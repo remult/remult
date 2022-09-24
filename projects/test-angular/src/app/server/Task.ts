@@ -1,7 +1,7 @@
 import { Entity, Fields } from '../../../../core/src/remult3';
 import { Validators } from '../../../../core/src/validators';
 import { BackendMethod } from '../../../../core/src/server-action';
-import { dbNamesOf, sqlCondition } from '../../../../core/src/filter/filter-consumer-bridge-to-sql-request';
+import { dbNamesOf } from '../../../../core/src/filter/filter-consumer-bridge-to-sql-request';
 import { remult } from '../../../../core/src/remult-proxy';
 import { SqlDatabase } from '../../../../core/src/data-providers/sql-database';
 import { KnexDataProvider } from '../../../../core/remult-knex';

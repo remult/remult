@@ -34,6 +34,7 @@ import { Repository } from '../../../../core/src/remult3';
 import { BackendMethod } from '../../../../core/src/server-action';
 import fetch from 'node-fetch';
 import { remult } from '../../../../core/src/remult-proxy';
+import { Customer, Order, seed } from './play-with-sql';
 
 
 const getDatabase = async () => {
@@ -73,16 +74,16 @@ serverInit().then(async (dataSource) => {
 
 
     let remultApi = remultExpress({
-        entities: [stam, Task],
+        entities: [stam, Task, Order, Customer],
         controllers: [controllerWithInstance, controllerWithStaic, AppComponent],
-        // dataProvider: createPostgresConnection(),
+         dataProvider: createPostgresConnection(),
         queueStorage: await preparePostgresQueueStorage(dataSource),
         logApiEndPoints: true,
         initRequest: async () => {
 
         },
         initApi: async remultParam => {
-            console.log({ count: await remult.repo(stam).count() })
+            seed();
         }
     });
 

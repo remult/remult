@@ -113,16 +113,15 @@ export class Order {
   //...
   static filterCity = Filter.createCustom<Order, { city: string }>(
     async ({ city }) => {
-      const orders = await dbNamesOf(remult.repo(Order));
-      const customerRepo = remult.repo(Customer);
-      const customers = await dbNamesOf(customerRepo);
+      const orders = await dbNamesOf(Order);
+      const customers = await dbNamesOf(Customer);
       return SqlDatabase.customFilter(
         async whereFragment => {
           whereFragment.sql =
             `${orders.customer} in 
                (select ${customers.id} 
                   from ${customers} 
-                 where ${await sqlCondition(customerRepo, { city })})`
+                 where ${await whereFragment.sqlCondition(Customer, { city })})`
         });
     });
 }
@@ -134,15 +133,15 @@ export class Order {
 @Entity("orders", { allowApiCrud: true })
 export class Order {
   //...
-  @Fields.string<Order>({
-    sqlExpression: async orderMetadata => {
-      const order = await dbNamesOf(orderMetadata);
-      const customer = await dbNamesOf(remult.repo(Customer));
+  @Fields.string({
+    sqlExpression: async () => {
+      const order = await dbNamesOf(Order);
+      const customer = await dbNamesOf(Customer);
       return `(
-        select ${customer.city}
-          from ${customer}
-         where ${customer.id} = ${order.customer}
-        )`;
+          select ${customer.city}
+            from ${customer}
+           where ${customer.id} = ${order.customer}
+          )`;
     }
   })
   city = '';

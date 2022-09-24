@@ -4,13 +4,15 @@ export interface SqlImplementation {
     getLimitSqlSyntax(limit: number, offset: number);
     createCommand(): SqlCommand;
     transaction(action: (sql: SqlImplementation) => Promise<void>): Promise<void>;
-    entityIsUsedForTheFirstTime(entity:EntityMetadata):Promise<void>;
+    entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void>;
 }
 
 
-export interface SqlCommand {
-    addParameterAndReturnSqlToken(val: any): string;
+export interface SqlCommand extends SqlCommandWithParameters {
     execute(sql: string): Promise<SqlResult>;
+}
+export interface SqlCommandWithParameters {
+    addParameterAndReturnSqlToken(val: any): string
 }
 
 export interface SqlResult {

@@ -319,4 +319,8 @@ declare class SubscribableImp implements Subscribable {
         reportObserved: () => void;
     }): Unobserve;
 }
+export declare function getEntityMetadata<entityType>(entity: EntityMetadataOverloads<entityType>): EntityMetadata<entityType>;
+export declare function getRepository<entityType>(entity: RepositoryOverloads<entityType>): Repository<entityType>;
+export declare type EntityMetadataOverloads<entityType> = Repository<entityType> | EntityMetadata<entityType> | ClassType<entityType>;
+export declare type RepositoryOverloads<entityType> = Repository<entityType> | ClassType<entityType>;
 export {};

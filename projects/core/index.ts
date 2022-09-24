@@ -73,7 +73,7 @@ export {
 export {
     SqlDatabase,
 } from './src/data-providers/sql-database';//V
-export { CustomSqlFilterObject, CustomSqlFilterBuilder, dbNamesOf,sqlCondition } from './src/filter/filter-consumer-bridge-to-sql-request';
+export { CustomSqlFilterObject, CustomSqlFilterBuilder, dbNamesOf } from './src/filter/filter-consumer-bridge-to-sql-request';
 
 
 

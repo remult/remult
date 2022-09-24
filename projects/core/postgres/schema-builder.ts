@@ -78,9 +78,9 @@ export class PostgresSchemaBuilder {
                         result += '\r\n  ';
 
                         if (isAutoIncrement(x))
-                            result += e.dbNameOf(x) + ' serial';
+                            result += e.$dbNameOf(x) + ' serial';
                         else {
-                            result += postgresColumnSyntax(x, e.dbNameOf(x));
+                            result += postgresColumnSyntax(x, e.$dbNameOf(x));
                             if (x == entity.idMetadata.field)
                                 result += ' primary key';
                         }
@@ -102,7 +102,7 @@ export class PostgresSchemaBuilder {
         try {
             let cmd = this.pool.createCommand();
 
-            const colName = e.dbNameOf(c(entity));
+            const colName = e.$dbNameOf(c(entity));
             if (
                 (await cmd.execute(`select 1   
         FROM information_schema.columns 
@@ -128,8 +128,8 @@ export class PostgresSchemaBuilder {
             )).rows.map(x => x.column_name);
             for (const col of entity.fields) {
                 if (!isDbReadonly(col, e))
-                    if (!cols.includes(e.dbNameOf(col).toLocaleLowerCase())) {
-                        let sql = `alter table ${e.$entityName} add column ${postgresColumnSyntax(col, e.dbNameOf(col))}`;
+                    if (!cols.includes(e.$dbNameOf(col).toLocaleLowerCase())) {
+                        let sql = `alter table ${e.$entityName} add column ${postgresColumnSyntax(col, e.$dbNameOf(col))}`;
                         //console.log(sql);
                         await this.pool.execute(sql);
                     }

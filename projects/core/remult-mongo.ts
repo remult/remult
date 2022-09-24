@@ -2,7 +2,7 @@ import type { MongoClient, Db, FindOptions } from 'mongodb';
 import { CompoundIdField, DataProvider, EntityDataProvider, EntityDataProviderFindOptions, EntityFilter, EntityMetadata, FieldMetadata, Filter, Remult, Repository } from '.';
 import { EntityDbNames, dbNamesOf, EntityDbNamesBase } from './src/filter/filter-consumer-bridge-to-sql-request';
 import { FilterConsumer } from './src/filter/filter-interfaces';
-import { RepositoryImplementation } from './src/remult3';
+import { getRepository, RepositoryImplementation, RepositoryOverloads } from './src/remult3';
 import { remult as remultContext } from './src/remult-proxy';
 
 export class MongoDataProvider implements DataProvider {
@@ -30,6 +30,16 @@ export class MongoDataProvider implements DataProvider {
             throw err;
         }
     }
+    static async mongoCondition<entityType>(
+        entity: RepositoryOverloads<entityType>,
+        condition: EntityFilter<entityType>) {
+        const repo = getRepository(entity);
+        var b = new FilterConsumerBridgeToMongo(await dbNamesOf(repo.metadata))
+        b._addWhere = false;
+        await (await ((repo as RepositoryImplementation<entityType>).translateWhereToFilter(condition))).__applyToConsumer(b)
+        let r = await b.resolveWhere();
+        return r;
+    }
 }
 const NULL = { $null: "$null" };
 function isNull(x: any) {
@@ -42,7 +52,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
     translateFromJson(row: any, nameProvider: EntityDbNamesBase) {
         let result = {};
         for (const col of this.entity.fields) {
-            let val = row[nameProvider.dbNameOf(col)];
+            let val = row[nameProvider.$dbNameOf(col)];
             if (isNull(val))
                 val = null;
             result[col.key] = col.valueConverter.fromDb(val);
@@ -56,7 +66,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
             let val = col.valueConverter.toDb(row[col.key]);
             if (val === null)
                 val = NULL;
-            result[nameProvider.dbNameOf(col)] = val;
+            result[nameProvider.$dbNameOf(col)] = val;
         }
         return result;
     }
@@ -86,7 +96,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
         if (options.orderBy) {
             op.sort = {};
             for (const s of options.orderBy.Segments) {
-                op.sort[e.dbNameOf(s.field)] = s.isDescending ? -1 : 1;
+                op.sort[e.$dbNameOf(s.field)] = s.isDescending ? -1 : 1;
             }
         }
         return await Promise.all(await collection.find(
@@ -200,7 +210,7 @@ class FilterConsumerBridgeToMongo implements FilterConsumer {
 
         this.result.push(() => (
             {
-                [this.nameProvider.dbNameOf(col)]: {
+                [this.nameProvider.$dbNameOf(col)]: {
                     $in: val.map(x => col.valueConverter.toDb(x))
                 }
             }
@@ -237,7 +247,7 @@ class FilterConsumerBridgeToMongo implements FilterConsumer {
     private add(col: FieldMetadata, val: any, operator: string) {
 
         this.result.push(() => ({
-            [this.nameProvider.dbNameOf(col)]: { [operator]: isNull(val) ? val : col.valueConverter.toDb(val) }
+            [this.nameProvider.$dbNameOf(col)]: { [operator]: isNull(val) ? val : col.valueConverter.toDb(val) }
         }))
 
 
@@ -258,14 +268,4 @@ class FilterConsumerBridgeToMongo implements FilterConsumer {
         //     }
         //   })());
     }
-}
-export async function mongoCondition<entityType>(
-    repo: Repository<entityType>,
-    condition: EntityFilter<entityType>) {
-
-    var b = new FilterConsumerBridgeToMongo(await dbNamesOf(repo.metadata))
-    b._addWhere = false;
-    await (await ((repo as RepositoryImplementation<entityType>).translateWhereToFilter(condition))).__applyToConsumer(b)
-    let r = await b.resolveWhere();
-    return r;
 }

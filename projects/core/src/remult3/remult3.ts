@@ -111,6 +111,7 @@ export interface EntityMetadata<entityType = any> {
     getDbName(): Promise<string>;
 }
 
+
 export declare type OmitEB<T> = Omit<T, keyof import('./RepositoryImplementation').EntityBase>
 
 /**used to perform CRUD operations on an `entityType` */

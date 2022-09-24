@@ -1,12 +1,12 @@
 
 import { EntityDataProvider, EntityDataProviderFindOptions, DataProvider } from "../data-interfaces";
-import { SqlCommand, SqlImplementation, SqlResult } from "../sql-command";
+import { SqlCommand, SqlCommandWithParameters, SqlImplementation, SqlResult } from "../sql-command";
 import { CompoundIdField } from "../column";
 
 import { CustomSqlFilterBuilderFunction, CustomSqlFilterObject, dbNamesOf, EntityDbNames, EntityDbNamesBase, FilterConsumerBridgeToSqlRequest, isDbReadonly } from "../filter/filter-consumer-bridge-to-sql-request";
 import { customDatabaseFilterToken, Filter } from '../filter/filter-interfaces';
 import { Sort, SortSegment } from '../sort';
-import { EntityMetadata, EntityFilter, OmitEB, Repository, RepositoryImplementation } from "../remult3";
+import { EntityMetadata, EntityFilter, OmitEB, Repository, RepositoryImplementation, RepositoryOverloads, getRepository } from "../remult3";
 import { FieldMetadata } from "../column-interfaces";
 import { Remult } from "../context";
 
@@ -73,6 +73,20 @@ export class SqlDatabase implements DataProvider {
       }
     }
 
+  }
+  static async sqlCondition<entityType>(
+    repo: RepositoryOverloads<entityType>,
+    condition: EntityFilter<entityType>,
+    sqlCommand?: SqlCommandWithParameters) {
+    if (!sqlCommand) {
+      sqlCommand = new myDummySQLCommand();
+    }
+    const r = getRepository(repo);
+    
+    var b = new FilterConsumerBridgeToSqlRequest(sqlCommand, await dbNamesOf(r.metadata))
+    b._addWhere = false;
+    await (await ((r as RepositoryImplementation<entityType>).translateWhereToFilter(condition))).__applyToConsumer(b)
+    return await b.resolveWhere();
   }
   public static LogToConsole = false;
   public static durationThreshold = 0;
@@ -183,7 +197,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
           else
             select += ', ';
 
-          select += e.dbNameOf(c.field);
+          select += e.$dbNameOf(c.field);
           if (c.isDescending)
             select += ' desc';
         }
@@ -230,7 +244,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
       else {
         if (colKeys.length > 0)
           select += ', ';
-        select += e.dbNameOf(x);
+        select += e.$dbNameOf(x);
         colKeys.push(x);
       }
     }
@@ -259,7 +273,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
           else
             statement += ', ';
 
-          statement += e.dbNameOf(x) + ' = ' + r.addParameterAndReturnSqlToken(v);
+          statement += e.$dbNameOf(x) + ' = ' + r.addParameterAndReturnSqlToken(v);
         }
       }
     }
@@ -305,7 +319,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
             vals += ', ';
           }
 
-          cols += e.dbNameOf(x);
+          cols += e.$dbNameOf(x);
           vals += r.addParameterAndReturnSqlToken(v);
         }
       }
@@ -324,3 +338,23 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
 
 
 
+class myDummySQLCommand implements SqlCommand {
+
+  execute(sql: string): Promise<SqlResult> {
+    throw new Error("Method not implemented.");
+  }
+  addParameterAndReturnSqlToken(val: any): string {
+    if (val === null)
+      return "null";
+    if (val instanceof Date)
+      val = val.toISOString();
+    if (typeof (val) == "string") {
+      if (val == undefined)
+        val = '';
+      return '\'' + val.replace(/'/g, '\'\'') + '\'';
+    }
+    return val.toString();
+  }
+
+
+}

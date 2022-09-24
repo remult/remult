@@ -5,7 +5,7 @@ import { Categories } from './remult-3-entities';
 import { Entity, EntityFilter, Fields, OmitEB, Repository, RepositoryImplementation } from '../remult3';
 import { testWebSqlImpl } from './frontend-database-tests-setup.spec';
 import { entityWithValidations } from '../shared-tests/entityWithValidations';
-import { EntityDbNames, FilterConsumerBridgeToSqlRequest, dbNamesOf, sqlCondition } from '../filter/filter-consumer-bridge-to-sql-request';
+import { EntityDbNames, FilterConsumerBridgeToSqlRequest, dbNamesOf } from '../filter/filter-consumer-bridge-to-sql-request';
 import { SqlCommand, SqlResult } from '../sql-command';
 import { Filter } from '../filter/filter-interfaces';
 
@@ -144,7 +144,7 @@ testWebSqlImpl("test work with filter", async ({ remult, createEntity }) => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity);
     const e = await dbNamesOf(repo);
     expect(
-        `select ${e.myId}, ${e.name} from ${e} where ${await sqlCondition(repo,
+        `select ${e.myId}, ${e.name} from ${e} where ${await SqlDatabase.sqlCondition(repo,
             {
                 myId: [1, 3]
             })}`)
@@ -155,10 +155,10 @@ testWebSqlImpl("test work with filter", async ({ remult, createEntity }) => {
     const command = SqlDatabase.getDb(remult).createCommand()
     const e = await dbNamesOf(repo);
     expect(
-        `select ${e.myId}, ${e.name} from ${e} where ${await sqlCondition(repo,
+        `select ${e.myId}, ${e.name} from ${e} where ${await SqlDatabase.sqlCondition(repo,
             {
                 myId: [1, 3]
-            },command)}`)
+            }, command)}`)
         .toBe("select myId, name from entityWithValidations where myId in (~1~,~2~)")
 }, false);
 

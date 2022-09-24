@@ -18,19 +18,32 @@ This can help if you want to switch sql database sometimes in the future.
 
 ### Simple sql
 ```ts
-const repo = remult.repo(Task);
+const tasks = await dbNamesOf(Task);
 const sql = SqlDatabase.getDb();
-const r = await sql.execute("select count(*) as c from " +  repo.metadata.options.dbName!);
+const r = await sql.execute(`select count(*) as c from ${tasks}`);
 console.log(r.rows[0].c);
 ```
+* The `dbNamesOf` function returns an object that exposes the db names of the entity and it's fields. This improves maintainability and allows for better searches in the code
 
+Another example:
+```ts
+const tasks = await dbNamesOf(Task);
+const sql = SqlDatabase.getDb();
+console.table(await sql.execute(
+  `select ${tasks.title}, ${tasks.completed} 
+     from ${tasks}`))
+```
 ### Using bound parameters
 ```ts
-const priceToUpdate = 7;
+const priceToUpdate = 5;
+const products = await dbNamesOf(Product);
 const sql = SqlDatabase.getDb();
 let command = sql.createCommand();
-await command.execute("update products set price = price + " 
-   + command.addParameterAndReturnSqlToken(+priceToUpdate));
+await command.execute(
+  `update ${products} 
+      set ${products.price} = 
+          ${products.price} + ${command.addParameterAndReturnSqlToken(+priceToUpdate)}`
+  );
 ```
 
 When executed with  `priceToUpdate = 5`, this code will run the following SQL:
@@ -39,13 +52,6 @@ update products set price = price + $1
 Arguments: { '$1': 5 }
 ```
 
-### Leveraging the Entity metadata
-To improve maintainability it makes sense to use in the query the column names as are defined in the entity itself. We can use the `dbNamesOf` function
-```ts
-const tasks = await dbNamesOf(remult.repo(Task));
-const sql = SqlDatabase.getDb();
-console.table(await `select ${tasks.title}, ${tasks.completed} from ${tasks}`)
-```
 
 ### Leveraging EntityFilter for Sql Databases
 Sometimes in our sql, we may want to use EntityFilters as sql filters, this is particularly useful if we have refactored complex filters in our code and we want to reuse them.
@@ -53,12 +59,12 @@ Sometimes in our sql, we may want to use EntityFilters as sql filters, this is p
  we can use the `sqlCondition` utility function for that:
 
 ```ts
-const repo = remult.repo(Task);
-const tasks = await dbNamesOf(remult.repo(Task));
+const tasks = await dbNamesOf(Task);
 const sql = await SqlDatabase.getDb();
-console.table(await sql.execute(
-    `select ${tasks.title}, ${tasks.completed} from ${tasks}
-      where ${await sqlCondition(repo, { id: [1, 3] })}}`))
+const command = sql.createCommand();
+console.table(await command.execute(
+  `select ${tasks.title}, ${tasks.completed} from ${tasks}
+    where ${await SqlDatabase.sqlCondition(Task, { id: [1, 3] }, command)}`))
 ```
 will result in the following sql:
 ```sql
@@ -67,13 +73,12 @@ select title, completed from tasks where id in (1, 3)
 
 #### We can also use this with bound parameters
 ```ts
-const repo = remult.repo(Task);
-const tasks = await dbNamesOf(remult.repo(Task));
+const tasks = await dbNamesOf(Task);
 const sql = await SqlDatabase.getDb();
 const command = sql.createCommand();
 console.table(await command.execute(
     `select ${tasks.title}, ${tasks.completed} from ${tasks}
-      where ${await sqlCondition(repo, { id: [1, 3] }, command)}}`))
+      where ${await SqlDatabase.sqlCondition(Task, { id: [1, 3] }, command)}`))
 ```
 This will result in the following sql:
 ```sql
@@ -84,27 +89,34 @@ Arguments: { '$1': 1, '$2': 3 }
 
 ## Knex
 ```ts
-const repo = remult.repo(Task);
+const tasks = await dbNamesOf(Task);
 const knex = KnexDataProvider.getDb();
-const r = await knex(repo.metadata.options.dbName!).count()
+const r = await knex(tasks.$entityName).count()
 console.log(r[0].count);
+```
+* Note that we use the `$entityName` to get the entity name of the table.
+
+Another example:
+```ts
+
 ```
 
 ### Leveraging the Entity metadata
 ```ts
-const tasks = await dbNamesOf(remult.repo(Task));
+const tasks = await dbNamesOf(Task);
 const knex = await KnexDataProvider.getDb();
 console.table(
-    await knex(tasks.$entityName).select(tasks.title,tasks.completed));
+  await knex(tasks.$entityName)
+    .select(tasks.title, tasks.completed));
 ```
 
 ### Leveraging EntityFilter for Knex 
 ```ts
-const repo = remult.repo(Task);
+const tasks = await dbNamesOf(Task);
 const knex = KnexDataProvider.getDb();
-const r = await knex(repo.metadata.options.dbName!)
-    .count()
-    .where(await knexCondition(repo, { id: [1, 3] }));
+const r = await knex(tasks.$entityName)
+  .count()
+  .where(await KnexDataProvider.knexCondition(Task, { id: [1, 3] }));
 console.log(r[0].count);
 ```
 
@@ -113,26 +125,27 @@ console.log(r[0].count);
 
 ## MongoDB
 ```ts
-const repo = remult.repo(Task);
+const tasks = await dbNamesOf(Task);
 const mongo = MongoDataProvider.getDb();
-const r = await (await mongo.collection(repo.metadata.options.dbName!)).countDocuments();
+const r = await (await mongo.collection(tasks.$entityName)).countDocuments();
 console.log(r);
 ```
 
 ### Leveraging EntityFilter for MongoDb
 ```ts
-const repo = remult.repo(Task);
+const tasks = await dbNamesOf(Task);
 const mongo = MongoDataProvider.getDb();
-const r = await (await mongo.collection(repo.metadata.options.dbName!))
-    .countDocuments(await mongoCondition(repo, { myId: [1, 2] }) );
+const r = await (await mongo.collection(tasks.$entityName))
+    .countDocuments(await MongoDataProvider.mongoCondition(Task, { id: [1, 2] }));
 console.log(r);
+
 ```
 
 ## Native postgres
 ```ts
-const repo = remult.repo(Task);
+const tasks = await dbNamesOf(Task);
 const sql = PostgresDataProvider.getDb();
-const r = await sql.query("select count(*) as c from " + repo.metadata.options.dbName!);
+const r = await sql.query(`select count(*) as c from ${tasks}`);
 console.log(r.rows[0].c);
 ```
 
@@ -140,13 +153,13 @@ console.log(r.rows[0].c);
 
 ## websql
 ```ts
-const repo = remult.repo(Task);
+const tasks = await dbNamesOf(Task);
 const sql = WebSqlDataProvider.getDb();
 sql.transaction(y => {
-    y.executeSql("select count(*) as c from " + repo.metadata.options.dbName!, undefined,
-        (_,r) => {
-            console.log(r.rows[0].c);
-        });
+    y.executeSql(`select count(*) as c from ${tasks}`, undefined,
+    (_, r) => {
+        console.log(r.rows[0].c);
+    });
 });
 ```
 > you can use the Entity Metadata and `sqlCondition` that are used in [SqlDatabase](#leveraging-the-entity-metadata)

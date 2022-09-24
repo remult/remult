@@ -1478,8 +1478,7 @@ describe("compound id", () => {
     let id = repo.metadata.idMetadata.field as CompoundIdField;
     var n = await dbNamesOf(repo.metadata)
     let f = new FilterConsumerBridgeToSqlRequest({
-      addParameterAndReturnSqlToken: x => x,
-      execute: undefined
+      addParameterAndReturnSqlToken: x => x
     }, n);
     id.resultIdFilter(undefined, repo.create({ a: 1, b: 2 })).__applyToConsumer(f);
     expect(await f.resolveWhere()).toBe(" where a = 1 and b = 2");
@@ -1497,8 +1496,7 @@ describe("compound id", () => {
     let id = repo.metadata.idMetadata.field as CompoundIdField;
     var n = await dbNamesOf(repo.metadata)
     let f = new FilterConsumerBridgeToSqlRequest({
-      addParameterAndReturnSqlToken: x => x,
-      execute: undefined
+      addParameterAndReturnSqlToken: x => x
     }, n);
     id.resultIdFilter("1,2", repo.create({ a: 1, b: 2 })).__applyToConsumer(f);
     expect(await f.resolveWhere()).toBe(" where a = 1 and b = 2");

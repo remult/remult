@@ -1308,7 +1308,7 @@ export class columnDefsImpl implements FieldMetadata {
     private _workingOnDbName = false;
     async getDbName() {
         if (this._workingOnDbName)
-            return "Recursive getDbName call for field '" + this.key+"'. ";
+            return "Recursive getDbName call for field '" + this.key + "'. ";
         this._workingOnDbName = true;
         try {
             if (this.settings.sqlExpression) {
@@ -2104,3 +2104,22 @@ class SubscribableImp implements Subscribable {
         return () => this._subscribers = this._subscribers.filter(x => x != list);
     }
 }
+export function getEntityMetadata<entityType>(entity: EntityMetadataOverloads<entityType>): EntityMetadata<entityType> {
+    if ((entity as Repository<entityType>).metadata)
+        return (entity as Repository<entityType>).metadata;
+    const settings = getEntitySettings(entity as ClassType<entityType>, false);
+    if (settings) {
+        return RepositoryImplementation.defaultRemult.repo(entity as ClassType<entityType>).metadata;
+    }
+    return entity as EntityMetadata;
+}
+export function getRepository<entityType>(entity: RepositoryOverloads<entityType>): Repository<entityType> {
+
+    const settings = getEntitySettings(entity as ClassType<entityType>, false);
+    if (settings) {
+        return RepositoryImplementation.defaultRemult.repo(entity as ClassType<entityType>);
+    }
+    return entity as Repository<entityType>;
+}
+export type EntityMetadataOverloads<entityType> = Repository<entityType> | EntityMetadata<entityType> | ClassType<entityType>;
+export type RepositoryOverloads<entityType> = Repository<entityType> | ClassType<entityType>;

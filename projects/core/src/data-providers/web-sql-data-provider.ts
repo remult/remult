@@ -55,10 +55,10 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
                 if (isAutoIncrement(x)) {
                     if (x.key != entity.idMetadata.field.key)
                         throw "in web sql, autoincrement is only allowed for primary key"
-                    result += e.dbNameOf(x) + ' integer primary key autoincrement';
+                    result += e.$dbNameOf(x) + ' integer primary key autoincrement';
                 }
                 else {
-                    result += this.addColumnSqlSyntax(x, e.dbNameOf(x));
+                    result += this.addColumnSqlSyntax(x, e.$dbNameOf(x));
                     if (x.key == entity.idMetadata.field.key) {
                         result += ' primary key';
                     }

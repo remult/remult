@@ -1,13 +1,13 @@
 
 import { Remult } from "../context";
 import { Entity, EntityFilter, Field, Repository } from "../remult3";
-import { knexCondition, KnexDataProvider } from '../../remult-knex';
+import { KnexDataProvider } from '../../remult-knex';
 import * as Knex from 'knex';
 import { config } from 'dotenv';
 import { testKnexPGSqlImpl, testMongo, testPostgresImplementation } from "./backend-database-test-setup.backend-spec";
 import { entityWithValidations } from "../shared-tests/entityWithValidations";
 import { PostgresDataProvider } from "../../postgres";
-import { MongoDataProvider, mongoCondition } from "../../remult-mongo";
+import { MongoDataProvider } from "../../remult-mongo";
 import { SqlDatabase } from "../data-providers/sql-database";
 import { dbNamesOf } from "../filter/filter-consumer-bridge-to-sql-request";
 config();
@@ -114,8 +114,8 @@ testKnexPGSqlImpl("work with native knex2", async ({ remult, createEntity }) => 
 testKnexPGSqlImpl("work with native knex3", async ({ remult, createEntity }) => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity);
     const knex = KnexDataProvider.getDb(remult);
-    const t =await  dbNamesOf(repo);
-    const r = await knex((await t).$entityName).select(t.myId,t.name);
+    const t = await dbNamesOf(repo);
+    const r = await knex((await t).$entityName).select(t.myId, t.name);
     expect(r.length).toBe(4);
 }, false);
 
@@ -131,13 +131,13 @@ testKnexPGSqlImpl("knex with filter", async ({ remult, createEntity }) => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity);
     const knex = KnexDataProvider.getDb(remult);
     const e = await dbNamesOf(repo);
-    const r = await knex(e.$entityName).count().where(await knexCondition(repo, { myId: [1, 3] }));
+    const r = await knex(e.$entityName).count().where(await KnexDataProvider.knexCondition(repo, { myId: [1, 3] }));
     expect(r[0].count).toBe('2');
 }, false);
 
 testMongo("work with native mongo and condition", async ({ remult, createEntity }) => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity);
     const mongo = MongoDataProvider.getDb(remult);
-    const r = await (await mongo.collection(repo.metadata.options.dbName!)).countDocuments(await mongoCondition(repo, { myId: [1, 2] }))
+    const r = await (await mongo.collection(repo.metadata.options.dbName!)).countDocuments(await MongoDataProvider.mongoCondition(repo, { myId: [1, 2] }))
     expect(r).toBe(2);
 }, false);

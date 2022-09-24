@@ -1,6 +1,6 @@
 import type { Knex } from 'knex';
 import { Remult } from "../src/context";
-import { EntityFilter, EntityMetadata, Repository } from "../src/remult3";
+import { EntityFilter, EntityMetadata, RepositoryOverloads } from "../src/remult3";
 import { DataProvider, EntityDataProvider } from '../src/data-interfaces';
 import { FieldMetadata } from '../src/column-interfaces';
 export declare class KnexDataProvider implements DataProvider {
@@ -10,10 +10,10 @@ export declare class KnexDataProvider implements DataProvider {
     getEntityDataProvider(entity: EntityMetadata<any>): EntityDataProvider;
     transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void>;
     static customFilter(build: CustomKnexFilterBuilderFunction): EntityFilter<any>;
+    static knexCondition<entityType>(entity: RepositoryOverloads<entityType>, condition: EntityFilter<entityType>): Promise<(knex: any) => void>;
     supportsCustomFilter?: boolean;
 }
 export declare type CustomKnexFilterBuilderFunction = () => Promise<(builder: Knex.QueryBuilder) => void>;
-export declare function knexCondition<entityType>(repo: Repository<entityType>, condition: EntityFilter<entityType>): Promise<(knex: any) => void>;
 export declare class KnexSchemaBuilder {
     private knex;
     verifyStructureOfAllEntities(remult: Remult): Promise<void>;

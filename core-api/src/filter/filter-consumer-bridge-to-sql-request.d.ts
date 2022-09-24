@@ -1,7 +1,8 @@
-import { SqlCommand } from "../sql-command";
+import { SqlCommandWithParameters } from "../sql-command";
 import { Filter, FilterConsumer } from './filter-interfaces';
 import { FieldMetadata } from "../column-interfaces";
-import { EntityFilter, EntityMetadata, OmitEB, Repository } from "../remult3/remult3";
+import { EntityFilter, OmitEB } from "../remult3/remult3";
+import { EntityMetadataOverloads, RepositoryOverloads } from "../remult3";
 export declare class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
     private r;
     private nameProvider;
@@ -9,7 +10,7 @@ export declare class FilterConsumerBridgeToSqlRequest implements FilterConsumer 
     _addWhere: boolean;
     promises: Promise<void>[];
     resolveWhere(): Promise<string>;
-    constructor(r: SqlCommand, nameProvider: EntityDbNamesBase);
+    constructor(r: SqlCommandWithParameters, nameProvider: EntityDbNamesBase);
     custom(key: string, customItem: any): void;
     or(orElements: Filter[]): void;
     isNull(col: FieldMetadata): void;
@@ -32,18 +33,18 @@ export interface CustomSqlFilterObject {
 }
 export declare class CustomSqlFilterBuilder {
     private r;
-    constructor(r: SqlCommand);
+    constructor(r: SqlCommandWithParameters);
     sql: string;
     addParameterAndReturnSqlToken<valueType>(val: valueType, field?: FieldMetadata<valueType>): string;
+    sqlCondition<entityType>(repo: RepositoryOverloads<entityType>, condition: EntityFilter<entityType>): Promise<string>;
 }
 export declare function isDbReadonly<entityType>(field: FieldMetadata, dbNames: EntityDbNames<entityType>): boolean;
 export declare type EntityDbNamesBase = {
     $entityName: string;
-    dbNameOf(field: FieldMetadata<any> | string): string;
+    $dbNameOf(field: FieldMetadata<any> | string): string;
     toString(): string;
 };
 export declare type EntityDbNames<entityType> = {
     [Properties in keyof Required<OmitEB<entityType>>]: string;
 } & EntityDbNamesBase;
-export declare function dbNamesOf<entityType>(repo: Repository<entityType> | EntityMetadata<entityType>): Promise<EntityDbNames<entityType>>;
-export declare function sqlCondition<entityType>(repo: Repository<entityType>, condition: EntityFilter<entityType>, sqlCommand?: SqlCommand): Promise<string>;
+export declare function dbNamesOf<entityType>(repo: EntityMetadataOverloads<entityType>): Promise<EntityDbNames<entityType>>;

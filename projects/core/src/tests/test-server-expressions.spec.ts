@@ -107,6 +107,13 @@ describe("test server expression value", () => {
         expect(r.d).toBe('ccdd');
         expect(r.e).toBe("ccee");
         expect(r.f).toBe("Recursive getDbName call for field 'f'. ff");
+        const z = await dbNamesOf(remult.repo(myClass).metadata);
+        expect(z.a).toBe('a');
+        const zz = await dbNamesOf(myClass);
+        expect(zz.a).toBe('a');
+        const zzz = await dbNamesOf(testServerExpression);
+        expect(zzz.code).toBe('code');
+
     });
 
 
