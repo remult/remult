@@ -1694,10 +1694,8 @@ export function getValueList<T>(type: ClassType<T> | FieldMetadata<T> | FieldRef
  * @Fields.string((options,remult) => options.includeInApi = true)
  * title='';
  */
-export function Field<entityType = any, valueType = any>(valueType: () => ClassType<valueType>, ...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
-
-
-
+export function Field<entityType = any, valueType = any>(valueType: () => ClassType<valueType>, ...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]): typedDecorator<valueType> {
+    //@ts-ignore
     return (target, key, c?) => {
         let factory = (remult: Remult) => {
             let r = buildOptions(options, remult);
@@ -2105,3 +2103,4 @@ class SubscribableImp implements Subscribable {
         return () => this._subscribers = this._subscribers.filter(x => x != list);
     }
 }
+export declare type typedDecorator<type> = ((target, key) => void) & { $type: type };
