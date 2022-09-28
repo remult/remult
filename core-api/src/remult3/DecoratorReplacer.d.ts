@@ -15,4 +15,7 @@ declare type inferredType<type> = {
 export declare function createEntity<T>(key: string, members: T, options?: EntityOptions<inferredType<T>>): {
     new (...args: any[]): inferredType<T>;
 };
+export declare function createClass<T>(members: T): {
+    new (...args: any[]): inferredType<T>;
+};
 export {};

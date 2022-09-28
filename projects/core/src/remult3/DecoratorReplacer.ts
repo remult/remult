@@ -41,5 +41,10 @@ export function createEntity<T>(key: string, members: T, options?: EntityOptions
     describeClass(r, Entity(key, options), members);
     //@ts-ignore
     return r;
-
+}
+export function createClass<T>(members: T): { new(...args): inferredType<T> } {
+    const r = class { };
+    describeClass(r, undefined, members);
+    //@ts-ignore
+    return r;
 }

@@ -34,6 +34,7 @@ export interface BackendMethodOptions<type> {
     /** EXPERIMENTAL: Determines if the user should be blocked while this `BackendMethod` is running*/
     blockUser?: boolean;
     paramTypes?: any[];
+    returnType?: any;
 }
 export declare const actionInfo: {
     allActions: any[];
@@ -63,7 +64,7 @@ export declare class ProgressListener {
     progress(progress: number): void;
 }
 export declare function prepareArgsToSend(types: any[], args: any[]): any[];
-export declare function prepareReceivedArgs(types: any[], args: any[], remult: Remult, ds: DataProvider, res: DataApiResponse): Promise<any[]>;
+export declare function prepareReceivedArgs(types: any[], args: any[], remult?: Remult, ds?: DataProvider, res?: DataApiResponse): Promise<any[]>;
 export declare const classBackendMethodsArray: unique symbol;
 export interface ActionInterface {
     doWork: (args: any[], self: any, baseUrl?: string, http?: RestDataProviderHttpProvider) => Promise<any>;

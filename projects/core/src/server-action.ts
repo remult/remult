@@ -15,7 +15,7 @@ import { SqlDatabase } from './data-providers/sql-database';
 import { packedRowInfo } from './__EntityValueProvider';
 import { Filter, AndFilter } from './filter/filter-interfaces';
 import { DataProvider, RestDataProviderHttpProvider } from './data-interfaces';
-import { getEntityRef, rowHelperImplementation, getFields, decorateColumnSettings, getEntitySettings, getControllerRef, EntityFilter, controllerRefImpl, RepositoryImplementation } from './remult3';
+import { getEntityRef, rowHelperImplementation, getFields, decorateColumnSettings, getEntitySettings, getControllerRef, EntityFilter, controllerRefImpl, RepositoryImplementation, $fieldOptionsMember, columnsOfType } from './remult3';
 import { FieldOptions } from './column-interfaces';
 
 
@@ -136,6 +136,7 @@ export interface BackendMethodOptions<type> {
     /** EXPERIMENTAL: Determines if the user should be blocked while this `BackendMethod` is running*/
     blockUser?: boolean;
     paramTypes?: any[];
+    returnType?: any;
 }
 
 export const actionInfo = {
@@ -200,14 +201,16 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                 types = options.paramTypes;
             // if types are undefined - you've forgot to set: "emitDecoratorMetadata":true
 
-            let serverAction = new myServerAction(key, types, options, args => originalMethod.apply(undefined, args));
+            let serverAction = new myServerAction(key, types, options, async args => prepareArgsToSend([options.returnType], [await originalMethod.apply(undefined, args)])[0]);
             serverAction.doWork = async (args, self, url, http) => {
                 args = prepareArgsToSend(types, args);
+                let result: any;
                 if (options.blockUser === false) {
-                    return await actionInfo.runActionWithoutBlockingUI(async () => (await serverAction.run({ args }, url, http)).data);
+                    result = await actionInfo.runActionWithoutBlockingUI(async () => (await serverAction.run({ args }, url, http)).data);
                 }
                 else
-                    return (await serverAction.run({ args }, url, http)).data;
+                    result = (await serverAction.run({ args }, url, http)).data;
+                return (await prepareReceivedArgs([options.returnType], [result]))[0];
             }
 
 
@@ -440,6 +443,7 @@ export class ProgressListener {
 export function prepareArgsToSend(types: any[], args: any[]) {
 
     if (types) {
+        const remult = RepositoryImplementation.defaultRemult;
         for (let index = 0; index < types.length; index++) {
             const paramType = types[index];
             for (const type of [Remult, SqlDatabase]) {
@@ -451,10 +455,18 @@ export function prepareArgsToSend(types: any[], args: any[]) {
             }
             if (args[index] != undefined) {
                 let x: FieldOptions = { valueType: paramType };
-                x = decorateColumnSettings(x, new Remult());
-                if (x.valueConverter)
-                    args[index] = x.valueConverter.toJson(args[index]);
+                if (typeof paramType === "function" && paramType[$fieldOptionsMember] !== undefined) {
+                    x = paramType[$fieldOptionsMember](remult);
+                }
+                x = decorateColumnSettings(x, remult);
                 let eo = getEntitySettings(paramType, false);
+                let cols = columnsOfType.get(types[index]);
+                if (cols && !eo) {
+                    const item = Object.assign(new paramType(), { ...args[index] });
+                    const ref = getControllerRef(item, remult) as unknown as controllerRefImpl;
+                    args[index] = ref.toApiJson();
+                } else
+                    args[index] = x.valueConverter.toJson(args[index]);
                 if (eo != null) {
                     let rh = getEntityRef(args[index]);
                     args[index] = rh.getId();
@@ -465,12 +477,14 @@ export function prepareArgsToSend(types: any[], args: any[]) {
     return args.map(x => x !== undefined ? x : customUndefined);
 
 }
-export async function prepareReceivedArgs(types: any[], args: any[], remult: Remult, ds: DataProvider, res: DataApiResponse) {
+export async function prepareReceivedArgs(types: any[], args: any[], remult?: Remult, ds?: DataProvider, res?: DataApiResponse) {
     for (let index = 0; index < args.length; index++) {
         const element = args[index];
         if (isCustomUndefined(element))
             args[index] = undefined;
     }
+    if (!remult)
+        remult = RepositoryImplementation.defaultRemult;
 
     if (types)
         for (let i = 0; i < types.length; i++) {
@@ -484,18 +498,26 @@ export async function prepareReceivedArgs(types: any[], args: any[], remult: Rem
                 args[i] = ds;
             } else if (types[i] == ProgressListener) {
                 args[i] = new ProgressListener(res);
-            } else {
+            }
+            else {
                 let x: FieldOptions = { valueType: types[i] };
+                if (typeof types[i] === "function" && types[i][$fieldOptionsMember] !== undefined) {
+                    x = types[i][$fieldOptionsMember](remult)
+                }
                 x = decorateColumnSettings(x, remult);
-                if (x.valueConverter)
-                    args[i] = x.valueConverter.fromJson(args[i]);
                 let eo = getEntitySettings(types[i], false);
+                let cols = columnsOfType.get(types[i]);
+                if (cols && !eo) {
+                    const item = new types[i];
+                    const ref = getControllerRef(item, remult) as unknown as controllerRefImpl;
+                    await ref._updateEntityBasedOnApi(args[i]);
+                    args[i] = item;
+                } else
+                    args[i] = x.valueConverter.fromJson(args[i]);
                 if (eo != null) {
                     if (!(args[i] === null || args[i] === undefined))
                         args[i] = await remult.repo(types[i]).findId(args[i]);
                 }
-
-
             }
         }
     return args;

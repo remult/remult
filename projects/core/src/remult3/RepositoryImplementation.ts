@@ -1680,7 +1680,7 @@ export function getValueList<T>(type: ClassType<T> | FieldMetadata<T> | FieldRef
 
     return ValueListInfo.get<T>(type as ClassType<T>).getValues();
 }
-
+export const $fieldOptionsMember = "$fieldOptions";
 /**Decorates fields that should be used as fields.
  * for more info see: [Field Types](https://remult.dev/docs/field-types.html)
  * 
@@ -1695,13 +1695,18 @@ export function getValueList<T>(type: ClassType<T> | FieldMetadata<T> | FieldRef
  * title='';
  */
 export function Field<entityType = any, valueType = any>(valueType: () => ClassType<valueType>, ...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]): typedDecorator<valueType> {
+
+    const $fieldOptions = (remult: Remult) => {
+        let r = buildOptions(options, remult);
+        if (!r.valueType && valueType) {
+            r.valueType = valueType();
+        }
+        return r;
+    }
     //@ts-ignore
-    return (target, key, c?) => {
+    return Object.assign((target, key, c?) => {
         let factory = (remult: Remult) => {
-            let r = buildOptions(options, remult);
-            if (!r.valueType && valueType) {
-                r.valueType = valueType();
-            }
+            let r = $fieldOptions(remult);
             if (!r.key) {
                 r.key = key;
             }
@@ -1738,7 +1743,9 @@ export function Field<entityType = any, valueType = any>(valueType: () => ClassT
             };
         }
 
-    }
+    }, { [$fieldOptionsMember]: $fieldOptions });
+
+
 
 
 

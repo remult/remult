@@ -251,6 +251,7 @@ export declare class ValueListInfo<T extends ValueListItem> implements ValueConv
 export declare function getValueList<T>(field: FieldRef<T>): T[];
 export declare function getValueList<T>(field: FieldMetadata<T>): T[];
 export declare function getValueList<T>(type: ClassType<T>): T[];
+export declare const $fieldOptionsMember = "$fieldOptions";
 /**Decorates fields that should be used as fields.
  * for more info see: [Field Types](https://remult.dev/docs/field-types.html)
  *
