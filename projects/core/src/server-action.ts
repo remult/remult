@@ -15,7 +15,7 @@ import { SqlDatabase } from './data-providers/sql-database';
 import { packedRowInfo } from './__EntityValueProvider';
 import { Filter, AndFilter } from './filter/filter-interfaces';
 import { DataProvider, RestDataProviderHttpProvider } from './data-interfaces';
-import { getEntityRef, rowHelperImplementation, getFields, decorateColumnSettings, getEntitySettings, getControllerRef, EntityFilter, controllerRefImpl, RepositoryImplementation, $fieldOptionsMember, columnsOfType } from './remult3';
+import { getEntityRef, rowHelperImplementation, getFields, decorateColumnSettings, getEntitySettings, getControllerRef, EntityFilter, controllerRefImpl, RepositoryImplementation, $fieldOptionsMember, columnsOfType, getFieldLoaderSaver } from './remult3';
 import { FieldOptions } from './column-interfaces';
 
 
@@ -460,13 +460,7 @@ export function prepareArgsToSend(types: any[], args: any[]) {
                 }
                 x = decorateColumnSettings(x, remult);
                 let eo = getEntitySettings(paramType, false);
-                let cols = columnsOfType.get(types[index]);
-                if (cols && !eo) {
-                    const item = Object.assign(new paramType(), { ...args[index] });
-                    const ref = getControllerRef(item, remult) as unknown as controllerRefImpl;
-                    args[index] = ref.toApiJson();
-                } else
-                    args[index] = x.valueConverter.toJson(args[index]);
+                args[index] = getFieldLoaderSaver(x, remult).toJson(args[index]);
                 if (eo != null) {
                     let rh = getEntityRef(args[index]);
                     args[index] = rh.getId();
@@ -506,14 +500,7 @@ export async function prepareReceivedArgs(types: any[], args: any[], remult?: Re
                 }
                 x = decorateColumnSettings(x, remult);
                 let eo = getEntitySettings(types[i], false);
-                let cols = columnsOfType.get(types[i]);
-                if (cols && !eo) {
-                    const item = new types[i];
-                    const ref = getControllerRef(item, remult) as unknown as controllerRefImpl;
-                    await ref._updateEntityBasedOnApi(args[i]);
-                    args[i] = item;
-                } else
-                    args[i] = x.valueConverter.fromJson(args[i]);
+                args[i] = await getFieldLoaderSaver(x, remult).fromJson(args[i]);
                 if (eo != null) {
                     if (!(args[i] === null || args[i] === undefined))
                         args[i] = await remult.repo(types[i]).findId(args[i]);

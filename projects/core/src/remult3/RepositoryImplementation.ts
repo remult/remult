@@ -766,7 +766,7 @@ abstract class rowHelperBase<T>
                         }
                     }
                 }
-                result[col.key] = col.valueConverter.toJson(val);
+                result[col.key] = getFieldLoaderSaver(col, this.remult).toJson(val);
             }
         }
         return result;
@@ -782,7 +782,7 @@ abstract class rowHelperBase<T>
                         if (lu)
                             lu.id = body[col.key];
                         else
-                            this.instance[col.key] = col.valueConverter.fromJson(body[col.key]);
+                            this.instance[col.key] = await getFieldLoaderSaver(col, this.remult).fromJson(body[col.key]);
                     }
 
                 }
@@ -1764,7 +1764,7 @@ function buildOptions<entityType = any, valueType = any>(options: (FieldOptions<
     }
     return r;
 }
-
+export const emptyJsonTranslator = x => x;
 export function decorateColumnSettings<valueType>(settings: FieldOptions<any, valueType>, remult: Remult) {
 
     if (settings.valueType) {
@@ -1815,10 +1815,10 @@ export function decorateColumnSettings<valueType>(settings: FieldOptions<any, va
             settings.valueConverter = ValueConverters.Default;
     }
     if (!settings.valueConverter.toJson) {
-        settings.valueConverter.toJson = x => x;
+        settings.valueConverter.toJson = emptyJsonTranslator;
     }
     if (!settings.valueConverter.fromJson) {
-        settings.valueConverter.fromJson = x => x;
+        settings.valueConverter.fromJson = emptyJsonTranslator;
     }
     if (!settings.valueConverter.toDb) {
         settings.valueConverter.toDb = x => settings.valueConverter.toJson(x);
@@ -2111,3 +2111,30 @@ class SubscribableImp implements Subscribable {
     }
 }
 export declare type typedDecorator<type> = ((target, key) => void) & { $type: type };
+
+
+export function getFieldLoaderSaver(options: FieldOptions, remult: Remult) {
+    let eo = getEntitySettings(options.valueType, false);
+    let cols = columnsOfType.get(options.valueType);
+    if (cols && !eo) {
+        return {
+            toJson: (val: any) => {
+                const item = Object.assign(new options.valueType(), { ...val });
+                const ref = getControllerRef(item, remult) as unknown as controllerRefImpl;
+                return ref.toApiJson();
+            },
+            fromJson: async (val: any) => {
+                const item = new options.valueType;
+                const ref = getControllerRef(item, remult) as unknown as controllerRefImpl;
+                await ref._updateEntityBasedOnApi(val);
+                return item;
+            }
+        }
+    } else return {
+        toJson: (val) => options.valueConverter.toJson(val),
+        fromJson: val => options.valueConverter.fromJson(val)
+    }
+
+
+
+}

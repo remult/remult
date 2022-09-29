@@ -2,7 +2,7 @@ import { controllerRefImpl, Fields, getControllerRef, ValueListFieldType } from 
 import { createClass, describeClass } from "../remult3/DecoratorReplacer";
 import { BackendMethod, prepareArgsToSend, prepareReceivedArgs } from "../server-action";
 
-it("test basic serialization", () => {
+it("test basic serialization", async () => {
   const r = class {
     a = '';
     b = 0;
@@ -23,10 +23,10 @@ it("test basic serialization", () => {
   expect(j.a).toBe('xnoam');
 
   const y = new r();
-  (getControllerRef(y) as unknown as controllerRefImpl)._updateEntityBasedOnApi(j);
+  await (getControllerRef(y) as unknown as controllerRefImpl)._updateEntityBasedOnApi(j);
   expect(y.a).toBe("noam");
 });
-it("test basic serialization with Date", () => {
+it("test basic serialization with Date", async () => {
   const r = class {
     a = '';
     b: Date;
@@ -42,7 +42,7 @@ it("test basic serialization with Date", () => {
   expect(j.b).toBe('1976-06-16');
 
   const y = new r();
-  (getControllerRef(y) as unknown as controllerRefImpl)._updateEntityBasedOnApi(j);
+  await (getControllerRef(y) as unknown as controllerRefImpl)._updateEntityBasedOnApi(j);
   expect(y.b.getFullYear()).toBe(1976);
 });
 it("test date with backend method", async () => {

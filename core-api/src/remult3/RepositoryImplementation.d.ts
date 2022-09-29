@@ -267,6 +267,7 @@ export declare const $fieldOptionsMember = "$fieldOptions";
  */
 export declare function Field<entityType = any, valueType = any>(valueType: () => ClassType<valueType>, ...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]): typedDecorator<valueType>;
 export declare const storableMember: unique symbol;
+export declare const emptyJsonTranslator: (x: any) => any;
 export declare function decorateColumnSettings<valueType>(settings: FieldOptions<any, valueType>, remult: Remult): FieldOptions<any, valueType>;
 interface columnInfo {
     key: string;
@@ -323,5 +324,9 @@ declare class SubscribableImp implements Subscribable {
 }
 export declare type typedDecorator<type> = ((target: any, key: any) => void) & {
     $type: type;
+};
+export declare function getFieldLoaderSaver(options: FieldOptions, remult: Remult): {
+    toJson: (val: any) => any;
+    fromJson: (val: any) => any;
 };
 export {};
