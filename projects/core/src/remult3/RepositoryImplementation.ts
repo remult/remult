@@ -11,7 +11,7 @@ import { v4 as uuid } from 'uuid';
 
 
 
-import { entityEventListener } from "../__EntityValueProvider";
+import { entityEventListener, packedRowInfo } from "../__EntityValueProvider";
 import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions, ErrorInfo } from "../data-interfaces";
 import { ValueConverters } from "../valueConverters";
 import { filterHelper } from "../filter/filter-interfaces";
@@ -196,7 +196,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 
     }
 
-    private getRefForExistingRow(entity: Partial<OmitEB<entityType>>, id: string | number) {
+    public getRefForExistingRow(entity: Partial<OmitEB<entityType>>, id: string | number) {
         let ref = getEntityRef(entity, false);
         if (!ref) {
             const instance = new this.entity(this.remult);
@@ -747,6 +747,12 @@ abstract class rowHelperBase<T>
     async __performColumnAndEntityValidations() {
 
     }
+    protected _forceRefId = false;
+    forceRefId(o: FieldOptions) {
+        if (isTransferEntityAsIdField(o))
+            return true;
+        return this._forceRefId;
+    }
     toApiJson() {
         let result: any = {};
         for (const col of this.columnsInfo) {
@@ -754,10 +760,12 @@ abstract class rowHelperBase<T>
                 let val;
                 let lu = this.lookups.get(col.key);
                 if (lu)
-                    val = lu.id;
+                    if (this.forceRefId(col))
+                        val = lu.id;
+                    else val = lu.item
                 else {
                     val = this.instance[col.key];
-                    if (!this.remult) {
+                    if (!this.remult && this.forceRefId(col)) {
                         if (val) {
                             let eo = getEntitySettings(val.constructor, false);
                             if (eo) {
@@ -766,7 +774,7 @@ abstract class rowHelperBase<T>
                         }
                     }
                 }
-                result[col.key] = getFieldLoaderSaver(col, this.remult).toJson(val);
+                result[col.key] = getFieldLoaderSaver(col, this.remult, this.forceRefId(col)).toJson(val);
             }
         }
         return result;
@@ -779,10 +787,10 @@ abstract class rowHelperBase<T>
                 if (col.includeInApi === undefined || this.remult.isAllowed(col.includeInApi)) {
                     if (!this.remult || col.allowApiUpdate === undefined || this.remult.isAllowedForInstance(this.instance, col.allowApiUpdate)) {
                         let lu = this.lookups.get(col.key);
-                        if (lu)
+                        if (lu && this.forceRefId(col))
                             lu.id = body[col.key];
                         else
-                            this.instance[col.key] = await getFieldLoaderSaver(col, this.remult).fromJson(body[col.key]);
+                            this.instance[col.key] = await getFieldLoaderSaver(col, this.remult, this.forceRefId(col)).fromJson(body[col.key]);
                     }
 
                 }
@@ -798,6 +806,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
 
     constructor(private info: EntityFullInfo<T>, instance: T, public repository: RepositoryImplementation<T>, private edp: EntityDataProvider, remult: Remult, private _isNew: boolean) {
         super(info.columnsInfo, instance, remult);
+        this._forceRefId = true;
         this.metadata = info;
         if (_isNew) {
             for (const col of info.columnsInfo) {
@@ -1750,6 +1759,15 @@ export function Field<entityType = any, valueType = any>(valueType: () => ClassT
 
 
 }
+
+export const TransferEntityAsIdFieldOptions: FieldOptions = {
+    //@ts-ignore
+    idOnly: true
+}
+export function isTransferEntityAsIdField(o: FieldOptions) {
+    //@ts-ignore
+    return o?.idOnly;
+}
 export const storableMember = Symbol("storableMember");
 function buildOptions<entityType = any, valueType = any>(options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[], remult: Remult) {
     let r = {} as FieldOptions<entityType, valueType>;
@@ -2113,10 +2131,34 @@ class SubscribableImp implements Subscribable {
 export declare type typedDecorator<type> = ((target, key) => void) & { $type: type };
 
 
-export function getFieldLoaderSaver(options: FieldOptions, remult: Remult) {
+export function getFieldLoaderSaver(options: FieldOptions, remult: Remult, forceIds: boolean) {
     let eo = getEntitySettings(options.valueType, false);
     let cols = columnsOfType.get(options.valueType);
-    if (cols && !eo) {
+    if (eo && !isTransferEntityAsIdField(options) && !forceIds) {
+        return {
+            toJson: (val: any) => {
+                if (val === null)
+                    return null;
+                let ref = getEntityRef(val, false);
+
+                if (!ref) {
+                    const repo = remult.repo(options.valueType);
+                    let id = val[repo.metadata.idMetadata.field.key];
+                    if (id === undefined)
+                        ref = repo.getEntityRef(repo.create(val))
+                    else
+                        ref = (repo as RepositoryImplementation<any>).getRefForExistingRow(val, undefined);
+                }
+                return packEntity(ref as any);
+            },
+            fromJson: async (val: any) => {
+                if (val === null)
+                    return null;
+                return await unpackEntity(val, remult.repo(options.valueType));
+            }
+        }
+    }
+    else if (cols && ((!isTransferEntityAsIdField(options) && !forceIds) || !eo)) {
         return {
             toJson: (val: any) => {
                 const item = Object.assign(new options.valueType(), { ...val });
@@ -2137,4 +2179,36 @@ export function getFieldLoaderSaver(options: FieldOptions, remult: Remult) {
 
 
 
+}
+export async function unpackEntity(d: packedRowInfo, repo: Repository<any>) {
+    let y: any;
+    if (d.isNewRow) {
+        y = repo.create();
+        let rowHelper = repo.getEntityRef(y) as rowHelperImplementation<any>;
+        await rowHelper._updateEntityBasedOnApi(d.data);
+
+    }
+    else {
+
+        let rows = await repo.find({
+            where: {
+                ...repo.metadata.idMetadata.getIdFilter(d.id),
+                $and: [repo.metadata.options.apiPrefilter]
+            }
+        });
+        if (rows.length != 1)
+            throw new Error("not found or too many matches");
+        y = rows[0];
+        await (repo.getEntityRef(y) as rowHelperImplementation<any>)._updateEntityBasedOnApi(d.data);
+    }
+    return y;
+}
+
+export function packEntity(defs: rowHelperImplementation<any>): packedRowInfo {
+    return {
+        data: defs.toApiJson(),
+        isNewRow: defs.isNew(),
+        wasChanged: defs.wasChanged(),
+        id: defs.getOriginalId()
+    };
 }

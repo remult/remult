@@ -1,6 +1,11 @@
-import { controllerRefImpl, Fields, getControllerRef, ValueListFieldType } from "../remult3";
+import { Remult } from "../context";
+import { InMemoryDataProvider } from "../data-providers/in-memory-database";
+import { remult } from "../remult-proxy";
+import { controllerRefImpl, Field, Fields, getControllerRef, TransferEntityAsIdFieldOptions, ValueListFieldType } from "../remult3";
 import { createClass, describeClass } from "../remult3/DecoratorReplacer";
 import { BackendMethod, prepareArgsToSend, prepareReceivedArgs } from "../server-action";
+import { createData } from "./createData";
+import { Products } from "./remult-3-entities";
 
 it("test basic serialization", async () => {
   const r = class {
@@ -137,3 +142,74 @@ it("test with class 2", async () => {
   const res = await prepareReceivedArgs([classToTestTypedArguments], ar);
   expect(res[0].b.getFullYear()).toBe(1976);
 });
+it("test on the fly type 3", async () => {
+  const t = createClass({
+    a: Fields.string(),
+    b: Field(() => classToTestTypedArguments)
+  });
+  let v = new t();
+  v = { a: 'noam', b: { a: 'yael', b: new Date(1976, 5, 16) } };
+  const ar = prepareArgsToSend([t], [v]);
+  expect(ar).toEqual([{ a: 'noam', b: { a: 'yael', b: '1976-06-16' } }])
+  const res = await prepareReceivedArgs([t], ar);
+  expect(res[0].b.b.getFullYear()).toBe(1976);
+})
+it("test Entity", async () => {
+  remult.dataProvider = new InMemoryDataProvider();
+
+  const t = createClass({
+    a: Fields.string(),
+    b: Field(() => Products)
+  });
+  let v = new t();
+  v = {
+    a: 'noam',
+    b: {
+      id: undefined,
+      archived: false,
+      availableFrom: new Date(1976, 5, 16),
+      name: "beer",
+      price: 3.5
+    }
+  };
+  const ar = prepareArgsToSend([t], [v]);
+  expect(ar.map(x => ({ a: x.a, b: { data: x.b.data } }))).toEqual([{
+    a: 'noam',
+    b: {
+      data: {
+        id: undefined,
+        archived: false,
+        availableFrom: '1976-06-15T22:00:00.000Z',
+        name: "beer",
+        price: 3.5
+      }
+    }
+  }])
+  const res = await prepareReceivedArgs([t], ar);
+  expect(res[0].b.availableFrom.getFullYear()).toBe(1976);
+})
+it("test Entity ID", async () => {
+  remult.dataProvider = new InMemoryDataProvider();
+
+  const t = createClass({
+    a: Fields.string(),
+    b: Field(() => Products, TransferEntityAsIdFieldOptions)
+  });
+  let v = new t();
+  v = {
+    a: 'noam',
+    b: {
+      id: 1,
+      archived: false,
+      availableFrom: new Date(1976, 5, 16),
+      name: "beer",
+      price: 3.5
+    }
+  };
+  const ar = prepareArgsToSend([t], [v]);
+  expect(ar).toEqual([{
+    a: 'noam',
+    b: 1
+  }])
+
+})

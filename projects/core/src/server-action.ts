@@ -15,7 +15,7 @@ import { SqlDatabase } from './data-providers/sql-database';
 import { packedRowInfo } from './__EntityValueProvider';
 import { Filter, AndFilter } from './filter/filter-interfaces';
 import { DataProvider, RestDataProviderHttpProvider } from './data-interfaces';
-import { getEntityRef, rowHelperImplementation, getFields, decorateColumnSettings, getEntitySettings, getControllerRef, EntityFilter, controllerRefImpl, RepositoryImplementation, $fieldOptionsMember, columnsOfType, getFieldLoaderSaver } from './remult3';
+import { getEntityRef, rowHelperImplementation, getFields, decorateColumnSettings, getEntitySettings, getControllerRef, EntityFilter, controllerRefImpl, RepositoryImplementation, $fieldOptionsMember, columnsOfType, getFieldLoaderSaver, Repository, packEntity, unpackEntity, isTransferEntityAsIdField } from './remult3';
 import { FieldOptions } from './column-interfaces';
 
 
@@ -271,25 +271,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                                     let repo = remult.repo(constructor);
                                     let y: any;
 
-                                    if (d.rowInfo.isNewRow) {
-                                        y = repo.create();
-                                        let rowHelper = repo.getEntityRef(y) as rowHelperImplementation<any>;
-                                        await rowHelper._updateEntityBasedOnApi(d.rowInfo.data);
-
-                                    }
-                                    else {
-
-                                        let rows = await repo.find({
-                                            where: {
-                                                ...repo.metadata.idMetadata.getIdFilter(d.rowInfo.id),
-                                                $and: [repo.metadata.options.apiPrefilter]
-                                            }
-                                        });
-                                        if (rows.length != 1)
-                                            throw new Error("not found or too many matches");
-                                        y = rows[0];
-                                        await (repo.getEntityRef(y) as rowHelperImplementation<any>)._updateEntityBasedOnApi(d.rowInfo.data);
-                                    }
+                                    y = await unpackEntity(d.rowInfo, repo);
                                     if (!remult.isAllowedForInstance(y, allowed))
                                         throw new ForbiddenError();
                                     let defs = getEntityRef(y) as rowHelperImplementation<any>;
@@ -355,12 +337,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                             protected execute: (info: serverMethodInArgs, req: Remult, res: DataApiResponse) => Promise<serverMethodOutArgs>;
                         }(classOptions.key + "/" + key, options ? options.queue : false, options.allowed).run({
                             args,
-                            rowInfo: {
-                                data: await defs.toApiJson(),
-                                isNewRow: defs.isNew(),
-                                wasChanged: defs.wasChanged(),
-                                id: defs.getOriginalId()
-                            }
+                            rowInfo: await packEntity(defs)
 
                         }, baseUrl, http));
                         await defs._updateEntityBasedOnApi(r.rowInfo.data);
@@ -416,6 +393,8 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
 const customUndefined = {
     _isUndefined: true
 }
+
+
 function registerAction(target: any, descriptor: any) {
     (target[classBackendMethodsArray] || (target[classBackendMethodsArray] = [])).push(descriptor.value);
     actionInfo.allActions.push(descriptor.value);
@@ -459,9 +438,9 @@ export function prepareArgsToSend(types: any[], args: any[]) {
                     x = paramType[$fieldOptionsMember](remult);
                 }
                 x = decorateColumnSettings(x, remult);
-                let eo = getEntitySettings(paramType, false);
-                args[index] = getFieldLoaderSaver(x, remult).toJson(args[index]);
-                if (eo != null) {
+                let eo = getEntitySettings(x.valueType, false);
+                args[index] = getFieldLoaderSaver(x, remult, false).toJson(args[index]);
+                if (eo != null && isTransferEntityAsIdField(x)) {
                     let rh = getEntityRef(args[index]);
                     args[index] = rh.getId();
                 }
@@ -499,11 +478,11 @@ export async function prepareReceivedArgs(types: any[], args: any[], remult?: Re
                     x = types[i][$fieldOptionsMember](remult)
                 }
                 x = decorateColumnSettings(x, remult);
-                let eo = getEntitySettings(types[i], false);
-                args[i] = await getFieldLoaderSaver(x, remult).fromJson(args[i]);
-                if (eo != null) {
+                let eo = getEntitySettings(x.valueType, false);
+                args[i] = await getFieldLoaderSaver(x, remult, false).fromJson(args[i]);
+                if (eo != null&&isTransferEntityAsIdField(x)) {
                     if (!(args[i] === null || args[i] === undefined))
-                        args[i] = await remult.repo(types[i]).findId(args[i]);
+                        args[i] = await remult.repo(x.valueType).findId(args[i]);
                 }
             }
         }

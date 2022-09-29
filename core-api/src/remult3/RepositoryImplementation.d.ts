@@ -4,7 +4,7 @@ import { LookupColumn } from '../column';
 import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef } from "./remult3";
 import { ClassType } from "../../classType";
 import { Remult, Unobserve } from "../context";
-import { entityEventListener } from "../__EntityValueProvider";
+import { entityEventListener, packedRowInfo } from "../__EntityValueProvider";
 import { DataProvider, EntityDataProvider } from "../data-interfaces";
 import { RefSubscriber } from ".";
 export declare class RepositoryImplementation<entityType> implements Repository<entityType> {
@@ -39,7 +39,7 @@ export declare class RepositoryImplementation<entityType> implements Repository<
     } ? number : entityType extends {
         id?: string;
     } ? string : (string | number)), entity: Partial<OmitEB<entityType>>): Promise<entityType>;
-    private getRefForExistingRow;
+    getRefForExistingRow(entity: Partial<OmitEB<entityType>>, id: string | number): EntityRef<Partial<Pick<entityType, Exclude<keyof entityType, "_" | "save" | "assign" | "delete" | "isNew" | "$">>>>;
     save(item: Partial<OmitEB<entityType>>[]): Promise<entityType[]>;
     save(item: Partial<OmitEB<entityType>>): Promise<entityType>;
     find(options: FindOptions<entityType>): Promise<entityType[]>;
@@ -92,6 +92,8 @@ declare abstract class rowHelperBase<T> {
     validate(): Promise<boolean>;
     __validateEntity(): Promise<void>;
     __performColumnAndEntityValidations(): Promise<void>;
+    protected _forceRefId: boolean;
+    forceRefId(o: FieldOptions): boolean;
     toApiJson(): any;
     _updateEntityBasedOnApi(body: any): Promise<void>;
 }
@@ -266,6 +268,8 @@ export declare const $fieldOptionsMember = "$fieldOptions";
  * title='';
  */
 export declare function Field<entityType = any, valueType = any>(valueType: () => ClassType<valueType>, ...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]): typedDecorator<valueType>;
+export declare const TransferEntityAsIdFieldOptions: FieldOptions;
+export declare function isTransferEntityAsIdField(o: FieldOptions): any;
 export declare const storableMember: unique symbol;
 export declare const emptyJsonTranslator: (x: any) => any;
 export declare function decorateColumnSettings<valueType>(settings: FieldOptions<any, valueType>, remult: Remult): FieldOptions<any, valueType>;
@@ -325,8 +329,10 @@ declare class SubscribableImp implements Subscribable {
 export declare type typedDecorator<type> = ((target: any, key: any) => void) & {
     $type: type;
 };
-export declare function getFieldLoaderSaver(options: FieldOptions, remult: Remult): {
+export declare function getFieldLoaderSaver(options: FieldOptions, remult: Remult, forceIds: boolean): {
     toJson: (val: any) => any;
     fromJson: (val: any) => any;
 };
+export declare function unpackEntity(d: packedRowInfo, repo: Repository<any>): Promise<any>;
+export declare function packEntity(defs: rowHelperImplementation<any>): packedRowInfo;
 export {};
