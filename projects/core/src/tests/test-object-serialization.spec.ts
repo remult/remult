@@ -1,7 +1,7 @@
 import { Remult } from "../context";
 import { InMemoryDataProvider } from "../data-providers/in-memory-database";
 import { remult } from "../remult-proxy";
-import { controllerRefImpl, Field, Fields, getControllerRef, TransferEntityAsIdFieldOptions, ValueListFieldType } from "../remult3";
+import { controllerRefImpl, Field, Fields, getControllerRef, inferMemberType, TransferEntityAsIdFieldOptions, ValueListFieldType } from "../remult3";
 import { createClass, describeClass } from "../remult3/DecoratorReplacer";
 import { BackendMethod, prepareArgsToSend, prepareReceivedArgs } from "../server-action";
 import { createData } from "./createData";
@@ -213,3 +213,177 @@ it("test Entity ID", async () => {
   }])
 
 })
+it("test Array", async () => {
+  const t = createClass({
+    a: Fields.string(),
+    b: Fields.array(() => classToTestTypedArguments)
+  });
+  let v = new t();
+  v = {
+    a: 'honig', b: [
+      { a: 'noam', b: new Date(1976, 5, 16) },
+      { a: 'yael', b: new Date(1978, 2, 15) }
+    ]
+  };
+  const ar = prepareArgsToSend([t], [v]);
+  expect(ar).toEqual([{
+    a: 'honig', b: [
+      { a: 'noam', b: '1976-06-16' },
+      { a: 'yael', b: '1978-03-15' }
+    ]
+  }])
+  const res = await prepareReceivedArgs([t], ar);
+  expect(res[0].b[0].b.getFullYear()).toBe(1976);
+  expect(res[0].b[1].b.getFullYear()).toBe(1978);
+});
+it("test Array2", async () => {
+  const t = createClass({
+    a: Fields.string(),
+    b: Fields.array(Field(() => classToTestTypedArguments))
+  });
+  let v = new t();
+  v = {
+    a: 'honig', b: [
+      { a: 'noam', b: new Date(1976, 5, 16) },
+      { a: 'yael', b: new Date(1978, 2, 15) }
+    ]
+  };
+  const ar = prepareArgsToSend([t], [v]);
+  expect(ar).toEqual([{
+    a: 'honig', b: [
+      { a: 'noam', b: '1976-06-16' },
+      { a: 'yael', b: '1978-03-15' }
+    ]
+  }])
+  const res = await prepareReceivedArgs([t], ar);
+  expect(res[0].b[0].b.getFullYear()).toBe(1976);
+  expect(res[0].b[1].b.getFullYear()).toBe(1978);
+});
+it("test Array3", async () => {
+  const t = createClass({
+    a: Fields.string(),
+    b: Fields.array(classToTestTypedArguments)
+  });
+  let v = new t();
+  v = {
+    a: 'honig', b: [
+      { a: 'noam', b: new Date(1976, 5, 16) },
+      { a: 'yael', b: new Date(1978, 2, 15) }
+    ]
+  };
+  const ar = prepareArgsToSend([t], [v]);
+  expect(ar).toEqual([{
+    a: 'honig', b: [
+      { a: 'noam', b: '1976-06-16' },
+      { a: 'yael', b: '1978-03-15' }
+    ]
+  }])
+  const res = await prepareReceivedArgs([t], ar);
+  expect(res[0].b[0].b.getFullYear()).toBe(1976);
+  expect(res[0].b[1].b.getFullYear()).toBe(1978);
+});
+it("test Array3", async () => {
+  const t = createClass({
+    a: Fields.string(),
+    b: Fields.array(createClass({
+      a: Fields.string(),
+      b: Fields.dateOnly()
+    }))
+  });
+  let v = new t();
+  v = {
+    a: 'honig', b: [
+      { a: 'noam', b: new Date(1976, 5, 16) },
+      { a: 'yael', b: new Date(1978, 2, 15) }
+    ]
+  };
+  const ar = prepareArgsToSend([t], [v]);
+  expect(ar).toEqual([{
+    a: 'honig', b: [
+      { a: 'noam', b: '1976-06-16' },
+      { a: 'yael', b: '1978-03-15' }
+    ]
+  }])
+  const res = await prepareReceivedArgs([t], ar);
+  expect(res[0].b[0].b.getFullYear()).toBe(1976);
+  expect(res[0].b[1].b.getFullYear()).toBe(1978);
+});
+it("test Array4", async () => {
+  const t = createClass({
+    a: Fields.string(),
+    b: Fields.array({
+      a: Fields.string(),
+      b: Fields.dateOnly()
+    })
+  });
+  let v = new t();
+  v = {
+    a: 'honig', b: [
+      { a: 'noam', b: new Date(1976, 5, 16) },
+      { a: 'yael', b: new Date(1978, 2, 15) }
+    ]
+  };
+  const ar = prepareArgsToSend([t], [v]);
+  expect(ar).toEqual([{
+    a: 'honig', b: [
+      { a: 'noam', b: '1976-06-16' },
+      { a: 'yael', b: '1978-03-15' }
+    ]
+  }])
+  const res = await prepareReceivedArgs([t], ar);
+  expect(res[0].b[0].b.getFullYear()).toBe(1976);
+  expect(res[0].b[1].b.getFullYear()).toBe(1978);
+});
+
+it("test array typing starting point", () => {
+  let t: { a: string, b: { c: string } }[];
+  let y: keyof typeof t[0] = "a";
+  let z: typeof t[0];
+  let zz: keyof typeof z.b = "c";;
+});
+it("test infer member type", () => {
+  {
+    let x = inferType(Field(() => String));
+    x = "a string is valid here";
+  }
+  {
+    let x = inferType(Field(() => classToTestTypedArguments));
+    let z: keyof typeof x = "a";
+    expect(z).toBe("a");
+  }
+  {
+    let x = inferType(classToTestTypedArguments);
+    let z: keyof InstanceType<typeof x> = "a";
+    expect(z).toBe("a");
+  }
+  {
+    let x = inferType(() => classToTestTypedArguments);
+    let z: keyof InstanceType<typeof x> = "a";
+    expect(z).toBe("a");
+  }
+  {
+    let x = inferType(Fields.array(() => classToTestTypedArguments));
+    let z: keyof typeof x[0] = 'a';
+  }
+  {
+    let x = inferType(Fields.array(classToTestTypedArguments));
+    let z: keyof typeof x[0] = 'a';
+  }
+  {
+    let a = Field(() => classToTestTypedArguments);
+    let b = Fields.array(a);
+    let x = inferType(b);
+    let z: keyof typeof x[0] = 'a';
+  }
+  {
+    let x = inferType(Fields.array({
+      a: Fields.string()
+    }));
+    let z: keyof typeof x[0] = 'a';
+  }
+
+});
+
+function inferType<T>(x: T): inferMemberType<T> {
+  return undefined;
+}

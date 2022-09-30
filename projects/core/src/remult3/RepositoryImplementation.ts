@@ -17,6 +17,7 @@ import { ValueConverters } from "../valueConverters";
 import { filterHelper } from "../filter/filter-interfaces";
 import { assign } from "../../assign";
 import { Paginator, RefSubscriber, RefSubscriberBase } from ".";
+import { prepareArgsToSend, prepareReceivedArgs } from "../server-action";
 //import { remult } from "../remult-proxy";
 
 
@@ -1516,12 +1517,28 @@ export function FieldType<valueType = any>(...options: (FieldOptions<any, valueT
     }
 
 }
+export class StorableArray {
+    getElementType(): any {
+        return this.type;
+    }
+    constructor(private type: () => any) {
 
+    }
+}
 export class Fields {
+    static array<valueType>(valueType: valueType) {
+        return Field<any,
+            valueType extends typedDecorator<infer R> ? R[]
+            : InstanceType<
+                //@ts-ignore
+                inferMemberType<valueType>
+            >[]>(() =>
+                //@ts-ignore
+                new StorableArray(valueType) as any)
+    }
 
-    static object<entityType = any, valueType = any>(
-        ...options: (FieldOptions<entityType, valueType> |
-            ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
+    static object<entityType = any, valueType = any>(...options: (FieldOptions<entityType, valueType[]> |
+        ((options: FieldOptions<entityType, valueType[]>, remult: Remult) => void))[]) {
         return Field(undefined, ...options);
     }
     static dateOnly<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]) {
@@ -1753,11 +1770,6 @@ export function Field<entityType = any, valueType = any>(valueType: () => ClassT
         }
 
     }, { [$fieldOptionsMember]: $fieldOptions });
-
-
-
-
-
 }
 
 export const TransferEntityAsIdFieldOptions: FieldOptions = {
@@ -2132,6 +2144,19 @@ export declare type typedDecorator<type> = ((target, key) => void) & { $type: ty
 
 
 export function getFieldLoaderSaver(options: FieldOptions, remult: Remult, forceIds: boolean) {
+    if (options.valueType instanceof StorableArray) {
+        let z = options.valueType;
+
+        return {
+            toJson: (val: any) => {
+
+                return val.map(val => prepareArgsToSend([z.getElementType()], [val])[0]);
+            },
+            fromJson: async (val: any) => {
+                return await Promise.all(val.map(async val => (await prepareReceivedArgs([z.getElementType()], [val]))[0]));
+            }
+        }
+    }
     let eo = getEntitySettings(options.valueType, false);
     let cols = columnsOfType.get(options.valueType);
     if (eo && !isTransferEntityAsIdField(options) && !forceIds) {
@@ -2211,4 +2236,14 @@ export function packEntity(defs: rowHelperImplementation<any>): packedRowInfo {
         wasChanged: defs.wasChanged(),
         id: defs.getOriginalId()
     };
+}
+export declare type inferMemberType<type> =
+    type extends typedDecorator<infer R> ? R
+    : type extends (() => infer R) ? R
+    : type extends ClassType<any> ? type
+    : inferredType<type>
+
+export declare type inferredType<type> = {
+    [member in keyof OmitEB<type>]:
+    inferMemberType<type[member]>
 }

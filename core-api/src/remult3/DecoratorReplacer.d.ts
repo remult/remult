@@ -1,6 +1,6 @@
 import { EntityOptions } from "../entity";
 import { OmitEB } from "./remult3";
-import { typedDecorator } from "./RepositoryImplementation";
+import { inferredType } from "./RepositoryImplementation";
 declare type Decorator<T = any> = (a: T, b: string, c?: any) => void;
 declare type Decorators<T> = T extends new (...args: any[]) => infer R ? {
     [K in keyof OmitEB<R>]?: Decorator;
@@ -9,9 +9,6 @@ declare type StaticDecorators<T> = {
     [K in keyof T]?: Decorator;
 };
 export declare function describeClass<classType>(classType: classType, classDecorator: ((x: any) => any) | undefined, members?: Decorators<classType> | undefined, staticMembers?: StaticDecorators<classType>): void;
-declare type inferredType<type> = {
-    [member in keyof OmitEB<type>]: type[member] extends typedDecorator<infer R> ? R : never;
-};
 export declare function createEntity<T>(key: string, members: T, options?: EntityOptions<inferredType<T>>): {
     new (...args: any[]): inferredType<T>;
 };

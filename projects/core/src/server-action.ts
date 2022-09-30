@@ -434,9 +434,13 @@ export function prepareArgsToSend(types: any[], args: any[]) {
             }
             if (args[index] != undefined) {
                 let x: FieldOptions = { valueType: paramType };
-                if (typeof paramType === "function" && paramType[$fieldOptionsMember] !== undefined) {
-                    x = paramType[$fieldOptionsMember](remult);
-                }
+                if (typeof paramType === "function")
+                    if (paramType[$fieldOptionsMember] !== undefined) {
+                        x = paramType[$fieldOptionsMember](remult);
+                    }
+                    else if (!paramType.prototype){
+                        x = { valueType: paramType() }
+                    }
                 x = decorateColumnSettings(x, remult);
                 let eo = getEntitySettings(x.valueType, false);
                 args[index] = getFieldLoaderSaver(x, remult, false).toJson(args[index]);
@@ -474,13 +478,18 @@ export async function prepareReceivedArgs(types: any[], args: any[], remult?: Re
             }
             else {
                 let x: FieldOptions = { valueType: types[i] };
-                if (typeof types[i] === "function" && types[i][$fieldOptionsMember] !== undefined) {
-                    x = types[i][$fieldOptionsMember](remult)
+                let paramType = types[i];
+                if (typeof paramType === "function")
+                if (paramType[$fieldOptionsMember] !== undefined) {
+                    x = paramType[$fieldOptionsMember](remult);
+                }
+                else if (!paramType.prototype){
+                    x = { valueType: paramType() }
                 }
                 x = decorateColumnSettings(x, remult);
                 let eo = getEntitySettings(x.valueType, false);
                 args[i] = await getFieldLoaderSaver(x, remult, false).fromJson(args[i]);
-                if (eo != null&&isTransferEntityAsIdField(x)) {
+                if (eo != null && isTransferEntityAsIdField(x)) {
                     if (!(args[i] === null || args[i] === undefined))
                         args[i] = await remult.repo(x.valueType).findId(args[i]);
                 }

@@ -212,8 +212,14 @@ declare class EntityFullInfo<T> implements EntityMetadata<T> {
     caption: string;
 }
 export declare function FieldType<valueType = any>(...options: (FieldOptions<any, valueType> | ((options: FieldOptions<any, valueType>, remult: Remult) => void))[]): (target: any) => any;
+export declare class StorableArray {
+    private type;
+    getElementType(): any;
+    constructor(type: () => any);
+}
 export declare class Fields {
-    static object<entityType = any, valueType = any>(...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]): typedDecorator<valueType>;
+    static array<valueType>(valueType: valueType): typedDecorator<valueType extends typedDecorator<infer R> ? R[] : InstanceType<inferMemberType<valueType>>[]>;
+    static object<entityType = any, valueType = any>(...options: (FieldOptions<entityType, valueType[]> | ((options: FieldOptions<entityType, valueType[]>, remult: Remult) => void))[]): typedDecorator<valueType[]>;
     static dateOnly<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]): typedDecorator<Date>;
     static date<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]): typedDecorator<Date>;
     static integer<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]): typedDecorator<Number>;
@@ -335,4 +341,8 @@ export declare function getFieldLoaderSaver(options: FieldOptions, remult: Remul
 };
 export declare function unpackEntity(d: packedRowInfo, repo: Repository<any>): Promise<any>;
 export declare function packEntity(defs: rowHelperImplementation<any>): packedRowInfo;
+export declare type inferMemberType<type> = type extends typedDecorator<infer R> ? R : type extends (() => infer R) ? R : type extends ClassType<any> ? type : inferredType<type>;
+export declare type inferredType<type> = {
+    [member in keyof OmitEB<type>]: inferMemberType<type[member]>;
+};
 export {};
