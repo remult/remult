@@ -15,7 +15,6 @@ Don't worry if you don't have Postgres installed locally. In the next step of th
 
    ```sh
    npm i pg
-   npm i --save-dev @types/pg
    ```
 
 2. Add the highlighted code to the `api` server module.
