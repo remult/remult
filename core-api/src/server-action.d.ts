@@ -76,12 +76,15 @@ export interface ActionInterface {
     doWork: (args: any[], self: any, baseUrl?: string, http?: RestDataProviderHttpProvider) => Promise<any>;
     __register(reg: (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void): any;
 }
-export declare function createBackendMethod<inArgs, returnType>(arg: {
+export declare type inferredMethod<inArgs, returnType> = (args: inferMemberType<inArgs>) => Promise<inferMemberType<returnType>>;
+export declare type createBackendMethodTypeArgs<inArgs, returnType> = {
     inputType?: inArgs;
     returnType?: returnType;
     key?: string;
-    implementation?: (args: inferMemberType<inArgs>) => Promise<inferMemberType<returnType>>;
-} & BackendMethodOptions<inferMemberType<inArgs>>): ((args: inferMemberType<inArgs>) => Promise<inferMemberType<returnType>>) & {
-    implementation: (args: inferMemberType<inArgs>) => Promise<inferMemberType<returnType>>;
+    implementation?: inferredMethod<inArgs, returnType>;
+} & BackendMethodOptions<inferMemberType<inArgs>>;
+export declare type createBackendMethodType<inArg, returnType> = (inferredMethod<inArg, returnType>) & {
+    implementation: inferredMethod<inArg, returnType>;
 };
+export declare function createBackendMethod<inArg, returnType>(arg: createBackendMethodTypeArgs<inArg, returnType>): createBackendMethodType<inArg, returnType>;
 export {};

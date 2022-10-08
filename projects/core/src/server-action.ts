@@ -111,7 +111,7 @@ export class myServerAction extends Action<inArgs, result>
         let ds = remult.dataProvider;
         await ds.transaction(async ds => {
             remult.dataProvider = (ds);
-            
+
             info.args = await prepareReceivedArgs(this.types, info.args, remult, ds, res);
             if (!remult.isAllowedForInstance(info.args ? info.args[0] : undefined, this.options.allowed))
                 throw new ForbiddenError();
@@ -536,15 +536,21 @@ function getMemberFieldOptions(type: any, remult: Remult) {
 class dynamicBackendMethods {
 
 }
-export function createBackendMethod<inArgs, returnType>(arg: {
-    inputType?: inArgs,
-    returnType?: returnType,
-    key?: string,
-    implementation?: (args: inferMemberType<inArgs>) => Promise<inferMemberType<returnType>>
-} & BackendMethodOptions<inferMemberType<inArgs>>):
-    ((args: inferMemberType<inArgs>) => Promise<inferMemberType<returnType>>) & {
-        implementation: (args: inferMemberType<inArgs>) => Promise<inferMemberType<returnType>>
-    } {
+export type inferredMethod<inArgs, returnType> = (args: inferMemberType<inArgs>) => Promise<inferMemberType<returnType>>;
+
+export type createBackendMethodTypeArgs<inArgs, returnType> = {
+    inputType?: inArgs;
+    returnType?: returnType;
+    key?: string;
+    implementation?: inferredMethod<inArgs, returnType>;
+} & BackendMethodOptions<inferMemberType<inArgs>>;
+
+export type createBackendMethodType<inArg, returnType> = (inferredMethod<inArg, returnType>) & {
+    implementation: inferredMethod<inArg, returnType>
+}
+
+export function createBackendMethod<inArg, returnType>(arg: createBackendMethodTypeArgs<inArg, returnType>):
+    createBackendMethodType<inArg, returnType> {
 
     const descriptor = {
         value: (...args) => arg.implementation(args[0])
@@ -559,3 +565,5 @@ export function createBackendMethod<inArgs, returnType>(arg: {
     //@ts-ignore
     return r;
 }
+
+

@@ -3,7 +3,7 @@ import { InMemoryDataProvider } from "../data-providers/in-memory-database";
 import { remult } from "../remult-proxy";
 import { columnsOfType, controllerRefImpl, Field, Fields, getControllerRef, getFields, inferMemberType, TransferEntityAsIdFieldOptions, ValueListFieldType } from "../remult3";
 import { createClass, describeClass } from "../remult3/DecoratorReplacer";
-import { BackendMethod, createBackendMethod, prepareArgsToSend, prepareReceivedArgs } from "../server-action";
+import { BackendMethod, createBackendMethod, createBackendMethodType, createBackendMethodTypeArgs, inferredMethod, prepareArgsToSend, prepareReceivedArgs } from "../server-action";
 import { ValueConverters } from "../valueConverters";
 import { createData } from "./createData";
 import { Products } from "./remult-3-entities";
@@ -499,11 +499,28 @@ it("start build backend method with allowed", async () => {
   }
   expect(ok).toBe(true);
 });
+
+
+
+function build<T>(what: T): inferMethods<T> {
+
+  return undefined;
+}
+
+declare type inferMethods<type> = {
+  [member in keyof type]: type[member] extends createBackendMethodType<infer R, infer S> ? inferredMethod<R, S> : never
+}
+
+
+
 it("test that it works", async () => {
   expect(await CompareBackendMethodCalls.m1(new Date(1976, 5, 16))).toBe(1976);
   expect(await CompareBackendMethodCalls.m2(new Date(1976, 5, 16))).toBe(1976);
   expect(await CompareBackendMethodCalls.m3(new Date(1976, 5, 16))).toBe(1976);
+  if (false)
+    z.m4(new Date(1976, 6, 16));
 });
+
 
 class CompareBackendMethodCalls {
   @BackendMethod({
@@ -531,3 +548,14 @@ class CompareBackendMethodCalls {
     key: "m3"
   })
 }
+
+let z = build({
+  m4: createBackendMethod({
+    allowed: true,
+    inputType: Fields.dateOnly(),
+    returnType: Number,
+    implementation:
+      async d => d.getFullYear()
+  })
+});
+
