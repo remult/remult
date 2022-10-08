@@ -443,7 +443,7 @@ it("start build backend method", async () => {
     returnType: Number,
     allowed: true,
     implementation: async d => d.getFullYear(),
-
+    key:"ghi"
   });
   expect(await m(new Date(1976, 5, 16))).toBe(1976);
   expect(await m.implementation(new Date(1976, 5, 16))).toBe(1976);
