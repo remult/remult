@@ -4,6 +4,7 @@ import { remult } from "../remult-proxy";
 import { columnsOfType, controllerRefImpl, Field, Fields, getControllerRef, getFields, inferMemberType, TransferEntityAsIdFieldOptions, ValueListFieldType } from "../remult3";
 import { createClass, describeClass } from "../remult3/DecoratorReplacer";
 import { BackendMethod, createBackendMethod, prepareArgsToSend, prepareReceivedArgs } from "../server-action";
+import { ValueConverters } from "../valueConverters";
 import { createData } from "./createData";
 import { Products } from "./remult-3-entities";
 
@@ -179,7 +180,7 @@ it("test Entity", async () => {
       data: {
         id: undefined,
         archived: false,
-        availableFrom: '1976-06-15T22:00:00.000Z',
+        availableFrom: new Date(1976, 5, 16).toISOString(),
         name: "beer",
         price: 3.5
       }
@@ -455,7 +456,7 @@ it("test replace implementation", async () => {
     inputType: Fields.dateOnly(),
     returnType: Number,
     allowed: true,
-    key:"abc",
+    key: "abc",
     implementation: async d => d.getFullYear(),
 
   });
@@ -469,7 +470,7 @@ it("start build backend method 2", async () => {
       a: Fields.dateOnly(),
       b: String
     },
-    key:"def",
+    key: "def",
     returnType: String,
     allowed: true,
     implementation: async ({ a, b }) => a.getFullYear().toString() + b
