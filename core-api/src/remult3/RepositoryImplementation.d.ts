@@ -39,7 +39,7 @@ export declare class RepositoryImplementation<entityType> implements Repository<
     } ? number : entityType extends {
         id?: string;
     } ? string : (string | number)), entity: Partial<OmitEB<entityType>>): Promise<entityType>;
-    getRefForExistingRow(entity: Partial<OmitEB<entityType>>, id: string | number): EntityRef<Partial<Pick<entityType, Exclude<keyof entityType, "_" | "save" | "assign" | "delete" | "isNew" | "$">>>>;
+    getRefForExistingRow(entity: Partial<OmitEB<entityType>>, id: string | number): EntityRef<Partial<Pick<entityType, Exclude<keyof entityType, "delete" | "_" | "save" | "assign" | "isNew" | "$">>>>;
     save(item: Partial<OmitEB<entityType>>[]): Promise<entityType[]>;
     save(item: Partial<OmitEB<entityType>>): Promise<entityType>;
     find(options: FindOptions<entityType>): Promise<entityType[]>;
@@ -332,7 +332,7 @@ declare class SubscribableImp implements Subscribable {
         reportObserved: () => void;
     }): Unobserve;
 }
-export declare type typedDecorator<type> = ((target: any, key: any) => void) & {
+export declare type typedDecorator<type> = ((target: any, key: any, c?: any) => void) & {
     $type: type;
 };
 export declare function getFieldLoaderSaver(options: FieldOptions, remult: Remult, forceIds: boolean): {

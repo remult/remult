@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { Remult, AllowedForInstance } from './context';
 import { DataApiResponse } from './data-api';
 import { DataProvider, RestDataProviderHttpProvider } from './data-interfaces';
+import { inferMemberType } from './remult3';
 interface inArgs {
     args: any[];
 }
@@ -47,6 +48,11 @@ export declare const actionInfo: {
 };
 export declare const serverActionField: unique symbol;
 export declare function Controller(key: string): (target: any) => any;
+export declare const paramDecorator: Map<any, {
+    methodName: string;
+    paramIndex: number;
+    decorator: any;
+}[]>;
 /** Indicates that the decorated methods runs on the backend. See: [Backend Methods](https://remult.dev/docs/backendMethods.html) */
 export declare function BackendMethod<type = any>(options: BackendMethodOptions<type>): (target: any, key: string, descriptor: any) => any;
 export interface jobWasQueuedResult {
@@ -70,4 +76,12 @@ export interface ActionInterface {
     doWork: (args: any[], self: any, baseUrl?: string, http?: RestDataProviderHttpProvider) => Promise<any>;
     __register(reg: (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void): any;
 }
+export declare function createBackendMethod<inArgs, returnType>(arg: {
+    inputType?: inArgs;
+    returnType?: returnType;
+    key?: string;
+    implementation?: (args: inferMemberType<inArgs>) => Promise<inferMemberType<returnType>>;
+} & BackendMethodOptions<inferMemberType<inArgs>>): ((args: inferMemberType<inArgs>) => Promise<inferMemberType<returnType>>) & {
+    implementation: (args: inferMemberType<inArgs>) => Promise<inferMemberType<returnType>>;
+};
 export {};

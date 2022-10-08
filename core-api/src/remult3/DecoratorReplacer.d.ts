@@ -1,3 +1,4 @@
+import { ClassType } from "../../classType";
 import { EntityOptions } from "../entity";
 import { OmitEB } from "./remult3";
 import { inferredType } from "./RepositoryImplementation";
@@ -12,7 +13,5 @@ export declare function describeClass<classType>(classType: classType, classDeco
 export declare function createEntity<T>(key: string, members: T, options?: EntityOptions<inferredType<T>>): {
     new (...args: any[]): inferredType<T>;
 };
-export declare function createClass<T>(members: T): {
-    new (...args: any[]): inferredType<T>;
-};
+export declare function createClass<T>(members: T): ClassType<inferredType<T>>;
 export {};

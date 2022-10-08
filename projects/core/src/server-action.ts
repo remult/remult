@@ -15,8 +15,10 @@ import { SqlDatabase } from './data-providers/sql-database';
 import { packedRowInfo } from './__EntityValueProvider';
 import { Filter, AndFilter } from './filter/filter-interfaces';
 import { DataProvider, RestDataProviderHttpProvider } from './data-interfaces';
-import { getEntityRef, rowHelperImplementation, getFields, decorateColumnSettings, getEntitySettings, getControllerRef, EntityFilter, controllerRefImpl, RepositoryImplementation, $fieldOptionsMember, columnsOfType, getFieldLoaderSaver, Repository, packEntity, unpackEntity, isTransferEntityAsIdField } from './remult3';
+import { getEntityRef, rowHelperImplementation, getFields, decorateColumnSettings, getEntitySettings, getControllerRef, EntityFilter, controllerRefImpl, RepositoryImplementation, $fieldOptionsMember, columnsOfType, getFieldLoaderSaver, Repository, packEntity, unpackEntity, isTransferEntityAsIdField, Field, inferredType, inferMemberType } from './remult3';
 import { FieldOptions } from './column-interfaces';
+import { createClass } from './remult3/DecoratorReplacer';
+import { InferIdType } from 'mongodb';
 
 
 
@@ -188,7 +190,11 @@ export function Controller(key: string) {
     };
 }
 
-
+export const paramDecorator = new Map<any, {
+    methodName: string,
+    paramIndex: number,
+    decorator: any;
+}[]>();
 
 /** Indicates that the decorated methods runs on the backend. See: [Backend Methods](https://remult.dev/docs/backendMethods.html) */
 export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
@@ -196,9 +202,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
         if (target.prototype !== undefined) {
             var originalMethod = descriptor.value;
 
-            var types: any[] = Reflect.getMetadata("design:paramtypes", target, key);
-            if (options.paramTypes)
-                types = options.paramTypes;
+            var types: any[] = getBackendMethodTypes<type>(target, key, options);
             // if types are undefined - you've forgot to set: "emitDecoratorMetadata":true
 
             let serverAction = new myServerAction(key, types, options, async args => prepareArgsToSend([options.returnType], [await originalMethod.apply(undefined, args)])[0]);
@@ -395,6 +399,27 @@ const customUndefined = {
 }
 
 
+function getBackendMethodTypes<type = any>(target: any, key: string, options: BackendMethodOptions<type>) {
+    var types: any[] = Reflect.getMetadata("design:paramtypes", target, key);
+    if (options.paramTypes)
+        types = options.paramTypes;
+    const paramDecorators = paramDecorator.get(target);
+    if (paramDecorators) {
+        for (const d of paramDecorators) {
+            if (d.methodName === key) {
+                if (types === undefined) {
+                    types = [];
+                }
+                while (types.length <= d.paramIndex) {
+                    types.push(undefined);
+                }
+                types[d.paramIndex] = d.decorator;
+            }
+        }
+    }
+    return types;
+}
+
 function registerAction(target: any, descriptor: any) {
     (target[classBackendMethodsArray] || (target[classBackendMethodsArray] = [])).push(descriptor.value);
     actionInfo.allActions.push(descriptor.value);
@@ -433,15 +458,7 @@ export function prepareArgsToSend(types: any[], args: any[]) {
                 }
             }
             if (args[index] != undefined) {
-                let x: FieldOptions = { valueType: paramType };
-                if (typeof paramType === "function")
-                    if (paramType[$fieldOptionsMember] !== undefined) {
-                        x = paramType[$fieldOptionsMember](remult);
-                    }
-                    else if (!paramType.prototype){
-                        x = { valueType: paramType() }
-                    }
-                x = decorateColumnSettings(x, remult);
+                let x = getMemberFieldOptions(paramType, remult);
                 let eo = getEntitySettings(x.valueType, false);
                 args[index] = getFieldLoaderSaver(x, remult, false).toJson(args[index]);
                 if (eo != null && isTransferEntityAsIdField(x)) {
@@ -477,16 +494,7 @@ export async function prepareReceivedArgs(types: any[], args: any[], remult?: Re
                 args[i] = new ProgressListener(res);
             }
             else {
-                let x: FieldOptions = { valueType: types[i] };
-                let paramType = types[i];
-                if (typeof paramType === "function")
-                if (paramType[$fieldOptionsMember] !== undefined) {
-                    x = paramType[$fieldOptionsMember](remult);
-                }
-                else if (!paramType.prototype){
-                    x = { valueType: paramType() }
-                }
-                x = decorateColumnSettings(x, remult);
+                let x: FieldOptions = getMemberFieldOptions(types[i], remult);
                 let eo = getEntitySettings(x.valueType, false);
                 args[i] = await getFieldLoaderSaver(x, remult, false).fromJson(args[i]);
                 if (eo != null && isTransferEntityAsIdField(x)) {
@@ -504,4 +512,50 @@ export const classBackendMethodsArray = Symbol('classBackendMethodsArray');
 export interface ActionInterface {
     doWork: (args: any[], self: any, baseUrl?: string, http?: RestDataProviderHttpProvider) => Promise<any>;
     __register(reg: (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void);
+}
+
+function getMemberFieldOptions(type: any, remult: Remult) {
+    let x: FieldOptions = { valueType: type };
+    let paramType = type;
+    if (typeof paramType === "object") {
+        const c = createClass(paramType);
+        paramType = Field(() => c);
+    }
+    if (typeof paramType === "function")
+        if (paramType[$fieldOptionsMember] !== undefined) {
+            x = paramType[$fieldOptionsMember](remult);
+        }
+        else if (!paramType.prototype) {
+            x = { valueType: paramType() };
+        }
+    x = decorateColumnSettings(x, remult);
+    return x;
+}
+
+
+class dynamicBackendMethods {
+
+}
+export function createBackendMethod<inArgs, returnType>(arg: {
+    inputType?: inArgs,
+    returnType?: returnType,
+    key?: string,
+    implementation?: (args: inferMemberType<inArgs>) => Promise<inferMemberType<returnType>>
+} & BackendMethodOptions<inferMemberType<inArgs>>):
+    ((args: inferMemberType<inArgs>) => Promise<inferMemberType<returnType>>) & {
+        implementation: (args: inferMemberType<inArgs>) => Promise<inferMemberType<returnType>>
+    } {
+
+    const descriptor = {
+        value: (...args) => arg.implementation(args[0])
+    };
+    BackendMethod({ ...arg, paramTypes: [arg.inputType] })(dynamicBackendMethods, arg.key, descriptor);
+    const r = x => descriptor.value(x);
+
+    Object.defineProperty(r, "implementation", {
+        get: () => arg.implementation,
+        set: x => arg.implementation = x
+    });
+    //@ts-ignore
+    return r;
 }

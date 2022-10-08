@@ -17,7 +17,7 @@ import { ValueConverters } from "../valueConverters";
 import { filterHelper } from "../filter/filter-interfaces";
 import { assign } from "../../assign";
 import { Paginator, RefSubscriber, RefSubscriberBase } from ".";
-import { prepareArgsToSend, prepareReceivedArgs } from "../server-action";
+import { paramDecorator, prepareArgsToSend, prepareReceivedArgs } from "../server-action";
 //import { remult } from "../remult-proxy";
 
 
@@ -1748,6 +1748,14 @@ export function Field<entityType = any, valueType = any>(valueType: () => ClassT
             return r;
 
         }
+        if (typeof c === "number") {
+            let params = paramDecorator.get(target);
+            if (!params) {
+                paramDecorator.set(target, params = []);
+            }
+            params.push({ methodName: key, paramIndex: c, decorator: Field(valueType, ...options) })
+            return;
+        }
         let names: columnInfo[] = columnsOfType.get(target.constructor);
         if (!names) {
             names = [];
@@ -2140,7 +2148,7 @@ class SubscribableImp implements Subscribable {
         return () => this._subscribers = this._subscribers.filter(x => x != list);
     }
 }
-export declare type typedDecorator<type> = ((target, key) => void) & { $type: type };
+export declare type typedDecorator<type> = ((target, key, c?) => void) & { $type: type };
 
 
 export function getFieldLoaderSaver(options: FieldOptions, remult: Remult, forceIds: boolean) {

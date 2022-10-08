@@ -1,6 +1,7 @@
+import { ClassType } from "../../classType";
 import { EntityOptions } from "../entity";
 import { OmitEB } from "./remult3";
-import { Entity, inferMemberType, inferredType, typedDecorator } from "./RepositoryImplementation";
+import { Entity, Field, inferMemberType, inferredType, typedDecorator } from "./RepositoryImplementation";
 
 type Decorator<T = any> = (a: T, b: string, c?: any) => void;
 type Decorators<T> = T extends new (...args: any[]) => infer R ? { [K in keyof OmitEB<R>]?: Decorator } : never;
@@ -11,10 +12,15 @@ export function describeClass<classType>(classType: classType, classDecorator: (
         classDecorator(classType);
     for (const fieldKey in members) {
         if (Object.prototype.hasOwnProperty.call(members, fieldKey)) {
-            const element: any = members[fieldKey];
+            let element: any = members[fieldKey];
             const prop = Object.getOwnPropertyDescriptor((classType as any).prototype, fieldKey);
-
-            element((classType as any).prototype, fieldKey, prop);
+            if (typeof element !== "function") {
+                const t = createClass(element);
+                Field(() => t)((classType as any).prototype, fieldKey);
+            } else if (element.prototype) {
+                Field(() => element)((classType as any).prototype, fieldKey);
+            } else
+                element((classType as any).prototype, fieldKey, prop);
             if (prop)
                 Object.defineProperty((classType as any).prototype, fieldKey, prop);
         }
@@ -41,7 +47,7 @@ export function createEntity<T>(key: string, members: T, options?: EntityOptions
     //@ts-ignore
     return r;
 }
-export function createClass<T>(members: T): { new(...args): inferredType<T> } {
+export function createClass<T>(members: T): ClassType<inferredType<T>> {
     const r = class { };
     describeClass(r, undefined, members);
     //@ts-ignore

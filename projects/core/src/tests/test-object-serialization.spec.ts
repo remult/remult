@@ -1,9 +1,9 @@
 import { Remult } from "../context";
 import { InMemoryDataProvider } from "../data-providers/in-memory-database";
 import { remult } from "../remult-proxy";
-import { controllerRefImpl, Field, Fields, getControllerRef, inferMemberType, TransferEntityAsIdFieldOptions, ValueListFieldType } from "../remult3";
+import { columnsOfType, controllerRefImpl, Field, Fields, getControllerRef, getFields, inferMemberType, TransferEntityAsIdFieldOptions, ValueListFieldType } from "../remult3";
 import { createClass, describeClass } from "../remult3/DecoratorReplacer";
-import { BackendMethod, prepareArgsToSend, prepareReceivedArgs } from "../server-action";
+import { BackendMethod, createBackendMethod, prepareArgsToSend, prepareReceivedArgs } from "../server-action";
 import { createData } from "./createData";
 import { Products } from "./remult-3-entities";
 
@@ -342,6 +342,9 @@ it("test array typing starting point", () => {
   let zz: keyof typeof z.b = "c";;
 });
 it("test infer member type", () => {
+  function inferType<T>(x: T): inferMemberType<T> {
+    return undefined;
+  }
   {
     let x = inferType(Field(() => String));
     x = "a string is valid here";
@@ -383,7 +386,93 @@ it("test infer member type", () => {
   }
 
 });
+it("test create class further", () => {
+  const t = createClass({
+    a: Fields.string()
+  });
+  expect(getFields(new t()).a.metadata.valueType).toBe(String);
+});
+it("test create class further 2", () => {
+  const t = createClass({
+    a: Field(() => classToTestTypedArguments),
+    b: classToTestTypedArguments
+  });
+  expect(getFields(new t()).a.metadata.valueType).toBe(classToTestTypedArguments);
+  expect(getFields(new t()).b.metadata.valueType).toBe(classToTestTypedArguments);
+});
+it("test create class further 3", () => {
+  const t = createClass({
+    a: String,
+  });
+  expect(getFields(new t()).a.metadata.valueType).toBe(String);
+});
+it("test create class further 4", () => {
+  const t = createClass({
+    a: {
+      b: String,
+      c: classToTestTypedArguments
+    },
+  });
+  let cols = columnsOfType.get(getFields(new t()).a.metadata.valueType)
+  expect(cols.length).toBe(2);
+});
+it("test parameter decorator", () => {
+  const r = new Remult();
+  r.apiClient.httpClient = {
+    delete: () => undefined,
+    get: () => undefined,
+    post: async (url, data) => {
+      expect(data.args[0]).toEqual("1976-06-16");
+      return { data: { result: "hello noam" } };
+    },
+    put: () => undefined
+  };
+  r.call(TestBackendMethodWithParameterDecorator.testBackendWithParameters, undefined, new Date(1976, 5, 16));
+});
+class TestBackendMethodWithParameterDecorator {
+  @BackendMethod({ allowed: true })
+  static async testBackendWithParameters(@Fields.dateOnly() a: Date) {
 
-function inferType<T>(x: T): inferMemberType<T> {
-  return undefined;
+  }
 }
+
+it("start build backend method", async () => {
+  let m = createBackendMethod({
+    inputType: Fields.dateOnly(),
+    returnType: Number,
+    allowed: true,
+    implementation: async d => d.getFullYear(),
+
+  });
+  expect(await m(new Date(1976, 5, 16))).toBe(1976);
+  expect(await m.implementation(new Date(1976, 5, 16))).toBe(1976);
+  m.implementation = async (d) => d.getFullYear() + 46;
+  expect(await m.implementation(new Date(1976, 5, 16))).toBe(2022);
+  expect(await m(new Date(1976, 5, 16))).toBe(2022);
+});
+it("test replace implementation", async () => {
+  let m = createBackendMethod({
+    inputType: Fields.dateOnly(),
+    returnType: Number,
+    allowed: true,
+    key:"abc",
+    implementation: async d => d.getFullYear(),
+
+  });
+  m.implementation = async (d) => d.getFullYear() + 46;
+  expect(await m.implementation(new Date(1976, 5, 16))).toBe(2022);
+  expect(await m(new Date(1976, 5, 16))).toBe(2022);
+});
+it("start build backend method 2", async () => {
+  let m = createBackendMethod({
+    inputType: {
+      a: Fields.dateOnly(),
+      b: String
+    },
+    key:"def",
+    returnType: String,
+    allowed: true,
+    implementation: async ({ a, b }) => a.getFullYear().toString() + b
+  });
+  expect(await m({ a: new Date(1976, 5, 16), b: "noam" })).toBe("1976noam");
+});
