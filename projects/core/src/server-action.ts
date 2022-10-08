@@ -111,10 +111,10 @@ export class myServerAction extends Action<inArgs, result>
         let ds = remult.dataProvider;
         await ds.transaction(async ds => {
             remult.dataProvider = (ds);
-            if (!remult.isAllowedForInstance(undefined, this.options.allowed))
-                throw new ForbiddenError();
-
+            
             info.args = await prepareReceivedArgs(this.types, info.args, remult, ds, res);
+            if (!remult.isAllowedForInstance(info.args ? info.args[0] : undefined, this.options.allowed))
+                throw new ForbiddenError();
             try {
                 result.data = await this.originalMethod(info.args);
 

@@ -477,3 +477,25 @@ it("start build backend method 2", async () => {
   });
   expect(await m({ a: new Date(1976, 5, 16), b: "noam" })).toBe("1976noam");
 });
+it("start build backend method with allowed", async () => {
+  let m = createBackendMethod({
+    inputType: {
+      a: Fields.dateOnly(),
+      b: String
+    },
+    key: "a1",
+    returnType: String,
+    allowed: (remult, y) => y.a.getFullYear() === 1976,
+    implementation: async ({ a, b }) => a.getFullYear().toString() + b
+  });
+  expect(await m({ a: new Date(1976, 5, 16), b: "noam" })).toBe("1976noam");
+  let ok = true;
+  try{
+    expect(await m({ a: new Date(1975, 5, 16), b: "noam" }));
+    ok = false;
+  }
+  catch {
+    ok = true;
+  }
+  expect(ok).toBe(true);
+});
