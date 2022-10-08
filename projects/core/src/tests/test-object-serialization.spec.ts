@@ -490,7 +490,7 @@ it("start build backend method with allowed", async () => {
   });
   expect(await m({ a: new Date(1976, 5, 16), b: "noam" })).toBe("1976noam");
   let ok = true;
-  try{
+  try {
     expect(await m({ a: new Date(1975, 5, 16), b: "noam" }));
     ok = false;
   }
@@ -499,3 +499,35 @@ it("start build backend method with allowed", async () => {
   }
   expect(ok).toBe(true);
 });
+it("test that it works", async () => {
+  expect(await CompareBackendMethodCalls.m1(new Date(1976, 5, 16))).toBe(1976);
+  expect(await CompareBackendMethodCalls.m2(new Date(1976, 5, 16))).toBe(1976);
+  expect(await CompareBackendMethodCalls.m3(new Date(1976, 5, 16))).toBe(1976);
+});
+
+class CompareBackendMethodCalls {
+  @BackendMethod({
+    allowed: true,
+    paramTypes: [Fields.dateOnly()],
+    returnType: Number
+  })
+  static async m1(d: Date) {
+    return d.getFullYear()
+  }
+  @BackendMethod({
+    allowed: true,
+    returnType: Number
+  })
+  static async m2(@Fields.dateOnly() d: Date) {
+    return d.getFullYear()
+  }
+
+  static m3 = createBackendMethod({
+    allowed: true,
+    inputType: Fields.dateOnly(),
+    returnType: Number,
+    implementation:
+      async d => d.getFullYear(),
+    key: "m3"
+  })
+}
