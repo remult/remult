@@ -1,8 +1,9 @@
 
-import { EntityOrderBy, FindOptions, getEntityRef, Remult, Repository, Sort } from '../../index';
+import { EntityOrderBy, FindOptions, getEntityRef, Remult, Repository, RestDataProviderHttpProvider, Sort } from '../../index';
 import { v4 as uuid } from 'uuid';
 import { RestEntityDataProvider } from '../data-providers/rest-data-provider';
 import { Action } from '../server-action';
+import { RepositoryImplementation } from '../remult3';
 
 
 class LiveQueryOnFrontEnd<entityType> {
@@ -74,44 +75,64 @@ export class LiveQueryClient {
 
     clientId = uuid();
     private queries = new Map<string, LiveQueryOnFrontEnd<any>>();
-    constructor(public lqp: LiveQueryProvider) { }
+    constructor(public lqp: LiveQueryProvider, private provider?: RestDataProviderHttpProvider) {
+        if (!this.provider)
+            this.provider = Action.provider;
+    }
+    runPromise(p: Promise<any>) {
+
+    }
 
     subscribe<entityType>(
         repo: Repository<entityType>,
         options: FindOptions<entityType>,
         onResult: (items: entityType[]) => void) {
-        const m: SubscribeToQueryArgs = { entityKey: repo.metadata.key, orderBy: options.orderBy };
-        const eventTypeKey = JSON.stringify(m);
-        let q = this.queries.get(eventTypeKey);
-        if (!q) {
-            if ([...this.queries.keys()].length == 0)
-                this.openListener();
-            this.queries.set(eventTypeKey, q = new LiveQueryOnFrontEnd(repo, m))
 
+        let alive = true;
+        let onUnsubscribe: VoidFunction = () => { };
 
-            const { url, filterObject } = new RestEntityDataProvider(Remult.apiBaseUrl + '/' + repo.metadata.key, Action.provider, repo.metadata)
-                .buildFindRequest({});
-            url.add("__action", 'subscribe|' + this.clientId);
-            const thenResult = (r: SubscribeResult) => {
-                q.setAllItems(r.result);
-                q.id = r.id;
-            }
-            if (filterObject) {
-                Action.provider.post(url.url, filterObject).then(thenResult);
-            }
-            else
-                Action.provider.get(url.url).then(thenResult);
+        this.runPromise((repo as RepositoryImplementation<entityType>).buildEntityDataProviderFindOptions(options)
+            .then(opts => {
+                if (!alive)
+                    return;
+                if ([...this.queries.keys()].length == 0)
+                    this.openListener();
+                const { url, filterObject } = new RestEntityDataProvider(Remult.apiBaseUrl + '/' + repo.metadata.key, Action.provider, repo.metadata)
+                    .buildFindRequest(opts);
 
-        }
-        else {
-            onResult(q.items);
-        }
-        q.listeners.push(onResult);
+                const eventTypeKey = JSON.stringify({ url, filterObject });
+                let q = this.queries.get(eventTypeKey);
+                if (!q) {
+                    this.queries.set(eventTypeKey, q = new LiveQueryOnFrontEnd(repo, { entityKey: repo.metadata.key, orderBy: options.orderBy }));
+
+                    url.add("__action", 'subscribe|' + this.clientId);
+                    const thenResult = (r: SubscribeResult) => {
+                        this.runPromise(q.setAllItems(r.result));
+                        q.id = r.id;
+                    }
+                    if (filterObject) {
+                        this.runPromise(this.provider.post(url.url, filterObject).then(thenResult));
+                    }
+                    else
+                        this.runPromise(this.provider.get(url.url).then(thenResult));
+                }
+                else {
+                    onResult(q.items);
+                }
+                q.listeners.push(onResult);
+                onUnsubscribe = () => {
+                    q.listeners.splice(q.listeners.indexOf(onResult), 1);
+                    if (q.listeners.length == 0) {
+                        this.queries.delete(eventTypeKey);
+                    }
+                    if (this.queries.size === 0)
+                        this.closeListener();
+                }
+            }));
+
         return () => {
-            q.listeners.splice(q.listeners.indexOf(onResult), 1);
-            if (q.listeners.length == 0) {
-                this.queries.delete(eventTypeKey);
-            }
+            alive = false;
+            onUnsubscribe();
         }
 
     }
@@ -121,7 +142,7 @@ export class LiveQueryClient {
         this.closeListener = this.lqp.openStreamAndReturnCloseFunction(this.clientId, message => {
             for (const q of this.queries.values()) {
                 if (q.id === message.event) {
-                    q.handle(JSON.parse(message.data));
+                    this.runPromise(q.handle(JSON.parse(message.data)));
                 }
             }
         });

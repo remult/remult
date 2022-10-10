@@ -237,19 +237,9 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 
     async find(options: FindOptions<entityType>): Promise<entityType[]> {
         Remult.onFind(this._info, options);
-        let opt: EntityDataProviderFindOptions = {};
         if (!options)
             options = {};
-
-        opt = {};
-        if (!options.orderBy || Object.keys(options.orderBy).length === 0) {
-            options.orderBy = this._info.entityInfo.defaultOrderBy;
-        }
-        opt.where = await this.translateWhereToFilter(options.where);
-        opt.orderBy = Sort.translateOrderByToSort(this.metadata, options.orderBy);
-
-        opt.limit = options.limit;
-        opt.page = options.page;
+        let opt = await this.buildEntityDataProviderFindOptions(options);
 
         let rawRows = await this.edp.find(opt);
         let loadFields: FieldMetadata[] = undefined;
@@ -292,6 +282,21 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
                 repo.addToCache(r);
             }
         }
+    }
+
+    async buildEntityDataProviderFindOptions(options: FindOptions<entityType>) {
+        let opt: EntityDataProviderFindOptions = {};
+
+        opt = {};
+        if (!options.orderBy || Object.keys(options.orderBy).length === 0) {
+            options.orderBy = this._info.entityInfo.defaultOrderBy;
+        }
+        opt.where = await this.translateWhereToFilter(options.where);
+        opt.orderBy = Sort.translateOrderByToSort(this.metadata, options.orderBy);
+
+        opt.limit = options.limit;
+        opt.page = options.page;
+        return opt;
     }
 
     private async mapRawDataToResult(r: any, loadFields: FieldMetadata[]) {

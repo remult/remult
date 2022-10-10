@@ -1,4 +1,4 @@
-import { EntityOrderBy, FindOptions, Repository } from '../../index';
+import { EntityOrderBy, FindOptions, Repository, RestDataProviderHttpProvider } from '../../index';
 export interface LiveQueryProvider {
     openStreamAndReturnCloseFunction(clientId: string, onMessage: MessageHandler): VoidFunction;
 }
@@ -8,9 +8,11 @@ export declare type MessageHandler = (message: {
 }) => void;
 export declare class LiveQueryClient {
     lqp: LiveQueryProvider;
+    private provider?;
     clientId: any;
     private queries;
-    constructor(lqp: LiveQueryProvider);
+    constructor(lqp: LiveQueryProvider, provider?: RestDataProviderHttpProvider);
+    runPromise(p: Promise<any>): void;
     subscribe<entityType>(repo: Repository<entityType>, options: FindOptions<entityType>, onResult: (items: entityType[]) => void): () => void;
     closeListener: VoidFunction;
     private openListener;

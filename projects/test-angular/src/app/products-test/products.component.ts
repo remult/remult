@@ -2,7 +2,8 @@ import { Component, NgZone, OnInit } from '@angular/core';
 import { Remult, Entity, IdEntity, Fields, Controller, InMemoryDataProvider, Sort } from 'remult';
 import { GridSettings } from '@remult/angular/interfaces';
 import { DialogConfig } from '../../../../angular';
-import { EventSourceLiveQuery } from '../../../../core/src/EventSourceLiveQuery';
+import { EventSourceLiveQuery } from '../../../../core/src/live-query/EventSourceLiveQuery';
+
 
 @Controller("blabla")
 

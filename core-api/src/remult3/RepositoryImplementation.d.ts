@@ -5,7 +5,7 @@ import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Reposit
 import { ClassType } from "../../classType";
 import { Remult, Unobserve } from "../context";
 import { entityEventListener } from "../__EntityValueProvider";
-import { DataProvider, EntityDataProvider } from "../data-interfaces";
+import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions } from "../data-interfaces";
 import { RefSubscriber } from ".";
 export declare class RepositoryImplementation<entityType> implements Repository<entityType> {
     private entity;
@@ -42,6 +42,7 @@ export declare class RepositoryImplementation<entityType> implements Repository<
     save(item: Partial<OmitEB<entityType>>[]): Promise<entityType[]>;
     save(item: Partial<OmitEB<entityType>>): Promise<entityType>;
     find(options: FindOptions<entityType>): Promise<entityType[]>;
+    buildEntityDataProviderFindOptions(options: FindOptions<entityType>): Promise<EntityDataProviderFindOptions>;
     private mapRawDataToResult;
     count(where?: EntityFilter<entityType>): Promise<number>;
     private cache;
