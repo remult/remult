@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { Remult, AllowedForInstance } from './context';
-import { DataApiRequest, DataApiResponse } from './data-api';
+import { DataApiResponse } from './data-api';
 import { DataProvider, RestDataProviderHttpProvider } from './data-interfaces';
 interface inArgs {
     args: any[];
@@ -8,14 +8,14 @@ interface inArgs {
 interface result {
     data: any;
 }
-export declare abstract class Action<inParam, outParam> {
+export declare abstract class Action<inParam, outParam> implements ActionInterface {
     private actionUrl;
     private queue;
     private allowed;
     constructor(actionUrl: string, queue: boolean, allowed: AllowedForInstance<any>);
     static apiUrlForJobStatus: string;
-    static provider: RestDataProviderHttpProvider;
-    run(pIn: inParam): Promise<outParam>;
+    run(pIn: inParam, baseUrl?: string, http?: RestDataProviderHttpProvider): Promise<outParam>;
+    doWork: (args: any[], self: any, baseUrl?: string, http?: RestDataProviderHttpProvider) => Promise<any>;
     protected abstract execute(info: inParam, req: Remult, res: DataApiResponse): Promise<outParam>;
     __register(reg: (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void): void;
 }
@@ -33,6 +33,7 @@ export interface BackendMethodOptions<type> {
     queue?: boolean;
     /** EXPERIMENTAL: Determines if the user should be blocked while this `BackendMethod` is running*/
     blockUser?: boolean;
+    paramTypes?: any[];
 }
 export declare const actionInfo: {
     allActions: any[];
@@ -47,9 +48,6 @@ export declare const serverActionField: unique symbol;
 export declare function Controller(key: string): (target: any) => any;
 /** Indicates that the decorated methods runs on the backend. See: [Backend Methods](https://remult.dev/docs/backendMethods.html) */
 export declare function BackendMethod<type = any>(options: BackendMethodOptions<type>): (target: any, key: string, descriptor: any) => any;
-export interface registrableAction {
-    __register: (reg: (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: ((data: any, req: DataApiRequest, res: DataApiResponse) => void)) => void) => void;
-}
 export interface jobWasQueuedResult {
     queuedJobId?: string;
 }
@@ -67,4 +65,8 @@ export declare class ProgressListener {
 export declare function prepareArgsToSend(types: any[], args: any[]): any[];
 export declare function prepareReceivedArgs(types: any[], args: any[], remult: Remult, ds: DataProvider, res: DataApiResponse): Promise<any[]>;
 export declare const classBackendMethodsArray: unique symbol;
+export interface ActionInterface {
+    doWork: (args: any[], self: any, baseUrl?: string, http?: RestDataProviderHttpProvider) => Promise<any>;
+    __register(reg: (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void): any;
+}
 export {};

@@ -1,5 +1,5 @@
 
-import { EntityOrderBy, FindOptions, getEntityRef, Remult, Repository, RestDataProviderHttpProvider, Sort } from '../../index';
+import { EntityOrderBy, FindOptions, getEntityRef, remult, Remult, Repository, RestDataProviderHttpProvider, Sort } from '../../index';
 import { v4 as uuid } from 'uuid';
 import { RestEntityDataProvider } from '../data-providers/rest-data-provider';
 import { Action } from '../server-action';
@@ -76,8 +76,7 @@ export class LiveQueryClient {
     clientId = uuid();
     private queries = new Map<string, LiveQueryOnFrontEnd<any>>();
     constructor(public lqp: LiveQueryProvider, private provider?: RestDataProviderHttpProvider) {
-        if (!this.provider)
-            this.provider = Action.provider;
+       
     }
     runPromise(p: Promise<any>) {
 
@@ -97,7 +96,7 @@ export class LiveQueryClient {
                     return;
                 if ([...this.queries.keys()].length == 0)
                     this.openListener();
-                const { url, filterObject } = new RestEntityDataProvider(Remult.apiBaseUrl + '/' + repo.metadata.key, Action.provider, repo.metadata)
+                const { url, filterObject } = new RestEntityDataProvider(()=>remult.apiClient.url + '/' + repo.metadata.key,()=> this.provider!, repo.metadata)
                     .buildFindRequest(opts);
 
                 const eventTypeKey = JSON.stringify({ url, filterObject });

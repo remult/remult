@@ -16,7 +16,7 @@ import { Categories, Categories as newCategories, CategoriesForTesting } from '.
 import { Entity as EntityDecorator, Field as ColumnDecorator, getEntityRef, decorateColumnSettings, Entity, Field, FieldType, ValueListFieldType, getFields, Fields, getValueList, ValueListInfo } from '../remult3/RepositoryImplementation';
 import { Sort, SqlDatabase, WebSqlDataProvider } from '../..';
 import { EntityBase, EntityMetadata, Repository, FindOptions } from '../remult3';
-import { ValueConverters } from '../../valueConverters';
+import { ValueConverters } from '../valueConverters';
 import { EntityOptions } from '../entity';
 
 import { entityFilterToJson, Filter } from '../filter/filter-interfaces';
@@ -167,28 +167,7 @@ describe("grid filter stuff", () => {
     let w = (await ds.getFilterWithSelectedRows()).where;
     expect(await c.count(w)).toBe(4);
   });
-  it("test context change event", async () => {
-    let d = new Done();
-    let c = new Remult();
-    let r = await c.userChange.observe(() => d.ok());
-    d.test("first fire");
-    d = new Done();
-    c.setUser({
-      id: '',
-      name: '',
-      roles: []
-    });
-    d.test("changed on user changed");
-    d = new Done();
-    r();
-    c.setUser({
-      id: '1',
-      name: '1',
-      roles: []
-    });
-    expect(d.happened).toBe(false, "should not have fired because unsubscribe has happened");
 
-  });
 
   it("test select rows in page is not select all", async () => {
     let [c] = await insertFourRows();
@@ -402,7 +381,7 @@ describe("test row provider", () => {
 
   it("Test Validation 2", async () => {
     var remult = new Remult();
-    remult.setDataProvider(new InMemoryDataProvider());
+    remult.dataProvider = (new InMemoryDataProvider());
     let type = class extends newCategories {
       a: string;
     };
@@ -429,7 +408,7 @@ describe("test row provider", () => {
   });
   it("Test Validation 2_1", async () => {
     var remult = new Remult();
-    remult.setDataProvider(new InMemoryDataProvider());
+    remult.dataProvider = (new InMemoryDataProvider());
     let type = class extends newCategories {
       a: string;
     };
@@ -456,7 +435,7 @@ describe("test row provider", () => {
   });
   it("Test Validation 3", async () => {
     var remult = new Remult();
-    remult.setDataProvider(new InMemoryDataProvider());
+    remult.dataProvider = (new InMemoryDataProvider());
     let type = class extends newCategories {
       a: string
     };
@@ -481,7 +460,7 @@ describe("test row provider", () => {
 
   it("Test unique Validation and is not empty", async () => {
     var remult = new Remult();
-    remult.setDataProvider(new InMemoryDataProvider());
+    remult.dataProvider = (new InMemoryDataProvider());
     let type = class extends newCategories {
       a: string
     };
@@ -520,7 +499,7 @@ describe("test row provider", () => {
 
   it("test grid update and validation cycle", async () => {
     var remult = new Remult();
-    remult.setDataProvider(new InMemoryDataProvider());
+    remult.dataProvider = (new InMemoryDataProvider());
     let type = class extends newCategories {
       categoryName: string
 
@@ -574,7 +553,7 @@ describe("test row provider", () => {
   });
   it("update should fail nicely", async () => {
     let cont = new Remult();
-    cont.setDataProvider({ getEntityDataProvider: (x) => new myDp(x), transaction: undefined });
+    cont.dataProvider = ({ getEntityDataProvider: (x) => new myDp(x), transaction: undefined });
     let c = cont.repo(newCategories).create();
     c.id = 1;
     c.categoryName = 'noam';
@@ -606,7 +585,7 @@ describe("test row provider", () => {
   it("lookup with undefined doesn't fetch", async () => {
 
     let cont = new Remult();
-    cont.setDataProvider({ getEntityDataProvider: (x) => new myDp(x), transaction: undefined });
+    cont.dataProvider = ({ getEntityDataProvider: (x) => new myDp(x), transaction: undefined });
     let c = cont.repo(newCategories);
 
     let calledFind = false;
@@ -631,7 +610,7 @@ describe("test row provider", () => {
   });
   it("lookup return the same new row", async () => {
     let cont = new Remult();
-    cont.setDataProvider({ getEntityDataProvider: (x) => new myDp(x), transaction: undefined });
+    cont.dataProvider = ({ getEntityDataProvider: (x) => new myDp(x), transaction: undefined });
     let c = cont.repo(newCategories);
     var nc = { value: undefined };
     nc.value = 1;
@@ -870,7 +849,7 @@ describe("field display stuff", () => {
 describe("api test", () => {
   it("can build", () => {
     let ctx = new Remult();
-    ctx.setDataProvider(new InMemoryDataProvider());
+    ctx.dataProvider = (new InMemoryDataProvider());
 
     let gs = new GridSettings(ctx.repo(newCategories));
     gs.addArea({
@@ -887,7 +866,7 @@ describe("api test", () => {
 });
 describe("column collection", () => {
   let ctx = new Remult();
-  ctx.setDataProvider(new InMemoryDataProvider());
+  ctx.dataProvider = (new InMemoryDataProvider());
 
   it("uses a saparate column", async () => {
     let type = class extends newCategories {
@@ -942,7 +921,7 @@ describe("column collection", () => {
 describe("grid settings ",
   () => {
     let ctx = new Remult();
-    ctx.setDataProvider(new InMemoryDataProvider());
+    ctx.dataProvider = (new InMemoryDataProvider());
 
     it("sort is displayed right", () => {
       let s = ctx.repo(newCategories);
@@ -1290,50 +1269,29 @@ describe("context", () => {
   it("what", () => {
     var c = new Remult();
     expect(c.authenticated()).toBe(false);
-    expect(c.user.id).toBe(undefined);
-    expect(c.user.name).toBe("");
-    expect(c.user.roles.length).toBe(0);
-    c.setUser({
+
+    c.user = ({
       id: '1',
       name: 'name',
       roles: ["a"]
     });
     expect(c.authenticated()).toBe(true);
-    c.setUser(undefined);
+    c.user = (undefined);
     expect(c.authenticated()).toBe(false);
-    expect(c.user.id).toBe(undefined);
-    expect(c.user.name).toBe("");
-    expect(c.user.roles.length).toBe(0);
+
 
   });
-  it("oauth user style", () => {
-    var remult = new Remult();
-    remult.setUser({
-      sub: '12',
-      name: "the name",
-      permissions: ["a", "b"]
-    });
-    expect(remult.user.id).toBe('12');
-    expect(remult.user.name).toBe("the name");
-    expect(remult.isAllowed("a")).toBe(true);
-    expect(remult.isAllowed("b")).toBe(true);
-    expect(remult.isAllowed("c")).toBe(false);
-  });
+
   it("is allowed for instance works with array", () => {
     var remult = new Remult();
-    remult.setUser({ roles: ["a"], id: '', name: '' });
+    remult.user = ({ roles: ["a"], id: '', name: '' });
     expect(remult.isAllowedForInstance({}, ["b", "a"])).toBe(true);
   });
-  it("user without roles work", () => {
-    var remult = new Remult();
-    remult.setUser({ sub: "12" });
-    expect(remult.user.roles.length).toBe(0);
-  });
+
   it("test no user is not allowed", () => {
     var remult = new Remult();
-    remult.setUser(undefined);
-    expect(remult.user.id).toBeUndefined();
-    expect(remult.user.name).toBe('');
+    remult.user = (undefined);
+    expect(remult.user).toBeUndefined();
   });
 });
 it("test http provider for remult", async () => {
@@ -1342,9 +1300,9 @@ it("test http provider for remult", async () => {
     get: async (url) => {
       return { count: 7 }
     },
-    delete: undefined,
-    put: undefined,
-    post: undefined
+    delete: async () => { },
+    put: async () => { },
+    post: async () => { }
   });
   // expect(await toPromise(Promise.resolve(7))).toBe(7);
   expect(await remult.repo(TestCategories1).count()).toBe(7);
@@ -1364,7 +1322,7 @@ describe("allow", () => {
     expect(Allow.everyone()).toBe(true);
     var remult = new Remult();
     expect(Allow.authenticated(remult)).toBe(false);
-    remult.setUser({ id: '', name: '', roles: [] });
+    remult.user = ({ id: '', name: '', roles: [] });
     expect(Allow.authenticated(remult)).toBe(true);
   });
 });
@@ -1379,7 +1337,7 @@ class TestCategories1 extends newCategories {
 describe("test ", () => {
   it("Test Validation,", async () => {
     var remult = new Remult();
-    remult.setDataProvider(new InMemoryDataProvider());
+    remult.dataProvider = (new InMemoryDataProvider());
 
     var c = remult.repo(TestCategories1);
     var cat = c.create();

@@ -38,7 +38,7 @@ export function testInMemory(key: string, what: dbTestWhatSignature, focus = fal
     itWithFocus(key + " - in memory", async () => {
         let remult = new Remult();
         let db = new InMemoryDataProvider();
-        remult.setDataProvider(db);
+        remult.dataProvider = (db);
         await what({ db, remult, createEntity: async (x) => remult.repo(x) });
     }, focus);
 }

@@ -23,7 +23,7 @@ export class eventTestEntity extends EntityBase {
 async function setup1() {
     const mem = new InMemoryDataProvider()
     const serverRemult = new Remult(mem);
-    serverRemult.setUser({ id: 'server', name: 'server', roles: [] });
+    serverRemult.user = ({ id: 'server', name: 'server', roles: [] });
     const serverRepo = serverRemult.repo(eventTestEntity);
     await serverRepo.insert([
         { id: 1, title: 'noam' },
@@ -34,7 +34,7 @@ async function setup1() {
         { id: 6, title: 'ofri' }
     ]);
     const remult = new Remult(mem);
-    remult.setUser({ id: clientId1, name: clientId1, roles: [] });
+    remult.user = ({ id: clientId1, name: clientId1, roles: [] });
     const clientRepo = remult.repo(eventTestEntity);
     const messages: ServerEventMessage[] = [];
     const qm = new LiveQueryManager({ send: m => messages.push(m) });

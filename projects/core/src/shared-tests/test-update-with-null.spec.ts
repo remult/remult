@@ -37,6 +37,5 @@ testAll("test number with null", async ({ createEntity }) => {
     i.numberWithNull = 0;
     await i.save();
     expect(i.numberWithNull).toBe(0);
-    SqlDatabase.LogToConsole = true;
     expect(await r.count({ numberWithNull: null })).toBe(0);
 }, false);

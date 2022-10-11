@@ -10,7 +10,7 @@ describe("test exception", () => {
     it("test save exception", async () => {
         var mem = new InMemoryDataProvider();
         var c = new Remult();
-        c.setDataProvider({
+        c.dataProvider = ({
             getEntityDataProvider: e => {
                 let r = mem.getEntityDataProvider(e);
                 return {

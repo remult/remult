@@ -61,3 +61,4 @@ basement_dist
 docs/.vuepress/dist
 
 /db
+projects/test-angular/.angular

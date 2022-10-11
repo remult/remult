@@ -1,4 +1,5 @@
 import { CustomModuleLoader } from './CustomModuleLoader';
+
 let moduleLoader = new CustomModuleLoader('/dist/test-angular');
 import * as express from 'express';
 import * as swaggerUi from 'swagger-ui-express';
@@ -8,25 +9,63 @@ import * as fs from 'fs';
 //import '../app.module';
 import { serverInit } from './server-init';
 import { remultGraphql } from 'remult/graphql';
-import { preparePostgresQueueStorage } from 'remult/postgres';
+import { createKnexDataProvider } from 'remult/remult-knex';
+
+import { createPostgresConnection, preparePostgresQueueStorage } from 'remult/postgres';
 
 import * as compression from 'compression';
 import * as forceHttps from 'express-force-https';
 import * as jwt from 'express-jwt';
 import { graphqlHTTP } from 'express-graphql';
 import { buildSchema } from 'graphql';
-import { remultExpress } from '../../../../core/server/expressBridge';
+
+
+import { remultExpress } from '../../../../core/remult-express';
 
 
 import { AppComponent } from '../app.component';
+import { AsyncLocalStorage } from 'async_hooks';
+import axios from 'axios';
+import { ExternalHttpProvider, Remult } from '../../../../core/src/context';
 
 import { helper, Task } from '../products-test/products.component';
 
 
 
 
+import { DataProvider } from '../../../../core/src/data-interfaces';
+import { Repository } from '../../../../core/src/remult3';
+import { BackendMethod } from '../../../../core/src/server-action';
+import fetch from 'node-fetch';
+import { remult } from '../../../../core/src/remult-proxy';
+
+
+const getDatabase = async () => {
+
+    const result = await createKnexDataProvider({
+        client: 'mssql',
+        connection: {
+            server: '127.0.0.1',
+            database: 'test2',
+            user: 'sa',
+            password: 'MASTERKEY',
+            options: {
+                enableArithAbort: true,
+                encrypt: false,
+                instanceName: 'sqlexpress'
+            }
+        }
+    });
+    return result;
+}
+
+const st = new AsyncLocalStorage();
+
 const d = new Date(2020, 1, 2, 3, 4, 5, 6);
 serverInit().then(async (dataSource) => {
+
+
+
 
     let app = express();
     app.use(jwt({ secret: process.env.TOKEN_SIGN_KEY, credentialsRequired: false, algorithms: ['HS256'] }));
@@ -47,21 +86,23 @@ serverInit().then(async (dataSource) => {
         //     dataProvider: async () => await createPostgresConnection(),
         queueStorage: await preparePostgresQueueStorage(dataSource),
         logApiEndPoints: true,
-        initApi: async remult => {
+        
 
+        initRequest: async () => {
+
+        },
+        initApi: async remultParam => {
         }
     });
 
+    app.use(express.json());
     app.use(remultApi);
+
     app.use('/api/docs', swaggerUi.serve,
         swaggerUi.setup(remultApi.openApiDoc({ title: 'remult-angular-todo' })));
 
-    app.use(express.static('dist/my-project'));
-    app.get('/api/noam', async (req, res) => {
-        let c = await remultApi.getRemult(req);
-        res.send('hello ' + JSON.stringify(c.user));
-    });
 
+    app.use(express.static('dist/my-project'));
     let g = remultGraphql(remultApi);
     app.use('/api/graphql', graphqlHTTP({
         schema: buildSchema(g.schema),
@@ -71,22 +112,24 @@ serverInit().then(async (dataSource) => {
 
 
     app.use('/*', async (req, res) => {
-
         const index = 'dist/my-project/index.html';
         if (fs.existsSync(index)) {
             res.send(fs.readFileSync(index).toString());
         }
         else {
-            res.send('No Result' + index);
+            console.log({
+                body: req.body,
+                path: req.path,
+                x: req.originalUrl,
+                method: req.method
+            });
+            res.send('No Result ' + req.path);
         }
     });
+
 
 
     let port = process.env.PORT || 3001;
     app.listen(port);
 });
 
-/* event work
-[] replace when id changed
-[] id that is not the id field
-*/

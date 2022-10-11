@@ -11,7 +11,7 @@ In the `fetchTasks` function, pass an `options` argument to the `find` method ca
 *pages/index.tsx*
 ```ts{3}
 async function fetchTasks() {
-  return taskRepo.find({
+  return remult.repo(Task).find({
     limit: 20
   });
 }
@@ -32,7 +32,7 @@ Use "asc" and "desc" to determine the sort order.
 *pages/index.tsx*
 ```ts{4}
 async function fetchTasks() {
-  return taskRepo.find({
+  return remult.repo(Task).find({
     limit: 20,
     orderBy: { completed: "asc" }
   });
@@ -50,7 +50,7 @@ Let's allow the user to toggle the display of completed tasks, using server-side
 *pages/index.tsx*
 ```ts{1,5}
 async function fetchTasks(hideCompleted: boolean) {
-   return taskRepo.find({
+   return remult.repo(Task).find({
       limit: 20,
       orderBy: { completed: "asc" },
       where: { completed: hideCompleted ? false : undefined }
@@ -85,20 +85,21 @@ useEffect(() => {
 4. Add a `checkbox` input element immediately before the `tasks` map in `home/index.tsx`, bind its check state to the `hideCompleted` state, and add an `onChange` handler which calls `setHideCompleted` when the value of the checkbox is changed.
 
 *pages/index.tsx*
-```tsx{3-7}
+```tsx{3-6}
 return (
    <div>
-   <input
-      type="checkbox"
-      checked={hideCompleted}
-      onChange={e => setHideCompleted(e.target.checked)} /> Hide Completed
-   <hr />
-   {tasks.map(task => (
-      <div key={task.id}>
-         <input type="checkbox" checked={task.completed} />
-         {task.title}
-      </div>
-   ))}
+      <input
+         type="checkbox"
+         checked={hideCompleted}
+         onChange={e => setHideCompleted(e.target.checked)} /> Hide Completed
+      <main>
+         {tasks.map(task => (
+            <div key={task.id}>
+               <input type="checkbox" checked={task.completed} />
+               {task.title}
+            </div>
+         ))}
+      </main>
    </div>
 );
 ```

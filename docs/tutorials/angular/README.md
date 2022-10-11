@@ -28,10 +28,10 @@ You can either **use a starter project** to speed things up, or go through the *
 
 ## Option 1: Clone the Starter Project
 
-1. Clone the *remult-angular-todo* repository from GitHub and install its dependencies.
+1. Clone the *angular-express-starter* repository from GitHub and install its dependencies.
 
 ```sh
-git clone https://github.com/remult/remult-angular-todo.git
+git clone https://github.com/remult/angular-express-starter.git remult-angular-todo
 cd remult-angular-todo
 npm install
 ```
@@ -55,7 +55,7 @@ Create the new Angular project.
 ng new remult-angular-todo
 ```
 ::: warning Note
-The ng new command prompts you for information about features to include in the initial app project. Accept the defaults by pressing the Enter or Return key.
+The `ng new` command prompts you for information about features to include in the initial app project. Accept the defaults by pressing the Enter or Return key.
 :::
 
 In this tutorial, we'll be using the root folder created by `Angular` as the root folder for our server project as well.
@@ -73,7 +73,7 @@ The starter API server TypeScript project contains a single module that initiali
 
 1. Open your IDE.
 
-2. Add the following entry to the `compilerOptions` section of the `tsconfig.json` file to enable the use of Synthetic Default Imports and es Module Interop in the app.
+2. Add the following entry to the `compilerOptions` section of the `tsconfig.json` file to enable the use of Synthetic Default Imports and ES Module Interop in the app.
    
 *tsconfig.json*
 ```json
@@ -81,7 +81,7 @@ The starter API server TypeScript project contains a single module that initiali
 "esModuleInterop": true,
 ```
 
-1. In the root folder, create a TypeScript configuration file `tsconfig.server.json` for the server project.
+3. In the root folder, create a TypeScript configuration file `tsconfig.server.json` for the server project.
 
 *tsconfig.server.json*
 ```json
@@ -94,9 +94,9 @@ The starter API server TypeScript project contains a single module that initiali
 }
 ```
 
-3. Create a `server` folder under the `src/` folder created by Angular cli.
+4. Create a `server` folder under the `src/` folder created by Angular cli.
 
-4. Create an `index.ts` file in the `src/server/` folder with the following code:
+5. Create an `index.ts` file in the `src/server/` folder with the following code:
 
 *src/server/index.ts*
 ```ts
@@ -132,21 +132,20 @@ app.use(api);
 app.listen(3002, () => console.log("Server started"));
 ```
 
-### Bootstrap Remult in the front-end
+### Add Angular Modules
 
-In the Angular app we'll be using `Remult` as an Angular service, to communicate with the API server via Angular's `HttpClientModule`.
+In the Angular app we'll be using Angular's `HttpClientModule` and `FormsModule`.
 
-We'll modify the `app.module.ts` file to load the `HttpClientModule` and setup a provider for `Remult` that accepts an `HttpClient` object as a dependency.
+We'll modify the `app.module.ts` file to load Angular's `HttpClientModule` and `FormsModule`.
 
 *src/app/app.module.ts*
-```ts{5-7,15-16,19}
+```ts{3-4,14-15}
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
+import { HttpClientModule } from "@angular/common/http";
+import { FormsModule } from '@angular/forms';
 
 import { AppComponent } from './app.component';
-import { HttpClientModule, HttpClient } from '@angular/common/http';
-import { FormsModule } from '@angular/forms';
-import { Remult } from 'remult';
 
 @NgModule({
   declarations: [
@@ -157,9 +156,7 @@ import { Remult } from 'remult';
     HttpClientModule,
     FormsModule
   ],
-  providers: [
-    { provide: Remult, useClass: Remult, deps: [HttpClient] }
-  ],
+  providers: [],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
@@ -204,7 +201,7 @@ npm run dev
 
 The server is now running and listening on port 3002. `ts-node-dev` is watching for file changes and will restart the server when code changes are saved.
 
-The default Angular app main screen should be displayed.
+The default Angular app main screen should be displayed on the regular port - 4200. Open it in the browser at [http://localhost:4200/](http://localhost:4200/).
 
 
 ### Setup completed

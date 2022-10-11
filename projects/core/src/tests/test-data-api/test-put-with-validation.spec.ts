@@ -9,6 +9,7 @@ import { InMemoryDataProvider } from "../../..";
 
 import { Status } from "../testModel/models";
 import { ErrorInfo } from "../../data-interfaces";
+import { remultFresh } from "../../../remult-fresh";
 
 
 
@@ -62,7 +63,7 @@ describe("data api", () => {
             allowApiUpdate: (c, x) => x._.isNew()
         })(type.prototype, 'val');
         let remult = new Remult();
-        remult.setDataProvider(new InMemoryDataProvider());
+        remult.dataProvider = (new InMemoryDataProvider());
         let c = remult.repo(type);
 
         var api = new DataApi(c, remult);
@@ -94,7 +95,7 @@ describe("data api", () => {
             allowApiUpdate: (c, x) => x.val != "yael"
         })(type.prototype, 'val');
         let remult = new Remult();
-        remult.setDataProvider(new InMemoryDataProvider());
+        remult.dataProvider = (new InMemoryDataProvider());
         let c = remult.repo(type);
 
         var api = new DataApi(c, remult);

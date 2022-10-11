@@ -77,11 +77,11 @@ export class AppComponent implements OnInit {
   }
   setToken(token: string) {
     if (token) {
-      this.remult.setUser(<UserInfo>new JwtHelperService().decodeToken(token));
+      this.remult.user = (<UserInfo>new JwtHelperService().decodeToken(token));
       sessionStorage.setItem("auth_token", token);
     }
     else {
-      this.remult.setUser(undefined);
+      this.remult.user = undefined;
       sessionStorage.removeItem("auth_token");
     }
   }

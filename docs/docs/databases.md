@@ -20,7 +20,6 @@ Remult can also be used to connect entities to local [frontend databases](#front
 Install node-postgres:
 ```sh
 npm i pg 
-npm i --save-dev @types/pg
 ```
 
 Modify the API server's main module:

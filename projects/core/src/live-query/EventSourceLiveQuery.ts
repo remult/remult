@@ -1,6 +1,7 @@
 import { Remult } from '../context';
 import { LiveQueryClient } from './LiveQuery';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
+import { remult } from '../remult-proxy';
 
 
 export class EventSourceLiveQuery extends LiveQueryClient {
@@ -12,7 +13,7 @@ export class EventSourceLiveQuery extends LiveQueryClient {
 class EventSourceLiveQueryProvider {
     constructor(private url: string = undefined, private jwtToken?: string) {
         if (!this.url) {
-            this.url = Remult.apiBaseUrl + '/stream';
+            this.url = remult.apiClient.url + '/stream';
         }
     }
     lastId = 0;

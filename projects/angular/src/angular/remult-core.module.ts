@@ -7,7 +7,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DataFilterInfoComponent } from './data-filter-info/data-filter-info.component';
 import { DataGrid2Component } from './date-grid-2/data-grid2.component';
 
-import { Remult, FieldMetadata, ValueListItem } from 'remult';
+import { Remult, FieldMetadata, ValueListItem, remult } from 'remult';
 import { actionInfo } from 'remult/src/server-action';
 
 import { NotAuthenticatedGuard, AuthenticatedGuard, RouteHelperService } from './navigate-to-component-route-service';
@@ -54,7 +54,7 @@ import { RemultAngularPluginsService } from './RemultAngularPluginsService';
     deps: [HttpClient, MatDialog]
   },
     NotAuthenticatedGuard, AuthenticatedGuard, RouteHelperService,
-    BusyService,RemultAngularPluginsService,
+    BusyService, RemultAngularPluginsService,
 
   { provide: HTTP_INTERCEPTORS, useClass: LoaderInterceptor, multi: true }]
   ,
@@ -71,14 +71,14 @@ export function DialogConfig(config: MatDialogConfig) {
 const dialogConfigMember = Symbol("dialogConfigMember");
 var _matDialog: MatDialog;
 export function buildContext(http: HttpClient, _dialog: MatDialog) {
-  let r = new Remult(http);
+  remult.apiClient.httpClient = http;
   _matDialog = _dialog;
 
 
   actionInfo.runActionWithoutBlockingUI = async x => await BusyService.singleInstance.donotWait(x);
   actionInfo.startBusyWithProgress = () => BusyService.singleInstance.startBusyWithProgress()
 
-  return r;
+  return remult;
 }
 
 

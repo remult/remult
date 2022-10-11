@@ -7,7 +7,7 @@ The `Task` entity class will be used:
 * As a model class for server-side code
 * By `remult` to generate API endpoints, API queries, and database commands
 
-The `Task` entity class we're creating will have an auto-generated UUID `id` field a `title` field and a `completed` field. The entity's API route ("tasks") will include endpoints for all `CRUD` operations.
+The `Task` entity class we're creating will have an auto-generated UUID `id` field, a `title` field and a `completed` field. The entity's API route ("tasks") will include endpoints for all `CRUD` operations.
 
 ## Define the Model
 
@@ -61,13 +61,14 @@ Now that the `Task` entity is defined, we can use it to seed the database with s
 Add the highlighted code lines to `src/server/api.ts`.
 
 *src/server/api.ts*
-```ts{6-17}
+```ts{3,7-18}
 import { remultExpress } from 'remult/remult-express';
 import { Task } from '../shared/Task';
+import { remult } from 'remult';
 
 export const api = remultExpress({
     entities: [Task],
-    initApi: async remult => {
+    initApi: async () => {
         const taskRepo = remult.repo(Task);
         if (await taskRepo.count() === 0) {
             await taskRepo.insert([
@@ -103,7 +104,7 @@ Replace the contents of `src/App.tsx` with the following code:
 *src/App.tsx*
 ```tsx
 import { useEffect, useState } from "react";
-import { remult } from "./common";
+import { remult } from "remult";
 import { Task } from "./shared/Task";
 
 const taskRepo = remult.repo(Task);
@@ -121,12 +122,14 @@ function App() {
 
   return (
     <div>
-      {tasks.map(task => (
-        <div key={task.id}>
-          <input type="checkbox" checked={task.completed} />
-          {task.title}
-        </div>
-      ))}
+      <main>
+        {tasks.map(task => (
+          <div key={task.id}>
+            <input type="checkbox" checked={task.completed} />
+            {task.title}
+          </div>
+        ))}
+      </main>
     </div>
   );
 }
@@ -142,3 +145,7 @@ Here's a quick overview of the different parts of the code snippet:
 * React's useEffect hook is used to call `fetchTasks` once when the React component is loaded.
 
 After the browser refreshes, the list of tasks appears.
+
+### Add Styles
+
+Optionally, make the app look a little better by replacing the contents of `src/index.css` with [this CSS file](https://raw.githubusercontent.com/remult/react-vite-express-starter/completed-tutorial/src/index.css).

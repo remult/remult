@@ -1,3 +1,5 @@
+
+
 /*
  * Public API Surface of remult
  */
@@ -7,7 +9,7 @@ export {
     StringFieldOptions,
     FieldsMetadata,
     Entity,
-    BuildEntity,
+
     EntityBase,
     ControllerBase,
     FieldRef,
@@ -38,6 +40,7 @@ export {
     Paginator,
     CaptionTransformer
 } from './src/remult3';
+export { describeClass } from './src/remult3/DecoratorReplacer';
 export { EntityOptions } from './src/entity';
 export {
     DataProvider,
@@ -68,8 +71,12 @@ export {
     WebSqlDataProvider
 } from './src/data-providers/web-sql-data-provider';//V
 export {
-    SqlDatabase
+    SqlDatabase,
 } from './src/data-providers/sql-database';//V
+export { CustomSqlFilterObject, CustomSqlFilterBuilder } from './src/filter/filter-consumer-bridge-to-sql-request';
+
+
+
 export { JsonDataProvider, JsonEntityStorage } from './src/data-providers/json-data-provider';//V
 
 //export * from './src/data-api'; //reconsider if to make internal
@@ -84,11 +91,13 @@ export {
     Allowed,
     Allow,
     Remult,
+    RemultContext,
+    ApiClient,
     isBackend,
     AllowedForInstance,
     EventDispatcher,
     EventSource,
-    HttpProvider,
+    ExternalHttpProvider,
     Unobserve,
     UserInfo
 } from './src/context';
@@ -102,4 +111,5 @@ export { FilterConsumerBridgeToSqlRequest } from './src/filter/filter-consumer-b
 export { UrlBuilder } from './urlBuilder';
 export { Validators } from './src/validators';
 
-export { ValueConverters } from './valueConverters';
+export { ValueConverters } from './src/valueConverters';
+export { remult } from './src/remult-proxy';

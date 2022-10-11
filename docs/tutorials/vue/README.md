@@ -23,10 +23,10 @@ You can either **use a starter project** to speed things up, or go through the *
 
 ## Option 1: Clone the Starter Project
 
-1. Clone the *remult-vue-todo* repository from GitHub and install its dependencies.
+1. Clone the *vue-express-starter* repository from GitHub and install its dependencies.
 
 ```sh
-git clone https://github.com/remult/remult-vue-todo.git
+git clone https://github.com/remult/vue-express-starter.git remult-vue-todo
 cd remult-vue-todo
 npm install
 ```
@@ -38,7 +38,7 @@ npm install
 npm run dev
 ```
 
-Open the app by navigating to [http://localhost:3000](http://localhost:3000), The default Vue app main screen should be displayed.
+The default "Vue" app main screen should be available at the default Vite dev server address http://127.0.0.1:5173.
 
 At this point, our starter project is up and running. We are now ready to move to the [next step of the tutorial](./entities.md) and start creating the task list app.
 
@@ -47,7 +47,7 @@ At this point, our starter project is up and running. We are now ready to move t
 ### Create a Vue project
 Create the new Vue project.
 ```sh
-npm init vue@latest
+npm init -y vue@latest
 ```
 
 
@@ -56,27 +56,20 @@ The command command prompts you for information about features to include in the
 2. Add Typescript? ... **Yes**
 3. For the rest of the answers, simply select the default.
 
-::: warning Need to install the following packages:
-If you are running create-vue for the first time, you'll get the following prompt, simply answer **y**es
-```sh
-Need to install the following packages:
-  create-vue@latest
-Ok to proceed? (y) y
-```
+::: warning Run into issues scaffolding the Vite project?
+See [Vite documentation](https://vitejs.dev/guide/#scaffolding-your-first-vite-project) for help.
 :::
-
 Once completed, run:
 ```sh
 cd remult-vue-todo
-npm i
 ```
 
 
 In this tutorial, we'll be using the root folder created by `Vue` as the root folder for our server project as well.
 ### Install required packages
-We need [axios](https://axios-http.com/) to serve as an HTTP client, `Express` to serve our app's API, and, of course, `Remult`. For development, we'll use [ts-node-dev](https://www.npmjs.com/package/ts-node-dev) to run the API server, and [concurrently](https://www.npmjs.com/package/concurrently) to run both API server and the Vue dev server from a single command.
+We need `Express` to serve our app's API, and, of course, `Remult`. For development, we'll use [ts-node-dev](https://www.npmjs.com/package/ts-node-dev) to run the API server, and [concurrently](https://www.npmjs.com/package/concurrently) to run both API server and the React dev server from a single command.
 ```sh
-npm i axios express remult
+npm i express remult
 npm i --save-dev @types/express ts-node-dev concurrently
 ```
 ### Create the API server project
@@ -89,11 +82,12 @@ The starter API server TypeScript project contains a single module that initiali
 *tsconfig.server.json*
 ```json
 {
-   "extends": "./tsconfig.json",
-   "compilerOptions": {
-      "module": "commonjs",
-      "emitDecoratorMetadata": true
-   }
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "module": "commonjs",
+        "emitDecoratorMetadata": true,
+        "esModuleInterop": true
+    }
 }
 ```
 
@@ -135,20 +129,6 @@ app.use(api);
 app.listen(3002, () => console.log("Server started"));
 ```
 
-### Bootstrap Remult in the front-end
-
-In the Vue app we'll be using a global `Remult` object to communicate with the API server via a `Promise`-based HTTP client (in this case - `Axios`).
-
-Create an `common.ts` file in the `src/` folder with the following code:
-
-*src/common.ts*
-```ts
-import axios from "axios";
-import { Remult } from "remult";
-
-export const remult = new Remult(axios); 
-```
-
 
 ### Final tweaks
 
@@ -164,20 +144,15 @@ Add the following entry to the `compilerOptions` section of the `tsconfig.json` 
 
 #### Proxy API requests from Vue DevServer (vite) to the API server
 The Vue app created in this tutorial is intended to be served from the same domain as its API. 
-However, for development, the API server will be listening on `http://localhost:3002`, while the Vue app is served from the default `http://localhost:3000`. 
+However, for development, the API server will be listening on `http://localhost:3002`, while the Vue app is served from the default `http://localhost:5173`. 
 
-We'll use the [proxy](https://vitejs.dev/config/#server-proxy) feature of vite to divert all calls for `http://localhost:3000/api` to our dev API server.
+We'll use the [proxy](https://vitejs.dev/config/#server-proxy) feature of Vite to divert all calls for `http://localhost:5173/api` to our dev API server.
 
 Configure the proxy by adding the following entry to the `vite.config.ts` file:
 
 *vite.config.ts*
-```ts{14-20}
-import { fileURLToPath, URL } from 'url'
-
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-
-// https://vitejs.dev/config/
+```ts{9}
+//...
 export default defineConfig({
   plugins: [vue()],
   resolve: {
@@ -185,20 +160,13 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
   },
-  server: {
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3002'
-      }
-    }
-  }
+  server: { proxy: { '/api': 'http://localhost:3002' } }
 })
-
 ```
 
 ### Run the app
 
-1. Replace the `npm` script named `dev` to start the dev API server and the Vue dev server (vite), by adding the following entry to the `scripts` section of `package.json`.
+1. Replace the `npm` script named `dev` to start the dev API server and the Vue dev server (vite), by replacing the following entry in the `scripts` section of `package.json`.
 
 *package.json*
 ```json
@@ -212,7 +180,7 @@ npm run dev
 
 The server is now running and listening on port 3002. `ts-node-dev` is watching for file changes and will restart the server when code changes are saved.
 
-Open the app by navigating to [http://localhost:3000](http://localhost:3000), The default Vue app main screen should be displayed.
+The default "Vue" app main screen should be available at the default Vite dev server address http://127.0.0.1:5173.
 
 
 ### Setup completed
