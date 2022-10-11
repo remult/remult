@@ -47,7 +47,7 @@ async function setup1() {
 }
 
 const clientId1 = "clientId1";
-describe("Live Query", () => {
+fdescribe("Live Query", () => {
     beforeEach(() => { actionInfo.runningOnServer = true });
     afterEach(() => { actionInfo.runningOnServer = false })
     it("test that data is sent with correct remult user", async () => {
