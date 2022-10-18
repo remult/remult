@@ -7,7 +7,7 @@ import { ClassType } from '../classType';
 import { Entity, Fields, getEntityKey, Repository } from '../src/remult3';
 import { IdEntity } from '../src/id-entity';
 import { remult, RemultProxy } from '../src/remult-proxy';
-import { ServerEventDispatcher, ServerEventMessage } from '../src/live-query/LiveQueryManager';
+import { ServerEventDispatcher, ServerEventMessage ,LiveQueryManager} from '../src/live-query/LiveQueryManager';
 
 
 
@@ -111,6 +111,7 @@ export function createRemultServer<RequestType extends GenericRequest = GenericR
 
   if (options.rootPath === undefined)
     options.rootPath = '/api';
+    
   actionInfo.runningOnServer = true;
   let bridge = new RemultServerImplementation(new inProcessQueueHandler(options.queueStorage), options, dataProvider);
   return bridge;
@@ -178,12 +179,14 @@ let remultObjectStorage: RemultAsyncLocalStorage;
 
 
 
-class RemultServerImplementation implements RemultServer {
+export class RemultServerImplementation implements RemultServer {
   constructor(public queue: inProcessQueueHandler, public options: RemultServerOptions<GenericRequest>,
     public dataProvider: DataProvider | Promise<DataProvider>) {
 
 
   }
+  server = new ServerEventsController();
+  liveQueryManager = new LiveQueryManager(this.server)
   withRemult<T>(req: GenericRequest, res: GenericResponse, next: VoidFunction) {
     this.process(async () => { next() })(req, res);
   }
@@ -237,7 +240,7 @@ class RemultServerImplementation implements RemultServer {
       let key = getEntityKey(e);
       if (key != undefined)
         this.add(key, c => {
-          return new DataApi(c.repo(e), c);
+          return new DataApi(c.repo(e), c,this.liveQueryManager);
         }, r);
     });
   }
@@ -272,6 +275,7 @@ class RemultServerImplementation implements RemultServer {
       let myReq = new ExpressRequestBridgeToDataApiRequest(req);
       let myRes = new ExpressResponseBridgeToDataApiResponse(res, req);
       let remult = new Remult();
+      remult._changeListener = this.liveQueryManager;
       remult.dataProvider = (await this.dataProvider);
       await new Promise(res => {
         remultObjectStorage.run(remult, async () => {

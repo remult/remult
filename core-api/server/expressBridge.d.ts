@@ -1,10 +1,11 @@
-import { queuedJobInfoResponse } from '../src/server-action';
+import { ActionInterface, queuedJobInfoResponse } from '../src/server-action';
 import { DataProvider } from '../src/data-interfaces';
-import { Remult, UserInfo } from '../src/context';
+import { DataApi, DataApiRequest, DataApiResponse } from '../src/data-api';
+import { AllowedForInstance, Remult, UserInfo } from '../src/context';
 import { ClassType } from '../classType';
 import { Repository } from '../src/remult3';
 import { IdEntity } from '../src/id-entity';
-import { ServerEventDispatcher, ServerEventMessage } from '../src/live-query/LiveQueryManager';
+import { ServerEventDispatcher, ServerEventMessage, LiveQueryManager } from '../src/live-query/LiveQueryManager';
 export interface RemultServerOptions<RequestType extends GenericRequest> {
     /** Sets a database connection for Remult.
      *
@@ -58,6 +59,41 @@ export interface GenericResponse {
     status(statusCode: number): GenericResponse;
     end(): any;
 }
+export declare class RemultServerImplementation implements RemultServer {
+    queue: inProcessQueueHandler;
+    options: RemultServerOptions<GenericRequest>;
+    dataProvider: DataProvider | Promise<DataProvider>;
+    constructor(queue: inProcessQueueHandler, options: RemultServerOptions<GenericRequest>, dataProvider: DataProvider | Promise<DataProvider>);
+    server: ServerEventsController;
+    liveQueryManager: LiveQueryManager;
+    withRemult<T>(req: GenericRequest, res: GenericResponse, next: VoidFunction): void;
+    routeImpl: RouteImplementation;
+    handle(req: GenericRequest, gRes?: GenericResponse): Promise<ServerHandleResponse>;
+    registeredRouter: boolean;
+    registerRouter(r: GenericRouter): void;
+    add(key: string, dataApiFactory: ((req: Remult) => DataApi), r: GenericRouter): void;
+    process(what: (remult: Remult, myReq: DataApiRequest, myRes: DataApiResponse, origReq: GenericRequest) => Promise<void>): (req: GenericRequest, res: GenericResponse) => Promise<void>;
+    getRemult(req: GenericRequest): Promise<Remult>;
+    hasQueue: boolean;
+    addAction(action: ActionInterface, r: GenericRouter): void;
+    openApiDoc(options: {
+        title: string;
+        version?: string;
+    }): any;
+    backendMethodsOpenApi: {
+        path: string;
+        allowed: AllowedForInstance<any>;
+        tag: string;
+    }[];
+}
+declare class inProcessQueueHandler {
+    private storage;
+    constructor(storage: QueueStorage);
+    submitJob(url: string, req: Remult, body: any): Promise<string>;
+    mapQueuedAction(url: string, what: (data: any, r: Remult, res: ApiActionResponse) => void): void;
+    actions: Map<string, (data: any, r: Remult, res: ApiActionResponse) => void>;
+    getJobInfo(queuedJobId: string): Promise<queuedJobInfo>;
+}
 export interface queuedJobInfo {
     info: queuedJobInfoResponse;
     userId: string;
@@ -81,6 +117,12 @@ export declare class EntityQueueStorage implements QueueStorage {
     doSync<T>(what: () => Promise<T>): Promise<any>;
     getJobInfo(queuedJobId: string): Promise<queuedJobInfo>;
     createJob(url: string, userId: string): Promise<string>;
+}
+declare class RouteImplementation {
+    map: Map<string, Map<string, GenericRequestHandler>>;
+    route(path: string): SpecificRoute;
+    handle(req: GenericRequest, gRes?: GenericResponse): Promise<ServerHandleResponse | undefined>;
+    middleware(req: GenericRequest, res: GenericResponse, next: VoidFunction): void;
 }
 export declare class JobsInQueueEntity extends IdEntity {
     userId: string;

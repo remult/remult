@@ -1,5 +1,5 @@
 import * as express from 'express';
-import { createRemultServer, RemultServer, RemultServerOptions } from './server/expressBridge';
+import { createRemultServer, RemultServer, RemultServerImplementation, RemultServerOptions } from './server/expressBridge';
 
 export function remultExpress(options?:
     RemultServerOptions<express.Request> & {
@@ -19,8 +19,11 @@ export function remultExpress(options?:
         app.use(express.urlencoded({ extended: true, limit: options.bodySizeLimit }));
     }
 
-    const server = createRemultServer(options);
+    const server = createRemultServer(options) as RemultServerImplementation;
     server.registerRouter(app);
+    app.get('/api/stream', (req, res) => {
+        server.server.subscribe(req, res)
+      });
     return Object.assign(app, {
         getRemult: (req) => server.getRemult(req),
         openApiDoc: (options: { title: string }) => server.openApiDoc(options),

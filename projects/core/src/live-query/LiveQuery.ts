@@ -4,6 +4,7 @@ import { v4 as uuid } from 'uuid';
 import { RestEntityDataProvider } from '../data-providers/rest-data-provider';
 import { Action } from '../server-action';
 import { RepositoryImplementation } from '../remult3';
+import { buildRestDataProvider } from '../context';
 
 
 class LiveQueryOnFrontEnd<entityType> {
@@ -76,7 +77,9 @@ export class LiveQueryClient {
     clientId = uuid();
     private queries = new Map<string, LiveQueryOnFrontEnd<any>>();
     constructor(public lqp: LiveQueryProvider, private provider?: RestDataProviderHttpProvider) {
-       
+       if (!this.provider){
+        this.provider = buildRestDataProvider(remult.apiClient.httpClient);
+       }
     }
     runPromise(p: Promise<any>) {
 
