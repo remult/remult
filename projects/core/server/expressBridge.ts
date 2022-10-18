@@ -1048,8 +1048,6 @@ export class ServerEventsController implements ServerEventDispatcher {
 
   subscribe(req: import('express').Request, res: import('express').Response) {
     res.writeHead(200, {
-      "Access-Control-Allow-Origin": req.header('origin') ? req.header('origin') : '',
-      "Access-Control-Allow-Credentials": "true",
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
       'Connection': 'keep-alive'
