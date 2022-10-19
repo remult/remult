@@ -5,7 +5,7 @@ import { AllowedForInstance, Remult, UserInfo } from '../src/context';
 import { ClassType } from '../classType';
 import { Repository } from '../src/remult3';
 import { IdEntity } from '../src/id-entity';
-import { ServerEventDispatcher, ServerEventMessage, LiveQueryManager } from '../src/live-query/LiveQueryManager';
+import { LiveQueryManager } from '../src/live-query/LiveQueryManager';
 export interface RemultServerOptions<RequestType extends GenericRequest> {
     /** Sets a database connection for Remult.
      *
@@ -64,7 +64,6 @@ export declare class RemultServerImplementation implements RemultServer {
     options: RemultServerOptions<GenericRequest>;
     dataProvider: DataProvider | Promise<DataProvider>;
     constructor(queue: inProcessQueueHandler, options: RemultServerOptions<GenericRequest>, dataProvider: DataProvider | Promise<DataProvider>);
-    server: ServerEventsController;
     liveQueryManager: LiveQueryManager;
     withRemult<T>(req: GenericRequest, res: GenericResponse, next: VoidFunction): void;
     routeImpl: RouteImplementation;
@@ -133,27 +132,5 @@ export declare class JobsInQueueEntity extends IdEntity {
     done: boolean;
     error: boolean;
     progress: number;
-}
-declare class clientConnection {
-    response: import('express').Response;
-    clientId: string;
-    close(): void;
-    closed: boolean;
-    write(id: number, message: any, eventType: string): void;
-    constructor(response: import('express').Response, clientId: string);
-    sendLiveMessage(): void;
-}
-export declare class ServerEventsController implements ServerEventDispatcher {
-    private messageHistoryLength;
-    connections: clientConnection[];
-    constructor(messageHistoryLength?: number);
-    send({ message, clientId, queryId }: ServerEventMessage): void;
-    subscribe(req: import('express').Request, res: import('express').Response): clientConnection;
-    messages: {
-        id: number;
-        message: any;
-        eventType: string;
-    }[];
-    SendMessage(message: any, eventType?: string): void;
 }
 export {};

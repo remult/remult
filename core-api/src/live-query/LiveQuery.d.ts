@@ -1,4 +1,5 @@
 import { EntityOrderBy, FindOptions, Repository, RestDataProviderHttpProvider } from '../../index';
+export declare const streamUrl = "stream1";
 export interface LiveQueryProvider {
     openStreamAndReturnCloseFunction(clientId: string, onMessage: MessageHandler): VoidFunction;
 }
@@ -11,10 +12,15 @@ export declare class LiveQueryClient {
     private provider?;
     clientId: any;
     private queries;
+    private channels;
     constructor(lqp: LiveQueryProvider, provider?: RestDataProviderHttpProvider);
     runPromise(p: Promise<any>): void;
+    close(): void;
+    subscribeChannel<T>(key: string, onResult: (item: T) => void): () => void;
+    private closeIfNoListeners;
     subscribe<entityType>(repo: Repository<entityType>, options: FindOptions<entityType>, onResult: (items: entityType[]) => void): () => void;
     closeListener: VoidFunction;
+    private openIfNoOpened;
     private openListener;
 }
 export declare type listener = (message: any) => void;
