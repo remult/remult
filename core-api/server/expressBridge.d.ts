@@ -57,6 +57,15 @@ export interface GenericResponse {
     status(statusCode: number): GenericResponse;
     end(): any;
 }
+export declare class RemultAsyncLocalStorage {
+    private readonly remultObjectStorage;
+    static enable(): void;
+    static disable(): void;
+    constructor(remultObjectStorage: import('async_hooks').AsyncLocalStorage<Remult>);
+    run(remult: Remult, callback: VoidFunction): void;
+    getRemult(): Remult;
+    static instance: RemultAsyncLocalStorage;
+}
 export interface queuedJobInfo {
     info: queuedJobInfoResponse;
     userId: string;
