@@ -4,10 +4,9 @@ import { RemultAsyncLocalStorage } from './expressBridge';
 let init = false;
 
 export function initAsyncHooks() {
-  return;
   if (init)
     return;
-  init=true;
+  init = true;
   RemultAsyncLocalStorage.instance = new RemultAsyncLocalStorage(new AsyncLocalStorage());
 
 }
