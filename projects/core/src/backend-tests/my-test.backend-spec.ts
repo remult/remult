@@ -69,22 +69,22 @@ testKnexPGSqlImpl("knex filter2", async ({ createEntity }) => {
     })).length).toBe(3);
 }, false);
 it("test async hooks and static remult", async () => {
-    let ok = true;
+    let gotException = true;
     try {
         RemultAsyncLocalStorage.instance.getRemult();
-        ok = false;
+        gotException = false;
     }
     catch { }
-    expect(ok).toBe(true);
+    expect(gotException).toBe(true);
     initAsyncHooks();
     expect(RemultAsyncLocalStorage.instance.getRemult()).toBe(undefined);
     RemultAsyncLocalStorage.enable();
     try {
         remult.isAllowed(false);
-        ok = false;
+        gotException = false;
     }
     catch { }
-    expect(ok).toBe(true);
+    expect(gotException).toBe(true);
     const promises = [];
     RemultAsyncLocalStorage.instance.run(new Remult(), () => {
         remult.user = { id: 'noam' };
