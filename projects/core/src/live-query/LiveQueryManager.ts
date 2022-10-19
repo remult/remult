@@ -33,7 +33,7 @@ export class LiveQueryManager implements LiveQueryProvider {
     for (const c of this.clients) {
       for (const q of c.queries) {
         if (q.repo.metadata.key === key) {
-          this.dispatcher.send({ clientId: c.clientId, queryId: q.id, message });
+          this.dispatcher.sendQueryMessage({ clientId: c.clientId, queryId: q.id, message });
         }
       }
     }
@@ -62,7 +62,7 @@ export class LiveQueryManager implements LiveQueryProvider {
             currentRow => {
               if (currentRow) {
                 const sendMessage = (message: liveQueryMessage) => {
-                  this.dispatcher.send({ clientId: c.clientId, queryId: q.id, message });
+                  this.dispatcher.sendQueryMessage({ clientId: c.clientId, queryId: q.id, message });
                 }
                 if (isNew)
                   sendMessage({
@@ -103,7 +103,8 @@ export interface clientInfo {
   })[]
 }
 export interface ServerEventDispatcher {
-  send(message: ServerEventMessage): void;
+  sendQueryMessage(message: ServerEventMessage): void;
+  sendChannelMessage<T>(channel: string, message: any): void;
 }
 export interface ServerEventMessage {
   clientId: string,

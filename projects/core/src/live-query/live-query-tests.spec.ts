@@ -37,7 +37,7 @@ async function setup1() {
     remult.user = ({ id: clientId1, name: clientId1, roles: [] });
     const clientRepo = remult.repo(eventTestEntity);
     const messages: ServerEventMessage[] = [];
-    const qm = new LiveQueryManager({ send: m => messages.push(m) });
+    const qm = new LiveQueryManager({ sendQueryMessage: m => messages.push(m) });
     let p = new PromiseResolver(qm);
 
     serverRemult._changeListener = qm;

@@ -4,7 +4,8 @@ import { v4 as uuid } from 'uuid';
 import { RestEntityDataProvider } from '../data-providers/rest-data-provider';
 import { Action } from '../server-action';
 import { RepositoryImplementation } from '../remult3';
-import { buildRestDataProvider } from '../context';
+import { Allowed, buildRestDataProvider } from '../context';
+import { ServerEventDispatcher } from './LiveQueryManager';
 
 export const streamUrl = 'stream1';
 class LiveQueryOnFrontEnd<entityType> {
@@ -106,10 +107,16 @@ export class LiveQueryClient {
     subscribeChannel<T>(key: string, onResult: (item: T) => void) {
 
         let onUnsubscribe: VoidFunction = () => { };
+        this.openIfNoOpened();
 
         let q = this.channels.get(key);
         if (!q) {
             this.channels.set(key, q = new MessageChannel());
+            this.provider.post(remult.apiClient.url + '/' + streamUrl, {
+                channel: key,
+                clientId: this.clientId,
+                remove: false
+            } as ChannelSubscribe);
         }
         else {
         }
@@ -237,11 +244,48 @@ export interface SubscribeResult {
 }
 
 
+export interface ChannelSubscribe {
+    clientId: string,
+    channel: string,
+    remove: boolean
+}
+
+
+export class AMessageChannel<messageType> {
+    userCanSubscribe(channel: string, remult: Remult) {
+        if (!remult)
+            remult = RepositoryImplementation.defaultRemult;
+        if (channel == this.key(remult) && remult.isAllowed(this.subscribedAllowed))
+            return true;
+        return false;
+    }
+    private key: (remult: Remult) => string;
+    constructor(key: (string | ((remult: Remult) => string)), private subscribedAllowed: Allowed) {
+        if (typeof key === "string")
+            this.key = () => key;
+        else this.key = key;
+
+    }
+    send(what: messageType, remult?: Remult) {
+        if (!this.dispatcher)
+            throw new Error("Message couldn't be send since no dispatcher was set");
+        this.dispatcher.sendChannelMessage(this.key(remult || RepositoryImplementation.defaultRemult), what);
+    }
+    subscribe(client: LiveQueryClient, onValue: (value: messageType) => void, remult?: Remult) {
+        client.subscribeChannel(this.key(remult || RepositoryImplementation.defaultRemult), onValue);
+    }
+    dispatcher: ServerEventDispatcher;
+}
+
+
+
 
 /*
-[] use entity normal http route for this - with __action.
+[V] use entity normal http route for this - with __action.
 [] move id from header to url in stream registration.
 [] transaction accumulates messages.
 [] on unsubscribe, also unsubscribe on server
 [] consolidate channel & query
+[] fix stream api url on server
+[] remove client id from header
 */
