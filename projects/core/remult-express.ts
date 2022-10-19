@@ -1,5 +1,6 @@
 import * as express from 'express';
 import { createRemultServer, RemultServer, RemultServerOptions } from './server/expressBridge';
+import { initAsyncHooks } from './server/initAsyncHooks';
 
 export function remultExpress(options?:
     RemultServerOptions<express.Request> & {
@@ -18,7 +19,7 @@ export function remultExpress(options?:
         app.use(express.json({ limit: options.bodySizeLimit }));
         app.use(express.urlencoded({ extended: true, limit: options.bodySizeLimit }));
     }
-
+    initAsyncHooks();
     const server = createRemultServer(options);
     server.registerRouter(app);
     return Object.assign(app, {
