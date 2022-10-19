@@ -18,7 +18,7 @@ export class CustomModuleLoader {
                 case "@remult/angular":
                     request = request = process.cwd() + root + '/angular';
                     break;
-                    case "@remult/angular/interfaces":
+                case "@remult/angular/interfaces":
                     request = request = process.cwd() + root + '/angular/interfaces';
                     break;
                 case "remult/server":
@@ -27,7 +27,7 @@ export class CustomModuleLoader {
                 case "remult/postgres":
                     request = request = process.cwd() + root + '/core/postgres';
                     break;
-                    case "remult/graphql":
+                case "remult/graphql":
                     request = request = process.cwd() + root + '/core/graphql';
                     break;
                 case "remult/src/context":
@@ -42,7 +42,10 @@ export class CustomModuleLoader {
                 case "remult/inputTypes":
                     request = request = process.cwd() + root + '/core/inputTypes';
                     break;
-                    case "remult/remult-knex":
+                case "remult/remult-express":
+                    request = request = process.cwd() + root + '/core/remult-express';
+                    break;
+                case "remult/remult-knex":
                     request = request = process.cwd() + root + '/core/remult-knex';
                     break;
                 case "remult/src/filter/filter-interfaces":

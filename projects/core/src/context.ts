@@ -220,6 +220,7 @@ export class Remult {
         deleted: (ref: EntityRef<any>) => { }
     };
 
+    //@ts-ignore // type error of typescript regarding args that doesn't appear in my normal development
     call<T extends ((...args: any[]) => Promise<any>)>(backendMethod: T, classInstance?: any, ...args: GetArguments<T>): ReturnType<T> {
         const z = (backendMethod[serverActionField]) as Action<any, any>;
         if (!z.doWork)
@@ -237,7 +238,7 @@ export class Remult {
     }
     /** A helper callback that is called whenever an entity is created. */
     static entityRefInit?: (ref: EntityRef<any>, row: any) => void;
-    readonly context: RemultContext = {};
+    readonly context: RemultContext = {} as any;
     apiClient: ApiClient = {
         url: '/api'
     };

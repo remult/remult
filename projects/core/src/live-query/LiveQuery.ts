@@ -6,7 +6,7 @@ import { Action } from '../server-action';
 import { RepositoryImplementation } from '../remult3';
 import { buildRestDataProvider } from '../context';
 
-
+export const streamUrl = 'stream1';
 class LiveQueryOnFrontEnd<entityType> {
     id: string;
     async setAllItems(result: any[]) {
@@ -68,6 +68,18 @@ export interface LiveQueryProvider {
 }
 
 
+class MessageChannel<T> {
+    id: string;
+    async handle(message: T) {
+        for (const l of this.listeners) {
+            l(message);
+        }
+    }
+
+    listeners: ((items: T) => void)[] = [];
+    constructor() { }
+
+}
 
 
 export type MessageHandler = (message: { data: string, event: string }) => void;
@@ -76,13 +88,49 @@ export class LiveQueryClient {
 
     clientId = uuid();
     private queries = new Map<string, LiveQueryOnFrontEnd<any>>();
+    private channels = new Map<string, MessageChannel<any>>();
     constructor(public lqp: LiveQueryProvider, private provider?: RestDataProviderHttpProvider) {
-       if (!this.provider){
-        this.provider = buildRestDataProvider(remult.apiClient.httpClient);
-       }
+        if (!this.provider) {
+            this.provider = buildRestDataProvider(remult.apiClient.httpClient);
+        }
     }
     runPromise(p: Promise<any>) {
 
+    }
+    close() {
+        this.queries.clear();
+        this.channels.clear();
+        if (this.closeListener)
+            this.closeListener();
+    }
+    subscribeChannel<T>(key: string, onResult: (item: T) => void) {
+
+        let onUnsubscribe: VoidFunction = () => { };
+
+        let q = this.channels.get(key);
+        if (!q) {
+            this.channels.set(key, q = new MessageChannel());
+        }
+        else {
+        }
+        q.listeners.push(onResult);
+        onUnsubscribe = () => {
+            q.listeners.splice(q.listeners.indexOf(onResult), 1);
+            if (q.listeners.length == 0) {
+                this.channels.delete(key);
+            }
+            this.closeIfNoListeners();
+        }
+
+        return () => {
+            onUnsubscribe();
+        }
+
+    }
+
+    private closeIfNoListeners() {
+        if (this.queries.size === 0 && this.channels.size === 0)
+            this.closeListener();
     }
 
     subscribe<entityType>(
@@ -97,9 +145,8 @@ export class LiveQueryClient {
             .then(opts => {
                 if (!alive)
                     return;
-                if ([...this.queries.keys()].length == 0)
-                    this.openListener();
-                const { url, filterObject } = new RestEntityDataProvider(()=>remult.apiClient.url + '/' + repo.metadata.key,()=> this.provider!, repo.metadata)
+                this.openIfNoOpened();
+                const { url, filterObject } = new RestEntityDataProvider(() => remult.apiClient.url + '/' + repo.metadata.key, () => this.provider!, repo.metadata)
                     .buildFindRequest(opts);
 
                 const eventTypeKey = JSON.stringify({ url, filterObject });
@@ -127,7 +174,7 @@ export class LiveQueryClient {
                     if (q.listeners.length == 0) {
                         this.queries.delete(eventTypeKey);
                     }
-                    if (this.queries.size === 0)
+                    if (this.queries.size === 0 && this.channels.size === 0)
                         this.closeListener();
                 }
             }));
@@ -140,12 +187,21 @@ export class LiveQueryClient {
     }
     closeListener: VoidFunction = () => { };
 
+    private openIfNoOpened() {
+        if (this.queries.size == 0 && this.channels.size == 0)
+            this.openListener();
+    }
+
     private openListener() {
         this.closeListener = this.lqp.openStreamAndReturnCloseFunction(this.clientId, message => {
             for (const q of this.queries.values()) {
                 if (q.id === message.event) {
                     this.runPromise(q.handle(JSON.parse(message.data)));
                 }
+            }
+            const channel = this.channels.get(message.event);
+            if (channel) {
+                channel.handle(JSON.parse(message.data));
             }
         });
     }
@@ -180,3 +236,12 @@ export interface SubscribeResult {
     id: string
 }
 
+
+
+/*
+[] use entity normal http route for this - with __action.
+[] move id from header to url in stream registration.
+[] transaction accumulates messages.
+[] on unsubscribe, also unsubscribe on server
+[] consolidate channel & query
+*/
