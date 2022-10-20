@@ -6,6 +6,9 @@ import { RestDataProvider, RestDataProviderHttpProviderUsingFetch } from './data
 import { EntityMetadata, EntityRef, FindOptions, Repository } from "./remult3";
 import { RepositoryImplementation } from "./remult3/RepositoryImplementation";
 import { ClassType } from "../classType";
+import { LiveQueryClient } from "./live-query/LiveQuery";
+import { EventSourceLiveQueryProvider } from "./live-query/EventSourceLiveQueryProvider";
+import { RemultProxy } from "./remult-proxy";
 
 export interface ExternalHttpProvider {
     post(url: string, data: any): Promise<any> | { toPromise(): Promise<any> };
@@ -214,8 +217,8 @@ export class Remult {
         }
 
     }
-     /*@internal*/
-     _changeListener = {
+    /*@internal*/
+    _changeListener = {
         saved: (ref: EntityRef<any>) => { },
         deleted: (ref: EntityRef<any>) => { }
     };
@@ -231,6 +234,8 @@ export class Remult {
     /** The current data provider */
     dataProvider: DataProvider = new RestDataProvider(() => this.apiClient);
 
+    liveQueryProvider = new LiveQueryClient(new EventSourceLiveQueryProvider());
+
     /** A helper callback that can be used to debug and trace all find operations. Useful in debugging scenarios */
     static onFind = (metadata: EntityMetadata, options: FindOptions<any>) => { };
     clearAllCache(): any {
@@ -243,6 +248,8 @@ export class Remult {
         url: '/api'
     };
 }
+
+RemultProxy.defaultRemult = new Remult();
 export type GetArguments<T> = T extends (
     ...args: infer FirstArgument
 ) => any

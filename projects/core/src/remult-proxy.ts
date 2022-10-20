@@ -1,12 +1,15 @@
-import { ClassType } from "../classType";
-import { Allowed, AllowedForInstance, ApiClient, EventDispatcher, EventSource, GetArguments, Remult, RemultContext, UserInfo } from "./context";
-import { DataProvider } from "./data-interfaces";
-import { EntityRef, Repository, RepositoryImplementation } from "./remult3";
+import type { ClassType } from "../classType";
+import type { Allowed, AllowedForInstance, ApiClient, GetArguments, Remult, RemultContext, UserInfo } from "./context";
+import type { DataProvider } from "./data-interfaces";
+import type { LiveQueryClient } from "./live-query/LiveQuery";
+import type { EntityRef, Repository } from "./remult3";
 
 
-let defaultRemult = new Remult();
 /*@internal*/
 export class RemultProxy implements Remult {
+    static defaultRemult: Remult;
+    get liveQueryProvider() { return this.remultFactory().liveQueryProvider };
+    set liveQueryProvider(val: LiveQueryClient) { this.remultFactory().liveQueryProvider = val };
     get _changeListener() {
         return this.remultFactory()._changeListener;
     }
@@ -42,10 +45,10 @@ export class RemultProxy implements Remult {
         return this.remultFactory().clearAllCache();
     }
     /*@internal*/
-    remultFactory = () => defaultRemult;
+    remultFactory = () => RemultProxy.defaultRemult;
 
 
-    repo: typeof defaultRemult.repo = (...args) => this.remultFactory().repo(...args);
+    repo: typeof RemultProxy.defaultRemult.repo = (...args) => this.remultFactory().repo(...args);
     get user() {
         return this.remultFactory().user;
     }
@@ -62,4 +65,3 @@ export class RemultProxy implements Remult {
 
 
 export const remult: Remult = new RemultProxy();
-RepositoryImplementation.defaultRemult = remult;

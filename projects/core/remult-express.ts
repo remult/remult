@@ -3,7 +3,7 @@ import { createRemultServer, RemultServer, RemultServerImplementation, RemultSer
 import { Remult } from './src/context';
 import { AMessageChannel, ChannelSubscribe, streamUrl } from './src/live-query/LiveQuery';
 import { LiveQueryManager, ServerEventDispatcher, ServerEventMessage } from './src/live-query/LiveQueryManager';
-import { RepositoryImplementation } from './src/remult3';
+import { remult } from './src/remult-proxy';
 
 export function remultExpress(options?:
     RemultServerOptions<express.Request> & {
@@ -32,10 +32,10 @@ export function remultExpress(options?:
 
     const streamPath = options.rootPath! + '/' + streamUrl
     app.get(streamPath, (req, res) => {
-        httpServerEvents.openHttpServerStream(req, res)
+        httpServerEvents.openHttpServerStream(req, res);
     });
     app.post(streamPath, (r, res, next) => server.withRemult(r, res, next), (req, res) => {
-        httpServerEvents.subscribeToChannel(RepositoryImplementation.defaultRemult, req.body, res)
+        httpServerEvents.subscribeToChannel(remult, req.body, res)
     });
     app.get(streamPath + '/stats', (req, res) => {
         httpServerEvents.consoleInfo();
@@ -110,7 +110,7 @@ export class ServerEventsController implements ServerEventDispatcher {
             'Cache-Control': 'no-cache',
             'Connection': 'keep-alive'
         });
-        const cc = new clientConnection(res, req.headers["client-id"] as string);
+        const cc = new clientConnection(res, req.headers["client-id"] as string || req.query['id'] as string);
         const lastEventId = req.headers['last-event-id'];
         if (lastEventId) {
             this.messages.filter(x => x.id > +lastEventId).forEach(m => cc.write(m.id, m.message, m.eventType));
@@ -144,7 +144,10 @@ class clientConnection {
     }
     closed = false;
     write(id: number, message: any, eventType: string): void {
-        this.response.write("event:" + eventType + "\nid:" + id + "\ndata:" + JSON.stringify(message) + "\n\n");
+        let event = "event:message";
+        if (id != undefined)
+            event += "\nid:" + id;
+        this.response.write(event + "\ndata:" + JSON.stringify({ event: eventType, data: message }) + "\n\n");
         let r = this.response as any as { flush(): void };
         if (r.flush)
             r.flush();
@@ -155,16 +158,17 @@ class clientConnection {
         public clientId: string
     ) {
         //console.log("open connection");
+        response.write("event:authenticate\ndata:" + "key" + "\n\n");
         this.sendLiveMessage();
     }
     sendLiveMessage() {
+        if (this.closed)
+            return;
+        this.response.write("event:keep-alive\ndata:\n\n");
+        let r = this.response as any as { flush(): void };
+        if (r.flush)
+            r.flush();
         setTimeout(() => {
-            if (this.closed)
-                return;
-            this.response.write("event:keep-alive\ndata:\n\n");
-            let r = this.response as any as { flush(): void };
-            if (r.flush)
-                r.flush();
             this.sendLiveMessage();
         }, 45000);
     }

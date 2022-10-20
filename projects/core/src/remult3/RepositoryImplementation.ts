@@ -17,6 +17,8 @@ import { ValueConverters } from "../valueConverters";
 import { filterHelper } from "../filter/filter-interfaces";
 import { assign } from "../../assign";
 import { Paginator, RefSubscriber, RefSubscriberBase } from ".";
+
+import { remult as defaultRemult } from "../remult-proxy";
 //import { remult } from "../remult-proxy";
 
 
@@ -42,7 +44,6 @@ let classValidatorValidate: ((item: any, ref: {
 //     });
 
 export class RepositoryImplementation<entityType> implements Repository<entityType>{
-    static defaultRemult: Remult;
     async createAfterFilter(orderBy: EntityOrderBy<entityType>, lastRow: entityType): Promise<EntityFilter<entityType>> {
         let values = new Map<string, any>();
 
@@ -1079,7 +1080,7 @@ export function getFields<fieldsContainerType>(container: fieldsContainerType, r
     return getControllerRef(container, remult).fields;
 }
 export function getControllerRef<fieldsContainerType>(container: fieldsContainerType, remultArg?: Remult): ControllerRef<fieldsContainerType> {
-    const remultVar = remultArg || RepositoryImplementation.defaultRemult;
+    const remultVar = remultArg || defaultRemult;
     let result = container[controllerColumns] as controllerRefImpl<fieldsContainerType>;
     if (!result)
         result = container[entityMember];
@@ -1950,7 +1951,7 @@ export class EntityBase {
 export class ControllerBase {
     protected remult: Remult;
     constructor(remult?: Remult) {
-        this.remult = remult || RepositoryImplementation.defaultRemult;
+        this.remult = remult || defaultRemult;
     }
     assign(values: Partial<Omit<this, keyof EntityBase>>) {
         assign(this, values);

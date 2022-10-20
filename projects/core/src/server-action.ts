@@ -17,6 +17,7 @@ import { Filter, AndFilter } from './filter/filter-interfaces';
 import { DataProvider, RestDataProviderHttpProvider } from './data-interfaces';
 import { getEntityRef, rowHelperImplementation, getFields, decorateColumnSettings, getEntitySettings, getControllerRef, EntityFilter, controllerRefImpl, RepositoryImplementation } from './remult3';
 import { FieldOptions } from './column-interfaces';
+import { remult } from './remult-proxy';
 
 
 
@@ -33,9 +34,9 @@ export abstract class Action<inParam, outParam> implements ActionInterface {
     static apiUrlForJobStatus = 'jobStatusInQueue';
     async run(pIn: inParam, baseUrl?: string, http?: RestDataProviderHttpProvider): Promise<outParam> {
         if (baseUrl === undefined)
-            baseUrl = RepositoryImplementation.defaultRemult.apiClient.url;
+            baseUrl = remult.apiClient.url;
         if (!http)
-            http = buildRestDataProvider(RepositoryImplementation.defaultRemult.apiClient.httpClient);
+            http = buildRestDataProvider(remult.apiClient.httpClient);
 
         let r = await http.post(baseUrl + '/' + this.actionUrl, pIn);
         let p: jobWasQueuedResult = r;
