@@ -1,12 +1,12 @@
 
 
+
 /*
  * Public API Surface of remult
  */
 export {
     Field,
     Fields,
-    StringFieldOptions,
     FieldsMetadata,
     Entity,
 
@@ -40,6 +40,7 @@ export {
     Paginator,
     CaptionTransformer
 } from './src/remult3';
+export { StringFieldOptions } from './src/remult3/RepositoryImplementation';
 export { describeClass } from './src/remult3/DecoratorReplacer';
 export { EntityOptions } from './src/entity';
 export {

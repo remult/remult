@@ -25,23 +25,24 @@ async function setup1() {
     const serverRemult = new Remult(mem);
     serverRemult.user = ({ id: 'server', name: 'server', roles: [] });
     const serverRepo = serverRemult.repo(eventTestEntity);
-    await serverRepo.insert([
+    const items = [
         { id: 1, title: 'noam' },
         { id: 2, title: 'yael' },
         { id: 3, title: 'yoni' },
         { id: 4, title: 'maayan' },
         { id: 5, title: 'itamar' },
         { id: 6, title: 'ofri' }
-    ]);
+    ];
+    await serverRepo.insert(items);
     const remult = new Remult(mem);
     remult.user = ({ id: clientId1, name: clientId1, roles: [] });
     const clientRepo = remult.repo(eventTestEntity);
     const messages: ServerEventMessage[] = [];
-    const qm = new LiveQueryManager({ sendQueryMessage: m => messages.push(m) });
+    const qm = new LiveQueryManager({ sendQueryMessage: m => messages.push(m), sendChannelMessage: undefined });
     let p = new PromiseResolver(qm);
 
     serverRemult._changeListener = qm;
-    const queryId = qm.subscribe(clientRepo, clientId1, {});
+    const queryId = qm.subscribe(clientRepo, clientId1, {}, remult, items.map(x => x.id));
     expect(messages.length).toBe(0);
     return { serverRepo, serverRemult, remult, clientRepo, messages, qm, queryId, flush: () => p.flush() };
 }

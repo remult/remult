@@ -13,16 +13,18 @@ export class LiveQueryManager implements LiveQueryProvider {
 
   }
 
-  subscribe(repo: Repository<any>, clientId: string, findOptions: FindOptions<any>): string {
+  subscribe(repo: Repository<any>, clientId: string, findOptions: FindOptions<any>, remult: Remult, ids: any[]): string {
     let client = this.clients.find(c => c.clientId === clientId);
     if (!client) {
       this.clients.push(client = { clientId: clientId, queries: [] });
     }
     const id = uuid();
+    console.log({ ids });
     client.queries.push({
       id,
       findOptions: findOptions,
-      repo
+      repo,
+      ids
     });
     return id;
   }
@@ -51,34 +53,50 @@ export class LiveQueryManager implements LiveQueryProvider {
   runPromise(p: Promise<any>) {
 
   }
-
+  //TODO - reconsider usage of zone
   saved(ref: EntityRef<any>) {
     const isNew = ref.isNew();
     const origId = isNew ? ref.getId() : ref.getOriginalId();
     for (const c of this.clients) {
       for (const q of c.queries) {
         if (q.repo.metadata.key === ref.metadata.key) {
-          this.runPromise(q.repo.findFirst(ref.metadata.idMetadata.getIdFilter(ref.getId())).then(
-            currentRow => {
-              if (currentRow) {
-                const sendMessage = (message: liveQueryMessage) => {
-                  this.dispatcher.sendQueryMessage({ clientId: c.clientId, queryId: q.id, message });
-                }
-                if (isNew)
-                  sendMessage({
-                    type: "add",
-                    data: { item: q.repo.getEntityRef(currentRow).toApiJson() }
-                  });
+          this.runPromise(q.repo.find(q.findOptions).then(
+            currentItems => {
+              const currentIds = currentItems.map(x => q.repo.getEntityRef(x).getId());
+              const sendMessage = (message: liveQueryMessage) => {
+                console.log({ message: message.type });
+                this.dispatcher.sendQueryMessage({ clientId: c.clientId, queryId: q.id, message });
+              }
+              console.log({ ids: q.ids, currentIds });
 
-                else
+              for (const id of q.ids.filter(y => !currentIds.includes(y))) {
+                if (id != origId || !currentIds.includes(ref.getId()))
+                  sendMessage({
+                    type: "remove",
+                    data: {
+                      id: id
+                    }
+                  })
+              }
+              for (const item of currentItems) {
+                const itemRef = q.repo.getEntityRef(item);
+                if (itemRef.getId() == ref.getId() && q.ids.includes(origId)) {
                   sendMessage({
                     type: "replace",
                     data: {
                       oldId: origId,
-                      item: q.repo.getEntityRef(currentRow).toApiJson()
+                      item: itemRef.toApiJson()
                     }
                   });
+                }
+                else if (!q.ids.includes(itemRef.getId())) {
+                  sendMessage({
+                    type: "add",
+                    data: { item: itemRef.toApiJson() }
+                  });
+                }
               }
+              q.ids = currentIds;
             }));
         }
       }
@@ -99,7 +117,8 @@ export interface clientInfo {
   queries: ({
     id: string,
     repo: Repository<any>,
-    findOptions: FindOptions<any>
+    findOptions: FindOptions<any>,
+    ids: any[]
   })[]
 }
 export interface ServerEventDispatcher {

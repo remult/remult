@@ -7,7 +7,7 @@ import { SortSegment } from './sort';
 import { ErrorInfo } from './data-interfaces';
 
 export interface LiveQueryProvider {
-  subscribe(repo: Repository<any>, id: string, options: FindOptions<any>, remult: Remult): string;
+  subscribe(repo: Repository<any>, id: string, options: FindOptions<any>, remult: Remult, ids: any[]): string;
 }
 export class DataApi<T = any> {
 
@@ -114,7 +114,7 @@ export class DataApi<T = any> {
         });
       if (this.liveQueryProvider && action?.startsWith("subscribe")) {
         response.success({
-          id: this.liveQueryProvider.subscribe(this.repository, action.split('|')[1], findOptions, this.remult),
+          id: this.liveQueryProvider.subscribe(this.repository, action.split('|')[1], findOptions, this.remult, r.map(y => this.repository.getEntityRef(y).getId())),
           result: r
         });
         return;

@@ -37,6 +37,10 @@ export function remultExpress(options?:
     app.post(streamPath, (r, res, next) => server.withRemult(r, res, next), (req, res) => {
         httpServerEvents.subscribeToChannel(RepositoryImplementation.defaultRemult, req.body, res)
     });
+    app.get(streamPath + '/stats', (req, res) => {
+        httpServerEvents.consoleInfo();
+        res.json("ok");
+    });
     return Object.assign(app, {
         getRemult: (req) => server.getRemult(req),
         openApiDoc: (options: { title: string }) => server.openApiDoc(options),
@@ -46,6 +50,12 @@ export function remultExpress(options?:
 
 }
 export class ServerEventsController implements ServerEventDispatcher {
+    consoleInfo() {
+        console.log(this.connections.map(x => ({
+            client: x.clientId,
+            channels: x.channels
+        })));
+    }
     subscribeToChannel(remult: Remult, info: ChannelSubscribe, res: import('express').Response) {
         let ok = false;
         if (this.channels)

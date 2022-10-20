@@ -5,13 +5,18 @@ import { remult } from '../remult-proxy';
 
 
 export class EventSourceLiveQuery extends LiveQueryClient {
-    constructor() {
-        super(new EventSourceLiveQueryProvider());
+    constructor(private wrapMessage?: (what: () => void) => void) {
+        super(new EventSourceLiveQueryProvider(wrapMessage));
+
     }
 }
 
 class EventSourceLiveQueryProvider {
-    constructor(private url: string = undefined, private jwtToken?: string) {
+    constructor(private wrapMessage?: (what: () => void) => void,
+        private url: string = undefined,
+        private jwtToken?: string) {
+        if (!this.wrapMessage)
+            this.wrapMessage = x => x();
         if (!this.url) {
             this.url = remult.apiClient.url + '/' + streamUrl;
         }
@@ -37,7 +42,7 @@ class EventSourceLiveQueryProvider {
                 this.lastId = mid;
                 console.log(message.data);
                 if (message.event !== 'keep-alive') {
-                    onMessage(message);
+                    this.wrapMessage(() => onMessage(message));
 
                 }
             },

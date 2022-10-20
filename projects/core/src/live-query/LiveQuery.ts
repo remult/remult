@@ -44,7 +44,7 @@ class LiveQueryOnFrontEnd<entityType> {
             }
             case "add":
                 {
-                    const item = await this.repo.fromJson(message.data);
+                    const item = await this.repo.fromJson(message.data.item);
                     this.items.push(item);
                     sortAndSend();
                     break;

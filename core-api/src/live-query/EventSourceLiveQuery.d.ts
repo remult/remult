@@ -1,4 +1,5 @@
 import { LiveQueryClient } from './LiveQuery';
 export declare class EventSourceLiveQuery extends LiveQueryClient {
-    constructor();
+    private wrapMessage?;
+    constructor(wrapMessage?: (what: () => void) => void);
 }

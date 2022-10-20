@@ -1,4 +1,5 @@
-export { Field, Fields, StringFieldOptions, FieldsMetadata, Entity, EntityBase, ControllerBase, FieldRef, IdFieldRef, FieldsRef, EntityMetadata, EntityOrderBy, EntityFilter, FindOptions, QueryResult, QueryOptions, Repository, FieldType, FindFirstOptions, ComparisonValueFilter, ValueFilter, IdFilter, ContainsStringValueFilter, getFields, EntityRef, getEntityRef, SortSegments, ValueListFieldType, getValueList, ValueListFieldOptions, ValueListInfo, OmitEB, Paginator, CaptionTransformer } from './src/remult3';
+export { Field, Fields, FieldsMetadata, Entity, EntityBase, ControllerBase, FieldRef, IdFieldRef, FieldsRef, EntityMetadata, EntityOrderBy, EntityFilter, FindOptions, QueryResult, QueryOptions, Repository, FieldType, FindFirstOptions, ComparisonValueFilter, ValueFilter, IdFilter, ContainsStringValueFilter, getFields, EntityRef, getEntityRef, SortSegments, ValueListFieldType, getValueList, ValueListFieldOptions, ValueListInfo, OmitEB, Paginator, CaptionTransformer } from './src/remult3';
+export { StringFieldOptions } from './src/remult3/RepositoryImplementation';
 export { describeClass } from './src/remult3/DecoratorReplacer';
 export { EntityOptions } from './src/entity';
 export { DataProvider, EntityDataProvider, EntityDataProviderFindOptions, ErrorInfo, RestDataProviderHttpProvider } from './src/data-interfaces';

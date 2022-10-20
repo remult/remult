@@ -2,7 +2,7 @@ import { Remult } from './context';
 import { FindOptions, Repository } from './remult3';
 import { ErrorInfo } from './data-interfaces';
 export interface LiveQueryProvider {
-    subscribe(repo: Repository<any>, id: string, options: FindOptions<any>, remult: Remult): string;
+    subscribe(repo: Repository<any>, id: string, options: FindOptions<any>, remult: Remult, ids: any[]): string;
 }
 export declare class DataApi<T = any> {
     private repository;
