@@ -166,15 +166,16 @@ fdescribe("Live Query Client", () => {
         });
         let p = new PromiseResolver(lqc);
         const serverRemult = new Remult(new InMemoryDataProvider());
+        serverRemult.liveQueryProvider = lqc;
         const serverRepo = serverRemult.repo(eventTestEntity);
         let closeSub1: VoidFunction;
         let closeSub2: VoidFunction;
         let result1: eventTestEntity[];
         let result2: eventTestEntity[];
-        closeSub1 = lqc.subscribe(serverRepo, {}, result => {
+        closeSub1 = serverRepo.query().subscribe(result => {
             result1 = result;
         });
-        closeSub2 = lqc.subscribe(serverRepo, {}, result => {
+        closeSub2 = serverRepo.query().subscribe(result => {
             result2 = result;
         });
         await p.flush();
