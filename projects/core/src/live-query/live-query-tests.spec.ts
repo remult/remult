@@ -119,7 +119,10 @@ fdescribe("Live Query", () => {
 class PromiseResolver {
     private promises: any[] = [];
     constructor(who: { runPromise: (p: any) => void }) {
-        who.runPromise = p => this.promises.push(p);
+        who.runPromise = p => {
+            this.promises.push(p);
+            return p;
+        };
     }
     async flush() {
         while (this.promises.length > 0) {
@@ -139,7 +142,7 @@ fdescribe("Live Query Client", () => {
         let get = 0;
         let sendMessage: MessageHandler;
         const lqc = new LiveQueryClient({
-            openStreamAndReturnCloseFunction(clientId, onMessage) {
+            async openStreamAndReturnCloseFunction(clientId, onMessage) {
                 open++;
                 sendMessage = onMessage;
                 return () => {
@@ -181,7 +184,7 @@ fdescribe("Live Query Client", () => {
         expect(result2[0].title).toBe("noam");
         sendMessage({
             event: '1',
-            data: JSON.stringify({
+            data: {
                 type: "replace",
                 data: {
                     oldId: 1,
@@ -190,7 +193,7 @@ fdescribe("Live Query Client", () => {
                         title: 'noam1'
                     }
                 }
-            } as liveQueryMessage)
+            } as liveQueryMessage
         });
         await p.flush();
         expect(result1[0].title).toBe("noam1");
@@ -199,7 +202,7 @@ fdescribe("Live Query Client", () => {
         await p.flush();
         sendMessage({
             event: '1',
-            data: JSON.stringify({
+            data: {
                 type: "replace",
                 data: {
                     oldId: 1,
@@ -208,7 +211,7 @@ fdescribe("Live Query Client", () => {
                         title: 'noam2'
                     }
                 }
-            } as liveQueryMessage)
+            } as liveQueryMessage
         });
         await p.flush();
         expect(result1[0].title).toBe("noam1");
@@ -224,6 +227,7 @@ fdescribe("Live Query Client", () => {
         expect(open).toBe(1);
         expect(get).toBe(1);
         closeSub1();
+        await p.flush();
         expect(open).toBe(0);
     })
 });

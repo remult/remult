@@ -93,13 +93,12 @@ export class LiveQueryClient {
     constructor(public lqp: LiveQueryProvider, private provider?: RestDataProviderHttpProvider) {
     }
     runPromise(p: Promise<any>) {
-
+        return p;
     }
     close() {
         this.queries.clear();
         this.channels.clear();
-        if (this.closeListener)
-            this.closeListener.then(x => x());
+        this.closeIfNoListeners();
     }
     subscribeChannel<T>(key: string, onResult: (item: T) => void) {
 
@@ -134,8 +133,10 @@ export class LiveQueryClient {
     }
 
     private closeIfNoListeners() {
-        if (this.queries.size === 0 && this.channels.size === 0)
-            this.closeListener.then(x => x());
+        if (this.queries.size === 0 && this.channels.size === 0){
+            this.runPromise(this.closeListener.then(x => x()));
+            this.closeListener = undefined;
+        }
     }
 
     subscribe<entityType>(
@@ -179,8 +180,7 @@ export class LiveQueryClient {
                     if (q.listeners.length == 0) {
                         this.queries.delete(eventTypeKey);
                     }
-                    if (this.queries.size === 0 && this.channels.size === 0)
-                        this.closeListener.then(x => x());
+                    this.closeIfNoListeners();
                 }
             })));
 
@@ -204,7 +204,7 @@ export class LiveQueryClient {
     private openListener() {
         if (this.closeListener)
             return this.closeListener;
-        return this.closeListener = this.lqp.openStreamAndReturnCloseFunction(this.clientId, message => {
+        return this.runPromise(this.closeListener = this.lqp.openStreamAndReturnCloseFunction(this.clientId, message => {
             for (const q of this.queries.values()) {
                 if (q.id === message.event) {
                     this.runPromise(q.handle(message.data));
@@ -214,7 +214,7 @@ export class LiveQueryClient {
             if (channel) {
                 channel.handle(message.data);
             }
-        });
+        }));
 
     }
 }

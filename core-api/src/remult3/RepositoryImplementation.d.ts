@@ -11,7 +11,6 @@ export declare class RepositoryImplementation<entityType> implements Repository<
     private entity;
     remult: Remult;
     private dataProvider;
-    static defaultRemult: Remult;
     createAfterFilter(orderBy: EntityOrderBy<entityType>, lastRow: entityType): Promise<EntityFilter<entityType>>;
     private _info;
     private __edp;

@@ -1,2 +1,2 @@
-import { Remult } from "./context";
+import type { Remult } from "./context";
 export declare const remult: Remult;

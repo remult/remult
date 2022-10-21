@@ -3,10 +3,10 @@ import { Allowed } from '../context';
 import { ServerEventDispatcher } from './LiveQueryManager';
 export declare const streamUrl = "stream1";
 export interface LiveQueryProvider {
-    openStreamAndReturnCloseFunction(clientId: string, onMessage: MessageHandler): VoidFunction;
+    openStreamAndReturnCloseFunction(clientId: string, onMessage: MessageHandler): Promise<VoidFunction>;
 }
 export declare type MessageHandler = (message: {
-    data: string;
+    data: any;
     event: string;
 }) => void;
 export declare class LiveQueryClient {
@@ -16,12 +16,12 @@ export declare class LiveQueryClient {
     private queries;
     private channels;
     constructor(lqp: LiveQueryProvider, provider?: RestDataProviderHttpProvider);
-    runPromise(p: Promise<any>): void;
+    runPromise(p: Promise<any>): Promise<any>;
     close(): void;
     subscribeChannel<T>(key: string, onResult: (item: T) => void): () => void;
     private closeIfNoListeners;
     subscribe<entityType>(repo: Repository<entityType>, options: FindOptions<entityType>, onResult: (items: entityType[]) => void): () => void;
-    closeListener: VoidFunction;
+    closeListener: Promise<VoidFunction>;
     private openIfNoOpened;
     private openListener;
 }
