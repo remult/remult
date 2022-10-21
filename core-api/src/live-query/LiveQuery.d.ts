@@ -20,7 +20,7 @@ export declare class LiveQueryClient {
     close(): void;
     subscribeChannel<T>(key: string, onResult: (item: T) => void): () => void;
     private closeIfNoListeners;
-    subscribe<entityType>(repo: Repository<entityType>, options: FindOptions<entityType>, onResult: (items: entityType[]) => void): () => void;
+    subscribe<entityType>(repo: Repository<entityType>, options: FindOptions<entityType>, onResult: (reducer: (prevState: entityType[]) => entityType[]) => void): () => void;
     closeListener: Promise<VoidFunction>;
     private openIfNoOpened;
     private openListener;

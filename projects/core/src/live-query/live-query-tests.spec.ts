@@ -172,11 +172,11 @@ fdescribe("Live Query Client", () => {
         let closeSub2: VoidFunction;
         let result1: eventTestEntity[];
         let result2: eventTestEntity[];
-        closeSub1 = serverRepo.query().subscribe(result => {
-            result1 = result;
+        closeSub1 = serverRepo.query().subscribe(reducer => {
+            result1 = reducer(result1);
         });
-        closeSub2 = serverRepo.query().subscribe(result => {
-            result2 = result;
+        closeSub2 = serverRepo.query().subscribe(reducer => {
+            result2 = reducer(result2);
         });
         await p.flush();
         expect(open).toBe(1);
@@ -221,8 +221,8 @@ fdescribe("Live Query Client", () => {
         await p.flush();
         expect(open).toBe(0);
         get = 0;
-        closeSub1 = lqc.subscribe(serverRepo, {}, result => {
-            result1 = result;
+        closeSub1 = lqc.subscribe(serverRepo, {}, reducer => {
+            result1 = reducer(result1);
         });
         await p.flush();
         expect(open).toBe(1);

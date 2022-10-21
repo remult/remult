@@ -11,25 +11,31 @@ export const streamUrl = 'stream1';
 class LiveQueryOnFrontEnd<entityType> {
     id: string;
     async setAllItems(result: any[]) {
-        this.items = await Promise.all(result.map(item => this.repo.fromJson(item)));
-        this.send();
+        const items = await Promise.all(result.map(item => this.repo.fromJson(item)));
+        this.forListeners(listener => {
+            listener(x => {
+                return items;
+            });
+        });
     }
-    send() {
+
+
+    forListeners(what: (listener: (((reducer: (prevState: entityType[]) => entityType[]) => void))) => void) {
         for (const l of this.listeners) {
-            l(this.items);
+            what(l)
         }
     }
 
     async handle(message: liveQueryMessage) {
 
 
-        const sortAndSend = () => {
+        const sort = (items: entityType[]) => {
 
             if (this.query.orderBy) {
                 const o = Sort.translateOrderByToSort(this.repo.metadata, this.query.orderBy);
-                this.items.sort((a: any, b: any) => o.compare(a, b));
+                items.sort((a: any, b: any) => o.compare(a, b));
             }
-            this.send();
+            return items;
         }
 
         switch (message.type) {
@@ -38,26 +44,40 @@ class LiveQueryOnFrontEnd<entityType> {
                 break;
             case "replace": {
                 const item = await this.repo.fromJson(message.data.item);
-                this.items = this.items.map(x => this.repo.getEntityRef(x).getId() === message.data.oldId ? item : x);
-                sortAndSend();
+                this.forListeners(listener => {
+                    listener(items => {
+                        if (!items)
+                            items = [];
+                        return sort(items.map(x => this.repo.getEntityRef(x).getId() === message.data.oldId ? item : x));
+                    });
+                });
                 break;
             }
             case "add":
                 {
                     const item = await this.repo.fromJson(message.data.item);
-                    this.items.push(item);
-                    sortAndSend();
+                    this.forListeners(listener =>
+                        listener(items => {
+                            if (!items)
+                                items = [];
+                            items.push(item);
+                            return sort(items);
+                        }));
                     break;
                 }
             case "remove":
-                this.items = this.items.filter(x => getEntityRef(x).getId() !== message.data.id);
-                this.send();
+                this.forListeners(listener =>
+                    listener(items => {
+                        if (!items)
+                            items = [];
+                        return this.items.filter(x => getEntityRef(x).getId() !== message.data.id);
+                    }));
                 break;
         };
     }
 
     items: entityType[] = [];
-    listeners: ((items: entityType[]) => void)[] = [];
+    listeners: (((reducer: (prevState: entityType[]) => entityType[]) => void))[] = [];
     constructor(private repo: Repository<entityType>, private query: SubscribeToQueryArgs<entityType>) { }
 
 }
@@ -133,7 +153,7 @@ export class LiveQueryClient {
     }
 
     private closeIfNoListeners() {
-        if (this.queries.size === 0 && this.channels.size === 0){
+        if (this.queries.size === 0 && this.channels.size === 0) {
             this.runPromise(this.closeListener.then(x => x()));
             this.closeListener = undefined;
         }
@@ -142,7 +162,7 @@ export class LiveQueryClient {
     subscribe<entityType>(
         repo: Repository<entityType>,
         options: FindOptions<entityType>,
-        onResult: (items: entityType[]) => void) {
+        onResult: (reducer: (prevState: entityType[]) => entityType[]) => void) {
 
         let alive = true;
         let onUnsubscribe: VoidFunction = () => { };
@@ -172,7 +192,7 @@ export class LiveQueryClient {
                         this.runPromise(this.provider.get(url.url).then(thenResult));
                 }
                 else {
-                    onResult(q.items);
+                    onResult(x => q.items);
                 }
                 q.listeners.push(onResult);
                 onUnsubscribe = () => {

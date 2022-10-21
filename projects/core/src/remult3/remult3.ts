@@ -317,7 +317,7 @@ export interface QueryResult<entityType> {
     forEach(what: (item: entityType) => Promise<any>): Promise<number>;
 
     /**@Experimental */
-    subscribe(onResult: (items: entityType[]) => void): VoidFunction
+    subscribe(onResult: (reducer: (prevState: entityType[]) => entityType[]) => void): VoidFunction
 }
 /** An interface used to paginating using the `query` method in the `Repository` object */
 export interface Paginator<entityType> {

@@ -1970,7 +1970,7 @@ class QueryResultImpl<entityType> implements QueryResult<entityType> {
             this.options.pageSize = queryConfig.defaultPageSize
         }
     }
-    subscribe(onResult: (items: entityType[]) => void): VoidFunction {
+    subscribe(onResult: (reducer: (prevState: entityType[]) => entityType[]) => void): VoidFunction {
         return this.repo.remult.liveQueryProvider.subscribe(this.repo, {
             limit: this.options.pageSize,
             load: this.options.load,
