@@ -18,7 +18,6 @@ import { entityWithValidationsOnColumn } from "../tests/entityWithValidationsOnC
 import { Validators } from "../validators";
 import { Status } from "../tests/testModel/models";
 import { IdEntity } from "../id-entity";
-import { testRest } from "../tests/frontend-database-tests-setup.spec";
 
 
 
@@ -565,8 +564,6 @@ testAll("auto increment can't be affected by insert or update", async ({ createE
     r.id = 4321;
     await r.save();
     expect(r.id).toBe(x);
-
-
 }, false)
 
 testAll("Paging",
