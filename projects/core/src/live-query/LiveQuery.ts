@@ -167,7 +167,7 @@ export class LiveQueryClient {
         let alive = true;
         let onUnsubscribe: VoidFunction = () => { };
 
-        this.runPromise(this.openListener().then(() => (repo as RepositoryImplementation<entityType>).buildEntityDataProviderFindOptions(options)
+        this.runPromise(this.openIfNoOpened().then(() => (repo as RepositoryImplementation<entityType>).buildEntityDataProviderFindOptions(options)
             .then(opts => {
                 if (!alive)
                     return;
@@ -217,26 +217,21 @@ export class LiveQueryClient {
             this.provider = buildRestDataProvider(defaultRemult.apiClient.httpClient);
         }
         if (!this.closeListener)
-            return this.openListener();
+            return this.runPromise(this.closeListener = this.lqp.openStreamAndReturnCloseFunction(this.clientId, message => {
+                for (const q of this.queries.values()) {
+                    if (q.id === message.event) {
+                        this.runPromise(q.handle(message.data));
+                    }
+                }
+                const channel = this.channels.get(message.event);
+                if (channel) {
+                    channel.handle(message.data);
+                }
+            }));
+
         return this.closeListener;
     }
 
-    private openListener() {
-        if (this.closeListener)
-            return this.closeListener;
-        return this.runPromise(this.closeListener = this.lqp.openStreamAndReturnCloseFunction(this.clientId, message => {
-            for (const q of this.queries.values()) {
-                if (q.id === message.event) {
-                    this.runPromise(q.handle(message.data));
-                }
-            }
-            const channel = this.channels.get(message.event);
-            if (channel) {
-                channel.handle(message.data);
-            }
-        }));
-
-    }
 }
 export type listener = (message: any) => void;
 

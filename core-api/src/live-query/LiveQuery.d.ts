@@ -23,7 +23,6 @@ export declare class LiveQueryClient {
     subscribe<entityType>(repo: Repository<entityType>, options: FindOptions<entityType>, onResult: (reducer: (prevState: entityType[]) => entityType[]) => void): () => void;
     closeListener: Promise<VoidFunction>;
     private openIfNoOpened;
-    private openListener;
 }
 export declare type listener = (message: any) => void;
 export interface SubscribeToQueryArgs<entityType = any> {

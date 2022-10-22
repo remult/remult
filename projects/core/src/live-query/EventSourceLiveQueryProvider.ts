@@ -3,8 +3,8 @@ import { LiveQueryProvider, MessageHandler, streamUrl } from "./LiveQuery";
 
 export class EventSourceLiveQueryProvider implements LiveQueryProvider {
   constructor(private wrapMessage?: (what: () => void) => void) {
-    if (!wrapMessage)
-      wrapMessage = x => x();
+    if (!this.wrapMessage)
+      this.wrapMessage = x => x();
   }
   openStreamAndReturnCloseFunction(clientId: string, onMessage: MessageHandler): Promise<VoidFunction> {
 

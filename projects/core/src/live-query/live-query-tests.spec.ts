@@ -1,16 +1,18 @@
 
 import { Remult } from "../context";
+import { DataApi } from "../data-api";
 import { InMemoryDataProvider } from "../data-providers/in-memory-database";
 import { Entity, EntityBase, Fields } from "../remult3";
 import { actionInfo } from "../server-action";
 import { createData } from "../tests/createData";
+import { createMockHttpDataProvider } from "../tests/testHelper.spec";
 import { LiveQueryClient, liveQueryMessage, MessageHandler } from "./LiveQuery";
 import { LiveQueryManager, ServerEventMessage } from "./LiveQueryManager";
 
 const joc = jasmine.objectContaining;
 
 @Entity("event-test", { allowApiCrud: true })
-export class eventTestEntity extends EntityBase {
+export class eventTestEntity {
     @Fields.integer()
     id = 0;
     @Fields.string()
@@ -44,7 +46,7 @@ async function setup1() {
     serverRemult._changeListener = qm;
     const queryId = qm.subscribe(clientRepo, clientId1, {}, remult, items.map(x => x.id));
     expect(messages.length).toBe(0);
-    return { serverRepo, serverRemult, remult, clientRepo, messages, qm, queryId, flush: () => p.flush() };
+    return { serverRepo, messages, flush: () => p.flush() };
 }
 
 const clientId1 = "clientId1";
@@ -56,7 +58,7 @@ fdescribe("Live Query", () => {
         const { serverRepo, messages, flush } = await setup1();
         const row = await serverRepo.findId(1);
         row.title += '1';
-        await row.save();
+        await serverRepo.save(row);
         await flush();
         expect(messages).toEqual([joc({
             message: joc({
@@ -72,7 +74,7 @@ fdescribe("Live Query", () => {
         const { serverRepo, messages, flush } = await setup1();
         const row = await serverRepo.findId(1);
         row.id = 99;
-        await row.save();
+        await serverRepo.save(row);
         await flush();
         expect(messages).toEqual([joc({
             message: joc({
@@ -105,7 +107,7 @@ fdescribe("Live Query", () => {
     });
     it("removed row is reported", async () => {
         const { serverRepo, messages, flush } = await setup1();
-        await (await serverRepo.findFirst({ id: 1 })).delete();
+        await serverRepo.delete((await serverRepo.findFirst({ id: 1 })));
         await flush();
         expect(messages).toEqual([joc({
             message: joc({
@@ -118,11 +120,13 @@ fdescribe("Live Query", () => {
 
 class PromiseResolver {
     private promises: any[] = [];
-    constructor(who: { runPromise: (p: any) => void }) {
-        who.runPromise = p => {
-            this.promises.push(p);
-            return p;
-        };
+    constructor(...who: { runPromise: (p: any) => void }[]) {
+        for (const w of who) {
+            w.runPromise = p => {
+                this.promises.push(p);
+                return p;
+            };
+        }
     }
     async flush() {
         while (this.promises.length > 0) {
@@ -231,4 +235,42 @@ fdescribe("Live Query Client", () => {
         await p.flush();
         expect(open).toBe(0);
     })
+});
+
+fdescribe("test live query full cycle", () => {
+    it("integration test 1", async () => {
+        const mem = new InMemoryDataProvider()
+        const remult = new Remult(mem);
+        const repo = remult.repo(eventTestEntity);
+
+        let mh: MessageHandler;
+        const qm = new LiveQueryManager({
+            sendQueryMessage: m => mh({
+                event: m.queryId,
+                data: m.message
+            }), sendChannelMessage: undefined
+        });
+        var dataApi = new DataApi(repo, remult, qm)
+        const lqc1 = new LiveQueryClient({
+            async openStreamAndReturnCloseFunction(clientId, onMessage) {
+                mh = onMessage;
+                return () => {
+
+                };
+            },
+        }, createMockHttpDataProvider(dataApi));
+
+        var pm = new PromiseResolver(lqc1, qm)
+        remult.liveQueryProvider = lqc1;
+        remult._changeListener = qm;
+        let result1: eventTestEntity[] = [];
+        repo.query({ pageSize: 100 }).subscribe(reducer => result1 = reducer(result1));
+        await pm.flush();
+        expect(result1.length).toBe(0);
+        await repo.insert({ id: 1, title: "ido" });
+        await pm.flush();
+        expect(result1.length).toBe(1);
+
+
+    });
 });
