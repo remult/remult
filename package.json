@@ -124,5 +124,8 @@
     "jsonwebtoken": false,
     "argon2": false,
     "password-hash": false
+  },
+  "dependencies": {
+    "mysql2": "^2.3.3"
   }
 }

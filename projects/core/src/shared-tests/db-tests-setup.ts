@@ -30,6 +30,7 @@ export function addDatabaseToTest(tester: dbTestMethodSignature) {
         test(tester);
     }
     databasesTesters.push(tester);
+    return tester;
 }
 
 
