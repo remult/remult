@@ -19,6 +19,7 @@ import { assign } from "../../assign";
 import { Paginator, RefSubscriber, RefSubscriberBase } from ".";
 
 import { remult as defaultRemult } from "../remult-proxy";
+import { getId } from "./getId";
 //import { remult } from "../remult-proxy";
 
 
@@ -206,8 +207,10 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
                 instance[field.key] = entity[field.key];
             }
             let row = new rowHelperImplementation(this._info, instance, this, this.edp, this.remult, false);
-            if (id)
+            if (id) {
                 row.id = id;
+                row.originalId = id;
+            }
             else row.id = row.getId();
             ref = row;
             Object.defineProperty(instance, entityMember, {
@@ -832,10 +835,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
     get apiInsertAllowed() { return this.remult.isAllowedForInstance(this.instance, this.metadata.options.allowApiInsert) }
     metadata: EntityMetadata<T>;
     getId() {
-        if (this.info.idMetadata.field instanceof CompoundIdField)
-            return this.info.idMetadata.field.getId(this.instance);
-        else
-            return this.instance[this.info.idMetadata.field.key];
+        return getId(this.info, this.instance);
     }
     saveMoreOriginalData() {
         this.originalId = this.getId();
@@ -1022,10 +1022,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
 
         }
         await this.calcServerExpression();
-        if (this.repository.metadata.idMetadata.field instanceof CompoundIdField) {
-            this.id = this.repository.metadata.idMetadata.field.getId(this.instance);
-        } else
-            this.id = data[this.repository.metadata.idMetadata.field.key];
+        this.id = getId(this.info, this.instance);
     }
     id;
     originalId;

@@ -1,11 +1,12 @@
 
-import { EntityOrderBy, FindOptions, getEntityRef, remult as defaultRemult, Remult, Repository, RestDataProviderHttpProvider, Sort } from '../../index';
+import { EntityOrderBy, FindOptions, remult as defaultRemult, Remult, Repository, RestDataProviderHttpProvider, Sort } from '../../index';
 import { v4 as uuid } from 'uuid';
 import { RestEntityDataProvider } from '../data-providers/rest-data-provider';
 import { Action } from '../server-action';
 import { RepositoryImplementation } from '../remult3';
 import { Allowed, buildRestDataProvider } from '../context';
 import { ServerEventDispatcher } from './LiveQueryManager';
+import { getId } from '../remult3/getId';
 
 export const streamUrl = 'stream1';
 class LiveQueryOnFrontEnd<entityType> {
@@ -48,7 +49,7 @@ class LiveQueryOnFrontEnd<entityType> {
                     listener(items => {
                         if (!items)
                             items = [];
-                        return sort(items.map(x => this.repo.getEntityRef(x).getId() === message.data.oldId ? item : x));
+                        return sort(items.map(x => getId(this.repo.metadata, x) === message.data.oldId ? item : x));
                     });
                 });
                 break;
@@ -70,7 +71,7 @@ class LiveQueryOnFrontEnd<entityType> {
                     listener(items => {
                         if (!items)
                             items = [];
-                        return this.items.filter(x => getEntityRef(x).getId() !== message.data.id);
+                        return this.items.filter(x => getId(this.repo.metadata, x) !== message.data.id);
                     }));
                 break;
         };
