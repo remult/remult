@@ -2,7 +2,7 @@ import * as express from 'express';
 import { createRemultServer, RemultServer, RemultServerImplementation, RemultServerOptions } from './server/expressBridge';
 import { Remult } from './src/context';
 import { AMessageChannel, ChannelSubscribe, streamUrl } from './src/live-query/LiveQuery';
-import { LiveQueryManager, ServerEventDispatcher, ServerEventMessage } from './src/live-query/LiveQueryManager';
+import { LiveQueryPublisher, ServerEventDispatcher, ServerEventMessage } from './src/live-query/LiveQueryManager';
 import { remult } from './src/remult-proxy';
 
 export function remultExpress(options?:
@@ -27,7 +27,7 @@ export function remultExpress(options?:
     const server = createRemultServer(options) as RemultServerImplementation;
     server.registerRouter(app);
     let httpServerEvents = new ServerEventsController(options.messageChannels);
-    server.liveQueryManager = new LiveQueryManager(httpServerEvents);
+    server.liveQueryManager = new LiveQueryPublisher(httpServerEvents);
 
 
     const streamPath = options.rootPath! + '/' + streamUrl

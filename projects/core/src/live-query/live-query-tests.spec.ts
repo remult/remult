@@ -7,7 +7,7 @@ import { actionInfo } from "../server-action";
 import { createData } from "../tests/createData";
 import { createMockHttpDataProvider } from "../tests/testHelper.spec";
 import { LiveQueryClient, liveQueryMessage, MessageHandler } from "./LiveQuery";
-import { LiveQueryManager, ServerEventMessage } from "./LiveQueryManager";
+import { LiveQueryPublisher, ServerEventMessage } from "./LiveQueryManager";
 
 const joc = jasmine.objectContaining;
 
@@ -40,7 +40,7 @@ async function setup1() {
     remult.user = ({ id: clientId1, name: clientId1, roles: [] });
     const clientRepo = remult.repo(eventTestEntity);
     const messages: ServerEventMessage[] = [];
-    const qm = new LiveQueryManager({ sendQueryMessage: m => messages.push(m), sendChannelMessage: undefined });
+    const qm = new LiveQueryPublisher({ sendQueryMessage: m => messages.push(m), sendChannelMessage: undefined });
     let p = new PromiseResolver(qm);
 
     serverRemult._changeListener = qm;
@@ -238,24 +238,24 @@ describe("Live Query Client", () => {
 });
 
 describe("test live query full cycle", () => {
-    beforeEach(()=>{
+    beforeEach(() => {
         queryConfig.defaultPageSize = 100;
     });
-    afterEach(()=>{
+    afterEach(() => {
         queryConfig.defaultPageSize = 2;
     });
-    it("integration test 1", async () => {
-        const mem = new InMemoryDataProvider()
+    function setup2() {
+        const mem = new InMemoryDataProvider();
         const remult = new Remult(mem);
         const repo = remult.repo(eventTestEntity);
         const remult2 = new Remult(mem);
         const repo2 = remult2.repo(eventTestEntity);
 
         const mh: ((m: ServerEventMessage) => void)[] = [];
-        const qm = new LiveQueryManager({
+        const qm = new LiveQueryPublisher({
             sendQueryMessage: m => mh.forEach(x => x(m)), sendChannelMessage: undefined
         });
-        var dataApi = new DataApi(repo, remult, qm)
+        var dataApi = new DataApi(repo, remult, qm);
         const buildLqc = () => {
             return new LiveQueryClient({
                 async openStreamAndReturnCloseFunction(clientId, onMessage) {
@@ -264,24 +264,25 @@ describe("test live query full cycle", () => {
                             onMessage({
                                 event: m.queryId,
                                 data: m.message
-                            })
-                    })
+                            });
+                    });
                     return () => {
-
                     };
                 },
             }, createMockHttpDataProvider(dataApi));
-        }
+        };
         const lqc1 = buildLqc();
-        const lqc2 = buildLqc()
+        const lqc2 = buildLqc();
 
-        var pm = new PromiseResolver(lqc1, lqc2, qm)
+        var pm = new PromiseResolver(lqc1, lqc2, qm);
         remult.liveQueryProvider = lqc1;
         remult2.liveQueryProvider = lqc2;
         remult._changeListener = qm;
         remult2._changeListener = qm;
-
-
+        return { repo, pm, repo2 };
+    }
+    it("integration test 1", async () => {
+        var { repo, pm, repo2 } = setup2();
         let result1: eventTestEntity[] = [];
         repo.query().subscribe(reducer => result1 = reducer(result1));
         await pm.flush();
@@ -298,4 +299,18 @@ describe("test live query full cycle", () => {
         expect(result1[1].title).toBe('yael2');
         await repo.save(result1[0]);
     });
+    it("test delete works", async () => {
+        var { repo, pm, repo2 } = setup2();
+        let result1: eventTestEntity[] = [];
+        repo.query().subscribe(reducer => result1 = reducer(result1));
+        await pm.flush();
+        await repo.insert({ id: 1, title: "noam" });
+        await repo2.insert({ id: 2, title: "yael" });
+        await pm.flush();
+        await repo.delete(result1[1]);
+        await pm.flush();
+        expect(result1.length).toBe(1);
+    });
 });
+
+

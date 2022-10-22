@@ -22,6 +22,7 @@ class LiveQueryOnFrontEnd<entityType> {
 
 
     forListeners(what: (listener: (((reducer: (prevState: entityType[]) => entityType[]) => void))) => void) {
+     //   what(x => this.defaultQueryState = x(this.defaultQueryState));
         for (const l of this.listeners) {
             what(l)
         }
@@ -71,13 +72,13 @@ class LiveQueryOnFrontEnd<entityType> {
                     listener(items => {
                         if (!items)
                             items = [];
-                        return this.items.filter(x => getId(this.repo.metadata, x) !== message.data.id);
+                        return items.filter(x => getId(this.repo.metadata, x) !== message.data.id);
                     }));
                 break;
         };
     }
 
-    items: entityType[] = [];
+    defaultQueryState: entityType[] = [];
     listeners: (((reducer: (prevState: entityType[]) => entityType[]) => void))[] = [];
     constructor(private repo: Repository<entityType>, private query: SubscribeToQueryArgs<entityType>) { }
 
@@ -193,7 +194,7 @@ export class LiveQueryClient {
                         this.runPromise(this.provider.get(url.url).then(thenResult));
                 }
                 else {
-                    onResult(x => q.items);
+                    onResult(x =>[... q.defaultQueryState]);
                 }
                 q.listeners.push(onResult);
                 onUnsubscribe = () => {

@@ -7,7 +7,7 @@ import { ClassType } from '../classType';
 import { Entity, Fields, getEntityKey, Repository } from '../src/remult3';
 import { IdEntity } from '../src/id-entity';
 import { remult, RemultProxy } from '../src/remult-proxy';
-import { ServerEventDispatcher, ServerEventMessage ,LiveQueryManager} from '../src/live-query/LiveQueryManager';
+import { ServerEventDispatcher, ServerEventMessage ,LiveQueryPublisher } from '../src/live-query/LiveQueryManager';
 
 
 
@@ -186,7 +186,7 @@ export class RemultServerImplementation implements RemultServer {
 
   }
   
-  liveQueryManager:LiveQueryManager;
+  liveQueryManager:LiveQueryPublisher;
   withRemult<T>(req: GenericRequest, res: GenericResponse, next: VoidFunction) {
     this.process(async () => { next() })(req, res);
   }

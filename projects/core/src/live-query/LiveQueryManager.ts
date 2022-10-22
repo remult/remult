@@ -5,7 +5,7 @@ import { LiveQueryProvider } from '../data-api';
 import { liveQueryMessage, SubscribeToQueryArgs } from './LiveQuery';
 
 
-export class LiveQueryManager implements LiveQueryProvider {
+export class LiveQueryPublisher implements LiveQueryProvider {
 
 
 
@@ -31,15 +31,7 @@ export class LiveQueryManager implements LiveQueryProvider {
 
   clients: clientInfo[] = [];
 
-  sendMessage(key: string, message: liveQueryMessage) {
-    for (const c of this.clients) {
-      for (const q of c.queries) {
-        if (q.repo.metadata.key === key) {
-          this.dispatcher.sendQueryMessage({ clientId: c.clientId, queryId: q.id, message });
-        }
-      }
-    }
-  }
+
   hasListeners(ref: EntityRef<any>) {
     for (const c of this.clients) {
       for (const q of c.queries) {
@@ -103,12 +95,23 @@ export class LiveQueryManager implements LiveQueryProvider {
     }
   }
   deleted(ref: EntityRef<any>) {
-    if (!this.hasListeners(ref))
-      return;
-    this.sendMessage(ref.metadata.key, {
-      type: "remove",
-      data: { id: ref.getId() }
-    });
+    const id = ref.getOriginalId();
+    for (const c of this.clients) {
+      for (const q of c.queries) {
+        if (q.repo.metadata.key === ref.metadata.key) {
+          if (q.ids.includes(id)) {
+            this.dispatcher.sendQueryMessage({
+              clientId: c.clientId, queryId: q.id, message: {
+                type: "remove",
+                data: {
+                  id: id
+                }
+              }
+            });
+          }
+        }
+      }
+    }
   }
 }
 

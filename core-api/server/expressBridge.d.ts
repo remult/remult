@@ -5,7 +5,7 @@ import { AllowedForInstance, Remult, UserInfo } from '../src/context';
 import { ClassType } from '../classType';
 import { Repository } from '../src/remult3';
 import { IdEntity } from '../src/id-entity';
-import { LiveQueryManager } from '../src/live-query/LiveQueryManager';
+import { LiveQueryPublisher } from '../src/live-query/LiveQueryManager';
 export interface RemultServerOptions<RequestType extends GenericRequest> {
     /** Sets a database connection for Remult.
      *
@@ -64,7 +64,7 @@ export declare class RemultServerImplementation implements RemultServer {
     options: RemultServerOptions<GenericRequest>;
     dataProvider: DataProvider | Promise<DataProvider>;
     constructor(queue: inProcessQueueHandler, options: RemultServerOptions<GenericRequest>, dataProvider: DataProvider | Promise<DataProvider>);
-    liveQueryManager: LiveQueryManager;
+    liveQueryManager: LiveQueryPublisher;
     withRemult<T>(req: GenericRequest, res: GenericResponse, next: VoidFunction): void;
     routeImpl: RouteImplementation;
     handle(req: GenericRequest, gRes?: GenericResponse): Promise<ServerHandleResponse>;
