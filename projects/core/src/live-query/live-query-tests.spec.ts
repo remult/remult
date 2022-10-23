@@ -165,7 +165,7 @@ describe("Live Query Client", () => {
                 }
             },
             put: undefined,
-            post: undefined,
+            post:async ()=>{},
             delete: undefined
         });
         let p = new PromiseResolver(lqc);
@@ -346,7 +346,7 @@ describe("test live query full cycle", () => {
         await pm.flush();
         expect(result1.length).toBe(1);
     });
-    fit("test unsubscribe works", async () => {
+    it("test unsubscribe works", async () => {
         var { repo, pm, messageCount } = setup2();
         let result1: eventTestEntity[] = [];
         const unsubscribe = repo.query().subscribe(reducer => result1 = reducer(result1));
@@ -360,7 +360,7 @@ describe("test live query full cycle", () => {
         await pm.flush();
         expect(messageCount()).toBe(1);
     });
-    fit("test disconnect and reconnect scenario", async () => {
+    it("test disconnect and reconnect scenario", async () => {
         var { repo, pm, clientStatus } = setup2();
         let result1: eventTestEntity[] = [];
         repo.query().subscribe(reducer => result1 = reducer(result1));
