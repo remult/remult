@@ -232,7 +232,7 @@ describe("Closed List  column", () => {
     e.l = Language.Russian;
     await e._.save();
     e = await c.findFirst();
-    console.log(e.$.l.metadata.valueConverter);
+    
     expect(e.l).toBe(Language.Russian);
     expect(e._.toApiJson().l).toBe(10);
   })

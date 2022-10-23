@@ -24,7 +24,7 @@ export class LiveQueryPublisher implements LiveQueryProvider {
       this.clients.push(client = { clientId: clientId, queries: [] });
     }
     const id = uuid();
-    console.log({ ids });
+    
     client.queries.push({
       id,
       findOptions: findOptions,
@@ -61,10 +61,9 @@ export class LiveQueryPublisher implements LiveQueryProvider {
             currentItems => {
               const currentIds = currentItems.map(x => q.repo.getEntityRef(x).getId());
               const sendMessage = (message: liveQueryMessage) => {
-                console.log({ message: message.type });
                 this.dispatcher.sendQueryMessage({ clientId: c.clientId, queryId: q.id, message });
               }
-              console.log({ ids: q.ids, currentIds });
+              
 
               for (const id of q.ids.filter(y => !currentIds.includes(y))) {
                 if (id != origId || !currentIds.includes(ref.getId()))

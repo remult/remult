@@ -152,7 +152,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         let x = entity[entityMember];
         if (!x) {
             x = new rowHelperImplementation(this._info, entity, this, this.edp, this.remult, true);
-            Object.defineProperty(entity, entityMember, {//I've used define property to hide this member from console.log
+            Object.defineProperty(entity, entityMember, {//I've used define property to hide this member from console.lo g
                 get: () => x
             });
             x.saveOriginalData();
@@ -310,7 +310,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             return undefined;
         let x = new this.entity(this.remult);
         let helper = new rowHelperImplementation(this._info, x, this, this.edp, this.remult, false);
-        Object.defineProperty(x, entityMember, {//I've used define property to hide this member from console.log
+        Object.defineProperty(x, entityMember, {//I've used define property to hide this member from console.lo g
             get: () => helper
         })
         await helper.loadDataFrom(r, loadFields);

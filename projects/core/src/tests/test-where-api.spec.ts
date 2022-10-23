@@ -44,12 +44,12 @@ describe("test where stuff", () => {
     });
     it("test two values", async () => {
         const json = await Filter.fromEntityFilter(repo.metadata, { $and: [{ id: 1 }, { id: 2 }] }).toJson();
-        console.log(json);
+        
         expect(await repo.count(Filter.entityFilterFromJson(repo.metadata, json))).toBe(0);
     });
     it("test in and", async () => {
         const json = await Filter.fromEntityFilter(repo.metadata, { $and: [{ id: [1,2] }, { id: [2] }] }).toJson();
-        console.log(json);
+        
         expect(await repo.count(Filter.entityFilterFromJson(repo.metadata, json))).toBe(1);
     });
 

@@ -56,7 +56,7 @@ describe("test exception", () => {
 
 });
 function log(what) {
-    console.log(what);
+    
     return what;
 }
 describe("angular http client exception ", () => {
@@ -384,7 +384,7 @@ describe("fetch client exception ", () => {
             },
             "status": 400
         });
-        console.log(err);
+        
         expect(err).toEqual({
             "modelState": {
                 "name": "name error"

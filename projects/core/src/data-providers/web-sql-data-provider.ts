@@ -32,7 +32,7 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
         let e = await getDbNameProvider(entity);
         let sql = 'drop  table if exists ' + e.entityName;
         if (SqlDatabase.LogToConsole)
-            console.log(sql);
+            console.info(sql);
         await this.createCommand().execute(sql);
     }
     async createTable(entity: EntityMetadata<any>) {

@@ -3,7 +3,7 @@ import { Allowed } from '../context';
 import { ServerEventDispatcher } from './LiveQueryPublisher';
 export declare const streamUrl = "stream1";
 export interface LiveQueryProvider {
-    openStreamAndReturnCloseFunction(clientId: string, onMessage: MessageHandler): Promise<VoidFunction>;
+    openStreamAndReturnCloseFunction(clientId: string, onMessage: MessageHandler, onReconnect: VoidFunction): Promise<VoidFunction>;
 }
 export declare type MessageHandler = (message: {
     data: any;

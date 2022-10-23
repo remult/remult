@@ -46,7 +46,7 @@ export async function verifyStructureOfAllEntities(db: SqlDatabase, remult: Remu
 
 export class PostgresSchemaBuilder {
     async verifyStructureOfAllEntities(remult: Remult) {
-        console.log("start verify structure");
+        console.log("start verify structure");//keep me
         for (const entityClass of allEntities) {
             let entity = remult.repo(entityClass).metadata;
             let e = await getDbNameProvider(entity);
@@ -59,7 +59,7 @@ export class PostgresSchemaBuilder {
                 }
             }
             catch (err) {
-                console.log("failed verify structure of " + e.entityName + " ", err);
+                /*keep me */ console.log("failed verify structure of " + e.entityName + " ", err);
             }
         }
     }
@@ -114,7 +114,7 @@ export class PostgresSchemaBuilder {
             }
         }
         catch (err) {
-            console.log(err);
+            console.error(err);
         }
     }
     async verifyAllColumns<T extends EntityMetadata>(entity: T) {
@@ -137,7 +137,7 @@ export class PostgresSchemaBuilder {
 
         }
         catch (err) {
-            console.log(err);
+            console.error(err);
         }
     }
     additionalWhere = '';

@@ -34,9 +34,7 @@ export function remultExpress(options?:
     app.get(streamPath, (req, res) => {
         httpServerEvents.openHttpServerStream(req, res);
     });
-    console.log("I am refreshing");
     app.post(streamPath, (r, res, next) => server.withRemult(r, res, next), (req, res) => {
-        console.log("Got post");
         server.liveQueryManager.unsubscribe(req.body);
         res.json("ok");
         //httpServerEvents.subscribeToChannel(remult, req.body, res)
@@ -55,7 +53,7 @@ export function remultExpress(options?:
 }
 export class ServerEventsController implements ServerEventDispatcher {
     consoleInfo() {
-        console.log(this.connections.map(x => ({
+        console.info(this.connections.map(x => ({
             client: x.clientId,
             channels: x.channels
         })));
@@ -135,7 +133,7 @@ export class ServerEventsController implements ServerEventDispatcher {
         z.messages.push({ id, message: message, eventType });
         while (z.messages.length > z.messageHistoryLength)
             z.messages.shift();
-        //console.log({ sendingTo: z.connections.length })
+        
         z.connections.forEach(y => y.write(id, message, eventType));
     }
 
@@ -143,7 +141,6 @@ export class ServerEventsController implements ServerEventDispatcher {
 class clientConnection {
     channels: Record<string, boolean> = {};
     close() {
-        console.log("close connection");
         this.closed = true;
     }
     closed = false;
@@ -161,7 +158,7 @@ class clientConnection {
         public response: import('express').Response,
         public clientId: string
     ) {
-        //console.log("open connection");
+        
         response.write("event:authenticate\ndata:" + "key" + "\n\n");
         this.sendLiveMessage();
     }

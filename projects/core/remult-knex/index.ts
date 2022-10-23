@@ -307,7 +307,7 @@ export class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
 
 export class KnexSchemaBuilder {
     async verifyStructureOfAllEntities(remult: Remult) {
-        console.log("start verify structure");
+        console.info("start verify structure");
         for (const entity of allEntities) {
             let metadata = remult.repo(entity).metadata;
 
@@ -384,7 +384,7 @@ export class KnexSchemaBuilder {
             }
         }
         catch (err) {
-            console.log(err);
+            console.error(err);
         }
     }
     additionalWhere = '';

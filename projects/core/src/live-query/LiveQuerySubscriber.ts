@@ -11,6 +11,7 @@ import { getId } from '../remult3/getId';
 export const streamUrl = 'stream1';
 class LiveQuerySubscriber<entityType> {
     id: string;
+    subscribeCode: () => void;
     async setAllItems(result: any[]) {
         const items = await Promise.all(result.map(item => this.repo.fromJson(item)));
         this.forListeners(listener => {
@@ -87,7 +88,7 @@ class LiveQuerySubscriber<entityType> {
 
 
 export interface LiveQueryProvider {
-    openStreamAndReturnCloseFunction(clientId: string, onMessage: MessageHandler): Promise<VoidFunction>;
+    openStreamAndReturnCloseFunction(clientId: string, onMessage: MessageHandler, onReconnect: VoidFunction): Promise<VoidFunction>;
 
 }
 
@@ -182,17 +183,19 @@ export class LiveQueryClient {
                 let q = this.queries.get(eventTypeKey);
                 if (!q) {
                     this.queries.set(eventTypeKey, q = new LiveQuerySubscriber(repo, { entityKey: repo.metadata.key, orderBy: options.orderBy }));
-
                     url.add("__action", 'subscribe|' + this.clientId);
-                    const thenResult = (r: SubscribeResult) => {
-                        this.runPromise(q.setAllItems(r.result));
-                        q.id = r.id;
-                    }
-                    if (filterObject) {
-                        this.runPromise(this.provider.post(url.url, filterObject).then(thenResult));
-                    }
-                    else
-                        this.runPromise(this.provider.get(url.url).then(thenResult));
+                    q.subscribeCode = () => {
+                        const thenResult = (r: SubscribeResult) => {
+                            this.runPromise(q.setAllItems(r.result));
+                            q.id = r.id;
+                        }
+                        if (filterObject) {
+                            this.runPromise(this.provider.post(url.url, filterObject).then(thenResult));
+                        }
+                        else
+                            this.runPromise(this.provider.get(url.url).then(thenResult));
+                    };
+                    q.subscribeCode();
                 }
                 else {
                     onResult(x => [...q.defaultQueryState]);
@@ -225,17 +228,22 @@ export class LiveQueryClient {
             this.provider = buildRestDataProvider(defaultRemult.apiClient.httpClient);
         }
         if (!this.closeListener)
-            return this.runPromise(this.closeListener = this.lqp.openStreamAndReturnCloseFunction(this.clientId, message => {
-                for (const q of this.queries.values()) {
-                    if (q.id === message.event) {
-                        this.runPromise(q.handle(message.data));
+            return this.runPromise(this.closeListener =
+                this.lqp.openStreamAndReturnCloseFunction(this.clientId, message => {
+                    for (const q of this.queries.values()) {
+                        if (q.id === message.event) {
+                            this.runPromise(q.handle(message.data));
+                        }
                     }
-                }
-                const channel = this.channels.get(message.event);
-                if (channel) {
-                    channel.handle(message.data);
-                }
-            }));
+                    const channel = this.channels.get(message.event);
+                    if (channel) {
+                        channel.handle(message.data);
+                    }
+                }, () => {
+                    for (const q of this.queries.values()) {
+                        q.subscribeCode();
+                    }
+                }));
 
         return this.closeListener;
     }

@@ -258,16 +258,27 @@ describe("test live query full cycle", () => {
             sendQueryMessage: m => mh.forEach(x => x(m)), sendChannelMessage: undefined
         });
         var dataApi = new DataApi(repo, remult, qm);
+        const clientStatus = {
+            connected: true,
+            reconnect: () => { }
+        }
         const buildLqc = () => {
             const p = createMockHttpDataProvider(dataApi);
             return new LiveQueryClient({
-                async openStreamAndReturnCloseFunction(clientId, onMessage) {
+                async openStreamAndReturnCloseFunction(clientId, onMessage, onReconnect) {
+                    clientStatus.connected = true;
+                    clientStatus.reconnect = () => {
+                        onReconnect();
+                        clientStatus.connected = true;
+                    };
+
                     mh.push(m => {
-                        if (m.clientId === clientId)
-                            onMessage({
-                                event: m.queryId,
-                                data: m.message
-                            });
+                        if (clientStatus.connected)
+                            if (m.clientId === clientId)
+                                onMessage({
+                                    event: m.queryId,
+                                    data: m.message
+                                });
                     });
                     return () => {
                     };
@@ -294,7 +305,7 @@ describe("test live query full cycle", () => {
         remult2.liveQueryProvider = lqc2;
         remult._changeListener = qm;
         remult2._changeListener = qm;
-        return { repo, pm, repo2, messageCount: () => messageCount };
+        return { repo, pm, repo2, messageCount: () => messageCount, clientStatus };
     }
     it("integration test 1", async () => {
         var { repo, pm, repo2 } = setup2();
@@ -348,6 +359,24 @@ describe("test live query full cycle", () => {
         await repo.insert({ id: 2, title: 'noam' });
         await pm.flush();
         expect(messageCount()).toBe(1);
+    });
+    fit("test disconnect and reconnect scenario", async () => {
+        var { repo, pm, clientStatus } = setup2();
+        let result1: eventTestEntity[] = [];
+        repo.query().subscribe(reducer => result1 = reducer(result1));
+        await pm.flush();
+        await repo.insert({ id: 1, title: "noam" });
+        await pm.flush();
+        expect(result1.length).toBe(1);
+        clientStatus.connected = false;
+        await repo.insert({ id: 2, title: "yael" });
+        await pm.flush();
+        expect(result1.length).toBe(1);
+        clientStatus.reconnect();
+        expect(clientStatus.connected).toBe(true);
+        await pm.flush();
+        expect(result1.length).toBe(2);
+
     });
 });
 

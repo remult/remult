@@ -373,7 +373,7 @@ describe("many to one relation", () => {
         async function test(where: EntityFilter<Products>, expected: number) {
             expect(await repo.count(where)).toBe(expected);
             function log(x: any) {
-                console.log(x);
+                
                 return x;
             }
             expect(await repo.count(log(Filter.entityFilterFromJson(repo.metadata, log(entityFilterToJson(repo.metadata,

@@ -249,7 +249,7 @@ export class RemultServerImplementation implements RemultServer {
 
     let myRoute = this.options.rootPath + '/' + key;
     if (this.options.logApiEndPoints)
-      console.log("[remult] " + myRoute);
+      console.info("[remult] " + myRoute);
 
 
     r.route(myRoute)
@@ -322,7 +322,7 @@ export class RemultServerImplementation implements RemultServer {
       })();
       this.backendMethodsOpenApi.push({ path: myUrl, allowed, tag });
       if (this.options.logApiEndPoints)
-        console.log("[remult] " + myUrl);
+        console.info("[remult] " + myUrl);
       if (queue) {
         this.hasQueue = true;
         this.queue.mapQueuedAction(myUrl, what);
