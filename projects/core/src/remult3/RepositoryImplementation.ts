@@ -1969,7 +1969,6 @@ class QueryResultImpl<entityType> implements QueryResult<entityType> {
     }
     subscribe(onResult: (reducer: (prevState: entityType[]) => entityType[]) => void): VoidFunction {
         return this.repo.remult.liveQueryProvider.subscribe(this.repo, {
-            limit: this.options.pageSize,
             load: this.options.load,
             orderBy: this.options.orderBy,
             where: this.options.where

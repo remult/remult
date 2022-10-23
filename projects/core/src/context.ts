@@ -6,7 +6,7 @@ import { RestDataProvider, RestDataProviderHttpProviderUsingFetch } from './data
 import { EntityMetadata, EntityRef, FindOptions, Repository } from "./remult3";
 import { RepositoryImplementation } from "./remult3/RepositoryImplementation";
 import { ClassType } from "../classType";
-import { LiveQueryClient } from "./live-query/LiveQuery";
+import { LiveQueryClient } from "./live-query/LiveQuerySubscriber";
 import { EventSourceLiveQueryProvider } from "./live-query/EventSourceLiveQueryProvider";
 import { RemultProxy } from "./remult-proxy";
 

@@ -6,8 +6,8 @@ import { Entity, EntityBase, Fields } from "../remult3";
 import { actionInfo } from "../server-action";
 import { createData } from "../tests/createData";
 import { createMockHttpDataProvider } from "../tests/testHelper.spec";
-import { LiveQueryClient, liveQueryMessage, MessageHandler } from "./LiveQuery";
-import { LiveQueryPublisher, ServerEventMessage } from "./LiveQueryManager";
+import { LiveQueryClient, liveQueryMessage, MessageHandler, streamUrl } from "./LiveQuerySubscriber";
+import { LiveQueryPublisher, ServerEventMessage } from "./LiveQueryPublisher";
 
 const joc = jasmine.objectContaining;
 
@@ -252,11 +252,14 @@ describe("test live query full cycle", () => {
         const repo2 = remult2.repo(eventTestEntity);
 
         const mh: ((m: ServerEventMessage) => void)[] = [];
+        let messageCount = 0;
+        mh.push(() => messageCount++);
         const qm = new LiveQueryPublisher({
             sendQueryMessage: m => mh.forEach(x => x(m)), sendChannelMessage: undefined
         });
         var dataApi = new DataApi(repo, remult, qm);
         const buildLqc = () => {
+            const p = createMockHttpDataProvider(dataApi);
             return new LiveQueryClient({
                 async openStreamAndReturnCloseFunction(clientId, onMessage) {
                     mh.push(m => {
@@ -269,7 +272,19 @@ describe("test live query full cycle", () => {
                     return () => {
                     };
                 },
-            }, createMockHttpDataProvider(dataApi));
+            }, {
+                get: x => p.get(x),
+                delete: x => p.delete(x)
+                , post: async (url, data) => {
+                    if (url === remult.apiClient.url + '/' + streamUrl) {
+                        qm.unsubscribe(data);
+                        return "";
+                    }
+                    return p.post(url, data);
+                },
+                put: (u, d) => p.put(u, d)
+
+            });
         };
         const lqc1 = buildLqc();
         const lqc2 = buildLqc();
@@ -279,7 +294,7 @@ describe("test live query full cycle", () => {
         remult2.liveQueryProvider = lqc2;
         remult._changeListener = qm;
         remult2._changeListener = qm;
-        return { repo, pm, repo2 };
+        return { repo, pm, repo2, messageCount: () => messageCount };
     }
     it("integration test 1", async () => {
         var { repo, pm, repo2 } = setup2();
@@ -311,6 +326,28 @@ describe("test live query full cycle", () => {
         await pm.flush();
         expect(result1.length).toBe(1);
     });
+    it("test add works if item already in array", async () => {
+        var { repo, pm, repo2 } = setup2();
+        let result1: eventTestEntity[] = [];
+        repo.query().subscribe(reducer => result1 = reducer(result1));
+        await pm.flush();
+        result1 = [await repo.insert({ id: 1, title: "noam" })];
+        await pm.flush();
+        expect(result1.length).toBe(1);
+    });
+    fit("test unsubscribe works", async () => {
+        var { repo, pm, messageCount } = setup2();
+        let result1: eventTestEntity[] = [];
+        const unsubscribe = repo.query().subscribe(reducer => result1 = reducer(result1));
+        await pm.flush();
+        await repo.insert({ id: 1, title: "noam" });
+        await pm.flush();
+        expect(result1.length).toBe(1);
+        expect(messageCount()).toBe(1);
+        unsubscribe();
+        await repo.insert({ id: 2, title: 'noam' });
+        await pm.flush();
+        expect(messageCount()).toBe(1);
+    });
 });
-
 

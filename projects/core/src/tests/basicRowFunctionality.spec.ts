@@ -360,9 +360,6 @@ describe("data api", () => {
     d.test();
   });
   it("post works", async () => {
-
-
-
     let [c, remult] = await createData(async () => { });
 
     var api = new DataApi(c, remult);
@@ -375,6 +372,25 @@ describe("data api", () => {
     };
     await api.post(t, { id: 1, categoryName: 'noam' });
     d.test();
+    expect(await c.count()).toBe(1);
+  });
+  it("post works for array", async () => {
+    let [c, remult] = await createData(async () => { });
+
+    var api = new DataApi(c, remult);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.created = async (data: any) => {
+      expect(data.length).toBe(2);
+      expect(data[0].id).toBe(1);
+      expect(data[0].categoryName).toBe('noam');
+      expect(data[1].id).toBe(2);
+      expect(data[1].categoryName).toBe('yael');
+      d.ok();
+    };
+    await api.post(t, [{ id: 1, categoryName: 'noam' }, { id: 2, categoryName: "yael" }]);
+    d.test();
+    expect(await c.count()).toBe(2);
   });
 
 
@@ -1792,7 +1808,7 @@ describe("test rest data provider translates data correctly", () => {
     let c = new Remult().repo(type);
     let z = new RestDataProvider(() => ({
       httpClient: {
-        delete: ()=>undefined,
+        delete: () => undefined,
         get: async () => {
           return [
             {
@@ -1801,8 +1817,8 @@ describe("test rest data provider translates data correctly", () => {
             }
           ]
         },
-        post: ()=>undefined,
-        put: ()=>undefined
+        post: () => undefined,
+        put: () => undefined
       }
     }));
     let x = z.getEntityDataProvider(c.metadata);
@@ -1868,15 +1884,15 @@ describe("test rest data provider translates data correctly", () => {
     let done = new Done();
     let z = new RestDataProvider(() => ({
       httpClient: {
-        delete: ()=>undefined,
-        get: ()=>undefined,
+        delete: () => undefined,
+        get: () => undefined,
         post: async (x, data) => {
           done.ok();
           expect(data.a).toBe(1);
           expect(data.b).toBe("2021-05-16T08:32:19.905Z");
           return data;
         },
-        put: ()=>undefined
+        put: () => undefined
       }
     }));
     let x = z.getEntityDataProvider(c.metadata);

@@ -2,7 +2,7 @@ import { Component, NgZone, OnInit } from '@angular/core';
 import { Remult, Entity, IdEntity, Fields, Controller, InMemoryDataProvider, Sort } from 'remult';
 import { GridSettings } from '@remult/angular/interfaces';
 import { DialogConfig } from '../../../../angular';
-import { EventSourceLiveQuery } from '../../../../core/src/live-query/EventSourceLiveQuery';
+
 
 
 @Controller("blabla")
@@ -54,15 +54,10 @@ export class ProductsComponent implements OnInit {
     }]
   });
   messages: string[] = [];
-  listener = new EventSourceLiveQuery();
   async ngOnInit() {
     await this.remult.repo(Task).count();
 
-    this.tasks = new Observable((subscribe) =>
-      this.listener.subscribe(
-        this.remult.repo(Task),
-        { orderBy: { completed: "asc" } },
-        x => this.zone.run(() => subscribe.next(x))))
+     
 
   }
   tasks: Observable<Task[]>;

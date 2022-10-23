@@ -5,7 +5,7 @@ import { AllowedForInstance, Remult, UserInfo } from '../src/context';
 import { ClassType } from '../classType';
 import { Repository } from '../src/remult3';
 import { IdEntity } from '../src/id-entity';
-import { LiveQueryPublisher } from '../src/live-query/LiveQueryManager';
+import { LiveQueryPublisher } from '../src/live-query/LiveQueryPublisher';
 export interface RemultServerOptions<RequestType extends GenericRequest> {
     /** Sets a database connection for Remult.
      *

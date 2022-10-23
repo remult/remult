@@ -1,7 +1,7 @@
 import type { ClassType } from "../classType";
 import type { Allowed, AllowedForInstance, ApiClient, GetArguments, Remult, RemultContext, UserInfo } from "./context";
 import type { DataProvider } from "./data-interfaces";
-import type { LiveQueryClient } from "./live-query/LiveQuery";
+import type { LiveQueryClient } from "./live-query/LiveQuerySubscriber";
 import type { EntityRef, Repository } from "./remult3";
 
 

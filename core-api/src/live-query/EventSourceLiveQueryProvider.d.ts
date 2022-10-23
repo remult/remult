@@ -1,4 +1,4 @@
-import { LiveQueryProvider, MessageHandler } from "./LiveQuery";
+import { LiveQueryProvider, MessageHandler } from "./LiveQuerySubscriber";
 export declare class EventSourceLiveQueryProvider implements LiveQueryProvider {
     private wrapMessage?;
     constructor(wrapMessage?: (what: () => void) => void);

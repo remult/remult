@@ -1,5 +1,5 @@
 import { remult } from "../remult-proxy";
-import { LiveQueryProvider, MessageHandler, streamUrl } from "./LiveQuery";
+import { LiveQueryProvider, MessageHandler, streamUrl } from "./LiveQuerySubscriber";
 
 export class EventSourceLiveQueryProvider implements LiveQueryProvider {
   constructor(private wrapMessage?: (what: () => void) => void) {

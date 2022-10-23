@@ -92,7 +92,7 @@ export abstract class Action<inParam, outParam> implements ActionInterface {
         });
     }
 }
-class ForbiddenError extends Error {
+export class ForbiddenError extends Error {
     constructor() {
         super("Forbidden");
     }

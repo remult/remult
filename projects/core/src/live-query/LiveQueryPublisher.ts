@@ -2,10 +2,15 @@ import { v4 as uuid } from 'uuid';
 import { Remult, UserInfo } from '../..';
 import { Repository, EntityRef, FindOptions, getEntityRef } from '../remult3';
 import { LiveQueryProvider } from '../data-api';
-import { liveQueryMessage, SubscribeToQueryArgs } from './LiveQuery';
+import { ChannelSubscribe, liveQueryMessage, SubscribeToQueryArgs } from './LiveQuerySubscriber';
 
 
 export class LiveQueryPublisher implements LiveQueryProvider {
+  unsubscribe(data: ChannelSubscribe) {
+    let client = this.clients.find(c => c.clientId === data.clientId);
+    if (client)
+      client.queries = client.queries.filter(q => q.id !== data.channel);
+  }
 
 
 
@@ -108,6 +113,7 @@ export class LiveQueryPublisher implements LiveQueryProvider {
                 }
               }
             });
+            q.ids = q.ids.filter(y => y != id);
           }
         }
       }

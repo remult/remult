@@ -1,8 +1,8 @@
 import * as express from 'express';
 import { RemultServer, RemultServerOptions } from './server/expressBridge';
 import { Remult } from './src/context';
-import { AMessageChannel, ChannelSubscribe } from './src/live-query/LiveQuery';
-import { ServerEventDispatcher, ServerEventMessage } from './src/live-query/LiveQueryManager';
+import { AMessageChannel, ChannelSubscribe } from './src/live-query/LiveQuerySubscriber';
+import { ServerEventDispatcher, ServerEventMessage } from './src/live-query/LiveQueryPublisher';
 export declare function remultExpress(options?: RemultServerOptions<express.Request> & {
     bodyParser?: boolean;
     bodySizeLimit?: string;

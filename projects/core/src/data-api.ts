@@ -5,6 +5,7 @@ import { Filter } from './filter/filter-interfaces';
 import { FindOptions, Repository, EntityRef, rowHelperImplementation, EntityFilter } from './remult3';
 import { SortSegment } from './sort';
 import { ErrorInfo } from './data-interfaces';
+import { ForbiddenError } from './server-action';
 
 export interface LiveQueryProvider {
   subscribe(repo: Repository<any>, id: string, options: FindOptions<any>, remult: Remult, ids: any[]): string;
@@ -200,17 +201,25 @@ export class DataApi<T = any> {
   async post(response: DataApiResponse, body: any) {
 
     try {
-      let newr = this.repository.create();
-      await (this.repository.getEntityRef(newr) as rowHelperImplementation<T>)._updateEntityBasedOnApi(body);
-      if (!this.repository.getEntityRef(newr).apiInsertAllowed) {
-        response.forbidden();
-        return;
-      }
 
-      await this.repository.getEntityRef(newr).save();
-      response.created(this.repository.getEntityRef(newr).toApiJson());
+      const insert = async (what: any) => {
+        let newr = this.repository.create();
+        await (this.repository.getEntityRef(newr) as rowHelperImplementation<T>)._updateEntityBasedOnApi(what);
+        if (!this.repository.getEntityRef(newr).apiInsertAllowed) {
+          throw new ForbiddenError();
+        }
+        await this.repository.getEntityRef(newr).save();
+        return this.repository.getEntityRef(newr).toApiJson()
+      }
+      if (Array.isArray(body)) {
+        response.created(await Promise.all(body.map(x => insert(x))));
+      }
+      else response.created(await insert(body));
     } catch (err) {
-      response.error(err);
+      if (err.isForbiddenError)
+        response.forbidden();
+      else
+        response.error(err);
     }
   }
 

@@ -1,8 +1,8 @@
 import * as express from 'express';
 import { createRemultServer, RemultServer, RemultServerImplementation, RemultServerOptions } from './server/expressBridge';
 import { Remult } from './src/context';
-import { AMessageChannel, ChannelSubscribe, streamUrl } from './src/live-query/LiveQuery';
-import { LiveQueryPublisher, ServerEventDispatcher, ServerEventMessage } from './src/live-query/LiveQueryManager';
+import { AMessageChannel, ChannelSubscribe, streamUrl } from './src/live-query/LiveQuerySubscriber';
+import { LiveQueryPublisher, ServerEventDispatcher, ServerEventMessage } from './src/live-query/LiveQueryPublisher';
 import { remult } from './src/remult-proxy';
 
 export function remultExpress(options?:
@@ -34,8 +34,12 @@ export function remultExpress(options?:
     app.get(streamPath, (req, res) => {
         httpServerEvents.openHttpServerStream(req, res);
     });
+    console.log("I am refreshing");
     app.post(streamPath, (r, res, next) => server.withRemult(r, res, next), (req, res) => {
-        httpServerEvents.subscribeToChannel(remult, req.body, res)
+        console.log("Got post");
+        server.liveQueryManager.unsubscribe(req.body);
+        res.json("ok");
+        //httpServerEvents.subscribeToChannel(remult, req.body, res)
     });
     app.get(streamPath + '/stats', (req, res) => {
         httpServerEvents.consoleInfo();
@@ -139,7 +143,7 @@ export class ServerEventsController implements ServerEventDispatcher {
 class clientConnection {
     channels: Record<string, boolean> = {};
     close() {
-        //console.log("close connection");
+        console.log("close connection");
         this.closed = true;
     }
     closed = false;

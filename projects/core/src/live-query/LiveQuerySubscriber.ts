@@ -5,11 +5,11 @@ import { RestEntityDataProvider } from '../data-providers/rest-data-provider';
 import { Action } from '../server-action';
 import { RepositoryImplementation } from '../remult3';
 import { Allowed, buildRestDataProvider } from '../context';
-import { ServerEventDispatcher } from './LiveQueryManager';
+import { ServerEventDispatcher } from './LiveQueryPublisher';
 import { getId } from '../remult3/getId';
 
 export const streamUrl = 'stream1';
-class LiveQueryOnFrontEnd<entityType> {
+class LiveQuerySubscriber<entityType> {
     id: string;
     async setAllItems(result: any[]) {
         const items = await Promise.all(result.map(item => this.repo.fromJson(item)));
@@ -22,7 +22,7 @@ class LiveQueryOnFrontEnd<entityType> {
 
 
     forListeners(what: (listener: (((reducer: (prevState: entityType[]) => entityType[]) => void))) => void) {
-     //   what(x => this.defaultQueryState = x(this.defaultQueryState));
+        //   what(x => this.defaultQueryState = x(this.defaultQueryState));
         for (const l of this.listeners) {
             what(l)
         }
@@ -62,6 +62,7 @@ class LiveQueryOnFrontEnd<entityType> {
                         listener(items => {
                             if (!items)
                                 items = [];
+                            items = items.filter(x => getId(this.repo.metadata, x) !== getId(this.repo.metadata, item));
                             items.push(item);
                             return sort(items);
                         }));
@@ -110,7 +111,7 @@ export type MessageHandler = (message: { data: any, event: string }) => void;
 export class LiveQueryClient {
 
     clientId = uuid();
-    private queries = new Map<string, LiveQueryOnFrontEnd<any>>();
+    private queries = new Map<string, LiveQuerySubscriber<any>>();
     private channels = new Map<string, MessageChannel<any>>();
     constructor(public lqp: LiveQueryProvider, private provider?: RestDataProviderHttpProvider) {
     }
@@ -180,7 +181,7 @@ export class LiveQueryClient {
                 const eventTypeKey = JSON.stringify({ url, filterObject });
                 let q = this.queries.get(eventTypeKey);
                 if (!q) {
-                    this.queries.set(eventTypeKey, q = new LiveQueryOnFrontEnd(repo, { entityKey: repo.metadata.key, orderBy: options.orderBy }));
+                    this.queries.set(eventTypeKey, q = new LiveQuerySubscriber(repo, { entityKey: repo.metadata.key, orderBy: options.orderBy }));
 
                     url.add("__action", 'subscribe|' + this.clientId);
                     const thenResult = (r: SubscribeResult) => {
@@ -194,13 +195,18 @@ export class LiveQueryClient {
                         this.runPromise(this.provider.get(url.url).then(thenResult));
                 }
                 else {
-                    onResult(x =>[... q.defaultQueryState]);
+                    onResult(x => [...q.defaultQueryState]);
                 }
                 q.listeners.push(onResult);
                 onUnsubscribe = () => {
                     q.listeners.splice(q.listeners.indexOf(onResult), 1);
                     if (q.listeners.length == 0) {
                         this.queries.delete(eventTypeKey);
+                        this.provider.post(defaultRemult.apiClient.url + '/' + streamUrl, {
+                            channel: q.id,
+                            clientId: this.clientId,
+                            remove: false
+                        } as ChannelSubscribe);
                     }
                     this.closeIfNoListeners();
                 }

@@ -2,7 +2,7 @@ import { DataProvider, RestDataProviderHttpProvider } from "./data-interfaces";
 import { RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider';
 import { EntityMetadata, EntityRef, FindOptions, Repository } from "./remult3";
 import { ClassType } from "../classType";
-import { LiveQueryClient } from "./live-query/LiveQuery";
+import { LiveQueryClient } from "./live-query/LiveQuerySubscriber";
 export interface ExternalHttpProvider {
     post(url: string, data: any): Promise<any> | {
         toPromise(): Promise<any>;
