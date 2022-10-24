@@ -45,7 +45,7 @@
 </a>
 
 <a href="https://www.youtube.com/watch?v=rEoScmSVNUE" target="_blank">
-  <p align="center">Watch code demo on YouTube here</p>
+  <p align="center">Watch code demo on YouTube here (14 mins)</p>
 </a>
 
 ## What is Remult?
