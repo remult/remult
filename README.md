@@ -40,7 +40,7 @@
 
 <a href="https://www.youtube.com/watch?v=rEoScmSVNUE" target="_blank">
   <p align="center">
-    <img src="https://github.com/remult/remult/raw/master/static/images/video-thumbnail.jpg" alt="Video thumbnail" width="320" />
+    <img src="https://github.com/remult/remult/raw/master/static/images/video-thumbnail.jpg" alt="Video thumbnail"  />
   </p>
 </a>
 
