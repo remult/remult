@@ -37,15 +37,6 @@ export class LiveQueryPublisher implements LiveQueryProvider {
   clients: clientInfo[] = [];
 
 
-  hasListeners(ref: EntityRef<any>) {
-    for (const c of this.clients) {
-      for (const q of c.queries) {
-        if (q.repo.metadata.key === ref.metadata.key)
-          return true;
-      }
-    }
-    return false;
-  }
 
   runPromise(p: Promise<any>) {
 

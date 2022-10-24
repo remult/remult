@@ -8,7 +8,6 @@ export declare class LiveQueryPublisher implements LiveQueryProvider {
     constructor(dispatcher: ServerEventDispatcher);
     subscribe(repo: Repository<any>, clientId: string, findOptions: FindOptions<any>, remult: Remult, ids: any[]): string;
     clients: clientInfo[];
-    hasListeners(ref: EntityRef<any>): boolean;
     runPromise(p: Promise<any>): void;
     saved(ref: EntityRef<any>): void;
     deleted(ref: EntityRef<any>): void;
