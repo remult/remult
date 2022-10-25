@@ -7,16 +7,15 @@ export interface PubSubClient {
     disconnect(): void;
 }
 export interface LiveQueryProvider {
-    openStreamAndReturnCloseFunction(clientId: string, onMessage: MessageHandler, onReconnect: VoidFunction): Promise<PubSubClient>;
+    openStreamAndReturnCloseFunction(onMessage: MessageHandler, onReconnect: VoidFunction): Promise<PubSubClient>;
 }
 export declare type MessageHandler = (message: {
     data: any;
-    event: string;
+    channel: string;
 }) => void;
 export declare class LiveQueryClient {
     lqp: LiveQueryProvider;
     private provider?;
-    clientId: any;
     private queries;
     private channels;
     constructor(lqp: LiveQueryProvider, provider?: RestDataProviderHttpProvider);
@@ -55,7 +54,7 @@ export interface SubscribeResult {
     result: [];
     id: string;
 }
-export interface ChannelSubscribe {
+export interface ServerEventChannelSubscribeDTO {
     clientId: string;
     channel: string;
     remove: boolean;

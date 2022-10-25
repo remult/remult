@@ -7,9 +7,7 @@ import { ClassType } from '../classType';
 import { Entity, Fields, getEntityKey, Repository } from '../src/remult3';
 import { IdEntity } from '../src/id-entity';
 import { remult, RemultProxy } from '../src/remult-proxy';
-import { ServerEventDispatcher, ServerEventMessage ,LiveQueryPublisher } from '../src/live-query/LiveQueryPublisher'; 
-
-
+import { LiveQueryPublisher } from '../src/live-query/LiveQueryPublisher';
 
 
 export interface RemultServerOptions<RequestType extends GenericRequest> {
@@ -111,7 +109,7 @@ export function createRemultServer<RequestType extends GenericRequest = GenericR
 
   if (options.rootPath === undefined)
     options.rootPath = '/api';
-    
+
   actionInfo.runningOnServer = true;
   let bridge = new RemultServerImplementation(new inProcessQueueHandler(options.queueStorage), options, dataProvider);
   return bridge;
@@ -185,8 +183,8 @@ export class RemultServerImplementation implements RemultServer {
 
 
   }
-  
-  liveQueryManager:LiveQueryPublisher;
+
+  liveQueryManager: LiveQueryPublisher;
   withRemult<T>(req: GenericRequest, res: GenericResponse, next: VoidFunction) {
     this.process(async () => { next() })(req, res);
   }
@@ -240,7 +238,7 @@ export class RemultServerImplementation implements RemultServer {
       let key = getEntityKey(e);
       if (key != undefined)
         this.add(key, c => {
-          return new DataApi(c.repo(e), c,this.liveQueryManager);
+          return new DataApi(c.repo(e), c, this.liveQueryManager);
         }, r);
     });
   }

@@ -1,14 +1,15 @@
+import { buildRestDataProvider } from "../context";
 import { remult } from "../remult-proxy";
-import { ChannelSubscribe, LiveQueryProvider, MessageHandler, PubSubClient, streamUrl } from "./LiveQuerySubscriber";
+import { ServerEventChannelSubscribeDTO, LiveQueryProvider, MessageHandler, PubSubClient, streamUrl } from "./LiveQuerySubscriber";
 
 export class EventSourceLiveQueryProvider implements LiveQueryProvider {
   constructor(private wrapMessage?: (what: () => void) => void) {
     if (!this.wrapMessage)
       this.wrapMessage = x => x();
   }
-  openStreamAndReturnCloseFunction(clientId: string, onMessage: MessageHandler, onReconnect: VoidFunction): Promise<PubSubClient> {
+  openStreamAndReturnCloseFunction(onMessage: MessageHandler, onReconnect: VoidFunction): Promise<PubSubClient> {
 
-    const source = new EventSource(remult.apiClient.url + '/' + streamUrl + "?id=" + clientId, {
+    const source = new EventSource(remult.apiClient.url + '/' + streamUrl, {
       withCredentials: true
     });
     source.onmessage = e => {
@@ -18,22 +19,29 @@ export class EventSourceLiveQueryProvider implements LiveQueryProvider {
     source.onerror = e => {
       console.error("Live Query Event Source Error", e);
     }
+    let connectionId: string;
+    source.addEventListener("connectionId", e => {
+      //@ts-ignore
+      connectionId = e.data;
+
+    });
+    const provider = buildRestDataProvider(remult.apiClient.httpClient);
     const client: PubSubClient = {
       disconnect() {
         source.close();
       },
       subscribe(channel) {
-        this.provider.post(remult.apiClient.url + '/' + streamUrl, {
+        provider.post(remult.apiClient.url + '/' + streamUrl, {
           channel: channel,
-          clientId: this.clientId,
+          clientId: connectionId,
           remove: false
-        } as ChannelSubscribe);
+        } as ServerEventChannelSubscribeDTO);
         return () => {
-          this.provider.post(remult.apiClient.url + '/' + streamUrl, {
+          provider.post(remult.apiClient.url + '/' + streamUrl, {
             channel: channel,
-            clientId: this.clientId,
+            clientId: connectionId,
             remove: true
-          } as ChannelSubscribe);
+          } as ServerEventChannelSubscribeDTO);
         }
       },
     }

@@ -1,8 +1,6 @@
 
 import { EntityOrderBy, FindOptions, remult as defaultRemult, Remult, Repository, RestDataProviderHttpProvider, Sort } from '../../index';
-import { v4 as uuid } from 'uuid';
 import { RestEntityDataProvider } from '../data-providers/rest-data-provider';
-import { Action } from '../server-action';
 import { RepositoryImplementation } from '../remult3';
 import { Allowed, buildRestDataProvider } from '../context';
 import { ServerEventDispatcher } from './LiveQueryPublisher';
@@ -93,7 +91,7 @@ export interface PubSubClient {
 }
 
 export interface LiveQueryProvider {
-    openStreamAndReturnCloseFunction(clientId: string, onMessage: MessageHandler, onReconnect: VoidFunction): Promise<PubSubClient>;
+    openStreamAndReturnCloseFunction(onMessage: MessageHandler, onReconnect: VoidFunction): Promise<PubSubClient>;
 
 }
 
@@ -113,11 +111,10 @@ class MessageChannel<T> {
 }
 
 
-export type MessageHandler = (message: { data: any, event: string }) => void;
+export type MessageHandler = (message: { data: any, channel: string }) => void;
 
 export class LiveQueryClient {
-
-    clientId = uuid();
+    
     private queries = new Map<string, LiveQuerySubscriber<any>>();
     private channels = new Map<string, MessageChannel<any>>();
     constructor(public lqp: LiveQueryProvider, private provider?: RestDataProviderHttpProvider) {
@@ -186,7 +183,7 @@ export class LiveQueryClient {
                 let q = this.queries.get(eventTypeKey);
                 if (!q) {
                     this.queries.set(eventTypeKey, q = new LiveQuerySubscriber(repo, { entityKey: repo.metadata.key, orderBy: options.orderBy }));
-                    url.add("__action", 'subscribe|' + this.clientId);
+                    url.add("__action", 'liveQuery');
                     q.subscribeCode = () => {
                         const thenResult = (r: SubscribeResult) => {
                             this.client.then(c =>
@@ -232,13 +229,13 @@ export class LiveQueryClient {
         }
         if (!this.client)
             return this.runPromise(this.client =
-                this.lqp.openStreamAndReturnCloseFunction(this.clientId, message => {
+                this.lqp.openStreamAndReturnCloseFunction(message => {
                     for (const q of this.queries.values()) {
-                        if (q.id === message.event) {
+                        if (q.id === message.channel) {
                             this.runPromise(q.handle(message.data));
                         }
                     }
-                    const channel = this.channels.get(message.event);
+                    const channel = this.channels.get(message.channel);
                     if (channel) {
                         channel.handle(message.data);
                     }
@@ -283,7 +280,7 @@ export interface SubscribeResult {
 }
 
 
-export interface ChannelSubscribe {
+export interface ServerEventChannelSubscribeDTO {
     clientId: string,
     channel: string,
     remove: boolean

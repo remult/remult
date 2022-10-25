@@ -8,7 +8,7 @@ import { ErrorInfo } from './data-interfaces';
 import { ForbiddenError } from './server-action';
 
 export interface LiveQueryProvider {
-  subscribe(repo: Repository<any>, id: string, options: FindOptions<any>, remult: Remult, ids: any[]): string;
+  subscribe(repo: Repository<any>,  options: FindOptions<any>, remult: Remult, ids: any[]): string;
 }
 export class DataApi<T = any> {
 
@@ -22,7 +22,7 @@ export class DataApi<T = any> {
   }
   httpPost(res: DataApiResponse, req: DataApiRequest, body: any) {
     const action = req?.get("__action");
-    if (action?.startsWith("subscribe"))
+    if (action?.startsWith("liveQuery"))
       return this.getArray(res, req, body);
     switch (action) {
       case "get":
@@ -113,9 +113,9 @@ export class DataApi<T = any> {
         .then(async r => {
           return await Promise.all(r.map(async y => this.repository.getEntityRef(y).toApiJson()));
         });
-      if (this.liveQueryProvider && action?.startsWith("subscribe")) {
+      if (this.liveQueryProvider && action?.startsWith("liveQuery")) {
         response.success({
-          id: this.liveQueryProvider.subscribe(this.repository, action.split('|')[1], findOptions, this.remult, r.map(y => this.repository.getEntityRef(y).getId())),
+          id: this.liveQueryProvider.subscribe(this.repository, findOptions, this.remult, r.map(y => this.repository.getEntityRef(y).getId())),
           result: r
         });
         return;

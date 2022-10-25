@@ -2,12 +2,11 @@
 import { queryConfig, Remult } from "../context";
 import { DataApi } from "../data-api";
 import { InMemoryDataProvider } from "../data-providers/in-memory-database";
-import { Entity, EntityBase, Fields } from "../remult3";
+import { Entity, Fields } from "../remult3";
 import { actionInfo } from "../server-action";
-import { createData } from "../tests/createData";
 import { createMockHttpDataProvider } from "../tests/testHelper.spec";
 import { LiveQueryClient, liveQueryMessage, MessageHandler, streamUrl } from "./LiveQuerySubscriber";
-import { LiveQueryPublisher, ServerEventMessage } from "./LiveQueryPublisher";
+import { LiveQueryPublisher } from "./LiveQueryPublisher";
 
 const joc = jasmine.objectContaining;
 
@@ -39,12 +38,12 @@ async function setup1() {
     const remult = new Remult(mem);
     remult.user = ({ id: clientId1, name: clientId1, roles: [] });
     const clientRepo = remult.repo(eventTestEntity);
-    const messages: ServerEventMessage[] = [];
-    const qm = new LiveQueryPublisher({ sendQueryMessage: m => messages.push(m), sendChannelMessage: undefined });
+    const messages: liveQueryMessage[] = [];
+    const qm = new LiveQueryPublisher({ sendChannelMessage: (c, m: any) => messages.push(m) });
     let p = new PromiseResolver(qm);
 
     serverRemult._changeListener = qm;
-    const queryId = qm.subscribe(clientRepo, clientId1, {}, remult, items.map(x => x.id));
+    const queryId = qm.subscribe(clientRepo, {}, remult, items.map(x => x.id));
     expect(messages.length).toBe(0);
     return { serverRepo, messages, flush: () => p.flush() };
 }
@@ -61,12 +60,10 @@ describe("Live Query", () => {
         await serverRepo.save(row);
         await flush();
         expect(messages).toEqual([joc({
-            message: joc({
-                type: 'replace',
-                data: joc({
-                    oldId: 1,
-                    item: joc({ selectUser: clientId1 })
-                })
+            type: 'replace',
+            data: joc({
+                oldId: 1,
+                item: joc({ selectUser: clientId1 })
             })
         })])
     });
@@ -77,43 +74,39 @@ describe("Live Query", () => {
         await serverRepo.save(row);
         await flush();
         expect(messages).toEqual([joc({
-            message: joc({
-                type: 'replace',
-                data: joc({
-                    oldId: 1,
-                    item: joc({
-                        id: 99,
-                        selectUser: clientId1
-                    })
+            type: 'replace',
+            data: joc({
+                oldId: 1,
+                item: joc({
+                    id: 99,
+                    selectUser: clientId1
                 })
             })
-        })])
+        })
+        ])
     });
     it("new row is reported", async () => {
         const { serverRepo, messages, flush } = await setup1();
         const row = await serverRepo.insert([{ id: 9, title: 'david' }]);
         await flush();
         expect(messages).toEqual([joc({
-            message: joc({
-                type: 'add',
-                data: joc({
-                    item: joc({
-                        id: 9,
-                        selectUser: clientId1
-                    })
+            type: 'add',
+            data: joc({
+                item: joc({
+                    id: 9,
+                    selectUser: clientId1
                 })
             })
-        })])
+        })
+        ])
     });
     it("removed row is reported", async () => {
         const { serverRepo, messages, flush } = await setup1();
         await serverRepo.delete((await serverRepo.findFirst({ id: 1 })));
         await flush();
         expect(messages).toEqual([joc({
-            message: joc({
-                type: 'remove',
-                data: { id: 1 }
-            })
+            type: 'remove',
+            data: { id: 1 }
         })])
     });
 });
@@ -146,7 +139,7 @@ describe("Live Query Client", () => {
         let get = 0;
         let sendMessage: MessageHandler;
         const lqc = new LiveQueryClient({
-            async openStreamAndReturnCloseFunction(clientId, onMessage) {
+            async openStreamAndReturnCloseFunction(onMessage) {
                 open++;
                 sendMessage = onMessage;
                 return {
@@ -196,7 +189,7 @@ describe("Live Query Client", () => {
         expect(result1[0].title).toBe("noam");
         expect(result2[0].title).toBe("noam");
         sendMessage({
-            event: '1',
+            channel: '1',
             data: {
                 type: "replace",
                 data: {
@@ -214,7 +207,7 @@ describe("Live Query Client", () => {
         closeSub1();
         await p.flush();
         sendMessage({
-            event: '1',
+            channel: '1',
             data: {
                 type: "replace",
                 data: {
@@ -259,11 +252,12 @@ describe("test live query full cycle", () => {
         const remult2 = new Remult(mem);
         const repo2 = remult2.repo(eventTestEntity);
 
-        const mh: ((m: ServerEventMessage) => void)[] = [];
+        const mh: ((channel: string, message: liveQueryMessage) => void)[] = [];
         let messageCount = 0;
-        mh.push(() => messageCount++);
         const qm = new LiveQueryPublisher({
-            sendQueryMessage: m => mh.forEach(x => x(m)), sendChannelMessage: undefined
+            sendChannelMessage<liveQueryMessage>(channel, message) {
+                mh.forEach(x => x(channel, message))
+            },
         });
         var dataApi = new DataApi(repo, remult, qm);
         const clientStatus = {
@@ -271,9 +265,8 @@ describe("test live query full cycle", () => {
             reconnect: () => { }
         }
         const buildLqc = () => {
-            const p = createMockHttpDataProvider(dataApi);
             return new LiveQueryClient({
-                async openStreamAndReturnCloseFunction(clientId, onMessage, onReconnect) {
+                async openStreamAndReturnCloseFunction(onMessage, onReconnect) {
                     clientStatus.connected = true;
                     clientStatus.reconnect = () => {
                         onReconnect();
@@ -281,13 +274,15 @@ describe("test live query full cycle", () => {
                     };
                     const channels: string[] = [];
 
-                    mh.push(m => {
+                    mh.push((channel, message) => {
                         if (clientStatus.connected)
-                            if (channels.includes(m.queryId))
+                            if (channels.includes(channel)) {
+                                messageCount++;
                                 onMessage({
-                                    event: m.queryId,
-                                    data: m.message
+                                    channel,
+                                    data: message
                                 });
+                            }
                     });
                     return {
                         disconnect() {
@@ -298,28 +293,11 @@ describe("test live query full cycle", () => {
 
                             return () => {
                                 channels.splice(channels.indexOf(channel), 1);
-                                qm.unsubscribe({
-                                    channel,
-                                    clientId,
-                                    remove: true
-                                })
                             }
                         },
                     };
                 },
-            }, {
-                get: x => p.get(x),
-                delete: x => p.delete(x)
-                , post: async (url, data) => {
-                    if (url === remult.apiClient.url + '/' + streamUrl) {
-                        qm.unsubscribe(data);
-                        return "";
-                    }
-                    return p.post(url, data);
-                },
-                put: (u, d) => p.put(u, d)
-
-            });
+            }, createMockHttpDataProvider(dataApi));
         };
         const lqc1 = buildLqc();
         const lqc2 = buildLqc();

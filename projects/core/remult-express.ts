@@ -1,9 +1,9 @@
 import * as express from 'express';
 import { createRemultServer, RemultServer, RemultServerImplementation, RemultServerOptions } from './server/expressBridge';
 import { Remult } from './src/context';
-import { AMessageChannel, ChannelSubscribe, streamUrl } from './src/live-query/LiveQuerySubscriber';
-import { LiveQueryPublisher, ServerEventDispatcher, ServerEventMessage } from './src/live-query/LiveQueryPublisher';
-import { remult } from './src/remult-proxy';
+import { AMessageChannel, ServerEventChannelSubscribeDTO, streamUrl } from './src/live-query/LiveQuerySubscriber';
+import { LiveQueryPublisher, ServerEventDispatcher } from './src/live-query/LiveQueryPublisher';
+import { v4 as uuid } from 'uuid';
 
 export function remultExpress(options?:
     RemultServerOptions<express.Request> & {
@@ -35,9 +35,8 @@ export function remultExpress(options?:
         httpServerEvents.openHttpServerStream(req, res);
     });
     app.post(streamPath, (r, res, next) => server.withRemult(r, res, next), (req, res) => {
-        server.liveQueryManager.unsubscribe(req.body);
+        httpServerEvents.subscribeToChannel(req.body)
         res.json("ok");
-        //httpServerEvents.subscribeToChannel(remult, req.body, res)
     });
     app.get(streamPath + '/stats', (req, res) => {
         httpServerEvents.consoleInfo();
@@ -52,35 +51,22 @@ export function remultExpress(options?:
 
 }
 export class ServerEventsController implements ServerEventDispatcher {
+    subscribeToChannel({ channel, remove, clientId }: ServerEventChannelSubscribeDTO) {
+        this.connections.forEach(c => {
+            if (c.connectionId === clientId) {
+                c.channels[channel] = !remove;
+            }
+        });
+    }
     consoleInfo() {
         console.info(this.connections.map(x => ({
-            client: x.clientId,
+            client: x.connectionId,
             channels: x.channels
         })));
     }
-    subscribeToChannel(remult: Remult, info: ChannelSubscribe, res: import('express').Response) {
-        let ok = false;
-        if (this.channels)
-            for (const sc of this.connections) {
-                if (sc.clientId === info.clientId) {
-                    for (const c of this.channels) {
-                        if (c.userCanSubscribe(info.channel, remult)) {
-                            sc.channels[info.channel] = !info.remove;
-                            ok = true;
-                        }
-                    }
 
-
-                }
-            }
-        if (ok)
-            res.json("ok");
-        else
-            res.status(404).json(`Channel "${info.channel}" not found`);
-
-    }
     connections: clientConnection[] = [];
-    constructor(private channels: AMessageChannel<any>[], private messageHistoryLength = 1000) {
+    constructor(channels: AMessageChannel<any>[]) {
         if (channels) {
             for (const c of channels) {
                 c.dispatcher = this;
@@ -89,18 +75,13 @@ export class ServerEventsController implements ServerEventDispatcher {
 
 
     }
-    sendQueryMessage({ message, clientId, queryId }: ServerEventMessage): void {
-        for (const sc of this.connections) {
-            if (sc.clientId === clientId) {
-                sc.write(undefined, message, queryId);
-            }
-        }
 
-    }
     sendChannelMessage<T>(channel: string, message: any) {
+        const data = JSON.stringify({ channel, data: message });
+
         for (const sc of this.connections) {
             if (sc.channels[channel]) {
-                sc.write(undefined, message, channel);
+                sc.write(data);
             }
         }
     }
@@ -112,11 +93,9 @@ export class ServerEventsController implements ServerEventDispatcher {
             'Cache-Control': 'no-cache',
             'Connection': 'keep-alive'
         });
-        const cc = new clientConnection(res, req.headers["client-id"] as string || req.query['id'] as string);
-        const lastEventId = req.headers['last-event-id'];
-        if (lastEventId) {
-            this.messages.filter(x => x.id > +lastEventId).forEach(m => cc.write(m.id, m.message, m.eventType));
-        }
+        const cc = new clientConnection(res);
+        //const lastEventId = req.headers['last-event-id'];
+
         this.connections.push(cc);
 
         req.on("close", () => {
@@ -125,18 +104,6 @@ export class ServerEventsController implements ServerEventDispatcher {
         });
         return cc;
     }
-
-    messages: { id: number, message: any, eventType: string }[] = [];
-    SendMessage(message: any, eventType = '') {
-        let z = this;
-        let id = i++;
-        z.messages.push({ id, message: message, eventType });
-        while (z.messages.length > z.messageHistoryLength)
-            z.messages.shift();
-        
-        z.connections.forEach(y => y.write(id, message, eventType));
-    }
-
 }
 class clientConnection {
     channels: Record<string, boolean> = {};
@@ -144,36 +111,28 @@ class clientConnection {
         this.closed = true;
     }
     closed = false;
-    write(id: number, message: any, eventType: string): void {
-        let event = "event:message";
-        if (id != undefined)
-            event += "\nid:" + id;
-        this.response.write(event + "\ndata:" + JSON.stringify({ event: eventType, data: message }) + "\n\n");
+    write(eventData: string, eventType = "message"): void {
+        let event = "event:" + eventType;
+        // if (id != undefined)
+        //     event += "\nid:" + id;
+        this.response.write(event + "\ndata:" + eventData + "\n\n");
         let r = this.response as any as { flush(): void };
         if (r.flush)
             r.flush();
     }
-
+    connectionId = uuid();
     constructor(
-        public response: import('express').Response,
-        public clientId: string
+        public response: import('express').Response
     ) {
-        
-        response.write("event:authenticate\ndata:" + "key" + "\n\n");
+        this.write(this.connectionId, "connectionId");
         this.sendLiveMessage();
     }
     sendLiveMessage() {
         if (this.closed)
             return;
-        this.response.write("event:keep-alive\ndata:\n\n");
-        let r = this.response as any as { flush(): void };
-        if (r.flush)
-            r.flush();
+        this.write("", "keep-alive");
         setTimeout(() => {
             this.sendLiveMessage();
         }, 45000);
     }
 }
-
-
-let i = 0;
