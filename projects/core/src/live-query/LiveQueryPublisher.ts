@@ -32,7 +32,7 @@ export class LiveQueryPublisher implements LiveQueryProvider {
   runPromise(p: Promise<any>) {
 
   }
-  //TODO - reconsider usage of zone
+  
   saved(ref: EntityRef<any>) {
     const isNew = ref.isNew();
     const origId = isNew ? ref.getId() : ref.getOriginalId();

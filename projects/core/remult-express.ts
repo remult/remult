@@ -34,7 +34,7 @@ export function remultExpress(options?:
     app.get(streamPath, (req, res) => {
         httpServerEvents.openHttpServerStream(req, res);
     });
-    app.post(streamPath, (r, res, next) => server.withRemult(r, res, next), (req, res) => {
+    app.post(streamPath + '/subscribe', (r, res, next) => server.withRemult(r, res, next), (req, res) => {
         httpServerEvents.subscribeToChannel(req.body)
         res.json("ok");
     });

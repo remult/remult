@@ -1,4 +1,3 @@
-
 import { EntityOrderBy, FindOptions, remult as defaultRemult, Remult, Repository, RestDataProviderHttpProvider, Sort } from '../../index';
 import { RestEntityDataProvider } from '../data-providers/rest-data-provider';
 import { RepositoryImplementation } from '../remult3';
@@ -6,7 +5,7 @@ import { Allowed, buildRestDataProvider } from '../context';
 import { ServerEventDispatcher } from './LiveQueryPublisher';
 import { getId } from '../remult3/getId';
 
-export const streamUrl = 'stream1';
+export const streamUrl = 'stream';
 class LiveQuerySubscriber<entityType> {
     id: string;
     subscribeCode: () => void;
@@ -157,7 +156,7 @@ export class LiveQueryClient {
             this.client = undefined;
         }
     }
-    //TODO - consider moving the queued job mechanism into this.
+
 
     subscribe<entityType>(
         repo: Repository<entityType>,
@@ -302,15 +301,5 @@ export class AMessageChannel<messageType> {
 
 
 
-/*
-[V] use entity normal http route for this - with __action.
-[] move id from header to url in stream registration.
-[] transaction accumulates messages.
-[] on unsubscribe, also unsubscribe on server
-[] consolidate channel & query
-[] fix stream api url on server
-[] remove client id from header
-*/
-//TODO - remove the query caching by key on the client
-//TODO - change the subscribe url to stream/subscribe
-//TODO - change stream name to stream.
+//TODO2 - transaction accumulates messages.
+//TODO2 - consider moving the queued job mechanism into this.

@@ -1,7 +1,7 @@
 import { EntityOrderBy, FindOptions, Remult, Repository, RestDataProviderHttpProvider } from '../../index';
 import { Allowed } from '../context';
 import { ServerEventDispatcher } from './LiveQueryPublisher';
-export declare const streamUrl = "stream1";
+export declare const streamUrl = "stream";
 export interface PubSubClient {
     subscribe(channel: string, handler: (value: any) => void): VoidFunction;
     disconnect(): void;
