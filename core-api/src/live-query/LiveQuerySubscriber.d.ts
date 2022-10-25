@@ -2,8 +2,12 @@ import { EntityOrderBy, FindOptions, Remult, Repository, RestDataProviderHttpPro
 import { Allowed } from '../context';
 import { ServerEventDispatcher } from './LiveQueryPublisher';
 export declare const streamUrl = "stream1";
+export interface PubSubClient {
+    subscribe(channel: string): VoidFunction;
+    disconnect(): void;
+}
 export interface LiveQueryProvider {
-    openStreamAndReturnCloseFunction(clientId: string, onMessage: MessageHandler, onReconnect: VoidFunction): Promise<VoidFunction>;
+    openStreamAndReturnCloseFunction(clientId: string, onMessage: MessageHandler, onReconnect: VoidFunction): Promise<PubSubClient>;
 }
 export declare type MessageHandler = (message: {
     data: any;
@@ -21,7 +25,7 @@ export declare class LiveQueryClient {
     subscribeChannel<T>(key: string, onResult: (item: T) => void): () => void;
     private closeIfNoListeners;
     subscribe<entityType>(repo: Repository<entityType>, options: FindOptions<entityType>, onResult: (reducer: (prevState: entityType[]) => entityType[]) => void): () => void;
-    closeListener: Promise<VoidFunction>;
+    client: Promise<PubSubClient>;
     private openIfNoOpened;
 }
 export declare type listener = (message: any) => void;

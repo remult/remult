@@ -12,6 +12,7 @@ export const streamUrl = 'stream1';
 class LiveQuerySubscriber<entityType> {
     id: string;
     subscribeCode: () => void;
+    unsubscribe: VoidFunction = () => { };
     async setAllItems(result: any[]) {
         const items = await Promise.all(result.map(item => this.repo.fromJson(item)));
         this.forListeners(listener => {
@@ -86,15 +87,20 @@ class LiveQuerySubscriber<entityType> {
 
 }
 
+export interface PubSubClient {
+    subscribe(channel: string): VoidFunction;
+    disconnect(): void;
+}
 
 export interface LiveQueryProvider {
-    openStreamAndReturnCloseFunction(clientId: string, onMessage: MessageHandler, onReconnect: VoidFunction): Promise<VoidFunction>;
+    openStreamAndReturnCloseFunction(clientId: string, onMessage: MessageHandler, onReconnect: VoidFunction): Promise<PubSubClient>;
 
 }
 
 
 class MessageChannel<T> {
     id: string;
+    unsubscribe: VoidFunction = () => { };
     async handle(message: T) {
         for (const l of this.listeners) {
             l(message);
@@ -132,14 +138,11 @@ export class LiveQueryClient {
             let q = this.channels.get(key);
             if (!q) {
                 this.channels.set(key, q = new MessageChannel());
-                this.provider.post(defaultRemult.apiClient.url + '/' + streamUrl, {
-                    channel: key,
-                    clientId: this.clientId,
-                    remove: false
-                } as ChannelSubscribe);
+                this.client.then(c =>
+                    q.unsubscribe = c.subscribe(key)
+                );
             }
-            else {
-            }
+
             q.listeners.push(onResult);
             onUnsubscribe = () => {
                 q.listeners.splice(q.listeners.indexOf(onResult), 1);
@@ -158,8 +161,8 @@ export class LiveQueryClient {
 
     private closeIfNoListeners() {
         if (this.queries.size === 0 && this.channels.size === 0) {
-            this.runPromise(this.closeListener.then(x => x()));
-            this.closeListener = undefined;
+            this.runPromise(this.client.then(x => x.disconnect()));
+            this.client = undefined;
         }
     }
 
@@ -186,8 +189,12 @@ export class LiveQueryClient {
                     url.add("__action", 'subscribe|' + this.clientId);
                     q.subscribeCode = () => {
                         const thenResult = (r: SubscribeResult) => {
+                            this.client.then(c =>
+                                q.unsubscribe = c.subscribe(r.id)
+                            );
                             this.runPromise(q.setAllItems(r.result));
                             q.id = r.id;
+
                         }
                         if (filterObject) {
                             this.runPromise(this.provider.post(url.url, filterObject).then(thenResult));
@@ -205,11 +212,7 @@ export class LiveQueryClient {
                     q.listeners.splice(q.listeners.indexOf(onResult), 1);
                     if (q.listeners.length == 0) {
                         this.queries.delete(eventTypeKey);
-                        this.provider.post(defaultRemult.apiClient.url + '/' + streamUrl, {
-                            channel: q.id,
-                            clientId: this.clientId,
-                            remove: false
-                        } as ChannelSubscribe);
+                        q.unsubscribe();
                     }
                     this.closeIfNoListeners();
                 }
@@ -221,14 +224,14 @@ export class LiveQueryClient {
         }
 
     }
-    closeListener: Promise<VoidFunction>;
+    client: Promise<PubSubClient>;
 
     private openIfNoOpened() {
         if (!this.provider) {
             this.provider = buildRestDataProvider(defaultRemult.apiClient.httpClient);
         }
-        if (!this.closeListener)
-            return this.runPromise(this.closeListener =
+        if (!this.client)
+            return this.runPromise(this.client =
                 this.lqp.openStreamAndReturnCloseFunction(this.clientId, message => {
                     for (const q of this.queries.values()) {
                         if (q.id === message.event) {
@@ -245,7 +248,7 @@ export class LiveQueryClient {
                     }
                 }));
 
-        return this.closeListener;
+        return this.client;
     }
 
 }

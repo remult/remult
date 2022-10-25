@@ -149,8 +149,16 @@ describe("Live Query Client", () => {
             async openStreamAndReturnCloseFunction(clientId, onMessage) {
                 open++;
                 sendMessage = onMessage;
-                return () => {
-                    open--;
+                return {
+                    disconnect() {
+                        open--;
+                    },
+                    subscribe(channel) {
+
+                        return () => {
+
+                        }
+                    },
                 }
             },
         }, {
@@ -165,7 +173,7 @@ describe("Live Query Client", () => {
                 }
             },
             put: undefined,
-            post:async ()=>{},
+            post: async () => { },
             delete: undefined
         });
         let p = new PromiseResolver(lqc);
@@ -271,16 +279,32 @@ describe("test live query full cycle", () => {
                         onReconnect();
                         clientStatus.connected = true;
                     };
+                    const channels: string[] = [];
 
                     mh.push(m => {
                         if (clientStatus.connected)
-                            if (m.clientId === clientId)
+                            if (channels.includes(m.queryId))
                                 onMessage({
                                     event: m.queryId,
                                     data: m.message
                                 });
                     });
-                    return () => {
+                    return {
+                        disconnect() {
+
+                        },
+                        subscribe(channel) {
+                            channels.push(channel);
+
+                            return () => {
+                                channels.splice(channels.indexOf(channel), 1);
+                                qm.unsubscribe({
+                                    channel,
+                                    clientId,
+                                    remove: true
+                                })
+                            }
+                        },
                     };
                 },
             }, {
