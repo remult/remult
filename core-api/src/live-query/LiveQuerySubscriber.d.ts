@@ -3,16 +3,12 @@ import { Allowed } from '../context';
 import { ServerEventDispatcher } from './LiveQueryPublisher';
 export declare const streamUrl = "stream1";
 export interface PubSubClient {
-    subscribe(channel: string): VoidFunction;
+    subscribe(channel: string, handler: (value: any) => void): VoidFunction;
     disconnect(): void;
 }
 export interface LiveQueryProvider {
-    openStreamAndReturnCloseFunction(onMessage: MessageHandler, onReconnect: VoidFunction): Promise<PubSubClient>;
+    openStreamAndReturnCloseFunction(onReconnect: VoidFunction): Promise<PubSubClient>;
 }
-export declare type MessageHandler = (message: {
-    data: any;
-    channel: string;
-}) => void;
 export declare class LiveQueryClient {
     lqp: LiveQueryProvider;
     private provider?;

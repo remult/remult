@@ -1,6 +1,5 @@
-import { LiveQueryProvider, MessageHandler, PubSubClient } from "./LiveQuerySubscriber";
+import { LiveQueryProvider, PubSubClient } from "./LiveQuerySubscriber";
 export declare class EventSourceLiveQueryProvider implements LiveQueryProvider {
-    private wrapMessage?;
-    constructor(wrapMessage?: (what: () => void) => void);
-    openStreamAndReturnCloseFunction(onMessage: MessageHandler, onReconnect: VoidFunction): Promise<PubSubClient>;
+    static wrapMessageHandling: (handleMessage: any) => any;
+    openStreamAndReturnCloseFunction(onReconnect: VoidFunction): Promise<PubSubClient>;
 }

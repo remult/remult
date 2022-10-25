@@ -22,7 +22,6 @@ class LiveQuerySubscriber<entityType> {
 
 
     forListeners(what: (listener: (((reducer: (prevState: entityType[]) => entityType[]) => void))) => void) {
-        //   what(x => this.defaultQueryState = x(this.defaultQueryState));
         for (const l of this.listeners) {
             what(l)
         }
@@ -86,12 +85,12 @@ class LiveQuerySubscriber<entityType> {
 }
 
 export interface PubSubClient {
-    subscribe(channel: string): VoidFunction;
+    subscribe(channel: string, handler: (value: any) => void): VoidFunction;
     disconnect(): void;
 }
 
 export interface LiveQueryProvider {
-    openStreamAndReturnCloseFunction(onMessage: MessageHandler, onReconnect: VoidFunction): Promise<PubSubClient>;
+    openStreamAndReturnCloseFunction(onReconnect: VoidFunction): Promise<PubSubClient>;
 
 }
 
@@ -109,12 +108,8 @@ class MessageChannel<T> {
     constructor() { }
 
 }
-
-
-export type MessageHandler = (message: { data: any, channel: string }) => void;
-
 export class LiveQueryClient {
-    
+
     private queries = new Map<string, LiveQuerySubscriber<any>>();
     private channels = new Map<string, MessageChannel<any>>();
     constructor(public lqp: LiveQueryProvider, private provider?: RestDataProviderHttpProvider) {
@@ -136,7 +131,7 @@ export class LiveQueryClient {
             if (!q) {
                 this.channels.set(key, q = new MessageChannel());
                 this.client.then(c =>
-                    q.unsubscribe = c.subscribe(key)
+                    q.unsubscribe = this.subscribeChannel(key, value => q.handle(value))
                 );
             }
 
@@ -162,6 +157,7 @@ export class LiveQueryClient {
             this.client = undefined;
         }
     }
+    //TODO - consider moving the queued job mechanism into this.
 
     subscribe<entityType>(
         repo: Repository<entityType>,
@@ -187,7 +183,7 @@ export class LiveQueryClient {
                     q.subscribeCode = () => {
                         const thenResult = (r: SubscribeResult) => {
                             this.client.then(c =>
-                                q.unsubscribe = c.subscribe(r.id)
+                                q.unsubscribe = c.subscribe(r.id, value => this.runPromise(q.handle(value)))
                             );
                             this.runPromise(q.setAllItems(r.result));
                             q.id = r.id;
@@ -229,17 +225,7 @@ export class LiveQueryClient {
         }
         if (!this.client)
             return this.runPromise(this.client =
-                this.lqp.openStreamAndReturnCloseFunction(message => {
-                    for (const q of this.queries.values()) {
-                        if (q.id === message.channel) {
-                            this.runPromise(q.handle(message.data));
-                        }
-                    }
-                    const channel = this.channels.get(message.channel);
-                    if (channel) {
-                        channel.handle(message.data);
-                    }
-                }, () => {
+                this.lqp.openStreamAndReturnCloseFunction(() => {
                     for (const q of this.queries.values()) {
                         q.subscribeCode();
                     }
@@ -325,3 +311,6 @@ export class AMessageChannel<messageType> {
 [] fix stream api url on server
 [] remove client id from header
 */
+//TODO - remove the query caching by key on the client
+//TODO - change the subscribe url to stream/subscribe
+//TODO - change stream name to stream.

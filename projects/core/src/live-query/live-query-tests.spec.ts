@@ -5,7 +5,7 @@ import { InMemoryDataProvider } from "../data-providers/in-memory-database";
 import { Entity, Fields } from "../remult3";
 import { actionInfo } from "../server-action";
 import { createMockHttpDataProvider } from "../tests/testHelper.spec";
-import { LiveQueryClient, liveQueryMessage, MessageHandler, streamUrl } from "./LiveQuerySubscriber";
+import { LiveQueryClient, liveQueryMessage } from "./LiveQuerySubscriber";
 import { LiveQueryPublisher } from "./LiveQueryPublisher";
 
 const joc = jasmine.objectContaining;
@@ -137,17 +137,16 @@ describe("Live Query Client", () => {
     it("registers once", async () => {
         let open = 0;
         let get = 0;
-        let sendMessage: MessageHandler;
+        let sendMessage = x => { };
         const lqc = new LiveQueryClient({
             async openStreamAndReturnCloseFunction(onMessage) {
                 open++;
-                sendMessage = onMessage;
                 return {
                     disconnect() {
                         open--;
                     },
-                    subscribe(channel) {
-
+                    subscribe(channel, onMessage) {
+                        sendMessage = onMessage;
                         return () => {
 
                         }
@@ -189,36 +188,34 @@ describe("Live Query Client", () => {
         expect(result1[0].title).toBe("noam");
         expect(result2[0].title).toBe("noam");
         sendMessage({
-            channel: '1',
+
+            type: "replace",
             data: {
-                type: "replace",
-                data: {
-                    oldId: 1,
-                    item: {
-                        id: 1,
-                        title: 'noam1'
-                    }
+                oldId: 1,
+                item: {
+                    id: 1,
+                    title: 'noam1'
                 }
-            } as liveQueryMessage
-        });
+            }
+        } as liveQueryMessage
+        );
         await p.flush();
         expect(result1[0].title).toBe("noam1");
         expect(result2[0].title).toBe("noam1");
         closeSub1();
         await p.flush();
         sendMessage({
-            channel: '1',
+
+            type: "replace",
             data: {
-                type: "replace",
-                data: {
-                    oldId: 1,
-                    item: {
-                        id: 1,
-                        title: 'noam2'
-                    }
+                oldId: 1,
+                item: {
+                    id: 1,
+                    title: 'noam2'
                 }
-            } as liveQueryMessage
-        });
+            }
+        } as liveQueryMessage
+        );
         await p.flush();
         expect(result1[0].title).toBe("noam1");
         expect(result2[0].title).toBe("noam2");
@@ -266,7 +263,7 @@ describe("test live query full cycle", () => {
         }
         const buildLqc = () => {
             return new LiveQueryClient({
-                async openStreamAndReturnCloseFunction(onMessage, onReconnect) {
+                async openStreamAndReturnCloseFunction(onReconnect) {
                     clientStatus.connected = true;
                     clientStatus.reconnect = () => {
                         onReconnect();
@@ -274,22 +271,22 @@ describe("test live query full cycle", () => {
                     };
                     const channels: string[] = [];
 
-                    mh.push((channel, message) => {
-                        if (clientStatus.connected)
-                            if (channels.includes(channel)) {
-                                messageCount++;
-                                onMessage({
-                                    channel,
-                                    data: message
-                                });
-                            }
-                    });
+
                     return {
                         disconnect() {
 
                         },
-                        subscribe(channel) {
+                        subscribe(channel, onMessage) {
                             channels.push(channel);
+                            mh.push((channel, message) => {
+                                if (clientStatus.connected)
+                                    if (channels.includes(channel)) {
+                                        messageCount++;
+                                        onMessage(
+                                            message
+                                        );
+                                    }
+                            });
 
                             return () => {
                                 channels.splice(channels.indexOf(channel), 1);

@@ -1,20 +1,22 @@
 import { buildRestDataProvider } from "../context";
 import { remult } from "../remult-proxy";
-import { ServerEventChannelSubscribeDTO, LiveQueryProvider, MessageHandler, PubSubClient, streamUrl } from "./LiveQuerySubscriber";
+import { ServerEventChannelSubscribeDTO, LiveQueryProvider, PubSubClient, streamUrl } from "./LiveQuerySubscriber";
 
 export class EventSourceLiveQueryProvider implements LiveQueryProvider {
-  constructor(private wrapMessage?: (what: () => void) => void) {
-    if (!this.wrapMessage)
-      this.wrapMessage = x => x();
-  }
-  openStreamAndReturnCloseFunction(onMessage: MessageHandler, onReconnect: VoidFunction): Promise<PubSubClient> {
+  static wrapMessageHandling = handleMessage => handleMessage();
+  openStreamAndReturnCloseFunction(onReconnect: VoidFunction): Promise<PubSubClient> {
 
     const source = new EventSource(remult.apiClient.url + '/' + streamUrl, {
       withCredentials: true
     });
+    const channels = new Map<string, ((value: any) => void)[]>();
     source.onmessage = e => {
-      this.wrapMessage(() =>
-        onMessage(JSON.parse(e.data)));
+      EventSourceLiveQueryProvider.wrapMessageHandling(() => {
+        let message = JSON.parse(e.data);
+        const listeners = channels.get(message.channel)
+        if (listeners)
+          listeners.forEach(x => x(message.data));
+      });
     };
     source.onerror = e => {
       console.error("Live Query Event Source Error", e);
@@ -30,13 +32,18 @@ export class EventSourceLiveQueryProvider implements LiveQueryProvider {
       disconnect() {
         source.close();
       },
-      subscribe(channel) {
+      subscribe(channel, handler) {
+        let listeners = channels.get(channel);
+        if (!listeners)
+          channels.set(channel, listeners = []);
+        listeners.push(handler);
         provider.post(remult.apiClient.url + '/' + streamUrl, {
           channel: channel,
           clientId: connectionId,
           remove: false
         } as ServerEventChannelSubscribeDTO);
         return () => {
+          listeners.splice(listeners.indexOf(handler, 1));
           provider.post(remult.apiClient.url + '/' + streamUrl, {
             channel: channel,
             clientId: connectionId,
