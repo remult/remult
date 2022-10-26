@@ -23,7 +23,7 @@
   "exports": {
     ".": {
       "require": "./index.js",
-      "node":{
+      "node": {
         "require": "./index.js",
         "import": "./index.js"
       },
@@ -31,7 +31,7 @@
     },
     "./remult-express": {
       "require": "./remult-express.js",
-      "node":{
+      "node": {
         "require": "./remult-express.js",
         "import": "./remult-express.js"
       },
@@ -39,7 +39,7 @@
     },
     "./server": {
       "require": "./server/index.js",
-      "node":{
+      "node": {
         "require": "./server/index.js",
         "import": "./server/index.js"
       },
@@ -47,7 +47,7 @@
     },
     "./remult-fastify": {
       "require": "./remult-fastify.js",
-      "node":{
+      "node": {
         "require": "./remult-fastify.js",
         "import": "./remult-fastify.js"
       },
@@ -55,7 +55,7 @@
     },
     "./remult-fresh": {
       "require": "./remult-fresh.js",
-      "node":{
+      "node": {
         "require": "./remult-fresh.js",
         "import": "./remult-fresh.js"
       },
@@ -63,7 +63,7 @@
     },
     "./postgres": {
       "require": "./postgres/index.js",
-      "node":{
+      "node": {
         "require": "./postgres/index.js",
         "import": "./postgres/index.js"
       },
@@ -71,7 +71,7 @@
     },
     "./postgres/schema-builder": {
       "require": "./postgres/schema-builder.js",
-      "node":{
+      "node": {
         "require": "./postgres/schema-builder.js",
         "import": "./postgres/schema-builder.js"
       },
@@ -79,7 +79,7 @@
     },
     "./remult-knex": {
       "require": "./remult-knex/index.js",
-      "node":{
+      "node": {
         "require": "./remult-knex/index.js",
         "import": "./remult-knex/index.js"
       },
@@ -87,15 +87,23 @@
     },
     "./remult-mongo": {
       "require": "./remult-mongo.js",
-      "node":{
+      "node": {
         "require": "./remult-mongo.js",
         "import": "./remult-mongo.js"
       },
       "import": "./esm/remult-mongo.js"
     },
+    "./live-query": {
+      "require": "./live-query.js",
+      "node": {
+        "require": "./live-query.js",
+        "import": "./live-query.js"
+      },
+      "import": "./esm/live-query.js"
+    },
     "./graphql": {
       "require": "./graphql.js",
-      "node":{
+      "node": {
         "require": "./graphql.js",
         "import": "./graphql.js"
       },
@@ -103,7 +111,7 @@
     },
     "./src/remult3": {
       "require": "./src/remult3/index.js",
-      "node":{
+      "node": {
         "require": "./src/remult3/index.js",
         "import": "./src/remult3/index.js"
       },
@@ -111,7 +119,7 @@
     },
     "./src/server-action": {
       "require": "./src/server-action.js",
-      "node":{
+      "node": {
         "require": "./src/server-action.js",
         "import": "./src/server-action.js"
       },

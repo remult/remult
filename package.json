@@ -126,5 +126,8 @@
     "jsonwebtoken": false,
     "argon2": false,
     "password-hash": false
+  },
+  "dependencies": {
+    "ably": "^1.2.30"
   }
 }

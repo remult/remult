@@ -7,12 +7,10 @@ import { SortSegment } from './sort';
 import { ErrorInfo } from './data-interfaces';
 import { ForbiddenError } from './server-action';
 
-export interface LiveQueryProvider {
-  subscribe(repo: Repository<any>,  options: FindOptions<any>, remult: Remult, ids: any[]): string;
-}
+
 export class DataApi<T = any> {
 
-  constructor(private repository: Repository<T>, private remult: Remult, private liveQueryProvider?: LiveQueryProvider) {
+  constructor(private repository: Repository<T>, private remult: Remult) {
   }
   httpGet(res: DataApiResponse, req: DataApiRequest) {
     if (req.get("__action") == "count") {
@@ -113,9 +111,9 @@ export class DataApi<T = any> {
         .then(async r => {
           return await Promise.all(r.map(async y => this.repository.getEntityRef(y).toApiJson()));
         });
-      if (this.liveQueryProvider && action?.startsWith("liveQuery")) {
+      if (this.remult.liveQueryPublisher && action?.startsWith("liveQuery")) {
         response.success({
-          id: this.liveQueryProvider.subscribe(this.repository, findOptions, this.remult, r.map(y => this.repository.getEntityRef(y).getId())),
+          id: this.remult.liveQueryPublisher.defineLiveQueryChannel(this.repository, findOptions, this.remult, r.map(y => this.repository.getEntityRef(y).getId())),
           result: r
         });
         return;

@@ -217,10 +217,10 @@ export class Remult {
         }
 
     }
-    /*@internal*/
-    _changeListener = {
+    liveQueryPublisher: LiveQueryPublisherInterface = {
         saved: (ref: EntityRef<any>) => { },
-        deleted: (ref: EntityRef<any>) => { }
+        deleted: (ref: EntityRef<any>) => { },
+        defineLiveQueryChannel: () => ""
     };
 
     //@ts-ignore // type error of typescript regarding args that doesn't appear in my normal development
@@ -234,7 +234,7 @@ export class Remult {
     /** The current data provider */
     dataProvider: DataProvider = new RestDataProvider(() => this.apiClient);
 
-    liveQueryProvider = new LiveQueryClient(new EventSourceLiveQueryProvider());
+    liveQuerySubscriber = new LiveQueryClient(new EventSourceLiveQueryProvider());
 
     /** A helper callback that can be used to debug and trace all find operations. Useful in debugging scenarios */
     static onFind = (metadata: EntityMetadata, options: FindOptions<any>) => { };
@@ -366,4 +366,10 @@ export class EventSource {
         }
     };
 
+}
+
+export interface LiveQueryPublisherInterface {
+    defineLiveQueryChannel(repo: Repository<any>, options: FindOptions<any>, remult: Remult, ids: any[]): string;
+    saved: (ref: EntityRef<any>) => void;
+    deleted: (ref: EntityRef<any>) => void;
 }

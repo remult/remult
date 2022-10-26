@@ -42,8 +42,8 @@ async function setup1() {
     const qm = new LiveQueryPublisher({ sendChannelMessage: (c, m: any) => messages.push(m) });
     let p = new PromiseResolver(qm);
 
-    serverRemult._changeListener = qm;
-    const queryId = qm.subscribe(clientRepo, {}, remult, items.map(x => x.id));
+    serverRemult.liveQueryPublisher = qm;
+    const queryId = qm.defineLiveQueryChannel(clientRepo, {}, remult, items.map(x => x.id));
     expect(messages.length).toBe(0);
     return { serverRepo, messages, flush: () => p.flush() };
 }
@@ -170,7 +170,7 @@ describe("Live Query Client", () => {
         });
         let p = new PromiseResolver(lqc);
         const serverRemult = new Remult(new InMemoryDataProvider());
-        serverRemult.liveQueryProvider = lqc;
+        serverRemult.liveQuerySubscriber = lqc;
         const serverRepo = serverRemult.repo(eventTestEntity);
         let closeSub1: VoidFunction;
         let closeSub2: VoidFunction;
@@ -256,7 +256,8 @@ describe("test live query full cycle", () => {
                 mh.forEach(x => x(channel, message))
             },
         });
-        var dataApi = new DataApi(repo, remult, qm);
+        remult.liveQueryPublisher = qm;
+        var dataApi = new DataApi(repo, remult);
         const clientStatus = {
             connected: true,
             reconnect: () => { }
@@ -300,10 +301,10 @@ describe("test live query full cycle", () => {
         const lqc2 = buildLqc();
 
         var pm = new PromiseResolver(lqc1, lqc2, qm);
-        remult.liveQueryProvider = lqc1;
-        remult2.liveQueryProvider = lqc2;
-        remult._changeListener = qm;
-        remult2._changeListener = qm;
+        remult.liveQuerySubscriber = lqc1;
+        remult2.liveQuerySubscriber = lqc2;
+        remult.liveQueryPublisher = qm;
+        remult2.liveQueryPublisher = qm;
         return { repo, pm, repo2, messageCount: () => messageCount, clientStatus };
     }
     it("integration test 1", async () => {

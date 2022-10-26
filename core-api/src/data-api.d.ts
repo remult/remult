@@ -1,14 +1,10 @@
 import { Remult } from './context';
-import { FindOptions, Repository } from './remult3';
+import { Repository } from './remult3';
 import { ErrorInfo } from './data-interfaces';
-export interface LiveQueryProvider {
-    subscribe(repo: Repository<any>, options: FindOptions<any>, remult: Remult, ids: any[]): string;
-}
 export declare class DataApi<T = any> {
     private repository;
     private remult;
-    private liveQueryProvider?;
-    constructor(repository: Repository<T>, remult: Remult, liveQueryProvider?: LiveQueryProvider);
+    constructor(repository: Repository<T>, remult: Remult);
     httpGet(res: DataApiResponse, req: DataApiRequest): Promise<void>;
     httpPost(res: DataApiResponse, req: DataApiRequest, body: any): Promise<void>;
     static defaultGetLimit: number;

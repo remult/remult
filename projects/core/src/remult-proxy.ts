@@ -1,5 +1,5 @@
 import type { ClassType } from "../classType";
-import type { Allowed, AllowedForInstance, ApiClient, GetArguments, Remult, RemultContext, UserInfo } from "./context";
+import type { Allowed, AllowedForInstance, ApiClient, GetArguments, LiveQueryPublisherInterface, Remult, RemultContext, UserInfo } from "./context";
 import type { DataProvider } from "./data-interfaces";
 import type { LiveQueryClient } from "./live-query/LiveQuerySubscriber";
 import type { EntityRef, Repository } from "./remult3";
@@ -8,16 +8,13 @@ import type { EntityRef, Repository } from "./remult3";
 /*@internal*/
 export class RemultProxy implements Remult {
     static defaultRemult: Remult;
-    get liveQueryProvider() { return this.remultFactory().liveQueryProvider };
-    set liveQueryProvider(val: LiveQueryClient) { this.remultFactory().liveQueryProvider = val };
-    get _changeListener() {
-        return this.remultFactory()._changeListener;
+    get liveQuerySubscriber() { return this.remultFactory().liveQuerySubscriber };
+    set liveQuerySubscriber(val: LiveQueryClient) { this.remultFactory().liveQuerySubscriber = val };
+    get liveQueryPublisher() {
+        return this.remultFactory().liveQueryPublisher;
     }
-    set _changeListener(val: {
-        saved: (ref: EntityRef<any>) => void;
-        deleted: (ref: EntityRef<any>) => void;
-    }) {
-        this.remultFactory()._changeListener = val;
+    set liveQueryPublisher(val: LiveQueryPublisherInterface) {
+        this.remultFactory().liveQueryPublisher = val;
     }
     call<T extends ((...args: any[]) => Promise<any>)>(backendMethod: T, self?: any, ...args: GetArguments<T>): ReturnType<T> {
         return this.remultFactory().call(backendMethod, self, ...args);

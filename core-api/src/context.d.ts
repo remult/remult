@@ -63,10 +63,11 @@ export declare class Remult {
     constructor(http: ExternalHttpProvider | typeof fetch | ApiClient);
     constructor(p: DataProvider);
     constructor();
+    liveQueryPublisher: LiveQueryPublisherInterface;
     call<T extends ((...args: any[]) => Promise<any>)>(backendMethod: T, classInstance?: any, ...args: GetArguments<T>): ReturnType<T>;
     /** The current data provider */
     dataProvider: DataProvider;
-    liveQueryProvider: LiveQueryClient;
+    liveQuerySubscriber: LiveQueryClient;
     /** A helper callback that can be used to debug and trace all find operations. Useful in debugging scenarios */
     static onFind: (metadata: EntityMetadata, options: FindOptions<any>) => void;
     clearAllCache(): any;
@@ -114,4 +115,9 @@ export declare class EventSource {
     listeners: (() => {})[];
     fire(): Promise<void>;
     dispatcher: EventDispatcher;
+}
+export interface LiveQueryPublisherInterface {
+    defineLiveQueryChannel(repo: Repository<any>, options: FindOptions<any>, remult: Remult, ids: any[]): string;
+    saved: (ref: EntityRef<any>) => void;
+    deleted: (ref: EntityRef<any>) => void;
 }

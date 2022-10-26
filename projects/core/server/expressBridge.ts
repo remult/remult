@@ -16,6 +16,7 @@ export interface RemultServerOptions<RequestType extends GenericRequest> {
    * @see [Connecting to a Database](https://remult.dev/docs/databases.html).
   */
   dataProvider?: DataProvider | Promise<DataProvider> | (() => Promise<DataProvider | undefined>);
+  //TODO pub sub provider.
   queueStorage?: QueueStorage;
   initRequest?: (remult: Remult, origReq: RequestType) => Promise<void>;
   getUser?: (request: RequestType) => Promise<UserInfo>;
@@ -238,7 +239,7 @@ export class RemultServerImplementation implements RemultServer {
       let key = getEntityKey(e);
       if (key != undefined)
         this.add(key, c => {
-          return new DataApi(c.repo(e), c, this.liveQueryManager);
+          return new DataApi(c.repo(e), c);
         }, r);
     });
   }
@@ -273,7 +274,7 @@ export class RemultServerImplementation implements RemultServer {
       let myReq = new ExpressRequestBridgeToDataApiRequest(req);
       let myRes = new ExpressResponseBridgeToDataApiResponse(res, req);
       let remult = new Remult();
-      remult._changeListener = this.liveQueryManager;
+      remult.liveQueryPublisher = this.liveQueryManager;
       remult.dataProvider = (await this.dataProvider);
       await new Promise(res => {
         remultObjectStorage.run(remult, async () => {

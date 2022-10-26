@@ -1,7 +1,7 @@
 import { buildRestDataProvider } from "../context";
 import { remult } from "../remult-proxy";
 import { ServerEventChannelSubscribeDTO, LiveQueryProvider, PubSubClient, streamUrl } from "./LiveQuerySubscriber";
-
+//TODO - move wrap message handling to live query subscriber
 export class EventSourceLiveQueryProvider implements LiveQueryProvider {
   static wrapMessageHandling = handleMessage => handleMessage();
   openStreamAndReturnCloseFunction(onReconnect: VoidFunction): Promise<PubSubClient> {

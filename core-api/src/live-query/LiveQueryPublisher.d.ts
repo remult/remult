@@ -1,10 +1,10 @@
 import { Remult } from '../..';
+import { LiveQueryPublisherInterface } from '../context';
 import { Repository, EntityRef, FindOptions } from '../remult3';
-import { LiveQueryProvider } from '../data-api';
-export declare class LiveQueryPublisher implements LiveQueryProvider {
+export declare class LiveQueryPublisher implements LiveQueryPublisherInterface {
     private dispatcher;
     constructor(dispatcher: ServerEventDispatcher);
-    subscribe(repo: Repository<any>, findOptions: FindOptions<any>, remult: Remult, ids: any[]): string;
+    defineLiveQueryChannel(repo: Repository<any>, findOptions: FindOptions<any>, remult: Remult, ids: any[]): string;
     queries: ({
         id: string;
         repo: Repository<any>;

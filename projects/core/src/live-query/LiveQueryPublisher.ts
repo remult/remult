@@ -1,15 +1,16 @@
 import { v4 as uuid } from 'uuid';
-import { Remult, UserInfo } from '../..';
-import { Repository, EntityRef, FindOptions, getEntityRef } from '../remult3';
-import { LiveQueryProvider } from '../data-api';
-import { ServerEventChannelSubscribeDTO, liveQueryMessage, SubscribeToQueryArgs } from './LiveQuerySubscriber';
+import { Remult } from '../..';
+import { LiveQueryPublisherInterface } from '../context';
+import { Repository, EntityRef, FindOptions } from '../remult3';
+
+import { liveQueryMessage } from './LiveQuerySubscriber';
 
 
-export class LiveQueryPublisher implements LiveQueryProvider {
-  
+export class LiveQueryPublisher implements LiveQueryPublisherInterface {
+
   constructor(private dispatcher: ServerEventDispatcher) { }
 
-  subscribe(repo: Repository<any>,  findOptions: FindOptions<any>, remult: Remult, ids: any[]): string {
+  defineLiveQueryChannel(repo: Repository<any>, findOptions: FindOptions<any>, remult: Remult, ids: any[]): string {
     const id = uuid();
     this.queries.push({
       id,
@@ -27,12 +28,13 @@ export class LiveQueryPublisher implements LiveQueryProvider {
     ids: any[]
   })[] = [];
 
-
+// TODO - aggregate transaction outside of it.
+// TODO - site as decorator pattern
 
   runPromise(p: Promise<any>) {
 
   }
-  
+
   saved(ref: EntityRef<any>) {
     const isNew = ref.isNew();
     const origId = isNew ? ref.getId() : ref.getOriginalId();
@@ -101,3 +103,6 @@ export class LiveQueryPublisher implements LiveQueryProvider {
 export interface ServerEventDispatcher {
   sendChannelMessage<T>(channel: string, message: T): void;
 }
+// TODO - ABYL
+// TODO - PUBNUB
+// TODO - find set all bug
