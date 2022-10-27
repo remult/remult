@@ -9,6 +9,7 @@ import { ClassType } from "../classType";
 import { LiveQueryClient } from "./live-query/LiveQuerySubscriber";
 import { EventSourceLiveQueryProvider } from "./live-query/EventSourceLiveQueryProvider";
 import { RemultProxy } from "./remult-proxy";
+import type { ServerEventDispatcher } from "../live-query";
 
 export interface ExternalHttpProvider {
     post(url: string, data: any): Promise<any> | { toPromise(): Promise<any> };
@@ -220,7 +221,11 @@ export class Remult {
     liveQueryPublisher: LiveQueryPublisherInterface = {
         saved: (ref: EntityRef<any>) => { },
         deleted: (ref: EntityRef<any>) => { },
-        defineLiveQueryChannel: () => ""
+        defineLiveQueryChannel: () => "",
+        dispatcher: undefined,
+        sendChannelMessage: function <messageType extends {}>(arg0: string, what: messageType): unknown {
+            throw new Error("invalid publisher.");
+        }
     };
 
     //@ts-ignore // type error of typescript regarding args that doesn't appear in my normal development
@@ -369,7 +374,9 @@ export class EventSource {
 }
 
 export interface LiveQueryPublisherInterface {
+    sendChannelMessage<messageType>(channel: string, message: messageType): void;
     defineLiveQueryChannel(repo: Repository<any>, options: FindOptions<any>, remult: Remult, ids: any[]): string;
     saved: (ref: EntityRef<any>) => void;
     deleted: (ref: EntityRef<any>) => void;
+    dispatcher: ServerEventDispatcher;
 }

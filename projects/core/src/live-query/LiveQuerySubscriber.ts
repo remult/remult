@@ -108,11 +108,10 @@ class MessageChannel<T> {
 
 }
 export class LiveQueryClient {
-
+    wrapMessageHandling = handleMessage => handleMessage();
     private queries = new Map<string, LiveQuerySubscriber<any>>();
     private channels = new Map<string, MessageChannel<any>>();
-    constructor(public lqp: LiveQueryProvider, private provider?: RestDataProviderHttpProvider) {
-    }
+    constructor(public lqp: LiveQueryProvider, private provider?: RestDataProviderHttpProvider) { }
     runPromise(p: Promise<any>) {
         return p;
     }
@@ -124,13 +123,13 @@ export class LiveQueryClient {
     subscribeChannel<T>(key: string, onResult: (item: T) => void) {
 
         let onUnsubscribe: VoidFunction = () => { };
-        this.openIfNoOpened().then(() => {
-
+        this.openIfNoOpened(key).then(() => {
+            console.log(key);
             let q = this.channels.get(key);
             if (!q) {
                 this.channels.set(key, q = new MessageChannel());
                 this.client.then(c =>
-                    q.unsubscribe = this.subscribeChannel(key, value => q.handle(value))
+                    q.unsubscribe = c.subscribe(key, value => this.wrapMessageHandling(() => q.handle(value)))
                 );
             }
 
@@ -157,7 +156,8 @@ export class LiveQueryClient {
         }
     }
 
-
+    //TODO - add unsubscribe to query on server, 
+    //TODO - consider the time that may pass from the get request to the subscribe to the channel, in some cases this could mean, a call to server to get token and a call to the external provider - it may be some time
     subscribe<entityType>(
         repo: Repository<entityType>,
         options: FindOptions<entityType>,
@@ -165,9 +165,9 @@ export class LiveQueryClient {
 
         let alive = true;
         let onUnsubscribe: VoidFunction = () => { };
-
-        this.runPromise(this.openIfNoOpened().then(() => (repo as RepositoryImplementation<entityType>).buildEntityDataProviderFindOptions(options)
+        this.runPromise(this.openIfNoOpened("query").then(() => (repo as RepositoryImplementation<entityType>).buildEntityDataProviderFindOptions(options)
             .then(opts => {
+                console.log("query");
                 if (!alive)
                     return;
 
@@ -182,10 +182,10 @@ export class LiveQueryClient {
                     q.subscribeCode = () => {
                         const thenResult = (r: SubscribeResult) => {
                             this.client.then(c =>
-                                q.unsubscribe = c.subscribe(r.id, value => this.runPromise(q.handle(value)))
+                                q.unsubscribe = c.subscribe(r.queryChannel, (value:any) => this.wrapMessageHandling(() => this.runPromise(q.handle(value))))
                             );
                             this.runPromise(q.setAllItems(r.result));
-                            q.id = r.id;
+                            q.id = r.queryChannel;
 
                         }
                         if (filterObject) {
@@ -218,7 +218,8 @@ export class LiveQueryClient {
     }
     client: Promise<PubSubClient>;
 
-    private openIfNoOpened() {
+    private openIfNoOpened(test: string) {
+        console.log("open if not opened " + test)
         if (!this.provider) {
             this.provider = buildRestDataProvider(defaultRemult.apiClient.httpClient);
         }
@@ -261,7 +262,7 @@ export declare type liveQueryMessage = {
 
 export interface SubscribeResult {
     result: [],
-    id: string
+    queryChannel: string
 }
 
 
@@ -273,29 +274,20 @@ export interface ServerEventChannelSubscribeDTO {
 
 
 export class AMessageChannel<messageType> {
-    userCanSubscribe(channel: string, remult: Remult) {
-        if (!remult)
-            remult = defaultRemult;
-        if (channel == this.key(remult) && remult.isAllowed(this.subscribedAllowed))
-            return true;
-        return false;
-    }
-    private key: (remult: Remult) => string;
-    constructor(key: (string | ((remult: Remult) => string)), private subscribedAllowed: Allowed) {
-        if (typeof key === "string")
-            this.key = () => key;
-        else this.key = key;
+
+
+    constructor(public channelKey: string) {
+
 
     }
     send(what: messageType, remult?: Remult) {
-        if (!this.dispatcher)
-            throw new Error("Message couldn't be send since no dispatcher was set");
-        this.dispatcher.sendChannelMessage(this.key(remult || defaultRemult), what);
+        remult = remult || defaultRemult;
+        remult.liveQueryPublisher.sendChannelMessage(this.channelKey, what);
     }
-    subscribe(client: LiveQueryClient, onValue: (value: messageType) => void, remult?: Remult) {
-        client.subscribeChannel(this.key(remult || defaultRemult), onValue);
+    subscribe(onValue: (value: messageType) => void, remult?: Remult) {
+        remult = remult || defaultRemult;
+        remult.liveQuerySubscriber.subscribeChannel(this.channelKey, onValue);
     }
-    dispatcher: ServerEventDispatcher;
 }
 
 

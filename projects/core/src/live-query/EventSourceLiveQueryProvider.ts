@@ -1,9 +1,7 @@
 import { buildRestDataProvider } from "../context";
 import { remult } from "../remult-proxy";
 import { ServerEventChannelSubscribeDTO, LiveQueryProvider, PubSubClient, streamUrl } from "./LiveQuerySubscriber";
-//TODO - move wrap message handling to live query subscriber
 export class EventSourceLiveQueryProvider implements LiveQueryProvider {
-  static wrapMessageHandling = handleMessage => handleMessage();
   openStreamAndReturnCloseFunction(onReconnect: VoidFunction): Promise<PubSubClient> {
 
     const source = new EventSource(remult.apiClient.url + '/' + streamUrl, {
@@ -11,22 +9,16 @@ export class EventSourceLiveQueryProvider implements LiveQueryProvider {
     });
     const channels = new Map<string, ((value: any) => void)[]>();
     source.onmessage = e => {
-      EventSourceLiveQueryProvider.wrapMessageHandling(() => {
-        let message = JSON.parse(e.data);
-        const listeners = channels.get(message.channel)
-        if (listeners)
-          listeners.forEach(x => x(message.data));
-      });
+      let message = JSON.parse(e.data);
+      const listeners = channels.get(message.channel)
+      if (listeners)
+        listeners.forEach(x => x(message.data));
     };
     source.onerror = e => {
       console.error("Live Query Event Source Error", e);
     }
     let connectionId: string;
-    source.addEventListener("connectionId", e => {
-      //@ts-ignore
-      connectionId = e.data;
 
-    });
     const provider = buildRestDataProvider(remult.apiClient.httpClient);
     const client: PubSubClient = {
       disconnect() {
@@ -54,12 +46,14 @@ export class EventSourceLiveQueryProvider implements LiveQueryProvider {
     }
     return new Promise<PubSubClient>((res) => {
       let connected = false;
-      source.onopen = e => {
+      source.addEventListener("connectionId", e => {
+        //@ts-ignore
+        connectionId = e.data;
         if (connected)
           onReconnect();
         connected = true;
         res(client)
-      }
+      });
     });
   }
 }

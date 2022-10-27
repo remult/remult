@@ -9,14 +9,13 @@ import { IdEntity } from '../src/id-entity';
 import { remult, RemultProxy } from '../src/remult-proxy';
 import { LiveQueryPublisher } from '../src/live-query/LiveQueryPublisher';
 
-
+//TODO support pub sub non express servers
 export interface RemultServerOptions<RequestType extends GenericRequest> {
   /** Sets a database connection for Remult.
    *
    * @see [Connecting to a Database](https://remult.dev/docs/databases.html).
   */
   dataProvider?: DataProvider | Promise<DataProvider> | (() => Promise<DataProvider | undefined>);
-  //TODO pub sub provider.
   queueStorage?: QueueStorage;
   initRequest?: (remult: Remult, origReq: RequestType) => Promise<void>;
   getUser?: (request: RequestType) => Promise<UserInfo>;

@@ -3,6 +3,7 @@ import { RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-da
 import { EntityMetadata, EntityRef, FindOptions, Repository } from "./remult3";
 import { ClassType } from "../classType";
 import { LiveQueryClient } from "./live-query/LiveQuerySubscriber";
+import type { ServerEventDispatcher } from "../live-query";
 export interface ExternalHttpProvider {
     post(url: string, data: any): Promise<any> | {
         toPromise(): Promise<any>;
@@ -117,7 +118,9 @@ export declare class EventSource {
     dispatcher: EventDispatcher;
 }
 export interface LiveQueryPublisherInterface {
+    sendChannelMessage<messageType>(channel: string, message: messageType): void;
     defineLiveQueryChannel(repo: Repository<any>, options: FindOptions<any>, remult: Remult, ids: any[]): string;
     saved: (ref: EntityRef<any>) => void;
     deleted: (ref: EntityRef<any>) => void;
+    dispatcher: ServerEventDispatcher;
 }

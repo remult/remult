@@ -8,10 +8,13 @@ import { liveQueryMessage } from './LiveQuerySubscriber';
 
 export class LiveQueryPublisher implements LiveQueryPublisherInterface {
 
-  constructor(private dispatcher: ServerEventDispatcher) { }
+  constructor(public dispatcher: ServerEventDispatcher) { }
+  sendChannelMessage<messageType>(channel: string, message: messageType) {
+    this.dispatcher.sendChannelMessage(channel, message);
+  }
 
   defineLiveQueryChannel(repo: Repository<any>, findOptions: FindOptions<any>, remult: Remult, ids: any[]): string {
-    const id = uuid();
+    const id =  `users:${remult.user?.id}:queries:${uuid()}`;
     this.queries.push({
       id,
       findOptions: findOptions,
@@ -28,8 +31,8 @@ export class LiveQueryPublisher implements LiveQueryPublisherInterface {
     ids: any[]
   })[] = [];
 
-// TODO - aggregate transaction outside of it.
-// TODO - site as decorator pattern
+  // TODO - aggregate transaction outside of it.
+  // TODO - site as decorator pattern
 
   runPromise(p: Promise<any>) {
 

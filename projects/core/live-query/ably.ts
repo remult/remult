@@ -4,7 +4,7 @@ import { LiveQueryProvider, PubSubClient } from '../src/live-query/LiveQuerySubs
 
 
 export class AblyLiveQueryProvider implements LiveQueryProvider {
-  constructor(private ably: Ably.Types.RealtimePromise) {}
+  constructor(private  ably: Ably.Types.RealtimePromise) {}
   async openStreamAndReturnCloseFunction(onReconnect: VoidFunction): Promise<PubSubClient> {
     return {
       disconnect: () => {

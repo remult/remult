@@ -1,6 +1,4 @@
 import { EntityOrderBy, FindOptions, Remult, Repository, RestDataProviderHttpProvider } from '../../index';
-import { Allowed } from '../context';
-import { ServerEventDispatcher } from './LiveQueryPublisher';
 export declare const streamUrl = "stream";
 export interface PubSubClient {
     subscribe(channel: string, handler: (value: any) => void): VoidFunction;
@@ -12,6 +10,7 @@ export interface LiveQueryProvider {
 export declare class LiveQueryClient {
     lqp: LiveQueryProvider;
     private provider?;
+    wrapMessageHandling: (handleMessage: any) => any;
     private queries;
     private channels;
     constructor(lqp: LiveQueryProvider, provider?: RestDataProviderHttpProvider);
@@ -48,7 +47,7 @@ export declare type liveQueryMessage = {
 };
 export interface SubscribeResult {
     result: [];
-    id: string;
+    queryChannel: string;
 }
 export interface ServerEventChannelSubscribeDTO {
     clientId: string;
@@ -56,11 +55,8 @@ export interface ServerEventChannelSubscribeDTO {
     remove: boolean;
 }
 export declare class AMessageChannel<messageType> {
-    private subscribedAllowed;
-    userCanSubscribe(channel: string, remult: Remult): boolean;
-    private key;
-    constructor(key: (string | ((remult: Remult) => string)), subscribedAllowed: Allowed);
+    channelKey: string;
+    constructor(channelKey: string);
     send(what: messageType, remult?: Remult): void;
-    subscribe(client: LiveQueryClient, onValue: (value: messageType) => void, remult?: Remult): void;
-    dispatcher: ServerEventDispatcher;
+    subscribe(onValue: (value: messageType) => void, remult?: Remult): void;
 }
