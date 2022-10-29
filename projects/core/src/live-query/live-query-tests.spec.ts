@@ -39,7 +39,7 @@ async function setup1() {
     remult.user = ({ id: clientId1, name: clientId1, roles: [] });
     const clientRepo = remult.repo(eventTestEntity);
     const messages: liveQueryMessage[] = [];
-    const qm = new LiveQueryPublisher({ sendChannelMessage: (c, m: any) => messages.push(m) });
+    const qm = new LiveQueryPublisher({ sendChannelMessage: (c, m: any) => messages.push(...m) });
     let p = new PromiseResolver(qm);
 
     serverRemult.liveQueryPublisher = qm;
@@ -146,7 +146,7 @@ describe("Live Query Client", () => {
                         open--;
                     },
                     subscribe(channel, onMessage) {
-                        sendMessage = onMessage;
+                        sendMessage = x=>onMessage([x]);
                         return () => {
 
                         }

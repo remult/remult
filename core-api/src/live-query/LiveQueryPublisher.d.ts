@@ -1,6 +1,6 @@
 import { Remult } from '../..';
-import { LiveQueryPublisherInterface } from '../context';
-import { Repository, EntityRef, FindOptions } from '../remult3';
+import { itemChange, LiveQueryPublisherInterface } from '../context';
+import { Repository, FindOptions } from '../remult3';
 export declare class LiveQueryPublisher implements LiveQueryPublisherInterface {
     dispatcher: ServerEventDispatcher;
     constructor(dispatcher: ServerEventDispatcher);
@@ -13,8 +13,7 @@ export declare class LiveQueryPublisher implements LiveQueryPublisherInterface {
         ids: any[];
     })[];
     runPromise(p: Promise<any>): void;
-    saved(ref: EntityRef<any>): void;
-    deleted(ref: EntityRef<any>): void;
+    itemChanged(entityKey: string, changes: itemChange[]): void;
 }
 export interface ServerEventDispatcher {
     sendChannelMessage<T>(channel: string, message: T): void;

@@ -219,8 +219,7 @@ export class Remult {
 
     }
     liveQueryPublisher: LiveQueryPublisherInterface = {
-        saved: (ref: EntityRef<any>) => { },
-        deleted: (ref: EntityRef<any>) => { },
+        itemChanged: () => { },
         defineLiveQueryChannel: () => "",
         dispatcher: undefined,
         sendChannelMessage: function <messageType extends {}>(arg0: string, what: messageType): unknown {
@@ -376,7 +375,11 @@ export class EventSource {
 export interface LiveQueryPublisherInterface {
     sendChannelMessage<messageType>(channel: string, message: messageType): void;
     defineLiveQueryChannel(repo: Repository<any>, options: FindOptions<any>, remult: Remult, ids: any[]): string;
-    saved: (ref: EntityRef<any>) => void;
-    deleted: (ref: EntityRef<any>) => void;
+    itemChanged: (entityKey: string, changes: itemChange[]) => void;
     dispatcher: ServerEventDispatcher;
+}
+export interface itemChange {
+    id: any;
+    oldId: any;
+    deleted: boolean;
 }

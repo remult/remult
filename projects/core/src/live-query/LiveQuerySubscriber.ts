@@ -26,7 +26,7 @@ class LiveQuerySubscriber<entityType> {
         }
     }
 
-    async handle(message: liveQueryMessage) {
+    async handle(messages: liveQueryMessage[]) {
 
 
         const sort = (items: entityType[]) => {
@@ -37,44 +37,48 @@ class LiveQuerySubscriber<entityType> {
             }
             return items;
         }
+        for (const message of messages) {
 
-        switch (message.type) {
-            case "all":
-                this.setAllItems(message.data);
-                break;
-            case "replace": {
-                const item = await this.repo.fromJson(message.data.item);
-                this.forListeners(listener => {
-                    listener(items => {
-                        if (!items)
-                            items = [];
-                        return sort(items.map(x => getId(this.repo.metadata, x) === message.data.oldId ? item : x));
-                    });
-                });
-                break;
-            }
-            case "add":
-                {
+
+
+            switch (message.type) {
+                case "all":
+                    this.setAllItems(message.data);
+                    break;
+                case "replace": {
                     const item = await this.repo.fromJson(message.data.item);
+                    this.forListeners(listener => {
+                        listener(items => {
+                            if (!items)
+                                items = [];
+                            return sort(items.map(x => getId(this.repo.metadata, x) === message.data.oldId ? item : x));
+                        });
+                    });
+                    break;
+                }
+                case "add":
+                    {
+                        const item = await this.repo.fromJson(message.data.item);
+                        this.forListeners(listener =>
+                            listener(items => {
+                                if (!items)
+                                    items = [];
+                                items = items.filter(x => getId(this.repo.metadata, x) !== getId(this.repo.metadata, item));
+                                items.push(item);
+                                return sort(items);
+                            }));
+                        break;
+                    }
+                case "remove":
                     this.forListeners(listener =>
                         listener(items => {
                             if (!items)
                                 items = [];
-                            items = items.filter(x => getId(this.repo.metadata, x) !== getId(this.repo.metadata, item));
-                            items.push(item);
-                            return sort(items);
+                            return items.filter(x => getId(this.repo.metadata, x) !== message.data.id);
                         }));
                     break;
-                }
-            case "remove":
-                this.forListeners(listener =>
-                    listener(items => {
-                        if (!items)
-                            items = [];
-                        return items.filter(x => getId(this.repo.metadata, x) !== message.data.id);
-                    }));
-                break;
-        };
+            };
+        }
     }
 
     defaultQueryState: entityType[] = [];
@@ -123,8 +127,7 @@ export class LiveQueryClient {
     subscribeChannel<T>(key: string, onResult: (item: T) => void) {
 
         let onUnsubscribe: VoidFunction = () => { };
-        this.openIfNoOpened(key).then(() => {
-            console.log(key);
+        this.openIfNoOpened().then(() => {
             let q = this.channels.get(key);
             if (!q) {
                 this.channels.set(key, q = new MessageChannel());
@@ -165,9 +168,8 @@ export class LiveQueryClient {
 
         let alive = true;
         let onUnsubscribe: VoidFunction = () => { };
-        this.runPromise(this.openIfNoOpened("query").then(() => (repo as RepositoryImplementation<entityType>).buildEntityDataProviderFindOptions(options)
+        this.runPromise(this.openIfNoOpened().then(() => (repo as RepositoryImplementation<entityType>).buildEntityDataProviderFindOptions(options)
             .then(opts => {
-                console.log("query");
                 if (!alive)
                     return;
 
@@ -182,7 +184,7 @@ export class LiveQueryClient {
                     q.subscribeCode = () => {
                         const thenResult = (r: SubscribeResult) => {
                             this.client.then(c =>
-                                q.unsubscribe = c.subscribe(r.queryChannel, (value:any) => this.wrapMessageHandling(() => this.runPromise(q.handle(value))))
+                                q.unsubscribe = c.subscribe(r.queryChannel, (value: any) => this.wrapMessageHandling(() => this.runPromise(q.handle(value))))
                             );
                             this.runPromise(q.setAllItems(r.result));
                             q.id = r.queryChannel;
@@ -218,8 +220,7 @@ export class LiveQueryClient {
     }
     client: Promise<PubSubClient>;
 
-    private openIfNoOpened(test: string) {
-        console.log("open if not opened " + test)
+    private openIfNoOpened() {
         if (!this.provider) {
             this.provider = buildRestDataProvider(defaultRemult.apiClient.httpClient);
         }
