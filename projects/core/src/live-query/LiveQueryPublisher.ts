@@ -41,7 +41,7 @@ export class LiveQueryPublisher implements LiveQueryPublisherInterface {
 
   itemChanged(entityKey: string, changes: itemChange[]) {
     for (const q of this.queries) {
-      //TODO optimize delete only messages that don't require running the query again
+      // possible optimization delete only messages that don't require running the query again
       if (q.repo.metadata.key === entityKey) {
         const messages = [];
         this.runPromise(q.repo.find(q.findOptions).then(

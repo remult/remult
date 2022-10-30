@@ -387,3 +387,62 @@ export interface itemChange {
     oldId: any;
     deleted: boolean;
 }
+
+export async function doTransaction(remult: Remult, what: () => Promise<void>) {
+    return await remult.dataProvider.transaction(async ds => {
+        remult.dataProvider = (ds);
+        const trans = new transactionLiveQueryPublisher(remult.liveQueryPublisher);
+        remult.liveQueryPublisher = trans;
+        await what();
+        trans.flush();
+    });
+}
+class transactionLiveQueryPublisher implements LiveQueryPublisherInterface {
+
+    constructor(private orig: LiveQueryPublisherInterface) { }
+    stopLiveQuery(id: any): void {
+        this.orig.stopLiveQuery(id);
+    }
+    transactionItems = new Map<string, itemChange[]>();
+    itemChanged(entityKey: string, changes: itemChange[]): void {
+        let items = this.transactionItems.get(entityKey);
+        if (!items) {
+            this.transactionItems.set(entityKey, items = []);
+        }
+        for (const c of changes) {
+            if (c.oldId !== undefined) {
+                const item = items.find(y => y.id === c.oldId);
+                if (item !== undefined) {
+                    if (c.deleted)
+                        item.deleted = true;
+                    if (c.id != item.id)
+                        item.id = c.id;
+                }
+                else
+                    items.push(c);
+            }
+            else items.push(c);
+        }
+    }
+    flush() {
+        for (const key of this.transactionItems.keys()) {
+            this.orig.itemChanged(key, this.transactionItems.get(key));
+        }
+    }
+    sendChannelMessage<messageType>(channel: string, message: messageType): void {
+        this.orig.sendChannelMessage(channel, message);
+    }
+    defineLiveQueryChannel(repo: Repository<any>, options: FindOptions<any>, remult: Remult, ids: any[]): string {
+        return this.orig.defineLiveQueryChannel(repo, options, remult, ids);
+    }
+
+
+    public get dispatcher(): ServerEventDispatcher {
+        return this.orig.dispatcher;
+    }
+    public set dispatcher(value: ServerEventDispatcher) {
+        this.orig.dispatcher = value;
+    }
+
+
+}

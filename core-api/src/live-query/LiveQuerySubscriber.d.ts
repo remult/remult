@@ -17,6 +17,7 @@ export declare class LiveQueryClient {
     runPromise(p: Promise<any>): Promise<any>;
     close(): void;
     subscribeChannel<T>(key: string, onResult: (item: T) => void): () => void;
+    timeoutToCloseWhenNotClosed: number;
     private closeIfNoListeners;
     subscribe<entityType>(repo: Repository<entityType>, options: FindOptions<entityType>, onResult: (reducer: (prevState: entityType[]) => entityType[]) => void): () => void;
     client: Promise<PubSubClient>;

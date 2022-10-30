@@ -145,15 +145,18 @@ export class LiveQueryClient {
         }
 
     }
-
+    timeoutToCloseWhenNotClosed = 1000;
     private closeIfNoListeners() {
-        setTimeout(() => {
-            if (this.client)
-                if (this.queries.size === 0 && this.channels.size === 0) {
-                    this.runPromise(this.client.then(x => x.disconnect()));
-                    this.client = undefined;
-                }
-        }, 1000);
+        this.runPromise(new Promise((res) => {
+            setTimeout(() => {
+                if (this.client)
+                    if (this.queries.size === 0 && this.channels.size === 0) {
+                        this.runPromise(this.client.then(x => x.disconnect()));
+                        this.client = undefined;
+                    }
+                res({});
+            }, this.timeoutToCloseWhenNotClosed);
+        }));
     }
 
     //TODO - consider the time that may pass from the get request to the subscribe to the channel, in some cases this could mean, a call to server to get token and a call to the external provider - it may be some time

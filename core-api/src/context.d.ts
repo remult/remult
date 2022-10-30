@@ -129,3 +129,4 @@ export interface itemChange {
     oldId: any;
     deleted: boolean;
 }
+export declare function doTransaction(remult: Remult, what: () => Promise<void>): Promise<void>;

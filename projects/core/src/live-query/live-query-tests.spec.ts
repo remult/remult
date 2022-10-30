@@ -168,6 +168,7 @@ describe("Live Query Client", () => {
             post: async () => { },
             delete: undefined
         });
+        lqc.timeoutToCloseWhenNotClosed = 10;
         let p = new PromiseResolver(lqc);
         const serverRemult = new Remult(new InMemoryDataProvider());
         serverRemult.liveQuerySubscriber = lqc;

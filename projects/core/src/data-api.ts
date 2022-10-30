@@ -1,6 +1,6 @@
 import { EntityOptions } from './entity';
 import { AndFilter, customUrlToken, buildFilterFromRequestParameters } from './filter/filter-interfaces';
-import { Remult, UserInfo } from './context';
+import { doTransaction, Remult, UserInfo } from './context';
 import { Filter } from './filter/filter-interfaces';
 import { FindOptions, Repository, EntityRef, rowHelperImplementation, EntityFilter } from './remult3';
 import { SortSegment } from './sort';
@@ -214,7 +214,13 @@ export class DataApi<T = any> {
         return this.repository.getEntityRef(newr).toApiJson()
       }
       if (Array.isArray(body)) {
-        response.created(await Promise.all(body.map(x => insert(x))));
+        const result = [];
+        await doTransaction(this.remult, async () => {
+          for (const item of body) {
+            result.push(await insert(item));
+          }
+        });
+        response.created(result);
       }
       else response.created(await insert(body));
     } catch (err) {
