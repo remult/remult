@@ -52,7 +52,6 @@ export interface SubscribeResult {
 export interface ServerEventChannelSubscribeDTO {
     clientId: string;
     channel: string;
-    remove: boolean;
 }
 export declare class AMessageChannel<messageType> {
     channelKey: string;

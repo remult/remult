@@ -9,6 +9,9 @@ import { liveQueryMessage } from './LiveQuerySubscriber';
 export class LiveQueryPublisher implements LiveQueryPublisherInterface {
 
   constructor(public dispatcher: ServerEventDispatcher) { }
+  stopLiveQuery(id: any): void {
+    this.queries = this.queries.filter(q => q.id !== id);
+  }
   sendChannelMessage<messageType>(channel: string, message: messageType) {
     this.dispatcher.sendChannelMessage(channel, message);
   }
@@ -31,8 +34,6 @@ export class LiveQueryPublisher implements LiveQueryPublisherInterface {
     ids: any[]
   })[] = [];
 
-  // TODO - aggregate transaction outside of it.
-  // TODO - site as decorator pattern
 
   runPromise(p: Promise<any>) {
 
@@ -40,59 +41,49 @@ export class LiveQueryPublisher implements LiveQueryPublisherInterface {
 
   itemChanged(entityKey: string, changes: itemChange[]) {
     for (const q of this.queries) {
+      //TODO optimize delete only messages that don't require running the query again
       if (q.repo.metadata.key === entityKey) {
-        for (const change of changes) {
-
-          if (change.deleted) {
-            if (q.ids.includes(change.id)) {
-              this.dispatcher.sendChannelMessage(q.id, [{
-                type: "remove",
-                data: {
-                  id: change.id
-                }
-              }]);
-              q.ids = q.ids.filter(y => y != change.id);
+        const messages = [];
+        this.runPromise(q.repo.find(q.findOptions).then(
+          currentItems => {
+            const currentIds = currentItems.map(x => q.repo.getEntityRef(x).getId());
+            const sendMessage = (message: liveQueryMessage) => {
+              messages.push(message);
             }
-          }
-          else
-            this.runPromise(q.repo.find(q.findOptions).then(
-              currentItems => {
-                const currentIds = currentItems.map(x => q.repo.getEntityRef(x).getId());
-                const sendMessage = (message: liveQueryMessage) => {
-                  this.dispatcher.sendChannelMessage(q.id, [message]);
-                }
 
 
-                for (const id of q.ids.filter(y => !currentIds.includes(y))) {
-                  if (id != change.oldId || !currentIds.includes(change.id))
-                    sendMessage({
-                      type: "remove",
-                      data: {
-                        id: id
-                      }
-                    })
-                }
-                for (const item of currentItems) {
-                  const itemRef = q.repo.getEntityRef(item);
-                  if (itemRef.getId() == change.id && q.ids.includes(change.oldId)) {
-                    sendMessage({
-                      type: "replace",
-                      data: {
-                        oldId: change.oldId,
-                        item: itemRef.toApiJson()
-                      }
-                    });
+            for (const id of q.ids.filter(y => !currentIds.includes(y))) {
+              let c = changes.find(c => c.oldId == id)
+              if (id != c.oldId || !currentIds.includes(c.id))
+                sendMessage({
+                  type: "remove",
+                  data: {
+                    id: id
                   }
-                  else if (!q.ids.includes(itemRef.getId())) {
-                    sendMessage({
-                      type: "add",
-                      data: { item: itemRef.toApiJson() }
-                    });
+                })
+            }
+            for (const item of currentItems) {
+              const itemRef = q.repo.getEntityRef(item);
+              let c = changes.find(c => c.id == itemRef.getId())
+              if (c !== undefined && q.ids.includes(c.oldId)) {
+                sendMessage({
+                  type: "replace",
+                  data: {
+                    oldId: c.oldId,
+                    item: itemRef.toApiJson()
                   }
-                }
-                q.ids = currentIds;
-              }));
-        }
+                });
+              }
+              else if (!q.ids.includes(itemRef.getId())) {
+                sendMessage({
+                  type: "add",
+                  data: { item: itemRef.toApiJson() }
+                });
+              }
+            }
+            q.ids = currentIds;
+            this.dispatcher.sendChannelMessage(q.id, messages);
+          }));
       }
     }
   }
@@ -102,6 +93,4 @@ export class LiveQueryPublisher implements LiveQueryPublisherInterface {
 export interface ServerEventDispatcher {
   sendChannelMessage<T>(channel: string, message: T): void;
 }
-// TODO - ABYL
 // TODO - PUBNUB
-// TODO - find set all bug

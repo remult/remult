@@ -146,7 +146,7 @@ describe("Live Query Client", () => {
                         open--;
                     },
                     subscribe(channel, onMessage) {
-                        sendMessage = x=>onMessage([x]);
+                        sendMessage = x => onMessage([x]);
                         return () => {
 
                         }
@@ -305,7 +305,7 @@ describe("test live query full cycle", () => {
         remult2.liveQuerySubscriber = lqc2;
         remult.liveQueryPublisher = qm;
         remult2.liveQueryPublisher = qm;
-        return { repo, pm, repo2, messageCount: () => messageCount, clientStatus };
+        return { repo, pm, repo2, messageCount: () => messageCount, clientStatus, qm };
     }
     it("integration test 1", async () => {
         var { repo, pm, repo2 } = setup2();
@@ -347,7 +347,7 @@ describe("test live query full cycle", () => {
         expect(result1.length).toBe(1);
     });
     it("test unsubscribe works", async () => {
-        var { repo, pm, messageCount } = setup2();
+        var { repo, pm, messageCount, qm } = setup2();
         let result1: eventTestEntity[] = [];
         const unsubscribe = repo.query().subscribe(reducer => result1 = reducer(result1));
         await pm.flush();
@@ -355,9 +355,11 @@ describe("test live query full cycle", () => {
         await pm.flush();
         expect(result1.length).toBe(1);
         expect(messageCount()).toBe(1);
+        expect(qm.queries.length).toBe(1);
         unsubscribe();
         await repo.insert({ id: 2, title: 'noam' });
         await pm.flush();
+        expect(qm.queries.length).toBe(0);
         expect(messageCount()).toBe(1);
     });
     it("test disconnect and reconnect scenario", async () => {

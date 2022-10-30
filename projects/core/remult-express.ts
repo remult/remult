@@ -46,7 +46,7 @@ export function remultExpress(options?:
 
 }
 export class ServerEventsController implements ServerEventDispatcher {
-    subscribeToChannel({ channel, remove, clientId }: ServerEventChannelSubscribeDTO, res: import('express').Response, remult: Remult) {
+    subscribeToChannel({ channel,  clientId }: ServerEventChannelSubscribeDTO, res: import('express').Response, remult: Remult,remove=false) {
         for (const c of this.connections) {
             if (c.connectionId === clientId) {
                 if (this.canUserConnectToChannel(channel, remult)) {
@@ -145,6 +145,9 @@ function buildHttpServerEventDispatcher(router: express.Router, apiPath: string,
     });
     router.post(streamPath + '/subscribe', (r, res, next) => server.withRemult(r, res, next), (req, res) => {
         (remult.liveQueryPublisher.dispatcher as ServerEventsController).subscribeToChannel(req.body, res, remult);
+    });
+    router.post(streamPath + '/unsubscribe', (r, res, next) => server.withRemult(r, res, next), (req, res) => {
+        (remult.liveQueryPublisher.dispatcher as ServerEventsController).subscribeToChannel(req.body, res, remult,true);
     });
     router.get(streamPath + '/stats', (r, res, next) => server.withRemult(r, res, next), (req, res) => {
         (remult.liveQueryPublisher.dispatcher as ServerEventsController).consoleInfo();

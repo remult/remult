@@ -118,9 +118,10 @@ export declare class EventSource {
     dispatcher: EventDispatcher;
 }
 export interface LiveQueryPublisherInterface {
+    stopLiveQuery(id: any): void;
     sendChannelMessage<messageType>(channel: string, message: messageType): void;
     defineLiveQueryChannel(repo: Repository<any>, options: FindOptions<any>, remult: Remult, ids: any[]): string;
-    itemChanged: (entityKey: string, changes: itemChange[]) => void;
+    itemChanged(entityKey: string, changes: itemChange[]): void;
     dispatcher: ServerEventDispatcher;
 }
 export interface itemChange {

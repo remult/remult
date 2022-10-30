@@ -10,7 +10,7 @@ export declare function remultExpress(options?: RemultServerOptions<express.Requ
 }): express.RequestHandler & RemultServer;
 export declare class ServerEventsController implements ServerEventDispatcher {
     private canUserConnectToChannel?;
-    subscribeToChannel({ channel, remove, clientId }: ServerEventChannelSubscribeDTO, res: import('express').Response, remult: Remult): void;
+    subscribeToChannel({ channel, clientId }: ServerEventChannelSubscribeDTO, res: import('express').Response, remult: Remult, remove?: boolean): void;
     consoleInfo(): void;
     connections: clientConnection[];
     constructor(canUserConnectToChannel?: (channel: string, remult: Remult) => boolean);

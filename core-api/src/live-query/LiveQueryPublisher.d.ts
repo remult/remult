@@ -4,6 +4,7 @@ import { Repository, FindOptions } from '../remult3';
 export declare class LiveQueryPublisher implements LiveQueryPublisherInterface {
     dispatcher: ServerEventDispatcher;
     constructor(dispatcher: ServerEventDispatcher);
+    stopLiveQuery(id: any): void;
     sendChannelMessage<messageType>(channel: string, message: messageType): void;
     defineLiveQueryChannel(repo: Repository<any>, findOptions: FindOptions<any>, remult: Remult, ids: any[]): string;
     queries: ({

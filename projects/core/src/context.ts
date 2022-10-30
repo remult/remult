@@ -224,6 +224,9 @@ export class Remult {
         dispatcher: undefined,
         sendChannelMessage: function <messageType extends {}>(arg0: string, what: messageType): unknown {
             throw new Error("invalid publisher.");
+        },
+        stopLiveQuery: function (id: any): void {
+            throw new Error("Function not implemented.");
         }
     };
 
@@ -373,9 +376,10 @@ export class EventSource {
 }
 
 export interface LiveQueryPublisherInterface {
+    stopLiveQuery(id: any): void;
     sendChannelMessage<messageType>(channel: string, message: messageType): void;
     defineLiveQueryChannel(repo: Repository<any>, options: FindOptions<any>, remult: Remult, ids: any[]): string;
-    itemChanged: (entityKey: string, changes: itemChange[]) => void;
+    itemChanged(entityKey: string, changes: itemChange[]): void;
     dispatcher: ServerEventDispatcher;
 }
 export interface itemChange {

@@ -31,15 +31,13 @@ export class EventSourceLiveQueryProvider implements LiveQueryProvider {
         listeners.push(handler);
         provider.post(remult.apiClient.url + '/' + streamUrl + '/subscribe', {
           channel: channel,
-          clientId: connectionId,
-          remove: false
+          clientId: connectionId
         } as ServerEventChannelSubscribeDTO);
         return () => {
           listeners.splice(listeners.indexOf(handler, 1));
-          provider.post(remult.apiClient.url + '/' + streamUrl + '/subscribe', {
+          provider.post(remult.apiClient.url + '/' + streamUrl + '/unsubscribe', {
             channel: channel,
-            clientId: connectionId,
-            remove: true
+            clientId: connectionId
           } as ServerEventChannelSubscribeDTO);
         }
       },

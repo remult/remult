@@ -27,6 +27,10 @@ export class DataApi<T = any> {
         return this.getArray(res, req, body);
       case "count":
         return this.count(res, req, body);
+      case "endLiveQuery":
+        this.remult.liveQueryPublisher.stopLiveQuery(body.id);
+        res.success("ok");
+        return;
       default:
         return this.post(res, body);
     }

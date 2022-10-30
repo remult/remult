@@ -2,7 +2,7 @@ import 'reflect-metadata';
 
 
 
-import { Remult, AllowedForInstance, Allowed, allEntities, ControllerOptions, classHelpers, ClassHelper, setControllerSettings, ExternalHttpProvider, buildRestDataProvider } from './context';
+import { Remult, AllowedForInstance, Allowed, allEntities, ControllerOptions, classHelpers, ClassHelper, setControllerSettings, ExternalHttpProvider, buildRestDataProvider, itemChange, LiveQueryPublisherInterface } from './context';
 
 
 
@@ -15,9 +15,10 @@ import { SqlDatabase } from './data-providers/sql-database';
 import { packedRowInfo } from './__EntityValueProvider';
 import { Filter, AndFilter } from './filter/filter-interfaces';
 import { DataProvider, RestDataProviderHttpProvider } from './data-interfaces';
-import { getEntityRef, rowHelperImplementation, getFields, decorateColumnSettings, getEntitySettings, getControllerRef, EntityFilter, controllerRefImpl, RepositoryImplementation } from './remult3';
+import { getEntityRef, rowHelperImplementation, getFields, decorateColumnSettings, getEntitySettings, getControllerRef, EntityFilter, controllerRefImpl, RepositoryImplementation, FindOptions, Repository } from './remult3';
 import { FieldOptions } from './column-interfaces';
 import { remult } from './remult-proxy';
+import { LiveQueryPublisher, ServerEventDispatcher } from '../live-query';
 
 
 
@@ -99,6 +100,66 @@ export class ForbiddenError extends Error {
     isForbiddenError = true;
 }
 
+async function doTransaction(remult: Remult, what: () => Promise<void>) {
+    return await remult.dataProvider.transaction(async ds => {
+        remult.dataProvider = (ds);
+        const trans = new transactionLiveQueryPublisher(remult.liveQueryPublisher);
+        remult.liveQueryPublisher = trans;
+        await what();
+        trans.flush();
+    });
+}
+class transactionLiveQueryPublisher implements LiveQueryPublisherInterface {
+
+    constructor(private orig: LiveQueryPublisherInterface) { }
+    stopLiveQuery(id: any): void {
+        this.orig.stopLiveQuery(id);
+    }
+    transactionItems = new Map<string, itemChange[]>();
+    itemChanged(entityKey: string, changes: itemChange[]): void {
+        let items = this.transactionItems.get(entityKey);
+        if (!items) {
+            this.transactionItems.set(entityKey, items = []);
+        }
+        for (const c of changes) {
+            if (c.oldId !== undefined) {
+                const item = items.find(y => y.id === c.oldId);
+                if (item !== undefined) {
+                    if (c.deleted)
+                        item.deleted = true;
+                    if (c.id != item.id)
+                        item.id = c.id;
+                }
+                else
+                    items.push(c);
+            }
+            else items.push(c);
+        }
+    }
+    flush() {
+        for (const key of this.transactionItems.keys()) {
+            this.orig.itemChanged(key, this.transactionItems.get(key));
+        }
+    }
+    sendChannelMessage<messageType>(channel: string, message: messageType): void {
+        this.orig.sendChannelMessage(channel, message);
+    }
+    defineLiveQueryChannel(repo: Repository<any>, options: FindOptions<any>, remult: Remult, ids: any[]): string {
+        return this.orig.defineLiveQueryChannel(repo, options, remult, ids);
+    }
+
+
+    public get dispatcher(): ServerEventDispatcher {
+        return this.orig.dispatcher;
+    }
+    public set dispatcher(value: ServerEventDispatcher) {
+        this.orig.dispatcher = value;
+    }
+
+
+}
+
+
 export class myServerAction extends Action<inArgs, result>
 {
     constructor(name: string, private types: any[], private options: BackendMethodOptions<any>, private originalMethod: (args: any[]) => any) {
@@ -108,8 +169,7 @@ export class myServerAction extends Action<inArgs, result>
     protected async execute(info: inArgs, remult: Remult, res: DataApiResponse): Promise<result> {
         let result = { data: {} };
         let ds = remult.dataProvider;
-        await ds.transaction(async ds => {
-            remult.dataProvider = (ds);
+        await doTransaction(remult, async () => {
             if (!remult.isAllowedForInstance(undefined, this.options.allowed))
                 throw new ForbiddenError();
 
@@ -259,12 +319,10 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                         try {
                             let remult = req;
 
-                            let ds = remult.dataProvider;
 
                             let r: serverMethodOutArgs;
-                            await ds.transaction(async (ds) => {
-                                remult.dataProvider = (ds);
-                                d.args = await prepareReceivedArgs(types, d.args, remult, ds, res);
+                            await doTransaction(remult, async () => {
+                                d.args = await prepareReceivedArgs(types, d.args, remult, remult.dataProvider, res);
                                 if (allEntities.includes(constructor)) {
                                     let repo = remult.repo(constructor);
                                     let y: any;
@@ -307,7 +365,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                                     }
                                 }
                                 else {
-                                    let y = new constructor(remult, ds);
+                                    let y = new constructor(remult, remult.dataProvider);
                                     let controllerRef = getControllerRef(y, remult) as controllerRefImpl;
                                     await controllerRef._updateEntityBasedOnApi(d.fields);
                                     if (!remult.isAllowedForInstance(y, allowed))

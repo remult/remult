@@ -1,4 +1,4 @@
-import { EntityOrderBy, FindOptions, remult as defaultRemult, Remult, Repository, RestDataProviderHttpProvider, Sort } from '../../index';
+import { EntityOrderBy, FindOptions, remult as defaultRemult, Remult, Repository, RestDataProviderHttpProvider, Sort, UrlBuilder } from '../../index';
 import { RestEntityDataProvider } from '../data-providers/rest-data-provider';
 import { RepositoryImplementation } from '../remult3';
 import { Allowed, buildRestDataProvider } from '../context';
@@ -27,58 +27,52 @@ class LiveQuerySubscriber<entityType> {
     }
 
     async handle(messages: liveQueryMessage[]) {
-
-
-        const sort = (items: entityType[]) => {
-
-            if (this.query.orderBy) {
-                const o = Sort.translateOrderByToSort(this.repo.metadata, this.query.orderBy);
-                items.sort((a: any, b: any) => o.compare(a, b));
-            }
-            return items;
-        }
-        for (const message of messages) {
-
-
-
-            switch (message.type) {
-                case "all":
-                    this.setAllItems(message.data);
-                    break;
-                case "replace": {
-                    const item = await this.repo.fromJson(message.data.item);
-                    this.forListeners(listener => {
-                        listener(items => {
-                            if (!items)
-                                items = [];
-                            return sort(items.map(x => getId(this.repo.metadata, x) === message.data.oldId ? item : x));
-                        });
-                    });
-                    break;
-                }
+        for (const m of messages) {
+            switch (m.type) {
                 case "add":
-                    {
-                        const item = await this.repo.fromJson(message.data.item);
-                        this.forListeners(listener =>
-                            listener(items => {
-                                if (!items)
-                                    items = [];
-                                items = items.filter(x => getId(this.repo.metadata, x) !== getId(this.repo.metadata, item));
-                                items.push(item);
-                                return sort(items);
-                            }));
-                        break;
-                    }
-                case "remove":
-                    this.forListeners(listener =>
-                        listener(items => {
-                            if (!items)
-                                items = [];
-                            return items.filter(x => getId(this.repo.metadata, x) !== message.data.id);
-                        }));
+                case "replace":
+                    m.data.item = await this.repo.fromJson(m.data.item);
                     break;
-            };
+                case "all":
+                    this.setAllItems(m.data);
+            }
+
         }
+
+        this.forListeners(listener => {
+            listener(items => {
+                if (!items)
+                    items = [];
+                let needSort = false;
+                for (const message of messages) {
+                    switch (message.type) {
+                        case "all":
+                            this.setAllItems(message.data);
+                            break;
+                        case "replace": {
+                            items = items.map(x => getId(this.repo.metadata, x) === message.data.oldId ? message.data.item : x)
+                            needSort = true;
+                            break;
+                        }
+                        case "add":
+                            items = items.filter(x => getId(this.repo.metadata, x) !== getId(this.repo.metadata, message.data.item));
+                            items.push(message.data.item);
+                            needSort = true;
+                            break;
+                        case "remove":
+                            items = items.filter(x => getId(this.repo.metadata, x) !== message.data.id);
+                            break;
+                    };
+                }
+                if (needSort) {
+                    if (this.query.orderBy) {
+                        const o = Sort.translateOrderByToSort(this.repo.metadata, this.query.orderBy);
+                        items.sort((a: any, b: any) => o.compare(a, b));
+                    }
+                }
+                return items;
+            });
+        });
     }
 
     defaultQueryState: entityType[] = [];
@@ -153,13 +147,15 @@ export class LiveQueryClient {
     }
 
     private closeIfNoListeners() {
-        if (this.queries.size === 0 && this.channels.size === 0) {
-            this.runPromise(this.client.then(x => x.disconnect()));
-            this.client = undefined;
-        }
+        setTimeout(() => {
+            if (this.client)
+                if (this.queries.size === 0 && this.channels.size === 0) {
+                    this.runPromise(this.client.then(x => x.disconnect()));
+                    this.client = undefined;
+                }
+        }, 1000);
     }
 
-    //TODO - add unsubscribe to query on server, 
     //TODO - consider the time that may pass from the get request to the subscribe to the channel, in some cases this could mean, a call to server to get token and a call to the external provider - it may be some time
     subscribe<entityType>(
         repo: Repository<entityType>,
@@ -207,6 +203,11 @@ export class LiveQueryClient {
                     if (q.listeners.length == 0) {
                         this.queries.delete(eventTypeKey);
                         q.unsubscribe();
+                        const url = new UrlBuilder(defaultRemult.apiClient.url + '/' + repo.metadata.key);
+                        url.add("__action", "endLiveQuery");
+                        this.provider.post(url.url, {
+                            id: q.id
+                        })
                     }
                     this.closeIfNoListeners();
                 }
@@ -269,8 +270,7 @@ export interface SubscribeResult {
 
 export interface ServerEventChannelSubscribeDTO {
     clientId: string,
-    channel: string,
-    remove: boolean
+    channel: string
 }
 
 
@@ -294,5 +294,4 @@ export class AMessageChannel<messageType> {
 
 
 
-//TODO2 - transaction accumulates messages.
 //TODO2 - consider moving the queued job mechanism into this.
