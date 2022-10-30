@@ -425,9 +425,12 @@ class transactionLiveQueryPublisher implements LiveQueryPublisherInterface {
         }
     }
     flush() {
-        for (const key of this.transactionItems.keys()) {
-            this.orig.itemChanged(key, this.transactionItems.get(key));
-        }
+        //TODO - figure out and resolve
+        setTimeout(() => {
+            for (const key of this.transactionItems.keys()) {
+                this.orig.itemChanged(key, this.transactionItems.get(key));
+            }
+        }, 100);
     }
     sendChannelMessage<messageType>(channel: string, message: messageType): void {
         this.orig.sendChannelMessage(channel, message);
