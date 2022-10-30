@@ -54,7 +54,7 @@ export class LiveQueryPublisher implements LiveQueryPublisherInterface {
 
             for (const id of q.ids.filter(y => !currentIds.includes(y))) {
               let c = changes.find(c => c.oldId == id)
-              if (id != c.oldId || !currentIds.includes(c.id))
+              if (c === undefined || id != c.oldId || !currentIds.includes(c.id))
                 sendMessage({
                   type: "remove",
                   data: {
