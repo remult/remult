@@ -117,7 +117,7 @@ export class DataApi<T = any> {
         });
       if (this.remult.liveQueryPublisher && action?.startsWith("liveQuery")) {
         response.success({
-          queryChannel: this.remult.liveQueryPublisher.defineLiveQueryChannel(this.repository, findOptions, this.remult, r.map(y => this.repository.getEntityRef(y).getId())),
+          queryChannel: this.remult.liveQueryPublisher.defineLiveQueryChannel(this.repository, findOptions, r.map(y => this.repository.getEntityRef(y).getId()), this.remult.user?.id),
           result: r
         });
         return;

@@ -43,7 +43,7 @@ async function setup1() {
     let p = new PromiseResolver(qm);
 
     serverRemult.liveQueryPublisher = qm;
-    const queryId = qm.defineLiveQueryChannel(clientRepo, {}, remult, items.map(x => x.id));
+    const queryId = qm.defineLiveQueryChannel(clientRepo, {}, items.map(x => x.id), remult.user.id);
     expect(messages.length).toBe(0);
     return { serverRepo, messages, flush: () => p.flush() };
 }

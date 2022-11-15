@@ -375,10 +375,11 @@ export class EventSource {
 
 }
 
+
 export interface LiveQueryPublisherInterface {
     stopLiveQuery(id: any): void;
     sendChannelMessage<messageType>(channel: string, message: messageType): void;
-    defineLiveQueryChannel(repo: Repository<any>, options: FindOptions<any>, remult: Remult, ids: any[]): string;
+    defineLiveQueryChannel(repo: Repository<any>, options: FindOptions<any>, ids: any[], userId: string): string;
     itemChanged(entityKey: string, changes: itemChange[]): void;
     dispatcher: ServerEventDispatcher;
 }
@@ -435,8 +436,8 @@ class transactionLiveQueryPublisher implements LiveQueryPublisherInterface {
     sendChannelMessage<messageType>(channel: string, message: messageType): void {
         this.orig.sendChannelMessage(channel, message);
     }
-    defineLiveQueryChannel(repo: Repository<any>, options: FindOptions<any>, remult: Remult, ids: any[]): string {
-        return this.orig.defineLiveQueryChannel(repo, options, remult, ids);
+    defineLiveQueryChannel(repo: Repository<any>, options: FindOptions<any>, ids: any[], userId: string): string {
+        return this.orig.defineLiveQueryChannel(repo, options, ids, userId);
     }
 
 

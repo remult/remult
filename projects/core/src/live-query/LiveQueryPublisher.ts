@@ -16,8 +16,8 @@ export class LiveQueryPublisher implements LiveQueryPublisherInterface {
     this.dispatcher.sendChannelMessage(channel, message);
   }
 
-  defineLiveQueryChannel(repo: Repository<any>, findOptions: FindOptions<any>, remult: Remult, ids: any[]): string {
-    const id = `users:${remult.user?.id}:queries:${uuid()}`;
+  defineLiveQueryChannel(repo: Repository<any>, findOptions: FindOptions<any>,ids: any[],userId:string): string {
+    const id = `users:${userId}:queries:${uuid()}`;
     this.queries.push({
       id,
       findOptions: findOptions,
