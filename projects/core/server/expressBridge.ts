@@ -18,6 +18,11 @@ export interface RemultServerOptions<RequestType extends GenericRequest> {
   dataProvider?: DataProvider | Promise<DataProvider> | (() => Promise<DataProvider | undefined>);
   queueStorage?: QueueStorage;
   initRequest?: (remult: Remult, origReq: RequestType) => Promise<void>;
+  requestSerializer?: {
+    toJson: (request: RequestType) => any,
+    fromJson: (request: any) => RequestType
+  };
+
   getUser?: (request: RequestType) => Promise<UserInfo>;
   initApi?: (remult: Remult) => void | Promise<void>;
   logApiEndPoints?: boolean;
@@ -93,6 +98,19 @@ export function createRemultServer<RequestType extends GenericRequest = GenericR
       });
       return dp;
     });
+  }
+  if (!options.requestSerializer) {
+    options.requestSerializer = {
+      toJson: x => {
+        return {
+          session: x['session'],
+          url: x.url
+        }
+      },
+      fromJson: x => {
+        return x;
+      }
+    }
   }
 
   {
@@ -251,12 +269,12 @@ export class RemultServerImplementation implements RemultServer {
 
 
     r.route(myRoute)
-      .get(this.process((c, req, res) =>
-        dataApiFactory(c).httpGet(res, req)
+      .get(this.process((c, req, res, orig) =>
+        dataApiFactory(c).httpGet(res, req, () => this.options.requestSerializer!.toJson(orig))
       )).put(this.process(async (c, req, res, orig) => dataApiFactory(c).put(res, '', orig.body)))
       .delete(this.process(async (c, req, res, orig) => dataApiFactory(c).delete(res, '')))
       .post(this.process(async (c, req, res, orig) =>
-        dataApiFactory(c).httpPost(res, req, orig.body)
+        dataApiFactory(c).httpPost(res, req, orig.body, () => this.options.requestSerializer!.toJson(orig))
       ));
     r.route(myRoute + '/:id')
       //@ts-ignore
@@ -265,8 +283,6 @@ export class RemultServerImplementation implements RemultServer {
       .put(this.process(async (c, req, res, orig) => dataApiFactory(c).put(res, orig.params.id, orig.body)))
       //@ts-ignore
       .delete(this.process(async (c, req, res, orig) => dataApiFactory(c).delete(res, orig.params.id)));
-
-
   }
   process(what: (remult: Remult, myReq: DataApiRequest, myRes: DataApiResponse, origReq: GenericRequest) => Promise<void>) {
     return async (req: GenericRequest, res: GenericResponse) => {

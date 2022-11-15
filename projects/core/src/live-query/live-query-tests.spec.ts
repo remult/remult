@@ -1,12 +1,13 @@
 
 import { queryConfig, Remult } from "../context";
-import { DataApi } from "../data-api";
+import { DataApi, DataApiRequest } from "../data-api";
 import { InMemoryDataProvider } from "../data-providers/in-memory-database";
-import { Entity, Fields } from "../remult3";
+import { Entity, Fields, FindOptions } from "../remult3";
 import { actionInfo } from "../server-action";
 import { createMockHttpDataProvider } from "../tests/testHelper.spec";
 import { LiveQueryClient, liveQueryMessage } from "./LiveQuerySubscriber";
-import { LiveQueryPublisher } from "./LiveQueryPublisher";
+import { LiveQueryPublisher, LiveQueryStorage } from "./LiveQueryPublisher";
+import { findOptionsFromJson, findOptionsToJson } from "../data-providers/rest-data-provider";
 
 const joc = jasmine.objectContaining;
 
@@ -19,6 +20,7 @@ export class eventTestEntity {
     @Fields.string((o, remult) => o.serverExpression = () => remult.user.name)
     selectUser = '';
 }
+
 
 
 async function setup1() {
@@ -39,11 +41,11 @@ async function setup1() {
     remult.user = ({ id: clientId1, name: clientId1, roles: [] });
     const clientRepo = remult.repo(eventTestEntity);
     const messages: liveQueryMessage[] = [];
-    const qm = new LiveQueryPublisher({ sendChannelMessage: (c, m: any) => messages.push(...m) });
+    const qm = new LiveQueryPublisher({ sendChannelMessage: (c, m: any) => messages.push(...m) }, new LiveQueryStorage(), async (_, _1, c) => c(clientRepo));
     let p = new PromiseResolver(qm);
 
     serverRemult.liveQueryPublisher = qm;
-    const queryId = qm.defineLiveQueryChannel(clientRepo, {}, items.map(x => x.id), remult.user.id);
+    const queryId = qm.defineLiveQueryChannel(() => ({}), clientRepo.metadata.key, {}, items.map(x => x.id), remult.user.id, clientRepo);
     expect(messages.length).toBe(0);
     return { serverRepo, messages, flush: () => p.flush() };
 }
@@ -252,11 +254,12 @@ describe("test live query full cycle", () => {
 
         const mh: ((channel: string, message: liveQueryMessage) => void)[] = [];
         let messageCount = 0;
+        const storage = new LiveQueryStorage();
         const qm = new LiveQueryPublisher({
             sendChannelMessage<liveQueryMessage>(channel, message) {
                 mh.forEach(x => x(channel, message))
             },
-        });
+        }, storage, async (_, _1, c) => c(repo));
         remult.liveQueryPublisher = qm;
         var dataApi = new DataApi(repo, remult);
         const clientStatus = {
@@ -306,7 +309,7 @@ describe("test live query full cycle", () => {
         remult2.liveQuerySubscriber = lqc2;
         remult.liveQueryPublisher = qm;
         remult2.liveQueryPublisher = qm;
-        return { repo, pm, repo2, messageCount: () => messageCount, clientStatus, qm };
+        return { repo, pm, repo2, messageCount: () => messageCount, clientStatus, qm: storage };
     }
     it("integration test 1", async () => {
         var { repo, pm, repo2 } = setup2();
@@ -379,7 +382,26 @@ describe("test live query full cycle", () => {
         expect(clientStatus.connected).toBe(true);
         await pm.flush();
         expect(result1.length).toBe(2);
-
     });
+});
+it("Serialize Find Options", async () => {
+    const r = new Remult().repo(eventTestEntity);
+    const findOptions: FindOptions<eventTestEntity> = {
+        limit: 3,
+        page: 2,
+        where: {
+            $and: [{
+                title: 'noam'
+            }]
+        },
+        orderBy: {
+            title: "desc"
+        }
+    };
+
+    const z = findOptionsToJson(findOptions, r.metadata);
+    const res = findOptionsFromJson(z, r.metadata);
+    expect(res).toEqual(findOptions);
+
 });
 

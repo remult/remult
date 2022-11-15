@@ -4,8 +4,9 @@ import { EntityDataProvider, DataProvider, EntityDataProviderFindOptions, RestDa
 
 import { UrlBuilder } from '../../urlBuilder';
 import { customUrlToken, Filter } from '../filter/filter-interfaces';
-import { EntityMetadata } from '../remult3';
+import { EntityMetadata, FindOptions } from '../remult3';
 import { ApiClient, buildRestDataProvider, Remult, retry } from '../context';
+import { Sort } from '../sort';
 
 
 export class RestDataProvider implements DataProvider {
@@ -32,6 +33,25 @@ export class RestDataProvider implements DataProvider {
   supportsCustomFilter = true;
 
 }
+
+export function findOptionsToJson(options: FindOptions<any>, meta: EntityMetadata) {
+  return {
+    limit: options.limit,
+    page: options.page,
+    where: Filter.entityFilterToJson(meta, options.where),
+    orderBy: options.orderBy
+  };
+}
+export function findOptionsFromJson(json: any, meta: EntityMetadata): FindOptions<any> {
+  return {
+    limit: json.limit,
+    page: json.page,
+    where: Filter.entityFilterFromJson(meta, json.where),
+    orderBy: json.orderBy
+  };
+}
+
+
 export class RestEntityDataProvider implements EntityDataProvider {
 
   constructor(private url: () => string, private http: () => RestDataProviderHttpProvider, private entity: EntityMetadata) {
@@ -78,7 +98,7 @@ export class RestEntityDataProvider implements EntityDataProvider {
       return this.http().get(url.url).then(x => x.map(y => this.translateFromJson(y)));;
   }
 
-   buildFindRequest(options: EntityDataProviderFindOptions): { filterObject: any; url: UrlBuilder; } {
+  buildFindRequest(options: EntityDataProviderFindOptions): { filterObject: any; url: UrlBuilder; } {
     let url = new UrlBuilder(this.url());
     let filterObject: any;
     if (options) {

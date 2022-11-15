@@ -1,38 +1,76 @@
 import { v4 as uuid } from 'uuid';
-import { Remult } from '../..';
 import { itemChange, LiveQueryPublisherInterface } from '../context';
-import { Repository, EntityRef, FindOptions } from '../remult3';
+import { findOptionsFromJson, findOptionsToJson } from '../data-providers/rest-data-provider';
+import { Repository, FindOptions } from '../remult3';
 
 import { liveQueryMessage } from './LiveQuerySubscriber';
 
 
+
+interface StoredQuery {
+  id: string,
+  findOptionsJson: any,
+  lastIds: any[],
+  requestJson: any,
+  entityKey: string
+}
+
+
+
+export class LiveQueryStorage {
+  queries: StoredQuery[] = [];
+
+  constructor() {
+
+  }
+  store(query: StoredQuery) {
+    this.queries.push(query);
+  }
+  remove(id: any) {
+    this.queries = this.queries.filter(q => q.id !== id);
+  }
+  async provideListeners(entityKey: string, handle: (args: {
+    query: StoredQuery,
+    setLastIds(ids: any[]): Promise<void>
+  }) => Promise<void>) {
+    for (const q of this.queries) {
+      if (q.entityKey === entityKey) {
+        await handle({
+          query: q,
+          setLastIds: async ids => { q.lastIds = ids }
+        })
+      }
+    }
+
+  }
+}
+
+
 export class LiveQueryPublisher implements LiveQueryPublisherInterface {
 
-  constructor(public dispatcher: ServerEventDispatcher) { }
+  constructor(public dispatcher: ServerEventDispatcher, private storage: LiveQueryStorage, private performWithRequest: (serializedRequest: any, entityKey: string, what: (repo: Repository<any>) => Promise<void>) => Promise<void>) { }
   stopLiveQuery(id: any): void {
-    this.queries = this.queries.filter(q => q.id !== id);
+    this.storage.remove(id);
   }
   sendChannelMessage<messageType>(channel: string, message: messageType) {
     this.dispatcher.sendChannelMessage(channel, message);
   }
 
-  defineLiveQueryChannel(repo: Repository<any>, findOptions: FindOptions<any>,ids: any[],userId:string): string {
+  defineLiveQueryChannel(serializeRequest: () => any, entityKey: string, findOptions: FindOptions<any>, ids: any[], userId: string, repo: Repository<any>): string {
     const id = `users:${userId}:queries:${uuid()}`;
-    this.queries.push({
-      id,
-      findOptions: findOptions,
-      repo,
-      ids
-    });
+    this.storage.store(
+      {
+        requestJson: serializeRequest(),
+        entityKey,
+        id,
+        findOptionsJson: findOptionsToJson(findOptions, repo.metadata),
+        lastIds: ids
+      }
+    );
     return id;
   }
 
-  queries: ({
-    id: string,
-    repo: Repository<any>,
-    findOptions: FindOptions<any>,
-    ids: any[]
-  })[] = [];
+
 
 
   runPromise(p: Promise<any>) {
@@ -40,57 +78,59 @@ export class LiveQueryPublisher implements LiveQueryPublisherInterface {
   }
 
   itemChanged(entityKey: string, changes: itemChange[]) {
-    for (const q of this.queries) {
-      // possible optimization delete only messages that don't require running the query again
-      if (q.repo.metadata.key === entityKey) {
-        const messages = [];
-        this.runPromise(q.repo.find(q.findOptions).then(
-          currentItems => {
-            const currentIds = currentItems.map(x => q.repo.getEntityRef(x).getId());
-            const sendMessage = (message: liveQueryMessage) => {
-              messages.push(message);
-            }
+
+    const messages = [];
+    this.runPromise(this.storage.provideListeners(entityKey,
+      async ({ query, setLastIds }) => {
+
+        await this.performWithRequest(query.requestJson, entityKey, async repo => {
+          const currentItems = await repo.find(findOptionsFromJson(query.findOptionsJson, repo.metadata));
+          const currentIds = currentItems.map(x => repo.getEntityRef(x).getId());
+          const sendMessage = (message: liveQueryMessage) => {
+            messages.push(message);
+          }
 
 
-            for (const id of q.ids.filter(y => !currentIds.includes(y))) {
-              let c = changes.find(c => c.oldId == id)
-              if (c === undefined || id != c.oldId || !currentIds.includes(c.id))
-                sendMessage({
-                  type: "remove",
-                  data: {
-                    id: id
-                  }
-                })
+          for (const id of query.lastIds.filter(y => !currentIds.includes(y))) {
+            let c = changes.find(c => c.oldId == id)
+            if (c === undefined || id != c.oldId || !currentIds.includes(c.id))
+              sendMessage({
+                type: "remove",
+                data: {
+                  id: id
+                }
+              })
+          }
+          for (const item of currentItems) {
+            const itemRef = repo.getEntityRef(item);
+            let c = changes.find(c => c.id == itemRef.getId())
+            if (c !== undefined && query.lastIds.includes(c.oldId)) {
+              sendMessage({
+                type: "replace",
+                data: {
+                  oldId: c.oldId,
+                  item: itemRef.toApiJson()
+                }
+              });
             }
-            for (const item of currentItems) {
-              const itemRef = q.repo.getEntityRef(item);
-              let c = changes.find(c => c.id == itemRef.getId())
-              if (c !== undefined && q.ids.includes(c.oldId)) {
-                sendMessage({
-                  type: "replace",
-                  data: {
-                    oldId: c.oldId,
-                    item: itemRef.toApiJson()
-                  }
-                });
-              }
-              else if (!q.ids.includes(itemRef.getId())) {
-                sendMessage({
-                  type: "add",
-                  data: { item: itemRef.toApiJson() }
-                });
-              }
+            else if (!query.lastIds.includes(itemRef.getId())) {
+              sendMessage({
+                type: "add",
+                data: { item: itemRef.toApiJson() }
+              });
             }
-            q.ids = currentIds;
-            this.dispatcher.sendChannelMessage(q.id, messages);
-          }));
-      }
-    }
+          }
+          await setLastIds(currentIds);
+          this.dispatcher.sendChannelMessage(query.id, messages);
+        })
+      }));
   }
 }
+
 
 
 export interface ServerEventDispatcher {
   sendChannelMessage<T>(channel: string, message: T): void;
 }
 // TODO - PUBNUB
+// TODO - connect stream when server is not yet up - for angular proxy

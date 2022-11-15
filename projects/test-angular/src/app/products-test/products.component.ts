@@ -18,32 +18,9 @@ import { DialogConfig } from '../../../../angular';
 })
 export class ProductsComponent implements OnInit {
   constructor(private remult: Remult, private zone: NgZone) {
-
+    remult.liveQuerySubscriber.wrapMessageHandling = x => zone.run(() => x());
   }
-  stopA: VoidFunction;
-  stopB: VoidFunction;
-  toggleA() {
-    if (this.stopA) {
-      this.stopA();
-      this.stopA = undefined;
-    }
-    //  else
-    // this.stopA = this.listener.listen("tasks",
-    //   (x) => this.zone.run(() => this.messages = [x, ...this.messages.splice(0, 19)])
-    // );
 
-  }
-  toggleB() {
-    if (this.stopB) {
-      this.stopB();
-      this.stopB = undefined;
-    }
-    //  else
-    // this.stopB = this.listener.listen("b",
-    //   (x) => this.zone.run(() => this.messages = [x, ...this.messages.splice(0, 19)])
-    // );
-
-  }
 
   grid = new GridSettings(this.remult.repo(Task), {
     allowCrud: true, gridButtons: [{
@@ -57,10 +34,16 @@ export class ProductsComponent implements OnInit {
   async ngOnInit() {
     await this.remult.repo(Task).count();
 
-     
+
 
   }
-  tasks: Observable<Task[]>;
+  tasks: Observable<Task[]> = new Observable((x) => {
+    let tasks: Task[] = [];
+    return this.remult.repo(Task).query().subscribe(newResult => {
+      tasks = newResult(tasks);
+      x.next(tasks);
+    })
+  });
 }
 
 

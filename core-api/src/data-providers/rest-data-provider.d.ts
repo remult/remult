@@ -1,7 +1,7 @@
 import { EntityDataProvider, DataProvider, EntityDataProviderFindOptions, RestDataProviderHttpProvider } from '../data-interfaces';
 import { UrlBuilder } from '../../urlBuilder';
 import { Filter } from '../filter/filter-interfaces';
-import { EntityMetadata } from '../remult3';
+import { EntityMetadata, FindOptions } from '../remult3';
 import { ApiClient } from '../context';
 export declare class RestDataProvider implements DataProvider {
     private apiProvider;
@@ -10,6 +10,13 @@ export declare class RestDataProvider implements DataProvider {
     transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void>;
     supportsCustomFilter: boolean;
 }
+export declare function findOptionsToJson(options: FindOptions<any>, meta: EntityMetadata): {
+    limit: number;
+    page: number;
+    where: any;
+    orderBy: import("../remult3").EntityOrderBy<any>;
+};
+export declare function findOptionsFromJson(json: any, meta: EntityMetadata): FindOptions<any>;
 export declare class RestEntityDataProvider implements EntityDataProvider {
     private url;
     private http;

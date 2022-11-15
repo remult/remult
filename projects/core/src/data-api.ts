@@ -12,17 +12,23 @@ export class DataApi<T = any> {
 
   constructor(private repository: Repository<T>, private remult: Remult) {
   }
-  httpGet(res: DataApiResponse, req: DataApiRequest) {
-    if (req.get("__action") == "count") {
-      return this.count(res, req);
-    } else
-      return this.getArray(res, req);
-  }
-  httpPost(res: DataApiResponse, req: DataApiRequest, body: any) {
+  httpGet(res: DataApiResponse, req: DataApiRequest, serializeRequest: () => any) {
     const action = req?.get("__action");
-    if (action?.startsWith("liveQuery"))
-      return this.getArray(res, req, body);
     switch (action) {
+      case "liveQuery":
+        return this.liveQuery(res, req, undefined, serializeRequest);
+      case "get":
+      case "count":
+        return this.count(res, req, undefined);
+    }
+    return this.getArray(res, req, undefined);
+
+  }
+  httpPost(res: DataApiResponse, req: DataApiRequest, body: any, serializeRequest: () => any) {
+    const action = req?.get("__action");
+    switch (action) {
+      case "liveQuery":
+        return this.liveQuery(res, req, body, serializeRequest);
       case "get":
         return this.getArray(res, req, body);
       case "count":
@@ -57,75 +63,99 @@ export class DataApi<T = any> {
   }
 
 
+  async getArrayImpl(response: DataApiResponse, request: DataApiRequest, filterBody: any) {
+
+    let findOptions: FindOptions<T> = { load: () => [] };
+    findOptions.where = await this.buildWhere(request, filterBody);
+
+    if (request) {
+
+      let sort = <string>request.get("_sort");
+      if (sort != undefined) {
+        let dir = request.get('_order');
+        findOptions.orderBy = determineSort(sort, dir);
+
+      }
+      let limit = +request.get("_limit");
+      if (!limit && DataApi.defaultGetLimit)
+        limit = DataApi.defaultGetLimit;
+      findOptions.limit = limit;
+      findOptions.page = +request.get("_page");
+
+    }
+    if (this.remult.isAllowed(this.repository.metadata.options.apiRequireId)) {
+      let hasId = false;
+      let w = await Filter.fromEntityFilter(this.repository.metadata, findOptions.where);
+      if (w) {
+        w.__applyToConsumer({
+          containsCaseInsensitive: () => { },
+          isDifferentFrom: () => { },
+          isEqualTo: (col, val) => {
+            if (this.repository.metadata.idMetadata.isIdField(col))
+              hasId = true;
+          },
+          custom: () => { },
+          databaseCustom: () => { },
+          isGreaterOrEqualTo: () => { },
+          isGreaterThan: () => { },
+          isIn: () => { },
+          isLessOrEqualTo: () => { },
+          isLessThan: () => { },
+          isNotNull: () => { },
+          isNull: () => { },
+
+          or: () => { }
+        });
+      }
+      if (!hasId) {
+        response.forbidden();
+        throw new ForbiddenError();
+      }
+    }
+    const r = await this.repository.find(findOptions)
+      .then(async r => {
+        return await Promise.all(r.map(async y => this.repository.getEntityRef(y).toApiJson()));
+      });
+    return { r, findOptions };
+
+  }
+
   async getArray(response: DataApiResponse, request: DataApiRequest, filterBody?: any) {
     if (!this.repository.metadata.apiReadAllowed) {
       response.forbidden();
       return;
     }
     try {
-      let findOptions: FindOptions<T> = { load: () => [] };
-      findOptions.where = await this.buildWhere(request, filterBody);
-      if (this.remult.isAllowed(this.repository.metadata.options.apiRequireId)) {
-        let hasId = false;
-        let w = await Filter.fromEntityFilter(this.repository.metadata, findOptions.where);
-        if (w) {
-          w.__applyToConsumer({
-            containsCaseInsensitive: () => { },
-            isDifferentFrom: () => { },
-            isEqualTo: (col, val) => {
-              if (this.repository.metadata.idMetadata.isIdField(col))
-                hasId = true;
-            },
-            custom: () => { },
-            databaseCustom: () => { },
-            isGreaterOrEqualTo: () => { },
-            isGreaterThan: () => { },
-            isIn: () => { },
-            isLessOrEqualTo: () => { },
-            isLessThan: () => { },
-            isNotNull: () => { },
-            isNull: () => { },
 
-            or: () => { }
-          });
-        }
-        if (!hasId) {
-          response.forbidden();
-          return
-        }
-      }
-      if (request) {
 
-        let sort = <string>request.get("_sort");
-        if (sort != undefined) {
-          let dir = request.get('_order');
-          findOptions.orderBy = determineSort(sort, dir);
+      const { r } = await this.getArrayImpl(response, request, filterBody)
 
-        }
-        let limit = +request.get("_limit");
-        if (!limit && DataApi.defaultGetLimit)
-          limit = DataApi.defaultGetLimit;
-        findOptions.limit = limit;
-        findOptions.page = +request.get("_page");
-
-      }
-      const action: string = request?.get("__action");
-
-      const r = await this.repository.find(findOptions)
-        .then(async r => {
-          return await Promise.all(r.map(async y => this.repository.getEntityRef(y).toApiJson()));
-        });
-      if (this.remult.liveQueryPublisher && action?.startsWith("liveQuery")) {
-        response.success({
-          queryChannel: this.remult.liveQueryPublisher.defineLiveQueryChannel(this.repository, findOptions, r.map(y => this.repository.getEntityRef(y).getId()), this.remult.user?.id),
-          result: r
-        });
-        return;
-      }
       response.success(r);
     }
     catch (err) {
-      response.error(err);
+      if (err.isForbiddenError)
+        response.forbidden();
+      else
+        response.error(err);
+    }
+  }
+  async liveQuery(response: DataApiResponse, request: DataApiRequest, filterBody: any, serializeRequest: () => any) {
+    if (!this.repository.metadata.apiReadAllowed) {
+      response.forbidden();
+      return;
+    }
+    try {
+      const r = await this.getArrayImpl(response, request, filterBody)
+      response.success({
+        queryChannel: this.remult.liveQueryPublisher.defineLiveQueryChannel(serializeRequest, this.repository.metadata.key, r.findOptions, r.r.map(y => this.repository.getEntityRef(y).getId()), this.remult.user?.id, this.repository),
+        result: r.r
+      });
+    }
+    catch (err) {
+      if (err.isForbiddenError)
+        response.forbidden();
+      else
+        response.error(err);
     }
   }
   private async buildWhere(request: DataApiRequest, filterBody: any): Promise<EntityFilter<any>> {
