@@ -31,13 +31,15 @@ export class LiveQueryStorage {
   }
   async provideListeners(entityKey: string, handle: (args: {
     query: StoredQuery,
-    setLastIds(ids: any[]): Promise<void>
+    setLastIds(ids: any[]): Promise<void>,
+    noListeners: () => Promise<void>
   }) => Promise<void>) {
     for (const q of this.queries) {
       if (q.entityKey === entityKey) {
         await handle({
           query: q,
-          setLastIds: async ids => { q.lastIds = ids }
+          setLastIds: async ids => { q.lastIds = ids },
+          noListeners: async () => { }
         })
       }
     }
@@ -81,48 +83,46 @@ export class LiveQueryPublisher implements LiveQueryPublisherInterface {
 
     const messages = [];
     this.runPromise(this.storage.provideListeners(entityKey,
-      async ({ query, setLastIds }) => {
+      async ({ query, setLastIds, noListeners }) => {
+        if (await this.dispatcher.anyoneListensToChannel(query.id)) {
 
-        await this.performWithRequest(query.requestJson, entityKey, async repo => {
-          const currentItems = await repo.find(findOptionsFromJson(query.findOptionsJson, repo.metadata));
-          const currentIds = currentItems.map(x => repo.getEntityRef(x).getId());
-          const sendMessage = (message: liveQueryMessage) => {
-            messages.push(message);
-          }
-
-
-          for (const id of query.lastIds.filter(y => !currentIds.includes(y))) {
-            let c = changes.find(c => c.oldId == id)
-            if (c === undefined || id != c.oldId || !currentIds.includes(c.id))
-              sendMessage({
-                type: "remove",
-                data: {
-                  id: id
-                }
-              })
-          }
-          for (const item of currentItems) {
-            const itemRef = repo.getEntityRef(item);
-            let c = changes.find(c => c.id == itemRef.getId())
-            if (c !== undefined && query.lastIds.includes(c.oldId)) {
-              sendMessage({
-                type: "replace",
-                data: {
-                  oldId: c.oldId,
-                  item: itemRef.toApiJson()
-                }
-              });
+          await this.performWithRequest(query.requestJson, entityKey, async repo => {
+            const currentItems = await repo.find(findOptionsFromJson(query.findOptionsJson, repo.metadata));
+            const currentIds = currentItems.map(x => repo.getEntityRef(x).getId());
+            for (const id of query.lastIds.filter(y => !currentIds.includes(y))) {
+              let c = changes.find(c => c.oldId == id)
+              if (c === undefined || id != c.oldId || !currentIds.includes(c.id))
+                messages.push({
+                  type: "remove",
+                  data: {
+                    id: id
+                  }
+                })
             }
-            else if (!query.lastIds.includes(itemRef.getId())) {
-              sendMessage({
-                type: "add",
-                data: { item: itemRef.toApiJson() }
-              });
+            for (const item of currentItems) {
+              const itemRef = repo.getEntityRef(item);
+              let c = changes.find(c => c.id == itemRef.getId())
+              if (c !== undefined && query.lastIds.includes(c.oldId)) {
+                messages.push({
+                  type: "replace",
+                  data: {
+                    oldId: c.oldId,
+                    item: itemRef.toApiJson()
+                  }
+                });
+              }
+              else if (!query.lastIds.includes(itemRef.getId())) {
+                messages.push({
+                  type: "add",
+                  data: { item: itemRef.toApiJson() }
+                });
+              }
             }
-          }
-          await setLastIds(currentIds);
-          this.dispatcher.sendChannelMessage(query.id, messages);
-        })
+            await setLastIds(currentIds);
+            this.dispatcher.sendChannelMessage(query.id, messages);
+          })
+        } else
+          await noListeners();
       }));
   }
 }
@@ -130,6 +130,7 @@ export class LiveQueryPublisher implements LiveQueryPublisherInterface {
 
 
 export interface ServerEventDispatcher {
+  anyoneListensToChannel(channel: string): Promise<boolean>;
   sendChannelMessage<T>(channel: string, message: T): void;
 }
 // TODO - PUBNUB

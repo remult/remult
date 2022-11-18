@@ -15,6 +15,7 @@ export declare class LiveQueryStorage {
     provideListeners(entityKey: string, handle: (args: {
         query: StoredQuery;
         setLastIds(ids: any[]): Promise<void>;
+        noListeners: () => Promise<void>;
     }) => Promise<void>): Promise<void>;
 }
 export declare class LiveQueryPublisher implements LiveQueryPublisherInterface {
@@ -29,6 +30,7 @@ export declare class LiveQueryPublisher implements LiveQueryPublisherInterface {
     itemChanged(entityKey: string, changes: itemChange[]): void;
 }
 export interface ServerEventDispatcher {
+    anyoneListensToChannel(channel: string): Promise<boolean>;
     sendChannelMessage<T>(channel: string, message: T): void;
 }
 export {};

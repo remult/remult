@@ -25,20 +25,10 @@ import { remultExpress } from '../../../../core/remult-express';
 
 import { AppComponent } from '../app.component';
 import { AsyncLocalStorage } from 'async_hooks';
-import axios from 'axios';
-import { ExternalHttpProvider, Remult } from '../../../../core/src/context';
 
-import { helper, Task } from '../products-test/products.component';
-
-
-
-
-import { DataProvider } from '../../../../core/src/data-interfaces';
-import { Repository } from '../../../../core/src/remult3';
-import { BackendMethod } from '../../../../core/src/server-action';
-import fetch from 'node-fetch';
-import { remult } from '../../../../core/src/remult-proxy';
-
+import { helper, ProductsComponent, Task } from '../products-test/products.component';
+import {AblyServerEventDispatcher } from '../../../../core/live-query/ably';
+import * as ably from 'ably';
 
 const getDatabase = async () => {
 
@@ -70,23 +60,28 @@ serverInit().then(async (dataSource) => {
     let app = express();
     app.use(jwt({ secret: process.env.TOKEN_SIGN_KEY, credentialsRequired: false, algorithms: ['HS256'] }));
     app.use(cors());
-    
 
-    
+
+
     app.use(compression({}));
-  
+
     if (process.env.DISABLE_HTTPS != "true")
         app.use(forceHttps);
 
 
 
     let remultApi = remultExpress({
+        serverEventDispatcher: () => {
+            
+            const d = new AblyServerEventDispatcher(new ably.Realtime.Promise(  process.env.ABLY_KEY));
+            return d;
+        },
         entities: [Task],
-        controllers: [AppComponent],
+        controllers: [AppComponent,ProductsComponent],
         //     dataProvider: async () => await createPostgresConnection(),
         queueStorage: await preparePostgresQueueStorage(dataSource),
         logApiEndPoints: true,
-        
+
 
         initRequest: async () => {
 
@@ -117,13 +112,7 @@ serverInit().then(async (dataSource) => {
             res.send(fs.readFileSync(index).toString());
         }
         else {
-            console.log({
-                body: req.body,
-                path: req.path,
-                x: req.originalUrl,
-                method: req.method
-            });
-            res.send('No Result ' + req.path);
+            res.status(404).json('No Result ' + req.path);
         }
     });
 
@@ -132,4 +121,3 @@ serverInit().then(async (dataSource) => {
     let port = process.env.PORT || 3001;
     app.listen(port);
 });
-

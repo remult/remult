@@ -93,6 +93,14 @@ export class ServerEventsController implements ServerEventDispatcher {
             this.canUserConnectToChannel = () => true;
         }
     }
+    async anyoneListensToChannel(channel: string): Promise<boolean> {
+        for (const sc of this.connections) {
+            if (sc.channels[channel]) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     sendChannelMessage<T>(channel: string, message: any) {
         const data = JSON.stringify({ channel, data: message });

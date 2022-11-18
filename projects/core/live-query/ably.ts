@@ -4,7 +4,7 @@ import { LiveQueryProvider, PubSubClient } from '../src/live-query/LiveQuerySubs
 
 
 export class AblyLiveQueryProvider implements LiveQueryProvider {
-  constructor(private  ably: Ably.Types.RealtimePromise) {}
+  constructor(private ably: Ably.Types.RealtimePromise) { }
   async openStreamAndReturnCloseFunction(onReconnect: VoidFunction): Promise<PubSubClient> {
     return {
       disconnect: () => {
@@ -21,6 +21,12 @@ export class AblyLiveQueryProvider implements LiveQueryProvider {
 
 export class AblyServerEventDispatcher implements ServerEventDispatcher {
   constructor(private ably: Ably.Types.RealtimePromise) { }
+  async anyoneListensToChannel(channel: string): Promise<boolean> {
+    console.log((await (await this.ably.channels.get(channel).presence.history()).current()).items)
+    
+    return true;
+    return (await this.ably.channels.get(channel).presence.get()).length > 0;
+  }
   sendChannelMessage<T>(channel: string, message: T): void {
     this.ably.channels.get(channel).publish({ data: message });
   }

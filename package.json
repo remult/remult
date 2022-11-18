@@ -128,6 +128,6 @@
     "password-hash": false
   },
   "dependencies": {
-    "ably": "^1.2.30"
+    "ably": "^1.2.33"
   }
 }
