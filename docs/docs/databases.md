@@ -20,7 +20,6 @@ Remult can also be used to connect entities to local [frontend databases](#front
 Install node-postgres:
 ```sh
 npm i pg 
-npm i --save-dev @types/pg
 ```
 
 Modify the API server's main module:
@@ -48,7 +47,7 @@ app.use(remultExpress({
     When set to `heroku`, it'll:
     * Use `process.env.DATABASE_URL` if no `connectionString` is provided
     * Use ssl, with the `rejectUnauthorized:false` flag as required by postgres on heroku
-    * Disable ssl for non production environments (`process.env.NODE_ENV !== "production"`). To use ssl also for dev, set the `sslInDev` option to true.
+    * Disable ssl for non production environments (`process.env["NODE_ENV"] !== "production"`). To use ssl also for dev, set the `sslInDev` option to true.
 * **sslInDev** - see `configuration:"heroku"`
 :::
 

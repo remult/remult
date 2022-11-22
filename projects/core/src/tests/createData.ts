@@ -9,7 +9,7 @@ export async function createData(doInsert?: (insert: (id: number, name: string, 
   new(): CategoriesForTesting;
 }): Promise<[Repository<CategoriesForTesting>, Remult]> {
   let remult = new Remult();
-  remult.setDataProvider(new InMemoryDataProvider());
+  remult.dataProvider = (new InMemoryDataProvider());
   if (!entity)
     entity = newCategories;
   let rep =await  deleteAll( remult.repo(entity));

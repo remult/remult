@@ -7,7 +7,7 @@ import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { Field, Entity, EntityBase, ValueListFieldType, Fields, getValueList, ValueListInfo } from '../remult3';
 
 import { IdEntity } from '../id-entity';
-import { postgresColumnSyntax } from '../../postgres/postgresColumnSyntax';
+import { postgresColumnSyntax } from '../../postgres/schema-builder';
 
 import { SqlCommand, SqlResult } from '../sql-command';
 import { FilterConsumerBridgeToSqlRequest, getDbNameProvider } from '../filter/filter-consumer-bridge-to-sql-request';
@@ -16,7 +16,7 @@ describe("test sql database expressions", () => {
     let web = new WebSqlDataProvider("test");
     let db = new SqlDatabase(web);
     let remult = new Remult();
-    remult.setDataProvider(db);
+    remult.dataProvider = (db);
     async function deleteAll() {
         await web.dropTable(remult.repo(testSqlExpression).metadata);
         await web.dropTable(remult.repo(expressionEntity).metadata);
@@ -42,7 +42,7 @@ describe("test sql database expressions", () => {
         expect((await x.create({ col: 'abc', id: 1 }).save()).col).toBe('abc');
         expect(n.isDbReadonly(x.metadata.fields.col)).toBe(false);
         let c = new Remult();
-        c.setDataProvider(db);
+        c.dataProvider = (db);
         expressionEntity.yes = true;
         x = c.repo(expressionEntity);
         n = await getDbNameProvider(x.metadata);

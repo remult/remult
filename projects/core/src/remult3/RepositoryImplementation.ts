@@ -13,10 +13,11 @@ import { v4 as uuid } from 'uuid';
 
 import { entityEventListener } from "../__EntityValueProvider";
 import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions, ErrorInfo } from "../data-interfaces";
-import { ValueConverters } from "../../valueConverters";
+import { ValueConverters } from "../valueConverters";
 import { filterHelper } from "../filter/filter-interfaces";
 import { assign } from "../../assign";
 import { Paginator, RefSubscriber, RefSubscriberBase } from ".";
+//import { remult } from "../remult-proxy";
 
 
 let classValidatorValidate: ((item: any, ref: {
@@ -41,6 +42,7 @@ let classValidatorValidate: ((item: any, ref: {
 //     });
 
 export class RepositoryImplementation<entityType> implements Repository<entityType>{
+    static defaultRemult: Remult;
     async createAfterFilter(orderBy: EntityOrderBy<entityType>, lastRow: entityType): Promise<EntityFilter<entityType>> {
         let values = new Map<string, any>();
 
@@ -800,7 +802,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
         if (_isNew) {
             for (const col of info.columnsInfo) {
 
-                if (col.defaultValue) {
+                if (col.defaultValue && instance[col.key] === undefined) {
                     if (typeof col.defaultValue === "function") {
                         instance[col.key] = col.defaultValue(instance);
                     }
@@ -1061,8 +1063,8 @@ function prepareColumnInfo(r: columnInfo[], remult: Remult): FieldOptions[] {
 export function getFields<fieldsContainerType>(container: fieldsContainerType, remult?: Remult): FieldsRef<fieldsContainerType> {
     return getControllerRef(container, remult).fields;
 }
-export function getControllerRef<fieldsContainerType>(container: fieldsContainerType, remult?: Remult): ControllerRef<fieldsContainerType> {
-
+export function getControllerRef<fieldsContainerType>(container: fieldsContainerType, remultArg?: Remult): ControllerRef<fieldsContainerType> {
+    const remultVar = remultArg || RepositoryImplementation.defaultRemult;
     let result = container[controllerColumns] as controllerRefImpl<fieldsContainerType>;
     if (!result)
         result = container[entityMember];
@@ -1080,7 +1082,7 @@ export function getControllerRef<fieldsContainerType>(container: fieldsContainer
             base = Object.getPrototypeOf(base);
         }
 
-        container[controllerColumns] = result = new controllerRefImpl(prepareColumnInfo(columnSettings, remult), container, remult);
+        container[controllerColumns] = result = new controllerRefImpl(prepareColumnInfo(columnSettings, remultVar), container, remultVar);
     }
     return result;
 }
@@ -1395,7 +1397,15 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
         this.caption = buildCaption(entityInfo.caption, this.key, remult);
 
         if (entityInfo.id) {
-            this.idMetadata.field = entityInfo.id(this.fields)
+            let r = entityInfo.id(this.fields)
+            if (Array.isArray(r)) {
+                if (r.length > 1)
+                    this.idMetadata.field = new CompoundIdField(...r);
+                else if (r.length == 1)
+                    this.idMetadata.field = r[0];
+            }
+            else
+                this.idMetadata.field = r;
         } else {
             if (this.fields["id"])
                 this.idMetadata.field = this.fields["id"];
@@ -1545,12 +1555,12 @@ export class Fields {
 }
 
 export function isAutoIncrement(f: FieldMetadata) {
-    return f.options.valueConverter?.fieldTypeInDb === 'autoincrement';
+    return f.options?.valueConverter?.fieldTypeInDb === 'autoincrement';
 }
 export interface StringFieldOptions<entityType = any> extends FieldOptions<entityType, string> {
     maxLength?: number;
 }
-export function ValueListFieldType<entityType = any, valueType extends ValueListItem = any>(...options: (ValueListFieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
+export function ValueListFieldType<valueType extends ValueListItem = any>(...options: (ValueListFieldOptions<any, valueType> | ((options: FieldOptions<any, valueType>, remult: Remult) => void))[]) {
     return (type: ClassType<valueType>) => {
         FieldType<valueType>(o => {
             o.valueConverter = ValueListInfo.get(type),
@@ -1677,11 +1687,11 @@ export function getValueList<T>(type: ClassType<T> | FieldMetadata<T> | FieldRef
  * FieldOptions can be set in two ways:
  * @example
  * // as an object
- * .@Fields.string({ includeInApi:false })
+ * @Fields.string({ includeInApi:false })
  * title='';
  * @example
  * // as an arrow function that receives `remult` as a parameter
- * .@Fields.string((options,remult) => options.includeInApi = true)
+ * @Fields.string((options,remult) => options.includeInApi = true)
  * title='';
  */
 export function Field<entityType = any, valueType = any>(valueType: () => ClassType<valueType>, ...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
@@ -1830,18 +1840,6 @@ interface columnInfo {
     settings: (remult: Remult) => FieldOptions
 
 }
-export declare type BuildEntityFields<entityType> = {
-    [Properties in keyof Partial<OmitEB<entityType>>]: any
-}
-export function BuildEntity<entityType>(c: ClassType<entityType>, key: string, fields: BuildEntityFields<entityType>, ...options: (EntityOptions<entityType> | ((options: EntityOptions<entityType>, remult: Remult) => void))[]) {
-    Entity(key, ...options)(c);
-    for (const fieldKey in fields) {
-        if (Object.prototype.hasOwnProperty.call(fields, fieldKey)) {
-            const element = fields[fieldKey];
-            element(c.prototype, fieldKey);
-        }
-    }
-}
 
 /**Decorates classes that should be used as entities.
  * Receives a key and an array of EntityOptions.
@@ -1858,13 +1856,14 @@ export function BuildEntity<entityType>(c: ClassType<entityType>, key: string, f
  *    @Fields.boolean()
  *    completed = false;
  * }
- * *EntityOptions can be set in two ways:*
+ * @note
+ * EntityOptions can be set in two ways:
  * @example
  * // as an object
- * .@Entity("tasks",{ allowApiCrud:true })
+ * @Entity("tasks",{ allowApiCrud:true })
  * @example
  * // as an arrow function that receives `remult` as a parameter
- * .@Entity("tasks", (options,remult) => options.allowApiCrud = true)
+ * @Entity("tasks", (options,remult) => options.allowApiCrud = true)
  */
 export function Entity<entityType>(key: string, ...options: (EntityOptions<entityType> | ((options: EntityOptions<entityType>, remult: Remult) => void))[]) {
 
@@ -1934,12 +1933,16 @@ export class EntityBase {
     get $() { return this._.fields }
 }
 export class ControllerBase {
-
-    constructor(protected remult: Remult) {
-
+    protected remult: Remult;
+    constructor(remult?: Remult) {
+        this.remult = remult || RepositoryImplementation.defaultRemult;
     }
-    get $() { return getFields(this) }
-    get _() { return getControllerRef(this) }
+    assign(values: Partial<Omit<this, keyof EntityBase>>) {
+        assign(this, values);
+        return this;
+    }
+    get $() { return getFields(this, this.remult) }
+    get _() { return getControllerRef(this, this.remult) }
 
 }
 

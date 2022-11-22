@@ -3,7 +3,7 @@
 Backend methods run on the backend, and are used to improve performance, run server only code (like send mail), or to perform operations that are not accessible through the api.
 ::: danger
 Backend methods are not subject to the entity's api restrictions, meaning that an entity that has allowApiUpdate=false, can be updated through code that runs in a `BackendMethod`.
-The rule is, if the user can run the `BackendMethod` using it's `allowed` option, the operations in it are considered allowed and if they should be restricted, it is up to the developer to restrict them.
+The rule is, if the user can run the `BackendMethod` using its `allowed` option, the operations in it are considered allowed and if they should be restricted, it is up to the developer to restrict them.
 :::
 
 
@@ -13,21 +13,21 @@ There are three different kinds of backend methods
 3. controller backend method
 
 ## static backend method
-A static backend method, is the simplest kind, it will send it's parameters to the `back-end`, and will return it's result to the `front-end`.
+A static backend method, is the simplest kind, it will send its parameters to the `back-end`, and will return its result to the `front-end`.
 Here's an example of a backend method.
 ```ts
 import { BackendMethod, Remult } from "remult";
 import { Task } from "./Task";
 
-export class TasksService {
+export class TasksController {
+   @BackendMethod({ allowed: true })
+   static async setAll(completed: boolean, remult?: Remult) {
+      const taskRepo = remult!.repo(Task);
 
-    @BackendMethod({ allowed: true })
-    static async setAll(completed: boolean, remult?: Remult) {
-        for await (const task of remult!.repo(Task).query()) {
-            task.completed = completed;
-            await task.save();
-        }
-    }
+      for (const task of await taskRepo.find()) {
+         await taskRepo.save({ ...task, completed });
+      }
+   }
 }
 ```
 
@@ -39,9 +39,18 @@ remult!.repo
 ```
 :::
 
+Remember to register the `TasksController` class in the `controllers` array of the `remultExpress` options.
+```ts{3}
+export const api = remultExpress({
+   entities: [Task],
+   controllers: [TasksController]
+})
+```
+
+
 usage example:
 ```ts
-await TaskService.setAll(true);
+await TasksController.setAll(true);
 ```
 
 ## Entity backend method
@@ -81,7 +90,7 @@ await task.toggleCompleted();
 
 
 ## Controller backend method
-A Controller is a class that once one of it's backend method is called, will save it's field values and send them back and forth between the `front-end` and the `back-end`
+A Controller is a class that once one of its backend method is called, will save its field values and send them back and forth between the `front-end` and the `back-end`
 
 ```ts
 import { BackendMethod, Controller, Field, Remult } from "remult";
@@ -104,7 +113,7 @@ export class SetTaskCompletedController {
 ```
 Once the `updateCompleted` method is called, all the `controller`'s field values will be sent to the `backend` and it can use them. Once the method completes, all the field values will return to the browser. 
 
-* the `Remult` object of it's constructor is automatically injected by the `Controller` decorator.
+* the `Remult` object of its constructor is automatically injected by the `Controller` decorator.
 
 Usage example:
 ```ts

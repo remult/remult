@@ -1,4 +1,4 @@
-const { description } = require('../../package')
+const { description } = require('../../projects/core/package')
 //const apiSideBar = require('./api-sidebar.json');
 module.exports = {
   /**
@@ -30,6 +30,7 @@ module.exports = {
   themeConfig: {
     logo: '/logo.png',
     repo: 'remult/remult',
+
     editLinks: true,
     docsDir: 'docs',
     lastUpdated: true,
@@ -48,9 +49,22 @@ module.exports = {
           },
           {
             text: 'Angular',
-            link: '/tutorials/tutorial-angular'
+            link: '/tutorials/angular/'
           }
+          ,
+          {
+            text: 'Vue',
+            link: '/tutorials/vue/'
+          },
+          {
+            text: 'Next.js',
+            link: '/tutorials/react-next/'
+          },
         ]
+      },
+      {
+        text: 'Discord',
+        link: 'https://discord.gg/GXHk7ZfuG5'
       }
     ],
     sidebar: {
@@ -60,13 +74,16 @@ module.exports = {
           title: 'Getting Started',
           collapsable: false,
           children: [
-            '']
+            '',
+            'add-remult-to-your-app',
+            'crud-your-first-entity',
+            'databases',
+          ]
         },
         {
           title: 'Concepts',
           collapsable: true,
           children: [
-            'databases',
             'field-types',
             'backendMethods',
             'entity-relations',
@@ -77,10 +94,12 @@ module.exports = {
           collapsable: true,
 
           children: [
+            'working-without-decorators',
             'rest-api',
             'adding-swagger',
             'adding-graphql',
             'lazy-loading-of-related-entities',
+            'using-remult-in-custom-backend-code',
             'using-server-only-packages',
             'running-sql-on-the-server'
           ]
@@ -110,22 +129,71 @@ module.exports = {
 
           collapsable: false,
           children: [
-            '',
+            ['', 'Setup'],
             'entities',
             'sorting-filtering',
             'crud',
             'validation',
             'backend-methods',
             'auth',
+            'database',
             'deployment'
           ]
         }],
-      '/tutorials/tutorial-angular': [
+      '/tutorials/angular/': [
         {
           title: 'Tutorial',
-          path: '/tutorials/tutorial-angular',
-          collapsable: false
-        }]
+          path: '/tutorials/angular/',
+
+          collapsable: false,
+          children: [
+            ['', 'Setup'],
+            'entities',
+            'sorting-filtering',
+            'crud',
+            'validation',
+            'backend-methods',
+            'auth',
+            'database',
+            'deployment'
+          ]
+        }],
+      '/tutorials/vue/': [
+        {
+          title: 'Tutorial',
+          path: '/tutorials/vue/',
+
+          collapsable: false,
+          children: [
+            ['', 'Setup'],
+            'entities',
+            'sorting-filtering',
+            'crud',
+            'validation',
+            'backend-methods',
+            'auth',
+            'database',
+            'deployment'
+          ]
+        }],
+      '/tutorials/react-next/': [
+        {
+          title: 'Tutorial',
+          path: '/tutorials/react-next/',
+
+          collapsable: false,
+          children: [
+            ['', 'Setup'],
+            'entities',
+            'sorting-filtering',
+            'crud',
+            'validation',
+            'backend-methods',
+            'auth',
+            'database',
+            'deployment'
+          ]
+        }],
 
     }
   },

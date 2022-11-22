@@ -13,7 +13,7 @@ To add graphql to a `remult` application follow these steps:
    import { remultGraphql } from 'remult/graphql';
    import { remultExpress } from 'remult/remult-express';
    
-   let app = express();
+   const app = express();
    let api = remultExpress();
    app.use(api);
    const { schema, rootValue } = remultGraphql(api);

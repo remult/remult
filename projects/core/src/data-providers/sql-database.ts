@@ -129,7 +129,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     }
 
     return r.execute(select).then(r => {
-      return +r.rows[0].count;
+      return Number(r.rows[0].count);
     });
 
   }
@@ -149,6 +149,9 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
       }
       if (options.limit) {
         options.orderBy = Sort.createUniqueSort(this.entity, options.orderBy);
+      }
+      if (!options.orderBy){
+        options.orderBy = Sort.createUniqueSort(this.entity,new Sort());
       }
       if (options.orderBy) {
         let first = true;

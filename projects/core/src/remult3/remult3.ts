@@ -6,11 +6,6 @@ import { EntityOptions as EntityOptions } from "../entity";
 import { SortSegment } from "../sort";
 import { entityEventListener } from "../__EntityValueProvider";
 
-
-
-
-
-
 export interface EntityRef<entityType> extends Subscribable {
     hasErrors(): boolean;
     undoChanges();
@@ -87,7 +82,7 @@ export interface FieldRef<entityType = any, valueType = any> extends Subscribabl
     valueChanged(): boolean;
     entityRef: EntityRef<entityType>;
     container: entityType;
-    metadata: FieldMetadata<entityType>;
+    metadata: FieldMetadata<valueType>;
     load(): Promise<valueType>;
     valueIsNull(): boolean;
     originalValueIsNull(): boolean;
@@ -122,7 +117,12 @@ export declare type OmitEB<T> = Omit<T, keyof import('./RepositoryImplementation
 export interface Repository<entityType> {
     /** returns a result array based on the provided options */
     find(options?: FindOptions<entityType>): Promise<entityType[]>;
-    /** returns the first item that matchers the `where` condition */
+    /** returns the first item that matchers the `where` condition
+     * @example
+     * await taskRepo.findFirst({ completed:false })
+     * @example
+     * await taskRepo.findFirst({ completed:false },{ createIfNotFound: true })
+     *      */
     findFirst(where?: EntityFilter<entityType>, options?: FindFirstOptions<entityType>): Promise<entityType>;
     /** returns the items that matches the idm the result is cached unless specified differently in the `options` parameter */
     findId(id: entityType extends { id?: number } ? number : entityType extends { id?: string } ? string : (string | number), options?: FindFirstOptionsBase<entityType>): Promise<entityType>;
@@ -163,7 +163,7 @@ export interface Repository<entityType> {
     insert(item: Partial<OmitEB<entityType>>[]): Promise<entityType[]>;
     insert(item: Partial<OmitEB<entityType>>): Promise<entityType>;
 
-    /** Updates an item, based on it's `id` 
+    /** Updates an item, based on its `id` 
      * @example
      * taskRepo.update(task.id,{...task,completed:true})
     */
@@ -306,7 +306,7 @@ export interface QueryResult<entityType> {
     [Symbol.asyncIterator](): {
         next: () => Promise<IteratorResult<entityType, entityType>>;
     };
-    /** returns the number of rows that match the query critiria */
+    /** returns the number of rows that match the query criteria */
     count(): Promise<number>;
     /** Returns a `Paginator` object that is used for efficient paging */
     paginator(): Promise<Paginator<entityType>>
@@ -321,7 +321,7 @@ export interface Paginator<entityType> {
     items: entityType[];
     /** True if next page exists */
     hasNextPage: boolean;
-    /** Get's the next page in the query's result set */
+    /** Gets the next page in the `query`'s result set */
     nextPage(): Promise<Paginator<entityType>>;
     /** the count of the total items in the `query`'s result */
     count(): Promise<number>;

@@ -1,85 +1,107 @@
-# Sorting and Filtering
-The RESTful API created by Remult supports server-side sorting and filtering. Let's use that to sort and filter the list of tasks.
+# Paging, Sorting and Filtering
+The RESTful API created by Remult supports **server-side paging, sorting, and filtering**. Let's use that to limit, sort and filter the list of tasks.
 
-### Show uncompleted tasks first
-Uncompleted tasks are important and should appear above completed tasks in the todo app. 
+## Limit Number of Fetched Tasks
+Since our database may eventually contain a lot of tasks, it make sense to use a **paging strategy** to limit the number of tasks retrieved in a single fetch from the back-end database.
 
-In the `useEffect` hook `App` function component, add an object literal argument to the `find` method call and set its `orderBy` with an object that contains the fields you want to order by.
-Use "asc" and "desc" to determine the sort order.
+Let's limit the number of fetched tasks to `20`.
+
+In the `fetchTasks` function, pass an `options` argument to the `find` method call and set its `limit` property to 20.
 
 *src/App.tsx*
 ```ts{3}
-useEffect(() => {
-   taskRepo.find({
-   orderBy: { completed: "asc" }
-   }).then(setTasks);
-}, []);
+async function fetchTasks() {
+  return taskRepo.find({
+    limit: 20
+  });
+}
+```
+
+There aren't enough tasks in the database for this change to have an immediate effect, but it will have one later on when we'll add more tasks.
+
+::: tip
+To query subsequent pages, use the [Repository.find()](../../docs/ref_repository.md#find) method's `page` option.
+:::
+
+## Show Active Tasks on Top
+Uncompleted tasks are important and should appear above completed tasks in the todo app. 
+
+In the `fetchTasks` function, set the `orderBy` property of the `find` method call's `option` argument to an object that contains the fields you want to sort by.
+Use "asc" and "desc" to determine the sort order.
+
+*src/App.tsx*
+```ts{4}
+async function fetchTasks() {
+  return taskRepo.find({
+    limit: 20,
+    orderBy: { completed: "asc" }
+  });
+}
 ```
 
 ::: warning Note
 By default, `false` is a "lower" value than `true`, and that's why uncompleted tasks are now showing at the top of the task list.
 :::
-### Hide completed tasks
-Let's hide all completed tasks, using server side filtering.
+## Toggle Display of Completed Tasks
+Let's allow the user to toggle the display of completed tasks, using server-side filtering.
 
-1. In the `useEffect` hook of the `App` function component, set the `where` property of the `options` argument of `find` to `{ completed: false }`}.
+1. Add a `hideCompleted` argument to the `fetchTasks` function and Modify the `fetchTasks` function, and set the `where` property of the options argument of `find`:
 
-   *src/App.tsx*
-   ```ts{4}
-   useEffect(() => {
-     taskRepo.find({
-       orderBy: { completed: "asc" },
-       where: { completed: false }
-     }).then(setTasks);
-   }, []);
-   ```
-   ::: warning Note
-   Because the `completed` field is of type `boolean`, the argument is **compile-time checked to be of the `boolean` type.**
-   :::
+*src/App.tsx*
+```ts{1,5}
+async function fetchTasks(hideCompleted: boolean) {
+   return taskRepo.find({
+      limit: 20,
+      orderBy: { completed: "asc" },
+      where: { completed: hideCompleted ? false : undefined }
+   });
+}
+```
 
-   * To see many more filtering options, see [EntityFilter](https://remult.dev/docs/entityFilter.html)
-### Optionally hide completed tasks
-Let's add the option to toggle the display of completed tasks using a checkbox at the top of the task list.
+::: warning Note
+Because the `completed` field is of type `boolean`, the argument is **compile-time checked to be of the `boolean` type**. Settings the `completed` filter to `undefined` causes it to be ignored by Remult.
+:::
 
-1. Add a `hideCompleted` boolean field to the `App` function component.
+::: tip Learn more
+Explore the reference for a [comprehensive list of filtering options](../../docs/entityFilter.md).
+:::
 
-   *src/App.tsx*
-   ```ts
-   const [hideCompleted, setHideCompleted] = useState(false);
-   ```
+2. Add a `hideCompleted` boolean React state to the `App` function component.
 
-2. In the `useEffect` hook of the `App` function component, change the `where` property of the `options` argument of `find`. Also register the `hideCompleted` in the array that is sent as the second parameter to `useEffect`.
+*src/App.tsx*
+```ts
+const [hideCompleted, setHideCompleted] = useState(false);
+```
 
-   *src/App.tsx*
-   ```ts{3,6}
-   useEffect(() => {
-     taskRepo.find({
-       orderBy: { completed: "asc" },
-       where: { completed: hideCompleted ? false : undefined }
-     }).then(setTasks);
-   }, [hideCompleted]);
-   ```
-   * Note that settings the `completed` filter options to `undefined` removes that condition.
+3. In the `useEffect` hook of the `App` function component, modify the call to `fetchTasks` and register the `hideCompleted` state in the second argument of `useEffect` (this will cause the effect to re-run when `hideCompleted` changes).
 
-3. Add a `checkbox` input element immediately before the `tasks` map in `App.tsx`, bind it to the `hideCompleted` field, and add a `change` handler which sets the `setHideCompleted` when the value of the checkbox is changed.
+*src/App.tsx*
+```ts{2-3}
+useEffect(() => {
+   fetchTasks(hideCompleted).then(setTasks);
+}, [hideCompleted]);
+```
 
-   *src/App.tsx*
-   ```tsx{3-7}
-   return (
-     <div >
-       <input
-         type="checkbox"
-         checked={hideCompleted}
-         onChange={e => setHideCompleted(e.target.checked)} /> Hide Completed
-       <hr />
-       {tasks.map(task => (
-         <div key={task.id}>
-           <input type="checkbox" checked={task.completed} />
-           {task.title}
-         </div>
-       ))}
-     </div>
-   );
-   ```
+4. Add a `checkbox` input element immediately before the `tasks` map in `App.tsx`, bind its check state to the `hideCompleted` state, and add an `onChange` handler which calls `setHideCompleted` when the value of the checkbox is changed.
+
+*src/App.tsx*
+```tsx{3-6}
+  return (
+    <div>
+      <input
+        type="checkbox"
+        checked={hideCompleted}
+        onChange={e => setHideCompleted(e.target.checked)} /> Hide Completed
+      <main>
+        {tasks.map(task => (
+          <div key={task.id}>
+            <input type="checkbox" checked={task.completed} />
+            {task.title}
+          </div>
+        ))}
+      </main>
+    </div>
+  );
+```
 
 After the browser refreshes, a "Hide completed" checkbox appears above the task list. The user can toggle the display of uncompleted tasks using the checkbox.

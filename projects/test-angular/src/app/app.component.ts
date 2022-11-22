@@ -51,7 +51,7 @@ export class AppComponent implements OnInit {
     // });
   }
   @BackendMethod({ allowed: true })
-  static async signIn(user: string, password: string, remult?: Remult) {
+  static async staticSignIn(user: string, password: string, remult?: Remult) {
     let result: UserInfo;
     // let u = await remult.repo_old(Users).findFirst(h => h.name.isEqualTo(user));
     // if (u)
@@ -77,11 +77,11 @@ export class AppComponent implements OnInit {
   }
   setToken(token: string) {
     if (token) {
-      this.remult.setUser(<UserInfo>new JwtHelperService().decodeToken(token));
+      this.remult.user = (<UserInfo>new JwtHelperService().decodeToken(token));
       sessionStorage.setItem("auth_token", token);
     }
     else {
-      this.remult.setUser(undefined);
+      this.remult.user = undefined;
       sessionStorage.removeItem("auth_token");
     }
   }

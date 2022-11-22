@@ -1,9 +1,11 @@
-import { ActionTestConfig } from './testHelper.spec';
+import { ActionTestConfig, testAsIfOnBackend } from './testHelper.spec';
 import { Remult, isBackend } from '../context';
-import { prepareArgsToSend, prepareReceivedArgs, Controller, BackendMethod, BackendMethodOptions } from '../server-action';
-import { Field, Entity, getFields, FieldType, ValueListFieldType, Fields } from '../remult3';
+import { prepareArgsToSend, Controller, BackendMethod } from '../server-action';
+import { Field, Entity, getFields, ValueListFieldType, Fields } from '../remult3';
 
 import { IdEntity } from '../id-entity';
+import { remult, RemultProxy } from '../remult-proxy';
+import { describeClass } from '../remult3/DecoratorReplacer';
 
 
 @ValueListFieldType()
@@ -19,6 +21,10 @@ export class myType {
 class testEntity extends IdEntity {
     @Fields.string()
     name: string;
+    @BackendMethod({ allowed: false })
+    async forbidden() {
+
+    }
 }
 
 @Controller('1')
@@ -41,6 +47,10 @@ class testBasics {
     @BackendMethod({ allowed: true })
     async testDataType(n: number) {
         return this.myType.what(n);
+    }
+    @BackendMethod({ allowed: false })
+    async forbidden() {
+
     }
 
     @BackendMethod({ allowed: true })
@@ -81,6 +91,10 @@ class testBasics {
 
         return d.getFullYear();
     }
+    @BackendMethod({ allowed: false })
+    static async testForbidden2() {
+
+    }
     @BackendMethod({ allowed: true })
     static async testDataType(d: myType, n: number) {
         return d.what(n);
@@ -88,6 +102,18 @@ class testBasics {
     @BackendMethod({ allowed: true })
     static async getValFromServer(remult?: Remult) {
         return (await remult.repo(testEntity).findFirst()).name;
+    }
+    static async staticBackendMethodWithoutDecorator() {
+        return isBackend();
+    }
+    static async staticBackendMethodWithoutDecoratorWithRemult(remult?: Remult) {
+        return (await remult.repo(testEntity).findFirst()).name;
+    }
+    async backendMethodWithoutDecorator() {
+        return isBackend();
+    }
+    async backendMethodWithoutDecoratorWithRemult(remult?: Remult) {
+        return (await remult.repo(testEntity).findFirst()).name + this.a;
     }
     @BackendMethod({ allowed: true })
     static async sendEntityAsParamter(entity: testEntity) {
@@ -106,16 +132,93 @@ class testBasics {
         return z.toString();
     }
 }
+describeClass(testBasics, undefined, undefined, {
+    staticBackendMethodWithoutDecorator: BackendMethod({ allowed: true })
+});
+describeClass(testBasics, undefined, undefined, {
+    staticBackendMethodWithoutDecoratorWithRemult: BackendMethod({ allowed: true, paramTypes: [Remult] })
+});
+describeClass(testBasics, undefined, {
+    backendMethodWithoutDecorator: BackendMethod({ allowed: true })
+});
+describeClass(testBasics, undefined, {
+    backendMethodWithoutDecoratorWithRemult: BackendMethod({ allowed: true, paramTypes: [Remult] })
+});
+
+
+class Stam {
+    @BackendMethod({ allowed: false })
+    static async testForbidden1() {
+        console.log("I am in forbidden");
+    }
+}
 
 
 describe("test Server Controller basics", () => {
     let c = new Remult();
-    c.setDataProvider(ActionTestConfig.db);
+    c.dataProvider = (ActionTestConfig.db);
     beforeEach(async done => {
 
         await Promise.all((await c.repo(testEntity).find()).map(x => x.delete()));
         done();
     });
+    it("forbidden static backend", async () => {
+        let ok = true;
+        try {
+            await Stam.testForbidden1();
+            ok = false;
+        }
+        catch (err: any) {
+            expect(err.httpStatusCode).toBe(403);
+        }
+        expect(ok).toBe(true)
+    });
+
+    it("forbidden static backend", async () => {
+        let ok = true;
+        try {
+            await testBasics.testForbidden2();
+            ok = false;
+        }
+        catch (err: any) {
+            expect(err.httpStatusCode).toBe(403);
+        }
+        expect(ok).toBe(true)
+    });
+    it("forbidden static backend", async () => {
+        let ok = true;
+        try {
+            await testBasics.testForbidden2();
+            ok = false;
+        }
+        catch (err: any) {
+            expect(err.httpStatusCode).toBe(403);
+        }
+        expect(ok).toBe(true)
+    });
+    it("forbidden backend", async () => {
+        let ok = true;
+        try {
+            await new testBasics(c).forbidden();
+            ok = false;
+        }
+        catch (err: any) {
+            expect(err.httpStatusCode).toBe(403);
+        }
+        expect(ok).toBe(true)
+    });
+    it("forbidden entity", async () => {
+        let ok = true;
+        try {
+            await remult.repo(testEntity).create().forbidden();
+            ok = false;
+        }
+        catch (err: any) {
+            expect(err.httpStatusCode).toBe(403);
+        }
+        expect(ok).toBe(true)
+    });
+
     it("test error", async () => {
         try {
             await testBasics.syntaxError();
@@ -140,6 +243,7 @@ describe("test Server Controller basics", () => {
 
         expect(await testBasics.sendEntityAsParamter(null)).toBe('null');
     });
+
     it("send entity to server prepare args to send ", async () => {
         let e = await c.repo(testEntity).create({ name: 'test' }).save();
         expect(prepareArgsToSend([testEntity], [e])[0]).toBe(e.id);
@@ -148,16 +252,120 @@ describe("test Server Controller basics", () => {
         await c.repo(testEntity).create({ name: 'test' }).save();
         expect(await testBasics.getValFromServer()).toBe('test');
     });
+    it("new backend method syntax static method with remult", async () => {
+        await c.repo(testEntity).create({ name: 'test' }).save();
+        expect(await testBasics.staticBackendMethodWithoutDecoratorWithRemult()).toBe('test');
+    });
+    it("new backend method syntax static method", async () => {
+        expect(await testBasics.staticBackendMethodWithoutDecorator()).toBe(true);
+    });
+    it("new backend method syntax 1", async () => {
+        expect(await new testBasics(undefined).backendMethodWithoutDecorator()).toBe(true);
+    });
+    it("new backend method syntax 2", async () => {
+        await c.repo(testEntity).create({ name: 'test' }).save();
+        const z = new testBasics(undefined);
+        z.a = 'x';
+        expect(await z.backendMethodWithoutDecoratorWithRemult()).toBe('testx');
+    });
+    it("test backend method caller", async () => {
+        const c = new Remult({
+            url: "xx", httpClient: {
+                delete: () => undefined,
+                get: () => undefined,
+                post: async (url, data) => {
+                    expect(url).toBe("xx/sf");
+                    expect(data.args[0]).toEqual("noam");
+                    return { data: { result: "hello noam" } };
+                },
+                put: () => undefined
+            }
+        });
+        const r = (await c.call(testBasics.sf, undefined, "noam"));
+        console.log(r);
+        expect(r.result).toBe("hello noam");
+    });
+    it("test backend method caller with proxy", async () => {
+        const p = new RemultProxy(); {
+            const c = new Remult({
+                url: "xx", httpClient: {
+                    delete: () => undefined,
+                    get: () => undefined,
+                    post: async (url, data) => {
+                        expect(url).toBe("xx/sf");
+                        expect(data.args[0]).toEqual("noam");
+                        return { data: { result: "hello noam" } };
+                    },
+                    put: () => undefined
+                }
+            });
+
+            p.remultFactory = () => c;
+        }
+        const r = (await p.call(testBasics.sf, undefined, "noam"));
+        console.log(r);
+        expect(r.result).toBe("hello noam");
+    });
+    it("test backend method instance method", async () => {
+        const c = new Remult({
+            url: "xx", httpClient: {
+                delete: () => undefined,
+                get: () => undefined,
+                post: async (url, data) => {
+                    expect(url).toBe("xx/1/doIt");
+                    return { result: { result: "hello noam" }, fields: {} };
+                },
+                put: () => undefined
+            }
+        });
+        const b = new testBasics(remult);
+        const r = (await c.call(b.doIt, b));
+        console.log(r);
+        expect(r.result).toBe("hello noam");
+    });
+    it("test backend method instance method with proxy", async () => {
+        const c = new Remult({
+            url: "xx", httpClient: {
+                delete: () => undefined,
+                get: () => undefined,
+                post: async (url, data) => {
+                    expect(url).toBe("xx/1/doIt");
+                    return { result: { result: "hello noam" }, fields: {} };
+                },
+                put: () => undefined
+            }
+        });
+        const p = new RemultProxy();
+        p.remultFactory = () => c;
+        const b = new testBasics(remult);
+        const r = (await p.call(b.doIt, b));
+        console.log(r);
+        expect(r.result).toBe("hello noam");
+    });
     it("test server function", async () => {
 
         let r = await testBasics.sf("noam");
         expect(r.onServer).toBe(true);
         expect(r.result).toBe('hello noam');
     });
+    it("test server function on server", async () => {
+        await testAsIfOnBackend(async () => {
+            let r = await testBasics.sf("noam");
+            expect(r.onServer).toBe(true);
+            expect(r.result).toBe('hello noam');
+        });
+    });
     it("test server Method Date", async () => {
         let tb = new testBasics(c);
         tb.theDate = new Date(1976, 6, 16);
         expect(await tb.testDate()).toBe(1976);
+    });
+    it("test server Method Date on server", async () => {
+        let tb = new testBasics(c);
+        tb.theDate = new Date(1976, 6, 16);
+        await testAsIfOnBackend(async () => {
+            expect(await tb.testDate()).toBe(1976)
+        });
     });
     it("test server Method myType", async () => {
         let tb = new testBasics(c);
@@ -220,6 +428,41 @@ describe("test Server Controller basics", () => {
         expect(happened).toBe(false);
 
 
+    });
+    it("test backend method with adhoc entity", async () => {
+        const myClass = class {
+            id = 0;
+            name = '';
+
+            async doSomething() {
+                return this.name + isBackend();
+            }
+        }
+        describeClass(myClass, Controller('addHocController'), {
+            id: Fields.autoIncrement(),
+            name: Fields.string(),
+            doSomething: BackendMethod({ allowed: true }),
+        })
+        const x = new myClass();
+        x.name = "123";
+        expect(await x.doSomething()).toBe("123true");
+    });
+    it("test static backend method with adhoc controller", async () => {
+        const myClass = class {
+            id = 0;
+            name = '';
+
+            static async adHockDoSomething() {
+                return isBackend();
+            }
+        }
+        describeClass(myClass, Controller('addHocController1'), {
+            id: Fields.autoIncrement(),
+            name: Fields.string()
+        }, {
+            adHockDoSomething: BackendMethod({ allowed: true }),
+        })
+        expect(await myClass.adHockDoSomething()).toBe(true);
     });
 
 });

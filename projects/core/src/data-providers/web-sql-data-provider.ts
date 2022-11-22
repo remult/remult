@@ -15,10 +15,10 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
     //@ts-ignore
     db: Database;
 
-    constructor(private databaseName: string) {
+    constructor(private databaseName: string, databaseSize = 2 * 1024 * 1024) {
 
         //@ts-ignore
-        this.db = window.openDatabase(databaseName, '1.0', databaseName, 2 * 1024 * 1024);
+        this.db = window.openDatabase(databaseName, '1.0', databaseName, databaseSize);
     }
 
     getLimitSqlSyntax(limit: number, offset: number) {
@@ -72,15 +72,17 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
 
     private addColumnSqlSyntax(x: FieldMetadata, dbName: string) {
         let result = dbName;
+        const nullNumber = x.allowNull ? "" : " default 0 not null";
         if (x.valueType == Date)
             result += " integer";
+
         else if (x.valueType == Boolean)
-            result += " integer default 0 not null";
+            result += " integer " + nullNumber;
         else if (x.valueType == Number) {
             if (!x.valueConverter.fieldTypeInDb)
-                result += ' real default 0 not null';
+                result += ' real ' + nullNumber;
             else
-                result += ' ' + x.valueConverter.fieldTypeInDb + ' default 0 not null';
+                result += ' ' + x.valueConverter.fieldTypeInDb + ' ' + nullNumber;
         }
         else
             result += " text" + (x.allowNull ? " " : " default '' not null ");

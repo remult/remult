@@ -1,11 +1,15 @@
-import { CompoundIdField, DataProvider, EntityDataProvider, EntityDataProviderFindOptions, EntityFilter, EntityMetadata, FieldMetadata, Filter, Remult } from ".."
-import knex, { Knex } from 'knex';
-import { customDatabaseFilterToken, FilterConsumer } from "../src/filter/filter-interfaces";
-import { dbNameProvider, getDbNameProvider } from "../src/filter/filter-consumer-bridge-to-sql-request";
-import { allEntities } from "../src/context";
 
-import { isAutoIncrement, StringFieldOptions, Fields } from "../src/remult3";
-import { ValueConverters } from "../valueConverters";
+import knex, { Knex } from 'knex';
+import { customDatabaseFilterToken, Filter, FilterConsumer } from "../src/filter/filter-interfaces";
+import { dbNameProvider, getDbNameProvider } from "../src/filter/filter-consumer-bridge-to-sql-request";
+import { allEntities, Remult } from "../src/context";
+
+import { isAutoIncrement, StringFieldOptions, Fields, EntityFilter, EntityMetadata } from "../src/remult3";
+import { ValueConverters } from "../src/valueConverters";
+import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions } from '../src/data-interfaces';
+import { FieldMetadata } from '../src/column-interfaces';
+import { CompoundIdField } from '../src/column';
+import { Sort } from '../src/sort';
 
 export class KnexDataProvider implements DataProvider {
     constructor(public knex: Knex) {
@@ -20,7 +24,7 @@ export class KnexDataProvider implements DataProvider {
             await action(new KnexDataProvider(t));
             await t.commit();
         }
-        catch (err){
+        catch (err) {
             await t.rollback();
             throw err;
         }
@@ -80,6 +84,9 @@ class KnexEntityDataProvider implements EntityDataProvider {
             let r = await br.resolveWhere();
             query.where(b => r.forEach(y => y(b)));
 
+        }
+        if (!options.orderBy) {
+            options.orderBy = Sort.createUniqueSort(this.entity, new Sort());
         }
         if (options.orderBy) {
 
@@ -179,8 +186,15 @@ class KnexEntityDataProvider implements EntityDataProvider {
 
         let insert = this.knex(e.entityName).insert(insertObject);
         if (isAutoIncrement(this.entity.idMetadata.field)) {
-            let result = await insert.returning(this.entity.idMetadata.field.key);
-            let newId = result[0].id;
+            let newId;
+            if (this.knex.client.config.client === 'mysql2') {
+                let result = await insert;
+                newId = result[0];
+            }
+            else {
+                let result = await insert.returning(this.entity.idMetadata.field.key);
+                newId = result[0].id;
+            }
 
             resultFilter = new Filter(x => x.isEqualTo(this.entity.idMetadata.field, newId));
         }

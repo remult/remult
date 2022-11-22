@@ -128,7 +128,7 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
             if (idMatches(r)) {
                 let newR = { ...r };
                 for (const f of this.entity.fields) {
-                    if (!f.dbReadOnly && !f.isServerExpression ) {
+                    if (!f.dbReadOnly && !f.isServerExpression) {
                         if (keys.includes(f.key)) {
                             newR[f.key] = f.valueConverter.toJson(data[f.key]);
                         }
@@ -156,12 +156,11 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
         let idf = this.entity.idMetadata.field;
         if (!(idf instanceof CompoundIdField)) {
             if (idf.options.valueConverter?.fieldTypeInDb === 'autoincrement') {
-
-                let lastRow = await this.find({ orderBy: new Sort({ field: idf, isDescending: true }) });
-                if (lastRow.length > 0)
-                    data[idf.key] = lastRow[0][idf.key] + 1;
-                else
-                    data[idf.key] = 1;
+                data[idf.key]=1;
+                for (const row of this.rows) {
+                    if (row[idf.key] >= data[idf.key])
+                        data[idf.key]=row[idf.key]+1;
+                }
             }
             if (data[idf.key])
                 this.rows.forEach(i => {

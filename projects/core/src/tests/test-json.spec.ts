@@ -28,17 +28,32 @@ class entityWithAutoId extends EntityBase {
 describe("test json database", () => {
     let db = new JsonDataProvider(localStorage);
     let remult = new Remult();
-    remult.setDataProvider(db);
+    remult.dataProvider = (db);
     async function deleteAll1() {
         await deleteAll(remult.repo(newCategories));
     }
     it("test auto increment", async () => {
         let remult = new Remult();
-        remult.setDataProvider(new InMemoryDataProvider());
+        remult.dataProvider = (new InMemoryDataProvider());
         let p = await remult.repo(entityWithAutoId).create({ name: 'a' }).save();
         expect(p.id).toBe(1);
         p = await remult.repo(entityWithAutoId).create({ name: 'b' }).save();
         expect(p.id).toBe(2);
+
+    });
+    it("test insert is in the correct order in the result array", async () => {
+        const mem = new InMemoryDataProvider();
+        const remult = new Remult(mem);
+        await remult.repo(entityWithAutoId).insert([
+            { name: 'a' },
+            { name: 'b' },
+            { name: 'c' }
+        ]);
+        expect(mem.rows[await remult.repo(entityWithAutoId).metadata.getDbName()]).toEqual([
+            { id: 1, name: 'a' },
+            { id: 2, name: 'b' },
+            { id: 3, name: 'c' }
+        ])
 
     });
 
@@ -69,7 +84,7 @@ describe("test tasks", () => {
             setItem: (x, y) => storage = y
         });
         let cont = new Remult();
-        cont.setDataProvider(db);
+        cont.dataProvider = (db);
         let c = cont.repo(tasks);
         let t = c.create();
         t.id = 1;
