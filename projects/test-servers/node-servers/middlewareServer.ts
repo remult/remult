@@ -1,6 +1,5 @@
 import * as express from "express";
-import { createRemultServer } from "../../core/server";
-
+import { createRemultServer } from "../../core/server/index";
 import { Task } from "../shared/Task";
 
 const app = express();

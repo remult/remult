@@ -1,5 +1,5 @@
 import type { FastifyInstance, FastifyPluginCallback, RouteHandlerMethod, FastifyRequest } from 'fastify';
-import { createRemultServer } from './server';
+import { createRemultServer } from './server/index';
 import { GenericRequestHandler, GenericResponse, GenericRouter, RemultServer, createRemultServerCore, RemultServerOptions, SpecificRoute } from './server/expressBridge';
 import { initAsyncHooks } from './server/initAsyncHooks';
 

@@ -10,7 +10,7 @@ export const api = remultFresh({
 console.log(api);
 
 
-export const handler = api.freshHandler;
+export const handler = api.handle;
 // export function handler(
 //   req: Request, ctx: MiddlewareHandlerContext
 // ) {

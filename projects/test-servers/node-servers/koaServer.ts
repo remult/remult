@@ -1,6 +1,6 @@
 import * as koa from 'koa';
 import * as bodyParser from 'koa-bodyparser';
-import { createRemultServer } from '../../core/server';
+import { createRemultServer } from '../../core/server/index';
 import { Task } from '../shared/Task';
 
 
