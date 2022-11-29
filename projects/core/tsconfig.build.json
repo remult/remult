@@ -2,6 +2,7 @@
     "extends": "./tsconfig.json",
     "exclude": [
         "src/test.ts",
-        "**/*.spec.ts"
+        "**/*.spec.ts",
+        "**/*.backend-spec.ts"
       ]
 }
