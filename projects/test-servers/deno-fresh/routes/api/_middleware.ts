@@ -7,7 +7,6 @@ import { remultFresh } from "remult/remult-fresh";
 export const api = remultFresh({
   entities: [Task],
 }, Response);
-console.log(api);
 
 
 export const handler = api.handle;

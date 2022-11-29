@@ -30,7 +30,6 @@ const environments: [string, number][] = [
 ]
 
 function test(name: string, test: () => Promise<void>, ...ignoreList: string[]) {
-    return;
     for (const [env, port] of environments) {
         if (ignoreList?.includes(env))
             continue;
@@ -91,7 +90,7 @@ test("test static remult", async () => {
 test("test injected remult", async () => {
     const r = await create3Tasks();
     expect(await Task.testInjectedRemult()).toBe(3)
-}, servers.fresh);
+});
 test("test http 404", async () => {
     const repo = create3Tasks();
     const task = await (await repo).findFirst();
