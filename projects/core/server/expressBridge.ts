@@ -28,7 +28,7 @@ export interface RemultServerOptions<RequestType extends GenericRequest> {
   rootPath?: string;
 };
 
-export function createRemultServer<RequestType extends GenericRequest = GenericRequest>(
+export function createRemultServerCore<RequestType extends GenericRequest = GenericRequest>(
   options?:
     RemultServerOptions<RequestType>,
 ): RemultServer {

@@ -1,7 +1,7 @@
 import * as express from "express";
+import { createRemultServer } from "../../core/server";
 
-import { createRemultServer } from "../../../../core/server/expressBridge";
-import { Task } from "./Task";
+import { Task } from "../shared/Task";
 
 const app = express();
 app.use(express.json());
