@@ -38,6 +38,8 @@ https://mySite.com/api/products?price_gte=5&price_lte=10
 | _gte | Greater than or equal | price_gte=10 |
 | _lt | Lesser than | price_lt=10 |
 | _lte | Lesser than or equal | price_lte=10 |
+| _null | is or is not null | price_null=true |
+| _in | is in json array | price_in==%5B10%2C20%5D  *(url encoded - `[10,20]`)* |
 
 * you can add several filter conditions using the `&` operator.
 
