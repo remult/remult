@@ -1,7 +1,7 @@
 import * as express from 'express';
 import { createRemultServer, RemultServer, RemultServerImplementation, RemultServerOptions } from './server/expressBridge';
 import { Remult } from './src/context';
-import { AMessageChannel, ServerEventChannelSubscribeDTO, streamUrl } from './src/live-query/LiveQuerySubscriber';
+import { AMessageChannel, liveQueryKeepAliveRoute, ServerEventChannelSubscribeDTO, streamUrl } from './src/live-query/LiveQuerySubscriber';
 import { LiveQueryPublisher, LiveQueryStorage, ServerEventDispatcher } from './src/live-query/LiveQueryPublisher';
 import { v4 as uuid } from 'uuid';
 import { remult } from './src/remult-proxy';
@@ -35,6 +35,10 @@ export function remultExpress(options?:
 
         }
     }
+    app.post(options.rootPath + liveQueryKeepAliveRoute, (r, res, n) => server.withRemult(r, res, n), (req, res) => {
+        remult.liveQueryPublisher.storage.keepAlive(req.body);
+        res.sendStatus(200);
+    });
     server.liveQueryManager = new LiveQueryPublisher(options.serverEventDispatcher(app, server),
         new LiveQueryStorage(),
         async (req, entityKey, what) => {
@@ -93,14 +97,7 @@ export class ServerEventsController implements ServerEventDispatcher {
             this.canUserConnectToChannel = () => true;
         }
     }
-    async anyoneListensToChannel(channel: string): Promise<boolean> {
-        for (const sc of this.connections) {
-            if (sc.channels[channel]) {
-                return true;
-            }
-        }
-        return false;
-    }
+
 
     sendChannelMessage<T>(channel: string, message: any) {
         const data = JSON.stringify({ channel, data: message });

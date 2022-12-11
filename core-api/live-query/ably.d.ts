@@ -9,6 +9,5 @@ export declare class AblyLiveQueryProvider implements LiveQueryProvider {
 export declare class AblyServerEventDispatcher implements ServerEventDispatcher {
     private ably;
     constructor(ably: Ably.Types.RealtimePromise);
-    anyoneListensToChannel(channel: string): Promise<boolean>;
     sendChannelMessage<T>(channel: string, message: T): void;
 }

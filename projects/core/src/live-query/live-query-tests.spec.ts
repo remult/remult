@@ -43,7 +43,6 @@ async function setup1() {
     const messages: liveQueryMessage[] = [];
     const qm = new LiveQueryPublisher({
         sendChannelMessage: (c, m: any) => messages.push(...m),
-        anyoneListensToChannel: async () => true
     }, new LiveQueryStorage(), async (_, _1, c) => c(clientRepo));
     let p = new PromiseResolver(qm);
 
@@ -262,7 +261,6 @@ describe("test live query full cycle", () => {
             sendChannelMessage<liveQueryMessage>(channel, message) {
                 mh.forEach(x => x(channel, message))
             },
-            anyoneListensToChannel: async () => true
         }, storage, async (_, _1, c) => c(repo));
         remult.liveQueryPublisher = qm;
         var dataApi = new DataApi(repo, remult);

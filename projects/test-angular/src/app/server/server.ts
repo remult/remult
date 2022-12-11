@@ -27,8 +27,9 @@ import { AppComponent } from '../app.component';
 import { AsyncLocalStorage } from 'async_hooks';
 
 import { helper, ProductsComponent, Task } from '../products-test/products.component';
-import {AblyServerEventDispatcher } from '../../../../core/live-query/ably';
+import { AblyServerEventDispatcher } from '../../../../core/live-query/ably';
 import * as ably from 'ably';
+import { LiveQueryStorage } from '../../../../core/src/live-query/LiveQueryPublisher';
 
 const getDatabase = async () => {
 
@@ -71,13 +72,13 @@ serverInit().then(async (dataSource) => {
 
 
     let remultApi = remultExpress({
-        serverEventDispatcher: () => {
-            
-            const d = new AblyServerEventDispatcher(new ably.Realtime.Promise(  process.env.ABLY_KEY));
-            return d;
-        },
+        // serverEventDispatcher: () => {
+
+        //     const d = new AblyServerEventDispatcher(new ably.Realtime.Promise(  process.env.ABLY_KEY));
+        //     return d;
+        // },
         entities: [Task],
-        controllers: [AppComponent,ProductsComponent],
+        controllers: [AppComponent, ProductsComponent],
         //     dataProvider: async () => await createPostgresConnection(),
         queueStorage: await preparePostgresQueueStorage(dataSource),
         logApiEndPoints: true,
@@ -121,3 +122,4 @@ serverInit().then(async (dataSource) => {
     let port = process.env.PORT || 3001;
     app.listen(port);
 });
+LiveQueryStorage.debugFileSaver = x => fs.writeFileSync('./tmp/liveQueryStorage.json', JSON.stringify(x, undefined, 2));

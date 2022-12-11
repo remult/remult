@@ -4,6 +4,7 @@ import { EntityMetadata, EntityRef, FindOptions, Repository } from "./remult3";
 import { ClassType } from "../classType";
 import { LiveQueryClient } from "./live-query/LiveQuerySubscriber";
 import type { ServerEventDispatcher } from "../live-query";
+import { LiveQueryStorage } from "./live-query/LiveQueryPublisher";
 export interface ExternalHttpProvider {
     post(url: string, data: any): Promise<any> | {
         toPromise(): Promise<any>;
@@ -123,6 +124,7 @@ export interface LiveQueryPublisherInterface {
     defineLiveQueryChannel(serializeRequest: () => any, entityKey: string, options: FindOptions<any>, ids: any[], userId: string, repo: Repository<any>): string;
     itemChanged(entityKey: string, changes: itemChange[]): void;
     dispatcher: ServerEventDispatcher;
+    storage: LiveQueryStorage;
 }
 export interface itemChange {
     id: any;

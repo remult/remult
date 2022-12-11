@@ -4,6 +4,7 @@ import { RepositoryImplementation } from '../remult3';
 import { Allowed, buildRestDataProvider } from '../context';
 import { ServerEventDispatcher } from './LiveQueryPublisher';
 import { getId } from '../remult3/getId';
+import { interval } from 'rxjs';
 
 export const streamUrl = 'stream';
 class LiveQuerySubscriber<entityType> {
@@ -18,7 +19,6 @@ class LiveQuerySubscriber<entityType> {
             });
         });
     }
-
 
     forListeners(what: (listener: (((reducer: (prevState: entityType[]) => entityType[]) => void))) => void) {
         for (const l of this.listeners) {
@@ -36,7 +36,6 @@ class LiveQuerySubscriber<entityType> {
                 case "all":
                     this.setAllItems(m.data);
             }
-
         }
 
         this.forListeners(listener => {
@@ -153,6 +152,8 @@ export class LiveQueryClient {
                     if (this.queries.size === 0 && this.channels.size === 0) {
                         this.runPromise(this.client.then(x => x.disconnect()));
                         this.client = undefined;
+                        clearInterval(this.interval);
+                        this.interval = undefined;
                     }
                 res({});
             }, this.timeoutToCloseWhenNotClosed);
@@ -223,24 +224,36 @@ export class LiveQueryClient {
 
     }
     client: Promise<PubSubClient>;
+    interval: any;
 
     private openIfNoOpened() {
         if (!this.provider) {
             this.provider = buildRestDataProvider(defaultRemult.apiClient.httpClient);
         }
-        if (!this.client)
+        if (!this.client) {
+            this.interval = setInterval(() => {
+                const ids = [];
+                for (const q of this.queries.values()) {
+                    ids.push(q.id);
+                }
+                if (ids.length > 0)
+                    this.runPromise(this.provider.post(defaultRemult.apiClient.url + liveQueryKeepAliveRoute, ids));
+            }, 3000);
+
             return this.runPromise(this.client =
                 this.lqp.openStreamAndReturnCloseFunction(() => {
                     for (const q of this.queries.values()) {
                         q.subscribeCode();
                     }
                 }));
+        }
 
         return this.client;
     }
 
 }
 export type listener = (message: any) => void;
+export const liveQueryKeepAliveRoute = '/_liveQueryKeepAlive';
 
 
 

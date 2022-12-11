@@ -21,9 +21,11 @@ export declare class LiveQueryClient {
     private closeIfNoListeners;
     subscribe<entityType>(repo: Repository<entityType>, options: FindOptions<entityType>, onResult: (reducer: (prevState: entityType[]) => entityType[]) => void): () => void;
     client: Promise<PubSubClient>;
+    interval: any;
     private openIfNoOpened;
 }
 export declare type listener = (message: any) => void;
+export declare const liveQueryKeepAliveRoute = "/_liveQueryKeepAlive";
 export interface SubscribeToQueryArgs<entityType = any> {
     entityKey: string;
     orderBy?: EntityOrderBy<entityType>;

@@ -10,6 +10,7 @@ import { LiveQueryClient } from "./live-query/LiveQuerySubscriber";
 import { EventSourceLiveQueryProvider } from "./live-query/EventSourceLiveQueryProvider";
 import { RemultProxy } from "./remult-proxy";
 import type { ServerEventDispatcher } from "../live-query";
+import { LiveQueryStorage } from "./live-query/LiveQueryPublisher";
 
 export interface ExternalHttpProvider {
     post(url: string, data: any): Promise<any> | { toPromise(): Promise<any> };
@@ -227,7 +228,8 @@ export class Remult {
         },
         stopLiveQuery: function (id: any): void {
             throw new Error("Function not implemented.");
-        }
+        },
+        storage: undefined!
     };
 
     //@ts-ignore // type error of typescript regarding args that doesn't appear in my normal development
@@ -382,6 +384,7 @@ export interface LiveQueryPublisherInterface {
     defineLiveQueryChannel(serializeRequest: () => any, entityKey: string, options: FindOptions<any>, ids: any[], userId: string, repo: Repository<any>): string;
     itemChanged(entityKey: string, changes: itemChange[]): void;
     dispatcher: ServerEventDispatcher;
+    storage: LiveQueryStorage;
 }
 export interface itemChange {
     id: any;
@@ -401,6 +404,12 @@ export async function doTransaction(remult: Remult, what: () => Promise<void>) {
 class transactionLiveQueryPublisher implements LiveQueryPublisherInterface {
 
     constructor(private orig: LiveQueryPublisherInterface) { }
+    get storage() {
+        return this.orig.storage;
+    };
+    set storage(value: LiveQueryStorage) {
+        this.orig.storage = value;
+    }
     stopLiveQuery(id: any): void {
         this.orig.stopLiveQuery(id);
     }
