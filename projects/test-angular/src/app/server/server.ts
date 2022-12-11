@@ -29,7 +29,7 @@ import { AsyncLocalStorage } from 'async_hooks';
 import { helper, ProductsComponent, Task } from '../products-test/products.component';
 import { AblyServerEventDispatcher } from '../../../../core/live-query/ably';
 import * as ably from 'ably';
-import { LiveQueryStorage } from '../../../../core/src/live-query/LiveQueryPublisher';
+import { LiveQueryStorage, LiveQueryStorageInMemoryImplementation } from '../../../../core/src/live-query/LiveQueryPublisher';
 
 const getDatabase = async () => {
 
@@ -122,4 +122,4 @@ serverInit().then(async (dataSource) => {
     let port = process.env.PORT || 3001;
     app.listen(port);
 });
-LiveQueryStorage.debugFileSaver = x => fs.writeFileSync('./tmp/liveQueryStorage.json', JSON.stringify(x, undefined, 2));
+LiveQueryStorageInMemoryImplementation.debugFileSaver = x => fs.writeFileSync('./tmp/liveQueryStorage.json', JSON.stringify(x, undefined, 2));

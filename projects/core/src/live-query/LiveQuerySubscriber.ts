@@ -231,14 +231,22 @@ export class LiveQueryClient {
             this.provider = buildRestDataProvider(defaultRemult.apiClient.httpClient);
         }
         if (!this.client) {
-            this.interval = setInterval(() => {
+            this.interval = setInterval(async () => {
                 const ids = [];
                 for (const q of this.queries.values()) {
                     ids.push(q.id);
                 }
-                if (ids.length > 0)
-                    this.runPromise(this.provider.post(defaultRemult.apiClient.url + liveQueryKeepAliveRoute, ids));
-            }, 3000);
+                if (ids.length > 0) {
+                    const invalidIds = await this.runPromise(this.provider.post(defaultRemult.apiClient.url + liveQueryKeepAliveRoute, ids));
+                    for (const id of invalidIds) {
+                        for (const q of this.queries.values()) {
+                            if (q.id === id)
+                                q.subscribeCode();
+
+                        }
+                    }
+                }
+            }, 30000);
 
             return this.runPromise(this.client =
                 this.lqp.openStreamAndReturnCloseFunction(() => {

@@ -18,19 +18,22 @@ interface StoredQuery {
 
 
 
-export class LiveQueryStorage {
+export class LiveQueryStorageInMemoryImplementation implements LiveQueryStorage {
   static debugFileSaver = (x: any) => { };
   debug() {
-    LiveQueryStorage.debugFileSaver(this.queries);
+    LiveQueryStorageInMemoryImplementation.debugFileSaver(this.queries);
   }
-  async keepAlive(ids: string[]) {
+  async keepAliveAndReturnUnknownIds(ids: string[]): Promise<string[]> {
+    const result = [];
     for (const id of ids) {
       let q = this.queries.find(q => q.id === id);
       if (q) {
         q.lastUsed = new Date().toISOString()
-      }
+      } else
+        result.push(id);
     }
     this.debug();
+    return result;
   }
 
   queries: (StoredQuery & { lastUsed: string })[] = [];
@@ -146,3 +149,13 @@ export interface ServerEventDispatcher {
 }
 // TODO - PUBNUB
 // TODO - connect stream when server is not yet up - for angular proxy
+export interface LiveQueryStorage {
+  keepAliveAndReturnUnknownIds(ids: string[]): Promise<string[]>
+  store(query: StoredQuery): void
+  remove(id: any): void
+  provideListeners(entityKey: string, handle: (args: {
+    query: StoredQuery,
+    setLastIds(ids: any[]): Promise<void>
+  }) => Promise<void>): Promise<void>
+
+}

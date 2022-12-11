@@ -7,10 +7,10 @@ interface StoredQuery {
     requestJson: any;
     entityKey: string;
 }
-export declare class LiveQueryStorage {
+export declare class LiveQueryStorageInMemoryImplementation implements LiveQueryStorage {
     static debugFileSaver: (x: any) => void;
     debug(): void;
-    keepAlive(ids: string[]): Promise<void>;
+    keepAliveAndReturnUnknownIds(ids: string[]): Promise<string[]>;
     queries: (StoredQuery & {
         lastUsed: string;
     })[];
@@ -35,5 +35,14 @@ export declare class LiveQueryPublisher implements LiveQueryPublisherInterface {
 }
 export interface ServerEventDispatcher {
     sendChannelMessage<T>(channel: string, message: T): void;
+}
+export interface LiveQueryStorage {
+    keepAliveAndReturnUnknownIds(ids: string[]): Promise<string[]>;
+    store(query: StoredQuery): void;
+    remove(id: any): void;
+    provideListeners(entityKey: string, handle: (args: {
+        query: StoredQuery;
+        setLastIds(ids: any[]): Promise<void>;
+    }) => Promise<void>): Promise<void>;
 }
 export {};

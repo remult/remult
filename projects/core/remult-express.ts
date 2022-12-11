@@ -2,7 +2,7 @@ import * as express from 'express';
 import { createRemultServer, RemultServer, RemultServerImplementation, RemultServerOptions } from './server/expressBridge';
 import { Remult } from './src/context';
 import { AMessageChannel, liveQueryKeepAliveRoute, ServerEventChannelSubscribeDTO, streamUrl } from './src/live-query/LiveQuerySubscriber';
-import { LiveQueryPublisher, LiveQueryStorage, ServerEventDispatcher } from './src/live-query/LiveQueryPublisher';
+import { LiveQueryPublisher, LiveQueryStorage, LiveQueryStorageInMemoryImplementation, ServerEventDispatcher } from './src/live-query/LiveQueryPublisher';
 import { v4 as uuid } from 'uuid';
 import { remult } from './src/remult-proxy';
 import { getEntityKey } from './src/remult3';
@@ -35,12 +35,12 @@ export function remultExpress(options?:
 
         }
     }
-    app.post(options.rootPath + liveQueryKeepAliveRoute, (r, res, n) => server.withRemult(r, res, n), (req, res) => {
-        remult.liveQueryPublisher.storage.keepAlive(req.body);
-        res.sendStatus(200);
+    app.post(options.rootPath + liveQueryKeepAliveRoute, (r, res, n) => server.withRemult(r, res, n), async (req, res) => {
+        res.send(await remult.liveQueryPublisher.storage.keepAliveAndReturnUnknownIds(req.body));
+
     });
     server.liveQueryManager = new LiveQueryPublisher(options.serverEventDispatcher(app, server),
-        new LiveQueryStorage(),
+        new LiveQueryStorageInMemoryImplementation(),
         async (req, entityKey, what) => {
 
             for (const e of options.entities) {
