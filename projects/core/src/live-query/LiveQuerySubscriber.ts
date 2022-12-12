@@ -160,7 +160,7 @@ export class LiveQueryClient {
         }));
     }
 
-    //TODO - consider the time that may pass from the get request to the subscribe to the channel, in some cases this could mean, a call to server to get token and a call to the external provider - it may be some time
+    //TODO 1 - consider the time that may pass from the get request to the subscribe to the channel, in some cases this could mean, a call to server to get token and a call to the external provider - it may be some time
     subscribe<entityType>(
         repo: Repository<entityType>,
         options: FindOptions<entityType>,
