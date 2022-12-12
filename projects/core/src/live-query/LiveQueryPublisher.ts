@@ -147,8 +147,7 @@ export class LiveQueryPublisher implements LiveQueryPublisherInterface {
 export interface ServerEventDispatcher {
   sendChannelMessage<T>(channel: string, message: T): void;
 }
-// TODO - PUBNUB
-// TODO - connect stream when server is not yet up - for angular proxy
+// TODO2 - PUBNUB
 export interface LiveQueryStorage {
   keepAliveAndReturnUnknownIds(ids: string[]): Promise<string[]>
   store(query: StoredQuery): void

@@ -9,7 +9,7 @@ import { IdEntity } from '../src/id-entity';
 import { remult, RemultProxy } from '../src/remult-proxy';
 import { LiveQueryPublisher } from '../src/live-query/LiveQueryPublisher';
 
-//TODO support pub sub non express servers
+//TODO2 -support pub sub non express servers
 export interface RemultServerOptions<RequestType extends GenericRequest> {
   /** Sets a database connection for Remult.
    *

@@ -1,6 +1,7 @@
 import { buildRestDataProvider } from "../context";
 import { remult } from "../remult-proxy";
 import { ServerEventChannelSubscribeDTO, LiveQueryProvider, PubSubClient, streamUrl } from "./LiveQuerySubscriber";
+// TODO - connect stream when server is not yet up - for angular proxy
 export class EventSourceLiveQueryProvider implements LiveQueryProvider {
   openStreamAndReturnCloseFunction(onReconnect: VoidFunction): Promise<PubSubClient> {
 
