@@ -142,8 +142,6 @@ export class LiveQueryPublisher implements LiveQueryPublisherInterface {
   }
 }
 
-
-
 export interface ServerEventDispatcher {
   sendChannelMessage<T>(channel: string, message: T): void;
 }
