@@ -117,6 +117,7 @@ const Home: NextPage = () => {
   useEffect(() => {
     fetchTasks().then(setTasks);
   }, []);
+
   return (
     <div>
       <main>
@@ -145,3 +146,72 @@ After the browser refreshes, the list of tasks appears.
 ### Add Styles
 
 Optionally, make the app look a little better by replacing the contents of `styles/globals.css` with [this CSS file](https://raw.githubusercontent.com/remult/react-vite-express-starter/completed-tutorial/src/index.css).
+
+
+## Static Generation & Server-side Rendering
+Next.js allow for pre-rendering page content using **Server-side Rendering (SSR)** or **Static-site Generation (SSG)**. 
+
+To access `remult` instance from **getServerSideProp** or **getStaticProps**, you need to write the following code:
+```tsx
+import { api } from '../src/server/api';
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const remult = await api.getRemult(context);
+  return { props: {} };
+};
+```
+Then you can fetch data using pieces of code from `fetchTasks` above.
+
+Your `pages/index.tsx` contents now should look like this:
+
+*pages/index.tsx*
+```tsx
+import type { NextPage } from 'next'
+import { useEffect, useState } from 'react';
+import { Task } from '../src/shared/Task';
+import { api } from '../src/server/api';
+
+type HomeProps = {
+  tasks: Task[];
+};
+
+const Home: NextPage = ({ tasks }: HomeProps) => {
+  return (
+    <div>
+      <main>
+        {tasks.map(task => (
+          <div key={task.id}>
+            <input type="checkbox" checked={task.completed} />
+            {task.title}
+          </div>
+        ))}
+      </main>
+    </div>
+  )
+}
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  // Get remult instance
+  const remult = await api.getRemult(context);
+
+  // Find all tasks
+  const tasks = await remult.repo(Task).find();
+
+  // Serialize tasks into plain object
+  const tasksJson = JSON.parse(JSON.stringify(tasks));
+  
+  return { props: { tasks: tasksJson } };
+};
+
+export default Home
+```
+
+::: tip
+Take a look at `const tasksJson = JSON.parse(JSON.stringify(tasks));`
+
+In Next.js, you can only pass serializable object to props either using:
+- `JSON.parse(JSON.stringify(data))`
+- entityRef's `toApiJson()` method, or
+- configuring nextjs with `next-superjson` library.
+
+:::
