@@ -1,5 +1,18 @@
-import { EntityOrderBy, FindOptions, Remult, Repository, RestDataProviderHttpProvider } from '../../index';
+import { EntityOrderBy, Remult, Repository } from '../../index';
 export declare const streamUrl = "stream";
+export declare class LiveQuerySubscriber<entityType> {
+    private repo;
+    private query;
+    id: string;
+    subscribeCode: () => void;
+    unsubscribe: VoidFunction;
+    setAllItems(result: any[]): Promise<void>;
+    forListeners(what: (listener: (((reducer: (prevState: entityType[]) => entityType[]) => void))) => void): void;
+    handle(messages: liveQueryMessage[]): Promise<void>;
+    defaultQueryState: entityType[];
+    listeners: (((reducer: (prevState: entityType[]) => entityType[]) => void))[];
+    constructor(repo: Repository<entityType>, query: SubscribeToQueryArgs<entityType>);
+}
 export interface PubSubClient {
     subscribe(channel: string, handler: (value: any) => void): VoidFunction;
     disconnect(): void;
@@ -7,22 +20,12 @@ export interface PubSubClient {
 export interface LiveQueryProvider {
     openStreamAndReturnCloseFunction(onReconnect: VoidFunction): Promise<PubSubClient>;
 }
-export declare class LiveQueryClient {
-    lqp: LiveQueryProvider;
-    private provider?;
-    wrapMessageHandling: (handleMessage: any) => any;
-    private queries;
-    private channels;
-    constructor(lqp: LiveQueryProvider, provider?: RestDataProviderHttpProvider);
-    runPromise(p: Promise<any>): Promise<any>;
-    close(): void;
-    subscribeChannel<T>(key: string, onResult: (item: T) => void): () => void;
-    timeoutToCloseWhenNotClosed: number;
-    private closeIfNoListeners;
-    subscribe<entityType>(repo: Repository<entityType>, options: FindOptions<entityType>, onResult: (reducer: (prevState: entityType[]) => entityType[]) => void): () => void;
-    client: Promise<PubSubClient>;
-    interval: any;
-    private openIfNoOpened;
+export declare class MessageChannel<T> {
+    id: string;
+    unsubscribe: VoidFunction;
+    handle(message: T): Promise<void>;
+    listeners: ((items: T) => void)[];
+    constructor();
 }
 export declare type listener = (message: any) => void;
 export declare const liveQueryKeepAliveRoute = "/_liveQueryKeepAlive";

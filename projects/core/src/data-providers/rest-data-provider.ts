@@ -5,7 +5,8 @@ import { EntityDataProvider, DataProvider, EntityDataProviderFindOptions, RestDa
 import { UrlBuilder } from '../../urlBuilder';
 import { customUrlToken, Filter } from '../filter/filter-interfaces';
 import { EntityMetadata, FindOptions } from '../remult3';
-import { ApiClient, buildRestDataProvider, Remult, retry } from '../context';
+import { ApiClient, Remult } from '../context';
+import { buildRestDataProvider, retry } from "../buildRestDataProvider";
 import { Sort } from '../sort';
 
 

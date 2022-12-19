@@ -1,7 +1,6 @@
 
 import axios from 'axios';
 import { remultFresh } from '../../remult-fresh';
-import { HttpProviderBridgeToRestDataProviderHttpProvider, Remult } from '../context';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { remult } from '../remult-proxy';
 import { Entity, Fields } from '../remult3';

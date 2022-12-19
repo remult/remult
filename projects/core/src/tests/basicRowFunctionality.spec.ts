@@ -8,7 +8,7 @@ import { Done } from "./Done";
 
 import { Status } from './testModel/models';
 
-import { Remult, Allowed, retry, toPromise, HttpProviderBridgeToRestDataProviderHttpProvider } from '../context';
+import { Remult, Allowed } from '../context';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { __RowsOfDataForTesting } from "../__RowsOfDataForTesting";
 import { DataList } from '../../../angular/interfaces/src/dataList';
@@ -31,6 +31,7 @@ import { ValueConverters } from "../valueConverters";
 import { dbNameProviderImpl, FilterConsumerBridgeToSqlRequest, getDbNameProvider } from "../filter/filter-consumer-bridge-to-sql-request";
 import axios from "axios";
 import { async } from "@angular/core/testing";
+import { HttpProviderBridgeToRestDataProviderHttpProvider, retry, toPromise } from "../buildRestDataProvider";
 
 //SqlDatabase.LogToConsole = true;
 

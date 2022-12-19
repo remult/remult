@@ -1,6 +1,6 @@
 import type * as Ably from 'ably';
-import { ServerEventDispatcher } from '../src/live-query/LiveQueryPublisher';
-import { LiveQueryProvider, PubSubClient } from '../src/live-query/LiveQuerySubscriber';
+import type { ServerEventDispatcher } from '../src/live-query/LiveQueryPublisher';
+import type { LiveQueryProvider, PubSubClient } from '../src/live-query/LiveQuerySubscriber';
 
 
 export class AblyLiveQueryProvider implements LiveQueryProvider {

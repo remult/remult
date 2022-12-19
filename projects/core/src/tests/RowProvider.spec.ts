@@ -3,7 +3,7 @@ import { InMemoryDataProvider } from '../data-providers/in-memory-database'
 import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
 import { testAllDataProviders } from './testHelper.spec';
 import { Status, TestStatus } from './testModel/models';
-import { Allow, Remult, toPromise } from '../context';
+import { Allow, Remult } from '../context';
 import { OneToMany } from '../column';
 import { FilterHelper } from '../../../angular/interfaces/src/filter-helper';
 

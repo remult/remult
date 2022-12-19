@@ -102,10 +102,14 @@ export function createRemultServer<RequestType extends GenericRequest = GenericR
   if (!options.requestSerializer) {
     options.requestSerializer = {
       toJson: x => {
-        return {
-          session: x['session'],
+        const r = {
           url: x.url
         }
+        for (const key of ['session', 'auth', 'user']) {
+          if (x[key])
+            r[key] = x[key];
+        }
+        return r;
       },
       fromJson: x => {
         return x;

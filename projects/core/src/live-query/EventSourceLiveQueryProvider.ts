@@ -1,4 +1,4 @@
-import { buildRestDataProvider } from "../context";
+import { buildRestDataProvider } from "../buildRestDataProvider";
 import { remult } from "../remult-proxy";
 import { ServerEventChannelSubscribeDTO, LiveQueryProvider, PubSubClient, streamUrl } from "./LiveQuerySubscriber";
 export class EventSourceLiveQueryProvider implements LiveQueryProvider {

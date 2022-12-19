@@ -98,10 +98,11 @@ export {
     AllowedForInstance,
     EventDispatcher,
     EventSource,
-    ExternalHttpProvider,
+
     Unobserve,
     UserInfo
 } from './src/context';
+export { ExternalHttpProvider } from './src/buildRestDataProvider'
 export {
     IdEntity
 } from './src/id-entity';

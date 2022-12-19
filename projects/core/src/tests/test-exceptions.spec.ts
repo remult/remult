@@ -1,10 +1,11 @@
 import { Done } from "./Done";
-import { processHttpException, Remult, toPromise } from '../context';
+import {  Remult } from '../context';
 
 
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 
 import { Field, Entity, EntityBase, Fields } from '../remult3';
+import { processHttpException, toPromise } from "../buildRestDataProvider";
 
 describe("test exception", () => {
     it("test save exception", async () => {

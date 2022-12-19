@@ -6,6 +6,7 @@ import { FindOptions, Repository, EntityRef, rowHelperImplementation, EntityFilt
 import { SortSegment } from './sort';
 import { ErrorInfo } from './data-interfaces';
 import { ForbiddenError } from './server-action';
+import { getId } from './remult3/getId';
 
 
 export class DataApi<T = any> {
@@ -147,7 +148,7 @@ export class DataApi<T = any> {
     try {
       const r = await this.getArrayImpl(response, request, filterBody)
       response.success({
-        queryChannel: this.remult.liveQueryPublisher.defineLiveQueryChannel(serializeRequest, this.repository.metadata.key, r.findOptions, r.r.map(y => this.repository.getEntityRef(y).getId()), this.remult.user?.id, this.repository),
+        queryChannel: this.remult.liveQueryPublisher.defineLiveQueryChannel(serializeRequest, this.repository.metadata.key, r.findOptions, r.r.map(y => getId(this.repository.metadata,y) ), this.remult.user?.id, this.repository),
         result: r.r
       });
     }

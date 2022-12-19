@@ -1,6 +1,6 @@
 import './frontend-database-tests-setup.spec';
 
-import { AllowedForInstance, HttpProviderBridgeToRestDataProviderHttpProvider, Remult } from "../context";
+import { AllowedForInstance, Remult } from "../context";
 import { DataApi, DataApiRequest, DataApiResponse, serializeError } from "../data-api";
 import { DataProvider, EntityDataProvider } from "../data-interfaces";
 import { InMemoryDataProvider } from "../data-providers/in-memory-database";
@@ -12,6 +12,7 @@ import { Action, actionInfo, serverActionField } from "../server-action";
 import { testConfiguration } from '../shared-tests/entityWithValidations';
 import { TestDataApiResponse } from './TestDataApiResponse';
 import { remult } from '../remult-proxy';
+import { HttpProviderBridgeToRestDataProviderHttpProvider } from '../buildRestDataProvider';
 
 
 

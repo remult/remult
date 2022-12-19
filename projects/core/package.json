@@ -94,12 +94,20 @@
       "import": "./esm/remult-mongo.js"
     },
     "./live-query": {
-      "require": "./live-query.js",
+      "require": "./live-query/index.js",
       "node": {
-        "require": "./live-query.js",
-        "import": "./live-query.js"
+        "require": "./live-query/index.js",
+        "import": "./live-query/index.js"
       },
-      "import": "./esm/live-query.js"
+      "import": "./esm/live-query/index.js"
+    },
+    "./live-query/ably": {
+      "require": "./live-query/ably.js",
+      "node": {
+        "require": "./live-query/ably.js",
+        "import": "./live-query/ably.js"
+      },
+      "import": "./esm/live-query/ably.js"
     },
     "./graphql": {
       "require": "./graphql.js",
