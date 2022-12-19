@@ -19,9 +19,9 @@ interface StoredQuery {
 
 
 export class LiveQueryStorageInMemoryImplementation implements LiveQueryStorage {
-  static debugFileSaver = (x: any) => { };
+  debugFileSaver = (x: any) => { };
   debug() {
-    LiveQueryStorageInMemoryImplementation.debugFileSaver(this.queries);
+    this.debugFileSaver(this.queries);
   }
   async keepAliveAndReturnUnknownIds(ids: string[]): Promise<string[]> {
     const result = [];
@@ -53,6 +53,9 @@ export class LiveQueryStorageInMemoryImplementation implements LiveQueryStorage 
     query: StoredQuery,
     setLastIds(ids: any[]): Promise<void>
   }) => Promise<void>) {
+    let d = new Date();
+    d.setMinutes(d.getMinutes() - 5);
+    this.queries = this.queries.filter(x => x.lastUsed > d.toISOString());
     for (const q of this.queries) {
       if (q.entityKey === entityKey) {
         await handle({

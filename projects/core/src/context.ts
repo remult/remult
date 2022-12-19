@@ -285,6 +285,7 @@ export async function doTransaction(remult: Remult, what: () => Promise<void>) {
         trans.flush();
     });
 }
+// TODO - talk about message size limit in ably - something that we may reach if we group the messages
 class transactionLiveQueryPublisher implements LiveQueryPublisherInterface {
 
     constructor(private orig: LiveQueryPublisherInterface) { }

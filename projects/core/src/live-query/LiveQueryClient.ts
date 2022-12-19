@@ -81,12 +81,25 @@ export class LiveQueryClient {
                     this.queries.set(eventTypeKey, q = new LiveQuerySubscriber(repo, { entityKey: repo.metadata.key, orderBy: options.orderBy }));
                     url.add("__action", 'liveQuery');
                     q.subscribeCode = () => {
+                        if (q.unsubscribe) {
+                            q.unsubscribe();
+                            q.unsubscribe = undefined;
+                        }
                         const thenResult = (r: SubscribeResult) => {
-                            this.client.then(c => q.unsubscribe = c.subscribe(r.queryChannel, (value: any) => this.wrapMessageHandling(() => this.runPromise(q.handle(value))))
+                            this.client.then(c => {
+                                let unsubscribeToChannel = c.subscribe(r.queryChannel, (value: any) => this.wrapMessageHandling(() => this.runPromise(q.handle(value))));
+                                q.unsubscribe = () => {
+                                    unsubscribeToChannel();
+                                    const url = new UrlBuilder(defaultRemult.apiClient.url + '/' + repo.metadata.key);
+                                    url.add("__action", "endLiveQuery");
+                                    this.runPromise(this.provider.post(url.url, {
+                                        id: q.id
+                                    }));
+                                }
+                            }
                             );
                             this.runPromise(q.setAllItems(r.result));
                             q.id = r.queryChannel;
-
                         };
                         if (filterObject) {
                             this.runPromise(this.provider.post(url.url, filterObject).then(thenResult));
@@ -106,11 +119,6 @@ export class LiveQueryClient {
                     if (q.listeners.length == 0) {
                         this.queries.delete(eventTypeKey);
                         q.unsubscribe();
-                        const url = new UrlBuilder(defaultRemult.apiClient.url + '/' + repo.metadata.key);
-                        url.add("__action", "endLiveQuery");
-                        this.provider.post(url.url, {
-                            id: q.id
-                        });
                     }
                     this.closeIfNoListeners();
                 };

@@ -3,15 +3,44 @@ import { remult } from "../remult-proxy";
 import { ServerEventChannelSubscribeDTO, LiveQueryProvider, PubSubClient, streamUrl } from "./LiveQuerySubscriber";
 export class EventSourceLiveQueryProvider implements LiveQueryProvider {
   openStreamAndReturnCloseFunction(onReconnect: VoidFunction): Promise<PubSubClient> {
+    let connectionId: string;
+    const channels = new Map<string, ((value: any) => void)[]>();
+    const provider = buildRestDataProvider(remult.apiClient.httpClient);
+    let connected = false;
+    let source: EventSource;
+    const client: PubSubClient = {
+      disconnect() {
+        source.close();
+      },
+      subscribe(channel, handler) {
+        let listeners = channels.get(channel);
+        
+        if (!listeners) {
+          channels.set(channel, listeners = []);
+          subscribeToChannel(channel);
+        }
+        listeners.push(handler);
+        return () => {
+          listeners.splice(listeners.indexOf(handler, 1));
+          if (listeners.length == 0) {
+            provider.post(remult.apiClient.url + '/' + streamUrl + '/unsubscribe', {
+              channel: channel,
+              clientId: connectionId
+            } as ServerEventChannelSubscribeDTO);
+            channels.delete(channel);
+          }
+        };
+      },
+    };
     return new Promise<PubSubClient>((res) => {
       createConnection();
 
       function createConnection() {
-        let connected = false;
-        const source = new EventSource(remult.apiClient.url + '/' + streamUrl, {
+        if (source)
+          source.close();
+        source = new EventSource(remult.apiClient.url + '/' + streamUrl, {
           withCredentials: true
         });
-        const channels = new Map<string, ((value: any) => void)[]>();
         source.onmessage = e => {
           let message = JSON.parse(e.data);
           const listeners = channels.get(message.channel);
@@ -25,41 +54,32 @@ export class EventSourceLiveQueryProvider implements LiveQueryProvider {
             createConnection();
           }, 500);
         };
-        let connectionId: string;
 
 
-        source.addEventListener("connectionId", e => {
+
+        source.addEventListener("connectionId", async e => {
           //@ts-ignore
           connectionId = e.data;
-          if (connected)
+          
+          if (connected) {
+            for (const channel of channels.keys()) {
+              await subscribeToChannel(channel);
+            }
             onReconnect();
-          connected = true;
-          const provider = buildRestDataProvider(remult.apiClient.httpClient);
-          const client: PubSubClient = {
-            disconnect() {
-              source.close();
-            },
-            subscribe(channel, handler) {
-              let listeners = channels.get(channel);
-              if (!listeners)
-                channels.set(channel, listeners = []);
-              listeners.push(handler);
-              provider.post(remult.apiClient.url + '/' + streamUrl + '/subscribe', {
-                channel: channel,
-                clientId: connectionId
-              } as ServerEventChannelSubscribeDTO);
-              return () => {
-                listeners.splice(listeners.indexOf(handler, 1));
-                provider.post(remult.apiClient.url + '/' + streamUrl + '/unsubscribe', {
-                  channel: channel,
-                  clientId: connectionId
-                } as ServerEventChannelSubscribeDTO);
-              };
-            },
-          };
-          res(client);
+          }
+          else {
+            connected = true;
+            res(client);
+          }
         });
       }
     });
+
+    function subscribeToChannel(channel: string) {
+      provider.post(remult.apiClient.url + '/' + streamUrl + '/subscribe', {
+        channel: channel,
+        clientId: connectionId
+      } as ServerEventChannelSubscribeDTO);
+    }
   }
 }

@@ -72,24 +72,24 @@ export class ServerEventsController implements ServerEventDispatcher {
         for (const c of this.connections) {
             if (c.connectionId === clientId) {
                 if (this.canUserConnectToChannel(channel, remult)) {
-                    c.channels[channel] = !remove;
+                    if (remove)
+                        delete c.channels[channel]
+                    else
+                        c.channels[channel] = true;
                     res.json("ok");
+                    this.debug();
                     return;
                 }
                 else {
                     res.sendStatus(403);
+                    this.debug();
                     return;
                 }
             }
         }
         res.sendStatus(404);
     }
-    consoleInfo() {
-        console.info(this.connections.map(x => ({
-            client: x.connectionId,
-            channels: x.channels
-        })));
-    }
+
 
     connections: clientConnection[] = [];
     constructor(private canUserConnectToChannel?: (channel: string, remult: Remult) => boolean) {
@@ -120,13 +120,21 @@ export class ServerEventsController implements ServerEventDispatcher {
         //const lastEventId = req.headers['last-event-id'];
 
         this.connections.push(cc);
-
+        this.debug();
         req.on("close", () => {
             cc.close();
             this.connections = this.connections.filter(s => s !== cc);
+            this.debug();
         });
         return cc;
     }
+    debug() {
+        this.debugFileSaver(this.connections.map(x => ({
+            id: x.connectionId,
+            channels: x.channels
+        })))
+    }
+    debugFileSaver: (x: any) => void = () => { };
 }
 class clientConnection {
     channels: Record<string, boolean> = {};
@@ -171,10 +179,6 @@ function buildHttpServerEventDispatcher(router: express.Router, apiPath: string,
     });
     router.post(streamPath + '/unsubscribe', (r, res, next) => server.withRemult(r, res, next), (req, res) => {
         (remult.liveQueryPublisher.dispatcher as ServerEventsController).subscribeToChannel(req.body, res, remult, true);
-    });
-    router.get(streamPath + '/stats', (r, res, next) => server.withRemult(r, res, next), (req, res) => {
-        (remult.liveQueryPublisher.dispatcher as ServerEventsController).consoleInfo();
-        res.json("ok");
     });
     return httpServerEvents;
 }

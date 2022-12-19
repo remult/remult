@@ -364,6 +364,7 @@ describe("test live query full cycle", () => {
         expect(messageCount()).toBe(1);
         expect(qm.queries.length).toBe(1);
         unsubscribe();
+        await pm.flush();
         await repo.insert({ id: 2, title: 'noam' });
         await pm.flush();
         expect(qm.queries.length).toBe(0);

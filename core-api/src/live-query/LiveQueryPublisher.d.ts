@@ -8,7 +8,7 @@ interface StoredQuery {
     entityKey: string;
 }
 export declare class LiveQueryStorageInMemoryImplementation implements LiveQueryStorage {
-    static debugFileSaver: (x: any) => void;
+    debugFileSaver: (x: any) => void;
     debug(): void;
     keepAliveAndReturnUnknownIds(ids: string[]): Promise<string[]>;
     queries: (StoredQuery & {
