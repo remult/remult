@@ -104,10 +104,12 @@ export class ServerEventsController implements ServerEventDispatcher {
 
         for (const sc of this.connections) {
             if (sc.channels[channel]) {
+                this.debugMessageFileSaver(sc.connectionId, channel, message)
                 sc.write(data);
             }
         }
     }
+    debugMessageFileSaver = (id, channel, message) => { };
 
 
     openHttpServerStream(req: import('express').Request, res: import('express').Response) {

@@ -44,12 +44,17 @@ export function findOptionsToJson(options: FindOptions<any>, meta: EntityMetadat
   };
 }
 export function findOptionsFromJson(json: any, meta: EntityMetadata): FindOptions<any> {
-  return {
-    limit: json.limit,
-    page: json.page,
-    where: Filter.entityFilterFromJson(meta, json.where),
-    orderBy: json.orderBy
-  };
+  let r = {};
+  for (const key of ["limit", "page", "where", "orderBy"]) {
+    if (json[key] !== undefined) {
+      if (key === "where") {
+        r[key] = Filter.entityFilterFromJson(meta, json.where)
+      }
+      else
+        r[key] = json[key]
+    }
+  }
+  return r;
 }
 
 

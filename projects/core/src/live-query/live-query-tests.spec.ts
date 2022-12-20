@@ -286,9 +286,9 @@ describe("test live query full cycle", () => {
                         },
                         subscribe(channel, onMessage) {
                             channels.push(channel);
-                            mh.push((channel, message) => {
+                            mh.push((c, message) => {
                                 if (clientStatus.connected)
-                                    if (channels.includes(channel)) {
+                                    if (channels.includes(c) && c == channel) {
                                         messageCount++;
                                         onMessage(
                                             message
@@ -407,12 +407,49 @@ describe("test live query full cycle", () => {
         expect(arr1.length).toBe(arr2.length);
 
     })
+    it("test subscription leak", async () => {
+        var { repo, pm } = setup2();
+        await repo.insert({ title: 'a1', id: 1 })
+        await repo.insert({ title: 'a2', id: 2 })
+        await repo.insert({ title: 'b1', id: 3 })
+        await repo.insert({ title: 'b2', id: 4 })
+
+        let arr1 = [];
+        let arr2 = [];
+        const u1 = repo.query({ where: { title: { $contains: "a" } } }).subscribe(y => arr1 = y(arr1));
+        await pm.flush();
+        const u2 = repo.query({ where: { title: { $contains: "b" } } }).subscribe(y => arr2 = y(arr2));
+        await pm.flush();
+        await repo.insert({ title: 'a3', id: 5 })
+        await pm.flush();
+        expect(arr1.length).toBe(3);
+        expect(arr2.length).toBe(2);
+
+    })
 });
 it("Serialize Find Options", async () => {
     const r = new Remult().repo(eventTestEntity);
     const findOptions: FindOptions<eventTestEntity> = {
         limit: 3,
         page: 2,
+        where: {
+            $and: [{
+                title: 'noam'
+            }]
+        },
+        orderBy: {
+            title: "desc"
+        }
+    };
+
+    const z = findOptionsToJson(findOptions, r.metadata);
+    const res = findOptionsFromJson(z, r.metadata);
+    expect(res).toEqual(findOptions);
+
+});
+it("Serialize Find Options1", async () => {
+    const r = new Remult().repo(eventTestEntity);
+    const findOptions: FindOptions<eventTestEntity> = {
         where: {
             $and: [{
                 title: 'noam'

@@ -102,10 +102,10 @@ export class LiveQueryPublisher implements LiveQueryPublisherInterface {
 
   itemChanged(entityKey: string, changes: itemChange[]) {
 
-    const messages = [];
     this.runPromise(this.storage.provideListeners(entityKey,
       async ({ query, setLastIds }) => {
         await this.performWithRequest(query.requestJson, entityKey, async repo => {
+          const messages = [];
           const currentItems = await repo.find(findOptionsFromJson(query.findOptionsJson, repo.metadata));
           const currentIds = currentItems.map(x => repo.getEntityRef(x).getId());
           for (const id of query.lastIds.filter(y => !currentIds.includes(y))) {

@@ -14,6 +14,7 @@ export declare class ServerEventsController implements ServerEventDispatcher {
     connections: clientConnection[];
     constructor(canUserConnectToChannel?: (channel: string, remult: Remult) => boolean);
     sendChannelMessage<T>(channel: string, message: any): void;
+    debugMessageFileSaver: (id: any, channel: any, message: any) => void;
     openHttpServerStream(req: import('express').Request, res: import('express').Response): clientConnection;
     debug(): void;
     debugFileSaver: (x: any) => void;
