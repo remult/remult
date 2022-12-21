@@ -25,12 +25,13 @@ export declare class LiveQueryStorageInMemoryImplementation implements LiveQuery
 export declare class LiveQueryPublisher implements LiveQueryPublisherInterface {
     dispatcher: ServerEventDispatcher;
     storage: LiveQueryStorage;
-    private performWithRequest;
+    performWithRequest: (serializedRequest: any, entityKey: string, what: (repo: Repository<any>) => Promise<void>) => Promise<void>;
     constructor(dispatcher: ServerEventDispatcher, storage: LiveQueryStorage, performWithRequest: (serializedRequest: any, entityKey: string, what: (repo: Repository<any>) => Promise<void>) => Promise<void>);
     stopLiveQuery(id: any): void;
     sendChannelMessage<messageType>(channel: string, message: messageType): void;
     defineLiveQueryChannel(serializeRequest: () => any, entityKey: string, findOptions: FindOptions<any>, ids: any[], userId: string, repo: Repository<any>): string;
     runPromise(p: Promise<any>): void;
+    debugFileSaver: (x: any) => void;
     itemChanged(entityKey: string, changes: itemChange[]): void;
 }
 export interface ServerEventDispatcher {

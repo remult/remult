@@ -83,7 +83,8 @@ export class LiveQueryClient {
                     q.subscribeCode = () => {
                         if (q.unsubscribe) {
                             q.unsubscribe();
-                            q.unsubscribe = undefined;
+                            //TODO - consider race scenario where unsubscribe is called before subscribe
+                            q.unsubscribe = () => { };
                         }
                         const thenResult = (r: SubscribeResult) => {
                             this.client.then(c => {

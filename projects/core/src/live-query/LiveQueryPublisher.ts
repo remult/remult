@@ -71,7 +71,7 @@ export class LiveQueryStorageInMemoryImplementation implements LiveQueryStorage 
 
 export class LiveQueryPublisher implements LiveQueryPublisherInterface {
 
-  constructor(public dispatcher: ServerEventDispatcher, public storage: LiveQueryStorage, private performWithRequest: (serializedRequest: any, entityKey: string, what: (repo: Repository<any>) => Promise<void>) => Promise<void>) { }
+  constructor(public dispatcher: ServerEventDispatcher, public storage: LiveQueryStorage, public performWithRequest: (serializedRequest: any, entityKey: string, what: (repo: Repository<any>) => Promise<void>) => Promise<void>) { }
   stopLiveQuery(id: any): void {
     this.storage.remove(id);
   }
@@ -99,9 +99,9 @@ export class LiveQueryPublisher implements LiveQueryPublisherInterface {
   runPromise(p: Promise<any>) {
 
   }
-
+  debugFileSaver = (x: any) => { };
   itemChanged(entityKey: string, changes: itemChange[]) {
-
+    //TODO - optimize so that the user will get their messages first. Based on user id
     this.runPromise(this.storage.provideListeners(entityKey,
       async ({ query, setLastIds }) => {
         await this.performWithRequest(query.requestJson, entityKey, async repo => {
@@ -137,6 +137,13 @@ export class LiveQueryPublisher implements LiveQueryPublisherInterface {
               });
             }
           }
+          this.debugFileSaver({
+            query: query.id,
+            currentIds,
+            changes,
+            lastIds: query.lastIds,
+            messages
+          });
           await setLastIds(currentIds);
           this.dispatcher.sendChannelMessage(query.id, messages);
         })
