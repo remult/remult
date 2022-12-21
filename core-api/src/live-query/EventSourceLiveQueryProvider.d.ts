@@ -1,4 +1,4 @@
-import { LiveQueryProvider, PubSubClient } from "./LiveQuerySubscriber";
-export declare class EventSourceLiveQueryProvider implements LiveQueryProvider {
-    openStreamAndReturnCloseFunction(onReconnect: VoidFunction): Promise<PubSubClient>;
+import { SubClient, SubClientConnection } from "./LiveQuerySubscriber";
+export declare class EventSourceLiveQueryProvider implements SubClient {
+    openConnection(onReconnect: VoidFunction): Promise<SubClientConnection>;
 }

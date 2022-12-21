@@ -144,10 +144,10 @@ describe("Live Query Client", () => {
         let get = 0;
         let sendMessage = x => { };
         const lqc = new LiveQueryClient({
-            async openStreamAndReturnCloseFunction(onMessage) {
+            async openConnection(onMessage) {
                 open++;
                 return {
-                    disconnect() {
+                    close() {
                         open--;
                     },
                     subscribe(channel, onMessage) {
@@ -271,7 +271,7 @@ describe("test live query full cycle", () => {
         }
         const buildLqc = () => {
             return new LiveQueryClient({
-                async openStreamAndReturnCloseFunction(onReconnect) {
+                async openConnection(onReconnect) {
                     clientStatus.connected = true;
                     clientStatus.reconnect = () => {
                         onReconnect();
@@ -281,7 +281,7 @@ describe("test live query full cycle", () => {
 
 
                     return {
-                        disconnect() {
+                        close() {
 
                         },
                         subscribe(channel, onMessage) {

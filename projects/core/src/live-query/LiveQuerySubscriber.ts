@@ -3,7 +3,7 @@ import { getId } from '../remult3/getId';
 
 export const streamUrl = 'stream';
 export class LiveQuerySubscriber<entityType> {
-    id: string;
+    queryChannel: string;
     subscribeCode: () => void;
     unsubscribe: VoidFunction = () => { };
     async setAllItems(result: any[]) {
@@ -75,15 +75,14 @@ export class LiveQuerySubscriber<entityType> {
     constructor(private repo: Repository<entityType>, private query: SubscribeToQueryArgs<entityType>) { }
 
 }
-
-export interface PubSubClient {
-    subscribe(channel: string, handler: (value: any) => void): VoidFunction;
-    disconnect(): void;
+export type Unsubscribe = VoidFunction;
+export interface SubClientConnection {
+    subscribe(channel: string, onMessage: (message: any) => void): Unsubscribe;
+    close(): void;
 }
 
-export interface LiveQueryProvider {
-    openStreamAndReturnCloseFunction(onReconnect: VoidFunction): Promise<PubSubClient>;
-
+export interface SubClient {
+    openConnection(onReconnect: VoidFunction): Promise<SubClientConnection>;
 }
 
 
@@ -151,7 +150,7 @@ export class AMessageChannel<messageType> {
     }
     subscribe(onValue: (value: messageType) => void, remult?: Remult) {
         remult = remult || defaultRemult;
-        remult.liveQuerySubscriber.subscribeChannel(this.channelKey, onValue);
+        return remult.liveQuerySubscriber.subscribeChannel(this.channelKey, onValue);
     }
 }
 

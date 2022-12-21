@@ -2,13 +2,13 @@ import { FindOptions, remult as defaultRemult, Repository, RestDataProviderHttpP
 import { RestEntityDataProvider } from '../data-providers/rest-data-provider';
 import { RepositoryImplementation } from '../remult3';
 import { buildRestDataProvider } from "../buildRestDataProvider";
-import { LiveQuerySubscriber, MessageChannel, LiveQueryProvider, SubscribeResult, PubSubClient, liveQueryKeepAliveRoute } from './LiveQuerySubscriber';
+import { LiveQuerySubscriber, MessageChannel, SubClient, SubscribeResult, SubClientConnection, liveQueryKeepAliveRoute, Unsubscribe } from './LiveQuerySubscriber';
 
 export class LiveQueryClient {
     wrapMessageHandling = handleMessage => handleMessage();
     private queries = new Map<string, LiveQuerySubscriber<any>>();
     private channels = new Map<string, MessageChannel<any>>();
-    constructor(public lqp: LiveQueryProvider, private provider?: RestDataProviderHttpProvider) { }
+    constructor(public lqp: SubClient, private provider?: RestDataProviderHttpProvider) { }
     runPromise(p: Promise<any>) {
         return p;
     }
@@ -17,7 +17,7 @@ export class LiveQueryClient {
         this.channels.clear();
         this.closeIfNoListeners();
     }
-    subscribeChannel<T>(key: string, onResult: (item: T) => void) {
+    subscribeChannel<T>(key: string, onResult: (item: T) => void): Unsubscribe {
 
         let onUnsubscribe: VoidFunction = () => { };
         this.openIfNoOpened().then(() => {
@@ -49,7 +49,7 @@ export class LiveQueryClient {
             setTimeout(() => {
                 if (this.client)
                     if (this.queries.size === 0 && this.channels.size === 0) {
-                        this.runPromise(this.client.then(x => x.disconnect()));
+                        this.runPromise(this.client.then(x => x.close()));
                         this.client = undefined;
                         clearInterval(this.interval);
                         this.interval = undefined;
@@ -71,7 +71,7 @@ export class LiveQueryClient {
             .then(opts => {
                 if (!alive)
                     return;
-
+                // TODO Noam- refactor into RestEntityDataProvider
                 const { url, filterObject } = new RestEntityDataProvider(() => defaultRemult.apiClient.url + '/' + repo.metadata.key, () => this.provider!, repo.metadata)
                     .buildFindRequest(opts);
 
@@ -88,19 +88,20 @@ export class LiveQueryClient {
                         }
                         const thenResult = (r: SubscribeResult) => {
                             this.client.then(c => {
+                                //TODO Noam - refactor to sue SubscribeChannel
                                 let unsubscribeToChannel = c.subscribe(r.queryChannel, (value: any) => this.wrapMessageHandling(() => this.runPromise(q.handle(value))));
                                 q.unsubscribe = () => {
                                     unsubscribeToChannel();
                                     const url = new UrlBuilder(defaultRemult.apiClient.url + '/' + repo.metadata.key);
                                     url.add("__action", "endLiveQuery");
                                     this.runPromise(this.provider.post(url.url, {
-                                        id: q.id
+                                        id: q.queryChannel
                                     }));
                                 }
                             }
                             );
                             this.runPromise(q.setAllItems(r.result));
-                            q.id = r.queryChannel;
+                            q.queryChannel = r.queryChannel;
                         };
                         if (filterObject) {
                             this.runPromise(this.provider.post(url.url, filterObject).then(thenResult));
@@ -131,7 +132,7 @@ export class LiveQueryClient {
         };
 
     }
-    client: Promise<PubSubClient>;
+    client: Promise<SubClientConnection>;
     interval: any;
 
     private openIfNoOpened() {
@@ -142,13 +143,13 @@ export class LiveQueryClient {
             this.interval = setInterval(async () => {
                 const ids = [];
                 for (const q of this.queries.values()) {
-                    ids.push(q.id);
+                    ids.push(q.queryChannel);
                 }
                 if (ids.length > 0) {
                     const invalidIds = await this.runPromise(this.provider.post(defaultRemult.apiClient.url + liveQueryKeepAliveRoute, ids));
                     for (const id of invalidIds) {
                         for (const q of this.queries.values()) {
-                            if (q.id === id)
+                            if (q.queryChannel === id)
                                 q.subscribeCode();
 
                         }
@@ -157,7 +158,7 @@ export class LiveQueryClient {
             }, 30000);
 
             return this.runPromise(this.client =
-                this.lqp.openStreamAndReturnCloseFunction(() => {
+                this.lqp.openConnection(() => {
                     for (const q of this.queries.values()) {
                         q.subscribeCode();
                     }

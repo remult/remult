@@ -3,7 +3,7 @@ export declare const streamUrl = "stream";
 export declare class LiveQuerySubscriber<entityType> {
     private repo;
     private query;
-    id: string;
+    queryChannel: string;
     subscribeCode: () => void;
     unsubscribe: VoidFunction;
     setAllItems(result: any[]): Promise<void>;
@@ -13,12 +13,13 @@ export declare class LiveQuerySubscriber<entityType> {
     listeners: (((reducer: (prevState: entityType[]) => entityType[]) => void))[];
     constructor(repo: Repository<entityType>, query: SubscribeToQueryArgs<entityType>);
 }
-export interface PubSubClient {
-    subscribe(channel: string, handler: (value: any) => void): VoidFunction;
-    disconnect(): void;
+export declare type Unsubscribe = VoidFunction;
+export interface SubClientConnection {
+    subscribe(channel: string, onMessage: (message: any) => void): Unsubscribe;
+    close(): void;
 }
-export interface LiveQueryProvider {
-    openStreamAndReturnCloseFunction(onReconnect: VoidFunction): Promise<PubSubClient>;
+export interface SubClient {
+    openConnection(onReconnect: VoidFunction): Promise<SubClientConnection>;
 }
 export declare class MessageChannel<T> {
     id: string;
@@ -63,5 +64,5 @@ export declare class AMessageChannel<messageType> {
     channelKey: string;
     constructor(channelKey: string);
     send(what: messageType, remult?: Remult): void;
-    subscribe(onValue: (value: messageType) => void, remult?: Remult): void;
+    subscribe(onValue: (value: messageType) => void, remult?: Remult): VoidFunction;
 }

@@ -1,13 +1,13 @@
 import type * as Ably from 'ably';
 import type { ServerEventDispatcher } from '../src/live-query/LiveQueryPublisher';
-import type { LiveQueryProvider, PubSubClient } from '../src/live-query/LiveQuerySubscriber';
+import type { SubClient, SubClientConnection } from '../src/live-query/LiveQuerySubscriber';
 
 
-export class AblyLiveQueryProvider implements LiveQueryProvider {
+export class AblyLiveQueryProvider implements SubClient {
   constructor(private ably: Ably.Types.RealtimePromise) { }
-  async openStreamAndReturnCloseFunction(onReconnect: VoidFunction): Promise<PubSubClient> {
+  async openConnection(onReconnect: VoidFunction): Promise<SubClientConnection> {
     return {
-      disconnect: () => {
+      close: () => {
         this.ably.connection.close()
       },
       subscribe: (channel, handler) => {
