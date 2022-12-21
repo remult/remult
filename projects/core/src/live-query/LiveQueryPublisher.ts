@@ -3,21 +3,6 @@ import { itemChange,  SubServer } from '../context';
 import { findOptionsFromJson, findOptionsToJson } from '../data-providers/rest-data-provider';
 import { Repository, FindOptions } from '../remult3';
 
-import { liveQueryMessage } from './LiveQuerySubscriber';
-
-
-
-interface StoredQuery {
-  id: string,
-  findOptionsJson: any,
-  lastIds: any[],
-  requestJson: any,
-  entityKey: string
-}
-
-
-
-
 export class LiveQueryStorageInMemoryImplementation implements LiveQueryStorage {
   debugFileSaver = (x: any) => { };
   debug() {
@@ -67,8 +52,9 @@ export class LiveQueryStorageInMemoryImplementation implements LiveQueryStorage 
     this.debug();
   }
 }
-
+/* @internal*/
 export declare type PerformWithRequest = (serializedRequest: any, entityKey: string, what: (repo: Repository<any>) => Promise<void>) => Promise<void>;
+/* @internal*/
 export class LiveQueryPublisher  {
 
   constructor(public subServer: () => SubServer, public performWithRequest: PerformWithRequest) { }
@@ -165,4 +151,11 @@ export interface LiveQueryStorage {
     setLastIds(ids: any[]): Promise<void>
   }) => Promise<void>): Promise<void>
 
+}
+interface StoredQuery {
+  id: string,
+  findOptionsJson: any,
+  lastIds: any[],
+  requestJson: any,
+  entityKey: string
 }

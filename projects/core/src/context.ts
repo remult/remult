@@ -5,7 +5,7 @@ import { EntityMetadata, EntityRef, FindOptions, Repository } from "./remult3";
 import { RepositoryImplementation } from "./remult3/RepositoryImplementation";
 import { ClassType } from "../classType";
 import { LiveQueryClient } from "./live-query/LiveQueryClient";
-import { EventSourceLiveQueryProvider } from "./live-query/EventSourceLiveQueryProvider";
+import { EventSourceSubClient } from "./live-query/EventSourceLiveQueryProvider";
 import { RemultProxy } from "./remult-proxy";
 import type { MessagePublisher } from "../live-query";
 import type { LiveQueryStorage, LiveQueryPublisher } from "./live-query/LiveQueryPublisher";
@@ -179,7 +179,7 @@ export class Remult {
     readonly context: RemultContext = {} as any;
     apiClient: ApiClient = {
         url: '/api',
-        subClient: new EventSourceLiveQueryProvider()
+        subClient: new EventSourceSubClient()
     };
 }
 

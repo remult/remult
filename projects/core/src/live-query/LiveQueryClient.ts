@@ -4,6 +4,7 @@ import { RepositoryImplementation } from '../remult3';
 import { buildRestDataProvider } from "../buildRestDataProvider";
 import { LiveQuerySubscriber, MessageChannel, SubClient, SubscribeResult, SubClientConnection, liveQueryKeepAliveRoute, Unsubscribe } from './LiveQuerySubscriber';
 import type { ApiClient } from '../../index';
+/* @internal*/
 export class LiveQueryClient {
     wrapMessageHandling(handleMessage) {
         var x = this.apiProvider().wrapMessageHandling;
