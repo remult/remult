@@ -25,7 +25,6 @@ export class LiveQueryClient {
         this.closeIfNoListeners();
     }
     subscribeChannel<T>(key: string, onResult: (item: T) => void): Unsubscribe {
-
         let onUnsubscribe: VoidFunction = () => { };
         this.openIfNoOpened().then(() => {
             let q = this.channels.get(key);
@@ -44,11 +43,9 @@ export class LiveQueryClient {
                 this.closeIfNoListeners();
             };
         });
-
         return () => {
             onUnsubscribe();
         };
-
     }
     timeoutToCloseWhenNotClosed = 1000;
     private closeIfNoListeners() {
@@ -123,10 +120,6 @@ export class LiveQueryClient {
     }
     client: Promise<SubClientConnection>;
     interval: any;
-    get provider() {
-        return buildRestDataProvider(this.apiProvider().httpClient);
-    }
-
     private openIfNoOpened() {
 
         if (!this.client) {
@@ -136,12 +129,13 @@ export class LiveQueryClient {
                     ids.push(q.queryChannel);
                 }
                 if (ids.length > 0) {
-                    const invalidIds = await this.runPromise(this.provider.post(this.apiProvider().url + liveQueryKeepAliveRoute, ids));
+                    let p = this.apiProvider();
+
+                    const invalidIds = await this.runPromise(buildRestDataProvider(p.httpClient).post(p.url + liveQueryKeepAliveRoute, ids));
                     for (const id of invalidIds) {
                         for (const q of this.queries.values()) {
                             if (q.queryChannel === id)
                                 q.subscribeCode();
-
                         }
                     }
                 }
