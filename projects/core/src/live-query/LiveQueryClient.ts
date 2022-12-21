@@ -94,19 +94,15 @@ export class LiveQueryClient {
                             q.unsubscribe = () => { };
                         }
                         const thenResult = (r: SubscribeResult) => {
-                            this.client.then(c => {
-                                //TODO Noam - refactor to sue SubscribeChannel
-                                let unsubscribeToChannel = c.subscribe(r.queryChannel, (value: any) => this.wrapMessageHandling(() => this.runPromise(q.handle(value))));
-                                q.unsubscribe = () => {
-                                    unsubscribeToChannel();
-                                    const url = new UrlBuilder(defaultRemult.apiClient.url + '/' + repo.metadata.key);
-                                    url.add("__action", "endLiveQuery");
-                                    this.runPromise(this.provider.post(url.url, {
-                                        id: q.queryChannel
-                                    }));
-                                }
+                            let unsubscribeToChannel = this.subscribeChannel(r.queryChannel, (value: any) => this.runPromise(q.handle(value)));
+                            q.unsubscribe = () => {
+                                unsubscribeToChannel();
+                                const url = new UrlBuilder(defaultRemult.apiClient.url + '/' + repo.metadata.key);
+                                url.add("__action", "endLiveQuery");
+                                this.runPromise(this.provider.post(url.url, {
+                                    id: q.queryChannel
+                                }));
                             }
-                            );
                             this.runPromise(q.setAllItems(r.result));
                             q.queryChannel = r.queryChannel;
                         };
