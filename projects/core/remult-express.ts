@@ -1,8 +1,8 @@
 import * as express from 'express';
 import { createRemultServer, RemultServer, RemultServerImplementation, RemultServerOptions } from './server/expressBridge';
-import { Remult } from './src/context';
+import { Remult, SubServer } from './src/context';
 import { AMessageChannel, liveQueryKeepAliveRoute, ServerEventChannelSubscribeDTO, streamUrl } from './src/live-query/LiveQuerySubscriber';
-import { LiveQueryPublisher, LiveQueryStorage, LiveQueryStorageInMemoryImplementation, ServerEventDispatcher } from './src/live-query/LiveQueryPublisher';
+import { LiveQueryPublisher, LiveQueryStorage, LiveQueryStorageInMemoryImplementation, MessagePublisher } from './src/live-query/LiveQueryPublisher';
 import { v4 as uuid } from 'uuid';
 import { remult } from './src/remult-proxy';
 import { getEntityKey } from './src/remult3';
@@ -11,7 +11,8 @@ export function remultExpress(options?:
     RemultServerOptions<express.Request> & {
         bodyParser?: boolean;
         bodySizeLimit?: string;
-        serverEventDispatcher?: (router: express.Router, server: RemultServer) => ServerEventDispatcher;
+        //TODO - move to remult-server
+        subServer?: (router: express.Router, server: RemultServer) => SubServer;
     }): express.RequestHandler & RemultServer {
     let app = express.Router();
 
@@ -28,36 +29,38 @@ export function remultExpress(options?:
 
     const server = createRemultServer(options) as RemultServerImplementation;
     server.registerRouter(app);
-    if (!options.serverEventDispatcher) {
-        options.serverEventDispatcher = (router, server) => {
+    if (!options.subServer) {
+        options.subServer = (router, server) => {
 
-            return buildHttpServerEventDispatcher(router, options.rootPath!, server);
+            return { publisher: buildHttpServerEventDispatcher(router, options.rootPath!, server) };
 
         }
     }
     app.post(options.rootPath + liveQueryKeepAliveRoute, (r, res, n) => server.withRemult(r, res, n), async (req, res) => {
-        res.send(await remult.liveQueryPublisher.storage.keepAliveAndReturnUnknownIds(req.body));
+        res.send(await remult.liveQueryPublisher.subServer().storage.keepAliveAndReturnUnknownIds(req.body));
 
     });
-    server.liveQueryManager = new LiveQueryPublisher(options.serverEventDispatcher(app, server),
-        new LiveQueryStorageInMemoryImplementation(),
-        async (req, entityKey, what) => {
+    server.runWithRequest = async (req, entityKey, what) => {
 
-            for (const e of options.entities) {
-                let key = getEntityKey(e);
-                if (key === entityKey) {
-                    await new Promise((result) => {
-                        server.withRemult(options.requestSerializer!.fromJson(req), undefined, async () => {
-                            await what(remult.repo(e));
-                            result({});
-                        });
+        for (const e of options.entities) {
+            let key = getEntityKey(e);
+            if (key === entityKey) {
+                await new Promise((result) => {
+                    server.withRemult(options.requestSerializer!.fromJson(req), undefined, async () => {
+                        await what(remult.repo(e));
+                        result({});
                     });
-                    return;
-                }
+                });
+                return;
             }
-            throw new Error("Couldn't find entity " + entityKey);
-        });
+        }
+        throw new Error("Couldn't find entity " + entityKey);
+    };
 
+    server.subServer = options.subServer(app, server);
+    if (!server.subServer.storage) {
+        server.subServer.storage = new LiveQueryStorageInMemoryImplementation()
+    }
 
     return Object.assign(app, {
         getRemult: (req) => server.getRemult(req),
@@ -67,7 +70,7 @@ export function remultExpress(options?:
     } as RemultServer);
 
 }
-export class ServerEventsController implements ServerEventDispatcher {
+export class ServerEventsController implements MessagePublisher {
     subscribeToChannel({ channel, clientId }: ServerEventChannelSubscribeDTO, res: import('express').Response, remult: Remult, remove = false) {
         for (const c of this.connections) {
             if (c.connectionId === clientId) {
@@ -174,13 +177,13 @@ function buildHttpServerEventDispatcher(router: express.Router, apiPath: string,
     const streamPath = apiPath + '/' + streamUrl
     let httpServerEvents = new ServerEventsController();
     router.get(streamPath, (r, res, next) => server.withRemult(r, res, next), (req, res) => {
-        (remult.liveQueryPublisher.dispatcher as ServerEventsController).openHttpServerStream(req, res);
+        (remult.subServer.publisher as ServerEventsController).openHttpServerStream(req, res);
     });
     router.post(streamPath + '/subscribe', (r, res, next) => server.withRemult(r, res, next), (req, res) => {
-        (remult.liveQueryPublisher.dispatcher as ServerEventsController).subscribeToChannel(req.body, res, remult);
+        (remult.subServer.publisher as ServerEventsController).subscribeToChannel(req.body, res, remult);
     });
     router.post(streamPath + '/unsubscribe', (r, res, next) => server.withRemult(r, res, next), (req, res) => {
-        (remult.liveQueryPublisher.dispatcher as ServerEventsController).subscribeToChannel(req.body, res, remult, true);
+        (remult.subServer.publisher as ServerEventsController).subscribeToChannel(req.body, res, remult, true);
     });
     return httpServerEvents;
 }

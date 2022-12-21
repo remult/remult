@@ -1,10 +1,10 @@
 import { DataProvider } from "./data-interfaces";
 import { EntityMetadata, EntityRef, FindOptions, Repository } from "./remult3";
 import { ClassType } from "../classType";
-import { LiveQueryClient } from "./live-query/LiveQueryClient";
-import type { ServerEventDispatcher } from "../live-query";
-import { LiveQueryStorage } from "./live-query/LiveQueryPublisher";
+import type { MessagePublisher } from "../live-query";
+import type { LiveQueryStorage } from "./live-query/LiveQueryPublisher";
 import { ExternalHttpProvider } from "./buildRestDataProvider";
+import { SubClient } from "./live-query/LiveQuerySubscriber";
 export declare function isBackend(): boolean;
 export declare class Remult {
     /**Return's a `Repository` of the specific entity type
@@ -38,11 +38,10 @@ export declare class Remult {
     constructor(http: ExternalHttpProvider | typeof fetch | ApiClient);
     constructor(p: DataProvider);
     constructor();
-    liveQueryPublisher: LiveQueryPublisherInterface;
+    subServer: SubServer;
     call<T extends ((...args: any[]) => Promise<any>)>(backendMethod: T, classInstance?: any, ...args: GetArguments<T>): ReturnType<T>;
     /** The current data provider */
     dataProvider: DataProvider;
-    liveQuerySubscriber: LiveQueryClient;
     /** A helper callback that can be used to debug and trace all find operations. Useful in debugging scenarios */
     static onFind: (metadata: EntityMetadata, options: FindOptions<any>) => void;
     clearAllCache(): any;
@@ -57,6 +56,12 @@ export interface RemultContext {
 export interface ApiClient {
     httpClient?: ExternalHttpProvider | typeof fetch;
     url?: string;
+    subClient?: SubClient;
+    wrapMessageHandling?: (x: VoidFunction) => void;
+}
+export interface SubServer {
+    storage?: LiveQueryStorage;
+    publisher?: MessagePublisher;
 }
 export declare const allEntities: ClassType<any>[];
 export interface ControllerOptions {
@@ -89,14 +94,6 @@ export declare class EventSource {
     listeners: (() => {})[];
     fire(): Promise<void>;
     dispatcher: EventDispatcher;
-}
-export interface LiveQueryPublisherInterface {
-    stopLiveQuery(id: any): void;
-    sendChannelMessage<messageType>(channel: string, message: messageType): void;
-    defineLiveQueryChannel(serializeRequest: () => any, entityKey: string, options: FindOptions<any>, ids: any[], userId: string, repo: Repository<any>): string;
-    itemChanged(entityKey: string, changes: itemChange[]): void;
-    dispatcher: ServerEventDispatcher;
-    storage: LiveQueryStorage;
 }
 export interface itemChange {
     id: any;

@@ -1,5 +1,5 @@
 import type * as Ably from 'ably';
-import type { ServerEventDispatcher } from '../src/live-query/LiveQueryPublisher';
+import type { MessagePublisher } from '../src/live-query/LiveQueryPublisher';
 import type { SubClient, SubClientConnection } from '../src/live-query/LiveQuerySubscriber';
 
 
@@ -19,7 +19,7 @@ export class AblyLiveQueryProvider implements SubClient {
   }
 }
 
-export class AblyServerEventDispatcher implements ServerEventDispatcher {
+export class AblyServerEventDispatcher implements MessagePublisher {
   constructor(private ably: Ably.Types.RealtimePromise) { }
   sendChannelMessage<T>(channel: string, message: T): void {
     this.ably.channels.get(channel).publish({ data: message });

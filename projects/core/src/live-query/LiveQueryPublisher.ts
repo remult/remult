@@ -1,5 +1,5 @@
 import { v4 as uuid } from 'uuid';
-import { itemChange, LiveQueryPublisherInterface } from '../context';
+import { itemChange,  SubServer } from '../context';
 import { findOptionsFromJson, findOptionsToJson } from '../data-providers/rest-data-provider';
 import { Repository, FindOptions } from '../remult3';
 
@@ -68,20 +68,20 @@ export class LiveQueryStorageInMemoryImplementation implements LiveQueryStorage 
   }
 }
 
+export declare type PerformWithRequest = (serializedRequest: any, entityKey: string, what: (repo: Repository<any>) => Promise<void>) => Promise<void>;
+export class LiveQueryPublisher  {
 
-export class LiveQueryPublisher implements LiveQueryPublisherInterface {
-
-  constructor(public dispatcher: ServerEventDispatcher, public storage: LiveQueryStorage, public performWithRequest: (serializedRequest: any, entityKey: string, what: (repo: Repository<any>) => Promise<void>) => Promise<void>) { }
+  constructor(public subServer: () => SubServer, public performWithRequest: PerformWithRequest) { }
   stopLiveQuery(id: any): void {
-    this.storage.remove(id);
+    this.subServer().storage.remove(id);
   }
   sendChannelMessage<messageType>(channel: string, message: messageType) {
-    this.dispatcher.sendChannelMessage(channel, message);
+    this.subServer().publisher.sendChannelMessage(channel, message);
   }
 
   defineLiveQueryChannel(serializeRequest: () => any, entityKey: string, findOptions: FindOptions<any>, ids: any[], userId: string, repo: Repository<any>): string {
     const id = `users:${userId}:queries:${uuid()}`;
-    this.storage.store(
+    this.subServer().storage.store(
       {
         requestJson: serializeRequest(),
         entityKey,
@@ -102,7 +102,7 @@ export class LiveQueryPublisher implements LiveQueryPublisherInterface {
   debugFileSaver = (x: any) => { };
   itemChanged(entityKey: string, changes: itemChange[]) {
     //TODO - optimize so that the user will get their messages first. Based on user id
-    this.runPromise(this.storage.provideListeners(entityKey,
+    this.runPromise(this.subServer().storage.provideListeners(entityKey,
       async ({ query, setLastIds }) => {
         await this.performWithRequest(query.requestJson, entityKey, async repo => {
           const messages = [];
@@ -145,14 +145,14 @@ export class LiveQueryPublisher implements LiveQueryPublisherInterface {
             messages
           });
           await setLastIds(currentIds);
-          this.dispatcher.sendChannelMessage(query.id, messages);
+          this.subServer().publisher.sendChannelMessage(query.id, messages);
         })
 
       }));
   }
 }
 
-export interface ServerEventDispatcher {
+export interface MessagePublisher {
   sendChannelMessage<T>(channel: string, message: T): void;
 }
 // TODO2 - PUBNUB

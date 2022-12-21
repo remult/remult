@@ -3,12 +3,18 @@ import { RestEntityDataProvider } from '../data-providers/rest-data-provider';
 import { RepositoryImplementation } from '../remult3';
 import { buildRestDataProvider } from "../buildRestDataProvider";
 import { LiveQuerySubscriber, MessageChannel, SubClient, SubscribeResult, SubClientConnection, liveQueryKeepAliveRoute, Unsubscribe } from './LiveQuerySubscriber';
-
+import type { ApiClient } from '../../index';
 export class LiveQueryClient {
-    wrapMessageHandling = handleMessage => handleMessage();
+    wrapMessageHandling(handleMessage) {
+        var x = this.apiProvider().wrapMessageHandling;
+        if (x)
+            x(handleMessage);
+        else
+            handleMessage();
+    };
     private queries = new Map<string, LiveQuerySubscriber<any>>();
     private channels = new Map<string, MessageChannel<any>>();
-    constructor(public lqp: SubClient, private provider?: RestDataProviderHttpProvider) { }
+    constructor(private apiProvider: () => ApiClient) { }
     runPromise(p: Promise<any>) {
         return p;
     }
@@ -134,11 +140,12 @@ export class LiveQueryClient {
     }
     client: Promise<SubClientConnection>;
     interval: any;
+    get provider() {
+        return buildRestDataProvider(this.apiProvider().httpClient);
+    }
 
     private openIfNoOpened() {
-        if (!this.provider) {
-            this.provider = buildRestDataProvider(defaultRemult.apiClient.httpClient);
-        }
+
         if (!this.client) {
             this.interval = setInterval(async () => {
                 const ids = [];
@@ -158,7 +165,7 @@ export class LiveQueryClient {
             }, 30000);
 
             return this.runPromise(this.client =
-                this.lqp.openConnection(() => {
+                this.apiProvider().subClient.openConnection(() => {
                     for (const q of this.queries.values()) {
                         q.subscribeCode();
                     }

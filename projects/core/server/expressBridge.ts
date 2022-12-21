@@ -2,12 +2,12 @@
 import { Action, actionInfo, ActionInterface, classBackendMethodsArray, jobWasQueuedResult, myServerAction, queuedJobInfoResponse, serverActionField } from '../src/server-action';
 import { DataProvider, ErrorInfo } from '../src/data-interfaces';
 import { DataApi, DataApiRequest, DataApiResponse, serializeError } from '../src/data-api';
-import { allEntities, AllowedForInstance, Remult, UserInfo } from '../src/context';
+import { allEntities, AllowedForInstance, Remult, SubServer, UserInfo } from '../src/context';
 import { ClassType } from '../classType';
 import { Entity, Fields, getEntityKey, Repository } from '../src/remult3';
 import { IdEntity } from '../src/id-entity';
 import { remult, RemultProxy } from '../src/remult-proxy';
-import { LiveQueryPublisher } from '../src/live-query/LiveQueryPublisher';
+import { LiveQueryPublisher, PerformWithRequest } from '../src/live-query/LiveQueryPublisher';
 
 //TODO2 -support pub sub non express servers
 export interface RemultServerOptions<RequestType extends GenericRequest> {
@@ -197,7 +197,7 @@ let remultObjectStorage: RemultAsyncLocalStorage;
 
 
 
-
+/* @internal*/
 
 export class RemultServerImplementation implements RemultServer {
   constructor(public queue: inProcessQueueHandler, public options: RemultServerOptions<GenericRequest>,
@@ -206,7 +206,8 @@ export class RemultServerImplementation implements RemultServer {
 
   }
 
-  liveQueryManager: LiveQueryPublisher;
+  runWithRequest: PerformWithRequest;
+  subServer: SubServer;
   withRemult<T>(req: GenericRequest, res: GenericResponse, next: VoidFunction) {
     this.process(async () => { next() })(req, res);
   }
@@ -293,8 +294,9 @@ export class RemultServerImplementation implements RemultServer {
       let myReq = new ExpressRequestBridgeToDataApiRequest(req);
       let myRes = new ExpressResponseBridgeToDataApiResponse(res, req);
       let remult = new Remult();
-      remult.liveQueryPublisher = this.liveQueryManager;
+      remult.liveQueryPublisher = new LiveQueryPublisher(() => remult.subServer, this.runWithRequest)
       remult.dataProvider = (await this.dataProvider);
+      remult.subServer = this.subServer;
       await new Promise(res => {
         remultObjectStorage.run(remult, async () => {
           if (req) {

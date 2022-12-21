@@ -1,12 +1,12 @@
 import { FindOptions, Repository, RestDataProviderHttpProvider } from '../../index';
-import { SubClient, SubClientConnection, Unsubscribe } from './LiveQuerySubscriber';
+import { SubClientConnection, Unsubscribe } from './LiveQuerySubscriber';
+import type { ApiClient } from '../../index';
 export declare class LiveQueryClient {
-    lqp: SubClient;
-    private provider?;
-    wrapMessageHandling: (handleMessage: any) => any;
+    private apiProvider;
+    wrapMessageHandling(handleMessage: any): void;
     private queries;
     private channels;
-    constructor(lqp: SubClient, provider?: RestDataProviderHttpProvider);
+    constructor(apiProvider: () => ApiClient);
     runPromise(p: Promise<any>): Promise<any>;
     close(): void;
     subscribeChannel<T>(key: string, onResult: (item: T) => void): Unsubscribe;
@@ -15,5 +15,6 @@ export declare class LiveQueryClient {
     subscribe<entityType>(repo: Repository<entityType>, options: FindOptions<entityType>, onResult: (reducer: (prevState: entityType[]) => entityType[]) => void): () => void;
     client: Promise<SubClientConnection>;
     interval: any;
+    get provider(): RestDataProviderHttpProvider | import("../data-providers/rest-data-provider").RestDataProviderHttpProviderUsingFetch;
     private openIfNoOpened;
 }

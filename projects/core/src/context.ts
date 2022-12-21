@@ -7,9 +7,10 @@ import { ClassType } from "../classType";
 import { LiveQueryClient } from "./live-query/LiveQueryClient";
 import { EventSourceLiveQueryProvider } from "./live-query/EventSourceLiveQueryProvider";
 import { RemultProxy } from "./remult-proxy";
-import type { ServerEventDispatcher } from "../live-query";
-import { LiveQueryStorage } from "./live-query/LiveQueryPublisher";
+import type { MessagePublisher } from "../live-query";
+import type { LiveQueryStorage, LiveQueryPublisher } from "./live-query/LiveQueryPublisher";
 import { buildRestDataProvider, ExternalHttpProvider, isExternalHttpProvider } from "./buildRestDataProvider";
+import { SubClient } from "./live-query/LiveQuerySubscriber";
 
 
 
@@ -124,20 +125,34 @@ export class Remult {
                 this.apiClient.httpClient = apiClient.httpClient;
             if (apiClient.url)
                 this.apiClient.url = apiClient.url;
+            if (apiClient.subClient)
+                this.apiClient.subClient = apiClient.subClient;
+            if (apiClient.wrapMessageHandling)
+                this.apiClient.wrapMessageHandling = apiClient.wrapMessageHandling
         }
 
     }
-    liveQueryPublisher: LiveQueryPublisherInterface = {
+    subServer: SubServer;
+    /* @internal*/
+    liveQueryPublisher: LiveQueryPublisher = {
         itemChanged: () => { },
         defineLiveQueryChannel: () => "",
-        dispatcher: undefined,
         sendChannelMessage: function <messageType extends {}>(arg0: string, what: messageType): unknown {
             throw new Error("invalid publisher.");
         },
         stopLiveQuery: function (id: any): void {
             throw new Error("Function not implemented.");
         },
-        storage: undefined!
+        subServer: function (): SubServer {
+            throw new Error("Function not implemented.");
+        },
+        performWithRequest: function (serializedRequest: any, entityKey: string, what: (repo: Repository<any>) => Promise<void>): Promise<void> {
+            throw new Error("Function not implemented.");
+        },
+        runPromise: function (p: Promise<any>): void {
+            throw new Error("Function not implemented.");
+        },
+        debugFileSaver: undefined
     };
 
     //@ts-ignore // type error of typescript regarding args that doesn't appear in my normal development
@@ -151,7 +166,8 @@ export class Remult {
     /** The current data provider */
     dataProvider: DataProvider = new RestDataProvider(() => this.apiClient);
 
-    liveQuerySubscriber = new LiveQueryClient(new EventSourceLiveQueryProvider());
+    /* @internal*/
+    liveQuerySubscriber = new LiveQueryClient(() => this.apiClient);
 
     /** A helper callback that can be used to debug and trace all find operations. Useful in debugging scenarios */
     static onFind = (metadata: EntityMetadata, options: FindOptions<any>) => { };
@@ -162,7 +178,8 @@ export class Remult {
     static entityRefInit?: (ref: EntityRef<any>, row: any) => void;
     readonly context: RemultContext = {} as any;
     apiClient: ApiClient = {
-        url: '/api'
+        url: '/api',
+        subClient: new EventSourceLiveQueryProvider()
     };
 }
 
@@ -178,7 +195,13 @@ export interface RemultContext {
 export interface ApiClient {
     httpClient?: ExternalHttpProvider | typeof fetch;
     url?: string;
+    subClient?: SubClient
+    wrapMessageHandling?: (x: VoidFunction) => void
 };
+export interface SubServer {
+    storage?: LiveQueryStorage,
+    publisher?: MessagePublisher
+}
 
 
 export const allEntities: ClassType<any>[] = [];
@@ -262,14 +285,7 @@ export class EventSource {
 }
 
 
-export interface LiveQueryPublisherInterface {
-    stopLiveQuery(id: any): void;
-    sendChannelMessage<messageType>(channel: string, message: messageType): void;
-    defineLiveQueryChannel(serializeRequest: () => any, entityKey: string, options: FindOptions<any>, ids: any[], userId: string, repo: Repository<any>): string;
-    itemChanged(entityKey: string, changes: itemChange[]): void;
-    dispatcher: ServerEventDispatcher;
-    storage: LiveQueryStorage;
-}
+
 export interface itemChange {
     id: any;
     oldId: any;
@@ -280,21 +296,23 @@ export async function doTransaction(remult: Remult, what: () => Promise<void>) {
     return await remult.dataProvider.transaction(async ds => {
         remult.dataProvider = (ds);
         const trans = new transactionLiveQueryPublisher(remult.liveQueryPublisher);
+        //TODO - refactor to simplify
+        //@ts-ignore
         remult.liveQueryPublisher = trans;
         await what();
         trans.flush();
     });
 }
 // TODO - talk about message size limit in ably - something that we may reach if we group the messages
-class transactionLiveQueryPublisher implements LiveQueryPublisherInterface {
+//@ts-ignore
+class transactionLiveQueryPublisher implements LiveQueryPublisher {
 
-    constructor(private orig: LiveQueryPublisherInterface) { }
-    get storage() {
-        return this.orig.storage;
-    };
-    set storage(value: LiveQueryStorage) {
-        this.orig.storage = value;
+    constructor(private orig: LiveQueryPublisher) { }
+    runPromise(p: Promise<any>): void {
+        this.orig.runPromise(p);
     }
+    debugFileSaver: (x: any) => void;
+
     stopLiveQuery(id: any): void {
         this.orig.stopLiveQuery(id);
     }
@@ -330,14 +348,4 @@ class transactionLiveQueryPublisher implements LiveQueryPublisherInterface {
     defineLiveQueryChannel(serializeRequest: () => any, entityKey: string, options: FindOptions<any>, ids: any[], userId: string, repo: Repository<any>): string {
         return this.orig.defineLiveQueryChannel(serializeRequest, entityKey, options, ids, userId, repo);
     }
-
-
-    public get dispatcher(): ServerEventDispatcher {
-        return this.orig.dispatcher;
-    }
-    public set dispatcher(value: ServerEventDispatcher) {
-        this.orig.dispatcher = value;
-    }
-
-
 }

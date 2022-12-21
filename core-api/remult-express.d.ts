@@ -1,14 +1,14 @@
 import * as express from 'express';
 import { RemultServer, RemultServerOptions } from './server/expressBridge';
-import { Remult } from './src/context';
+import { Remult, SubServer } from './src/context';
 import { ServerEventChannelSubscribeDTO } from './src/live-query/LiveQuerySubscriber';
-import { ServerEventDispatcher } from './src/live-query/LiveQueryPublisher';
+import { MessagePublisher } from './src/live-query/LiveQueryPublisher';
 export declare function remultExpress(options?: RemultServerOptions<express.Request> & {
     bodyParser?: boolean;
     bodySizeLimit?: string;
-    serverEventDispatcher?: (router: express.Router, server: RemultServer) => ServerEventDispatcher;
+    subServer?: (router: express.Router, server: RemultServer) => SubServer;
 }): express.RequestHandler & RemultServer;
-export declare class ServerEventsController implements ServerEventDispatcher {
+export declare class ServerEventsController implements MessagePublisher {
     private canUserConnectToChannel?;
     subscribeToChannel({ channel, clientId }: ServerEventChannelSubscribeDTO, res: import('express').Response, remult: Remult, remove?: boolean): void;
     connections: clientConnection[];

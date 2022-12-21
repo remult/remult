@@ -42,9 +42,12 @@ async function setup1() {
     remult.user = ({ id: clientId1, name: clientId1, roles: [] });
     const clientRepo = remult.repo(eventTestEntity);
     const messages: liveQueryMessage[] = [];
-    const qm = new LiveQueryPublisher({
-        sendChannelMessage: (c, m: any) => messages.push(...m),
-    }, new LiveQueryStorageInMemoryImplementation(), async (_, _1, c) => c(clientRepo));
+    let sub = {
+        publisher: {
+            sendChannelMessage: (c, m: any) => messages.push(...m),
+        }, storage: new LiveQueryStorageInMemoryImplementation()
+    };
+    const qm = new LiveQueryPublisher(() => (sub), async (_, _1, c) => c(clientRepo));
     let p = new PromiseResolver(qm);
 
     serverRemult.liveQueryPublisher = qm;
@@ -143,36 +146,39 @@ describe("Live Query Client", () => {
         let open = 0;
         let get = 0;
         let sendMessage = x => { };
-        const lqc = new LiveQueryClient({
-            async openConnection(onMessage) {
-                open++;
-                return {
-                    close() {
-                        open--;
-                    },
-                    subscribe(channel, onMessage) {
-                        sendMessage = x => onMessage([x]);
-                        return () => {
+        const lqc = new LiveQueryClient(() => ({
+            subClient: {
+                async openConnection(onMessage) {
+                    open++;
+                    return {
+                        close() {
+                            open--;
+                        },
+                        subscribe(channel, onMessage) {
+                            sendMessage = x => onMessage([x]);
+                            return () => {
 
-                        }
-                    },
-                }
+                            }
+                        },
+                    }
+                },
             },
-        }, {
-            get: async (url) => {
-                get++;
-                return {
-                    id: '1',
-                    result: [{
-                        id: 1,
-                        title: 'noam'
-                    }]
-                }
-            },
-            put: undefined,
-            post: async () => { },
-            delete: undefined
-        });
+            httpClient: {
+                get: async (url) => {
+                    get++;
+                    return {
+                        id: '1',
+                        result: [{
+                            id: 1,
+                            title: 'noam'
+                        }]
+                    }
+                },
+                put: () => undefined,
+                post: async () => { },
+                delete: () => undefined
+            }
+        }));
         lqc.timeoutToCloseWhenNotClosed = 10;
         let p = new PromiseResolver(lqc);
         const serverRemult = new Remult(new InMemoryDataProvider());
@@ -258,11 +264,13 @@ describe("test live query full cycle", () => {
         const mh: ((channel: string, message: liveQueryMessage) => void)[] = [];
         let messageCount = 0;
         const storage = new LiveQueryStorageInMemoryImplementation();
-        const qm = new LiveQueryPublisher({
-            sendChannelMessage<liveQueryMessage>(channel, message) {
-                mh.forEach(x => x(channel, message))
-            },
-        }, storage, async (_, _1, c) => c(repo));
+        const qm = new LiveQueryPublisher(() => ({
+            publisher: {
+                sendChannelMessage<liveQueryMessage>(channel, message) {
+                    mh.forEach(x => x(channel, message))
+                },
+            }, storage
+        }), async (_, _1, c) => c(repo));
         remult.liveQueryPublisher = qm;
         var dataApi = new DataApi(repo, remult);
         const clientStatus = {
@@ -270,39 +278,41 @@ describe("test live query full cycle", () => {
             reconnect: () => { }
         }
         const buildLqc = () => {
-            return new LiveQueryClient({
-                async openConnection(onReconnect) {
-                    clientStatus.connected = true;
-                    clientStatus.reconnect = () => {
-                        onReconnect();
+            return new LiveQueryClient(() => ({
+                subClient: {
+                    async openConnection(onReconnect) {
                         clientStatus.connected = true;
-                    };
-                    const channels: string[] = [];
+                        clientStatus.reconnect = () => {
+                            onReconnect();
+                            clientStatus.connected = true;
+                        };
+                        const channels: string[] = [];
 
 
-                    return {
-                        close() {
+                        return {
+                            close() {
 
-                        },
-                        subscribe(channel, onMessage) {
-                            channels.push(channel);
-                            mh.push((c, message) => {
-                                if (clientStatus.connected)
-                                    if (channels.includes(c) && c == channel) {
-                                        messageCount++;
-                                        onMessage(
-                                            message
-                                        );
-                                    }
-                            });
+                            },
+                            subscribe(channel, onMessage) {
+                                channels.push(channel);
+                                mh.push((c, message) => {
+                                    if (clientStatus.connected)
+                                        if (channels.includes(c) && c == channel) {
+                                            messageCount++;
+                                            onMessage(
+                                                message
+                                            );
+                                        }
+                                });
 
-                            return () => {
-                                channels.splice(channels.indexOf(channel), 1);
-                            }
-                        },
-                    };
-                },
-            }, createMockHttpDataProvider(dataApi));
+                                return () => {
+                                    channels.splice(channels.indexOf(channel), 1);
+                                }
+                            },
+                        };
+                    },
+                }, httpClient: createMockHttpDataProvider(dataApi)
+            }));
         };
         const lqc1 = buildLqc();
         const lqc2 = buildLqc();
