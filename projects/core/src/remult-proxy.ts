@@ -49,6 +49,11 @@ export class RemultProxy implements Remult {
     /*@internal*/
     remultFactory = () => RemultProxy.defaultRemult;
 
+    /*@internal*/
+    resetFactory() {
+        this.remultFactory = () => RemultProxy.defaultRemult;
+    }
+
 
     repo: typeof RemultProxy.defaultRemult.repo = (...args) => this.remultFactory().repo(...args);
     get user() {

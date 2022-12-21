@@ -58,7 +58,7 @@ function App() {
       setTasks(tasks.map(t => t === task ? { ...task, ...values } : t));
    };
 
-   const saveTask = () => {
+   const saveTask = async () => {
       const savedTask = await taskRepo.save(task);
       setTasks(tasks.map(t => t === task ? savedTask : t));
    };
@@ -114,7 +114,7 @@ function App() {
             setTasks(tasks.map(t => t === task ? { ...task, ...values } : t));
           };
 
-          const saveTask = () => {
+          const saveTask = async () => {
             const savedTask = await taskRepo.save(task);
             setTasks(tasks.map(t => t === task ? savedTask : t));
           };

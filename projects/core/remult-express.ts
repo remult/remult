@@ -1,11 +1,14 @@
 import * as express from 'express';
-import { createRemultServer, RemultServer, RemultServerImplementation, RemultServerOptions } from './server/expressBridge';
+
+import { createRemultServer } from './server/index';
+import { RemultServer, RemultServerImplementation, RemultServerOptions } from './server/expressBridge';
 import { Remult, SubServer } from './src/context';
 import { AMessageChannel, liveQueryKeepAliveRoute, ServerEventChannelSubscribeDTO, streamUrl } from './src/live-query/LiveQuerySubscriber';
 import { LiveQueryPublisher, LiveQueryStorage, LiveQueryStorageInMemoryImplementation, MessagePublisher } from './src/live-query/LiveQueryPublisher';
 import { v4 as uuid } from 'uuid';
 import { remult } from './src/remult-proxy';
 import { getEntityKey } from './src/remult3';
+
 
 export function remultExpress(options?:
     RemultServerOptions<express.Request> & {

@@ -45,6 +45,14 @@
       },
       "import": "./esm/server/index.js"
     },
+    "./server/core": {
+      "require": "./server/core.js",
+      "node":{
+        "require": "./server/core.js",
+        "import": "./server/core.js"
+      },
+      "import": "./esm/server/core.js"
+    },
     "./remult-fastify": {
       "require": "./remult-fastify.js",
       "node": {

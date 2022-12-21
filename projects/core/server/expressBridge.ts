@@ -32,7 +32,7 @@ export interface RemultServerOptions<RequestType extends GenericRequest> {
   rootPath?: string;
 };
 
-export function createRemultServer<RequestType extends GenericRequest = GenericRequest>(
+export function createRemultServerCore<RequestType extends GenericRequest = GenericRequest>(
   options?:
     RemultServerOptions<RequestType>,
 ): RemultServer {
@@ -64,34 +64,14 @@ export function createRemultServer<RequestType extends GenericRequest = GenericR
       return dp;
     return new (await import('./JsonEntityFileStorage')).JsonFileDataProvider('./db')
   });
-  if (!remultObjectStorage) {
-    dataProvider = dataProvider.then(async dp => {
-      try {
-        const asyncHooks = await import('async_hooks');
-        remultObjectStorage = new RemultAsyncLocalStorage(new asyncHooks.AsyncLocalStorage());
-      }
-      catch {
-        remultObjectStorage = new RemultAsyncLocalStorage(undefined);
-      }
+  RemultAsyncLocalStorage.enable();
 
 
-
-      (remult as RemultProxy).remultFactory = () => {
-        const r = remultObjectStorage.getRemult()
-        if (r)
-          return r;
-        else throw new Error("remult object was requested outside of a valid context, try running it within initApi or a remult request cycle");
-      };
-      return dp;
-    });
-
-
-  }
   if (options.initApi) {
     dataProvider = dataProvider.then(async dp => {
       var remult = new Remult(dp);
       await new Promise((res) => {
-        remultObjectStorage.run(remult, async () => {
+        RemultAsyncLocalStorage.instance.run(remult, async () => {
           await options.initApi(remult);
           res({})
         })
@@ -176,7 +156,18 @@ export interface GenericResponse {
   end();
 };
 
-class RemultAsyncLocalStorage {
+export class RemultAsyncLocalStorage {
+  static enable() {
+    (remult as RemultProxy).remultFactory = () => {
+      const r = RemultAsyncLocalStorage.instance.getRemult()
+      if (r)
+        return r;
+      else throw new Error("remult object was requested outside of a valid context, try running it within initApi or a remult request cycle");
+    };
+  }
+  static disable() {
+    (remult as RemultProxy).resetFactory();
+  }
   constructor(private readonly remultObjectStorage: import('async_hooks').AsyncLocalStorage<Remult>) {
 
   }
@@ -188,13 +179,12 @@ class RemultAsyncLocalStorage {
   }
   getRemult() {
     if (!this.remultObjectStorage) {
-      throw "can't use static remult in this environment, `async_hooks` were not found";
+      throw new Error("can't use static remult in this environment, `async_hooks` were not initialized");
     }
     return this.remultObjectStorage.getStore()
   }
+  static instance = new RemultAsyncLocalStorage(undefined!);
 }
-let remultObjectStorage: RemultAsyncLocalStorage;
-
 
 
 /* @internal*/
@@ -298,7 +288,7 @@ export class RemultServerImplementation implements RemultServer {
       remult.dataProvider = (await this.dataProvider);
       remult.subServer = this.subServer;
       await new Promise(res => {
-        remultObjectStorage.run(remult, async () => {
+        RemultAsyncLocalStorage.instance.run(remult, async () => {
           if (req) {
             let user;
             if (this.options.getUser)

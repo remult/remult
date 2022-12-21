@@ -1,7 +1,7 @@
 import * as express from "express";
-import { remultExpress } from "../../../../core/remult-express";
-import { remult } from "../../../../core/src/remult-proxy";
-import { Task } from "./Task";
+import { remultExpress } from "../../core/remult-express";
+import { remult } from "../../core/src/remult-proxy";
+import { Task } from "../shared/Task";
 
 const app = express();
 const api = remultExpress({ entities: [Task] });

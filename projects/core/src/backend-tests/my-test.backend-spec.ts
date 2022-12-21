@@ -7,6 +7,9 @@ import { config } from 'dotenv';
 import { testKnexPGSqlImpl, testPostgresImplementation } from "./backend-database-test-setup.backend-spec";
 import { entityWithValidations } from "../shared-tests/entityWithValidations";
 import { SqlDatabase } from "../data-providers/sql-database";
+import { RemultAsyncLocalStorage } from "../../server/expressBridge";
+import { initAsyncHooks } from "../../server/initAsyncHooks";
+import { remult } from "../remult-proxy";
 config();
 
 
@@ -65,3 +68,48 @@ testKnexPGSqlImpl("knex filter2", async ({ createEntity }) => {
         }
     })).length).toBe(3);
 }, false);
+it("test async hooks and static remult", async () => {
+    let gotException = true;
+    try {
+        RemultAsyncLocalStorage.instance.getRemult();
+        gotException = false;
+    }
+    catch { }
+    expect(gotException).toBe(true);
+    initAsyncHooks();
+    expect(RemultAsyncLocalStorage.instance.getRemult()).toBe(undefined);
+    RemultAsyncLocalStorage.enable();
+    try {
+        remult.isAllowed(false);
+        gotException = false;
+    }
+    catch { }
+    expect(gotException).toBe(true);
+    const promises = [];
+    RemultAsyncLocalStorage.instance.run(new Remult(), () => {
+        remult.user = { id: 'noam' };
+        promises.push(new Promise(res => {
+            setTimeout(() => {
+                expect(remult.user.id).toBe('noam');
+                res({})
+            }, 10);
+        }))
+        RemultAsyncLocalStorage.instance.run(new Remult(), () => {
+            remult.user = { id: 'yoni' };
+            promises.push(new Promise(res => {
+                setTimeout(() => {
+                    expect(remult.user.id).toBe('yoni');
+                    res({})
+                }, 10);
+            }))
+        });
+        promises.push(new Promise(res => {
+            setTimeout(() => {
+                expect(remult.user.id).toBe('noam');
+                res({})
+            }, 10);
+        }))
+    });
+    await Promise.all(promises);
+
+});

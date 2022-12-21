@@ -186,8 +186,15 @@ class KnexEntityDataProvider implements EntityDataProvider {
 
         let insert = this.knex(e.entityName).insert(insertObject);
         if (isAutoIncrement(this.entity.idMetadata.field)) {
-            let result = await insert.returning(this.entity.idMetadata.field.key);
-            let newId = result[0].id;
+            let newId;
+            if (this.knex.client.config.client === 'mysql2') {
+                let result = await insert;
+                newId = result[0];
+            }
+            else {
+                let result = await insert.returning(this.entity.idMetadata.field.key);
+                newId = result[0].id;
+            }
 
             resultFilter = new Filter(x => x.isEqualTo(this.entity.idMetadata.field, newId));
         }

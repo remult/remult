@@ -1,29 +1,38 @@
-
 import axios from 'axios';
+import { remult } from '../remult-proxy';
+import { Categories } from '../tests/remult-3-entities';
+import { Task } from '../../../test-servers/shared/Task'
 import { remultFresh } from '../../remult-fresh';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
-import { remult } from '../remult-proxy';
-import { Entity, Fields } from '../remult3';
-import { Action, BackendMethod } from '../server-action';
-import { Categories } from '../tests/remult-3-entities';
+
+const servers = {
+    koa: "koa",
+    fastify: "fastify",
+    express: "express",
+    mw: "mw",
+    fresh: "fresh",
+    mwc: "mwc"
+}
 
 
 remult.apiClient.url = 'http://localhost:3003/api';
 let path = remult.apiClient.url + '/tasks';
-const environments = [
-    // ["next", 3000],
+const environments: [string, number][] = [
+    //["next", 3000],
     // ["nest", 3001],
-    //  ["koa", 3002],
-    //  ["fastify", 3003],
-    //  ["express", 3004],
-    //  ["generic server", 3005],
+    [servers.koa, 3002],
+    [servers.fastify, 3003],
+    [servers.express, 3004],
+    [servers.mw, 3005],
+    [servers.mwc, 3007],
+    [servers.fresh, 8000]
     // ["optine", 3006],
-    // ["fresh", 8000]
 ]
 
-function test(name: string, test: () => Promise<void>) {
+function test(name: string, test: () => Promise<void>, ...ignoreList: string[]) {
     for (const [env, port] of environments) {
-
+        if (ignoreList?.includes(env))
+            continue;
         const theTest = async () => {
             remult.apiClient.url = `http://localhost:${port}/api`;
             path = remult.apiClient.url + '/tasks';
@@ -33,6 +42,7 @@ function test(name: string, test: () => Promise<void>) {
         fit(testName, theTest);
     }
 }
+
 test("works", async () => {
     const repo = await create3Tasks();
     const tasks = await repo.find({ where: { completed: true } });
@@ -72,6 +82,14 @@ test("forbidden", async () => {
         err = error;
     }
     expect(err.httpStatusCode).toEqual(403)
+});
+test("test static remult", async () => {
+    const r = await create3Tasks();
+    expect(await Task.testStaticRemult()).toBe(3)
+}, servers.fresh, servers.mwc);
+test("test injected remult", async () => {
+    const r = await create3Tasks();
+    expect(await Task.testInjectedRemult()).toBe(3)
 });
 test("test http 404", async () => {
     const repo = create3Tasks();
@@ -133,24 +151,6 @@ it("test fresh", async () => {
     expect(r.body).toEqual([])
 });
 
-@Entity("tasks", {
-    allowApiCrud: true
-})
-export class Task {
-    @Fields.uuid()
-    id!: string;
-
-    @Fields.string({
-        //  validate: Validators.required should only be on backend
-    })
-    title = '';
-
-    @Fields.boolean()
-    completed = false;
-    @BackendMethod({ allowed: false })
-    static testForbidden() {
-    }
-}
 
 async function create3Tasks() {
 
@@ -164,3 +164,4 @@ async function create3Tasks() {
     expect(await taskRepo.count()).toBe(3);
     return taskRepo;
 }
+

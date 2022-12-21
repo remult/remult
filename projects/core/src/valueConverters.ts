@@ -121,6 +121,8 @@ export class ValueConverters {
     fromJson: value => {
       if (typeof value === "boolean")
         return value;
+      if (value === 1)
+        return true;
       if (value !== undefined && value !== null) {
         return value.toString().trim().toLowerCase() == 'true';
       }
@@ -135,8 +137,8 @@ export class ValueConverters {
   static readonly Number: ValueConverter<number> =
     {
       fromDb: value => {
-        if (value===null)
-        return null;
+        if (value === null)
+          return null;
         if (value !== undefined)
           return +value;
         return undefined;
