@@ -231,7 +231,7 @@ testAll("test paging with complex object", async ({ remult, createEntity }) => {
         i++;
     }
     expect(i).toBe(5);
-})
+},false)
 testAll("test paging with complex object_2", async ({ remult, createEntity }) => {
 
     let c1 = await (await createEntity(c)).create({ id: 1, name: 'c1' }).save();

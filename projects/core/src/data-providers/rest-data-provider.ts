@@ -8,6 +8,7 @@ import { EntityMetadata, FindOptions } from '../remult3';
 import { ApiClient, Remult } from '../context';
 import { buildRestDataProvider, retry } from "../buildRestDataProvider";
 import { Sort } from '../sort';
+import { SubscribeResult } from '../live-query/LiveQuerySubscriber';
 
 
 export class RestDataProvider implements DataProvider {
@@ -16,7 +17,7 @@ export class RestDataProvider implements DataProvider {
   ) {
 
   }
-  public getEntityDataProvider(entity: EntityMetadata): EntityDataProvider {
+  public getEntityDataProvider(entity: EntityMetadata): RestEntityDataProvider {
 
     return new RestEntityDataProvider(() => {
       let url = this.apiProvider()?.url;
@@ -79,32 +80,15 @@ export class RestEntityDataProvider implements EntityDataProvider {
   }
 
   public async count(where: Filter): Promise<number> {
-    let url = new UrlBuilder(this.url());
-    url.add("__action", "count");
-    let filterObject: any;
-
-    if (where) {
-      filterObject = where.toJson();
-      if (addFilterToUrlAndReturnTrueIfSuccessful(filterObject, url))
-        filterObject = undefined;
-    }
-    if (filterObject)
-      return this.http().post(url.url, filterObject).then(r => +(r.count));
-    else
-      return this.http().get(url.url).then(r => +(r.count));
+    const { run } = this.buildFindRequest({ where });
+    return run("count").then(r => +r.count);
   }
-  public find(options: EntityDataProviderFindOptions): Promise<Array<any>> {
-    let { filterObject, url } = this.buildFindRequest(options);
-
-    if (filterObject) {
-      url.add("__action", "get");
-      return this.http().post(url.url, filterObject).then(x => x.map(y => this.translateFromJson(y)));
-    }
-    else
-      return this.http().get(url.url).then(x => x.map(y => this.translateFromJson(y)));;
+  public find(options?: EntityDataProviderFindOptions): Promise<Array<any>> {
+    let { run } = this.buildFindRequest(options);
+    return run().then(x => x.map(y => this.translateFromJson(y)));
   }
 
-  buildFindRequest(options: EntityDataProviderFindOptions): { filterObject: any; url: UrlBuilder; } {
+  buildFindRequest(options: EntityDataProviderFindOptions) {
     let url = new UrlBuilder(this.url());
     let filterObject: any;
     if (options) {
@@ -135,7 +119,37 @@ export class RestEntityDataProvider implements EntityDataProvider {
         url.add('_page', options.page);
 
     }
-    return { filterObject, url };
+
+    const run = (action?: string) => {
+      let u = new UrlBuilder(url.url);
+      if (!action && filterObject) {
+        action = "get";
+      }
+      if (action)
+        u.add("__action", action);
+      if (filterObject) {
+        return this.http().post(u.url, filterObject);
+      }
+      else
+        return this.http().get(u.url);
+    };
+
+    return {
+      createKey: () => JSON.stringify({ url, filterObject }),
+      run,
+      subscribe: async () => {
+        const result: SubscribeResult = await run("liveQuery");
+        return {
+          ...result,
+          unsubscribe: async () => {
+            return this.http().post(
+              this.url() + "?__action=endLiveQuery", {
+              id: result.queryChannel
+            });
+          }
+        }
+      }
+    };
   }
 
   public update(id: any, data: any): Promise<any> {

@@ -1,5 +1,5 @@
 import { FindOptions, remult as defaultRemult, Repository, RestDataProviderHttpProvider, UrlBuilder } from '../../index';
-import { RestEntityDataProvider } from '../data-providers/rest-data-provider';
+import { RestDataProvider, RestEntityDataProvider } from '../data-providers/rest-data-provider';
 import { RepositoryImplementation } from '../remult3';
 import { buildRestDataProvider } from "../buildRestDataProvider";
 import { LiveQuerySubscriber, MessageChannel, SubClient, SubscribeResult, SubClientConnection, liveQueryKeepAliveRoute, Unsubscribe } from './LiveQuerySubscriber';
@@ -78,40 +78,26 @@ export class LiveQueryClient {
             .then(opts => {
                 if (!alive)
                     return;
-                // TODO Noam- refactor into RestEntityDataProvider
-                const { url, filterObject } = new RestEntityDataProvider(() => defaultRemult.apiClient.url + '/' + repo.metadata.key, () => this.provider!, repo.metadata)
-                    .buildFindRequest(opts);
-
-                const eventTypeKey = JSON.stringify({ url, filterObject });
+                const { createKey, subscribe } = new RestDataProvider(this.apiProvider).getEntityDataProvider(repo.metadata).buildFindRequest(opts);
+                const eventTypeKey = createKey();
                 let q = this.queries.get(eventTypeKey);
                 if (!q) {
                     this.queries.set(eventTypeKey, q = new LiveQuerySubscriber(repo, { entityKey: repo.metadata.key, orderBy: options.orderBy }));
-                    url.add("__action", 'liveQuery');
                     q.subscribeCode = () => {
                         if (q.unsubscribe) {
                             q.unsubscribe();
-                            //TODO - consider race scenario where unsubscribe is called before subscribe
+                            //TODO 1- consider race scenario where unsubscribe is called before subscribe
                             q.unsubscribe = () => { };
                         }
-                        const thenResult = (r: SubscribeResult) => {
+                        this.runPromise(subscribe().then(r => {
                             let unsubscribeToChannel = this.subscribeChannel(r.queryChannel, (value: any) => this.runPromise(q.handle(value)));
                             q.unsubscribe = () => {
                                 unsubscribeToChannel();
-                                const url = new UrlBuilder(defaultRemult.apiClient.url + '/' + repo.metadata.key);
-                                url.add("__action", "endLiveQuery");
-                                this.runPromise(this.provider.post(url.url, {
-                                    id: q.queryChannel
-                                }));
+                                this.runPromise(r.unsubscribe());
                             }
                             this.runPromise(q.setAllItems(r.result));
                             q.queryChannel = r.queryChannel;
-                        };
-                        if (filterObject) {
-                            this.runPromise(this.provider.post(url.url, filterObject).then(thenResult));
-                        }
-
-                        else
-                            this.runPromise(this.provider.get(url.url).then(thenResult));
+                        }))
                     };
                     q.subscribeCode();
                 }
@@ -150,7 +136,7 @@ export class LiveQueryClient {
                     ids.push(q.queryChannel);
                 }
                 if (ids.length > 0) {
-                    const invalidIds = await this.runPromise(this.provider.post(defaultRemult.apiClient.url + liveQueryKeepAliveRoute, ids));
+                    const invalidIds = await this.runPromise(this.provider.post(this.apiProvider().url + liveQueryKeepAliveRoute, ids));
                     for (const id of invalidIds) {
                         for (const q of this.queries.values()) {
                             if (q.queryChannel === id)

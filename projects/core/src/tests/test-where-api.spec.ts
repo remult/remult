@@ -174,7 +174,7 @@ describe("custom filter", () => {
             delete: ()=>undefined,
             get: async (url) => {
                 ok.ok();
-                expect(url).toBe('/entityForCustomFilter?__action=count&%24custom%24filter=%7B%22oneAndThree%22%3Atrue%7D');
+                expect(url).toBe('/entityForCustomFilter?%24custom%24filter=%7B%22oneAndThree%22%3Atrue%7D&__action=count');
                 return { count: 0 }
 
             },

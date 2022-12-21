@@ -6,7 +6,7 @@ import { ApiClient } from '../context';
 export declare class RestDataProvider implements DataProvider {
     private apiProvider;
     constructor(apiProvider: () => ApiClient);
-    getEntityDataProvider(entity: EntityMetadata): EntityDataProvider;
+    getEntityDataProvider(entity: EntityMetadata): RestEntityDataProvider;
     transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void>;
     supportsCustomFilter: boolean;
 }
@@ -25,10 +25,15 @@ export declare class RestEntityDataProvider implements EntityDataProvider {
     translateFromJson(row: any): {};
     translateToJson(row: any): {};
     count(where: Filter): Promise<number>;
-    find(options: EntityDataProviderFindOptions): Promise<Array<any>>;
+    find(options?: EntityDataProviderFindOptions): Promise<Array<any>>;
     buildFindRequest(options: EntityDataProviderFindOptions): {
-        filterObject: any;
-        url: UrlBuilder;
+        createKey: () => string;
+        run: (action?: string) => Promise<any>;
+        subscribe: () => Promise<{
+            unsubscribe: () => Promise<any>;
+            result: [];
+            queryChannel: string;
+        }>;
     };
     update(id: any, data: any): Promise<any>;
     delete(id: any): Promise<void>;
