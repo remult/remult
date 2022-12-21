@@ -8,7 +8,7 @@ import { LiveQueryClient } from "./live-query/LiveQueryClient";
 import { EventSourceSubClient } from "./live-query/EventSourceLiveQueryProvider";
 import { RemultProxy } from "./remult-proxy";
 import type { MessagePublisher } from "../live-query";
-import type { LiveQueryStorage, LiveQueryPublisher } from "./live-query/LiveQueryPublisher";
+import type { LiveQueryStorage, LiveQueryPublisher, LiveQueryChangesListener } from "./live-query/LiveQueryPublisher";
 import { buildRestDataProvider, ExternalHttpProvider, isExternalHttpProvider } from "./buildRestDataProvider";
 import { SubClient } from "./live-query/LiveQuerySubscriber";
 
@@ -134,25 +134,8 @@ export class Remult {
     }
     subServer: SubServer;
     /* @internal*/
-    liveQueryPublisher: LiveQueryPublisher = {
-        itemChanged: () => { },
-        defineLiveQueryChannel: () => "",
-        sendChannelMessage: function <messageType extends {}>(arg0: string, what: messageType): unknown {
-            throw new Error("invalid publisher.");
-        },
-        stopLiveQuery: function (id: any): void {
-            throw new Error("Function not implemented.");
-        },
-        subServer: function (): SubServer {
-            throw new Error("Function not implemented.");
-        },
-        performWithRequest: function (serializedRequest: any, entityKey: string, what: (repo: Repository<any>) => Promise<void>): Promise<void> {
-            throw new Error("Function not implemented.");
-        },
-        runPromise: function (p: Promise<any>): void {
-            throw new Error("Function not implemented.");
-        },
-        debugFileSaver: undefined
+    liveQueryPublisher: LiveQueryChangesListener = {
+        itemChanged: () => { }
     };
 
     //@ts-ignore // type error of typescript regarding args that doesn't appear in my normal development
@@ -247,15 +230,6 @@ export class Allow {
 }
 
 
-
-
-
-
-
-
-
-
-
 export const queryConfig = {
     defaultPageSize: 200
 };
@@ -291,13 +265,11 @@ export interface itemChange {
     oldId: any;
     deleted: boolean;
 }
-
+//TODO - consider allowing the user to add logic post transaction - like send messages etc...
 export async function doTransaction(remult: Remult, what: () => Promise<void>) {
     return await remult.dataProvider.transaction(async ds => {
         remult.dataProvider = (ds);
         const trans = new transactionLiveQueryPublisher(remult.liveQueryPublisher);
-        //TODO - refactor to simplify
-        //@ts-ignore
         remult.liveQueryPublisher = trans;
         await what();
         trans.flush();
@@ -305,17 +277,9 @@ export async function doTransaction(remult: Remult, what: () => Promise<void>) {
 }
 // TODO - talk about message size limit in ably - something that we may reach if we group the messages
 //@ts-ignore
-class transactionLiveQueryPublisher implements LiveQueryPublisher {
+class transactionLiveQueryPublisher implements LiveQueryChangesListener {
 
-    constructor(private orig: LiveQueryPublisher) { }
-    runPromise(p: Promise<any>): void {
-        this.orig.runPromise(p);
-    }
-    debugFileSaver: (x: any) => void;
-
-    stopLiveQuery(id: any): void {
-        this.orig.stopLiveQuery(id);
-    }
+    constructor(private orig: LiveQueryChangesListener) { }
     transactionItems = new Map<string, itemChange[]>();
     itemChanged(entityKey: string, changes: itemChange[]): void {
         let items = this.transactionItems.get(entityKey);
@@ -341,11 +305,5 @@ class transactionLiveQueryPublisher implements LiveQueryPublisher {
         for (const key of this.transactionItems.keys()) {
             this.orig.itemChanged(key, this.transactionItems.get(key));
         }
-    }
-    sendChannelMessage<messageType>(channel: string, message: messageType): void {
-        this.orig.sendChannelMessage(channel, message);
-    }
-    defineLiveQueryChannel(serializeRequest: () => any, entityKey: string, options: FindOptions<any>, ids: any[], userId: string, repo: Repository<any>): string {
-        return this.orig.defineLiveQueryChannel(serializeRequest, entityKey, options, ids, userId, repo);
     }
 }

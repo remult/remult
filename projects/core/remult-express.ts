@@ -40,7 +40,7 @@ export function remultExpress(options?:
         }
     }
     app.post(options.rootPath + liveQueryKeepAliveRoute, (r, res, n) => server.withRemult(r, res, n), async (req, res) => {
-        res.send(await remult.liveQueryPublisher.subServer().storage.keepAliveAndReturnUnknownIds(req.body));
+        res.send(await remult.subServer.storage.keepAliveAndReturnUnknownIds(req.body));
 
     });
     server.runWithRequest = async (req, entityKey, what) => {

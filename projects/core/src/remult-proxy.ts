@@ -2,7 +2,7 @@ import type { ClassType } from "../classType";
 import type { Allowed, AllowedForInstance, ApiClient, GetArguments, Remult, RemultContext, SubServer, UserInfo } from "./context";
 import type { DataProvider } from "./data-interfaces";
 import { LiveQueryClient } from "./live-query/LiveQueryClient";
-import type { LiveQueryPublisher } from "./live-query/LiveQueryPublisher";
+import type { LiveQueryChangesListener } from "./live-query/LiveQueryPublisher";
 import type { Repository } from "./remult3";
 
 
@@ -18,7 +18,7 @@ export class RemultProxy implements Remult {
         return this.remultFactory().liveQueryPublisher;
     }
     /* @internal*/
-    set liveQueryPublisher(val: LiveQueryPublisher) {
+    set liveQueryPublisher(val: LiveQueryChangesListener) {
         this.remultFactory().liveQueryPublisher = val;
     }
     call<T extends ((...args: any[]) => Promise<any>)>(backendMethod: T, self?: any, ...args: GetArguments<T>): ReturnType<T> {

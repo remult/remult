@@ -146,7 +146,7 @@ export class AMessageChannel<messageType> {
     }
     send(what: messageType, remult?: Remult) {
         remult = remult || defaultRemult;
-        remult.liveQueryPublisher.sendChannelMessage(this.channelKey, what);
+        remult.subServer.publisher.sendChannelMessage(this.channelKey, what);
     }
     subscribe(onValue: (value: messageType) => void, remult?: Remult) {
         remult = remult || defaultRemult;

@@ -1,4 +1,4 @@
-import { EntityOptions } from './entity';
+import { v4 as uuid } from 'uuid';
 import { AndFilter, customUrlToken, buildFilterFromRequestParameters } from './filter/filter-interfaces';
 import { doTransaction, Remult, UserInfo } from './context';
 import { Filter } from './filter/filter-interfaces';
@@ -7,6 +7,7 @@ import { SortSegment } from './sort';
 import { ErrorInfo } from './data-interfaces';
 import { ForbiddenError } from './server-action';
 import { getId } from './remult3/getId';
+import { findOptionsToJson } from './data-providers/rest-data-provider';
 
 
 export class DataApi<T = any> {
@@ -35,7 +36,7 @@ export class DataApi<T = any> {
       case "count":
         return this.count(res, req, body);
       case "endLiveQuery":
-        this.remult.liveQueryPublisher.stopLiveQuery(body.id);
+        this.remult.subServer.storage.remove(body.id);
         res.success("ok");
         return;
       default:
@@ -147,8 +148,18 @@ export class DataApi<T = any> {
     }
     try {
       const r = await this.getArrayImpl(response, request, filterBody)
+      const queryChannel = `users:${this.remult.user?.id}:queries:${uuid()}`;
+      this.remult.subServer.storage.store(
+        {
+          requestJson: serializeRequest(),
+          entityKey: this.repository.metadata.key,
+          id: queryChannel,
+          findOptionsJson: findOptionsToJson(r.findOptions, this.repository.metadata),
+          lastIds: r.r.map(y => getId(this.repository.metadata, y))
+        }
+      );
       response.success({
-        queryChannel: this.remult.liveQueryPublisher.defineLiveQueryChannel(serializeRequest, this.repository.metadata.key, r.findOptions, r.r.map(y => getId(this.repository.metadata,y) ), this.remult.user?.id, this.repository),
+        queryChannel,
         result: r.r
       });
     }
@@ -310,3 +321,4 @@ export function serializeError(data: ErrorInfo) {
     data = { message: x };
   return data;
 }
+

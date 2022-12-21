@@ -1,5 +1,5 @@
 import { v4 as uuid } from 'uuid';
-import { itemChange,  SubServer } from '../context';
+import { itemChange, SubServer } from '../context';
 import { findOptionsFromJson, findOptionsToJson } from '../data-providers/rest-data-provider';
 import { Repository, FindOptions } from '../remult3';
 
@@ -55,39 +55,14 @@ export class LiveQueryStorageInMemoryImplementation implements LiveQueryStorage 
 /* @internal*/
 export declare type PerformWithRequest = (serializedRequest: any, entityKey: string, what: (repo: Repository<any>) => Promise<void>) => Promise<void>;
 /* @internal*/
-export class LiveQueryPublisher  {
+export class LiveQueryPublisher implements LiveQueryChangesListener {
 
   constructor(public subServer: () => SubServer, public performWithRequest: PerformWithRequest) { }
-  stopLiveQuery(id: any): void {
-    this.subServer().storage.remove(id);
-  }
-  sendChannelMessage<messageType>(channel: string, message: messageType) {
-    this.subServer().publisher.sendChannelMessage(channel, message);
-  }
 
-  defineLiveQueryChannel(serializeRequest: () => any, entityKey: string, findOptions: FindOptions<any>, ids: any[], userId: string, repo: Repository<any>): string {
-    const id = `users:${userId}:queries:${uuid()}`;
-    this.subServer().storage.store(
-      {
-        requestJson: serializeRequest(),
-        entityKey,
-        id,
-        findOptionsJson: findOptionsToJson(findOptions, repo.metadata),
-        lastIds: ids
-      }
-    );
-    return id;
-  }
-
-
-
-
-  runPromise(p: Promise<any>) {
-
-  }
+  runPromise(p: Promise<any>) { }
   debugFileSaver = (x: any) => { };
   itemChanged(entityKey: string, changes: itemChange[]) {
-    //TODO - optimize so that the user will get their messages first. Based on user id
+    //TODO 2 - optimize so that the user will get their messages first. Based on user id
     this.runPromise(this.subServer().storage.provideListeners(entityKey,
       async ({ query, setLastIds }) => {
         await this.performWithRequest(query.requestJson, entityKey, async repo => {
@@ -137,6 +112,13 @@ export class LiveQueryPublisher  {
       }));
   }
 }
+
+/* @internal*/
+export interface LiveQueryChangesListener {
+  itemChanged(entityKey: string, changes: itemChange[]);
+}
+
+
 
 export interface MessagePublisher {
   sendChannelMessage<T>(channel: string, message: T): void;
