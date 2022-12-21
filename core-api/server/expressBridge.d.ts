@@ -20,7 +20,7 @@ export interface RemultServerOptions<RequestType extends GenericRequest> {
     controllers?: ClassType<any>[];
     rootPath?: string;
 }
-export declare function createRemultServer<RequestType extends GenericRequest = GenericRequest>(options?: RemultServerOptions<RequestType>): RemultServer;
+export declare function createRemultServerCore<RequestType extends GenericRequest = GenericRequest>(options?: RemultServerOptions<RequestType>): RemultServer;
 export declare type GenericRequestHandler = (req: GenericRequest, res: GenericResponse, next: VoidFunction) => void;
 export interface ServerHandleResponse {
     data?: any;
