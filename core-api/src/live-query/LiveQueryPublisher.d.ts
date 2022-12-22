@@ -13,8 +13,8 @@ export declare class LiveQueryStorageInMemoryImplementation implements LiveQuery
         setLastIds(ids: any[]): Promise<void>;
     }) => Promise<void>): Promise<void>;
 }
-export interface MessagePublisher {
-    sendChannelMessage<T>(channel: string, message: T): void;
+export interface SubscriptionServer {
+    publishMessage<T>(channel: string, message: T): void;
 }
 export interface LiveQueryStorage {
     keepAliveAndReturnUnknownIds(ids: string[]): Promise<string[]>;

@@ -1,11 +1,11 @@
 import type * as Ably from 'ably';
-import type { MessagePublisher } from '../src/live-query/LiveQueryPublisher';
-import type { SubClient, SubClientConnection } from '../src/live-query/LiveQuerySubscriber';
+import type { SubscriptionServer } from '../src/live-query/LiveQueryPublisher';
+import type { SubscriptionClient, SubscriptionClientConnection } from '../src/live-query/LiveQuerySubscriber';
 
 
-export class AblyLiveQueryProvider implements SubClient {
+export class AblyLiveQueryProvider implements SubscriptionClient {
   constructor(private ably: Ably.Types.RealtimePromise) { }
-  async openConnection(onReconnect: VoidFunction): Promise<SubClientConnection> {
+  async openConnection(onReconnect: VoidFunction): Promise<SubscriptionClientConnection> {
     return {
       close: () => {
         this.ably.connection.close()
@@ -19,9 +19,9 @@ export class AblyLiveQueryProvider implements SubClient {
   }
 }
 
-export class AblyServerEventDispatcher implements MessagePublisher {
+export class AblyServerEventDispatcher implements SubscriptionServer {
   constructor(private ably: Ably.Types.RealtimePromise) { }
-  sendChannelMessage<T>(channel: string, message: T): void {
+  publishMessage<T>(channel: string, message: T): void {
     this.ably.channels.get(channel).publish({ data: message });
   }
 }

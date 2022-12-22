@@ -14,12 +14,12 @@ export declare class LiveQuerySubscriber<entityType> {
     constructor(repo: Repository<entityType>, query: SubscribeToQueryArgs<entityType>);
 }
 export declare type Unsubscribe = VoidFunction;
-export interface SubClientConnection {
+export interface SubscriptionClientConnection {
     subscribe(channel: string, onMessage: (message: any) => void): Unsubscribe;
     close(): void;
 }
-export interface SubClient {
-    openConnection(onReconnect: VoidFunction): Promise<SubClientConnection>;
+export interface SubscriptionClient {
+    openConnection(onReconnect: VoidFunction): Promise<SubscriptionClientConnection>;
 }
 export declare class MessageChannel<T> {
     id: string;

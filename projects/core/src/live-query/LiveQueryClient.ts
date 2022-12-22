@@ -2,7 +2,7 @@ import { FindOptions, remult as defaultRemult, Repository, RestDataProviderHttpP
 import { RestDataProvider, RestEntityDataProvider } from '../data-providers/rest-data-provider';
 import { RepositoryImplementation } from '../remult3';
 import { buildRestDataProvider } from "../buildRestDataProvider";
-import { LiveQuerySubscriber, MessageChannel, SubClient, SubscribeResult, SubClientConnection, liveQueryKeepAliveRoute, Unsubscribe } from './LiveQuerySubscriber';
+import { LiveQuerySubscriber, MessageChannel, SubscriptionClient, SubscribeResult, SubscriptionClientConnection, liveQueryKeepAliveRoute, Unsubscribe } from './LiveQuerySubscriber';
 import type { ApiClient } from '../../index';
 /* @internal*/
 export class LiveQueryClient {
@@ -118,7 +118,7 @@ export class LiveQueryClient {
         };
 
     }
-    client: Promise<SubClientConnection>;
+    client: Promise<SubscriptionClientConnection>;
     interval: any;
     private openIfNoOpened() {
 
@@ -142,7 +142,7 @@ export class LiveQueryClient {
             }, 30000);
 
             return this.runPromise(this.client =
-                this.apiProvider().subClient.openConnection(() => {
+                this.apiProvider().subscriptionClient.openConnection(() => {
                     for (const q of this.queries.values()) {
                         q.subscribeCode();
                     }

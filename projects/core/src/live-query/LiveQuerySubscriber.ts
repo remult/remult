@@ -76,13 +76,13 @@ export class LiveQuerySubscriber<entityType> {
 
 }
 export type Unsubscribe = VoidFunction;
-export interface SubClientConnection {
+export interface SubscriptionClientConnection {
     subscribe(channel: string, onMessage: (message: any) => void): Unsubscribe;
     close(): void;
 }
 
-export interface SubClient {
-    openConnection(onReconnect: VoidFunction): Promise<SubClientConnection>;
+export interface SubscriptionClient {
+    openConnection(onReconnect: VoidFunction): Promise<SubscriptionClientConnection>;
 }
 
 
@@ -146,7 +146,7 @@ export class AMessageChannel<messageType> {
     }
     send(what: messageType, remult?: Remult) {
         remult = remult || defaultRemult;
-        remult.subServer.publisher.sendChannelMessage(this.channelKey, what);
+        remult.subServer.subscriptionServer.publishMessage(this.channelKey, what);
     }
     subscribe(onValue: (value: messageType) => void, remult?: Remult) {
         remult = remult || defaultRemult;

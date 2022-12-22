@@ -43,15 +43,15 @@ async function setup1() {
     const clientRepo = remult.repo(eventTestEntity);
     const messages: liveQueryMessage[] = [];
     serverRemult.subServer = {
-        publisher: {
-            sendChannelMessage: (c, m: any) => messages.push(...m),
-        }, storage: new LiveQueryStorageInMemoryImplementation()
+        subscriptionServer: {
+            publishMessage: (c, m: any) => messages.push(...m),
+        }, liveQueryStorage: new LiveQueryStorageInMemoryImplementation()
     };
     const qm = new LiveQueryPublisher(() => (serverRemult.subServer), async (_, _1, c) => c(clientRepo));
     let p = new PromiseResolver(qm);
 
     serverRemult.liveQueryPublisher = qm;
-    serverRemult.subServer.storage.store({
+    serverRemult.subServer.liveQueryStorage.store({
         entityKey: clientRepo.metadata.key,
         findOptionsJson: {},
         requestJson: {},
@@ -153,7 +153,7 @@ describe("Live Query Client", () => {
         let get = 0;
         let sendMessage = x => { };
         const lqc = new LiveQueryClient(() => ({
-            subClient: {
+            subscriptionClient: {
                 async openConnection(onMessage) {
                     open++;
                     return {
@@ -271,9 +271,9 @@ describe("test live query full cycle", () => {
         let messageCount = 0;
         const storage = new LiveQueryStorageInMemoryImplementation();
         remult.subServer = {
-            storage,
-            publisher: {
-                sendChannelMessage<liveQueryMessage>(channel, message) {
+            liveQueryStorage: storage,
+            subscriptionServer: {
+                publishMessage<liveQueryMessage>(channel, message) {
                     mh.forEach(x => x(channel, message))
                 }
             }
@@ -287,7 +287,7 @@ describe("test live query full cycle", () => {
         }
         const buildLqc = () => {
             return new LiveQueryClient(() => ({
-                subClient: {
+                subscriptionClient: {
                     async openConnection(onReconnect) {
                         clientStatus.connected = true;
                         clientStatus.reconnect = () => {

@@ -10,7 +10,7 @@ import { RemultProxy } from "./remult-proxy";
 import type { MessagePublisher } from "../live-query";
 import type { LiveQueryStorage, LiveQueryPublisher, LiveQueryChangesListener } from "./live-query/LiveQueryPublisher";
 import { buildRestDataProvider, ExternalHttpProvider, isExternalHttpProvider } from "./buildRestDataProvider";
-import { SubClient } from "./live-query/LiveQuerySubscriber";
+import { SubscriptionClient } from "./live-query/LiveQuerySubscriber";
 
 
 
@@ -125,8 +125,8 @@ export class Remult {
                 this.apiClient.httpClient = apiClient.httpClient;
             if (apiClient.url)
                 this.apiClient.url = apiClient.url;
-            if (apiClient.subClient)
-                this.apiClient.subClient = apiClient.subClient;
+            if (apiClient.subscriptionClient)
+                this.apiClient.subscriptionClient = apiClient.subscriptionClient;
             if (apiClient.wrapMessageHandling)
                 this.apiClient.wrapMessageHandling = apiClient.wrapMessageHandling
         }
@@ -162,7 +162,7 @@ export class Remult {
     readonly context: RemultContext = {} as any;
     apiClient: ApiClient = {
         url: '/api',
-        subClient: new EventSourceSubClient()
+        subscriptionClient: new EventSourceSubClient()
     };
 }
 
@@ -178,13 +178,12 @@ export interface RemultContext {
 export interface ApiClient {
     httpClient?: ExternalHttpProvider | typeof fetch;
     url?: string;
-    subClient?: SubClient
+    subscriptionClient?: SubscriptionClient
     wrapMessageHandling?: (x: VoidFunction) => void
 };
-export interface SubServer {
-    storage?: LiveQueryStorage,
-    //TODO - consider not calling it server, since one may publish posts from the frontend as well
-    publisher?: MessagePublisher
+export interface SubServer {//TODO - kill
+    liveQueryStorage?: LiveQueryStorage,
+    subscriptionServer?: MessagePublisher
 }
 
 

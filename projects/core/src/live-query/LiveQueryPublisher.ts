@@ -63,7 +63,7 @@ export class LiveQueryPublisher implements LiveQueryChangesListener {
   debugFileSaver = (x: any) => { };
   itemChanged(entityKey: string, changes: itemChange[]) {
     //TODO 2 - optimize so that the user will get their messages first. Based on user id
-    this.runPromise(this.subServer().storage.provideListeners(entityKey,
+    this.runPromise(this.subServer().liveQueryStorage.provideListeners(entityKey,
       async ({ query, setLastIds }) => {
         await this.performWithRequest(query.requestJson, entityKey, async repo => {
           const messages = [];
@@ -106,7 +106,7 @@ export class LiveQueryPublisher implements LiveQueryChangesListener {
             messages
           });
           await setLastIds(currentIds);
-          this.subServer().publisher.sendChannelMessage(query.id, messages);
+          this.subServer().subscriptionServer.publishMessage(query.id, messages);
         })
 
       }));
@@ -120,8 +120,8 @@ export interface LiveQueryChangesListener {
 
 
 
-export interface MessagePublisher {
-  sendChannelMessage<T>(channel: string, message: T): void;
+export interface SubscriptionServer {
+  publishMessage<T>(channel: string, message: T): void;
 }
 // TODO2 - PUBNUB
 export interface LiveQueryStorage {

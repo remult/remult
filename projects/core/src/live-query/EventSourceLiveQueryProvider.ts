@@ -1,14 +1,14 @@
 import { buildRestDataProvider } from "../buildRestDataProvider";
 import { remult } from "../remult-proxy";
-import { ServerEventChannelSubscribeDTO, SubClient, SubClientConnection, streamUrl } from "./LiveQuerySubscriber";
-export class EventSourceSubClient implements SubClient {
-  openConnection(onReconnect: VoidFunction): Promise<SubClientConnection> {
+import { ServerEventChannelSubscribeDTO, SubscriptionClient, SubscriptionClientConnection, streamUrl } from "./LiveQuerySubscriber";
+export class EventSourceSubClient implements SubscriptionClient {
+  openConnection(onReconnect: VoidFunction): Promise<SubscriptionClientConnection> {
     let connectionId: string;
     const channels = new Map<string, ((value: any) => void)[]>();
     const provider = buildRestDataProvider(remult.apiClient.httpClient);
     let connected = false;
     let source: EventSource;
-    const client: SubClientConnection = {
+    const client: SubscriptionClientConnection = {
       close() {
         source.close();
       },
@@ -32,7 +32,7 @@ export class EventSourceSubClient implements SubClient {
         };
       },
     };
-    return new Promise<SubClientConnection>((res) => {
+    return new Promise<SubscriptionClientConnection>((res) => {
       createConnection();
 
       function createConnection() {

@@ -4,7 +4,7 @@ import { ClassType } from "../classType";
 import type { MessagePublisher } from "../live-query";
 import type { LiveQueryStorage } from "./live-query/LiveQueryPublisher";
 import { ExternalHttpProvider } from "./buildRestDataProvider";
-import { SubClient } from "./live-query/LiveQuerySubscriber";
+import { SubscriptionClient } from "./live-query/LiveQuerySubscriber";
 export declare function isBackend(): boolean;
 export declare class Remult {
     /**Return's a `Repository` of the specific entity type
@@ -56,12 +56,12 @@ export interface RemultContext {
 export interface ApiClient {
     httpClient?: ExternalHttpProvider | typeof fetch;
     url?: string;
-    subClient?: SubClient;
+    subscriptionClient?: SubscriptionClient;
     wrapMessageHandling?: (x: VoidFunction) => void;
 }
 export interface SubServer {
-    storage?: LiveQueryStorage;
-    publisher?: MessagePublisher;
+    liveQueryStorage?: LiveQueryStorage;
+    subscriptionServer?: MessagePublisher;
 }
 export declare const allEntities: ClassType<any>[];
 export interface ControllerOptions {

@@ -36,7 +36,7 @@ export class DataApi<T = any> {
       case "count":
         return this.count(res, req, body);
       case "endLiveQuery":
-        this.remult.subServer.storage.remove(body.id);
+        this.remult.subServer.liveQueryStorage.remove(body.id);
         res.success("ok");
         return;
       default:
@@ -149,7 +149,7 @@ export class DataApi<T = any> {
     try {
       const r = await this.getArrayImpl(response, request, filterBody)
       const queryChannel = `users:${this.remult.user?.id}:queries:${uuid()}`;
-      this.remult.subServer.storage.store(
+      this.remult.subServer.liveQueryStorage.store(
         {
           requestJson: serializeRequest(),
           entityKey: this.repository.metadata.key,
