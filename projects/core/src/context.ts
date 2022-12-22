@@ -183,6 +183,7 @@ export interface ApiClient {
 };
 export interface SubServer {
     storage?: LiveQueryStorage,
+    //TODO - consider not calling it server, since one may publish posts from the frontend as well
     publisher?: MessagePublisher
 }
 
