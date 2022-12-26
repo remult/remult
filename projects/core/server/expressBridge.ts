@@ -2,12 +2,13 @@
 import { Action, actionInfo, ActionInterface, classBackendMethodsArray, jobWasQueuedResult, myServerAction, queuedJobInfoResponse, serverActionField } from '../src/server-action';
 import { DataProvider, ErrorInfo } from '../src/data-interfaces';
 import { DataApi, DataApiRequest, DataApiResponse, serializeError } from '../src/data-api';
-import { allEntities, AllowedForInstance, Remult, SubServer, UserInfo } from '../src/context';
+import { allEntities, AllowedForInstance, Remult, UserInfo } from '../src/context';
 import { ClassType } from '../classType';
 import { Entity, Fields, getEntityKey, Repository } from '../src/remult3';
 import { IdEntity } from '../src/id-entity';
 import { remult, RemultProxy } from '../src/remult-proxy';
-import { LiveQueryPublisher, PerformWithRequest } from '../src/live-query/LiveQueryPublisher';
+import { LiveQueryPublisher, LiveQueryStorage, LiveQueryStorageInMemoryImplementation, PerformWithRequest } from '../src/live-query/LiveQueryPublisher';
+import { MessagePublisher } from '../live-query';
 
 //TODO2 -support pub sub non express servers
 export interface RemultServerOptions<RequestType extends GenericRequest> {
@@ -17,6 +18,7 @@ export interface RemultServerOptions<RequestType extends GenericRequest> {
   */
   dataProvider?: DataProvider | Promise<DataProvider> | (() => Promise<DataProvider | undefined>);
   queueStorage?: QueueStorage;
+  liveQueryStorageForRequest?: (remult?: Remult) => LiveQueryStorage | Promise<LiveQueryStorage>,
   initRequest?: (remult: Remult, origReq: RequestType) => Promise<void>;
   requestSerializer?: {
     toJson: (request: RequestType) => any,
@@ -190,6 +192,7 @@ export class RemultAsyncLocalStorage {
 /* @internal*/
 
 export class RemultServerImplementation implements RemultServer {
+  liveQueryStorage: LiveQueryStorage = new LiveQueryStorageInMemoryImplementation();
   constructor(public queue: inProcessQueueHandler, public options: RemultServerOptions<GenericRequest>,
     public dataProvider: DataProvider | Promise<DataProvider>) {
 
@@ -197,7 +200,7 @@ export class RemultServerImplementation implements RemultServer {
   }
 
   runWithRequest: PerformWithRequest;
-  subServer: SubServer;
+  subscriptionServer: MessagePublisher;
   withRemult<T>(req: GenericRequest, res: GenericResponse, next: VoidFunction) {
     this.process(async () => { next() })(req, res);
   }
@@ -284,9 +287,10 @@ export class RemultServerImplementation implements RemultServer {
       let myReq = new ExpressRequestBridgeToDataApiRequest(req);
       let myRes = new ExpressResponseBridgeToDataApiResponse(res, req);
       let remult = new Remult();
-      remult.liveQueryPublisher = new LiveQueryPublisher(() => remult.subServer, this.runWithRequest)
+      remult.liveQueryPublisher = new LiveQueryPublisher(() => remult.subscriptionServer, () => remult.liveQueryStorage, this.runWithRequest)
       remult.dataProvider = (await this.dataProvider);
-      remult.subServer = this.subServer;
+      remult.subscriptionServer = this.subscriptionServer;
+      remult.liveQueryStorage = this.liveQueryStorage;
       await new Promise(res => {
         RemultAsyncLocalStorage.instance.run(remult, async () => {
           if (req) {
@@ -303,6 +307,11 @@ export class RemultServerImplementation implements RemultServer {
           }
           if (this.options.initRequest) {
             await this.options.initRequest(remult, req);
+          }
+          if (this.options.liveQueryStorageForRequest) {
+            const r = await this.options.liveQueryStorageForRequest(remult);
+            if (r)
+              remult.liveQueryStorage = r;
           }
 
           await what(remult, myReq, myRes, req);

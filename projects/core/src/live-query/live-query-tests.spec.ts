@@ -42,16 +42,15 @@ async function setup1() {
     remult.user = ({ id: clientId1, name: clientId1, roles: [] });
     const clientRepo = remult.repo(eventTestEntity);
     const messages: liveQueryMessage[] = [];
-    serverRemult.subServer = {
-        subscriptionServer: {
-            publishMessage: (c, m: any) => messages.push(...m),
-        }, liveQueryStorage: new LiveQueryStorageInMemoryImplementation()
+    serverRemult.subscriptionServer = {
+        publishMessage: (c, m: any) => messages.push(...m),
     };
-    const qm = new LiveQueryPublisher(() => (serverRemult.subServer), async (_, _1, c) => c(clientRepo));
+    serverRemult.liveQueryStorage = new LiveQueryStorageInMemoryImplementation();
+    const qm = new LiveQueryPublisher(() => (serverRemult.subscriptionServer), () => serverRemult.liveQueryStorage, async (_, _1, c) => c(clientRepo));
     let p = new PromiseResolver(qm);
 
     serverRemult.liveQueryPublisher = qm;
-    serverRemult.subServer.liveQueryStorage.store({
+    serverRemult.liveQueryStorage.store({
         entityKey: clientRepo.metadata.key,
         findOptionsJson: {},
         requestJson: {},
@@ -269,16 +268,14 @@ describe("test live query full cycle", () => {
 
         const mh: ((channel: string, message: liveQueryMessage) => void)[] = [];
         let messageCount = 0;
-        const storage = new LiveQueryStorageInMemoryImplementation();
-        remult.subServer = {
-            liveQueryStorage: storage,
-            subscriptionServer: {
-                publishMessage<liveQueryMessage>(channel, message) {
-                    mh.forEach(x => x(channel, message))
-                }
+        remult.liveQueryStorage = new LiveQueryStorageInMemoryImplementation();
+        remult.subscriptionServer = {
+            publishMessage<liveQueryMessage>(channel, message) {
+                mh.forEach(x => x(channel, message))
             }
         }
-        const qm = new LiveQueryPublisher(() => (remult.subServer), async (_, _1, c) => c(repo));
+
+        const qm = new LiveQueryPublisher(() => (remult.subscriptionServer), () => remult.liveQueryStorage, async (_, _1, c) => c(repo));
         remult.liveQueryPublisher = qm;
         var dataApi = new DataApi(repo, remult);
         const clientStatus = {
@@ -330,7 +327,7 @@ describe("test live query full cycle", () => {
         remult2.liveQuerySubscriber = lqc2;
         remult.liveQueryPublisher = qm;
         remult2.liveQueryPublisher = qm;
-        return { repo, pm, repo2, messageCount: () => messageCount, clientStatus, qm: storage, testApi: () => createMockHttpDataProvider(dataApi) };
+        return { repo, pm, repo2, messageCount: () => messageCount, clientStatus, qm: remult.liveQueryStorage as LiveQueryStorageInMemoryImplementation, testApi: () => createMockHttpDataProvider(dataApi) };
     }
     it("integration test 1", async () => {
         var { repo, pm, repo2 } = setup2();

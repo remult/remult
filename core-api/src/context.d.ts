@@ -2,7 +2,6 @@ import { DataProvider } from "./data-interfaces";
 import { EntityMetadata, EntityRef, FindOptions, Repository } from "./remult3";
 import { ClassType } from "../classType";
 import type { MessagePublisher } from "../live-query";
-import type { LiveQueryStorage } from "./live-query/LiveQueryPublisher";
 import { ExternalHttpProvider } from "./buildRestDataProvider";
 import { SubscriptionClient } from "./live-query/LiveQuerySubscriber";
 export declare function isBackend(): boolean;
@@ -38,7 +37,7 @@ export declare class Remult {
     constructor(http: ExternalHttpProvider | typeof fetch | ApiClient);
     constructor(p: DataProvider);
     constructor();
-    subServer: SubServer;
+    subscriptionServer?: MessagePublisher;
     call<T extends ((...args: any[]) => Promise<any>)>(backendMethod: T, classInstance?: any, ...args: GetArguments<T>): ReturnType<T>;
     /** The current data provider */
     dataProvider: DataProvider;
@@ -58,10 +57,6 @@ export interface ApiClient {
     url?: string;
     subscriptionClient?: SubscriptionClient;
     wrapMessageHandling?: (x: VoidFunction) => void;
-}
-export interface SubServer {
-    liveQueryStorage?: LiveQueryStorage;
-    subscriptionServer?: MessagePublisher;
 }
 export declare const allEntities: ClassType<any>[];
 export interface ControllerOptions {

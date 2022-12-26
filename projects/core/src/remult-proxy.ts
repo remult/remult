@@ -1,8 +1,8 @@
 import type { ClassType } from "../classType";
-import type { Allowed, AllowedForInstance, ApiClient, GetArguments, Remult, RemultContext, SubServer, UserInfo } from "./context";
+import type { Allowed, AllowedForInstance, ApiClient, GetArguments, Remult, RemultContext, UserInfo } from "./context";
 import type { DataProvider } from "./data-interfaces";
 import { LiveQueryClient } from "./live-query/LiveQueryClient";
-import type { LiveQueryChangesListener } from "./live-query/LiveQueryPublisher";
+import type { LiveQueryChangesListener, LiveQueryStorage, SubscriptionServer } from "./live-query/LiveQueryPublisher";
 import type { Repository } from "./remult3";
 
 
@@ -13,6 +13,12 @@ export class RemultProxy implements Remult {
     get liveQuerySubscriber() { return this.remultFactory().liveQuerySubscriber };
     /* @internal*/
     set liveQuerySubscriber(val: LiveQueryClient) { this.remultFactory().liveQuerySubscriber = val };
+
+    /* @internal*/
+    get liveQueryStorage() { return this.remultFactory().liveQueryStorage };
+    /* @internal*/
+    set liveQueryStorage(val: LiveQueryStorage) { this.remultFactory().liveQueryStorage = val };
+
     /* @internal*/
     get liveQueryPublisher() {
         return this.remultFactory().liveQueryPublisher;
@@ -68,11 +74,11 @@ export class RemultProxy implements Remult {
     set apiClient(client: ApiClient) {
         this.remultFactory().apiClient = client;
     }
-    get subServer() {
-        return this.remultFactory().subServer;
+    get subscriptionServer() {
+        return this.remultFactory().subscriptionServer;
     }
-    set subServer(value: SubServer) {
-        this.remultFactory().subServer = value;
+    set subscriptionServer(value: SubscriptionServer) {
+        this.remultFactory().subscriptionServer = value;
     }
 
 }

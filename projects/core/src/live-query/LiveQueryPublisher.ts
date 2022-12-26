@@ -1,5 +1,5 @@
 import { v4 as uuid } from 'uuid';
-import { itemChange, SubServer } from '../context';
+import { itemChange } from '../context';
 import { findOptionsFromJson, findOptionsToJson } from '../data-providers/rest-data-provider';
 import { Repository, FindOptions } from '../remult3';
 
@@ -57,13 +57,13 @@ export declare type PerformWithRequest = (serializedRequest: any, entityKey: str
 /* @internal*/
 export class LiveQueryPublisher implements LiveQueryChangesListener {
 
-  constructor(public subServer: () => SubServer, public performWithRequest: PerformWithRequest) { }
+  constructor(private subscriptionServer: () => SubscriptionServer, private liveQueryStorage: () => LiveQueryStorage, public performWithRequest: PerformWithRequest) { }
 
   runPromise(p: Promise<any>) { }
   debugFileSaver = (x: any) => { };
   itemChanged(entityKey: string, changes: itemChange[]) {
     //TODO 2 - optimize so that the user will get their messages first. Based on user id
-    this.runPromise(this.subServer().liveQueryStorage.provideListeners(entityKey,
+    this.runPromise(this.liveQueryStorage().provideListeners(entityKey,
       async ({ query, setLastIds }) => {
         await this.performWithRequest(query.requestJson, entityKey, async repo => {
           const messages = [];
@@ -106,7 +106,7 @@ export class LiveQueryPublisher implements LiveQueryChangesListener {
             messages
           });
           await setLastIds(currentIds);
-          this.subServer().subscriptionServer.publishMessage(query.id, messages);
+          this.subscriptionServer().publishMessage(query.id, messages);
         })
 
       }));

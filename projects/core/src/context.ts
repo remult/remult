@@ -132,7 +132,9 @@ export class Remult {
         }
 
     }
-    subServer: SubServer;
+    /* @internal*/
+    liveQueryStorage?: LiveQueryStorage
+    subscriptionServer?: MessagePublisher
     /* @internal*/
     liveQueryPublisher: LiveQueryChangesListener = {
         itemChanged: () => { }
@@ -181,10 +183,6 @@ export interface ApiClient {
     subscriptionClient?: SubscriptionClient
     wrapMessageHandling?: (x: VoidFunction) => void
 };
-export interface SubServer {//TODO - kill
-    liveQueryStorage?: LiveQueryStorage,
-    subscriptionServer?: MessagePublisher
-}
 
 
 export const allEntities: ClassType<any>[] = [];
@@ -265,7 +263,7 @@ export interface itemChange {
     oldId: any;
     deleted: boolean;
 }
-//TODO - consider allowing the user to add logic post transaction - like send messages etc...
+
 export async function doTransaction(remult: Remult, what: () => Promise<void>) {
     return await remult.dataProvider.transaction(async ds => {
         remult.dataProvider = (ds);
@@ -275,8 +273,6 @@ export async function doTransaction(remult: Remult, what: () => Promise<void>) {
         trans.flush();
     });
 }
-// TODO - talk about message size limit in ably - something that we may reach if we group the messages
-//@ts-ignore
 class transactionLiveQueryPublisher implements LiveQueryChangesListener {
 
     constructor(private orig: LiveQueryChangesListener) { }

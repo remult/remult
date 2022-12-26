@@ -146,7 +146,7 @@ export class AMessageChannel<messageType> {
     }
     send(what: messageType, remult?: Remult) {
         remult = remult || defaultRemult;
-        remult.subServer.subscriptionServer.publishMessage(this.channelKey, what);
+        remult.subscriptionServer.publishMessage(this.channelKey, what);
     }
     subscribe(onValue: (value: messageType) => void, remult?: Remult) {
         remult = remult || defaultRemult;

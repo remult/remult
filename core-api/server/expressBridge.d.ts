@@ -4,6 +4,7 @@ import { Remult, UserInfo } from '../src/context';
 import { ClassType } from '../classType';
 import { Repository } from '../src/remult3';
 import { IdEntity } from '../src/id-entity';
+import { LiveQueryStorage } from '../src/live-query/LiveQueryPublisher';
 export interface RemultServerOptions<RequestType extends GenericRequest> {
     /** Sets a database connection for Remult.
      *
@@ -11,6 +12,7 @@ export interface RemultServerOptions<RequestType extends GenericRequest> {
     */
     dataProvider?: DataProvider | Promise<DataProvider> | (() => Promise<DataProvider | undefined>);
     queueStorage?: QueueStorage;
+    liveQueryStorageForRequest?: (remult?: Remult) => LiveQueryStorage | Promise<LiveQueryStorage>;
     initRequest?: (remult: Remult, origReq: RequestType) => Promise<void>;
     requestSerializer?: {
         toJson: (request: RequestType) => any;
