@@ -2,7 +2,7 @@
 import { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from "../column-interfaces";
 import { EntityOptions } from "../entity";
 import { CompoundIdField, LookupColumn, makeTitle } from '../column';
-import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef } from "./remult3";
+import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef, LiveQuery } from "./remult3";
 import { ClassType } from "../../classType";
 import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControllerSettings, Unobserve, EventSource } from "../context";
 import { AndFilter, customFilterInfo, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
@@ -239,6 +239,15 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
                 return this.update(id, entity);
             }
         }
+    }
+    liveQuery(options?: FindOptions<entityType>) {
+        if (!options)
+            options = {};
+        return {
+            subscribe: (onResult) =>
+                this.remult.liveQuerySubscriber.subscribe(this, options, onResult)
+
+        } as LiveQuery<entityType>
     }
 
     async find(options: FindOptions<entityType>): Promise<entityType[]> {
@@ -1969,14 +1978,6 @@ class QueryResultImpl<entityType> implements QueryResult<entityType> {
             this.options.pageSize = queryConfig.defaultPageSize
         }
     }
-    subscribe(onResult: (reducer: (prevState: entityType[]) => entityType[]) => void): VoidFunction {
-        return this.repo.remult.liveQuerySubscriber.subscribe(this.repo, {
-            load: this.options.load,
-            orderBy: this.options.orderBy,
-            where: this.options.where
-        }, onResult);
-    }
-
     private _count: number = undefined;
     async getPage(page?: number) {
 

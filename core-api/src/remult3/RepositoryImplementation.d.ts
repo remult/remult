@@ -41,6 +41,7 @@ export declare class RepositoryImplementation<entityType> implements Repository<
     private getRefForExistingRow;
     save(item: Partial<OmitEB<entityType>>[]): Promise<entityType[]>;
     save(item: Partial<OmitEB<entityType>>): Promise<entityType>;
+    liveQuery(options?: FindOptions<entityType>): any;
     find(options: FindOptions<entityType>): Promise<entityType[]>;
     buildEntityDataProviderFindOptions(options: FindOptions<entityType>): Promise<EntityDataProviderFindOptions>;
     private mapRawDataToResult;

@@ -2,6 +2,7 @@ import { ClassType } from "../../classType";
 import { FieldMetadata } from "../column-interfaces";
 import { Unobserve } from "../context";
 import { EntityOptions as EntityOptions } from "../entity";
+import { liveQueryMessage, Unsubscribe } from "../live-query/LiveQuerySubscriber";
 import { SortSegment } from "../sort";
 import { entityEventListener } from "../__EntityValueProvider";
 export interface EntityRef<entityType> extends Subscribable {
@@ -118,6 +119,8 @@ export declare type idType<entityType> = entityType extends {
 export interface Repository<entityType> {
     /** returns a result array based on the provided options */
     find(options?: FindOptions<entityType>): Promise<entityType[]>;
+    /** returns a result array based on the provided options */
+    liveQuery(options?: FindOptions<entityType>): LiveQuery<entityType>;
     /** returns the first item that matchers the `where` condition
      * @example
      * await taskRepo.findFirst({ completed:false })
@@ -185,6 +188,14 @@ export interface Repository<entityType> {
     metadata: EntityMetadata<entityType>;
     addEventListener(listener: entityEventListener<entityType>): Unobserve;
 }
+export interface LiveQuery<entityType> {
+    /**@Experimental */
+    subscribe(onResult: (reducer: LiveQuerySubscribeResult<entityType>) => void): Unsubscribe;
+}
+export declare type LiveQuerySubscribeResult<entityType> = ((prevState: entityType[]) => entityType[]) & {
+    items: entityType[];
+    changes: liveQueryMessage[];
+};
 export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
     /** Determines the number of rows returned by the request, on the browser the default is 100 rows
      * @example
@@ -300,8 +311,6 @@ export interface QueryResult<entityType> {
     getPage(pageNumber?: number): Promise<entityType[]>;
     /** Performs an operation on all the items matching the query criteria */
     forEach(what: (item: entityType) => Promise<any>): Promise<number>;
-    /**@Experimental */
-    subscribe(onResult: (reducer: (prevState: entityType[]) => entityType[]) => void): VoidFunction;
 }
 /** An interface used to paginating using the `query` method in the `Repository` object */
 export interface Paginator<entityType> {

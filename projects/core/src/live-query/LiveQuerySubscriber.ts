@@ -1,5 +1,7 @@
 import { EntityOrderBy, remult as defaultRemult, Remult, Repository, Sort } from '../../index';
+import { LiveQuerySubscribeResult } from '../remult3';
 import { getId } from '../remult3/getId';
+import { LiveQueryChangesListener } from './LiveQueryPublisher';
 
 export const streamUrl = 'stream';
 export class LiveQuerySubscriber<entityType> {
@@ -12,13 +14,24 @@ export class LiveQuerySubscriber<entityType> {
             listener(x => {
                 return items;
             });
-        });
+        }, [
+            {
+                type: "all",
+                data: items
+            }
+        ]);
     }
 
-    forListeners(what: (listener: (((reducer: (prevState: entityType[]) => entityType[]) => void))) => void) {
+    forListeners(what: (listener: (((reducer: (prevState: entityType[]) => entityType[]) => void))) => void, changes: liveQueryMessage[]) {
         what(reducer => this.defaultQueryState = reducer(this.defaultQueryState))
+
         for (const l of this.listeners) {
-            what(l)
+            what(reducer => {
+                l(Object.assign(reducer, {
+                    changes,
+                    items: this.defaultQueryState
+                }))
+            })
         }
     }
 
@@ -67,11 +80,11 @@ export class LiveQuerySubscriber<entityType> {
                 }
                 return items;
             });
-        });
+        }, messages);
     }
 
     defaultQueryState: entityType[] = [];
-    listeners: (((reducer: (prevState: entityType[]) => entityType[]) => void))[] = [];
+    listeners: (((reducer: LiveQuerySubscribeResult<entityType>) => void))[] = [];
     constructor(private repo: Repository<entityType>, private query: SubscribeToQueryArgs<entityType>) { }
 
 }
