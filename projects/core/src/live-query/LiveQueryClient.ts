@@ -39,6 +39,7 @@ export class LiveQueryClient {
                 q.listeners.splice(q.listeners.indexOf(onResult), 1);
                 if (q.listeners.length == 0) {
                     this.channels.delete(key);
+                    q.unsubscribe()
                 }
                 this.closeIfNoListeners();
             };
@@ -99,7 +100,8 @@ export class LiveQueryClient {
                     q.subscribeCode();
                 }
                 else {
-                    onResult(x => [...q.defaultQueryState]);
+                    q.sendDefaultState(onResult);
+
                 }
                 q.listeners.push(onResult);
                 onUnsubscribe = () => {
@@ -130,8 +132,8 @@ export class LiveQueryClient {
                 }
                 if (ids.length > 0) {
                     let p = this.apiProvider();
-
-                    const invalidIds = await this.runPromise(buildRestDataProvider(p.httpClient).post(p.url + liveQueryKeepAliveRoute, ids));
+                    let { actionInfo } = await import('../server-action');
+                    const invalidIds = await this.runPromise(await actionInfo.runActionWithoutBlockingUI(() => buildRestDataProvider(p.httpClient).post(p.url + liveQueryKeepAliveRoute, ids)));
                     for (const id of invalidIds) {
                         for (const q of this.queries.values()) {
                             if (q.queryChannel === id)

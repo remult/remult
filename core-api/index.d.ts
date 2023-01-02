@@ -25,3 +25,4 @@ export { UrlBuilder } from './urlBuilder';
 export { Validators } from './src/validators';
 export { ValueConverters } from './src/valueConverters';
 export { remult } from './src/remult-proxy';
+export { getId } from './src/remult3/getId';

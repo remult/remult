@@ -4,11 +4,14 @@ export declare const streamUrl = "stream";
 export declare class LiveQuerySubscriber<entityType> {
     private repo;
     private query;
+    sendDefaultState(onResult: (reducer: (prevState: entityType[]) => entityType[]) => void): void;
     queryChannel: string;
     subscribeCode: () => void;
     unsubscribe: VoidFunction;
     setAllItems(result: any[]): Promise<void>;
+    private allItemsMessage;
     forListeners(what: (listener: (((reducer: (prevState: entityType[]) => entityType[]) => void))) => void, changes: liveQueryMessage[]): void;
+    private createReducerType;
     handle(messages: liveQueryMessage[]): Promise<void>;
     defaultQueryState: entityType[];
     listeners: (((reducer: LiveQuerySubscribeResult<entityType>) => void))[];

@@ -5,6 +5,9 @@ import { LiveQueryChangesListener } from './LiveQueryPublisher';
 
 export const streamUrl = 'stream';
 export class LiveQuerySubscriber<entityType> {
+    sendDefaultState(onResult: (reducer: (prevState: entityType[]) => entityType[]) => void) {
+        onResult(this.createReducerType(() => [...this.defaultQueryState], this.allItemsMessage(this.defaultQueryState)))
+    }
     queryChannel: string;
     subscribeCode: () => void;
     unsubscribe: VoidFunction = () => { };
@@ -14,12 +17,16 @@ export class LiveQuerySubscriber<entityType> {
             listener(x => {
                 return items;
             });
-        }, [
+        }, this.allItemsMessage(items));
+    }
+
+    private allItemsMessage(items: entityType[]): liveQueryMessage[] {
+        return [
             {
                 type: "all",
                 data: items
             }
-        ]);
+        ];
     }
 
     forListeners(what: (listener: (((reducer: (prevState: entityType[]) => entityType[]) => void))) => void, changes: liveQueryMessage[]) {
@@ -27,12 +34,16 @@ export class LiveQuerySubscriber<entityType> {
 
         for (const l of this.listeners) {
             what(reducer => {
-                l(Object.assign(reducer, {
-                    changes,
-                    items: this.defaultQueryState
-                }))
+                l(this.createReducerType(reducer, changes))
             })
         }
+    }
+
+    private createReducerType(reducer: (prevState: entityType[]) => entityType[], changes: liveQueryMessage[]): LiveQuerySubscribeResult<entityType> {
+        return Object.assign(reducer, {
+            changes,
+            items: this.defaultQueryState
+        });
     }
 
     async handle(messages: liveQueryMessage[]) {

@@ -5,10 +5,11 @@ import { InMemoryDataProvider } from "../data-providers/in-memory-database";
 import { Entity, Fields, FindOptions, getEntityRef } from "../remult3";
 import { actionInfo } from "../server-action";
 import { createMockHttpDataProvider } from "../tests/testHelper.spec";
-import { liveQueryMessage } from "./LiveQuerySubscriber";
+import { AMessageChannel, liveQueryMessage } from "./LiveQuerySubscriber";
 import { LiveQueryClient } from "./LiveQueryClient";
 import { LiveQueryPublisher, LiveQueryStorage, LiveQueryStorageInMemoryImplementation } from "./LiveQueryPublisher";
 import { findOptionsFromJson, findOptionsToJson } from "../data-providers/rest-data-provider";
+import { remult } from "../remult-proxy";
 
 const joc = jasmine.objectContaining;
 
@@ -417,7 +418,10 @@ describe("test live query full cycle", () => {
         let arr2 = [];
         const u1 = repo.liveQuery().subscribe(y => arr1 = y(arr1));
         await pm.flush();
-        const u2 = repo.liveQuery().subscribe(y => arr2 = y(arr2));
+        const u2 = repo.liveQuery().subscribe(y => {
+            arr2 = y(arr2);
+            expect(y.items.length).toBe(2);
+        });
         await pm.flush();
         expect(arr1.length).toBe(arr2.length);
 
@@ -492,4 +496,34 @@ it("Serialize Find Options1", async () => {
     expect(res).toEqual(findOptions);
 
 });
+it("test channel subscribe", async () => {
+    const mc = new AMessageChannel("zxcvz");
+    let sub = 0;
+    remult.apiClient.subscriptionClient = {
+        openConnection: async () => {
+            return {
+                subscribe: (what) => {
+                    sub++;
+                    return () => {
+                        sub--;
+                    }
+                },
+                close() {
+
+                },
+            }
+        }
+    }
+    let pr = new PromiseResolver(remult.liveQuerySubscriber);
+    let r = mc.subscribe(() => { });
+    let r2 = mc.subscribe(() => { });
+    await pr.flush();
+    expect(sub).toBe(1);
+    r();
+    await pr.flush();
+    expect(sub).toBe(1);
+    r2();
+    await pr.flush();
+    expect(sub).toBe(0);
+})
 
