@@ -148,7 +148,6 @@ export interface ServerEventChannelSubscribeDTO {
     channel: string
 }
 
-//TODO Yoni - keep in remult?
 export class PubSubChannel<messageType> {
 
 
