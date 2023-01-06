@@ -87,7 +87,7 @@ export class ForbiddenError extends Error {
     constructor() {
         super("Forbidden");
     }
-    isForbiddenError = true;
+    isForbiddenError:true = true;
 }
 
 

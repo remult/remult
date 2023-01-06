@@ -5,9 +5,9 @@ import { InMemoryDataProvider } from "../data-providers/in-memory-database";
 import { Entity, Fields, FindOptions, getEntityRef } from "../remult3";
 import { actionInfo } from "../server-action";
 import { createMockHttpDataProvider } from "../tests/testHelper.spec";
-import { AMessageChannel, liveQueryMessage } from "./LiveQuerySubscriber";
+import { PubSubChannel, LiveQueryChange } from "./LiveQuerySubscriber";
 import { LiveQueryClient } from "./LiveQueryClient";
-import { LiveQueryPublisher, LiveQueryStorage, LiveQueryStorageInMemoryImplementation } from "./LiveQueryPublisher";
+import { LiveQueryPublisher, LiveQueryStorage, InMemoryLiveQueryStorage } from "./LiveQueryPublisher";
 import { findOptionsFromJson, findOptionsToJson } from "../data-providers/rest-data-provider";
 import { remult } from "../remult-proxy";
 
@@ -42,16 +42,16 @@ async function setup1() {
     const remult = new Remult(mem);
     remult.user = ({ id: clientId1, name: clientId1, roles: [] });
     const clientRepo = remult.repo(eventTestEntity);
-    const messages: liveQueryMessage[] = [];
+    const messages: LiveQueryChange[] = [];
     serverRemult.subscriptionServer = {
         publishMessage: (c, m: any) => messages.push(...m),
     };
-    serverRemult.liveQueryStorage = new LiveQueryStorageInMemoryImplementation();
+    serverRemult.liveQueryStorage = new InMemoryLiveQueryStorage();
     const qm = new LiveQueryPublisher(() => (serverRemult.subscriptionServer), () => serverRemult.liveQueryStorage, async (_, _1, c) => c(clientRepo));
     let p = new PromiseResolver(qm);
 
     serverRemult.liveQueryPublisher = qm;
-    serverRemult.liveQueryStorage.store({
+    serverRemult.liveQueryStorage.add({
         entityKey: clientRepo.metadata.key,
         findOptionsJson: {},
         requestJson: {},
@@ -215,7 +215,7 @@ describe("Live Query Client", () => {
                     title: 'noam1'
                 }
             }
-        } as liveQueryMessage
+        } as LiveQueryChange
         );
         await p.flush();
         expect(result1[0].title).toBe("noam1");
@@ -232,7 +232,7 @@ describe("Live Query Client", () => {
                     title: 'noam2'
                 }
             }
-        } as liveQueryMessage
+        } as LiveQueryChange
         );
         await p.flush();
         expect(result1[0].title).toBe("noam1");
@@ -267,9 +267,9 @@ describe("test live query full cycle", () => {
         const remult2 = new Remult(mem);
         const repo2 = remult2.repo(eventTestEntity);
 
-        const mh: ((channel: string, message: liveQueryMessage) => void)[] = [];
+        const mh: ((channel: string, message: LiveQueryChange) => void)[] = [];
         let messageCount = 0;
-        remult.liveQueryStorage = new LiveQueryStorageInMemoryImplementation();
+        remult.liveQueryStorage = new InMemoryLiveQueryStorage();
         remult.subscriptionServer = {
             publishMessage<liveQueryMessage>(channel, message) {
                 mh.forEach(x => x(channel, message))
@@ -328,7 +328,7 @@ describe("test live query full cycle", () => {
         remult2.liveQuerySubscriber = lqc2;
         remult.liveQueryPublisher = qm;
         remult2.liveQueryPublisher = qm;
-        return { repo, pm, repo2, messageCount: () => messageCount, clientStatus, qm: remult.liveQueryStorage as LiveQueryStorageInMemoryImplementation, testApi: () => createMockHttpDataProvider(dataApi) };
+        return { repo, pm, repo2, messageCount: () => messageCount, clientStatus, qm: remult.liveQueryStorage as InMemoryLiveQueryStorage, testApi: () => createMockHttpDataProvider(dataApi) };
     }
     it("integration test 1", async () => {
         var { repo, pm, repo2 } = setup2();
@@ -436,7 +436,7 @@ describe("test live query full cycle", () => {
         let arr1 = [];
         let arr2 = [];
         let arr1Items: eventTestEntity[][] = [];
-        let arr1Messages: liveQueryMessage[][] = [];
+        let arr1Messages: LiveQueryChange[][] = [];
         const u1 = repo.liveQuery({ where: { title: { $contains: "a" } } }).subscribe(y => {
             arr1 = y(arr1);
             arr1Items.push([...y.items]);
@@ -497,7 +497,7 @@ it("Serialize Find Options1", async () => {
 
 });
 it("test channel subscribe", async () => {
-    const mc = new AMessageChannel("zxcvz");
+    const mc = new PubSubChannel("zxcvz");
     let sub = 0;
     remult.apiClient.subscriptionClient = {
         openConnection: async () => {

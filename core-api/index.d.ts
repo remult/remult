@@ -1,4 +1,4 @@
-export { Field, Fields, FieldsMetadata, Entity, EntityBase, ControllerBase, FieldRef, IdFieldRef, FieldsRef, EntityMetadata, EntityOrderBy, EntityFilter, FindOptions, QueryResult, QueryOptions, Repository, FieldType, FindFirstOptions, ComparisonValueFilter, ValueFilter, IdFilter, ContainsStringValueFilter, getFields, EntityRef, getEntityRef, SortSegments, ValueListFieldType, getValueList, ValueListFieldOptions, ValueListInfo, OmitEB, Paginator, CaptionTransformer } from './src/remult3';
+export { Field, Fields, FieldsMetadata, Entity, EntityBase, ControllerBase, FieldRef, IdFieldRef, FieldsRef, EntityMetadata, EntityOrderBy, EntityFilter, FindOptions, QueryResult, QueryOptions, Repository, FieldType, FindFirstOptions, ComparisonValueFilter, ValueFilter, IdFilter, ContainsStringValueFilter, getFields, EntityRef, getEntityRef, SortSegments, ValueListFieldType, getValueList, ValueListFieldOptions, ValueListInfo, OmitEB, Paginator, CaptionTransformer, LiveQuery, LiveQueryChangeInfo } from './src/remult3';
 export { StringFieldOptions } from './src/remult3/RepositoryImplementation';
 export { describeClass } from './src/remult3/DecoratorReplacer';
 export { EntityOptions } from './src/entity';
@@ -25,4 +25,4 @@ export { UrlBuilder } from './urlBuilder';
 export { Validators } from './src/validators';
 export { ValueConverters } from './src/valueConverters';
 export { remult } from './src/remult-proxy';
-export { getId } from './src/remult3/getId';
+export { LiveQueryChange, Unsubscribe } from './src/live-query/LiveQuerySubscriber';

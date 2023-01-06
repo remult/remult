@@ -1,4 +1,5 @@
-export { SubscriptionServer as MessagePublisher, LiveQueryStorage, LiveQueryStorageInMemoryImplementation } from "../src/live-query/LiveQueryPublisher";
-export { SubscriptionClientConnection as SubClientConnection, SubscriptionClient as SubClient, AMessageChannel } from '../src/live-query/LiveQuerySubscriber';
+//TODO - move to main export, and delete from package json
+export { SubscriptionServer, LiveQueryStorage, InMemoryLiveQueryStorage } from "../src/live-query/LiveQueryPublisher";
+export { SubscriptionClientConnection, SubscriptionClient, PubSubChannel  } from '../src/live-query/LiveQuerySubscriber';
 
 

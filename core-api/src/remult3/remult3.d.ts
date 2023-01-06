@@ -2,7 +2,7 @@ import { ClassType } from "../../classType";
 import { FieldMetadata } from "../column-interfaces";
 import { Unobserve } from "../context";
 import { EntityOptions as EntityOptions } from "../entity";
-import { liveQueryMessage, Unsubscribe } from "../live-query/LiveQuerySubscriber";
+import { LiveQueryChange, Unsubscribe } from "../live-query/LiveQuerySubscriber";
 import { SortSegment } from "../sort";
 import { entityEventListener } from "../__EntityValueProvider";
 export interface EntityRef<entityType> extends Subscribable {
@@ -189,12 +189,11 @@ export interface Repository<entityType> {
     addEventListener(listener: entityEventListener<entityType>): Unobserve;
 }
 export interface LiveQuery<entityType> {
-    /**@Experimental */
-    subscribe(onResult: (reducer: LiveQuerySubscribeResult<entityType>) => void): Unsubscribe;
+    subscribe(onChange: (reducer: LiveQueryChangeInfo<entityType>) => void): Unsubscribe;
 }
-export declare type LiveQuerySubscribeResult<entityType> = ((prevState: entityType[]) => entityType[]) & {
+export declare type LiveQueryChangeInfo<entityType> = ((prevState: entityType[]) => entityType[]) & {
     items: entityType[];
-    changes: liveQueryMessage[];
+    changes: LiveQueryChange[];
 };
 export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
     /** Determines the number of rows returned by the request, on the browser the default is 100 rows

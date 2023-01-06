@@ -5,10 +5,10 @@ import { EntityMetadata, EntityRef, FindOptions, Repository } from "./remult3";
 import { RepositoryImplementation } from "./remult3/RepositoryImplementation";
 import { ClassType } from "../classType";
 import { LiveQueryClient } from "./live-query/LiveQueryClient";
-import { EventSourceSubClient } from "./live-query/EventSourceLiveQueryProvider";
+import { SseSubscriptionClient } from "./live-query/EventSourceLiveQueryProvider";
 import { RemultProxy } from "./remult-proxy";
-import type { MessagePublisher } from "../live-query";
-import type { LiveQueryStorage, LiveQueryPublisher, LiveQueryChangesListener } from "./live-query/LiveQueryPublisher";
+
+import type { LiveQueryStorage, LiveQueryPublisher, LiveQueryChangesListener, SubscriptionServer } from "./live-query/LiveQueryPublisher";
 import { buildRestDataProvider, ExternalHttpProvider, isExternalHttpProvider } from "./buildRestDataProvider";
 import { SubscriptionClient } from "./live-query/LiveQuerySubscriber";
 
@@ -134,7 +134,7 @@ export class Remult {
     }
     /* @internal*/
     liveQueryStorage?: LiveQueryStorage
-    subscriptionServer?: MessagePublisher
+    subscriptionServer?: SubscriptionServer
     /* @internal*/
     liveQueryPublisher: LiveQueryChangesListener = {
         itemChanged: () => { }
@@ -164,7 +164,7 @@ export class Remult {
     readonly context: RemultContext = {} as any;
     apiClient: ApiClient = {
         url: '/api',
-        subscriptionClient: new EventSourceSubClient()
+        subscriptionClient: new SseSubscriptionClient()
     };
 }
 

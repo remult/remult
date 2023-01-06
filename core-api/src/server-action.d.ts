@@ -21,7 +21,7 @@ export declare abstract class Action<inParam, outParam> implements ActionInterfa
 }
 export declare class ForbiddenError extends Error {
     constructor();
-    isForbiddenError: boolean;
+    isForbiddenError: true;
 }
 export declare class myServerAction extends Action<inArgs, result> {
     private types;

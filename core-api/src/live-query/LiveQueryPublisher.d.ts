@@ -1,14 +1,14 @@
-export declare class LiveQueryStorageInMemoryImplementation implements LiveQueryStorage {
+export declare class InMemoryLiveQueryStorage implements LiveQueryStorage {
     debugFileSaver: (x: any) => void;
     debug(): void;
-    keepAliveAndReturnUnknownIds(ids: string[]): Promise<string[]>;
+    keepAliveAndReturnUnknownQueryIds(ids: string[]): Promise<string[]>;
     queries: (StoredQuery & {
         lastUsed: string;
     })[];
     constructor();
-    store(query: StoredQuery): void;
+    add(query: StoredQuery): void;
     remove(id: any): void;
-    provideListeners(entityKey: string, handle: (args: {
+    forEach(entityKey: string, handle: (args: {
         query: StoredQuery;
         setLastIds(ids: any[]): Promise<void>;
     }) => Promise<void>): Promise<void>;
@@ -17,19 +17,19 @@ export interface SubscriptionServer {
     publishMessage<T>(channel: string, message: T): void;
 }
 export interface LiveQueryStorage {
-    keepAliveAndReturnUnknownIds(ids: string[]): Promise<string[]>;
-    store(query: StoredQuery): void;
-    remove(id: any): void;
-    provideListeners(entityKey: string, handle: (args: {
+    add(query: StoredQuery): void;
+    remove(queryId: any): void;
+    forEach(entityKey: string, callback: (args: {
         query: StoredQuery;
         setLastIds(ids: any[]): Promise<void>;
     }) => Promise<void>): Promise<void>;
+    keepAliveAndReturnUnknownQueryIds(queryIds: string[]): Promise<string[]>;
 }
 interface StoredQuery {
+    entityKey: string;
     id: string;
     findOptionsJson: any;
-    lastIds: any[];
     requestJson: any;
-    entityKey: string;
+    lastIds: any[];
 }
 export {};

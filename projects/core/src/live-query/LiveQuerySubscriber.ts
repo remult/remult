@@ -1,9 +1,10 @@
 import { EntityOrderBy, remult as defaultRemult, Remult, Repository, Sort } from '../../index';
-import { LiveQuerySubscribeResult } from '../remult3';
+import { LiveQueryChangeInfo } from '../remult3';
 import { getId } from '../remult3/getId';
 import { LiveQueryChangesListener } from './LiveQueryPublisher';
 
 export const streamUrl = 'stream';
+//@internal
 export class LiveQuerySubscriber<entityType> {
     sendDefaultState(onResult: (reducer: (prevState: entityType[]) => entityType[]) => void) {
         onResult(this.createReducerType(() => [...this.defaultQueryState], this.allItemsMessage(this.defaultQueryState)))
@@ -20,7 +21,7 @@ export class LiveQuerySubscriber<entityType> {
         }, this.allItemsMessage(items));
     }
 
-    private allItemsMessage(items: entityType[]): liveQueryMessage[] {
+    private allItemsMessage(items: entityType[]): LiveQueryChange[] {
         return [
             {
                 type: "all",
@@ -29,7 +30,7 @@ export class LiveQuerySubscriber<entityType> {
         ];
     }
 
-    forListeners(what: (listener: (((reducer: (prevState: entityType[]) => entityType[]) => void))) => void, changes: liveQueryMessage[]) {
+    forListeners(what: (listener: (((reducer: (prevState: entityType[]) => entityType[]) => void))) => void, changes: LiveQueryChange[]) {
         what(reducer => this.defaultQueryState = reducer(this.defaultQueryState))
 
         for (const l of this.listeners) {
@@ -39,14 +40,14 @@ export class LiveQuerySubscriber<entityType> {
         }
     }
 
-    private createReducerType(reducer: (prevState: entityType[]) => entityType[], changes: liveQueryMessage[]): LiveQuerySubscribeResult<entityType> {
+    private createReducerType(reducer: (prevState: entityType[]) => entityType[], changes: LiveQueryChange[]): LiveQueryChangeInfo<entityType> {
         return Object.assign(reducer, {
             changes,
             items: this.defaultQueryState
         });
     }
 
-    async handle(messages: liveQueryMessage[]) {
+    async handle(messages: LiveQueryChange[]) {
         for (const m of messages) {
             switch (m.type) {
                 case "add":
@@ -95,7 +96,7 @@ export class LiveQuerySubscriber<entityType> {
     }
 
     defaultQueryState: entityType[] = [];
-    listeners: (((reducer: LiveQuerySubscribeResult<entityType>) => void))[] = [];
+    listeners: (((reducer: LiveQueryChangeInfo<entityType>) => void))[] = [];
     constructor(private repo: Repository<entityType>, private query: SubscribeToQueryArgs<entityType>) { }
 
 }
@@ -110,29 +111,15 @@ export interface SubscriptionClient {
 }
 
 
-export class MessageChannel<T> {
-    id: string;
-    unsubscribe: VoidFunction = () => { };
-    async handle(message: T) {
-        for (const l of this.listeners) {
-            l(message);
-        }
-    }
-
-    listeners: ((items: T) => void)[] = [];
-    constructor() { }
-
-}
-export type listener = (message: any) => void;
 export const liveQueryKeepAliveRoute = '/_liveQueryKeepAlive';
 
 
 
-export interface SubscribeToQueryArgs<entityType = any> {
+ interface SubscribeToQueryArgs<entityType = any> {
     entityKey: string,
     orderBy?: EntityOrderBy<entityType>
 }
-export declare type liveQueryMessage = {
+export declare type LiveQueryChange = {
     type: "all",
     data: any[]
 } | {
@@ -148,33 +135,34 @@ export declare type liveQueryMessage = {
     type: "remove",
     data: { id: any }
 }
-
+//@internal
 export interface SubscribeResult {
     result: [],
     queryChannel: string
 }
 
 
+//@internal
 export interface ServerEventChannelSubscribeDTO {
     clientId: string,
     channel: string
 }
 
 //TODO Yoni - keep in remult?
-export class AMessageChannel<messageType> {
+export class PubSubChannel<messageType> {
 
 
     constructor(public channelKey: string) {
 
 
     }
-    send(what: messageType, remult?: Remult) {
+    publish(message: messageType, remult?: Remult) {
         remult = remult || defaultRemult;
-        remult.subscriptionServer.publishMessage(this.channelKey, what);
+        remult.subscriptionServer.publishMessage(this.channelKey, message);
     }
-    subscribe(onValue: (value: messageType) => void, remult?: Remult) {
+    subscribe(onMessage: (message: messageType) => void, remult?: Remult) {
         remult = remult || defaultRemult;
-        return remult.liveQuerySubscriber.subscribeChannel(this.channelKey, onValue);
+        return remult.liveQuerySubscriber.subscribeChannel(this.channelKey, onMessage);
     }
 }
 

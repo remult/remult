@@ -35,7 +35,7 @@ export class RestDataProvider implements DataProvider {
   supportsCustomFilter = true;
 
 }
-
+//@internal
 export function findOptionsToJson(options: FindOptions<any>, meta: EntityMetadata) {
   return {
     limit: options.limit,
@@ -44,6 +44,7 @@ export function findOptionsToJson(options: FindOptions<any>, meta: EntityMetadat
     orderBy: options.orderBy
   };
 }
+//@internal
 export function findOptionsFromJson(json: any, meta: EntityMetadata): FindOptions<any> {
   let r = {};
   for (const key of ["limit", "page", "where", "orderBy"]) {
@@ -87,7 +88,7 @@ export class RestEntityDataProvider implements EntityDataProvider {
     let { run } = this.buildFindRequest(options);
     return run().then(x => x.map(y => this.translateFromJson(y)));
   }
-
+//@internal
   buildFindRequest(options: EntityDataProviderFindOptions) {
     let url = new UrlBuilder(this.url());
     let filterObject: any;

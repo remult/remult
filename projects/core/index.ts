@@ -38,7 +38,9 @@ export {
     ValueListInfo,
     OmitEB,
     Paginator,
-    CaptionTransformer
+    CaptionTransformer,
+    LiveQuery,
+    LiveQueryChangeInfo
 } from './src/remult3';
 export { StringFieldOptions } from './src/remult3/RepositoryImplementation';
 export { describeClass } from './src/remult3/DecoratorReplacer';
@@ -115,4 +117,5 @@ export { Validators } from './src/validators';
 
 export { ValueConverters } from './src/valueConverters';
 export { remult } from './src/remult-proxy';
-export { getId } from './src/remult3/getId';
+//export { getId } from './src/remult3/getId';
+export { LiveQueryChange, Unsubscribe } from './src/live-query/LiveQuerySubscriber'

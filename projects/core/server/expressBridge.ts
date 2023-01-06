@@ -7,8 +7,8 @@ import { ClassType } from '../classType';
 import { Entity, Fields, getEntityKey, Repository } from '../src/remult3';
 import { IdEntity } from '../src/id-entity';
 import { remult, RemultProxy } from '../src/remult-proxy';
-import { LiveQueryPublisher, LiveQueryStorage, LiveQueryStorageInMemoryImplementation, PerformWithRequest } from '../src/live-query/LiveQueryPublisher';
-import { MessagePublisher } from '../live-query';
+import { LiveQueryPublisher, LiveQueryStorage, InMemoryLiveQueryStorage, PerformWithRequest, SubscriptionServer } from '../src/live-query/LiveQueryPublisher';
+
 
 //TODO2 -support pub sub non express servers
 export interface RemultServerOptions<RequestType extends GenericRequest> {
@@ -18,8 +18,9 @@ export interface RemultServerOptions<RequestType extends GenericRequest> {
   */
   dataProvider?: DataProvider | Promise<DataProvider> | (() => Promise<DataProvider | undefined>);
   queueStorage?: QueueStorage;
-  liveQueryStorageForRequest?: (remult?: Remult) => LiveQueryStorage | Promise<LiveQueryStorage>,
-  initRequest?: (remult: Remult, origReq: RequestType) => Promise<void>;
+  liveQueryStorage?: LiveQueryStorage,
+  subscriptionServer?: SubscriptionServer
+  initRequest?: (remult: Remult, origReq: RequestType, options: InitRequestOptions) => Promise<void>;
   requestSerializer?: {
     toJson: (request: RequestType) => any,
     fromJson: (request: any) => RequestType
@@ -33,6 +34,9 @@ export interface RemultServerOptions<RequestType extends GenericRequest> {
   controllers?: ClassType<any>[];
   rootPath?: string;
 };
+export interface InitRequestOptions {
+  liveQueryStorage: LiveQueryStorage
+}
 
 export function createRemultServerCore<RequestType extends GenericRequest = GenericRequest>(
   options?:
@@ -192,15 +196,18 @@ export class RemultAsyncLocalStorage {
 /* @internal*/
 
 export class RemultServerImplementation implements RemultServer {
-  liveQueryStorage: LiveQueryStorage = new LiveQueryStorageInMemoryImplementation();
+  liveQueryStorage: LiveQueryStorage = new InMemoryLiveQueryStorage();
   constructor(public queue: inProcessQueueHandler, public options: RemultServerOptions<GenericRequest>,
     public dataProvider: DataProvider | Promise<DataProvider>) {
-
+    if (options.liveQueryStorage)
+      this.liveQueryStorage = options.liveQueryStorage;
+    if (options.subscriptionServer)
+      this.subscriptionServer = options.subscriptionServer;
 
   }
 
   runWithRequest: PerformWithRequest;
-  subscriptionServer: MessagePublisher;
+  subscriptionServer: SubscriptionServer;
   withRemult<T>(req: GenericRequest, res: GenericResponse, next: VoidFunction) {
     this.process(async () => { next() })(req, res);
   }
@@ -306,13 +313,16 @@ export class RemultServerImplementation implements RemultServer {
               remult.user = (user);
           }
           if (this.options.initRequest) {
-            await this.options.initRequest(remult, req);
+            await this.options.initRequest(remult, req, {
+              get liveQueryStorage() {
+                return remult.liveQueryStorage
+              },
+              set liveQueryStorage(value: LiveQueryStorage) {
+                remult.liveQueryStorage = value;
+              }
+            });
           }
-          if (this.options.liveQueryStorageForRequest) {
-            const r = await this.options.liveQueryStorageForRequest(remult);
-            if (r)
-              remult.liveQueryStorage = r;
-          }
+
 
           await what(remult, myReq, myRes, req);
           res({});

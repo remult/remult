@@ -149,7 +149,7 @@ export class DataApi<T = any> {
     try {
       const r = await this.getArrayImpl(response, request, filterBody)
       const queryChannel = `users:${this.remult.user?.id}:queries:${uuid()}`;
-      this.remult.liveQueryStorage.store(
+      this.remult.liveQueryStorage.add(
         {
           requestJson: serializeRequest(),
           entityKey: this.repository.metadata.key,

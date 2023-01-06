@@ -3,12 +3,12 @@ import { itemChange } from '../context';
 import { findOptionsFromJson, findOptionsToJson } from '../data-providers/rest-data-provider';
 import { Repository, FindOptions } from '../remult3';
 
-export class LiveQueryStorageInMemoryImplementation implements LiveQueryStorage {
+export class InMemoryLiveQueryStorage implements LiveQueryStorage {
   debugFileSaver = (x: any) => { };
   debug() {
     this.debugFileSaver(this.queries);
   }
-  async keepAliveAndReturnUnknownIds(ids: string[]): Promise<string[]> {
+  async keepAliveAndReturnUnknownQueryIds(ids: string[]): Promise<string[]> {
     const result = [];
     for (const id of ids) {
       let q = this.queries.find(q => q.id === id);
@@ -26,7 +26,7 @@ export class LiveQueryStorageInMemoryImplementation implements LiveQueryStorage 
   constructor() {
 
   }
-  store(query: StoredQuery) {
+  add(query: StoredQuery) {
     this.queries.push({ ...query, lastUsed: new Date().toISOString() });
     this.debug();
   }
@@ -34,7 +34,7 @@ export class LiveQueryStorageInMemoryImplementation implements LiveQueryStorage 
     this.queries = this.queries.filter(q => q.id !== id);
     this.debug();
   }
-  async provideListeners(entityKey: string, handle: (args: {
+  async forEach(entityKey: string, handle: (args: {
     query: StoredQuery,
     setLastIds(ids: any[]): Promise<void>
   }) => Promise<void>) {
@@ -63,7 +63,7 @@ export class LiveQueryPublisher implements LiveQueryChangesListener {
   debugFileSaver = (x: any) => { };
   itemChanged(entityKey: string, changes: itemChange[]) {
     //TODO 2 - optimize so that the user will get their messages first. Based on user id
-    this.runPromise(this.liveQueryStorage().provideListeners(entityKey,
+    this.runPromise(this.liveQueryStorage().forEach(entityKey,
       async ({ query, setLastIds }) => {
         await this.performWithRequest(query.requestJson, entityKey, async repo => {
           const messages = [];
@@ -124,20 +124,28 @@ export interface SubscriptionServer {
   publishMessage<T>(channel: string, message: T): void;
 }
 // TODO2 - PUBNUB
+// TODO2 - https://centrifugal.dev/
 export interface LiveQueryStorage {
-  keepAliveAndReturnUnknownIds(ids: string[]): Promise<string[]>
-  store(query: StoredQuery): void
-  remove(id: any): void
-  provideListeners(entityKey: string, handle: (args: {
+  add(query: StoredQuery): void
+  remove(queryId: any): void
+  forEach(entityKey: string, callback: (args: {
     query: StoredQuery,
-    setLastIds(ids: any[]): Promise<void>
+    setLastIds(ids: any[]): Promise<void>//TODO - rename to set data
   }) => Promise<void>): Promise<void>
+  keepAliveAndReturnUnknownQueryIds(queryIds: string[]): Promise<string[]>
 
 }
 interface StoredQuery {
-  id: string,
-  findOptionsJson: any,
-  lastIds: any[],
-  requestJson: any,
   entityKey: string
+  id: string,
+
+  //TODO - refactor to data all 3
+  findOptionsJson: any,
+  requestJson: any,
+  lastIds: any[],
+
 }
+
+
+
+//TODO match new file names to their respective classes
