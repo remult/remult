@@ -5,12 +5,12 @@ import { EntityMetadata, EntityRef, FindOptions, Repository } from "./remult3";
 import { RepositoryImplementation } from "./remult3/RepositoryImplementation";
 import { ClassType } from "../classType";
 import { LiveQueryClient } from "./live-query/LiveQueryClient";
-import { SseSubscriptionClient } from "./live-query/EventSourceLiveQueryProvider";
+import { SseSubscriptionClient } from "./live-query/SseSubscriptionClient";
 import { RemultProxy } from "./remult-proxy";
 
-import type { LiveQueryStorage, LiveQueryPublisher, LiveQueryChangesListener, SubscriptionServer } from "./live-query/LiveQueryPublisher";
+import type { LiveQueryStorage, LiveQueryPublisher, LiveQueryChangesListener, SubscriptionServer } from "./live-query/SubscriptionServer";
 import { buildRestDataProvider, ExternalHttpProvider, isExternalHttpProvider } from "./buildRestDataProvider";
-import { SubscriptionClient } from "./live-query/LiveQuerySubscriber";
+import { SubscriptionClient } from "./live-query/SubscriptionClient";
 
 
 

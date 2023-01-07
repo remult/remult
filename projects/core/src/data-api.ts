@@ -8,7 +8,7 @@ import { ErrorInfo } from './data-interfaces';
 import { ForbiddenError } from './server-action';
 import { getId } from './remult3/getId';
 import { findOptionsToJson } from './data-providers/rest-data-provider';
-import { QueryData } from './live-query/LiveQueryPublisher';
+import { QueryData } from './live-query/SubscriptionServer';
 
 
 export class DataApi<T = any> {

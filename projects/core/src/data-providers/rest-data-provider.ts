@@ -8,7 +8,7 @@ import { EntityMetadata, FindOptions } from '../remult3';
 import { ApiClient, Remult } from '../context';
 import { buildRestDataProvider, retry } from "../buildRestDataProvider";
 import { Sort } from '../sort';
-import { SubscribeResult } from '../live-query/LiveQuerySubscriber';
+import { SubscribeResult } from '../live-query/SubscriptionClient';
 
 
 export class RestDataProvider implements DataProvider {

@@ -1,7 +1,7 @@
 import * as express from 'express';
 import { RemultServer, RemultServerOptions } from './server/expressBridge';
 import { Remult } from './src/context';
-import { SubscriptionServer } from './src/live-query/LiveQueryPublisher';
+import { SubscriptionServer } from './src/live-query/SubscriptionServer';
 export declare function remultExpress(options?: RemultServerOptions<express.Request> & {
     bodyParser?: boolean;
     bodySizeLimit?: string;

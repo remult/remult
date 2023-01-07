@@ -1,7 +1,7 @@
 import { EntityOrderBy, remult as defaultRemult, Remult, Repository, Sort } from '../../index';
 import { LiveQueryChangeInfo } from '../remult3';
 import { getId } from '../remult3/getId';
-import { LiveQueryChangesListener } from './LiveQueryPublisher';
+import { LiveQueryChangesListener } from './SubscriptionServer';
 
 export const streamUrl = 'stream';
 //@internal

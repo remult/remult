@@ -2,7 +2,7 @@ import { FindOptions, remult as defaultRemult, Repository, RestDataProviderHttpP
 import { RestDataProvider, RestEntityDataProvider } from '../data-providers/rest-data-provider';
 import { RepositoryImplementation } from '../remult3';
 import { buildRestDataProvider } from "../buildRestDataProvider";
-import { LiveQuerySubscriber, SubscriptionClient, SubscribeResult, SubscriptionClientConnection, liveQueryKeepAliveRoute, Unsubscribe } from './LiveQuerySubscriber';
+import { LiveQuerySubscriber, SubscriptionClient, SubscribeResult, SubscriptionClientConnection, liveQueryKeepAliveRoute, Unsubscribe } from './SubscriptionClient';
 import type { ApiClient } from '../../index';
 /* @internal*/
 export class LiveQueryClient {

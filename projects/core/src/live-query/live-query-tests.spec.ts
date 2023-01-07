@@ -5,9 +5,9 @@ import { InMemoryDataProvider } from "../data-providers/in-memory-database";
 import { Entity, Fields, FindOptions, getEntityRef } from "../remult3";
 import { actionInfo } from "../server-action";
 import { createMockHttpDataProvider } from "../tests/testHelper.spec";
-import { PubSubChannel, LiveQueryChange } from "./LiveQuerySubscriber";
+import { PubSubChannel, LiveQueryChange } from "./SubscriptionClient";
 import { LiveQueryClient } from "./LiveQueryClient";
-import { LiveQueryPublisher, LiveQueryStorage, InMemoryLiveQueryStorage } from "./LiveQueryPublisher";
+import { LiveQueryPublisher, LiveQueryStorage, InMemoryLiveQueryStorage } from "./SubscriptionServer";
 import { findOptionsFromJson, findOptionsToJson } from "../data-providers/rest-data-provider";
 import { remult } from "../remult-proxy";
 

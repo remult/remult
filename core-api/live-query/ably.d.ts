@@ -1,6 +1,6 @@
 import type * as Ably from 'ably';
-import type { SubscriptionServer } from '../src/live-query/LiveQueryPublisher';
-import type { SubscriptionClient, SubscriptionClientConnection } from '../src/live-query/LiveQuerySubscriber';
+import type { SubscriptionServer } from '../src/live-query/SubscriptionServer';
+import type { SubscriptionClient, SubscriptionClientConnection } from '../src/live-query/SubscriptionClient';
 export declare class AblyLiveQueryProvider implements SubscriptionClient {
     private ably;
     constructor(ably: Ably.Types.RealtimePromise);

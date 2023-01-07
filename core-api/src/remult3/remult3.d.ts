@@ -2,7 +2,7 @@ import { ClassType } from "../../classType";
 import { FieldMetadata } from "../column-interfaces";
 import { Unobserve } from "../context";
 import { EntityOptions as EntityOptions } from "../entity";
-import { LiveQueryChange, Unsubscribe } from "../live-query/LiveQuerySubscriber";
+import { LiveQueryChange, Unsubscribe } from "../live-query/SubscriptionClient";
 import { SortSegment } from "../sort";
 import { entityEventListener } from "../__EntityValueProvider";
 export interface EntityRef<entityType> extends Subscribable {
