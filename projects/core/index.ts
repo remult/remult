@@ -119,7 +119,7 @@ export { ValueConverters } from './src/valueConverters';
 export { remult } from './src/remult-proxy';
 //export { getId } from './src/remult3/getId';
 
-export { SubscriptionServer, LiveQueryStorage, InMemoryLiveQueryStorage } from "./src/live-query/LiveQueryPublisher";
+export { SubscriptionServer, LiveQueryStorage, StoredQuery, InMemoryLiveQueryStorage } from "./src/live-query/LiveQueryPublisher";
 export { SubscriptionClientConnection, SubscriptionClient, PubSubChannel, LiveQueryChange, Unsubscribe } from './src/live-query/LiveQuerySubscriber';
 
 

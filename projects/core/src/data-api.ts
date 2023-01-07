@@ -8,6 +8,7 @@ import { ErrorInfo } from './data-interfaces';
 import { ForbiddenError } from './server-action';
 import { getId } from './remult3/getId';
 import { findOptionsToJson } from './data-providers/rest-data-provider';
+import { QueryData } from './live-query/LiveQueryPublisher';
 
 
 export class DataApi<T = any> {
@@ -149,13 +150,16 @@ export class DataApi<T = any> {
     try {
       const r = await this.getArrayImpl(response, request, filterBody)
       const queryChannel = `users:${this.remult.user?.id}:queries:${uuid()}`;
+      const data: QueryData = {
+        requestJson: serializeRequest(),
+        findOptionsJson: findOptionsToJson(r.findOptions, this.repository.metadata),
+        lastIds: r.r.map(y => getId(this.repository.metadata, y))
+      }
       this.remult.liveQueryStorage.add(
         {
-          requestJson: serializeRequest(),
           entityKey: this.repository.metadata.key,
           id: queryChannel,
-          findOptionsJson: findOptionsToJson(r.findOptions, this.repository.metadata),
-          lastIds: r.r.map(y => getId(this.repository.metadata, y))
+          data
         }
       );
       response.success({

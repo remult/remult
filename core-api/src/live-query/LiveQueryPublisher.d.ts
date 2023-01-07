@@ -10,7 +10,7 @@ export declare class InMemoryLiveQueryStorage implements LiveQueryStorage {
     remove(id: any): void;
     forEach(entityKey: string, handle: (args: {
         query: StoredQuery;
-        setLastIds(ids: any[]): Promise<void>;
+        setData(data: any): Promise<void>;
     }) => Promise<void>): Promise<void>;
 }
 export interface SubscriptionServer {
@@ -21,15 +21,17 @@ export interface LiveQueryStorage {
     remove(queryId: any): void;
     forEach(entityKey: string, callback: (args: {
         query: StoredQuery;
-        setLastIds(ids: any[]): Promise<void>;
+        setData(data: any): Promise<void>;
     }) => Promise<void>): Promise<void>;
     keepAliveAndReturnUnknownQueryIds(queryIds: string[]): Promise<string[]>;
 }
-interface StoredQuery {
+export interface StoredQuery {
     entityKey: string;
     id: string;
+    data: any;
+}
+export interface QueryData {
     findOptionsJson: any;
     requestJson: any;
     lastIds: any[];
 }
-export {};

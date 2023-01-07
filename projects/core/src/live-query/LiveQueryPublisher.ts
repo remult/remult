@@ -36,7 +36,7 @@ export class InMemoryLiveQueryStorage implements LiveQueryStorage {
   }
   async forEach(entityKey: string, handle: (args: {
     query: StoredQuery,
-    setLastIds(ids: any[]): Promise<void>
+    setData(data: any): Promise<void>
   }) => Promise<void>) {
     let d = new Date();
     d.setMinutes(d.getMinutes() - 5);
@@ -45,7 +45,7 @@ export class InMemoryLiveQueryStorage implements LiveQueryStorage {
       if (q.entityKey === entityKey) {
         await handle({
           query: q,
-          setLastIds: async ids => { q.lastIds = ids },
+          setData: async data => { q.data = data },
         })
       }
     }
@@ -64,7 +64,8 @@ export class LiveQueryPublisher implements LiveQueryChangesListener {
   itemChanged(entityKey: string, changes: itemChange[]) {
     //TODO 2 - optimize so that the user will get their messages first. Based on user id
     this.runPromise(this.liveQueryStorage().forEach(entityKey,
-      async ({ query, setLastIds }) => {
+      async ({ query: q, setData }) => {
+        let query = { ...q.data } as QueryData;
         await this.performWithRequest(query.requestJson, entityKey, async repo => {
           const messages = [];
           const currentItems = await repo.find(findOptionsFromJson(query.findOptionsJson, repo.metadata));
@@ -99,14 +100,15 @@ export class LiveQueryPublisher implements LiveQueryChangesListener {
             }
           }
           this.debugFileSaver({
-            query: query.id,
+            query: q.id,
             currentIds,
             changes,
             lastIds: query.lastIds,
             messages
           });
-          await setLastIds(currentIds);
-          this.subscriptionServer().publishMessage(query.id, messages);
+          query.lastIds = currentIds;
+          await setData(query);
+          this.subscriptionServer().publishMessage(q.id, messages);
         })
 
       }));
@@ -130,20 +132,21 @@ export interface LiveQueryStorage {
   remove(queryId: any): void
   forEach(entityKey: string, callback: (args: {
     query: StoredQuery,
-    setLastIds(ids: any[]): Promise<void>//TODO - rename to set data
+    setData(data: any): Promise<void>
   }) => Promise<void>): Promise<void>
   keepAliveAndReturnUnknownQueryIds(queryIds: string[]): Promise<string[]>
 
 }
-interface StoredQuery {
+export interface StoredQuery {
   entityKey: string
   id: string,
+  data: any
+}
 
-  //TODO - refactor to data all 3
+export interface QueryData {
   findOptionsJson: any,
   requestJson: any,
   lastIds: any[],
-
 }
 
 

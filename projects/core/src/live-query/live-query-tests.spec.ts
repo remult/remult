@@ -53,9 +53,11 @@ async function setup1() {
     serverRemult.liveQueryPublisher = qm;
     serverRemult.liveQueryStorage.add({
         entityKey: clientRepo.metadata.key,
-        findOptionsJson: {},
-        requestJson: {},
-        lastIds: items.map(x => x.id),
+        data: {
+            findOptionsJson: {},
+            requestJson: {},
+            lastIds: items.map(x => x.id),
+        },
         id: "xxx"
     })
     expect(messages.length).toBe(0);
