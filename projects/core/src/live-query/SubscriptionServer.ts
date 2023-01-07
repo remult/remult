@@ -3,55 +3,10 @@ import { itemChange } from '../context';
 import { findOptionsFromJson, findOptionsToJson } from '../data-providers/rest-data-provider';
 import { Repository, FindOptions } from '../remult3';
 
-export class InMemoryLiveQueryStorage implements LiveQueryStorage {
-  debugFileSaver = (x: any) => { };
-  debug() {
-    this.debugFileSaver(this.queries);
-  }
-  async keepAliveAndReturnUnknownQueryIds(ids: string[]): Promise<string[]> {
-    const result = [];
-    for (const id of ids) {
-      let q = this.queries.find(q => q.id === id);
-      if (q) {
-        q.lastUsed = new Date().toISOString()
-      } else
-        result.push(id);
-    }
-    this.debug();
-    return result;
-  }
-
-  queries: (StoredQuery & { lastUsed: string })[] = [];
-
-  constructor() {
-
-  }
-  add(query: StoredQuery) {
-    this.queries.push({ ...query, lastUsed: new Date().toISOString() });
-    this.debug();
-  }
-  remove(id: any) {
-    this.queries = this.queries.filter(q => q.id !== id);
-    this.debug();
-  }
-  async forEach(entityKey: string, handle: (args: {
-    query: StoredQuery,
-    setData(data: any): Promise<void>
-  }) => Promise<void>) {
-    let d = new Date();
-    d.setMinutes(d.getMinutes() - 5);
-    this.queries = this.queries.filter(x => x.lastUsed > d.toISOString());
-    for (const q of this.queries) {
-      if (q.entityKey === entityKey) {
-        await handle({
-          query: q,
-          setData: async data => { q.data = data },
-        })
-      }
-    }
-    this.debug();
-  }
+export interface SubscriptionServer {
+  publishMessage<T>(channel: string, message: T): void;
 }
+
 /* @internal*/
 export declare type PerformWithRequest = (serializedRequest: any, entityKey: string, what: (repo: Repository<any>) => Promise<void>) => Promise<void>;
 /* @internal*/
@@ -121,10 +76,6 @@ export interface LiveQueryChangesListener {
 }
 
 
-
-export interface SubscriptionServer {
-  publishMessage<T>(channel: string, message: T): void;
-}
 // TODO2 - PUBNUB
 // TODO2 - https://centrifugal.dev/
 export interface LiveQueryStorage {
@@ -137,6 +88,55 @@ export interface LiveQueryStorage {
   keepAliveAndReturnUnknownQueryIds(queryIds: string[]): Promise<string[]>
 
 }
+export class InMemoryLiveQueryStorage implements LiveQueryStorage {
+  debugFileSaver = (x: any) => { };
+  debug() {
+    this.debugFileSaver(this.queries);
+  }
+  async keepAliveAndReturnUnknownQueryIds(ids: string[]): Promise<string[]> {
+    const result = [];
+    for (const id of ids) {
+      let q = this.queries.find(q => q.id === id);
+      if (q) {
+        q.lastUsed = new Date().toISOString()
+      } else
+        result.push(id);
+    }
+    this.debug();
+    return result;
+  }
+
+  queries: (StoredQuery & { lastUsed: string })[] = [];
+
+  constructor() {
+
+  }
+  add(query: StoredQuery) {
+    this.queries.push({ ...query, lastUsed: new Date().toISOString() });
+    this.debug();
+  }
+  remove(id: any) {
+    this.queries = this.queries.filter(q => q.id !== id);
+    this.debug();
+  }
+  async forEach(entityKey: string, handle: (args: {
+    query: StoredQuery,
+    setData(data: any): Promise<void>
+  }) => Promise<void>) {
+    let d = new Date();
+    d.setMinutes(d.getMinutes() - 5);
+    this.queries = this.queries.filter(x => x.lastUsed > d.toISOString());
+    for (const q of this.queries) {
+      if (q.entityKey === entityKey) {
+        await handle({
+          query: q,
+          setData: async data => { q.data = data },
+        })
+      }
+    }
+    this.debug();
+  }
+}
 export interface StoredQuery {
   entityKey: string
   id: string,
@@ -148,7 +148,3 @@ export interface QueryData {
   requestJson: any,
   lastIds: any[],
 }
-
-
-
-//TODO match new file names to their respective classes
