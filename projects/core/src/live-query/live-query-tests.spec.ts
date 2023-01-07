@@ -335,7 +335,7 @@ describe("test live query full cycle", () => {
     it("integration test 1", async () => {
         var { repo, pm, repo2 } = setup2();
         let result1: eventTestEntity[] = [];
-        repo.liveQuery().subscribe(reducer => result1 = reducer(result1));
+        const u = repo.liveQuery().subscribe(reducer => result1 = reducer(result1));
         await pm.flush();
         expect(result1.length).toBe(0);
         await repo.insert({ id: 1, title: "noam" });
@@ -349,11 +349,12 @@ describe("test live query full cycle", () => {
         expect(result1[0].title).toBe('noam1');
         expect(result1[1].title).toBe('yael2');
         await repo.save(result1[0]);
+        u();
     });
     it("test delete works", async () => {
         var { repo, pm, repo2 } = setup2();
         let result1: eventTestEntity[] = [];
-        repo.liveQuery().subscribe(reducer => result1 = reducer(result1));
+        const u = repo.liveQuery().subscribe(reducer => result1 = reducer(result1));
         await pm.flush();
         await repo.insert({ id: 1, title: "noam" });
         await repo2.insert({ id: 2, title: "yael" });
@@ -361,15 +362,17 @@ describe("test live query full cycle", () => {
         await repo.delete(result1[1]);
         await pm.flush();
         expect(result1.length).toBe(1);
+        u();
     });
     it("test add works if item already in array", async () => {
         var { repo, pm, repo2 } = setup2();
         let result1: eventTestEntity[] = [];
-        repo.liveQuery().subscribe(reducer => result1 = reducer(result1));
+        const u = repo.liveQuery().subscribe(reducer => result1 = reducer(result1));
         await pm.flush();
         result1 = [await repo.insert({ id: 1, title: "noam" })];
         await pm.flush();
         expect(result1.length).toBe(1);
+        u();
     });
     it("test unsubscribe works", async () => {
         var { repo, pm, messageCount, qm } = setup2();
@@ -391,7 +394,7 @@ describe("test live query full cycle", () => {
     it("test disconnect and reconnect scenario", async () => {
         var { repo, pm, clientStatus } = setup2();
         let result1: eventTestEntity[] = [];
-        repo.liveQuery().subscribe(reducer => result1 = reducer(result1));
+        const u = repo.liveQuery().subscribe(reducer => result1 = reducer(result1));
         await pm.flush();
         await repo.insert({ id: 1, title: "noam" });
         await pm.flush();
@@ -404,6 +407,7 @@ describe("test live query full cycle", () => {
         expect(clientStatus.connected).toBe(true);
         await pm.flush();
         expect(result1.length).toBe(2);
+        u();
     });
     it("expect pure json object, from live query", async () => {
         var { testApi, repo } = setup2();
@@ -426,6 +430,8 @@ describe("test live query full cycle", () => {
         });
         await pm.flush();
         expect(arr1.length).toBe(arr2.length);
+        u1();
+        u2();
 
     })
     it("test subscription leak", async () => {
@@ -457,6 +463,8 @@ describe("test live query full cycle", () => {
         expect(arr1Items[1].length).toBe(3);
         expect(arr1Messages[0].length).toBe(1);
         expect(arr1Messages[1][0].type).toBe("add");
+        u1();
+        u2();
 
     })
 });
