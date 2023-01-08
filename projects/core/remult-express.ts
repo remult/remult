@@ -96,9 +96,6 @@ export class SseSubscriptionServer implements SubscriptionServer {
 
     //@internal
     private connections: clientConnection[] = [];
-    //TODO - talk about who can subscribe, and the channel name item
-    //TODO - talk about is equal to optimization
-    //TODO - talk about potential cost of reading data from live query for entities that don't have any active queries.
     constructor(
 
         private canUserConnectToChannel?: (channel: string, remult: Remult) => boolean) {

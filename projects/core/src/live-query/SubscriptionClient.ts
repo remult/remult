@@ -147,8 +147,7 @@ export interface ServerEventChannelSubscribeDTO {
     clientId: string,
     channel: string
 }
-//tODO - consider rename to subscription channel
-export class PubSubChannel<messageType> {
+export class SubscriptionChannel<messageType> {
 
 
     constructor(public channelKey: string) {

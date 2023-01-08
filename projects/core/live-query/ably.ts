@@ -3,7 +3,7 @@ import type { SubscriptionServer } from '../src/live-query/SubscriptionServer';
 import type { SubscriptionClient, SubscriptionClientConnection } from '../src/live-query/SubscriptionClient';
 
 
-export class AblyLiveQueryProvider implements SubscriptionClient {
+export class AblySubscriptionClient implements SubscriptionClient {
   constructor(private ably: Ably.Types.RealtimePromise) { }
   async openConnection(onReconnect: VoidFunction): Promise<SubscriptionClientConnection> {
     return {
@@ -19,7 +19,7 @@ export class AblyLiveQueryProvider implements SubscriptionClient {
   }
 }
 
-export class AblyServerEventDispatcher implements SubscriptionServer {
+export class AblySubscriptionServer implements SubscriptionServer {
   constructor(private ably: Ably.Types.RealtimePromise) { }
   publishMessage<T>(channel: string, message: T): void {
     this.ably.channels.get(channel).publish({ data: message });

@@ -5,7 +5,7 @@ import { InMemoryDataProvider } from "../data-providers/in-memory-database";
 import { Entity, Fields, FindOptions, getEntityRef } from "../remult3";
 import { actionInfo } from "../server-action";
 import { createMockHttpDataProvider } from "../tests/testHelper.spec";
-import { PubSubChannel, LiveQueryChange } from "./SubscriptionClient";
+import { SubscriptionChannel, LiveQueryChange } from "./SubscriptionClient";
 import { LiveQueryClient } from "./LiveQueryClient";
 import { LiveQueryPublisher, LiveQueryStorage, InMemoryLiveQueryStorage } from "./SubscriptionServer";
 import { findOptionsFromJson, findOptionsToJson } from "../data-providers/rest-data-provider";
@@ -507,7 +507,7 @@ it("Serialize Find Options1", async () => {
 
 });
 it("test channel subscribe", async () => {
-    const mc = new PubSubChannel("zxcvz");
+    const mc = new SubscriptionChannel("zxcvz");
     let sub = 0;
     remult.apiClient.subscriptionClient = {
         openConnection: async () => {

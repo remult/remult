@@ -120,6 +120,6 @@ export { remult } from './src/remult-proxy';
 //export { getId } from './src/remult3/getId';
 
 export { SubscriptionServer, LiveQueryStorage, StoredQuery, InMemoryLiveQueryStorage } from "./src/live-query/SubscriptionServer";
-export { SubscriptionClientConnection, SubscriptionClient, PubSubChannel, LiveQueryChange, Unsubscribe } from './src/live-query/SubscriptionClient';
+export { SubscriptionClientConnection, SubscriptionClient, SubscriptionChannel, LiveQueryChange, Unsubscribe } from './src/live-query/SubscriptionClient';
 
 
