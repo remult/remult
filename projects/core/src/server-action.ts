@@ -15,7 +15,7 @@ import { SqlDatabase } from './data-providers/sql-database';
 import { packedRowInfo } from './__EntityValueProvider';
 import { Filter, AndFilter } from './filter/filter-interfaces';
 import { DataProvider, RestDataProviderHttpProvider } from './data-interfaces';
-import { getEntityRef, rowHelperImplementation, getFields, decorateColumnSettings, getEntitySettings, getControllerRef, EntityFilter, controllerRefImpl, RepositoryImplementation, $fieldOptionsMember, columnsOfType, getFieldLoaderSaver, Repository, packEntity, unpackEntity, isTransferEntityAsIdField, Field, inferredType, inferMemberType } from './remult3';
+import { getEntityRef, rowHelperImplementation, getFields, decorateColumnSettings, getEntitySettings, getControllerRef, EntityFilter, controllerRefImpl, RepositoryImplementation, $fieldOptionsMember, columnsOfType, getFieldLoaderSaver, Repository, packEntity, unpackEntity, isTransferEntityAsIdField, Field, InferredType, InferMemberType } from './remult3';
 import { FieldOptions } from './column-interfaces';
 import { createClass } from './remult3/DecoratorReplacer';
 import { InferIdType } from 'mongodb';
@@ -536,21 +536,21 @@ function getMemberFieldOptions(type: any, remult: Remult) {
 class dynamicBackendMethods {
 
 }
-export type inferredMethod<inArgs, returnType> = (args: inferMemberType<inArgs>) => Promise<inferMemberType<returnType>>;
+export type inferredMethod<inArgs, returnType> = (args: InferMemberType<inArgs>) => Promise<InferMemberType<returnType>>;
 
-export type createBackendMethodTypeArgs<inArgs, returnType> = {
+export type CreateBackendMethodOptions<inArgs, returnType> = {
     inputType?: inArgs;
     returnType?: returnType;
     key?: string;
     implementation?: inferredMethod<inArgs, returnType>;
-} & BackendMethodOptions<inferMemberType<inArgs>>;
+} & BackendMethodOptions<InferMemberType<inArgs>>;
 
-export type createBackendMethodType<inArg, returnType> = (inferredMethod<inArg, returnType>) & {
+export type BackendMethodType<inArg, returnType> = (inferredMethod<inArg, returnType>) & {
     implementation: inferredMethod<inArg, returnType>
 }
 
-export function createBackendMethod<inArg, returnType>(arg: createBackendMethodTypeArgs<inArg, returnType>):
-    createBackendMethodType<inArg, returnType> {
+export function createBackendMethod<inArg, returnType>(arg: CreateBackendMethodOptions<inArg, returnType>):
+    BackendMethodType<inArg, returnType> {
 
     const descriptor = {
         value: (...args) => arg.implementation(args[0])

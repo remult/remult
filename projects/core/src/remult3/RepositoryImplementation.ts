@@ -2,7 +2,7 @@
 import { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from "../column-interfaces";
 import { EntityOptions } from "../entity";
 import { CompoundIdField, LookupColumn, makeTitle } from '../column';
-import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef } from "./remult3";
+import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef, TypedDecorator } from "./remult3";
 import { ClassType } from "../../classType";
 import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControllerSettings, Unobserve, EventSource } from "../context";
 import { AndFilter, customFilterInfo, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
@@ -1528,10 +1528,10 @@ export class StorableArray {
 export class Fields {
     static array<valueType>(valueType: valueType) {
         return Field<any,
-            valueType extends typedDecorator<infer R> ? R[]
+            valueType extends TypedDecorator<infer R> ? R[]
             : InstanceType<
                 //@ts-ignore
-                inferMemberType<valueType>
+                InferMemberType<valueType>
             >[]>(() =>
                 //@ts-ignore
                 new StorableArray(valueType) as any)
@@ -1720,7 +1720,7 @@ export const $fieldOptionsMember = "$fieldOptions";
  * @Fields.string((options,remult) => options.includeInApi = true)
  * title='';
  */
-export function Field<entityType = any, valueType = any>(valueType: () => ClassType<valueType>, ...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]): typedDecorator<valueType> {
+export function Field<entityType = any, valueType = any>(valueType: () => ClassType<valueType>, ...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]): TypedDecorator<valueType> {
 
     const $fieldOptions = (remult: Remult) => {
         let r = buildOptions(options, remult);
@@ -2148,7 +2148,7 @@ class SubscribableImp implements Subscribable {
         return () => this._subscribers = this._subscribers.filter(x => x != list);
     }
 }
-export declare type typedDecorator<type> = ((target, key, c?) => void) & { $type: type };
+
 
 
 export function getFieldLoaderSaver(options: FieldOptions, remult: Remult, forceIds: boolean) {
@@ -2244,14 +2244,4 @@ export function packEntity(defs: rowHelperImplementation<any>): packedRowInfo {
         wasChanged: defs.wasChanged(),
         id: defs.getOriginalId()
     };
-}
-export declare type inferMemberType<type> =
-    type extends typedDecorator<infer R> ? R
-    : type extends (() => infer R) ? R
-    : type extends ClassType<any> ? type
-    : inferredType<type>
-
-export declare type inferredType<type> = {
-    [member in keyof OmitEB<type>]:
-    inferMemberType<type[member]>
 }

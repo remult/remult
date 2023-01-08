@@ -1,7 +1,7 @@
 import { ClassType } from "../../classType";
 import { EntityOptions } from "../entity";
-import { OmitEB } from "./remult3";
-import { Entity, Field, inferMemberType, inferredType, typedDecorator } from "./RepositoryImplementation";
+import { OmitEB, InferMemberType, InferredType, TypedDecorator } from "./remult3";
+import { Entity, Field } from "./RepositoryImplementation";
 
 type Decorator<T = any> = (a: T, b: string, c?: any) => void;
 type Decorators<T> = T extends new (...args: any[]) => infer R ? { [K in keyof OmitEB<R>]?: Decorator } : never;
@@ -41,13 +41,13 @@ export function describeClass<classType>(classType: classType, classDecorator: (
 
 
 
-export function createEntity<T>(key: string, members: T, options?: EntityOptions<inferredType<T>>): { new(...args): inferredType<T> } {
+export function createEntity<T>(key: string, members: T, options?: EntityOptions<InferredType<T>>): { new(...args): InferredType<T> } {
     const r = class { };
     describeClass(r, Entity(key, options), members);
     //@ts-ignore
     return r;
 }
-export function createClass<T>(members: T): ClassType<inferredType<T>> {
+export function createClass<T>(members: T): ClassType<InferredType<T>> {
     const r = class { };
     describeClass(r, undefined, members);
     //@ts-ignore

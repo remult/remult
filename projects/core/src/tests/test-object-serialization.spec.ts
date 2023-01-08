@@ -1,9 +1,9 @@
 import { Remult } from "../context";
 import { InMemoryDataProvider } from "../data-providers/in-memory-database";
 import { remult } from "../remult-proxy";
-import { columnsOfType, controllerRefImpl, Field, Fields, getControllerRef, getFields, inferMemberType, TransferEntityAsIdFieldOptions, ValueListFieldType } from "../remult3";
+import { columnsOfType, controllerRefImpl, Field, Fields, getControllerRef, getFields, InferMemberType, TransferEntityAsIdFieldOptions, ValueListFieldType } from "../remult3";
 import { createClass, describeClass } from "../remult3/DecoratorReplacer";
-import { BackendMethod, createBackendMethod, createBackendMethodType, createBackendMethodTypeArgs, inferredMethod, prepareArgsToSend, prepareReceivedArgs } from "../server-action";
+import { BackendMethod, createBackendMethod, BackendMethodType, CreateBackendMethodOptions, inferredMethod, prepareArgsToSend, prepareReceivedArgs } from "../server-action";
 import { ValueConverters } from "../valueConverters";
 import { createData } from "./createData";
 import { Products } from "./remult-3-entities";
@@ -343,7 +343,7 @@ it("test array typing starting point", () => {
   let zz: keyof typeof z.b = "c";;
 });
 it("test infer member type", () => {
-  function inferType<T>(x: T): inferMemberType<T> {
+  function inferType<T>(x: T): InferMemberType<T> {
     return undefined;
   }
   {
@@ -443,7 +443,7 @@ it("start build backend method", async () => {
     returnType: Number,
     allowed: true,
     implementation: async d => d.getFullYear(),
-    key:"ghi"
+    key: "ghi"
   });
   expect(await m(new Date(1976, 5, 16))).toBe(1976);
   expect(await m.implementation(new Date(1976, 5, 16))).toBe(1976);
@@ -508,7 +508,7 @@ function build<T>(what: T): inferMethods<T> {
 }
 
 declare type inferMethods<type> = {
-  [member in keyof type]: type[member] extends createBackendMethodType<infer R, infer S> ? inferredMethod<R, S> : never
+  [member in keyof type]: type[member] extends BackendMethodType<infer R, infer S> ? inferredMethod<R, S> : never
 }
 
 
