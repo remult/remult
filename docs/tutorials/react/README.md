@@ -97,7 +97,7 @@ app.listen(3002, () => console.log("Server started"));
 ::: warning Important
 Our server Node.js project is using the CommonJS module system.
 
-Therefore, it is import to **remove the `"type": "module"` entry from the `package.json` file** created by Vite.
+Therefore, it is important to **remove the `"type": "module"` entry from the `package.json` file** created by Vite.
 
 *package.json*
 ```json

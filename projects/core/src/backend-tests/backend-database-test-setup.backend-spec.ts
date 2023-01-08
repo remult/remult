@@ -61,6 +61,17 @@ if (true)
         },
         //debug: true
     }), "sqlite3"));
+export const mySqlTest =
+    addDatabaseToTest(testKnexSqlImpl(Knex.default({
+        client: 'mysql2',
+        connection: {
+            user: 'root',
+            password: 'MASTERKEY',
+            host: '127.0.0.1',
+            database: 'test'
+        }
+        //debug: true
+    }), "mysql2"));
 
 
 

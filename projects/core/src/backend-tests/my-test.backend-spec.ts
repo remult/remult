@@ -10,6 +10,9 @@ import { PostgresDataProvider } from "../../postgres";
 import { MongoDataProvider } from "../../remult-mongo";
 import { SqlDatabase } from "../data-providers/sql-database";
 import { dbNamesOf } from "../filter/filter-consumer-bridge-to-sql-request";
+import { RemultAsyncLocalStorage } from "../../server/expressBridge";
+import { initAsyncHooks } from "../../server/initAsyncHooks";
+import { remult } from "../remult-proxy";
 config();
 
 
@@ -68,6 +71,7 @@ testKnexPGSqlImpl("knex filter2", async ({ createEntity }) => {
         }
     })).length).toBe(3);
 }, false);
+
 
 
 
@@ -141,3 +145,50 @@ testMongo("work with native mongo and condition", async ({ remult, createEntity 
     const r = await (await mongo.collection(repo.metadata.options.dbName!)).countDocuments(await MongoDataProvider.mongoCondition(repo, { myId: [1, 2] }))
     expect(r).toBe(2);
 }, false);
+
+it("test async hooks and static remult", async () => {
+    let gotException = true;
+    try {
+        RemultAsyncLocalStorage.instance.getRemult();
+        gotException = false;
+    }
+    catch { }
+    expect(gotException).toBe(true);
+    initAsyncHooks();
+    expect(RemultAsyncLocalStorage.instance.getRemult()).toBe(undefined);
+    RemultAsyncLocalStorage.enable();
+    try {
+        remult.isAllowed(false);
+        gotException = false;
+    }
+    catch { }
+    expect(gotException).toBe(true);
+    const promises = [];
+    RemultAsyncLocalStorage.instance.run(new Remult(), () => {
+        remult.user = { id: 'noam' };
+        promises.push(new Promise(res => {
+            setTimeout(() => {
+                expect(remult.user.id).toBe('noam');
+                res({})
+            }, 10);
+        }))
+        RemultAsyncLocalStorage.instance.run(new Remult(), () => {
+            remult.user = { id: 'yoni' };
+            promises.push(new Promise(res => {
+                setTimeout(() => {
+                    expect(remult.user.id).toBe('yoni');
+                    res({})
+                }, 10);
+            }))
+        });
+        promises.push(new Promise(res => {
+            setTimeout(() => {
+                expect(remult.user.id).toBe('noam');
+                res({})
+            }, 10);
+        }))
+    });
+    await Promise.all(promises);
+
+});
+

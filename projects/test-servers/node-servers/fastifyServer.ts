@@ -1,7 +1,7 @@
 import fastify from 'fastify';
-import { Task } from "./Task";
-import { remultFastify } from '../../../../core/remult-fastify';
-import { remult } from '../../../../core/src/remult-proxy';
+import { Task } from "../shared/Task";
+import { remultFastify } from '../../core/remult-fastify';
+import { remult } from '../../core/src/remult-proxy';
 (async () => {
     const server = fastify();
     const api = remultFastify({ entities: [Task] });

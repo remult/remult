@@ -3,6 +3,7 @@
     "compilerOptions": {
         "experimentalDecorators": true,
         "module": "commonjs",
+        "rootDir": "../",
         "outDir": "../../out-tsc/backend-tests",
         "types": [
             "jasmine",

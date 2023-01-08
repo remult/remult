@@ -9,8 +9,9 @@ import { Status } from "../tests/testModel/models";
 
 
 export function itWithFocus(key: string, what: () => Promise<void>, focus = false) {
-    if (focus)
+    if (focus) {
         fit(key, what);
+    }
     else
         it(key, what);
 }
@@ -31,6 +32,7 @@ export function addDatabaseToTest(tester: dbTestMethodSignature) {
         test(tester);
     }
     databasesTesters.push(tester);
+    return tester;
 }
 
 

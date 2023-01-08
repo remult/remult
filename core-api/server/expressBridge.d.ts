@@ -20,7 +20,7 @@ export interface RemultServerOptions<RequestType extends GenericRequest> {
     controllers?: ClassType<any>[];
     rootPath?: string;
 }
-export declare function createRemultServer<RequestType extends GenericRequest = GenericRequest>(options?: RemultServerOptions<RequestType>): RemultServer;
+export declare function createRemultServerCore<RequestType extends GenericRequest = GenericRequest>(options?: RemultServerOptions<RequestType>): RemultServer;
 export declare type GenericRequestHandler = (req: GenericRequest, res: GenericResponse, next: VoidFunction) => void;
 export interface ServerHandleResponse {
     data?: any;
@@ -56,6 +56,15 @@ export interface GenericResponse {
     json(data: any): any;
     status(statusCode: number): GenericResponse;
     end(): any;
+}
+export declare class RemultAsyncLocalStorage {
+    private readonly remultObjectStorage;
+    static enable(): void;
+    static disable(): void;
+    constructor(remultObjectStorage: import('async_hooks').AsyncLocalStorage<Remult>);
+    run(remult: Remult, callback: VoidFunction): void;
+    getRemult(): Remult;
+    static instance: RemultAsyncLocalStorage;
 }
 export interface queuedJobInfo {
     info: queuedJobInfoResponse;

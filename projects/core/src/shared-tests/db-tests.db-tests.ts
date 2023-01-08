@@ -21,7 +21,6 @@ import { IdEntity } from "../id-entity";
 
 
 
-
 testAll("what", async ({ remult, createEntity }) => {
     await (await createEntity(stam)).create({ id: 1, title: 'noam' }).save();
     expect(await remult.repo(stam).count()).toBe(1);
@@ -565,8 +564,6 @@ testAll("auto increment can't be affected by insert or update", async ({ createE
     r.id = 4321;
     await r.save();
     expect(r.id).toBe(x);
-
-
 }, false)
 
 testAll("Paging",
