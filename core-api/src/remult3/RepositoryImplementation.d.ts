@@ -1,10 +1,10 @@
 import { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from "../column-interfaces";
 import { EntityOptions } from "../entity";
 import { LookupColumn } from '../column';
-import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef } from "./remult3";
+import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef, TypedDecorator } from "./remult3";
 import { ClassType } from "../../classType";
 import { Remult, Unobserve } from "../context";
-import { entityEventListener } from "../__EntityValueProvider";
+import { entityEventListener, packedRowInfo } from "../__EntityValueProvider";
 import { DataProvider, EntityDataProvider } from "../data-interfaces";
 import { RefSubscriber } from ".";
 export declare class RepositoryImplementation<entityType> implements Repository<entityType> {
@@ -39,7 +39,7 @@ export declare class RepositoryImplementation<entityType> implements Repository<
     } ? number : entityType extends {
         id?: string;
     } ? string : (string | number)), entity: Partial<OmitEB<entityType>>): Promise<entityType>;
-    private getRefForExistingRow;
+    getRefForExistingRow(entity: Partial<OmitEB<entityType>>, id: string | number): EntityRef<Partial<Pick<entityType, Exclude<keyof entityType, "delete" | "_" | "save" | "assign" | "isNew" | "$">>>>;
     save(item: Partial<OmitEB<entityType>>[]): Promise<entityType[]>;
     save(item: Partial<OmitEB<entityType>>): Promise<entityType>;
     find(options: FindOptions<entityType>): Promise<entityType[]>;
@@ -92,6 +92,8 @@ declare abstract class rowHelperBase<T> {
     validate(): Promise<boolean>;
     __validateEntity(): Promise<void>;
     __performColumnAndEntityValidations(): Promise<void>;
+    protected _forceRefId: boolean;
+    forceRefId(o: FieldOptions): boolean;
     toApiJson(): any;
     _updateEntityBasedOnApi(body: any): Promise<void>;
 }
@@ -210,16 +212,22 @@ declare class EntityFullInfo<T> implements EntityMetadata<T> {
     caption: string;
 }
 export declare function FieldType<valueType = any>(...options: (FieldOptions<any, valueType> | ((options: FieldOptions<any, valueType>, remult: Remult) => void))[]): (target: any) => any;
+export declare class StorableArray {
+    private type;
+    getElementType(): any;
+    constructor(type: () => any);
+}
 export declare class Fields {
-    static object<entityType = any, valueType = any>(...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]): (target: any, key: any, c?: any) => void;
-    static dateOnly<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]): (target: any, key: any, c?: any) => void;
-    static date<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]): (target: any, key: any, c?: any) => void;
-    static integer<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]): (target: any, key: any, c?: any) => void;
-    static autoIncrement<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]): (target: any, key: any, c?: any) => void;
-    static number<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]): (target: any, key: any, c?: any) => void;
-    static uuid<entityType = any>(...options: (FieldOptions<entityType, string> | ((options: FieldOptions<entityType, string>, remult: Remult) => void))[]): (target: any, key: any, c?: any) => void;
-    static string<entityType = any>(...options: (StringFieldOptions<entityType> | ((options: StringFieldOptions<entityType>, remult: Remult) => void))[]): (target: any, key: any, c?: any) => void;
-    static boolean<entityType = any>(...options: (FieldOptions<entityType, boolean> | ((options: FieldOptions<entityType, boolean>, remult: Remult) => void))[]): (target: any, key: any, c?: any) => void;
+    static array<valueType>(valueType: valueType): TypedDecorator<valueType extends TypedDecorator<infer R> ? R[] : any[]>;
+    static object<entityType = any, valueType = any>(...options: (FieldOptions<entityType, valueType[]> | ((options: FieldOptions<entityType, valueType[]>, remult: Remult) => void))[]): TypedDecorator<valueType[]>;
+    static dateOnly<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]): TypedDecorator<Date>;
+    static date<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]): TypedDecorator<Date>;
+    static integer<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]): TypedDecorator<Number>;
+    static autoIncrement<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]): TypedDecorator<Number>;
+    static number<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]): TypedDecorator<Number>;
+    static uuid<entityType = any>(...options: (FieldOptions<entityType, string> | ((options: FieldOptions<entityType, string>, remult: Remult) => void))[]): TypedDecorator<any>;
+    static string<entityType = any>(...options: (StringFieldOptions<entityType> | ((options: StringFieldOptions<entityType>, remult: Remult) => void))[]): TypedDecorator<String>;
+    static boolean<entityType = any>(...options: (FieldOptions<entityType, boolean> | ((options: FieldOptions<entityType, boolean>, remult: Remult) => void))[]): TypedDecorator<Boolean>;
 }
 export declare function isAutoIncrement(f: FieldMetadata): boolean;
 export interface StringFieldOptions<entityType = any> extends FieldOptions<entityType, string> {
@@ -251,6 +259,7 @@ export declare class ValueListInfo<T extends ValueListItem> implements ValueConv
 export declare function getValueList<T>(field: FieldRef<T>): T[];
 export declare function getValueList<T>(field: FieldMetadata<T>): T[];
 export declare function getValueList<T>(type: ClassType<T>): T[];
+export declare const $fieldOptionsMember = "$fieldOptions";
 /**Decorates fields that should be used as fields.
  * for more info see: [Field Types](https://remult.dev/docs/field-types.html)
  *
@@ -264,8 +273,11 @@ export declare function getValueList<T>(type: ClassType<T>): T[];
  * @Fields.string((options,remult) => options.includeInApi = true)
  * title='';
  */
-export declare function Field<entityType = any, valueType = any>(valueType: () => ClassType<valueType>, ...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]): (target: any, key: any, c?: any) => void;
+export declare function Field<entityType = any, valueType = any>(valueType: () => ClassType<valueType>, ...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]): TypedDecorator<valueType>;
+export declare const TransferEntityAsIdFieldOptions: FieldOptions;
+export declare function isTransferEntityAsIdField(o: FieldOptions): any;
 export declare const storableMember: unique symbol;
+export declare const emptyJsonTranslator: (x: any) => any;
 export declare function decorateColumnSettings<valueType>(settings: FieldOptions<any, valueType>, remult: Remult): FieldOptions<any, valueType>;
 interface columnInfo {
     key: string;
@@ -320,4 +332,10 @@ declare class SubscribableImp implements Subscribable {
         reportObserved: () => void;
     }): Unobserve;
 }
+export declare function getFieldLoaderSaver(options: FieldOptions, remult: Remult, forceIds: boolean): {
+    toJson: (val: any) => any;
+    fromJson: (val: any) => any;
+};
+export declare function unpackEntity(d: packedRowInfo, repo: Repository<any>): Promise<any>;
+export declare function packEntity(defs: rowHelperImplementation<any>): packedRowInfo;
 export {};

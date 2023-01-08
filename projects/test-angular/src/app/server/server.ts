@@ -30,7 +30,7 @@ import axios from 'axios';
 import { ExternalHttpProvider, Remult } from '../../../../core/src/context';
 
 import { DataProvider } from '../../../../core/src/data-interfaces';
-import { Repository } from '../../../../core/src/remult3';
+import { OmitEB, Repository } from '../../../../core/src/remult3';
 import { BackendMethod } from '../../../../core/src/server-action';
 import fetch from 'node-fetch';
 import { remult } from '../../../../core/src/remult-proxy';
@@ -124,12 +124,38 @@ serverInit().then(async (dataSource) => {
     app.listen(port);
 });
 
-
-
-class OverviewController {
-    @BackendMethod({ allowed: true })
-    static async getOverview(x: boolean) {
-        return {};
-    }
+class zzz {
+    @myStringDecorator()
+    a: string;
 }
+
+let z = {
+    a: zzz,
+    b: Number,
+    c: Boolean,
+    d: String,
+    e: Date,
+    f: myStringDecorator()
+}
+declare type typedDecorator<type> = ((target, key) => void) & { $type: type };
+function myStringDecorator(): typedDecorator<string> {
+    //@ts-ignore
+    return (target, key) => { }
+}
+
+
+
+declare type inferredType<type> = {
+    [member in keyof OmitEB<type>]:
+    type[member] extends StringConstructor ? string : 
+    type[member] extends typedDecorator<infer R> ? R : never
+}
+let zz: inferredType<typeof z>;
+
+
+
+let y: ReturnType<StringConstructor>;
+let y1: ReturnType<StringConstructor> extends string ? string : never;
+let y2: StringConstructor extends StringConstructor ? string : never;
+y2
 

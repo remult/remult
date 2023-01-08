@@ -31,6 +31,7 @@ import { ValueConverters } from "../valueConverters";
 import { dbNameProviderImpl, FilterConsumerBridgeToSqlRequest, getDbNameProvider } from "../filter/filter-consumer-bridge-to-sql-request";
 import axios from "axios";
 import { async } from "@angular/core/testing";
+import { createEntity } from "../remult3/DecoratorReplacer";
 
 //SqlDatabase.LogToConsole = true;
 
@@ -557,6 +558,15 @@ describe("data api", () => {
       ]
     });
     d.test();
+  });
+  it("test createEntity", async () => {
+    const e = createEntity("createEntity", {
+      id: Fields.integer(),
+      name: Fields.string()
+    });
+    const repo = new Remult(new InMemoryDataProvider()).repo(e);
+    await repo.insert([{ id: 1, name: "noam" }, { id: 2, name: "yoni" }]);
+    expect(await repo.count()).toBe(2);
   });
 
   it("delete with validation fails", async () => {
@@ -1792,7 +1802,7 @@ describe("test rest data provider translates data correctly", () => {
     let c = new Remult().repo(type);
     let z = new RestDataProvider(() => ({
       httpClient: {
-        delete: ()=>undefined,
+        delete: () => undefined,
         get: async () => {
           return [
             {
@@ -1801,8 +1811,8 @@ describe("test rest data provider translates data correctly", () => {
             }
           ]
         },
-        post: ()=>undefined,
-        put: ()=>undefined
+        post: () => undefined,
+        put: () => undefined
       }
     }));
     let x = z.getEntityDataProvider(c.metadata);
@@ -1868,15 +1878,15 @@ describe("test rest data provider translates data correctly", () => {
     let done = new Done();
     let z = new RestDataProvider(() => ({
       httpClient: {
-        delete: ()=>undefined,
-        get: ()=>undefined,
+        delete: () => undefined,
+        get: () => undefined,
         post: async (x, data) => {
           done.ok();
           expect(data.a).toBe(1);
           expect(data.b).toBe("2021-05-16T08:32:19.905Z");
           return data;
         },
-        put: ()=>undefined
+        put: () => undefined
       }
     }));
     let x = z.getEntityDataProvider(c.metadata);

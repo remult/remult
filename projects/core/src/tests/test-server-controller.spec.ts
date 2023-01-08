@@ -1,7 +1,7 @@
 import { ActionTestConfig, testAsIfOnBackend } from './testHelper.spec';
 import { Remult, isBackend } from '../context';
 import { prepareArgsToSend, Controller, BackendMethod } from '../server-action';
-import { Field, Entity, getFields, ValueListFieldType, Fields } from '../remult3';
+import { Field, Entity, getFields, ValueListFieldType, Fields, TransferEntityAsIdFieldOptions } from '../remult3';
 
 import { IdEntity } from '../id-entity';
 import { remult, RemultProxy } from '../remult-proxy';
@@ -37,7 +37,7 @@ class testBasics {
     theDate: Date;
     @Field(() => myType)
     myType: myType;
-    @Field(() => testEntity)
+    @Field(() => testEntity, TransferEntityAsIdFieldOptions)
     myEntity: testEntity;
     @BackendMethod({ allowed: true })
     async testDate() {
@@ -239,14 +239,14 @@ describe("test Server Controller basics", () => {
         let e = await c.repo(testEntity).create({ name: 'test' }).save();
         expect(await testBasics.sendEntityAsParamter(e)).toBe('test');
     });
-    it("send entity to server ", async () => {
+    it("send entity to server null", async () => {
 
         expect(await testBasics.sendEntityAsParamter(null)).toBe('null');
     });
 
     it("send entity to server prepare args to send ", async () => {
         let e = await c.repo(testEntity).create({ name: 'test' }).save();
-        expect(prepareArgsToSend([testEntity], [e])[0]).toBe(e.id);
+        expect(prepareArgsToSend([Field(() => testEntity, TransferEntityAsIdFieldOptions)], [e])[0]).toBe(e.id);
     });
     it("data is saved on server", async () => {
         await c.repo(testEntity).create({ name: 'test' }).save();
