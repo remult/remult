@@ -3,6 +3,7 @@
     <img src="https://github.com/remult/remult/raw/master/docs/.vuepress/public/logo.png" width="140" height="140">
   </a>
   <h1>Remult</h1>
+  <p>A CRUD framework for full-stack TypeScript</p>
 	<a href="https://circleci.com/gh/remult/remult/tree/master" rel="nofollow">
 		<img alt="CircleCI" src="https://circleci.com/gh/remult/remult/tree/master.svg?style=shield">
 	</a>
@@ -24,20 +25,42 @@
   <a href="https://twitter.com/intent/tweet?text=Remult%20-%20open-source%20CRUD%20framework%20for%20full-stack%20TypeScript%0A%0A%40remultjs%0A&url=https%3A%2F%2Fgithub.com%2Fremult%2Fremult">
     <img alt="Twitter URL" src="https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Ftwitter.com%2Fintent%2Ftweet%3Ftext%3DRemult%2520-%2520open-source%2520CRUD%2520framework%2520for%2520full-stack%2520TypeScript%250A%250A%2540remultjs%250A%26url%3Dhttps%253A%252F%252Fgithub.com%252Fremult%252Fremult">
   </a>
-	<a href="https://twitter.com/remultjs" rel="nofollow">
-	  <img alt="Twitter Follow" src="https://img.shields.io/twitter/url.svg?label=Follow%20%40remultjs&style=social&url=https%3A%2F%2Ftwitter.com%2FRemultJs">
-	</a>
 </div>
-<hr/>
 
-[Getting Started](#getting-started) | [Documentation](#documentation) |
-[Example Apps](#example-apps)
+
+<br/>
+
+<div align="center">
+  <a href="#getting-started">Getting Started</a> |
+  <a href="#documentation">Documentation</a> |
+  <a href="#example-apps">Example Apps</a>
+</div>
+
+<hr/>
+<br/>
+
+<a href="https://www.youtube.com/watch?v=rEoScmSVNUE" target="_blank">
+  <p align="center">
+    <img src="https://github.com/remult/remult/raw/master/static/images/video-thumbnail.jpg" alt="Video thumbnail"  />
+  </p>
+</a>
+
+<a href="https://www.youtube.com/watch?v=rEoScmSVNUE" target="_blank">
+  <p align="center">Watch code demo on YouTube here (14 mins)</p>
+</a>
 
 ## What is Remult?
 
 **Remult** is a full-stack CRUD framework that uses your **TypeScript entities
 as a single source of truth for your API, frontend type-safe API client and
 backend ORM**.
+
+* :zap: Zero-boilerplate CRUD API routes with paging, sorting, and filtering for Express / Fastify / Next.js / NestJS / Koa / others...
+* :ok_hand: Fullstack type-safety for API queries, mutations and RPC, without code generation
+* :sparkles: Input validation, defined once, runs both on the backend and on the frontend for best UX
+* :lock: Fine-grained code-based API authorization
+* :relieved: Incrementally adoptable
+* :rocket: Production ready
 
 ### Status
 

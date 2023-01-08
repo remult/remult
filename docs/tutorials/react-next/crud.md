@@ -58,7 +58,7 @@ const Home: NextPage = () => {
       setTasks(tasks.map(t => t === task ? { ...task, ...values } : t));
    };
 
-   const saveTask = () => {
+   const saveTask = async () => {
       const savedTask = await remult.repo(Task).save(task);
       setTasks(tasks.map(t => t === task ? savedTask : t));
    };
@@ -115,7 +115,7 @@ const Home: NextPage = () => {
                   setTasks(tasks.map(t => t === task ? { ...task, ...values } : t));
                }
 
-               const saveTask = () => {
+               const saveTask = async () => {
                   const savedTask = await remult.repo(Task).save(task);
                   setTasks(tasks.map(t => t === task ? savedTask : t));
                }

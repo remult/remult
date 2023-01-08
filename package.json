@@ -1,14 +1,14 @@
 {
   "name": "remult-mono-repo",
   "description": "See projects/core for the remult core package.json. This package.json is used for remult/core development, test projects and experimental work. See ",
-  "version": "0.16.3-exp.1",
+  "version": "0.17.0",
   "scripts": {
     "test": "concurrently -k -n \"TSC,Test\" -c \"bgBlue.bold,bgGreen.bold\" \"tsc -w -p projects/core/tsconfig.build.json --emitDeclarationOnly --outDir core-api\" \"cd projects/test-angular && ng test core\"",
     "release-core": "npm run build-core && npm run patch-versions",
     "release-core-experimental": "npm run build-core && npm run patch-versions-experimental && cd dist/remult && npm publish  --access public --tag experimental",
     "build-core": "tsc -p projects/core/tsconfig.build.json && tsc -p projects/core/tsconfig.build.esm.json && copyfiles -u 2 projects/core/package.json dist/remult && copyfiles README.md dist/remult && copyfiles LICENSE dist/remult",
     "build": "npm run build-core && npm run remult-angular-build ",
-    "all-servers": "concurrently -k -n \"koa,fastify,express,mw\" -c \"bgBlue.bold,bgGreen.bold,bgCyan.bold,bgYellow.bold\" \"ts-node-dev -P projects/test-angular/tsconfig.server.json projects/test-angular/src/app/server/koaServer.ts\" \"ts-node-dev -P projects/test-angular/tsconfig.server.json projects/test-angular/src/app/server/fastifyServer.ts\" \"ts-node-dev -P projects/test-angular/tsconfig.server.json projects/test-angular/src/app/server/expressServer.ts\" \"ts-node-dev -P projects/test-angular/tsconfig.server.json projects/test-angular/src/app/server/middlewareServer.ts\"",
+    "all-servers": "concurrently -k -n \"koa,fastify,express,mw,deno-fresh,mwc\" -c \"bgBlue.bold,bgGreen.bold,bgCyan.bold,bgYellow.bold\" \"ts-node-dev -P projects/test-angular/tsconfig.server.json projects/test-servers/node-servers/koaServer.ts\" \"ts-node-dev -P projects/test-angular/tsconfig.server.json projects/test-servers/node-servers/fastifyServer.ts\" \"ts-node-dev -P projects/test-angular/tsconfig.server.json projects/test-servers/node-servers/expressServer.ts\" \"ts-node-dev -P projects/test-angular/tsconfig.server.json projects/test-servers/node-servers/middlewareServer.ts\" \"cd projects/test-servers/deno-fresh && deno task start\" \"ts-node-dev -P projects/test-angular/tsconfig.server.json projects/test-servers/node-servers/middlewareCore.ts\" ",
     "publish-as-next": "npm run build && npm run patch-versions && cd dist/remult && npm publish  --access public --tag next && cd.. && cd angular && npm publish  --access public --tag next",
     "test:ci": "cd projects/test-angular && ng test core --code-coverage",
     "remove-next": "npm remult dist-tag rm next",
@@ -77,11 +77,11 @@
     "cors": "^2.8.5",
     "cp": "^0.2.0",
     "dotenv": "^8.1.0",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "express-force-https": "^1.0.0",
     "express-graphql": "^0.12.0",
     "express-jwt": "^6.0.0",
-    "fastify": "^4.2.1",
+    "fastify": "^4.10.2",
     "fastify-plugin": "^4.0.0",
     "graphql": "^15.8.0",
     "jasmine": "^4.1.0",
@@ -124,5 +124,8 @@
     "jsonwebtoken": false,
     "argon2": false,
     "password-hash": false
+  },
+  "dependencies": {
+    "mysql2": "^2.3.3"
   }
 }
