@@ -89,7 +89,7 @@
     "jasmine-spec-reporter": "~5.0.0",
     "jasmine-ts": "^0.4.0",
     "jest": "^27.5.1",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "karma": "~6.3.16",
     "karma-chrome-launcher": "~3.1.0",
     "karma-coverage": "~2.0.3",
