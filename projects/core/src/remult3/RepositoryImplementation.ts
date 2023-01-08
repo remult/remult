@@ -5,7 +5,7 @@ import { CompoundIdField, LookupColumn, makeTitle } from '../column';
 import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef } from "./remult3";
 import { ClassType } from "../../classType";
 import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControllerSettings, Unobserve, EventSource } from "../context";
-import { AndFilter, customFilterInfo, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
+import { AndFilter, rawFilterInfo, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
 import { Sort } from "../sort";
 import { v4 as uuid } from 'uuid';
 
@@ -432,7 +432,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             } as EntityFilter<entityType>;
         }
         let r = await Filter.fromEntityFilter(this.metadata, where);
-        if (r && !this.dataProvider.supportsCustomFilter) {
+        if (r && !this.dataProvider.supportsrawFilter) {
             r = await Filter.translateCustomWhere(r, this.metadata, this.remult);
         }
         return r;
@@ -1867,12 +1867,12 @@ interface columnInfo {
 export function Entity<entityType>(key: string, ...options: (EntityOptions<entityType> | ((options: EntityOptions<entityType>, remult: Remult) => void))[]) {
 
     return target => {
-        for (const customFilterMember in target) {
-            if (Object.prototype.hasOwnProperty.call(target, customFilterMember)) {
-                const element = target[customFilterMember] as customFilterInfo<any>;
-                if (element?.customFilterInfo?.customFilterTranslator) {
-                    if (!element.customFilterInfo.key)
-                        element.customFilterInfo.key = customFilterMember;
+        for (const rawFilterMember in target) {
+            if (Object.prototype.hasOwnProperty.call(target, rawFilterMember)) {
+                const element = target[rawFilterMember] as rawFilterInfo<any>;
+                if (element?.rawFilterInfo?.rawFilterTranslator) {
+                    if (!element.rawFilterInfo.key)
+                        element.rawFilterInfo.key = rawFilterMember;
                 }
             }
         }

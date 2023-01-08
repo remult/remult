@@ -7,15 +7,15 @@ To do that with SQL, we can write the following code:
 ```ts{3-5}
 console.table(
   await remult.repo(Task).find({
-    where: SqlDatabase.customFilter((whereFragment) => {
+    where: SqlDatabase.rawFilter((whereFragment) => {
       whereFragment.sql = 'length(title)>10'
     })
   })
 )
 ```
-* Note that the `customFilter` method receives an `async` arrow function, this means that you can create complex logic here and maybe even other queries which their results will be used as part of that `customFilter`.
+* Note that the `rawFilter` method receives an `async` arrow function, this means that you can create complex logic here and maybe even other queries which their results will be used as part of that `rawFilter`.
 This code will work great on the backend, but if we try to run it in the frontend, we'll get the 'database custom is not allowed with api calls.' error.
-To call it from the frontend, we need to use a `customFilter`
+To call it from the frontend, we need to use a `rawFilter`
 
 In the entity class, we'll add the `titleLengthFilter` static method
 ```ts{7-11}
@@ -26,13 +26,13 @@ export class Task {
   //...
   
   static titleLengthFilter = Filter.createCustom<Task>(async () => {
-    return SqlDatabase.customFilter((whereFragment) => {
+    return SqlDatabase.rawFilter((whereFragment) => {
       whereFragment.sql = 'length(title)>10'
     })
   });
 }
 ```
-`customFilter` allows us to wrap server-side filters with an easy-to-use API and use it in the frontend.
+`rawFilter` allows us to wrap server-side filters with an easy-to-use API and use it in the frontend.
 Here's how you can use it both in the frontend and also the backend
 
 ```ts{3}
@@ -49,7 +49,7 @@ http://127.0.0.1:3002/api/tasks?%24custom%24titleLengthFilter=%7B%7D
 ```
 :::
 
-### The `customFilter` can also receive and use arguments:
+### The `rawFilter` can also receive and use arguments:
 
 ```ts{7-13}
 @Entity<Task>("tasks", {
@@ -60,7 +60,7 @@ export class Task {
   
   static titleLengthFilter = Filter.createCustom<Task, { minLength: number }>(
     async ({ minLength }) => {
-      return SqlDatabase.customFilter((whereFragment) => {
+      return SqlDatabase.rawFilter((whereFragment) => {
         whereFragment.sql = 'length(title)>' 
           + whereFragment.addParameterAndReturnSqlToken(minLength)
       })
@@ -92,7 +92,7 @@ We can use custom filter with other data providers:
     to:number
   }>(
     () => {
-      return KnexDataProvider.customFilter(async ({from,to}) => {
+      return KnexDataProvider.rawFilter(async ({from,to}) => {
         return knexQueryBuilder => {
           knexQueryBuilder.andWhereBetween('id', [from, to]);
         }
@@ -104,7 +104,7 @@ We can use custom filter with other data providers:
 ```ts{3-5}
 static titleLengthFilter = Filter.createCustom<Task, { minLength: number }>(
   ({ minLength }) => {
-    return ArrayEntityDataProvider.customFilter( (item) => {
+    return ArrayEntityDataProvider.rawFilter( (item) => {
       return item.title?.length>minLength
     })
   });

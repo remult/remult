@@ -9,9 +9,9 @@ export declare class KnexDataProvider implements DataProvider {
     static getDb(remult?: Remult): Knex<any, Record<string, any>[]>;
     getEntityDataProvider(entity: EntityMetadata<any>): EntityDataProvider;
     transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void>;
-    static customFilter(build: CustomKnexFilterBuilderFunction): EntityFilter<any>;
-    static knexCondition<entityType>(entity: RepositoryOverloads<entityType>, condition: EntityFilter<entityType>): Promise<(knex: any) => void>;
-    supportsCustomFilter?: boolean;
+    static rawFilter(build: CustomKnexFilterBuilderFunction): EntityFilter<any>;
+    static filterToRaw<entityType>(entity: RepositoryOverloads<entityType>, condition: EntityFilter<entityType>): Promise<(knex: any) => void>;
+    supportsrawFilter?: boolean;
 }
 export declare type CustomKnexFilterBuilderFunction = () => Promise<(builder: Knex.QueryBuilder) => void>;
 export declare class KnexSchemaBuilder {

@@ -56,7 +56,7 @@ Arguments: { '$1': 5 }
 ### Leveraging EntityFilter for Sql Databases
 Sometimes in our sql, we may want to use EntityFilters as sql filters, this is particularly useful if we have refactored complex filters in our code and we want to reuse them.
 
- we can use the `sqlCondition` utility function for that:
+ we can use the `filterToRaw` utility function for that:
 
 ```ts
 const tasks = await dbNamesOf(Task);
@@ -64,7 +64,7 @@ const sql = await SqlDatabase.getDb();
 const command = sql.createCommand();
 console.table(await command.execute(
   `select ${tasks.title}, ${tasks.completed} from ${tasks}
-    where ${await SqlDatabase.sqlCondition(Task, { id: [1, 3] }, command)}`))
+    where ${await SqlDatabase.filterToRaw(Task, { id: [1, 3] }, command)}`))
 ```
 will result in the following sql:
 ```sql
@@ -78,7 +78,7 @@ const sql = await SqlDatabase.getDb();
 const command = sql.createCommand();
 console.table(await command.execute(
     `select ${tasks.title}, ${tasks.completed} from ${tasks}
-      where ${await SqlDatabase.sqlCondition(Task, { id: [1, 3] }, command)}`))
+      where ${await SqlDatabase.filterToRaw(Task, { id: [1, 3] }, command)}`))
 ```
 This will result in the following sql:
 ```sql
@@ -110,7 +110,7 @@ const tasks = await dbNamesOf(Task);
 const knex = KnexDataProvider.getDb();
 const r = await knex(tasks.$entityName)
   .count()
-  .where(await KnexDataProvider.knexCondition(Task, { id: [1, 3] }));
+  .where(await KnexDataProvider.filterToRaw(Task, { id: [1, 3] }));
 console.log(r[0].count);
 ```
 
@@ -130,7 +130,7 @@ console.log(r);
 const tasks = await dbNamesOf(Task);
 const mongo = MongoDataProvider.getDb();
 const r = await (await mongo.collection(tasks.$entityName))
-    .countDocuments(await MongoDataProvider.mongoCondition(Task, { id: [1, 2] }));
+    .countDocuments(await MongoDataProvider.filterToRaw(Task, { id: [1, 2] }));
 console.log(r);
 ```
 

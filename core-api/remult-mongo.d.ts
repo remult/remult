@@ -8,7 +8,7 @@ export declare class MongoDataProvider implements DataProvider {
     static getDb(remult?: Remult): Db;
     getEntityDataProvider(entity: EntityMetadata<any>): EntityDataProvider;
     transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void>;
-    static mongoCondition<entityType>(entity: RepositoryOverloads<entityType>, condition: EntityFilter<entityType>): Promise<{
+    static filterToRaw<entityType>(entity: RepositoryOverloads<entityType>, condition: EntityFilter<entityType>): Promise<{
         $and: any[];
     } | {
         $and?: undefined;

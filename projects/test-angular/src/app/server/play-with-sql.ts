@@ -27,13 +27,13 @@ export class Order {
     async ({ city }) => {
       const orders = await dbNamesOf(Order);
       const customers = await dbNamesOf(Customer);
-      return SqlDatabase.customFilter(
+      return SqlDatabase.rawFilter(
         async whereFragment => {
           whereFragment.sql =
             `${orders.customer} in 
                (select ${customers.id} 
                   from ${customers} 
-                 where ${await whereFragment.sqlCondition(Customer, { city })})`
+                 where ${await whereFragment.filterToRaw(Customer, { city })})`
         });
     });
   @Fields.string({

@@ -6,8 +6,8 @@ export declare class Filter {
     constructor(apply?: (add: FilterConsumer) => void);
     __applyToConsumer(add: FilterConsumer): void;
     static resolve<entityType>(filter: EntityFilter<entityType> | (() => EntityFilter<entityType> | Promise<EntityFilter<entityType>>)): Promise<EntityFilter<entityType>>;
-    static createCustom<entityType>(customFilterTranslator: (unused: any, r: Remult) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>, key?: string): (() => EntityFilter<entityType>) & customFilterInfo<entityType>;
-    static createCustom<entityType, argsType>(customFilterTranslator: (args: argsType, r: Remult) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>, key?: string): ((y: argsType) => EntityFilter<entityType>) & customFilterInfo<entityType>;
+    static createCustom<entityType>(rawFilterTranslator: (unused: any, r: Remult) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>, key?: string): (() => EntityFilter<entityType>) & rawFilterInfo<entityType>;
+    static createCustom<entityType, argsType>(rawFilterTranslator: (args: argsType, r: Remult) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>, key?: string): ((y: argsType) => EntityFilter<entityType>) & rawFilterInfo<entityType>;
     static fromEntityFilter<T>(entity: EntityMetadata<T>, whereItem: EntityFilter<T>): Filter;
     toJson(): any;
     static entityFilterToJson<T>(entityDefs: EntityMetadata<T>, where: EntityFilter<T>): any;
@@ -77,9 +77,9 @@ export declare function entityFilterToJson<T>(entityDefs: EntityMetadata<T>, whe
 export declare function buildFilterFromRequestParameters(entity: EntityMetadata, filterInfo: {
     get: (key: string) => any;
 }): EntityFilter<any>;
-export interface customFilterInfo<entityType> {
-    customFilterInfo: {
+export interface rawFilterInfo<entityType> {
+    rawFilterInfo: {
         key: string;
-        customFilterTranslator: (args: any, r: Remult) => (EntityFilter<entityType> | Promise<EntityFilter<entityType>>);
+        rawFilterTranslator: (args: any, r: Remult) => (EntityFilter<entityType> | Promise<EntityFilter<entityType>>);
     };
 }

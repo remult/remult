@@ -10,8 +10,8 @@ export declare class SqlDatabase implements DataProvider {
     execute(sql: string): Promise<SqlResult>;
     getEntityDataProvider(entity: EntityMetadata): EntityDataProvider;
     transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void>;
-    static customFilter(build: CustomSqlFilterBuilderFunction): EntityFilter<any>;
-    static sqlCondition<entityType>(repo: RepositoryOverloads<entityType>, condition: EntityFilter<entityType>, sqlCommand?: SqlCommandWithParameters): Promise<string>;
+    static rawFilter(build: CustomSqlFilterBuilderFunction): EntityFilter<any>;
+    static filterToRaw<entityType>(repo: RepositoryOverloads<entityType>, condition: EntityFilter<entityType>, sqlCommand?: SqlCommandWithParameters): Promise<string>;
     static LogToConsole: boolean;
     static durationThreshold: number;
     constructor(sql: SqlImplementation);

@@ -16,7 +16,7 @@ import { DataApi } from '../data-api';
 import { ArrayEntityDataProvider } from '../data-providers/array-entity-data-provider';
 import { ClassType } from '../../classType';
 import { CustomSqlFilterBuilder, dbNamesOf } from '../filter/filter-consumer-bridge-to-sql-request';
-import { entityForCustomFilter } from './entityForCustomFilter';
+import { entityForrawFilter } from './entityForCustomFilter';
 
 
 describe("test where stuff", () => {
@@ -100,18 +100,18 @@ describe("test where stuff", () => {
 
 describe("custom filter", () => {
     it("test that it works", async () => {
-        let c = new Remult().repo(entityForCustomFilter, new InMemoryDataProvider());
+        let c = new Remult().repo(entityForrawFilter, new InMemoryDataProvider());
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
         }
-        expect(await (c.count(entityForCustomFilter.filter({ oneAndThree: true }))))
+        expect(await (c.count(entityForrawFilter.filter({ oneAndThree: true }))))
             .toBe(2);
     });
     it("works with serialize filter", async () => {
-        let z = entityForCustomFilter.oneAndThree();
-        let c = new Remult().repo(entityForCustomFilter, new InMemoryDataProvider());
+        let z = entityForrawFilter.oneAndThree();
+        let c = new Remult().repo(entityForrawFilter, new InMemoryDataProvider());
 
-        let json = (await Filter.fromEntityFilter(c.metadata, entityForCustomFilter.oneAndThree())).toJson();
+        let json = (await Filter.fromEntityFilter(c.metadata, entityForrawFilter.oneAndThree())).toJson();
 
         expect(json).toEqual({
             $custom$oneAndThree: {}
@@ -122,13 +122,13 @@ describe("custom filter", () => {
 
     it("test that it works", () =>
         testRestDb(async ({ remult }) => {
-            let c = remult.repo(entityForCustomFilter);
+            let c = remult.repo(entityForrawFilter);
             for (let id = 0; id < 5; id++) {
                 await c.create({ id }).save();
             }
-            expect(await (c.count(entityForCustomFilter.oneAndThree()))).toBe(2);
-            expect((await (c.findFirst(entityForCustomFilter.testNumericValue(2)))).id).toBe(2);
-            expect((await (c.findFirst(entityForCustomFilter.testObjectValue({ val: 2 })))).id).toBe(2);
+            expect(await (c.count(entityForrawFilter.oneAndThree()))).toBe(2);
+            expect((await (c.findFirst(entityForrawFilter.testNumericValue(2)))).id).toBe(2);
+            expect((await (c.findFirst(entityForrawFilter.testObjectValue({ val: 2 })))).id).toBe(2);
         })
 
     );
@@ -136,35 +136,35 @@ describe("custom filter", () => {
     it("test that it works with sql", async () => {
         let w = new WebSqlDataProvider("testWithFilter");
 
-        let c = new Remult().repo(entityForCustomFilter, new SqlDatabase(w));
+        let c = new Remult().repo(entityForrawFilter, new SqlDatabase(w));
         await w.dropTable(c.metadata);
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
         }
         const e = await dbNamesOf(c.metadata);
-        expect(await (c.count(SqlDatabase.customFilter(async x => x.sql = e.id + ' in (' + x.addParameterAndReturnSqlToken(1) + "," + x.addParameterAndReturnSqlToken(3, c.metadata.fields.id) + ")"))))
+        expect(await (c.count(SqlDatabase.rawFilter(async x => x.sql = e.id + ' in (' + x.addParameterAndReturnSqlToken(1) + "," + x.addParameterAndReturnSqlToken(3, c.metadata.fields.id) + ")"))))
             .toBe(2);
-        expect(await (c.count(entityForCustomFilter.filter({ dbOneOrThree: true })))).toBe(2);
+        expect(await (c.count(entityForrawFilter.filter({ dbOneOrThree: true })))).toBe(2);
     });
     it("test that it works with arrayFilter", async () => {
 
 
-        let c = new Remult().repo(entityForCustomFilter, new InMemoryDataProvider());
+        let c = new Remult().repo(entityForrawFilter, new InMemoryDataProvider());
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
         }
-        expect(await (c.count(ArrayEntityDataProvider.customFilter(x => x.id == 1 || x.id == 3))))
+        expect(await (c.count(ArrayEntityDataProvider.rawFilter(x => x.id == 1 || x.id == 3))))
             .toBe(2);
-        expect(await (c.count(entityForCustomFilter.filter({ dbOneOrThree: true })))).toBe(2);
+        expect(await (c.count(entityForrawFilter.filter({ dbOneOrThree: true })))).toBe(2);
     });
     it("test or and promise in translate", async () => {
-        let c = new Remult().repo(entityForCustomFilter, new InMemoryDataProvider());
+        let c = new Remult().repo(entityForrawFilter, new InMemoryDataProvider());
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
         }
         "".toString();
         expect(await (c.count({
-            $or: [entityForCustomFilter.filter({ dbOneOrThree: true }), { id: 4 }]
+            $or: [entityForrawFilter.filter({ dbOneOrThree: true }), { id: 4 }]
         }))).toBe(3);
     });
     it("test sent in api", async () => {
@@ -174,7 +174,7 @@ describe("custom filter", () => {
                 delete: () => undefined,
                 get: async (url) => {
                     ok.ok();
-                    expect(url).toBe('/entityForCustomFilter?__action=count&%24custom%24filter=%7B%22oneAndThree%22%3Atrue%7D');
+                    expect(url).toBe('/entityForrawFilter?__action=count&%24custom%24filter=%7B%22oneAndThree%22%3Atrue%7D');
                     return { count: 0 }
 
                 },
@@ -184,14 +184,14 @@ describe("custom filter", () => {
         }));
         let c = new Remult();
         c.dataProvider = (z);
-        await c.repo(entityForCustomFilter).count(entityForCustomFilter.filter({ oneAndThree: true }));
+        await c.repo(entityForrawFilter).count(entityForrawFilter.filter({ oneAndThree: true }));
         ok.test();
     });
 
     it("test that api reads custom correctly", async () => {
         let remult = new Remult();
         remult.dataProvider = (new InMemoryDataProvider());
-        let c = remult.repo(entityForCustomFilter);
+        let c = remult.repo(entityForrawFilter);
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
         }
@@ -214,7 +214,7 @@ describe("custom filter", () => {
     it("test that api reads custom correctly 2", async () => {
         let remult = new Remult();
         remult.dataProvider = (new InMemoryDataProvider());
-        let c = remult.repo(entityForCustomFilter);
+        let c = remult.repo(entityForrawFilter);
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
         }
@@ -243,7 +243,7 @@ describe("custom filter", () => {
     it("test that api reads custom correctly 3", async () => {
         let remult = new Remult();
         remult.dataProvider = (new InMemoryDataProvider());
-        let c = remult.repo(entityForCustomFilter);
+        let c = remult.repo(entityForrawFilter);
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
         }
@@ -273,7 +273,7 @@ describe("custom filter", () => {
     it("test that api reads custom correctly and translates to db", async () => {
         let remult = new Remult();
         remult.dataProvider = (new InMemoryDataProvider());
-        let c = remult.repo(entityForCustomFilter);
+        let c = remult.repo(entityForrawFilter);
         for (let id = 0; id < 5; id++) {
             await c.create({ id }).save();
         }
@@ -307,14 +307,14 @@ declare type SliceCaseReducers<State> = {
 
     [K: string]: (state: Draft<State>) => State;
 };
-function x<CaseReducers extends SliceCaseReducers<{ test?: WritableDraft<entityForCustomFilter>[]; }>>(what: CaseReducers) {
+function x<CaseReducers extends SliceCaseReducers<{ test?: WritableDraft<entityForrawFilter>[]; }>>(what: CaseReducers) {
 }
 //reproduce typescript bug with recursive types
 x<{
     addComment: (state: WritableDraft<{
-        test?: entityForCustomFilter[];
+        test?: entityForrawFilter[];
     }>) => {
-        test: WritableDraft<entityForCustomFilter>[];
+        test: WritableDraft<entityForrawFilter>[];
     };
 }>({} as any);
 

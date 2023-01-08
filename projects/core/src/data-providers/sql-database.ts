@@ -67,7 +67,7 @@ export class SqlDatabase implements DataProvider {
     });
   }
   //TODO - change to "rawFilter" (in all databases and docs)
-  static customFilter(build: CustomSqlFilterBuilderFunction): EntityFilter<any> {
+  static rawFilter(build: CustomSqlFilterBuilderFunction): EntityFilter<any> {
     return {
       [customDatabaseFilterToken]: {
         buildSql: build
@@ -76,7 +76,7 @@ export class SqlDatabase implements DataProvider {
 
   }
   //TODO - filter to raw
-  static async sqlCondition<entityType>(
+  static async filterToRaw<entityType>(
     repo: RepositoryOverloads<entityType>,
     condition: EntityFilter<entityType>,
     sqlCommand?: SqlCommandWithParameters) {
@@ -84,7 +84,7 @@ export class SqlDatabase implements DataProvider {
       sqlCommand = new myDummySQLCommand();
     }
     const r = getRepository(repo);
-    
+
     var b = new FilterConsumerBridgeToSqlRequest(sqlCommand, await dbNamesOf(r.metadata))
     b._addWhere = false;
     await (await ((r as RepositoryImplementation<entityType>).translateWhereToFilter(condition))).__applyToConsumer(b)

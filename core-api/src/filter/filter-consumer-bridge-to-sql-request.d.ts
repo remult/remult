@@ -36,7 +36,7 @@ export declare class CustomSqlFilterBuilder {
     constructor(r: SqlCommandWithParameters);
     sql: string;
     addParameterAndReturnSqlToken<valueType>(val: valueType, field?: FieldMetadata<valueType>): string;
-    sqlCondition<entityType>(repo: RepositoryOverloads<entityType>, condition: EntityFilter<entityType>): Promise<string>;
+    filterToRaw<entityType>(repo: RepositoryOverloads<entityType>, condition: EntityFilter<entityType>): Promise<string>;
 }
 export declare function isDbReadonly<entityType>(field: FieldMetadata, dbNames: EntityDbNames<entityType>): boolean;
 export declare type EntityDbNamesBase = {

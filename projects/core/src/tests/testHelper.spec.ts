@@ -265,6 +265,6 @@ export class MockRestDataProvider implements DataProvider {
   transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
     throw new Error('Method not implemented.');
   }
-  supportsCustomFilter = true;
+  supportsrawFilter = true;
 
 }

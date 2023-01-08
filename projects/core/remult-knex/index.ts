@@ -39,7 +39,7 @@ export class KnexDataProvider implements DataProvider {
 
 
     }
-    static customFilter(build: CustomKnexFilterBuilderFunction): EntityFilter<any> {
+    static rawFilter(build: CustomKnexFilterBuilderFunction): EntityFilter<any> {
         return {
             [customDatabaseFilterToken]: {
                 buildKnex: build
@@ -47,7 +47,7 @@ export class KnexDataProvider implements DataProvider {
         }
 
     }
-    static async knexCondition<entityType>(
+    static async filterToRaw<entityType>(
         entity: RepositoryOverloads<entityType>,
         condition: EntityFilter<entityType>) {
         const repo = getRepository(entity);
@@ -57,7 +57,7 @@ export class KnexDataProvider implements DataProvider {
         let r = await b.resolveWhere();
         return knex => r.forEach(y => y(knex))
     }
-    supportsCustomFilter?: boolean;
+    supportsrawFilter?: boolean;
 
 }
 export type CustomKnexFilterBuilderFunction = () => Promise<(builder: Knex.QueryBuilder) => void>

@@ -144,7 +144,7 @@ testWebSqlImpl("test work with filter", async ({ remult, createEntity }) => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity);
     const e = await dbNamesOf(repo);
     expect(
-        `select ${e.myId}, ${e.name} from ${e} where ${await SqlDatabase.sqlCondition(repo,
+        `select ${e.myId}, ${e.name} from ${e} where ${await SqlDatabase.filterToRaw(repo,
             {
                 myId: [1, 3]
             })}`)
@@ -155,7 +155,7 @@ testWebSqlImpl("test work with filter", async ({ remult, createEntity }) => {
     const command = SqlDatabase.getDb(remult).createCommand()
     const e = await dbNamesOf(repo);
     expect(
-        `select ${e.myId}, ${e.name} from ${e} where ${await SqlDatabase.sqlCondition(repo,
+        `select ${e.myId}, ${e.name} from ${e} where ${await SqlDatabase.filterToRaw(repo,
             {
                 myId: [1, 3]
             }, command)}`)

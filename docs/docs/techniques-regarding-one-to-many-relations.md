@@ -65,7 +65,7 @@ console.table(await remult.repo(Order).find({
 }))
 ```
 
-We can refactor this to a `customFilter` that will be easier to use and will run on the backend
+We can refactor this to a `rawFilter` that will be easier to use and will run on the backend
 
 ```ts
 @Entity("orders", { allowApiCrud: true })
@@ -87,14 +87,14 @@ console.table(await remult.repo(Order).find({
 ```
 
 #### Using Sql Capabilities
-We can improve on the customFilter by using the database's in statement capabilities:
+We can improve on the rawFilter by using the database's in statement capabilities:
 ```ts
 @Entity("orders", { allowApiCrud: true })
 export class Order {
   //...
   static filterCity = Filter.createCustom<Order, { city: string }>(
     async ({ city }) => {
-      return SqlDatabase.customFilter(
+      return SqlDatabase.rawFilter(
         whereFragment => {
           whereFragment.sql =
             `select customer in 
@@ -106,7 +106,7 @@ export class Order {
 }
 ```
 
-We can also reuse the entity definitions by using `dbNamesOf` and `sqlCondition`
+We can also reuse the entity definitions by using `dbNamesOf` and `filterToRaw`
 ```ts
 @Entity("orders", { allowApiCrud: true })
 export class Order {
@@ -115,13 +115,13 @@ export class Order {
     async ({ city }) => {
       const orders = await dbNamesOf(Order);
       const customers = await dbNamesOf(Customer);
-      return SqlDatabase.customFilter(
+      return SqlDatabase.rawFilter(
         async whereFragment => {
           whereFragment.sql =
             `${orders.customer} in 
                (select ${customers.id} 
                   from ${customers} 
-                 where ${await whereFragment.sqlCondition(Customer, { city })})`
+                 where ${await whereFragment.filterToRaw(Customer, { city })})`
         });
     });
 }

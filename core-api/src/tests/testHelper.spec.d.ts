@@ -30,5 +30,5 @@ export declare class MockRestDataProvider implements DataProvider {
     constructor(remult: Remult);
     getEntityDataProvider(metadata: EntityMetadata<any>): EntityDataProvider;
     transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void>;
-    supportsCustomFilter: boolean;
+    supportsrawFilter: boolean;
 }

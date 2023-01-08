@@ -137,10 +137,10 @@ export class CustomSqlFilterBuilder {
       val = field.valueConverter.toDb(val);
     return this.r.addParameterAndReturnSqlToken(val)
   }
-  async sqlCondition<entityType>(
+  async filterToRaw<entityType>(
     repo: RepositoryOverloads<entityType>,
     condition: EntityFilter<entityType>) {
-    return SqlDatabase.sqlCondition(repo, condition, this);
+    return SqlDatabase.filterToRaw(repo, condition, this);
   }
 }
 

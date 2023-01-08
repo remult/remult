@@ -30,7 +30,7 @@ export class MongoDataProvider implements DataProvider {
             throw err;
         }
     }
-    static async mongoCondition<entityType>(
+    static async filterToRaw<entityType>(
         entity: RepositoryOverloads<entityType>,
         condition: EntityFilter<entityType>) {
         const repo = getRepository(entity);
