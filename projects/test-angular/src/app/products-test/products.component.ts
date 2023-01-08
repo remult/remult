@@ -1,14 +1,9 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ComponentFactoryResolver, Input, NgZone, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
-import { Remult, Field, Entity, EntityBase, BackendMethod, getFields, IdEntity, isBackend, Fields, Controller, Filter, FieldRef, remult } from 'remult';
-
-import { CustomDataComponent, DataAreaSettings, DataControlSettings, getEntityValueList, GridSettings, InputField } from '@remult/angular/interfaces';
-
+import { Component, NgZone, OnInit } from '@angular/core';
+import { Remult, Entity, IdEntity, Fields, Controller, InMemoryDataProvider, Sort, BackendMethod } from 'remult';
+import { GridSettings } from '@remult/angular/interfaces';
 import { DialogConfig } from '../../../../angular';
-import { RemultAngularPluginsService } from '../../../../angular/src/angular/RemultAngularPluginsService';
-import axios, { Axios } from 'axios';
-import { Products } from './products';
-import { stat } from 'fs';
-import { HttpClient } from '@angular/common/http';
+import * as ably from 'ably';
+
 
 
 @Controller("blabla")
@@ -23,94 +18,90 @@ import { HttpClient } from '@angular/common/http';
   height: '1500px'
 })
 export class ProductsComponent implements OnInit {
-  page = 0;
-  constructor(private remult: Remult, plugin: RemultAngularPluginsService, private componentFactoryResolver: ComponentFactoryResolver, http: HttpClient) {
-    plugin.dataControlAugmenter = (f, s) => {
-      if (f.options.aha)
-        s.click = () => alert("aha");
+  constructor(private remult: Remult, private zone: NgZone) {
+    remult.liveQuerySubscriber.wrapMessageHandling = x => zone.run(() => x());
+    if (false) {
+      const p = new AblyLiveQueryProvider(new ably.Realtime.Promise(
+        {
+          async authCallback(data, callback) {
+            try {
+              callback(null, await ProductsComponent.getAblyToken())
+            }
+            catch (error: any) {
+              callback(error, null);
+            }
+          },
+        }
+
+      ))
+      remult.liveQuerySubscriber = new LiveQueryClient(p);
     }
-    //Remult.setDefaultHttpProvider(http);
   }
 
-  @ViewChild('theId', { read: ViewContainerRef, static: true }) theId: ViewContainerRef;
 
-  grid = new GridSettings(this.remult.repo(stam), {
-    allowCrud: true,
-
+  grid = new GridSettings(this.remult.repo(Task), {
+    allowCrud: true, gridButtons: [{
+      name: 'reload',
+      click: () => {
+        this.grid.reloadData();
+      }
+    }]
   });
-  area: DataAreaSettings;
-  field: FieldRef<any, any>;
+
+  messages: string[] = [];
   async ngOnInit() {
-    remult.apiClient.httpClient = undefined;
-    console.log(await remult.repo(stam).count());
-    //console.log(await this.remult.repo(stam).count());
-  }
-  async click() {
+    await this.remult.repo(Task).count();
+
+
 
   }
+  tasks: Observable<Task[]> = new Observable((x) => {
+    let tasks: Task[] = [];
+    return this.remult.repo(Task).query().subscribe(newResult => {
+      tasks = newResult(tasks);
+      x.next(tasks);
+    })
+  });
 
+  @BackendMethod({ allowed: true })
+  static async getAblyToken() {
+    const a = new ably.Realtime.Promise(process.env.ABLY_KEY);
+    return await a.auth.createTokenRequest({
+      capability: {
+        [`*`]: ["subscribe"]
+      }
+    });
+  }
 }
 
 
-@Entity<stam>('stam', {
+export const helper = {
+  onSaved: (t: Task) => { },
+  onDeleted: (t: Task) => { },
+}
+
+@Entity<Task>("tasks", {
   allowApiCrud: true,
-
+  saved: item => {
+    helper.onSaved(item);
+  },
+  deleted: item => {
+    helper.onDeleted(item)
+  }
 })
-export class stam extends IdEntity {
-  @Fields.string({ dbName: 'name', aha: true })
-  name: string;
-  @Fields.dateOnly({ allowNull: true })
-  stamDate?: Date
+export class Task extends IdEntity {
 
-  @Fields.string({ serverExpression: () => 'noam' })
-  test: string = '';
-
-
-  @BackendMethod({ allowed: true })
-  static async staticBackendMethod() {
-    return remult.repo(stam).count();
-  }
-  @BackendMethod({ allowed: true })
-  async entityBackendMethod() {
-
-  }
-}
-
-export class controllerWithStaic {
-  @BackendMethod({ allowed: true })
-  static staticControllerMethod() {
-
-  }
-}
-@Controller("controllerWithInstance")
-export class controllerWithInstance {
-  @BackendMethod({ allowed: true })
-  InstanceControllerMethod() {
-
-  }
-}
-
-declare module 'remult' {
-  export interface FieldOptions {
-    aha?: boolean
-  }
+  @Fields.string()
+  title = '';
+  @Fields.boolean()
+  completed = false;
 }
 
 
 
-@Component({
-  selector: 'app-a',
-  template: `Component({{args?.fieldRef?.metadata?.caption}}) <input *ngIf="args?.fieldRef" [(ngModel)]="args.fieldRef.inputValue" >`,
-})
-export class AComponent implements CustomDataComponent {
-  @Input()
-  args: { fieldRef: FieldRef<any, any>; settings: DataControlSettings<any, any> };
-
-}
+import { Observable } from 'rxjs';
+import { AblyLiveQueryProvider } from '../../../../core/live-query/ably';
+import { LiveQueryClient } from '../../../../core/live-query';
 
 
-@Component({
-  selector: 'app-b',
-  template: `Component b`,
-})
-export class BComponent { }
+

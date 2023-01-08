@@ -1,24 +1,19 @@
 import 'reflect-metadata';
-
-
-
-import { Remult, AllowedForInstance, Allowed, allEntities, ControllerOptions, classHelpers, ClassHelper, setControllerSettings, ExternalHttpProvider, buildRestDataProvider } from './context';
-
-
-
-
-import { DataApiRequest, DataApiResponse } from './data-api';
-
+import { Remult, AllowedForInstance, Allowed, allEntities, ControllerOptions, classHelpers, ClassHelper, setControllerSettings, doTransaction } from './context';
+import { buildRestDataProvider } from "./buildRestDataProvider";
+import { DataApiResponse } from './data-api';
 import { SqlDatabase } from './data-providers/sql-database';
-
-
 import { packedRowInfo } from './__EntityValueProvider';
-import { Filter, AndFilter } from './filter/filter-interfaces';
 import { DataProvider, RestDataProviderHttpProvider } from './data-interfaces';
 import { getEntityRef, rowHelperImplementation, getFields, decorateColumnSettings, getEntitySettings, getControllerRef, EntityFilter, controllerRefImpl, RepositoryImplementation, $fieldOptionsMember, columnsOfType, getFieldLoaderSaver, Repository, packEntity, unpackEntity, isTransferEntityAsIdField, Field, InferredType, InferMemberType } from './remult3';
 import { FieldOptions } from './column-interfaces';
 import { createClass } from './remult3/DecoratorReplacer';
 import { InferIdType } from 'mongodb';
+
+
+import { remult, RemultProxy } from './remult-proxy';
+
+
 
 
 
@@ -35,9 +30,9 @@ export abstract class Action<inParam, outParam> implements ActionInterface {
     static apiUrlForJobStatus = 'jobStatusInQueue';
     async run(pIn: inParam, baseUrl?: string, http?: RestDataProviderHttpProvider): Promise<outParam> {
         if (baseUrl === undefined)
-            baseUrl = RepositoryImplementation.defaultRemult.apiClient.url;
+            baseUrl = remult.apiClient.url;
         if (!http)
-            http = buildRestDataProvider(RepositoryImplementation.defaultRemult.apiClient.httpClient);
+            http = buildRestDataProvider(remult.apiClient.httpClient);
 
         let r = await http.post(baseUrl + '/' + this.actionUrl, pIn);
         let p: jobWasQueuedResult = r;
@@ -93,12 +88,15 @@ export abstract class Action<inParam, outParam> implements ActionInterface {
         });
     }
 }
-class ForbiddenError extends Error {
+export class ForbiddenError extends Error {
     constructor() {
         super("Forbidden");
     }
-    isForbiddenError = true;
+    isForbiddenError:true = true;
 }
+
+
+
 
 export class myServerAction extends Action<inArgs, result>
 {
@@ -109,9 +107,7 @@ export class myServerAction extends Action<inArgs, result>
     protected async execute(info: inArgs, remult: Remult, res: DataApiResponse): Promise<result> {
         let result = { data: {} };
         let ds = remult.dataProvider;
-        await ds.transaction(async ds => {
-            remult.dataProvider = (ds);
-
+        await doTransaction(remult, async () => {
             info.args = await prepareReceivedArgs(this.types, info.args, remult, ds, res);
             if (!remult.isAllowedForInstance(info.args ? info.args[0] : undefined, this.options.allowed))
                 throw new ForbiddenError();
@@ -265,12 +261,10 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                         try {
                             let remult = req;
 
-                            let ds = remult.dataProvider;
 
                             let r: serverMethodOutArgs;
-                            await ds.transaction(async (ds) => {
-                                remult.dataProvider = (ds);
-                                d.args = await prepareReceivedArgs(types, d.args, remult, ds, res);
+                            await doTransaction(remult, async () => {
+                                d.args = await prepareReceivedArgs(types, d.args, remult, remult.dataProvider, res);
                                 if (allEntities.includes(constructor)) {
                                     let repo = remult.repo(constructor);
                                     let y: any;
@@ -295,7 +289,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                                     }
                                 }
                                 else {
-                                    let y = new constructor(remult, ds);
+                                    let y = new constructor(remult, remult.dataProvider);
                                     let controllerRef = getControllerRef(y, remult) as controllerRefImpl;
                                     await controllerRef._updateEntityBasedOnApi(d.fields);
                                     if (!remult.isAllowedForInstance(y, allowed))
@@ -447,7 +441,7 @@ export class ProgressListener {
 export function prepareArgsToSend(types: any[], args: any[]) {
 
     if (types) {
-        const remult = RepositoryImplementation.defaultRemult;
+        const remult = RemultProxy.defaultRemult;
         for (let index = 0; index < types.length; index++) {
             const paramType = types[index];
             for (const type of [Remult, SqlDatabase]) {
@@ -478,7 +472,7 @@ export async function prepareReceivedArgs(types: any[], args: any[], remult?: Re
             args[index] = undefined;
     }
     if (!remult)
-        remult = RepositoryImplementation.defaultRemult;
+        remult = RemultProxy.defaultRemult;
 
     if (types)
         for (let i = 0; i < types.length; i++) {

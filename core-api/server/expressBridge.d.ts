@@ -4,6 +4,7 @@ import { Remult, UserInfo } from '../src/context';
 import { ClassType } from '../classType';
 import { Repository } from '../src/remult3';
 import { IdEntity } from '../src/id-entity';
+import { LiveQueryStorage, SubscriptionServer } from '../src/live-query/SubscriptionServer';
 export interface RemultServerOptions<RequestType extends GenericRequest> {
     /** Sets a database connection for Remult.
      *
@@ -11,7 +12,13 @@ export interface RemultServerOptions<RequestType extends GenericRequest> {
     */
     dataProvider?: DataProvider | Promise<DataProvider> | (() => Promise<DataProvider | undefined>);
     queueStorage?: QueueStorage;
-    initRequest?: (remult: Remult, origReq: RequestType) => Promise<void>;
+    liveQueryStorage?: LiveQueryStorage;
+    subscriptionServer?: SubscriptionServer;
+    initRequest?: (remult: Remult, origReq: RequestType, options: InitRequestOptions) => Promise<void>;
+    requestSerializer?: {
+        toJson: (request: RequestType) => any;
+        fromJson: (request: any) => RequestType;
+    };
     getUser?: (request: RequestType) => Promise<UserInfo>;
     initApi?: (remult: Remult) => void | Promise<void>;
     logApiEndPoints?: boolean;
@@ -19,6 +26,9 @@ export interface RemultServerOptions<RequestType extends GenericRequest> {
     entities?: ClassType<any>[];
     controllers?: ClassType<any>[];
     rootPath?: string;
+}
+export interface InitRequestOptions {
+    liveQueryStorage: LiveQueryStorage;
 }
 export declare function createRemultServerCore<RequestType extends GenericRequest = GenericRequest>(options?: RemultServerOptions<RequestType>): RemultServer;
 export declare type GenericRequestHandler = (req: GenericRequest, res: GenericResponse, next: VoidFunction) => void;

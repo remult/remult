@@ -2,10 +2,10 @@
 import { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from "../column-interfaces";
 import { EntityOptions } from "../entity";
 import { CompoundIdField, LookupColumn, makeTitle } from '../column';
-import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef, TypedDecorator } from "./remult3";
+import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef, LiveQuery,TypedDecorator } from "./remult3";
 import { ClassType } from "../../classType";
 import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControllerSettings, Unobserve, EventSource } from "../context";
-import { AndFilter, customFilterInfo, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
+import { AndFilter, rawFilterInfo, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
 import { Sort } from "../sort";
 import { v4 as uuid } from 'uuid';
 
@@ -18,6 +18,8 @@ import { filterHelper } from "../filter/filter-interfaces";
 import { assign } from "../../assign";
 import { Paginator, RefSubscriber, RefSubscriberBase } from ".";
 import { paramDecorator, prepareArgsToSend, prepareReceivedArgs } from "../server-action";
+import { remult as defaultRemult, RemultProxy } from "../remult-proxy";
+import { getId } from "./getId";
 //import { remult } from "../remult-proxy";
 
 
@@ -43,7 +45,6 @@ let classValidatorValidate: ((item: any, ref: {
 //     });
 
 export class RepositoryImplementation<entityType> implements Repository<entityType>{
-    static defaultRemult: Remult;
     async createAfterFilter(orderBy: EntityOrderBy<entityType>, lastRow: entityType): Promise<EntityFilter<entityType>> {
         let values = new Map<string, any>();
 
@@ -84,7 +85,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
     private get edp() {
         return this.__edp ? this.__edp : this.__edp = this.dataProvider.getEntityDataProvider(this.metadata);
     }
-    constructor(private entity: ClassType<entityType>, private remult: Remult, private dataProvider: DataProvider) {
+    constructor(private entity: ClassType<entityType>, public remult: Remult, private dataProvider: DataProvider) {
         this._info = createOldEntity(entity, remult);
     }
     idCache = new Map<any, any>();
@@ -151,7 +152,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         let x = entity[entityMember];
         if (!x) {
             x = new rowHelperImplementation(this._info, entity, this, this.edp, this.remult, true);
-            Object.defineProperty(entity, entityMember, {//I've used define property to hide this member from console.log
+            Object.defineProperty(entity, entityMember, {//I've used define property to hide this member from console.lo g
                 get: () => x
             });
             x.saveOriginalData();
@@ -206,8 +207,10 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
                 instance[field.key] = entity[field.key];
             }
             let row = new rowHelperImplementation(this._info, instance, this, this.edp, this.remult, false);
-            if (id)
+            if (id) {
                 row.id = id;
+                row.originalId = id;
+            }
             else row.id = row.getId();
             ref = row;
             Object.defineProperty(instance, entityMember, {
@@ -237,22 +240,21 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             }
         }
     }
+    liveQuery(options?: FindOptions<entityType>) {
+        if (!options)
+            options = {};
+        return {
+            subscribe: (info) =>
+                this.remult.liveQuerySubscriber.subscribe(this, options, info)
+
+        } as LiveQuery<entityType>
+    }
 
     async find(options: FindOptions<entityType>): Promise<entityType[]> {
         Remult.onFind(this._info, options);
-        let opt: EntityDataProviderFindOptions = {};
         if (!options)
             options = {};
-
-        opt = {};
-        if (!options.orderBy || Object.keys(options.orderBy).length === 0) {
-            options.orderBy = this._info.entityInfo.defaultOrderBy;
-        }
-        opt.where = await this.translateWhereToFilter(options.where);
-        opt.orderBy = Sort.translateOrderByToSort(this.metadata, options.orderBy);
-
-        opt.limit = options.limit;
-        opt.page = options.page;
+        let opt = await this.buildEntityDataProviderFindOptions(options);
 
         let rawRows = await this.edp.find(opt);
         let loadFields: FieldMetadata[] = undefined;
@@ -297,12 +299,27 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         }
     }
 
+    async buildEntityDataProviderFindOptions(options: FindOptions<entityType>) {
+        let opt: EntityDataProviderFindOptions = {};
+
+        opt = {};
+        if (!options.orderBy || Object.keys(options.orderBy).length === 0) {
+            options.orderBy = this._info.entityInfo.defaultOrderBy;
+        }
+        opt.where = await this.translateWhereToFilter(options.where);
+        opt.orderBy = Sort.translateOrderByToSort(this.metadata, options.orderBy);
+
+        opt.limit = options.limit;
+        opt.page = options.page;
+        return opt;
+    }
+
     private async mapRawDataToResult(r: any, loadFields: FieldMetadata[]) {
         if (!r)
             return undefined;
         let x = new this.entity(this.remult);
         let helper = new rowHelperImplementation(this._info, x, this, this.edp, this.remult, false);
-        Object.defineProperty(x, entityMember, {//I've used define property to hide this member from console.log
+        Object.defineProperty(x, entityMember, {//I've used define property to hide this member from console.lo g
             get: () => helper
         })
         await helper.loadDataFrom(r, loadFields);
@@ -422,8 +439,8 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
     }
 
 
-
-    private async translateWhereToFilter(where: EntityFilter<entityType>): Promise<Filter> {
+    /* @internal*/
+    async translateWhereToFilter(where: EntityFilter<entityType>): Promise<Filter> {
         if (this.metadata.options.backendPrefilter && isBackend()) {
             let z = where;
             where = {
@@ -433,7 +450,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             } as EntityFilter<entityType>;
         }
         let r = await Filter.fromEntityFilter(this.metadata, where);
-        if (r && !this.dataProvider.supportsCustomFilter) {
+        if (r && !this.dataProvider.supportsrawFilter) {
             r = await Filter.translateCustomWhere(r, this.metadata, this.remult);
         }
         return r;
@@ -729,6 +746,10 @@ abstract class rowHelperBase<T>
     originalValues: any = {};
     saveOriginalData() {
         this.originalValues = this.copyDataToObject();
+        this.saveMoreOriginalData();
+    }
+    saveMoreOriginalData() {
+
     }
     async validate() {
         this.__clearErrorsAndReportChanged();
@@ -832,10 +853,10 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
     get apiInsertAllowed() { return this.remult.isAllowedForInstance(this.instance, this.metadata.options.allowApiInsert) }
     metadata: EntityMetadata<T>;
     getId() {
-        if (this.info.idMetadata.field instanceof CompoundIdField)
-            return this.info.idMetadata.field.getId(this.instance);
-        else
-            return this.instance[this.info.idMetadata.field.key];
+        return getId(this.info, this.instance);
+    }
+    saveMoreOriginalData() {
+        this.originalId = this.getId();
     }
 
 
@@ -949,6 +970,9 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
                     }
                 }
                 await this.loadDataFrom(updatedRow);
+                this.repository.remult.liveQueryPublisher.itemChanged(this.repository.metadata.key, [{ id: this.getId(), oldId: this.getOriginalId(), deleted: false }]);
+
+
                 if (this.info.entityInfo.saved)
                     await this.info.entityInfo.saved(this.instance);
 
@@ -984,6 +1008,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
 
         try {
             await this.edp.delete(this.id);
+            this.repository.remult.liveQueryPublisher.itemChanged(this.repository.metadata.key, [{ id: this.getId(), oldId: this.getOriginalId(), deleted: true }]);
             if (this.info.entityInfo.deleted)
                 await this.info.entityInfo.deleted(this.instance);
 
@@ -1017,14 +1042,12 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
 
         }
         await this.calcServerExpression();
-        if (this.repository.metadata.idMetadata.field instanceof CompoundIdField) {
-            this.id = this.repository.metadata.idMetadata.field.getId(this.instance);
-        } else
-            this.id = data[this.repository.metadata.idMetadata.field.key];
+        this.id = getId(this.info, this.instance);
     }
     id;
+    originalId;
     public getOriginalId() {
-        return this.id;
+        return this.originalId;
     }
 
     private async calcServerExpression() {
@@ -1074,7 +1097,7 @@ export function getFields<fieldsContainerType>(container: fieldsContainerType, r
     return getControllerRef(container, remult).fields;
 }
 export function getControllerRef<fieldsContainerType>(container: fieldsContainerType, remultArg?: Remult): ControllerRef<fieldsContainerType> {
-    const remultVar = remultArg || RepositoryImplementation.defaultRemult;
+    const remultVar = remultArg || defaultRemult;
     let result = container[controllerColumns] as controllerRefImpl<fieldsContainerType>;
     if (!result)
         result = container[entityMember];
@@ -1315,28 +1338,27 @@ export class columnDefsImpl implements FieldMetadata {
 
 
     }
-    dbNamePromise: Promise<string>;
-    getDbName(): Promise<string> {
-        if (this.dbNamePromise)
-            return this.dbNamePromise;
-        this.dbNamePromise = (async () => {
-
+    private _workingOnDbName = false;
+    async getDbName() {
+        if (this._workingOnDbName)
+            return "Recursive getDbName call for field '" + this.key + "'. ";
+        this._workingOnDbName = true;
+        try {
             if (this.settings.sqlExpression) {
+                let result: string;
                 if (typeof this.settings.sqlExpression === "function") {
-                    return this.settings.sqlExpression(this.entityDefs);
+                    result = await this.settings.sqlExpression(this.entityDefs);
                 } else
-                    return this.settings.sqlExpression;
+                    result = this.settings.sqlExpression;
+                if (!result)
+                    return this.settings.dbName;
+                return result;
             }
             return this.settings.dbName;
-
-        })().then(x => {
-            if (x)
-                return x;
-            return this.settings.dbName;
-
-        });
-        return this.dbNamePromise;
-
+        }
+        finally {
+            this._workingOnDbName = false;
+        }
 
     }
     options: FieldOptions<any, any> = this.settings;
@@ -1440,7 +1462,7 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
             this.dbNamePromise = Promise.resolve(this.options.sqlExpression);
         else if (typeof this.options.sqlExpression === "function") {
 
-            let r = this.options.sqlExpression(this.fields);
+            let r = this.options.sqlExpression(this);
             if (r instanceof Promise)
                 this.dbNamePromise = r;
             else if (r)
@@ -1911,12 +1933,12 @@ interface columnInfo {
 export function Entity<entityType>(key: string, ...options: (EntityOptions<entityType> | ((options: EntityOptions<entityType>, remult: Remult) => void))[]) {
 
     return target => {
-        for (const customFilterMember in target) {
-            if (Object.prototype.hasOwnProperty.call(target, customFilterMember)) {
-                const element = target[customFilterMember] as customFilterInfo<any>;
-                if (element?.customFilterInfo?.customFilterTranslator) {
-                    if (!element.customFilterInfo.key)
-                        element.customFilterInfo.key = customFilterMember;
+        for (const rawFilterMember in target) {
+            if (Object.prototype.hasOwnProperty.call(target, rawFilterMember)) {
+                const element = target[rawFilterMember] as rawFilterInfo<any>;
+                if (element?.rawFilterInfo?.rawFilterTranslator) {
+                    if (!element.rawFilterInfo.key)
+                        element.rawFilterInfo.key = rawFilterMember;
                 }
             }
         }
@@ -1978,7 +2000,7 @@ export class EntityBase {
 export class ControllerBase {
     protected remult: Remult;
     constructor(remult?: Remult) {
-        this.remult = remult || RepositoryImplementation.defaultRemult;
+        this.remult = remult || defaultRemult;
     }
     assign(values: Partial<Omit<this, keyof EntityBase>>) {
         assign(this, values);
@@ -2150,7 +2172,6 @@ class SubscribableImp implements Subscribable {
 }
 
 
-
 export function getFieldLoaderSaver(options: FieldOptions, remult: Remult, forceIds: boolean) {
     if (options.valueType instanceof StorableArray) {
         let z = options.valueType;
@@ -2245,3 +2266,24 @@ export function packEntity(defs: rowHelperImplementation<any>): packedRowInfo {
         id: defs.getOriginalId()
     };
 }
+
+export function getEntityMetadata<entityType>(entity: EntityMetadataOverloads<entityType>): EntityMetadata<entityType> {
+    if ((entity as Repository<entityType>).metadata)
+        return (entity as Repository<entityType>).metadata;
+    const settings = getEntitySettings(entity as ClassType<entityType>, false);
+    if (settings) {
+        return RemultProxy.defaultRemult.repo(entity as ClassType<entityType>).metadata;
+    }
+    return entity as EntityMetadata;
+}
+export function getRepository<entityType>(entity: RepositoryOverloads<entityType>): Repository<entityType> {
+
+    const settings = getEntitySettings(entity as ClassType<entityType>, false);
+    if (settings) {
+        return RemultProxy.defaultRemult.repo(entity as ClassType<entityType>);
+    }
+    return entity as Repository<entityType>;
+}
+export type EntityMetadataOverloads<entityType> = Repository<entityType> | EntityMetadata<entityType> | ClassType<entityType>;
+export type RepositoryOverloads<entityType> = Repository<entityType> | ClassType<entityType>;
+

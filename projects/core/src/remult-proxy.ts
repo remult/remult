@@ -1,12 +1,32 @@
-import { ClassType } from "../classType";
-import { Allowed, AllowedForInstance, ApiClient, EventDispatcher, EventSource, GetArguments, Remult, RemultContext, UserInfo } from "./context";
-import { DataProvider } from "./data-interfaces";
-import { Repository, RepositoryImplementation } from "./remult3";
+import type { ClassType } from "../classType";
+import type { Allowed, AllowedForInstance, ApiClient, GetArguments, Remult, RemultContext, UserInfo } from "./context";
+import type { DataProvider } from "./data-interfaces";
+import { LiveQueryClient } from "./live-query/LiveQueryClient";
+import type { LiveQueryChangesListener, LiveQueryStorage, SubscriptionServer } from "./live-query/SubscriptionServer";
+import type { Repository } from "./remult3";
 
 
-let defaultRemult = new Remult();
 /*@internal*/
 export class RemultProxy implements Remult {
+    static defaultRemult: Remult;
+    /* @internal*/
+    get liveQuerySubscriber() { return this.remultFactory().liveQuerySubscriber };
+    /* @internal*/
+    set liveQuerySubscriber(val: LiveQueryClient) { this.remultFactory().liveQuerySubscriber = val };
+
+    /* @internal*/
+    get liveQueryStorage() { return this.remultFactory().liveQueryStorage };
+    /* @internal*/
+    set liveQueryStorage(val: LiveQueryStorage) { this.remultFactory().liveQueryStorage = val };
+
+    /* @internal*/
+    get liveQueryPublisher() {
+        return this.remultFactory().liveQueryPublisher;
+    }
+    /* @internal*/
+    set liveQueryPublisher(val: LiveQueryChangesListener) {
+        this.remultFactory().liveQueryPublisher = val;
+    }
     call<T extends ((...args: any[]) => Promise<any>)>(backendMethod: T, self?: any, ...args: GetArguments<T>): ReturnType<T> {
         return this.remultFactory().call(backendMethod, self, ...args);
     }
@@ -33,14 +53,15 @@ export class RemultProxy implements Remult {
         return this.remultFactory().clearAllCache();
     }
     /*@internal*/
-    remultFactory = () => defaultRemult;
+    remultFactory = () => RemultProxy.defaultRemult;
+
     /*@internal*/
     resetFactory() {
-        this.remultFactory = () => defaultRemult;
+        this.remultFactory = () => RemultProxy.defaultRemult;
     }
 
 
-    repo: typeof defaultRemult.repo = (...args) => this.remultFactory().repo(...args);
+    repo: typeof RemultProxy.defaultRemult.repo = (...args) => this.remultFactory().repo(...args);
     get user() {
         return this.remultFactory().user;
     }
@@ -53,8 +74,14 @@ export class RemultProxy implements Remult {
     set apiClient(client: ApiClient) {
         this.remultFactory().apiClient = client;
     }
+    get subscriptionServer() {
+        return this.remultFactory().subscriptionServer;
+    }
+    set subscriptionServer(value: SubscriptionServer) {
+        this.remultFactory().subscriptionServer = value;
+    }
+
 }
 
 
 export const remult: Remult = new RemultProxy();
-RepositoryImplementation.defaultRemult = remult;

@@ -1,27 +1,45 @@
-import { EntityOptions } from './entity';
+import { v4 as uuid } from 'uuid';
 import { AndFilter, customUrlToken, buildFilterFromRequestParameters } from './filter/filter-interfaces';
-import { Remult, UserInfo } from './context';
+import { doTransaction, Remult, UserInfo } from './context';
 import { Filter } from './filter/filter-interfaces';
 import { FindOptions, Repository, EntityRef, rowHelperImplementation, EntityFilter } from './remult3';
 import { SortSegment } from './sort';
 import { ErrorInfo } from './data-interfaces';
+import { ForbiddenError } from './server-action';
+import { getId } from './remult3/getId';
+import { findOptionsToJson } from './data-providers/rest-data-provider';
+import { QueryData } from './live-query/SubscriptionServer';
+
 
 export class DataApi<T = any> {
 
   constructor(private repository: Repository<T>, private remult: Remult) {
   }
-  httpGet(res: DataApiResponse, req: DataApiRequest) {
-    if (req.get("__action") == "count") {
-      return this.count(res, req);
-    } else
-      return this.getArray(res, req);
+  httpGet(res: DataApiResponse, req: DataApiRequest, serializeRequest: () => any) {
+    const action = req?.get("__action");
+    switch (action) {
+      case "liveQuery":
+        return this.liveQuery(res, req, undefined, serializeRequest);
+      case "get":
+      case "count":
+        return this.count(res, req, undefined);
+    }
+    return this.getArray(res, req, undefined);
+
   }
-  httpPost(res: DataApiResponse, req: DataApiRequest, body: any) {
-    switch (req.get("__action")) {
+  httpPost(res: DataApiResponse, req: DataApiRequest, body: any, serializeRequest: () => any) {
+    const action = req?.get("__action");
+    switch (action) {
+      case "liveQuery":
+        return this.liveQuery(res, req, body, serializeRequest);
       case "get":
         return this.getArray(res, req, body);
       case "count":
         return this.count(res, req, body);
+      case "endLiveQuery":
+        this.remult.liveQueryStorage.remove(body.id);
+        res.success("ok");
+        return;
       default:
         return this.post(res, body);
     }
@@ -48,65 +66,112 @@ export class DataApi<T = any> {
   }
 
 
+  async getArrayImpl(response: DataApiResponse, request: DataApiRequest, filterBody: any) {
+
+    let findOptions: FindOptions<T> = { load: () => [] };
+    findOptions.where = await this.buildWhere(request, filterBody);
+
+    if (request) {
+
+      let sort = <string>request.get("_sort");
+      if (sort != undefined) {
+        let dir = request.get('_order');
+        findOptions.orderBy = determineSort(sort, dir);
+
+      }
+      let limit = +request.get("_limit");
+      if (!limit && DataApi.defaultGetLimit)
+        limit = DataApi.defaultGetLimit;
+      findOptions.limit = limit;
+      findOptions.page = +request.get("_page");
+
+    }
+    if (this.remult.isAllowed(this.repository.metadata.options.apiRequireId)) {
+      let hasId = false;
+      let w = await Filter.fromEntityFilter(this.repository.metadata, findOptions.where);
+      if (w) {
+        w.__applyToConsumer({
+          containsCaseInsensitive: () => { },
+          isDifferentFrom: () => { },
+          isEqualTo: (col, val) => {
+            if (this.repository.metadata.idMetadata.isIdField(col))
+              hasId = true;
+          },
+          custom: () => { },
+          databaseCustom: () => { },
+          isGreaterOrEqualTo: () => { },
+          isGreaterThan: () => { },
+          isIn: () => { },
+          isLessOrEqualTo: () => { },
+          isLessThan: () => { },
+          isNotNull: () => { },
+          isNull: () => { },
+
+          or: () => { }
+        });
+      }
+      if (!hasId) {
+        response.forbidden();
+        throw new ForbiddenError();
+      }
+    }
+    const r = await this.repository.find(findOptions)
+      .then(async r => {
+        return await Promise.all(r.map(async y => this.repository.getEntityRef(y).toApiJson()));
+      });
+    return { r, findOptions };
+
+  }
+
   async getArray(response: DataApiResponse, request: DataApiRequest, filterBody?: any) {
     if (!this.repository.metadata.apiReadAllowed) {
       response.forbidden();
       return;
     }
     try {
-      let findOptions: FindOptions<T> = { load: () => [] };
-      findOptions.where = await this.buildWhere(request, filterBody);
-      if (this.remult.isAllowed(this.repository.metadata.options.apiRequireId)) {
-        let hasId = false;
-        let w = await Filter.fromEntityFilter(this.repository.metadata, findOptions.where);
-        if (w) {
-          w.__applyToConsumer({
-            containsCaseInsensitive: () => { },
-            isDifferentFrom: () => { },
-            isEqualTo: (col, val) => {
-              if (this.repository.metadata.idMetadata.isIdField(col))
-                hasId = true;
-            },
-            custom: () => { },
-            databaseCustom: () => { },
-            isGreaterOrEqualTo: () => { },
-            isGreaterThan: () => { },
-            isIn: () => { },
-            isLessOrEqualTo: () => { },
-            isLessThan: () => { },
-            isNotNull: () => { },
-            isNull: () => { },
 
-            or: () => { }
-          });
-        }
-        if (!hasId) {
-          response.forbidden();
-          return
-        }
-      }
-      if (request) {
 
-        let sort = <string>request.get("_sort");
-        if (sort != undefined) {
-          let dir = request.get('_order');
-          findOptions.orderBy = determineSort(sort, dir);
+      const { r } = await this.getArrayImpl(response, request, filterBody)
 
-        }
-        let limit = +request.get("_limit");
-        if (!limit && DataApi.defaultGetLimit)
-          limit = DataApi.defaultGetLimit;
-        findOptions.limit = limit;
-        findOptions.page = +request.get("_page");
-
-      }
-      await this.repository.find(findOptions)
-        .then(async r => {
-          response.success(await Promise.all(r.map(async y => this.repository.getEntityRef(y).toApiJson())));
-        });
+      response.success(r);
     }
     catch (err) {
-      response.error(err);
+      if (err.isForbiddenError)
+        response.forbidden();
+      else
+        response.error(err);
+    }
+  }
+  async liveQuery(response: DataApiResponse, request: DataApiRequest, filterBody: any, serializeRequest: () => any) {
+    if (!this.repository.metadata.apiReadAllowed) {
+      response.forbidden();
+      return;
+    }
+    try {
+      const r = await this.getArrayImpl(response, request, filterBody)
+      const queryChannel = `users:${this.remult.user?.id}:queries:${uuid()}`;
+      const data: QueryData = {
+        requestJson: serializeRequest(),
+        findOptionsJson: findOptionsToJson(r.findOptions, this.repository.metadata),
+        lastIds: r.r.map(y => getId(this.repository.metadata, y))
+      }
+      this.remult.liveQueryStorage.add(
+        {
+          entityKey: this.repository.metadata.key,
+          id: queryChannel,
+          data
+        }
+      );
+      response.success({
+        queryChannel,
+        result: r.r
+      });
+    }
+    catch (err) {
+      if (err.isForbiddenError)
+        response.forbidden();
+      else
+        response.error(err);
     }
   }
   private async buildWhere(request: DataApiRequest, filterBody: any): Promise<EntityFilter<any>> {
@@ -184,17 +249,31 @@ export class DataApi<T = any> {
   async post(response: DataApiResponse, body: any) {
 
     try {
-      let newr = this.repository.create();
-      await (this.repository.getEntityRef(newr) as rowHelperImplementation<T>)._updateEntityBasedOnApi(body);
-      if (!this.repository.getEntityRef(newr).apiInsertAllowed) {
-        response.forbidden();
-        return;
-      }
 
-      await this.repository.getEntityRef(newr).save();
-      response.created(this.repository.getEntityRef(newr).toApiJson());
+      const insert = async (what: any) => {
+        let newr = this.repository.create();
+        await (this.repository.getEntityRef(newr) as rowHelperImplementation<T>)._updateEntityBasedOnApi(what);
+        if (!this.repository.getEntityRef(newr).apiInsertAllowed) {
+          throw new ForbiddenError();
+        }
+        await this.repository.getEntityRef(newr).save();
+        return this.repository.getEntityRef(newr).toApiJson()
+      }
+      if (Array.isArray(body)) {
+        const result = [];
+        await doTransaction(this.remult, async () => {
+          for (const item of body) {
+            result.push(await insert(item));
+          }
+        });
+        response.created(result);
+      }
+      else response.created(await insert(body));
     } catch (err) {
-      response.error(err);
+      if (err.isForbiddenError)
+        response.forbidden();
+      else
+        response.error(err);
     }
   }
 
@@ -246,3 +325,4 @@ export function serializeError(data: ErrorInfo) {
     data = { message: x };
   return data;
 }
+

@@ -1,4 +1,5 @@
-import { PoolConfig, QueryResult } from 'pg';
+import { ClientBase, PoolConfig, QueryResult } from 'pg';
+import { Remult } from '../src/context';
 import { EntityMetadata } from '../src/remult3';
 import { SqlCommand, SqlImplementation } from '../src/sql-command';
 import { SqlDatabase } from '../src/data-providers/sql-database';
@@ -10,6 +11,7 @@ export interface PostgresClient extends PostgresCommandSource {
 }
 export declare class PostgresDataProvider implements SqlImplementation {
     private pool;
+    static getDb(remult?: Remult): ClientBase;
     entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void>;
     getLimitSqlSyntax(limit: number, offset: number): string;
     createCommand(): SqlCommand;

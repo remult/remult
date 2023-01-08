@@ -1,7 +1,7 @@
 import { ClassType } from '../classType';
 import { FieldMetadata, FieldOptions, ValueConverter } from './column-interfaces';
 import { Filter } from './filter/filter-interfaces';
-import { EntityFilter, FindOptions, Repository, RepositoryImplementation } from './remult3';
+import { EntityFilter, FindOptions, idType, Repository, RepositoryImplementation } from './remult3';
 export declare function makeTitle(name: string): string;
 export declare class CompoundIdField implements FieldMetadata<string> {
     fields: FieldMetadata[];
@@ -30,7 +30,7 @@ export declare class LookupColumn<T> {
     waitLoadOf(id: any): Promise<T>;
     get(id: any): any;
     set(item: T): void;
-    constructor(repository: RepositoryImplementation<T>, _id: string);
+    constructor(repository: RepositoryImplementation<T>, _id: idType<T>);
     private _item;
     get id(): any;
     set id(value: any);

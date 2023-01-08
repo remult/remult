@@ -8,7 +8,7 @@ import { Done } from "./Done";
 
 import { Status } from './testModel/models';
 
-import { Remult, Allowed, retry, toPromise, HttpProviderBridgeToRestDataProviderHttpProvider } from '../context';
+import { Remult, Allowed } from '../context';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { __RowsOfDataForTesting } from "../__RowsOfDataForTesting";
 import { DataList } from '../../../angular/interfaces/src/dataList';
@@ -28,10 +28,11 @@ import { assign } from '../../assign';
 import { entityWithValidations, testConfiguration } from '../shared-tests/entityWithValidations';
 import { entityWithValidationsOnColumn } from './entityWithValidationsOnColumn';
 import { ValueConverters } from "../valueConverters";
-import { dbNameProviderImpl, FilterConsumerBridgeToSqlRequest, getDbNameProvider } from "../filter/filter-consumer-bridge-to-sql-request";
+import {  FilterConsumerBridgeToSqlRequest, dbNamesOf } from "../filter/filter-consumer-bridge-to-sql-request";
 import axios from "axios";
 import { async } from "@angular/core/testing";
 import { createEntity } from "../remult3/DecoratorReplacer";
+import { HttpProviderBridgeToRestDataProviderHttpProvider, retry, toPromise } from "../buildRestDataProvider";
 
 //SqlDatabase.LogToConsole = true;
 
@@ -352,6 +353,7 @@ describe("data api", () => {
       }, transaction: undefined
     });
 
+
     var api = new DataApi(ctx.repo(newCategories), ctx);
     let t = new TestDataApiResponse();
     let d = new Done();
@@ -361,9 +363,6 @@ describe("data api", () => {
     d.test();
   });
   it("post works", async () => {
-
-
-
     let [c, remult] = await createData(async () => { });
 
     var api = new DataApi(c, remult);
@@ -376,6 +375,25 @@ describe("data api", () => {
     };
     await api.post(t, { id: 1, categoryName: 'noam' });
     d.test();
+    expect(await c.count()).toBe(1);
+  });
+  it("post works for array", async () => {
+    let [c, remult] = await createData(async () => { });
+
+    var api = new DataApi(c, remult);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.created = async (data: any) => {
+      expect(data.length).toBe(2);
+      expect(data[0].id).toBe(1);
+      expect(data[0].categoryName).toBe('noam');
+      expect(data[1].id).toBe(2);
+      expect(data[1].categoryName).toBe('yael');
+      d.ok();
+    };
+    await api.post(t, [{ id: 1, categoryName: 'noam' }, { id: 2, categoryName: "yael" }]);
+    d.test();
+    expect(await c.count()).toBe(2);
   });
 
 
@@ -801,7 +819,6 @@ describe("data api", () => {
 
 
     let startTest = false;
-    let remult = new Remult();
     let mem = new InMemoryDataProvider();
     remult.dataProvider = (mem);
     let type = class extends newCategories {
@@ -1417,7 +1434,7 @@ describe("column validation", () => {
   });
   it("test date filter and values", async () => {
     let sql = new SqlDatabase(new WebSqlDataProvider('identity_game'));
-    let c = new Remult();
+    let c = new Remult(sql);
     await sql.execute("drop table if exists t1");
     c.dataProvider = (sql);
     let type = class extends EntityBase {
@@ -1452,7 +1469,7 @@ describe("column validation", () => {
 describe("test web sql identity", () => {
   it("play", async () => {
     let sql = new SqlDatabase(new WebSqlDataProvider('identity_game'));
-    let c = new Remult();
+    let c = new Remult(sql);
     await sql.execute("drop table if exists t1");
     c.dataProvider = (sql);
 
@@ -1486,10 +1503,9 @@ describe("compound id", () => {
     let ctx = new Remult();
     let repo = ctx.repo(CompoundIdEntity);
     let id = repo.metadata.idMetadata.field as CompoundIdField;
-    var n = await getDbNameProvider(repo.metadata)
+    var n = await dbNamesOf(repo.metadata)
     let f = new FilterConsumerBridgeToSqlRequest({
-      addParameterAndReturnSqlToken: x => x,
-      execute: undefined
+      addParameterAndReturnSqlToken: x => x
     }, n);
     id.resultIdFilter(undefined, repo.create({ a: 1, b: 2 })).__applyToConsumer(f);
     expect(await f.resolveWhere()).toBe(" where a = 1 and b = 2");
@@ -1505,10 +1521,9 @@ describe("compound id", () => {
     let ctx = new Remult();
     let repo = ctx.repo(CompoundIdEntity);
     let id = repo.metadata.idMetadata.field as CompoundIdField;
-    var n = await getDbNameProvider(repo.metadata)
+    var n = await dbNamesOf(repo.metadata)
     let f = new FilterConsumerBridgeToSqlRequest({
-      addParameterAndReturnSqlToken: x => x,
-      execute: undefined
+      addParameterAndReturnSqlToken: x => x
     }, n);
     id.resultIdFilter("1,2", repo.create({ a: 1, b: 2 })).__applyToConsumer(f);
     expect(await f.resolveWhere()).toBe(" where a = 1 and b = 2");
@@ -1674,6 +1689,7 @@ describe("test data list", () => {
         return r;
       }, transaction: undefined
     });
+
     let rl = new DataList<newCategories>(cont.repo(newCategories));
     await rl.get();
     expect(rl.items.length).toBe(3);
@@ -2037,7 +2053,7 @@ export class entityWithValidationsOnEntityEvent extends EntityBase {
   name: string;
 }
 @Entity<EntityWithLateBoundDbName>('stam', {
-  sqlExpression: async (t) => '(select ' + t.id.options.dbName + ')'
+  sqlExpression: async (t) => '(select ' + t.fields.id.options.dbName + ')'
 })
 export class EntityWithLateBoundDbName extends EntityBase {
   @Fields.integer({ dbName: 'CategoryID' })

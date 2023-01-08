@@ -1,6 +1,6 @@
 import './frontend-database-tests-setup.spec';
 
-import { AllowedForInstance, HttpProviderBridgeToRestDataProviderHttpProvider, Remult } from "../context";
+import { AllowedForInstance, Remult } from "../context";
 import { DataApi, DataApiRequest, DataApiResponse, serializeError } from "../data-api";
 import { DataProvider, EntityDataProvider } from "../data-interfaces";
 import { InMemoryDataProvider } from "../data-providers/in-memory-database";
@@ -12,6 +12,7 @@ import { Action, actionInfo, serverActionField } from "../server-action";
 import { testConfiguration } from '../shared-tests/entityWithValidations';
 import { TestDataApiResponse } from './TestDataApiResponse';
 import { remult } from '../remult-proxy';
+import { HttpProviderBridgeToRestDataProviderHttpProvider } from '../buildRestDataProvider';
 
 
 
@@ -62,8 +63,8 @@ export const ActionTestConfig = {
   db: new InMemoryDataProvider()
 }
 remult.apiClient.httpClient = {
-  delete: ()=>undefined,
-  get: ()=>undefined,
+  delete: () => undefined,
+  get: () => undefined,
   post: async (urlreq, data) => {
     return await new Promise((res, r) => {
       let found = false;
@@ -104,7 +105,7 @@ remult.apiClient.httpClient = {
     });
 
   },
-  put: ()=>undefined
+  put: () => undefined
 }
 
 
@@ -130,7 +131,6 @@ export async function testInMemoryDb(runAsync: (db: {
   db: DataProvider,
   remult: Remult
 }) => Promise<void>) {
-  let remult = new Remult();
   let db = new InMemoryDataProvider();
   remult.dataProvider = (db);
   await runAsync({ db, remult });
@@ -200,72 +200,76 @@ export class MockRestDataProvider implements DataProvider {
   getEntityDataProvider(metadata: EntityMetadata<any>): EntityDataProvider {
 
     let dataApi = new DataApi(this.remult.repo(metadata.entityType), this.remult);
-    return new RestEntityDataProvider(() => "", () => new HttpProviderBridgeToRestDataProviderHttpProvider({
-      delete: async url => {
-
-
-        let urlSplit = url.split('/');
-        let r = new TestDataApiResponse();
-        let result;
-        r.deleted = () => { };
-        try {
-          testConfiguration.restDbRunningOnServer = true;
-          await dataApi.delete(r, urlSplit[urlSplit.length - 1]);
-        }
-        finally {
-          testConfiguration.restDbRunningOnServer = false;
-        }
-        return result;
-      },
-      get: async (url) => {
-        let r = new TestDataApiResponse();
-        let result;
-
-
-        r.success = data => { result = data };
-        try {
-          testConfiguration.restDbRunningOnServer = true;
-          await dataApi.httpGet(r, urlToReq(url));
-        }
-        finally {
-          testConfiguration.restDbRunningOnServer = false;
-        }
-        return result;
-      },
-      post: async (url, data) => {
-
-        let r = new TestDataApiResponse();
-        let result;
-        r.created = data => { result = data };
-        r.success = data => { result = data };
-        try {
-          testConfiguration.restDbRunningOnServer = true;
-          await dataApi.httpPost(r, urlToReq(url), data);
-        }
-        finally {
-          testConfiguration.restDbRunningOnServer = false;
-        }
-        return result;
-      },
-      put: async (url, data) => {
-        let urlSplit = url.split('/');
-        let r = new TestDataApiResponse();
-        let result;
-        r.success = data => { result = data };
-        try {
-          testConfiguration.restDbRunningOnServer = true;
-          await dataApi.put(r, urlSplit[urlSplit.length - 1], data);
-        }
-        finally {
-          testConfiguration.restDbRunningOnServer = false;
-        }
-        return result;
-      }
-    }), metadata);
+    return new RestEntityDataProvider(() => "", () => createMockHttpDataProvider(dataApi), metadata);
   }
   transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
     throw new Error('Method not implemented.');
   }
-  supportsCustomFilter = true;
+  supportsrawFilter = true;
 
 }
+export function createMockHttpDataProvider(dataApi: DataApi<any>): import("c:/Repos/radweb/projects/core/src/data-interfaces").RestDataProviderHttpProvider {
+  return new HttpProviderBridgeToRestDataProviderHttpProvider({
+    delete: async (url) => {
+
+
+      let urlSplit = url.split('/');
+      let r = new TestDataApiResponse();
+      let result;
+      r.deleted = () => { };
+      try {
+        testConfiguration.restDbRunningOnServer = true;
+        await dataApi.delete(r, urlSplit[urlSplit.length - 1]);
+      }
+      finally {
+        testConfiguration.restDbRunningOnServer = false;
+      }
+      return result;
+    },
+    get: async (url) => {
+      let r = new TestDataApiResponse();
+      let result;
+
+
+      r.success = data => { result = data; };
+      try {
+        testConfiguration.restDbRunningOnServer = true;
+        await dataApi.httpGet(r, urlToReq(url), () => "");
+      }
+      finally {
+        testConfiguration.restDbRunningOnServer = false;
+      }
+      return result;
+    },
+    post: async (url, data) => {
+
+      let r = new TestDataApiResponse();
+      let result;
+      r.created = data => { result = data; };
+      r.success = data => { result = data; };
+      try {
+        testConfiguration.restDbRunningOnServer = true;
+        await dataApi.httpPost(r, urlToReq(url), data, () => ({}));
+      }
+      finally {
+        testConfiguration.restDbRunningOnServer = false;
+      }
+      return result;
+    },
+    put: async (url, data) => {
+      let urlSplit = url.split('/');
+      let r = new TestDataApiResponse();
+      let result;
+      r.success = data => { result = data; };
+      try {
+        testConfiguration.restDbRunningOnServer = true;
+        await dataApi.put(r, urlSplit[urlSplit.length - 1], data);
+      }
+      finally {
+        testConfiguration.restDbRunningOnServer = false;
+      }
+      return result;
+    }
+  });
+}
+

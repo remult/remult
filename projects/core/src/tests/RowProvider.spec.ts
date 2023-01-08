@@ -3,7 +3,7 @@ import { InMemoryDataProvider } from '../data-providers/in-memory-database'
 import { ArrayEntityDataProvider } from "../data-providers/array-entity-data-provider";
 import { testAllDataProviders } from './testHelper.spec';
 import { Status, TestStatus } from './testModel/models';
-import { Allow, Remult, toPromise } from '../context';
+import { Allow, Remult } from '../context';
 import { OneToMany } from '../column';
 import { FilterHelper } from '../../../angular/interfaces/src/filter-helper';
 
@@ -106,12 +106,10 @@ describe("grid filter stuff", () => {
   });
   it("filter with contains", async () => {
     let x = new FilterConsumerBridgeToSqlRequest({
-      addParameterAndReturnSqlToken: () => "",
-      execute: () => { throw "rr" }
+      addParameterAndReturnSqlToken: () => ""
     }, {
-      entityName: '',
-      nameOf: () => 'col',
-      isDbReadonly: () => false
+      $entityName: '',
+      $dbNameOf: () => 'col'
     });
 
     x.containsCaseInsensitive(new mockColumnDefs("col"), "no'am");
@@ -119,12 +117,10 @@ describe("grid filter stuff", () => {
   });
   it("filter with contains", async () => {
     let x = new FilterConsumerBridgeToSqlRequest({
-      addParameterAndReturnSqlToken: () => "",
-      execute: () => { throw "rr" }
+      addParameterAndReturnSqlToken: () => ""
     }, {
-      entityName: '',
-      nameOf: () => 'col',
-      isDbReadonly: () => false
+      $entityName: '',
+      $dbNameOf: () => 'col'
     });
 
     x.containsCaseInsensitive(new mockColumnDefs("col"), "no'a'm");
@@ -232,7 +228,7 @@ describe("Closed List  column", () => {
     e.l = Language.Russian;
     await e._.save();
     e = await c.findFirst();
-    console.log(e.$.l.metadata.valueConverter);
+    
     expect(e.l).toBe(Language.Russian);
     expect(e._.toApiJson().l).toBe(10);
   })

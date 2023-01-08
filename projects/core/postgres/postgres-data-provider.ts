@@ -1,6 +1,6 @@
 
 
-import { Pool, PoolConfig, QueryResult } from 'pg';
+import { ClientBase, Pool, PoolConfig, QueryResult } from 'pg';
 import { Remult } from '../src/context';
 import { PostgresSchemaBuilder, verifyStructureOfAllEntities } from './schema-builder';
 import { EntityMetadata } from '../src/remult3';
@@ -17,6 +17,14 @@ export interface PostgresClient extends PostgresCommandSource {
 }
 
 export class PostgresDataProvider implements SqlImplementation {
+    static getDb(remult?: Remult): ClientBase {
+        const sql = SqlDatabase.getDb(remult);
+        const me = sql._getSourceSql() as PostgresDataProvider;
+        if (!me.pool) {
+            throw "the data provider is not a PostgresDataProvider";
+        }
+        return me.pool as any as ClientBase;
+    }
     async entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void> {
 
     }
@@ -39,7 +47,9 @@ export class PostgresDataProvider implements SqlImplementation {
                 createCommand: () => new PostgresBridgeToSQLCommand(client),
                 entityIsUsedForTheFirstTime: this.entityIsUsedForTheFirstTime,
                 transaction: () => { throw "nested transactions not allowed" },
-                getLimitSqlSyntax: this.getLimitSqlSyntax
+                getLimitSqlSyntax: this.getLimitSqlSyntax,
+                //@ts-ignore
+                pool:client
             });
             await client.query('COMMIT');
         }

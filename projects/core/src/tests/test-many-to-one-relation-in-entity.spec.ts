@@ -373,7 +373,7 @@ describe("many to one relation", () => {
         async function test(where: EntityFilter<Products>, expected: number) {
             expect(await repo.count(where)).toBe(expected);
             function log(x: any) {
-                console.log(x);
+                
                 return x;
             }
             expect(await repo.count(log(Filter.entityFilterFromJson(repo.metadata, log(entityFilterToJson(repo.metadata,
@@ -479,7 +479,6 @@ describe("many to one relation", () => {
             category: cat
         }).save();
 
-        remult = new Remult();
         let d = new Done();
         remult.dataProvider = ({
             transaction: undefined,
@@ -495,6 +494,7 @@ describe("many to one relation", () => {
 
             }
         });
+
         p = await remult.repo(Products).findFirst();
         p.name = "prod 11";
         await p.save();
@@ -799,7 +799,7 @@ describe("Test entity relation and count finds", () => {
                 }
 
             }
-        });
+        })//clear the cache;
         let api = new DataApi(c.repo(h), c);
         let t = new TestDataApiResponse();
         let done = new Done();

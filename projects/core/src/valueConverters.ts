@@ -23,7 +23,7 @@ export class ValueConverters {
         return val.toISOString();
       }
       else {
-        console.log("ToJsonError", val);
+        console.error("ToJsonError", val);
         throw new Error("Expected date but got val");
       }
 

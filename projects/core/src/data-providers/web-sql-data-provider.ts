@@ -5,7 +5,8 @@ import { SqlCommand, SqlResult, SqlImplementation } from "../sql-command";
 import { EntityMetadata, isAutoIncrement } from "../remult3";
 import { FieldMetadata } from "../column-interfaces";
 import { SqlDatabase } from "./sql-database";
-import { getDbNameProvider } from "../filter/filter-consumer-bridge-to-sql-request";
+import { dbNamesOf, isDbReadonly } from "../filter/filter-consumer-bridge-to-sql-request";
+import { Remult } from "../context";
 //SqlDatabase.LogToConsole = true;
 export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTesting {
     rows: {
@@ -20,6 +21,14 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
         //@ts-ignore
         this.db = window.openDatabase(databaseName, '1.0', databaseName, databaseSize);
     }
+    static getDb(remult?: Remult) {
+        const sql = SqlDatabase.getDb(remult);
+        const me = sql._getSourceSql() as WebSqlDataProvider;
+        if (!me.db) {
+            throw "the data provider is not a WebSqlDataProvider";
+        }
+        return me.db;
+    }
 
     getLimitSqlSyntax(limit: number, offset: number) {
         return ' limit ' + limit + ' offset ' + offset;
@@ -29,34 +38,34 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
     }
 
     async dropTable(entity: EntityMetadata) {
-        let e = await getDbNameProvider(entity);
-        let sql = 'drop  table if exists ' + e.entityName;
+        let e = await dbNamesOf(entity);
+        let sql = 'drop  table if exists ' + e.$entityName;
         if (SqlDatabase.LogToConsole)
-            console.log(sql);
+            console.info(sql);
         await this.createCommand().execute(sql);
     }
     async createTable(entity: EntityMetadata<any>) {
         let result = '';
-        let e = await getDbNameProvider(entity);
+        let e = await dbNamesOf(entity);
         for (const x of entity.fields) {
-            if (!e.isDbReadonly(x) || isAutoIncrement(x)) {
+            if (!isDbReadonly(x, e) || isAutoIncrement(x)) {
                 if (result.length != 0)
                     result += ',';
                 result += '\r\n  ';
                 if (isAutoIncrement(x)) {
                     if (x.key != entity.idMetadata.field.key)
                         throw "in web sql, autoincrement is only allowed for primary key"
-                    result += e.nameOf(x) + ' integer primary key autoincrement';
+                    result += e.$dbNameOf(x) + ' integer primary key autoincrement';
                 }
                 else {
-                    result += this.addColumnSqlSyntax(x, e.nameOf(x));
+                    result += this.addColumnSqlSyntax(x, e.$dbNameOf(x));
                     if (x.key == entity.idMetadata.field.key) {
                         result += ' primary key';
                     }
                 }
             }
         }
-        let sql = 'create table if not exists ' + e.entityName + ' (' + result + '\r\n)';
+        let sql = 'create table if not exists ' + e.$entityName + ' (' + result + '\r\n)';
         if (SqlDatabase.LogToConsole)
             console.log(sql);
         await this.createCommand().execute(sql);

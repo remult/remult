@@ -1,5 +1,6 @@
 import './frontend-database-tests-setup.spec';
 import { Remult } from "../context";
+import { DataApi } from "../data-api";
 import { DataProvider, EntityDataProvider } from "../data-interfaces";
 import { InMemoryDataProvider } from "../data-providers/in-memory-database";
 import { EntityMetadata } from "../remult3";
@@ -30,5 +31,6 @@ export declare class MockRestDataProvider implements DataProvider {
     constructor(remult: Remult);
     getEntityDataProvider(metadata: EntityMetadata<any>): EntityDataProvider;
     transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void>;
-    supportsCustomFilter: boolean;
+    supportsrawFilter: boolean;
 }
+export declare function createMockHttpDataProvider(dataApi: DataApi<any>): import("c:/Repos/radweb/projects/core/src/data-interfaces").RestDataProviderHttpProvider;

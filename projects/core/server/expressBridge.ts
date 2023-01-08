@@ -7,10 +7,10 @@ import { ClassType } from '../classType';
 import { Entity, Fields, getEntityKey, Repository } from '../src/remult3';
 import { IdEntity } from '../src/id-entity';
 import { remult, RemultProxy } from '../src/remult-proxy';
+import { LiveQueryPublisher, LiveQueryStorage, InMemoryLiveQueryStorage, PerformWithRequest, SubscriptionServer } from '../src/live-query/SubscriptionServer';
 
 
-
-
+//TODO2 -support pub sub non express servers
 export interface RemultServerOptions<RequestType extends GenericRequest> {
   /** Sets a database connection for Remult.
    *
@@ -18,7 +18,14 @@ export interface RemultServerOptions<RequestType extends GenericRequest> {
   */
   dataProvider?: DataProvider | Promise<DataProvider> | (() => Promise<DataProvider | undefined>);
   queueStorage?: QueueStorage;
-  initRequest?: (remult: Remult, origReq: RequestType) => Promise<void>;
+  liveQueryStorage?: LiveQueryStorage,
+  subscriptionServer?: SubscriptionServer
+  initRequest?: (remult: Remult, origReq: RequestType, options: InitRequestOptions) => Promise<void>;
+  requestSerializer?: {
+    toJson: (request: RequestType) => any,
+    fromJson: (request: any) => RequestType
+  };
+
   getUser?: (request: RequestType) => Promise<UserInfo>;
   initApi?: (remult: Remult) => void | Promise<void>;
   logApiEndPoints?: boolean;
@@ -27,6 +34,9 @@ export interface RemultServerOptions<RequestType extends GenericRequest> {
   controllers?: ClassType<any>[];
   rootPath?: string;
 };
+export interface InitRequestOptions {
+  liveQueryStorage: LiveQueryStorage
+}
 
 export function createRemultServerCore<RequestType extends GenericRequest = GenericRequest>(
   options?:
@@ -75,6 +85,23 @@ export function createRemultServerCore<RequestType extends GenericRequest = Gene
       return dp;
     });
   }
+  if (!options.requestSerializer) {
+    options.requestSerializer = {
+      toJson: x => {
+        const r = {
+          url: x.url
+        }
+        for (const key of ['session', 'auth', 'user']) {
+          if (x[key])
+            r[key] = x[key];
+        }
+        return r;
+      },
+      fromJson: x => {
+        return x;
+      }
+    }
+  }
 
   {
     let allControllers: ClassType<any>[] = [];
@@ -90,12 +117,14 @@ export function createRemultServerCore<RequestType extends GenericRequest = Gene
 
   if (options.rootPath === undefined)
     options.rootPath = '/api';
+
   actionInfo.runningOnServer = true;
   let bridge = new RemultServerImplementation(new inProcessQueueHandler(options.queueStorage), options, dataProvider);
   return bridge;
 
 }
 export type GenericRequestHandler = (req: GenericRequest, res: GenericResponse, next: VoidFunction) => void;
+
 
 
 export interface ServerHandleResponse {
@@ -165,14 +194,21 @@ export class RemultAsyncLocalStorage {
 }
 
 
+/* @internal*/
 
-
-class RemultServerImplementation implements RemultServer {
+export class RemultServerImplementation implements RemultServer {
+  liveQueryStorage: LiveQueryStorage = new InMemoryLiveQueryStorage();
   constructor(public queue: inProcessQueueHandler, public options: RemultServerOptions<GenericRequest>,
     public dataProvider: DataProvider | Promise<DataProvider>) {
-
+    if (options.liveQueryStorage)
+      this.liveQueryStorage = options.liveQueryStorage;
+    if (options.subscriptionServer)
+      this.subscriptionServer = options.subscriptionServer;
 
   }
+
+  runWithRequest: PerformWithRequest;
+  subscriptionServer: SubscriptionServer;
   withRemult<T>(req: GenericRequest, res: GenericResponse, next: VoidFunction) {
     this.process(async () => { next() })(req, res);
   }
@@ -235,16 +271,16 @@ class RemultServerImplementation implements RemultServer {
 
     let myRoute = this.options.rootPath + '/' + key;
     if (this.options.logApiEndPoints)
-      console.log("[remult] " + myRoute);
+      console.info("[remult] " + myRoute);
 
 
     r.route(myRoute)
-      .get(this.process((c, req, res) =>
-        dataApiFactory(c).httpGet(res, req)
+      .get(this.process((c, req, res, orig) =>
+        dataApiFactory(c).httpGet(res, req, () => this.options.requestSerializer!.toJson(orig))
       )).put(this.process(async (c, req, res, orig) => dataApiFactory(c).put(res, '', orig.body)))
       .delete(this.process(async (c, req, res, orig) => dataApiFactory(c).delete(res, '')))
       .post(this.process(async (c, req, res, orig) =>
-        dataApiFactory(c).httpPost(res, req, orig.body)
+        dataApiFactory(c).httpPost(res, req, orig.body, () => this.options.requestSerializer!.toJson(orig))
       ));
     r.route(myRoute + '/:id')
       //@ts-ignore
@@ -253,15 +289,16 @@ class RemultServerImplementation implements RemultServer {
       .put(this.process(async (c, req, res, orig) => dataApiFactory(c).put(res, orig.params.id, orig.body)))
       //@ts-ignore
       .delete(this.process(async (c, req, res, orig) => dataApiFactory(c).delete(res, orig.params.id)));
-
-
   }
   process(what: (remult: Remult, myReq: DataApiRequest, myRes: DataApiResponse, origReq: GenericRequest) => Promise<void>) {
     return async (req: GenericRequest, res: GenericResponse) => {
       let myReq = new ExpressRequestBridgeToDataApiRequest(req);
       let myRes = new ExpressResponseBridgeToDataApiResponse(res, req);
       let remult = new Remult();
+      remult.liveQueryPublisher = new LiveQueryPublisher(() => remult.subscriptionServer, () => remult.liveQueryStorage, this.runWithRequest)
       remult.dataProvider = (await this.dataProvider);
+      remult.subscriptionServer = this.subscriptionServer;
+      remult.liveQueryStorage = this.liveQueryStorage;
       await new Promise(res => {
         RemultAsyncLocalStorage.instance.run(remult, async () => {
           if (req) {
@@ -277,8 +314,16 @@ class RemultServerImplementation implements RemultServer {
               remult.user = (user);
           }
           if (this.options.initRequest) {
-            await this.options.initRequest(remult, req);
+            await this.options.initRequest(remult, req, {
+              get liveQueryStorage() {
+                return remult.liveQueryStorage
+              },
+              set liveQueryStorage(value: LiveQueryStorage) {
+                remult.liveQueryStorage = value;
+              }
+            });
           }
+
 
           await what(remult, myReq, myRes, req);
           res({});
@@ -307,7 +352,7 @@ class RemultServerImplementation implements RemultServer {
       })();
       this.backendMethodsOpenApi.push({ path: myUrl, allowed, tag });
       if (this.options.logApiEndPoints)
-        console.log("[remult] " + myUrl);
+        console.info("[remult] " + myUrl);
       if (queue) {
         this.hasQueue = true;
         this.queue.mapQueuedAction(myUrl, what);

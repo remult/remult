@@ -5,13 +5,12 @@ import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Reposit
 import { ClassType } from "../../classType";
 import { Remult, Unobserve } from "../context";
 import { entityEventListener, packedRowInfo } from "../__EntityValueProvider";
-import { DataProvider, EntityDataProvider } from "../data-interfaces";
+import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions } from "../data-interfaces";
 import { RefSubscriber } from ".";
 export declare class RepositoryImplementation<entityType> implements Repository<entityType> {
     private entity;
-    private remult;
+    remult: Remult;
     private dataProvider;
-    static defaultRemult: Remult;
     createAfterFilter(orderBy: EntityOrderBy<entityType>, lastRow: entityType): Promise<EntityFilter<entityType>>;
     private _info;
     private __edp;
@@ -39,10 +38,12 @@ export declare class RepositoryImplementation<entityType> implements Repository<
     } ? number : entityType extends {
         id?: string;
     } ? string : (string | number)), entity: Partial<OmitEB<entityType>>): Promise<entityType>;
-    getRefForExistingRow(entity: Partial<OmitEB<entityType>>, id: string | number): EntityRef<Partial<Pick<entityType, Exclude<keyof entityType, "delete" | "_" | "save" | "assign" | "isNew" | "$">>>>;
+    getRefForExistingRow(entity: Partial<OmitEB<entityType>>, id: string | number): EntityRef<Partial<Pick<entityType, Exclude<keyof entityType, "_" | "save" | "assign" | "delete" | "isNew" | "$">>>>;
     save(item: Partial<OmitEB<entityType>>[]): Promise<entityType[]>;
     save(item: Partial<OmitEB<entityType>>): Promise<entityType>;
+    liveQuery(options?: FindOptions<entityType>): any;
     find(options: FindOptions<entityType>): Promise<entityType[]>;
+    buildEntityDataProviderFindOptions(options: FindOptions<entityType>): Promise<EntityDataProviderFindOptions>;
     private mapRawDataToResult;
     count(where?: EntityFilter<entityType>): Promise<number>;
     private cache;
@@ -51,7 +52,6 @@ export declare class RepositoryImplementation<entityType> implements Repository<
     create(item?: Partial<OmitEB<entityType>>): entityType;
     fromJson(json: any, newRow?: boolean): Promise<entityType>;
     findId(id: any, options?: FindFirstOptionsBase<entityType>): Promise<entityType>;
-    private translateWhereToFilter;
 }
 export declare function __updateEntityBasedOnWhere<T>(entityDefs: EntityMetadata<T>, where: EntityFilter<T>, r: T): void;
 export declare type EntityOptionsFactory = (remult: Remult) => EntityOptions;
@@ -89,6 +89,7 @@ declare abstract class rowHelperBase<T> {
     copyDataToObject(): any;
     originalValues: any;
     saveOriginalData(): void;
+    saveMoreOriginalData(): void;
     validate(): Promise<boolean>;
     __validateEntity(): Promise<void>;
     __performColumnAndEntityValidations(): Promise<void>;
@@ -108,6 +109,7 @@ export declare class rowHelperImplementation<T> extends rowHelperBase<T> impleme
     get apiInsertAllowed(): boolean;
     metadata: EntityMetadata<T>;
     getId(): any;
+    saveMoreOriginalData(): void;
     private _wasDeleted;
     wasDeleted(): boolean;
     undoChanges(): void;
@@ -120,6 +122,7 @@ export declare class rowHelperImplementation<T> extends rowHelperBase<T> impleme
     delete(): Promise<void>;
     loadDataFrom(data: any, loadItems?: FieldMetadata[]): Promise<void>;
     id: any;
+    originalId: any;
     getOriginalId(): any;
     private calcServerExpression;
     isNew(): boolean;
@@ -177,7 +180,7 @@ export declare class columnDefsImpl implements FieldMetadata {
     private settings;
     private entityDefs;
     constructor(settings: FieldOptions, entityDefs: EntityFullInfo<any>, remult: Remult);
-    dbNamePromise: Promise<string>;
+    private _workingOnDbName;
     getDbName(): Promise<string>;
     options: FieldOptions<any, any>;
     target: ClassType<any>;
@@ -338,4 +341,8 @@ export declare function getFieldLoaderSaver(options: FieldOptions, remult: Remul
 };
 export declare function unpackEntity(d: packedRowInfo, repo: Repository<any>): Promise<any>;
 export declare function packEntity(defs: rowHelperImplementation<any>): packedRowInfo;
+export declare function getEntityMetadata<entityType>(entity: EntityMetadataOverloads<entityType>): EntityMetadata<entityType>;
+export declare function getRepository<entityType>(entity: RepositoryOverloads<entityType>): Repository<entityType>;
+export declare type EntityMetadataOverloads<entityType> = Repository<entityType> | EntityMetadata<entityType> | ClassType<entityType>;
+export declare type RepositoryOverloads<entityType> = Repository<entityType> | ClassType<entityType>;
 export {};

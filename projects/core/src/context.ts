@@ -1,107 +1,21 @@
-
-import { DataProvider, RestDataProviderHttpProvider } from "./data-interfaces";
-import { DataApiRequest } from "./data-api";
+import { DataProvider } from "./data-interfaces";
 import { Action, actionInfo, serverActionField } from './server-action';
-import { RestDataProvider, RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider';
+import { RestDataProvider } from './data-providers/rest-data-provider';
 import { EntityMetadata, EntityRef, FindOptions, Repository } from "./remult3";
 import { RepositoryImplementation } from "./remult3/RepositoryImplementation";
 import { ClassType } from "../classType";
+import { LiveQueryClient } from "./live-query/LiveQueryClient";
+import { SseSubscriptionClient } from "./live-query/SseSubscriptionClient";
+import { RemultProxy } from "./remult-proxy";
 
-export interface ExternalHttpProvider {
-    post(url: string, data: any): Promise<any> | { toPromise(): Promise<any> };
-    delete(url: string): Promise<void> | { toPromise(): Promise<void> };
-    put(url: string, data: any): Promise<any> | { toPromise(): Promise<any> };
-    get(url: string): Promise<any> | { toPromise(): Promise<any> };
-}
-export class HttpProviderBridgeToRestDataProviderHttpProvider implements RestDataProviderHttpProvider {
-    constructor(private http: ExternalHttpProvider) {
+import type { LiveQueryStorage, LiveQueryPublisher, LiveQueryChangesListener, SubscriptionServer } from "./live-query/SubscriptionServer";
+import { buildRestDataProvider, ExternalHttpProvider, isExternalHttpProvider } from "./buildRestDataProvider";
+import { SubscriptionClient } from "./live-query/SubscriptionClient";
 
-    }
-    async post(url: string, data: any): Promise<any> {
-        return await retry(() => toPromise(this.http.post(url, data)));
-    }
-    delete(url: string): Promise<void> {
-        return toPromise(this.http.delete(url));
-    }
-    put(url: string, data: any): Promise<any> {
-        return toPromise(this.http.put(url, data));
-    }
-    async get(url: string): Promise<any> {
-        return await retry(() => toPromise(this.http.get(url)));
-    }
-}
-export async function retry<T>(what: () => Promise<T>): Promise<T> {
-    while (true) {
-        try {
-            return await what();
-        } catch (err) {
-            if (err.message?.startsWith("Error occurred while trying to proxy") ||
-                err.message?.startsWith("Error occured while trying to proxy") ||
-                err.message?.includes("http proxy error") ||
-                err.message?.startsWith("Gateway Timeout")) {
-                await new Promise((res, req) => {
-                    setTimeout(() => {
-                        res({})
-                    }, 250);
-                })
-                continue;
-            }
-            throw err;
-        }
-    }
-}
 
-export function toPromise<T>(p: Promise<T> | { toPromise(): Promise<T> }) {
-    let r: Promise<T>;
-    if (p["toPromise"] !== undefined) {
-        r = p["toPromise"]();
-    }
-    //@ts-ignore
-    else r = p;
-    return r.then((x: any) => {
-        if (x && (x.status == 200 || x.status == 201) && x.headers && x.request && x.data)//for axios
-            return x.data;
-        return x;
-    }).catch(async ex => {
-        throw await processHttpException(ex);
-    });
-}
 
-export async function processHttpException(ex: any) {
-    let z = await ex;
-    var error;
-    if (z.error)
-        error = z.error;
 
-    else if (z.isAxiosError) {
-        if (typeof z.response?.data === "string")
-            error = z.response.data;
-        else
-            error = z?.response?.data
 
-    }
-    if (!error)
-        error = z.message;
-    if (z.status == 0 && z.error.isTrusted)
-        error = "Network Error";
-    if (typeof error === 'string') {
-        error = {
-            message: error,
-        };
-    }
-    if (z.modelState)
-        error.modelState = z.modelState;
-    let httpStatusCode = z.status;
-    if (httpStatusCode === undefined)
-        httpStatusCode = z.response?.status;
-    if (httpStatusCode !== undefined && httpStatusCode !== null) {
-        error.httpStatusCode = httpStatusCode;
-    }
-    var result = Object.assign(error, {
-        //     exception: ex disabled for now because JSON.stringify crashed with this
-    });
-    return result;
-}
 
 export function isBackend() {
     return actionInfo.runningOnServer;
@@ -211,10 +125,22 @@ export class Remult {
                 this.apiClient.httpClient = apiClient.httpClient;
             if (apiClient.url)
                 this.apiClient.url = apiClient.url;
+            if (apiClient.subscriptionClient)
+                this.apiClient.subscriptionClient = apiClient.subscriptionClient;
+            if (apiClient.wrapMessageHandling)
+                this.apiClient.wrapMessageHandling = apiClient.wrapMessageHandling
         }
 
     }
+    /* @internal*/
+    liveQueryStorage?: LiveQueryStorage
+    subscriptionServer?: SubscriptionServer
+    /* @internal*/
+    liveQueryPublisher: LiveQueryChangesListener = {
+        itemChanged: () => { }
+    };
 
+    //@ts-ignore // type error of typescript regarding args that doesn't appear in my normal development
     call<T extends ((...args: any[]) => Promise<any>)>(backendMethod: T, classInstance?: any, ...args: GetArguments<T>): ReturnType<T> {
         const z = (backendMethod[serverActionField]) as Action<any, any>;
         if (!z.doWork)
@@ -225,6 +151,9 @@ export class Remult {
     /** The current data provider */
     dataProvider: DataProvider = new RestDataProvider(() => this.apiClient);
 
+    /* @internal*/
+    liveQuerySubscriber = new LiveQueryClient(() => this.apiClient);
+
     /** A helper callback that can be used to debug and trace all find operations. Useful in debugging scenarios */
     static onFind = (metadata: EntityMetadata, options: FindOptions<any>) => { };
     clearAllCache(): any {
@@ -232,11 +161,14 @@ export class Remult {
     }
     /** A helper callback that is called whenever an entity is created. */
     static entityRefInit?: (ref: EntityRef<any>, row: any) => void;
-    readonly context: RemultContext = {};
+    readonly context: RemultContext = {} as any;
     apiClient: ApiClient = {
-        url: '/api'
+        url: '/api',
+        subscriptionClient: new SseSubscriptionClient()
     };
 }
+
+RemultProxy.defaultRemult = new Remult();
 export type GetArguments<T> = T extends (
     ...args: infer FirstArgument
 ) => any
@@ -248,6 +180,8 @@ export interface RemultContext {
 export interface ApiClient {
     httpClient?: ExternalHttpProvider | typeof fetch;
     url?: string;
+    subscriptionClient?: SubscriptionClient
+    wrapMessageHandling?: (x: VoidFunction) => void
 };
 
 
@@ -261,31 +195,7 @@ export class ClassHelper {
     classes = new Map<any, ControllerOptions>();
 }
 
-function isExternalHttpProvider(item: any) {
-    let http: ExternalHttpProvider = item as ExternalHttpProvider;
-    if (http && http.get && http.put && http.post && http.delete)
-        return true;
-    return false;
-}
 
-export function buildRestDataProvider(provider: ExternalHttpProvider | typeof fetch) {
-    if (!provider)
-        return new RestDataProviderHttpProviderUsingFetch();
-    let httpDataProvider: RestDataProviderHttpProvider;
-
-    if (!httpDataProvider) {
-
-        if (isExternalHttpProvider(provider)) {
-            httpDataProvider = new HttpProviderBridgeToRestDataProviderHttpProvider(provider as ExternalHttpProvider);
-        }
-    }
-    if (!httpDataProvider) {
-        if (typeof provider === "function") {
-            httpDataProvider = new RestDataProviderHttpProviderUsingFetch(provider);
-        }
-    }
-    return httpDataProvider;
-}
 
 export function setControllerSettings(target: any, options: ControllerOptions) {
     let r = target;
@@ -318,15 +228,6 @@ export class Allow {
 }
 
 
-
-
-
-
-
-
-
-
-
 export const queryConfig = {
     defaultPageSize: 200
 };
@@ -353,4 +254,52 @@ export class EventSource {
         }
     };
 
+}
+
+
+
+export interface itemChange {
+    id: any;
+    oldId: any;
+    deleted: boolean;
+}
+
+export async function doTransaction(remult: Remult, what: () => Promise<void>) {
+    return await remult.dataProvider.transaction(async ds => {
+        remult.dataProvider = (ds);
+        const trans = new transactionLiveQueryPublisher(remult.liveQueryPublisher);
+        remult.liveQueryPublisher = trans;
+        await what();
+        trans.flush();
+    });
+}
+class transactionLiveQueryPublisher implements LiveQueryChangesListener {
+
+    constructor(private orig: LiveQueryChangesListener) { }
+    transactionItems = new Map<string, itemChange[]>();
+    itemChanged(entityKey: string, changes: itemChange[]): void {
+        let items = this.transactionItems.get(entityKey);
+        if (!items) {
+            this.transactionItems.set(entityKey, items = []);
+        }
+        for (const c of changes) {
+            if (c.oldId !== undefined) {
+                const item = items.find(y => y.id === c.oldId);
+                if (item !== undefined) {
+                    if (c.deleted)
+                        item.deleted = true;
+                    if (c.id != item.id)
+                        item.id = c.id;
+                }
+                else
+                    items.push(c);
+            }
+            else items.push(c);
+        }
+    }
+    flush() {
+        for (const key of this.transactionItems.keys()) {
+            this.orig.itemChanged(key, this.transactionItems.get(key));
+        }
+    }
 }

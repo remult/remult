@@ -13,7 +13,7 @@ import { Remult } from "../context";
 import { dWithPrefilter } from "../tests/dWithPrefilter";
 import { entityFilterToJson, Filter } from "../filter/filter-interfaces";
 import { d } from "../tests/d";
-import { entityForCustomFilter1 } from "../tests/entityForCustomFilter";
+import { entityForrawFilter1 } from "../tests/entityForCustomFilter";
 import { entityWithValidationsOnColumn } from "../tests/entityWithValidationsOnColumn";
 import { Validators } from "../validators";
 import { Status } from "../tests/testModel/models";
@@ -231,7 +231,7 @@ testAll("test paging with complex object", async ({ remult, createEntity }) => {
         i++;
     }
     expect(i).toBe(5);
-})
+},false)
 testAll("test paging with complex object_2", async ({ remult, createEntity }) => {
 
     let c1 = await (await createEntity(c)).create({ id: 1, name: 'c1' }).save();
@@ -277,13 +277,13 @@ testAll("test filter doesn't collapse", async ({ createEntity }) => {
 });
 testAll("test that it works with inheritance", async ({ createEntity }) => {
 
-    let c = await createEntity(entityForCustomFilter1);
+    let c = await createEntity(entityForrawFilter1);
     for (let id = 0; id < 5; id++) {
         await c.create({ id }).save();
     }
-    expect(await (c.count(entityForCustomFilter1.oneAndThree()))).toBe(2);
-    expect((await (c.findFirst(entityForCustomFilter1.testNumericValue(2)))).id).toBe(2);
-    expect((await (c.findFirst(entityForCustomFilter1.testObjectValue({ val: 2 })))).id).toBe(2);
+    expect(await (c.count(entityForrawFilter1.oneAndThree()))).toBe(2);
+    expect((await (c.findFirst(entityForrawFilter1.testNumericValue(2)))).id).toBe(2);
+    expect((await (c.findFirst(entityForrawFilter1.testObjectValue({ val: 2 })))).id).toBe(2);
 })
 testAll("put with validations on column fails", async ({ remult, createEntity }) => {
 

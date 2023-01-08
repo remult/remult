@@ -1,10 +1,11 @@
 import { Done } from "./Done";
-import { processHttpException, Remult, toPromise } from '../context';
+import {  Remult } from '../context';
 
 
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 
 import { Field, Entity, EntityBase, Fields } from '../remult3';
+import { processHttpException, toPromise } from "../buildRestDataProvider";
 
 describe("test exception", () => {
     it("test save exception", async () => {
@@ -32,6 +33,7 @@ describe("test exception", () => {
             },
             transaction: undefined
         });
+       
         var ok = new Done();
         let type = class extends EntityBase {
             id: string;
@@ -56,7 +58,7 @@ describe("test exception", () => {
 
 });
 function log(what) {
-    console.log(what);
+    
     return what;
 }
 describe("angular http client exception ", () => {
@@ -384,7 +386,7 @@ describe("fetch client exception ", () => {
             },
             "status": 400
         });
-        console.log(err);
+        
         expect(err).toEqual({
             "modelState": {
                 "name": "name error"

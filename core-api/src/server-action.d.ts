@@ -20,6 +20,10 @@ export declare abstract class Action<inParam, outParam> implements ActionInterfa
     protected abstract execute(info: inParam, req: Remult, res: DataApiResponse): Promise<outParam>;
     __register(reg: (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void): void;
 }
+export declare class ForbiddenError extends Error {
+    constructor();
+    isForbiddenError: true;
+}
 export declare class myServerAction extends Action<inArgs, result> {
     private types;
     private options;

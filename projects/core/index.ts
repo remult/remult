@@ -1,12 +1,12 @@
 
 
+
 /*
  * Public API Surface of remult
  */
 export {
     Field,
     Fields,
-    StringFieldOptions,
     FieldsMetadata,
     Entity,
 
@@ -41,9 +41,14 @@ export {
     CaptionTransformer,
     InferMemberType,
     InferredType,
-    TypedDecorator
+    TypedDecorator,
+    LiveQuery,
+    LiveQueryChangeInfo
 } from './src/remult3';
 export { describeClass, createEntity, createClass } from './src/remult3/DecoratorReplacer';
+
+export { StringFieldOptions } from './src/remult3/RepositoryImplementation';
+
 export { EntityOptions } from './src/entity';
 export {
     DataProvider,
@@ -76,7 +81,7 @@ export {
 export {
     SqlDatabase,
 } from './src/data-providers/sql-database';//V
-export { CustomSqlFilterObject, CustomSqlFilterBuilder } from './src/filter/filter-consumer-bridge-to-sql-request';
+export { CustomSqlFilterObject, CustomSqlFilterBuilder, dbNamesOf } from './src/filter/filter-consumer-bridge-to-sql-request';
 
 
 
@@ -103,19 +108,25 @@ export {
     AllowedForInstance,
     EventDispatcher,
     EventSource,
-    ExternalHttpProvider,
+
     Unobserve,
     UserInfo
 } from './src/context';
+export { ExternalHttpProvider } from './src/buildRestDataProvider'
 export {
     IdEntity
 } from './src/id-entity';
 export { SortSegment, Sort } from './src/sort';
 export { OneToMany, CompoundIdField } from './src/column';
 export { Filter } from './src/filter/filter-interfaces';
-export { FilterConsumerBridgeToSqlRequest } from './src/filter/filter-consumer-bridge-to-sql-request';
 export { UrlBuilder } from './urlBuilder';
 export { Validators } from './src/validators';
 
 export { ValueConverters } from './src/valueConverters';
 export { remult } from './src/remult-proxy';
+//export { getId } from './src/remult3/getId';
+
+export { SubscriptionServer, LiveQueryStorage, StoredQuery, InMemoryLiveQueryStorage } from "./src/live-query/SubscriptionServer";
+export { SubscriptionClientConnection, SubscriptionClient, SubscriptionChannel, LiveQueryChange, Unsubscribe } from './src/live-query/SubscriptionClient';
+
+

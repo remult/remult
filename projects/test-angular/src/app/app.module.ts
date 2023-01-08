@@ -22,7 +22,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { CategoriesComponent } from './categories/categories.component';
 import { TestComponent } from './test/test.component';
 import { TestDialogComponent } from './test-dialog/test-dialog.component';
-import { AComponent, BComponent, ProductsComponent } from './products-test/products.component';
+import {  ProductsComponent } from './products-test/products.component';
 import { JwtModule } from '@auth0/angular-jwt';
 import { MatMenuModule } from '@angular/material/menu';
 import { ScrollingModule } from '@angular/cdk/scrolling';
@@ -39,8 +39,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     AppComponent,
     ProductsComponent,
     CategoriesComponent,
-    AComponent,
-    BComponent,
 
     TestComponent,
     //  InputAreaComponent,

@@ -1,7 +1,8 @@
 import { ClassType } from "../../classType";
 import { FieldMetadata } from "../column-interfaces";
 import { Unobserve } from "../context";
-import { EntityOptions as EntityOptions } from "../entity";
+import { LiveQueryChange, Unsubscribe } from "../live-query/SubscriptionClient";
+import { EntityOptions } from "../entity";
 import { SortSegment } from "../sort";
 import { entityEventListener } from "../__EntityValueProvider";
 export interface EntityRef<entityType> extends Subscribable {
@@ -15,7 +16,8 @@ export interface EntityRef<entityType> extends Subscribable {
     wasDeleted(): boolean;
     fields: FieldsRef<entityType>;
     error: string;
-    getId(): any;
+    getId(): idType<entityType>;
+    getOriginalId(): idType<entityType>;
     repository: Repository<entityType>;
     metadata: EntityMetadata<entityType>;
     toApiJson(): any;
@@ -108,10 +110,17 @@ export interface EntityMetadata<entityType = any> {
     getDbName(): Promise<string>;
 }
 export declare type OmitEB<T> = Omit<T, keyof import('./RepositoryImplementation').EntityBase>;
+export declare type idType<entityType> = entityType extends {
+    id?: number;
+} ? number : entityType extends {
+    id?: string;
+} ? string : (string | number);
 /**used to perform CRUD operations on an `entityType` */
 export interface Repository<entityType> {
     /** returns a result array based on the provided options */
     find(options?: FindOptions<entityType>): Promise<entityType[]>;
+    /** returns a result array based on the provided options */
+    liveQuery(options?: FindOptions<entityType>): LiveQuery<entityType>;
     /** returns the first item that matchers the `where` condition
      * @example
      * await taskRepo.findFirst({ completed:false })
@@ -120,16 +129,12 @@ export interface Repository<entityType> {
      *      */
     findFirst(where?: EntityFilter<entityType>, options?: FindFirstOptions<entityType>): Promise<entityType>;
     /** returns the items that matches the idm the result is cached unless specified differently in the `options` parameter */
-    findId(id: entityType extends {
-        id?: number;
-    } ? number : entityType extends {
-        id?: string;
-    } ? string : (string | number), options?: FindFirstOptionsBase<entityType>): Promise<entityType>;
+    findId(id: idType<entityType>, options?: FindFirstOptionsBase<entityType>): Promise<entityType>;
     /**  An alternative form of fetching data from the API server, which is intended for operating on large numbers of entity objects.
      *
      * It also has it's own paging mechanism that can be used n paging scenarios.
      *
-     * The `query` method doesn't return an array (as the `find` method) and instead returns an `iteratable` `QueryResult` object
+     * The `query` method doesn't return an array (as the `find` method) and instead returns an `iterable` `QueryResult` object
      * which supports iterations using the JavaScript `for await` statement.
      * @example
      * for await (const task of taskRepo.query()) {
@@ -182,6 +187,14 @@ export interface Repository<entityType> {
     /**The metadata for the `entity` */
     metadata: EntityMetadata<entityType>;
     addEventListener(listener: entityEventListener<entityType>): Unobserve;
+}
+export interface LiveQuery<entityType> {
+    subscribe(onChange: (info: LiveQueryChangeInfo<entityType>) => void): Unsubscribe;
+}
+export interface LiveQueryChangeInfo<entityType> {
+    items: entityType[];
+    changes: LiveQueryChange[];
+    applyChanges(prevState: entityType[]): entityType[];
 }
 export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
     /** Determines the number of rows returned by the request, on the browser the default is 100 rows

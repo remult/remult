@@ -282,7 +282,7 @@ describe("test Server Controller basics", () => {
             }
         });
         const r = (await c.call(testBasics.sf, undefined, "noam"));
-        console.log(r);
+        
         expect(r.result).toBe("hello noam");
     });
     it("test backend method caller with proxy", async () => {
@@ -303,7 +303,6 @@ describe("test Server Controller basics", () => {
             p.remultFactory = () => c;
         }
         const r = (await p.call(testBasics.sf, undefined, "noam"));
-        console.log(r);
         expect(r.result).toBe("hello noam");
     });
     it("test backend method instance method", async () => {
@@ -320,7 +319,7 @@ describe("test Server Controller basics", () => {
         });
         const b = new testBasics(remult);
         const r = (await c.call(b.doIt, b));
-        console.log(r);
+        
         expect(r.result).toBe("hello noam");
     });
     it("test backend method instance method with proxy", async () => {
@@ -339,7 +338,7 @@ describe("test Server Controller basics", () => {
         p.remultFactory = () => c;
         const b = new testBasics(remult);
         const r = (await p.call(b.doIt, b));
-        console.log(r);
+
         expect(r.result).toBe("hello noam");
     });
     it("test server function", async () => {
