@@ -105,7 +105,7 @@ We can use custom filter with other data providers:
 static titleLengthFilter = Filter.createCustom<Task, { minLength: number }>(
   ({ minLength }) => {
     return ArrayEntityDataProvider.customFilter( (item) => {
-      return item.title?.length>minLegnth
+      return item.title?.length>minLength
     })
   });
 });

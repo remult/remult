@@ -66,6 +66,7 @@ export class SqlDatabase implements DataProvider {
       }
     });
   }
+  //TODO - change to "rawFilter" (in all databases and docs)
   static customFilter(build: CustomSqlFilterBuilderFunction): EntityFilter<any> {
     return {
       [customDatabaseFilterToken]: {
@@ -74,6 +75,7 @@ export class SqlDatabase implements DataProvider {
     }
 
   }
+  //TODO - filter to raw
   static async sqlCondition<entityType>(
     repo: RepositoryOverloads<entityType>,
     condition: EntityFilter<entityType>,
