@@ -1,28 +1,42 @@
 
 import { EntityDataProvider, EntityDataProviderFindOptions, DataProvider } from "../data-interfaces";
-import { SqlCommand, SqlImplementation, SqlResult } from "../sql-command";
+import { SqlCommand, SqlCommandWithParameters, SqlImplementation, SqlResult } from "../sql-command";
 import { CompoundIdField } from "../column";
 
-import { CustomSqlFilterBuilderFunction, CustomSqlFilterObject, dbNameProvider, FilterConsumerBridgeToSqlRequest, getDbNameProvider } from "../filter/filter-consumer-bridge-to-sql-request";
+import { CustomSqlFilterBuilderFunction, CustomSqlFilterObject, dbNamesOf, EntityDbNames, EntityDbNamesBase, FilterConsumerBridgeToSqlRequest, isDbReadonly } from "../filter/filter-consumer-bridge-to-sql-request";
 import { customDatabaseFilterToken, Filter } from '../filter/filter-interfaces';
 import { Sort, SortSegment } from '../sort';
-import { EntityMetadata, EntityFilter } from "../remult3";
+import { EntityMetadata, EntityFilter, OmitEB, Repository, RepositoryImplementation, RepositoryOverloads, getRepository } from "../remult3";
 import { FieldMetadata } from "../column-interfaces";
+import { Remult } from "../context";
+import { RemultProxy } from "../remult-proxy";
+
 
 // @dynamic
 export class SqlDatabase implements DataProvider {
+  static getDb(remult?: Remult) {
+    const r = (remult || RemultProxy.defaultRemult).dataProvider as SqlDatabase;
+    if (!r.createCommand)
+      throw "the data provider is not an SqlDatabase";
+    return r;
+  }
   createCommand(): SqlCommand {
     return new LogSQLCommand(this.sql.createCommand(), SqlDatabase.LogToConsole);
   }
   async execute(sql: string) {
     return await this.createCommand().execute(sql);
   }
+  /* @internal*/
+  _getSourceSql() {
+    return this.sql;
+  }
+
   getEntityDataProvider(entity: EntityMetadata): EntityDataProvider {
 
     return new ActualSQLServerDataProvider(entity, this, async (dbName) => {
 
-      if (this.createdEntities.indexOf(dbName.entityName) < 0) {
-        this.createdEntities.push(dbName.entityName);
+      if (this.createdEntities.indexOf(dbName.$entityName) < 0) {
+        this.createdEntities.push(dbName.$entityName);
         await this.sql.entityIsUsedForTheFirstTime(entity);
       }
     }, this.sql);
@@ -53,13 +67,29 @@ export class SqlDatabase implements DataProvider {
       }
     });
   }
-  static customFilter(build: CustomSqlFilterBuilderFunction): EntityFilter<any> {
+  //TODO - change to "rawFilter" (in all databases and docs)
+  static rawFilter(build: CustomSqlFilterBuilderFunction): EntityFilter<any> {
     return {
       [customDatabaseFilterToken]: {
         buildSql: build
       }
     }
 
+  }
+  //TODO - filter to raw
+  static async filterToRaw<entityType>(
+    repo: RepositoryOverloads<entityType>,
+    condition: EntityFilter<entityType>,
+    sqlCommand?: SqlCommandWithParameters) {
+    if (!sqlCommand) {
+      sqlCommand = new myDummySQLCommand();
+    }
+    const r = getRepository(repo);
+
+    var b = new FilterConsumerBridgeToSqlRequest(sqlCommand, await dbNamesOf(r.metadata))
+    b._addWhere = false;
+    await (await ((r as RepositoryImplementation<entityType>).translateWhereToFilter(condition))).__applyToConsumer(b)
+    return await b.resolveWhere();
   }
   public static LogToConsole = false;
   public static durationThreshold = 0;
@@ -105,12 +135,12 @@ class LogSQLCommand implements SqlCommand {
 
 class ActualSQLServerDataProvider implements EntityDataProvider {
   public static LogToConsole = false;
-  constructor(private entity: EntityMetadata, private sql: SqlDatabase, private iAmUsed: (e: dbNameProvider) => Promise<void>, private strategy: SqlImplementation) {
+  constructor(private entity: EntityMetadata, private sql: SqlDatabase, private iAmUsed: (e: EntityDbNamesBase) => Promise<void>, private strategy: SqlImplementation) {
 
 
   }
   async init() {
-    let dbNameProvider = await getDbNameProvider(this.entity);
+    let dbNameProvider: EntityDbNamesBase = await dbNamesOf(this.entity);
     await this.iAmUsed(dbNameProvider);
     return dbNameProvider;
   }
@@ -120,7 +150,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
   async count(where: Filter): Promise<number> {
     let e = await this.init();
 
-    let select = 'select count(*) count from ' + e.entityName;
+    let select = 'select count(*) count from ' + e.$entityName;
     let r = this.sql.createCommand();
     if (where) {
       let wc = new FilterConsumerBridgeToSqlRequest(r, e);
@@ -139,7 +169,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     let { colKeys, select } = this.buildSelect(e);
     select = 'select ' + select;
 
-    select += '\n from ' + e.entityName;
+    select += '\n from ' + e.$entityName;
     let r = this.sql.createCommand();
     if (options) {
       if (options.where) {
@@ -150,8 +180,8 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
       if (options.limit) {
         options.orderBy = Sort.createUniqueSort(this.entity, options.orderBy);
       }
-      if (!options.orderBy){
-        options.orderBy = Sort.createUniqueSort(this.entity,new Sort());
+      if (!options.orderBy) {
+        options.orderBy = Sort.createUniqueSort(this.entity, new Sort());
       }
       if (options.orderBy) {
         let first = true;
@@ -170,7 +200,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
           else
             select += ', ';
 
-          select += e.nameOf(c.field);
+          select += e.$dbNameOf(c.field);
           if (c.isDescending)
             select += ' desc';
         }
@@ -208,7 +238,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     return result;
   }
 
-  private buildSelect(e: dbNameProvider) {
+  private buildSelect(e: EntityDbNamesBase) {
     let select = '';
     let colKeys: FieldMetadata[] = [];
     for (const x of this.entity.fields) {
@@ -217,7 +247,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
       else {
         if (colKeys.length > 0)
           select += ', ';
-        select += e.nameOf(x);
+        select += e.$dbNameOf(x);
         colKeys.push(x);
       }
     }
@@ -230,14 +260,14 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     let f = new FilterConsumerBridgeToSqlRequest(r, e);
     Filter.fromEntityFilter(this.entity, this.entity.idMetadata.getIdFilter(id)).__applyToConsumer(f);
 
-    let statement = 'update ' + e.entityName + ' set ';
+    let statement = 'update ' + e.$entityName + ' set ';
     let added = false;
 
 
     for (const x of this.entity.fields) {
       if (x instanceof CompoundIdField) {
 
-      } if (e.isDbReadonly(x)) { }
+      } if (isDbReadonly(x, e)) { }
       else if (data[x.key] !== undefined) {
         let v = x.valueConverter.toDb(data[x.key]);
         if (v !== undefined) {
@@ -246,7 +276,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
           else
             statement += ', ';
 
-          statement += e.nameOf(x) + ' = ' + r.addParameterAndReturnSqlToken(v);
+          statement += e.$dbNameOf(x) + ' = ' + r.addParameterAndReturnSqlToken(v);
         }
       }
     }
@@ -266,7 +296,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     let r = this.sql.createCommand();
     let f = new FilterConsumerBridgeToSqlRequest(r, e);
     Filter.fromEntityFilter(this.entity, this.entity.idMetadata.getIdFilter(id)).__applyToConsumer(f);
-    let statement = 'delete from ' + e.entityName;
+    let statement = 'delete from ' + e.$entityName;
     statement += await f.resolveWhere();
     return r.execute(statement).then(() => { });
   }
@@ -280,7 +310,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
 
     for (const x of this.entity.fields) {
 
-      if (e.isDbReadonly(x)) { }
+      if (isDbReadonly(x, e)) { }
 
       else {
         let v = x.valueConverter.toDb(data[x.key]);
@@ -292,14 +322,14 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
             vals += ', ';
           }
 
-          cols += e.nameOf(x);
+          cols += e.$dbNameOf(x);
           vals += r.addParameterAndReturnSqlToken(v);
         }
       }
     }
 
 
-    let statement = `insert into ${e.entityName} (${cols}) values (${vals})`;
+    let statement = `insert into ${e.$entityName} (${cols}) values (${vals})`;
 
     let { colKeys, select } = this.buildSelect(e);
     statement += ' returning ' + select;
@@ -309,3 +339,25 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
 }
 
 
+
+
+class myDummySQLCommand implements SqlCommand {
+
+  execute(sql: string): Promise<SqlResult> {
+    throw new Error("Method not implemented.");
+  }
+  addParameterAndReturnSqlToken(val: any): string {
+    if (val === null)
+      return "null";
+    if (val instanceof Date)
+      val = val.toISOString();
+    if (typeof (val) == "string") {
+      if (val == undefined)
+        val = '';
+      return '\'' + val.replace(/'/g, '\'\'') + '\'';
+    }
+    return val.toString();
+  }
+
+
+}

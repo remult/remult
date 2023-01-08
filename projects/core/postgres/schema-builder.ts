@@ -2,7 +2,7 @@
 import { FieldMetadata } from '../src/column-interfaces';
 import { Remult, allEntities } from '../src/context';
 import { SqlDatabase } from '../src/data-providers/sql-database';
-import { getDbNameProvider } from '../src/filter/filter-consumer-bridge-to-sql-request';
+import { dbNamesOf, EntityDbNamesBase, isDbReadonly } from '../src/filter/filter-consumer-bridge-to-sql-request';
 import { EntityMetadata, isAutoIncrement } from '../src/remult3';
 import { ValueConverters } from '../src/valueConverters';
 
@@ -49,45 +49,45 @@ export class PostgresSchemaBuilder {
         console.log("start verify structure");//keep me
         for (const entityClass of allEntities) {
             let entity = remult.repo(entityClass).metadata;
-            let e = await getDbNameProvider(entity);
+            let e: EntityDbNamesBase = await dbNamesOf(entity);
             try {
                 if (!entity.options.sqlExpression) {
-                    if ((await e.entityName).toLowerCase().indexOf('from ') < 0) {
+                    if ((await e.$entityName).toLowerCase().indexOf('from ') < 0) {
                         await this.createIfNotExist(entity);
                         await this.verifyAllColumns(entity);
                     }
                 }
             }
             catch (err) {
-                /*keep me */ console.log("failed verify structure of " + e.entityName + " ", err);
+                console.log("failed verify structure of " + e.$entityName + " ", err);
             }
         }
     }
     async createIfNotExist(entity: EntityMetadata): Promise<void> {
         var c = this.pool.createCommand();
-        let e = await getDbNameProvider(entity);
+        let e: EntityDbNamesBase = await dbNamesOf(entity);
 
-        await c.execute("select 1 from information_Schema.tables where table_name=" + c.addParameterAndReturnSqlToken((e.entityName).toLowerCase()) + this.additionalWhere).then(async r => {
+        await c.execute("select 1 from information_Schema.tables where table_name=" + c.addParameterAndReturnSqlToken((e.$entityName).toLowerCase()) + this.additionalWhere).then(async r => {
 
             if (r.rows.length == 0) {
                 let result = '';
                 for (const x of entity.fields) {
-                    if (!e.isDbReadonly(x) || isAutoIncrement(x)) {
+                    if (!isDbReadonly(x, e) || isAutoIncrement(x)) {
                         if (result.length != 0)
                             result += ',';
                         result += '\r\n  ';
 
-                        if (isAutoIncrement( x))
-                            result += e.nameOf(x) + ' serial';
+                        if (isAutoIncrement(x))
+                            result += e.$dbNameOf(x) + ' serial';
                         else {
-                            result += postgresColumnSyntax(x, e.nameOf(x));
+                            result += postgresColumnSyntax(x, e.$dbNameOf(x));
                             if (x == entity.idMetadata.field)
                                 result += ' primary key';
                         }
                     }
                 }
 
-                let sql = 'create table ' + e.entityName + ' (' + result + '\r\n)';
+                let sql = 'create table ' + e.$entityName + ' (' + result + '\r\n)';
                 //console.log(sql);
                 await this.pool.execute(sql);
             }
@@ -96,19 +96,19 @@ export class PostgresSchemaBuilder {
 
 
     async addColumnIfNotExist<T extends EntityMetadata>(entity: T, c: ((e: T) => FieldMetadata)) {
-        let e = await getDbNameProvider(entity);
-        if (e.isDbReadonly(c(entity)))
+        let e: EntityDbNamesBase = await dbNamesOf(entity);
+        if (isDbReadonly(c(entity), e))
             return;
         try {
             let cmd = this.pool.createCommand();
 
-            const colName = e.nameOf(c(entity));
+            const colName = e.$dbNameOf(c(entity));
             if (
                 (await cmd.execute(`select 1   
         FROM information_schema.columns 
-        WHERE table_name=${cmd.addParameterAndReturnSqlToken((e.entityName).toLocaleLowerCase())} and column_name=${cmd.addParameterAndReturnSqlToken((colName).toLocaleLowerCase())}` + this.additionalWhere
+        WHERE table_name=${cmd.addParameterAndReturnSqlToken((e.$entityName).toLocaleLowerCase())} and column_name=${cmd.addParameterAndReturnSqlToken((colName).toLocaleLowerCase())}` + this.additionalWhere
                 )).rows.length == 0) {
-                let sql = `alter table ${e.entityName} add column ${postgresColumnSyntax(c(entity), colName)}`;
+                let sql = `alter table ${e.$entityName} add column ${postgresColumnSyntax(c(entity), colName)}`;
                 //console.log(sql);
                 await this.pool.execute(sql);
             }
@@ -120,16 +120,16 @@ export class PostgresSchemaBuilder {
     async verifyAllColumns<T extends EntityMetadata>(entity: T) {
         try {
             let cmd = this.pool.createCommand();
-            let e = await getDbNameProvider(entity);
+            let e: EntityDbNamesBase = await dbNamesOf(entity);
 
             let cols = (await cmd.execute(`select column_name   
         FROM information_schema.columns 
-        WHERE table_name=${cmd.addParameterAndReturnSqlToken((e.entityName).toLocaleLowerCase())} ` + this.additionalWhere
+        WHERE table_name=${cmd.addParameterAndReturnSqlToken((e.$entityName).toLocaleLowerCase())} ` + this.additionalWhere
             )).rows.map(x => x.column_name);
             for (const col of entity.fields) {
-                if (!e.isDbReadonly(col))
-                    if (!cols.includes(e.nameOf(col).toLocaleLowerCase())) {
-                        let sql = `alter table ${e.entityName} add column ${postgresColumnSyntax(col, e.nameOf(col))}`;
+                if (!isDbReadonly(col, e))
+                    if (!cols.includes(e.$dbNameOf(col).toLocaleLowerCase())) {
+                        let sql = `alter table ${e.$entityName} add column ${postgresColumnSyntax(col, e.$dbNameOf(col))}`;
                         //console.log(sql);
                         await this.pool.execute(sql);
                     }

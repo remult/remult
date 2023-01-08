@@ -126,6 +126,7 @@ export function createRemultServerCore<RequestType extends GenericRequest = Gene
 export type GenericRequestHandler = (req: GenericRequest, res: GenericResponse, next: VoidFunction) => void;
 
 
+
 export interface ServerHandleResponse {
   data?: any;
   statusCode: number;

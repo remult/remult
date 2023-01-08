@@ -1,6 +1,6 @@
 import { Allowed, AllowedForInstance } from "./context";
 import { FieldMetadata as FieldMetadata } from './column-interfaces';
-import { EntityOrderBy, FieldsMetadata, EntityFilter, EntityRef } from "./remult3";
+import { EntityOrderBy, FieldsMetadata, EntityFilter, EntityRef, EntityMetadata } from "./remult3";
 export interface EntityOptions<entityType = any> {
     /**A human readable name for the entity */
     caption?: string;
@@ -67,7 +67,7 @@ export interface EntityOptions<entityType = any> {
    */
     dbName?: string;
     /** For entities that are based on SQL expressions instead of a physical table or view*/
-    sqlExpression?: string | ((entity: FieldsMetadata<entityType>) => string | Promise<string>);
+    sqlExpression?: string | ((entity: EntityMetadata<entityType>) => string | Promise<string>);
     /** An arrow function that identifies the `id` column to use for this entity
      * @example
      * //Single column id

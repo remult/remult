@@ -4,7 +4,7 @@ import { EntityMetadata, EntityFilter } from '../remult3';
 export declare class ArrayEntityDataProvider implements EntityDataProvider {
     private entity;
     private rows?;
-    static customFilter(filter: CustomArrayFilter): EntityFilter<any>;
+    static rawFilter(filter: CustomArrayFilter): EntityFilter<any>;
     constructor(entity: EntityMetadata, rows?: any[]);
     private verifyThatRowHasAllNotNullColumns;
     count(where?: Filter): Promise<number>;

@@ -7,7 +7,7 @@ import { Sort } from '../sort';
 
 
 export class ArrayEntityDataProvider implements EntityDataProvider {
-    static customFilter(filter: CustomArrayFilter): EntityFilter<any> {
+    static rawFilter(filter: CustomArrayFilter): EntityFilter<any> {
         return {
             [customDatabaseFilterToken]: {
                 arrayFilter: filter

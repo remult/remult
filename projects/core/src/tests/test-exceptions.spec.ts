@@ -33,6 +33,7 @@ describe("test exception", () => {
             },
             transaction: undefined
         });
+       
         var ok = new Done();
         let type = class extends EntityBase {
             id: string;

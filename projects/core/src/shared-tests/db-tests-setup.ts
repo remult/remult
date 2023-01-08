@@ -2,6 +2,7 @@ import { ClassType } from "../../classType";
 import { Remult } from "../context";
 import { DataProvider } from "../data-interfaces";
 import { InMemoryDataProvider } from "../data-providers/in-memory-database";
+import { remult } from "../remult-proxy";
 import { Repository } from "../remult3";
 import { Categories, CategoriesForTesting } from "../tests/remult-3-entities";
 import { Status } from "../tests/testModel/models";
@@ -38,9 +39,8 @@ export function addDatabaseToTest(tester: dbTestMethodSignature) {
 
 export function testInMemory(key: string, what: dbTestWhatSignature, focus = false) {
     itWithFocus(key + " - in memory", async () => {
-        let remult = new Remult();
         let db = new InMemoryDataProvider();
-        remult.dataProvider = (db);
+        let remult = new Remult(db);
         await what({ db, remult, createEntity: async (x) => remult.repo(x) });
     }, focus);
 }

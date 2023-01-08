@@ -52,7 +52,6 @@ export declare class RepositoryImplementation<entityType> implements Repository<
     create(item?: Partial<OmitEB<entityType>>): entityType;
     fromJson(json: any, newRow?: boolean): Promise<entityType>;
     findId(id: any, options?: FindFirstOptionsBase<entityType>): Promise<entityType>;
-    private translateWhereToFilter;
 }
 export declare function __updateEntityBasedOnWhere<T>(entityDefs: EntityMetadata<T>, where: EntityFilter<T>, r: T): void;
 export declare type EntityOptionsFactory = (remult: Remult) => EntityOptions;
@@ -179,7 +178,7 @@ export declare class columnDefsImpl implements FieldMetadata {
     private settings;
     private entityDefs;
     constructor(settings: FieldOptions, entityDefs: EntityFullInfo<any>, remult: Remult);
-    dbNamePromise: Promise<string>;
+    private _workingOnDbName;
     getDbName(): Promise<string>;
     options: FieldOptions<any, any>;
     target: ClassType<any>;
@@ -324,4 +323,8 @@ declare class SubscribableImp implements Subscribable {
         reportObserved: () => void;
     }): Unobserve;
 }
+export declare function getEntityMetadata<entityType>(entity: EntityMetadataOverloads<entityType>): EntityMetadata<entityType>;
+export declare function getRepository<entityType>(entity: RepositoryOverloads<entityType>): Repository<entityType>;
+export declare type EntityMetadataOverloads<entityType> = Repository<entityType> | EntityMetadata<entityType> | ClassType<entityType>;
+export declare type RepositoryOverloads<entityType> = Repository<entityType> | ClassType<entityType>;
 export {};

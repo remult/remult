@@ -18,21 +18,21 @@ export class Filter {
             return await filter();
         return filter;
     }
-    static createCustom<entityType>(customFilterTranslator: (r: Remult) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>, key?: string): (() => EntityFilter<entityType>) & customFilterInfo<entityType>;
-    static createCustom<entityType, argsType>(customFilterTranslator: (r: Remult, args: argsType) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>, key?: string): ((y: argsType) => EntityFilter<entityType>) & customFilterInfo<entityType>;
-    static createCustom<entityType, argsType>(customFilterTranslator: (r: Remult, args: argsType) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>, key = ''): ((y: argsType) => EntityFilter<entityType>) & customFilterInfo<entityType> {
+    static createCustom<entityType>(rawFilterTranslator: (unused: any, r: Remult) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>, key?: string): (() => EntityFilter<entityType>) & rawFilterInfo<entityType>;
+    static createCustom<entityType, argsType>(rawFilterTranslator: (args: argsType, r: Remult) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>, key?: string): ((y: argsType) => EntityFilter<entityType>) & rawFilterInfo<entityType>;
+    static createCustom<entityType, argsType>(rawFilterTranslator: (args: argsType, r: Remult) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>, key = ''): ((y: argsType) => EntityFilter<entityType>) & rawFilterInfo<entityType> {
 
-        let customFilterInfo = { key: key, customFilterTranslator };
+        let rawFilterInfo = { key: key, rawFilterTranslator };
         return Object.assign((x: any) => {
             let z = {};
             if (x == undefined)
                 x = {};
-            if (!customFilterInfo.key)
+            if (!rawFilterInfo.key)
                 throw "Usage of custom filter before a key was assigned to it";
             return {
-                [customUrlToken + customFilterInfo.key]: x
+                [customUrlToken + rawFilterInfo.key]: x
             }
-        }, { customFilterInfo }) as ((y: argsType) => EntityFilter<entityType>) & customFilterInfo<entityType>;
+        }, { rawFilterInfo }) as ((y: argsType) => EntityFilter<entityType>) & rawFilterInfo<entityType>;
 
     }
     static fromEntityFilter<T>(entity: EntityMetadata<T>, whereItem: EntityFilter<T>): Filter {
@@ -139,10 +139,10 @@ export class Filter {
             let r: Filter[] = [];
             for (const key in entity.entityType) {
 
-                const element = entity.entityType[key] as customFilterInfo<any>;
-                if (element && element.customFilterInfo && element.customFilterInfo.customFilterTranslator) {
-                    if (element.customFilterInfo.key == filterKey) {
-                        r.push(await Filter.fromEntityFilter(entity, await element.customFilterInfo.customFilterTranslator(remult, custom)));
+                const element = entity.entityType[key] as rawFilterInfo<any>;
+                if (element && element.rawFilterInfo && element.rawFilterInfo.rawFilterTranslator) {
+                    if (element.rawFilterInfo.key == filterKey) {
+                        r.push(await Filter.fromEntityFilter(entity, await element.rawFilterInfo.rawFilterTranslator(custom, remult)));
                     }
                 }
             }
@@ -440,8 +440,8 @@ export function buildFilterFromRequestParameters(entity: EntityMetadata, filterI
 
     for (const key in entity.entityType) {
 
-        const element = entity.entityType[key] as customFilterInfo<any>;
-        if (element && element.customFilterInfo && element.customFilterInfo.customFilterTranslator) {
+        const element = entity.entityType[key] as rawFilterInfo<any>;
+        if (element && element.rawFilterInfo && element.rawFilterInfo.rawFilterTranslator) {
             let custom = filterInfo.get(customUrlToken + key);
             if (custom !== undefined) {
                 where.push({ [customUrlToken + key]: custom });
@@ -549,10 +549,10 @@ class customTranslator implements FilterConsumer {
 
 
 
-export interface customFilterInfo<entityType> {
-    customFilterInfo: {
+export interface rawFilterInfo<entityType> {
+    rawFilterInfo: {
         key: string;
-        customFilterTranslator: (r: Remult, args: any) => (EntityFilter<entityType> | Promise<EntityFilter<entityType>>);
+        rawFilterTranslator: (args: any, r: Remult) => (EntityFilter<entityType> | Promise<EntityFilter<entityType>>);
     }
 
 }

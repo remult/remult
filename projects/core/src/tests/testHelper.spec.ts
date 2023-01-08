@@ -131,7 +131,6 @@ export async function testInMemoryDb(runAsync: (db: {
   db: DataProvider,
   remult: Remult
 }) => Promise<void>) {
-  let remult = new Remult();
   let db = new InMemoryDataProvider();
   remult.dataProvider = (db);
   await runAsync({ db, remult });
@@ -206,7 +205,7 @@ export class MockRestDataProvider implements DataProvider {
   transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
     throw new Error('Method not implemented.');
   }
-  supportsCustomFilter = true;
+  supportsrawFilter = true;
 
 }
 export function createMockHttpDataProvider(dataApi: DataApi<any>): import("c:/Repos/radweb/projects/core/src/data-interfaces").RestDataProviderHttpProvider {

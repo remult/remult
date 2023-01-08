@@ -10,7 +10,7 @@ import { IdEntity } from '../id-entity';
 import { postgresColumnSyntax } from '../../postgres/schema-builder';
 
 import { SqlCommand, SqlResult } from '../sql-command';
-import { FilterConsumerBridgeToSqlRequest, getDbNameProvider } from '../filter/filter-consumer-bridge-to-sql-request';
+import { FilterConsumerBridgeToSqlRequest, dbNamesOf, isDbReadonly } from '../filter/filter-consumer-bridge-to-sql-request';
 
 describe("test sql database expressions", () => {
     let web = new WebSqlDataProvider("test");
@@ -37,18 +37,18 @@ describe("test sql database expressions", () => {
     it("test undefined behaves as a column", async () => {
         await deleteAll();
         let x = remult.repo(expressionEntity);
-        let n = await getDbNameProvider(x.metadata);
-        expect((n.nameOf(x.metadata.fields.col))).toBe('col');
+        let n = await dbNamesOf(x.metadata);
+        expect((n.col)).toBe('col');
         expect((await x.create({ col: 'abc', id: 1 }).save()).col).toBe('abc');
-        expect(n.isDbReadonly(x.metadata.fields.col)).toBe(false);
+        expect(isDbReadonly(x.metadata.fields.col, n)).toBe(false);
         let c = new Remult();
         c.dataProvider = (db);
         expressionEntity.yes = true;
         x = c.repo(expressionEntity);
-        n = await getDbNameProvider(x.metadata);
-        expect(n.nameOf(x.metadata.fields.col)).toBe("'1+1'");
+        n = await dbNamesOf(x.metadata);
+        expect(n.col).toBe("'1+1'");
         expect((await x.create({ col: 'abc', id: 2 }).save()).col).toBe('1+1');
-        expect(n.isDbReadonly(x.metadata.fields.col)).toBe(true);
+        expect(isDbReadonly(x.metadata.fields.col, n)).toBe(true);
     });
     it("test asyync dbname", async () => {
         let z = await remult.repo(testServerExpression1).metadata.getDbName();
@@ -119,7 +119,7 @@ describe("test filter for date", () => {
         let c = new Remult()
         let e = c.repo(testCreate);
         var d = new myDummySQLCommand();
-        var db = await getDbNameProvider(e.metadata);
+        var db = await dbNamesOf(e.metadata);
         let f = new FilterConsumerBridgeToSqlRequest(d, db);
         f.isGreaterOrEqualTo(e.metadata.fields.theDate, new Date("2021-08-06T05:05:25.440Z"));
 
@@ -225,7 +225,7 @@ describe("Test Value List Items", () => {
     it("test caption 2", () => {
         expect(getValueList(missingCaption2)[0].caption).toBe("Abc");
     });
-    it ("find by id",()=>{
+    it("find by id", () => {
         expect(ValueListInfo.get(missingCaption).byId("abc").caption).toBe("Abc");
     })
 })

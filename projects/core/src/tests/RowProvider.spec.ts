@@ -106,12 +106,10 @@ describe("grid filter stuff", () => {
   });
   it("filter with contains", async () => {
     let x = new FilterConsumerBridgeToSqlRequest({
-      addParameterAndReturnSqlToken: () => "",
-      execute: () => { throw "rr" }
+      addParameterAndReturnSqlToken: () => ""
     }, {
-      entityName: '',
-      nameOf: () => 'col',
-      isDbReadonly: () => false
+      $entityName: '',
+      $dbNameOf: () => 'col'
     });
 
     x.containsCaseInsensitive(new mockColumnDefs("col"), "no'am");
@@ -119,12 +117,10 @@ describe("grid filter stuff", () => {
   });
   it("filter with contains", async () => {
     let x = new FilterConsumerBridgeToSqlRequest({
-      addParameterAndReturnSqlToken: () => "",
-      execute: () => { throw "rr" }
+      addParameterAndReturnSqlToken: () => ""
     }, {
-      entityName: '',
-      nameOf: () => 'col',
-      isDbReadonly: () => false
+      $entityName: '',
+      $dbNameOf: () => 'col'
     });
 
     x.containsCaseInsensitive(new mockColumnDefs("col"), "no'a'm");

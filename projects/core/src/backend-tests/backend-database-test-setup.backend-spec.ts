@@ -1,9 +1,9 @@
 import { Remult } from "../context";
 import { KnexDataProvider, KnexSchemaBuilder } from '../../remult-knex';
 import * as Knex from 'knex';
-import { MongoClient } from 'mongodb';
+import { Db, MongoClient } from 'mongodb';
 import { config } from 'dotenv';
-import { createPostgresConnection, PostgresSchemaBuilder } from "../../postgres";
+import { createPostgresConnection, PostgresDataProvider, PostgresSchemaBuilder } from "../../postgres";
 import { ClassType } from "../../classType";
 import { addDatabaseToTest, dbTestWhatSignature, itWithFocus, testAll } from "../shared-tests/db-tests-setup";
 config();

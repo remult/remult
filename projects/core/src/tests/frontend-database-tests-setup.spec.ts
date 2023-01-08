@@ -1,6 +1,6 @@
 
 import { addDatabaseToTest, dbTestWhatSignature, itWithFocus } from "../shared-tests/db-tests-setup";
-import { InMemoryDataProvider } from "../..";
+import { InMemoryDataProvider, remult } from "../..";
 import { Remult } from "../context";
 import { SqlDatabase } from "../data-providers/sql-database";
 import { WebSqlDataProvider } from "../data-providers/web-sql-data-provider";
@@ -34,7 +34,6 @@ export function testRest(key: string, what: dbTestWhatSignature, focus = false) 
     let r = new Remult();
     r.dataProvider = (new InMemoryDataProvider());
 
-    let remult = new Remult();
     let db = new MockRestDataProvider(r);
     remult.dataProvider = (db);
     await what({ db, remult, createEntity: async (x) => remult.repo(x) });

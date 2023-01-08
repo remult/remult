@@ -2,8 +2,8 @@
 import { ClassType } from "../../classType";
 import { FieldMetadata } from "../column-interfaces";
 import { Unobserve } from "../context";
-import { EntityOptions as EntityOptions } from "../entity";
 import { LiveQueryChange, Unsubscribe } from "../live-query/SubscriptionClient";
+import { EntityOptions } from "../entity";
 import { SortSegment } from "../sort";
 import { entityEventListener } from "../__EntityValueProvider";
 
@@ -112,6 +112,7 @@ export interface EntityMetadata<entityType = any> {
     readonly apiInsertAllowed: boolean;
     getDbName(): Promise<string>;
 }
+
 
 export declare type OmitEB<T> = Omit<T, keyof import('./RepositoryImplementation').EntityBase>
 //TODO - breaking change from last version - on strict mode we cant assign IdEntity to EntityBase

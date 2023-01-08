@@ -5,7 +5,7 @@ import { CompoundIdField, LookupColumn, makeTitle } from '../column';
 import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef, LiveQuery } from "./remult3";
 import { ClassType } from "../../classType";
 import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControllerSettings, Unobserve, EventSource } from "../context";
-import { AndFilter, customFilterInfo, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
+import { AndFilter, rawFilterInfo, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
 import { Sort } from "../sort";
 import { v4 as uuid } from 'uuid';
 
@@ -18,7 +18,7 @@ import { filterHelper } from "../filter/filter-interfaces";
 import { assign } from "../../assign";
 import { Paginator, RefSubscriber, RefSubscriberBase } from ".";
 
-import { remult as defaultRemult } from "../remult-proxy";
+import { remult as defaultRemult, RemultProxy } from "../remult-proxy";
 import { getId } from "./getId";
 //import { remult } from "../remult-proxy";
 
@@ -439,8 +439,8 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
     }
 
 
-
-    private async translateWhereToFilter(where: EntityFilter<entityType>): Promise<Filter> {
+    /* @internal*/
+    async translateWhereToFilter(where: EntityFilter<entityType>): Promise<Filter> {
         if (this.metadata.options.backendPrefilter && isBackend()) {
             let z = where;
             where = {
@@ -450,7 +450,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             } as EntityFilter<entityType>;
         }
         let r = await Filter.fromEntityFilter(this.metadata, where);
-        if (r && !this.dataProvider.supportsCustomFilter) {
+        if (r && !this.dataProvider.supportsrawFilter) {
             r = await Filter.translateCustomWhere(r, this.metadata, this.remult);
         }
         return r;
@@ -1329,28 +1329,27 @@ export class columnDefsImpl implements FieldMetadata {
 
 
     }
-    dbNamePromise: Promise<string>;
-    getDbName(): Promise<string> {
-        if (this.dbNamePromise)
-            return this.dbNamePromise;
-        this.dbNamePromise = (async () => {
-
+    private _workingOnDbName = false;
+    async getDbName() {
+        if (this._workingOnDbName)
+            return "Recursive getDbName call for field '" + this.key + "'. ";
+        this._workingOnDbName = true;
+        try {
             if (this.settings.sqlExpression) {
+                let result: string;
                 if (typeof this.settings.sqlExpression === "function") {
-                    return this.settings.sqlExpression(this.entityDefs);
+                    result = await this.settings.sqlExpression(this.entityDefs);
                 } else
-                    return this.settings.sqlExpression;
+                    result = this.settings.sqlExpression;
+                if (!result)
+                    return this.settings.dbName;
+                return result;
             }
             return this.settings.dbName;
-
-        })().then(x => {
-            if (x)
-                return x;
-            return this.settings.dbName;
-
-        });
-        return this.dbNamePromise;
-
+        }
+        finally {
+            this._workingOnDbName = false;
+        }
 
     }
     options: FieldOptions<any, any> = this.settings;
@@ -1454,7 +1453,7 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
             this.dbNamePromise = Promise.resolve(this.options.sqlExpression);
         else if (typeof this.options.sqlExpression === "function") {
 
-            let r = this.options.sqlExpression(this.fields);
+            let r = this.options.sqlExpression(this);
             if (r instanceof Promise)
                 this.dbNamePromise = r;
             else if (r)
@@ -1892,12 +1891,12 @@ interface columnInfo {
 export function Entity<entityType>(key: string, ...options: (EntityOptions<entityType> | ((options: EntityOptions<entityType>, remult: Remult) => void))[]) {
 
     return target => {
-        for (const customFilterMember in target) {
-            if (Object.prototype.hasOwnProperty.call(target, customFilterMember)) {
-                const element = target[customFilterMember] as customFilterInfo<any>;
-                if (element?.customFilterInfo?.customFilterTranslator) {
-                    if (!element.customFilterInfo.key)
-                        element.customFilterInfo.key = customFilterMember;
+        for (const rawFilterMember in target) {
+            if (Object.prototype.hasOwnProperty.call(target, rawFilterMember)) {
+                const element = target[rawFilterMember] as rawFilterInfo<any>;
+                if (element?.rawFilterInfo?.rawFilterTranslator) {
+                    if (!element.rawFilterInfo.key)
+                        element.rawFilterInfo.key = rawFilterMember;
                 }
             }
         }
@@ -2129,3 +2128,22 @@ class SubscribableImp implements Subscribable {
         return () => this._subscribers = this._subscribers.filter(x => x != list);
     }
 }
+export function getEntityMetadata<entityType>(entity: EntityMetadataOverloads<entityType>): EntityMetadata<entityType> {
+    if ((entity as Repository<entityType>).metadata)
+        return (entity as Repository<entityType>).metadata;
+    const settings = getEntitySettings(entity as ClassType<entityType>, false);
+    if (settings) {
+        return RemultProxy.defaultRemult.repo(entity as ClassType<entityType>).metadata;
+    }
+    return entity as EntityMetadata;
+}
+export function getRepository<entityType>(entity: RepositoryOverloads<entityType>): Repository<entityType> {
+
+    const settings = getEntitySettings(entity as ClassType<entityType>, false);
+    if (settings) {
+        return RemultProxy.defaultRemult.repo(entity as ClassType<entityType>);
+    }
+    return entity as Repository<entityType>;
+}
+export type EntityMetadataOverloads<entityType> = Repository<entityType> | EntityMetadata<entityType> | ClassType<entityType>;
+export type RepositoryOverloads<entityType> = Repository<entityType> | ClassType<entityType>;

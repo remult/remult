@@ -6,7 +6,7 @@ import { EntityMetadata, OmitEB } from './remult3';
 export interface DataProvider {
   getEntityDataProvider(entity: EntityMetadata): EntityDataProvider;
   transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void>;
-  supportsCustomFilter?: boolean;
+  supportsrawFilter?: boolean;
 }
 
 export interface EntityDataProvider {

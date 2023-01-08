@@ -7,7 +7,6 @@ import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 import { DataApi } from '../data-api';
 
 import { assign } from '../../assign';
-import { Filter } from '../filter/filter-interfaces';
 import { dWithPrefilter } from './dWithPrefilter';
 import { d } from './d';
 import { remult } from '../remult-proxy';

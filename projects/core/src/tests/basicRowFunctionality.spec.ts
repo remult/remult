@@ -28,7 +28,7 @@ import { assign } from '../../assign';
 import { entityWithValidations, testConfiguration } from '../shared-tests/entityWithValidations';
 import { entityWithValidationsOnColumn } from './entityWithValidationsOnColumn';
 import { ValueConverters } from "../valueConverters";
-import { dbNameProviderImpl, FilterConsumerBridgeToSqlRequest, getDbNameProvider } from "../filter/filter-consumer-bridge-to-sql-request";
+import {  FilterConsumerBridgeToSqlRequest, dbNamesOf } from "../filter/filter-consumer-bridge-to-sql-request";
 import axios from "axios";
 import { async } from "@angular/core/testing";
 import { HttpProviderBridgeToRestDataProviderHttpProvider, retry, toPromise } from "../buildRestDataProvider";
@@ -351,6 +351,7 @@ describe("data api", () => {
         return r;
       }, transaction: undefined
     });
+
 
     var api = new DataApi(ctx.repo(newCategories), ctx);
     let t = new TestDataApiResponse();
@@ -808,7 +809,6 @@ describe("data api", () => {
 
 
     let startTest = false;
-    let remult = new Remult();
     let mem = new InMemoryDataProvider();
     remult.dataProvider = (mem);
     let type = class extends newCategories {
@@ -1424,7 +1424,7 @@ describe("column validation", () => {
   });
   it("test date filter and values", async () => {
     let sql = new SqlDatabase(new WebSqlDataProvider('identity_game'));
-    let c = new Remult();
+    let c = new Remult(sql);
     await sql.execute("drop table if exists t1");
     c.dataProvider = (sql);
     let type = class extends EntityBase {
@@ -1459,7 +1459,7 @@ describe("column validation", () => {
 describe("test web sql identity", () => {
   it("play", async () => {
     let sql = new SqlDatabase(new WebSqlDataProvider('identity_game'));
-    let c = new Remult();
+    let c = new Remult(sql);
     await sql.execute("drop table if exists t1");
     c.dataProvider = (sql);
 
@@ -1493,10 +1493,9 @@ describe("compound id", () => {
     let ctx = new Remult();
     let repo = ctx.repo(CompoundIdEntity);
     let id = repo.metadata.idMetadata.field as CompoundIdField;
-    var n = await getDbNameProvider(repo.metadata)
+    var n = await dbNamesOf(repo.metadata)
     let f = new FilterConsumerBridgeToSqlRequest({
-      addParameterAndReturnSqlToken: x => x,
-      execute: undefined
+      addParameterAndReturnSqlToken: x => x
     }, n);
     id.resultIdFilter(undefined, repo.create({ a: 1, b: 2 })).__applyToConsumer(f);
     expect(await f.resolveWhere()).toBe(" where a = 1 and b = 2");
@@ -1512,10 +1511,9 @@ describe("compound id", () => {
     let ctx = new Remult();
     let repo = ctx.repo(CompoundIdEntity);
     let id = repo.metadata.idMetadata.field as CompoundIdField;
-    var n = await getDbNameProvider(repo.metadata)
+    var n = await dbNamesOf(repo.metadata)
     let f = new FilterConsumerBridgeToSqlRequest({
-      addParameterAndReturnSqlToken: x => x,
-      execute: undefined
+      addParameterAndReturnSqlToken: x => x
     }, n);
     id.resultIdFilter("1,2", repo.create({ a: 1, b: 2 })).__applyToConsumer(f);
     expect(await f.resolveWhere()).toBe(" where a = 1 and b = 2");
@@ -1681,6 +1679,7 @@ describe("test data list", () => {
         return r;
       }, transaction: undefined
     });
+
     let rl = new DataList<newCategories>(cont.repo(newCategories));
     await rl.get();
     expect(rl.items.length).toBe(3);
@@ -2044,7 +2043,7 @@ export class entityWithValidationsOnEntityEvent extends EntityBase {
   name: string;
 }
 @Entity<EntityWithLateBoundDbName>('stam', {
-  sqlExpression: async (t) => '(select ' + t.id.options.dbName + ')'
+  sqlExpression: async (t) => '(select ' + t.fields.id.options.dbName + ')'
 })
 export class EntityWithLateBoundDbName extends EntityBase {
   @Fields.integer({ dbName: 'CategoryID' })

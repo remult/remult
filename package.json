@@ -68,6 +68,7 @@
     "@types/websql": "0.0.27",
     "@vuepress/plugin-back-to-top": "^1.5.2",
     "@vuepress/plugin-medium-zoom": "^1.5.2",
+    "ably": "^1.2.33",
     "axios": "^0.22.0",
     "better-sqlite3": "^7.5.0",
     "class-validator": "^0.13.2",
@@ -102,6 +103,7 @@
     "koa-bodyparser": "^4.3.0",
     "mongodb": "^4.2.1",
     "mssql": "^4.2.3",
+    "mysql2": "^2.3.3",
     "ng-packagr": "^11.2.0",
     "password-hash": "^1.2.2",
     "pg": "^8.3.0",
@@ -120,9 +122,7 @@
     "typedoc-plugin-markdown": "^3.10.4",
     "typescript": "~4.1.5",
     "uuid": "^8.3.2",
-    "zone.js": "~0.11.3",
-    "ably": "^1.2.33",
-    "mysql2": "^2.3.3"
+    "zone.js": "~0.11.3"
   },
   "browser": {
     "jsonwebtoken": false,

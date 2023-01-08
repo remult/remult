@@ -2,7 +2,12 @@ import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { Remult } from '../context';
 import { SqlDatabase } from '../data-providers/sql-database';
 import { Categories } from './remult-3-entities';
-import { Entity, Fields, Repository } from '../remult3';
+import { Entity, EntityFilter, Fields, OmitEB, Repository, RepositoryImplementation } from '../remult3';
+import { testWebSqlImpl } from './frontend-database-tests-setup.spec';
+import { entityWithValidations } from '../shared-tests/entityWithValidations';
+import { EntityDbNames, FilterConsumerBridgeToSqlRequest, dbNamesOf } from '../filter/filter-consumer-bridge-to-sql-request';
+import { SqlCommand, SqlResult } from '../sql-command';
+import { Filter } from '../filter/filter-interfaces';
 
 
 describe("test sql database", () => {
@@ -92,6 +97,7 @@ describe("test sql database", () => {
         }
 
     })
+
 });
 
 @Entity("Categories")
@@ -106,3 +112,55 @@ class testErrorInFromDb {
     categoryName = '';
 
 }
+
+testWebSqlImpl("work with native sql", async ({ remult, createEntity }) => {
+    const repo = await entityWithValidations.create4RowsInDp(createEntity);
+    const sql = SqlDatabase.getDb(remult);
+    const r =
+        await sql.execute("select count(*) as c from " + repo.metadata.options.dbName!);
+    expect(r.rows[0].c).toBe(4);
+}, false);
+testWebSqlImpl("work with native sql2", async ({ remult, createEntity }) => {
+    const repo = await entityWithValidations.create4RowsInDp(createEntity);
+    const sql = WebSqlDataProvider.getDb(remult);
+    await new Promise((res) => {
+        sql.transaction(y => {
+            y.executeSql("select count(*) as c from " + repo.metadata.options.dbName!, undefined,
+                (_, r) => {
+                    expect(r.rows[0].c).toBe(4);
+                    res({});
+                });
+        });
+    });
+}, false);
+testWebSqlImpl("test getEntityDbNames", async ({ remult, createEntity }) => {
+    const repo = await entityWithValidations.create4RowsInDp(createEntity);
+    const e = await dbNamesOf(repo);
+    expect(
+        `select ${e.myId}, ${e.name} from ${e}`)
+        .toBe("select myId, name from entityWithValidations")
+}, false);
+testWebSqlImpl("test work with filter", async ({ remult, createEntity }) => {
+    const repo = await entityWithValidations.create4RowsInDp(createEntity);
+    const e = await dbNamesOf(repo);
+    expect(
+        `select ${e.myId}, ${e.name} from ${e} where ${await SqlDatabase.filterToRaw(repo,
+            {
+                myId: [1, 3]
+            })}`)
+        .toBe("select myId, name from entityWithValidations where myId in (1,3)")
+}, false);
+testWebSqlImpl("test work with filter", async ({ remult, createEntity }) => {
+    const repo = await entityWithValidations.create4RowsInDp(createEntity);
+    const command = SqlDatabase.getDb(remult).createCommand()
+    const e = await dbNamesOf(repo);
+    expect(
+        `select ${e.myId}, ${e.name} from ${e} where ${await SqlDatabase.filterToRaw(repo,
+            {
+                myId: [1, 3]
+            }, command)}`)
+        .toBe("select myId, name from entityWithValidations where myId in (~1~,~2~)")
+}, false);
+
+
+
