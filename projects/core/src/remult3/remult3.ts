@@ -135,7 +135,7 @@ export interface Repository<entityType> {
      * 
      * It also has it's own paging mechanism that can be used n paging scenarios.
      * 
-     * The `query` method doesn't return an array (as the `find` method) and instead returns an `iteratable` `QueryResult` object 
+     * The `query` method doesn't return an array (as the `find` method) and instead returns an `iterable` `QueryResult` object 
      * which supports iterations using the JavaScript `for await` statement. 
      * @example
      * for await (const task of taskRepo.query()) {
@@ -195,11 +195,12 @@ export interface Repository<entityType> {
     addEventListener(listener: entityEventListener<entityType>): Unobserve;
 }
 export interface LiveQuery<entityType> {
-    subscribe(onChange: (reducer: LiveQueryChangeInfo<entityType>) => void): Unsubscribe
+    subscribe(onChange: (info: LiveQueryChangeInfo<entityType>) => void): Unsubscribe
 }
-export type LiveQueryChangeInfo<entityType> = ((prevState: entityType[]) => entityType[]) & {
+export interface LiveQueryChangeInfo<entityType> {
     items: entityType[],
     changes: LiveQueryChange[]
+    applyChanges(prevState: entityType[]): entityType[]
 };
 export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
 

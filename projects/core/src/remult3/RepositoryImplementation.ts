@@ -244,8 +244,8 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         if (!options)
             options = {};
         return {
-            subscribe: (onResult) =>
-                this.remult.liveQuerySubscriber.subscribe(this, options, onResult)
+            subscribe: (info) =>
+                this.remult.liveQuerySubscriber.subscribe(this, options, info)
 
         } as LiveQuery<entityType>
     }

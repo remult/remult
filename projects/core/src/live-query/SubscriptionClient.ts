@@ -6,7 +6,7 @@ import { LiveQueryChangesListener } from './SubscriptionServer';
 export const streamUrl = 'stream';
 //@internal
 export class LiveQuerySubscriber<entityType> {
-    sendDefaultState(onResult: (reducer: (prevState: entityType[]) => entityType[]) => void) {
+    sendDefaultState(onResult: (info: LiveQueryChangeInfo<entityType>) => void) {
         onResult(this.createReducerType(() => [...this.defaultQueryState], this.allItemsMessage(this.defaultQueryState)))
     }
     queryChannel: string;
@@ -40,11 +40,12 @@ export class LiveQuerySubscriber<entityType> {
         }
     }
 
-    private createReducerType(reducer: (prevState: entityType[]) => entityType[], changes: LiveQueryChange[]): LiveQueryChangeInfo<entityType> {
-        return Object.assign(reducer, {
+    private createReducerType(applyChanges: (prevState: entityType[]) => entityType[], changes: LiveQueryChange[]): LiveQueryChangeInfo<entityType> {
+        return {
+             applyChanges,
             changes,
             items: this.defaultQueryState
-        });
+        };
     }
 
     async handle(messages: LiveQueryChange[]) {
@@ -115,7 +116,7 @@ export const liveQueryKeepAliveRoute = '/_liveQueryKeepAlive';
 
 
 
- interface SubscribeToQueryArgs<entityType = any> {
+interface SubscribeToQueryArgs<entityType = any> {
     entityKey: string,
     orderBy?: EntityOrderBy<entityType>
 }

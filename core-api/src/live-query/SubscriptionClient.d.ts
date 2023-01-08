@@ -27,7 +27,7 @@ export declare type LiveQueryChange = {
         id: any;
     };
 };
-export declare class PubSubChannel<messageType> {
+export declare class SubscriptionChannel<messageType> {
     channelKey: string;
     constructor(channelKey: string);
     publish(message: messageType, remult?: Remult): void;

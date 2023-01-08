@@ -1,6 +1,6 @@
 import { FindOptions, remult as defaultRemult, Repository, RestDataProviderHttpProvider, UrlBuilder } from '../../index';
 import { RestDataProvider, RestEntityDataProvider } from '../data-providers/rest-data-provider';
-import { RepositoryImplementation } from '../remult3';
+import { LiveQueryChangeInfo, RepositoryImplementation } from '../remult3';
 import { buildRestDataProvider } from "../buildRestDataProvider";
 import { LiveQuerySubscriber, SubscriptionClient, SubscribeResult, SubscriptionClientConnection, liveQueryKeepAliveRoute, Unsubscribe } from './SubscriptionClient';
 import type { ApiClient } from '../../index';
@@ -68,7 +68,7 @@ export class LiveQueryClient {
     subscribe<entityType>(
         repo: Repository<entityType>,
         options: FindOptions<entityType>,
-        onResult: (reducer: (prevState: entityType[]) => entityType[]) => void) {
+        onResult: (info: LiveQueryChangeInfo<entityType>) => void) {
 
         let alive = true;
         let onUnsubscribe: VoidFunction = () => { };

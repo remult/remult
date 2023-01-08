@@ -196,10 +196,10 @@ describe("Live Query Client", () => {
         let closeSub2: VoidFunction;
         let result1: eventTestEntity[];
         let result2: eventTestEntity[];
-        closeSub1 = serverRepo.liveQuery().subscribe(reducer => {
+        closeSub1 = serverRepo.liveQuery().subscribe(({ applyChanges: reducer }) => {
             result1 = reducer(result1);
         });
-        closeSub2 = serverRepo.liveQuery().subscribe(reducer => {
+        closeSub2 = serverRepo.liveQuery().subscribe(({ applyChanges:reducer }) => {
             result2 = reducer(result2);
         });
         await p.flush();
@@ -243,7 +243,7 @@ describe("Live Query Client", () => {
         await p.flush();
         expect(open).toBe(0);
         get = 0;
-        closeSub1 = lqc.subscribe(serverRepo, {}, reducer => {
+        closeSub1 = lqc.subscribe(serverRepo, {}, ({ applyChanges:reducer }) => {
             result1 = reducer(result1);
         });
         await p.flush();
@@ -335,7 +335,7 @@ describe("test live query full cycle", () => {
     it("integration test 1", async () => {
         var { repo, pm, repo2 } = setup2();
         let result1: eventTestEntity[] = [];
-        const u = repo.liveQuery().subscribe(reducer => result1 = reducer(result1));
+        const u = repo.liveQuery().subscribe(({ applyChanges:reducer }) => result1 = reducer(result1));
         await pm.flush();
         expect(result1.length).toBe(0);
         await repo.insert({ id: 1, title: "noam" });
@@ -354,7 +354,7 @@ describe("test live query full cycle", () => {
     it("test delete works", async () => {
         var { repo, pm, repo2 } = setup2();
         let result1: eventTestEntity[] = [];
-        const u = repo.liveQuery().subscribe(reducer => result1 = reducer(result1));
+        const u = repo.liveQuery().subscribe(({applyChanges: reducer }) => result1 = reducer(result1));
         await pm.flush();
         await repo.insert({ id: 1, title: "noam" });
         await repo2.insert({ id: 2, title: "yael" });
@@ -367,7 +367,7 @@ describe("test live query full cycle", () => {
     it("test add works if item already in array", async () => {
         var { repo, pm, repo2 } = setup2();
         let result1: eventTestEntity[] = [];
-        const u = repo.liveQuery().subscribe(reducer => result1 = reducer(result1));
+        const u = repo.liveQuery().subscribe(({ applyChanges:reducer }) => result1 = reducer(result1));
         await pm.flush();
         result1 = [await repo.insert({ id: 1, title: "noam" })];
         await pm.flush();
@@ -377,7 +377,7 @@ describe("test live query full cycle", () => {
     it("test unsubscribe works", async () => {
         var { repo, pm, messageCount, qm } = setup2();
         let result1: eventTestEntity[] = [];
-        const unsubscribe = repo.liveQuery().subscribe(reducer => result1 = reducer(result1));
+        const unsubscribe = repo.liveQuery().subscribe(({ applyChanges:reducer }) => result1 = reducer(result1));
         await pm.flush();
         await repo.insert({ id: 1, title: "noam" });
         await pm.flush();
@@ -394,7 +394,7 @@ describe("test live query full cycle", () => {
     it("test disconnect and reconnect scenario", async () => {
         var { repo, pm, clientStatus } = setup2();
         let result1: eventTestEntity[] = [];
-        const u = repo.liveQuery().subscribe(reducer => result1 = reducer(result1));
+        const u = repo.liveQuery().subscribe(reducer => result1 = reducer.applyChanges(result1));
         await pm.flush();
         await repo.insert({ id: 1, title: "noam" });
         await pm.flush();
@@ -422,10 +422,10 @@ describe("test live query full cycle", () => {
         await repo.insert({ title: 'b' })
         let arr1 = [];
         let arr2 = [];
-        const u1 = repo.liveQuery().subscribe(y => arr1 = y(arr1));
+        const u1 = repo.liveQuery().subscribe(y => arr1 = y.applyChanges(arr1));
         await pm.flush();
         const u2 = repo.liveQuery().subscribe(y => {
-            arr2 = y(arr2);
+            arr2 = y.applyChanges(arr2);
             expect(y.items.length).toBe(2);
         });
         await pm.flush();
@@ -446,12 +446,12 @@ describe("test live query full cycle", () => {
         let arr1Items: eventTestEntity[][] = [];
         let arr1Messages: LiveQueryChange[][] = [];
         const u1 = repo.liveQuery({ where: { title: { $contains: "a" } } }).subscribe(y => {
-            arr1 = y(arr1);
+            arr1 = y.applyChanges(arr1);
             arr1Items.push([...y.items]);
             arr1Messages.push(y.changes);
         });
         await pm.flush();
-        const u2 = repo.liveQuery({ where: { title: { $contains: "b" } } }).subscribe(y => arr2 = y(arr2));
+        const u2 = repo.liveQuery({ where: { title: { $contains: "b" } } }).subscribe(y => arr2 = y.applyChanges(arr2));
         await pm.flush();
         await repo.insert({ title: 'a3', id: 5 })
         await pm.flush();
