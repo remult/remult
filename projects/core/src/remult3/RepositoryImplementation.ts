@@ -2,9 +2,9 @@
 import { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from "../column-interfaces";
 import { EntityOptions } from "../entity";
 import { CompoundIdField, LookupColumn, makeTitle } from '../column';
-import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef } from "./remult3";
+import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef, ForbiddenError } from "./remult3";
 import { ClassType } from "../../classType";
-import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControllerSettings, Unobserve, EventSource } from "../context";
+import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControllerSettings, Unobserve, EventSource, AllowedForInstance } from "../context";
 import { AndFilter, customFilterInfo, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
 import { Sort } from "../sort";
 import { v4 as uuid } from 'uuid';
@@ -248,6 +248,43 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             options.orderBy = this._info.entityInfo.defaultOrderBy;
         }
         opt.where = await this.translateWhereToFilter(options.where);
+
+        if (this.remult.__enforceApiRules) {
+            if (!this.metadata.apiReadAllowed) {
+                throw new ForbiddenError();
+            }
+            if (this.remult.isAllowed(this.metadata.options.apiRequireId)) {
+                let hasId = false;
+
+                if (opt.where) {
+                    opt.where.__applyToConsumer({
+                        containsCaseInsensitive: () => { },
+                        isDifferentFrom: () => { },
+                        isEqualTo: (col, val) => {
+                            if (this.metadata.idMetadata.isIdField(col))
+                                hasId = true;
+                        },
+                        custom: () => { },
+                        databaseCustom: () => { },
+                        isGreaterOrEqualTo: () => { },
+                        isGreaterThan: () => { },
+                        isIn: () => { },
+                        isLessOrEqualTo: () => { },
+                        isLessThan: () => { },
+                        isNotNull: () => { },
+                        isNull: () => { },
+
+                        or: () => { }
+                    });
+                }
+                if (!hasId) {
+                    throw new ForbiddenError()
+                    return
+                }
+            }
+        }
+
+
         opt.orderBy = Sort.translateOrderByToSort(this.metadata, options.orderBy);
 
         opt.limit = options.limit;
@@ -311,6 +348,9 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
     }
 
     async count(where?: EntityFilter<entityType>): Promise<number> {
+        if (this.remult.__enforceApiRules && !this.metadata.apiReadAllowed) {
+            throw new ForbiddenError();
+        }
         return this.edp.count(await this.translateWhereToFilter(where));
     }
     private cache = new Map<string, cacheEntityInfo<entityType>>();
@@ -431,6 +471,18 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
                 ]
             } as EntityFilter<entityType>;
         }
+        if (this.remult.__enforceApiRules) {
+            if (this.metadata.options.apiPrefilter) {
+                let z = where;
+                where = {
+                    $and: [
+                        z, await Filter.resolve(this.metadata.options.apiPrefilter)
+                    ]
+                } as EntityFilter<entityType>;
+            }
+        }
+
+
         let r = await Filter.fromEntityFilter(this.metadata, where);
         if (r && !this.dataProvider.supportsCustomFilter) {
             r = await Filter.translateCustomWhere(r, this.metadata, this.remult);
@@ -750,7 +802,7 @@ abstract class rowHelperBase<T>
     toApiJson() {
         let result: any = {};
         for (const col of this.columnsInfo) {
-            if (!this.remult || col.includeInApi === undefined || this.remult.isAllowed(col.includeInApi)) {
+            if (!this.remult || this.allowedWithUndefinedTrue(col.includeInApi)) {
                 let val;
                 let lu = this.lookups.get(col.key);
                 if (lu)
@@ -771,13 +823,16 @@ abstract class rowHelperBase<T>
         }
         return result;
     }
+    allowedWithUndefinedTrue(allow: AllowedForInstance<T>) {
+        return allow === undefined || this.remult.isAllowedForInstance(this.instance, allow);
+    }
 
     async _updateEntityBasedOnApi(body: any) {
         let keys = Object.keys(body);
         for (const col of this.columnsInfo) {
             if (keys.includes(col.key))
-                if (col.includeInApi === undefined || this.remult.isAllowed(col.includeInApi)) {
-                    if (!this.remult || col.allowApiUpdate === undefined || this.remult.isAllowedForInstance(this.instance, col.allowApiUpdate)) {
+                if (this.allowedWithUndefinedTrue(col.includeInApi)) {
+                    if (!this.remult || this.allowedWithUndefinedTrue(col.allowApiUpdate )) {
                         let lu = this.lookups.get(col.key);
                         if (lu)
                             lu.id = body[col.key];
@@ -877,6 +932,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
     private _saving = false;
     async save(): Promise<T> {
         try {
+
             if (this._saving)
                 throw new Error("cannot save while entity is already saving");
             this._saving = true;
@@ -898,12 +954,14 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
             let d = this.copyDataToObject();
             let ignoreKeys = [];
             for (const field of this.metadata.fields) {
-                if (field.dbReadOnly) {
+                if (field.dbReadOnly ||
+                    this.remult.__enforceApiRules && (
+                        !this.allowedWithUndefinedTrue(field.options.allowApiUpdate) ||
+                        !this.allowedWithUndefinedTrue(field.options.includeInApi))) {
                     d[field.key] = undefined;
                     ignoreKeys.push(field.key);
                     let f = this.fields.find(field);
                     f.value = f.originalValue;
-
                 }
             }
 
@@ -914,9 +972,19 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
 
                 this._subscribers?.reportChanged();
                 if (this.isNew()) {
+                    if (this.remult.__enforceApiRules) {
+                        if (!this.remult.isAllowedForInstance(this.instance, this.metadata.options.allowApiInsert)) {
+                            throw new ForbiddenError();
+                        }
+                    }
                     updatedRow = await this.edp.insert(d);
                 }
                 else {
+                    if (this.remult.__enforceApiRules) {
+                        if (!this.remult.isAllowedForInstance(this.instance, this.metadata.options.allowApiUpdate)) {
+                            throw new ForbiddenError();
+                        }
+                    }
                     let changesOnly = {};
                     let wasChanged = false;
                     for (const key in d) {
@@ -967,6 +1035,11 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
     }
 
     async delete() {
+        if (this.remult.__enforceApiRules) {
+            if (!this.remult.isAllowedForInstance(this.instance, this.metadata.options.allowApiDelete)) {
+                throw new ForbiddenError();
+            }
+        }
         this.__clearErrorsAndReportChanged();
         if (this.info.entityInfo.deleting)
             await this.info.entityInfo.deleting(this.instance);
@@ -1011,6 +1084,20 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
             this.id = this.repository.metadata.idMetadata.field.getId(this.instance);
         } else
             this.id = data[this.repository.metadata.idMetadata.field.key];
+        if (this.remult.__enforceApiRules) {
+            for (const col of this.info.fields) {
+                if (!this.allowedWithUndefinedTrue(col.options.includeInApi)) {
+                    console.log("removed from object " + col.key);
+                    let lu = this.lookups.get(col.key);
+                    if (lu) {
+                        lu.id = undefined;
+                    }
+                    else
+                        this.instance[col.key] = undefined;
+                }
+            }
+
+        }
     }
     id;
     public getOriginalId() {

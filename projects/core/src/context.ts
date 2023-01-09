@@ -129,9 +129,9 @@ export class Remult {
         return r;
     }
 
+    __enforceApiRules = false;
     user?: UserInfo;
 
-    /*  delete me */
     /** Checks if a user was authenticated */
     authenticated() {
         return this.user?.id !== undefined;

@@ -7,6 +7,12 @@ import { Repository, RepositoryImplementation } from "./remult3";
 let defaultRemult = new Remult();
 /*@internal*/
 export class RemultProxy implements Remult {
+    get __enforceApiRules() {
+        return this.remultFactory().__enforceApiRules;
+    }
+    set __enforceApiRules(value: boolean) {
+        this.remultFactory().__enforceApiRules = value;
+    }
     call<T extends ((...args: any[]) => Promise<any>)>(backendMethod: T, self?: any, ...args: GetArguments<T>): ReturnType<T> {
         return this.remultFactory().call(backendMethod, self, ...args);
     }

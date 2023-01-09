@@ -1,6 +1,7 @@
 import { ClassType } from "../../classType";
 import { FieldMetadata } from "../column-interfaces";
 import { Unobserve } from "../context";
+import { ErrorInfo } from "../data-interfaces";
 import { EntityOptions as EntityOptions } from "../entity";
 import { SortSegment } from "../sort";
 import { entityEventListener } from "../__EntityValueProvider";
@@ -309,4 +310,11 @@ export interface Paginator<entityType> {
     nextPage(): Promise<Paginator<entityType>>;
     /** the count of the total items in the `query`'s result */
     count(): Promise<number>;
+}
+export declare class ForbiddenError extends Error implements ErrorInfo {
+    constructor();
+    message: string;
+    isForbiddenError: boolean;
+    httpStatusCode: number;
+    static isForbiddenError(error: any): boolean;
 }

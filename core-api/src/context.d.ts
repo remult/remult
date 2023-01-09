@@ -38,6 +38,7 @@ export declare class Remult {
      *
      */
     repo<T>(entity: ClassType<T>, dataProvider?: DataProvider): Repository<T>;
+    __enforceApiRules: boolean;
     user?: UserInfo;
     /** Checks if a user was authenticated */
     authenticated(): boolean;

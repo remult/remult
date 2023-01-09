@@ -98,7 +98,9 @@ describe("data api", () => {
         remult.dataProvider = (new InMemoryDataProvider());
         let c = remult.repo(type);
 
-        var api = new DataApi(c, remult);
+        const apiRemult = new Remult(remult.dataProvider);
+
+        var api = new DataApi(c, apiRemult);
         let t = new TestDataApiResponse();
         t.success = () => { };
         t.created = () => { };

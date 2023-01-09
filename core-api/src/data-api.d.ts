@@ -9,6 +9,7 @@ export declare class DataApi<T = any> {
     httpPost(res: DataApiResponse, req: DataApiRequest, body: any): Promise<void>;
     static defaultGetLimit: number;
     get(response: DataApiResponse, id: any): Promise<void>;
+    catch(err: any, response: DataApiResponse): void;
     count(response: DataApiResponse, request: DataApiRequest, filterBody?: any): Promise<void>;
     getArray(response: DataApiResponse, request: DataApiRequest, filterBody?: any): Promise<void>;
     private buildWhere;

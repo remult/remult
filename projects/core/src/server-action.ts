@@ -1,11 +1,5 @@
 import 'reflect-metadata';
-
-
-
 import { Remult, AllowedForInstance, Allowed, allEntities, ControllerOptions, classHelpers, ClassHelper, setControllerSettings, ExternalHttpProvider, buildRestDataProvider } from './context';
-
-
-
 
 import { DataApiRequest, DataApiResponse } from './data-api';
 
@@ -15,7 +9,7 @@ import { SqlDatabase } from './data-providers/sql-database';
 import { packedRowInfo } from './__EntityValueProvider';
 import { Filter, AndFilter } from './filter/filter-interfaces';
 import { DataProvider, RestDataProviderHttpProvider } from './data-interfaces';
-import { getEntityRef, rowHelperImplementation, getFields, decorateColumnSettings, getEntitySettings, getControllerRef, EntityFilter, controllerRefImpl, RepositoryImplementation } from './remult3';
+import { getEntityRef, rowHelperImplementation, getFields, decorateColumnSettings, getEntitySettings, getControllerRef, EntityFilter, controllerRefImpl, RepositoryImplementation, ForbiddenError } from './remult3';
 import { FieldOptions } from './column-interfaces';
 
 
@@ -82,7 +76,7 @@ export abstract class Action<inParam, outParam> implements ActionInterface {
                 res.success(r);
             }
             catch (err) {
-                if (err.isForbiddenError)// got a problem in next with instance of ForbiddenError  - so replaced it with this bool
+                if (ForbiddenError.isForbiddenError(err))// got a problem in next with instance of ForbiddenError  - so replaced it with this bool
                     res.forbidden();
                 else
                     res.error(err);
@@ -91,12 +85,7 @@ export abstract class Action<inParam, outParam> implements ActionInterface {
         });
     }
 }
-class ForbiddenError extends Error {
-    constructor() {
-        super("Forbidden");
-    }
-    isForbiddenError = true;
-}
+
 
 export class myServerAction extends Action<inArgs, result>
 {
