@@ -38,7 +38,7 @@ export declare class RepositoryImplementation<entityType> implements Repository<
     } ? number : entityType extends {
         id?: string;
     } ? string : (string | number)), entity: Partial<OmitEB<entityType>>): Promise<entityType>;
-    getRefForExistingRow(entity: Partial<OmitEB<entityType>>, id: string | number): EntityRef<Partial<Pick<entityType, Exclude<keyof entityType, "delete" | "_" | "save" | "assign" | "isNew" | "$">>>>;
+    getRefForExistingRow(entity: Partial<OmitEB<entityType>>, id: string | number): EntityRef<Partial<Pick<entityType, Exclude<keyof entityType, "_" | "save" | "assign" | "delete" | "isNew" | "$">>>>;
     save(item: Partial<OmitEB<entityType>>[]): Promise<entityType[]>;
     save(item: Partial<OmitEB<entityType>>): Promise<entityType>;
     liveQuery(options?: FindOptions<entityType>): any;
