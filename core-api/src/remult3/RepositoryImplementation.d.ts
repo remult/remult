@@ -1,7 +1,7 @@
 import { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from "../column-interfaces";
 import { EntityOptions } from "../entity";
 import { LookupColumn } from '../column';
-import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef, TypedDecorator } from "./remult3";
+import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef, MemberType } from "./remult3";
 import { ClassType } from "../../classType";
 import { Remult, Unobserve } from "../context";
 import { entityEventListener, packedRowInfo } from "../__EntityValueProvider";
@@ -221,16 +221,16 @@ export declare class StorableArray {
     constructor(type: () => any);
 }
 export declare class Fields {
-    static array<valueType>(valueType: valueType): TypedDecorator<valueType extends TypedDecorator<infer R> ? R[] : any[]>;
-    static object<entityType = any, valueType = any>(...options: (FieldOptions<entityType, valueType[]> | ((options: FieldOptions<entityType, valueType[]>, remult: Remult) => void))[]): TypedDecorator<valueType[]>;
-    static dateOnly<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]): TypedDecorator<Date>;
-    static date<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]): TypedDecorator<Date>;
-    static integer<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]): TypedDecorator<Number>;
-    static autoIncrement<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]): TypedDecorator<Number>;
-    static number<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]): TypedDecorator<Number>;
-    static uuid<entityType = any>(...options: (FieldOptions<entityType, string> | ((options: FieldOptions<entityType, string>, remult: Remult) => void))[]): TypedDecorator<any>;
-    static string<entityType = any>(...options: (StringFieldOptions<entityType> | ((options: StringFieldOptions<entityType>, remult: Remult) => void))[]): TypedDecorator<String>;
-    static boolean<entityType = any>(...options: (FieldOptions<entityType, boolean> | ((options: FieldOptions<entityType, boolean>, remult: Remult) => void))[]): TypedDecorator<Boolean>;
+    static array<valueType>(valueType: valueType): MemberType<valueType extends MemberType<infer R> ? R[] : any[]>;
+    static object<entityType = any, valueType = any>(...options: (FieldOptions<entityType, valueType[]> | ((options: FieldOptions<entityType, valueType[]>, remult: Remult) => void))[]): MemberType<valueType[]>;
+    static dateOnly<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]): MemberType<Date>;
+    static date<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]): MemberType<Date>;
+    static integer<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]): MemberType<Number>;
+    static autoIncrement<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]): MemberType<Number>;
+    static number<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]): MemberType<Number>;
+    static uuid<entityType = any>(...options: (FieldOptions<entityType, string> | ((options: FieldOptions<entityType, string>, remult: Remult) => void))[]): MemberType<any>;
+    static string<entityType = any>(...options: (StringFieldOptions<entityType> | ((options: StringFieldOptions<entityType>, remult: Remult) => void))[]): MemberType<String>;
+    static boolean<entityType = any>(...options: (FieldOptions<entityType, boolean> | ((options: FieldOptions<entityType, boolean>, remult: Remult) => void))[]): MemberType<Boolean>;
 }
 export declare function isAutoIncrement(f: FieldMetadata): boolean;
 export interface StringFieldOptions<entityType = any> extends FieldOptions<entityType, string> {
@@ -276,7 +276,7 @@ export declare const $fieldOptionsMember = "$fieldOptions";
  * @Fields.string((options,remult) => options.includeInApi = true)
  * title='';
  */
-export declare function Field<entityType = any, valueType = any>(valueType: () => ClassType<valueType>, ...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]): TypedDecorator<valueType>;
+export declare function Field<entityType = any, valueType = any>(valueType: () => ClassType<valueType>, ...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]): MemberType<valueType>;
 export declare const TransferEntityAsIdFieldOptions: FieldOptions;
 export declare function isTransferEntityAsIdField(o: FieldOptions): any;
 export declare const storableMember: unique symbol;

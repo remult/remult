@@ -3,7 +3,7 @@ import { InMemoryDataProvider } from "../data-providers/in-memory-database";
 import { remult } from "../remult-proxy";
 import { columnsOfType, controllerRefImpl, Field, Fields, getControllerRef, getFields, InferMemberType, TransferEntityAsIdFieldOptions, ValueListFieldType } from "../remult3";
 import { createClass, describeClass } from "../remult3/DecoratorReplacer";
-import { BackendMethod, createBackendMethod, BackendMethodType, CreateBackendMethodOptions, inferredMethod, prepareArgsToSend, prepareReceivedArgs } from "../server-action";
+import { BackendMethod, createBackendMethod, BackendMethodType, CreateBackendMethodOptions, InferredMethodType, prepareArgsToSend, prepareReceivedArgs } from "../server-action";
 import { ValueConverters } from "../valueConverters";
 import { createData } from "./createData";
 import { Products } from "./remult-3-entities";
@@ -357,7 +357,7 @@ it("test infer member type", () => {
   }
   {
     let x = inferType(classToTestTypedArguments);
-    let z: keyof InstanceType<typeof x> = "a";
+    let z: keyof typeof x = "a";
     expect(z).toBe("a");
   }
   {
@@ -477,6 +477,72 @@ it("start build backend method 2", async () => {
   });
   expect(await m({ a: new Date(1976, 5, 16), b: "noam" })).toBe("1976noam");
 });
+it("start build backend method 3", async () => {
+  let x = class {
+    a = new Date();
+    b = '';
+  }
+  describeClass(x, undefined, {
+    a: Fields.date(),
+    b: Fields.string()
+  })
+  let m = createBackendMethod({
+    inputType:  x,
+    key: "def",
+    returnType: String,
+    allowed: true,
+    implementation: async ({ a, b }) => a.getFullYear().toString() + b
+  });
+  expect(await m({ a: new Date(1976, 5, 16), b: "noam" })).toBe("1976noam");
+});
+it("start build backend method 3_1", async () => {
+  let x = class {
+    a = new Date();
+    b = '';
+  }
+  describeClass(x, undefined, {
+    a: Fields.date(),
+    b: Fields.string()
+  })
+  let m = createBackendMethod({
+    inputType: Field(()=> x),
+    key: "def",
+    returnType: String,
+    allowed: true,
+    implementation: async ({ a, b }) => a.getFullYear().toString() + b
+  });
+  expect(await m({ a: new Date(1976, 5, 16), b: "noam" })).toBe("1976noam");
+});
+class myClass4 {
+  @Fields.date()
+  a = new Date();
+  @Fields.string()
+  b = '';
+}
+it("start build backend method 4", async () => {
+
+
+  let m = createBackendMethod({
+    inputType: myClass4,
+    key: "def",
+    returnType: String,
+    allowed: true,
+    implementation: async ({ a, b }) => a.getFullYear().toString() + b
+  });
+  expect(await m({ a: new Date(1976, 5, 16), b: "noam" })).toBe("1976noam");
+});
+it("start build backend method 4_1", async () => {
+
+
+  let m = createBackendMethod({
+    inputType: Field(()=> myClass4),
+    key: "def",
+    returnType: String,
+    allowed: true,
+    implementation: async ({ a, b }) => a.getFullYear().toString() + b
+  });
+  expect(await m({ a: new Date(1976, 5, 16), b: "noam" })).toBe("1976noam");
+});
 it("start build backend method with allowed", async () => {
   let m = createBackendMethod({
     inputType: {
@@ -508,7 +574,7 @@ function build<T>(what: T): inferMethods<T> {
 }
 
 declare type inferMethods<type> = {
-  [member in keyof type]: type[member] extends BackendMethodType<infer R, infer S> ? inferredMethod<R, S> : never
+  [member in keyof type]: type[member] extends BackendMethodType<infer R, infer S> ? InferredMethodType<R, S> : never
 }
 
 

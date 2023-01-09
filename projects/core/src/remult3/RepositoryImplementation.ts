@@ -2,7 +2,7 @@
 import { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from "../column-interfaces";
 import { EntityOptions } from "../entity";
 import { CompoundIdField, LookupColumn, makeTitle } from '../column';
-import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef, LiveQuery,TypedDecorator } from "./remult3";
+import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef, LiveQuery,MemberType } from "./remult3";
 import { ClassType } from "../../classType";
 import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControllerSettings, Unobserve, EventSource } from "../context";
 import { AndFilter, rawFilterInfo, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
@@ -1550,7 +1550,7 @@ export class StorableArray {
 export class Fields {
     static array<valueType>(valueType: valueType) {
         return Field<any,
-            valueType extends TypedDecorator<infer R> ? R[]
+            valueType extends MemberType<infer R> ? R[]
             : InstanceType<
                 //@ts-ignore
                 InferMemberType<valueType>
@@ -1742,7 +1742,7 @@ export const $fieldOptionsMember = "$fieldOptions";
  * @Fields.string((options,remult) => options.includeInApi = true)
  * title='';
  */
-export function Field<entityType = any, valueType = any>(valueType: () => ClassType<valueType>, ...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]): TypedDecorator<valueType> {
+export function Field<entityType = any, valueType = any>(valueType: () => ClassType<valueType>, ...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]): MemberType<valueType> {
 
     const $fieldOptions = (remult: Remult) => {
         let r = buildOptions(options, remult);

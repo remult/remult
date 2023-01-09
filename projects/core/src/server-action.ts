@@ -530,17 +530,22 @@ function getMemberFieldOptions(type: any, remult: Remult) {
 class dynamicBackendMethods {
 
 }
-export type inferredMethod<inArgs, returnType> = (args: InferMemberType<inArgs>) => Promise<InferMemberType<returnType>>;
+export type InferredMethodType<inputType, returnType> = (args: InferMemberType<inputType>) => Promise<InferMemberType<returnType>>;
 
-export type CreateBackendMethodOptions<inArgs, returnType> = {
-    inputType?: inArgs;
+export type CreateBackendMethodOptions<inputType, returnType> = {
+    inputType?: inputType;
     returnType?: returnType;
     key?: string;
-    implementation?: inferredMethod<inArgs, returnType>;
-} & BackendMethodOptions<InferMemberType<inArgs>>;
+    implementation?: InferredMethodType<inputType, returnType>;
+    allowed: AllowedForInstance<InferMemberType<inputType>>;
+    /** EXPERIMENTAL: Determines if this method should be queued for later execution */
+    queue?: boolean;
+    /** EXPERIMENTAL: Determines if the user should be blocked while this `BackendMethod` is running*/
+    blockUser?: boolean;
+} ;
 
-export type BackendMethodType<inArg, returnType> = (inferredMethod<inArg, returnType>) & {
-    implementation: inferredMethod<inArg, returnType>
+export type BackendMethodType<inputType, returnType> = (InferredMethodType<inputType, returnType>) & {
+    implementation: InferredMethodType<inputType, returnType>
 }
 
 export function createBackendMethod<inArg, returnType>(arg: CreateBackendMethodOptions<inArg, returnType>):
@@ -560,4 +565,10 @@ export function createBackendMethod<inArg, returnType>(arg: CreateBackendMethodO
     return r;
 }
 
+//TODO - signIn2 - should register
+//TODO - signIn2 - should get it's name from it's member name? - NO (no decorator)
+//TODO - signIn3 - need this kind of register.
+//TODO - signIn4 - should register
+//TODO - make key first parameter of create backend method
+//TODO - backend should validate parameters as much as possible
 

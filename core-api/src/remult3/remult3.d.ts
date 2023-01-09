@@ -323,10 +323,10 @@ export interface Paginator<entityType> {
     /** the count of the total items in the `query`'s result */
     count(): Promise<number>;
 }
-export declare type TypedDecorator<type> = ((target: any, key: any, c?: any) => void) & {
+export declare type MemberType<type> = ((target: any, key: any, c?: any) => void) & {
     $type: type;
 };
-export declare type InferMemberType<type> = type extends TypedDecorator<infer R> ? R : type extends (() => infer R) ? R : type extends ClassType<any> ? type : InferredType<type>;
+export declare type InferMemberType<type> = type extends MemberType<infer R> ? R : type extends (() => infer R) ? R : type extends ClassType<infer R> ? R : InferredType<type>;
 export declare type InferredType<type> = {
     [member in keyof OmitEB<type>]: InferMemberType<type[member]>;
 };

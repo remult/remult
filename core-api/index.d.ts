@@ -1,4 +1,4 @@
-export { Field, Fields, FieldsMetadata, Entity, EntityBase, ControllerBase, FieldRef, IdFieldRef, FieldsRef, EntityMetadata, EntityOrderBy, EntityFilter, FindOptions, QueryResult, QueryOptions, Repository, FieldType, FindFirstOptions, ComparisonValueFilter, ValueFilter, IdFilter, ContainsStringValueFilter, getFields, EntityRef, getEntityRef, SortSegments, ValueListFieldType, getValueList, ValueListFieldOptions, ValueListInfo, OmitEB, Paginator, CaptionTransformer, InferMemberType, InferredType, TypedDecorator, LiveQuery, LiveQueryChangeInfo } from './src/remult3';
+export { Field, Fields, FieldsMetadata, Entity, EntityBase, ControllerBase, FieldRef, IdFieldRef, FieldsRef, EntityMetadata, EntityOrderBy, EntityFilter, FindOptions, QueryResult, QueryOptions, Repository, FieldType, FindFirstOptions, ComparisonValueFilter, ValueFilter, IdFilter, ContainsStringValueFilter, getFields, EntityRef, getEntityRef, SortSegments, ValueListFieldType, getValueList, ValueListFieldOptions, ValueListInfo, OmitEB, Paginator, CaptionTransformer, InferMemberType, InferredType, MemberType as TypedDecorator, LiveQuery, LiveQueryChangeInfo } from './src/remult3';
 export { describeClass, createEntity, createClass } from './src/remult3/DecoratorReplacer';
 export { StringFieldOptions } from './src/remult3/RepositoryImplementation';
 export { EntityOptions } from './src/entity';
@@ -13,7 +13,7 @@ export { WebSqlDataProvider } from './src/data-providers/web-sql-data-provider';
 export { SqlDatabase, } from './src/data-providers/sql-database';
 export { CustomSqlFilterObject, CustomSqlFilterBuilder, dbNamesOf } from './src/filter/filter-consumer-bridge-to-sql-request';
 export { JsonDataProvider, JsonEntityStorage } from './src/data-providers/json-data-provider';
-export { Controller, BackendMethodOptions, BackendMethod, ProgressListener, createBackendMethod, CreateBackendMethodOptions, BackendMethodType, } from './src/server-action';
+export { Controller, BackendMethodOptions, BackendMethod, ProgressListener, createBackendMethod, CreateBackendMethodOptions, BackendMethodType, InferredMethodType, } from './src/server-action';
 export { Allowed, Allow, Remult, RemultContext, ApiClient, isBackend, AllowedForInstance, EventDispatcher, EventSource, Unobserve, UserInfo } from './src/context';
 export { ExternalHttpProvider } from './src/buildRestDataProvider';
 export { IdEntity } from './src/id-entity';

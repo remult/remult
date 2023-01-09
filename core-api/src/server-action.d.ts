@@ -80,15 +80,20 @@ export interface ActionInterface {
     doWork: (args: any[], self: any, baseUrl?: string, http?: RestDataProviderHttpProvider) => Promise<any>;
     __register(reg: (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void): any;
 }
-export declare type inferredMethod<inArgs, returnType> = (args: InferMemberType<inArgs>) => Promise<InferMemberType<returnType>>;
-export declare type CreateBackendMethodOptions<inArgs, returnType> = {
-    inputType?: inArgs;
+export declare type InferredMethodType<inputType, returnType> = (args: InferMemberType<inputType>) => Promise<InferMemberType<returnType>>;
+export declare type CreateBackendMethodOptions<inputType, returnType> = {
+    inputType?: inputType;
     returnType?: returnType;
     key?: string;
-    implementation?: inferredMethod<inArgs, returnType>;
-} & BackendMethodOptions<InferMemberType<inArgs>>;
-export declare type BackendMethodType<inArg, returnType> = (inferredMethod<inArg, returnType>) & {
-    implementation: inferredMethod<inArg, returnType>;
+    implementation?: InferredMethodType<inputType, returnType>;
+    allowed: AllowedForInstance<InferMemberType<inputType>>;
+    /** EXPERIMENTAL: Determines if this method should be queued for later execution */
+    queue?: boolean;
+    /** EXPERIMENTAL: Determines if the user should be blocked while this `BackendMethod` is running*/
+    blockUser?: boolean;
+};
+export declare type BackendMethodType<inputType, returnType> = (InferredMethodType<inputType, returnType>) & {
+    implementation: InferredMethodType<inputType, returnType>;
 };
 export declare function createBackendMethod<inArg, returnType>(arg: CreateBackendMethodOptions<inArg, returnType>): BackendMethodType<inArg, returnType>;
 export {};

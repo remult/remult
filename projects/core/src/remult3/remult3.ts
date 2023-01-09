@@ -341,11 +341,11 @@ export interface Paginator<entityType> {
 }
 
 
-export declare type TypedDecorator<type> = ((target, key, c?) => void) & { $type: type };
+export declare type MemberType<type> = ((target, key, c?) => void) & { $type: type };
 export declare type InferMemberType<type> =
-    type extends TypedDecorator<infer R> ? R
+    type extends MemberType<infer R> ? R
     : type extends (() => infer R) ? R
-    : type extends ClassType<any> ? type
+    : type extends ClassType<infer R> ? R
     : InferredType<type>
 
 export declare type InferredType<type> = {

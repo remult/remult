@@ -41,7 +41,7 @@ export {
     CaptionTransformer,
     InferMemberType,
     InferredType,
-    TypedDecorator,
+    MemberType as TypedDecorator,
     LiveQuery,
     LiveQueryChangeInfo
 } from './src/remult3';
@@ -96,6 +96,7 @@ export {
     createBackendMethod,
     CreateBackendMethodOptions,
     BackendMethodType,
+    InferredMethodType,
 } from './src/server-action';
 
 export {

@@ -1,6 +1,6 @@
 import { ClassType } from "../../classType";
 import { EntityOptions } from "../entity";
-import { OmitEB, InferMemberType, InferredType, TypedDecorator } from "./remult3";
+import { OmitEB, InferMemberType, InferredType, MemberType } from "./remult3";
 import { Entity, Field } from "./RepositoryImplementation";
 
 type Decorator<T = any> = (a: T, b: string, c?: any) => void;
