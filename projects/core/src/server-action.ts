@@ -92,7 +92,7 @@ export class ForbiddenError extends Error {
     constructor() {
         super("Forbidden");
     }
-    isForbiddenError:true = true;
+    isForbiddenError: true = true;
 }
 
 
@@ -535,31 +535,30 @@ export type InferredMethodType<inputType, returnType> = (args: InferMemberType<i
 export type CreateBackendMethodOptions<inputType, returnType> = {
     inputType?: inputType;
     returnType?: returnType;
-    key?: string;
     implementation?: InferredMethodType<inputType, returnType>;
     allowed: AllowedForInstance<InferMemberType<inputType>>;
     /** EXPERIMENTAL: Determines if this method should be queued for later execution */
     queue?: boolean;
     /** EXPERIMENTAL: Determines if the user should be blocked while this `BackendMethod` is running*/
     blockUser?: boolean;
-} ;
+};
 
 export type BackendMethodType<inputType, returnType> = (InferredMethodType<inputType, returnType>) & {
     implementation: InferredMethodType<inputType, returnType>
 }
 
-export function createBackendMethod<inArg, returnType>(arg: CreateBackendMethodOptions<inArg, returnType>):
-    BackendMethodType<inArg, returnType> {
+export function createBackendMethod<inputType, returnType>(key: string, options: CreateBackendMethodOptions<inputType, returnType>):
+    BackendMethodType<inputType, returnType> {
 
     const descriptor = {
-        value: (...args) => arg.implementation(args[0])
+        value: (...args) => options.implementation(args[0])
     };
-    BackendMethod({ ...arg, paramTypes: [arg.inputType] })(dynamicBackendMethods, arg.key, descriptor);
+    BackendMethod({ ...options, paramTypes: [options.inputType] })(dynamicBackendMethods, key, descriptor);
     const r = x => descriptor.value(x);
 
     Object.defineProperty(r, "implementation", {
-        get: () => arg.implementation,
-        set: x => arg.implementation = x
+        get: () => options.implementation,
+        set: x => options.implementation = x
     });
     //@ts-ignore
     return r;
@@ -569,6 +568,5 @@ export function createBackendMethod<inArg, returnType>(arg: CreateBackendMethodO
 //TODO - signIn2 - should get it's name from it's member name? - NO (no decorator)
 //TODO - signIn3 - need this kind of register.
 //TODO - signIn4 - should register
-//TODO - make key first parameter of create backend method
 //TODO - backend should validate parameters as much as possible
 

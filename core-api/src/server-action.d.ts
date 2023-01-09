@@ -84,7 +84,6 @@ export declare type InferredMethodType<inputType, returnType> = (args: InferMemb
 export declare type CreateBackendMethodOptions<inputType, returnType> = {
     inputType?: inputType;
     returnType?: returnType;
-    key?: string;
     implementation?: InferredMethodType<inputType, returnType>;
     allowed: AllowedForInstance<InferMemberType<inputType>>;
     /** EXPERIMENTAL: Determines if this method should be queued for later execution */
@@ -95,5 +94,5 @@ export declare type CreateBackendMethodOptions<inputType, returnType> = {
 export declare type BackendMethodType<inputType, returnType> = (InferredMethodType<inputType, returnType>) & {
     implementation: InferredMethodType<inputType, returnType>;
 };
-export declare function createBackendMethod<inArg, returnType>(arg: CreateBackendMethodOptions<inArg, returnType>): BackendMethodType<inArg, returnType>;
+export declare function createBackendMethod<inputType, returnType>(key: string, options: CreateBackendMethodOptions<inputType, returnType>): BackendMethodType<inputType, returnType>;
 export {};

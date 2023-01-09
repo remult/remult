@@ -438,12 +438,11 @@ class TestBackendMethodWithParameterDecorator {
 }
 
 it("start build backend method", async () => {
-  let m = createBackendMethod({
+  let m = createBackendMethod("ghi", {
     inputType: Fields.dateOnly(),
     returnType: Number,
     allowed: true,
     implementation: async d => d.getFullYear(),
-    key: "ghi"
   });
   expect(await m(new Date(1976, 5, 16))).toBe(1976);
   expect(await m.implementation(new Date(1976, 5, 16))).toBe(1976);
@@ -452,11 +451,10 @@ it("start build backend method", async () => {
   expect(await m(new Date(1976, 5, 16))).toBe(2022);
 });
 it("test replace implementation", async () => {
-  let m = createBackendMethod({
+  let m = createBackendMethod("abc", {
     inputType: Fields.dateOnly(),
     returnType: Number,
     allowed: true,
-    key: "abc",
     implementation: async d => d.getFullYear(),
 
   });
@@ -465,12 +463,11 @@ it("test replace implementation", async () => {
   expect(await m(new Date(1976, 5, 16))).toBe(2022);
 });
 it("start build backend method 2", async () => {
-  let m = createBackendMethod({
+  let m = createBackendMethod("def", {
     inputType: {
       a: Fields.dateOnly(),
       b: String
     },
-    key: "def",
     returnType: String,
     allowed: true,
     implementation: async ({ a, b }) => a.getFullYear().toString() + b
@@ -486,9 +483,8 @@ it("start build backend method 3", async () => {
     a: Fields.date(),
     b: Fields.string()
   })
-  let m = createBackendMethod({
-    inputType:  x,
-    key: "def",
+  let m = createBackendMethod("def", {
+    inputType: x,
     returnType: String,
     allowed: true,
     implementation: async ({ a, b }) => a.getFullYear().toString() + b
@@ -504,9 +500,8 @@ it("start build backend method 3_1", async () => {
     a: Fields.date(),
     b: Fields.string()
   })
-  let m = createBackendMethod({
-    inputType: Field(()=> x),
-    key: "def",
+  let m = createBackendMethod("def", {
+    inputType: Field(() => x),
     returnType: String,
     allowed: true,
     implementation: async ({ a, b }) => a.getFullYear().toString() + b
@@ -522,9 +517,8 @@ class myClass4 {
 it("start build backend method 4", async () => {
 
 
-  let m = createBackendMethod({
+  let m = createBackendMethod("def", {
     inputType: myClass4,
-    key: "def",
     returnType: String,
     allowed: true,
     implementation: async ({ a, b }) => a.getFullYear().toString() + b
@@ -534,9 +528,8 @@ it("start build backend method 4", async () => {
 it("start build backend method 4_1", async () => {
 
 
-  let m = createBackendMethod({
-    inputType: Field(()=> myClass4),
-    key: "def",
+  let m = createBackendMethod("def", {
+    inputType: Field(() => myClass4),
     returnType: String,
     allowed: true,
     implementation: async ({ a, b }) => a.getFullYear().toString() + b
@@ -544,12 +537,11 @@ it("start build backend method 4_1", async () => {
   expect(await m({ a: new Date(1976, 5, 16), b: "noam" })).toBe("1976noam");
 });
 it("start build backend method with allowed", async () => {
-  let m = createBackendMethod({
+  let m = createBackendMethod("a1", {
     inputType: {
       a: Fields.dateOnly(),
       b: String
     },
-    key: "a1",
     returnType: String,
     allowed: (remult, y) => y.a.getFullYear() === 1976,
     implementation: async ({ a, b }) => a.getFullYear().toString() + b
@@ -605,18 +597,17 @@ class CompareBackendMethodCalls {
     return d.getFullYear()
   }
 
-  static m3 = createBackendMethod({
+  static m3 = createBackendMethod("m3", {
     allowed: true,
     inputType: Fields.dateOnly(),
     returnType: Number,
     implementation:
       async d => d.getFullYear(),
-    key: "m3"
   })
 }
 
 let z = build({
-  m4: createBackendMethod({
+  m4: createBackendMethod("m4", {
     allowed: true,
     inputType: Fields.dateOnly(),
     returnType: Number,
