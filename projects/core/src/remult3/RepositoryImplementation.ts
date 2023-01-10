@@ -2,7 +2,7 @@
 import { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from "../column-interfaces";
 import { EntityOptions } from "../entity";
 import { CompoundIdField, LookupColumn, makeTitle } from '../column';
-import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef, LiveQuery,MemberType } from "./remult3";
+import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef, LiveQuery, MemberType } from "./remult3";
 import { ClassType } from "../../classType";
 import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControllerSettings, Unobserve, EventSource } from "../context";
 import { AndFilter, rawFilterInfo, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
@@ -2208,7 +2208,14 @@ export function getFieldLoaderSaver(options: FieldOptions, remult: Remult, force
             fromJson: async (val: any) => {
                 if (val === null)
                     return null;
-                return await unpackEntity(val, remult.repo(options.valueType));
+                const r = await unpackEntity(val, remult.repo(options.valueType));
+                if (r) {
+                    const ref = getEntityRef(r, false) as unknown as rowHelperBase<any>;
+                    if (ref) {
+                        await ref.__validateEntity();
+                    }
+                }
+                return r;
             }
         }
     }
@@ -2223,6 +2230,7 @@ export function getFieldLoaderSaver(options: FieldOptions, remult: Remult, force
                 const item = new options.valueType;
                 const ref = getControllerRef(item, remult) as unknown as controllerRefImpl;
                 await ref._updateEntityBasedOnApi(val);
+                await ref.__validateEntity();
                 return item;
             }
         }

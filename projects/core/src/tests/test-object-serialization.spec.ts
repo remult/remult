@@ -1,9 +1,11 @@
 import { Remult } from "../context";
+import { ErrorInfo } from "../data-interfaces";
 import { InMemoryDataProvider } from "../data-providers/in-memory-database";
 import { remult } from "../remult-proxy";
 import { columnsOfType, controllerRefImpl, Field, Fields, getControllerRef, getFields, InferMemberType, TransferEntityAsIdFieldOptions, ValueListFieldType } from "../remult3";
 import { createClass, describeClass } from "../remult3/DecoratorReplacer";
 import { BackendMethod, createBackendMethod, BackendMethodType, CreateBackendMethodOptions, InferredMethodType, prepareArgsToSend, prepareReceivedArgs } from "../server-action";
+import { Validators } from "../validators";
 import { ValueConverters } from "../valueConverters";
 import { createData } from "./createData";
 import { Products } from "./remult-3-entities";
@@ -577,6 +579,49 @@ it("test that it works", async () => {
   expect(await CompareBackendMethodCalls.m3(new Date(1976, 5, 16))).toBe(1976);
   if (false)
     z.m4(new Date(1976, 6, 16));
+});
+
+it("test validation", async () => {
+  const m = createBackendMethod("t1", {
+    inputType: {
+      a: Fields.string({ validate: Validators.required })
+    },
+    returnType: String,
+    allowed: true,
+    implementation: async x => x.a + "z"
+  })
+  let ok = true;
+  try {
+    await m({ a: "" })
+    ok = false;
+  }
+  catch (err: any) {
+    expect(err.modelState.a).toBe("Should not be empty");
+  }
+  expect(ok).toBe(true);
+  expect(await m({a:"noam"})).toBe("noamz");
+
+});
+fit("test validation 1", async () => {
+  const m = createBackendMethod("t1", {
+    inputType: 
+       Fields.string({ validate: Validators.required })
+    ,
+    returnType: String,
+    allowed: true,
+    implementation: async x => x + "z"
+  })
+  let ok = true;
+  try {
+    await m( "" )
+    ok = false;
+  }
+  catch (err: any) {
+    expect(err.modelState.a).toBe("Should not be empty");
+  }
+  expect(ok).toBe(true);
+  expect(await m("noam")).toBe("noamz");
+
 });
 
 
