@@ -95,7 +95,7 @@
     "karma-coverage": "~2.0.3",
     "karma-jasmine": "~4.0.0",
     "karma-jasmine-html-reporter": "~1.5.0",
-    "knex": "^1.0.1",
+    "knex": "^2.4.0",
     "koa": "^2.13.4",
     "koa-bodyparser": "^4.3.0",
     "mongodb": "^4.2.1",
