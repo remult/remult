@@ -31,6 +31,7 @@ import { ValueConverters } from "../valueConverters";
 import {  FilterConsumerBridgeToSqlRequest, dbNamesOf } from "../filter/filter-consumer-bridge-to-sql-request";
 import axios from "axios";
 import { async } from "@angular/core/testing";
+import { createEntity } from "../remult3/DecoratorReplacer";
 import { HttpProviderBridgeToRestDataProviderHttpProvider, retry, toPromise } from "../buildRestDataProvider";
 
 //SqlDatabase.LogToConsole = true;
@@ -575,6 +576,15 @@ describe("data api", () => {
       ]
     });
     d.test();
+  });
+  it("test createEntity", async () => {
+    const e = createEntity("createEntity", {
+      id: Fields.integer(),
+      name: Fields.string()
+    });
+    const repo = new Remult(new InMemoryDataProvider()).repo(e);
+    await repo.insert([{ id: 1, name: "noam" }, { id: 2, name: "yoni" }]);
+    expect(await repo.count()).toBe(2);
   });
 
   it("delete with validation fails", async () => {

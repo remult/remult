@@ -115,7 +115,6 @@ export interface EntityMetadata<entityType = any> {
 
 
 export declare type OmitEB<T> = Omit<T, keyof import('./RepositoryImplementation').EntityBase>
-//TODO - breaking change from last version - on strict mode we cant assign IdEntity to EntityBase
 export declare type idType<entityType> = entityType extends { id?: number } ? number : entityType extends { id?: string } ? string : (string | number);
 /**used to perform CRUD operations on an `entityType` */
 export interface Repository<entityType> {
@@ -338,4 +337,18 @@ export interface Paginator<entityType> {
     nextPage(): Promise<Paginator<entityType>>;
     /** the count of the total items in the `query`'s result */
     count(): Promise<number>;
+}
+
+
+export declare type MemberType<type> = ((target, key, c?) => void) & { $type: type };
+export declare type InferMemberType<type> =
+    type extends MemberType<infer R> ? R
+    : type extends (() => infer R) ? R
+    : type extends ClassType<infer R> ? R
+    : InferredType<type>
+
+export declare type InferredType<type> = {
+    [member in keyof OmitEB<type>]:
+    InferMemberType<type[member]>
+
 }

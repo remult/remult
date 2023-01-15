@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { Remult, AllowedForInstance } from './context';
 import { DataApiResponse } from './data-api';
 import { DataProvider, RestDataProviderHttpProvider } from './data-interfaces';
+import { InferMemberType } from './remult3';
 interface inArgs {
     args: any[];
 }
@@ -38,6 +39,7 @@ export interface BackendMethodOptions<type> {
     /** EXPERIMENTAL: Determines if the user should be blocked while this `BackendMethod` is running*/
     blockUser?: boolean;
     paramTypes?: any[];
+    returnType?: any;
 }
 export declare const actionInfo: {
     allActions: any[];
@@ -50,6 +52,11 @@ export declare const actionInfo: {
 };
 export declare const serverActionField: unique symbol;
 export declare function Controller(key: string): (target: any) => any;
+export declare const paramDecorator: Map<any, {
+    methodName: string;
+    paramIndex: number;
+    decorator: any;
+}[]>;
 /** Indicates that the decorated methods runs on the backend. See: [Backend Methods](https://remult.dev/docs/backendMethods.html) */
 export declare function BackendMethod<type = any>(options: BackendMethodOptions<type>): (target: any, key: string, descriptor: any) => any;
 export interface jobWasQueuedResult {
@@ -67,10 +74,25 @@ export declare class ProgressListener {
     progress(progress: number): void;
 }
 export declare function prepareArgsToSend(types: any[], args: any[]): any[];
-export declare function prepareReceivedArgs(types: any[], args: any[], remult: Remult, ds: DataProvider, res: DataApiResponse): Promise<any[]>;
+export declare function prepareReceivedArgs(types: any[], args: any[], remult?: Remult, ds?: DataProvider, res?: DataApiResponse): Promise<any[]>;
 export declare const classBackendMethodsArray: unique symbol;
 export interface ActionInterface {
     doWork: (args: any[], self: any, baseUrl?: string, http?: RestDataProviderHttpProvider) => Promise<any>;
     __register(reg: (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void): any;
 }
+export declare type InferredMethodType<inputType, returnType> = (args: InferMemberType<inputType>) => Promise<InferMemberType<returnType>>;
+export declare type CreateBackendMethodOptions<inputType, returnType> = {
+    inputType?: inputType;
+    returnType?: returnType;
+    implementation?: InferredMethodType<inputType, returnType>;
+    allowed: AllowedForInstance<InferMemberType<inputType>>;
+    /** EXPERIMENTAL: Determines if this method should be queued for later execution */
+    queue?: boolean;
+    /** EXPERIMENTAL: Determines if the user should be blocked while this `BackendMethod` is running*/
+    blockUser?: boolean;
+};
+export declare type BackendMethodType<inputType, returnType> = (InferredMethodType<inputType, returnType>) & {
+    implementation: InferredMethodType<inputType, returnType>;
+};
+export declare function createBackendMethod<inputType, returnType>(key: string, options: CreateBackendMethodOptions<inputType, returnType>): BackendMethodType<inputType, returnType>;
 export {};

@@ -80,7 +80,7 @@ remult.apiClient.httpClient = {
                 let t = new TestDataApiResponse();
                 actionInfo.runningOnServer = true;
                 t.success = data => {
-                  res(data);
+                  res(JSON.parse(JSON.stringify(data)));
                   actionInfo.runningOnServer = false
                 }
                 t.error = data => {

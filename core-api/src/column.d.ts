@@ -25,12 +25,15 @@ export declare class CompoundIdField implements FieldMetadata<string> {
 }
 export declare class LookupColumn<T> {
     private repository;
-    id: idType<T>;
+    private _id;
     setId(val: any): void;
     waitLoadOf(id: any): Promise<T>;
     get(id: any): any;
     set(item: T): void;
-    constructor(repository: RepositoryImplementation<T>, id: idType<T>);
+    constructor(repository: RepositoryImplementation<T>, _id: idType<T>);
+    private _item;
+    get id(): any;
+    set id(value: any);
     get item(): T;
     waitLoad(): Promise<T>;
 }

@@ -106,44 +106,59 @@ export class LookupColumn<T> {
   }
   get(id: any): any {
     if (id === undefined || id === null)
-      return null;
+      if (!this._item)
+        return null;
+      else
+        return this._item;
     return this.repository.getCachedById(id);
   }
   set(item: T) {
+    this._item = item;
     if (item) {
-      if (typeof item === "string" || typeof item === "number")
-        this.id = item as any;
-      else {
+      if (typeof item === "string" || typeof item === "number") {
+        this._id = item as any;
+        this._item = undefined;
+      } else {
         let eo = getEntityRef(item, false);
         if (eo) {
           this.repository.addToCache(item);
-          this.id = eo.getId();
+          this._id = eo.getId();
         }
         else {
-          this.id = item[this.repository.metadata.idMetadata.field.key];
+          this._item = item;
+          this._id = item[this.repository.metadata.idMetadata.field.key];
         }
       }
     }
     else if (item === null) {
-      this.id = null;
+      this._id = null;
     }
     else {
-      this.id = undefined;
+      this._id = undefined;
     }
   }
 
-  constructor(private repository: RepositoryImplementation<T>, public id: idType<T>
+  constructor(private repository: RepositoryImplementation<T>, private _id: idType<T>
   ) { }
+  private _item = undefined;
+  get id() {
+    return this._id;
+  }
+  set id(value: any) {
+    this._id = value;
+    this._item = undefined;
+  }
 
   get item(): T {
-
-    return this.get(this.id);
+    if (this._item)
+      return this._item;
+    return this.get(this._id);
   }
   async waitLoad() {
-    return this.waitLoadOf(this.id);
+    return this.waitLoadOf(this._id);
   }
 }
-9000
+
 
 export class OneToMany<T>{
   constructor(private provider: Repository<T>,

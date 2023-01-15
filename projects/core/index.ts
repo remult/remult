@@ -39,11 +39,16 @@ export {
     OmitEB,
     Paginator,
     CaptionTransformer,
+    InferMemberType,
+    InferredType,
+    MemberType as TypedDecorator,
     LiveQuery,
     LiveQueryChangeInfo
 } from './src/remult3';
+export { describeClass, createEntity, createClass } from './src/remult3/DecoratorReplacer';
+
 export { StringFieldOptions } from './src/remult3/RepositoryImplementation';
-export { describeClass } from './src/remult3/DecoratorReplacer';
+
 export { EntityOptions } from './src/entity';
 export {
     DataProvider,
@@ -87,7 +92,11 @@ export {
     Controller,
     BackendMethodOptions,
     BackendMethod,
-    ProgressListener
+    ProgressListener,
+    createBackendMethod,
+    CreateBackendMethodOptions,
+    BackendMethodType,
+    InferredMethodType,
 } from './src/server-action';
 
 export {
