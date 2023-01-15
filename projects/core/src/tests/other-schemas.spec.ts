@@ -37,8 +37,8 @@ interface myInterface {
 }
 it("test alternative schema", async () => {
   let info: EntityInfoProvider<myInterface> = ({
-    getEntityInfo: () => ({
-      key: "custom",
+    $entity$key: "custom",
+    $entity$getInfo: () => ({
       options: {
         allowApiCrud: true
       },
@@ -85,11 +85,11 @@ it("test remult-zod", async () => {
   expect(await repo.count({ completed: false })).toBe(2);
   expect((await repo.find({ where: { id: 2 } }))[0].completed).toBe(true);
 });
-fit("test remult-zod", async () => {
+it("test remult-zod with auto increment", async () => {
   let task = zodEntity(
     "custom",
     z.object({
-      id: zodField(z.number()),
+      id: zodField(z.number(), Fields.autoIncrement()),
       name: z.string(),
       completed: z.boolean()
     }), {

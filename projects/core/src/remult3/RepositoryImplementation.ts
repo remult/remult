@@ -4,7 +4,7 @@ import { EntityOptions } from "../entity";
 import { CompoundIdField, LookupColumn, makeTitle } from '../column';
 import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef, LiveQuery, MemberType } from "./remult3";
 import { ClassType } from "../../classType";
-import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControllerSettings, Unobserve, EventSource, EntityInfo } from "../context";
+import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControllerSettings, Unobserve, EventSource, EntityInfo, EntityInfoProvider } from "../context";
 import { AndFilter, rawFilterInfo, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
 import { Sort } from "../sort";
 import { v4 as uuid } from 'uuid';
@@ -499,7 +499,10 @@ export function getEntitySettings<T>(entity: ClassType<T>, throwError = true): E
 
     return info;
 }
-export function getEntityKey(entity: ClassType<any>): string {
+export function getEntityKey(entity: (ClassType<any> | EntityInfoProvider<any>)): string {
+    if ((entity as EntityInfoProvider<any>).$entity$key) {
+        return (entity as EntityInfoProvider<any>).$entity$key;
+    }
     return Reflect.getMetadata(entityInfo_key, entity);
 }
 export const columnsOfType = new Map<any, columnInfo[]>();
@@ -510,7 +513,6 @@ export function createOldEntity<T>(entity: ClassType<T>, remult: Remult) {
 
     let info = getEntitySettings(entity)(remult);
     let key = getEntityKey(entity);
-
 
     let base = Object.getPrototypeOf(entity);
     while (base != null) {
@@ -544,11 +546,10 @@ export function createOldEntity<T>(entity: ClassType<T>, remult: Remult) {
 
     return new EntityFullInfo<T>({
         fields: prepareColumnInfo(r, remult),
-        key: key,
         options: info,
         createInstance: x => new entity(x),
         entityType: entity
-    }, remult);
+    }, key, remult);
 }
 
 abstract class rowHelperBase<T>
@@ -831,7 +832,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
 
 
     constructor(private info: EntityFullInfo<T>, instance: T, public repository: RepositoryImplementation<T>, private edp: EntityDataProvider, remult: Remult, private _isNew: boolean) {
-        super(info.columnsInfo, instance, remult);
+        super(info.info.fields, instance, remult);
         this._forceRefId = true;
         this.metadata = info;
         if (_isNew) {
@@ -1406,6 +1407,7 @@ export class EntityFullInfo<T> implements EntityMetadata<T> {
 
     constructor(
         public info: EntityInfo<T>,
+        key: string,
         private remult: Remult,
     ) {
         if (this.options.allowApiCrud !== undefined) {
@@ -1418,7 +1420,7 @@ export class EntityFullInfo<T> implements EntityMetadata<T> {
             if (this.options.allowApiRead === undefined)
                 this.options.allowApiRead = this.options.allowApiCrud;
         }
-        this.key = info.key;
+        this.key = key;
         this.entityType = info.entityType;
         if (this.options.allowApiRead === undefined)
             this.options.allowApiRead = true;

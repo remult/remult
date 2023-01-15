@@ -2,17 +2,21 @@ import * as z from 'zod';
 import { ZodObject, ZodRawShape } from 'zod';
 import { bigint, ZodFirstPartyTypeKind } from 'zod/lib';
 import { FieldOptions } from './src/column-interfaces';
-import { EntityInfoProvider } from './src/context';
+import { EntityInfoProvider, Remult } from './src/context';
 import { EntityOptions } from './src/entity';
+import { $fieldOptionsMember, MemberType } from './src/remult3';
 
-export function zodEntity<T extends ZodRawShape>(key: string, z: ZodObject<T>, options: EntityOptions<T>)
-  : ZodObject<T> & EntityInfoProvider<z.infer<ZodObject<T>>> {
-  return Object.assign(z, {
-    getEntityInfo: () => {
+const $remultFieldOptions = Symbol("$remultFieldOptions")
+
+export function zodEntity<zodType extends ZodRawShape>(key: string, zodType: ZodObject<zodType>, options: EntityOptions<zodType>)
+  : ZodObject<zodType> & EntityInfoProvider<z.infer<ZodObject<zodType>>> {
+  return Object.assign(zodType, {
+    $entity$key: key,
+    $entity$getInfo: (remult: Remult) => {
       const fields: FieldOptions[] = [];
-      for (const key in z.shape) {
-        if (Object.prototype.hasOwnProperty.call(z.shape, key)) {
-          const element = z.shape[key];
+      for (const key in zodType.shape) {
+        if (Object.prototype.hasOwnProperty.call(zodType.shape, key)) {
+          const element = zodType.shape[key];
           const o: FieldOptions = { key }
 
           switch (element._def.typeName) {
@@ -29,19 +33,29 @@ export function zodEntity<T extends ZodRawShape>(key: string, z: ZodObject<T>, o
               o.valueType = Date;
               break;
           }
+          const fieldOptions = element._def[$remultFieldOptions];
+          if (fieldOptions)
+            for (const fo of fieldOptions) {
+              let fieldInfo = fo[$fieldOptionsMember];
+              if (fieldInfo) {
+                Object.assign(o, fieldInfo(remult));
+              }
+              else
+                Object.assign(o, fo);
+            }
           fields.push(o);
         }
       }
 
       return {
         options,
-        key,
         fields
       }
     }
-  } as EntityInfoProvider<T>);
+  } as EntityInfoProvider<zodType>);
 }
-export function zodField<T extends z.ZodType>(zodType: T, ...options: FieldOptions<any, z.infer<T>>[]) {
+export function zodField<zodType extends z.ZodType>(zodType: zodType, ...options: (FieldOptions<any, z.infer<zodType>> | MemberType<InstanceType<z.infer<zodType>>>)[]) {
+  zodType._def[$remultFieldOptions] = options;
   return zodType;
 }
 

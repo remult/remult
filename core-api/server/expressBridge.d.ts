@@ -1,6 +1,6 @@
 import { queuedJobInfoResponse } from '../src/server-action';
 import { DataProvider } from '../src/data-interfaces';
-import { Remult, UserInfo } from '../src/context';
+import { EntityInfoProvider, Remult, UserInfo } from '../src/context';
 import { ClassType } from '../classType';
 import { Repository } from '../src/remult3';
 import { IdEntity } from '../src/id-entity';
@@ -23,7 +23,7 @@ export interface RemultServerOptions<RequestType extends GenericRequest> {
     initApi?: (remult: Remult) => void | Promise<void>;
     logApiEndPoints?: boolean;
     defaultGetLimit?: number;
-    entities?: ClassType<any>[];
+    entities?: (ClassType<any> | EntityInfoProvider<any>)[];
     controllers?: ClassType<any>[];
     rootPath?: string;
 }

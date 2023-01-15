@@ -2,7 +2,7 @@ import { DataProvider } from "./data-interfaces";
 import { Action, actionInfo, serverActionField } from './server-action';
 import { RestDataProvider } from './data-providers/rest-data-provider';
 import { EntityMetadata, EntityRef, FindOptions, Repository } from "./remult3";
-import { createOldEntity, decorateColumnSettings, EntityFullInfo, RepositoryImplementation } from "./remult3/RepositoryImplementation";
+import { createOldEntity, decorateColumnSettings, EntityFullInfo, getEntityKey, RepositoryImplementation } from "./remult3/RepositoryImplementation";
 import { ClassType } from "../classType";
 import { LiveQueryClient } from "./live-query/LiveQueryClient";
 import { SseSubscriptionClient } from "./live-query/SseSubscriptionClient";
@@ -24,11 +24,11 @@ export function isBackend() {
 }
 
 export interface EntityInfoProvider<InstanceType> {
-    getEntityInfo(remult: Remult): EntityInfo<InstanceType>;
+    $entity$key: string;
+    $entity$getInfo(remult: Remult): EntityInfo<InstanceType>;
 }
 
 export interface EntityInfo<instanceType> {
-    key: string;
     options: EntityOptions;
     fields: FieldOptions[];
     createInstance?(remult: Remult): instanceType;
@@ -51,11 +51,11 @@ export class Remult {
         let r = dpCache.get(entity);
         if (!r) {
             const z = entity as any as EntityInfoProvider<T>;
-            if (z.getEntityInfo) {
-                let info = z.getEntityInfo(this);
+            if (z.$entity$getInfo) {
+                let info = z.$entity$getInfo(this);
                 info.fields.forEach(f => decorateColumnSettings(f, this));
                 dpCache.set(entity, r = new RepositoryImplementation(
-                    new EntityFullInfo(info, this)
+                    new EntityFullInfo(info, getEntityKey(z), this)
                     , this, dataProvider));
             }
             else

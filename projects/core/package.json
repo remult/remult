@@ -37,6 +37,14 @@
       },
       "import": "./esm/remult-express.js"
     },
+    "./remult-zod": {
+      "require": "./remult-zod.js",
+      "node": {
+        "require": "./remult-zod.js",
+        "import": "./remult-zod.js"
+      },
+      "import": "./esm/remult-zod.js"
+    },
     "./server": {
       "require": "./server/index.js",
       "node": {

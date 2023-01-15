@@ -8,10 +8,10 @@ import { EntityOptions } from "./entity";
 import { FieldOptions } from "./column-interfaces";
 export declare function isBackend(): boolean;
 export interface EntityInfoProvider<InstanceType> {
-    getEntityInfo(remult: Remult): EntityInfo<InstanceType>;
+    $entity$key: string;
+    $entity$getInfo(remult: Remult): EntityInfo<InstanceType>;
 }
 export interface EntityInfo<instanceType> {
-    key: string;
     options: EntityOptions;
     fields: FieldOptions[];
     createInstance?(remult: Remult): instanceType;

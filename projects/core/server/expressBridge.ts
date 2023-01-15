@@ -2,7 +2,7 @@
 import { Action, actionInfo, ActionInterface, classBackendMethodsArray, jobWasQueuedResult, myServerAction, queuedJobInfoResponse, serverActionField } from '../src/server-action';
 import { DataProvider, ErrorInfo } from '../src/data-interfaces';
 import { DataApi, DataApiRequest, DataApiResponse, serializeError } from '../src/data-api';
-import { allEntities, AllowedForInstance, Remult, UserInfo } from '../src/context';
+import { allEntities, AllowedForInstance, EntityInfoProvider, Remult, UserInfo } from '../src/context';
 import { ClassType } from '../classType';
 import { Entity, Fields, getEntityKey, Repository } from '../src/remult3';
 import { IdEntity } from '../src/id-entity';
@@ -30,7 +30,7 @@ export interface RemultServerOptions<RequestType extends GenericRequest> {
   initApi?: (remult: Remult) => void | Promise<void>;
   logApiEndPoints?: boolean;
   defaultGetLimit?: number;
-  entities?: ClassType<any>[];
+  entities?: (ClassType<any> | EntityInfoProvider<any>)[];
   controllers?: ClassType<any>[];
   rootPath?: string;
 };
@@ -104,7 +104,7 @@ export function createRemultServerCore<RequestType extends GenericRequest = Gene
   }
 
   {
-    let allControllers: ClassType<any>[] = [];
+    let allControllers: any[] = [];
     if (!options.entities)
       options.entities = [...allEntities];
 

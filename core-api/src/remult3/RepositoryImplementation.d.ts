@@ -3,7 +3,7 @@ import { EntityOptions } from "../entity";
 import { LookupColumn } from '../column';
 import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef, MemberType } from "./remult3";
 import { ClassType } from "../../classType";
-import { Remult, Unobserve, EntityInfo } from "../context";
+import { Remult, Unobserve, EntityInfo, EntityInfoProvider } from "../context";
 import { entityEventListener, packedRowInfo } from "../__EntityValueProvider";
 import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions } from "../data-interfaces";
 import { RefSubscriber } from ".";
@@ -57,7 +57,7 @@ export declare type EntityOptionsFactory = (remult: Remult) => EntityOptions;
 export declare const entityInfo: unique symbol;
 export declare const entityInfo_key: unique symbol;
 export declare function getEntitySettings<T>(entity: ClassType<T>, throwError?: boolean): EntityOptionsFactory;
-export declare function getEntityKey(entity: ClassType<any>): string;
+export declare function getEntityKey(entity: (ClassType<any> | EntityInfoProvider<any>)): string;
 export declare const columnsOfType: Map<any, columnInfo[]>;
 export declare function createOldEntity<T>(entity: ClassType<T>, remult: Remult): EntityFullInfo<T>;
 declare abstract class rowHelperBase<T> {
@@ -201,7 +201,7 @@ export declare class EntityFullInfo<T> implements EntityMetadata<T> {
     key: string;
     entityType: any;
     options: EntityOptions<any>;
-    constructor(info: EntityInfo<T>, remult: Remult);
+    constructor(info: EntityInfo<T>, key: string, remult: Remult);
     get apiUpdateAllowed(): boolean;
     get apiReadAllowed(): boolean;
     get apiDeleteAllowed(): boolean;
