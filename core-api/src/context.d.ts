@@ -4,7 +4,19 @@ import { ClassType } from "../classType";
 import type { SubscriptionServer } from "./live-query/SubscriptionServer";
 import { ExternalHttpProvider } from "./buildRestDataProvider";
 import { SubscriptionClient } from "./live-query/SubscriptionClient";
+import { EntityOptions } from "./entity";
+import { FieldOptions } from "./column-interfaces";
 export declare function isBackend(): boolean;
+export interface EntityInfoProvider<InstanceType> {
+    getEntityInfo(remult: Remult): EntityInfo<InstanceType>;
+}
+export interface EntityInfo<instanceType> {
+    key: string;
+    options: EntityOptions;
+    fields: FieldOptions[];
+    createInstance?(remult: Remult): instanceType;
+    entityType?: any;
+}
 export declare class Remult {
     /**Return's a `Repository` of the specific entity type
      * @example
@@ -12,7 +24,7 @@ export declare class Remult {
      * @see [Repository](https://remult.dev/docs/ref_repository.html)
      *
      */
-    repo<T>(entity: ClassType<T>, dataProvider?: DataProvider): Repository<T>;
+    repo<T>(entity: (ClassType<T> | EntityInfoProvider<T>), dataProvider?: DataProvider): Repository<T>;
     user?: UserInfo;
     /** Checks if a user was authenticated */
     authenticated(): boolean;

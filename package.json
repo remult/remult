@@ -128,5 +128,8 @@
     "jsonwebtoken": false,
     "argon2": false,
     "password-hash": false
+  },
+  "dependencies": {
+    "zod": "^3.20.2"
   }
 }

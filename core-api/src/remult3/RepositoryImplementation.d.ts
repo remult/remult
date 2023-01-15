@@ -3,19 +3,18 @@ import { EntityOptions } from "../entity";
 import { LookupColumn } from '../column';
 import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef } from "./remult3";
 import { ClassType } from "../../classType";
-import { Remult, Unobserve } from "../context";
+import { Remult, Unobserve, EntityInfo } from "../context";
 import { entityEventListener } from "../__EntityValueProvider";
 import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions } from "../data-interfaces";
 import { RefSubscriber } from ".";
 export declare class RepositoryImplementation<entityType> implements Repository<entityType> {
-    private entity;
+    private _info;
     remult: Remult;
     private dataProvider;
     createAfterFilter(orderBy: EntityOrderBy<entityType>, lastRow: entityType): Promise<EntityFilter<entityType>>;
-    private _info;
     private __edp;
     private get edp();
-    constructor(entity: ClassType<entityType>, remult: Remult, dataProvider: DataProvider);
+    constructor(_info: EntityFullInfo<entityType>, remult: Remult, dataProvider: DataProvider);
     idCache: Map<any, any>;
     getCachedById(id: any): entityType;
     getCachedByIdAsync(id: any): Promise<entityType>;
@@ -193,14 +192,14 @@ export declare class columnDefsImpl implements FieldMetadata {
     isServerExpression: boolean;
     valueType: any;
 }
-declare class EntityFullInfo<T> implements EntityMetadata<T> {
-    columnsInfo: FieldOptions[];
-    entityInfo: EntityOptions;
+export declare class EntityFullInfo<T> implements EntityMetadata<T> {
+    info: EntityInfo<T>;
     private remult;
-    readonly entityType: ClassType<T>;
-    readonly key: string;
+    createInstance(): T;
+    key: string;
+    entityType: any;
     options: EntityOptions<any>;
-    constructor(columnsInfo: FieldOptions[], entityInfo: EntityOptions, remult: Remult, entityType: ClassType<T>, key: string);
+    constructor(info: EntityInfo<T>, remult: Remult);
     get apiUpdateAllowed(): boolean;
     get apiReadAllowed(): boolean;
     get apiDeleteAllowed(): boolean;

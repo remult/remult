@@ -4,7 +4,7 @@ import { EntityOptions } from "../entity";
 import { CompoundIdField, LookupColumn, makeTitle } from '../column';
 import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef, LiveQuery } from "./remult3";
 import { ClassType } from "../../classType";
-import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControllerSettings, Unobserve, EventSource } from "../context";
+import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControllerSettings, Unobserve, EventSource, EntityInfo } from "../context";
 import { AndFilter, rawFilterInfo, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
 import { Sort } from "../sort";
 import { v4 as uuid } from 'uuid';
@@ -80,14 +80,11 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         return r;
     }
 
-    private _info: EntityFullInfo<entityType>;
     private __edp: EntityDataProvider;
     private get edp() {
         return this.__edp ? this.__edp : this.__edp = this.dataProvider.getEntityDataProvider(this.metadata);
     }
-    constructor(private entity: ClassType<entityType>, public remult: Remult, private dataProvider: DataProvider) {
-        this._info = createOldEntity(entity, remult);
-    }
+    constructor(private _info: EntityFullInfo<entityType>, public remult: Remult, private dataProvider: DataProvider) { }
     idCache = new Map<any, any>();
     getCachedById(id: any): entityType {
         id = id + '';
@@ -201,7 +198,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
     private getRefForExistingRow(entity: Partial<OmitEB<entityType>>, id: string | number) {
         let ref = getEntityRef(entity, false);
         if (!ref) {
-            const instance = new this.entity(this.remult);
+            const instance = this._info.createInstance();
 
             for (const field of this.fieldsOf(entity)) {
                 instance[field.key] = entity[field.key];
@@ -304,7 +301,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 
         opt = {};
         if (!options.orderBy || Object.keys(options.orderBy).length === 0) {
-            options.orderBy = this._info.entityInfo.defaultOrderBy;
+            options.orderBy = this._info.options.defaultOrderBy;
         }
         opt.where = await this.translateWhereToFilter(options.where);
         opt.orderBy = Sort.translateOrderByToSort(this.metadata, options.orderBy);
@@ -317,7 +314,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
     private async mapRawDataToResult(r: any, loadFields: FieldMetadata[]) {
         if (!r)
             return undefined;
-        let x = new this.entity(this.remult);
+        let x = this._info.createInstance();
         let helper = new rowHelperImplementation(this._info, x, this, this.edp, this.remult, false);
         Object.defineProperty(x, entityMember, {//I've used define property to hide this member from console.lo g
             get: () => helper
@@ -399,7 +396,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
     }
 
     create(item?: Partial<OmitEB<entityType>>): entityType {
-        let r = new this.entity(this.remult);
+        let r = this._info.createInstance();
         if (item)
             for (const field of this.fieldsOf(item)) {
                 r[field.key] = item[field.key];
@@ -544,7 +541,14 @@ export function createOldEntity<T>(entity: ClassType<T>, remult: Remult) {
     }
 
 
-    return new EntityFullInfo<T>(prepareColumnInfo(r, remult), info, remult, entity, key);
+
+    return new EntityFullInfo<T>({
+        fields: prepareColumnInfo(r, remult),
+        key: key,
+        options: info,
+        createInstance: x => new entity(x),
+        entityType: entity
+    }, remult);
 }
 
 abstract class rowHelperBase<T>
@@ -819,10 +823,10 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
 
 
     constructor(private info: EntityFullInfo<T>, instance: T, public repository: RepositoryImplementation<T>, private edp: EntityDataProvider, remult: Remult, private _isNew: boolean) {
-        super(info.columnsInfo, instance, remult);
+        super(info.info.fields, instance, remult);
         this.metadata = info;
         if (_isNew) {
-            for (const col of info.columnsInfo) {
+            for (const col of info.info.fields) {
 
                 if (col.defaultValue && instance[col.key] === undefined) {
                     if (typeof col.defaultValue === "function") {
@@ -887,7 +891,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
                 [Symbol.iterator]: () => _items[Symbol.iterator](),
                 toArray: () => _items
             };
-            for (const c of this.info.columnsInfo) {
+            for (const c of this.info.info.fields) {
                 _items.push(r[c.key] = new FieldRefImplementation(c, this.info.fields[c.key], this.instance, this, this));
             }
 
@@ -911,8 +915,8 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
                 if (col.metadata.options.saving)
                     await col.metadata.options.saving(this.instance, col);
             }
-            if (this.info.entityInfo.saving) {
-                await this.info.entityInfo.saving(this.instance, () => doNotSave = true);
+            if (this.info.options.saving) {
+                await this.info.options.saving(this.instance, () => doNotSave = true);
             }
 
             this.__assertValidity();
@@ -964,8 +968,8 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
                 this.repository.remult.liveQueryPublisher.itemChanged(this.repository.metadata.key, [{ id: this.getId(), oldId: this.getOriginalId(), deleted: false }]);
 
 
-                if (this.info.entityInfo.saved)
-                    await this.info.entityInfo.saved(this.instance);
+                if (this.info.options.saved)
+                    await this.info.options.saved(this.instance);
 
                 this.saveOriginalData();
                 this._isNew = false;
@@ -993,15 +997,15 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
 
     async delete() {
         this.__clearErrorsAndReportChanged();
-        if (this.info.entityInfo.deleting)
-            await this.info.entityInfo.deleting(this.instance);
+        if (this.info.options.deleting)
+            await this.info.options.deleting(this.instance);
         this.__assertValidity();
 
         try {
             await this.edp.delete(this.id);
             this.repository.remult.liveQueryPublisher.itemChanged(this.repository.metadata.key, [{ id: this.getId(), oldId: this.getOriginalId(), deleted: true }]);
-            if (this.info.entityInfo.deleted)
-                await this.info.entityInfo.deleted(this.instance);
+            if (this.info.options.deleted)
+                await this.info.options.deleted(this.instance);
 
             if (this.repository.listeners)
                 for (const listener of this.repository.listeners.filter(x => x.deleted)) {
@@ -1043,7 +1047,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
 
     private async calcServerExpression() {
         if (isBackend())
-            for (const col of this.info.columnsInfo) {
+            for (const col of this.info.info.fields) {
                 if (col.serverExpression) {
                     this.instance[col.key] = await col.serverExpression(this.instance);
                 }
@@ -1071,8 +1075,8 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
             }
         }
 
-        if (this.info.entityInfo.validation)
-            await this.info.entityInfo.validation(this.instance, this);
+        if (this.info.options.validation)
+            await this.info.options.validation(this.instance, this);
         if (this.repository.listeners)
             for (const listener of this.repository.listeners.filter(x => x.validating)) {
                 await listener.validating(this.instance);
@@ -1381,11 +1385,20 @@ export class columnDefsImpl implements FieldMetadata {
     isServerExpression: boolean;
     valueType = this.settings.valueType;
 }
-class EntityFullInfo<T> implements EntityMetadata<T> {
+export class EntityFullInfo<T> implements EntityMetadata<T> {
+    createInstance() {
+        if (this.info.createInstance)
+            return this.info.createInstance(this.remult)
+        return {} as T;
+    }
+    key: string;
+    entityType: any;
+    options = this.info.options;
 
-    options = this.entityInfo;
-
-    constructor(public columnsInfo: FieldOptions[], public entityInfo: EntityOptions, private remult: Remult, public readonly entityType: ClassType<T>, public readonly key: string) {
+    constructor(
+        public info: EntityInfo<T>,
+        private remult: Remult,
+    ) {
         if (this.options.allowApiCrud !== undefined) {
             if (this.options.allowApiDelete === undefined)
                 this.options.allowApiDelete = this.options.allowApiCrud;
@@ -1396,12 +1409,14 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
             if (this.options.allowApiRead === undefined)
                 this.options.allowApiRead = this.options.allowApiCrud;
         }
+        this.key = info.key;
+        this.entityType = info.entityType;
         if (this.options.allowApiRead === undefined)
             this.options.allowApiRead = true;
-        if (!this.key)
-            this.key = entityType.name;
-        if (!entityInfo.dbName)
-            entityInfo.dbName = this.key;
+        if (!this.key && info.entityType?.name)
+            this.key = info.entityType.name;
+        if (!info.options.dbName)
+            info.options.dbName = this.key;
 
         let _items = [];
         let r = {
@@ -1411,16 +1426,16 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
 
         };
 
-        for (const x of columnsInfo) {
+        for (const x of info.fields) {
             _items.push(r[x.key] = new columnDefsImpl(x, this, remult));
         }
 
         this.fields = r as unknown as FieldsMetadata<T>;
 
-        this.caption = buildCaption(entityInfo.caption, this.key, remult);
+        this.caption = buildCaption(info.options.caption, this.key, remult);
 
-        if (entityInfo.id) {
-            let r = entityInfo.id(this.fields)
+        if (info.options.id) {
+            let r = info.options.id(this.fields)
             if (Array.isArray(r)) {
                 if (r.length > 1)
                     this.idMetadata.field = new CompoundIdField(...r);
@@ -1718,9 +1733,6 @@ export function getValueList<T>(type: ClassType<T> | FieldMetadata<T> | FieldRef
  * title='';
  */
 export function Field<entityType = any, valueType = any>(valueType: () => ClassType<valueType>, ...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
-
-
-
     return (target, key, c?) => {
         let factory = (remult: Remult) => {
             let r = buildOptions(options, remult);

@@ -24,7 +24,7 @@ export class ValueConverters {
       }
       else {
         console.error("ToJsonError", val);
-        throw new Error("Expected date but got val");
+        throw new Error("Expected date but got "+val);
       }
 
     },

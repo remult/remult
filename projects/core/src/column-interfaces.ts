@@ -73,6 +73,7 @@ export interface FieldOptions<entityType = any, valueType = any> {
     valueType?: any;
     /** The entity type to which this field belongs */
     target?: ClassType<entityType>;//confusing it'll sometime reference an entity/controller and sometype the datatype iteslf
+    //TODO - consider removing this and use an object key approach instead
     /** The key to be used for this field */
     key?: string;
 }

@@ -2,7 +2,7 @@ import { DataProvider } from "./data-interfaces";
 import { Action, actionInfo, serverActionField } from './server-action';
 import { RestDataProvider } from './data-providers/rest-data-provider';
 import { EntityMetadata, EntityRef, FindOptions, Repository } from "./remult3";
-import { RepositoryImplementation } from "./remult3/RepositoryImplementation";
+import { createOldEntity, decorateColumnSettings, EntityFullInfo, RepositoryImplementation } from "./remult3/RepositoryImplementation";
 import { ClassType } from "../classType";
 import { LiveQueryClient } from "./live-query/LiveQueryClient";
 import { SseSubscriptionClient } from "./live-query/SseSubscriptionClient";
@@ -11,6 +11,8 @@ import { RemultProxy } from "./remult-proxy";
 import type { LiveQueryStorage, LiveQueryPublisher, LiveQueryChangesListener, SubscriptionServer } from "./live-query/SubscriptionServer";
 import { buildRestDataProvider, ExternalHttpProvider, isExternalHttpProvider } from "./buildRestDataProvider";
 import { SubscriptionClient } from "./live-query/SubscriptionClient";
+import { EntityOptions } from "./entity";
+import { FieldOptions } from "./column-interfaces";
 
 
 
@@ -21,6 +23,17 @@ export function isBackend() {
     return actionInfo.runningOnServer;
 }
 
+export interface EntityInfoProvider<InstanceType> {
+    getEntityInfo(remult: Remult): EntityInfo<InstanceType>;
+}
+
+export interface EntityInfo<instanceType> {
+    key: string;
+    options: EntityOptions;
+    fields: FieldOptions[];
+    createInstance?(remult: Remult): instanceType;
+    entityType?: any
+}
 export class Remult {
     /**Return's a `Repository` of the specific entity type
      * @example
@@ -28,7 +41,7 @@ export class Remult {
      * @see [Repository](https://remult.dev/docs/ref_repository.html)
      * 
      */
-    public repo<T>(entity: ClassType<T>, dataProvider?: DataProvider): Repository<T> {
+    public repo<T>(entity: (ClassType<T> | EntityInfoProvider<T>), dataProvider?: DataProvider): Repository<T> {
         if (dataProvider === undefined)
             dataProvider = this.dataProvider;
         let dpCache = this.repCache.get(dataProvider);
@@ -37,8 +50,18 @@ export class Remult {
 
         let r = dpCache.get(entity);
         if (!r) {
-
-            dpCache.set(entity, r = new RepositoryImplementation(entity, this, dataProvider));
+            const z = entity as any as EntityInfoProvider<T>;
+            if (z.getEntityInfo) {
+                let info = z.getEntityInfo(this);
+                info.fields.forEach(f => decorateColumnSettings(f, this));
+                dpCache.set(entity, r = new RepositoryImplementation(
+                    new EntityFullInfo(info, this)
+                    , this, dataProvider));
+            }
+            else
+                dpCache.set(entity, r = new RepositoryImplementation(
+                    createOldEntity(entity as ClassType<T>, this)
+                    , this, dataProvider));
         }
         return r;
     }
@@ -99,7 +122,7 @@ export class Remult {
         } else return this.isAllowed(allowed as Allowed);
     }
     /* @internal */
-    repCache = new Map<DataProvider, Map<ClassType<any>, Repository<any>>>();
+    repCache = new Map<DataProvider, Map<any, Repository<any>>>();
     /** Creates a new instance of the `remult` object.
      * 
      * Can receive either an HttpProvider or a DataProvider as a parameter - which will be used to fetch data from.
