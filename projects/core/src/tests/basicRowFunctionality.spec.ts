@@ -1235,7 +1235,7 @@ describe("data api", () => {
     };
     Entity<typeof type.prototype>('', {
 
-      allowApiDelete: (c, t) => {
+      allowApiDelete: (t, c) => {
         return t.id == 1;
       }
     })(type);
@@ -1265,7 +1265,7 @@ describe("data api", () => {
     };
     Entity<typeof type.prototype>('', {
 
-      allowApiUpdate: (c, t) => {
+      allowApiUpdate: (t, c) => {
         return t.id == 1;
       }
     })(type);
@@ -1300,7 +1300,7 @@ describe("data api", () => {
     };
     Entity<typeof type.prototype>('', {
 
-      allowApiInsert: (c, t) => {
+      allowApiInsert: (t, c) => {
         return t.categoryName == 'ok';
       }
     })(type);

@@ -72,11 +72,11 @@ export interface UserInfo {
     name?: string;
     roles?: string[];
 }
-export declare type Allowed = boolean | string | string[] | ((c: Remult) => boolean);
-export declare type AllowedForInstance<T> = boolean | string | string[] | ((c: Remult, entity?: T) => boolean);
+export declare type Allowed = boolean | string | string[] | ((c?: Remult) => boolean);
+export declare type AllowedForInstance<T> = boolean | string | string[] | ((entity?: T, c?: Remult) => boolean);
 export declare class Allow {
     static everyone: () => boolean;
-    static authenticated: (remult: Remult) => boolean;
+    static authenticated: (...args: any[]) => any;
 }
 export declare const queryConfig: {
     defaultPageSize: number;
