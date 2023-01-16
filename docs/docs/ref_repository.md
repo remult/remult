@@ -1,7 +1,5 @@
 # Repository
 used to perform CRUD operations on an `entityType`
-## metadata
-The metadata for the `entity`
 ## find
 returns a result array based on the provided options
 
@@ -29,6 +27,7 @@ Arguments:
       })
       ```
       
+   * **load**
    * **where** - filters the data
       
       
@@ -57,7 +56,6 @@ Arguments:
       await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
       ```
       
-   * **load**
 ## findFirst
 returns the first item that matchers the `where` condition
    
@@ -82,6 +80,7 @@ Arguments:
    *see*
    [EntityFilter](http://remult.dev/docs/entityFilter.html)
 * **options**
+   * **load**
    * **where** - filters the data
       
       
@@ -112,7 +111,6 @@ Arguments:
       
    * **useCache** - determines if to cache the result, and return the results from cache.
    * **createIfNotFound** - If set to true and an item is not found, it's created and returned
-   * **load**
 ## findId
 returns the items that matches the idm the result is cached unless specified differently in the `options` parameter
 
@@ -135,6 +133,7 @@ An alternative form of fetching data from the API server, which is intended for 
 
 Arguments:
 * **options**
+   * **load**
    * **where** - filters the data
       
       
@@ -165,7 +164,6 @@ Arguments:
       
    * **pageSize** - The number of items to return in each step
    * **progress** - A callback method to indicate the progress of the iteration
-   * **load**
 ## count
 Returns a count of the items matching the criteria.
    
@@ -251,6 +249,13 @@ returns an `entityRef` for an item returned by `create`, `find` etc...
 
 Arguments:
 * **item**
+## metadata
+The metadata for the `entity`
+   
+   
+   *see*
+   [EntityMetadata](https://remult.dev/docs/ref_entitymetadata.html)
+   
 ## addEventListener
 * **addEventListener**
 

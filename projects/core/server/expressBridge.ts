@@ -20,11 +20,12 @@ export interface RemultServerOptions<RequestType extends GenericRequest> {
   queueStorage?: QueueStorage;
   liveQueryStorage?: LiveQueryStorage,
   subscriptionServer?: SubscriptionServer
-  initRequest?: (remult: Remult, origReq: RequestType, options: InitRequestOptions) => Promise<void>;
+  initRequest?: (origReq: RequestType, options: InitRequestOptions) => Promise<void>;
   requestSerializer?: {
     toJson: (request: RequestType) => any,
     fromJson: (request: any) => RequestType
   };
+
 
   getUser?: (request: RequestType) => Promise<UserInfo>;
   initApi?: (remult: Remult) => void | Promise<void>;
@@ -35,7 +36,8 @@ export interface RemultServerOptions<RequestType extends GenericRequest> {
   rootPath?: string;
 };
 export interface InitRequestOptions {
-  liveQueryStorage: LiveQueryStorage
+  liveQueryStorage: LiveQueryStorage,
+  readonly remult: Remult
 }
 
 export function createRemultServerCore<RequestType extends GenericRequest = GenericRequest>(
@@ -314,7 +316,9 @@ export class RemultServerImplementation implements RemultServer {
               remult.user = (user);
           }
           if (this.options.initRequest) {
-            await this.options.initRequest(remult, req, {
+
+            await this.options.initRequest(req, {
+              remult,
               get liveQueryStorage() {
                 return remult.liveQueryStorage
               },
@@ -322,6 +326,7 @@ export class RemultServerImplementation implements RemultServer {
                 remult.liveQueryStorage = value;
               }
             });
+
           }
 
 

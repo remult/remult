@@ -14,7 +14,7 @@ export interface RemultServerOptions<RequestType extends GenericRequest> {
     queueStorage?: QueueStorage;
     liveQueryStorage?: LiveQueryStorage;
     subscriptionServer?: SubscriptionServer;
-    initRequest?: (remult: Remult, origReq: RequestType, options: InitRequestOptions) => Promise<void>;
+    initRequest?: (origReq: RequestType, options: InitRequestOptions) => Promise<void>;
     requestSerializer?: {
         toJson: (request: RequestType) => any;
         fromJson: (request: any) => RequestType;
@@ -29,6 +29,7 @@ export interface RemultServerOptions<RequestType extends GenericRequest> {
 }
 export interface InitRequestOptions {
     liveQueryStorage: LiveQueryStorage;
+    readonly remult: Remult;
 }
 export declare function createRemultServerCore<RequestType extends GenericRequest = GenericRequest>(options?: RemultServerOptions<RequestType>): RemultServer;
 export declare type GenericRequestHandler = (req: GenericRequest, res: GenericResponse, next: VoidFunction) => void;

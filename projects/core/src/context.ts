@@ -26,7 +26,8 @@ export class Remult {
      * @example
      * const taskRepo = remult.repo(Task);
      * @see [Repository](https://remult.dev/docs/ref_repository.html)
-     * 
+     * @param entity - the entity to use
+     * @param dataProvider - an optional alternative data provider to use. Useful for writing to offline storage or an alternative data provider
      */
     public repo<T>(entity: ClassType<T>, dataProvider?: DataProvider): Repository<T> {
         if (dataProvider === undefined)
@@ -42,10 +43,9 @@ export class Remult {
         }
         return r;
     }
-
+    /** Returns the current user's info */
     user?: UserInfo;
 
-    /*  delete me */
     /** Checks if a user was authenticated */
     authenticated() {
         return this.user?.id !== undefined;
@@ -98,6 +98,8 @@ export class Remult {
             return allowed(instance, this)
         } else return this.isAllowed(allowed as Allowed);
     }
+    /** The current data provider */
+    dataProvider: DataProvider = new RestDataProvider(() => this.apiClient);
     /* @internal */
     repCache = new Map<DataProvider, Map<ClassType<any>, Repository<any>>>();
     /** Creates a new instance of the `remult` object.
@@ -141,6 +143,13 @@ export class Remult {
     };
 
     //@ts-ignore // type error of typescript regarding args that doesn't appear in my normal development
+    /** Used to call a `backendMethod` using a specific `remult` object
+     * @example
+     * await remult.call(TasksController.setAll, undefined, true);
+     * @param backendMethod - the backend method to call
+     * @param classInstance - the class instance of the backend method, for static backend methods use undefined
+     * @param args - the arguments to send to the backend method
+    */
     call<T extends ((...args: any[]) => Promise<any>)>(backendMethod: T, classInstance?: any, ...args: GetArguments<T>): ReturnType<T> {
         const z = (backendMethod[serverActionField]) as Action<any, any>;
         if (!z.doWork)
@@ -148,8 +157,6 @@ export class Remult {
         //@ts-ignore
         return z.doWork(args, classInstance, this.apiClient.url, buildRestDataProvider(this.apiClient.httpClient));
     }
-    /** The current data provider */
-    dataProvider: DataProvider = new RestDataProvider(() => this.apiClient);
 
     /* @internal*/
     liveQuerySubscriber = new LiveQueryClient(() => this.apiClient);
@@ -161,7 +168,9 @@ export class Remult {
     }
     /** A helper callback that is called whenever an entity is created. */
     static entityRefInit?: (ref: EntityRef<any>, row: any) => void;
+    /** context information that can be used to store custom information that will be disposed as part of the `remult` object */
     readonly context: RemultContext = {} as any;
+    /** The api client that will be used by `remult` to perform calls to the `api` */
     apiClient: ApiClient = {
         url: '/api',
         subscriptionClient: new SseSubscriptionClient()
@@ -178,7 +187,16 @@ export interface RemultContext {
 
 }
 export interface ApiClient {
+    /** The http client to use when making api calls.
+     * @example
+     * remult.apiClient.httpClient = axios;
+     * @example
+     * remult.apiClient.httpClient = httpClient;//angular http client
+     * @example
+     * remult.apiClient.httpClient = fetch; //this is the default
+     */
     httpClient?: ExternalHttpProvider | typeof fetch;
+    /** The base url to for making api calls */
     url?: string;
     subscriptionClient?: SubscriptionClient
     wrapMessageHandling?: (x: VoidFunction) => void

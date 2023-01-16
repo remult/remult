@@ -95,6 +95,7 @@ module.exports = {
 
           children: [
             'custom-filter',
+            'custom-options',
             'working-without-decorators',
             'rest-api',
             'techniques-regarding-one-to-many-relations.md',
@@ -115,6 +116,8 @@ module.exports = {
             'ref_remult',
             'ref_repository',
             'entityFilter',
+            'ref_entitymetadata',
+            'ref_fieldmetadata',
             'allowed',
             'ref_backendmethod',
             'ref_queryresult',
