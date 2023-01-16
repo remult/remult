@@ -14,7 +14,7 @@ export interface RemultServerOptions<RequestType extends GenericRequest> {
     queueStorage?: QueueStorage;
     liveQueryStorage?: LiveQueryStorage;
     subscriptionServer?: SubscriptionServer;
-    initRequest?: (origReq: RequestType, options: InitRequestOptions) => Promise<void>;
+    initRequest?: (request: RequestType, options: InitRequestOptions) => Promise<void>;
     requestSerializer?: {
         toJson: (request: RequestType) => any;
         fromJson: (request: any) => RequestType;
