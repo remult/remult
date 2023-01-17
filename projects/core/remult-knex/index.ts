@@ -53,7 +53,7 @@ export class KnexDataProvider implements DataProvider {
         const repo = getRepository(entity);
         var b = new FilterConsumerBridgeToKnexRequest(await dbNamesOf(repo.metadata))
         b._addWhere = false;
-        await(await((repo as RepositoryImplementation<entityType>).translateWhereToFilter(condition))).__applyToConsumer(b)
+        await (await ((repo as RepositoryImplementation<entityType>).translateWhereToFilter(condition))).__applyToConsumer(b)
         let r = await b.resolveWhere();
         return knex => r.forEach(y => y(knex))
     }
@@ -334,7 +334,7 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
 
 export class KnexSchemaBuilder {
     async verifyStructureOfAllEntities(remult: Remult) {
-        console.info("start verify structure");
+        console.time("Knex Auto create tables and columns")
         for (const entity of allEntities) {
             let metadata = remult.repo(entity).metadata;
 
@@ -347,9 +347,10 @@ export class KnexSchemaBuilder {
                 }
             }
             catch (err) {
-                console.log("failed verify structure of " + await metadata.getDbName() + " ", err);
+                console.error("failed verify structure of " + await metadata.getDbName() + " ", err);
             }
         }
+        console.timeEnd("Knex Auto create tables and columns")
     }
     async createIfNotExist(entity: EntityMetadata): Promise<void> {
         const e: EntityDbNamesBase = await dbNamesOf(entity);
@@ -393,19 +394,17 @@ export class KnexSchemaBuilder {
         let colName = e.$dbNameOf(col);
 
         if (!await this.knex.schema.hasColumn(e.$entityName, colName)) {
-            await this.knex.schema.alterTable(e.$entityName, b => {
+            await logSql(this.knex.schema.alterTable(e.$entityName, b => {
                 buildColumn(col, colName, b);
-            });
+            }));
         }
-
-
-
     }
     async verifyAllColumns<T extends EntityMetadata>(entity: T) {
         let e = await dbNamesOf(entity);
         try {
-            for (const col of entity.fields) {
-                if (isDbReadonly(col, e)) {
+            for (const col of entity.fields.toArray()) {
+
+                if (!isDbReadonly(col, e)) {
                     await this.addColumnIfNotExist(entity, () => col);
                 }
             }
@@ -476,7 +475,7 @@ function logSql<T extends {
         sql: string
     };
 }>(who: T) {
-    //console.log(who.toSQL().sql);
+    console.info(who.toSQL());
     return who;
 }
 

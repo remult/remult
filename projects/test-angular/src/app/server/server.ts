@@ -28,7 +28,6 @@ import { AsyncLocalStorage } from 'async_hooks';
 
 import { helper, ProductsComponent, Task } from '../products-test/products.component';
 
-
 const getDatabase = async () => {
 
     const result = await createKnexDataProvider({
@@ -77,8 +76,8 @@ serverInit().then(async (dataSource) => {
         // },
         entities: [Task],
         controllers: [AppComponent, ProductsComponent],
-        //     dataProvider: async () => await createPostgresConnection(),
-        queueStorage: await preparePostgresQueueStorage(dataSource),
+        dataProvider:getDatabase(),// async () => await createPostgresConnection(),
+        //queueStorage: await preparePostgresQueueStorage(dataSource),
         logApiEndPoints: true,
 
 
@@ -120,3 +119,5 @@ serverInit().then(async (dataSource) => {
     let port = process.env.PORT || 3001;
     app.listen(port);
 });
+
+

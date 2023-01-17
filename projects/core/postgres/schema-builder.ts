@@ -46,7 +46,7 @@ export async function verifyStructureOfAllEntities(db: SqlDatabase, remult: Remu
 
 export class PostgresSchemaBuilder {
     async verifyStructureOfAllEntities(remult: Remult) {
-        console.log("start verify structure");//keep me
+        console.time("Postgres Auto create tables and columns")
         for (const entityClass of allEntities) {
             let entity = remult.repo(entityClass).metadata;
             let e: EntityDbNamesBase = await dbNamesOf(entity);
@@ -59,9 +59,10 @@ export class PostgresSchemaBuilder {
                 }
             }
             catch (err) {
-                console.log("failed verify structure of " + e.$entityName + " ", err);
+                console.error("failed verify structure of " + e.$entityName + " ", err);
             }
         }
+        console.timeEnd("Postgres Auto create tables and columns")
     }
     async createIfNotExist(entity: EntityMetadata): Promise<void> {
         var c = this.pool.createCommand();
@@ -88,7 +89,7 @@ export class PostgresSchemaBuilder {
                 }
 
                 let sql = 'create table ' + e.$entityName + ' (' + result + '\r\n)';
-                //console.log(sql);
+                console.info(sql);
                 await this.pool.execute(sql);
             }
         });
@@ -109,7 +110,7 @@ export class PostgresSchemaBuilder {
         WHERE table_name=${cmd.addParameterAndReturnSqlToken((e.$entityName).toLocaleLowerCase())} and column_name=${cmd.addParameterAndReturnSqlToken((colName).toLocaleLowerCase())}` + this.additionalWhere
                 )).rows.length == 0) {
                 let sql = `alter table ${e.$entityName} add column ${postgresColumnSyntax(c(entity), colName)}`;
-                //console.log(sql);
+                console.info(sql);
                 await this.pool.execute(sql);
             }
         }
@@ -130,7 +131,7 @@ export class PostgresSchemaBuilder {
                 if (!isDbReadonly(col, e))
                     if (!cols.includes(e.$dbNameOf(col).toLocaleLowerCase())) {
                         let sql = `alter table ${e.$entityName} add column ${postgresColumnSyntax(col, e.$dbNameOf(col))}`;
-                        //console.log(sql);
+                        console.info(sql);
                         await this.pool.execute(sql);
                     }
             }
