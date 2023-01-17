@@ -36,9 +36,8 @@ export class KnexDataProvider implements DataProvider {
             await t.rollback();
             throw err;
         }
-
-
     }
+
     static rawFilter(build: CustomKnexFilterBuilderFunction): EntityFilter<any> {
         return {
             [customDatabaseFilterToken]: {
@@ -333,8 +332,11 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
 
 
 export class KnexSchemaBuilder {
+    //@internal
+    static logToConsole = true;
     async verifyStructureOfAllEntities(remult: Remult) {
-        console.time("Knex Auto create tables and columns")
+        if (KnexSchemaBuilder.logToConsole)
+            console.time("Knex Auto create tables and columns")
         for (const entity of allEntities) {
             let metadata = remult.repo(entity).metadata;
 
@@ -350,7 +352,8 @@ export class KnexSchemaBuilder {
                 console.error("failed verify structure of " + await metadata.getDbName() + " ", err);
             }
         }
-        console.timeEnd("Knex Auto create tables and columns")
+        if (KnexSchemaBuilder.logToConsole)
+            console.timeEnd("Knex Auto create tables and columns")
     }
     async createIfNotExist(entity: EntityMetadata): Promise<void> {
         const e: EntityDbNamesBase = await dbNamesOf(entity);
@@ -475,7 +478,8 @@ function logSql<T extends {
         sql: string
     };
 }>(who: T) {
-    console.info(who.toSQL());
+    if (KnexSchemaBuilder.logToConsole)
+        console.info(who.toSQL());
     return who;
 }
 

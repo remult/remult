@@ -6,6 +6,8 @@ import { config } from 'dotenv';
 import { createPostgresConnection, PostgresDataProvider, PostgresSchemaBuilder } from "../../postgres";
 import { ClassType } from "../../classType";
 import { addDatabaseToTest, dbTestWhatSignature, itWithFocus, testAll } from "../shared-tests/db-tests-setup";
+KnexSchemaBuilder.logToConsole = false;
+PostgresSchemaBuilder.logToConsole = false;
 config();
 function testKnexSqlImpl(knex: Knex.Knex, name: string) {
     return (key: string, what: dbTestWhatSignature, focus = false) => {
