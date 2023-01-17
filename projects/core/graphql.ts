@@ -34,20 +34,20 @@ export function remultGraphql(api: RemultServer) {
                             }
                     }
                     fields += "\n\t" + f.key + ":" + type;
-                    for (const operator of ["", ".ne"]) {
+                    for (const operator of ["", "_ne"]) {
                         filterFields += "\n\t" + f.key + operator + ":" + type;
                     }
                     if (f.valueType === String || f.valueType === Number)
-                        for (const operator of [".gt", ".gte", ".lt", ".lte"]) {
+                        for (const operator of ["_gt", "_gte", "_lt", "_lte"]) {
                             filterFields += "\n\t" + f.key + operator + ":" + type;
                         }
                     if (f.valueType === String)
-                        for (const operator of [".st", ".contains"]) {
+                        for (const operator of ["_st", "_contains"]) {
                             filterFields += "\n\t" + f.key + operator + ":" + type;
                         }
                     if (f.allowNull)
-                        filterFields += "\n\t" + f.key + ".null:Boolean";
-                    filterFields += "\n\t" + f.key + ".in:[" + type + "]";
+                        filterFields += "\n\t" + f.key + "_null:Boolean";
+                    filterFields += "\n\t" + f.key + "_in:[" + type + "]";
                 }
             }
             types += "type " + key + "{" + fields + "\n}\n";

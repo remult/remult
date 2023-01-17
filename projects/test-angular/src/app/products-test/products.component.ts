@@ -20,22 +20,7 @@ import * as ably from 'ably';
 export class ProductsComponent implements OnInit {
   constructor(private remult: Remult, private zone: NgZone) {
     remult.liveQuerySubscriber.wrapMessageHandling = x => zone.run(() => x());
-    if (false) {
-      const p = new AblyLiveQueryProvider(new ably.Realtime.Promise(
-        {
-          async authCallback(data, callback) {
-            try {
-              callback(null, await ProductsComponent.getAblyToken())
-            }
-            catch (error: any) {
-              callback(error, null);
-            }
-          },
-        }
 
-      ))
-      remult.liveQuerySubscriber = new LiveQueryClient(p);
-    }
   }
 
 
@@ -57,8 +42,8 @@ export class ProductsComponent implements OnInit {
   }
   tasks: Observable<Task[]> = new Observable((x) => {
     let tasks: Task[] = [];
-    return this.remult.repo(Task).query().subscribe(newResult => {
-      tasks = newResult(tasks);
+    return this.remult.repo(Task).liveQuery().subscribe(newResult => {
+      tasks = newResult.items;
       x.next(tasks);
     })
   });
@@ -100,8 +85,8 @@ export class Task extends IdEntity {
 
 
 import { Observable } from 'rxjs';
-import { AblyLiveQueryProvider } from '../../../../core/live-query/ably';
-import { LiveQueryClient } from '../../../../core/live-query';
+
+
 
 
 
