@@ -1569,6 +1569,21 @@ export class Fields {
     static number<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]) {
         return Field(() => Number, ...options)
     }
+    static createdAt<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]) {
+        return Field(() => Date, {
+            saving: (_, ref) => {
+                if (getEntityRef(_).isNew())
+                    ref.value = new Date()
+            }
+        }, ...options);
+    }
+    static updatedAt<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]) {
+        return Field(() => Date, {
+            saving: (_, ref) => {
+                ref.value = new Date()
+            }
+        }, ...options);
+    }
 
     static uuid<entityType = any>(...options: (FieldOptions<entityType, string> | ((options: FieldOptions<entityType, string>, remult: Remult) => void))[]) {
         return Field(() => String, {

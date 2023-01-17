@@ -84,8 +84,8 @@ describe("test server expression value", () => {
         const repo = new Remult(new InMemoryDataProvider()).repo(e);
         let item = await repo.insert({ num: 1 });
         expect(item.id.length).toBe(36, item.id);
-         item = await repo.insert({id:'123',num:2})
-         expect(item.id).toBe('123');
+        item = await repo.insert({ id: '123', num: 2 })
+        expect(item.id).toBe('123');
 
     })
     it("test cuid", async () => {
@@ -100,9 +100,31 @@ describe("test server expression value", () => {
         const repo = new Remult(new InMemoryDataProvider()).repo(e);
         let item = await repo.insert({ num: 1 });
         expect(item.id.length).toBe(25, item.id);
-         item = await repo.insert({id:'123',num:2})
-         expect(item.id).toBe('123');
-
+        item = await repo.insert({ id: '123', num: 2 })
+        expect(item.id).toBe('123');
+    })
+    it("test createdAt", async () => {
+        const e = class {
+            id = 1
+            createdAt!: Date
+            updatedAt!: Date
+            val=0
+        }
+        describeClass(e, Entity("x"), {
+            id: Fields.autoIncrement(),
+            createdAt: Fields.createdAt(),
+            updatedAt: Fields.updatedAt(),
+            val:Fields.number()
+        })
+        const repo = new Remult(new InMemoryDataProvider()).repo(e);
+        let item = await repo.insert({});
+        expect(item.createdAt.toDateString()).toBe(new Date().toDateString());
+        expect(item.createdAt.valueOf()).toBeCloseTo(item.updatedAt.valueOf());
+        let c = item.createdAt;
+        item = await repo.save({...item,val:3});
+        expect(item.val).toBe(3);
+        expect(item.createdAt).toEqual(c);
+        expect(item.createdAt).not.toEqual(item.updatedAt);
     })
 
     it("test recursive db names", async () => {
