@@ -306,13 +306,13 @@ export class FilterSerializer implements FilterConsumer {
         }));
     }
     isNull(col: FieldMetadata): void {
-        this.add(col.key + "_null", true);
+        this.add(col.key + ".null", true);
     }
     isNotNull(col: FieldMetadata): void {
-        this.add(col.key + "_null", false);
+        this.add(col.key + ".null", false);
     }
     isIn(col: FieldMetadata, val: any[]): void {
-        this.add(col.key + "_in", val.map(x => col.valueConverter.toJson(x)));
+        this.add(col.key + ".in", val.map(x => col.valueConverter.toJson(x)));
     }
 
     public isEqualTo(col: FieldMetadata, val: any): void {
@@ -320,26 +320,26 @@ export class FilterSerializer implements FilterConsumer {
     }
 
     public isDifferentFrom(col: FieldMetadata, val: any): void {
-        this.add(col.key + '_ne', col.valueConverter.toJson(val));
+        this.add(col.key + '.ne', col.valueConverter.toJson(val));
     }
 
     public isGreaterOrEqualTo(col: FieldMetadata, val: any): void {
-        this.add(col.key + '_gte', col.valueConverter.toJson(val));
+        this.add(col.key + '.gte', col.valueConverter.toJson(val));
     }
 
     public isGreaterThan(col: FieldMetadata, val: any): void {
-        this.add(col.key + '_gt', col.valueConverter.toJson(val));
+        this.add(col.key + '.gt', col.valueConverter.toJson(val));
     }
 
     public isLessOrEqualTo(col: FieldMetadata, val: any): void {
-        this.add(col.key + '_lte', col.valueConverter.toJson(val));
+        this.add(col.key + '.lte', col.valueConverter.toJson(val));
     }
 
     public isLessThan(col: FieldMetadata, val: any): void {
-        this.add(col.key + '_lt', col.valueConverter.toJson(val));
+        this.add(col.key + '.lt', col.valueConverter.toJson(val));
     }
     public containsCaseInsensitive(col: FieldMetadata, val: any): void {
-        this.add(col.key + "_contains", val);
+        this.add(col.key + ".contains", val);
     }
 
 }
@@ -401,13 +401,13 @@ export function buildFilterFromRequestParameters(entity: EntityMetadata, filterI
         }
         let c = new filterHelper(col);
         addFilter('', val => val);
-        addFilter('_gt', val => ({ "$gt": val }));
-        addFilter('_gte', val => ({ "$gte": val }));
-        addFilter('_lt', val => ({ "$lt": val }));
-        addFilter('_lte', val => ({ "$lte": val }));
-        addFilter('_ne', val => ({ "$ne": val }));
-        addFilter('_in', val => val, true);
-        var nullFilter = filterInfo.get(col.key + "_null");
+        addFilter('.gt', val => ({ "$gt": val }));
+        addFilter('.gte', val => ({ "$gte": val }));
+        addFilter('.lt', val => ({ "$lt": val }));
+        addFilter('.lte', val => ({ "$lte": val }));
+        addFilter('.ne', val => ({ "$ne": val }));
+        addFilter('.in', val => val, true);
+        var nullFilter = filterInfo.get(col.key + ".null");
         if (nullFilter) {
             nullFilter = nullFilter.toString().trim().toLowerCase();
             switch (nullFilter) {
@@ -422,7 +422,7 @@ export function buildFilterFromRequestParameters(entity: EntityMetadata, filterI
             }
         }
 
-        addFilter('_contains', val => ({ $contains: val })
+        addFilter('.contains', val => ({ $contains: val })
             , false, true);
 
     });

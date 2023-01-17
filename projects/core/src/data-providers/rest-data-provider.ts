@@ -270,7 +270,7 @@ export function addFilterToUrlAndReturnTrueIfSuccessful(filter: any, url: UrlBui
     if (Object.prototype.hasOwnProperty.call(filter, key)) {
       const element = filter[key];
       if (Array.isArray(element)) {
-        if (key.endsWith("_in"))
+        if (key.endsWith(".in"))
           url.add(key, JSON.stringify(element));
 
         else

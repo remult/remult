@@ -466,7 +466,7 @@ testAllDbs("get array works with filter in body", async ({ createData, remult })
             return undefined;
         }
     }, {
-        status_in: '[1, 2]'
+        "status.in": '[1, 2]'
     });
     d.test();
 }, false);

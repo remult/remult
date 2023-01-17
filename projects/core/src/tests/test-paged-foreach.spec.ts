@@ -318,10 +318,10 @@ describe("test paged foreach ", () => {
                 OR: [
                     {
                         a: 'a',
-                        b_gt: 'b'
+                        "b.gt": 'b'
                     },
                     {
-                        a_gt: 'a'
+                        "a.gt": 'a'
                     }
                 ]
             });
@@ -332,7 +332,7 @@ describe("test paged foreach ", () => {
             },
             {
                 a: 'a',
-                b_gt: 'b'
+                "b.gt": 'b'
             });
         await test(
             {
@@ -343,7 +343,7 @@ describe("test paged foreach ", () => {
             {
                 OR: [
                     { a: 'a' },
-                    { b_gt: 'b' }]
+                    { "b.gt": 'b' }]
             });
 
 

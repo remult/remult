@@ -110,7 +110,7 @@ describe("test tasks", () => {
         }
         await api.getArray(tr, {
             get: x => {
-                if (x == 'completed_ne')
+                if (x == 'completed.ne')
                     return 'true';
                 return undefined;
             }

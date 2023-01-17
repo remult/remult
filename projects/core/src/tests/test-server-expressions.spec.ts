@@ -108,20 +108,24 @@ describe("test server expression value", () => {
             id = 1
             createdAt!: Date
             updatedAt!: Date
-            val=0
+            val = 0
         }
         describeClass(e, Entity("x"), {
             id: Fields.autoIncrement(),
             createdAt: Fields.createdAt(),
             updatedAt: Fields.updatedAt(),
-            val:Fields.number()
+            val: Fields.number()
         })
         const repo = new Remult(new InMemoryDataProvider()).repo(e);
         let item = await repo.insert({});
         expect(item.createdAt.toDateString()).toBe(new Date().toDateString());
         expect(item.createdAt.valueOf()).toBeCloseTo(item.updatedAt.valueOf());
         let c = item.createdAt;
-        item = await repo.save({...item,val:3});
+        await new Promise(res =>
+            setTimeout(() => {
+                res({})
+            }, 10))
+        item = await repo.save({ ...item, val: 3 });
         expect(item.val).toBe(3);
         expect(item.createdAt).toEqual(c);
         expect(item.createdAt).not.toEqual(item.updatedAt);

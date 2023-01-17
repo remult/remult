@@ -469,7 +469,7 @@ describe("data api", () => {
     };
     await api.getArray(t, {
       get: x => {
-        if (x == "id_ne")
+        if (x == "id.ne")
           return ["1", "3"];
         return undefined;
       }
@@ -492,7 +492,7 @@ describe("data api", () => {
     };
     await api.getArray(t, {
       get: x => {
-        if (x == "status_ne")
+        if (x == "status.ne")
           return ["0", "2"];
         return undefined;
       }
@@ -517,7 +517,7 @@ describe("data api", () => {
     };
     await api.getArray(t, {
       get: x => {
-        if (x == "status_in")
+        if (x == "status.in")
           return '[1, 2]';
         return undefined;
       }
@@ -545,7 +545,7 @@ describe("data api", () => {
         return undefined;
       }
     }, {
-      status_in: [1, 2]
+      "status.in": [1, 2]
     });
     d.test();
   });
@@ -1020,7 +1020,7 @@ describe("data api", () => {
     };
     await api.getArray(t, {
       get: x => {
-        if (x == c.create()._.fields.categoryName.metadata.key + '_contains')
+        if (x == c.create()._.fields.categoryName.metadata.key + '.contains')
           return "a";
         return undefined;
       }
@@ -1379,22 +1379,22 @@ describe("rest call use url get or fallback to post", () => {
   });
   it("should get 1", () => {
     let url = new UrlBuilder('');
-    expect(addFilterToUrlAndReturnTrueIfSuccessful({ a_ne: 1 }, url)).toBe(true);
-    expect(url.url).toBe("?a_ne=1");
+    expect(addFilterToUrlAndReturnTrueIfSuccessful({ "a.ne": 1 }, url)).toBe(true);
+    expect(url.url).toBe("?a.ne=1");
   });
   it("should get 2", () => {
     let url = new UrlBuilder('');
-    expect(addFilterToUrlAndReturnTrueIfSuccessful({ a_ne: [1, 2] }, url)).toBe(true);
-    expect(url.url).toBe("?a_ne=1&a_ne=2");
+    expect(addFilterToUrlAndReturnTrueIfSuccessful({ "a.ne": [1, 2] }, url)).toBe(true);
+    expect(url.url).toBe("?a.ne=1&a.ne=2");
   });
   it("should get 3", () => {
     let url = new UrlBuilder('');
-    expect(addFilterToUrlAndReturnTrueIfSuccessful({ a_in: [1, 2] }, url)).toBe(true);
-    expect(url.url).toBe("?a_in=%5B1%2C2%5D");
+    expect(addFilterToUrlAndReturnTrueIfSuccessful({ "a.in": [1, 2] }, url)).toBe(true);
+    expect(url.url).toBe("?a.in=%5B1%2C2%5D");
   });
   it("should post ", () => {
     let url = new UrlBuilder('');
-    expect(addFilterToUrlAndReturnTrueIfSuccessful({ a_in: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] }, url)).toBe(false);
+    expect(addFilterToUrlAndReturnTrueIfSuccessful({ "a.in": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] }, url)).toBe(false);
   });
   it("should post ", () => {
     let url = new UrlBuilder('');
