@@ -23,8 +23,7 @@ export class ValueConverters {
         return val.toISOString();
       }
       else {
-        console.error("ToJsonError", val);
-        throw new Error("Expected date but got val");
+        throw new Error("Expected date but got " + val);
       }
 
     },
@@ -38,7 +37,15 @@ export class ValueConverters {
       return new Date(Date.parse(val));
     },
     toDb: x => x,
-    fromDb: x => x,
+    fromDb: val => {
+      if (typeof val === "number")
+        val = new Date(val);
+      if (typeof (val) === "string")
+        val = new Date(val);
+      if (val && !(val instanceof Date))
+        throw "expected date but got " + val;
+      return val;
+    },
     fromInput: x => ValueConverters.Date.fromJson(x),
     toInput: x => ValueConverters.Date.toJson(x),
     displayValue: (val) => {

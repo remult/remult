@@ -1,5 +1,5 @@
 import { DataApi } from "../data-api";
-import { Fields, Entity, EntityBase, EntityFilter, Field } from "../remult3";
+import { Fields, Entity, EntityBase, EntityFilter, Field, createOldEntity } from "../remult3";
 import { c } from "../tests/c";
 
 import { Done } from "../tests/Done";
@@ -18,6 +18,7 @@ import { entityWithValidationsOnColumn } from "../tests/entityWithValidationsOnC
 import { Validators } from "../validators";
 import { Status } from "../tests/testModel/models";
 import { IdEntity } from "../id-entity";
+import { describeClass } from "../remult3/DecoratorReplacer";
 
 
 
@@ -231,7 +232,7 @@ testAll("test paging with complex object", async ({ remult, createEntity }) => {
         i++;
     }
     expect(i).toBe(5);
-},false)
+}, false)
 testAll("test paging with complex object_2", async ({ remult, createEntity }) => {
 
     let c1 = await (await createEntity(c)).create({ id: 1, name: 'c1' }).save();
@@ -726,3 +727,19 @@ testAll("test transaction rollback", async ({ db }) => {
     }
     expect(fail).toBe(true);
 })
+testAll("test date", async ({ createEntity }) => {
+    const e = class {
+
+        a = 0;
+        d = new Date()
+    }
+    describeClass(e, Entity("tdate", { allowApiCrud: true }), {
+        a: Fields.number(),
+        d: Fields.date()
+    })
+    const r = await createEntity(e);
+    await r.insert({ a: 1, d: new Date(1976, 5, 16) });
+    let item = await r.findFirst();
+    expect(item.d.getFullYear()).toBe(1976);
+
+},false)
