@@ -559,6 +559,12 @@ abstract class rowHelperBase<T>
         this._subscribers?.reportChanged();
     }
     constructor(protected columnsInfo: FieldOptions[], protected instance: T, protected remult: Remult) {
+        {
+            let fac = remult as RemultProxy;
+            if (fac != null && fac.remultFactory) {
+                remult = fac.remultFactory();
+            }
+        }
         for (const col of columnsInfo) {
             let ei = getEntitySettings(col.valueType, false);
 
