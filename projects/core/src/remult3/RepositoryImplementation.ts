@@ -1572,7 +1572,11 @@ export class Fields {
     static uuid<entityType = any>(...options: (FieldOptions<entityType, string> | ((options: FieldOptions<entityType, string>, remult: Remult) => void))[]) {
         return Field(() => String, {
             allowApiUpdate: false,
-            defaultValue: () => uuid()
+            defaultValue: () => uuid(),
+            saving: (_, r) => {
+                if (!r.value)
+                    r.value = uuid();
+            }
         }, ...options);
     }
     static string<entityType = any>(...options: (StringFieldOptions<entityType> | ((options: StringFieldOptions<entityType>, remult: Remult) => void))[]) {
