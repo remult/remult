@@ -35,9 +35,9 @@ export interface FieldOptions<entityType = any, valueType = any> {
      *   }
      * })
      */
-    validate?: ((entity: entityType, col: FieldRef<entityType, valueType>) => (any | Promise<any>)) | ((entity: entityType, col: FieldRef<entityType, valueType>) => (any | Promise<any>))[];
+    validate?: ((entity: entityType, fieldRef: FieldRef<entityType, valueType>) => (any | Promise<any>)) | ((entity: entityType, fieldRef: FieldRef<entityType, valueType>) => (any | Promise<any>))[];
     /** Will be fired before this field is saved to the server/database */
-    saving?: ((entity: entityType, col: FieldRef<entityType, valueType>) => (any | Promise<any>));
+    saving?: ((entity: entityType, fieldRef: FieldRef<entityType, valueType>) => (any | Promise<any>));
     /**  An expression that will determine this fields value on the backend and be provided to the front end*/
     serverExpression?: (entity: entityType) => valueType | Promise<valueType>;
     /** The name of the column in the database that holds the data for this field. If no name is set, the key will be used instead. */
@@ -122,7 +122,7 @@ export interface ValueConverter<valueType> {
     readonly fieldTypeInDb?: string;
     readonly inputType?: string;
 }
-export declare type FieldValidator<entityType = any, valueType = any> = (entity: entityType, col: FieldRef<entityType, valueType>) => void | Promise<void>;
+export declare type FieldValidator<entityType = any, valueType = any> = (entity: entityType, fieldRef: FieldRef<entityType, valueType>) => void | Promise<void>;
 export declare type ValueOrExpression<valueType> = valueType | (() => valueType);
 export declare function valueOrExpressionToValue<valueType>(f: ValueOrExpression<valueType>): valueType;
 export interface ValueListItem {

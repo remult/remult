@@ -79,6 +79,7 @@
     "core-js": "^2.5.4",
     "cors": "^2.8.5",
     "cp": "^0.2.0",
+    "cuid": "^2.1.8",
     "dotenv": "^8.1.0",
     "express": "^4.17.3",
     "express-force-https": "^1.0.0",

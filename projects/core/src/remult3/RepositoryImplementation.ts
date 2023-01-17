@@ -8,6 +8,7 @@ import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControll
 import { AndFilter, rawFilterInfo, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
 import { Sort } from "../sort";
 import { v4 as uuid } from 'uuid';
+import * as cuid from 'cuid';
 
 
 
@@ -1576,6 +1577,16 @@ export class Fields {
             saving: (_, r) => {
                 if (!r.value)
                     r.value = uuid();
+            }
+        }, ...options);
+    }
+    static cuid<entityType = any>(...options: (FieldOptions<entityType, string> | ((options: FieldOptions<entityType, string>, remult: Remult) => void))[]) {
+        return Field(() => String, {
+            allowApiUpdate: false,
+            defaultValue: () => cuid(),
+            saving: (_, r) => {
+                if (!r.value)
+                    r.value = cuid();
             }
         }, ...options);
     }
