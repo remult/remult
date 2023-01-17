@@ -6,7 +6,7 @@ import { FieldMetadata } from '../src/column-interfaces';
 export declare class KnexDataProvider implements DataProvider {
     knex: Knex;
     constructor(knex: Knex);
-    static getDb(remult?: Remult): Knex<any, Record<string, any>[]>;
+    static getDb(remult?: Remult): Knex<any, any[]>;
     getEntityDataProvider(entity: EntityMetadata<any>): EntityDataProvider;
     transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void>;
     static rawFilter(build: CustomKnexFilterBuilderFunction): EntityFilter<any>;
