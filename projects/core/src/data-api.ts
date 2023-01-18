@@ -228,8 +228,8 @@ export class DataApi<T = any> {
         response.forbidden();
         return;
       }
-      await this.repository.getEntityRef(row).save();
-      response.success(this.repository.getEntityRef(row).toApiJson());
+      await ref.save();
+      response.success(ref.toApiJson());
     });
   }
 

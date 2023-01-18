@@ -813,7 +813,6 @@ abstract class rowHelperBase<T>
                         else
                             this.instance[col.key] = col.valueConverter.fromJson(body[col.key]);
                     }
-
                 }
         }
         await Promise.all([...this.fields].map(x => x.load()));
