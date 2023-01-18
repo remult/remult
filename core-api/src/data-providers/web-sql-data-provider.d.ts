@@ -1,4 +1,3 @@
-/// <reference types="websql" />
 import { __RowsOfDataForTesting } from "../__RowsOfDataForTesting";
 import { SqlCommand, SqlImplementation } from "../sql-command";
 import { EntityMetadata } from "../remult3";
@@ -9,7 +8,7 @@ export declare class WebSqlDataProvider implements SqlImplementation, __RowsOfDa
         [tableName: string]: any;
     };
     constructor(databaseName: string, databaseSize?: number);
-    static getDb(remult?: Remult): Database;
+    static getDb(remult?: Remult): any;
     getLimitSqlSyntax(limit: number, offset: number): string;
     entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void>;
     dropTable(entity: EntityMetadata): Promise<void>;
