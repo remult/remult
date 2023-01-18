@@ -3,7 +3,7 @@ import * as express from 'express';
 import { createRemultServer } from './server/index';
 import { RemultServer, RemultServerImplementation, RemultServerOptions } from './server/expressBridge';
 import { Remult } from './src/context';
-import { liveQueryKeepAliveRoute, ServerEventChannelSubscribeDTO, streamUrl } from './src/live-query/SubscriptionClient';
+import { liveQueryKeepAliveRoute, ServerEventChannelSubscribeDTO, streamUrl } from './src/live-query/SubscriptionChannel';
 import { SubscriptionServer } from './src/live-query/SubscriptionServer';
 import { v4 as uuid } from 'uuid';
 import { remult } from './src/remult-proxy';

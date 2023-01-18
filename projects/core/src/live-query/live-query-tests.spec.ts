@@ -5,7 +5,7 @@ import { InMemoryDataProvider } from "../data-providers/in-memory-database";
 import { Entity, Fields, FindOptions, getEntityRef } from "../remult3";
 import { actionInfo } from "../server-action";
 import { createMockHttpDataProvider } from "../tests/testHelper.spec";
-import { SubscriptionChannel, LiveQueryChange } from "./SubscriptionClient";
+import { SubscriptionChannel, LiveQueryChange } from "./SubscriptionChannel";
 import { LiveQueryClient } from "./LiveQueryClient";
 import { LiveQueryPublisher, LiveQueryStorage, InMemoryLiveQueryStorage } from "./SubscriptionServer";
 import { findOptionsFromJson, findOptionsToJson } from "../data-providers/rest-data-provider";
@@ -142,7 +142,8 @@ class PromiseResolver {
 
             let p = this.promises;
             this.promises = [];
-            await Promise.all(p);
+
+            await Promise.all(p).catch(err => { });
         }
     }
 
@@ -199,7 +200,7 @@ describe("Live Query Client", () => {
         closeSub1 = serverRepo.liveQuery().subscribe(({ applyChanges: reducer }) => {
             result1 = reducer(result1);
         });
-        closeSub2 = serverRepo.liveQuery().subscribe(({ applyChanges:reducer }) => {
+        closeSub2 = serverRepo.liveQuery().subscribe(({ applyChanges: reducer }) => {
             result2 = reducer(result2);
         });
         await p.flush();
@@ -243,9 +244,15 @@ describe("Live Query Client", () => {
         await p.flush();
         expect(open).toBe(0);
         get = 0;
-        closeSub1 = lqc.subscribe(serverRepo, {}, ({ applyChanges:reducer }) => {
-            result1 = reducer(result1);
-        });
+        closeSub1 = lqc.subscribe(serverRepo, {},
+            {
+                complete: () => { },
+                error: () => { },
+                next:
+                    ({ applyChanges: reducer }) => {
+                        result1 = reducer(result1);
+                    }
+            });
         await p.flush();
         expect(open).toBe(1);
         expect(get).toBe(1);
@@ -330,12 +337,12 @@ describe("test live query full cycle", () => {
         remult2.liveQuerySubscriber = lqc2;
         remult.liveQueryPublisher = qm;
         remult2.liveQueryPublisher = qm;
-        return { repo, pm, repo2, messageCount: () => messageCount, clientStatus, qm: remult.liveQueryStorage as InMemoryLiveQueryStorage, testApi: () => createMockHttpDataProvider(dataApi) };
+        return { repo, pm, repo2, messageCount: () => messageCount, clientStatus, qm: remult.liveQueryStorage as InMemoryLiveQueryStorage, testApi: () => createMockHttpDataProvider(dataApi), remult };
     }
     it("integration test 1", async () => {
         var { repo, pm, repo2 } = setup2();
         let result1: eventTestEntity[] = [];
-        const u = repo.liveQuery().subscribe(({ applyChanges:reducer }) => result1 = reducer(result1));
+        const u = repo.liveQuery().subscribe(({ applyChanges: reducer }) => result1 = reducer(result1));
         await pm.flush();
         expect(result1.length).toBe(0);
         await repo.insert({ id: 1, title: "noam" });
@@ -354,7 +361,7 @@ describe("test live query full cycle", () => {
     it("test delete works", async () => {
         var { repo, pm, repo2 } = setup2();
         let result1: eventTestEntity[] = [];
-        const u = repo.liveQuery().subscribe(({applyChanges: reducer }) => result1 = reducer(result1));
+        const u = repo.liveQuery().subscribe(({ applyChanges: reducer }) => result1 = reducer(result1));
         await pm.flush();
         await repo.insert({ id: 1, title: "noam" });
         await repo2.insert({ id: 2, title: "yael" });
@@ -367,7 +374,7 @@ describe("test live query full cycle", () => {
     it("test add works if item already in array", async () => {
         var { repo, pm, repo2 } = setup2();
         let result1: eventTestEntity[] = [];
-        const u = repo.liveQuery().subscribe(({ applyChanges:reducer }) => result1 = reducer(result1));
+        const u = repo.liveQuery().subscribe(({ applyChanges: reducer }) => result1 = reducer(result1));
         await pm.flush();
         result1 = [await repo.insert({ id: 1, title: "noam" })];
         await pm.flush();
@@ -377,7 +384,7 @@ describe("test live query full cycle", () => {
     it("test unsubscribe works", async () => {
         var { repo, pm, messageCount, qm } = setup2();
         let result1: eventTestEntity[] = [];
-        const unsubscribe = repo.liveQuery().subscribe(({ applyChanges:reducer }) => result1 = reducer(result1));
+        const unsubscribe = repo.liveQuery().subscribe(({ applyChanges: reducer }) => result1 = reducer(result1));
         await pm.flush();
         await repo.insert({ id: 1, title: "noam" });
         await pm.flush();
@@ -451,7 +458,11 @@ describe("test live query full cycle", () => {
             arr1Messages.push(y.changes);
         });
         await pm.flush();
-        const u2 = repo.liveQuery({ where: { title: { $contains: "b" } } }).subscribe(y => arr2 = y.applyChanges(arr2));
+        let done = false;
+        const u2 = repo.liveQuery({ where: { title: { $contains: "b" } } }).subscribe({
+            next: y => arr2 = y.applyChanges(arr2),
+            complete: () => done = true
+        });
         await pm.flush();
         await repo.insert({ title: 'a3', id: 5 })
         await pm.flush();
@@ -464,9 +475,68 @@ describe("test live query full cycle", () => {
         expect(arr1Messages[0].length).toBe(1);
         expect(arr1Messages[1][0].type).toBe("add");
         u1();
+        expect(done).toBe(false);
         u2();
+        await pm.flush();;
+        expect(done).toBe(true);
 
     })
+    it("error on channel open", async () => {
+        let { remult } = await setup2();
+        remult.apiClient.subscriptionClient = {
+            openConnection: async () => {
+                return {
+                    subscribe(channel, onMessage) {
+                        throw "the error"
+                    },
+                    close() {
+
+                    }
+                }
+            }
+        }
+        remult.liveQuerySubscriber = new LiveQueryClient(() => remult.apiClient)
+        let pm = new PromiseResolver(remult.liveQuerySubscriber)
+        let error = false;
+        let u = remult.repo(eventTestEntity).liveQuery().subscribe({
+            error:
+                er => {
+                    error = true
+                }
+        });
+        await pm.flush();
+        expect(error).toBe(true);
+        u();
+    });
+    it("error on channel open", async () => {
+        let { remult } = await setup2();
+        remult.apiClient.subscriptionClient = {
+            openConnection: async () => {
+                return {
+                    subscribe(channel, onMessage, onError) {
+
+                        onError("had error");
+                        return () => { }
+                    },
+                    close() {
+
+                    }
+                }
+            }
+        }
+        remult.liveQuerySubscriber = new LiveQueryClient(() => remult.apiClient)
+        let pm = new PromiseResolver(remult.liveQuerySubscriber)
+        let error = false;
+        let u = remult.repo(eventTestEntity).liveQuery().subscribe({
+            error:
+                er => {
+                    error = true
+                }
+        });
+        await pm.flush();
+        expect(error).toBe(true);
+        u();
+    });
 });
 it("Serialize Find Options", async () => {
     const r = new Remult().repo(eventTestEntity);
@@ -537,3 +607,43 @@ it("test channel subscribe", async () => {
     expect(sub).toBe(0);
 })
 
+
+
+describe("test failure", () => {
+    it("Error on open connection", async () => {
+        let r = new Remult(new InMemoryDataProvider());
+        r.apiClient.subscriptionClient = {
+            openConnection: async () => {
+                throw "open connection error"
+            }
+        }
+        let pm = new PromiseResolver(r.liveQuerySubscriber)
+        let error = false;
+        let u = r.repo(eventTestEntity).liveQuery().subscribe({ error: er => { error = true } });
+        await pm.flush();
+        expect(error).toBe(true);
+        u();
+    });
+    it("error on subscribe", async () => {
+        let r = new Remult(new InMemoryDataProvider());
+        r.apiClient.subscriptionClient = {
+            openConnection: async () => {
+                return {
+                    subscribe(channel, onMessage) {
+                        throw "the error"
+                    },
+                    close() {
+
+                    }
+                }
+            }
+        }
+        let pm = new PromiseResolver(r.liveQuerySubscriber)
+        let error = false;
+        let u = r.repo(eventTestEntity).liveQuery().subscribe({ error: er => { error = true } });
+        await pm.flush();
+        expect(error).toBe(true);
+        u();
+    });
+
+})

@@ -3,7 +3,7 @@ import { EntityMetadata, EntityRef, FindOptions, Repository } from "./remult3";
 import { ClassType } from "../classType";
 import type { SubscriptionServer } from "./live-query/SubscriptionServer";
 import { ExternalHttpProvider } from "./buildRestDataProvider";
-import { SubscriptionClient } from "./live-query/SubscriptionClient";
+import { SubscriptionClient } from "./live-query/SubscriptionChannel";
 export declare function isBackend(): boolean;
 export declare class Remult {
     /**Return's a `Repository` of the specific entity type

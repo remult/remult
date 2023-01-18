@@ -2,7 +2,7 @@
 import { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from "../column-interfaces";
 import { EntityOptions } from "../entity";
 import { CompoundIdField, LookupColumn, makeTitle } from '../column';
-import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef, LiveQuery } from "./remult3";
+import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef, LiveQuery, LiveQueryChangeInfo } from "./remult3";
 import { ClassType } from "../../classType";
 import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControllerSettings, Unobserve, EventSource } from "../context";
 import { AndFilter, rawFilterInfo, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
@@ -21,6 +21,7 @@ import { Paginator, RefSubscriber, RefSubscriberBase } from ".";
 
 import { remult as defaultRemult, RemultProxy } from "../remult-proxy";
 import { getId } from "./getId";
+import { SubscriptionListener } from "../live-query/SubscriptionChannel";
 //import { remult } from "../remult-proxy";
 
 
@@ -245,8 +246,19 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         if (!options)
             options = {};
         return {
-            subscribe: (info) =>
-                this.remult.liveQuerySubscriber.subscribe(this, options, info)
+            subscribe: (l) => {
+                let listener = l as SubscriptionListener<LiveQueryChangeInfo<entityType>>;
+                if (typeof l === "function") {
+                    listener = {
+                        next: l,
+                        complete: () => { },
+                        error: () => { }
+                    }
+                }
+                listener.error ??= () => { };
+                listener.complete ??= () => { };
+                return this.remult.liveQuerySubscriber.subscribe(this, options, listener)
+            }
 
         } as LiveQuery<entityType>
     }

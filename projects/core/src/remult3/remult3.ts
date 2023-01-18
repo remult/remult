@@ -2,7 +2,7 @@
 import { ClassType } from "../../classType";
 import { FieldMetadata } from "../column-interfaces";
 import { Unobserve } from "../context";
-import { LiveQueryChange, Unsubscribe } from "../live-query/SubscriptionClient";
+import { LiveQueryChange, SubscriptionListener, Unsubscribe } from "../live-query/SubscriptionChannel";
 import { EntityOptions } from "../entity";
 import { SortSegment } from "../sort";
 import { entityEventListener } from "../__EntityValueProvider";
@@ -235,7 +235,8 @@ export interface Repository<entityType> {
     addEventListener(listener: entityEventListener<entityType>): Unobserve;
 }
 export interface LiveQuery<entityType> {
-    subscribe(onChange: (info: LiveQueryChangeInfo<entityType>) => void): Unsubscribe
+    subscribe(next: (info: LiveQueryChangeInfo<entityType>) => void): Unsubscribe
+    subscribe(listener: Partial<SubscriptionListener<LiveQueryChangeInfo<entityType>>>): Unsubscribe
 }
 export interface LiveQueryChangeInfo<entityType> {
     items: entityType[],

@@ -10,7 +10,7 @@ import { RemultProxy } from "./remult-proxy";
 
 import type { LiveQueryStorage, LiveQueryPublisher, LiveQueryChangesListener, SubscriptionServer } from "./live-query/SubscriptionServer";
 import { buildRestDataProvider, ExternalHttpProvider, isExternalHttpProvider } from "./buildRestDataProvider";
-import { SubscriptionClient } from "./live-query/SubscriptionClient";
+import { SubscriptionClient } from "./live-query/SubscriptionChannel";
 
 
 

@@ -25,4 +25,4 @@ export { Validators } from './src/validators';
 export { ValueConverters } from './src/valueConverters';
 export { remult } from './src/remult-proxy';
 export { SubscriptionServer, LiveQueryStorage, StoredQuery, InMemoryLiveQueryStorage } from "./src/live-query/SubscriptionServer";
-export { SubscriptionClientConnection, SubscriptionClient, SubscriptionChannel, LiveQueryChange, Unsubscribe } from './src/live-query/SubscriptionClient';
+export { SubscriptionListener, SubscriptionClientConnection, SubscriptionClient, SubscriptionChannel, LiveQueryChange, Unsubscribe } from './src/live-query/SubscriptionChannel';

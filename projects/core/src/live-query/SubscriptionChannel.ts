@@ -35,14 +35,14 @@ export class LiveQuerySubscriber<entityType> {
 
         for (const l of this.listeners) {
             what(reducer => {
-                l(this.createReducerType(reducer, changes))
+                l.next(this.createReducerType(reducer, changes))
             })
         }
     }
 
     private createReducerType(applyChanges: (prevState: entityType[]) => entityType[], changes: LiveQueryChange[]): LiveQueryChangeInfo<entityType> {
         return {
-             applyChanges,
+            applyChanges,
             changes,
             items: this.defaultQueryState
         };
@@ -97,13 +97,20 @@ export class LiveQuerySubscriber<entityType> {
     }
 
     defaultQueryState: entityType[] = [];
-    listeners: (((reducer: LiveQueryChangeInfo<entityType>) => void))[] = [];
+    listeners: SubscriptionListener<LiveQueryChangeInfo<entityType>>[] = [];
     constructor(private repo: Repository<entityType>, private query: SubscribeToQueryArgs<entityType>) { }
 
 }
+
+export interface SubscriptionListener<type> {
+    next(message: type): void;
+    error(err: any): void
+    complete(): void
+}
+
 export type Unsubscribe = VoidFunction;
 export interface SubscriptionClientConnection {
-    subscribe(channel: string, onMessage: (message: any) => void): Unsubscribe;
+    subscribe(channel: string, onMessage: (message: any) => void, onError: (err: any) => void): Unsubscribe;
     close(): void;
 }
 
@@ -159,9 +166,23 @@ export class SubscriptionChannel<messageType> {
         remult = remult || defaultRemult;
         remult.subscriptionServer.publishMessage(this.channelKey, message);
     }
-    subscribe(onMessage: (message: messageType) => void, remult?: Remult) {
+    //TODO - consider on error and on complete here
+    subscribe(next: (message: messageType) => void, remult?: Remult)
+    subscribe(listener: Partial<SubscriptionListener<messageType>>)
+    //@internal
+    subscribe(next: ((message: messageType) => void) | Partial<SubscriptionListener<messageType>>, remult?: Remult) {
         remult = remult || defaultRemult;
-        return remult.liveQuerySubscriber.subscribeChannel(this.channelKey, onMessage);
+
+        let listener = next as Partial<SubscriptionListener<messageType>>;
+        if (typeof (next) === "function") {
+            listener = {
+                next
+            }
+        }
+        listener.error ??= () => { };
+        listener.complete ??= () => { };
+
+        return remult.liveQuerySubscriber.subscribeChannel(this.channelKey, listener as SubscriptionListener<messageType>);
     }
 }
 

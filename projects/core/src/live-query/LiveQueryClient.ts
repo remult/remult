@@ -2,7 +2,7 @@ import { FindOptions, remult as defaultRemult, Repository, RestDataProviderHttpP
 import { RestDataProvider, RestEntityDataProvider } from '../data-providers/rest-data-provider';
 import { LiveQueryChangeInfo, RepositoryImplementation } from '../remult3';
 import { buildRestDataProvider } from "../buildRestDataProvider";
-import { LiveQuerySubscriber, SubscriptionClient, SubscribeResult, SubscriptionClientConnection, liveQueryKeepAliveRoute, Unsubscribe } from './SubscriptionClient';
+import { LiveQuerySubscriber, SubscriptionClient, SubscribeResult, SubscriptionClientConnection, liveQueryKeepAliveRoute, Unsubscribe, SubscriptionListener } from './SubscriptionChannel';
 import type { ApiClient } from '../../index';
 /* @internal*/
 export class LiveQueryClient {
@@ -24,13 +24,22 @@ export class LiveQueryClient {
         this.channels.clear();
         this.closeIfNoListeners();
     }
-    subscribeChannel<T>(key: string, onResult: (item: T) => void): Unsubscribe {
+    subscribeChannel<T>(key: string, onResult: SubscriptionListener<T>): Unsubscribe {
         let onUnsubscribe: VoidFunction = () => { };
         this.openIfNoOpened().then(() => {
             let q = this.channels.get(key);
             if (!q) {
                 this.channels.set(key, q = new MessageChannel());
-                this.client.then(c => q.unsubscribe = c.subscribe(key, value => this.wrapMessageHandling(() => q.handle(value)))
+                this.client.then(c => {
+                    try {
+                        q.unsubscribe = c.subscribe(key, value => this.wrapMessageHandling(() => q.handle(value)), err => {
+                            onResult.error(err);
+                        })
+                    } catch (err: any) {
+                        onResult.error(err);
+                        throw err;
+                    }
+                }
                 );
             }
 
@@ -68,51 +77,68 @@ export class LiveQueryClient {
     subscribe<entityType>(
         repo: Repository<entityType>,
         options: FindOptions<entityType>,
-        onResult: (info: LiveQueryChangeInfo<entityType>) => void) {
+        listener: SubscriptionListener<LiveQueryChangeInfo<entityType>>
+    ) {
+
 
         let alive = true;
         let onUnsubscribe: VoidFunction = () => { };
-        this.runPromise(this.openIfNoOpened().then(() => (repo as RepositoryImplementation<entityType>).buildEntityDataProviderFindOptions(options)
-            .then(opts => {
-                if (!alive)
-                    return;
-                const { createKey, subscribe } = new RestDataProvider(this.apiProvider).getEntityDataProvider(repo.metadata).buildFindRequest(opts);
-                const eventTypeKey = createKey();
-                let q = this.queries.get(eventTypeKey);
-                if (!q) {
-                    this.queries.set(eventTypeKey, q = new LiveQuerySubscriber(repo, { entityKey: repo.metadata.key, orderBy: options.orderBy }));
-                    q.subscribeCode = () => {
-                        if (q.unsubscribe) {
-                            q.unsubscribe();
-                            //TODO 1- consider race scenario where unsubscribe is called before subscribe
-                            q.unsubscribe = () => { };
-                        }
-                        this.runPromise(subscribe().then(r => {
-                            let unsubscribeToChannel = this.subscribeChannel(r.queryChannel, (value: any) => this.runPromise(q.handle(value)));
-                            q.unsubscribe = () => {
-                                unsubscribeToChannel();
-                                this.runPromise(r.unsubscribe());
+        this.runPromise(this.openIfNoOpened()
+            .then(() => (repo as RepositoryImplementation<entityType>).buildEntityDataProviderFindOptions(options)
+                .then(opts => {
+                    if (!alive)
+                        return;
+                    const { createKey, subscribe } = new RestDataProvider(this.apiProvider).getEntityDataProvider(repo.metadata).buildFindRequest(opts);
+                    const eventTypeKey = createKey();
+                    let q = this.queries.get(eventTypeKey);
+                    if (!q) {
+                        this.queries.set(eventTypeKey, q = new LiveQuerySubscriber(repo, { entityKey: repo.metadata.key, orderBy: options.orderBy }));
+                        q.subscribeCode = () => {
+                            if (q.unsubscribe) {
+                                q.unsubscribe();
+                                //TODO 1- consider race scenario where unsubscribe is called before subscribe
+                                q.unsubscribe = () => { };
                             }
-                            this.runPromise(q.setAllItems(r.result));
-                            q.queryChannel = r.queryChannel;
-                        }))
-                    };
-                    q.subscribeCode();
-                }
-                else {
-                    q.sendDefaultState(onResult);
-
-                }
-                q.listeners.push(onResult);
-                onUnsubscribe = () => {
-                    q.listeners.splice(q.listeners.indexOf(onResult), 1);
-                    if (q.listeners.length == 0) {
-                        this.queries.delete(eventTypeKey);
-                        q.unsubscribe();
+                            this.runPromise(subscribe()
+                                .then(r => {
+                                    let unsubscribeToChannel = this.subscribeChannel(r.queryChannel, {
+                                        next: (value: any) => this.runPromise(q.handle(value)),
+                                        complete: () => { },
+                                        error: er => {
+                                            q.listeners.forEach(l => l.error(er))
+                                        }
+                                    });
+                                    q.unsubscribe = () => {
+                                        unsubscribeToChannel();
+                                        this.runPromise(r.unsubscribe());
+                                    }
+                                    this.runPromise(q.setAllItems(r.result));
+                                    q.queryChannel = r.queryChannel;
+                                })
+                                .catch(err => {
+                                    listener.error(err)
+                                }))
+                        };
+                        q.subscribeCode();
                     }
-                    this.closeIfNoListeners();
-                };
-            })));
+                    else {
+                        q.sendDefaultState(listener.next);
+
+                    }
+                    q.listeners.push(listener);
+                    onUnsubscribe = () => {
+                        q.listeners.splice(q.listeners.indexOf(listener), 1);
+                        listener.complete();
+                        if (q.listeners.length == 0) {
+                            this.queries.delete(eventTypeKey);
+                            q.unsubscribe();
+                        }
+                        this.closeIfNoListeners();
+                    };
+                }))
+            .catch(err => {
+                listener.error(err);
+            }));
 
         return () => {
             alive = false;
@@ -160,11 +186,11 @@ class MessageChannel<T> {
     unsubscribe: VoidFunction = () => { };
     async handle(message: T) {
         for (const l of this.listeners) {
-            l(message);
+            l.next(message);
         }
     }
 
-    listeners: ((items: T) => void)[] = [];
+    listeners: SubscriptionListener<T>[] = [];
     constructor() { }
 
 }

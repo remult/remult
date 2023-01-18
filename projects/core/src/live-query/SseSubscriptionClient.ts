@@ -1,6 +1,6 @@
 import { buildRestDataProvider } from "../buildRestDataProvider";
 import { remult } from "../remult-proxy";
-import { ServerEventChannelSubscribeDTO, SubscriptionClient, SubscriptionClientConnection, streamUrl } from "./SubscriptionClient";
+import { ServerEventChannelSubscribeDTO, SubscriptionClient, SubscriptionClientConnection, streamUrl } from "./SubscriptionChannel";
 export class SseSubscriptionClient implements SubscriptionClient {
   openConnection(onReconnect: VoidFunction): Promise<SubscriptionClientConnection> {
     let connectionId: string;

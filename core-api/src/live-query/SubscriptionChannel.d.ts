@@ -1,8 +1,13 @@
 import { Remult } from '../../index';
 export declare const streamUrl = "stream";
+export interface SubscriptionListener<type> {
+    next(message: type): void;
+    error(err: any): void;
+    complete(): void;
+}
 export declare type Unsubscribe = VoidFunction;
 export interface SubscriptionClientConnection {
-    subscribe(channel: string, onMessage: (message: any) => void): Unsubscribe;
+    subscribe(channel: string, onMessage: (message: any) => void, onError: (err: any) => void): Unsubscribe;
     close(): void;
 }
 export interface SubscriptionClient {
@@ -31,5 +36,6 @@ export declare class SubscriptionChannel<messageType> {
     channelKey: string;
     constructor(channelKey: string);
     publish(message: messageType, remult?: Remult): void;
-    subscribe(onMessage: (message: messageType) => void, remult?: Remult): VoidFunction;
+    subscribe(next: (message: messageType) => void, remult?: Remult): any;
+    subscribe(listener: Partial<SubscriptionListener<messageType>>): any;
 }
