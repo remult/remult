@@ -1634,7 +1634,7 @@ export function ValueListFieldType<valueType extends ValueListItem = any>(...opt
     return (type: ClassType<valueType>) => {
         FieldType<valueType>(o => {
             o.valueConverter = ValueListInfo.get(type),
-                o.displayValue = (item, val) => val.caption
+                o.displayValue = (item, val) => val?.caption
         }, ...options)(type)
     }
 }
