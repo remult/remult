@@ -604,7 +604,7 @@ class testFilter {
     b: string = '';
     @Fields.string()
     c: string = '';
-    static search = Filter.createCustom<testFilter, string>((remult, str) => ({
+    static search = Filter.createCustom<testFilter, string>(( str,remult) => ({
         $and: [{
             $or: [
                 { a: 'a' },
