@@ -1347,11 +1347,7 @@ export class columnDefsImpl implements FieldMetadata {
 
 
     }
-    private _workingOnDbName = false;
     async getDbName() {
-        if (this._workingOnDbName)
-            return "Recursive getDbName call for field '" + this.key + "'. ";
-        this._workingOnDbName = true;
         try {
             if (this.settings.sqlExpression) {
                 let result: string;
@@ -1366,7 +1362,6 @@ export class columnDefsImpl implements FieldMetadata {
             return this.settings.dbName;
         }
         finally {
-            this._workingOnDbName = false;
         }
 
     }
