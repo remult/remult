@@ -15,6 +15,8 @@ export class ValueConverters {
 
   static readonly Date: ValueConverter<Date> = {
     toJson: (val: Date) => {
+      if (val===null)
+      return null;
       if (!val)
         return '';
       if (typeof (val) === "string")
@@ -28,6 +30,8 @@ export class ValueConverters {
 
     },
     fromJson: (val: string) => {
+      if (val === null)
+        return null;
       if (val == undefined)
         return undefined;
       if (val == '')
@@ -86,12 +90,7 @@ export class ValueConverters {
 
     }//when using date storage,  the database expects and returns a date local and every where else we reflect on date iso
     , fromDb: (val: Date) => {
-
-      var d = val as Date;
-      if (!d)
-        return null;
-      return val;
-
+      return ValueConverters.Date.fromDb(val)
     },
     fieldTypeInDb: 'date',
     displayValue: (value: Date) => {

@@ -149,7 +149,7 @@ testAll("put with validations on entity fails",
         expect(x[0].name).toBe('noam');
 
     });
-testAll("test date with null works", async ({ createEntity }) => {
+testAll("test date only with null works", async ({ createEntity }) => {
 
     let repo = await createEntity(testDateWithNull);
     let r = repo.create({ id: 0 });
@@ -157,7 +157,33 @@ testAll("test date with null works", async ({ createEntity }) => {
     r = await repo.findFirst();
     expect(r.d).toBeNull();
     expect(await repo.count({ d: null })).toBe(1);
+    r.d = new Date(1976, 5, 16);
+    await r.save();
+    expect(r.d.getFullYear()).toBe(1976);
+    r = await repo.findFirst();
+    expect(r.d.getFullYear()).toBe(1976);
+    r.d = null;
+    await r.save();
+    expect (r.d).toBeNull();
 }, false);
+testAll("test date with null works", async ({ createEntity }) => {
+
+    let repo = await createEntity(testDateWithNull);
+    let r = repo.create({ id: 0 });
+    await r.save();
+    r = await repo.findFirst();
+    expect(r.fullDate).toBeNull("expected null after");
+    expect(await repo.count({ fullDate: null })).toBe(1);
+    r.fullDate = new Date(1976, 5, 16);
+    await r.save();
+    expect(r.fullDate.getFullYear()).toBe(1976);
+    r = await repo.findFirst();
+    expect(r.fullDate.getFullYear()).toBe(1976);
+    r.fullDate = null;
+    await r.save();
+    expect (r.fullDate).toBeNull();
+}, false);
+
 testAll("test original value of date", async ({ createEntity }) => {
     let r = await (await createEntity(testDateWithNull)).create({ id: 1, d: new Date(1976, 6, 16) }).save();
 
@@ -171,6 +197,8 @@ class testDateWithNull extends EntityBase {
     id: number = 0;
     @Fields.dateOnly({ allowNull: true })
     d: Date;
+    @Fields.date({ allowNull: true })
+    fullDate: Date=null;
 }
 
 testAll("test string with null works", async ({ createEntity }) => {
@@ -604,7 +632,7 @@ class testFilter {
     b: string = '';
     @Fields.string()
     c: string = '';
-    static search = Filter.createCustom<testFilter, string>(( str,remult) => ({
+    static search = Filter.createCustom<testFilter, string>((str, remult) => ({
         $and: [{
             $or: [
                 { a: 'a' },
@@ -742,4 +770,4 @@ testAll("test date", async ({ createEntity }) => {
     let item = await r.findFirst();
     expect(item.d.getFullYear()).toBe(1976);
 
-},false)
+}, false)
