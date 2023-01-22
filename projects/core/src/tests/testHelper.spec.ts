@@ -208,7 +208,7 @@ export class MockRestDataProvider implements DataProvider {
   supportsrawFilter = true;
 
 }
-export function createMockHttpDataProvider(dataApi: DataApi<any>): import("c:/Repos/radweb/projects/core/src/data-interfaces").RestDataProviderHttpProvider {
+export function createMockHttpDataProvider(dataApi: DataApi<any>): import("../data-interfaces").RestDataProviderHttpProvider {
   return new HttpProviderBridgeToRestDataProviderHttpProvider({
     delete: async (url) => {
 

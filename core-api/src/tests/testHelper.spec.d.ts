@@ -33,4 +33,4 @@ export declare class MockRestDataProvider implements DataProvider {
     transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void>;
     supportsrawFilter: boolean;
 }
-export declare function createMockHttpDataProvider(dataApi: DataApi<any>): import("c:/Repos/radweb/projects/core/src/data-interfaces").RestDataProviderHttpProvider;
+export declare function createMockHttpDataProvider(dataApi: DataApi<any>): import("../data-interfaces").RestDataProviderHttpProvider;
