@@ -766,18 +766,21 @@ class inProcessQueueHandler {
     let job = await this.storage.getJobInfo(id);
 
     this.actions.get(url)(body, req, {
-      error: error => job.setErrorResult(serializeError(error))
-
-      ,
+      error: error => job.setErrorResult(serializeError(error)),
       success: result => job.setResult(result),
-      progress: progress => job.setProgress(progress)
+      progress: progress => job.setProgress(progress),
+      created: () => { throw Error("Created response not expected for queue") },
+      deleted: () => { throw Error("deleted response not expected for queue") },
+      notFound: () => { throw Error("notFound response not expected for queue") },
+      forbidden: () => job.setErrorResult("Forbidden")
+
     });
     return id;
   }
-  mapQueuedAction(url: string, what: (data: any, r: Remult, res: ApiActionResponse) => void) {
+  mapQueuedAction(url: string, what: (data: any, r: Remult, res: DataApiResponse) => void) {
     this.actions.set(url, what);
   }
-  actions = new Map<string, ((data: any, r: Remult, res: ApiActionResponse) => void)>();
+  actions = new Map<string, ((data: any, r: Remult, res: DataApiResponse) => void)>();
   async getJobInfo(queuedJobId: string): Promise<queuedJobInfo> {
     return await this.storage.getJobInfo(queuedJobId);
   }
@@ -789,12 +792,6 @@ export interface queuedJobInfo {
   setErrorResult(error: any): void;
   setResult(result: any): void;
   setProgress(progress: number): void;
-}
-export interface ApiActionResponse {
-  error(error: any): void;
-  success(result: any): void;
-  progress(progress: number): void;
-
 }
 class InMemoryQueueStorage implements QueueStorage {
   async getJobInfo(queuedJobId: string): Promise<queuedJobInfo> {

@@ -84,11 +84,6 @@ export interface queuedJobInfo {
     setResult(result: any): void;
     setProgress(progress: number): void;
 }
-export interface ApiActionResponse {
-    error(error: any): void;
-    success(result: any): void;
-    progress(progress: number): void;
-}
 export interface QueueStorage {
     createJob(url: string, userId: string): Promise<string>;
     getJobInfo(queuedJobId: string): Promise<queuedJobInfo>;
