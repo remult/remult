@@ -10,6 +10,8 @@
     "downlevelIteration": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports":true,
     "importHelpers": true,
     "target": "es2015",
     "skipLibCheck": true,

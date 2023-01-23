@@ -8,7 +8,7 @@ import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControll
 import { AndFilter, rawFilterInfo, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
 import { Sort } from "../sort";
 import { v4 as uuid } from 'uuid';
-import * as cuid from 'cuid';
+import cuid from 'cuid';
 
 
 
