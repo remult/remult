@@ -279,6 +279,8 @@ export declare type EntityFilter<entityType> = {
 export declare type ValueFilter<valueType> = valueType | valueType[] | {
     $ne?: valueType | valueType[];
     "!="?: valueType | valueType[];
+    $in?: valueType[];
+    $nin?: valueType[];
 };
 export declare type ComparisonValueFilter<valueType> = ValueFilter<valueType> & {
     $gt?: valueType;

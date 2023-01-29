@@ -89,12 +89,17 @@ export class Filter {
                                             break
                                         case "$ne":
                                         case "!=":
+                                        case "$nin":
                                             found = true;
                                             if (Array.isArray(element)) {
                                                 result.push(fh.isNotIn(element));
                                             }
                                             else
                                                 result.push(fh.isDifferentFrom(element));
+                                            break;
+                                        case "$in":
+                                            found = true;
+                                            result.push(fh.isIn(element));
                                             break;
                                         case "$contains":
                                             found = true;
