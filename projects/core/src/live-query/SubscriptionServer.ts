@@ -115,8 +115,10 @@ export class InMemoryLiveQueryStorage implements LiveQueryStorage {
     this.queries.push({ ...query, lastUsed: new Date().toISOString() });
     this.debug();
   }
+  removeCountForTesting = 0;
   remove(id: any) {
     this.queries = this.queries.filter(q => q.id !== id);
+    this.removeCountForTesting++;
     this.debug();
   }
   async forEach(entityKey: string, handle: (args: {

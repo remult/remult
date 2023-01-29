@@ -55,6 +55,7 @@ export class LiveQueryClient {
         });
         return () => {
             onUnsubscribe();
+            onUnsubscribe = ()=>{};
         };
     }
     timeoutToCloseWhenNotClosed = 1000;
@@ -109,6 +110,7 @@ export class LiveQueryClient {
                                         }
                                     });
                                     q.unsubscribe = () => {
+                                        q.unsubscribe = ()=>{}
                                         unsubscribeToChannel();
                                         this.runPromise(r.unsubscribe());
                                     }

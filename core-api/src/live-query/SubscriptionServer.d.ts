@@ -19,6 +19,7 @@ export declare class InMemoryLiveQueryStorage implements LiveQueryStorage {
     })[];
     constructor();
     add(query: StoredQuery): void;
+    removeCountForTesting: number;
     remove(id: any): void;
     forEach(entityKey: string, handle: (args: {
         query: StoredQuery;
