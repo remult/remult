@@ -1,5 +1,6 @@
 import { buildRestDataProvider } from "../buildRestDataProvider";
 import { remult } from "../remult-proxy";
+import { actionInfo } from "../server-action";
 import { ServerEventChannelSubscribeDTO, SubscriptionClient, SubscriptionClientConnection, streamUrl } from "./SubscriptionChannel";
 export class SseSubscriptionClient implements SubscriptionClient {
   openConnection(onReconnect: VoidFunction): Promise<SubscriptionClientConnection> {
@@ -23,10 +24,10 @@ export class SseSubscriptionClient implements SubscriptionClient {
         return () => {
           listeners.splice(listeners.indexOf(handler, 1));
           if (listeners.length == 0) {
-            provider.post(remult.apiClient.url + '/' + streamUrl + '/unsubscribe', {
+            actionInfo.runActionWithoutBlockingUI(() => provider.post(remult.apiClient.url + '/' + streamUrl + '/unsubscribe', {
               channel: channel,
               clientId: connectionId
-            } as ServerEventChannelSubscribeDTO);
+            } as ServerEventChannelSubscribeDTO));
             channels.delete(channel);
           }
         };

@@ -9,6 +9,7 @@ import { ApiClient, Remult } from '../context';
 import { buildRestDataProvider, retry } from "../buildRestDataProvider";
 import { Sort } from '../sort';
 import { SubscribeResult } from '../live-query/SubscriptionChannel';
+import { actionInfo } from '../server-action';
 
 
 export class RestDataProvider implements DataProvider {
@@ -88,7 +89,7 @@ export class RestEntityDataProvider implements EntityDataProvider {
     let { run } = this.buildFindRequest(options);
     return run().then(x => x.map(y => this.translateFromJson(y)));
   }
-//@internal
+  //@internal
   buildFindRequest(options: EntityDataProviderFindOptions) {
     let url = new UrlBuilder(this.url());
     let filterObject: any;
@@ -143,10 +144,10 @@ export class RestEntityDataProvider implements EntityDataProvider {
         return {
           ...result,
           unsubscribe: async () => {
-            return this.http().post(
+            return actionInfo.runActionWithoutBlockingUI(() => this.http().post(
               this.url() + "?__action=endLiveQuery", {
               id: result.queryChannel
-            });
+            }));
           }
         }
       }
