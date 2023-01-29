@@ -3,6 +3,7 @@ import { FieldMetadata } from '../src/column-interfaces';
 import { Remult, allEntities } from '../src/context';
 import { SqlDatabase } from '../src/data-providers/sql-database';
 import { dbNamesOf, EntityDbNamesBase, isDbReadonly } from '../src/filter/filter-consumer-bridge-to-sql-request';
+import { RemultProxy } from '../src/remult-proxy';
 import { EntityMetadata, isAutoIncrement } from '../src/remult3';
 import { ValueConverters } from '../src/valueConverters';
 
@@ -47,7 +48,10 @@ export async function verifyStructureOfAllEntities(db: SqlDatabase, remult: Remu
 export class PostgresSchemaBuilder {
     //@internal
     static logToConsole = true;
-    async verifyStructureOfAllEntities(remult: Remult) {
+    async verifyStructureOfAllEntities(remult?: Remult) {
+        if (!remult) {
+            remult = RemultProxy.defaultRemult;
+        }
         if (PostgresSchemaBuilder.logToConsole)
             console.time("Postgres Auto create tables and columns")
         for (const entityClass of allEntities) {

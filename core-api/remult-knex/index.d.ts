@@ -16,7 +16,7 @@ export declare class KnexDataProvider implements DataProvider {
 export declare type CustomKnexFilterBuilderFunction = () => Promise<(builder: Knex.QueryBuilder) => void>;
 export declare class KnexSchemaBuilder {
     private knex;
-    verifyStructureOfAllEntities(remult: Remult): Promise<void>;
+    verifyStructureOfAllEntities(remult?: Remult): Promise<void>;
     createIfNotExist(entity: EntityMetadata): Promise<void>;
     addColumnIfNotExist<T extends EntityMetadata>(entity: T, c: ((e: T) => FieldMetadata)): Promise<void>;
     verifyAllColumns<T extends EntityMetadata>(entity: T): Promise<void>;

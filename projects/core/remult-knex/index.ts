@@ -10,7 +10,7 @@ import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions } from 
 import { FieldMetadata } from '../src/column-interfaces';
 import { CompoundIdField } from '../src/column';
 import { Sort } from '../src/sort';
-import { remult as remultContext } from '../src/remult-proxy';
+import { remult as remultContext, RemultProxy } from '../src/remult-proxy';
 
 export class KnexDataProvider implements DataProvider {
     constructor(public knex: Knex) {
@@ -334,7 +334,9 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
 export class KnexSchemaBuilder {
     //@internal
     static logToConsole = true;
-    async verifyStructureOfAllEntities(remult: Remult) {
+    async verifyStructureOfAllEntities(remult?: Remult) {
+        if (!remult)
+            remult = RemultProxy.defaultRemult;
         if (KnexSchemaBuilder.logToConsole)
             console.time("Knex Auto create tables and columns")
         for (const entity of allEntities) {

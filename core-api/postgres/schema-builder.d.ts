@@ -6,7 +6,7 @@ export declare function postgresColumnSyntax(x: FieldMetadata, dbName: string): 
 export declare function verifyStructureOfAllEntities(db: SqlDatabase, remult: Remult): Promise<void>;
 export declare class PostgresSchemaBuilder {
     private pool;
-    verifyStructureOfAllEntities(remult: Remult): Promise<void>;
+    verifyStructureOfAllEntities(remult?: Remult): Promise<void>;
     createIfNotExist(entity: EntityMetadata): Promise<void>;
     addColumnIfNotExist<T extends EntityMetadata>(entity: T, c: ((e: T) => FieldMetadata)): Promise<void>;
     verifyAllColumns<T extends EntityMetadata>(entity: T): Promise<void>;
