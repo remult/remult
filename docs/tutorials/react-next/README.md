@@ -2,7 +2,7 @@
 
 ### Create a simple todo app with Remult using Next.js
 
-In this tutorial, we are going to create a simple app to manage a task list. We'll use `Next.js`, and Remult as our full-stack CRUD framework. For deployment to production, we'll use `Heroku` and a `PostgreSQL` database. 
+In this tutorial, we are going to create a simple app to manage a task list. We'll use `Next.js`, and Remult as our full-stack CRUD framework, and [tailwindcss](https://tailwindcss.com) as a css framework. For deployment to production, we'll use [railway.app](https://railway.app/) to host the application and a `PostgreSQL` database.
 
 By the end of the tutorial, you should have a basic understanding of Remult and how to use it to accelerate and simplify full stack app development.
 
@@ -13,13 +13,14 @@ This tutorial assumes you are familiar with `TypeScript`, `React` and `Next.js`.
 Before you begin, make sure you have [Node.js](https://nodejs.org) and [git](https://git-scm.com/) installed. <!-- consider specifying Node minimum version with npm -->
 
 # Setup for the Tutorial
+
 This tutorial requires setting up a Next.js project and a few lines of code to add Remult.
 
 You can either **use a starter project** to speed things up, or go through the **step-by-step setup**.
 
 ## Option 1: Clone the Starter Project
 
-1. Clone the *remult-nextjs-todo* repository from GitHub and install its dependencies.
+1. Clone the _remult-nextjs-todo_ repository from GitHub and install its dependencies.
 
 ```sh
 git clone https://github.com/remult/nextjs-starter.git remult-nextjs-todo
@@ -43,9 +44,50 @@ At this point, our starter project is up and running. We are now ready to move t
 ### Create a Next.js project
 
 Create the new Next.js project.
+
 ```sh
-npx -y create-next-app@latest remult-nextjs-todo --typescript
+npx -y create-next-app@latest remult-nextjs-todo --typescript --src-dir
 cd remult-nextjs-todo
+```
+
+Open your IDE
+
+### Configure Tailwind (optional)
+
+1. Install Tailwind CSS
+
+```sh
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init -p
+```
+
+2. Configure your template paths
+
+Add the paths to all of your template files in your tailwind.config.js file.
+
+_tailwind.config.js_
+
+```js{3}
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: ["./src/**/*.{js,ts,jsx,tsx}"],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+};
+```
+
+3. Add the Tailwind directives to your CSS
+
+replace the content of the `globals.css` file with:
+
+_src/styles/global.css_
+
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 ```
 
 ### Install Remult
@@ -55,49 +97,49 @@ npm i remult
 ```
 
 ### Bootstrap Remult in the back-end
-Remult is bootstrapped in a `Next.js` using a [catch all dynamic API route](https://nextjs.org/docs/api-routes/dynamic-api-routes#optional-catch-all-api-routes), that passes the handling of requests to an object created using the `createRemultServer` function.
 
-1. Open your IDE.
+Remult is bootstrapped in a `Next.js` using a [catch all dynamic API route](https://nextjs.org/docs/api-routes/dynamic-api-routes#optional-catch-all-api-routes), that passes the handling of requests to an object created using the `remultNext` function.
 
-2. Create a folder named `src` in the project's root.
+1. Create a folder named `server` in the `src` folder
 
-3. Create a folder named `server` in the `src` folder
+2. Create an `api.ts` file in the `src/server` folder with the following code:
 
-4. Create an `api.ts` file in the `src/server` folder with the following code:
+_src/server/api.ts_
 
-*src/server/api.ts*
 ```ts
-import { createRemultServer } from "remult/server";
+import { remultNext } from "remult/remult-next";
 
-export const api = createRemultServer({});
+export const api = remultNext({});
 ```
 
-5. Add a file named `[...remult].ts` in the folder `pages/api`. This file is a "catch all" `Next.js` API route which will be used to handle all API requests.
+5. Add a file named `[...remult].ts` in the folder `src/pages/api`. This file is a "catch all" `Next.js` API route which will be used to handle all API requests.
 
-*pages/api/[...remult].ts*
+_src/pages/api/[...remult].ts_
+
 ```ts
-import { NextApiRequest, NextApiResponse } from 'next'
-import { api } from '../../src/server/api';
+import { NextApiRequest, NextApiResponse } from "next";
+import { api } from "../../server/api";
 
 const handler = async (_req: NextApiRequest, res: NextApiResponse) => {
-    await api.handle(_req, res);
-}
+  await api.handle(_req, res);
+};
 
-export default handler
+export default handler;
 ```
 
-### Enable TypeScript decorators 
+### Enable TypeScript decorators
 
 Add the following entry to the `compilerOptions` section of the `tsconfig.json` file to enable the use of decorators in the React app.
-   
-*tsconfig.json*
+
+_tsconfig.json_
+
 ```json
 "experimentalDecorators": true,
 "emitDecoratorMetadata": true
 ```
-   
+
 ### Run the app
-   
+
 Open a terminal and start the app.
 
 ```sh
@@ -107,4 +149,5 @@ npm run dev
 The default `Next.js` main screen should be displayed.
 
 ### Setup completed
+
 At this point, our starter project is up and running. We are now ready to move to the [next step of the tutorial](./entities.md) and start creating the task list app.
