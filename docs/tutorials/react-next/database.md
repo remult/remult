@@ -25,10 +25,12 @@ Don't worry if you don't have Postgres installed locally. In the next step of th
 
    import { createPostgresConnection } from "remult/postgres";
    
-   export const api = createRemultServer({
+   export const api = remultNext({
         //...
         dataProvider: createPostgresConnection({
             connectionString: "your connection string"
         }),
    });
    ```
+
+   Once the application restarts, it'll use postgres as the data source for your application. It'll automatically create the `tasks` table for you - as you'll see in the `terminal` window.

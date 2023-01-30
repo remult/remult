@@ -32,28 +32,8 @@ After the browser refreshes, **the list of tasks disappeared** and the user can 
 ```sh
 curl -i http://localhost:3000/api/tasks
 ```
-
 :::
 
-::: tip Use authorization metadata to avoid redundant api requests
-Although not necessary, it's a good idea to avoid sending `GET` api requests for tasks from our React app, if the current user is not authorized to access the endpoint.
-
-A simple way to achieve this is by adding the highlighted code lines to the `fetchTasks` function in `home/index.tsx`:
-
-_src/pages/index.tsx_
-
-```ts{2}
-async function fetchTasks() {
-  if (!taskRepo.metadata.apiReadAllowed) return [];
-  return taskRepo.find({
-    limit: 20,
-    orderBy: { completed: "asc" },
-    // where: { completed: true },
-  });
-}
-```
-
-:::
 
 ::: danger Authorized server-side code can still modify tasks
 Although client CRUD requests to `tasks` API endpoints now require a signed-in user, the API endpoint created for our `setAllCompleted` server function remains available to unauthenticated requests. Since the `allowApiCrud` rule we implemented does not affect the server-side code's ability to use the `Task` entity class for performing database CRUD operations, **the `setAllCompleted` function still works as before**.

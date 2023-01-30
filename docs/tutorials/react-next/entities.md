@@ -36,7 +36,7 @@ export class Task {
 }
 ```
 
-3. In the server's `api` module, register the `Task` entity with Remult by adding `entities: [Task]` to an `options` object you pass to the remultNext()` function:
+3. In the server's `api` module, register the `Task` entity with Remult by adding `entities: [Task]` to an `options` object you pass to the `remultNext()` function:
 
 _src/server/api.ts_
 

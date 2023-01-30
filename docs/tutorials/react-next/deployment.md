@@ -1,74 +1,66 @@
 # Deployment
 
-Let's deploy the todo app to [Heroku](https://www.heroku.com/).
+Let's deploy the todo app to [Railway](https://railway.app/).
 
-## Connect to Heroku Postgres
+## Database connection string
 
-Modify the highlighted code in the api server module to only use `Postgres` in production, and keep using the simple JSON db in our dev environment.
+Modify the highlighted code in the api server module to get the postgres connection string from the `DATABASE_URL` environment variable.
 
-*src/server/api.ts*
+_src/server/api.ts_
+
 ```ts{5-8}
 //...
 
-export const api = createRemultServer({
-    //...
-    dataProvider: process.env["NODE_ENV"] === "production" ?
-        createPostgresConnection({
-            configuration: "heroku"
-        }) : undefined,
-    //...
+export const api = remultNext({
+  //...
+  dataProvider: createPostgresConnection({
+    connectionString: process.env["DATABASE_URL"] || "your connection string",
+  }),
+  //...
 });
 ```
 
-The `{ configuration: "heroku" }` argument passed to Remult's `createPostgresConnection()` tells Remult to use the `DATABASE_URL` environment variable as the `connectionString` for Postgres. (See [Heroku documentation](https://devcenter.heroku.com/articles/connecting-heroku-postgres#connecting-in-node-js).)
+## Deploy to Railway
 
-In development, the `dataProvider` function returns `undefined`, causing Remult to continue to use the default JSON-file database.
+In order to deploy the todo app to [railway](https://railway.app/) you'll need a `railway` account. You'll also need [Railway CLI](https://docs.railway.app/develop/cli#npm) installed, and you'll need to login to railway from the cli, using `railway login`.
 
-## Deploy to Heroku
+1. Modify the project's `start` npm script to bind the `$PORT` to the port assigned by railway.
 
-In order to deploy the todo app to [heroku](https://www.heroku.com/) you'll need a `heroku` account. You'll also need [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) and [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli#download-and-install) installed.
+_package.json_
 
-1. Modify the project's `start` npm script to bind the `$PORT` to the port assigned by heroku.
-
-*package.json*
 ```json
 "start": "next start -p $PORT"
 ```
 
-2. Create a Heroku `app`.
+2. Create a Railway `project`.
 
+From the terminal in your project folder run:
 ```sh
-heroku create
+railway init
 ```
-
-3. Set the jwt authentication to something random - you can use an [online UUID generator](https://www.uuidgenerator.net/).
-
-```sh
-heroku config:set NEXTAUTH_SECRET=random-secret
-```
-
-4. Provision a dev postgres database on Heroku.
-
-```sh
-heroku addons:create heroku-postgresql:hobby-dev
-```
-
-5. Commit the changes to git and deploy to Heroku using `git push`.
-
-```sh
-git add .
-git commit -m "todo app tutorial"
-git push heroku main
-```
-
-6. Open the deployed app using `heroku apps:open` command.
-
-```sh
-heroku apps:open
-```
+3. Select `Empty Project`
+4. Set a project name.
+5. Once it's done add a database by running the following command:
+   ```sh
+   railway add
+   ```
+6. Select `postgressql` as the database.
+7. Once that's done run the following command to upload the project to railway:
+   ```sh
+   railway up
+   ```
+8. After it completes the build, let's define a domain for it:
+   1. got to the `railway` project's site and click on the project:
+   2. Select settings
+   3. Under `Environment` click on `Generate Domain`
+   4. Copy the newly generated domain .
+   5. Switch to the `variables` tab
+   6. Add a new variable called `NEXTAUTH_URL` and set it the the newly generated domain you copied on step 4.
+   7. Add another variable called `NEXTAUTH_SECRET` and set it to a random string, you can use an [online UUID generator](https://www.uuidgenerator.net/)
+   8. Open the newly generated domain in the browser and you'll see the app live in production. (it may take a few minutes to go live)
 
 ::: warning Note
-If you run into trouble deploying the app to Heroku, try using Heroku's [documentation](https://devcenter.heroku.com/articles/git).
+If you run into trouble deploying the app to Railway, try using Railway's [documentationhttps://docs.railway.app/deploy/deployments).
 :::
 
 That's it - our application is deployed to production, play with it and enjoy.

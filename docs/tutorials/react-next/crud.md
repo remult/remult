@@ -4,7 +4,7 @@
 
 Now that we can see the list of tasks, it's time to add a few more.
 
-Add the highlighted `newTaskTitle` state and `addTask` method the Home Component
+Add the highlighted `newTaskTitle` state and `addTask` function the Home Component
 
 _src/pages/index.tsx_
 
@@ -72,7 +72,7 @@ Try adding a few tasks to see how it works
 
 ## Mark Tasks as completed
 
-Modify the contents of the `tasks.map` iteration within the `Home` component to include the following `setCompleted` method and call it in the input's `onChange` event.
+Modify the contents of the `tasks.map` iteration within the `Home` component to include the following `setCompleted` function and call it in the input's `onChange` event.
 
 _src/pages/index.tsx_
 
@@ -100,14 +100,14 @@ _src/pages/index.tsx_
 }
 ```
 
-- The `setTask` method is used to replace the state of the changed task in the `tasks` array
+- The `setTask` function is used to replace the state of the changed task in the `tasks` array
 - The `taskRepo.save` method update the `task` to the server and returns the updated value
 
 ## Rename Tasks and Save them
 
 To make the tasks in the list updatable, we'll bind the `tasks` React state to `input` elements and add a _Save_ button to save the changes to the backend database.
 
-Modify the contents of the `tasks.map` iteration within the `Home` component to include the following `setTitle` and `saveTask` methods and add an `input` and a save `button`.
+Modify the contents of the `tasks.map` iteration within the `Home` component to include the following `setTitle` and `saveTask` functions and add an `input` and a save `button`.
 
 _src/pages/index.tsx_
 
@@ -165,8 +165,8 @@ _src/pages/index.tsx_
 }
 ```
 
-- The `setTitle` method, called from the `input`'s `onChange` event, saves the value from the `input` to the `tasks` state.
-- The `saveTask` method, called from the `button`'s' `onClick`event , saved the `task` object to the backend.
+- The `setTitle` function, called from the `input`'s `onChange` event, saves the value from the `input` to the `tasks` state.
+- The `saveTask` function, called from the `button`'s' `onClick`event , saved the `task` object to the backend.
 - The button's icon is an `svg` icon, copied from the [heroicons website](https://heroicons.com/)
 
 Make some changes and refresh the browser to verify the backend database is updated.

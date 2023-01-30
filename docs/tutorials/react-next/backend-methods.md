@@ -6,7 +6,7 @@ When performing operations on multiple entity objects, performance consideration
 
 Let's add two buttons to the todo app: "Set all as completed" and "Set all as uncompleted".
 
-1. Add a `setAllCompleted` async method to the `Home` function component, which accepts a `completed` boolean argument and sets the value of the `completed` field of all the tasks accordingly.
+1. Add a `setAllCompleted` async function to the `Home` function component, which accepts a `completed` boolean argument and sets the value of the `completed` field of all the tasks accordingly.
 
    _src/pages/index.tsx_
 
@@ -74,7 +74,7 @@ export class TasksController {
 
 The `@BackendMethod` decorator tells Remult to expose the method as an API endpoint (the `allowed` property will be discussed later on in this tutorial).
 
-The optional `remult` argument of the static `setAllCompleted` function is intentionally omitted in the client-side calling code. In the server-side, Remult injects `@BackendMethod`-decorated functions with a server `Remult` object. **Unlike the front-end `Remult` object, the server implementation interacts directly with the database.**
+**Unlike the front-end `Remult` object, the server implementation interacts directly with the database.**
 
 2. Register `TasksController` by adding it to the `controllers` array of the `options` object passed to `createRemultServer()`, in the server's `api` module:
 
