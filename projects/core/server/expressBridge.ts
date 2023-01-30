@@ -27,7 +27,7 @@ export interface RemultServerOptions<RequestType extends GenericRequest> {
   };
 
 
-  getUser?: (request: RequestType) => Promise<UserInfo>;
+  getUser?: (request: RequestType) => Promise<UserInfo | undefined>;
   initApi?: (remult: Remult) => void | Promise<void>;
   logApiEndPoints?: boolean;
   defaultGetLimit?: number;
