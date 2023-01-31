@@ -28,7 +28,7 @@ Let's add two buttons to the todo app: "Set all as completed" and "Set all as un
    _src/pages/index.tsx_
 
    ```tsx
-   <div className="flex justify-center border-t-3 p-4 gap-4 flex-wrap ">
+   <div className="flex justify-center border-t-4 p-4 gap-4 flex-wrap ">
      <button
        className="bg-blue-500 hover:bg-blue-700 text-base text-white font-semibold py-1 px-4 rounded focus:outline-none focus:shadow-outline "
        onClick={() => setAllCompleted(true)}

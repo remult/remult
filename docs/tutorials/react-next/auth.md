@@ -32,8 +32,8 @@ After the browser refreshes, **the list of tasks disappeared** and the user can 
 ```sh
 curl -i http://localhost:3000/api/tasks
 ```
-:::
 
+:::
 
 ::: danger Authorized server-side code can still modify tasks
 Although client CRUD requests to `tasks` API endpoints now require a signed-in user, the API endpoint created for our `setAllCompleted` server function remains available to unauthenticated requests. Since the `allowApiCrud` rule we implemented does not affect the server-side code's ability to use the `Task` entity class for performing database CRUD operations, **the `setAllCompleted` function still works as before**.
@@ -66,15 +66,18 @@ npm i next-auth
    _src/pages/api/auth/[...nextauth].ts_
 
    ```ts
-   import NextAuth from "next-auth";
+   import { NextApiRequest } from "next";
+   import { getToken } from "next-auth/jwt";
+   import NextAuth from "next-auth/next";
    import CredentialsProvider from "next-auth/providers/credentials";
-
-   const validUsers = [
-     { id: "1", name: "Jane", roles: [] },
-     { id: "2", name: "Steve", roles: [] },
-   ];
+   import { UserInfo } from "remult";
 
    const secret = process.env["NEXTAUTH_SECRET"] || "my secret";
+
+   const validUsers: UserInfo[] = [
+     { id: "1", name: "Jane" },
+     { id: "2", name: "Steve" },
+   ];
 
    export default NextAuth({
      providers: [
@@ -82,19 +85,16 @@ npm i next-auth
          name: "Username",
          credentials: {
            name: {
-             label: "",
+             label: "Username",
              type: "text",
-             placeholder: "Username, try Steve or Jane",
+             placeholder: "Try Steve or Jane",
            },
          },
-         authorize(credentials) {
-           return (
-             validUsers.find((user) => user.name === credentials?.name) || null
-           );
-         },
+         authorize: (credentials) =>
+           validUsers.find((user) => user.name === credentials?.name) || null,
        }),
      ],
-     secret: secret,
+     secret,
    });
    ```
 
@@ -108,8 +108,8 @@ _src/pages/\_app.tsx_
 
 ```tsx{3,5-15}
 import "@/styles/globals.css";
-import { SessionProvider } from "next-auth/react";
 import type { AppProps } from "next/app";
+import { SessionProvider } from "next-auth/react";
 
 export default function App({
   Component,
@@ -291,5 +291,8 @@ const validUsers = [
   { id: "2", name: "Steve", roles: [] },
 ];
 ```
+::: warning Import Roles
+This code requires adding an import of `Roles` from `./Roles`.
+:::
 
 **Sign in to the app as _"Steve"_ to test that the actions restricted to `admin` users are not allowed. :lock:**

@@ -173,7 +173,7 @@ Make some changes and refresh the browser to verify the backend database is upda
 
 ::: tip Browser's Network tab
 As you play with these `CRUD` capabilities, monitor the network tab and see that they are all translated to `rest` api calls.
-
+:::
 ## Delete Tasks
 
 Let's add a _Delete_ button next to the _Save_ button of each task in the list.
@@ -184,7 +184,7 @@ _src/pages/index.tsx_
 
 ```tsx{1-4,6-21}
 const deleteTask = async () => {
-  await remult.repo(Task).delete(task);
+  await taskRepo.delete(task);
   setTasks(tasks.filter((t) => t !== task));
 };
 //...

@@ -57,7 +57,8 @@ railway init
    5. Switch to the `variables` tab
    6. Add a new variable called `NEXTAUTH_URL` and set it the the newly generated domain you copied on step 4.
    7. Add another variable called `NEXTAUTH_SECRET` and set it to a random string, you can use an [online UUID generator](https://www.uuidgenerator.net/)
-   8. Open the newly generated domain in the browser and you'll see the app live in production. (it may take a few minutes to go live)
+   8. Wait for railway to complete the build and deployment
+   9. Open the newly generated domain in the browser and you'll see the app live in production. (it may take a few minutes to go live)
 
 ::: warning Note
 If you run into trouble deploying the app to Railway, try using Railway's [documentationhttps://docs.railway.app/deploy/deployments).
