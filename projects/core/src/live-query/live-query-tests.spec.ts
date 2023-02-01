@@ -390,7 +390,7 @@ describe("test live query full cycle", () => {
         u();
     });
     it("test unsubscribe works", async () => {
-        var { repo, pm, messageCount, qm, unsubscribeCount,remult } = setup2();
+        var { repo, pm, messageCount, qm, unsubscribeCount, remult } = setup2();
         let result1: eventTestEntity[] = [];
         const unsubscribe = repo.liveQuery().subscribe(({ applyChanges: reducer }) => result1 = reducer(result1));
         await pm.flush();
@@ -399,7 +399,7 @@ describe("test live query full cycle", () => {
         expect(result1.length).toBe(1);
         expect(messageCount()).toBe(1);
         expect(qm.queries.length).toBe(1);
-        
+
         unsubscribe();
         await pm.flush();
         await repo.insert({ id: 2, title: 'noam' });
@@ -467,6 +467,7 @@ describe("test live query full cycle", () => {
         let arr2 = [];
         let arr1Items: eventTestEntity[][] = [];
         let arr1Messages: LiveQueryChange[][] = [];
+        let arr2Messages: LiveQueryChange[][] = [];
         const u1 = repo.liveQuery({ where: { title: { $contains: "a" } } }).subscribe(y => {
             arr1 = y.applyChanges(arr1);
             arr1Items.push([...y.items]);
@@ -475,7 +476,10 @@ describe("test live query full cycle", () => {
         await pm.flush();
         let done = false;
         const u2 = repo.liveQuery({ where: { title: { $contains: "b" } } }).subscribe({
-            next: y => arr2 = y.applyChanges(arr2),
+            next: y => {
+                arr2 = y.applyChanges(arr2)
+                arr2Messages.push(y.changes)
+            },
             complete: () => done = true
         });
         await pm.flush();
@@ -485,6 +489,7 @@ describe("test live query full cycle", () => {
         expect(arr2.length).toBe(2);
         expect(arr1Items.length).toBe(2);
         expect(arr1Messages.length).toBe(2);
+        expect(arr2Messages.length).toBe(1);
         expect(arr1Items[0].length).toBe(2);
         expect(arr1Items[1].length).toBe(3);
         expect(arr1Messages[0].length).toBe(1);
@@ -604,7 +609,7 @@ it("test channel subscribe", async () => {
                     }
                 },
                 close() {
-                    
+
                 },
             }
         }
@@ -624,7 +629,7 @@ it("test channel subscribe", async () => {
     r2();
     await pr.flush();
     expect(sub).toBe(0);
-    
+
 })
 
 

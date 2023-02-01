@@ -63,7 +63,8 @@ export class LiveQueryPublisher implements LiveQueryChangesListener {
           });
           query.lastIds = currentIds;
           await setData(query);
-          this.subscriptionServer().publishMessage(q.id, messages);
+          if (messages.length > 0)
+            this.subscriptionServer().publishMessage(q.id, messages);
         })
 
       }));
