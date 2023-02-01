@@ -6,7 +6,7 @@ Let's deploy the todo app to [Railway](https://railway.app/).
 
 Modify the highlighted code in the api server module to get the postgres connection string from the `DATABASE_URL` environment variable.
 
-_src/server/api.ts_
+_src/pages/api/[...remult].ts_
 
 ```ts{5-8}
 //...

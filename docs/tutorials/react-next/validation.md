@@ -12,9 +12,9 @@ _src/shared/Task.ts_
 
 ```ts{1-3}
 @Fields.string({
-    validate: Validators.required
+  validate: Validators.required
 })
-title = '';
+title = ""
 ```
 
 ::: warning Import Validators
@@ -49,10 +49,9 @@ _src/shared/Task.ts_
 
 ```ts
 @Fields.string<Task>({
-    validate: (task) => {
-        if (task.title.length < 3)
-            throw "Too Short";
-    }
+  validate: (task) => {
+    if (task.title.length < 3) throw "Too Short"
+  }
 })
-title = '';
+title = ""
 ```

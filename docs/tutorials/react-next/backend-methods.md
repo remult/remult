@@ -13,34 +13,24 @@ Let's add two buttons to the todo app: "Set all as completed" and "Set all as un
    ```ts
    const setAllCompleted = async (completed: boolean) => {
      for (const task of await taskRepo.find()) {
-       await taskRepo.save({ ...task, completed });
+       await taskRepo.save({ ...task, completed })
      }
-     setTasks(await fetchTasks());
-   };
+     setTasks(await fetchTasks())
+   }
    ```
 
    The `for` loop iterates the array of `Task` objects returned from the backend, and saves each task back to the backend with a modified value in the `completed` field.
 
    After all the tasks are saved, we refetch the task list using the `fetchTasks` function and update the React state.
 
-2. Add the two buttons to the return section of the `Home` component. Both of the buttons' `onClick` events will call the `setAllCompleted` method with the appropriate value of the `completed` argument.
+2. Add the two buttons to the return section of the `Home` component, just before the closing `</main>` tag. Both of the buttons' `onClick` events will call the `setAllCompleted` method with the appropriate value of the `completed` argument.
 
    _src/pages/index.tsx_
 
    ```tsx
-   <div className="flex justify-center border-t-4 p-4 gap-4 flex-wrap ">
-     <button
-       className="bg-blue-500 hover:bg-blue-700 text-base text-white font-semibold py-1 px-4 rounded focus:outline-none focus:shadow-outline "
-       onClick={() => setAllCompleted(true)}
-     >
-       Set All Completed
-     </button>
-     <button
-       className="bg-blue-500 hover:bg-blue-700 text-base text-white font-semibold py-1 px-4 rounded focus:outline-none focus:shadow-outline"
-       onClick={() => setAllCompleted(false)}
-     >
-       Set All Uncompleted
-     </button>
+   <div>
+     <button onClick={() => setAllCompleted(true)}>Set All Completed</button>
+     <button onClick={() => setAllCompleted(false)}>Set All Uncompleted</button>
    </div>
    ```
 
@@ -57,16 +47,16 @@ A simple way to prevent this is to expose an API endpoint for `setAllCompleted` 
 _src/shared/TasksController.ts_
 
 ```ts
-import { BackendMethod, remult } from "remult";
-import { Task } from "./Task";
+import { BackendMethod, remult } from "remult"
+import { Task } from "./Task"
 
 export class TasksController {
   @BackendMethod({ allowed: true })
   static async setAllCompleted(completed: boolean) {
-    const taskRepo = remult.repo(Task);
+    const taskRepo = remult.repo(Task)
 
     for (const task of await taskRepo.find()) {
-      await taskRepo.save({ ...task, completed });
+      await taskRepo.save({ ...task, completed })
     }
   }
 }
@@ -78,16 +68,16 @@ The `@BackendMethod` decorator tells Remult to expose the method as an API endpo
 
 2. Register `TasksController` by adding it to the `controllers` array of the `options` object passed to `createRemultServer()`, in the server's `api` module:
 
-_src/server/api.ts_
+_src/pages/api/[...remult].ts_
 
 ```ts{2,6}
 //...
-import { TasksController } from "../shared/TasksController";
+import { TasksController } from "../../shared/TasksController"
 
 export const api = remultNext({
   //...
-  controllers: [TasksController],
-});
+  controllers: [TasksController]
+})
 ```
 
 3. Replace the `for` iteration in the `setAllCompleted` function of the `Home` component with a call to the `setAllCompleted` method in the `TasksController`.
@@ -96,9 +86,9 @@ _src/pages/index.tsx_
 
 ```tsx{2}
 const setAllCompleted = async (completed: boolean) => {
-  await TasksController.setAllCompleted(completed);
-  setTasks(await fetchTasks());
-};
+  await TasksController.setAllCompleted(completed)
+  setTasks(await fetchTasks())
+}
 ```
 
 ::: warning Import TasksController

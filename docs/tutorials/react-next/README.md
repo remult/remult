@@ -55,7 +55,12 @@ Open your IDE
 ### Cleanup Next.js default css
 To start from scratch, let's cleanup the default css provided by nest.
 
-**Delete the content** of the `src/styles/globals.css` file
+You can either:
+
+1. **Delete the content** of the `src/styles/globals.css` file
+
+2. Or Optionally, make the app look a little better by replacing the contents of `src/styles/globals.css` with [this CSS file](https://raw.githubusercontent.com/remult/react-vite-express-starter/completed-tutorial/src/index.css).
+// TODO - update css to a new one
 
 ### Install Remult
 
@@ -67,31 +72,14 @@ npm i remult
 
 Remult is bootstrapped in a `Next.js` using a [catch all dynamic API route](https://nextjs.org/docs/api-routes/dynamic-api-routes#optional-catch-all-api-routes), that passes the handling of requests to an object created using the `remultNext` function.
 
-1. Create a folder named `server` in the `src` folder
-
-2. Create an `api.ts` file in the `src/server` folder with the following code:
-
-_src/server/api.ts_
-
-```ts
-import { remultNext } from "remult/remult-next"
-
-export const api = remultNext({})
-```
-
-5. Add a file named `[...remult].ts` in the folder `src/pages/api`. This file is a "catch all" `Next.js` API route which will be used to handle all API requests.
+Add a file named `[...remult].ts` in the folder `src/pages/api`. This file is a "catch all" `Next.js` API route which will be used to handle all API requests.
 
 _src/pages/api/[...remult].ts_
 
 ```ts
-import { NextApiRequest, NextApiResponse } from "next"
-import { api } from "../../server/api"
+import { remultNext } from "remult/remult-next";
 
-const handler = async (_req: NextApiRequest, res: NextApiResponse) => {
-  await api.handle(_req, res)
-}
-
-export default handler
+export default remultNext({})
 ```
 
 ### Enable TypeScript decorators
@@ -118,3 +106,4 @@ The default `Next.js` main screen should be displayed.
 ### Setup completed
 
 At this point, our starter project is up and running. We are now ready to move to the [next step of the tutorial](./entities.md) and start creating the task list app.
+

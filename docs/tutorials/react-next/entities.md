@@ -19,34 +19,34 @@ The `Task` entity class we're creating will have an auto-generated UUID `id` fie
 _src/shared/Task.ts_
 
 ```ts
-import { Entity, Fields } from "remult";
+import { Entity, Fields } from "remult"
 
 @Entity("tasks", {
-  allowApiCrud: true,
+  allowApiCrud: true
 })
 export class Task {
   @Fields.autoIncrement()
-  id = 0;
+  id = 0
 
   @Fields.string()
-  title = "";
+  title = ""
 
   @Fields.boolean()
-  completed = false;
+  completed = false
 }
 ```
 
 3. In the server's `api` module, register the `Task` entity with Remult by adding `entities: [Task]` to an `options` object you pass to the `remultNext()` function:
 
-_src/server/api.ts_
+_src/pages/api/[...remult].ts_
 
 ```ts{2,5}
-import { remultNext } from "remult/remult-next";
-import { Task } from "../shared/Task";
+import { remultNext } from "remult/remult-next"
+import { Task } from "../../shared/Task"
 
 export const api = remultNext({
-  entities: [Task],
-});
+  entities: [Task]
+})
 ```
 
 The [@Entity](../../docs/ref_entity.md) decorator tells Remult this class is an entity class. The decorator accepts a `key` argument (used to name the API route and as a default database collection/table name), and an `options` argument used to define entity-related properties and operations, discussed in the next sections of this tutorial.
@@ -87,39 +87,37 @@ Replace the contents of `src/pages/index.tsx` with the following code:
 _src/pages/index.tsx_
 
 ```tsx
-import { useEffect, useState } from "react";
-import { remult } from "remult";
-import { Task } from "../shared/Task";
+import { useEffect, useState } from "react"
+import { remult } from "remult"
+import { Task } from "../shared/Task"
 
-const taskRepo = remult.repo(Task);
+const taskRepo = remult.repo(Task)
 
 async function fetchTasks() {
-  return taskRepo.find();
+  return taskRepo.find()
 }
 export default function Home() {
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([])
 
   useEffect(() => {
-    fetchTasks().then(setTasks);
-  }, []);
+    fetchTasks().then(setTasks)
+  }, [])
 
   return (
-    <div className="flex items-center justify-center h-screen bg-gray-50 text-lg flex-col">
-      <h3 className="text-6xl text-red-500 italic">Todos</h3>
-      <main className="bg-white border rounded-lg  shadow-lg flex flex-col w-screen m-5 max-w-md">
-        {tasks.map((task) => (
-          <div key={task.id} className="flex border px-6 py-2 gap-2">
-            <input
-              className="w-6 mr-2"
-              type="checkbox"
-              checked={task.completed}
-            />
-            {task.title}
-          </div>
-        ))}
+    <div>
+      <h1>Todos</h1>
+      <main>
+        {tasks.map(task => {
+          return (
+            <div key={task.id}>
+              <input type="checkbox" checked={task.completed} />
+              {task.title}
+            </div>
+          )
+        })}
       </main>
     </div>
-  );
+  )
 }
 ```
 

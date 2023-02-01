@@ -57,27 +57,25 @@ Let's set-up `NextAuth.js` to authenticate users to our app.
 
 1. Install `next-auth`:
 
-```sh
-npm i next-auth
-```
+   ```sh
+   npm i next-auth
+   ```
 
 2. In the `src/pages/api` folder, create a folder called `auth` and Create the following `[...nextauth].ts` file in it (API route).
 
    _src/pages/api/auth/[...nextauth].ts_
 
    ```ts
-   import { NextApiRequest } from "next";
-   import { getToken } from "next-auth/jwt";
-   import NextAuth from "next-auth/next";
-   import CredentialsProvider from "next-auth/providers/credentials";
-   import { UserInfo } from "remult";
+   import NextAuth from "next-auth/next"
+   import CredentialsProvider from "next-auth/providers/credentials"
+   import { UserInfo } from "remult"
 
-   const secret = process.env["NEXTAUTH_SECRET"] || "my secret";
+   const secret = process.env["NEXTAUTH_SECRET"] || "my secret"
 
    const validUsers: UserInfo[] = [
      { id: "1", name: "Jane" },
-     { id: "2", name: "Steve" },
-   ];
+     { id: "2", name: "Steve" }
+   ]
 
    export default NextAuth({
      providers: [
@@ -87,15 +85,15 @@ npm i next-auth
            name: {
              label: "Username",
              type: "text",
-             placeholder: "Try Steve or Jane",
-           },
+             placeholder: "Try Steve or Jane"
+           }
          },
-         authorize: (credentials) =>
-           validUsers.find((user) => user.name === credentials?.name) || null,
-       }),
+         authorize: credentials =>
+           validUsers.find(user => user.name === credentials?.name) || null
+       })
      ],
-     secret,
-   });
+     secret
+   })
    ```
 
    This (very) simplistic NextAuth.js [CredentialsProvider](https://next-auth.js.org/providers/credentials) authorizes users by looking up a `username` in a predefined list of valid users.
@@ -107,21 +105,20 @@ Add the highlighted code to the `_app.tsx` Next.js page:
 _src/pages/\_app.tsx_
 
 ```tsx{3,5-15}
-import "@/styles/globals.css";
-import type { AppProps } from "next/app";
-import { SessionProvider } from "next-auth/react";
+import "@/styles/globals.css"
+import type { AppProps } from "next/app"
+import { SessionProvider } from "next-auth/react"
 
 export default function App({
   Component,
-  pageProps: { session, ...pageProps },
+  pageProps: { session, ...pageProps }
 }: AppProps) {
   return (
     <SessionProvider session={session}>
       <Component {...pageProps} />
     </SessionProvider>
-  );
+  )
 }
-
 ```
 
 Add the highlighted code to the `Home` Next.js page:
@@ -130,12 +127,12 @@ _src/pages/index.tsx_
 
 ```tsx{2,7,11-25,31-39}
 //... imports
-import { signIn, signOut, useSession } from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react"
 
 //... fetchTasks
 
 export default function Home() {
-  const { data: session } = useSession();
+  const { data: session } = useSession()
 
   //,,,
 
@@ -152,7 +149,7 @@ export default function Home() {
           </button>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -172,7 +169,7 @@ export default function Home() {
         ...
       </main>
     </div>
-  );
+  )
 }
 ```
 
@@ -186,8 +183,8 @@ _src/pages/api/auth/[...nextauth].ts_
 
 ```ts
 export async function getUserFromNextAuth(req: NextApiRequest) {
-  const token = await getToken({ req, secret });
-  return validUsers.find((u) => u.id === token?.sub);
+  const token = await getToken({ req, secret })
+  return validUsers.find(u => u.id === token?.sub)
 }
 ```
 
@@ -197,17 +194,17 @@ This code requires adding an import of `NextApiRequest` from `next` and `getToke
 
 2. Set the `getUser` property of the options object of `remultNext` to the `getUserFromNextAuth` function:
 
-   _src/server/api.ts_
+   _src/pages/api/[...remult].ts_
 
 ```ts{1,7}
-import { getUserFromNextAuth } from "../pages/api/auth/[...nextauth]";
+import { getUserFromNextAuth } from "../pages/api/auth/[...nextauth]"
 
 //...
 
 export const api = remultNext({
   //...
-  getUser: getUserFromNextAuth,
-});
+  getUser: getUserFromNextAuth
+})
 ```
 
 The todo app now supports signing in and out, with **all access restricted to signed in users only**.
@@ -227,8 +224,8 @@ _src/shared/Roles.ts_
 
 ```ts
 export const Roles = {
-  admin: "admin",
-};
+  admin: "admin"
+}
 ```
 
 2. Modify the highlighted lines in the `Task` entity class to reflect the top three authorization rules.
@@ -236,27 +233,27 @@ export const Roles = {
 _src/shared/Task.ts_
 
 ```ts{2,5-8,16}
-import { Allow, Entity, Fields, Validators } from "remult";
-import { Roles } from "./Roles";
+import { Allow, Entity, Fields, Validators } from "remult"
+import { Roles } from "./Roles"
 
 @Entity<Task>("tasks", {
   allowApiRead: Allow.authenticated,
   allowApiUpdate: Allow.authenticated,
   allowApiInsert: Roles.admin,
-  allowApiDelete: Roles.admin,
+  allowApiDelete: Roles.admin
 })
 export class Task {
   @Fields.uuid()
-  id!: string;
+  id!: string
 
   @Fields.string({
     validate: Validators.required,
-    allowApiUpdate: Roles.admin,
+    allowApiUpdate: Roles.admin
   })
-  title = "";
+  title = ""
 
   @Fields.boolean()
-  completed = false;
+  completed = false
 }
 ```
 
@@ -265,17 +262,17 @@ export class Task {
 _src/shared/TasksController.ts_
 
 ```ts{3,6}
-import { Allow, BackendMethod, remult } from "remult";
-import { Task } from "./Task";
-import { Roles } from "./Roles";
+import { Allow, BackendMethod, remult } from "remult"
+import { Task } from "./Task"
+import { Roles } from "./Roles"
 
 export class TasksController {
   @BackendMethod({ allowed: Roles.admin })
   static async setAll(completed: boolean) {
-    const taskRepo = remult.repo(Task);
+    const taskRepo = remult.repo(Task)
 
     for (const task of await taskRepo.find()) {
-      await taskRepo.save({ ...task, completed });
+      await taskRepo.save({ ...task, completed })
     }
   }
 }
@@ -288,17 +285,17 @@ _pages/api/auth/[...nextauth].ts_
 ```ts{2}
 const validUsers = [
   { id: "1", name: "Jane", roles: [Roles.admin] },
-  { id: "2", name: "Steve", roles: [] },
-];
+  { id: "2", name: "Steve", roles: [] }
+]
 ```
+
 ::: warning Import Roles
 This code requires adding an import of `Roles` from `./Roles`.
 :::
 
 **Sign in to the app as _"Steve"_ to test that the actions restricted to `admin` users are not allowed. :lock:**
 
-//TODO - remove tailwind
 //TODO - remove Roles
 //TODO - try to make next-auth give sensible session info.
 //TODO - vercel deployment
-//TODO - remove server folder and replace `api` with [...remult]
+//TODO - consider remult.authenticated instead of Allow.authenticated
