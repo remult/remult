@@ -2,7 +2,7 @@
 
 ### Create a simple todo app with Remult using Next.js
 
-In this tutorial, we are going to create a simple app to manage a task list. We'll use `Next.js`, and Remult as our full-stack CRUD framework, and [tailwindcss](https://tailwindcss.com) as a css framework. For deployment to production, we'll use [railway.app](https://railway.app/) to host the application and a `PostgreSQL` database.
+In this tutorial, we are going to create a simple app to manage a task list. We'll use `Next.js`, and Remult as our full-stack CRUD framework. For deployment to production, we'll use [railway.app](https://railway.app/) to host the application and a `PostgreSQL` database.
 
 By the end of the tutorial, you should have a basic understanding of Remult and how to use it to accelerate and simplify full stack app development.
 
@@ -52,43 +52,10 @@ cd remult-nextjs-todo
 
 Open your IDE
 
-### Configure Tailwind (optional)
+### Cleanup Next.js default css
+To start from scratch, let's cleanup the default css provided by nest.
 
-1. Install Tailwind CSS
-
-```sh
-npm install -D tailwindcss postcss autoprefixer
-npx tailwindcss init -p
-```
-
-2. Configure your template paths
-
-Add the paths to all of your template files in your tailwind.config.js file.
-
-_tailwind.config.js_
-
-```js{3}
-/** @type {import('tailwindcss').Config} */
-module.exports = {
-  content: ["./src/**/*.{js,ts,jsx,tsx}"],
-  theme: {
-    extend: {},
-  },
-  plugins: [],
-};
-```
-
-3. Add the Tailwind directives to your CSS
-
-replace the content of the `globals.css` file with:
-
-_src/styles/global.css_
-
-```css
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-```
+**Delete the content** of the `src/styles/globals.css` file
 
 ### Install Remult
 
@@ -107,9 +74,9 @@ Remult is bootstrapped in a `Next.js` using a [catch all dynamic API route](http
 _src/server/api.ts_
 
 ```ts
-import { remultNext } from "remult/remult-next";
+import { remultNext } from "remult/remult-next"
 
-export const api = remultNext({});
+export const api = remultNext({})
 ```
 
 5. Add a file named `[...remult].ts` in the folder `src/pages/api`. This file is a "catch all" `Next.js` API route which will be used to handle all API requests.
@@ -117,14 +84,14 @@ export const api = remultNext({});
 _src/pages/api/[...remult].ts_
 
 ```ts
-import { NextApiRequest, NextApiResponse } from "next";
-import { api } from "../../server/api";
+import { NextApiRequest, NextApiResponse } from "next"
+import { api } from "../../server/api"
 
 const handler = async (_req: NextApiRequest, res: NextApiResponse) => {
-  await api.handle(_req, res);
-};
+  await api.handle(_req, res)
+}
 
-export default handler;
+export default handler
 ```
 
 ### Enable TypeScript decorators

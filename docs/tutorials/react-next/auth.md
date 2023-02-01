@@ -296,3 +296,9 @@ This code requires adding an import of `Roles` from `./Roles`.
 :::
 
 **Sign in to the app as _"Steve"_ to test that the actions restricted to `admin` users are not allowed. :lock:**
+
+//TODO - remove tailwind
+//TODO - remove Roles
+//TODO - try to make next-auth give sensible session info.
+//TODO - vercel deployment
+//TODO - remove server folder and replace `api` with [...remult]
