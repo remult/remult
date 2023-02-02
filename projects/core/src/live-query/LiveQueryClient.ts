@@ -55,7 +55,7 @@ export class LiveQueryClient {
         });
         return () => {
             onUnsubscribe();
-            onUnsubscribe = ()=>{};
+            onUnsubscribe = () => { };
         };
     }
     timeoutToCloseWhenNotClosed = 1000;
@@ -82,13 +82,10 @@ export class LiveQueryClient {
     ) {
 
 
-        let alive = true;
         let onUnsubscribe: VoidFunction = () => { };
-        this.runPromise(this.openIfNoOpened()
-            .then(() => (repo as RepositoryImplementation<entityType>).buildEntityDataProviderFindOptions(options)
-                .then(opts => {
-                    if (!alive)
-                        return;
+        this.runPromise((repo as RepositoryImplementation<entityType>).buildEntityDataProviderFindOptions(options)
+            .then(opts => this.openIfNoOpened()
+                .then(() => {
                     const { createKey, subscribe } = new RestDataProvider(this.apiProvider).getEntityDataProvider(repo.metadata).buildFindRequest(opts);
                     const eventTypeKey = createKey();
                     let q = this.queries.get(eventTypeKey);
@@ -102,6 +99,10 @@ export class LiveQueryClient {
                             }
                             this.runPromise(subscribe()
                                 .then(r => {
+                                    if (q.listeners.length === 0) {
+                                        r.unsubscribe();
+                                        return;
+                                    }
                                     let unsubscribeToChannel = this.subscribeChannel(r.queryChannel, {
                                         next: (value: any) => this.runPromise(q.handle(value)),
                                         complete: () => { },
@@ -110,7 +111,7 @@ export class LiveQueryClient {
                                         }
                                     });
                                     q.unsubscribe = () => {
-                                        q.unsubscribe = ()=>{}
+                                        q.unsubscribe = () => { }
                                         unsubscribeToChannel();
                                         this.runPromise(r.unsubscribe());
                                     }
@@ -143,7 +144,6 @@ export class LiveQueryClient {
             }));
 
         return () => {
-            alive = false;
             onUnsubscribe();
         };
 
