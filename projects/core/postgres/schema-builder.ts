@@ -94,9 +94,9 @@ export class PostgresSchemaBuilder {
                             result += e.$dbNameOf(x) + ' serial';
                         else {
                             result += postgresColumnSyntax(x, e.$dbNameOf(x));
-                            if (x == entity.idMetadata.field)
-                                result += ' primary key';
                         }
+                        if (x == entity.idMetadata.field)
+                            result += ' primary key';
                     }
                 }
 
