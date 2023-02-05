@@ -196,7 +196,9 @@ module.exports = {
             'backend-methods',
             'auth',
             'database',
-            'deployment'
+            'deployment',
+            'appendix-1-get-server-side-props',
+            'appendix-2-using-authorization-metadata-in-front-end'
           ]
         }],
 
