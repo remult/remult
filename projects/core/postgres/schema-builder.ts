@@ -54,9 +54,13 @@ export class PostgresSchemaBuilder {
         }
         if (PostgresSchemaBuilder.logToConsole)
             console.time("Postgres Auto create tables and columns")
-        for (const entityClass of allEntities) {
+        const completed = new Set<string>();
+        for (const entityClass of [...allEntities].reverse()) {
             let entity = remult.repo(entityClass).metadata;
             let e: EntityDbNamesBase = await dbNamesOf(entity);
+            if (completed.has(e.$entityName))
+                continue;
+            completed.add(e.$entityName)
             try {
                 if (!entity.options.sqlExpression) {
                     if ((await e.$entityName).toLowerCase().indexOf('from ') < 0) {
