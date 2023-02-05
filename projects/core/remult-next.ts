@@ -28,7 +28,7 @@ export function remultNext(
       getServerSideProps: (getServerPropsFunction) => {
         return (context) => {
           return new Promise<GetServerSidePropsResult<any>>((res, err) => {
-            result.withRemult(context, undefined!, async () => {
+            result.withRemult(context.req, context.res, async () => {
               try {
                 let r = await getServerPropsFunction(context)
                 res(JSON.parse(JSON.stringify(r)))
