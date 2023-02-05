@@ -63,11 +63,16 @@ Now that the `Task` entity is defined, we can start using the `api` to query and
 
 1. Open a browser with the url: [http://localhost:3000/api/tasks](http://localhost:3000/api/tasks), and you'll see that you get an empty array.
 2. Use `curl` to `POST` a new task
+   1. **clean Car**
    ```sh
    curl http://localhost:3000/api/tasks -d "{\"title\": \"Clean car\"}" -H "Content-Type: application/json"
    ```
 3. Refresh the browser for the url: [http://localhost:3000/api/tasks](http://localhost:3000/api/tasks) and see that the array now contains one item.
 4. Use `curl` to `POST` several more tasks
+   1. Read a book
+   2. Take a nap (completed)
+   3. Pay bills
+   4. Do laundry
    ```sh
    curl http://localhost:3000/api/tasks -d "[{\"title\": \"Read a book\"},{\"title\": \"Take a nap\", \"completed\":true },{\"title\": \"Pay bills\"},{\"title\": \"Do laundry\"}]" -H "Content-Type: application/json"
    ```

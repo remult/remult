@@ -61,7 +61,21 @@ Let's set-up `NextAuth.js` to authenticate users to our app.
    npm i next-auth
    ```
 
-2. In the `src/pages/api` folder, create a folder called `auth` and Create the following `[...nextauth].ts` file in it (API route).
+2. `NextAuth` requires a "secret" used to encrypt the NextAuth.js JWT.
+
+   Create a file called `.env.local` and set the `NEXTAUTH_SECRET` to a random string.
+
+   _.env.local_
+
+   ```
+   NEXTAUTH_SECRET=something-secret
+   ```
+
+   :::tip
+   you can use an [online UUID generator](https://www.uuidgenerator.net/) to generate a completely random string
+   :::
+
+3. In the `src/pages/api` folder, create a folder called `auth` and Create the following `[...nextauth].ts` file in it (API route).
 
    _src/pages/api/auth/[...nextauth].ts_
 
@@ -69,8 +83,6 @@ Let's set-up `NextAuth.js` to authenticate users to our app.
    import NextAuth from "next-auth/next"
    import CredentialsProvider from "next-auth/providers/credentials"
    import { UserInfo } from "remult"
-
-   const secret = process.env["NEXTAUTH_SECRET"] || "my secret"
 
    const validUsers: UserInfo[] = [
      { id: "1", name: "Jane" },
@@ -80,19 +92,16 @@ Let's set-up `NextAuth.js` to authenticate users to our app.
    export default NextAuth({
      providers: [
        CredentialsProvider({
-         name: "Username",
          credentials: {
            name: {
              label: "Username",
-             type: "text",
              placeholder: "Try Steve or Jane"
            }
          },
          authorize: credentials =>
            validUsers.find(user => user.name === credentials?.name) || null
        })
-     ],
-     secret
+     ]
    })
    ```
 
@@ -104,7 +113,7 @@ Add the highlighted code to the `_app.tsx` Next.js page:
 
 _src/pages/\_app.tsx_
 
-```tsx{3,5-15}
+```tsx{3,7,10,12}
 import "@/styles/globals.css"
 import type { AppProps } from "next/app"
 import { SessionProvider } from "next-auth/react"
@@ -121,56 +130,30 @@ export default function App({
 }
 ```
 
-Add the highlighted code to the `Home` Next.js page:
+Replace the `useEffect` with the highlighted code to the `Home` Next.js page:
 
 _src/pages/index.tsx_
 
-```tsx{2,7,11-25,31-39}
-//... imports
+```tsx{1,3-9,14-15}
 import { signIn, signOut, useSession } from "next-auth/react"
-
-//... fetchTasks
-
-export default function Home() {
-  const { data: session } = useSession()
-
-  //,,,
-
-  if (!session) {
-    return (
-      <div>
-        <div className="flex items-center justify-center h-screen bg-gray-50 text-lg flex-col">
-          <h3 className="text-6xl text-red-500 italic">Todos</h3>
-          <button
-            className="bg-blue-500 hover:bg-blue-700 text-base text-white font-semibold py-1 px-4 rounded focus:outline-none focus:shadow-outline mt-8"
-            onClick={() => signIn()}
-          >
-            Sign In
-          </button>
-        </div>
-      </div>
-    )
+//...
+const session = useSession()
+useEffect(() => {
+  if (session.status === "unauthenticated") signIn()
+  else {
+    fetchTasks().then(setTasks)
   }
-
-  return (
-    <div className="flex items-center justify-center h-screen bg-gray-50 text-lg flex-col">
-      <h3 className="text-6xl text-red-500 italic">Todos</h3>
-      <main className="bg-white border rounded-lg  shadow-lg flex flex-col w-screen m-5 max-w-md">
-        <div className="flex  justify-between px-6 p-2">
-          Hello {session.user!.name}
-          <button
-            className="bg-blue-500 hover:bg-blue-700 text-base text-white font-semibold py-1 px-4 rounded focus:outline-none focus:shadow-outline"
-            onClick={() => signOut()}
-          >
-            Sign Out
-          </button>
-        </div>
-        <form onSubmit={addTask} className="border-b-2 p-2 px-6 flex"></form>
-        ...
-      </main>
-    </div>
-  )
-}
+}, [session])
+return (
+  <div>
+    <h1>Todos</h1>
+    <main>
+      Hello {session.data?.user?.name}
+      <button onClick={() => signOut()}>Sign Out</button>
+      ...
+    </main>
+  </div>
+)
 ```
 
 ### Connect Remult-Next
@@ -183,7 +166,7 @@ _src/pages/api/auth/[...nextauth].ts_
 
 ```ts
 export async function getUserFromNextAuth(req: NextApiRequest) {
-  const token = await getToken({ req, secret })
+  const token = await getToken({ req })
   return validUsers.find(u => u.id === token?.sub)
 }
 ```
@@ -216,39 +199,28 @@ Usually, not all application users have the same privileges. Let's define an `ad
 - All signed in users can see the list of tasks.
 - All signed in users can set specific tasks as `completed`.
 - Only users belonging to the `admin` role can create, delete or edit the titles of tasks.
-- Only users belonging to the `admin` role can mark all tasks as completed or uncompleted.
 
-1. Create a `roles.ts` file in the `src/shared/` folder, with the following `Roles`:
-
-_src/shared/Roles.ts_
-
-```ts
-export const Roles = {
-  admin: "admin"
-}
-```
-
-2. Modify the highlighted lines in the `Task` entity class to reflect the top three authorization rules.
+1. Modify the highlighted lines in the `Task` entity class to reflect the top three authorization rules.
 
 _src/shared/Task.ts_
 
-```ts{2,5-8,16}
+```ts{5-6,13-15}
 import { Allow, Entity, Fields, Validators } from "remult"
-import { Roles } from "./Roles"
 
 @Entity<Task>("tasks", {
-  allowApiRead: Allow.authenticated,
-  allowApiUpdate: Allow.authenticated,
-  allowApiInsert: Roles.admin,
-  allowApiDelete: Roles.admin
+  allowApiCrud: Allow.authenticated,
+  allowApiInsert: "admin",
+  allowApiDelete: "admin"
 })
 export class Task {
   @Fields.uuid()
   id!: string
 
   @Fields.string({
-    validate: Validators.required,
-    allowApiUpdate: Roles.admin
+    validate: (task) => {
+      if (task.title.length < 3) throw "Too Short"
+    }
+    allowApiUpdate: "admin"
   })
   title = ""
 
@@ -257,45 +229,15 @@ export class Task {
 }
 ```
 
-3. Modify the highlighted line in the `TasksController` class to reflect the fourth authorization rule.
-
-_src/shared/TasksController.ts_
-
-```ts{3,6}
-import { Allow, BackendMethod, remult } from "remult"
-import { Task } from "./Task"
-import { Roles } from "./Roles"
-
-export class TasksController {
-  @BackendMethod({ allowed: Roles.admin })
-  static async setAll(completed: boolean) {
-    const taskRepo = remult.repo(Task)
-
-    for (const task of await taskRepo.find()) {
-      await taskRepo.save({ ...task, completed })
-    }
-  }
-}
-```
-
-4. Let's give the user _"Jane"_ the `admin` role by modifying the `roles` array of her `validUsers` entry.
+2. Let's give the user _"Jane"_ the `admin` role by modifying the `roles` array of her `validUsers` entry.
 
 _pages/api/auth/[...nextauth].ts_
 
 ```ts{2}
 const validUsers = [
-  { id: "1", name: "Jane", roles: [Roles.admin] },
+  { id: "1", name: "Jane", roles: ["admin"] },
   { id: "2", name: "Steve", roles: [] }
 ]
 ```
 
-::: warning Import Roles
-This code requires adding an import of `Roles` from `./Roles`.
-:::
-
 **Sign in to the app as _"Steve"_ to test that the actions restricted to `admin` users are not allowed. :lock:**
-
-//TODO - remove Roles
-//TODO - try to make next-auth give sensible session info.
-//TODO - vercel deployment
-//TODO - consider remult.authenticated instead of Allow.authenticated
