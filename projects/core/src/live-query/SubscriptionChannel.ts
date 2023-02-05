@@ -119,7 +119,7 @@ export interface SubscriptionClient {
 }
 
 
-export const liveQueryKeepAliveRoute = '/_liveQueryKeepAlive';
+export const liveQueryKeepAliveRoute = '_liveQueryKeepAlive';
 
 
 

@@ -160,7 +160,7 @@ export class LiveQueryClient {
                 if (ids.length > 0) {
                     let p = this.apiProvider();
                     let { actionInfo } = await import('../server-action');
-                    const invalidIds = await this.runPromise(await actionInfo.runActionWithoutBlockingUI(() => buildRestDataProvider(p.httpClient).post(p.url + liveQueryKeepAliveRoute, ids)));
+                    const invalidIds = await this.runPromise(await actionInfo.runActionWithoutBlockingUI(() => buildRestDataProvider(p.httpClient).post(p.url+'/' + liveQueryKeepAliveRoute, ids)));
                     for (const id of invalidIds) {
                         for (const q of this.queries.values()) {
                             if (q.queryChannel === id)

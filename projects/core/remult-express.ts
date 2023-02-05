@@ -40,10 +40,6 @@ export function remultExpress(options?:
         canRegisterRoute.registerRoutes(app, options.rootPath!, server);
     }
 
-    app.post(options.rootPath + liveQueryKeepAliveRoute, (r, res, n) => server.withRemult(r, res, n), async (req, res) => {
-        res.send(await remult.liveQueryStorage.keepAliveAndReturnUnknownQueryIds(req.body));
-
-    });
     server.runWithRequest = async (req, entityKey, what) => {
 
         for (const e of options.entities) {

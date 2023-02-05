@@ -8,6 +8,7 @@ import { Entity, Fields, getEntityKey, Repository } from '../src/remult3';
 import { IdEntity } from '../src/id-entity';
 import { remult, RemultProxy } from '../src/remult-proxy';
 import { LiveQueryPublisher, LiveQueryStorage, InMemoryLiveQueryStorage, PerformWithRequest, SubscriptionServer } from '../src/live-query/SubscriptionServer';
+import { liveQueryKeepAliveRoute } from '../src/live-query/SubscriptionChannel';
 
 
 //TODO2 -support pub sub non express servers
@@ -258,6 +259,13 @@ export class RemultServerImplementation implements RemultServer {
             });
           }, doWork: undefined
         }, r);
+      this.addAction({
+        __register: x => {
+          x(liveQueryKeepAliveRoute, false, () => true, async (data: any, req, res) => {
+            res.success(await remult.liveQueryStorage.keepAliveAndReturnUnknownQueryIds(data));
+          });
+        }, doWork: undefined
+      }, r);
 
     }
     this.options.entities.forEach(e => {
@@ -357,7 +365,9 @@ export class RemultServerImplementation implements RemultServer {
       })();
       this.backendMethodsOpenApi.push({ path: myUrl, allowed, tag });
       if (this.options.logApiEndPoints)
-        console.info("[remult] " + myUrl);
+      //TODO - should I hide this route in the list of routes
+        if (url !== liveQueryKeepAliveRoute)
+          console.info("[remult] " + myUrl);
       if (queue) {
         this.hasQueue = true;
         this.queue.mapQueuedAction(myUrl, what);

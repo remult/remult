@@ -1,9 +1,9 @@
 import { CustomModuleLoader } from './CustomModuleLoader';
 
 let moduleLoader = new CustomModuleLoader('/dist/test-angular');
-import * as express from 'express';
+import  express from 'express';
 import * as swaggerUi from 'swagger-ui-express';
-import * as cors from 'cors';
+import  cors from 'cors';
 
 import * as fs from 'fs';
 //import '../app.module';
@@ -13,9 +13,9 @@ import { createKnexDataProvider } from 'remult/remult-knex';
 
 import { createPostgresConnection, preparePostgresQueueStorage } from 'remult/postgres';
 
-import * as compression from 'compression';
-import * as forceHttps from 'express-force-https';
-import * as jwt from 'express-jwt';
+import compression from 'compression';
+import  forceHttps from 'express-force-https';
+import  jwt from 'express-jwt';
 import { graphqlHTTP } from 'express-graphql';
 import { buildSchema } from 'graphql';
 
