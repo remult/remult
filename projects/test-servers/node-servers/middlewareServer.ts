@@ -1,4 +1,4 @@
-import * as express from "express";
+import express from "express";
 import { createRemultServer } from "../../core/server/index";
 import { Task } from "../shared/Task";
 

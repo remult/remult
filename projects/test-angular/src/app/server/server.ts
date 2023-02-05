@@ -1,9 +1,9 @@
 import { CustomModuleLoader } from './CustomModuleLoader';
 
 let moduleLoader = new CustomModuleLoader('/dist/test-angular');
-import  express from 'express';
+import express from 'express';
 import * as swaggerUi from 'swagger-ui-express';
-import  cors from 'cors';
+import cors from 'cors';
 
 import * as fs from 'fs';
 //import '../app.module';
@@ -14,19 +14,21 @@ import { createKnexDataProvider } from 'remult/remult-knex';
 import { createPostgresConnection, preparePostgresQueueStorage } from 'remult/postgres';
 
 import compression from 'compression';
-import  forceHttps from 'express-force-https';
-import  jwt from 'express-jwt';
+import forceHttps from 'express-force-https';
+import jwt from 'express-jwt';
 import { graphqlHTTP } from 'express-graphql';
 import { buildSchema } from 'graphql';
 
 
-import { remultExpress } from '../../../../core/remult-express';
+import { remultExpress, SseSubscriptionServer } from '../../../../core/remult-express';
 
 
 import { AppComponent } from '../app.component';
 import { AsyncLocalStorage } from 'async_hooks';
 
+
 import { helper, ProductsComponent, Task } from '../products-test/products.component';
+import { remultNext } from '../../../../core/remult-next'
 
 const getDatabase = async () => {
 
@@ -76,7 +78,7 @@ serverInit().then(async (dataSource) => {
         // },
         entities: [Task],
         controllers: [AppComponent, ProductsComponent],
-        dataProvider:getDatabase(),// async () => await createPostgresConnection(),
+        dataProvider: getDatabase(),// async () => await createPostgresConnection(),
         //queueStorage: await preparePostgresQueueStorage(dataSource),
         logApiEndPoints: true,
 
@@ -89,7 +91,25 @@ serverInit().then(async (dataSource) => {
     });
 
     app.use(express.json());
-    app.use(remultApi);
+
+
+    const rNext = remultNext({
+        entities: [Task],
+        subscriptionServer: new SseSubscriptionServer(),
+        dataProvider: getDatabase(),// async () => await createPostgresConnection(),
+    })
+
+    new SseSubscriptionServer().registerRoutes(app, '/api', rNext);
+    app.use(async (req, res, next) => {
+        //@ts-ignore
+        const r = await rNext(req, res)
+        console.log(req.url, r)
+        if (!r)
+            next();
+        //     next();
+    })
+
+    //app.use(remultApi);
 
     app.use('/api/docs', swaggerUi.serve,
         swaggerUi.setup(remultApi.openApiDoc({ title: 'remult-angular-todo' })));
