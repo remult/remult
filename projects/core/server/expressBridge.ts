@@ -210,7 +210,22 @@ export class RemultServerImplementation implements RemultServer {
 
   }
 
-  runWithRequest: PerformWithRequest;
+  runWithRequest: PerformWithRequest = async (req, entityKey, what) => {
+
+    for (const e of this.options.entities) {
+      let key = getEntityKey(e);
+      if (key === entityKey) {
+        await new Promise((result) => {
+          this.withRemult(this.options.requestSerializer!.fromJson(req), undefined, async () => {
+            await what(remult.repo(e));
+            result({});
+          });
+        });
+        return;
+      }
+    }
+    throw new Error("Couldn't find entity " + entityKey);
+  };;
   subscriptionServer: SubscriptionServer;
   withRemult<T>(req: GenericRequest, res: GenericResponse, next: VoidFunction) {
     this.process(async () => { next() })(req, res);
@@ -365,7 +380,7 @@ export class RemultServerImplementation implements RemultServer {
       })();
       this.backendMethodsOpenApi.push({ path: myUrl, allowed, tag });
       if (this.options.logApiEndPoints)
-      //TODO - should I hide this route in the list of routes
+        //TODO - should I hide this route in the list of routes
         if (url !== liveQueryKeepAliveRoute)
           console.info("[remult] " + myUrl);
       if (queue) {
