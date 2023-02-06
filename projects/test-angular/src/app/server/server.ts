@@ -29,6 +29,7 @@ import { AsyncLocalStorage } from 'async_hooks';
 
 import { helper, ProductsComponent, Task } from '../products-test/products.component';
 import { remultNext } from '../../../../core/remult-next'
+import { DataProviderLiveQueryStorage } from '../../../../core/live-query/DataProviderLiveQueryStorage'
 
 const getDatabase = async () => {
 
@@ -97,6 +98,8 @@ serverInit().then(async (dataSource) => {
         entities: [Task],
         subscriptionServer: new SseSubscriptionServer(),
         dataProvider: getDatabase(),// async () => await createPostgresConnection(),
+        liveQueryStorage: new DataProviderLiveQueryStorage(undefined!),
+
     })
 
     new SseSubscriptionServer().registerRoutes(app, '/api', rNext);
@@ -139,5 +142,3 @@ serverInit().then(async (dataSource) => {
     let port = process.env.PORT || 3001;
     app.listen(port);
 });
-
-

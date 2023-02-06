@@ -81,7 +81,7 @@ export interface LiveQueryChangesListener {
 // TODO2 - https://centrifugal.dev/
 export interface LiveQueryStorage {
   add(query: StoredQuery): void
-  remove(queryId: any): void
+  remove(queryId: string): void
   forEach(entityKey: string, callback: (args: {
     query: StoredQuery,
     setData(data: any): Promise<void>

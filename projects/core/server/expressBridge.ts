@@ -9,6 +9,7 @@ import { IdEntity } from '../src/id-entity';
 import { remult, RemultProxy } from '../src/remult-proxy';
 import { LiveQueryPublisher, LiveQueryStorage, InMemoryLiveQueryStorage, PerformWithRequest, SubscriptionServer } from '../src/live-query/SubscriptionServer';
 import { liveQueryKeepAliveRoute } from '../src/live-query/SubscriptionChannel';
+import { initDataProvider } from './initDataProvider';
 
 
 //TODO2 -support pub sub non express servers
@@ -62,19 +63,9 @@ export function createRemultServerCore<RequestType extends GenericRequest = Gene
   }
 
 
-  let dataProvider: Promise<DataProvider>;
-  if (typeof options.dataProvider === "function") {
-    dataProvider = options.dataProvider();
-  } else dataProvider = Promise.resolve(options.dataProvider)
+  let dataProvider = initDataProvider(options.dataProvider);
 
-
-  dataProvider = dataProvider.then(async dp => {
-    if (dp)
-      return dp;
-    return new (await import('./JsonEntityFileStorage')).JsonFileDataProvider('./db')
-  });
   RemultAsyncLocalStorage.enable();
-
 
   if (options.initApi) {
     dataProvider = dataProvider.then(async dp => {
