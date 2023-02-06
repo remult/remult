@@ -1,4 +1,4 @@
-# Live Query
+# Appendix 3 - Live Query
 
 Since next and vercel are truly server-less, we'll need to use a 3rd party provider for our live query implementation.
 
@@ -17,22 +17,27 @@ Since next and vercel are truly server-less, we'll need to use a 3rd party provi
    ```
 
 7) Adjust the `[...remult].ts` file to setup the subscription server
-   //TODO - implement entity based live query storage
-   //TODO - chase down the set all completed issue - that doesn't seem to update the state correctly without the fetch tasks
-   //TODO - liveQueryStorage = new DataProviderLiveQueryStorage(dataProvider)
 
-   ```ts{2-3,6-8}
+   ```ts{2-4,6,10-14}
    //...
    import ably from "ably"
    import { AblySubscriptionServer } from "remult/live-query/ably"
+   import { DataProviderLiveQueryStorage } from "remult/live-query/data-provider-live-query-storage"
+
+   const dataProvider = createPostgresConnection()
 
    export default remultNext({
+     //..
+     dataProvider,
+     liveQueryStorage: new DataProviderLiveQueryStorage(dataProvider),
      subscriptionServer: new AblySubscriptionServer(
        new ably.Realtime.Promise(process.env["ABLY_API_KEY"]!)
      )
-     //...
    })
    ```
+
+   - Because of the `server-less` nature of `nextjs` we need to store the live queries. We use the same `dataProvider` that we use for remult as the `liveQueryStorage`
+   - We define `ably` as the `subscriptionServer`
 
 8) Copy the second api key (with only the `subscribe` capability) and Set the `subscriptionClient` on the frontend - we'll add a new useEffect for it (since in most cases it'll be elsewhere in the code)
 

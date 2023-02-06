@@ -198,7 +198,8 @@ module.exports = {
             'database',
             'deployment',
             'appendix-1-get-server-side-props',
-            'appendix-2-using-authorization-metadata-in-front-end'
+            'appendix-2-using-authorization-metadata-in-front-end',
+            'appendix-3-live-query'
           ]
         }],
 
