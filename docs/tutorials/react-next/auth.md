@@ -134,7 +134,7 @@ Replace the `useEffect` with the highlighted code to the `Home` Next.js page:
 
 _src/pages/index.tsx_
 
-```tsx{1,3-9,14-15}
+```tsx{1,3-9,14-17}
 import { signIn, signOut, useSession } from "next-auth/react"
 //...
 const session = useSession()
@@ -148,8 +148,10 @@ return (
   <div>
     <h1>Todos</h1>
     <main>
-      Hello {session.data?.user?.name}
-      <button onClick={() => signOut()}>Sign Out</button>
+      <div>
+        Hello {session.data?.user?.name}
+        <button onClick={() => signOut()}>Sign Out</button>
+      </div>
       ...
     </main>
   </div>
