@@ -154,7 +154,6 @@ export interface EntityMetadata<entityType = any> {
 
 
 export declare type OmitEB<T> = Omit<T, keyof import('./RepositoryImplementation').EntityBase>
-//TODO - breaking change from last version - on strict mode we cant assign IdEntity to EntityBase
 export declare type idType<entityType> = entityType extends { id?: number } ? number : entityType extends { id?: string } ? string : (string | number);
 /**used to perform CRUD operations on an `entityType` */
 export interface Repository<entityType> {
