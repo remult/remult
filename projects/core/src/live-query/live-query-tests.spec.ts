@@ -127,6 +127,14 @@ describe("Live Query", () => {
     });
 });
 
+function createTestPromise() {
+    let resume: VoidFunction;
+    const r = new Promise(r => {
+        resume = () => r({});
+    });
+    return Object.assign(r, { resume });
+}
+
 class PromiseResolver {
     private promises: any[] = [];
     constructor(...who: { runPromise: (p: any) => void }[]) {
@@ -389,8 +397,86 @@ describe("test live query full cycle", () => {
         expect(result1.length).toBe(1);
         u();
     });
+    it("test add works if item already in array", async () => {
+        var { repo, pm, repo2 } = setup2();
+        let result1: eventTestEntity[] = [];
+        const u = repo.liveQuery().subscribe(({ applyChanges: reducer }) => result1 = reducer(result1));
+        await pm.flush();
+        await repo.insert({ id: 1, title: "noam" });
+        await pm.flush();
+        expect(result1.length).toBe(1);
+        u();
+    });
+    it("test quick unsubscribe before query completes", async () => {
+        const serverRemult = new Remult(new InMemoryDataProvider())
+        const serverRepo = serverRemult.repo(eventTestEntity);
+        var dataApi = new DataApi(serverRepo, serverRemult);
+        var remult = new Remult();
+        var dp = createMockHttpDataProvider(dataApi);
+        let waitForUnsubscribe = createTestPromise();
+        let waitForGet = createTestPromise();
+
+        remult.apiClient.httpClient = {
+            post: (a, b) => dp.post(a, b),
+            put: (a, b) => dp.put(a, b),
+            delete: a => dp.delete(a),
+            get: async (url) => {
+                waitForUnsubscribe.resume();
+                await waitForGet;
+                return dp.get(url)
+            }
+        };
+        let mh: ((channel: string, message: any) => void)[] = [];
+        serverRemult.subscriptionServer = {
+            publishMessage: (c, m) => mh.forEach(x => x(c, m))
+        }
+        serverRemult.liveQueryStorage = new InMemoryLiveQueryStorage();
+        serverRemult.liveQueryPublisher = new LiveQueryPublisher(() => serverRemult.subscriptionServer, () => serverRemult.liveQueryStorage, async (_, _1, c) => c(serverRemult.repo(eventTestEntity)))
+        let stats = {
+            sub: 0,
+            unSub: 0
+        }
+        remult.apiClient.subscriptionClient = {
+            openConnection: async () => {
+                return {
+                    subscribe: (a, handler) => {
+                        stats.sub++;
+                        mh.push((c, m) => {
+                            handler(m)
+                        });
+                        return () => {
+                            mh = mh.filter(h => h !== handler)
+                        }
+                    },
+                    close: () => {
+
+                    }
+                }
+            }
+        }
+        var pm = new PromiseResolver(remult.liveQuerySubscriber, serverRemult.liveQueryPublisher as LiveQueryPublisher)
+        const repo = remult.repo(eventTestEntity);
+        let result1: eventTestEntity[] = [];
+        let u = repo.liveQuery().subscribe({
+            next: ({ applyChanges: reducer }) => result1 = reducer(result1),
+            error: err => {
+                throw err
+            }
+        });
+        await waitForUnsubscribe;
+        u()
+        waitForGet.resume();
+        await pm.flush();
+        await repo.insert({ id: 1, title: "noam" });
+        await pm.flush();
+        expect(result1.length).toBe(0);
+        expect(stats.sub).toBe(0);
+        expect(stats.unSub).toBe(0); 
+
+    });
+  
     it("test unsubscribe works", async () => {
-        var { repo, pm, messageCount, qm, unsubscribeCount,remult } = setup2();
+        var { repo, pm, messageCount, qm, unsubscribeCount, remult } = setup2();
         let result1: eventTestEntity[] = [];
         const unsubscribe = repo.liveQuery().subscribe(({ applyChanges: reducer }) => result1 = reducer(result1));
         await pm.flush();
@@ -399,7 +485,7 @@ describe("test live query full cycle", () => {
         expect(result1.length).toBe(1);
         expect(messageCount()).toBe(1);
         expect(qm.queries.length).toBe(1);
-        
+
         unsubscribe();
         await pm.flush();
         await repo.insert({ id: 2, title: 'noam' });
@@ -467,6 +553,7 @@ describe("test live query full cycle", () => {
         let arr2 = [];
         let arr1Items: eventTestEntity[][] = [];
         let arr1Messages: LiveQueryChange[][] = [];
+        let arr2Messages: LiveQueryChange[][] = [];
         const u1 = repo.liveQuery({ where: { title: { $contains: "a" } } }).subscribe(y => {
             arr1 = y.applyChanges(arr1);
             arr1Items.push([...y.items]);
@@ -475,7 +562,10 @@ describe("test live query full cycle", () => {
         await pm.flush();
         let done = false;
         const u2 = repo.liveQuery({ where: { title: { $contains: "b" } } }).subscribe({
-            next: y => arr2 = y.applyChanges(arr2),
+            next: y => {
+                arr2 = y.applyChanges(arr2)
+                arr2Messages.push(y.changes)
+            },
             complete: () => done = true
         });
         await pm.flush();
@@ -485,6 +575,7 @@ describe("test live query full cycle", () => {
         expect(arr2.length).toBe(2);
         expect(arr1Items.length).toBe(2);
         expect(arr1Messages.length).toBe(2);
+        expect(arr2Messages.length).toBe(1);
         expect(arr1Items[0].length).toBe(2);
         expect(arr1Items[1].length).toBe(3);
         expect(arr1Messages[0].length).toBe(1);
@@ -604,7 +695,7 @@ it("test channel subscribe", async () => {
                     }
                 },
                 close() {
-                    
+
                 },
             }
         }
@@ -624,7 +715,7 @@ it("test channel subscribe", async () => {
     r2();
     await pr.flush();
     expect(sub).toBe(0);
-    
+
 })
 
 

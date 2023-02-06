@@ -40,28 +40,7 @@ export function remultExpress(options?:
         canRegisterRoute.registerRoutes(app, options.rootPath!, server);
     }
 
-    app.post(options.rootPath + liveQueryKeepAliveRoute, (r, res, n) => server.withRemult(r, res, n), async (req, res) => {
-        res.send(await remult.liveQueryStorage.keepAliveAndReturnUnknownQueryIds(req.body));
-
-    });
-    server.runWithRequest = async (req, entityKey, what) => {
-
-        for (const e of options.entities) {
-            let key = getEntityKey(e);
-            if (key === entityKey) {
-                await new Promise((result) => {
-                    server.withRemult(options.requestSerializer!.fromJson(req), undefined, async () => {
-                        await what(remult.repo(e));
-                        result({});
-                    });
-                });
-                return;
-            }
-        }
-        throw new Error("Couldn't find entity " + entityKey);
-    };
-
-
+    
     return Object.assign(app, {
         getRemult: (req) => server.getRemult(req),
         openApiDoc: (options: { title: string }) => server.openApiDoc(options),

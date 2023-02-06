@@ -23,7 +23,13 @@ export function remultNext(
   let result = createRemultServer(options)
   return Object.assign(
     (req, res) => result.handle(req, res),
-    result,
+    result, {
+      getRemult: (...args) => result.getRemult(...args),
+      handle: (...args) => result.handle(...args),
+      openApiDoc:(...args)=> result.openApiDoc(...args),
+      registerRouter:(...args)=> result.registerRouter(...args),
+      withRemult:(...args)=> result.withRemult(...args),
+    } as RemultServer,
     {
       getServerSideProps: (getServerPropsFunction) => {
         return (context) => {

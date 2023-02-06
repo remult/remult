@@ -119,7 +119,7 @@ export interface SubscriptionClient {
 }
 
 
-export const liveQueryKeepAliveRoute = '/_liveQueryKeepAlive';
+export const liveQueryKeepAliveRoute = '_liveQueryKeepAlive';
 
 
 
@@ -166,7 +166,6 @@ export class SubscriptionChannel<messageType> {
         remult = remult || defaultRemult;
         remult.subscriptionServer.publishMessage(this.channelKey, message);
     }
-    //TODO - consider on error and on complete here
     subscribe(next: (message: messageType) => void, remult?: Remult)
     subscribe(listener: Partial<SubscriptionListener<messageType>>)
     //@internal

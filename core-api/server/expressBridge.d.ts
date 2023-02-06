@@ -19,7 +19,7 @@ export interface RemultServerOptions<RequestType extends GenericRequest> {
         toJson: (request: RequestType) => any;
         fromJson: (request: any) => RequestType;
     };
-    getUser?: (request: RequestType) => Promise<UserInfo>;
+    getUser?: (request: RequestType) => Promise<UserInfo | undefined>;
     initApi?: (remult: Remult) => void | Promise<void>;
     logApiEndPoints?: boolean;
     defaultGetLimit?: number;

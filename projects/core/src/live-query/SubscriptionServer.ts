@@ -63,7 +63,8 @@ export class LiveQueryPublisher implements LiveQueryChangesListener {
           });
           query.lastIds = currentIds;
           await setData(query);
-          this.subscriptionServer().publishMessage(q.id, messages);
+          if (messages.length > 0)
+            this.subscriptionServer().publishMessage(q.id, messages);
         })
 
       }));
@@ -80,7 +81,7 @@ export interface LiveQueryChangesListener {
 // TODO2 - https://centrifugal.dev/
 export interface LiveQueryStorage {
   add(query: StoredQuery): void
-  remove(queryId: any): void
+  remove(queryId: string): void
   forEach(entityKey: string, callback: (args: {
     query: StoredQuery,
     setData(data: any): Promise<void>

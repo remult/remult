@@ -8,6 +8,8 @@ import { Entity, Fields, getEntityKey, Repository } from '../src/remult3';
 import { IdEntity } from '../src/id-entity';
 import { remult, RemultProxy } from '../src/remult-proxy';
 import { LiveQueryPublisher, LiveQueryStorage, InMemoryLiveQueryStorage, PerformWithRequest, SubscriptionServer } from '../src/live-query/SubscriptionServer';
+import { liveQueryKeepAliveRoute } from '../src/live-query/SubscriptionChannel';
+import { initDataProvider } from './initDataProvider';
 
 
 //TODO2 -support pub sub non express servers
@@ -61,19 +63,9 @@ export function createRemultServerCore<RequestType extends GenericRequest = Gene
   }
 
 
-  let dataProvider: Promise<DataProvider>;
-  if (typeof options.dataProvider === "function") {
-    dataProvider = options.dataProvider();
-  } else dataProvider = Promise.resolve(options.dataProvider)
+  let dataProvider = initDataProvider(options.dataProvider);
 
-
-  dataProvider = dataProvider.then(async dp => {
-    if (dp)
-      return dp;
-    return new (await import('./JsonEntityFileStorage')).JsonFileDataProvider('./db')
-  });
   RemultAsyncLocalStorage.enable();
-
 
   if (options.initApi) {
     dataProvider = dataProvider.then(async dp => {
@@ -209,7 +201,22 @@ export class RemultServerImplementation implements RemultServer {
 
   }
 
-  runWithRequest: PerformWithRequest;
+  runWithRequest: PerformWithRequest = async (req, entityKey, what) => {
+
+    for (const e of this.options.entities) {
+      let key = getEntityKey(e);
+      if (key === entityKey) {
+        await new Promise((result) => {
+          this.withRemult(this.options.requestSerializer!.fromJson(req), undefined, async () => {
+            await what(remult.repo(e));
+            result({});
+          });
+        });
+        return;
+      }
+    }
+    throw new Error("Couldn't find entity " + entityKey);
+  };;
   subscriptionServer: SubscriptionServer;
   withRemult<T>(req: GenericRequest, res: GenericResponse, next: VoidFunction) {
     this.process(async () => { next() })(req, res);
@@ -258,6 +265,13 @@ export class RemultServerImplementation implements RemultServer {
             });
           }, doWork: undefined
         }, r);
+      this.addAction({
+        __register: x => {
+          x(liveQueryKeepAliveRoute, false, () => true, async (data: any, req, res) => {
+            res.success(await remult.liveQueryStorage.keepAliveAndReturnUnknownQueryIds(data));
+          });
+        }, doWork: undefined
+      }, r);
 
     }
     this.options.entities.forEach(e => {
@@ -357,7 +371,9 @@ export class RemultServerImplementation implements RemultServer {
       })();
       this.backendMethodsOpenApi.push({ path: myUrl, allowed, tag });
       if (this.options.logApiEndPoints)
-        console.info("[remult] " + myUrl);
+        //TODO - should I hide this route in the list of routes
+        if (url !== liveQueryKeepAliveRoute)
+          console.info("[remult] " + myUrl);
       if (queue) {
         this.hasQueue = true;
         this.queue.mapQueuedAction(myUrl, what);
