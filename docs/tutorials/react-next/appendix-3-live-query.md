@@ -33,7 +33,7 @@ Since next and vercel are truly server-less, we'll need to use a 3rd party provi
    export function getAblySubscriptionServer() {
      return new AblySubscriptionServer(ablyServer())
    }
-
+   // TODO - replace with subscribe key
    export function getAblySubscriptionClient() {
      return new AblySubscriptionClient(
        new ably.Realtime.Promise({
@@ -67,6 +67,7 @@ Since next and vercel are truly server-less, we'll need to use a 3rd party provi
 7) Adjust the `[...remult].ts` file
    //TODO - implement entity based live query storage
    //TODO - chase down the set all completed issue - that doesn't seem to update the state correctly without the fetch tasks
+   //TODO - liveQueryStorage = new DataProviderLiveQueryStorage(dataProvider)
 
    ```ts{2-5,8}
    //...

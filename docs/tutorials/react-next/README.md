@@ -61,6 +61,7 @@ You can either:
 
 2. Or Optionally, make the app look a little better by replacing the contents of `src/styles/globals.css` with [this CSS file](https://raw.githubusercontent.com/remult/react-vite-express-starter/completed-tutorial/src/index.css).
 // TODO - update css to a new one
+// TODO - update starter project
 
 ### Install Remult
 

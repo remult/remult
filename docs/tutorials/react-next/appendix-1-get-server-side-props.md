@@ -45,7 +45,7 @@ export default function Home(
 ## Applying Access Rules
 The `getServerSideProps` runs on the backend, and is not subject to the `apiAllowed` rules - so we'll need to do that ourselves based on the metadata of the entity
 ```ts{4}
-export const getServerSideProps = Remult.getServerSideProps(async (req) => {
+export const getServerSideProps = remultApi.getServerSideProps(async (req) => {
   return {
     props: {
       tasks: taskRepo.metadata.apiReadAllowed ? await fetchTasks() : [],
