@@ -119,12 +119,12 @@
       "import": "./esm/live-query/ably.js"
     },
     "./live-query/data-provider-live-query-storage": {
-      "require": "./live-query/DataProviderLiveQueryStorage.js",
+      "require": "./live-query/data-provider-live-query-storage.js",
       "node": {
-        "require": "./live-query/DataProviderLiveQueryStorage.js",
-        "import": "./live-query/DataProviderLiveQueryStorage.js"
+        "require": "./live-query/data-provider-live-query-storage.js",
+        "import": "./live-query/data-provider-live-query-storage.js"
       },
-      "import": "./esm/live-query/DataProviderLiveQueryStorage.js"
+      "import": "./esm/live-query/data-provider-live-query-storage.js"
     },
     "./graphql": {
       "require": "./graphql.js",
