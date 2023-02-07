@@ -22,6 +22,8 @@ You can either **use a starter project** to speed things up, or go through the *
 
 1. Clone the _remult-nextjs-todo_ repository from GitHub and install its dependencies.
 
+//TODO - merge new-tutorial-18 branch to maain branch
+
 ```sh
 git clone https://github.com/remult/nextjs-starter.git remult-nextjs-todo
 cd remult-nextjs-todo
@@ -53,15 +55,15 @@ cd remult-nextjs-todo
 Open your IDE
 
 ### Cleanup Next.js default css
+
 To start from scratch, let's cleanup the default css provided by nest.
 
 You can either:
 
 1. **Delete the content** of the `src/styles/globals.css` file
 
-2. Or Optionally, make the app look a little better by replacing the contents of `src/styles/globals.css` with [this CSS file](https://raw.githubusercontent.com/remult/react-vite-express-starter/completed-tutorial/src/index.css).
-// TODO - update css to a new one
-// TODO - update starter project
+2. Or Optionally, make the app look a little better by replacing the contents of `src/styles/globals.css` with [this CSS file](https://raw.githubusercontent.com/remult/nextjs-starter/new-tutorial-18/src/styles/globals.css).
+   // TODO - update css path to main branch after merge
 
 ### Install Remult
 
@@ -78,7 +80,7 @@ Add a file named `[...remult].ts` in the folder `src/pages/api`. This file is a 
 _src/pages/api/[...remult].ts_
 
 ```ts
-import { remultNext } from "remult/remult-next";
+import { remultNext } from "remult/remult-next"
 
 export default remultNext({})
 ```
@@ -107,4 +109,3 @@ The default `Next.js` main screen should be displayed.
 ### Setup completed
 
 At this point, our starter project is up and running. We are now ready to move to the [next step of the tutorial](./entities.md) and start creating the task list app.
-
