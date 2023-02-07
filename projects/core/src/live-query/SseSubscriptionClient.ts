@@ -77,10 +77,10 @@ export class SseSubscriptionClient implements SubscriptionClient {
     });
 
     function subscribeToChannel(channel: string) {
-      provider.post(remult.apiClient.url + '/' + streamUrl + '/subscribe', {
+      actionInfo.runActionWithoutBlockingUI(() => provider.post(remult.apiClient.url + '/' + streamUrl + '/subscribe', {
         channel: channel,
         clientId: connectionId
-      } as ServerEventChannelSubscribeDTO);
+      } as ServerEventChannelSubscribeDTO));
     }
   }
 }

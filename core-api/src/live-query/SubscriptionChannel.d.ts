@@ -13,7 +13,7 @@ export interface SubscriptionClientConnection {
 export interface SubscriptionClient {
     openConnection(onReconnect: VoidFunction): Promise<SubscriptionClientConnection>;
 }
-export declare const liveQueryKeepAliveRoute = "/_liveQueryKeepAlive";
+export declare const liveQueryKeepAliveRoute = "_liveQueryKeepAlive";
 export declare type LiveQueryChange = {
     type: "all";
     data: any[];
