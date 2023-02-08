@@ -92,7 +92,6 @@ export function remultGraphql(api: RemultServer) {
       filterTypes += "input " + key + "Filter{" + filterFields + "\n\tOR:[" + key + "Filter]\n}\n";
       query += q;
       root[key] = async ({ options, filter }, req, a) => {
-        console.log({ ...a.fieldNodes })
 
         return new Promise(async (res, error) => {
           api.withRemult(req, undefined!, async () => {
