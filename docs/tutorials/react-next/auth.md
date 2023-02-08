@@ -81,7 +81,7 @@ Let's set-up `NextAuth.js` to authenticate users to our app.
 
    ```ts
    import NextAuth from "next-auth/next"
-   import CredentialsProvider from "next-auth/providers/credentials"
+   import Credentials from "next-auth/providers/credentials"
    import { UserInfo } from "remult"
 
    const validUsers: UserInfo[] = [
@@ -91,21 +91,20 @@ Let's set-up `NextAuth.js` to authenticate users to our app.
 
    export default NextAuth({
      providers: [
-       CredentialsProvider({
+       Credentials({
          credentials: {
            name: {
-             label: "Username",
              placeholder: "Try Steve or Jane"
            }
          },
-         authorize: credentials =>
-           validUsers.find(user => user.name === credentials?.name) || null
+         authorize: info =>
+           validUsers.find(user => user.name === info?.name) || null
        })
      ]
    })
    ```
 
-   This (very) simplistic NextAuth.js [CredentialsProvider](https://next-auth.js.org/providers/credentials) authorizes users by looking up a `username` in a predefined list of valid users.
+   This (very) simplistic NextAuth.js [Credentials](https://next-auth.js.org/providers/credentials) authorizes users by looking up the user's name in a predefined list of valid users.
 
 ### Frontend setup
 
@@ -113,36 +112,40 @@ Add the highlighted code to the `_app.tsx` Next.js page:
 
 _src/pages/\_app.tsx_
 
-```tsx{3,7,10,12}
-import "@/styles/globals.css"
-import type { AppProps } from "next/app"
-import { SessionProvider } from "next-auth/react"
+```tsx{3,7,9}
+import "@/styles/globals.css";
+import type { AppProps } from "next/app";
+import { SessionProvider } from "next-auth/react";
 
-export default function App({
-  Component,
-  pageProps: { session, ...pageProps }
-}: AppProps) {
+export default function App({ Component, pageProps }: AppProps) {
   return (
-    <SessionProvider session={session}>
+    <SessionProvider session={pageProps.session}>
       <Component {...pageProps} />
     </SessionProvider>
-  )
+  );
 }
+
 ```
 
 Replace the `useEffect` with the highlighted code to the `Home` Next.js page:
 
 _src/pages/index.tsx_
 
-```tsx{1,3-9,14-17}
+```tsx{1,3,6-7,15,20-23}
 import { signIn, signOut, useSession } from "next-auth/react"
 //...
 const session = useSession()
+
 useEffect(() => {
   if (session.status === "unauthenticated") signIn()
-  else {
-    fetchTasks().then(setTasks)
-  }
+  else
+    return taskRepo
+      .liveQuery({
+        limit: 20,
+        orderBy: { completed: "asc" }
+        //where: { completed: true },
+      })
+      .subscribe(info => setTasks(info.applyChanges))
 }, [session])
 return (
   <div>
@@ -158,7 +161,7 @@ return (
 )
 ```
 
-### Connect Remult-Next
+### Connect Remult-Next On the Backend
 
 Once an authentication flow is established, integrating it with Remult in the backend is as simple as providing Remult with a `getUser` function that extracts a `UserInfo` object from a `Request`.
 
@@ -166,10 +169,12 @@ Once an authentication flow is established, integrating it with Remult in the ba
 
 _src/pages/api/auth/[...nextauth].ts_
 
+// TODO - consider writing a function to get user by id - and doing the getToken in the [...remult] file
+
 ```ts
 export async function getUserFromNextAuth(req: NextApiRequest) {
   const token = await getToken({ req })
-  return validUsers.find(u => u.id === token?.sub)
+  return validUsers.find(user => user.id === token?.sub)
 }
 ```
 
@@ -206,7 +211,7 @@ Usually, not all application users have the same privileges. Let's define an `ad
 
 _src/shared/Task.ts_
 
-```ts{5-6,13-15}
+```ts{5-6,16}
 import { Allow, Entity, Fields, Validators } from "remult"
 
 @Entity<Task>("tasks", {
@@ -243,3 +248,93 @@ const validUsers = [
 ```
 
 **Sign in to the app as _"Steve"_ to test that the actions restricted to `admin` users are not allowed. :lock:**
+
+## Role-based Authorization on the Frontend
+
+From a user experience perspective in only makes sense that uses that can't add or delete, would not see these buttons.
+
+Let's reuse the same definitions on the Frontend.
+
+### Connect Remult-Next On the Frontend
+
+First we need to configure `next-auth` to include the user info in the `session` info provided to the frontend
+
+Apply these changes to the code of `[...nextauth].ts` file
+
+_pages/api/auth/[...nextauth].ts_
+
+```ts{2-7}
+export default NextAuth({
+  callbacks: {
+    session: ({ session, token }) => ({
+      ...session,
+      user: validUsers.find(user => user.id === token?.sub)
+    })
+  }
+  //...
+})
+```
+
+Next let's set remult's user based on the `session` info
+
+```ts{2}
+useEffect(() => {
+  remult.user = session.data?.user as UserInfo
+  if (session.status === "unauthenticated") signIn()
+  else
+    return taskRepo
+      .liveQuery({
+        limit: 20,
+        orderBy: { completed: "asc" }
+        //where: { completed: true },
+      })
+      .subscribe(info => setTasks(info.applyChanges))
+}, [session])
+```
+
+::: warning Import Allow
+This code requires adding an import of `UserInfo` from `remult`.
+:::
+
+## Show components based on the entity's metadata
+
+Now let's use the entity's metadata to only show the form if the user is allowed to insert
+
+```tsx{2,11}
+<main>
+  {typeof window !== "undefined" && taskRepo.metadata.apiInsertAllowed && (
+    <form onSubmit={addTask}>
+      <input
+        value={newTaskTitle}
+        placeholder="What needs to be done?"
+        onChange={e => setNewTaskTitle(e.target.value)}
+      />
+      <button>Add</button>
+    </form>
+  )}
+  ...
+</main>
+```
+
+And let's do the same for the `delete` button:
+
+```tsx{10,12}
+return (
+  <div key={task.id}>
+    <input
+      type="checkbox"
+      checked={task.completed}
+      onChange={e => setCompleted(e.target.checked)}
+    />
+    <input value={task.title} onChange={e => setTitle(e.target.value)} />
+    <button onClick={saveTask}>Save</button>
+    {typeof window !== "undefined" && taskRepo.metadata.apiDeleteAllowed && (
+      <button onClick={deleteTask}>Delete</button>
+    )}
+  </div>
+)
+```
+
+* we use `typeof window !== "undefined"` to make sure that the call to `taskRepo.metadata` will run on the front end and not part of the server side rendering. `taskRepo.metadata` is not available in the render method of server side rendering.
+
+This way we can keep the frontend consistent with the `api`'s Authorization rules

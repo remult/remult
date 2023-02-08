@@ -86,7 +86,6 @@ _src/pages/index.tsx_
 ```tsx{2}
 const setAllCompleted = async (completed: boolean) => {
   await TasksController.setAllCompleted(completed)
-  setTasks(await fetchTasks())
 }
 ```
 

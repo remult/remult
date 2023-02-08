@@ -28,6 +28,7 @@ There aren't enough tasks in the database for this change to have an immediate e
 To query subsequent pages, use the [Repository.find()](../../docs/ref_repository.md#find) method's `page` option.
 :::
 
+
 ## Show Active Tasks on Top
 
 Uncompleted tasks are important and should appear above completed tasks in the todo app.

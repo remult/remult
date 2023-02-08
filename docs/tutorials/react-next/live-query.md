@@ -5,7 +5,7 @@ Our todo list has more than one user, viewing it at a time - try opening multipl
 To fix that, we'll use the `liveQuery` feature of remult.
 
 Adjust the `useEffect` hook in the `page.tsx` file
-
+//TODO - applyChanges should not apply sort.
 ```ts
 useEffect(() => {
   return taskRepo
