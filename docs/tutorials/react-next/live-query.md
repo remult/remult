@@ -6,6 +6,7 @@ To fix that, we'll use the `liveQuery` feature of remult.
 
 Adjust the `useEffect` hook in the `page.tsx` file
 //TODO - applyChanges should not apply sort.
+//TODO - check that use effect will unsubscribe completely when it needs to.
 ```ts
 useEffect(() => {
   return taskRepo
