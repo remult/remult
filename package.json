@@ -1,7 +1,7 @@
 {
   "name": "remult-mono-repo",
   "description": "See projects/core for the remult core package.json. This package.json is used for remult/core development, test projects and experimental work. See ",
-  "version": "0.17.2",
+  "version": "0.17.3",
   "scripts": {
     "build-core-watch": "concurrently \"tsc -w -p projects/core/tsconfig.build.esm.json -outDir ../w18/crm-demo/node_modules/remult/esm/\" \"tsc -w -p projects/core/tsconfig.build.json -outDir ../w18/crm-demo/node_modules/remult/\"",
     "test": "concurrently -k -n \"TSC,Test\" -c \"bgBlue.bold,bgGreen.bold\" \"tsc -w -p projects/core/tsconfig.build.json --emitDeclarationOnly --outDir core-api\" \"cd projects/test-angular && ng test core\"",
