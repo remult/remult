@@ -15,7 +15,6 @@ Let's add two buttons to the todo app: "Set all as completed" and "Set all as un
      for (const task of await taskRepo.find()) {
        await taskRepo.save({ ...task, completed })
      }
-     setTasks(await fetchTasks())
    }
    ```
 

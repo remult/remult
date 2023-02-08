@@ -98,16 +98,12 @@ import { Task } from "../shared/Task"
 
 const taskRepo = remult.repo(Task)
 
-async function fetchTasks() {
-  return taskRepo.find()
-}
 export default function Home() {
   const [tasks, setTasks] = useState<Task[]>([])
 
   useEffect(() => {
-    fetchTasks().then(setTasks)
+    taskRepo.find().then(setTasks)
   }, [])
-
   return (
     <div>
       <h1>Todos</h1>
@@ -129,8 +125,7 @@ export default function Home() {
 Here's a quick overview of the different parts of the code snippet:
 
 - `taskRepo` is a Remult [Repository](../../docs/ref_repository.md) object used to fetch and create Task entity objects.
-- The `fetchTasks` function uses the Remult [repository](../../docs/ref_repository.md)'s [find](../../docs/ref_repository.md#find) method to fetch tasks from the server.
 - `tasks` is a Task array React state to hold the list of tasks.
-- React's useEffect hook is used to call `fetchTasks` once when the React component is loaded.
+- React's useEffect hook is used to call the Remult [repository](../../docs/ref_repository.md)'s [find](../../docs/ref_repository.md#find) method to fetch tasks from the server, once when the React component is loaded.
 
 After the browser refreshes, the list of tasks appears.

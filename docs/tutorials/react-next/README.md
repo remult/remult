@@ -49,8 +49,12 @@ Create the new Next.js project.
 
 ```sh
 npx -y create-next-app@latest remult-nextjs-todo --typescript --src-dir
-cd remult-nextjs-todo
 ```
+
+- Answer all the questions and enter the created folder:
+  ```sh
+  cd remult-nextjs-todo
+  ```
 
 Open your IDE
 
@@ -92,8 +96,7 @@ Add the following entry to the `compilerOptions` section of the `tsconfig.json` 
 _tsconfig.json_
 
 ```json
-"experimentalDecorators": true,
-"emitDecoratorMetadata": true
+"experimentalDecorators": true
 ```
 
 ### Run the app
