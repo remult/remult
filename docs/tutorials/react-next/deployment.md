@@ -2,6 +2,8 @@
 
 Let's deploy the todo app to [vercel](https://vercel.com/).
 
+//TODO - add ably etc...
+
 ## Create a github repo
 
 Vercel deploys automatically whenever you push to github, so the first step of deployment is to create a github repo and push all your changes to it.
