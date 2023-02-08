@@ -66,6 +66,11 @@ export class stam extends IdEntity {
   test: string = '';
 
 
+  @Fields.string({
+    sqlExpression: () => remult.user?.name
+  })
+  test1 = ''
+
   @BackendMethod({ allowed: true })
   static async staticBackendMethod() {
     return remult.repo(stam).count();

@@ -24,7 +24,7 @@ import { remultExpress } from '../../../../core/remult-express';
 
 import { controllerWithInstance, controllerWithStaic, stam } from '../products-test/products.component';
 import { AppComponent } from '../app.component';
-import { Task } from './Task';
+
 import { AsyncLocalStorage } from 'async_hooks';
 import axios from 'axios';
 import { ExternalHttpProvider, Remult } from '../../../../core/src/context';
@@ -32,7 +32,7 @@ import { ExternalHttpProvider, Remult } from '../../../../core/src/context';
 import { DataProvider } from '../../../../core/src/data-interfaces';
 import { Repository } from '../../../../core/src/remult3';
 import { BackendMethod } from '../../../../core/src/server-action';
-import fetch from 'node-fetch';
+
 import { remult } from '../../../../core/src/remult-proxy';
 
 
@@ -73,7 +73,7 @@ serverInit().then(async (dataSource) => {
 
 
     let remultApi = remultExpress({
-        entities: [stam, Task],
+        entities: [stam],
         controllers: [controllerWithInstance, controllerWithStaic, AppComponent],
         // dataProvider: createPostgresConnection(),
         queueStorage: await preparePostgresQueueStorage(dataSource),

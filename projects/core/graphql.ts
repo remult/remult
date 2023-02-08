@@ -27,7 +27,7 @@ export function remultGraphql(api: RemultServer) {
                             type = "Boolean";
                         case Number:
                             {
-                                if (f.valueConverter?.fieldTypeInDb=='integer')
+                                if (f.valueConverter?.fieldTypeInDb == 'integer')
                                     type = "Int";
                                 else
                                     type = "Float";
@@ -54,39 +54,48 @@ export function remultGraphql(api: RemultServer) {
             types += "input " + key + "Filter{" + filterFields + "\n\tOR:[" + key + "Filter]\n}\n";
             query += "\n\t" + key + "(options: options, filter:" + key + "Filter): [" + key + "]";
             root[key] = async ({ options, filter }, req) => {
-                let remult = await api.getRemult(req);
-                let repo = remult.repo(e);
-                let dApi = new DataApi(repo, remult);
-                let result: any;
-                let err: any;
-                await dApi.getArray({
-                    success: x => result = x,
-                    created: undefined,
-                    deleted: undefined,
-                    error: x => err = x,
-                    forbidden: () => err = 'forbidden',
-                    notFound: () => err = 'not found',
-                    progress: undefined
 
 
-                }, {
-                    get: key => {
-                        if (options)
-                            switch (key) {
-                                case "_limit":
-                                    return options.limit;
-                                case "_page":
-                                    return options.page;
-                                case "_sort":
-                                    return options.sort;
-                                case "_order":
-                                    return options.order;
+                return new Promise(async (res, error) => {
+
+                    api.withRemult(req, undefined!, async () => {
+                        let remult = await api.getRemult(req);
+                        let repo = remult.repo(e);
+                        let dApi = new DataApi(repo, remult);
+                        let result: any;
+                        let err: any;
+                        await dApi.getArray({
+                            success: x => result = x,
+                            created: undefined,
+                            deleted: undefined,
+                            error: x => err = x,
+                            forbidden: () => err = 'forbidden',
+                            notFound: () => err = 'not found',
+                            progress: undefined
+
+
+                        }, {
+                            get: key => {
+                                if (options)
+                                    switch (key) {
+                                        case "_limit":
+                                            return options.limit;
+                                        case "_page":
+                                            return options.page;
+                                        case "_sort":
+                                            return options.sort;
+                                        case "_order":
+                                            return options.order;
+                                    }
                             }
-                    }
-                }, filter);
-                if (err)
-                    throw err;
-                return result;
+                        }, filter);
+                        if (err) {
+                            error(err);
+                            return
+                        }
+                        res(result);
+                    });
+                });
             }
         }
     }
