@@ -52,7 +52,7 @@ export class LiveQueryClient {
                 }
                 this.closeIfNoListeners();
             };
-        });
+        }).catch(err=>onResult.error(err));
         return () => {
             onUnsubscribe();
             onUnsubscribe = () => { };
@@ -74,7 +74,8 @@ export class LiveQueryClient {
         }));
     }
 
-    //TODO 1 - consider the time that may pass from the get request to the subscribe to the channel, in some cases this could mean, a call to server to get token and a call to the external provider - it may be some time
+    //TODO - consider the time that may pass from the get request to the subscribe to the channel, in some cases this could mean, a call to server to get token and a call to the external provider - it may be some time - maybe we should do another handshake message once the subscription succeeds and not set the known ids until that handshake is made
+
     subscribe<entityType>(
         repo: Repository<entityType>,
         options: FindOptions<entityType>,
@@ -84,61 +85,60 @@ export class LiveQueryClient {
 
         let onUnsubscribe: VoidFunction = () => { };
         this.runPromise((repo as RepositoryImplementation<entityType>).buildEntityDataProviderFindOptions(options)
-            .then(opts => this.openIfNoOpened()
-                .then(() => {
-                    const { createKey, subscribe } = new RestDataProvider(this.apiProvider).getEntityDataProvider(repo.metadata).buildFindRequest(opts);
-                    const eventTypeKey = createKey();
-                    let q = this.queries.get(eventTypeKey);
-                    if (!q) {
-                        this.queries.set(eventTypeKey, q = new LiveQuerySubscriber(repo, { entityKey: repo.metadata.key, orderBy: options.orderBy }));
-                        q.subscribeCode = () => {
-                            if (q.unsubscribe) {
-                                q.unsubscribe();
-                                //TODO 1- consider race scenario where unsubscribe is called before subscribe
-                                q.unsubscribe = () => { };
-                            }
-                            this.runPromise(subscribe()
-                                .then(r => {
-                                    if (q.listeners.length === 0) {
-                                        r.unsubscribe();
-                                        return;
-                                    }
-                                    let unsubscribeToChannel = this.subscribeChannel(r.queryChannel, {
-                                        next: (value: any) => this.runPromise(q.handle(value)),
-                                        complete: () => { },
-                                        error: er => {
-                                            q.listeners.forEach(l => l.error(er))
-                                        }
-                                    });
-                                    q.unsubscribe = () => {
-                                        q.unsubscribe = () => { }
-                                        unsubscribeToChannel();
-                                        this.runPromise(r.unsubscribe());
-                                    }
-                                    this.runPromise(q.setAllItems(r.result));
-                                    q.queryChannel = r.queryChannel;
-                                })
-                                .catch(err => {
-                                    listener.error(err)
-                                }))
-                        };
-                        q.subscribeCode();
-                    }
-                    else {
-                        q.sendDefaultState(listener.next);
-
-                    }
-                    q.listeners.push(listener);
-                    onUnsubscribe = () => {
-                        q.listeners.splice(q.listeners.indexOf(listener), 1);
-                        listener.complete();
-                        if (q.listeners.length == 0) {
-                            this.queries.delete(eventTypeKey);
+            .then(opts => {
+                const { createKey, subscribe } = new RestDataProvider(this.apiProvider).getEntityDataProvider(repo.metadata).buildFindRequest(opts);
+                const eventTypeKey = createKey();
+                let q = this.queries.get(eventTypeKey);
+                if (!q) {
+                    this.queries.set(eventTypeKey, q = new LiveQuerySubscriber(repo, { entityKey: repo.metadata.key, orderBy: options.orderBy }));
+                    q.subscribeCode = () => {
+                        if (q.unsubscribe) {
                             q.unsubscribe();
+                            //TODO 1- consider race scenario where unsubscribe is called before subscribe
+                            q.unsubscribe = () => { };
                         }
-                        this.closeIfNoListeners();
+                        this.runPromise(subscribe()
+                            .then(r => {
+                                if (q.listeners.length === 0) {
+                                    r.unsubscribe();
+                                    return;
+                                }
+                                this.runPromise(q.setAllItems(r.result));
+                                q.queryChannel = r.queryChannel;
+                                let unsubscribeToChannel = this.subscribeChannel(r.queryChannel, {
+                                    next: (value: any) => this.runPromise(q.handle(value)),
+                                    complete: () => { },
+                                    error: er => {
+                                        q.listeners.forEach(l => l.error(er))
+                                    }
+                                });
+                                q.unsubscribe = () => {
+                                    q.unsubscribe = () => { }
+                                    unsubscribeToChannel();
+                                    this.runPromise(r.unsubscribe());
+                                }
+                            })
+                            .catch(err => {
+                                listener.error(err)
+                            }))
                     };
-                }))
+                    q.subscribeCode();
+                }
+                else {
+                    q.sendDefaultState(listener.next);
+
+                }
+                q.listeners.push(listener);
+                onUnsubscribe = () => {
+                    q.listeners.splice(q.listeners.indexOf(listener), 1);
+                    listener.complete();
+                    if (q.listeners.length == 0) {
+                        this.queries.delete(eventTypeKey);
+                        q.unsubscribe();
+                    }
+                    this.closeIfNoListeners();
+                };
+            })
             .catch(err => {
                 listener.error(err);
             }));
@@ -160,7 +160,7 @@ export class LiveQueryClient {
                 if (ids.length > 0) {
                     let p = this.apiProvider();
                     let { actionInfo } = await import('../server-action');
-                    const invalidIds = await this.runPromise(await actionInfo.runActionWithoutBlockingUI(() => buildRestDataProvider(p.httpClient).post(p.url+'/' + liveQueryKeepAliveRoute, ids)));
+                    const invalidIds = await this.runPromise(await actionInfo.runActionWithoutBlockingUI(() => buildRestDataProvider(p.httpClient).post(p.url + '/' + liveQueryKeepAliveRoute, ids)));
                     for (const id of invalidIds) {
                         for (const q of this.queries.values()) {
                             if (q.queryChannel === id)

@@ -471,10 +471,10 @@ describe("test live query full cycle", () => {
         await pm.flush();
         expect(result1.length).toBe(0);
         expect(stats.sub).toBe(0);
-        expect(stats.unSub).toBe(0); 
+        expect(stats.unSub).toBe(0);
 
     });
-  
+
     it("test unsubscribe works", async () => {
         var { repo, pm, messageCount, qm, unsubscribeCount, remult } = setup2();
         let result1: eventTestEntity[] = [];
@@ -721,21 +721,8 @@ it("test channel subscribe", async () => {
 
 
 describe("test failure", () => {
-    it("Error on open connection", async () => {
-        let r = new Remult(new InMemoryDataProvider());
-        r.apiClient.subscriptionClient = {
-            openConnection: async () => {
-                throw "open connection error"
-            }
-        }
-        let pm = new PromiseResolver(r.liveQuerySubscriber)
-        let error = false;
-        let u = r.repo(eventTestEntity).liveQuery().subscribe({ error: er => { error = true } });
-        await pm.flush();
-        expect(error).toBe(true);
-        u();
-    });
-    it("error on subscribe", async () => {
+   
+    it("error on subscribe query", async () => {
         let r = new Remult(new InMemoryDataProvider());
         r.apiClient.subscriptionClient = {
             openConnection: async () => {
@@ -754,6 +741,58 @@ describe("test failure", () => {
         let u = r.repo(eventTestEntity).liveQuery().subscribe({ error: er => { error = true } });
         await pm.flush();
         expect(error).toBe(true);
+        u();
+    });
+    it("error on subscribe", async () => {
+
+        let r = new Remult(new InMemoryDataProvider());
+        r.liveQueryStorage = new InMemoryLiveQueryStorage();
+        await r.repo(eventTestEntity).insert({ id: 1, title: "a" });
+        expect(await r.repo(eventTestEntity).count()).toBe(1)
+        let items: any[] ;
+        let error = false;
+        
+        var cr = new Remult( createMockHttpDataProvider(new DataApi(r.repo(eventTestEntity),r) ));
+        cr.apiClient.subscriptionClient = {
+            openConnection: async () => {
+                return {
+                    subscribe(channel, onMessage) {
+                        throw "the error"
+                    },
+                    close() {
+
+                    }
+                }
+            }
+        }
+        let pm = new PromiseResolver(cr.liveQuerySubscriber)
+        expect(await cr.repo(eventTestEntity).count()).toBe(1)
+        let u = cr.repo(eventTestEntity).liveQuery().subscribe({ error: er => { error = true }, next: x => items = x.items });
+        await pm.flush();
+        expect(error).toBe(true);
+        expect(items.length).toBe(1);
+        u();
+    });
+    it("Error on open connection", async () => {
+        let r = new Remult(new InMemoryDataProvider());
+        r.liveQueryStorage = new InMemoryLiveQueryStorage();
+        await r.repo(eventTestEntity).insert({ id: 1, title: "a" });
+        expect(await r.repo(eventTestEntity).count()).toBe(1)
+        let items: any[] ;
+        let error = false;
+        
+        var cr = new Remult( createMockHttpDataProvider(new DataApi(r.repo(eventTestEntity),r) ));
+        cr.apiClient.subscriptionClient = {
+            openConnection: async () => {
+                throw "open connection error"
+            }
+        }
+        let pm = new PromiseResolver(cr.liveQuerySubscriber)
+        expect(await cr.repo(eventTestEntity).count()).toBe(1)
+        let u = cr.repo(eventTestEntity).liveQuery().subscribe({ error: er => { error = true }, next: x => items = x.items });
+        await pm.flush();
+        expect(error).toBe(true);
+        expect(items.length).toBe(1);
         u();
     });
 
