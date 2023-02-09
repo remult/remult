@@ -1,7 +1,9 @@
 import { EntityOrderBy, remult as defaultRemult, Remult, Repository, Sort } from '../../index';
 import { LiveQueryChangeInfo } from '../remult3';
 import { getId } from '../remult3/getId';
+import { v4 as uuid } from 'uuid'
 import { LiveQueryChangesListener } from './SubscriptionServer';
+import { getLiveQueryChannel } from '../data-api';
 
 export const streamUrl = 'stream';
 //@internal
@@ -97,7 +99,10 @@ export class LiveQuerySubscriber<entityType> {
 
     defaultQueryState: entityType[] = [];
     listeners: SubscriptionListener<LiveQueryChangeInfo<entityType>>[] = [];
-    constructor(private repo: Repository<entityType>, private query: SubscribeToQueryArgs<entityType>) { }
+    id = uuid()
+    constructor(private repo: Repository<entityType>, private query: SubscribeToQueryArgs<entityType>, userId: string) {
+        this.queryChannel = getLiveQueryChannel(this.id, userId);
+    }
 
 }
 
@@ -109,7 +114,7 @@ export interface SubscriptionListener<type> {
 
 export type Unsubscribe = VoidFunction;
 export interface SubscriptionClientConnection {
-    subscribe(channel: string, onMessage: (message: any) => void, onError: (err: any) => void): Unsubscribe;
+    subscribe(channel: string, onMessage: (message: any) => void, onError: (err: any) => void): Promise<Unsubscribe>;
     close(): void;
 }
 

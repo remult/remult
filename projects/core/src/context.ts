@@ -159,7 +159,7 @@ export class Remult {
     }
 
     /* @internal*/
-    liveQuerySubscriber = new LiveQueryClient(() => this.apiClient);
+    liveQuerySubscriber = new LiveQueryClient(() => this.apiClient,()=>this.user?.id);
 
     /** A helper callback that can be used to debug and trace all find operations. Useful in debugging scenarios */
     static onFind = (metadata: EntityMetadata, options: FindOptions<any>) => { };

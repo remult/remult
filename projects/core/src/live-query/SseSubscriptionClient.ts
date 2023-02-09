@@ -13,12 +13,12 @@ export class SseSubscriptionClient implements SubscriptionClient {
       close() {
         source.close();
       },
-      subscribe(channel, handler) {
+      async subscribe(channel, handler) {
         let listeners = channels.get(channel);
 
         if (!listeners) {
           channels.set(channel, listeners = []);
-          subscribeToChannel(channel);
+          await subscribeToChannel(channel);
         }
         listeners.push(handler);
         return () => {
@@ -76,8 +76,8 @@ export class SseSubscriptionClient implements SubscriptionClient {
       }
     });
 
-    function subscribeToChannel(channel: string) {
-      actionInfo.runActionWithoutBlockingUI(() => provider.post(remult.apiClient.url + '/' + streamUrl + '/subscribe', {
+    async function subscribeToChannel(channel: string) {
+      return actionInfo.runActionWithoutBlockingUI(() => provider.post(remult.apiClient.url + '/' + streamUrl + '/subscribe', {
         channel: channel,
         clientId: connectionId
       } as ServerEventChannelSubscribeDTO));

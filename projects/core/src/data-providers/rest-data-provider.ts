@@ -139,14 +139,14 @@ export class RestEntityDataProvider implements EntityDataProvider {
     return {
       createKey: () => JSON.stringify({ url, filterObject }),
       run,
-      subscribe: async () => {
-        const result: SubscribeResult = await run("liveQuery");
+      subscribe: async (queryId) => {
+        const result:any[] = await run( liveQueryAction+ queryId);
         return {
-          ...result,
+          result,
           unsubscribe: async () => {
             return actionInfo.runActionWithoutBlockingUI(() => this.http().post(
               this.url() + "?__action=endLiveQuery", {
-              id: result.queryChannel
+              id: queryId
             }));
           }
         }
@@ -286,3 +286,4 @@ export function addFilterToUrlAndReturnTrueIfSuccessful(filter: any, url: UrlBui
   }
   return true;
 }
+export const liveQueryAction = "liveQuery|";

@@ -171,7 +171,7 @@ describe("Live Query Client", () => {
                         close() {
                             open--;
                         },
-                        subscribe(channel, onMessage) {
+                        async subscribe(channel, onMessage) {
                             sendMessage = x => onMessage([x]);
                             return () => {
 
@@ -183,19 +183,17 @@ describe("Live Query Client", () => {
             httpClient: {
                 get: async (url) => {
                     get++;
-                    return {
-                        id: '1',
-                        result: [{
-                            id: 1,
-                            title: 'noam'
-                        }]
-                    }
+                    return [{
+                        id: 1,
+                        title: 'noam'
+                    }]
+
                 },
                 put: () => undefined,
                 post: async () => { },
                 delete: () => undefined
             }
-        }));
+        }), () => serverRemult.user?.id);
         let p = new PromiseResolver(lqc);
         const serverRemult = new Remult(new InMemoryDataProvider());
         serverRemult.liveQuerySubscriber = lqc;
@@ -317,7 +315,7 @@ describe("test live query full cycle", () => {
                             close() {
 
                             },
-                            subscribe(channel, onMessage) {
+                            async subscribe(channel, onMessage) {
                                 channels.push(channel);
                                 mh.push((c, message) => {
                                     if (clientStatus.connected)
@@ -337,7 +335,7 @@ describe("test live query full cycle", () => {
                         };
                     },
                 }, httpClient: createMockHttpDataProvider(dataApi)
-            }));
+            }), () => remult.user?.id);
         };
         const lqc1 = buildLqc();
         const lqc2 = buildLqc();
@@ -425,6 +423,78 @@ describe("test live query full cycle", () => {
         expect(result1.length).toBe(1);
         u();
     });
+    it("test quick unsubscribe before subscribe completes", async () => {
+        const serverRemult = new Remult(new InMemoryDataProvider())
+        const serverRepo = serverRemult.repo(eventTestEntity);
+        var dataApi = new DataApi(serverRepo, serverRemult);
+        var remult = new Remult();
+        var dp = createMockHttpDataProvider(dataApi);
+        let waitForUnsubscribe = createTestPromise();
+        let waitForSubscribe = createTestPromise();
+        let stats = {
+            sub: 0,
+            unSub: 0,
+            query: 0
+        }
+        remult.apiClient.httpClient = {
+            post: (a, b) => dp.post(a, b),
+            put: (a, b) => dp.put(a, b),
+            delete: a => dp.delete(a),
+            get: async (url) => {
+                stats.query++
+
+                return dp.get(url)
+            }
+        };
+        let mh: ((channel: string, message: any) => void)[] = [];
+        serverRemult.subscriptionServer = {
+            publishMessage: (c, m) => mh.forEach(x => x(c, m))
+        }
+        serverRemult.liveQueryStorage = new InMemoryLiveQueryStorage();
+        serverRemult.liveQueryPublisher = new LiveQueryPublisher(() => serverRemult.subscriptionServer, () => serverRemult.liveQueryStorage, async (_, _1, c) => c(serverRemult.repo(eventTestEntity)))
+
+        remult.apiClient.subscriptionClient = {
+            openConnection: async () => {
+                return {
+                    subscribe: async (a, handler) => {
+                        waitForUnsubscribe.resume();
+                        await waitForSubscribe;
+                        stats.sub++;
+                        mh.push((c, m) => {
+                            handler(m)
+                        });
+                        return () => {
+                            stats.unSub++;
+                            mh = mh.filter(h => h !== handler)
+                        }
+                    },
+                    close: () => {
+
+                    }
+                }
+            }
+        }
+        var pm = new PromiseResolver(remult.liveQuerySubscriber, serverRemult.liveQueryPublisher as LiveQueryPublisher)
+        const repo = remult.repo(eventTestEntity);
+        let result1: eventTestEntity[] = [];
+        let u = repo.liveQuery().subscribe({
+            next: ({ applyChanges: reducer }) => result1 = reducer(result1),
+            error: err => {
+                throw err
+            }
+        });
+        await waitForUnsubscribe;
+        u()
+        waitForSubscribe.resume();
+        await pm.flush();
+        await repo.insert({ id: 1, title: "noam" });
+        await pm.flush();
+        expect(result1.length).toBe(0);
+        expect(stats.sub).toBe(1);
+        expect(stats.unSub).toBe(1);
+        expect(stats.query).toBe(0);
+
+    });
     it("test quick unsubscribe before query completes", async () => {
         const serverRemult = new Remult(new InMemoryDataProvider())
         const serverRepo = serverRemult.repo(eventTestEntity);
@@ -457,12 +527,13 @@ describe("test live query full cycle", () => {
         remult.apiClient.subscriptionClient = {
             openConnection: async () => {
                 return {
-                    subscribe: (a, handler) => {
+                    subscribe: async (a, handler) => {
                         stats.sub++;
                         mh.push((c, m) => {
                             handler(m)
                         });
                         return () => {
+                            stats.unSub++;
                             mh = mh.filter(h => h !== handler)
                         }
                     },
@@ -488,8 +559,8 @@ describe("test live query full cycle", () => {
         await repo.insert({ id: 1, title: "noam" });
         await pm.flush();
         expect(result1.length).toBe(0);
-        expect(stats.sub).toBe(0);
-        expect(stats.unSub).toBe(0);
+        expect(stats.sub).toBe(1);
+        expect(stats.unSub).toBe(1);
 
     });
 
@@ -565,8 +636,8 @@ describe("test live query full cycle", () => {
     it("expect pure json object, from live query", async () => {
         var { testApi, repo } = setup2();
         await repo.insert({ title: 'a' })
-        const r = await testApi().get('/api/tasks?__action=liveQuery');
-        expect(getEntityRef(r.result[0], false)).toBe(undefined);
+        const r = await testApi().get('/api/tasks?__action=liveQuery|123');
+        expect(getEntityRef(r[0], false)).toBe(undefined);
 
     })
     it("test 2 subscriptions work", async () => {
@@ -646,7 +717,7 @@ describe("test live query full cycle", () => {
                 }
             }
         }
-        remult.liveQuerySubscriber = new LiveQueryClient(() => remult.apiClient)
+        remult.liveQuerySubscriber = new LiveQueryClient(() => remult.apiClient, () => remult.user?.id)
         let pm = new PromiseResolver(remult.liveQuerySubscriber)
         let error = false;
         let u = remult.repo(eventTestEntity).liveQuery().subscribe({
@@ -664,7 +735,7 @@ describe("test live query full cycle", () => {
         remult.apiClient.subscriptionClient = {
             openConnection: async () => {
                 return {
-                    subscribe(channel, onMessage, onError) {
+                    async subscribe(channel, onMessage, onError) {
 
                         onError("had error");
                         return () => { }
@@ -675,7 +746,7 @@ describe("test live query full cycle", () => {
                 }
             }
         }
-        remult.liveQuerySubscriber = new LiveQueryClient(() => remult.apiClient)
+        remult.liveQuerySubscriber = new LiveQueryClient(() => remult.apiClient, () => remult.user?.id)
         let pm = new PromiseResolver(remult.liveQuerySubscriber)
         let error = false;
         let u = remult.repo(eventTestEntity).liveQuery().subscribe({
@@ -734,7 +805,7 @@ it("test channel subscribe", async () => {
     remult.apiClient.subscriptionClient = {
         openConnection: async () => {
             return {
-                subscribe: (what) => {
+                subscribe: async (what) => {
                     sub++;
                     return () => {
                         sub--;
@@ -747,8 +818,8 @@ it("test channel subscribe", async () => {
         }
     }
     let pr = new PromiseResolver(remult.liveQuerySubscriber);
-    let r = mc.subscribe(() => { });
-    let r2 = mc.subscribe(() => { });
+    let r = await mc.subscribe(() => { });
+    let r2 = await mc.subscribe(() => { });
     await pr.flush();
     expect(sub).toBe(1);
     r();
@@ -817,7 +888,7 @@ describe("test failure", () => {
         let u = cr.repo(eventTestEntity).liveQuery().subscribe({ error: er => { error = true }, next: x => items = x.items });
         await pm.flush();
         expect(error).toBe(true);
-        expect(items.length).toBe(1);
+        expect(items).toBeUndefined();
         u();
     });
     it("Error on open connection", async () => {
@@ -839,7 +910,7 @@ describe("test failure", () => {
         let u = cr.repo(eventTestEntity).liveQuery().subscribe({ error: er => { error = true }, next: x => items = x.items });
         await pm.flush();
         expect(error).toBe(true);
-        expect(items.length).toBe(1);
+        expect(items).toBeUndefined();
         u();
     });
 
