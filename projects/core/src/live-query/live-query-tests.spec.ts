@@ -386,6 +386,25 @@ describe("test live query full cycle", () => {
         expect(result1.length).toBe(1);
         u();
     });
+    it("test sort works", async () => {
+        var { repo, pm, repo2 } = setup2();
+        let result1: eventTestEntity[] = [];
+        let items: eventTestEntity[] = [];
+        const u = repo.liveQuery({
+            orderBy: { title: "desc" }
+        }).subscribe((info) => {
+            result1 = info.applyChanges(result1);
+            items = info.items;
+        });
+        await pm.flush();
+        await repo.insert({ id: 1, title: "noam" });
+        await pm.flush();
+        await repo2.insert({ id: 2, title: "yael" });
+        await pm.flush();
+        expect(result1.map(r => r.id)).toEqual([1, 2]);
+        expect(items.map(r => r.id)).toEqual([2, 1]);
+        u();
+    });
     it("test add works if item already in array", async () => {
         var { repo, pm, repo2 } = setup2();
         let result1: eventTestEntity[] = [];

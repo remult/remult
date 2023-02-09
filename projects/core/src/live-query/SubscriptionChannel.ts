@@ -31,7 +31,15 @@ export class LiveQuerySubscriber<entityType> {
     }
 
     forListeners(what: (listener: (((reducer: (prevState: entityType[]) => entityType[]) => void))) => void, changes: LiveQueryChange[]) {
-        what(reducer => this.defaultQueryState = reducer(this.defaultQueryState))
+        what(reducer => {
+            this.defaultQueryState = reducer(this.defaultQueryState);
+            if (changes.find(c => c.type === "add" || c.type === "replace")) {
+                if (this.query.orderBy) {
+                    const o = Sort.translateOrderByToSort(this.repo.metadata, this.query.orderBy);
+                    this.defaultQueryState.sort((a: any, b: any) => o.compare(a, b));
+                }
+            }
+        })
 
         for (const l of this.listeners) {
             what(reducer => {
@@ -64,7 +72,6 @@ export class LiveQuerySubscriber<entityType> {
             listener(items => {
                 if (!items)
                     items = [];
-                let needSort = false;
                 for (const message of messages) {
                     switch (message.type) {
                         case "all":
@@ -72,24 +79,16 @@ export class LiveQuerySubscriber<entityType> {
                             break;
                         case "replace": {
                             items = items.map(x => getId(this.repo.metadata, x) === message.data.oldId ? message.data.item : x)
-                            needSort = true;
                             break;
                         }
                         case "add":
                             items = items.filter(x => getId(this.repo.metadata, x) !== getId(this.repo.metadata, message.data.item));
                             items.push(message.data.item);
-                            needSort = true;
                             break;
                         case "remove":
                             items = items.filter(x => getId(this.repo.metadata, x) !== message.data.id);
                             break;
                     };
-                }
-                if (needSort) {
-                    if (this.query.orderBy) {
-                        const o = Sort.translateOrderByToSort(this.repo.metadata, this.query.orderBy);
-                        items.sort((a: any, b: any) => o.compare(a, b));
-                    }
                 }
                 return items;
             });
