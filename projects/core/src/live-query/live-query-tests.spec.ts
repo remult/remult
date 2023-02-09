@@ -196,7 +196,6 @@ describe("Live Query Client", () => {
                 delete: () => undefined
             }
         }));
-        lqc.timeoutToCloseWhenNotClosed = 10;
         let p = new PromiseResolver(lqc);
         const serverRemult = new Remult(new InMemoryDataProvider());
         serverRemult.liveQuerySubscriber = lqc;
@@ -499,6 +498,33 @@ describe("test live query full cycle", () => {
         expect(unsubscribeCount()).toBe(1);
         expect((remult.liveQueryStorage as InMemoryLiveQueryStorage).removeCountForTesting).toBe(1);
     });
+    it("test unsubscribe works after  subscribe and unsubscribe", async () => {
+        var { repo, pm, messageCount, qm, unsubscribeCount, remult } = setup2();
+        let result1: eventTestEntity[] = [];
+        let unsubscribe = repo.liveQuery().subscribe(({ applyChanges: reducer }) => result1 = reducer(result1));
+        await pm.flush();
+        unsubscribe();
+        await pm.flush();
+        unsubscribe = repo.liveQuery().subscribe(({ applyChanges: reducer }) => result1 = reducer(result1));
+        await pm.flush();
+        unsubscribe();
+        await pm.flush();
+        expect(unsubscribeCount()).toBe(2);
+        expect((remult.liveQueryStorage as InMemoryLiveQueryStorage).removeCountForTesting).toBe(2);
+    });
+    it("test unsubscribe works after a quick subscribe and unsubscribe", async () => {
+        var { repo, pm, messageCount, qm, unsubscribeCount, remult } = setup2();
+        let result1: eventTestEntity[] = [];
+        let unsubscribe = repo.liveQuery().subscribe(({ applyChanges: reducer }) => result1 = reducer(result1));
+        unsubscribe();
+        await pm.flush();
+        unsubscribe = repo.liveQuery().subscribe(({ applyChanges: reducer }) => result1 = reducer(result1));
+        await pm.flush();
+        unsubscribe();
+        await pm.flush();
+        expect(unsubscribeCount()).toBe(1);
+        expect((remult.liveQueryStorage as InMemoryLiveQueryStorage).removeCountForTesting).toBe(1);
+    });
     it("test disconnect and reconnect scenario", async () => {
         var { repo, pm, clientStatus } = setup2();
         let result1: eventTestEntity[] = [];
@@ -685,6 +711,7 @@ it("Serialize Find Options1", async () => {
 it("test channel subscribe", async () => {
     const mc = new SubscriptionChannel("zxcvz");
     let sub = 0;
+    let close = 0;
     remult.apiClient.subscriptionClient = {
         openConnection: async () => {
             return {
@@ -695,7 +722,7 @@ it("test channel subscribe", async () => {
                     }
                 },
                 close() {
-
+                    close++;
                 },
             }
         }
@@ -715,13 +742,14 @@ it("test channel subscribe", async () => {
     r2();
     await pr.flush();
     expect(sub).toBe(0);
+    expect(close).toBe(1);
 
 })
 
 
 
 describe("test failure", () => {
-   
+
     it("error on subscribe query", async () => {
         let r = new Remult(new InMemoryDataProvider());
         r.apiClient.subscriptionClient = {
@@ -749,10 +777,10 @@ describe("test failure", () => {
         r.liveQueryStorage = new InMemoryLiveQueryStorage();
         await r.repo(eventTestEntity).insert({ id: 1, title: "a" });
         expect(await r.repo(eventTestEntity).count()).toBe(1)
-        let items: any[] ;
+        let items: any[];
         let error = false;
-        
-        var cr = new Remult( createMockHttpDataProvider(new DataApi(r.repo(eventTestEntity),r) ));
+
+        var cr = new Remult(createMockHttpDataProvider(new DataApi(r.repo(eventTestEntity), r)));
         cr.apiClient.subscriptionClient = {
             openConnection: async () => {
                 return {
@@ -778,10 +806,10 @@ describe("test failure", () => {
         r.liveQueryStorage = new InMemoryLiveQueryStorage();
         await r.repo(eventTestEntity).insert({ id: 1, title: "a" });
         expect(await r.repo(eventTestEntity).count()).toBe(1)
-        let items: any[] ;
+        let items: any[];
         let error = false;
-        
-        var cr = new Remult( createMockHttpDataProvider(new DataApi(r.repo(eventTestEntity),r) ));
+
+        var cr = new Remult(createMockHttpDataProvider(new DataApi(r.repo(eventTestEntity), r)));
         cr.apiClient.subscriptionClient = {
             openConnection: async () => {
                 throw "open connection error"

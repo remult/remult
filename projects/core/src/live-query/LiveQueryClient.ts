@@ -52,29 +52,25 @@ export class LiveQueryClient {
                 }
                 this.closeIfNoListeners();
             };
-        }).catch(err=>onResult.error(err));
+        }).catch(err => onResult.error(err));
         return () => {
             onUnsubscribe();
             onUnsubscribe = () => { };
         };
     }
-    timeoutToCloseWhenNotClosed = 1000;
+
     private closeIfNoListeners() {
-        this.runPromise(new Promise((res) => {
-            setTimeout(() => {
-                if (this.client)
-                    if (this.queries.size === 0 && this.channels.size === 0) {
-                        this.runPromise(this.client.then(x => x.close()));
-                        this.client = undefined;
-                        clearInterval(this.interval);
-                        this.interval = undefined;
-                    }
-                res({});
-            }, this.timeoutToCloseWhenNotClosed);
-        }));
+        if (this.client)
+            if (this.queries.size === 0 && this.channels.size === 0) {
+                this.runPromise(this.client.then(x => x.close()));
+                this.client = undefined;
+                clearInterval(this.interval);
+                this.interval = undefined;
+            }
     }
 
     //TODO - consider the time that may pass from the get request to the subscribe to the channel, in some cases this could mean, a call to server to get token and a call to the external provider - it may be some time - maybe we should do another handshake message once the subscription succeeds and not set the known ids until that handshake is made
+    //TODO - alternatively what if the client would dictate the query id and subscribe to it prior to the query execution.
 
     subscribe<entityType>(
         repo: Repository<entityType>,
@@ -82,10 +78,12 @@ export class LiveQueryClient {
         listener: SubscriptionListener<LiveQueryChangeInfo<entityType>>
     ) {
 
-
-        let onUnsubscribe: VoidFunction = () => { };
+        let alive = true;
+        let onUnsubscribe: VoidFunction = () => { alive = false };
         this.runPromise((repo as RepositoryImplementation<entityType>).buildEntityDataProviderFindOptions(options)
             .then(opts => {
+                if (!alive)
+                    return;
                 const { createKey, subscribe } = new RestDataProvider(this.apiProvider).getEntityDataProvider(repo.metadata).buildFindRequest(opts);
                 const eventTypeKey = createKey();
                 let q = this.queries.get(eventTypeKey);
