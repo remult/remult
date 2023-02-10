@@ -56,8 +56,6 @@ export class SseSubscriptionClient implements SubscriptionClient {
           }, 500);
         };
 
-
-
         source.addEventListener("connectionId", async e => {
           //@ts-ignore
           connectionId = e.data;
@@ -75,12 +73,13 @@ export class SseSubscriptionClient implements SubscriptionClient {
         });
       }
     });
-
     async function subscribeToChannel(channel: string) {
-      return actionInfo.runActionWithoutBlockingUI(() => provider.post(remult.apiClient.url + '/' + streamUrl + '/subscribe', {
-        channel: channel,
-        clientId: connectionId
-      } as ServerEventChannelSubscribeDTO));
+      return actionInfo.runActionWithoutBlockingUI(() => {
+        return provider.post(remult.apiClient.url + '/' + streamUrl + '/subscribe', {
+          channel: channel,
+          clientId: connectionId
+        } as ServerEventChannelSubscribeDTO)
+      });
     }
   }
 }

@@ -28,8 +28,6 @@ export class ProductsComponent implements OnInit {
 
   messages: string[] = [];
   async ngOnInit() {
-    //TODO - figure out why this is required
-    await this.remult.repo(Task).count();
 
 
 
