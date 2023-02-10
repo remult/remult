@@ -4,6 +4,7 @@ import { ServerEventChannelSubscribeDTO } from './src/live-query/SubscriptionCha
 import { SubscriptionServer } from './src/live-query/SubscriptionServer';
 import { DataApiResponse } from './src/data-api';
 import { v4 as uuid } from 'uuid';
+import { ConnectionNotFoundError } from './src/live-query/SseSubscriptionClient';
 
 export class SseSubscriptionServer implements SubscriptionServer {
     //@internal
@@ -27,7 +28,7 @@ export class SseSubscriptionServer implements SubscriptionServer {
                 }
             }
         }
-        res.error({ message: "client connection not found" });
+        res.success(ConnectionNotFoundError);
     }
 
     //@internal

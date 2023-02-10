@@ -33,7 +33,7 @@ export class SseSubscriptionClient implements SubscriptionClient {
         };
       },
     };
-    return new Promise<SubscriptionClientConnection>((res) => {
+    const createConnectionPromise = () => new Promise<SubscriptionClientConnection>((res) => {
       createConnection();
 
       function createConnection() {
@@ -73,13 +73,20 @@ export class SseSubscriptionClient implements SubscriptionClient {
         });
       }
     });
+    return createConnectionPromise();
     async function subscribeToChannel(channel: string) {
-      return actionInfo.runActionWithoutBlockingUI(() => {
+      const result = await actionInfo.runActionWithoutBlockingUI(() => {
         return provider.post(remult.apiClient.url + '/' + streamUrl + '/subscribe', {
           channel: channel,
           clientId: connectionId
         } as ServerEventChannelSubscribeDTO)
       });
+      if (result === ConnectionNotFoundError) {
+        await createConnectionPromise()
+      }
     }
   }
 }
+
+
+export const ConnectionNotFoundError = "client connection not found";
