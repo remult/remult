@@ -286,4 +286,4 @@ export function addFilterToUrlAndReturnTrueIfSuccessful(filter: any, url: UrlBui
   }
   return true;
 }
-export const liveQueryAction = "liveQuery|";
+export const liveQueryAction = "liveQuery-";

@@ -36,4 +36,4 @@ export declare class RestDataProviderHttpProviderUsingFetch implements RestDataP
     }): Promise<any>;
 }
 export declare function addFilterToUrlAndReturnTrueIfSuccessful(filter: any, url: UrlBuilder): boolean;
-export declare const liveQueryAction = "liveQuery|";
+export declare const liveQueryAction = "liveQuery-";
