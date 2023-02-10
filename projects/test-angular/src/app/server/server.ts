@@ -27,7 +27,7 @@ import { AppComponent } from '../app.component';
 import { AsyncLocalStorage } from 'async_hooks';
 
 
-import { helper, ProductsComponent, Task } from '../products-test/products.component';
+import { Task } from '../products-test/products.component';
 import { remultNext } from '../../../../core/remult-next'
 import { DataProviderLiveQueryStorage } from '../../../../core/live-query/data-provider-live-query-storage'
 
