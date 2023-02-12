@@ -165,35 +165,29 @@ return (
 
 Once an authentication flow is established, integrating it with Remult in the backend is as simple as providing Remult with a `getUser` function that extracts a `UserInfo` object from a `Request`.
 
-1. Add the following `getUserFromNextAuth` function to `[...nextauth].ts`.
+1. Add the following `findUserById` function to `[...nextauth].ts`.
 
 _src/pages/api/auth/[...nextauth].ts_
 
-// TODO - consider writing a function to get user by id - and doing the getToken in the [...remult] file
-
 ```ts
-export async function getUserFromNextAuth(req: NextApiRequest) {
-  const token = await getToken({ req })
-  return validUsers.find(user => user.id === token?.sub)
+export function findUserById(id?: string) {
+  return validUsers.find(user => user.id === id)
 }
 ```
 
-::: warning Import NextApiRequest and getToken
-This code requires adding an import of `NextApiRequest` from `next` and `getToken` from `next-auth-jwt`.
-:::
+  - Note that we've made the `id` parameter optional to support cases where the id is undefined, in such cases it'll return an undefined user
 
-2. Set the `getUser` property of the options object of `remultNext` to the `getUserFromNextAuth` function:
+2. Set the `getUser` property of the options object of `remultNext` to a function that gets the token from next auth and users `findUserById` to get the actual user:
 
    _src/pages/api/[...remult].ts_
 
-```ts{1,7}
-import { getUserFromNextAuth } from "../pages/api/auth/[...nextauth]"
+```ts{1-2,5}
+import { findUserById } from "./auth/[...nextauth]"
+import { getToken } from "next-auth/jwt"
 
-//...
-
-export const api = remultNext({
+export default remultNext({
+  getUser: async req => findUserById((await getToken({ req }))?.sub)
   //...
-  getUser: getUserFromNextAuth
 })
 ```
 
@@ -268,7 +262,7 @@ export default NextAuth({
   callbacks: {
     session: ({ session, token }) => ({
       ...session,
-      user: validUsers.find(user => user.id === token?.sub)
+      user: findUserById(token?.sub)
     })
   }
   //...
@@ -335,6 +329,6 @@ return (
 )
 ```
 
-* we use `typeof window !== "undefined"` to make sure that the call to `taskRepo.metadata` will run on the front end and not part of the server side rendering. `taskRepo.metadata` is not available in the render method of server side rendering.
+- we use `typeof window !== "undefined"` to make sure that the call to `taskRepo.metadata` will run on the front end and not part of the server side rendering. `taskRepo.metadata` is not available in the render method of server side rendering.
 
 This way we can keep the frontend consistent with the `api`'s Authorization rules
