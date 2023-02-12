@@ -31,7 +31,7 @@ export class DataProviderLiveQueryStorage implements LiveQueryStorage {
     let d = new Date();
     d.setMinutes(d.getMinutes() - 5);
     for (const query of await repo.find({ where: { entityKey } })) {
-      //TODO - has timezone issues - if two servers are connected from two timezones this will fail!
+      //TODO - has timezone issues - if two servers are connected from two timezones this will fail! - store the date as iso string
       if (query.lastUsed < d)
         await repo.delete(query);
       else {
