@@ -77,10 +77,11 @@ serverInit().then(async (dataSource) => {
     app.use(express.json());
 
 
-    if (false) {
+    if (true) {
         const rNext = remultNext({
             entities: [Task],
             dataProvider: getDatabase(),// async () => await createPostgresConnection(),
+            liveQueryStorage:new DataProviderLiveQueryStorage(getDatabase())
         })
         app.use(async (req, res, next) => {
             //@ts-ignore

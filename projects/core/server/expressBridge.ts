@@ -294,12 +294,12 @@ export class RemultServerImplementation implements RemultServer {
             (remult.subscriptionServer as SseSubscriptionServer).subscribeToChannel(origReq.body, res, remult, true);
           })
         );
-        r.route(this.options.rootPath + '/' + liveQueryKeepAliveRoute).post(
-          this.process(async (remult, req, res, origReq, origRes: import('express').Response) => {
-            res.success(await remult.liveQueryStorage.keepAliveAndReturnUnknownQueryIds(origReq.body))
-          })
-        )
       }
+      r.route(this.options.rootPath + '/' + liveQueryKeepAliveRoute).post(
+        this.process(async (remult, req, res, origReq, origRes: import('express').Response) => {
+          res.success(await remult.liveQueryStorage.keepAliveAndReturnUnknownQueryIds(origReq.body))
+        })
+      )
     }
 
     this.options.entities.forEach(e => {
