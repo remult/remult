@@ -4,7 +4,7 @@ import { SubscriptionServer } from './src/live-query/SubscriptionServer';
 export declare class SseSubscriptionServer implements SubscriptionServer {
     private canUserConnectToChannel?;
     constructor(canUserConnectToChannel?: (channel: string, remult: Remult) => boolean);
-    publishMessage<T>(channel: string, message: any): void;
+    publishMessage<T>(channel: string, message: any): Promise<void>;
 }
 export interface ResponseRequiredForSSE {
     write(data: string): void;

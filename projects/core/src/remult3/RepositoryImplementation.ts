@@ -979,12 +979,12 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
                     }
                 }
                 await this.loadDataFrom(updatedRow);
-                this.repository.remult.liveQueryPublisher.itemChanged(this.repository.metadata.key, [{ id: this.getId(), oldId: this.getOriginalId(), deleted: false }]);
 
 
                 if (this.info.entityInfo.saved)
                     await this.info.entityInfo.saved(this.instance);
 
+                await this.repository.remult.liveQueryPublisher.itemChanged(this.repository.metadata.key, [{ id: this.getId(), oldId: this.getOriginalId(), deleted: false }]);
                 this.saveOriginalData();
                 this._isNew = false;
                 return this.instance;
@@ -1017,7 +1017,6 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
 
         try {
             await this.edp.delete(this.id);
-            this.repository.remult.liveQueryPublisher.itemChanged(this.repository.metadata.key, [{ id: this.getId(), oldId: this.getOriginalId(), deleted: true }]);
             if (this.info.entityInfo.deleted)
                 await this.info.entityInfo.deleted(this.instance);
 
@@ -1025,6 +1024,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
                 for (const listener of this.repository.listeners.filter(x => x.deleted)) {
                     await listener.deleted(this.instance);
                 }
+            await this.repository.remult.liveQueryPublisher.itemChanged(this.repository.metadata.key, [{ id: this.getId(), oldId: this.getOriginalId(), deleted: true }]);
 
             this._wasDeleted = true;
         } catch (err) {

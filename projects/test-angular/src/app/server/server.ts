@@ -1,5 +1,5 @@
 import { CustomModuleLoader } from './CustomModuleLoader';
-import {writeToLog} from '../../../../core/myLog'
+import { writeToLog } from '../../../../core/myLog'
 let moduleLoader = new CustomModuleLoader('/dist/test-angular');
 import express from 'express';
 import * as swaggerUi from 'swagger-ui-express';
@@ -31,9 +31,26 @@ import { Task } from '../products-test/products.component';
 import { remultNext } from '../../../../core/remult-next'
 import { DataProviderLiveQueryStorage } from '../../../../core/live-query/data-provider-live-query-storage'
 
+
+import type * as Ably from 'ably';
+import { Rest } from "ably/promises";
+import { SubscriptionServer } from '../../../../core';
+
+
+class AblySubscriptionServer implements SubscriptionServer {
+    constructor(private ably: Ably.Types.RestPromise) { }
+    async publishMessage<T>(channel: string, message: T) {
+        console.log(
+            new Date().toISOString() + ": " + channel + "\n" + JSON.stringify(message, undefined, 4)
+        )
+        await this.ably.channels.get(channel).publish({ data: message });
+    }
+}
+
+
 const getDatabase = async () => {
     return createPostgresConnection({
-        connectionString:process.env['DATABASE_URL_SUPA']
+        connectionString: process.env['DATABASE_URL_SUPA']
     })
     const result = await createKnexDataProvider({
         client: 'mssql',
@@ -71,20 +88,54 @@ serverInit().then(async (dataSource) => {
     if (process.env.DISABLE_HTTPS != "true")
         app.use(forceHttps);
 
-        writeToLog("asb");
+    writeToLog("asb");
 
 
     app.use(express.json());
 
 
-    if (false) {
+
+    if (true) {
         const rNext = remultNext({
             entities: [Task],
             dataProvider: getDatabase(),// async () => await createPostgresConnection(),
+            liveQueryStorage: new DataProviderLiveQueryStorage(getDatabase()),
+            subscriptionServer: new AblySubscriptionServer(
+                new Rest(process.env["ABLY_API_KEY"]!)
+            ),
+            initRequest: async (req, options) => {
+                return
+                const x = options.remult.subscriptionServer;
+
+                options.remult.subscriptionServer = {
+                    publishMessage: async (c, m) => {
+                        console.log(c + "\n" + JSON.stringify(m, undefined, 2))
+                        x.publishMessage(c, m);
+                    },
+                    //@ts-ignore
+                    openHttpServerStream: (...args) => x.openHttpServerStream(...args),
+                    //@ts-ignore
+                    subscribeToChannel: (...args) => x.subscribeToChannel(...args)
+                }
+
+            }
         })
         app.use(async (req, res, next) => {
+
+            if (req.path === '/api/getAblyToken') {
+                const token = await new Rest(
+                    process.env["ABLY_API_KEY"]!
+                ).auth.createTokenRequest({
+                    capability: {
+                        "*": ["subscribe"],
+                    },
+                });
+                res.status(200).json(token);
+                return;
+            }
             //@ts-ignore
             const r = await rNext(req, res)
+            console.log("REQUEST DONE!!!!");
             if (!r)
                 next();
         })

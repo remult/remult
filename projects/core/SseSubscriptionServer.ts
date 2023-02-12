@@ -42,7 +42,7 @@ export class SseSubscriptionServer implements SubscriptionServer {
     }
 
 
-    publishMessage<T>(channel: string, message: any) {
+    async publishMessage<T>(channel: string, message: any) {
         const data = JSON.stringify({ channel, data: message });
 
         for (const sc of this.connections) {
