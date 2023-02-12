@@ -56,7 +56,7 @@ export class KnexDataProvider implements DataProvider {
         let r = await b.resolveWhere();
         return knex => r.forEach(y => y(knex))
     }
-    supportsrawFilter?: boolean;
+    supportsRawFilter?: boolean;
 
 }
 export type CustomKnexFilterBuilderFunction = () => Promise<(builder: Knex.QueryBuilder) => void>
