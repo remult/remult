@@ -27,7 +27,7 @@ Follow these steps only if you want to use `liveQuery` in the app
 
    export default remultNext({
      subscriptionServer: new AblySubscriptionServer(
-       new ably.Realtime(process.env["ABLY_API_KEY"]!)
+       new ably.Rest(process.env["ABLY_API_KEY"]!)
      )
      //...
    })
@@ -67,7 +67,7 @@ Follow these steps only if you want to use `liveQuery` in the app
    const session = useSession()
    useEffect(() => {
      remult.apiClient.subscriptionClient = new AblySubscriptionClient(
-       new ably.Rest(process.env["ABLY_API_KEY"]!)
+       new ably.Realtime(process.env["ABLY_API_KEY"]!)
      )
    }, [])
    ```
