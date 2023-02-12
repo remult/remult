@@ -25,7 +25,7 @@ function App() {
       <main>
         {tasks.map(task => {
           const handleChange = (values: Partial<Task>) => {
-            setTasks(tasks.map(t => t === task ? { ...task, ...values } : t));
+            setTasks(tasks => tasks.map(t => t === task ? { ...task, ...values } : t));
           };
 
           return (
@@ -55,12 +55,12 @@ function App() {
 ```tsx{6-9,19}
 {tasks.map(task => {
    const handleChange = (values: Partial<Task>) => {
-      setTasks(tasks.map(t => t === task ? { ...task, ...values } : t));
+      setTasks(tasks => tasks.map(t => t === task ? { ...task, ...values } : t));
    };
 
    const saveTask = async () => {
       const savedTask = await taskRepo.save(task);
-      setTasks(tasks.map(t => t === task ? savedTask : t));
+      setTasks(tasks => tasks.map(t => t === task ? savedTask : t));
    };
 
    return (
@@ -111,12 +111,12 @@ function App() {
       <main>
         {tasks.map(task => {
           const handleChange = (values: Partial<Task>) => {
-            setTasks(tasks.map(t => t === task ? { ...task, ...values } : t));
+            setTasks(tasks => tasks.map(t => t === task ? { ...task, ...values } : t));
           };
 
           const saveTask = async () => {
             const savedTask = await taskRepo.save(task);
-            setTasks(tasks.map(t => t === task ? savedTask : t));
+            setTasks(tasks => tasks.map(t => t === task ? savedTask : t));
           };
 
           return (
@@ -154,12 +154,12 @@ Add the highlighted `deleteTask` function and *Delete* `button` Within the `task
 ```tsx{11-14,25}
 {tasks.map(task => {
  const handleChange = (values: Partial<Task>) => {
-   setTasks(tasks.map(t => t === task ? { ...task, ...values } : t));
+   setTasks(tasks => tasks.map(t => t === task ? { ...task, ...values } : t));
  };
  
  const saveTask = async () => {
    const savedTask = await taskRepo.save(task);
-   setTasks(tasks.map(t => t === task ? savedTask : t));
+   setTasks(tasks => tasks.map(t => t === task ? savedTask : t));
  };
  
  const deleteTask = async () => {

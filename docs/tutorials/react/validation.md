@@ -25,7 +25,7 @@ This code requires adding an import of `Validators` from `remult`.
 const saveTask = async () => {
   try {
     const savedTask = await taskRepo.save(task);
-    setTasks(tasks.map(t => t === task ? savedTask : t));
+    setTasks(tasks => tasks.map(t => t === task ? savedTask : t));
   } catch (error: any) {
     alert(error.message);
   }

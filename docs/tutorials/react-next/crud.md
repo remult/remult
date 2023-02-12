@@ -74,7 +74,7 @@ _src/pages/index.tsx_
 {
   tasks.map(task => {
     const setTask = (value: Task) =>
-      setTasks(tasks.map(t => (t === task ? value : t)))
+      setTasks(tasks => tasks.map(t => (t === task ? value : t)))
 
     const setCompleted = async (completed: boolean) =>
       setTask(await taskRepo.save({ ...task, completed }))
@@ -102,7 +102,6 @@ To make the tasks in the list updatable, we'll bind the `tasks` React state to `
 
 Modify the contents of the `tasks.map` iteration within the `Home` component to include the following `setTitle` and `saveTask` functions and add an `input` and a save `button`.
 
-
 //TODO - prettifier takes down my :any type for the catch statement
 _src/pages/index.tsx_
 
@@ -110,7 +109,7 @@ _src/pages/index.tsx_
 {
   tasks.map(task => {
     const setTask = (value: Task) =>
-      setTasks(tasks.map(t => (t === task ? value : t)))
+      setTasks(tasks => tasks.map(t => (t === task ? value : t)))
 
     const setCompleted = async (completed: boolean) =>
       setTask(await taskRepo.save({ ...task, completed }))
@@ -162,7 +161,7 @@ _src/pages/index.tsx_
 {
   tasks.map(task => {
     const setTask = (value: Task) =>
-      setTasks(tasks.map(t => (t === task ? value : t)))
+      setTasks(tasks => tasks.map(t => (t === task ? value : t)))
 
     const setCompleted = async (completed: boolean) =>
       setTask(await taskRepo.save({ ...task, completed }))

@@ -45,7 +45,7 @@ Follow these steps only if you want to use `liveQuery` in the app
      req: NextApiRequest,
      res: NextApiResponse
    ) {
-     const token = await new ably.Realtime(
+     const token = await new ably.Rest(
        process.env["ABLY_API_KEY"]!
      ).auth.createTokenRequest({
        capability: {
@@ -67,7 +67,7 @@ Follow these steps only if you want to use `liveQuery` in the app
    const session = useSession()
    useEffect(() => {
      remult.apiClient.subscriptionClient = new AblySubscriptionClient(
-       new ably.Realtime({ authUrl: "/api/getAblyToken" })
+       new ably.Rest(process.env["ABLY_API_KEY"]!)
      )
    }, [])
    ```
