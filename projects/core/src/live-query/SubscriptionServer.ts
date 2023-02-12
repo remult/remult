@@ -72,7 +72,6 @@ export class LiveQueryPublisher implements LiveQueryChangesListener {
 
 /* @internal*/
 export interface LiveQueryChangesListener {
-  //TODO - reconsider if we should wait for this or not
   itemChanged(entityKey: string, changes: itemChange[]): Promise<void>;
 }
 
