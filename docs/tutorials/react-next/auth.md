@@ -138,7 +138,7 @@ const session = useSession()
 
 useEffect(() => {
   if (session.status === "unauthenticated") signIn()
-  else
+  else if (session.status === "authenticated")
     return taskRepo
       .liveQuery({
         limit: 20,
@@ -160,7 +160,7 @@ return (
   </div>
 )
 ```
-
+//TODO - if (session.status !== "authenticated") return <></>;
 ### Connect Remult-Next On the Backend
 
 Once an authentication flow is established, integrating it with Remult in the backend is as simple as providing Remult with a `getUser` function that extracts a `UserInfo` object from a `Request`.
@@ -175,7 +175,7 @@ export function findUserById(id?: string) {
 }
 ```
 
-  - Note that we've made the `id` parameter optional to support cases where the id is undefined, in such cases it'll return an undefined user
+- Note that we've made the `id` parameter optional to support cases where the id is undefined, in such cases it'll return an undefined user
 
 2. Set the `getUser` property of the options object of `remultNext` to a function that gets the token from next auth and users `findUserById` to get the actual user:
 
@@ -275,7 +275,7 @@ Next let's set remult's user based on the `session` info
 useEffect(() => {
   remult.user = session.data?.user as UserInfo
   if (session.status === "unauthenticated") signIn()
-  else
+  else if (session.status === "authenticated")
     return taskRepo
       .liveQuery({
         limit: 20,
@@ -293,7 +293,7 @@ This code requires adding an import of `UserInfo` from `remult`.
 ## Show components based on the entity's metadata
 
 Now let's use the entity's metadata to only show the form if the user is allowed to insert
-
+//TODO - gives an hydration error for Steve
 ```tsx{2,11}
 <main>
   {typeof window !== "undefined" && taskRepo.metadata.apiInsertAllowed && (

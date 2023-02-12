@@ -62,7 +62,7 @@ Follow these steps only if you want to use `liveQuery` in the app
 
    ```tsx
    import ably from "ably/promises"
-   import { AblySubscriptionClient } from "remult/live-query/ably"
+   import { AblySubscriptionClient } from "remult/live-query/ably"//TODO - remove live-query - should ably
    //...
    const session = useSession()
    useEffect(() => {
@@ -78,6 +78,7 @@ Follow these steps only if you want to use `liveQuery` in the app
 
    ```ts{2,4,6-7}
    //...
+   //TODO - export from remult - disable auto create of table and create code through init  api to create it if needed
    import { DataProviderLiveQueryStorage } from "remult/live-query/data-provider-live-query-storage"
 
    const dataProvider = createPostgresConnection()

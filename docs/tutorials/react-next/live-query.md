@@ -5,8 +5,6 @@ Our todo list has more than one user, viewing it at a time - try opening multipl
 To fix that, we'll use the `liveQuery` feature of remult.
 
 Adjust the `useEffect` hook in the `page.tsx` file
-//TODO - applyChanges should not apply sort.
-//TODO - check that use effect will unsubscribe completely when it needs to.
 ```ts
 useEffect(() => {
   return taskRepo
@@ -29,5 +27,3 @@ Let's review the change:
 - The `subscribe` method return an `unsubscribe` method, we return it to the `useEffect` hook so that it'll call the `unsubscribe` as the component unmounts
 
 Try changing values in one tab and review these changes on the other tab.
-
-//TODO - discuss the hot module reload issue - a new `remultNext` object is created with a new `SSE SERVER` and event a new `live query storage` that means that messages don't come to the client. it's hard when working on the `backend` method part oh the world. One thing we can do is when we get the error of "client connection not found" - to fire the reconnect callback

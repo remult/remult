@@ -68,6 +68,9 @@ You can either:
 
 2. Or Optionally, make the app look a little better by replacing the contents of `src/styles/globals.css` with [this CSS file](https://raw.githubusercontent.com/remult/nextjs-starter/new-tutorial-18/src/styles/globals.css).
    // TODO - update css path to main branch after merge
+   // TODO - make sure css looks ok also before we add buttons to the line
+   // TODO - why css doesn't match mobile for tutorial
+   // TODO - figure out why the check doesn't work ok on ios
 
 ### Install Remult
 
