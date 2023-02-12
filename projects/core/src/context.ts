@@ -159,7 +159,7 @@ export class Remult {
     }
 
     /* @internal*/
-    liveQuerySubscriber = new LiveQueryClient(() => this.apiClient);
+    liveQuerySubscriber = new LiveQueryClient(() => this.apiClient, () => this.user?.id);
 
     /** A helper callback that can be used to debug and trace all find operations. Useful in debugging scenarios */
     static onFind = (metadata: EntityMetadata, options: FindOptions<any>) => { };
@@ -292,13 +292,17 @@ export interface itemChange {
 }
 
 export async function doTransaction(remult: Remult, what: () => Promise<void>) {
-    return await remult.dataProvider.transaction(async ds => {
+    const trans = new transactionLiveQueryPublisher(remult.liveQueryPublisher);
+    let ok = true;
+    const result = await remult.dataProvider.transaction(async ds => {
         remult.dataProvider = (ds);
-        const trans = new transactionLiveQueryPublisher(remult.liveQueryPublisher);
         remult.liveQueryPublisher = trans;
         await what();
-        trans.flush();
+        ok = true;
     });
+    if (ok)
+        trans.flush();
+
 }
 class transactionLiveQueryPublisher implements LiveQueryChangesListener {
 

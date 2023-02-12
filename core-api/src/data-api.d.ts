@@ -15,7 +15,7 @@ export declare class DataApi<T = any> {
         findOptions: FindOptions<T>;
     }>;
     getArray(response: DataApiResponse, request: DataApiRequest, filterBody?: any): Promise<void>;
-    liveQuery(response: DataApiResponse, request: DataApiRequest, filterBody: any, serializeRequest: () => any): Promise<void>;
+    liveQuery(response: DataApiResponse, request: DataApiRequest, filterBody: any, serializeRequest: () => any, queryChannel: string): Promise<void>;
     private buildWhere;
     private doOnId;
     put(response: DataApiResponse, id: any, body: any): Promise<void>;
@@ -36,3 +36,4 @@ export interface DataApiRequest {
 }
 export declare function determineSort(sortUrlParm: string, dirUrlParam: string): any;
 export declare function serializeError(data: ErrorInfo): ErrorInfo<any>;
+export declare function getLiveQueryChannel(queryId: string, userId: string): string;

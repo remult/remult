@@ -1,7 +1,9 @@
 import { EntityOrderBy, remult as defaultRemult, Remult, Repository, Sort } from '../../index';
 import { LiveQueryChangeInfo } from '../remult3';
 import { getId } from '../remult3/getId';
+import { v4 as uuid } from 'uuid'
 import { LiveQueryChangesListener } from './SubscriptionServer';
+import { getLiveQueryChannel } from '../data-api';
 
 export const streamUrl = 'stream';
 //@internal
@@ -31,7 +33,15 @@ export class LiveQuerySubscriber<entityType> {
     }
 
     forListeners(what: (listener: (((reducer: (prevState: entityType[]) => entityType[]) => void))) => void, changes: LiveQueryChange[]) {
-        what(reducer => this.defaultQueryState = reducer(this.defaultQueryState))
+        what(reducer => {
+            this.defaultQueryState = reducer(this.defaultQueryState);
+            if (changes.find(c => c.type === "add" || c.type === "replace")) {
+                if (this.query.orderBy) {
+                    const o = Sort.translateOrderByToSort(this.repo.metadata, this.query.orderBy);
+                    this.defaultQueryState.sort((a: any, b: any) => o.compare(a, b));
+                }
+            }
+        })
 
         for (const l of this.listeners) {
             what(reducer => {
@@ -64,7 +74,6 @@ export class LiveQuerySubscriber<entityType> {
             listener(items => {
                 if (!items)
                     items = [];
-                let needSort = false;
                 for (const message of messages) {
                     switch (message.type) {
                         case "all":
@@ -72,24 +81,16 @@ export class LiveQuerySubscriber<entityType> {
                             break;
                         case "replace": {
                             items = items.map(x => getId(this.repo.metadata, x) === message.data.oldId ? message.data.item : x)
-                            needSort = true;
                             break;
                         }
                         case "add":
                             items = items.filter(x => getId(this.repo.metadata, x) !== getId(this.repo.metadata, message.data.item));
                             items.push(message.data.item);
-                            needSort = true;
                             break;
                         case "remove":
                             items = items.filter(x => getId(this.repo.metadata, x) !== message.data.id);
                             break;
                     };
-                }
-                if (needSort) {
-                    if (this.query.orderBy) {
-                        const o = Sort.translateOrderByToSort(this.repo.metadata, this.query.orderBy);
-                        items.sort((a: any, b: any) => o.compare(a, b));
-                    }
                 }
                 return items;
             });
@@ -98,7 +99,10 @@ export class LiveQuerySubscriber<entityType> {
 
     defaultQueryState: entityType[] = [];
     listeners: SubscriptionListener<LiveQueryChangeInfo<entityType>>[] = [];
-    constructor(private repo: Repository<entityType>, private query: SubscribeToQueryArgs<entityType>) { }
+    id = uuid()
+    constructor(private repo: Repository<entityType>, private query: SubscribeToQueryArgs<entityType>, userId: string) {
+        this.queryChannel = getLiveQueryChannel(this.id, userId);
+    }
 
 }
 
@@ -110,7 +114,7 @@ export interface SubscriptionListener<type> {
 
 export type Unsubscribe = VoidFunction;
 export interface SubscriptionClientConnection {
-    subscribe(channel: string, onMessage: (message: any) => void, onError: (err: any) => void): Unsubscribe;
+    subscribe(channel: string, onMessage: (message: any) => void, onError: (err: any) => void): Promise<Unsubscribe>;
     close(): void;
 }
 

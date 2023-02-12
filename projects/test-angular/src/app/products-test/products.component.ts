@@ -1,8 +1,10 @@
 import { Component, NgZone, OnInit } from '@angular/core';
-import { Remult, Entity, IdEntity, Fields, Controller, InMemoryDataProvider, Sort, BackendMethod } from 'remult';
+import { Remult, Entity, IdEntity, Fields, Controller, InMemoryDataProvider, Sort, BackendMethod, remult } from 'remult';
 import { GridSettings } from '@remult/angular/interfaces';
 import { DialogConfig } from '../../../../angular';
 import * as ably from 'ably';
+import { Observable } from 'rxjs';
+
 
 
 
@@ -24,18 +26,8 @@ export class ProductsComponent implements OnInit {
   }
 
 
-  grid = new GridSettings(this.remult.repo(Task), {
-    allowCrud: true, gridButtons: [{
-      name: 'reload',
-      click: () => {
-        this.grid.reloadData();
-      }
-    }]
-  });
-
   messages: string[] = [];
   async ngOnInit() {
-    await this.remult.repo(Task).count();
 
 
 
@@ -47,6 +39,12 @@ export class ProductsComponent implements OnInit {
       x.next(tasks);
     })
   });
+  save(t: Task) {
+    remult.repo(Task).save(t)
+  }
+  setAllCompleted(completed: boolean) {
+    Task.setAllCompleted(completed)
+  }
 
   @BackendMethod({ allowed: true })
   static async getAblyToken() {
@@ -59,34 +57,26 @@ export class ProductsComponent implements OnInit {
   }
 }
 
-
-export const helper = {
-  onSaved: (t: Task) => { },
-  onDeleted: (t: Task) => { },
-}
-
-@Entity<Task>("tasks", {
-  allowApiCrud: true,
-  saved: item => {
-    helper.onSaved(item);
-  },
-  deleted: item => {
-    helper.onDeleted(item)
-  }
+@Entity("tasks", {
+  allowApiCrud: true
 })
-export class Task extends IdEntity {
-
-  @Fields.string()
-  title = '';
+export class Task {
+  @Fields.autoIncrement()
+  id = 0
+  @Fields.string<Task>()
+  title = ''
   @Fields.boolean()
-  completed = false;
-  @Fields.string()
-  test='';
+  completed = false
+  @BackendMethod({ allowed: true })
+  static async setAllCompleted(completed: boolean) {
+    const taskRepo = remult.repo(Task);
+    for (const task of await taskRepo.find()) {
+      await taskRepo.save({ ...task, completed })
+    }
+  }
 }
 
 
-
-import { Observable } from 'rxjs';
 
 
 

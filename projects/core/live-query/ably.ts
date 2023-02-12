@@ -10,10 +10,13 @@ export class AblySubscriptionClient implements SubscriptionClient {
       close: () => {
         this.ably.connection.close()
       },
-      subscribe: (channel, handler) => {
+      subscribe: async (channel, handler) => {
         let myHandler = (y: Ably.Types.Message) => handler(y.data);
-        this.ably.channels.get(channel).subscribe(y => myHandler(y));
-        return () => { myHandler = () => { } };
+        await this.ably.channels.get(channel).subscribe(y => myHandler(y));
+        return () => {
+          myHandler = () => { }
+          this.ably.channels.get(channel).unsubscribe()
+        };
       }
     }
   }

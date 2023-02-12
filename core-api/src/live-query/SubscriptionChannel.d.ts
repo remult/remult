@@ -7,13 +7,13 @@ export interface SubscriptionListener<type> {
 }
 export declare type Unsubscribe = VoidFunction;
 export interface SubscriptionClientConnection {
-    subscribe(channel: string, onMessage: (message: any) => void, onError: (err: any) => void): Unsubscribe;
+    subscribe(channel: string, onMessage: (message: any) => void, onError: (err: any) => void): Promise<Unsubscribe>;
     close(): void;
 }
 export interface SubscriptionClient {
     openConnection(onReconnect: VoidFunction): Promise<SubscriptionClientConnection>;
 }
-export declare const liveQueryKeepAliveRoute = "/_liveQueryKeepAlive";
+export declare const liveQueryKeepAliveRoute = "_liveQueryKeepAlive";
 export declare type LiveQueryChange = {
     type: "all";
     data: any[];

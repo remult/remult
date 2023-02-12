@@ -3,7 +3,7 @@ export interface SubscriptionServer {
 }
 export interface LiveQueryStorage {
     add(query: StoredQuery): void;
-    remove(queryId: any): void;
+    remove(queryId: string): void;
     forEach(entityKey: string, callback: (args: {
         query: StoredQuery;
         setData(data: any): Promise<void>;

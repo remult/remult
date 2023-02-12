@@ -1,7 +1,7 @@
 {
   "name": "remult-mono-repo",
   "description": "See projects/core for the remult core package.json. This package.json is used for remult/core development, test projects and experimental work. See ",
-  "version": "0.18.1-exp.24",
+  "version": "0.18.1-exp.27",
   "scripts": {
     "test": "concurrently -k -n \"TSC,Test\" -c \"bgBlue.bold,bgGreen.bold\" \"tsc -w -p projects/core/tsconfig.build.json --emitDeclarationOnly --outDir core-api\" \"cd projects/test-angular && ng test core\"",
     "release-core": "npm run build-core && npm run patch-versions",
@@ -92,7 +92,7 @@
     "jasmine-spec-reporter": "~5.0.0",
     "jasmine-ts": "^0.4.0",
     "jest": "^27.5.1",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "karma": "~6.3.16",
     "karma-chrome-launcher": "~3.1.0",
     "karma-coverage": "~2.0.3",
@@ -128,6 +128,7 @@
   "browser": {
     "jsonwebtoken": false,
     "argon2": false,
-    "password-hash": false
+    "password-hash": false,
+    "fs": false
   }
 }

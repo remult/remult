@@ -42,7 +42,7 @@ export interface BackendMethodOptions<type> {
 export declare const actionInfo: {
     allActions: any[];
     runningOnServer: boolean;
-    runActionWithoutBlockingUI: (what: () => Promise<any>) => Promise<any>;
+    runActionWithoutBlockingUI: <T>(what: () => Promise<T>) => Promise<T>;
     startBusyWithProgress: () => {
         progress: (percent: number) => void;
         close: () => void;

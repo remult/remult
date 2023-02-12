@@ -64,7 +64,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     MatIconModule,
     FormsModule,
     MatMenuModule,
-
   ],
   entryComponents: [
     //,InputAreaComponent

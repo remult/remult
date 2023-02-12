@@ -8,8 +8,10 @@ import { Entity, Fields, getEntityKey, Repository } from '../src/remult3';
 import { IdEntity } from '../src/id-entity';
 import { remult, RemultProxy } from '../src/remult-proxy';
 import { LiveQueryPublisher, LiveQueryStorage, InMemoryLiveQueryStorage, PerformWithRequest, SubscriptionServer } from '../src/live-query/SubscriptionServer';
-import { liveQueryKeepAliveRoute } from '../src/live-query/SubscriptionChannel';
+import { liveQueryKeepAliveRoute, streamUrl } from '../src/live-query/SubscriptionChannel';
 import { initDataProvider } from './initDataProvider';
+import { ResponseRequiredForSSE, SseSubscriptionServer } from "../SseSubscriptionServer";
+
 
 
 //TODO2 -support pub sub non express servers
@@ -49,6 +51,9 @@ export function createRemultServerCore<RequestType extends GenericRequest = Gene
 
   if (!options) {
     options = {};
+  }
+  if (!options.subscriptionServer) {
+    options.subscriptionServer = new SseSubscriptionServer();
   }
   if (options.logApiEndPoints === undefined)
     options.logApiEndPoints = true;
@@ -157,6 +162,7 @@ export interface GenericResponse {
   end();
 };
 
+
 export class RemultAsyncLocalStorage {
   static enable() {
     (remult as RemultProxy).remultFactory = () => {
@@ -222,13 +228,17 @@ export class RemultServerImplementation implements RemultServer {
     this.process(async () => { next() })(req, res);
   }
   routeImpl: RouteImplementation;
-
-  handle(req: GenericRequest, gRes?: GenericResponse): Promise<ServerHandleResponse> {
+  getRouteImpl() {
     if (!this.routeImpl) {
       this.routeImpl = new RouteImplementation();
       this.registerRouter(this.routeImpl);
     }
-    return this.routeImpl.handle(req, gRes);
+    return this.routeImpl;
+  }
+
+  handle(req: GenericRequest, gRes?: GenericResponse): Promise<ServerHandleResponse> {
+
+    return this.getRouteImpl().handle(req, gRes);
   }
   registeredRouter = false;
   registerRouter(r: GenericRouter) {
@@ -265,15 +275,33 @@ export class RemultServerImplementation implements RemultServer {
             });
           }, doWork: undefined
         }, r);
-      this.addAction({
-        __register: x => {
-          x(liveQueryKeepAliveRoute, false, () => true, async (data: any, req, res) => {
-            res.success(await remult.liveQueryStorage.keepAliveAndReturnUnknownQueryIds(data));
-          });
-        }, doWork: undefined
-      }, r);
 
+      if (this.options.subscriptionServer instanceof SseSubscriptionServer) {
+        const streamPath = this.options.rootPath + '/' + streamUrl
+
+        r.route(streamPath).get(
+          this.process(async (remult, req, res, origReq, origRes: import('express').Response) => {
+            (remult.subscriptionServer as SseSubscriptionServer).openHttpServerStream(origReq, origRes);
+          })
+        );
+        r.route(streamPath + '/subscribe').post(
+          this.process(async (remult, req, res, origReq, origRes: import('express').Response) => {
+            (remult.subscriptionServer as SseSubscriptionServer).subscribeToChannel(origReq.body, res, remult);
+          })
+        );
+        r.route(streamPath + '/unsubscribe').post(
+          this.process(async (remult, req, res, origReq, origRes: import('express').Response) => {
+            (remult.subscriptionServer as SseSubscriptionServer).subscribeToChannel(origReq.body, res, remult, true);
+          })
+        );
+        r.route(this.options.rootPath + '/' + liveQueryKeepAliveRoute).post(
+          this.process(async (remult, req, res, origReq, origRes: import('express').Response) => {
+            res.success(await remult.liveQueryStorage.keepAliveAndReturnUnknownQueryIds(origReq.body))
+          })
+        )
+      }
     }
+
     this.options.entities.forEach(e => {
       let key = getEntityKey(e);
       if (key != undefined)
@@ -282,7 +310,6 @@ export class RemultServerImplementation implements RemultServer {
         }, r);
     });
   }
-
   add(key: string, dataApiFactory: ((req: Remult) => DataApi), r: GenericRouter) {
 
     let myRoute = this.options.rootPath + '/' + key;
@@ -306,10 +333,10 @@ export class RemultServerImplementation implements RemultServer {
       //@ts-ignore
       .delete(this.process(async (c, req, res, orig) => dataApiFactory(c).delete(res, orig.params.id)));
   }
-  process(what: (remult: Remult, myReq: DataApiRequest, myRes: DataApiResponse, origReq: GenericRequest) => Promise<void>) {
-    return async (req: GenericRequest, res: GenericResponse) => {
+  process(what: (remult: Remult, myReq: DataApiRequest, myRes: DataApiResponse, origReq: GenericRequest, origRes: GenericResponse) => Promise<void>) {
+    return async (req: GenericRequest, origRes: GenericResponse) => {
       let myReq = new ExpressRequestBridgeToDataApiRequest(req);
-      let myRes = new ExpressResponseBridgeToDataApiResponse(res, req);
+      let myRes = new ExpressResponseBridgeToDataApiResponse(origRes, req);
       let remult = new Remult();
       remult.liveQueryPublisher = new LiveQueryPublisher(() => remult.subscriptionServer, () => remult.liveQueryStorage, this.runWithRequest)
       remult.dataProvider = (await this.dataProvider);
@@ -344,7 +371,7 @@ export class RemultServerImplementation implements RemultServer {
           }
 
 
-          await what(remult, myReq, myRes, req);
+          await what(remult, myReq, myRes, req, origRes);
           res({});
         })
       })
@@ -371,9 +398,7 @@ export class RemultServerImplementation implements RemultServer {
       })();
       this.backendMethodsOpenApi.push({ path: myUrl, allowed, tag });
       if (this.options.logApiEndPoints)
-        //TODO - should I hide this route in the list of routes
-        if (url !== liveQueryKeepAliveRoute)
-          console.info("[remult] " + myUrl);
+        console.info("[remult] " + myUrl);
       if (queue) {
         this.hasQueue = true;
         this.queue.mapQueuedAction(myUrl, what);
@@ -943,10 +968,20 @@ class RouteImplementation {
 
   }
   async handle(req: GenericRequest, gRes?: GenericResponse): Promise<ServerHandleResponse | undefined> {
-
-
     return new Promise<ServerHandleResponse | undefined>(res => {
-      const response = new class implements GenericResponse {
+      const response = new class implements GenericResponse, ResponseRequiredForSSE {
+        write(data: string): void {
+          (gRes as any as ResponseRequiredForSSE).write(data)
+        }
+        writeHead(statusCode: number, headers: any): void {
+          (gRes as any as ResponseRequiredForSSE).writeHead(statusCode, headers)
+          this.statusCode = statusCode;
+          res({ statusCode })
+        }
+        flush() {
+          if ((gRes as any as ResponseRequiredForSSE).flush)
+            (gRes as any as ResponseRequiredForSSE).flush()
+        }
         statusCode = 200;
         json(data: any) {
           if (gRes !== undefined)
