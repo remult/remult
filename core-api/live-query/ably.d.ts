@@ -8,6 +8,6 @@ export declare class AblySubscriptionClient implements SubscriptionClient {
 }
 export declare class AblySubscriptionServer implements SubscriptionServer {
     private ably;
-    constructor(ably: Ably.Types.RealtimePromise);
-    publishMessage<T>(channel: string, message: T): void;
+    constructor(ably: Ably.Types.RestPromise);
+    publishMessage<T>(channel: string, message: T): Promise<void>;
 }

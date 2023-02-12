@@ -8,7 +8,7 @@ export class AblySubscriptionClient implements SubscriptionClient {
   async openConnection(onReconnect: VoidFunction): Promise<SubscriptionClientConnection> {
     return {
       close: () => {
-        this.ably.connection.close()
+        // Since we did not open the connection, we do not close it
       },
       subscribe: async (channel, handler) => {
         let myHandler = (y: Ably.Types.Message) => handler(y.data);
@@ -23,7 +23,7 @@ export class AblySubscriptionClient implements SubscriptionClient {
 }
 
 export class AblySubscriptionServer implements SubscriptionServer {
-  constructor(private ably: Ably.Types.RealtimePromise) { }
+  constructor(private ably: Ably.Types.RestPromise) { }
   async publishMessage<T>(channel: string, message: T) {
     await this.ably.channels.get(channel).publish({ data: message });
   }

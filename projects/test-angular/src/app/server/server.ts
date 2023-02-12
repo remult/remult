@@ -31,6 +31,23 @@ import { Task } from '../products-test/products.component';
 import { remultNext } from '../../../../core/remult-next'
 import { DataProviderLiveQueryStorage } from '../../../../core/live-query/data-provider-live-query-storage'
 
+
+import type * as Ably from 'ably';
+import { Rest } from "ably/promises";
+import { SubscriptionServer } from '../../../../core';
+
+
+class AblySubscriptionServer implements SubscriptionServer {
+    constructor(private ably: Ably.Types.RestPromise) { }
+    async publishMessage<T>(channel: string, message: T) {
+        console.log(
+            new Date().toISOString() + ": " + channel + "\n" + JSON.stringify(message, undefined, 4)
+        )
+        await this.ably.channels.get(channel).publish({ data: message });
+    }
+}
+
+
 const getDatabase = async () => {
     return createPostgresConnection({
         connectionString: process.env['DATABASE_URL_SUPA']
@@ -83,8 +100,11 @@ serverInit().then(async (dataSource) => {
             entities: [Task],
             dataProvider: getDatabase(),// async () => await createPostgresConnection(),
             liveQueryStorage: new DataProviderLiveQueryStorage(getDatabase()),
+            subscriptionServer: new AblySubscriptionServer(
+                new Rest(process.env["ABLY_API_KEY"]!)
+            ),
             initRequest: async (req, options) => {
-
+                return
                 const x = options.remult.subscriptionServer;
 
                 options.remult.subscriptionServer = {
@@ -101,6 +121,18 @@ serverInit().then(async (dataSource) => {
             }
         })
         app.use(async (req, res, next) => {
+
+            if (req.path === '/api/getAblyToken') {
+                const token = await new Rest(
+                    process.env["ABLY_API_KEY"]!
+                ).auth.createTokenRequest({
+                    capability: {
+                        "*": ["subscribe"],
+                    },
+                });
+                res.status(200).json(token);
+                return;
+            }
             //@ts-ignore
             const r = await rNext(req, res)
             console.log("REQUEST DONE!!!!");

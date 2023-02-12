@@ -1,5 +1,5 @@
 export interface SubscriptionServer {
-    publishMessage<T>(channel: string, message: T): void;
+    publishMessage<T>(channel: string, message: T): Promise<void>;
 }
 export interface LiveQueryStorage {
     add(query: StoredQuery): void;
