@@ -6,7 +6,7 @@ import { LiveQueryStorage, StoredQuery } from "../src/live-query/SubscriptionSer
 import { Entity, Fields, Repository } from "../src/remult3";
 
 
-
+//TODO - reconsider long import - import { DataProviderLiveQueryStorage } from "remult/live-query/data-provider-live-query-storage";
 export class DataProviderLiveQueryStorage implements LiveQueryStorage {
   repo: Promise<Repository<LiveQueryStorageEntity>>;
   constructor(dataProvider: DataProvider | Promise<DataProvider> | (() => Promise<DataProvider | undefined>)) {
