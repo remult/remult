@@ -3,7 +3,7 @@ import { findOptionsFromJson } from '../data-providers/rest-data-provider';
 import { Repository } from '../remult3';
 
 export interface SubscriptionServer {
-  publishMessage<T>(channel: string, message: T): void;
+  publishMessage<T>(channel: string, message: T): Promise<void>;
 }
 
 /* @internal*/
@@ -15,9 +15,9 @@ export class LiveQueryPublisher implements LiveQueryChangesListener {
 
   runPromise(p: Promise<any>) { }
   debugFileSaver = (x: any) => { };
-  itemChanged(entityKey: string, changes: itemChange[]) {
+  async itemChanged(entityKey: string, changes: itemChange[]) {
     //TODO 2 - optimize so that the user will get their messages first. Based on user id
-    this.runPromise(this.liveQueryStorage().forEach(entityKey,
+    await (this.liveQueryStorage().forEach(entityKey,
       async ({ query: q, setData }) => {
         let query = { ...q.data } as QueryData;
         await this.performWithRequest(query.requestJson, entityKey, async repo => {
@@ -72,7 +72,7 @@ export class LiveQueryPublisher implements LiveQueryChangesListener {
 
 /* @internal*/
 export interface LiveQueryChangesListener {
-  itemChanged(entityKey: string, changes: itemChange[]);
+  itemChanged(entityKey: string, changes: itemChange[]): Promise<void>;
 }
 
 

@@ -24,7 +24,7 @@ export class AblySubscriptionClient implements SubscriptionClient {
 
 export class AblySubscriptionServer implements SubscriptionServer {
   constructor(private ably: Ably.Types.RealtimePromise) { }
-  publishMessage<T>(channel: string, message: T): void {
-    this.ably.channels.get(channel).publish({ data: message });
+  async publishMessage<T>(channel: string, message: T) {
+    await this.ably.channels.get(channel).publish({ data: message });
   }
 }

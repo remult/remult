@@ -139,7 +139,7 @@ export class Remult {
     subscriptionServer?: SubscriptionServer
     /* @internal*/
     liveQueryPublisher: LiveQueryChangesListener = {
-        itemChanged: () => { }
+        itemChanged:async () => { }
     };
 
     //@ts-ignore // type error of typescript regarding args that doesn't appear in my normal development
@@ -301,14 +301,14 @@ export async function doTransaction(remult: Remult, what: () => Promise<void>) {
         ok = true;
     });
     if (ok)
-        trans.flush();
+        await trans.flush();
 
 }
 class transactionLiveQueryPublisher implements LiveQueryChangesListener {
 
     constructor(private orig: LiveQueryChangesListener) { }
     transactionItems = new Map<string, itemChange[]>();
-    itemChanged(entityKey: string, changes: itemChange[]): void {
+    async itemChanged(entityKey: string, changes: itemChange[]) {
         let items = this.transactionItems.get(entityKey);
         if (!items) {
             this.transactionItems.set(entityKey, items = []);
@@ -328,9 +328,9 @@ class transactionLiveQueryPublisher implements LiveQueryChangesListener {
             else items.push(c);
         }
     }
-    flush() {
+    async flush() {
         for (const key of this.transactionItems.keys()) {
-            this.orig.itemChanged(key, this.transactionItems.get(key));
+            await this.orig.itemChanged(key, this.transactionItems.get(key));
         }
     }
 }

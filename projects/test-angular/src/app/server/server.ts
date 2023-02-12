@@ -1,5 +1,5 @@
 import { CustomModuleLoader } from './CustomModuleLoader';
-import {writeToLog} from '../../../../core/myLog'
+import { writeToLog } from '../../../../core/myLog'
 let moduleLoader = new CustomModuleLoader('/dist/test-angular');
 import express from 'express';
 import * as swaggerUi from 'swagger-ui-express';
@@ -33,7 +33,7 @@ import { DataProviderLiveQueryStorage } from '../../../../core/live-query/data-p
 
 const getDatabase = async () => {
     return createPostgresConnection({
-        connectionString:process.env['DATABASE_URL_SUPA']
+        connectionString: process.env['DATABASE_URL_SUPA']
     })
     const result = await createKnexDataProvider({
         client: 'mssql',
@@ -71,21 +71,39 @@ serverInit().then(async (dataSource) => {
     if (process.env.DISABLE_HTTPS != "true")
         app.use(forceHttps);
 
-        writeToLog("asb");
+    writeToLog("asb");
 
 
     app.use(express.json());
+
 
 
     if (true) {
         const rNext = remultNext({
             entities: [Task],
             dataProvider: getDatabase(),// async () => await createPostgresConnection(),
-            liveQueryStorage:new DataProviderLiveQueryStorage(getDatabase())
+            liveQueryStorage: new DataProviderLiveQueryStorage(getDatabase()),
+            initRequest: async (req, options) => {
+
+                const x = options.remult.subscriptionServer;
+
+                options.remult.subscriptionServer = {
+                    publishMessage: async (c, m) => {
+                        console.log(c + "\n" + JSON.stringify(m, undefined, 2))
+                        x.publishMessage(c, m);
+                    },
+                    //@ts-ignore
+                    openHttpServerStream: (...args) => x.openHttpServerStream(...args),
+                    //@ts-ignore
+                    subscribeToChannel: (...args) => x.subscribeToChannel(...args)
+                }
+
+            }
         })
         app.use(async (req, res, next) => {
             //@ts-ignore
             const r = await rNext(req, res)
+            console.log("REQUEST DONE!!!!");
             if (!r)
                 next();
         })

@@ -16,6 +16,7 @@ export class DataProviderLiveQueryStorage implements LiveQueryStorage {
     )
 
   }
+  //TODO - consider case where query id already exists (reconnect)
   add({ id, entityKey, data }: StoredQuery): void {
     this.repo.then(repo => repo.insert({
       id, entityKey, data
