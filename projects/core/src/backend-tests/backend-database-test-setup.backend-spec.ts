@@ -20,11 +20,8 @@ function testKnexSqlImpl(knex: Knex.Knex, name: string) {
                     async (entity: ClassType<any>) => {
 
                         let repo = remult.repo(entity);
-                        let sb = new KnexSchemaBuilder(knex);
                         await knex.schema.dropTableIfExists(await repo.metadata.getDbName());
-                        await sb.createIfNotExist(repo.metadata);
-                        await sb.verifyAllColumns(repo.metadata);
-                        await knex(await repo.metadata.getDbName()).delete();
+                        await db.ensureSchema([repo.metadata])
                         return repo;
                     }
             });
@@ -77,9 +74,7 @@ export const mySqlTest =
 
 
 
-let pg = createPostgresConnection({
-    autoCreateTables: false
-});
+let pg = createPostgresConnection();
 export function testPostgresImplementation(key: string, what: dbTestWhatSignature, focus = false) {
 
 
@@ -92,11 +87,8 @@ export function testPostgresImplementation(key: string, what: dbTestWhatSignatur
             createEntity:
                 async (entity: ClassType<any>) => {
                     let repo = remult.repo(entity);
-                    let sb = new PostgresSchemaBuilder(db);
                     await db.execute("drop table if exists " + await repo.metadata.getDbName());
-                    await sb.createIfNotExist(repo.metadata);
-                    await sb.verifyAllColumns(repo.metadata);
-                    await db.execute("delete from " + await repo.metadata.getDbName());
+                    await db.ensureSchema([repo.metadata])
                     return repo;
                 }
         });

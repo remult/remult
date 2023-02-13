@@ -50,7 +50,7 @@ class AblySubscriptionServer implements SubscriptionServer {
 
 const getDatabase = async () => {
     return createPostgresConnection({
-        connectionString: process.env['DATABASE_URL_SUPA']
+        connectionString: process.env['DATABASE_URL']
     })
     const result = await createKnexDataProvider({
         client: 'mssql',

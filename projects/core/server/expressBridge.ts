@@ -1,6 +1,6 @@
 
 import { Action, actionInfo, ActionInterface, classBackendMethodsArray, jobWasQueuedResult, myServerAction, queuedJobInfoResponse, serverActionField } from '../src/server-action';
-import { DataProvider, ErrorInfo } from '../src/data-interfaces';
+import { DataProvider, ErrorInfo, CanEnsureSchema } from '../src/data-interfaces';
 import { DataApi, DataApiRequest, DataApiResponse, serializeError } from '../src/data-api';
 import { allEntities, AllowedForInstance, Remult, UserInfo } from '../src/context';
 import { ClassType } from '../classType';
@@ -30,7 +30,12 @@ export interface RemultServerOptions<RequestType extends GenericRequest> {
     fromJson: (request: any) => RequestType
   };
 
-
+  /** Will create tables and columns in supporting databases. default: true 
+   * 
+   * @description
+   * when set to true, it'll create entities that do not exist, and add columns that are missing.
+  */
+  ensureSchema?: boolean;
   getUser?: (request: RequestType) => Promise<UserInfo | undefined>;
   initApi?: (remult: Remult) => void | Promise<void>;
   logApiEndPoints?: boolean;
@@ -69,21 +74,33 @@ export function createRemultServerCore<RequestType extends GenericRequest = Gene
 
 
   let dataProvider = initDataProvider(options.dataProvider);
+  if (options.ensureSchema === undefined)
+    options.ensureSchema = true;
 
   RemultAsyncLocalStorage.enable();
 
-  if (options.initApi) {
-    dataProvider = dataProvider.then(async dp => {
-      var remult = new Remult(dp);
-      await new Promise((res) => {
-        RemultAsyncLocalStorage.instance.run(remult, async () => {
+  dataProvider = dataProvider.then(async dp => {
+    var remult = new Remult(dp);
+    await new Promise((res) => {
+      RemultAsyncLocalStorage.instance.run(remult, async () => {
+        if (options.ensureSchema) {
+          if (dp.ensureSchema) {
+            const entitiesMetadata = options.entities.map(e => remult.repo(e).metadata);
+            await dp.ensureSchema(entitiesMetadata)
+            for (const item of [options.liveQueryStorage, options.queueStorage] as any as (CanEnsureSchema)[]) {
+              if (item?.ensureSchema)
+                await item.ensureSchema(remult)
+            }
+          }
+        }
+        if (options.initApi)
           await options.initApi(remult);
-          res({})
-        })
-      });
-      return dp;
+        res({})
+      })
     });
-  }
+    return dp;
+  });
+
   if (!options.requestSerializer) {
     options.requestSerializer = {
       toJson: x => {

@@ -40,7 +40,6 @@ export function postgresColumnSyntax(x: FieldMetadata, dbName: string) {
     return result;
 }
 
-
 export async function verifyStructureOfAllEntities(db: SqlDatabase, remult: Remult) {
     return await new PostgresSchemaBuilder(db).verifyStructureOfAllEntities(remult);
 }
@@ -52,18 +51,30 @@ export class PostgresSchemaBuilder {
         if (!remult) {
             remult = RemultProxy.defaultRemult;
         }
-        if (PostgresSchemaBuilder.logToConsole)
-            console.time("Postgres Auto create tables and columns")
         const completed = new Set<string>();
+        const entities: EntityMetadata[] = [];
         for (const entityClass of [...allEntities].reverse()) {
             let entity = remult.repo(entityClass).metadata;
             let e: EntityDbNamesBase = await dbNamesOf(entity);
             if (completed.has(e.$entityName))
                 continue;
             completed.add(e.$entityName)
+            entities.push(entity);
+        }
+        await this.ensureSchema(entities);
+    }
+    async ensureSchema(entities: EntityMetadata<any>[], caption?: string) {
+        //TODO - discuss this console log
+        let desc = "Ensure postgres schema";
+        if (caption)
+            desc += " - " + caption;
+        if (PostgresSchemaBuilder.logToConsole)
+            console.time(desc);
+        for (const entity of entities) {
+            let e: EntityDbNamesBase = await dbNamesOf(entity);
             try {
                 if (!entity.options.sqlExpression) {
-                    if ((await e.$entityName).toLowerCase().indexOf('from ') < 0) {
+                    if (e.$entityName.toLowerCase().indexOf('from ') < 0) {
                         await this.createIfNotExist(entity);
                         await this.verifyAllColumns(entity);
                     }
@@ -74,8 +85,9 @@ export class PostgresSchemaBuilder {
             }
         }
         if (PostgresSchemaBuilder.logToConsole)
-            console.timeEnd("Postgres Auto create tables and columns")
+            console.timeEnd(desc);
     }
+
     async createIfNotExist(entity: EntityMetadata): Promise<void> {
         var c = this.pool.createCommand();
         let e: EntityDbNamesBase = await dbNamesOf(entity);

@@ -38,10 +38,6 @@ export async function serverInit() {
     });
 
     var r = new SqlDatabase(new PostgresDataProvider(pool));
-    let remult = new Remult();
-    remult.dataProvider = r;
-    await new PostgresSchemaBuilder(r).verifyStructureOfAllEntities(remult);
-
     return r;
 
 }

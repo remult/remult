@@ -110,21 +110,13 @@
       },
       "import": "./esm/remult-mongo.js"
     },
-    "./live-query/ably": {
-      "require": "./live-query/ably.js",
+    "./ably": {
+      "require": "./ably.js",
       "node": {
-        "require": "./live-query/ably.js",
-        "import": "./live-query/ably.js"
+        "require": "./ably.js",
+        "import": "./ably.js"
       },
-      "import": "./esm/live-query/ably.js"
-    },
-    "./live-query/data-provider-live-query-storage": {
-      "require": "./live-query/data-provider-live-query-storage.js",
-      "node": {
-        "require": "./live-query/data-provider-live-query-storage.js",
-        "import": "./live-query/data-provider-live-query-storage.js"
-      },
-      "import": "./esm/live-query/data-provider-live-query-storage.js"
+      "import": "./esm/ably.js"
     },
     "./graphql": {
       "require": "./graphql.js",

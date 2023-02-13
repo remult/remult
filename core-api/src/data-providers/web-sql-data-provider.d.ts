@@ -11,6 +11,7 @@ export declare class WebSqlDataProvider implements SqlImplementation, __RowsOfDa
     static getDb(remult?: Remult): any;
     getLimitSqlSyntax(limit: number, offset: number): string;
     entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void>;
+    ensureSchema(entities: EntityMetadata<any>[]): Promise<void>;
     dropTable(entity: EntityMetadata): Promise<void>;
     createTable(entity: EntityMetadata<any>): Promise<void>;
     createCommand(): SqlCommand;
