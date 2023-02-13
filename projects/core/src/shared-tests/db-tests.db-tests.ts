@@ -773,6 +773,7 @@ testAll("test date", async ({ createEntity }) => {
     expect(item.d.getFullYear()).toBe(1976);
 
 }, false)
+//TODO - fix not to run with rest api
 testAll("test live query storage", async ({ db, remult }) => {
     var x = new DataProviderLiveQueryStorage(db);
     if (db.ensureSchema)
