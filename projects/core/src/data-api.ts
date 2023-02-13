@@ -25,7 +25,7 @@ export class DataApi<T = any> {
     return this.getArray(res, req, undefined);
 
   }
-  httpPost(res: DataApiResponse, req: DataApiRequest, body: any, serializeRequest: () => any) {
+  async httpPost(res: DataApiResponse, req: DataApiRequest, body: any, serializeRequest: () => any) {
     const action = req?.get("__action");
     if (action?.startsWith(liveQueryAction))
       return this.liveQuery(res, req, undefined, serializeRequest, getLiveQueryChannel(action.substring(liveQueryAction.length), this.remult.user?.id));
@@ -35,7 +35,7 @@ export class DataApi<T = any> {
       case "count":
         return this.count(res, req, body);
       case "endLiveQuery":
-        this.remult.liveQueryStorage.remove(getLiveQueryChannel(body.id, this.remult.user?.id));
+        await this.remult.liveQueryStorage.remove(getLiveQueryChannel(body.id, this.remult.user?.id));
         res.success("ok");
         return;
       default:
@@ -152,7 +152,7 @@ export class DataApi<T = any> {
         findOptionsJson: findOptionsToJson(r.findOptions, this.repository.metadata),
         lastIds: r.r.map(y => getId(this.repository.metadata, y))
       }
-      this.remult.liveQueryStorage.add(
+      await this.remult.liveQueryStorage.add(
         {
           entityKey: this.repository.metadata.key,
           id: queryChannel,

@@ -19,6 +19,8 @@ import { Validators } from "../validators";
 import { Status } from "../tests/testModel/models";
 import { IdEntity } from "../id-entity";
 import { describeClass } from "../remult3/DecoratorReplacer";
+import { DataProviderLiveQueryStorage } from "../../live-query/data-provider-live-query-storage";
+import { v4 as uuid } from 'uuid'
 
 
 
@@ -164,7 +166,7 @@ testAll("test date only with null works", async ({ createEntity }) => {
     expect(r.d.getFullYear()).toBe(1976);
     r.d = null;
     await r.save();
-    expect (r.d).toBeNull();
+    expect(r.d).toBeNull();
 }, false);
 testAll("test date with null works", async ({ createEntity }) => {
 
@@ -181,7 +183,7 @@ testAll("test date with null works", async ({ createEntity }) => {
     expect(r.fullDate.getFullYear()).toBe(1976);
     r.fullDate = null;
     await r.save();
-    expect (r.fullDate).toBeNull();
+    expect(r.fullDate).toBeNull();
 }, false);
 
 testAll("test original value of date", async ({ createEntity }) => {
@@ -198,7 +200,7 @@ class testDateWithNull extends EntityBase {
     @Fields.dateOnly({ allowNull: true })
     d: Date;
     @Fields.date({ allowNull: true })
-    fullDate: Date=null;
+    fullDate: Date = null;
 }
 
 testAll("test string with null works", async ({ createEntity }) => {
@@ -771,3 +773,14 @@ testAll("test date", async ({ createEntity }) => {
     expect(item.d.getFullYear()).toBe(1976);
 
 }, false)
+testAll("test live query storage", async ({ db, remult }) => {
+    var x = new DataProviderLiveQueryStorage(db);
+    if (db.ensureSchema)
+        await x.ensureSchema(remult)
+    const id = uuid();
+    await x.add({ id, entityKey: 'x', data: "noam" });
+    await x.forEach("x", async args => {
+        expect(args.query.data).toBe("noam");
+    });
+    expect((await x.keepAliveAndReturnUnknownQueryIds([id]))).toEqual([])
+})

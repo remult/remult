@@ -2,7 +2,7 @@ import { initDataProvider } from "../server/initDataProvider";
 import { Remult } from "../src/context";
 import { CanEnsureSchema, DataProvider } from "../src/data-interfaces";
 import { LiveQueryStorage, StoredQuery } from "../src/live-query/SubscriptionServer";
-import { Entity, Fields, Repository } from "../src/remult3";
+import { Entity, EntityBase, Fields, Repository } from "../src/remult3";
 
 export class DataProviderLiveQueryStorage implements LiveQueryStorage, CanEnsureSchema {
   repo: Promise<Repository<LiveQueryStorageEntity>>;
@@ -16,14 +16,14 @@ export class DataProviderLiveQueryStorage implements LiveQueryStorage, CanEnsure
   async ensureSchema(remult: Remult) {
     await (await this.dataProvider).ensureSchema([(await this.repo).metadata], "Live query storage")
   }
-  add({ id, entityKey, data }: StoredQuery): void {
-    this.repo.then(async repo => {
+  async add({ id, entityKey, data }: StoredQuery) {
+    await this.repo.then(async repo => {
       const q = await repo.findId(id, { createIfNotFound: true });
-      await repo.save({ ...q, entityKey, data })
+      await q.assign({ entityKey, data }).save();
     })
   }
-  remove(queryId: string): void {
-    this.repo.then(repo => repo.delete(queryId)).catch(() => { });
+  async remove(queryId: string) {
+    await this.repo.then(repo => repo.delete(queryId)).catch(() => { });
   }
 
   async forEach(entityKey: string, callback: (args: { query: StoredQuery; setData(data: any): Promise<void>; }) => Promise<void>): Promise<void> {
@@ -59,7 +59,7 @@ export class DataProviderLiveQueryStorage implements LiveQueryStorage, CanEnsure
 @Entity(undefined!, {
   dbName: 'remult_live_query_storage'
 })
-class LiveQueryStorageEntity {
+class LiveQueryStorageEntity extends EntityBase {
   @Fields.string()
   id = ''
   @Fields.string()
