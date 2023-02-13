@@ -111,12 +111,12 @@
       "import": "./esm/remult-mongo.js"
     },
     "./ably": {
-      "require": "./live-query/ably.js",
+      "require": "./ably.js",
       "node": {
-        "require": "./live-query/ably.js",
-        "import": "./live-query/ably.js"
+        "require": "./ably.js",
+        "import": "./ably.js"
       },
-      "import": "./esm/live-query/ably.js"
+      "import": "./esm/ably.js"
     },
     "./graphql": {
       "require": "./graphql.js",
