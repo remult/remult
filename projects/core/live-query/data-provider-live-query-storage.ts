@@ -18,7 +18,6 @@ export class DataProviderLiveQueryStorage implements LiveQueryStorage, CanEnsure
   }
   async add({ id, entityKey, data }: StoredQuery) {
     await this.repo.then(async repo => {
-      //TODO - talk to yoni about how this fails with non entity ref - since repo save here makes a wrong decision, since an item returns
       const q = await repo.findId(id, { createIfNotFound: true });
       await q.assign({ entityKey, data }).save();
     })
