@@ -131,7 +131,7 @@ Replace the `useEffect` with the highlighted code to the `Home` Next.js page:
 
 _src/pages/index.tsx_
 
-```tsx{1,3,6-7,15,20-23}
+```tsx{1,3,6-7,15-16,21-24}
 import { signIn, signOut, useSession } from "next-auth/react"
 //...
 const session = useSession()
@@ -147,6 +147,7 @@ useEffect(() => {
       })
       .subscribe(info => setTasks(info.applyChanges))
 }, [session])
+if (session.status !== "authenticated") return <></>
 return (
   <div>
     <h1>Todos</h1>
@@ -160,7 +161,7 @@ return (
   </div>
 )
 ```
-//TODO - if (session.status !== "authenticated") return <></>;
+
 ### Connect Remult-Next On the Backend
 
 Once an authentication flow is established, integrating it with Remult in the backend is as simple as providing Remult with a `getUser` function that extracts a `UserInfo` object from a `Request`.
@@ -293,10 +294,10 @@ This code requires adding an import of `UserInfo` from `remult`.
 ## Show components based on the entity's metadata
 
 Now let's use the entity's metadata to only show the form if the user is allowed to insert
-//TODO - gives an hydration error for Steve
+
 ```tsx{2,11}
 <main>
-  {typeof window !== "undefined" && taskRepo.metadata.apiInsertAllowed && (
+  {taskRepo.metadata.apiInsertAllowed && (
     <form onSubmit={addTask}>
       <input
         value={newTaskTitle}
@@ -322,13 +323,11 @@ return (
     />
     <input value={task.title} onChange={e => setTitle(e.target.value)} />
     <button onClick={saveTask}>Save</button>
-    {typeof window !== "undefined" && taskRepo.metadata.apiDeleteAllowed && (
+    {taskRepo.metadata.apiDeleteAllowed && (
       <button onClick={deleteTask}>Delete</button>
     )}
   </div>
 )
 ```
-
-- we use `typeof window !== "undefined"` to make sure that the call to `taskRepo.metadata` will run on the front end and not part of the server side rendering. `taskRepo.metadata` is not available in the render method of server side rendering.
 
 This way we can keep the frontend consistent with the `api`'s Authorization rules

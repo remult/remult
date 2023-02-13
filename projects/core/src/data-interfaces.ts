@@ -14,8 +14,6 @@ export interface DataProvider {
 export interface CanEnsureSchema {
   ensureSchema(remult: Remult): Promise<void>
 }
-//TODO - implement for knex, postgres, initApi, move autoCreateTable to remultServer and call it ensureSchema
-
 export interface EntityDataProvider {
   count(where: Filter): Promise<number>;
   find(options?: EntityDataProviderFindOptions): Promise<Array<any>>;
