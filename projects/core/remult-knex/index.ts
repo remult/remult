@@ -56,7 +56,13 @@ export class KnexDataProvider implements DataProvider {
         let r = await b.resolveWhere();
         return knex => r.forEach(y => y(knex))
     }
-    supportsrawFilter?: boolean;
+    supportsRawFilter?: boolean;
+
+    async ensureSchema(entities: EntityMetadata<any>[], caption?: string): Promise<void> {
+
+        var sb = new KnexSchemaBuilder(this.knex);
+        await sb.ensureSchema(entities, caption)
+    }
 
 }
 export type CustomKnexFilterBuilderFunction = () => Promise<(builder: Knex.QueryBuilder) => void>
@@ -308,12 +314,9 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
     }
 
     private add(col: FieldMetadata, val: any, operator: string) {
-
         this.result.push(b => b.where(this.nameProvider.$dbNameOf(col), operator, col.valueConverter.toDb(val)))
-
-
-
     }
+
 
 
 
@@ -337,25 +340,33 @@ export class KnexSchemaBuilder {
     async verifyStructureOfAllEntities(remult?: Remult) {
         if (!remult)
             remult = RemultProxy.defaultRemult;
-        if (KnexSchemaBuilder.logToConsole)
-            console.time("Knex Auto create tables and columns")
-        for (const entity of allEntities) {
-            let metadata = remult.repo(entity).metadata;
 
+        const entities = allEntities.map(x => remult.repo(x).metadata);
+        this.ensureSchema(entities);
+    }
+
+    async ensureSchema(entities: EntityMetadata<any>[], caption?: string) {
+        let desc = "ensure knex schema";
+        if (caption)
+            desc += " - " + caption;
+        if (KnexSchemaBuilder.logToConsole)
+            console.time(desc);
+        for (const entity of entities) {
+            let e: EntityDbNamesBase = await dbNamesOf(entity);
             try {
-                if (!metadata.options.sqlExpression) {
-                    if ((await metadata.getDbName()).toLowerCase().indexOf('from ') < 0) {
-                        await this.createIfNotExist(metadata);
-                        await this.verifyAllColumns(metadata);
+                if (!entity.options.sqlExpression) {
+                    if (e.$entityName.toLowerCase().indexOf('from ') < 0) {
+                        await this.createIfNotExist(entity);
+                        await this.verifyAllColumns(entity);
                     }
                 }
             }
             catch (err) {
-                console.error("failed verify structure of " + await metadata.getDbName() + " ", err);
+                console.error("failed verify structure of " + e.$entityName + " ", err);
             }
         }
         if (KnexSchemaBuilder.logToConsole)
-            console.timeEnd("Knex Auto create tables and columns")
+            console.timeEnd(desc);
     }
     async createIfNotExist(entity: EntityMetadata): Promise<void> {
         const e: EntityDbNamesBase = await dbNamesOf(entity);
@@ -485,11 +496,9 @@ function logSql<T extends {
     return who;
 }
 
-export async function createKnexDataProvider(config: Knex.Config, autoCreateTables = true) {
+export async function createKnexDataProvider(config: Knex.Config) {
 
     let k = (await import('knex')).default(config)
     let result = new KnexDataProvider(k);
-    if (autoCreateTables)
-        await new KnexSchemaBuilder(k).verifyStructureOfAllEntities(new Remult(result));
     return result;
 }

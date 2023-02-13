@@ -22,7 +22,7 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
         this.db = window.openDatabase(databaseName, '1.0', databaseName, databaseSize);
     }
     // return instance of websql.Database class - see @types/websql
-    static getDb(remult?: Remult):any {
+    static getDb(remult?: Remult): any {
         const sql = SqlDatabase.getDb(remult);
         const me = sql._getSourceSql() as WebSqlDataProvider;
         if (!me.db) {
@@ -36,6 +36,11 @@ export class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTes
     }
     async entityIsUsedForTheFirstTime(entity: EntityMetadata) {
         await this.createTable(entity);
+    }
+    async ensureSchema(entities: EntityMetadata<any>[]): Promise<void> {
+        for (const entity of entities) {
+            await this.createTable(entity);
+        }
     }
 
     async dropTable(entity: EntityMetadata) {

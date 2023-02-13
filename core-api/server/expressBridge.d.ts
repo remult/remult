@@ -19,6 +19,8 @@ export interface RemultServerOptions<RequestType extends GenericRequest> {
         toJson: (request: RequestType) => any;
         fromJson: (request: any) => RequestType;
     };
+    /** Will create tables and schemas in supporting databases. default: true */
+    ensureSchema?: boolean;
     getUser?: (request: RequestType) => Promise<UserInfo | undefined>;
     initApi?: (remult: Remult) => void | Promise<void>;
     logApiEndPoints?: boolean;

@@ -11,12 +11,14 @@ export declare class KnexDataProvider implements DataProvider {
     transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void>;
     static rawFilter(build: CustomKnexFilterBuilderFunction): EntityFilter<any>;
     static filterToRaw<entityType>(entity: RepositoryOverloads<entityType>, condition: EntityFilter<entityType>): Promise<(knex: any) => void>;
-    supportsrawFilter?: boolean;
+    supportsRawFilter?: boolean;
+    ensureSchema(entities: EntityMetadata<any>[]): Promise<void>;
 }
 export declare type CustomKnexFilterBuilderFunction = () => Promise<(builder: Knex.QueryBuilder) => void>;
 export declare class KnexSchemaBuilder {
     private knex;
     verifyStructureOfAllEntities(remult?: Remult): Promise<void>;
+    ensureSchema(entities: EntityMetadata<any>[]): Promise<void>;
     createIfNotExist(entity: EntityMetadata): Promise<void>;
     addColumnIfNotExist<T extends EntityMetadata>(entity: T, c: ((e: T) => FieldMetadata)): Promise<void>;
     verifyAllColumns<T extends EntityMetadata>(entity: T): Promise<void>;

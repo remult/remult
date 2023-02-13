@@ -31,7 +31,7 @@ class PostgresBridgeToSQLQueryResult implements SqlResult {
 
 }
 export class PostgresDataProvider implements SqlImplementation {
-    async entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void> {}
+    async entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void> { }
     getLimitSqlSyntax(limit: number, offset: number) {
         return ' limit ' + limit + ' offset ' + offset;
     }
@@ -97,7 +97,7 @@ export async function createPostgresConnection(options?: {
         options.poolSize = 4;
     const db = new SqlDatabase(new PostgresDataProvider(new Pool(config, options.poolSize)));
     let remult = new Remult();
-    remult.setDataProvider(db);
+    remult.dataProvider = db;
     if (options.autoCreateTables === undefined || options.autoCreateTables)
         await verifyStructureOfAllEntities(db, remult);
     return db;

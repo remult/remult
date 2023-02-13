@@ -564,7 +564,7 @@ describe("test live query full cycle", () => {
         expect(stats.unSub).toBe(1);
 
     });
-    fit("test quick unsubscribe and subscribe", async () => {
+    it("test quick unsubscribe and subscribe", async () => {
         const serverRemult = new Remult(new InMemoryDataProvider())
         const serverRepo = serverRemult.repo(eventTestEntity);
         var dataApi = new DataApi(serverRepo, serverRemult);

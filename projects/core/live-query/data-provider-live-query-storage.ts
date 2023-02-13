@@ -1,38 +1,38 @@
 import { initDataProvider } from "../server/initDataProvider";
 import { Remult } from "../src/context";
-import { DataProvider } from "../src/data-interfaces";
-import { IdEntity } from "../src/id-entity";
+import { CanEnsureSchema, DataProvider } from "../src/data-interfaces";
 import { LiveQueryStorage, StoredQuery } from "../src/live-query/SubscriptionServer";
 import { Entity, Fields, Repository } from "../src/remult3";
 
-
-
-export class DataProviderLiveQueryStorage implements LiveQueryStorage {
+export class DataProviderLiveQueryStorage implements LiveQueryStorage, CanEnsureSchema {
   repo: Promise<Repository<LiveQueryStorageEntity>>;
+  dataProvider: Promise<DataProvider>;
   constructor(dataProvider: DataProvider | Promise<DataProvider> | (() => Promise<DataProvider | undefined>)) {
-
-    this.repo = initDataProvider(dataProvider).then(dp =>
+    this.dataProvider = initDataProvider(dataProvider);
+    this.repo = this.dataProvider.then(dp =>
       new Remult(dp).repo(LiveQueryStorageEntity)
     )
-
   }
-  //TODO - consider case where query id already exists (reconnect)
+  async ensureSchema(remult: Remult) {
+    await (await this.dataProvider).ensureSchema([(await this.repo).metadata], "Live query storage")
+  }
   add({ id, entityKey, data }: StoredQuery): void {
-    this.repo.then(repo => repo.insert({
-      id, entityKey, data
-    }))
+    this.repo.then(async repo => {
+      const q = await repo.findId(id, { createIfNotFound: true });
+      await repo.save({ ...q, entityKey, data })
+    })
   }
   remove(queryId: string): void {
-    this.repo.then(repo => repo.delete(queryId)).catch(()=>{});
+    this.repo.then(repo => repo.delete(queryId)).catch(() => { });
   }
 
   async forEach(entityKey: string, callback: (args: { query: StoredQuery; setData(data: any): Promise<void>; }) => Promise<void>): Promise<void> {
     const repo = await this.repo;
     let d = new Date();
     d.setMinutes(d.getMinutes() - 5);
+    const iso = d.toISOString();
     for (const query of await repo.find({ where: { entityKey } })) {
-      //TODO - has timezone issues - if two servers are connected from two timezones this will fail!
-      if (query.lastUsed < d)
+      if (query.lastUsedIso < iso)
         await repo.delete(query);
       else {
         await callback({
@@ -48,7 +48,7 @@ export class DataProviderLiveQueryStorage implements LiveQueryStorage {
   async keepAliveAndReturnUnknownQueryIds(queryIds: string[]): Promise<string[]> {
     const repo = await this.repo;
     for (const query of await repo.find({ where: { id: queryIds } })) {
-      query.lastUsed = new Date();
+      query.lastUsedIso = new Date().toISOString();
       await repo.save(query);
       queryIds = queryIds.filter(x => x !== query.id);
     }
@@ -66,6 +66,6 @@ class LiveQueryStorageEntity {
   entityKey = ''
   @Fields.object()
   data: any
-  @Fields.date()
-  lastUsed = new Date()
+  @Fields.string()
+  lastUsedIso = new Date().toISOString()
 }
