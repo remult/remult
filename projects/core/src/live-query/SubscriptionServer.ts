@@ -79,8 +79,8 @@ export interface LiveQueryChangesListener {
 // TODO2 - PUBNUB
 // TODO2 - https://centrifugal.dev/
 export interface LiveQueryStorage {
-  add(query: StoredQuery): void
-  remove(queryId: string): void
+  add(query: StoredQuery): Promise<void>
+  remove(queryId: string): Promise<void>
   forEach(entityKey: string, callback: (args: {
     query: StoredQuery,
     setData(data: any): Promise<void>
@@ -111,12 +111,12 @@ export class InMemoryLiveQueryStorage implements LiveQueryStorage {
   constructor() {
 
   }
-  add(query: StoredQuery) {
+  async add(query: StoredQuery) {
     this.queries.push({ ...query, lastUsed: new Date().toISOString() });
     this.debug();
   }
   removeCountForTesting = 0;
-  remove(id: any) {
+  async remove(id: any) {
     this.queries = this.queries.filter(q => q.id !== id);
     this.removeCountForTesting++;
     this.debug();

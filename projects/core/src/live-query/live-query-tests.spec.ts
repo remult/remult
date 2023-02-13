@@ -51,7 +51,7 @@ async function setup1() {
     let p = new PromiseResolver(qm);
 
     serverRemult.liveQueryPublisher = qm;
-    serverRemult.liveQueryStorage.add({
+    await serverRemult.liveQueryStorage.add({
         entityKey: clientRepo.metadata.key,
         data: {
             findOptionsJson: {},
