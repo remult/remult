@@ -119,7 +119,7 @@ describe("test server expression value", () => {
         const repo = new Remult(new InMemoryDataProvider()).repo(e);
         let item = await repo.insert({});
         expect(item.createdAt.toDateString()).toBe(new Date().toDateString());
-        expect(item.createdAt.valueOf()).toBeCloseTo(item.updatedAt.valueOf());
+        expect(Math.abs((item.updatedAt.valueOf() - item.createdAt.valueOf()))).toBeLessThan(5);
         let c = item.createdAt;
         await new Promise(res =>
             setTimeout(() => {

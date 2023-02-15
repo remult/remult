@@ -1,15 +1,14 @@
 import { Sort } from './sort';
 import { Filter } from './filter/filter-interfaces';
 import { EntityMetadata, OmitEB } from './remult3';
-import type { Remult } from './context';
 export interface DataProvider {
     getEntityDataProvider(entity: EntityMetadata): EntityDataProvider;
     transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void>;
     supportsRawFilter?: boolean;
     ensureSchema?(entities: EntityMetadata[]): Promise<void>;
 }
-export interface CanEnsureSchema {
-    ensureSchema(remult: Remult): Promise<void>;
+export interface Storage {
+    ensureSchema(): Promise<void>;
 }
 export interface EntityDataProvider {
     count(where: Filter): Promise<number>;

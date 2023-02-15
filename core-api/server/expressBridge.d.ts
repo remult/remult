@@ -19,7 +19,11 @@ export interface RemultServerOptions<RequestType extends GenericRequest> {
         toJson: (request: RequestType) => any;
         fromJson: (request: any) => RequestType;
     };
-    /** Will create tables and schemas in supporting databases. default: true */
+    /** Will create tables and columns in supporting databases. default: true
+     *
+     * @description
+     * when set to true, it'll create entities that do not exist, and add columns that are missing.
+    */
     ensureSchema?: boolean;
     getUser?: (request: RequestType) => Promise<UserInfo | undefined>;
     initApi?: (remult: Remult) => void | Promise<void>;

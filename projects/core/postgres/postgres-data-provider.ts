@@ -36,10 +36,10 @@ export class PostgresDataProvider implements SqlImplementation {
         return new PostgresBridgeToSQLCommand(this.pool);
     }
     constructor(private pool: PostgresPool) { }
-    async ensureSchema(entities: EntityMetadata<any>[], caption?: string): Promise<void> {
+    async ensureSchema(entities: EntityMetadata<any>[]): Promise<void> {
         var db = new SqlDatabase(this);
         var sb = new PostgresSchemaBuilder(db);
-        await sb.ensureSchema(entities, caption)
+        await sb.ensureSchema(entities)
     }
 
     async transaction(action: (dataProvider: SqlImplementation) => Promise<void>) {
@@ -138,7 +138,7 @@ export async function preparePostgresQueueStorage(sql: SqlDatabase) {
     c.dataProvider = (sql);
     let JobsInQueueEntity = (await import('../server/expressBridge')).JobsInQueueEntity
     let e = c.repo(JobsInQueueEntity);
-    await sql.ensureSchema([e.metadata], "Queue storage");
+    await sql.ensureSchema([e.metadata]);
     return new (await import('../server/expressBridge')).EntityQueueStorage(c.repo(JobsInQueueEntity));
 
 

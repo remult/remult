@@ -8,11 +8,10 @@ export interface DataProvider {
   getEntityDataProvider(entity: EntityMetadata): EntityDataProvider;
   transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void>;
   supportsRawFilter?: boolean;
-  ensureSchema?(entities: EntityMetadata[],caption?:string): Promise<void>
+  ensureSchema?(entities: EntityMetadata[]): Promise<void>
 }
-//TODO - reconsider name with Yoni
-export interface CanEnsureSchema {
-  ensureSchema(remult: Remult): Promise<void>
+export interface Storage {
+  ensureSchema(): Promise<void>
 }
 export interface EntityDataProvider {
   count(where: Filter): Promise<number>;

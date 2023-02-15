@@ -30,9 +30,9 @@ export class SqlDatabase implements DataProvider {
   _getSourceSql() {
     return this.sql;
   }
-  async ensureSchema(entities: EntityMetadata<any>[], caption?: string): Promise<void> {
+  async ensureSchema(entities: EntityMetadata<any>[]): Promise<void> {
     if (this.sql.ensureSchema)
-      await this.sql.ensureSchema(entities, caption);
+      await this.sql.ensureSchema(entities);
   }
 
   getEntityDataProvider(entity: EntityMetadata): EntityDataProvider {

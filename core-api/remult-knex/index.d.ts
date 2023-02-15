@@ -26,4 +26,4 @@ export declare class KnexSchemaBuilder {
     constructor(knex: Knex);
 }
 export declare function buildColumn(x: FieldMetadata, dbName: string, b: Knex.CreateTableBuilder): void;
-export declare function createKnexDataProvider(config: Knex.Config, autoCreateTables?: boolean): Promise<KnexDataProvider>;
+export declare function createKnexDataProvider(config: Knex.Config): Promise<KnexDataProvider>;
