@@ -8,7 +8,7 @@ export declare class SqlDatabase implements DataProvider {
     static getDb(remult?: Remult): SqlDatabase;
     createCommand(): SqlCommand;
     execute(sql: string): Promise<SqlResult>;
-    ensureSchema(entities: EntityMetadata<any>[]): Promise<void>;
+    ensureSchema(entities: EntityMetadata<any>[], caption?: string): Promise<void>;
     getEntityDataProvider(entity: EntityMetadata): EntityDataProvider;
     transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void>;
     static rawFilter(build: CustomSqlFilterBuilderFunction): EntityFilter<any>;

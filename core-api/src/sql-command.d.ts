@@ -4,7 +4,7 @@ export interface SqlImplementation {
     createCommand(): SqlCommand;
     transaction(action: (sql: SqlImplementation) => Promise<void>): Promise<void>;
     entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void>;
-    ensureSchema?(entities: EntityMetadata[]): Promise<void>;
+    ensureSchema?(entities: EntityMetadata[], caption?: string): Promise<void>;
 }
 export interface SqlCommand extends SqlCommandWithParameters {
     execute(sql: string): Promise<SqlResult>;

@@ -12,13 +12,13 @@ export declare class KnexDataProvider implements DataProvider {
     static rawFilter(build: CustomKnexFilterBuilderFunction): EntityFilter<any>;
     static filterToRaw<entityType>(entity: RepositoryOverloads<entityType>, condition: EntityFilter<entityType>): Promise<(knex: any) => void>;
     supportsRawFilter?: boolean;
-    ensureSchema(entities: EntityMetadata<any>[]): Promise<void>;
+    ensureSchema(entities: EntityMetadata<any>[], caption?: string): Promise<void>;
 }
 export declare type CustomKnexFilterBuilderFunction = () => Promise<(builder: Knex.QueryBuilder) => void>;
 export declare class KnexSchemaBuilder {
     private knex;
     verifyStructureOfAllEntities(remult?: Remult): Promise<void>;
-    ensureSchema(entities: EntityMetadata<any>[]): Promise<void>;
+    ensureSchema(entities: EntityMetadata<any>[], caption?: string): Promise<void>;
     createIfNotExist(entity: EntityMetadata): Promise<void>;
     addColumnIfNotExist<T extends EntityMetadata>(entity: T, c: ((e: T) => FieldMetadata)): Promise<void>;
     verifyAllColumns<T extends EntityMetadata>(entity: T): Promise<void>;
@@ -26,4 +26,4 @@ export declare class KnexSchemaBuilder {
     constructor(knex: Knex);
 }
 export declare function buildColumn(x: FieldMetadata, dbName: string, b: Knex.CreateTableBuilder): void;
-export declare function createKnexDataProvider(config: Knex.Config, autoCreateTables?: boolean): Promise<KnexDataProvider>;
+export declare function createKnexDataProvider(config: Knex.Config): Promise<KnexDataProvider>;

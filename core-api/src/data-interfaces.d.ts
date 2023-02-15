@@ -6,7 +6,7 @@ export interface DataProvider {
     getEntityDataProvider(entity: EntityMetadata): EntityDataProvider;
     transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void>;
     supportsRawFilter?: boolean;
-    ensureSchema?(entities: EntityMetadata[]): Promise<void>;
+    ensureSchema?(entities: EntityMetadata[], caption?: string): Promise<void>;
 }
 export interface CanEnsureSchema {
     ensureSchema(remult: Remult): Promise<void>;
