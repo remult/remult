@@ -7,7 +7,7 @@ import { h } from "../tests/h";
 import { Categories as newCategories } from "../tests/remult-3-entities";
 import { tasks } from "../tests/tasks";
 import { TestDataApiResponse } from "../tests/TestDataApiResponse";
-import { testAll, testAllDbs } from "./db-tests-setup";
+import { testAll, testAllDbs, TestDbs } from "./db-tests-setup";
 import { entityWithValidations, testConfiguration } from "./entityWithValidations";
 import { Remult } from "../context";
 import { dWithPrefilter } from "../tests/dWithPrefilter";
@@ -784,4 +784,6 @@ testAll("test live query storage", async ({ db, remult }) => {
         expect(args.query.data).toBe("noam");
     });
     expect((await x.keepAliveAndReturnUnknownQueryIds([id]))).toEqual([])
+}, false, {
+    exclude: [TestDbs.restDataProvider]
 })
