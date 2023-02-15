@@ -78,7 +78,7 @@ Follow these steps only if you want to use `liveQuery` in the app
 
    ```ts{2,4,6-7}
    //...
-   import { DataProviderLiveQueryStorage } from "remult"
+   import { DataProviderLiveQueryStorage } from "remult/server"
 
    const dataProvider = createPostgresConnection()
    export default remultNext({
