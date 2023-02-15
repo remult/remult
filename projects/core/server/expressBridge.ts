@@ -1,6 +1,6 @@
 
 import { Action, actionInfo, ActionInterface, classBackendMethodsArray, jobWasQueuedResult, myServerAction, queuedJobInfoResponse, serverActionField } from '../src/server-action';
-import { DataProvider, ErrorInfo, CanEnsureSchema } from '../src/data-interfaces';
+import { DataProvider, ErrorInfo, Storage } from '../src/data-interfaces';
 import { DataApi, DataApiRequest, DataApiResponse, serializeError } from '../src/data-api';
 import { allEntities, AllowedForInstance, Remult, UserInfo } from '../src/context';
 import { ClassType } from '../classType';
@@ -84,14 +84,26 @@ export function createRemultServerCore<RequestType extends GenericRequest = Gene
     await new Promise((res) => {
       RemultAsyncLocalStorage.instance.run(remult, async () => {
         if (options.ensureSchema) {
+          let started = false;
+          const startConsoleLog = () => {
+            if (started)
+              return;
+            started = true;
+            console.time("Ensure Schema")
+          }
           if (dp.ensureSchema) {
+            startConsoleLog();
             const entitiesMetadata = options.entities.map(e => remult.repo(e).metadata);
             await dp.ensureSchema(entitiesMetadata)
-            for (const item of [options.liveQueryStorage, options.queueStorage] as any as (CanEnsureSchema)[]) {
-              if (item?.ensureSchema)
-                await item.ensureSchema(remult)
+          }
+          for (const item of [options.liveQueryStorage, options.queueStorage] as any as (Storage)[]) {
+            if (item?.ensureSchema) {
+              startConsoleLog();
+              await item.ensureSchema()
             }
           }
+          if (started)
+            console.timeEnd("Ensure Schema")
         }
         if (options.initApi)
           await options.initApi(remult);

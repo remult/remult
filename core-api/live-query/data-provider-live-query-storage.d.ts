@@ -1,12 +1,11 @@
-import { Remult } from "../src/context";
-import { CanEnsureSchema, DataProvider } from "../src/data-interfaces";
+import { Storage, DataProvider } from "../src/data-interfaces";
 import { LiveQueryStorage, StoredQuery } from "../src/live-query/SubscriptionServer";
 import { EntityBase, Repository } from "../src/remult3";
-export declare class DataProviderLiveQueryStorage implements LiveQueryStorage, CanEnsureSchema {
+export declare class DataProviderLiveQueryStorage implements LiveQueryStorage, Storage {
     repo: Promise<Repository<LiveQueryStorageEntity>>;
     dataProvider: Promise<DataProvider>;
     constructor(dataProvider: DataProvider | Promise<DataProvider> | (() => Promise<DataProvider | undefined>));
-    ensureSchema(remult: Remult): Promise<void>;
+    ensureSchema(): Promise<void>;
     add({ id, entityKey, data }: StoredQuery): Promise<void>;
     remove(queryId: string): Promise<void>;
     forEach(entityKey: string, callback: (args: {

@@ -1,10 +1,10 @@
 import { initDataProvider } from "../server/initDataProvider";
 import { Remult } from "../src/context";
-import { CanEnsureSchema, DataProvider } from "../src/data-interfaces";
+import { Storage, DataProvider } from "../src/data-interfaces";
 import { LiveQueryStorage, StoredQuery } from "../src/live-query/SubscriptionServer";
 import { Entity, EntityBase, Fields, Repository } from "../src/remult3";
 
-export class DataProviderLiveQueryStorage implements LiveQueryStorage, CanEnsureSchema {
+export class DataProviderLiveQueryStorage implements LiveQueryStorage, Storage {
   repo: Promise<Repository<LiveQueryStorageEntity>>;
   dataProvider: Promise<DataProvider>;
   constructor(dataProvider: DataProvider | Promise<DataProvider> | (() => Promise<DataProvider | undefined>)) {
@@ -13,8 +13,8 @@ export class DataProviderLiveQueryStorage implements LiveQueryStorage, CanEnsure
       new Remult(dp).repo(LiveQueryStorageEntity)
     )
   }
-  async ensureSchema(remult: Remult) {
-    await (await this.dataProvider).ensureSchema([(await this.repo).metadata], "Live query storage")
+  async ensureSchema() {
+    await (await this.dataProvider).ensureSchema([(await this.repo).metadata])
   }
   async add({ id, entityKey, data }: StoredQuery) {
     await this.repo.then(async repo => {

@@ -58,10 +58,10 @@ export class KnexDataProvider implements DataProvider {
     }
     supportsRawFilter?: boolean;
 
-    async ensureSchema(entities: EntityMetadata<any>[], caption?: string): Promise<void> {
+    async ensureSchema(entities: EntityMetadata<any>[]): Promise<void> {
 
         var sb = new KnexSchemaBuilder(this.knex);
-        await sb.ensureSchema(entities, caption)
+        await sb.ensureSchema(entities)
     }
 
 }
@@ -345,12 +345,7 @@ export class KnexSchemaBuilder {
         this.ensureSchema(entities);
     }
 
-    async ensureSchema(entities: EntityMetadata<any>[], caption?: string) {
-        let desc = "ensure knex schema";
-        if (caption)
-            desc += " - " + caption;
-        if (KnexSchemaBuilder.logToConsole)
-            console.time(desc);
+    async ensureSchema(entities: EntityMetadata<any>[]) {
         for (const entity of entities) {
             let e: EntityDbNamesBase = await dbNamesOf(entity);
             try {
@@ -362,11 +357,9 @@ export class KnexSchemaBuilder {
                 }
             }
             catch (err) {
-                console.error("failed verify structure of " + e.$entityName + " ", err);
+                console.error("failed ensure schema of " + e.$entityName + " ", err);
             }
         }
-        if (KnexSchemaBuilder.logToConsole)
-            console.timeEnd(desc);
     }
     async createIfNotExist(entity: EntityMetadata): Promise<void> {
         const e: EntityDbNamesBase = await dbNamesOf(entity);

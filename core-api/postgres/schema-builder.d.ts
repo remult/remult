@@ -7,7 +7,7 @@ export declare function verifyStructureOfAllEntities(db: SqlDatabase, remult: Re
 export declare class PostgresSchemaBuilder {
     private pool;
     verifyStructureOfAllEntities(remult?: Remult): Promise<void>;
-    ensureSchema(entities: EntityMetadata<any>[], caption?: string): Promise<void>;
+    ensureSchema(entities: EntityMetadata<any>[]): Promise<void>;
     createIfNotExist(entity: EntityMetadata): Promise<void>;
     addColumnIfNotExist<T extends EntityMetadata>(entity: T, c: ((e: T) => FieldMetadata)): Promise<void>;
     verifyAllColumns<T extends EntityMetadata>(entity: T): Promise<void>;

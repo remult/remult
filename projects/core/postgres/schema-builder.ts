@@ -63,13 +63,7 @@ export class PostgresSchemaBuilder {
         }
         await this.ensureSchema(entities);
     }
-    async ensureSchema(entities: EntityMetadata<any>[], caption?: string) {
-        //TODO - discuss this console log
-        let desc = "Ensure postgres schema";
-        if (caption)
-            desc += " - " + caption;
-        if (PostgresSchemaBuilder.logToConsole)
-            console.time(desc);
+    async ensureSchema(entities: EntityMetadata<any>[]) {
         for (const entity of entities) {
             let e: EntityDbNamesBase = await dbNamesOf(entity);
             try {
@@ -84,8 +78,6 @@ export class PostgresSchemaBuilder {
                 console.error("failed verify structure of " + e.$entityName + " ", err);
             }
         }
-        if (PostgresSchemaBuilder.logToConsole)
-            console.timeEnd(desc);
     }
 
     async createIfNotExist(entity: EntityMetadata): Promise<void> {

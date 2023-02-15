@@ -16,7 +16,7 @@ export declare class PostgresDataProvider implements SqlImplementation {
     getLimitSqlSyntax(limit: number, offset: number): string;
     createCommand(): SqlCommand;
     constructor(pool: PostgresPool);
-    ensureSchema(entities: EntityMetadata<any>[], caption?: string): Promise<void>;
+    ensureSchema(entities: EntityMetadata<any>[]): Promise<void>;
     transaction(action: (dataProvider: SqlImplementation) => Promise<void>): Promise<void>;
 }
 export interface PostgresCommandSource {
