@@ -39,6 +39,12 @@ npm install
 npm run dev
 ```
 
+4. Open another terminal and run the `dev-node` npm script
+
+```sh
+npm run dev-node
+```
+
 The default "Vite + React" app main screen should be available at the default Vite dev server address [http://127.0.0.1:5173](http://127.0.0.1:5173).
 
 At this point, our starter project is up and running. We are now ready to move to the [next step of the tutorial](./entities.md) and start creating the task list app.
@@ -62,7 +68,7 @@ In this tutorial, we'll be using the root folder created by `Vite` as the root f
 
 ### Install required packages
 
-We need `Express` to serve our app's API, and, of course, `Remult`. For development, we'll use [ts-node-dev](https://www.npmjs.com/package/ts-node-dev) to run the API server, and [concurrently](https://www.npmjs.com/package/concurrently) to run both API server and the React dev server from a single command.
+We need `Express` to serve our app's API, and, of course, `Remult`. For development, we'll use [tsx](https://www.npmjs.com/package/tsx) to run the API server.
 
 ```sh
 npm i express remult
@@ -178,17 +184,18 @@ npm run dev
 _package.json_
 
 //TODO YONI - Why not use this in production?
+
 ```json
 "dev-node": "tsx watch src/server"
 ```
 
 3. Open another terminal and start the `node` server
 
-```sh 
+```sh
 npm run dev-node
 ```
 
-The server is now running and listening on port 3002. `ts-node-dev` is watching for file changes and will restart the server when code changes are saved.
+The server is now running and listening on port 3002. `tsx` is watching for file changes and will restart the server when code changes are saved.
 
 The default "Vite + React" app main screen should be available at the default Vite dev server address [http://127.0.0.1:5173](http://127.0.0.1:5173).
 

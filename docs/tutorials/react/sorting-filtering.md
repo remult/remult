@@ -79,15 +79,15 @@ Because the `completed` field is of type `boolean`, the argument is **compile-ti
 Play with different filtering values, and eventually comment it out, since we do need all the tasks
 
 ```ts{6}
-  useEffect(() => {
-    taskRepo
-      .find({
-        limit: 20,
-        orderBy: { completed: "asc" },
-        //where: { completed: true },
-      })
-      .then(setTasks);
-  }, []);
+useEffect(() => {
+  taskRepo
+    .find({
+      limit: 20,
+      orderBy: { completed: "asc" },
+      //where: { completed: true },
+    })
+    .then(setTasks);
+}, []);
 ```
 
 ::: tip Learn more
