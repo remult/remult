@@ -1,160 +1,145 @@
 # Deployment
 
-Let's deploy the todo app to [Heroku](https://www.heroku.com/).
+Let's deploy the todo app to [railway.app](https://railway.app/).
 
 ## Prepare for Production
 
 In this tutorial, we'll deploy both the React app and the API server as [one server-side app](https://create-react-app.dev/docs/deployment/#other-solutions), and redirect all non-API requests to return the React app.
 
-In addition, to follow a few basic production best practices, we'll use [compression](https://www.npmjs.com/package/compression) middleware to improve performance, [helmet](https://www.npmjs.com/package/helmet) middleware for security CSRF to protect the api and redirect all non-HTTPS requests to HTTPS using [heroku-ssl-redirect](https://www.npmjs.com/package/heroku-ssl-redirect)
+In addition, to follow a few basic production best practices, we'll use [compression](https://www.npmjs.com/package/compression) middleware to improve performance, [helmet](https://www.npmjs.com/package/helmet) middleware for security and CSRF to protect the api
 
-1. Install `compression`, `helmet`, `csurf`, `cookie-parser` and `heroku-ssl-redirect`.
+1. Install `compression`, `helmet` and `csurf`.
 
 ```sh
-npm i compression helmet heroku-ssl-redirect csurf cookie-parser
-npm i @types/compression @types/csurf @types/cookie-parser --save-dev
+npm i compression helmet csurf
+npm i @types/compression @types/csurf --save-dev
 ```
 
 2. Add the highlighted code lines to `src/server/index.ts`, and modify the `app.listen` function's `port` argument to prefer a port number provided by the production host's `PORT` environment variable.
 
-*src/server/index.ts*
-```ts{5-10,16-19,21-25,27-32}
-import express from "express";
-import { api } from "./api";
-import session from "cookie-session";
-import { auth } from "./auth";
-import helmet from 'helmet';
-import compression from 'compression';
-import sslRedirect from 'heroku-ssl-redirect';
-import path from 'path';
-import csrf from "csurf";
-import cookieParser from "cookie-parser";
+_src/server/index.ts_
 
-const app = express();
-app.use(session({
-    secret: process.env['SESSION_SECRET'] || "my secret"
-}));
-app.use(sslRedirect());
-app.use(helmet({ contentSecurityPolicy: false }));
-app.use(compression());
-app.use("/api", cookieParser());
-app.use(auth);
-app.use('/api', csrf({ cookie: true }));
+```ts{5-8,16-18,20-24,26-31}
+import express from "express"
+import { api } from "./api"
+import session from "cookie-session"
+import { auth } from "./auth"
+import helmet from "helmet"
+import compression from "compression"
+import csrf from "csurf"
+import path from "path"
+
+const app = express()
+app.use(
+  session({
+    secret: process.env["SESSION_SECRET"] || "my secret"
+  })
+)
+app.use(sslRedirect())
+app.use(helmet({ contentSecurityPolicy: false }))
+app.use(compression())
+app.use(auth)
+app.use("/api", csrf({ cookie: true }))
 app.use("/api", (req, res, next) => {
-    res.cookie("XSRF-TOKEN", req.csrfToken());
-    next();
-});
-app.use(api);
-app.use(express.static(path.join(__dirname, '../')));
-app.get('/*', function (_, res) {
-    res.sendFile(path.join(__dirname, '../', 'index.html'));
-});
+  res.cookie("XSRF-TOKEN", req.csrfToken())
+  next()
+})
+app.use(api)
+app.use(express.static(path.join(__dirname, "../")))
+app.get("/*", function(_, res) {
+  res.sendFile(path.join(__dirname, "../", "index.html"))
+})
 
-app.listen(process.env["PORT"] || 3002, () => console.log("Server started"));
+app.listen(process.env["PORT"] || 3002, () => console.log("Server started"))
 ```
 
+3. Modify the highlighted code in the api server module to prefer a `connectionString` provided by the production host's `DATABASE_URL` environment variable.
 
-3. Modify the highlighted code in the api server module to only use `Postgres` in production, and keep using the simple JSON db in our dev environment.
+   _src/server/api.ts_
 
-    *src/server/api.ts*
-    ```ts{5-8}
-    //...
+   ```ts{5}
+   //...
+   export const api = remultExpress({
+     //...
+     dataProvider: createPostgresConnection({
+       connectionString: process.env["DATABASE_URL"] || "your connection string"
+     })
+     //...
+   })
+   ```
 
-    export const api = remultExpress({
-        //...
-        dataProvider: process.env["NODE_ENV"] === "production" ?
-            createPostgresConnection({
-                configuration: "heroku"
-            }) : undefined,
-        //...
-    });
-    ```
+1. In the root folder, create a TypeScript configuration file `tsconfig.server.json` for the build of the server project using TypeScript.
 
-    The `{ configuration: "heroku" }` argument passed to Remult's `createPostgresConnection()` tells Remult to use the `DATABASE_URL` environment variable as the `connectionString` for Postgres. (See [Heroku documentation](https://devcenter.heroku.com/articles/connecting-heroku-postgres#connecting-in-node-js).)
+_tsconfig.server.json_
 
-    In development, the `dataProvider` function returns `undefined`, causing Remult to continue to use the default JSON-file database.
-
-4. Add the highlighted lines to the server's TypeScript configuration file, to prepare it for production builds using TypeScript:
-
-*tsconfig.server.json*
-```json{7-13}
+```json
 {
-    "extends": "./tsconfig.json",
-    "compilerOptions": {
-        "module": "commonjs",
-        "emitDecoratorMetadata": true,
-        "esModuleInterop": true,
-        "noEmit": false,
-        "outDir": "dist",
-        "rootDir": "src"
-    },
-    "include": [
-        "src/server/index.ts"
-    ]
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": true,
+    "noEmit": false,
+    "outDir": "dist",
+    "rootDir": "src"
+  },
+  "include": ["src/server/index.ts"]
 }
 ```
 
 5. Modify the project's `build` npm script to additionally transpile the API server's TypeScript code to JavaScript (using `tsc`).
 
-*package.json*
+_package.json_
+
 ```json
 "build": "tsc && vite build && tsc -p tsconfig.server.json",
 ```
 
 6. Modify the project's `start` npm script to start the production Node.js server.
 
-*package.json*
+_package.json_
+
 ```json
 "start": "node dist/server/"
 ```
 
 The todo app is now ready for deployment to production.
 
-## Deploy to Heroku
+## Deploy to Railway
 
-In order to deploy the todo app to [heroku](https://www.heroku.com/) you'll need a `heroku` account. You'll also need [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) and [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli#download-and-install) installed.
+In order to deploy the todo app to [railway](https://railway.app/) you'll need a `railway` account. You'll also need [Railway CLI](https://docs.railway.app/develop/cli#npm) installed, and you'll need to login to railway from the cli, using `railway login`.
 
-1. Initialize `git` if you haven't done it so far.
-```sh
-git init
-```
 Click enter multiple times to answer all its questions with the default answer
 
-2. Create a Heroku `app`.
+1. Create a Railway `project`.
 
-```sh
-heroku create
-```
-
-3. Set the jwt authentication to something random - you can use an [online UUID generator](https://www.uuidgenerator.net/).
-
-```sh
-heroku config:set SESSION_SECRET=random-secret
-```
-
-4. Provision a dev postgres database on Heroku.
-
-```sh
-heroku addons:create heroku-postgresql:hobby-dev
-```
-
-5. Commit the changes to git and deploy to Heroku using `git push`.
-
-```sh
-git add .
-git commit -m "todo app tutorial"
-git push heroku master
-```
-
-7. Open the deployed app using `heroku apps:open` command.
-
-```sh
-heroku apps:open
-```
+   From the terminal in your project folder run:
+   ```sh
+   railway init
+   ```
+3. Select `Empty Project`
+4. Set a project name.
+5. Once it's done add a database by running the following command:
+   ```sh
+   railway add
+   ```
+6. Select `postgressql` as the database.
+7. Once that's done run the following command to upload the project to railway:
+   ```sh
+   railway up
+   ```
+8. After it completes the build, let's define a domain for it:
+   1. got to the `railway` project's site and click on the project
+   2. Switch to the `variables` tab
+   3. Add another variable called `SESSION_SECRET` and set it to a random string, you can use an [online UUID generator](https://www.uuidgenerator.net/)
+   4. Switch to the `settings` tab
+   5. Under `Environment` click on `Generate Domain`
+   6. Click on the newly generated url to open the app in the browser and you'll see the app live in production. (it may take a few minutes to go live)
 
 ::: warning Note
-If you run into trouble deploying the app to Heroku, try using Heroku's [documentation](https://devcenter.heroku.com/articles/git).
+If you run into trouble deploying the app to Railway, try using Railway's [documentation](https://docs.railway.app/deploy/deployments).
 :::
+
 
 That's it - our application is deployed to production, play with it and enjoy.
 

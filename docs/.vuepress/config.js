@@ -139,6 +139,7 @@ module.exports = {
             'sorting-filtering',
             'crud',
             'validation',
+            'live-query',
             'backend-methods',
             'auth',
             'database',

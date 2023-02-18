@@ -8,7 +8,7 @@ The `Task` entity class will be used:
 - As a model class for server-side code
 - By `remult` to generate API endpoints, API queries, and database commands
 
-The `Task` entity class we're creating will have an auto-generated UUID `id` field a `title` field and a `completed` field. The entity's API route ("tasks") will include endpoints for all `CRUD` operations.
+The `Task` entity class we're creating will have an auto-increment `id` field a `title` field and a `completed` field. The entity's API route ("tasks") will include endpoints for all `CRUD` operations.
 
 ## Define the Model
 
@@ -62,7 +62,7 @@ The [@Fields.string](../../docs/ref_field.md) decorator tells Remult the `title`
 Now that the `Task` entity is defined, we can start using the `api` to query and add a few tasks
 
 1. Open a browser with the url: [http://localhost:3000/api/tasks](http://localhost:3000/api/tasks), and you'll see that you get an empty array.
-2. Use `curl` to `POST` a new task
+2. Open a new terminal window and Use `curl` to `POST` a new task
    1. **clean Car**
    ```sh
    curl http://localhost:3000/api/tasks -d "{\"title\": \"Clean car\"}" -H "Content-Type: application/json"

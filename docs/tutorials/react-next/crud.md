@@ -157,7 +157,7 @@ Add the highlighted `deleteTask` function and _Delete_ `button` Within the `task
 
 _src/pages/index.tsx_
 
-```tsx{19-25,37}
+```tsx{19-26,37}
 {
   tasks.map(task => {
     const setTask = (value: Task) =>
@@ -180,8 +180,8 @@ _src/pages/index.tsx_
       try {
         await taskRepo.delete(task)
         setTasks(tasks.filter(t => t !== task))
-      } catch (err /*:any*/) {
-        alert(err.message)
+      } catch (error /*:any*/) {
+        alert(error.message)
       }
     }
 

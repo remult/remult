@@ -2,7 +2,7 @@
 
 ### Create a simple todo app with Remult using a React frontend
 
-In this tutorial, we are going to create a simple app to manage a task list. We'll use `React` for the UI, `Node.js` + `Express.js` for the API server, and Remult as our full-stack CRUD framework. For deployment to production, we'll use `Heroku` and a `PostgreSQL` database. 
+In this tutorial, we are going to create a simple app to manage a task list. We'll use `React` for the UI, `Node.js` + `Express.js` for the API server, and Remult as our full-stack CRUD framework. For deployment to production, we'll use [railway.app](https://railway.app/) and a `PostgreSQL` database.
 
 By the end of the tutorial, you should have a basic understanding of Remult and how to use it to accelerate and simplify full stack app development.
 
@@ -17,13 +17,14 @@ This tutorial assumes you are familiar with `TypeScript` and `React`.
 Before you begin, make sure you have [Node.js](https://nodejs.org) and [git](https://git-scm.com/) installed. <!-- consider specifying Node minimum version with npm -->
 
 # Setup for the Tutorial
+
 This tutorial requires setting up a React project, an API server project, and a few lines of code to add Remult.
 
 You can either **use a starter project** to speed things up, or go through the **step-by-step setup**.
 
 ## Option 1: Clone the Starter Project
 
-1. Clone the *react-vite-express-starter* repository from GitHub and install its dependencies.
+1. Clone the _react-vite-express-starter_ repository from GitHub and install its dependencies.
 
 ```sh
 git clone https://github.com/remult/react-vite-express-starter.git remult-react-todo
@@ -45,7 +46,9 @@ At this point, our starter project is up and running. We are now ready to move t
 ## Option 2: Step-by-step Setup
 
 ### Create a React project using Vite
+
 Create the new React project.
+
 ```sh
 npm create -y vite@latest remult-react-todo -- --template react-ts
 cd remult-react-todo
@@ -56,28 +59,35 @@ See [Vite documentation](https://vitejs.dev/guide/#scaffolding-your-first-vite-p
 :::
 
 In this tutorial, we'll be using the root folder created by `Vite` as the root folder for our server project as well.
+
 ### Install required packages
+
 We need `Express` to serve our app's API, and, of course, `Remult`. For development, we'll use [ts-node-dev](https://www.npmjs.com/package/ts-node-dev) to run the API server, and [concurrently](https://www.npmjs.com/package/concurrently) to run both API server and the React dev server from a single command.
+
 ```sh
 npm i express remult
-npm i --save-dev @types/express ts-node-dev concurrently
+npm i --save-dev @types/express tsx
 ```
+
 ### Create the API server project
+
 The starter API server TypeScript project contains a single module that initializes `Express`, and begins listening for API requests.
 
 1. Open your IDE.
 
 2. In the root folder, create a TypeScript configuration file `tsconfig.server.json` for the server project.
 
-*tsconfig.server.json*
+//TODO - consider only adding this in deployment
+_tsconfig.server.json_
+
 ```json
 {
-    "extends": "./tsconfig.json",
-    "compilerOptions": {
-        "module": "commonjs",
-        "emitDecoratorMetadata": true,
-        "esModuleInterop": true
-    }
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": true
+  }
 }
 ```
 
@@ -85,13 +95,14 @@ The starter API server TypeScript project contains a single module that initiali
 
 4. Create an `index.ts` file in the `src/server/` folder with the following code:
 
-*src/server/index.ts*
+_src/server/index.ts_
+
 ```ts
-import express from 'express';
+import express from "express"
 
-const app = express();
+const app = express()
 
-app.listen(3002, () => console.log("Server started"));
+app.listen(3002, () => console.log("Server started"))
 ```
 
 ::: warning Important
@@ -99,7 +110,8 @@ Our server Node.js project is using the CommonJS module system.
 
 Therefore, it is important to **remove the `"type": "module"` entry from the `package.json` file** created by Vite.
 
-*package.json*
+_package.json_
+
 ```json
 "type": "module", // <- remove this
 ```
@@ -108,79 +120,96 @@ Don't worry, this does not cause any side-effects.
 :::
 
 ### Bootstrap Remult in the back-end
+
 Remult is loaded in the back-end as an `Express middleware`.
 
 1. Create an `api.ts` file in the `src/server/` folder with the following code:
 
-*src/server/api.ts*
-```ts
-import { remultExpress } from 'remult/remult-express';
+_src/server/api.ts_
 
-export const api = remultExpress();
+```ts
+import { remultExpress } from "remult/remult-express"
+
+export const api = remultExpress()
 ```
 
 2. Add the highlighted code lines to register the middleware in the main server module `index.ts`.
 
-*src/server/index.ts*
+_src/server/index.ts_
+
 ```ts{2,5}
-import express from 'express';
-import { api } from './api';
+import express from "express"
+import { api } from "./api"
 
-const app = express();
-app.use(api);
+const app = express()
+app.use(api)
 
-app.listen(3002, () => console.log("Server started"));
+app.listen(3002, () => console.log("Server started"))
 ```
-
 
 ### Final tweaks
 
 Our full stack starter project is almost ready. Let's complete these final configurations.
+
 #### Enable TypeScript decorators in the React app
 
 Add the following entry to the `compilerOptions` section of the `tsconfig.json` file to enable the use of decorators in the React app.
-   
-*tsconfig.json*
+
+_tsconfig.json_
+
 ```json
 "experimentalDecorators": true
 ```
 
 #### Proxy API requests from Vite dev server to the API server
-The react app created in this tutorial is intended to be served from the same domain as its API. 
-However, for development, the API server will be listening on `http://localhost:3002`, while the react app is served from the default `http://localhost:5173`. 
+
+The react app created in this tutorial is intended to be served from the same domain as its API.
+However, for development, the API server will be listening on `http://localhost:3002`, while the react app is served from the default `http://localhost:5173`.
 
 We'll use the [proxy](https://vitejs.dev/config/#server-proxy) feature of Vite to divert all calls for `http://localhost:5173/api` to our dev API server.
 
 Configure the proxy by adding the following entry to the `vite.config.ts` file:
 
-*vite.config.ts*
+_vite.config.ts_
+
+//TODO - consider using 127.0.0.1 for the proxy - it may work faster for the case where the frontend is on localhost
+
 ```ts{5}
 //...
 
 export default defineConfig({
   plugins: [react()],
-  server: { proxy: { '/api': 'http://localhost:3002' } }
+  server: { proxy: { "/api": "http://localhost:3002" } }
 })
 ```
 
 ### Run the app
 
-1. Replace the `npm` script named `dev` to start the dev API server and the react dev server (vite), by replacing the following entry in the `scripts` section of `package.json`.
+1. Open a terminal and start the vite dev server.
 
-*package.json*
-```json
-"dev": "concurrently -k -n \"API,WEB\" -c \"bgBlue.bold,bgGreen.bold\" \"ts-node-dev -P tsconfig.server.json src/server/\" \"vite\""
-```
-  
-2. Open a terminal and start the app.
 ```sh
 npm run dev
+```
+
+2. Add an `npm` script named `dev-node` to start the dev API server in the `package.json`.
+
+_package.json_
+
+//TODO YONI - Why not use this in production?
+```json
+"dev-node": "tsx watch src/server"
+```
+
+3. Open another terminal and start the `node` server
+
+```sh 
+npm run dev-node
 ```
 
 The server is now running and listening on port 3002. `ts-node-dev` is watching for file changes and will restart the server when code changes are saved.
 
 The default "Vite + React" app main screen should be available at the default Vite dev server address [http://127.0.0.1:5173](http://127.0.0.1:5173).
 
-
 ### Setup completed
+
 At this point, our starter project is up and running. We are now ready to move to the [next step of the tutorial](./entities.md) and start creating the task list app.
