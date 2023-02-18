@@ -41,7 +41,7 @@ With the current state of the `setAllCompleted` function, each modified task bei
 
 A simple way to prevent this is to expose an API endpoint for `setAllCompleted` requests, and run the same logic on the server instead of the client.
 
-1. Create a new `TasksController` class, in the `shared` folder, and refactor the `for` loop from the `setAllCompleted` function of the `Home` function component into a new, `static`, `setAllCompleted` method in the `TasksController` class, which will run on the server.
+1. Create a new `TasksController` class, in the `shared` folder, and refactor the `for` loop from the `setAllCompleted` function of the `App` function component into a new, `static`, `setAllCompleted` method in the `TasksController` class, which will run on the server.
 
 _src/shared/TasksController.ts_
 

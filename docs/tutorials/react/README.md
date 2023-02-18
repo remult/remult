@@ -75,25 +75,9 @@ The starter API server TypeScript project contains a single module that initiali
 
 1. Open your IDE.
 
-2. In the root folder, create a TypeScript configuration file `tsconfig.server.json` for the server project.
+2. Create a `server` folder under the `src/` folder created by Vite.
 
-//TODO - consider only adding this in deployment
-_tsconfig.server.json_
-
-```json
-{
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "module": "commonjs",
-    "emitDecoratorMetadata": true,
-    "esModuleInterop": true
-  }
-}
-```
-
-3. Create a `server` folder under the `src/` folder created by Vite.
-
-4. Create an `index.ts` file in the `src/server/` folder with the following code:
+3. Create an `index.ts` file in the `src/server/` folder with the following code:
 
 _src/server/index.ts_
 
@@ -171,8 +155,6 @@ We'll use the [proxy](https://vitejs.dev/config/#server-proxy) feature of Vite t
 Configure the proxy by adding the following entry to the `vite.config.ts` file:
 
 _vite.config.ts_
-
-//TODO - consider using 127.0.0.1 for the proxy - it may work faster for the case where the frontend is on localhost
 
 ```ts{5}
 //...

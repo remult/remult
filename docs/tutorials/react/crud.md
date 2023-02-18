@@ -4,7 +4,7 @@
 
 Now that we can see the list of tasks, it's time to add a few more.
 
-Add the highlighted `newTaskTitle` state and `addTask` function the Home Component
+Add the highlighted `newTaskTitle` state and `addTask` function the App Component
 
 _src/App.tsx_
 
@@ -66,7 +66,7 @@ Try adding a few tasks to see how it works
 
 ## Mark Tasks as completed
 
-Modify the contents of the `tasks.map` iteration within the `Home` component to include the following `setCompleted` function and call it in the input's `onChange` event.
+Modify the contents of the `tasks.map` iteration within the `App` component to include the following `setCompleted` function and call it in the input's `onChange` event.
 
 _src/App.tsx_
 
@@ -100,7 +100,7 @@ _src/App.tsx_
 
 To make the tasks in the list updatable, we'll bind the `tasks` React state to `input` elements and add a _Save_ button to save the changes to the backend database.
 
-Modify the contents of the `tasks.map` iteration within the `Home` component to include the following `setTitle` and `saveTask` functions and add an `input` and a save `button`.
+Modify the contents of the `tasks.map` iteration within the `App` component to include the following `setTitle` and `saveTask` functions and add an `input` and a save `button`.
 
 //TODO - prettifier takes down my :any type for the catch statement
 _src/App.tsx_
@@ -153,7 +153,7 @@ As you play with these `CRUD` capabilities, monitor the network tab and see that
 
 Let's add a _Delete_ button next to the _Save_ button of each task in the list.
 
-Add the highlighted `deleteTask` function and _Delete_ `button` Within the `tasks.map` iteration in the `return` section of the `Home` component.
+Add the highlighted `deleteTask` function and _Delete_ `button` Within the `tasks.map` iteration in the `return` section of the `App` component.
 
 _src/App.tsx_
 
@@ -200,5 +200,3 @@ _src/App.tsx_
   })
 }
 ```
-
-//TODO - search for home, pages, 3000 and make sure all are replaced
