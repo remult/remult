@@ -66,7 +66,7 @@ npm i --save-dev @types/cookie-session
 
    _src/server/index.ts_
 
-   ```ts{3,6-8}
+   ```ts{3,6-10}
    //...
 
    import session from "cookie-session"
@@ -295,7 +295,7 @@ _src/server/auth.ts_
 ```ts{2}
 const validUsers = [
   { id: "1", name: "Jane", roles: ["admin"] },
-  { id: "2", name: "Steve", roles: [] }
+  { id: "2", name: "Steve" }
 ]
 ```
 
@@ -327,7 +327,7 @@ const Auth: React.FC<{ children: JSX.Element }> = ({ children }) => {
 This code requires adding an import of `remult` from `remult`.
 :::
 
-## Show functionality based on the entity's metadata
+### Show functionality based on the entity's metadata
 
 Now let's use the entity's metadata to only show the form if the user is allowed to insert
 

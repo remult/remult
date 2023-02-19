@@ -20,7 +20,6 @@ Let's add two buttons to the todo app: "Set all as completed" and "Set all as un
 
    The `for` loop iterates the array of `Task` objects returned from the backend, and saves each task back to the backend with a modified value in the `completed` field.
 
-   After all the tasks are saved, we refetch the task list using the `fetchTasks` function and update the React state.
 
 2. Add the two buttons to the return section of the `App` component, just before the closing `</main>` tag. Both of the buttons' `onClick` events will call the `setAllCompleted` method with the appropriate value of the `completed` argument.
 

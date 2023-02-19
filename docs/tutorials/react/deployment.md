@@ -6,27 +6,26 @@ Let's deploy the todo app to [railway.app](https://railway.app/).
 
 In this tutorial, we'll deploy both the React app and the API server as [one server-side app](https://create-react-app.dev/docs/deployment/#other-solutions), and redirect all non-API requests to return the React app.
 
-In addition, to follow a few basic production best practices, we'll use [compression](https://www.npmjs.com/package/compression) middleware to improve performance, [helmet](https://www.npmjs.com/package/helmet) middleware for security and CSRF to protect the api
+In addition, to follow a few basic production best practices, we'll use [compression](https://www.npmjs.com/package/compression) middleware to improve performance and [helmet](https://www.npmjs.com/package/helmet) middleware for security
 
-1. Install `compression`, `helmet` and `csurf`.
+1. Install `compression` and `helmet`.
 
 ```sh
-npm i compression helmet csurf
-npm i @types/compression @types/csurf --save-dev
+npm i compression helmet
+npm i @types/compression --save-dev
 ```
 
 2. Add the highlighted code lines to `src/server/index.ts`, and modify the `app.listen` function's `port` argument to prefer a port number provided by the production host's `PORT` environment variable.
 
 _src/server/index.ts_
 
-```ts{5-8,16-18,20-24,26-31}
+```ts{5-7,15-16,19-24}
 import express from "express"
 import { api } from "./api"
 import session from "cookie-session"
 import { auth } from "./auth"
 import helmet from "helmet"
 import compression from "compression"
-import csrf from "csurf"
 import path from "path"
 
 const app = express()
@@ -35,15 +34,9 @@ app.use(
     secret: process.env["SESSION_SECRET"] || "my secret"
   })
 )
-app.use(sslRedirect())
 app.use(helmet({ contentSecurityPolicy: false }))
 app.use(compression())
 app.use(auth)
-app.use("/api", csrf({ cookie: true }))
-app.use("/api", (req, res, next) => {
-  res.cookie("XSRF-TOKEN", req.csrfToken())
-  next()
-})
 app.use(api)
 app.use(express.static(path.join(__dirname, "../")))
 app.get("/*", function(_, res) {
@@ -128,13 +121,12 @@ Click enter multiple times to answer all its questions with the default answer
    ```sh
    railway up
    ```
-8. After it completes the build, let's define a domain for it:
-   1. got to the `railway` project's site and click on the project
-   2. Switch to the `variables` tab
-   3. Add another variable called `SESSION_SECRET` and set it to a random string, you can use an [online UUID generator](https://www.uuidgenerator.net/)
-   4. Switch to the `settings` tab
-   5. Under `Environment` click on `Generate Domain`
-   6. Click on the newly generated url to open the app in the browser and you'll see the app live in production. (it may take a few minutes to go live)
+8. got to the `railway` project's site and click on the project
+9. Switch to the `variables` tab
+10. Add another variable called `SESSION_SECRET` and set it to a random string, youcan use an [online UUID generator](https://www.uuidgenerator.net/)
+11. Switch to the `settings` tab
+12. Under `Environment` click on `Generate Domain`
+13. Click on the newly generated url to open the app in the browser and you'll see the app live in production. (it may take a few minutes to go live)
 
 ::: warning Note
 If you run into trouble deploying the app to Railway, try using Railway's [documentation](https://docs.railway.app/deploy/deployments).

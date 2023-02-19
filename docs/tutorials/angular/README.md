@@ -137,7 +137,6 @@ app.listen(3002, () => console.log("Server started"))
 
 ### Add Angular Modules
 
-//TODO - why HttpClientModule - we con't actually use it
 In the Angular app we'll be using Angular's `HttpClientModule` and `FormsModule`.
 
 We'll modify the `app.module.ts` file to load Angular's `HttpClientModule` and `FormsModule`.

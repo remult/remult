@@ -20,16 +20,17 @@ Don't worry if you don't have Postgres installed locally. In the next step of th
 
 2. Add the highlighted code to the `api` server module.
 
-   *src/server/api.ts*
+   _src/server/api.ts_
+
    ```ts{3,7-9}
    //...
 
-   import { createPostgresConnection } from "remult/postgres";
-   
+   import { createPostgresConnection } from "remult/postgres"
+
    export const api = remultExpress({
-        //...
-        dataProvider: createPostgresConnection({
-            connectionString: "your connection string"
-        }),
-   });
+     //...
+     dataProvider: createPostgresConnection({
+       connectionString: "your connection string"
+     })
+   })
    ```
