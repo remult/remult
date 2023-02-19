@@ -4,17 +4,19 @@ Our todo list has more than one user, viewing it at a time - try opening multipl
 
 To fix that, we'll use the `liveQuery` feature of remult.
 
-Adjust the `useEffect` hook in the `App.tsx` file
-```ts
-useEffect(() => {
-  return taskRepo
-    .liveQuery({
-      limit: 20,
-      orderBy: { completed: "asc" }
-      //where: { completed: true },
-    })
-    .subscribe(info => setTasks(info.applyChanges))
-}, [])
+Adjust the `onMounted` hook in the `App.tsx` file
+```ts{2,4,9}
+onMounted(() =>
+  onUnmounted(
+    taskRepo
+      .liveQuery({
+        limit: 20,
+        orderBy: { completed: "asc" },
+        //where: { completed: true },
+      })
+      .subscribe((info) => (tasks.value = info.applyChanges(tasks.value)))
+  )
+);
 ```
 
 Let's review the change:
@@ -24,6 +26,6 @@ Let's review the change:
   - `items` - an up to date list of items representing the current result - it's useful for readonly use cases.
   - `applyChanges` - a method that receives an array and applies the changes to it - we send that method to the `setTasks` state function, to apply the changes to the existing `tasks` state.
   - `changes` - a detailed list of changes that were received
-- The `subscribe` method return an `unsubscribe` method, we return it to the `useEffect` hook so that it'll call the `unsubscribe` as the component unmounts
+- The `subscribe` method return an `unsubscribe` method, we return it to the `onUnmounted` hook so that it'll call the `unsubscribe` as the component unmounts
 
 Try changing values in one tab and review these changes on the other tab.

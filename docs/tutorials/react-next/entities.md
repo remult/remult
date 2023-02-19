@@ -15,7 +15,7 @@ The `Task` entity class we're creating will have an auto-increment `id` field a 
 1. Create a `shared` folder under the `src` folder. This folder will contain code shared between frontend and backend.
 
 2. Create a file `Task.ts` in the `src/shared/` folder, with the following code:
-
+//TODO - reconsider capital `T` in class name
 _src/shared/Task.ts_
 
 ```ts

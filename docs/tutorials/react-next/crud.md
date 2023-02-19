@@ -141,7 +141,6 @@ _src/pages/index.tsx_
 
 - The `setTitle` function, called from the `input`'s `onChange` event, saves the value from the `input` to the `tasks` state.
 - The `saveTask` function, called from the `button`'s' `onClick`event , saved the `task` object to the backend.
-- The button's icon is an `svg` icon, copied from the [heroicons website](https://heroicons.com/)
 
 Make some changes and refresh the browser to verify the backend database is updated.
 

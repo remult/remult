@@ -89,7 +89,7 @@ npm i --save-dev @types/cookie-session
 
    ```ts
    import express, { Router } from "express"
-   import { UserInfo } from "remult"
+   import type { UserInfo } from "remult"
 
    export const auth = Router()
 
@@ -128,7 +128,7 @@ npm i --save-dev @types/cookie-session
 
    _src/server/index.ts_
 
-   ```ts{3,9}
+   ```ts{3,11}
    //...
 
    import { auth } from "./auth"

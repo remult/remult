@@ -1,82 +1,89 @@
 # Backend methods
+
 When performing operations on multiple entity objects, performance considerations may necessitate running them on the server. **With Remult, moving client-side logic to run on the server is a simple refactoring**.
 
 ## Set All Tasks as Un/completed
+
 Let's add two buttons to the todo app: "Set all as completed" and "Set all as uncompleted".
 
-1. Add a `setAll` async function to the `App` function component, which accepts a `completed` boolean argument and sets the value of the `completed` field of all the tasks accordingly.
+1. Add a `setAllCompleted` async function to the `App` function component, which accepts a `completed` boolean argument and sets the value of the `completed` field of all the tasks accordingly.
 
-   *src/App.vue*
+   _src/App.vue_
+
    ```ts
-   async function setAll(completed: boolean) {
+   async function setAllCompleted(completed: boolean) {
      for (const task of await taskRepo.find()) {
        await taskRepo.save({ ...task, completed })
      }
-     fetchTasks();
    }
    ```
 
    The `for` loop iterates the array of `Task` objects returned from the backend, and saves each task back to the backend with a modified value in the `completed` field.
 
-   After all the tasks are saved, we refetch the task list using the `fetchTasks` function.
+2. Add the two buttons to the end of the `</main>` section of the `App` component. Both of the buttons' `@click` events will call the `setAllCompleted` function with the appropriate value of the `completed` argument.
 
-2. Add the two buttons to the return section of the `App` component. Both of the buttons' `onClick` events will call the `setAll` function with the appropriate value of the `completed` argument.
+   _src/App.vue_
 
-   *src/App.vue*
    ```vue
    <div>
-     <button @click="setAll(true)">Set all as completed</button>
-     <button @click="setAll(false)">Set all as uncompleted</button>
+     <button @click="setAllCompleted(true)">Set All as Completed</button>
+     <button @click="setAllCompleted(false)">Set All as Uncompleted</button>
    </div>
    ```
 
 Make sure the buttons are working as expected before moving on to the next step.
 
 ## Refactor from Front-end to Back-end
-With the current state of the `setAll` function, each modified task being saved causes an API `PUT` request handled separately by the server. As the number of tasks in the todo list grows, this may become a performance issue.
 
-A simple way to prevent this is to expose an API endpoint for `setAll` requests, and run the same logic on the server instead of the client.
+With the current state of the `setAllCompleted` function, each modified task being saved causes an API `PUT` request handled separately by the server. As the number of tasks in the todo list grows, this may become a performance issue.
 
-1. Create a new `TasksController` class, in the `shared` folder, and refactor the `for` loop from the `setAll` function of the `App` function component into a new, `static`, `setAll` method in the `TasksController` class, which will run on the server.
+A simple way to prevent this is to expose an API endpoint for `setAllCompleted` requests, and run the same logic on the server instead of the client.
 
-*src/shared/TasksController.ts*
+1. Create a new `TasksController` class, in the `shared` folder, and refactor the `for` loop from the `setAllCompleted` function of the `App` function component into a new, `static`, `setAllCompleted` method in the `TasksController` class, which will run on the server.
+
+_src/shared/TasksController.ts_
+
 ```ts
-import { BackendMethod, Remult } from "remult";
-import { Task } from "./Task";
+import { BackendMethod, remult } from "remult"
+import { Task } from "./Task"
 
 export class TasksController {
-   @BackendMethod({ allowed: true })
-   static async setAll(completed: boolean, remult?: Remult) {
-      const taskRepo = remult!.repo(Task);
+  @BackendMethod({ allowed: true })
+  static async setAllCompleted(completed: boolean) {
+    const taskRepo = remult.repo(Task)
 
-      for (const task of await taskRepo.find()) {
-         await taskRepo.save({ ...task, completed });
-      }
-   }
+    for (const task of await taskRepo.find()) {
+      await taskRepo.save({ ...task, completed })
+    }
+  }
 }
 ```
-The `@BackendMethod` decorator tells Remult to expose the method as an API endpoint (the `allowed` property will be discussed later on in this tutorial). 
+
+The `@BackendMethod` decorator tells Remult to expose the method as an API endpoint (the `allowed` property will be discussed later on in this tutorial).
+
+**Unlike the front-end `Remult` object, the server implementation interacts directly with the database.**
 
 2. Register `TasksController` by adding it to the `controllers` array of the `options` object passed to `remultExpress()`, in the server's `api` module:
 
-*src/server/api.ts*
+_src/server/api.ts_
+
 ```ts{2,6}
 //...
-import { TasksController } from "../shared/TasksController";
+import { TasksController } from "../shared/TasksController"
 
 export const api = remultExpress({
-   //...
-   controllers: [TasksController]
-});
+  //...
+  controllers: [TasksController]
+})
 ```
 
-3. Replace the `for` iteration in the `setAll` function of the `App` component with a call to the `setAll` method in the `TasksController`.
+3. Replace the `for` iteration in the `setAllCompleted` function of the `App` component with a call to the `setAllCompleted` method in the `TasksController`.
 
-*src/App.vue*
+_src/App.vue_
+
 ```ts{2}
-async function setAll(completed: boolean) {
-  await TasksController.setAll(completed);
-  fetchTasks();
+async function setAllCompleted(completed: boolean) {
+  await TasksController.setAllCompleted(completed)
 }
 ```
 
@@ -88,4 +95,4 @@ Remember to add an import of `TasksController` in `App.vue`.
 With Remult backend methods, argument types are compile-time checked. :thumbsup:
 :::
 
-After the browser refreshed, the *"Set all..."* buttons function exactly the same, but much faster.
+After the browser refreshed, the _"Set all..."_ buttons function exactly the same, but much faster.

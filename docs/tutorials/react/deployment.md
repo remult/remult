@@ -107,31 +107,32 @@ Click enter multiple times to answer all its questions with the default answer
 1. Create a Railway `project`.
 
    From the terminal in your project folder run:
+
    ```sh
    railway init
    ```
-3. Select `Empty Project`
-4. Set a project name.
-5. Once it's done add a database by running the following command:
+
+2. Select `Empty Project`
+3. Set a project name.
+4. Once it's done add a database by running the following command:
    ```sh
    railway add
    ```
-6. Select `postgressql` as the database.
-7. Once that's done run the following command to upload the project to railway:
+5. Select `postgressql` as the database.
+6. Once that's done run the following command to upload the project to railway:
    ```sh
    railway up
    ```
-8. got to the `railway` project's site and click on the project
-9. Switch to the `variables` tab
-10. Add another variable called `SESSION_SECRET` and set it to a random string, youcan use an [online UUID generator](https://www.uuidgenerator.net/)
-11. Switch to the `settings` tab
-12. Under `Environment` click on `Generate Domain`
-13. Click on the newly generated url to open the app in the browser and you'll see the app live in production. (it may take a few minutes to go live)
+7. got to the `railway` project's site and click on the project
+8. Switch to the `variables` tab
+9. Add another variable called `SESSION_SECRET` and set it to a random string, youcan use an [online UUID generator](https://www.uuidgenerator.net/)
+10. Switch to the `settings` tab
+11. Under `Environment` click on `Generate Domain`
+12. Click on the newly generated url to open the app in the browser and you'll see the app live in production. (it may take a few minutes to go live)
 
 ::: warning Note
 If you run into trouble deploying the app to Railway, try using Railway's [documentation](https://docs.railway.app/deploy/deployments).
 :::
-
 
 That's it - our application is deployed to production, play with it and enjoy.
 

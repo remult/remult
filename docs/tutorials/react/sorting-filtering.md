@@ -28,7 +28,6 @@ There aren't enough tasks in the database for this change to have an immediate e
 To query subsequent pages, use the [Repository.find()](../../docs/ref_repository.md#find) method's `page` option.
 :::
 
-
 ## Show Active Tasks on Top
 
 Uncompleted tasks are important and should appear above completed tasks in the todo app.
@@ -58,6 +57,7 @@ By default, `false` is a "lower" value than `true`, and that's why uncompleted t
 Remult supports sending filter rules to the server to query only the tasks that we need.
 
 Adjust the `useEffect` hook to fetch only `completed` tasks.
+
 _src/App.tsx_
 
 ```ts{6}
@@ -83,11 +83,11 @@ useEffect(() => {
   taskRepo
     .find({
       limit: 20,
-      orderBy: { completed: "asc" },
+      orderBy: { completed: "asc" }
       //where: { completed: true },
     })
-    .then(setTasks);
-}, []);
+    .then(setTasks)
+}, [])
 ```
 
 ::: tip Learn more
