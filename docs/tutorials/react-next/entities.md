@@ -19,6 +19,8 @@ The `Task` entity class we're creating will have an auto-increment `id` field a 
 _src/shared/Task.ts_
 
 ```ts
+// src/shared/Task.ts
+
 import { Entity, Fields } from "remult"
 
 @Entity("tasks", {
@@ -36,11 +38,11 @@ export class Task {
 }
 ```
 
-3. In the server's `api` module, register the `Task` entity with Remult by adding `entities: [Task]` to an `options` object you pass to the `remultNext()` function:
+3. In the `[...remult].ts` api route, register the `Task` entity with Remult by adding `entities: [Task]` to an `options` object you pass to the `remultNext()` function:
 
-_src/pages/api/[...remult].ts_
+```ts{4,7}
+// src/pages/api/[...remult].ts
 
-```ts{2,5}
 import { remultNext } from "remult/remult-next"
 import { Task } from "../../shared/Task"
 
@@ -57,27 +59,28 @@ The `@Fields.autoIncrement` decorator tells Remult to automatically generate an 
 
 The [@Fields.string](../../docs/ref_field.md) decorator tells Remult the `title` property is an entity data field of type `String`. This decorator is also used to define field-related properties and operations, discussed in the next sections of this tutorial and the same goes for `@Fields.boolean` and the `completed` property.
 
-## Test the api
+## Test the API
 
-Now that the `Task` entity is defined, we can start using the `api` to query and add a few tasks
+Now that the `Task` entity is defined, we can start using the REST API to query and add a tasks.
 
 1. Open a browser with the url: [http://localhost:3000/api/tasks](http://localhost:3000/api/tasks), and you'll see that you get an empty array.
-2. Open a new terminal window and Use `curl` to `POST` a new task
-   1. **clean Car**
-   ```sh
-   curl http://localhost:3000/api/tasks -d "{\"title\": \"Clean car\"}" -H "Content-Type: application/json"
-   ```
+
+2. Use `curl` to `POST` a new task - *Clean car*.
+
+```sh
+curl http://localhost:3000/api/tasks -d "{\"title\": \"Clean car\"}" -H "Content-Type: application/json"
+```
+
 3. Refresh the browser for the url: [http://localhost:3000/api/tasks](http://localhost:3000/api/tasks) and see that the array now contains one item.
-4. Use `curl` to `POST` several more tasks
-   1. Read a book
-   2. Take a nap (completed)
-   3. Pay bills
-   4. Do laundry
-   ```sh
-   curl http://localhost:3000/api/tasks -d "[{\"title\": \"Read a book\"},{\"title\": \"Take a nap\", \"completed\":true },{\"title\": \"Pay bills\"},{\"title\": \"Do laundry\"}]" -H "Content-Type: application/json"
-   ```
-   - Note that the `POST` route can accept a `Task` or an array of `Tasks` to insert many tasks
-5. Use the browser again, to see that the tasks were stored in the db.
+
+4. Use `curl` to `POST` a few more tasks:
+
+```sh
+curl http://localhost:3000/api/tasks -d "[{\"title\": \"Read a book\"},{\"title\": \"Take a nap\", \"completed\":true },{\"title\": \"Pay bills\"},{\"title\": \"Do laundry\"}]" -H "Content-Type: application/json"
+```
+- Note that the `POST` endpoint can accept a single `Task` or an array of `Task`s.
+
+5. Refresh the browser again, to see that the tasks were stored in the db.
 
 ::: warning Wait, where is the backend database?
 While remult supports [many relational and non-relational databases](https://remult.dev/docs/databases.html), in this tutorial we start by storing entity data in a backend **JSON file**. Notice that a `db` folder has been created under the root folder, with a `tasks.json` file containing the created tasks.
@@ -89,9 +92,9 @@ Let's start developing the web app by displaying the list of existing tasks in a
 
 Replace the contents of `src/pages/index.tsx` with the following code:
 
-_src/pages/index.tsx_
-
 ```tsx
+// src/pages/index.tsx
+
 import { useEffect, useState } from "react"
 import { remult } from "remult"
 import { Task } from "../shared/Task"
@@ -126,6 +129,6 @@ Here's a quick overview of the different parts of the code snippet:
 
 - `taskRepo` is a Remult [Repository](../../docs/ref_repository.md) object used to fetch and create Task entity objects.
 - `tasks` is a Task array React state to hold the list of tasks.
-- React's useEffect hook is used to call the Remult [repository](../../docs/ref_repository.md)'s [find](../../docs/ref_repository.md#find) method to fetch tasks from the server, once when the React component is loaded.
+- React's useEffect hook is used to call the Remult [repository](../../docs/ref_repository.md)'s [find](../../docs/ref_repository.md#find) method to fetch tasks from the server once when the React component is loaded.
 
 After the browser refreshes, the list of tasks appears.

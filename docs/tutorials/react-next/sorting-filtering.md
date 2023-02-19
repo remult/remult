@@ -8,18 +8,26 @@ Since our database may eventually contain a lot of tasks, it make sense to use a
 
 Let's limit the number of fetched tasks to `20`.
 
-In the `useEffect` hook, pass an `options` argument to the `find` method call and set its `limit` property to 20.
+In the `useEffect` hook defined in the `Home` component, pass an `options` argument to the `find` method call and set its `limit` property to 20.
 
-_src/pages/index.tsx_
+```ts{9-13}
+// src/pages/index.tsx
 
-```ts{4}
-useEffect(() => {
-  taskRepo
-    .find({
-      limit: 20
-    })
-    .then(setTasks)
-}, [])
+//...
+
+export default function Home() {
+  //...
+
+  useEffect(() => {
+    taskRepo
+      .find({
+        limit: 20
+      })
+      .then(setTasks)
+  }, [])
+
+  //...
+}
 ```
 
 There aren't enough tasks in the database for this change to have an immediate effect, but it will have one later on when we'll add more tasks.
@@ -36,9 +44,9 @@ Uncompleted tasks are important and should appear above completed tasks in the t
 In the `useEffect` hook, set the `orderBy` property of the `find` method call's `option` argument to an object that contains the fields you want to sort by.
 Use "asc" and "desc" to determine the sort order.
 
-_src/pages/index.tsx_
+```ts{7}
+// src/pages/index.tsx
 
-```ts{5}
 useEffect(() => {
   taskRepo
     .find({
@@ -53,7 +61,7 @@ useEffect(() => {
 By default, `false` is a "lower" value than `true`, and that's why uncompleted tasks are now showing at the top of the task list.
 :::
 
-## Server side Filtering
+## Toggle Display of Completed Tasks
 
 Remult supports sending filter rules to the server to query only the tasks that we need.
 
