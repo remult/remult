@@ -22,7 +22,7 @@ You can either **use a starter project** to speed things up, or go through the *
 
 1. Clone the _remult-nextjs-todo_ repository from GitHub and install its dependencies.
 
-//TODO - merge new-tutorial-18 branch to main branch
+
 
 ```sh
 git clone https://github.com/remult/nextjs-starter.git remult-nextjs-todo
@@ -103,11 +103,5 @@ The default `Next.js` main screen should be displayed.
 ### Remove Next.js default styles
 
 The Next.js default styles won't fit our todo app. If you'd like a nice-looking app, replace the contents of `src/styles/globals.css` with [this CSS file](https://raw.githubusercontent.com/remult/nextjs-starter/new-tutorial-18/src/styles/globals.css). Otherwise, you can simply **delete the contents of `src/styles/globals.css`**.
-
-   // TODO - update css path to main branch after merge
-   // TODO - make sure css looks ok also before we add buttons to the line
-   // TODO - why css doesn't match mobile for tutorial
-   // TODO - figure out why the check doesn't work ok on ios
-   // TODO - check that react CSS solves next CSS issues### Setup completed
 
 At this point, our starter project is up and running. We are now ready to move to the [next step of the tutorial](./entities.md) and start creating the task list app.

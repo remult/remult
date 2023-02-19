@@ -5,7 +5,6 @@ Let's deploy the todo app to [railway.app](https://railway.app/).
 ## Prepare for Production
 
 In this tutorial, we'll deploy both the Vue app and the API server as [one server-side app](https://create-react-app.dev/docs/deployment/#other-solutions), and redirect all non-API requests to return the Vue app.
-//TODO - I removed CURF
 In addition, to follow a few basic production best practices, we'll use [compression](https://www.npmjs.com/package/compression) middleware to improve performance and [helmet](https://www.npmjs.com/package/helmet) middleware for security
 
 1. Install `compression` and `helmet`.

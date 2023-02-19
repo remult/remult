@@ -148,8 +148,6 @@ npm i --save-dev @types/cookie-session
 
 1. Create a file `src/Auth.vue` and place the following `Auth` component code in it:
 
-   //TODO - consider highlighting entire files when talking about new files
-
    _src/Auth.vue_
 
    ```vue

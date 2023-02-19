@@ -183,8 +183,6 @@ npm run dev
 
 _package.json_
 
-//TODO YONI - Why not use this in production?
-
 ```json
 "dev-node": "tsx watch src/server"
 ```
