@@ -71,6 +71,7 @@ You can either:
    // TODO - make sure css looks ok also before we add buttons to the line
    // TODO - why css doesn't match mobile for tutorial
    // TODO - figure out why the check doesn't work ok on ios
+   // TODO - check that react CSS solves next CSS issues
 
 ### Install Remult
 
