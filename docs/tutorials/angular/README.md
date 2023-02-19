@@ -29,7 +29,7 @@ This tutorial requires setting up an Angular project, an API server project, and
 You can either **use a starter project** to speed things up, or go through the **step-by-step setup**.
 
 ## Option 1: Clone the Starter Project
-
+//TODO - rebuild starter repository
 1. Clone the _angular-express-starter_ repository from GitHub and install its dependencies.
 
 ```sh
