@@ -287,13 +287,15 @@ useEffect(() => {
 }, [session])
 ```
 
-::: warning Import Allow
+::: warning Import UserInfo
 This code requires adding an import of `UserInfo` from `remult`.
 :::
 
-## Show components based on the entity's metadata
+## Show functionality based on the entity's metadata
 
 Now let's use the entity's metadata to only show the form if the user is allowed to insert
+
+_src/pages/index.tsx_
 
 ```tsx{2,11}
 <main>
@@ -312,6 +314,8 @@ Now let's use the entity's metadata to only show the form if the user is allowed
 ```
 
 And let's do the same for the `delete` button:
+
+_src/pages/index.tsx_
 
 ```tsx{10,12}
 return (

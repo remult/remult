@@ -108,7 +108,6 @@ The Next.js default styles won't fit our todo app. If you'd like a nice-looking 
    // TODO - make sure css looks ok also before we add buttons to the line
    // TODO - why css doesn't match mobile for tutorial
    // TODO - figure out why the check doesn't work ok on ios
-
-### Setup completed
+   // TODO - check that react CSS solves next CSS issues### Setup completed
 
 At this point, our starter project is up and running. We are now ready to move to the [next step of the tutorial](./entities.md) and start creating the task list app.
