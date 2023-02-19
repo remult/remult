@@ -2,7 +2,7 @@
 
 ### Create a simple todo app with Remult using Next.js
 
-In this tutorial, we are going to create a simple app to manage a task list. We'll use `Next.js`, and Remult as our full-stack CRUD framework. For deployment to production, we'll use [railway.app](https://railway.app/) to host the application and a `PostgreSQL` database.
+In this tutorial, we are going to create a simple app to manage a task list. We'll use `Next.js`, and Remult as our full-stack CRUD framework. For deployment to production, we'll use [Vercel](https://vercel.com/) and a [Supabase](https://supabase.com/) `PostgreSQL` database.
 
 By the end of the tutorial, you should have a basic understanding of Remult and how to use it to accelerate and simplify full stack app development.
 
@@ -22,7 +22,7 @@ You can either **use a starter project** to speed things up, or go through the *
 
 1. Clone the _remult-nextjs-todo_ repository from GitHub and install its dependencies.
 
-//TODO - merge new-tutorial-18 branch to maain branch
+//TODO - merge new-tutorial-18 branch to main branch
 
 ```sh
 git clone https://github.com/remult/nextjs-starter.git remult-nextjs-todo
@@ -37,7 +37,7 @@ npm install
 npm run dev
 ```
 
-The default Next.js app main screen should be displayed.
+The default Next.js app main screen should be displayed (except for the styles which were modified for the tutorial).
 
 At this point, our starter project is up and running. We are now ready to move to the [next step of the tutorial](./entities.md) and start creating the task list app.
 
@@ -45,32 +45,18 @@ At this point, our starter project is up and running. We are now ready to move t
 
 ### Create a Next.js project
 
-Create the new Next.js project.
+1. Create the new Next.js project.
 
 ```sh
 npx -y create-next-app@latest remult-nextjs-todo --typescript --src-dir
 ```
+Answer all the questions (default answers are fine). 
 
-- Answer all the questions and enter the created folder:
-  ```sh
-  cd remult-nextjs-todo
-  ```
+2. Go to the created folder.
 
-Open your IDE
-
-### Cleanup Next.js default css
-
-To start from scratch, let's cleanup the default css provided by nest.
-
-You can either:
-
-1. **Delete the content** of the `src/styles/globals.css` file
-
-2. Or Optionally, make the app look a little better by replacing the contents of `src/styles/globals.css` with [this CSS file](https://raw.githubusercontent.com/remult/nextjs-starter/new-tutorial-18/src/styles/globals.css).
-   // TODO - update css path to main branch after merge
-   // TODO - make sure css looks ok also before we add buttons to the line
-   // TODO - why css doesn't match mobile for tutorial
-   // TODO - figure out why the check doesn't work ok on ios
+```sh
+cd remult-nextjs-todo
+```
 
 ### Install Remult
 
@@ -82,11 +68,13 @@ npm i remult
 
 Remult is bootstrapped in a `Next.js` using a [catch all dynamic API route](https://nextjs.org/docs/api-routes/dynamic-api-routes#optional-catch-all-api-routes), that passes the handling of requests to an object created using the `remultNext` function.
 
-Add a file named `[...remult].ts` in the folder `src/pages/api`. This file is a "catch all" `Next.js` API route which will be used to handle all API requests.
+1. Open your IDE.
 
-_src/pages/api/[...remult].ts_
+2. Create a `[...remult].ts` file in the `src/pages/api` folder. This file is a "catch all" `Next.js` API route which will be used to handle all API requests.
 
 ```ts
+// src/pages/api/[...remult].ts
+
 import { remultNext } from "remult/remult-next"
 
 export default remultNext({})
@@ -111,6 +99,15 @@ npm run dev
 ```
 
 The default `Next.js` main screen should be displayed.
+
+### Remove Next.js default styles
+
+The Next.js default styles won't fit our todo app. If you'd like a nice-looking app, replace the contents of `src/styles/globals.css` with [this CSS file](https://raw.githubusercontent.com/remult/nextjs-starter/new-tutorial-18/src/styles/globals.css). Otherwise, you can simply **delete the contents of `src/styles/globals.css`**.
+
+   // TODO - update css path to main branch after merge
+   // TODO - make sure css looks ok also before we add buttons to the line
+   // TODO - why css doesn't match mobile for tutorial
+   // TODO - figure out why the check doesn't work ok on ios
 
 ### Setup completed
 
