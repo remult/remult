@@ -4,7 +4,10 @@ Our todo list has more than one user, viewing it at a time - try opening multipl
 
 To fix that, we'll use the `liveQuery` feature of remult.
 
-Adjust the `useEffect` hook in the `page.tsx` file
+Adjust the `useEffect` hook in the `pages/index.tsx` file
+
+_src/pages/index.tsx_
+
 ```ts{2-3,8}
 useEffect(() => {
   return taskRepo

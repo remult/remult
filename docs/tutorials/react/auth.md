@@ -181,7 +181,7 @@ npm i --save-dev @types/cookie-session
      useEffect(() => {
        fetch("/api/currentUser")
          .then(r => r.json())
-         .then(async currentUserFromServer => {
+         .then(currentUserFromServer => {
            setCurrentUser(currentUserFromServer)
          })
      }, [])
@@ -191,13 +191,13 @@ npm i --save-dev @types/cookie-session
          <>
            <h1>todos</h1>
            <main>
-             <form>
+             <form onSubmit={signIn}>
                <input
                  value={signInUsername}
                  onChange={e => setSignInUsername(e.target.value)}
                  placeholder="Username, try Steve or Jane"
                />
-               <button onClick={signIn}>Sign in</button>
+               <button>Sign in</button>
              </form>
            </main>
          </>

@@ -62,12 +62,11 @@ Follow these steps only if you want to use `liveQuery` in the app
 
    ```tsx
    import ably from "ably/promises"
-   import { AblySubscriptionClient } from "remult/ably" 
+   import { AblySubscriptionClient } from "remult/ably"
    //...
-   const session = useSession()
    useEffect(() => {
      remult.apiClient.subscriptionClient = new AblySubscriptionClient(
-       new ably.Realtime(process.env["ABLY_API_KEY"]!)
+       new ably.Realtime({ authUrl: "/api/getAblyToken" })
      )
    }, [])
    ```
