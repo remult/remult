@@ -138,7 +138,7 @@ Let's start developing the web app by displaying the list of existing tasks in a
    <h1>todos</h1>
    <main>
      <div *ngFor="let task of tasks">
-       <input type="checkbox" [checked]="task.completed" />
+       <input type="checkbox" [(ngModel)]="task.completed" />
        {{task.title}}
      </div>
    </main>

@@ -13,7 +13,7 @@ export class TodoComponent implements OnInit {
   newTaskTitle = ""
   async addTask() {
     try {
-      const newTask = await this.taskRepo.save({ title: this.newTaskTitle })
+      const newTask = await this.taskRepo.insert({ title: this.newTaskTitle })
       this.tasks.push(newTask)
       this.newTaskTitle = ""
     } catch (error /*:any*/) {
@@ -41,7 +41,7 @@ _src/app/todo/todo.component.html_
     <button>Add</button>
   </form>
   <div *ngFor="let task of tasks">
-    <input type="checkbox" [checked]="task.completed" />
+    <input type="checkbox" [(ngModel)]="task.completed" />
     {{ task.title }}
   </div>
 </main>
@@ -82,8 +82,6 @@ To make the tasks in the list updatable, we'll bind the `input` elements to the 
      <button (click)="saveTask(task)">Save</button>
    </div>
    ```
-
-   - Make sure to use replace the `[checked]` attribute with the `ngModel` attribute on the checkbox, to have two-way binding for the `completed` field
 
 Make some changes and refresh the browser to verify the backend database is updated.
 
