@@ -102,7 +102,6 @@ To make the tasks in the list updatable, we'll bind the `tasks` React state to `
 
 Modify the contents of the `tasks.map` iteration within the `App` component to include the following `setTitle` and `saveTask` functions and add an `input` and a save `button`.
 
-
 _src/App.tsx_
 
 ```tsx{9,11-17,26-27}

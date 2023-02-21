@@ -1,8 +1,12 @@
-# Live Query
+# Live Queries :rocket:
 
-Our todo list has more than one user, viewing it at a time - try opening multiple tabs with the todo list, update the tasks in one tab and you'll see the other tabs don't reflect these changes unless you reload them.
+::: tip New Feature
+Live queries are a new feature introduced in version 0.18.
+:::
 
-To fix that, we'll use the `liveQuery` feature of remult.
+Our todo list app can have multiple users using it at the same time. However, changes made by one user are not seen by others unless they manually refresh the browser.
+
+Let's add realtime multiplayer capabilities to this app.
 
 ## One Time Setup
 
@@ -53,4 +57,10 @@ Let's review the change:
   - `changes` - a detailed list of changes that were received
 - The `subscribe` method return an `unsubscribe` method, which we store in the `unsubscribe` member and call in the `ngOnDestroy` hook
 
-Try changing values in one tab and review these changes on the other tab.
+Open the todo app in two (or more) browser windows/tabs, make some changes in one window and notice how the others are updated in realtime.
+
+::: tip Under the hood
+The default implementation of live-queries uses HTTP Server-Sent Events (SSE) to push realtime updates to clients, and stores live-query information in-memory.
+
+For scalable production / serverless environments, live-query updates can be pushed using integration with third-party realtime providers, such as [Ably](https://ably.com/), and live-query information can be stored to any database supported by Remult.
+:::
