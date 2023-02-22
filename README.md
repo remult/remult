@@ -61,6 +61,7 @@ backend ORM**.
 * :lock: Fine-grained code-based API authorization
 * :relieved: Incrementally adoptable
 * :rocket: Production ready
+* :mega: **NEW - Zero-boilerplate realtime live-queries**
 
 ### Status
 
