@@ -38,7 +38,7 @@ app.use(compression())
 app.use(auth)
 app.use(api)
 app.use(express.static(path.join(__dirname, "../")))
-app.get("/*", function(_, res) {
+app.get("/*", (_, res) => {
   res.sendFile(path.join(__dirname, "../", "index.html"))
 })
 
