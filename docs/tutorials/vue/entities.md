@@ -16,9 +16,9 @@ The `Task` entity class we're creating will have an auto-increment `id` field a 
 
 2. Create a file `Task.ts` in the `src/shared/` folder, with the following code:
 
-_src/shared/Task.ts_
-
 ```ts
+// src/shared/Task.ts
+
 import { Entity, Fields } from "remult"
 
 @Entity("tasks", {
@@ -38,9 +38,9 @@ export class Task {
 
 3. In the server's `api` module, register the `Task` entity with Remult by adding `entities: [Task]` to an `options` object you pass to the `remultExpress()` middleware:
 
-_src/server/api.ts_
+```ts{4,7}
+// src/server/api.ts
 
-```ts{2,5}
 import { remultExpress } from "remult/remult-express"
 import { Task } from "../shared/Task"
 
@@ -89,9 +89,9 @@ Let's start developing the web app by displaying the list of existing tasks in a
 
 Replace the contents of `src/App.vue` with the following code:
 
-_src/App.vue_
-
 ```vue
+// src/App.vue
+
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { remult } from "remult";

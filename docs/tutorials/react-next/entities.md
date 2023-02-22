@@ -16,9 +16,9 @@ The `Task` entity class we're creating will have an auto-increment `id` field a 
 
 2. Create a file `Task.ts` in the `src/shared/` folder, with the following code:
 
-_src/shared/Task.ts_
-
 ```ts
+// src/shared/Task.ts
+
 // src/shared/Task.ts
 
 import { Entity, Fields } from "remult"

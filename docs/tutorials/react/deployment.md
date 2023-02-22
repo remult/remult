@@ -16,9 +16,9 @@ npm i @types/compression --save-dev
 
 2. Add the highlighted code lines to `src/server/index.ts`, and modify the `app.listen` function's `port` argument to prefer a port number provided by the production host's `PORT` environment variable.
 
-_src/server/index.ts_
+```ts{7-9,17-18,21-26}
+// src/server/index.ts
 
-```ts{5-7,15-16,19-24}
 import express from "express"
 import { api } from "./api"
 import session from "cookie-session"
@@ -47,9 +47,9 @@ app.listen(process.env["PORT"] || 3002, () => console.log("Server started"))
 
 3. Modify the highlighted code in the api server module to prefer a `connectionString` provided by the production host's `DATABASE_URL` environment variable.
 
-   _src/server/api.ts_
+   ```ts{7}
+   // src/server/api.ts
 
-   ```ts{5}
    //...
    export const api = remultExpress({
      //...
@@ -62,9 +62,9 @@ app.listen(process.env["PORT"] || 3002, () => console.log("Server started"))
 
 1. In the root folder, create a TypeScript configuration file `tsconfig.server.json` for the build of the server project using TypeScript.
 
-_tsconfig.server.json_
-
 ```json
+// tsconfig.server.json
+
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
@@ -81,17 +81,17 @@ _tsconfig.server.json_
 
 5. Modify the project's `build` npm script to additionally transpile the API server's TypeScript code to JavaScript (using `tsc`).
 
-_package.json_
-
 ```json
+// package.json
+
 "build": "tsc && vite build && tsc -p tsconfig.server.json",
 ```
 
 6. Modify the project's `start` npm script to start the production Node.js server.
 
-_package.json_
-
 ```json
+// package.json
+
 "start": "node dist/server/"
 ```
 

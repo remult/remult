@@ -85,9 +85,9 @@ The starter API server TypeScript project contains a single module that initiali
 
 3. Create an `index.ts` file in the `src/server/` folder with the following code:
 
-_src/server/index.ts_
-
 ```ts
+// src/server/index.ts
+
 import express from "express"
 
 const app = express()
@@ -100,9 +100,9 @@ Our server Node.js project is using the CommonJS module system.
 
 Therefore, it is important to **remove the `"type": "module"` entry from the `package.json` file** created by Vite.
 
-_package.json_
-
 ```json
+// package.json
+
 "type": "module", // <- remove this
 ```
 
@@ -115,9 +115,9 @@ Remult is loaded in the back-end as an `Express middleware`.
 
 1. Create an `api.ts` file in the `src/server/` folder with the following code:
 
-_src/server/api.ts_
-
 ```ts
+// src/server/api.ts
+
 import { remultExpress } from "remult/remult-express"
 
 export const api = remultExpress()
@@ -125,9 +125,9 @@ export const api = remultExpress()
 
 2. Add the highlighted code lines to register the middleware in the main server module `index.ts`.
 
-_src/server/index.ts_
+```ts{4,7}
+// src/server/index.ts
 
-```ts{2,5}
 import express from "express"
 import { api } from "./api"
 
@@ -145,9 +145,9 @@ Our full stack starter project is almost ready. Let's complete these final confi
 
 Add the following entry to the `compilerOptions` section of the `tsconfig.json` file to enable the use of decorators in the React app.
 
-_tsconfig.json_
-
 ```json
+// tsconfig.json
+
 "experimentalDecorators": true
 ```
 
@@ -160,9 +160,9 @@ We'll use the [proxy](https://vitejs.dev/config/#server-proxy) feature of Vite t
 
 Configure the proxy by adding the following entry to the `vite.config.ts` file:
 
-_vite.config.ts_
+```ts{7}
+// vite.config.ts
 
-```ts{5}
 //...
 
 export default defineConfig({
@@ -181,9 +181,9 @@ npm run dev
 
 2. Add an `npm` script named `dev-node` to start the dev API server in the `package.json`.
 
-_package.json_
-
 ```json
+// package.json
+
 "dev-node": "tsx watch src/server"
 ```
 

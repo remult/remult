@@ -6,9 +6,9 @@ Now that we can see the list of tasks, it's time to add a few more.
 
 Add the highlighted `newTaskTitle` state and `addTask` function the App Component
 
-_src/App.tsx_
+```ts{5-16}
+// src/App.tsx
 
-```ts{3-14}
 export default function App() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [newTaskTitle, setNewTaskTitle] = useState("")
@@ -34,9 +34,9 @@ This code requires adding an import of `FormEvent` from `react`.
 
 Next let's adjust the `tsx` to display a form to add new tasks
 
-_src/App.tsx_
+```tsx{7-14}
+// src/App.tsx
 
-```tsx{5-12}
 return (
   <div>
     <h1>Todos</h1>
@@ -68,9 +68,9 @@ Try adding a few tasks to see how it works
 
 Modify the contents of the `tasks.map` iteration within the `App` component to include the following `setCompleted` function and call it in the input's `onChange` event.
 
-_src/App.tsx_
+```tsx{5-6,8-9,16}
+// src/App.tsx
 
-```tsx{3-4,6-7,14}
 {
   tasks.map(task => {
     const setTask = (value: Task) =>
@@ -102,9 +102,9 @@ To make the tasks in the list updatable, we'll bind the `tasks` React state to `
 
 Modify the contents of the `tasks.map` iteration within the `App` component to include the following `setTitle` and `saveTask` functions and add an `input` and a save `button`.
 
-_src/App.tsx_
+```tsx{11,13-19,28-29}
+// src/App.tsx
 
-```tsx{9,11-17,26-27}
 {
   tasks.map(task => {
     const setTask = (value: Task) =>
@@ -153,9 +153,9 @@ Let's add a _Delete_ button next to the _Save_ button of each task in the list.
 
 Add the highlighted `deleteTask` function and _Delete_ `button` Within the `tasks.map` iteration in the `return` section of the `App` component.
 
-_src/App.tsx_
+```tsx{21-28,39}
+// src/App.tsx
 
-```tsx{19-26,37}
 {
   tasks.map(task => {
     const setTask = (value: Task) =>

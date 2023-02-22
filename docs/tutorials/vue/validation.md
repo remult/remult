@@ -8,9 +8,9 @@ Task titles are required. Let's add a validity check for this rule.
 
 1. In the `Task` entity class, modify the `Fields.string` decorator for the `title` field to include an object literal argument and set the object's `validate` property to `Validators.required`.
 
-_src/shared/Task.ts_
+```ts{3-5}
+// src/shared/Task.ts
 
-```ts{1-3}
 @Fields.string({
   validate: Validators.required
 })
@@ -45,9 +45,9 @@ The `validate` property of the first argument of `Remult` field decorators can b
 
 Try something like this and see what happens:
 
-_src/shared/Task.ts_
-
 ```ts
+// src/shared/Task.ts
+
 @Fields.string<Task>({
   validate: (task) => {
     if (task.title.length < 3) throw "Too Short"

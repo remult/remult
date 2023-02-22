@@ -10,9 +10,9 @@ Let's limit the number of fetched tasks to `20`.
 
 In the `onMounted` hook, pass an `options` argument to the `find` method call and set its `limit` property to 20.
 
-_src/App.vue_
+```ts{6}
+// src/App.vue
 
-```ts{4}
 onMounted(() =>
   taskRepo
     .find({
@@ -35,9 +35,9 @@ Uncompleted tasks are important and should appear above completed tasks in the t
 In the `onMounted` hook, set the `orderBy` property of the `find` method call's `option` argument to an object that contains the fields you want to sort by.
 Use "asc" and "desc" to determine the sort order.
 
-_src/App.vue_
+```ts{7}
+// src/App.vue
 
-```ts{5}
 onMounted(() =>
   taskRepo
     .find({
@@ -57,11 +57,10 @@ By default, `false` is a "lower" value than `true`, and that's why uncompleted t
 Remult supports sending filter rules to the server to query only the tasks that we need.
 
 Adjust the `onMounted` hook to fetch only `completed` tasks.
-_src/App.tsx_
 
-_src/App.vue_
+```ts{8}
+// src/App.vue
 
-```ts{6}
 onMounted(() =>
   taskRepo
     .find({

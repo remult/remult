@@ -10,9 +10,9 @@ Let's limit the number of fetched tasks to `20`.
 
 In the `ngOnInit` method, pass an `options` argument to the `find` method call and set its `limit` property to 20.
 
-_src/app/todo/todo.component.ts_
+```ts{5}
+// src/app/todo/todo.component.ts
 
-```ts{3}
 ngOnInit() {
   this.taskRepo.find({
     limit: 20
@@ -33,9 +33,9 @@ Uncompleted tasks are important and should appear above completed tasks in the t
 In the `ngOnInit` method, set the `orderBy` property of the `find` method call's `option` argument to an object that contains the fields you want to sort by.
 Use "asc" and "desc" to determine the sort order.
 
-_src/app/todo/todo.component.ts_
+```ts{6}
+// src/app/todo/todo.component.ts
 
-```ts{4}
 ngOnInit() {
   this.taskRepo.find({
     limit: 20,
@@ -53,11 +53,10 @@ By default, `false` is a "lower" value than `true`, and that's why uncompleted t
 Remult supports sending filter rules to the server to query only the tasks that we need.
 
 Adjust the `ngOnInit` method to fetch only `completed` tasks.
-_src/App.tsx_
 
-_src/app/todo/todo.component.ts_
+```ts{7}
+// src/app/todo/todo.component.ts
 
-```ts{5}
 ngOnInit() {
   this.taskRepo.find({
     limit: 20,

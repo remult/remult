@@ -84,9 +84,9 @@ export default remultNext({})
 
 Add the following entry to the `compilerOptions` section of the `tsconfig.json` file to enable the use of decorators in the React app.
 
-_tsconfig.json_
-
 ```json
+// tsconfig.json
+
 "experimentalDecorators": true
 ```
 

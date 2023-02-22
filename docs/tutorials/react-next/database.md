@@ -20,18 +20,18 @@ Don't worry if you don't have Postgres installed locally. In the next step of th
 
 2. Add an environment variables called `DATABASE_URL` and set it with your connection string
 
-   _.env.local_
-
    ```
+   // .env.local
+
    ...
    DATABASE_URL=your connection string
    ```
 
 4) Add the highlighted code to the `api` server module.
 
-   _src/server/api.ts_
+   ```ts{5,9}
+   // src/server/api.ts
 
-   ```ts{3,7}
    //...
 
    import { createPostgresConnection } from "remult/postgres"

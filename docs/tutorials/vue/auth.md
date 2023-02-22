@@ -13,9 +13,9 @@ In this tutorial, we'll use `Express`'s [cookie-session](https://expressjs.com/e
 This rule is implemented within the `Task` `@Entity` decorator, by modifying the value of the `allowApiCrud` property.
 This property can be set to a function that accepts a `Remult` argument and returns a `boolean` value. Let's use the `Allow.authenticated` function from Remult.
 
-_src/shared/Task.ts_
+```ts{4}
+// src/shared/Task.ts
 
-```ts{2}
 @Entity("tasks", {
     allowApiCrud: Allow.authenticated
 })
@@ -40,9 +40,9 @@ Although client CRUD requests to `tasks` API endpoints now require a signed-in u
 
 To fix this, let's implement the same rule using the `@BackendMethod` decorator of the `setAllCompleted` method of `TasksController`.
 
-_src/shared/TasksController.ts_
-
 ```ts
+// src/shared/TasksController.ts
+
 @BackendMethod({ allowed: Allow.authenticated })
 ```
 
@@ -64,9 +64,9 @@ npm i --save-dev @types/cookie-session
 
 2. Modify the main server module `index.ts` to use the `cookie-session` Express middleware.
 
-   _src/server/index.ts_
+   ```ts{5,8-12}
+   // src/server/index.ts
 
-   ```ts{3,6-10}
    //...
 
    import session from "cookie-session"
@@ -85,9 +85,9 @@ npm i --save-dev @types/cookie-session
 
 3. Create a file `src/server/auth.ts` for the `auth` express router and place the following code in it:
 
-   _src/server/auth.ts_
-
    ```ts
+   // src/server/auth.ts
+
    import express, { Router } from "express"
    import type { UserInfo } from "remult"
 
@@ -126,9 +126,9 @@ npm i --save-dev @types/cookie-session
 
 4. Register the `auth` router in the main server module.
 
-   _src/server/index.ts_
+   ```ts{5,13}
+   // src/server/index.ts
 
-   ```ts{3,11}
    //...
 
    import { auth } from "./auth"
@@ -148,9 +148,9 @@ npm i --save-dev @types/cookie-session
 
 1. Create a file `src/Auth.vue` and place the following `Auth` component code in it:
 
-   _src/Auth.vue_
-
    ```vue
+   // src/Auth.vue
+
    <script setup lang="ts">
    import { onMounted, ref } from "vue";
    import type { UserInfo } from "remult";
@@ -208,9 +208,9 @@ npm i --save-dev @types/cookie-session
 
 2. In the `main.vue` file, change the `rootComponent` to `Auth`.
 
-   _src/main.ts_
+   ```ts{4,8}
+   // src/main.ts
 
-   ```ts{2,6}
    import { createApp } from "vue"
    import Auth from "./Auth.vue"
 
@@ -223,9 +223,9 @@ npm i --save-dev @types/cookie-session
 
 Once an authentication flow is established, integrating it with Remult in the backend is as simple as providing Remult with a `getUser` function that extracts a `UserInfo` object from a `Request`.
 
-_src/server/api.ts_
+```ts{7}
+// src/server/api.ts
 
-```ts{5}
 //...
 
 export const api = remultExpress({
@@ -246,9 +246,9 @@ Usually, not all application users have the same privileges. Let's define an `ad
 
 1. Modify the highlighted lines in the `Task` entity class to reflect the top three authorization rules.
 
-_src/shared/Task.ts_
+```ts{7-8,18}
+// src/shared/Task.ts
 
-```ts{5-6,16}
 import { Allow, Entity, Fields, Validators } from "remult"
 
 @Entity<Task>("tasks", {
@@ -275,9 +275,9 @@ export class Task {
 
 2. Let's give the user _"Jane"_ the `admin` role by modifying the `roles` array of her `validUsers` entry.
 
-_src/server/auth.ts_
+```ts{4}
+// src/server/auth.ts
 
-```ts{2}
 const validUsers = [
   { id: "1", name: "Jane", roles: ["admin"] },
   { id: "2", name: "Steve" }
@@ -295,9 +295,9 @@ Let's reuse the same definitions on the Frontend.
 ### Connect Remult On the Frontend
 
 In the `Auth` component, we'll set `remult.user` based on the current user
-_src/Auth.vue_
+```vue{4-5,11}
+// src/Auth.vue
 
-```vue{2-3,9}
 <script setup lang="ts">
 import { onMounted, ref, watch } from "vue"
 import { remult } from "remult"
@@ -315,9 +315,9 @@ watch(currentUser, (user) => (remult.user = user))
 
 Now let's use the entity's metadata to only show the form if the user is allowed to insert
 
-_src/Auth.vue_
+```vue{8,23}
+// src/Auth.vue
 
-```vue{6,21}
 <template>
   <div>
     <h1>todos</h1>

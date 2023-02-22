@@ -66,9 +66,9 @@ By default, `false` is a "lower" value than `true`, and that's why uncompleted t
 Remult supports sending filter rules to the server to query only the tasks that we need.
 
 Adjust the `useEffect` hook to fetch only `completed` tasks.
-_src/pages/index.tsx_
+```ts{8}
+// src/pages/index.tsx
 
-```ts{6}
 useEffect(() => {
   taskRepo
     .find({

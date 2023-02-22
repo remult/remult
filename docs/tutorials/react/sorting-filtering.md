@@ -10,9 +10,9 @@ Let's limit the number of fetched tasks to `20`.
 
 In the `useEffect` hook, pass an `options` argument to the `find` method call and set its `limit` property to 20.
 
-_src/App.tsx_
+```ts{6}
+// src/App.tsx
 
-```ts{4}
 useEffect(() => {
   taskRepo
     .find({
@@ -35,9 +35,9 @@ Uncompleted tasks are important and should appear above completed tasks in the t
 In the `useEffect` hook, set the `orderBy` property of the `find` method call's `option` argument to an object that contains the fields you want to sort by.
 Use "asc" and "desc" to determine the sort order.
 
-_src/App.tsx_
+```ts{7}
+// src/App.tsx
 
-```ts{5}
 useEffect(() => {
   taskRepo
     .find({
@@ -58,9 +58,9 @@ Remult supports sending filter rules to the server to query only the tasks that 
 
 Adjust the `useEffect` hook to fetch only `completed` tasks.
 
-_src/App.tsx_
+```ts{8}
+// src/App.tsx
 
-```ts{6}
 useEffect(() => {
   taskRepo
     .find({

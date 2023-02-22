@@ -6,9 +6,9 @@ It is done by defining a function with the special name `getServerSideProps`. Th
 
 Let's adjust the `index.tsx` code to get the page rendered on the server, including the list of tasks - using `getServerSideProps`
 
-_src/pages/index.tsx_
+```tsx{3-4,6-12,15,17,21}
+// src/pages/index.tsx
 
-```tsx{1-2,4-10,13,15,19}
 import { InferGetServerSidePropsType } from "next"
 import remultApi from "./api/[...remult]"
 //...

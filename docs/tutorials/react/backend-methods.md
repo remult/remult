@@ -8,9 +8,9 @@ Let's add two buttons to the todo app: "Set all as completed" and "Set all as un
 
 1. Add a `setAllCompleted` async function to the `App` function component, which accepts a `completed` boolean argument and sets the value of the `completed` field of all the tasks accordingly.
 
-   _src/App.tsx_
-
    ```ts
+   // src/App.tsx
+
    const setAllCompleted = async (completed: boolean) => {
      for (const task of await taskRepo.find()) {
        await taskRepo.save({ ...task, completed })
@@ -23,9 +23,9 @@ Let's add two buttons to the todo app: "Set all as completed" and "Set all as un
 
 2. Add the two buttons to the return section of the `App` component, just before the closing `</main>` tag. Both of the buttons' `onClick` events will call the `setAllCompleted` method with the appropriate value of the `completed` argument.
 
-   _src/App.tsx_
-
    ```tsx
+   // src/App.tsx
+
    <div>
      <button onClick={() => setAllCompleted(true)}>Set All Completed</button>
      <button onClick={() => setAllCompleted(false)}>Set All Uncompleted</button>
@@ -42,9 +42,9 @@ A simple way to prevent this is to expose an API endpoint for `setAllCompleted` 
 
 1. Create a new `TasksController` class, in the `shared` folder, and refactor the `for` loop from the `setAllCompleted` function of the `App` function component into a new, `static`, `setAllCompleted` method in the `TasksController` class, which will run on the server.
 
-_src/shared/TasksController.ts_
-
 ```ts
+// src/shared/TasksController.ts
+
 import { BackendMethod, remult } from "remult"
 import { Task } from "./Task"
 
@@ -66,9 +66,9 @@ The `@BackendMethod` decorator tells Remult to expose the method as an API endpo
 
 2. Register `TasksController` by adding it to the `controllers` array of the `options` object passed to `remultExpress()`, in the server's `api` module:
 
-_src/server/api.ts_
+```ts{4,8}
+// src/server/api.ts
 
-```ts{2,6}
 //...
 import { TasksController } from "../shared/TasksController"
 
@@ -80,9 +80,9 @@ export const api = remultExpress({
 
 3. Replace the `for` iteration in the `setAllCompleted` function of the `App` component with a call to the `setAllCompleted` method in the `TasksController`.
 
-_src/App.tsx_
+```tsx{4}
+// src/App.tsx
 
-```tsx{2}
 const setAllCompleted = async (completed: boolean) => {
   await TasksController.setAllCompleted(completed)
 }

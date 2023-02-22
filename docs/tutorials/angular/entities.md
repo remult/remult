@@ -16,9 +16,9 @@ The `Task` entity class we're creating will have an auto-increment `id` field a 
 
 2. Create a file `Task.ts` in the `src/shared/` folder, with the following code:
 
-_src/shared/Task.ts_
-
 ```ts
+// src/shared/Task.ts
+
 import { Entity, Fields } from "remult"
 
 @Entity("tasks", {
@@ -38,9 +38,9 @@ export class Task {
 
 3. In the server's `api` module, register the `Task` entity with Remult by adding `entities: [Task]` to an `options` object you pass to the `remultExpress()` middleware:
 
-_src/server/api.ts_
+```ts{4,7}
+// src/server/api.ts
 
-```ts{2,5}
 import { remultExpress } from "remult/remult-express"
 import { Task } from "../shared/Task"
 
@@ -95,17 +95,17 @@ Let's start developing the web app by displaying the list of existing tasks in a
 
 2. Replace the `app.components.html` to use the `todo` component.
 
-3. _src/app/app.component.html_
+3. ```html
+   <!-- src/app/app.component.html -->
 
-   ```html
    <app-todo></app-todo>
    ```
 
 4. Add the highlighted code lines to the `TodoComponent` class file:
 
-   _src/app/todo/todo.component.ts_
+   ```ts{4-5,12-17}
+   // src/app/todo/todo.component.ts
 
-   ```ts{2-3,10-15}
    import { Component, OnInit } from '@angular/core';
    import { remult } from 'remult';
    import { Task } from '../../shared/Task';
@@ -132,9 +132,9 @@ Let's start developing the web app by displaying the list of existing tasks in a
 
 5. Replace the contents of `todo.component.html` with the following HTML:
 
-   _src/app/todo/todo.component.html_
-
    ```html
+   <!-- src/app/todo/todo.component.html -->
+
    <h1>todos</h1>
    <main>
      <div *ngFor="let task of tasks">
