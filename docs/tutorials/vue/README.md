@@ -2,7 +2,7 @@
 
 ### Create a simple todo app with Remult using a Vue frontend
 
-In this tutorial, we are going to create a simple app to manage a task list. We'll use `Vue` for the UI, `Node.js` + `Express.js` for the API server, and Remult as our full-stack CRUD framework. For deployment to production, we'll use `Heroku` and a `PostgreSQL` database.
+In this tutorial, we are going to create a simple app to manage a task list. We'll use `Vue` for the UI, `Node.js` + `Express.js` for the API server, and Remult as our full-stack CRUD framework. For deployment to production, we'll use [railway.app](https://railway.app/) and a `PostgreSQL` database.
 
 By the end of the tutorial, you should have a basic understanding of Remult and how to use it to accelerate and simplify full stack app development.
 
@@ -196,6 +196,10 @@ npm run dev-node
 The server is now running and listening on port 3002. `tsx` is watching for file changes and will restart the server when code changes are saved.
 
 The default "Vue" app main screen should be available at the default Vite dev server address http://127.0.0.1:5173.
+
+### Remove Vue default styles
+
+The vue default styles won't fit our todo app. If you'd like a nice-looking app, replace the contents of `src/assets/main.css` with [this CSS file](https://raw.githubusercontent.com/remult/vue-express-starter/master/src/assets/main.css). Otherwise, you can simply **delete the contents of `src/assets/main.css`**.
 
 ### Setup completed
 

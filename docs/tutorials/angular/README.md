@@ -210,6 +210,10 @@ The server is now running and listening on port 3002. `tsx` is watching for file
 
 The default Angular app main screen should be displayed on the regular port - 4200. Open it in the browser at [http://localhost:4200/](http://localhost:4200/).
 
+### Remove Angular default styles
+
+The angular default styles won't fit our todo app. If you'd like a nice-looking app, replace the contents of `src/styles.css` with [this CSS file](https://raw.githubusercontent.com/remult/angular-express-starter/master/src/styles.css). Otherwise, you can simply **delete the contents of `src/styles.css`**.
+
 ### Setup completed
 
 At this point, our starter project is up and running. We are now ready to move to the [next step of the tutorial](./entities.md) and start creating the task list app.

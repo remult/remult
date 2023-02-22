@@ -197,6 +197,10 @@ The server is now running and listening on port 3002. `tsx` is watching for file
 
 The default "Vite + React" app main screen should be available at the default Vite dev server address [http://127.0.0.1:5173](http://127.0.0.1:5173).
 
+### Remove React default styles
+
+The react default styles won't fit our todo app. If you'd like a nice-looking app, replace the contents of `src/index.css` with [this CSS file](https://raw.githubusercontent.com/remult/react-vite-express-starter/master/src/index.css). Otherwise, you can simply **delete the contents of `src/index.css`**.
+
 ### Setup completed
 
 At this point, our starter project is up and running. We are now ready to move to the [next step of the tutorial](./entities.md) and start creating the task list app.
