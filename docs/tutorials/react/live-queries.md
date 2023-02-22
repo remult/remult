@@ -14,7 +14,7 @@ Let's switch from fetching Tasks once when the React component is loaded, and ma
 
 1. Modify the contents of the `useEffect` hook in the `App` component:
 
-```ts{4-10}
+```ts{4-5,10}
 // src/App.tsx
 
 useEffect(() => {
@@ -30,7 +30,7 @@ useEffect(() => {
 
 Let's review the change:
 
-- Instead of calling the `repository`'s `find` method we now call the `liveQuery` method to define the query, and the call its `subscribe` method to establish a subscription which will update the Tasks state in realtime.
+- Instead of calling the `repository`'s `find` method we now call the `liveQuery` method to define the query, and then call its `subscribe` method to establish a subscription which will update the Tasks state in realtime.
 - The `subscribe` method accepts a callback with an `info` object that has 3 members:
   - `items` - an up to date list of items representing the current result - it's useful for readonly use cases.
   - `applyChanges` - a method that receives an array and applies the changes to it - we send that method to the `setTasks` state function, to apply the changes to the existing `tasks` state.

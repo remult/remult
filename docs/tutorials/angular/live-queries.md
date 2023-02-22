@@ -23,11 +23,17 @@ export class AppModule {
 }
 ```
 
-## Using LiveQuery
+## Realtime updated todo list
+
+Let's switch from fetching Tasks once when the Angular component is loaded, and manually maintaining state for CRUD operations, to using a realtime updated live query subscription **for both initial data fetching and subsequent state changes**.
+
+1. Modify the contents of the `ngOnInit` method in the `Todo` component:
 
 Modify the `TodoComponent` with the following changes
 
-```ts{1,5,7-8,13,15-17}
+```ts{3,7,9-10,15,17-19}
+// src/app/todo/todo.component.ts
+
 export class TodoComponent implements OnInit, OnDestroy {
   //...
   taskRepo = remult.repo(Task)
@@ -50,12 +56,39 @@ export class TodoComponent implements OnInit, OnDestroy {
 
 Let's review the change:
 
-- Instead of calling the `repository`'s `find` method we now call the `liveQuery` method and it's `subscribe` method.
+- Instead of calling the `repository`'s `find` method we now call the `liveQuery` method to define the query, and then call its `subscribe` method to establish a subscription which will update the Tasks state in realtime.
 - The `subscribe` method accepts a callback with an `info` object that has 3 members:
   - `items` - an up to date list of items representing the current result - it's useful for readonly use cases.
   - `applyChanges` - a method that receives an array and applies the changes to it - we send that method to the `setTasks` state function, to apply the changes to the existing `tasks` state.
   - `changes` - a detailed list of changes that were received
-- The `subscribe` method return an `unsubscribe` method, which we store in the `unsubscribe` member and call in the `ngOnDestroy` hook
+- The `subscribe` method return an `unsubscribe` method, which we store in the `unsubscribe` member and call in the `ngOnDestroy` hook, so that it'll be called when the component unmounts.
+
+2. As all relevant CRUD operations (made by all users) will **immediately update the component's state**, we should remove the manual adding of new Tasks to the component's state:
+
+```ts{6}
+// src/app/todo/todo.component.ts
+
+async addTask() {
+  try {
+    const newTask = await this.taskRepo.insert({ title: this.newTaskTitle })
+    //this.tasks.push(newTask) <-- this line is no longer needed
+    this.newTaskTitle = ""
+  } catch (error /*:any*/) {
+    alert(error.message)
+  }
+}
+```
+
+3. Optionally remove other redundant state changing code:
+
+```ts{5}
+// src/app/todo/todo.component.ts
+
+async deleteTask(task: Task) {
+   await this.taskRepo.delete(task);
+   // this.tasks = this.tasks.filter(t => t !== task); <-- this line is no longer needed
+}
+```
 
 Open the todo app in two (or more) browser windows/tabs, make some changes in one window and notice how the others are updated in realtime.
 
