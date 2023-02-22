@@ -48,7 +48,7 @@ const addTask = async (e: FormEvent) => {
     const newTask = await taskRepo.insert({ title: newTaskTitle })
     // setTasks([...tasks, newTask])   <-- this line is no longer needed
     setNewTaskTitle("")
-  } catch (error) {
+  } catch (error: any) {
     alert(error.message)
   }
 }
@@ -74,7 +74,7 @@ const addTask = async (e: FormEvent) => {
     const saveTask = async () => {
       try {
         await taskRepo.save(task)
-      } catch (error /*:any*/) {
+      } catch (error: any) {
         alert(error.message)
       }
     }
@@ -83,7 +83,7 @@ const addTask = async (e: FormEvent) => {
       try {
         await taskRepo.delete(task)
         // setTasks(tasks.filter(t => t !== task))
-      } catch (error /*:any*/) {
+      } catch (error: any) {
         alert(error.message)
       }
     }

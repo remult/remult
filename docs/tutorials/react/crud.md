@@ -118,7 +118,7 @@ _src/App.tsx_
     const saveTask = async () => {
       try {
         setTask(await taskRepo.save(task))
-      } catch (error /*:any*/) {
+      } catch (error: any) {
         alert(error.message)
       }
     }
@@ -169,7 +169,7 @@ _src/App.tsx_
     const saveTask = async () => {
       try {
         setTask(await taskRepo.save(task))
-      } catch (error /*:any*/) {
+      } catch (error: any) {
         alert(error.message)
       }
     }
@@ -178,7 +178,7 @@ _src/App.tsx_
       try {
         await taskRepo.delete(task)
         setTasks(tasks.filter(t => t !== task))
-      } catch (error /*:any*/) {
+      } catch (error: any) {
         alert(error.message)
       }
     }

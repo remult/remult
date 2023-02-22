@@ -73,7 +73,7 @@ async addTask() {
     const newTask = await this.taskRepo.insert({ title: this.newTaskTitle })
     //this.tasks.push(newTask) <-- this line is no longer needed
     this.newTaskTitle = ""
-  } catch (error /*:any*/) {
+  } catch (error: any) {
     alert(error.message)
   }
 }

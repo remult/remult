@@ -16,7 +16,7 @@ export class TodoComponent implements OnInit {
       const newTask = await this.taskRepo.insert({ title: this.newTaskTitle })
       this.tasks.push(newTask)
       this.newTaskTitle = ""
-    } catch (error /*:any*/) {
+    } catch (error: any) {
       alert(error.message)
     }
   }

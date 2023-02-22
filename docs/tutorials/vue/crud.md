@@ -17,7 +17,7 @@ async function addTask() {
     const newTask = await taskRepo.insert({ title: newTaskTitle.value })
     tasks.value.push(newTask)
     newTaskTitle.value = ""
-  } catch (error/*:any*/) {
+  } catch (error: any) {
     alert(error.message)
   }
 }
@@ -55,7 +55,7 @@ _src/App.vue_
 async function saveTask(task: Task) {
   try {
     await taskRepo.save(task)
-  } catch (error/*:any*/) {
+  } catch (error: any) {
     alert(error.message)
   }
 }
@@ -73,7 +73,7 @@ async function saveTask(task: Task) {
 
 - The `taskRepo.save` method update the `task` to the server and returns the updated value
 - - The `saveTask` function, called from the `button`'s `click` event, and the `checkbox`'s change event saves the `task` object to the backend.
-Make some changes and refresh the browser to verify the backend database is updated.
+    Make some changes and refresh the browser to verify the backend database is updated.
 
 ::: tip Browser's Network tab
 As you play with these `CRUD` capabilities, monitor the network tab and see that they are all translated to `rest` api calls.
@@ -92,10 +92,10 @@ _src/App.vue_
 //...
 async function deleteTask(task: Task) {
   try {
-    await taskRepo.delete(task);
-    tasks.value = tasks.value.filter((t) => task !== t);
-  } catch (error/*:any*/) {
-    alert(error.message);
+    await taskRepo.delete(task)
+    tasks.value = tasks.value.filter(t => task !== t)
+  } catch (error: any) {
+    alert(error.message)
   }
 }
 </script>
