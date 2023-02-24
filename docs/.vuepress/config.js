@@ -94,17 +94,17 @@ module.exports = {
           collapsable: true,
 
           children: [
-            'custom-filter',
-            'custom-options',
-            'working-without-decorators',
-            'rest-api',
-            'techniques-regarding-one-to-many-relations.md',
-            'adding-swagger',
             'adding-graphql',
-            'lazy-loading-of-related-entities',
-            'using-remult-in-custom-backend-code',
+            'adding-swagger',
+            'rest-api',
             'using-server-only-packages',
-            'running-sql-on-the-server'
+            'working-without-decorators',
+            'custom-options',
+            'techniques-regarding-one-to-many-relations.md',
+            'running-sql-on-the-server',
+            'custom-filter',
+            'using-remult-in-custom-backend-code',
+            'lazy-loading-of-related-entities',
           ]
         },
         {

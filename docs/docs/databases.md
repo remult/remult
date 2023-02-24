@@ -27,32 +27,33 @@ npm i pg
 
 Modify the API server's main module:
 
-```ts{5,9-16}
+```ts{5,9,13-16}
 // index.ts
 
-import express from "express";
-import { remultExpress } from "remult/remult-express";
-import { createPostgresConnection } from "remult/postgres";
+import express from "express"
+import { remultExpress } from "remult/remult-express"
+import { createPostgresConnection } from "remult/postgres"
 
-const app = express();
+const app = express()
 
-const connectionString = "postgres://user:password@host:5432/database";
+const connectionString = "postgres://user:password@host:5432/database"
 
 app.use(
   remultExpress({
-    dataProvider: () =>
+    dataProvider:
       createPostgresConnection({
-        connectionString, // Default: process.env.DATABASE_URL
-      }),
+        connectionString // default: process.env["DATABASE_URL"]
+      })
   })
-);
+)
 ```
+
+- If `connectionString` is not provided the `DATABASE_URL`environment will be used
 
 ::: details Additional options
 
-- **configuration** - can be set to `heroku` or to the `pg.PoolConfig` options object.
+- **configuration** - can be set to the `pg.PoolConfig` options object or to `heroku`.
   When set to `heroku`, it'll:
-  - Use `process.env.DATABASE_URL` if no `connectionString` is provided
   - Use ssl, with the `rejectUnauthorized:false` flag as required by postgres on heroku
   - Disable ssl for non production environments (`process.env["NODE_ENV"] !== "production"`). To use ssl also for dev, set the `sslInDev` option to true.
 - **sslInDev** - see `configuration:"heroku"`
@@ -68,24 +69,24 @@ npm i knex pg
 
 Modify the API server's main module:
 
-```ts{5,9-15}
+```ts{5,11-15}
 // index.ts
 
-import express from "express";
-import { remultExpress } from "remult/remult-express";
-import { createKnexDataProvider } from "remult/remult-knex";
+import express from "express"
+import { remultExpress } from "remult/remult-express"
+import { createKnexDataProvider } from "remult/remult-knex"
 
-const app = express();
+const app = express()
 
 app.use(
   remultExpress({
     dataProvider: createKnexDataProvider({
       // Knex client configuration for Postgres
       client: "pg",
-      connection: "postgres://user:password@host:5432/database",
-    }),
+      connection: "postgres://user:password@host:5432/database"
+    })
   })
-);
+)
 ```
 
 ## MySQL
@@ -98,14 +99,14 @@ npm i knex mysql2
 
 Modify the API server's main module:
 
-```ts{5,9-20}
+```ts{5,11-20}
 // index.ts
 
-import express from "express";
-import { remultExpress } from "remult/remult-express";
-import { createKnexDataProvider } from "remult/remult-knex";
+import express from "express"
+import { remultExpress } from "remult/remult-express"
+import { createKnexDataProvider } from "remult/remult-knex"
 
-const app = express();
+const app = express()
 
 app.use(
   remultExpress({
@@ -116,11 +117,11 @@ app.use(
         user: "your_database_user",
         password: "your_database_password",
         host: "127.0.0.1",
-        database: "test",
-      },
-    }),
+        database: "test"
+      }
+    })
   })
-);
+)
 ```
 
 ## MongoDB
@@ -133,25 +134,25 @@ npm i mongodb
 
 Modify the API server's main module:
 
-```ts{5-6,10-16}
+```ts{5-6,12-16}
 // index.ts
 
-import express from "express";
-import { remultExpress } from "remult/remult-express";
-import { MongoClient } from "mongodb";
-import { MongoDataProvider } from "remult/remult-mongo";
+import express from "express"
+import { remultExpress } from "remult/remult-express"
+import { MongoClient } from "mongodb"
+import { MongoDataProvider } from "remult/remult-mongo"
 
-const app = express();
+const app = express()
 
 app.use(
   remultExpress({
     dataProvider: async () => {
-      const client = new MongoClient("mongodb://localhost:27017/local");
-      await client.connect();
-      return new MongoDataProvider(client.db("test"), client);
-    },
+      const client = new MongoClient("mongodb://localhost:27017/local")
+      await client.connect()
+      return new MongoDataProvider(client.db("test"), client)
+    }
   })
-);
+)
 ```
 
 ## SQLite
@@ -164,14 +165,14 @@ npm i knex sqlite3
 
 Modify the API server's main module:
 
-```ts{5,9-17}
+```ts{5,11-17}
 // index.ts
 
-import express from "express";
-import { remultExpress } from "remult/remult-express";
-import { createKnexDataProvider } from "remult/remult-knex";
+import express from "express"
+import { remultExpress } from "remult/remult-express"
+import { createKnexDataProvider } from "remult/remult-knex"
 
-const app = express();
+const app = express()
 
 app.use(
   remultExpress({
@@ -179,11 +180,11 @@ app.use(
       // Knex client configuration for SQLite
       client: "sqlite3",
       connection: {
-        filename: "./mydb.sqlite",
-      },
-    }),
+        filename: "./mydb.sqlite"
+      }
+    })
   })
-);
+)
 ```
 
 ## Microsoft SQL Server
@@ -196,14 +197,14 @@ npm i knex tedious
 
 Modify the API server's main module:
 
-```ts{5,9-25}
+```ts{5,11-25}
 // index.ts
 
-import express from "express";
-import { remultExpress } from "remult/remult-express";
-import { createKnexDataProvider } from "remult/remult-knex";
+import express from "express"
+import { remultExpress } from "remult/remult-express"
+import { createKnexDataProvider } from "remult/remult-knex"
 
-const app = express();
+const app = express()
 
 app.use(
   remultExpress({
@@ -218,12 +219,12 @@ app.use(
         options: {
           enableArithAbort: true,
           encrypt: false,
-          instanceName: `sqlexpress`,
-        },
-      },
-    }),
+          instanceName: `sqlexpress`
+        }
+      }
+    })
   })
-);
+)
 ```
 
 ## Oracle
@@ -236,14 +237,14 @@ npm i knex oracledb
 
 Modify the API server's main module:
 
-```ts{5,9-19}
+```ts{5,11-19}
 // index.ts
 
-import express from "express";
-import { remultExpress } from "remult/remult-express";
-import { createKnexDataProvider } from "remult/remult-knex";
+import express from "express"
+import { remultExpress } from "remult/remult-express"
+import { createKnexDataProvider } from "remult/remult-knex"
 
-const app = express();
+const app = express()
 
 app.use(
   remultExpress({
@@ -253,33 +254,33 @@ app.use(
       connection: {
         user: "your_database_user",
         password: "your_database_password",
-        connectString: "SERVER",
-      },
-    }),
+        connectString: "SERVER"
+      }
+    })
   })
-);
+)
 ```
 
 ## JSON Files
 
 Modify the API server's main module:
 
-```ts{5-6,10-12}
+```ts{5-6,12-14}
 // index.ts
 
-import express from "express";
-import { remultExpress } from "remult/remult-express";
-import { JsonDataProvider } from "remult";
-import { JsonEntityFileStorage } from "remult/server";
+import express from "express"
+import { remultExpress } from "remult/remult-express"
+import { JsonDataProvider } from "remult"
+import { JsonEntityFileStorage } from "remult/server"
 
-const app = express();
+const app = express()
 
 app.use(
   remultExpress({
     dataProvider: async () =>
-      new JsonDataProvider(new JsonEntityFileStorage("./db")),
+      new JsonDataProvider(new JsonEntityFileStorage("./db"))
   })
-);
+)
 ```
 
 ::: tip Note
@@ -293,33 +294,31 @@ Although the common use case of `Remult` on the front end, is to call the backen
 ### Local Storage
 
 ```ts
-import { JsonDataProvider, Remult } from "remult";
-export const remultLocalStorage = new Remult(
-  new JsonDataProvider(localStorage)
-);
+import { JsonDataProvider, Remult } from "remult"
+export const remultLocalStorage = new Remult(new JsonDataProvider(localStorage))
 ```
 
 ### Session Storage
 
 ```ts
-import { JsonDataProvider, Remult } from "remult";
+import { JsonDataProvider, Remult } from "remult"
 export const remultSessionStorage = new Remult(
   new JsonDataProvider(sessionStorage)
-);
+)
 ```
 
 ### Web Sql
 
 ```ts
-import { Remult, SqlDatabase, WebSqlDataProvider } from "remult";
+import { Remult, SqlDatabase, WebSqlDataProvider } from "remult"
 export const remultWebSql = new Remult(
   new SqlDatabase(new WebSqlDataProvider("db"))
-);
+)
 ```
 
 ### In Memory object array
 
 ```ts
-import { Remult, InMemoryDataProvider } from "remult";
-export const remult = new Remult(new InMemoryDataProvider());
+import { Remult, InMemoryDataProvider } from "remult"
+export const remult = new Remult(new InMemoryDataProvider())
 ```
