@@ -102,6 +102,6 @@ The default `Next.js` main screen should be displayed.
 
 ### Remove Next.js default styles
 
-The Next.js default styles won't fit our todo app. If you'd like a nice-looking app, replace the contents of `src/styles/globals.css` with [this CSS file](https://raw.githubusercontent.com/remult/nextjs-starter/new-tutorial-18/src/styles/globals.css). Otherwise, you can simply **delete the contents of `src/styles/globals.css`**.
+The Next.js default styles won't fit our todo app. If you'd like a nice-looking app, replace the contents of `src/styles/globals.css` with [this CSS file](https://raw.githubusercontent.com/remult/nextjs-starter/main/src/styles/globals.css). Otherwise, you can simply **delete the contents of `src/styles/globals.css`**.
 
 At this point, our starter project is up and running. We are now ready to move to the [next step of the tutorial](./entities.md) and start creating the task list app.
