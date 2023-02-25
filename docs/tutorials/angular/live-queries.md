@@ -10,7 +10,7 @@ Let's add realtime multiplayer capabilities to this app.
 
 ## One Time Setup
 
-We'll need angular to run it's change detection when we receive messages from teh backend - to do that we'll add the following code to `AppModule`
+We'll need angular to run it's change detection when we receive messages from the backend - to do that we'll add the following code to `AppModule`
 
 ```ts{1-2,5-7}
 import { NgModule, NgZone } from "@angular/core"
