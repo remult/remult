@@ -13,9 +13,9 @@ In this tutorial, we'll use [NextAuth.js](https://next-auth.js.org/) for authent
 This rule is implemented within the `Task` `@Entity` decorator, by modifying the value of the `allowApiCrud` property.
 This property can be set to a function that accepts a `Remult` argument and returns a `boolean` value. Let's use the `Allow.authenticated` function from Remult.
 
-_src/shared/Task.ts_
+```ts{4}
+// src/shared/Task.ts
 
-```ts{2}
 @Entity("tasks", {
     allowApiCrud: Allow.authenticated
 })
@@ -40,9 +40,9 @@ Although client CRUD requests to `tasks` API endpoints now require a signed-in u
 
 To fix this, let's implement the same rule using the `@BackendMethod` decorator of the `setAllCompleted` method of `TasksController`.
 
-_src/shared/TasksController.ts_
-
 ```ts
+// src/shared/TasksController.ts
+
 @BackendMethod({ allowed: Allow.authenticated })
 ```
 
@@ -65,9 +65,9 @@ Let's set-up `NextAuth.js` to authenticate users to our app.
 
    Create a file called `.env.local` and set the `NEXTAUTH_SECRET` to a random string.
 
-   _.env.local_
-
    ```
+   // .env.local
+
    NEXTAUTH_SECRET=something-secret
    ```
 
@@ -77,9 +77,9 @@ Let's set-up `NextAuth.js` to authenticate users to our app.
 
 3. In the `src/pages/api` folder, create a folder called `auth` and Create the following `[...nextauth].ts` file in it (API route).
 
-   _src/pages/api/auth/[...nextauth].ts_
-
    ```ts
+   // src/pages/api/auth/[...nextauth].ts
+
    import NextAuth from "next-auth/next"
    import Credentials from "next-auth/providers/credentials"
    import { UserInfo } from "remult"
@@ -110,9 +110,9 @@ Let's set-up `NextAuth.js` to authenticate users to our app.
 
 Add the highlighted code to the `_app.tsx` Next.js page:
 
-_src/pages/\_app.tsx_
+```tsx{5,9,11}
+// src/pages/\app.tsx
 
-```tsx{3,7,9}
 import "@/styles/globals.css";
 import type { AppProps } from "next/app";
 import { SessionProvider } from "next-auth/react";
@@ -129,9 +129,9 @@ export default function App({ Component, pageProps }: AppProps) {
 
 Replace the `useEffect` with the highlighted code to the `Home` Next.js page:
 
-_src/pages/index.tsx_
+```tsx{3,5,8-9,17-18,23-26}
+// src/pages/index.tsx
 
-```tsx{1,3,6-7,15-16,21-24}
 import { signIn, signOut, useSession } from "next-auth/react"
 //...
 const session = useSession()
@@ -168,9 +168,9 @@ Once an authentication flow is established, integrating it with Remult in the ba
 
 1. Add the following `findUserById` function to `[...nextauth].ts`.
 
-_src/pages/api/auth/[...nextauth].ts_
-
 ```ts
+// src/pages/api/auth/[...nextauth].ts
+
 export function findUserById(id?: string) {
   return validUsers.find(user => user.id === id)
 }
@@ -180,9 +180,9 @@ export function findUserById(id?: string) {
 
 2. Set the `getUser` property of the options object of `remultNext` to a function that gets the token from next auth and users `findUserById` to get the actual user:
 
-   _src/pages/api/[...remult].ts_
+```ts{3-4,7}
+   // src/pages/api/[...remult].ts
 
-```ts{1-2,5}
 import { findUserById } from "./auth/[...nextauth]"
 import { getToken } from "next-auth/jwt"
 
@@ -204,9 +204,9 @@ Usually, not all application users have the same privileges. Let's define an `ad
 
 1. Modify the highlighted lines in the `Task` entity class to reflect the top three authorization rules.
 
-_src/shared/Task.ts_
+```ts{7-8,18}
+// src/shared/Task.ts
 
-```ts{5-6,16}
 import { Allow, Entity, Fields, Validators } from "remult"
 
 @Entity<Task>("tasks", {
@@ -233,9 +233,9 @@ export class Task {
 
 2. Let's give the user _"Jane"_ the `admin` role by modifying the `roles` array of her `validUsers` entry.
 
-_pages/api/auth/[...nextauth].ts_
+```ts{4}
+// pages/api/auth/[...nextauth].ts
 
-```ts{2}
 const validUsers = [
   { id: "1", name: "Jane", roles: ["admin"] },
   { id: "2", name: "Steve", roles: [] }
@@ -256,9 +256,9 @@ First we need to configure `next-auth` to include the user info in the `session`
 
 Apply these changes to the code of `[...nextauth].ts` file
 
-_pages/api/auth/[...nextauth].ts_
+```ts{4-9}
+// pages/api/auth/[...nextauth].ts
 
-```ts{2-7}
 export default NextAuth({
   callbacks: {
     session: ({ session, token }) => ({
@@ -295,9 +295,9 @@ This code requires adding an import of `UserInfo` from `remult`.
 
 Now let's use the entity's metadata to only show the form if the user is allowed to insert
 
-_src/pages/index.tsx_
+```tsx{4,13}
+// src/pages/index.tsx
 
-```tsx{2,11}
 <main>
   {taskRepo.metadata.apiInsertAllowed && (
     <form onSubmit={addTask}>
@@ -315,9 +315,9 @@ _src/pages/index.tsx_
 
 And let's do the same for the `delete` button:
 
-_src/pages/index.tsx_
+```tsx{12,14}
+// src/pages/index.tsx
 
-```tsx{10,12}
 return (
   <div key={task.id}>
     <input

@@ -18,9 +18,9 @@ Follow these steps only if you want to use `liveQuery` in the app
 5. Copy the first api key (with the many capabilities), create an entry in the `.env.local` file, name it `ABLY_API_KEY` and paste the api key there.
 6. Configure `ably` as the `subscriptionServer`
 
-   _src/api/[...remult].ts_
+   ```ts{4-5,8-10}
+   // src/api/[...remult].ts
 
-   ```ts{2-3,6-8}
    //...
    import ably from "ably/promises"
    import { AblySubscriptionServer } from "remult/ably"
@@ -35,9 +35,9 @@ Follow these steps only if you want to use `liveQuery` in the app
 
 7. Next, we'll need to create a route that `ably`'s client on the front-end will use to get a `token` for a user that wants to subscribe to a channel - in the `src/pages/api` folder, create a file called `getAblyToken.ts`
 
-   _src/pages/api/getAblyToken.ts_
-
    ```ts
+   // src/pages/api/getAblyToken.ts
+
    import { NextApiRequest, NextApiResponse } from "next"
    import ably from "ably/promises"
 
@@ -58,25 +58,24 @@ Follow these steps only if you want to use `liveQuery` in the app
 
 8) Configure the `front-end` to use ably as it's `subscriptionClient` by adding a new `useEffect` hook and configure `ably` to use the `api/getAblyToken` route we've created as it's `authUrl`
 
-   _src/pages/index.tsx_
-
    ```tsx
+   // src/pages/index.tsx
+
    import ably from "ably/promises"
-   import { AblySubscriptionClient } from "remult/ably" 
+   import { AblySubscriptionClient } from "remult/ably"
    //...
-   const session = useSession()
    useEffect(() => {
      remult.apiClient.subscriptionClient = new AblySubscriptionClient(
-       new ably.Realtime(process.env["ABLY_API_KEY"]!)
+       new ably.Realtime({ authUrl: "/api/getAblyToken" })
      )
    }, [])
    ```
 
 9) Configure `remultNext` to store live-queries in the `dataProvider`
 
-   _src/api/[...remult].ts_
+   ```ts{4,6,8-9}
+   // src/api/[...remult].ts
 
-   ```ts{2,4,6-7}
    //...
    import { DataProviderLiveQueryStorage } from "remult/server"
 

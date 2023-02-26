@@ -13,9 +13,9 @@ In this tutorial, we'll use `Express`'s [cookie-session](https://expressjs.com/e
 This rule is implemented within the `Task` `@Entity` decorator, by modifying the value of the `allowApiCrud` property.
 This property can be set to a function that accepts a `Remult` argument and returns a `boolean` value. Let's use the `Allow.authenticated` function from Remult.
 
-_src/shared/Task.ts_
+```ts{4}
+// src/shared/Task.ts
 
-```ts{2}
 @Entity("tasks", {
     allowApiCrud: Allow.authenticated
 })
@@ -40,9 +40,9 @@ Although client CRUD requests to `tasks` API endpoints now require a signed-in u
 
 To fix this, let's implement the same rule using the `@BackendMethod` decorator of the `setAllCompleted` method of `TasksController`.
 
-_src/shared/TasksController.ts_
-
 ```ts
+// src/shared/TasksController.ts
+
 @BackendMethod({ allowed: Allow.authenticated })
 ```
 
@@ -64,9 +64,9 @@ npm i --save-dev @types/cookie-session
 
 2. Modify the main server module `index.ts` to use the `cookie-session` Express middleware.
 
-   _src/server/index.ts_
+   ```ts{5,8-12}
+   // src/server/index.ts
 
-   ```ts{3,6-10}
    //...
 
    import session from "cookie-session"
@@ -85,9 +85,9 @@ npm i --save-dev @types/cookie-session
 
 3. Create a file `src/server/auth.ts` for the `auth` express router and place the following code in it:
 
-   _src/server/auth.ts_
-
    ```ts
+   // src/server/auth.ts
+
    import express, { Router } from "express"
    import { UserInfo } from "remult"
 
@@ -126,9 +126,9 @@ npm i --save-dev @types/cookie-session
 
 4. Register the `auth` router in the main server module.
 
-   _src/server/index.ts_
+   ```ts{5,13}
+   // src/server/index.ts
 
-   ```ts{3,11}
    //...
 
    import { auth } from "./auth"
@@ -151,9 +151,9 @@ npm i --save-dev @types/cookie-session
    ng g c auth
    ```
 2. Add the highlighted code lines to the `AuthComponent` class file:
-   _src/app/auth/auth.component.ts_
-
    ```ts
+   // src/app/auth/auth.component.ts
+
    import { Component, OnInit } from "@angular/core"
    import { HttpClient } from "@angular/common/http"
    import { remult, UserInfo } from "remult"
@@ -198,9 +198,9 @@ npm i --save-dev @types/cookie-session
    ```
 
 3. Replace the contents of auth.component.html with the following html:
-   _src/app/auth/auth.component.ts_
-   ```html
    <ng-container *ngIf="!remult.authenticated()">
+   // src/app/auth/auth.component.ts
+   ```html
      <h1>todos</h1>
      <main>
        <form (submit)="signIn()">
@@ -223,9 +223,9 @@ npm i --save-dev @types/cookie-session
    ```
 4. Change the `app.component.html` to use the `AuthComponent` instead of the `TodoComponent`
 
-   _src/app/app.component.html_
-
    ```html
+   <!-- src/app/app.component.html -->
+
    <app-auth></app-auth>
    ```
 
@@ -233,9 +233,9 @@ npm i --save-dev @types/cookie-session
 
 Once an authentication flow is established, integrating it with Remult in the backend is as simple as providing Remult with a `getUser` function that extracts a `UserInfo` object from a `Request`.
 
-_src/server/api.ts_
+```ts{7}
+// src/server/api.ts
 
-```ts{5}
 //...
 
 export const api = remultExpress({
@@ -256,9 +256,9 @@ Usually, not all application users have the same privileges. Let's define an `ad
 
 1. Modify the highlighted lines in the `Task` entity class to reflect the top three authorization rules.
 
-_src/shared/Task.ts_
+```ts{7-8,18}
+// src/shared/Task.ts
 
-```ts{5-6,16}
 import { Allow, Entity, Fields, Validators } from "remult"
 
 @Entity<Task>("tasks", {
@@ -285,9 +285,9 @@ export class Task {
 
 2. Let's give the user _"Jane"_ the `admin` role by modifying the `roles` array of her `validUsers` entry.
 
-_src/server/auth.ts_
+```ts{4}
+// src/server/auth.ts
 
-```ts{2}
 const validUsers = [
   { id: "1", name: "Jane", roles: ["admin"] },
   { id: "2", name: "Steve" }
@@ -303,9 +303,9 @@ From a user experience perspective in only makes sense that uses that can't add 
 Let's reuse the same definitions on the Frontend.
 
 Modify the contents of auth.component.html to only display the form and delete buttons if these operations are allowed based on the entity's metadata:
-_src/app/auth/auth.component.ts_
+```html{5,22}
+<!-- src/app/auth/auth.component.ts -->
 
-```html{3,20}
 <h1>todos</h1>
 <main>
   <form *ngIf="taskRepo.metadata.apiInsertAllowed" (submit)="addTask()">

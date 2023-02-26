@@ -6,17 +6,17 @@ Now that we can see the list of tasks, it's time to add a few more.
 
 1. Add a `newTaskTitle` field and an `addTask` method to the `ToDoComponent`
 
-_src/app/todo/todo.component.ts_
+```ts{4-13}
+// src/app/todo/todo.component.ts
 
-```ts{2-11}
 export class TodoComponent implements OnInit {
   newTaskTitle = ""
   async addTask() {
     try {
-      const newTask = await this.taskRepo.save({ title: this.newTaskTitle })
+      const newTask = await this.taskRepo.insert({ title: this.newTaskTitle })
       this.tasks.push(newTask)
       this.newTaskTitle = ""
-    } catch (error /*:any*/) {
+    } catch (error: any) {
       alert(error.message)
     }
   }
@@ -27,9 +27,9 @@ export class TodoComponent implements OnInit {
 
 2. Add an _Add Task_ form in the html template:
 
-_src/app/todo/todo.component.html_
+```html{5-12}
+<!-- src/app/todo/todo.component.html -->
 
-```html{3-10}
 <h1>todos</h1>
 <main>
   <form (submit)="addTask()">
@@ -41,7 +41,7 @@ _src/app/todo/todo.component.html_
     <button>Add</button>
   </form>
   <div *ngFor="let task of tasks">
-    <input type="checkbox" [checked]="task.completed" />
+    <input type="checkbox" [(ngModel)]="task.completed" />
     {{ task.title }}
   </div>
 </main>
@@ -55,9 +55,9 @@ To make the tasks in the list updatable, we'll bind the `input` elements to the 
 
 1. Add a `saveTask` method to save the state of a task to the backend database
 
-   _src/app/todo/todo.component.ts_
-
    ```ts
+   // src/app/todo/todo.component.ts
+
    async saveTask(task: Task) {
      try {
        await this.taskRepo.save(task)
@@ -69,9 +69,9 @@ To make the tasks in the list updatable, we'll bind the `input` elements to the 
 
 2) Modify the contents of the `tasks` div to include the following `input` elements and a _Save_ button to call the `saveTask` method.
 
-   _src/app/todo/todo.component.html_
+   ```html{4-10}
+   <!-- src/app/todo/todo.component.html -->
 
-   ```html{2-8}
    <div *ngFor="let task of tasks">
      <input
        type="checkbox"
@@ -83,8 +83,6 @@ To make the tasks in the list updatable, we'll bind the `input` elements to the 
    </div>
    ```
 
-   - Make sure to use replace the `[checked]` attribute with the `ngModel` attribute on the checkbox, to have two-way binding for the `completed` field
-
 Make some changes and refresh the browser to verify the backend database is updated.
 
 ## Delete Tasks
@@ -93,9 +91,9 @@ Let's add a _Delete_ button next to the _Save_ button of each task in the list.
 
 1. Add the following `deleteTask` method to the `TodoComponent` class:
 
-_src/app/todo/todo.component.ts_
-
 ```ts
+// src/app/todo/todo.component.ts
+
 async deleteTask(task: Task) {
    await this.taskRepo.delete(task);
    this.tasks = this.tasks.filter(t => t !== task);
@@ -104,9 +102,9 @@ async deleteTask(task: Task) {
 
 2. Add a _Delete_ button in the html:
 
-_src/app/todo/todo.component.html_
+```html{11}
+<!-- src/app/todo/todo.component.html -->
 
-```html{9}
 <div *ngFor="let task of tasks">
   <input
     type="checkbox"

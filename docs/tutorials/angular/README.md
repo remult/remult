@@ -85,9 +85,9 @@ The starter API server TypeScript project contains a single module that initiali
 
 2. Add the following entry to the `compilerOptions` section of the `tsconfig.json` file to enable the use of Synthetic Default Imports and ES Module Interop in the app.
 
-_tsconfig.json_
-
 ```json
+// tsconfig.json
+
 "allowSyntheticDefaultImports": true,
 "esModuleInterop": true,
 ```
@@ -96,9 +96,9 @@ _tsconfig.json_
 
 3. Create an `index.ts` file in the `src/server/` folder with the following code:
 
-_src/server/index.ts_
-
 ```ts
+// src/server/index.ts
+
 import express from "express"
 
 const app = express()
@@ -112,9 +112,9 @@ Remult is loaded in the back-end as an `Express middleware`.
 
 1. Create an `api.ts` file in the `src/server/` folder with the following code:
 
-_src/server/api.ts_
-
 ```ts
+// src/server/api.ts
+
 import { remultExpress } from "remult/remult-express"
 
 export const api = remultExpress()
@@ -122,9 +122,9 @@ export const api = remultExpress()
 
 2. Add the highlighted code lines to register the middleware in the main server module `index.ts`.
 
-_src/server/index.ts_
+```ts{4,7}
+// src/server/index.ts
 
-```ts{2,5}
 import express from "express"
 import { api } from "./api"
 
@@ -140,9 +140,9 @@ In the Angular app we'll be using Angular's `HttpClientModule` and `FormsModule`
 
 We'll modify the `app.module.ts` file to load Angular's `HttpClientModule` and `FormsModule`.
 
-_src/app/app.module.ts_
+```ts{5-6,12}
+// src/app/app.module.ts
 
-```ts{3-4,10}
 import { NgModule } from "@angular/core"
 import { BrowserModule } from "@angular/platform-browser"
 import { HttpClientModule } from "@angular/common/http"
@@ -172,9 +172,9 @@ We'll use the [proxy](https://angular.io/guide/build#proxying-to-a-backend-serve
 
 Create a file `proxy.conf.json` in the root folder, with the following contents:
 
-_proxy.conf.json_
-
 ```json
+// proxy.conf.json
+
 {
   "/api": {
     "target": "http://localhost:3002",
@@ -187,9 +187,9 @@ _proxy.conf.json_
 
 1. Add script called `dev` that will run the angular `dev` server with the proxy configuration we've set and a script called `dev-node` to run the api.
 
-_package.json_
-
 ```json
+// package.json
+
 "dev": "ng serve --proxy-config proxy.conf.json --open",
 "dev-node": "tsx watch src/server",
 ```
@@ -209,6 +209,10 @@ npm run dev-node
 The server is now running and listening on port 3002. `tsx` is watching for file changes and will restart the server when code changes are saved.
 
 The default Angular app main screen should be displayed on the regular port - 4200. Open it in the browser at [http://localhost:4200/](http://localhost:4200/).
+
+### Remove Angular default styles
+
+The angular default styles won't fit our todo app. If you'd like a nice-looking app, replace the contents of `src/styles.css` with [this CSS file](https://raw.githubusercontent.com/remult/angular-express-starter/master/src/styles.css). Otherwise, you can simply **delete the contents of `src/styles.css`**.
 
 ### Setup completed
 

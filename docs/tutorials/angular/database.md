@@ -20,9 +20,9 @@ Don't worry if you don't have Postgres installed locally. In the next step of th
 
 2. Add the highlighted code to the `api` server module.
 
-   _src/server/api.ts_
+   ```ts{5,9-11}
+   // src/server/api.ts
 
-   ```ts{3,7-9}
    //...
 
    import { createPostgresConnection } from "remult/postgres"

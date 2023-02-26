@@ -6,9 +6,9 @@ Now that we can see the list of tasks, it's time to add a few more.
 
 Add the highlighted `newTaskTitle` ref and `addTask` function, and the relevant `<form>` to the App Component
 
-_src/App.vue_
+```vue{5-14,20-23}
+// src/App.vue
 
-```vue{3-12,18-21}
 <script setup lang="ts">
 //...
 const newTaskTitle = ref("")
@@ -17,7 +17,7 @@ async function addTask() {
     const newTask = await taskRepo.insert({ title: newTaskTitle.value })
     tasks.value.push(newTask)
     newTaskTitle.value = ""
-  } catch (error/*:any*/) {
+  } catch (error: any) {
     alert(error.message)
   }
 }
@@ -47,15 +47,15 @@ Try adding a few tasks to see how it works
 
 To make the tasks in the list updatable, we'll bind the `input` elements to the `Task` properties and add a _Save_ button to save the changes to the backend database.
 
-_src/App.vue_
+```vue{5-11,16-18}
+// src/App.vue
 
-```vue{3-9,14-16}
 <script setup lang="ts">
 //...
 async function saveTask(task: Task) {
   try {
     await taskRepo.save(task)
-  } catch (error/*:any*/) {
+  } catch (error: any) {
     alert(error.message)
   }
 }
@@ -73,7 +73,7 @@ async function saveTask(task: Task) {
 
 - The `taskRepo.save` method update the `task` to the server and returns the updated value
 - - The `saveTask` function, called from the `button`'s `click` event, and the `checkbox`'s change event saves the `task` object to the backend.
-Make some changes and refresh the browser to verify the backend database is updated.
+    Make some changes and refresh the browser to verify the backend database is updated.
 
 ::: tip Browser's Network tab
 As you play with these `CRUD` capabilities, monitor the network tab and see that they are all translated to `rest` api calls.
@@ -85,17 +85,17 @@ Let's add a _Delete_ button next to the _Save_ button of each task in the list.
 
 Add the highlighted `deleteTask` function and _Delete_ `button`
 
-_src/App.vue_
+```vue{5-12,20}
+// src/App.vue
 
-```vue{3-10,18}
 <script setup lang="ts">
 //...
 async function deleteTask(task: Task) {
   try {
-    await taskRepo.delete(task);
-    tasks.value = tasks.value.filter((t) => task !== t);
-  } catch (error/*:any*/) {
-    alert(error.message);
+    await taskRepo.delete(task)
+    tasks.value = tasks.value.filter(t => task !== t)
+  } catch (error: any) {
+    alert(error.message)
   }
 }
 </script>
