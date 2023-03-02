@@ -144,7 +144,7 @@ Add the following entry to the `compilerOptions` section of the `tsconfig.json` 
 ```json
 // tsconfig.json
 
-"experimentalDecorators": true
+"experimentalDecorators": true // <- add this
 ```
 
 #### Proxy API requests from Vue DevServer (vite) to the API server

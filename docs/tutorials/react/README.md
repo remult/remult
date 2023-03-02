@@ -148,7 +148,7 @@ Add the following entry to the `compilerOptions` section of the `tsconfig.json` 
 ```json
 // tsconfig.json
 
-"experimentalDecorators": true
+"experimentalDecorators": true // <- add this
 ```
 
 #### Proxy API requests from Vite dev server to the API server
