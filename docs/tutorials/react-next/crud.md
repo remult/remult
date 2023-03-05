@@ -139,7 +139,7 @@ Modify the contents of the `tasks.map` iteration within the `Home` component to 
 ```
 
 - The `setTitle` function, called from the `input`'s `onChange` event, saves the value from the `input` to the `tasks` state.
-- The `saveTask` function, called from the `button`'s' `onClick`event , saved the `task` object to the backend.
+- The `saveTask` function, called from the `button`'s' `onClick`event , saves the `task` object to the backend.
 
 Make some changes and refresh the browser to verify the backend database is updated.
 
