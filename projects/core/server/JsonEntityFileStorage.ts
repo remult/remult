@@ -1,5 +1,5 @@
 import * as path from 'path';
-import * as fs from 'fs';
+import * as fs from 'node:fs';
 import { JsonDataProvider, JsonEntityStorage } from '../index';
 
 
