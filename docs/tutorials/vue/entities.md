@@ -51,7 +51,7 @@ export const api = remultExpress({
 
 The [@Entity](../../docs/ref_entity.md) decorator tells Remult this class is an entity class. The decorator accepts a `key` argument (used to name the API route and as a default database collection/table name), and an `options` argument used to define entity-related properties and operations, discussed in the next sections of this tutorial.
 
-By default, all CRUD operations are enabled for an entity. To disable a specific operation, use the [allowApiCrud](../../docs/ref_entity.md#allowapicrud) option and set it to `false` for the operation you want to disable. For example, to disable the `create` operation, use `allowApiCrud: { create: false }`. Later in this tutorial, we'll do that with [authorization rules](auth.md)
+To initially allow all CRUD operations for tasks, we set the option [allowApiCrud](../../docs/ref_entity.md#allowapicrud) to true.
 
 The `@Fields.autoIncrement` decorator tells Remult to automatically generate an id using the databases's auto increment capabilities.
 

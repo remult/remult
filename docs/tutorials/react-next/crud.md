@@ -198,7 +198,7 @@ export default function Home() {
   const deleteTask = async (task: Task) => {
     try {
       await taskRepo.delete(task);
-      setTasks(tasks.filter((t) => t !== task));
+      setTasks((tasks) => tasks.filter((t) => t !== task));
     } catch (error: any) {
       alert(error.message);
     }
