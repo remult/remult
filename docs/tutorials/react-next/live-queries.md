@@ -56,41 +56,39 @@ const addTask = async (e: FormEvent) => {
 
 3. Optionally remove other redundant state changing code:
 
-```tsx{11,17,26}
+```tsx{9,10,17,18,27}
 //src/pages/index.tsx
 
+export default function Home() {
+  //...
+  const setTask = (value: Task) =>
+    setTasks((tasks) => tasks.map((t) => (t.id === value.id ? value : t)));
+
+  const setCompleted = async (task: Task, completed: boolean) =>
+    // setTask(await taskRepo.save({ ...task, completed })); <-- delete this line
+    await taskRepo.save({ ...task, completed }); // <-- add this line instead
+
+  const setTitle = (task: Task, title: string) => 
+    setTask({ ...task, title });
+
+  const saveTask = async (task: Task) => {
+    try {
+      // setTask(await taskRepo.save(task)) <-- delete this line
+      await taskRepo.save(task); // <-- add this line instead
+    } catch (error: any) {
+      alert(error.message);
+    }
+  };
+
+  const deleteTask = async (task: Task) => {
+    try {
+      await taskRepo.delete(task);
+      // setTasks((tasks)=> tasks.filter((t) => t !== task)); <-- delete this line
+    } catch (error: any) {
+      alert(error.message);
+    }
+  };
 //...
-
-{
-  tasks.map(task => {
-    const setTask = (value: Task) =>
-      setTasks(tasks => tasks.map(t => (t === task ? value : t)))
-
-    const setCompleted = async (completed: boolean) =>
-      taskRepo.save({ ...task, completed })
-
-    const setTitle = (title: string) => setTask({ ...task, title })
-
-    const saveTask = async () => {
-      try {
-        await taskRepo.save(task)
-      } catch (error: any) {
-        alert(error.message)
-      }
-    }
-
-    const deleteTask = async () => {
-      try {
-        await taskRepo.delete(task)
-        // setTasks(tasks.filter(t => t !== task))
-      } catch (error: any) {
-        alert(error.message)
-      }
-    }
-
-    //...
-  })
-}
 ```
 
 Open the todo app in two (or more) browser windows/tabs, make some changes in one window and notice how the others are updated in realtime.

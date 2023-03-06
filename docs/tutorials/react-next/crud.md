@@ -127,7 +127,7 @@ export default function Home() {
 
   const saveTask = async (task: Task) => {
     try {
-      await taskRepo.save(task);
+      setTask(await taskRepo.save(task))
     } catch (error: any) {
       alert(error.message);
     }
@@ -189,7 +189,7 @@ export default function Home() {
 
   const saveTask = async (task: Task) => {
     try {
-      await taskRepo.save(task);
+      setTask(await taskRepo.save(task))
     } catch (error: any) {
       alert(error.message);
     }

@@ -57,7 +57,7 @@ The `@Fields.autoIncrement` decorator tells Remult to automatically generate an 
 
 The [@Fields.string](../../docs/ref_field.md) decorator tells Remult the `title` property is an entity data field of type `String`. This decorator is also used to define field-related properties and operations, discussed in the next sections of this tutorial and the same goes for `@Fields.boolean` and the `completed` property.
 
-## Test the api
+## Test the API
 
 Now that the `Task` entity is defined, we can start using the `api` to query and add a few tasks
 

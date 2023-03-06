@@ -2,6 +2,14 @@
 
 Validating user entered data is usually required both on the client-side and on the server-side, often causing a violation of the [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) design principle. **With Remult, validation code can be placed within the entity class, and Remult will run the validation logic on both the frontend and the relevant API requests.**
 
+::: warning Handling validation errors
+
+When a validation error occurs, Remult will throw an exception. 
+
+As we wrote them, The [CRUD operations](crud.md) catch these exceptions, and alerts the user.
+We leave it to you to decide how to handle validation errors in your application.
+:::
+
 ## Validate the Title Field
 
 Task titles are required. Let's add a validity check for this rule.

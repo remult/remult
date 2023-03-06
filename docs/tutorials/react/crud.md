@@ -127,7 +127,7 @@ export default function App() {
 
   const saveTask = async (task: Task) => {
     try {
-      await taskRepo.save(task);
+      setTask(await taskRepo.save(task))
     } catch (error: any) {
       alert(error.message);
     }
@@ -189,7 +189,7 @@ export default function App() {
 
   const saveTask = async (task: Task) => {
     try {
-      await taskRepo.save(task);
+      setTask(await taskRepo.save(task))
     } catch (error: any) {
       alert(error.message);
     }
@@ -198,7 +198,7 @@ export default function App() {
   const deleteTask = async (task: Task) => {
     try {
       await taskRepo.delete(task);
-      setTasks((tasks)=>tasks.filter((t) => t !== task));
+      setTasks((tasks)=> tasks.filter((t) => t !== task));
     } catch (error: any) {
       alert(error.message);
     }
