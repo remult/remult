@@ -85,11 +85,19 @@ The starter API server TypeScript project contains a single module that initiali
 
 2. Add the following entry to the `compilerOptions` section of the `tsconfig.json` file to enable the use of Synthetic Default Imports and ES Module Interop in the app.
 
-```json
+```json{6-7}
 // tsconfig.json
+{
+...
+  "compilerOptions": {
+    ...
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+   ...
+  }
+...
+}
 
-"allowSyntheticDefaultImports": true,
-"esModuleInterop": true,
 ```
 
 2. Create a `server` folder under the `src/` folder created by Angular cli.

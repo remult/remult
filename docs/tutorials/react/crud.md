@@ -17,7 +17,7 @@ export default function App() {
     e.preventDefault()
     try {
       const newTask = await taskRepo.insert({ title: newTaskTitle })
-      setTasks([...tasks, newTask])
+      setTasks((tasks)=>[...tasks, newTask])
       setNewTaskTitle("")
     } catch (error: any) {
       alert(error.message)
@@ -66,63 +66,83 @@ Try adding a few tasks to see how it works
 
 ## Mark Tasks as completed
 
-Modify the contents of the `tasks.map` iteration within the `App` component to include the following `setCompleted` function and call it in the input's `onChange` event.
+Add the `setTask`, `setCompleted` functions within the `App` component
 
 ```tsx{5-6,8-9,16}
 // src/App.tsx
 
-{
-  tasks.map(task => {
-    const setTask = (value: Task) =>
-      setTasks(tasks => tasks.map(t => (t === task ? value : t)))
+export default function App() {
+  //...
+  const setTask = (value: Task) =>
+    setTasks((tasks) => tasks.map((t) => (t.id === value.id ? value : t)));
 
-    const setCompleted = async (completed: boolean) =>
-      setTask(await taskRepo.save({ ...task, completed }))
+  const setCompleted = async (task: Task, completed: boolean) =>
+    setTask(await taskRepo.save({ ...task, completed }));
 
-    return (
-      <div key={task.id}>
-        <input
-          type="checkbox"
-          checked={task.completed}
-          onChange={e => setCompleted(e.target.checked)}
-        />
-        {task.title}
-      </div>
-    )
-  })
+//...
 }
 ```
-
 - The `setTask` function is used to replace the state of the changed task in the `tasks` array
 - The `taskRepo.save` method update the `task` to the server and returns the updated value
+
+Modify the contents of the `tasks.map` iteration within the `App` component, call `setCompleted` in the input's `onChange` event.
+
+```tsx{10}
+// src/App.tsx
+
+  {
+    tasks.map(task => {
+      return (
+        <div key={task.id}>
+          <input
+            type="checkbox"
+            checked={task.completed}
+            onChange={(e) => setCompleted(task, e.target.checked)}
+          />
+          {task.title}
+        </div>
+      )
+    })
+    //...
+```
 
 ## Rename Tasks and Save them
 
 To make the tasks in the list updatable, we'll bind the `tasks` React state to `input` elements and add a _Save_ button to save the changes to the backend database.
 
-Modify the contents of the `tasks.map` iteration within the `App` component to include the following `setTitle` and `saveTask` functions and add an `input` and a save `button`.
+Add the `setTitle`, `saveTask` functions within the `App` component
 
-```tsx{11,13-19,28-29}
+```tsx{11,13-19}
+// src/App.tsx
+
+export default function App() {
+  //...
+  const setTask = (value: Task) =>
+    setTasks((tasks) => tasks.map((t) => (t.id === value.id ? value : t)));
+
+  const setCompleted = async (task: Task, completed: boolean) =>
+    setTask(await taskRepo.save({ ...task, completed }));
+
+  const setTitle = (task: Task, title: string) => setTask({ ...task, title });
+
+  const saveTask = async (task: Task) => {
+    try {
+      await taskRepo.save(task);
+    } catch (error: any) {
+      alert(error.message);
+    }
+  };
+//...
+
+}
+```
+Within the `tasks.map` iteration in the `return` section of the `App` component, add an `input` and a save `button`.
+
+```tsx{12-14}
 // src/App.tsx
 
 {
   tasks.map(task => {
-    const setTask = (value: Task) =>
-      setTasks(tasks => tasks.map(t => (t === task ? value : t)))
-
-    const setCompleted = async (completed: boolean) =>
-      setTask(await taskRepo.save({ ...task, completed }))
-
-    const setTitle = (title: string) => setTask({ ...task, title })
-
-    const saveTask = async () => {
-      try {
-        setTask(await taskRepo.save(task))
-      } catch (error: any) {
-        alert(error.message)
-      }
-    }
-
     return (
       <div key={task.id}>
         <input
@@ -130,8 +150,9 @@ Modify the contents of the `tasks.map` iteration within the `App` component to i
           checked={task.completed}
           onChange={e => setCompleted(e.target.checked)}
         />
-        <input value={task.title} onChange={e => setTitle(e.target.value)} />
-        <button onClick={saveTask}>Save</button>
+         <input value={task.title} 
+            onChange={(e) => setTitle(task, e.target.value)} />
+         <button onClick={() => saveTask(task)}>Save</button>
       </div>
     )
   })
@@ -151,38 +172,48 @@ As you play with these `CRUD` capabilities, monitor the network tab and see that
 
 Let's add a _Delete_ button next to the _Save_ button of each task in the list.
 
-Add the highlighted `deleteTask` function and _Delete_ `button` Within the `tasks.map` iteration in the `return` section of the `App` component.
+Add the highlighted `deleteTask` function within the `App` component
 
-```tsx{21-28,39}
+```tsx{21-28}
+// src/App.tsx
+
+export default function App() {
+  //...
+  const setTask = (value: Task) =>
+    setTasks((tasks) => tasks.map((t) => (t.id === value.id ? value : t)));
+
+  const setCompleted = async (task: Task, completed: boolean) =>
+    setTask(await taskRepo.save({ ...task, completed }));
+
+  const setTitle = (task: Task, title: string) => setTask({ ...task, title });
+
+  const saveTask = async (task: Task) => {
+    try {
+      await taskRepo.save(task);
+    } catch (error: any) {
+      alert(error.message);
+    }
+  };
+
+  const deleteTask = async (task: Task) => {
+    try {
+      await taskRepo.delete(task);
+      setTasks(tasks.filter((t) => t !== task));
+    } catch (error: any) {
+      alert(error.message);
+    }
+  };
+//...
+
+}
+```
+Within the `tasks.map` iteration in the `return` section of the `App` component, add a _Delete_ `button`.
+
+```tsx{15}
 // src/App.tsx
 
 {
   tasks.map(task => {
-    const setTask = (value: Task) =>
-      setTasks(tasks => tasks.map(t => (t === task ? value : t)))
-
-    const setCompleted = async (completed: boolean) =>
-      setTask(await taskRepo.save({ ...task, completed }))
-
-    const setTitle = (title: string) => setTask({ ...task, title })
-
-    const saveTask = async () => {
-      try {
-        setTask(await taskRepo.save(task))
-      } catch (error: any) {
-        alert(error.message)
-      }
-    }
-
-    const deleteTask = async () => {
-      try {
-        await taskRepo.delete(task)
-        setTasks(tasks.filter(t => t !== task))
-      } catch (error: any) {
-        alert(error.message)
-      }
-    }
-
     return (
       <div key={task.id}>
         <input
@@ -190,9 +221,11 @@ Add the highlighted `deleteTask` function and _Delete_ `button` Within the `task
           checked={task.completed}
           onChange={e => setCompleted(e.target.checked)}
         />
-        <input value={task.title} onChange={e => setTitle(e.target.value)} />
-        <button onClick={saveTask}>Save</button>
-        <button onClick={deleteTask}>Delete</button>
+         <input value={task.title} 
+            onChange={(e) => setTitle(task, e.target.value)} />
+         <button onClick={() => saveTask(task)}>Save</button>
+         <button onClick={() => deleteTask(task)}>Delete</button>
+
       </div>
     )
   })
