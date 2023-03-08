@@ -6,7 +6,7 @@ Validating user entered data is usually required both on the client-side and on 
 
 When a validation error occurs, Remult will throw an exception. 
 
-As we wrote them, The [CRUD operations](crud.md) catch these exceptions, and alerts the user.
+In this tutorial, [CRUD operations](crud.md) catch these exceptions, and alert the user.
 We leave it to you to decide how to handle validation errors in your application.
 :::
 
