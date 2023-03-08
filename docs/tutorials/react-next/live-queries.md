@@ -56,7 +56,7 @@ const addTask = async (e: FormEvent) => {
 
 3. Optionally remove other redundant state changing code:
 
-```tsx{11,17,26}
+```tsx{11-12,18-19,28}
 //src/pages/index.tsx
 
 //...
@@ -67,13 +67,15 @@ const addTask = async (e: FormEvent) => {
       setTasks(tasks => tasks.map(t => (t === task ? value : t)))
 
     const setCompleted = async (completed: boolean) =>
-      taskRepo.save({ ...task, completed })
+      // setTask(await taskRepo.save({ ...task, completed })) <- Delete this line
+      await taskRepo.save({ ...task, completed }) // <- replace with this line
 
     const setTitle = (title: string) => setTask({ ...task, title })
 
     const saveTask = async () => {
       try {
-        await taskRepo.save(task)
+        // setTask(await taskRepo.save(task)) <- Delete this line
+        await taskRepo.save(task) // <- replace with this line
       } catch (error: any) {
         alert(error.message)
       }
@@ -82,7 +84,7 @@ const addTask = async (e: FormEvent) => {
     const deleteTask = async () => {
       try {
         await taskRepo.delete(task)
-        // setTasks(tasks.filter(t => t !== task))
+        // setTasks(tasks.filter(t => t !== task)) <- Delete this line
       } catch (error: any) {
         alert(error.message)
       }

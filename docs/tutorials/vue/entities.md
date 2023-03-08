@@ -57,27 +57,28 @@ The `@Fields.autoIncrement` decorator tells Remult to automatically generate an 
 
 The [@Fields.string](../../docs/ref_field.md) decorator tells Remult the `title` property is an entity data field of type `String`. This decorator is also used to define field-related properties and operations, discussed in the next sections of this tutorial and the same goes for `@Fields.boolean` and the `completed` property.
 
-## Test the api
+## Test the API
 
-Now that the `Task` entity is defined, we can start using the `api` to query and add a few tasks
+Now that the `Task` entity is defined, we can start using the REST API to query and add a tasks.
 
 1. Open a browser with the url: [http://localhost:3002/api/tasks](http://localhost:3002/api/tasks), and you'll see that you get an empty array.
-2. Open a new terminal window and Use `curl` to `POST` a new task
-   1. **clean Car**
-   ```sh
-   curl http://localhost:3002/api/tasks -d "{\"title\": \"Clean car\"}" -H "Content-Type: application/json"
-   ```
+
+2. Use `curl` to `POST` a new task - *Clean car*.
+
+```sh
+curl http://localhost:3002/api/tasks -d "{\"title\": \"Clean car\"}" -H "Content-Type: application/json"
+```
+
 3. Refresh the browser for the url: [http://localhost:3002/api/tasks](http://localhost:3002/api/tasks) and see that the array now contains one item.
-4. Use `curl` to `POST` several more tasks
-   1. Read a book
-   2. Take a nap (completed)
-   3. Pay bills
-   4. Do laundry
-   ```sh
-   curl http://localhost:3002/api/tasks -d "[{\"title\": \"Read a book\"},{\"title\": \"Take a nap\", \"completed\":true },{\"title\": \"Pay bills\"},{\"title\": \"Do laundry\"}]" -H "Content-Type: application/json"
-   ```
-   - Note that the `POST` route can accept a `Task` or an array of `Tasks` to insert many tasks
-5. Use the browser again, to see that the tasks were stored in the db.
+
+4. Use `curl` to `POST` a few more tasks:
+
+```sh
+curl http://localhost:3002/api/tasks -d "[{\"title\": \"Read a book\"},{\"title\": \"Take a nap\", \"completed\":true },{\"title\": \"Pay bills\"},{\"title\": \"Do laundry\"}]" -H "Content-Type: application/json"
+```
+- Note that the `POST` endpoint can accept a single `Task` or an array of `Task`s.
+
+5. Refresh the browser again, to see that the tasks were stored in the db.
 
 ::: warning Wait, where is the backend database?
 While remult supports [many relational and non-relational databases](https://remult.dev/docs/databases.html), in this tutorial we start by storing entity data in a backend **JSON file**. Notice that a `db` folder has been created under the root folder, with a `tasks.json` file containing the created tasks.

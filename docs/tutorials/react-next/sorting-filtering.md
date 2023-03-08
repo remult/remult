@@ -61,7 +61,7 @@ useEffect(() => {
 By default, `false` is a "lower" value than `true`, and that's why uncompleted tasks are now showing at the top of the task list.
 :::
 
-## Toggle Display of Completed Tasks
+## Server Side Filtering
 
 Remult supports sending filter rules to the server to query only the tasks that we need.
 
