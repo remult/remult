@@ -51,7 +51,7 @@ export const api = remultExpress({
 
 The [@Entity](../../docs/ref_entity.md) decorator tells Remult this class is an entity class. The decorator accepts a `key` argument (used to name the API route and as a default database collection/table name), and an `options` argument used to define entity-related properties and operations, discussed in the next sections of this tutorial.
 
-To initially allow all CRUD operations for tasks, we set the option [allowApiCrud](../../docs/ref_entity.md#allowapicrud) to true.
+To initially allow all CRUD operations for tasks, we set the option [allowApiCrud](../../docs/ref_entity.md#allowapicrud) to `true`.
 
 The `@Fields.autoIncrement` decorator tells Remult to automatically generate an id using the databases's auto increment capabilities.
 

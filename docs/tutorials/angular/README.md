@@ -87,6 +87,7 @@ The starter API server TypeScript project contains a single module that initiali
 
 ```json{6-7}
 // tsconfig.json
+
 {
 ...
   "compilerOptions": {
