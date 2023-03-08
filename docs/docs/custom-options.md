@@ -43,14 +43,14 @@ Follow these Steps:
    ```
 3. Use that property in your UI
    ```html
-   <input placeholder={taskRepo.metadata.fields.title.placeholderText}/>
+   <input placeholder={taskRepo.metadata.fields.title.options.placeholderText}/>
    ```
 
 ### Augmenting `UserInfo` interface
 If you want to have more information in `remult.user` you can augment the `UserInfo` interface
 ```ts
 declare module 'remult' {
-    export interface RemultContext {
+    export interface UserInfo {
       phone:string,
       email:string
     }
