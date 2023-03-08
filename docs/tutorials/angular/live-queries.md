@@ -12,7 +12,9 @@ Let's add realtime multiplayer capabilities to this app.
 
 We'll need angular to run it's change detection when we receive messages from the backend - to do that we'll add the following code to `AppModule`
 
-```ts{1-2,5-7}
+```ts{3-5,7-9}
+// src/app/app.module.ts
+
 import { NgModule, NgZone } from "@angular/core"
 import { remult } from "remult"
 //...

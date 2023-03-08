@@ -55,6 +55,7 @@ The [@Entity](../../docs/ref_entity.md) decorator tells Remult this class is an 
 
 To initially allow all CRUD operations for tasks, we set the option [allowApiCrud](../../docs/ref_entity.md#allowapicrud) to `true`.
 
+
 The `@Fields.autoIncrement` decorator tells Remult to automatically generate an id using the databases's auto increment capabilities.
 
 The [@Fields.string](../../docs/ref_field.md) decorator tells Remult the `title` property is an entity data field of type `String`. This decorator is also used to define field-related properties and operations, discussed in the next sections of this tutorial and the same goes for `@Fields.boolean` and the `completed` property.

@@ -14,7 +14,9 @@ Let's switch from fetching Tasks once when the React component is loaded, and ma
 
 Adjust the `onMounted` hook in the `App.tsx` file
 
-```ts{2,4,9}
+```ts{4,6,11}
+// src/App.vue
+
 onMounted(() =>
   onUnmounted(
     taskRepo
