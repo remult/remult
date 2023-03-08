@@ -6,7 +6,7 @@ import { CompoundIdField } from "../column";
 import { CustomSqlFilterBuilderFunction, CustomSqlFilterObject, dbNamesOf, EntityDbNames, EntityDbNamesBase, FilterConsumerBridgeToSqlRequest, isDbReadonly } from "../filter/filter-consumer-bridge-to-sql-request";
 import { customDatabaseFilterToken, Filter } from '../filter/filter-interfaces';
 import { Sort, SortSegment } from '../sort';
-import { EntityMetadata, EntityFilter, OmitEB, Repository, RepositoryImplementation, RepositoryOverloads, getRepository } from "../remult3";
+import { EntityMetadata, EntityFilter, OmitEB, Repository, RepositoryImplementation, RepositoryOverloads, getRepository, EntityBase } from "../remult3";
 import { FieldMetadata } from "../column-interfaces";
 import { Remult } from "../context";
 import { RemultProxy } from "../remult-proxy";
@@ -362,4 +362,45 @@ class myDummySQLCommand implements SqlCommand {
   }
 
 
+}
+
+
+
+async function bulkInsert<entityType extends EntityBase>(array: entityType[],db:SqlDatabase) {
+  if (array.length == 0) return;
+
+  const chunkSize = 250;
+  for (let i = 0; i < array.length; i += chunkSize) {
+    const items = array.slice(i, i + chunkSize);
+    // do whatever
+
+    const c = db.createCommand();
+    let sql =
+      'insert into ' +
+      (await items[0]._.metadata.getDbName()) +
+      ' (' +
+      (
+        await Promise.all(
+          items[0]._.metadata.fields.toArray().map((f) => f.getDbName())
+        )
+      ).join(',') +
+      ') values ';
+
+    sql += items
+      .map(
+        (row) =>
+          '(' +
+          row.$.toArray()
+            .map((f) =>
+              c.addParameterAndReturnSqlToken(
+                f.metadata.valueConverter.toDb!(f.value)
+              )
+            )
+            .join(', ') +
+          ')'
+      )
+      .join(',');
+
+    await c.execute(sql);
+  }
 }
