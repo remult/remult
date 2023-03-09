@@ -36,6 +36,6 @@ export declare class SubscriptionChannel<messageType> {
     channelKey: string;
     constructor(channelKey: string);
     publish(message: messageType, remult?: Remult): void;
-    subscribe(next: (message: messageType) => void, remult?: Remult): any;
-    subscribe(listener: Partial<SubscriptionListener<messageType>>): any;
+    subscribe(next: (message: messageType) => void, remult?: Remult): Promise<Unsubscribe>;
+    subscribe(listener: Partial<SubscriptionListener<messageType>>): Promise<Unsubscribe>;
 }

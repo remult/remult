@@ -170,10 +170,10 @@ export class SubscriptionChannel<messageType> {
         remult = remult || defaultRemult;
         remult.subscriptionServer.publishMessage(this.channelKey, message);
     }
-    subscribe(next: (message: messageType) => void, remult?: Remult)
-    subscribe(listener: Partial<SubscriptionListener<messageType>>)
+    subscribe(next: (message: messageType) => void, remult?: Remult): Promise<Unsubscribe>
+    subscribe(listener: Partial<SubscriptionListener<messageType>>): Promise<Unsubscribe>
     //@internal
-    subscribe(next: ((message: messageType) => void) | Partial<SubscriptionListener<messageType>>, remult?: Remult) {
+    subscribe(next: ((message: messageType) => void) | Partial<SubscriptionListener<messageType>>, remult?: Remult) : Promise<Unsubscribe>{
         remult = remult || defaultRemult;
 
         let listener = next as Partial<SubscriptionListener<messageType>>;
