@@ -9,7 +9,7 @@ var api: {
     const z: member = JSON.parse(JSON.stringify(findType("FindFirstOptions")));
     z.name = "FindFirstOptionsBase";
     z.children = z.children.filter(m => m.inheritedFrom?.name.startsWith(z.name));
-    api.children.push(z);
+    api.children[0].children.push(z);
 }
 
 class DocFile {
@@ -154,9 +154,12 @@ class DocFile {
 
 
 function findType(type: string) {
-    let r = api.children.find(e => e.name == type);
+    let r = api.children[0].children.find(e => e.name == type);
     if (!r)
+        r = api.children[1].children.find(e => e.name == type);
+    if (!r){
         throw new Error("Couldn't find type " + type);
+    }
     return r;
 }
 
@@ -184,7 +187,8 @@ try {
         "QueryResult",
         "Paginator",
         "EntityMetadata",
-        "FieldMetadata"
+        "FieldMetadata",
+        "RemultServerOptions"
     ]) {
         let type = findType(typeName);
 

@@ -56,6 +56,62 @@ Arguments:
       await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
       ```
       
+## liveQuery
+returns a result array based on the provided options
+
+Arguments:
+* **options**
+   * **limit** - Determines the number of rows returned by the request, on the browser the default is 100 rows
+      
+      
+      *example*
+      ```ts
+      await this.remult.repo(Products).find({
+       limit:10,
+       page:2
+      })
+      ```
+      
+   * **page** - Determines the page number that will be used to extract the data
+      
+      
+      *example*
+      ```ts
+      await this.remult.repo(Products).find({
+       limit:10,
+       page:2
+      })
+      ```
+      
+   * **load**
+   * **where** - filters the data
+      
+      
+      *example*
+      ```ts
+      await taskRepo.find({where: { completed:false }})
+      ```
+      
+      
+      
+      *see*
+      For more usage examples see [EntityFilter](https://remult.dev/docs/entityFilter.html)
+      
+   * **orderBy** - Determines the order of items returned .
+      
+      
+      *example*
+      ```ts
+      await this.remult.repo(Products).find({ orderBy: { name: "asc" }})
+      ```
+      
+      
+      
+      *example*
+      ```ts
+      await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
+      ```
+      
 ## findFirst
 returns the first item that matchers the `where` condition
    

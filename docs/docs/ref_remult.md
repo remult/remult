@@ -79,10 +79,6 @@ Arguments:
 * **args**
     - the arguments to send to the backend method
    
-## apiClient
-The api client that will be used by `remult` to perform calls to the `api`
-## context
-context information that can be used to store custom information that will be disposed as part of the `remult` object
 ## onFind
 A helper callback that can be used to debug and trace all find operations. Useful in debugging scenarios
 
@@ -144,3 +140,15 @@ Arguments:
 * **clearAllCache**
 ## entityRefInit
 A helper callback that is called whenever an entity is created.
+## context
+context information that can be used to store custom information that will be disposed as part of the `remult` object
+## apiClient
+The api client that will be used by `remult` to perform calls to the `api`
+## liveQueryStorage
+* **liveQueryStorage**
+## subscriptionServer
+* **subscriptionServer**
+## liveQueryPublisher
+* **liveQueryPublisher**
+## liveQuerySubscriber
+* **liveQuerySubscriber**

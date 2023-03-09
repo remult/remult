@@ -115,6 +115,7 @@ module.exports = {
             'ref_field',
             'ref_remult',
             'ref_repository',
+            `ref_remultserveroptions`,
             'entityFilter',
             'ref_entitymetadata',
             'ref_fieldmetadata',
