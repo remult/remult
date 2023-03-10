@@ -118,7 +118,7 @@ export interface EntityMetadata<entityType = any> {
      * @example
      * const taskRepo = remult.repo(Task);
      * if (taskRepo.metadata.apiUpdateAllowed){
-     *   //Allow user to edit the entity
+     *   // Allow user to edit the entity
      * }
     */
     readonly apiUpdateAllowed: boolean;
@@ -126,7 +126,7 @@ export interface EntityMetadata<entityType = any> {
      * @example
      * const taskRepo = remult.repo(Task);
      * if (taskRepo.metadata.apiReadAllowed){
-     *   taskRepo.find()
+     *   await taskRepo.find()
      * }
      */
     readonly apiReadAllowed: boolean;
@@ -134,7 +134,7 @@ export interface EntityMetadata<entityType = any> {
      * @example
      * const taskRepo = remult.repo(Task);
      * if (taskRepo.metadata.apiDeleteAllowed){
-     *   //display delete button
+     *   // display delete button
      * }
     */
     readonly apiDeleteAllowed: boolean;
@@ -142,7 +142,7 @@ export interface EntityMetadata<entityType = any> {
      * @example
      * const taskRepo = remult.repo(Task);
      * if (taskRepo.metadata.apiInsertAllowed){
-     *   //display insert button
+     *   // display insert button
      * }
     */
     readonly apiInsertAllowed: boolean;

@@ -6,32 +6,48 @@ import { Repository } from '../src/remult3';
 import { IdEntity } from '../src/id-entity';
 import { LiveQueryStorage, SubscriptionServer } from '../src/live-query/SubscriptionServer';
 export interface RemultServerOptions<RequestType extends GenericRequest> {
-    /** Sets a database connection for Remult.
+    /**Entities to use for the api */
+    entities?: ClassType<any>[];
+    /**Controller to use for the api */
+    controllers?: ClassType<any>[];
+    /** Will be called to get the current user based on the current request */
+    getUser?: (request: RequestType) => Promise<UserInfo | undefined>;
+    /** Will be called for each request and can be used for configuration */
+    initRequest?: (request: RequestType, options: InitRequestOptions) => Promise<void>;
+    /** Will be called once the server is loaded and the data provider is ready */
+    initApi?: (remult: Remult) => void | Promise<void>;
+    /** Data Provider to use for the api.
      *
      * @see [Connecting to a Database](https://remult.dev/docs/databases.html).
     */
     dataProvider?: DataProvider | Promise<DataProvider> | (() => Promise<DataProvider | undefined>);
-    queueStorage?: QueueStorage;
-    liveQueryStorage?: LiveQueryStorage;
-    subscriptionServer?: SubscriptionServer;
-    initRequest?: (request: RequestType, options: InitRequestOptions) => Promise<void>;
-    requestSerializer?: {
-        toJson: (request: RequestType) => any;
-        fromJson: (request: any) => RequestType;
-    };
     /** Will create tables and columns in supporting databases. default: true
      *
      * @description
      * when set to true, it'll create entities that do not exist, and add columns that are missing.
     */
     ensureSchema?: boolean;
-    getUser?: (request: RequestType) => Promise<UserInfo | undefined>;
-    initApi?: (remult: Remult) => void | Promise<void>;
-    logApiEndPoints?: boolean;
-    defaultGetLimit?: number;
-    entities?: ClassType<any>[];
-    controllers?: ClassType<any>[];
+    /** The path to use for the api, default:/api
+     *
+     * @description
+     * If you want to use a different api path adjust this field
+    */
     rootPath?: string;
+    /** The default limit to use for find requests that did not specify a limit */
+    defaultGetLimit?: number;
+    /** When set to true (default) it'll console log each api endpoint that is created */
+    logApiEndPoints?: boolean;
+    /** A subscription server to use for live query and message channels */
+    subscriptionServer?: SubscriptionServer;
+    /** A storage to use to store live queries, relevant mostly for serverless scenarios or larger scales */
+    liveQueryStorage?: LiveQueryStorage;
+    /** Used to store the relevent request info for re running a live query */
+    requestSerializer?: {
+        toJson: (request: RequestType) => any;
+        fromJson: (request: any) => RequestType;
+    };
+    /** Storage to use for backend methods that use queue */
+    queueStorage?: QueueStorage;
 }
 export interface InitRequestOptions {
     liveQueryStorage: LiveQueryStorage;
