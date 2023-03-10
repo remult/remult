@@ -2,7 +2,7 @@
 import { queryConfig, Remult } from "../context";
 import { DataApi, DataApiRequest } from "../data-api";
 import { InMemoryDataProvider } from "../data-providers/in-memory-database";
-import { Entity, Fields, FindOptions, getEntityRef } from "../remult3";
+import { Entity, Fields, FindOptions, getEntityRef, RepositoryImplementation } from "../remult3";
 import { actionInfo } from "../server-action";
 import { createMockHttpDataProvider } from "../tests/testHelper.spec";
 import { SubscriptionChannel, LiveQueryChange } from "./SubscriptionChannel";
@@ -21,6 +21,8 @@ export class eventTestEntity {
     title: string;
     @Fields.string((o, remult) => o.serverExpression = () => remult.user.name)
     selectUser = '';
+    @Fields.date()
+    birthDate = new Date(1976, 5, 16)
 }
 
 
@@ -249,7 +251,7 @@ describe("Live Query Client", () => {
         await p.flush();
         expect(open).toBe(0);
         get = 0;
-        closeSub1 = lqc.subscribe(serverRepo, {},
+        closeSub1 = lqc.subscribe(serverRepo as RepositoryImplementation<any>, {},
             {
                 complete: () => { },
                 error: () => { },
@@ -367,6 +369,7 @@ describe("test live query full cycle", () => {
         await pm.flush();
         expect(result1.length).toBe(2);
         expect(result1[0].title).toBe('noam1');
+        expect(result1[0].birthDate.getFullYear()).toBe(1976)
         expect(result1[1].title).toBe('yael2');
         await repo.save(result1[0]);
         u();

@@ -270,9 +270,33 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         let opt = await this.buildEntityDataProviderFindOptions(options);
 
         let rawRows = await this.edp.find(opt);
+        let result = await this.loadManyToOneForManyRows( rawRows,options.load);
+        return result;
+
+
+
+    }
+
+
+
+    async buildEntityDataProviderFindOptions(options: FindOptions<entityType>) {
+        let opt: EntityDataProviderFindOptions = {};
+
+        opt = {};
+        if (!options.orderBy || Object.keys(options.orderBy).length === 0) {
+            options.orderBy = this._info.entityInfo.defaultOrderBy;
+        }
+        opt.where = await this.translateWhereToFilter(options.where);
+        opt.orderBy = Sort.translateOrderByToSort(this.metadata, options.orderBy);
+
+        opt.limit = options.limit;
+        opt.page = options.page;
+        return opt;
+    }
+    async loadManyToOneForManyRows( rawRows: any[],load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[]) {
         let loadFields: FieldMetadata[] = undefined;
-        if (options.load)
-            loadFields = options.load(this.metadata.fields);
+        if (load)
+            loadFields = load(this.metadata.fields);
 
         for (const col of this.metadata.fields) {
             let ei = getEntitySettings(col.valueType, false);
@@ -297,34 +321,16 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 
             }
         }
-
-        let result = await Promise.all(rawRows.map(async r =>
-            await this.mapRawDataToResult(r, loadFields)
-        ));
-        return result;
-
-
-        async function loadManyToOne(repo: RepositoryImplementation<any>, toLoad: any[]) {//extracted a method to be able to see it in the call stack
+        async function loadManyToOne(repo: RepositoryImplementation<any>, toLoad: any[]) {
             let rows = await repo.find({ where: repo.metadata.idMetadata.getIdFilter(...toLoad) });
             for (const r of rows) {
                 repo.addToCache(r);
             }
         }
-    }
 
-    async buildEntityDataProviderFindOptions(options: FindOptions<entityType>) {
-        let opt: EntityDataProviderFindOptions = {};
-
-        opt = {};
-        if (!options.orderBy || Object.keys(options.orderBy).length === 0) {
-            options.orderBy = this._info.entityInfo.defaultOrderBy;
-        }
-        opt.where = await this.translateWhereToFilter(options.where);
-        opt.orderBy = Sort.translateOrderByToSort(this.metadata, options.orderBy);
-
-        opt.limit = options.limit;
-        opt.page = options.page;
-        return opt;
+        let result = await Promise.all(rawRows.map(async (r) => await this.mapRawDataToResult(r, loadFields)
+        ));
+        return result;
     }
 
     private async mapRawDataToResult(r: any, loadFields: FieldMetadata[]) {
@@ -339,6 +345,24 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         helper.saveOriginalData();
 
         return x;
+    }
+    // TODO - consider replacing with fromJsonArray - also consider having a TOJSON for similar cases
+    async fromJson(json: any, newRow?: boolean): Promise<entityType> {
+        let obj = {};
+        for (const col of this.fieldsOf(json)) {
+            if (json[col.key] !== undefined) {
+                obj[col.key] = col.valueConverter.fromJson(json[col.key]);
+            }
+        }
+        if (newRow) {
+            let r = this.create();
+            let helper = this.getEntityRef(r) as rowHelperImplementation<entityType>;
+            await helper.loadDataFrom(obj);
+            return r;
+        }
+        else
+            return this.mapRawDataToResult(obj, undefined);
+
     }
 
     async count(where?: EntityFilter<entityType>): Promise<number> {
@@ -422,23 +446,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 
         return r;
     }
-    async fromJson(json: any, newRow?: boolean): Promise<entityType> {
-        let obj = {};
-        for (const col of this.fieldsOf(json)) {
-            if (json[col.key] !== undefined) {
-                obj[col.key] = col.valueConverter.fromJson(json[col.key]);
-            }
-        }
-        if (newRow) {
-            let r = this.create();
-            let helper = this.getEntityRef(r) as rowHelperImplementation<entityType>;
-            await helper.loadDataFrom(obj);
-            return r;
-        }
-        else
-            return this.mapRawDataToResult(obj, undefined);
 
-    }
     findId(id: any, options?: FindFirstOptionsBase<entityType>): Promise<entityType> {
         if (id === null || id === undefined)
             return null;

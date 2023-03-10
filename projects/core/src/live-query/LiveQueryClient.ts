@@ -1,6 +1,6 @@
 import { FindOptions, remult as defaultRemult, Repository, RestDataProviderHttpProvider, UrlBuilder } from '../../index';
 import { RestDataProvider, RestEntityDataProvider } from '../data-providers/rest-data-provider';
-import { LiveQueryChangeInfo, RepositoryImplementation } from '../remult3';
+import type { LiveQueryChangeInfo, RepositoryImplementation } from '../remult3';
 import { buildRestDataProvider } from "../buildRestDataProvider";
 import { LiveQuerySubscriber, SubscriptionClient, SubscribeResult, SubscriptionClientConnection, liveQueryKeepAliveRoute, Unsubscribe, SubscriptionListener } from './SubscriptionChannel';
 import type { ApiClient } from '../../index';
@@ -76,7 +76,7 @@ export class LiveQueryClient {
 
 
     subscribe<entityType>(
-        repo: Repository<entityType>,
+        repo: RepositoryImplementation<entityType>,
         options: FindOptions<entityType>,
         listener: SubscriptionListener<LiveQueryChangeInfo<entityType>>
     ) {
@@ -91,7 +91,7 @@ export class LiveQueryClient {
                 const eventTypeKey = createKey();
                 let q = this.queries.get(eventTypeKey);
                 if (!q) {
-                    this.queries.set(eventTypeKey, q = new LiveQuerySubscriber(repo, { entityKey: repo.metadata.key, orderBy: options.orderBy }, this.getUserId()));
+                    this.queries.set(eventTypeKey, q = new LiveQuerySubscriber(repo, { entityKey: repo.metadata.key, options }, this.getUserId()));
                     q.subscribeCode = () => {
                         if (q.unsubscribe) {
                             q.unsubscribe();

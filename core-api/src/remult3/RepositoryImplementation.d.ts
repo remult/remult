@@ -44,13 +44,14 @@ export declare class RepositoryImplementation<entityType> implements Repository<
     liveQuery(options?: FindOptions<entityType>): any;
     find(options: FindOptions<entityType>): Promise<entityType[]>;
     buildEntityDataProviderFindOptions(options: FindOptions<entityType>): Promise<EntityDataProviderFindOptions>;
+    loadManyToOneForManyRows(rawRows: any[], load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[]): Promise<entityType[]>;
     private mapRawDataToResult;
+    fromJson(json: any, newRow?: boolean): Promise<entityType>;
     count(where?: EntityFilter<entityType>): Promise<number>;
     private cache;
     findFirst(where?: EntityFilter<entityType>, options?: FindFirstOptions<entityType>): Promise<entityType>;
     private fieldsOf;
     create(item?: Partial<OmitEB<entityType>>): entityType;
-    fromJson(json: any, newRow?: boolean): Promise<entityType>;
     findId(id: any, options?: FindFirstOptionsBase<entityType>): Promise<entityType>;
 }
 export declare function __updateEntityBasedOnWhere<T>(entityDefs: EntityMetadata<T>, where: EntityFilter<T>, r: T): void;

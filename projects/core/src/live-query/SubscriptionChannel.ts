@@ -1,5 +1,5 @@
-import { EntityOrderBy, remult as defaultRemult, Remult, Repository, Sort } from '../../index';
-import { LiveQueryChangeInfo } from '../remult3';
+import { EntityOrderBy, FindOptions, remult as defaultRemult, Remult, Repository, Sort } from '../../index';
+import type { LiveQueryChangeInfo, RepositoryImplementation } from '../remult3';
 import { getId } from '../remult3/getId';
 import { v4 as uuid } from 'uuid'
 import { LiveQueryChangesListener } from './SubscriptionServer';
@@ -15,7 +15,7 @@ export class LiveQuerySubscriber<entityType> {
     subscribeCode: () => void;
     unsubscribe: VoidFunction = () => { };
     async setAllItems(result: any[]) {
-        const items = await Promise.all(result.map(item => this.repo.fromJson(item)));
+        const items = await this.repo.loadManyToOneForManyRows(result, this.query.options.load);
         this.forListeners(listener => {
             listener(x => {
                 return items;
@@ -36,8 +36,8 @@ export class LiveQuerySubscriber<entityType> {
         what(reducer => {
             this.defaultQueryState = reducer(this.defaultQueryState);
             if (changes.find(c => c.type === "add" || c.type === "replace")) {
-                if (this.query.orderBy) {
-                    const o = Sort.translateOrderByToSort(this.repo.metadata, this.query.orderBy);
+                if (this.query.options.orderBy) {
+                    const o = Sort.translateOrderByToSort(this.repo.metadata, this.query.options.orderBy);
                     this.defaultQueryState.sort((a: any, b: any) => o.compare(a, b));
                 }
             }
@@ -59,15 +59,19 @@ export class LiveQuerySubscriber<entityType> {
     }
 
     async handle(messages: LiveQueryChange[]) {
-        for (const m of messages) {
-            switch (m.type) {
-                case "add":
-                case "replace":
-                    m.data.item = await this.repo.fromJson(m.data.item);
-                    break;
-                case "all":
-                    this.setAllItems(m.data);
+
+        let x = messages.filter(({ type }) => type == "add" || type == "replace");
+        let loadedItems = await this.repo.loadManyToOneForManyRows(x.map(m => {
+            const row = m.data.item;
+            let result = {};
+            for (const col of this.repo.metadata.fields.toArray()) {
+                result[col.key] = col.valueConverter.fromJson(row[col.key]);
             }
+            return result;
+        }), this.query.options.load);
+        for (let index = 0; index < x.length; index++) {
+            const element = x[index];
+            element.data.item = loadedItems[index];
         }
 
         this.forListeners(listener => {
@@ -100,7 +104,7 @@ export class LiveQuerySubscriber<entityType> {
     defaultQueryState: entityType[] = [];
     listeners: SubscriptionListener<LiveQueryChangeInfo<entityType>>[] = [];
     id = uuid()
-    constructor(private repo: Repository<entityType>, private query: SubscribeToQueryArgs<entityType>, userId: string) {
+    constructor(private repo: RepositoryImplementation<entityType>, private query: SubscribeToQueryArgs<entityType>, userId: string) {
         this.queryChannel = getLiveQueryChannel(this.id, userId);
     }
 
@@ -129,7 +133,7 @@ export const liveQueryKeepAliveRoute = '_liveQueryKeepAlive';
 
 interface SubscribeToQueryArgs<entityType = any> {
     entityKey: string,
-    orderBy?: EntityOrderBy<entityType>
+    options: FindOptions<entityType>
 }
 export declare type LiveQueryChange = {
     type: "all",
@@ -173,7 +177,7 @@ export class SubscriptionChannel<messageType> {
     subscribe(next: (message: messageType) => void, remult?: Remult): Promise<Unsubscribe>
     subscribe(listener: Partial<SubscriptionListener<messageType>>): Promise<Unsubscribe>
     //@internal
-    subscribe(next: ((message: messageType) => void) | Partial<SubscriptionListener<messageType>>, remult?: Remult) : Promise<Unsubscribe>{
+    subscribe(next: ((message: messageType) => void) | Partial<SubscriptionListener<messageType>>, remult?: Remult): Promise<Unsubscribe> {
         remult = remult || defaultRemult;
 
         let listener = next as Partial<SubscriptionListener<messageType>>;
