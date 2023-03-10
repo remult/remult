@@ -120,6 +120,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         this.idCache.set(id, row);
         return await row;
     }
+    //TODO - Used to prevent unnecessary many to one relations
     addToCache(item: entityType) {
         if (item)
             this.idCache.set(this.getEntityRef(item).getId() + '', item);

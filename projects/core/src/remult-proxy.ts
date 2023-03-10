@@ -3,7 +3,7 @@ import type { Allowed, AllowedForInstance, ApiClient, GetArguments, Remult, Remu
 import type { DataProvider } from "./data-interfaces";
 import { LiveQueryClient } from "./live-query/LiveQueryClient";
 import type { LiveQueryChangesListener, LiveQueryStorage, SubscriptionServer } from "./live-query/SubscriptionServer";
-import type { Repository } from "./remult3";
+import type { Repository, RepositoryImplementation } from "./remult3";
 
 
 /*@internal*/
@@ -77,6 +77,7 @@ export class RemultProxy implements Remult {
             getEntityRef: (...args2) => self.remultFactory().repo(...args).getEntityRef(...args2),
             insert: (args2) => self.remultFactory().repo(...args).insert(args2),
             liveQuery: (...args2) => self.remultFactory().repo(...args).liveQuery(...args2),
+            addToCache: (args2) => (self.remultFactory().repo(...args) as RepositoryImplementation<any>).addToCache(args2),
 
             get metadata() {
                 return self.remultFactory().repo(...args).metadata
