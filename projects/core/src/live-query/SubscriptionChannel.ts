@@ -15,7 +15,7 @@ export class LiveQuerySubscriber<entityType> {
     subscribeCode: () => void;
     unsubscribe: VoidFunction = () => { };
     async setAllItems(result: any[]) {
-        const items = await this.repo.loadManyToOneForManyRows(result, this.query.options.load);
+        const items = await this.repo.fromJsonArray(result, this.query.options.load);
         this.forListeners(listener => {
             listener(x => {
                 return items;
@@ -60,18 +60,13 @@ export class LiveQuerySubscriber<entityType> {
 
     async handle(messages: LiveQueryChange[]) {
 
-        let x = messages.filter(({ type }) => type == "add" || type == "replace");
-        let loadedItems = await this.repo.loadManyToOneForManyRows(x.map(m => {
-            const row = m.data.item;
-            let result = {};
-            for (const col of this.repo.metadata.fields.toArray()) {
-                result[col.key] = col.valueConverter.fromJson(row[col.key]);
+        {
+            let x = messages.filter(({ type }) => type == "add" || type == "replace");
+            let loadedItems = await this.repo.fromJsonArray(x.map(m => m.data.item), this.query.options.load);
+            for (let index = 0; index < x.length; index++) {
+                const element = x[index];
+                element.data.item = loadedItems[index];
             }
-            return result;
-        }), this.query.options.load);
-        for (let index = 0; index < x.length; index++) {
-            const element = x[index];
-            element.data.item = loadedItems[index];
         }
 
         this.forListeners(listener => {

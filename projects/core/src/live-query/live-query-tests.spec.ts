@@ -374,6 +374,16 @@ describe("test live query full cycle", () => {
         await repo.save(result1[0]);
         u();
     });
+    it("integration test 2", async () => {
+        var { repo, pm, repo2 } = setup2();
+        let result1: eventTestEntity[] = [];
+        await repo.insert({id:1,title:"noam"});
+        const u = repo.liveQuery().subscribe(({ applyChanges: reducer }) => result1 = reducer(result1));
+        await pm.flush();
+        expect(result1[0].title).toBe('noam');
+        expect(result1[0].birthDate.getFullYear()).toBe(1976)
+        u();
+    });
     it("test delete works", async () => {
         var { repo, pm, repo2 } = setup2();
         let result1: eventTestEntity[] = [];

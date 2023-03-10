@@ -44,7 +44,8 @@ export declare class RepositoryImplementation<entityType> implements Repository<
     liveQuery(options?: FindOptions<entityType>): any;
     find(options: FindOptions<entityType>): Promise<entityType[]>;
     buildEntityDataProviderFindOptions(options: FindOptions<entityType>): Promise<EntityDataProviderFindOptions>;
-    loadManyToOneForManyRows(rawRows: any[], load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[]): Promise<entityType[]>;
+    fromJsonArray(jsonItems: any[], load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[]): Promise<entityType[]>;
+    private loadManyToOneForManyRows;
     private mapRawDataToResult;
     fromJson(json: any, newRow?: boolean): Promise<entityType>;
     count(where?: EntityFilter<entityType>): Promise<number>;

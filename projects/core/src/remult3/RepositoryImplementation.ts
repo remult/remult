@@ -293,7 +293,16 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         opt.page = options.page;
         return opt;
     }
-    async loadManyToOneForManyRows(rawRows: any[], load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[]) {
+    async fromJsonArray(jsonItems: any[], load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[]) {
+        return this.loadManyToOneForManyRows(jsonItems.map(row => {
+            let result = {};
+            for (const col of this.metadata.fields.toArray()) {
+                result[col.key] = col.valueConverter.fromJson(row[col.key]);
+            }
+            return result;
+        }))
+    }
+    private async loadManyToOneForManyRows(rawRows: any[], load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[]) {
         let loadFields: FieldMetadata[] = undefined;
         if (load)
             loadFields = load(this.metadata.fields);
