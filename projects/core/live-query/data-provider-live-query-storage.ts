@@ -1,5 +1,5 @@
 import { initDataProvider } from "../server/initDataProvider";
-import { Remult } from "../src/context";
+import { allEntities, Remult } from "../src/context";
 import { Storage, DataProvider } from "../src/data-interfaces";
 import { LiveQueryStorage, StoredQuery } from "../src/live-query/SubscriptionServer";
 import { Entity, EntityBase, Fields, Repository } from "../src/remult3";
@@ -69,3 +69,4 @@ class LiveQueryStorageEntity extends EntityBase {
   @Fields.string()
   lastUsedIso = new Date().toISOString()
 }
+allEntities.splice(allEntities.indexOf(LiveQueryStorageEntity), 1);
