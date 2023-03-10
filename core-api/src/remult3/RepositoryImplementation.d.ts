@@ -49,7 +49,7 @@ export declare class RepositoryImplementation<entityType> implements Repository<
     fromJson(json: any, newRow?: boolean): Promise<entityType>;
     count(where?: EntityFilter<entityType>): Promise<number>;
     private cache;
-    findFirst(where?: EntityFilter<entityType>, options?: FindFirstOptions<entityType>): Promise<entityType>;
+    findFirst(where?: EntityFilter<entityType>, options?: FindFirstOptions<entityType>, skipOrderByAndLimit?: boolean): Promise<entityType>;
     private fieldsOf;
     create(item?: Partial<OmitEB<entityType>>): entityType;
     findId(id: any, options?: FindFirstOptionsBase<entityType>): Promise<entityType>;

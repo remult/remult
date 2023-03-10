@@ -270,7 +270,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         let opt = await this.buildEntityDataProviderFindOptions(options);
 
         let rawRows = await this.edp.find(opt);
-        let result = await this.loadManyToOneForManyRows( rawRows,options.load);
+        let result = await this.loadManyToOneForManyRows(rawRows, options.load);
         return result;
 
 
@@ -293,7 +293,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         opt.page = options.page;
         return opt;
     }
-    async loadManyToOneForManyRows( rawRows: any[],load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[]) {
+    async loadManyToOneForManyRows(rawRows: any[], load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[]) {
         let loadFields: FieldMetadata[] = undefined;
         if (load)
             loadFields = load(this.metadata.fields);
@@ -369,7 +369,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         return this.edp.count(await this.translateWhereToFilter(where));
     }
     private cache = new Map<string, cacheEntityInfo<entityType>>();
-    async findFirst(where?: EntityFilter<entityType>, options?: FindFirstOptions<entityType>): Promise<entityType> {
+    async findFirst(where?: EntityFilter<entityType>, options?: FindFirstOptions<entityType>, skipOrderByAndLimit = false): Promise<entityType> {
 
         if (!options)
             options = {};
@@ -408,7 +408,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             }
         }
 
-        r = this.find({ ...options, limit: 1 }).then(async items => {
+        r = this.find(skipOrderByAndLimit ? { ...options, orderBy: undefined } : { ...options, limit: 1 }).then(async items => {
             let r: entityType = undefined;
             if (items.length > 0)
                 r = items[0];
@@ -456,7 +456,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             useCache: true,
             ...options,
             where: this.metadata.idMetadata.getIdFilter(id),
-        });
+        }, true);
     }
 
 

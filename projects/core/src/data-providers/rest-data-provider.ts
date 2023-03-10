@@ -39,10 +39,9 @@ export class RestDataProvider implements DataProvider {
 //@internal
 export function findOptionsToJson(options: FindOptions<any>, meta: EntityMetadata) {
   return {
-    limit: options.limit,
-    page: options.page,
+    ...options,
     where: Filter.entityFilterToJson(meta, options.where),
-    orderBy: options.orderBy
+
   };
 }
 //@internal
@@ -103,6 +102,7 @@ export class RestEntityDataProvider implements EntityDataProvider {
       if (options.orderBy && options.orderBy.Segments) {
         let sort = '';
         let order = '';
+        let hasDescending = false;
         options.orderBy.Segments.forEach(c => {
           if (sort.length > 0) {
             sort += ",";
@@ -110,10 +110,14 @@ export class RestEntityDataProvider implements EntityDataProvider {
           }
           sort += c.field.key;
           order += c.isDescending ? "desc" : "asc";
+          if (c.isDescending)
+            hasDescending = true;
 
         });
-        url.add('_sort', sort);
-        url.add('_order', order);
+        if (sort)
+          url.add('_sort', sort);
+        if (hasDescending)
+          url.add('_order', order);
       }
       if (options.limit)
         url.add('_limit', options.limit);
@@ -140,7 +144,7 @@ export class RestEntityDataProvider implements EntityDataProvider {
       createKey: () => JSON.stringify({ url, filterObject }),
       run,
       subscribe: async (queryId) => {
-        const result:any[] = await run( liveQueryAction+ queryId);
+        const result: any[] = await run(liveQueryAction + queryId);
         return {
           result,
           unsubscribe: async () => {
