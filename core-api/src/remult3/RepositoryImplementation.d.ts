@@ -42,7 +42,7 @@ export declare class RepositoryImplementation<entityType> implements Repository<
     save(item: Partial<OmitEB<entityType>>[]): Promise<entityType[]>;
     save(item: Partial<OmitEB<entityType>>): Promise<entityType>;
     liveQuery(options?: FindOptions<entityType>): any;
-    find(options: FindOptions<entityType>): Promise<entityType[]>;
+    find(options: FindOptions<entityType>, skipOrderByAndLimit?: boolean): Promise<entityType[]>;
     buildEntityDataProviderFindOptions(options: FindOptions<entityType>): Promise<EntityDataProviderFindOptions>;
     fromJsonArray(jsonItems: any[], load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[]): Promise<entityType[]>;
     private loadManyToOneForManyRows;

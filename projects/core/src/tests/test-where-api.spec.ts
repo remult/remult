@@ -18,6 +18,7 @@ import { ClassType } from '../../classType';
 import { CustomSqlFilterBuilder, dbNamesOf } from '../filter/filter-consumer-bridge-to-sql-request';
 import { entityForrawFilter } from './entityForCustomFilter';
 import { describeClass } from '../remult3/DecoratorReplacer';
+import { title } from 'process';
 
 
 describe("test where stuff", () => {
@@ -45,12 +46,12 @@ describe("test where stuff", () => {
     });
     it("test two values", async () => {
         const json = await Filter.fromEntityFilter(repo.metadata, { $and: [{ id: 1 }, { id: 2 }] }).toJson();
-        
+
         expect(await repo.count(Filter.entityFilterFromJson(repo.metadata, json))).toBe(0);
     });
     it("test in and", async () => {
-        const json = await Filter.fromEntityFilter(repo.metadata, { $and: [{ id: [1,2] }, { id: [2] }] }).toJson();
-        
+        const json = await Filter.fromEntityFilter(repo.metadata, { $and: [{ id: [1, 2] }, { id: [2] }] }).toJson();
+
         expect(await repo.count(Filter.entityFilterFromJson(repo.metadata, json))).toBe(1);
     });
 
@@ -172,16 +173,17 @@ describe("custom filter", () => {
         let ok = new Done();
         let z = new RestDataProvider(() => ({
             httpClient: {
-            delete: ()=>undefined,
-            get: async (url) => {
-                ok.ok();
-                expect(url).toBe('/entityForrawFilter?%24custom%24filter=%7B%22oneAndThree%22%3Atrue%7D&__action=count');
-                return { count: 0 }
+                delete: () => undefined,
+                get: async (url) => {
+                    ok.ok();
+                    expect(url).toBe('/entityForrawFilter?%24custom%24filter=%7B%22oneAndThree%22%3Atrue%7D&__action=count');
+                    return { count: 0 }
 
-            },
-            post: ()=>undefined,
-            put: ()=>undefined,
-        },url:''}));
+                },
+                post: () => undefined,
+                put: () => undefined,
+            }, url: ''
+        }));
         let c = new Remult();
         c.dataProvider = (z);
         await c.repo(entityForrawFilter).count(entityForrawFilter.filter({ oneAndThree: true }));
@@ -189,71 +191,78 @@ describe("custom filter", () => {
     });
     it("test order by on rest request", async () => {
         let ok = new Done();
-        let c = new Remult( new RestDataProvider(() => ({
+        let c = new Remult(new RestDataProvider(() => ({
             httpClient: {
-            delete: ()=>undefined,
-            get: async (url) => {
-                ok.ok();
-                expect(url).toBe('/Categories?_sort=categoryName%2Cid');
-                return []
+                delete: () => undefined,
+                get: async (url) => {
+                    ok.ok();
+                    expect(url).toBe('/Categories?_sort=categoryName%2Cid');
+                    return []
 
-            },
-            post: ()=>undefined,
-            put: ()=>undefined,
-        },url:''})));
+                },
+                post: () => undefined,
+                put: () => undefined,
+            }, url: ''
+        })));
         await c.repo(Categories).find({
-            orderBy:{
-                categoryName:"asc",
-                id:"asc"
+            orderBy: {
+                categoryName: "asc",
+                id: "asc"
             }
         });
         ok.test();
     });
     it("test order by on rest request", async () => {
         let ok = new Done();
-        let c = new Remult( new RestDataProvider(() => ({
+        let c = new Remult(new RestDataProvider(() => ({
             httpClient: {
-            delete: ()=>undefined,
-            get: async (url) => {
-                ok.ok();
-                expect(url).toBe('/Categories?_sort=categoryName%2Cid&_order=asc%2Cdesc');
-                return []
+                delete: () => undefined,
+                get: async (url) => {
+                    ok.ok();
+                    expect(url).toBe('/Categories?_sort=categoryName%2Cid&_order=asc%2Cdesc');
+                    return []
 
-            },
-            post: ()=>undefined,
-            put: ()=>undefined,
-        },url:''})));
+                },
+                post: () => undefined,
+                put: () => undefined,
+            }, url: ''
+        })));
         await c.repo(Categories).find({
-            orderBy:{
-                categoryName:"asc",
-                id:"desc"
+            orderBy: {
+                categoryName: "asc",
+                id: "desc"
             }
         });
         ok.test();
     });
     it("test find id on api", async () => {
-        let myEntity  = class {
-            id=0;
+        let myEntity = class {
+            id = 0;
+            title = ''
         }
-        describeClass(myEntity,Entity("test",{
-            defaultOrderBy:x=>x.id
-        }),{
-            id:Fields.integer()
+        describeClass(myEntity, Entity("test", {
+            defaultOrderBy: {
+                title: "asc"
+            }
+        }), {
+            id: Fields.integer(),
+            title: Fields.string()
         })
 
         let ok = new Done();
         let z = new RestDataProvider(() => ({
             httpClient: {
-            delete: ()=>undefined,
-            get: async (url) => {
-                ok.ok();
-                expect(url).toBe('/test?id=8');
-                return []
+                delete: () => undefined,
+                get: async (url) => {
+                    ok.ok();
+                    expect(url).toBe('/test?id=8');
+                    return []
 
-            },
-            post: ()=>undefined,
-            put: ()=>undefined,
-        },url:''}));
+                },
+                post: () => undefined,
+                put: () => undefined,
+            }, url: ''
+        }));
         let c = new Remult();
         c.dataProvider = (z);
         await c.repo(myEntity).findId(8);

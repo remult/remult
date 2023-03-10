@@ -263,11 +263,15 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         } as LiveQuery<entityType>
     }
 
-    async find(options: FindOptions<entityType>): Promise<entityType[]> {
+    async find(options: FindOptions<entityType>, skipOrderByAndLimit = false): Promise<entityType[]> {
         Remult.onFind(this._info, options);
         if (!options)
             options = {};
         let opt = await this.buildEntityDataProviderFindOptions(options);
+        if (skipOrderByAndLimit) {
+            delete opt.orderBy;
+            delete opt.limit;
+        }
 
         let rawRows = await this.edp.find(opt);
         let result = await this.loadManyToOneForManyRows(rawRows, options.load);
@@ -331,7 +335,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             }
         }
         async function loadManyToOne(repo: RepositoryImplementation<any>, toLoad: any[]) {
-            let rows = await repo.find({ where: repo.metadata.idMetadata.getIdFilter(...toLoad) });
+            let rows = await repo.find({ where: repo.metadata.idMetadata.getIdFilter(...toLoad) },true);
             for (const r of rows) {
                 repo.addToCache(r);
             }
@@ -417,7 +421,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             }
         }
 
-        r = this.find(skipOrderByAndLimit ? { ...options, orderBy: undefined } : { ...options, limit: 1 }).then(async items => {
+        r = this.find({ ...options, limit: 1 }, skipOrderByAndLimit).then(async items => {
             let r: entityType = undefined;
             if (items.length > 0)
                 r = items[0];
