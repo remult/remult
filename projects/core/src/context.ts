@@ -10,7 +10,7 @@ import { RemultProxy } from "./remult-proxy";
 
 import type { LiveQueryStorage, LiveQueryPublisher, LiveQueryChangesListener, SubscriptionServer } from "./live-query/SubscriptionServer";
 import { buildRestDataProvider, ExternalHttpProvider, isExternalHttpProvider } from "./buildRestDataProvider";
-import { SubscriptionClient } from "./live-query/SubscriptionChannel";
+import { SubscriptionClient, Unsubscribe } from "./live-query/SubscriptionChannel";
 
 
 
@@ -261,9 +261,9 @@ export const queryConfig = {
 
 
 export interface EventDispatcher {
-    observe(what: () => any | Promise<any>): Promise<Unobserve>;
+    observe(what: () => any | Promise<any>): Promise<Unsubscribe>;
 }
-export declare type Unobserve = () => void;
+
 export class EventSource {
     listeners: (() => {})[] = []
     async fire() {

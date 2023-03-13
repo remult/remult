@@ -3,10 +3,11 @@ import { EntityOptions } from "../entity";
 import { LookupColumn } from '../column';
 import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef } from "./remult3";
 import { ClassType } from "../../classType";
-import { Remult, Unobserve } from "../context";
+import { Remult } from "../context";
 import { entityEventListener } from "../__EntityValueProvider";
 import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions } from "../data-interfaces";
 import { RefSubscriber } from ".";
+import { Unsubscribe } from "../live-query/SubscriptionChannel";
 export declare class RepositoryImplementation<entityType> implements Repository<entityType> {
     private entity;
     remult: Remult;
@@ -72,7 +73,7 @@ declare abstract class rowHelperBase<T> {
     set error(val: string);
     constructor(columnsInfo: FieldOptions[], instance: T, remult: Remult);
     _subscribers: SubscribableImp;
-    subscribe(listener: RefSubscriber): Unobserve;
+    subscribe(listener: RefSubscriber): Unsubscribe;
     _isLoading: boolean;
     initSubscribers(): void;
     get isLoading(): boolean;
@@ -148,7 +149,7 @@ export declare class FieldRefImplementation<entityType, valueType> implements Fi
     private rowBase;
     constructor(settings: FieldOptions, metadata: FieldMetadata, container: any, helper: EntityRef<entityType>, rowBase: rowHelperBase<entityType>);
     _subscribers: SubscribableImp;
-    subscribe(listener: RefSubscriber): Unobserve;
+    subscribe(listener: RefSubscriber): Unsubscribe;
     valueIsNull(): boolean;
     originalValueIsNull(): boolean;
     load(): Promise<valueType>;
@@ -325,7 +326,7 @@ declare class SubscribableImp implements Subscribable {
     subscribe(listener: (() => void) | {
         reportChanged: () => void;
         reportObserved: () => void;
-    }): Unobserve;
+    }): Unsubscribe;
 }
 export declare function getEntityMetadata<entityType>(entity: EntityMetadataOverloads<entityType>): EntityMetadata<entityType>;
 export declare function getRepository<entityType>(entity: RepositoryOverloads<entityType>): Repository<entityType>;

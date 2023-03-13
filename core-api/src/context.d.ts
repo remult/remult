@@ -3,7 +3,7 @@ import { EntityMetadata, EntityRef, FindOptions, Repository } from "./remult3";
 import { ClassType } from "../classType";
 import type { SubscriptionServer } from "./live-query/SubscriptionServer";
 import { ExternalHttpProvider } from "./buildRestDataProvider";
-import { SubscriptionClient } from "./live-query/SubscriptionChannel";
+import { SubscriptionClient, Unsubscribe } from "./live-query/SubscriptionChannel";
 export declare function isBackend(): boolean;
 export declare class Remult {
     /**Return's a `Repository` of the specific entity type
@@ -102,9 +102,8 @@ export declare const queryConfig: {
     defaultPageSize: number;
 };
 export interface EventDispatcher {
-    observe(what: () => any | Promise<any>): Promise<Unobserve>;
+    observe(what: () => any | Promise<any>): Promise<Unsubscribe>;
 }
-export declare type Unobserve = () => void;
 export declare class EventSource {
     listeners: (() => {})[];
     fire(): Promise<void>;

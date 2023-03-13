@@ -4,7 +4,7 @@ import { EntityOptions } from "../entity";
 import { CompoundIdField, LookupColumn, makeTitle } from '../column';
 import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef, LiveQuery, LiveQueryChangeInfo } from "./remult3";
 import { ClassType } from "../../classType";
-import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControllerSettings, Unobserve, EventSource } from "../context";
+import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControllerSettings,  EventSource } from "../context";
 import { AndFilter, rawFilterInfo, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
 import { Sort } from "../sort";
 import { v4 as uuid } from 'uuid';
@@ -21,7 +21,7 @@ import { Paginator, RefSubscriber, RefSubscriberBase } from ".";
 
 import { remult as defaultRemult, RemultProxy } from "../remult-proxy";
 import { getId } from "./getId";
-import { SubscriptionListener } from "../live-query/SubscriptionChannel";
+import { SubscriptionListener, Unsubscribe } from "../live-query/SubscriptionChannel";
 //import { remult } from "../remult-proxy";
 
 
@@ -336,7 +336,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             }
         }
         async function loadManyToOne(repo: RepositoryImplementation<any>, toLoad: any[]) {
-            let rows = await repo.find({ where: repo.metadata.idMetadata.getIdFilter(...toLoad) },true);
+            let rows = await repo.find({ where: repo.metadata.idMetadata.getIdFilter(...toLoad) }, true);
             for (const r of rows) {
                 repo.addToCache(r);
             }
@@ -646,7 +646,7 @@ abstract class rowHelperBase<T>
     }
 
     _subscribers: SubscribableImp;
-    subscribe(listener: RefSubscriber): Unobserve {
+    subscribe(listener: RefSubscriber): Unsubscribe {
         this.initSubscribers();
         return this._subscribers.subscribe(listener);
 
@@ -972,6 +972,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
             if (this.info.idMetadata.field instanceof CompoundIdField)
                 delete (d.id);
             let updatedRow: any;
+            let isNew = this.isNew();
             try {
 
                 this._subscribers?.reportChanged();
@@ -1005,6 +1006,10 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
 
                 if (this.info.entityInfo.saved)
                     await this.info.entityInfo.saved(this.instance);
+                if (this.repository.listeners)
+                    for (const listener of this.repository.listeners.filter(x => x.saved)) {
+                        await listener.saved(this.instance, isNew);
+                    }
 
                 await this.repository.remult.liveQueryPublisher.itemChanged(this.repository.metadata.key, [{ id: this.getId(), oldId: this.getOriginalId(), deleted: false }]);
                 this.saveOriginalData();
@@ -1189,7 +1194,7 @@ export class FieldRefImplementation<entityType, valueType> implements FieldRef<e
 
     }
     _subscribers: SubscribableImp;
-    subscribe(listener: RefSubscriber): Unobserve {
+    subscribe(listener: RefSubscriber): Unsubscribe {
         if (!this._subscribers) {
             this.rowBase.initSubscribers();
         }
@@ -2171,7 +2176,7 @@ class SubscribableImp implements Subscribable {
     subscribe(listener: (() => void) | {
         reportChanged: () => void,
         reportObserved: () => void
-    }): Unobserve {
+    }): Unsubscribe {
 
         let list: {
             reportChanged: () => void,

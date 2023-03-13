@@ -14,7 +14,7 @@ export { SqlDatabase, } from './src/data-providers/sql-database';
 export { CustomSqlFilterObject, CustomSqlFilterBuilder, dbNamesOf } from './src/filter/filter-consumer-bridge-to-sql-request';
 export { JsonDataProvider, JsonEntityStorage } from './src/data-providers/json-data-provider';
 export { Controller, BackendMethodOptions, BackendMethod, ProgressListener } from './src/server-action';
-export { Allowed, Allow, Remult, RemultContext, ApiClient, isBackend, AllowedForInstance, EventDispatcher, EventSource, Unobserve, UserInfo } from './src/context';
+export { Allowed, Allow, Remult, RemultContext, ApiClient, isBackend, AllowedForInstance, EventDispatcher, EventSource, UserInfo } from './src/context';
 export { ExternalHttpProvider } from './src/buildRestDataProvider';
 export { IdEntity } from './src/id-entity';
 export { SortSegment, Sort } from './src/sort';

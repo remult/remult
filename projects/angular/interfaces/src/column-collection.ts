@@ -1,11 +1,12 @@
 
-import { FieldMetadata, FieldRef, EntityMetadata, getEntityRef, IdEntity, ValueListItem, EntityRef, Allowed, FieldOptions, Remult, ValueConverter, Unobserve, Repository, EntityOrderBy, EntityFilter, ValueListInfo } from "remult";
+import { FieldMetadata, FieldRef, EntityMetadata, getEntityRef, IdEntity, ValueListItem, EntityRef, Allowed, FieldOptions, Remult, ValueConverter, Repository, EntityOrderBy, EntityFilter, ValueListInfo } from "remult";
 
 import { DataControlInfo, DataControlSettings, decorateDataSettings, getFieldDefinition, ValueOrEntityExpression } from "./data-control-interfaces";
 import { FilterHelper } from "./filter-helper";
 import { decorateColumnSettings, getEntitySettings, RefSubscriber } from 'remult/src/remult3';
 
 import { ClassType } from "remult/classType";
+import { Unsubscribe } from "../../../../core-api";
 
 
 
@@ -418,7 +419,7 @@ export class InputField<valueType> implements FieldRef<any, valueType> {
 
 
   }
-  subscribe(listener: RefSubscriber): Unobserve {
+  subscribe(listener: RefSubscriber): Unsubscribe {
     throw new Error("Method not implemented.");
   }
   valueIsNull() {

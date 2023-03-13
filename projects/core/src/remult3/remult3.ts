@@ -1,7 +1,6 @@
 
 import { ClassType } from "../../classType";
 import { FieldMetadata } from "../column-interfaces";
-import { Unobserve } from "../context";
 import { LiveQueryChange, SubscriptionListener, Unsubscribe } from "../live-query/SubscriptionChannel";
 import { EntityOptions } from "../entity";
 import { SortSegment } from "../sort";
@@ -43,7 +42,7 @@ export interface RefSubscriberBase {
 export declare type RefSubscriber = (() => void) | RefSubscriberBase;
 export interface Subscribable {
     // new to talk with Yoni;
-    subscribe(listener: RefSubscriber): Unobserve;
+    subscribe(listener: RefSubscriber): Unsubscribe;
 }
 
 export type FieldsRef<entityType> = {
@@ -231,7 +230,7 @@ export interface Repository<entityType> {
     */
     metadata: EntityMetadata<entityType>;
 
-    addEventListener(listener: entityEventListener<entityType>): Unobserve;
+    addEventListener(listener: entityEventListener<entityType>): Unsubscribe;
 }
 export interface LiveQuery<entityType> {
     subscribe(next: (info: LiveQueryChangeInfo<entityType>) => void): Unsubscribe

@@ -101,8 +101,6 @@ export {
     AllowedForInstance,
     EventDispatcher,
     EventSource,
-
-    Unobserve,
     UserInfo
 } from './src/context';
 export { ExternalHttpProvider } from './src/buildRestDataProvider'
