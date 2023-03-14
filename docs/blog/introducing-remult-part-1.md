@@ -1,10 +1,10 @@
 ---
-title: Introducing Remult (Part 1)
+title: "Introducing Remult: The Backend to Frontend Framework You Always Wanted"
 ---
 
 > March 14, 2023 | Noam Honig
 
-# Introducing Remult (Part 1)
+# Introducing Remult: The Backend to Frontend Framework You Always Wanted
 
 Application developers, as their name implies, like to develop applications––they ultimately care very little about frontend vs. backend, and really just want to deliver value to users.  Being an application developer myself, and very much like other application developers, one of the things that constantly drives my decision making when selecting tools and frameworks is the fact that I’m also quite lazy. 
 
