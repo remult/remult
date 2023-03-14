@@ -63,6 +63,11 @@ module.exports = {
         ]
       },
       {
+        text: 'Blog',
+        link: '/blog/introducing-remult-part-1',
+
+      },
+      {
         text: 'Discord',
         link: 'https://discord.gg/GXHk7ZfuG5'
       }
@@ -205,7 +210,15 @@ module.exports = {
             'appendix-1-get-server-side-props'
           ]
         }],
-
+      '/blog/': [
+        {
+          title: 'Remult Blog',
+          
+          children: [
+            'introducing-remult-part-1'
+          ]
+        }
+      ]
     }
   },
 
