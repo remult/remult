@@ -305,9 +305,9 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
     }
     public containsCaseInsensitive(col: FieldMetadata, val: any): void {
 
-
+        
         this.result.push(b => b.whereRaw(
-            'lower (' + this.nameProvider.$dbNameOf(col) + ") like lower ('%" + val.replace(/'/g, '\'\'') + "%')"));
+          'lower (' + b.client.ref( this.nameProvider.$dbNameOf(col)) + ") like lower ('%" + val.replace(/'/g, '\'\'') + "%')"));
         this.promises.push((async () => {
 
         })());

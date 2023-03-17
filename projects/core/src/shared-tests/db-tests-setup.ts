@@ -53,7 +53,9 @@ export function testInMemory(key: string, what: dbTestWhatSignature, focus = fal
     }, focus);
 }
 export const TestDbs = {
-    restDataProvider: "restDataProvider"
+    restDataProvider: "restDataProvider",
+    mongo:"mongo"
+
 }
 
 

@@ -786,3 +786,22 @@ testAll("test live query storage", async ({ db, remult }) => {
 }, false, {
     exclude: [TestDbs.restDataProvider]
 })
+
+testAll("test contains with names with casing", async ({ createEntity }) => {
+    const e = class {
+
+        a = 0;
+        firstName=''
+    }
+    describeClass(e, Entity("testNameContains", { allowApiCrud: true }), {
+        a: Fields.number(),
+        firstName: Fields.string()
+    })
+    const r = await createEntity(e);
+    await r.insert({ a: 1, firstName:"noam" });
+    let item = await r.findFirst({firstName:{$contains:"oa"}});
+    expect(item.firstName).toBe("noam");
+
+}, true,{
+    exclude:[TestDbs.mongo]
+})
