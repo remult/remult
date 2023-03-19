@@ -802,6 +802,6 @@ testAll("test contains with names with casing", async ({ createEntity }) => {
     let item = await r.findFirst({firstName:{$contains:"oa"}});
     expect(item.firstName).toBe("noam");
 
-}, true,{
+}, false,{
     exclude:[TestDbs.mongo]
 })
