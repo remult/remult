@@ -8,6 +8,6 @@
     "remult/remult-fresh": "https://cdn.skypack.dev/remult@0.17.0-exp.10/remult-fresh?dts",
     "remult/postgres/schema-builder": "https://cdn.skypack.dev/remult@0.17.0-exp.10/postgres/schema-builder?dts",
     "path": "https://deno.land/std/path/mod.ts",
-    "fs": "https://deno.land/std@0.147.0/node/fs.ts"
+    "https://deno.land/std/node/fs.ts": "https://deno.land/std@0.177.0/node/fs.ts"
   }
 }
