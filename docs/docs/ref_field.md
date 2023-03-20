@@ -20,7 +20,14 @@ for more info see: [Field Types](https://remult.dev/docs/field-types.html)
    ```
    
 ## caption
-A human readable name for the field
+A human readable name for the field. Can be used to achieve a consistent caption for a field throughout the app
+   
+   
+   *example*
+   ```ts
+   <input placeholder={taskRepo.metadata.fields.title.caption}/>
+   ```
+   
 ## allowNull
 If it can store null in the database
 ## includeInApi
@@ -70,14 +77,43 @@ An arrow function that'll be used to perform validations on it
    })
    ```
    
+## serverExpression
+An expression that will determine this fields value on the backend and be provided to the front end
+
+Arguments:
+* **entity**
 ## dbName
 The name of the column in the database that holds the data for this field. If no name is set, the key will be used instead.
 ## sqlExpression
 Used or fields that are based on an sql expressions, instead of a physical table column
+   
+   
+   *example*
+   ```ts
+   
+   @Fields.integer({
+     sqlExpression:e=> 'length(title)'
+   })
+   titleLength = 0;
+   @Fields.string()
+   title='';
+   ```
+   
 ## dbReadOnly
 For fields that shouldn't be part of an update or insert statement
 ## valueConverter
 The value converter to be used when loading and saving this field
+## displayValue
+an arrow function that translates the value to a display value
+
+Arguments:
+* **entity**
+* **value**
+## defaultValue
+an arrow function that determines the default value of the field, when the entity is created using the `repo.create` method
+
+Arguments:
+* **entity**
 ## inputType
 The html input type for this field
 ## lazy
@@ -95,19 +131,3 @@ The entity type to which this field belongs
 The key to be used for this field
 ## saving
 * **saving**
-## serverExpression
-An expression that will determine this fields value on the backend and be provided to the front end
-
-Arguments:
-* **entity**
-## displayValue
-an arrow function that translates the value to a display value
-
-Arguments:
-* **entity**
-* **value**
-## defaultValue
-an arrow function that determines the default value of the field, when the entity is created using the `repo.create` method
-
-Arguments:
-* **entity**

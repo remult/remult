@@ -4,7 +4,11 @@ import { EntityMetadata, OmitEB } from './remult3';
 export interface DataProvider {
     getEntityDataProvider(entity: EntityMetadata): EntityDataProvider;
     transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void>;
-    supportsrawFilter?: boolean;
+    supportsRawFilter?: boolean;
+    ensureSchema?(entities: EntityMetadata[]): Promise<void>;
+}
+export interface Storage {
+    ensureSchema(): Promise<void>;
 }
 export interface EntityDataProvider {
     count(where: Filter): Promise<number>;

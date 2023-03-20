@@ -1,7 +1,9 @@
-import { EntityOrderBy, remult as defaultRemult, Remult, Repository, Sort } from '../../index';
-import { LiveQueryChangeInfo } from '../remult3';
+import { EntityOrderBy, FindOptions, remult as defaultRemult, Remult, Repository, Sort } from '../../index';
+import type { LiveQueryChangeInfo, RepositoryImplementation } from '../remult3';
 import { getId } from '../remult3/getId';
+import { v4 as uuid } from 'uuid'
 import { LiveQueryChangesListener } from './SubscriptionServer';
+import { getLiveQueryChannel } from '../data-api';
 
 export const streamUrl = 'stream';
 //@internal
@@ -13,7 +15,7 @@ export class LiveQuerySubscriber<entityType> {
     subscribeCode: () => void;
     unsubscribe: VoidFunction = () => { };
     async setAllItems(result: any[]) {
-        const items = await Promise.all(result.map(item => this.repo.fromJson(item)));
+        const items = await this.repo.fromJsonArray(result, this.query.options.load);
         this.forListeners(listener => {
             listener(x => {
                 return items;
@@ -31,32 +33,39 @@ export class LiveQuerySubscriber<entityType> {
     }
 
     forListeners(what: (listener: (((reducer: (prevState: entityType[]) => entityType[]) => void))) => void, changes: LiveQueryChange[]) {
-        what(reducer => this.defaultQueryState = reducer(this.defaultQueryState))
+        what(reducer => {
+            this.defaultQueryState = reducer(this.defaultQueryState);
+            if (changes.find(c => c.type === "add" || c.type === "replace")) {
+                if (this.query.options.orderBy) {
+                    const o = Sort.translateOrderByToSort(this.repo.metadata, this.query.options.orderBy);
+                    this.defaultQueryState.sort((a: any, b: any) => o.compare(a, b));
+                }
+            }
+        })
 
         for (const l of this.listeners) {
             what(reducer => {
-                l(this.createReducerType(reducer, changes))
+                l.next(this.createReducerType(reducer, changes))
             })
         }
     }
 
     private createReducerType(applyChanges: (prevState: entityType[]) => entityType[], changes: LiveQueryChange[]): LiveQueryChangeInfo<entityType> {
         return {
-             applyChanges,
+            applyChanges,
             changes,
             items: this.defaultQueryState
         };
     }
 
     async handle(messages: LiveQueryChange[]) {
-        for (const m of messages) {
-            switch (m.type) {
-                case "add":
-                case "replace":
-                    m.data.item = await this.repo.fromJson(m.data.item);
-                    break;
-                case "all":
-                    this.setAllItems(m.data);
+
+        {
+            let x = messages.filter(({ type }) => type == "add" || type == "replace");
+            let loadedItems = await this.repo.fromJsonArray(x.map(m => m.data.item), this.query.options.load);
+            for (let index = 0; index < x.length; index++) {
+                const element = x[index];
+                element.data.item = loadedItems[index];
             }
         }
 
@@ -64,7 +73,6 @@ export class LiveQuerySubscriber<entityType> {
             listener(items => {
                 if (!items)
                     items = [];
-                let needSort = false;
                 for (const message of messages) {
                     switch (message.type) {
                         case "all":
@@ -72,24 +80,16 @@ export class LiveQuerySubscriber<entityType> {
                             break;
                         case "replace": {
                             items = items.map(x => getId(this.repo.metadata, x) === message.data.oldId ? message.data.item : x)
-                            needSort = true;
                             break;
                         }
                         case "add":
                             items = items.filter(x => getId(this.repo.metadata, x) !== getId(this.repo.metadata, message.data.item));
                             items.push(message.data.item);
-                            needSort = true;
                             break;
                         case "remove":
                             items = items.filter(x => getId(this.repo.metadata, x) !== message.data.id);
                             break;
                     };
-                }
-                if (needSort) {
-                    if (this.query.orderBy) {
-                        const o = Sort.translateOrderByToSort(this.repo.metadata, this.query.orderBy);
-                        items.sort((a: any, b: any) => o.compare(a, b));
-                    }
                 }
                 return items;
             });
@@ -97,13 +97,23 @@ export class LiveQuerySubscriber<entityType> {
     }
 
     defaultQueryState: entityType[] = [];
-    listeners: (((reducer: LiveQueryChangeInfo<entityType>) => void))[] = [];
-    constructor(private repo: Repository<entityType>, private query: SubscribeToQueryArgs<entityType>) { }
+    listeners: SubscriptionListener<LiveQueryChangeInfo<entityType>>[] = [];
+    id = uuid()
+    constructor(private repo: RepositoryImplementation<entityType>, private query: SubscribeToQueryArgs<entityType>, userId: string) {
+        this.queryChannel = getLiveQueryChannel(this.id, userId);
+    }
 
 }
+
+export interface SubscriptionListener<type> {
+    next(message: type): void;
+    error(err: any): void
+    complete(): void
+}
+
 export type Unsubscribe = VoidFunction;
 export interface SubscriptionClientConnection {
-    subscribe(channel: string, onMessage: (message: any) => void): Unsubscribe;
+    subscribe(channel: string, onMessage: (message: any) => void, onError: (err: any) => void): Promise<Unsubscribe>;
     close(): void;
 }
 
@@ -112,13 +122,13 @@ export interface SubscriptionClient {
 }
 
 
-export const liveQueryKeepAliveRoute = '/_liveQueryKeepAlive';
+export const liveQueryKeepAliveRoute = '_liveQueryKeepAlive';
 
 
 
 interface SubscribeToQueryArgs<entityType = any> {
     entityKey: string,
-    orderBy?: EntityOrderBy<entityType>
+    options: FindOptions<entityType>
 }
 export declare type LiveQueryChange = {
     type: "all",
@@ -159,9 +169,22 @@ export class SubscriptionChannel<messageType> {
         remult = remult || defaultRemult;
         remult.subscriptionServer.publishMessage(this.channelKey, message);
     }
-    subscribe(onMessage: (message: messageType) => void, remult?: Remult) {
+    subscribe(next: (message: messageType) => void, remult?: Remult): Promise<Unsubscribe>
+    subscribe(listener: Partial<SubscriptionListener<messageType>>): Promise<Unsubscribe>
+    //@internal
+    subscribe(next: ((message: messageType) => void) | Partial<SubscriptionListener<messageType>>, remult?: Remult): Promise<Unsubscribe> {
         remult = remult || defaultRemult;
-        return remult.liveQuerySubscriber.subscribeChannel(this.channelKey, onMessage);
+
+        let listener = next as Partial<SubscriptionListener<messageType>>;
+        if (typeof (next) === "function") {
+            listener = {
+                next
+            }
+        }
+        listener.error ??= () => { };
+        listener.complete ??= () => { };
+
+        return remult.liveQuerySubscriber.subscribeChannel(this.channelKey, listener as SubscriptionListener<messageType>);
     }
 }
 

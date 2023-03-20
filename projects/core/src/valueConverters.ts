@@ -15,6 +15,8 @@ export class ValueConverters {
 
   static readonly Date: ValueConverter<Date> = {
     toJson: (val: Date) => {
+      if (val===null)
+      return null;
       if (!val)
         return '';
       if (typeof (val) === "string")
@@ -23,12 +25,13 @@ export class ValueConverters {
         return val.toISOString();
       }
       else {
-        console.error("ToJsonError", val);
-        throw new Error("Expected date but got val");
+        throw new Error("Expected date but got " + val);
       }
 
     },
     fromJson: (val: string) => {
+      if (val === null)
+        return null;
       if (val == undefined)
         return undefined;
       if (val == '')
@@ -38,7 +41,15 @@ export class ValueConverters {
       return new Date(Date.parse(val));
     },
     toDb: x => x,
-    fromDb: x => x,
+    fromDb: val => {
+      if (typeof val === "number")
+        val = new Date(val);
+      if (typeof (val) === "string")
+        val = new Date(val);
+      if (val && !(val instanceof Date))
+        throw "expected date but got " + val;
+      return val;
+    },
     fromInput: x => ValueConverters.Date.fromJson(x),
     toInput: x => ValueConverters.Date.toJson(x),
     displayValue: (val) => {
@@ -79,12 +90,7 @@ export class ValueConverters {
 
     }//when using date storage,  the database expects and returns a date local and every where else we reflect on date iso
     , fromDb: (val: Date) => {
-
-      var d = val as Date;
-      if (!d)
-        return null;
-      return val;
-
+      return ValueConverters.Date.fromDb(val)
     },
     fieldTypeInDb: 'date',
     displayValue: (value: Date) => {

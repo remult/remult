@@ -1,9 +1,9 @@
 export interface SubscriptionServer {
-    publishMessage<T>(channel: string, message: T): void;
+    publishMessage<T>(channel: string, message: T): Promise<void>;
 }
 export interface LiveQueryStorage {
-    add(query: StoredQuery): void;
-    remove(queryId: any): void;
+    add(query: StoredQuery): Promise<void>;
+    remove(queryId: string): Promise<void>;
     forEach(entityKey: string, callback: (args: {
         query: StoredQuery;
         setData(data: any): Promise<void>;
@@ -18,8 +18,9 @@ export declare class InMemoryLiveQueryStorage implements LiveQueryStorage {
         lastUsed: string;
     })[];
     constructor();
-    add(query: StoredQuery): void;
-    remove(id: any): void;
+    add(query: StoredQuery): Promise<void>;
+    removeCountForTesting: number;
+    remove(id: any): Promise<void>;
     forEach(entityKey: string, handle: (args: {
         query: StoredQuery;
         setData(data: any): Promise<void>;

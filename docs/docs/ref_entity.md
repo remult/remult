@@ -88,7 +88,7 @@ A filter that will be used for all queries from this entity both from the API an
    
    *example*
    ```ts
-   fixedWhereFilter: { archive:false }
+   backendPrefilter: { archive:false }
    ```
    
    
@@ -112,18 +112,6 @@ An order by to be used, in case no order by was specified
    defaultOrderBy: { price: "desc", name: "asc" }
    ```
    
-## dbName
-The name of the table in the database that holds the data for this entity.
-If no name is set, the `key` will be used instead.
-   
-   
-   *example*
-   ```ts
-   dbName:'myProducts'
-   ```
-   
-## sqlExpression
-For entities that are based on SQL expressions instead of a physical table or view
 ## saving
 An event that will be fired before the Entity will be saved to the database.
 If the `error` property of the entity's ref or any of its fields will be set, the save will be aborted and an exception will be thrown.
@@ -164,8 +152,36 @@ Will be called when the entity is being validated, usually prior to the `saving`
 Arguments:
 * **row**
 * **ref**
+## dbName
+The name of the table in the database that holds the data for this entity.
+If no name is set, the `key` will be used instead.
+   
+   
+   *example*
+   ```ts
+   dbName:'myProducts'
+   ```
+   
+## sqlExpression
+For entities that are based on SQL expressions instead of a physical table or view
 ## id
 An arrow function that identifies the `id` column to use for this entity
+   
+   
+   *example*
+   ```ts
+   //Single column id
+   @Entity<products>("products",{ id:p=>p.productCode })
+   ```
+   
+   
+   
+   *example*
+   ```ts
+   //Multiple columns id
+   @Entity<orderdetails>("orderdetails",{ id:od=> [od.orderId, od.productCode] })
+   ```
+   
 
 Arguments:
 * **entity**

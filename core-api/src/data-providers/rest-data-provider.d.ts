@@ -8,7 +8,7 @@ export declare class RestDataProvider implements DataProvider {
     constructor(apiProvider: () => ApiClient);
     getEntityDataProvider(entity: EntityMetadata): RestEntityDataProvider;
     transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void>;
-    supportsrawFilter: boolean;
+    supportsRawFilter: boolean;
 }
 export declare class RestEntityDataProvider implements EntityDataProvider {
     private url;
@@ -36,3 +36,4 @@ export declare class RestDataProviderHttpProviderUsingFetch implements RestDataP
     }): Promise<any>;
 }
 export declare function addFilterToUrlAndReturnTrueIfSuccessful(filter: any, url: UrlBuilder): boolean;
+export declare const liveQueryAction = "liveQuery-";

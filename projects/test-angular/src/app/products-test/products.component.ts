@@ -1,8 +1,10 @@
 import { Component, NgZone, OnInit } from '@angular/core';
-import { Remult, Entity, IdEntity, Fields, Controller, InMemoryDataProvider, Sort, BackendMethod } from 'remult';
+import { Remult, Entity, IdEntity, Fields, Controller, InMemoryDataProvider, Sort, BackendMethod, remult } from 'remult';
 import { GridSettings } from '@remult/angular/interfaces';
 import { DialogConfig } from '../../../../angular';
 import * as ably from 'ably';
+import { Observable } from 'rxjs';
+
 
 
 
@@ -20,48 +22,29 @@ import * as ably from 'ably';
 export class ProductsComponent implements OnInit {
   constructor(private remult: Remult, private zone: NgZone) {
     remult.liveQuerySubscriber.wrapMessageHandling = x => zone.run(() => x());
-    if (false) {
-      const p = new AblyLiveQueryProvider(new ably.Realtime.Promise(
-        {
-          async authCallback(data, callback) {
-            try {
-              callback(null, await ProductsComponent.getAblyToken())
-            }
-            catch (error: any) {
-              callback(error, null);
-            }
-          },
-        }
 
-      ))
-      remult.liveQuerySubscriber = new LiveQueryClient(p);
-    }
   }
 
 
-  grid = new GridSettings(this.remult.repo(Task), {
-    allowCrud: true, gridButtons: [{
-      name: 'reload',
-      click: () => {
-        this.grid.reloadData();
-      }
-    }]
-  });
-
   messages: string[] = [];
   async ngOnInit() {
-    await this.remult.repo(Task).count();
 
 
 
   }
   tasks: Observable<Task[]> = new Observable((x) => {
     let tasks: Task[] = [];
-    return this.remult.repo(Task).query().subscribe(newResult => {
-      tasks = newResult(tasks);
+    return this.remult.repo(Task).liveQuery().subscribe(newResult => {
+      tasks = newResult.items;
       x.next(tasks);
     })
   });
+  save(t: Task) {
+    remult.repo(Task).save(t)
+  }
+  setAllCompleted(completed: boolean) {
+    Task.setAllCompleted(completed)
+  }
 
   @BackendMethod({ allowed: true })
   static async getAblyToken() {
@@ -74,34 +57,28 @@ export class ProductsComponent implements OnInit {
   }
 }
 
-
-export const helper = {
-  onSaved: (t: Task) => { },
-  onDeleted: (t: Task) => { },
-}
-
-@Entity<Task>("tasks", {
-  allowApiCrud: true,
-  saved: item => {
-    helper.onSaved(item);
-  },
-  deleted: item => {
-    helper.onDeleted(item)
-  }
+@Entity("tasks", {
+  allowApiCrud: true
 })
-export class Task extends IdEntity {
-
-  @Fields.string()
-  title = '';
+export class Task {
+  @Fields.autoIncrement()
+  id = 0
+  @Fields.string<Task>()
+  title = ''
   @Fields.boolean()
-  completed = false;
+  completed = false
+  @BackendMethod({ allowed: true })
+  static async setAllCompleted(completed: boolean) {
+    const taskRepo = remult.repo(Task);
+    for (const task of await taskRepo.find()) {
+      await taskRepo.save({ ...task, completed })
+    }
+  }
 }
 
 
 
-import { Observable } from 'rxjs';
-import { AblyLiveQueryProvider } from '../../../../core/live-query/ably';
-import { LiveQueryClient } from '../../../../core/live-query';
+
 
 
 

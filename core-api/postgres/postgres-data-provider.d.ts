@@ -16,6 +16,7 @@ export declare class PostgresDataProvider implements SqlImplementation {
     getLimitSqlSyntax(limit: number, offset: number): string;
     createCommand(): SqlCommand;
     constructor(pool: PostgresPool);
+    ensureSchema(entities: EntityMetadata<any>[]): Promise<void>;
     transaction(action: (dataProvider: SqlImplementation) => Promise<void>): Promise<void>;
 }
 export interface PostgresCommandSource {
@@ -25,6 +26,5 @@ export declare function createPostgresConnection(options?: {
     connectionString?: string;
     sslInDev?: boolean;
     configuration?: "heroku" | PoolConfig;
-    autoCreateTables?: boolean;
 }): Promise<SqlDatabase>;
 export declare function preparePostgresQueueStorage(sql: SqlDatabase): Promise<import("../server/expressBridge").EntityQueueStorage>;

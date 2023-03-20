@@ -1,9 +1,9 @@
 import { CustomModuleLoader } from './CustomModuleLoader';
-
+import { writeToLog } from '../../../../core/myLog'
 let moduleLoader = new CustomModuleLoader('/dist/test-angular');
-import * as express from 'express';
+import express from 'express';
 import * as swaggerUi from 'swagger-ui-express';
-import * as cors from 'cors';
+import cors from 'cors';
 
 import * as fs from 'fs';
 //import '../app.module';
@@ -13,9 +13,9 @@ import { createKnexDataProvider } from 'remult/remult-knex';
 
 import { createPostgresConnection, preparePostgresQueueStorage } from 'remult/postgres';
 
-import * as compression from 'compression';
-import * as forceHttps from 'express-force-https';
-import * as jwt from 'express-jwt';
+import compression from 'compression';
+import forceHttps from 'express-force-https';
+import jwt from 'express-jwt';
 import { graphqlHTTP } from 'express-graphql';
 import { buildSchema } from 'graphql';
 
@@ -26,11 +26,32 @@ import { remultExpress } from '../../../../core/remult-express';
 import { AppComponent } from '../app.component';
 import { AsyncLocalStorage } from 'async_hooks';
 
-import { helper, ProductsComponent, Task } from '../products-test/products.component';
+
+import { Task } from '../products-test/products.component';
+import { remultNext } from '../../../../core/remult-next'
+import { DataProviderLiveQueryStorage } from '../../../../core/live-query/data-provider-live-query-storage'
+
+
+import type * as Ably from 'ably';
+import { Rest } from "ably/promises";
+import { SubscriptionServer } from '../../../../core';
+
+
+class AblySubscriptionServer implements SubscriptionServer {
+    constructor(private ably: Ably.Types.RestPromise) { }
+    async publishMessage<T>(channel: string, message: T) {
+        console.log(
+            new Date().toISOString() + ": " + channel + "\n" + JSON.stringify(message, undefined, 4)
+        )
+        await this.ably.channels.get(channel).publish({ data: message });
+    }
+}
 
 
 const getDatabase = async () => {
-
+    return createPostgresConnection({
+        connectionString: process.env['DATABASE_URL']
+    })
     const result = await createKnexDataProvider({
         client: 'mssql',
         connection: {
@@ -67,43 +88,67 @@ serverInit().then(async (dataSource) => {
     if (process.env.DISABLE_HTTPS != "true")
         app.use(forceHttps);
 
+    writeToLog("asb");
 
-
-    let remultApi = remultExpress({
-        // serverEventDispatcher: () => {
-
-        //     const d = new AblyServerEventDispatcher(new ably.Realtime.Promise(  process.env.ABLY_KEY));
-        //     return d;
-        // },
-        entities: [Task],
-        controllers: [AppComponent, ProductsComponent],
-        //     dataProvider: async () => await createPostgresConnection(),
-        queueStorage: await preparePostgresQueueStorage(dataSource),
-        logApiEndPoints: true,
-
-
-        initRequest: async () => {
-
-        },
-        initApi: async remultParam => {
-        }
-    });
 
     app.use(express.json());
-    app.use(remultApi);
-
-    app.use('/api/docs', swaggerUi.serve,
-        swaggerUi.setup(remultApi.openApiDoc({ title: 'remult-angular-todo' })));
 
 
-    app.use(express.static('dist/my-project'));
-    let g = remultGraphql(remultApi);
-    app.use('/api/graphql', graphqlHTTP({
-        schema: buildSchema(g.schema),
-        rootValue: g.rootValue,
-        graphiql: true,
-    }));
 
+    if (true) {
+        const rNext = remultNext({
+            entities: [Task],
+            dataProvider: getDatabase(),// async () => await createPostgresConnection(),
+            liveQueryStorage: new DataProviderLiveQueryStorage(getDatabase()),
+            subscriptionServer: new AblySubscriptionServer(
+                new Rest(process.env["ABLY_API_KEY"]!)
+            ),
+            initRequest: async (req, options) => {
+                return
+                const x = options.remult.subscriptionServer;
+
+                options.remult.subscriptionServer = {
+                    publishMessage: async (c, m) => {
+                        console.log(c + "\n" + JSON.stringify(m, undefined, 2))
+                        x.publishMessage(c, m);
+                    },
+                    //@ts-ignore
+                    openHttpServerStream: (...args) => x.openHttpServerStream(...args),
+                    //@ts-ignore
+                    subscribeToChannel: (...args) => x.subscribeToChannel(...args)
+                }
+
+            }
+        })
+        app.use(async (req, res, next) => {
+
+            if (req.path === '/api/getAblyToken') {
+                const token = await new Rest(
+                    process.env["ABLY_API_KEY"]!
+                ).auth.createTokenRequest({
+                    capability: {
+                        "*": ["subscribe"],
+                    },
+                });
+                res.status(200).json(token);
+                return;
+            }
+            //@ts-ignore
+            const r = await rNext(req, res)
+            console.log("REQUEST DONE!!!!");
+            if (!r)
+                next();
+        })
+    }
+    else {
+        const rExpress = remultExpress({
+            entities: [Task],
+            dataProvider: getDatabase(),// async () => await createPostgresConnection(),
+        })
+        app.use(rExpress)
+    }
+
+    //app.use(remultApi);
 
     app.use('/*', async (req, res) => {
         const index = 'dist/my-project/index.html';
@@ -114,8 +159,6 @@ serverInit().then(async (dataSource) => {
             res.status(404).json('No Result ' + req.path);
         }
     });
-
-
 
     let port = process.env.PORT || 3001;
     app.listen(port);

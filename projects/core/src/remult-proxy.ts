@@ -3,7 +3,7 @@ import type { Allowed, AllowedForInstance, ApiClient, GetArguments, Remult, Remu
 import type { DataProvider } from "./data-interfaces";
 import { LiveQueryClient } from "./live-query/LiveQueryClient";
 import type { LiveQueryChangesListener, LiveQueryStorage, SubscriptionServer } from "./live-query/SubscriptionServer";
-import type { Repository } from "./remult3";
+import type { Repository, RepositoryImplementation } from "./remult3";
 
 
 /*@internal*/
@@ -37,6 +37,7 @@ export class RemultProxy implements Remult {
 
     get dataProvider(): DataProvider { return this.remultFactory().dataProvider };
     set dataProvider(provider: DataProvider) { this.remultFactory().dataProvider = provider }
+    /*@internal*/
     get repCache(): Map<DataProvider, Map<ClassType<any>, Repository<any>>> { return this.remultFactory().repCache };
 
     authenticated(): boolean {
@@ -61,7 +62,31 @@ export class RemultProxy implements Remult {
     }
 
 
-    repo: typeof RemultProxy.defaultRemult.repo = (...args) => this.remultFactory().repo(...args);
+    //@ts-ignore
+    repo: typeof RemultProxy.defaultRemult.repo = (...args) => {
+        let self = this;
+        return {
+            addEventListener: (...args2) => self.remultFactory().repo(...args).addEventListener(...args2),
+            count: (...args2) => self.remultFactory().repo(...args).count(...args2),
+            create: (...args2) => self.remultFactory().repo(...args).create(...args2),
+            delete: (args2) => self.remultFactory().repo(...args).delete(args2),
+            find: (...args2) => self.remultFactory().repo(...args).find(...args2),
+            findFirst: (...args2) => self.remultFactory().repo(...args).findFirst(...args2),
+            findId: (...args2) => self.remultFactory().repo(...args).findId(...args2),
+            fromJson: (...args2) => self.remultFactory().repo(...args).fromJson(...args2),
+            getEntityRef: (...args2) => self.remultFactory().repo(...args).getEntityRef(...args2),
+            insert: (args2) => self.remultFactory().repo(...args).insert(args2),
+            liveQuery: (...args2) => self.remultFactory().repo(...args).liveQuery(...args2),
+            addToCache: (args2) => (self.remultFactory().repo(...args) as RepositoryImplementation<any>).addToCache(args2),
+
+            get metadata() {
+                return self.remultFactory().repo(...args).metadata
+            },
+            query: (...args2) => self.remultFactory().repo(...args).query(...args2),
+            save: (args2) => self.remultFactory().repo(...args).save(args2),
+            update: (...args2) => self.remultFactory().repo(...args).update(...args2),
+        }
+    };
     get user() {
         return this.remultFactory().user;
     }

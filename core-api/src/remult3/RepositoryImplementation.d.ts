@@ -3,10 +3,11 @@ import { EntityOptions } from "../entity";
 import { LookupColumn } from '../column';
 import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef, MemberType } from "./remult3";
 import { ClassType } from "../../classType";
-import { Remult, Unobserve } from "../context";
+import { Remult } from "../context";
 import { entityEventListener, packedRowInfo } from "../__EntityValueProvider";
 import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions } from "../data-interfaces";
 import { RefSubscriber } from ".";
+import { Unsubscribe } from "../live-query/SubscriptionChannel";
 export declare class RepositoryImplementation<entityType> implements Repository<entityType> {
     private entity;
     remult: Remult;
@@ -42,15 +43,17 @@ export declare class RepositoryImplementation<entityType> implements Repository<
     save(item: Partial<OmitEB<entityType>>[]): Promise<entityType[]>;
     save(item: Partial<OmitEB<entityType>>): Promise<entityType>;
     liveQuery(options?: FindOptions<entityType>): any;
-    find(options: FindOptions<entityType>): Promise<entityType[]>;
+    find(options: FindOptions<entityType>, skipOrderByAndLimit?: boolean): Promise<entityType[]>;
     buildEntityDataProviderFindOptions(options: FindOptions<entityType>): Promise<EntityDataProviderFindOptions>;
+    fromJsonArray(jsonItems: any[], load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[]): Promise<entityType[]>;
+    private loadManyToOneForManyRows;
     private mapRawDataToResult;
+    fromJson(json: any, newRow?: boolean): Promise<entityType>;
     count(where?: EntityFilter<entityType>): Promise<number>;
     private cache;
-    findFirst(where?: EntityFilter<entityType>, options?: FindFirstOptions<entityType>): Promise<entityType>;
+    findFirst(where?: EntityFilter<entityType>, options?: FindFirstOptions<entityType>, skipOrderByAndLimit?: boolean): Promise<entityType>;
     private fieldsOf;
     create(item?: Partial<OmitEB<entityType>>): entityType;
-    fromJson(json: any, newRow?: boolean): Promise<entityType>;
     findId(id: any, options?: FindFirstOptionsBase<entityType>): Promise<entityType>;
 }
 export declare function __updateEntityBasedOnWhere<T>(entityDefs: EntityMetadata<T>, where: EntityFilter<T>, r: T): void;
@@ -70,7 +73,7 @@ declare abstract class rowHelperBase<T> {
     set error(val: string);
     constructor(columnsInfo: FieldOptions[], instance: T, remult: Remult);
     _subscribers: SubscribableImp;
-    subscribe(listener: RefSubscriber): Unobserve;
+    subscribe(listener: RefSubscriber): Unsubscribe;
     _isLoading: boolean;
     initSubscribers(): void;
     get isLoading(): boolean;
@@ -148,7 +151,7 @@ export declare class FieldRefImplementation<entityType, valueType> implements Fi
     private rowBase;
     constructor(settings: FieldOptions, metadata: FieldMetadata, container: any, helper: EntityRef<entityType>, rowBase: rowHelperBase<entityType>);
     _subscribers: SubscribableImp;
-    subscribe(listener: RefSubscriber): Unobserve;
+    subscribe(listener: RefSubscriber): Unsubscribe;
     valueIsNull(): boolean;
     originalValueIsNull(): boolean;
     load(): Promise<valueType>;
@@ -180,7 +183,6 @@ export declare class columnDefsImpl implements FieldMetadata {
     private settings;
     private entityDefs;
     constructor(settings: FieldOptions, entityDefs: EntityFullInfo<any>, remult: Remult);
-    private _workingOnDbName;
     getDbName(): Promise<string>;
     options: FieldOptions<any, any>;
     target: ClassType<any>;
@@ -228,7 +230,10 @@ export declare class Fields {
     static integer<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]): MemberType<Number>;
     static autoIncrement<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]): MemberType<Number>;
     static number<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]): MemberType<Number>;
+    static createdAt<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]): MemberType<Date>;
+    static updatedAt<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]): MemberType<Date>;
     static uuid<entityType = any>(...options: (FieldOptions<entityType, string> | ((options: FieldOptions<entityType, string>, remult: Remult) => void))[]): MemberType<any>;
+    static cuid<entityType = any>(...options: (FieldOptions<entityType, string> | ((options: FieldOptions<entityType, string>, remult: Remult) => void))[]): MemberType<any>;
     static string<entityType = any>(...options: (StringFieldOptions<entityType> | ((options: StringFieldOptions<entityType>, remult: Remult) => void))[]): MemberType<String>;
     static boolean<entityType = any>(...options: (FieldOptions<entityType, boolean> | ((options: FieldOptions<entityType, boolean>, remult: Remult) => void))[]): MemberType<Boolean>;
 }
@@ -333,7 +338,7 @@ declare class SubscribableImp implements Subscribable {
     subscribe(listener: (() => void) | {
         reportChanged: () => void;
         reportObserved: () => void;
-    }): Unobserve;
+    }): Unsubscribe;
 }
 export declare function getFieldLoaderSaver(options: FieldOptions, remult: Remult, forceIds: boolean): {
     toJson: (val: any) => any;

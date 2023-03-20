@@ -6,5 +6,6 @@ export interface packedRowInfo {
 }
 export interface entityEventListener<entityType> {
     deleted?: (entity: entityType) => void;
+    saved?: (entity: entityType, isNew: boolean) => void;
     validating?: (entity: entityType) => Promise<any> | any;
 }

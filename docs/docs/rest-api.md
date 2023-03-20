@@ -23,29 +23,28 @@ https://mySite.com/api/products?_sort=price&_order=desc
 ## Filter
 You can filter the rows using different operators
 ```
-https://mySite.com/api/products?price_gte=5&price_lte=10
+https://mySite.com/api/products?price.gte=5&price.lte=10
 ```
 ### Filter Operators
 
 | operator | description | example |
 | --- | --- | ---|
 | `none` | Equal To | price=10 |
-| _ne | Not Equal | price_ne=10 |
-| _in | In list | price_in=[10, 85, 116] |
-| _contains | Contains a string | name_contains=ee |
-| _st | Starts with a string | name_st=Bee |
-| _gt | Greater than | price_gt=10 |
-| _gte | Greater than or equal | price_gte=10 |
-| _lt | Lesser than | price_lt=10 |
-| _lte | Lesser than or equal | price_lte=10 |
-| _null | is or is not null | price_null=true |
-| _in | is in json array | price_in=%5B10%2C20%5D  *(url encoded - `[10,20]`)* |
+| .ne | Not Equal | price.ne=10 |
+| .in | is in json array | price.in=%5B10%2C20%5D  *(url encoded - `[10,20]`)* |
+| .contains | Contains a string | name.contains=ee |
+| .st | Starts with a string | name.st=Bee |
+| .gt | Greater than | price.gt=10 |
+| .gte | Greater than or equal | price.gte=10 |
+| .lt | Lesser than | price.lt=10 |
+| .lte | Lesser than or equal | price.lte=10 |
+| .null | is or is not null | price.null=true |
 
 * you can add several filter conditions using the `&` operator.
 
 ### Count
 ```
-https://mySite.com/api/products?price_gte=10&__action=count
+https://mySite.com/api/products?price.gte=10&__action=count
 ```
 returns:
 ```JSON
@@ -66,6 +65,6 @@ https://mySite.com/api/products?_limit=5&_page=3
 :::tip
 You can use it all in conjunction:
 ```
-https://mySite.com/api/products?price_gte=5&price_lte=10&_sort=price&_order=desc&_limit=5&_page=3
+https://mySite.com/api/products?price.gte=5&price.lte=10&_sort=price&_order=desc&_limit=5&_page=3
 ```
 :::

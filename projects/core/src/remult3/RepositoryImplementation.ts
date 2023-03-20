@@ -2,12 +2,13 @@
 import { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from "../column-interfaces";
 import { EntityOptions } from "../entity";
 import { CompoundIdField, LookupColumn, makeTitle } from '../column';
-import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef, LiveQuery, MemberType } from "./remult3";
+import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef, LiveQuery, MemberType, LiveQueryChangeInfo } from "./remult3";
 import { ClassType } from "../../classType";
-import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControllerSettings, Unobserve, EventSource } from "../context";
+import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControllerSettings,  EventSource } from "../context";
 import { AndFilter, rawFilterInfo, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
 import { Sort } from "../sort";
 import { v4 as uuid } from 'uuid';
+import cuid from 'cuid';
 
 
 
@@ -20,6 +21,7 @@ import { Paginator, RefSubscriber, RefSubscriberBase } from ".";
 import { paramDecorator, prepareArgsToSend, prepareReceivedArgs } from "../server-action";
 import { remult as defaultRemult, RemultProxy } from "../remult-proxy";
 import { getId } from "./getId";
+import { SubscriptionListener, Unsubscribe } from "../live-query/SubscriptionChannel";
 //import { remult } from "../remult-proxy";
 
 
@@ -118,6 +120,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         this.idCache.set(id, row);
         return await row;
     }
+    //TODO - Used to prevent unnecessary many to one relations
     addToCache(item: entityType) {
         if (item)
             this.idCache.set(this.getEntityRef(item).getId() + '', item);
@@ -244,22 +247,70 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         if (!options)
             options = {};
         return {
-            subscribe: (info) =>
-                this.remult.liveQuerySubscriber.subscribe(this, options, info)
+            subscribe: (l) => {
+                let listener = l as SubscriptionListener<LiveQueryChangeInfo<entityType>>;
+                if (typeof l === "function") {
+                    listener = {
+                        next: l,
+                        complete: () => { },
+                        error: () => { }
+                    }
+                }
+                listener.error ??= () => { };
+                listener.complete ??= () => { };
+                return this.remult.liveQuerySubscriber.subscribe(this, options, listener)
+            }
 
         } as LiveQuery<entityType>
     }
 
-    async find(options: FindOptions<entityType>): Promise<entityType[]> {
+    async find(options: FindOptions<entityType>, skipOrderByAndLimit = false): Promise<entityType[]> {
         Remult.onFind(this._info, options);
         if (!options)
             options = {};
         let opt = await this.buildEntityDataProviderFindOptions(options);
+        if (skipOrderByAndLimit) {
+            delete opt.orderBy;
+            delete opt.limit;
+        }
 
         let rawRows = await this.edp.find(opt);
+        let result = await this.loadManyToOneForManyRows(rawRows, options.load);
+        return result;
+
+
+
+    }
+
+
+
+    async buildEntityDataProviderFindOptions(options: FindOptions<entityType>) {
+        let opt: EntityDataProviderFindOptions = {};
+
+        opt = {};
+        if (!options.orderBy || Object.keys(options.orderBy).length === 0) {
+            options.orderBy = this._info.entityInfo.defaultOrderBy;
+        }
+        opt.where = await this.translateWhereToFilter(options.where);
+        opt.orderBy = Sort.translateOrderByToSort(this.metadata, options.orderBy);
+
+        opt.limit = options.limit;
+        opt.page = options.page;
+        return opt;
+    }
+    async fromJsonArray(jsonItems: any[], load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[]) {
+        return this.loadManyToOneForManyRows(jsonItems.map(row => {
+            let result = {};
+            for (const col of this.metadata.fields.toArray()) {
+                result[col.key] = col.valueConverter.fromJson(row[col.key]);
+            }
+            return result;
+        }))
+    }
+    private async loadManyToOneForManyRows(rawRows: any[], load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[]) {
         let loadFields: FieldMetadata[] = undefined;
-        if (options.load)
-            loadFields = options.load(this.metadata.fields);
+        if (load)
+            loadFields = load(this.metadata.fields);
 
         for (const col of this.metadata.fields) {
             let ei = getEntitySettings(col.valueType, false);
@@ -284,34 +335,16 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 
             }
         }
-
-        let result = await Promise.all(rawRows.map(async r =>
-            await this.mapRawDataToResult(r, loadFields)
-        ));
-        return result;
-
-
-        async function loadManyToOne(repo: RepositoryImplementation<any>, toLoad: any[]) {//extracted a method to be able to see it in the call stack
-            let rows = await repo.find({ where: repo.metadata.idMetadata.getIdFilter(...toLoad) });
+        async function loadManyToOne(repo: RepositoryImplementation<any>, toLoad: any[]) {
+            let rows = await repo.find({ where: repo.metadata.idMetadata.getIdFilter(...toLoad) }, true);
             for (const r of rows) {
                 repo.addToCache(r);
             }
         }
-    }
 
-    async buildEntityDataProviderFindOptions(options: FindOptions<entityType>) {
-        let opt: EntityDataProviderFindOptions = {};
-
-        opt = {};
-        if (!options.orderBy || Object.keys(options.orderBy).length === 0) {
-            options.orderBy = this._info.entityInfo.defaultOrderBy;
-        }
-        opt.where = await this.translateWhereToFilter(options.where);
-        opt.orderBy = Sort.translateOrderByToSort(this.metadata, options.orderBy);
-
-        opt.limit = options.limit;
-        opt.page = options.page;
-        return opt;
+        let result = await Promise.all(rawRows.map(async (r) => await this.mapRawDataToResult(r, loadFields)
+        ));
+        return result;
     }
 
     private async mapRawDataToResult(r: any, loadFields: FieldMetadata[]) {
@@ -327,12 +360,30 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 
         return x;
     }
+    // TODO - consider replacing with fromJsonArray - also consider having a TOJSON for similar cases
+    async fromJson(json: any, newRow?: boolean): Promise<entityType> {
+        let obj = {};
+        for (const col of this.fieldsOf(json)) {
+            if (json[col.key] !== undefined) {
+                obj[col.key] = col.valueConverter.fromJson(json[col.key]);
+            }
+        }
+        if (newRow) {
+            let r = this.create();
+            let helper = this.getEntityRef(r) as rowHelperImplementation<entityType>;
+            await helper.loadDataFrom(obj);
+            return r;
+        }
+        else
+            return this.mapRawDataToResult(obj, undefined);
+
+    }
 
     async count(where?: EntityFilter<entityType>): Promise<number> {
         return this.edp.count(await this.translateWhereToFilter(where));
     }
     private cache = new Map<string, cacheEntityInfo<entityType>>();
-    async findFirst(where?: EntityFilter<entityType>, options?: FindFirstOptions<entityType>): Promise<entityType> {
+    async findFirst(where?: EntityFilter<entityType>, options?: FindFirstOptions<entityType>, skipOrderByAndLimit = false): Promise<entityType> {
 
         if (!options)
             options = {};
@@ -371,7 +422,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             }
         }
 
-        r = this.find({ ...options, limit: 1 }).then(async items => {
+        r = this.find({ ...options, limit: 1 }, skipOrderByAndLimit).then(async items => {
             let r: entityType = undefined;
             if (items.length > 0)
                 r = items[0];
@@ -409,23 +460,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 
         return r;
     }
-    async fromJson(json: any, newRow?: boolean): Promise<entityType> {
-        let obj = {};
-        for (const col of this.fieldsOf(json)) {
-            if (json[col.key] !== undefined) {
-                obj[col.key] = col.valueConverter.fromJson(json[col.key]);
-            }
-        }
-        if (newRow) {
-            let r = this.create();
-            let helper = this.getEntityRef(r) as rowHelperImplementation<entityType>;
-            await helper.loadDataFrom(obj);
-            return r;
-        }
-        else
-            return this.mapRawDataToResult(obj, undefined);
 
-    }
     findId(id: any, options?: FindFirstOptionsBase<entityType>): Promise<entityType> {
         if (id === null || id === undefined)
             return null;
@@ -435,7 +470,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             useCache: true,
             ...options,
             where: this.metadata.idMetadata.getIdFilter(id),
-        });
+        }, true);
     }
 
 
@@ -450,7 +485,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             } as EntityFilter<entityType>;
         }
         let r = await Filter.fromEntityFilter(this.metadata, where);
-        if (r && !this.dataProvider.supportsrawFilter) {
+        if (r && !this.dataProvider.supportsRawFilter) {
             r = await Filter.translateCustomWhere(r, this.metadata, this.remult);
         }
         return r;
@@ -559,6 +594,12 @@ abstract class rowHelperBase<T>
         this._subscribers?.reportChanged();
     }
     constructor(protected columnsInfo: FieldOptions[], protected instance: T, protected remult: Remult) {
+        {
+            let fac = remult as RemultProxy;
+            if (fac != null && fac.remultFactory) {
+                remult = fac.remultFactory();
+            }
+        }
         for (const col of columnsInfo) {
             let ei = getEntitySettings(col.valueType, false);
 
@@ -605,7 +646,7 @@ abstract class rowHelperBase<T>
     }
 
     _subscribers: SubscribableImp;
-    subscribe(listener: RefSubscriber): Unobserve {
+    subscribe(listener: RefSubscriber): Unsubscribe {
         this.initSubscribers();
         return this._subscribers.subscribe(listener);
 
@@ -814,7 +855,6 @@ abstract class rowHelperBase<T>
                         else
                             this.instance[col.key] = await getFieldLoaderSaver(col, this.remult, this.forceRefId(col)).fromJson(body[col.key]);
                     }
-
                 }
         }
         await Promise.all([...this.fields].map(x => x.load()));
@@ -941,6 +981,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
             if (this.info.idMetadata.field instanceof CompoundIdField)
                 delete (d.id);
             let updatedRow: any;
+            let isNew = this.isNew();
             try {
 
                 this._subscribers?.reportChanged();
@@ -970,12 +1011,16 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
                     }
                 }
                 await this.loadDataFrom(updatedRow);
-                this.repository.remult.liveQueryPublisher.itemChanged(this.repository.metadata.key, [{ id: this.getId(), oldId: this.getOriginalId(), deleted: false }]);
 
 
                 if (this.info.entityInfo.saved)
                     await this.info.entityInfo.saved(this.instance);
+                if (this.repository.listeners)
+                    for (const listener of this.repository.listeners.filter(x => x.saved)) {
+                        await listener.saved(this.instance, isNew);
+                    }
 
+                await this.repository.remult.liveQueryPublisher.itemChanged(this.repository.metadata.key, [{ id: this.getId(), oldId: this.getOriginalId(), deleted: false }]);
                 this.saveOriginalData();
                 this._isNew = false;
                 return this.instance;
@@ -1008,7 +1053,6 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
 
         try {
             await this.edp.delete(this.id);
-            this.repository.remult.liveQueryPublisher.itemChanged(this.repository.metadata.key, [{ id: this.getId(), oldId: this.getOriginalId(), deleted: true }]);
             if (this.info.entityInfo.deleted)
                 await this.info.entityInfo.deleted(this.instance);
 
@@ -1016,6 +1060,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
                 for (const listener of this.repository.listeners.filter(x => x.deleted)) {
                     await listener.deleted(this.instance);
                 }
+            await this.repository.remult.liveQueryPublisher.itemChanged(this.repository.metadata.key, [{ id: this.getId(), oldId: this.getOriginalId(), deleted: true }]);
 
             this._wasDeleted = true;
         } catch (err) {
@@ -1158,7 +1203,7 @@ export class FieldRefImplementation<entityType, valueType> implements FieldRef<e
 
     }
     _subscribers: SubscribableImp;
-    subscribe(listener: RefSubscriber): Unobserve {
+    subscribe(listener: RefSubscriber): Unsubscribe {
         if (!this._subscribers) {
             this.rowBase.initSubscribers();
         }
@@ -1338,11 +1383,7 @@ export class columnDefsImpl implements FieldMetadata {
 
 
     }
-    private _workingOnDbName = false;
     async getDbName() {
-        if (this._workingOnDbName)
-            return "Recursive getDbName call for field '" + this.key + "'. ";
-        this._workingOnDbName = true;
         try {
             if (this.settings.sqlExpression) {
                 let result: string;
@@ -1357,7 +1398,6 @@ export class columnDefsImpl implements FieldMetadata {
             return this.settings.dbName;
         }
         finally {
-            this._workingOnDbName = false;
         }
 
     }
@@ -1587,11 +1627,40 @@ export class Fields {
     static number<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]) {
         return Field(() => Number, ...options)
     }
+    static createdAt<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]) {
+        return Field(() => Date, {
+            saving: (_, ref) => {
+                if (getEntityRef(_).isNew())
+                    ref.value = new Date()
+            }
+        }, ...options);
+    }
+    static updatedAt<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]) {
+        return Field(() => Date, {
+            saving: (_, ref) => {
+                ref.value = new Date()
+            }
+        }, ...options);
+    }
 
     static uuid<entityType = any>(...options: (FieldOptions<entityType, string> | ((options: FieldOptions<entityType, string>, remult: Remult) => void))[]) {
         return Field(() => String, {
             allowApiUpdate: false,
-            defaultValue: () => uuid()
+            defaultValue: () => uuid(),
+            saving: (_, r) => {
+                if (!r.value)
+                    r.value = uuid();
+            }
+        }, ...options);
+    }
+    static cuid<entityType = any>(...options: (FieldOptions<entityType, string> | ((options: FieldOptions<entityType, string>, remult: Remult) => void))[]) {
+        return Field(() => String, {
+            allowApiUpdate: false,
+            defaultValue: () => cuid(),
+            saving: (_, r) => {
+                if (!r.value)
+                    r.value = cuid();
+            }
         }, ...options);
     }
     static string<entityType = any>(...options: (StringFieldOptions<entityType> | ((options: StringFieldOptions<entityType>, remult: Remult) => void))[]) {
@@ -1612,7 +1681,7 @@ export function ValueListFieldType<valueType extends ValueListItem = any>(...opt
     return (type: ClassType<valueType>) => {
         FieldType<valueType>(o => {
             o.valueConverter = ValueListInfo.get(type),
-                o.displayValue = (item, val) => val.caption
+                o.displayValue = (item, val) => val?.caption
         }, ...options)(type)
     }
 }
@@ -2149,7 +2218,7 @@ class SubscribableImp implements Subscribable {
     subscribe(listener: (() => void) | {
         reportChanged: () => void,
         reportObserved: () => void
-    }): Unobserve {
+    }): Unsubscribe {
 
         let list: {
             reportChanged: () => void,

@@ -63,6 +63,11 @@ module.exports = {
         ]
       },
       {
+        text: 'Blog',
+        link: '/blog/introducing-remult-part-1',
+
+      },
+      {
         text: 'Discord',
         link: 'https://discord.gg/GXHk7ZfuG5'
       }
@@ -94,16 +99,17 @@ module.exports = {
           collapsable: true,
 
           children: [
-            'custom-filter',
-            'working-without-decorators',
-            'rest-api',
-            'techniques-regarding-one-to-many-relations.md',
-            'adding-swagger',
             'adding-graphql',
-            'lazy-loading-of-related-entities',
-            'using-remult-in-custom-backend-code',
+            'adding-swagger',
+            'rest-api',
             'using-server-only-packages',
-            'running-sql-on-the-server'
+            'working-without-decorators',
+            'custom-options',
+            'techniques-regarding-one-to-many-relations.md',
+            'running-sql-on-the-server',
+            'custom-filter',
+            'using-remult-in-custom-backend-code',
+            'lazy-loading-of-related-entities',
           ]
         },
         {
@@ -114,7 +120,10 @@ module.exports = {
             'ref_field',
             'ref_remult',
             'ref_repository',
+            `ref_remultserveroptions`,
             'entityFilter',
+            'ref_entitymetadata',
+            'ref_fieldmetadata',
             'allowed',
             'ref_backendmethod',
             'ref_queryresult',
@@ -136,6 +145,7 @@ module.exports = {
             'sorting-filtering',
             'crud',
             'validation',
+            'live-queries',
             'backend-methods',
             'auth',
             'database',
@@ -154,6 +164,7 @@ module.exports = {
             'sorting-filtering',
             'crud',
             'validation',
+            'live-queries',
             'backend-methods',
             'auth',
             'database',
@@ -172,6 +183,7 @@ module.exports = {
             'sorting-filtering',
             'crud',
             'validation',
+            'live-queries',
             'backend-methods',
             'auth',
             'database',
@@ -190,13 +202,23 @@ module.exports = {
             'sorting-filtering',
             'crud',
             'validation',
+            'live-queries',
             'backend-methods',
             'auth',
             'database',
-            'deployment'
+            'deployment',
+            'appendix-1-get-server-side-props'
           ]
         }],
-
+      '/blog/': [
+        {
+          title: 'Remult Blog',
+          
+          children: [
+            'introducing-remult-part-1'
+          ]
+        }
+      ]
     }
   },
 

@@ -8,7 +8,8 @@ import { EntityMetadata, FindOptions } from '../remult3';
 import { ApiClient, Remult } from '../context';
 import { buildRestDataProvider, retry } from "../buildRestDataProvider";
 import { Sort } from '../sort';
-import { SubscribeResult } from '../live-query/SubscriptionClient';
+import { SubscribeResult } from '../live-query/SubscriptionChannel';
+import { actionInfo } from '../server-action';
 
 
 export class RestDataProvider implements DataProvider {
@@ -32,16 +33,15 @@ export class RestDataProvider implements DataProvider {
   async transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
     throw new Error("Method not implemented.");
   }
-  supportsrawFilter = true;
+  supportsRawFilter = true;
 
 }
 //@internal
 export function findOptionsToJson(options: FindOptions<any>, meta: EntityMetadata) {
   return {
-    limit: options.limit,
-    page: options.page,
+    ...options,
     where: Filter.entityFilterToJson(meta, options.where),
-    orderBy: options.orderBy
+
   };
 }
 //@internal
@@ -88,7 +88,7 @@ export class RestEntityDataProvider implements EntityDataProvider {
     let { run } = this.buildFindRequest(options);
     return run().then(x => x.map(y => this.translateFromJson(y)));
   }
-//@internal
+  //@internal
   buildFindRequest(options: EntityDataProviderFindOptions) {
     let url = new UrlBuilder(this.url());
     let filterObject: any;
@@ -102,6 +102,7 @@ export class RestEntityDataProvider implements EntityDataProvider {
       if (options.orderBy && options.orderBy.Segments) {
         let sort = '';
         let order = '';
+        let hasDescending = false;
         options.orderBy.Segments.forEach(c => {
           if (sort.length > 0) {
             sort += ",";
@@ -109,10 +110,14 @@ export class RestEntityDataProvider implements EntityDataProvider {
           }
           sort += c.field.key;
           order += c.isDescending ? "desc" : "asc";
+          if (c.isDescending)
+            hasDescending = true;
 
         });
-        url.add('_sort', sort);
-        url.add('_order', order);
+        if (sort)
+          url.add('_sort', sort);
+        if (hasDescending)
+          url.add('_order', order);
       }
       if (options.limit)
         url.add('_limit', options.limit);
@@ -138,15 +143,15 @@ export class RestEntityDataProvider implements EntityDataProvider {
     return {
       createKey: () => JSON.stringify({ url, filterObject }),
       run,
-      subscribe: async () => {
-        const result: SubscribeResult = await run("liveQuery");
+      subscribe: async (queryId) => {
+        const result: any[] = await run(liveQueryAction + queryId);
         return {
-          ...result,
+          result,
           unsubscribe: async () => {
-            return this.http().post(
+            return actionInfo.runActionWithoutBlockingUI(() => this.http().post(
               this.url() + "?__action=endLiveQuery", {
-              id: result.queryChannel
-            });
+              id: queryId
+            }));
           }
         }
       }
@@ -270,7 +275,7 @@ export function addFilterToUrlAndReturnTrueIfSuccessful(filter: any, url: UrlBui
     if (Object.prototype.hasOwnProperty.call(filter, key)) {
       const element = filter[key];
       if (Array.isArray(element)) {
-        if (key.endsWith("_in"))
+        if (key.endsWith(".in"))
           url.add(key, JSON.stringify(element));
 
         else
@@ -285,3 +290,4 @@ export function addFilterToUrlAndReturnTrueIfSuccessful(filter: any, url: UrlBui
   }
   return true;
 }
+export const liveQueryAction = "liveQuery-";

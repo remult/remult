@@ -2,7 +2,10 @@ import { ClassType } from '../classType';
 import { Allowed, AllowedForInstance } from './context';
 import { EntityMetadata, FieldRef } from './remult3';
 export interface FieldOptions<entityType = any, valueType = any> {
-    /**A human readable name for the field */
+    /** A human readable name for the field. Can be used to achieve a consistent caption for a field throughout the app
+    * @example
+    * <input placeholder={taskRepo.metadata.fields.title.caption}/>
+    */
     caption?: string;
     /** If it can store null in the database */
     allowNull?: boolean;
@@ -32,14 +35,23 @@ export interface FieldOptions<entityType = any, valueType = any> {
      *   }
      * })
      */
-    validate?: ((entity: entityType, col: FieldRef<entityType, valueType>) => (any | Promise<any>)) | ((entity: entityType, col: FieldRef<entityType, valueType>) => (any | Promise<any>))[];
+    validate?: ((entity: entityType, fieldRef: FieldRef<entityType, valueType>) => (any | Promise<any>)) | ((entity: entityType, fieldRef: FieldRef<entityType, valueType>) => (any | Promise<any>))[];
     /** Will be fired before this field is saved to the server/database */
-    saving?: ((entity: entityType, col: FieldRef<entityType, valueType>) => (any | Promise<any>));
+    saving?: ((entity: entityType, fieldRef: FieldRef<entityType, valueType>) => (any | Promise<any>));
     /**  An expression that will determine this fields value on the backend and be provided to the front end*/
     serverExpression?: (entity: entityType) => valueType | Promise<valueType>;
     /** The name of the column in the database that holds the data for this field. If no name is set, the key will be used instead. */
     dbName?: string;
-    /** Used or fields that are based on an sql expressions, instead of a physical table column */
+    /** Used or fields that are based on an sql expressions, instead of a physical table column
+     * @example
+     *
+     * @Fields.integer({
+     *   sqlExpression:e=> 'length(title)'
+     * })
+     * titleLength = 0;
+     * @Fields.string()
+     * title='';
+    */
     sqlExpression?: string | ((entity: EntityMetadata<entityType>) => string | Promise<string>);
     /** For fields that shouldn't be part of an update or insert statement */
     dbReadOnly?: boolean;
@@ -62,18 +74,42 @@ export interface FieldOptions<entityType = any, valueType = any> {
     /** The key to be used for this field */
     key?: string;
 }
+/**Metadata for a `Field`, this metadata can be used in the user interface to provide a richer UI experience */
 export interface FieldMetadata<valueType = any> {
+    /** The field's member name in an object.
+     * @example
+     * const taskRepo = remult.repo(Task);
+     * console.log(taskRepo.metadata.fields.title.key);
+     * // result: title
+     */
     readonly key: string;
-    readonly target: ClassType<valueType>;
-    readonly valueType: any;
+    /** A human readable caption for the field. Can be used to achieve a consistent caption for a field throughout the app
+     * @example
+     * <input placeholder={taskRepo.metadata.fields.title.caption}/>
+     */
     readonly caption: string;
-    readonly inputType: string;
-    readonly allowNull: boolean;
-    getDbName(): Promise<string>;
-    readonly isServerExpression: boolean;
-    readonly dbReadOnly: boolean;
-    readonly valueConverter: ValueConverter<valueType>;
+    /** The field's value type (number,string etc...) */
+    readonly valueType: any;
+    /** The options sent to this field's decorator */
     readonly options: FieldOptions;
+    /** The `inputType` relevant for this field, determined by the options sent to it's decorator and the valueConverter in these options */
+    readonly inputType: string;
+    /** if null is allowed for this field */
+    readonly allowNull: boolean;
+    /** The class that contains this field
+     * @example
+     * const taskRepo = remult.repo(Task);
+     * Task == taskRepo.metadata.fields.title.target //will return true
+    */
+    readonly target: ClassType<valueType>;
+    /** Returns the dbName - based on it's `dbName` option and it's `sqlExpression` option */
+    getDbName(): Promise<string>;
+    /** Indicates if this field is based on a server express */
+    readonly isServerExpression: boolean;
+    /** indicates that this field should only be included in select statement, and excluded from update or insert. useful for db generated ids etc... */
+    readonly dbReadOnly: boolean;
+    /** the Value converter for this field */
+    readonly valueConverter: ValueConverter<valueType>;
 }
 export interface ValueConverter<valueType> {
     fromJson?(val: any): valueType;
@@ -86,7 +122,7 @@ export interface ValueConverter<valueType> {
     readonly fieldTypeInDb?: string;
     readonly inputType?: string;
 }
-export declare type FieldValidator<entityType = any, valueType = any> = (entity: entityType, col: FieldRef<entityType, valueType>) => void | Promise<void>;
+export declare type FieldValidator<entityType = any, valueType = any> = (entity: entityType, fieldRef: FieldRef<entityType, valueType>) => void | Promise<void>;
 export declare type ValueOrExpression<valueType> = valueType | (() => valueType);
 export declare function valueOrExpressionToValue<valueType>(f: ValueOrExpression<valueType>): valueType;
 export interface ValueListItem {

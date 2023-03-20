@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "uuid": "^8.3.2",
+    "cuid": "^2.1.8",
     "reflect-metadata": "^0.1.13",
     "tslib": "^2.3.1"
   },
@@ -37,6 +38,14 @@
       },
       "import": "./esm/remult-express.js"
     },
+    "./remult-next": {
+      "require": "./remult-next.js",
+      "node": {
+        "require": "./remult-next.js",
+        "import": "./remult-next.js"
+      },
+      "import": "./esm/remult-next.js"
+    },
     "./server": {
       "require": "./server/index.js",
       "node": {
@@ -47,7 +56,7 @@
     },
     "./server/core": {
       "require": "./server/core.js",
-      "node":{
+      "node": {
         "require": "./server/core.js",
         "import": "./server/core.js"
       },
@@ -101,13 +110,13 @@
       },
       "import": "./esm/remult-mongo.js"
     },
-    "./live-query/ably": {
-      "require": "./live-query/ably.js",
+    "./ably": {
+      "require": "./ably.js",
       "node": {
-        "require": "./live-query/ably.js",
-        "import": "./live-query/ably.js"
+        "require": "./ably.js",
+        "import": "./ably.js"
       },
-      "import": "./esm/live-query/ably.js"
+      "import": "./esm/ably.js"
     },
     "./graphql": {
       "require": "./graphql.js",

@@ -6,7 +6,7 @@ export declare class Filter {
     constructor(apply?: (add: FilterConsumer) => void);
     __applyToConsumer(add: FilterConsumer): void;
     static resolve<entityType>(filter: EntityFilter<entityType> | (() => EntityFilter<entityType> | Promise<EntityFilter<entityType>>)): Promise<EntityFilter<entityType>>;
-    static createCustom<entityType>(rawFilterTranslator: (unused: any, r: Remult) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>, key?: string): (() => EntityFilter<entityType>) & rawFilterInfo<entityType>;
+    static createCustom<entityType>(rawFilterTranslator: (unused: never, r: Remult) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>, key?: string): (() => EntityFilter<entityType>) & rawFilterInfo<entityType>;
     static createCustom<entityType, argsType>(rawFilterTranslator: (args: argsType, r: Remult) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>, key?: string): ((y: argsType) => EntityFilter<entityType>) & rawFilterInfo<entityType>;
     static fromEntityFilter<T>(entity: EntityMetadata<T>, whereItem: EntityFilter<T>): Filter;
     toJson(): any;

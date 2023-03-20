@@ -1,13 +1,11 @@
-import { v4 as uuid } from 'uuid';
 import { AndFilter, customUrlToken, buildFilterFromRequestParameters } from './filter/filter-interfaces';
 import { doTransaction, Remult, UserInfo } from './context';
 import { Filter } from './filter/filter-interfaces';
 import { FindOptions, Repository, EntityRef, rowHelperImplementation, EntityFilter } from './remult3';
-import { SortSegment } from './sort';
 import { ErrorInfo } from './data-interfaces';
 import { ForbiddenError } from './server-action';
 import { getId } from './remult3/getId';
-import { findOptionsToJson } from './data-providers/rest-data-provider';
+import { findOptionsToJson, liveQueryAction } from './data-providers/rest-data-provider';
 import { QueryData } from './live-query/SubscriptionServer';
 
 
@@ -17,9 +15,9 @@ export class DataApi<T = any> {
   }
   httpGet(res: DataApiResponse, req: DataApiRequest, serializeRequest: () => any) {
     const action = req?.get("__action");
+    if (action?.startsWith(liveQueryAction))
+      return this.liveQuery(res, req, undefined, serializeRequest, getLiveQueryChannel(action.substring(liveQueryAction.length), this.remult.user?.id));
     switch (action) {
-      case "liveQuery":
-        return this.liveQuery(res, req, undefined, serializeRequest);
       case "get":
       case "count":
         return this.count(res, req, undefined);
@@ -27,17 +25,17 @@ export class DataApi<T = any> {
     return this.getArray(res, req, undefined);
 
   }
-  httpPost(res: DataApiResponse, req: DataApiRequest, body: any, serializeRequest: () => any) {
+  async httpPost(res: DataApiResponse, req: DataApiRequest, body: any, serializeRequest: () => any) {
     const action = req?.get("__action");
+    if (action?.startsWith(liveQueryAction))
+      return this.liveQuery(res, req, undefined, serializeRequest, getLiveQueryChannel(action.substring(liveQueryAction.length), this.remult.user?.id));
     switch (action) {
-      case "liveQuery":
-        return this.liveQuery(res, req, body, serializeRequest);
       case "get":
         return this.getArray(res, req, body);
       case "count":
         return this.count(res, req, body);
       case "endLiveQuery":
-        this.remult.liveQueryStorage.remove(body.id);
+        await this.remult.liveQueryStorage.remove(getLiveQueryChannel(body.id, this.remult.user?.id));
         res.success("ok");
         return;
       default:
@@ -142,30 +140,26 @@ export class DataApi<T = any> {
         response.error(err);
     }
   }
-  async liveQuery(response: DataApiResponse, request: DataApiRequest, filterBody: any, serializeRequest: () => any) {
+  async liveQuery(response: DataApiResponse, request: DataApiRequest, filterBody: any, serializeRequest: () => any, queryChannel: string) {
     if (!this.repository.metadata.apiReadAllowed) {
       response.forbidden();
       return;
     }
     try {
       const r = await this.getArrayImpl(response, request, filterBody)
-      const queryChannel = `users:${this.remult.user?.id}:queries:${uuid()}`;
       const data: QueryData = {
         requestJson: serializeRequest(),
         findOptionsJson: findOptionsToJson(r.findOptions, this.repository.metadata),
         lastIds: r.r.map(y => getId(this.repository.metadata, y))
       }
-      this.remult.liveQueryStorage.add(
+      await this.remult.liveQueryStorage.add(
         {
           entityKey: this.repository.metadata.key,
           id: queryChannel,
           data
         }
       );
-      response.success({
-        queryChannel,
-        result: r.r
-      });
+      response.success(r.r);
     }
     catch (err) {
       if (err.isForbiddenError)
@@ -228,8 +222,8 @@ export class DataApi<T = any> {
         response.forbidden();
         return;
       }
-      await this.repository.getEntityRef(row).save();
-      response.success(this.repository.getEntityRef(row).toApiJson());
+      await ref.save();
+      response.success(ref.toApiJson());
     });
   }
 
@@ -326,3 +320,7 @@ export function serializeError(data: ErrorInfo) {
   return data;
 }
 
+
+export function getLiveQueryChannel(queryId: string, userId: string) {
+  return `users:${userId}:queries:${queryId}`
+}

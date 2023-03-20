@@ -1,86 +1,89 @@
 # Backend methods
+
 When performing operations on multiple entity objects, performance considerations may necessitate running them on the server. **With Remult, moving client-side logic to run on the server is a simple refactoring**.
 
 ## Set All Tasks as Un/completed
+
 Let's add two buttons to the todo app: "Set all as completed" and "Set all as uncompleted".
 
-1. Add a `setAll` async function to the `Home` function component, which accepts a `completed` boolean argument and sets the value of the `completed` field of all the tasks accordingly.
+1. Add a `setAllCompleted` async function to the `Home` function component, which accepts a `completed` boolean argument and sets the value of the `completed` field of all the tasks accordingly.
 
-   *pages/index.tsx*
    ```ts
-   const setAll = async (completed: boolean) => {
-      const taskRepo = remult.repo(Task);
+   // src/pages/index.tsx
 
-      for (const task of await taskRepo.find()) {
-         await taskRepo.save({ ...task, completed });
-      }
-      setTasks(await fetchTasks(hideCompleted));
-   };
+   const setAllCompleted = async (completed: boolean) => {
+     for (const task of await taskRepo.find()) {
+       await taskRepo.save({ ...task, completed })
+     }
+   }
    ```
 
    The `for` loop iterates the array of `Task` objects returned from the backend, and saves each task back to the backend with a modified value in the `completed` field.
 
-   After all the tasks are saved, we refetch the task list using the `fetchTasks` function and update the React state.
+2. Add the two buttons to the return section of the `Home` component, just before the closing `</main>` tag. Both of the buttons' `onClick` events will call the `setAllCompleted` method with the appropriate value of the `completed` argument.
 
-2. Add the two buttons to the return section of the `Home` component. Both of the buttons' `onClick` events will call the `setAll` function with the appropriate value of the `completed` argument.
-
-   *pages/index.tsx*
    ```tsx
+   // src/pages/index.tsx
+
    <div>
-      <button onClick={() => setAll(true)}>Set all as completed</button>
-      <button onClick={() => setAll(false)}>Set all as uncompleted</button>
+     <button onClick={() => setAllCompleted(true)}>Set All Completed</button>
+     <button onClick={() => setAllCompleted(false)}>Set All Uncompleted</button>
    </div>
    ```
 
 Make sure the buttons are working as expected before moving on to the next step.
 
 ## Refactor from Front-end to Back-end
-With the current state of the `setAll` function, each modified task being saved causes an API `PUT` request handled separately by the server. As the number of tasks in the todo list grows, this may become a performance issue.
 
-A simple way to prevent this is to expose an API endpoint for `setAll` requests, and run the same logic on the server instead of the client.
+With the current state of the `setAllCompleted` function, each modified task being saved causes an API `PUT` request handled separately by the server. As the number of tasks in the todo list grows, this may become a performance issue.
 
-1. Create a new `TasksController` class, in the `shared` folder, and refactor the `for` loop from the `setAll` function of the `Home` function component into a new, `static`, `setAll` method in the `TasksController` class, which will run on the server.
+A simple way to prevent this is to expose an API endpoint for `setAllCompleted` requests, and run the same logic on the server instead of the client.
 
-*src/shared/TasksController.ts*
+1. Create a new `TasksController` class, in the `shared` folder, and refactor the `for` loop from the `setAllCompleted` function of the `Home` function component into a new, `static`, `setAllCompleted` method in the `TasksController` class, which will run on the server.
+
 ```ts
-import { BackendMethod, remult } from "remult";
-import { Task } from "./Task";
+// src/shared/TasksController.ts
+
+import { BackendMethod, remult } from "remult"
+import { Task } from "./Task"
 
 export class TasksController {
-   @BackendMethod({ allowed: true })
-   static async setAll(completed: boolean) {
-      const taskRepo = remult.repo(Task);
+  @BackendMethod({ allowed: true })
+  static async setAllCompleted(completed: boolean) {
+    const taskRepo = remult.repo(Task)
 
-      for (const task of await taskRepo.find()) {
-         await taskRepo.save({ ...task, completed });
-      }
-   }
+    for (const task of await taskRepo.find()) {
+      await taskRepo.save({ ...task, completed })
+    }
+  }
 }
 ```
-The `@BackendMethod` decorator tells Remult to expose the method as an API endpoint (the `allowed` property will be discussed later on in this tutorial). 
 
-The optional `remult` argument of the static `setAll` function is intentionally omitted in the client-side calling code. In the server-side, Remult injects `@BackendMethod`-decorated functions with a server `Remult` object. **Unlike the front-end `Remult` object, the server implementation interacts directly with the database.**
+The `@BackendMethod` decorator tells Remult to expose the method as an API endpoint (the `allowed` property will be discussed later on in this tutorial).
+
+**Unlike the front-end `Remult` object, the server implementation interacts directly with the database.**
 
 2. Register `TasksController` by adding it to the `controllers` array of the `options` object passed to `createRemultServer()`, in the server's `api` module:
 
-*src/server/api.ts*
-```ts{2,6}
-//...
-import { TasksController } from '../shared/TasksController';
+```ts{4,8}
+// src/pages/api/[...remult].ts
 
-export const api = createRemultServer({
-   //...
-   controllers: [TasksController]
+//...
+import { TasksController } from "../../shared/TasksController"
+
+export const api = remultNext({
+  //...
+  controllers: [TasksController]
 })
 ```
 
-3. Replace the `for` iteration in the `setAll` function of the `Home` component with a call to the `setAll` method in the `TasksController`.
+3. Replace the `for` iteration in the `setAllCompleted` function of the `Home` component with a call to the `setAllCompleted` method in the `TasksController`.
 
-*pages/index.tsx*
-```tsx{2}
-const setAll = async (completed: boolean) => {
-   await TasksController.setAll(completed);
-   setTasks(await fetchTasks(hideCompleted));
+```tsx{4}
+// src/pages/index.tsx
+
+const setAllCompleted = async (completed: boolean) => {
+  await TasksController.setAllCompleted(completed)
 }
 ```
 
@@ -92,4 +95,4 @@ Remember to add an import of `TasksController` in `home/index.tsx`.
 With Remult backend methods, argument types are compile-time checked. :thumbsup:
 :::
 
-After the browser refreshed, the *"Set all..."* buttons function exactly the same, but much faster.
+After the browser refreshed, the _"Set all..."_ buttons function exactly the same, but much faster.

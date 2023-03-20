@@ -373,7 +373,7 @@ describe("many to one relation", () => {
         async function test(where: EntityFilter<Products>, expected: number) {
             expect(await repo.count(where)).toBe(expected);
             function log(x: any) {
-                
+
                 return x;
             }
             expect(await repo.count(log(Filter.entityFilterFromJson(repo.metadata, log(entityFilterToJson(repo.metadata,
@@ -684,6 +684,8 @@ describe("many to one relation", () => {
         expect(await remult.repo(Products).count({ category: { $id: [2, 3] } })).toBe(2);
         expect(await remult.repo(Products).count({ category: { $id: { $ne: 1 } } })).toBe(2);
         expect(await remult.repo(Products).count({ category: { $id: { $ne: [2, 3] } } })).toBe(1);
+        expect(await remult.repo(Products).count({ category: { $id: { $in: [2, 3] } } })).toBe(2);
+        expect(await remult.repo(Products).count({ category: { $id: { $nin: [2, 3] } } })).toBe(1);
     });
     it("test cache", async () => {
         const remult = new Remult(new InMemoryDataProvider());

@@ -9,7 +9,7 @@ var api: {
     const z: member = JSON.parse(JSON.stringify(findType("FindFirstOptions")));
     z.name = "FindFirstOptionsBase";
     z.children = z.children.filter(m => m.inheritedFrom?.name.startsWith(z.name));
-    api.children.push(z);
+    api.children[0].children.push(z);
 }
 
 class DocFile {
@@ -60,7 +60,7 @@ class DocFile {
                 if (t.tag.startsWith("entity") || t.tag.startsWith("field")) {
                     if (t.text.startsWith("\n   "))
                         lastExample.text += "\n   ";
-                        else lastExample.text+="\n";
+                    else lastExample.text += "\n";
                     lastExample.text += "@" + t.tag[0].toUpperCase() + t.tag.substring(1) + t.text;
                     continue;
                 }
@@ -89,18 +89,22 @@ class DocFile {
     }
     writeMembers(type: member, indent = 0) {
 
-
         if (type.children) {
             try {
                 if (type.name === "Repository")
                     type.children.sort((a, b) => a.id - b.id);
                 else
                     type.children.sort((a, b) => a.sources[0].line - b.sources[0].line)
-                type.children = [...type.children.filter(x => x.comment), ...type.children.filter(x => !x.comment)]
+                const itemsWithComment = type.children.filter(x => x.comment || x.signatures?.filter(s => s.comment));
+                type.children = [...itemsWithComment, ...type.children.filter(x => !itemsWithComment.includes(x))]
             } catch { }
+            if (type.name === "Repository" && false)
+                console.table(type.children.map(c => ({ name: c.name, id: c.id, line: c.sources && c.sources[0]?.line, comment: !!(c.comment || c.signatures?.filter(s => s.comment)) })))
 
             for (const m of type.children) {
                 if (m.flags.isPrivate)
+                    continue;
+                if (m.name == "repCache")
                     continue;
                 if (indent == 0)
                     this.writeLine(header(indent + 2, m.name), indent)
@@ -111,10 +115,12 @@ class DocFile {
                         this.writeMemberComments(s, indent);
                         {
                             if (s.parameters && indent == 0/* to prevent the parameters of load, in find options etc... */) {
-                                this.writeLine("",indent);
+                                this.writeLine("", indent);
                                 this.writeLine("Arguments:", indent);
                                 for (const p of s.parameters) {
                                     this.writeMemberComments(p, indent);
+                                    if (p.comment?.text)
+                                        this.writeLine(" - " + p.comment?.text, indent + 1);
                                     if (p.type.type == 'union') {
                                         for (const pp of p.type.types) {
                                             if (pp.name)
@@ -148,9 +154,12 @@ class DocFile {
 
 
 function findType(type: string) {
-    let r = api.children.find(e => e.name == type);
+    let r = api.children[0].children.find(e => e.name == type);
     if (!r)
+        r = api.children[1].children.find(e => e.name == type);
+    if (!r){
         throw new Error("Couldn't find type " + type);
+    }
     return r;
 }
 
@@ -176,7 +185,10 @@ try {
         "Remult",
         "Repository",
         "QueryResult",
-        "Paginator"
+        "Paginator",
+        "EntityMetadata",
+        "FieldMetadata",
+        "RemultServerOptions"
     ]) {
         let type = findType(typeName);
 
@@ -221,7 +233,8 @@ interface member {
     id: number,
     children: member[],
     comment: {
-        shortText: string,
+        shortText?: string,
+        text?: string,
         tags: Tag[]
     },
     inheritedFrom: {
