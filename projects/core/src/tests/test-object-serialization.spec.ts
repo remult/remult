@@ -545,7 +545,7 @@ it("start build backend method with allowed", async () => {
       b: String
     },
     returnType: String,
-    allowed: (remult, y) => y.a.getFullYear() === 1976,
+    allowed: ( y) => y.a.getFullYear() === 1976,
     implementation: async ({ a, b }) => a.getFullYear().toString() + b
   });
   expect(await m({ a: new Date(1976, 5, 16), b: "noam" })).toBe("1976noam");
