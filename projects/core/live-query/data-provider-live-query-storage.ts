@@ -14,16 +14,25 @@ export class DataProviderLiveQueryStorage implements LiveQueryStorage, Storage {
     )
   }
   async ensureSchema() {
-    await (await this.dataProvider).ensureSchema([(await this.repo).metadata])
+    //TODO - add test for this
+    const dp = await this.dataProvider;
+    if (dp.ensureSchema)
+      await dp.ensureSchema([(await this.repo).metadata])
   }
   async add({ id, entityKey, data }: StoredQuery) {
-    await this.repo.then(async repo => {
+    //TODO - add test that makes sure this can't fail on double add of exact same id
+        await this.repo.then(async repo => {
       const q = await repo.findId(id, { createIfNotFound: true });
       await q.assign({ entityKey, data }).save();
     })
   }
   async remove(queryId: string) {
-    await this.repo.then(repo => repo.delete(queryId)).catch(() => { });
+    //TODO - add test for that it plays nicely when it can't find ids that it doesn't need
+    await this.repo.then(async repo => {
+      const r = await repo.findId(queryId);
+      if (r)
+        await repo.delete(r);
+    }).catch(() => { });
   }
 
   async forEach(entityKey: string, callback: (args: { query: StoredQuery; setData(data: any): Promise<void>; }) => Promise<void>): Promise<void> {
