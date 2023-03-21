@@ -126,10 +126,11 @@ Click enter multiple times to answer all its questions with the default answer
    ```
 7. got to the `railway` project's site and click on the project
 8. Switch to the `variables` tab
-9. Add another variable called `SESSION_SECRET` and set it to a random string, youcan use an [online UUID generator](https://www.uuidgenerator.net/)
-10. Switch to the `settings` tab
-11. Under `Environment` click on `Generate Domain`
-12. Click on the newly generated url to open the app in the browser and you'll see the app live in production. (it may take a few minutes to go live)
+9. Click on `+ New Variable`, and in the `VARIABLE_NAME` click `Add Reference` and select `DATABASE_URL`
+10. Add another variable called `SESSION_SECRET` and set it to a random string, you can use an [online UUID generator](https://www.uuidgenerator.net/)
+11. Switch to the `settings` tab
+12. Under `Environment` click on `Generate Domain`
+13. Click on the newly generated url to open the app in the browser and you'll see the app live in production. (it may take a few minutes to go live)
 
 ::: warning Note
 If you run into trouble deploying the app to Railway, try using Railway's [documentation](https://docs.railway.app/deploy/deployments).
