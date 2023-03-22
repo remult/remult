@@ -142,23 +142,21 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 
 
     query(options?: QueryOptions<entityType>): QueryResult<entityType> {
-
-
         return new QueryResultImpl(options, this);
-
-
     }
+
+
 
 
     getEntityRef(entity: entityType): EntityRef<entityType> {
         let x = entity[entityMember];
         if (!x) {
+            this.fixTypes(entity);
             x = new rowHelperImplementation(this._info, entity, this, this.edp, this.remult, true);
             Object.defineProperty(entity, entityMember, {//I've used define property to hide this member from console.lo g
                 get: () => x
             });
             x.saveOriginalData();
-
         }
         return x;
     }
@@ -230,6 +228,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             for (const field of this.fieldsOf(entity)) {
                 instance[field.key] = entity[field.key];
             }
+            this.fixTypes(instance);
             let row = new rowHelperImplementation(this._info, instance, this, this.edp, this.remult, false);
             if (id) {
                 row.id = id;
@@ -472,14 +471,30 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 
     create(item?: Partial<OmitEB<entityType>>): entityType {
         let r = new this.entity(this.remult);
-        if (item)
+        if (item) {
             for (const field of this.fieldsOf(item)) {
                 r[field.key] = item[field.key];
             }
+            this.fixTypes(r)
+        }
         let z = this.getEntityRef(r);
 
 
         return r;
+    }
+    async fixTypes(item: any) {
+        for (const field of this.fieldsOf(item)) {
+            const val = item[field.key];
+            if (val !== null && val !== undefined) {
+                if (field.valueType === Date && !(val instanceof Date))
+                    item[field.key] = field.valueConverter.fromJson(field.valueConverter.toJson(val))
+                else for (const [type, typeName] of [[String, "string"], [Number, "number"], [Boolean, "boolean"]]) {
+                    if (field.valueType === type && typeof val !== typeName)
+                        item[field.key] = field.valueConverter.fromJson(field.valueConverter.toJson(val))
+                }
+            }
+        }
+        return item;
     }
 
     findId(id: any, options?: FindFirstOptionsBase<entityType>): Promise<entityType> {

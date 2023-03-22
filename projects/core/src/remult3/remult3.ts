@@ -237,8 +237,6 @@ export interface Repository<entityType> {
     addEventListener(listener: entityEventListener<entityType>): Unsubscribe;
     validate(item: Partial<entityType>, ...fields: (Extract<keyof OmitEB<entityType>, string>)[]): Promise<ErrorInfo<entityType> | undefined>
     fields: FieldsMetadata<entityType>;
-
-    //TODO - Consider the case where we've got a string to a date, we should to fromJson(toJson) before the validate
 }
 export interface LiveQuery<entityType> {
     subscribe(next: (info: LiveQueryChangeInfo<entityType>) => void): Unsubscribe

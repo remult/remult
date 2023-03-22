@@ -56,6 +56,7 @@ export declare class RepositoryImplementation<entityType> implements Repository<
     findFirst(where?: EntityFilter<entityType>, options?: FindFirstOptions<entityType>, skipOrderByAndLimit?: boolean): Promise<entityType>;
     private fieldsOf;
     create(item?: Partial<OmitEB<entityType>>): entityType;
+    fixTypes(item: any): Promise<any>;
     findId(id: any, options?: FindFirstOptionsBase<entityType>): Promise<entityType>;
 }
 export declare function __updateEntityBasedOnWhere<T>(entityDefs: EntityMetadata<T>, where: EntityFilter<T>, r: T): void;
