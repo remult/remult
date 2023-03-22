@@ -1,8 +1,5 @@
 import { FieldRef, FieldMetadata, Entity, ValueListItem, Remult, ValueListInfo } from "remult";
 
-import { InputField } from "./column-collection";
-
-
 
 export type DataControlInfo<rowType> = DataControlSettings<rowType> | FieldRef<any, any>;
 export interface DataControlSettings<entityType = any, valueType = any> {
@@ -57,18 +54,6 @@ export function getFieldDefinition(col: FieldMetadata | FieldRef<any, any>) {
 
 }
 export function decorateDataSettings(colInput: FieldMetadata | FieldRef<any, any>, x: DataControlSettings) {
-    if (colInput instanceof InputField) {
-
-        for (const key in colInput.dataControl) {
-            if (Object.prototype.hasOwnProperty.call(colInput.dataControl, key)) {
-                const element = colInput.dataControl[key];
-                if (x[key] === undefined)
-                    x[key] = element;
-            }
-
-        }
-    }
-
     let col = getFieldDefinition(colInput);
     if (col.target) {
         let settingsOnColumnLevel = Reflect.getMetadata(configDataControlField, col.target, col.key);

@@ -9,7 +9,7 @@ import { FilterHelper } from '../../../angular/interfaces/src/filter-helper';
 
 import { FilterConsumerBridgeToSqlRequest } from '../filter/filter-consumer-bridge-to-sql-request';
 import { Validators } from '../validators';
-import { FieldCollection, DataAreaSettings, DataControlSettings, getEntityValueList as getValueListFromRepo, GridSettings, InputField, DataControl, decorateDataSettings } from '../../../angular/interfaces';
+import { FieldCollection, DataAreaSettings, DataControlSettings, getEntityValueList as getValueListFromRepo, GridSettings, DataControl, decorateDataSettings } from '../../../angular/interfaces';
 import { Lookup } from '../../../angular/src/lookup';
 import { IdEntity } from '../id-entity';
 import { Categories, Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
@@ -737,30 +737,7 @@ describe("test row provider", () => {
     expect(cc._getColDisplayValue(cc.items[0], c2)).toBe('noam');
 
   });
-  it("get value function works 1", () => {
-    let a = new InputField<number>({ valueType: Number });
-    a.value = 5;
-    var cc = new DataAreaSettings({ fields: () => [a] })
 
-
-    expect(cc.fields._getColDisplayValue(cc.fields.items[0], null)).toBe('5');
-
-  });
-  it("get value function works 2", () => {
-    let a = new InputField<number>({ valueType: Number });
-    a.value = 5;
-    var cc = new FieldCollection(undefined, () => true, undefined, () => true, undefined);
-    cc.add(a);
-    expect(cc._getColDisplayValue(cc.items[0], null)).toBe('5');
-
-  });
-  it("get value function works 3", () => {
-    let a = new InputField<number>({ valueType: Number });
-    a.value = 5;
-    var cc = new FieldCollection(undefined, () => true, undefined, () => true, undefined);
-    cc.add({ field: a, getValue: () => a.value * 2 });
-    expect(cc._getColDisplayValue(cc.items[0], null)).toBe(10);
-  });
 })
 class myClass1 {
   @Fields.integer()
@@ -1069,18 +1046,7 @@ describe("order by api", () => {
 
   });
 });
-describe("test area", () => {
-  it("works without entity", () => {
-    let n = new InputField<number>({
-      valueType: Number
-    });
-    n.value = 5;
-    let area = new DataAreaSettings({ fields: () => [n] });
-    expect(area.fields.items.length).toBe(1);
-    expect(area.fields.__showArea()).toBe(true);
-    expect(area.fields.getNonGridColumns(() => { }).length).toBe(1);
-  });
-});
+
 
 class myClass {
   @Fields.number()
@@ -1099,16 +1065,6 @@ describe("test column value change", () => {
     area.fields._colValueChanged(area.fields.items[0], null);
     x.d.test();
   });
-  it("should fire", () => {
-    let d = new Done();
-    let x = new InputField<number>({
-      valueChange: () => d.ok()
-    });
-    let area = new DataAreaSettings({ fields: () => [x] });
-    area.fields._colValueChanged(area.fields.items[0], null);
-    d.test();
-  });
-
 });
 // describe("test number column", () => {
 //   it("Number is always a number", () => {
@@ -1219,23 +1175,6 @@ describe("value list column without id and caption", () => {
   it("getValueList", () => {
     expect(getValueList(Language).length).toBe(3);
   });
-  it("works with automatic id", () => {
-    let col = new InputField<TestStatus>({
-      valueConverter: ValueListInfo.get(TestStatus),
-      defaultValue: () => TestStatus.open
-    });
-
-    col.value = TestStatus.open;
-    expect(col.value).toBe(TestStatus.open);
-    expect(col.inputValue).toBe('open');
-    col.value = TestStatus.closed;
-    expect(col.inputValue).toBe('cc');
-    let options = ValueListInfo.get(TestStatus).getValues();
-    expect(options.length).toBe(3);
-    expect(options[2].caption).toBe('hh');
-    expect(options[2].id).toBe('hold');
-
-  })
 })
 describe("relation", () => {
   it("should get values", async () => {
@@ -1368,6 +1307,19 @@ class myDp extends ArrayEntityDataProvider {
 class mockColumnDefs implements FieldMetadata {
   constructor(public dbName: string) {
 
+  }
+  apiUpdateAllowed(item: any): boolean {
+    throw new Error('Method not implemented.');
+  }
+  displayValue(item: any): string {
+    throw new Error('Method not implemented.');
+  }
+  includeInApi: boolean;
+  toInput(value: any, inputType?: string): string {
+    throw new Error('Method not implemented.');
+  }
+  fromInput(inputValue: string, inputType?: string) {
+    throw new Error('Method not implemented.');
   }
   async getDbName(): Promise<string> {
     return this.dbName;

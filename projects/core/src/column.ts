@@ -29,6 +29,19 @@ export class CompoundIdField implements FieldMetadata<string> {
   constructor(...columns: FieldMetadata[]) {
     this.fields = columns;
   }
+  apiUpdateAllowed(item: any): boolean {
+    throw new Error('Method not implemented.');
+  }
+  displayValue(item: any): string {
+    throw new Error('Method not implemented.');
+  }
+  includeInApi: boolean;
+  toInput(value: string, inputType?: string): string {
+    throw new Error('Method not implemented.');
+  }
+  fromInput(inputValue: string, inputType?: string): string {
+    throw new Error('Method not implemented.');
+  }
   getDbName(): Promise<string> {
     return Promise.resolve("");
   }

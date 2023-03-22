@@ -114,7 +114,7 @@ export interface EntityMetadata<entityType = any> {
     /** true if the current user is allowed to update an entity instance
      * @example
      * const taskRepo = remult.repo(Task);
-     * if (taskRepo.metadata.apiUpdateAllowed){
+     * if (taskRepo.metadata.apiUpdateAllowed(task)){
      *   // Allow user to edit the entity
      * }
     */
@@ -130,7 +130,7 @@ export interface EntityMetadata<entityType = any> {
     /** true if the current user is allowed to delete an entity instance
      * @example
      * const taskRepo = remult.repo(Task);
-     * if (taskRepo.metadata.apiDeleteAllowed){
+     * if (taskRepo.metadata.apiDeleteAllowed(task)){
      *   // display delete button
      * }
     */
@@ -138,7 +138,7 @@ export interface EntityMetadata<entityType = any> {
     /** true if the current user is allowed to create an entity instance
      * @example
      * const taskRepo = remult.repo(Task);
-     * if (taskRepo.metadata.apiInsertAllowed){
+     * if (taskRepo.metadata.apiInsertAllowed(task)){
      *   // display insert button
      * }
     */

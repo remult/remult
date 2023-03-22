@@ -116,7 +116,7 @@ export interface EntityMetadata<entityType = any> {
     /** true if the current user is allowed to update an entity instance 
      * @example
      * const taskRepo = remult.repo(Task);
-     * if (taskRepo.metadata.apiUpdateAllowed){
+     * if (taskRepo.metadata.apiUpdateAllowed(task)){
      *   // Allow user to edit the entity
      * }
     */
@@ -132,7 +132,7 @@ export interface EntityMetadata<entityType = any> {
     /** true if the current user is allowed to delete an entity instance 
      * @example
      * const taskRepo = remult.repo(Task);
-     * if (taskRepo.metadata.apiDeleteAllowed){
+     * if (taskRepo.metadata.apiDeleteAllowed(task)){
      *   // display delete button
      * }
     */
@@ -140,7 +140,7 @@ export interface EntityMetadata<entityType = any> {
     /** true if the current user is allowed to create an entity instance
      * @example
      * const taskRepo = remult.repo(Task);
-     * if (taskRepo.metadata.apiInsertAllowed){
+     * if (taskRepo.metadata.apiInsertAllowed(task)){
      *   // display insert button
      * }
     */
@@ -234,6 +234,7 @@ export interface Repository<entityType> {
 
     //TODO - validate(item:entityType,...fields?:key of entityType[]):ErrorInfo<entityType>|undefined
     //TODO - Consider the case where we've got a string to a date, we should to fromJson(toJson) before the validate
+    //TODO - add fields
 }
 export interface LiveQuery<entityType> {
     subscribe(next: (info: LiveQueryChangeInfo<entityType>) => void): Unsubscribe

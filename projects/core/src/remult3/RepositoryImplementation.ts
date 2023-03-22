@@ -1360,7 +1360,7 @@ export function buildCaption(caption: string | ((remult: Remult) => string), key
 }
 
 export class columnDefsImpl implements FieldMetadata {
-    constructor(private settings: FieldOptions, private entityDefs: EntityFullInfo<any>, remult: Remult) {
+    constructor(private settings: FieldOptions, private entityDefs: EntityFullInfo<any>, private remult: Remult) {
         if (settings.serverExpression)
             this.isServerExpression = true;
         if (typeof (this.settings.allowApiUpdate) === "boolean")
@@ -1368,11 +1368,28 @@ export class columnDefsImpl implements FieldMetadata {
         if (!this.inputType)
             this.inputType = this.valueConverter.inputType;
         this.caption = buildCaption(settings.caption, settings.key, remult);
-
-
-
-
     }
+    //TODO - add test
+    apiUpdateAllowed(item: any): boolean {
+        return this.remult.isAllowedForInstance(item, this.options.allowApiUpdate)
+    }
+    //TODO - add test
+    displayValue(item: any): string {
+        return this.remult.repo(this.entityDefs.entityType).getEntityRef(item).fields.find(this.key).displayValue;
+    }
+    //TODO - add test
+    get includeInApi() {
+        return this.remult.isAllowed(this.options.includeInApi);
+    }
+    //TODO - add test
+    toInput(value: any, inputType?: string): string {
+        return this.valueConverter.toInput(value, inputType);
+    }
+    //TODO - add test
+    fromInput(inputValue: string, inputType?: string): any {
+        return this.valueConverter.fromInput(inputValue, inputType);
+    }
+
     async getDbName() {
         try {
             if (this.settings.sqlExpression) {

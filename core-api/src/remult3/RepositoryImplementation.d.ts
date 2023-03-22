@@ -180,7 +180,13 @@ export declare function buildCaption(caption: string | ((remult: Remult) => stri
 export declare class columnDefsImpl implements FieldMetadata {
     private settings;
     private entityDefs;
+    private remult;
     constructor(settings: FieldOptions, entityDefs: EntityFullInfo<any>, remult: Remult);
+    apiUpdateAllowed(item: any): boolean;
+    displayValue(item: any): string;
+    get includeInApi(): boolean;
+    toInput(value: any, inputType?: string): string;
+    fromInput(inputValue: string, inputType?: string): any;
     getDbName(): Promise<string>;
     options: FieldOptions<any, any>;
     target: ClassType<any>;

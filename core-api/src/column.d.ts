@@ -6,6 +6,11 @@ export declare function makeTitle(name: string): string;
 export declare class CompoundIdField implements FieldMetadata<string> {
     fields: FieldMetadata[];
     constructor(...columns: FieldMetadata[]);
+    apiUpdateAllowed(item: any): boolean;
+    displayValue(item: any): string;
+    includeInApi: boolean;
+    toInput(value: string, inputType?: string): string;
+    fromInput(inputValue: string, inputType?: string): string;
     getDbName(): Promise<string>;
     getId(instance: any): string;
     options: FieldOptions<any, any>;

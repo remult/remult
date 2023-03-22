@@ -110,6 +110,11 @@ export interface FieldMetadata<valueType = any> {
     readonly dbReadOnly: boolean;
     /** the Value converter for this field */
     readonly valueConverter: Required<ValueConverter<valueType>>;
+    apiUpdateAllowed(item: any): boolean;
+    displayValue(item: any): string;
+    readonly includeInApi: boolean;
+    toInput(value: valueType, inputType?: string): string;
+    fromInput(inputValue: string, inputType?: string): valueType;
 }
 export interface ValueConverter<valueType> {
     fromJson?(val: any): valueType;
