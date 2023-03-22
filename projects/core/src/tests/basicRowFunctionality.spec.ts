@@ -1297,6 +1297,8 @@ describe("data api", () => {
         categoryName: 'noam 1'
       });
     d.test();
+    expect(c.metadata.apiUpdateAllowed({id:2} as any)).toBe(false)
+    expect(c.metadata.apiUpdateAllowed({id:1} as any)).toBe(false)
     t = new TestDataApiResponse();
     d = new Done();
     t.success = () => d.ok();

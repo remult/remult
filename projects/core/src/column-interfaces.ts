@@ -121,7 +121,7 @@ export interface FieldMetadata<valueType = any> {
     /** indicates that this field should only be included in select statement, and excluded from update or insert. useful for db generated ids etc... */
     readonly dbReadOnly: boolean;
     /** the Value converter for this field */
-    readonly valueConverter: ValueConverter<valueType>;
+    readonly valueConverter:  ValueConverter<valueType>;
     //TODO - apiUpdateAllowed - function
     //TODO - includedInApi
     //TODO - displayValue(item:EntityType>)
@@ -132,8 +132,8 @@ export interface ValueConverter<valueType> {
     toJson?(val: valueType): any;
     fromDb?(val: any): valueType
     toDb?(val: valueType): any;
-    toInput?(val: valueType, inputType: string): string;//TODO - input, optional
-    fromInput?(val: string, inputType: string): valueType;//TODO - input, optional
+    toInput?(val: valueType, inputType?: string): string;
+    fromInput?(val: string, inputType?: string): valueType;
     displayValue?(val: valueType): string;
     readonly fieldTypeInDb?: string;
     readonly inputType?: string;

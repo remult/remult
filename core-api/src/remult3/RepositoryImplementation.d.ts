@@ -203,10 +203,10 @@ declare class EntityFullInfo<T> implements EntityMetadata<T> {
     readonly key: string;
     options: EntityOptions<any>;
     constructor(columnsInfo: FieldOptions[], entityInfo: EntityOptions, remult: Remult, entityType: ClassType<T>, key: string);
-    get apiUpdateAllowed(): boolean;
+    apiUpdateAllowed(item: T): boolean;
     get apiReadAllowed(): boolean;
-    get apiDeleteAllowed(): boolean;
-    get apiInsertAllowed(): boolean;
+    apiDeleteAllowed(item: T): boolean;
+    apiInsertAllowed(item: T): boolean;
     dbNamePromise: Promise<string>;
     getDbName(): Promise<string>;
     idMetadata: IdMetadata<T>;

@@ -90,6 +90,7 @@ export interface FieldRef<entityType = any, valueType = any> extends Subscribabl
     validate(): Promise<boolean>;
 }
 export interface IdMetadata<entityType = any> {
+    getId(item: entityType): any;
     field: FieldMetadata<any>;
     getIdFilter(...ids: any[]): EntityFilter<entityType>;
     isIdField(col: FieldMetadata): boolean;
@@ -117,7 +118,7 @@ export interface EntityMetadata<entityType = any> {
      *   // Allow user to edit the entity
      * }
     */
-    readonly apiUpdateAllowed: boolean;
+    apiUpdateAllowed(item: entityType): boolean;
     /** true if the current user is allowed to read from entity
      * @example
      * const taskRepo = remult.repo(Task);
@@ -133,7 +134,7 @@ export interface EntityMetadata<entityType = any> {
      *   // display delete button
      * }
     */
-    readonly apiDeleteAllowed: boolean;
+    apiDeleteAllowed(item: entityType): boolean;
     /** true if the current user is allowed to create an entity instance
      * @example
      * const taskRepo = remult.repo(Task);
@@ -141,7 +142,7 @@ export interface EntityMetadata<entityType = any> {
      *   // display insert button
      * }
     */
-    readonly apiInsertAllowed: boolean;
+    apiInsertAllowed(item: entityType): boolean;
     /** Returns the dbName - based on it's `dbName` option and it's `sqlExpression` option */
     getDbName(): Promise<string>;
     /** Metadata for the Entity's id */

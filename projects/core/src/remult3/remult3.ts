@@ -90,7 +90,7 @@ export interface FieldRef<entityType = any, valueType = any> extends Subscribabl
     validate(): Promise<boolean>;
 }
 export interface IdMetadata<entityType = any> {
-    //TODO - getId(item:entityType)
+    getId(item: entityType): any;
     field: FieldMetadata<any>;
     getIdFilter(...ids: any[]): EntityFilter<entityType>;
     isIdField(col: FieldMetadata): boolean;
@@ -120,7 +120,7 @@ export interface EntityMetadata<entityType = any> {
      *   // Allow user to edit the entity
      * }
     */
-    readonly apiUpdateAllowed: boolean;//TODO - turn to function
+    apiUpdateAllowed(item: entityType): boolean;
     /** true if the current user is allowed to read from entity
      * @example
      * const taskRepo = remult.repo(Task);
@@ -136,7 +136,7 @@ export interface EntityMetadata<entityType = any> {
      *   // display delete button
      * }
     */
-    readonly apiDeleteAllowed: boolean;//TODO - turn to function
+    apiDeleteAllowed(item: entityType): boolean;
     /** true if the current user is allowed to create an entity instance
      * @example
      * const taskRepo = remult.repo(Task);
@@ -144,7 +144,7 @@ export interface EntityMetadata<entityType = any> {
      *   // display insert button
      * }
     */
-    readonly apiInsertAllowed: boolean;//TODO - turn to function
+    apiInsertAllowed(item: entityType): boolean;
     /** Returns the dbName - based on it's `dbName` option and it's `sqlExpression` option */
     getDbName(): Promise<string>;
     /** Metadata for the Entity's id */
@@ -232,8 +232,8 @@ export interface Repository<entityType> {
 
     addEventListener(listener: entityEventListener<entityType>): Unsubscribe;
 
-    // validate(item:entityType,...fields?:key of entityType[]):ErrorInfo<entityType>|undefined
-    // Consider the case where we've got a string to a date, we should to fromJson(toJson) before the validate
+    //TODO - validate(item:entityType,...fields?:key of entityType[]):ErrorInfo<entityType>|undefined
+    //TODO - Consider the case where we've got a string to a date, we should to fromJson(toJson) before the validate
 }
 export interface LiveQuery<entityType> {
     subscribe(next: (info: LiveQueryChangeInfo<entityType>) => void): Unsubscribe

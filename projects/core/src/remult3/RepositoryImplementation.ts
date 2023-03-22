@@ -4,7 +4,7 @@ import { EntityOptions } from "../entity";
 import { CompoundIdField, LookupColumn, makeTitle } from '../column';
 import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef, LiveQuery, LiveQueryChangeInfo } from "./remult3";
 import { ClassType } from "../../classType";
-import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControllerSettings,  EventSource } from "../context";
+import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControllerSettings, EventSource } from "../context";
 import { AndFilter, rawFilterInfo, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
 import { Sort } from "../sort";
 import { v4 as uuid } from 'uuid';
@@ -20,7 +20,6 @@ import { assign } from "../../assign";
 import { Paginator, RefSubscriber, RefSubscriberBase } from ".";
 
 import { remult as defaultRemult, RemultProxy } from "../remult-proxy";
-import { getId } from "./getId";
 import { SubscriptionListener, Unsubscribe } from "../live-query/SubscriptionChannel";
 //import { remult } from "../remult-proxy";
 
@@ -884,7 +883,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
     get apiInsertAllowed() { return this.remult.isAllowedForInstance(this.instance, this.metadata.options.allowApiInsert) }
     metadata: EntityMetadata<T>;
     getId() {
-        return getId(this.info, this.instance);
+        return this.info.idMetadata.getId(this.instance)
     }
     saveMoreOriginalData() {
         this.originalId = this.getId();
@@ -1078,7 +1077,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
 
         }
         await this.calcServerExpression();
-        this.id = getId(this.info, this.instance);
+        this.id = this.getId();
     }
     id;
     originalId;
@@ -1476,10 +1475,10 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
                 this.idMetadata.field = [...this.fields][0];
         }
     }
-    get apiUpdateAllowed() { return this.remult.isAllowedForInstance(undefined, this.options.allowApiUpdate) }
+    apiUpdateAllowed(item: T) { return this.remult.isAllowedForInstance(this.remult.repo(this.entityType).getEntityRef(item), this.options.allowApiUpdate) }
     get apiReadAllowed() { return this.remult.isAllowed(this.options.allowApiRead) }
-    get apiDeleteAllowed() { return this.remult.isAllowedForInstance(undefined, this.options.allowApiDelete) }
-    get apiInsertAllowed() { return this.remult.isAllowedForInstance(undefined, this.options.allowApiInsert) }
+    apiDeleteAllowed(item: T) { return this.remult.isAllowedForInstance(this.remult.repo(this.entityType).getEntityRef(item), this.options.allowApiDelete) }
+    apiInsertAllowed(item: T) { return this.remult.isAllowedForInstance(this.remult.repo(this.entityType).getEntityRef(item), this.options.allowApiInsert) }
 
     dbNamePromise: Promise<string>;
     getDbName(): Promise<string> {
@@ -1509,6 +1508,12 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
     }
 
     idMetadata: IdMetadata<T> = {
+        getId: item => {
+            if (this.idMetadata.field instanceof CompoundIdField)
+                return this.idMetadata.field.getId(item);
+            else
+                return item[this.idMetadata.field.key];
+        },
         field: undefined,
         createIdInFilter: (items: T[]): EntityFilter<any> => {
             if (items.length > 0)

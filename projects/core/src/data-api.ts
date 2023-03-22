@@ -4,7 +4,6 @@ import { Filter } from './filter/filter-interfaces';
 import { FindOptions, Repository, EntityRef, rowHelperImplementation, EntityFilter } from './remult3';
 import { ErrorInfo } from './data-interfaces';
 import { ForbiddenError } from './server-action';
-import { getId } from './remult3/getId';
 import { findOptionsToJson, liveQueryAction } from './data-providers/rest-data-provider';
 import { QueryData } from './live-query/SubscriptionServer';
 
@@ -150,7 +149,7 @@ export class DataApi<T = any> {
       const data: QueryData = {
         requestJson: serializeRequest(),
         findOptionsJson: findOptionsToJson(r.findOptions, this.repository.metadata),
-        lastIds: r.r.map(y => getId(this.repository.metadata, y))
+        lastIds: r.r.map(y => this.repository.metadata.idMetadata.getId(y))
       }
       await this.remult.liveQueryStorage.add(
         {

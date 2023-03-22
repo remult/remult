@@ -116,8 +116,8 @@ export interface ValueConverter<valueType> {
     toJson?(val: valueType): any;
     fromDb?(val: any): valueType;
     toDb?(val: valueType): any;
-    toInput?(val: valueType, inputType: string): string;
-    fromInput?(val: string, inputType: string): valueType;
+    toInput?(val: valueType, inputType?: string): string;
+    fromInput?(val: string, inputType?: string): valueType;
     displayValue?(val: valueType): string;
     readonly fieldTypeInDb?: string;
     readonly inputType?: string;
