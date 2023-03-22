@@ -1395,7 +1395,7 @@ export class columnDefsImpl implements FieldMetadata {
     target: ClassType<any> = this.settings.target;
     readonly: boolean;
 
-    valueConverter = this.settings.valueConverter;
+    valueConverter = this.settings.valueConverter as Required<ValueConverter<any>>;
     allowNull = !!this.settings.allowNull;
 
     caption: string;

@@ -185,7 +185,7 @@ export declare class columnDefsImpl implements FieldMetadata {
     options: FieldOptions<any, any>;
     target: ClassType<any>;
     readonly: boolean;
-    valueConverter: ValueConverter<any>;
+    valueConverter: Required<ValueConverter<any>>;
     allowNull: boolean;
     caption: string;
     get dbName(): any;

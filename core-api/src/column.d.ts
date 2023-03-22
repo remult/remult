@@ -9,7 +9,7 @@ export declare class CompoundIdField implements FieldMetadata<string> {
     getDbName(): Promise<string>;
     getId(instance: any): string;
     options: FieldOptions<any, any>;
-    get valueConverter(): ValueConverter<string>;
+    get valueConverter(): Required<ValueConverter<string>>;
     target: ClassType<any>;
     readonly: true;
     allowNull: boolean;

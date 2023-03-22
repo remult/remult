@@ -395,7 +395,7 @@ export class InputField<valueType> implements FieldRef<any, valueType> {
     }
 
     this.originalValue = this._value;
-    let valueConverter = this.options.valueConverter ? this.options.valueConverter : undefined;
+    let valueConverter:Required<ValueConverter<any>> = this.options.valueConverter ? this.options.valueConverter : undefined as any;
     if (valueConverter)
       if (!settings.inputType) {
         settings.inputType = valueConverter.inputType;
@@ -445,7 +445,7 @@ export class InputField<valueType> implements FieldRef<any, valueType> {
     readonly isServerExpression: boolean;
     readonly dbReadOnly: boolean;
     readonly dbName: string;
-    readonly valueConverter: ValueConverter<valueType>;
+    readonly valueConverter: Required<ValueConverter<valueType>>;
     readonly options: FieldOptions;
   };
   _value: valueType;

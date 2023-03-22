@@ -228,7 +228,7 @@ describe("Closed List  column", () => {
     e.l = Language.Russian;
     await e._.save();
     e = await c.findFirst();
-    
+
     expect(e.l).toBe(Language.Russian);
     expect(e._.toApiJson().l).toBe(10);
   })
@@ -1373,7 +1373,7 @@ class mockColumnDefs implements FieldMetadata {
     return this.dbName;
   }
   options: FieldOptions<any, any>;
-  valueConverter: ValueConverter<any> = ValueConverters.Default;
+  valueConverter: Required<ValueConverter<any>> = ValueConverters.Default;
   target: ClassType<any>;
   readonly: boolean;
   readonly dbReadOnly: boolean;
@@ -1387,5 +1387,3 @@ class mockColumnDefs implements FieldMetadata {
   readonly allowNull: boolean;
   readonly dbType: string;
 }
-
-
