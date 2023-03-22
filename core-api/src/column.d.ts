@@ -8,7 +8,7 @@ export declare class CompoundIdField implements FieldMetadata<string> {
     constructor(...columns: FieldMetadata[]);
     apiUpdateAllowed(item: any): boolean;
     displayValue(item: any): string;
-    includeInApi: boolean;
+    includedInApi: boolean;
     toInput(value: string, inputType?: string): string;
     fromInput(inputValue: string, inputType?: string): string;
     getDbName(): Promise<string>;

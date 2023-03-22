@@ -112,7 +112,7 @@ export interface FieldMetadata<valueType = any> {
     readonly valueConverter: Required<ValueConverter<valueType>>;
     apiUpdateAllowed(item: any): boolean;
     displayValue(item: any): string;
-    readonly includeInApi: boolean;
+    readonly includedInApi: boolean;
     toInput(value: valueType, inputType?: string): string;
     fromInput(inputValue: string, inputType?: string): valueType;
 }

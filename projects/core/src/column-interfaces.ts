@@ -124,10 +124,9 @@ export interface FieldMetadata<valueType = any> {
     readonly valueConverter: Required<ValueConverter<valueType>>;
     apiUpdateAllowed(item: any): boolean;//TODO - consider typing the item
     displayValue(item: any): string;//TODO - consider typing the item
-    readonly includeInApi: boolean;
+    readonly includedInApi: boolean;
     toInput(value: valueType, inputType?: string): string;
     fromInput(inputValue: string, inputType?: string): valueType;
-    //TODO - fix tutorials
 }
 export interface ValueConverter<valueType> {
     fromJson?(val: any): valueType;

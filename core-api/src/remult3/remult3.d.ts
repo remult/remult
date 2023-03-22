@@ -4,6 +4,7 @@ import { LiveQueryChange, SubscriptionListener, Unsubscribe } from "../live-quer
 import { EntityOptions } from "../entity";
 import { SortSegment } from "../sort";
 import { entityEventListener } from "../__EntityValueProvider";
+import { ErrorInfo } from "../..";
 export interface EntityRef<entityType> extends Subscribable {
     hasErrors(): boolean;
     undoChanges(): any;
@@ -20,7 +21,7 @@ export interface EntityRef<entityType> extends Subscribable {
     repository: Repository<entityType>;
     metadata: EntityMetadata<entityType>;
     toApiJson(): any;
-    validate(): Promise<boolean>;
+    validate(): Promise<ErrorInfo<entityType> | undefined>;
     readonly apiUpdateAllowed: boolean;
     readonly apiDeleteAllowed: boolean;
     readonly apiInsertAllowed: boolean;
@@ -30,7 +31,7 @@ export interface ControllerRef<entityType> extends Subscribable {
     hasErrors(): boolean;
     fields: FieldsRef<entityType>;
     error: string;
-    validate(): Promise<boolean>;
+    validate(): Promise<ErrorInfo<entityType> | undefined>;
     readonly isLoading: boolean;
 }
 export interface RefSubscriberBase {
@@ -228,6 +229,8 @@ export interface Repository<entityType> {
     */
     metadata: EntityMetadata<entityType>;
     addEventListener(listener: entityEventListener<entityType>): Unsubscribe;
+    validate(item: Partial<entityType>, ...fields: (Extract<keyof OmitEB<entityType>, string>)[]): Promise<ErrorInfo<entityType> | undefined>;
+    fields: FieldsMetadata<entityType>;
 }
 export interface LiveQuery<entityType> {
     subscribe(next: (info: LiveQueryChangeInfo<entityType>) => void): Unsubscribe;

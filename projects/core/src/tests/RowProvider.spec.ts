@@ -14,7 +14,7 @@ import { Lookup } from '../../../angular/src/lookup';
 import { IdEntity } from '../id-entity';
 import { Categories, Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
 import { Entity as EntityDecorator, Field as ColumnDecorator, getEntityRef, decorateColumnSettings, Entity, Field, FieldType, ValueListFieldType, getFields, Fields, getValueList, ValueListInfo } from '../remult3/RepositoryImplementation';
-import { Sort, SqlDatabase, WebSqlDataProvider } from '../..';
+import { describeClass, Sort, SqlDatabase, WebSqlDataProvider } from '../..';
 import { EntityBase, EntityMetadata, Repository, FindOptions } from '../remult3';
 import { ValueConverters } from '../valueConverters';
 import { EntityOptions } from '../entity';
@@ -1117,6 +1117,27 @@ describe("test datetime column", () => {
     test(new Date(2021, 2, 26), '2021-03-26');
     "".toString();
   });
+  it("test display value, from and to input", () => {
+    let x = class {
+      name = 'noam'
+      myDate = new Date(1976, 5, 16)
+    }
+
+    describeClass(x, Entity("myEntity"), {
+      name: Fields.string(),
+      myDate: Fields.dateOnly<InstanceType<typeof x>>({
+        displayValue: z => z.name + z.myDate.getFullYear()
+      })
+    })
+    var repo = new Remult().repo(x);
+    let y: InstanceType<typeof x> = {
+      name: 'noam',
+      myDate: new Date(1976, 5, 16)
+    }
+    expect(repo.fields.myDate.displayValue(y)).toBe('noam1976')
+    expect(repo.fields.myDate.toInput(new Date(1976, 5, 16))).toBe("1976-06-16");
+    expect(repo.fields.myDate.fromInput("1976-06-16")).toEqual(new Date(1976, 5, 16));
+  })
 
 
   it("date Storage works 1", () => {
@@ -1314,7 +1335,7 @@ class mockColumnDefs implements FieldMetadata {
   displayValue(item: any): string {
     throw new Error('Method not implemented.');
   }
-  includeInApi: boolean;
+  includedInApi: boolean;
   toInput(value: any, inputType?: string): string {
     throw new Error('Method not implemented.');
   }

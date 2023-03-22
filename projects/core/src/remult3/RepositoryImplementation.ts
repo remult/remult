@@ -119,7 +119,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         this.idCache.set(id, row);
         return await row;
     }
-    //TODO - Used to prevent unnecessary many to one relations
+    //TODO2 - Used to prevent unnecessary many to one relations
     addToCache(item: entityType) {
         if (item)
             this.idCache.set(this.getEntityRef(item).getId() + '', item);
@@ -188,6 +188,28 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
                 return await ref.save();
             } else {
                 return await this.getEntityRef(this.create(entity)).save();
+            }
+        }
+    }
+    get fields() {
+        return this.metadata.fields;
+    }
+    async validate(entity: Partial<OmitEB<entityType>>, ...fields: (Extract<keyof OmitEB<entityType>, string>)[]): Promise<ErrorInfo<entityType> | undefined> {
+        {
+            let ref: rowHelperImplementation<any> = this.getEntityRef(entity as any) as any;
+
+            if (!fields || fields.length === 0) {
+                return await ref.validate()
+            } else {
+                ref.__clearErrorsAndReportChanged();
+                let hasError = false;
+                for (const f of fields) {
+                    if (!await ref.fields.find(f).validate())
+                        hasError = true;
+                }
+                if (!hasError)
+                    return undefined;
+                return ref.buildErrorInfoObject();
             }
         }
     }
@@ -359,7 +381,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 
         return x;
     }
-    // TODO - consider replacing with fromJsonArray - also consider having a TOJSON for similar cases
+    // TODO2 - consider replacing with fromJsonArray - also consider having a TOJSON for similar cases
     async fromJson(json: any, newRow?: boolean): Promise<entityType> {
         let obj = {};
         for (const col of this.fieldsOf(json)) {
@@ -698,26 +720,27 @@ abstract class rowHelperBase<T>
     }
     errors: { [key: string]: string };
     protected __assertValidity() {
-        if (!this.hasErrors()) {
-            let error: ErrorInfo = {
-                modelState: Object.assign({}, this.errors),
-                message: this.error
-            }
-            if (!error.message) {
-                for (const col of this.columnsInfo) {
-                    if (this.errors[col.key]) {
-                        error.message = this.fields[col.key].metadata.caption + ": " + this.errors[col.key];
-                        this.error = error.message;
-                        break;
-                    }
+        if (!this.hasErrors())
+            throw this.buildErrorInfoObject();
+    }
+    buildErrorInfoObject() {
+        let error: ErrorInfo = {
+            modelState: Object.assign({}, this.errors),
+            message: this.error
+        };
+        if (!error.message) {
+            for (const col of this.columnsInfo) {
+                if (this.errors[col.key]) {
+                    error.message = this.fields[col.key].metadata.caption + ": " + this.errors[col.key];
+                    this.error = error.message;
+                    break;
                 }
-
             }
-            throw error;
-
 
         }
+        return error;
     }
+
     abstract get fields(): FieldsRef<T>;
     catchSaveErrors(err: any): any {
         let e = err;
@@ -797,7 +820,9 @@ abstract class rowHelperBase<T>
             await classValidatorValidate(this.instance, this);
         await this.__performColumnAndEntityValidations();
         let r = this.hasErrors();
-        return r;
+        if (!this.hasErrors())
+            return this.buildErrorInfoObject();
+        else return undefined;
     }
     async __validateEntity() {
         this.__clearErrorsAndReportChanged();
@@ -1369,23 +1394,21 @@ export class columnDefsImpl implements FieldMetadata {
             this.inputType = this.valueConverter.inputType;
         this.caption = buildCaption(settings.caption, settings.key, remult);
     }
-    //TODO - add test
     apiUpdateAllowed(item: any): boolean {
         return this.remult.isAllowedForInstance(item, this.options.allowApiUpdate)
     }
-    //TODO - add test
+
     displayValue(item: any): string {
         return this.remult.repo(this.entityDefs.entityType).getEntityRef(item).fields.find(this.key).displayValue;
     }
-    //TODO - add test
-    get includeInApi() {
-        return this.remult.isAllowed(this.options.includeInApi);
+    get includedInApi() {
+        if (this.options.includeInApi === undefined)
+            return true;
+        return this.remult.isAllowed(this.options.includeInApi);//TODO - consolidate other code paths to go through here
     }
-    //TODO - add test
     toInput(value: any, inputType?: string): string {
         return this.valueConverter.toInput(value, inputType);
     }
-    //TODO - add test
     fromInput(inputValue: string, inputType?: string): any {
         return this.valueConverter.fromInput(inputValue, inputType);
     }
@@ -1492,10 +1515,10 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
                 this.idMetadata.field = [...this.fields][0];
         }
     }
-    apiUpdateAllowed(item: T) { return this.remult.isAllowedForInstance(this.remult.repo(this.entityType).getEntityRef(item), this.options.allowApiUpdate) }
+    apiUpdateAllowed(item: T) { return this.remult.repo(this.entityType).getEntityRef(item).apiUpdateAllowed }
     get apiReadAllowed() { return this.remult.isAllowed(this.options.allowApiRead) }
-    apiDeleteAllowed(item: T) { return this.remult.isAllowedForInstance(this.remult.repo(this.entityType).getEntityRef(item), this.options.allowApiDelete) }
-    apiInsertAllowed(item: T) { return this.remult.isAllowedForInstance(this.remult.repo(this.entityType).getEntityRef(item), this.options.allowApiInsert) }
+    apiDeleteAllowed(item: T) { return this.remult.repo(this.entityType).getEntityRef(item).apiDeleteAllowed }
+    apiInsertAllowed(item: T) { return this.remult.repo(this.entityType).getEntityRef(item).apiInsertAllowed }
 
     dbNamePromise: Promise<string>;
     getDbName(): Promise<string> {

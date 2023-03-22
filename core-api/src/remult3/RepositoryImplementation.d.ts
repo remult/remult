@@ -5,7 +5,7 @@ import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Reposit
 import { ClassType } from "../../classType";
 import { Remult } from "../context";
 import { entityEventListener } from "../__EntityValueProvider";
-import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions } from "../data-interfaces";
+import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions, ErrorInfo } from "../data-interfaces";
 import { RefSubscriber } from ".";
 import { Unsubscribe } from "../live-query/SubscriptionChannel";
 export declare class RepositoryImplementation<entityType> implements Repository<entityType> {
@@ -34,6 +34,8 @@ export declare class RepositoryImplementation<entityType> implements Repository<
     delete(item: entityType): Promise<void>;
     insert(item: Partial<OmitEB<entityType>>[]): Promise<entityType[]>;
     insert(item: Partial<OmitEB<entityType>>): Promise<entityType>;
+    get fields(): FieldsMetadata<entityType>;
+    validate(entity: Partial<OmitEB<entityType>>, ...fields: (Extract<keyof OmitEB<entityType>, string>)[]): Promise<ErrorInfo<entityType> | undefined>;
     update(id: (entityType extends {
         id?: number;
     } ? number : entityType extends {
@@ -84,6 +86,7 @@ declare abstract class rowHelperBase<T> {
         [key: string]: string;
     };
     protected __assertValidity(): void;
+    buildErrorInfoObject(): ErrorInfo<any>;
     abstract get fields(): FieldsRef<T>;
     catchSaveErrors(err: any): any;
     __clearErrorsAndReportChanged(): void;
@@ -93,7 +96,7 @@ declare abstract class rowHelperBase<T> {
     originalValues: any;
     saveOriginalData(): void;
     saveMoreOriginalData(): void;
-    validate(): Promise<boolean>;
+    validate(): Promise<ErrorInfo<any>>;
     __validateEntity(): Promise<void>;
     __performColumnAndEntityValidations(): Promise<void>;
     toApiJson(): any;
@@ -184,7 +187,7 @@ export declare class columnDefsImpl implements FieldMetadata {
     constructor(settings: FieldOptions, entityDefs: EntityFullInfo<any>, remult: Remult);
     apiUpdateAllowed(item: any): boolean;
     displayValue(item: any): string;
-    get includeInApi(): boolean;
+    get includedInApi(): boolean;
     toInput(value: any, inputType?: string): string;
     fromInput(inputValue: string, inputType?: string): any;
     getDbName(): Promise<string>;
