@@ -57,11 +57,11 @@ export type FieldsRef<entityType> = {
 
 }
 export type FieldsMetadata<entityType> = {
-    [Properties in keyof OmitEB<entityType>]: FieldMetadata<entityType[Properties]>
+    [Properties in keyof OmitEB<entityType>]: FieldMetadata<entityType[Properties], entityType>
 } & {
-    find(fieldMetadataOrKey: FieldMetadata | string): FieldMetadata,
-    [Symbol.iterator]: () => IterableIterator<FieldMetadata>,
-    toArray(): FieldMetadata<any>[]
+    find(fieldMetadataOrKey: FieldMetadata | string): FieldMetadata<any, entityType>,
+    [Symbol.iterator]: () => IterableIterator<FieldMetadata<any, entityType>>,
+    toArray(): FieldMetadata<any, entityType> []
 
 
 }
@@ -145,7 +145,7 @@ export interface EntityMetadata<entityType = any> {
      *   // display insert button
      * }
     */
-    apiInsertAllowed(item: entityType): boolean; 
+    apiInsertAllowed(item: entityType): boolean;
     //TODO YONI - only a few cases require the actual entity - should we make the item optional?
     //TODO - fix tutorials
 

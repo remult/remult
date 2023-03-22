@@ -1,6 +1,6 @@
 import { ClassType } from '../classType';
 import { Allowed, AllowedForInstance } from './context';
-import { EntityMetadata, FieldRef } from './remult3';
+import { EntityMetadata, FieldRef, OmitEB } from './remult3';
 export interface FieldOptions<entityType = any, valueType = any> {
     /** A human readable name for the field. Can be used to achieve a consistent caption for a field throughout the app
     * @example
@@ -75,7 +75,7 @@ export interface FieldOptions<entityType = any, valueType = any> {
     key?: string;
 }
 /**Metadata for a `Field`, this metadata can be used in the user interface to provide a richer UI experience */
-export interface FieldMetadata<valueType = any> {
+export interface FieldMetadata<valueType = any, entityType = any> {
     /** The field's member name in an object.
      * @example
      * const taskRepo = remult.repo(Task);
@@ -110,8 +110,8 @@ export interface FieldMetadata<valueType = any> {
     readonly dbReadOnly: boolean;
     /** the Value converter for this field */
     readonly valueConverter: Required<ValueConverter<valueType>>;
-    apiUpdateAllowed(item: any): boolean;
-    displayValue(item: any): string;
+    apiUpdateAllowed(item: Partial<OmitEB<entityType>>): boolean;
+    displayValue(item: Partial<OmitEB<entityType>>): string;
     readonly includedInApi: boolean;
     toInput(value: valueType, inputType?: string): string;
     fromInput(inputValue: string, inputType?: string): valueType;

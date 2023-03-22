@@ -52,11 +52,11 @@ export declare type FieldsRef<entityType> = {
     toArray(): FieldRef<entityType, any>[];
 };
 export declare type FieldsMetadata<entityType> = {
-    [Properties in keyof OmitEB<entityType>]: FieldMetadata<entityType[Properties]>;
+    [Properties in keyof OmitEB<entityType>]: FieldMetadata<entityType[Properties], entityType>;
 } & {
-    find(fieldMetadataOrKey: FieldMetadata | string): FieldMetadata;
-    [Symbol.iterator]: () => IterableIterator<FieldMetadata>;
-    toArray(): FieldMetadata<any>[];
+    find(fieldMetadataOrKey: FieldMetadata | string): FieldMetadata<any, entityType>;
+    [Symbol.iterator]: () => IterableIterator<FieldMetadata<any, entityType>>;
+    toArray(): FieldMetadata<any, entityType>[];
 };
 export declare type SortSegments<entityType> = {
     [Properties in keyof entityType]: SortSegment & {
