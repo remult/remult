@@ -40,5 +40,12 @@
     "typescript.tsdk": "node_modules\\typescript\\lib",
     "cSpell.ignoreWords": [
         "allowapicrud"
-    ]
+    ],
+    "[typescriptreact]": {
+        "editor.defaultFormatter": "vscode.typescript-language-features"
+    }
+    ,
+    "[typescript]": {
+        "editor.defaultFormatter": "vscode.typescript-language-features"
+    }
 }

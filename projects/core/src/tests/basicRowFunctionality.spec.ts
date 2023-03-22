@@ -120,6 +120,18 @@ describe('Test basic row functionality', () => {
 
 
   });
+  it("Find or Create id", async () => {
+    let [repo] = await (await createData());
+    let row = await repo.findId( 1, { createIfNotFound: true });
+    expect(row._.isNew()).toBe(true);
+    expect(row.id).toBe(1);
+    await row._.save();
+    let row2 = await repo.findId( 1, { createIfNotFound: true });
+    expect(row2._.isNew()).toBe(false);
+    expect(row2.id).toBe(1);
+
+
+  });
 
   it("object is autonemous", () => {
     let x = new Remult().repo(newCategories).create();

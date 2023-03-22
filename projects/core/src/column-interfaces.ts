@@ -122,14 +122,18 @@ export interface FieldMetadata<valueType = any> {
     readonly dbReadOnly: boolean;
     /** the Value converter for this field */
     readonly valueConverter: ValueConverter<valueType>;
+    //TODO - apiUpdateAllowed - function
+    //TODO - includedInApi
+    //TODO - displayValue(item:EntityType>)
+    //TODO - toInput, fromInput
 }
 export interface ValueConverter<valueType> {
     fromJson?(val: any): valueType;
     toJson?(val: valueType): any;
     fromDb?(val: any): valueType
     toDb?(val: valueType): any;
-    toInput?(val: valueType, inputType: string): string;
-    fromInput?(val: string, inputType: string): valueType;
+    toInput?(val: valueType, inputType: string): string;//TODO - input, optional
+    fromInput?(val: string, inputType: string): valueType;//TODO - input, optional
     displayValue?(val: valueType): string;
     readonly fieldTypeInDb?: string;
     readonly inputType?: string;
