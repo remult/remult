@@ -91,14 +91,14 @@ npm i --save-dev @types/cookie-session
    import express, { Router } from "express"
    import type { UserInfo } from "remult"
 
-   export const auth = Router()
-
-   auth.use(express.json())
-
    const validUsers: UserInfo[] = [
      { id: "1", name: "Jane" },
      { id: "2", name: "Steve" }
    ]
+
+   export const auth = Router()
+
+   auth.use(express.json())
 
    auth.post("/api/signIn", (req, res) => {
      const user = validUsers.find(user => user.name === req.body.username)
