@@ -791,17 +791,30 @@ testAll("test contains with names with casing", async ({ createEntity }) => {
     const e = class {
 
         a = 0;
-        firstName=''
+        firstName = ''
     }
     describeClass(e, Entity("testNameContains", { allowApiCrud: true }), {
         a: Fields.number(),
         firstName: Fields.string()
     })
     const r = await createEntity(e);
-    await r.insert({ a: 1, firstName:"noam" });
-    let item = await r.findFirst({firstName:{$contains:"oa"}});
+    await r.insert({ a: 1, firstName: "noam" });
+    let item = await r.findFirst({ firstName: { $contains: "oa" } });
     expect(item.firstName).toBe("noam");
 
-}, false,{
-    exclude:[TestDbs.mongo]
+}, false, {
+    exclude: [TestDbs.mongo]
 })
+testAll("test live query storage", async (x) => {
+    const s = new DataProviderLiveQueryStorage(x.db);
+    await s.ensureSchema();
+    const entityKey = "ek";
+    const id = 'id'
+    await s.add({ id, entityKey, data: {} });
+    await s.add({ id, entityKey, data: {} });
+    x.remult.clearAllCache();
+    await s.add({ id, entityKey, data: {} });
+    await s.keepAliveAndReturnUnknownQueryIds([id]);
+    await s.remove(id);
+    await s.remove(id);
+}, false, { exclude: [TestDbs.restDataProvider] })
