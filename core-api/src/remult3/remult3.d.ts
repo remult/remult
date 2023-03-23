@@ -123,7 +123,7 @@ export interface EntityMetadata<entityType = any> {
      *   // Allow user to edit the entity
      * }
     */
-    apiUpdateAllowed(item: entityType): boolean;
+    apiUpdateAllowed(item?: entityType): boolean;
     /** true if the current user is allowed to read from entity
      * @example
      * const taskRepo = remult.repo(Task);
@@ -139,7 +139,7 @@ export interface EntityMetadata<entityType = any> {
      *   // display delete button
      * }
     */
-    apiDeleteAllowed(item: entityType): boolean;
+    apiDeleteAllowed(item?: entityType): boolean;
     /** true if the current user is allowed to create an entity instance
      * @example
      * const taskRepo = remult.repo(Task);
@@ -147,7 +147,7 @@ export interface EntityMetadata<entityType = any> {
      *   // display insert button
      * }
     */
-    apiInsertAllowed(item: entityType): boolean;
+    apiInsertAllowed(item?: entityType): boolean;
     /** Returns the dbName - based on it's `dbName` option and it's `sqlExpression` option */
     getDbName(): Promise<string>;
     /** Metadata for the Entity's id */

@@ -115,7 +115,7 @@ export interface FieldMetadata<valueType = any, entityType = any> {
      * repo.fields.createDate.displayValue(task) //will display the date as defined in the `displayValue` option defined for it.
     */
     displayValue(item: Partial<OmitEB<entityType>>): string;
-    apiUpdateAllowed(item: Partial<OmitEB<entityType>>): boolean;
+    apiUpdateAllowed(item?: Partial<OmitEB<entityType>>): boolean;
     readonly includedInApi: boolean;
     /** Adapts the value for usage with html input
      * @example

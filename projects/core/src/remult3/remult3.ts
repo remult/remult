@@ -125,7 +125,7 @@ export interface EntityMetadata<entityType = any> {
      *   // Allow user to edit the entity
      * }
     */
-    apiUpdateAllowed(item: entityType): boolean;
+    apiUpdateAllowed(item?: entityType): boolean;
     /** true if the current user is allowed to read from entity
      * @example
      * const taskRepo = remult.repo(Task);
@@ -141,7 +141,7 @@ export interface EntityMetadata<entityType = any> {
      *   // display delete button
      * }
     */
-    apiDeleteAllowed(item: entityType): boolean;
+    apiDeleteAllowed(item?: entityType): boolean;
     /** true if the current user is allowed to create an entity instance
      * @example
      * const taskRepo = remult.repo(Task);
@@ -149,7 +149,7 @@ export interface EntityMetadata<entityType = any> {
      *   // display insert button
      * }
     */
-    apiInsertAllowed(item: entityType): boolean;
+    apiInsertAllowed(item?: entityType): boolean;
     //TODO YONI - only a few cases require the actual entity - should we make the item optional?
     //TODO - fix tutorials
 

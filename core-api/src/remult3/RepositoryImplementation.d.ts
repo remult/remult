@@ -186,7 +186,7 @@ export declare class columnDefsImpl implements FieldMetadata {
     private entityDefs;
     private remult;
     constructor(settings: FieldOptions, entityDefs: EntityFullInfo<any>, remult: Remult);
-    apiUpdateAllowed(item: any): boolean;
+    apiUpdateAllowed(item?: any): boolean;
     displayValue(item: any): string;
     get includedInApi(): boolean;
     toInput(value: any, inputType?: string): string;

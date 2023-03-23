@@ -1409,7 +1409,9 @@ export class columnDefsImpl implements FieldMetadata {
             this.inputType = this.valueConverter.inputType;
         this.caption = buildCaption(settings.caption, settings.key, remult);
     }
-    apiUpdateAllowed(item: any): boolean {
+    apiUpdateAllowed(item?: any): boolean {
+        if (this.options.allowApiUpdate === undefined)
+            return true;
         return this.remult.isAllowedForInstance(item, this.options.allowApiUpdate)
     }
 
@@ -1530,10 +1532,27 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
                 this.idMetadata.field = [...this.fields][0];
         }
     }
-    apiUpdateAllowed(item: T) { return this.remult.repo(this.entityType).getEntityRef(item).apiUpdateAllowed }
-    get apiReadAllowed() { return this.remult.isAllowed(this.options.allowApiRead) }
-    apiDeleteAllowed(item: T) { return this.remult.repo(this.entityType).getEntityRef(item).apiDeleteAllowed }
-    apiInsertAllowed(item: T) { return this.remult.repo(this.entityType).getEntityRef(item).apiInsertAllowed }
+    apiUpdateAllowed(item: T) {
+        if (this.options.allowApiUpdate === undefined)
+            return false;
+        return !item ? this.remult.isAllowedForInstance(undefined, this.options.allowApiUpdate) : this.remult.repo(this.entityType).getEntityRef(item).apiUpdateAllowed
+    }
+    get apiReadAllowed() {
+        if (this.options.allowApiUpdate === undefined)
+            return true; //TODO2 - consider that this default may be confusing, since it's different from all others.
+        return this.remult.isAllowed(this.options.allowApiRead)
+    }
+    apiDeleteAllowed(item: T) {
+
+        if (this.options.allowApiDelete === undefined)
+            return false;
+        return !item ? this.remult.isAllowedForInstance(undefined, this.options.allowApiDelete) : this.remult.repo(this.entityType).getEntityRef(item).apiDeleteAllowed
+    }
+    apiInsertAllowed(item: T) {
+        if (this.options.allowApiUpdate === undefined)
+            return false;
+        return !item ? this.remult.isAllowedForInstance(undefined, this.options.allowApiInsert) : this.remult.repo(this.entityType).getEntityRef(item).apiInsertAllowed
+    }
 
     dbNamePromise: Promise<string>;
     getDbName(): Promise<string> {

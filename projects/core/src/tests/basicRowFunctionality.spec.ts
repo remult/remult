@@ -32,6 +32,7 @@ import { FilterConsumerBridgeToSqlRequest, dbNamesOf } from "../filter/filter-co
 import axios from "axios";
 import { async } from "@angular/core/testing";
 import { HttpProviderBridgeToRestDataProviderHttpProvider, retry, toPromise } from "../buildRestDataProvider";
+import { describeClass } from "../remult3/DecoratorReplacer";
 
 //SqlDatabase.LogToConsole = true;
 
@@ -701,7 +702,9 @@ describe("data api", () => {
       }
     })(type);
     let [c, remult] = await createData(async insert => await insert(1, 'noam'), type);
-
+    expect(c.metadata.apiDeleteAllowed()).toBe(true)
+    expect(c.metadata.apiUpdateAllowed()).toBe(true)
+    expect(c.metadata.apiInsertAllowed()).toBe(true)
     var api = new DataApi(c, remult);
     let t = new TestDataApiResponse();
     let d = new Done();
@@ -715,6 +718,30 @@ describe("data api", () => {
     var x = await c.find({ where: { id: 1 } });
     expect(x.length).toBe(0);
   });
+  it("check api defaults", () => {
+    const c = class {
+      id = 0;
+      name?=''
+    }
+    describeClass(c, Entity("asdf"), {
+      id: Fields.autoIncrement(),
+      name:Fields.string()
+    })
+    const repo = new Remult(new InMemoryDataProvider()).repo(c);
+    expect(repo.metadata.apiDeleteAllowed()).toBe(false)
+    expect(repo.metadata.apiUpdateAllowed()).toBe(false)
+    expect(repo.metadata.apiInsertAllowed()).toBe(false)
+    expect(repo.metadata.apiDeleteAllowed({ id: 1 })).toBe(false)
+    expect(repo.metadata.apiUpdateAllowed({ id: 1 })).toBe(false)
+    expect(repo.metadata.apiInsertAllowed({ id: 1 })).toBe(false)
+    expect(repo.fields.id.apiUpdateAllowed()).toBe(false)
+    expect(repo.fields.id.apiUpdateAllowed({id:1})).toBe(false)
+    expect(repo.fields.name.apiUpdateAllowed()).toBe(true)
+    expect(repo.fields.name.apiUpdateAllowed({id:1})).toBe(true)
+    expect(repo.metadata.apiReadAllowed).toBe(true)
+
+
+  })
 
   it("put with validation fails", async () => {
 
