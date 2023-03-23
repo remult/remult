@@ -91,6 +91,10 @@ export interface FieldRef<entityType = any, valueType = any> extends Subscribabl
     validate(): Promise<boolean>;
 }
 export interface IdMetadata<entityType = any> {
+    /** Extracts the id value of an entity item. Useful in cases where the id column is not called id
+     * @example
+     * repo.metadata.idMetadata.getId(task)
+     */
     getId(item: entityType): any;
     field: FieldMetadata<any>;
     getIdFilter(...ids: any[]): EntityFilter<entityType>;
@@ -186,8 +190,19 @@ export interface Repository<entityType> {
      * @see [EntityFilter](http://remult.dev/docs/entityFilter.html)
      * @example
      * await taskRepo.count({ completed:false })
-     */
+    */
     count(where?: EntityFilter<entityType>): Promise<number>;
+    /**Validates an item
+     * @example
+     * const error = repo.validate(task);
+     * if (error){
+     *   alert(error.message);
+     *   alert(error.modelState.title);//shows the specific error for the title field
+     * }
+     * // Can also be used to validate specific fields
+     * const error = repo.validate(task,"title")
+     */
+    validate(item: Partial<entityType>, ...fields: (Extract<keyof OmitEB<entityType>, string>)[]): Promise<ErrorInfo<entityType> | undefined>;
     /** saves an item or item[] to the data source. It assumes that if an `id` value exists, it's an existing row - otherwise it's a new row
      * @example
      * await taskRepo.save({...task, completed:true })
@@ -224,13 +239,17 @@ export interface Repository<entityType> {
     fromJson(x: any, isNew?: boolean): Promise<entityType>;
     /** returns an `entityRef` for an item returned by `create`, `find` etc... */
     getEntityRef(item: entityType): EntityRef<entityType>;
+    /** Provides information about the fields of the Repository's entity
+     * @example
+     * console.log(repo.fields.title.caption) // displays the caption of a specific field
+     * console.log(repo.fields.title.options)// writes the options that were defined for this field
+    */
+    fields: FieldsMetadata<entityType>;
     /**The metadata for the `entity`
      * @See [EntityMetadata](https://remult.dev/docs/ref_entitymetadata.html)
     */
     metadata: EntityMetadata<entityType>;
     addEventListener(listener: entityEventListener<entityType>): Unsubscribe;
-    validate(item: Partial<entityType>, ...fields: (Extract<keyof OmitEB<entityType>, string>)[]): Promise<ErrorInfo<entityType> | undefined>;
-    fields: FieldsMetadata<entityType>;
 }
 export interface LiveQuery<entityType> {
     subscribe(next: (info: LiveQueryChangeInfo<entityType>) => void): Unsubscribe;

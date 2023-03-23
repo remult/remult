@@ -122,10 +122,28 @@ export interface FieldMetadata<valueType = any, entityType = any> {
     readonly dbReadOnly: boolean;
     /** the Value converter for this field */
     readonly valueConverter: Required<ValueConverter<valueType>>;
-    apiUpdateAllowed(item: Partial<OmitEB<entityType>>): boolean;
+    /** Get the display value for a specific item
+     * @example
+     * repo.fields.createDate.displayValue(task) //will display the date as defined in the `displayValue` option defined for it.
+    */
     displayValue(item: Partial<OmitEB<entityType>>): string;
+    apiUpdateAllowed(item: Partial<OmitEB<entityType>>): boolean;
     readonly includedInApi: boolean;
+    /** Adapts the value for usage with html input
+     * @example
+     * @Fields.dateOnly()
+     * birthDate = new Date(1976,5,16)
+     * //...
+     * input.value = repo.fields.birthDate.toInput(person) // will return '1976-06-16'
+     */
     toInput(value: valueType, inputType?: string): string;
+    /** Adapts the value for usage with html input
+     * @example
+     * @Fields.dateOnly()
+     * birthDate = new Date(1976,5,16)
+     * //...
+     * person.birthDate = repo.fields.birthDate.fromInput(personFormState) // will return Date
+     */
     fromInput(inputValue: string, inputType?: string): valueType;
 }
 export interface ValueConverter<valueType> {
