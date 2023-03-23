@@ -91,14 +91,14 @@ npm i --save-dev @types/cookie-session
    import express, { Router } from "express"
    import type { UserInfo } from "remult"
 
-   export const auth = Router()
-
-   auth.use(express.json())
-
    const validUsers: UserInfo[] = [
      { id: "1", name: "Jane" },
      { id: "2", name: "Steve" }
    ]
+
+   export const auth = Router()
+
+   auth.use(express.json())
 
    auth.post("/api/signIn", (req, res) => {
      const user = validUsers.find(user => user.name === req.body.username)
@@ -152,11 +152,12 @@ npm i --save-dev @types/cookie-session
    // src/Auth.tsx
 
    import { FormEvent, useEffect, useState } from "react"
-   import { UserInfo } from "remult"
+   import { remult } from "remult"
+   import App from "./App"
 
-   const Auth: React.FC<{ children: JSX.Element }> = ({ children }) => {
-     const [signInUsername, setSignInUsername] = useState("")
-     const [currentUser, setCurrentUser] = useState<UserInfo>()
+   export default function Auth() {
+     const [username, setUsername] = useState("")
+     const [signedIn, setSignedIn] = useState(false)
 
      const signIn = async (e: FormEvent) => {
        e.preventDefault()
@@ -165,36 +166,40 @@ npm i --save-dev @types/cookie-session
          headers: {
            "Content-Type": "application/json"
          },
-         body: JSON.stringify({ username: signInUsername })
+         body: JSON.stringify({ username })
        })
        if (result.ok) {
-         setCurrentUser(await result.json())
-         setSignInUsername("")
-       } else alert(await result.json())
+         remult.user = await result.json()
+         setSignedIn(true)
+         setUsername("")
+       } else {
+         alert(await result.json())
+       }
      }
+
      const signOut = async () => {
        await fetch("/api/signOut", {
          method: "POST"
        })
-       setCurrentUser(undefined)
+       remult.user = undefined
+       setSignedIn(false)
      }
      useEffect(() => {
-       fetch("/api/currentUser")
-         .then(r => r.json())
-         .then(currentUserFromServer => {
-           setCurrentUser(currentUserFromServer)
-         })
+       fetch("/api/currentUser").then(async r => {
+         remult.user = await r.json()
+         if (remult.user) setSignedIn(true)
+       })
      }, [])
 
-     if (!currentUser)
+     if (!signedIn)
        return (
          <>
-           <h1>todos</h1>
+           <h1>Todos</h1>
            <main>
              <form onSubmit={signIn}>
                <input
-                 value={signInUsername}
-                 onChange={e => setSignInUsername(e.target.value)}
+                 value={username}
+                 onChange={e => setUsername(e.target.value)}
                  placeholder="Username, try Steve or Jane"
                />
                <button>Sign in</button>
@@ -205,31 +210,27 @@ npm i --save-dev @types/cookie-session
      return (
        <>
          <header>
-           Hello {currentUser.name} <button onClick={signOut}>Sign Out</button>
+           Hello {remult.user!.name} <button onClick={signOut}>Sign Out</button>
          </header>
-         {children}
+         <App />
        </>
      )
    }
-   export default Auth
    ```
 
-2. In the `main.tsx` file, wrap the `App` component with the `Auth` component.
+2. In the `main.tsx` file, Replace the `App` component with the `Auth` component.
 
-   ```ts{6,11-13}
+   ```ts{5,11}
    // src/main.tsx
 
    import React from "react"
    import ReactDOM from "react-dom/client"
-   import App from "./App"
    import Auth from "./Auth"
    import "./index.css"
 
    ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
      <React.StrictMode>
-       <Auth>
-         <App />
-       </Auth>
+       <Auth />
      </React.StrictMode>
    )
    ```
