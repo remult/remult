@@ -18,7 +18,11 @@ describe("type recovery", () => {
   let mem = new InMemoryDataProvider();
 
   const repo = new Remult(mem).repo(entity);
-  beforeEach(() => { mem.rows = {} })
+  beforeEach(async () => {
+    for (const item of await repo.find()) {
+      await repo.delete(item);
+    }
+  })
 
   it("test insert works with Date", async () => {
     let r = await repo.insert({ id: 0, date: '1976-06-16' as any });
