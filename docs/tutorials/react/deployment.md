@@ -33,7 +33,7 @@ app.use(
     secret: process.env["SESSION_SECRET"] || "my secret"
   })
 )
-app.use(helmet({ contentSecurityPolicy: false }))
+app.use(helmet())
 app.use(compression())
 app.use(auth)
 app.use(api)
