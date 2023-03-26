@@ -152,44 +152,47 @@ npm i --save-dev @types/cookie-session
    // src/Auth.vue
 
    <script setup lang="ts">
-   import { onMounted, ref } from "vue";
-   import type { UserInfo } from "remult";
-   import App from "./App.vue";
+   import { onMounted, ref } from "vue"
+   import { remult } from "remult"
+   import App from "./App.vue"
 
-   const signInUsername = ref("");
-   const currentUser = ref<UserInfo>();
+   const username = ref("")
+   const signedIn = ref(false)
 
    const signIn = async () => {
      const result = await fetch("/api/signIn", {
        method: "POST",
        headers: {
-         "Content-Type": "application/json",
+         "Content-Type": "application/json"
        },
-       body: JSON.stringify({ username: signInUsername.value }),
-     });
+       body: JSON.stringify({ username: username.value })
+     })
      if (result.ok) {
-       currentUser.value = await result.json();
-       signInUsername.value = "";
-     } else alert(await result.json());
-   };
+       remult.user = await result.json()
+       signedIn.value = true
+       username.value = ""
+     } else alert(await result.json())
+   }
    const signOut = async () => {
      await fetch("/api/signOut", {
-       method: "POST",
-     });
-     currentUser.value = undefined;
-   };
+       method: "POST"
+     })
+     remult.user = undefined
+     signedIn.value = false
+   }
 
    onMounted(async () => {
-     currentUser.value = await fetch("/api/currentUser").then((r) => r.json());
-   });
+     remult.user = await fetch("/api/currentUser").then(r => r.json())
+     signedIn.value = remult.authenticated()
+   })
    </script>
    <template>
-     <div v-if="!currentUser">
+     <div v-if="!signedIn">
        <h1>todos</h1>
        <main>
          <form @submit.prevent="signIn()">
            <input
-             v-model="signInUsername"
+             v-model="username"
              placeholder="Username, try Steve or Jane"
            />
            <button>Sign in</button>
@@ -198,7 +201,7 @@ npm i --save-dev @types/cookie-session
      </div>
      <div v-else>
        <header>
-         Hello {{ currentUser!.name }}
+         Hello {{ remult.user!.name }}
          <button @click="signOut()">Sign Out</button>
        </header>
        <App />
@@ -288,32 +291,11 @@ const validUsers = [
 
 ## Role-based Authorization on the Frontend
 
-From a user experience perspective in only makes sense that uses that can't add or delete, would not see these buttons.
+From a user experience perspective it only makes sense that users that can't add or delete, would not see these buttons.
 
 Let's reuse the same definitions on the Frontend.
 
-### Connect Remult On the Frontend
-
-In the `Auth` component, we'll set `remult.user` based on the current user
-```vue{4-5,11}
-// src/Auth.vue
-
-<script setup lang="ts">
-import { onMounted, ref, watch } from "vue"
-import { remult } from "remult"
-import type { UserInfo } from "remult"
-import App from "./App.vue"
-
-const signInUsername = ref("")
-const currentUser = ref<UserInfo>()
-watch(currentUser, (user) => (remult.user = user))
-//...
-</script>
-```
-
-### Show functionality based on the entity's metadata
-
-Now let's use the entity's metadata to only show the form if the user is allowed to insert
+We'll use the entity's metadata to only show the form if the user is allowed to insert
 
 ```vue{8,23}
 // src/Auth.vue
@@ -323,7 +305,7 @@ Now let's use the entity's metadata to only show the form if the user is allowed
     <h1>todos</h1>
     <main>
       <form
-        v-if="taskRepo.metadata.apiInsertAllowed"
+        v-if="taskRepo.metadata.apiInsertAllowed()"
         @submit.prevent="addTask()"
       >
         <input v-model="newTaskTitle" placeholder="What needs to be done?" />
@@ -338,7 +320,7 @@ Now let's use the entity's metadata to only show the form if the user is allowed
         <input v-model="task.title" />
         <button @click="saveTask(task)">Save</button>
         <button
-          v-if="taskRepo.metadata.apiDeleteAllowed"
+          v-if="taskRepo.metadata.apiDeleteAllowed(task)"
           @click="deleteTask(task)"
         >
           Delete
@@ -354,3 +336,5 @@ Now let's use the entity's metadata to only show the form if the user is allowed
 ```
 
 This way we can keep the frontend consistent with the `api`'s Authorization rules
+
+- Note We send the `task` to the `apiDeleteAllowed` method, because the `apiDeleteAllowed` option, can be sophisticated and can also be based on the specific item's values.

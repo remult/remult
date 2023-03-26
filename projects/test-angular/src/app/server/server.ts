@@ -121,7 +121,6 @@ serverInit().then(async (dataSource) => {
             }
         })
         app.use(async (req, res, next) => {
-
             if (req.path === '/api/getAblyToken') {
                 const token = await new Rest(
                     process.env["ABLY_API_KEY"]!

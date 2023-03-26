@@ -220,7 +220,7 @@ npm i --save-dev @types/cookie-session
 
 2. In the `main.tsx` file, Replace the `App` component with the `Auth` component.
 
-   ```ts{5,11}
+   ```ts{5,10}
    // src/main.tsx
 
    import React from "react"
@@ -304,39 +304,17 @@ const validUsers = [
 
 ## Role-based Authorization on the Frontend
 
-From a user experience perspective in only makes sense that uses that can't add or delete, would not see these buttons.
+From a user experience perspective it only makes sense that users that can't add or delete, would not see these buttons.
 
 Let's reuse the same definitions on the Frontend.
 
-### Connect Remult On the Frontend
-
-In the `Auth` component, we'll set `remult.user` based on the current user
-
-```ts{5-8}
-// src/Auth.tsx
-
-const Auth: React.FC<{ children: JSX.Element }> = ({ children }) => {
-  //...
-  useEffect(() => {
-    remult.user = currentUser
-  }, [currentUser])
-  //...
-}
-```
-
-::: warning Import remult
-This code requires adding an import of `remult` from `remult`.
-:::
-
-### Show functionality based on the entity's metadata
-
-Now let's use the entity's metadata to only show the form if the user is allowed to insert
+We'll use the entity's metadata to only show the form if the user is allowed to insert
 
 ```tsx{4,13}
 // src/App.tsx
 
 <main>
-  {taskRepo.metadata.apiInsertAllowed && (
+  {taskRepo.metadata.apiInsertAllowed() && (
     <form onSubmit={addTask}>
       <input
         value={newTaskTitle}
@@ -364,7 +342,7 @@ return (
     />
     <input value={task.title} onChange={e => setTitle(e.target.value)} />
     <button onClick={saveTask}>Save</button>
-    {taskRepo.metadata.apiDeleteAllowed && (
+    {taskRepo.metadata.apiDeleteAllowed(task) && (
       <button onClick={deleteTask}>Delete</button>
     )}
   </div>
@@ -372,3 +350,5 @@ return (
 ```
 
 This way we can keep the frontend consistent with the `api`'s Authorization rules
+
+- Note We send the `task` to the `apiDeleteAllowed` method, because the `apiDeleteAllowed` option, can be sophisticated and can also be based on the specific item's values.
