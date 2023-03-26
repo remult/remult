@@ -1,6 +1,6 @@
 import { Allowed, Remult, AllowedForInstance } from "./context";
 
-import { FieldMetadata as FieldMetadata } from './column-interfaces';
+import { FieldMetadata  } from './column-interfaces';
 import { EntityOrderBy, FieldsMetadata, EntityFilter, EntityRef, EntityMetadata } from "./remult3";
 
 

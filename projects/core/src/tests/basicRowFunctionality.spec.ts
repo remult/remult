@@ -28,10 +28,11 @@ import { assign } from '../../assign';
 import { entityWithValidations, testConfiguration } from '../shared-tests/entityWithValidations';
 import { entityWithValidationsOnColumn } from './entityWithValidationsOnColumn';
 import { ValueConverters } from "../valueConverters";
-import {  FilterConsumerBridgeToSqlRequest, dbNamesOf } from "../filter/filter-consumer-bridge-to-sql-request";
+import { FilterConsumerBridgeToSqlRequest, dbNamesOf } from "../filter/filter-consumer-bridge-to-sql-request";
 import axios from "axios";
 import { async } from "@angular/core/testing";
 import { HttpProviderBridgeToRestDataProviderHttpProvider, retry, toPromise } from "../buildRestDataProvider";
+import { describeClass } from "../remult3/DecoratorReplacer";
 
 //SqlDatabase.LogToConsole = true;
 
@@ -122,11 +123,11 @@ describe('Test basic row functionality', () => {
   });
   it("Find or Create id", async () => {
     let [repo] = await (await createData());
-    let row = await repo.findId( 1, { createIfNotFound: true });
+    let row = await repo.findId(1, { createIfNotFound: true });
     expect(row._.isNew()).toBe(true);
     expect(row.id).toBe(1);
     await row._.save();
-    let row2 = await repo.findId( 1, { createIfNotFound: true });
+    let row2 = await repo.findId(1, { createIfNotFound: true });
     expect(row2._.isNew()).toBe(false);
     expect(row2.id).toBe(1);
 
@@ -284,13 +285,19 @@ describe("data api", () => {
     c.name = 'noam';
     await c._.save();
     c.name = '1';
-    expect(await c._.validate()).toBe(false);
+
+    expect((await c._.validate()).modelState!.name).toBe('invalid on column')
     c.name = "123";
-    expect(await c._.validate()).toBe(true);
-
-
-
+    expect(await c._.validate()).toBeUndefined();
   });
+  it("validation works on non active record", async () => {
+    let remult = new Remult(new InMemoryDataProvider());
+    var repo = remult.repo(entityWithValidationsOnColumn);
+    expect((await repo.validate({ name: "1" })).modelState!.name).toBe('invalid on column');
+    expect(await repo.validate({ name: "123" })).toBeUndefined();
+    expect(await repo.validate({ name: "1" }, "myId")).toBeUndefined();
+
+  })
   it("validate with validations on column fails 1", async () => {
     let remult = new Remult(new InMemoryDataProvider());
     var s = remult.repo(entityWithValidationsOnColumn);
@@ -302,7 +309,8 @@ describe("data api", () => {
     c.name = '1';
     expect(await c.$.name.validate()).toBe(false);
     c.name = "123";
-    expect(await c._.validate()).toBe(true);
+    const val = await c._.validate();
+    expect(val).toBeUndefined()
 
   });
   it("put with validations on entity fails", async () => {
@@ -694,7 +702,9 @@ describe("data api", () => {
       }
     })(type);
     let [c, remult] = await createData(async insert => await insert(1, 'noam'), type);
-
+    expect(c.metadata.apiDeleteAllowed()).toBe(true)
+    expect(c.metadata.apiUpdateAllowed()).toBe(true)
+    expect(c.metadata.apiInsertAllowed()).toBe(true)
     var api = new DataApi(c, remult);
     let t = new TestDataApiResponse();
     let d = new Done();
@@ -708,6 +718,30 @@ describe("data api", () => {
     var x = await c.find({ where: { id: 1 } });
     expect(x.length).toBe(0);
   });
+  it("check api defaults", () => {
+    const c = class {
+      id = 0;
+      name?=''
+    }
+    describeClass(c, Entity("asdf"), {
+      id: Fields.autoIncrement(),
+      name:Fields.string()
+    })
+    const repo = new Remult(new InMemoryDataProvider()).repo(c);
+    expect(repo.metadata.apiDeleteAllowed()).toBe(false)
+    expect(repo.metadata.apiUpdateAllowed()).toBe(false)
+    expect(repo.metadata.apiInsertAllowed()).toBe(false)
+    expect(repo.metadata.apiDeleteAllowed({ id: 1 })).toBe(false)
+    expect(repo.metadata.apiUpdateAllowed({ id: 1 })).toBe(false)
+    expect(repo.metadata.apiInsertAllowed({ id: 1 })).toBe(false)
+    expect(repo.fields.id.apiUpdateAllowed()).toBe(false)
+    expect(repo.fields.id.apiUpdateAllowed({id:1})).toBe(false)
+    expect(repo.fields.name.apiUpdateAllowed()).toBe(true)
+    expect(repo.fields.name.apiUpdateAllowed({id:1})).toBe(true)
+    expect(repo.metadata.apiReadAllowed).toBe(true)
+
+
+  })
 
   it("put with validation fails", async () => {
 
@@ -976,7 +1010,8 @@ describe("data api", () => {
     Fields.string({ includeInApi: false })(type.prototype, "categoryName");
     Entity('', { allowApiUpdate: true })(type);
     let [c, remult] = await createData(async insert => await insert(1, 'noam'), type);
-
+    expect(c.fields.categoryName.includedInApi).toBe(false)
+    expect(c.fields.description.includedInApi).toBe(true);
 
     var api = new DataApi(c, remult);
     let t = new TestDataApiResponse();
@@ -1297,6 +1332,8 @@ describe("data api", () => {
         categoryName: 'noam 1'
       });
     d.test();
+    expect(c.metadata.apiUpdateAllowed({ id: 2 } as any)).toBe(false)
+    expect(c.metadata.apiUpdateAllowed({ id: 1 } as any)).toBe(true)
     t = new TestDataApiResponse();
     d = new Done();
     t.success = () => d.ok();

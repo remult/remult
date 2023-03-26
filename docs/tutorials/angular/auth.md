@@ -89,7 +89,7 @@ npm i --save-dev @types/cookie-session
    // src/server/auth.ts
 
    import express, { Router } from "express"
-   import { UserInfo } from "remult"
+   import type { UserInfo } from "remult"
 
    const validUsers: UserInfo[] = [
      { id: "1", name: "Jane" },
@@ -298,7 +298,7 @@ const validUsers = [
 
 ## Role-based Authorization on the Frontend
 
-From a user experience perspective in only makes sense that uses that can't add or delete, would not see these buttons.
+From a user experience perspective it only makes sense that users that can't add or delete, would not see these buttons.
 
 Let's reuse the same definitions on the Frontend.
 
@@ -308,7 +308,7 @@ Modify the contents of auth.component.html to only display the form and delete b
 
 <h1>todos</h1>
 <main>
-  <form *ngIf="taskRepo.metadata.apiInsertAllowed" (submit)="addTask()">
+  <form *ngIf="taskRepo.metadata.apiInsertAllowed()" (submit)="addTask()">
     <input
       placeholder="What needs to be done?"
       [(ngModel)]="newTaskTitle"
@@ -325,7 +325,7 @@ Modify the contents of auth.component.html to only display the form and delete b
     <input [(ngModel)]="task.title" />
     <button (click)="saveTask(task)">Save</button>
     <button
-      *ngIf="taskRepo.metadata.apiDeleteAllowed"
+      *ngIf="taskRepo.metadata.apiDeleteAllowed(task)"
       (click)="deleteTask(task)"
     >
       Delete
@@ -339,3 +339,6 @@ Modify the contents of auth.component.html to only display the form and delete b
 ```
 
 This way we can keep the frontend consistent with the `api`'s Authorization rules
+
+* Note We send the `task` to the `apiDeleteAllowed` method, because the `apiDeleteAllowed` option, can be sophisticated and can also be based on the specific item's values,
+

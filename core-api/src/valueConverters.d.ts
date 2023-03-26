@@ -6,7 +6,7 @@ export declare class ValueConverters {
     static readonly Boolean: ValueConverter<Boolean>;
     static readonly Number: ValueConverter<number>;
     static readonly Integer: ValueConverter<number>;
-    static readonly Default: ValueConverter<any>;
+    static readonly Default: Required<ValueConverter<any>>;
     static readonly JsonString: ValueConverter<any>;
     static readonly JsonValue: ValueConverter<any>;
 }

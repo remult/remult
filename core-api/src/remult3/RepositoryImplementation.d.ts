@@ -5,7 +5,7 @@ import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Reposit
 import { ClassType } from "../../classType";
 import { Remult } from "../context";
 import { entityEventListener } from "../__EntityValueProvider";
-import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions } from "../data-interfaces";
+import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions, ErrorInfo } from "../data-interfaces";
 import { RefSubscriber } from ".";
 import { Unsubscribe } from "../live-query/SubscriptionChannel";
 export declare class RepositoryImplementation<entityType> implements Repository<entityType> {
@@ -34,6 +34,8 @@ export declare class RepositoryImplementation<entityType> implements Repository<
     delete(item: entityType): Promise<void>;
     insert(item: Partial<OmitEB<entityType>>[]): Promise<entityType[]>;
     insert(item: Partial<OmitEB<entityType>>): Promise<entityType>;
+    get fields(): FieldsMetadata<entityType>;
+    validate(entity: Partial<OmitEB<entityType>>, ...fields: (Extract<keyof OmitEB<entityType>, string>)[]): Promise<ErrorInfo<entityType> | undefined>;
     update(id: (entityType extends {
         id?: number;
     } ? number : entityType extends {
@@ -54,6 +56,7 @@ export declare class RepositoryImplementation<entityType> implements Repository<
     findFirst(where?: EntityFilter<entityType>, options?: FindFirstOptions<entityType>, skipOrderByAndLimit?: boolean): Promise<entityType>;
     private fieldsOf;
     create(item?: Partial<OmitEB<entityType>>): entityType;
+    fixTypes(item: any): Promise<any>;
     findId(id: any, options?: FindFirstOptionsBase<entityType>): Promise<entityType>;
 }
 export declare function __updateEntityBasedOnWhere<T>(entityDefs: EntityMetadata<T>, where: EntityFilter<T>, r: T): void;
@@ -84,6 +87,7 @@ declare abstract class rowHelperBase<T> {
         [key: string]: string;
     };
     protected __assertValidity(): void;
+    buildErrorInfoObject(): ErrorInfo<any>;
     abstract get fields(): FieldsRef<T>;
     catchSaveErrors(err: any): any;
     __clearErrorsAndReportChanged(): void;
@@ -93,7 +97,7 @@ declare abstract class rowHelperBase<T> {
     originalValues: any;
     saveOriginalData(): void;
     saveMoreOriginalData(): void;
-    validate(): Promise<boolean>;
+    validate(): Promise<ErrorInfo<any>>;
     __validateEntity(): Promise<void>;
     __performColumnAndEntityValidations(): Promise<void>;
     toApiJson(): any;
@@ -180,12 +184,18 @@ export declare function buildCaption(caption: string | ((remult: Remult) => stri
 export declare class columnDefsImpl implements FieldMetadata {
     private settings;
     private entityDefs;
+    private remult;
     constructor(settings: FieldOptions, entityDefs: EntityFullInfo<any>, remult: Remult);
+    apiUpdateAllowed(item?: any): boolean;
+    displayValue(item: any): string;
+    get includedInApi(): boolean;
+    toInput(value: any, inputType?: string): string;
+    fromInput(inputValue: string, inputType?: string): any;
     getDbName(): Promise<string>;
     options: FieldOptions<any, any>;
     target: ClassType<any>;
     readonly: boolean;
-    valueConverter: ValueConverter<any>;
+    valueConverter: Required<ValueConverter<any>>;
     allowNull: boolean;
     caption: string;
     get dbName(): any;
@@ -203,10 +213,10 @@ declare class EntityFullInfo<T> implements EntityMetadata<T> {
     readonly key: string;
     options: EntityOptions<any>;
     constructor(columnsInfo: FieldOptions[], entityInfo: EntityOptions, remult: Remult, entityType: ClassType<T>, key: string);
-    get apiUpdateAllowed(): boolean;
+    apiUpdateAllowed(item: T): boolean;
     get apiReadAllowed(): boolean;
-    get apiDeleteAllowed(): boolean;
-    get apiInsertAllowed(): boolean;
+    apiDeleteAllowed(item: T): boolean;
+    apiInsertAllowed(item: T): boolean;
     dbNamePromise: Promise<string>;
     getDbName(): Promise<string>;
     idMetadata: IdMetadata<T>;

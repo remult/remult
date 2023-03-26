@@ -66,6 +66,10 @@ export class RemultProxy implements Remult {
     repo: typeof RemultProxy.defaultRemult.repo = (...args) => {
         let self = this;
         return {
+            get fields() {
+                return self.remultFactory().repo(...args).metadata.fields
+            },
+            validate: (...args2) => self.remultFactory().repo(...args).validate(...args2),
             addEventListener: (...args2) => self.remultFactory().repo(...args).addEventListener(...args2),
             count: (...args2) => self.remultFactory().repo(...args).count(...args2),
             create: (...args2) => self.remultFactory().repo(...args).create(...args2),

@@ -1,6 +1,6 @@
 import { ClassType } from '../classType';
 import { Allowed, Remult, AllowedForInstance } from './context';
-import { EntityMetadata, FieldRef } from './remult3';
+import { EntityMetadata, FieldRef, OmitEB } from './remult3';
 
 
 
@@ -87,7 +87,7 @@ export interface FieldOptions<entityType = any, valueType = any> {
     key?: string;
 }
 /**Metadata for a `Field`, this metadata can be used in the user interface to provide a richer UI experience */
-export interface FieldMetadata<valueType = any> {
+export interface FieldMetadata<valueType = any, entityType = any> {
     /** The field's member name in an object.
      * @example
      * const taskRepo = remult.repo(Task);
@@ -121,19 +121,38 @@ export interface FieldMetadata<valueType = any> {
     /** indicates that this field should only be included in select statement, and excluded from update or insert. useful for db generated ids etc... */
     readonly dbReadOnly: boolean;
     /** the Value converter for this field */
-    readonly valueConverter: ValueConverter<valueType>;
-    //TODO - apiUpdateAllowed - function
-    //TODO - includedInApi
-    //TODO - displayValue(item:EntityType>)
-    //TODO - toInput, fromInput
+    readonly valueConverter: Required<ValueConverter<valueType>>;
+    /** Get the display value for a specific item
+     * @example
+     * repo.fields.createDate.displayValue(task) //will display the date as defined in the `displayValue` option defined for it.
+    */
+    displayValue(item: Partial<OmitEB<entityType>>): string;
+    apiUpdateAllowed(item?: Partial<OmitEB<entityType>>): boolean;
+    readonly includedInApi: boolean;
+    /** Adapts the value for usage with html input
+     * @example
+     * @Fields.dateOnly()
+     * birthDate = new Date(1976,5,16)
+     * //...
+     * input.value = repo.fields.birthDate.toInput(person) // will return '1976-06-16'
+     */
+    toInput(value: valueType, inputType?: string): string;
+    /** Adapts the value for usage with html input
+     * @example
+     * @Fields.dateOnly()
+     * birthDate = new Date(1976,5,16)
+     * //...
+     * person.birthDate = repo.fields.birthDate.fromInput(personFormState) // will return Date
+     */
+    fromInput(inputValue: string, inputType?: string): valueType;
 }
 export interface ValueConverter<valueType> {
     fromJson?(val: any): valueType;
     toJson?(val: valueType): any;
     fromDb?(val: any): valueType
     toDb?(val: valueType): any;
-    toInput?(val: valueType, inputType: string): string;//TODO - input, optional
-    fromInput?(val: string, inputType: string): valueType;//TODO - input, optional
+    toInput?(val: valueType, inputType?: string): string;
+    fromInput?(val: string, inputType?: string): valueType;
     displayValue?(val: valueType): string;
     readonly fieldTypeInDb?: string;
     readonly inputType?: string;

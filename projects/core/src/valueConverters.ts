@@ -15,8 +15,8 @@ export class ValueConverters {
 
   static readonly Date: ValueConverter<Date> = {
     toJson: (val: Date) => {
-      if (val===null)
-      return null;
+      if (val === null)
+        return null;
       if (!val)
         return '';
       if (typeof (val) === "string")
@@ -178,13 +178,16 @@ export class ValueConverters {
       toDb: value => ValueConverters.Integer.toJson(value),
       fieldTypeInDb: 'integer'
     }
-  static readonly Default: ValueConverter<any> = {
+  static readonly Default: Required<ValueConverter<any>> = {
     fromJson: x => x,
     toJson: x => x,
     fromDb: x => ValueConverters.JsonString.fromDb(x),
     toDb: x => ValueConverters.JsonString.toDb(x),
     fromInput: x => ValueConverters.Default.fromJson(x),
-    toInput: x => ValueConverters.Default.toJson(x)
+    toInput: x => ValueConverters.Default.toJson(x),
+    displayValue: x => x + '',
+    fieldTypeInDb: '',
+    inputType: 'text'
   }
   static readonly JsonString: ValueConverter<any> = {
     fromJson: x => x,
