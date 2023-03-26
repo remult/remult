@@ -1,6 +1,6 @@
 # Release Notes
 
-## Next version
+## v0.19.0
 
 - `Repository`
   - Added a `validate` method that returns an `ErrorInfo` object if invalid.
