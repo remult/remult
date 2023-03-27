@@ -198,9 +198,10 @@ npm i --save-dev @types/cookie-session
    ```
 
 3. Replace the contents of auth.component.html with the following html:
-   <ng-container *ngIf="!remult.authenticated()">
-   // src/app/auth/auth.component.ts
    ```html
+   // src/app/auth/auth.component.ts
+
+   <ng-container *ngIf="!remult.authenticated()">
      <h1>todos</h1>
      <main>
        <form (submit)="signIn()">
