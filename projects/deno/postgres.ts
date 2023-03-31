@@ -1,7 +1,7 @@
-import { Remult, SqlDatabase, EntityMetadata, SqlCommand, SqlImplementation, SqlResult } from "https://cdn.skypack.dev/remult@0.15.4?dts";
-import { verifyStructureOfAllEntities } from "https://cdn.skypack.dev/remult@0.15.4/postgres/schema-builder?dts";
-import { ClientOptions, ConnectionString, Pool } from "https://deno.land/x/postgres@v0.16.1/mod.ts";
-import { QueryObjectResult } from "https://deno.land/x/postgres@v0.16.1/query/query.ts";
+import { Remult, SqlDatabase, EntityMetadata, SqlCommand, SqlImplementation, SqlResult } from "https://cdn.skypack.dev/remult@latest?dts";
+import { PostgresSchemaBuilder, verifyStructureOfAllEntities } from "https://cdn.skypack.dev/remult@latest/postgres/schema-builder?dts";
+import { ClientOptions, ConnectionString, Pool } from "https://deno.land/x/postgres@v0.17.0/mod.ts";
+import { QueryObjectResult } from "https://deno.land/x/postgres@v0.17.0/query/query.ts";
 
 class PostgresBridgeToSQLCommand implements SqlCommand {
     constructor(private source: {
@@ -30,11 +30,17 @@ class PostgresBridgeToSQLQueryResult implements SqlResult {
     rows: any[];
 
 }
+
 export class PostgresDataProvider implements SqlImplementation {
     async entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void> { }
     getLimitSqlSyntax(limit: number, offset: number) {
         return ' limit ' + limit + ' offset ' + offset;
     }
+    async ensureSchema(entities: EntityMetadata<any>[]): Promise<void> {
+      var db = new SqlDatabase(this);
+      var sb = new PostgresSchemaBuilder(db);
+      await sb.ensureSchema(entities)
+  }
 
     createCommand(): SqlCommand {
         return new PostgresBridgeToSQLCommand({
@@ -98,7 +104,5 @@ export async function createPostgresConnection(options?: {
     const db = new SqlDatabase(new PostgresDataProvider(new Pool(config, options.poolSize)));
     let remult = new Remult();
     remult.dataProvider = db;
-    if (options.autoCreateTables === undefined || options.autoCreateTables)
-        await verifyStructureOfAllEntities(db, remult);
     return db;
 }
