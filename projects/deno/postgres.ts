@@ -87,8 +87,7 @@ export class PostgresDataProvider implements SqlImplementation {
 export async function createPostgresConnection(options?: {
     connectionString?: string,
     poolSize?: number,
-    configuration?: ClientOptions | ConnectionString | undefined,
-    autoCreateTables?: boolean
+    configuration?: ClientOptions | ConnectionString | undefined
 }) {
     if (!options)
         options = {};
