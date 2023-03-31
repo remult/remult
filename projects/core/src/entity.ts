@@ -1,6 +1,6 @@
 import { Allowed, Remult, AllowedForInstance } from "./context";
 
-import { FieldMetadata  } from './column-interfaces';
+import { FieldMetadata } from './column-interfaces';
 import { EntityOrderBy, FieldsMetadata, EntityFilter, EntityRef, EntityMetadata } from "./remult3";
 
 
@@ -11,7 +11,11 @@ export interface EntityOptions<entityType = any> {
 
   /**
    * Determines if this Entity is available for get requests using Rest Api 
-   * @see [allowed](http://remult.dev/docs/allowed.html)*/
+   * @description
+   * Determines if one has any access to the data of an entity.
+   * @see [allowed](http://remult.dev/docs/allowed.html)
+   * @see to restrict data based on a criteria, use [apiPrefilter](https://remult.dev/docs/ref_entity.html#apiprefilter)
+   * */
   allowApiRead?: Allowed;
 
   /** 
@@ -28,10 +32,15 @@ export interface EntityOptions<entityType = any> {
   allowApiCrud?: Allowed;
 
   /** A filter that determines which rows can be queries using the api.
+   * @description
+   * Use apiPrefilter in cases where you to restrict data based on user profile
   * @example
   * apiPrefilter: { archive:false }
   *
+  * @example
+  * apiPrefilter: ()=> remult.isAllowed("admin")?{}:{ archive:false }
   * @see [EntityFilter](http://remult.dev/docs/entityFilter.html)
+  * 
   */
   apiPrefilter?: EntityFilter<entityType> | (() => EntityFilter<entityType> | Promise<EntityFilter<entityType>>);
 

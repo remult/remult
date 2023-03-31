@@ -46,8 +46,18 @@ A human readable name for the entity
 Determines if this Entity is available for get requests using Rest Api
    
    
+   *description*
+   
+   Determines if one has any access to the data of an entity.
+   
+   
    *see*
    [allowed](http://remult.dev/docs/allowed.html)
+   
+   
+   *see*
+   to restrict data based on a criteria, use [apiPrefilter](https://remult.dev/docs/ref_entity.html#apiprefilter)
+   
 ## allowApiUpdate
 Determines if this entity can be updated through the api.
    
@@ -72,6 +82,11 @@ sets  the `allowApiUpdate`, `allowApiDelete` and `allowApiInsert` properties in 
 A filter that determines which rows can be queries using the api.
    
    
+   *description*
+   
+   Use apiPrefilter in cases where you to restrict data based on user profile
+   
+   
    *example*
    ```ts
    apiPrefilter: { archive:false }
@@ -79,8 +94,16 @@ A filter that determines which rows can be queries using the api.
    
    
    
+   *example*
+   ```ts
+   apiPrefilter: ()=> remult.isAllowed("admin")?{}:{ archive:false }
+   ```
+   
+   
+   
    *see*
    [EntityFilter](http://remult.dev/docs/entityFilter.html)
+   
    
 ## backendPrefilter
 A filter that will be used for all queries from this entity both from the API and from within the backend.
