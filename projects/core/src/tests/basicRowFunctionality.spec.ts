@@ -721,11 +721,11 @@ describe("data api", () => {
   it("check api defaults", () => {
     const c = class {
       id = 0;
-      name?=''
+      name?= ''
     }
     describeClass(c, Entity("asdf"), {
       id: Fields.autoIncrement(),
-      name:Fields.string()
+      name: Fields.string()
     })
     const repo = new Remult(new InMemoryDataProvider()).repo(c);
     expect(repo.metadata.apiDeleteAllowed()).toBe(false)
@@ -735,9 +735,9 @@ describe("data api", () => {
     expect(repo.metadata.apiUpdateAllowed({ id: 1 })).toBe(false)
     expect(repo.metadata.apiInsertAllowed({ id: 1 })).toBe(false)
     expect(repo.fields.id.apiUpdateAllowed()).toBe(false)
-    expect(repo.fields.id.apiUpdateAllowed({id:1})).toBe(false)
+    expect(repo.fields.id.apiUpdateAllowed({ id: 1 })).toBe(false)
     expect(repo.fields.name.apiUpdateAllowed()).toBe(true)
-    expect(repo.fields.name.apiUpdateAllowed({id:1})).toBe(true)
+    expect(repo.fields.name.apiUpdateAllowed({ id: 1 })).toBe(true)
     expect(repo.metadata.apiReadAllowed).toBe(true)
 
 
@@ -2200,8 +2200,24 @@ describe("test fetch", () => {
       ok = true;
     } catch { }
     expect(ok).toBe(false);
-
   })
+  it("json field works", async () => {
+    const r = new Remult(new InMemoryDataProvider());
+    var e = class {
+      id: 1;
+      person: { name: 'noam' }
+    }
+    describeClass(e, Entity("asdf"), {
+      id: Fields.integer(),
+      person: Fields.json({
+        valueConverter: {
+          toJson: x => x.name,
+          fromJson: x => ({ name: x })
+        }
+      })
+    })
+    expect(r.repo(e).fields.person.valueConverter.toDb({ name: "noam" })).toBe("noam")
+  });
 });
 class mockResponse implements Response {
   constructor(val: Partial<Response>) {

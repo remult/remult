@@ -6,7 +6,11 @@ export interface EntityOptions<entityType = any> {
     caption?: string;
     /**
      * Determines if this Entity is available for get requests using Rest Api
-     * @see [allowed](http://remult.dev/docs/allowed.html)*/
+     * @description
+     * Determines if one has any access to the data of an entity.
+     * @see [allowed](http://remult.dev/docs/allowed.html)
+     * @see to restrict data based on a criteria, use [apiPrefilter](https://remult.dev/docs/ref_entity.html#apiprefilter)
+     * */
     allowApiRead?: Allowed;
     /**
      * Determines if this entity can be updated through the api.
@@ -21,10 +25,15 @@ export interface EntityOptions<entityType = any> {
     /** sets  the `allowApiUpdate`, `allowApiDelete` and `allowApiInsert` properties in a single set */
     allowApiCrud?: Allowed;
     /** A filter that determines which rows can be queries using the api.
+     * @description
+     * Use apiPrefilter in cases where you to restrict data based on user profile
     * @example
     * apiPrefilter: { archive:false }
     *
+    * @example
+    * apiPrefilter: ()=> remult.isAllowed("admin")?{}:{ archive:false }
     * @see [EntityFilter](http://remult.dev/docs/entityFilter.html)
+    *
     */
     apiPrefilter?: EntityFilter<entityType> | (() => EntityFilter<entityType> | Promise<EntityFilter<entityType>>);
     /** A filter that will be used for all queries from this entity both from the API and from within the backend.

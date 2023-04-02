@@ -14,10 +14,9 @@ export declare class DataProviderLiveQueryStorage implements LiveQueryStorage, S
     }) => Promise<void>): Promise<void>;
     keepAliveAndReturnUnknownQueryIds(queryIds: string[]): Promise<string[]>;
 }
-declare class LiveQueryStorageEntity extends EntityBase {
+export declare class LiveQueryStorageEntity extends EntityBase {
     id: string;
     entityKey: string;
     data: any;
     lastUsedIso: string;
 }
-export {};

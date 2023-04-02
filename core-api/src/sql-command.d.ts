@@ -5,6 +5,7 @@ export interface SqlImplementation {
     transaction(action: (sql: SqlImplementation) => Promise<void>): Promise<void>;
     entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void>;
     ensureSchema?(entities: EntityMetadata[]): Promise<void>;
+    supportsJsonColumnType?: boolean;
 }
 export interface SqlCommand extends SqlCommandWithParameters {
     execute(sql: string): Promise<SqlResult>;

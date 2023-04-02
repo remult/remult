@@ -178,7 +178,7 @@ export class Task extends IdEntity {
   title = ""
   @Fields.boolean()
   completed = false
-  @Fields.object()
+  @Fields.json()
   tags: string[] = []
 }
 ```

@@ -19,7 +19,7 @@ import { Validators } from "../validators";
 import { Status } from "../tests/testModel/models";
 import { IdEntity } from "../id-entity";
 import { describeClass } from "../remult3/DecoratorReplacer";
-import { DataProviderLiveQueryStorage } from "../../live-query/data-provider-live-query-storage";
+import { DataProviderLiveQueryStorage, LiveQueryStorageEntity } from "../../live-query/data-provider-live-query-storage";
 import { v4 as uuid } from 'uuid'
 
 
@@ -773,7 +773,8 @@ testAll("test date", async ({ createEntity }) => {
     expect(item.d.getFullYear()).toBe(1976);
 
 }, false)
-testAll("test live query storage", async ({ db, remult }) => {
+testAll("test live query storage", async ({ db, remult, createEntity }) => {
+    await createEntity(LiveQueryStorageEntity)
     var x = new DataProviderLiveQueryStorage(db);
     if (db.ensureSchema)
         await x.ensureSchema()
@@ -806,6 +807,7 @@ testAll("test contains with names with casing", async ({ createEntity }) => {
     exclude: [TestDbs.mongo]
 })
 testAll("test live query storage", async (x) => {
+    await x.createEntity(LiveQueryStorageEntity)
     const s = new DataProviderLiveQueryStorage(x.db);
     await s.ensureSchema();
     const entityKey = "ek";
@@ -818,3 +820,69 @@ testAll("test live query storage", async (x) => {
     await s.remove(id);
     await s.remove(id);
 }, false, { exclude: [TestDbs.restDataProvider] })
+testAll("test json structure using object", async ({ createEntity }) => {
+    const e = class {
+        a = 0;
+        person: {
+            firstName: string,
+            lastName: string
+        }
+    }
+    describeClass(e, Entity("testJsonStructure", { allowApiCrud: true }), {
+        a: Fields.number(),
+        person: Fields.object()
+    })
+    const r = await createEntity(e);
+    await r.insert({ a: 1, person: { firstName: "noam", lastName: "honig" } });
+    let item = await r.findFirst();
+    expect(item.person).toEqual({ firstName: "noam", lastName: "honig" });
+}, false)
+@Entity("testObject", { allowApiCrud: true })
+class testObject {
+    @Fields.integer()
+    id = 0;
+    @Fields.object()
+    person = { firstName: "noam", lastName: "honig" }
+}
+testAll("test object entity", async ({ createEntity }) => {
+
+    const r = await createEntity(testObject);
+    await r.insert({ id: 1, person: { firstName: "noam", lastName: "honig" } });
+    let item = await r.findFirst();
+    expect(item.person).toEqual({ firstName: "noam", lastName: "honig" });
+}, false)
+@Entity("testObjectJson", { allowApiCrud: true })
+class testObjectJson {
+    @Fields.integer()
+    id = 0;
+    @Fields.json()
+    person = { firstName: "noam", lastName: "honig" }
+}
+testAll("test object entity", async ({ createEntity }) => {
+
+    const r = await createEntity(testObjectJson);
+    await r.insert({ id: 1, person: { firstName: "noam", lastName: "honig" } });
+    let item = await r.findFirst();
+    expect(item.person).toEqual({ firstName: "noam", lastName: "honig" });
+}, false)
+testAll("test json structure", async ({ createEntity }) => {
+    const e = class {
+
+        a = 0;
+        person: {
+            firstName: string,
+            lastName: string
+
+        }
+    }
+    describeClass(e, Entity("testJsonFieldType", { allowApiCrud: true }), {
+        a: Fields.number(),
+        person: Fields.json()
+    })
+    const r = await createEntity(e);
+    await r.insert({ a: 1, person: { firstName: "noam", lastName: "honig" } });
+    let item = await r.findFirst();
+    expect(item.person).toEqual({ firstName: "noam", lastName: "honig" });
+}, false)
+
+

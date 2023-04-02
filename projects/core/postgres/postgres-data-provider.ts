@@ -17,6 +17,7 @@ export interface PostgresClient extends PostgresCommandSource {
 }
 
 export class PostgresDataProvider implements SqlImplementation {
+    supportsJsonColumnType=true;
     static getDb(remult?: Remult): ClientBase {
         const sql = SqlDatabase.getDb(remult);
         const me = sql._getSourceSql() as PostgresDataProvider;

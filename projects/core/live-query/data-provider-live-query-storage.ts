@@ -62,10 +62,12 @@ export class DataProviderLiveQueryStorage implements LiveQueryStorage, Storage {
   }
 }
 
+
 @Entity(undefined!, {
   dbName: 'remult_live_query_storage'
 })
-class LiveQueryStorageEntity extends EntityBase {
+/*@internal */
+export class LiveQueryStorageEntity extends EntityBase {
   @Fields.string()
   id = ''
   @Fields.string()

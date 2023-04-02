@@ -10,6 +10,7 @@ import { EntityMetadata, EntityFilter, OmitEB, Repository, RepositoryImplementat
 import { FieldMetadata } from "../column-interfaces";
 import { Remult } from "../context";
 import { RemultProxy } from "../remult-proxy";
+import { ValueConverters } from "../valueConverters";
 
 
 // @dynamic
@@ -36,6 +37,14 @@ export class SqlDatabase implements DataProvider {
   }
 
   getEntityDataProvider(entity: EntityMetadata): EntityDataProvider {
+    if (!this.sql.supportsJsonColumnType) {
+      for (const f of entity.fields.toArray()) {
+        if (f.valueConverter.fieldTypeInDb === "json") {
+          //@ts-ignore
+          f.valueConverter = { ...f.valueConverter, toDb: ValueConverters.JsonString.toDb, fromDb: ValueConverters.JsonString.fromDb }
+        }
+      }
+    }
 
     return new ActualSQLServerDataProvider(entity, this, async (dbName) => {
 
@@ -366,7 +375,7 @@ class myDummySQLCommand implements SqlCommand {
 
 
 
-async function bulkInsert<entityType extends EntityBase>(array: entityType[],db:SqlDatabase) {
+async function bulkInsert<entityType extends EntityBase>(array: entityType[], db: SqlDatabase) {
   if (array.length == 0) return;
 
   const chunkSize = 250;

@@ -1651,11 +1651,22 @@ export function FieldType<valueType = any>(...options: (FieldOptions<any, valueT
 }
 
 export class Fields {
-
+    /** 
+     * Stored as a JSON.stringify - to store as json use Fields.json
+    */
     static object<entityType = any, valueType = any>(
         ...options: (FieldOptions<entityType, valueType> |
             ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
         return Field(undefined, ...options);
+    }
+    static json<entityType = any, valueType = any>(
+        ...options: (FieldOptions<entityType, valueType> |
+            ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
+        return Field(undefined, {
+            valueConverter: {
+                fieldTypeInDb: "json"
+            }
+        }, ...options);
     }
     static dateOnly<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]) {
         return Field(() => Date, {

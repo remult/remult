@@ -24,6 +24,14 @@ export class KnexDataProvider implements DataProvider {
     }
 
     getEntityDataProvider(entity: EntityMetadata<any>): EntityDataProvider {
+        if (!supportsJson(this.knex))
+            for (const f of entity.fields.toArray()) {
+                if (f.valueConverter.fieldTypeInDb === "json") {
+                    //@ts-ignore
+                    f.valueConverter = { ...f.valueConverter, toDb: ValueConverters.JsonString.toDb, fromDb: ValueConverters.JsonString.fromDb }
+
+                }
+            }
         return new KnexEntityDataProvider(entity, this.knex);
     }
     async transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
@@ -305,9 +313,9 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
     }
     public containsCaseInsensitive(col: FieldMetadata, val: any): void {
 
-        
+
         this.result.push(b => b.whereRaw(
-          'lower (' + b.client.ref( this.nameProvider.$dbNameOf(col)) + ") like lower ('%" + val.replace(/'/g, '\'\'') + "%')"));
+            'lower (' + b.client.ref(this.nameProvider.$dbNameOf(col)) + ") like lower ('%" + val.replace(/'/g, '\'\'') + "%')"));
         this.promises.push((async () => {
 
         })());
@@ -380,7 +388,7 @@ export class KnexSchemaBuilder {
                             if (isAutoIncrement(x))
                                 b.increments(cols.get(x).name);
                             else {
-                                buildColumn(x, cols.get(x).name, b);
+                                buildColumn(x, cols.get(x).name, b, supportsJson(this.knex));
                                 if (x == entity.idMetadata.field)
                                     b.primary([cols.get(x).name]);
                             }
@@ -404,7 +412,7 @@ export class KnexSchemaBuilder {
 
         if (!await this.knex.schema.hasColumn(e.$entityName, colName)) {
             await logSql(this.knex.schema.alterTable(e.$entityName, b => {
-                buildColumn(col, colName, b);
+                buildColumn(col, colName, b, supportsJson(this.knex));
             }));
         }
     }
@@ -427,8 +435,14 @@ export class KnexSchemaBuilder {
 
     }
 }
+function supportsJson(knex: Knex) {
+    const client: string = knex.client.config.client
+    if (client?.includes("sqlite3") || client?.includes("mssql"))
+        return false;
+    return true;
+}
 
-export function buildColumn(x: FieldMetadata, dbName: string, b: Knex.CreateTableBuilder) {
+export function buildColumn(x: FieldMetadata, dbName: string, b: Knex.CreateTableBuilder, supportsJson = true) {
 
 
     if (x.valueType == Number) {
@@ -470,6 +484,11 @@ export function buildColumn(x: FieldMetadata, dbName: string, b: Knex.CreateTabl
                 c.defaultTo(0).notNullable();
             }
         }
+        else if (x.valueConverter.fieldTypeInDb == "json")
+            if (supportsJson)
+                b.json(dbName);
+            else
+                b.text(dbName)
         else b.specificType(dbName, x.valueConverter.fieldTypeInDb);
     }
     else {
