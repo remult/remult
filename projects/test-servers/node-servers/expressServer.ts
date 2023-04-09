@@ -1,4 +1,4 @@
-import * as express from "express";
+import  express from "express";
 import { remultExpress } from "../../core/remult-express";
 import { remult } from "../../core/src/remult-proxy";
 import { Task } from "../shared/Task";

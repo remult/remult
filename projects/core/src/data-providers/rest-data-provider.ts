@@ -211,8 +211,10 @@ export class RestDataProviderHttpProviderUsingFetch implements RestDataProviderH
   }): Promise<any> {
 
     const headers = {
-      "Content-type": "application/json"
+
     }
+    if (options?.body)
+      headers["Content-type"] = "application/json";
     if (typeof window !== 'undefined' && typeof window.document !== 'undefined' && typeof (window.document.cookie !== 'undefined'))
       for (const cookie of window.document.cookie.split(';')) {
         if (cookie.trim().startsWith('XSRF-TOKEN=')) {

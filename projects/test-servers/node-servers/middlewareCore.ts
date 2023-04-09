@@ -1,4 +1,4 @@
-import * as express from "express";
+import express from "express";
 
 import { createRemultServerCore } from "../../core/server/expressBridge";
 import { Task } from "../shared/Task";
