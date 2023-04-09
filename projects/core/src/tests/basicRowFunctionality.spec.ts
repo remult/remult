@@ -2188,6 +2188,7 @@ describe("test fetch", () => {
   });
   it("delete", async () => {
     let z = await new RestDataProviderHttpProviderUsingFetch(async (url, info) => {
+      expect(info.headers).toEqual({}) // fastify fails with content type and no body
       return new mockResponse({ status: 204, json: async () => 7 })
     }).delete('abc');
     expect(z).toBeUndefined();
