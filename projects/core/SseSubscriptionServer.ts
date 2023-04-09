@@ -17,7 +17,7 @@ export class SseSubscriptionServer implements SubscriptionServer {
 
                     else
                         c.channels[channel] = true;
-                    res.success("ok");
+                    res.success({status:"ok"});
                     this.debug();
                     return;
                 }

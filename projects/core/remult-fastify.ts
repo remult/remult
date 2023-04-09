@@ -1,13 +1,13 @@
 import type { FastifyInstance, FastifyPluginCallback, RouteHandlerMethod, FastifyRequest } from 'fastify';
 import { createRemultServer } from './server/index';
 import { GenericRequestHandler, GenericResponse, GenericRouter, RemultServer, createRemultServerCore, RemultServerOptions, SpecificRoute } from './server/expressBridge';
-import { initAsyncHooks } from './server/initAsyncHooks';
+import { ResponseRequiredForSSE } from './SseSubscriptionServer';
 
 
 export function remultFastify(options: RemultServerOptions<FastifyRequest>): FastifyPluginCallback & RemultServer {
     function fastifyHandler(handler: GenericRequestHandler) {
         const response: RouteHandlerMethod = (req, res) => {
-            const myRes: GenericResponse = {
+            const myRes: GenericResponse & ResponseRequiredForSSE = {
                 status(statusCode) {
                     res.status(statusCode);
                     return myRes;
@@ -17,8 +17,19 @@ export function remultFastify(options: RemultServerOptions<FastifyRequest>): Fas
                 },
                 json(data) {
                     res.send(data);
+                },
+                write(data: string) {
+                    res.raw.write(data)
+                },
+                writeHead(status: number, headers: any) {
+                    res.raw.writeHead(status, headers);
                 }
             };
+            Object.assign(req, {
+                on(event: "close", listener: () => {}) {
+                    req.raw.on(event, listener)
+                }
+            })
             handler(req, myRes, () => { });
         };
         return response;
