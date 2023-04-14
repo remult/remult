@@ -150,8 +150,6 @@ export interface EntityMetadata<entityType = any> {
      * }
     */
     apiInsertAllowed(item?: entityType): boolean;
-    //TODO YONI - only a few cases require the actual entity - should we make the item optional?
-    //TODO - fix tutorials
 
     /** Returns the dbName - based on it's `dbName` option and it's `sqlExpression` option */
     getDbName(): Promise<string>;
