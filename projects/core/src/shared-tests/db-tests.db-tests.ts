@@ -28,6 +28,15 @@ testAll("what", async ({ remult, createEntity }) => {
     await (await createEntity(stam)).create({ id: 1, title: 'noam' }).save();
     expect(await remult.repo(stam).count()).toBe(1);
 }, false);
+testAll("data types", async ({ remult, createEntity }) => {
+    let r = await (await createEntity(stam)).create({
+        id: 1,
+        //@ts-ignore
+        title: 42
+    }).save();
+    expect(r.title).toEqual("42");
+
+}, false);
 testAll("filter works on all db",
     async ({ createEntity }) => {
         let s = await entityWithValidations.create4RowsInDp(createEntity);

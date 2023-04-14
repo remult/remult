@@ -1957,10 +1957,7 @@ export function decorateColumnSettings<valueType>(settings: FieldOptions<any, va
     if (settings.valueType == String) {
         let x = settings as unknown as FieldOptions<any, String>;
         if (!settings.valueConverter)
-            x.valueConverter = {
-                toJson: x => x,
-                fromJson: x => x
-            };
+            x.valueConverter = ValueConverters.String;
     }
 
     if (settings.valueType == Number) {

@@ -165,6 +165,16 @@ export class ValueConverters {
       inputType: InputTypes.number
 
     }
+  static readonly String: ValueConverter<String> =
+    {
+      fromDb: enforceString,
+      toDb: enforceString,
+      fromJson: enforceString,
+      toJson: enforceString,
+      fromInput: enforceString,
+      toInput: enforceString,
+
+    }
   static readonly Integer: ValueConverter<number> =
     {
       ...ValueConverters.Number,
@@ -206,4 +216,11 @@ export class ValueConverters {
     toInput: x => ValueConverters.JsonString.toJson(x),
     fieldTypeInDb: 'json'
   }
+}
+function enforceString(value: string) {
+  if (value === null || value === undefined)
+    return value;
+  if (typeof (value) !== "string")
+    return (value as any).toString()
+  return value;
 }
