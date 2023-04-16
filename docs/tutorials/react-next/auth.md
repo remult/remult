@@ -85,7 +85,7 @@ Let's set-up `NextAuth.js` to authenticate users to our app.
    import { UserInfo } from "remult"
 
    const validUsers: UserInfo[] = [
-     { id: "1", name: "Jane", roles: ["admin"] },
+     { id: "1", name: "Jane" },
      { id: "2", name: "Steve" }
    ]
    export function getUserById(id: string | undefined) {
