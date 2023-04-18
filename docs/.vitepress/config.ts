@@ -1,40 +1,14 @@
-const { description } = require('../../projects/core/package')
-//const apiSideBar = require('./api-sidebar.json');
-module.exports = {
-  /**
-   * Ref：https://v1.vuepress.vuejs.org/config/#title
-   */
-  title: 'Remult',
-  /**
-   * Ref：https://v1.vuepress.vuejs.org/config/#description
-   */
-  description: description,
+import { defineConfig } from 'vitepress'
 
-  /**
-   * Extra tags to be injected to the page HTML `<head>`
-   *
-   * ref：https://v1.vuepress.vuejs.org/config/#head
-   */
-  head: [
-    ['meta', { name: 'theme-color', content: '#3eaf7c' }],
-    ['meta', { name: 'apple-mobile-web-app-capable', content: 'yes' }],
-    ['meta', { name: 'apple-mobile-web-app-status-bar-style', content: 'black' }],
-    ['link', { rel: 'icon', href: '/favicon.png' }]
-  ],
+// https://vitepress.dev/reference/site-config
+export default defineConfig({
+  title: "Remult",
+  description: "Build Full-stack, End-to-end Type-safe CRUD Apps without the Boilerplate",
+  lastUpdated: true,
 
-  /**
-   * Theme configuration, here is the default theme configuration for VuePress.
-   *
-   * ref：https://v1.vuepress.vuejs.org/theme/default-theme-config.html
-   */
   themeConfig: {
     logo: '/logo.png',
-    repo: 'remult/remult',
-
-    editLinks: true,
-    docsDir: 'docs',
-    lastUpdated: true,
-    smoothScroll: true,
+    editLink: { pattern: "https://github.com/remult/remult/edit/master/docs/:path" },
     nav: [
       {
         text: 'Docs',
@@ -66,39 +40,41 @@ module.exports = {
         text: 'Blog',
         link: '/blog/introducing-remult-part-1',
 
-      },
-      {
-        text: 'Discord',
-        link: 'https://discord.gg/GXHk7ZfuG5'
       }
+    ],
+    search: { provider: 'local', options: {} },
+    socialLinks: [
+      { icon: 'twitter', link: 'https://twitter.com/RemultJs' },
+      { icon: 'youtube', link: 'https://www.youtube.com/@remult6539' },
+      { icon: 'discord', link: 'https://discord.gg/GXHk7ZfuG5' },
+      { icon: 'github', link: 'https://github.com/remult/remult' },
     ],
     sidebar: {
 
       '/docs/': [
         {
-          title: 'Getting Started',
-          collapsable: false,
-          children: [
+          text: 'Getting Started',
+          items: [
             '',
-            'add-remult-to-your-app',
+            { text: "Add Remult to your App", link: '/docs/add-remult-to-your-app.md' },
             'crud-your-first-entity',
             'databases',
           ]
         },
         {
-          title: 'Concepts',
-          collapsable: true,
-          children: [
+          text: 'Concepts',
+          collapsed: true,
+          items: [
             'field-types',
             'backendMethods',
             'entity-relations',
           ]
         },
         {
-          title: 'Advanced Topics',
-          collapsable: true,
+          text: 'Advanced Topics',
+          collapsed: true,
 
-          children: [
+          items: [
             'adding-graphql',
             'adding-swagger',
             'rest-api',
@@ -113,9 +89,9 @@ module.exports = {
           ]
         },
         {
-          title: 'API Reference',
-          collapsable: true,
-          children: [
+          text: 'API Reference',
+          collapsed: true,
+          items: [
             'ref_entity',
             'ref_field',
             'ref_remult',
@@ -135,11 +111,11 @@ module.exports = {
 
       '/tutorials/react/': [
         {
-          title: 'Tutorial',
+          text: 'Tutorial',
           path: '/tutorials/react/',
 
-          collapsable: false,
-          children: [
+          collapsed: false,
+          items: [
             ['', 'Setup'],
             'entities',
             'sorting-filtering',
@@ -154,11 +130,11 @@ module.exports = {
         }],
       '/tutorials/angular/': [
         {
-          title: 'Tutorial',
+          text: 'Tutorial',
           path: '/tutorials/angular/',
 
-          collapsable: false,
-          children: [
+          collapsed: false,
+          items: [
             ['', 'Setup'],
             'entities',
             'sorting-filtering',
@@ -173,11 +149,11 @@ module.exports = {
         }],
       '/tutorials/vue/': [
         {
-          title: 'Tutorial',
+          text: 'Tutorial',
           path: '/tutorials/vue/',
 
-          collapsable: false,
-          children: [
+          collapsed: false,
+          items: [
             ['', 'Setup'],
             'entities',
             'sorting-filtering',
@@ -192,11 +168,11 @@ module.exports = {
         }],
       '/tutorials/react-next/': [
         {
-          title: 'Tutorial',
+          text: 'Tutorial',
           path: '/tutorials/react-next/',
 
-          collapsable: false,
-          children: [
+          collapsed: false,
+          items: [
             ['', 'Setup'],
             'entities',
             'sorting-filtering',
@@ -212,26 +188,16 @@ module.exports = {
         }],
       '/blog/': [
         {
-          title: 'Remult Blog',
-          
-          children: [
+          text: 'Remult Blog',
+
+          items: [
             'introducing-remult-part-1'
           ]
         }
       ]
+    },
+    footer: {
+      message: "MIT Licensed | Made by the Remult team with ❤️"
     }
   },
-
-  /**
-   * Apply plugins，ref：https://v1.vuepress.vuejs.org/zh/plugin/
-   */
-  plugins: [
-    '@vuepress/plugin-back-to-top',
-    '@vuepress/plugin-medium-zoom',
-    ['vuepress-plugin-code-copy', true],
-    ['@vuepress/google-analytics',
-      {
-        'ga': 'UA-212489509-1'
-      }]
-  ]
-}
+})

@@ -1,5 +1,7 @@
 ---
 title: "Introducing Remult: The Backend to Frontend Framework You Always Wanted"
+sidebar: false
+editLink: false
 ---
 
 > March 14, 2023 | Noam Honig
