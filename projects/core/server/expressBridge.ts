@@ -395,9 +395,10 @@ export class RemultServerImplementation<RequestType> implements RemultServer<Req
   }
 
 
-  process(what: (remult: Remult, myReq: DataApiRequest, myRes: DataApiResponse, origReq: GenericRequest, origRes: GenericResponse) => Promise<void>) {
+  process(what: (remult: Remult, myReq: DataApiRequest, myRes: DataApiResponse, genReq: GenericRequest, origRes: GenericResponse) => Promise<void>) {
     return async (req: RequestType, origRes: GenericResponse) => {
-      let myReq = new ExpressRequestBridgeToDataApiRequest(this.coreOptions.buildGenericRequest(req));
+      const genReq = this.coreOptions.buildGenericRequest(req);
+      let myReq = new ExpressRequestBridgeToDataApiRequest(genReq);
       let myRes = new ExpressResponseBridgeToDataApiResponse(origRes, req);
       await this.runWithRemult(async remult => {
         remult.liveQueryPublisher = new LiveQueryPublisher(() => remult.subscriptionServer, () => remult.liveQueryStorage, this.runWithSerializedJsonContextData)
@@ -429,7 +430,7 @@ export class RemultServerImplementation<RequestType> implements RemultServer<Req
             });
           }
         }
-        await what(remult, myReq, myRes, req, origRes);
+        await what(remult, myReq, myRes, genReq, origRes);
       })
     }
   };
