@@ -398,6 +398,11 @@ export class RemultServerImplementation<RequestType> implements RemultServer<Req
   process(what: (remult: Remult, myReq: DataApiRequest, myRes: DataApiResponse, genReq: GenericRequest, origRes: GenericResponse) => Promise<void>) {
     return async (req: RequestType, origRes: GenericResponse) => {
       const genReq = this.coreOptions.buildGenericRequest(req);
+      if (!genReq.query) {
+        genReq.query = req["_tempQuery"];
+      }
+      if (!genReq.params)
+        genReq.params = req["_tempParams"];
       let myReq = new ExpressRequestBridgeToDataApiRequest(genReq);
       let myRes = new ExpressResponseBridgeToDataApiResponse(origRes, req);
       await this.runWithRemult(async remult => {
@@ -430,7 +435,7 @@ export class RemultServerImplementation<RequestType> implements RemultServer<Req
             });
           }
         }
-        await what(remult, myReq, myRes, genReq, origRes);
+        await what(remult, myReq, myRes, req, origRes);
       })
     }
   };
@@ -805,23 +810,7 @@ class ExpressRequestBridgeToDataApiRequest implements DataApiRequest {
   }
 
   constructor(private r: GenericRequest) {
-    if (!this.r.query) {
-      let query: { [key: string]: undefined | string | string[] } = {};
 
-      getUrlFromReq(this.r).searchParams.forEach((val, key) => {
-        let current = query[key];
-        if (!current) {
-          query[key] = val;
-          return;
-        }
-        if (Array.isArray(current)) {
-          current.push(val);
-          return;
-        }
-        query[key] = [current, val];
-      });
-      this.r.query = query;
-    }
   }
 }
 class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
@@ -1086,8 +1075,28 @@ class RouteImplementation<RequestType> {
     const req = this.coreOptions.buildGenericRequest(origReq);
 
 
-    const url = getUrlFromReq(req);
+    let theUrl: string = req.url;
+    if (theUrl.startsWith('/'))//next sends a partial url '/api/tasks' and not the full url
+      theUrl = 'http://stam' + theUrl;
+    const url = new URL(theUrl);
     const path = url.pathname;
+    if (!req.query) {
+      let query: { [key: string]: undefined | string | string[] } = {};
+      url.searchParams.forEach((val, key) => {
+        let current = query[key];
+        if (!current) {
+          query[key] = val;
+          return;
+        }
+        if (Array.isArray(current)) {
+          current.push(val);
+          return;
+        }
+        query[key] = [current, val];
+      });
+      origReq["_tempQuery"] = query;
+      req.query = query;
+    }
     let lowerPath = path.toLowerCase();
     let m = this.map.get(lowerPath);
 
@@ -1105,8 +1114,10 @@ class RouteImplementation<RequestType> {
       if (m) {
         let h = m.get(req.method.toLowerCase());
         if (h) {
-          if (!req.params)
+          if (!req.params) {
             req.params = {};
+            origReq["_tempParams"] = req.params;
+          }
           req.params.id = path.substring(idPosition + 1);
           h(origReq, res, next);
           return;
@@ -1144,12 +1155,4 @@ allEntities.splice(allEntities.indexOf(JobsInQueueEntity), 1);
 
 export interface ServerCoreOptions<RequestType> {
   buildGenericRequest(req: RequestType): GenericRequest
-}
-
-function getUrlFromReq(req: GenericRequest) {
-  let theUrl: string = req.url;
-  if (theUrl.startsWith('/')) //next sends a partial url '/api/tasks' and not the full url
-    theUrl = 'http://stam' + theUrl;
-  const url = new URL(theUrl);
-  return url;
 }
