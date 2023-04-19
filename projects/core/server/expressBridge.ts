@@ -1096,7 +1096,7 @@ class RouteImplementation<RequestType> {
     if (m) {
       let h = m.get(req.method.toLowerCase());
       if (h) {
-        h(req, res, next);
+        h(origReq, res, next);
         return;
       }
     }
