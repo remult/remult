@@ -5,8 +5,8 @@ export declare class DataApi<T = any> {
     private repository;
     private remult;
     constructor(repository: Repository<T>, remult: Remult);
-    httpGet(res: DataApiResponse, req: DataApiRequest, serializeRequest: () => any): Promise<void>;
-    httpPost(res: DataApiResponse, req: DataApiRequest, body: any, serializeRequest: () => any): Promise<void>;
+    httpGet(res: DataApiResponse, req: DataApiRequest, serializeRequest: () => Promise<any>): Promise<void>;
+    httpPost(res: DataApiResponse, req: DataApiRequest, body: any, serializeRequest: () => Promise<any>): Promise<void>;
     static defaultGetLimit: number;
     get(response: DataApiResponse, id: any): Promise<void>;
     count(response: DataApiResponse, request: DataApiRequest, filterBody?: any): Promise<void>;

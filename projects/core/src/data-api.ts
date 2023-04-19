@@ -12,7 +12,7 @@ export class DataApi<T = any> {
 
   constructor(private repository: Repository<T>, private remult: Remult) {
   }
-  httpGet(res: DataApiResponse, req: DataApiRequest, serializeRequest: () => any) {
+  httpGet(res: DataApiResponse, req: DataApiRequest, serializeRequest: () => Promise<any>) {
     const action = req?.get("__action");
     if (action?.startsWith(liveQueryAction))
       return this.liveQuery(res, req, undefined, serializeRequest, getLiveQueryChannel(action.substring(liveQueryAction.length), this.remult.user?.id));
@@ -24,7 +24,7 @@ export class DataApi<T = any> {
     return this.getArray(res, req, undefined);
 
   }
-  async httpPost(res: DataApiResponse, req: DataApiRequest, body: any, serializeRequest: () => any) {
+  async httpPost(res: DataApiResponse, req: DataApiRequest, body: any, serializeRequest: () => Promise<any>) {
     const action = req?.get("__action");
     if (action?.startsWith(liveQueryAction))
       return this.liveQuery(res, req, undefined, serializeRequest, getLiveQueryChannel(action.substring(liveQueryAction.length), this.remult.user?.id));

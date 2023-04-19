@@ -234,7 +234,7 @@ export function createMockHttpDataProvider(dataApi: DataApi<any>): import("../da
       r.success = data => { result = data; };
       try {
         testConfiguration.restDbRunningOnServer = true;
-        await dataApi.httpGet(r, urlToReq(url), () => "");
+        await dataApi.httpGet(r, urlToReq(url), async () => "");
       }
       finally {
         testConfiguration.restDbRunningOnServer = false;
@@ -249,7 +249,7 @@ export function createMockHttpDataProvider(dataApi: DataApi<any>): import("../da
       r.success = data => { result = data; };
       try {
         testConfiguration.restDbRunningOnServer = true;
-        await dataApi.httpPost(r, urlToReq(url), data, () => ({}));
+        await dataApi.httpPost(r, urlToReq(url), data, async () => ({}));
       }
       finally {
         testConfiguration.restDbRunningOnServer = false;

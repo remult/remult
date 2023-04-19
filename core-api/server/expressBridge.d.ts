@@ -41,10 +41,10 @@ export interface RemultServerOptions<RequestType extends GenericRequest> {
     subscriptionServer?: SubscriptionServer;
     /** A storage to use to store live queries, relevant mostly for serverless scenarios or larger scales */
     liveQueryStorage?: LiveQueryStorage;
-    /** Used to store the relevent request info for re running a live query */
-    requestSerializer?: {
-        toJson: (request: RequestType) => any;
-        fromJson: (request: any) => RequestType;
+    /** Used to store the context relevant info for re running a live query */
+    contextSerializer?: {
+        serialize(remult: Remult): Promise<any>;
+        deserialize(json: any, remult: Remult): Promise<void>;
     };
     /** Storage to use for backend methods that use queue */
     queueStorage?: QueueStorage;
