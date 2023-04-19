@@ -24,7 +24,7 @@ export function remultNext(
     buildGenericRequest: req => req
   })
   return Object.assign(
-    (req, res) => { result.handle(req, res) },
+    (req, res) => result.handle(req, res).then(() => { }),
     result, {
       getRemult: (...args) => result.getRemult(...args),
       handle: (...args) => result.handle(...args),
