@@ -139,7 +139,7 @@ export class DataApi<T = any> {
         response.error(err);
     }
   }
-  async liveQuery(response: DataApiResponse, request: DataApiRequest, filterBody: any, serializeRequest: () => any, queryChannel: string) {
+  async liveQuery(response: DataApiResponse, request: DataApiRequest, filterBody: any, serializeRequest: () => Promise<any>, queryChannel: string) {
     if (!this.repository.metadata.apiReadAllowed) {
       response.forbidden();
       return;
@@ -147,7 +147,7 @@ export class DataApi<T = any> {
     try {
       const r = await this.getArrayImpl(response, request, filterBody)
       const data: QueryData = {
-        requestJson: serializeRequest(),
+        requestJson: await serializeRequest(),
         findOptionsJson: findOptionsToJson(r.findOptions, this.repository.metadata),
         lastIds: r.r.map(y => this.repository.metadata.idMetadata.getId(y))
       }
