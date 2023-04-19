@@ -15,7 +15,7 @@ import { ResponseRequiredForSSE, SseSubscriptionServer } from "../SseSubscriptio
 
 
 //TODO2 -support pub sub non express servers
-export interface RemultServerOptions<RequestType extends GenericRequest> {
+export interface RemultServerOptions<RequestType> {
   /**Entities to use for the api */
   entities?: ClassType<any>[];
   /**Controller to use for the api */
@@ -67,10 +67,12 @@ export interface InitRequestOptions {
   readonly remult: Remult
 }
 
-export function createRemultServerCore<RequestType extends GenericRequest = GenericRequest>(
-  options?:
+export function createRemultServerCore<RequestType>(
+  options:
     RemultServerOptions<RequestType>,
-): RemultServer {
+
+  serverCoreOptions: ServerCoreOptions<RequestType>
+): RemultServer<RequestType> {
 
   if (!options) {
     options = {};
@@ -147,7 +149,7 @@ export function createRemultServerCore<RequestType extends GenericRequest = Gene
     options.rootPath = '/api';
 
   actionInfo.runningOnServer = true;
-  let bridge = new RemultServerImplementation(new inProcessQueueHandler(options.queueStorage), options, dataProvider);
+  let bridge = new RemultServerImplementation<RequestType>(new inProcessQueueHandler(options.queueStorage), options, dataProvider, serverCoreOptions);
   return bridge;
 
 }
@@ -159,12 +161,12 @@ export interface ServerHandleResponse {
   data?: any;
   statusCode: number;
 }
-export interface RemultServer {
-  getRemult(req: GenericRequest): Promise<Remult>;
+export interface RemultServer<RequestType> {
+  getRemult(req: RequestType): Promise<Remult>;
   openApiDoc(options: { title: string, version?: string }): any;
   registerRouter(r: GenericRouter): void;
-  handle(req: GenericRequest, gRes?: GenericResponse): Promise<ServerHandleResponse | undefined>;
-  withRemult(req: GenericRequest, res: GenericResponse, next: VoidFunction);
+  handle(req: RequestType, gRes?: GenericResponse): Promise<ServerHandleResponse | undefined>;
+  withRemult(req: RequestType, res: GenericResponse, next: VoidFunction);
 
 }
 export type GenericRouter = {
@@ -225,10 +227,10 @@ export class RemultAsyncLocalStorage {
 
 /* @internal*/
 
-export class RemultServerImplementation implements RemultServer {
+export class RemultServerImplementation<RequestType> implements RemultServer<RequestType> {
   liveQueryStorage: LiveQueryStorage = new InMemoryLiveQueryStorage();
-  constructor(public queue: inProcessQueueHandler, public options: RemultServerOptions<GenericRequest>,
-    public dataProvider: DataProvider | Promise<DataProvider>) {
+  constructor(public queue: inProcessQueueHandler, public options: RemultServerOptions<any>,
+    public dataProvider: DataProvider | Promise<DataProvider>, private coreOptions: ServerCoreOptions<RequestType>) {
     if (options.liveQueryStorage)
       this.liveQueryStorage = options.liveQueryStorage;
     if (options.subscriptionServer)
@@ -254,19 +256,19 @@ export class RemultServerImplementation implements RemultServer {
     throw new Error("Couldn't find entity " + entityKey);
   };;
   subscriptionServer: SubscriptionServer;
-  withRemult<T>(req: GenericRequest, res: GenericResponse, next: VoidFunction) {
+  withRemult<T>(req: RequestType, res: GenericResponse, next: VoidFunction) {
     this.process(async () => { next() })(req, res);
   }
-  routeImpl: RouteImplementation;
+  routeImpl: RouteImplementation<RequestType>;
   getRouteImpl() {
     if (!this.routeImpl) {
-      this.routeImpl = new RouteImplementation();
+      this.routeImpl = new RouteImplementation(this.coreOptions);
       this.registerRouter(this.routeImpl);
     }
     return this.routeImpl;
   }
 
-  handle(req: GenericRequest, gRes?: GenericResponse): Promise<ServerHandleResponse> {
+  handle(req: RequestType, gRes?: GenericResponse): Promise<ServerHandleResponse> {
 
     return this.getRouteImpl().handle(req, gRes);
   }
@@ -394,7 +396,7 @@ export class RemultServerImplementation implements RemultServer {
 
 
   process(what: (remult: Remult, myReq: DataApiRequest, myRes: DataApiResponse, origReq: GenericRequest, origRes: GenericResponse) => Promise<void>) {
-    return async (req: GenericRequest, origRes: GenericResponse) => {
+    return async (req: RequestType, origRes: GenericResponse) => {
       let myReq = new ExpressRequestBridgeToDataApiRequest(req);
       let myRes = new ExpressResponseBridgeToDataApiResponse(origRes, req);
       await this.runWithRemult(async remult => {
@@ -431,7 +433,7 @@ export class RemultServerImplementation implements RemultServer {
       })
     }
   };
-  async getRemult(req: GenericRequest) {
+  async getRemult(req: RequestType) {
     let remult: Remult;
     await this.process(async (c) => {
       remult = c;
@@ -991,7 +993,10 @@ export class EntityQueueStorage implements QueueStorage {
   }
 
 }
-class RouteImplementation {
+class RouteImplementation<RequestType> {
+  constructor(private coreOptions: ServerCoreOptions<RequestType>) {
+
+  }
   map = new Map<string, Map<string, GenericRequestHandler>>();
   route(path: string): SpecificRoute {
     //consider using:
@@ -1021,7 +1026,7 @@ class RouteImplementation {
     return route;
 
   }
-  async handle(req: GenericRequest, gRes?: GenericResponse): Promise<ServerHandleResponse | undefined> {
+  async handle(req: RequestType, gRes?: GenericResponse): Promise<ServerHandleResponse | undefined> {
     return new Promise<ServerHandleResponse | undefined>(res => {
       const response = new class implements GenericResponse, ResponseRequiredForSSE {
         write(data: string): void {
@@ -1060,7 +1065,10 @@ class RouteImplementation {
     })
 
   }
-  middleware(req: GenericRequest, res: GenericResponse, next: VoidFunction) {
+  middleware(origReq: RequestType, res: GenericResponse, next: VoidFunction) {
+    const req = this.coreOptions.buildGenericRequest(origReq);
+
+
     let theUrl: string = req.url;
     if (theUrl.startsWith('/'))//next sends a partial url '/api/tasks' and not the full url
       theUrl = 'http://stam' + theUrl;
@@ -1135,3 +1143,7 @@ export class JobsInQueueEntity extends IdEntity {
 }
 
 allEntities.splice(allEntities.indexOf(JobsInQueueEntity), 1);
+
+export interface ServerCoreOptions<RequestType> {
+  buildGenericRequest(req: RequestType): GenericRequest
+}

@@ -10,7 +10,7 @@ import { createRemultServer, RemultServer, RemultServerOptions } from "./server"
 
 export function remultNext(
   options?: RemultServerOptions<NextApiRequest>
-): RemultServer &
+): RemultServer<NextApiRequest> &
   NextApiHandler & {
     getServerSideProps<
       P extends { [key: string]: any } = { [key: string]: any },
@@ -20,16 +20,18 @@ export function remultNext(
       getServerPropsFunction: GetServerSideProps<P, Q, D>
     ): GetServerSideProps<P, Q, D>
   } {
-  let result = createRemultServer(options)
+  let result = createRemultServer(options, {
+    buildGenericRequest: req => req
+  })
   return Object.assign(
     (req, res) => result.handle(req, res),
     result, {
       getRemult: (...args) => result.getRemult(...args),
       handle: (...args) => result.handle(...args),
-      openApiDoc:(...args)=> result.openApiDoc(...args),
-      registerRouter:(...args)=> result.registerRouter(...args),
-      withRemult:(...args)=> result.withRemult(...args),
-    } as RemultServer,
+      openApiDoc: (...args) => result.openApiDoc(...args),
+      registerRouter: (...args) => result.registerRouter(...args),
+      withRemult: (...args) => result.withRemult(...args),
+    } as RemultServer<NextApiRequest>,
     {
       getServerSideProps: (getServerPropsFunction) => {
         return (context) => {

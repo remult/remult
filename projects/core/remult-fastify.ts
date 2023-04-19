@@ -4,7 +4,7 @@ import { GenericRequestHandler, GenericResponse, GenericRouter, RemultServer, cr
 import { ResponseRequiredForSSE } from './SseSubscriptionServer';
 
 
-export function remultFastify(options: RemultServerOptions<FastifyRequest>): FastifyPluginCallback & RemultServer {
+export function remultFastify(options: RemultServerOptions<FastifyRequest>): FastifyPluginCallback & RemultServer<FastifyRequest> {
     function fastifyHandler(handler: GenericRequestHandler) {
         const response: RouteHandlerMethod = (req, res) => {
             const myRes: GenericResponse & ResponseRequiredForSSE = {
@@ -34,7 +34,9 @@ export function remultFastify(options: RemultServerOptions<FastifyRequest>): Fas
         };
         return response;
     }
-    const api = createRemultServer(options);
+    const api = createRemultServer(options, {
+        buildGenericRequest: req => req
+    });
     const pluginFunction: FastifyPluginCallback = async (instance: FastifyInstance, op) => {
         //@ts-ignore
         let fastifyRouter: GenericRouter = {
@@ -70,5 +72,5 @@ export function remultFastify(options: RemultServerOptions<FastifyRequest>): Fas
         openApiDoc: x => api.openApiDoc(x),
         handle: (req, res) => api.handle(req, res),
         withRemult: (req, res, next) => api.withRemult(req, res, next)
-    } as RemultServer);
+    } as RemultServer<FastifyRequest>);
 }

@@ -7,7 +7,7 @@ import { DataApi } from "./src/data-api";
 import { RemultServer } from "./server/expressBridge";
 import { ValueConverters } from "./src/valueConverters";
 
-export function remultGraphql(api: RemultServer) {
+export function remultGraphql(api: RemultServer<any>) {
   let r = new Remult();
   let types: {
     key: string,

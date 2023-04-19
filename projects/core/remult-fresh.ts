@@ -2,8 +2,10 @@ import { } from "./server/core";
 import { RemultServerOptions, RemultServer, createRemultServerCore, GenericRequest } from "./server/expressBridge";
 import { Remult } from "./src/context";
 
-export function remultFresh<RequestType extends GenericRequest >(options: RemultServerOptions<RequestType>, response: FreshResponse): RemultFresh {
-    const server = createRemultServerCore(options);
+export function remultFresh(options: RemultServerOptions<FreshRequest>, response: FreshResponse): RemultFresh {
+    const server = createRemultServerCore<FreshRequest>(options, {
+        buildGenericRequest: r => r
+    });
     return {
         getRemult: r => server.getRemult(r),
         openApiDoc: x => server.openApiDoc(x),
@@ -21,7 +23,7 @@ export function remultFresh<RequestType extends GenericRequest >(options: Remult
                     break;
             }
             let init: ResponseInit = {};
-            const res = await server.handle(theReq);
+            const res = await server.handle(req);
             if (res) {
                 init.status = res.statusCode;
                 if (res.data) {
@@ -38,7 +40,7 @@ export function remultFresh<RequestType extends GenericRequest >(options: Remult
 };
 
 export interface RemultFresh {
-    getRemult(req: GenericRequest): Promise<Remult>;
+    getRemult(req: FreshRequest): Promise<Remult>;
     openApiDoc(options: { title: string }): any;
     handle(req: FreshRequest, ctx: FreshContext): Promise<any>
 }

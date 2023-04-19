@@ -2,7 +2,7 @@
 import type { GetServerSideProps, NextApiRequest, PreviewData, NextApiHandler } from "next";
 import type { ParsedUrlQuery } from "querystring";
 import { RemultServer, RemultServerOptions } from "./server";
-export declare function remultNext(options?: RemultServerOptions<NextApiRequest>): RemultServer & NextApiHandler & {
+export declare function remultNext(options?: RemultServerOptions<NextApiRequest>): RemultServer<NextApiRequest> & NextApiHandler & {
     getServerSideProps<P extends {
         [key: string]: any;
     } = {

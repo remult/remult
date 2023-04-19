@@ -1,8 +1,8 @@
-import { RemultServerOptions, GenericRequest } from "./server/expressBridge";
+import { RemultServerOptions } from "./server/expressBridge";
 import { Remult } from "./src/context";
-export declare function remultFresh<RequestType extends GenericRequest>(options: RemultServerOptions<RequestType>, response: FreshResponse): RemultFresh;
+export declare function remultFresh(options: RemultServerOptions<FreshRequest>, response: FreshResponse): RemultFresh;
 export interface RemultFresh {
-    getRemult(req: GenericRequest): Promise<Remult>;
+    getRemult(req: FreshRequest): Promise<Remult>;
     openApiDoc(options: {
         title: string;
     }): any;

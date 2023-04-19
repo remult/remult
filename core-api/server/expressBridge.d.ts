@@ -5,7 +5,7 @@ import { ClassType } from '../classType';
 import { Repository } from '../src/remult3';
 import { IdEntity } from '../src/id-entity';
 import { LiveQueryStorage, SubscriptionServer } from '../src/live-query/SubscriptionServer';
-export interface RemultServerOptions<RequestType extends GenericRequest> {
+export interface RemultServerOptions<RequestType> {
     /**Entities to use for the api */
     entities?: ClassType<any>[];
     /**Controller to use for the api */
@@ -53,21 +53,21 @@ export interface InitRequestOptions {
     liveQueryStorage: LiveQueryStorage;
     readonly remult: Remult;
 }
-export declare function createRemultServerCore<RequestType extends GenericRequest = GenericRequest>(options?: RemultServerOptions<RequestType>): RemultServer;
+export declare function createRemultServerCore<RequestType>(options: RemultServerOptions<RequestType>, serverCoreOptions: ServerCoreOptions<RequestType>): RemultServer<RequestType>;
 export declare type GenericRequestHandler = (req: GenericRequest, res: GenericResponse, next: VoidFunction) => void;
 export interface ServerHandleResponse {
     data?: any;
     statusCode: number;
 }
-export interface RemultServer {
-    getRemult(req: GenericRequest): Promise<Remult>;
+export interface RemultServer<RequestType> {
+    getRemult(req: RequestType): Promise<Remult>;
     openApiDoc(options: {
         title: string;
         version?: string;
     }): any;
     registerRouter(r: GenericRouter): void;
-    handle(req: GenericRequest, gRes?: GenericResponse): Promise<ServerHandleResponse | undefined>;
-    withRemult(req: GenericRequest, res: GenericResponse, next: VoidFunction): any;
+    handle(req: RequestType, gRes?: GenericResponse): Promise<ServerHandleResponse | undefined>;
+    withRemult(req: RequestType, res: GenericResponse, next: VoidFunction): any;
 }
 export declare type GenericRouter = {
     route(path: string): SpecificRoute;
@@ -127,4 +127,7 @@ export declare class JobsInQueueEntity extends IdEntity {
     done: boolean;
     error: boolean;
     progress: number;
+}
+export interface ServerCoreOptions<RequestType> {
+    buildGenericRequest(req: RequestType): GenericRequest;
 }
