@@ -805,7 +805,23 @@ class ExpressRequestBridgeToDataApiRequest implements DataApiRequest {
   }
 
   constructor(private r: GenericRequest) {
+    if (!this.r.query) {
+      let query: { [key: string]: undefined | string | string[] } = {};
 
+      getUrlFromReq(this.r).searchParams.forEach((val, key) => {
+        let current = query[key];
+        if (!current) {
+          query[key] = val;
+          return;
+        }
+        if (Array.isArray(current)) {
+          current.push(val);
+          return;
+        }
+        query[key] = [current, val];
+      });
+      this.r.query = query;
+    }
   }
 }
 class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
@@ -1070,27 +1086,8 @@ class RouteImplementation<RequestType> {
     const req = this.coreOptions.buildGenericRequest(origReq);
 
 
-    let theUrl: string = req.url;
-    if (theUrl.startsWith('/'))//next sends a partial url '/api/tasks' and not the full url
-      theUrl = 'http://stam' + theUrl;
-    const url = new URL(theUrl);
+    const url = getUrlFromReq(req);
     const path = url.pathname;
-    if (!req.query) {
-      let query: { [key: string]: undefined | string | string[] } = {};
-      url.searchParams.forEach((val, key) => {
-        let current = query[key];
-        if (!current) {
-          query[key] = val;
-          return;
-        }
-        if (Array.isArray(current)) {
-          current.push(val);
-          return;
-        }
-        query[key] = [current, val];
-      });
-      req.query = query;
-    }
     let lowerPath = path.toLowerCase();
     let m = this.map.get(lowerPath);
 
@@ -1147,4 +1144,12 @@ allEntities.splice(allEntities.indexOf(JobsInQueueEntity), 1);
 
 export interface ServerCoreOptions<RequestType> {
   buildGenericRequest(req: RequestType): GenericRequest
+}
+
+function getUrlFromReq(req: GenericRequest) {
+  let theUrl: string = req.url;
+  if (theUrl.startsWith('/')) //next sends a partial url '/api/tasks' and not the full url
+    theUrl = 'http://stam' + theUrl;
+  const url = new URL(theUrl);
+  return url;
 }
