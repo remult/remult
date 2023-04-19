@@ -397,7 +397,7 @@ export class RemultServerImplementation<RequestType> implements RemultServer<Req
 
   process(what: (remult: Remult, myReq: DataApiRequest, myRes: DataApiResponse, origReq: GenericRequest, origRes: GenericResponse) => Promise<void>) {
     return async (req: RequestType, origRes: GenericResponse) => {
-      let myReq = new ExpressRequestBridgeToDataApiRequest(req);
+      let myReq = new ExpressRequestBridgeToDataApiRequest(this.coreOptions.buildGenericRequest(req));
       let myRes = new ExpressResponseBridgeToDataApiResponse(origRes, req);
       await this.runWithRemult(async remult => {
         remult.liveQueryPublisher = new LiveQueryPublisher(() => remult.subscriptionServer, () => remult.liveQueryStorage, this.runWithSerializedJsonContextData)
@@ -1110,7 +1110,7 @@ class RouteImplementation<RequestType> {
           if (!req.params)
             req.params = {};
           req.params.id = path.substring(idPosition + 1);
-          h(req, res, next);
+          h(origReq, res, next);
           return;
         }
       }
