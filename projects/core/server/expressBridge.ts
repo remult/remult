@@ -435,7 +435,7 @@ export class RemultServerImplementation<RequestType> implements RemultServer<Req
             });
           }
         }
-        await what(remult, myReq, myRes, req, origRes);
+        await what(remult, myReq, myRes, genReq, origRes);
       })
     }
   };
