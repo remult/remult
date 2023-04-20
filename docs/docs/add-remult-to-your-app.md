@@ -91,6 +91,31 @@ export default remultNext({
 })
 ```
 
+### Sveltekit
+```ts
+//src/api.server.ts
+
+import { remultSveltekit } from 'remult/remult-sveltekit';
+
+export const api = remultSveltekit({
+  entities: [
+    /* entity types */
+  ]
+})
+```
+Register hook:
+
+```ts
+//src/hooks.server.ts
+
+import { sequence } from '@sveltejs/kit/hooks';
+import { api } from './api.server';
+
+export const handle = sequence(api)
+
+```
+
+
 ### Nest
 
 ```ts

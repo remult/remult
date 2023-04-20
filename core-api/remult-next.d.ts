@@ -8,5 +8,9 @@ export declare function remultNext(options?: RemultServerOptions<NextApiRequest>
     } = {
         [key: string]: any;
     }, Q extends ParsedUrlQuery = ParsedUrlQuery, D extends PreviewData = PreviewData>(getServerPropsFunction: GetServerSideProps<P, Q, D>): GetServerSideProps<P, Q, D>;
+    /** Creates a `next.js` handler with remult defined in the correct context
+     * @see
+     * https://remult.dev/tutorials/react-next/appendix-1-get-server-side-props.html#using-remult-in-a-next-js-api-handler
+     */
     handle<T>(handler: NextApiHandler<T>): NextApiHandler<T>;
 };

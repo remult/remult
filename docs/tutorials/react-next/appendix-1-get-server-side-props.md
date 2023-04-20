@@ -1,4 +1,4 @@
-# Appendix 1 - Server-side Rendering & getServerSideProps
+# Appendix 1 - Server-side Rendering, getServerSideProps & handlers
 
 Next.js allow for pre-rendering page content using Server-side Rendering (SSR).
 
@@ -41,15 +41,39 @@ export default function Home(
 
 4. In the `useEffect` method we remove the call to `fetchTasks` since these tasks are already received in the props.
 
-
 ## Applying Access Rules
+
 The `getServerSideProps` runs on the backend, and is not subject to the `apiAllowed` rules - so we'll need to do that ourselves based on the metadata of the entity
+
 ```ts{4}
-export const getServerSideProps = remultApi.getServerSideProps(async (req) => {
+export const getServerSideProps = remultApi.getServerSideProps(async req => {
   return {
     props: {
-      tasks: taskRepo.metadata.apiReadAllowed ? await fetchTasks() : [],
-    },
-  };
-});
+      tasks: taskRepo.metadata.apiReadAllowed ? await fetchTasks() : []
+    }
+  }
+})
 ```
+
+## Using remult in a next.js api handler
+
+To use `remult` in a `next.js` handler, we need to wrap the function with remult's `handle` method
+
+```ts
+// src/pages/taskCount.ts
+
+import { remult } from "remult"
+import { Task } from "../../shared/tasks"
+import api from "./[...remult]"
+
+export default api.handle(async (req, res) => {
+  const taskRepo = remult.repo(Task)
+  res.json({
+    total: await taskRepo.count(),
+    completed: await taskRepo.count({ completed: true })
+  })
+})
+```
+
+When using remult from a `next.js` api handler, you may get the error:
+`Error: remult object was requested outside of a valid context, try running it within initApi or a remult request cycle`
