@@ -15,7 +15,7 @@ export declare class DataApi<T = any> {
         findOptions: FindOptions<T>;
     }>;
     getArray(response: DataApiResponse, request: DataApiRequest, filterBody?: any): Promise<void>;
-    liveQuery(response: DataApiResponse, request: DataApiRequest, filterBody: any, serializeRequest: () => any, queryChannel: string): Promise<void>;
+    liveQuery(response: DataApiResponse, request: DataApiRequest, filterBody: any, serializeRequest: () => Promise<any>, queryChannel: string): Promise<void>;
     private buildWhere;
     private doOnId;
     put(response: DataApiResponse, id: any, body: any): Promise<void>;

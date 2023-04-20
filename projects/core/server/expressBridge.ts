@@ -166,6 +166,7 @@ export interface RemultServer<RequestType> {
   openApiDoc(options: { title: string, version?: string }): any;
   registerRouter(r: GenericRouter): void;
   handle(req: RequestType, gRes?: GenericResponse): Promise<ServerHandleResponse | undefined>;
+  //TODO - consider removing res and making it a promise, where next can also be a promise.
   withRemult(req: RequestType, res: GenericResponse, next: VoidFunction);
 
 }

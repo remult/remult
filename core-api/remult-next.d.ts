@@ -8,4 +8,5 @@ export declare function remultNext(options?: RemultServerOptions<NextApiRequest>
     } = {
         [key: string]: any;
     }, Q extends ParsedUrlQuery = ParsedUrlQuery, D extends PreviewData = PreviewData>(getServerPropsFunction: GetServerSideProps<P, Q, D>): GetServerSideProps<P, Q, D>;
+    handle<T>(handler: NextApiHandler<T>): NextApiHandler<T>;
 };

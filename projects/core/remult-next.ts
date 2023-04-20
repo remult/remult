@@ -18,7 +18,8 @@ export function remultNext(
       D extends PreviewData = PreviewData
     >(
       getServerPropsFunction: GetServerSideProps<P, Q, D>
-    ): GetServerSideProps<P, Q, D>
+    ): GetServerSideProps<P, Q, D>,
+    handle<T>(handler: NextApiHandler<T>): NextApiHandler<T>,
   } {
   let result = createRemultServer(options, {
     buildGenericRequest: req => req
@@ -43,6 +44,16 @@ export function remultNext(
               } catch (e) {
                 err(e)
               }
+            })
+          })
+        }
+      },
+      handle: (handler: NextApiHandler) => {
+        return async (req, res) => {
+          await new Promise<void>(async (resolve) => {
+            result.withRemult(req, res, async () => {
+              await handler(req, res);
+              resolve()
             })
           })
         }
