@@ -45,14 +45,16 @@ export class HttpProviderBridgeToRestDataProviderHttpProvider implements RestDat
     }
 }
 export async function retry<T>(what: () => Promise<T>): Promise<T> {
+    let i = 0;
     while (true) {
         try {
             return await what();
         } catch (err) {
-            if (err.message?.startsWith("Error occurred while trying to proxy") ||
+            if ((err.message?.startsWith("Error occurred while trying to proxy") ||
                 err.message?.startsWith("Error occured while trying to proxy") ||
                 err.message?.includes("http proxy error") ||
-                err.message?.startsWith("Gateway Timeout")) {
+                err.message?.startsWith("Gateway Timeout") ||
+                err.status == 500) && i++ < 10) {
                 await new Promise((res, req) => {
                     setTimeout(() => {
                         res({})

@@ -60,7 +60,7 @@ export const getServerSideProps = remultApi.getServerSideProps(async req => {
 To use `remult` in a `next.js` handler, we need to wrap the function with remult's `handle` method
 
 ```ts
-// src/pages/taskCount.ts
+// src/pages/api/taskCount.ts
 
 import { remult } from "remult"
 import { Task } from "../../shared/tasks"
@@ -75,5 +75,3 @@ export default api.handle(async (req, res) => {
 })
 ```
 
-When using remult from a `next.js` api handler, you may get the error:
-`Error: remult object was requested outside of a valid context, try running it within initApi or a remult request cycle`

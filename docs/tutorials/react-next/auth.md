@@ -88,7 +88,7 @@ Let's set-up `NextAuth.js` to authenticate users to our app.
      { id: "1", name: "Jane" },
      { id: "2", name: "Steve" }
    ]
-   export function getUserById(id: string | undefined) {
+   export function findUserById(id: string | undefined) {
      return validUsers.find(user => user.id === id)
    }
 
@@ -107,7 +107,7 @@ Let's set-up `NextAuth.js` to authenticate users to our app.
      callbacks: {
        session: ({ session, token }) => ({
          ...session,
-         user: getUserById(token?.sub)
+         user: findUserById(token?.sub)
        })
      }
    })
@@ -122,7 +122,7 @@ We've configured the `session` `callback` to include the user info as part of th
 Add the highlighted code to the `_app.tsx` Next.js page:
 
 ```tsx{5,9,11}
-// src/pages/\app.tsx
+// src/pages/_app.tsx
 
 import "@/styles/globals.css";
 import type { AppProps } from "next/app";
