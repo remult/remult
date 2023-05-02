@@ -61,7 +61,7 @@ The [@Fields.string](../../docs/ref_field.md) decorator tells Remult the `title`
 
 Now that the `Task` entity is defined, we can start using the REST API to query and add a tasks.
 
-1. Open a browser with the url: <a href="http://localhost:3002/api/tasks" target="_blank" rel="noreferrer">http://localhost:3002/api/tasks</a>, and you'll see that you get an empty array.
+1. Open a browser with the url: [http://localhost:3002/api/tasks](http://localhost:3002/api/tasks), and you'll see that you get an empty array.
 
 2. Use `curl` to `POST` a new task - *Clean car*.
 
@@ -69,7 +69,7 @@ Now that the `Task` entity is defined, we can start using the REST API to query 
 curl http://localhost:3002/api/tasks -d "{\"title\": \"Clean car\"}" -H "Content-Type: application/json"
 ```
 
-3. Refresh the browser for the url: <a href="http://localhost:3002/api/tasks" target="_blank" rel="noreferrer">http://localhost:3002/api/tasks</a> and see that the array now contains one item.
+3. Refresh the browser for the url: [http://localhost:3002/api/tasks](http://localhost:3002/api/tasks) and see that the array now contains one item.
 
 4. Use `curl` to `POST` a few more tasks:
 
