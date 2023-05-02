@@ -5,6 +5,7 @@ export default defineConfig({
   title: "Remult",
   description: "Build Full-stack, End-to-end Type-safe CRUD Apps without the Boilerplate",
   lastUpdated: true,
+  ignoreDeadLinks: 'localhostLinks',
 
   themeConfig: {
     logo: '/logo.png',
