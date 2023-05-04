@@ -153,7 +153,7 @@ export function createRemultServerCore<RequestType>(
   return bridge;
 
 }
-export type GenericRequestHandler = (req: GenericRequest, res: GenericResponse, next: VoidFunction) => void;
+export type GenericRequestHandler = (req: GenericRequestInfo, res: GenericResponse, next: VoidFunction) => void;
 
 
 
@@ -167,7 +167,7 @@ export interface RemultServer<RequestType> {
   withRemult(req: RequestType, res: GenericResponse, next: VoidFunction);
   openApiDoc(options: { title: string, version?: string }): any;
 
-  
+
   registerRouter(r: GenericRouter): void;
   handle(req: RequestType, gRes?: GenericResponse): Promise<ServerHandleResponse | undefined>;
 
@@ -181,10 +181,9 @@ export type SpecificRoute = {
   post(handler: GenericRequestHandler): SpecificRoute,
   delete(handler: GenericRequestHandler): SpecificRoute
 }
-export interface GenericRequest {
+export interface GenericRequestInfo {
   url?: string; //optional for next
   method?: any;
-  body?: any;
   query?: any;
   params?: any;
 }
@@ -320,19 +319,20 @@ export class RemultServerImplementation<RequestType> implements RemultServer<Req
           })
         );
         r.route(streamPath + '/subscribe').post(
-          this.process(async (remult, req, res, origReq, origRes: import('express').Response) => {
-            (remult.subscriptionServer as SseSubscriptionServer).subscribeToChannel(origReq.body, res, remult);
+          this.process(async (remult, req, res, reqInfo, origRes: import('express').Response, origReq: RequestType) => {
+            const body =
+              (remult.subscriptionServer as SseSubscriptionServer).subscribeToChannel(await this.coreOptions.getRequestBody(origReq), res, remult);
           })
         );
         r.route(streamPath + '/unsubscribe').post(
-          this.process(async (remult, req, res, origReq, origRes: import('express').Response) => {
-            (remult.subscriptionServer as SseSubscriptionServer).subscribeToChannel(origReq.body, res, remult, true);
+          this.process(async (remult, req, res, reqInfo, origRes: import('express').Response, origReq: RequestType) => {
+            (remult.subscriptionServer as SseSubscriptionServer).subscribeToChannel(await this.coreOptions.getRequestBody(origReq), res, remult, true);
           })
         );
       }
       r.route(this.options.rootPath + '/' + liveQueryKeepAliveRoute).post(
-        this.process(async (remult, req, res, origReq, origRes: import('express').Response) => {
-          res.success(await remult.liveQueryStorage.keepAliveAndReturnUnknownQueryIds(origReq.body))
+        this.process(async (remult, req, res, reqInfo, origRes: import('express').Response, origReq: RequestType) => {
+          res.success(await remult.liveQueryStorage.keepAliveAndReturnUnknownQueryIds(await this.coreOptions.getRequestBody(origReq)))
         })
       )
     }
@@ -368,10 +368,10 @@ export class RemultServerImplementation<RequestType> implements RemultServer<Req
     r.route(myRoute)
       .get(this.process((c, req, res, orig) =>
         dataApiFactory(c).httpGet(res, req, () => this.serializeContext(c))
-      )).put(this.process(async (c, req, res, orig) => dataApiFactory(c).put(res, '', orig.body)))
+      )).put(this.process(async (c, req, res, _, __, orig) => dataApiFactory(c).put(res, '', await this.coreOptions.getRequestBody(orig))))
       .delete(this.process(async (c, req, res, orig) => dataApiFactory(c).delete(res, '')))
-      .post(this.process(async (c, req, res, orig) =>
-        dataApiFactory(c).httpPost(res, req, orig.body, () => this.serializeContext(c))
+      .post(this.process(async (c, req, res, _, __, orig) =>
+        dataApiFactory(c).httpPost(res, req, await this.coreOptions.getRequestBody(orig), () => this.serializeContext(c))
       ));
     r.route(myRoute + '/:id')
       //@ts-ignore
@@ -398,9 +398,9 @@ export class RemultServerImplementation<RequestType> implements RemultServer<Req
   }
 
 
-  process(what: (remult: Remult, myReq: DataApiRequest, myRes: DataApiResponse, genReq: GenericRequest, origRes: GenericResponse) => Promise<void>) {
+  process(what: (remult: Remult, myReq: DataApiRequest, myRes: DataApiResponse, genReq: GenericRequestInfo, origRes: GenericResponse, origReq: RequestType) => Promise<void>) {
     return async (req: RequestType, origRes: GenericResponse) => {
-      const genReq = this.coreOptions.buildGenericRequest(req);
+      const genReq = this.coreOptions.buildGenericRequestInfo(req);
       if (!genReq.query) {
         genReq.query = req["_tempQuery"];
       }
@@ -438,7 +438,7 @@ export class RemultServerImplementation<RequestType> implements RemultServer<Req
             });
           }
         }
-        await what(remult, myReq, myRes, genReq, origRes);
+        await what(remult, myReq, myRes, genReq, origRes, req);
       })
     }
   };
@@ -469,16 +469,16 @@ export class RemultServerImplementation<RequestType> implements RemultServer<Req
         this.queue.mapQueuedAction(myUrl, what);
       }
       r.route(myUrl).post(this.process(
-        async (remult, req, res, orig) => {
+        async (remult, req, res, _, __, orig) => {
 
           if (queue) {
             let r: jobWasQueuedResult = {
-              queuedJobId: await this.queue.submitJob(myUrl, remult, orig.body)
+              queuedJobId: await this.queue.submitJob(myUrl, remult, await this.coreOptions.getRequestBody(orig))
             };
 
             res.success(r);
           } else
-            return what(orig.body, remult, res)
+            return what(await this.coreOptions.getRequestBody(orig), remult, res)
         }
       ));
     });
@@ -812,7 +812,7 @@ class ExpressRequestBridgeToDataApiRequest implements DataApiRequest {
     return this.r.query[key];
   }
 
-  constructor(private r: GenericRequest) {
+  constructor(private r: GenericRequestInfo) {
 
   }
 }
@@ -823,7 +823,7 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
   setStatus(status: number) {
     return this.r.status(status);
   }
-  constructor(private r: GenericResponse, private req: GenericRequest) {
+  constructor(private r: GenericResponse, private req: GenericRequestInfo) {
 
   }
   progress(progress: number): void {
@@ -1075,7 +1075,7 @@ class RouteImplementation<RequestType> {
 
   }
   middleware(origReq: RequestType, res: GenericResponse, next: VoidFunction) {
-    const req = this.coreOptions.buildGenericRequest(origReq);
+    const req = this.coreOptions.buildGenericRequestInfo(origReq);
 
 
     let theUrl: string = req.url;
@@ -1157,5 +1157,6 @@ export class JobsInQueueEntity extends IdEntity {
 allEntities.splice(allEntities.indexOf(JobsInQueueEntity), 1);
 
 export interface ServerCoreOptions<RequestType> {
-  buildGenericRequest(req: RequestType): GenericRequest
+  buildGenericRequestInfo(req: RequestType): GenericRequestInfo,
+  getRequestBody(req: RequestType): Promise<any>
 }

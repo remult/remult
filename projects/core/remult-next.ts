@@ -26,7 +26,8 @@ export function remultNext(
     handle<T>(handler: NextApiHandler<T>): NextApiHandler<T>,
   } {
   let result = createRemultServer(options, {
-    buildGenericRequest: req => req
+    buildGenericRequestInfo: req => req,
+    getRequestBody: async req => req.body
   })
   return Object.assign(
     (req, res) => result.handle(req, res).then(() => { }),

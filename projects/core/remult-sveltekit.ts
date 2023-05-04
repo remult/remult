@@ -2,8 +2,8 @@ import type { RequestEvent, Handle } from '@sveltejs/kit';
 import {
   createRemultServer,
   RemultServer,
-   GenericResponse,
-   RemultServerOptions
+  GenericResponse,
+  RemultServerOptions
 } from './server';
 import { ResponseRequiredForSSE } from './SseSubscriptionServer';
 
@@ -12,28 +12,21 @@ export function remultSveltekit(
   options?: RemultServerOptions<RequestEvent>
 ): RemultServer<RequestEvent> & Handle {
   let result = createRemultServer<RequestEvent>(options, {
-    buildGenericRequest: event =>
+    buildGenericRequestInfo: event =>
     ({
       url: event.request.url,
       method: event.request.method,
-      body: event.locals["_tempJson"],
       on: (e: 'close', do1: VoidFunction) => {
         if (e === 'close') {
           event.locals["_tempOnClose"] = do1;
         }
       }
-    })
+    }), getRequestBody: event => event.request.json()
   });
   const handler: Handle = async ({ event, resolve }) => {
     if (event.url.pathname.startsWith(options.rootPath)) {
-      let json = {};
-      try {
-        if (event.request.method == 'POST' || event.request.method == 'PUT') {
-          json = await event.request.json();
-        }
-      } catch (error) {
-        console.log(error);
-      }
+
+
       let sseResponse: Response | undefined = undefined;
       event.locals["_tempOnClose"] = () => { };
 
@@ -69,9 +62,6 @@ export function remultSveltekit(
           }
         }
       };
-      event.locals["_tempJson"] = json;
-
-
 
       const responseFromRemultHandler = await result.handle(event, response);
       if (sseResponse !== undefined) {

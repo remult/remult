@@ -19,13 +19,13 @@ remult.apiClient.url = 'http://localhost:3003/api';
 let path = remult.apiClient.url + '/tasks';
 const environments: [string, number][] = [
     //["next", 3000],
-    // ["nest", 3001],
+    //["nest", 3001],
     //[servers.koa, 3002],
     //[servers.fastify, 3003],
     //[servers.express, 3004],
     //[servers.mw, 3005],
     //[servers.mwc, 3007],
-    //[servers.fresh, 8000]
+    [servers.fresh, 8000]
     // ["optine", 3006],
 ]
 
@@ -49,7 +49,7 @@ test("works", async () => {
     expect(tasks.length).toBe(1);
     await repo.save({ ...tasks[0], completed: false });
     expect(await repo.count({ completed: true })).toBe(0);
-});
+}); 
 test("test multiple items", async () => {
     const repo = await create3Tasks();
     expect(await repo.count({
@@ -164,5 +164,4 @@ async function create3Tasks() {
     expect(await taskRepo.count()).toBe(3);
     return taskRepo;
 }
-
 

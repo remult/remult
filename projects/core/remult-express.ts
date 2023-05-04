@@ -24,7 +24,8 @@ export function remultExpress(options?:
         app.use(express.urlencoded({ extended: true, limit: options.bodySizeLimit }));
     }
     const server = createRemultServer<express.Request>(options, {
-        buildGenericRequest: req => req
+        buildGenericRequestInfo: req => req,
+        getRequestBody: async req => req.body
     }) as RemultServerImplementation<express.Request>;
     server.registerRouter(app);
 

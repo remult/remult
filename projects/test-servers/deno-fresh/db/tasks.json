@@ -1,17 +1,1 @@
-[
-  {
-    "id": "dcc9b0b8-9638-4274-889b-93466a456269",
-    "title": "a",
-    "completed": false
-  },
-  {
-    "id": "d0fa9f35-c765-47b4-9f35-5c5d4d04d2fc",
-    "title": "b",
-    "completed": true
-  },
-  {
-    "id": "77882f01-8653-4185-8207-4453b985453d",
-    "title": "c",
-    "completed": false
-  }
-]
+[]

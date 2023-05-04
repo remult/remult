@@ -1,27 +1,16 @@
 import { } from "./server/core";
-import { RemultServerOptions, RemultServer, createRemultServerCore, GenericRequest } from "./server/expressBridge";
+import { RemultServerOptions, RemultServer, createRemultServerCore, GenericRequestInfo } from "./server/expressBridge";
 import { Remult } from "./src/context";
 
 export function remultFresh(options: RemultServerOptions<FreshRequest>, response: FreshResponse): RemultFresh {
     const server = createRemultServerCore<FreshRequest>(options, {
-        buildGenericRequest: r => r
+        buildGenericRequestInfo: r => r,
+        getRequestBody: req => req.json()
     });
     return {
         getRemult: r => server.getRemult(r),
         openApiDoc: x => server.openApiDoc(x),
         handle: async (req: FreshRequest, ctx: FreshContext) => {
-            const theReq = {
-                method: req.method,
-                url: req.url,
-                body: undefined
-            };
-
-            switch (req.method.toLocaleLowerCase()) {
-                case "put":
-                case "post":
-                    theReq.body = await req.json();
-                    break;
-            }
             let init: ResponseInit = {};
             const res = await server.handle(req);
             if (res) {

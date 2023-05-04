@@ -35,7 +35,8 @@ export function remultFastify(options: RemultServerOptions<FastifyRequest>): Fas
         return response;
     }
     const api = createRemultServer(options, {
-        buildGenericRequest: req => req
+        buildGenericRequestInfo: req => req,
+        getRequestBody:async req=>req.body
     });
     const pluginFunction: FastifyPluginCallback = async (instance: FastifyInstance, op) => {
         //@ts-ignore

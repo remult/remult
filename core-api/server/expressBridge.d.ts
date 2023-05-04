@@ -54,20 +54,20 @@ export interface InitRequestOptions {
     readonly remult: Remult;
 }
 export declare function createRemultServerCore<RequestType>(options: RemultServerOptions<RequestType>, serverCoreOptions: ServerCoreOptions<RequestType>): RemultServer<RequestType>;
-export declare type GenericRequestHandler = (req: GenericRequest, res: GenericResponse, next: VoidFunction) => void;
+export declare type GenericRequestHandler = (req: GenericRequestInfo, res: GenericResponse, next: VoidFunction) => void;
 export interface ServerHandleResponse {
     data?: any;
     statusCode: number;
 }
 export interface RemultServer<RequestType> {
     getRemult(req: RequestType): Promise<Remult>;
+    withRemult(req: RequestType, res: GenericResponse, next: VoidFunction): any;
     openApiDoc(options: {
         title: string;
         version?: string;
     }): any;
     registerRouter(r: GenericRouter): void;
     handle(req: RequestType, gRes?: GenericResponse): Promise<ServerHandleResponse | undefined>;
-    withRemult(req: RequestType, res: GenericResponse, next: VoidFunction): any;
 }
 export declare type GenericRouter = {
     route(path: string): SpecificRoute;
@@ -78,10 +78,9 @@ export declare type SpecificRoute = {
     post(handler: GenericRequestHandler): SpecificRoute;
     delete(handler: GenericRequestHandler): SpecificRoute;
 };
-export interface GenericRequest {
+export interface GenericRequestInfo {
     url?: string;
     method?: any;
-    body?: any;
     query?: any;
     params?: any;
 }
@@ -129,5 +128,6 @@ export declare class JobsInQueueEntity extends IdEntity {
     progress: number;
 }
 export interface ServerCoreOptions<RequestType> {
-    buildGenericRequest(req: RequestType): GenericRequest;
+    buildGenericRequestInfo(req: RequestType): GenericRequestInfo;
+    getRequestBody(req: RequestType): Promise<any>;
 }
