@@ -377,7 +377,7 @@ export class RemultServerImplementation<RequestType> implements RemultServer<Req
       //@ts-ignore
       .get(this.process(async (c, req, res, orig) => dataApiFactory(c).get(res, orig.params.id)))
       //@ts-ignore
-      .put(this.process(async (c, req, res, orig) => dataApiFactory(c).put(res, orig.params.id, orig.body)))
+      .put(this.process(async (c, req, res, reqInfo,_,orig) => dataApiFactory(c).put(res, reqInfo.params.id, await this.coreOptions.getRequestBody(orig)))) 
       //@ts-ignore
       .delete(this.process(async (c, req, res, orig) => dataApiFactory(c).delete(res, orig.params.id)));
   }

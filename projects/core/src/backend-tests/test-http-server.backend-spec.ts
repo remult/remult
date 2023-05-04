@@ -21,9 +21,9 @@ const environments: [string, number][] = [
     //["next", 3000],
     //["nest", 3001],
     //[servers.koa, 3002],
-    //[servers.fastify, 3003],
-    //[servers.express, 3004],
-    //[servers.mw, 3005],
+    [servers.fastify, 3003],
+    [servers.express, 3004],
+    [servers.mw, 3005],
     //[servers.mwc, 3007],
     [servers.fresh, 8000]
     // ["optine", 3006],
