@@ -65,7 +65,7 @@ console.table(await remult.repo(Order).find({
 }))
 ```
 
-We can refactor this to a `rawFilter` that will be easier to use and will run on the backend
+We can refactor this to a custom filter that will be easier to use and will run on the backend
 
 ```ts
 @Entity("orders", { allowApiCrud: true })
@@ -87,7 +87,7 @@ console.table(await remult.repo(Order).find({
 ```
 
 #### Using Sql Capabilities
-We can improve on the rawFilter by using the database's in statement capabilities:
+We can improve on the custom filter by using the database's in statement capabilities:
 ```ts
 @Entity("orders", { allowApiCrud: true })
 export class Order {
@@ -97,7 +97,7 @@ export class Order {
       return SqlDatabase.rawFilter(
         whereFragment => {
           whereFragment.sql =
-            `select customer in 
+            `customer in 
             (select id 
                from customers 
               where city = ${whereFragment.addParameterAndReturnSqlToken(city)})`

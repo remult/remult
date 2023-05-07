@@ -11,21 +11,25 @@ const servers = {
     express: "express",
     mw: "mw",
     fresh: "fresh",
-    mwc: "mwc"
+    mwc: "mwc",
+    svelteKit:'svelteKit',
+    nextApp:"nextApp"
 }
 
 
 remult.apiClient.url = 'http://localhost:3003/api';
 let path = remult.apiClient.url + '/tasks';
 const environments: [string, number][] = [
-    //["next", 3000],
-    //["nest", 3001],
-    //[servers.koa, 3002],
-    [servers.fastify, 3003],
-    [servers.express, 3004],
-    [servers.mw, 3005],
-    //[servers.mwc, 3007],
-    [servers.fresh, 8000]
+    // ["next", 3000],
+    // [servers.nextApp,3010],
+    // //["nest", 3001],
+    // [servers.koa, 3002],
+    // [servers.fastify, 3003],
+    // [servers.express, 3004],
+    // [servers.mw, 3005],
+    // [servers.mwc, 3007],
+    // [servers.fresh, 8000],
+    // [servers.svelteKit, 5173],
     // ["optine", 3006],
 ]
 
@@ -128,7 +132,7 @@ class FreshResponseTest {
         return new this(data, init);
     }
 }
-
+ 
 it("test fresh", async () => {
 
     const api = remultFresh({
@@ -164,4 +168,3 @@ async function create3Tasks() {
     expect(await taskRepo.count()).toBe(3);
     return taskRepo;
 }
-

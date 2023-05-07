@@ -14,3 +14,10 @@ export declare function remultNext(options?: RemultServerOptions<NextApiRequest>
      */
     handle<T>(handler: NextApiHandler<T>): NextApiHandler<T>;
 };
+export declare function remultNextApp(options?: RemultServerOptions<Request>): RemultServer<Request> & {
+    GET: (req: Request) => Promise<Response>;
+    PUT: (req: Request) => Promise<Response>;
+    POST: (req: Request) => Promise<Response>;
+    DELETE: (req: Request) => Promise<Response>;
+    withRemult<T>(what: () => Promise<T>): Promise<T>;
+};

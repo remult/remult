@@ -377,7 +377,7 @@ export class RemultServerImplementation<RequestType> implements RemultServer<Req
       //@ts-ignore
       .get(this.process(async (c, req, res, orig) => dataApiFactory(c).get(res, orig.params.id)))
       //@ts-ignore
-      .put(this.process(async (c, req, res, reqInfo,_,orig) => dataApiFactory(c).put(res, reqInfo.params.id, await this.coreOptions.getRequestBody(orig)))) 
+      .put(this.process(async (c, req, res, reqInfo, _, orig) => dataApiFactory(c).put(res, reqInfo.params.id, await this.coreOptions.getRequestBody(orig))))
       //@ts-ignore
       .delete(this.process(async (c, req, res, orig) => dataApiFactory(c).delete(res, orig.params.id)));
   }
@@ -409,10 +409,6 @@ export class RemultServerImplementation<RequestType> implements RemultServer<Req
       let myReq = new ExpressRequestBridgeToDataApiRequest(genReq);
       let myRes = new ExpressResponseBridgeToDataApiResponse(origRes, req);
       await this.runWithRemult(async remult => {
-        remult.liveQueryPublisher = new LiveQueryPublisher(() => remult.subscriptionServer, () => remult.liveQueryStorage, this.runWithSerializedJsonContextData)
-        remult.dataProvider = (await this.dataProvider);
-        remult.subscriptionServer = this.subscriptionServer;
-        remult.liveQueryStorage = this.liveQueryStorage;
         if (req) {
           let user;
           if (this.options.getUser)

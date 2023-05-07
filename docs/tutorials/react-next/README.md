@@ -50,7 +50,16 @@ At this point, our starter project is up and running. We are now ready to move t
 ```sh
 npx -y create-next-app@latest remult-nextjs-todo --typescript --src-dir
 ```
-Answer all the questions (default answers are fine). 
+Answer the questions as follows:
+```sh
+√ What is your project named? ... next-app-server
+√ Would you like to use TypeScript with this project? ... Yes
+√ Would you like to use ESLint with this project? ... No 
+√ Would you like to use Tailwind CSS with this project? ... No 
+√ Would you like to use `src/` directory with this project? ...  Yes
+√ Use App Router (recommended)? ... No 
+√ Would you like to customize the default import alias? ... No / Yes
+```
 
 2. Go to the created folder.
 
