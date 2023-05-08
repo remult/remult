@@ -5,14 +5,18 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 1. Download the source:
 
    ```bash
-   npx degit remult/remult/examples/nextjs-todo
+   npx degit remult/remult/examples/nextjs-todo nextjs-todo
    cd nextjs-todo
    npm i
    ```
 
-2. Create `.env.local` file
+2. Create `.env.local` file with the following content
    ```
    NEXTAUTH_SECRET=something-secret
+   ```
+   or run
+   ```bash
+   echo NEXTAUTH_SECRET=something-secret > .env.local
    ```
 3. Run development server
    ```bash
