@@ -56,7 +56,7 @@ export interface RemultServerOptions<RequestType> {
   /** Used to store the context relevant info for re running a live query */
   contextSerializer?: {
     serialize(remult: Remult): Promise<any>
-    deserialize(json: any, remult: Remult): Promise<void>
+    deserialize(json: any, options: InitRequestOptions): Promise<void>
   }
 
   /** Storage to use for backend methods that use queue */
@@ -247,7 +247,15 @@ export class RemultServerImplementation<RequestType> implements RemultServer<Req
         await this.runWithRemult(async remult => {
           remult.user = jsonContextData.user;
           if (this.options.contextSerializer) {
-            await this.options.contextSerializer.deserialize(jsonContextData, remult);
+            await this.options.contextSerializer.deserialize(jsonContextData, {
+              remult,
+              get liveQueryStorage() {
+                return remult.liveQueryStorage
+              },
+              set liveQueryStorage(value: LiveQueryStorage) {
+                remult.liveQueryStorage = value;
+              }
+            });
           }
           await what(remult.repo(e));
         })
