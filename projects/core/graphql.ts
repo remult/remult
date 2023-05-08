@@ -94,6 +94,7 @@ export function remultGraphql(api: RemultServer<any>) {
       root[key] = async ({ options, filter }, req, a) => {
 
         return new Promise(async (res, error) => {
+          //TODO - consider this with remult usage
           api.withRemult(req, undefined!, async () => {
             let remult = await api.getRemult(req);
             let repo = remult.repo(e);
