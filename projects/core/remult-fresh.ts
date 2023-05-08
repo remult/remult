@@ -1,5 +1,5 @@
 import { } from "./server/core";
-import { RemultServerOptions, RemultServer, createRemultServerCore, GenericRequestInfo } from "./server/expressBridge";
+import { RemultServerOptions, RemultServer, createRemultServerCore, GenericRequestInfo, RemultServerCore } from "./server/expressBridge";
 import { Remult } from "./src/context";
 
 export function remultFresh(options: RemultServerOptions<FreshRequest>, response: FreshResponse): RemultFresh {
@@ -28,9 +28,7 @@ export function remultFresh(options: RemultServerOptions<FreshRequest>, response
     }
 };
 
-export interface RemultFresh {
-    getRemult(req: FreshRequest): Promise<Remult>;
-    openApiDoc(options: { title: string }): any;
+export interface RemultFresh extends RemultServerCore<FreshRequest> {
     handle(req: FreshRequest, ctx: FreshContext): Promise<any>
 }
 export interface FreshRequest {

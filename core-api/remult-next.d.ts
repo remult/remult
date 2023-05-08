@@ -1,8 +1,9 @@
 /// <reference types="node" />
 import type { GetServerSideProps, NextApiRequest, PreviewData, NextApiHandler } from "next";
 import type { ParsedUrlQuery } from "querystring";
-import { RemultServer, RemultServerOptions } from "./server";
-export declare function remultNext(options?: RemultServerOptions<NextApiRequest>): RemultServer<NextApiRequest> & NextApiHandler & {
+import { RemultServerCore, RemultServerOptions } from "./server";
+export declare function remultNext(options?: RemultServerOptions<NextApiRequest>): RemultNextServer;
+export declare type RemultNextServer = RemultServerCore<NextApiRequest> & NextApiHandler & {
     getServerSideProps<P extends {
         [key: string]: any;
     } = {
@@ -14,7 +15,8 @@ export declare function remultNext(options?: RemultServerOptions<NextApiRequest>
      */
     handle<T>(handler: NextApiHandler<T>): NextApiHandler<T>;
 };
-export declare function remultNextApp(options?: RemultServerOptions<Request>): RemultServer<Request> & {
+export declare function remultNextApp(options?: RemultServerOptions<Request>): RemultNextAppServer;
+export declare type RemultNextAppServer = RemultServerCore<Request> & {
     GET: (req: Request) => Promise<Response>;
     PUT: (req: Request) => Promise<Response>;
     POST: (req: Request) => Promise<Response>;

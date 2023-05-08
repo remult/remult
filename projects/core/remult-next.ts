@@ -6,26 +6,12 @@ import type {
   NextApiHandler
 } from "next"
 import type { ParsedUrlQuery } from "querystring"
-import { createRemultServer, GenericResponse, RemultServer, RemultServerOptions } from "./server"
+import { createRemultServer, GenericResponse, RemultServer, RemultServerCore, RemultServerOptions } from "./server"
 import { ResponseRequiredForSSE } from "./SseSubscriptionServer"
 
 export function remultNext(
   options?: RemultServerOptions<NextApiRequest>
-): RemultServer<NextApiRequest> &
-  NextApiHandler & {
-    getServerSideProps<
-      P extends { [key: string]: any } = { [key: string]: any },
-      Q extends ParsedUrlQuery = ParsedUrlQuery,
-      D extends PreviewData = PreviewData
-    >(
-      getServerPropsFunction: GetServerSideProps<P, Q, D>
-    ): GetServerSideProps<P, Q, D>,
-    /** Creates a `next.js` handler with remult defined in the correct context
-     * @see
-     * https://remult.dev/tutorials/react-next/appendix-1-get-server-side-props.html#using-remult-in-a-next-js-api-handler
-     */
-    handle<T>(handler: NextApiHandler<T>): NextApiHandler<T>,
-  } {
+): RemultNextServer {
   let result = createRemultServer(options, {
     buildGenericRequestInfo: req => req,
     getRequestBody: async req => req.body
@@ -33,12 +19,9 @@ export function remultNext(
   return Object.assign(
     (req, res) => result.handle(req, res).then(() => { }),
     result, {
-      getRemult: (...args) => result.getRemult(...args),
-      handle: (...args) => result.handle(...args),
-      openApiDoc: (...args) => result.openApiDoc(...args),
-      registerRouter: (...args) => result.registerRouter(...args),
-      withRemult: (...args) => result.withRemult(...args),
-    } as RemultServer<NextApiRequest>,
+    getRemult: (req) => result.getRemult(req),
+    openApiDoc: (arg) => result.openApiDoc(arg),
+  },
     {
       getServerSideProps: (getServerPropsFunction) => {
         return (context) => {
@@ -68,6 +51,21 @@ export function remultNext(
   )
 }
 
+export type RemultNextServer = RemultServerCore<NextApiRequest> &
+  NextApiHandler & {
+    getServerSideProps<
+      P extends { [key: string]: any } = { [key: string]: any },
+      Q extends ParsedUrlQuery = ParsedUrlQuery,
+      D extends PreviewData = PreviewData
+    >(
+      getServerPropsFunction: GetServerSideProps<P, Q, D>
+    ): GetServerSideProps<P, Q, D>,
+    /** Creates a `next.js` handler with remult defined in the correct context
+     * @see
+     * https://remult.dev/tutorials/react-next/appendix-1-get-server-side-props.html#using-remult-in-a-next-js-api-handler
+     */
+    handle<T>(handler: NextApiHandler<T>): NextApiHandler<T>,
+  }
 
 
 
@@ -75,13 +73,7 @@ const encoder = new TextEncoder();
 
 export function remultNextApp(
   options?: RemultServerOptions<Request>
-): RemultServer<Request> & {
-  GET: (req: Request) => Promise<Response>;
-  PUT: (req: Request) => Promise<Response>;
-  POST: (req: Request) => Promise<Response>;
-  DELETE: (req: Request) => Promise<Response>;
-  withRemult<T>(what: () => Promise<T>): Promise<T>;
-} {
+): RemultNextAppServer {
   let result = createRemultServer<Request>(options!, {
     getRequestBody: req => req.json(),
     buildGenericRequestInfo: (req) => ({
@@ -145,25 +137,27 @@ export function remultNextApp(
       }
     }
   };
-  //@ts-ignore
-  return Object.assign({}, {
+  return {
     getRemult: (req) => result.getRemult(req),
     openApiDoc: (options: { title: string }) => result.openApiDoc(options),
-    registerRouter: (x) => result.registerRouter(x),
-    
-    handler: handler,
     GET: handler,
     POST: handler,
     PUT: handler,
     DELETE: handler,
-    withRemult: (what: ()=>Promise<any>) => {
+    withRemult: (what: () => Promise<any>) => {
       return new Promise<any>((resolve) => {
         return result.withRemult({} as any, undefined!, () => {
           what().then(resolve)
         })
       })
     }
-
-  } as RemultServer<Request>);
+  };
 }
 
+export type RemultNextAppServer = RemultServerCore<Request> & {
+  GET: (req: Request) => Promise<Response>;
+  PUT: (req: Request) => Promise<Response>;
+  POST: (req: Request) => Promise<Response>;
+  DELETE: (req: Request) => Promise<Response>;
+  withRemult<T>(what: () => Promise<T>): Promise<T>;
+}

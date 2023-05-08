@@ -59,15 +59,17 @@ export interface ServerHandleResponse {
     data?: any;
     statusCode: number;
 }
-export interface RemultServer<RequestType> {
-    getRemult(req: RequestType): Promise<Remult>;
+export interface RemultServer<RequestType> extends RemultServerCore<RequestType> {
     withRemult(req: RequestType, res: GenericResponse, next: VoidFunction): any;
+    registerRouter(r: GenericRouter): void;
+    handle(req: RequestType, gRes?: GenericResponse): Promise<ServerHandleResponse | undefined>;
+}
+export interface RemultServerCore<RequestType> {
+    getRemult(req: RequestType): Promise<Remult>;
     openApiDoc(options: {
         title: string;
         version?: string;
     }): any;
-    registerRouter(r: GenericRouter): void;
-    handle(req: RequestType, gRes?: GenericResponse): Promise<ServerHandleResponse | undefined>;
 }
 export declare type GenericRouter = {
     route(path: string): SpecificRoute;

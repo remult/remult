@@ -161,16 +161,15 @@ export interface ServerHandleResponse {
   data?: any;
   statusCode: number;
 }
-export interface RemultServer<RequestType> {
-  getRemult(req: RequestType): Promise<Remult>;
-  //TODO - consider removing res and making it a promise, where next can also be a promise.
+export interface RemultServer<RequestType> extends RemultServerCore<RequestType> {
   withRemult(req: RequestType, res: GenericResponse, next: VoidFunction);
-  openApiDoc(options: { title: string, version?: string }): any;
-
-
   registerRouter(r: GenericRouter): void;
   handle(req: RequestType, gRes?: GenericResponse): Promise<ServerHandleResponse | undefined>;
+}
 
+export interface RemultServerCore<RequestType> {
+  getRemult(req: RequestType): Promise<Remult>;
+  openApiDoc(options: { title: string, version?: string }): any;
 }
 export type GenericRouter = {
   route(path: string): SpecificRoute
@@ -258,7 +257,7 @@ export class RemultServerImplementation<RequestType> implements RemultServer<Req
     throw new Error("Couldn't find entity " + entityKey);
   };;
   subscriptionServer: SubscriptionServer;
-  withRemult<T>(req: RequestType, res: GenericResponse, next: VoidFunction) {
+  withRemult = (req: RequestType, res: GenericResponse, next: VoidFunction) => {
     this.process(async () => { next() })(req, res);
   }
   routeImpl: RouteImplementation<RequestType>;

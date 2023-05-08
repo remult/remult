@@ -1,7 +1,7 @@
 import * as express from 'express';
 
 import { createRemultServer } from './server/index';
-import { RemultServer, RemultServerImplementation, RemultServerOptions } from './server/expressBridge';
+import { RemultServer, RemultServerCore, RemultServerImplementation, RemultServerOptions } from './server/expressBridge';
 
 export function remultExpress(options?:
     RemultServerOptions<express.Request> & {
@@ -10,7 +10,7 @@ export function remultExpress(options?:
 
 
 
-    }): express.RequestHandler & RemultServer<express.Request> {
+    }): RemultExpressServer {
     let app = express.Router();
 
     if (!options) {
@@ -32,8 +32,11 @@ export function remultExpress(options?:
     return Object.assign(app, {
         getRemult: (req) => server.getRemult(req),
         openApiDoc: (options: { title: string }) => server.openApiDoc(options),
-        registerRouter: x => server.registerRouter(x),
         withRemult: (...args) => server.withRemult(...args)
-    } as RemultServer<express.Request>);
+    } as RemultExpressServer);
 
+}
+
+export type RemultExpressServer = express.RequestHandler & RemultServerCore<express.Request> & {
+    withRemult: (req: express.Request, res: express.Response, next: VoidFunction) => void
 }

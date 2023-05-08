@@ -3,14 +3,15 @@ import {
   createRemultServer,
   RemultServer,
   GenericResponse,
-  RemultServerOptions
+  RemultServerOptions,
+  RemultServerCore
 } from './server';
 import { ResponseRequiredForSSE } from './SseSubscriptionServer';
 
 
 export function remultSveltekit(
   options?: RemultServerOptions<RequestEvent>
-): RemultServer<RequestEvent> & Handle {
+): RemultSveltekitServer{
   let result = createRemultServer<RequestEvent>(options, {
     buildGenericRequestInfo: event =>
     ({
@@ -84,11 +85,9 @@ export function remultSveltekit(
     });
   };
   return Object.assign(handler, {
-
     getRemult: (req) => result.getRemult(req),
     openApiDoc: (options: { title: string }) => result.openApiDoc(options),
-    registerRouter: x => result.registerRouter(x),
-    withRemult: (...args) => result.withRemult(...args)
-
-  } as RemultServer<RequestEvent>);
+  } ) as RemultSveltekitServer;
 }
+
+export type RemultSveltekitServer = RemultServerCore<RequestEvent> & Handle;
