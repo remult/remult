@@ -28,4 +28,9 @@ export declare function createPostgresConnection(options?: {
     sslInDev?: boolean;
     configuration?: "heroku" | PoolConfig;
 }): Promise<SqlDatabase>;
+export declare function createPostgresDataProvider(options?: {
+    connectionString?: string;
+    sslInDev?: boolean;
+    configuration?: "heroku" | PoolConfig;
+}): Promise<SqlDatabase>;
 export declare function preparePostgresQueueStorage(sql: SqlDatabase): Promise<import("../server/expressBridge").EntityQueueStorage>;

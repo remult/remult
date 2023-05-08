@@ -52,7 +52,7 @@ npx -y create-next-app@latest remult-nextjs-todo --typescript --src-dir
 ```
 Answer the questions as follows:
 ```sh
-√ What is your project named? ... next-app-server
+√ What is your project named? ... remult-nextjs-todo
 √ Would you like to use TypeScript with this project? ... Yes
 √ Would you like to use ESLint with this project? ... No 
 √ Would you like to use Tailwind CSS with this project? ... No 

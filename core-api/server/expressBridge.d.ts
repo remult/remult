@@ -44,7 +44,7 @@ export interface RemultServerOptions<RequestType> {
     /** Used to store the context relevant info for re running a live query */
     contextSerializer?: {
         serialize(remult: Remult): Promise<any>;
-        deserialize(json: any, remult: Remult): Promise<void>;
+        deserialize(json: any, options: InitRequestOptions): Promise<void>;
     };
     /** Storage to use for backend methods that use queue */
     queueStorage?: QueueStorage;

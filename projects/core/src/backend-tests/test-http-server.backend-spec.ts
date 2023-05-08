@@ -16,7 +16,6 @@ const servers = {
     nextApp: "nextApp"
 }
 
-
 remult.apiClient.url = 'http://localhost:3003/api';
 let path = remult.apiClient.url + '/tasks';
 const environments: [string, number][] = [

@@ -1,5 +1,5 @@
-import { RemultServer } from "./server/expressBridge";
-export declare function remultGraphql(api: RemultServer<any>): {
+import { RemultExpressServer } from "./remult-express";
+export declare function remultGraphql(api: RemultExpressServer): {
     rootValue: {};
     schema: string;
 };
