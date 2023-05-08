@@ -91,6 +91,23 @@ export default remultNext({
 })
 ```
 
+### Next.js App Router
+```ts
+// src/app/api/[...remult]/route.ts
+
+import { remultNextApp } from "../../../lib/remultNext";
+import { Task } from "../../../model/task";
+
+export const api = remultNextApp({
+  entities: [
+    /* entity types */
+  ],
+});
+
+export const { GET, POST, PUT, DELETE } = api;
+
+```
+
 ### Sveltekit
 ```ts
 //src/api.server.ts
