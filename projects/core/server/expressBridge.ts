@@ -247,7 +247,7 @@ export class RemultServerImplementation<RequestType> implements RemultServer<Req
         await this.runWithRemult(async remult => {
           remult.user = jsonContextData.user;
           if (this.options.contextSerializer) {
-            await this.options.contextSerializer.deserialize(jsonContextData, {
+            await this.options.contextSerializer.deserialize(jsonContextData.context, {
               remult,
               get liveQueryStorage() {
                 return remult.liveQueryStorage
