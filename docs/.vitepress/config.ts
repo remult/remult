@@ -1,4 +1,15 @@
+import { link } from 'fs'
 import { defineConfig } from 'vitepress'
+
+const tutorials = [
+  { name: "react" },
+  { name: "angular" },
+  { name: "vue" },
+  {
+    name: "next.js",
+    additionalItems: [{ text: "Appendix: Server-side Rendering", link: '/tutorials/react-next/appendix-1-get-server-side-props' }]
+  },
+]
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -12,30 +23,12 @@ export default defineConfig({
     editLink: { pattern: "https://github.com/remult/remult/edit/master/docs/:path" },
     nav: [
       {
-        text: 'Docs',
+        text: 'Guide',
         link: '/docs/',
       },
       {
         text: 'Tutorials',
-        items: [
-          {
-            text: 'React',
-            link: '/tutorials/react/'
-          },
-          {
-            text: 'Angular',
-            link: '/tutorials/angular/'
-          }
-          ,
-          {
-            text: 'Vue',
-            link: '/tutorials/vue/'
-          },
-          {
-            text: 'Next.js',
-            link: '/tutorials/react-next/'
-          },
-        ]
+        items: tutorials.map(t => ({ text: t.name.charAt(0).toUpperCase() + t.name.slice(1), link: `/tutorials/${t.name}/` }))
       },
       {
         text: 'Blog',
@@ -56,55 +49,75 @@ export default defineConfig({
         {
           text: 'Getting Started',
           items: [
-            '',
-            { text: "Add Remult to your App", link: '/docs/add-remult-to-your-app.md' },
-            'crud-your-first-entity',
-            'databases',
+            { text: "Introduction", link: '/docs/' },
+            { text: "Add Remult to your App", link: '/docs/add-remult-to-your-app' },
+            { text: "CRUD your first Entity", link: '/docs/crud-your-first-entity' },
+            { text: "Connecting to a Database", link: '/docs/databases' },
           ]
         },
         {
-          text: 'Concepts',
-          collapsed: true,
+          text: 'Entities',
           items: [
-            'field-types',
-            'backendMethods',
-            'entity-relations',
+            { text: "Fields", link: '/docs/field-types' },
+            {
+              text: "Relations", link: '/docs/entity-relations', collapsed: true,
+              items: [
+                { text: "Lazy loading", link: '/docs/lazy-loading-of-related-entities' },
+                { text: "More on One to Many", link: '/docs/techniques-regarding-one-to-many-relations' },
+              ]
+            },
           ]
         },
         {
-          text: 'Advanced Topics',
-          collapsed: true,
+          text: "Server-side Code",
+          items: [
+            {
+              text: "Backend Methods", link: '/docs/backendMethods',
+              collapsed: true,
+              items: [
+                { text: "Server-only Dependencies", link: '/docs/using-server-only-packages' },
+              ]
+            },
+
+          ]
+        },
+        {
+          text: 'Escape Hatches',
 
           items: [
-            'adding-graphql',
-            'adding-swagger',
+            { text: "Custom/SQL Filters", link: '/docs/custom-filter' },
+            { text: "Direct Database Access", link: '/docs/running-sql-on-the-server' },
+            { text: "Remult within Express Routes", link: '/docs/using-remult-in-custom-backend-code' },
+            { text: "Avoiding Decorators", link: '/docs/working-without-decorators' },
+            { text: "Extensibility", link: '/docs/custom-options' },
             'rest-api',
-            'using-server-only-packages',
-            'working-without-decorators',
-            'custom-options',
-            'techniques-regarding-one-to-many-relations.md',
-            'running-sql-on-the-server',
-            'custom-filter',
-            'using-remult-in-custom-backend-code',
-            'lazy-loading-of-related-entities',
           ]
         },
         {
-          text: 'API Reference',
+          text: "Integrations", collapsed: true,
+          items: [
+            { text: "Open API", link: '/docs/adding-swagger' },
+            { text: "GraphQL", link: '/docs/adding-graphql' },
+
+          ]
+        },
+        {
+          text: 'Reference',
           collapsed: true,
           items: [
-            'ref_entity',
-            'ref_field',
-            'ref_remult',
-            'ref_repository',
-            `ref_remultserveroptions`,
-            'entityFilter',
-            'ref_entitymetadata',
-            'ref_fieldmetadata',
-            'allowed',
-            'ref_backendmethod',
-            'ref_queryresult',
-            `ref_paginator`
+            { text: "Entity", link: '/docs/ref_entity' },
+            { text: "Field", link: '/docs/ref_field' },
+            { text: "Remult", link: '/docs/ref_remult' },
+            { text: "Repository", link: '/docs/ref_repository' },
+            { text: "RemultServerOptions", link: '/docs/ref_remultserveroptions' },
+            { text: "EntityFilter", link: '/docs/entityFilter' },
+            { text: "EntityMetadata", link: '/docs/ref_entitymetadata' },
+            { text: "FieldMetadata", link: '/docs/ref_fieldmetadata' },
+            { text: "Allowed", link: '/docs/allowed' },
+            { text: "BackendMethod", link: '/docs/ref_backendmethod' },
+            { text: "QueryResult", link: '/docs/ref_queryresult' },
+            { text: "Paginator", link: '/docs/ref_paginator' },
+            { text: "REST API Specs", link: '/docs/rest-api' },
           ]
         }
 

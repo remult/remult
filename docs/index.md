@@ -4,7 +4,7 @@ layout: home
 
 hero:
   name: "remult"
-  # text: "A CRUD framework for fullstack TypeScript"
+  text: "A CRUD framework for fullstack TypeScript"
   tagline: "Build Full-stack, End-to-end Type-safe CRUD Apps without the Boilerplate"
   image: 
     src: /logo.png
