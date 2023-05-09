@@ -5,7 +5,7 @@ import { ClassType } from '../classType';
 import { Repository } from '../src/remult3';
 import { IdEntity } from '../src/id-entity';
 import { LiveQueryStorage, SubscriptionServer } from '../src/live-query/SubscriptionServer';
-export interface RemultServerOptions<RequestType extends GenericRequest> {
+export interface RemultServerOptions<RequestType> {
     /**Entities to use for the api */
     entities?: ClassType<any>[];
     /**Controller to use for the api */
@@ -41,10 +41,10 @@ export interface RemultServerOptions<RequestType extends GenericRequest> {
     subscriptionServer?: SubscriptionServer;
     /** A storage to use to store live queries, relevant mostly for serverless scenarios or larger scales */
     liveQueryStorage?: LiveQueryStorage;
-    /** Used to store the relevent request info for re running a live query */
-    requestSerializer?: {
-        toJson: (request: RequestType) => any;
-        fromJson: (request: any) => RequestType;
+    /** Used to store the context relevant info for re running a live query */
+    contextSerializer?: {
+        serialize(remult: Remult): Promise<any>;
+        deserialize(json: any, options: InitRequestOptions): Promise<void>;
     };
     /** Storage to use for backend methods that use queue */
     queueStorage?: QueueStorage;
@@ -53,21 +53,23 @@ export interface InitRequestOptions {
     liveQueryStorage: LiveQueryStorage;
     readonly remult: Remult;
 }
-export declare function createRemultServerCore<RequestType extends GenericRequest = GenericRequest>(options?: RemultServerOptions<RequestType>): RemultServer;
-export declare type GenericRequestHandler = (req: GenericRequest, res: GenericResponse, next: VoidFunction) => void;
+export declare function createRemultServerCore<RequestType>(options: RemultServerOptions<RequestType>, serverCoreOptions: ServerCoreOptions<RequestType>): RemultServer<RequestType>;
+export declare type GenericRequestHandler = (req: GenericRequestInfo, res: GenericResponse, next: VoidFunction) => void;
 export interface ServerHandleResponse {
     data?: any;
     statusCode: number;
 }
-export interface RemultServer {
-    getRemult(req: GenericRequest): Promise<Remult>;
+export interface RemultServer<RequestType> extends RemultServerCore<RequestType> {
+    withRemult(req: RequestType, res: GenericResponse, next: VoidFunction): any;
+    registerRouter(r: GenericRouter): void;
+    handle(req: RequestType, gRes?: GenericResponse): Promise<ServerHandleResponse | undefined>;
+}
+export interface RemultServerCore<RequestType> {
+    getRemult(req: RequestType): Promise<Remult>;
     openApiDoc(options: {
         title: string;
         version?: string;
     }): any;
-    registerRouter(r: GenericRouter): void;
-    handle(req: GenericRequest, gRes?: GenericResponse): Promise<ServerHandleResponse | undefined>;
-    withRemult(req: GenericRequest, res: GenericResponse, next: VoidFunction): any;
 }
 export declare type GenericRouter = {
     route(path: string): SpecificRoute;
@@ -78,10 +80,9 @@ export declare type SpecificRoute = {
     post(handler: GenericRequestHandler): SpecificRoute;
     delete(handler: GenericRequestHandler): SpecificRoute;
 };
-export interface GenericRequest {
+export interface GenericRequestInfo {
     url?: string;
     method?: any;
-    body?: any;
     query?: any;
     params?: any;
 }
@@ -127,4 +128,8 @@ export declare class JobsInQueueEntity extends IdEntity {
     done: boolean;
     error: boolean;
     progress: number;
+}
+export interface ServerCoreOptions<RequestType> {
+    buildGenericRequestInfo(req: RequestType): GenericRequestInfo;
+    getRequestBody(req: RequestType): Promise<any>;
 }

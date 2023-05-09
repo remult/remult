@@ -12,10 +12,10 @@ export class DataApi<T = any> {
 
   constructor(private repository: Repository<T>, private remult: Remult) {
   }
-  httpGet(res: DataApiResponse, req: DataApiRequest, serializeRequest: () => any) {
+  httpGet(res: DataApiResponse, req: DataApiRequest, serializeContext: () => Promise<any>) {
     const action = req?.get("__action");
     if (action?.startsWith(liveQueryAction))
-      return this.liveQuery(res, req, undefined, serializeRequest, getLiveQueryChannel(action.substring(liveQueryAction.length), this.remult.user?.id));
+      return this.liveQuery(res, req, undefined, serializeContext, getLiveQueryChannel(action.substring(liveQueryAction.length), this.remult.user?.id));
     switch (action) {
       case "get":
       case "count":
@@ -24,10 +24,10 @@ export class DataApi<T = any> {
     return this.getArray(res, req, undefined);
 
   }
-  async httpPost(res: DataApiResponse, req: DataApiRequest, body: any, serializeRequest: () => any) {
+  async httpPost(res: DataApiResponse, req: DataApiRequest, body: any, serializeContext: () => Promise<any>) {
     const action = req?.get("__action");
     if (action?.startsWith(liveQueryAction))
-      return this.liveQuery(res, req, undefined, serializeRequest, getLiveQueryChannel(action.substring(liveQueryAction.length), this.remult.user?.id));
+      return this.liveQuery(res, req, undefined, serializeContext, getLiveQueryChannel(action.substring(liveQueryAction.length), this.remult.user?.id));
     switch (action) {
       case "get":
         return this.getArray(res, req, body);
@@ -139,7 +139,7 @@ export class DataApi<T = any> {
         response.error(err);
     }
   }
-  async liveQuery(response: DataApiResponse, request: DataApiRequest, filterBody: any, serializeRequest: () => any, queryChannel: string) {
+  async liveQuery(response: DataApiResponse, request: DataApiRequest, filterBody: any, serializeContext: () => Promise<any>, queryChannel: string) {
     if (!this.repository.metadata.apiReadAllowed) {
       response.forbidden();
       return;
@@ -147,7 +147,7 @@ export class DataApi<T = any> {
     try {
       const r = await this.getArrayImpl(response, request, filterBody)
       const data: QueryData = {
-        requestJson: serializeRequest(),
+        requestJson: await serializeContext(),
         findOptionsJson: findOptionsToJson(r.findOptions, this.repository.metadata),
         lastIds: r.r.map(y => this.repository.metadata.idMetadata.getId(y))
       }

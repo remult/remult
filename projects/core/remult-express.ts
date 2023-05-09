@@ -1,7 +1,7 @@
 import * as express from 'express';
 
-import { createRemultServer, GenericResponse } from './server/index';
-import { RemultServer, RemultServerImplementation, RemultServerOptions } from './server/expressBridge';
+import { createRemultServer } from './server/index';
+import { RemultServer, RemultServerCore, RemultServerImplementation, RemultServerOptions } from './server/expressBridge';
 
 export function remultExpress(options?:
     RemultServerOptions<express.Request> & {
@@ -10,7 +10,7 @@ export function remultExpress(options?:
 
 
 
-    }): express.RequestHandler & RemultServer {
+    }): RemultExpressServer {
     let app = express.Router();
 
     if (!options) {
@@ -23,14 +23,20 @@ export function remultExpress(options?:
         app.use(express.json({ limit: options.bodySizeLimit }));
         app.use(express.urlencoded({ extended: true, limit: options.bodySizeLimit }));
     }
-    const server = createRemultServer(options) as RemultServerImplementation;
+    const server = createRemultServer<express.Request>(options, {
+        buildGenericRequestInfo: req => req,
+        getRequestBody: async req => req.body
+    }) as RemultServerImplementation<express.Request>;
     server.registerRouter(app);
 
     return Object.assign(app, {
         getRemult: (req) => server.getRemult(req),
         openApiDoc: (options: { title: string }) => server.openApiDoc(options),
-        registerRouter: x => server.registerRouter(x),
         withRemult: (...args) => server.withRemult(...args)
-    } as RemultServer);
+    } as RemultExpressServer);
 
+}
+
+export type RemultExpressServer = express.RequestHandler & RemultServerCore<express.Request> & {
+    withRemult: (req: express.Request, res: express.Response, next: VoidFunction) => void
 }

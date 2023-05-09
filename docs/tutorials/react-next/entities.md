@@ -19,8 +19,6 @@ The `Task` entity class we're creating will have an auto-increment `id` field a 
 ```ts
 // src/shared/Task.ts
 
-// src/shared/Task.ts
-
 import { Entity, Fields } from "remult"
 
 @Entity("tasks", {

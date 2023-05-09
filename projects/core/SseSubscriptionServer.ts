@@ -1,4 +1,4 @@
-import { GenericRequest, GenericResponse } from './server/index';
+import { GenericRequestInfo, GenericResponse } from './server/index';
 import { Remult } from './src/context';
 import { ServerEventChannelSubscribeDTO } from './src/live-query/SubscriptionChannel';
 import { SubscriptionServer } from './src/live-query/SubscriptionServer';
@@ -56,7 +56,7 @@ export class SseSubscriptionServer implements SubscriptionServer {
     debugMessageFileSaver = (id, channel, message) => { };
 
     //@internal
-    openHttpServerStream(req: GenericRequest, res: GenericResponse & ResponseRequiredForSSE) {
+    openHttpServerStream(req: GenericRequestInfo, res: GenericResponse & ResponseRequiredForSSE) {
         res.writeHead(200, {
             'Content-Type': 'text/event-stream',
             'Cache-Control': 'no-cache',

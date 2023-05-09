@@ -65,3 +65,4 @@ docs/.vitepress/dist
 
 /db
 projects/test-angular/.angular
+examples/nextjs-todo/db/tasks.json

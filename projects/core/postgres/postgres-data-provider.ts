@@ -17,7 +17,7 @@ export interface PostgresClient extends PostgresCommandSource {
 }
 
 export class PostgresDataProvider implements SqlImplementation {
-    supportsJsonColumnType=true;
+    supportsJsonColumnType = true;
     static getDb(remult?: Remult): ClientBase {
         const sql = SqlDatabase.getDb(remult);
         const me = sql._getSourceSql() as PostgresDataProvider;
@@ -53,6 +53,7 @@ export class PostgresDataProvider implements SqlImplementation {
                 entityIsUsedForTheFirstTime: this.entityIsUsedForTheFirstTime,
                 transaction: () => { throw "nested transactions not allowed" },
                 getLimitSqlSyntax: this.getLimitSqlSyntax,
+                supportsJsonColumnType: this.supportsJsonColumnType,
                 //@ts-ignore
                 pool: client
             });
@@ -99,8 +100,14 @@ class PostgresBridgeToSQLQueryResult implements SqlResult {
 }
 
 
-
 export async function createPostgresConnection(options?: {
+    connectionString?: string,
+    sslInDev?: boolean,
+    configuration?: "heroku" | PoolConfig
+}) {
+    return createPostgresDataProvider(options)
+}
+export async function createPostgresDataProvider(options?: {
     connectionString?: string,
     sslInDev?: boolean,
     configuration?: "heroku" | PoolConfig

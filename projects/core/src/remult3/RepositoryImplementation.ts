@@ -1421,7 +1421,7 @@ export class columnDefsImpl implements FieldMetadata {
     get includedInApi() {
         if (this.options.includeInApi === undefined)
             return true;
-        return this.remult.isAllowed(this.options.includeInApi);//TODO - consolidate other code paths to go through here
+        return this.remult.isAllowed(this.options.includeInApi);//TODO 2- consolidate other code paths to go through here
     }
     toInput(value: any, inputType?: string): string {
         return this.valueConverter.toInput(value, inputType);

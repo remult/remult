@@ -73,6 +73,7 @@ export class SqlDatabase implements DataProvider {
           getLimitSqlSyntax: this.sql.getLimitSqlSyntax,
           entityIsUsedForTheFirstTime: y => x.entityIsUsedForTheFirstTime(y),
           transaction: z => x.transaction(z),
+          supportsJsonColumnType: this.sql.supportsJsonColumnType
         }));
       }
       finally {

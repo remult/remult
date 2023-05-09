@@ -5,8 +5,8 @@ export declare class DataApi<T = any> {
     private repository;
     private remult;
     constructor(repository: Repository<T>, remult: Remult);
-    httpGet(res: DataApiResponse, req: DataApiRequest, serializeRequest: () => any): Promise<void>;
-    httpPost(res: DataApiResponse, req: DataApiRequest, body: any, serializeRequest: () => any): Promise<void>;
+    httpGet(res: DataApiResponse, req: DataApiRequest, serializeContext: () => Promise<any>): Promise<void>;
+    httpPost(res: DataApiResponse, req: DataApiRequest, body: any, serializeContext: () => Promise<any>): Promise<void>;
     static defaultGetLimit: number;
     get(response: DataApiResponse, id: any): Promise<void>;
     count(response: DataApiResponse, request: DataApiRequest, filterBody?: any): Promise<void>;
@@ -15,7 +15,7 @@ export declare class DataApi<T = any> {
         findOptions: FindOptions<T>;
     }>;
     getArray(response: DataApiResponse, request: DataApiRequest, filterBody?: any): Promise<void>;
-    liveQuery(response: DataApiResponse, request: DataApiRequest, filterBody: any, serializeRequest: () => any, queryChannel: string): Promise<void>;
+    liveQuery(response: DataApiResponse, request: DataApiRequest, filterBody: any, serializeContext: () => Promise<any>, queryChannel: string): Promise<void>;
     private buildWhere;
     private doOnId;
     put(response: DataApiResponse, id: any, body: any): Promise<void>;

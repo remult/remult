@@ -6,8 +6,9 @@ import { getEntityKey } from "./src/remult3";
 import { DataApi } from "./src/data-api";
 import { RemultServer } from "./server/expressBridge";
 import { ValueConverters } from "./src/valueConverters";
+import { RemultExpressServer } from "./remult-express";
 
-export function remultGraphql(api: RemultServer) {
+export function remultGraphql(api: RemultExpressServer) {
   let r = new Remult();
   let types: {
     key: string,
@@ -94,6 +95,7 @@ export function remultGraphql(api: RemultServer) {
       root[key] = async ({ options, filter }, req, a) => {
 
         return new Promise(async (res, error) => {
+          //TODO - consider this with remult usage
           api.withRemult(req, undefined!, async () => {
             let remult = await api.getRemult(req);
             let repo = remult.repo(e);

@@ -78,6 +78,14 @@
       },
       "import": "./esm/remult-fresh.js"
     },
+    "./remult-sveltekit": {
+      "require": "./remult-sveltekit.js",
+      "node": {
+        "require": "./remult-sveltekit.js",
+        "import": "./remult-sveltekit.js"
+      },
+      "import": "./esm/remult-sveltekit.js"
+    },
     "./postgres": {
       "require": "./postgres/index.js",
       "node": {

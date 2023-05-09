@@ -7,11 +7,11 @@ export interface SubscriptionServer {
 }
 
 /* @internal*/
-export declare type PerformWithRequest = (serializedRequest: any, entityKey: string, what: (repo: Repository<any>) => Promise<void>) => Promise<void>;
+export declare type PerformWithContext = (serializedRequest: any, entityKey: string, what: (repo: Repository<any>) => Promise<void>) => Promise<void>;
 /* @internal*/
 export class LiveQueryPublisher implements LiveQueryChangesListener {
 
-  constructor(private subscriptionServer: () => SubscriptionServer, private liveQueryStorage: () => LiveQueryStorage, public performWithRequest: PerformWithRequest) { }
+  constructor(private subscriptionServer: () => SubscriptionServer, private liveQueryStorage: () => LiveQueryStorage, public performWithContext: PerformWithContext) { }
 
   runPromise(p: Promise<any>) { }
   debugFileSaver = (x: any) => { };
@@ -20,7 +20,7 @@ export class LiveQueryPublisher implements LiveQueryChangesListener {
     await (this.liveQueryStorage().forEach(entityKey,
       async ({ query: q, setData }) => {
         let query = { ...q.data } as QueryData;
-        await this.performWithRequest(query.requestJson, entityKey, async repo => {
+        await this.performWithContext(query.requestJson, entityKey, async repo => {
           const messages = [];
           const currentItems = await repo.find(findOptionsFromJson(query.findOptionsJson, repo.metadata));
           const currentIds = currentItems.map(x => repo.getEntityRef(x).getId());

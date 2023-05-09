@@ -67,7 +67,7 @@ import { remultFastify } from "remult/remult-fastify"
 })()
 ```
 
-### Next.js
+### Next.js Pages Router
 
 ```ts
 // src/pages/api/[...remult].ts
@@ -75,6 +75,36 @@ import { remultFastify } from "remult/remult-fastify"
 import { remultNext } from "remult/remult-next"
 
 export default remultNext({
+  entities: [
+    /* entity types */
+  ]
+})
+```
+
+### Next.js App Router
+```ts
+// src/app/api/[...remult]/route.ts
+
+import { remultNextApp } from "remult/remult-next";
+
+export const api = remultNextApp({
+  entities: [
+    /* entity types */
+  ],
+});
+
+export const { GET, POST, PUT, DELETE } = api;
+
+```
+
+### Sveltekit
+
+```ts
+// src/hooks.server.ts
+
+import { remultSveltekit } from 'remult/remult-sveltekit';
+
+export const handle = remultSveltekit({
   entities: [
     /* entity types */
   ]

@@ -1,10 +1,10 @@
 import type { FastifyInstance, FastifyPluginCallback, RouteHandlerMethod, FastifyRequest } from 'fastify';
 import { createRemultServer } from './server/index';
-import { GenericRequestHandler, GenericResponse, GenericRouter, RemultServer, createRemultServerCore, RemultServerOptions, SpecificRoute } from './server/expressBridge';
+import { GenericRequestHandler, GenericResponse, GenericRouter, RemultServer, RemultServerOptions, SpecificRoute, RemultServerCore } from './server/expressBridge';
 import { ResponseRequiredForSSE } from './SseSubscriptionServer';
 
 
-export function remultFastify(options: RemultServerOptions<FastifyRequest>): FastifyPluginCallback & RemultServer {
+export function remultFastify(options: RemultServerOptions<FastifyRequest>): RemultFastifyServer {
     function fastifyHandler(handler: GenericRequestHandler) {
         const response: RouteHandlerMethod = (req, res) => {
             const myRes: GenericResponse & ResponseRequiredForSSE = {
@@ -34,7 +34,10 @@ export function remultFastify(options: RemultServerOptions<FastifyRequest>): Fas
         };
         return response;
     }
-    const api = createRemultServer(options);
+    const api = createRemultServer(options, {
+        buildGenericRequestInfo: req => req,
+        getRequestBody: async req => req.body
+    });
     const pluginFunction: FastifyPluginCallback = async (instance: FastifyInstance, op) => {
         //@ts-ignore
         let fastifyRouter: GenericRouter = {
@@ -68,7 +71,14 @@ export function remultFastify(options: RemultServerOptions<FastifyRequest>): Fas
     return Object.assign(pluginFunction, {
         getRemult: x => api.getRemult(x),
         openApiDoc: x => api.openApiDoc(x),
-        handle: (req, res) => api.handle(req, res),
-        withRemult: (req, res, next) => api.withRemult(req, res, next)
-    } as RemultServer);
+        withRemult: (req, what) => new Promise<any>((resolve) => {
+            return api.withRemult(req as any, undefined!, () => {
+                what().then(resolve)
+            })
+        })
+    } as RemultFastifyServer);
+}
+
+export type RemultFastifyServer = FastifyPluginCallback & RemultServerCore<FastifyRequest> & {
+    withRemult<T>(req: FastifyRequest, what: () => Promise<T>): Promise<T>
 }
