@@ -1,5 +1,5 @@
 ---
-sidebarDepth: 2
+sidebarDepth: 3
 ---
 
 # Add Remult to your App
@@ -77,7 +77,7 @@ import { remultFastify } from "remult/remult-fastify"
 })()
 ```
 
-### Next.js
+### Next.js Pages Router
 
 ```ts
 // src/pages/api/[...remult].ts
@@ -95,8 +95,7 @@ export default remultNext({
 ```ts
 // src/app/api/[...remult]/route.ts
 
-import { remultNextApp } from "../../../lib/remultNext";
-import { Task } from "../../../model/task";
+import { remultNextApp } from "remult/remult-next";
 
 export const api = remultNextApp({
   entities: [
@@ -109,29 +108,18 @@ export const { GET, POST, PUT, DELETE } = api;
 ```
 
 ### Sveltekit
+
 ```ts
-//src/api.server.ts
+// src/hooks.server.ts
 
 import { remultSveltekit } from 'remult/remult-sveltekit';
 
-export const api = remultSveltekit({
+export const handle = remultSveltekit({
   entities: [
     /* entity types */
   ]
 })
 ```
-Register hook:
-
-```ts
-//src/hooks.server.ts
-
-import { sequence } from '@sveltejs/kit/hooks';
-import { api } from './api.server';
-
-export const handle = sequence(api)
-
-```
-
 
 ### Nest
 
