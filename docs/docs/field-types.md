@@ -114,8 +114,8 @@ id:string
 This id value is determined by the underlying database on insert, and can't be updated through the api.
 
 ```ts
-@Fields.cuid()
-id:string
+@Fields.autoIncrement()
+id:number
 ```
 
 ## Enum Field
