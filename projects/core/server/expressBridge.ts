@@ -153,6 +153,7 @@ export function createRemultServerCore<RequestType>(
   return bridge;
 
 }
+//TODO  - the type is wrong - it should be RequestType as on the server - also reconsider GenericResponse here, because it's also the server Response
 export type GenericRequestHandler = (req: GenericRequestInfo, res: GenericResponse, next: VoidFunction) => void;
 
 

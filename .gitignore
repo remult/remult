@@ -64,3 +64,4 @@ docs/.vuepress/dist
 projects/test-angular/.angular
 examples/nextjs-todo/db/tasks.json
 examples/nextjs-app-router-todo/db/tasks.json
+test.heapsnapshot
