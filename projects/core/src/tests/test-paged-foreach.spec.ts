@@ -218,12 +218,14 @@ describe("test paged foreach ", () => {
         let remult = new Remult();
         let e = remult.repo(Categories) as RepositoryImplementation<Categories>;
         function test(orderBy: EntityOrderBy<Categories>, ...sort: FieldMetadata[]) {
+            let z = {...orderBy};
             let s = Sort.createUniqueEntityOrderBy(e.metadata, orderBy);
             let expected = {};
             for (const c of sort) {
                 expected[c.key] = "asc";
             }
             expect(s).toEqual(expected);
+            expect(orderBy).toEqual(z)
         }
         test({ id: "asc" }, e.metadata.fields.id);
         test({ categoryName: "asc" }, e.metadata.fields.categoryName, e.metadata.fields.id);

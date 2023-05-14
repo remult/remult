@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { GenericResponse } from './server/index';
 import { Remult } from './src/context';
 import { SubscriptionServer } from './src/live-query/SubscriptionServer';
@@ -14,6 +15,7 @@ export interface ResponseRequiredForSSE {
 export declare class clientConnection {
     response: GenericResponse & ResponseRequiredForSSE;
     channels: Record<string, boolean>;
+    timeOutRef: NodeJS.Timeout;
     close(): void;
     closed: boolean;
     write(eventData: string, eventType?: string): void;
