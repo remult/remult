@@ -1,10 +1,21 @@
 ---
-home: true
+# https://vitepress.dev/reference/default-theme-home-page
+layout: home
 
-heroImage: /logo.png
-tagline: A CRUD framework for fullstack TypeScript
-actionText: Get Started →
-actionLink: /docs/
+hero:
+  name: "remult"
+  text: "A CRUD framework for fullstack TypeScript"
+  tagline: "Build Full-stack, End-to-end Type-safe CRUD Apps without the Boilerplate"
+  image: 
+    src: /logo.png
+    alt: Remult
+  actions:
+    - theme: brand
+      text: Get Started
+      link: /docs/
+    - theme: alt
+      text: View on GitHub
+      link: https://github.com/remult/remult
 
 features:
   - title: API Included
@@ -24,23 +35,4 @@ features:
 
   - title: Easy Setup
     details: Bootstrap in minutes with an Express.js middleware in the backend and an http client wrapper in the frontend.
-
-footer: MIT Licensed | Made by the Remult team with ❤️
 ---
-<main>
-<div style="display:flex;flex-direction:column;align-items:center;">
-<div style="position: relative;
-  overflow: hidden;
-  width: 100%;
-  padding-top: 56.25%;">
-<iframe  src="https://www.youtube.com/embed/rEoScmSVNUE" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen 
-style="position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
-  width: 100%;
-  height: 100%;"></iframe>
-</div>
-</div>
-</main>

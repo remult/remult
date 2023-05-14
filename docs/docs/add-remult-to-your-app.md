@@ -1,5 +1,5 @@
 ---
-sidebarDepth: 3
+outline: [2,3]
 ---
 
 # Add Remult to your App
@@ -17,19 +17,9 @@ If you're using one `package.json` for both frontend and backend (or a meta-fram
 
 If you're using multiple `package.json` files (monorepo) - **install Remult in both server and client folders**.
 
-<code-group>
-<code-block title="npm">
 ```sh
 npm install remult
 ```
-</code-block>
-
-<code-block title="yarn">
-```sh
-yarn add remult
-```
-</code-block>
-</code-group>
 
 ## Server-side Initialization
 
