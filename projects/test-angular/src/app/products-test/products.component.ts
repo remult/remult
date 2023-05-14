@@ -1,5 +1,5 @@
 import { Component, NgZone, OnInit } from '@angular/core';
-import { Remult, Entity, IdEntity, Fields, Controller, InMemoryDataProvider, Sort, BackendMethod, remult, SubscriptionChannel } from 'remult';
+import { Remult, Entity, IdEntity, Fields, Controller, InMemoryDataProvider, Sort, BackendMethod, remult, SubscriptionChannel, ProgressListener } from 'remult';
 import { GridSettings } from '@remult/angular/interfaces';
 import { DialogConfig } from '../../../../angular';
 import * as ably from 'ably';
@@ -48,8 +48,11 @@ export class ProductsComponent {
 
       // })
 
-      let s = await new SubscriptionChannel("x"+this.i).subscribe(() => { })
-      s();
+      // let s = await new SubscriptionChannel("x" + this.i).subscribe(() => { })
+      // s();
+
+      await Task.test()
+
     }
     this.getRemultCount()
 
@@ -76,6 +79,19 @@ export class Task {
     const taskRepo = remult.repo(Task);
     for (const task of await taskRepo.find()) {
       await taskRepo.save({ ...task, completed })
+    }
+  }
+  @BackendMethod({ allowed: true, queue: true })
+  static async test(p?: ProgressListener) {
+
+    for (let index = 0; index < 2; index++) {
+      await new Promise(resolve => {
+        setTimeout(() => {
+          resolve({})
+        }, 100);
+      })
+      p.progress(index / 2)
+
     }
   }
 }

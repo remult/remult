@@ -952,7 +952,7 @@ export class EntityQueueStorage implements QueueStorage {
   }
 
   async getJobInfo(queuedJobId: string): Promise<queuedJobInfo> {
-    let q = await this.repo.findId(queuedJobId);
+    let q = await this.repo.findId(queuedJobId, { useCache: false });
     let lastProgress: Date = undefined;
     return {
       userId: q.userId,

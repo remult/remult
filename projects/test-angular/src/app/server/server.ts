@@ -3,13 +3,23 @@ let moduleLoader = new CustomModuleLoader('/dist/test-angular');
 import express, { application } from "express";
 import { remultExpress } from '../../../../core/remult-express'
 import { Task } from "../products-test/products.component";
-import { remult } from '../../../../core';
+import { JsonDataProvider, Remult, remult } from '../../../../core';
 import { oneMore } from './oneMore';
 import { getHeapFromFile } from '@memlab/heap-analysis';
 import * as heapdump from 'heapdump'
+import { preparePostgresQueueStorage } from '../../../../core/postgres'
+import { JsonFileDataProvider } from '../../../../core/server';
+import { JobsInQueueEntity } from '../../../../core/server/expressBridge';
+import { EntityQueueStorage } from '../../../../core/server/expressBridge';
+
+var r = new Remult();
+r.dataProvider = new JsonFileDataProvider('./db');
 
 const app = express()
-export const api = remultExpress({ entities: [Task] })
+export const api = remultExpress({
+    entities: [Task],
+    queueStorage: new EntityQueueStorage(r.repo(JobsInQueueEntity))
+})
 app.use(api)
 
 app.get('/c', async (req, res) => {
@@ -19,9 +29,9 @@ app.get('/b', api.withRemult, async (req, res) => res.json(await remult.repo(Tas
 
 
 
-app.get('/a',api.withRemult, async (req, res) => res.json({what:(remult.subscriptionServer as any).connections.length}))
+app.get('/a', api.withRemult, async (req, res) => res.json({ what: (remult.subscriptionServer as any).connections.length }))
 
-app.get('/api/remultCount',api.withRemult,  (req, res) => {
+app.get('/api/remultCount', api.withRemult, (req, res) => {
     console.log("god here")
     heapdump.writeSnapshot('./test.heapsnapshot');
 
@@ -41,7 +51,7 @@ app.get('/api/remultCount',api.withRemult,  (req, res) => {
             remultCount,
             testMemCount,
             openQueries: (remult.liveQueryStorage as any).queries.length,
-            sse:(remult.subscriptionServer as any).connections.length
+            sse: (remult.subscriptionServer as any).connections.length
         })
     })
 })
