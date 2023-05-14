@@ -208,7 +208,7 @@ Usually, not all application users have the same privileges. Let's define an `ad
 ```ts{7-8,18}
 // src/shared/Task.ts
 
-import { Allow, Entity, Fields, Validators } from "remult"
+import { Allow, Entity, Fields } from "remult"
 
 @Entity<Task>("tasks", {
   allowApiCrud: Allow.authenticated,

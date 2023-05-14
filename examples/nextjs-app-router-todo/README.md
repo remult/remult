@@ -1,3 +1,5 @@
+## Next App Router Sample
+
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
@@ -5,8 +7,8 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 1. Download the source:
 
    ```bash
-   npx degit remult/remult/examples/nextjs-todo nextjs-todo
-   cd nextjs-todo
+   npx degit remult/remult/examples/nextjs-app-router-todo nextjs-app-router-todo
+   cd nextjs-app-router-todo
    npm i
    ```
 

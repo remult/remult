@@ -1,9 +1,6 @@
-<ul>
-  <li *ngFor="let m of tasks | async">
-    <input type="checkbox" [(ngModel)]="m.completed" (change)="save(m)" />{{
-    m.title
-    }}
-  </li>
-  <button (click)="setAllCompleted(true)">set all true</button>
-  <button (click)="setAllCompleted(false)">set all false</button>
-</ul>
+remult:
+<pre>
+{{ countRemult | json }}
+</pre>
+
+{{ i }} <button (click)="test()">test</button>

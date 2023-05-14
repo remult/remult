@@ -37,7 +37,7 @@ Let's review the change:
   - `items` - an up to date list of items representing the current result - it's useful for readonly use cases.
   - `applyChanges` - a method that receives an array and applies the changes to it - we send that method to the `setTasks` state function, to apply the changes to the existing `tasks` state.
   - `changes` - a detailed list of changes that were received
-- The `subscribe` method return an `unsubscribe` function, we return it to the `onUnmounted` hook so that it'll be called when the component unmounts.
+- The `subscribe` method returns an `unsubscribe` function, we return it to the `onUnmounted` hook so that it'll be called when the component unmounts.
 
 2. As all relevant CRUD operations (made by all users) will **immediately update the component's state**, we should remove the manual adding of new Tasks to the component's state:
 

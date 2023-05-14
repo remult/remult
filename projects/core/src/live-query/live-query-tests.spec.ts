@@ -880,14 +880,34 @@ it("Serialize Find Options1", async () => {
         },
         orderBy: {
             title: "desc"
-        }
+        },
     };
 
     const z = findOptionsToJson(findOptions, r.metadata);
-    const res = findOptionsFromJson(z, r.metadata);
+    const res = findOptionsFromJson(JSON.parse(JSON.stringify(z)), r.metadata);
     expect(res).toEqual(findOptions);
 
 });
+it("Serialize Find Options2", async () => {
+    const r = new Remult().repo(eventTestEntity);
+    const findOptions: FindOptions<eventTestEntity> = {
+        where: {
+            $and: [{
+                title: 'noam'
+            }]
+        },
+        orderBy: {
+            title: "desc"
+        },
+        load: x => [x.title, x.birthDate]
+    };
+
+    const z = findOptionsToJson(findOptions, r.metadata);
+    const res: FindOptions<eventTestEntity> = findOptionsFromJson(JSON.parse(JSON.stringify(z)), r.metadata);
+    expect(res.load(r.fields).map(f => f.key)).toEqual(["title", "birthDate"])
+
+});
+
 it("test channel subscribe", async () => {
     const mc = new SubscriptionChannel("zxcvz");
     let sub = 0;
