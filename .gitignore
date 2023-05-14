@@ -60,6 +60,10 @@ config.local.js
 basement_dist
 docs/.vuepress/dist
 
+# vitepress
+docs/.vitepress/cache
+docs/.vitepress/dist
+
 /db
 projects/test-angular/.angular
 examples/nextjs-todo/db/tasks.json
