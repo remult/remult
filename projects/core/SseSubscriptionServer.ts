@@ -17,7 +17,7 @@ export class SseSubscriptionServer implements SubscriptionServer {
 
                     else
                         c.channels[channel] = true;
-                    res.success({status:"ok"});
+                    res.success({ status: "ok" });
                     this.debug();
                     return;
                 }
@@ -92,7 +92,10 @@ export interface ResponseRequiredForSSE {
 }
 export class clientConnection {
     channels: Record<string, boolean> = {};
+    timeOutRef: NodeJS.Timeout;
     close() {
+        if (this.timeOutRef)
+            clearTimeout(this.timeOutRef);
         this.closed = true;
     }
     closed = false;
@@ -115,7 +118,7 @@ export class clientConnection {
         if (this.closed)
             return;
         this.write("", "keep-alive");
-        setTimeout(() => {
+        this.timeOutRef=  setTimeout(() => {
             this.sendLiveMessage();
         }, 45000);
     }

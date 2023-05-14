@@ -17,11 +17,11 @@ app.get('/c', async (req, res) => {
 })
 app.get('/b', api.withRemult, async (req, res) => res.json(await remult.repo(Task).count()))
 
-app.use(api.withRemult)
 
-app.get('/a', async (req, res) => res.json(await remult.repo(Task).count()))
 
-app.get('/api/remultCount', api.withRemult, (req, res) => {
+app.get('/a',api.withRemult, async (req, res) => res.json({what:(remult.subscriptionServer as any).connections.length}))
+
+app.get('/api/remultCount',api.withRemult,  (req, res) => {
     console.log("god here")
     heapdump.writeSnapshot('./test.heapsnapshot');
 
@@ -40,14 +40,11 @@ app.get('/api/remultCount', api.withRemult, (req, res) => {
         res.json({
             remultCount,
             testMemCount,
-            openQueries: (remult.liveQueryStorage as any).queries.length
+            openQueries: (remult.liveQueryStorage as any).queries.length,
+            sse:(remult.subscriptionServer as any).connections.length
         })
     })
 })
 
 
 app.listen(3001);
-
-
-
-
