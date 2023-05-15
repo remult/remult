@@ -8,6 +8,7 @@ const validUsers: UserInfo[] = [
 ]
 //Based on article at https://authjs.dev/reference/sveltekit
 export default SvelteKitAuth({
+  trustHost:true,
   providers: [
     Credentials({
       credentials: {
