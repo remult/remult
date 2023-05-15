@@ -32,6 +32,7 @@ class PostgresBridgeToSQLQueryResult implements SqlResult {
 }
 
 export class PostgresDataProvider implements SqlImplementation {
+    supportsJsonColumnType = true;
     async entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void> { }
     getLimitSqlSyntax(limit: number, offset: number) {
         return ' limit ' + limit + ' offset ' + offset;
@@ -69,7 +70,8 @@ export class PostgresDataProvider implements SqlImplementation {
                 createCommand: () => new PostgresBridgeToSQLCommand(transaction),
                 entityIsUsedForTheFirstTime: this.entityIsUsedForTheFirstTime,
                 transaction: () => { throw "nested transactions not allowed" },
-                getLimitSqlSyntax: this.getLimitSqlSyntax
+                getLimitSqlSyntax: this.getLimitSqlSyntax,
+                supportsJsonColumnType: this.supportsJsonColumnType,
             });
             await transaction.commit();
         }
