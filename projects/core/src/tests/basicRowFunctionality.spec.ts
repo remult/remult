@@ -33,6 +33,7 @@ import axios from "axios";
 import { async } from "@angular/core/testing";
 import { HttpProviderBridgeToRestDataProviderHttpProvider, retry, toPromise } from "../buildRestDataProvider";
 import { describeClass } from "../remult3/DecoratorReplacer";
+import { remult } from "../remult-proxy";
 
 //SqlDatabase.LogToConsole = true;
 
@@ -2285,7 +2286,7 @@ describe("test fetch", () => {
     }).delete('abc');
     expect(z).toBeUndefined();
   });
-  it("rest doesn't suppor transactions", async () => {
+  it("rest doesn't support transactions", async () => {
     const r = new RestDataProvider(() => undefined);
     let ok = false;
     try {
@@ -2311,7 +2312,13 @@ describe("test fetch", () => {
     })
     expect(r.repo(e).fields.person.valueConverter.toDb({ name: "noam" })).toBe("noam")
   });
+  it("test repo consistent instance",()=>{
+    let x = remult.repo(Categories);
+    let y = remult.repo(Categories);
+    expect(x).toBe(y);
+  })
 });
+
 class mockResponse implements Response {
   constructor(val: Partial<Response>) {
     Object.assign(this, val);
