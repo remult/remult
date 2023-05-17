@@ -2067,6 +2067,98 @@ describe("test toPromise", () => {
 
 
 
+@Entity<CompoundIdSimple>("CompoundIdPojoEntity", {
+  id: x => [x.a, x.b]
+})
+class CompoundIdSimple {
+  @Fields.integer()
+  a: number;
+  @Fields.integer()
+  b: number;
+  @Fields.integer()
+  c: number;
+}
+describe("CompoundIdPojoEntity", () => {
+  it("test basic operations", async () => {
+    var repo = new Remult(new InMemoryDataProvider()).repo(CompoundIdSimple);
+    expect(repo.metadata.idMetadata.getId({ a: 1, b: 10, c: 100 })).toBe("1,10");
+  });
+  it("test delete by id", async () => {
+    var repo = new Remult(new InMemoryDataProvider()).repo(CompoundIdSimple);
+    await repo.insert([
+      { a: 1, b: 10, c: 100 },
+      { a: 2, b: 20, c: 200 },
+      { a: 3, b: 30, c: 300 },
+    ]);
+    await repo.delete(repo.metadata.idMetadata.getId({ a: 2, b: 20 }));
+    expect((await repo.find()).map(x => x.a)).toEqual([1, 3])
+  })
+  it("test delete", async () => {
+    var repo = new Remult(new InMemoryDataProvider()).repo(CompoundIdSimple);
+    await repo.insert([
+      { a: 1, b: 10, c: 100 },
+      { a: 2, b: 20, c: 200 },
+      { a: 3, b: 30, c: 300 },
+    ]);
+    await repo.delete({ a: 2, b: 20, c: 200 });
+    expect((await repo.find()).map(x => x.a)).toEqual([1, 3])
+  })
+  it("test delete with partial object", async () => {
+    var repo = new Remult(new InMemoryDataProvider()).repo(CompoundIdSimple);
+    await repo.insert([
+      { a: 1, b: 10, c: 100 },
+      { a: 2, b: 20, c: 200 },
+      { a: 3, b: 30, c: 300 },
+    ]);
+    await repo.delete({ a: 2, b: 20 });
+    expect((await repo.find()).map(x => x.a)).toEqual([1, 3])
+  })
+  it("test save", async () => {
+    var repo = new Remult(new InMemoryDataProvider()).repo(CompoundIdSimple);
+    await repo.insert([
+      { a: 1, b: 10, c: 100 },
+      { a: 2, b: 20, c: 200 },
+      { a: 3, b: 30, c: 300 },
+    ]);
+    await repo.save({ a: 2, b: 20, c: 201 });
+    expect((await repo.findFirst({ a: 2, b: 20 })).c).toBe(201);
+  })
+  it("test update", async () => {
+    var repo = new Remult(new InMemoryDataProvider()).repo(CompoundIdSimple);
+    await repo.insert([
+      { a: 2, b: 20, c: 200 },
+    ]);
+    await repo.update(repo.metadata.idMetadata.getId({ a: 2, b: 20 }), { c: 201 });
+    expect((await repo.findFirst({ a: 2, b: 20 })).c).toBe(201);
+  })
+  it("test update", async () => {
+    var repo = new Remult(new InMemoryDataProvider()).repo(CompoundIdSimple);
+    await repo.insert([
+      { a: 2, b: 20, c: 200 },
+    ]);
+    await repo.update(repo.metadata.idMetadata.getId({ a: 2, b: 20 }), { c: 201 });
+    expect((await repo.findFirst({ a: 2, b: 20 })).c).toBe(201);
+  })
+  it("test update", async () => {
+    var repo = new Remult(new InMemoryDataProvider()).repo(CompoundIdSimple);
+    await repo.insert([
+      { a: 2, b: 20, c: 200 },
+    ]);
+    await repo.update({ a: 2, b: 20 }, { c: 201 });
+    expect((await repo.findFirst({ a: 2, b: 20 })).c).toBe(201);
+  })
+  it("test update change of id fields", async () => {
+    var repo = new Remult(new InMemoryDataProvider()).repo(CompoundIdSimple);
+    await repo.insert([
+      { a: 2, b: 20, c: 200 },
+    ]);
+    await repo.update(repo.metadata.idMetadata.getId({ a: 2, b: 20 }), { b: 21 });
+    expect((await repo.findFirst({ a: 2 })).b).toBe(21);
+  })
+
+});
+
+
 @Entity<CompoundIdEntity>(
   'compountIdEntity', {
   id: x => [x.a, x.b],

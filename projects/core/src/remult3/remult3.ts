@@ -95,11 +95,11 @@ export interface IdMetadata<entityType = any> {
      * @example
      * repo.metadata.idMetadata.getId(task)
      */
-    getId(item: entityType): any;
+    getId(item: Partial<OmitEB<entityType>>): any;
     field: FieldMetadata<any>;
     getIdFilter(...ids: any[]): EntityFilter<entityType>;
     isIdField(col: FieldMetadata): boolean;
-    createIdInFilter(items: entityType[]): EntityFilter<entityType>;
+    createIdInFilter(items: Partial<OmitEB<entityType>>[]): EntityFilter<entityType>;
 
 }
 
@@ -228,10 +228,11 @@ export interface Repository<entityType> {
      * taskRepo.update(task.id,{...task,completed:true})
     */
     update(id: (entityType extends { id?: number } ? number : entityType extends { id?: string } ? string : (string | number)), item: Partial<OmitEB<entityType>>): Promise<entityType>;
+    update(id: Partial<OmitEB<entityType>>, item: Partial<OmitEB<entityType>>): Promise<entityType>;
 
     /** Deletes an Item*/
     delete(id: (entityType extends { id?: number } ? number : entityType extends { id?: string } ? string : (string | number))): Promise<void>;
-    delete(item: entityType): Promise<void>;
+    delete(item: Partial<OmitEB<entityType>>): Promise<void>;
 
     /** Creates an instance of an item. It'll not be saved to the data source unless `save` or `insert` will be called for that item */
     create(item?: Partial<OmitEB<entityType>>): entityType;

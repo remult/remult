@@ -204,8 +204,8 @@ describe("remult-3-basics", () => {
         expect(p.category.id).toBe(2);
         p = await r.update(1, {
             ...p,
-            //@ts-ignore
-            category: { id: 1 }
+
+            category: { id: 1 } as any
         })
         expect(p.id).toBe(1);
         expect(p.category.id).toBe(1);
@@ -240,8 +240,8 @@ describe("remult-3-basics", () => {
         expect(p.category.id).toBe(2);
         p = await r.update(1, {
             ...p,
-            //@ts-ignore
-            category: { id: 1 }
+
+            category: { id: 1 } as any
         })
         expect(p.id).toBe(1);
         expect(p.category.id).toBe(1);

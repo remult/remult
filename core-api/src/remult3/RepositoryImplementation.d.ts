@@ -40,7 +40,8 @@ export declare class RepositoryImplementation<entityType> implements Repository<
         id?: number;
     } ? number : entityType extends {
         id?: string;
-    } ? string : (string | number)), entity: Partial<OmitEB<entityType>>): Promise<entityType>;
+    } ? string : (string | number)), item: Partial<OmitEB<entityType>>): Promise<entityType>;
+    update(originalItem: Partial<OmitEB<entityType>>, item: Partial<OmitEB<entityType>>): Promise<entityType>;
     private getRefForExistingRow;
     save(item: Partial<OmitEB<entityType>>[]): Promise<entityType[]>;
     save(item: Partial<OmitEB<entityType>>): Promise<entityType>;

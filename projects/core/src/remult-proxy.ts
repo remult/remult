@@ -88,7 +88,7 @@ export class RemultProxy implements Remult {
             },
             query: (...args2) => self.remultFactory().repo(...args).query(...args2),
             save: (args2) => self.remultFactory().repo(...args).save(args2),
-            update: (...args2) => self.remultFactory().repo(...args).update(...args2),
+            update: (a,b) => self.remultFactory().repo(...args).update(a,b),
         }
     };
     get user() {

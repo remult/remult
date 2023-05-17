@@ -211,7 +211,9 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             }
         }
     }
-    async update(id: (entityType extends { id?: number } ? number : entityType extends { id?: string } ? string : (string | number)), entity: Partial<OmitEB<entityType>>): Promise<entityType> {
+    update(id: (entityType extends { id?: number } ? number : entityType extends { id?: string } ? string : (string | number)), item: Partial<OmitEB<entityType>>): Promise<entityType>;
+    update(originalItem: Partial<OmitEB<entityType>>, item: Partial<OmitEB<entityType>>): Promise<entityType>;
+    async update(id: any, entity: Partial<OmitEB<entityType>>): Promise<entityType> {
 
         let ref = this.getRefForExistingRow(entity, id);
 
@@ -230,6 +232,8 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             }
             this.fixTypes(instance);
             let row = new rowHelperImplementation(this._info, instance, this, this.edp, this.remult, false);
+            if (typeof (id) === "object")
+                id = this.metadata.idMetadata.getId(id)
             if (id) {
                 row.id = id;
                 row.originalId = id;
@@ -256,7 +260,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
                 return await this.getEntityRef(entity as unknown as entityType).save();
             }
             else {
-                let id = entity[this.metadata.idMetadata.field.key];
+                let id = this.metadata.idMetadata.getId(entity);
                 if (id === undefined)
                     return this.insert(entity);
                 return this.update(id, entity);
