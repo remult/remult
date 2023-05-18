@@ -1698,6 +1698,7 @@ export class Fields {
     }
     static createdAt<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]) {
         return Field(() => Date, {
+            allowApiUpdate: false,
             saving: (_, ref) => {
                 if (getEntityRef(_).isNew())
                     ref.value = new Date()
@@ -1706,6 +1707,7 @@ export class Fields {
     }
     static updatedAt<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]) {
         return Field(() => Date, {
+            allowApiUpdate: false,
             saving: (_, ref) => {
                 ref.value = new Date()
             }

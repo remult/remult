@@ -2,7 +2,8 @@
 
 All notable changes to this project will be documented in this file.
 
-
+## [0.20.2] - in progress
+- createdAt & updatedAt are by default `allowApiUpdate` false
 ## [0.20.1] - 2023-05-17
 - Improved support for compound id entity
 - Minor bug fixes
