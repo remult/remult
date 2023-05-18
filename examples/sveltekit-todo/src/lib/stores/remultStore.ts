@@ -2,7 +2,7 @@ import { browser } from "$app/environment";
 import type { Repository } from "remult";
 import { writable } from "svelte/store";
 
-// probably to move in remult-svelte
+// TODO: move in remult repo
 export const remultStore = <T>(repo: Repository<T>, initValues: T[] = []) => {
 	const { subscribe, set, update } = writable<T[]>(initValues);
 

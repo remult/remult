@@ -5,14 +5,11 @@
   import { browser } from "$app/environment"
   import { signOut } from "@auth/sveltekit/client"
   import "../app.css"
+  import { remultStore } from "../lib/stores/remultStore"
   import { TasksController } from "../shared/tasksController"
   import type { PageData } from "./$types"
-  import { remultStore } from "./remultStore"
 
   export let data: PageData
-
-  // set the user (can't we do it globally?)
-  remult.user = data.user
 
   // get the repo
   const taskRepo = remult.repo(Task)
