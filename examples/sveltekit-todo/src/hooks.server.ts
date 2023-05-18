@@ -1,6 +1,6 @@
-import { sequence } from '@sveltejs/kit/hooks';
+import { sequence } from "@sveltejs/kit/hooks";
 
-import { api } from './api.server';
-import authServer from './auth.server';
+import { handleAuth } from "./hooks/handleAuth";
+import { handleRemult } from "./hooks/handleRemult";
 
-export const handle = sequence(authServer, api);
+export const handle = sequence(handleAuth, handleRemult);
