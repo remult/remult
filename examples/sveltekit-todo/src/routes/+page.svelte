@@ -18,7 +18,8 @@
   let tasks = remultStore(taskRepo, data.tasks)
 
   // listen to changes
-  $: browser && tasks.listen({ limit: 2 })
+  // $: browser && tasks.listen({ limit: 2 })
+  $: browser && tasks.listen()
 
   let newTaskTitle = ""
 
