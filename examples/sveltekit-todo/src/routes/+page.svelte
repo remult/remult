@@ -1,17 +1,20 @@
 <script lang="ts">
   import { remult } from "remult"
+  import { onDestroy, onMount } from "svelte"
   import { Task } from "../shared/task"
-  import { onMount, onDestroy } from "svelte"
 
-  import { signIn, signOut } from "@auth/sveltekit/client"
-  import { page } from "$app/stores"
-  import { TasksController } from "../shared/tasksController"
+  import { signOut } from "@auth/sveltekit/client"
   import "../app.css"
+  import { TasksController } from "../shared/tasksController"
 
-  remult.user = $page.data.user
+  export let data
+  remult.user = data.user
+  let tasks = data.tasks
+
   const taskRepo = remult.repo(Task)
-  let tasks: Task[] = []
+
   let newTaskTitle = ""
+
   let unSub = () => {}
   onMount(() => {
     unSub = taskRepo
@@ -19,6 +22,7 @@
       .subscribe((info) => (tasks = info.applyChanges(tasks)))
   })
   onDestroy(() => unSub())
+
   async function addTask() {
     try {
       const newTask = await taskRepo.insert({ title: newTaskTitle })

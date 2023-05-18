@@ -1,11 +1,8 @@
-import { redirect } from "@sveltejs/kit"
 import { remult } from "remult"
+import { Task } from "../shared/task"
 
 export const load = async () => {
-  if (!remult.authenticated()) {
-    throw redirect(303, "/auth/signin")
-  }
-  return {
-    user: remult.user
-  }
+  const tasks = await remult.repo(Task).find()
+  // Maybe something better to do here? (if return task, we get non-POJOs error)
+  return { tasks: JSON.parse(JSON.stringify(tasks)) as Task[] }
 }
