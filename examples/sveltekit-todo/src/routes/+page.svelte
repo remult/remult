@@ -1,24 +1,28 @@
 <script lang="ts">
   import { remult } from "remult"
   import { Task } from "../shared/task"
-  import { onMount, onDestroy } from "svelte"
 
-  import { signIn, signOut } from "@auth/sveltekit/client"
-  import { page } from "$app/stores"
-  import { TasksController } from "../shared/tasksController"
+  import { browser } from "$app/environment"
+  import { signOut } from "@auth/sveltekit/client"
   import "../app.css"
+  import { remultStore } from "../lib/stores/remultStore"
+  import { TasksController } from "../shared/tasksController"
+  import type { PageData } from "./$types"
 
-  remult.user = $page.data.user
+  export let data: PageData
+
+  // get the repo
   const taskRepo = remult.repo(Task)
-  let tasks: Task[] = []
+
+  // Start with SSR tasks then subscribe to changes
+  let tasks = remultStore(taskRepo, data.tasks)
+
+  // listen to changes
+  // $: browser && tasks.listen({ limit: 2 })
+  $: browser && tasks.listen()
+
   let newTaskTitle = ""
-  let unSub = () => {}
-  onMount(() => {
-    unSub = taskRepo
-      .liveQuery()
-      .subscribe((info) => (tasks = info.applyChanges(tasks)))
-  })
-  onDestroy(() => unSub())
+
   async function addTask() {
     try {
       const newTask = await taskRepo.insert({ title: newTaskTitle })
@@ -57,7 +61,7 @@
       <button>Add</button>
     </form>
   {/if}
-  {#each tasks as task}
+  {#each $tasks as task}
     <div>
       <input
         type="checkbox"
