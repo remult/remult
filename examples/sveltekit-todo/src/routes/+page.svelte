@@ -15,8 +15,10 @@
   const taskRepo = remult.repo(Task)
 
   // Start with SSR tasks then subscribe to changes
-  let tasks = remultStore<Task>(taskRepo, data.tasks)
-  $: browser && tasks.init()
+  let tasks = remultStore(taskRepo, data.tasks)
+
+  // listen to changes
+  $: browser && tasks.listen({ limit: 2 })
 
   let newTaskTitle = ""
 

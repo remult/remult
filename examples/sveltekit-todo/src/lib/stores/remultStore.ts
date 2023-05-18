@@ -1,5 +1,5 @@
 import { browser } from "$app/environment";
-import type { Repository } from "remult";
+import type { FindOptions, Repository } from "remult";
 import { writable } from "svelte/store";
 
 // TODO: move in remult repo
@@ -8,10 +8,11 @@ export const remultStore = <T>(repo: Repository<T>, initValues: T[] = []) => {
 
 	return {
 		subscribe,
-		init: () => {
+
+		listen: (options?: FindOptions<T>) => {
 			if (browser) {
 				repo
-					.liveQuery()
+					.liveQuery(options)
 					.subscribe((info) => {
 						set(info.items)
 					})
@@ -23,6 +24,6 @@ You should do like:
   $: browser && tasks.init()
 				`);
 			}
-		}
+		},
 	};
 }
