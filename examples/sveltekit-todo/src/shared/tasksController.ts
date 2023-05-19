@@ -3,9 +3,11 @@ import { Task } from "./task"
 
 export class TasksController {
   @BackendMethod({ allowed: Allow.authenticated })
-  static async setAllCompleted(completed: boolean) {
+  static async setAllCompleted(ids: number[], completed: boolean) {
     const taskRepo = remult.repo(Task)
-    for (const task of await taskRepo.find()) {
+    const orIds = ids.map(id => { return { id: id } })
+
+    for (const task of await taskRepo.find({ where: { $or: orIds } })) {
       await taskRepo.save({ ...task, completed })
     }
   }

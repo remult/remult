@@ -3,9 +3,11 @@
   import { Task } from "../shared/task"
 
   import { browser } from "$app/environment"
+  import { goto } from "$app/navigation"
+  import { page } from "$app/stores"
   import { signOut } from "@auth/sveltekit/client"
   import "../app.css"
-  import { remultStore } from "../lib/stores/remultStore"
+  import { remultLive } from "$lib/stores/remultLive"
   import { TasksController } from "../shared/tasksController"
   import type { PageData } from "./$types"
 
@@ -14,12 +16,9 @@
   // get the repo
   const taskRepo = remult.repo(Task)
 
-  // Start with SSR tasks then subscribe to changes
-  let tasks = remultStore(taskRepo, data.tasks)
-
-  // listen to changes
-  // $: browser && tasks.listen({ limit: 2 })
-  $: browser && tasks.listen()
+  // Start with SSR tasks then subscribe to changes (respecting options!)
+  const tasks = remultLive(taskRepo, data.tasks)
+  $: browser && tasks.listen(data.options)
 
   let newTaskTitle = ""
 
@@ -46,7 +45,20 @@
     }
   }
   async function setAllCompleted(completed: boolean) {
-    await TasksController.setAllCompleted(completed)
+    await TasksController.setAllCompleted(
+      $tasks.map((c) => c.id),
+      completed
+    )
+  }
+
+  function updateLimit(direction: "MORE" | "LESS") {
+    const limit = parseInt($page.url.searchParams.get("limit") || "3")
+    const newLimit = direction === "MORE" ? limit + 1 : limit - 1
+
+    // Let's not go bellow 1!
+    if (newLimit < 1) return
+
+    goto(`/?limit=${newLimit}`)
   }
 </script>
 
@@ -54,6 +66,11 @@
 <main>
   <div>
     Hello {remult.user?.name} <button on:click={signOut}>Sign Out</button>
+  </div>
+  <div>
+    <button on:click={() => updateLimit("LESS")}>Less</button>
+    <i>Show</i>
+    <button on:click={() => updateLimit("MORE")}>More</button>
   </div>
   {#if taskRepo.metadata.apiInsertAllowed()}
     <form on:submit|preventDefault={addTask}>
