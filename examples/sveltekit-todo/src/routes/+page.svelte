@@ -45,10 +45,7 @@
     }
   }
   async function setAllCompleted(completed: boolean) {
-    await TasksController.setAllCompleted(
-      $tasks.map((c) => c.id),
-      completed
-    )
+    await TasksController.setAllCompleted(completed)
   }
 
   function updateLimit(direction: "MORE" | "LESS") {

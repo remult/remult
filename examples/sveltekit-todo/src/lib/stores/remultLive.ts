@@ -20,17 +20,16 @@ import { onDestroy } from 'svelte';
  */
 export const remultLive = <T>(repo: Repository<T>, initValues: T[] = []) => {
 	const { subscribe, set } = writable<T[]>(initValues);
-
 	let unSub: any = null
 
-	onDestroy(() => {
-		plzUnSub()
+	onDestroy(async () => {
+		await plzUnSub()
 	})
 
 	// if we already have a subscription, unsubscribe (on option update for example)
-	const plzUnSub = () => {
+	const plzUnSub = async () => {
 		if (unSub) {
-			unSub()
+			await unSub()
 			unSub = null
 		}
 	}
@@ -38,9 +37,9 @@ export const remultLive = <T>(repo: Repository<T>, initValues: T[] = []) => {
 	return {
 		subscribe,
 		set,
-		listen: (options?: FindOptions<T>) => {
+		listen: async (options?: FindOptions<T>) => {
 			if (browser) {
-				plzUnSub()
+				await plzUnSub()
 
 				unSub = repo
 					.liveQuery(options)
