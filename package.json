@@ -17,7 +17,7 @@
     "patch-versions-experimental": " FOR /F %i in ('npm version prerelease -preid \"exp\" -m \"release %s\"') DO git push origin %i && npm run update-versions",
     "patch-versions": " FOR /F %i in ('npm version patch -m \"release %s\"') DO git push origin %i && npm run update-versions",
     "update-versions": "ts-node --project projects/test-angular/tsconfig.server.json ./misc/update-versions.ts",
-    "node-serve": "tsc-watch -p projects/test-angular/tsconfig.server.json --onSuccess \"npm run server:dev-run\"",
+    "dev-node": "tsx watch --inspect projects/test-angular/src/app/server/server.ts",
     "build-server-watch": "tsc -p projects/test-angular/tsconfig.server.json --watch",
     "server:dev-run": "node --inspect dist/test-angular/test-angular/src/app/server/server.js",
     "docs": "cd docs && npm run dev",
