@@ -2,10 +2,16 @@ import fastify from "fastify"
 import { remultFastify } from "../../core/remult-fastify"
 import { remult } from "../../core/src/remult-proxy"
 import { Task } from "../shared/Task"
+import fastifySwaggerUi from "@fastify/swagger-ui";
+import fs from 'fs'
+
   ; (async () => {
     const server = fastify()
     const api = remultFastify({ entities: [Task] })
+    const openApiDocument = api.openApiDoc({ title: "tasks" });
+    fs.writeFileSync('/temp/test.json', JSON.stringify(openApiDocument, undefined, 2))
     await server.register(api)
+    
     server.get("/api/test", async (req, res) => {
       return {
         result: await api.withRemult(req, () => remult.repo(Task).count())

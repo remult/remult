@@ -92,10 +92,10 @@ export function remultGraphql(api: RemultExpressServer) {
 
       filterTypes += "input " + key + "Filter{" + filterFields + "\n\tOR:[" + key + "Filter]\n}\n";
       query += q;
-      root[key] = async ({ options, filter }, req, a) => {
-
+      root[key] = async (arg1, req, a) => {
+        const { options, filter } =arg1;
         return new Promise(async (res, error) => {
-          //TODO - consider this with remult usage
+          //TODO - consider this with remult usage when working with other servers
           api.withRemult(req, undefined!, async () => {
             let remult = await api.getRemult(req);
             let repo = remult.repo(e);
@@ -166,3 +166,9 @@ input options{
 `
   };
 }
+
+//TODO - filter doesn't work since we changed id_eq to be id.eq in rest, but graphql doesn't allow it.
+//TODO - the list of entities, is based on allEntities - that's wrong - it should be based on the api entities - or a separate array.
+//TODO - it's currently only planned for express server - it uses it's 'withRemult' that doesn't exist in all other servers.
+//TODO - it doesn't support mutations
+//TODO - it doesn't support backend methods
