@@ -1,5 +1,5 @@
-import { DataApi } from "./src/data-api";
-import { RemultServerCore } from "./server/expressBridge";
+import { RemultServerCore } from "./server";
+
 
 export function remultGraphql(api: RemultServerCore<any>) {
 
@@ -107,9 +107,7 @@ export function remultGraphql(api: RemultServerCore<any>) {
         return new Promise(async (res, error) => {
 
           server.run(req, async () => {
-            let remult = await api.getRemult(req);
-            let repo = remult.repo(meta.entityType);
-            let dApi = new DataApi(repo, remult);
+            let dApi = await server.getDataApi(req, meta);
             let result: any;
             let err: any;
             await dApi.getArray({
@@ -188,8 +186,6 @@ function getTypeName(key: string) {
   return key;
 }
 
-//TODO - filter doesn't work since we changed id_eq to be id.eq in rest, but graphql doesn't allow it.
-//TODO - the list of entities, is based on entities - that's wrong - it should be based on the api entities - or a separate array.
-//TODO - it's currently only planned for express server - it uses it's 'withRemult' that doesn't exist in all other servers.
-//TODO - it doesn't support mutations
-//TODO - it doesn't support backend methods
+
+
+

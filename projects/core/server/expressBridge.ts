@@ -175,6 +175,7 @@ export interface RemultServerCore<RequestType> {
   ["get internal server"](): remultServerInternalExperimental<RequestType>;
 }
 export interface remultServerInternalExperimental<RequestType> {
+  getDataApi(req: RequestType, meta: EntityMetadata<any>): Promise<DataApi>;
   getEntities(): EntityMetadata[];
   run<T>(request: RequestType, what: () => Promise<T>): Promise<T>
 
@@ -245,6 +246,10 @@ export class RemultServerImplementation<RequestType> implements RemultServer<Req
     if (options.subscriptionServer)
       this.subscriptionServer = options.subscriptionServer;
 
+  }
+  async getDataApi(req: RequestType, meta: EntityMetadata<any>): Promise<DataApi> {
+    const remult = await this.getRemult(req);
+    return new DataApi(remult.repo(meta.entityType), remult)
   }
   run<T>(request: RequestType, what: () => Promise<T>): Promise<T> {
     return new Promise<any>((resolve, error) => {
