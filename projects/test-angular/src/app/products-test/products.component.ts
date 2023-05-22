@@ -1,5 +1,5 @@
 import { Component, NgZone, OnInit } from '@angular/core';
-import { Remult, Entity, IdEntity, Fields, Controller, InMemoryDataProvider, Sort, BackendMethod, remult, SubscriptionChannel, ProgressListener } from 'remult';
+import { Remult, Entity, IdEntity, Fields, Controller, InMemoryDataProvider, Sort, BackendMethod, remult, SubscriptionChannel, ProgressListener, Field } from 'remult';
 import { GridSettings } from '@remult/angular/interfaces';
 import { DialogConfig } from '../../../../angular';
 import * as ably from 'ably';
@@ -49,6 +49,16 @@ export class ProductsComponent {
 
 }
 
+@Entity("categories", {
+  allowApiCrud: true
+})
+export class Category {
+  @Fields.autoIncrement()
+  id = 0;
+  @Fields.string()
+  name = ''
+}
+
 @Entity("tasks", {
   allowApiCrud: true
 })
@@ -59,6 +69,8 @@ export class Task {
   title = ''
   @Fields.boolean()
   completed = false
+  @Field(() => Category)
+  category: Category;
   @BackendMethod({ allowed: true, apiPrefix: 'noam' })
   static async entityStatic() {
     return "ok";

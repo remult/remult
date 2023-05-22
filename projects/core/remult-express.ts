@@ -32,8 +32,9 @@ export function remultExpress(options?:
     return Object.assign(app, {
         getRemult: (req) => server.getRemult(req),
         openApiDoc: (options: { title: string }) => server.openApiDoc(options),
-        withRemult: (...args) => server.withRemult(...args)
-    } as RemultExpressServer);
+        withRemult: (req, res, next) => server.withRemult(req, res, next),
+        "get internal server": () => server['get internal server']()
+    });
 
 }
 

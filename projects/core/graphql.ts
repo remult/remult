@@ -1,15 +1,10 @@
-import { Remult } from ".";
-
-import { allEntities } from "./src/context";
-import { getEntityKey } from "./src/remult3";
-
 import { DataApi } from "./src/data-api";
-import { RemultServer } from "./server/expressBridge";
-import { ValueConverters } from "./src/valueConverters";
-import { RemultExpressServer } from "./remult-express";
+import { RemultServerCore } from "./server/expressBridge";
 
-export function remultGraphql(api: RemultExpressServer) {
-  let r = new Remult();
+export function remultGraphql(api: RemultServerCore<any>) {
+
+  let server = api["get internal server"]();
+  const entities = server.getEntities();
   let types: {
     key: string,
     fields: string,
@@ -19,20 +14,25 @@ export function remultGraphql(api: RemultExpressServer) {
   let filterTypes = '';
   let query = '';
   let root = {};
+  let resolversQuery = {}
+  let resolvers = { Query: resolversQuery }
+
   function getType(key: string) {
     let t = types.find(t => t.key === key);
     if (!t)
       types.push((t = ({ fields: "", key, moreFields: "", resultProcessors: [] })))
     return t;
   }
-  for (const e of allEntities) {
-    let meta = r.repo(e).metadata;
+  for (const meta of entities) {
     let filterFields = '';
 
     let key = meta.key;
     const t = getType(key)
-    let q = "\n\t" + key + "(options: options, filter:" + key + "Filter): [" + key + "]";
+    let q = "\n\t" + key + "(options: options, filter:" + key + "Filter): [" + getTypeName(key) + "]";
     if (key) {
+
+      const filterFieldMap = new Map<string, string>()
+
       for (const f of meta.fields) {
         {
           let type = "String";
@@ -49,11 +49,14 @@ export function remultGraphql(api: RemultExpressServer) {
               }
               break;
           }
-          if (allEntities.includes(f.valueType)) {
-            const refKey = r.repo(f.valueType).metadata.key;
-            t.fields += "\n\t" + f.key + ":" + refKey;
+          let info = entities.find(i => i.entityType === f.valueType);
+          if (info !== undefined) {
+            const refKey = info.key;
+            t.fields += "\n\t" + f.key + ":" + getTypeName(refKey);
             t.resultProcessors.push(r => {
               const val = r[f.key];
+              if (val === null || val === undefined)
+                return null;
               r[f.key] = async (args: any, req: any, gqlInfo: any) => {
                 const queryResult: any[] = await root[refKey]({ ...args.filter, filter: { id: val }, options: { limit: 1 } }, req, gqlInfo);
                 if (queryResult.length > 0)
@@ -72,20 +75,27 @@ export function remultGraphql(api: RemultExpressServer) {
           }
           else
             t.fields += "\n\t" + f.key + ":" + type;
+          const addFilter = (operator: string, theType?: string) => {
+            if (!theType)
+              theType = type;
+            filterFields += "\n\t" + f.key + operator + ":" + theType;
+            filterFieldMap.set(f.key + operator.replace('_', '.'), f.key + operator);
+          }
           for (const operator of ["", "_ne"]) {
-            filterFields += "\n\t" + f.key + operator + ":" + type;
+            addFilter(operator);
+
           }
           if (f.valueType === String || f.valueType === Number)
             for (const operator of ["_gt", "_gte", "_lt", "_lte"]) {
-              filterFields += "\n\t" + f.key + operator + ":" + type;
+              addFilter(operator);
             }
           if (f.valueType === String)
             for (const operator of ["_st", "_contains"]) {
-              filterFields += "\n\t" + f.key + operator + ":" + type;
+              addFilter(operator);
             }
           if (f.allowNull)
-            filterFields += "\n\t" + f.key + "_null:Boolean";
-          filterFields += "\n\t" + f.key + "_in:[" + type + "]";
+            addFilter("_null", "Boolean");
+          addFilter("_in", "[" + type + "]");
         }
       }
 
@@ -93,12 +103,12 @@ export function remultGraphql(api: RemultExpressServer) {
       filterTypes += "input " + key + "Filter{" + filterFields + "\n\tOR:[" + key + "Filter]\n}\n";
       query += q;
       root[key] = async (arg1, req, a) => {
-        const { options, filter } =arg1;
+        const { options, filter } = arg1;
         return new Promise(async (res, error) => {
-          //TODO - consider this with remult usage when working with other servers
-          api.withRemult(req, undefined!, async () => {
+
+          server.run(req, async () => {
             let remult = await api.getRemult(req);
-            let repo = remult.repo(e);
+            let repo = remult.repo(meta.entityType);
             let dApi = new DataApi(repo, remult);
             let result: any;
             let err: any;
@@ -128,6 +138,11 @@ export function remultGraphql(api: RemultExpressServer) {
                     case "_order":
                       return options.order;
                   }
+                if (filter) {
+                  let f = filterFieldMap.get(key);
+                  if (f)
+                    return filter[f];
+                }
               }
             }, filter);
             if (err) {
@@ -138,6 +153,7 @@ export function remultGraphql(api: RemultExpressServer) {
           });
         });
       }
+      resolversQuery[key] = (origItem: any, args: any, req: any, gqlInfo: any) => root[key](args, req, gqlInfo);
     }
   }
   if (query.length > 0) {
@@ -152,9 +168,10 @@ export function remultGraphql(api: RemultExpressServer) {
 
 
   return {
+    resolvers,
     rootValue: root,
     schema:
-      `${types.map(({ key, fields, moreFields }) => "type " + key + "{" + fields + moreFields + "\n}\n").join('')}
+      `${types.map(({ key, fields, moreFields }) => "type " + getTypeName(key) + "{" + fields + moreFields + "\n}\n").join('')}
 ${query}
 ${filterTypes}
 input options{
@@ -167,8 +184,12 @@ input options{
   };
 }
 
+function getTypeName(key: string) {
+  return key;
+}
+
 //TODO - filter doesn't work since we changed id_eq to be id.eq in rest, but graphql doesn't allow it.
-//TODO - the list of entities, is based on allEntities - that's wrong - it should be based on the api entities - or a separate array.
+//TODO - the list of entities, is based on entities - that's wrong - it should be based on the api entities - or a separate array.
 //TODO - it's currently only planned for express server - it uses it's 'withRemult' that doesn't exist in all other servers.
 //TODO - it doesn't support mutations
 //TODO - it doesn't support backend methods

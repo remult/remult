@@ -21,6 +21,7 @@ export function remultNext(
     result, {
     getRemult: (req) => result.getRemult(req),
     openApiDoc: (arg) => result.openApiDoc(arg),
+    "get internal server": () => result['get internal server']()
   },
     {
       getServerSideProps: (getServerPropsFunction) => {
@@ -144,13 +145,9 @@ export function remultNextApp(
     POST: handler,
     PUT: handler,
     DELETE: handler,
-    withRemult: (what: () => Promise<any>) => {
-      return new Promise<any>((resolve) => {
-        return result.withRemult({} as any, undefined!, () => {
-          what().then(resolve)
-        })
-      })
-    }
+    withRemult: <T>(what) =>
+      result['get internal server']().run<T>(undefined!, what),
+    "get internal server": () => result['get internal server']()
   };
 }
 
