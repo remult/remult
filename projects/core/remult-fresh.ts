@@ -24,7 +24,8 @@ export function remultFresh(options: RemultServerOptions<FreshRequest>, response
             else {
                 return ctx.next();
             };
-        }
+        },
+        "get internal server": () => server["get internal server"]()
     }
 };
 
