@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.20.2] - in progress
+## [0.20.2] - 2023-05-22
 - createdAt & updatedAt are by default `allowApiUpdate` false
 - Added `apiPrefix` to `BackendMethod` `options` to allow more control over backend method routes. #189
 ## [0.20.1] - 2023-05-17
