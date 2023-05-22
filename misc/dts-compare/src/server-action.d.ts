@@ -33,6 +33,11 @@ export declare class myServerAction extends Action<inArgs, result> {
 export interface BackendMethodOptions<type> {
     /**Determines when this `BackendMethod` can execute, see: [Allowed](https://remult.dev/docs/allowed.html)  */
     allowed: AllowedForInstance<type>;
+    /** Used to determine the route for the BackendMethod.
+     * @example
+     * {allowed:true, apiPrefix:'someFolder/'}
+     */
+    apiPrefix?: string;
     /** EXPERIMENTAL: Determines if this method should be queued for later execution */
     queue?: boolean;
     /** EXPERIMENTAL: Determines if the user should be blocked while this `BackendMethod` is running*/

@@ -26,40 +26,25 @@ export class ProductsComponent {
 
 
   }
-  ngOnInit() {
-    this.test();
-  }
-  i = 0;
-  countRemult = {};
-  async test() {
-    let z = 0
-    while (z++ < 100) {
-      this.i++;
-      //await remult.repo(Task).find()
+  async ngOnInit() {
+    var t = await remult.repo(Task).findFirst();
 
-      // await new Promise(resolve => {
-      //   let unsub = () => { };
-      //   unsub = remult.repo(Task).liveQuery({
-      //     limit: this.i
-      //   }).subscribe(x => {
-      //     unsub();
-      //     resolve({});
-      //   })
-
-      // })
-
-      // let s = await new SubscriptionChannel("x" + this.i).subscribe(() => { })
-      // s();
-
-      await Task.test()
-
+    try {
+      this.countRemult = {
+        "entityInstance": await t.entityInstance(),
+        "entityStatic": await Task.entityStatic(),
+        "undecoratedStatic": await TasksController.undecoratedStatic(),
+        "decoratedStatic": await TasksControllerDecorated.decoratedStatic(),
+        "decorated": await new TasksControllerDecorated().decorated()
+      }
+    } catch (err) {
+      this.countRemult = err;
     }
-    this.getRemultCount()
 
   }
-  async getRemultCount() {
-    this.countRemult = await this.http.get('/api/remultCount').toPromise()
-  }
+
+  countRemult = {};
+
 
 
 }
@@ -74,31 +59,30 @@ export class Task {
   title = ''
   @Fields.boolean()
   completed = false
-  @BackendMethod({ allowed: true })
-  static async setAllCompleted(completed: boolean) {
-    const taskRepo = remult.repo(Task);
-    for (const task of await taskRepo.find()) {
-      await taskRepo.save({ ...task, completed })
-    }
+  @BackendMethod({ allowed: true, apiPrefix: 'noam' })
+  static async entityStatic() {
+    return "ok";
   }
-  @BackendMethod({ allowed: true, queue: true })
-  static async test(p?: ProgressListener) {
-
-    for (let index = 0; index < 2; index++) {
-      await new Promise(resolve => {
-        setTimeout(() => {
-          resolve({})
-        }, 100);
-      })
-      p.progress(index / 2)
-
-    }
+  @BackendMethod({ allowed: true, apiPrefix: 'noam' })
+  async entityInstance() {
+    return "ok"
   }
 }
 
-
-
-
-
-
-
+export class TasksController {
+  @BackendMethod({ allowed: true, apiPrefix: 'noam' })
+  static async undecoratedStatic() {
+    return "ok";
+  }
+}
+@Controller("Decorated/myStuff/someMoreStuff")
+export class TasksControllerDecorated {
+  @BackendMethod({ allowed: true, apiPrefix: 'noam' })
+  static async decoratedStatic() {
+    return "ok";
+  }
+  @BackendMethod({ allowed: true, apiPrefix: 'noam' })
+  async decorated() {
+    return "ok";
+  }
+}

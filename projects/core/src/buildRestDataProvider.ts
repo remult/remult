@@ -54,7 +54,7 @@ export async function retry<T>(what: () => Promise<T>): Promise<T> {
                 err.message?.startsWith("Error occured while trying to proxy") ||
                 err.message?.includes("http proxy error") ||
                 err.message?.startsWith("Gateway Timeout") ||
-                err.status == 500) && i++ < 10) {
+                err.status == 500) && i++ < 50) {
                 await new Promise((res, req) => {
                     setTimeout(() => {
                         res({})
