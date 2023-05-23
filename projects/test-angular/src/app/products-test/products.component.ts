@@ -67,6 +67,12 @@ export class Task {
   async entityInstance() {
     return "ok"
   }
+  @Fields.string({ allowApiUpdate: false })
+  apiUpdateNotAllowed = '';
+  @Fields.string({ includeInApi: false })
+  includeInApiFalse = '';
+  @Fields.string({ serverExpression: () => '' })
+  serverExpression = '';
 }
 
 export class TasksController {

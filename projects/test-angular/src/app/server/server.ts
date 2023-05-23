@@ -13,7 +13,7 @@ import { buildSchema } from 'graphql';
 import { graphqlHTTP } from 'express-graphql';
 
 import { createSchema, createYoga } from 'graphql-yoga'
-
+import fs from 'fs'
 
 
 
@@ -32,6 +32,7 @@ export const api = remultExpress({
 app.use(api)
 
 const openApiDocument = api.openApiDoc({ title: 'remult-react-todo' })
+fs.writeFileSync('/temp/test.json', JSON.stringify(openApiDocument, undefined, 2))
 app.get('/api/openApi.json', (req, res) => res.json(openApiDocument));
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openApiDocument));
 const { schema, rootValue } = remultGraphql(api);
