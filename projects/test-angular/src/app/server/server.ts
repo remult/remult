@@ -27,7 +27,7 @@ const app = express()
 export const api = remultExpress({
     entities: [Task],
     controllers: [TasksController, TasksControllerDecorated],
-    queueStorage: new EntityQueueStorage(r.repo(JobsInQueueEntity))
+    queueStorage: new EntityQueueStorage(r.repo(JobsInQueueEntity)),
 })
 app.use(api)
 

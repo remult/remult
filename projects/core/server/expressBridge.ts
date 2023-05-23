@@ -591,7 +591,7 @@ export class RemultServerImplementation<RequestType> implements RemultServer<Req
           mutationKey += 'Mutation';
           spec.components.schemas[mutationKey] = {
             type: "object",
-            properties:mutationProperties
+            properties: mutationProperties
           }
         }
         let definition = {
@@ -605,8 +605,8 @@ export class RemultServerImplementation<RequestType> implements RemultServer<Req
         }
 
 
-        let apiPath: any = spec.paths['/api/' + key] = {};
-        let apiPathWithId: any = spec.paths['/api/' + key + "/{id}"] = {};
+        let apiPath: any = spec.paths[this.options.rootPath + '/' + key] = {};
+        let apiPathWithId: any = spec.paths[this.options.rootPath + '/' + key + "/{id}"] = {};
         //https://github.com/2fd/open-api.d.ts
         apiPath.get = secure(meta.options.allowApiRead, true, {
           description: "return an array of " + key + ". supports filter operators. For more info on filtering [see this article](https://remult.dev/docs/rest-api.html#filter)",
