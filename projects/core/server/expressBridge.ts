@@ -576,38 +576,55 @@ export class RemultServerImplementation<RequestType> implements RemultServer<Req
       let key = meta.key;
       let parameters = [];
       if (key) {
+        let mutationKey = key;
         let properties: any = {};
+        let mutationProperties: any = {};
         for (const f of meta.fields) {
           let type = f.valueType == String ? "string" :
             f.valueType == Boolean ? "boolean" :
               f.valueType == Date ? "string" :
                 f.valueType == Number ? "number" :
                   "object";
-          properties[f.key] = {
-            type
+          if (f.options.includeInApi !== false) {
+            properties[f.key] = {
+              type
+            }
+            if (f.options.allowApiUpdate !== false) {
+              mutationProperties[f.key] = {
+                type
+              }
+            }
+            parameters.push({
+              "name": f.key,
+              "in": "query",
+              "description": "filter equal to " + f.key,
+              "required": false,
+              "style": "simple",
+              type
+            });
+            parameters.push({
+              "name": f.key + "_ne",
+              "in": "query",
+              "description": "filter not equal to " + f.key,
+              "required": false,
+              "style": "simple",
+              type
+            });
           }
-          parameters.push({
-            "name": f.key,
-            "in": "query",
-            "description": "filter equal to " + f.key,
-            "required": false,
-            "style": "simple",
-            type
-          });
-          parameters.push({
-            "name": f.key + "_ne",
-            "in": "query",
-            "description": "filter not equal to " + f.key,
-            "required": false,
-            "style": "simple",
-            type
-          });
-
-
         }
+
         spec.components.schemas[key] = {
           type: "object",
           properties
+        }
+        //TODO - handle allow api read also on the get level
+
+        if (JSON.stringify(properties) !== JSON.stringify(mutationProperties)) {
+          mutationKey += 'Mutation';
+          spec.components.schemas[mutationKey] = {
+            type: "object",
+            properties: mutationProperties
+          }
         }
         let definition = {
           "$ref": "#/components/schemas/" + key
@@ -620,8 +637,8 @@ export class RemultServerImplementation<RequestType> implements RemultServer<Req
         }
 
 
-        let apiPath: any = spec.paths['/api/' + key] = {};
-        let apiPathWithId: any = spec.paths['/api/' + key + "/{id}"] = {};
+        let apiPath: any = spec.paths[this.options.rootPath + '/' + key] = {};
+        let apiPathWithId: any = spec.paths[this.options.rootPath + '/' + key + "/{id}"] = {};
         //https://github.com/2fd/open-api.d.ts
         apiPath.get = secure(meta.options.allowApiRead, true, {
           description: "return an array of " + key + ". supports filter operators. For more info on filtering [see this article](https://remult.dev/docs/rest-api.html#filter)",
@@ -681,13 +698,12 @@ export class RemultServerImplementation<RequestType> implements RemultServer<Req
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/" + key
+                  "$ref": "#/components/schemas/" + mutationKey
                 }
               }
             }
           }
         };
-
 
 
         apiPath.post = secure(meta.options.allowApiInsert, false, {
