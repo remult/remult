@@ -23,13 +23,26 @@ import fs from 'fs'
 var r = new Remult();
 r.dataProvider = new JsonFileDataProvider('./db');
 
+
 const app = express()
+app.use((req, res, next) => {
+    //@ts-ignore
+    req.session = "noam"
+    next()
+})
 export const api = remultExpress({
     entities: [Task, Category],
     controllers: [TasksController, TasksControllerDecorated],
     queueStorage: new EntityQueueStorage(r.repo(JobsInQueueEntity)),
+    //@ts-ignore
+    getUser: ({ session }) => {
+        console.log(session)
+        return undefined;
+    }
 })
 app.use(api)
+
+
 
 const openApiDocument = api.openApiDoc({ title: 'remult-react-todo' })
 fs.writeFileSync('/temp/test.json', JSON.stringify(openApiDocument, undefined, 2))

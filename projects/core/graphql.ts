@@ -105,7 +105,8 @@ export function remultGraphql(api: RemultServerCore<any>) {
       root[key] = async (arg1, req, a) => {
         const { options, filter } = arg1;
         return new Promise(async (res, error) => {
-
+          if (req.req)
+            req = req.req; //TODO - yoga sends its own request object - and in it you get the original request (need to test with svelte and next)
           server.run(req, async () => {
             let dApi = await server.getDataApi(req, meta);
             let result: any;
