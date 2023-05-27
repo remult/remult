@@ -571,7 +571,7 @@ export class RemultServerImplementation<RequestType> implements RemultServer<Req
               type
             });
             parameters.push({
-              "name": f.key + "_ne",
+              "name": f.key + ".ne",
               "in": "query",
               "description": "filter not equal to " + f.key,
               "required": false,
@@ -585,7 +585,7 @@ export class RemultServerImplementation<RequestType> implements RemultServer<Req
           type: "object",
           properties
         }
-        //TODO - handle allow api read also on the get level
+        
 
         if (JSON.stringify(properties) !== JSON.stringify(mutationProperties)) {
           mutationKey += 'Mutation';
