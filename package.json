@@ -1,7 +1,7 @@
 {
   "name": "remult-mono-repo",
   "description": "See projects/core for the remult core package.json. This package.json is used for remult/core development, test projects and experimental work. See ",
-  "version": "0.20.3-exp.1",
+  "version": "0.20.3-exp.2",
   "scripts": {
     "test": "concurrently -k -n \"TSC,Test\" -c \"bgBlue.bold,bgGreen.bold\" \"tsc -w -p projects/core/tsconfig.build.json --emitDeclarationOnly --outDir misc/dts-compare\" \"cd projects/test-angular && ng test core\"",
     "release-core": "npm run build-core && npm run patch-versions",
