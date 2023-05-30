@@ -597,19 +597,12 @@ export class RemultServerImplementation<RequestType> implements RemultServer<Req
             parameters.push({
               "name": f.key,
               "in": "query",
-              "description": "filter equal to " + f.key,
+              "description": "filter equal to " + f.key + ". See [more filtering options](https://remult.dev/docs/rest-api.html#filter)",
               "required": false,
               "style": "simple",
               type
             });
-            parameters.push({
-              "name": f.key + "_ne",
-              "in": "query",
-              "description": "filter not equal to " + f.key,
-              "required": false,
-              "style": "simple",
-              type
-            });
+
           }
         }
 
@@ -617,7 +610,7 @@ export class RemultServerImplementation<RequestType> implements RemultServer<Req
           type: "object",
           properties
         }
-        //TODO - handle allow api read also on the get level
+
 
         if (JSON.stringify(properties) !== JSON.stringify(mutationProperties)) {
           mutationKey += 'Mutation';

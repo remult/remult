@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## next
+- fixed issue with columns in postgres with casing in the db - sa `createdAt`
+
 ## [0.20.3] - 2023-05-23
 
 - Improved Open API Support

@@ -1,6 +1,6 @@
 
 import { Remult } from "../context";
-import { Entity, EntityFilter, Field, Repository } from "../remult3";
+import { Entity, EntityFilter, Field, Fields, Repository } from "../remult3";
 import { KnexDataProvider } from '../../remult-knex';
 import * as Knex from 'knex';
 import { config } from 'dotenv';
@@ -13,6 +13,7 @@ import { dbNamesOf } from "../filter/filter-consumer-bridge-to-sql-request";
 import { RemultAsyncLocalStorage } from "../../server/expressBridge";
 import { initAsyncHooks } from "../../server/initAsyncHooks";
 import { remult } from "../remult-proxy";
+import { describeClass } from "../remult3/DecoratorReplacer";
 config();
 
 
@@ -73,7 +74,25 @@ testKnexPGSqlImpl("knex filter2", async ({ createEntity }) => {
 }, false);
 
 
-
+testPostgresImplementation("ensure schema with dbNames that have quotes", async ({ remult }) => {
+    const db = SqlDatabase.getDb(remult);
+    const entityName = 'test_naming';
+    await db.execute("Drop table if exists " + entityName);
+    await db.execute(`create table ${entityName}(id int,"createdAt" Date)`);
+    const ent = class {
+        id = 0
+        createdAt = new Date()
+        oneMoreColumn = 0
+    }
+    describeClass(ent, Entity(entityName), {
+        id: Fields.integer(),
+        createdAt: Fields.createdAt({ dbName: '"createdAt"' }),
+        oneMoreColumn: Fields.integer()
+    })
+    await db.ensureSchema([remult.repo(ent).metadata])
+    await remult.repo(ent).insert({ id: 1, oneMoreColumn: 8 })
+    expect((await remult.repo(ent).findFirst()).createdAt.getFullYear()).toBe(new Date().getFullYear())
+}, false)
 
 testPostgresImplementation("work with native sql", async ({ remult, createEntity }) => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity);
