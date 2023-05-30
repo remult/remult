@@ -144,15 +144,19 @@ export class PostgresSchemaBuilder {
             let cols = (await cmd.execute(`select column_name   
         FROM information_schema.columns 
         WHERE table_name=${cmd.addParameterAndReturnSqlToken((e.$entityName).toLocaleLowerCase())} ` + this.additionalWhere
-            )).rows.map(x => x.column_name);
+            )).rows.map(x => x.column_name.toLocaleLowerCase());
             for (const col of entity.fields) {
-                if (!isDbReadonly(col, e))
-                    if (!cols.includes(e.$dbNameOf(col).toLocaleLowerCase())) {
+                if (!isDbReadonly(col, e)) {
+                    let colName = e.$dbNameOf(col).toLocaleLowerCase();
+                    if (colName.startsWith('"') && colName.endsWith('"'))
+                        colName = colName.substring(1, colName.length - 1);
+                    if (!cols.includes(colName)) {
                         let sql = `alter table ${e.$entityName} add column ${postgresColumnSyntax(col, e.$dbNameOf(col))}`;
                         if (PostgresSchemaBuilder.logToConsole)
                             console.info(sql);
                         await this.pool.execute(sql);
                     }
+                }
             }
 
         }
