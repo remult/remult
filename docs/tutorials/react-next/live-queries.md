@@ -45,7 +45,8 @@ Let's review the change:
 const addTask = async (e: FormEvent) => {
   e.preventDefault()
   try {
-    const newTask = await taskRepo.insert({ title: newTaskTitle })
+    await taskRepo.insert({ title: newTaskTitle })
+    // ^ this no longer needs to be a variable as we are not using it to set the state.
     // setTasks([...tasks, newTask])   <-- this line is no longer needed
     setNewTaskTitle("")
   } catch (error: any) {
