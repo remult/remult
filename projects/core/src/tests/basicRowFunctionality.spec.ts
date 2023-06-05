@@ -1148,7 +1148,7 @@ describe("data api", () => {
     });
     d.test();
   });
-  fit("get is not Allowed", async () => {
+  it("get is not Allowed", async () => {
     let type = class extends newCategories {
 
     };
