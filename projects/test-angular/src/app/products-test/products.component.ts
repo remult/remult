@@ -42,8 +42,6 @@ export class ProductsComponent {
 
 }
 
-// [ ] allowApiRead :false should also prevent read!!!
-
 @Entity("categories", { allowApiRead: false})
 export class Category {
   @Fields.cuid()
