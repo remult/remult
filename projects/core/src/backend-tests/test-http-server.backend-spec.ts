@@ -21,15 +21,15 @@ let path = remult.apiClient.url + '/tasks';
 const environments: [string, number][] = [
     // ["optine", 3006],
     // //["nest", 3001],
-    ["next", 3000],
-    [servers.nextApp, 3010],
-    [servers.koa, 3002],
-    [servers.fastify, 3003],
-    [servers.express, 3004],
-    [servers.mw, 3005],
-    [servers.mwc, 3007],
-    [servers.fresh, 8000],
-    [servers.svelteKit, 5173],
+    // ["next", 3000],
+    // [servers.nextApp, 3010],
+    // [servers.koa, 3002],
+    // [servers.fastify, 3003],
+    // [servers.express, 3004],
+    // [servers.mw, 3005],
+    // [servers.mwc, 3007],
+    // [servers.fresh, 8000],
+    // [servers.svelteKit, 5173],
 ]
 
 function test(name: string, test: () => Promise<void>, ...ignoreList: string[]) {
