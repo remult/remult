@@ -1148,13 +1148,14 @@ describe("data api", () => {
     });
     d.test();
   });
-  it("get is not Allowed", async () => {
+  fit("get is not Allowed", async () => {
     let type = class extends newCategories {
 
     };
     Entity('', {
-
-      allowApiRead: false
+      allowApiRead: false,
+      allowApiCrud:undefined,
+      allowApiUpdate:undefined
     })(type);
     let [c, remult] = await createData(async i => {
       await i(1, 'noam', 'a');

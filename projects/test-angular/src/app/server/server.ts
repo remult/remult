@@ -2,7 +2,7 @@ import { CustomModuleLoader } from './CustomModuleLoader';
 let moduleLoader = new CustomModuleLoader('/dist/test-angular');
 import express, { application } from "express";
 import { remultExpress } from '../../../../core/remult-express'
-import { Task, TasksController, TasksControllerDecorated } from "../products-test/products.component";
+import { Task, TasksController, TasksControllerDecorated,Category } from "../products-test/products.component";
 import { JsonDataProvider, Remult, remult } from '../../../../core';
 import { JsonFileDataProvider } from '../../../../core/server';
 import { JobsInQueueEntity } from '../../../../core/server/expressBridge';
@@ -20,12 +20,13 @@ import fs from 'fs'
 
 
 
+
 var r = new Remult();
 r.dataProvider = new JsonFileDataProvider('./db');
 
 const app = express()
 export const api = remultExpress({
-    entities: [Task],
+    entities: [Task,Category],
     controllers: [TasksController, TasksControllerDecorated],
     queueStorage: new EntityQueueStorage(r.repo(JobsInQueueEntity)),
 })

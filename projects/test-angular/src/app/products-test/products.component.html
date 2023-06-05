@@ -1,6 +1,4 @@
 remult:
-<pre>
-{{ countRemult | json }}
-</pre>
-
-{{ i }} <button (click)="test()">test</button>
+<div *ngFor="let t of tasks">
+  {{ t.title }}
+</div>

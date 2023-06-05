@@ -1,5 +1,5 @@
 import { Component, NgZone, OnInit } from '@angular/core';
-import { Remult, Entity, IdEntity, Fields, Controller, InMemoryDataProvider, Sort, BackendMethod, remult, SubscriptionChannel, ProgressListener } from 'remult';
+import { Remult, Entity, IdEntity, Fields, Controller, InMemoryDataProvider, Sort, BackendMethod, remult, SubscriptionChannel, ProgressListener, Field } from 'remult';
 import { GridSettings } from '@remult/angular/interfaces';
 import { DialogConfig } from '../../../../angular';
 import * as ably from 'ably';
@@ -26,20 +26,13 @@ export class ProductsComponent {
 
 
   }
-  async ngOnInit() {
-    var t = await remult.repo(Task).findFirst();
 
-    try {
-      this.countRemult = {
-        "entityInstance": await t.entityInstance(),
-        "entityStatic": await Task.entityStatic(),
-        "undecoratedStatic": await TasksController.undecoratedStatic(),
-        "decoratedStatic": await TasksControllerDecorated.decoratedStatic(),
-        "decorated": await new TasksControllerDecorated().decorated()
-      }
-    } catch (err) {
-      this.countRemult = err;
-    }
+  tasks: Task[] = [];
+
+  async ngOnInit() {
+    remult.repo(Task).liveQuery({
+      load:()=>[]
+    }).subscribe(info => this.tasks = info.applyChanges(this.tasks))
 
   }
 
@@ -47,6 +40,16 @@ export class ProductsComponent {
 
 
 
+}
+
+// [ ] allowApiRead :false should also prevent read!!!
+
+@Entity("categories", { allowApiRead: false})
+export class Category {
+  @Fields.cuid()
+  id = ''
+  @Fields.string()
+  name = ''
 }
 
 @Entity("tasks", {
@@ -59,6 +62,11 @@ export class Task {
   title = ''
   @Fields.boolean()
   completed = false
+
+  @Field(() => Category)
+  category?: Category
+
+
   @BackendMethod({ allowed: true, apiPrefix: 'noam' })
   static async entityStatic() {
     return "ok";
