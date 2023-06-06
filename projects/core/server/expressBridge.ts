@@ -247,7 +247,7 @@ export class RemultServerImplementation<RequestType> implements RemultServer<Req
       this.subscriptionServer = options.subscriptionServer;
 
   }
-  async getDataApi(req: RequestType, meta: EntityMetadata<any>): Promise<DataApi> {
+  async getDataApi(req: RequestType, meta: EntityMetadata<any>): Promise<DataApi> { // [ ] - fix api to return also an up to date meta object, that we can use it's include in api etc... also in the where
     const remult = await this.getRemult(req);
     return new DataApi(remult.repo(meta.entityType), remult)
   }
