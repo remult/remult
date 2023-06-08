@@ -11,6 +11,17 @@ export class Validators {
         },
         defaultMessage: 'Should not be empty'
     });
+    static email = Object.assign((entity: any, col: FieldRef<any, string>, message = undefined) => {
+        if (col.value &&
+    !/^[\w\.-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9.-]+$/.test(col.value))
+            col.error = message || Validators.required.defaultMessage;
+    }, {
+        withMessage: (message: string) => {
+            return (entity: any, col: FieldRef<any, string>) => Validators.required(entity, col, message)
+        },
+        defaultMessage: 'Invalid Email'
+    });
+    
     static unique = Object.assign(async (entity: any, col: FieldRef<any, any>, message = undefined) => {
         if (!col.entityRef)
             throw "unique validation may only work on columns that are attached to an entity";
