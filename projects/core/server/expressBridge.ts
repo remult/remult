@@ -175,8 +175,11 @@ export interface RemultServerCore<RequestType> {
   ["get internal server"](): remultServerInternalExperimental<RequestType>;
 }
 export interface remultServerInternalExperimental<RequestType> {
+  //[ ] - not needed
   getDataApi(req: RequestType, meta: EntityMetadata<any>): Promise<DataApi>;
+  //[ ] - get entities array object
   getEntities(): EntityMetadata[];
+  //[ ] - resolved by with remult
   run<T>(request: RequestType, what: () => Promise<T>): Promise<T>
 
 }
