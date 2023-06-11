@@ -14,6 +14,12 @@ import { graphqlHTTP } from 'express-graphql';
 
 import { createSchema, createYoga } from 'graphql-yoga'
 import fs from 'fs'
+import { MongoClient } from "mongodb"
+import { MongoDataProvider } from '../../../../core/remult-mongo';
+import { createPostgresDataProvider } from '../../../../core/postgres';
+import {config} from 'dotenv'
+config()
+
 
 
 
@@ -41,7 +47,6 @@ export const api = remultExpress({
     }
 })
 app.use(api)
-
 
 
 const openApiDocument = api.openApiDoc({ title: 'remult-react-todo' })

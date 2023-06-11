@@ -54,13 +54,14 @@ export function testInMemory(key: string, what: dbTestWhatSignature, focus = fal
 }
 export const TestDbs = {
     restDataProvider: "restDataProvider",
-    mongo:"mongo"
+    mongo: "mongo",
+    inMemory: 'in memory'
 
 }
 
 
 
-databasesTesters.push(testInMemory);
+addDatabaseToTest(testInMemory, TestDbs.inMemory);
 
 export declare type dbTestWhatSignature = ((db: {
     db: DataProvider,

@@ -26,20 +26,13 @@ export class ProductsComponent {
 
 
   }
-  async ngOnInit() {
-    var t = await remult.repo(Task).findFirst();
 
-    try {
-      this.countRemult = {
-        "entityInstance": await t.entityInstance(),
-        "entityStatic": await Task.entityStatic(),
-        "undecoratedStatic": await TasksController.undecoratedStatic(),
-        "decoratedStatic": await TasksControllerDecorated.decoratedStatic(),
-        "decorated": await new TasksControllerDecorated().decorated()
-      }
-    } catch (err) {
-      this.countRemult = err;
-    }
+  tasks: Task[] = [];
+
+  async ngOnInit() {
+    remult.repo(Task).liveQuery({
+      load: () => []
+    }).subscribe(info => this.tasks = info.applyChanges(this.tasks))
 
   }
 
@@ -91,6 +84,13 @@ export class TasksController {
   @BackendMethod({ allowed: true, apiPrefix: 'noam' })
   static async undecoratedStatic() {
     return "ok";
+  }
+  @BackendMethod({ allowed: true })
+  static async testTrans() {
+    const repo = remult.repo(Task);
+    await repo.insert({ title: "before error" });
+    throw new Error("RRRRR")
+    await repo.insert({ title: "After Error" })
   }
 }
 @Controller("Decorated/myStuff/someMoreStuff")

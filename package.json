@@ -1,9 +1,10 @@
 {
   "name": "remult-mono-repo",
   "description": "See projects/core for the remult core package.json. This package.json is used for remult/core development, test projects and experimental work. See ",
-  "version": "0.20.3-exp.2",
+  "version": "0.20.5-exp.0",
   "scripts": {
     "test": "concurrently -k -n \"TSC,Test\" -c \"bgBlue.bold,bgGreen.bold\" \"tsc -w -p projects/core/tsconfig.build.json --emitDeclarationOnly --outDir misc/dts-compare\" \"cd projects/test-angular && ng test core\"",
+    "test-ng": "cd projects/test-angular &&  ng test angular",
     "release-core": "npm run build-core && npm run patch-versions",
     "release-core-experimental": "npm run build-core && npm run patch-versions-experimental && cd dist/remult && npm publish  --access public --tag exp",
     "build-core": "tsc -p projects/core/tsconfig.build.json && tsc -p projects/core/tsconfig.build.esm.json && copyfiles -u 2 projects/core/package.json dist/remult && copyfiles README.md dist/remult && copyfiles LICENSE dist/remult",
@@ -128,6 +129,7 @@
     "typedoc-plugin-markdown": "3.10.4",
     "typescript": "~4.1.5",
     "uuid": "^8.3.2",
+    "vitest": "^0.32.0",
     "zone.js": "~0.11.3"
   },
   "browser": {

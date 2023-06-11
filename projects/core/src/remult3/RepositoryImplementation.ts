@@ -329,7 +329,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
                 result[col.key] = col.valueConverter.fromJson(row[col.key]);
             }
             return result;
-        }))
+        }),load)
     }
     private async loadManyToOneForManyRows(rawRows: any[], load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[]) {
         let loadFields: FieldMetadata[] = undefined;
@@ -1542,7 +1542,7 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
         return !item ? this.remult.isAllowedForInstance(undefined, this.options.allowApiUpdate) : this.remult.repo(this.entityType).getEntityRef(item).apiUpdateAllowed
     }
     get apiReadAllowed() {
-        if (this.options.allowApiUpdate === undefined)
+        if (this.options.allowApiRead === undefined)
             return true; //TODO2 - consider that this default may be confusing, since it's different from all others.
         return this.remult.isAllowed(this.options.allowApiRead)
     }

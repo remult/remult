@@ -133,22 +133,24 @@ export class Order {
 @Entity("orders", { allowApiCrud: true })
 export class Order {
   //...
-  @Fields.string({
-    sqlExpression: async () => {
-      const order = await dbNamesOf(Order);
+  @Fields.string<Order>({
+    sqlExpression: async (orderMetadata) => {
       const customer = await dbNamesOf(Customer);
       return `(
           select ${customer.city}
             from ${customer}
-           where ${customer.id} = ${order.customer}
+           where ${
+             customer.id
+           } = ${await orderMetadata.fields.customer.getDbName()}
           )`;
-    }
+    },
   })
-  city = '';
+  city = "";
 }
 ```
 
 * This adds a calculated `city` field to the `Order` entity that we can use to order by or filter
+* Note that we didn't use `dbNamesOf(Order)` because it'll try to extract the dbName of all fields and `sqlExpressions` which will cause a stack overflow
 
 ```ts
 console.table(await remult.repo(Order).find({

@@ -1153,8 +1153,9 @@ describe("data api", () => {
 
     };
     Entity('', {
-
-      allowApiRead: false
+      allowApiRead: false,
+      allowApiCrud:undefined,
+      allowApiUpdate:undefined
     })(type);
     let [c, remult] = await createData(async i => {
       await i(1, 'noam', 'a');

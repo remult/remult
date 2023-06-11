@@ -21,6 +21,7 @@ import { IdEntity } from "../id-entity";
 import { describeClass } from "../remult3/DecoratorReplacer";
 import { DataProviderLiveQueryStorage, LiveQueryStorageEntity } from "../../live-query/data-provider-live-query-storage";
 import { v4 as uuid } from 'uuid'
+import { testPostgresImplementation } from "../backend-tests/backend-database-test-setup.backend-spec";
 
 
 
@@ -753,10 +754,15 @@ testAll("task with enum string", async ({ createEntity }) => {
     expect(await r.count({ priority: PriorityWithString.Critical })).toBe(1)
     expect(await r.count({ priority: PriorityWithString.Low })).toBe(0)
 });
-testAll("test transaction rollback", async ({ db }) => {
+testAll("test transaction rollback", async ({ db, createEntity }) => {
     let fail = true;
+    const r = await createEntity(stam);
+    await r.insert({ title: "task b", id: 1 })
     try {
-        await db.transaction(async () => {
+        await db.transaction(async (db) => {
+            var remultWithTransaction = new Remult(db).repo(stam)
+            await remultWithTransaction.insert({ title: "task a", id: 2 })
+            expect(await remultWithTransaction.count()).toBe(2);
             throw "error"
         });
         fail = false;
@@ -764,8 +770,9 @@ testAll("test transaction rollback", async ({ db }) => {
     catch {
 
     }
+    expect(await r.count()).toBe(1);
     expect(fail).toBe(true);
-})
+}, false, { exclude: [TestDbs.inMemory] })
 testAll("test date", async ({ createEntity }) => {
     const e = class {
 
