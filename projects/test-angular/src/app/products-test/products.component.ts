@@ -31,7 +31,7 @@ export class ProductsComponent {
 
   async ngOnInit() {
     remult.repo(Task).liveQuery({
-      load:()=>[]
+      load: () => []
     }).subscribe(info => this.tasks = info.applyChanges(this.tasks))
 
   }
@@ -42,7 +42,7 @@ export class ProductsComponent {
 
 }
 
-@Entity("categories", { allowApiRead: false})
+@Entity("categories", { allowApiRead: false })
 export class Category {
   @Fields.cuid()
   id = ''
@@ -85,6 +85,13 @@ export class TasksController {
   @BackendMethod({ allowed: true, apiPrefix: 'noam' })
   static async undecoratedStatic() {
     return "ok";
+  }
+  @BackendMethod({ allowed: true })
+  static async testTrans() {
+    const repo = remult.repo(Task);
+    await repo.insert({ title: "before error" });
+    throw new Error("RRRRR")
+    await repo.insert({ title: "After Error" })
   }
 }
 @Controller("Decorated/myStuff/someMoreStuff")

@@ -1,4 +1,4 @@
-import type { MongoClient, Db, FindOptions } from 'mongodb';
+import type { MongoClient, Db, FindOptions, ClientSession } from 'mongodb';
 import { CompoundIdField, DataProvider, EntityDataProvider, EntityDataProviderFindOptions, EntityFilter, EntityMetadata, FieldMetadata, Filter, Remult, Repository } from '.';
 import { EntityDbNames, dbNamesOf, EntityDbNamesBase } from './src/filter/filter-consumer-bridge-to-sql-request';
 import { FilterConsumer } from './src/filter/filter-interfaces';
@@ -6,28 +6,37 @@ import { getRepository, RepositoryImplementation, RepositoryOverloads } from './
 import { remult as remultContext } from './src/remult-proxy';
 
 export class MongoDataProvider implements DataProvider {
-    constructor(private db: Db, private client: MongoClient) {
-
+    constructor(private db: Db, private client: MongoClient, options?: { session?: ClientSession, disableTransactions?: boolean }) {
+        this.session = options?.session;
+        this.disableTransactions = options?.disableTransactions;
     }
+    session?: ClientSession;
+    disableTransactions = false;
     static getDb(remult?: Remult) {
         const r = (remult || remultContext).dataProvider as MongoDataProvider;
         if (!r.db)
             throw "the data provider is not a MongoDataProvider";
-        return r.db;
+        return { db: r.db, session: r.session };
     }
     getEntityDataProvider(entity: EntityMetadata<any>): EntityDataProvider {
-        return new MongoEntityDataProvider(this.db, entity);
+        return new MongoEntityDataProvider(this.db, entity, this.session);
     }
     async transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
         let session = await this.client.startSession();
+
         session.startTransaction();
+
+        const db = this.client.db(this.db.databaseName);
         try {
-            await action(new MongoDataProvider(this.db, undefined));
+            await action(new MongoDataProvider(db, undefined, { session }));
             await session.commitTransaction();
         }
         catch (err) {
             await session.abortTransaction();
             throw err;
+        }
+        finally {
+            await session.endSession();
         }
     }
     static async filterToRaw<entityType>(
@@ -46,7 +55,7 @@ function isNull(x: any) {
     return x?.$null === NULL.$null;
 }
 class MongoEntityDataProvider implements EntityDataProvider {
-    constructor(private db: Db, private entity: EntityMetadata<any>) {
+    constructor(private db: Db, private entity: EntityMetadata<any>, private session?: ClientSession) {
 
     }
     translateFromJson(row: any, nameProvider: EntityDbNamesBase) {
@@ -76,7 +85,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
         where.__applyToConsumer(x);
         let w = await x.resolveWhere();
 
-        return await collection.countDocuments(w);
+        return await collection.countDocuments(w, { session: this.session });
     }
     async find(options?: EntityDataProviderFindOptions): Promise<any[]> {
         let { collection, e } = await this.collection()
@@ -85,7 +94,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
             options.where.__applyToConsumer(x);
         let where = await x.resolveWhere();
         let op: FindOptions<any> = {
-
+            session: this.session
         };
         if (options.limit) {
             op.limit = options.limit;
@@ -127,7 +136,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
         }
         let r = await collection.updateOne(await f.resolveWhere(), {
             $set: newR
-        });
+        }, { session: this.session });
         return this.find({ where: Filter.fromEntityFilter(this.entity, resultFilter) }).then(y => y[0]);
 
     }
@@ -135,12 +144,12 @@ class MongoEntityDataProvider implements EntityDataProvider {
         const { e, collection } = await this.collection();
         let f = new FilterConsumerBridgeToMongo(e);
         Filter.fromEntityFilter(this.entity, this.entity.idMetadata.getIdFilter(id)).__applyToConsumer(f);
-        collection.deleteOne(await f.resolveWhere());
+        collection.deleteOne(await f.resolveWhere(), { session: this.session });
     }
     async insert(data: any): Promise<any> {
         let { collection, e } = await this.collection();
-        let r = await collection.insertOne(await this.translateToJson(data, e));
-        return await this.translateFromJson(await collection.findOne({ _id: r.insertedId }), e)
+        let r = await collection.insertOne(await this.translateToJson(data, e), { session: this.session });
+        return await this.translateFromJson(await collection.findOne({ _id: r.insertedId }, { session: this.session }), e)
     }
 
     private async collection() {

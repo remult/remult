@@ -145,7 +145,7 @@ testKnexPGSqlImpl("work with native knex3", async ({ remult, createEntity }) => 
 testMongo("work with native mongo", async ({ remult, createEntity }) => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity);
     const mongo = MongoDataProvider.getDb(remult);
-    const r = await (await mongo.collection(repo.metadata.options.dbName!)).countDocuments();
+    const r = await (await mongo.db.collection(repo.metadata.options.dbName!)).countDocuments();
     expect(r).toBe(4);
 }, false);
 
@@ -161,7 +161,7 @@ testKnexPGSqlImpl("knex with filter", async ({ remult, createEntity }) => {
 testMongo("work with native mongo and condition", async ({ remult, createEntity }) => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity);
     const mongo = MongoDataProvider.getDb(remult);
-    const r = await (await mongo.collection(repo.metadata.options.dbName!)).countDocuments(await MongoDataProvider.filterToRaw(repo, { myId: [1, 2] }))
+    const r = await (await mongo.db.collection(repo.metadata.options.dbName!)).countDocuments(await MongoDataProvider.filterToRaw(repo, { myId: [1, 2] }))
     expect(r).toBe(2);
 }, false);
 
