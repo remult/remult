@@ -15,9 +15,9 @@
     "importHelpers": true,
     "target": "es2015",
     "skipLibCheck": true,
-    "types": [
-      "vitest/globals"
-    ],
+    // "types": [
+    //   "vitest/globals"
+    // ],
     "typeRoots": [
       "node_modules/@types"
     ],
@@ -37,5 +37,8 @@
         "projects/*"
       ]
     }
-  }
+  },
+  "exclude": [
+    
+  ]
 }
