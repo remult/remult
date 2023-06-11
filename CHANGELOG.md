@@ -2,7 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.20.5] - 2023-06-11
+
+- fixed issue #200 transactions on mongo db
+
 ## [0.20.4] - 2023-06-05
+
 - fixed issue with columns in postgres with casing in the db - sa `createdAt`
 - Issue #196 fixed - load options in live query
 - Fixed issue with `apiReadAllowed:false` when `apiUpdateAllowed` is set to undefined
