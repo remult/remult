@@ -104,9 +104,10 @@ export {
     UserInfo
 } from './src/context';
 export { ExternalHttpProvider } from './src/buildRestDataProvider'
-export {
-    IdEntity
-} from './src/id-entity';
+//[ ] - figure out why this causes a circular reference 
+// export {
+//     IdEntity
+// } from './src/id-entity';
 export { SortSegment, Sort } from './src/sort';
 export { OneToMany, CompoundIdField } from './src/column';
 export { Filter } from './src/filter/filter-interfaces';

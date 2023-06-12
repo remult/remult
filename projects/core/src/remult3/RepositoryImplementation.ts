@@ -1,4 +1,3 @@
-
 import { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from "../column-interfaces";
 import { EntityOptions } from "../entity";
 import { CompoundIdField, LookupColumn, makeTitle } from '../column';

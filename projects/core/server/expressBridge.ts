@@ -1,9 +1,9 @@
 
 import { Action, actionInfo, ActionInterface, classBackendMethodsArray, jobWasQueuedResult, myServerAction, queuedJobInfoResponse, serverActionField } from '../src/server-action';
-import { DataProvider, ErrorInfo, Storage } from '../src/data-interfaces';
+import type { DataProvider, ErrorInfo, Storage } from '../src/data-interfaces';
 import { DataApi, DataApiRequest, DataApiResponse, serializeError } from '../src/data-api';
 import { allEntities, AllowedForInstance, Remult, UserInfo } from '../src/context';
-import { ClassType } from '../classType';
+import type { ClassType } from '../classType';
 import { Entity, EntityMetadata, Fields, getEntityKey, Repository } from '../src/remult3';
 import { IdEntity } from '../src/id-entity';
 import { remult, RemultProxy } from '../src/remult-proxy';

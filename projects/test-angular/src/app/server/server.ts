@@ -17,7 +17,7 @@ import fs from 'fs'
 import { MongoClient } from "mongodb"
 import { MongoDataProvider } from '../../../../core/remult-mongo';
 import { createPostgresDataProvider } from '../../../../core/postgres';
-import {config} from 'dotenv'
+import { config } from 'dotenv'
 config()
 
 
@@ -53,10 +53,10 @@ const openApiDocument = api.openApiDoc({ title: 'remult-react-todo' })
 fs.writeFileSync('/temp/test.json', JSON.stringify(openApiDocument, undefined, 2))
 app.get('/api/openApi.json', (req, res) => res.json(openApiDocument));
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openApiDocument));
-const { schema, rootValue, resolvers } = remultGraphql(api);
+const { typeDefs, rootValue, resolvers } = remultGraphql(api);
 
 app.use('/api/graphql', graphqlHTTP({
-    schema: buildSchema(schema),
+    schema: buildSchema(typeDefs),
     rootValue,
     graphiql: true,
 }));
@@ -64,7 +64,7 @@ app.use('/api/graphql', graphqlHTTP({
 const yoga = createYoga({
     graphqlEndpoint: '/api/yogaGraphql',
     schema: (createSchema({
-        typeDefs: schema,
+        typeDefs,
         resolvers
     }))
 })

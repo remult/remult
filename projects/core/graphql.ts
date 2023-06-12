@@ -1,6 +1,7 @@
-import { DataApi, DataApiResponse } from 'src/data-api'
-import type { RemultServerCore } from './server'
-import { EntityMetadata, FieldsMetadata } from 'index'
+import type { DataApiResponse } from '../core/src/data-api'
+import { DataApi } from '../core/src/data-api'
+import { EntityMetadata, FieldsMetadata, Remult, remult } from '../core'
+import type { ClassType } from './classType'
 
 const v2ConnectionAndPagination = false
 const andImplementation = false
@@ -48,7 +49,16 @@ type GraphQLType = {
 }
 
 let _removeComments = false
-export function remultGraphql(api: RemultServerCore<any>, options?: { removeComments?: boolean }) {
+export function remultGraphql(options?: {
+  removeComments?: boolean, entities?: ClassType<any>[],
+  getRemultFromRequest?: (req: any) => Remult
+}) {
+  if (!options) {
+    options = {}
+  }
+  if (!options.getRemultFromRequest) {
+    options.getRemultFromRequest = () => remult;
+  }
   const { removeComments } = {
     removeComments: false,
     ...options,
@@ -58,8 +68,11 @@ export function remultGraphql(api: RemultServerCore<any>, options?: { removeComm
     _removeComments = true
   }
 
-  const server = api['get internal server']()
-  const entities = server.getEntities()
+
+  const entities = (() => {
+    const remult = new Remult();
+    return options.entities?.map(x => remult.repo(x).metadata) || [];
+  })()
 
   const types: GraphQLType[] = []
 
@@ -213,16 +226,10 @@ export function remultGraphql(api: RemultServerCore<any>, options?: { removeComm
         ) => Promise<void>,
       ) => {
         return createResultPromise(async (response, setResult, arg1, req) => {
-          if (req.req) {
-            req = req.req //TODO - yoga sends its own request object - and in it you get the original request (need to test with svelte and next)
-            // req should be "ctx" for context. inside, you have by default "YogaInitialContext", now I added session for example.
-          }
-          // [ ] reconsider if this should be moved outside the call to graphql
-          await server.run(req, async () => {
-            const dApi = await server.getDataApi(req, meta) // [ ] - fix api to return also an up to date meta object, that we can use it's include in api etc... also in the where
-
-            await work(dApi, response, setResult, arg1, req)
-          })
+          const remult = options.getRemultFromRequest(req);
+          const dApi = new DataApi(remult.repo(meta.entityType), remult);
+          // [ ] - fix api to return also an up to date meta object, that we can use it's include in api etc... also in the where
+          await work(dApi, response, setResult, arg1, req)
         })
       }
 
@@ -353,9 +360,11 @@ Select a dedicated page.`,
 
       root[key] = handleRequestWithDataApiContext(
         async (dApi, response, setResult, arg1: any, req: any) => {
-          let rowsPromise = () => {
-            const p = new Promise<any[]>(setResult => {
-              dApi.getArray(
+
+          setResult({
+            [itemsKey]: createResultPromise(async (response, setResult) => {
+
+              await dApi.getArray(
                 {
                   ...response,
                   success: (x: any) => {
@@ -372,15 +381,7 @@ Select a dedicated page.`,
                 },
                 translateWhereToRestBody(meta.fields, arg1),
               )
-            })
-            rowsPromise = () => p
 
-            return p
-          }
-
-          setResult({
-            [itemsKey]: createResultPromise(async (response, setResult) => {
-              setResult(await rowsPromise())
             }),
             [totalCountKey]: createResultPromise(async (response, setResult) => {
               // [ ] count should ignore limit, page etc....

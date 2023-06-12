@@ -1,11 +1,11 @@
 import { AndFilter, customUrlToken, buildFilterFromRequestParameters } from './filter/filter-interfaces';
 import { doTransaction, Remult, UserInfo } from './context';
 import { Filter } from './filter/filter-interfaces';
-import { FindOptions, Repository, EntityRef, rowHelperImplementation, EntityFilter } from './remult3';
-import { ErrorInfo } from './data-interfaces';
+import type { FindOptions, Repository, EntityRef, rowHelperImplementation, EntityFilter } from './remult3';
+import type { ErrorInfo } from './data-interfaces';
 import { ForbiddenError } from './server-action';
 import { findOptionsToJson, liveQueryAction } from './data-providers/rest-data-provider';
-import { QueryData } from './live-query/SubscriptionServer';
+import type  { QueryData } from './live-query/SubscriptionServer';
 
 
 export class DataApi<T = any> {

@@ -1,4 +1,4 @@
-import { EntityOrderBy, FindOptions, remult as defaultRemult, Remult, Repository, Sort } from '../../index';
+import { FindOptions, remult as defaultRemult, Remult, Sort } from '../../index';
 import type { LiveQueryChangeInfo, RepositoryImplementation } from '../remult3';
 import { v4 as uuid } from 'uuid'
 import { getLiveQueryChannel } from '../data-api';
