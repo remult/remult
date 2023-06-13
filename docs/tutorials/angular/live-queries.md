@@ -45,7 +45,7 @@ export class TodoComponent implements OnInit, OnDestroy {
     this.unsubscribe = this.taskRepo
       .liveQuery({
         limit: 20,
-        orderBy: { completed: "asc" }
+        orderBy: { createdAt: "asc" }
         //where: { completed: true },
       })
       .subscribe(info => (this.tasks = info.applyChanges(this.tasks)))

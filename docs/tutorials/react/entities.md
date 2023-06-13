@@ -25,14 +25,17 @@ import { Entity, Fields } from "remult"
   allowApiCrud: true
 })
 export class Task {
-  @Fields.autoIncrement()
-  id = 0
+  @Fields.cuid()
+  id = "";
 
   @Fields.string()
-  title = ""
+  title = "";
 
   @Fields.boolean()
-  completed = false
+  completed = false;
+
+  @Fields.createdAt()
+  createdAt?: Date;
 }
 ```
 

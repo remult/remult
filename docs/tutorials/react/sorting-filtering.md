@@ -42,7 +42,7 @@ useEffect(() => {
   taskRepo
     .find({
       limit: 20,
-      orderBy: { completed: "asc" }
+      orderBy: { createdAt: "asc" }
     })
     .then(setTasks)
 }, [])
@@ -65,7 +65,7 @@ useEffect(() => {
   taskRepo
     .find({
       limit: 20,
-      orderBy: { completed: "asc" },
+      orderBy: { createdAt: "asc" },
       where: { completed: true }
     })
     .then(setTasks)
@@ -83,7 +83,7 @@ useEffect(() => {
   taskRepo
     .find({
       limit: 20,
-      orderBy: { completed: "asc" }
+      orderBy: { createdAt: "asc" }
       //where: { completed: true },
     })
     .then(setTasks)

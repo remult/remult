@@ -42,7 +42,7 @@ onMounted(() =>
   taskRepo
     .find({
       limit: 20,
-      orderBy: { completed: "asc" }
+      orderBy: { createdAt: "asc" }
     })
     .then(items => (tasks.value = items))
 )
@@ -65,7 +65,7 @@ onMounted(() =>
   taskRepo
     .find({
       limit: 20,
-      orderBy: { completed: "asc" },
+      orderBy: { createdAt: "asc" },
       where: { completed: true }
     })
     .then(items => (tasks.value = items))
@@ -83,7 +83,7 @@ onMounted(() =>
   taskRepo
     .find({
       limit: 20,
-      orderBy: { completed: "asc" }
+      orderBy: { createdAt: "asc" }
       //where: { completed: true }
     })
     .then(items => (tasks.value = items))

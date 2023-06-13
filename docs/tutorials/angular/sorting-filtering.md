@@ -39,7 +39,7 @@ Use "asc" and "desc" to determine the sort order.
 ngOnInit() {
   this.taskRepo.find({
     limit: 20,
-    orderBy: { completed:"asc" }
+    orderBy: { createdAt:"asc" }
   }).then((items) => (this.tasks = items));
 }
 ```
@@ -60,7 +60,7 @@ Adjust the `ngOnInit` method to fetch only `completed` tasks.
 ngOnInit() {
   this.taskRepo.find({
     limit: 20,
-    orderBy: { completed:"asc" },
+    orderBy: { createdAt:"asc" },
     where: { completed: true }
   }).then((items) => (this.tasks = items));
 }
@@ -76,7 +76,7 @@ Play with different filtering values, and eventually comment it out, since we do
 ngOnInit() {
   this.taskRepo.find({
     limit: 20,
-    orderBy: { completed:"asc" },
+    orderBy: { createdAt:"asc" },
     //where: { completed: true }
   }).then((items) => (this.tasks = items));
 }

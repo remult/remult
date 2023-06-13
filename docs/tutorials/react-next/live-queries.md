@@ -21,7 +21,7 @@ useEffect(() => {
   return taskRepo
     .liveQuery({
       limit: 20,
-      orderBy: { completed: "asc" }
+      orderBy: { createdAt: "asc" }
       //where: { completed: true },
     })
     .subscribe(info => setTasks(info.applyChanges))

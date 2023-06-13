@@ -51,7 +51,7 @@ useEffect(() => {
   taskRepo
     .find({
       limit: 20,
-      orderBy: { completed: "asc" }
+      orderBy: { createdAt: "asc" }
     })
     .then(setTasks)
 }, [])
@@ -73,7 +73,7 @@ useEffect(() => {
   taskRepo
     .find({
       limit: 20,
-      orderBy: { completed: "asc" },
+      orderBy: { createdAt: "asc" },
       where: { completed: true }
     })
     .then(setTasks)
@@ -91,7 +91,7 @@ Play with different filtering values, and eventually comment it out, since we do
     taskRepo
       .find({
         limit: 20,
-        orderBy: { completed: "asc" },
+        orderBy: { createdAt: "asc" },
         //where: { completed: true },
       })
       .then(setTasks);
