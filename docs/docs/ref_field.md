@@ -1,6 +1,6 @@
 # Field
 Decorates fields that should be used as fields.
-for more info see: [Field Types](https://remult.dev/docs/field-types.html)
+for more info see: [Field Types](../docs/field-types.md)
    
    
    *example*
