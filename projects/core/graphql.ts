@@ -880,3 +880,7 @@ export function translateWhereToRestBody<T>(fields: FieldsMetadata<T>, { where }
   }
   return result
 }
+
+
+//[ ] - remove update, delete, create from mutations if it's completely disallowed.
+//[ ] - when fetching a related entity - make sure it's include in api is true in the specific context.
