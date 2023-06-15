@@ -11,11 +11,10 @@ import { FilterConsumerBridgeToSqlRequest } from '../filter/filter-consumer-brid
 import { Validators } from '../validators';
 
 
-import { IdEntity } from '../id-entity';
 import { Categories, Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
 import { Entity as EntityDecorator, Field as ColumnDecorator, getEntityRef, decorateColumnSettings, Entity, Field, FieldType, ValueListFieldType, getFields, Fields, getValueList, ValueListInfo } from '../remult3/RepositoryImplementation';
 import { describeClass, Sort, SqlDatabase, WebSqlDataProvider } from '../..';
-import { EntityBase, EntityMetadata, Repository, FindOptions } from '../remult3';
+import { IdEntity, EntityBase, EntityMetadata, Repository, FindOptions } from '../remult3';
 import { ValueConverters } from '../valueConverters';
 import { EntityOptions } from '../entity';
 

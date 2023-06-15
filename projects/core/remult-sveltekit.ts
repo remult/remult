@@ -87,7 +87,6 @@ export function remultSveltekit(
   return Object.assign(handler, {
     getRemult: (req) => result.getRemult(req),
     openApiDoc: (options: { title: string }) => result.openApiDoc(options),
-    "get internal server": () => result['get internal server']()
   });
 }
 

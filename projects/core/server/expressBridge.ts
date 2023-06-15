@@ -4,8 +4,7 @@ import type { DataProvider, ErrorInfo, Storage } from '../src/data-interfaces';
 import { DataApi, DataApiRequest, DataApiResponse, serializeError } from '../src/data-api';
 import { allEntities, AllowedForInstance, Remult, UserInfo } from '../src/context';
 import type { ClassType } from '../classType';
-import { Entity, EntityMetadata, Fields, getEntityKey, Repository } from '../src/remult3';
-import { IdEntity } from '../src/id-entity';
+import { Entity, EntityBase, EntityMetadata, Fields, getEntityKey, IdEntity, Repository } from '../src/remult3';
 import { remult, RemultProxy } from '../src/remult-proxy';
 import { LiveQueryPublisher, LiveQueryStorage, InMemoryLiveQueryStorage, PerformWithContext, SubscriptionServer } from '../src/live-query/SubscriptionServer';
 import { liveQueryKeepAliveRoute, streamUrl } from '../src/live-query/SubscriptionChannel';
@@ -167,22 +166,14 @@ export interface RemultServer<RequestType> extends RemultServerCore<RequestType>
   withRemult(req: RequestType, res: GenericResponse, next: VoidFunction);
   registerRouter(r: GenericRouter): void;
   handle(req: RequestType, gRes?: GenericResponse): Promise<ServerHandleResponse | undefined>;
+  withRemultPromise<T>(request: RequestType, what: () => Promise<T>): Promise<T>
 }
 
 export interface RemultServerCore<RequestType> {
   getRemult(req: RequestType): Promise<Remult>;
   openApiDoc(options: { title: string, version?: string }): any;
-  ["get internal server"](): remultServerInternalExperimental<RequestType>;
 }
-export interface remultServerInternalExperimental<RequestType> {
-  //[ ] - not needed
-  getDataApi(req: RequestType, meta: EntityMetadata<any>): Promise<DataApi>;
-  //[ ] - get entities array object
-  getEntities(): EntityMetadata[];
-  //[ ] - resolved by with remult
-  run<T>(request: RequestType, what: () => Promise<T>): Promise<T>
 
-}
 export type GenericRouter = {
   route(path: string): SpecificRoute
 }
@@ -240,7 +231,7 @@ export class RemultAsyncLocalStorage {
 
 /* @internal*/
 
-export class RemultServerImplementation<RequestType> implements RemultServer<RequestType>, remultServerInternalExperimental<RequestType> {
+export class RemultServerImplementation<RequestType> implements RemultServer<RequestType> {
   liveQueryStorage: LiveQueryStorage = new InMemoryLiveQueryStorage();
   constructor(public queue: inProcessQueueHandler, public options: RemultServerOptions<any>,
     public dataProvider: DataProvider | Promise<DataProvider>, private coreOptions: ServerCoreOptions<RequestType>, private entitiesMetaData: EntityMetadata[]) {
@@ -250,11 +241,7 @@ export class RemultServerImplementation<RequestType> implements RemultServer<Req
       this.subscriptionServer = options.subscriptionServer;
 
   }
-  async getDataApi(req: RequestType, meta: EntityMetadata<any>): Promise<DataApi> { // [ ] - fix api to return also an up to date meta object, that we can use it's include in api etc... also in the where
-    const remult = await this.getRemult(req);
-    return new DataApi(remult.repo(meta.entityType), remult)
-  }
-  run<T>(request: RequestType, what: () => Promise<T>): Promise<T> {
+  withRemultPromise<T>(request: RequestType, what: () => Promise<T>): Promise<T> {
     return new Promise<any>((resolve, error) => {
       return this.withRemult(request, undefined!, () => {
         try {
@@ -270,9 +257,7 @@ export class RemultServerImplementation<RequestType> implements RemultServer<Req
     var r = new Remult();
     return this.options.entities.map(x => r.repo(x).metadata);
   }
-  ["get internal server"](): remultServerInternalExperimental<RequestType> {
-    return this;
-  }
+
 
 
   runWithSerializedJsonContextData: PerformWithContext = async (jsonContextData, entityKey, what) => {

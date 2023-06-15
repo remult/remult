@@ -327,6 +327,9 @@ export declare class EntityBase {
     isNew(): boolean;
     get $(): FieldsRef<this>;
 }
+export declare class IdEntity extends EntityBase {
+    id: string;
+}
 export declare class ControllerBase {
     protected remult: Remult;
     constructor(remult?: Remult);

@@ -72,8 +72,8 @@ export function remultFastify(options: RemultServerOptions<FastifyRequest>): Rem
         getRemult: x => api.getRemult(x),
         openApiDoc: x => api.openApiDoc(x),
         withRemult: <T>(req, what) =>
-            api['get internal server']().run<T>(req, what),
-        "get internal server": () => api['get internal server']()
+            api.withRemultPromise<T>(req, what),
+        
     });
 }
 

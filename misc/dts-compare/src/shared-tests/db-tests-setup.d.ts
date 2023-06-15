@@ -13,6 +13,7 @@ export declare function testInMemory(key: string, what: dbTestWhatSignature, foc
 export declare const TestDbs: {
     restDataProvider: string;
     mongo: string;
+    inMemory: string;
 };
 export declare type dbTestWhatSignature = ((db: {
     db: DataProvider;

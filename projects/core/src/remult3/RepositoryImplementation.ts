@@ -2116,6 +2116,10 @@ export class EntityBase {
     isNew() { return this._.isNew(); }
     get $() { return this._.fields }
 }
+export class IdEntity extends EntityBase {
+    @Fields.uuid()
+    id: string;
+  }
 export class ControllerBase {
     protected remult: Remult;
     constructor(remult?: Remult) {

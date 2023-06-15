@@ -33,7 +33,6 @@ export function remultExpress(options?:
         getRemult: (req) => server.getRemult(req),
         openApiDoc: (options: { title: string }) => server.openApiDoc(options),
         withRemult: (req, res, next) => server.withRemult(req, res, next),
-        "get internal server": () => server['get internal server']()
     });
 
 }

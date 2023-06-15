@@ -1,4 +1,4 @@
-export { Field, Fields, FieldsMetadata, Entity, EntityBase, ControllerBase, FieldRef, IdFieldRef, FieldsRef, EntityMetadata, EntityOrderBy, EntityFilter, FindOptions, QueryResult, QueryOptions, Repository, FieldType, FindFirstOptions, ComparisonValueFilter, ValueFilter, IdFilter, ContainsStringValueFilter, getFields, EntityRef, getEntityRef, SortSegments, ValueListFieldType, getValueList, ValueListFieldOptions, ValueListInfo, OmitEB, Paginator, CaptionTransformer, LiveQuery, LiveQueryChangeInfo } from './src/remult3';
+export { Field, Fields, FieldsMetadata, Entity, IdEntity, EntityBase, ControllerBase, FieldRef, IdFieldRef, FieldsRef, EntityMetadata, EntityOrderBy, EntityFilter, FindOptions, QueryResult, QueryOptions, Repository, FieldType, FindFirstOptions, ComparisonValueFilter, ValueFilter, IdFilter, ContainsStringValueFilter, getFields, EntityRef, getEntityRef, SortSegments, ValueListFieldType, getValueList, ValueListFieldOptions, ValueListInfo, OmitEB, Paginator, CaptionTransformer, LiveQuery, LiveQueryChangeInfo } from './src/remult3';
 export { StringFieldOptions } from './src/remult3/RepositoryImplementation';
 export { describeClass } from './src/remult3/DecoratorReplacer';
 export { EntityOptions } from './src/entity';
@@ -16,7 +16,6 @@ export { JsonDataProvider, JsonEntityStorage } from './src/data-providers/json-d
 export { Controller, BackendMethodOptions, BackendMethod, ProgressListener } from './src/server-action';
 export { Allowed, Allow, Remult, RemultContext, ApiClient, isBackend, AllowedForInstance, EventDispatcher, EventSource, UserInfo } from './src/context';
 export { ExternalHttpProvider } from './src/buildRestDataProvider';
-export { IdEntity } from './src/id-entity';
 export { SortSegment, Sort } from './src/sort';
 export { OneToMany, CompoundIdField } from './src/column';
 export { Filter } from './src/filter/filter-interfaces';
