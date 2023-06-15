@@ -49,13 +49,11 @@ type GraphQLType = {
 }
 
 let _removeComments = false
-export function remultGraphql(options?: {
-  removeComments?: boolean, entities?: ClassType<any>[],
+export function remultGraphql(options: {
+  removeComments?: boolean, entities: ClassType<any>[],
   getRemultFromRequest?: (req: any) => Remult
 }) {
-  if (!options) {
-    options = {}
-  }
+
   if (!options.getRemultFromRequest) {
     options.getRemultFromRequest = () => remult;
   }

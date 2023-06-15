@@ -31,18 +31,13 @@ r.dataProvider = new JsonFileDataProvider('./db');
 
 
 const app = express()
-app.use((req, res, next) => {
-    //@ts-ignore
-    req.session = "noam"
-    next()
-})
+
 export const api = remultExpress({
     entities: [Task, Category],
     controllers: [TasksController, TasksControllerDecorated],
     queueStorage: new EntityQueueStorage(r.repo(JobsInQueueEntity)),
     //@ts-ignore
     getUser: ({ session }) => {
-        console.log(session)
         return undefined;
     }
 })
@@ -53,16 +48,22 @@ const openApiDocument = api.openApiDoc({ title: 'remult-react-todo' })
 fs.writeFileSync('/temp/test.json', JSON.stringify(openApiDocument, undefined, 2))
 app.get('/api/openApi.json', (req, res) => res.json(openApiDocument));
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openApiDocument));
-const { typeDefs, rootValue, resolvers } = remultGraphql(api);
+const { typeDefs, rootValue, resolvers } = remultGraphql({
+    entities: [Category, Task]
+});
 
-app.use('/api/graphql', graphqlHTTP({
+app.use('/api/graphql', api.withRemult, graphqlHTTP({
     schema: buildSchema(typeDefs),
     rootValue,
     graphiql: true,
 }));
 
+fs.writeFileSync('/temp/gql.txt', typeDefs);
+
 const yoga = createYoga({
     graphqlEndpoint: '/api/yogaGraphql',
+    graphiql: true,
+
     schema: (createSchema({
         typeDefs,
         resolvers
