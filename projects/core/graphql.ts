@@ -220,14 +220,14 @@ export function remultGraphql(options: {
           response: DataApiResponse,
           setResult: (result: any) => void,
           arg1: any,
-          req: any,
+          meta:EntityMetadata,
         ) => Promise<void>,
       ) => {
         return createResultPromise(async (response, setResult, arg1, req) => {
           const remult = options.getRemultFromRequest(req);
-          const dApi = new DataApi(remult.repo(meta.entityType), remult);
-          // [ ] - fix api to return also an up to date meta object, that we can use it's include in api etc... also in the where
-          await work(dApi, response, setResult, arg1, req)
+          const repo = remult.repo(meta.entityType);
+          const dApi = new DataApi(repo, remult);
+          await work(dApi, response, setResult, arg1, meta)
         })
       }
 
@@ -357,7 +357,7 @@ Select a dedicated page.`,
       }
 
       root[key] = handleRequestWithDataApiContext(
-        async (dApi, response, setResult, arg1: any, req: any) => {
+        async (dApi, response, setResult, arg1: any, meta:EntityMetadata) => {
 
           setResult({
             [itemsKey]: createResultPromise(async (response, setResult) => {
@@ -382,7 +382,6 @@ Select a dedicated page.`,
 
             }),
             [totalCountKey]: createResultPromise(async (response, setResult) => {
-              // [ ] count should ignore limit, page etc....
               await dApi.count(
                 {
                   ...response,
