@@ -145,7 +145,7 @@ export function remultNextApp(
     PUT: handler,
     DELETE: handler,
     withRemult: <T>(what) =>
-      result.withRemultPromise<T>(undefined!, what),
+      result.withRemultPromise<T>({} as any, what),
   };
 }
 
