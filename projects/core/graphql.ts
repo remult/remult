@@ -864,7 +864,7 @@ function bridgeQueryOptionsToDataApiGet(arg1: any) {
     }
   }
 }
-
+//@internal
 export function translateWhereToRestBody<T>(fields: FieldsMetadata<T>, { where }: { where: any }) {
   if (!where) return undefined
   const result: any = {}

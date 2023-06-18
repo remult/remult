@@ -1,4 +1,4 @@
-import { FieldsMetadata, Remult } from '../core';
+import { Remult } from './index';
 import type { ClassType } from './classType';
 export declare function remultGraphql(options: {
     removeComments?: boolean;
@@ -12,6 +12,3 @@ export declare function remultGraphql(options: {
     rootValue: Record<string, any>;
     typeDefs: string;
 };
-export declare function translateWhereToRestBody<T>(fields: FieldsMetadata<T>, { where }: {
-    where: any;
-}): any;
