@@ -37,6 +37,464 @@ exports[`graphql-connection > gets related entities 1`] = `
 }
 `;
 
+exports[`graphql-connection > test allow api create 1`] = `
+"type Query {
+    c(id: ID!): C
+    cs(limit: Int, page: Int, orderBy: csOrderBy, where: csWhere): CConnection
+    node(nodeId: ID!): Node
+}
+
+type Mutation {
+    updateC(id: ID!, patch: UpdateCInput!, clientMutationId: String): UpdateCPayload
+    deleteC(id: ID!, clientMutationId: String): DeleteCPayload
+}
+
+type C implements Node {
+    id: Int!
+    nodeId: ID!
+}
+
+input csOrderBy {
+  id: OrderByDirection
+}
+
+input csWhere {
+  id: WhereInt
+  OR: [csWhere!]
+}
+
+type CConnection {
+    totalCount: Int!
+    items: [C!]!
+}
+
+input UpdateCInput {
+    id: Int
+}
+
+type UpdateCPayload {
+    c: C
+    clientMutationId: String
+}
+
+type DeleteCPayload {
+    id: ID
+    clientMutationId: String
+}
+
+input WhereString {
+    eq: String
+    ne: String
+    in: [String!]
+    nin: [String!]
+    gt: String
+    gte: String
+    lt: String
+    lte: String
+    st: String
+}
+
+input WhereStringNullable {
+    eq: String
+    ne: String
+    in: [String!]
+    nin: [String!]
+    gt: String
+    gte: String
+    lt: String
+    lte: String
+    st: String
+    null: Boolean
+}
+
+input WhereInt {
+    eq: Int
+    ne: Int
+    in: [Int!]
+    nin: [Int!]
+    gt: Int
+    gte: Int
+    lt: Int
+    lte: Int
+}
+
+input WhereIntNullable {
+    eq: Int
+    ne: Int
+    in: [Int!]
+    nin: [Int!]
+    gt: Int
+    gte: Int
+    lt: Int
+    lte: Int
+    null: Boolean
+}
+
+input WhereFloat {
+    eq: Float
+    ne: Float
+    in: [Float!]
+    nin: [Float!]
+    gt: Float
+    gte: Float
+    lt: Float
+    lte: Float
+}
+
+input WhereFloatNullable {
+    eq: Float
+    ne: Float
+    in: [Float!]
+    nin: [Float!]
+    gt: Float
+    gte: Float
+    lt: Float
+    lte: Float
+    null: Boolean
+}
+
+input WhereBoolean {
+    eq: Boolean
+    ne: Boolean
+    in: [Boolean!]
+    nin: [Boolean!]
+}
+
+input WhereBooleanNullable {
+    eq: Boolean
+    ne: Boolean
+    in: [Boolean!]
+    nin: [Boolean!]
+    null: Boolean
+}
+
+input WhereID {
+    eq: ID
+    ne: ID
+    in: [ID!]
+    nin: [ID!]
+}
+
+input WhereIDNullable {
+    eq: ID
+    ne: ID
+    in: [ID!]
+    nin: [ID!]
+    null: Boolean
+}
+
+enum OrderByDirection {
+    ASC
+    DESC
+}
+
+interface Node {
+    nodeId: ID!
+}
+"
+`;
+
+exports[`graphql-connection > test allow api create 2`] = `
+"type Query {
+    c(id: ID!): C
+    cs(limit: Int, page: Int, orderBy: csOrderBy, where: csWhere): CConnection
+    node(nodeId: ID!): Node
+}
+
+
+
+type C implements Node {
+    id: Int!
+    nodeId: ID!
+}
+
+input csOrderBy {
+  id: OrderByDirection
+}
+
+input csWhere {
+  id: WhereInt
+  OR: [csWhere!]
+}
+
+type CConnection {
+    totalCount: Int!
+    items: [C!]!
+}
+
+input WhereString {
+    eq: String
+    ne: String
+    in: [String!]
+    nin: [String!]
+    gt: String
+    gte: String
+    lt: String
+    lte: String
+    st: String
+}
+
+input WhereStringNullable {
+    eq: String
+    ne: String
+    in: [String!]
+    nin: [String!]
+    gt: String
+    gte: String
+    lt: String
+    lte: String
+    st: String
+    null: Boolean
+}
+
+input WhereInt {
+    eq: Int
+    ne: Int
+    in: [Int!]
+    nin: [Int!]
+    gt: Int
+    gte: Int
+    lt: Int
+    lte: Int
+}
+
+input WhereIntNullable {
+    eq: Int
+    ne: Int
+    in: [Int!]
+    nin: [Int!]
+    gt: Int
+    gte: Int
+    lt: Int
+    lte: Int
+    null: Boolean
+}
+
+input WhereFloat {
+    eq: Float
+    ne: Float
+    in: [Float!]
+    nin: [Float!]
+    gt: Float
+    gte: Float
+    lt: Float
+    lte: Float
+}
+
+input WhereFloatNullable {
+    eq: Float
+    ne: Float
+    in: [Float!]
+    nin: [Float!]
+    gt: Float
+    gte: Float
+    lt: Float
+    lte: Float
+    null: Boolean
+}
+
+input WhereBoolean {
+    eq: Boolean
+    ne: Boolean
+    in: [Boolean!]
+    nin: [Boolean!]
+}
+
+input WhereBooleanNullable {
+    eq: Boolean
+    ne: Boolean
+    in: [Boolean!]
+    nin: [Boolean!]
+    null: Boolean
+}
+
+input WhereID {
+    eq: ID
+    ne: ID
+    in: [ID!]
+    nin: [ID!]
+}
+
+input WhereIDNullable {
+    eq: ID
+    ne: ID
+    in: [ID!]
+    nin: [ID!]
+    null: Boolean
+}
+
+enum OrderByDirection {
+    ASC
+    DESC
+}
+
+interface Node {
+    nodeId: ID!
+}
+"
+`;
+
+exports[`graphql-connection > test allow api delete 1`] = `
+"type Query {
+    c(id: ID!): C
+    cs(limit: Int, page: Int, orderBy: csOrderBy, where: csWhere): CConnection
+    node(nodeId: ID!): Node
+}
+
+type Mutation {
+    createC(input: CreateCInput!, clientMutationId: String): CreateCPayload
+    updateC(id: ID!, patch: UpdateCInput!, clientMutationId: String): UpdateCPayload
+}
+
+type C implements Node {
+    id: Int!
+    nodeId: ID!
+}
+
+input csOrderBy {
+  id: OrderByDirection
+}
+
+input csWhere {
+  id: WhereInt
+  OR: [csWhere!]
+}
+
+type CConnection {
+    totalCount: Int!
+    items: [C!]!
+}
+
+input CreateCInput {
+    id: Int
+}
+
+type CreateCPayload {
+    c: C
+    clientMutationId: String
+}
+
+input UpdateCInput {
+    id: Int
+}
+
+type UpdateCPayload {
+    c: C
+    clientMutationId: String
+}
+
+input WhereString {
+    eq: String
+    ne: String
+    in: [String!]
+    nin: [String!]
+    gt: String
+    gte: String
+    lt: String
+    lte: String
+    st: String
+}
+
+input WhereStringNullable {
+    eq: String
+    ne: String
+    in: [String!]
+    nin: [String!]
+    gt: String
+    gte: String
+    lt: String
+    lte: String
+    st: String
+    null: Boolean
+}
+
+input WhereInt {
+    eq: Int
+    ne: Int
+    in: [Int!]
+    nin: [Int!]
+    gt: Int
+    gte: Int
+    lt: Int
+    lte: Int
+}
+
+input WhereIntNullable {
+    eq: Int
+    ne: Int
+    in: [Int!]
+    nin: [Int!]
+    gt: Int
+    gte: Int
+    lt: Int
+    lte: Int
+    null: Boolean
+}
+
+input WhereFloat {
+    eq: Float
+    ne: Float
+    in: [Float!]
+    nin: [Float!]
+    gt: Float
+    gte: Float
+    lt: Float
+    lte: Float
+}
+
+input WhereFloatNullable {
+    eq: Float
+    ne: Float
+    in: [Float!]
+    nin: [Float!]
+    gt: Float
+    gte: Float
+    lt: Float
+    lte: Float
+    null: Boolean
+}
+
+input WhereBoolean {
+    eq: Boolean
+    ne: Boolean
+    in: [Boolean!]
+    nin: [Boolean!]
+}
+
+input WhereBooleanNullable {
+    eq: Boolean
+    ne: Boolean
+    in: [Boolean!]
+    nin: [Boolean!]
+    null: Boolean
+}
+
+input WhereID {
+    eq: ID
+    ne: ID
+    in: [ID!]
+    nin: [ID!]
+}
+
+input WhereIDNullable {
+    eq: ID
+    ne: ID
+    in: [ID!]
+    nin: [ID!]
+    null: Boolean
+}
+
+enum OrderByDirection {
+    ASC
+    DESC
+}
+
+interface Node {
+    nodeId: ID!
+}
+"
+`;
+
 exports[`graphql-connection > test basics 1`] = `
 "type Query {
     task(id: ID!): Task

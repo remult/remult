@@ -53,7 +53,9 @@ export class Category {
 }
 
 @Entity("tasks", {
-  allowApiCrud: true
+  allowApiCrud: true,
+  allowApiDelete: false
+
 })
 export class Task {
   @Fields.autoIncrement()

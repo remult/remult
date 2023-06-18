@@ -1,4 +1,4 @@
-import type from  'vitest/globals' 
+import type from 'vitest/globals'
 import { createSchema, createYoga } from "graphql-yoga"
 import {
   Entity,
@@ -7,6 +7,7 @@ import {
   Fields,
   InMemoryDataProvider,
   Remult,
+  describeClass,
   remult
 } from "../core"
 import { remultExpress, type RemultExpressServer } from "../core/remult-express"
@@ -395,6 +396,51 @@ describe("graphql-connection", () => {
     // rmv removeComments is very handy for testing!
     const { typeDefs } = remultGraphql({
       entities: [Task, Category],
+      removeComments: true
+    })
+
+    expect(typeDefs).toMatchSnapshot()
+  })
+  it("test allow api delete", async () => {
+    const C = class {
+      id = 0
+    }
+    describeClass(C, Entity("cs", { allowApiCrud: true, allowApiDelete: false }), {
+      id: Fields.integer()
+    })
+    // rmv removeComments is very handy for testing!
+    const { typeDefs } = remultGraphql({
+      entities: [C],
+      removeComments: true
+    })
+
+    expect(typeDefs).toMatchSnapshot()
+  })
+  it("test allow api create", async () => {
+    const C = class {
+      id = 0
+    }
+    describeClass(C, Entity("cs", { allowApiCrud: true, allowApiInsert: false }), {
+      id: Fields.integer()
+    })
+    // rmv removeComments is very handy for testing!
+    const { typeDefs } = remultGraphql({
+      entities: [C],
+      removeComments: true
+    })
+
+    expect(typeDefs).toMatchSnapshot()
+  })
+  it("test allow api create", async () => {
+    const C = class {
+      id = 0
+    }
+    describeClass(C, Entity("cs", { allowApiCrud: false }), {
+      id: Fields.integer()
+    })
+    // rmv removeComments is very handy for testing!
+    const { typeDefs } = remultGraphql({
+      entities: [C],
       removeComments: true
     })
 

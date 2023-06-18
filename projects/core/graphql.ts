@@ -220,7 +220,7 @@ export function remultGraphql(options: {
           response: DataApiResponse,
           setResult: (result: any) => void,
           arg1: any,
-          meta:EntityMetadata,
+          meta: EntityMetadata,
         ) => Promise<void>,
       ) => {
         return createResultPromise(async (response, setResult, arg1, req) => {
@@ -357,7 +357,7 @@ Select a dedicated page.`,
       }
 
       root[key] = handleRequestWithDataApiContext(
-        async (dApi, response, setResult, arg1: any, meta:EntityMetadata) => {
+        async (dApi, response, setResult, arg1: any, meta: EntityMetadata) => {
 
           setResult({
             [itemsKey]: createResultPromise(async (response, setResult) => {
@@ -405,122 +405,129 @@ Select a dedicated page.`,
 
       const root_mutation = upsertTypes('Mutation', 'type', -9)
 
-      // create
-      const createInput = `Create${getMetaType(meta)}Input`
-      const createPayload = `Create${getMetaType(meta)}Payload`
-      const createResolverKey = `create${getMetaType(meta)}`
-      root_mutation.fields.push({
-        key: createResolverKey,
-        args: [{ key: 'input', value: `${createInput}!` }, argClientMutationId],
-        value: `${createPayload}`,
-        comment: `Create a new \`${getMetaType(meta)}\``,
-      })
+      const checkCanExist = (rule: any) => rule !== false && !(rule === undefined && (meta.options.allowApiCrud === false || meta.options.allowApiCrud === undefined))
 
-      currentType.mutation.create.input = upsertTypes(createInput, 'input')
 
-      currentType.mutation.create.payload = upsertTypes(createPayload)
-      currentType.mutation.create.payload.fields.push(
-        {
-          key: `${toCamelCase(getMetaType(meta))}`,
-          value: `${getMetaType(meta)}`,
-        },
-        argClientMutationId,
-      )
-      root[createResolverKey] = handleRequestWithDataApiContext(
-        async (dApi, response, setResult, arg1: any, req: any) => {
-          await dApi.post(
-            {
-              ...response,
-              created: y => {
-                currentType.query.resultProcessors.forEach(z => z(y))
-                setResult({
-                  [toCamelCase(getMetaType(meta))]: y,
-                })
+      if (checkCanExist(meta.options.allowApiInsert)) {
+        // create
+        const createInput = `Create${getMetaType(meta)}Input`
+        const createPayload = `Create${getMetaType(meta)}Payload`
+        const createResolverKey = `create${getMetaType(meta)}`
+        root_mutation.fields.push({
+          key: createResolverKey,
+          args: [{ key: 'input', value: `${createInput}!` }, argClientMutationId],
+          value: `${createPayload}`,
+          comment: `Create a new \`${getMetaType(meta)}\``,
+        })
+
+        currentType.mutation.create.input = upsertTypes(createInput, 'input')
+
+        currentType.mutation.create.payload = upsertTypes(createPayload)
+        currentType.mutation.create.payload.fields.push(
+          {
+            key: `${toCamelCase(getMetaType(meta))}`,
+            value: `${getMetaType(meta)}`,
+          },
+          argClientMutationId,
+        )
+        root[createResolverKey] = handleRequestWithDataApiContext(
+          async (dApi, response, setResult, arg1: any, req: any) => {
+            await dApi.post(
+              {
+                ...response,
+                created: y => {
+                  currentType.query.resultProcessors.forEach(z => z(y))
+                  setResult({
+                    [toCamelCase(getMetaType(meta))]: y,
+                  })
+                },
               },
-            },
-            arg1.input,
-          )
-        },
-      )
-      resolversMutation[createResolverKey] = (origItem: any, args: any, req: any, gqlInfo: any) =>
-        root[createResolverKey](args, req, gqlInfo)
+              arg1.input,
+            )
+          },
+        )
+        resolversMutation[createResolverKey] = (origItem: any, args: any, req: any, gqlInfo: any) =>
+          root[createResolverKey](args, req, gqlInfo)
+      }
 
-      // update
-      const updateInput = `Update${getMetaType(meta)}Input`
-      const updatePayload = `Update${getMetaType(meta)}Payload`
-      const updateResolverKey = `update${getMetaType(meta)}`
-      root_mutation.fields.push({
-        key: updateResolverKey,
-        args: [argId, { key: 'patch', value: `${updateInput}!` }, argClientMutationId],
-        value: `${updatePayload}`,
-        comment: `Update a \`${getMetaType(meta)}\``,
-      })
+      if (checkCanExist(meta.options.allowApiUpdate)) {
+        // update
+        const updateInput = `Update${getMetaType(meta)}Input`
+        const updatePayload = `Update${getMetaType(meta)}Payload`
+        const updateResolverKey = `update${getMetaType(meta)}`
+        root_mutation.fields.push({
+          key: updateResolverKey,
+          args: [argId, { key: 'patch', value: `${updateInput}!` }, argClientMutationId],
+          value: `${updatePayload}`,
+          comment: `Update a \`${getMetaType(meta)}\``,
+        })
 
-      currentType.mutation.update.input = upsertTypes(updateInput, 'input')
+        currentType.mutation.update.input = upsertTypes(updateInput, 'input')
 
-      currentType.mutation.update.payload = upsertTypes(updatePayload)
-      currentType.mutation.update.payload.fields.push(
-        {
-          key: `${toCamelCase(getMetaType(meta))}`,
-          value: `${getMetaType(meta)}`,
-        },
-        argClientMutationId,
-      )
-      root[updateResolverKey] = handleRequestWithDataApiContext(
-        async (dApi, response, setResult, arg1: any, req: any) => {
-          await dApi.put(
-            {
-              ...response,
-              success: y => {
-                currentType.query.resultProcessors.forEach(z => z(y))
-                setResult({
-                  [toCamelCase(getMetaType(meta))]: y,
-                })
+        currentType.mutation.update.payload = upsertTypes(updatePayload)
+        currentType.mutation.update.payload.fields.push(
+          {
+            key: `${toCamelCase(getMetaType(meta))}`,
+            value: `${getMetaType(meta)}`,
+          },
+          argClientMutationId,
+        )
+        root[updateResolverKey] = handleRequestWithDataApiContext(
+          async (dApi, response, setResult, arg1: any, req: any) => {
+            await dApi.put(
+              {
+                ...response,
+                success: y => {
+                  currentType.query.resultProcessors.forEach(z => z(y))
+                  setResult({
+                    [toCamelCase(getMetaType(meta))]: y,
+                  })
+                },
               },
-            },
-            arg1.id,
-            arg1.patch,
-          )
-        },
-      )
-      resolversMutation[updateResolverKey] = (origItem: any, args: any, req: any, gqlInfo: any) =>
-        root[updateResolverKey](args, req, gqlInfo)
+              arg1.id,
+              arg1.patch,
+            )
+          },
+        )
+        resolversMutation[updateResolverKey] = (origItem: any, args: any, req: any, gqlInfo: any) =>
+          root[updateResolverKey](args, req, gqlInfo)
+      }
+      if (checkCanExist(meta.options.allowApiDelete)) {
+        // delete
+        const deletePayload = `Delete${getMetaType(meta)}Payload`
+        const deleteResolverKey = `delete${getMetaType(meta)}`
+        root_mutation.fields.push({
+          key: deleteResolverKey,
+          args: [argId, argClientMutationId],
+          value: `${deletePayload}`,
+          comment: `Delete a \`${getMetaType(meta)}\``,
+        })
 
-      // delete
-      const deletePayload = `Delete${getMetaType(meta)}Payload`
-      const deleteResolverKey = `delete${getMetaType(meta)}`
-      root_mutation.fields.push({
-        key: deleteResolverKey,
-        args: [argId, argClientMutationId],
-        value: `${deletePayload}`,
-        comment: `Delete a \`${getMetaType(meta)}\``,
-      })
-
-      currentType.mutation.delete.payload = upsertTypes(deletePayload)
-      const deletedResultKey = `id`
-      currentType.mutation.delete.payload.fields.push(
-        {
-          key: deletedResultKey,
-          value: 'ID',
-        },
-        argClientMutationId,
-      )
-      root[deleteResolverKey] = handleRequestWithDataApiContext(
-        async (dApi, response, setResult, arg1: any, req: any) => {
-          await dApi.delete(
-            {
-              ...response,
-              deleted: () => {
-                setResult({ [deletedResultKey]: arg1.id })
+        currentType.mutation.delete.payload = upsertTypes(deletePayload)
+        const deletedResultKey = `id`
+        currentType.mutation.delete.payload.fields.push(
+          {
+            key: deletedResultKey,
+            value: 'ID',
+          },
+          argClientMutationId,
+        )
+        root[deleteResolverKey] = handleRequestWithDataApiContext(
+          async (dApi, response, setResult, arg1: any, req: any) => {
+            await dApi.delete(
+              {
+                ...response,
+                deleted: () => {
+                  setResult({ [deletedResultKey]: arg1.id })
+                },
               },
-            },
-            arg1.id,
-          )
-        },
-      )
-      resolversMutation[deleteResolverKey] = (origItem: any, args: any, req: any, gqlInfo: any) =>
-        root[deleteResolverKey](args, req, gqlInfo)
-
+              arg1.id,
+            )
+          },
+        )
+        resolversMutation[deleteResolverKey] = (origItem: any, args: any, req: any, gqlInfo: any) =>
+          root[deleteResolverKey](args, req, gqlInfo)
+      }
       const whereTypeFields: string[] = []
       for (const f of meta.fields) {
         if (f.options.includeInApi === false) continue
@@ -618,16 +625,18 @@ Select a dedicated page.`,
         const updateType = it_is_not_at_ref ? type : 'ID'
         if (includeInUpdateOrInsert) {
           // create
-          currentType.mutation.create.input.fields.push({
-            key: f.key,
-            value: updateType,
-          })
+          if (currentType.mutation.create.input)
+            currentType.mutation.create.input.fields.push({
+              key: f.key,
+              value: updateType,
+            })
 
           // update
-          currentType.mutation.update.input.fields.push({
-            key: f.key,
-            value: updateType,
-          })
+          if (currentType.mutation.update.input)
+            currentType.mutation.update.input.fields.push({
+              key: f.key,
+              value: updateType,
+            })
         }
       }
 
@@ -882,6 +891,6 @@ export function translateWhereToRestBody<T>(fields: FieldsMetadata<T>, { where }
 }
 
 
-//[ ] - remove update, delete, create from mutations if it's completely disallowed.
+
 //[ ] - when fetching a related entity - make sure it's include in api is true in the specific context.
 //[ ] - test graphql where in entity definitions there is a reference to static remult
