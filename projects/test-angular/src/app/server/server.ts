@@ -47,23 +47,23 @@ app.use(api)
 const openApiDocument = api.openApiDoc({ title: 'remult-react-todo' })
 fs.writeFileSync('/temp/test.json', JSON.stringify(openApiDocument, undefined, 2))
 app.get('/api/openApi.json', (req, res) => res.json(openApiDocument));
+
+
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openApiDocument));
 const { typeDefs, rootValue, resolvers } = remultGraphql({
     entities: [Category, Task]
 });
 
-app.use('/api/graphql', api.withRemult, graphqlHTTP({
-    schema: buildSchema(typeDefs),
-    rootValue,
-    graphiql: true,
-}));
+// app.use('/api/graphql', api.withRemult, graphqlHTTP({
+//     schema: buildSchema(typeDefs),
+//     rootValue,
+//     graphiql: true,
+// }));
 
 fs.writeFileSync('/temp/gql.txt', typeDefs);
 
 const yoga = createYoga({
-    graphqlEndpoint: '/api/yogaGraphql',
-    graphiql: true,
-
+    graphqlEndpoint: '/api/graphql',
     schema: (createSchema({
         typeDefs,
         resolvers
@@ -73,7 +73,7 @@ app.get('/test', (req, res) => {
     let z = rootValue;
     res.send("t")
 })
-app.use(yoga.graphqlEndpoint, yoga)
+app.use(yoga.graphqlEndpoint, api.withRemult, yoga)
 
 
 
