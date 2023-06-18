@@ -77,8 +77,8 @@ export function remultNextApp(
   let result = createRemultServer<Request>(options!, {
     getRequestBody: req => req.json(),
     buildGenericRequestInfo: (req) => ({
-      url: req.url,
-      method: req.method,
+      url: req?.url,
+      method: req?.method,
 
       on: (e: "close", do1: VoidFunction) => {
         if (e === "close") {
