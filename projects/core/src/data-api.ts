@@ -195,10 +195,16 @@ export class DataApi<T = any> {
   private async doOnId(response: DataApiResponse, id: any, what: (row: T) => Promise<void>) {
     try {
 
-
+      var where: EntityFilter<any>[] = [this.repository.metadata.idMetadata.getIdFilter(id)];
+      if (this.repository.metadata.options.apiPrefilter) {
+        if (typeof this.repository.metadata.options.apiPrefilter === "function")
+          where.push(await this.repository.metadata.options.apiPrefilter());
+        else
+          where.push(this.repository.metadata.options.apiPrefilter);
+      }
 
       await this.repository.find({
-        where: { $and: [this.repository.metadata.options.apiPrefilter, this.repository.metadata.idMetadata.getIdFilter(id)] } as EntityFilter<any>
+        where: { $and: where } as EntityFilter<any>
       })
         .then(async r => {
           if (r.length == 0)

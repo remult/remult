@@ -42,7 +42,11 @@ export class ProductsComponent {
 
 }
 
-@Entity("categories", { allowApiRead: false })
+@Entity<Category>("categories", {
+  allowApiCrud: true, apiPrefilter: () => ({
+    id: { $ne: "clj30u9o500000kr3956ph9ep" }
+  })
+})
 export class Category {
   @Fields.cuid()
   id = ''

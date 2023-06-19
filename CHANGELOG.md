@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.20.6] - 2023-06-19
+
+- Fixed an issue when apiPrefilter was an arrow function, it did not affect get of a specific resource
+
 ## [0.20.5] - 2023-06-11
 
 - fixed issue #200 transactions on mongo db
