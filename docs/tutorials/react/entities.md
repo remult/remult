@@ -56,11 +56,11 @@ The [@Entity](../../docs/ref_entity.md) decorator tells Remult this class is an 
 
 To initially allow all CRUD operations for tasks, we set the option [allowApiCrud](../../docs/ref_entity.md#allowapicrud) to `true`.
 
-The [@Fields.cuid](../../docs/ref_field.md) decorator tells Remult to automatically generate an short random id using the [cuid](https://github.com/paralleldrive/cuid) library. This value can't be changed after the entity is created.
+The [@Fields.cuid](../../docs/field-types.md#fields-cuid) decorator tells Remult to automatically generate a short random id using the [cuid](https://github.com/paralleldrive/cuid) library. This value can't be changed after the entity is created.
 
-The [@Fields.string](../../docs/ref_field.md) decorator tells Remult the `title` property is an entity data field of type `String`. This decorator is also used to define field-related properties and operations, discussed in the next sections of this tutorial and the same goes for `@Fields.boolean` and the `completed` property.
+The [@Fields.string](../../docs/field-types.md#fields-string) decorator tells Remult the `title` property is an entity data field of type `String`. This decorator is also used to define field-related properties and operations, discussed in the next sections of this tutorial and the same goes for `@Fields.boolean` and the `completed` property.
 
-The [@Fields.createdAt](../../docs/ref_field.md) decorator tells Remult to automatically generate a `createdAt` field with the current date and time.
+The [@Fields.createdAt](../../docs/field-types.md#fields-createdat) decorator tells Remult to automatically generate a `createdAt` field with the current date and time.
 
 ::: tip
 For a complete list of supported field types, see the [Field Types](../../docs/field-types.md) section in the Remult documentation.
