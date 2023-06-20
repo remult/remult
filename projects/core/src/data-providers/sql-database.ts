@@ -103,7 +103,19 @@ export class SqlDatabase implements DataProvider {
     await (await ((r as RepositoryImplementation<entityType>).translateWhereToFilter(condition))).__applyToConsumer(b)
     return await b.resolveWhere();
   }
+  /**
+   * `false` _(default)_ - No logging
+   *
+   * `true` - to log all queries to the console
+   * 
+   * `oneLiner` - to log all queries to the console as one line
+   * 
+   * a `function` - to log all queries to the console as a custom format
+   */
   public static LogToConsole: boolean | 'oneLiner' | ((duration: number, query: string, args: Record<string, any>) => void) = false;
+  /**
+   * Threshold in milliseconds for logging queries to the console.
+   */
   public static durationThreshold = 0;
   constructor(private sql: SqlImplementation) {
 
