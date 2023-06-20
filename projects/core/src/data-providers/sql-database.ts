@@ -103,7 +103,7 @@ export class SqlDatabase implements DataProvider {
     await (await ((r as RepositoryImplementation<entityType>).translateWhereToFilter(condition))).__applyToConsumer(b)
     return await b.resolveWhere();
   }
-  public static LogToConsole: boolean | 'oneLiner' | ((duration: number, query: string, args: Record<string, any>) => {}) = false;
+  public static LogToConsole: boolean | 'oneLiner' | ((duration: number, query: string, args: Record<string, any>) => void) = false;
   public static durationThreshold = 0;
   constructor(private sql: SqlImplementation) {
 

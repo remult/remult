@@ -13,7 +13,7 @@ export declare class SqlDatabase implements DataProvider {
     transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void>;
     static rawFilter(build: CustomSqlFilterBuilderFunction): EntityFilter<any>;
     static filterToRaw<entityType>(repo: RepositoryOverloads<entityType>, condition: EntityFilter<entityType>, sqlCommand?: SqlCommandWithParameters): Promise<string>;
-    static LogToConsole: boolean;
+    static LogToConsole: boolean | 'oneLiner' | ((duration: number, query: string, args: Record<string, any>) => void);
     static durationThreshold: number;
     constructor(sql: SqlImplementation);
     private createdEntities;
