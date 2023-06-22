@@ -2,10 +2,9 @@ import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
 import { Remult } from '../context';
 import { SqlDatabase } from '../data-providers/sql-database';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
-import { Field, Entity, EntityBase, FieldType, Fields } from '../remult3';
+import { Field, Entity, EntityBase, FieldType, Fields, IdEntity } from '../remult3';
 import { entityFilterToJson, Filter } from '../filter/filter-interfaces';
 import { assign } from '../../assign';
-import { IdEntity } from '../id-entity';
 
 
 describe("test object column", () => {

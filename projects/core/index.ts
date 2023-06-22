@@ -10,7 +10,7 @@ export {
     Fields,
     FieldsMetadata,
     Entity,
-
+    IdEntity,
     EntityBase,
     ControllerBase,
     FieldRef,
@@ -104,9 +104,6 @@ export {
     UserInfo
 } from './src/context';
 export { ExternalHttpProvider } from './src/buildRestDataProvider'
-export {
-    IdEntity
-} from './src/id-entity';
 export { SortSegment, Sort } from './src/sort';
 export { OneToMany, CompoundIdField } from './src/column';
 export { Filter } from './src/filter/filter-interfaces';

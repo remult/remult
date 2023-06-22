@@ -1,9 +1,8 @@
 import { ActionTestConfig, testAsIfOnBackend } from './testHelper.spec';
 import { Remult, isBackend } from '../context';
 import { prepareArgsToSend, Controller, BackendMethod } from '../server-action';
-import { Field, Entity, getFields, ValueListFieldType, Fields } from '../remult3';
+import { Field, Entity, getFields, ValueListFieldType, Fields, IdEntity } from '../remult3';
 
-import { IdEntity } from '../id-entity';
 import { remult, RemultProxy } from '../remult-proxy';
 import { describeClass } from '../remult3/DecoratorReplacer';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';

@@ -1,15 +1,21 @@
 import type { RequestEvent } from "@sveltejs/kit"
 import { createSchema, createYoga } from "graphql-yoga"
 import { remultGraphql } from "remult/graphql"
-import { api } from "../../../api.server"
+import { Task } from "../../../shared/Task"
 
-const { schema, rootValue } = remultGraphql(api)
+const { typeDefs, resolvers } = remultGraphql({
+  entities: [Task]
+})
 
 const yogaApp = createYoga<RequestEvent>({
   schema: createSchema({
-    typeDefs: schema,
-    resolvers: {}
-  })
+    typeDefs: createSchema({
+      typeDefs,
+      resolvers
+    }),
+  }),
+  fetchAPI: { Response }
+
 })
 
 export { yogaApp as GET, yogaApp as POST }

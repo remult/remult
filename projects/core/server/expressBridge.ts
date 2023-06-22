@@ -1,11 +1,10 @@
 
 import { Action, actionInfo, ActionInterface, classBackendMethodsArray, jobWasQueuedResult, myServerAction, queuedJobInfoResponse, serverActionField } from '../src/server-action';
-import { DataProvider, ErrorInfo, Storage } from '../src/data-interfaces';
+import type { DataProvider, ErrorInfo, Storage } from '../src/data-interfaces';
 import { DataApi, DataApiRequest, DataApiResponse, serializeError } from '../src/data-api';
 import { allEntities, AllowedForInstance, Remult, UserInfo } from '../src/context';
-import { ClassType } from '../classType';
-import { Entity, Fields, getEntityKey, Repository } from '../src/remult3';
-import { IdEntity } from '../src/id-entity';
+import type { ClassType } from '../classType';
+import { Entity, EntityBase, EntityMetadata, Fields, getEntityKey, IdEntity, Repository } from '../src/remult3';
 import { remult, RemultProxy } from '../src/remult-proxy';
 import { LiveQueryPublisher, LiveQueryStorage, InMemoryLiveQueryStorage, PerformWithContext, SubscriptionServer } from '../src/live-query/SubscriptionServer';
 import { liveQueryKeepAliveRoute, streamUrl } from '../src/live-query/SubscriptionChannel';
@@ -98,6 +97,7 @@ export function createRemultServerCore<RequestType>(
     options.ensureSchema = true;
 
   RemultAsyncLocalStorage.enable();
+  const entitiesMetaData: EntityMetadata[] = [];
 
   dataProvider = dataProvider.then(async dp => {
     var remult = new Remult(dp);
@@ -111,10 +111,10 @@ export function createRemultServerCore<RequestType>(
             started = true;
             console.time("Ensure Schema")
           }
+          entitiesMetaData.push(...options.entities.map(e => remult.repo(e).metadata));
           if (dp.ensureSchema) {
             startConsoleLog();
-            const entitiesMetadata = options.entities.map(e => remult.repo(e).metadata);
-            await dp.ensureSchema(entitiesMetadata)
+            await dp.ensureSchema(entitiesMetaData)
           }
           for (const item of [options.liveQueryStorage, options.queueStorage] as any as (Storage)[]) {
             if (item?.ensureSchema) {
@@ -149,7 +149,7 @@ export function createRemultServerCore<RequestType>(
     options.rootPath = '/api';
 
   actionInfo.runningOnServer = true;
-  let bridge = new RemultServerImplementation<RequestType>(new inProcessQueueHandler(options.queueStorage), options, dataProvider, serverCoreOptions);
+  let bridge = new RemultServerImplementation<RequestType>(new inProcessQueueHandler(options.queueStorage), options, dataProvider, serverCoreOptions, entitiesMetaData);
   return bridge;
 
 }
@@ -166,12 +166,14 @@ export interface RemultServer<RequestType> extends RemultServerCore<RequestType>
   withRemult(req: RequestType, res: GenericResponse, next: VoidFunction);
   registerRouter(r: GenericRouter): void;
   handle(req: RequestType, gRes?: GenericResponse): Promise<ServerHandleResponse | undefined>;
+  withRemultPromise<T>(request: RequestType, what: () => Promise<T>): Promise<T>
 }
 
 export interface RemultServerCore<RequestType> {
   getRemult(req: RequestType): Promise<Remult>;
   openApiDoc(options: { title: string, version?: string }): any;
 }
+
 export type GenericRouter = {
   route(path: string): SpecificRoute
 }
@@ -232,13 +234,31 @@ export class RemultAsyncLocalStorage {
 export class RemultServerImplementation<RequestType> implements RemultServer<RequestType> {
   liveQueryStorage: LiveQueryStorage = new InMemoryLiveQueryStorage();
   constructor(public queue: inProcessQueueHandler, public options: RemultServerOptions<any>,
-    public dataProvider: DataProvider | Promise<DataProvider>, private coreOptions: ServerCoreOptions<RequestType>) {
+    public dataProvider: DataProvider | Promise<DataProvider>, private coreOptions: ServerCoreOptions<RequestType>, private entitiesMetaData: EntityMetadata[]) {
     if (options.liveQueryStorage)
       this.liveQueryStorage = options.liveQueryStorage;
     if (options.subscriptionServer)
       this.subscriptionServer = options.subscriptionServer;
 
   }
+  withRemultPromise<T>(request: RequestType, what: () => Promise<T>): Promise<T> {
+    return new Promise<any>((resolve, error) => {
+      return this.withRemult(request, undefined!, () => {
+        try {
+          what().then(resolve).catch(error)
+        } catch (err) {
+          error(err)
+        }
+      })
+    })
+  }
+  getEntities(): EntityMetadata<any>[] {
+    //TODO - consider using entitiesMetaData - but it may require making it all awaitable
+    var r = new Remult();
+    return this.options.entities.map(x => r.repo(x).metadata);
+  }
+
+
 
   runWithSerializedJsonContextData: PerformWithContext = async (jsonContextData, entityKey, what) => {
 
@@ -269,6 +289,7 @@ export class RemultServerImplementation<RequestType> implements RemultServer<Req
   withRemult = (req: RequestType, res: GenericResponse, next: VoidFunction) => {
     this.process(async () => { next() })(req, res);
   }
+
   routeImpl: RouteImplementation<RequestType>;
   getRouteImpl() {
     if (!this.routeImpl) {
@@ -390,7 +411,7 @@ export class RemultServerImplementation<RequestType> implements RemultServer<Req
       .delete(this.process(async (c, req, res, orig) => dataApiFactory(c).delete(res, orig.params.id)));
   }
 
-
+  //runs with remult but without init request
   private async runWithRemult(what: (remult: Remult) => Promise<any>) {
     let remult = new Remult();
     remult.liveQueryPublisher = new LiveQueryPublisher(() => remult.subscriptionServer, () => remult.liveQueryStorage, this.runWithSerializedJsonContextData)
@@ -488,7 +509,6 @@ export class RemultServerImplementation<RequestType> implements RemultServer<Req
     });
   }
   openApiDoc(options: { title: string, version?: string }) {
-    let r = new Remult();
     if (!options.version)
       options.version = "1.0.0";
     let spec: any = {
@@ -539,9 +559,9 @@ export class RemultServerImplementation<RequestType> implements RemultServer<Req
         return item;
       }
     }
-    for (const e of this.options.entities) {
-      let meta = r.repo(e).metadata;
-      let key = getEntityKey(e);
+    for (const meta of this.getEntities()) {
+
+      let key = meta.key;
       let parameters = [];
       if (key) {
         let mutationKey = key;

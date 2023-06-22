@@ -1,7 +1,7 @@
 import * as express from 'express';
 
 import { createRemultServer } from './server/index';
-import { RemultServer, RemultServerCore, RemultServerImplementation, RemultServerOptions } from './server/expressBridge';
+import type { RemultServer, RemultServerCore, RemultServerImplementation, RemultServerOptions } from './server/expressBridge';
 
 export function remultExpress(options?:
     RemultServerOptions<express.Request> & {
@@ -32,8 +32,9 @@ export function remultExpress(options?:
     return Object.assign(app, {
         getRemult: (req) => server.getRemult(req),
         openApiDoc: (options: { title: string }) => server.openApiDoc(options),
-        withRemult: (...args) => server.withRemult(...args)
-    } as RemultExpressServer);
+        withRemult: (req, res, next) => server.withRemult(req, res, next),
+        // [ ]- add with remult promise
+    });
 
 }
 

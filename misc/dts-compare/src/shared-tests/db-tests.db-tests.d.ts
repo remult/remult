@@ -1,5 +1,4 @@
-import { EntityBase } from "../remult3";
-import { IdEntity } from "../id-entity";
+import { EntityBase, IdEntity } from "../remult3";
 export declare class stam extends EntityBase {
     id: number;
     title: string;

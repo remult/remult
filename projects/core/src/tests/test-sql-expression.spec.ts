@@ -4,9 +4,7 @@ import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 
 import { SqlDatabase } from '../data-providers/sql-database';
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider';
-import { Field, Entity, EntityBase, ValueListFieldType, Fields, getValueList, ValueListInfo } from '../remult3';
-
-import { IdEntity } from '../id-entity';
+import { Field, Entity, EntityBase, ValueListFieldType, Fields, getValueList, ValueListInfo, IdEntity } from '../remult3';
 import { postgresColumnSyntax } from '../../postgres/schema-builder';
 
 import { SqlCommand, SqlResult } from '../sql-command';

@@ -42,20 +42,21 @@ export class ProductsComponent {
 
 }
 
-@Entity<Category>("categories", {
-  allowApiCrud: true, apiPrefilter: () => ({
-    id: { $ne: "clj30u9o500000kr3956ph9ep" }
-  })
+
+@Entity("categories", {
+  allowApiCrud: true
 })
 export class Category {
-  @Fields.cuid()
-  id = ''
+  @Fields.autoIncrement()
+  id = 0;
   @Fields.string()
   name = ''
 }
 
 @Entity("tasks", {
-  allowApiCrud: true
+  allowApiCrud: true,
+  allowApiDelete: false
+
 })
 export class Task {
   @Fields.autoIncrement()
@@ -64,11 +65,8 @@ export class Task {
   title = ''
   @Fields.boolean()
   completed = false
-
   @Field(() => Category)
-  category?: Category
-
-
+  category: Category;
   @BackendMethod({ allowed: true, apiPrefix: 'noam' })
   static async entityStatic() {
     return "ok";

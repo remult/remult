@@ -36,7 +36,7 @@ export function remultFastify(options: RemultServerOptions<FastifyRequest>): Rem
     }
     const api = createRemultServer(options, {
         buildGenericRequestInfo: req => req,
-        getRequestBody: async req => req.body
+        getRequestBody: async req => req.body,
     });
     const pluginFunction: FastifyPluginCallback = async (instance: FastifyInstance, op) => {
         //@ts-ignore
@@ -71,12 +71,10 @@ export function remultFastify(options: RemultServerOptions<FastifyRequest>): Rem
     return Object.assign(pluginFunction, {
         getRemult: x => api.getRemult(x),
         openApiDoc: x => api.openApiDoc(x),
-        withRemult: (req, what) => new Promise<any>((resolve) => {
-            return api.withRemult(req as any, undefined!, () => {
-                what().then(resolve)
-            })
-        })
-    } as RemultFastifyServer);
+        withRemult: <T>(req, what) =>
+            api.withRemultPromise<T>(req, what),
+        
+    });
 }
 
 export type RemultFastifyServer = FastifyPluginCallback & RemultServerCore<FastifyRequest> & {

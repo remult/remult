@@ -1,5 +1,5 @@
 import { DataApi } from "../data-api";
-import { Fields, Entity, EntityBase, EntityFilter, Field, createOldEntity } from "../remult3";
+import { Fields, Entity, EntityBase, EntityFilter, Field, createOldEntity, IdEntity } from "../remult3";
 import { c } from "../tests/c";
 
 import { Done } from "../tests/Done";
@@ -17,7 +17,6 @@ import { entityForrawFilter1 } from "../tests/entityForCustomFilter";
 import { entityWithValidationsOnColumn } from "../tests/entityWithValidationsOnColumn";
 import { Validators } from "../validators";
 import { Status } from "../tests/testModel/models";
-import { IdEntity } from "../id-entity";
 import { describeClass } from "../remult3/DecoratorReplacer";
 import { DataProviderLiveQueryStorage, LiveQueryStorageEntity } from "../../live-query/data-provider-live-query-storage";
 import { v4 as uuid } from 'uuid'

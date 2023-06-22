@@ -15,6 +15,7 @@
     "importHelpers": true,
     "target": "es2015",
     "skipLibCheck": true,
+    // "importsNotUsedAsValues": "error",
     // "types": [
     //   "vitest/globals"
     // ],

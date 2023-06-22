@@ -11,7 +11,7 @@ import { ResponseRequiredForSSE } from './SseSubscriptionServer';
 
 export function remultSveltekit(
   options?: RemultServerOptions<RequestEvent>
-): RemultSveltekitServer{
+): RemultSveltekitServer {
   let result = createRemultServer<RequestEvent>(options, {
     buildGenericRequestInfo: event =>
     ({
@@ -87,7 +87,7 @@ export function remultSveltekit(
   return Object.assign(handler, {
     getRemult: (req) => result.getRemult(req),
     openApiDoc: (options: { title: string }) => result.openApiDoc(options),
-  } ) as RemultSveltekitServer;
+  });
 }
 
 export type RemultSveltekitServer = RemultServerCore<RequestEvent> & Handle;

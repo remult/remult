@@ -1,9 +1,8 @@
 import { queuedJobInfoResponse } from '../src/server-action';
-import { DataProvider } from '../src/data-interfaces';
+import type { DataProvider } from '../src/data-interfaces';
 import { Remult, UserInfo } from '../src/context';
-import { ClassType } from '../classType';
-import { Repository } from '../src/remult3';
-import { IdEntity } from '../src/id-entity';
+import type { ClassType } from '../classType';
+import { IdEntity, Repository } from '../src/remult3';
 import { LiveQueryStorage, SubscriptionServer } from '../src/live-query/SubscriptionServer';
 export interface RemultServerOptions<RequestType> {
     /**Entities to use for the api */
@@ -63,6 +62,7 @@ export interface RemultServer<RequestType> extends RemultServerCore<RequestType>
     withRemult(req: RequestType, res: GenericResponse, next: VoidFunction): any;
     registerRouter(r: GenericRouter): void;
     handle(req: RequestType, gRes?: GenericResponse): Promise<ServerHandleResponse | undefined>;
+    withRemultPromise<T>(request: RequestType, what: () => Promise<T>): Promise<T>;
 }
 export interface RemultServerCore<RequestType> {
     getRemult(req: RequestType): Promise<Remult>;

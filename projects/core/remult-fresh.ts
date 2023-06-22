@@ -24,7 +24,7 @@ export function remultFresh(options: RemultServerOptions<FreshRequest>, response
             else {
                 return ctx.next();
             };
-        }
+        },
     }
 };
 
