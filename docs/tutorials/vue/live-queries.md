@@ -22,7 +22,7 @@ onMounted(() =>
     taskRepo
       .liveQuery({
         limit: 20,
-        orderBy: { completed: "asc" }
+        orderBy: { createdAt: "asc" }
         //where: { completed: true },
       })
       .subscribe(info => (tasks.value = info.applyChanges(tasks.value)))
