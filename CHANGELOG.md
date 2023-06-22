@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.21.0] - 2023-06-22
+- Major improvements to the GraphQL support:
+  - Better Query support
+  - Mutation Support
+  - Improved compatibility to standard GraphQL structures
+  - **Breaking Change** Note that the GraphQL Schema has changed, and client code needs to be adjusted. If you run into any issues, please open a github issue or reach out to us on discord.
+- Improved SQL Log to Console see [PR #204](https://github.com/remult/remult/pull/204), 
+### Big Thanks
+- to [jycouet](https://github.com/jycouet) for his first two pull requests, and his help forming the GraphQL Schema according to best practices.
+- to [talmosko](https://github.com/talmosko) for his help and improvements for the tutorials and documentation.
+
+
 ## [0.20.6] - 2023-06-19
 
 - Fixed an issue when apiPrefilter was an arrow function, it did not affect get of a specific resource

@@ -23,6 +23,9 @@ export declare class SqlDatabase implements DataProvider {
      * a `function` - to log all queries to the console as a custom format
      */
     static LogToConsole: boolean | 'oneLiner' | ((duration: number, query: string, args: Record<string, any>) => void);
+    /**
+     * Threshold in milliseconds for logging queries to the console.
+     */
     static durationThreshold: number;
     constructor(sql: SqlImplementation);
     private createdEntities;
