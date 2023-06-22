@@ -103,7 +103,19 @@ export class SqlDatabase implements DataProvider {
     await (await ((r as RepositoryImplementation<entityType>).translateWhereToFilter(condition))).__applyToConsumer(b)
     return await b.resolveWhere();
   }
-  public static LogToConsole = false;
+  /**
+   * `false` _(default)_ - No logging
+   *
+   * `true` - to log all queries to the console
+   * 
+   * `oneLiner` - to log all queries to the console as one line
+   * 
+   * a `function` - to log all queries to the console as a custom format
+   */
+  public static LogToConsole: boolean | 'oneLiner' | ((duration: number, query: string, args: Record<string, any>) => void) = false;
+  /**
+   * Threshold in milliseconds for logging queries to the console.
+   */
   public static durationThreshold = 0;
   constructor(private sql: SqlImplementation) {
 
@@ -113,9 +125,23 @@ export class SqlDatabase implements DataProvider {
 
 
 
+const icons = new Map<string, string>([
+  // CRUD
+  ['INSERT', '⚪'],// Used to insert new data into a database.
+  ['SELECT', '🔵'],// Used to select data from a database and retrieve it.
+  ['UPDATE', '🟣'],// Used to update existing data within a database.
+  ['DELETE', '🟤'],// Used to delete existing data from a database.
+  // Additional
+  ['CREATE', '🟩'],// Used to create a new table, or database.
+  ['ALTER', '🟨'],// Used to modify an existing database object, such as a table.
+  ['DROP', '🟥'],// Used to delete an entire table or database.
+  ['TRUNCATE', '⬛'],// Used to remove all records from a table, including all spaces allocated for the records are removed.
+  ['GRANT', '🟪'],// Used to give a specific user permission to perform certain tasks.
+  ['REVOKE', '🟫'], // Used to take back permissions from a user.
+]);
 
 class LogSQLCommand implements SqlCommand {
-  constructor(private origin: SqlCommand, private allQueries: boolean) {
+  constructor(private origin: SqlCommand, private logToConsole: typeof SqlDatabase.LogToConsole) {
 
   }
 
@@ -130,10 +156,19 @@ class LogSQLCommand implements SqlCommand {
     try {
       let start = new Date();
       let r = await this.origin.execute(sql);
-      if (this.allQueries) {
+      if (this.logToConsole !== false) {
         var d = new Date().valueOf() - start.valueOf();
         if (d > SqlDatabase.durationThreshold) {
-          console.info({ query: sql, arguments: this.args, duration: d / 1000 });
+          const duration = d / 1000
+          if (this.logToConsole === "oneLiner") {
+            const rawSql = sql.replace(/(\r\n|\n|\r|\t)/gm, ' ').replace(/  +/g, ' ').trim();
+            const first = rawSql.split(' ')[0].toUpperCase();
+            console.info(`${icons.get(first) || '💢'} (${(duration).toFixed(3)}) ${rawSql} ${JSON.stringify(this.args)}`);
+          } else if (typeof this.logToConsole === "function") {
+            this.logToConsole(duration, sql, this.args);
+          } else {
+            console.info({ query: sql, arguments: this.args, duration });
+          }
         }
       }
       return r;
