@@ -708,6 +708,13 @@ Select a dedicated page.`,
   nodeInterface.comment = `Node interface of remult entities (eg: nodeId: \`Task:1\` so \`__typename:id\`)`
   nodeInterface.fields.push(argNodeId)
 
+  const errorInterface = upsertTypes('Error', 'interface', 32)
+  errorInterface.comment = `Error interface of remult entities`
+  errorInterface.fields.push({
+    key: 'message',
+    value: 'String!',
+  })
+
   return {
     resolvers,
     rootValue: root,

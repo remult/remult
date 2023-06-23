@@ -191,6 +191,10 @@ enum OrderByDirection {
 interface Node {
     nodeId: ID!
 }
+
+interface Error {
+    message: String!
+}
 "
 `;
 
@@ -330,6 +334,10 @@ enum OrderByDirection {
 
 interface Node {
     nodeId: ID!
+}
+
+interface Error {
+    message: String!
 }
 "
 `;
@@ -491,6 +499,10 @@ enum OrderByDirection {
 
 interface Node {
     nodeId: ID!
+}
+
+interface Error {
+    message: String!
 }
 "
 `;
@@ -729,6 +741,10 @@ enum OrderByDirection {
 
 interface Node {
     nodeId: ID!
+}
+
+interface Error {
+    message: String!
 }
 "
 `;
