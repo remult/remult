@@ -73,8 +73,30 @@ describe("graphql-connection", () => {
   let remult: Remult
 
   let gql: (gql: string) => Promise<any>
-  it("test", async () => {
-    expect(1 + 1).toBe(2)
+
+  beforeEach(async () => {
+    remult = new Remult(new InMemoryDataProvider())
+
+    const { typeDefs, resolvers } = remultGraphql({
+      entities: [Task, Category],
+      getRemultFromRequest: () => remult
+    })
+
+    const yoga = createYoga({
+      schema: createSchema({
+        typeDefs,
+        resolvers
+      })
+    })
+
+    gql = async (query: string) => {
+      return await yoga.getResultForParams({
+        request: {} as any,
+        params: {
+          query
+        }
+      })
+    }
   })
 
   it('test nodes', async () => {
@@ -83,8 +105,6 @@ describe("graphql-connection", () => {
 
     await remult.repo(Task).insert({ title: 'task a', category: cat[0] })
     await remult.repo(Task).insert({ title: 'task b', category: cat[1] })
-
-
 
     const tasks: any = await gql(`
     query{
@@ -445,29 +465,5 @@ describe("graphql-connection", () => {
     })
 
     expect(typeDefs).toMatchSnapshot()
-  })
-  beforeEach(async () => {
-    remult = new Remult(new InMemoryDataProvider())
-
-    const { typeDefs, resolvers } = remultGraphql({
-      entities: [Task, Category],
-      getRemultFromRequest: () => remult
-    })
-
-    const yoga = createYoga({
-      schema: createSchema({
-        typeDefs,
-        resolvers
-      })
-    })
-
-    gql = async (query: string) => {
-      return await yoga.getResultForParams({
-        request: {} as any,
-        params: {
-          query
-        }
-      })
-    }
   })
 })
