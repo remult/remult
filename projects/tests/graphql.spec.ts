@@ -69,7 +69,7 @@ export enum Priority {
   Critical
 }
 
-describe("graphql-connection", () => {
+describe("graphql", () => {
   let remult: Remult
 
   let gql: (gql: string) => Promise<any>
