@@ -7,10 +7,11 @@ const v2ConnectionAndPagination = false
 const andImplementation = false
 
 type Enum = { Enum: true }
+type Union = { Union: true }
 
 type Arg = {
   key: string
-  value: Enum | string
+  value: Enum | Union | string
   comment?: string
 }
 
@@ -19,7 +20,7 @@ type Field = Arg & {
   order?: number
 }
 
-type Kind = 'type_impl_node' | 'type_impl_error' | 'type' | 'input' | 'enum' | 'interface'
+type Kind = 'type_impl_node' | 'type_impl_error' | 'type' | 'input' | 'enum' | 'interface' | 'union'
 
 type GraphQLType = {
   kind: Kind
@@ -36,13 +37,16 @@ type GraphQLType = {
     create: {
       input?: GraphQLType
       payload?: GraphQLType
+      union?: GraphQLType
     }
     update: {
       input?: GraphQLType
       payload?: GraphQLType
+      union?: GraphQLType
     }
     delete: {
       payload?: GraphQLType
+      union?: GraphQLType
     }
   }
   order?: number
@@ -106,6 +110,12 @@ export function remultGraphql(options: {
       }
     }
     return t
+  }
+
+  function upsertUnion(key: string, values: string[]) {
+    const u = upsertTypes(key, 'union')
+    u.fields = values.map(value => { return { key: value, value: { Union: true } } })
+    return u
   }
 
   // Where - GraphQL primitives
@@ -206,7 +216,7 @@ export function remultGraphql(options: {
                 if (err) {
 
                   res({
-                    __typename: 'Error',
+                    __typename: 'ValidationError',
                     message: err.message,
                   })
 
@@ -416,13 +426,16 @@ Select a dedicated page.`,
 
       if (checkCanExist(meta.options.allowApiInsert)) {
         // create
+        const createResolverKey = `create${getMetaType(meta)}`
         const createInput = `Create${getMetaType(meta)}Input`
         const createPayload = `Create${getMetaType(meta)}Payload`
-        const createResolverKey = `create${getMetaType(meta)}`
+        const createUnionResult = `Create${getMetaType(meta)}Result`
+
+
         root_mutation.fields.push({
           key: createResolverKey,
           args: [{ key: 'input', value: `${createInput}!` }, argClientMutationId],
-          value: `${createPayload}`,
+          value: `${createUnionResult}`,
           comment: `Create a new \`${getMetaType(meta)}\``,
         })
 
@@ -436,6 +449,9 @@ Select a dedicated page.`,
           },
           argClientMutationId,
         )
+
+        currentType.mutation.create.union = upsertUnion(createUnionResult, [createPayload, "ValidationError"])
+
         root[createResolverKey] = handleRequestWithDataApiContext(
           async (dApi, response, setResult, arg1: any, req: any) => {
             await dApi.post(
@@ -744,13 +760,15 @@ Select a dedicated page.`,
           prefix = `type ${key} implements Error`
         }
 
-        const type = blockFormat({
-          prefix,
-          data: fields
-            .sort((a, b) => (a.order ? a.order : 0) - (b.order ? b.order : 0))
-            .map(field => fieldFormat(field)),
-          comment: comment ?? `The ${kind} for \`${key}\``,
-        })
+        const type = kind === 'union' ?
+          `union ${key} = ${fields.map(field => field.key).join(' | ')}` :
+          blockFormat({
+            prefix,
+            data: fields
+              .sort((a, b) => (a.order ? a.order : 0) - (b.order ? b.order : 0))
+              .map(field => fieldFormat(field)),
+            comment: comment ?? `The ${kind} for \`${key}\``,
+          })
 
         const orderByStr = orderBy.length > 0 ? `\n\n${orderBy.join('\n\n')}` : ``
         const whereTypeStr = whereType.length > 0 ? `\n\n${whereType.join('\n\n')}` : ``

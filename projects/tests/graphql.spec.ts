@@ -367,14 +367,36 @@ describe("graphql-connection", () => {
     const result = await gql(`
     mutation {
       createTask(input: {title: "testing"}) {
-        task {
-          id
-          title
+        ... on CreateTaskPayload {
+          task {
+            id
+            title
+          }
         }
       }
     }`)
-    expect(result).toMatchSnapshot()
-    expect(await remult.repo(Task).find()).toMatchSnapshot()
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "data": {
+          "createTask": null,
+        },
+        "errors": [
+          [GraphQLError: Abstract type "CreateTaskResult" must resolve to an Object type at runtime for field "Mutation.createTask". Either the "CreateTaskResult" type should provide a "resolveType" function or each possible type should provide an "isTypeOf" function.],
+        ],
+      }
+    `)
+    expect(await remult.repo(Task).find()).toMatchInlineSnapshot(`
+      [
+        Task {
+          "category": null,
+          "completed": false,
+          "id": 1,
+          "thePriority": 1,
+          "title": "testing",
+          "userOnServer": "",
+        },
+      ]
+    `)
   })
 
   it("test mutation update", async () => {
@@ -392,13 +414,12 @@ describe("graphql-connection", () => {
     expect(result).toMatchSnapshot()
   })
 
-  it("test mutation validation error", async () => {
+  it("test mutation generic error", async () => {
     const result = await gql(`
     mutation {
       createTask(input: {title: "a"}) {
-        task {
-          id
-          title
+        ... on Error {
+          message
         }
       }
     }`)
@@ -406,7 +427,27 @@ describe("graphql-connection", () => {
       {
         "data": {
           "createTask": {
-            "task": null,
+            "message": "The Title: Too short",
+          },
+        },
+      }
+    `)
+  })
+
+  it("test mutation validation error", async () => {
+    const result = await gql(`
+    mutation {
+      createTask(input: {title: "a"}) {
+        ... on ValidationError {
+          message
+        }
+      }
+    }`)
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "data": {
+          "createTask": {
+            "message": "The Title: Too short",
           },
         },
       }

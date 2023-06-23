@@ -358,7 +358,7 @@ exports[`graphql-connection > test allow api delete 1`] = `
 }
 
 type Mutation {
-    createC(input: CreateCInput!, clientMutationId: String): CreateCPayload
+    createC(input: CreateCInput!, clientMutationId: String): CreateCResult
     updateC(id: ID!, patch: UpdateCInput!, clientMutationId: String): UpdateCPayload
 }
 
@@ -389,6 +389,8 @@ type CreateCPayload {
     c: C
     clientMutationId: String
 }
+
+union CreateCResult = CreateCPayload | ValidationError
 
 input UpdateCInput {
     id: Int
@@ -529,10 +531,10 @@ exports[`graphql-connection > test basics 1`] = `
 }
 
 type Mutation {
-    createTask(input: CreateTaskInput!, clientMutationId: String): CreateTaskPayload
+    createTask(input: CreateTaskInput!, clientMutationId: String): CreateTaskResult
     updateTask(id: ID!, patch: UpdateTaskInput!, clientMutationId: String): UpdateTaskPayload
     deleteTask(id: ID!, clientMutationId: String): DeleteTaskPayload
-    createCategory(input: CreateCategoryInput!, clientMutationId: String): CreateCategoryPayload
+    createCategory(input: CreateCategoryInput!, clientMutationId: String): CreateCategoryResult
     updateCategory(id: ID!, patch: UpdateCategoryInput!, clientMutationId: String): UpdateCategoryPayload
     deleteCategory(id: ID!, clientMutationId: String): DeleteCategoryPayload
 }
@@ -580,6 +582,8 @@ type CreateTaskPayload {
     task: Task
     clientMutationId: String
 }
+
+union CreateTaskResult = CreateTaskPayload | ValidationError
 
 input UpdateTaskInput {
     title: String
@@ -630,6 +634,8 @@ type CreateCategoryPayload {
     category: Category
     clientMutationId: String
 }
+
+union CreateCategoryResult = CreateCategoryPayload | ValidationError
 
 input UpdateCategoryInput {
     name: String
@@ -800,32 +806,6 @@ exports[`graphql-connection > test graphql 1`] = `
     },
   },
 }
-`;
-
-exports[`graphql-connection > test mutation create 1`] = `
-{
-  "data": {
-    "createTask": {
-      "task": {
-        "id": 1,
-        "title": "testing",
-      },
-    },
-  },
-}
-`;
-
-exports[`graphql-connection > test mutation create 2`] = `
-[
-  Task {
-    "category": null,
-    "completed": false,
-    "id": 1,
-    "thePriority": 1,
-    "title": "testing",
-    "userOnServer": "",
-  },
-]
 `;
 
 exports[`graphql-connection > test mutation delete 1`] = `
