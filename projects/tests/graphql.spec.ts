@@ -515,6 +515,38 @@ describe("graphql-connection", () => {
     `)
   })
 
+  it("test mutation create clientMutationId", async () => {
+    const result = await gql(`
+    mutation {
+      createTask(input: {title: "testing"}, clientMutationId: "123yop123") {
+        ... on CreateTaskPayload {
+          clientMutationId
+        }
+      }
+    }`)
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "data": {
+          "createTask": {
+            "clientMutationId": "123yop123",
+          },
+        },
+      }
+    `)
+    expect(await remult.repo(Task).find()).toMatchInlineSnapshot(`
+      [
+        Task {
+          "category": null,
+          "completed": false,
+          "id": 1,
+          "thePriority": 1,
+          "title": "testing",
+          "userOnServer": "",
+        },
+      ]
+    `)
+  })
+
   it("test mutation update", async () => {
     await remult.repo(Task).insert({ title: "aaa" })
 

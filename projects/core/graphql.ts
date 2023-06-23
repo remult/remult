@@ -468,6 +468,7 @@ Select a dedicated page.`,
                   setResult({
                     __typename: createPayload,
                     [toCamelCase(getMetaType(meta))]: y,
+                    clientMutationId: arg1.clientMutationId
                   })
                 },
               },
