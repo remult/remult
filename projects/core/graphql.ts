@@ -215,9 +215,15 @@ export function remultGraphql(options: {
               .then(() => {
                 if (err) {
 
+                  // Validation Error
+                  const modelState = []
+                  for (const key in err.modelState) {
+                    modelState.push({ field: key, message: err.modelState[key] })
+                  }
                   res({
                     __typename: 'ValidationError',
                     message: err.message,
+                    modelState
                   })
 
                   return
@@ -740,6 +746,21 @@ Select a dedicated page.`,
   const validationErrorInterface = upsertTypes('ValidationError', 'type_impl_error', 33)
   validationErrorInterface.comment = `Validation Error`
   validationErrorInterface.fields.push({
+    key: 'message',
+    value: 'String!',
+  })
+  validationErrorInterface.fields.push({
+    key: 'modelState',
+    value: '[ValidationErrorModelState!]!',
+  })
+
+  const validationErrorModelStateInterface = upsertTypes('ValidationErrorModelState', 'type', 33)
+  validationErrorModelStateInterface.comment = `Validation Error Model State`
+  validationErrorModelStateInterface.fields.push({
+    key: 'field',
+    value: 'String!',
+  })
+  validationErrorModelStateInterface.fields.push({
     key: 'message',
     value: 'String!',
   })

@@ -440,6 +440,10 @@ describe("graphql-connection", () => {
       createTask(input: {title: "a"}) {
         ... on ValidationError {
           message
+          modelState {
+            field
+            message
+          }
         }
       }
     }`)
@@ -448,6 +452,12 @@ describe("graphql-connection", () => {
         "data": {
           "createTask": {
             "message": "The Title: Too short",
+            "modelState": [
+              {
+                "field": "title",
+                "message": "Too short",
+              },
+            ],
           },
         },
       }
