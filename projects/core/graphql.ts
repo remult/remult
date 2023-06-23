@@ -466,6 +466,7 @@ Select a dedicated page.`,
                 created: y => {
                   currentType.query.resultProcessors.forEach(z => z(y))
                   setResult({
+                    __typename: createPayload,
                     [toCamelCase(getMetaType(meta))]: y,
                   })
                 },

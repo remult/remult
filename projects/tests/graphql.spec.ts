@@ -492,11 +492,13 @@ describe("graphql-connection", () => {
     expect(result).toMatchInlineSnapshot(`
       {
         "data": {
-          "createTask": null,
+          "createTask": {
+            "task": {
+              "id": 1,
+              "title": "testing",
+            },
+          },
         },
-        "errors": [
-          [GraphQLError: Abstract type "CreateTaskResult" must resolve to an Object type at runtime for field "Mutation.createTask". Either the "CreateTaskResult" type should provide a "resolveType" function or each possible type should provide an "isTypeOf" function.],
-        ],
       }
     `)
     expect(await remult.repo(Task).find()).toMatchInlineSnapshot(`
