@@ -195,6 +195,10 @@ interface Node {
 interface Error {
     message: String!
 }
+
+type ValidationError implements Error {
+    message: String!
+}
 "
 `;
 
@@ -337,6 +341,10 @@ interface Node {
 }
 
 interface Error {
+    message: String!
+}
+
+type ValidationError implements Error {
     message: String!
 }
 "
@@ -502,6 +510,10 @@ interface Node {
 }
 
 interface Error {
+    message: String!
+}
+
+type ValidationError implements Error {
     message: String!
 }
 "
@@ -744,6 +756,10 @@ interface Node {
 }
 
 interface Error {
+    message: String!
+}
+
+type ValidationError implements Error {
     message: String!
 }
 "

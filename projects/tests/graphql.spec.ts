@@ -392,6 +392,27 @@ describe("graphql-connection", () => {
     expect(result).toMatchSnapshot()
   })
 
+  it("test mutation validation error", async () => {
+    const result = await gql(`
+    mutation {
+      createTask(input: {title: "a"}) {
+        task {
+          id
+          title
+        }
+      }
+    }`)
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "data": {
+          "createTask": {
+            "task": null,
+          },
+        },
+      }
+    `)
+  })
+
   it("test graphql", async () => {
     await remult.repo(Task).insert([{ title: "task c" }])
     await remult.repo(Task).insert([{ title: "task b" }])

@@ -19,7 +19,7 @@ type Field = Arg & {
   order?: number
 }
 
-type Kind = 'type_impl_node' | 'type' | 'input' | 'enum' | 'interface'
+type Kind = 'type_impl_node' | 'type_impl_error' | 'type' | 'input' | 'enum' | 'interface'
 
 type GraphQLType = {
   kind: Kind
@@ -204,8 +204,14 @@ export function remultGraphql(options: {
             work(response, x => (result = x), arg1, req)
               .then(() => {
                 if (err) {
-                  error(err)
+
+                  res({
+                    __typename: 'Error',
+                    message: err.message,
+                  })
+
                   return
+                  error(err)
                 }
                 res(result)
               })
@@ -715,6 +721,13 @@ Select a dedicated page.`,
     value: 'String!',
   })
 
+  const validationErrorInterface = upsertTypes('ValidationError', 'type_impl_error', 33)
+  validationErrorInterface.comment = `Validation Error`
+  validationErrorInterface.fields.push({
+    key: 'message',
+    value: 'String!',
+  })
+
   return {
     resolvers,
     rootValue: root,
@@ -726,6 +739,9 @@ Select a dedicated page.`,
         let prefix = `${kind} ${key}`
         if (kind === 'type_impl_node') {
           prefix = `type ${key} implements Node`
+        }
+        if (kind === 'type_impl_error') {
+          prefix = `type ${key} implements Error`
         }
 
         const type = blockFormat({
