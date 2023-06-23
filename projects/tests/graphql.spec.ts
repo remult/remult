@@ -119,7 +119,30 @@ describe("graphql-connection", () => {
       }
     }`)
 
-    expect(tasks).toMatchSnapshot()
+    expect(tasks).toMatchInlineSnapshot(`
+      {
+        "data": {
+          "tasks": {
+            "items": [
+              {
+                "category": {
+                  "nodeId": "Category:0",
+                },
+                "nodeId": "Task:1",
+                "title": "task a",
+              },
+              {
+                "category": {
+                  "nodeId": "Category:1",
+                },
+                "nodeId": "Task:2",
+                "title": "task b",
+              },
+            ],
+          },
+        },
+      }
+    `)
     const taskNode = await gql(`
     query{
         node(nodeId: "${tasks.data.tasks.items[0].nodeId}"){
@@ -130,7 +153,16 @@ describe("graphql-connection", () => {
         }
     }
     `)
-    expect(taskNode).toMatchSnapshot()
+    expect(taskNode).toMatchInlineSnapshot(`
+      {
+        "data": {
+          "node": {
+            "nodeId": "Task:1",
+            "title": "task a",
+          },
+        },
+      }
+    `)
     expect(taskNode.data.node.title).toBe('task a')
   })
 
@@ -142,7 +174,11 @@ describe("graphql-connection", () => {
           title: { eq: "aaa" }
         }
       })
-    ).toMatchSnapshot()
+    ).toMatchInlineSnapshot(`
+      {
+        "title": "aaa",
+      }
+    `)
   })
   it("test where translator in", async () => {
     const meta = remult.repo(Task).metadata
@@ -153,7 +189,14 @@ describe("graphql-connection", () => {
         }
       }
     })
-    expect(result).toMatchSnapshot()
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "title.in": [
+          "aaa",
+          "ccc",
+        ],
+      }
+    `)
   })
 
   it("test where", async () => {
@@ -270,7 +313,42 @@ describe("graphql-connection", () => {
         }
       }
     }`)
-    expect(result).toMatchSnapshot()
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "data": {
+          "tasks": {
+            "items": [
+              {
+                "category": {
+                  "name": "c1",
+                  "tasks": {
+                    "items": [
+                      {
+                        "title": "task a",
+                      },
+                    ],
+                  },
+                },
+                "title": "task a",
+              },
+              {
+                "category": {
+                  "name": "c2",
+                  "tasks": {
+                    "items": [
+                      {
+                        "title": "task b",
+                      },
+                    ],
+                  },
+                },
+                "title": "task b",
+              },
+            ],
+          },
+        },
+      }
+    `)
     expect(result.data.tasks.items[0].category.name).toBe("c1")
     expect(result.data.tasks.items[0].category.tasks.items[0].title).toBe(
       "task a"
@@ -293,7 +371,16 @@ describe("graphql-connection", () => {
         title
       }
     }`)
-    ).toMatchSnapshot()
+    ).toMatchInlineSnapshot(`
+      {
+        "data": {
+          "task": {
+            "id": 2,
+            "title": "bbb",
+          },
+        },
+      }
+    `)
   })
 
   it("test count", async () => {
@@ -359,8 +446,35 @@ describe("graphql-connection", () => {
           id
         }
       }`)
-    ).toMatchSnapshot()
-    expect(await remult.repo(Task).find()).toMatchSnapshot()
+    ).toMatchInlineSnapshot(`
+      {
+        "data": {
+          "deleteTask": {
+            "id": "2",
+          },
+        },
+      }
+    `)
+    expect(await remult.repo(Task).find()).toMatchInlineSnapshot(`
+      [
+        Task {
+          "category": null,
+          "completed": false,
+          "id": 1,
+          "thePriority": 1,
+          "title": "task a",
+          "userOnServer": "",
+        },
+        Task {
+          "category": null,
+          "completed": false,
+          "id": 3,
+          "thePriority": 1,
+          "title": "task c",
+          "userOnServer": "",
+        },
+      ]
+    `)
   })
 
   it("test mutation create", async () => {
@@ -411,7 +525,18 @@ describe("graphql-connection", () => {
         }
       }
     }`)
-    expect(result).toMatchSnapshot()
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "data": {
+          "updateTask": {
+            "task": {
+              "id": 1,
+              "title": "bbb",
+            },
+          },
+        },
+      }
+    `)
   })
 
   it("test mutation generic error", async () => {
@@ -481,7 +606,31 @@ describe("graphql-connection", () => {
       }
     }`)
 
-    expect(result).toMatchSnapshot()
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "data": {
+          "tasks": {
+            "items": [
+              {
+                "completed": false,
+                "id": 3,
+                "title": "task a",
+              },
+              {
+                "completed": false,
+                "id": 2,
+                "title": "task b",
+              },
+              {
+                "completed": false,
+                "id": 1,
+                "title": "task c",
+              },
+            ],
+          },
+        },
+      }
+    `)
   })
 
   it("test basics", async () => {
@@ -491,7 +640,261 @@ describe("graphql-connection", () => {
       removeComments: true
     })
 
-    expect(typeDefs).toMatchSnapshot()
+    expect(typeDefs).toMatchInlineSnapshot(`
+      "type Query {
+          task(id: ID!): Task
+          tasks(limit: Int, page: Int, orderBy: tasksOrderBy, where: tasksWhere): TaskConnection
+          category(id: ID!): Category
+          categories(limit: Int, page: Int, orderBy: categoriesOrderBy, where: categoriesWhere): CategoryConnection
+          node(nodeId: ID!): Node
+      }
+
+      type Mutation {
+          createTask(input: CreateTaskInput!, clientMutationId: String): CreateTaskResult
+          updateTask(id: ID!, patch: UpdateTaskInput!, clientMutationId: String): UpdateTaskPayload
+          deleteTask(id: ID!, clientMutationId: String): DeleteTaskPayload
+          createCategory(input: CreateCategoryInput!, clientMutationId: String): CreateCategoryResult
+          updateCategory(id: ID!, patch: UpdateCategoryInput!, clientMutationId: String): UpdateCategoryPayload
+          deleteCategory(id: ID!, clientMutationId: String): DeleteCategoryPayload
+      }
+
+      type Task implements Node {
+          id: Int!
+          title: String!
+          completed: Boolean!
+          thePriority: String!
+          category: Category
+          userOnServer: String!
+          nodeId: ID!
+      }
+
+      input tasksOrderBy {
+        id: OrderByDirection
+        title: OrderByDirection
+        completed: OrderByDirection
+        thePriority: OrderByDirection
+        category: OrderByDirection
+      }
+
+      input tasksWhere {
+        id: WhereInt
+        title: WhereString
+        completed: WhereBoolean
+        thePriority: WhereString
+        OR: [tasksWhere!]
+      }
+
+      type TaskConnection {
+          totalCount: Int!
+          items: [Task!]!
+      }
+
+      input CreateTaskInput {
+          title: String
+          completed: Boolean
+          thePriority: String
+          category: ID
+          userOnServer: String
+      }
+
+      type CreateTaskPayload {
+          task: Task
+          clientMutationId: String
+      }
+
+      union CreateTaskResult = CreateTaskPayload | ValidationError
+
+      input UpdateTaskInput {
+          title: String
+          completed: Boolean
+          thePriority: String
+          category: ID
+          userOnServer: String
+      }
+
+      type UpdateTaskPayload {
+          task: Task
+          clientMutationId: String
+      }
+
+      type DeleteTaskPayload {
+          id: ID
+          clientMutationId: String
+      }
+
+      type Category implements Node {
+          id: String!
+          name: String!
+          tasks(limit: Int, page: Int, orderBy: tasksOrderBy, where: tasksWhere): TaskConnection
+          nodeId: ID!
+      }
+
+      input categoriesOrderBy {
+        id: OrderByDirection
+        name: OrderByDirection
+      }
+
+      input categoriesWhere {
+        id: WhereString
+        name: WhereString
+        OR: [categoriesWhere!]
+      }
+
+      type CategoryConnection {
+          totalCount: Int!
+          items: [Category!]!
+      }
+
+      input CreateCategoryInput {
+          name: String
+      }
+
+      type CreateCategoryPayload {
+          category: Category
+          clientMutationId: String
+      }
+
+      union CreateCategoryResult = CreateCategoryPayload | ValidationError
+
+      input UpdateCategoryInput {
+          name: String
+      }
+
+      type UpdateCategoryPayload {
+          category: Category
+          clientMutationId: String
+      }
+
+      type DeleteCategoryPayload {
+          id: ID
+          clientMutationId: String
+      }
+
+      input WhereString {
+          eq: String
+          ne: String
+          in: [String!]
+          nin: [String!]
+          gt: String
+          gte: String
+          lt: String
+          lte: String
+          st: String
+      }
+
+      input WhereStringNullable {
+          eq: String
+          ne: String
+          in: [String!]
+          nin: [String!]
+          gt: String
+          gte: String
+          lt: String
+          lte: String
+          st: String
+          null: Boolean
+      }
+
+      input WhereInt {
+          eq: Int
+          ne: Int
+          in: [Int!]
+          nin: [Int!]
+          gt: Int
+          gte: Int
+          lt: Int
+          lte: Int
+      }
+
+      input WhereIntNullable {
+          eq: Int
+          ne: Int
+          in: [Int!]
+          nin: [Int!]
+          gt: Int
+          gte: Int
+          lt: Int
+          lte: Int
+          null: Boolean
+      }
+
+      input WhereFloat {
+          eq: Float
+          ne: Float
+          in: [Float!]
+          nin: [Float!]
+          gt: Float
+          gte: Float
+          lt: Float
+          lte: Float
+      }
+
+      input WhereFloatNullable {
+          eq: Float
+          ne: Float
+          in: [Float!]
+          nin: [Float!]
+          gt: Float
+          gte: Float
+          lt: Float
+          lte: Float
+          null: Boolean
+      }
+
+      input WhereBoolean {
+          eq: Boolean
+          ne: Boolean
+          in: [Boolean!]
+          nin: [Boolean!]
+      }
+
+      input WhereBooleanNullable {
+          eq: Boolean
+          ne: Boolean
+          in: [Boolean!]
+          nin: [Boolean!]
+          null: Boolean
+      }
+
+      input WhereID {
+          eq: ID
+          ne: ID
+          in: [ID!]
+          nin: [ID!]
+      }
+
+      input WhereIDNullable {
+          eq: ID
+          ne: ID
+          in: [ID!]
+          nin: [ID!]
+          null: Boolean
+      }
+
+      enum OrderByDirection {
+          ASC
+          DESC
+      }
+
+      interface Node {
+          nodeId: ID!
+      }
+
+      interface Error {
+          message: String!
+      }
+
+      type ValidationError implements Error {
+          message: String!
+          modelState: [ValidationErrorModelState!]!
+      }
+
+      type ValidationErrorModelState {
+          field: String!
+          message: String!
+      }
+      "
+    `)
   })
   it("test allow api delete", async () => {
     const C = class {
@@ -506,7 +909,182 @@ describe("graphql-connection", () => {
       removeComments: true
     })
 
-    expect(typeDefs).toMatchSnapshot()
+    expect(typeDefs).toMatchInlineSnapshot(`
+      "type Query {
+          c(id: ID!): C
+          cs(limit: Int, page: Int, orderBy: csOrderBy, where: csWhere): CConnection
+          node(nodeId: ID!): Node
+      }
+
+      type Mutation {
+          createC(input: CreateCInput!, clientMutationId: String): CreateCResult
+          updateC(id: ID!, patch: UpdateCInput!, clientMutationId: String): UpdateCPayload
+      }
+
+      type C implements Node {
+          id: Int!
+          nodeId: ID!
+      }
+
+      input csOrderBy {
+        id: OrderByDirection
+      }
+
+      input csWhere {
+        id: WhereInt
+        OR: [csWhere!]
+      }
+
+      type CConnection {
+          totalCount: Int!
+          items: [C!]!
+      }
+
+      input CreateCInput {
+          id: Int
+      }
+
+      type CreateCPayload {
+          c: C
+          clientMutationId: String
+      }
+
+      union CreateCResult = CreateCPayload | ValidationError
+
+      input UpdateCInput {
+          id: Int
+      }
+
+      type UpdateCPayload {
+          c: C
+          clientMutationId: String
+      }
+
+      input WhereString {
+          eq: String
+          ne: String
+          in: [String!]
+          nin: [String!]
+          gt: String
+          gte: String
+          lt: String
+          lte: String
+          st: String
+      }
+
+      input WhereStringNullable {
+          eq: String
+          ne: String
+          in: [String!]
+          nin: [String!]
+          gt: String
+          gte: String
+          lt: String
+          lte: String
+          st: String
+          null: Boolean
+      }
+
+      input WhereInt {
+          eq: Int
+          ne: Int
+          in: [Int!]
+          nin: [Int!]
+          gt: Int
+          gte: Int
+          lt: Int
+          lte: Int
+      }
+
+      input WhereIntNullable {
+          eq: Int
+          ne: Int
+          in: [Int!]
+          nin: [Int!]
+          gt: Int
+          gte: Int
+          lt: Int
+          lte: Int
+          null: Boolean
+      }
+
+      input WhereFloat {
+          eq: Float
+          ne: Float
+          in: [Float!]
+          nin: [Float!]
+          gt: Float
+          gte: Float
+          lt: Float
+          lte: Float
+      }
+
+      input WhereFloatNullable {
+          eq: Float
+          ne: Float
+          in: [Float!]
+          nin: [Float!]
+          gt: Float
+          gte: Float
+          lt: Float
+          lte: Float
+          null: Boolean
+      }
+
+      input WhereBoolean {
+          eq: Boolean
+          ne: Boolean
+          in: [Boolean!]
+          nin: [Boolean!]
+      }
+
+      input WhereBooleanNullable {
+          eq: Boolean
+          ne: Boolean
+          in: [Boolean!]
+          nin: [Boolean!]
+          null: Boolean
+      }
+
+      input WhereID {
+          eq: ID
+          ne: ID
+          in: [ID!]
+          nin: [ID!]
+      }
+
+      input WhereIDNullable {
+          eq: ID
+          ne: ID
+          in: [ID!]
+          nin: [ID!]
+          null: Boolean
+      }
+
+      enum OrderByDirection {
+          ASC
+          DESC
+      }
+
+      interface Node {
+          nodeId: ID!
+      }
+
+      interface Error {
+          message: String!
+      }
+
+      type ValidationError implements Error {
+          message: String!
+          modelState: [ValidationErrorModelState!]!
+      }
+
+      type ValidationErrorModelState {
+          field: String!
+          message: String!
+      }
+      "
+    `)
   })
   it("test allow api create", async () => {
     const C = class {
@@ -521,7 +1099,176 @@ describe("graphql-connection", () => {
       removeComments: true
     })
 
-    expect(typeDefs).toMatchSnapshot()
+    expect(typeDefs).toMatchInlineSnapshot(`
+      "type Query {
+          c(id: ID!): C
+          cs(limit: Int, page: Int, orderBy: csOrderBy, where: csWhere): CConnection
+          node(nodeId: ID!): Node
+      }
+
+      type Mutation {
+          updateC(id: ID!, patch: UpdateCInput!, clientMutationId: String): UpdateCPayload
+          deleteC(id: ID!, clientMutationId: String): DeleteCPayload
+      }
+
+      type C implements Node {
+          id: Int!
+          nodeId: ID!
+      }
+
+      input csOrderBy {
+        id: OrderByDirection
+      }
+
+      input csWhere {
+        id: WhereInt
+        OR: [csWhere!]
+      }
+
+      type CConnection {
+          totalCount: Int!
+          items: [C!]!
+      }
+
+      input UpdateCInput {
+          id: Int
+      }
+
+      type UpdateCPayload {
+          c: C
+          clientMutationId: String
+      }
+
+      type DeleteCPayload {
+          id: ID
+          clientMutationId: String
+      }
+
+      input WhereString {
+          eq: String
+          ne: String
+          in: [String!]
+          nin: [String!]
+          gt: String
+          gte: String
+          lt: String
+          lte: String
+          st: String
+      }
+
+      input WhereStringNullable {
+          eq: String
+          ne: String
+          in: [String!]
+          nin: [String!]
+          gt: String
+          gte: String
+          lt: String
+          lte: String
+          st: String
+          null: Boolean
+      }
+
+      input WhereInt {
+          eq: Int
+          ne: Int
+          in: [Int!]
+          nin: [Int!]
+          gt: Int
+          gte: Int
+          lt: Int
+          lte: Int
+      }
+
+      input WhereIntNullable {
+          eq: Int
+          ne: Int
+          in: [Int!]
+          nin: [Int!]
+          gt: Int
+          gte: Int
+          lt: Int
+          lte: Int
+          null: Boolean
+      }
+
+      input WhereFloat {
+          eq: Float
+          ne: Float
+          in: [Float!]
+          nin: [Float!]
+          gt: Float
+          gte: Float
+          lt: Float
+          lte: Float
+      }
+
+      input WhereFloatNullable {
+          eq: Float
+          ne: Float
+          in: [Float!]
+          nin: [Float!]
+          gt: Float
+          gte: Float
+          lt: Float
+          lte: Float
+          null: Boolean
+      }
+
+      input WhereBoolean {
+          eq: Boolean
+          ne: Boolean
+          in: [Boolean!]
+          nin: [Boolean!]
+      }
+
+      input WhereBooleanNullable {
+          eq: Boolean
+          ne: Boolean
+          in: [Boolean!]
+          nin: [Boolean!]
+          null: Boolean
+      }
+
+      input WhereID {
+          eq: ID
+          ne: ID
+          in: [ID!]
+          nin: [ID!]
+      }
+
+      input WhereIDNullable {
+          eq: ID
+          ne: ID
+          in: [ID!]
+          nin: [ID!]
+          null: Boolean
+      }
+
+      enum OrderByDirection {
+          ASC
+          DESC
+      }
+
+      interface Node {
+          nodeId: ID!
+      }
+
+      interface Error {
+          message: String!
+      }
+
+      type ValidationError implements Error {
+          message: String!
+          modelState: [ValidationErrorModelState!]!
+      }
+
+      type ValidationErrorModelState {
+          field: String!
+          message: String!
+      }
+      "
+    `)
   })
   it("test allow api create", async () => {
     const C = class {
@@ -536,6 +1283,158 @@ describe("graphql-connection", () => {
       removeComments: true
     })
 
-    expect(typeDefs).toMatchSnapshot()
+    expect(typeDefs).toMatchInlineSnapshot(`
+      "type Query {
+          c(id: ID!): C
+          cs(limit: Int, page: Int, orderBy: csOrderBy, where: csWhere): CConnection
+          node(nodeId: ID!): Node
+      }
+
+
+
+      type C implements Node {
+          id: Int!
+          nodeId: ID!
+      }
+
+      input csOrderBy {
+        id: OrderByDirection
+      }
+
+      input csWhere {
+        id: WhereInt
+        OR: [csWhere!]
+      }
+
+      type CConnection {
+          totalCount: Int!
+          items: [C!]!
+      }
+
+      input WhereString {
+          eq: String
+          ne: String
+          in: [String!]
+          nin: [String!]
+          gt: String
+          gte: String
+          lt: String
+          lte: String
+          st: String
+      }
+
+      input WhereStringNullable {
+          eq: String
+          ne: String
+          in: [String!]
+          nin: [String!]
+          gt: String
+          gte: String
+          lt: String
+          lte: String
+          st: String
+          null: Boolean
+      }
+
+      input WhereInt {
+          eq: Int
+          ne: Int
+          in: [Int!]
+          nin: [Int!]
+          gt: Int
+          gte: Int
+          lt: Int
+          lte: Int
+      }
+
+      input WhereIntNullable {
+          eq: Int
+          ne: Int
+          in: [Int!]
+          nin: [Int!]
+          gt: Int
+          gte: Int
+          lt: Int
+          lte: Int
+          null: Boolean
+      }
+
+      input WhereFloat {
+          eq: Float
+          ne: Float
+          in: [Float!]
+          nin: [Float!]
+          gt: Float
+          gte: Float
+          lt: Float
+          lte: Float
+      }
+
+      input WhereFloatNullable {
+          eq: Float
+          ne: Float
+          in: [Float!]
+          nin: [Float!]
+          gt: Float
+          gte: Float
+          lt: Float
+          lte: Float
+          null: Boolean
+      }
+
+      input WhereBoolean {
+          eq: Boolean
+          ne: Boolean
+          in: [Boolean!]
+          nin: [Boolean!]
+      }
+
+      input WhereBooleanNullable {
+          eq: Boolean
+          ne: Boolean
+          in: [Boolean!]
+          nin: [Boolean!]
+          null: Boolean
+      }
+
+      input WhereID {
+          eq: ID
+          ne: ID
+          in: [ID!]
+          nin: [ID!]
+      }
+
+      input WhereIDNullable {
+          eq: ID
+          ne: ID
+          in: [ID!]
+          nin: [ID!]
+          null: Boolean
+      }
+
+      enum OrderByDirection {
+          ASC
+          DESC
+      }
+
+      interface Node {
+          nodeId: ID!
+      }
+
+      interface Error {
+          message: String!
+      }
+
+      type ValidationError implements Error {
+          message: String!
+          modelState: [ValidationErrorModelState!]!
+      }
+
+      type ValidationErrorModelState {
+          field: String!
+          message: String!
+      }
+      "
+    `)
   })
 })
