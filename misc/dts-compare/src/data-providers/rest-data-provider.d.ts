@@ -8,7 +8,7 @@ export declare class RestDataProvider implements DataProvider {
     constructor(apiProvider: () => ApiClient);
     getEntityDataProvider(entity: EntityMetadata): RestEntityDataProvider;
     transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void>;
-    supportsRawFilter: boolean;
+    isProxy: boolean;
 }
 export declare class RestEntityDataProvider implements EntityDataProvider {
     private url;

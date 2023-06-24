@@ -4,6 +4,15 @@ import { ClassType } from "../classType";
 import type { SubscriptionServer } from "./live-query/SubscriptionServer";
 import { ExternalHttpProvider } from "./buildRestDataProvider";
 import { SubscriptionClient, Unsubscribe } from "./live-query/SubscriptionChannel";
+export declare class RemultAsyncLocalStorage {
+    private readonly remultObjectStorage;
+    static enable(): void;
+    static disable(): void;
+    constructor(remultObjectStorage: import('async_hooks').AsyncLocalStorage<Remult>);
+    run(remult: Remult, callback: VoidFunction): void;
+    getRemult(): Remult;
+    static instance: RemultAsyncLocalStorage;
+}
 export declare function isBackend(): boolean;
 export declare class Remult {
     /**Return's a `Repository` of the specific entity type
@@ -59,6 +68,7 @@ export declare class Remult {
     readonly context: RemultContext;
     /** The api client that will be used by `remult` to perform calls to the `api` */
     apiClient: ApiClient;
+    static run<T>(callback: () => T): T;
 }
 export declare type GetArguments<T> = T extends (...args: infer FirstArgument) => any ? FirstArgument : never;
 export interface RemultContext {

@@ -31,6 +31,6 @@ export declare class MockRestDataProvider implements DataProvider {
     constructor(remult: Remult);
     getEntityDataProvider(metadata: EntityMetadata<any>): EntityDataProvider;
     transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void>;
-    supportsRawFilter: boolean;
+    isProxy: boolean;
 }
 export declare function createMockHttpDataProvider(dataApi: DataApi<any>): import("../data-interfaces").RestDataProviderHttpProvider;

@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { Remult, AllowedForInstance, Allowed, allEntities, ControllerOptions, classHelpers, ClassHelper, setControllerSettings, doTransaction } from './context';
+import { Remult, AllowedForInstance, Allowed, allEntities, ControllerOptions, classHelpers, ClassHelper, setControllerSettings, doTransaction, isBackend } from './context';
 import { buildRestDataProvider } from "./buildRestDataProvider";
 import { DataApiResponse } from './data-api';
 import { SqlDatabase } from './data-providers/sql-database';
@@ -22,6 +22,7 @@ export abstract class Action<inParam, outParam> implements ActionInterface {
     constructor(private actionUrl: string, private queue: boolean, private allowed: AllowedForInstance<any>) {
 
     }
+
     static apiUrlForJobStatus = 'jobStatusInQueue';
     async run(pIn: inParam, baseUrl?: string, http?: RestDataProviderHttpProvider): Promise<outParam> {
         if (baseUrl === undefined)
@@ -64,6 +65,8 @@ export abstract class Action<inParam, outParam> implements ActionInterface {
 
     }
     doWork: (args: any[], self: any, baseUrl?: string, http?: RestDataProviderHttpProvider) => Promise<any>;
+
+
     protected abstract execute(info: inParam, req: Remult, res: DataApiResponse): Promise<outParam>;
 
     __register(reg: (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void) {
@@ -95,7 +98,7 @@ export class ForbiddenError extends Error {
 
 export class myServerAction extends Action<inArgs, result>
 {
-    constructor(name: string, private types: any[], private options: BackendMethodOptions<any>, private originalMethod: (args: any[]) => any) {
+    constructor(name: string, private types: any[], private options: BackendMethodOptions<any>, public originalMethod: (args: any[]) => any) {
         super(name, options.queue, options.allowed)
     }
 
@@ -118,6 +121,7 @@ export class myServerAction extends Action<inArgs, result>
         });
         return result;
     }
+
 
 
 
@@ -191,8 +195,8 @@ export function Controller(key: string) {
 /** Indicates that the decorated methods runs on the backend. See: [Backend Methods](https://remult.dev/docs/backendMethods.html) */
 export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
     return (target: any, key: string, descriptor: any) => {
+        const originalMethod = descriptor.value;
         if (target.prototype !== undefined) {
-            var originalMethod = descriptor.value;
 
             var types: any[] = Reflect.getMetadata("design:paramtypes", target, key);
             if (options.paramTypes)
@@ -212,7 +216,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
 
 
             descriptor.value = async function (...args: any[]) {
-                if (!actionInfo.runningOnServer) {
+                if (!isBackend()) {
                     return await serverAction.doWork(args, undefined);
                 }
                 else
@@ -234,7 +238,6 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
             x = new ClassHelper();
             classHelpers.set(target.constructor, x);
         }
-        var originalMethod = descriptor.value;
         let serverAction: ActionInterface = {
             __register(reg: (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void) {
 
@@ -386,7 +389,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
         };
 
         descriptor.value = async function (...args: any[]) {
-            if (!actionInfo.runningOnServer) {
+            if (!isBackend()) {
                 let self = this;
                 return serverAction.doWork(args, self);
             }

@@ -1154,8 +1154,8 @@ describe("data api", () => {
     };
     Entity('', {
       allowApiRead: false,
-      allowApiCrud:undefined,
-      allowApiUpdate:undefined
+      allowApiCrud: undefined,
+      allowApiUpdate: undefined
     })(type);
     let [c, remult] = await createData(async i => {
       await i(1, 'noam', 'a');
@@ -2313,7 +2313,7 @@ describe("test fetch", () => {
     })
     expect(r.repo(e).fields.person.valueConverter.toDb({ name: "noam" })).toBe("noam")
   });
-  it("test repo consistent instance",()=>{
+  it("test repo consistent instance", () => {
     let x = remult.repo(Categories);
     let y = remult.repo(Categories);
     expect(x).toBe(y);

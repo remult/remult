@@ -1,5 +1,5 @@
 import { AsyncLocalStorage } from 'async_hooks';
-import { RemultAsyncLocalStorage } from './expressBridge';
+import { RemultAsyncLocalStorage } from '../src/context';
 
 let init = false;
 
