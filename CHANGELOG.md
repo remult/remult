@@ -1,7 +1,8 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
-
+## next
+- Fixed issue where using using displayValue or validate on a spread object, marked it as new, and always triggered a post call
 ## [0.21.0] - 2023-06-22
 - Major improvements to the GraphQL support:
   - Better Query support

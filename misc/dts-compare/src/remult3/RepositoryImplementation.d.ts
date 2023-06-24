@@ -219,6 +219,7 @@ declare class EntityFullInfo<T> implements EntityMetadata<T> {
     get apiReadAllowed(): boolean;
     apiDeleteAllowed(item: T): boolean;
     apiInsertAllowed(item: T): boolean;
+    getEntityMetadataWithoutBreakingTheEntity(item: T): EntityRef<T>;
     dbNamePromise: Promise<string>;
     getDbName(): Promise<string>;
     idMetadata: IdMetadata<T>;

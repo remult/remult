@@ -193,7 +193,9 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
     }
     async validate(entity: Partial<OmitEB<entityType>>, ...fields: (Extract<keyof OmitEB<entityType>, string>)[]): Promise<ErrorInfo<entityType> | undefined> {
         {
-            let ref: rowHelperImplementation<any> = this.getEntityRef(entity as any) as any;
+            let ref: rowHelperImplementation<any> = getEntityRef(entity, false) as any;
+            if (!ref)
+                ref = this.getEntityRef({ ...entity } as any) as any;
 
             if (!fields || fields.length === 0) {
                 return await ref.validate()
@@ -1439,7 +1441,7 @@ export class columnDefsImpl implements FieldMetadata {
     }
 
     displayValue(item: any): string {
-        return this.remult.repo(this.entityDefs.entityType).getEntityRef(item).fields.find(this.key).displayValue;
+        return this.entityDefs.getEntityMetadataWithoutBreakingTheEntity(item).fields.find(this.key).displayValue;
     }
     get includedInApi() {
         if (this.options.includeInApi === undefined)
@@ -1558,7 +1560,7 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
     apiUpdateAllowed(item: T) {
         if (this.options.allowApiUpdate === undefined)
             return false;
-        return !item ? this.remult.isAllowedForInstance(undefined, this.options.allowApiUpdate) : this.remult.repo(this.entityType).getEntityRef(item).apiUpdateAllowed
+        return !item ? this.remult.isAllowedForInstance(undefined, this.options.allowApiUpdate) : this.getEntityMetadataWithoutBreakingTheEntity(item).apiUpdateAllowed
     }
     get apiReadAllowed() {
         if (this.options.allowApiRead === undefined)
@@ -1569,14 +1571,21 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
 
         if (this.options.allowApiDelete === undefined)
             return false;
-        return !item ? this.remult.isAllowedForInstance(undefined, this.options.allowApiDelete) : this.remult.repo(this.entityType).getEntityRef(item).apiDeleteAllowed
+        return !item ? this.remult.isAllowedForInstance(undefined, this.options.allowApiDelete) : this.getEntityMetadataWithoutBreakingTheEntity(item).apiDeleteAllowed
     }
+
     apiInsertAllowed(item: T) {
         if (this.options.allowApiUpdate === undefined)
             return false;
-        return !item ? this.remult.isAllowedForInstance(undefined, this.options.allowApiInsert) : this.remult.repo(this.entityType).getEntityRef(item).apiInsertAllowed
+        return !item ? this.remult.isAllowedForInstance(undefined, this.options.allowApiInsert) : this.getEntityMetadataWithoutBreakingTheEntity(item).apiInsertAllowed
     }
 
+    getEntityMetadataWithoutBreakingTheEntity(item: T) {
+        let result = getEntityRef(item, false);
+        if (result)
+            return result;
+        return this.remult.repo(this.entityType).getEntityRef({ ...item });
+    }
     dbNamePromise: Promise<string>;
     getDbName(): Promise<string> {
 
