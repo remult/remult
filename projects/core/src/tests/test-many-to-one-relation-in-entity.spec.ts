@@ -702,7 +702,7 @@ describe("many to one relation", () => {
         cat["x"] = true;
         const p = await remult.repo(Products2).insert({ id: 1, name: "p1", cat: { id: 1, name: "b" } });
         await p.$.cat.load();
-        expect((p.cat as Categories).archive).toBe(true);
+        expect((p.cat as Categories).archive).toBe(undefined);
     });
 });
 

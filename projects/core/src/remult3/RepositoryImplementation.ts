@@ -328,7 +328,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
                 result[col.key] = col.valueConverter.fromJson(row[col.key]);
             }
             return result;
-        }),load)
+        }), load)
     }
     private async loadManyToOneForManyRows(rawRows: any[], load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[]) {
         let loadFields: FieldMetadata[] = undefined;
@@ -383,22 +383,39 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 
         return x;
     }
+
+    toJson(item: entityType) {
+        return (this.getEntityRef(item) as rowHelperImplementation<entityType>).toApiJson(true);
+    }
     // TODO2 - consider replacing with fromJsonArray - also consider having a TOJSON for similar cases
-    async fromJson(json: any, newRow?: boolean): Promise<entityType> {
-        let obj = {};
+    fromJson(json: any, newRow?: boolean): entityType {
+        if (json === null || json === undefined)
+            return json;
+        let result = new this.entity(this.remult);
         for (const col of this.fieldsOf(json)) {
-            if (json[col.key] !== undefined) {
-                obj[col.key] = col.valueConverter.fromJson(json[col.key]);
+            let ei = getEntitySettings(col.valueType, false);
+            if (ei) {
+                result[col.key] = this.remult.repo(col.valueType).fromJson(json[col.key]);
+            } else {
+                if (json[col.key] !== undefined) {
+                    result[col.key] = col.valueConverter.fromJson(json[col.key]);
+                }
             }
         }
+        this.fixTypes(result);
         if (newRow) {
-            let r = this.create();
-            let helper = this.getEntityRef(r) as rowHelperImplementation<entityType>;
-            await helper.loadDataFrom(obj);
-            return r;
+
+            return this.create(result);
+        } else {
+            let row = new rowHelperImplementation(this._info, result, this, this.edp, this.remult, false);
+
+            Object.defineProperty(result, entityMember, {//I've used define property to hide this member from console.lo g
+                get: () => row
+            });
+            row.saveOriginalData();
+            return result as entityType;
         }
-        else
-            return this.mapRawDataToResult(obj, undefined);
+
 
     }
 
@@ -852,14 +869,17 @@ abstract class rowHelperBase<T>
     async __performColumnAndEntityValidations() {
 
     }
-    toApiJson() {
+    toApiJson(includeRelatedEntities = false) {
         let result: any = {};
         for (const col of this.columnsInfo) {
             if (!this.remult || col.includeInApi === undefined || this.remult.isAllowed(col.includeInApi)) {
                 let val;
                 let lu = this.lookups.get(col.key);
                 if (lu)
-                    val = lu.id;
+                    if (includeRelatedEntities)
+                        val = lu.toJson()
+                    else
+                        val = lu.id;
                 else {
                     val = this.instance[col.key];
                     if (!this.remult) {
@@ -2119,7 +2139,7 @@ export class EntityBase {
 export class IdEntity extends EntityBase {
     @Fields.uuid()
     id: string;
-  }
+}
 export class ControllerBase {
     protected remult: Remult;
     constructor(remult?: Remult) {

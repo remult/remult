@@ -107,6 +107,11 @@ export class CompoundIdField implements FieldMetadata<string> {
 
 
 export class LookupColumn<T> {
+  toJson(): any {
+    if (this.item === null)
+      return null;
+    return this.repository.toJson(this.item);
+  }
   setId(val: any) {
     if (this.repository.metadata.idMetadata.field.valueType == Number)
       val = +val;
@@ -122,7 +127,9 @@ export class LookupColumn<T> {
       return null;
     return this.repository.getCachedById(id);
   }
+  storedItem: { item: T };
   set(item: T) {
+    this.storedItem = undefined;
     if (item) {
       if (typeof item === "string" || typeof item === "number")
         this.id = item as any;
@@ -133,6 +140,7 @@ export class LookupColumn<T> {
           this.id = eo.getId();
         }
         else {
+          this.storedItem = { item }
           this.id = item[this.repository.metadata.idMetadata.field.key];
         }
       }
@@ -149,7 +157,8 @@ export class LookupColumn<T> {
   ) { }
 
   get item(): T {
-
+    if (this.storedItem)
+      return this.storedItem.item;
     return this.get(this.id);
   }
   async waitLoad() {

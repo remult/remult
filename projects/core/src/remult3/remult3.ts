@@ -237,9 +237,11 @@ export interface Repository<entityType> {
     /** Creates an instance of an item. It'll not be saved to the data source unless `save` or `insert` will be called for that item */
     create(item?: Partial<OmitEB<entityType>>): entityType;
 
-
+    //TODO - talk about cases of arrays 
+    toJson(item: entityType): any;
+    //TODO - talk about cases of arrays 
     /** Translates a json object to an item instance */
-    fromJson(x: any, isNew?: boolean): Promise<entityType>;
+    fromJson(x: any, isNew?: boolean): entityType;
     /** returns an `entityRef` for an item returned by `create`, `find` etc... */
     getEntityRef(item: entityType): EntityRef<entityType>;
     /** Provides information about the fields of the Repository's entity 
