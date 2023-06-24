@@ -43,8 +43,8 @@ describe("Test sync from and to json", () => {
   const task1: Task = {
     id: 1,
     title: "test",
-    date: new Date(2020, 6, 3, 4),
-    dateOnly: new Date(2020, 6, 3, 4),
+    date: new Date("2020-07-03T01:00:00.000Z"),
+    dateOnly: new Date("2020-07-03T01:00:00.000Z"),
     shouldNotSee: 'secret',
     status: status.notOk,
     category: category
@@ -52,8 +52,8 @@ describe("Test sync from and to json", () => {
   const task2: Task = {
     id: 2,
     title: "test2",
-    date: new Date(2022, 6, 3, 4),
-    dateOnly: new Date(2022, 6, 3, 4),
+    date: new Date("2022-07-03T01:00:00.000Z"),
+    dateOnly: new Date("2022-07-03T01:00:00.000Z"),
     shouldNotSee: 'secret',
     status: status.ok,
     category: category
@@ -94,13 +94,13 @@ describe("Test sync from and to json", () => {
       }
     `);
   })
-  it("test category",()=>{
-    const t = {...task1};
+  it("test category", () => {
+    const t = { ...task1 };
     const ref = repo.getEntityRef(t);
     expect(ref.fields.category.value?.name).toBe("testCat")
   })
-  it ("test with null category",()=>{
-    const t = {...task1,category:null};
+  it("test with null category", () => {
+    const t = { ...task1, category: null };
     expect(repo.fromJson(repo.toJson(t))).toMatchInlineSnapshot(`
       Task {
         "category": null,
