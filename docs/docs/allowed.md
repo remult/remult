@@ -38,6 +38,6 @@ The Allowed for Instance method accepts two parameters:
 For Example:
 ```ts
 @Entity<Task>("tasks", {
-    allowApiUpdate: (remult, task) => remult.isAllowed("admin") && !task!.completed
+    allowApiUpdate: (task, remult) => remult.isAllowed("admin") && !task!.completed
 })
 ``` 
