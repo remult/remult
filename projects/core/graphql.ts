@@ -891,6 +891,3 @@ export function translateWhereToRestBody<T>(fields: FieldsMetadata<T>, { where }
 }
 
 
-
-//[ ] - when fetching a related entity - make sure it's include in api is true in the specific context.
-//[ ] - test graphql where in entity definitions there is a reference to static remult
