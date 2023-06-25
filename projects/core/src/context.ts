@@ -203,8 +203,12 @@ export class Remult {
         url: '/api',
         subscriptionClient: new SseSubscriptionClient()
     };
-    static run<T>(callback: () => T) {
+    static run<T>(callback: () => T, options: {
+        dataProvider: DataProvider
+    }) {
         const remult = new Remult();
+        if (options.dataProvider)
+            remult.dataProvider = options.dataProvider;
         let r: T;
         RemultAsyncLocalStorage.instance.run(remult, () => {
             r = callback()

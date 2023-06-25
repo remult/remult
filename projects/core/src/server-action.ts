@@ -143,7 +143,7 @@ export interface BackendMethodOptions<type> {
 
 export const actionInfo = {
     allActions: [] as any[],
-    runningOnServer: false,// [ ] - replace with check of current remult if it data source is rest api.
+    runningOnServer: false,
     runActionWithoutBlockingUI: <T>(what: () => Promise<T>): Promise<T> => { return what() },
     startBusyWithProgress: () => ({
         progress: (percent: number) => { },
