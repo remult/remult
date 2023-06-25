@@ -328,7 +328,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
                 result[col.key] = col.valueConverter.fromJson(row[col.key]);
             }
             return result;
-        }),load)
+        }), load)
     }
     private async loadManyToOneForManyRows(rawRows: any[], load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[]) {
         let loadFields: FieldMetadata[] = undefined;
@@ -1641,7 +1641,7 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
 
 
 export function FieldType<valueType = any>(...options: (FieldOptions<any, valueType> | ((options: FieldOptions<any, valueType>, remult: Remult) => void))[]) {
-    return target => {
+    return (target, context?) => {
         if (!options) {
             options = [];
         }
@@ -1748,11 +1748,11 @@ export interface StringFieldOptions<entityType = any> extends FieldOptions<entit
     maxLength?: number;
 }
 export function ValueListFieldType<valueType extends ValueListItem = any>(...options: (ValueListFieldOptions<any, valueType> | ((options: FieldOptions<any, valueType>, remult: Remult) => void))[]) {
-    return (type: ClassType<valueType>) => {
+    return (type: ClassType<valueType>, context?) => {
         FieldType<valueType>(o => {
             o.valueConverter = ValueListInfo.get(type),
                 o.displayValue = (item, val) => val?.caption
-        }, ...options)(type)
+        }, ...options)(type, context)
     }
 }
 export interface ValueListFieldOptions<entityType, valueType> extends FieldOptions<entityType, valueType> {
@@ -2024,6 +2024,7 @@ interface columnInfo {
     settings: (remult: Remult) => FieldOptions
 
 }
+//[ ] YONI - in Typescript 5 I do get the name of the class, what would we like to change because of that?
 
 /**Decorates classes that should be used as entities.
  * Receives a key and an array of EntityOptions.
@@ -2051,7 +2052,7 @@ interface columnInfo {
  */
 export function Entity<entityType>(key: string, ...options: (EntityOptions<entityType> | ((options: EntityOptions<entityType>, remult: Remult) => void))[]) {
 
-    return target => {
+    return (target, info?) => {
         for (const rawFilterMember in target) {
             if (Object.prototype.hasOwnProperty.call(target, rawFilterMember)) {
                 const element = target[rawFilterMember] as rawFilterInfo<any>;
@@ -2119,7 +2120,7 @@ export class EntityBase {
 export class IdEntity extends EntityBase {
     @Fields.uuid()
     id: string;
-  }
+}
 export class ControllerBase {
     protected remult: Remult;
     constructor(remult?: Remult) {

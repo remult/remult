@@ -175,7 +175,7 @@ interface serverMethodOutArgs {
 
 const classOptions = new Map<any, ControllerOptions>();
 export function Controller(key: string) {
-    return function (target) {
+    return function (target,context) {
         let r = target;
         classOptions.set(r, { key });
         setControllerSettings(target, { key });
@@ -190,9 +190,13 @@ export function Controller(key: string) {
 
 /** Indicates that the decorated methods runs on the backend. See: [Backend Methods](https://remult.dev/docs/backendMethods.html) */
 export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
-    return (target: any, key: string, descriptor: any) => {
+    return (target: any, context: any/*ClassMethodDecoratorContext<type>*/
+        , descriptor?: any) => {
+        const key = typeof (context) === "string" ? context : context.name.toString();
+        const originalMethod = descriptor ? descriptor.value : target;
+        let result = originalMethod;
         if (target.prototype !== undefined) {
-            var originalMethod = descriptor.value;
+
 
             var types: any[] = Reflect.getMetadata("design:paramtypes", target, key);
             if (options.paramTypes)
@@ -211,18 +215,20 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
 
 
 
-            descriptor.value = async function (...args: any[]) {
+            result = async function (...args: any[]) {
                 if (!actionInfo.runningOnServer) {
                     return await serverAction.doWork(args, undefined);
                 }
                 else
-                    return (await originalMethod.apply(undefined, args));
+                    return (await originalMethod.apply(this, args));
             }
-            registerAction(target, descriptor);
-            descriptor.value[serverActionField] = serverAction;
-
-
-            return descriptor;
+            registerAction(target, result);
+            result[serverActionField] = serverAction;
+            if (descriptor) {
+                descriptor.value = result
+                return descriptor;
+            }
+            else return result
         }
 
 
@@ -234,7 +240,6 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
             x = new ClassHelper();
             classHelpers.set(target.constructor, x);
         }
-        var originalMethod = descriptor.value;
         let serverAction: ActionInterface = {
             __register(reg: (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void) {
 
@@ -385,7 +390,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
             }
         };
 
-        descriptor.value = async function (...args: any[]) {
+        result = async function (...args: any[]) {
             if (!actionInfo.runningOnServer) {
                 let self = this;
                 return serverAction.doWork(args, self);
@@ -393,11 +398,15 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
             else
                 return (await originalMethod.apply(this, args));
         }
-        registerAction(target.constructor, descriptor);
-        descriptor.value[serverActionField] = serverAction;
+        registerAction(target.constructor, result);
+        result[serverActionField] = serverAction;
 
 
-        return descriptor;
+        if (descriptor) {
+            descriptor.value = result
+            return descriptor;
+        }
+        else return result
     }
 }
 
@@ -410,9 +419,9 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
 const customUndefined = {
     _isUndefined: true
 }
-function registerAction(target: any, descriptor: any) {
-    (target[classBackendMethodsArray] || (target[classBackendMethodsArray] = [])).push(descriptor.value);
-    actionInfo.allActions.push(descriptor.value);
+function registerAction(target: any, resultMethod: any) {
+    (target[classBackendMethodsArray] || (target[classBackendMethodsArray] = [])).push(resultMethod);
+    actionInfo.allActions.push(resultMethod);
 }
 
 function isCustomUndefined(x: any) {

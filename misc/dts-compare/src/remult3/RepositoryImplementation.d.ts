@@ -225,7 +225,7 @@ declare class EntityFullInfo<T> implements EntityMetadata<T> {
     dbName: string;
     caption: string;
 }
-export declare function FieldType<valueType = any>(...options: (FieldOptions<any, valueType> | ((options: FieldOptions<any, valueType>, remult: Remult) => void))[]): (target: any) => any;
+export declare function FieldType<valueType = any>(...options: (FieldOptions<any, valueType> | ((options: FieldOptions<any, valueType>, remult: Remult) => void))[]): (target: any, context?: any) => any;
 export declare class Fields {
     /**
      * Stored as a JSON.stringify - to store as json use Fields.json
@@ -248,7 +248,7 @@ export declare function isAutoIncrement(f: FieldMetadata): boolean;
 export interface StringFieldOptions<entityType = any> extends FieldOptions<entityType, string> {
     maxLength?: number;
 }
-export declare function ValueListFieldType<valueType extends ValueListItem = any>(...options: (ValueListFieldOptions<any, valueType> | ((options: FieldOptions<any, valueType>, remult: Remult) => void))[]): (type: ClassType<valueType>) => void;
+export declare function ValueListFieldType<valueType extends ValueListItem = any>(...options: (ValueListFieldOptions<any, valueType> | ((options: FieldOptions<any, valueType>, remult: Remult) => void))[]): (type: ClassType<valueType>, context?: any) => void;
 export interface ValueListFieldOptions<entityType, valueType> extends FieldOptions<entityType, valueType> {
     getValues?: () => valueType[];
 }
@@ -318,7 +318,7 @@ interface columnInfo {
  * // as an arrow function that receives `remult` as a parameter
  * @Entity("tasks", (options,remult) => options.allowApiCrud = true)
  */
-export declare function Entity<entityType>(key: string, ...options: (EntityOptions<entityType> | ((options: EntityOptions<entityType>, remult: Remult) => void))[]): (target: any) => any;
+export declare function Entity<entityType>(key: string, ...options: (EntityOptions<entityType> | ((options: EntityOptions<entityType>, remult: Remult) => void))[]): (target: any, info?: any) => any;
 export declare class EntityBase {
     get _(): EntityRef<this>;
     save(): Promise<this>;
