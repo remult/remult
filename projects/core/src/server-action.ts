@@ -175,7 +175,7 @@ interface serverMethodOutArgs {
 
 const classOptions = new Map<any, ControllerOptions>();
 export function Controller(key: string) {
-    return function (target,context) {
+    return function (target,context?) {
         let r = target;
         classOptions.set(r, { key });
         setControllerSettings(target, { key });
