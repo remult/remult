@@ -392,7 +392,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             return item.map(x => this.toJson(x))
         return (this.getEntityRef(item) as rowHelperImplementation<entityType>).toApiJson(true);
     }
-    
+
     fromJson(json: any, newRow?: boolean) {
         if (json === null || json === undefined)
             return json;
@@ -1932,7 +1932,7 @@ export function Field<entityType = any, valueType = any>(valueType: () => ClassT
 
     return (target,
         //@ts-ignore
-        context: ClassFieldDecoratorContext<entityType, valueType> | string
+        context: ClassFieldDecoratorContext<entityType, valueType | undefined> | string
         , c?) => {
         const key = typeof context === "string" ? context : context.name.toString();
         let factory = (remult: Remult) => {
