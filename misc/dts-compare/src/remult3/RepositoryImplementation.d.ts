@@ -51,7 +51,8 @@ export declare class RepositoryImplementation<entityType> implements Repository<
     fromJsonArray(jsonItems: any[], load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[]): Promise<entityType[]>;
     private loadManyToOneForManyRows;
     private mapRawDataToResult;
-    fromJson(json: any, newRow?: boolean): Promise<entityType>;
+    toJson(item: entityType | entityType[]): any;
+    fromJson(json: any, newRow?: boolean): any;
     count(where?: EntityFilter<entityType>): Promise<number>;
     private cache;
     findFirst(where?: EntityFilter<entityType>, options?: FindFirstOptions<entityType>, skipOrderByAndLimit?: boolean): Promise<entityType>;
@@ -101,7 +102,7 @@ declare abstract class rowHelperBase<T> {
     validate(): Promise<ErrorInfo<any>>;
     __validateEntity(): Promise<void>;
     __performColumnAndEntityValidations(): Promise<void>;
-    toApiJson(): any;
+    toApiJson(includeRelatedEntities?: boolean): any;
     _updateEntityBasedOnApi(body: any): Promise<void>;
 }
 export declare class rowHelperImplementation<T> extends rowHelperBase<T> implements EntityRef<T> {
@@ -214,6 +215,7 @@ declare class EntityFullInfo<T> implements EntityMetadata<T> {
     get apiReadAllowed(): boolean;
     apiDeleteAllowed(item: T): boolean;
     apiInsertAllowed(item: T): boolean;
+    getEntityMetadataWithoutBreakingTheEntity(item: T): EntityRef<T>;
     dbNamePromise: Promise<string>;
     getDbName(): Promise<string>;
     idMetadata: IdMetadata<T>;

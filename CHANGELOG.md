@@ -3,11 +3,13 @@
 All notable changes to this project will be documented in this file.
 
 ## next
+
 - Typescript 5 style decorators support - no more `experimentalDecorators`.
   - Also, the decorators now do type checking, so if you put @Fields.string() on a number, it'll give you an error
   - And - no longer need for the Generics in the decorators setting.
     - `@Entity<Task>(...)` is now `@Entity(...)`
     - `@Fields.string<Task>(...)` is now `@Fields.string(...)`
+- Fixed issue where using using displayValue or validate on a spread object, marked it as new, and always triggered a post call
 
 ## [0.21.0] - 2023-06-22
 

@@ -193,7 +193,9 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
     }
     async validate(entity: Partial<OmitEB<entityType>>, ...fields: (Extract<keyof OmitEB<entityType>, string>)[]): Promise<ErrorInfo<entityType> | undefined> {
         {
-            let ref: rowHelperImplementation<any> = this.getEntityRef(entity as any) as any;
+            let ref: rowHelperImplementation<any> = getEntityRef(entity, false) as any;
+            if (!ref)
+                ref = this.getEntityRef({ ...entity } as any) as any;
 
             if (!fields || fields.length === 0) {
                 return await ref.validate()
@@ -238,7 +240,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
                 row.originalId = id;
             }
             else row.id = row.getId();
-            ref = row;
+            ref = row as any;
             Object.defineProperty(instance, entityMember, {
                 get: () => row
             });
@@ -383,22 +385,43 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 
         return x;
     }
-    // TODO2 - consider replacing with fromJsonArray - also consider having a TOJSON for similar cases
-    async fromJson(json: any, newRow?: boolean): Promise<entityType> {
-        let obj = {};
+
+    toJson(item: entityType | entityType[]) {
+        if (Array.isArray(item))
+            return item.map(x => this.toJson(x))
+        return (this.getEntityRef(item) as rowHelperImplementation<entityType>).toApiJson(true);
+    }
+    
+    fromJson(json: any, newRow?: boolean) {
+        if (json === null || json === undefined)
+            return json;
+        if (Array.isArray(json))
+            return json.map(item => this.fromJson(item))
+        let result = new this.entity(this.remult);
         for (const col of this.fieldsOf(json)) {
-            if (json[col.key] !== undefined) {
-                obj[col.key] = col.valueConverter.fromJson(json[col.key]);
+            let ei = getEntitySettings(col.valueType, false);
+            if (ei) {
+                result[col.key] = this.remult.repo(col.valueType).fromJson(json[col.key]);
+            } else {
+                if (json[col.key] !== undefined) {
+                    result[col.key] = col.valueConverter.fromJson(json[col.key]);
+                }
             }
         }
+        this.fixTypes(result);
         if (newRow) {
-            let r = this.create();
-            let helper = this.getEntityRef(r) as rowHelperImplementation<entityType>;
-            await helper.loadDataFrom(obj);
-            return r;
+
+            return this.create(result);
+        } else {
+            let row = new rowHelperImplementation(this._info, result, this, this.edp, this.remult, false);
+
+            Object.defineProperty(result, entityMember, {//I've used define property to hide this member from console.lo g
+                get: () => row
+            });
+            row.saveOriginalData();
+            return result as entityType;
         }
-        else
-            return this.mapRawDataToResult(obj, undefined);
+
 
     }
 
@@ -852,14 +875,17 @@ abstract class rowHelperBase<T>
     async __performColumnAndEntityValidations() {
 
     }
-    toApiJson() {
+    toApiJson(includeRelatedEntities = false) {
         let result: any = {};
         for (const col of this.columnsInfo) {
             if (!this.remult || col.includeInApi === undefined || this.remult.isAllowed(col.includeInApi)) {
                 let val;
                 let lu = this.lookups.get(col.key);
                 if (lu)
-                    val = lu.id;
+                    if (includeRelatedEntities)
+                        val = lu.toJson()
+                    else
+                        val = lu.id;
                 else {
                     val = this.instance[col.key];
                     if (!this.remult) {
@@ -1425,7 +1451,7 @@ export class columnDefsImpl implements FieldMetadata {
     }
 
     displayValue(item: any): string {
-        return this.remult.repo(this.entityDefs.entityType).getEntityRef(item).fields.find(this.key).displayValue;
+        return this.entityDefs.getEntityMetadataWithoutBreakingTheEntity(item).fields.find(this.key).displayValue;
     }
     get includedInApi() {
         if (this.options.includeInApi === undefined)
@@ -1549,7 +1575,7 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
     apiUpdateAllowed(item: T) {
         if (this.options.allowApiUpdate === undefined)
             return false;
-        return !item ? this.remult.isAllowedForInstance(undefined, this.options.allowApiUpdate) : this.remult.repo(this.entityType).getEntityRef(item).apiUpdateAllowed
+        return !item ? this.remult.isAllowedForInstance(undefined, this.options.allowApiUpdate) : this.getEntityMetadataWithoutBreakingTheEntity(item).apiUpdateAllowed
     }
     get apiReadAllowed() {
         if (this.options.allowApiRead === undefined)
@@ -1560,14 +1586,21 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
 
         if (this.options.allowApiDelete === undefined)
             return false;
-        return !item ? this.remult.isAllowedForInstance(undefined, this.options.allowApiDelete) : this.remult.repo(this.entityType).getEntityRef(item).apiDeleteAllowed
+        return !item ? this.remult.isAllowedForInstance(undefined, this.options.allowApiDelete) : this.getEntityMetadataWithoutBreakingTheEntity(item).apiDeleteAllowed
     }
+
     apiInsertAllowed(item: T) {
         if (this.options.allowApiUpdate === undefined)
             return false;
-        return !item ? this.remult.isAllowedForInstance(undefined, this.options.allowApiInsert) : this.remult.repo(this.entityType).getEntityRef(item).apiInsertAllowed
+        return !item ? this.remult.isAllowedForInstance(undefined, this.options.allowApiInsert) : this.getEntityMetadataWithoutBreakingTheEntity(item).apiInsertAllowed
     }
 
+    getEntityMetadataWithoutBreakingTheEntity(item: T) {
+        let result = getEntityRef(item, false);
+        if (result)
+            return result;
+        return this.remult.repo(this.entityType).getEntityRef({ ...item });
+    }
     dbNamePromise: Promise<string>;
     getDbName(): Promise<string> {
 

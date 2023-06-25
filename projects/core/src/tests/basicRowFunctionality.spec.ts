@@ -20,7 +20,7 @@ import { addFilterToUrlAndReturnTrueIfSuccessful, RestDataProvider, RestDataProv
 import { entityFilterToJson, Filter, OrFilter } from '../filter/filter-interfaces';
 import { Categories, Categories as newCategories, CategoriesForTesting } from './remult-3-entities';
 
-import { Field, decorateColumnSettings, Entity, EntityBase, FieldType, Fields, getEntityKey, isAutoIncrement } from '../remult3';
+import { Field, decorateColumnSettings, Entity, EntityBase, FieldType, Fields, getEntityKey, isAutoIncrement, getEntityRef } from '../remult3';
 
 import { CompoundIdField } from '../column';
 import { actionInfo } from '../server-action';
@@ -719,7 +719,7 @@ describe("data api", () => {
     var x = await c.find({ where: { id: 1 } });
     expect(x.length).toBe(0);
   });
-  it("check api defaults", () => {
+  it("check api defaults", async () => {
     const c = class {
       id = 0;
       name?= ''
@@ -740,7 +740,14 @@ describe("data api", () => {
     expect(repo.fields.name.apiUpdateAllowed()).toBe(true)
     expect(repo.fields.name.apiUpdateAllowed({ id: 1 })).toBe(true)
     expect(repo.metadata.apiReadAllowed).toBe(true)
-
+    let x = { id: 1 };
+    expect(getEntityRef(x, false)).toBe(undefined);
+    repo.metadata.fields.id.displayValue(x);
+    repo.metadata.fields.id.apiUpdateAllowed(x);
+    repo.metadata.apiDeleteAllowed(x);
+    repo.metadata.apiUpdateAllowed(x);
+    await repo.validate(x);
+    expect(getEntityRef(x, false)).toBeUndefined();
 
   })
 
@@ -1154,8 +1161,8 @@ describe("data api", () => {
     };
     Entity('', {
       allowApiRead: false,
-      allowApiCrud:undefined,
-      allowApiUpdate:undefined
+      allowApiCrud: undefined,
+      allowApiUpdate: undefined
     })(type);
     let [c, remult] = await createData(async i => {
       await i(1, 'noam', 'a');
@@ -2313,7 +2320,7 @@ describe("test fetch", () => {
     })
     expect(r.repo(e).fields.person.valueConverter.toDb({ name: "noam" })).toBe("noam")
   });
-  it("test repo consistent instance",()=>{
+  it("test repo consistent instance", () => {
     let x = remult.repo(Categories);
     let y = remult.repo(Categories);
     expect(x).toBe(y);
