@@ -37,7 +37,7 @@
     "ng": "ng",
     "ng-serve": "cd projects/test-angular && ng serve --port 4201",
     "ng-serve-noam-ip-10.0.0.6": "ng serve --port 4201 --host 10.0.0.6",
-    "update-starter":"misc\\update-versions-to-starter-projects.sh"
+    "update-starter": "misc\\update-versions-to-starter-projects.sh"
   },
   "private": true,
   "devDependencies": {
@@ -56,9 +56,11 @@
     "@angular/router": "~11.2.10",
     "@fastify/express": "^2.0.1",
     "@fastify/middie": "^8.0.0",
+    "@fastify/swagger-ui": "^1.8.1",
     "@koa/router": "^12.0.0",
     "@memlab/heap-analysis": "^1.0.20",
     "@microsoft/fetch-event-source": "^2.0.1",
+    "@paralleldrive/cuid2": "^2.2.1",
     "@sveltejs/kit": "^1.15.7",
     "@types/compression": "0.0.36",
     "@types/express": "^4.17.1",
@@ -86,7 +88,6 @@
     "core-js": "^2.5.4",
     "cors": "^2.8.5",
     "cp": "^0.2.0",
-    "cuid": "^2.1.8",
     "dotenv": "^8.1.0",
     "express": "^4.17.3",
     "express-force-https": "^1.0.0",
@@ -95,6 +96,7 @@
     "fastify": "^4.10.2",
     "fastify-plugin": "^4.0.0",
     "graphql": "^15.8.0",
+    "graphql-yoga": "^3.9.1",
     "jasmine": "^4.1.0",
     "jasmine-core": "~3.6.0",
     "jasmine-spec-reporter": "~5.0.0",
@@ -140,9 +142,5 @@
     "argon2": false,
     "password-hash": false,
     "fs": false
-  },
-  "dependencies": {
-    "@fastify/swagger-ui": "^1.8.1",
-    "graphql-yoga": "^3.9.1"
   }
 }

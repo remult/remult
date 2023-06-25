@@ -99,7 +99,7 @@ describe("test server expression value", () => {
         })
         const repo = new Remult(new InMemoryDataProvider()).repo(e);
         let item = await repo.insert({ num: 1 });
-        expect(item.id.length).toBe(25, item.id);
+        expect(item.id.length).toBe(24, item.id);
         item = await repo.insert({ id: '123', num: 2 })
         expect(item.id).toBe('123');
     })

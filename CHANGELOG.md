@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file.
 - Added Remult.run
 - isBackend will return true or false based on dataProvider.isProxy equal false or runningOnServer member
 - Backend method will call backend based on isBackend method,
+- Replaced deprecated cuid with `paralleldrive/cuid2`
 
 ## [0.21.0] - 2023-06-22
 
