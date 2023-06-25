@@ -114,8 +114,8 @@ id:string
 This id value is determined by the underlying database on insert, and can't be updated through the api.
 
 ```ts
-@Fields.cuid()
-id:string
+@Fields.autoIncrement()
+id:number
 ```
 
 ## Enum Field
@@ -178,7 +178,7 @@ export class Task extends IdEntity {
   title = ""
   @Fields.boolean()
   completed = false
-  @Fields.object()
+  @Fields.json()
   tags: string[] = []
 }
 ```

@@ -97,7 +97,57 @@ describe("test sql database", () => {
         }
 
     })
+    it("LogToConsole true", async () => {
+        await deleteAll();
 
+        SqlDatabase.LogToConsole = true;
+
+        console.info = jasmine.createSpy("log");
+        await remult.repo(Categories).insert([{ categoryName: 'a', id: 1 }]);
+
+        expect(console.info).toHaveBeenCalledWith(
+            jasmine.objectContaining(
+                {
+                    query: 'insert into Categories (CategoryID, categoryName) values (~1~, ~2~) returning CategoryID, categoryName, description, status',
+                    arguments: { "~1~": 1, "~2~": 'a' },
+                }
+            )
+        )
+
+        SqlDatabase.LogToConsole = false;
+    })
+
+    it("LogToConsole oneLiner", async () => {
+        await deleteAll();
+
+        SqlDatabase.LogToConsole = "oneLiner";
+
+        console.info = jasmine.createSpy("log");
+        await remult.repo(Categories).insert([{ categoryName: 'a', id: 1 }]);
+
+        expect(console.info).toHaveBeenCalledWith(
+            jasmine.stringMatching('⚪')
+        )
+
+        SqlDatabase.LogToConsole = false;
+    })
+
+    it("LogToConsole fn", async () => {
+        await deleteAll();
+
+        SqlDatabase.LogToConsole = (duration: number, query: string, args: Record<string, any>) => { };
+
+        SqlDatabase.LogToConsole = jasmine.createSpy("log");
+        await remult.repo(Categories).insert([{ categoryName: 'a', id: 1 }]);
+
+        expect(SqlDatabase.LogToConsole).toHaveBeenCalledWith(
+            jasmine.anything(),
+            'insert into Categories (CategoryID, categoryName) values (~1~, ~2~) returning CategoryID, categoryName, description, status',
+            jasmine.objectContaining({ "~1~": 1, "~2~": 'a' })
+        )
+
+        SqlDatabase.LogToConsole = false;
+    })
 });
 
 @Entity("Categories")

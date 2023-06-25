@@ -1,5 +1,5 @@
 import { DataApi } from "../data-api";
-import { Fields, Entity, EntityBase, EntityFilter, Field, createOldEntity } from "../remult3";
+import { Fields, Entity, EntityBase, EntityFilter, Field, createOldEntity, IdEntity } from "../remult3";
 import { c } from "../tests/c";
 
 import { Done } from "../tests/Done";
@@ -17,16 +17,25 @@ import { entityForrawFilter1 } from "../tests/entityForCustomFilter";
 import { entityWithValidationsOnColumn } from "../tests/entityWithValidationsOnColumn";
 import { Validators } from "../validators";
 import { Status } from "../tests/testModel/models";
-import { IdEntity } from "../id-entity";
 import { describeClass } from "../remult3/DecoratorReplacer";
-import { DataProviderLiveQueryStorage } from "../../live-query/data-provider-live-query-storage";
+import { DataProviderLiveQueryStorage, LiveQueryStorageEntity } from "../../live-query/data-provider-live-query-storage";
 import { v4 as uuid } from 'uuid'
+import { testPostgresImplementation } from "../backend-tests/backend-database-test-setup.backend-spec";
 
 
 
 testAll("what", async ({ remult, createEntity }) => {
     await (await createEntity(stam)).create({ id: 1, title: 'noam' }).save();
     expect(await remult.repo(stam).count()).toBe(1);
+}, false);
+testAll("data types", async ({ remult, createEntity }) => {
+    let r = await (await createEntity(stam)).create({
+        id: 1,
+        //@ts-ignore
+        title: 42
+    }).save();
+    expect(r.title).toEqual("42");
+
 }, false);
 testAll("filter works on all db",
     async ({ createEntity }) => {
@@ -744,10 +753,15 @@ testAll("task with enum string", async ({ createEntity }) => {
     expect(await r.count({ priority: PriorityWithString.Critical })).toBe(1)
     expect(await r.count({ priority: PriorityWithString.Low })).toBe(0)
 });
-testAll("test transaction rollback", async ({ db }) => {
+testAll("test transaction rollback", async ({ db, createEntity }) => {
     let fail = true;
+    const r = await createEntity(stam);
+    await r.insert({ title: "task b", id: 1 })
     try {
-        await db.transaction(async () => {
+        await db.transaction(async (db) => {
+            var remultWithTransaction = new Remult(db).repo(stam)
+            await remultWithTransaction.insert({ title: "task a", id: 2 })
+            expect(await remultWithTransaction.count()).toBe(2);
             throw "error"
         });
         fail = false;
@@ -755,8 +769,9 @@ testAll("test transaction rollback", async ({ db }) => {
     catch {
 
     }
+    expect(await r.count()).toBe(1);
     expect(fail).toBe(true);
-})
+}, false, { exclude: [TestDbs.inMemory] })
 testAll("test date", async ({ createEntity }) => {
     const e = class {
 
@@ -773,7 +788,8 @@ testAll("test date", async ({ createEntity }) => {
     expect(item.d.getFullYear()).toBe(1976);
 
 }, false)
-testAll("test live query storage", async ({ db, remult }) => {
+testAll("test live query storage", async ({ db, remult, createEntity }) => {
+    await createEntity(LiveQueryStorageEntity)
     var x = new DataProviderLiveQueryStorage(db);
     if (db.ensureSchema)
         await x.ensureSchema()
@@ -791,17 +807,97 @@ testAll("test contains with names with casing", async ({ createEntity }) => {
     const e = class {
 
         a = 0;
-        firstName=''
+        firstName = ''
     }
     describeClass(e, Entity("testNameContains", { allowApiCrud: true }), {
         a: Fields.number(),
         firstName: Fields.string()
     })
     const r = await createEntity(e);
-    await r.insert({ a: 1, firstName:"noam" });
-    let item = await r.findFirst({firstName:{$contains:"oa"}});
+    await r.insert({ a: 1, firstName: "noam" });
+    let item = await r.findFirst({ firstName: { $contains: "oa" } });
     expect(item.firstName).toBe("noam");
 
-}, false,{
-    exclude:[TestDbs.mongo]
+}, false, {
+    exclude: [TestDbs.mongo]
 })
+testAll("test live query storage", async (x) => {
+    await x.createEntity(LiveQueryStorageEntity)
+    const s = new DataProviderLiveQueryStorage(x.db);
+    await s.ensureSchema();
+    const entityKey = "ek";
+    const id = 'id'
+    await s.add({ id, entityKey, data: {} });
+    await s.add({ id, entityKey, data: {} });
+    x.remult.clearAllCache();
+    await s.add({ id, entityKey, data: {} });
+    await s.keepAliveAndReturnUnknownQueryIds([id]);
+    await s.remove(id);
+    await s.remove(id);
+}, false, { exclude: [TestDbs.restDataProvider] })
+testAll("test json structure using object", async ({ createEntity }) => {
+    const e = class {
+        a = 0;
+        person: {
+            firstName: string,
+            lastName: string
+        }
+    }
+    describeClass(e, Entity("testJsonStructure", { allowApiCrud: true }), {
+        a: Fields.number(),
+        person: Fields.object()
+    })
+    const r = await createEntity(e);
+    await r.insert({ a: 1, person: { firstName: "noam", lastName: "honig" } });
+    let item = await r.findFirst();
+    expect(item.person).toEqual({ firstName: "noam", lastName: "honig" });
+}, false)
+@Entity("testObject", { allowApiCrud: true })
+class testObject {
+    @Fields.integer()
+    id = 0;
+    @Fields.object()
+    person = { firstName: "noam", lastName: "honig" }
+}
+testAll("test object entity", async ({ createEntity }) => {
+
+    const r = await createEntity(testObject);
+    await r.insert({ id: 1, person: { firstName: "noam", lastName: "honig" } });
+    let item = await r.findFirst();
+    expect(item.person).toEqual({ firstName: "noam", lastName: "honig" });
+}, false)
+@Entity("testObjectJson", { allowApiCrud: true })
+class testObjectJson {
+    @Fields.integer()
+    id = 0;
+    @Fields.json()
+    person = { firstName: "noam", lastName: "honig" }
+}
+testAll("test object entity", async ({ createEntity }) => {
+
+    const r = await createEntity(testObjectJson);
+    await r.insert({ id: 1, person: { firstName: "noam", lastName: "honig" } });
+    let item = await r.findFirst();
+    expect(item.person).toEqual({ firstName: "noam", lastName: "honig" });
+}, false)
+testAll("test json structure", async ({ createEntity }) => {
+    const e = class {
+
+        a = 0;
+        person: {
+            firstName: string,
+            lastName: string
+
+        }
+    }
+    describeClass(e, Entity("testJsonFieldType", { allowApiCrud: true }), {
+        a: Fields.number(),
+        person: Fields.json()
+    })
+    const r = await createEntity(e);
+    await r.insert({ a: 1, person: { firstName: "noam", lastName: "honig" } });
+    let item = await r.findFirst();
+    expect(item.person).toEqual({ firstName: "noam", lastName: "honig" });
+}, false)
+
+

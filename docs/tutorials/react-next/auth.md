@@ -80,7 +80,7 @@ Let's set-up `NextAuth.js` to authenticate users to our app.
    ```ts
    // src/pages/api/auth/[...nextauth].ts
 
-   import NextAuth from "next-auth/next"
+   import NextAuth from "next-auth"
    import Credentials from "next-auth/providers/credentials"
    import { UserInfo } from "remult"
 
@@ -88,6 +88,9 @@ Let's set-up `NextAuth.js` to authenticate users to our app.
      { id: "1", name: "Jane" },
      { id: "2", name: "Steve" }
    ]
+   export function findUserById(id: string | undefined) {
+     return validUsers.find(user => user.id === id)
+   }
 
    export default NextAuth({
      providers: [
@@ -100,43 +103,53 @@ Let's set-up `NextAuth.js` to authenticate users to our app.
          authorize: info =>
            validUsers.find(user => user.name === info?.name) || null
        })
-     ]
+     ],
+     callbacks: {
+       session: ({ session, token }) => ({
+         ...session,
+         user: findUserById(token?.sub)
+       })
+     }
    })
    ```
 
-   This (very) simplistic NextAuth.js [Credentials](https://next-auth.js.org/providers/credentials) authorizes users by looking up the user's name in a predefined list of valid users.
+This (very) simplistic NextAuth.js [Credentials](https://next-auth.js.org/providers/credentials) authorizes users by looking up the user's name in a predefined list of valid users.
+
+We've configured the `session` `callback` to include the user info as part of the session info, so that remult on the frontend will have the authorization info.
 
 ### Frontend setup
 
 Add the highlighted code to the `_app.tsx` Next.js page:
 
 ```tsx{5,9,11}
-// src/pages/\app.tsx
+// src/pages/_app.tsx
 
 import "@/styles/globals.css";
 import type { AppProps } from "next/app";
 import { SessionProvider } from "next-auth/react";
 
 export default function App({ Component, pageProps }: AppProps) {
-  return (
-    <SessionProvider session={pageProps.session}>
-      <Component {...pageProps} />
-    </SessionProvider>
-  );
+return (
+ <SessionProvider session={pageProps.session}>
+   <Component {...pageProps} />
+ </SessionProvider>
+);
 }
 
 ```
 
-Replace the `useEffect` with the highlighted code to the `Home` Next.js page:
+Adjust the `useEffect` with the highlighted code to the `Home` Next.js page:
 
-```tsx{3,5,8-9,17-18,23-26}
+```tsx{3-4,6,9-11,19-20,25-28}
 // src/pages/index.tsx
 
+import { remult, UserInfo } from "remult"
 import { signIn, signOut, useSession } from "next-auth/react"
 //...
 const session = useSession()
 
 useEffect(() => {
+  remult.user = session.data?.user as UserInfo
   if (session.status === "unauthenticated") signIn()
   else if (session.status === "authenticated")
     return taskRepo
@@ -153,7 +166,7 @@ return (
     <h1>Todos</h1>
     <main>
       <div>
-        Hello {session.data?.user?.name}
+        Hello {remult.user?.name}
         <button onClick={() => signOut()}>Sign Out</button>
       </div>
       ...
@@ -166,22 +179,10 @@ return (
 
 Once an authentication flow is established, integrating it with Remult in the backend is as simple as providing Remult with a `getUser` function that extracts a `UserInfo` object from a `Request`.
 
-1. Add the following `findUserById` function to `[...nextauth].ts`.
-
-```ts
-// src/pages/api/auth/[...nextauth].ts
-
-export function findUserById(id?: string) {
-  return validUsers.find(user => user.id === id)
-}
-```
-
-- Note that we've made the `id` parameter optional to support cases where the id is undefined, in such cases it'll return an undefined user
-
-2. Set the `getUser` property of the options object of `remultNext` to a function that gets the token from next auth and users `findUserById` to get the actual user:
+Set the `getUser` property of the options object of `remultNext` to a function that gets the token from next auth and users `findUserById` to get the actual user:
 
 ```ts{3-4,7}
-   // src/pages/api/[...remult].ts
+// src/pages/api/[...remult].ts
 
 import { findUserById } from "./auth/[...nextauth]"
 import { getToken } from "next-auth/jwt"
@@ -207,7 +208,7 @@ Usually, not all application users have the same privileges. Let's define an `ad
 ```ts{7-8,18}
 // src/shared/Task.ts
 
-import { Allow, Entity, Fields, Validators } from "remult"
+import { Allow, Entity, Fields } from "remult"
 
 @Entity<Task>("tasks", {
   allowApiCrud: Allow.authenticated,
@@ -238,7 +239,7 @@ export class Task {
 
 const validUsers = [
   { id: "1", name: "Jane", roles: ["admin"] },
-  { id: "2", name: "Steve", roles: [] }
+  { id: "2", name: "Steve" }
 ]
 ```
 
@@ -246,60 +247,17 @@ const validUsers = [
 
 ## Role-based Authorization on the Frontend
 
-From a user experience perspective in only makes sense that uses that can't add or delete, would not see these buttons.
+From a user experience perspective it only makes sense that users that can't add or delete, would not see these buttons.
 
 Let's reuse the same definitions on the Frontend.
 
-### Connect Remult-Next On the Frontend
-
-First we need to configure `next-auth` to include the user info in the `session` info provided to the frontend
-
-Apply these changes to the code of `[...nextauth].ts` file
-
-```ts{4-9}
-// pages/api/auth/[...nextauth].ts
-
-export default NextAuth({
-  callbacks: {
-    session: ({ session, token }) => ({
-      ...session,
-      user: findUserById(token?.sub)
-    })
-  }
-  //...
-})
-```
-
-Next let's set remult's user based on the `session` info
-
-```ts{2}
-useEffect(() => {
-  remult.user = session.data?.user as UserInfo
-  if (session.status === "unauthenticated") signIn()
-  else if (session.status === "authenticated")
-    return taskRepo
-      .liveQuery({
-        limit: 20,
-        orderBy: { completed: "asc" }
-        //where: { completed: true },
-      })
-      .subscribe(info => setTasks(info.applyChanges))
-}, [session])
-```
-
-::: warning Import UserInfo
-This code requires adding an import of `UserInfo` from `remult`.
-:::
-
-## Show functionality based on the entity's metadata
-
-Now let's use the entity's metadata to only show the form if the user is allowed to insert
+We'll use the entity's metadata to only show the form if the user is allowed to insert
 
 ```tsx{4,13}
 // src/pages/index.tsx
 
 <main>
-  {taskRepo.metadata.apiInsertAllowed && (
+  {taskRepo.metadata.apiInsertAllowed() && (
     <form onSubmit={addTask}>
       <input
         value={newTaskTitle}
@@ -327,7 +285,7 @@ return (
     />
     <input value={task.title} onChange={e => setTitle(e.target.value)} />
     <button onClick={saveTask}>Save</button>
-    {taskRepo.metadata.apiDeleteAllowed && (
+    {taskRepo.metadata.apiDeleteAllowed(task) && (
       <button onClick={deleteTask}>Delete</button>
     )}
   </div>
@@ -335,3 +293,5 @@ return (
 ```
 
 This way we can keep the frontend consistent with the `api`'s Authorization rules
+
+- Note We send the `task` to the `apiDeleteAllowed` method, because the `apiDeleteAllowed` option, can be sophisticated and can also be based on the specific item's values.

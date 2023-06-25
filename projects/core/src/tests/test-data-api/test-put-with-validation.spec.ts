@@ -97,6 +97,8 @@ describe("data api", () => {
         let remult = new Remult();
         remult.dataProvider = (new InMemoryDataProvider());
         let c = remult.repo(type);
+        expect (c.fields.val.apiUpdateAllowed({val:'yael'})).toBe(false)
+        expect (c.fields.val.apiUpdateAllowed({val:'yae'})).toBe(true)
 
         var api = new DataApi(c, remult);
         let t = new TestDataApiResponse();

@@ -1,6 +1,6 @@
 <div align="center">
   <a href="http://remult.dev/">
-    <img src="https://github.com/remult/remult/raw/master/docs/.vuepress/public/logo.png" width="140" height="140">
+    <img src="https://github.com/remult/remult/raw/master/docs/public/logo.png" width="140" height="140">
   </a>
   <h1>Remult</h1>
   <p>A CRUD framework for full-stack TypeScript</p>
@@ -26,7 +26,6 @@
     <img alt="Twitter URL" src="https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Ftwitter.com%2Fintent%2Ftweet%3Ftext%3DRemult%2520-%2520open-source%2520CRUD%2520framework%2520for%2520full-stack%2520TypeScript%250A%250A%2540remultjs%250A%26url%3Dhttps%253A%252F%252Fgithub.com%252Fremult%252Fremult">
   </a>
 </div>
-
 
 <br/>
 
@@ -55,13 +54,13 @@
 as a single source of truth for your API, frontend type-safe API client and
 backend ORM**.
 
-* :zap: Zero-boilerplate CRUD API routes with paging, sorting, and filtering for Express / Fastify / Next.js / NestJS / Koa / others...
-* :ok_hand: Fullstack type-safety for API queries, mutations and RPC, without code generation
-* :sparkles: Input validation, defined once, runs both on the backend and on the frontend for best UX
-* :lock: Fine-grained code-based API authorization
-* :relieved: Incrementally adoptable
-* :rocket: Production ready
-* :mega: **NEW - Zero-boilerplate realtime live-queries**
+- :zap: Zero-boilerplate CRUD API routes with paging, sorting, and filtering for Express / Fastify / Next.js / NestJS / Koa / others...
+- :ok_hand: Fullstack type-safety for API queries, mutations and RPC, without code generation
+- :sparkles: Input validation, defined once, runs both on the backend and on the frontend for best UX
+- :lock: Fine-grained code-based API authorization
+- :relieved: Incrementally adoptable
+- :rocket: Production ready
+- :mega: **NEW - Zero-boilerplate realtime live-queries**
 
 ### Status
 
@@ -104,17 +103,17 @@ npm i remult
 ```ts
 // shared/product.ts
 
-import { Entity, Fields } from "remult";
+import { Entity, Fields } from "remult"
 
 @Entity("products", {
-  allowApiCrud: true,
+  allowApiCrud: true
 })
 export class Product {
   @Fields.string()
-  name = "";
+  name = ""
 
   @Fields.number()
-  unitPrice = 0;
+  unitPrice = 0
 }
 ```
 
@@ -123,20 +122,22 @@ export class Product {
 ```ts
 // backend/index.ts
 
-import express from "express";
-import { remultExpress } from "remult/remult-express";
-import { Product } from "../shared/product";
+import express from "express"
+import { remultExpress } from "remult/remult-express"
+import { Product } from "../shared/product"
 
-const port = 3001;
-const app = express();
+const port = 3001
+const app = express()
 
-app.use(remultExpress({
-  entities: [Product],
-}));
+app.use(
+  remultExpress({
+    entities: [Product]
+  })
+)
 
 app.listen(port, () => {
-  console.log(`Example API listening at http://localhost:${port}`);
-});
+  console.log(`Example API listening at http://localhost:${port}`)
+})
 ```
 
 ### :rocket: API Ready
@@ -152,15 +153,15 @@ app.listen(port, () => {
 ```ts
 // frontend/code.ts
 
-import { remult } from "remult";
-import { Product } from "../shared/product";
+import { remult } from "remult"
+import { Product } from "../shared/product"
 
 async function increasePriceOfTofu(priceIncrease: number) {
-  const productsRepo = remult.repo(Product);
+  const productsRepo = remult.repo(Product)
 
-  const product = await productsRepo.findFirst({ name: "Tofu" }); // filter is passed through API request all the way to the db
-  product.unitPrice += priceIncrease;
-  productsRepo.save(product); // mutation request updates the db with no boilerplate code
+  const product = await productsRepo.findFirst({ name: "Tofu" }) // filter is passed through API request all the way to the db
+  product.unitPrice += priceIncrease
+  productsRepo.save(product) // mutation request updates the db with no boilerplate code
 }
 ```
 
@@ -180,46 +181,46 @@ static async increasePriceOfTofu(priceIncrease: number) {
 ### :ballot_box_with_check: Data validation and constraints - defined once
 
 ```ts
-import { Entity, Fields, Validators } from "remult";
+import { Entity, Fields, Validators } from "remult"
 
 @Entity("products", {
-  allowApiCrud: true,
+  allowApiCrud: true
 })
 export class Product {
   @Fields.string({
-    validate: Validators.required,
+    validate: Validators.required
   })
-  name = "";
+  name = ""
 
   @Fields.string<Product>({
     validate: (product) => {
       if (product.description.trim().length < 50) {
-        throw "too short";
+        throw "too short"
       }
-    },
+    }
   })
-  description = "";
+  description = ""
 
   @Fields.number({
     validate: (_, field) => {
       if (field.value < 0) {
-        field.error = "must not be less than 0"; // or: throw "must not be less than 0";
+        field.error = "must not be less than 0" // or: throw "must not be less than 0";
       }
-    },
+    }
   })
-  unitPrice = 0;
+  unitPrice = 0
 }
 ```
 
 ### Enforced in frontend:
 
 ```ts
-const product = productsRepo.create();
+const product = productsRepo.create()
 
 try {
-  await productsRepo.save(product);
+  await productsRepo.save(product)
 } catch (e: any) {
-  console.error(e.message); // Browser console will display - "Name: required"
+  console.error(e.message) // Browser console will display - "Name: required"
 }
 ```
 
@@ -236,18 +237,18 @@ try {
 ```ts
 @Entity<Article>("Articles", {
   allowApiRead: true,
-  allowApiInsert: (remult) => remult.authenticated(),
-  allowApiUpdate: (remult, article) => article.author.id == remult.user.id,
+  allowApiInsert: (_, remult) => remult.authenticated(),
+  allowApiUpdate: (article, remult) => article.author.id == remult.user.id
 })
 export class Article {
   @Fields.string({ allowApiUpdate: false })
-  slug = "";
+  slug = ""
 
   @Field(() => Profile, { allowApiUpdate: false })
-  author!: Profile;
+  author!: Profile
 
   @Fields.string()
-  content = "";
+  content = ""
 }
 ```
 

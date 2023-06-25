@@ -91,14 +91,14 @@ npm i --save-dev @types/cookie-session
    import express, { Router } from "express"
    import type { UserInfo } from "remult"
 
-   export const auth = Router()
-
-   auth.use(express.json())
-
    const validUsers: UserInfo[] = [
      { id: "1", name: "Jane" },
      { id: "2", name: "Steve" }
    ]
+
+   export const auth = Router()
+
+   auth.use(express.json())
 
    auth.post("/api/signIn", (req, res) => {
      const user = validUsers.find(user => user.name === req.body.username)
@@ -152,11 +152,12 @@ npm i --save-dev @types/cookie-session
    // src/Auth.tsx
 
    import { FormEvent, useEffect, useState } from "react"
-   import { UserInfo } from "remult"
+   import { remult } from "remult"
+   import App from "./App"
 
-   const Auth: React.FC<{ children: JSX.Element }> = ({ children }) => {
-     const [signInUsername, setSignInUsername] = useState("")
-     const [currentUser, setCurrentUser] = useState<UserInfo>()
+   export default function Auth() {
+     const [username, setUsername] = useState("")
+     const [signedIn, setSignedIn] = useState(false)
 
      const signIn = async (e: FormEvent) => {
        e.preventDefault()
@@ -165,36 +166,40 @@ npm i --save-dev @types/cookie-session
          headers: {
            "Content-Type": "application/json"
          },
-         body: JSON.stringify({ username: signInUsername })
+         body: JSON.stringify({ username })
        })
        if (result.ok) {
-         setCurrentUser(await result.json())
-         setSignInUsername("")
-       } else alert(await result.json())
+         remult.user = await result.json()
+         setSignedIn(true)
+         setUsername("")
+       } else {
+         alert(await result.json())
+       }
      }
+
      const signOut = async () => {
        await fetch("/api/signOut", {
          method: "POST"
        })
-       setCurrentUser(undefined)
+       remult.user = undefined
+       setSignedIn(false)
      }
      useEffect(() => {
-       fetch("/api/currentUser")
-         .then(r => r.json())
-         .then(currentUserFromServer => {
-           setCurrentUser(currentUserFromServer)
-         })
+       fetch("/api/currentUser").then(async r => {
+         remult.user = await r.json()
+         if (remult.user) setSignedIn(true)
+       })
      }, [])
 
-     if (!currentUser)
+     if (!signedIn)
        return (
          <>
-           <h1>todos</h1>
+           <h1>Todos</h1>
            <main>
              <form onSubmit={signIn}>
                <input
-                 value={signInUsername}
-                 onChange={e => setSignInUsername(e.target.value)}
+                 value={username}
+                 onChange={e => setUsername(e.target.value)}
                  placeholder="Username, try Steve or Jane"
                />
                <button>Sign in</button>
@@ -205,31 +210,27 @@ npm i --save-dev @types/cookie-session
      return (
        <>
          <header>
-           Hello {currentUser.name} <button onClick={signOut}>Sign Out</button>
+           Hello {remult.user!.name} <button onClick={signOut}>Sign Out</button>
          </header>
-         {children}
+         <App />
        </>
      )
    }
-   export default Auth
    ```
 
-2. In the `main.tsx` file, wrap the `App` component with the `Auth` component.
+2. In the `main.tsx` file, Replace the `App` component with the `Auth` component.
 
-   ```ts{6,11-13}
+   ```ts{5,10}
    // src/main.tsx
 
    import React from "react"
    import ReactDOM from "react-dom/client"
-   import App from "./App"
    import Auth from "./Auth"
    import "./index.css"
 
    ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
      <React.StrictMode>
-       <Auth>
-         <App />
-       </Auth>
+       <Auth />
      </React.StrictMode>
    )
    ```
@@ -303,39 +304,17 @@ const validUsers = [
 
 ## Role-based Authorization on the Frontend
 
-From a user experience perspective in only makes sense that uses that can't add or delete, would not see these buttons.
+From a user experience perspective it only makes sense that users that can't add or delete, would not see these buttons.
 
 Let's reuse the same definitions on the Frontend.
 
-### Connect Remult On the Frontend
-
-In the `Auth` component, we'll set `remult.user` based on the current user
-
-```ts{5-8}
-// src/Auth.tsx
-
-const Auth: React.FC<{ children: JSX.Element }> = ({ children }) => {
-  //...
-  useEffect(() => {
-    remult.user = currentUser
-  }, [currentUser])
-  //...
-}
-```
-
-::: warning Import remult
-This code requires adding an import of `remult` from `remult`.
-:::
-
-### Show functionality based on the entity's metadata
-
-Now let's use the entity's metadata to only show the form if the user is allowed to insert
+We'll use the entity's metadata to only show the form if the user is allowed to insert
 
 ```tsx{4,13}
 // src/App.tsx
 
 <main>
-  {taskRepo.metadata.apiInsertAllowed && (
+  {taskRepo.metadata.apiInsertAllowed() && (
     <form onSubmit={addTask}>
       <input
         value={newTaskTitle}
@@ -363,7 +342,7 @@ return (
     />
     <input value={task.title} onChange={e => setTitle(e.target.value)} />
     <button onClick={saveTask}>Save</button>
-    {taskRepo.metadata.apiDeleteAllowed && (
+    {taskRepo.metadata.apiDeleteAllowed(task) && (
       <button onClick={deleteTask}>Delete</button>
     )}
   </div>
@@ -371,3 +350,5 @@ return (
 ```
 
 This way we can keep the frontend consistent with the `api`'s Authorization rules
+
+- Note We send the `task` to the `apiDeleteAllowed` method, because the `apiDeleteAllowed` option, can be sophisticated and can also be based on the specific item's values.

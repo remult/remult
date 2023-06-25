@@ -1,22 +1,21 @@
 import { AndFilter, customUrlToken, buildFilterFromRequestParameters } from './filter/filter-interfaces';
 import { doTransaction, Remult, UserInfo } from './context';
 import { Filter } from './filter/filter-interfaces';
-import { FindOptions, Repository, EntityRef, rowHelperImplementation, EntityFilter } from './remult3';
-import { ErrorInfo } from './data-interfaces';
+import type { FindOptions, Repository, EntityRef, rowHelperImplementation, EntityFilter } from './remult3';
+import type { ErrorInfo } from './data-interfaces';
 import { ForbiddenError } from './server-action';
-import { getId } from './remult3/getId';
 import { findOptionsToJson, liveQueryAction } from './data-providers/rest-data-provider';
-import { QueryData } from './live-query/SubscriptionServer';
+import type  { QueryData } from './live-query/SubscriptionServer';
 
 
 export class DataApi<T = any> {
 
   constructor(private repository: Repository<T>, private remult: Remult) {
   }
-  httpGet(res: DataApiResponse, req: DataApiRequest, serializeRequest: () => any) {
+  httpGet(res: DataApiResponse, req: DataApiRequest, serializeContext: () => Promise<any>) {
     const action = req?.get("__action");
     if (action?.startsWith(liveQueryAction))
-      return this.liveQuery(res, req, undefined, serializeRequest, getLiveQueryChannel(action.substring(liveQueryAction.length), this.remult.user?.id));
+      return this.liveQuery(res, req, undefined, serializeContext, getLiveQueryChannel(action.substring(liveQueryAction.length), this.remult.user?.id));
     switch (action) {
       case "get":
       case "count":
@@ -25,10 +24,10 @@ export class DataApi<T = any> {
     return this.getArray(res, req, undefined);
 
   }
-  async httpPost(res: DataApiResponse, req: DataApiRequest, body: any, serializeRequest: () => any) {
+  async httpPost(res: DataApiResponse, req: DataApiRequest, body: any, serializeContext: () => Promise<any>) {
     const action = req?.get("__action");
     if (action?.startsWith(liveQueryAction))
-      return this.liveQuery(res, req, undefined, serializeRequest, getLiveQueryChannel(action.substring(liveQueryAction.length), this.remult.user?.id));
+      return this.liveQuery(res, req, undefined, serializeContext, getLiveQueryChannel(action.substring(liveQueryAction.length), this.remult.user?.id));
     switch (action) {
       case "get":
         return this.getArray(res, req, body);
@@ -140,7 +139,7 @@ export class DataApi<T = any> {
         response.error(err);
     }
   }
-  async liveQuery(response: DataApiResponse, request: DataApiRequest, filterBody: any, serializeRequest: () => any, queryChannel: string) {
+  async liveQuery(response: DataApiResponse, request: DataApiRequest, filterBody: any, serializeContext: () => Promise<any>, queryChannel: string) {
     if (!this.repository.metadata.apiReadAllowed) {
       response.forbidden();
       return;
@@ -148,9 +147,9 @@ export class DataApi<T = any> {
     try {
       const r = await this.getArrayImpl(response, request, filterBody)
       const data: QueryData = {
-        requestJson: serializeRequest(),
+        requestJson: await serializeContext(),
         findOptionsJson: findOptionsToJson(r.findOptions, this.repository.metadata),
-        lastIds: r.r.map(y => getId(this.repository.metadata, y))
+        lastIds: r.r.map(y => this.repository.metadata.idMetadata.getId(y))
       }
       await this.remult.liveQueryStorage.add(
         {
@@ -196,10 +195,16 @@ export class DataApi<T = any> {
   private async doOnId(response: DataApiResponse, id: any, what: (row: T) => Promise<void>) {
     try {
 
-
+      var where: EntityFilter<any>[] = [this.repository.metadata.idMetadata.getIdFilter(id)];
+      if (this.repository.metadata.options.apiPrefilter) {
+        if (typeof this.repository.metadata.options.apiPrefilter === "function")
+          where.push(await this.repository.metadata.options.apiPrefilter());
+        else
+          where.push(this.repository.metadata.options.apiPrefilter);
+      }
 
       await this.repository.find({
-        where: { $and: [this.repository.metadata.options.apiPrefilter, this.repository.metadata.idMetadata.getIdFilter(id)] } as EntityFilter<any>
+        where: { $and: where } as EntityFilter<any>
       })
         .then(async r => {
           if (r.length == 0)

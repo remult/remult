@@ -1,8 +1,6 @@
-import { EntityOrderBy, FindOptions, remult as defaultRemult, Remult, Repository, Sort } from '../../index';
+import { FindOptions, remult as defaultRemult, Remult, Sort } from '../../index';
 import type { LiveQueryChangeInfo, RepositoryImplementation } from '../remult3';
-import { getId } from '../remult3/getId';
 import { v4 as uuid } from 'uuid'
-import { LiveQueryChangesListener } from './SubscriptionServer';
 import { getLiveQueryChannel } from '../data-api';
 
 export const streamUrl = 'stream';
@@ -79,15 +77,15 @@ export class LiveQuerySubscriber<entityType> {
                             this.setAllItems(message.data);
                             break;
                         case "replace": {
-                            items = items.map(x => getId(this.repo.metadata, x) === message.data.oldId ? message.data.item : x)
+                            items = items.map(x => this.repo.metadata.idMetadata.getId(x) === message.data.oldId ? message.data.item : x)
                             break;
                         }
                         case "add":
-                            items = items.filter(x => getId(this.repo.metadata, x) !== getId(this.repo.metadata, message.data.item));
+                            items = items.filter(x => this.repo.metadata.idMetadata.getId(x) !== this.repo.metadata.idMetadata.getId(message.data.item));
                             items.push(message.data.item);
                             break;
                         case "remove":
-                            items = items.filter(x => getId(this.repo.metadata, x) !== message.data.id);
+                            items = items.filter(x => this.repo.metadata.idMetadata.getId(x) !== message.data.id);
                             break;
                     };
                 }

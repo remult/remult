@@ -1,5 +1,5 @@
 ---
-sidebarDepth: 2
+outline: [2,3]
 ---
 
 # Add Remult to your App
@@ -17,19 +17,9 @@ If you're using one `package.json` for both frontend and backend (or a meta-fram
 
 If you're using multiple `package.json` files (monorepo) - **install Remult in both server and client folders**.
 
-<code-group>
-<code-block title="npm">
 ```sh
 npm install remult
 ```
-</code-block>
-
-<code-block title="yarn">
-```sh
-yarn add remult
-```
-</code-block>
-</code-group>
 
 ## Server-side Initialization
 
@@ -77,7 +67,7 @@ import { remultFastify } from "remult/remult-fastify"
 })()
 ```
 
-### Next.js
+### Next.js Pages Router
 
 ```ts
 // src/pages/api/[...remult].ts
@@ -85,6 +75,36 @@ import { remultFastify } from "remult/remult-fastify"
 import { remultNext } from "remult/remult-next"
 
 export default remultNext({
+  entities: [
+    /* entity types */
+  ]
+})
+```
+
+### Next.js App Router
+```ts
+// src/app/api/[...remult]/route.ts
+
+import { remultNextApp } from "remult/remult-next";
+
+export const api = remultNextApp({
+  entities: [
+    /* entity types */
+  ],
+});
+
+export const { GET, POST, PUT, DELETE } = api;
+
+```
+
+### Sveltekit
+
+```ts
+// src/hooks.server.ts
+
+import { remultSveltekit } from 'remult/remult-sveltekit';
+
+export const handle = remultSveltekit({
   entities: [
     /* entity types */
   ]

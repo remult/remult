@@ -28,9 +28,9 @@ There aren't enough tasks in the database for this change to have an immediate e
 To query subsequent pages, use the [Repository.find()](../../docs/ref_repository.md#find) method's `page` option.
 :::
 
-## Show Active Tasks on Top
+## Sorting By Creation Date
 
-Uncompleted tasks are important and should appear above completed tasks in the todo app.
+We would like old tasks to appear first in the list, and new tasks to appear last. Let's sort the tasks by their `createdAt` field.
 
 In the `onMounted` hook, set the `orderBy` property of the `find` method call's `option` argument to an object that contains the fields you want to sort by.
 Use "asc" and "desc" to determine the sort order.
@@ -42,15 +42,11 @@ onMounted(() =>
   taskRepo
     .find({
       limit: 20,
-      orderBy: { completed: "asc" }
+      orderBy: { createdAt: "asc" }
     })
     .then(items => (tasks.value = items))
 )
 ```
-
-::: warning Note
-By default, `false` is a "lower" value than `true`, and that's why uncompleted tasks are now showing at the top of the task list.
-:::
 
 ## Server side Filtering
 
@@ -65,7 +61,7 @@ onMounted(() =>
   taskRepo
     .find({
       limit: 20,
-      orderBy: { completed: "asc" },
+      orderBy: { createdAt: "asc" },
       where: { completed: true }
     })
     .then(items => (tasks.value = items))
@@ -83,7 +79,7 @@ onMounted(() =>
   taskRepo
     .find({
       limit: 20,
-      orderBy: { completed: "asc" }
+      orderBy: { createdAt: "asc" }
       //where: { completed: true }
     })
     .then(items => (tasks.value = items))

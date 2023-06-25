@@ -6,6 +6,9 @@ import { config } from 'dotenv';
 import { createPostgresConnection, PostgresDataProvider, PostgresSchemaBuilder } from "../../postgres";
 import { ClassType } from "../../classType";
 import { addDatabaseToTest, dbTestWhatSignature, itWithFocus, testAll, TestDbs } from "../shared-tests/db-tests-setup";
+import { describeClass } from "../remult3/DecoratorReplacer";
+import { Entity, Fields } from "../remult3";
+
 KnexSchemaBuilder.logToConsole = false;
 PostgresSchemaBuilder.logToConsole = false;
 config();
@@ -109,7 +112,10 @@ testAll("transactions", async ({ db, createEntity }) => {
 });
 
 
-let client = new MongoClient("mongodb://localhost:27017/local");
+
+const mongoConnectionString = process.env['MONGO_TEST_URL'];//"mongodb://localhost:27017/local"
+
+let client = new MongoClient(mongoConnectionString);
 let done: MongoClient;
 let mongoDbPromise = client.connect().then(c => {
     done = c;
@@ -140,7 +146,40 @@ export function testMongo(key: string, what: dbTestWhatSignature, focus = false)
         });
     }, focus);
 }
-addDatabaseToTest(testMongo,TestDbs.mongo);
+addDatabaseToTest(testMongo, TestDbs.mongo);
 
 
-import '../shared-tests'
+
+it("test mongo without transaction", async () => {
+    const client = new MongoClient("mongodb://localhost:27017/local")
+    await client.connect();
+    const mongoDb = client.db('test');
+    const db = new MongoDataProvider(mongoDb, client, { disableTransactions: true });
+    var remult = new Remult(db);
+    const entity = class {
+        id = 0
+        title = ''
+    }
+    describeClass(entity, Entity("testNoTrans"), { id: Fields.number(), title: Fields.string() })
+    const repo = remult.repo(entity);
+    for (const item of await repo.find()) {
+        await repo.delete(item);
+    }
+    await repo.insert({ id: 1, title: "a" });
+    try {
+        await db.transaction(async () => {
+            await repo.insert({ id: 2, title: "b" });
+            throw new Error();
+        })
+    } catch { }
+    expect(await repo.count()).toBe(2);
+})
+
+
+
+
+
+
+import '../shared-tests';
+
+

@@ -38,15 +38,19 @@ export class RestDataProvider implements DataProvider {
 }
 //@internal
 export function findOptionsToJson(options: FindOptions<any>, meta: EntityMetadata) {
-  return {
+
+  const r: any = {
     ...options,
     where: Filter.entityFilterToJson(meta, options.where),
 
   };
+  if (options.load)
+    r.load = options.load(meta.fields).map(y=>y.key);
+  return r;
 }
 //@internal
 export function findOptionsFromJson(json: any, meta: EntityMetadata): FindOptions<any> {
-  let r = {};
+  let r: any = {};
   for (const key of ["limit", "page", "where", "orderBy"]) {
     if (json[key] !== undefined) {
       if (key === "where") {
@@ -55,6 +59,9 @@ export function findOptionsFromJson(json: any, meta: EntityMetadata): FindOption
       else
         r[key] = json[key]
     }
+  }
+  if (json.load) {
+    r.load = (z) => json.load.map(y => z.find(y))
   }
   return r;
 }
@@ -211,8 +218,10 @@ export class RestDataProviderHttpProviderUsingFetch implements RestDataProviderH
   }): Promise<any> {
 
     const headers = {
-      "Content-type": "application/json"
+
     }
+    if (options?.body)
+      headers["Content-type"] = "application/json";
     if (typeof window !== 'undefined' && typeof window.document !== 'undefined' && typeof (window.document.cookie !== 'undefined'))
       for (const cookie of window.document.cookie.split(';')) {
         if (cookie.trim().startsWith('XSRF-TOKEN=')) {

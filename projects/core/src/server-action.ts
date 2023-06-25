@@ -129,6 +129,11 @@ export class myServerAction extends Action<inArgs, result>
 export interface BackendMethodOptions<type> {
     /**Determines when this `BackendMethod` can execute, see: [Allowed](https://remult.dev/docs/allowed.html)  */
     allowed: AllowedForInstance<type>;
+    /** Used to determine the route for the BackendMethod.
+     * @example
+     * {allowed:true, apiPrefix:'someFolder/'}
+     */
+    apiPrefix?: string;
     /** EXPERIMENTAL: Determines if this method should be queued for later execution */
     queue?: boolean;
     /** EXPERIMENTAL: Determines if the user should be blocked while this `BackendMethod` is running*/
@@ -139,8 +144,8 @@ export interface BackendMethodOptions<type> {
 
 export const actionInfo = {
     allActions: [] as any[],
-    runningOnServer: false,
-    runActionWithoutBlockingUI:<T> (what: () => Promise<T>): Promise<T> => { return what() },
+    runningOnServer: false,// [ ] - replace with check of current remult if it data source is rest api.
+    runActionWithoutBlockingUI: <T>(what: () => Promise<T>): Promise<T> => { return what() },
     startBusyWithProgress: () => ({
         progress: (percent: number) => { },
         close: () => { }
@@ -201,7 +206,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
             var types: any[] = getBackendMethodTypes<type>(target, key, options);
             // if types are undefined - you've forgot to set: "emitDecoratorMetadata":true
 
-            let serverAction = new myServerAction(key, types, options, async args => prepareArgsToSend([options.returnType], [await originalMethod.apply(undefined, args)])[0]);
+            let serverAction = new myServerAction((options?.apiPrefix ? (options.apiPrefix + '/') : '') + key, types, options, async args => prepareArgsToSend([options.returnType], [await originalMethod.apply(undefined, args)])[0]);
             serverAction.doWork = async (args, self, url, http) => {
                 args = prepareArgsToSend(types, args);
                 let result: any;
@@ -252,7 +257,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                     }
 
 
-                    reg(controllerOptions.key + '/' + key, options ? options.queue : false, options.allowed, async (d: serverMethodInArgs, req, res) => {
+                    reg(controllerOptions.key + '/' + (options?.apiPrefix ? (options.apiPrefix + '/') : '') + key, options ? options.queue : false, options.allowed, async (d: serverMethodInArgs, req, res) => {
 
                         d.args = d.args.map(x => isCustomUndefined(x) ? undefined : x);
                         let allowed = options.allowed;
@@ -333,7 +338,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
 
                         let r = await (new class extends Action<serverMethodInArgs, serverMethodOutArgs>{
                             protected execute: (info: serverMethodInArgs, req: Remult, res: DataApiResponse) => Promise<serverMethodOutArgs>;
-                        }(classOptions.key + "/" + key, options ? options.queue : false, options.allowed).run({
+                        }(classOptions.key + "/" + (options?.apiPrefix ? (options.apiPrefix + '/') : '') + key, options ? options.queue : false, options.allowed).run({
                             args,
                             rowInfo: await packEntity(defs)
 
@@ -352,7 +357,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                         await defs.__validateEntity();
                         let r = await (new class extends Action<serverMethodInArgs, serverMethodOutArgs>{
                             protected execute: (info: serverMethodInArgs, req: Remult, res: DataApiResponse) => Promise<serverMethodOutArgs>;
-                        }(x.classes.get(self.constructor).key + "/" + key, options ? options.queue : false, options.allowed).run({
+                        }(x.classes.get(self.constructor).key + "/" + (options?.apiPrefix ? (options.apiPrefix + '/') : '') + key, options ? options.queue : false, options.allowed).run({
                             args,
                             fields: await defs.toApiJson()
                         }, baseUrl, http));

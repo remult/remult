@@ -1,9 +1,11 @@
 import { Component, NgZone, OnInit } from '@angular/core';
-import { Remult, Entity, IdEntity, Fields, Controller, InMemoryDataProvider, Sort, BackendMethod, remult } from 'remult';
+import { Remult, Entity, IdEntity, Fields, Controller, InMemoryDataProvider, Sort, BackendMethod, remult, SubscriptionChannel, ProgressListener, Field } from 'remult';
 import { GridSettings } from '@remult/angular/interfaces';
 import { DialogConfig } from '../../../../angular';
 import * as ably from 'ably';
 import { Observable } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+
 
 
 
@@ -19,46 +21,42 @@ import { Observable } from 'rxjs';
 @DialogConfig({
   height: '1500px'
 })
-export class ProductsComponent implements OnInit {
-  constructor(private remult: Remult, private zone: NgZone) {
-    remult.liveQuerySubscriber.wrapMessageHandling = x => zone.run(() => x());
+export class ProductsComponent {
+  constructor(private remult: Remult, private zone: NgZone, private http: HttpClient) {
+
 
   }
 
+  tasks: Task[] = [];
 
-  messages: string[] = [];
   async ngOnInit() {
+    remult.repo(Task).liveQuery({
+      load: () => []
+    }).subscribe(info => this.tasks = info.applyChanges(this.tasks))
+
+  }
+
+  countRemult = {};
 
 
 
-  }
-  tasks: Observable<Task[]> = new Observable((x) => {
-    let tasks: Task[] = [];
-    return this.remult.repo(Task).liveQuery().subscribe(newResult => {
-      tasks = newResult.items;
-      x.next(tasks);
-    })
-  });
-  save(t: Task) {
-    remult.repo(Task).save(t)
-  }
-  setAllCompleted(completed: boolean) {
-    Task.setAllCompleted(completed)
-  }
+}
 
-  @BackendMethod({ allowed: true })
-  static async getAblyToken() {
-    const a = new ably.Realtime.Promise(process.env.ABLY_KEY);
-    return await a.auth.createTokenRequest({
-      capability: {
-        [`*`]: ["subscribe"]
-      }
-    });
-  }
+
+@Entity("categories", {
+  allowApiCrud: true
+})
+export class Category {
+  @Fields.autoIncrement()
+  id = 0;
+  @Fields.string()
+  name = ''
 }
 
 @Entity("tasks", {
-  allowApiCrud: true
+  allowApiCrud: true,
+  allowApiDelete: false
+
 })
 export class Task {
   @Fields.autoIncrement()
@@ -67,18 +65,45 @@ export class Task {
   title = ''
   @Fields.boolean()
   completed = false
-  @BackendMethod({ allowed: true })
-  static async setAllCompleted(completed: boolean) {
-    const taskRepo = remult.repo(Task);
-    for (const task of await taskRepo.find()) {
-      await taskRepo.save({ ...task, completed })
-    }
+  @Field(() => Category)
+  category: Category;
+  @BackendMethod({ allowed: true, apiPrefix: 'noam' })
+  static async entityStatic() {
+    return "ok";
   }
+  @BackendMethod({ allowed: true, apiPrefix: 'noam' })
+  async entityInstance() {
+    return "ok"
+  }
+  @Fields.string({ allowApiUpdate: false })
+  apiUpdateNotAllowed = '';
+  @Fields.string({ includeInApi: false })
+  includeInApiFalse = '';
+  @Fields.string({ serverExpression: () => '' })
+  serverExpression = '';
 }
 
-
-
-
-
-
-
+export class TasksController {
+  @BackendMethod({ allowed: true, apiPrefix: 'noam' })
+  static async undecoratedStatic() {
+    return "ok";
+  }
+  @BackendMethod({ allowed: true })
+  static async testTrans() {
+    const repo = remult.repo(Task);
+    await repo.insert({ title: "before error" });
+    throw new Error("RRRRR")
+    await repo.insert({ title: "After Error" })
+  }
+}
+@Controller("Decorated/myStuff/someMoreStuff")
+export class TasksControllerDecorated {
+  @BackendMethod({ allowed: true, apiPrefix: 'noam' })
+  static async decoratedStatic() {
+    return "ok";
+  }
+  @BackendMethod({ allowed: true, apiPrefix: 'noam' })
+  async decorated() {
+    return "ok";
+  }
+}

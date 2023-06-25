@@ -2,7 +2,6 @@
   "name": "remult",
   "version": "0.15.0",
   "description": "A CRUD framework for full-stack TypeScript",
-  "main": "index.js",
   "types": "index.d.ts",
   "module": "esm/index.js",
   "homepage": "https://remult.dev/",
@@ -77,6 +76,14 @@
         "import": "./remult-fresh.js"
       },
       "import": "./esm/remult-fresh.js"
+    },
+    "./remult-sveltekit": {
+      "require": "./remult-sveltekit.js",
+      "node": {
+        "require": "./remult-sveltekit.js",
+        "import": "./remult-sveltekit.js"
+      },
+      "import": "./esm/remult-sveltekit.js"
     },
     "./postgres": {
       "require": "./postgres/index.js",

@@ -3,7 +3,7 @@
 ## entities
 Entities to use for the api
 ## controllers
-Controller to use for the api
+Controllers to use for the api
 ## getUser
 Will be called to get the current user based on the current request
 

@@ -14,7 +14,9 @@ export class DataProviderLiveQueryStorage implements LiveQueryStorage, Storage {
     )
   }
   async ensureSchema() {
-    await (await this.dataProvider).ensureSchema([(await this.repo).metadata])
+    const dp = await this.dataProvider;
+    if (dp.ensureSchema)
+      await dp.ensureSchema([(await this.repo).metadata])
   }
   async add({ id, entityKey, data }: StoredQuery) {
     await this.repo.then(async repo => {
@@ -23,7 +25,11 @@ export class DataProviderLiveQueryStorage implements LiveQueryStorage, Storage {
     })
   }
   async remove(queryId: string) {
-    await this.repo.then(repo => repo.delete(queryId)).catch(() => { });
+    await this.repo.then(async repo => {
+      const r = await repo.findId(queryId);
+      if (r)
+        await repo.delete(r);
+    }).catch(() => { });
   }
 
   async forEach(entityKey: string, callback: (args: { query: StoredQuery; setData(data: any): Promise<void>; }) => Promise<void>): Promise<void> {
@@ -56,10 +62,12 @@ export class DataProviderLiveQueryStorage implements LiveQueryStorage, Storage {
   }
 }
 
+
 @Entity(undefined!, {
   dbName: 'remult_live_query_storage'
 })
-class LiveQueryStorageEntity extends EntityBase {
+/*@internal */
+export class LiveQueryStorageEntity extends EntityBase {
   @Fields.string()
   id = ''
   @Fields.string()

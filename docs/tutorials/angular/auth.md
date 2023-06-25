@@ -89,16 +89,16 @@ npm i --save-dev @types/cookie-session
    // src/server/auth.ts
 
    import express, { Router } from "express"
-   import { UserInfo } from "remult"
-
-   export const auth = Router()
-
-   auth.use(express.json())
+   import type { UserInfo } from "remult"
 
    const validUsers: UserInfo[] = [
      { id: "1", name: "Jane" },
      { id: "2", name: "Steve" }
    ]
+
+   export const auth = Router()
+
+   auth.use(express.json())
 
    auth.post("/api/signIn", (req, res) => {
      const user = validUsers.find(user => user.name === req.body.username)
@@ -198,9 +198,10 @@ npm i --save-dev @types/cookie-session
    ```
 
 3. Replace the contents of auth.component.html with the following html:
-   <ng-container *ngIf="!remult.authenticated()">
-   // src/app/auth/auth.component.ts
    ```html
+   // src/app/auth/auth.component.ts
+
+   <ng-container *ngIf="!remult.authenticated()">
      <h1>todos</h1>
      <main>
        <form (submit)="signIn()">
@@ -298,7 +299,7 @@ const validUsers = [
 
 ## Role-based Authorization on the Frontend
 
-From a user experience perspective in only makes sense that uses that can't add or delete, would not see these buttons.
+From a user experience perspective it only makes sense that users that can't add or delete, would not see these buttons.
 
 Let's reuse the same definitions on the Frontend.
 
@@ -308,7 +309,7 @@ Modify the contents of auth.component.html to only display the form and delete b
 
 <h1>todos</h1>
 <main>
-  <form *ngIf="taskRepo.metadata.apiInsertAllowed" (submit)="addTask()">
+  <form *ngIf="taskRepo.metadata.apiInsertAllowed()" (submit)="addTask()">
     <input
       placeholder="What needs to be done?"
       [(ngModel)]="newTaskTitle"
@@ -325,7 +326,7 @@ Modify the contents of auth.component.html to only display the form and delete b
     <input [(ngModel)]="task.title" />
     <button (click)="saveTask(task)">Save</button>
     <button
-      *ngIf="taskRepo.metadata.apiDeleteAllowed"
+      *ngIf="taskRepo.metadata.apiDeleteAllowed(task)"
       (click)="deleteTask(task)"
     >
       Delete
@@ -339,3 +340,6 @@ Modify the contents of auth.component.html to only display the form and delete b
 ```
 
 This way we can keep the frontend consistent with the `api`'s Authorization rules
+
+* Note We send the `task` to the `apiDeleteAllowed` method, because the `apiDeleteAllowed` option, can be sophisticated and can also be based on the specific item's values,
+

@@ -240,6 +240,25 @@ Arguments:
    
    *see*
    [EntityFilter](http://remult.dev/docs/entityFilter.html)
+## validate
+Validates an item
+   
+   
+   *example*
+   ```ts
+   const error = repo.validate(task);
+   if (error){
+     alert(error.message);
+     alert(error.modelState.title);//shows the specific error for the title field
+   }
+   // Can also be used to validate specific fields
+   const error = repo.validate(task,"title")
+   ```
+   
+
+Arguments:
+* **item**
+* **fields**
 ## save
 saves an item or item[] to the data source. It assumes that if an `id` value exists, it's an existing row - otherwise it's a new row
    
@@ -305,6 +324,16 @@ returns an `entityRef` for an item returned by `create`, `find` etc...
 
 Arguments:
 * **item**
+## fields
+Provides information about the fields of the Repository's entity
+   
+   
+   *example*
+   ```ts
+   console.log(repo.fields.title.caption) // displays the caption of a specific field
+   console.log(repo.fields.title.options)// writes the options that were defined for this field
+   ```
+   
 ## metadata
 The metadata for the `entity`
    

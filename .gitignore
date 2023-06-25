@@ -58,7 +58,22 @@ dist
 .basement
 config.local.js
 basement_dist
-docs/.vuepress/dist
+
+# vitepress
+docs/.vitepress/cache
+docs/.vitepress/dist
+
+# vitepress
+docs/.vitepress/cache
+docs/.vitepress/dist
 
 /db
 projects/test-angular/.angular
+examples/nextjs-todo/db
+examples/nextjs-app-router-todo/db
+test.heapsnapshot
+examples/sveltekit-todo/db
+projects/test-servers/deno-fresh/db
+projects/test-servers/next-app-server/db
+projects/test-servers/next-server/db
+projects/test-servers/sveltekit-server/db

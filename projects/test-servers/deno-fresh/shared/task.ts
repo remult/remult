@@ -8,7 +8,7 @@ export class Task {
     id!: string;
 
     @Fields.string({
-          validate: Validators.required 
+        validate: Validators.required
     })
     title = '';
 
@@ -17,8 +17,8 @@ export class Task {
     @BackendMethod({ allowed: false })
     static testForbidden() {
     }
-    @BackendMethod({ allowed: true ,paramTypes:[Remult]})
-    static async testInjectedRemult(remult?:Remult) {
+    @BackendMethod({ allowed: true,paramTypes:[Remult] })
+    static async testInjectedRemult(remult?: Remult) {
         return await remult!.repo(Task).count()
     }
 }

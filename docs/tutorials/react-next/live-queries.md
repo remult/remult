@@ -21,7 +21,7 @@ useEffect(() => {
   return taskRepo
     .liveQuery({
       limit: 20,
-      orderBy: { completed: "asc" }
+      orderBy: { createdAt: "asc" }
       //where: { completed: true },
     })
     .subscribe(info => setTasks(info.applyChanges))
@@ -35,7 +35,7 @@ Let's review the change:
   - `items` - an up to date list of items representing the current result - it's useful for readonly use cases.
   - `applyChanges` - a method that receives an array and applies the changes to it - we send that method to the `setTasks` state function, to apply the changes to the existing `tasks` state.
   - `changes` - a detailed list of changes that were received
-- The `subscribe` method return an `unsubscribe` function which we use as a return value for the `useEffect` hook, so that it'll be called when the component unmounts.
+- The `subscribe` method returns an `unsubscribe` function which we use as a return value for the `useEffect` hook, so that it'll be called when the component unmounts.
 
 2. As all relevant CRUD operations (made by all users) will **immediately update the component's state**, we should remove the manual adding of new Tasks to the component's state:
 
@@ -45,7 +45,8 @@ Let's review the change:
 const addTask = async (e: FormEvent) => {
   e.preventDefault()
   try {
-    const newTask = await taskRepo.insert({ title: newTaskTitle })
+    await taskRepo.insert({ title: newTaskTitle })
+    // ^ this no longer needs to be a variable as we are not using it to set the state.
     // setTasks([...tasks, newTask])   <-- this line is no longer needed
     setNewTaskTitle("")
   } catch (error: any) {

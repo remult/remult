@@ -11,10 +11,14 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports":true,
+    "allowSyntheticDefaultImports": true,
     "importHelpers": true,
     "target": "es2015",
     "skipLibCheck": true,
+    // "importsNotUsedAsValues": "error",
+    // "types": [
+    //   "vitest/globals"
+    // ],
     "typeRoots": [
       "node_modules/@types"
     ],
@@ -33,7 +37,9 @@
       "@remult/*": [
         "projects/*"
       ]
-
     }
-  }
+  },
+  "exclude": [
+    
+  ]
 }

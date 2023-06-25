@@ -1,18 +1,18 @@
 {
   "name": "docs",
   "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
   "scripts": {
-    "dev": "vuepress dev .",
-    "build": "vuepress build .",
-    "publish": "tools\\deploy.sh",
-    "brokenLinks": "blc http://remult.dev/ -ro --exclude http://localhost* --exclude http://127.0.0.1*"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "vitepress dev",
+    "build": "vitepress build",
+    "preview": "vitepress preview",
+    "publish": "tools\\deploy.sh"
   },
+  "author": "",
+  "license": "ISC",
   "devDependencies": {
-    "@vuepress/plugin-google-analytics": "^1.8.2",
-    "vuepress": "^1.8.2",
-    "vuepress-plugin-code-copy": "^1.0.6"
-  },
-  "dependencies": {
-    "broken-link-checker": "^0.7.8"
+    "vitepress": "^1.0.0-alpha.71"
   }
 }

@@ -86,6 +86,22 @@ select title, completed from tasks where id in ($1, $2)
 Arguments: { '$1': 1, '$2': 3 }
 ```
 
+
+### Logs
+
+You may want to log the `sql` that is being executed, simply do:
+
+```ts
+SqlDatabase.LogToConsole = true
+```
+
+You could also use another formats line `onLiner` or even provide your own logger `function` to do your own things.
+
+You want to log only slow queries? `SqlDatabase.durationThreshold` is the property for you! _(default is 0 milliseconds, which means log everything)_.
+
+
+
+
 ## Knex
 ```ts
 const tasks = await dbNamesOf(Task);

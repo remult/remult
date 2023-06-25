@@ -1,10 +1,9 @@
-
 import { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from "../column-interfaces";
 import { EntityOptions } from "../entity";
 import { CompoundIdField, LookupColumn, makeTitle } from '../column';
 import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef, LiveQuery, MemberType, LiveQueryChangeInfo } from "./remult3";
 import { ClassType } from "../../classType";
-import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControllerSettings,  EventSource } from "../context";
+import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControllerSettings, EventSource } from "../context";
 import { AndFilter, rawFilterInfo, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
 import { Sort } from "../sort";
 import { v4 as uuid } from 'uuid';
@@ -20,7 +19,6 @@ import { assign } from "../../assign";
 import { Paginator, RefSubscriber, RefSubscriberBase } from ".";
 import { paramDecorator, prepareArgsToSend, prepareReceivedArgs } from "../server-action";
 import { remult as defaultRemult, RemultProxy } from "../remult-proxy";
-import { getId } from "./getId";
 import { SubscriptionListener, Unsubscribe } from "../live-query/SubscriptionChannel";
 //import { remult } from "../remult-proxy";
 
@@ -120,7 +118,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         this.idCache.set(id, row);
         return await row;
     }
-    //TODO - Used to prevent unnecessary many to one relations
+    //TODO2 - Used to prevent unnecessary many to one relations
     addToCache(item: entityType) {
         if (item)
             this.idCache.set(this.getEntityRef(item).getId() + '', item);
@@ -143,23 +141,21 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 
 
     query(options?: QueryOptions<entityType>): QueryResult<entityType> {
-
-
         return new QueryResultImpl(options, this);
-
-
     }
+
+
 
 
     getEntityRef(entity: entityType): EntityRef<entityType> {
         let x = entity[entityMember];
         if (!x) {
+            this.fixTypes(entity);
             x = new rowHelperImplementation(this._info, entity, this, this.edp, this.remult, true);
             Object.defineProperty(entity, entityMember, {//I've used define property to hide this member from console.lo g
                 get: () => x
             });
             x.saveOriginalData();
-
         }
         return x;
     }
@@ -192,7 +188,31 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             }
         }
     }
-    async update(id: (entityType extends { id?: number } ? number : entityType extends { id?: string } ? string : (string | number)), entity: Partial<OmitEB<entityType>>): Promise<entityType> {
+    get fields() {
+        return this.metadata.fields;
+    }
+    async validate(entity: Partial<OmitEB<entityType>>, ...fields: (Extract<keyof OmitEB<entityType>, string>)[]): Promise<ErrorInfo<entityType> | undefined> {
+        {
+            let ref: rowHelperImplementation<any> = this.getEntityRef(entity as any) as any;
+
+            if (!fields || fields.length === 0) {
+                return await ref.validate()
+            } else {
+                ref.__clearErrorsAndReportChanged();
+                let hasError = false;
+                for (const f of fields) {
+                    if (!await ref.fields.find(f).validate())
+                        hasError = true;
+                }
+                if (!hasError)
+                    return undefined;
+                return ref.buildErrorInfoObject();
+            }
+        }
+    }
+    update(id: (entityType extends { id?: number } ? number : entityType extends { id?: string } ? string : (string | number)), item: Partial<OmitEB<entityType>>): Promise<entityType>;
+    update(originalItem: Partial<OmitEB<entityType>>, item: Partial<OmitEB<entityType>>): Promise<entityType>;
+    async update(id: any, entity: Partial<OmitEB<entityType>>): Promise<entityType> {
 
         let ref = this.getRefForExistingRow(entity, id);
 
@@ -209,7 +229,10 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             for (const field of this.fieldsOf(entity)) {
                 instance[field.key] = entity[field.key];
             }
+            this.fixTypes(instance);
             let row = new rowHelperImplementation(this._info, instance, this, this.edp, this.remult, false);
+            if (typeof (id) === "object")
+                id = this.metadata.idMetadata.getId(id)
             if (id) {
                 row.id = id;
                 row.originalId = id;
@@ -236,7 +259,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
                 return await this.getEntityRef(entity as unknown as entityType).save();
             }
             else {
-                let id = entity[this.metadata.idMetadata.field.key];
+                let id = this.metadata.idMetadata.getId(entity);
                 if (id === undefined)
                     return this.insert(entity);
                 return this.update(id, entity);
@@ -305,7 +328,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
                 result[col.key] = col.valueConverter.fromJson(row[col.key]);
             }
             return result;
-        }))
+        }), load)
     }
     private async loadManyToOneForManyRows(rawRows: any[], load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[]) {
         let loadFields: FieldMetadata[] = undefined;
@@ -360,7 +383,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 
         return x;
     }
-    // TODO - consider replacing with fromJsonArray - also consider having a TOJSON for similar cases
+    // TODO2 - consider replacing with fromJsonArray - also consider having a TOJSON for similar cases
     async fromJson(json: any, newRow?: boolean): Promise<entityType> {
         let obj = {};
         for (const col of this.fieldsOf(json)) {
@@ -451,14 +474,30 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
 
     create(item?: Partial<OmitEB<entityType>>): entityType {
         let r = new this.entity(this.remult);
-        if (item)
+        if (item) {
             for (const field of this.fieldsOf(item)) {
                 r[field.key] = item[field.key];
             }
+            this.fixTypes(r)
+        }
         let z = this.getEntityRef(r);
 
 
         return r;
+    }
+    async fixTypes(item: any) {
+        for (const field of this.fieldsOf(item)) {
+            const val = item[field.key];
+            if (val !== null && val !== undefined) {
+                if (field.valueType === Date && !(val instanceof Date))
+                    item[field.key] = field.valueConverter.fromJson(field.valueConverter.toJson(val))
+                else for (const [type, typeName] of [[String, "string"], [Number, "number"], [Boolean, "boolean"]]) {
+                    if (field.valueType === type && typeof val !== typeName)
+                        item[field.key] = field.valueConverter.fromJson(field.valueConverter.toJson(val))
+                }
+            }
+        }
+        return item;
     }
 
     findId(id: any, options?: FindFirstOptionsBase<entityType>): Promise<entityType> {
@@ -699,26 +738,27 @@ abstract class rowHelperBase<T>
     }
     errors: { [key: string]: string };
     protected __assertValidity() {
-        if (!this.hasErrors()) {
-            let error: ErrorInfo = {
-                modelState: Object.assign({}, this.errors),
-                message: this.error
-            }
-            if (!error.message) {
-                for (const col of this.columnsInfo) {
-                    if (this.errors[col.key]) {
-                        error.message = this.fields[col.key].metadata.caption + ": " + this.errors[col.key];
-                        this.error = error.message;
-                        break;
-                    }
+        if (!this.hasErrors())
+            throw this.buildErrorInfoObject();
+    }
+    buildErrorInfoObject() {
+        let error: ErrorInfo = {
+            modelState: Object.assign({}, this.errors),
+            message: this.error
+        };
+        if (!error.message) {
+            for (const col of this.columnsInfo) {
+                if (this.errors[col.key]) {
+                    error.message = this.fields[col.key].metadata.caption + ": " + this.errors[col.key];
+                    this.error = error.message;
+                    break;
                 }
-
             }
-            throw error;
-
 
         }
+        return error;
     }
+
     abstract get fields(): FieldsRef<T>;
     catchSaveErrors(err: any): any {
         let e = err;
@@ -798,7 +838,9 @@ abstract class rowHelperBase<T>
             await classValidatorValidate(this.instance, this);
         await this.__performColumnAndEntityValidations();
         let r = this.hasErrors();
-        return r;
+        if (!this.hasErrors())
+            return this.buildErrorInfoObject();
+        else return undefined;
     }
     async __validateEntity() {
         this.__clearErrorsAndReportChanged();
@@ -893,7 +935,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
     get apiInsertAllowed() { return this.remult.isAllowedForInstance(this.instance, this.metadata.options.allowApiInsert) }
     metadata: EntityMetadata<T>;
     getId() {
-        return getId(this.info, this.instance);
+        return this.info.idMetadata.getId(this.instance)
     }
     saveMoreOriginalData() {
         this.originalId = this.getId();
@@ -1087,7 +1129,7 @@ export class rowHelperImplementation<T> extends rowHelperBase<T> implements Enti
 
         }
         await this.calcServerExpression();
-        this.id = getId(this.info, this.instance);
+        this.id = this.getId();
     }
     id;
     originalId;
@@ -1370,7 +1412,7 @@ export function buildCaption(caption: string | ((remult: Remult) => string), key
 }
 
 export class columnDefsImpl implements FieldMetadata {
-    constructor(private settings: FieldOptions, private entityDefs: EntityFullInfo<any>, remult: Remult) {
+    constructor(private settings: FieldOptions, private entityDefs: EntityFullInfo<any>, private remult: Remult) {
         if (settings.serverExpression)
             this.isServerExpression = true;
         if (typeof (this.settings.allowApiUpdate) === "boolean")
@@ -1378,11 +1420,28 @@ export class columnDefsImpl implements FieldMetadata {
         if (!this.inputType)
             this.inputType = this.valueConverter.inputType;
         this.caption = buildCaption(settings.caption, settings.key, remult);
-
-
-
-
     }
+    apiUpdateAllowed(item?: any): boolean {
+        if (this.options.allowApiUpdate === undefined)
+            return true;
+        return this.remult.isAllowedForInstance(item, this.options.allowApiUpdate)
+    }
+
+    displayValue(item: any): string {
+        return this.remult.repo(this.entityDefs.entityType).getEntityRef(item).fields.find(this.key).displayValue;
+    }
+    get includedInApi() {
+        if (this.options.includeInApi === undefined)
+            return true;
+        return this.remult.isAllowed(this.options.includeInApi);//TODO 2- consolidate other code paths to go through here
+    }
+    toInput(value: any, inputType?: string): string {
+        return this.valueConverter.toInput(value, inputType);
+    }
+    fromInput(inputValue: string, inputType?: string): any {
+        return this.valueConverter.fromInput(inputValue, inputType);
+    }
+
     async getDbName() {
         try {
             if (this.settings.sqlExpression) {
@@ -1405,7 +1464,7 @@ export class columnDefsImpl implements FieldMetadata {
     target: ClassType<any> = this.settings.target;
     readonly: boolean;
 
-    valueConverter = this.settings.valueConverter;
+    valueConverter = this.settings.valueConverter as Required<ValueConverter<any>>;
     allowNull = !!this.settings.allowNull;
 
     caption: string;
@@ -1485,10 +1544,27 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
                 this.idMetadata.field = [...this.fields][0];
         }
     }
-    get apiUpdateAllowed() { return this.remult.isAllowedForInstance(undefined, this.options.allowApiUpdate) }
-    get apiReadAllowed() { return this.remult.isAllowed(this.options.allowApiRead) }
-    get apiDeleteAllowed() { return this.remult.isAllowedForInstance(undefined, this.options.allowApiDelete) }
-    get apiInsertAllowed() { return this.remult.isAllowedForInstance(undefined, this.options.allowApiInsert) }
+    apiUpdateAllowed(item: T) {
+        if (this.options.allowApiUpdate === undefined)
+            return false;
+        return !item ? this.remult.isAllowedForInstance(undefined, this.options.allowApiUpdate) : this.remult.repo(this.entityType).getEntityRef(item).apiUpdateAllowed
+    }
+    get apiReadAllowed() {
+        if (this.options.allowApiRead === undefined)
+            return true; //TODO2 - consider that this default may be confusing, since it's different from all others.
+        return this.remult.isAllowed(this.options.allowApiRead)
+    }
+    apiDeleteAllowed(item: T) {
+
+        if (this.options.allowApiDelete === undefined)
+            return false;
+        return !item ? this.remult.isAllowedForInstance(undefined, this.options.allowApiDelete) : this.remult.repo(this.entityType).getEntityRef(item).apiDeleteAllowed
+    }
+    apiInsertAllowed(item: T) {
+        if (this.options.allowApiUpdate === undefined)
+            return false;
+        return !item ? this.remult.isAllowedForInstance(undefined, this.options.allowApiInsert) : this.remult.repo(this.entityType).getEntityRef(item).apiInsertAllowed
+    }
 
     dbNamePromise: Promise<string>;
     getDbName(): Promise<string> {
@@ -1518,6 +1594,12 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
     }
 
     idMetadata: IdMetadata<T> = {
+        getId: item => {
+            if (this.idMetadata.field instanceof CompoundIdField)
+                return this.idMetadata.field.getId(item);
+            else
+                return item[this.idMetadata.field.key];
+        },
         field: undefined,
         createIdInFilter: (items: T[]): EntityFilter<any> => {
             if (items.length > 0)
@@ -1598,10 +1680,22 @@ export class Fields {
                 //@ts-ignore
                 new StorableArray(valueType) as any)
     }
-
+    /** 
+     * Stored as a JSON.stringify - to store as json use Fields.json
+     */
     static object<entityType = any, valueType = any>(...options: (FieldOptions<entityType, valueType[]> |
         ((options: FieldOptions<entityType, valueType[]>, remult: Remult) => void))[]) {
+
         return Field(undefined, ...options);
+    }
+    static json<entityType = any, valueType = any>(
+        ...options: (FieldOptions<entityType, valueType> |
+            ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
+        return Field(undefined, {
+            valueConverter: {
+                fieldTypeInDb: "json"
+            }
+        }, ...options);
     }
     static dateOnly<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]) {
         return Field(() => Date, {
@@ -1629,6 +1723,7 @@ export class Fields {
     }
     static createdAt<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]) {
         return Field(() => Date, {
+            allowApiUpdate: false,
             saving: (_, ref) => {
                 if (getEntityRef(_).isNew())
                     ref.value = new Date()
@@ -1637,6 +1732,7 @@ export class Fields {
     }
     static updatedAt<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]) {
         return Field(() => Date, {
+            allowApiUpdate: false,
             saving: (_, ref) => {
                 ref.value = new Date()
             }
@@ -1909,10 +2005,7 @@ export function decorateColumnSettings<valueType>(settings: FieldOptions<any, va
     if (settings.valueType == String) {
         let x = settings as unknown as FieldOptions<any, String>;
         if (!settings.valueConverter)
-            x.valueConverter = {
-                toJson: x => x,
-                fromJson: x => x
-            };
+            x.valueConverter = ValueConverters.String;
     }
 
     if (settings.valueType == Number) {
@@ -2065,6 +2158,10 @@ export class EntityBase {
     delete() { return this._.delete(); }
     isNew() { return this._.isNew(); }
     get $() { return this._.fields }
+}
+export class IdEntity extends EntityBase {
+    @Fields.uuid()
+    id: string;
 }
 export class ControllerBase {
     protected remult: Remult;

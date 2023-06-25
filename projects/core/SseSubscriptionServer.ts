@@ -1,4 +1,4 @@
-import { GenericRequest, GenericResponse } from './server/index';
+import { GenericRequestInfo, GenericResponse } from './server/index';
 import { Remult } from './src/context';
 import { ServerEventChannelSubscribeDTO } from './src/live-query/SubscriptionChannel';
 import { SubscriptionServer } from './src/live-query/SubscriptionServer';
@@ -17,7 +17,7 @@ export class SseSubscriptionServer implements SubscriptionServer {
 
                     else
                         c.channels[channel] = true;
-                    res.success("ok");
+                    res.success({ status: "ok" });
                     this.debug();
                     return;
                 }
@@ -56,7 +56,7 @@ export class SseSubscriptionServer implements SubscriptionServer {
     debugMessageFileSaver = (id, channel, message) => { };
 
     //@internal
-    openHttpServerStream(req: GenericRequest, res: GenericResponse & ResponseRequiredForSSE) {
+    openHttpServerStream(req: GenericRequestInfo, res: GenericResponse & ResponseRequiredForSSE) {
         res.writeHead(200, {
             'Content-Type': 'text/event-stream',
             'Cache-Control': 'no-cache',
@@ -92,7 +92,10 @@ export interface ResponseRequiredForSSE {
 }
 export class clientConnection {
     channels: Record<string, boolean> = {};
+    timeOutRef: NodeJS.Timeout;
     close() {
+        if (this.timeOutRef)
+            clearTimeout(this.timeOutRef);
         this.closed = true;
     }
     closed = false;
@@ -115,7 +118,7 @@ export class clientConnection {
         if (this.closed)
             return;
         this.write("", "keep-alive");
-        setTimeout(() => {
+        this.timeOutRef=  setTimeout(() => {
             this.sendLiveMessage();
         }, 45000);
     }

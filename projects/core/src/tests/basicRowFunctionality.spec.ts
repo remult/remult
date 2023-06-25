@@ -28,11 +28,13 @@ import { assign } from '../../assign';
 import { entityWithValidations, testConfiguration } from '../shared-tests/entityWithValidations';
 import { entityWithValidationsOnColumn } from './entityWithValidationsOnColumn';
 import { ValueConverters } from "../valueConverters";
-import {  FilterConsumerBridgeToSqlRequest, dbNamesOf } from "../filter/filter-consumer-bridge-to-sql-request";
+import { FilterConsumerBridgeToSqlRequest, dbNamesOf } from "../filter/filter-consumer-bridge-to-sql-request";
 import axios from "axios";
 import { async } from "@angular/core/testing";
 import { createEntity } from "../remult3/DecoratorReplacer";
 import { HttpProviderBridgeToRestDataProviderHttpProvider, retry, toPromise } from "../buildRestDataProvider";
+import { describeClass } from "../remult3/DecoratorReplacer";
+import { remult } from "../remult-proxy";
 
 //SqlDatabase.LogToConsole = true;
 
@@ -116,6 +118,18 @@ describe('Test basic row functionality', () => {
     expect(row.id).toBe(1);
     await row._.save();
     let row2 = await repo.findFirst({ id: 1 }, { createIfNotFound: true });
+    expect(row2._.isNew()).toBe(false);
+    expect(row2.id).toBe(1);
+
+
+  });
+  it("Find or Create id", async () => {
+    let [repo] = await (await createData());
+    let row = await repo.findId(1, { createIfNotFound: true });
+    expect(row._.isNew()).toBe(true);
+    expect(row.id).toBe(1);
+    await row._.save();
+    let row2 = await repo.findId(1, { createIfNotFound: true });
     expect(row2._.isNew()).toBe(false);
     expect(row2.id).toBe(1);
 
@@ -273,13 +287,19 @@ describe("data api", () => {
     c.name = 'noam';
     await c._.save();
     c.name = '1';
-    expect(await c._.validate()).toBe(false);
+
+    expect((await c._.validate()).modelState!.name).toBe('invalid on column')
     c.name = "123";
-    expect(await c._.validate()).toBe(true);
-
-
-
+    expect(await c._.validate()).toBeUndefined();
   });
+  it("validation works on non active record", async () => {
+    let remult = new Remult(new InMemoryDataProvider());
+    var repo = remult.repo(entityWithValidationsOnColumn);
+    expect((await repo.validate({ name: "1" })).modelState!.name).toBe('invalid on column');
+    expect(await repo.validate({ name: "123" })).toBeUndefined();
+    expect(await repo.validate({ name: "1" }, "myId")).toBeUndefined();
+
+  })
   it("validate with validations on column fails 1", async () => {
     let remult = new Remult(new InMemoryDataProvider());
     var s = remult.repo(entityWithValidationsOnColumn);
@@ -291,7 +311,8 @@ describe("data api", () => {
     c.name = '1';
     expect(await c.$.name.validate()).toBe(false);
     c.name = "123";
-    expect(await c._.validate()).toBe(true);
+    const val = await c._.validate();
+    expect(val).toBeUndefined()
 
   });
   it("put with validations on entity fails", async () => {
@@ -692,7 +713,9 @@ describe("data api", () => {
       }
     })(type);
     let [c, remult] = await createData(async insert => await insert(1, 'noam'), type);
-
+    expect(c.metadata.apiDeleteAllowed()).toBe(true)
+    expect(c.metadata.apiUpdateAllowed()).toBe(true)
+    expect(c.metadata.apiInsertAllowed()).toBe(true)
     var api = new DataApi(c, remult);
     let t = new TestDataApiResponse();
     let d = new Done();
@@ -706,6 +729,30 @@ describe("data api", () => {
     var x = await c.find({ where: { id: 1 } });
     expect(x.length).toBe(0);
   });
+  it("check api defaults", () => {
+    const c = class {
+      id = 0;
+      name?= ''
+    }
+    describeClass(c, Entity("asdf"), {
+      id: Fields.autoIncrement(),
+      name: Fields.string()
+    })
+    const repo = new Remult(new InMemoryDataProvider()).repo(c);
+    expect(repo.metadata.apiDeleteAllowed()).toBe(false)
+    expect(repo.metadata.apiUpdateAllowed()).toBe(false)
+    expect(repo.metadata.apiInsertAllowed()).toBe(false)
+    expect(repo.metadata.apiDeleteAllowed({ id: 1 })).toBe(false)
+    expect(repo.metadata.apiUpdateAllowed({ id: 1 })).toBe(false)
+    expect(repo.metadata.apiInsertAllowed({ id: 1 })).toBe(false)
+    expect(repo.fields.id.apiUpdateAllowed()).toBe(false)
+    expect(repo.fields.id.apiUpdateAllowed({ id: 1 })).toBe(false)
+    expect(repo.fields.name.apiUpdateAllowed()).toBe(true)
+    expect(repo.fields.name.apiUpdateAllowed({ id: 1 })).toBe(true)
+    expect(repo.metadata.apiReadAllowed).toBe(true)
+
+
+  })
 
   it("put with validation fails", async () => {
 
@@ -974,7 +1021,8 @@ describe("data api", () => {
     Fields.string({ includeInApi: false })(type.prototype, "categoryName");
     Entity('', { allowApiUpdate: true })(type);
     let [c, remult] = await createData(async insert => await insert(1, 'noam'), type);
-
+    expect(c.fields.categoryName.includedInApi).toBe(false)
+    expect(c.fields.description.includedInApi).toBe(true);
 
     var api = new DataApi(c, remult);
     let t = new TestDataApiResponse();
@@ -1115,8 +1163,9 @@ describe("data api", () => {
 
     };
     Entity('', {
-
-      allowApiRead: false
+      allowApiRead: false,
+      allowApiCrud:undefined,
+      allowApiUpdate:undefined
     })(type);
     let [c, remult] = await createData(async i => {
       await i(1, 'noam', 'a');
@@ -1295,6 +1344,8 @@ describe("data api", () => {
         categoryName: 'noam 1'
       });
     d.test();
+    expect(c.metadata.apiUpdateAllowed({ id: 2 } as any)).toBe(false)
+    expect(c.metadata.apiUpdateAllowed({ id: 1 } as any)).toBe(true)
     t = new TestDataApiResponse();
     d = new Done();
     t.success = () => d.ok();
@@ -2028,6 +2079,98 @@ describe("test toPromise", () => {
 
 
 
+@Entity<CompoundIdSimple>("CompoundIdPojoEntity", {
+  id: x => [x.a, x.b]
+})
+class CompoundIdSimple {
+  @Fields.integer()
+  a: number;
+  @Fields.integer()
+  b: number;
+  @Fields.integer()
+  c: number;
+}
+describe("CompoundIdPojoEntity", () => {
+  it("test basic operations", async () => {
+    var repo = new Remult(new InMemoryDataProvider()).repo(CompoundIdSimple);
+    expect(repo.metadata.idMetadata.getId({ a: 1, b: 10, c: 100 })).toBe("1,10");
+  });
+  it("test delete by id", async () => {
+    var repo = new Remult(new InMemoryDataProvider()).repo(CompoundIdSimple);
+    await repo.insert([
+      { a: 1, b: 10, c: 100 },
+      { a: 2, b: 20, c: 200 },
+      { a: 3, b: 30, c: 300 },
+    ]);
+    await repo.delete(repo.metadata.idMetadata.getId({ a: 2, b: 20 }));
+    expect((await repo.find()).map(x => x.a)).toEqual([1, 3])
+  })
+  it("test delete", async () => {
+    var repo = new Remult(new InMemoryDataProvider()).repo(CompoundIdSimple);
+    await repo.insert([
+      { a: 1, b: 10, c: 100 },
+      { a: 2, b: 20, c: 200 },
+      { a: 3, b: 30, c: 300 },
+    ]);
+    await repo.delete({ a: 2, b: 20, c: 200 });
+    expect((await repo.find()).map(x => x.a)).toEqual([1, 3])
+  })
+  it("test delete with partial object", async () => {
+    var repo = new Remult(new InMemoryDataProvider()).repo(CompoundIdSimple);
+    await repo.insert([
+      { a: 1, b: 10, c: 100 },
+      { a: 2, b: 20, c: 200 },
+      { a: 3, b: 30, c: 300 },
+    ]);
+    await repo.delete({ a: 2, b: 20 });
+    expect((await repo.find()).map(x => x.a)).toEqual([1, 3])
+  })
+  it("test save", async () => {
+    var repo = new Remult(new InMemoryDataProvider()).repo(CompoundIdSimple);
+    await repo.insert([
+      { a: 1, b: 10, c: 100 },
+      { a: 2, b: 20, c: 200 },
+      { a: 3, b: 30, c: 300 },
+    ]);
+    await repo.save({ a: 2, b: 20, c: 201 });
+    expect((await repo.findFirst({ a: 2, b: 20 })).c).toBe(201);
+  })
+  it("test update", async () => {
+    var repo = new Remult(new InMemoryDataProvider()).repo(CompoundIdSimple);
+    await repo.insert([
+      { a: 2, b: 20, c: 200 },
+    ]);
+    await repo.update(repo.metadata.idMetadata.getId({ a: 2, b: 20 }), { c: 201 });
+    expect((await repo.findFirst({ a: 2, b: 20 })).c).toBe(201);
+  })
+  it("test update", async () => {
+    var repo = new Remult(new InMemoryDataProvider()).repo(CompoundIdSimple);
+    await repo.insert([
+      { a: 2, b: 20, c: 200 },
+    ]);
+    await repo.update(repo.metadata.idMetadata.getId({ a: 2, b: 20 }), { c: 201 });
+    expect((await repo.findFirst({ a: 2, b: 20 })).c).toBe(201);
+  })
+  it("test update", async () => {
+    var repo = new Remult(new InMemoryDataProvider()).repo(CompoundIdSimple);
+    await repo.insert([
+      { a: 2, b: 20, c: 200 },
+    ]);
+    await repo.update({ a: 2, b: 20 }, { c: 201 });
+    expect((await repo.findFirst({ a: 2, b: 20 })).c).toBe(201);
+  })
+  it("test update change of id fields", async () => {
+    var repo = new Remult(new InMemoryDataProvider()).repo(CompoundIdSimple);
+    await repo.insert([
+      { a: 2, b: 20, c: 200 },
+    ]);
+    await repo.update(repo.metadata.idMetadata.getId({ a: 2, b: 20 }), { b: 21 });
+    expect((await repo.findFirst({ a: 2 })).b).toBe(21);
+  })
+
+});
+
+
 @Entity<CompoundIdEntity>(
   'compountIdEntity', {
   id: x => [x.a, x.b],
@@ -2149,11 +2292,12 @@ describe("test fetch", () => {
   });
   it("delete", async () => {
     let z = await new RestDataProviderHttpProviderUsingFetch(async (url, info) => {
+      expect(info.headers).toEqual({}) // fastify fails with content type and no body
       return new mockResponse({ status: 204, json: async () => 7 })
     }).delete('abc');
     expect(z).toBeUndefined();
   });
-  it("rest doesn't suppor transactions", async () => {
+  it("rest doesn't support transactions", async () => {
     const r = new RestDataProvider(() => undefined);
     let ok = false;
     try {
@@ -2161,9 +2305,31 @@ describe("test fetch", () => {
       ok = true;
     } catch { }
     expect(ok).toBe(false);
-
+  })
+  it("json field works", async () => {
+    const r = new Remult(new InMemoryDataProvider());
+    var e = class {
+      id: 1;
+      person: { name: 'noam' }
+    }
+    describeClass(e, Entity("asdf"), {
+      id: Fields.integer(),
+      person: Fields.json({
+        valueConverter: {
+          toJson: x => x.name,
+          fromJson: x => ({ name: x })
+        }
+      })
+    })
+    expect(r.repo(e).fields.person.valueConverter.toDb({ name: "noam" })).toBe("noam")
+  });
+  it("test repo consistent instance",()=>{
+    let x = remult.repo(Categories);
+    let y = remult.repo(Categories);
+    expect(x).toBe(y);
   })
 });
+
 class mockResponse implements Response {
   constructor(val: Partial<Response>) {
     Object.assign(this, val);

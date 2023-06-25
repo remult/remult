@@ -25,21 +25,21 @@ export class Sort {
     }
     return r;
   }
-  compare(a:any,b:any){
+  compare(a: any, b: any) {
     let r = 0;
     for (let i = 0; i < this.Segments.length; i++) {
-        let seg = this.Segments[i];
-        let left = a[seg.field.key];
-        let right = b[seg.field.key];
-        if (left > right)
-            r = 1;
-        else if (left < right)
-            r = -1;
-        if (r != 0) {
-            if (seg.isDescending)
-                r *= -1;
-            return r;
-        }
+      let seg = this.Segments[i];
+      let left = a[seg.field.key];
+      let right = b[seg.field.key];
+      if (left > right)
+        r = 1;
+      else if (left < right)
+        r = -1;
+      if (r != 0) {
+        if (seg.isDescending)
+          r *= -1;
+        return r;
+      }
     }
     return r;
   }
@@ -92,6 +92,7 @@ export class Sort {
       orderBy = entityMetadata.options.defaultOrderBy;
     if (!orderBy)
       orderBy = { [entityMetadata.idMetadata.field.key]: "asc" } as EntityOrderBy<T>
+    else orderBy = { ...orderBy }
 
 
     if (entityMetadata.idMetadata.field instanceof CompoundIdField) {

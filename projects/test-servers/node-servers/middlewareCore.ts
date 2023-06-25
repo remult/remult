@@ -1,4 +1,4 @@
-import * as express from "express";
+import express from "express";
 
 import { createRemultServerCore } from "../../core/server/expressBridge";
 import { Task } from "../shared/Task";
@@ -6,7 +6,10 @@ import { Task } from "../shared/Task";
 const app = express();
 app.use(express.json());
 
-const api = createRemultServerCore({ entities: [Task] });
+const api = createRemultServerCore<express.Request>({ entities: [Task] }, {
+    buildGenericRequestInfo: req => req,
+    getRequestBody: req => req.body
+});
 app.use(async (req, res, next) => {
     await api.handle(req, res) || next()
 });
