@@ -915,7 +915,7 @@ testAll("test json structure 2", async ({ createEntity }) => {
     let item = await r.findFirst();
     expect(item.items).toEqual(["a", "b"]);
     //expect(await r.count({ items: { $contains: "b" } })).toBe(1)
-}, false,{exclude: [TestDbs.mongo]})
+}, false)
 
 
 
