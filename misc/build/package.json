@@ -1,0 +1,13 @@
+{
+  "name": "build-remult",
+  "license": "MIT",
+  "author": {
+    "name": "Noam Honig"
+  },
+  "scripts": {
+    "build-core":"tsc -p ../../projects/core/tsconfig.build.json && tsc -p ../../projects/core/tsconfig.build.esm.json && copyfiles -u 2 ../../projects/core/package.json ../../dist/remult && copyfiles ../../README.md ../../dist/remult && copyfiles ../../LICENSE ../../dist/remult"
+  },
+  "devDependencies": {
+    "typescript": "^5.1.3"
+  }
+}
