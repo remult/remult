@@ -108,6 +108,8 @@ describe("Test sync from and to json", () => {
   })
   it("test with null category", () => {
     const t = { ...task1, category: null };
+    delete t.date
+    delete t.dateOnly
     expect(repo.fromJson(repo.toJson(t))).toMatchInlineSnapshot(`
       Task {
         "category": null,
