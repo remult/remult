@@ -29,6 +29,8 @@ describe("backend method context awareness", () => {
       Remult.run(() => {
         let x = remult.user
         ok = true;
+      }, {
+        dataProvider: new InMemoryDataProvider()
       })
       expect(ok).toBe(true);
     }
@@ -46,6 +48,8 @@ describe("backend method context awareness", () => {
         let x = remult.user
         ok = true;
         return 77;
+      }, {
+        dataProvider: new InMemoryDataProvider()
       })).toBe(77)
       expect(ok).toBe(true);
     }
@@ -70,6 +74,8 @@ describe("backend method context awareness", () => {
         await remult.repo(c).insert([{ id: 1 }, { id: 2 }])
         ok = true;
         return await remult.repo(c).count()
+      }, {
+        dataProvider: new InMemoryDataProvider()
       })).toBe(2)
       expect(ok).toBe(true);
     }
@@ -93,6 +99,8 @@ describe("backend method context awareness", () => {
     await Remult.run(() => {
       remult.dataProvider = new InMemoryDataProvider();
       c.testingContextAwareness();
+    }, {
+      dataProvider: new InMemoryDataProvider()
     })
     expect(wasCalled).toBe(true)
   })
