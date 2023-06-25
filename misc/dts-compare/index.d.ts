@@ -4,10 +4,8 @@ export { StringFieldOptions } from './src/remult3/RepositoryImplementation';
 export { EntityOptions } from './src/entity';
 export { DataProvider, EntityDataProvider, EntityDataProviderFindOptions, ErrorInfo, RestDataProviderHttpProvider } from './src/data-interfaces';
 export { SqlCommand, SqlImplementation, SqlResult } from './src/sql-command';
-export {
-  FieldMetadata, FieldOptions, FieldValidator, ValueConverter, ValueListItem, // reconsider, maybe it should go to remult angular as the abstraction ?
-  ValueOrExpression
-} from './src/column-interfaces';
+export { FieldMetadata, FieldOptions, FieldValidator, ValueConverter, ValueListItem, // reconsider, maybe it should go to remult angular as the abstraction ?
+ValueOrExpression } from './src/column-interfaces';
 export { RestDataProvider } from './src/data-providers/rest-data-provider';
 export { InMemoryDataProvider } from './src/data-providers/in-memory-database';
 export { ArrayEntityDataProvider } from './src/data-providers/array-entity-data-provider';

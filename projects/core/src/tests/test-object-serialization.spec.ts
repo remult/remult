@@ -602,7 +602,7 @@ it("test validation", async () => {
   expect(await m({a:"noam"})).toBe("noamz");
 
 });
-fit("test validation 1", async () => {
+it("test validation 1", async () => {
   const m = createBackendMethod("t1", {
     inputType: 
        Fields.string({ validate: Validators.required })
