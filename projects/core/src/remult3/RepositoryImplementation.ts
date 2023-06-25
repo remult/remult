@@ -3,7 +3,7 @@ import { EntityOptions } from "../entity";
 import { CompoundIdField, LookupColumn, makeTitle } from '../column';
 import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef, LiveQuery, LiveQueryChangeInfo } from "./remult3";
 import { ClassType } from "../../classType";
-import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControllerSettings, EventSource } from "../context";
+import { allEntities, Remult, isBackend, queryConfig as queryConfig, setControllerSettings, EventSource, Allowed, AllowedForInstance } from "../context";
 import { AndFilter, rawFilterInfo, entityFilterToJson, Filter, FilterConsumer, OrFilter } from "../filter/filter-interfaces";
 import { Sort } from "../sort";
 import { v4 as uuid } from 'uuid';
@@ -1226,14 +1226,13 @@ export class controllerRefImpl<T = any> extends rowHelperBase<T> implements Cont
             }
         }
     }
-    errors: { [key: string]: string; };
-    originalValues: any;
     fields: FieldsRef<T>;
 
 }
 export class FieldRefImplementation<entityType, valueType> implements FieldRef<entityType, valueType> {
     constructor(private settings: FieldOptions, public metadata: FieldMetadata, public container: any, private helper: EntityRef<entityType>, private rowBase: rowHelperBase<entityType>) {
-
+        this.target = this.settings.target;
+        this.entityRef = this.helper;
     }
     _subscribers: SubscribableImp;
     subscribe(listener: RefSubscriber): Unsubscribe {
@@ -1265,7 +1264,7 @@ export class FieldRefImplementation<entityType, valueType> implements FieldRef<e
         }
         return this.value;
     }
-    target: ClassType<any> = this.settings.target;
+    target: ClassType<any>;
 
     reportObserved() {
         this._subscribers?.reportObserved();
@@ -1347,7 +1346,7 @@ export class FieldRefImplementation<entityType, valueType> implements FieldRef<e
         }
         return JSON.stringify(this.metadata.valueConverter.toJson(this.rowBase.originalValues[this.metadata.key])) != JSON.stringify(this.metadata.valueConverter.toJson(val));
     }
-    entityRef: EntityRef<any> = this.helper;
+    entityRef: EntityRef<any>;
 
 
     async __performValidation() {
@@ -1404,6 +1403,13 @@ export function buildCaption(caption: string | ((remult: Remult) => string), key
 
 export class columnDefsImpl implements FieldMetadata {
     constructor(private settings: FieldOptions, private entityDefs: EntityFullInfo<any>, private remult: Remult) {
+        this.options = this.settings;
+        this.target = this.settings.target;
+        this.valueConverter = this.settings.valueConverter as Required<ValueConverter<any>>;
+        this.allowNull = !!this.settings.allowNull;
+        this.valueType = this.settings.valueType;
+        this.key = this.settings.key;
+        this.inputType = this.settings.inputType;
         if (settings.serverExpression)
             this.isServerExpression = true;
         if (typeof (this.settings.allowApiUpdate) === "boolean")
@@ -1451,12 +1457,12 @@ export class columnDefsImpl implements FieldMetadata {
         }
 
     }
-    options: FieldOptions<any, any> = this.settings;
-    target: ClassType<any> = this.settings.target;
+    options: FieldOptions<any, any>;
+    target: ClassType<any>;
     readonly: boolean;
 
-    valueConverter = this.settings.valueConverter as Required<ValueConverter<any>>;
-    allowNull = !!this.settings.allowNull;
+    valueConverter: Required<ValueConverter<any>>;
+    allowNull: boolean;
 
     caption: string;
     get dbName() {
@@ -1472,26 +1478,31 @@ export class columnDefsImpl implements FieldMetadata {
         return this.settings.dbName;
 
     }
-    inputType = this.settings.inputType;
-    key = this.settings.key;
+    inputType: string;
+    key: string;
     get dbReadOnly() {
         return this.settings.dbReadOnly;
     };
     isServerExpression: boolean;
-    valueType = this.settings.valueType;
+    valueType: any;
 }
 class EntityFullInfo<T> implements EntityMetadata<T> {
 
-    options = this.entityInfo;
+    options: EntityOptions<T>;
 
     constructor(public columnsInfo: FieldOptions[], public entityInfo: EntityOptions, private remult: Remult, public readonly entityType: ClassType<T>, public readonly key: string) {
+        this.options = entityInfo
         if (this.options.allowApiCrud !== undefined) {
+            let crud: AllowedForInstance<T>;
+            if ((typeof this.options.allowApiCrud) === "function")
+                crud = (_, remult) => (this.options.allowApiCrud as Function)(remult);
+            else crud = this.options.allowApiCrud as AllowedForInstance<T>
             if (this.options.allowApiDelete === undefined)
-                this.options.allowApiDelete = this.options.allowApiCrud;
+                this.options.allowApiDelete = crud;
             if (this.options.allowApiInsert === undefined)
-                this.options.allowApiInsert = this.options.allowApiCrud;
+                this.options.allowApiInsert = crud;
             if (this.options.allowApiUpdate === undefined)
-                this.options.allowApiUpdate = this.options.allowApiCrud;
+                this.options.allowApiUpdate = crud;
             if (this.options.allowApiRead === undefined)
                 this.options.allowApiRead = this.options.allowApiCrud;
         }
@@ -1885,7 +1896,11 @@ export function Field<entityType = any, valueType = any>(valueType: () => ClassT
 
 
 
-    return (target, key, c?) => {
+    return (target,
+        //@ts-ignore
+        context: ClassFieldDecoratorContext<entityType, valueType> | string
+        , c?) => {
+        const key = typeof context === "string" ? context : context.name.toString();
         let factory = (remult: Remult) => {
             let r = buildOptions(options, remult);
             if (!r.valueType && valueType) {
@@ -2050,9 +2065,14 @@ interface columnInfo {
  * // as an arrow function that receives `remult` as a parameter
  * @Entity("tasks", (options,remult) => options.allowApiCrud = true)
  */
-export function Entity<entityType>(key: string, ...options: (EntityOptions<entityType> | ((options: EntityOptions<entityType>, remult: Remult) => void))[]) {
+export function Entity<entityType>(key: string, ...options:
+    (EntityOptions<entityType extends new (...args: any) => any ? InstanceType<entityType> : entityType> |
+        ((options: EntityOptions<entityType extends new (...args: any) => any ? InstanceType<entityType> : entityType>, remult: Remult) => void))[]) {
 
-    return (target, info?) => {
+    return (target,
+        //@ts-ignore
+        info?: ClassDecoratorContext<entityType extends new (...args: any) => any ? entityType : never>
+    ) => {
         for (const rawFilterMember in target) {
             if (Object.prototype.hasOwnProperty.call(target, rawFilterMember)) {
                 const element = target[rawFilterMember] as rawFilterInfo<any>;
@@ -2064,7 +2084,7 @@ export function Entity<entityType>(key: string, ...options: (EntityOptions<entit
         }
 
         let factory: EntityOptionsFactory = remult => {
-            let r = {} as EntityOptions<entityType>;
+            let r = {} as EntityOptions<entityType extends new (...args: any) => any ? InstanceType<entityType> : entityType>;
             for (const o of options) {
                 if (o) {
                     if (typeof o === "function")

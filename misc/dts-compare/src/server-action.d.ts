@@ -56,7 +56,7 @@ export declare const actionInfo: {
 export declare const serverActionField: unique symbol;
 export declare function Controller(key: string): (target: any, context?: any) => any;
 /** Indicates that the decorated methods runs on the backend. See: [Backend Methods](https://remult.dev/docs/backendMethods.html) */
-export declare function BackendMethod<type = any>(options: BackendMethodOptions<type>): (target: any, context: any, descriptor?: any) => any;
+export declare function BackendMethod<type = any>(options: BackendMethodOptions<type>): (target: any, context: ClassMethodDecoratorContext<type> | string, descriptor?: any) => any;
 export interface jobWasQueuedResult {
     queuedJobId?: string;
 }

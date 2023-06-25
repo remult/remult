@@ -1,7 +1,7 @@
 import { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from "../column-interfaces";
 import { EntityOptions } from "../entity";
 import { LookupColumn } from '../column';
-import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef, LiveQuery } from "./remult3";
+import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef } from "./remult3";
 import { ClassType } from "../../classType";
 import { Remult } from "../context";
 import { entityEventListener } from "../__EntityValueProvider";
@@ -45,7 +45,7 @@ export declare class RepositoryImplementation<entityType> implements Repository<
     private getRefForExistingRow;
     save(item: Partial<OmitEB<entityType>>[]): Promise<entityType[]>;
     save(item: Partial<OmitEB<entityType>>): Promise<entityType>;
-    liveQuery(options?: FindOptions<entityType>): LiveQuery<entityType>;
+    liveQuery(options?: FindOptions<entityType>): any;
     find(options: FindOptions<entityType>, skipOrderByAndLimit?: boolean): Promise<entityType[]>;
     buildEntityDataProviderFindOptions(options: FindOptions<entityType>): Promise<EntityDataProviderFindOptions>;
     fromJsonArray(jsonItems: any[], load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[]): Promise<entityType[]>;
@@ -140,10 +140,6 @@ export declare function getControllerRef<fieldsContainerType>(container: fieldsC
 export declare class controllerRefImpl<T = any> extends rowHelperBase<T> implements ControllerRef<T> {
     constructor(columnsInfo: FieldOptions[], instance: any, remult: Remult);
     __performColumnAndEntityValidations(): Promise<void>;
-    errors: {
-        [key: string]: string;
-    };
-    originalValues: any;
     fields: FieldsRef<T>;
 }
 export declare class FieldRefImplementation<entityType, valueType> implements FieldRef<entityType, valueType> {
@@ -212,7 +208,7 @@ declare class EntityFullInfo<T> implements EntityMetadata<T> {
     private remult;
     readonly entityType: ClassType<T>;
     readonly key: string;
-    options: EntityOptions<any>;
+    options: EntityOptions<T>;
     constructor(columnsInfo: FieldOptions[], entityInfo: EntityOptions, remult: Remult, entityType: ClassType<T>, key: string);
     apiUpdateAllowed(item: T): boolean;
     get apiReadAllowed(): boolean;
@@ -230,19 +226,19 @@ export declare class Fields {
     /**
      * Stored as a JSON.stringify - to store as json use Fields.json
     */
-    static object<entityType = any, valueType = any>(...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]): (target: any, key: any, c?: any) => void;
-    static json<entityType = any, valueType = any>(...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]): (target: any, key: any, c?: any) => void;
-    static dateOnly<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]): (target: any, key: any, c?: any) => void;
-    static date<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]): (target: any, key: any, c?: any) => void;
-    static integer<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]): (target: any, key: any, c?: any) => void;
-    static autoIncrement<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]): (target: any, key: any, c?: any) => void;
-    static number<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]): (target: any, key: any, c?: any) => void;
-    static createdAt<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]): (target: any, key: any, c?: any) => void;
-    static updatedAt<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]): (target: any, key: any, c?: any) => void;
-    static uuid<entityType = any>(...options: (FieldOptions<entityType, string> | ((options: FieldOptions<entityType, string>, remult: Remult) => void))[]): (target: any, key: any, c?: any) => void;
-    static cuid<entityType = any>(...options: (FieldOptions<entityType, string> | ((options: FieldOptions<entityType, string>, remult: Remult) => void))[]): (target: any, key: any, c?: any) => void;
-    static string<entityType = any>(...options: (StringFieldOptions<entityType> | ((options: StringFieldOptions<entityType>, remult: Remult) => void))[]): (target: any, key: any, c?: any) => void;
-    static boolean<entityType = any>(...options: (FieldOptions<entityType, boolean> | ((options: FieldOptions<entityType, boolean>, remult: Remult) => void))[]): (target: any, key: any, c?: any) => void;
+    static object<entityType = any, valueType = any>(...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]): (target: any, context: any, c?: any) => void;
+    static json<entityType = any, valueType = any>(...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]): (target: any, context: any, c?: any) => void;
+    static dateOnly<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]): (target: any, context: any, c?: any) => void;
+    static date<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]): (target: any, context: any, c?: any) => void;
+    static integer<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]): (target: any, context: any, c?: any) => void;
+    static autoIncrement<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]): (target: any, context: any, c?: any) => void;
+    static number<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]): (target: any, context: any, c?: any) => void;
+    static createdAt<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]): (target: any, context: any, c?: any) => void;
+    static updatedAt<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]): (target: any, context: any, c?: any) => void;
+    static uuid<entityType = any>(...options: (FieldOptions<entityType, string> | ((options: FieldOptions<entityType, string>, remult: Remult) => void))[]): (target: any, context: any, c?: any) => void;
+    static cuid<entityType = any>(...options: (FieldOptions<entityType, string> | ((options: FieldOptions<entityType, string>, remult: Remult) => void))[]): (target: any, context: any, c?: any) => void;
+    static string<entityType = any>(...options: (StringFieldOptions<entityType> | ((options: StringFieldOptions<entityType>, remult: Remult) => void))[]): (target: any, context: any, c?: any) => void;
+    static boolean<entityType = any>(...options: (FieldOptions<entityType, boolean> | ((options: FieldOptions<entityType, boolean>, remult: Remult) => void))[]): (target: any, context: any, c?: any) => void;
 }
 export declare function isAutoIncrement(f: FieldMetadata): boolean;
 export interface StringFieldOptions<entityType = any> extends FieldOptions<entityType, string> {
@@ -287,7 +283,7 @@ export declare function getValueList<T>(type: ClassType<T>): T[];
  * @Fields.string((options,remult) => options.includeInApi = true)
  * title='';
  */
-export declare function Field<entityType = any, valueType = any>(valueType: () => ClassType<valueType>, ...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]): (target: any, key: any, c?: any) => void;
+export declare function Field<entityType = any, valueType = any>(valueType: () => ClassType<valueType>, ...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]): (target: any, context: ClassFieldDecoratorContext<entityType, valueType> | string, c?: any) => void;
 export declare const storableMember: unique symbol;
 export declare function decorateColumnSettings<valueType>(settings: FieldOptions<any, valueType>, remult: Remult): FieldOptions<any, valueType>;
 interface columnInfo {
@@ -318,7 +314,7 @@ interface columnInfo {
  * // as an arrow function that receives `remult` as a parameter
  * @Entity("tasks", (options,remult) => options.allowApiCrud = true)
  */
-export declare function Entity<entityType>(key: string, ...options: (EntityOptions<entityType> | ((options: EntityOptions<entityType>, remult: Remult) => void))[]): (target: any, info?: any) => any;
+export declare function Entity<entityType>(key: string, ...options: (EntityOptions<entityType extends new (...args: any) => any ? InstanceType<entityType> : entityType> | ((options: EntityOptions<entityType extends new (...args: any) => any ? InstanceType<entityType> : entityType>, remult: Remult) => void))[]): (target: any, info?: any) => any;
 export declare class EntityBase {
     get _(): EntityRef<this>;
     save(): Promise<this>;

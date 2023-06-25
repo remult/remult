@@ -175,7 +175,7 @@ interface serverMethodOutArgs {
 
 const classOptions = new Map<any, ControllerOptions>();
 export function Controller(key: string) {
-    return function (target,context?) {
+    return function (target, context?:any) {
         let r = target;
         classOptions.set(r, { key });
         setControllerSettings(target, { key });
@@ -190,7 +190,9 @@ export function Controller(key: string) {
 
 /** Indicates that the decorated methods runs on the backend. See: [Backend Methods](https://remult.dev/docs/backendMethods.html) */
 export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
-    return (target: any, context: any/*ClassMethodDecoratorContext<type>*/
+    return (target: any, 
+        //@ts-ignore
+        context: ClassMethodDecoratorContext<type>|string
         , descriptor?: any) => {
         const key = typeof (context) === "string" ? context : context.name.toString();
         const originalMethod = descriptor ? descriptor.value : target;
