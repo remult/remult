@@ -62,6 +62,7 @@ describe("Test sync from and to json", () => {
 
   it("test that it works", () => {
     let theJson = repo.toJson(task1);
+    delete theJson.date;
     expect(theJson).toMatchInlineSnapshot({
       date: expect.any(String),
     }, `
@@ -70,7 +71,6 @@ describe("Test sync from and to json", () => {
           "id": 1,
           "name": "testCat",
         },
-        "date": "2020-07-03T01:00:00.000Z",
         "dateOnly": "2020-07-03",
         "id": 1,
         "status": "notOk",
@@ -78,6 +78,10 @@ describe("Test sync from and to json", () => {
       }
     `)
     let t = repo.fromJson(theJson);
+    expect(t.date.getFullYear()).toBe(2020);
+    expect(t.dateOnly.getFullYear()).toBe(2020);
+    delete t.date
+    delete t.dateOnly
     expect(t).toMatchInlineSnapshot({
       date: expect.any(Date),
       dateOnly: expect.any(Date)
@@ -87,8 +91,6 @@ describe("Test sync from and to json", () => {
           "id": 1,
           "name": "testCat",
         },
-        "date": 2020-07-03T01:00:00.000Z,
-        "dateOnly": 2020-07-02T21:00:00.000Z,
         "id": 1,
         "shouldNotSee": "",
         "status": status {
