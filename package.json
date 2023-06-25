@@ -36,7 +36,8 @@
     "server-test2": "jest --config=projects/core/jest.config.js --watch",
     "ng": "ng",
     "ng-serve": "cd projects/test-angular && ng serve --port 4201",
-    "ng-serve-noam-ip-10.0.0.6": "ng serve --port 4201 --host 10.0.0.6"
+    "ng-serve-noam-ip-10.0.0.6": "ng serve --port 4201 --host 10.0.0.6",
+    "update-starter":"misc\\update-versions-to-starter-projects.sh"
   },
   "private": true,
   "devDependencies": {

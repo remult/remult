@@ -68,7 +68,9 @@ export declare class Remult {
     readonly context: RemultContext;
     /** The api client that will be used by `remult` to perform calls to the `api` */
     apiClient: ApiClient;
-    static run<T>(callback: () => T): T;
+    static run<T>(callback: () => T, options: {
+        dataProvider: DataProvider;
+    }): T;
 }
 export declare type GetArguments<T> = T extends (...args: infer FirstArgument) => any ? FirstArgument : never;
 export interface RemultContext {

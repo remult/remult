@@ -1,29 +1,25 @@
-cd /c/repos/remult-react-todo
+cd /c/repos/react-vite-express-starter
 npm i remult@latest
 git add .
 git commit -m "updated remult"
 git push
 
-cd /c/repos/remult-angular-todo
+cd /c/repos/angular-express-starter
 npm i remult@latest
 git add .
 git commit -m "updated remult"
 git push
 
-cd /c/repos/remult-vue-todo
+cd /c/repos/vue-express-starter
 npm i remult@latest
 git add .
 git commit -m "updated remult"
 git push
 
-cd /c/repos/remult-nextjs-todo
+cd /c/repos/nextjs-starter
 npm i remult@latest
 git add .
 git commit -m "updated remult"
 git push
 
-cd /c/repos/angular-starter-project
-npm i remult@latest @remult/angular@latest
-git add .
-git commit -m "updated remult"
-git push
+

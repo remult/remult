@@ -9,7 +9,13 @@ All notable changes to this project will be documented in this file.
   - And - no longer need for the Generics in the decorators setting.
     - `@Entity<Task>(...)` is now `@Entity(...)`
     - `@Fields.string<Task>(...)` is now `@Fields.string(...)`
-- Fixed issue where using using displayValue or validate on a spread object, marked it as new, and always triggered a post call
+    - [ ] fix docs
+    - [ ] fix example projects
+    - [ ] fix crm
+- Fixed issue where using displayValue or validate on a spread object, marked it as new, and always triggered a post call
+- Added Remult.run
+- isBackend will return true or false based on dataProvider.isProxy equal false or runningOnServer member
+- Backend method will call backend based on isBackend method,
 
 ## [0.21.0] - 2023-06-22
 

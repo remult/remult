@@ -10,7 +10,7 @@ import { PostgresDataProvider } from "../../postgres";
 import { MongoDataProvider } from "../../remult-mongo";
 import { SqlDatabase } from "../data-providers/sql-database";
 import { dbNamesOf } from "../filter/filter-consumer-bridge-to-sql-request";
-import { RemultAsyncLocalStorage } from "../../server/expressBridge";
+import { RemultAsyncLocalStorage } from "../../src/context";
 import { initAsyncHooks } from "../../server/initAsyncHooks";
 import { remult } from "../remult-proxy";
 import { describeClass } from "../remult3/DecoratorReplacer";
