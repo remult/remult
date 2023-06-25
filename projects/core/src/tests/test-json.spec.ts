@@ -6,12 +6,12 @@ import { Remult } from '../context';
 import { JsonDataProvider } from '../data-providers/json-data-provider';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 
-import { IdEntity } from '../id-entity';
+
 
 import { DataApi } from '../data-api';
 
 import { Categories as newCategories } from './remult-3-entities';
-import { Field, Entity, EntityBase, Fields } from '../remult3';
+import { Field, Entity, EntityBase, Fields, IdEntity } from '../remult3';
 import { tasks } from './tasks';
 import { deleteAll } from "../shared-tests/deleteAll";
 
@@ -110,7 +110,7 @@ describe("test tasks", () => {
         }
         await api.getArray(tr, {
             get: x => {
-                if (x == 'completed_ne')
+                if (x == 'completed.ne')
                     return 'true';
                 return undefined;
             }

@@ -1,6 +1,6 @@
 
 npm run build
-cd .vuepress/dist
+cd .vitepress/dist
 git init
 git add -A
 git commit -m 'deploy'

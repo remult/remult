@@ -205,10 +205,10 @@ export class MockRestDataProvider implements DataProvider {
   transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
     throw new Error('Method not implemented.');
   }
-  supportsrawFilter = true;
+  supportsRawFilter = true;
 
 }
-export function createMockHttpDataProvider(dataApi: DataApi<any>): import("c:/Repos/radweb/projects/core/src/data-interfaces").RestDataProviderHttpProvider {
+export function createMockHttpDataProvider(dataApi: DataApi<any>): import("../data-interfaces").RestDataProviderHttpProvider {
   return new HttpProviderBridgeToRestDataProviderHttpProvider({
     delete: async (url) => {
 
@@ -234,7 +234,7 @@ export function createMockHttpDataProvider(dataApi: DataApi<any>): import("c:/Re
       r.success = data => { result = data; };
       try {
         testConfiguration.restDbRunningOnServer = true;
-        await dataApi.httpGet(r, urlToReq(url), () => "");
+        await dataApi.httpGet(r, urlToReq(url), async () => "");
       }
       finally {
         testConfiguration.restDbRunningOnServer = false;
@@ -249,7 +249,7 @@ export function createMockHttpDataProvider(dataApi: DataApi<any>): import("c:/Re
       r.success = data => { result = data; };
       try {
         testConfiguration.restDbRunningOnServer = true;
-        await dataApi.httpPost(r, urlToReq(url), data, () => ({}));
+        await dataApi.httpPost(r, urlToReq(url), data, async () => ({}));
       }
       finally {
         testConfiguration.restDbRunningOnServer = false;

@@ -1,20 +1,5 @@
 # Remult
 * **Remult**
-## user
-Returns the current user's info
-## userChange
-returns a dispatcher object that fires once a user has changed
-## constructor
-Creates a new instance of the `remult` object.
-
-Arguments:
-* **provider**
-## apiBaseUrl
-The api Base Url to be used in all remult calls. by default it's set to `/api`.
-## _dataSource
-The current data provider
-## entityRefInit
-A helper callback that is called whenever an entity is created.
 ## repo
 Return's a `Repository` of the specific entity type
    
@@ -28,17 +13,15 @@ Return's a `Repository` of the specific entity type
    
    *see*
    [Repository](https://remult.dev/docs/ref_repository.html)
-   
-   
 
 Arguments:
 * **entity**
+    - the entity to use
 * **dataProvider**
-## setUser
-Set's the current user info
-
-Arguments:
-* **info**
+    - an optional alternative data provider to use. Useful for writing to offline storage or an alternative data provider
+   
+## user
+Returns the current user's info
 ## authenticated
 Checks if a user was authenticated
 ## isAllowed
@@ -71,11 +54,31 @@ checks if the user matches the allowedForInstance callback
 Arguments:
 * **instance**
 * **allowed**
-## setDataProvider
-sets the current data provider
+## dataProvider
+The current data provider
+## constructor
+Creates a new instance of the `remult` object.
 
 Arguments:
-* **dataProvider**
+* **http**
+## call
+Used to call a `backendMethod` using a specific `remult` object
+   
+   
+   *example*
+   ```ts
+   await remult.call(TasksController.setAll, undefined, true);
+   ```
+   
+
+Arguments:
+* **backendMethod**
+    - the backend method to call
+* **classInstance**
+    - the class instance of the backend method, for static backend methods use undefined
+* **args**
+    - the arguments to send to the backend method
+   
 ## onFind
 A helper callback that can be used to debug and trace all find operations. Useful in debugging scenarios
 
@@ -104,6 +107,7 @@ Arguments:
       })
       ```
       
+   * **load**
    * **where** - filters the data
       
       
@@ -132,6 +136,19 @@ Arguments:
       await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
       ```
       
-   * **load**
 ## clearAllCache
 * **clearAllCache**
+## entityRefInit
+A helper callback that is called whenever an entity is created.
+## context
+context information that can be used to store custom information that will be disposed as part of the `remult` object
+## apiClient
+The api client that will be used by `remult` to perform calls to the `api`
+## liveQueryStorage
+* **liveQueryStorage**
+## subscriptionServer
+* **subscriptionServer**
+## liveQueryPublisher
+* **liveQueryPublisher**
+## liveQuerySubscriber
+* **liveQuerySubscriber**

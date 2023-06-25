@@ -1,5 +1,5 @@
 ---
-sidebarDepth: 2
+outline: [2,3]
 ---
 
 # Add Remult to your App
@@ -11,25 +11,15 @@ To scaffold a new project, we suggest using one of the [tutorials](../docs/#lear
 
 ## Installation
 
-**The *remult* package is one and the same for both the frontend bundle and the backend server.**
+**The _remult_ package is one and the same for both the frontend bundle and the backend server.**
 
 If you're using one `package.json` for both frontend and backend (or a meta-framework such as Next.js) - **install Remult once** in the project's root folder.
 
 If you're using multiple `package.json` files (monorepo) - **install Remult in both server and client folders**.
 
-<code-group>
-<code-block title="npm">
 ```sh
 npm install remult
 ```
-</code-block>
-
-<code-block title="yarn">
-```sh
-yarn add remult
-```
-</code-block>
-</code-group>
 
 ## Server-side Initialization
 
@@ -40,46 +30,85 @@ Here is the code for setting up the Remult middleware:
 ### Express
 
 ```ts
-import express from 'express';
-import { remultExpress } from 'remult/remult-express';
+import express from "express"
+import { remultExpress } from "remult/remult-express"
 
-const app = express();
+const app = express()
 
-app.use(remultExpress({ entities: [/* entity types */] }));
+app.use(
+  remultExpress({
+    entities: [
+      /* entity types */
+    ]
+  })
+)
 
-app.listen(3000);
+app.listen(3000)
 ```
 
 ### Fastify
 
 ```ts
-import fastify from 'fastify';
-import { remultFastify } from 'remult/remult-fastify';
+import fastify from "fastify"
+import { remultFastify } from "remult/remult-fastify"
 
-(async () => {
-    const server = fastify();
+;(async () => {
+  const server = fastify()
 
-    await server.register(remultFastify({ entities: [/* entity types */] }));
+  await server.register(
+    remultFastify({
+      entities: [
+        /* entity types */
+      ]
+    })
+  )
 
-    server.listen({ port: 3000 });
-})();    
+  server.listen({ port: 3000 })
+})()
 ```
 
-### Next.js
+### Next.js Pages Router
 
 ```ts
 // src/pages/api/[...remult].ts
 
-import { NextApiRequest, NextApiResponse } from 'next';
-import { createRemultServer } from 'remult/server';
+import { remultNext } from "remult/remult-next"
 
-export const api = createRemultServer({ entities: [/* entity types */] });
+export default remultNext({
+  entities: [
+    /* entity types */
+  ]
+})
+```
 
-const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-    await api.handle(req, res);
-};
+### Next.js App Router
+```ts
+// src/app/api/[...remult]/route.ts
 
-export default handler;
+import { remultNextApp } from "remult/remult-next";
+
+export const api = remultNextApp({
+  entities: [
+    /* entity types */
+  ],
+});
+
+export const { GET, POST, PUT, DELETE } = api;
+
+```
+
+### Sveltekit
+
+```ts
+// src/hooks.server.ts
+
+import { remultSveltekit } from 'remult/remult-sveltekit';
+
+export const handle = remultSveltekit({
+  entities: [
+    /* entity types */
+  ]
+})
 ```
 
 ### Nest
@@ -87,43 +116,52 @@ export default handler;
 ```ts
 // src/main.ts
 
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import { remultExpress } from 'remult/remult-express';
+import { NestFactory } from "@nestjs/core"
+import { AppModule } from "./app.module"
+import { remultExpress } from "remult/remult-express"
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  
-  app.use(remultExpress({ entities: [/* entity types */] }));
-  
-  await app.listen(3000);
+  const app = await NestFactory.create(AppModule)
+
+  app.use(
+    remultExpress({
+      entities: [
+        /* entity types */
+      ]
+    })
+  )
+
+  await app.listen(3000)
 }
-bootstrap();
+bootstrap()
 ```
 
 ### Koa
 
 ```ts
-import * as koa from 'koa';
-import * as bodyParser from 'koa-bodyparser';
-import { createRemultServer } from 'remult/server';
+import * as koa from "koa"
+import * as bodyParser from "koa-bodyparser"
+import { createRemultServer } from "remult/server"
 
-const app = new koa();
+const app = new koa()
 
-app.use(bodyParser());
+app.use(bodyParser())
 
-const api = createRemultServer({ entities: [/* entity types */] });
+const api = createRemultServer({
+  entities: [
+    /* entity types */
+  ]
+})
 
 app.use(async (ctx, next) => {
-    const r = await api.handle(ctx.request);
-    if (r) {
-        ctx.response.body = r.data;
-        ctx.response.status = r.statusCode;
-    } else
-        return await next();
-});
+  const r = await api.handle(ctx.request)
+  if (r) {
+    ctx.response.body = r.data
+    ctx.response.status = r.statusCode
+  } else return await next()
+})
 
-app.listen(3000, () => { });
+app.listen(3000, () => {})
 ```
 
 ## Client-side Initialization
@@ -137,35 +175,35 @@ Here is the code for setting up a Remult client instance:
 ### Using Fetch
 
 ```ts
-import { remult } from 'remult';
+import { remult } from "remult"
 ```
 
 ### Using Axios
 
 ```ts
-import axios from 'axios';
-import { remult } from 'remult';
+import axios from "axios"
+import { remult } from "remult"
 
-remult.apiClient.httpClient = axios;
+remult.apiClient.httpClient = axios
 ```
 
 ### Using Angular HttpClient
 
 ```ts
 //...
-import { HttpClientModule, HttpClient } from '@angular/common/http';
-import { remult } from 'remult';
+import { HttpClientModule, HttpClient } from "@angular/common/http"
+import { remult } from "remult"
 
 @NgModule({
+  //...
+  imports: [
     //...
-    imports: [
-        //...
-        HttpClientModule
-    ]
+    HttpClientModule
+  ]
 })
 export class AppModule {
   constructor(http: HttpClient) {
-    remult.apiClient.httpClient = http;
+    remult.apiClient.httpClient = http
   }
 }
 ```
@@ -177,7 +215,7 @@ By default, remult makes data API calls to routes based at the `/api` route of t
 To use a different base URL for API calls (e.g. `https://localhost:3002/api`), set the remult object's `apiClient.url` property.
 
 ```ts
-remult.apiClient.url = 'http://localhost:3002/api'
+remult.apiClient.url = "http://localhost:3002/api"
 ```
 
 ::: warning CORS

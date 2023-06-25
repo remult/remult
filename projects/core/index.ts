@@ -1,6 +1,7 @@
 
 
 
+
 /*
  * Public API Surface of remult
  */
@@ -9,7 +10,7 @@ export {
     Fields,
     FieldsMetadata,
     Entity,
-
+    IdEntity,
     EntityBase,
     ControllerBase,
     FieldRef,
@@ -109,14 +110,9 @@ export {
     AllowedForInstance,
     EventDispatcher,
     EventSource,
-
-    Unobserve,
     UserInfo
 } from './src/context';
 export { ExternalHttpProvider } from './src/buildRestDataProvider'
-export {
-    IdEntity
-} from './src/id-entity';
 export { SortSegment, Sort } from './src/sort';
 export { OneToMany, CompoundIdField } from './src/column';
 export { Filter } from './src/filter/filter-interfaces';
@@ -128,6 +124,4 @@ export { remult } from './src/remult-proxy';
 //export { getId } from './src/remult3/getId';
 
 export { SubscriptionServer, LiveQueryStorage, StoredQuery, InMemoryLiveQueryStorage } from "./src/live-query/SubscriptionServer";
-export { SubscriptionClientConnection, SubscriptionClient, SubscriptionChannel, LiveQueryChange, Unsubscribe } from './src/live-query/SubscriptionClient';
-
-
+export { SubscriptionListener, SubscriptionClientConnection, SubscriptionClient, SubscriptionChannel, LiveQueryChange, Unsubscribe } from './src/live-query/SubscriptionChannel';

@@ -1,11 +1,12 @@
 
-import { FieldMetadata, FieldRef, EntityMetadata, getEntityRef, IdEntity, ValueListItem, EntityRef, Allowed, FieldOptions, Remult, ValueConverter, Unobserve, Repository, EntityOrderBy, EntityFilter, ValueListInfo } from "remult";
+import { FieldMetadata, FieldRef, EntityMetadata, getEntityRef, IdEntity, ValueListItem, EntityRef, Allowed, FieldOptions, Remult, ValueConverter, Repository, EntityOrderBy, EntityFilter, ValueListInfo } from "remult";
 
 import { DataControlInfo, DataControlSettings, decorateDataSettings, getFieldDefinition, ValueOrEntityExpression } from "./data-control-interfaces";
 import { FilterHelper } from "./filter-helper";
 import { decorateColumnSettings, getEntitySettings, RefSubscriber } from 'remult/src/remult3';
 
 import { ClassType } from "remult/classType";
+
 
 
 
@@ -357,122 +358,6 @@ export function valueOrEntityExpressionToValue<T, entityType>(f: ValueOrEntityEx
   return <T>f;
 }
 
-
-export class InputField<valueType> implements FieldRef<any, valueType> {
-  private options: FieldOptions;
-  dataControl: DataControlSettings;
-  async validate() {
-    return true;
-  }
-  constructor(
-    settings: FieldOptions<any, valueType>
-      & DataControlSettings
-      & {
-
-
-        remult?: Remult
-      }) {
-
-    if (!settings.dbName)
-      settings.dbName = settings.key;
-
-    this.options = decorateColumnSettings(settings, settings.remult);
-    this.dataControl = settings;
-    if (!this.dataControl.valueList && this.options.valueConverter instanceof ValueListInfo) {
-      this.dataControl.valueList = this.options.valueConverter.getValues();
-    }
-
-
-    if (!settings.caption)
-      settings.caption = 'caption';
-
-    if (!settings.key)
-      settings.key = settings.caption;
-    this.inputType = settings.inputType;
-    if (settings.defaultValue) {
-      this._value = settings.defaultValue(undefined) as unknown as valueType
-    }
-
-    this.originalValue = this._value;
-    let valueConverter = this.options.valueConverter ? this.options.valueConverter : undefined;
-    if (valueConverter)
-      if (!settings.inputType) {
-        settings.inputType = valueConverter.inputType;
-      }
-    this.metadata = {
-
-      allowNull: settings.allowNull,
-      caption: settings.caption,
-      options: this.options,
-      valueConverter: valueConverter,
-      valueType: settings.valueType,
-      key: settings.key,
-      dbName: settings.dbName,
-      dbReadOnly: false,
-      inputType: settings.inputType,
-      isServerExpression: false,
-      getDbName: async () => settings.dbName,
-      target: undefined
-
-    }
-
-
-  }
-  subscribe(listener: RefSubscriber): Unobserve {
-    throw new Error("Method not implemented.");
-  }
-  valueIsNull() {
-    return this.value === null;
-  }
-  originalValueIsNull() {
-    return this.originalValue === null;
-  }
-  load(): Promise<valueType> {
-    throw new Error("Method not implemented.");
-  }
-  metadata: {
-    readonly key: string;
-    readonly target: ClassType<valueType>;
-    readonly valueType: any;
-    getDbName: () => Promise<string>;
-
-    caption: string;
-    readonly inputType: string;
-    readonly allowNull: boolean;
-
-
-    readonly isServerExpression: boolean;
-    readonly dbReadOnly: boolean;
-    readonly dbName: string;
-    readonly valueConverter: ValueConverter<valueType>;
-    readonly options: FieldOptions;
-  };
-  _value: valueType;
-  inputType: string;
-  error: string;
-  get displayValue() {
-    if (this.options.displayValue)
-      return this.options.displayValue(this.value, undefined);
-    return this.value.toString();
-  }
-  get value(): valueType { return this._value; }
-  set value(val: valueType) {
-    this._value = val;
-    if (this.dataControl.valueChange)
-      this.dataControl.valueChange(undefined, this)
-  };
-  originalValue: valueType;
-  get inputValue(): string { return this.metadata.valueConverter.toInput(this.value, this.inputType); }
-  set inputValue(val: string) { this.value = this.metadata.valueConverter.fromInput(val, this.inputType); };
-  valueChanged(): boolean {
-    return this.originalValue != this.value;
-  }
-  entityRef: EntityRef<any>;
-  container: any;
-
-
-
-}
 
 function fixResult(result: ValueListItem[], inField: FieldMetadata | FieldRef<any, any>) {
   let field = getFieldDefinition(inField);

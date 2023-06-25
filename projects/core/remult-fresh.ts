@@ -1,27 +1,18 @@
 import { } from "./server/core";
-import { RemultServerOptions, RemultServer, createRemultServerCore, GenericRequest } from "./server/expressBridge";
+import { RemultServerOptions, RemultServer, createRemultServerCore, GenericRequestInfo, RemultServerCore } from "./server/expressBridge";
 import { Remult } from "./src/context";
 
-export function remultFresh<RequestType extends GenericRequest >(options: RemultServerOptions<RequestType>, response: FreshResponse): RemultFresh {
-    const server = createRemultServerCore(options);
+export function remultFresh(options: RemultServerOptions<FreshRequest>, response: FreshResponse): RemultFresh {
+    const server = createRemultServerCore<FreshRequest>(options, {
+        buildGenericRequestInfo: r => r,
+        getRequestBody: req => req.json()
+    });
     return {
         getRemult: r => server.getRemult(r),
         openApiDoc: x => server.openApiDoc(x),
         handle: async (req: FreshRequest, ctx: FreshContext) => {
-            const theReq = {
-                method: req.method,
-                url: req.url,
-                body: undefined
-            };
-
-            switch (req.method.toLocaleLowerCase()) {
-                case "put":
-                case "post":
-                    theReq.body = await req.json();
-                    break;
-            }
             let init: ResponseInit = {};
-            const res = await server.handle(theReq);
+            const res = await server.handle(req);
             if (res) {
                 init.status = res.statusCode;
                 if (res.data) {
@@ -33,13 +24,11 @@ export function remultFresh<RequestType extends GenericRequest >(options: Remult
             else {
                 return ctx.next();
             };
-        }
+        },
     }
 };
 
-export interface RemultFresh {
-    getRemult(req: GenericRequest): Promise<Remult>;
-    openApiDoc(options: { title: string }): any;
+export interface RemultFresh extends RemultServerCore<FreshRequest> {
     handle(req: FreshRequest, ctx: FreshContext): Promise<any>
 }
 export interface FreshRequest {

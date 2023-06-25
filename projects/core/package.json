@@ -2,7 +2,6 @@
   "name": "remult",
   "version": "0.15.0",
   "description": "A CRUD framework for full-stack TypeScript",
-  "main": "index.js",
   "types": "index.d.ts",
   "module": "esm/index.js",
   "homepage": "https://remult.dev/",
@@ -17,6 +16,7 @@
   },
   "dependencies": {
     "uuid": "^8.3.2",
+    "cuid": "^2.1.8",
     "reflect-metadata": "^0.1.13",
     "tslib": "^2.3.1"
   },
@@ -37,13 +37,13 @@
       },
       "import": "./esm/remult-express.js"
     },
-    "./remult-zod": {
-      "require": "./remult-zod.js",
+    "./remult-next": {
+      "require": "./remult-next.js",
       "node": {
-        "require": "./remult-zod.js",
-        "import": "./remult-zod.js"
+        "require": "./remult-next.js",
+        "import": "./remult-next.js"
       },
-      "import": "./esm/remult-zod.js"
+      "import": "./esm/remult-next.js"
     },
     "./server": {
       "require": "./server/index.js",
@@ -55,7 +55,7 @@
     },
     "./server/core": {
       "require": "./server/core.js",
-      "node":{
+      "node": {
         "require": "./server/core.js",
         "import": "./server/core.js"
       },
@@ -76,6 +76,14 @@
         "import": "./remult-fresh.js"
       },
       "import": "./esm/remult-fresh.js"
+    },
+    "./remult-sveltekit": {
+      "require": "./remult-sveltekit.js",
+      "node": {
+        "require": "./remult-sveltekit.js",
+        "import": "./remult-sveltekit.js"
+      },
+      "import": "./esm/remult-sveltekit.js"
     },
     "./postgres": {
       "require": "./postgres/index.js",
@@ -109,13 +117,13 @@
       },
       "import": "./esm/remult-mongo.js"
     },
-    "./live-query/ably": {
-      "require": "./live-query/ably.js",
+    "./ably": {
+      "require": "./ably.js",
       "node": {
-        "require": "./live-query/ably.js",
-        "import": "./live-query/ably.js"
+        "require": "./ably.js",
+        "import": "./ably.js"
       },
-      "import": "./esm/live-query/ably.js"
+      "import": "./esm/ably.js"
     },
     "./graphql": {
       "require": "./graphql.js",

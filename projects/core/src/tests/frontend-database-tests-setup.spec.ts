@@ -1,5 +1,5 @@
 
-import { addDatabaseToTest, dbTestWhatSignature, itWithFocus } from "../shared-tests/db-tests-setup";
+import { addDatabaseToTest, dbTestWhatSignature, itWithFocus, TestDbs } from "../shared-tests/db-tests-setup";
 import { InMemoryDataProvider, remult } from "../..";
 import { Remult } from "../context";
 import { SqlDatabase } from "../data-providers/sql-database";
@@ -39,7 +39,7 @@ export function testRest(key: string, what: dbTestWhatSignature, focus = false) 
     await what({ db, remult, createEntity: async (x) => remult.repo(x) });
   }, focus);
 }
-addDatabaseToTest(testRest);
+addDatabaseToTest(testRest, TestDbs.restDataProvider);
 
 
 import '../shared-tests/';

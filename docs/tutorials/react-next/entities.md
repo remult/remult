@@ -1,13 +1,14 @@
-# Entities 
+# Entities
 
 Let's start coding the app by defining the `Task` entity class.
 
 The `Task` entity class will be used:
-* As a model class for client-side code
-* As a model class for server-side code
-* By `remult` to generate API endpoints, API queries, and database commands
 
-The `Task` entity class we're creating will have an auto-generated UUID `id` field a `title` field and a `completed` field. The entity's API route ("tasks") will include endpoints for all `CRUD` operations.
+- As a model class for client-side code
+- As a model class for server-side code
+- By `remult` to generate API endpoints, API queries, and database commands
+
+The `Task` entity class we're creating will have an auto-generated `id` field, a `title` field, a `completed` field and an auto-generated `createdAt` field. The entity's API route ("tasks") will include endpoints for all `CRUD` operations.
 
 ## Define the Model
 
@@ -15,203 +16,126 @@ The `Task` entity class we're creating will have an auto-generated UUID `id` fie
 
 2. Create a file `Task.ts` in the `src/shared/` folder, with the following code:
 
-*src/shared/Task.ts*
 ```ts
-import { Entity, Fields } from "remult";
+// src/shared/Task.ts
+
+import { Entity, Fields } from "remult"
 
 @Entity("tasks", {
-    allowApiCrud: true
+  allowApiCrud: true
 })
 export class Task {
-    @Fields.uuid()
-    id!: string;
+  @Fields.cuid()
+  id = ""
 
-    @Fields.string()
-    title = '';
+  @Fields.string()
+  title = ""
 
-    @Fields.boolean()
-    completed = false;
+  @Fields.boolean()
+  completed = false
+
+  @Fields.createdAt()
+  createdAt?: Date
 }
 ```
 
-3. In the server's `api` module, register the `Task` entity with Remult by adding `entities: [Task]` to an `options` object you pass to the `createRemultServer()` method:
+3. In the `[...remult].ts` api route, register the `Task` entity with Remult by adding `entities: [Task]` to an `options` object you pass to the `remultNext()` function:
 
-*src/server/api.ts*
-```ts{2,5}
-import { createRemultServer } from "remult/server";
-import { Task } from "../shared/Task";
+```ts{4,7}
+// src/pages/api/[...remult].ts
 
-export const api = createRemultServer({
-    entities: [Task]
+import { remultNext } from "remult/remult-next"
+import { Task } from "../../shared/Task"
+
+export const api = remultNext({
+  entities: [Task]
 })
 ```
 
-The [@Entity](../../docs/ref_entity.md) decorator tells Remult this class is an entity class. The decorator accepts a `key` argument (used to name the API route and as a default database collection/table name), and an `options` argument used to define entity-related properties and operations, discussed in the next sections of this tutorial. 
+The [@Entity](../../docs/ref_entity.md) decorator tells Remult this class is an entity class. The decorator accepts a `key` argument (used to name the API route and as a default database collection/table name), and an `options` argument used to define entity-related properties and operations, discussed in the next sections of this tutorial.
 
 To initially allow all CRUD operations for tasks, we set the option [allowApiCrud](../../docs/ref_entity.md#allowapicrud) to `true`.
 
-The `@Fields.uuid` decorator tells Remult to automatically generate an id using `uuid`. We mark this property as optional so we can create new `Task` objects without assigning an `id` at first, and have Remult generate one before the object's data is stored to the backend database.
+The [@Fields.cuid](../../docs/field-types.md#fields-cuid) decorator tells Remult to automatically generate a short random id using the [cuid](https://github.com/paralleldrive/cuid) library. This value can't be changed after the entity is created.
 
-The [@Fields.string](../../docs/ref_field.md) decorator tells Remult the `title` property is an entity data field of type `String`. This decorator is also used to define field-related properties and operations, discussed in the next sections of this tutorial and the same goes for `@Fields.boolean` and the `completed` property.
+The [@Fields.string](../../docs/field-types.md#fields-string) decorator tells Remult the `title` property is an entity data field of type `String`. This decorator is also used to define field-related properties and operations, discussed in the next sections of this tutorial and the same goes for `@Fields.boolean` and the `completed` property.
 
-## Seed Test Data
+The [@Fields.createdAt](../../docs/field-types.md#fields-createdat) decorator tells Remult to automatically generate a `createdAt` field with the current date and time.
 
-Now that the `Task` entity is defined, we can use it to seed the database with some test data.
+::: tip
+For a complete list of supported field types, see the [Field Types](../../docs/field-types.md) section in the Remult documentation.
+:::
 
-Add the highlighted code lines to `src/server/api.ts`.
+## Test the API
 
-*src/server/api.ts*
-```ts{6-17}
-import { createRemultServer } from "remult/server";
-import { Task } from "../shared/Task";
+Now that the `Task` entity is defined, we can start using the REST API to query and add a tasks.
 
-export const api = createRemultServer({
-    entities: [Task],
-    initApi: async remult => {
-        const taskRepo = remult.repo(Task);
-        if (await taskRepo.count() === 0) {
-            await taskRepo.insert([
-                { title: "Task a" },
-                { title: "Task b", completed: true },
-                { title: "Task c" },
-                { title: "Task d" },
-                { title: "Task e", completed: true }
-            ]);
-        }
-    }
-})
+1. Open a browser with the url: [http://localhost:3000/api/tasks](http://localhost:3000/api/tasks), and you'll see that you get an empty array.
+
+2. Use `curl` to `POST` a new task - *Clean car*.
+
+```sh
+curl http://localhost:3000/api/tasks -d "{\"title\": \"Clean car\"}" -H "Content-Type: application/json"
 ```
 
-The `initApi` callback is called only once, after a database connection is established and the server is ready to perform initialization operations.
+3. Refresh the browser for the url: [http://localhost:3000/api/tasks](http://localhost:3000/api/tasks) and see that the array now contains one item.
 
-`taskRepo` is a Remult [Repository](../../docs/ref_repository.md) object used to fetch and create `Task` entity objects.
+4. Use `curl` to `POST` a few more tasks:
 
-The code in `initApi` simply adds five new Tasks to the database if the current `count` is zero.
+```sh
+curl http://localhost:3000/api/tasks -d "[{\"title\": \"Read a book\"},{\"title\": \"Take a nap\", \"completed\":true },{\"title\": \"Pay bills\"},{\"title\": \"Do laundry\"}]" -H "Content-Type: application/json"
+```
+- Note that the `POST` endpoint can accept a single `Task` or an array of `Task`s.
 
-Saving the changes will cause the server to restart and seed the database with the test data. Navigate to the `tasks` API route at <http://localhost:3000/api/tasks> to see the data.
+5. Refresh the browser again, to see that the tasks were stored in the db.
 
 ::: warning Wait, where is the backend database?
 While remult supports [many relational and non-relational databases](https://remult.dev/docs/databases.html), in this tutorial we start by storing entity data in a backend **JSON file**. Notice that a `db` folder has been created under the root folder, with a `tasks.json` file containing the created tasks.
 :::
 
-
 ## Display the Task List
+
 Let's start developing the web app by displaying the list of existing tasks in a React component.
 
-Replace the contents of `pages/index.tsx` with the following code:
+Replace the contents of `src/pages/index.tsx` with the following code:
 
-*pages/index.tsx*
 ```tsx
-import type { NextPage } from 'next'
-import { useEffect, useState } from 'react';
-import { remult } from 'remult';
-import { Task } from '../src/shared/Task';
+// src/pages/index.tsx
 
-async function fetchTasks() {
-  return remult.repo(Task).find();
-}
+import { useEffect, useState } from "react"
+import { remult } from "remult"
+import { Task } from "../shared/Task"
 
-const Home: NextPage = () => {
-  const [tasks, setTasks] = useState<Task[]>([]);
+const taskRepo = remult.repo(Task)
+
+export default function Home() {
+  const [tasks, setTasks] = useState<Task[]>([])
 
   useEffect(() => {
-    fetchTasks().then(setTasks);
-  }, []);
-
+    taskRepo.find().then(setTasks)
+  }, [])
   return (
     <div>
+      <h1>Todos</h1>
       <main>
-        {tasks.map(task => (
-          <div key={task.id}>
-            <input type="checkbox" checked={task.completed} />
-            {task.title}
-          </div>
-        ))}
+        {tasks.map(task => {
+          return (
+            <div key={task.id}>
+              <input type="checkbox" checked={task.completed} />
+              {task.title}
+            </div>
+          )
+        })}
       </main>
     </div>
   )
 }
-
-export default Home
 ```
 
 Here's a quick overview of the different parts of the code snippet:
 
-* The `fetchTasks` function uses the Remult [repository](../../docs/ref_repository.md)'s [find](../../docs/ref_repository.md#find) method to fetch tasks from the server.
-* `tasks` is a Task array React state to hold the list of tasks.
-* React's useEffect hook is used to call `fetchTasks` once when the React component is loaded.
+- `taskRepo` is a Remult [Repository](../../docs/ref_repository.md) object used to fetch and create Task entity objects.
+- `tasks` is a Task array React state to hold the list of tasks.
+- React's useEffect hook is used to call the Remult [repository](../../docs/ref_repository.md)'s [find](../../docs/ref_repository.md#find) method to fetch tasks from the server once when the React component is loaded.
 
 After the browser refreshes, the list of tasks appears.
-
-### Add Styles
-
-Optionally, make the app look a little better by replacing the contents of `styles/globals.css` with [this CSS file](https://raw.githubusercontent.com/remult/react-vite-express-starter/completed-tutorial/src/index.css).
-
-
-## Static Generation & Server-side Rendering
-Next.js allow for pre-rendering page content using **Server-side Rendering (SSR)** or **Static-site Generation (SSG)**. 
-
-To access `remult` instance from **getServerSideProp** or **getStaticProps**, you need to write the following code:
-```tsx
-import { api } from '../src/server/api';
-
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const remult = await api.getRemult(context);
-  return { props: {} };
-};
-```
-Then you can fetch data using pieces of code from `fetchTasks` above.
-
-Your `pages/index.tsx` contents now should look like this:
-
-*pages/index.tsx*
-```tsx
-import type { NextPage } from 'next'
-import { useEffect, useState } from 'react';
-import { Task } from '../src/shared/Task';
-import { api } from '../src/server/api';
-
-type HomeProps = {
-  tasks: Task[];
-};
-
-const Home: NextPage = ({ tasks }: HomeProps) => {
-  return (
-    <div>
-      <main>
-        {tasks.map(task => (
-          <div key={task.id}>
-            <input type="checkbox" checked={task.completed} />
-            {task.title}
-          </div>
-        ))}
-      </main>
-    </div>
-  )
-}
-
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  // Get remult instance
-  const remult = await api.getRemult(context);
-
-  // Find all tasks
-  const tasks = await remult.repo(Task).find();
-
-  // Serialize tasks into plain object
-  const tasksJson = JSON.parse(JSON.stringify(tasks));
-  
-  return { props: { tasks: tasksJson } };
-};
-
-export default Home
-```
-
-::: tip
-Take a look at `const tasksJson = JSON.parse(JSON.stringify(tasks));`
-
-In Next.js, you can only pass serializable object to props either using:
-- `JSON.parse(JSON.stringify(data))`
-- entityRef's `toApiJson()` method, or
-- configuring nextjs with `next-superjson` library.
-
-:::

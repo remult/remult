@@ -24,11 +24,14 @@
         "postgresql",
         "Prefilter",
         "remult",
+        "remult-nextjs-todo",
         "remult's",
         "respawn",
         "scroller",
         "styleext",
+        "Supabase",
         "tldr",
+        "Todos",
         "typedoc",
         "unchecks",
         "unopinionated",
@@ -38,6 +41,12 @@
     "cSpell.ignoreWords": [
         "allowapicrud"
     ],
-    "autoHide.autoHideSideBar": false,
-    "autoHide.autoHidePanel": false
+
+    "[typescriptreact]": {
+        "editor.defaultFormatter": "vscode.typescript-language-features"
+    }
+    ,
+    "[typescript]": {
+        "editor.defaultFormatter": "vscode.typescript-language-features"
+    }
 }

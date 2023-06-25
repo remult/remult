@@ -1,11 +1,12 @@
 import { ActionTestConfig, testAsIfOnBackend } from './testHelper.spec';
 import { Remult, isBackend } from '../context';
 import { prepareArgsToSend, Controller, BackendMethod } from '../server-action';
-import { Field, Entity, getFields, ValueListFieldType, Fields, TransferEntityAsIdFieldOptions } from '../remult3';
+import { Field, Entity, getFields, ValueListFieldType, Fields, IdEntity, TransferEntityAsIdFieldOptions } from '../remult3';
 
-import { IdEntity } from '../id-entity';
+
 import { remult, RemultProxy } from '../remult-proxy';
 import { describeClass } from '../remult3/DecoratorReplacer';
+import { InMemoryDataProvider } from '../data-providers/in-memory-database';
 
 
 @ValueListFieldType()
@@ -282,7 +283,7 @@ describe("test Server Controller basics", () => {
             }
         });
         const r = (await c.call(testBasics.sf, undefined, "noam"));
-        
+
         expect(r.result).toBe("hello noam");
     });
     it("test backend method caller with proxy", async () => {
@@ -319,7 +320,7 @@ describe("test Server Controller basics", () => {
         });
         const b = new testBasics(remult);
         const r = (await c.call(b.doIt, b));
-        
+
         expect(r.result).toBe("hello noam");
     });
     it("test backend method instance method with proxy", async () => {
@@ -428,6 +429,20 @@ describe("test Server Controller basics", () => {
 
 
     });
+    it("test static backend method ", async () => {
+        const myClass = class {
+            static async doSomething2222() {
+                return isBackend().toString();
+            }
+        }
+        describeClass(myClass,
+            undefined,
+            undefined,
+            {
+                doSomething2222: BackendMethod({ allowed: true ,apiPrefix:'myPrefix'}),
+            })
+        expect(await myClass.doSomething2222()).toBe("true");
+    });
     it("test backend method with adhoc entity", async () => {
         const myClass = class {
             id = 0;
@@ -462,6 +477,28 @@ describe("test Server Controller basics", () => {
             adHockDoSomething: BackendMethod({ allowed: true }),
         })
         expect(await myClass.adHockDoSomething()).toBe(true);
+    });
+
+    it("test remult proxy for repository", async () => {
+        let remult1 = new Remult(new InMemoryDataProvider());
+        await remult1.repo(testEntity).insert({ name: "a" });
+        let remult2 = new Remult(new InMemoryDataProvider());
+        let remultProxy = new RemultProxy();
+        let repo = remultProxy.repo(testEntity);
+        remultProxy.remultFactory = () => remult1;
+        expect(await repo.count()).toBe(1);
+        remultProxy.remultFactory = () => remult2;
+        expect(await repo.count()).toBe(0);
+        let z = await repo.save({ name: "b" });
+        expect(z.name).toBe("b");
+        expect(await repo.count()).toBe(1);
+        remultProxy.remultFactory = () => remult1;
+        expect(await repo.find({
+            where: {
+                name: "b"
+            }
+        })).toEqual([])
+
     });
 
 });

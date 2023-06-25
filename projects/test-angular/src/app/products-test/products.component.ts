@@ -1,8 +1,12 @@
 import { Component, NgZone, OnInit } from '@angular/core';
-import { Remult, Entity, IdEntity, Fields, Controller, InMemoryDataProvider, Sort, BackendMethod } from 'remult';
+import { Remult, Entity, IdEntity, Fields, Controller, InMemoryDataProvider, Sort, BackendMethod, remult, SubscriptionChannel, ProgressListener, Field } from 'remult';
 import { GridSettings } from '@remult/angular/interfaces';
 import { DialogConfig } from '../../../../angular';
 import * as ably from 'ably';
+import { Observable } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+
+
 
 
 
@@ -17,91 +21,89 @@ import * as ably from 'ably';
 @DialogConfig({
   height: '1500px'
 })
-export class ProductsComponent implements OnInit {
-  constructor(private remult: Remult, private zone: NgZone) {
-    remult.liveQuerySubscriber.wrapMessageHandling = x => zone.run(() => x());
-    if (false) {
-      const p = new AblyLiveQueryProvider(new ably.Realtime.Promise(
-        {
-          async authCallback(data, callback) {
-            try {
-              callback(null, await ProductsComponent.getAblyToken())
-            }
-            catch (error: any) {
-              callback(error, null);
-            }
-          },
-        }
+export class ProductsComponent {
+  constructor(private remult: Remult, private zone: NgZone, private http: HttpClient) {
 
-      ))
-      remult.liveQuerySubscriber = new LiveQueryClient(p);
-    }
+
   }
 
+  tasks: Task[] = [];
 
-  grid = new GridSettings(this.remult.repo(Task), {
-    allowCrud: true, gridButtons: [{
-      name: 'reload',
-      click: () => {
-        this.grid.reloadData();
-      }
-    }]
-  });
-
-  messages: string[] = [];
   async ngOnInit() {
-    await this.remult.repo(Task).count();
-
-
+    remult.repo(Task).liveQuery({
+      load: () => []
+    }).subscribe(info => this.tasks = info.applyChanges(this.tasks))
 
   }
-  tasks: Observable<Task[]> = new Observable((x) => {
-    let tasks: Task[] = [];
-    return this.remult.repo(Task).query().subscribe(newResult => {
-      tasks = newResult(tasks);
-      x.next(tasks);
-    })
-  });
 
-  @BackendMethod({ allowed: true })
-  static async getAblyToken() {
-    const a = new ably.Realtime.Promise(process.env.ABLY_KEY);
-    return await a.auth.createTokenRequest({
-      capability: {
-        [`*`]: ["subscribe"]
-      }
-    });
-  }
+  countRemult = {};
+
+
+
 }
 
 
-export const helper = {
-  onSaved: (t: Task) => { },
-  onDeleted: (t: Task) => { },
-}
-
-@Entity<Task>("tasks", {
-  allowApiCrud: true,
-  saved: item => {
-    helper.onSaved(item);
-  },
-  deleted: item => {
-    helper.onDeleted(item)
-  }
+@Entity("categories", {
+  allowApiCrud: true
 })
-export class Task extends IdEntity {
-
+export class Category {
+  @Fields.autoIncrement()
+  id = 0;
   @Fields.string()
-  title = '';
-  @Fields.boolean()
-  completed = false;
+  name = ''
 }
 
+@Entity("tasks", {
+  allowApiCrud: true,
+  allowApiDelete: false
 
+})
+export class Task {
+  @Fields.autoIncrement()
+  id = 0
+  @Fields.string<Task>()
+  title = ''
+  @Fields.boolean()
+  completed = false
+  @Field(() => Category)
+  category: Category;
+  @BackendMethod({ allowed: true, apiPrefix: 'noam' })
+  static async entityStatic() {
+    return "ok";
+  }
+  @BackendMethod({ allowed: true, apiPrefix: 'noam' })
+  async entityInstance() {
+    return "ok"
+  }
+  @Fields.string({ allowApiUpdate: false })
+  apiUpdateNotAllowed = '';
+  @Fields.string({ includeInApi: false })
+  includeInApiFalse = '';
+  @Fields.string({ serverExpression: () => '' })
+  serverExpression = '';
+}
 
-import { Observable } from 'rxjs';
-import { AblyLiveQueryProvider } from '../../../../core/live-query/ably';
-import { LiveQueryClient } from '../../../../core/live-query';
-
-
-
+export class TasksController {
+  @BackendMethod({ allowed: true, apiPrefix: 'noam' })
+  static async undecoratedStatic() {
+    return "ok";
+  }
+  @BackendMethod({ allowed: true })
+  static async testTrans() {
+    const repo = remult.repo(Task);
+    await repo.insert({ title: "before error" });
+    throw new Error("RRRRR")
+    await repo.insert({ title: "After Error" })
+  }
+}
+@Controller("Decorated/myStuff/someMoreStuff")
+export class TasksControllerDecorated {
+  @BackendMethod({ allowed: true, apiPrefix: 'noam' })
+  static async decoratedStatic() {
+    return "ok";
+  }
+  @BackendMethod({ allowed: true, apiPrefix: 'noam' })
+  async decorated() {
+    return "ok";
+  }
+}

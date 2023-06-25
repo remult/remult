@@ -545,7 +545,7 @@ it("start build backend method with allowed", async () => {
       b: String
     },
     returnType: String,
-    allowed: (remult, y) => y.a.getFullYear() === 1976,
+    allowed: ( y) => y.a.getFullYear() === 1976,
     implementation: async ({ a, b }) => a.getFullYear().toString() + b
   });
   expect(await m({ a: new Date(1976, 5, 16), b: "noam" })).toBe("1976noam");
@@ -602,26 +602,25 @@ it("test validation", async () => {
   expect(await m({ a: "noam" })).toBe("noamz");
 
 });
-if (false)
-  it("test validation 1 - make sure to return this on merge", async () => {
-    const m = createBackendMethod("t1", {
-      inputType:
-        Fields.string({ validate: Validators.required })
-      ,
-      returnType: String,
-      allowed: true,
-      implementation: async x => x + "z"
-    })
-    let ok = true;
-    try {
-      await m("")
-      ok = false;
-    }
-    catch (err: any) {
-      expect(err.modelState.a).toBe("Should not be empty");
-    }
-    expect(ok).toBe(true);
-    expect(await m("noam")).toBe("noamz");
+it("test validation 1", async () => {
+  const m = createBackendMethod("t1", {
+    inputType: 
+       Fields.string({ validate: Validators.required })
+    ,
+    returnType: String,
+    allowed: true,
+    implementation: async x => x + "z"
+  })
+  let ok = true;
+  try {
+    await m( "" )
+    ok = false;
+  }
+  catch (err: any) {
+    expect(err.modelState.a).toBe("Should not be empty");
+  }
+  expect(ok).toBe(true);
+  expect(await m("noam")).toBe("noamz");
 
   });
 

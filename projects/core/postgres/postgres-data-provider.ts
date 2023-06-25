@@ -17,6 +17,7 @@ export interface PostgresClient extends PostgresCommandSource {
 }
 
 export class PostgresDataProvider implements SqlImplementation {
+    supportsJsonColumnType = true;
     static getDb(remult?: Remult): ClientBase {
         const sql = SqlDatabase.getDb(remult);
         const me = sql._getSourceSql() as PostgresDataProvider;
@@ -35,7 +36,11 @@ export class PostgresDataProvider implements SqlImplementation {
     createCommand(): SqlCommand {
         return new PostgresBridgeToSQLCommand(this.pool);
     }
-    constructor(private pool: PostgresPool) {
+    constructor(private pool: PostgresPool) { }
+    async ensureSchema(entities: EntityMetadata<any>[]): Promise<void> {
+        var db = new SqlDatabase(this);
+        var sb = new PostgresSchemaBuilder(db);
+        await sb.ensureSchema(entities)
     }
 
     async transaction(action: (dataProvider: SqlImplementation) => Promise<void>) {
@@ -48,8 +53,9 @@ export class PostgresDataProvider implements SqlImplementation {
                 entityIsUsedForTheFirstTime: this.entityIsUsedForTheFirstTime,
                 transaction: () => { throw "nested transactions not allowed" },
                 getLimitSqlSyntax: this.getLimitSqlSyntax,
+                supportsJsonColumnType: this.supportsJsonColumnType,
                 //@ts-ignore
-                pool:client
+                pool: client
             });
             await client.query('COMMIT');
         }
@@ -94,12 +100,17 @@ class PostgresBridgeToSQLQueryResult implements SqlResult {
 }
 
 
-
 export async function createPostgresConnection(options?: {
     connectionString?: string,
     sslInDev?: boolean,
-    configuration?: "heroku" | PoolConfig,
-    autoCreateTables?: boolean
+    configuration?: "heroku" | PoolConfig
+}) {
+    return createPostgresDataProvider(options)
+}
+export async function createPostgresDataProvider(options?: {
+    connectionString?: string,
+    sslInDev?: boolean,
+    configuration?: "heroku" | PoolConfig
 }) {
     if (!options)
         options = {};
@@ -126,21 +137,16 @@ export async function createPostgresConnection(options?: {
     const db = new SqlDatabase(new PostgresDataProvider(new Pool(config)));
     let remult = new Remult();
     remult.dataProvider = (db);
-    if (options.autoCreateTables === undefined || options.autoCreateTables)
-        await verifyStructureOfAllEntities(db, remult);
     return db;
 
 }
 
 export async function preparePostgresQueueStorage(sql: SqlDatabase) {
-
     let c = new Remult();
     c.dataProvider = (sql);
     let JobsInQueueEntity = (await import('../server/expressBridge')).JobsInQueueEntity
     let e = c.repo(JobsInQueueEntity);
-    await new PostgresSchemaBuilder(sql).createIfNotExist(e.metadata);
-    await new PostgresSchemaBuilder(sql).verifyAllColumns(e.metadata);
-
+    await sql.ensureSchema([e.metadata]);
     return new (await import('../server/expressBridge')).EntityQueueStorage(c.repo(JobsInQueueEntity));
 
 

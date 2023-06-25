@@ -1,3 +1,10 @@
+---
+tags:
+  - Where
+  - Filter
+  - Entity Where
+  - Entity Filter
+---
 # EntityFilter
 Used to filter the desired result set
 ### Basic example
@@ -9,6 +16,8 @@ where: { status:1 }
 ### In Statement
 ```ts
 where:{ status:[1,3,5] }
+//or
+where:{ status:{ $in:[1,3,5]: } }
 ```
 
 ### Not Equal
@@ -23,6 +32,8 @@ where:{ status:{ $ne:1 }}
 where:{status:{ "!=":[1,2,3] }}
 //or 
 where:{status:{ $ne:[1,2,3] }}
+//or
+where:{status:{ $nin:[1,2,3] }}
 ```
 
 ### Comparison operators

@@ -15,19 +15,27 @@ export function itWithFocus(key: string, what: () => Promise<void>, focus = fals
     else
         it(key, what);
 }
-export function testAll(key: string, what: dbTestWhatSignature, focus = false) {
+export function testAll(key: string, what: dbTestWhatSignature, focus = false, options?: {
+    exclude?: string[]
+}) {
+    function runTest(m: dbTestMethodSignature) {
+        return !options?.exclude?.includes(m.key);
+    }
     for (const test of databasesTesters) {
-        test(key, what, focus);
+        if (runTest(test))
+            test(key, what, focus);
     }
     loadedTests.push(x => {
-        x(key, what, focus);
+        if (runTest(x))
+            x(key, what, focus);
     })
 }
 
 
 const databasesTesters = [] as dbTestMethodSignature[];
 const loadedTests = [] as ((tested: dbTestMethodSignature) => void)[];
-export function addDatabaseToTest(tester: dbTestMethodSignature) {
+export function addDatabaseToTest(tester: dbTestMethodSignature, key?: string) {
+    tester.key = key;
     for (const test of loadedTests) {
         test(tester);
     }
@@ -44,17 +52,23 @@ export function testInMemory(key: string, what: dbTestWhatSignature, focus = fal
         await what({ db, remult, createEntity: async (x) => remult.repo(x) });
     }, focus);
 }
+export const TestDbs = {
+    restDataProvider: "restDataProvider",
+    mongo: "mongo",
+    inMemory: 'in memory'
+
+}
 
 
 
-databasesTesters.push(testInMemory);
+addDatabaseToTest(testInMemory, TestDbs.inMemory);
 
-export declare type dbTestWhatSignature = (db: {
+export declare type dbTestWhatSignature = ((db: {
     db: DataProvider,
     remult: Remult,
     createEntity<entityType>(entity: ClassType<entityType>): Promise<Repository<entityType>>
-}) => Promise<void>;
-export declare type dbTestMethodSignature = (key: string, what: dbTestWhatSignature, focus: boolean) => void;
+}) => Promise<void>);
+export declare type dbTestMethodSignature = ((key: string, what: dbTestWhatSignature, focus: boolean) => void) & { key?: string };
 
 
 

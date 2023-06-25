@@ -1,6 +1,7 @@
-import * as express from "express";
+import express from "express";
 import { createRemultServer } from "../../core/server/index";
 import { Task } from "../shared/Task";
+import { remult } from "../../core";
 
 const app = express();
 app.use(express.json());
@@ -9,8 +10,7 @@ const api = createRemultServer({ entities: [Task] });
 app.use(async (req, res, next) => {
     await api.handle(req, res) || next()
 });
-app.get('/api/test', async (req, res) => {
-    const remult = await api.getRemult(req);
+app.get('/api/test', api.withRemult, async (req, res) => {
     res.json({ result: await remult.repo(Task).count() })
 })
 const port = 3005;

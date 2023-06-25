@@ -131,6 +131,21 @@ describe("data api", () => {
     await api.put(t, 1, { name: 'YAEL' });
     d.test();
   });
+  it("put id 1 works with predefined filterand shouldnt return anything", async () => {
+    let [c, remult] = await createData(async (i) => {
+      await i(1, 'noam', 'a');
+      await i(2, 'yael', 'b');
+      await i(3, 'yoni', 'a');
+    }, CategoriesForThisTest2);
+    var api = new DataApi(c, remult);
+    let t = new TestDataApiResponse();
+    let d = new Done();
+    t.notFound = () => {
+      d.ok();
+    };
+    await api.put(t, 1, { name: 'YAEL' });
+    d.test();
+  });
   it("getArray works with predefined filter", async () => {
     let [c, remult] = await createData(async (i) => {
       await i(1, 'noam', 'a');

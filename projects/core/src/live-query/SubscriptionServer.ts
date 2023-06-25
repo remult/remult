@@ -1,27 +1,26 @@
-import { v4 as uuid } from 'uuid';
 import { itemChange } from '../context';
-import { findOptionsFromJson, findOptionsToJson } from '../data-providers/rest-data-provider';
-import { Repository, FindOptions } from '../remult3';
+import { findOptionsFromJson } from '../data-providers/rest-data-provider';
+import { Repository } from '../remult3';
 
 export interface SubscriptionServer {
-  publishMessage<T>(channel: string, message: T): void;
+  publishMessage<T>(channel: string, message: T): Promise<void>;
 }
 
 /* @internal*/
-export declare type PerformWithRequest = (serializedRequest: any, entityKey: string, what: (repo: Repository<any>) => Promise<void>) => Promise<void>;
+export declare type PerformWithContext = (serializedRequest: any, entityKey: string, what: (repo: Repository<any>) => Promise<void>) => Promise<void>;
 /* @internal*/
 export class LiveQueryPublisher implements LiveQueryChangesListener {
 
-  constructor(private subscriptionServer: () => SubscriptionServer, private liveQueryStorage: () => LiveQueryStorage, public performWithRequest: PerformWithRequest) { }
+  constructor(private subscriptionServer: () => SubscriptionServer, private liveQueryStorage: () => LiveQueryStorage, public performWithContext: PerformWithContext) { }
 
   runPromise(p: Promise<any>) { }
   debugFileSaver = (x: any) => { };
-  itemChanged(entityKey: string, changes: itemChange[]) {
+  async itemChanged(entityKey: string, changes: itemChange[]) {
     //TODO 2 - optimize so that the user will get their messages first. Based on user id
-    this.runPromise(this.liveQueryStorage().forEach(entityKey,
+    await (this.liveQueryStorage().forEach(entityKey,
       async ({ query: q, setData }) => {
         let query = { ...q.data } as QueryData;
-        await this.performWithRequest(query.requestJson, entityKey, async repo => {
+        await this.performWithContext(query.requestJson, entityKey, async repo => {
           const messages = [];
           const currentItems = await repo.find(findOptionsFromJson(query.findOptionsJson, repo.metadata));
           const currentIds = currentItems.map(x => repo.getEntityRef(x).getId());
@@ -63,7 +62,8 @@ export class LiveQueryPublisher implements LiveQueryChangesListener {
           });
           query.lastIds = currentIds;
           await setData(query);
-          this.subscriptionServer().publishMessage(q.id, messages);
+          if (messages.length > 0)
+            this.subscriptionServer().publishMessage(q.id, messages);
         })
 
       }));
@@ -72,15 +72,15 @@ export class LiveQueryPublisher implements LiveQueryChangesListener {
 
 /* @internal*/
 export interface LiveQueryChangesListener {
-  itemChanged(entityKey: string, changes: itemChange[]);
+  itemChanged(entityKey: string, changes: itemChange[]): Promise<void>;
 }
 
 
 // TODO2 - PUBNUB
 // TODO2 - https://centrifugal.dev/
 export interface LiveQueryStorage {
-  add(query: StoredQuery): void
-  remove(queryId: any): void
+  add(query: StoredQuery): Promise<void>
+  remove(queryId: string): Promise<void>
   forEach(entityKey: string, callback: (args: {
     query: StoredQuery,
     setData(data: any): Promise<void>
@@ -111,12 +111,14 @@ export class InMemoryLiveQueryStorage implements LiveQueryStorage {
   constructor() {
 
   }
-  add(query: StoredQuery) {
+  async add(query: StoredQuery) {
     this.queries.push({ ...query, lastUsed: new Date().toISOString() });
     this.debug();
   }
-  remove(id: any) {
+  removeCountForTesting = 0;
+  async remove(id: any) {
     this.queries = this.queries.filter(q => q.id !== id);
+    this.removeCountForTesting++;
     this.debug();
   }
   async forEach(entityKey: string, handle: (args: {

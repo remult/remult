@@ -1,6 +1,7 @@
 import { buildRestDataProvider } from "../buildRestDataProvider";
 import { remult } from "../remult-proxy";
-import { ServerEventChannelSubscribeDTO, SubscriptionClient, SubscriptionClientConnection, streamUrl } from "./SubscriptionClient";
+import { actionInfo } from "../server-action";
+import { ServerEventChannelSubscribeDTO, SubscriptionClient, SubscriptionClientConnection, streamUrl } from "./SubscriptionChannel";
 export class SseSubscriptionClient implements SubscriptionClient {
   openConnection(onReconnect: VoidFunction): Promise<SubscriptionClientConnection> {
     let connectionId: string;
@@ -12,27 +13,27 @@ export class SseSubscriptionClient implements SubscriptionClient {
       close() {
         source.close();
       },
-      subscribe(channel, handler) {
+      async subscribe(channel, handler) {
         let listeners = channels.get(channel);
 
         if (!listeners) {
           channels.set(channel, listeners = []);
-          subscribeToChannel(channel);
+          await subscribeToChannel(channel);
         }
         listeners.push(handler);
         return () => {
           listeners.splice(listeners.indexOf(handler, 1));
           if (listeners.length == 0) {
-            provider.post(remult.apiClient.url + '/' + streamUrl + '/unsubscribe', {
+            actionInfo.runActionWithoutBlockingUI(() => provider.post(remult.apiClient.url + '/' + streamUrl + '/unsubscribe', {
               channel: channel,
               clientId: connectionId
-            } as ServerEventChannelSubscribeDTO);
+            } as ServerEventChannelSubscribeDTO));
             channels.delete(channel);
           }
         };
       },
     };
-    return new Promise<SubscriptionClientConnection>((res) => {
+    const createConnectionPromise = () => new Promise<SubscriptionClientConnection>((res) => {
       createConnection();
 
       function createConnection() {
@@ -55,8 +56,6 @@ export class SseSubscriptionClient implements SubscriptionClient {
           }, 500);
         };
 
-
-
         source.addEventListener("connectionId", async e => {
           //@ts-ignore
           connectionId = e.data;
@@ -74,12 +73,20 @@ export class SseSubscriptionClient implements SubscriptionClient {
         });
       }
     });
-
-    function subscribeToChannel(channel: string) {
-      provider.post(remult.apiClient.url + '/' + streamUrl + '/subscribe', {
-        channel: channel,
-        clientId: connectionId
-      } as ServerEventChannelSubscribeDTO);
+    return createConnectionPromise();
+    async function subscribeToChannel(channel: string) {
+      const result = await actionInfo.runActionWithoutBlockingUI(() => {
+        return provider.post(remult.apiClient.url + '/' + streamUrl + '/subscribe', {
+          channel: channel,
+          clientId: connectionId
+        } as ServerEventChannelSubscribeDTO)
+      });
+      if (result === ConnectionNotFoundError) {
+        await createConnectionPromise()
+      }
     }
   }
 }
+
+
+export const ConnectionNotFoundError = "client connection not found";

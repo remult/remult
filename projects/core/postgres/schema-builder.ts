@@ -3,6 +3,7 @@ import { FieldMetadata } from '../src/column-interfaces';
 import { Remult, allEntities } from '../src/context';
 import { SqlDatabase } from '../src/data-providers/sql-database';
 import { dbNamesOf, EntityDbNamesBase, isDbReadonly } from '../src/filter/filter-consumer-bridge-to-sql-request';
+import { RemultProxy } from '../src/remult-proxy';
 import { EntityMetadata, isAutoIncrement } from '../src/remult3';
 import { ValueConverters } from '../src/valueConverters';
 
@@ -39,30 +40,46 @@ export function postgresColumnSyntax(x: FieldMetadata, dbName: string) {
     return result;
 }
 
-
 export async function verifyStructureOfAllEntities(db: SqlDatabase, remult: Remult) {
     return await new PostgresSchemaBuilder(db).verifyStructureOfAllEntities(remult);
 }
 
 export class PostgresSchemaBuilder {
-    async verifyStructureOfAllEntities(remult: Remult) {
-        console.log("start verify structure");//keep me
-        for (const entityClass of allEntities) {
+    //@internal
+    static logToConsole = true;
+    async verifyStructureOfAllEntities(remult?: Remult) {
+        if (!remult) {
+            remult = RemultProxy.defaultRemult;
+        }
+        const completed = new Set<string>();
+        const entities: EntityMetadata[] = [];
+        for (const entityClass of [...allEntities].reverse()) {
             let entity = remult.repo(entityClass).metadata;
+            let e: EntityDbNamesBase = await dbNamesOf(entity);
+            if (completed.has(e.$entityName))
+                continue;
+            completed.add(e.$entityName)
+            entities.push(entity);
+        }
+        await this.ensureSchema(entities);
+    }
+    async ensureSchema(entities: EntityMetadata<any>[]) {
+        for (const entity of entities) {
             let e: EntityDbNamesBase = await dbNamesOf(entity);
             try {
                 if (!entity.options.sqlExpression) {
-                    if ((await e.$entityName).toLowerCase().indexOf('from ') < 0) {
+                    if (e.$entityName.toLowerCase().indexOf('from ') < 0) {
                         await this.createIfNotExist(entity);
                         await this.verifyAllColumns(entity);
                     }
                 }
             }
             catch (err) {
-                console.log("failed verify structure of " + e.$entityName + " ", err);
+                console.error("failed verify structure of " + e.$entityName + " ", err);
             }
         }
     }
+
     async createIfNotExist(entity: EntityMetadata): Promise<void> {
         var c = this.pool.createCommand();
         let e: EntityDbNamesBase = await dbNamesOf(entity);
@@ -81,14 +98,15 @@ export class PostgresSchemaBuilder {
                             result += e.$dbNameOf(x) + ' serial';
                         else {
                             result += postgresColumnSyntax(x, e.$dbNameOf(x));
-                            if (x == entity.idMetadata.field)
-                                result += ' primary key';
                         }
+                        if (x == entity.idMetadata.field)
+                            result += ' primary key';
                     }
                 }
 
                 let sql = 'create table ' + e.$entityName + ' (' + result + '\r\n)';
-                //console.log(sql);
+                if (PostgresSchemaBuilder.logToConsole)
+                    console.info(sql);
                 await this.pool.execute(sql);
             }
         });
@@ -109,7 +127,8 @@ export class PostgresSchemaBuilder {
         WHERE table_name=${cmd.addParameterAndReturnSqlToken((e.$entityName).toLocaleLowerCase())} and column_name=${cmd.addParameterAndReturnSqlToken((colName).toLocaleLowerCase())}` + this.additionalWhere
                 )).rows.length == 0) {
                 let sql = `alter table ${e.$entityName} add column ${postgresColumnSyntax(c(entity), colName)}`;
-                //console.log(sql);
+                if (PostgresSchemaBuilder.logToConsole)
+                    console.info(sql);
                 await this.pool.execute(sql);
             }
         }
@@ -125,14 +144,19 @@ export class PostgresSchemaBuilder {
             let cols = (await cmd.execute(`select column_name   
         FROM information_schema.columns 
         WHERE table_name=${cmd.addParameterAndReturnSqlToken((e.$entityName).toLocaleLowerCase())} ` + this.additionalWhere
-            )).rows.map(x => x.column_name);
+            )).rows.map(x => x.column_name.toLocaleLowerCase());
             for (const col of entity.fields) {
-                if (!isDbReadonly(col, e))
-                    if (!cols.includes(e.$dbNameOf(col).toLocaleLowerCase())) {
+                if (!isDbReadonly(col, e)) {
+                    let colName = e.$dbNameOf(col).toLocaleLowerCase();
+                    if (colName.startsWith('"') && colName.endsWith('"'))
+                        colName = colName.substring(1, colName.length - 1);
+                    if (!cols.includes(colName)) {
                         let sql = `alter table ${e.$entityName} add column ${postgresColumnSyntax(col, e.$dbNameOf(col))}`;
-                        //console.log(sql);
+                        if (PostgresSchemaBuilder.logToConsole)
+                            console.info(sql);
                         await this.pool.execute(sql);
                     }
+                }
             }
 
         }

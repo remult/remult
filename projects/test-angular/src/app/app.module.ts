@@ -22,8 +22,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { CategoriesComponent } from './categories/categories.component';
 import { TestComponent } from './test/test.component';
 import { TestDialogComponent } from './test-dialog/test-dialog.component';
-import {  ProductsComponent } from './products-test/products.component';
-import { JwtModule } from '@auth0/angular-jwt';
+import { ProductsComponent } from './products-test/products.component';
 import { MatMenuModule } from '@angular/material/menu';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -65,11 +64,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     MatIconModule,
     FormsModule,
     MatMenuModule,
-    JwtModule.forRoot({
-      config: {
-        tokenGetter: () => sessionStorage.getItem("auth_token")
-      }
-    })
   ],
   entryComponents: [
     //,InputAreaComponent

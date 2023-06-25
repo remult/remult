@@ -1,8 +1,10 @@
 
 import { InMemoryDataProvider } from "../data-providers/in-memory-database";
 import { Categories, Products } from './remult-3-entities';
-import { createOldEntity, getEntityRef } from "../remult3";
+import { createOldEntity, Entity, Field, Fields, getEntityRef } from "../remult3";
 import { Remult } from "../context";
+import { describeClass } from "../remult3/DecoratorReplacer";
+import { MockRestDataProvider } from "./testHelper.spec";
 
 
 describe("remult-3-basics", () => {
@@ -177,10 +179,74 @@ describe("remult-3-basics", () => {
         let repo = remult.repo(Categories);
         let items = (await repo.insert([{ id: 1 }, { id: 2 }])).map(y => ({ ...y, categoryName: y.id.toString() }));
         await repo.save(items);
-        expect (items[0].categoryName).toBe('1');
+        expect(items[0].categoryName).toBe('1');
+    });
+    it("test update of object", async () => {
+        const product = class {
+            id = 0
+            category!: Categories
+        }
+        describeClass(product, Entity("pr"), {
+            id: Fields.number(),
+            category: Field(() => Categories)
+        })
+        var remult = new Remult(new InMemoryDataProvider());
+        const [c1, c2] = await remult.repo(Categories).insert([{ id: 1, categoryName: 'cat1' }, { id: 2, categoryName: "cat2" }]);
+        const r = remult.repo(product);
+        let p = await r.insert({ id: 1, category: c1 });
+        expect(p.category.id).toBe(1);
+        p = await r.findId(1, { useCache: false });
+        expect(p.category.id).toBe(1);
+        p = await r.update(1, { ...p, category: c2 })
+        expect(p.id).toBe(1);
+        expect(p.category.id).toBe(2);
+        p = await r.findId(1, { useCache: false });
+        expect(p.category.id).toBe(2);
+        p = await r.update(1, {
+            ...p,
+
+            category: { id: 1 } as any
+        })
+        expect(p.id).toBe(1);
+        expect(p.category.id).toBe(1);
+        p = await r.findId(1, { useCache: false });
+        expect(p.category.id).toBe(1);
+        expect(p.category.categoryName).toBe("cat1");
 
     });
+    it("test update of object data api", async () => {
+        const product = class {
+            id = 0
+            category!: Categories
+        }
+        describeClass(product, Entity("pr", { allowApiCrud: true }), {
+            id: Fields.number(),
+            category: Field(() => Categories)
+        })
 
+        var sr = new Remult(new InMemoryDataProvider());
+        var dp = new MockRestDataProvider(sr);
+        var remult = new Remult(dp);
+        const [c1, c2] = await remult.repo(Categories).insert([{ id: 1, categoryName: 'cat1' }, { id: 2, categoryName: "cat2" }]);
+        const r = remult.repo(product);
+        let p = await r.insert({ id: 1, category: c1 });
+        expect(p.category.id).toBe(1);
+        p = await r.findId(1, { useCache: false });
+        expect(p.category.id).toBe(1);
+        p = await r.update(1, { ...p, category: c2 })
+        expect(p.id).toBe(1);
+        expect(p.category.id).toBe(2);
+        p = await r.findId(1, { useCache: false });
+        expect(p.category.id).toBe(2);
+        p = await r.update(1, {
+            ...p,
 
+            category: { id: 1 } as any
+        })
+        expect(p.id).toBe(1);
+        expect(p.category.id).toBe(1);
+        p = await r.findId(1, { useCache: false });
+        expect(p.category.id).toBe(1);
+        expect(p.category.categoryName).toBe("cat1");
+    });
 });
-

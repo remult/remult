@@ -10,7 +10,7 @@ import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions } from 
 import { FieldMetadata } from '../src/column-interfaces';
 import { CompoundIdField } from '../src/column';
 import { Sort } from '../src/sort';
-import { remult as remultContext } from '../src/remult-proxy';
+import { remult as remultContext, RemultProxy } from '../src/remult-proxy';
 
 export class KnexDataProvider implements DataProvider {
     constructor(public knex: Knex) {
@@ -24,6 +24,14 @@ export class KnexDataProvider implements DataProvider {
     }
 
     getEntityDataProvider(entity: EntityMetadata<any>): EntityDataProvider {
+        if (!supportsJson(this.knex))
+            for (const f of entity.fields.toArray()) {
+                if (f.valueConverter.fieldTypeInDb === "json") {
+                    //@ts-ignore
+                    f.valueConverter = { ...f.valueConverter, toDb: ValueConverters.JsonString.toDb, fromDb: ValueConverters.JsonString.fromDb }
+
+                }
+            }
         return new KnexEntityDataProvider(entity, this.knex);
     }
     async transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void> {
@@ -36,9 +44,8 @@ export class KnexDataProvider implements DataProvider {
             await t.rollback();
             throw err;
         }
-
-
     }
+
     static rawFilter(build: CustomKnexFilterBuilderFunction): EntityFilter<any> {
         return {
             [customDatabaseFilterToken]: {
@@ -53,11 +60,17 @@ export class KnexDataProvider implements DataProvider {
         const repo = getRepository(entity);
         var b = new FilterConsumerBridgeToKnexRequest(await dbNamesOf(repo.metadata))
         b._addWhere = false;
-        await(await((repo as RepositoryImplementation<entityType>).translateWhereToFilter(condition))).__applyToConsumer(b)
+        await (await ((repo as RepositoryImplementation<entityType>).translateWhereToFilter(condition))).__applyToConsumer(b)
         let r = await b.resolveWhere();
         return knex => r.forEach(y => y(knex))
     }
-    supportsrawFilter?: boolean;
+    supportsRawFilter?: boolean;
+
+    async ensureSchema(entities: EntityMetadata<any>[]): Promise<void> {
+
+        var sb = new KnexSchemaBuilder(this.knex);
+        await sb.ensureSchema(entities)
+    }
 
 }
 export type CustomKnexFilterBuilderFunction = () => Promise<(builder: Knex.QueryBuilder) => void>
@@ -302,19 +315,16 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
 
 
         this.result.push(b => b.whereRaw(
-            'lower (' + this.nameProvider.$dbNameOf(col) + ") like lower ('%" + val.replace(/'/g, '\'\'') + "%')"));
+            'lower (' + b.client.ref(this.nameProvider.$dbNameOf(col)) + ") like lower ('%" + val.replace(/'/g, '\'\'') + "%')"));
         this.promises.push((async () => {
 
         })());
     }
 
     private add(col: FieldMetadata, val: any, operator: string) {
-
         this.result.push(b => b.where(this.nameProvider.$dbNameOf(col), operator, col.valueConverter.toDb(val)))
-
-
-
     }
+
 
 
 
@@ -333,21 +343,29 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
 
 
 export class KnexSchemaBuilder {
-    async verifyStructureOfAllEntities(remult: Remult) {
-        console.info("start verify structure");
-        for (const entity of allEntities) {
-            let metadata = remult.repo(entity).metadata;
+    //@internal
+    static logToConsole = true;
+    async verifyStructureOfAllEntities(remult?: Remult) {
+        if (!remult)
+            remult = RemultProxy.defaultRemult;
 
+        const entities = allEntities.map(x => remult.repo(x).metadata);
+        this.ensureSchema(entities);
+    }
+
+    async ensureSchema(entities: EntityMetadata<any>[]) {
+        for (const entity of entities) {
+            let e: EntityDbNamesBase = await dbNamesOf(entity);
             try {
-                if (!metadata.options.sqlExpression) {
-                    if ((await metadata.getDbName()).toLowerCase().indexOf('from ') < 0) {
-                        await this.createIfNotExist(metadata);
-                        await this.verifyAllColumns(metadata);
+                if (!entity.options.sqlExpression) {
+                    if (e.$entityName.toLowerCase().indexOf('from ') < 0) {
+                        await this.createIfNotExist(entity);
+                        await this.verifyAllColumns(entity);
                     }
                 }
             }
             catch (err) {
-                console.log("failed verify structure of " + await metadata.getDbName() + " ", err);
+                console.error("failed ensure schema of " + e.$entityName + " ", err);
             }
         }
     }
@@ -370,7 +388,7 @@ export class KnexSchemaBuilder {
                             if (isAutoIncrement(x))
                                 b.increments(cols.get(x).name);
                             else {
-                                buildColumn(x, cols.get(x).name, b);
+                                buildColumn(x, cols.get(x).name, b, supportsJson(this.knex));
                                 if (x == entity.idMetadata.field)
                                     b.primary([cols.get(x).name]);
                             }
@@ -393,19 +411,17 @@ export class KnexSchemaBuilder {
         let colName = e.$dbNameOf(col);
 
         if (!await this.knex.schema.hasColumn(e.$entityName, colName)) {
-            await this.knex.schema.alterTable(e.$entityName, b => {
-                buildColumn(col, colName, b);
-            });
+            await logSql(this.knex.schema.alterTable(e.$entityName, b => {
+                buildColumn(col, colName, b, supportsJson(this.knex));
+            }));
         }
-
-
-
     }
     async verifyAllColumns<T extends EntityMetadata>(entity: T) {
         let e = await dbNamesOf(entity);
         try {
-            for (const col of entity.fields) {
-                if (isDbReadonly(col, e)) {
+            for (const col of entity.fields.toArray()) {
+
+                if (!isDbReadonly(col, e)) {
                     await this.addColumnIfNotExist(entity, () => col);
                 }
             }
@@ -419,8 +435,14 @@ export class KnexSchemaBuilder {
 
     }
 }
+function supportsJson(knex: Knex) {
+    const client: string = knex.client.config.client
+    if (client?.includes("sqlite3") || client?.includes("mssql"))
+        return false;
+    return true;
+}
 
-export function buildColumn(x: FieldMetadata, dbName: string, b: Knex.CreateTableBuilder) {
+export function buildColumn(x: FieldMetadata, dbName: string, b: Knex.CreateTableBuilder, supportsJson = true) {
 
 
     if (x.valueType == Number) {
@@ -462,6 +484,11 @@ export function buildColumn(x: FieldMetadata, dbName: string, b: Knex.CreateTabl
                 c.defaultTo(0).notNullable();
             }
         }
+        else if (x.valueConverter.fieldTypeInDb == "json")
+            if (supportsJson)
+                b.json(dbName);
+            else
+                b.text(dbName)
         else b.specificType(dbName, x.valueConverter.fieldTypeInDb);
     }
     else {
@@ -476,15 +503,14 @@ function logSql<T extends {
         sql: string
     };
 }>(who: T) {
-    //console.log(who.toSQL().sql);
+    if (KnexSchemaBuilder.logToConsole)
+        console.info(who.toSQL());
     return who;
 }
 
-export async function createKnexDataProvider(config: Knex.Config, autoCreateTables = true) {
+export async function createKnexDataProvider(config: Knex.Config) {
 
     let k = (await import('knex')).default(config)
     let result = new KnexDataProvider(k);
-    if (autoCreateTables)
-        await new KnexSchemaBuilder(k).verifyStructureOfAllEntities(new Remult(result));
     return result;
 }

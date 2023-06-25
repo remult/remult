@@ -5,7 +5,12 @@ import { Db, MongoClient } from 'mongodb';
 import { config } from 'dotenv';
 import { createPostgresConnection, PostgresDataProvider, PostgresSchemaBuilder } from "../../postgres";
 import { ClassType } from "../../classType";
-import { addDatabaseToTest, dbTestWhatSignature, itWithFocus, testAll } from "../shared-tests/db-tests-setup";
+import { addDatabaseToTest, dbTestWhatSignature, itWithFocus, testAll, TestDbs } from "../shared-tests/db-tests-setup";
+import { describeClass } from "../remult3/DecoratorReplacer";
+import { Entity, Fields } from "../remult3";
+
+KnexSchemaBuilder.logToConsole = false;
+PostgresSchemaBuilder.logToConsole = false;
 config();
 function testKnexSqlImpl(knex: Knex.Knex, name: string) {
     return (key: string, what: dbTestWhatSignature, focus = false) => {
@@ -18,11 +23,8 @@ function testKnexSqlImpl(knex: Knex.Knex, name: string) {
                     async (entity: ClassType<any>) => {
 
                         let repo = remult.repo(entity);
-                        let sb = new KnexSchemaBuilder(knex);
                         await knex.schema.dropTableIfExists(await repo.metadata.getDbName());
-                        await sb.createIfNotExist(repo.metadata);
-                        await sb.verifyAllColumns(repo.metadata);
-                        await knex(await repo.metadata.getDbName()).delete();
+                        await db.ensureSchema([repo.metadata])
                         return repo;
                     }
             });
@@ -75,9 +77,7 @@ export const mySqlTest =
 
 
 
-let pg = createPostgresConnection({
-    autoCreateTables: false
-});
+let pg = createPostgresConnection();
 export function testPostgresImplementation(key: string, what: dbTestWhatSignature, focus = false) {
 
 
@@ -90,11 +90,8 @@ export function testPostgresImplementation(key: string, what: dbTestWhatSignatur
             createEntity:
                 async (entity: ClassType<any>) => {
                     let repo = remult.repo(entity);
-                    let sb = new PostgresSchemaBuilder(db);
                     await db.execute("drop table if exists " + await repo.metadata.getDbName());
-                    await sb.createIfNotExist(repo.metadata);
-                    await sb.verifyAllColumns(repo.metadata);
-                    await db.execute("delete from " + await repo.metadata.getDbName());
+                    await db.ensureSchema([repo.metadata])
                     return repo;
                 }
         });
@@ -115,7 +112,10 @@ testAll("transactions", async ({ db, createEntity }) => {
 });
 
 
-let client = new MongoClient("mongodb://localhost:27017/local");
+
+const mongoConnectionString = process.env['MONGO_TEST_URL'];//"mongodb://localhost:27017/local"
+
+let client = new MongoClient(mongoConnectionString);
 let done: MongoClient;
 let mongoDbPromise = client.connect().then(c => {
     done = c;
@@ -146,7 +146,40 @@ export function testMongo(key: string, what: dbTestWhatSignature, focus = false)
         });
     }, focus);
 }
-addDatabaseToTest(testMongo);
+addDatabaseToTest(testMongo, TestDbs.mongo);
 
 
-import '../shared-tests'
+
+it("test mongo without transaction", async () => {
+    const client = new MongoClient("mongodb://localhost:27017/local")
+    await client.connect();
+    const mongoDb = client.db('test');
+    const db = new MongoDataProvider(mongoDb, client, { disableTransactions: true });
+    var remult = new Remult(db);
+    const entity = class {
+        id = 0
+        title = ''
+    }
+    describeClass(entity, Entity("testNoTrans"), { id: Fields.number(), title: Fields.string() })
+    const repo = remult.repo(entity);
+    for (const item of await repo.find()) {
+        await repo.delete(item);
+    }
+    await repo.insert({ id: 1, title: "a" });
+    try {
+        await db.transaction(async () => {
+            await repo.insert({ id: 2, title: "b" });
+            throw new Error();
+        })
+    } catch { }
+    expect(await repo.count()).toBe(2);
+})
+
+
+
+
+
+
+import '../shared-tests';
+
+

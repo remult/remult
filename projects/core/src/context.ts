@@ -10,9 +10,10 @@ import { RemultProxy } from "./remult-proxy";
 
 import type { LiveQueryStorage, LiveQueryPublisher, LiveQueryChangesListener, SubscriptionServer } from "./live-query/SubscriptionServer";
 import { buildRestDataProvider, ExternalHttpProvider, isExternalHttpProvider } from "./buildRestDataProvider";
-import { SubscriptionClient } from "./live-query/SubscriptionClient";
 import { EntityOptions } from "./entity";
 import { FieldOptions } from "./column-interfaces";
+import { SubscriptionClient, Unsubscribe } from "./live-query/SubscriptionChannel";
+
 
 
 
@@ -39,7 +40,8 @@ export class Remult {
      * @example
      * const taskRepo = remult.repo(Task);
      * @see [Repository](https://remult.dev/docs/ref_repository.html)
-     * 
+     * @param entity - the entity to use
+     * @param dataProvider - an optional alternative data provider to use. Useful for writing to offline storage or an alternative data provider
      */
     public repo<T>(entity: (ClassType<T> | EntityInfoProvider<T>), dataProvider?: DataProvider): Repository<T> {
         if (dataProvider === undefined)
@@ -65,10 +67,9 @@ export class Remult {
         }
         return r;
     }
-
+    /** Returns the current user's info */
     user?: UserInfo;
 
-    /*  delete me */
     /** Checks if a user was authenticated */
     authenticated() {
         return this.user?.id !== undefined;
@@ -118,9 +119,11 @@ export class Remult {
             }
         }
         else if (typeof (allowed) === "function") {
-            return allowed(this, instance)
+            return allowed(instance, this)
         } else return this.isAllowed(allowed as Allowed);
     }
+    /** The current data provider */
+    dataProvider: DataProvider = new RestDataProvider(() => this.apiClient);
     /* @internal */
     repCache = new Map<DataProvider, Map<any, Repository<any>>>();
     /** Creates a new instance of the `remult` object.
@@ -160,10 +163,17 @@ export class Remult {
     subscriptionServer?: SubscriptionServer
     /* @internal*/
     liveQueryPublisher: LiveQueryChangesListener = {
-        itemChanged: () => { }
+        itemChanged:async () => { }
     };
 
     //@ts-ignore // type error of typescript regarding args that doesn't appear in my normal development
+    /** Used to call a `backendMethod` using a specific `remult` object
+     * @example
+     * await remult.call(TasksController.setAll, undefined, true);
+     * @param backendMethod - the backend method to call
+     * @param classInstance - the class instance of the backend method, for static backend methods use undefined
+     * @param args - the arguments to send to the backend method
+    */
     call<T extends ((...args: any[]) => Promise<any>)>(backendMethod: T, classInstance?: any, ...args: GetArguments<T>): ReturnType<T> {
         const z = (backendMethod[serverActionField]) as Action<any, any>;
         if (!z.doWork)
@@ -171,11 +181,9 @@ export class Remult {
         //@ts-ignore
         return z.doWork(args, classInstance, this.apiClient.url, buildRestDataProvider(this.apiClient.httpClient));
     }
-    /** The current data provider */
-    dataProvider: DataProvider = new RestDataProvider(() => this.apiClient);
 
     /* @internal*/
-    liveQuerySubscriber = new LiveQueryClient(() => this.apiClient);
+    liveQuerySubscriber = new LiveQueryClient(() => this.apiClient, () => this.user?.id);
 
     /** A helper callback that can be used to debug and trace all find operations. Useful in debugging scenarios */
     static onFind = (metadata: EntityMetadata, options: FindOptions<any>) => { };
@@ -184,7 +192,9 @@ export class Remult {
     }
     /** A helper callback that is called whenever an entity is created. */
     static entityRefInit?: (ref: EntityRef<any>, row: any) => void;
+    /** context information that can be used to store custom information that will be disposed as part of the `remult` object */
     readonly context: RemultContext = {} as any;
+    /** The api client that will be used by `remult` to perform calls to the `api` */
     apiClient: ApiClient = {
         url: '/api',
         subscriptionClient: new SseSubscriptionClient()
@@ -201,7 +211,16 @@ export interface RemultContext {
 
 }
 export interface ApiClient {
+    /** The http client to use when making api calls.
+     * @example
+     * remult.apiClient.httpClient = axios;
+     * @example
+     * remult.apiClient.httpClient = httpClient;//angular http client
+     * @example
+     * remult.apiClient.httpClient = fetch; //this is the default
+     */
     httpClient?: ExternalHttpProvider | typeof fetch;
+    /** The base url to for making api calls */
     url?: string;
     subscriptionClient?: SubscriptionClient
     wrapMessageHandling?: (x: VoidFunction) => void
@@ -242,12 +261,21 @@ export interface UserInfo {
 }
 
 
-export declare type Allowed = boolean | string | string[] | ((c: Remult) => boolean);
+export declare type Allowed = boolean | string | string[] | ((c?: Remult) => boolean);
 
-export declare type AllowedForInstance<T> = boolean | string | string[] | ((c: Remult, entity?: T) => boolean);
+export declare type AllowedForInstance<T> = boolean | string | string[] | ((entity?: T, c?: Remult) => boolean);
 export class Allow {
     static everyone = () => true;
-    static authenticated = (remult: Remult) => remult.authenticated();
+    static authenticated = (...args: any[]) => {
+        if (args.length > 1) {
+            return (args[1] as Remult).authenticated()
+        }
+        else if (args.length == 1) {
+            if (args[0].authenticated)
+                return args[0].authenticated();
+        }
+        return RemultProxy.defaultRemult.authenticated();
+    }
 }
 
 
@@ -257,9 +285,9 @@ export const queryConfig = {
 
 
 export interface EventDispatcher {
-    observe(what: () => any | Promise<any>): Promise<Unobserve>;
+    observe(what: () => any | Promise<any>): Promise<Unsubscribe>;
 }
-export declare type Unobserve = () => void;
+
 export class EventSource {
     listeners: (() => {})[] = []
     async fire() {
@@ -288,19 +316,23 @@ export interface itemChange {
 }
 
 export async function doTransaction(remult: Remult, what: () => Promise<void>) {
-    return await remult.dataProvider.transaction(async ds => {
+    const trans = new transactionLiveQueryPublisher(remult.liveQueryPublisher);
+    let ok = true;
+    const result = await remult.dataProvider.transaction(async ds => {
         remult.dataProvider = (ds);
-        const trans = new transactionLiveQueryPublisher(remult.liveQueryPublisher);
         remult.liveQueryPublisher = trans;
         await what();
-        trans.flush();
+        ok = true;
     });
+    if (ok)
+        await trans.flush();
+
 }
 class transactionLiveQueryPublisher implements LiveQueryChangesListener {
 
     constructor(private orig: LiveQueryChangesListener) { }
     transactionItems = new Map<string, itemChange[]>();
-    itemChanged(entityKey: string, changes: itemChange[]): void {
+    async itemChanged(entityKey: string, changes: itemChange[]) {
         let items = this.transactionItems.get(entityKey);
         if (!items) {
             this.transactionItems.set(entityKey, items = []);
@@ -320,9 +352,9 @@ class transactionLiveQueryPublisher implements LiveQueryChangesListener {
             else items.push(c);
         }
     }
-    flush() {
+    async flush() {
         for (const key of this.transactionItems.keys()) {
-            this.orig.itemChanged(key, this.transactionItems.get(key));
+            await this.orig.itemChanged(key, this.transactionItems.get(key));
         }
     }
 }

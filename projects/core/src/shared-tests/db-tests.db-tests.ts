@@ -1,5 +1,5 @@
 import { DataApi } from "../data-api";
-import { Fields, Entity, EntityBase, EntityFilter, Field } from "../remult3";
+import { Fields, Entity, EntityBase, EntityFilter, Field, createOldEntity, IdEntity } from "../remult3";
 import { c } from "../tests/c";
 
 import { Done } from "../tests/Done";
@@ -7,7 +7,7 @@ import { h } from "../tests/h";
 import { Categories as newCategories } from "../tests/remult-3-entities";
 import { tasks } from "../tests/tasks";
 import { TestDataApiResponse } from "../tests/TestDataApiResponse";
-import { testAll, testAllDbs } from "./db-tests-setup";
+import { testAll, testAllDbs, TestDbs } from "./db-tests-setup";
 import { entityWithValidations, testConfiguration } from "./entityWithValidations";
 import { Remult } from "../context";
 import { dWithPrefilter } from "../tests/dWithPrefilter";
@@ -17,13 +17,25 @@ import { entityForrawFilter1 } from "../tests/entityForCustomFilter";
 import { entityWithValidationsOnColumn } from "../tests/entityWithValidationsOnColumn";
 import { Validators } from "../validators";
 import { Status } from "../tests/testModel/models";
-import { IdEntity } from "../id-entity";
+import { describeClass } from "../remult3/DecoratorReplacer";
+import { DataProviderLiveQueryStorage, LiveQueryStorageEntity } from "../../live-query/data-provider-live-query-storage";
+import { v4 as uuid } from 'uuid'
+import { testPostgresImplementation } from "../backend-tests/backend-database-test-setup.backend-spec";
 
 
 
 testAll("what", async ({ remult, createEntity }) => {
     await (await createEntity(stam)).create({ id: 1, title: 'noam' }).save();
     expect(await remult.repo(stam).count()).toBe(1);
+}, false);
+testAll("data types", async ({ remult, createEntity }) => {
+    let r = await (await createEntity(stam)).create({
+        id: 1,
+        //@ts-ignore
+        title: 42
+    }).save();
+    expect(r.title).toEqual("42");
+
 }, false);
 testAll("filter works on all db",
     async ({ createEntity }) => {
@@ -148,7 +160,7 @@ testAll("put with validations on entity fails",
         expect(x[0].name).toBe('noam');
 
     });
-testAll("test date with null works", async ({ createEntity }) => {
+testAll("test date only with null works", async ({ createEntity }) => {
 
     let repo = await createEntity(testDateWithNull);
     let r = repo.create({ id: 0 });
@@ -156,7 +168,33 @@ testAll("test date with null works", async ({ createEntity }) => {
     r = await repo.findFirst();
     expect(r.d).toBeNull();
     expect(await repo.count({ d: null })).toBe(1);
+    r.d = new Date(1976, 5, 16);
+    await r.save();
+    expect(r.d.getFullYear()).toBe(1976);
+    r = await repo.findFirst();
+    expect(r.d.getFullYear()).toBe(1976);
+    r.d = null;
+    await r.save();
+    expect(r.d).toBeNull();
 }, false);
+testAll("test date with null works", async ({ createEntity }) => {
+
+    let repo = await createEntity(testDateWithNull);
+    let r = repo.create({ id: 0 });
+    await r.save();
+    r = await repo.findFirst();
+    expect(r.fullDate).toBeNull("expected null after");
+    expect(await repo.count({ fullDate: null })).toBe(1);
+    r.fullDate = new Date(1976, 5, 16);
+    await r.save();
+    expect(r.fullDate.getFullYear()).toBe(1976);
+    r = await repo.findFirst();
+    expect(r.fullDate.getFullYear()).toBe(1976);
+    r.fullDate = null;
+    await r.save();
+    expect(r.fullDate).toBeNull();
+}, false);
+
 testAll("test original value of date", async ({ createEntity }) => {
     let r = await (await createEntity(testDateWithNull)).create({ id: 1, d: new Date(1976, 6, 16) }).save();
 
@@ -170,6 +208,8 @@ class testDateWithNull extends EntityBase {
     id: number = 0;
     @Fields.dateOnly({ allowNull: true })
     d: Date;
+    @Fields.date({ allowNull: true })
+    fullDate: Date = null;
 }
 
 testAll("test string with null works", async ({ createEntity }) => {
@@ -231,7 +271,7 @@ testAll("test paging with complex object", async ({ remult, createEntity }) => {
         i++;
     }
     expect(i).toBe(5);
-},false)
+}, false)
 testAll("test paging with complex object_2", async ({ remult, createEntity }) => {
 
     let c1 = await (await createEntity(c)).create({ id: 1, name: 'c1' }).save();
@@ -466,7 +506,7 @@ testAllDbs("get array works with filter in body", async ({ createData, remult })
             return undefined;
         }
     }, {
-        status_in: '[1, 2]'
+        "status.in": '[1, 2]'
     });
     d.test();
 }, false);
@@ -603,7 +643,7 @@ class testFilter {
     b: string = '';
     @Fields.string()
     c: string = '';
-    static search = Filter.createCustom<testFilter, string>((remult, str) => ({
+    static search = Filter.createCustom<testFilter, string>((str, remult) => ({
         $and: [{
             $or: [
                 { a: 'a' },
@@ -713,10 +753,15 @@ testAll("task with enum string", async ({ createEntity }) => {
     expect(await r.count({ priority: PriorityWithString.Critical })).toBe(1)
     expect(await r.count({ priority: PriorityWithString.Low })).toBe(0)
 });
-testAll("test transaction rollback", async ({ db }) => {
+testAll("test transaction rollback", async ({ db, createEntity }) => {
     let fail = true;
+    const r = await createEntity(stam);
+    await r.insert({ title: "task b", id: 1 })
     try {
-        await db.transaction(async () => {
+        await db.transaction(async (db) => {
+            var remultWithTransaction = new Remult(db).repo(stam)
+            await remultWithTransaction.insert({ title: "task a", id: 2 })
+            expect(await remultWithTransaction.count()).toBe(2);
             throw "error"
         });
         fail = false;
@@ -724,5 +769,135 @@ testAll("test transaction rollback", async ({ db }) => {
     catch {
 
     }
+    expect(await r.count()).toBe(1);
     expect(fail).toBe(true);
+}, false, { exclude: [TestDbs.inMemory] })
+testAll("test date", async ({ createEntity }) => {
+    const e = class {
+
+        a = 0;
+        d = new Date()
+    }
+    describeClass(e, Entity("tdate", { allowApiCrud: true }), {
+        a: Fields.number(),
+        d: Fields.date()
+    })
+    const r = await createEntity(e);
+    await r.insert({ a: 1, d: new Date(1976, 5, 16) });
+    let item = await r.findFirst();
+    expect(item.d.getFullYear()).toBe(1976);
+
+}, false)
+testAll("test live query storage", async ({ db, remult, createEntity }) => {
+    await createEntity(LiveQueryStorageEntity)
+    var x = new DataProviderLiveQueryStorage(db);
+    if (db.ensureSchema)
+        await x.ensureSchema()
+    const id = uuid();
+    await x.add({ id, entityKey: 'x', data: "noam" });
+    await x.forEach("x", async args => {
+        expect(args.query.data).toBe("noam");
+    });
+    expect((await x.keepAliveAndReturnUnknownQueryIds([id]))).toEqual([])
+}, false, {
+    exclude: [TestDbs.restDataProvider]
 })
+
+testAll("test contains with names with casing", async ({ createEntity }) => {
+    const e = class {
+
+        a = 0;
+        firstName = ''
+    }
+    describeClass(e, Entity("testNameContains", { allowApiCrud: true }), {
+        a: Fields.number(),
+        firstName: Fields.string()
+    })
+    const r = await createEntity(e);
+    await r.insert({ a: 1, firstName: "noam" });
+    let item = await r.findFirst({ firstName: { $contains: "oa" } });
+    expect(item.firstName).toBe("noam");
+
+}, false, {
+    exclude: [TestDbs.mongo]
+})
+testAll("test live query storage", async (x) => {
+    await x.createEntity(LiveQueryStorageEntity)
+    const s = new DataProviderLiveQueryStorage(x.db);
+    await s.ensureSchema();
+    const entityKey = "ek";
+    const id = 'id'
+    await s.add({ id, entityKey, data: {} });
+    await s.add({ id, entityKey, data: {} });
+    x.remult.clearAllCache();
+    await s.add({ id, entityKey, data: {} });
+    await s.keepAliveAndReturnUnknownQueryIds([id]);
+    await s.remove(id);
+    await s.remove(id);
+}, false, { exclude: [TestDbs.restDataProvider] })
+testAll("test json structure using object", async ({ createEntity }) => {
+    const e = class {
+        a = 0;
+        person: {
+            firstName: string,
+            lastName: string
+        }
+    }
+    describeClass(e, Entity("testJsonStructure", { allowApiCrud: true }), {
+        a: Fields.number(),
+        person: Fields.object()
+    })
+    const r = await createEntity(e);
+    await r.insert({ a: 1, person: { firstName: "noam", lastName: "honig" } });
+    let item = await r.findFirst();
+    expect(item.person).toEqual({ firstName: "noam", lastName: "honig" });
+}, false)
+@Entity("testObject", { allowApiCrud: true })
+class testObject {
+    @Fields.integer()
+    id = 0;
+    @Fields.object()
+    person = { firstName: "noam", lastName: "honig" }
+}
+testAll("test object entity", async ({ createEntity }) => {
+
+    const r = await createEntity(testObject);
+    await r.insert({ id: 1, person: { firstName: "noam", lastName: "honig" } });
+    let item = await r.findFirst();
+    expect(item.person).toEqual({ firstName: "noam", lastName: "honig" });
+}, false)
+@Entity("testObjectJson", { allowApiCrud: true })
+class testObjectJson {
+    @Fields.integer()
+    id = 0;
+    @Fields.json()
+    person = { firstName: "noam", lastName: "honig" }
+}
+testAll("test object entity", async ({ createEntity }) => {
+
+    const r = await createEntity(testObjectJson);
+    await r.insert({ id: 1, person: { firstName: "noam", lastName: "honig" } });
+    let item = await r.findFirst();
+    expect(item.person).toEqual({ firstName: "noam", lastName: "honig" });
+}, false)
+testAll("test json structure", async ({ createEntity }) => {
+    const e = class {
+
+        a = 0;
+        person: {
+            firstName: string,
+            lastName: string
+
+        }
+    }
+    describeClass(e, Entity("testJsonFieldType", { allowApiCrud: true }), {
+        a: Fields.number(),
+        person: Fields.json()
+    })
+    const r = await createEntity(e);
+    await r.insert({ a: 1, person: { firstName: "noam", lastName: "honig" } });
+    let item = await r.findFirst();
+    expect(item.person).toEqual({ firstName: "noam", lastName: "honig" });
+}, false)
+
+

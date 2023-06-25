@@ -1,0 +1,21 @@
+{
+  "name": "next-server",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@types/node": "18.16.3",
+    "@types/react": "18.2.3",
+    "@types/react-dom": "18.2.3",
+    "next": "13.3.4",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "remult": "file:../../../dist/remult",
+    "typescript": "5.0.4"
+  }
+}

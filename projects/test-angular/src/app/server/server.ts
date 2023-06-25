@@ -1,122 +1,108 @@
 import { CustomModuleLoader } from './CustomModuleLoader';
-
 let moduleLoader = new CustomModuleLoader('/dist/test-angular');
-import * as express from 'express';
-import * as swaggerUi from 'swagger-ui-express';
-import * as cors from 'cors';
-
-import * as fs from 'fs';
-//import '../app.module';
-import { serverInit } from './server-init';
-import { remultGraphql } from 'remult/graphql';
-import { createKnexDataProvider } from 'remult/remult-knex';
-
-import { createPostgresConnection, preparePostgresQueueStorage } from 'remult/postgres';
-
-import * as compression from 'compression';
-import * as forceHttps from 'express-force-https';
-import * as jwt from 'express-jwt';
-import { graphqlHTTP } from 'express-graphql';
+import express, { application } from "express";
+import { remultExpress } from '../../../../core/remult-express'
+import { Category, Task, TasksController, TasksControllerDecorated } from "../products-test/products.component";
+import { JsonDataProvider, Remult, remult } from '../../../../core';
+import { JsonFileDataProvider } from '../../../../core/server';
+import { JobsInQueueEntity } from '../../../../core/server/expressBridge';
+import { EntityQueueStorage } from '../../../../core/server/expressBridge';
+import { remultGraphql } from '../../../../core/graphql'
+import swaggerUi from 'swagger-ui-express';
 import { buildSchema } from 'graphql';
+import { graphqlHTTP } from 'express-graphql';
 
-
-import { remultExpress } from '../../../../core/remult-express';
-
-
-import { AppComponent } from '../app.component';
-import { AsyncLocalStorage } from 'async_hooks';
-
-import { helper, ProductsComponent, Task } from '../products-test/products.component';
-
-
-const getDatabase = async () => {
-
-    const result = await createKnexDataProvider({
-        client: 'mssql',
-        connection: {
-            server: '127.0.0.1',
-            database: 'test2',
-            user: 'sa',
-            password: 'MASTERKEY',
-            options: {
-                enableArithAbort: true,
-                encrypt: false,
-                instanceName: 'sqlexpress'
-            }
-        }
-    });
-    return result;
-}
-
-const st = new AsyncLocalStorage();
-
-const d = new Date(2020, 1, 2, 3, 4, 5, 6);
-serverInit().then(async (dataSource) => {
+import { createSchema, createYoga } from 'graphql-yoga'
+import fs from 'fs'
+import { MongoClient } from "mongodb"
+import { MongoDataProvider } from '../../../../core/remult-mongo';
+import { createPostgresDataProvider } from '../../../../core/postgres';
+import { config } from 'dotenv'
+config()
 
 
 
 
-    let app = express();
-    app.use(jwt({ secret: process.env.TOKEN_SIGN_KEY, credentialsRequired: false, algorithms: ['HS256'] }));
-    app.use(cors());
 
 
 
-    app.use(compression({}));
-
-    if (process.env.DISABLE_HTTPS != "true")
-        app.use(forceHttps);
+var r = new Remult();
+r.dataProvider = new JsonFileDataProvider('./db');
 
 
+const app = express()
 
-    let remultApi = remultExpress({
-        // serverEventDispatcher: () => {
-
-        //     const d = new AblyServerEventDispatcher(new ably.Realtime.Promise(  process.env.ABLY_KEY));
-        //     return d;
-        // },
-        entities: [Task],
-        controllers: [AppComponent, ProductsComponent],
-        //     dataProvider: async () => await createPostgresConnection(),
-        queueStorage: await preparePostgresQueueStorage(dataSource),
-        logApiEndPoints: true,
-
-
-        initRequest: async () => {
-
-        },
-        initApi: async remultParam => {
-        }
-    });
-
-    app.use(express.json());
-    app.use(remultApi);
-
-    app.use('/api/docs', swaggerUi.serve,
-        swaggerUi.setup(remultApi.openApiDoc({ title: 'remult-angular-todo' })));
+export const api = remultExpress({
+    entities: [Task, Category],
+    controllers: [TasksController, TasksControllerDecorated],
+    queueStorage: new EntityQueueStorage(r.repo(JobsInQueueEntity)),
+    //@ts-ignore
+    getUser: ({ session }) => {
+        return undefined;
+    }
+})
+app.use(api)
 
 
-    app.use(express.static('dist/my-project'));
-    let g = remultGraphql(remultApi);
-    app.use('/api/graphql', graphqlHTTP({
-        schema: buildSchema(g.schema),
-        rootValue: g.rootValue,
-        graphiql: true,
-    }));
+const openApiDocument = api.openApiDoc({ title: 'remult-react-todo' })
+fs.writeFileSync('/temp/test.json', JSON.stringify(openApiDocument, undefined, 2))
+app.get('/api/openApi.json', (req, res) => res.json(openApiDocument));
 
 
-    app.use('/*', async (req, res) => {
-        const index = 'dist/my-project/index.html';
-        if (fs.existsSync(index)) {
-            res.send(fs.readFileSync(index).toString());
-        }
-        else {
-            res.status(404).json('No Result ' + req.path);
-        }
-    });
-
-
-
-    let port = process.env.PORT || 3001;
-    app.listen(port);
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openApiDocument));
+const { typeDefs, rootValue, resolvers } = remultGraphql({
+    entities: [Category, Task]
 });
+
+// app.use('/api/graphql', api.withRemult, graphqlHTTP({
+//     schema: buildSchema(typeDefs),
+//     rootValue,
+//     graphiql: true,
+// }));
+
+fs.writeFileSync('/temp/gql.txt', typeDefs);
+
+const yoga = createYoga({
+    graphqlEndpoint: '/api/graphql',
+    schema: (createSchema({
+        typeDefs,
+        resolvers
+    }))
+})
+app.get('/test', (req, res) => {
+    let z = rootValue;
+    res.send("t")
+})
+app.use(yoga.graphqlEndpoint, api.withRemult, yoga)
+
+
+
+
+
+// app.get('/api/remultCount', api.withRemult, (req, res) => {
+//     console.log("god here")
+//     heapdump.writeSnapshot('./test.heapsnapshot');
+
+//     getHeapFromFile('./test.heapsnapshot').then(heapGraph => {
+//         let remultCount = 0;
+//         let testMemCount = 0;
+//         heapGraph.nodes.forEach(node => {
+//             if (node.name == ('Remult')) {
+//                 remultCount++;
+//             }
+//             if (node.name === "TestMem123") {
+//                 testMemCount++;
+//             }
+//         }
+//         );
+//         res.json({
+//             remultCount,
+//             testMemCount,
+//             openQueries: (remult.liveQueryStorage as any).queries.length,
+//             sse: (remult.subscriptionServer as any).connections.length
+//         })
+//     })
+// })
+
+
+app.listen(3001);

@@ -29,6 +29,19 @@ export class CompoundIdField implements FieldMetadata<string> {
   constructor(...columns: FieldMetadata[]) {
     this.fields = columns;
   }
+  apiUpdateAllowed(item: any): boolean {
+    throw new Error('Method not implemented.');
+  }
+  displayValue(item: any): string {
+    throw new Error('Method not implemented.');
+  }
+  includedInApi: boolean;
+  toInput(value: string, inputType?: string): string {
+    throw new Error('Method not implemented.');
+  }
+  fromInput(inputValue: string, inputType?: string): string {
+    throw new Error('Method not implemented.');
+  }
   getDbName(): Promise<string> {
     return Promise.resolve("");
   }
@@ -42,7 +55,7 @@ export class CompoundIdField implements FieldMetadata<string> {
     return r;
   }
   options: FieldOptions<any, any>;
-  get valueConverter(): ValueConverter<string> {
+  get valueConverter(): Required<ValueConverter<string>> {
     throw new Error("cant get value converter of compound id");
   }
 

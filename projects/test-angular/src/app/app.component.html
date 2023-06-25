@@ -1,6 +1,6 @@
 <div style="height:100%;display:flex;flex-direction: column;">
   <mat-toolbar color="primary" style="flex-shrink: 0;">
-    <button mat-button class="sidenav-toggle" (click)="sidenav.toggle()">
+    <button mat-button class="sidenav-toggle" (click)="sidenav.toggle()" >
       <mat-icon>menu</mat-icon>
     </button>
     <span class="toolbar-title">{{currentTitle()}}</span>
@@ -18,7 +18,7 @@
     </ng-container>
   </mat-toolbar>
   <mat-sidenav-container class="app-sidenav-container">
-    <mat-sidenav #sidenav class="app-sidenav mat-elevation-z10 no-print" [opened]="true"
+    <mat-sidenav #sidenav class="app-sidenav mat-elevation-z10 no-print" [opened]="false"
       [mode]="'side'">
       <div style="width:100%;text-align: center">
 

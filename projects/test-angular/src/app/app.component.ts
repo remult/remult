@@ -9,7 +9,7 @@ import { openDialog, RouteHelperService } from '@remult/angular';
 
 
 //import { PasswordColumn, Users } from '../../projects/angular/schematics/hello/files/src/app/users/users';
-import { JwtHelperService } from '@auth0/angular-jwt';
+
 
 
 
@@ -77,7 +77,7 @@ export class AppComponent implements OnInit {
   }
   setToken(token: string) {
     if (token) {
-      this.remult.user = (<UserInfo>new JwtHelperService().decodeToken(token));
+      
       sessionStorage.setItem("auth_token", token);
     }
     else {

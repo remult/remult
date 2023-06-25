@@ -1,0 +1,892 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`graphql-connection > gets related entities 1`] = `
+{
+  "data": {
+    "tasks": {
+      "items": [
+        {
+          "category": {
+            "name": "c1",
+            "tasks": {
+              "items": [
+                {
+                  "title": "task a",
+                },
+              ],
+            },
+          },
+          "title": "task a",
+        },
+        {
+          "category": {
+            "name": "c2",
+            "tasks": {
+              "items": [
+                {
+                  "title": "task b",
+                },
+              ],
+            },
+          },
+          "title": "task b",
+        },
+      ],
+    },
+  },
+}
+`;
+
+exports[`graphql-connection > test allow api create 1`] = `
+"type Query {
+    c(id: ID!): C
+    cs(limit: Int, page: Int, orderBy: csOrderBy, where: csWhere): CConnection
+    node(nodeId: ID!): Node
+}
+
+type Mutation {
+    updateC(id: ID!, patch: UpdateCInput!, clientMutationId: String): UpdateCPayload
+    deleteC(id: ID!, clientMutationId: String): DeleteCPayload
+}
+
+type C implements Node {
+    id: Int!
+    nodeId: ID!
+}
+
+input csOrderBy {
+  id: OrderByDirection
+}
+
+input csWhere {
+  id: WhereInt
+  OR: [csWhere!]
+}
+
+type CConnection {
+    totalCount: Int!
+    items: [C!]!
+}
+
+input UpdateCInput {
+    id: Int
+}
+
+type UpdateCPayload {
+    c: C
+    clientMutationId: String
+}
+
+type DeleteCPayload {
+    id: ID
+    clientMutationId: String
+}
+
+input WhereString {
+    eq: String
+    ne: String
+    in: [String!]
+    nin: [String!]
+    gt: String
+    gte: String
+    lt: String
+    lte: String
+    st: String
+}
+
+input WhereStringNullable {
+    eq: String
+    ne: String
+    in: [String!]
+    nin: [String!]
+    gt: String
+    gte: String
+    lt: String
+    lte: String
+    st: String
+    null: Boolean
+}
+
+input WhereInt {
+    eq: Int
+    ne: Int
+    in: [Int!]
+    nin: [Int!]
+    gt: Int
+    gte: Int
+    lt: Int
+    lte: Int
+}
+
+input WhereIntNullable {
+    eq: Int
+    ne: Int
+    in: [Int!]
+    nin: [Int!]
+    gt: Int
+    gte: Int
+    lt: Int
+    lte: Int
+    null: Boolean
+}
+
+input WhereFloat {
+    eq: Float
+    ne: Float
+    in: [Float!]
+    nin: [Float!]
+    gt: Float
+    gte: Float
+    lt: Float
+    lte: Float
+}
+
+input WhereFloatNullable {
+    eq: Float
+    ne: Float
+    in: [Float!]
+    nin: [Float!]
+    gt: Float
+    gte: Float
+    lt: Float
+    lte: Float
+    null: Boolean
+}
+
+input WhereBoolean {
+    eq: Boolean
+    ne: Boolean
+    in: [Boolean!]
+    nin: [Boolean!]
+}
+
+input WhereBooleanNullable {
+    eq: Boolean
+    ne: Boolean
+    in: [Boolean!]
+    nin: [Boolean!]
+    null: Boolean
+}
+
+input WhereID {
+    eq: ID
+    ne: ID
+    in: [ID!]
+    nin: [ID!]
+}
+
+input WhereIDNullable {
+    eq: ID
+    ne: ID
+    in: [ID!]
+    nin: [ID!]
+    null: Boolean
+}
+
+enum OrderByDirection {
+    ASC
+    DESC
+}
+
+interface Node {
+    nodeId: ID!
+}
+"
+`;
+
+exports[`graphql-connection > test allow api create 2`] = `
+"type Query {
+    c(id: ID!): C
+    cs(limit: Int, page: Int, orderBy: csOrderBy, where: csWhere): CConnection
+    node(nodeId: ID!): Node
+}
+
+
+
+type C implements Node {
+    id: Int!
+    nodeId: ID!
+}
+
+input csOrderBy {
+  id: OrderByDirection
+}
+
+input csWhere {
+  id: WhereInt
+  OR: [csWhere!]
+}
+
+type CConnection {
+    totalCount: Int!
+    items: [C!]!
+}
+
+input WhereString {
+    eq: String
+    ne: String
+    in: [String!]
+    nin: [String!]
+    gt: String
+    gte: String
+    lt: String
+    lte: String
+    st: String
+}
+
+input WhereStringNullable {
+    eq: String
+    ne: String
+    in: [String!]
+    nin: [String!]
+    gt: String
+    gte: String
+    lt: String
+    lte: String
+    st: String
+    null: Boolean
+}
+
+input WhereInt {
+    eq: Int
+    ne: Int
+    in: [Int!]
+    nin: [Int!]
+    gt: Int
+    gte: Int
+    lt: Int
+    lte: Int
+}
+
+input WhereIntNullable {
+    eq: Int
+    ne: Int
+    in: [Int!]
+    nin: [Int!]
+    gt: Int
+    gte: Int
+    lt: Int
+    lte: Int
+    null: Boolean
+}
+
+input WhereFloat {
+    eq: Float
+    ne: Float
+    in: [Float!]
+    nin: [Float!]
+    gt: Float
+    gte: Float
+    lt: Float
+    lte: Float
+}
+
+input WhereFloatNullable {
+    eq: Float
+    ne: Float
+    in: [Float!]
+    nin: [Float!]
+    gt: Float
+    gte: Float
+    lt: Float
+    lte: Float
+    null: Boolean
+}
+
+input WhereBoolean {
+    eq: Boolean
+    ne: Boolean
+    in: [Boolean!]
+    nin: [Boolean!]
+}
+
+input WhereBooleanNullable {
+    eq: Boolean
+    ne: Boolean
+    in: [Boolean!]
+    nin: [Boolean!]
+    null: Boolean
+}
+
+input WhereID {
+    eq: ID
+    ne: ID
+    in: [ID!]
+    nin: [ID!]
+}
+
+input WhereIDNullable {
+    eq: ID
+    ne: ID
+    in: [ID!]
+    nin: [ID!]
+    null: Boolean
+}
+
+enum OrderByDirection {
+    ASC
+    DESC
+}
+
+interface Node {
+    nodeId: ID!
+}
+"
+`;
+
+exports[`graphql-connection > test allow api delete 1`] = `
+"type Query {
+    c(id: ID!): C
+    cs(limit: Int, page: Int, orderBy: csOrderBy, where: csWhere): CConnection
+    node(nodeId: ID!): Node
+}
+
+type Mutation {
+    createC(input: CreateCInput!, clientMutationId: String): CreateCPayload
+    updateC(id: ID!, patch: UpdateCInput!, clientMutationId: String): UpdateCPayload
+}
+
+type C implements Node {
+    id: Int!
+    nodeId: ID!
+}
+
+input csOrderBy {
+  id: OrderByDirection
+}
+
+input csWhere {
+  id: WhereInt
+  OR: [csWhere!]
+}
+
+type CConnection {
+    totalCount: Int!
+    items: [C!]!
+}
+
+input CreateCInput {
+    id: Int
+}
+
+type CreateCPayload {
+    c: C
+    clientMutationId: String
+}
+
+input UpdateCInput {
+    id: Int
+}
+
+type UpdateCPayload {
+    c: C
+    clientMutationId: String
+}
+
+input WhereString {
+    eq: String
+    ne: String
+    in: [String!]
+    nin: [String!]
+    gt: String
+    gte: String
+    lt: String
+    lte: String
+    st: String
+}
+
+input WhereStringNullable {
+    eq: String
+    ne: String
+    in: [String!]
+    nin: [String!]
+    gt: String
+    gte: String
+    lt: String
+    lte: String
+    st: String
+    null: Boolean
+}
+
+input WhereInt {
+    eq: Int
+    ne: Int
+    in: [Int!]
+    nin: [Int!]
+    gt: Int
+    gte: Int
+    lt: Int
+    lte: Int
+}
+
+input WhereIntNullable {
+    eq: Int
+    ne: Int
+    in: [Int!]
+    nin: [Int!]
+    gt: Int
+    gte: Int
+    lt: Int
+    lte: Int
+    null: Boolean
+}
+
+input WhereFloat {
+    eq: Float
+    ne: Float
+    in: [Float!]
+    nin: [Float!]
+    gt: Float
+    gte: Float
+    lt: Float
+    lte: Float
+}
+
+input WhereFloatNullable {
+    eq: Float
+    ne: Float
+    in: [Float!]
+    nin: [Float!]
+    gt: Float
+    gte: Float
+    lt: Float
+    lte: Float
+    null: Boolean
+}
+
+input WhereBoolean {
+    eq: Boolean
+    ne: Boolean
+    in: [Boolean!]
+    nin: [Boolean!]
+}
+
+input WhereBooleanNullable {
+    eq: Boolean
+    ne: Boolean
+    in: [Boolean!]
+    nin: [Boolean!]
+    null: Boolean
+}
+
+input WhereID {
+    eq: ID
+    ne: ID
+    in: [ID!]
+    nin: [ID!]
+}
+
+input WhereIDNullable {
+    eq: ID
+    ne: ID
+    in: [ID!]
+    nin: [ID!]
+    null: Boolean
+}
+
+enum OrderByDirection {
+    ASC
+    DESC
+}
+
+interface Node {
+    nodeId: ID!
+}
+"
+`;
+
+exports[`graphql-connection > test basics 1`] = `
+"type Query {
+    task(id: ID!): Task
+    tasks(limit: Int, page: Int, orderBy: tasksOrderBy, where: tasksWhere): TaskConnection
+    category(id: ID!): Category
+    categories(limit: Int, page: Int, orderBy: categoriesOrderBy, where: categoriesWhere): CategoryConnection
+    node(nodeId: ID!): Node
+}
+
+type Mutation {
+    createTask(input: CreateTaskInput!, clientMutationId: String): CreateTaskPayload
+    updateTask(id: ID!, patch: UpdateTaskInput!, clientMutationId: String): UpdateTaskPayload
+    deleteTask(id: ID!, clientMutationId: String): DeleteTaskPayload
+    createCategory(input: CreateCategoryInput!, clientMutationId: String): CreateCategoryPayload
+    updateCategory(id: ID!, patch: UpdateCategoryInput!, clientMutationId: String): UpdateCategoryPayload
+    deleteCategory(id: ID!, clientMutationId: String): DeleteCategoryPayload
+}
+
+type Task implements Node {
+    id: Int!
+    title: String!
+    completed: Boolean!
+    thePriority: String!
+    category: Category
+    userOnServer: String!
+    nodeId: ID!
+}
+
+input tasksOrderBy {
+  id: OrderByDirection
+  title: OrderByDirection
+  completed: OrderByDirection
+  thePriority: OrderByDirection
+  category: OrderByDirection
+}
+
+input tasksWhere {
+  id: WhereInt
+  title: WhereString
+  completed: WhereBoolean
+  thePriority: WhereString
+  OR: [tasksWhere!]
+}
+
+type TaskConnection {
+    totalCount: Int!
+    items: [Task!]!
+}
+
+input CreateTaskInput {
+    title: String
+    completed: Boolean
+    thePriority: String
+    category: ID
+    userOnServer: String
+}
+
+type CreateTaskPayload {
+    task: Task
+    clientMutationId: String
+}
+
+input UpdateTaskInput {
+    title: String
+    completed: Boolean
+    thePriority: String
+    category: ID
+    userOnServer: String
+}
+
+type UpdateTaskPayload {
+    task: Task
+    clientMutationId: String
+}
+
+type DeleteTaskPayload {
+    id: ID
+    clientMutationId: String
+}
+
+type Category implements Node {
+    id: String!
+    name: String!
+    tasks(limit: Int, page: Int, orderBy: tasksOrderBy, where: tasksWhere): TaskConnection
+    nodeId: ID!
+}
+
+input categoriesOrderBy {
+  id: OrderByDirection
+  name: OrderByDirection
+}
+
+input categoriesWhere {
+  id: WhereString
+  name: WhereString
+  OR: [categoriesWhere!]
+}
+
+type CategoryConnection {
+    totalCount: Int!
+    items: [Category!]!
+}
+
+input CreateCategoryInput {
+    name: String
+}
+
+type CreateCategoryPayload {
+    category: Category
+    clientMutationId: String
+}
+
+input UpdateCategoryInput {
+    name: String
+}
+
+type UpdateCategoryPayload {
+    category: Category
+    clientMutationId: String
+}
+
+type DeleteCategoryPayload {
+    id: ID
+    clientMutationId: String
+}
+
+input WhereString {
+    eq: String
+    ne: String
+    in: [String!]
+    nin: [String!]
+    gt: String
+    gte: String
+    lt: String
+    lte: String
+    st: String
+}
+
+input WhereStringNullable {
+    eq: String
+    ne: String
+    in: [String!]
+    nin: [String!]
+    gt: String
+    gte: String
+    lt: String
+    lte: String
+    st: String
+    null: Boolean
+}
+
+input WhereInt {
+    eq: Int
+    ne: Int
+    in: [Int!]
+    nin: [Int!]
+    gt: Int
+    gte: Int
+    lt: Int
+    lte: Int
+}
+
+input WhereIntNullable {
+    eq: Int
+    ne: Int
+    in: [Int!]
+    nin: [Int!]
+    gt: Int
+    gte: Int
+    lt: Int
+    lte: Int
+    null: Boolean
+}
+
+input WhereFloat {
+    eq: Float
+    ne: Float
+    in: [Float!]
+    nin: [Float!]
+    gt: Float
+    gte: Float
+    lt: Float
+    lte: Float
+}
+
+input WhereFloatNullable {
+    eq: Float
+    ne: Float
+    in: [Float!]
+    nin: [Float!]
+    gt: Float
+    gte: Float
+    lt: Float
+    lte: Float
+    null: Boolean
+}
+
+input WhereBoolean {
+    eq: Boolean
+    ne: Boolean
+    in: [Boolean!]
+    nin: [Boolean!]
+}
+
+input WhereBooleanNullable {
+    eq: Boolean
+    ne: Boolean
+    in: [Boolean!]
+    nin: [Boolean!]
+    null: Boolean
+}
+
+input WhereID {
+    eq: ID
+    ne: ID
+    in: [ID!]
+    nin: [ID!]
+}
+
+input WhereIDNullable {
+    eq: ID
+    ne: ID
+    in: [ID!]
+    nin: [ID!]
+    null: Boolean
+}
+
+enum OrderByDirection {
+    ASC
+    DESC
+}
+
+interface Node {
+    nodeId: ID!
+}
+"
+`;
+
+exports[`graphql-connection > test get single task by id 1`] = `
+{
+  "data": {
+    "task": {
+      "id": 2,
+      "title": "bbb",
+    },
+  },
+}
+`;
+
+exports[`graphql-connection > test graphql 1`] = `
+{
+  "data": {
+    "tasks": {
+      "items": [
+        {
+          "completed": false,
+          "id": 3,
+          "title": "task a",
+        },
+        {
+          "completed": false,
+          "id": 2,
+          "title": "task b",
+        },
+        {
+          "completed": false,
+          "id": 1,
+          "title": "task c",
+        },
+      ],
+    },
+  },
+}
+`;
+
+exports[`graphql-connection > test mutation create 1`] = `
+{
+  "data": {
+    "createTask": {
+      "task": {
+        "id": 1,
+        "title": "testing",
+      },
+    },
+  },
+}
+`;
+
+exports[`graphql-connection > test mutation create 2`] = `
+[
+  Task {
+    "category": null,
+    "completed": false,
+    "id": 1,
+    "thePriority": 1,
+    "title": "testing",
+    "userOnServer": "",
+  },
+]
+`;
+
+exports[`graphql-connection > test mutation delete 1`] = `
+{
+  "data": {
+    "deleteTask": {
+      "id": "2",
+    },
+  },
+}
+`;
+
+exports[`graphql-connection > test mutation delete 2`] = `
+[
+  Task {
+    "category": null,
+    "completed": false,
+    "id": 1,
+    "thePriority": 1,
+    "title": "task a",
+    "userOnServer": "",
+  },
+  Task {
+    "category": null,
+    "completed": false,
+    "id": 3,
+    "thePriority": 1,
+    "title": "task c",
+    "userOnServer": "",
+  },
+]
+`;
+
+exports[`graphql-connection > test mutation update 1`] = `
+{
+  "data": {
+    "updateTask": {
+      "task": {
+        "id": 1,
+        "title": "bbb",
+      },
+    },
+  },
+}
+`;
+
+exports[`graphql-connection > test nodes 1`] = `
+{
+  "data": {
+    "tasks": {
+      "items": [
+        {
+          "category": {
+            "nodeId": "Category:0",
+          },
+          "nodeId": "Task:1",
+          "title": "task a",
+        },
+        {
+          "category": {
+            "nodeId": "Category:1",
+          },
+          "nodeId": "Task:2",
+          "title": "task b",
+        },
+      ],
+    },
+  },
+}
+`;
+
+exports[`graphql-connection > test nodes 2`] = `
+{
+  "data": {
+    "node": {
+      "nodeId": "Task:1",
+      "title": "task a",
+    },
+  },
+}
+`;
+
+exports[`graphql-connection > test where translator 1`] = `
+{
+  "title": "aaa",
+}
+`;
+
+exports[`graphql-connection > test where translator in 1`] = `
+{
+  "title.in": [
+    "aaa",
+    "ccc",
+  ],
+}
+`;

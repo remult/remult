@@ -15,6 +15,8 @@ export class ValueConverters {
 
   static readonly Date: ValueConverter<Date> = {
     toJson: (val: Date) => {
+      if (val === null)
+        return null;
       if (!val)
         return '';
       if (typeof (val) === "string")
@@ -24,11 +26,13 @@ export class ValueConverters {
       }
       else {
         console.error("ToJsonError", val);
-        throw new Error("Expected date but got "+val);
+        throw new Error("Expected date but got " + val);
       }
 
     },
     fromJson: (val: string) => {
+      if (val === null)
+        return null;
       if (val == undefined)
         return undefined;
       if (val == '')
@@ -38,7 +42,15 @@ export class ValueConverters {
       return new Date(Date.parse(val));
     },
     toDb: x => x,
-    fromDb: x => x,
+    fromDb: val => {
+      if (typeof val === "number")
+        val = new Date(val);
+      if (typeof (val) === "string")
+        val = new Date(val);
+      if (val && !(val instanceof Date))
+        throw "expected date but got " + val;
+      return val;
+    },
     fromInput: x => ValueConverters.Date.fromJson(x),
     toInput: x => ValueConverters.Date.toJson(x),
     displayValue: (val) => {
@@ -79,12 +91,7 @@ export class ValueConverters {
 
     }//when using date storage,  the database expects and returns a date local and every where else we reflect on date iso
     , fromDb: (val: Date) => {
-
-      var d = val as Date;
-      if (!d)
-        return null;
-      return val;
-
+      return ValueConverters.Date.fromDb(val)
     },
     fieldTypeInDb: 'date',
     displayValue: (value: Date) => {
@@ -159,6 +166,16 @@ export class ValueConverters {
       inputType: InputTypes.number
 
     }
+  static readonly String: ValueConverter<String> =
+    {
+      fromDb: enforceString,
+      toDb: enforceString,
+      fromJson: enforceString,
+      toJson: enforceString,
+      fromInput: enforceString,
+      toInput: enforceString,
+
+    }
   static readonly Integer: ValueConverter<number> =
     {
       ...ValueConverters.Number,
@@ -172,13 +189,16 @@ export class ValueConverters {
       toDb: value => ValueConverters.Integer.toJson(value),
       fieldTypeInDb: 'integer'
     }
-  static readonly Default: ValueConverter<any> = {
+  static readonly Default: Required<ValueConverter<any>> = {
     fromJson: x => x,
     toJson: x => x,
     fromDb: x => ValueConverters.JsonString.fromDb(x),
     toDb: x => ValueConverters.JsonString.toDb(x),
     fromInput: x => ValueConverters.Default.fromJson(x),
-    toInput: x => ValueConverters.Default.toJson(x)
+    toInput: x => ValueConverters.Default.toJson(x),
+    displayValue: x => x + '',
+    fieldTypeInDb: '',
+    inputType: 'text'
   }
   static readonly JsonString: ValueConverter<any> = {
     fromJson: x => x,
@@ -197,4 +217,11 @@ export class ValueConverters {
     toInput: x => ValueConverters.JsonString.toJson(x),
     fieldTypeInDb: 'json'
   }
+}
+function enforceString(value: string) {
+  if (value === null || value === undefined)
+    return value;
+  if (typeof (value) !== "string")
+    return (value as any).toString()
+  return value;
 }
