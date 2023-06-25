@@ -547,7 +547,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
             } as EntityFilter<entityType>;
         }
         let r = await Filter.fromEntityFilter(this.metadata, where);
-        if (r && !this.dataProvider.supportsRawFilter) {
+        if (r && !this.dataProvider.isProxy) {
             r = await Filter.translateCustomWhere(r, this.metadata, this.remult);
         }
         return r;

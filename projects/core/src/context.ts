@@ -6,19 +6,47 @@ import { RepositoryImplementation } from "./remult3/RepositoryImplementation";
 import { ClassType } from "../classType";
 import { LiveQueryClient } from "./live-query/LiveQueryClient";
 import { SseSubscriptionClient } from "./live-query/SseSubscriptionClient";
-import { RemultProxy } from "./remult-proxy";
+import { RemultProxy, remult } from "./remult-proxy";
 
 import type { LiveQueryStorage, LiveQueryPublisher, LiveQueryChangesListener, SubscriptionServer } from "./live-query/SubscriptionServer";
 import { buildRestDataProvider, ExternalHttpProvider, isExternalHttpProvider } from "./buildRestDataProvider";
 import { SubscriptionClient, Unsubscribe } from "./live-query/SubscriptionChannel";
 
 
+export class RemultAsyncLocalStorage {
+    static enable() {
+        (remult as RemultProxy).remultFactory = () => {
+            const r = RemultAsyncLocalStorage.instance.getRemult()
+            if (r)
+                return r;
+            else throw new Error("remult object was requested outside of a valid context, try running it within initApi or a remult request cycle");
+        };
+    }
+    static disable() {
+        (remult as RemultProxy).resetFactory();
+    }
+    constructor(private readonly remultObjectStorage: import('async_hooks').AsyncLocalStorage<Remult>) {
 
+    }
+    run(remult: Remult, callback: VoidFunction) {
+        if (this.remultObjectStorage)
+            this.remultObjectStorage.run(remult, callback);
+        else
+            callback();
+    }
+    getRemult() {
+        if (!this.remultObjectStorage) {
+            throw new Error("can't use static remult in this environment, `async_hooks` were not initialized");
+        }
+        return this.remultObjectStorage.getStore()
+    }
+    static instance = new RemultAsyncLocalStorage(undefined!);
+}
 
 
 
 export function isBackend() {
-    return actionInfo.runningOnServer;
+    return actionInfo.runningOnServer || !remult.dataProvider.isProxy;
 }
 
 export class Remult {
@@ -139,7 +167,7 @@ export class Remult {
     subscriptionServer?: SubscriptionServer
     /* @internal*/
     liveQueryPublisher: LiveQueryChangesListener = {
-        itemChanged:async () => { }
+        itemChanged: async () => { }
     };
 
     //@ts-ignore // type error of typescript regarding args that doesn't appear in my normal development
@@ -175,6 +203,18 @@ export class Remult {
         url: '/api',
         subscriptionClient: new SseSubscriptionClient()
     };
+    static run<T>(callback: () => T, options: {
+        dataProvider: DataProvider
+    }) {
+        const remult = new Remult();
+        if (options.dataProvider)
+            remult.dataProvider = options.dataProvider;
+        let r: T;
+        RemultAsyncLocalStorage.instance.run(remult, () => {
+            r = callback()
+        })
+        return r;
+    }
 }
 
 RemultProxy.defaultRemult = new Remult();

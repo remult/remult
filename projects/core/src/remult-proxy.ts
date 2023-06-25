@@ -121,7 +121,6 @@ export class RemultProxy implements Remult {
     set subscriptionServer(value: SubscriptionServer) {
         this.remultFactory().subscriptionServer = value;
     }
-
 }
 
 

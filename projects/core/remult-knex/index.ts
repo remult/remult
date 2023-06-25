@@ -64,7 +64,7 @@ export class KnexDataProvider implements DataProvider {
         let r = await b.resolveWhere();
         return knex => r.forEach(y => y(knex))
     }
-    supportsRawFilter?: boolean;
+    isProxy?: boolean;
 
     async ensureSchema(entities: EntityMetadata<any>[]): Promise<void> {
 

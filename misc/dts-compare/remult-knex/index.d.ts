@@ -11,7 +11,7 @@ export declare class KnexDataProvider implements DataProvider {
     transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void>;
     static rawFilter(build: CustomKnexFilterBuilderFunction): EntityFilter<any>;
     static filterToRaw<entityType>(entity: RepositoryOverloads<entityType>, condition: EntityFilter<entityType>): Promise<(knex: any) => void>;
-    supportsRawFilter?: boolean;
+    isProxy?: boolean;
     ensureSchema(entities: EntityMetadata<any>[]): Promise<void>;
 }
 export declare type CustomKnexFilterBuilderFunction = () => Promise<(builder: Knex.QueryBuilder) => void>;

@@ -4,8 +4,8 @@ import { EntityMetadata, OmitEB } from './remult3';
 export interface DataProvider {
     getEntityDataProvider(entity: EntityMetadata): EntityDataProvider;
     transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void>;
-    supportsRawFilter?: boolean;
     ensureSchema?(entities: EntityMetadata[]): Promise<void>;
+    isProxy?: boolean;
 }
 export interface Storage {
     ensureSchema(): Promise<void>;

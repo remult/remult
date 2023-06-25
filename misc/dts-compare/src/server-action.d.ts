@@ -26,7 +26,7 @@ export declare class ForbiddenError extends Error {
 export declare class myServerAction extends Action<inArgs, result> {
     private types;
     private options;
-    private originalMethod;
+    originalMethod: (args: any[]) => any;
     constructor(name: string, types: any[], options: BackendMethodOptions<any>, originalMethod: (args: any[]) => any);
     protected execute(info: inArgs, remult: Remult, res: DataApiResponse): Promise<result>;
 }

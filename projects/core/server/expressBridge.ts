@@ -2,7 +2,7 @@
 import { Action, actionInfo, ActionInterface, classBackendMethodsArray, jobWasQueuedResult, myServerAction, queuedJobInfoResponse, serverActionField } from '../src/server-action';
 import type { DataProvider, ErrorInfo, Storage } from '../src/data-interfaces';
 import { DataApi, DataApiRequest, DataApiResponse, serializeError } from '../src/data-api';
-import { allEntities, AllowedForInstance, Remult, UserInfo } from '../src/context';
+import { allEntities, AllowedForInstance, Remult, RemultAsyncLocalStorage, UserInfo } from '../src/context';
 import type { ClassType } from '../classType';
 import { Entity, EntityBase, EntityMetadata, Fields, getEntityKey, IdEntity, Repository } from '../src/remult3';
 import { remult, RemultProxy } from '../src/remult-proxy';
@@ -198,35 +198,6 @@ export interface GenericResponse {
 };
 
 
-export class RemultAsyncLocalStorage {
-  static enable() {
-    (remult as RemultProxy).remultFactory = () => {
-      const r = RemultAsyncLocalStorage.instance.getRemult()
-      if (r)
-        return r;
-      else throw new Error("remult object was requested outside of a valid context, try running it within initApi or a remult request cycle");
-    };
-  }
-  static disable() {
-    (remult as RemultProxy).resetFactory();
-  }
-  constructor(private readonly remultObjectStorage: import('async_hooks').AsyncLocalStorage<Remult>) {
-
-  }
-  run(remult: Remult, callback: VoidFunction) {
-    if (this.remultObjectStorage)
-      this.remultObjectStorage.run(remult, callback);
-    else
-      callback();
-  }
-  getRemult() {
-    if (!this.remultObjectStorage) {
-      throw new Error("can't use static remult in this environment, `async_hooks` were not initialized");
-    }
-    return this.remultObjectStorage.getStore()
-  }
-  static instance = new RemultAsyncLocalStorage(undefined!);
-}
 
 
 /* @internal*/
