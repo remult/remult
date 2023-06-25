@@ -18,6 +18,10 @@ All notable changes to this project will be documented in this file.
 - Backend method will call backend based on isBackend method,
 - Replaced deprecated cuid with `paralleldrive/cuid2`
 
+## [0.21.1] - 2023-06-25
+- Fixed issue with `Field.Json` fails to insert in case of array
+
+
 ## [0.21.0] - 2023-06-22
 
 - Major improvements to the GraphQL support:

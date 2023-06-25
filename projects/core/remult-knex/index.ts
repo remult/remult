@@ -173,7 +173,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
             if (isDbReadonly(x, e)) { }
 
             else if (data[x.key] !== undefined) {
-                let v = x.valueConverter.toDb(data[x.key]);
+                let v = translateValueAndHandleArrayAndHandleArray(x, data[x.key]);
                 if (v !== undefined) {
                     let key = await e.$dbNameOf(x);
                     updateObject[key] = v;
@@ -207,7 +207,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
             if (isDbReadonly(x, e)) { }
 
             else {
-                let v = x.valueConverter.toDb(data[x.key]);
+                let v = translateValueAndHandleArrayAndHandleArray(x, data[x.key]);
                 if (v != undefined) {
                     let key = await e.$dbNameOf(x);
                     insertObject[key] = v;
@@ -291,7 +291,7 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
     }
     isIn(col: FieldMetadata, val: any[]): void {
         this.result.push(knex =>
-            knex.whereIn(this.nameProvider.$dbNameOf(col), val.map(x => col.valueConverter.toDb(x))))
+            knex.whereIn(this.nameProvider.$dbNameOf(col), val.map(x => translateValueAndHandleArrayAndHandleArray(col, x))))
     }
     isEqualTo(col: FieldMetadata, val: any): void {
         this.add(col, val, "=");
@@ -322,7 +322,7 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
     }
 
     private add(col: FieldMetadata, val: any, operator: string) {
-        this.result.push(b => b.where(this.nameProvider.$dbNameOf(col), operator, col.valueConverter.toDb(val)))
+        this.result.push(b => b.where(this.nameProvider.$dbNameOf(col), operator, translateValueAndHandleArrayAndHandleArray(col, val)))
     }
 
 
@@ -512,5 +512,11 @@ export async function createKnexDataProvider(config: Knex.Config) {
 
     let k = (await import('knex')).default(config)
     let result = new KnexDataProvider(k);
+    return result;
+}
+function translateValueAndHandleArrayAndHandleArray(field: FieldMetadata<any>, val: any) {
+    let result = field.valueConverter.toDb(val);
+    if (Array.isArray(result))
+        return JSON.stringify(result);
     return result;
 }

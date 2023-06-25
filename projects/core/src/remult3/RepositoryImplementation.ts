@@ -536,7 +536,6 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         }, true);
     }
 
-
     /* @internal*/
     async translateWhereToFilter(where: EntityFilter<entityType>): Promise<Filter> {
         if (this.metadata.options.backendPrefilter && isBackend()) {

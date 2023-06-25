@@ -80,6 +80,8 @@ class PostgresBridgeToSQLCommand implements SqlCommand {
     }
     values: any[] = [];
     addParameterAndReturnSqlToken(val: any): string {
+        if (Array.isArray(val)) 
+            val = JSON.stringify(val);
         this.values.push(val);
         return '$' + this.values.length;
     }
