@@ -21,6 +21,7 @@ import { describeClass } from "../remult3/DecoratorReplacer";
 import { DataProviderLiveQueryStorage, LiveQueryStorageEntity } from "../../live-query/data-provider-live-query-storage";
 import { v4 as uuid } from 'uuid'
 import { testPostgresImplementation } from "../backend-tests/backend-database-test-setup.backend-spec";
+import { ValueConverters } from "../valueConverters";
 
 
 
@@ -899,5 +900,42 @@ testAll("test json structure", async ({ createEntity }) => {
     let item = await r.findFirst();
     expect(item.person).toEqual({ firstName: "noam", lastName: "honig" });
 }, false)
+testAll("test json structure 2", async ({ createEntity }) => {
+    const e = class {
+
+        a = 0;
+        items: string[] = []
+    }
+    describeClass(e, Entity("testJsonFieldType2", { allowApiCrud: true }), {
+        a: Fields.number(),
+        items: Fields.json()
+    })
+    const r = await createEntity(e);
+    await r.insert({ a: 1, items: ["a", "b"] });
+    let item = await r.findFirst();
+    expect(item.items).toEqual(["a", "b"]);
+    //expect(await r.count({ items: { $contains: "b" } })).toBe(1)
+}, false,{exclude: [TestDbs.mongo]})
+
+
+
+testAll("test json structure 3", async ({ createEntity }) => {
+    const e = class {
+
+        a = 0;
+        items: string[] = []
+    }
+    describeClass(e, Entity("testJsonFieldType3", { allowApiCrud: true }), {
+        a: Fields.number(),
+        items: Fields.object()
+    })
+    const r = await createEntity(e);
+    await r.insert({ a: 1, items: ["a", "b"] });
+    let item = await r.findFirst();
+    expect(item.items).toEqual(["a", "b"]);
+    expect(await r.count({ items: { $contains: "b" } })).toBe(1)
+}, false, {
+    exclude: [TestDbs.mongo]
+})
 
 

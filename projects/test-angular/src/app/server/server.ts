@@ -3,7 +3,7 @@ let moduleLoader = new CustomModuleLoader('/dist/test-angular');
 import express, { application } from "express";
 import { remultExpress } from '../../../../core/remult-express'
 import { Category, Task, TasksController, TasksControllerDecorated } from "../products-test/products.component";
-import { JsonDataProvider, Remult, remult } from '../../../../core';
+import { Entity, Fields, JsonDataProvider, Remult, SqlDatabase, describeClass, remult } from '../../../../core';
 import { JsonFileDataProvider } from '../../../../core/server';
 import { JobsInQueueEntity } from '../../../../core/server/expressBridge';
 import { EntityQueueStorage } from '../../../../core/server/expressBridge';
@@ -39,6 +39,24 @@ export const api = remultExpress({
     //@ts-ignore
     getUser: ({ session }) => {
         return undefined;
+    },
+    dataProvider: createPostgresDataProvider(),
+    initApi: async () => {
+        const e = class {
+
+            a = 0;
+            items: string[] = []
+        }
+        describeClass(e, Entity("testJsonFieldType2", { allowApiCrud: true }), {
+            a: Fields.number(),
+            items: Fields.json()
+        })
+        await remult.repo(e).insert({a:3,items:["a","b"]})
+
+        console.log(await remult.repo(e).findId(3))
+
+        const db = SqlDatabase.getDb(remult);
+        //db.execute("insert into testJsonFieldType2 ()")
     }
 })
 app.use(api)
