@@ -238,9 +238,11 @@ export interface Repository<entityType> {
     create(item?: Partial<OmitEB<entityType>>): entityType;
 
     //TODO - talk about cases of arrays 
+    toJson(item: entityType[]): any[];
     toJson(item: entityType): any;
     //TODO - talk about cases of arrays 
     /** Translates a json object to an item instance */
+    fromJson(x: any[], isNew?: boolean): entityType[];
     fromJson(x: any, isNew?: boolean): entityType;
     /** returns an `entityRef` for an item returned by `create`, `find` etc... */
     getEntityRef(item: entityType): EntityRef<entityType>;

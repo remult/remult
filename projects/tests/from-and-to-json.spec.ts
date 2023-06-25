@@ -123,5 +123,14 @@ describe("Test sync from and to json", () => {
       }
     `)
   })
+  it("works with array",()=>{
+    const r = repo.toJson([task1,task2])
+    expect (r.length).toBe(2)
+    const rr = repo.fromJson(r);
+    expect (rr.length).toBe(2)
+  })
 
 })
+
+
+

@@ -240,7 +240,7 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
                 row.originalId = id;
             }
             else row.id = row.getId();
-            ref = row;
+            ref = row as any;
             Object.defineProperty(instance, entityMember, {
                 get: () => row
             });
@@ -386,13 +386,17 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         return x;
     }
 
-    toJson(item: entityType) {
+    toJson(item: entityType | entityType[]) {
+        if (Array.isArray(item))
+            return item.map(x => this.toJson(x))
         return (this.getEntityRef(item) as rowHelperImplementation<entityType>).toApiJson(true);
     }
-    // TODO2 - consider replacing with fromJsonArray - also consider having a TOJSON for similar cases
-    fromJson(json: any, newRow?: boolean): entityType {
+    
+    fromJson(json: any, newRow?: boolean) {
         if (json === null || json === undefined)
             return json;
+        if (Array.isArray(json))
+            return json.map(item => this.fromJson(item))
         let result = new this.entity(this.remult);
         for (const col of this.fieldsOf(json)) {
             let ei = getEntitySettings(col.valueType, false);

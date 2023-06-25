@@ -51,8 +51,8 @@ export declare class RepositoryImplementation<entityType> implements Repository<
     fromJsonArray(jsonItems: any[], load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[]): Promise<entityType[]>;
     private loadManyToOneForManyRows;
     private mapRawDataToResult;
-    toJson(item: entityType): any;
-    fromJson(json: any, newRow?: boolean): entityType;
+    toJson(item: entityType | entityType[]): any;
+    fromJson(json: any, newRow?: boolean): any;
     count(where?: EntityFilter<entityType>): Promise<number>;
     private cache;
     findFirst(where?: EntityFilter<entityType>, options?: FindFirstOptions<entityType>, skipOrderByAndLimit?: boolean): Promise<entityType>;
