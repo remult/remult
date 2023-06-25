@@ -5,7 +5,7 @@
     "name": "Noam Honig"
   },
   "scripts": {
-    "build-core": "tsc -p ../../projects/core/tsconfig.build.json && tsc -p ../../projects/core/tsconfig.build.esm.json && copyfiles -u 2 ../../projects/core/package.json ../../dist/remult && copyfiles ../../README.md ../../dist/remult && copyfiles ../../LICENSE ../../dist/remult",
+    "build-core": "tsc -p ../../projects/core/tsconfig.build.json && tsc -p ../../projects/core/tsconfig.build.esm.json && copyfiles -u 4 ../../projects/core/package.json ../../dist/remult && copyfiles ../../README.md ../../dist/remult && copyfiles ../../LICENSE ../../dist/remult",
     "build-core-watch": "concurrently \"tsc -w -p ../../projects/core/tsconfig.build.esm.json -outDir ../../../../try/t27/remult-react-todo/node_modules/remult/esm/\" \"tsc -w -p ../../projects/core/tsconfig.build.json -outDir ../../../../try/t27/remult-react-todo/node_modules/remult/\""
   },
   "devDependencies": {
