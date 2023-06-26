@@ -1954,6 +1954,7 @@ export function Field<entityType = any, valueType = any>(valueType: () => ClassT
             return r;
 
         }
+        checkTarget(target);
         let names: columnInfo[] = columnsOfType.get(target.constructor);
         if (!names) {
             names = [];
@@ -2366,3 +2367,8 @@ export function getRepository<entityType>(entity: RepositoryOverloads<entityType
 }
 export type EntityMetadataOverloads<entityType> = Repository<entityType> | EntityMetadata<entityType> | ClassType<entityType>;
 export type RepositoryOverloads<entityType> = Repository<entityType> | ClassType<entityType>;
+
+export function checkTarget(target: any) {
+    if (!target)
+        throw new Error("Set the 'experimentalDecorators:true' option in your 'tsconfig' or 'jsconfig' (target undefined)")
+}

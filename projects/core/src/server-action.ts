@@ -5,7 +5,7 @@ import { DataApiResponse } from './data-api';
 import { SqlDatabase } from './data-providers/sql-database';
 import { packedRowInfo } from './__EntityValueProvider';
 import { DataProvider, RestDataProviderHttpProvider } from './data-interfaces';
-import { getEntityRef, rowHelperImplementation, getFields, decorateColumnSettings, getEntitySettings, getControllerRef, EntityFilter, controllerRefImpl, RepositoryImplementation, FindOptions, Repository } from './remult3';
+import { getEntityRef, rowHelperImplementation, getFields, decorateColumnSettings, getEntitySettings, getControllerRef, EntityFilter, controllerRefImpl, RepositoryImplementation, FindOptions, Repository, checkTarget } from './remult3';
 import { FieldOptions } from './column-interfaces';
 import { remult } from './remult-proxy';
 
@@ -201,6 +201,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
         const key = typeof (context) === "string" ? context : context.name.toString();
         const originalMethod = descriptor ? descriptor.value : target;
         let result = originalMethod;
+        checkTarget(target)
         if (target.prototype !== undefined) {
 
 
