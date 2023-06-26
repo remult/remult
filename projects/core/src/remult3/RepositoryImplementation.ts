@@ -1703,32 +1703,32 @@ export class Fields {
     */
     static object<entityType = any, valueType = any>(
         ...options: (FieldOptions<entityType, valueType> |
-            ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
+            ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]): (target: any, context: string | ClassFieldDecoratorContext<entityType, valueType | undefined>, c?: any) => void {
         return Field(undefined, ...options);
     }
     static json<entityType = any, valueType = any>(
         ...options: (FieldOptions<entityType, valueType> |
-            ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
+            ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]): (target: any, context: string | ClassFieldDecoratorContext<entityType, valueType | undefined>, c?: any) => void {
         return Field(undefined, {
             valueConverter: {
                 fieldTypeInDb: "json"
             }
         }, ...options);
     }
-    static dateOnly<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]) {
+    static dateOnly<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]): (target: any, context: string | ClassFieldDecoratorContext<entityType, Date | undefined>, c?: any) => void {
         return Field(() => Date, {
             valueConverter: ValueConverters.DateOnly
         }, ...options);
     }
-    static date<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]) {
+    static date<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]): (target: any, context: string | ClassFieldDecoratorContext<entityType, Date | undefined>, c?: any) => void {
         return Field(() => Date, ...options);
     }
-    static integer<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]) {
+    static integer<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]): (target: any, context: string | ClassFieldDecoratorContext<entityType, number | undefined>, c?: any) => void {
         return Field(() => Number, {
             valueConverter: ValueConverters.Integer
         }, ...options)
     }
-    static autoIncrement<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]) {
+    static autoIncrement<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]): (target: any, context: string | ClassFieldDecoratorContext<entityType, number | undefined>, c?: any) => void {
         return Field(() => Number, {
             allowApiUpdate: false,
             dbReadOnly: true,
@@ -1736,10 +1736,10 @@ export class Fields {
         }, ...options)
     }
 
-    static number<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]) {
+    static number<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]): (target: any, context: string | ClassFieldDecoratorContext<entityType, number | undefined>, c?: any) => void {
         return Field(() => Number, ...options)
     }
-    static createdAt<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]) {
+    static createdAt<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]): (target: any, context: string | ClassFieldDecoratorContext<entityType, Date | undefined>, c?: any) => void {
         return Field(() => Date, {
             allowApiUpdate: false,
             saving: (_, ref) => {
@@ -1748,7 +1748,7 @@ export class Fields {
             }
         }, ...options);
     }
-    static updatedAt<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]) {
+    static updatedAt<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]): (target: any, context: string | ClassFieldDecoratorContext<entityType, Date | undefined>, c?: any) => void {
         return Field(() => Date, {
             allowApiUpdate: false,
             saving: (_, ref) => {
@@ -1757,7 +1757,7 @@ export class Fields {
         }, ...options);
     }
 
-    static uuid<entityType = any>(...options: (FieldOptions<entityType, string> | ((options: FieldOptions<entityType, string>, remult: Remult) => void))[]) {
+    static uuid<entityType = any>(...options: (FieldOptions<entityType, string> | ((options: FieldOptions<entityType, string>, remult: Remult) => void))[]): (target: any, context: string | ClassFieldDecoratorContext<entityType, string | undefined>, c?: any) => void {
         return Field(() => String, {
             allowApiUpdate: false,
             defaultValue: () => uuid(),
@@ -1767,7 +1767,7 @@ export class Fields {
             }
         }, ...options);
     }
-    static cuid<entityType = any>(...options: (FieldOptions<entityType, string> | ((options: FieldOptions<entityType, string>, remult: Remult) => void))[]) {
+    static cuid<entityType = any>(...options: (FieldOptions<entityType, string> | ((options: FieldOptions<entityType, string>, remult: Remult) => void))[]): (target: any, context: string | ClassFieldDecoratorContext<entityType, string | undefined>, c?: any) => void {
         return Field(() => String, {
             allowApiUpdate: false,
             defaultValue: () => createId(),
@@ -1777,10 +1777,10 @@ export class Fields {
             }
         }, ...options);
     }
-    static string<entityType = any>(...options: (StringFieldOptions<entityType> | ((options: StringFieldOptions<entityType>, remult: Remult) => void))[]) {
+    static string<entityType = any>(...options: (StringFieldOptions<entityType> | ((options: StringFieldOptions<entityType>, remult: Remult) => void))[]): (target: any, context: string | ClassFieldDecoratorContext<entityType, string | undefined>, c?: any) => void {
         return Field(() => String, ...options);
     }
-    static boolean<entityType = any>(...options: (FieldOptions<entityType, boolean> | ((options: FieldOptions<entityType, boolean>, remult: Remult) => void))[]) {
+    static boolean<entityType = any>(...options: (FieldOptions<entityType, boolean> | ((options: FieldOptions<entityType, boolean>, remult: Remult) => void))[]): (target: any, context: string | ClassFieldDecoratorContext<entityType, boolean | undefined>, c?: any) => void {
         return Field(() => Boolean, ...options);
     }
 }
@@ -1926,7 +1926,7 @@ export function getValueList<T>(type: ClassType<T> | FieldMetadata<T> | FieldRef
  * title='';
  */
 export function Field<entityType = any, valueType = any>(valueType: () => ClassType<valueType>, ...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]) {
-
+    // IMPORTANT!!!! if you call this in another decorator, make sure to set It's return type correctly with the | undefined
 
 
     return (target,
