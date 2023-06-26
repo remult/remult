@@ -9,14 +9,14 @@ import { Sort, SortSegment } from '../sort';
 import { EntityMetadata, EntityFilter, OmitEB, Repository, RepositoryImplementation, RepositoryOverloads, getRepository, EntityBase } from "../remult3";
 import { FieldMetadata } from "../column-interfaces";
 import { Remult } from "../context";
-import { RemultProxy } from "../remult-proxy";
+import { remult as defaultRemult } from "../remult-proxy";
 import { ValueConverters } from "../valueConverters";
 
 
 // @dynamic
 export class SqlDatabase implements DataProvider {
   static getDb(remult?: Remult) {
-    const r = (remult || RemultProxy.defaultRemult).dataProvider as SqlDatabase;
+    const r = (remult || defaultRemult).dataProvider as SqlDatabase;
     if (!r.createCommand)
       throw "the data provider is not an SqlDatabase";
     return r;

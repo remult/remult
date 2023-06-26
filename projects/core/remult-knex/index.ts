@@ -10,7 +10,7 @@ import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions } from 
 import { FieldMetadata } from '../src/column-interfaces';
 import { CompoundIdField } from '../src/column';
 import { Sort } from '../src/sort';
-import { remult as remultContext, RemultProxy } from '../src/remult-proxy';
+import { remult as remultContext } from '../src/remult-proxy';
 
 export class KnexDataProvider implements DataProvider {
     constructor(public knex: Knex) {
@@ -347,7 +347,7 @@ export class KnexSchemaBuilder {
     static logToConsole = true;
     async verifyStructureOfAllEntities(remult?: Remult) {
         if (!remult)
-            remult = RemultProxy.defaultRemult;
+            remult = remultContext;
 
         const entities = allEntities.map(x => remult.repo(x).metadata);
         this.ensureSchema(entities);

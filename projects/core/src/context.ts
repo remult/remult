@@ -21,7 +21,7 @@ export class RemultAsyncLocalStorage {
                 return r;
             else throw new Error("remult object was requested outside of a valid context, try running it within initApi or a remult request cycle");
         };
-    }
+    } 
     static disable() {
         (remult as RemultProxy).resetFactory();
     }
@@ -290,7 +290,7 @@ export class Allow {
             if (args[0].authenticated)
                 return args[0].authenticated();
         }
-        return RemultProxy.defaultRemult.authenticated();
+        return remult.authenticated();
     }
 }
 

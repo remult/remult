@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file.
 - isBackend will return true or false based on dataProvider.isProxy equal false or runningOnServer member
 - Backend method will call backend based on isBackend method,
 - Replaced deprecated cuid with `paralleldrive/cuid2`
+- Fixed an issue where when `getDb` was called without a `remult` parameter, it wouldn't use the default remult
 
 ## [0.21.1] - 2023-06-25
 - Fixed issue with `Field.Json` fails to insert in case of array

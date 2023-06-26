@@ -3,7 +3,7 @@ import { FieldMetadata } from '../src/column-interfaces';
 import { Remult, allEntities } from '../src/context';
 import { SqlDatabase } from '../src/data-providers/sql-database';
 import { dbNamesOf, EntityDbNamesBase, isDbReadonly } from '../src/filter/filter-consumer-bridge-to-sql-request';
-import { RemultProxy } from '../src/remult-proxy';
+import { remult as defaultRemult } from '../src/remult-proxy';
 import { EntityMetadata, isAutoIncrement } from '../src/remult3';
 import { ValueConverters } from '../src/valueConverters';
 
@@ -49,7 +49,7 @@ export class PostgresSchemaBuilder {
     static logToConsole = true;
     async verifyStructureOfAllEntities(remult?: Remult) {
         if (!remult) {
-            remult = RemultProxy.defaultRemult;
+            remult = defaultRemult;
         }
         const completed = new Set<string>();
         const entities: EntityMetadata[] = [];

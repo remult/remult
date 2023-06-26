@@ -19,7 +19,7 @@ import { filterHelper } from "../filter/filter-interfaces";
 import { assign } from "../../assign";
 import { Paginator, RefSubscriber, RefSubscriberBase } from ".";
 
-import { remult as defaultRemult, RemultProxy } from "../remult-proxy";
+import { RemultProxy, remult as defaultRemult } from "../remult-proxy";
 import { SubscriptionListener, Unsubscribe } from "../live-query/SubscriptionChannel";
 //import { remult } from "../remult-proxy";
 
@@ -2352,7 +2352,7 @@ export function getEntityMetadata<entityType>(entity: EntityMetadataOverloads<en
         return (entity as Repository<entityType>).metadata;
     const settings = getEntitySettings(entity as ClassType<entityType>, false);
     if (settings) {
-        return RemultProxy.defaultRemult.repo(entity as ClassType<entityType>).metadata;
+        return defaultRemult.repo(entity as ClassType<entityType>).metadata;
     }
     return entity as EntityMetadata;
 }
@@ -2360,7 +2360,7 @@ export function getRepository<entityType>(entity: RepositoryOverloads<entityType
 
     const settings = getEntitySettings(entity as ClassType<entityType>, false);
     if (settings) {
-        return RemultProxy.defaultRemult.repo(entity as ClassType<entityType>);
+        return defaultRemult.repo(entity as ClassType<entityType>);
     }
     return entity as Repository<entityType>;
 }

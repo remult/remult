@@ -4,6 +4,7 @@ import { Categories } from '../tests/remult-3-entities';
 import { Task } from '../../../test-servers/shared/Task'
 import { remultFresh } from '../../remult-fresh';
 import { InMemoryDataProvider } from '../data-providers/in-memory-database';
+import { RemultAsyncLocalStorage } from '../context';
 
 const servers = {
     koa: "koa",
@@ -133,25 +134,29 @@ class FreshResponseTest {
 }
 
 it("test fresh", async () => {
+    try {
+        const api = remultFresh({
+            entities: [Categories],
+            dataProvider: new InMemoryDataProvider(),
+            rootPath: '/api',
+            logApiEndPoints: false
+        }, FreshResponseTest);
 
-    const api = remultFresh({
-        entities: [Categories],
-        dataProvider: new InMemoryDataProvider(),
-        rootPath: '/api'
-    }, FreshResponseTest);
-
-    const r: FreshResponseTest = await api.handle({
-        url: '/api/Categories',
-        json() {
-            return undefined
-        },
-        method: "get"
-    }, {
-        next() {
-            return undefined!;
-        },
-    });
-    expect(r.body).toEqual([])
+        const r: FreshResponseTest = await api.handle({
+            url: '/api/Categories',
+            json() {
+                return undefined
+            },
+            method: "get"
+        }, {
+            next() {
+                return undefined!;
+            },
+        });
+        expect(r.body).toEqual([])
+    } finally {
+        RemultAsyncLocalStorage.disable()
+    }
 });
 
 

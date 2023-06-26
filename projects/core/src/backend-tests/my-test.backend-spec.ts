@@ -14,6 +14,7 @@ import { RemultAsyncLocalStorage } from "../../src/context";
 import { initAsyncHooks } from "../../server/initAsyncHooks";
 import { remult } from "../remult-proxy";
 import { describeClass } from "../remult3/DecoratorReplacer";
+import { AsyncLocalStorage } from "async_hooks"
 config();
 
 
@@ -173,41 +174,46 @@ it("test async hooks and static remult", async () => {
     }
     catch { }
     expect(gotException).toBe(true);
-    initAsyncHooks();
-    expect(RemultAsyncLocalStorage.instance.getRemult()).toBe(undefined);
-    RemultAsyncLocalStorage.enable();
+    RemultAsyncLocalStorage.instance = new RemultAsyncLocalStorage(new AsyncLocalStorage());
     try {
-        remult.isAllowed(false);
-        gotException = false;
-    }
-    catch { }
-    expect(gotException).toBe(true);
-    const promises = [];
-    RemultAsyncLocalStorage.instance.run(new Remult(), () => {
-        remult.user = { id: 'noam' };
-        promises.push(new Promise(res => {
-            setTimeout(() => {
-                expect(remult.user.id).toBe('noam');
-                res({})
-            }, 10);
-        }))
+        expect(RemultAsyncLocalStorage.instance.getRemult()).toBe(undefined);
+        RemultAsyncLocalStorage.enable();
+        try {
+            remult.isAllowed(false);
+            gotException = false;
+        }
+        catch { }
+        expect(gotException).toBe(true);
+        const promises = [];
         RemultAsyncLocalStorage.instance.run(new Remult(), () => {
-            remult.user = { id: 'yoni' };
+            remult.user = { id: 'noam' };
             promises.push(new Promise(res => {
                 setTimeout(() => {
-                    expect(remult.user.id).toBe('yoni');
+                    expect(remult.user.id).toBe('noam');
+                    res({})
+                }, 10);
+            }))
+            RemultAsyncLocalStorage.instance.run(new Remult(), () => {
+                remult.user = { id: 'yoni' };
+                promises.push(new Promise(res => {
+                    setTimeout(() => {
+                        expect(remult.user.id).toBe('yoni');
+                        res({})
+                    }, 10);
+                }))
+            });
+            promises.push(new Promise(res => {
+                setTimeout(() => {
+                    expect(remult.user.id).toBe('noam');
                     res({})
                 }, 10);
             }))
         });
-        promises.push(new Promise(res => {
-            setTimeout(() => {
-                expect(remult.user.id).toBe('noam');
-                res({})
-            }, 10);
-        }))
-    });
-    await Promise.all(promises);
+        await Promise.all(promises);
+    } finally {
+        RemultAsyncLocalStorage.disable()
+        RemultAsyncLocalStorage.instance = new RemultAsyncLocalStorage(undefined);
+    }
 
 });
 
