@@ -18,10 +18,8 @@ All notable changes to this project will be documented in this file.
     - `@Fields.string<Task>(...)` is now `@Fields.string(...)`
   - Why didn't we implement typescript 5 decorators in runtime? the implementation for that is not yet fully supported with tools such as esbuild etc... so implementing it is trying to hit a moving target.
     At this time we recommend using `experimentalDecorator:false` for development, to get the typing, but `experimentalDecorator:true` for deploying and functionality.
-    
-    - [ ] fix docs - make sure to check the target version that comes out with the ts
-    - [ ] fix example projects
-    - [ ] fix crm
+
+
   
 
 ## [0.21.1] - 2023-06-25
