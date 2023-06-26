@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
     - [ ] fix docs
     - [ ] fix example projects
     - [ ] fix crm
+- Added `ToJson` and `FromJson` methods the the `Repository` object. These are extremely useful in the context of SSR (next etc...) where you need to send plain json over the wire, but still want to have dates and other cool stuff in your app
 - Fixed issue where using displayValue or validate on a spread object, marked it as new, and always triggered a post call
 - Added Remult.run
 - isBackend will return true or false based on dataProvider.isProxy equal false or runningOnServer member
