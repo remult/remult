@@ -191,12 +191,20 @@ export function Controller(key: string) {
 }
 
 
+export interface ClassMethodDecoratorContextStub<
+    This = unknown,
+    Value extends (this: This, ...args: any) => any = (this: This, ...args: any) => any,
+> {
+    readonly kind: "method";
+    readonly name: string | symbol;
+    readonly access: {
+        has(object: This): boolean;
+    };
+}
 
 /** Indicates that the decorated methods runs on the backend. See: [Backend Methods](https://remult.dev/docs/backendMethods.html) */
 export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
-    return (target: any,
-        //@ts-ignore
-        context: ClassMethodDecoratorContext<type> | string
+    return (target: any, context: ClassMethodDecoratorContextStub<type> | string
         , descriptor?: any) => {
         const key = typeof (context) === "string" ? context : context.name.toString();
         const originalMethod = descriptor ? descriptor.value : target;
