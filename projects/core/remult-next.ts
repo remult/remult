@@ -135,6 +135,11 @@ export function remultNextApp(
           status: responseFromRemultHandler.statusCode,
         });
       }
+      if (!responseFromRemultHandler) {
+        return new Response("", {
+          status: 404
+        })
+      }
     }
   };
   return {
