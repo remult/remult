@@ -19,6 +19,7 @@ All notable changes to this project will be documented in this file.
   - Why didn't we implement typescript 5 decorators in runtime? the implementation for that is not yet fully supported with tools such as esbuild etc... so implementing it is trying to hit a moving target.
     At this time we recommend using `experimentalDecorator:false` for development, to get the typing, but `experimentalDecorator:true` for deploying and functionality.
 - Added 404 on missing route for next app router - issue #211
+- Fixed an issue where live query would not unsubscribe automatically to a query that failed to fetch.
 
 
   

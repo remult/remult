@@ -10,6 +10,7 @@ import { LiveQueryClient } from "./LiveQueryClient";
 import { LiveQueryPublisher, LiveQueryStorage, InMemoryLiveQueryStorage } from "./SubscriptionServer";
 import { findOptionsFromJson, findOptionsToJson } from "../data-providers/rest-data-provider";
 import { remult } from "../remult-proxy";
+import { HttpProviderBridgeToRestDataProviderHttpProvider } from "../buildRestDataProvider";
 
 const joc = jasmine.objectContaining;
 
@@ -971,6 +972,44 @@ describe("test failure", () => {
         expect(error).toBe(true);
         u();
     });
+    it("test error on query, automatically unsubscribes", async () => {
+        const error = () => { throw Error("error") };
+        var cr = new Remult(new HttpProviderBridgeToRestDataProviderHttpProvider({
+            delete: error,
+            get: error,
+            post: error,
+            put: error
+        }))
+        let subCount = 0;
+        let unSubCount = 0;
+        cr.apiClient.subscriptionClient = {
+            openConnection: async () => {
+                return {
+                    async subscribe(channel, onMessage) {
+                        subCount++
+                        return () => {
+                            unSubCount++
+                        }
+                    },
+                    close() {
+
+                    }
+                }
+            }
+        }
+        let pm = new PromiseResolver(cr.liveQuerySubscriber)
+        let errorHappened = false;
+        cr.repo(eventTestEntity).liveQuery().subscribe({
+            next: x => { },
+            error: () => errorHappened = true
+        })
+        await pm.flush();
+        expect(errorHappened).toBe(true);
+        expect(subCount).toBe(1)
+        expect(cr.liveQuerySubscriber.hasQueriesForTesting()).toBe(false)
+        expect(unSubCount).toBe(1)
+
+    })
     it("error on subscribe", async () => {
 
         let r = new Remult(new InMemoryDataProvider());

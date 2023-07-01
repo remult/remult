@@ -15,6 +15,9 @@ export class LiveQueryClient {
             handleMessage();
     };
     private queries = new Map<string, LiveQuerySubscriber<any>>();
+    hasQueriesForTesting() {
+        return this.queries.size > 0
+    }
     private channels = new Map<string, MessageChannel<any>>();
     constructor(private apiProvider: () => ApiClient, private getUserId: () => string) { }
     runPromise<X>(p: Promise<X>) {
@@ -127,7 +130,9 @@ export class LiveQueryClient {
                                     }
                                 })
                                 .catch(err => {
-                                    listener.error(err)
+                                    q.listeners.forEach(l => l.error(err))
+                                    unsubscribeToChannel();
+                                    this.queries.delete(eventTypeKey);
                                 }))
                         })).catch(err => {
                             q.listeners.forEach(l => l.error(err));

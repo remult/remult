@@ -55,8 +55,15 @@ export declare const actionInfo: {
 };
 export declare const serverActionField: unique symbol;
 export declare function Controller(key: string): (target: any, context?: any) => any;
+export interface ClassMethodDecoratorContextStub<This = unknown, Value extends (this: This, ...args: any) => any = (this: This, ...args: any) => any> {
+    readonly kind: "method";
+    readonly name: string | symbol;
+    readonly access: {
+        has(object: This): boolean;
+    };
+}
 /** Indicates that the decorated methods runs on the backend. See: [Backend Methods](https://remult.dev/docs/backendMethods.html) */
-export declare function BackendMethod<type = any>(options: BackendMethodOptions<type>): (target: any, context: ClassMethodDecoratorContext<type> | string, descriptor?: any) => any;
+export declare function BackendMethod<type = any>(options: BackendMethodOptions<type>): (target: any, context: ClassMethodDecoratorContextStub<type> | string, descriptor?: any) => any;
 export interface jobWasQueuedResult {
     queuedJobId?: string;
 }
