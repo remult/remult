@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - Backend method will call backend based on isBackend method,
 - Replaced deprecated cuid with `paralleldrive/cuid2`
 - Fixed an issue where when `getDb` was called without a `remult` parameter, it wouldn't use the default remult
+- Fixed liveQuery's apply changes to also support state that it's initial value is undefined.
 - Typescript 5 style decorators are now supported in development, but to deploy you still need `experimentalDecorators` .
   - Also, the decorators now do type checking, so if you put @Fields.string() on a number, it'll give you an error
   - And - no longer need for the Generics in the decorators setting.
@@ -20,9 +21,6 @@ All notable changes to this project will be documented in this file.
     At this time we recommend using `experimentalDecorator:false` for development, to get the typing, but `experimentalDecorator:true` for deploying and functionality.
 - Added 404 on missing route for next app router - issue #211
 - Fixed an issue where live query would not unsubscribe automatically to a query that failed to fetch.
-
-
-  
 
 ## [0.21.1] - 2023-06-25
 

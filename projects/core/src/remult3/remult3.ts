@@ -266,7 +266,7 @@ export interface LiveQuery<entityType> {
 export interface LiveQueryChangeInfo<entityType> {
     items: entityType[],
     changes: LiveQueryChange[]
-    applyChanges(prevState: entityType[]): entityType[]
+    applyChanges(prevState: entityType[] | undefined): entityType[]
 };
 export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
 

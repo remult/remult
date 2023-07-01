@@ -756,7 +756,7 @@ describe("test live query full cycle", () => {
         await repo.insert({ title: 'b1', id: 3 })
         await repo.insert({ title: 'b2', id: 4 })
 
-        let arr1 = [];
+        let arr1:eventTestEntity[];
         let arr2 = [];
         let arr1Items: eventTestEntity[][] = [];
         let arr1Messages: LiveQueryChange[][] = [];
