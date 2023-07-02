@@ -221,13 +221,16 @@ export function remultGraphql(options: {
                     modelState.push({ field: key, message: err.modelState[key] })
                   }
                   res({
-                    __typename: 'ValidationError',
-                    message: err.message,
-                    modelState
+                    clientMutationId: arg1.clientMutationId,
+                    task: { // How do I know that I'm on a task?! here?
+                      __typename: 'ValidationError',
+                      message: err.message,
+                      modelState
+                    }
                   })
 
-                  return
-                  error(err)
+                  // return
+                  // error(err)
                 }
                 res(result)
               })
@@ -435,13 +438,13 @@ Select a dedicated page.`,
         const createResolverKey = `create${getMetaType(meta)}`
         const createInput = `Create${getMetaType(meta)}Input`
         const createPayload = `Create${getMetaType(meta)}Payload`
-        const createUnionResult = `Create${getMetaType(meta)}Result`
+        const createUnionOrError = `Create${getMetaType(meta)}OrError`
 
 
         root_mutation.fields.push({
           key: createResolverKey,
           args: [{ key: 'input', value: `${createInput}!` }, argClientMutationId],
-          value: `${createUnionResult}`,
+          value: `${createPayload}`,
           comment: `Create a new \`${getMetaType(meta)}\``,
         })
 
@@ -451,31 +454,38 @@ Select a dedicated page.`,
         currentType.mutation.create.payload.fields.push(
           {
             key: `${toCamelCase(getMetaType(meta))}`,
-            value: `${getMetaType(meta)}`,
+            value: createUnionOrError,
           },
           argClientMutationId,
         )
 
-        currentType.mutation.create.union = upsertUnion(createUnionResult, [createPayload, "ValidationError"])
+        currentType.mutation.create.union = upsertUnion(createUnionOrError, [getMetaType(meta), "ValidationError"])
 
-        root[createResolverKey] = handleRequestWithDataApiContext(
-          async (dApi, response, setResult, arg1: any, req: any) => {
-            await dApi.post(
-              {
-                ...response,
-                created: y => {
-                  currentType.query.resultProcessors.forEach(z => z(y))
-                  setResult({
-                    __typename: createPayload,
-                    [toCamelCase(getMetaType(meta))]: y,
-                    clientMutationId: arg1.clientMutationId
-                  })
+        try {
+          root[createResolverKey] = handleRequestWithDataApiContext(
+            async (dApi, response, setResult, arg1: any, req: any) => {
+              await dApi.post(
+                {
+                  ...response,
+                  created: y => {
+                    currentType.query.resultProcessors.forEach(z => z(y))
+                    setResult({
+                      [toCamelCase(getMetaType(meta))]: {
+                        __typename: getMetaType(meta),
+                        ...y,
+                      },
+                      clientMutationId: arg1.clientMutationId // TODO generalized clientMutationId (simply add it in result if passed as args)
+                    })
+                  },
                 },
-              },
-              arg1.input,
-            )
-          },
-        )
+                arg1.input,
+              )
+            },
+          )
+        } catch (error) {
+          console.log(`coucou`);
+
+        }
         resolversMutation[createResolverKey] = (origItem: any, args: any, req: any, gqlInfo: any) =>
           root[createResolverKey](args, req, gqlInfo)
       }

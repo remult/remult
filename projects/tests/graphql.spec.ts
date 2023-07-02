@@ -1,4 +1,4 @@
-import type from 'vitest/globals'
+import { expect, it, describe, beforeEach } from "vitest"
 import { createSchema, createYoga } from "graphql-yoga"
 import {
   Entity,
@@ -10,7 +10,6 @@ import {
   describeClass,
   remult
 } from "../core"
-import { remultExpress, type RemultExpressServer } from "../core/remult-express"
 import { remultGraphql, translateWhereToRestBody } from "../core/graphql"
 
 @FieldType({ displayValue: (_, v) => v?.name })
@@ -481,8 +480,8 @@ describe("graphql", () => {
     const result = await gql(`
     mutation {
       createTask(input: {title: "testing"}) {
-        ... on CreateTaskPayload {
-          task {
+        task {
+          ... on Task {
             id
             title
           }
@@ -576,17 +575,23 @@ describe("graphql", () => {
   it("test mutation generic error", async () => {
     const result = await gql(`
     mutation {
-      createTask(input: {title: "a"}) {
-        ... on Error {
-          message
+      createTask(input: {title: "a"}, clientMutationId: "yop") {
+        task {
+          ... on Error {
+            message
+          }
         }
+        clientMutationId
       }
     }`)
     expect(result).toMatchInlineSnapshot(`
       {
         "data": {
           "createTask": {
-            "message": "The Title: Too short",
+            "clientMutationId": "yop",
+            "task": {
+              "message": "The Title: Too short",
+            },
           },
         },
       }
@@ -597,11 +602,13 @@ describe("graphql", () => {
     const result = await gql(`
     mutation {
       createTask(input: {title: "a"}) {
-        ... on ValidationError {
-          message
-          modelState {
-            field
+        task {
+          ... on ValidationError {
             message
+            modelState {
+              field
+              message
+            }
           }
         }
       }
@@ -610,13 +617,15 @@ describe("graphql", () => {
       {
         "data": {
           "createTask": {
-            "message": "The Title: Too short",
-            "modelState": [
-              {
-                "field": "title",
-                "message": "Too short",
-              },
-            ],
+            "task": {
+              "message": "The Title: Too short",
+              "modelState": [
+                {
+                  "field": "title",
+                  "message": "Too short",
+                },
+              ],
+            },
           },
         },
       }
@@ -684,10 +693,10 @@ describe("graphql", () => {
       }
 
       type Mutation {
-          createTask(input: CreateTaskInput!, clientMutationId: String): CreateTaskResult
+          createTask(input: CreateTaskInput!, clientMutationId: String): CreateTaskPayload
           updateTask(id: ID!, patch: UpdateTaskInput!, clientMutationId: String): UpdateTaskPayload
           deleteTask(id: ID!, clientMutationId: String): DeleteTaskPayload
-          createCategory(input: CreateCategoryInput!, clientMutationId: String): CreateCategoryResult
+          createCategory(input: CreateCategoryInput!, clientMutationId: String): CreateCategoryPayload
           updateCategory(id: ID!, patch: UpdateCategoryInput!, clientMutationId: String): UpdateCategoryPayload
           deleteCategory(id: ID!, clientMutationId: String): DeleteCategoryPayload
       }
@@ -732,11 +741,11 @@ describe("graphql", () => {
       }
 
       type CreateTaskPayload {
-          task: Task
+          task: CreateTaskOrError
           clientMutationId: String
       }
 
-      union CreateTaskResult = CreateTaskPayload | ValidationError
+      union CreateTaskOrError = Task | ValidationError
 
       input UpdateTaskInput {
           title: String
@@ -784,11 +793,11 @@ describe("graphql", () => {
       }
 
       type CreateCategoryPayload {
-          category: Category
+          category: CreateCategoryOrError
           clientMutationId: String
       }
 
-      union CreateCategoryResult = CreateCategoryPayload | ValidationError
+      union CreateCategoryOrError = Category | ValidationError
 
       input UpdateCategoryInput {
           name: String
@@ -951,7 +960,7 @@ describe("graphql", () => {
       }
 
       type Mutation {
-          createC(input: CreateCInput!, clientMutationId: String): CreateCResult
+          createC(input: CreateCInput!, clientMutationId: String): CreateCPayload
           updateC(id: ID!, patch: UpdateCInput!, clientMutationId: String): UpdateCPayload
       }
 
@@ -979,11 +988,11 @@ describe("graphql", () => {
       }
 
       type CreateCPayload {
-          c: C
+          c: CreateCOrError
           clientMutationId: String
       }
 
-      union CreateCResult = CreateCPayload | ValidationError
+      union CreateCOrError = C | ValidationError
 
       input UpdateCInput {
           id: Int
