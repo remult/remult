@@ -37,16 +37,13 @@ type GraphQLType = {
     create: {
       input?: GraphQLType
       payload?: GraphQLType
-      union?: GraphQLType
     }
     update: {
       input?: GraphQLType
       payload?: GraphQLType
-      union?: GraphQLType
     }
     delete: {
       payload?: GraphQLType
-      union?: GraphQLType
     }
   }
   order?: number
@@ -112,8 +109,8 @@ export function remultGraphql(options: {
     return t
   }
 
-  function upsertUnion(key: string, values: string[]) {
-    const u = upsertTypes(key, 'union')
+  function upsertUnion(key: string, values: string[], order?: number) {
+    const u = upsertTypes(key, 'union', order)
     u.fields = values.map(value => { return { key: value, value: { Union: true } } })
     return u
   }
@@ -175,6 +172,7 @@ export function remultGraphql(options: {
     comment: `The globally unique \`ID\` _(_typename:id)_`,
   }
   const argClientMutationId = { key: 'clientMutationId', value: `String` }
+  const argErrorDetail = { key: 'error', value: `ErrorDetail` }
 
   for (const meta of entities) {
     const orderByFields: string[] = []
@@ -215,22 +213,50 @@ export function remultGraphql(options: {
               .then(() => {
                 if (err) {
 
-                  // Validation Error
-                  const modelState = []
-                  for (const key in err.modelState) {
-                    modelState.push({ field: key, message: err.modelState[key] })
-                  }
-                  res({
-                    clientMutationId: arg1.clientMutationId,
-                    task: { // How do I know that I'm on a task?! here?
-                      __typename: 'ValidationError',
-                      message: err.message,
-                      modelState
+                  if (err.message === 'forbidden') {
+                    // TODO generalize clientMutationId
+                    // TODO task error & task should be done at resolver level)
+                    // TODO add tests
+                    res({
+                      clientMutationId: arg1.clientMutationId,
+                      task: null,
+                      error: {
+                        __typename: 'ForbiddenError',
+                        message: err.message,
+                      }
+                    })
+                  } else if (err.message === 'not found') {
+                    // TODO generalize clientMutationId
+                    // TODO task error & task should be done at resolver level)
+                    // TODO add tests
+                    res({
+                      clientMutationId: arg1.clientMutationId,
+                      task: null,
+                      error: {
+                        __typename: 'NotFoundError',
+                        message: err.message,
+                      }
+                    })
+                  } else {
+                    // Validation Error
+                    const modelState = []
+                    for (const key in err.modelState) {
+                      modelState.push({ field: key, message: err.modelState[key] })
                     }
-                  })
 
-                  // return
-                  // error(err)
+                    // TODO generalize clientMutationId
+                    // TODO task error & task should be done at resolver level)
+                    res({
+                      clientMutationId: arg1.clientMutationId,
+                      task: null,
+                      error: {
+                        __typename: 'ValidationError',
+                        message: err.message,
+                        modelState
+                      }
+                    })
+
+                  }
                 }
                 res(result)
               })
@@ -427,19 +453,15 @@ Select a dedicated page.`,
       }
 
       // Mutation
-
       const root_mutation = upsertTypes('Mutation', 'type', -9)
 
       const checkCanExist = (rule: any) => rule !== false && !(rule === undefined && (meta.options.allowApiCrud === false || meta.options.allowApiCrud === undefined))
-
 
       if (checkCanExist(meta.options.allowApiInsert)) {
         // create
         const createResolverKey = `create${getMetaType(meta)}`
         const createInput = `Create${getMetaType(meta)}Input`
         const createPayload = `Create${getMetaType(meta)}Payload`
-        const createUnionOrError = `Create${getMetaType(meta)}OrError`
-
 
         root_mutation.fields.push({
           key: createResolverKey,
@@ -454,12 +476,11 @@ Select a dedicated page.`,
         currentType.mutation.create.payload.fields.push(
           {
             key: `${toCamelCase(getMetaType(meta))}`,
-            value: createUnionOrError,
+            value: getMetaType(meta),
           },
+          argErrorDetail,
           argClientMutationId,
         )
-
-        currentType.mutation.create.union = upsertUnion(createUnionOrError, [getMetaType(meta), "ValidationError"])
 
         try {
           root[createResolverKey] = handleRequestWithDataApiContext(
@@ -470,10 +491,7 @@ Select a dedicated page.`,
                   created: y => {
                     currentType.query.resultProcessors.forEach(z => z(y))
                     setResult({
-                      [toCamelCase(getMetaType(meta))]: {
-                        __typename: getMetaType(meta),
-                        ...y,
-                      },
+                      [toCamelCase(getMetaType(meta))]: y,
                       clientMutationId: arg1.clientMutationId // TODO generalized clientMutationId (simply add it in result if passed as args)
                     })
                   },
@@ -748,14 +766,16 @@ Select a dedicated page.`,
   nodeInterface.comment = `Node interface of remult entities (eg: nodeId: \`Task:1\` so \`__typename:id\`)`
   nodeInterface.fields.push(argNodeId)
 
-  const errorInterface = upsertTypes('Error', 'interface', 32)
+  upsertUnion(argErrorDetail.value, ['ValidationError', 'ForbiddenError', 'NotFoundError'], 32)
+
+  const errorInterface = upsertTypes('Error', 'interface', 33)
   errorInterface.comment = `Error interface of remult entities`
   errorInterface.fields.push({
     key: 'message',
     value: 'String!',
   })
 
-  const validationErrorInterface = upsertTypes('ValidationError', 'type_impl_error', 33)
+  const validationErrorInterface = upsertTypes('ValidationError', 'type_impl_error', 34)
   validationErrorInterface.comment = `Validation Error`
   validationErrorInterface.fields.push({
     key: 'message',
@@ -766,13 +786,28 @@ Select a dedicated page.`,
     value: '[ValidationErrorModelState!]!',
   })
 
-  const validationErrorModelStateInterface = upsertTypes('ValidationErrorModelState', 'type', 33)
+  const validationErrorModelStateInterface = upsertTypes('ValidationErrorModelState', 'type', 34)
   validationErrorModelStateInterface.comment = `Validation Error Model State`
   validationErrorModelStateInterface.fields.push({
     key: 'field',
     value: 'String!',
   })
   validationErrorModelStateInterface.fields.push({
+    key: 'message',
+    value: 'String!',
+  })
+
+  // progress: () => { },
+  const forbiddenErrorInterface = upsertTypes('ForbiddenError', 'type_impl_error', 34)
+  forbiddenErrorInterface.comment = `Forbidden Error`
+  forbiddenErrorInterface.fields.push({
+    key: 'message',
+    value: 'String!',
+  })
+
+  const notFoundErrorInterface = upsertTypes('NotFoundError', 'type_impl_error', 34)
+  notFoundErrorInterface.comment = `Not Found Error`
+  notFoundErrorInterface.fields.push({
     key: 'message',
     value: 'String!',
   })

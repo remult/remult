@@ -481,10 +481,8 @@ describe("graphql", () => {
     mutation {
       createTask(input: {title: "testing"}) {
         task {
-          ... on Task {
-            id
-            title
-          }
+          id
+          title
         }
       }
     }`)
@@ -577,6 +575,9 @@ describe("graphql", () => {
     mutation {
       createTask(input: {title: "a"}, clientMutationId: "yop") {
         task {
+          id
+        }
+        error {
           ... on Error {
             message
           }
@@ -589,9 +590,10 @@ describe("graphql", () => {
         "data": {
           "createTask": {
             "clientMutationId": "yop",
-            "task": {
+            "error": {
               "message": "The Title: Too short",
             },
+            "task": null,
           },
         },
       }
@@ -603,6 +605,9 @@ describe("graphql", () => {
     mutation {
       createTask(input: {title: "a"}) {
         task {
+          id
+        }
+        error {
           ... on ValidationError {
             message
             modelState {
@@ -617,7 +622,7 @@ describe("graphql", () => {
       {
         "data": {
           "createTask": {
-            "task": {
+            "error": {
               "message": "The Title: Too short",
               "modelState": [
                 {
@@ -626,6 +631,7 @@ describe("graphql", () => {
                 },
               ],
             },
+            "task": null,
           },
         },
       }
@@ -741,11 +747,10 @@ describe("graphql", () => {
       }
 
       type CreateTaskPayload {
-          task: CreateTaskOrError
+          task: Task
+          error: ErrorDetail
           clientMutationId: String
       }
-
-      union CreateTaskOrError = Task | ValidationError
 
       input UpdateTaskInput {
           title: String
@@ -793,11 +798,10 @@ describe("graphql", () => {
       }
 
       type CreateCategoryPayload {
-          category: CreateCategoryOrError
+          category: Category
+          error: ErrorDetail
           clientMutationId: String
       }
-
-      union CreateCategoryOrError = Category | ValidationError
 
       input UpdateCategoryInput {
           name: String
@@ -923,6 +927,8 @@ describe("graphql", () => {
           nodeId: ID!
       }
 
+      union ErrorDetail = ValidationError | ForbiddenError | NotFoundError
+
       interface Error {
           message: String!
       }
@@ -934,6 +940,14 @@ describe("graphql", () => {
 
       type ValidationErrorModelState {
           field: String!
+          message: String!
+      }
+
+      type ForbiddenError implements Error {
+          message: String!
+      }
+
+      type NotFoundError implements Error {
           message: String!
       }
       "
@@ -988,11 +1002,10 @@ describe("graphql", () => {
       }
 
       type CreateCPayload {
-          c: CreateCOrError
+          c: C
+          error: ErrorDetail
           clientMutationId: String
       }
-
-      union CreateCOrError = C | ValidationError
 
       input UpdateCInput {
           id: Int
@@ -1113,6 +1126,8 @@ describe("graphql", () => {
           nodeId: ID!
       }
 
+      union ErrorDetail = ValidationError | ForbiddenError | NotFoundError
+
       interface Error {
           message: String!
       }
@@ -1124,6 +1139,14 @@ describe("graphql", () => {
 
       type ValidationErrorModelState {
           field: String!
+          message: String!
+      }
+
+      type ForbiddenError implements Error {
+          message: String!
+      }
+
+      type NotFoundError implements Error {
           message: String!
       }
       "
@@ -1297,6 +1320,8 @@ describe("graphql", () => {
           nodeId: ID!
       }
 
+      union ErrorDetail = ValidationError | ForbiddenError | NotFoundError
+
       interface Error {
           message: String!
       }
@@ -1308,6 +1333,14 @@ describe("graphql", () => {
 
       type ValidationErrorModelState {
           field: String!
+          message: String!
+      }
+
+      type ForbiddenError implements Error {
+          message: String!
+      }
+
+      type NotFoundError implements Error {
           message: String!
       }
       "
@@ -1464,6 +1497,8 @@ describe("graphql", () => {
           nodeId: ID!
       }
 
+      union ErrorDetail = ValidationError | ForbiddenError | NotFoundError
+
       interface Error {
           message: String!
       }
@@ -1475,6 +1510,14 @@ describe("graphql", () => {
 
       type ValidationErrorModelState {
           field: String!
+          message: String!
+      }
+
+      type ForbiddenError implements Error {
+          message: String!
+      }
+
+      type NotFoundError implements Error {
           message: String!
       }
       "
