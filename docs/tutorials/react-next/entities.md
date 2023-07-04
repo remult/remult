@@ -12,9 +12,9 @@ The `Task` entity class we're creating will have an auto-generated `id` field, a
 
 ## Define the Model
 
-1. Create a `shared` folder under the `src` folder. This folder will contain code shared between frontend and backend.
+1. Create a `shared` folder under the root folder. This folder will contain code shared between frontend and backend.
 
-2. Create a file `Task.ts` in the `src/shared/` folder, with the following code:
+2. Create a file `Task.ts` in the `shared/` folder, with the following code:
 
 ```ts
 // src/shared/Task.ts
@@ -39,17 +39,20 @@ export class Task {
 }
 ```
 
-3. In the `[...remult].ts` api route, register the `Task` entity with Remult by adding `entities: [Task]` to an `options` object you pass to the `remultNext()` function:
+3. In the `[...remult]/route.ts` api route, register the `Task` entity with Remult by adding `entities: [Task]` to an `options` object you pass to the `remultNext()` function:
 
 ```ts{4,7}
-// src/pages/api/[...remult].ts
+// src/app/api/[...remult]/route.ts
 
-import { remultNext } from "remult/remult-next"
-import { Task } from "../../shared/Task"
+import { remultNextApp } from "remult/remult-next"
+import { Task } from "@/shared/Task";
 
-export const api = remultNext({
+const api = remultNextApp({
   entities: [Task]
 })
+
+export const { POST, PUT, DELETE, GET } = api;
+
 ```
 
 The [@Entity](../../docs/ref_entity.md) decorator tells Remult this class is an entity class. The decorator accepts a `key` argument (used to name the API route and as a default database collection/table name), and an `options` argument used to define entity-related properties and operations, discussed in the next sections of this tutorial.
@@ -97,38 +100,39 @@ While remult supports [many relational and non-relational databases](https://rem
 
 Let's start developing the web app by displaying the list of existing tasks in a React component.
 
-Replace the contents of `src/pages/index.tsx` with the following code:
+Replace the contents of `app/page.tsx` with the following code:
 
 ```tsx
-// src/pages/index.tsx
+// src/app/page.tsx
 
-import { useEffect, useState } from "react"
-import { remult } from "remult"
-import { Task } from "../shared/Task"
+"use client";
+import { Task } from "@/shared/Task";
+import { useEffect, useState } from "react";
+import { remult } from "remult";
 
-const taskRepo = remult.repo(Task)
+const taskRepo = remult.repo(Task);
 
 export default function Home() {
-  const [tasks, setTasks] = useState<Task[]>([])
+  const [tasks, setTasks] = useState<Task[]>([]);
 
   useEffect(() => {
-    taskRepo.find().then(setTasks)
-  }, [])
+    taskRepo.find().then(setTasks);
+  }, []);
   return (
     <div>
       <h1>Todos</h1>
       <main>
-        {tasks.map(task => {
+        {tasks.map((task) => {
           return (
             <div key={task.id}>
               <input type="checkbox" checked={task.completed} />
               {task.title}
             </div>
-          )
+          );
         })}
       </main>
     </div>
-  )
+  );
 }
 ```
 

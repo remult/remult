@@ -14,7 +14,7 @@ This rule is implemented within the `Task` `@Entity` decorator, by modifying the
 This property can be set to a function that accepts a `Remult` argument and returns a `boolean` value. Let's use the `Allow.authenticated` function from Remult.
 
 ```ts{4}
-// src/shared/Task.ts
+// src/app/shared/Task.ts
 
 @Entity("tasks", {
     allowApiCrud: Allow.authenticated
@@ -41,7 +41,7 @@ Although client CRUD requests to `tasks` API endpoints now require a signed-in u
 To fix this, let's implement the same rule using the `@BackendMethod` decorator of the `setAllCompleted` method of `TasksController`.
 
 ```ts
-// src/shared/TasksController.ts
+// src/app/shared/TasksController.ts
 
 @BackendMethod({ allowed: Allow.authenticated })
 ```
@@ -75,42 +75,49 @@ Let's set-up `NextAuth.js` to authenticate users to our app.
    you can use an [online UUID generator](https://www.uuidgenerator.net/) to generate a completely random string
    :::
 
-3. In the `src/pages/api` folder, create a folder called `auth` and Create the following `[...nextauth].ts` file in it (API route).
+3. Make a folder called `auth` in the `src/app/api` folder. In it, create a folder called `nextauth`. Also, create the following `route.ts` file in it (API route).
 
    ```ts
-   // src/pages/api/auth/[...nextauth].ts
+   // src/app/api/auth/[...nextauth]/route.ts
 
-   import NextAuth from "next-auth"
-   import Credentials from "next-auth/providers/credentials"
-   import { UserInfo } from "remult"
+    import NextAuth, { NextAuthOptions } from "next-auth";
+    import Credentials from "next-auth/providers/credentials";
+    import { UserInfo } from "remult";
 
-   const validUsers: UserInfo[] = [
-     { id: "1", name: "Jane" },
-     { id: "2", name: "Steve" }
-   ]
-   export function findUserById(id: string | undefined) {
-     return validUsers.find(user => user.id === id)
-   }
+    const validUsers: UserInfo[] = [
+      { id: "1", name: "Jane"},
+      { id: "2", name: "Steve" },
+    ];
+    export function getUserById(id: string | undefined) {
+      return validUsers.find((user) => user.id === id);
+    }
+    export const authOptions: NextAuthOptions = {
+      secret: process.env.AUTH_SECRET,
+      session: {
+        strategy: "jwt",
+      },
+      providers: [
+        Credentials({
+          credentials: {
+            name: {
+              placeholder: "Try Steve or Jane",
+            },
+          },
+          authorize: (info) =>
+            validUsers.find((user) => user.name === info?.name) || null,
+        }),
+      ],
+      callbacks: {
+        session: ({ session, token }) => ({
+          ...session,
+          user: getUserById(token?.sub),
+        }),
+      },
+    };
 
-   export default NextAuth({
-     providers: [
-       Credentials({
-         credentials: {
-           name: {
-             placeholder: "Try Steve or Jane"
-           }
-         },
-         authorize: info =>
-           validUsers.find(user => user.name === info?.name) || null
-       })
-     ],
-     callbacks: {
-       session: ({ session, token }) => ({
-         ...session,
-         user: findUserById(token?.sub)
-       })
-     }
-   })
+    const handler = NextAuth(authOptions);
+    export { handler as GET, handler as POST };
+
    ```
 
 This (very) simplistic NextAuth.js [Credentials](https://next-auth.js.org/providers/credentials) authorizes users by looking up the user's name in a predefined list of valid users.
@@ -119,29 +126,43 @@ We've configured the `session` `callback` to include the user info as part of th
 
 ### Frontend setup
 
-Add the highlighted code to the `_app.tsx` Next.js page:
+Create a new `app/providers.tsx` file, and add the following code:
 
-```tsx{5,9,11}
-// src/pages/_app.tsx
+```tsx
+// src/app/providers.tsx
 
-import "@/styles/globals.css";
-import type { AppProps } from "next/app";
+"use client";
+
 import { SessionProvider } from "next-auth/react";
 
-export default function App({ Component, pageProps }: AppProps) {
-return (
- <SessionProvider session={pageProps.session}>
-   <Component {...pageProps} />
- </SessionProvider>
-);
-}
+type Props = {
+  children?: React.ReactNode;
+};
+
+export const NextAuthProvider = ({ children }: Props) => {
+  return <SessionProvider>{children}</SessionProvider>;
+};
+
+```
+This file will be used to wrap the entire app with the `SessionProvider` component from `next-auth/react`.
+
+In `app/layout.tsx`, import the `NextAuthProvider` component and wrap the `children` with it:
+
+```tsx
+// src/app/layout.tsx
+
+//...
+ <body className={inter.className}>
+        <NextAuthProvider>{children}</NextAuthProvider>
+      </body>
+//...
 
 ```
 
-Adjust the `useEffect` with the highlighted code to the `Home` Next.js page:
+Adjust the `useEffect` with the highlighted code to the `Home` Next.js page, and add a `signOut` button if the user is signed-in:
 
 ```tsx{3-4,6,9-11,19-20,25-28}
-// src/pages/index.tsx
+// src/app/page.tsx
 
 import { remult, UserInfo } from "remult"
 import { signIn, signOut, useSession } from "next-auth/react"
@@ -160,6 +181,9 @@ useEffect(() => {
       })
       .subscribe(info => setTasks(info.applyChanges))
 }, [session])
+
+//...
+
 if (session.status !== "authenticated") return <></>
 return (
   <div>
@@ -177,20 +201,28 @@ return (
 
 ### Connect Remult-Next On the Backend
 
-Once an authentication flow is established, integrating it with Remult in the backend is as simple as providing Remult with a `getUser` function that extracts a `UserInfo` object from a `Request`.
+Once an authentication flow is established, integrating it with Remult in the backend is as simple as providing Remult with a `getUser` function that extracts a `UserInfo` object from a serverSession. 
 
-Set the `getUser` property of the options object of `remultNext` to a function that gets the token from next auth and users `findUserById` to get the actual user:
+::: warning Note
+  for getting the user from the serverSession, we are using next-auth experimental version based on [this tutorial](https://codevoweb.com/setup-and-use-nextauth-in-nextjs-13-app-directory/)
+:::
 
-```ts{3-4,7}
+Set the `getUser` property of the options object of `remultNext` to this 
+
+```ts{3-4,8-10}
 // src/pages/api/[...remult].ts
 
-import { findUserById } from "./auth/[...nextauth]"
-import { getToken } from "next-auth/jwt"
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]/route";
 
-export default remultNext({
-  getUser: async req => findUserById((await getToken({ req }))?.sub)
+export const api = remultNextApp({
   //...
-})
+  getUser: async () => {
+    return (await getServerSession(authOptions))?.user as UserInfo;
+  },
+});
+
+//...
 ```
 
 The todo app now supports signing in and out, with **all access restricted to signed in users only**.
@@ -254,7 +286,7 @@ Let's reuse the same definitions on the Frontend.
 We'll use the entity's metadata to only show the form if the user is allowed to insert
 
 ```tsx{4,13}
-// src/pages/index.tsx
+// src/app/page.tsx
 
 <main>
   {taskRepo.metadata.apiInsertAllowed() && (
@@ -274,7 +306,7 @@ We'll use the entity's metadata to only show the form if the user is allowed to 
 And let's do the same for the `delete` button:
 
 ```tsx{12,14}
-// src/pages/index.tsx
+// src/app/page.tsx
 
 return (
   <div key={task.id}>

@@ -9,7 +9,7 @@ Let's add two buttons to the todo app: "Set all as completed" and "Set all as un
 1. Add a `setAllCompleted` async function to the `Home` function component, which accepts a `completed` boolean argument and sets the value of the `completed` field of all the tasks accordingly.
 
    ```ts
-   // src/pages/index.tsx
+   // app/page.tsx
 
    const setAllCompleted = async (completed: boolean) => {
      for (const task of await taskRepo.find()) {
@@ -23,7 +23,7 @@ Let's add two buttons to the todo app: "Set all as completed" and "Set all as un
 2. Add the two buttons to the return section of the `Home` component, just before the closing `</main>` tag. Both of the buttons' `onClick` events will call the `setAllCompleted` method with the appropriate value of the `completed` argument.
 
    ```tsx
-   // src/pages/index.tsx
+   // app/page.tsx
 
    <div>
      <button onClick={() => setAllCompleted(true)}>Set All Completed</button>
@@ -42,7 +42,7 @@ A simple way to prevent this is to expose an API endpoint for `setAllCompleted` 
 1. Create a new `TasksController` class, in the `shared` folder, and refactor the `for` loop from the `setAllCompleted` function of the `Home` function component into a new, `static`, `setAllCompleted` method in the `TasksController` class, which will run on the server.
 
 ```ts
-// src/shared/TasksController.ts
+// shared/tasksController.ts
 
 import { BackendMethod, remult } from "remult"
 import { Task } from "./Task"
@@ -66,12 +66,12 @@ The `@BackendMethod` decorator tells Remult to expose the method as an API endpo
 2. Register `TasksController` by adding it to the `controllers` array of the `options` object passed to `createRemultServer()`, in the server's `api` module:
 
 ```ts{4,8}
-// src/pages/api/[...remult].ts
+// app/api/[...remult]/route.ts
 
 //...
-import { TasksController } from "../../shared/TasksController"
+import { TasksController } from "@/shared/tasksController";
 
-export const api = remultNext({
+export const api = remultNextApp({
   //...
   controllers: [TasksController]
 })
@@ -80,7 +80,7 @@ export const api = remultNext({
 3. Replace the `for` iteration in the `setAllCompleted` function of the `Home` component with a call to the `setAllCompleted` method in the `TasksController`.
 
 ```tsx{4}
-// src/pages/index.tsx
+// app/page.tsx
 
 const setAllCompleted = async (completed: boolean) => {
   await TasksController.setAllCompleted(completed)
@@ -88,7 +88,7 @@ const setAllCompleted = async (completed: boolean) => {
 ```
 
 ::: warning Import TasksController
-Remember to add an import of `TasksController` in `home/index.tsx`.
+Remember to add an import of `TasksController` in `app/page.tsx`.
 :::
 
 ::: tip Note

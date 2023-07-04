@@ -23,9 +23,8 @@ You can either **use a starter project** to speed things up, or go through the *
 1. Clone the _remult-nextjs-todo_ repository from GitHub and install its dependencies.
 
 
-
 ```sh
-git clone https://github.com/remult/nextjs-starter.git remult-nextjs-todo
+git clone https://github.com/remult/nextjs-app-starter.git remult-nextjs-todo
 cd remult-nextjs-todo
 npm install
 ```
@@ -48,17 +47,16 @@ At this point, our starter project is up and running. We are now ready to move t
 1. Create the new Next.js project.
 
 ```sh
-npx -y create-next-app@latest remult-nextjs-todo --typescript --src-dir
+npx -y create-next-app@latest remult-nextjs-todo
 ```
 Answer the questions as follows:
 ```sh
-√ What is your project named? ... remult-nextjs-todo
-√ Would you like to use TypeScript with this project? ... Yes
-√ Would you like to use ESLint with this project? ... No 
-√ Would you like to use Tailwind CSS with this project? ... No 
-√ Would you like to use `src/` directory with this project? ...  Yes
-√ Use App Router (recommended)? ... No 
-√ Would you like to customize the default import alias? ... No / Yes
+✔ Would you like to use TypeScript? … Yes
+✔ Would you like to use ESLint? … No 
+✔ Would you like to use Tailwind CSS? … No 
+✔ Would you like to use `src/` directory? …  Yes
+✔ Would you like to use App Router? (recommended) … Yes
+✔ Would you like to customize the default import alias? … Yes
 ```
 
 2. Go to the created folder.
@@ -79,14 +77,17 @@ Remult is bootstrapped in a `Next.js` using a [catch all dynamic API route](http
 
 1. Open your IDE.
 
-2. Create a `[...remult].ts` file in the `src/pages/api` folder. This file is a "catch all" `Next.js` API route which will be used to handle all API requests.
+2. Create an `api` folder at the `app` directory, and a `[...remult]` folder inside it. Additionally, create a `route.ts` file within the `app/api/[...remult]` folder. This file serves as a 'catch all' route for the Next.js API, responsible for handling all API requests.
 
 ```ts
-// src/pages/api/[...remult].ts
+// src/app/api/[...remult]/route.ts
 
-import { remultNext } from "remult/remult-next"
+import { remultNextApp } from "remult/remult-next";
 
-export default remultNext({})
+const api = remultNextApp({});
+
+export const { POST, PUT, DELETE, GET } = api;
+
 ```
 
 ### Enable TypeScript decorators
@@ -121,7 +122,7 @@ The default `Next.js` main screen should be displayed.
 
 ### Remove Next.js default styles
 
-The Next.js default styles won't fit our todo app. If you'd like a nice-looking app, replace the contents of `src/styles/globals.css` with [this CSS file](https://raw.githubusercontent.com/remult/nextjs-starter/main/src/styles/globals.css). Otherwise, you can simply **delete the contents of `src/styles/globals.css`**.
+The Next.js default styles won't fit our todo app. If you'd like a nice-looking app, replace the contents of `app/globals.css` with [this CSS file](https://raw.githubusercontent.com/remult/nextjs-app-starter/main/app/globals.css). Otherwise, you can simply **delete the contents of `app/globals.css`**.
 
 ### Setup completed
 

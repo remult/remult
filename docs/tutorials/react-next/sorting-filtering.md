@@ -11,7 +11,7 @@ Let's limit the number of fetched tasks to `20`.
 In the `useEffect` hook defined in the `Home` component, pass an `options` argument to the `find` method call and set its `limit` property to 20.
 
 ```ts{9-13}
-// src/pages/index.tsx
+// src/app/page.tsx
 
 //...
 
@@ -44,7 +44,7 @@ In the `useEffect` hook, set the `orderBy` property of the `find` method call's 
 Use "asc" and "desc" to determine the sort order.
 
 ```ts{7}
-// src/pages/index.tsx
+// src/app/page.tsx
 
 useEffect(() => {
   taskRepo
@@ -62,7 +62,7 @@ Remult supports sending filter rules to the server to query only the tasks that 
 
 Adjust the `useEffect` hook to fetch only `completed` tasks.
 ```ts{8}
-// src/pages/index.tsx
+// src/app/page.tsx
 
 useEffect(() => {
   taskRepo
@@ -76,7 +76,7 @@ useEffect(() => {
 ```
 
 ::: warning Note
-Because the `completed` field is of type `boolean`, the argument is **compile-time checked to be of the `boolean` type**. Settings the `completed` filter to `undefined` causes it to be ignored by Remult.
+Because the `completed` field is of type `boolean`, the argument is **compile-time checked to be of the `boolean` type**. Setting the `completed` filter to `undefined` causes it to be ignored by Remult.
 :::
 
 Play with different filtering values, and eventually comment it out, since we do need all the tasks

@@ -12,10 +12,10 @@ Let's add realtime multiplayer capabilities to this app.
 
 Let's switch from fetching Tasks once when the React component is loaded, and manually maintaining state for CRUD operations, to using a realtime updated live query subscription **for both initial data fetching and subsequent state changes**.
 
-1. Modify the contents of the `useEffect` hook in the `pages/index.tsx` file
+1. Modify the contents of the `useEffect` hook in the `app/page.tsx` file
 
 ```ts{4-5,10}
-//src/pages/index.tsx
+// src/app/page.tsx
 
 useEffect(() => {
   return taskRepo
@@ -40,7 +40,7 @@ Let's review the change:
 2. As all relevant CRUD operations (made by all users) will **immediately update the component's state**, we should remove the manual adding of new Tasks to the component's state:
 
 ```ts{7}
-//src/pages/index.tsx
+// src/app/page.tsx
 
 const addTask = async (e: FormEvent) => {
   e.preventDefault()
@@ -58,7 +58,7 @@ const addTask = async (e: FormEvent) => {
 3. Optionally remove other redundant state changing code:
 
 ```tsx{11-12,18-19,28}
-//src/pages/index.tsx
+// src/app/page.tsx
 
 //...
 
