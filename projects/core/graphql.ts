@@ -482,28 +482,23 @@ Select a dedicated page.`,
           argClientMutationId,
         )
 
-        try {
-          root[createResolverKey] = handleRequestWithDataApiContext(
-            async (dApi, response, setResult, arg1: any, req: any) => {
-              await dApi.post(
-                {
-                  ...response,
-                  created: y => {
-                    currentType.query.resultProcessors.forEach(z => z(y))
-                    setResult({
-                      [toCamelCase(getMetaType(meta))]: y,
-                      clientMutationId: arg1.clientMutationId // TODO generalized clientMutationId (simply add it in result if passed as args)
-                    })
-                  },
+        root[createResolverKey] = handleRequestWithDataApiContext(
+          async (dApi, response, setResult, arg1: any, req: any) => {
+            await dApi.post(
+              {
+                ...response,
+                created: y => {
+                  currentType.query.resultProcessors.forEach(z => z(y))
+                  setResult({
+                    [toCamelCase(getMetaType(meta))]: y,
+                    clientMutationId: arg1.clientMutationId // TODO generalized clientMutationId (simply add it in result if passed as args)
+                  })
                 },
-                arg1.input,
-              )
-            },
-          )
-        } catch (error) {
-          console.log(`coucou`);
-
-        }
+              },
+              arg1.input,
+            )
+          },
+        )
         resolversMutation[createResolverKey] = (origItem: any, args: any, req: any, gqlInfo: any) =>
           root[createResolverKey](args, req, gqlInfo)
       }
