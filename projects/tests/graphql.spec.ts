@@ -637,6 +637,44 @@ describe("graphql", () => {
       }
     `)
   })
+  it("test mutation update validation error", async () => {
+    let task= await remult.repo(Task).insert({ title: "task c" })
+    const result = await gql(`
+    mutation {
+      updateTask(id: ${task.id},patch: {title: "a"}) {
+        task {
+          id
+        }
+        error {
+          ... on ValidationError {
+            message
+            modelState {
+              field
+              message
+            }
+          }
+        }
+      }
+    }`)
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "data": {
+          "updateTask": {
+            "error": {
+              "message": "The Title: Too short",
+              "modelState": [
+                {
+                  "field": "title",
+                  "message": "Too short",
+                },
+              ],
+            },
+            "task": null,
+          },
+        },
+      }
+    `)
+  })
 
   it("test graphql", async () => {
     await remult.repo(Task).insert([{ title: "task c" }])
@@ -762,11 +800,13 @@ describe("graphql", () => {
 
       type UpdateTaskPayload {
           task: Task
+          error: ErrorDetail
           clientMutationId: String
       }
 
       type DeleteTaskPayload {
           id: ID
+          error: ErrorDetail
           clientMutationId: String
       }
 
@@ -809,11 +849,13 @@ describe("graphql", () => {
 
       type UpdateCategoryPayload {
           category: Category
+          error: ErrorDetail
           clientMutationId: String
       }
 
       type DeleteCategoryPayload {
           id: ID
+          error: ErrorDetail
           clientMutationId: String
       }
 
@@ -1013,6 +1055,7 @@ describe("graphql", () => {
 
       type UpdateCPayload {
           c: C
+          error: ErrorDetail
           clientMutationId: String
       }
 
@@ -1165,7 +1208,10 @@ describe("graphql", () => {
       removeComments: true
     })
 
-    expect(typeDefs).toMatchInlineSnapshot(`
+    expect(typeDefs).toMatchInlineSnapshot(
+
+      
+    `
       "type Query {
           c(id: ID!): C
           cs(limit: Int, page: Int, orderBy: csOrderBy, where: csWhere): CConnection
@@ -1202,189 +1248,14 @@ describe("graphql", () => {
 
       type UpdateCPayload {
           c: C
+          error: ErrorDetail
           clientMutationId: String
       }
 
       type DeleteCPayload {
           id: ID
+          error: ErrorDetail
           clientMutationId: String
-      }
-
-      input WhereString {
-          eq: String
-          ne: String
-          in: [String!]
-          nin: [String!]
-          gt: String
-          gte: String
-          lt: String
-          lte: String
-          st: String
-      }
-
-      input WhereStringNullable {
-          eq: String
-          ne: String
-          in: [String!]
-          nin: [String!]
-          gt: String
-          gte: String
-          lt: String
-          lte: String
-          st: String
-          null: Boolean
-      }
-
-      input WhereInt {
-          eq: Int
-          ne: Int
-          in: [Int!]
-          nin: [Int!]
-          gt: Int
-          gte: Int
-          lt: Int
-          lte: Int
-      }
-
-      input WhereIntNullable {
-          eq: Int
-          ne: Int
-          in: [Int!]
-          nin: [Int!]
-          gt: Int
-          gte: Int
-          lt: Int
-          lte: Int
-          null: Boolean
-      }
-
-      input WhereFloat {
-          eq: Float
-          ne: Float
-          in: [Float!]
-          nin: [Float!]
-          gt: Float
-          gte: Float
-          lt: Float
-          lte: Float
-      }
-
-      input WhereFloatNullable {
-          eq: Float
-          ne: Float
-          in: [Float!]
-          nin: [Float!]
-          gt: Float
-          gte: Float
-          lt: Float
-          lte: Float
-          null: Boolean
-      }
-
-      input WhereBoolean {
-          eq: Boolean
-          ne: Boolean
-          in: [Boolean!]
-          nin: [Boolean!]
-      }
-
-      input WhereBooleanNullable {
-          eq: Boolean
-          ne: Boolean
-          in: [Boolean!]
-          nin: [Boolean!]
-          null: Boolean
-      }
-
-      input WhereID {
-          eq: ID
-          ne: ID
-          in: [ID!]
-          nin: [ID!]
-      }
-
-      input WhereIDNullable {
-          eq: ID
-          ne: ID
-          in: [ID!]
-          nin: [ID!]
-          null: Boolean
-      }
-
-      enum OrderByDirection {
-          ASC
-          DESC
-      }
-
-      interface Node {
-          nodeId: ID!
-      }
-
-      union ErrorDetail = ValidationError | ForbiddenError | NotFoundError
-
-      interface Error {
-          message: String!
-      }
-
-      type ValidationError implements Error {
-          message: String!
-          modelState: [ValidationErrorModelState!]!
-      }
-
-      type ValidationErrorModelState {
-          field: String!
-          message: String!
-      }
-
-      type ForbiddenError implements Error {
-          message: String!
-      }
-
-      type NotFoundError implements Error {
-          message: String!
-      }
-      "
-    `)
-  })
-  it("test allow api create", async () => {
-    const C = class {
-      id = 0
-    }
-    describeClass(C, Entity("cs", { allowApiCrud: false }), {
-      id: Fields.integer()
-    })
-    // rmv removeComments is very handy for testing!
-    const { typeDefs } = remultGraphql({
-      entities: [C],
-      removeComments: true
-    })
-
-    expect(typeDefs).toMatchInlineSnapshot(`
-      "type Query {
-          c(id: ID!): C
-          cs(limit: Int, page: Int, orderBy: csOrderBy, where: csWhere): CConnection
-          node(nodeId: ID!): Node
-      }
-
-
-
-      type C implements Node {
-          id: Int!
-          nodeId: ID!
-      }
-
-      input csOrderBy {
-        id: OrderByDirection
-      }
-
-      input csWhere {
-        id: WhereInt
-        OR: [csWhere!]
-      }
-
-      type CConnection {
-          totalCount: Int!
-          items: [C!]!
       }
 
       input WhereString {

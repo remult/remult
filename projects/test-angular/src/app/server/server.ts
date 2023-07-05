@@ -40,23 +40,9 @@ export const api = remultExpress({
     getUser: ({ session }) => {
         return undefined;
     },
-    dataProvider: createPostgresDataProvider(),
+    //dataProvider: createPostgresDataProvider(),
     initApi: async () => {
-        const e = class {
-
-            a = 0;
-            items: string[] = []
-        }
-        describeClass(e, Entity("testJsonFieldType2", { allowApiCrud: true }), {
-            a: Fields.number(),
-            items: Fields.json()
-        })
-        await remult.repo(e).insert({a:3,items:["a","b"]})
-
-        console.log(await remult.repo(e).findId(3))
-
-        const db = SqlDatabase.getDb(remult);
-        //db.execute("insert into testJsonFieldType2 ()")
+       
     }
 })
 app.use(api)

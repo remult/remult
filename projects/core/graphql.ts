@@ -212,51 +212,8 @@ export function remultGraphql(options: {
             work(response, x => (result = x), arg1, req)
               .then(() => {
                 if (err) {
-
-                  if (err.message === 'forbidden') {
-                    // TODO generalize clientMutationId
-                    // TODO task error & task should be done at resolver level)
-                    // TODO add tests
-                    res({
-                      clientMutationId: arg1.clientMutationId,
-                      task: null,
-                      error: {
-                        __typename: 'ForbiddenError',
-                        message: err.message,
-                      }
-                    })
-                  } else if (err.message === 'not found') {
-                    // TODO generalize clientMutationId
-                    // TODO task error & task should be done at resolver level)
-                    // TODO add tests
-                    res({
-                      clientMutationId: arg1.clientMutationId,
-                      task: null,
-                      error: {
-                        __typename: 'NotFoundError',
-                        message: err.message,
-                      }
-                    })
-                  } else {
-                    // Validation Error
-                    const modelState = []
-                    for (const key in err.modelState) {
-                      modelState.push({ field: key, message: err.modelState[key] })
-                    }
-
-                    // TODO generalize clientMutationId
-                    // TODO task error & task should be done at resolver level)
-                    res({
-                      clientMutationId: arg1.clientMutationId,
-                      task: null,
-                      error: {
-                        __typename: 'ValidationError',
-                        message: err.message,
-                        modelState
-                      }
-                    })
-
-                  }
+                  error(err)
+                  return
                 }
                 res(result)
               })
@@ -281,6 +238,62 @@ export function remultGraphql(options: {
           await work(dApi, response, setResult, arg1, meta)
         })
       }
+      const handleMutationWithErrors = (
+        work: (
+          dataApi: DataApi,
+          response: DataApiResponse,
+          setResult: (result: any) => void,
+          arg1: any,
+          meta: EntityMetadata,
+        ) => Promise<void>,
+      ) => {
+        return handleRequestWithDataApiContext(async (dApi, response, origSetResult, arg1: any, req: any) => {
+          const setResult = (item: any) => {
+            origSetResult({
+              clientMutationId: arg1.clientMutationId,
+              ...item
+            })
+          }
+          return work(dApi, {
+            ...response,
+            forbidden: () => {
+              setResult({
+
+                error: {
+                  __typename: 'ForbiddenError',
+                  message: "forbidden",
+                }
+              })
+            },
+            notFound: () => {
+              setResult({
+
+                error: {
+                  __typename: 'NotFoundError',
+                  message: "not found",
+                }
+              })
+            },
+            error: err => {
+              const modelState = []
+              if (err.modelState)
+                for (const key in err.modelState) {
+                  modelState.push({ field: key, message: err.modelState[key] })
+                }
+              setResult({
+                error: {
+                  __typename: 'ValidationError',
+                  message: err.message,
+                  modelState
+                }
+              })
+            },
+          }, setResult, arg1, req);
+        })
+
+
+      }
+
 
       const queryArgsConnection: Arg[] = [
         {
@@ -482,7 +495,7 @@ Select a dedicated page.`,
           argClientMutationId,
         )
 
-        root[createResolverKey] = handleRequestWithDataApiContext(
+        root[createResolverKey] = handleMutationWithErrors(
           async (dApi, response, setResult, arg1: any, req: any) => {
             await dApi.post(
               {
@@ -491,7 +504,6 @@ Select a dedicated page.`,
                   currentType.query.resultProcessors.forEach(z => z(y))
                   setResult({
                     [toCamelCase(getMetaType(meta))]: y,
-                    clientMutationId: arg1.clientMutationId // TODO generalized clientMutationId (simply add it in result if passed as args)
                   })
                 },
               },
@@ -523,9 +535,10 @@ Select a dedicated page.`,
             key: `${toCamelCase(getMetaType(meta))}`,
             value: `${getMetaType(meta)}`,
           },
+          argErrorDetail,
           argClientMutationId,
         )
-        root[updateResolverKey] = handleRequestWithDataApiContext(
+        root[updateResolverKey] = handleMutationWithErrors(
           async (dApi, response, setResult, arg1: any, req: any) => {
             await dApi.put(
               {
@@ -563,9 +576,10 @@ Select a dedicated page.`,
             key: deletedResultKey,
             value: 'ID',
           },
+          argErrorDetail,
           argClientMutationId,
         )
-        root[deleteResolverKey] = handleRequestWithDataApiContext(
+        root[deleteResolverKey] = handleMutationWithErrors(
           async (dApi, response, setResult, arg1: any, req: any) => {
             await dApi.delete(
               {
