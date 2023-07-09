@@ -1,5 +1,5 @@
-import { EntityBase } from "../remult3";
-import { Status } from "./testModel/models";
+import { EntityBase } from '../remult3';
+import { Status } from './testModel/models';
 export declare class Products {
     id: number;
     name: string;

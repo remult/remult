@@ -1,4 +1,4 @@
-import { ValueConverter } from "./column-interfaces";
+import { ValueConverter } from './column-interfaces';
 export declare class ValueConverters {
     static readonly Date: ValueConverter<Date>;
     static readonly DateOnly: ValueConverter<Date>;

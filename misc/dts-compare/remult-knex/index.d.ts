@@ -1,6 +1,6 @@
 import type { Knex } from 'knex';
-import { Remult } from "../src/context";
-import { EntityFilter, EntityMetadata, RepositoryOverloads } from "../src/remult3";
+import { Remult } from '../src/context';
+import { EntityFilter, EntityMetadata, RepositoryOverloads } from '../src/remult3';
 import { DataProvider, EntityDataProvider } from '../src/data-interfaces';
 import { FieldMetadata } from '../src/column-interfaces';
 export declare class KnexDataProvider implements DataProvider {
@@ -20,7 +20,7 @@ export declare class KnexSchemaBuilder {
     verifyStructureOfAllEntities(remult?: Remult): Promise<void>;
     ensureSchema(entities: EntityMetadata<any>[]): Promise<void>;
     createIfNotExist(entity: EntityMetadata): Promise<void>;
-    addColumnIfNotExist<T extends EntityMetadata>(entity: T, c: ((e: T) => FieldMetadata)): Promise<void>;
+    addColumnIfNotExist<T extends EntityMetadata>(entity: T, c: (e: T) => FieldMetadata): Promise<void>;
     verifyAllColumns<T extends EntityMetadata>(entity: T): Promise<void>;
     additionalWhere: string;
     constructor(knex: Knex);

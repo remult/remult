@@ -1,22 +1,11 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "experimentalDecorators":true,
+    "experimentalDecorators": true,
     "outDir": "../../out-tsc/spec",
-    "types": [
-      "jasmine",
-      "node",
-      "websql"
-    ]
+    "types": ["jasmine", "node", "websql"]
   },
-  "files": [
-    "src/test.ts"
-  ],
-  "include": [
-    "**/*.spec.ts",
-    "**/*.d.ts"
-  ],
-  "exclude": [
-    "**/schematics/**"
-  ]
+  "files": ["src/test.ts"],
+  "include": ["**/*.spec.ts", "**/*.d.ts"],
+  "exclude": ["**/schematics/**"]
 }

@@ -18,19 +18,19 @@ export interface RemultServerOptions<RequestType> {
     /** Data Provider to use for the api.
      *
      * @see [Connecting to a Database](https://remult.dev/docs/databases.html).
-    */
+     */
     dataProvider?: DataProvider | Promise<DataProvider> | (() => Promise<DataProvider | undefined>);
     /** Will create tables and columns in supporting databases. default: true
      *
      * @description
      * when set to true, it'll create entities that do not exist, and add columns that are missing.
-    */
+     */
     ensureSchema?: boolean;
     /** The path to use for the api, default:/api
      *
      * @description
      * If you want to use a different api path adjust this field
-    */
+     */
     rootPath?: string;
     /** The default limit to use for find requests that did not specify a limit */
     defaultGetLimit?: number;

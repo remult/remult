@@ -1,9 +1,9 @@
-import { DataProvider } from "./data-interfaces";
-import { EntityMetadata, EntityRef, FindOptions, Repository } from "./remult3";
-import { ClassType } from "../classType";
-import type { SubscriptionServer } from "./live-query/SubscriptionServer";
-import { ExternalHttpProvider } from "./buildRestDataProvider";
-import { SubscriptionClient, Unsubscribe } from "./live-query/SubscriptionChannel";
+import { DataProvider } from './data-interfaces';
+import { EntityMetadata, EntityRef, FindOptions, Repository } from './remult3';
+import { ClassType } from '../classType';
+import type { SubscriptionServer } from './live-query/SubscriptionServer';
+import { ExternalHttpProvider } from './buildRestDataProvider';
+import { SubscriptionClient, Unsubscribe } from './live-query/SubscriptionChannel';
 export declare class RemultAsyncLocalStorage {
     private readonly remultObjectStorage;
     static enable(): void;
@@ -57,8 +57,8 @@ export declare class Remult {
      * @param backendMethod - the backend method to call
      * @param classInstance - the class instance of the backend method, for static backend methods use undefined
      * @param args - the arguments to send to the backend method
-    */
-    call<T extends ((...args: any[]) => Promise<any>)>(backendMethod: T, classInstance?: any, ...args: GetArguments<T>): ReturnType<T>;
+     */
+    call<T extends (...args: any[]) => Promise<any>>(backendMethod: T, classInstance?: any, ...args: GetArguments<T>): ReturnType<T>;
     /** A helper callback that can be used to debug and trace all find operations. Useful in debugging scenarios */
     static onFind: (metadata: EntityMetadata, options: FindOptions<any>) => void;
     clearAllCache(): any;

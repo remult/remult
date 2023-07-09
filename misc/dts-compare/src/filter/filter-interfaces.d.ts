@@ -1,6 +1,6 @@
-import { FieldMetadata } from "../column-interfaces";
-import { Remult } from "../context";
-import { EntityMetadata, EntityFilter } from "../remult3";
+import { FieldMetadata } from '../column-interfaces';
+import { Remult } from '../context';
+import { EntityMetadata, EntityFilter } from '../remult3';
 export declare class Filter {
     private apply?;
     constructor(apply?: (add: FilterConsumer) => void);
@@ -80,6 +80,6 @@ export declare function buildFilterFromRequestParameters(entity: EntityMetadata,
 export interface rawFilterInfo<entityType> {
     rawFilterInfo: {
         key: string;
-        rawFilterTranslator: (args: any, r: Remult) => (EntityFilter<entityType> | Promise<EntityFilter<entityType>>);
+        rawFilterTranslator: (args: any, r: Remult) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>;
     };
 }

@@ -1,6 +1,6 @@
-import { Allowed, AllowedForInstance } from "./context";
+import { Allowed, AllowedForInstance } from './context';
 import { FieldMetadata } from './column-interfaces';
-import { EntityOrderBy, FieldsMetadata, EntityFilter, EntityRef, EntityMetadata } from "./remult3";
+import { EntityOrderBy, FieldsMetadata, EntityFilter, EntityRef, EntityMetadata } from './remult3';
 export interface EntityOptions<entityType = any> {
     /**A human readable name for the entity */
     caption?: string;
@@ -27,14 +27,14 @@ export interface EntityOptions<entityType = any> {
     /** A filter that determines which rows can be queries using the api.
      * @description
      * Use apiPrefilter in cases where you to restrict data based on user profile
-    * @example
-    * apiPrefilter: { archive:false }
-    *
-    * @example
-    * apiPrefilter: ()=> remult.isAllowed("admin")?{}:{ archive:false }
-    * @see [EntityFilter](http://remult.dev/docs/entityFilter.html)
-    *
-    */
+     * @example
+     * apiPrefilter: { archive:false }
+     *
+     * @example
+     * apiPrefilter: ()=> remult.isAllowed("admin")?{}:{ archive:false }
+     * @see [EntityFilter](http://remult.dev/docs/entityFilter.html)
+     *
+     */
     apiPrefilter?: EntityFilter<entityType> | (() => EntityFilter<entityType> | Promise<EntityFilter<entityType>>);
     /** A filter that will be used for all queries from this entity both from the API and from within the backend.
      * @example
@@ -51,15 +51,15 @@ export interface EntityOptions<entityType = any> {
      */
     defaultOrderBy?: EntityOrderBy<entityType>;
     /** An event that will be fired before the Entity will be saved to the database.
-    * If the `error` property of the entity's ref or any of its fields will be set, the save will be aborted and an exception will be thrown.
-    * this is the place to run logic that we want to run in any case before an entity is saved.
-    * @example
-    * @Entity<Task>("tasks", {
-    * saving: async task => {
-    *      task.lastUpdated = new Date()
-    *  }
-    *})
-    */
+     * If the `error` property of the entity's ref or any of its fields will be set, the save will be aborted and an exception will be thrown.
+     * this is the place to run logic that we want to run in any case before an entity is saved.
+     * @example
+     * @Entity<Task>("tasks", {
+     * saving: async task => {
+     *      task.lastUpdated = new Date()
+     *  }
+     *})
+     */
     saving?: (row: entityType, proceedWithoutSavingToDb: () => void) => Promise<any> | any;
     /** will be called after the Entity was saved to the data source. */
     saved?: (row: entityType) => Promise<any> | any;
@@ -70,10 +70,10 @@ export interface EntityOptions<entityType = any> {
     /** Will be called when the entity is being validated, usually prior to the `saving` event */
     validation?: (row: entityType, ref: EntityRef<entityType>) => Promise<any> | any;
     /** The name of the table in the database that holds the data for this entity.
-   * If no name is set, the `key` will be used instead.
-   * @example
-   * dbName:'myProducts'
-   */
+     * If no name is set, the `key` will be used instead.
+     * @example
+     * dbName:'myProducts'
+     */
     dbName?: string;
     /** For entities that are based on SQL expressions instead of a physical table or view*/
     sqlExpression?: string | ((entity: EntityMetadata<entityType>) => string | Promise<string>);
@@ -84,7 +84,7 @@ export interface EntityOptions<entityType = any> {
      * @example
      * //Multiple columns id
      * @Entity<OrderDetails>("orderDetails", { id:od=> [od.orderId, od.productCode] })
-    */
+     */
     id?: (entity: FieldsMetadata<entityType>) => FieldMetadata | FieldMetadata[];
     entityRefInit?: (ref: EntityRef<entityType>, row: entityType) => void;
     apiRequireId?: Allowed;

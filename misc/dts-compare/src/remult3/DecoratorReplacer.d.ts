@@ -1,4 +1,4 @@
-import { OmitEB } from "./remult3";
+import { OmitEB } from './remult3';
 declare type Decorator<T = any> = (a: T, b: string, c?: any) => void;
 declare type Decorators<T> = T extends new (...args: any[]) => infer R ? {
     [K in keyof OmitEB<R>]?: Decorator;

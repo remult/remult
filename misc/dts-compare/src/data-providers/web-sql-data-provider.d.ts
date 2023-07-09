@@ -1,7 +1,7 @@
-import { __RowsOfDataForTesting } from "../__RowsOfDataForTesting";
-import { SqlCommand, SqlImplementation } from "../sql-command";
-import { EntityMetadata } from "../remult3";
-import { Remult } from "../context";
+import { __RowsOfDataForTesting } from '../__RowsOfDataForTesting';
+import { SqlCommand, SqlImplementation } from '../sql-command';
+import { EntityMetadata } from '../remult3';
+import { Remult } from '../context';
 export declare class WebSqlDataProvider implements SqlImplementation, __RowsOfDataForTesting {
     private databaseName;
     rows: {

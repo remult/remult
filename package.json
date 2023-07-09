@@ -3,6 +3,7 @@
   "description": "See projects/core for the remult core package.json. This package.json is used for remult/core development, test projects and experimental work. See ",
   "version": "0.21.1-exp.9",
   "scripts": {
+    "format": "prettier \"./projects/core/**\" --write",
     "test": "concurrently -k -n \"TSC,Test\" -c \"bgBlue.bold,bgGreen.bold\" \"tsc -w -p projects/core/tsconfig.build.json --emitDeclarationOnly --outDir misc/dts-compare\" \"cd projects/test-angular && ng test core\"",
     "test:wsl": "export CHROME_BIN='/mnt/c/Program Files/Google/Chrome/Application/chrome.exe' && npm run test",
     "test-vitest": "cd projects/tests && vitest",
@@ -118,6 +119,7 @@
     "ng-packagr": "^11.2.0",
     "password-hash": "^1.2.2",
     "pg": "^8.3.0",
+    "prettier": "^3.0.0",
     "protractor": "~7.0.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "~6.6.0",

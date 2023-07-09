@@ -1,6 +1,6 @@
 // Karma configuration file, see link for more information
 // https://karma-runner.github.io/1.0/config/configuration-file.html
-const ci = process.env.CI;
+const ci = process.env.CI
 
 module.exports = function (config) {
   config.set({
@@ -11,20 +11,20 @@ module.exports = function (config) {
       require('karma-chrome-launcher'),
       require('karma-jasmine-html-reporter'),
       require('karma-coverage'),
-      require('@angular-devkit/build-angular/plugins/karma')
+      require('@angular-devkit/build-angular/plugins/karma'),
     ],
     client: {
-      clearContext: false // leave Jasmine Spec Runner output visible in browser
+      clearContext: false, // leave Jasmine Spec Runner output visible in browser
     },
     reporters: ['progress', 'kjhtml'],
     port: 9876,
     colors: true,
     logLevel: config.LOG_INFO,
     autoWatch: !ci,
-    browsers: ci ? ['ChromeHeadless'] : ["Chrome"],
+    browsers: ci ? ['ChromeHeadless'] : ['Chrome'],
     singleRun: ci,
     coverageReporter: {
-      reporters: [{type: 'lcov'}]
-    }
-  });
-};
+      reporters: [{ type: 'lcov' }],
+    },
+  })
+}

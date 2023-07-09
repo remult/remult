@@ -3,9 +3,9 @@ import { Allowed, AllowedForInstance } from './context';
 import { EntityMetadata, FieldRef, OmitEB } from './remult3';
 export interface FieldOptions<entityType = any, valueType = any> {
     /** A human readable name for the field. Can be used to achieve a consistent caption for a field throughout the app
-    * @example
-    * <input placeholder={taskRepo.metadata.fields.title.caption}/>
-    */
+     * @example
+     * <input placeholder={taskRepo.metadata.fields.title.caption}/>
+     */
     caption?: string;
     /** If it can store null in the database */
     allowNull?: boolean;
@@ -13,7 +13,7 @@ export interface FieldOptions<entityType = any, valueType = any> {
      * @see [allowed](http://remult.dev/docs/allowed.html)*/
     includeInApi?: Allowed;
     /** If this field data can be updated in the api.
-    * @see [allowed](http://remult.dev/docs/allowed.html)*/
+     * @see [allowed](http://remult.dev/docs/allowed.html)*/
     allowApiUpdate?: AllowedForInstance<entityType>;
     /** An arrow function that'll be used to perform validations on it
      * @example
@@ -35,9 +35,9 @@ export interface FieldOptions<entityType = any, valueType = any> {
      *   }
      * })
      */
-    validate?: ((entity: entityType, fieldRef: FieldRef<entityType, valueType>) => (any | Promise<any>)) | ((entity: entityType, fieldRef: FieldRef<entityType, valueType>) => (any | Promise<any>))[];
+    validate?: ((entity: entityType, fieldRef: FieldRef<entityType, valueType>) => any | Promise<any>) | ((entity: entityType, fieldRef: FieldRef<entityType, valueType>) => any | Promise<any>)[];
     /** Will be fired before this field is saved to the server/database */
-    saving?: ((entity: entityType, fieldRef: FieldRef<entityType, valueType>) => (any | Promise<any>));
+    saving?: (entity: entityType, fieldRef: FieldRef<entityType, valueType>) => any | Promise<any>;
     /**  An expression that will determine this fields value on the backend and be provided to the front end*/
     serverExpression?: (entity: entityType) => valueType | Promise<valueType>;
     /** The name of the column in the database that holds the data for this field. If no name is set, the key will be used instead. */
@@ -51,7 +51,7 @@ export interface FieldOptions<entityType = any, valueType = any> {
      * titleLength = 0;
      * @Fields.string()
      * title='';
-    */
+     */
     sqlExpression?: string | ((entity: EntityMetadata<entityType>) => string | Promise<string>);
     /** For fields that shouldn't be part of an update or insert statement */
     dbReadOnly?: boolean;
@@ -100,7 +100,7 @@ export interface FieldMetadata<valueType = any, entityType = any> {
      * @example
      * const taskRepo = remult.repo(Task);
      * Task == taskRepo.metadata.fields.title.target //will return true
-    */
+     */
     readonly target: ClassType<valueType>;
     /** Returns the dbName - based on it's `dbName` option and it's `sqlExpression` option */
     getDbName(): Promise<string>;
@@ -113,7 +113,7 @@ export interface FieldMetadata<valueType = any, entityType = any> {
     /** Get the display value for a specific item
      * @example
      * repo.fields.createDate.displayValue(task) //will display the date as defined in the `displayValue` option defined for it.
-    */
+     */
     displayValue(item: Partial<OmitEB<entityType>>): string;
     apiUpdateAllowed(item?: Partial<OmitEB<entityType>>): boolean;
     readonly includedInApi: boolean;

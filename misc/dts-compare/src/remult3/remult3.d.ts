@@ -1,10 +1,10 @@
-import { ClassType } from "../../classType";
-import { FieldMetadata } from "../column-interfaces";
-import { LiveQueryChange, SubscriptionListener, Unsubscribe } from "../live-query/SubscriptionChannel";
-import { EntityOptions } from "../entity";
-import { SortSegment } from "../sort";
-import { entityEventListener } from "../__EntityValueProvider";
-import { ErrorInfo } from "../..";
+import { ClassType } from '../../classType';
+import { FieldMetadata } from '../column-interfaces';
+import { LiveQueryChange, SubscriptionListener, Unsubscribe } from '../live-query/SubscriptionChannel';
+import { EntityOptions } from '../entity';
+import { SortSegment } from '../sort';
+import { entityEventListener } from '../__EntityValueProvider';
+import { ErrorInfo } from '../..';
 export interface EntityRef<entityType> extends Subscribable {
     hasErrors(): boolean;
     undoChanges(): any;
@@ -44,7 +44,7 @@ export interface Subscribable {
 }
 export declare type FieldsRef<entityType> = {
     [Properties in keyof OmitEB<entityType>]: entityType[Properties] extends {
-        id?: (number | string);
+        id?: number | string;
     } ? IdFieldRef<entityType, entityType[Properties]> : FieldRef<entityType, entityType[Properties]>;
 } & {
     find(fieldMetadataOrKey: FieldMetadata | string): FieldRef<entityType, any>;
@@ -68,12 +68,12 @@ export interface IdFieldRef<entityType, valueType> extends FieldRef<entityType, 
         id?: number;
     } ? number : valueType extends {
         id?: string;
-    } ? string : (string | number)): any;
-    getId(): (valueType extends {
+    } ? string : string | number): any;
+    getId(): valueType extends {
         id?: number;
     } ? number : valueType extends {
         id?: string;
-    } ? string : (string | number));
+    } ? string : string | number;
 }
 export interface FieldRef<entityType = any, valueType = any> extends Subscribable {
     error: string;
@@ -110,7 +110,7 @@ export interface EntityMetadata<entityType = any> {
     /** A human readable caption for the entity. Can be used to achieve a consistent caption for a field throughout the app
      * @example
      * <h1>Create a new item in {taskRepo.metadata.caption}</h1>
-    */
+     */
     readonly caption: string;
     /** The options send to the `Entity`'s decorator */
     readonly options: EntityOptions;
@@ -122,7 +122,7 @@ export interface EntityMetadata<entityType = any> {
      * if (taskRepo.metadata.apiUpdateAllowed(task)){
      *   // Allow user to edit the entity
      * }
-    */
+     */
     apiUpdateAllowed(item?: entityType): boolean;
     /** true if the current user is allowed to read from entity
      * @example
@@ -138,7 +138,7 @@ export interface EntityMetadata<entityType = any> {
      * if (taskRepo.metadata.apiDeleteAllowed(task)){
      *   // display delete button
      * }
-    */
+     */
     apiDeleteAllowed(item?: entityType): boolean;
     /** true if the current user is allowed to create an entity instance
      * @example
@@ -146,7 +146,7 @@ export interface EntityMetadata<entityType = any> {
      * if (taskRepo.metadata.apiInsertAllowed(task)){
      *   // display insert button
      * }
-    */
+     */
     apiInsertAllowed(item?: entityType): boolean;
     /** Returns the dbName - based on it's `dbName` option and it's `sqlExpression` option */
     getDbName(): Promise<string>;
@@ -158,7 +158,7 @@ export declare type idType<entityType> = entityType extends {
     id?: number;
 } ? number : entityType extends {
     id?: string;
-} ? string : (string | number);
+} ? string : string | number;
 /**used to perform CRUD operations on an `entityType` */
 export interface Repository<entityType> {
     /** returns a result array based on the provided options */
@@ -190,7 +190,7 @@ export interface Repository<entityType> {
      * @see [EntityFilter](http://remult.dev/docs/entityFilter.html)
      * @example
      * await taskRepo.count({ completed:false })
-    */
+     */
     count(where?: EntityFilter<entityType>): Promise<number>;
     /**Validates an item
      * @example
@@ -202,11 +202,11 @@ export interface Repository<entityType> {
      * // Can also be used to validate specific fields
      * const error = repo.validate(task,"title")
      */
-    validate(item: Partial<entityType>, ...fields: (Extract<keyof OmitEB<entityType>, string>)[]): Promise<ErrorInfo<entityType> | undefined>;
+    validate(item: Partial<entityType>, ...fields: Extract<keyof OmitEB<entityType>, string>[]): Promise<ErrorInfo<entityType> | undefined>;
     /** saves an item or item[] to the data source. It assumes that if an `id` value exists, it's an existing row - otherwise it's a new row
      * @example
      * await taskRepo.save({...task, completed:true })
-    */
+     */
     save(item: Partial<OmitEB<entityType>>[]): Promise<entityType[]>;
     save(item: Partial<OmitEB<entityType>>): Promise<entityType>;
     /**Insert an item or item[] to the data source
@@ -214,25 +214,25 @@ export interface Repository<entityType> {
      * await taskRepo.insert({title:"task a"})
      * @example
      * await taskRepo.insert([{title:"task a"}, {title:"task b", completed:true }])
-    */
+     */
     insert(item: Partial<OmitEB<entityType>>[]): Promise<entityType[]>;
     insert(item: Partial<OmitEB<entityType>>): Promise<entityType>;
     /** Updates an item, based on its `id`
      * @example
      * taskRepo.update(task.id,{...task,completed:true})
-    */
-    update(id: (entityType extends {
+     */
+    update(id: entityType extends {
         id?: number;
     } ? number : entityType extends {
         id?: string;
-    } ? string : (string | number)), item: Partial<OmitEB<entityType>>): Promise<entityType>;
+    } ? string : string | number, item: Partial<OmitEB<entityType>>): Promise<entityType>;
     update(id: Partial<OmitEB<entityType>>, item: Partial<OmitEB<entityType>>): Promise<entityType>;
     /** Deletes an Item*/
-    delete(id: (entityType extends {
+    delete(id: entityType extends {
         id?: number;
     } ? number : entityType extends {
         id?: string;
-    } ? string : (string | number))): Promise<void>;
+    } ? string : string | number): Promise<void>;
     delete(item: Partial<OmitEB<entityType>>): Promise<void>;
     /** Creates an instance of an item. It'll not be saved to the data source unless `save` or `insert` will be called for that item */
     create(item?: Partial<OmitEB<entityType>>): entityType;
@@ -249,11 +249,11 @@ export interface Repository<entityType> {
      * @example
      * console.log(repo.fields.title.caption) // displays the caption of a specific field
      * console.log(repo.fields.title.options)// writes the options that were defined for this field
-    */
+     */
     fields: FieldsMetadata<entityType>;
     /**The metadata for the `entity`
      * @See [EntityMetadata](https://remult.dev/docs/ref_entitymetadata.html)
-    */
+     */
     metadata: EntityMetadata<entityType>;
     addEventListener(listener: entityEventListener<entityType>): Unsubscribe;
 }
@@ -273,7 +273,7 @@ export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
      *  limit:10,
      *  page:2
      * })
-    */
+     */
     limit?: number;
     /** Determines the page number that will be used to extract the data
      * @example
@@ -281,7 +281,7 @@ export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
      *  limit:10,
      *  page:2
      * })
-    */
+     */
     page?: number;
 }
 /** Determines the order of items returned .
@@ -291,34 +291,34 @@ export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
  * await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
  */
 export declare type EntityOrderBy<entityType> = {
-    [Properties in keyof Partial<OmitEB<entityType>>]?: "asc" | "desc";
+    [Properties in keyof Partial<OmitEB<entityType>>]?: 'asc' | 'desc';
 };
 /**Used to filter the desired result set
  * @see [EntityFilter](http://remult.dev/docs/entityFilter.html)
  */
 export declare type EntityFilter<entityType> = {
-    [Properties in keyof Partial<OmitEB<entityType>>]?: (Partial<OmitEB<entityType>>[Properties] extends (number | Date | undefined) ? ComparisonValueFilter<Partial<OmitEB<entityType>>[Properties]> : Partial<OmitEB<entityType>>[Properties] extends (string | undefined) ? ContainsStringValueFilter & ComparisonValueFilter<string> : Partial<OmitEB<entityType>>[Properties] extends (boolean | undefined) ? ValueFilter<boolean> : Partial<OmitEB<entityType>>[Properties] extends ({
-        id?: (string | number);
-    } | undefined) ? IdFilter<Partial<OmitEB<entityType>>[Properties]> : ValueFilter<Partial<OmitEB<entityType>>[Properties]>) & ContainsStringValueFilter;
+    [Properties in keyof Partial<OmitEB<entityType>>]?: (Partial<OmitEB<entityType>>[Properties] extends number | Date | undefined ? ComparisonValueFilter<Partial<OmitEB<entityType>>[Properties]> : Partial<OmitEB<entityType>>[Properties] extends string | undefined ? ContainsStringValueFilter & ComparisonValueFilter<string> : Partial<OmitEB<entityType>>[Properties] extends boolean | undefined ? ValueFilter<boolean> : Partial<OmitEB<entityType>>[Properties] extends {
+        id?: string | number;
+    } | undefined ? IdFilter<Partial<OmitEB<entityType>>[Properties]> : ValueFilter<Partial<OmitEB<entityType>>[Properties]>) & ContainsStringValueFilter;
 } & {
     $or?: EntityFilter<entityType>[];
     $and?: EntityFilter<entityType>[];
 };
 export declare type ValueFilter<valueType> = valueType | valueType[] | {
     $ne?: valueType | valueType[];
-    "!="?: valueType | valueType[];
+    '!='?: valueType | valueType[];
     $in?: valueType[];
     $nin?: valueType[];
 };
 export declare type ComparisonValueFilter<valueType> = ValueFilter<valueType> & {
     $gt?: valueType;
-    ">"?: valueType;
+    '>'?: valueType;
     $gte?: valueType;
-    ">="?: valueType;
+    '>='?: valueType;
     $lt?: valueType;
-    "<"?: valueType;
+    '<'?: valueType;
     $lte?: valueType;
-    "<="?: valueType;
+    '<='?: valueType;
 };
 export interface ContainsStringValueFilter {
     $contains?: string;
@@ -333,24 +333,24 @@ export interface LoadOptions<entityType> {
 }
 export interface FindOptionsBase<entityType> extends LoadOptions<entityType> {
     /** filters the data
-    * @example
-    * await taskRepo.find({where: { completed:false }})
-    * @see For more usage examples see [EntityFilter](https://remult.dev/docs/entityFilter.html)
-    */
+     * @example
+     * await taskRepo.find({where: { completed:false }})
+     * @see For more usage examples see [EntityFilter](https://remult.dev/docs/entityFilter.html)
+     */
     where?: EntityFilter<entityType>;
     /** Determines the order of items returned .
-    * @example
-    * await this.remult.repo(Products).find({ orderBy: { name: "asc" }})
-    * @example
-    * await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
-    */
+     * @example
+     * await this.remult.repo(Products).find({ orderBy: { name: "asc" }})
+     * @example
+     * await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
+     */
     orderBy?: EntityOrderBy<entityType>;
 }
 export interface FindFirstOptions<entityType> extends FindOptionsBase<entityType>, FindFirstOptionsBase<entityType> {
 }
 export interface FindFirstOptionsBase<entityType> extends LoadOptions<entityType> {
     /** determines if to cache the result, and return the results from cache.
-      */
+     */
     useCache?: boolean;
     /** If set to true and an item is not found, it's created and returned*/
     createIfNotFound?: boolean;
@@ -371,7 +371,7 @@ export interface QueryResult<entityType> {
      * for await (const task of taskRepo.query()) {
      *   await taskRepo.save({ ...task, completed });
      * }
-    */
+     */
     [Symbol.asyncIterator](): {
         next: () => Promise<IteratorResult<entityType, entityType>>;
     };

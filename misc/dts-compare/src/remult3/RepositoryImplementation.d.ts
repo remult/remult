@@ -1,13 +1,13 @@
-import { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from "../column-interfaces";
-import { EntityOptions } from "../entity";
+import { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from '../column-interfaces';
+import { EntityOptions } from '../entity';
 import { LookupColumn } from '../column';
-import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef } from "./remult3";
-import { ClassType } from "../../classType";
-import { Remult } from "../context";
-import { entityEventListener } from "../__EntityValueProvider";
-import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions, ErrorInfo } from "../data-interfaces";
-import { RefSubscriber } from ".";
-import { Unsubscribe } from "../live-query/SubscriptionChannel";
+import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef, LiveQuery } from './remult3';
+import { ClassType } from '../../classType';
+import { Remult } from '../context';
+import { entityEventListener } from '../__EntityValueProvider';
+import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions, ErrorInfo } from '../data-interfaces';
+import { RefSubscriber } from '.';
+import { Unsubscribe } from '../live-query/SubscriptionChannel';
 export declare class RepositoryImplementation<entityType> implements Repository<entityType> {
     private entity;
     remult: Remult;
@@ -26,26 +26,26 @@ export declare class RepositoryImplementation<entityType> implements Repository<
     addEventListener(listener: entityEventListener<entityType>): () => void;
     query(options?: QueryOptions<entityType>): QueryResult<entityType>;
     getEntityRef(entity: entityType): EntityRef<entityType>;
-    delete(id: (entityType extends {
+    delete(id: entityType extends {
         id?: number;
     } ? number : entityType extends {
         id?: string;
-    } ? string : (string | number))): Promise<void>;
+    } ? string : string | number): Promise<void>;
     delete(item: entityType): Promise<void>;
     insert(item: Partial<OmitEB<entityType>>[]): Promise<entityType[]>;
     insert(item: Partial<OmitEB<entityType>>): Promise<entityType>;
     get fields(): FieldsMetadata<entityType>;
-    validate(entity: Partial<OmitEB<entityType>>, ...fields: (Extract<keyof OmitEB<entityType>, string>)[]): Promise<ErrorInfo<entityType> | undefined>;
-    update(id: (entityType extends {
+    validate(entity: Partial<OmitEB<entityType>>, ...fields: Extract<keyof OmitEB<entityType>, string>[]): Promise<ErrorInfo<entityType> | undefined>;
+    update(id: entityType extends {
         id?: number;
     } ? number : entityType extends {
         id?: string;
-    } ? string : (string | number)), item: Partial<OmitEB<entityType>>): Promise<entityType>;
+    } ? string : string | number, item: Partial<OmitEB<entityType>>): Promise<entityType>;
     update(originalItem: Partial<OmitEB<entityType>>, item: Partial<OmitEB<entityType>>): Promise<entityType>;
     private getRefForExistingRow;
     save(item: Partial<OmitEB<entityType>>[]): Promise<entityType[]>;
     save(item: Partial<OmitEB<entityType>>): Promise<entityType>;
-    liveQuery(options?: FindOptions<entityType>): any;
+    liveQuery(options?: FindOptions<entityType>): LiveQuery<entityType>;
     find(options: FindOptions<entityType>, skipOrderByAndLimit?: boolean): Promise<entityType[]>;
     buildEntityDataProviderFindOptions(options: FindOptions<entityType>): Promise<EntityDataProviderFindOptions>;
     fromJsonArray(jsonItems: any[], load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[]): Promise<entityType[]>;
@@ -165,7 +165,7 @@ export declare class FieldRefImplementation<entityType, valueType> implements Fi
     set value(value: any);
     get originalValue(): any;
     private rawOriginalValue;
-    setId(id: (string | number)): void;
+    setId(id: string | number): void;
     getId(): any;
     get inputValue(): string;
     set inputValue(val: string);
@@ -227,7 +227,7 @@ export declare function FieldType<valueType = any>(...options: (FieldOptions<any
 export declare class Fields {
     /**
      * Stored as a JSON.stringify - to store as json use Fields.json
-    */
+     */
     static object<entityType = any, valueType = any>(...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]): (target: any, context: string | ClassFieldDecoratorContextStub<entityType, valueType | undefined>, c?: any) => void;
     static json<entityType = any, valueType = any>(...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]): (target: any, context: string | ClassFieldDecoratorContextStub<entityType, valueType | undefined>, c?: any) => void;
     static dateOnly<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]): (target: any, context: string | ClassFieldDecoratorContextStub<entityType, Date | undefined>, c?: any) => void;
@@ -279,7 +279,7 @@ export interface ClassFieldDecoratorContextStub<entityType, valueType> {
     readonly name: string;
 }
 export interface ClassDecoratorContextStub<Class extends new (...args: any) => any = new (...args: any) => any> {
-    readonly kind: "class";
+    readonly kind: 'class';
     readonly name: string | undefined;
     addInitializer(initializer: (this: Class) => void): void;
 }

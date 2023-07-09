@@ -1,8 +1,8 @@
 {
-    "extends": "./tsconfig.build.json",
-    "compilerOptions": {
-        "outDir": "../../dist/remult/esm",
-        "module": "ESNext",
-        "target": "ESNext",
-    }
+  "extends": "./tsconfig.build.json",
+  "compilerOptions": {
+    "outDir": "../../dist/remult/esm",
+    "module": "ESNext",
+    "target": "ESNext"
+  }
 }

@@ -1,12 +1,12 @@
-import { AsyncLocalStorage } from 'async_hooks';
-import { RemultAsyncLocalStorage } from '../src/context';
+import { AsyncLocalStorage } from 'async_hooks'
+import { RemultAsyncLocalStorage } from '../src/context'
 
-let init = false;
+let init = false
 
 export function initAsyncHooks() {
-  if (init)
-    return;
-  init = true;
-  RemultAsyncLocalStorage.instance = new RemultAsyncLocalStorage(new AsyncLocalStorage());
-
+  if (init) return
+  init = true
+  RemultAsyncLocalStorage.instance = new RemultAsyncLocalStorage(
+    new AsyncLocalStorage(),
+  )
 }

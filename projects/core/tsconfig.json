@@ -1,20 +1,16 @@
 {
-    "extends": "../../tsconfig.json",
-    "compilerOptions": {
-        "outDir": "../../dist/remult",
-        "baseUrl": ".",
-        "declaration": true,
-        "stripInternal": true,
-        "experimentalDecorators": true,
-        "sourceMap": false,
-        "module": "commonjs",
-        "moduleResolution": "node",
-        "target": "es5",
-        "skipLibCheck": true,
-        "lib": [
-            "es2018",
-            "dom"
-        ]
-        
-    }
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../dist/remult",
+    "baseUrl": ".",
+    "declaration": true,
+    "stripInternal": true,
+    "experimentalDecorators": true,
+    "sourceMap": false,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "target": "es5",
+    "skipLibCheck": true,
+    "lib": ["es2018", "dom"]
+  }
 }

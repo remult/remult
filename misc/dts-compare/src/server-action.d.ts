@@ -17,7 +17,7 @@ export declare abstract class Action<inParam, outParam> implements ActionInterfa
     run(pIn: inParam, baseUrl?: string, http?: RestDataProviderHttpProvider): Promise<outParam>;
     doWork: (args: any[], self: any, baseUrl?: string, http?: RestDataProviderHttpProvider) => Promise<any>;
     protected abstract execute(info: inParam, req: Remult, res: DataApiResponse): Promise<outParam>;
-    __register(reg: (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void): void;
+    __register(reg: (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: (data: any, req: Remult, res: DataApiResponse) => void) => void): void;
 }
 export declare class ForbiddenError extends Error {
     constructor();
@@ -56,7 +56,7 @@ export declare const actionInfo: {
 export declare const serverActionField: unique symbol;
 export declare function Controller(key: string): (target: any, context?: any) => any;
 export interface ClassMethodDecoratorContextStub<This = unknown, Value extends (this: This, ...args: any) => any = (this: This, ...args: any) => any> {
-    readonly kind: "method";
+    readonly kind: 'method';
     readonly name: string | symbol;
     readonly access: {
         has(object: This): boolean;
@@ -83,6 +83,6 @@ export declare function prepareReceivedArgs(types: any[], args: any[], remult: R
 export declare const classBackendMethodsArray: unique symbol;
 export interface ActionInterface {
     doWork: (args: any[], self: any, baseUrl?: string, http?: RestDataProviderHttpProvider) => Promise<any>;
-    __register(reg: (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: ((data: any, req: Remult, res: DataApiResponse) => void)) => void): any;
+    __register(reg: (url: string, queue: boolean, allowed: AllowedForInstance<any>, what: (data: any, req: Remult, res: DataApiResponse) => void) => void): any;
 }
 export {};

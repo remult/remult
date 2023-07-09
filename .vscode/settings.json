@@ -1,51 +1,42 @@
 {
-    "files.associations": {
-        "*.json": "jsonc"
-    },
-    "cSpell.words": [
-        "angular",
-        "angular's",
-        "autoincrement",
-        "chromedriver",
-        "circleci",
-        "codecov",
-        "codelyzer",
-        "copyfiles",
-        "devkit",
-        "expressjwt",
-        "Honig",
-        "lcov",
-        "ng-packagr",
-        "Noam",
-        "openapi",
-        "packagr",
-        "paramtypes",
-        "postgres",
-        "postgresql",
-        "Prefilter",
-        "remult",
-        "remult-nextjs-todo",
-        "remult's",
-        "respawn",
-        "scroller",
-        "styleext",
-        "Supabase",
-        "tldr",
-        "Todos",
-        "typedoc",
-        "unchecks",
-        "unopinionated",
-        "websql"
-    ],
-    "typescript.tsdk": "node_modules\\typescript\\lib",
-    "cSpell.ignoreWords": [
-        "allowapicrud"
-    ],
-    "[typescriptreact]": {
-        "editor.defaultFormatter": "vscode.typescript-language-features"
-    }
-    ,
-    "[typescript]": {
-        "editor.defaultFormatter": "vscode.typescript-language-features"
-    }
+  "files.associations": {
+    "*.json": "jsonc"
+  },
+  "cSpell.words": [
+    "angular",
+    "angular's",
+    "autoincrement",
+    "chromedriver",
+    "circleci",
+    "codecov",
+    "codelyzer",
+    "copyfiles",
+    "devkit",
+    "expressjwt",
+    "Honig",
+    "lcov",
+    "ng-packagr",
+    "Noam",
+    "openapi",
+    "packagr",
+    "paramtypes",
+    "postgres",
+    "postgresql",
+    "Prefilter",
+    "remult",
+    "remult-nextjs-todo",
+    "remult's",
+    "respawn",
+    "scroller",
+    "styleext",
+    "Supabase",
+    "tldr",
+    "Todos",
+    "typedoc",
+    "unchecks",
+    "unopinionated",
+    "websql"
+  ],
+  "typescript.tsdk": "node_modules\\typescript\\lib",
+  "cSpell.ignoreWords": ["allowapicrud"]
 }

@@ -1,23 +1,13 @@
 {
-    "extends": "../../tsconfig.json",
-    "compilerOptions": {
-        "experimentalDecorators": true,
-        "module": "commonjs",
-        "rootDir": "../",
-        "outDir": "../../out-tsc/backend-tests",
-        "types": [
-            "jasmine",
-            "node"
-        ]
-    },
-    "files": [
-        "src/test.ts"
-    ],
-    "include": [
-        "**/*.backend-spec.ts",
-        "**/*.d.ts"
-    ],
-    "exclude": [
-        "**/schematics/**"
-    ]
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "module": "commonjs",
+    "rootDir": "../",
+    "outDir": "../../out-tsc/backend-tests",
+    "types": ["jasmine", "node"]
+  },
+  "files": ["src/test.ts"],
+  "include": ["**/*.backend-spec.ts", "**/*.d.ts"],
+  "exclude": ["**/schematics/**"]
 }

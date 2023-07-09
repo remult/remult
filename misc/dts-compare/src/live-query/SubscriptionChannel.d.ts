@@ -15,10 +15,10 @@ export interface SubscriptionClient {
 }
 export declare const liveQueryKeepAliveRoute = "_liveQueryKeepAlive";
 export declare type LiveQueryChange = {
-    type: "all";
+    type: 'all';
     data: any[];
 } | {
-    type: "add";
+    type: 'add';
     data: any;
 } | {
     type: 'replace';
@@ -27,7 +27,7 @@ export declare type LiveQueryChange = {
         item: any;
     };
 } | {
-    type: "remove";
+    type: 'remove';
     data: {
         id: any;
     };

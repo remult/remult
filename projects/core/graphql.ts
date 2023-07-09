@@ -20,7 +20,14 @@ type Field = Arg & {
   order?: number
 }
 
-type Kind = 'type_impl_node' | 'type_impl_error' | 'type' | 'input' | 'enum' | 'interface' | 'union'
+type Kind =
+  | 'type_impl_node'
+  | 'type_impl_error'
+  | 'type'
+  | 'input'
+  | 'enum'
+  | 'interface'
+  | 'union'
 
 type GraphQLType = {
   kind: Kind
@@ -51,12 +58,12 @@ type GraphQLType = {
 
 let _removeComments = false
 export function remultGraphql(options: {
-  removeComments?: boolean, entities: ClassType<any>[],
+  removeComments?: boolean
+  entities: ClassType<any>[]
   getRemultFromRequest?: (req: any) => Remult
 }) {
-
   if (!options.getRemultFromRequest) {
-    options.getRemultFromRequest = () => remult;
+    options.getRemultFromRequest = () => remult
   }
   const { removeComments } = {
     removeComments: false,
@@ -67,10 +74,9 @@ export function remultGraphql(options: {
     _removeComments = true
   }
 
-
   const entities = (() => {
-    const remult = new Remult();
-    return options.entities?.map(x => remult.repo(x).metadata) || [];
+    const remult = new Remult()
+    return options.entities?.map((x) => remult.repo(x).metadata) || []
   })()
 
   const types: GraphQLType[] = []
@@ -81,7 +87,7 @@ export function remultGraphql(options: {
   const resolvers = { Query: resolversQuery, Mutation: resolversMutation }
 
   function upsertTypes(key: string, kind: Kind = 'type', order = 0) {
-    let t = types.find(t => t.key === key)
+    let t = types.find((t) => t.key === key)
     if (!t) {
       types.push(
         (t = {
@@ -111,14 +117,20 @@ export function remultGraphql(options: {
 
   function upsertUnion(key: string, values: string[], order?: number) {
     const u = upsertTypes(key, 'union', order)
-    u.fields = values.map(value => { return { key: value, value: { Union: true } } })
+    u.fields = values.map((value) => {
+      return { key: value, value: { Union: true } }
+    })
     return u
   }
 
   // Where - GraphQL primitives
   for (const whereType of ['String', 'Int', 'Float', 'Boolean', 'ID']) {
     const currentWhere = upsertTypes(`Where${whereType}`, 'input', 20)
-    const currentWhereNullable = upsertTypes(`Where${whereType}Nullable`, 'input', 20)
+    const currentWhereNullable = upsertTypes(
+      `Where${whereType}Nullable`,
+      'input',
+      20,
+    )
 
     // For everyone
     const operatorType = ['eq', 'ne']
@@ -126,14 +138,20 @@ export function remultGraphql(options: {
     for (const operator of [...operatorType, ...operatorTypeArray]) {
       const field = {
         key: operator,
-        value: operatorTypeArray.includes(operator) ? `[${whereType}!]` : whereType,
+        value: operatorTypeArray.includes(operator)
+          ? `[${whereType}!]`
+          : whereType,
       }
       currentWhere.fields.push(field)
       currentWhereNullable.fields.push(field)
     }
 
     // only for specific types
-    if (whereType === 'String' || whereType === 'Int' || whereType === 'Float') {
+    if (
+      whereType === 'String' ||
+      whereType === 'Int' ||
+      whereType === 'Float'
+    ) {
       for (const operator of ['gt', 'gte', 'lt', 'lte']) {
         const field = {
           key: operator,
@@ -207,9 +225,9 @@ export function remultGraphql(options: {
               error: (x: any) => (err = x),
               forbidden: () => (err = 'forbidden'),
               notFound: () => (err = 'not found'),
-              progress: () => { },
+              progress: () => {},
             }
-            work(response, x => (result = x), arg1, req)
+            work(response, (x) => (result = x), arg1, req)
               .then(() => {
                 if (err) {
                   error(err)
@@ -217,7 +235,7 @@ export function remultGraphql(options: {
                 }
                 res(result)
               })
-              .catch(err => error(err))
+              .catch((err) => error(err))
           })
         }
       }
@@ -232,9 +250,9 @@ export function remultGraphql(options: {
         ) => Promise<void>,
       ) => {
         return createResultPromise(async (response, setResult, arg1, req) => {
-          const remult = options.getRemultFromRequest(req);
-          const repo = remult.repo(meta.entityType);
-          const dApi = new DataApi(repo, remult);
+          const remult = options.getRemultFromRequest(req)
+          const repo = remult.repo(meta.entityType)
+          const dApi = new DataApi(repo, remult)
           await work(dApi, response, setResult, arg1, meta)
         })
       }
@@ -247,53 +265,59 @@ export function remultGraphql(options: {
           meta: EntityMetadata,
         ) => Promise<void>,
       ) => {
-        return handleRequestWithDataApiContext(async (dApi, response, origSetResult, arg1: any, req: any) => {
-          const setResult = (item: any) => {
-            origSetResult({
-              clientMutationId: arg1.clientMutationId,
-              ...item
-            })
-          }
-          return work(dApi, {
-            ...response,
-            forbidden: () => {
-              setResult({
-
-                error: {
-                  __typename: 'ForbiddenError',
-                  message: "forbidden",
-                }
+        return handleRequestWithDataApiContext(
+          async (dApi, response, origSetResult, arg1: any, req: any) => {
+            const setResult = (item: any) => {
+              origSetResult({
+                clientMutationId: arg1.clientMutationId,
+                ...item,
               })
-            },
-            notFound: () => {
-              setResult({
-
-                error: {
-                  __typename: 'NotFoundError',
-                  message: "not found",
-                }
-              })
-            },
-            error: err => {
-              const modelState = []
-              if (err.modelState)
-                for (const key in err.modelState) {
-                  modelState.push({ field: key, message: err.modelState[key] })
-                }
-              setResult({
-                error: {
-                  __typename: 'ValidationError',
-                  message: err.message,
-                  modelState
-                }
-              })
-            },
-          }, setResult, arg1, req);
-        })
-
-
+            }
+            return work(
+              dApi,
+              {
+                ...response,
+                forbidden: () => {
+                  setResult({
+                    error: {
+                      __typename: 'ForbiddenError',
+                      message: 'forbidden',
+                    },
+                  })
+                },
+                notFound: () => {
+                  setResult({
+                    error: {
+                      __typename: 'NotFoundError',
+                      message: 'not found',
+                    },
+                  })
+                },
+                error: (err) => {
+                  const modelState = []
+                  if (err.modelState)
+                    for (const key in err.modelState) {
+                      modelState.push({
+                        field: key,
+                        message: err.modelState[key],
+                      })
+                    }
+                  setResult({
+                    error: {
+                      __typename: 'ValidationError',
+                      message: err.message,
+                      modelState,
+                    },
+                  })
+                },
+              },
+              setResult,
+              arg1,
+              req,
+            )
+          },
+        )
       }
-
 
       const queryArgsConnection: Arg[] = [
         {
@@ -311,8 +335,16 @@ _Side note: \`Math.ceil(totalCount / limit)\` to determine how many pages there 
 For **page by page** pagination.
 Select a dedicated page.`,
         },
-        { key: 'orderBy', value: `${key}OrderBy`, comment: `Remult sorting options` },
-        { key: 'where', value: `${key}Where`, comment: `Remult filtering options` },
+        {
+          key: 'orderBy',
+          value: `${key}OrderBy`,
+          comment: `Remult sorting options`,
+        },
+        {
+          key: 'where',
+          value: `${key}Where`,
+          comment: `Remult filtering options`,
+        },
       ]
       if (v2ConnectionAndPagination) {
         queryArgsConnection.push(
@@ -359,8 +391,8 @@ Select a dedicated page.`,
           await dApi.get(
             {
               ...response,
-              success: y => {
-                currentType.query.resultProcessors.forEach(z => z(y))
+              success: (y) => {
+                currentType.query.resultProcessors.forEach((z) => z(y))
                 setResult(y)
               },
             },
@@ -368,8 +400,12 @@ Select a dedicated page.`,
           )
         },
       )
-      resolversQuery[getSingleEntityKey] = (origItem: any, args: any, req: any, gqlInfo: any) =>
-        root[getSingleEntityKey](args, req, gqlInfo)
+      resolversQuery[getSingleEntityKey] = (
+        origItem: any,
+        args: any,
+        req: any,
+        gqlInfo: any,
+      ) => root[getSingleEntityKey](args, req, gqlInfo)
 
       // Connection (v1 items, v2 edges)
       const connectionKey = `${getMetaType(meta)}Connection`
@@ -422,17 +458,15 @@ Select a dedicated page.`,
 
       root[key] = handleRequestWithDataApiContext(
         async (dApi, response, setResult, arg1: any, meta: EntityMetadata) => {
-
           setResult({
             [itemsKey]: createResultPromise(async (response, setResult) => {
-
               await dApi.getArray(
                 {
                   ...response,
                   success: (x: any) => {
                     setResult(
                       x.map((y: any) => {
-                        currentType.query.resultProcessors.forEach(z => z(y))
+                        currentType.query.resultProcessors.forEach((z) => z(y))
                         return y
                       }),
                     )
@@ -443,32 +477,44 @@ Select a dedicated page.`,
                 },
                 translateWhereToRestBody(meta.fields, arg1),
               )
-
             }),
-            [totalCountKey]: createResultPromise(async (response, setResult) => {
-              await dApi.count(
-                {
-                  ...response,
-                  success: x => setResult(x.count),
-                },
-                {
-                  get: bridgeQueryOptionsToDataApiGet(arg1),
-                },
-                translateWhereToRestBody(meta.fields, arg1),
-              )
-            }),
+            [totalCountKey]: createResultPromise(
+              async (response, setResult) => {
+                await dApi.count(
+                  {
+                    ...response,
+                    success: (x) => setResult(x.count),
+                  },
+                  {
+                    get: bridgeQueryOptionsToDataApiGet(arg1),
+                  },
+                  translateWhereToRestBody(meta.fields, arg1),
+                )
+              },
+            ),
           })
         },
       )
 
-      resolversQuery[key] = (origItem: any, args: any, req: any, gqlInfo: any) => {
+      resolversQuery[key] = (
+        origItem: any,
+        args: any,
+        req: any,
+        gqlInfo: any,
+      ) => {
         return root[key](args, req, gqlInfo)
       }
 
       // Mutation
       const root_mutation = upsertTypes('Mutation', 'type', -9)
 
-      const checkCanExist = (rule: any) => rule !== false && !(rule === undefined && (meta.options.allowApiCrud === false || meta.options.allowApiCrud === undefined))
+      const checkCanExist = (rule: any) =>
+        rule !== false &&
+        !(
+          rule === undefined &&
+          (meta.options.allowApiCrud === false ||
+            meta.options.allowApiCrud === undefined)
+        )
 
       if (checkCanExist(meta.options.allowApiInsert)) {
         // create
@@ -478,7 +524,10 @@ Select a dedicated page.`,
 
         root_mutation.fields.push({
           key: createResolverKey,
-          args: [{ key: 'input', value: `${createInput}!` }, argClientMutationId],
+          args: [
+            { key: 'input', value: `${createInput}!` },
+            argClientMutationId,
+          ],
           value: `${createPayload}`,
           comment: `Create a new \`${getMetaType(meta)}\``,
         })
@@ -500,8 +549,8 @@ Select a dedicated page.`,
             await dApi.post(
               {
                 ...response,
-                created: y => {
-                  currentType.query.resultProcessors.forEach(z => z(y))
+                created: (y) => {
+                  currentType.query.resultProcessors.forEach((z) => z(y))
                   setResult({
                     [toCamelCase(getMetaType(meta))]: y,
                   })
@@ -511,8 +560,12 @@ Select a dedicated page.`,
             )
           },
         )
-        resolversMutation[createResolverKey] = (origItem: any, args: any, req: any, gqlInfo: any) =>
-          root[createResolverKey](args, req, gqlInfo)
+        resolversMutation[createResolverKey] = (
+          origItem: any,
+          args: any,
+          req: any,
+          gqlInfo: any,
+        ) => root[createResolverKey](args, req, gqlInfo)
       }
 
       if (checkCanExist(meta.options.allowApiUpdate)) {
@@ -522,7 +575,11 @@ Select a dedicated page.`,
         const updateResolverKey = `update${getMetaType(meta)}`
         root_mutation.fields.push({
           key: updateResolverKey,
-          args: [argId, { key: 'patch', value: `${updateInput}!` }, argClientMutationId],
+          args: [
+            argId,
+            { key: 'patch', value: `${updateInput}!` },
+            argClientMutationId,
+          ],
           value: `${updatePayload}`,
           comment: `Update a \`${getMetaType(meta)}\``,
         })
@@ -543,8 +600,8 @@ Select a dedicated page.`,
             await dApi.put(
               {
                 ...response,
-                success: y => {
-                  currentType.query.resultProcessors.forEach(z => z(y))
+                success: (y) => {
+                  currentType.query.resultProcessors.forEach((z) => z(y))
                   setResult({
                     [toCamelCase(getMetaType(meta))]: y,
                   })
@@ -555,8 +612,12 @@ Select a dedicated page.`,
             )
           },
         )
-        resolversMutation[updateResolverKey] = (origItem: any, args: any, req: any, gqlInfo: any) =>
-          root[updateResolverKey](args, req, gqlInfo)
+        resolversMutation[updateResolverKey] = (
+          origItem: any,
+          args: any,
+          req: any,
+          gqlInfo: any,
+        ) => root[updateResolverKey](args, req, gqlInfo)
       }
       if (checkCanExist(meta.options.allowApiDelete)) {
         // delete
@@ -592,8 +653,12 @@ Select a dedicated page.`,
             )
           },
         )
-        resolversMutation[deleteResolverKey] = (origItem: any, args: any, req: any, gqlInfo: any) =>
-          root[deleteResolverKey](args, req, gqlInfo)
+        resolversMutation[deleteResolverKey] = (
+          origItem: any,
+          args: any,
+          req: any,
+          gqlInfo: any,
+        ) => root[deleteResolverKey](args, req, gqlInfo)
       }
       const whereTypeFields: string[] = []
       for (const f of meta.fields) {
@@ -615,8 +680,9 @@ Select a dedicated page.`,
             break
         }
         const ref = entities.find((i: any) => i.entityType === f.valueType)
-        currentType.query.resultProcessors.push(r => {
-          r[nodeIdKey] = () => getMetaType(meta) + ':' + meta.idMetadata.getId(r)
+        currentType.query.resultProcessors.push((r) => {
+          r[nodeIdKey] = () =>
+            getMetaType(meta) + ':' + meta.idMetadata.getId(r)
         })
         if (ref !== undefined) {
           // will do: Task.category
@@ -626,7 +692,7 @@ Select a dedicated page.`,
             comment: f.caption,
           })
           const refKey = ref.key
-          currentType.query.resultProcessors.push(r => {
+          currentType.query.resultProcessors.push((r) => {
             const val = r[f.key]
             if (val === null || val === undefined) return null
             r[f.key] = async (args: any, req: any, gqlInfo: any) => {
@@ -656,7 +722,7 @@ Select a dedicated page.`,
             comment: `List all \`${getMetaType(meta)}\` of \`${refKey}\``,
           })
 
-          refT.query.resultProcessors.push(r => {
+          refT.query.resultProcessors.push((r) => {
             const val = r.id
             r[key] = async (args: any, req: any, gqlInfo: any) => {
               return await root[key](
@@ -678,14 +744,17 @@ Select a dedicated page.`,
         }
 
         // sorting
-        if (!f.isServerExpression) orderByFields.push(`${f.key}: OrderByDirection`)
+        if (!f.isServerExpression)
+          orderByFields.push(`${f.key}: OrderByDirection`)
 
         // helper
         const it_is_not_at_ref = ref === undefined
 
         // where
         if (it_is_not_at_ref && !f.isServerExpression) {
-          whereTypeFields.push(`${f.key}: Where${type}${f.allowNull ? 'Nullable' : ''}`)
+          whereTypeFields.push(
+            `${f.key}: Where${type}${f.allowNull ? 'Nullable' : ''}`,
+          )
         }
 
         const includeInUpdateOrInsert = f.options.allowApiUpdate !== false
@@ -742,8 +811,12 @@ Select a dedicated page.`,
     pageInfo.fields.push({ key: 'hasPreviousPage', value: 'Boolean!' })
     pageInfo.fields.push({ key: 'startCursor', value: 'String!' })
   }
-  resolversQuery[nodeKey] = (origItem: any, args: any, req: any, gqlInfo: any) =>
-    root[nodeKey](args, req, gqlInfo)
+  resolversQuery[nodeKey] = (
+    origItem: any,
+    args: any,
+    req: any,
+    gqlInfo: any,
+  ) => root[nodeKey](args, req, gqlInfo)
   root[nodeKey] = async (args: any, req: any, gqlInfo: any) => {
     const nodeId = args.nodeId
     const sp = nodeId.split(':')
@@ -775,7 +848,11 @@ Select a dedicated page.`,
   nodeInterface.comment = `Node interface of remult entities (eg: nodeId: \`Task:1\` so \`__typename:id\`)`
   nodeInterface.fields.push(argNodeId)
 
-  upsertUnion(argErrorDetail.value, ['ValidationError', 'ForbiddenError', 'NotFoundError'], 32)
+  upsertUnion(
+    argErrorDetail.value,
+    ['ValidationError', 'ForbiddenError', 'NotFoundError'],
+    32,
+  )
 
   const errorInterface = upsertTypes('Error', 'interface', 33)
   errorInterface.comment = `Error interface of remult entities`
@@ -784,7 +861,11 @@ Select a dedicated page.`,
     value: 'String!',
   })
 
-  const validationErrorInterface = upsertTypes('ValidationError', 'type_impl_error', 34)
+  const validationErrorInterface = upsertTypes(
+    'ValidationError',
+    'type_impl_error',
+    34,
+  )
   validationErrorInterface.comment = `Validation Error`
   validationErrorInterface.fields.push({
     key: 'message',
@@ -795,7 +876,11 @@ Select a dedicated page.`,
     value: '[ValidationErrorModelState!]!',
   })
 
-  const validationErrorModelStateInterface = upsertTypes('ValidationErrorModelState', 'type', 34)
+  const validationErrorModelStateInterface = upsertTypes(
+    'ValidationErrorModelState',
+    'type',
+    34,
+  )
   validationErrorModelStateInterface.comment = `Validation Error Model State`
   validationErrorModelStateInterface.fields.push({
     key: 'field',
@@ -807,14 +892,22 @@ Select a dedicated page.`,
   })
 
   // progress: () => { },
-  const forbiddenErrorInterface = upsertTypes('ForbiddenError', 'type_impl_error', 34)
+  const forbiddenErrorInterface = upsertTypes(
+    'ForbiddenError',
+    'type_impl_error',
+    34,
+  )
   forbiddenErrorInterface.comment = `Forbidden Error`
   forbiddenErrorInterface.fields.push({
     key: 'message',
     value: 'String!',
   })
 
-  const notFoundErrorInterface = upsertTypes('NotFoundError', 'type_impl_error', 34)
+  const notFoundErrorInterface = upsertTypes(
+    'NotFoundError',
+    'type_impl_error',
+    34,
+  )
   notFoundErrorInterface.comment = `Not Found Error`
   notFoundErrorInterface.fields.push({
     key: 'message',
@@ -837,20 +930,27 @@ Select a dedicated page.`,
           prefix = `type ${key} implements Error`
         }
 
-        const type = kind === 'union' ?
-          `union ${key} = ${fields.map(field => field.key).join(' | ')}` :
-          blockFormat({
-            prefix,
-            data: fields
-              .sort((a, b) => (a.order ? a.order : 0) - (b.order ? b.order : 0))
-              .map(field => fieldFormat(field)),
-            comment: comment ?? `The ${kind} for \`${key}\``,
-          })
+        const type =
+          kind === 'union'
+            ? `union ${key} = ${fields.map((field) => field.key).join(' | ')}`
+            : blockFormat({
+                prefix,
+                data: fields
+                  .sort(
+                    (a, b) => (a.order ? a.order : 0) - (b.order ? b.order : 0),
+                  )
+                  .map((field) => fieldFormat(field)),
+                comment: comment ?? `The ${kind} for \`${key}\``,
+              })
 
-        const orderByStr = orderBy.length > 0 ? `\n\n${orderBy.join('\n\n')}` : ``
-        const whereTypeStr = whereType.length > 0 ? `\n\n${whereType.join('\n\n')}` : ``
+        const orderByStr =
+          orderBy.length > 0 ? `\n\n${orderBy.join('\n\n')}` : ``
+        const whereTypeStr =
+          whereType.length > 0 ? `\n\n${whereType.join('\n\n')}` : ``
         const whereTypeSubFieldsStr =
-          whereTypeSubFields.length > 0 ? `\n\n${whereTypeSubFields.join('\n\n')}` : ``
+          whereTypeSubFields.length > 0
+            ? `\n\n${whereTypeSubFields.join('\n\n')}`
+            : ``
         return `${type}${orderByStr}${whereTypeStr}${whereTypeSubFieldsStr}`
       })
       .join(`\n\n`)}
@@ -899,7 +999,7 @@ ${obj.comment}
 function argsFormat(args?: Arg[]) {
   if (args) {
     return `(${args
-      .map(arg => {
+      .map((arg) => {
         let strComment = `
     """
     ${arg.comment}
@@ -931,7 +1031,9 @@ function fieldFormat(field: Field) {
     strComment = ``
   }
 
-  let key_value = `${field.key}${field.args ? `${argsFormat(field.args)}` : ``}: ${field.value}`
+  let key_value = `${field.key}${
+    field.args ? `${argsFormat(field.args)}` : ``
+  }: ${field.value}`
   // It's an enum
   if (typeof field.value === 'object') {
     key_value = `${field.key}`
@@ -963,7 +1065,7 @@ function bridgeQueryOptionsToDataApiGet(arg1: any) {
     if (orderBy) {
       if (key === '_sort') {
         const sort_keys: string[] = []
-        Object.keys(orderBy).forEach(sort_key => {
+        Object.keys(orderBy).forEach((sort_key) => {
           sort_keys.push(sort_key)
         })
         if (sort_keys.length > 0) {
@@ -971,7 +1073,7 @@ function bridgeQueryOptionsToDataApiGet(arg1: any) {
         }
       } else if (key === '_order') {
         const sort_directions: string[] = []
-        Object.keys(orderBy).forEach(sort_key => {
+        Object.keys(orderBy).forEach((sort_key) => {
           const direction = orderBy[sort_key].toLowerCase()
           sort_directions.push(direction)
         })
@@ -983,7 +1085,10 @@ function bridgeQueryOptionsToDataApiGet(arg1: any) {
   }
 }
 //@internal
-export function translateWhereToRestBody<T>(fields: FieldsMetadata<T>, { where }: { where: any }) {
+export function translateWhereToRestBody<T>(
+  fields: FieldsMetadata<T>,
+  { where }: { where: any },
+) {
   if (!where) return undefined
   const result: any = {}
   for (const field of fields) {
@@ -996,16 +1101,16 @@ export function translateWhereToRestBody<T>(fields: FieldsMetadata<T>, { where }
       }
 
       for (const op of ['gt', 'gte', 'lt', 'lte', 'ne', 'in']) {
-        tr(op, val => (result[field.key + '.' + op] = val))
+        tr(op, (val) => (result[field.key + '.' + op] = val))
       }
-      tr('nin', x => (result[field.key + '.ne'] = x))
-      tr('eq', x => (result[field.key] = x))
+      tr('nin', (x) => (result[field.key + '.ne'] = x))
+      tr('eq', (x) => (result[field.key] = x))
     }
   }
   if (where.OR) {
-    result.OR = where.OR.map((where: any) => translateWhereToRestBody(fields, { where }))
+    result.OR = where.OR.map((where: any) =>
+      translateWhereToRestBody(fields, { where }),
+    )
   }
   return result
 }
-
-

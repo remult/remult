@@ -1,6 +1,6 @@
-import { Storage, DataProvider } from "../src/data-interfaces";
-import { LiveQueryStorage, StoredQuery } from "../src/live-query/SubscriptionServer";
-import { EntityBase, Repository } from "../src/remult3";
+import { Storage, DataProvider } from '../src/data-interfaces';
+import { LiveQueryStorage, StoredQuery } from '../src/live-query/SubscriptionServer';
+import { EntityBase, Repository } from '../src/remult3';
 export declare class DataProviderLiveQueryStorage implements LiveQueryStorage, Storage {
     repo: Promise<Repository<LiveQueryStorageEntity>>;
     dataProvider: Promise<DataProvider>;

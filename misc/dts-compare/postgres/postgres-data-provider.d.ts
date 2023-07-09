@@ -26,11 +26,11 @@ export interface PostgresCommandSource {
 export declare function createPostgresConnection(options?: {
     connectionString?: string;
     sslInDev?: boolean;
-    configuration?: "heroku" | PoolConfig;
+    configuration?: 'heroku' | PoolConfig;
 }): Promise<SqlDatabase>;
 export declare function createPostgresDataProvider(options?: {
     connectionString?: string;
     sslInDev?: boolean;
-    configuration?: "heroku" | PoolConfig;
+    configuration?: 'heroku' | PoolConfig;
 }): Promise<SqlDatabase>;
 export declare function preparePostgresQueueStorage(sql: SqlDatabase): Promise<import("../server/expressBridge").EntityQueueStorage>;

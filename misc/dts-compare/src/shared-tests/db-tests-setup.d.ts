@@ -1,9 +1,9 @@
-import { ClassType } from "../../classType";
-import { Remult } from "../context";
-import { DataProvider } from "../data-interfaces";
-import { Repository } from "../remult3";
-import { CategoriesForTesting } from "../tests/remult-3-entities";
-import { Status } from "../tests/testModel/models";
+import { ClassType } from '../../classType';
+import { Remult } from '../context';
+import { DataProvider } from '../data-interfaces';
+import { Repository } from '../remult3';
+import { CategoriesForTesting } from '../tests/remult-3-entities';
+import { Status } from '../tests/testModel/models';
 export declare function itWithFocus(key: string, what: () => Promise<void>, focus?: boolean): void;
 export declare function testAll(key: string, what: dbTestWhatSignature, focus?: boolean, options?: {
     exclude?: string[];
@@ -15,11 +15,11 @@ export declare const TestDbs: {
     mongo: string;
     inMemory: string;
 };
-export declare type dbTestWhatSignature = ((db: {
+export declare type dbTestWhatSignature = (db: {
     db: DataProvider;
     remult: Remult;
     createEntity<entityType>(entity: ClassType<entityType>): Promise<Repository<entityType>>;
-}) => Promise<void>);
+}) => Promise<void>;
 export declare type dbTestMethodSignature = ((key: string, what: dbTestWhatSignature, focus: boolean) => void) & {
     key?: string;
 };

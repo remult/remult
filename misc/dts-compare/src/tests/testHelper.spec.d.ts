@@ -1,9 +1,9 @@
 import './frontend-database-tests-setup.spec';
-import { Remult } from "../context";
-import { DataApi } from "../data-api";
-import { DataProvider, EntityDataProvider } from "../data-interfaces";
-import { InMemoryDataProvider } from "../data-providers/in-memory-database";
-import { EntityMetadata } from "../remult3";
+import { Remult } from '../context';
+import { DataApi } from '../data-api';
+import { DataProvider, EntityDataProvider } from '../data-interfaces';
+import { InMemoryDataProvider } from '../data-providers/in-memory-database';
+import { EntityMetadata } from '../remult3';
 export declare function itForEach<T>(name: string, arrayOfT: T[], runAsync: (item: T) => Promise<any>): void;
 export declare function fitForEach<T>(name: string, arrayOfT: T[], runAsync: (item: T) => Promise<any>): void;
 export declare function testAsIfOnBackend(what: () => Promise<any>): Promise<void>;
@@ -33,4 +33,4 @@ export declare class MockRestDataProvider implements DataProvider {
     transaction(action: (dataProvider: DataProvider) => Promise<void>): Promise<void>;
     isProxy: boolean;
 }
-export declare function createMockHttpDataProvider(dataApi: DataApi<any>): import("../data-interfaces").RestDataProviderHttpProvider;
+export declare function createMockHttpDataProvider(dataApi: DataApi<any>): import('../data-interfaces').RestDataProviderHttpProvider;
