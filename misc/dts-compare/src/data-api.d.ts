@@ -36,4 +36,3 @@ export interface DataApiRequest {
 }
 export declare function determineSort(sortUrlParm: string, dirUrlParam: string): any;
 export declare function serializeError(data: ErrorInfo): ErrorInfo<any>;
-export declare function getLiveQueryChannel(queryId: string, userId: string): string;

@@ -4,7 +4,7 @@ import express, { application } from "express";
 import { remultExpress } from '../../../../core/remult-express'
 import { Category, Task, TasksController, TasksControllerDecorated } from "../products-test/products.component";
 import { Entity, Fields, JsonDataProvider, Remult, SqlDatabase, describeClass, remult } from '../../../../core';
-import { JsonFileDataProvider } from '../../../../core/server';
+import { DataProviderLiveQueryStorage, JsonFileDataProvider } from '../../../../core/server';
 import { JobsInQueueEntity } from '../../../../core/server/expressBridge';
 import { EntityQueueStorage } from '../../../../core/server/expressBridge';
 import { remultGraphql } from '../../../../core/graphql'
@@ -36,27 +36,14 @@ export const api = remultExpress({
     entities: [Task, Category],
     controllers: [TasksController, TasksControllerDecorated],
     queueStorage: new EntityQueueStorage(r.repo(JobsInQueueEntity)),
+    liveQueryStorage: new DataProviderLiveQueryStorage(r.dataProvider),
     //@ts-ignore
     getUser: ({ session }) => {
-        return undefined;
+        return { id: "1" };
     },
-    dataProvider: createPostgresDataProvider(),
+    //  dataProvider: createPostgresDataProvider(),
     initApi: async () => {
-        const e = class {
 
-            a = 0;
-            items: string[] = []
-        }
-        describeClass(e, Entity("testJsonFieldType2", { allowApiCrud: true }), {
-            a: Fields.number(),
-            items: Fields.json()
-        })
-        await remult.repo(e).insert({a:3,items:["a","b"]})
-
-        console.log(await remult.repo(e).findId(3))
-
-        const db = SqlDatabase.getDb(remult);
-        //db.execute("insert into testJsonFieldType2 ()")
     }
 })
 app.use(api)

@@ -5,7 +5,7 @@ import type { FindOptions, Repository, EntityRef, rowHelperImplementation, Entit
 import type { ErrorInfo } from './data-interfaces';
 import { ForbiddenError } from './server-action';
 import { findOptionsToJson, liveQueryAction } from './data-providers/rest-data-provider';
-import type  { QueryData } from './live-query/SubscriptionServer';
+import type { QueryData } from './live-query/SubscriptionServer';
 
 
 export class DataApi<T = any> {
@@ -15,7 +15,7 @@ export class DataApi<T = any> {
   httpGet(res: DataApiResponse, req: DataApiRequest, serializeContext: () => Promise<any>) {
     const action = req?.get("__action");
     if (action?.startsWith(liveQueryAction))
-      return this.liveQuery(res, req, undefined, serializeContext, getLiveQueryChannel(action.substring(liveQueryAction.length), this.remult.user?.id));
+      return this.liveQuery(res, req, undefined, serializeContext, action.substring(liveQueryAction.length));
     switch (action) {
       case "get":
       case "count":
@@ -27,14 +27,14 @@ export class DataApi<T = any> {
   async httpPost(res: DataApiResponse, req: DataApiRequest, body: any, serializeContext: () => Promise<any>) {
     const action = req?.get("__action");
     if (action?.startsWith(liveQueryAction))
-      return this.liveQuery(res, req, undefined, serializeContext, getLiveQueryChannel(action.substring(liveQueryAction.length), this.remult.user?.id));
+      return this.liveQuery(res, req, undefined, serializeContext, action.substring(liveQueryAction.length));
     switch (action) {
       case "get":
         return this.getArray(res, req, body);
       case "count":
         return this.count(res, req, body);
       case "endLiveQuery":
-        await this.remult.liveQueryStorage.remove(getLiveQueryChannel(body.id, this.remult.user?.id));
+        await this.remult.liveQueryStorage.remove(body.id);
         res.success("ok");
         return;
       default:
@@ -323,9 +323,4 @@ export function serializeError(data: ErrorInfo) {
   if (typeof x === 'string')
     data = { message: x };
   return data;
-}
-
-
-export function getLiveQueryChannel(queryId: string, userId: string) {
-  return `users:${userId}:queries:${queryId}`
 }
