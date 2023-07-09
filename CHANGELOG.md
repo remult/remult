@@ -21,6 +21,7 @@ All notable changes to this project will be documented in this file.
     At this time we recommend using `experimentalDecorator:false` for development, to get the typing, but `experimentalDecorator:true` for deploying and functionality.
 - Added 404 on missing route for next app router - issue #211
 - Fixed an issue where live query would not unsubscribe automatically to a query that failed to fetch.
+- Graphql Mutations now display validation errors in the graphql way
 
 ## [0.21.1] - 2023-06-25
 
