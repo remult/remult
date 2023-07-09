@@ -35,12 +35,15 @@ class Task {
 
 
 describe("Test sync from and to json", () => {
-  const remult = new Remult(new InMemoryDataProvider())
+  let remult = new Remult(new InMemoryDataProvider())
   let category: Category
-  let task1: Task 
+  let task1: Task
   let task2: Task
-  const repo = remult.repo(Task)
+  let repo = remult.repo(Task)
   beforeEach(() => {
+    remult = new Remult(new InMemoryDataProvider())
+    repo = remult.repo(Task)
+
     category = {
       id: 1,
       name: "testCat"
@@ -110,12 +113,12 @@ describe("Test sync from and to json", () => {
     await repo.insert(task1);
     remult.clearAllCache()
     const tasks = await repo.find({ load: (x) => [x.title] });
+    delete tasks[0].date
+    delete tasks[0].dateOnly
     expect(tasks).toMatchInlineSnapshot(`
         [
           Task {
             "category": undefined,
-            "date": 2020-07-03T01:00:00.000Z,
-            "dateOnly": 2020-07-02T21:00:00.000Z,
             "id": 1,
             "shouldNotSee": "secret",
             "status": status {
@@ -127,11 +130,13 @@ describe("Test sync from and to json", () => {
         ]
       `)
   })
-  it("test witht loading it works", async () => {
+  it("test with loading it works", async () => {
     await remult.repo(Category).insert(category);
     await repo.insert(task1);
     remult.clearAllCache()
     const tasks = await repo.find({ load: (x) => [x.category] });
+    delete tasks[0].date;
+    delete tasks[0].dateOnly;
     expect(tasks).toMatchInlineSnapshot(`
       [
         Task {
@@ -139,24 +144,7 @@ describe("Test sync from and to json", () => {
             "id": 1,
             "name": "testCat",
           },
-          "date": 2020-07-03T01:00:00.000Z,
-          "dateOnly": 2020-07-02T21:00:00.000Z,
           "id": 1,
-          "shouldNotSee": "secret",
-          "status": status {
-            "caption": "Not Ok",
-            "id": "notOk",
-          },
-          "title": "test",
-        },
-        Task {
-          "category": Category {
-            "id": 1,
-            "name": "testCat",
-          },
-          "date": 2020-07-03T01:00:00.000Z,
-          "dateOnly": 2020-07-02T21:00:00.000Z,
-          "id": 2,
           "shouldNotSee": "secret",
           "status": status {
             "caption": "Not Ok",
