@@ -1,4 +1,4 @@
-import { Entity, Field, Fields, InMemoryDataProvider, Remult, ValueListFieldType } from "../core";
+import { Entity, Field, Fields, InMemoryDataProvider, Remult, ValueListFieldType, describeClass } from "../core";
 
 @ValueListFieldType()
 class status {
@@ -183,6 +183,58 @@ describe("Test sync from and to json", () => {
     expect(r.length).toBe(2)
     const rr = repo.fromJson(r);
     expect(rr.length).toBe(2)
+  })
+  it("works with lazy", async () => {
+    const cat = await remult.repo(Category).insert(category);
+    const c = class {
+      id = '';
+      name = '';
+      cat?: Category;
+    }
+    describeClass(c, Entity("cc",), {
+      id: Fields.string(),
+      name: Fields.string(),
+      cat: Field(() => Category, { lazy: true })
+    })
+    const repo = remult.repo(c);
+    await repo.insert({id:'1',name:'11',cat:category});
+    remult.clearAllCache();
+    expect(repo.toJson(await repo.find())).toMatchInlineSnapshot(`
+      [
+        {
+          "cat": undefined,
+          "id": "1",
+          "name": "11",
+        },
+      ]
+    `)
+
+  })
+  it("works with lazy two", async () => {
+    const cat = await remult.repo(Category).insert(category);
+    const c = class {
+      id = '';
+      name = '';
+      cat?: Category;
+    }
+    describeClass(c, Entity("cc",), {
+      id: Fields.string(),
+      name: Fields.string(),
+      cat: Field(() => Category, { lazy: true })
+    })
+    const repo = remult.repo(c);
+    await repo.insert({id:'1',name:'11',cat:category});
+    remult.clearAllCache();
+    expect(await repo.toJson(repo.find())).toMatchInlineSnapshot(`
+      [
+        {
+          "cat": undefined,
+          "id": "1",
+          "name": "11",
+        },
+      ]
+    `)
+
   })
 
 })

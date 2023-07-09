@@ -387,17 +387,21 @@ export class RepositoryImplementation<entityType> implements Repository<entityTy
         return x;
     }
 
-    toJson(item: entityType | entityType[]) {
+    toJson(item: entityType | entityType[] | Promise<entityType> | Promise<entityType[]>) {
+        if (item === undefined || item === null)
+            return item;
         if (Array.isArray(item))
             return item.map(x => this.toJson(x))
-        return (this.getEntityRef(item) as rowHelperImplementation<entityType>).toApiJson(true);
+        if (typeof (item as Promise<any>).then === "function")
+            return (item as Promise<any>).then(x => this.toJson(x));
+        return (this.getEntityRef(item as entityType) as rowHelperImplementation<entityType>).toApiJson(true);
     }
 
     fromJson(json: any, newRow?: boolean) {
         if (json === null || json === undefined)
             return json;
         if (Array.isArray(json))
-            return json.map(item => this.fromJson(item))
+            return json.map(item => this.fromJson(item, newRow))
         let result = new this.entity(this.remult);
         for (const col of this.fieldsOf(json)) {
             let ei = getEntitySettings(col.valueType, false);
