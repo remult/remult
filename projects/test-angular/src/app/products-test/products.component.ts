@@ -24,13 +24,15 @@ import { HttpClient } from '@angular/common/http';
 export class ProductsComponent {
   constructor(private remult: Remult, private zone: NgZone, private http: HttpClient) {
 
-
+    remult.apiClient.wrapMessageHandling=x=>zone.run(()=>x())
   }
 
   tasks: Task[] = [];
+  stop:VoidFunction;
 
   async ngOnInit() {
-    remult.repo(Task).liveQuery({
+    //remult.user = {id:"1"}
+    this.stop = remult.repo(Task).liveQuery({
       load: () => []
     }).subscribe(info => this.tasks = info.applyChanges(this.tasks))
 

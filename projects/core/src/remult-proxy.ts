@@ -84,7 +84,8 @@ export class RemultProxy implements Remult {
             find: (...args2) => self.remultFactory().repo(...args).find(...args2),
             findFirst: (...args2) => self.remultFactory().repo(...args).findFirst(...args2),
             findId: (a, b) => self.remultFactory().repo(...args).findId(a as any, b),
-            toJson: (json) => self.remultFactory().repo(...args).toJson(json),
+            //@ts-ignore
+            toJson: (json:any) => self.remultFactory().repo(...args).toJson(json),
             fromJson: (item, isNew) => self.remultFactory().repo(...args).fromJson(item, isNew),
             getEntityRef: (...args2) => self.remultFactory().repo(...args).getEntityRef(...args2),
             insert: (args2) => self.remultFactory().repo(...args).insert(args2),

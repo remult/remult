@@ -1,4 +1,4 @@
-import { Entity, Field, Fields, InMemoryDataProvider, Remult, ValueListFieldType } from "../core";
+import { Entity, Field, Fields, InMemoryDataProvider, Remult, ValueListFieldType, describeClass } from "../core";
 
 @ValueListFieldType()
 class status {
@@ -35,30 +35,38 @@ class Task {
 
 
 describe("Test sync from and to json", () => {
-  const remult = new Remult(new InMemoryDataProvider())
-  const category: Category = {
-    id: 1,
-    name: "testCat"
-  };
-  const task1: Task = {
-    id: 1,
-    title: "test",
-    date: new Date("2020-07-03T01:00:00.000Z"),
-    dateOnly: new Date("2020-07-03T01:00:00.000Z"),
-    shouldNotSee: 'secret',
-    status: status.notOk,
-    category: category
-  }
-  const task2: Task = {
-    id: 2,
-    title: "test2",
-    date: new Date("2022-07-03T01:00:00.000Z"),
-    dateOnly: new Date("2022-07-03T01:00:00.000Z"),
-    shouldNotSee: 'secret',
-    status: status.ok,
-    category: category
-  }
-  const repo = remult.repo(Task)
+  let remult = new Remult(new InMemoryDataProvider())
+  let category: Category
+  let task1: Task
+  let task2: Task
+  let repo = remult.repo(Task)
+  beforeEach(() => {
+    remult = new Remult(new InMemoryDataProvider())
+    repo = remult.repo(Task)
+
+    category = {
+      id: 1,
+      name: "testCat"
+    };
+    task1 = {
+      id: 1,
+      title: "test",
+      date: new Date("2020-07-03T01:00:00.000Z"),
+      dateOnly: new Date("2020-07-03T01:00:00.000Z"),
+      shouldNotSee: 'secret',
+      status: status.notOk,
+      category: category
+    }
+    task2 = {
+      id: 2,
+      title: "test2",
+      date: new Date("2022-07-03T01:00:00.000Z"),
+      dateOnly: new Date("2022-07-03T01:00:00.000Z"),
+      shouldNotSee: 'secret',
+      status: status.ok,
+      category: category
+    }
+  })
 
   it("test that it works", () => {
     let theJson = repo.toJson(task1);
@@ -100,6 +108,53 @@ describe("Test sync from and to json", () => {
       }
     `);
   })
+  it("test without loading it works", async () => {
+    await remult.repo(Category).insert(category);
+    await repo.insert(task1);
+    remult.clearAllCache()
+    const tasks = await repo.find({ load: (x) => [x.title] });
+    delete tasks[0].date
+    delete tasks[0].dateOnly
+    expect(tasks).toMatchInlineSnapshot(`
+        [
+          Task {
+            "category": undefined,
+            "id": 1,
+            "shouldNotSee": "secret",
+            "status": status {
+              "caption": "Not Ok",
+              "id": "notOk",
+            },
+            "title": "test",
+          },
+        ]
+      `)
+  })
+  it("test with loading it works", async () => {
+    await remult.repo(Category).insert(category);
+    await repo.insert(task1);
+    remult.clearAllCache()
+    const tasks = await repo.find({ load: (x) => [x.category] });
+    delete tasks[0].date;
+    delete tasks[0].dateOnly;
+    expect(tasks).toMatchInlineSnapshot(`
+      [
+        Task {
+          "category": Category {
+            "id": 1,
+            "name": "testCat",
+          },
+          "id": 1,
+          "shouldNotSee": "secret",
+          "status": status {
+            "caption": "Not Ok",
+            "id": "notOk",
+          },
+          "title": "test",
+        },
+      ]
+    `)
+  })
   it("test category", () => {
     const t = { ...task1 };
     const ref = repo.getEntityRef(t);
@@ -123,11 +178,63 @@ describe("Test sync from and to json", () => {
       }
     `)
   })
-  it("works with array",()=>{
-    const r = repo.toJson([task1,task2])
-    expect (r.length).toBe(2)
+  it("works with array", () => {
+    const r = repo.toJson([task1, task2])
+    expect(r.length).toBe(2)
     const rr = repo.fromJson(r);
-    expect (rr.length).toBe(2)
+    expect(rr.length).toBe(2)
+  })
+  it("works with lazy", async () => {
+    const cat = await remult.repo(Category).insert(category);
+    const c = class {
+      id = '';
+      name = '';
+      cat?: Category;
+    }
+    describeClass(c, Entity("cc",), {
+      id: Fields.string(),
+      name: Fields.string(),
+      cat: Field(() => Category, { lazy: true })
+    })
+    const repo = remult.repo(c);
+    await repo.insert({id:'1',name:'11',cat:category});
+    remult.clearAllCache();
+    expect(repo.toJson(await repo.find())).toMatchInlineSnapshot(`
+      [
+        {
+          "cat": undefined,
+          "id": "1",
+          "name": "11",
+        },
+      ]
+    `)
+
+  })
+  it("works with lazy two", async () => {
+    const cat = await remult.repo(Category).insert(category);
+    const c = class {
+      id = '';
+      name = '';
+      cat?: Category;
+    }
+    describeClass(c, Entity("cc",), {
+      id: Fields.string(),
+      name: Fields.string(),
+      cat: Field(() => Category, { lazy: true })
+    })
+    const repo = remult.repo(c);
+    await repo.insert({id:'1',name:'11',cat:category});
+    remult.clearAllCache();
+    expect(await repo.toJson(repo.find())).toMatchInlineSnapshot(`
+      [
+        {
+          "cat": undefined,
+          "id": "1",
+          "name": "11",
+        },
+      ]
+    `)
+
   })
 
 })

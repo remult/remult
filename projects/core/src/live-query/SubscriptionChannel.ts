@@ -1,7 +1,6 @@
 import { FindOptions, remult as defaultRemult, Remult, Sort } from '../../index';
 import type { LiveQueryChangeInfo, RepositoryImplementation } from '../remult3';
 import { v4 as uuid } from 'uuid'
-import { getLiveQueryChannel } from '../data-api';
 
 export const streamUrl = 'stream';
 //@internal
@@ -98,7 +97,8 @@ export class LiveQuerySubscriber<entityType> {
     listeners: SubscriptionListener<LiveQueryChangeInfo<entityType>>[] = [];
     id = uuid()
     constructor(private repo: RepositoryImplementation<entityType>, private query: SubscribeToQueryArgs<entityType>, userId: string) {
-        this.queryChannel = getLiveQueryChannel(this.id, userId);
+        this.queryChannel = `users:${userId}:queries:${this.id}`;
+        this.id = this.queryChannel;
     }
 
 }

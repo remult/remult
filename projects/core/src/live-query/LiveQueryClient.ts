@@ -4,7 +4,6 @@ import type { LiveQueryChangeInfo, RepositoryImplementation } from '../remult3';
 import { buildRestDataProvider } from "../buildRestDataProvider";
 import { LiveQuerySubscriber, SubscriptionClient, SubscribeResult, SubscriptionClientConnection, liveQueryKeepAliveRoute, Unsubscribe, SubscriptionListener } from './SubscriptionChannel';
 import type { ApiClient } from '../../index';
-import { getLiveQueryChannel } from '../data-api';
 /* @internal*/
 export class LiveQueryClient {
     wrapMessageHandling(handleMessage) {
@@ -115,7 +114,7 @@ export class LiveQueryClient {
 
 
 
-                            this.runPromise(subscribe(q.id)
+                            this.runPromise(subscribe(q.queryChannel)
                                 .then(r => {
                                     if (q.listeners.length === 0) {
                                         r.unsubscribe();

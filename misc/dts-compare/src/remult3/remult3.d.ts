@@ -236,7 +236,9 @@ export interface Repository<entityType> {
     delete(item: Partial<OmitEB<entityType>>): Promise<void>;
     /** Creates an instance of an item. It'll not be saved to the data source unless `save` or `insert` will be called for that item */
     create(item?: Partial<OmitEB<entityType>>): entityType;
+    toJson(item: Promise<entityType[]>): Promise<any[]>;
     toJson(item: entityType[]): any[];
+    toJson(item: Promise<entityType>): Promise<any>;
     toJson(item: entityType): any;
     /** Translates a json object to an item instance */
     fromJson(x: any[], isNew?: boolean): entityType[];
