@@ -7,10 +7,11 @@ const v2ConnectionAndPagination = false
 const andImplementation = false
 
 type Enum = { Enum: true }
+type Union = { Union: true }
 
 type Arg = {
   key: string
-  value: Enum | string
+  value: Enum | Union | string
   comment?: string
 }
 
@@ -19,7 +20,7 @@ type Field = Arg & {
   order?: number
 }
 
-type Kind = 'type_impl_node' | 'type' | 'input' | 'enum' | 'interface'
+type Kind = 'type_impl_node' | 'type_impl_error' | 'type' | 'input' | 'enum' | 'interface' | 'union'
 
 type GraphQLType = {
   kind: Kind
@@ -108,6 +109,12 @@ export function remultGraphql(options: {
     return t
   }
 
+  function upsertUnion(key: string, values: string[], order?: number) {
+    const u = upsertTypes(key, 'union', order)
+    u.fields = values.map(value => { return { key: value, value: { Union: true } } })
+    return u
+  }
+
   // Where - GraphQL primitives
   for (const whereType of ['String', 'Int', 'Float', 'Boolean', 'ID']) {
     const currentWhere = upsertTypes(`Where${whereType}`, 'input', 20)
@@ -165,6 +172,7 @@ export function remultGraphql(options: {
     comment: `The globally unique \`ID\` _(_typename:id)_`,
   }
   const argClientMutationId = { key: 'clientMutationId', value: `String` }
+  const argErrorDetail = { key: 'error', value: `ErrorDetail` }
 
   for (const meta of entities) {
     const orderByFields: string[] = []
@@ -230,6 +238,62 @@ export function remultGraphql(options: {
           await work(dApi, response, setResult, arg1, meta)
         })
       }
+      const handleMutationWithErrors = (
+        work: (
+          dataApi: DataApi,
+          response: DataApiResponse,
+          setResult: (result: any) => void,
+          arg1: any,
+          meta: EntityMetadata,
+        ) => Promise<void>,
+      ) => {
+        return handleRequestWithDataApiContext(async (dApi, response, origSetResult, arg1: any, req: any) => {
+          const setResult = (item: any) => {
+            origSetResult({
+              clientMutationId: arg1.clientMutationId,
+              ...item
+            })
+          }
+          return work(dApi, {
+            ...response,
+            forbidden: () => {
+              setResult({
+
+                error: {
+                  __typename: 'ForbiddenError',
+                  message: "forbidden",
+                }
+              })
+            },
+            notFound: () => {
+              setResult({
+
+                error: {
+                  __typename: 'NotFoundError',
+                  message: "not found",
+                }
+              })
+            },
+            error: err => {
+              const modelState = []
+              if (err.modelState)
+                for (const key in err.modelState) {
+                  modelState.push({ field: key, message: err.modelState[key] })
+                }
+              setResult({
+                error: {
+                  __typename: 'ValidationError',
+                  message: err.message,
+                  modelState
+                }
+              })
+            },
+          }, setResult, arg1, req);
+        })
+
+
+      }
+
 
       const queryArgsConnection: Arg[] = [
         {
@@ -402,17 +466,16 @@ Select a dedicated page.`,
       }
 
       // Mutation
-
       const root_mutation = upsertTypes('Mutation', 'type', -9)
 
       const checkCanExist = (rule: any) => rule !== false && !(rule === undefined && (meta.options.allowApiCrud === false || meta.options.allowApiCrud === undefined))
 
-
       if (checkCanExist(meta.options.allowApiInsert)) {
         // create
+        const createResolverKey = `create${getMetaType(meta)}`
         const createInput = `Create${getMetaType(meta)}Input`
         const createPayload = `Create${getMetaType(meta)}Payload`
-        const createResolverKey = `create${getMetaType(meta)}`
+
         root_mutation.fields.push({
           key: createResolverKey,
           args: [{ key: 'input', value: `${createInput}!` }, argClientMutationId],
@@ -426,11 +489,13 @@ Select a dedicated page.`,
         currentType.mutation.create.payload.fields.push(
           {
             key: `${toCamelCase(getMetaType(meta))}`,
-            value: `${getMetaType(meta)}`,
+            value: getMetaType(meta),
           },
+          argErrorDetail,
           argClientMutationId,
         )
-        root[createResolverKey] = handleRequestWithDataApiContext(
+
+        root[createResolverKey] = handleMutationWithErrors(
           async (dApi, response, setResult, arg1: any, req: any) => {
             await dApi.post(
               {
@@ -470,9 +535,10 @@ Select a dedicated page.`,
             key: `${toCamelCase(getMetaType(meta))}`,
             value: `${getMetaType(meta)}`,
           },
+          argErrorDetail,
           argClientMutationId,
         )
-        root[updateResolverKey] = handleRequestWithDataApiContext(
+        root[updateResolverKey] = handleMutationWithErrors(
           async (dApi, response, setResult, arg1: any, req: any) => {
             await dApi.put(
               {
@@ -510,9 +576,10 @@ Select a dedicated page.`,
             key: deletedResultKey,
             value: 'ID',
           },
+          argErrorDetail,
           argClientMutationId,
         )
-        root[deleteResolverKey] = handleRequestWithDataApiContext(
+        root[deleteResolverKey] = handleMutationWithErrors(
           async (dApi, response, setResult, arg1: any, req: any) => {
             await dApi.delete(
               {
@@ -708,6 +775,52 @@ Select a dedicated page.`,
   nodeInterface.comment = `Node interface of remult entities (eg: nodeId: \`Task:1\` so \`__typename:id\`)`
   nodeInterface.fields.push(argNodeId)
 
+  upsertUnion(argErrorDetail.value, ['ValidationError', 'ForbiddenError', 'NotFoundError'], 32)
+
+  const errorInterface = upsertTypes('Error', 'interface', 33)
+  errorInterface.comment = `Error interface of remult entities`
+  errorInterface.fields.push({
+    key: 'message',
+    value: 'String!',
+  })
+
+  const validationErrorInterface = upsertTypes('ValidationError', 'type_impl_error', 34)
+  validationErrorInterface.comment = `Validation Error`
+  validationErrorInterface.fields.push({
+    key: 'message',
+    value: 'String!',
+  })
+  validationErrorInterface.fields.push({
+    key: 'modelState',
+    value: '[ValidationErrorModelState!]!',
+  })
+
+  const validationErrorModelStateInterface = upsertTypes('ValidationErrorModelState', 'type', 34)
+  validationErrorModelStateInterface.comment = `Validation Error Model State`
+  validationErrorModelStateInterface.fields.push({
+    key: 'field',
+    value: 'String!',
+  })
+  validationErrorModelStateInterface.fields.push({
+    key: 'message',
+    value: 'String!',
+  })
+
+  // progress: () => { },
+  const forbiddenErrorInterface = upsertTypes('ForbiddenError', 'type_impl_error', 34)
+  forbiddenErrorInterface.comment = `Forbidden Error`
+  forbiddenErrorInterface.fields.push({
+    key: 'message',
+    value: 'String!',
+  })
+
+  const notFoundErrorInterface = upsertTypes('NotFoundError', 'type_impl_error', 34)
+  notFoundErrorInterface.comment = `Not Found Error`
+  notFoundErrorInterface.fields.push({
+    key: 'message',
+    value: 'String!',
+  })
+
   return {
     resolvers,
     rootValue: root,
@@ -720,14 +833,19 @@ Select a dedicated page.`,
         if (kind === 'type_impl_node') {
           prefix = `type ${key} implements Node`
         }
+        if (kind === 'type_impl_error') {
+          prefix = `type ${key} implements Error`
+        }
 
-        const type = blockFormat({
-          prefix,
-          data: fields
-            .sort((a, b) => (a.order ? a.order : 0) - (b.order ? b.order : 0))
-            .map(field => fieldFormat(field)),
-          comment: comment ?? `The ${kind} for \`${key}\``,
-        })
+        const type = kind === 'union' ?
+          `union ${key} = ${fields.map(field => field.key).join(' | ')}` :
+          blockFormat({
+            prefix,
+            data: fields
+              .sort((a, b) => (a.order ? a.order : 0) - (b.order ? b.order : 0))
+              .map(field => fieldFormat(field)),
+            comment: comment ?? `The ${kind} for \`${key}\``,
+          })
 
         const orderByStr = orderBy.length > 0 ? `\n\n${orderBy.join('\n\n')}` : ``
         const whereTypeStr = whereType.length > 0 ? `\n\n${whereType.join('\n\n')}` : ``

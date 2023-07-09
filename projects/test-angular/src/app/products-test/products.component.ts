@@ -63,7 +63,12 @@ export class Category {
 export class Task {
   @Fields.autoIncrement()
   id = 0
-  @Fields.string<Task>()
+  @Fields.string<Task>({
+    validate:task=>{
+      if (task.title.length<3)
+      throw Error("too short")
+    }
+  })
   title = ''
   @Fields.boolean()
   completed = false
