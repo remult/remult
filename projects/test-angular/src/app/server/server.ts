@@ -41,9 +41,9 @@ export const api = remultExpress({
     getUser: ({ session }) => {
         return { id: "1" };
     },
+
     //  dataProvider: createPostgresDataProvider(),
     initApi: async () => {
-
     }
 })
 app.use(api)
