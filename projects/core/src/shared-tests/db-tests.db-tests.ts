@@ -36,6 +36,7 @@ import {
 import { v4 as uuid } from 'uuid'
 import { testPostgresImplementation } from '../backend-tests/backend-database-test-setup.backend-spec'
 import { ValueConverters } from '../valueConverters'
+import { testRest } from '../tests/frontend-database-tests-setup.spec'
 
 testAll(
   'what',
@@ -762,6 +763,64 @@ testAll(
   },
   false,
 )
+testAll(
+  'filter 2_1',
+  async ({ createEntity }) => {
+    const s = await createEntity(testFilter)
+    await s.insert({ id: 1, a: 'a', b: 'b', c: 'c' })
+    expect(
+      await s.count({
+        $and: [{ a: { '!=': 'b' } }, { a: { '!=': 'c' } }],
+      }),
+    ).toBe(1)
+  },
+  false,
+)
+testAll(
+  'filter 2',
+  async ({ createEntity }) => {
+    const s = await createEntity(testFilter)
+    await s.insert({ id: 1, a: 'a', b: 'b', c: 'c' })
+    expect(
+      await s.count({
+        $and: [testFilter.differentFrom('b'), testFilter.differentFrom('c')],
+      }),
+    ).toBe(1)
+  },
+  false,
+)
+testAll(
+  'filter 3',
+  async ({ createEntity }) => {
+    const s = await createEntity(testFilter)
+    await s.insert({ id: 1, a: 'a', b: 'b', c: 'c' })
+    expect(
+      await s.count({
+        $and: [
+          testFilter.differentFromArray(['x', 'b']),
+          testFilter.differentFromArray(['y', 'c']),
+        ],
+      }),
+    ).toBe(1)
+  },
+  false,
+)
+testAll(
+  'filter 4',
+  async ({ createEntity }) => {
+    const s = await createEntity(testFilter)
+    await s.insert({ id: 1, a: 'a', b: 'b', c: 'c' })
+    expect(
+      await s.count({
+        $and: [
+          testFilter.differentFromObj({ str: 'b' }),
+          testFilter.differentFromObj({ str: 'c' }),
+        ],
+      }),
+    ).toBe(1)
+  },
+  false,
+)
 
 testAll(
   'large string field',
@@ -791,6 +850,25 @@ class testFilter {
       },
     ],
   }))
+  static differentFrom = Filter.createCustom<testFilter, string>((str) => {
+    return {
+      a: { '!=': str },
+    }
+  })
+  static differentFromObj = Filter.createCustom<testFilter, { str: string }>(
+    ({ str }) => {
+      return {
+        a: { '!=': str },
+      }
+    },
+  )
+  static differentFromArray = Filter.createCustom<testFilter, string[]>(
+    (str) => {
+      return {
+        a: { '!=': str },
+      }
+    },
+  )
 }
 
 @Entity('teststringWithNull', { allowApiCrud: true })
@@ -1102,10 +1180,14 @@ testAll(
       id = 0
       name = ''
     }
-    describeClass(category, Entity('rel_ID_categories', { allowApiCrud: true }), {
-      id: Fields.autoIncrement(),
-      name: Fields.string(),
-    })
+    describeClass(
+      category,
+      Entity('rel_ID_categories', { allowApiCrud: true }),
+      {
+        id: Fields.autoIncrement(),
+        name: Fields.string(),
+      },
+    )
     const task = class {
       id = 0
       title = ''
@@ -1124,7 +1206,9 @@ testAll(
       { title: 't2', category: cat[0] },
       { title: 't3', category: cat[1] },
     ])
-    expect(taskRepo.fields.category!.valueConverter.fieldTypeInDb).toBe(ValueConverters.Integer.fieldTypeInDb)
+    expect(taskRepo.fields.category!.valueConverter.fieldTypeInDb).toBe(
+      ValueConverters.Integer.fieldTypeInDb,
+    )
     expect(await taskRepo.count({ category: cat[0] })).toBe(2)
     expect(await taskRepo.count({ category: cat[1] })).toBe(1)
     expect(await taskRepo.count({ category: { $id: cat[0].id } })).toBe(2)

@@ -184,7 +184,7 @@ function urlToReq(url: string) {
     get: (key) => {
       let r = args.get(key)
       if (r !== undefined) {
-        r.toString()
+        r
       }
       return r
     },
@@ -244,6 +244,7 @@ export function createMockHttpDataProvider(
       }
       return result
     },
+
     post: async (url, data) => {
       let r = new TestDataApiResponse()
       let result

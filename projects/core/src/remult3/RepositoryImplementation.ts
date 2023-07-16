@@ -40,7 +40,7 @@ import {
 } from '../context'
 import {
   AndFilter,
-  rawFilterInfo,
+  customFilterInfo,
   entityFilterToJson,
   Filter,
   FilterConsumer,
@@ -2549,7 +2549,7 @@ export function Entity<entityType>(
   ) => {
     for (const rawFilterMember in target) {
       if (Object.prototype.hasOwnProperty.call(target, rawFilterMember)) {
-        const element = target[rawFilterMember] as rawFilterInfo<any>
+        const element = target[rawFilterMember] as customFilterInfo<any>
         if (element?.rawFilterInfo?.rawFilterTranslator) {
           if (!element.rawFilterInfo.key)
             element.rawFilterInfo.key = rawFilterMember

@@ -33,21 +33,22 @@ export class Filter {
       r: Remult,
     ) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>,
     key?: string,
-  ): (() => EntityFilter<entityType>) & rawFilterInfo<entityType>
+  ): (() => EntityFilter<entityType>) & customFilterInfo<entityType>
   static createCustom<entityType, argsType>(
     rawFilterTranslator: (
       args: argsType,
       r: Remult,
     ) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>,
     key?: string,
-  ): ((y: argsType) => EntityFilter<entityType>) & rawFilterInfo<entityType>
+  ): ((y: argsType) => EntityFilter<entityType>) & customFilterInfo<entityType>
   static createCustom<entityType, argsType>(
     rawFilterTranslator: (
       args: argsType,
       r: Remult,
     ) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>,
     key = '',
-  ): ((y: argsType) => EntityFilter<entityType>) & rawFilterInfo<entityType> {
+  ): ((y: argsType) => EntityFilter<entityType>) &
+    customFilterInfo<entityType> {
     let rawFilterInfo = { key: key, rawFilterTranslator }
     return Object.assign(
       (x: any) => {
@@ -60,7 +61,8 @@ export class Filter {
         }
       },
       { rawFilterInfo },
-    ) as ((y: argsType) => EntityFilter<entityType>) & rawFilterInfo<entityType>
+    ) as ((y: argsType) => EntityFilter<entityType>) &
+      customFilterInfo<entityType>
   }
   static fromEntityFilter<T>(
     entity: EntityMetadata<T>,
@@ -183,7 +185,7 @@ export class Filter {
     let f = new customTranslator(async (filterKey, custom) => {
       let r: Filter[] = []
       for (const key in entity.entityType) {
-        const element = entity.entityType[key] as rawFilterInfo<any>
+        const element = entity.entityType[key] as customFilterInfo<any>
         if (
           element &&
           element.rawFilterInfo &&
@@ -309,6 +311,7 @@ export class OrFilter extends Filter {
 
 export const customUrlToken = '$custom$'
 export const customDatabaseFilterToken = '$db$'
+const customArrayToken = '$an array'
 export class FilterSerializer implements FilterConsumer {
   result: any = {}
   constructor() {}
@@ -316,6 +319,8 @@ export class FilterSerializer implements FilterConsumer {
     throw new Error('database custom is not allowed with api calls.')
   }
   custom(key, customItem: any): void {
+    if (Array.isArray(customItem))
+      customItem = { [customArrayToken]: customItem }
     this.add(customUrlToken + key, customItem)
   }
   hasUndefined = false
@@ -481,7 +486,7 @@ export function buildFilterFromRequestParameters(
   }
 
   for (const key in entity.entityType) {
-    const element = entity.entityType[key] as rawFilterInfo<any>
+    const element = entity.entityType[key] as customFilterInfo<any>
     if (
       element &&
       element.rawFilterInfo &&
@@ -489,7 +494,13 @@ export function buildFilterFromRequestParameters(
     ) {
       let custom = filterInfo.get(customUrlToken + key)
       if (custom !== undefined) {
-        where.push({ [customUrlToken + key]: custom })
+        const addItem = (item: any) => {
+          if (item[customArrayToken] != undefined) item = item[customArrayToken]
+          where.push({ [customUrlToken + key]: item })
+        }
+        if (Array.isArray(custom)) {
+          custom.forEach((item) => addItem(item))
+        } else addItem(custom)
       }
     }
   }
@@ -592,7 +603,7 @@ class customTranslator implements FilterConsumer {
   }
 }
 
-export interface rawFilterInfo<entityType> {
+export interface customFilterInfo<entityType> {
   rawFilterInfo: {
     key: string
     rawFilterTranslator: (

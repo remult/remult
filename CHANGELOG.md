@@ -22,6 +22,7 @@ All notable changes to this project will be documented in this file.
 - Added 404 on missing route for next app router - issue #211
 - Fixed an issue where live query would not unsubscribe automatically to a query that failed to fetch.
 - Fixed an issue where, when using the cache with findId or findFirst, and requesting to load fields, if the cache contained a row without those fields, it would return the cached row without those fields.
+- Fixed an issue where in a filter that contained multiple instances of the same custom filter, with an 'and' condition did not work correctly
 - Graphql Mutations now display validation errors in the graphql way
 
 ## [0.21.1] - 2023-06-25

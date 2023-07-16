@@ -227,7 +227,7 @@ export class DataApi<T = any> {
         buildFilterFromRequestParameters(this.repository.metadata, {
           get: (key) => {
             let result = request.get(key)
-            if (key.startsWith(customUrlToken) && result)
+            if (key.startsWith(customUrlToken) && result&&typeof result==="string")
               return JSON.parse(result)
             return result
           },
