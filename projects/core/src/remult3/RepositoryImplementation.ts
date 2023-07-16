@@ -67,6 +67,7 @@ import {
   SubscriptionListener,
   Unsubscribe,
 } from '../live-query/SubscriptionChannel'
+import { findOptionsToJson } from '../data-providers/rest-data-provider'
 //import { remult } from "../remult-proxy";
 
 let classValidatorValidate:
@@ -584,7 +585,11 @@ export class RepositoryImplementation<entityType>
     let r: Promise<entityType>
     let cacheInfo: cacheEntityInfo<entityType>
     if (options.useCache) {
-      let f = await entityFilterToJson(this.metadata, options.where)
+      
+      let f =  findOptionsToJson(
+        options,
+        this.metadata,
+      )
       let key = JSON.stringify(f)
       cacheInfo = this.cache.get(key)
       if (cacheInfo !== undefined) {

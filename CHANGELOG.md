@@ -3,8 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## next
-- Fixed an issue with the many-to-one relation where the 'many' table did not store the ID as an 'integer' in cases where the 'one' table's ID column was an integer
 - Added `ToJson` and `FromJson` methods the the `Repository` object. These are extremely useful in the context of SSR (next etc...) where you need to send plain json over the wire, but still want to have dates and other cool stuff in your app
+- Fixed an issue with the many-to-one relation where the 'many' table did not store the ID as an 'integer' in cases where the 'one' table's ID column was an integer
 - Fixed issue where using displayValue or validate on a spread object, marked it as new, and always triggered a post call
 - Added Remult.run
 - isBackend will return true or false based on dataProvider.isProxy equal false or runningOnServer member
@@ -21,6 +21,7 @@ All notable changes to this project will be documented in this file.
     At this time we recommend using `experimentalDecorator:false` for development, to get the typing, but `experimentalDecorator:true` for deploying and functionality.
 - Added 404 on missing route for next app router - issue #211
 - Fixed an issue where live query would not unsubscribe automatically to a query that failed to fetch.
+- Fixed an issue where, when using the cache with findId or findFirst, and requesting to load fields, if the cache contained a row without those fields, it would return the cached row without those fields.
 - Graphql Mutations now display validation errors in the graphql way
 
 ## [0.21.1] - 2023-06-25
