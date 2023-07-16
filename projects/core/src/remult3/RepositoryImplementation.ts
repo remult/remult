@@ -2447,12 +2447,6 @@ export function decorateColumnSettings<valueType>(
                     .valueType === Number
                 for (const key of [
                   'fieldTypeInDb',
-                  'fromDb',
-                  'toDb',
-                  'fromInput',
-                  'toInput',
-                  'fromJson',
-                  'toJson',
                 ] as (keyof ValueConverter<any>)[]) {
                   //@ts-ignore
                   target[key] = ValueConverters.Integer[key]
