@@ -1129,6 +1129,6 @@ testAll(
     expect(await taskRepo.count({ category: cat[1] })).toBe(1)
     expect(await taskRepo.count({ category: { $id: cat[0].id } })).toBe(2)
   },
-  true,
+  false,
   { exclude: [TestDbs.mongo] },
 )
