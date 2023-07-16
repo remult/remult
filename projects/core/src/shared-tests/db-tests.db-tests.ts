@@ -1095,3 +1095,40 @@ testAll(
     exclude: [TestDbs.mongo],
   },
 )
+testAll(
+  'test relation to number id',
+  async ({ createEntity }) => {
+    const category = class {
+      id = 0
+      name = ''
+    }
+    describeClass(category, Entity('rel_ID_categories', { allowApiCrud: true }), {
+      id: Fields.autoIncrement(),
+      name: Fields.string(),
+    })
+    const task = class {
+      id = 0
+      title = ''
+      category?: InstanceType<typeof category>
+    }
+    describeClass(task, Entity('rel_ID_task', { allowApiCrud: true }), {
+      id: Fields.autoIncrement(),
+      title: Fields.string(),
+      category: Field(() => category),
+    })
+    const catRepo = await createEntity(category)
+    const taskRepo = await createEntity(task)
+    const cat = await catRepo.insert([{ name: 'cat0' }, { name: 'cat1' }])
+    await taskRepo.insert([
+      { title: 't1', category: cat[0] },
+      { title: 't2', category: cat[0] },
+      { title: 't3', category: cat[1] },
+    ])
+    expect(taskRepo.fields.category!.valueConverter.fieldTypeInDb).toBe(ValueConverters.Integer.fieldTypeInDb)
+    expect(await taskRepo.count({ category: cat[0] })).toBe(2)
+    expect(await taskRepo.count({ category: cat[1] })).toBe(1)
+    expect(await taskRepo.count({ category: { $id: cat[0].id } })).toBe(2)
+  },
+  true,
+  { exclude: [TestDbs.mongo] },
+)

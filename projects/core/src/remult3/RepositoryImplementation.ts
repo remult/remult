@@ -2431,10 +2431,44 @@ export function decorateColumnSettings<valueType>(
   if (!settings.valueConverter) {
     let ei = getEntitySettings(settings.valueType, false)
     if (ei) {
+      let isIdNumeric: Boolean = undefined
       settings.valueConverter = {
         toDb: (x) => x,
         fromDb: (x) => x,
       }
+      settings.valueConverter = new Proxy(
+        settings.valueConverter,
+        { 
+          get(target, property) {
+            if (target[property] === undefined) {
+              if (isIdNumeric === undefined) {
+                isIdNumeric =
+                  remult.repo(settings.valueType).metadata.idMetadata.field
+                    .valueType === Number
+                for (const key of [
+                  'fieldTypeInDb',
+                  'fromDb',
+                  'toDb',
+                  'fromInput',
+                  'toInput',
+                  'fromJson',
+                  'toJson',
+                ] as (keyof ValueConverter<any>)[]) {
+                  //@ts-ignore
+                  target[key] = ValueConverters.Integer[key]
+                }
+              }
+            }
+            return target[property]
+          },
+          set(target, property, value, receiver) {
+            target[property] = value
+            return true
+          },
+        },
+      )
+
+     
     } else settings.valueConverter = ValueConverters.Default
   }
   if (!settings.valueConverter.toJson) {
