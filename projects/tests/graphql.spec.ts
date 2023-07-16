@@ -289,7 +289,7 @@ describe("graphql", () => {
       ).toBe(3)
   })
 
-  it.only("gets related entities", async () => {
+  it("gets related entities", async () => {
     const cat = await remult
       .repo(Category)
       .insert([{ name: "c1" }, { name: "c2" }])
