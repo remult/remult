@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## next
+## [0.22.0] - 2023-07-16
 - Added `ToJson` and `FromJson` methods the the `Repository` object. These are extremely useful in the context of SSR (next etc...) where you need to send plain json over the wire, but still want to have dates and other cool stuff in your app
 - Fixed an issue with the many-to-one relation where the 'many' table did not store the ID as an 'integer' in cases where the 'one' table's ID column was an integer
 - Fixed issue where using displayValue or validate on a spread object, marked it as new, and always triggered a post call
