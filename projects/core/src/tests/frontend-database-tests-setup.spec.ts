@@ -40,7 +40,7 @@ export function testWebSqlImpl(
     focus,
   )
 }
-addDatabaseToTest(testWebSqlImpl)
+addDatabaseToTest(testWebSqlImpl, TestDbs.webSql)
 
 export function testRest(
   key: string,

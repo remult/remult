@@ -12,7 +12,9 @@ export declare function addDatabaseToTest(tester: dbTestMethodSignature, key?: s
 export declare function testInMemory(key: string, what: dbTestWhatSignature, focus?: boolean): void;
 export declare const TestDbs: {
     restDataProvider: string;
+    webSql: string;
     mongo: string;
+    mongoNoTrans: string;
     inMemory: string;
 };
 export declare type dbTestWhatSignature = (db: {

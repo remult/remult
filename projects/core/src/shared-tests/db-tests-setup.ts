@@ -63,7 +63,9 @@ export function testInMemory(
 }
 export const TestDbs = {
   restDataProvider: 'restDataProvider',
+  webSql:'webSql',
   mongo: 'mongo',
+  mongoNoTrans: 'mongoNoTrans',
   inMemory: 'in memory',
 }
 

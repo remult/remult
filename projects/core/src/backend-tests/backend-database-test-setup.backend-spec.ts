@@ -137,56 +137,94 @@ addDatabaseToTest(testPostgresImplementation)
 import { Categories } from '../tests/remult-3-entities'
 import { MongoDataProvider } from '../../remult-mongo'
 
-testAll('transactions', async ({ db, createEntity }) => {
-  let x = await createEntity(Categories)
+export const testMongo = (() => {
+  const mongoConnectionString = process.env['MONGO_TEST_URL'] //"mongodb://localhost:27017/local"
 
-  await db.transaction(async (db) => {
-    let remult = new Remult(db)
-    expect(await remult.repo(Categories).count()).toBe(0)
+  let client = new MongoClient(mongoConnectionString)
+  let done: MongoClient
+  let mongoDbPromise = client.connect().then((c) => {
+    done = c
+    return c.db('test')
   })
-})
 
-const mongoConnectionString = process.env['MONGO_TEST_URL'] //"mongodb://localhost:27017/local"
+  afterAll(async () => {
+    if (done) done.close()
+  })
 
-let client = new MongoClient(mongoConnectionString)
-let done: MongoClient
-let mongoDbPromise = client.connect().then((c) => {
-  done = c
-  return c.db('test')
-})
+  return function testMongo(
+    key: string,
+    what: dbTestWhatSignature,
+    focus = false,
+  ) {
+    itWithFocus(
+      key + ' - mongo',
+      async () => {
+        let mongoDb = await mongoDbPromise
+        let db = new MongoDataProvider(mongoDb, client)
+        let remult = new Remult(db)
+        await what({
+          db,
+          remult,
+          createEntity: async (entity: ClassType<any>) => {
+            let repo = remult.repo(entity)
+            await mongoDb
+              .collection(await repo.metadata.getDbName())
+              .deleteMany({})
 
-afterAll(async () => {
-  if (done) done.close()
-})
+            return repo
+          },
+        })
+      },
+      focus,
+    )
+  }
+})()
+export const testMongoNoTrans = (() => {
+  const mongoConnectionString = 'mongodb://localhost:27017/local'
 
-export function testMongo(
-  key: string,
-  what: dbTestWhatSignature,
-  focus = false,
-) {
-  itWithFocus(
-    key + ' - mongo',
-    async () => {
-      let mongoDb = await mongoDbPromise
-      let db = new MongoDataProvider(mongoDb, client)
-      let remult = new Remult(db)
-      await what({
-        db,
-        remult,
-        createEntity: async (entity: ClassType<any>) => {
-          let repo = remult.repo(entity)
-          await mongoDb
-            .collection(await repo.metadata.getDbName())
-            .deleteMany({})
+  let client = new MongoClient(mongoConnectionString)
+  let done: MongoClient
+  let mongoDbPromise = client.connect().then((c) => {
+    done = c
+    return c.db('test')
+  })
 
-          return repo
-        },
-      })
-    },
-    focus,
-  )
-}
+  afterAll(async () => {
+    if (done) done.close()
+  })
+
+  return function testMongo(
+    key: string,
+    what: dbTestWhatSignature,
+    focus = false,
+  ) {
+    itWithFocus(
+      key + ' - '+TestDbs.mongoNoTrans,
+      async () => {
+        let mongoDb = await mongoDbPromise
+        let db = new MongoDataProvider(mongoDb, client, {
+          disableTransactions: true,
+        })
+        let remult = new Remult(db)
+        await what({
+          db,
+          remult,
+          createEntity: async (entity: ClassType<any>) => {
+            let repo = remult.repo(entity)
+            await mongoDb
+              .collection(await repo.metadata.getDbName())
+              .deleteMany({})
+
+            return repo
+          },
+        })
+      },
+      focus,
+    )
+  }
+})()
 addDatabaseToTest(testMongo, TestDbs.mongo)
+addDatabaseToTest(testMongoNoTrans, TestDbs.mongoNoTrans)
 
 it('test mongo without transaction', async () => {
   const client = new MongoClient('mongodb://localhost:27017/local')
@@ -210,12 +248,35 @@ it('test mongo without transaction', async () => {
   }
   await repo.insert({ id: 1, title: 'a' })
   try {
-    await db.transaction(async () => {
-      await repo.insert({ id: 2, title: 'b' })
-      throw new Error()
+    await db.transaction(async (dbWithTrans) => {
+      await new Remult(dbWithTrans).repo(entity).insert({ id: 2, title: 'b' })
+      throw 'Error'
     })
-  } catch {}
+  } catch (err) {
+    expect(err).toBe('Error')
+  }
   expect(await repo.count()).toBe(2)
 })
+
+
+testMongoNoTrans(
+  'transactions mongo no trans',
+  async ({ db, createEntity }) => {
+    let x = await createEntity(Categories)
+
+    try {
+      await db.transaction(async (db) => {
+        let remult = new Remult(db)
+        await remult.repo(Categories).insert({ categoryName: 'testing' })
+        expect(await remult.repo(Categories).count()).toBe(1)
+        throw 'Fail'
+      })
+    } catch (err: any) {
+      expect(err).toBe('Fail')
+    }
+    expect(await x.count()).toBe(1)
+  },
+  false,
+)
 
 import '../shared-tests'

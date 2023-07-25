@@ -12,7 +12,10 @@ import { c } from '../tests/c'
 
 import { Done } from '../tests/Done'
 import { h } from '../tests/h'
-import { Categories as newCategories } from '../tests/remult-3-entities'
+import {
+  Categories,
+  Categories as newCategories,
+} from '../tests/remult-3-entities'
 import { tasks } from '../tests/tasks'
 import { TestDataApiResponse } from '../tests/TestDataApiResponse'
 import { testAll, testAllDbs, TestDbs } from './db-tests-setup'
@@ -971,13 +974,66 @@ testAll(
         throw 'error'
       })
       fail = false
-    } catch {}
+    } catch (err) {
+      expect(err).toBe('error')
+    }
     expect(await r.count()).toBe(1)
     expect(fail).toBe(true)
   },
   false,
-  { exclude: [TestDbs.inMemory] },
+  {
+    exclude: [
+      TestDbs.inMemory,
+      TestDbs.mongoNoTrans,
+      TestDbs.restDataProvider,
+      TestDbs.webSql,
+    ],
+  },
 )
+testAll(
+  'transactions',
+  async ({ db, createEntity }) => {
+    let x = await createEntity(Categories)
+
+    await db.transaction(async (db) => {
+      let remult = new Remult(db)
+      expect(await remult.repo(Categories).count()).toBe(0)
+    })
+  },
+  false,
+
+  {
+    exclude: [TestDbs.mongoNoTrans, TestDbs.restDataProvider, TestDbs.webSql],
+  },
+)
+testAll(
+  'transactions 1',
+  async ({ db, createEntity }) => {
+    let x = await createEntity(Categories)
+
+    try {
+      await db.transaction(async (db) => {
+        let remult = new Remult(db)
+        await remult.repo(Categories).insert({ categoryName: 'testing' })
+        expect(await remult.repo(Categories).count()).toBe(1)
+        throw 'Fail'
+      })
+    } catch (err: any) {
+      expect(err).toBe('Fail')
+    }
+    expect(await x.count()).toBe(0)
+  },
+  false,
+  {
+    exclude: [
+      TestDbs.inMemory,
+      TestDbs.mongoNoTrans,
+      TestDbs.restDataProvider,
+      TestDbs.webSql,
+    ],
+  },
+)
+
 testAll(
   'test date',
   async ({ createEntity }) => {
@@ -1033,7 +1089,7 @@ testAll(
   },
   false,
   {
-    exclude: [TestDbs.mongo],
+    exclude: [TestDbs.mongo, TestDbs.mongoNoTrans],
   },
 )
 testAll(
@@ -1170,7 +1226,7 @@ testAll(
   },
   false,
   {
-    exclude: [TestDbs.mongo],
+    exclude: [TestDbs.mongo, TestDbs.mongoNoTrans],
   },
 )
 testAll(
@@ -1214,5 +1270,5 @@ testAll(
     expect(await taskRepo.count({ category: { $id: cat[0].id } })).toBe(2)
   },
   false,
-  { exclude: [TestDbs.mongo] },
+  { exclude: [TestDbs.mongo, TestDbs.mongoNoTrans] },
 )

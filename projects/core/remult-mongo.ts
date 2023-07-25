@@ -46,19 +46,23 @@ export class MongoDataProvider implements DataProvider {
   async transaction(
     action: (dataProvider: DataProvider) => Promise<void>,
   ): Promise<void> {
-    let session = await this.client.startSession()
+    if (this.disableTransactions) {
+      await action(this)
+    } else {
+      let session = await this.client.startSession()
 
-    session.startTransaction()
+      session.startTransaction()
 
-    const db = this.client.db(this.db.databaseName)
-    try {
-      await action(new MongoDataProvider(db, undefined, { session }))
-      await session.commitTransaction()
-    } catch (err) {
-      await session.abortTransaction()
-      throw err
-    } finally {
-      await session.endSession()
+      const db = this.client.db(this.db.databaseName)
+      try {
+        await action(new MongoDataProvider(db, undefined, { session }))
+        await session.commitTransaction()
+      } catch (err) {
+        await session.abortTransaction()
+        throw err
+      } finally {
+        await session.endSession()
+      }
     }
   }
   static async filterToRaw<entityType>(
