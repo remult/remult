@@ -1,6 +1,6 @@
-import type { DataApiResponse } from '../core/src/data-api'
-import { DataApi } from '../core/src/data-api'
-import { EntityMetadata, FieldsMetadata, Remult, remult } from '../core'
+import type { DataApiResponse } from './src/data-api'
+import { DataApi } from './src/data-api'
+import { EntityMetadata, FieldsMetadata, Remult, remult } from './index'
 import type { ClassType } from './classType'
 
 const v2ConnectionAndPagination = false
@@ -864,7 +864,7 @@ function bridgeQueryOptionsToDataApiGet(arg1: any) {
     }
   }
 }
-
+//@internal
 export function translateWhereToRestBody<T>(fields: FieldsMetadata<T>, { where }: { where: any }) {
   if (!where) return undefined
   const result: any = {}

@@ -69,7 +69,11 @@ docs/.vitepress/dist
 
 /db
 projects/test-angular/.angular
-examples/nextjs-todo/db/tasks.json
-examples/nextjs-app-router-todo/db/tasks.json
+examples/nextjs-todo/db
+examples/nextjs-app-router-todo/db
 test.heapsnapshot
-examples/sveltekit-todo/db/tasks.json
+examples/sveltekit-todo/db
+projects/test-servers/deno-fresh/db
+projects/test-servers/next-app-server/db
+projects/test-servers/next-server/db
+projects/test-servers/sveltekit-server/db

@@ -1,27 +1,95 @@
 # Adding Graphql
- 
+
 To add graphql to a `remult` application follow these steps:
-1. Install the `graphql` and `express-graphql` packages:
+
+1. Install the `graphql-yoga` packages:
    ```sh
-   npm i graphql express-graphql
-      ```
-2. In the `/src/server/index.ts` file add the following code:
-   ```ts{2-4,8-15}
-   import express from 'express';
-   import { buildSchema } from 'graphql';
-   import { graphqlHTTP } from 'express-graphql';
-   import { remultGraphql } from 'remult/graphql';
-   import { remultExpress } from 'remult/remult-express';
-   
-   const app = express();
-   let api = remultExpress();
-   app.use(api);
-   const { schema, rootValue } = remultGraphql(api);
-   app.use('/api/graphql', graphqlHTTP({
-       schema: buildSchema(schema),
-       rootValue,
-       graphiql: true,
-   }));
-   app.listen(3002, () => console.log("Server started"));
+   npm i graphql-yoga
    ```
 
+## Express:
+
+In the `/src/server/index.ts` file add the following code:
+
+```ts{3-4,12-21}
+import express from 'express';
+import { remultExpress } from 'remult/remult-express';
+import { createSchema, createYoga } from 'graphql-yoga'
+import { remultGraphql } from 'remult/graphql';
+
+const app = express()
+const entities = [Task]
+let api = remultExpress({
+   entities
+});
+app.use(api);
+const { typeDefs, resolvers } = remultGraphql({
+   entities
+});
+const yoga = createYoga({
+   graphqlEndpoint: '/api/graphql',
+   schema: (createSchema({
+      typeDefs,
+      resolvers
+   }))
+})
+app.use(yoga.graphqlEndpoint, api.withRemult, yoga)
+app.listen(3002, () => console.log("Server started"));
+```
+
+## Next App Router
+
+```ts
+// Next.js Custom Route Handler: https://nextjs.org/docs/app/building-your-application/routing/router-handlers
+import { createYoga, createSchema } from "graphql-yoga"
+import { remultGraphql } from "remult/graphql"
+import { api } from "../[...remult]/route"
+import { Task } from "../../../shared/task"
+
+const { typeDefs, resolvers } = remultGraphql({
+  entities: [Task]
+})
+
+const yoga = createYoga({
+  // While using Next.js file convention for routing, we need to configure Yoga to use the correct endpoint
+  graphqlEndpoint: "/api/graphql",
+  schema: createSchema({
+    typeDefs,
+    resolvers
+  }),
+  // Yoga needs to know how to create a valid Next response
+  fetchAPI: { Response }
+})
+
+const handleRequest = (request: any, ctx: any) =>
+  api.withRemult(() => yoga.handleRequest(request, ctx))
+
+export { handleRequest as GET, handleRequest as POST }
+```
+
+## Svelte
+
+`src/routes/api/graphql/+server.ts`
+
+```ts
+import type { RequestEvent } from "@sveltejs/kit"
+import { createSchema, createYoga } from "graphql-yoga"
+import { remultGraphql } from "remult/graphql"
+import { Task } from "../../../shared/Task"
+
+const { typeDefs, resolvers } = remultGraphql({
+  entities: [Task]
+})
+
+const yogaApp = createYoga<RequestEvent>({
+  schema: createSchema({
+    typeDefs: createSchema({
+      typeDefs,
+      resolvers
+    })
+  }),
+  fetchAPI: { Response }
+})
+
+export { yogaApp as GET, yogaApp as POST }
+```

@@ -77,8 +77,8 @@ export function remultNextApp(
   let result = createRemultServer<Request>(options!, {
     getRequestBody: req => req.json(),
     buildGenericRequestInfo: (req) => ({
-      url: req.url,
-      method: req.method,
+      url: req?.url,
+      method: req?.method,
 
       on: (e: "close", do1: VoidFunction) => {
         if (e === "close") {
@@ -145,10 +145,10 @@ export function remultNextApp(
     PUT: handler,
     DELETE: handler,
     withRemult: <T>(what) =>
-      result.withRemultPromise<T>(undefined!, what),
+      result.withRemultPromise<T>({} as any, what),
   };
 }
-
+//[ ] - Add handle, similar to handle in next page router.
 export type RemultNextAppServer = RemultServerCore<Request> & {
   GET: (req: Request) => Promise<Response>;
   PUT: (req: Request) => Promise<Response>;
