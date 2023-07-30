@@ -1,7 +1,7 @@
 import { Remult } from '../context'
 import { KnexDataProvider, KnexSchemaBuilder } from '../../remult-knex'
 import * as Knex from 'knex'
-import { Db, MongoClient } from 'mongodb'
+import { Db, MongoClient, MongoDBNamespace } from 'mongodb'
 import { config } from 'dotenv'
 import {
   createPostgresConnection,
@@ -199,7 +199,7 @@ export const testMongoNoTrans = (() => {
     focus = false,
   ) {
     itWithFocus(
-      key + ' - '+TestDbs.mongoNoTrans,
+      key + ' - ' + TestDbs.mongoNoTrans,
       async () => {
         let mongoDb = await mongoDbPromise
         let db = new MongoDataProvider(mongoDb, client, {
@@ -258,7 +258,6 @@ it('test mongo without transaction', async () => {
   expect(await repo.count()).toBe(2)
 })
 
-
 testMongoNoTrans(
   'transactions mongo no trans',
   async ({ db, createEntity }) => {
@@ -278,5 +277,36 @@ testMongoNoTrans(
   },
   false,
 )
+testMongoNoTrans(
+  'test Dates',
+  async ({ createEntity }) => {
+    const c = class {
+      id: number
+      date: Date
+    }
+    describeClass(c, Entity('test_dates_on_mongo'), {
+      id: Fields.integer(),
+      date: Fields.date(),
+    })
+    const r = await createEntity(c)
+    let x = await r.insert({ id: 1, date: new Date(1976, 5, 16) })
+    const client = new MongoClient('mongodb://localhost:27017/local')
+    await client.connect()
+    const mongoDb = client.db('test')
+    expect(
+      (await mongoDb.collection(await r.metadata.getDbName()).findOne())
+        .date instanceof Date,
+    ).toBe(true)
+    x.date = new Date(1978, 2, 15)
+    await r.save(x)
 
+    expect(
+      (await mongoDb.collection(await r.metadata.getDbName()).findOne())
+        .date instanceof Date,
+    ).toBe(true)
+
+    //let z = await r.save({ ...x, date: new Date(1978, 2, 15) })
+  },
+  false,
+)
 import '../shared-tests'

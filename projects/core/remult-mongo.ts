@@ -91,7 +91,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
     private entity: EntityMetadata<any>,
     private session?: ClientSession,
   ) {}
-  translateFromJson(row: any, nameProvider: EntityDbNamesBase) {
+  translateFromDb(row: any, nameProvider: EntityDbNamesBase) {
     let result = {}
     for (const col of this.entity.fields) {
       let val = row[nameProvider.$dbNameOf(col)]
@@ -100,7 +100,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
     }
     return result
   }
-  translateToJson(row: any, nameProvider: EntityDbNamesBase) {
+  translateToDb(row: any, nameProvider: EntityDbNamesBase) {
     let result = {}
     for (const col of this.entity.fields) {
       let val = col.valueConverter.toDb(row[col.key])
@@ -140,7 +140,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
     return await Promise.all(
       await collection
         .find(where, op)
-        .map((x) => this.translateFromJson(x, e))
+        .map((x) => this.translateFromDb(x, e))
         .toArray(),
     )
   }
@@ -164,7 +164,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
     for (const f of this.entity.fields) {
       if (!f.dbReadOnly && !f.isServerExpression) {
         if (keys.includes(f.key)) {
-          newR[f.key] = f.valueConverter.toJson(data[f.key])
+          newR[f.key] = f.valueConverter.toDb(data[f.key])
         }
       }
     }
@@ -190,10 +190,10 @@ class MongoEntityDataProvider implements EntityDataProvider {
   }
   async insert(data: any): Promise<any> {
     let { collection, e } = await this.collection()
-    let r = await collection.insertOne(await this.translateToJson(data, e), {
+    let r = await collection.insertOne(await this.translateToDb(data, e), {
       session: this.session,
     })
-    return await this.translateFromJson(
+    return await this.translateFromDb(
       await collection.findOne(
         { _id: r.insertedId },
         { session: this.session },
