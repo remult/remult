@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.22.2] - 2023-07-30
+- Fixed [#216](https://github.com/remult/remult/issues/216) wrong date type saved on update
+
 ## [0.22.1] - 2023-07-25
 - Fixed issue [#215](https://github.com/remult/remult/issues/215) support for mongo without transactions
 ## [0.22.0] - 2023-07-16
