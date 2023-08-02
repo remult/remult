@@ -104,6 +104,23 @@ export const mySqlTest = addDatabaseToTest(
   ),
 )
 
+addDatabaseToTest(
+  testKnexSqlImpl(
+    Knex.default({
+      client: 'mysql',
+      connection: {
+        user: 'root',
+        password: 'MASTERKEY',
+        host: '127.0.0.1',
+        database: 'test',
+        port: 3307
+      },
+      //debug: true
+    }),
+    'mysql',
+  ),
+)
+
 let pg = createPostgresConnection()
 export function testPostgresImplementation(
   key: string,

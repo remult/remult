@@ -114,6 +114,7 @@
     "koa-bodyparser": "^4.3.0",
     "mongodb": "^4.2.1",
     "mssql": "^4.2.3",
+    "mysql": "^2.18.1",
     "mysql2": "^2.3.3",
     "next": "^13.1.6",
     "ng-packagr": "^11.2.0",

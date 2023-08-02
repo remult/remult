@@ -253,7 +253,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
     let insert = this.knex(e.$entityName).insert(insertObject)
     if (isAutoIncrement(this.entity.idMetadata.field)) {
       let newId
-      if (this.knex.client.config.client === 'mysql2') {
+      if (this.knex.client.config.client === 'mysql2' || this.knex.client.config.client === 'mysql') {
         let result = await insert
         newId = result[0]
       } else {
@@ -468,7 +468,7 @@ export class KnexSchemaBuilder {
 }
 function supportsJson(knex: Knex) {
   const client: string = knex.client.config.client
-  if (client?.includes('sqlite3') || client?.includes('mssql')) return false
+  if (client?.includes('sqlite3') || client?.includes('mssql') || client?.includes('mysql')) return false
   return true
 }
 
