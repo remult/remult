@@ -2450,13 +2450,14 @@ export function decorateColumnSettings<valueType>(
                 isIdNumeric =
                   remult.repo(settings.valueType).metadata.idMetadata.field
                     .valueType === Number
+                if (isIdNumeric){
                 for (const key of [
                   'fieldTypeInDb',
                 ] as (keyof ValueConverter<any>)[]) {
                   //@ts-ignore
                   target[key] = ValueConverters.Integer[key]
                 }
-              }
+              }}
             }
             return target[property]
           },
