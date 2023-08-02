@@ -1,9 +1,9 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
-## [0.22.3] - coming soon
+## [0.22.3] - 2023-08-02
 - Fixed an issue with the many-to-one relation where the 'many' table did not store the ID as a `string` in cases where the 'one' table's ID column was not an integer
-
+- Added tests for MariaDB and fixed issues
 
 ## [0.22.2] - 2023-07-30
 - Fixed [#216](https://github.com/remult/remult/issues/216) wrong date type saved on update
