@@ -1,6 +1,8 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [0.22.4] - 2023-08-03
+- Fixed an issue where an update with only a few fields, would update all other fields to their default values.
 ## [0.22.3] - 2023-08-02
 - Fixed an issue with the many-to-one relation where the 'many' table did not store the ID as a `string` in cases where the 'one' table's ID column was not an integer
 - Added tests for MariaDB and fixed issues

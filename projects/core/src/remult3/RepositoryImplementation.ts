@@ -303,9 +303,27 @@ export class RepositoryImplementation<entityType>
     id: any,
     entity: Partial<OmitEB<entityType>>,
   ): Promise<entityType> {
-    let ref = this.getRefForExistingRow(entity, id)
-
-    return (await ref.save()) as unknown as entityType
+    {
+      let ref = getEntityRef(entity, false)
+      if (ref) return (await ref.save()) as unknown as entityType
+    }
+    let ref = this.getRefForExistingRow(
+      entity,
+      id,
+    ) as rowHelperImplementation<entityType>
+    if (this.dataProvider.isProxy) {
+      return await ref.save(Object.keys(entity))
+    } else {
+      const r = await this.findId(ref.id, { useCache: false })
+      if (!r) throw new Error('Not Found')
+      for (const key in entity) {
+        if (Object.prototype.hasOwnProperty.call(entity, key)) {
+          let f = ref.fields[key]
+          if (f) r[key] = f.value
+        }
+      }
+      return await getEntityRef(r).save()
+    }
   }
 
   private getRefForExistingRow(
@@ -585,11 +603,7 @@ export class RepositoryImplementation<entityType>
     let r: Promise<entityType>
     let cacheInfo: cacheEntityInfo<entityType>
     if (options.useCache) {
-      
-      let f =  findOptionsToJson(
-        options,
-        this.metadata,
-      )
+      let f = findOptionsToJson(options, this.metadata)
       let key = JSON.stringify(f)
       cacheInfo = this.cache.get(key)
       if (cacheInfo !== undefined) {
@@ -1191,13 +1205,14 @@ export class rowHelperImplementation<T>
     return this._columns
   }
   private _saving = false
-  async save(): Promise<T> {
+  async save(onlyTheseFieldsSentOnlyInTheCaseOfProxySaveWithPartialObject?: string[]): Promise<T> {
     try {
       if (this._saving)
         throw new Error('cannot save while entity is already saving')
       this._saving = true
       if (this.wasDeleted()) throw new Error('cannot save a deleted row')
       this.isLoading = true
+      if (onlyTheseFieldsSentOnlyInTheCaseOfProxySaveWithPartialObject===undefined) // no need
       await this.__validateEntity()
       let doNotSave = false
       for (const col of this.fields) {
@@ -1216,7 +1231,11 @@ export class rowHelperImplementation<T>
       let d = this.copyDataToObject()
       let ignoreKeys = []
       for (const field of this.metadata.fields) {
-        if (field.dbReadOnly) {
+        if (
+          field.dbReadOnly ||
+          (onlyTheseFieldsSentOnlyInTheCaseOfProxySaveWithPartialObject !== undefined &&
+            !onlyTheseFieldsSentOnlyInTheCaseOfProxySaveWithPartialObject.includes(field.key))
+        ) {
           d[field.key] = undefined
           ignoreKeys.push(field.key)
           let f = this.fields.find(field)
@@ -2441,34 +2460,30 @@ export function decorateColumnSettings<valueType>(
         toDb: (x) => x,
         fromDb: (x) => x,
       }
-      settings.valueConverter = new Proxy(
-        settings.valueConverter,
-        { 
-          get(target, property) {
-            if (target[property] === undefined) {
-              if (isIdNumeric === undefined) {
-                isIdNumeric =
-                  remult.repo(settings.valueType).metadata.idMetadata.field
-                    .valueType === Number
-                if (isIdNumeric){
+      settings.valueConverter = new Proxy(settings.valueConverter, {
+        get(target, property) {
+          if (target[property] === undefined) {
+            if (isIdNumeric === undefined) {
+              isIdNumeric =
+                remult.repo(settings.valueType).metadata.idMetadata.field
+                  .valueType === Number
+              if (isIdNumeric) {
                 for (const key of [
                   'fieldTypeInDb',
                 ] as (keyof ValueConverter<any>)[]) {
                   //@ts-ignore
                   target[key] = ValueConverters.Integer[key]
                 }
-              }}
+              }
             }
-            return target[property]
-          },
-          set(target, property, value, receiver) {
-            target[property] = value
-            return true
-          },
+          }
+          return target[property]
         },
-      )
-
-     
+        set(target, property, value, receiver) {
+          target[property] = value
+          return true
+        },
+      })
     } else settings.valueConverter = ValueConverters.Default
   }
   if (!settings.valueConverter.toJson) {

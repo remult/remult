@@ -1305,11 +1305,80 @@ testAll(
       { title: 't2', category: cat[0] },
       { title: 't3', category: cat[1] },
     ])
-    expect(taskRepo.fields.category!.valueConverter.fieldTypeInDb).toBeUndefined()
+    expect(
+      taskRepo.fields.category!.valueConverter.fieldTypeInDb,
+    ).toBeUndefined()
     expect(await taskRepo.count({ category: cat[0] })).toBe(2)
     expect(await taskRepo.count({ category: cat[1] })).toBe(1)
     expect(await taskRepo.count({ category: { $id: cat[0].id } })).toBe(2)
   },
   false,
   { exclude: [TestDbs.mongo, TestDbs.mongoNoTrans] },
+)
+testAll(
+  "test update doesn't override other values",
+  async ({ createEntity, remult }) => {
+    const catRepo = await createEntity(Categories)
+    const cat = await catRepo.insert({ id: 1, categoryName: 'cat' })
+    const task = class {
+      id = 0
+      title = ''
+      completed = false
+      cat?: Categories
+    }
+    describeClass(task, Entity('tasks', { allowApiCrud: true }), {
+      id: Fields.integer(),
+      title: Fields.string(),
+      cat: Field(() => Categories),
+      completed: Fields.boolean(),
+    })
+    const taskRepo = await createEntity(task)
+    await taskRepo.insert({ id: 1, cat, title: 'noam' })
+
+    {
+      const aTask = await taskRepo.findFirst({}, { useCache: false })
+      expect(aTask.title).toBe('noam')
+      expect(aTask.cat.categoryName).toBe('cat')
+      expect(aTask.completed).toBe(false)
+    }
+
+    await taskRepo.update(1, { completed: true })
+    {
+      const aTask = await taskRepo.findFirst({}, { useCache: false })
+      expect(aTask.id).toBe(1)
+      expect(aTask.title).toBe('noam')
+      expect(aTask.cat.categoryName).toBe('cat')
+      expect(aTask.completed).toBe(true)
+    }
+  },
+  false,
+)
+testAll(
+  "test update doesn't validate non included fields",
+  async ({ createEntity, remult }) => {
+    const catRepo = await createEntity(Categories)
+    const cat = await catRepo.insert({ id: 1, categoryName: 'cat' })
+    const task = class {
+      id = 0
+      title = ''
+      completed = false
+      cat?: Categories
+    }
+    describeClass(task, Entity('tasks', { allowApiCrud: true }), {
+      id: Fields.integer(),
+      title: Fields.string({validate:Validators.required}),
+      cat: Field(() => Categories),
+      completed: Fields.boolean(),
+    })
+    const taskRepo = await createEntity(task)
+    await taskRepo.insert({ id: 1, cat, title: 'noam' })
+
+
+    await taskRepo.update(1, { completed: true })
+    {
+      const aTask = await taskRepo.findId(1, { useCache: false })
+      expect(aTask.completed).toBe(true)
+    }
+  },
+  false,
 )

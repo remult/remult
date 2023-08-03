@@ -124,7 +124,7 @@ export declare class rowHelperImplementation<T> extends rowHelperBase<T> impleme
     private _columns;
     get fields(): FieldsRef<T>;
     private _saving;
-    save(): Promise<T>;
+    save(onlyTheseFieldsSentOnlyInTheCaseOfProxySaveWithPartialObject?: string[]): Promise<T>;
     private getIdFilter;
     delete(): Promise<void>;
     loadDataFrom(data: any, loadItems?: FieldMetadata[]): Promise<void>;
