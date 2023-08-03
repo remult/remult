@@ -49,8 +49,8 @@ async function addTask() {
     const newTask = await taskRepo.insert({ title: newTaskTitle.value })
     //tasks.value.push(newTask) <-- this line is no longer needed
     newTaskTitle.value = ""
-  } catch (error: any) {
-    alert(error.message)
+  } catch (error) {
+    alert((error as { message: string }).message)
   }
 }
 ```
@@ -64,8 +64,8 @@ async function deleteTask(task: Task) {
   try {
     await taskRepo.delete(task)
     //tasks.value = tasks.value.filter((t) => task !== t); <-- this line is no longer needed
-  } catch (error: any) {
-    alert(error.message)
+  } catch (error) {
+    alert((error as { message: string }).message)
   }
 }
 ```

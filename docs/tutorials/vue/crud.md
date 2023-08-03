@@ -17,8 +17,8 @@ async function addTask() {
     const newTask = await taskRepo.insert({ title: newTaskTitle.value })
     tasks.value.push(newTask)
     newTaskTitle.value = ""
-  } catch (error: any) {
-    alert(error.message)
+  } catch (error) {
+    alert((error as { message: string }).message)
   }
 }
 </script>
@@ -55,8 +55,8 @@ To make the tasks in the list updatable, we'll bind the `input` elements to the 
 async function saveTask(task: Task) {
   try {
     await taskRepo.save(task)
-  } catch (error: any) {
-    alert(error.message)
+  } catch (error) {
+    alert((error as { message: string }).message)
   }
 }
 </script>
@@ -94,8 +94,8 @@ async function deleteTask(task: Task) {
   try {
     await taskRepo.delete(task)
     tasks.value = tasks.value.filter(t => task !== t)
-  } catch (error: any) {
-    alert(error.message)
+  } catch (error) {
+    alert((error as { message: string }).message)
   }
 }
 </script>

@@ -19,8 +19,8 @@ export default function Home() {
       const newTask = await taskRepo.insert({ title: newTaskTitle })
       setTasks([...tasks, newTask])
       setNewTaskTitle("")
-    } catch (error: any) {
-      alert(error.message)
+    } catch (error) {
+      alert((error as { message: string }).message)
     }
   }
   //...
@@ -118,8 +118,8 @@ Modify the contents of the `tasks.map` iteration within the `Home` component to 
     const saveTask = async () => {
       try {
         setTask(await taskRepo.save(task))
-      } catch (error: any) {
-        alert(error.message)
+      } catch (error) {
+        alert((error as { message: string }).message)
       }
     }
 
@@ -169,8 +169,8 @@ Add the highlighted `deleteTask` function and _Delete_ `button` Within the `task
     const saveTask = async () => {
       try {
         setTask(await taskRepo.save(task))
-      } catch (error: any) {
-        alert(error.message)
+      } catch (error) {
+        alert((error as { message: string }).message)
       }
     }
 
@@ -178,8 +178,8 @@ Add the highlighted `deleteTask` function and _Delete_ `button` Within the `task
       try {
         await taskRepo.delete(task)
         setTasks(tasks.filter(t => t !== task))
-      } catch (error: any) {
-        alert(error.message)
+      } catch (error) {
+        alert((error as { message: string }).message)
       }
     }
 

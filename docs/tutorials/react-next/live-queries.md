@@ -49,8 +49,8 @@ const addTask = async (e: FormEvent) => {
     // ^ this no longer needs to be a variable as we are not using it to set the state.
     // setTasks([...tasks, newTask])   <-- this line is no longer needed
     setNewTaskTitle("")
-  } catch (error: any) {
-    alert(error.message)
+  } catch (error) {
+    alert((error as { message: string }).message)
   }
 }
 ```
@@ -77,8 +77,8 @@ const addTask = async (e: FormEvent) => {
       try {
         // setTask(await taskRepo.save(task)) <- Delete this line
         await taskRepo.save(task) // <- replace with this line
-      } catch (error: any) {
-        alert(error.message)
+      } catch (error) {
+        alert((error as { message: string }).message)
       }
     }
 
@@ -86,8 +86,8 @@ const addTask = async (e: FormEvent) => {
       try {
         await taskRepo.delete(task)
         // setTasks(tasks.filter(t => t !== task)) <- Delete this line
-      } catch (error: any) {
-        alert(error.message)
+      } catch (error) {
+        alert((error as { message: string }).message)
       }
     }
 
