@@ -39,7 +39,7 @@ export class RemultAsyncLocalStorage {
     ;(remult as RemultProxy).resetFactory()
   }
   constructor(
-    private readonly remultObjectStorage: import('async_hooks').AsyncLocalStorage<Remult>,
+    private readonly remultObjectStorage: myAsyncLocalStorage<Remult>,
   ) {}
   run(remult: Remult, callback: VoidFunction) {
     if (this.remultObjectStorage) this.remultObjectStorage.run(remult, callback)
@@ -54,6 +54,10 @@ export class RemultAsyncLocalStorage {
     return this.remultObjectStorage.getStore()
   }
   static instance = new RemultAsyncLocalStorage(undefined!)
+}
+type myAsyncLocalStorage<T> = {
+  run<R>(store: T, callback: (...args: any[]) => R, ...args: any[]): R
+  getStore(): T
 }
 
 export function isBackend() {

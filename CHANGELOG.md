@@ -1,18 +1,30 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+
+## [0.22.5] - 2023-08-09
+
+- Fixed issue [#220](https://github.com/remult/remult/issues/220)
+
 ## [0.22.4] - 2023-08-03
+
 - Fixed an issue where an update with only a few fields, would update all other fields to their default values.
+
 ## [0.22.3] - 2023-08-02
+
 - Fixed an issue with the many-to-one relation where the 'many' table did not store the ID as a `string` in cases where the 'one' table's ID column was not an integer
 - Added tests for MariaDB and fixed issues
 
 ## [0.22.2] - 2023-07-30
+
 - Fixed [#216](https://github.com/remult/remult/issues/216) wrong date type saved on update
 
 ## [0.22.1] - 2023-07-25
+
 - Fixed issue [#215](https://github.com/remult/remult/issues/215) support for mongo without transactions
+
 ## [0.22.0] - 2023-07-16
+
 - Added `ToJson` and `FromJson` methods the the `Repository` object. These are extremely useful in the context of SSR (next etc...) where you need to send plain json over the wire, but still want to have dates and other cool stuff in your app
 - Fixed an issue with the many-to-one relation where the 'many' table did not store the ID as an 'integer' in cases where the 'one' table's ID column was an integer
 - Fixed issue where using displayValue or validate on a spread object, marked it as new, and always triggered a post call
