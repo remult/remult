@@ -8,7 +8,7 @@ const tutorials = [
   {
     title: "Next.js",
     path: "react-next",
-    additionalItems: [{ text: "Appendix: Server-side Rendering", link: '/tutorials/react-next/appendix-1-get-server-side-props' }]
+    additionalItems: []// [{ text: "Appendix: Server-side Rendering", link: '/tutorials/react-next/appendix-1-get-server-side-props' }]
   },
 ]
 
@@ -19,9 +19,9 @@ export default defineConfig({
   lastUpdated: true,
   ignoreDeadLinks: 'localhostLinks',
 
-  head:[
+  head: [
     ['link', { href: '/favicon.png', rel: 'icon', type: 'image/png' }],
-		['link', { href: '/favicon.png', rel: 'apple-touch-icon', sizes: '128x128' }],
+    ['link', { href: '/favicon.png', rel: 'apple-touch-icon', sizes: '128x128' }],
     [
       'script',
       {
