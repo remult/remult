@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [0.22.6] - unknown
 
 - Implemented $contains for mongo
+- Implemented contains for graphql
 
 ## [0.22.5] - 2023-08-09
 
