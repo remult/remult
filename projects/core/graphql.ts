@@ -163,7 +163,7 @@ export function remultGraphql(options: {
     }
 
     if (whereType === 'String') {
-      for (const operator of ['st']) {
+      for (const operator of ['contains']) {
         const field = {
           key: operator,
           value: whereType,
@@ -1105,6 +1105,7 @@ export function translateWhereToRestBody<T>(
       }
       tr('nin', (x) => (result[field.key + '.ne'] = x))
       tr('eq', (x) => (result[field.key] = x))
+      tr('contains', (x) => (result[field.key+'.contains'] = x))
     }
   }
   if (where.OR) {
