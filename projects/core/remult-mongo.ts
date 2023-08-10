@@ -282,7 +282,8 @@ class FilterConsumerBridgeToMongo implements FilterConsumer {
     this.add(col, val, '$lt')
   }
   public containsCaseInsensitive(col: FieldMetadata, val: any): void {
-    throw 'containsCaseInsensitive not yet implemented'
+    this.add(col, val, '$regex')
+    
     // this.promises.push(col.getDbName().then(colName => {
 
     //     this.result.push(b => b.whereRaw(

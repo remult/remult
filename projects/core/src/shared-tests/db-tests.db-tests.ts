@@ -1071,6 +1071,7 @@ testAll(
   },
 )
 
+
 testAll(
   'test contains with names with casing',
   async ({ createEntity }) => {
@@ -1089,7 +1090,7 @@ testAll(
   },
   false,
   {
-    exclude: [TestDbs.mongo, TestDbs.mongoNoTrans],
+    exclude: [TestDbs.mongo],
   },
 )
 testAll(

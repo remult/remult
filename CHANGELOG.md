@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.22.6] - unknown
+
+- Fixed $contains for mongo
+
 ## [0.22.5] - 2023-08-09
 
 - Fixed issue [#220](https://github.com/remult/remult/issues/220)
