@@ -8,14 +8,14 @@ Since our database may eventually contain a lot of tasks, it make sense to use a
 
 Let's limit the number of fetched tasks to `20`.
 
-In the `useEffect` hook defined in the `Home` component, pass an `options` argument to the `find` method call and set its `limit` property to 20.
+In the `useEffect` hook defined in the 'Todo` component, pass an `options` argument to the `find` method call and set its `limit` property to 20.
 
 ```ts{9-13}
-// src/pages/index.tsx
+// src/components/todo.tsx
 
 //...
 
-export default function Home() {
+export default function Todo() {
   //...
 
   useEffect(() => {
@@ -44,7 +44,7 @@ In the `useEffect` hook, set the `orderBy` property of the `find` method call's 
 Use "asc" and "desc" to determine the sort order.
 
 ```ts{7}
-// src/pages/index.tsx
+// src/components/todo.tsx
 
 useEffect(() => {
   taskRepo
@@ -61,8 +61,9 @@ useEffect(() => {
 Remult supports sending filter rules to the server to query only the tasks that we need.
 
 Adjust the `useEffect` hook to fetch only `completed` tasks.
+
 ```ts{8}
-// src/pages/index.tsx
+// src/components/todo.tsx
 
 useEffect(() => {
   taskRepo
@@ -76,7 +77,7 @@ useEffect(() => {
 ```
 
 ::: warning Note
-Because the `completed` field is of type `boolean`, the argument is **compile-time checked to be of the `boolean` type**. Settings the `completed` filter to `undefined` causes it to be ignored by Remult.
+Because the `completed` field is of type `boolean`, the argument is **compile-time checked to be of the `boolean` type**. Setting the `completed` filter to `undefined` causes it to be ignored by Remult.
 :::
 
 Play with different filtering values, and eventually comment it out, since we do need all the tasks

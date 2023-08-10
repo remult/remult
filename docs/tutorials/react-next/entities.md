@@ -14,7 +14,7 @@ The `Task` entity class we're creating will have an auto-generated `id` field, a
 
 1. Create a `shared` folder under the `src` folder. This folder will contain code shared between frontend and backend.
 
-2. Create a file `Task.ts` in the `src/shared/` folder, with the following code:
+2. Create a file `Task.ts` in the `shared/` folder, with the following code:
 
 ```ts
 // src/shared/Task.ts
@@ -39,17 +39,20 @@ export class Task {
 }
 ```
 
-3. In the `[...remult].ts` api route, register the `Task` entity with Remult by adding `entities: [Task]` to an `options` object you pass to the `remultNext()` function:
+3. In the `[...remult]/route.ts` api route, register the `Task` entity with Remult by adding `entities: [Task]` to an `options` object you pass to the `remultNextApp()` function:
 
 ```ts{4,7}
-// src/pages/api/[...remult].ts
+// src/app/api/[...remult]/route.ts
 
-import { remultNext } from "remult/remult-next"
-import { Task } from "../../shared/Task"
+import { remultNextApp } from "remult/remult-next"
+import { Task } from "../../../shared/Task"
 
-export const api = remultNext({
+const api = remultNextApp({
   entities: [Task]
 })
+
+export const { POST, PUT, DELETE, GET } = api
+
 ```
 
 The [@Entity](../../docs/ref_entity.md) decorator tells Remult this class is an entity class. The decorator accepts a `key` argument (used to name the API route and as a default database collection/table name), and an `options` argument used to define entity-related properties and operations, discussed in the next sections of this tutorial.
@@ -72,7 +75,7 @@ Now that the `Task` entity is defined, we can start using the REST API to query 
 
 1. Open a browser with the url: [http://localhost:3000/api/tasks](http://localhost:3000/api/tasks), and you'll see that you get an empty array.
 
-2. Use `curl` to `POST` a new task - *Clean car*.
+2. Use `curl` to `POST` a new task - _Clean car_.
 
 ```sh
 curl http://localhost:3000/api/tasks -d "{\"title\": \"Clean car\"}" -H "Content-Type: application/json"
@@ -85,6 +88,7 @@ curl http://localhost:3000/api/tasks -d "{\"title\": \"Clean car\"}" -H "Content
 ```sh
 curl http://localhost:3000/api/tasks -d "[{\"title\": \"Read a book\"},{\"title\": \"Take a nap\", \"completed\":true },{\"title\": \"Pay bills\"},{\"title\": \"Do laundry\"}]" -H "Content-Type: application/json"
 ```
+
 - Note that the `POST` endpoint can accept a single `Task` or an array of `Task`s.
 
 5. Refresh the browser again, to see that the tasks were stored in the db.
@@ -97,18 +101,19 @@ While remult supports [many relational and non-relational databases](https://rem
 
 Let's start developing the web app by displaying the list of existing tasks in a React component.
 
-Replace the contents of `src/pages/index.tsx` with the following code:
+In the `src` folder create a `components` folder and in it create a `todo.tsx` file and place the following code in it:
 
 ```tsx
-// src/pages/index.tsx
+// src/components/todo.tsx
 
+"use client"
 import { useEffect, useState } from "react"
 import { remult } from "remult"
 import { Task } from "../shared/Task"
 
 const taskRepo = remult.repo(Task)
 
-export default function Home() {
+export default function Todo() {
   const [tasks, setTasks] = useState<Task[]>([])
 
   useEffect(() => {
@@ -118,7 +123,7 @@ export default function Home() {
     <div>
       <h1>Todos</h1>
       <main>
-        {tasks.map(task => {
+        {tasks.map((task) => {
           return (
             <div key={task.id}>
               <input type="checkbox" checked={task.completed} />
@@ -137,5 +142,19 @@ Here's a quick overview of the different parts of the code snippet:
 - `taskRepo` is a Remult [Repository](../../docs/ref_repository.md) object used to fetch and create Task entity objects.
 - `tasks` is a Task array React state to hold the list of tasks.
 - React's useEffect hook is used to call the Remult [repository](../../docs/ref_repository.md)'s [find](../../docs/ref_repository.md#find) method to fetch tasks from the server once when the React component is loaded.
+
+### Display the todo Component
+
+Replace the contents of `src/app/page.tsx` with the following code:
+
+```tsx
+// src/app/page.tsx
+import Todo from "../components/todo"
+
+export default function Home() {
+  return <Todo />
+}
+```
+
 
 After the browser refreshes, the list of tasks appears.
