@@ -51,12 +51,12 @@ npx -y create-next-app@latest remult-nextjs-todo
 ```
 Answer the questions as follows:
 ```sh
-✔ Would you like to use TypeScript? … Yes
-✔ Would you like to use ESLint? … No 
-✔ Would you like to use Tailwind CSS? … No 
-✔ Would you like to use `src/` directory? …  Yes
-✔ Would you like to use App Router? (recommended) … Yes
-✔ Would you like to customize the default import alias? … Yes
+✔ Would you like to use TypeScript? ... Yes
+✔ Would you like to use ESLint? ... No 
+✔ Would you like to use Tailwind CSS? ... No 
+✔ Would you like to use `src/` directory? ...  Yes
+✔ Would you like to use App Router? (recommended) ... Yes
+✔ Would you like to customize the default import alias? ... No
 ```
 
 2. Go to the created folder.
@@ -77,7 +77,7 @@ Remult is bootstrapped in a `Next.js` using a [catch all dynamic API route](http
 
 1. Open your IDE.
 
-2. Create an `api` folder at the `app` directory, and a `[...remult]` folder inside it. Additionally, create a `route.ts` file within the `app/api/[...remult]` folder. This file serves as a 'catch all' route for the Next.js API, responsible for handling all API requests.
+2. Generate an `api` directory within the app folder, and inside it, create a `[...remult]` subdirectory. Inside the `app/api/[...remult]` directory, craft a `route.ts` file with the following code. This file functions as a catch all route for the Next.js API route, effectively managing all incoming API requests. 
 
 ```ts
 // src/app/api/[...remult]/route.ts
@@ -122,7 +122,7 @@ The default `Next.js` main screen should be displayed.
 
 ### Remove Next.js default styles
 
-The Next.js default styles won't fit our todo app. If you'd like a nice-looking app, replace the contents of `app/globals.css` with [this CSS file](https://raw.githubusercontent.com/remult/nextjs-app-starter/main/app/globals.css). Otherwise, you can simply **delete the contents of `app/globals.css`**.
+The Next.js default styles won't fit our todo app. If you'd like a nice-looking app, replace the contents of `app/globals.css` with [this CSS file](https://raw.githubusercontent.com/remult/nextjs-app-starter/main/src/app/globals.css). Otherwise, you can simply **delete the contents of `app/globals.css`**.
 
 ### Setup completed
 

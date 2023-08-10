@@ -8,14 +8,14 @@ Since our database may eventually contain a lot of tasks, it make sense to use a
 
 Let's limit the number of fetched tasks to `20`.
 
-In the `useEffect` hook defined in the `Home` component, pass an `options` argument to the `find` method call and set its `limit` property to 20.
+In the `useEffect` hook defined in the 'Todo` component, pass an `options` argument to the `find` method call and set its `limit` property to 20.
 
 ```ts{9-13}
-// src/app/page.tsx
+// src/components/todo.tsx
 
 //...
 
-export default function Home() {
+export default function Todo() {
   //...
 
   useEffect(() => {
@@ -44,7 +44,7 @@ In the `useEffect` hook, set the `orderBy` property of the `find` method call's 
 Use "asc" and "desc" to determine the sort order.
 
 ```ts{7}
-// src/app/page.tsx
+// src/components/todo.tsx
 
 useEffect(() => {
   taskRepo
@@ -61,8 +61,9 @@ useEffect(() => {
 Remult supports sending filter rules to the server to query only the tasks that we need.
 
 Adjust the `useEffect` hook to fetch only `completed` tasks.
+
 ```ts{8}
-// src/app/page.tsx
+// src/components/todo.tsx
 
 useEffect(() => {
   taskRepo

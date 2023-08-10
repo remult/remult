@@ -7,9 +7,9 @@ Now that we can see the list of tasks, it's time to add a few more.
 Add the highlighted `newTaskTitle` state and `addTask` function the Home Component
 
 ```ts{5-16}
-// app/page.tsx
+// src/components/todo.tsx
 
-export default function Home() {
+export default function Todo() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [newTaskTitle, setNewTaskTitle] = useState("")
 
@@ -35,7 +35,7 @@ This code requires adding an import of `FormEvent` from `react`.
 Next let's adjust the `tsx` to display a form to add new tasks
 
 ```tsx{7-14}
-// app/page.tsx
+// src/components/todo.tsx
 
 return (
   <div>
@@ -66,10 +66,10 @@ Try adding a few tasks to see how it works
 
 ## Mark Tasks as completed
 
-Modify the contents of the `tasks.map` iteration within the `Home` component to include the following `setCompleted` function and call it in the input's `onChange` event.
+Modify the contents of the `tasks.map` iteration within the 'Todo` component to include the following `setCompleted` function and call it in the input's `onChange` event.
 
 ```tsx{5-6,8-9,16}
-// app/page.tsx
+// src/components/todo.tsx
 
 {
   tasks.map(task => {
@@ -100,10 +100,10 @@ Modify the contents of the `tasks.map` iteration within the `Home` component to 
 
 To make the tasks in the list updatable, we'll bind the `tasks` React state to `input` elements and add a _Save_ button to save the changes to the backend database.
 
-Modify the contents of the `tasks.map` iteration within the `Home` component to include the following `setTitle` and `saveTask` functions and add an `input` and a save `button`.
+Modify the contents of the `tasks.map` iteration within the 'Todo` component to include the following `setTitle` and `saveTask` functions and add an `input` and a save `button`.
 
 ```tsx{11,13-19,28-29}
-// app/page.tsx
+// src/components/todo.tsx
 
 {
   tasks.map(task => {
@@ -151,10 +151,10 @@ As you play with these `CRUD` capabilities, monitor the network tab and see that
 
 Let's add a _Delete_ button next to the _Save_ button of each task in the list.
 
-Add the highlighted `deleteTask` function and _Delete_ `button` Within the `tasks.map` iteration in the `return` section of the `Home` component.
+Add the highlighted `deleteTask` function and _Delete_ `button` Within the `tasks.map` iteration in the `return` section of the 'Todo` component.
 
 ```tsx{21-28,39}
-// app/page.tsx
+// src/components/todo.tsx
 
 {
   tasks.map(task => {

@@ -41,7 +41,7 @@ Although client CRUD requests to `tasks` API endpoints now require a signed-in u
 To fix this, let's implement the same rule using the `@BackendMethod` decorator of the `setAllCompleted` method of `TasksController`.
 
 ```ts
-// src/app/shared/TasksController.ts
+// src/shared/TasksController.ts
 
 @BackendMethod({ allowed: Allow.authenticated })
 ```
@@ -286,7 +286,7 @@ Let's reuse the same definitions on the Frontend.
 We'll use the entity's metadata to only show the form if the user is allowed to insert
 
 ```tsx{4,13}
-// src/app/page.tsx
+// src/components/todo.tsx
 
 <main>
   {taskRepo.metadata.apiInsertAllowed() && (
@@ -306,7 +306,7 @@ We'll use the entity's metadata to only show the form if the user is allowed to 
 And let's do the same for the `delete` button:
 
 ```tsx{12,14}
-// src/app/page.tsx
+// src/components/todo.tsx
 
 return (
   <div key={task.id}>

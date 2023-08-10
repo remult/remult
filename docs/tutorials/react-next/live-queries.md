@@ -12,10 +12,10 @@ Let's add realtime multiplayer capabilities to this app.
 
 Let's switch from fetching Tasks once when the React component is loaded, and manually maintaining state for CRUD operations, to using a realtime updated live query subscription **for both initial data fetching and subsequent state changes**.
 
-1. Modify the contents of the `useEffect` hook in the `app/page.tsx` file
+1. Modify the contents of the `useEffect` hook in the `src/components/todo.tsx` file
 
 ```ts{4-5,10}
-// src/app/page.tsx
+// src/components/todo.tsx
 
 useEffect(() => {
   return taskRepo
@@ -40,7 +40,7 @@ Let's review the change:
 2. As all relevant CRUD operations (made by all users) will **immediately update the component's state**, we should remove the manual adding of new Tasks to the component's state:
 
 ```ts{7}
-// src/app/page.tsx
+// src/components/todo.tsx
 
 const addTask = async (e: FormEvent) => {
   e.preventDefault()
@@ -58,7 +58,7 @@ const addTask = async (e: FormEvent) => {
 3. Optionally remove other redundant state changing code:
 
 ```tsx{11-12,18-19,28}
-// src/app/page.tsx
+// src/components/todo.tsx
 
 //...
 
@@ -100,6 +100,7 @@ Open the todo app in two (or more) browser windows/tabs, make some changes in on
 
 ::: tip Under the hood
 The default implementation of live-queries uses HTTP Server-Sent Events (SSE) to push realtime updates to clients, and stores live-query information in-memory.
+Check the browser's network tab, you'll see a call to the `/api/stream` route which receives messages on every update.
 
 For scalable production / serverless environments, live-query updates can be pushed using integration with third-party realtime providers, such as [Ably](https://ably.com/), and live-query information can be stored to any database supported by Remult.
 :::
