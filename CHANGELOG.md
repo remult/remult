@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [0.22.6] - unknown
 
-- Fixed $contains for mongo
+- Implemented $contains for mongo
 
 ## [0.22.5] - 2023-08-09
 
