@@ -34,35 +34,33 @@ Don't worry if you don't have Postgres installed locally. In the next step of th
 
    //...
 
-   import { createPostgresConnection } from "remult/postgres"
+   import { createPostgresDataProvider } from "remult/postgres"
 
    const api = remultNextApp({
      //...
-     dataProvider: createPostgresConnection()
+     dataProvider: createPostgresDataProvider()
    })
    ```
 
    Once the application restarts, it'll use postgres as the data source for your application. It'll automatically create the `tasks` table for you - as you'll see in the `terminal` window.
 
-::: tip Use Supabase's free database
-1. Visit [https://app.supabase.io/](https://app.supabase.io/) and click "New project".
-2. Select a name, password, and region for your database. Make sure to save the password, as you will need it later.
-3. Click "Create new project". Creating the project can take a while, so be patient.
-4. Once the project is created navigate to the `Project Settings` icon on the left
-5. Select the "Database" tab on the left. 
-6. Scroll down to the `Connection string` section
-7. Select the `URI` tab, and copy the connection string to the `DATABASE_URL` environment variable in your `.env.local` file.
-8. Replace the `[YOUR-PASSWORD]` token with the password you created on step 2.
+::: tip specifying the connection string
+You can specify a connection string, by setting the `connectionString` property, for example::
+
+```ts
+createPostgresDataProvider({
+  connectionString: "your connection string"
+})
+```
+
+and You can set more options using the `configuration` property.
+
+```ts
+createPostgresDataProvider({
+  configuration: {
+    ssl: true
+  }
+})
+```
+
 :::
-
-
-   ::: tip specifying the connection string
-   If you want to specify a connection string, by setting the `connectionString` property:
-
-   ```ts
-   createPostgresConnection({
-     connectionString: "your connection string"
-   })
-   ```
-
-   :::
