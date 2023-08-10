@@ -166,7 +166,7 @@ Vercel deploys automatically whenever you push to github, so the first step of d
 1. Create a vercel account if you don't already have one.
 2. Goto [https://vercel.com/new](https://vercel.com/new)
 3. Select your `github` repo and click `import`
-4. Configure the project's name and in the `> Environment Variables` section,  `NEXTAUTH_SECRET` and `ABLY_API_KEY` environment variables
+4. Configure the project's name and in the `> Environment Variables` section, `NEXTAUTH_SECRET` and `ABLY_API_KEY` environment variables
 5. Click `Deploy`
 6. Now we need to define the postgres database.
 7. Wait for vercel to complete it's deployment
@@ -182,6 +182,8 @@ Vercel deploys automatically whenever you push to github, so the first step of d
 17. Once completed click on 'Visit'.
 
 That's it - our application is deployed to production on vercel, play with it and enjoy.
+
+[Code at this stage](https://github.com/noam-honig/remult-nextjs-app-router-todo)
 
 To see a larger more complex code base, visit our [CRM example project](https://www.github.com/remult/crm-demo)
 
