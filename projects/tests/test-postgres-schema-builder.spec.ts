@@ -27,3 +27,6 @@ if (process.env['DATABASE_URL'])
       expect(await repo.count()).toBe(0)
     })
   })
+  else {
+    it("stam",()=>expect(1+1).toBe(2))
+  }
