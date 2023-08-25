@@ -129,23 +129,31 @@ export class PostgresSchemaBuilder {
       )
       .then(async (r) => {
         if (r.rows.length == 0) {
-          let result = ''
+          let result = []
           for (const x of entity.fields) {
-            if (!isDbReadonly(x, e) || isAutoIncrement(x)) {
-              if (result.length != 0) result += ','
-              result += '\r\n  '
-
-              if (isAutoIncrement(x)) result += e.$dbNameOf(x) + ' serial'
-              else {
-                result += postgresColumnSyntax(x, e.$dbNameOf(x))
-              }
-              if (x == entity.idMetadata.field) result += ' primary key'
+            const col = createColumn(x)
+            if (!result.includes(col)) {
+              result.push(col)
             }
           }
 
-          let sql = 'create table ' + e.$entityName + ' (' + result + '\r\n)'
+          let sql = `CREATE TABLE ${e.$entityName} (
+  ${result.join(`,\r\n  `)}
+)`
           if (PostgresSchemaBuilder.logToConsole) console.info(sql)
           await this.pool.execute(sql)
+        }
+
+        function createColumn(x: FieldMetadata<any, any>) {
+          let result = ''
+          if (!isDbReadonly(x, e) || isAutoIncrement(x)) {
+            if (isAutoIncrement(x)) result += e.$dbNameOf(x) + ' serial'
+            else {
+              result += postgresColumnSyntax(x, e.$dbNameOf(x))
+            }
+            if (x == entity.idMetadata.field) result += ' primary key'
+          }
+          return result
         }
       })
   }

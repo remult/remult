@@ -2,6 +2,7 @@ import { expect, it, describe, beforeEach, afterEach } from 'vitest'
 import { config } from 'dotenv'
 import {
   Entity,
+  Field,
   Fields,
   SqlDatabase,
   dbNamesOf,
@@ -140,7 +141,7 @@ describe.skipIf(!connectionString)('Test postgres schema builder', () => {
       name: Fields.string(),
     })
     const repo1 = remult.repo(Task1)
-    // expect((await dbNamesOf(repo1)).$entityName).toBe('"Task"')
+    expect((await dbNamesOf(repo1)).$entityName).toBe('"Task"')
     await sb.createIfNotExist(repo1.metadata)
     await repo1.insert({ id: '1', name: 'u1' })
     expect(await repo1.find()).toMatchInlineSnapshot(`
@@ -182,5 +183,108 @@ describe.skipIf(!connectionString)('Test postgres schema builder', () => {
         },
       ]
     `)
+  })
+
+  it('Two columns looking at the same field', async () => {
+    const Category = class {
+      id = ''
+      name = ''
+    }
+    describeClass(Category, Entity('categories'), {
+      id: Fields.string(),
+      name: Fields.string(),
+    })
+
+    const repoC = remult.repo(Category)
+
+    const Task = class {
+      id = ''
+      name = ''
+      category = null
+      categoryId = null
+    }
+    describeClass(Task, Entity('task', { dbName: '"Task"' }), {
+      id: Fields.string(),
+      name: Fields.string(),
+      categoryId: Fields.string({
+        dbName: '"categoryId"',
+        allowNull: true,
+      }),
+      category: Field(() => Category, {
+        dbName: '"categoryId"',
+        allowNull: true,
+        lazy: true,
+      }),
+    })
+    const repoT = remult.repo(Task)
+
+    var sb = new PostgresSchemaBuilder(db)
+    await sb.ensureSchema([repoT.metadata, repoC.metadata])
+
+    await repoC.insert({ id: '1', name: 'cat1' })
+
+    // 1/ Let's not add any category
+    await repoT.insert({ id: '1', name: 'u1' })
+    expect(await repoT.find({})).toMatchInlineSnapshot(`
+      [
+        Task {
+          "category": null,
+          "categoryId": null,
+          "id": "1",
+          "name": "u1",
+        },
+      ]
+    `)
+
+    // 2/ Let's add a category wit "category"
+    await repoT.insert({ id: '2', name: 'u2', category: '1' })
+    expect(await repoT.findId('2')).toMatchInlineSnapshot(`
+      Task {
+        "category": undefined,
+        "categoryId": "1",
+        "id": "2",
+        "name": "u2",
+      }
+    `)
+
+    expect(await repoT.findId('2', { load: (e) => [e.category] }))
+      .toMatchInlineSnapshot(`
+        Task {
+          "category": Category {
+            "id": "1",
+            "name": "cat1",
+          },
+          "categoryId": "1",
+          "id": "2",
+          "name": "u2",
+        }
+      `)
+
+    // 3/ Let's add a category wit "categoryId"
+    await repoT.insert({ id: '3', name: 'u3', categoryId: '1' })
+    expect(await repoT.findId('3')).toMatchInlineSnapshot(`
+      Task {
+        "category": Category {
+          "id": "1",
+          "name": "cat1",
+        },
+        "categoryId": "1",
+        "id": "3",
+        "name": "u3",
+      }
+    `)
+
+    expect(await repoT.findId('3', { load: (e) => [e.category] }))
+      .toMatchInlineSnapshot(`
+        Task {
+          "category": Category {
+            "id": "1",
+            "name": "cat1",
+          },
+          "categoryId": "1",
+          "id": "3",
+          "name": "u3",
+        }
+      `)
   })
 })
