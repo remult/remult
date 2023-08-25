@@ -23,7 +23,7 @@ let db: SqlDatabase = undefined
 PostgresSchemaBuilder.logToConsole = false
 SqlDatabase.LogToConsole = false
 
-const schemas = ['public']
+const schemas = ['public', 'not_public']
 
 describe.skipIf(!connectionString)('Test postgres schema builder', () => {
   beforeEach(async () => {
@@ -182,5 +182,43 @@ describe.skipIf(!connectionString)('Test postgres schema builder', () => {
         },
       ]
     `)
+  })
+
+  it('schema builder with default schema', async () => {
+    var sb = new PostgresSchemaBuilder(db, 'not_public')
+
+    const Task = class {
+      id = ''
+      name = ''
+    }
+    describeClass(Task, Entity('task', { dbName: '"Task"' }), {
+      id: Fields.string(),
+      name: Fields.string(),
+    })
+    const repo = remult.repo(Task)
+    await sb.createIfNotExist(repo.metadata)
+    const result = await db.execute(
+      `SELECT table_schema FROM information_schema.tables WHERE table_name = 'Task';`,
+    )
+    expect(result.rows[0].table_schema).toBe('not_public')
+  })
+
+  it('schema builder with default schema & overwritten at entity level', async () => {
+    var sb = new PostgresSchemaBuilder(db, 'not_public')
+
+    const Task = class {
+      id = ''
+      name = ''
+    }
+    describeClass(Task, Entity('task', { dbName: 'public."Task"' }), {
+      id: Fields.string(),
+      name: Fields.string(),
+    })
+    const repo = remult.repo(Task)
+    await sb.createIfNotExist(repo.metadata)
+    const result = await db.execute(
+      `SELECT table_schema FROM information_schema.tables WHERE table_name = 'Task';`,
+    )
+    expect(result.rows[0].table_schema).toBe('public')
   })
 })

@@ -61,8 +61,13 @@ export class PostgresSchemaBuilder {
     let table = ''
     let schema = ''
 
+    if (this.specifiedSchema) {
+      schema = this.specifiedSchema
+    }
+
     const splited = e.$entityName.split('.')
 
+    // let's prioritize the specified schema at dbName level
     if (splited.length > 1) {
       schema = splited[0]
       table = splited[1]
@@ -87,6 +92,16 @@ export class PostgresSchemaBuilder {
     return where.join(' AND ')
   }
 
+  private schemaAndName(e: EntityDbNamesBase) {
+    if (e.$entityName.includes('.')) {
+      return e.$entityName
+    }
+    if (this.specifiedSchema) {
+      return `${this.specifiedSchema}.${e.$entityName}`
+    }
+    return e.$entityName
+  }
+
   async verifyStructureOfAllEntities(remult?: Remult) {
     if (!remult) {
       remult = defaultRemult
@@ -102,6 +117,7 @@ export class PostgresSchemaBuilder {
     }
     await this.ensureSchema(entities)
   }
+
   async ensureSchema(entities: EntityMetadata<any>[]) {
     for (const entity of entities) {
       let e: EntityDbNamesBase = await dbNamesOf(entity)
@@ -143,7 +159,7 @@ export class PostgresSchemaBuilder {
             }
           }
 
-          let sql = 'create table ' + e.$entityName + ' (' + result + '\r\n)'
+          let sql = `CREATE table ${this.schemaAndName(e)} (${result}\r\n)`
           if (PostgresSchemaBuilder.logToConsole) console.info(sql)
           await this.pool.execute(sql)
         }
@@ -171,9 +187,9 @@ export class PostgresSchemaBuilder {
           )
         ).rows.length == 0
       ) {
-        let sql = `alter table ${
-          e.$entityName
-        } add column ${postgresColumnSyntax(c(entity), colName)}`
+        let sql =
+          `ALTER table ${this.schemaAndName(e)} ` +
+          `ADD column ${postgresColumnSyntax(c(entity), colName)}`
         if (PostgresSchemaBuilder.logToConsole) console.info(sql)
         await this.pool.execute(sql)
       }
@@ -181,6 +197,7 @@ export class PostgresSchemaBuilder {
       console.error(err)
     }
   }
+
   async verifyAllColumns<T extends EntityMetadata>(entity: T) {
     try {
       let cmd = this.pool.createCommand()
@@ -198,9 +215,9 @@ export class PostgresSchemaBuilder {
           if (colName.startsWith('"') && colName.endsWith('"'))
             colName = colName.substring(1, colName.length - 1)
           if (!cols.includes(colName)) {
-            let sql = `alter table ${
-              e.$entityName
-            } add column ${postgresColumnSyntax(col, e.$dbNameOf(col))}`
+            let sql =
+              `ALTER table ${this.schemaAndName(e)} ` +
+              `add column ${postgresColumnSyntax(col, e.$dbNameOf(col))}`
             if (PostgresSchemaBuilder.logToConsole) console.info(sql)
             await this.pool.execute(sql)
           }
@@ -211,5 +228,13 @@ export class PostgresSchemaBuilder {
     }
   }
 
-  constructor(private pool: SqlDatabase) {}
+  specifiedSchema = ''
+  constructor(
+    private pool: SqlDatabase,
+    schema?: string,
+  ) {
+    if (schema) {
+      this.specifiedSchema = schema
+    }
+  }
 }
