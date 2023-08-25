@@ -1,4 +1,3 @@
-import { SqlCommand } from 'src/sql-command'
 import { FieldMetadata } from '../src/column-interfaces'
 import { Remult, allEntities } from '../src/context'
 import { SqlDatabase } from '../src/data-providers/sql-database'
@@ -9,6 +8,7 @@ import {
 } from '../src/filter/filter-consumer-bridge-to-sql-request'
 import { remult as defaultRemult } from '../src/remult-proxy'
 import { EntityMetadata, isAutoIncrement } from '../src/remult3'
+import { SqlCommand } from '../src/sql-command'
 import { ValueConverters } from '../src/valueConverters'
 
 export function postgresColumnSyntax(x: FieldMetadata, dbName: string) {

@@ -95,6 +95,10 @@ export interface EntityOptions<entityType = any> {
    * If no name is set, the `key` will be used instead.
    * @example
    * dbName:'myProducts'
+   *
+   * You can also add your schema name to the table name
+   * @example
+   * dbName:'public."myProducts"'
    */
   dbName?: string
   /** For entities that are based on SQL expressions instead of a physical table or view*/
