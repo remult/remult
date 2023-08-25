@@ -1,15 +1,15 @@
 <script lang="ts">
-  import { remult } from "remult"
-  import { Task } from "../shared/task"
+  import { remult } from 'remult'
+  import { Task } from '../shared/task'
 
-  import { browser } from "$app/environment"
-  import { goto } from "$app/navigation"
-  import { page } from "$app/stores"
-  import { signOut } from "@auth/sveltekit/client"
-  import "../app.css"
-  import { remultLive } from "$lib/stores/remultLive"
-  import { TasksController } from "../shared/tasksController"
-  import type { PageData } from "./$types"
+  import { browser } from '$app/environment'
+  import { goto } from '$app/navigation'
+  import { page } from '$app/stores'
+  import { signOut } from '@auth/sveltekit/client'
+  import '../app.css'
+  import { remultLive } from '$lib/stores/remultLive'
+  import { TasksController } from '../shared/tasksController'
+  import type { PageData } from './$types'
 
   export let data: PageData
 
@@ -20,12 +20,12 @@
   const tasks = remultLive(taskRepo, data.tasks)
   $: browser && tasks.listen(data.options)
 
-  let newTaskTitle = ""
+  let newTaskTitle = ''
 
   async function addTask() {
     try {
       const newTask = await taskRepo.insert({ title: newTaskTitle })
-      newTaskTitle = ""
+      newTaskTitle = ''
     } catch (error: any) {
       alert(error.message)
     }
@@ -48,9 +48,9 @@
     await TasksController.setAllCompleted(completed)
   }
 
-  function updateLimit(direction: "MORE" | "LESS") {
-    const limit = parseInt($page.url.searchParams.get("limit") || "3")
-    const newLimit = direction === "MORE" ? limit + 1 : limit - 1
+  function updateLimit(direction: 'MORE' | 'LESS') {
+    const limit = parseInt($page.url.searchParams.get('limit') || '3')
+    const newLimit = direction === 'MORE' ? limit + 1 : limit - 1
 
     // Let's not go bellow 1!
     if (newLimit < 1) return
@@ -65,16 +65,21 @@
     Hello {remult.user?.name} <button on:click={signOut}>Sign Out</button>
   </div>
   <div>
-    <button on:click={() => updateLimit("LESS")}>Less</button>
+    <button on:click={() => updateLimit('LESS')}>Less</button>
     <i>Show</i>
-    <button on:click={() => updateLimit("MORE")}>More</button>
+    <button on:click={() => updateLimit('MORE')}>More</button>
   </div>
-  {#if taskRepo.metadata.apiInsertAllowed()}
-    <form on:submit|preventDefault={addTask}>
-      <input bind:value={newTaskTitle} placeholder="What needs to be done?" />
-      <button>Add</button>
-    </form>
-  {/if}
+  <form on:submit|preventDefault={addTask}>
+    <input
+      title={!taskRepo.metadata.apiInsertAllowed()
+        ? 'Sign in as Jane to add tasks'
+        : 'Be creative in your description!'}
+      disabled={!taskRepo.metadata.apiInsertAllowed()}
+      bind:value={newTaskTitle}
+      placeholder="What needs to be done?"
+    />
+    <button disabled={!taskRepo.metadata.apiInsertAllowed()}>Add</button>
+  </form>
   {#each $tasks as task}
     <div>
       <input
