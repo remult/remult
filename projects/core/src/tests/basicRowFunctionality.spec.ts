@@ -11,7 +11,6 @@ import { Status } from './testModel/models'
 import { Remult, Allowed } from '../context'
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider'
 import { __RowsOfDataForTesting } from '../__RowsOfDataForTesting'
-import { DataList } from '../../../angular/interfaces/src/dataList'
 import { UrlBuilder } from '../../urlBuilder'
 
 import { SqlDatabase } from '../data-providers/sql-database'
@@ -58,7 +57,6 @@ import {
   dbNamesOf,
 } from '../filter/filter-consumer-bridge-to-sql-request'
 import axios from 'axios'
-import { async } from '@angular/core/testing'
 import {
   HttpProviderBridgeToRestDataProviderHttpProvider,
   retry,
@@ -1676,19 +1674,6 @@ describe('compound id', () => {
   })
 })
 describe('test data list', () => {
-  it('delete works', async () => {
-    let [c] = await createData(async (i) => {
-      await i(1, 'a')
-      await i(2, 'b')
-      await i(3, 'c')
-    })
-    let rl = new DataList<CategoriesForTesting>(c)
-    await rl.get()
-    expect(rl.items.length).toBe(3)
-    await rl.items[1]._.delete()
-    expect(rl.items.length).toBe(2)
-  })
-
   it('dbname of entity string works', async () => {
     let type = class extends Categories {}
     Entity('testName', { dbName: 'test' })(type)
@@ -1698,37 +1683,6 @@ describe('test data list', () => {
   it('dbname of entity can use column names', async () => {
     let r = new Remult().repo(EntityWithLateBoundDbName)
     expect(await r.metadata.getDbName()).toBe('(select CategoryID)')
-  })
-
-  it('delete fails nicely', async () => {
-    let cont = new Remult()
-    cont.dataProvider = {
-      getEntityDataProvider: (x) => {
-        let r = new ArrayEntityDataProvider(x, [
-          { id: 1 },
-          { id: 2 },
-          { id: 3 },
-        ])
-        r.delete = (id) => {
-          return Promise.resolve().then(() => {
-            throw Promise.resolve('error')
-          })
-        }
-        return r
-      },
-      transaction: undefined,
-    }
-
-    let rl = new DataList<newCategories>(cont.repo(newCategories))
-    await rl.get()
-    expect(rl.items.length).toBe(3)
-    try {
-      await rl.items[1]._.delete()
-      fail('was not supposed to get here')
-    } catch (err) {
-      expect(rl.items.length).toBe(3)
-      expect(rl.items[1]._.error).toBe('error')
-    }
   })
 })
 describe('test date storage', () => {
