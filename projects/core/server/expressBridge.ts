@@ -145,7 +145,7 @@ export function createRemultServerCore<RequestType>(
           const startConsoleLog = () => {
             if (started) return
             started = true
-            console.time('Ensure Schema')
+            console.time('Schema ensured')
           }
           entitiesMetaData.push(
             ...options.entities.map((e) => remult.repo(e).metadata),
@@ -163,7 +163,7 @@ export function createRemultServerCore<RequestType>(
               await item.ensureSchema()
             }
           }
-          if (started) console.timeEnd('Ensure Schema')
+          if (started) console.timeEnd('Schema ensured')
         }
         if (options.initApi) await options.initApi(remult)
         res({})
