@@ -1071,7 +1071,6 @@ testAll(
   },
 )
 
-
 testAll(
   'test contains with names with casing',
   async ({ createEntity }) => {
@@ -1367,13 +1366,12 @@ testAll(
     }
     describeClass(task, Entity('tasks', { allowApiCrud: true }), {
       id: Fields.integer(),
-      title: Fields.string({validate:Validators.required}),
+      title: Fields.string({ validate: Validators.required }),
       cat: Field(() => Categories),
       completed: Fields.boolean(),
     })
     const taskRepo = await createEntity(task)
     await taskRepo.insert({ id: 1, cat, title: 'noam' })
-
 
     await taskRepo.update(1, { completed: true })
     {

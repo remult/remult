@@ -8,11 +8,15 @@ export declare class RemultAsyncLocalStorage {
     private readonly remultObjectStorage;
     static enable(): void;
     static disable(): void;
-    constructor(remultObjectStorage: import('async_hooks').AsyncLocalStorage<Remult>);
+    constructor(remultObjectStorage: myAsyncLocalStorage<Remult>);
     run(remult: Remult, callback: VoidFunction): void;
     getRemult(): Remult;
     static instance: RemultAsyncLocalStorage;
 }
+declare type myAsyncLocalStorage<T> = {
+    run<R>(store: T, callback: (...args: any[]) => R, ...args: any[]): R;
+    getStore(): T;
+};
 export declare function isBackend(): boolean;
 export declare class Remult {
     /**Return's a `Repository` of the specific entity type
@@ -127,3 +131,4 @@ export interface itemChange {
     deleted: boolean;
 }
 export declare function doTransaction(remult: Remult, what: () => Promise<void>): Promise<void>;
+export {};
