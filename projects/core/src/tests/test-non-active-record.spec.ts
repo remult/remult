@@ -3,6 +3,7 @@ import { ErrorInfo } from '../data-interfaces'
 import { InMemoryDataProvider } from '../data-providers/in-memory-database'
 import { Entity, Fields } from '../remult3'
 import { Validators } from '../validators'
+import { describe, it, expect,beforeEach,afterEach,beforeAll } from 'vitest'
 
 @Entity('nonActiveRecord', {})
 class taskNonActiveRecord {

@@ -1,6 +1,6 @@
 import { Entity, EntityBase, Field, FieldType, Fields } from '../remult3'
 import { testAll } from './db-tests-setup'
-import { deleteAll } from './deleteAll'
+import { describe, it, expect } from 'vitest'
 
 @FieldType<GroupsValue>({
   valueConverter: {

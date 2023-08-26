@@ -39,7 +39,8 @@ import {
 import { v4 as uuid } from 'uuid'
 import { testPostgresImplementation } from '../backend-tests/backend-database-test-setup.backend-spec'
 import { ValueConverters } from '../valueConverters'
-import { testRest } from '../tests/frontend-database-tests-setup.spec'
+import { testRest } from '../tests/frontend-database-tests-setup.spec-browser'
+import { describe, it, expect } from 'vitest'
 
 testAll(
   'what',

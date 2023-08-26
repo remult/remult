@@ -137,7 +137,7 @@
     "typedoc-plugin-markdown": "3.10.4",
     "typescript": "~4.1.5",
     "uuid": "^8.3.2",
-    "vitest": "^0.32.0",
+    "vitest": "^0.34.3",
     "zone.js": "~0.11.3"
   },
   "browser": {

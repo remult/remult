@@ -6,13 +6,14 @@ import {
 } from '../column-interfaces'
 import { InMemoryDataProvider } from '../data-providers/in-memory-database'
 import { ArrayEntityDataProvider } from '../data-providers/array-entity-data-provider'
-import { testAllDataProviders } from './testHelper.spec'
+import { testAllDataProviders } from './testHelper'
 import { Status, TestStatus } from './testModel/models'
 import { Allow, Remult } from '../context'
 import { OneToMany } from '../column'
 
 import { FilterConsumerBridgeToSqlRequest } from '../filter/filter-consumer-bridge-to-sql-request'
 import { Validators } from '../validators'
+import { describe, it, expect } from 'vitest'
 
 import {
   Categories,
@@ -532,9 +533,9 @@ describe('test datetime column', () => {
     function test(d: Date, expected: string) {
       expect(ValueConverters.DateOnly.toJson(d)).toBe(expected)
       const ed = ValueConverters.DateOnly.fromJson(expected)
-      expect(ed.getFullYear()).toEqual(d.getFullYear(), 'year')
-      expect(ed.getMonth()).toEqual(d.getMonth(), 'month')
-      expect(ed.getDate()).toEqual(d.getDate(), 'day')
+      expect(ed.getFullYear()).to.eq(d.getFullYear(), 'year')
+      expect(ed.getMonth()).to.eq(d.getMonth(), 'month')
+      expect(ed.getDate()).to.eq(d.getDate(), 'day')
     }
     test(new Date(2021, 2, 26), '2021-03-26')
     test(new Date(2021, 9, 31), '2021-10-31')

@@ -1,4 +1,4 @@
-import './frontend-database-tests-setup.spec'
+
 
 import { AllowedForInstance, Remult } from '../context'
 import {
@@ -18,8 +18,9 @@ import { testConfiguration } from '../shared-tests/entityWithValidations'
 import { TestDataApiResponse } from './TestDataApiResponse'
 import { remult } from '../remult-proxy'
 import { HttpProviderBridgeToRestDataProviderHttpProvider } from '../buildRestDataProvider'
+import { describe, it, expect } from 'vitest'
 
-jasmine.DEFAULT_TIMEOUT_INTERVAL = 999999
+
 //actionInfo.runningOnServer = false;
 
 export function itForEach<T>(

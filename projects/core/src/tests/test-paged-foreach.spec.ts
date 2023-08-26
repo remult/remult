@@ -16,7 +16,8 @@ import { CompoundIdField } from '../column'
 import { entityFilterToJson, Filter } from '../filter/filter-interfaces'
 
 import { SqlDatabase } from '../..'
-import { testRestDb } from './testHelper.spec'
+import { testRestDb } from './testHelper'
+import { describe, it, expect,beforeEach,afterEach,beforeAll } from 'vitest'
 
 describe('test paged foreach ', () => {
   queryConfig.defaultPageSize = 2

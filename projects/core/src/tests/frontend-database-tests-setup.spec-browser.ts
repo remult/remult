@@ -9,7 +9,8 @@ import { Remult } from '../context'
 import { SqlDatabase } from '../data-providers/sql-database'
 import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider'
 
-import { MockRestDataProvider } from './testHelper.spec'
+import { MockRestDataProvider } from './testHelper'
+import { describe, it, expect } from 'vitest'
 
 export function testWebSqlImpl(
   key: string,
@@ -62,4 +63,4 @@ export function testRest(
 }
 addDatabaseToTest(testRest, TestDbs.restDataProvider)
 
-import '../shared-tests/'
+import '../shared-tests'

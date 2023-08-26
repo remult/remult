@@ -1,0 +1,6 @@
+{
+  "devDependencies": {
+    "@vitest/browser": "^0.34.3",
+    "webdriverio": "^8.15.8"
+  }
+}

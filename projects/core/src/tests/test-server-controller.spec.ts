@@ -1,4 +1,4 @@
-import { ActionTestConfig, testAsIfOnBackend } from './testHelper.spec'
+import { ActionTestConfig, testAsIfOnBackend } from './testHelper'
 import { Remult, isBackend } from '../context'
 import { prepareArgsToSend, Controller, BackendMethod } from '../server-action'
 import {
@@ -13,6 +13,7 @@ import {
 import { remult, RemultProxy } from '../remult-proxy'
 import { describeClass } from '../remult3/DecoratorReplacer'
 import { InMemoryDataProvider } from '../data-providers/in-memory-database'
+import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'vitest'
 
 @ValueListFieldType()
 export class myType {
@@ -82,17 +83,17 @@ class testBasics {
       result: 'hello ' + name,
     }
   }
-  @BackendMethod({ allowed: true })
+  @BackendMethod({ allowed: true, paramTypes: [Date] })
   static async testDate(d: Date) {
     return d.getFullYear()
   }
   @BackendMethod({ allowed: false })
   static async testForbidden2() {}
-  @BackendMethod({ allowed: true })
+  @BackendMethod({ allowed: true, paramTypes: [myType] })
   static async testDataType(d: myType, n: number) {
     return d.what(n)
   }
-  @BackendMethod({ allowed: true })
+  @BackendMethod({ allowed: true, paramTypes: [Remult] })
   static async getValFromServer(remult?: Remult) {
     return (await remult.repo(testEntity).findFirst()).name
   }
@@ -155,7 +156,6 @@ describe('test Server Controller basics', () => {
   c.dataProvider = ActionTestConfig.db
   beforeEach(async (done) => {
     await Promise.all((await c.repo(testEntity).find()).map((x) => x.delete()))
-    done()
   })
   it('forbidden static backend', async () => {
     let ok = true

@@ -6,6 +6,7 @@ import { remult } from '../remult-proxy'
 import { Repository } from '../remult3'
 import { Categories, CategoriesForTesting } from '../tests/remult-3-entities'
 import { Status } from '../tests/testModel/models'
+import { describe, it, expect } from 'vitest'
 
 export function itWithFocus(
   key: string,

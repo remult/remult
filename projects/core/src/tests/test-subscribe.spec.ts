@@ -2,6 +2,7 @@ import { InMemoryDataProvider } from '../..'
 import { Remult } from '../context'
 import { Entity, EntityBase, Field, Fields } from '../remult3'
 import { Validators } from '../validators'
+import { describe, it, expect } from 'vitest'
 
 describe('test subscribe', () => {
   it('basics', async () => {

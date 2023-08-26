@@ -12,6 +12,7 @@ import {
 } from '../remult3'
 import { entityFilterToJson, Filter } from '../filter/filter-interfaces'
 import { assign } from '../../assign'
+import { describe, it, expect,beforeEach,afterEach,beforeAll } from 'vitest'
 
 describe('test object column', () => {
   var wsql = new WebSqlDataProvider('test')

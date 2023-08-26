@@ -5,6 +5,7 @@ import { InMemoryDataProvider } from '../data-providers/in-memory-database'
 
 import { Field, Entity, EntityBase, Fields } from '../remult3'
 import { processHttpException, toPromise } from '../buildRestDataProvider'
+import { describe, it, expect } from 'vitest'
 
 describe('test exception', () => {
   it('test save exception', async () => {

@@ -22,6 +22,7 @@ import {
   dbNamesOf,
   isDbReadonly,
 } from '../filter/filter-consumer-bridge-to-sql-request'
+import { describe, it, expect,beforeEach,afterEach,beforeAll } from 'vitest'
 
 describe('test sql database expressions', () => {
   let web = new WebSqlDataProvider('test')

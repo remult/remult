@@ -13,7 +13,7 @@ import {
 import { entityFilterToJson, Filter } from '../filter/filter-interfaces'
 import { Language } from './RowProvider.spec'
 
-import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider'
+
 import { SqlDatabase } from '../data-providers/sql-database'
 
 import { DataApi } from '../data-api'
@@ -22,38 +22,9 @@ import { actionInfo } from '../server-action'
 import { Done } from './Done'
 import { TestDataApiResponse } from './TestDataApiResponse'
 import { h } from './h'
+import { describe, it, expect,beforeEach,afterEach,beforeAll } from 'vitest'
+import { Categories, Products } from './entities-for-tests'
 
-@Entity('categories')
-class Categories extends EntityBase {
-  @Fields.integer()
-  id: number
-  @Fields.string()
-  name: string
-  @Field(() => Language)
-  language: Language
-  @Fields.boolean()
-  archive: boolean = false
-}
-@Entity('suppliers')
-class Suppliers extends EntityBase {
-  @Fields.string()
-  supplierId: string
-  @Fields.string()
-  name: string
-}
-@Entity('products')
-class Products extends EntityBase {
-  @Fields.integer()
-  id: number
-  @Fields.string()
-  name: string
-  @Field(() => Categories, {
-    lazy: true,
-  })
-  category: Categories
-  @Field(() => Suppliers)
-  supplier: Suppliers
-}
 @Entity('products')
 class ProductsEager extends EntityBase {
   @Fields.integer()
@@ -95,8 +66,8 @@ class following extends EntityBase {
 }
 
 describe('many to one relation', () => {
-  beforeEach(() => (actionInfo.runningOnServer = true))
-  afterEach(() => (actionInfo.runningOnServer = false))
+  beforeEach(() => {(actionInfo.runningOnServer = true)})
+  afterEach(() =>{ (actionInfo.runningOnServer = false)})
   it('xx', async () => {
     let mem = new InMemoryDataProvider()
     let remult = new Remult()
@@ -188,14 +159,14 @@ describe('many to one relation', () => {
     p.id = 10
     p.name = 'prod 10'
     p.category = cat
-    expect(p.category.id).toBe(1, 'right after set')
+    expect(p.category.id).to.eq(1, 'right after set')
     //    expect(p.category.name).toBe("cat 1", "right after set");
     await p.$.category.load()
-    expect(p.category.name).toBe('cat 1', 'after set and wait load')
+    expect(p.category.name).to.eq('cat 1', 'after set and wait load')
     await p.save()
-    expect(p.category.name).toBe('cat 1', 'after save')
+    expect(p.category.name).to.eq('cat 1', 'after save')
     expect(mem.rows[remult.repo(Products).metadata.key][0].category).toBe(1)
-    expect(p._.toApiJson().category).toBe(1, 'to api pojo')
+    expect(p._.toApiJson().category).to.eq(1, 'to api pojo')
     p = await remult.repo(Products).findFirst()
     expect(p.id).toBe(10)
     expect(p.category.id).toBe(1)
@@ -208,15 +179,15 @@ describe('many to one relation', () => {
     c2.id = 2
     c2.name = 'cat 2'
     await c2.save()
-    expect(p._.wasChanged()).toBe(false, 'x')
-    expect(p.$.category.valueChanged()).toBe(false, 'y')
+    expect(p._.wasChanged()).to.eq(false, 'x')
+    expect(p.$.category.valueChanged()).to.eq(false, 'y')
     p.category = c2
     expect(p._.wasChanged()).toBe(true)
     expect(p.$.category.valueChanged()).toBe(true)
     expect(p.$.category.value.id).toBe(2)
     expect(p.$.category.originalValue.id).toBe(1)
     await p.save()
-    expect(p._.wasChanged()).toBe(false, 'a')
+    expect(p._.wasChanged()).to.eq(false, 'a')
     expect(p.$.category.valueChanged()).toBe(false)
     expect(p.$.category.value.id).toBe(2)
     expect(p.$.category.originalValue.id).toBe(2)
@@ -418,7 +389,7 @@ describe('many to one relation', () => {
             ),
           ),
         ),
-      ).toBe(expected, 'packed where')
+      ).to.eq(expected, 'packed where')
     }
 
     await test({ category: c }, 2)
@@ -760,42 +731,7 @@ describe('many to one relation', () => {
     expect((await p.$.category.load()).id).toBe(cat.id)
     expect((await p.$.category.load()).isNew()).toBe(false)
   })
-  it('test relation in sql', async () => {
-    var wsql = new WebSqlDataProvider('test2')
-    let db = new SqlDatabase(wsql)
-    let remult = new Remult()
-    remult.dataProvider = db
-    for (const x of [Categories, Products, Suppliers] as any[]) {
-      let e = remult.repo(x).metadata
-      await wsql.dropTable(e)
-      await wsql.createTable(e)
-    }
-    let cat = await remult
-      .repo(Categories)
-      .create({ id: 1, name: 'cat' })
-      .save()
-    let sup = await remult
-      .repo(Suppliers)
-      .create({ supplierId: 'sup1', name: 'sup1name' })
-      .save()
-    let p = await remult
-      .repo(Products)
-      .create({
-        id: 10,
-        name: 'prod',
-        category: cat,
-        supplier: sup,
-      })
-      .save()
-    await p.$.category.load()
-    expect(p.category.id).toBe(cat.id)
-    let sqlr = (await db.execute('select category,supplier from products'))
-      .rows[0]
-    expect(sqlr.category).toEqual('1.0')
-    expect(sqlr.supplier).toBe('sup1')
-    expect(await remult.repo(Products).count({ supplier: sup })).toBe(1)
-    expect(await remult.repo(Products).count({ supplier: [sup] })).toBe(1)
-  })
+ 
   it('test filter with id', async () => {
     let mem = new InMemoryDataProvider()
     let remult = new Remult()

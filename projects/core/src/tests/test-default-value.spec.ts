@@ -3,6 +3,7 @@ import { Remult } from '../context'
 import { InMemoryDataProvider } from '../data-providers/in-memory-database'
 
 import { EntityBase, Entity, Fields } from '../remult3'
+import { describe, it, expect } from 'vitest'
 
 describe('test default value', () => {
   it('test basics', async () => {

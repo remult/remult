@@ -10,7 +10,7 @@ import {
   Repository,
   RepositoryImplementation,
 } from '../remult3'
-import { testWebSqlImpl } from './frontend-database-tests-setup.spec'
+import { testWebSqlImpl } from './frontend-database-tests-setup.spec-browser'
 import { entityWithValidations } from '../shared-tests/entityWithValidations'
 import {
   EntityDbNames,
@@ -19,6 +19,7 @@ import {
 } from '../filter/filter-consumer-bridge-to-sql-request'
 import { SqlCommand, SqlResult } from '../sql-command'
 import { Filter } from '../filter/filter-interfaces'
+import { describe, it, expect } from 'vitest'
 
 describe('test sql database', () => {
   let db = new SqlDatabase(new WebSqlDataProvider('test'))
