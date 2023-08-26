@@ -57,7 +57,7 @@ export class SqlDatabase implements DataProvider {
   async ensureSchema(entities: EntityMetadata<any>[]): Promise<void> {
     if (this.sql.ensureSchema) await this.sql.ensureSchema(entities)
   }
-
+ 
   getEntityDataProvider(entity: EntityMetadata): EntityDataProvider {
     if (!this.sql.supportsJsonColumnType) {
       for (const f of entity.fields.toArray()) {

@@ -54,7 +54,7 @@ export class PostgresSchemaBuilder {
     if (s.startsWith('"') && s.endsWith('"')) {
       return s.substring(1, s.length - 1)
     }
-    return s
+    return s.toLocaleLowerCase()
   }
 
   private whereTableAndSchema(cmd: SqlCommand, e: EntityDbNamesBase) {

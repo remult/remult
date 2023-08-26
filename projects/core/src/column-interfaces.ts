@@ -54,7 +54,7 @@ export interface FieldOptions<entityType = any, valueType = any> {
   /**  An expression that will determine this fields value on the backend and be provided to the front end*/
   serverExpression?: (entity: entityType) => valueType | Promise<valueType>
   /** The name of the column in the database that holds the data for this field. If no name is set, the key will be used instead.
-   * Be aware that if you want to keep your casing, you have to escape your string with double quotes.
+   * Be aware that if you are using postgres and want to keep your casing, you have to escape your string with double quotes.
    * @example
    *
    * @Fields.string({ dbName: '"userName"'})
