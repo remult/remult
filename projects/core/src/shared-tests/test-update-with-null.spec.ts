@@ -1,8 +1,8 @@
 import { SqlDatabase } from '../data-providers/sql-database'
 import { Entity, EntityBase, Field, Fields } from '../remult3'
-import { testWebSqlImpl } from '../tests/frontend-database-tests-setup.spec'
 import { testAll } from './db-tests-setup'
 import { deleteAll } from './deleteAll'
+import { describe, it, expect } from 'vitest'
 
 @Entity('testNull', { allowApiCrud: true })
 class testNull extends EntityBase {

@@ -68,7 +68,6 @@ docs/.vitepress/cache
 docs/.vitepress/dist
 
 /db
-projects/test-angular/.angular
 examples/nextjs-todo/db
 examples/nextjs-app-router-todo/db
 test.heapsnapshot

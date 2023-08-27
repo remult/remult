@@ -7,8 +7,9 @@ import { DataApi } from '../../data-api'
 import { isBackend, Remult } from '../../context'
 import { Categories as newCategories } from '../remult-3-entities'
 import { Field, Entity as EntityDecorator, EntityBase } from '../../remult3'
-import { testAsIfOnBackend } from '../testHelper.spec'
+import { testAsIfOnBackend } from '../testHelper'
 import { Filter } from '../../filter/filter-interfaces'
+import { describe, it, expect } from 'vitest'
 
 describe('data api', () => {
   let remult = new Remult()
@@ -311,13 +312,13 @@ describe('', () => {
         await i(3, 'yoni', 'a')
       }, stam1)
       let r = await c.find()
-      expect(r.length).toBe(1, 'array length')
-      expect(r[0].id).toBe(2, 'value of first row')
-      expect(await c.count()).toBe(1, 'count')
-      expect(await c.findFirst({ id: 1 })).toBe(undefined, 'find first')
+      expect(r.length).to.eq(1, 'array length')
+      expect(r[0].id).to.eq(2, 'value of first row')
+      expect(await c.count()).to.eq(1, 'count')
+      expect(await c.findFirst({ id: 1 })).to.eq(undefined, 'find first')
       expect(
         (await c.findFirst({ id: 1 }, { createIfNotFound: true }))._.isNew(),
-      ).toBe(true, 'lookup ')
+      ).to.eq(true, 'lookup ')
     })
   })
 })
@@ -327,20 +328,20 @@ describe('', () => {
 class stam2 extends newCategories {}
 describe('', () => {
   it('works with predefined Entity Filter lambda', async () => {
-    testAsIfOnBackend(async () => {
+    await testAsIfOnBackend(async () => {
       let [c] = await createData(async (i) => {
         await i(1, 'noam', 'a')
         await i(2, 'yael', 'b')
         await i(3, 'yoni', 'a')
       }, stam2)
       let r = await c.find()
-      expect(r.length).toBe(1, 'array length')
-      expect(r[0].id).toBe(2, 'value of first row')
-      expect(await c.count()).toBe(1, 'count')
-      expect(await c.findFirst({ id: 1 })).toBe(undefined, 'find first')
+      expect(r.length).to.eq(1, 'array length')
+      expect(r[0].id).to.eq(2, 'value of first row')
+      expect(await c.count()).to.eq(1, 'count')
+      expect(await c.findFirst({ id: 1 })).to.eq(undefined, 'find first')
       expect(
         (await c.findFirst({ id: 1 }, { createIfNotFound: true }))._.isNew(),
-      ).toBe(true, 'lookup ')
+      ).to.eq(true, 'lookup ')
     })
   })
 })
@@ -349,22 +350,21 @@ describe('', () => {
 })
 class stam3 extends newCategories {}
 it('backend filter only works on backend', async () => {
-  let [c] = await createData(async (i) => {
+  let [c, remult] = await createData(async (i) => {
     await i(1, 'noam', 'a')
     await i(2, 'yael', 'b')
     await i(3, 'yoni', 'a')
   }, stam3)
-  expect(isBackend()).toBe(false)
+  remult.dataProvider.isProxy = true
   let r = await c.find()
-  expect(r.length).toBe(3, 'array length')
-  expect(await c.count()).toBe(3, 'count')
-  await testAsIfOnBackend(async () => {
-    expect(await c.count()).toBe(1, 'count')
-    expect(await c.findFirst({ id: 1 })).toBe(undefined, 'find first')
-    expect(
-      (await c.findFirst({ id: 1 }, { createIfNotFound: true }))._.isNew(),
-    ).toBe(true, 'lookup ')
-  })
+  expect(r.length).to.eq(3, 'array length')
+  expect(await c.count()).to.eq(3, 'count')
+  remult.dataProvider.isProxy = false
+  expect(await c.count()).to.eq(1, 'count')
+  expect(await c.findFirst({ id: 1 })).to.eq(undefined, 'find first')
+  expect(
+    (await c.findFirst({ id: 1 }, { createIfNotFound: true }))._.isNew(),
+  ).to.eq(true, 'lookup ')
 })
 
 @EntityDecorator<CategoriesForThisTest>(undefined, {

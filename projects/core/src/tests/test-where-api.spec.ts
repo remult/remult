@@ -1,7 +1,7 @@
-import { testInMemoryDb, testRestDb, testSql } from './testHelper.spec'
+import { testInMemoryDb, testRestDb, testSql } from './testHelper'
 import { TestDataApiResponse } from './TestDataApiResponse'
 import { Done } from './Done'
-import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider'
+
 import { Remult } from '../context'
 import { SqlDatabase } from '../data-providers/sql-database'
 import { Categories, CategoriesForTesting } from './remult-3-entities'
@@ -30,12 +30,12 @@ import {
 import { entityForrawFilter } from './entityForCustomFilter'
 import { describeClass } from '../remult3/DecoratorReplacer'
 import { title } from 'process'
+import { describe, it, expect,beforeEach,beforeAll,afterEach } from 'vitest'
 
 describe('test where stuff', () => {
   let repo: Repository<CategoriesForTesting>
   beforeAll(async (done) => {
     ;[repo] = await insertFourRows()
-    done()
   })
   it('test in statement', async () => {
     expect(await repo.count({ id: [undefined] })).toBe(0)
@@ -166,33 +166,7 @@ describe('custom filter', () => {
         (await c.findFirst(entityForrawFilter.testObjectValue({ val: 2 }))).id,
       ).toBe(2)
     }))
-  it('test that it works with sql', async () => {
-    let w = new WebSqlDataProvider('testWithFilter')
-
-    let c = new Remult().repo(entityForrawFilter, new SqlDatabase(w))
-    await w.dropTable(c.metadata)
-    for (let id = 0; id < 5; id++) {
-      await c.create({ id }).save()
-    }
-    const e = await dbNamesOf(c.metadata)
-    expect(
-      await c.count(
-        SqlDatabase.rawFilter(
-          async (x) =>
-            (x.sql =
-              e.id +
-              ' in (' +
-              x.addParameterAndReturnSqlToken(1) +
-              ',' +
-              x.addParameterAndReturnSqlToken(3, c.metadata.fields.id) +
-              ')'),
-        ),
-      ),
-    ).toBe(2)
-    expect(
-      await c.count(entityForrawFilter.filter({ dbOneOrThree: true })),
-    ).toBe(2)
-  })
+  
   it('test that it works with arrayFilter', async () => {
     let c = new Remult().repo(entityForrawFilter, new InMemoryDataProvider())
     for (let id = 0; id < 5; id++) {

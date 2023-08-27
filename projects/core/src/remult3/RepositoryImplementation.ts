@@ -710,7 +710,7 @@ export class RepositoryImplementation<entityType>
   async translateWhereToFilter(
     where: EntityFilter<entityType>,
   ): Promise<Filter> {
-    if (this.metadata.options.backendPrefilter && isBackend()) {
+    if (this.metadata.options.backendPrefilter && !this.dataProvider.isProxy) {
       let z = where
       where = {
         $and: [z, await Filter.resolve(this.metadata.options.backendPrefilter)],

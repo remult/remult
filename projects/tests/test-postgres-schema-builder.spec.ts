@@ -1,5 +1,4 @@
 import { expect, it, describe, beforeEach, afterEach } from 'vitest'
-import { config } from 'dotenv'
 import {
   Entity,
   Fields,
@@ -13,7 +12,6 @@ import {
   createPostgresDataProvider,
 } from '../core/postgres'
 
-config()
 
 //connection string is in a .env file placed in the `tests` folder with key `DATABASE_URL`
 // if we don't have this, tests will be skipped

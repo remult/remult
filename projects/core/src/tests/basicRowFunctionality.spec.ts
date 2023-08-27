@@ -2,16 +2,14 @@ import { createData } from './createData'
 import { DataApi } from '../data-api'
 import { InMemoryDataProvider } from '../data-providers/in-memory-database'
 import { ArrayEntityDataProvider } from '../data-providers/array-entity-data-provider'
-import { MockRestDataProvider } from './testHelper.spec'
+import { MockRestDataProvider } from './testHelper'
 import { TestDataApiResponse } from './TestDataApiResponse'
 import { Done } from './Done'
 
 import { Status } from './testModel/models'
 
 import { Remult, Allowed } from '../context'
-import { WebSqlDataProvider } from '../data-providers/web-sql-data-provider'
 import { __RowsOfDataForTesting } from '../__RowsOfDataForTesting'
-import { DataList } from '../../../angular/interfaces/src/dataList'
 import { UrlBuilder } from '../../urlBuilder'
 
 import { SqlDatabase } from '../data-providers/sql-database'
@@ -58,7 +56,6 @@ import {
   dbNamesOf,
 } from '../filter/filter-consumer-bridge-to-sql-request'
 import axios from 'axios'
-import { async } from '@angular/core/testing'
 import {
   HttpProviderBridgeToRestDataProviderHttpProvider,
   retry,
@@ -66,6 +63,8 @@ import {
 } from '../buildRestDataProvider'
 import { describeClass } from '../remult3/DecoratorReplacer'
 import { remult } from '../remult-proxy'
+import { describe, it, expect,beforeEach,afterEach,beforeAll } from 'vitest'
+import { CompoundIdEntity } from './entities-for-tests'
 
 //SqlDatabase.LogToConsole = true;
 
@@ -221,8 +220,8 @@ class myTestEntity extends EntityBase {
 }
 
 describe('data api', () => {
-  beforeEach(() => (actionInfo.runningOnServer = true))
-  afterEach(() => (actionInfo.runningOnServer = false))
+  beforeEach(() =>{ (actionInfo.runningOnServer = true)})
+  afterEach(() =>{ (actionInfo.runningOnServer = false)})
   it('get based on id', async () => {
     let [c, remult] = await createData(
       async (insert) => await insert(1, 'noam'),
@@ -1447,65 +1446,10 @@ describe('column validation', () => {
     //expect(c._.isValid()).toBe(true);
     //expect(c._.columns.id.error).toBe(undefined);
   })
-  it('test date filter and values', async () => {
-    let sql = new SqlDatabase(new WebSqlDataProvider('identity_game'))
-    let c = new Remult(sql)
-    await sql.execute('drop table if exists t1')
-    c.dataProvider = sql
-    let type = class extends EntityBase {
-      id: number
-      name: string
-      c3: Date
-    }
-    Entity('t1')(type)
-    Fields.autoIncrement()(type.prototype, 'id')
-    Fields.string()(type.prototype, 'name')
-    Fields.date()(type.prototype, 'c3')
 
-    let f = c.repo(type)
-    let d = new Date(2020, 1, 2, 3, 4, 5, 6)
-    let p = f.create()
-    p.name = '1'
-    p.c3 = d
-    await p._.save()
-    await f.create({ name: '2', c3: new Date(2021) }).save()
-    p = await f.findFirst({ c3: d })
-    p = await f.findFirst({ c3: d })
-    f.findFirst({ c3: d })
-    expect(p.name).toBe('1')
-    p = await f.findFirst({ c3: { $ne: d } })
-    expect(p.name).toBe('2')
-    p = await f.findFirst({ c3: { '!=': d } })
-    expect(p.name).toBe('2')
-  })
 })
 
-describe('test web sql identity', () => {
-  it('play', async () => {
-    let sql = new SqlDatabase(new WebSqlDataProvider('identity_game'))
-    let c = new Remult(sql)
-    await sql.execute('drop table if exists t1')
-    c.dataProvider = sql
 
-    let type = class extends EntityBase {
-      id: number
-      name: string
-    }
-    Entity('t1')(type)
-    Fields.autoIncrement()(type.prototype, 'id')
-    Fields.string()(type.prototype, 'name')
-
-    let f = c.repo(type)
-    let t = f.create()
-    t.name = 'a'
-    await t._.save()
-    expect(t.id).toBe(1)
-    t = f.create()
-    t.name = 'b'
-    await t._.save()
-    expect(t.id).toBe(2)
-  })
-})
 describe('compound id', () => {
   it('id field is compound', () => {
     let ctx = new Remult()
@@ -1556,24 +1500,7 @@ describe('compound id', () => {
     expect(() => id.valueConverter).toThrowError()
     expect(await id.getDbName()).toBe('')
   })
-  it('compound sql', async () => {
-    let sql = new SqlDatabase(new WebSqlDataProvider('compound'))
-    let ctx = new Remult()
-    ctx.dataProvider = sql
 
-    let cod = ctx.repo(CompoundIdEntity)
-    for (const od of await cod.find({ where: { a: 99 } })) {
-      await od._.delete()
-    }
-    let od = cod.create()
-    od.a = 99
-    od.b = 1
-    await od._.save()
-    od = await cod.findFirst({ a: 99 })
-    od.c = 5
-    await od._.save()
-    await od._.delete()
-  })
   const ctx = new Remult()
   it('start', async () => {
     let mem = new InMemoryDataProvider()
@@ -1676,19 +1603,6 @@ describe('compound id', () => {
   })
 })
 describe('test data list', () => {
-  it('delete works', async () => {
-    let [c] = await createData(async (i) => {
-      await i(1, 'a')
-      await i(2, 'b')
-      await i(3, 'c')
-    })
-    let rl = new DataList<CategoriesForTesting>(c)
-    await rl.get()
-    expect(rl.items.length).toBe(3)
-    await rl.items[1]._.delete()
-    expect(rl.items.length).toBe(2)
-  })
-
   it('dbname of entity string works', async () => {
     let type = class extends Categories {}
     Entity('testName', { dbName: 'test' })(type)
@@ -1698,37 +1612,6 @@ describe('test data list', () => {
   it('dbname of entity can use column names', async () => {
     let r = new Remult().repo(EntityWithLateBoundDbName)
     expect(await r.metadata.getDbName()).toBe('(select CategoryID)')
-  })
-
-  it('delete fails nicely', async () => {
-    let cont = new Remult()
-    cont.dataProvider = {
-      getEntityDataProvider: (x) => {
-        let r = new ArrayEntityDataProvider(x, [
-          { id: 1 },
-          { id: 2 },
-          { id: 3 },
-        ])
-        r.delete = (id) => {
-          return Promise.resolve().then(() => {
-            throw Promise.resolve('error')
-          })
-        }
-        return r
-      },
-      transaction: undefined,
-    }
-
-    let rl = new DataList<newCategories>(cont.repo(newCategories))
-    await rl.get()
-    expect(rl.items.length).toBe(3)
-    try {
-      await rl.items[1]._.delete()
-      fail('was not supposed to get here')
-    } catch (err) {
-      expect(rl.items.length).toBe(3)
-      expect(rl.items[1]._.error).toBe('error')
-    }
   })
 })
 describe('test date storage', () => {
@@ -1767,25 +1650,7 @@ describe('test bool value', () => {
   })
 })
 
-describe('test number negative', () => {
-  // it("negative", () => {
-  //   let nc = decorateColumnSettings<number>({ dataType: Number });
-  //   expect(nc.valueConverter.toInput(nc.valueConverter.fromInput("-", ''), '')).toBe("-");
-  // });
-  // it("negative2", () => {
-  //   let nc = decorateColumnSettings<number>({ dataType: Number });;
-  //   expect(nc.valueConverter.fromInput('2-1', '')).toBe(0);
-  // });
-  // it("negative decimal", () => {
-  //   let nc = new NumberColumn();
-  //   nc.inputValue = '-0.00';
-  //   expect(nc.value).toBe(0);
-  //   expect(nc.inputValue).toBe('-0.00');
-  //   nc.inputValue = '-0.001';
-  //   expect(nc.value).toBe(-0.001);
-  //   expect(nc.inputValue).toBe('-0.001');
-  // });
-})
+
 describe('cache', () => {
   it('find first useCache', async () => {
     let [r] = await createData(async (i) => i(1, 'noam'))
@@ -1952,7 +1817,7 @@ describe('check allowedDataType', () => {
   let roleC = strC
   beforeAll(async (done) => {
     c.user = { id: 'x', name: 'y', roles: [strA, strB] }
-    done()
+    
   })
   it('1', () => {
     expect(c.isAllowed(strA)).toBe(true)
@@ -2141,17 +2006,7 @@ describe('CompoundIdPojoEntity', () => {
   })
 })
 
-@Entity<CompoundIdEntity>('compountIdEntity', {
-  id: (x) => [x.a, x.b],
-})
-class CompoundIdEntity extends EntityBase {
-  @Fields.integer()
-  a: number
-  @Fields.integer()
-  b: number
-  @Fields.integer()
-  c: number
-}
+
 @Entity<entityWithValidationsOnEntityEvent>('', {
   validation: (t) => {
     if (!t.name || t.name.length < 3) t._.fields.name.error = 'invalid'

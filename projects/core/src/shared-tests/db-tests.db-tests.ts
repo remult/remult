@@ -39,7 +39,8 @@ import {
 import { v4 as uuid } from 'uuid'
 import { testPostgresImplementation } from '../backend-tests/backend-database-test-setup.backend-spec'
 import { ValueConverters } from '../valueConverters'
-import { testRest } from '../tests/frontend-database-tests-setup.spec'
+import { testRest } from '../tests/frontend-database-tests-setup.spec-browser'
+import { describe, it, expect } from 'vitest'
 
 testAll(
   'what',
@@ -257,7 +258,7 @@ testAll(
     let r = repo.create({ id: 0 })
     await r.save()
     r = await repo.findFirst()
-    expect(r.fullDate).toBeNull('expected null after')
+    expect(r.fullDate).toBeNull()
     expect(await repo.count({ fullDate: null })).toBe(1)
     r.fullDate = new Date(1976, 5, 16)
     await r.save()
