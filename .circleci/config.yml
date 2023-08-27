@@ -18,7 +18,7 @@ jobs:
           POSTGRES_DB: test_db
           POSTGRES_PASSWORD: password
     environment:
-      DATABASE_URL: postgres://postgres:password@database:5432/test_db # Connection string
+      DATABASE_URL: postgres://postgres:password@127.0.0.1:5432/test_db # Connection string
     steps:
       - checkout
       - node/install-packages
