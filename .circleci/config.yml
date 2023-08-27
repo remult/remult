@@ -8,16 +8,7 @@ orbs:
   browser-tools: circleci/browser-tools@1.2.5
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
-jobs:
-build:
-  docker:
-    - image: cimg/postgres:14.0
-      environment:
-        POSTGRES_USER: postgres
-        POSTGRES_DB: test_db
-        POSTGRES_PASSWORD: password
-  environment:
-    DATABASE_URL: postgres://postgres:password@localhost:5432/test_db # Connection string
+# jobs:
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
@@ -36,11 +27,20 @@ workflows:
                 chrome-version: 114.0.5735.90 # TODO: remove -> https://github.com/CircleCI-Public/browser-tools-orb/issues/75
             #- browser-tools/install-chrome
             #- browser-tools/install-chromedriver
+            - run:
+                name: Spawn Postgres Docker
+                command: |
+                  docker run --name my-postgres -e POSTGRES_PASSWORD=mysecretpassword -d -p 5432:5432 postgres:14.2
 
+            - run:
+                name: Get Postgres Connection String
+                command: |
+                  export DATABASE_URL=postgres://postgres:mysecretpassword@localhost:5432/my_database
             - run:
                 command: |
                   google-chrome --version
                   chromedriver --version
                 name: Check install
+
           post-steps:
             - codecov/upload
