@@ -30,12 +30,6 @@ workflows:
           name: test
           version: '16.18'
           run-command: test:ci
-          docker:
-            - image: cimg/postgres:14.0
-              environment:
-                POSTGRES_PASSWORD: password
-          environment:
-            DATABASE_URL: postgres://postgres:password@localhost:5432/postgres
           setup:
             - browser-tools/install-browser-tools:
                 chrome-version: 114.0.5735.90 # TODO: remove -> https://github.com/CircleCI-Public/browser-tools-orb/issues/75
