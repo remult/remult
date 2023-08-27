@@ -15,7 +15,7 @@ export default defineConfig({
     reporters: ['dot'],
     globals: false,
     coverage: {
-      enabled: true,
+      enabled: false,
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
       include: ['**'],
