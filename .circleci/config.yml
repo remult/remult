@@ -18,7 +18,7 @@ jobs:
           POSTGRES_DB: test_db
           POSTGRES_PASSWORD: password
       - image: mongo:4.2
-      - image: circleci/mongo:4.0
+      - image: cimg/mongo:4.0
         command: [--replSet,rs0,]
         name: mongo2
       - image: cimg/mysql:8.0
