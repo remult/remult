@@ -39,8 +39,8 @@ describe('test sql database expressions', () => {
     x.code = 3
     await x._.save()
     expect(x.code).toBe(3)
-    expect(x.testExpression).toBe(15, 'after save')
-    expect(x._.fields.testExpression.originalValue).toBe(15, 'after save')
+    expect(x.testExpression).to.eq(15, 'after save')
+    expect(x._.fields.testExpression.originalValue).to.eq(15, 'after save')
     x = await remult.repo(testSqlExpression).findFirst()
 
     expect(x.testExpression).toBe(15)
@@ -140,11 +140,11 @@ describe('Postgres create db', () => {
     expect(postgresColumnSyntax(e.metadata.fields.i, 'x')).toBe(
       'x integer default 0 not null',
     )
-    expect(postgresColumnSyntax(e.metadata.fields.s, 'x')).toBe(
+    expect(postgresColumnSyntax(e.metadata.fields.s, 'x')).to.eq(
       "x varchar default '' not null",
       's',
     )
-    expect(postgresColumnSyntax(e.metadata.fields.s2, 'x')).toBe(
+    expect(postgresColumnSyntax(e.metadata.fields.s2, 'x')).to.eq(
       "x varchar default '' not null",
       's2',
     )
@@ -212,7 +212,7 @@ describe('Test Value List Items', () => {
         getValues: () => [new missingId()],
       })(missingId)
       getValueList(missingId)
-      expect(true).toBe(
+      expect(true).to.eq(
         false,
         "should have failed and not reached this since it's missing an id",
       )

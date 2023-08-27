@@ -8,11 +8,11 @@ export default defineConfig({
     threads: false,
 
     include: [
-      '*.spec.ts',
-      //'../core/src/**/*.spec.ts',
-      //'../core/src/**/**/*.backend-spec.ts',
+      './projects/test/*.spec.ts',
+      './projects/core/src/**/*.spec.ts',
+      './projects/core/src/**/**/*.backend-spec.ts',
     ],
-    reporters: ['html', 'dot'],
+    reporters: ['dot'],
     globals: false,
     coverage: {
       enabled: true,
