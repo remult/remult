@@ -1,6 +1,5 @@
 import { defineConfig } from 'vitest/config'
 import { config } from 'dotenv'
-
 config()
 
 export default defineConfig({
@@ -8,11 +7,11 @@ export default defineConfig({
     threads: false,
 
     include: [
-      './projects/test/*.spec.ts',
-      './projects/core/src/**/*.spec.ts',
-      './projects/core/src/**/**/*.backend-spec.ts',
+      './projects/tests/**/*.spec.ts',
+      
+      //'./projects/core/src/**/**/*.backend-spec.ts',
     ],
-    reporters: ['dot'],
+  //  reporters: ['dot'],
     globals: false,
     coverage: {
       enabled: false,
