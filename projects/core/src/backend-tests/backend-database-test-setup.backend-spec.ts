@@ -119,7 +119,7 @@ if (process.env['TEST_MYSQL'])
           password: 'MASTERKEY',
           host: '127.0.0.1',
           database: 'test',
-          port: 3307,
+    //      port: 3307,
         },
         //debug: true
       }),

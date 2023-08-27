@@ -17,8 +17,19 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_DB: test_db
           POSTGRES_PASSWORD: password
+      - image: mongo:4.2
+      - image: cimg/mysql:8.0
+        environment:
+          MYSQL_ROOT_PASSWORD: MASTERKEY
+          MYSQL_DATABASE: test_
+          MYSQL_USER: root
+          MYSQL_PASSWORD: MASTERKEY
     environment:
       DATABASE_URL: postgres://postgres:password@127.0.0.1:5432/test_db # Connection string
+      MONGO_TEST_URL: mongodb://localhost:27017/local
+      MONGO_NO_TRANS_TEST_URL: mongodb://localhost:27017/local
+      TEST_MYSQL: true
+      TEST_MYSQL2: true
     steps:
       - checkout
       - node/install-packages
@@ -36,20 +47,3 @@ workflows:
           name: build
           npm-run: build-core
       - test-remult
-      - node/test:
-          name: test
-          version: '16.18'
-          run-command: test:ci
-          setup:
-            - browser-tools/install-browser-tools:
-                chrome-version: 114.0.5735.90 # TODO: remove -> https://github.com/CircleCI-Public/browser-tools-orb/issues/75
-            #- browser-tools/install-chrome
-            #- browser-tools/install-chromedriver
-
-            - run:
-                command: |
-                  google-chrome --version
-                  chromedriver --version
-                name: Check install
-          post-steps:
-            - codecov/upload
