@@ -79,7 +79,7 @@ if (process.env['TESTS_SQL_SERVER'])
       'sql server',
     ),
   )
-if (process.env['TEST_SQL_LITE'])
+if (process.env['TEST_SQL_LITE']||true)
   addDatabaseToTest(
     testKnexSqlImpl(
       Knex.default({
