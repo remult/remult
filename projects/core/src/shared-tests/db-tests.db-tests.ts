@@ -258,7 +258,7 @@ testAll(
     let r = repo.create({ id: 0 })
     await r.save()
     r = await repo.findFirst()
-    expect(r.fullDate).toBeNull('expected null after')
+    expect(r.fullDate).toBeNull()
     expect(await repo.count({ fullDate: null })).toBe(1)
     r.fullDate = new Date(1976, 5, 16)
     await r.save()

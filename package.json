@@ -76,6 +76,8 @@
     "@types/pg": "^8.6.3",
     "@types/swagger-ui-express": "^4.1.3",
     "@types/websql": "0.0.27",
+    "@vitest/coverage-v8": "^0.34.3",
+    "@vitest/ui": "^0.34.3",
     "@vuepress/plugin-back-to-top": "^1.5.2",
     "@vuepress/plugin-medium-zoom": "^1.5.2",
     "ably": "^1.2.33",

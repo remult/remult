@@ -14,7 +14,7 @@ export function itWithFocus(
   focus = false,
 ) {
   if (focus) {
-    fit(key, what)
+    it.only(key, what)
   } else it(key, what)
 }
 export function testAll(
