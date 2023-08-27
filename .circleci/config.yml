@@ -24,7 +24,7 @@ jobs:
       - node/install-packages
       - run:
           name: Run Tests
-          command: npm test
+          command: npm run test:ci
       - codecov/upload
 
 # Invoke jobs via workflows
