@@ -16,7 +16,7 @@
     "all-servers": "concurrently -k -n \"koa,fastify,express,mw,deno-fresh,mwc,next,svelteKit,next-app\" -c \"bgBlue.bold,bgGreen.bold,bgCyan.bold,bgYellow.bold\" \"ts-node-dev -P projects/test-angular/tsconfig.server.json projects/test-servers/node-servers/koaServer.ts\" \"npm run fastify-server\" \"ts-node-dev -P projects/test-angular/tsconfig.server.json projects/test-servers/node-servers/expressServer.ts\" \"ts-node-dev -P projects/test-angular/tsconfig.server.json projects/test-servers/node-servers/middlewareServer.ts\" \"cd projects/test-servers/deno-fresh && deno task start\" \"ts-node-dev -P projects/test-angular/tsconfig.server.json projects/test-servers/node-servers/middlewareCore.ts\" \"cd projects/test-servers/next-server && npm run dev\" \"cd projects/test-servers/sveltekit-server && npm run dev\" \"cd projects/test-servers/next-app-server && npm run dev\" ",
     "fastify-server": "ts-node-dev -P projects/test-angular/tsconfig.server.json projects/test-servers/node-servers/fastifyServer.ts",
     "publish-as-next": "npm run build && npm run patch-versions && cd dist/remult && npm publish  --access public --tag next && cd.. && cd angular && npm publish  --access public --tag next",
-    "test:ci": "cd projects/test-angular && ng test core --code-coverage && npm run test-vitest",
+    "test:ci": "vitest run",
     "remove-next": "npm remult dist-tag rm next",
     "patch-versions-experimental": " FOR /F %i in ('npm version prerelease -preid \"exp\" -m \"release %s\"') DO git push origin %i && npm run update-versions",
     "patch-versions": " FOR /F %i in ('npm version patch -m \"release %s\"') DO git push origin %i && npm run update-versions",
