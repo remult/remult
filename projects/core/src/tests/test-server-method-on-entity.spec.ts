@@ -1,4 +1,4 @@
-import { ActionTestConfig, testRestDb } from './testHelper.spec'
+import { ActionTestConfig, testRestDb } from './testHelper'
 import { TestDataApiResponse } from './TestDataApiResponse'
 import { Remult, isBackend } from '../context'
 import { actionInfo, BackendMethod } from '../server-action'
@@ -19,6 +19,7 @@ import { dWithPrefilter } from './dWithPrefilter'
 import { d } from './d'
 import { remult } from '../remult-proxy'
 import { describeClass } from '../remult3/DecoratorReplacer'
+import { describe, it, expect,beforeEach,afterEach,beforeAll } from 'vitest'
 
 @Entity('testServerMethodOnEntity')
 class testServerMethodOnEntity extends EntityBase {

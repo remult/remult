@@ -2,6 +2,7 @@ import { Field, Entity, EntityBase, Fields } from '../remult3'
 import { describeClass } from '../remult3/DecoratorReplacer'
 
 import { testAll } from './db-tests-setup'
+import { describe, it, expect } from 'vitest'
 
 describe('custom id column', () => {
   testAll('basic test', async ({ createEntity }) => {

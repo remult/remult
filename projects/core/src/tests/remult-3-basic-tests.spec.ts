@@ -9,7 +9,8 @@ import {
 } from '../remult3'
 import { Remult } from '../context'
 import { describeClass } from '../remult3/DecoratorReplacer'
-import { MockRestDataProvider } from './testHelper.spec'
+import { MockRestDataProvider } from './testHelper'
+import { describe, it, expect } from 'vitest'
 
 describe('remult-3-basics', () => {
   it('test the very basics', async () => {

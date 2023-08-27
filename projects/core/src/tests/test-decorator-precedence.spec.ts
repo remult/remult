@@ -7,6 +7,7 @@ import {
   Repository,
   Fields,
 } from '../remult3'
+import { describe, it, expect } from 'vitest'
 
 @Entity('my entity')
 class myEntity extends EntityBase {

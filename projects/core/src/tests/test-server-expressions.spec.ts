@@ -5,10 +5,11 @@ import { remult } from '../remult-proxy'
 import { Field, Entity, EntityBase, Fields } from '../remult3'
 import { describeClass } from '../remult3/DecoratorReplacer'
 import { actionInfo } from '../server-action'
+import { describe, it, expect,beforeEach,afterEach,beforeAll } from 'vitest'
 
 describe('test server expression value', () => {
-  beforeEach(() => (actionInfo.runningOnServer = true))
-  afterEach(() => (actionInfo.runningOnServer = false))
+  beforeEach(() => {(actionInfo.runningOnServer = true)})
+  afterEach(() =>{ (actionInfo.runningOnServer = false)})
   it('test basics create', async () => {
     let c = new Remult()
     c.dataProvider = new InMemoryDataProvider()
@@ -80,7 +81,7 @@ describe('test server expression value', () => {
     })
     const repo = new Remult(new InMemoryDataProvider()).repo(e)
     let item = await repo.insert({ num: 1 })
-    expect(item.id.length).toBe(36, item.id)
+    expect(item.id.length).to.eq(36, item.id)
     item = await repo.insert({ id: '123', num: 2 })
     expect(item.id).toBe('123')
   })
@@ -95,7 +96,7 @@ describe('test server expression value', () => {
     })
     const repo = new Remult(new InMemoryDataProvider()).repo(e)
     let item = await repo.insert({ num: 1 })
-    expect(item.id.length).toBe(24, item.id)
+    expect(item.id.length).to.eq(24, item.id)
     item = await repo.insert({ id: '123', num: 2 })
     expect(item.id).toBe('123')
   })

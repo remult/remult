@@ -9,7 +9,7 @@ import {
   RepositoryImplementation,
 } from '../remult3'
 import { actionInfo } from '../server-action'
-import { createMockHttpDataProvider } from '../tests/testHelper.spec'
+import { createMockHttpDataProvider } from '../tests/testHelper'
 import { SubscriptionChannel, LiveQueryChange } from './SubscriptionChannel'
 import { LiveQueryClient } from './LiveQueryClient'
 import {
@@ -23,8 +23,9 @@ import {
 } from '../data-providers/rest-data-provider'
 import { remult } from '../remult-proxy'
 import { HttpProviderBridgeToRestDataProviderHttpProvider } from '../buildRestDataProvider'
+import { describe, it, expect,beforeEach,afterEach } from 'vitest'
 
-const joc = jasmine.objectContaining
+const joc = expect.objectContaining
 
 @Entity('event-test', { allowApiCrud: true })
 export class eventTestEntity {
@@ -1043,7 +1044,7 @@ it('test channel subscribe', async () => {
 })
 
 describe('test failure', () => {
-  it('error on subscribe query', async () => {
+  it('error on subscribe query', async () => {  
     let r = new Remult(new InMemoryDataProvider())
     r.apiClient.subscriptionClient = {
       openConnection: async () => {
@@ -1178,5 +1179,6 @@ describe('test failure', () => {
     expect(error).toBe(true)
     expect(items).toBeUndefined()
     u()
+    await pm.flush()
   })
 })
