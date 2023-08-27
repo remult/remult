@@ -27,7 +27,7 @@ jobs:
           MYSQL_PASSWORD: MASTERKEY
     environment:
       DATABASE_URL: postgres://postgres:password@127.0.0.1:5432/test_db # Connection string
-      # MONGO_TEST_URL: mongodb://localhost:27017/local
+      MONGO_TEST_URL: $MONGO_TEST_URL
       MONGO_NO_TRANS_TEST_URL: mongodb://localhost:27017/local
       TEST_MYSQL: true
       TEST_MYSQL2: true
