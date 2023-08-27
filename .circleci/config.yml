@@ -19,8 +19,8 @@ jobs:
           POSTGRES_PASSWORD: password
       - image: mongo:4.2
       - image: circleci/mongo:4.0
-        command: [--replSet,rs0]
-        port: 27030:27017
+        command: [--replSet,rs0,]
+        name: mongo_trans
       - image: cimg/mysql:8.0
         environment:
           MYSQL_ROOT_PASSWORD: MASTERKEY
@@ -28,7 +28,7 @@ jobs:
           MYSQL_PASSWORD: MASTERKEY
     environment:
       DATABASE_URL: postgres://postgres:password@127.0.0.1:5432/test_db # Connection string
-      MONGO_TEST_URL: mongodb://localhost:27030/local
+      MONGO_TEST_URL: mongodb://mongo_trans:27017/local
       MONGO_NO_TRANS_TEST_URL: mongodb://localhost:27017/local
       TEST_MYSQL: true
       TEST_MYSQL2: true
