@@ -1,8 +1,8 @@
 import type { Knex } from 'knex';
-import { Remult } from '../src/context';
-import { EntityFilter, EntityMetadata, RepositoryOverloads } from '../src/remult3';
-import { DataProvider, EntityDataProvider } from '../src/data-interfaces';
-import { FieldMetadata } from '../src/column-interfaces';
+import type { Remult } from '../src/context';
+import type { FieldMetadata } from '../src/column-interfaces';
+import type { DataProvider, EntityDataProvider } from '../src/data-interfaces';
+import type { EntityFilter, EntityMetadata, RepositoryOverloads } from '../src/remult3';
 export declare class KnexDataProvider implements DataProvider {
     knex: Knex;
     constructor(knex: Knex);

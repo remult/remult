@@ -1,4 +1,4 @@
-import { FieldRef } from './remult3';
+import type { FieldRef } from './remult3';
 export declare class Validators {
     static required: ((entity: any, col: FieldRef<any, string>, message?: any) => void) & {
         withMessage: (message: string) => (entity: any, col: FieldRef<any, string>) => void;

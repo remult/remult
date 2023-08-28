@@ -5,8 +5,9 @@ import {
   Field,
   FieldType,
   Fields,
-} from '../../core/src//remult3'
-import { testAll } from './db-tests-setup'
+} from '../../../core/src/remult3'
+import type { DbTestProps } from './db-tests-props'
+import { it } from 'vitest'
 
 @FieldType<GroupsValue>({
   valueConverter: {
@@ -59,19 +60,21 @@ class testGroups extends EntityBase {
   g: GroupsValue
 }
 
-testAll('test save and load', async ({ createEntity }) => {
-  let re = await createEntity(testGroups)
-  await re.create({ id: 1 }).save()
-  let x = await re.findFirst()
-  expect(x.g.evilGet()).toBe('')
-  x.g = x.g.addGroup('xx')
-  expect(x.$.g.valueChanged()).toBe(true)
-  await x.save()
-  expect(x.g.evilGet()).toBe('xx')
-})
-testAll('test2 save and load', async ({ createEntity }) => {
-  let re = await createEntity(testGroups)
-  await re.create({ id: 1, g: new GroupsValue(undefined) }).save()
-  let x = await re.findFirst()
-  expect(x.g.evilGet()).toBe('')
-})
+export function testSpecialValues({ createEntity }: DbTestProps) {
+  it('test save and load', async () => {
+    let re = await createEntity(testGroups)
+    await re.create({ id: 1 }).save()
+    let x = await re.findFirst()
+    expect(x.g.evilGet()).toBe('')
+    x.g = x.g.addGroup('xx')
+    expect(x.$.g.valueChanged()).toBe(true)
+    await x.save()
+    expect(x.g.evilGet()).toBe('xx')
+  })
+  it('test2 save and load', async () => {
+    let re = await createEntity(testGroups)
+    await re.create({ id: 1, g: new GroupsValue(undefined) }).save()
+    let x = await re.findFirst()
+    expect(x.g.evilGet()).toBe('')
+  })
+}

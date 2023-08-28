@@ -1,6 +1,6 @@
-import { Remult } from './context';
-import type { FindOptions, Repository } from './remult3';
+import type { Remult } from './context';
 import type { ErrorInfo } from './data-interfaces';
+import type { FindOptions, Repository } from './remult3';
 export declare class DataApi<T = any> {
     private repository;
     private remult;

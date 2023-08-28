@@ -1,5 +1,6 @@
 import { config } from 'dotenv'
 import { defineConfig } from 'vitest/config'
+
 config()
 
 export default defineConfig({
@@ -8,8 +9,8 @@ export default defineConfig({
 
     include: [
       './projects/tests/**/*.spec.ts',
-
       './projects/tests/**/*.backend-spec.ts',
+      //'./projects/tests/dbs/sql-lite.spec.ts',
     ],
     //  reporters: ['dot'],
     globals: false,

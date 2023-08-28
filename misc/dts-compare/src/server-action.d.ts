@@ -1,7 +1,8 @@
 import 'reflect-metadata';
-import { Remult, AllowedForInstance } from './context';
-import { DataApiResponse } from './data-api';
-import { DataProvider, RestDataProviderHttpProvider } from './data-interfaces';
+import type { AllowedForInstance } from './context';
+import { Remult } from './context';
+import type { DataApiResponse } from './data-api';
+import type { DataProvider, RestDataProviderHttpProvider } from './data-interfaces';
 interface inArgs {
     args: any[];
 }

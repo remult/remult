@@ -6,7 +6,7 @@ import { dbNamesOf } from '../../core/src/filter/filter-consumer-bridge-to-sql-r
 import type { Repository } from '../../core/src/remult3'
 import { Entity, Fields } from '../../core/src/remult3'
 import { entityWithValidations } from '../shared-tests/entityWithValidations'
-import { testWebSqlImpl } from './frontend-database-tests-setup.spec-browser'
+import { testWebSqlImpl } from '../dbs/websql.spec-browser'
 import { Categories } from './remult-3-entities'
 
 describe('test sql database', () => {
@@ -158,7 +158,7 @@ class testErrorInFromDb {
 
 testWebSqlImpl(
   'work with native sql',
-  async ({ remult, createEntity }) => {
+  async ({ getRemult: remult, createEntity }) => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity)
     const sql = SqlDatabase.getDb(remult)
     const r = await sql.execute(
@@ -170,7 +170,7 @@ testWebSqlImpl(
 )
 testWebSqlImpl(
   'work with native sql2',
-  async ({ remult, createEntity }) => {
+  async ({ getRemult: remult, createEntity }) => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity)
     const sql = WebSqlDataProvider.getDb(remult)
     await new Promise((res) => {
@@ -190,7 +190,7 @@ testWebSqlImpl(
 )
 testWebSqlImpl(
   'test getEntityDbNames',
-  async ({ remult, createEntity }) => {
+  async ({ getRemult: remult, createEntity }) => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity)
     const e = await dbNamesOf(repo)
     expect(`select ${e.myId}, ${e.name} from ${e}`).toBe(
@@ -201,7 +201,7 @@ testWebSqlImpl(
 )
 testWebSqlImpl(
   'test work with filter',
-  async ({ remult, createEntity }) => {
+  async ({ getRemult: remult, createEntity }) => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity)
     const e = await dbNamesOf(repo)
     expect(
@@ -216,7 +216,7 @@ testWebSqlImpl(
 )
 testWebSqlImpl(
   'test work with filter',
-  async ({ remult, createEntity }) => {
+  async ({ getRemult: remult, createEntity }) => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity)
     const command = SqlDatabase.getDb(remult).createCommand()
     const e = await dbNamesOf(repo)

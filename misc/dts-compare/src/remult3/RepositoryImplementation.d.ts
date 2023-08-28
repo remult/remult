@@ -1,13 +1,13 @@
-import { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from '../column-interfaces';
-import { EntityOptions } from '../entity';
+import type { ClassType } from '../../classType';
 import { LookupColumn } from '../column';
-import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef, LiveQuery } from './remult3';
-import { ClassType } from '../../classType';
+import type { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from '../column-interfaces';
 import { Remult } from '../context';
-import { entityEventListener } from '../__EntityValueProvider';
-import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions, ErrorInfo } from '../data-interfaces';
-import { RefSubscriber } from '.';
-import { Unsubscribe } from '../live-query/SubscriptionChannel';
+import type { EntityOptions } from '../entity';
+import type { ControllerRef, EntityFilter, EntityMetadata, EntityOrderBy, EntityRef, FieldRef, FieldsMetadata, FieldsRef, FindFirstOptions, FindFirstOptionsBase, FindOptions, IdMetadata, OmitEB, QueryOptions, QueryResult, Repository, Subscribable } from './remult3';
+import type { RefSubscriber } from '.';
+import type { entityEventListener } from '../__EntityValueProvider';
+import type { DataProvider, EntityDataProvider, EntityDataProviderFindOptions, ErrorInfo } from '../data-interfaces';
+import type { Unsubscribe } from '../live-query/SubscriptionChannel';
 export declare class RepositoryImplementation<entityType> implements Repository<entityType> {
     private entity;
     remult: Remult;
@@ -45,7 +45,7 @@ export declare class RepositoryImplementation<entityType> implements Repository<
     private getRefForExistingRow;
     save(item: Partial<OmitEB<entityType>>[]): Promise<entityType[]>;
     save(item: Partial<OmitEB<entityType>>): Promise<entityType>;
-    liveQuery(options?: FindOptions<entityType>): LiveQuery<entityType>;
+    liveQuery(options?: FindOptions<entityType>): any;
     find(options: FindOptions<entityType>, skipOrderByAndLimit?: boolean): Promise<entityType[]>;
     buildEntityDataProviderFindOptions(options: FindOptions<entityType>): Promise<EntityDataProviderFindOptions>;
     fromJsonArray(jsonItems: any[], load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[]): Promise<entityType[]>;
@@ -306,7 +306,7 @@ interface columnInfo {
 /**Decorates classes that should be used as entities.
  * Receives a key and an array of EntityOptions.
  * @example
- * import { Entity, Fields } from "remult";
+ * import  { Entity, Fields } from "remult";
  * @Entity("tasks", {
  *    allowApiCrud: true
  * })

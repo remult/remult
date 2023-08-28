@@ -1,6 +1,6 @@
-import { FieldMetadata } from '../column-interfaces';
-import { Remult } from '../context';
-import { EntityMetadata, EntityFilter } from '../remult3';
+import type { FieldMetadata } from '../column-interfaces';
+import type { Remult } from '../context';
+import type { EntityFilter, EntityMetadata } from '../remult3';
 export declare class Filter {
     private apply?;
     constructor(apply?: (add: FilterConsumer) => void);

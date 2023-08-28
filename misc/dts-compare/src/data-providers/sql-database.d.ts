@@ -1,8 +1,8 @@
-import { EntityDataProvider, DataProvider } from '../data-interfaces';
-import { SqlCommand, SqlCommandWithParameters, SqlImplementation, SqlResult } from '../sql-command';
-import { CustomSqlFilterBuilderFunction } from '../filter/filter-consumer-bridge-to-sql-request';
-import { EntityMetadata, EntityFilter, RepositoryOverloads } from '../remult3';
-import { Remult } from '../context';
+import type { DataProvider, EntityDataProvider } from '../data-interfaces';
+import type { SqlCommand, SqlCommandWithParameters, SqlImplementation, SqlResult } from '../sql-command';
+import type { Remult } from '../context';
+import type { CustomSqlFilterBuilderFunction } from '../filter/filter-consumer-bridge-to-sql-request';
+import type { EntityFilter, EntityMetadata, RepositoryOverloads } from '../remult3';
 export declare class SqlDatabase implements DataProvider {
     private sql;
     static getDb(remult?: Remult): SqlDatabase;

@@ -1,4 +1,4 @@
-import { Remult } from '../../index';
+import type { Remult } from '../../index';
 export declare const streamUrl = "stream";
 export interface SubscriptionListener<type> {
     next(message: type): void;

@@ -1,5 +1,5 @@
-import { Remult } from './index';
 import type { ClassType } from './classType';
+import { Remult } from './index';
 export declare function remultGraphql(options: {
     removeComments?: boolean;
     entities: ClassType<any>[];

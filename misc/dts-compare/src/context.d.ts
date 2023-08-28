@@ -1,9 +1,9 @@
-import { DataProvider } from './data-interfaces';
-import { EntityMetadata, EntityRef, FindOptions, Repository } from './remult3';
-import { ClassType } from '../classType';
+import type { ClassType } from '../classType';
+import type { DataProvider } from './data-interfaces';
+import type { EntityMetadata, EntityRef, FindOptions, Repository } from './remult3';
+import type { ExternalHttpProvider } from './buildRestDataProvider';
+import type { SubscriptionClient, Unsubscribe } from './live-query/SubscriptionChannel';
 import type { SubscriptionServer } from './live-query/SubscriptionServer';
-import { ExternalHttpProvider } from './buildRestDataProvider';
-import { SubscriptionClient, Unsubscribe } from './live-query/SubscriptionChannel';
 export declare class RemultAsyncLocalStorage {
     private readonly remultObjectStorage;
     static enable(): void;

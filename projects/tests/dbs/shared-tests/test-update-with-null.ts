@@ -1,6 +1,7 @@
 import { expect } from 'vitest'
-import { Entity, EntityBase, Field, Fields } from '../../core/src//remult3'
-import { testAll } from './db-tests-setup'
+import { Entity, EntityBase, Field, Fields } from '../../../core/src/remult3'
+import type { DbTestProps } from './db-tests-props'
+import { it } from 'vitest'
 
 @Entity('testNull', { allowApiCrud: true })
 class testNull extends EntityBase {
@@ -15,9 +16,8 @@ class testNull extends EntityBase {
   numberWithNull: number | null = null
 }
 
-testAll(
-  'test that update null works',
-  async ({ createEntity }) => {
+export function testUpdateWithNull({ createEntity }: DbTestProps) {
+  it('test that update null works', async () => {
     let r = await createEntity(testNull)
     let i = r.create({ id: 1, myCol: { value: 'abc' } })
     await i.save()
@@ -26,12 +26,8 @@ testAll(
     expect(i.myCol).toBe(null)
     await i.save()
     expect(i.myCol).toBe(null)
-  },
-  false,
-)
-testAll(
-  'test number with null',
-  async ({ createEntity }) => {
+  })
+  it('test number with null', async () => {
     let r = await createEntity(testNull)
     const i = await r.insert({
       id: 1,
@@ -44,6 +40,5 @@ testAll(
     await i.save()
     expect(i.numberWithNull).toBe(0)
     expect(await r.count({ numberWithNull: null })).toBe(0)
-  },
-  false,
-)
+  })
+}
