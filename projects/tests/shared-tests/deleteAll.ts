@@ -1,4 +1,4 @@
-import { Repository } from '../../core/src/remult3'
+import type { Repository } from '../../core/src/remult3'
 
 export async function deleteAll<entityType>(
   r: Repository<entityType>,

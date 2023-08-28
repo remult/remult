@@ -1,4 +1,4 @@
-import { DataApiResponse } from '../../core/src/data-api'
+import type { DataApiResponse } from '../../core/src/data-api'
 
 export class TestDataApiResponse implements DataApiResponse {
   progress(progress: number): void {}

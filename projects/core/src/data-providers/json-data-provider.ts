@@ -1,12 +1,11 @@
-import {
+import type {
+  DataProvider,
   EntityDataProvider,
   EntityDataProviderFindOptions,
-  DataProvider,
 } from '../data-interfaces'
-import { Filter } from '../filter/filter-interfaces'
+import type { Filter } from '../filter/filter-interfaces'
+import type { EntityMetadata } from '../remult3'
 import { ArrayEntityDataProvider } from './array-entity-data-provider'
-import { EntityMetadata } from '../remult3'
-import { Sort } from '../sort'
 
 export interface JsonEntityStorage {
   getItem(entityDbName: string): string | null

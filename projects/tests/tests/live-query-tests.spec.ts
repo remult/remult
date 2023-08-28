@@ -1,29 +1,24 @@
-import { queryConfig, Remult } from '../../core/src/context'
-import { DataApi, DataApiRequest } from '../../core/src/data-api'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { Remult, queryConfig } from '../../core/src/context'
 import { InMemoryDataProvider } from '../../core/src/data-providers/in-memory-database'
-import {
-  Entity,
-  Fields,
-  FindOptions,
-  getEntityRef,
-  RepositoryImplementation,
-} from '../../core/src/remult3'
-import { actionInfo } from '../../core/src/server-action'
-import { createMockHttpDataProvider } from '../tests/testHelper'
-import { SubscriptionChannel, LiveQueryChange } from '../../core/src/live-query/SubscriptionChannel'
-import { LiveQueryClient } from '../../core/src/live-query/LiveQueryClient'
-import {
-  LiveQueryPublisher,
-  LiveQueryStorage,
-  InMemoryLiveQueryStorage,
-} from '../../core/src/live-query/SubscriptionServer'
 import {
   findOptionsFromJson,
   findOptionsToJson,
 } from '../../core/src/data-providers/rest-data-provider'
+import { LiveQueryClient } from '../../core/src/live-query/LiveQueryClient'
+import type { LiveQueryChange } from '../../core/src/live-query/SubscriptionChannel'
+import { SubscriptionChannel } from '../../core/src/live-query/SubscriptionChannel'
+import {
+  InMemoryLiveQueryStorage,
+  LiveQueryPublisher,
+} from '../../core/src/live-query/SubscriptionServer'
 import { remult } from '../../core/src/remult-proxy'
+import type { FindOptions } from '../../core/src/remult3'
+import { Entity, Fields, getEntityRef } from '../../core/src/remult3'
+import { actionInfo } from '../../core/src/server-action'
+import { createMockHttpDataProvider } from '../tests/testHelper'
 import { HttpProviderBridgeToRestDataProviderHttpProvider } from '../../core/src/buildRestDataProvider'
-import { describe, it, expect,beforeEach,afterEach } from 'vitest'
+import { DataApi } from '../../core/src/data-api'
 
 const joc = expect.objectContaining
 
@@ -1044,7 +1039,7 @@ it('test channel subscribe', async () => {
 })
 
 describe('test failure', () => {
-  it('error on subscribe query', async () => {  
+  it('error on subscribe query', async () => {
     let r = new Remult(new InMemoryDataProvider())
     r.apiClient.subscriptionClient = {
       openConnection: async () => {

@@ -1,22 +1,21 @@
-import { ClassType } from '../classType'
 import { assign } from '../assign'
-import {
+import type { ClassType } from '../classType'
+import type {
   FieldMetadata,
   FieldOptions,
   ValueConverter,
 } from './column-interfaces'
 
-import { AndFilter, Filter } from './filter/filter-interfaces'
+import { Filter } from './filter/filter-interfaces'
 
-import {
+import type {
   EntityFilter,
   FindOptions,
-  getEntityRef,
   idType,
   Repository,
   RepositoryImplementation,
-  __updateEntityBasedOnWhere,
 } from './remult3'
+import { __updateEntityBasedOnWhere, getEntityRef } from './remult3'
 
 export function makeTitle(name: string) {
   // insert a space before all caps

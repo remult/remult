@@ -1,26 +1,16 @@
-import {
-  FindOptions,
-  remult as defaultRemult,
-  Repository,
-  RestDataProviderHttpProvider,
-  UrlBuilder,
-} from '../../index'
-import {
-  RestDataProvider,
-  RestEntityDataProvider,
-} from '../data-providers/rest-data-provider'
-import type { LiveQueryChangeInfo, RepositoryImplementation } from '../remult3'
+import type { ApiClient, FindOptions } from '../../index'
 import { buildRestDataProvider } from '../buildRestDataProvider'
-import {
-  LiveQuerySubscriber,
-  SubscriptionClient,
-  SubscribeResult,
+import { RestDataProvider } from '../data-providers/rest-data-provider'
+import type { LiveQueryChangeInfo, RepositoryImplementation } from '../remult3'
+import type {
   SubscriptionClientConnection,
-  liveQueryKeepAliveRoute,
-  Unsubscribe,
   SubscriptionListener,
+  Unsubscribe,
 } from './SubscriptionChannel'
-import type { ApiClient } from '../../index'
+import {
+  liveQueryKeepAliveRoute,
+  LiveQuerySubscriber,
+} from './SubscriptionChannel'
 /* @internal*/
 export class LiveQueryClient {
   wrapMessageHandling(handleMessage) {

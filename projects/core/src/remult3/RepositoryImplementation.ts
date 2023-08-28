@@ -1,74 +1,67 @@
-import {
+import { createId } from '@paralleldrive/cuid2'
+import { v4 as uuid } from 'uuid'
+import type { ClassType } from '../../classType'
+import { CompoundIdField, LookupColumn, makeTitle } from '../column'
+import type {
   FieldMetadata,
   FieldOptions,
   ValueConverter,
   ValueListItem,
 } from '../column-interfaces'
-import { EntityOptions } from '../entity'
-import { CompoundIdField, LookupColumn, makeTitle } from '../column'
+import type { AllowedForInstance } from '../context'
 import {
-  EntityMetadata,
-  FieldRef,
-  FieldsRef,
-  EntityFilter,
-  FindOptions,
-  Repository,
-  EntityRef,
-  QueryOptions,
-  QueryResult,
-  EntityOrderBy,
-  FieldsMetadata,
-  IdMetadata,
-  FindFirstOptionsBase,
-  FindFirstOptions,
-  OmitEB,
-  Subscribable,
+  Remult,
+  allEntities,
+  isBackend,
+  queryConfig,
+  setControllerSettings,
+} from '../context'
+import type { EntityOptions } from '../entity'
+import type { customFilterInfo } from '../filter/filter-interfaces'
+import { Filter } from '../filter/filter-interfaces'
+import { Sort } from '../sort'
+import type {
   ControllerRef,
+  EntityFilter,
+  EntityMetadata,
+  EntityOrderBy,
+  EntityRef,
+  FieldRef,
+  FieldsMetadata,
+  FieldsRef,
+  FindFirstOptions,
+  FindFirstOptionsBase,
+  FindOptions,
+  IdMetadata,
   LiveQuery,
   LiveQueryChangeInfo,
+  OmitEB,
+  QueryOptions,
+  QueryResult,
+  Repository,
+  Subscribable,
 } from './remult3'
-import { ClassType } from '../../classType'
-import {
-  allEntities,
-  Remult,
-  isBackend,
-  queryConfig as queryConfig,
-  setControllerSettings,
-  EventSource,
-  Allowed,
-  AllowedForInstance,
-} from '../context'
-import {
-  AndFilter,
-  customFilterInfo,
-  entityFilterToJson,
-  Filter,
-  FilterConsumer,
-  OrFilter,
-} from '../filter/filter-interfaces'
-import { Sort } from '../sort'
-import { v4 as uuid } from 'uuid'
-import { createId } from '@paralleldrive/cuid2'
 
-import { entityEventListener } from '../__EntityValueProvider'
-import {
+import type { Paginator, RefSubscriber, RefSubscriberBase } from '.'
+import { assign } from '../../assign'
+import type { entityEventListener } from '../__EntityValueProvider'
+import type {
   DataProvider,
   EntityDataProvider,
   EntityDataProviderFindOptions,
   ErrorInfo,
 } from '../data-interfaces'
-import { ValueConverters } from '../valueConverters'
 import { filterHelper } from '../filter/filter-interfaces'
-import { assign } from '../../assign'
-import { Paginator, RefSubscriber, RefSubscriberBase } from '.'
+import { ValueConverters } from '../valueConverters'
 
-import { RemultProxy, remult as defaultRemult } from '../remult-proxy'
-import {
+import { findOptionsToJson } from '../data-providers/rest-data-provider'
+import type {
   SubscriptionListener,
   Unsubscribe,
 } from '../live-query/SubscriptionChannel'
-import { findOptionsToJson } from '../data-providers/rest-data-provider'
-//import { remult } from "../remult-proxy";
+import type { RemultProxy } from '../remult-proxy'
+import { remult as defaultRemult } from '../remult-proxy'
+//import  { remult } from "../remult-proxy";
 
 let classValidatorValidate:
   | ((
@@ -78,7 +71,7 @@ let classValidatorValidate:
       },
     ) => Promise<void>)
   | undefined = undefined
-// import("class-validator".toString())
+// import ("class-validator".toString())
 //     .then((v) => {
 //         classValidatorValidate = (item, ref) => {
 //             return v.validate(item).then(errors => {
@@ -1205,15 +1198,21 @@ export class rowHelperImplementation<T>
     return this._columns
   }
   private _saving = false
-  async save(onlyTheseFieldsSentOnlyInTheCaseOfProxySaveWithPartialObject?: string[]): Promise<T> {
+  async save(
+    onlyTheseFieldsSentOnlyInTheCaseOfProxySaveWithPartialObject?: string[],
+  ): Promise<T> {
     try {
       if (this._saving)
         throw new Error('cannot save while entity is already saving')
       this._saving = true
       if (this.wasDeleted()) throw new Error('cannot save a deleted row')
       this.isLoading = true
-      if (onlyTheseFieldsSentOnlyInTheCaseOfProxySaveWithPartialObject===undefined) // no need
-      await this.__validateEntity()
+      if (
+        onlyTheseFieldsSentOnlyInTheCaseOfProxySaveWithPartialObject ===
+        undefined
+      )
+        // no need
+        await this.__validateEntity()
       let doNotSave = false
       for (const col of this.fields) {
         if (col.metadata.options.saving)
@@ -1233,8 +1232,11 @@ export class rowHelperImplementation<T>
       for (const field of this.metadata.fields) {
         if (
           field.dbReadOnly ||
-          (onlyTheseFieldsSentOnlyInTheCaseOfProxySaveWithPartialObject !== undefined &&
-            !onlyTheseFieldsSentOnlyInTheCaseOfProxySaveWithPartialObject.includes(field.key))
+          (onlyTheseFieldsSentOnlyInTheCaseOfProxySaveWithPartialObject !==
+            undefined &&
+            !onlyTheseFieldsSentOnlyInTheCaseOfProxySaveWithPartialObject.includes(
+              field.key,
+            ))
         ) {
           d[field.key] = undefined
           ignoreKeys.push(field.key)
@@ -2347,7 +2349,7 @@ export function Field<entityType = any, valueType = any>(
     | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void)
   )[]
 ) {
-  // IMPORTANT!!!! if you call this in another decorator, make sure to set It's return type correctly with the | undefined
+  // import ANT!!!! if you call this in another decorator, make sure to set It's return type correctly with the | undefined
 
   return (
     target,
@@ -2518,7 +2520,7 @@ interface columnInfo {
 /**Decorates classes that should be used as entities.
  * Receives a key and an array of EntityOptions.
  * @example
- * import { Entity, Fields } from "remult";
+ * import  { Entity, Fields } from "remult";
  * @Entity("tasks", {
  *    allowApiCrud: true
  * })

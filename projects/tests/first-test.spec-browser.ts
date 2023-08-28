@@ -1,4 +1,4 @@
-import { it, expect } from 'vitest'
+import { expect, it } from 'vitest'
 import { remult } from '../core/src/remult-proxy'
 it('first test', () => {
   expect(1 + 1).toBe(2)

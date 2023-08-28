@@ -1,4 +1,5 @@
 import { AsyncLocalStorage } from 'async_hooks'
+import { describe, expect, it } from 'vitest'
 import {
   BackendMethod,
   Entity,
@@ -7,9 +8,7 @@ import {
   describeClass,
   remult,
 } from '../core'
-import { initAsyncHooks } from '../core/server/initAsyncHooks'
 import { Remult, RemultAsyncLocalStorage } from '../core/src/context'
-import { describe, it, expect } from 'vitest'
 
 describe('backend method context awareness', () => {
   it('getting error when async was initialized', async () => {

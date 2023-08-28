@@ -1,12 +1,10 @@
-import { InMemoryDataProvider } from '../../core/src/data-providers/in-memory-database'
-import { Status } from './testModel/models'
 import { Remult } from '../../core/src/context'
-import {
-  Categories as newCategories,
-  CategoriesForTesting,
-} from './remult-3-entities'
-import { Repository } from '../../core/src/remult3'
+import { InMemoryDataProvider } from '../../core/src/data-providers/in-memory-database'
+import type { Repository } from '../../core/src/remult3'
 import { deleteAll } from '../shared-tests/deleteAll'
+import type { CategoriesForTesting } from './remult-3-entities'
+import { Categories as newCategories } from './remult-3-entities'
+import type { Status } from './testModel/models'
 
 export async function createData(
   doInsert?: (

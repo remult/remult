@@ -1,15 +1,19 @@
-import { Remult } from '../../core/src/context'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { InMemoryDataProvider } from '../../core/src//data-providers/in-memory-database'
+import { Entity, EntityBase, Fields } from '../../core/src//remult3'
+import { describeClass } from '../../core/src//remult3/DecoratorReplacer'
+import { Remult } from '../../core/src/context'
 import { dbNamesOf } from '../../core/src/filter/filter-consumer-bridge-to-sql-request'
 import { remult } from '../../core/src/remult-proxy'
-import { Field, Entity, EntityBase, Fields } from '../../core/src//remult3'
-import { describeClass } from '../../core/src//remult3/DecoratorReplacer'
 import { actionInfo } from '../../core/src/server-action'
-import { describe, it, expect,beforeEach,afterEach,beforeAll } from 'vitest'
 
 describe('test server expression value', () => {
-  beforeEach(() => {(actionInfo.runningOnServer = true)})
-  afterEach(() =>{ (actionInfo.runningOnServer = false)})
+  beforeEach(() => {
+    actionInfo.runningOnServer = true
+  })
+  afterEach(() => {
+    actionInfo.runningOnServer = false
+  })
   it('test basics create', async () => {
     let c = new Remult()
     c.dataProvider = new InMemoryDataProvider()

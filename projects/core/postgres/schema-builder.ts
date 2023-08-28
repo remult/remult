@@ -1,14 +1,16 @@
-import { FieldMetadata } from '../src/column-interfaces'
-import { Remult, allEntities } from '../src/context'
-import { SqlDatabase } from '../src/data-providers/sql-database'
+import type { FieldMetadata } from '../src/column-interfaces'
+import type { Remult } from '../src/context'
+import { allEntities } from '../src/context'
+import type { SqlDatabase } from '../src/data-providers/sql-database'
+import type { EntityDbNamesBase } from '../src/filter/filter-consumer-bridge-to-sql-request'
 import {
-  EntityDbNamesBase,
   dbNamesOf,
   isDbReadonly,
 } from '../src/filter/filter-consumer-bridge-to-sql-request'
 import { remult as defaultRemult } from '../src/remult-proxy'
-import { EntityMetadata, isAutoIncrement } from '../src/remult3'
-import { SqlCommand } from '../src/sql-command'
+import type { EntityMetadata } from '../src/remult3'
+import { isAutoIncrement } from '../src/remult3'
+import type { SqlCommand } from '../src/sql-command'
 import { ValueConverters } from '../src/valueConverters'
 
 export function postgresColumnSyntax(x: FieldMetadata, dbName: string) {

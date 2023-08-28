@@ -1,6 +1,6 @@
-import { ClassType } from '../classType'
-import { Allowed, Remult, AllowedForInstance } from './context'
-import { EntityMetadata, FieldRef, OmitEB } from './remult3'
+import type { ClassType } from '../classType'
+import type { Allowed, AllowedForInstance } from './context'
+import type { EntityMetadata, FieldRef, OmitEB } from './remult3'
 
 export interface FieldOptions<entityType = any, valueType = any> {
   /** A human readable name for the field. Can be used to achieve a consistent caption for a field throughout the app

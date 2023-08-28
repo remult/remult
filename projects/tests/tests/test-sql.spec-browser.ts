@@ -1,25 +1,13 @@
-import { WebSqlDataProvider } from '../../core/src/data-providers/web-sql-data-provider'
+import { describe, expect, it } from 'vitest'
 import { Remult } from '../../core/src/context'
 import { SqlDatabase } from '../../core/src/data-providers/sql-database'
-import { Categories } from './remult-3-entities'
-import {
-  Entity,
-  EntityFilter,
-  Fields,
-  OmitEB,
-  Repository,
-  RepositoryImplementation,
-} from '../../core/src/remult3'
-import { testWebSqlImpl } from './frontend-database-tests-setup.spec-browser'
+import { WebSqlDataProvider } from '../../core/src/data-providers/web-sql-data-provider'
+import { dbNamesOf } from '../../core/src/filter/filter-consumer-bridge-to-sql-request'
+import type { Repository } from '../../core/src/remult3'
+import { Entity, Fields } from '../../core/src/remult3'
 import { entityWithValidations } from '../shared-tests/entityWithValidations'
-import {
-  EntityDbNames,
-  FilterConsumerBridgeToSqlRequest,
-  dbNamesOf,
-} from '../../core/src/filter/filter-consumer-bridge-to-sql-request'
-import { SqlCommand, SqlResult } from '../../core/src/sql-command'
-import { Filter } from '../../core/src/filter/filter-interfaces'
-import { describe, it, expect } from 'vitest'
+import { testWebSqlImpl } from './frontend-database-tests-setup.spec-browser'
+import { Categories } from './remult-3-entities'
 
 describe('test sql database', () => {
   let db = new SqlDatabase(new WebSqlDataProvider('test'))

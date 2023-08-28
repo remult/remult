@@ -1,28 +1,23 @@
-import type { MongoClient, Db, FindOptions, ClientSession } from 'mongodb'
-import {
-  CompoundIdField,
+import type { ClientSession, Db, FindOptions, MongoClient } from 'mongodb'
+import type {
   DataProvider,
   EntityDataProvider,
   EntityDataProviderFindOptions,
   EntityFilter,
   EntityMetadata,
   FieldMetadata,
-  Filter,
   Remult,
-  Repository,
 } from '.'
-import {
-  EntityDbNames,
-  dbNamesOf,
-  EntityDbNamesBase,
-} from './src/filter/filter-consumer-bridge-to-sql-request'
-import { FilterConsumer } from './src/filter/filter-interfaces'
-import {
-  getRepository,
+import { CompoundIdField, Filter } from '.'
+import type { EntityDbNamesBase } from './src/filter/filter-consumer-bridge-to-sql-request'
+import { dbNamesOf } from './src/filter/filter-consumer-bridge-to-sql-request'
+import type { FilterConsumer } from './src/filter/filter-interfaces'
+import { remult as remultContext } from './src/remult-proxy'
+import type {
   RepositoryImplementation,
   RepositoryOverloads,
 } from './src/remult3'
-import { remult as remultContext } from './src/remult-proxy'
+import { getRepository } from './src/remult3'
 
 export class MongoDataProvider implements DataProvider {
   constructor(
@@ -283,7 +278,7 @@ class FilterConsumerBridgeToMongo implements FilterConsumer {
   }
   public containsCaseInsensitive(col: FieldMetadata, val: any): void {
     this.add(col, val, '$regex')
-    
+
     // this.promises.push(col.getDbName().then(colName => {
 
     //     this.result.push(b => b.whereRaw(

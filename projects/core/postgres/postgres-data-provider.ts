@@ -1,12 +1,14 @@
-import { ClientBase, Pool, PoolConfig, QueryResult } from 'pg'
+import type { ClientBase, PoolConfig, QueryResult } from 'pg'
+import { Pool } from 'pg'
 import { Remult } from '../src/context'
-import {
-  PostgresSchemaBuilder,
-  verifyStructureOfAllEntities,
-} from './schema-builder'
-import { EntityMetadata } from '../src/remult3'
-import { SqlCommand, SqlImplementation, SqlResult } from '../src/sql-command'
 import { SqlDatabase } from '../src/data-providers/sql-database'
+import type { EntityMetadata } from '../src/remult3'
+import type {
+  SqlCommand,
+  SqlImplementation,
+  SqlResult,
+} from '../src/sql-command'
+import { PostgresSchemaBuilder } from './schema-builder'
 
 export interface PostgresPool extends PostgresCommandSource {
   connect(): Promise<PostgresClient>

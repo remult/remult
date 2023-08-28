@@ -1,24 +1,23 @@
-import {
-  AndFilter,
-  customUrlToken,
-  buildFilterFromRequestParameters,
-} from './filter/filter-interfaces'
-import { doTransaction, Remult, UserInfo } from './context'
-import { Filter } from './filter/filter-interfaces'
-import type {
-  FindOptions,
-  Repository,
-  EntityRef,
-  rowHelperImplementation,
-  EntityFilter,
-} from './remult3'
+import type { Remult } from './context'
+import { doTransaction } from './context'
 import type { ErrorInfo } from './data-interfaces'
-import { ForbiddenError } from './server-action'
 import {
   findOptionsToJson,
   liveQueryAction,
 } from './data-providers/rest-data-provider'
+import {
+  Filter,
+  buildFilterFromRequestParameters,
+  customUrlToken,
+} from './filter/filter-interfaces'
 import type { QueryData } from './live-query/SubscriptionServer'
+import type {
+  EntityFilter,
+  FindOptions,
+  Repository,
+  rowHelperImplementation,
+} from './remult3'
+import { ForbiddenError } from './server-action'
 
 export class DataApi<T = any> {
   constructor(
@@ -227,7 +226,11 @@ export class DataApi<T = any> {
         buildFilterFromRequestParameters(this.repository.metadata, {
           get: (key) => {
             let result = request.get(key)
-            if (key.startsWith(customUrlToken) && result&&typeof result==="string")
+            if (
+              key.startsWith(customUrlToken) &&
+              result &&
+              typeof result === 'string'
+            )
               return JSON.parse(result)
             return result
           },

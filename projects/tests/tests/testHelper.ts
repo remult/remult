@@ -1,25 +1,23 @@
-
-
-import { AllowedForInstance, Remult } from '../../core/src/context'
-import {
-  DataApi,
-  DataApiRequest,
-  DataApiResponse,
-  serializeError,
-} from '../../core/src/data-api'
-import { DataProvider, EntityDataProvider } from '../../core/src/data-interfaces'
+import { it } from 'vitest'
+import { HttpProviderBridgeToRestDataProviderHttpProvider } from '../../core/src/buildRestDataProvider'
+import type { AllowedForInstance } from '../../core/src/context'
+import { Remult } from '../../core/src/context'
+import type { DataApiResponse } from '../../core/src/data-api'
+import { DataApi, serializeError } from '../../core/src/data-api'
+import type {
+  DataProvider,
+  EntityDataProvider,
+  RestDataProviderHttpProvider,
+} from '../../core/src/data-interfaces'
 import { InMemoryDataProvider } from '../../core/src/data-providers/in-memory-database'
 import { RestEntityDataProvider } from '../../core/src/data-providers/rest-data-provider'
 import { SqlDatabase } from '../../core/src/data-providers/sql-database'
 import { WebSqlDataProvider } from '../../core/src/data-providers/web-sql-data-provider'
-import { EntityMetadata } from '../../core/src/remult3'
-import { Action, actionInfo, serverActionField } from '../../core/src/server-action'
+import { remult } from '../../core/src/remult-proxy'
+import type { EntityMetadata } from '../../core/src/remult3'
+import { actionInfo, serverActionField } from '../../core/src/server-action'
 import { testConfiguration } from '../shared-tests/entityWithValidations'
 import { TestDataApiResponse } from './TestDataApiResponse'
-import { remult } from '../../core/src/remult-proxy'
-import { HttpProviderBridgeToRestDataProviderHttpProvider } from '../../core/src/buildRestDataProvider'
-import { describe, it, expect } from 'vitest'
-
 
 //actionInfo.runningOnServer = false;
 
@@ -215,7 +213,7 @@ export class MockRestDataProvider implements DataProvider {
 }
 export function createMockHttpDataProvider(
   dataApi: DataApi<any>,
-): import('../../core/src/data-interfaces').RestDataProviderHttpProvider {
+): RestDataProviderHttpProvider {
   return new HttpProviderBridgeToRestDataProviderHttpProvider({
     delete: async (url) => {
       let urlSplit = url.split('/')

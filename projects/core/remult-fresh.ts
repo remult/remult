@@ -1,12 +1,9 @@
 import {} from './server/core'
-import {
-  RemultServerOptions,
-  RemultServer,
-  createRemultServerCore,
-  GenericRequestInfo,
+import type {
   RemultServerCore,
+  RemultServerOptions,
 } from './server/expressBridge'
-import { Remult } from './src/context'
+import { createRemultServerCore } from './server/expressBridge'
 
 export function remultFresh(
   options: RemultServerOptions<FreshRequest>,

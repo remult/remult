@@ -1,15 +1,17 @@
-
-
 import { Remult } from '../../core/src//context'
 import { SqlDatabase } from '../../core/src//data-providers/sql-database'
 
-import { dbNamesOf } from '../../core/src/filter/filter-consumer-bridge-to-sql-request'
-import { entityForrawFilter } from './entityForCustomFilter'
+import { describe, expect, it } from 'vitest'
 import { WebSqlDataProvider } from '../../core/src/data-providers/web-sql-data-provider'
-import { describe, it, expect, beforeEach, beforeAll, afterEach } from 'vitest'
-import { Categories, CompoundIdEntity, Products, Suppliers } from './entities-for-tests'
+import { dbNamesOf } from '../../core/src/filter/filter-consumer-bridge-to-sql-request'
 import { Entity, EntityBase, Fields } from '../../core/src/remult3'
-
+import {
+  Categories,
+  CompoundIdEntity,
+  Products,
+  Suppliers,
+} from './entities-for-tests'
+import { entityForrawFilter } from './entityForCustomFilter'
 
 it('test that it works with sql', async () => {
   let w = new WebSqlDataProvider('testWithFilter')
@@ -49,10 +51,7 @@ it('test relation in sql', async () => {
     await wsql.dropTable(e)
     await wsql.createTable(e)
   }
-  let cat = await remult
-    .repo(Categories)
-    .create({ id: 1, name: 'cat' })
-    .save()
+  let cat = await remult.repo(Categories).create({ id: 1, name: 'cat' }).save()
   let sup = await remult
     .repo(Suppliers)
     .create({ supplierId: 'sup1', name: 'sup1name' })

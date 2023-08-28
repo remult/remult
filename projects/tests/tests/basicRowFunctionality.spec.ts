@@ -1,70 +1,57 @@
-import { createData } from './createData'
 import { DataApi } from '../../core/src//data-api'
-import { InMemoryDataProvider } from '../../core/src//data-providers/in-memory-database'
 import { ArrayEntityDataProvider } from '../../core/src//data-providers/array-entity-data-provider'
-import { MockRestDataProvider } from './testHelper'
-import { TestDataApiResponse } from './TestDataApiResponse'
+import { InMemoryDataProvider } from '../../core/src//data-providers/in-memory-database'
+import { createData } from './createData'
 import { Done } from './Done'
+import { TestDataApiResponse } from './TestDataApiResponse'
+import { MockRestDataProvider } from './testHelper'
 
 import { Status } from './testModel/models'
 
-import { Remult, Allowed } from '../../core/src/context'
-import { __RowsOfDataForTesting } from '../../core/src/__RowsOfDataForTesting'
 import { UrlBuilder } from '../../core/src/../urlBuilder'
-
-import { SqlDatabase } from '../../core/src//data-providers/sql-database'
+import type { Allowed } from '../../core/src/context'
+import { Remult } from '../../core/src/context'
 
 import {
   addFilterToUrlAndReturnTrueIfSuccessful,
   RestDataProvider,
   RestDataProviderHttpProviderUsingFetch,
 } from '../../core/src//data-providers/rest-data-provider'
-import {
-  entityFilterToJson,
-  Filter,
-  OrFilter,
-} from '../../core/src/filter/filter-interfaces'
-import {
-  Categories,
-  Categories as newCategories,
-  CategoriesForTesting,
-} from './remult-3-entities'
+import { entityFilterToJson } from '../../core/src/filter/filter-interfaces'
+import { Categories, Categories as newCategories } from './remult-3-entities'
 
 import {
-  Field,
   decorateColumnSettings,
   Entity,
   EntityBase,
-  FieldType,
+  Field,
   Fields,
+  FieldType,
   getEntityKey,
-  isAutoIncrement,
   getEntityRef,
+  isAutoIncrement,
 } from '../../core/src//remult3'
 
-import { CompoundIdField } from '../../core/src/column'
-import { actionInfo } from '../../core/src/server-action'
-import { assign } from '../../core/assign'
-import {
-  entityWithValidations,
-  testConfiguration,
-} from '../shared-tests/entityWithValidations'
-import { entityWithValidationsOnColumn } from './entityWithValidationsOnColumn'
-import { ValueConverters } from '../../core/src/valueConverters'
-import {
-  FilterConsumerBridgeToSqlRequest,
-  dbNamesOf,
-} from '../../core/src/filter/filter-consumer-bridge-to-sql-request'
 import axios from 'axios'
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { assign } from '../../core/assign'
+import { describeClass } from '../../core/src//remult3/DecoratorReplacer'
 import {
   HttpProviderBridgeToRestDataProviderHttpProvider,
   retry,
   toPromise,
 } from '../../core/src/buildRestDataProvider'
-import { describeClass } from '../../core/src//remult3/DecoratorReplacer'
+import { CompoundIdField } from '../../core/src/column'
+import {
+  dbNamesOf,
+  FilterConsumerBridgeToSqlRequest,
+} from '../../core/src/filter/filter-consumer-bridge-to-sql-request'
 import { remult } from '../../core/src/remult-proxy'
-import { describe, it, expect,beforeEach,afterEach,beforeAll } from 'vitest'
+import { actionInfo } from '../../core/src/server-action'
+import { ValueConverters } from '../../core/src/valueConverters'
+import { entityWithValidations } from '../shared-tests/entityWithValidations'
 import { CompoundIdEntity } from './entities-for-tests'
+import { entityWithValidationsOnColumn } from './entityWithValidationsOnColumn'
 
 //SqlDatabase.LogToConsole = true;
 
@@ -177,7 +164,7 @@ describe('Test basic row functionality', () => {
     expect(y.id).toBe(1)
     expect(y.categoryName).toBe('noam')
   })
-  // it("json name is important", async () => {
+  // it("json name is import ant", async () => {
   //   let ctx = new Remult().for(newCategories);
   //   let x = ctx.create();
   //   x.id = 1;
@@ -187,7 +174,7 @@ describe('Test basic row functionality', () => {
   //   expect(y.id).toBe(1);
   //   expect(y.xx).toBe('noam');
   // });
-  // it("json name is important 1", async () => {
+  // it("json name is import ant 1", async () => {
   //   let ctx = new Remult().for_old(myTestEntity);
   //   let x = ctx.create();
   //   x.id.value = 1;
@@ -202,7 +189,7 @@ describe('Test basic row functionality', () => {
   //   expect(x.name1.value).toBe('yael');
 
   // });
-  // it("json name is important", () => {
+  // it("json name is import ant", () => {
   //   let x = new myTestEntity();
   //   x.id.value = 1;
   //   x.name1.value = 'a';
@@ -220,8 +207,12 @@ class myTestEntity extends EntityBase {
 }
 
 describe('data api', () => {
-  beforeEach(() =>{ (actionInfo.runningOnServer = true)})
-  afterEach(() =>{ (actionInfo.runningOnServer = false)})
+  beforeEach(() => {
+    actionInfo.runningOnServer = true
+  })
+  afterEach(() => {
+    actionInfo.runningOnServer = false
+  })
   it('get based on id', async () => {
     let [c, remult] = await createData(
       async (insert) => await insert(1, 'noam'),
@@ -1446,9 +1437,7 @@ describe('column validation', () => {
     //expect(c._.isValid()).toBe(true);
     //expect(c._.columns.id.error).toBe(undefined);
   })
-
 })
-
 
 describe('compound id', () => {
   it('id field is compound', () => {
@@ -1650,7 +1639,6 @@ describe('test bool value', () => {
   })
 })
 
-
 describe('cache', () => {
   it('find first useCache', async () => {
     let [r] = await createData(async (i) => i(1, 'noam'))
@@ -1817,7 +1805,6 @@ describe('check allowedDataType', () => {
   let roleC = strC
   beforeAll(async (done) => {
     c.user = { id: 'x', name: 'y', roles: [strA, strB] }
-    
   })
   it('1', () => {
     expect(c.isAllowed(strA)).toBe(true)
@@ -2005,7 +1992,6 @@ describe('CompoundIdPojoEntity', () => {
     expect((await repo.findFirst({ a: 2 })).b).toBe(21)
   })
 })
-
 
 @Entity<entityWithValidationsOnEntityEvent>('', {
   validation: (t) => {

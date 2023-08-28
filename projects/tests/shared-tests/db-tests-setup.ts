@@ -1,12 +1,12 @@
-import { ClassType } from '../../core/classType'
+import { it } from 'vitest'
+import type { ClassType } from '../../core/classType'
 import { Remult } from '../../core/src/context'
-import { DataProvider } from '../../core/src/data-interfaces'
+import type { DataProvider } from '../../core/src/data-interfaces'
 import { InMemoryDataProvider } from '../../core/src/data-providers/in-memory-database'
-import { remult } from '../../core/src/remult-proxy'
-import { Repository } from '../../core/src/remult3'
-import { Categories, CategoriesForTesting } from '../tests/remult-3-entities'
-import { Status } from '../tests/testModel/models'
-import { describe, it, expect } from 'vitest'
+import type { Repository } from '../../core/src/remult3'
+import type { CategoriesForTesting } from '../tests/remult-3-entities'
+import { Categories } from '../tests/remult-3-entities'
+import type { Status } from '../tests/testModel/models'
 
 export function itWithFocus(
   key: string,
@@ -64,7 +64,7 @@ export function testInMemory(
 }
 export const TestDbs = {
   restDataProvider: 'restDataProvider',
-  webSql:'webSql',
+  webSql: 'webSql',
   mongo: 'mongo',
   mongoNoTrans: 'mongoNoTrans',
   inMemory: 'in memory',

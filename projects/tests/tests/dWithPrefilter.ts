@@ -1,5 +1,5 @@
+import { Entity, EntityBase, Fields } from '../../core/src/remult3'
 import { BackendMethod } from '../../core/src/server-action'
-import { Field, Entity, EntityBase, Fields } from '../../core/src/remult3'
 
 @Entity<dWithPrefilter>('d', {
   apiPrefilter: { b: 2 },

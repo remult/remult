@@ -1,28 +1,33 @@
-import { DataProvider } from './data-interfaces'
-import { Action, actionInfo, serverActionField } from './server-action'
+import type { ClassType } from '../classType'
+import type { DataProvider } from './data-interfaces'
 import { RestDataProvider } from './data-providers/rest-data-provider'
-import { EntityMetadata, EntityRef, FindOptions, Repository } from './remult3'
-import { RepositoryImplementation } from './remult3/RepositoryImplementation'
-import { ClassType } from '../classType'
 import { LiveQueryClient } from './live-query/LiveQueryClient'
 import { SseSubscriptionClient } from './live-query/SseSubscriptionClient'
 import { RemultProxy, remult } from './remult-proxy'
-
 import type {
-  LiveQueryStorage,
-  LiveQueryPublisher,
-  LiveQueryChangesListener,
-  SubscriptionServer,
-} from './live-query/SubscriptionServer'
+  EntityMetadata,
+  EntityRef,
+  FindOptions,
+  Repository,
+} from './remult3'
+import { RepositoryImplementation } from './remult3/RepositoryImplementation'
+import type { Action } from './server-action'
+import { actionInfo, serverActionField } from './server-action'
+
+import type { ExternalHttpProvider } from './buildRestDataProvider'
 import {
   buildRestDataProvider,
-  ExternalHttpProvider,
   isExternalHttpProvider,
 } from './buildRestDataProvider'
-import {
+import type {
   SubscriptionClient,
   Unsubscribe,
 } from './live-query/SubscriptionChannel'
+import type {
+  LiveQueryChangesListener,
+  LiveQueryStorage,
+  SubscriptionServer,
+} from './live-query/SubscriptionServer'
 
 export class RemultAsyncLocalStorage {
   static enable() {
@@ -248,7 +253,7 @@ export class Remult {
   }
 }
 
-RemultProxy.defaultRemult = new Remult()
+RemultProxy.defaultRemultFactory = () => new Remult()
 export type GetArguments<T> = T extends (...args: infer FirstArgument) => any
   ? FirstArgument
   : never

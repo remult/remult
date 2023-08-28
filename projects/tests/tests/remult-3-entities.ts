@@ -1,4 +1,5 @@
-import { EntityBase, Field, Entity, Repository, Fields } from '../../core/src/remult3'
+import type { Repository } from '../../core/src/remult3'
+import { Entity, EntityBase, Field, Fields } from '../../core/src/remult3'
 import { Status } from './testModel/models'
 
 @Entity('Products')

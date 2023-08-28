@@ -1,16 +1,10 @@
+import { describe, expect, it } from 'vitest'
 import { InMemoryDataProvider } from '../../core/src//data-providers/in-memory-database'
-import { Categories, Products } from './remult-3-entities'
-import {
-  createOldEntity,
-  Entity,
-  Field,
-  Fields,
-  getEntityRef,
-} from '../../core/src//remult3'
-import { Remult } from '../../core/src/context'
+import { Entity, Field, Fields, getEntityRef } from '../../core/src//remult3'
 import { describeClass } from '../../core/src//remult3/DecoratorReplacer'
+import { Remult } from '../../core/src/context'
+import { Categories, Products } from './remult-3-entities'
 import { MockRestDataProvider } from './testHelper'
-import { describe, it, expect } from 'vitest'
 
 describe('remult-3-basics', () => {
   it('test the very basics', async () => {

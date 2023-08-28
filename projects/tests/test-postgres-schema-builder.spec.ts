@@ -1,4 +1,4 @@
-import { expect, it, describe, beforeEach, afterEach } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import {
   Entity,
   Fields,
@@ -11,7 +11,6 @@ import {
   PostgresSchemaBuilder,
   createPostgresDataProvider,
 } from '../core/postgres'
-
 
 //connection string is in a .env file placed in the `tests` folder with key `DATABASE_URL`
 // if we don't have this, tests will be skipped

@@ -1,19 +1,18 @@
 import type {
   GetServerSideProps,
   GetServerSidePropsResult,
+  NextApiHandler,
   NextApiRequest,
   PreviewData,
-  NextApiHandler,
 } from 'next'
 import type { ParsedUrlQuery } from 'querystring'
-import {
-  createRemultServer,
+import type { ResponseRequiredForSSE } from './SseSubscriptionServer'
+import type {
   GenericResponse,
-  RemultServer,
   RemultServerCore,
   RemultServerOptions,
 } from './server'
-import { ResponseRequiredForSSE } from './SseSubscriptionServer'
+import { createRemultServer } from './server'
 
 export function remultNext(
   options?: RemultServerOptions<NextApiRequest>,

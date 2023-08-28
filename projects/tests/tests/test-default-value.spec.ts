@@ -2,8 +2,8 @@ import { Remult } from '../../core/src/context'
 
 import { InMemoryDataProvider } from '../../core/src//data-providers/in-memory-database'
 
-import { EntityBase, Entity, Fields } from '../../core/src//remult3'
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
+import { Entity, EntityBase, Fields } from '../../core/src//remult3'
 
 describe('test default value', () => {
   it('test basics', async () => {

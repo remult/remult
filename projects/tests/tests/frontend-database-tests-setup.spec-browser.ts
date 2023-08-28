@@ -1,16 +1,15 @@
-import {
-  addDatabaseToTest,
-  dbTestWhatSignature,
-  itWithFocus,
-  TestDbs,
-} from '../shared-tests/db-tests-setup'
 import { InMemoryDataProvider, remult } from '../../core/'
 import { Remult } from '../../core/src/context'
 import { SqlDatabase } from '../../core/src/data-providers/sql-database'
 import { WebSqlDataProvider } from '../../core/src/data-providers/web-sql-data-provider'
+import type { dbTestWhatSignature } from '../shared-tests/db-tests-setup'
+import {
+  addDatabaseToTest,
+  itWithFocus,
+  TestDbs,
+} from '../shared-tests/db-tests-setup'
 
 import { MockRestDataProvider } from './testHelper'
-import { describe, it, expect } from 'vitest'
 
 export function testWebSqlImpl(
   key: string,

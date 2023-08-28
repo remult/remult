@@ -1,13 +1,6 @@
+import { describe, expect, it } from 'vitest'
+import { Entity, EntityBase, Fields } from '../../core/src//remult3'
 import { Remult } from '../../core/src/context'
-import {
-  Field,
-  Entity,
-  EntityBase,
-  FindOptions,
-  Repository,
-  Fields,
-} from '../../core/src//remult3'
-import { describe, it, expect } from 'vitest'
 
 @Entity('my entity')
 class myEntity extends EntityBase {

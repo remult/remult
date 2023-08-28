@@ -1,12 +1,12 @@
-import { Allowed, Remult, AllowedForInstance } from './context'
+import type { Allowed, AllowedForInstance } from './context'
 
-import { FieldMetadata } from './column-interfaces'
-import {
-  EntityOrderBy,
-  FieldsMetadata,
+import type { FieldMetadata } from './column-interfaces'
+import type {
   EntityFilter,
-  EntityRef,
   EntityMetadata,
+  EntityOrderBy,
+  EntityRef,
+  FieldsMetadata,
 } from './remult3'
 
 export interface EntityOptions<entityType = any> {

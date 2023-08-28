@@ -1,38 +1,35 @@
 import type { Knex } from 'knex'
+import type { Remult } from '../src/context'
+import { allEntities } from '../src/context'
+import type { EntityDbNamesBase } from '../src/filter/filter-consumer-bridge-to-sql-request'
+import {
+  dbNamesOf,
+  isDbReadonly,
+} from '../src/filter/filter-consumer-bridge-to-sql-request'
+import type { FilterConsumer } from '../src/filter/filter-interfaces'
 import {
   customDatabaseFilterToken,
   Filter,
-  FilterConsumer,
 } from '../src/filter/filter-interfaces'
-import {
-  EntityDbNames,
-  dbNamesOf,
-  isDbReadonly,
-  EntityDbNamesBase,
-} from '../src/filter/filter-consumer-bridge-to-sql-request'
-import { allEntities, Remult } from '../src/context'
 
-import {
-  isAutoIncrement,
-  StringFieldOptions,
-  Fields,
-  EntityFilter,
-  EntityMetadata,
-  Repository,
-  RepositoryImplementation,
-  RepositoryOverloads,
-  getRepository,
-} from '../src/remult3'
-import { ValueConverters } from '../src/valueConverters'
-import {
+import { CompoundIdField } from '../src/column'
+import type { FieldMetadata } from '../src/column-interfaces'
+import type {
   DataProvider,
   EntityDataProvider,
   EntityDataProviderFindOptions,
 } from '../src/data-interfaces'
-import { FieldMetadata } from '../src/column-interfaces'
-import { CompoundIdField } from '../src/column'
-import { Sort } from '../src/sort'
 import { remult as remultContext } from '../src/remult-proxy'
+import type {
+  EntityFilter,
+  EntityMetadata,
+  RepositoryImplementation,
+  RepositoryOverloads,
+  StringFieldOptions,
+} from '../src/remult3'
+import { getRepository, isAutoIncrement } from '../src/remult3'
+import { Sort } from '../src/sort'
+import { ValueConverters } from '../src/valueConverters'
 
 export class KnexDataProvider implements DataProvider {
   constructor(public knex: Knex) {}
@@ -253,7 +250,10 @@ class KnexEntityDataProvider implements EntityDataProvider {
     let insert = this.knex(e.$entityName).insert(insertObject)
     if (isAutoIncrement(this.entity.idMetadata.field)) {
       let newId
-      if (this.knex.client.config.client === 'mysql2' || this.knex.client.config.client === 'mysql') {
+      if (
+        this.knex.client.config.client === 'mysql2' ||
+        this.knex.client.config.client === 'mysql'
+      ) {
         let result = await insert
         newId = result[0]
       } else {
@@ -468,7 +468,12 @@ export class KnexSchemaBuilder {
 }
 function supportsJson(knex: Knex) {
   const client: string = knex.client.config.client
-  if (client?.includes('sqlite3') || client?.includes('mssql') || client?.includes('mysql')) return false
+  if (
+    client?.includes('sqlite3') ||
+    client?.includes('mssql') ||
+    client?.includes('mysql')
+  )
+    return false
   return true
 }
 

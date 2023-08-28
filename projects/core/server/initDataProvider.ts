@@ -1,4 +1,4 @@
-import { DataProvider } from '../src/data-interfaces'
+import type { DataProvider } from '../src/data-interfaces'
 
 export function initDataProvider(
   optionsDataProvider?:

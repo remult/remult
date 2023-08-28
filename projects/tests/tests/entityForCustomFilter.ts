@@ -1,8 +1,9 @@
-import { SqlDatabase } from '../../core/src/data-providers/sql-database'
-import { Entity, EntityBase, Field, EntityFilter, Fields } from '../../core/src/remult3'
-import { Filter } from '../../core/src/filter/filter-interfaces'
 import { ArrayEntityDataProvider } from '../../core/src/data-providers/array-entity-data-provider'
+import { SqlDatabase } from '../../core/src/data-providers/sql-database'
 import { dbNamesOf } from '../../core/src/filter/filter-consumer-bridge-to-sql-request'
+import { Filter } from '../../core/src/filter/filter-interfaces'
+import type { EntityFilter } from '../../core/src/remult3'
+import { Entity, EntityBase, Fields } from '../../core/src/remult3'
 
 @Entity('entityForrawFilter', { allowApiCrud: true })
 export class entityForrawFilter extends EntityBase {

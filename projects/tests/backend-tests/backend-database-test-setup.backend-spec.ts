@@ -1,25 +1,24 @@
-import { Remult, RemultAsyncLocalStorage } from '../../core/src/context'
 import { AsyncLocalStorage } from 'async_hooks'
-import { KnexDataProvider, KnexSchemaBuilder } from '../../core/remult-knex'
-import * as Knex from 'knex'
-import { Db, MongoClient, MongoDBNamespace } from 'mongodb'
 import { config } from 'dotenv'
+import * as Knex from 'knex'
+import { MongoClient } from 'mongodb'
+import { afterAll, expect, it } from 'vitest'
+import type { ClassType } from '../../core/classType'
 import {
-  createPostgresConnection,
   PostgresDataProvider,
   PostgresSchemaBuilder,
+  createPostgresConnection,
 } from '../../core/postgres'
-import { ClassType } from '../../core/classType'
-import {
-  addDatabaseToTest,
-  dbTestWhatSignature,
-  itWithFocus,
-  testAll,
-  TestDbs,
-} from '../../core/src/shared-tests/db-tests-setup'
-import { describeClass } from '../../core/src/remult3/DecoratorReplacer'
+import { KnexDataProvider, KnexSchemaBuilder } from '../../core/remult-knex'
+import { Remult, RemultAsyncLocalStorage } from '../../core/src/context'
 import { Entity, Fields } from '../../core/src/remult3'
-import { describe, it, expect, afterAll } from 'vitest'
+import { describeClass } from '../../core/src/remult3/DecoratorReplacer'
+import type { dbTestWhatSignature } from '../shared-tests/db-tests-setup'
+import {
+  TestDbs,
+  addDatabaseToTest,
+  itWithFocus,
+} from '../shared-tests/db-tests-setup'
 
 KnexSchemaBuilder.logToConsole = false
 PostgresSchemaBuilder.logToConsole = false
@@ -79,7 +78,7 @@ if (process.env['TESTS_SQL_SERVER'])
       'sql server',
     ),
   )
-if (process.env['TEST_SQL_LITE']||true)
+if (process.env['TEST_SQL_LITE'] || true)
   addDatabaseToTest(
     testKnexSqlImpl(
       Knex.default({
@@ -119,7 +118,7 @@ if (process.env['TEST_MYSQL'])
           password: 'MASTERKEY',
           host: '127.0.0.1',
           database: 'test',
-    //      port: 3307,
+          //      port: 3307,
         },
         //debug: true
       }),
@@ -158,12 +157,17 @@ export function testPostgresImplementation(
 }
 addDatabaseToTest(testPostgresImplementation)
 
-import { Categories } from '../../core/src/tests/remult-3-entities'
 import { MongoDataProvider } from '../../core/remult-mongo'
+import { SqlDatabase } from '../../core/src/data-providers/sql-database'
+import { dbNamesOf } from '../../core/src/filter/filter-consumer-bridge-to-sql-request'
+import { remult } from '../../core/src/remult-proxy'
+import '../shared-tests'
+import { entityWithValidations } from '../shared-tests/entityWithValidations'
+import { Categories } from '../tests/remult-3-entities'
 
 export const testMongo = (() => {
   const mongoConnectionString = process.env['MONGO_TEST_URL'] //"mongodb://localhost:27017/local"
-  if (!mongoConnectionString) return ()=>{}
+  if (!mongoConnectionString) return () => {}
 
   let client = new MongoClient(mongoConnectionString)
   let done: MongoClient
@@ -208,7 +212,7 @@ const MONGO_NO_TRANS_TEST_URL = process.env['MONGO_NO_TRANS_TEST_URL']
 
 export const testMongoNoTrans = (() => {
   const mongoConnectionString = MONGO_NO_TRANS_TEST_URL
-  if (!MONGO_NO_TRANS_TEST_URL) return ()=>{}
+  if (!MONGO_NO_TRANS_TEST_URL) return () => {}
 
   let client = new MongoClient(mongoConnectionString)
   let done: MongoClient
@@ -338,11 +342,6 @@ testMongoNoTrans(
   },
   false,
 )
-import '../../core/src/shared-tests'
-import { remult } from '../../core/src/remult-proxy'
-import { entityWithValidations } from '../../core/src/shared-tests/entityWithValidations'
-import { dbNamesOf } from '../../core/src/filter/filter-consumer-bridge-to-sql-request'
-import { SqlDatabase } from '../../core/src/data-providers/sql-database'
 
 testPostgresImplementation(
   'default order by',

@@ -1,4 +1,10 @@
-import { Field, Entity, EntityBase, FieldType, Fields } from '../../core/src/remult3'
+import {
+  Entity,
+  EntityBase,
+  Field,
+  FieldType,
+  Fields,
+} from '../../core/src/remult3'
 
 @FieldType<h>({
   valueConverter: {

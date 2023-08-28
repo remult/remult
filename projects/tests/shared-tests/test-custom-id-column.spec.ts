@@ -1,8 +1,8 @@
-import { Field, Entity, EntityBase, Fields } from '../../core/src//remult3'
+import { Entity, EntityBase, Fields } from '../../core/src//remult3'
 import { describeClass } from '../../core/src//remult3/DecoratorReplacer'
 
+import { describe, expect } from 'vitest'
 import { testAll } from './db-tests-setup'
-import { describe, it, expect } from 'vitest'
 
 describe('custom id column', () => {
   testAll('basic test', async ({ createEntity }) => {

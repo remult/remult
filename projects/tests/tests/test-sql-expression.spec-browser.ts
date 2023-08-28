@@ -1,28 +1,26 @@
 import { Remult } from '../../core/src/context'
 
-import { InMemoryDataProvider } from '../../core/src/data-providers/in-memory-database'
-
+import { postgresColumnSyntax } from '../../core/postgres/schema-builder'
 import { SqlDatabase } from '../../core/src/data-providers/sql-database'
 import { WebSqlDataProvider } from '../../core/src/data-providers/web-sql-data-provider'
 import {
-  Field,
   Entity,
   EntityBase,
-  ValueListFieldType,
+  Field,
   Fields,
-  getValueList,
-  ValueListInfo,
   IdEntity,
+  ValueListFieldType,
+  ValueListInfo,
+  getValueList,
 } from '../../core/src/remult3'
-import { postgresColumnSyntax } from '../../core/postgres/schema-builder'
 
-import { SqlCommand, SqlResult } from '../../core/src/sql-command'
+import { describe, expect, it } from 'vitest'
 import {
   FilterConsumerBridgeToSqlRequest,
   dbNamesOf,
   isDbReadonly,
 } from '../../core/src/filter/filter-consumer-bridge-to-sql-request'
-import { describe, it, expect,beforeEach,afterEach,beforeAll } from 'vitest'
+import type { SqlCommand, SqlResult } from '../../core/src/sql-command'
 
 describe('test sql database expressions', () => {
   let web = new WebSqlDataProvider('test')

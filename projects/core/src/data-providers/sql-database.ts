@@ -1,40 +1,39 @@
-import {
+import { CompoundIdField } from '../column'
+import type {
+  DataProvider,
   EntityDataProvider,
   EntityDataProviderFindOptions,
-  DataProvider,
 } from '../data-interfaces'
-import {
+import type {
   SqlCommand,
   SqlCommandWithParameters,
   SqlImplementation,
   SqlResult,
 } from '../sql-command'
-import { CompoundIdField } from '../column'
 
-import {
+import type { FieldMetadata } from '../column-interfaces'
+import type { Remult } from '../context'
+import type {
   CustomSqlFilterBuilderFunction,
-  CustomSqlFilterObject,
-  dbNamesOf,
-  EntityDbNames,
   EntityDbNamesBase,
+} from '../filter/filter-consumer-bridge-to-sql-request'
+import {
   FilterConsumerBridgeToSqlRequest,
+  dbNamesOf,
   isDbReadonly,
 } from '../filter/filter-consumer-bridge-to-sql-request'
-import { customDatabaseFilterToken, Filter } from '../filter/filter-interfaces'
-import { Sort, SortSegment } from '../sort'
-import {
-  EntityMetadata,
+import { Filter, customDatabaseFilterToken } from '../filter/filter-interfaces'
+import { remult as defaultRemult } from '../remult-proxy'
+import type {
+  EntityBase,
   EntityFilter,
-  OmitEB,
-  Repository,
+  EntityMetadata,
   RepositoryImplementation,
   RepositoryOverloads,
-  getRepository,
-  EntityBase,
 } from '../remult3'
-import { FieldMetadata } from '../column-interfaces'
-import { Remult } from '../context'
-import { remult as defaultRemult } from '../remult-proxy'
+import { getRepository } from '../remult3'
+import type { SortSegment } from '../sort'
+import { Sort } from '../sort'
 import { ValueConverters } from '../valueConverters'
 
 // @dynamic
@@ -57,7 +56,7 @@ export class SqlDatabase implements DataProvider {
   async ensureSchema(entities: EntityMetadata<any>[]): Promise<void> {
     if (this.sql.ensureSchema) await this.sql.ensureSchema(entities)
   }
- 
+
   getEntityDataProvider(entity: EntityMetadata): EntityDataProvider {
     if (!this.sql.supportsJsonColumnType) {
       for (const f of entity.fields.toArray()) {

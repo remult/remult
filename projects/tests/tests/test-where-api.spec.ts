@@ -1,36 +1,29 @@
-import { testInMemoryDb, testRestDb, testSql } from './testHelper'
-import { TestDataApiResponse } from './TestDataApiResponse'
-import { Done } from './Done'
-
-import { Remult } from '../../core/src//context'
-import { SqlDatabase } from '../../core/src//data-providers/sql-database'
-import { Categories, CategoriesForTesting } from './remult-3-entities'
-import { insertFourRows } from './RowProvider.spec'
-import { createData } from './createData'
+import { InMemoryDataProvider } from '../../core/src/data-providers/in-memory-database'
+import { RestDataProvider } from '../../core/src//data-providers/rest-data-provider'
 import {
-  Entity,
-  EntityBase,
-  Field,
+  Filter,
+  customUrlToken,
+} from '../../core/src//filter/filter-interfaces'
+import type {
   EntityFilter,
   FindOptions,
   Repository,
-  Fields,
 } from '../../core/src//remult3'
-import { InMemoryDataProvider } from '../../core/src//data-providers/in-memory-database'
-import { customUrlToken, Filter } from '../../core/src//filter/filter-interfaces'
-import { RestDataProvider } from '../../core/src//data-providers/rest-data-provider'
+import { Entity, EntityBase, Fields } from '../../core/src//remult3'
 import { DataApi } from '../../core/src/data-api'
+import { insertFourRows } from './RowProvider.spec'
+import type { CategoriesForTesting } from './remult-3-entities'
+import { Categories } from './remult-3-entities'
 
 import { ArrayEntityDataProvider } from '../../core/src//data-providers/array-entity-data-provider'
 
-import {
-  CustomSqlFilterBuilder,
-  dbNamesOf,
-} from '../../core/src//filter/filter-consumer-bridge-to-sql-request'
-import { entityForrawFilter } from './entityForCustomFilter'
+import { beforeAll, describe, expect, it } from 'vitest'
 import { describeClass } from '../../core/src//remult3/DecoratorReplacer'
-import { title } from 'process'
-import { describe, it, expect,beforeEach,beforeAll,afterEach } from 'vitest'
+import { entityForrawFilter } from './entityForCustomFilter'
+import { Remult } from '../../core/src//context'
+import { TestDataApiResponse } from './TestDataApiResponse'
+import { Done } from './Done'
+import { testRestDb } from './testHelper'
 
 describe('test where stuff', () => {
   let repo: Repository<CategoriesForTesting>
@@ -166,7 +159,7 @@ describe('custom filter', () => {
         (await c.findFirst(entityForrawFilter.testObjectValue({ val: 2 }))).id,
       ).toBe(2)
     }))
-  
+
   it('test that it works with arrayFilter', async () => {
     let c = new Remult().repo(entityForrawFilter, new InMemoryDataProvider())
     for (let id = 0; id < 5; id++) {

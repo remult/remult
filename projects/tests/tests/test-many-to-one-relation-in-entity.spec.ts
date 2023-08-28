@@ -1,29 +1,31 @@
-import { Remult } from '../../core/src/context'
 import { InMemoryDataProvider } from '../../core/src//data-providers/in-memory-database'
+import type {
+  EntityFilter,
+  rowHelperImplementation,
+} from '../../core/src//remult3'
 import {
-  Field,
   Entity,
   EntityBase,
-  rowHelperImplementation,
-  EntityFilter,
+  Field,
   Fields,
   getEntityRef,
 } from '../../core/src//remult3'
+import { Remult } from '../../core/src/context'
 
-import { entityFilterToJson, Filter } from '../../core/src/filter/filter-interfaces'
+import {
+  entityFilterToJson,
+  Filter,
+} from '../../core/src/filter/filter-interfaces'
 import { Language } from './RowProvider.spec'
-
-
-import { SqlDatabase } from '../../core/src//data-providers/sql-database'
 
 import { DataApi } from '../../core/src//data-api'
 
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { actionInfo } from '../../core/src/server-action'
 import { Done } from './Done'
-import { TestDataApiResponse } from './TestDataApiResponse'
-import { h } from './h'
-import { describe, it, expect,beforeEach,afterEach,beforeAll } from 'vitest'
 import { Categories, Products } from './entities-for-tests'
+import { h } from './h'
+import { TestDataApiResponse } from './TestDataApiResponse'
 
 @Entity('products')
 class ProductsEager extends EntityBase {
@@ -66,8 +68,12 @@ class following extends EntityBase {
 }
 
 describe('many to one relation', () => {
-  beforeEach(() => {(actionInfo.runningOnServer = true)})
-  afterEach(() =>{ (actionInfo.runningOnServer = false)})
+  beforeEach(() => {
+    actionInfo.runningOnServer = true
+  })
+  afterEach(() => {
+    actionInfo.runningOnServer = false
+  })
   it('xx', async () => {
     let mem = new InMemoryDataProvider()
     let remult = new Remult()
@@ -731,7 +737,7 @@ describe('many to one relation', () => {
     expect((await p.$.category.load()).id).toBe(cat.id)
     expect((await p.$.category.load()).isNew()).toBe(false)
   })
- 
+
   it('test filter with id', async () => {
     let mem = new InMemoryDataProvider()
     let remult = new Remult()

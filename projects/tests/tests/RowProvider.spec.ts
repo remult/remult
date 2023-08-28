@@ -1,53 +1,39 @@
-import {
+import { ArrayEntityDataProvider } from '../../core/src//data-providers/array-entity-data-provider'
+import { InMemoryDataProvider } from '../../core/src//data-providers/in-memory-database'
+import { OneToMany } from '../../core/src/column'
+import type {
   FieldMetadata,
   FieldOptions,
   ValueConverter,
-  ValueListItem,
 } from '../../core/src/column-interfaces'
-import { InMemoryDataProvider } from '../../core/src//data-providers/in-memory-database'
-import { ArrayEntityDataProvider } from '../../core/src//data-providers/array-entity-data-provider'
-import { testAllDataProviders } from './testHelper'
-import { Status, TestStatus } from './testModel/models'
 import { Allow, Remult } from '../../core/src/context'
-import { OneToMany } from '../../core/src/column'
 
+import { describe, expect, it } from 'vitest'
 import { FilterConsumerBridgeToSqlRequest } from '../../core/src/filter/filter-consumer-bridge-to-sql-request'
 import { Validators } from '../../core/src/validators'
-import { describe, it, expect } from 'vitest'
 
+import { describeClass, Sort } from '../../core/'
+import type { EntityMetadata, FindOptions } from '../../core/src//remult3'
+import { EntityBase } from '../../core/src//remult3'
 import {
-  Categories,
-  Categories as newCategories,
-  CategoriesForTesting,
-} from './remult-3-entities'
-import {
-  Entity as EntityDecorator,
-  Field as ColumnDecorator,
-  getEntityRef,
   decorateColumnSettings,
   Entity,
+  Entity as EntityDecorator,
   Field,
-  FieldType,
-  ValueListFieldType,
-  getFields,
   Fields,
+  getEntityRef,
   getValueList,
+  ValueListFieldType,
   ValueListInfo,
 } from '../../core/src//remult3/RepositoryImplementation'
-import { describeClass, Sort, SqlDatabase, WebSqlDataProvider } from '../../core/'
-import {
-  IdEntity,
-  EntityBase,
-  EntityMetadata,
-  Repository,
-  FindOptions,
-} from '../../core/src//remult3'
 import { ValueConverters } from '../../core/src/valueConverters'
+import { Categories, Categories as newCategories } from './remult-3-entities'
 
-
-import { entityFilterToJson, Filter } from '../../core/src/filter/filter-interfaces'
-import { ClassType } from '../../core/classType'
-import { Done } from './Done'
+import type { ClassType } from '../../core/classType'
+import {
+  entityFilterToJson,
+  Filter,
+} from '../../core/src/filter/filter-interfaces'
 import { createData } from './createData'
 
 @ValueListFieldType({

@@ -1,6 +1,4 @@
-
-import { Field, Entity, EntityBase, Fields } from '../../core/src/remult3'
-
+import { Entity, EntityBase, Fields } from '../../core/src/remult3'
 
 @Entity('d1', {
   allowApiCrud: true,
