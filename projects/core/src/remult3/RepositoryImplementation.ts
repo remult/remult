@@ -1,7 +1,8 @@
 import { createId } from '@paralleldrive/cuid2'
 import { v4 as uuid } from 'uuid'
 import type { ClassType } from '../../classType'
-import { CompoundIdField, LookupColumn, makeTitle } from '../column'
+import { LookupColumn, makeTitle } from '../column'
+import { CompoundIdField } from '../CompoundIdField'
 import type {
   FieldMetadata,
   FieldOptions,
@@ -42,7 +43,7 @@ import type {
   Subscribable,
 } from './remult3'
 
-import type { Paginator, RefSubscriber, RefSubscriberBase } from '.'
+import type { Paginator, RefSubscriber, RefSubscriberBase } from './remult3'
 import { assign } from '../../assign'
 import type { entityEventListener } from '../__EntityValueProvider'
 import type {

@@ -30,7 +30,7 @@ import {
   getEntityKey,
   getEntityRef,
   isAutoIncrement,
-} from '../../core/src//remult3'
+} from '../../core/src/remult3/RepositoryImplementation'
 
 import axios from 'axios'
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
@@ -41,7 +41,7 @@ import {
   retry,
   toPromise,
 } from '../../core/src/buildRestDataProvider'
-import { CompoundIdField } from '../../core/src/column'
+import { CompoundIdField } from '../../core'
 import {
   dbNamesOf,
   FilterConsumerBridgeToSqlRequest,
@@ -49,9 +49,10 @@ import {
 import { remult } from '../../core/src/remult-proxy'
 import { actionInfo } from '../../core/src/server-action'
 import { ValueConverters } from '../../core/src/valueConverters'
-import { entityWithValidations } from '../shared-tests/entityWithValidations'
+import { entityWithValidations } from '../dbs/shared-tests/entityWithValidations'
 import { CompoundIdEntity } from './entities-for-tests'
-import { entityWithValidationsOnColumn } from './entityWithValidationsOnColumn'
+import { entityWithValidationsOnColumn } from '../dbs/shared-tests/entityWithValidationsOnColumn'
+import { resultCompoundIdFilter } from '../../core/src/resultCompoundIdFilter'
 
 //SqlDatabase.LogToConsole = true;
 
@@ -432,7 +433,7 @@ describe('data api', () => {
     let t = new TestDataApiResponse()
     let d = new Done()
     t.error = (err) => {
-      if (!err.message) fail('no message')
+      if (!err.message) throw 'no message'
       d.ok()
     }
     await api.post(t, { id: 1, categoryName: 'noam' })
@@ -1458,9 +1459,11 @@ describe('compound id', () => {
       },
       n,
     )
-    id.resultIdFilter(undefined, repo.create({ a: 1, b: 2 })).__applyToConsumer(
-      f,
-    )
+    resultCompoundIdFilter(
+      id,
+      undefined,
+      repo.create({ a: 1, b: 2 }),
+    ).__applyToConsumer(f)
     expect(await f.resolveWhere()).toBe(' where a = 1 and b = 2')
   })
   it('check is auto increment', async () => {
@@ -1479,7 +1482,11 @@ describe('compound id', () => {
       },
       n,
     )
-    id.resultIdFilter('1,2', repo.create({ a: 1, b: 2 })).__applyToConsumer(f)
+    resultCompoundIdFilter(
+      id,
+      '1,2',
+      repo.create({ a: 1, b: 2 }),
+    ).__applyToConsumer(f)
     expect(await f.resolveWhere()).toBe(' where a = 1 and b = 2')
   })
   it('some things should not work', async () => {

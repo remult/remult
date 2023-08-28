@@ -1,11 +1,10 @@
-import { Remult } from '../context'
+import { Remult } from '../../core'
 
-import { InMemoryDataProvider } from '../data-providers/in-memory-database'
-import { JsonDataProvider } from '../data-providers/json-data-provider'
+import { InMemoryDataProvider, JsonDataProvider } from '../../core'
 
 import { describe, expect, it } from 'vitest'
-import { Entity, EntityBase, Fields } from '../remult3'
-import { deleteAll } from '../shared-tests/deleteAll'
+import { Entity, EntityBase, Fields } from '../../core'
+import { deleteAll } from '../dbs/shared-tests/deleteAll'
 import { Categories as newCategories } from './remult-3-entities'
 
 @Entity('entityWithAutoId')

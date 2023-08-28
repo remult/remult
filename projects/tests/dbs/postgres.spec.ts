@@ -1,18 +1,16 @@
-import { beforeAll, beforeEach, describe, it, expect } from 'vitest'
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { Entity, Fields, Remult, SqlDatabase, describeClass } from '../../core'
 import {
   PostgresDataProvider,
   PostgresSchemaBuilder,
   createPostgresConnection,
 } from '../../core/postgres'
-import { Entity, Fields, SqlDatabase, describeClass } from '../../core'
-import { Remult, dbNamesOf } from '../../core'
 
+import * as Knex from 'knex'
 import type { ClassType } from '../../core/classType'
 import { allDbTests } from './shared-tests'
+import { entityWithValidations } from './shared-tests/entityWithValidations'
 import { knexTests } from './shared-tests/test-knex'
-import * as Knex from 'knex'
-import { entityWithValidations } from '../shared-tests/entityWithValidations'
-import { KnexDataProvider } from '../../core/remult-knex'
 
 PostgresSchemaBuilder.logToConsole = false
 const postgresConnection = process.env.DATABASE_URL

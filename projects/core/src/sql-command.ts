@@ -1,4 +1,4 @@
-import type { EntityMetadata } from './remult3'
+import type { EntityMetadata } from './remult3/remult3'
 
 export interface SqlImplementation {
   getLimitSqlSyntax(limit: number, offset: number)

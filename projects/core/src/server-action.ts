@@ -19,14 +19,17 @@ import type {
 } from './data-interfaces'
 import { SqlDatabase } from './data-providers/sql-database'
 import { remult } from './remult-proxy'
-import type { controllerRefImpl, rowHelperImplementation } from './remult3'
+import type {
+  controllerRefImpl,
+  rowHelperImplementation,
+} from './remult3/RepositoryImplementation'
 import {
   checkTarget,
   decorateColumnSettings,
   getControllerRef,
   getEntityRef,
   getEntitySettings,
-} from './remult3'
+} from './remult3/RepositoryImplementation'
 
 interface inArgs {
   args: any[]

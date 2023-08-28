@@ -1,4 +1,4 @@
-import { Entity, EntityBase, Field, Fields } from '../../core/src/remult3'
+import { Entity, EntityBase, Field, Fields } from '../../core'
 
 import { Language } from './RowProvider.spec'
 

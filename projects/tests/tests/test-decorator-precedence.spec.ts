@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { Entity, EntityBase, Fields } from '../../core/src//remult3'
+import { Entity, EntityBase, Fields } from '../../core'
 import { Remult } from '../../core/src/context'
 
 @Entity('my entity')

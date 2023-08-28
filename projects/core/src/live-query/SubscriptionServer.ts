@@ -1,6 +1,6 @@
 import type { itemChange } from '../context'
 import { findOptionsFromJson } from '../data-providers/rest-data-provider'
-import type { Repository } from '../remult3'
+import type { Repository } from '../remult3/remult3'
 
 export interface SubscriptionServer {
   publishMessage<T>(channel: string, message: T): Promise<void>

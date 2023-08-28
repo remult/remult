@@ -7,7 +7,7 @@ import {
   Fields,
   ValueListInfo,
   getEntityRef,
-} from '../../../core/src/remult3'
+} from '../../../core/src/remult3/RepositoryImplementation'
 import { Done } from '../Done'
 import { TestDataApiResponse } from '../TestDataApiResponse'
 import { createData } from '../createData'

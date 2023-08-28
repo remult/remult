@@ -4,7 +4,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { Remult } from '../../core'
 import type { ClassType } from '../../core/classType'
 import { MongoDataProvider } from '../../core/remult-mongo'
-import { entityWithValidations } from '../shared-tests/entityWithValidations'
+import { entityWithValidations } from './shared-tests/entityWithValidations'
 import { allDbTests } from './shared-tests'
 
 const mongoConnectionString = process.env['MONGO_TEST_URL'] //"mongodb://localhost:27017/local"

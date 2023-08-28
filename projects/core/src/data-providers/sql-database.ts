@@ -1,4 +1,4 @@
-import { CompoundIdField } from '../column'
+import { CompoundIdField } from '../CompoundIdField'
 import type {
   DataProvider,
   EntityDataProvider,
@@ -24,14 +24,13 @@ import {
 } from '../filter/filter-consumer-bridge-to-sql-request'
 import { Filter, customDatabaseFilterToken } from '../filter/filter-interfaces'
 import { remult as defaultRemult } from '../remult-proxy'
+import type { EntityFilter, EntityMetadata } from '../remult3/remult3'
 import type {
   EntityBase,
-  EntityFilter,
-  EntityMetadata,
   RepositoryImplementation,
   RepositoryOverloads,
-} from '../remult3'
-import { getRepository } from '../remult3'
+} from '../remult3/RepositoryImplementation'
+import { getRepository } from '../remult3/RepositoryImplementation'
 import type { SortSegment } from '../sort'
 import { Sort } from '../sort'
 import { ValueConverters } from '../valueConverters'

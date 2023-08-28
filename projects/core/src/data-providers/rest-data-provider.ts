@@ -9,7 +9,7 @@ import { UrlBuilder } from '../../urlBuilder'
 import { buildRestDataProvider, retry } from '../buildRestDataProvider'
 import type { ApiClient } from '../context'
 import { customUrlToken, Filter } from '../filter/filter-interfaces'
-import type { EntityMetadata, FindOptions } from '../remult3'
+import type { EntityMetadata, FindOptions } from '../remult3/remult3'
 import { actionInfo } from '../server-action'
 
 export class RestDataProvider implements DataProvider {

@@ -14,51 +14,13 @@ import { RestEntityDataProvider } from '../../core/src/data-providers/rest-data-
 import { SqlDatabase } from '../../core/src/data-providers/sql-database'
 import { WebSqlDataProvider } from '../../core/src/data-providers/web-sql-data-provider'
 import { remult } from '../../core/src/remult-proxy'
-import type { EntityMetadata } from '../../core/src/remult3'
+import type { EntityMetadata } from '../../core'
 import { actionInfo, serverActionField } from '../../core/src/server-action'
-import { testConfiguration } from '../shared-tests/entityWithValidations'
+import { testConfiguration } from '../dbs/shared-tests/entityWithValidations'
 import { TestDataApiResponse } from './TestDataApiResponse'
 
 //actionInfo.runningOnServer = false;
 
-export function itForEach<T>(
-  name: string,
-  arrayOfT: T[],
-  runAsync: (item: T) => Promise<any>,
-) {
-  arrayOfT.forEach((i) => {
-    it(name + ' - ' + i, (done: DoneFn) => {
-      runAsync(i)
-        .catch((e) => {
-          fail(e)
-          done()
-        })
-        .then(done, (e) => {
-          fail(e)
-          done()
-        })
-    })
-  })
-}
-export function fitForEach<T>(
-  name: string,
-  arrayOfT: T[],
-  runAsync: (item: T) => Promise<any>,
-) {
-  arrayOfT.forEach((i) => {
-    fit(name + ' - ' + i, (done: DoneFn) => {
-      runAsync(i)
-        .catch((e) => {
-          fail(e)
-          done()
-        })
-        .then(done, (e) => {
-          fail(e)
-          done()
-        })
-    })
-  })
-}
 export async function testAsIfOnBackend(what: () => Promise<any>) {
   try {
     actionInfo.runningOnServer = true

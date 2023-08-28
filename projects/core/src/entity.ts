@@ -7,7 +7,7 @@ import type {
   EntityOrderBy,
   EntityRef,
   FieldsMetadata,
-} from './remult3'
+} from './remult3/remult3'
 
 export interface EntityOptions<entityType = any> {
   /**A human readable name for the entity */

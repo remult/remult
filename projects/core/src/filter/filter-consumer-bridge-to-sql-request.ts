@@ -1,7 +1,10 @@
 import type { FieldMetadata } from '../column-interfaces'
 import { SqlDatabase } from '../data-providers/sql-database'
-import type { EntityMetadataOverloads, RepositoryOverloads } from '../remult3'
-import { getEntityMetadata } from '../remult3'
+import type {
+  EntityMetadataOverloads,
+  RepositoryOverloads,
+} from '../remult3/RepositoryImplementation'
+import { getEntityMetadata } from '../remult3/RepositoryImplementation'
 import type { EntityFilter, OmitEB } from '../remult3/remult3'
 import type { SqlCommandWithParameters } from '../sql-command'
 import type { Filter, FilterConsumer } from './filter-interfaces'

@@ -1,12 +1,15 @@
 import { DataApi } from '../../../core/src/data-api'
-import type { EntityFilter, Repository } from '../../../core/src/remult3'
+import type {
+  EntityFilter,
+  Repository,
+} from '../../../core/src/remult3/remult3'
 import {
   Entity,
   EntityBase,
   Field,
   Fields,
   IdEntity,
-} from '../../../core/src/remult3'
+} from '../../../core/src/remult3/RepositoryImplementation'
 import { c } from '../../tests/c'
 
 import { v4 as uuid } from 'uuid'
@@ -26,7 +29,7 @@ import { TestDataApiResponse } from '../../tests/TestDataApiResponse'
 import { d } from '../../tests/d'
 import { dWithPrefilter } from '../../tests/dWithPrefilter'
 import { entityForrawFilter1 } from '../../tests/entityForCustomFilter'
-import { entityWithValidationsOnColumn } from '../../tests/entityWithValidationsOnColumn'
+import { entityWithValidationsOnColumn } from './entityWithValidationsOnColumn'
 import { h } from '../../tests/h'
 import {
   Categories,
@@ -39,7 +42,7 @@ import type { DbTestProps } from './db-tests-props'
 import {
   entityWithValidations,
   testConfiguration,
-} from '../../shared-tests/entityWithValidations'
+} from './entityWithValidations'
 import type { CategoriesForTesting } from '../../tests/remult-3-entities'
 import { ValueConverters } from '../../../core/src/valueConverters'
 import { it } from 'vitest'

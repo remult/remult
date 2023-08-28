@@ -4,7 +4,7 @@ import type {
   EntityDataProviderFindOptions,
 } from '../data-interfaces'
 import type { Filter } from '../filter/filter-interfaces'
-import type { EntityMetadata } from '../remult3'
+import type { EntityMetadata } from '../remult3/remult3'
 import { ArrayEntityDataProvider } from './array-entity-data-provider'
 
 export interface JsonEntityStorage {

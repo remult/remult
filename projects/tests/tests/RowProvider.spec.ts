@@ -12,9 +12,8 @@ import { describe, expect, it } from 'vitest'
 import { FilterConsumerBridgeToSqlRequest } from '../../core/src/filter/filter-consumer-bridge-to-sql-request'
 import { Validators } from '../../core/src/validators'
 
-import { describeClass, Sort } from '../../core/'
-import type { EntityMetadata, FindOptions } from '../../core/src//remult3'
-import { EntityBase } from '../../core/src//remult3'
+import type { EntityMetadata, FindOptions } from '../../core'
+import { describeClass, EntityBase, Sort } from '../../core/'
 import {
   decorateColumnSettings,
   Entity,
@@ -377,7 +376,7 @@ describe('test row provider', () => {
     c.categoryName = 'bla bla'
     try {
       await c._.save()
-      fail('Shouldnt have reached this')
+      throw 'Shouldnt have reached this'
     } catch (err) {}
     expect(c.categoryName).toBe('bla bla')
   })
@@ -394,7 +393,7 @@ describe('test row provider', () => {
     c.categoryName = 'yael'
     try {
       await cont.repo(newCategories).save(c)
-      fail('shouldnt be here')
+      throw 'shouldnt be here'
     } catch (err) {
       expect(c.categoryName).toBe('yael')
     }

@@ -5,7 +5,7 @@ import {
   getFields,
   IdEntity,
   ValueListFieldType,
-} from '../../core/src//remult3'
+} from '../../core'
 import { isBackend, Remult } from '../../core/src/context'
 import {
   BackendMethod,

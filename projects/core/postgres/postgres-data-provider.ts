@@ -2,7 +2,7 @@ import type { ClientBase, PoolConfig, QueryResult } from 'pg'
 import { Pool } from 'pg'
 import { Remult } from '../src/context'
 import { SqlDatabase } from '../src/data-providers/sql-database'
-import type { EntityMetadata } from '../src/remult3'
+import type { EntityMetadata } from '../src/remult3/remult3'
 import type {
   SqlCommand,
   SqlImplementation,

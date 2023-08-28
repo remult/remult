@@ -5,8 +5,12 @@ import type {
   LiveQueryStorage,
   StoredQuery,
 } from '../src/live-query/SubscriptionServer'
-import type { Repository } from '../src/remult3'
-import { Entity, EntityBase, Fields } from '../src/remult3'
+import type { Repository } from '../src/remult3/remult3'
+import {
+  Entity,
+  EntityBase,
+  Fields,
+} from '../src/remult3/RepositoryImplementation'
 
 export class DataProviderLiveQueryStorage implements LiveQueryStorage, Storage {
   repo: Promise<Repository<LiveQueryStorageEntity>>

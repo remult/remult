@@ -7,8 +7,8 @@ import {
   dbNamesOf,
   isDbReadonly,
 } from '../filter/filter-consumer-bridge-to-sql-request'
-import type { EntityMetadata } from '../remult3'
-import { isAutoIncrement } from '../remult3'
+import type { EntityMetadata } from '../remult3/remult3'
+import { isAutoIncrement } from '../remult3/RepositoryImplementation'
 import { SqlDatabase } from './sql-database'
 //SqlDatabase.LogToConsole = true;
 export class WebSqlDataProvider

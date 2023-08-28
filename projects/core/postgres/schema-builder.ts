@@ -8,8 +8,8 @@ import {
   isDbReadonly,
 } from '../src/filter/filter-consumer-bridge-to-sql-request'
 import { remult as defaultRemult } from '../src/remult-proxy'
-import type { EntityMetadata } from '../src/remult3'
-import { isAutoIncrement } from '../src/remult3'
+import type { EntityMetadata } from '../src/remult3/remult3'
+import { isAutoIncrement } from '../src/remult3/RepositoryImplementation'
 import type { SqlCommand } from '../src/sql-command'
 import { ValueConverters } from '../src/valueConverters'
 

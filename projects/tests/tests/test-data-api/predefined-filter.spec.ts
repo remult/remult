@@ -7,7 +7,7 @@ import { DataApi } from '../../../core/src/data-api'
 import { describe, expect, it } from 'vitest'
 import { Remult } from '../../../core/src/context'
 import { Filter } from '../../../core/src/filter/filter-interfaces'
-import { Entity as EntityDecorator } from '../../../core/src/remult3'
+import { Entity as EntityDecorator } from '../../../core'
 import { Categories as newCategories } from '../remult-3-entities'
 import { testAsIfOnBackend } from '../testHelper'
 

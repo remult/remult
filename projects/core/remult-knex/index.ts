@@ -12,7 +12,7 @@ import {
   Filter,
 } from '../src/filter/filter-interfaces'
 
-import { CompoundIdField } from '../src/column'
+import { CompoundIdField } from '../src/CompoundIdField'
 import type { FieldMetadata } from '../src/column-interfaces'
 import type {
   DataProvider,
@@ -20,16 +20,19 @@ import type {
   EntityDataProviderFindOptions,
 } from '../src/data-interfaces'
 import { remult as remultContext } from '../src/remult-proxy'
+import type { EntityFilter, EntityMetadata } from '../src/remult3/remult3'
 import type {
-  EntityFilter,
-  EntityMetadata,
   RepositoryImplementation,
   RepositoryOverloads,
   StringFieldOptions,
-} from '../src/remult3'
-import { getRepository, isAutoIncrement } from '../src/remult3'
+} from '../src/remult3/RepositoryImplementation'
+import {
+  getRepository,
+  isAutoIncrement,
+} from '../src/remult3/RepositoryImplementation'
 import { Sort } from '../src/sort'
 import { ValueConverters } from '../src/valueConverters'
+import { resultCompoundIdFilter as resultCompoundIdFilter } from '../src/resultCompoundIdFilter'
 
 export class KnexDataProvider implements DataProvider {
   constructor(public knex: Knex) {}
@@ -224,7 +227,8 @@ class KnexEntityDataProvider implements EntityDataProvider {
     const e = await this.init()
     let resultFilter: Filter
     if (this.entity.idMetadata.field instanceof CompoundIdField)
-      resultFilter = this.entity.idMetadata.field.resultIdFilter(
+      resultFilter = resultCompoundIdFilter(
+        this.entity.idMetadata.field,
         undefined,
         data,
       )

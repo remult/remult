@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { InMemoryDataProvider } from '../../core/src//data-providers/in-memory-database'
-import { Entity, Field, Fields, getEntityRef } from '../../core/src//remult3'
+import { Entity, Field, Fields, getEntityRef } from '../../core'
 import { describeClass } from '../../core/src//remult3/DecoratorReplacer'
 import { Remult } from '../../core/src/context'
 import { Categories, Products } from './remult-3-entities'

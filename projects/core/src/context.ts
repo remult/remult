@@ -9,7 +9,7 @@ import type {
   EntityRef,
   FindOptions,
   Repository,
-} from './remult3'
+} from './remult3/remult3'
 import { RepositoryImplementation } from './remult3/RepositoryImplementation'
 import type { Action } from './server-action'
 import { actionInfo, serverActionField } from './server-action'

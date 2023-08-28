@@ -16,8 +16,9 @@ import { remult as remultContext } from './src/remult-proxy'
 import type {
   RepositoryImplementation,
   RepositoryOverloads,
-} from './src/remult3'
-import { getRepository } from './src/remult3'
+} from './src/remult3/RepositoryImplementation'
+import { getRepository } from './src/remult3/RepositoryImplementation'
+import { resultCompoundIdFilter } from './src/resultCompoundIdFilter'
 
 export class MongoDataProvider implements DataProvider {
   constructor(
@@ -151,7 +152,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
       resultFilter = this.entity.idMetadata.getIdFilter(data.id)
     for (const x of this.entity.fields) {
       if (x instanceof CompoundIdField) {
-        resultFilter = x.resultIdFilter(id, data)
+        resultFilter = resultCompoundIdFilter(x, id, data)
       }
     }
     let newR = {}

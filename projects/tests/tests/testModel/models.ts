@@ -1,4 +1,4 @@
-import { ValueListFieldType } from '../../../core/src/remult3'
+import { ValueListFieldType } from '../../../core'
 
 @ValueListFieldType()
 export class Status {

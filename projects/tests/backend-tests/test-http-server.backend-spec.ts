@@ -48,7 +48,7 @@ function test(
       await test()
     }
     const testName = env + ` ${port}: ${name}`
-    fit(testName, theTest)
+    it.only(testName, theTest)
   }
 }
 

@@ -1,13 +1,9 @@
-import type {
-  EntityFilter,
-  EntityOrderBy,
-  RepositoryImplementation,
-} from '../../core/src//remult3'
-import { Entity, EntityBase, Fields } from '../../core/src//remult3'
-import { CompoundIdField } from '../../core/src/column'
+import type { EntityFilter, EntityOrderBy } from '../../core'
+import { CompoundIdField, Entity, EntityBase, Fields } from '../../core'
 import type { FieldMetadata } from '../../core/src/column-interfaces'
 import { Remult, queryConfig } from '../../core/src/context'
 import { entityFilterToJson } from '../../core/src/filter/filter-interfaces'
+import type { RepositoryImplementation } from '../../core/src/remult3/RepositoryImplementation'
 import { Sort } from '../../core/src/sort'
 import { createData } from './createData'
 import { Categories } from './remult-3-entities'

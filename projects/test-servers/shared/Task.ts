@@ -1,6 +1,7 @@
-import { Remult, isBackend } from '../../core/src/context'
+import type { Remult } from '../../core'
+import { isBackend } from '../../core'
 import { remult } from '../../core/src/remult-proxy'
-import { Entity, Fields } from '../../core/src/remult3'
+import { Entity, Fields } from '../../core'
 import { BackendMethod } from '../../core/src/server-action'
 import { Validators } from '../../core/src/validators'
 

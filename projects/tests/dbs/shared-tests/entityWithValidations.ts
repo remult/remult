@@ -1,7 +1,6 @@
-import type { ClassType } from '../../core/classType'
-import type { Remult } from '../../core/src/context'
-import type { Repository } from '../../core/src/remult3'
-import { Entity, EntityBase, Fields } from '../../core/src/remult3'
+import type { Remult, Repository } from '../../../core'
+import { Entity, EntityBase, Fields } from '../../../core'
+import type { ClassType } from '../../../core/classType'
 
 export var testConfiguration = { restDbRunningOnServer: false }
 @Entity<entityWithValidations>('', {

@@ -15,7 +15,8 @@ import type {
   LiveQueryStorage,
   SubscriptionServer,
 } from './live-query/SubscriptionServer'
-import type { Repository, RepositoryImplementation } from './remult3'
+import type { Repository } from './remult3/remult3'
+import type { RepositoryImplementation } from './remult3/RepositoryImplementation'
 
 let defaultRemult: Remult
 

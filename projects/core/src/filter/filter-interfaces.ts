@@ -1,7 +1,10 @@
 import type { FieldMetadata } from '../column-interfaces'
 import type { Remult } from '../context'
-import type { EntityFilter, EntityMetadata } from '../remult3'
-import { getEntityRef, getEntitySettings } from '../remult3'
+import type { EntityFilter, EntityMetadata } from '../remult3/remult3'
+import {
+  getEntityRef,
+  getEntitySettings,
+} from '../remult3/RepositoryImplementation'
 
 export class Filter {
   constructor(private apply?: (add: FilterConsumer) => void) {

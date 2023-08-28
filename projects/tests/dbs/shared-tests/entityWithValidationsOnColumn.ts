@@ -1,4 +1,4 @@
-import { Entity, EntityBase, Fields } from '../../core/src/remult3'
+import { Entity, EntityBase, Fields } from '../../../core'
 import type { entityWithValidations } from '../shared-tests/entityWithValidations'
 
 @Entity('', { allowApiCrud: true })

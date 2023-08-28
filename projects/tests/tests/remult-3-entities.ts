@@ -1,5 +1,10 @@
-import type { Repository } from '../../core/src/remult3'
-import { Entity, EntityBase, Field, Fields } from '../../core/src/remult3'
+import type { Repository } from '../../core/src/remult3/remult3'
+import {
+  Entity,
+  EntityBase,
+  Field,
+  Fields,
+} from '../../core/src/remult3/RepositoryImplementation'
 import { Status } from './testModel/models'
 
 @Entity('Products')

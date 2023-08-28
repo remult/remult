@@ -2,13 +2,8 @@
  * Public API Surface of remult
  */
 export {
-  Field,
-  Fields,
+  OmitEB,
   FieldsMetadata,
-  Entity,
-  IdEntity,
-  EntityBase,
-  ControllerBase,
   FieldRef,
   IdFieldRef,
   FieldsRef,
@@ -19,26 +14,34 @@ export {
   QueryResult,
   QueryOptions,
   Repository,
-  FieldType,
   FindFirstOptions,
   ComparisonValueFilter,
   ValueFilter,
   IdFilter,
   ContainsStringValueFilter,
-  getFields,
   EntityRef,
-  getEntityRef,
   SortSegments,
+  Paginator,
+  LiveQuery,
+  LiveQueryChangeInfo,
+} from './src/remult3/remult3'
+export {
+  Field,
+  Fields,
+  Entity,
+  IdEntity,
+  EntityBase,
+  ControllerBase,
+  FieldType,
+  getFields,
+  getEntityRef,
   ValueListFieldType,
   getValueList,
   ValueListFieldOptions,
   ValueListInfo,
-  OmitEB,
-  Paginator,
   CaptionTransformer,
-  LiveQuery,
-  LiveQueryChangeInfo,
-} from './src/remult3'
+} from './src/remult3/RepositoryImplementation'
+
 export { StringFieldOptions } from './src/remult3/RepositoryImplementation'
 export { describeClass } from './src/remult3/DecoratorReplacer'
 export { EntityOptions } from './src/entity'
@@ -96,7 +99,8 @@ export {
 } from './src/context'
 export { ExternalHttpProvider } from './src/buildRestDataProvider'
 export { SortSegment, Sort } from './src/sort'
-export { OneToMany, CompoundIdField } from './src/column'
+export { OneToMany } from './src/column'
+export { CompoundIdField } from './src/CompoundIdField'
 export { Filter } from './src/filter/filter-interfaces'
 export { UrlBuilder } from './urlBuilder'
 export { Validators } from './src/validators'

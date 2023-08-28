@@ -13,8 +13,8 @@ import {
   LiveQueryPublisher,
 } from '../../core/src/live-query/SubscriptionServer'
 import { remult } from '../../core/src/remult-proxy'
-import type { FindOptions } from '../../core/src/remult3'
-import { Entity, Fields, getEntityRef } from '../../core/src/remult3'
+import type { FindOptions } from '../../core'
+import { Entity, Fields, getEntityRef } from '../../core'
 import { actionInfo } from '../../core/src/server-action'
 import { createMockHttpDataProvider } from '../tests/testHelper'
 import { HttpProviderBridgeToRestDataProviderHttpProvider } from '../../core/src/buildRestDataProvider'

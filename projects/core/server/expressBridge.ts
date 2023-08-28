@@ -1,3 +1,4 @@
+import type { Response } from 'express'
 import type { ResponseRequiredForSSE } from '../SseSubscriptionServer'
 import { SseSubscriptionServer } from '../SseSubscriptionServer'
 import type { ClassType } from '../classType'
@@ -19,8 +20,13 @@ import {
   InMemoryLiveQueryStorage,
   LiveQueryPublisher,
 } from '../src/live-query/SubscriptionServer'
-import type { EntityMetadata, Repository } from '../src/remult3'
-import { Entity, Fields, IdEntity, getEntityKey } from '../src/remult3'
+import {
+  Entity,
+  Fields,
+  IdEntity,
+  getEntityKey,
+} from '../src/remult3/RepositoryImplementation'
+import type { EntityMetadata, Repository } from '../src/remult3/remult3'
 import type {
   ActionInterface,
   jobWasQueuedResult,
@@ -362,19 +368,11 @@ export class RemultServerImplementation<RequestType>
         const streamPath = this.options.rootPath + '/' + streamUrl
 
         r.route(streamPath).get(
-          this.process(
-            async (
-              remult,
-              req,
-              res,
-              origReq,
-              origRes: import('express').Response,
-            ) => {
-              ;(
-                remult.subscriptionServer as SseSubscriptionServer
-              ).openHttpServerStream(origReq, origRes)
-            },
-          ),
+          this.process(async (remult, req, res, origReq, origRes: Response) => {
+            ;(
+              remult.subscriptionServer as SseSubscriptionServer
+            ).openHttpServerStream(origReq, origRes)
+          }),
         )
         r.route(streamPath + '/subscribe').post(
           this.process(
@@ -383,7 +381,7 @@ export class RemultServerImplementation<RequestType>
               req,
               res,
               reqInfo,
-              origRes: import('express').Response,
+              origRes: Response,
               origReq: RequestType,
             ) => {
               const body = (
@@ -403,7 +401,7 @@ export class RemultServerImplementation<RequestType>
               req,
               res,
               reqInfo,
-              origRes: import('express').Response,
+              origRes: Response,
               origReq: RequestType,
             ) => {
               ;(
@@ -425,7 +423,7 @@ export class RemultServerImplementation<RequestType>
             req,
             res,
             reqInfo,
-            origRes: import('express').Response,
+            origRes: Response,
             origReq: RequestType,
           ) => {
             res.success(

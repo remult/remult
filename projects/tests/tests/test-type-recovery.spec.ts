@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { InMemoryDataProvider } from '../../core/src//data-providers/in-memory-database'
 import { Remult } from '../../core/src/context'
-import { Entity, Fields } from '../../core/src/remult3'
+import { Entity, Fields } from '../../core'
 import { describeClass } from '../../core/src/remult3/DecoratorReplacer'
 
 describe('type recovery', () => {

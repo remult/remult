@@ -1,7 +1,8 @@
-import type { ApiClient, FindOptions } from '../../index'
 import { buildRestDataProvider } from '../buildRestDataProvider'
+import type { ApiClient } from '../context'
 import { RestDataProvider } from '../data-providers/rest-data-provider'
-import type { LiveQueryChangeInfo, RepositoryImplementation } from '../remult3'
+import type { RepositoryImplementation } from '../remult3/RepositoryImplementation'
+import type { FindOptions, LiveQueryChangeInfo } from '../remult3/remult3'
 import type {
   SubscriptionClientConnection,
   SubscriptionListener,

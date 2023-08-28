@@ -11,12 +11,9 @@ import {
   customUrlToken,
 } from './filter/filter-interfaces'
 import type { QueryData } from './live-query/SubscriptionServer'
-import type {
-  EntityFilter,
-  FindOptions,
-  Repository,
-  rowHelperImplementation,
-} from './remult3'
+import type { EntityFilter, FindOptions, Repository } from './remult3/remult3'
+import type { rowHelperImplementation } from './remult3/RepositoryImplementation'
+
 import { ForbiddenError } from './server-action'
 
 export class DataApi<T = any> {

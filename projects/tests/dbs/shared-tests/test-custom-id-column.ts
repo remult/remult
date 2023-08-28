@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { Entity, EntityBase, Fields } from '../../../core/src/remult3'
+import { Entity, EntityBase, Fields } from '../../../core'
 import { describeClass } from '../../../core/src/remult3/DecoratorReplacer'
 import type { DbTestProps } from './db-tests-props'
 

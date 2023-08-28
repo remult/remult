@@ -54,6 +54,7 @@
     "better-sqlite3": "^7.5.0",
     "class-validator": "^0.13.2",
     "concurrently": "^7.2.2",
+    "dependency-cruiser": "^13.1.5",
     "dotenv": "^8.1.0",
     "eslint": "^8.48.0",
     "express": "^4.17.3",
