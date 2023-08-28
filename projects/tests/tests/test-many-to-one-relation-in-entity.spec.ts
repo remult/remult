@@ -1,15 +1,7 @@
 import { InMemoryDataProvider } from '../../core/src//data-providers/in-memory-database'
-import type {
-  EntityFilter,
-  rowHelperImplementation,
-} from '../../core/src//remult3'
-import {
-  Entity,
-  EntityBase,
-  Field,
-  Fields,
-  getEntityRef,
-} from '../../core/src//remult3'
+import type { rowHelperImplementation } from '../../core/src/remult3/RepositoryImplementation'
+import type { EntityFilter } from '../../core'
+import { Entity, EntityBase, Field, Fields, getEntityRef } from '../../core'
 import { Remult } from '../../core/src/context'
 
 import {
@@ -21,7 +13,7 @@ import { Language } from './RowProvider.spec'
 import { DataApi } from '../../core/src//data-api'
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { actionInfo } from '../../core/src/server-action'
+import { actionInfo } from '../../core/src/server-action-info'
 import { Done } from './Done'
 import { Categories, Products } from './entities-for-tests'
 import { h } from './h'

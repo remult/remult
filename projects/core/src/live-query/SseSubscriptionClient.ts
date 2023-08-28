@@ -1,6 +1,6 @@
 import { buildRestDataProvider } from '../buildRestDataProvider'
 import { remult } from '../remult-proxy'
-import { actionInfo } from '../server-action'
+import { actionInfo } from '../server-action-info'
 import type {
   ServerEventChannelSubscribeDTO,
   SubscriptionClient,

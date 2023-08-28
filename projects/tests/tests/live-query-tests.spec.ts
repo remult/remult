@@ -15,7 +15,7 @@ import {
 import { remult } from '../../core/src/remult-proxy'
 import type { FindOptions } from '../../core'
 import { Entity, Fields, getEntityRef } from '../../core'
-import { actionInfo } from '../../core/src/server-action'
+import { actionInfo } from '../../core/src/server-action-info'
 import { createMockHttpDataProvider } from '../tests/testHelper'
 import { HttpProviderBridgeToRestDataProviderHttpProvider } from '../../core/src/buildRestDataProvider'
 import { DataApi } from '../../core/src/data-api'

@@ -1,10 +1,8 @@
 import type { FieldMetadata } from '../column-interfaces'
 import type { Remult } from '../context'
 import type { EntityFilter, EntityMetadata } from '../remult3/remult3'
-import {
-  getEntityRef,
-  getEntitySettings,
-} from '../remult3/RepositoryImplementation'
+
+import { getEntityRef, getEntitySettings } from '../remult3/getEntityRef'
 
 export class Filter {
   constructor(private apply?: (add: FilterConsumer) => void) {
@@ -608,5 +606,34 @@ export interface customFilterInfo<entityType> {
       args: any,
       r: Remult,
     ) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>
+  }
+}
+
+export function __updateEntityBasedOnWhere<T>(
+  entityDefs: EntityMetadata<T>,
+  where: EntityFilter<T>,
+  r: T,
+) {
+  let w = Filter.fromEntityFilter(entityDefs, where)
+  const emptyFunction = () => {}
+  if (w) {
+    w.__applyToConsumer({
+      custom: emptyFunction,
+      databaseCustom: emptyFunction,
+      containsCaseInsensitive: emptyFunction,
+      isDifferentFrom: emptyFunction,
+      isEqualTo: (col, val) => {
+        r[col.key] = val
+      },
+      isGreaterOrEqualTo: emptyFunction,
+      isGreaterThan: emptyFunction,
+      isIn: emptyFunction,
+      isLessOrEqualTo: emptyFunction,
+      isLessThan: emptyFunction,
+      isNotNull: emptyFunction,
+      isNull: emptyFunction,
+
+      or: emptyFunction,
+    })
   }
 }

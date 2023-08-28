@@ -1,10 +1,8 @@
 import { assign } from '../assign'
 
 import type { FindOptions, idType, Repository } from './remult3/remult3'
-import {
-  __updateEntityBasedOnWhere,
-  getEntityRef,
-} from './remult3/RepositoryImplementation'
+import { __updateEntityBasedOnWhere } from './remult3/__updateEntityBasedOnWhere'
+import { getEntityRef } from './remult3/getEntityRef'
 import type { RepositoryImplementation } from './remult3/RepositoryImplementation'
 
 export function makeTitle(name: string) {

@@ -200,7 +200,7 @@ export class LiveQueryClient {
         }
         if (ids.length > 0) {
           let p = this.apiProvider()
-          let { actionInfo } = await import('../server-action')
+          let { actionInfo } = await import('../server-action-info')
           const invalidIds: string[] = await this.runPromise(
             await actionInfo.runActionWithoutBlockingUI(() =>
               buildRestDataProvider(p.httpClient).post(

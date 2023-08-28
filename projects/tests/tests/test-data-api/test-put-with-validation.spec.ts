@@ -1,12 +1,11 @@
 import { InMemoryDataProvider } from '../../../core/'
 import { Remult } from '../../../core/src/context'
 import { DataApi } from '../../../core/src/data-api'
+import { Entity, getEntityRef } from '../../../core'
 import {
-  Entity,
   EntityBase,
   Fields,
   ValueListInfo,
-  getEntityRef,
 } from '../../../core/src/remult3/RepositoryImplementation'
 import { Done } from '../Done'
 import { TestDataApiResponse } from '../TestDataApiResponse'

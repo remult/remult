@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { InMemoryDataProvider } from '../../core/src//data-providers/in-memory-database'
-import { Entity, Fields } from '../../core/src//remult3'
+import { Entity, Fields } from '../../core'
 import { Remult } from '../../core/src/context'
 import type { ErrorInfo } from '../../core/src/data-interfaces'
 import { Validators } from '../../core/src/validators'

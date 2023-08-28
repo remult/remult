@@ -27,9 +27,9 @@ import {
   checkTarget,
   decorateColumnSettings,
   getControllerRef,
-  getEntityRef,
-  getEntitySettings,
 } from './remult3/RepositoryImplementation'
+import { getEntityRef, getEntitySettings } from './remult3/getEntityRef'
+import { actionInfo, serverActionField } from './server-action-info'
 
 interface inArgs {
   args: any[]
@@ -176,20 +176,6 @@ export interface BackendMethodOptions<type> {
   blockUser?: boolean
   paramTypes?: any[]
 }
-
-export const actionInfo = {
-  allActions: [] as any[],
-  runningOnServer: false,
-  runActionWithoutBlockingUI: <T>(what: () => Promise<T>): Promise<T> => {
-    return what()
-  },
-  startBusyWithProgress: () => ({
-    progress: (percent: number) => {},
-    close: () => {},
-  }),
-}
-
-export const serverActionField = Symbol('serverActionField')
 
 interface serverMethodInArgs {
   args: any[]

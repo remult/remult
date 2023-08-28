@@ -20,12 +20,10 @@ import {
   InMemoryLiveQueryStorage,
   LiveQueryPublisher,
 } from '../src/live-query/SubscriptionServer'
-import {
-  Entity,
-  Fields,
-  IdEntity,
-  getEntityKey,
-} from '../src/remult3/RepositoryImplementation'
+import { Fields, IdEntity } from '../src/remult3/RepositoryImplementation'
+
+import { Entity } from '../src/remult3/entity'
+import { getEntityKey } from '../src/remult3/getEntityRef'
 import type { EntityMetadata, Repository } from '../src/remult3/remult3'
 import type {
   ActionInterface,
@@ -33,12 +31,8 @@ import type {
   myServerAction,
   queuedJobInfoResponse,
 } from '../src/server-action'
-import {
-  Action,
-  actionInfo,
-  classBackendMethodsArray,
-  serverActionField,
-} from '../src/server-action'
+import { Action, classBackendMethodsArray } from '../src/server-action'
+import { actionInfo, serverActionField } from '../src/server-action-info'
 import { initDataProvider } from './initDataProvider'
 
 //TODO2 -support pub sub non express servers

@@ -22,7 +22,9 @@
     "release-docs": "cd docs && npm run publish",
     "build-ref-ts": "ts-node --project tsconfig.server.json ./docs/misc/docs-work.ts",
     "build-ref": "cd docs/tools && build-ref.bat",
-    "update-starter": "misc\\update-versions-to-starter-projects.sh"
+    "update-starter": "misc\\update-versions-to-starter-projects.sh",
+    "detect-circular": "depcruise projects/core --include-only \"^projects/core\" --output-type dot | dot -T svg > dependency-graph.svg",
+    "dc": "depcruise projects/core --include-only \"^projects/core\" --output-to ./tmp/dependency-violations.html --output-type err-html | dot -T svg > dependency-graph.svg "
   },
   "private": true,
   "devDependencies": {

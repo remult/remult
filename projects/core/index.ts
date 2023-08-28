@@ -28,19 +28,19 @@ export {
 export {
   Field,
   Fields,
-  Entity,
   IdEntity,
   EntityBase,
   ControllerBase,
   FieldType,
   getFields,
-  getEntityRef,
   ValueListFieldType,
   getValueList,
   ValueListFieldOptions,
   ValueListInfo,
   CaptionTransformer,
 } from './src/remult3/RepositoryImplementation'
+export { Entity } from './src/remult3/entity'
+export { getEntityRef } from './src/remult3/getEntityRef'
 
 export { StringFieldOptions } from './src/remult3/RepositoryImplementation'
 export { describeClass } from './src/remult3/DecoratorReplacer'

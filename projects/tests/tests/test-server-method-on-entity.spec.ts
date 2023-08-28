@@ -1,14 +1,9 @@
 import { DataApi } from '../../core/src//data-api'
 import { InMemoryDataProvider } from '../../core/src//data-providers/in-memory-database'
-import {
-  Entity,
-  EntityBase,
-  Field,
-  Fields,
-  getEntityRef,
-} from '../../core/src//remult3'
+import { Entity, EntityBase, Field, Fields, getEntityRef } from '../../core'
 import { Remult, isBackend } from '../../core/src/context'
-import { BackendMethod, actionInfo } from '../../core/src/server-action'
+import { BackendMethod } from '../../core/src/server-action'
+import { actionInfo } from '../../core/src/server-action-info'
 import { TestDataApiResponse } from './TestDataApiResponse'
 import { ActionTestConfig, testRestDb } from './testHelper'
 

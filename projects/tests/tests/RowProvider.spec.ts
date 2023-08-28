@@ -15,16 +15,15 @@ import { Validators } from '../../core/src/validators'
 import type { EntityMetadata, FindOptions } from '../../core'
 import { describeClass, EntityBase, Sort } from '../../core/'
 import {
-  decorateColumnSettings,
   Entity,
   Entity as EntityDecorator,
+  getEntityRef,
   Field,
   Fields,
-  getEntityRef,
   getValueList,
   ValueListFieldType,
   ValueListInfo,
-} from '../../core/src//remult3/RepositoryImplementation'
+} from '../../core'
 import { ValueConverters } from '../../core/src/valueConverters'
 import { Categories, Categories as newCategories } from './remult-3-entities'
 
@@ -34,6 +33,7 @@ import {
   Filter,
 } from '../../core/src/filter/filter-interfaces'
 import { createData } from './createData'
+import { decorateColumnSettings } from '../../core/src/remult3/RepositoryImplementation'
 
 @ValueListFieldType({
   getValues: () => [

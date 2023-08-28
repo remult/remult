@@ -4,15 +4,15 @@ import { RestDataProvider } from './data-providers/rest-data-provider'
 import { LiveQueryClient } from './live-query/LiveQueryClient'
 import { SseSubscriptionClient } from './live-query/SseSubscriptionClient'
 import { RemultProxy, remult } from './remult-proxy'
+import { RepositoryImplementation } from './remult3/RepositoryImplementation'
 import type {
   EntityMetadata,
   EntityRef,
   FindOptions,
   Repository,
 } from './remult3/remult3'
-import { RepositoryImplementation } from './remult3/RepositoryImplementation'
 import type { Action } from './server-action'
-import { actionInfo, serverActionField } from './server-action'
+import { actionInfo, serverActionField } from './server-action-info'
 
 import type { ExternalHttpProvider } from './buildRestDataProvider'
 import {

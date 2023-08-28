@@ -10,7 +10,7 @@ import { buildRestDataProvider, retry } from '../buildRestDataProvider'
 import type { ApiClient } from '../context'
 import { customUrlToken, Filter } from '../filter/filter-interfaces'
 import type { EntityMetadata, FindOptions } from '../remult3/remult3'
-import { actionInfo } from '../server-action'
+import { actionInfo } from '../server-action-info'
 
 export class RestDataProvider implements DataProvider {
   constructor(private apiProvider: () => ApiClient) {}

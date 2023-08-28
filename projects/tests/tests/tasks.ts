@@ -1,8 +1,4 @@
-import {
-  Entity,
-  EntityBase,
-  Fields,
-} from '../../core/src/remult3/RepositoryImplementation'
+import { Entity, EntityBase, Fields } from '../../core'
 
 @Entity('tasks', { allowApiCrud: true })
 export class tasks extends EntityBase {

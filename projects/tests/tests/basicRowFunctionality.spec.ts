@@ -21,16 +21,13 @@ import { entityFilterToJson } from '../../core/src/filter/filter-interfaces'
 import { Categories, Categories as newCategories } from './remult-3-entities'
 
 import {
-  decorateColumnSettings,
   Entity,
+  getEntityRef,
   EntityBase,
   Field,
   Fields,
   FieldType,
-  getEntityKey,
-  getEntityRef,
-  isAutoIncrement,
-} from '../../core/src/remult3/RepositoryImplementation'
+} from '../../core'
 
 import axios from 'axios'
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
@@ -47,12 +44,17 @@ import {
   FilterConsumerBridgeToSqlRequest,
 } from '../../core/src/filter/filter-consumer-bridge-to-sql-request'
 import { remult } from '../../core/src/remult-proxy'
-import { actionInfo } from '../../core/src/server-action'
+import { actionInfo } from '../../core/src/server-action-info'
 import { ValueConverters } from '../../core/src/valueConverters'
 import { entityWithValidations } from '../dbs/shared-tests/entityWithValidations'
 import { CompoundIdEntity } from './entities-for-tests'
 import { entityWithValidationsOnColumn } from '../dbs/shared-tests/entityWithValidationsOnColumn'
 import { resultCompoundIdFilter } from '../../core/src/resultCompoundIdFilter'
+import {
+  decorateColumnSettings,
+  isAutoIncrement,
+} from '../../core/src/remult3/RepositoryImplementation'
+import { getEntityKey } from '../../core/src/remult3/getEntityRef'
 
 //SqlDatabase.LogToConsole = true;
 

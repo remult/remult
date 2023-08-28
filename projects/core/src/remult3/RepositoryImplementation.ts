@@ -10,15 +10,8 @@ import type {
   ValueListItem,
 } from '../column-interfaces'
 import type { AllowedForInstance } from '../context'
-import {
-  Remult,
-  allEntities,
-  isBackend,
-  queryConfig,
-  setControllerSettings,
-} from '../context'
+import { Remult, isBackend, queryConfig } from '../context'
 import type { EntityOptions } from '../entity'
-import type { customFilterInfo } from '../filter/filter-interfaces'
 import { Filter } from '../filter/filter-interfaces'
 import { Sort } from '../sort'
 import type {
@@ -62,6 +55,13 @@ import type {
 } from '../live-query/SubscriptionChannel'
 import type { RemultProxy } from '../remult-proxy'
 import { remult as defaultRemult } from '../remult-proxy'
+import {
+  entityMember,
+  getEntityKey,
+  getEntityRef,
+  getEntitySettings,
+} from './getEntityRef'
+import { __updateEntityBasedOnWhere } from './__updateEntityBasedOnWhere'
 //import  { remult } from "../remult-proxy";
 
 let classValidatorValidate:
@@ -718,60 +718,8 @@ export class RepositoryImplementation<entityType>
   }
 }
 
-export function __updateEntityBasedOnWhere<T>(
-  entityDefs: EntityMetadata<T>,
-  where: EntityFilter<T>,
-  r: T,
-) {
-  let w = Filter.fromEntityFilter(entityDefs, where)
-  const emptyFunction = () => {}
-  if (w) {
-    w.__applyToConsumer({
-      custom: emptyFunction,
-      databaseCustom: emptyFunction,
-      containsCaseInsensitive: emptyFunction,
-      isDifferentFrom: emptyFunction,
-      isEqualTo: (col, val) => {
-        r[col.key] = val
-      },
-      isGreaterOrEqualTo: emptyFunction,
-      isGreaterThan: emptyFunction,
-      isIn: emptyFunction,
-      isLessOrEqualTo: emptyFunction,
-      isLessThan: emptyFunction,
-      isNotNull: emptyFunction,
-      isNull: emptyFunction,
-
-      or: emptyFunction,
-    })
-  }
-}
-
 export type EntityOptionsFactory = (remult: Remult) => EntityOptions
 
-export const entityInfo = Symbol('entityInfo')
-export const entityInfo_key = Symbol('entityInfo_key')
-const entityMember = Symbol('entityMember')
-export function getEntitySettings<T>(
-  entity: ClassType<T>,
-  throwError = true,
-): EntityOptionsFactory {
-  if (entity === undefined)
-    if (throwError) {
-      throw new Error('Undefined is not an entity :)')
-    } else return undefined
-  let info: EntityOptionsFactory = Reflect.getMetadata(entityInfo, entity)
-  if (!info && throwError)
-    throw new Error(
-      entity.prototype.constructor.name +
-        " is not a known entity, did you forget to set @Entity() or did you forget to add the '@' before the call to Entity?",
-    )
-
-  return info
-}
-export function getEntityKey(entity: ClassType<any>): string {
-  return Reflect.getMetadata(entityInfo_key, entity)
-}
 export const columnsOfType = new Map<any, columnInfo[]>()
 export function createOldEntity<T>(entity: ClassType<T>, remult: Remult) {
   let r: columnInfo[] = columnsOfType.get(entity)
@@ -1643,19 +1591,6 @@ export class FieldRefImplementation<entityType, valueType>
   }
 }
 
-export function getEntityRef<entityType>(
-  entity: entityType,
-  throwException = true,
-): EntityRef<entityType> {
-  let x = entity[entityMember]
-  if (!x && throwException)
-    throw new Error(
-      'item ' +
-        entity.constructor.name +
-        ' was not initialized using a context',
-    )
-  return x
-}
 export const CaptionTransformer = {
   transformCaption: (remult: Remult, key: string, caption: string) => caption,
 }
@@ -2516,103 +2451,6 @@ interface columnInfo {
   key: string
   settings: (remult: Remult) => FieldOptions
 }
-//[ ] YONI - in Typescript 5 I do get the name of the class, what would we like to change because of that?
-
-/**Decorates classes that should be used as entities.
- * Receives a key and an array of EntityOptions.
- * @example
- * import  { Entity, Fields } from "remult";
- * @Entity("tasks", {
- *    allowApiCrud: true
- * })
- * export class Task {
- *    @Fields.uuid()
- *    id!: string;
- *    @Fields.string()
- *    title = '';
- *    @Fields.boolean()
- *    completed = false;
- * }
- * @note
- * EntityOptions can be set in two ways:
- * @example
- * // as an object
- * @Entity("tasks",{ allowApiCrud:true })
- * @example
- * // as an arrow function that receives `remult` as a parameter
- * @Entity("tasks", (options,remult) => options.allowApiCrud = true)
- */
-export function Entity<entityType>(
-  key: string,
-  ...options: (
-    | EntityOptions<
-        entityType extends new (...args: any) => any
-          ? InstanceType<entityType>
-          : entityType
-      >
-    | ((
-        options: EntityOptions<
-          entityType extends new (...args: any) => any
-            ? InstanceType<entityType>
-            : entityType
-        >,
-        remult: Remult,
-      ) => void)
-  )[]
-) {
-  return (
-    target,
-    info?: ClassDecoratorContextStub<
-      entityType extends new (...args: any) => any ? entityType : never
-    >,
-  ) => {
-    for (const rawFilterMember in target) {
-      if (Object.prototype.hasOwnProperty.call(target, rawFilterMember)) {
-        const element = target[rawFilterMember] as customFilterInfo<any>
-        if (element?.rawFilterInfo?.rawFilterTranslator) {
-          if (!element.rawFilterInfo.key)
-            element.rawFilterInfo.key = rawFilterMember
-        }
-      }
-    }
-
-    let factory: EntityOptionsFactory = (remult) => {
-      let r = {} as EntityOptions<
-        entityType extends new (...args: any) => any
-          ? InstanceType<entityType>
-          : entityType
-      >
-      for (const o of options) {
-        if (o) {
-          if (typeof o === 'function') o(r, remult)
-          else Object.assign(r, o)
-        }
-      }
-
-      let base = Object.getPrototypeOf(target)
-      if (base) {
-        let baseFactory = getEntitySettings(base, false)
-        if (baseFactory) {
-          let opt = baseFactory(remult)
-          if (opt) {
-            r = {
-              ...opt,
-              ...r,
-            }
-          }
-        }
-      }
-      return r
-    }
-
-    allEntities.push(target)
-    setControllerSettings(target, { key })
-    Reflect.defineMetadata(entityInfo, factory, target)
-    Reflect.defineMetadata(entityInfo_key, key, target)
-    return target
-  }
-}
-
 export class EntityBase {
   get _(): EntityRef<this> {
     return getEntityRef(this)

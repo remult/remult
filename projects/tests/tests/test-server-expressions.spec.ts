@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { InMemoryDataProvider } from '../../core/src//data-providers/in-memory-database'
-import { Entity, EntityBase, Fields } from '../../core/src//remult3'
+import { Entity, EntityBase, Fields } from '../../core'
 import { describeClass } from '../../core/src//remult3/DecoratorReplacer'
 import { Remult } from '../../core/src/context'
 import { dbNamesOf } from '../../core/src/filter/filter-consumer-bridge-to-sql-request'
 import { remult } from '../../core/src/remult-proxy'
-import { actionInfo } from '../../core/src/server-action'
+import { actionInfo } from '../../core/src/server-action-info'
 
 describe('test server expression value', () => {
   beforeEach(() => {

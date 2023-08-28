@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { InMemoryDataProvider } from '../../core/'
-import { Entity, EntityBase, Field, Fields } from '../../core/src//remult3'
+import { Entity, EntityBase, Field, Fields } from '../../core'
 import { Remult } from '../../core/src/context'
 import { Validators } from '../../core/src/validators'
 

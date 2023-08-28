@@ -3,13 +3,7 @@ import type {
   EntityFilter,
   Repository,
 } from '../../../core/src/remult3/remult3'
-import {
-  Entity,
-  EntityBase,
-  Field,
-  Fields,
-  IdEntity,
-} from '../../../core/src/remult3/RepositoryImplementation'
+import { Entity, EntityBase, Field, Fields, IdEntity } from '../../../core'
 import { c } from '../../tests/c'
 
 import { v4 as uuid } from 'uuid'
