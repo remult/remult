@@ -1,29 +1,25 @@
-import { createData } from './createData'
-import { Remult, queryConfig } from '../../core/src/context'
-import {
-  Entity,
-  EntityBase,
-  Field,
+import type {
+  EntityFilter,
   EntityOrderBy,
   RepositoryImplementation,
-  EntityFilter,
-  Fields,
 } from '../../core/src//remult3'
-import { Categories } from './remult-3-entities'
-import { FieldMetadata } from '../../core/src/column-interfaces'
-import { Sort } from '../../core/src/sort'
+import { Entity, EntityBase, Fields } from '../../core/src//remult3'
 import { CompoundIdField } from '../../core/src/column'
-import { entityFilterToJson, Filter } from '../../core/src/filter/filter-interfaces'
+import type { FieldMetadata } from '../../core/src/column-interfaces'
+import { Remult, queryConfig } from '../../core/src/context'
+import { entityFilterToJson } from '../../core/src/filter/filter-interfaces'
+import { Sort } from '../../core/src/sort'
+import { createData } from './createData'
+import { Categories } from './remult-3-entities'
 
-
+import { describe, expect, it } from 'vitest'
 import { testRestDb } from './testHelper'
-import { describe, it, expect,beforeEach,afterEach,beforeAll } from 'vitest'
 
 describe('test paged foreach ', () => {
   queryConfig.defaultPageSize = 2
 
   it('basic foreach with where', async () => {
-    let [c] = await createData(async (insert) => {
+    const [c] = await createData(async (insert) => {
       await insert(1, 'noam')
       await insert(2, 'yael')
       await insert(3, 'yoni')
@@ -37,7 +33,7 @@ describe('test paged foreach ', () => {
     expect(i).toBe(4)
   })
   it('basic foreach with where 2', async () => {
-    let [c] = await createData(async (insert) => {
+    const [c] = await createData(async (insert) => {
       await insert(1, 'noam')
       await insert(2, 'yael')
       await insert(3, 'yoni')
@@ -53,7 +49,7 @@ describe('test paged foreach ', () => {
     expect(i).toBe(4)
   })
   it('basic foreach with order by', async () => {
-    let [c] = await createData(async (insert) => {
+    const [c] = await createData(async (insert) => {
       await insert(1, 'noam')
       await insert(2, 'yael')
       await insert(3, 'yoni')
@@ -81,7 +77,7 @@ describe('test paged foreach ', () => {
   })
 
   it('basic foreach with order by desc', async () => {
-    let [c] = await createData(async (insert) => {
+    const [c] = await createData(async (insert) => {
       await insert(1, 'noam')
       await insert(2, 'yael')
       await insert(3, 'yoni')
@@ -98,14 +94,14 @@ describe('test paged foreach ', () => {
     expect(i).toBe(5)
   })
   it('iterate', async () => {
-    let [c] = await createData(async (insert) => {
+    const [c] = await createData(async (insert) => {
       await insert(1, 'noam')
       await insert(2, 'yael')
       await insert(3, 'yoni')
       await insert(4, 'shay')
       await insert(5, 'ido')
     })
-    var i = 0
+    let i = 0
     for await (const x of c.query()) {
       expect(x.id).toBe(++i)
     }
@@ -113,7 +109,7 @@ describe('test paged foreach ', () => {
     expect(i).toBe(5)
   })
   it('paginate', async () => {
-    let [c] = await createData(async (insert) => {
+    const [c] = await createData(async (insert) => {
       await insert(1, 'noam')
       await insert(2, 'yael')
       await insert(3, 'yoni')
@@ -133,7 +129,7 @@ describe('test paged foreach ', () => {
     expect(p.hasNextPage).toBe(false)
   })
   it('paginate3', async () => {
-    let [c] = await createData(async (insert) => {
+    const [c] = await createData(async (insert) => {
       await insert(1, 'aoam')
       await insert(2, 'bael')
       await insert(3, 'coni')
@@ -164,7 +160,7 @@ describe('test paged foreach ', () => {
   })
   it('paginate2', async () => {
     testRestDb(async ({ remult }) => {
-      let c = remult.repo(Categories)
+      const c = remult.repo(Categories)
       await c.insert([
         { id: 1, categoryName: 'aoam' },
         { id: 2, categoryName: 'bael' },
@@ -197,14 +193,14 @@ describe('test paged foreach ', () => {
     })
   })
   it('paginate', async () => {
-    let [c] = await createData(async (insert) => {
+    const [c] = await createData(async (insert) => {
       await insert(1, 'noam')
       await insert(2, 'yael')
       await insert(3, 'yoni')
       await insert(4, 'shay')
       await insert(5, 'ido')
     })
-    let p = await c.query({
+    const p = await c.query({
       pageSize: 3,
     })
 
@@ -212,7 +208,7 @@ describe('test paged foreach ', () => {
     expect((await p.getPage(2)).map((x) => x.id)).toEqual([4, 5])
   })
   it('paginate on boundries', async () => {
-    let [c] = await createData(async (insert) => {
+    const [c] = await createData(async (insert) => {
       await insert(1, 'noam')
       await insert(2, 'yael')
       await insert(3, 'yoni')
@@ -231,14 +227,14 @@ describe('test paged foreach ', () => {
     expect(p.hasNextPage).toBe(false)
   })
   it('test toArray', async () => {
-    let [c] = await createData(async (insert) => {
+    const [c] = await createData(async (insert) => {
       await insert(1, 'noam')
       await insert(2, 'yael')
       await insert(3, 'yoni')
       await insert(4, 'shay')
       await insert(5, 'ido')
     })
-    var i = 0
+    let i = 0
 
     for (const x of await c.query({ pageSize: 10 }).getPage()) {
       expect(x.id).toBe(++i)
@@ -246,15 +242,15 @@ describe('test paged foreach ', () => {
     expect(i).toBe(5)
   })
   it('test make sort unique', async () => {
-    let remult = new Remult()
-    let e = remult.repo(Categories) as RepositoryImplementation<Categories>
+    const remult = new Remult()
+    const e = remult.repo(Categories) as RepositoryImplementation<Categories>
     function test(
       orderBy: EntityOrderBy<Categories>,
       ...sort: FieldMetadata[]
     ) {
-      let z = { ...orderBy }
-      let s = Sort.createUniqueEntityOrderBy(e.metadata, orderBy)
-      let expected = {}
+      const z = { ...orderBy }
+      const s = Sort.createUniqueEntityOrderBy(e.metadata, orderBy)
+      const expected = {}
       for (const c of sort) {
         expected[c.key] = 'asc'
       }
@@ -270,14 +266,14 @@ describe('test paged foreach ', () => {
   })
 
   it('unique sort and  compound id', async () => {
-    let remult = new Remult()
+    const remult = new Remult()
 
-    let eDefs = remult.repo(theTable).metadata
-    let e = eDefs.fields
+    const eDefs = remult.repo(theTable).metadata
+    const e = eDefs.fields
 
     function test(orderBy: EntityOrderBy<theTable>, ...sort: FieldMetadata[]) {
-      let s = Sort.createUniqueEntityOrderBy(eDefs, orderBy)
-      let expected = {}
+      const s = Sort.createUniqueEntityOrderBy(eDefs, orderBy)
+      const expected = {}
       for (const c of sort) {
         expected[c.key] = 'asc'
       }
@@ -290,10 +286,10 @@ describe('test paged foreach ', () => {
     test({ c: 'asc' }, e.c, e.a, e.b)
   })
   it('create rows after filter compound id', async () => {
-    let remult = new Remult()
+    const remult = new Remult()
 
-    let eDefs = remult.repo(theTable) as RepositoryImplementation<theTable>
-    let e = eDefs.create()
+    const eDefs = remult.repo(theTable) as RepositoryImplementation<theTable>
+    const e = eDefs.create()
     e.a = 'a'
     e.b = 'b'
     e.c = 'c'
@@ -322,15 +318,15 @@ describe('test paged foreach ', () => {
     )
   })
   it('create rows after filter, values are frozen when filter is created', async () => {
-    let remult = new Remult()
+    const remult = new Remult()
 
-    let eDefs = remult.repo(theTable) as RepositoryImplementation<theTable>
-    let e = eDefs.create()
+    const eDefs = remult.repo(theTable) as RepositoryImplementation<theTable>
+    const e = eDefs.create()
     e.a = 'a'
     e.b = 'b'
     e.c = 'c'
 
-    let f = await eDefs.createAfterFilter({ a: 'asc', b: 'asc' }, e)
+    const f = await eDefs.createAfterFilter({ a: 'asc', b: 'asc' }, e)
     e.a = '1'
     e.b = '2'
     expect(JSON.stringify(await entityFilterToJson(eDefs.metadata, f))).toEqual(
@@ -342,9 +338,9 @@ describe('test paged foreach ', () => {
     )
   })
   it('serialize filter with or', async () => {
-    let remult = new Remult()
-    let eDefs = remult.repo(theTable) as RepositoryImplementation<theTable>
-    let e = eDefs.create()
+    const remult = new Remult()
+    const eDefs = remult.repo(theTable) as RepositoryImplementation<theTable>
+    eDefs.create()
 
     async function test(expectedWhere: EntityFilter<theTable>, expected: any) {
       expect(
