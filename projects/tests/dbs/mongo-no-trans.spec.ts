@@ -32,7 +32,7 @@ describe.skipIf(!mongoConnectionStringWithoutTransaction)(
       return repo
     }
     afterAll(async () => {
-      await client.close()
+      if (client) await client.close()
     })
     beforeEach(() => {
       remult = new Remult(db)

@@ -27,7 +27,7 @@ describe.skipIf(!mongoConnectionString)('mongo with Transaction', () => {
     db = new MongoDataProvider(mongoDb, client)
   })
   afterAll(async () => {
-    await client.close()
+    if (client) await client.close()
   })
   beforeEach(() => {
     remult = new Remult(db)
