@@ -83,13 +83,14 @@ const { typeDefs, resolvers } = remultGraphql({
 
 const yogaApp = createYoga<RequestEvent>({
   schema: createSchema({
-    typeDefs: createSchema({
-      typeDefs,
-      resolvers
-    })
+    typeDefs,
+    resolvers
   }),
+  // While using Next.js file convention for routing, we need to configure Yoga to use the correct endpoint
+  graphqlEndpoint: '/api/graphql',
+
   fetchAPI: { Response }
 })
 
-export { yogaApp as GET, yogaApp as POST }
+export { yogaApp as GET, yogaApp as OPTIONS, yogaApp as POST }
 ```
