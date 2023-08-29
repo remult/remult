@@ -94,4 +94,3 @@ const yogaApp = createYoga<RequestEvent>({
 
 export { yogaApp as GET, yogaApp as OPTIONS, yogaApp as POST }
 ```
-
