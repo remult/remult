@@ -53,6 +53,9 @@ class Task {
   @Field(() => Category, { allowNull: true })
   category?: Category
 
+  @Field(() => Category, { allowNull: true })
+  category2?: Category
+
   @Fields.string({
     serverExpression: () => {
       return ''
@@ -317,15 +320,15 @@ describe('graphql', () => {
 
     const result = await gql(`
     query{
-      tasks{
-        items{
+      tasks {
+        items {
           title
-          category{
+          category {
             name
-            tasks{
+            tasksOfcategory {
               items {
-              title
-            }
+                title
+              }
             }
           }
         }
@@ -339,7 +342,7 @@ describe('graphql', () => {
               {
                 "category": {
                   "name": "c1",
-                  "tasks": {
+                  "tasksOfcategory": {
                     "items": [
                       {
                         "title": "task a",
@@ -352,7 +355,7 @@ describe('graphql', () => {
               {
                 "category": {
                   "name": "c2",
-                  "tasks": {
+                  "tasksOfcategory": {
                     "items": [
                       {
                         "title": "task b",
@@ -368,13 +371,13 @@ describe('graphql', () => {
       }
     `)
     expect(result.data.tasks.items[0].category.name).toBe('c1')
-    expect(result.data.tasks.items[0].category.tasks.items[0].title).toBe(
-      'task a',
-    )
+    expect(
+      result.data.tasks.items[0].category.tasksOfcategory.items[0].title,
+    ).toBe('task a')
     expect(result.data.tasks.items[1].category.name).toBe('c2')
-    expect(result.data.tasks.items[1].category.tasks.items[0].title).toBe(
-      'task b',
-    )
+    expect(
+      result.data.tasks.items[1].category.tasksOfcategory.items[0].title,
+    ).toBe('task b')
   })
   it('test get single task by id', async () => {
     const tasks = await remult
@@ -477,6 +480,7 @@ describe('graphql', () => {
       [
         Task {
           "category": null,
+          "category2": null,
           "completed": false,
           "id": 1,
           "thePriority": 1,
@@ -485,6 +489,7 @@ describe('graphql', () => {
         },
         Task {
           "category": null,
+          "category2": null,
           "completed": false,
           "id": 3,
           "thePriority": 1,
@@ -521,6 +526,7 @@ describe('graphql', () => {
       [
         Task {
           "category": null,
+          "category2": null,
           "completed": false,
           "id": 1,
           "thePriority": 1,
@@ -553,6 +559,7 @@ describe('graphql', () => {
       [
         Task {
           "category": null,
+          "category2": null,
           "completed": false,
           "id": 1,
           "thePriority": 1,
@@ -770,6 +777,7 @@ describe('graphql', () => {
           completed: Boolean!
           thePriority: String!
           category: Category
+          category2: Category
           userOnServer: String!
           nodeId: ID!
       }
@@ -780,6 +788,7 @@ describe('graphql', () => {
         completed: OrderByDirection
         thePriority: OrderByDirection
         category: OrderByDirection
+        category2: OrderByDirection
       }
 
       input tasksWhere {
@@ -800,6 +809,7 @@ describe('graphql', () => {
           completed: Boolean
           thePriority: String
           category: ID
+          category2: ID
           userOnServer: String
       }
 
@@ -814,6 +824,7 @@ describe('graphql', () => {
           completed: Boolean
           thePriority: String
           category: ID
+          category2: ID
           userOnServer: String
       }
 
@@ -832,7 +843,8 @@ describe('graphql', () => {
       type Category implements Node {
           id: String!
           name: String!
-          tasks(limit: Int, page: Int, orderBy: tasksOrderBy, where: tasksWhere): TaskConnection
+          tasksOfcategory(limit: Int, page: Int, orderBy: tasksOrderBy, where: tasksWhere): TaskConnection
+          tasksOfcategory2(limit: Int, page: Int, orderBy: tasksOrderBy, where: tasksWhere): TaskConnection
           nodeId: ID!
       }
 

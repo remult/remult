@@ -713,10 +713,11 @@ Select a dedicated page.`,
             }
           })
 
-          // will do: Category.tasks
+          // will do: Category.tasks (actually: Category.tasksOfcategory & tasksOfcategory2)
           const refT = upsertTypes(getMetaType(ref), 'type_impl_node')
+          const keyOf = key + 'Of' + f.key
           refT.fields.push({
-            key,
+            key: keyOf,
             args: queryArgsConnection,
             value: connectionKey,
             order: 10,
@@ -725,7 +726,7 @@ Select a dedicated page.`,
 
           refT.query.resultProcessors.push((r) => {
             const val = r.id
-            r[key] = async (args: any, req: any, gqlInfo: any) => {
+            r[keyOf] = async (args: any, req: any, gqlInfo: any) => {
               return await root[key](
                 {
                   where: { ...args.where, [f.key]: { eq: val } },
