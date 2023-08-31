@@ -2,7 +2,7 @@ import { Remult } from '../../core/src/context'
 import { SqlDatabase } from '../../core/src/data-providers/sql-database'
 import { WebSqlDataProvider } from '../../core/src/data-providers/web-sql-data-provider'
 
-import { beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { beforeAll, beforeEach, describe, expect, it, vitest } from 'vitest'
 import { allDbTests } from './shared-tests'
 import { entityWithValidations } from './shared-tests/entityWithValidations'
 import type { ClassType } from '../../core/classType'
@@ -172,5 +172,17 @@ describe('websql', () => {
       ok = true
     } catch {}
     expect(ok).toBe(false)
+  })
+  it('LogToConsole oneLiner', async () => {
+    const cat = await createEntity(Categories)
+
+    SqlDatabase.LogToConsole = 'oneLiner'
+
+    const info = vitest.spyOn(console, 'info')
+    await cat.insert([{ categoryName: 'a', id: 1 }])
+
+    expect(info).toHaveBeenCalledWith(expect.stringMatching('⚪'))
+
+    SqlDatabase.LogToConsole = false
   })
 })

@@ -159,19 +159,6 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
     SqlDatabase.LogToConsole = false
   })
 
-  it('LogToConsole oneLiner', async () => {
-    const cat = await createEntity(Categories)
-
-    SqlDatabase.LogToConsole = 'oneLiner'
-
-    const info = vitest.spyOn(console, 'info')
-    await cat.insert([{ categoryName: 'a', id: 1 }])
-
-    expect(info).toHaveBeenCalledWith(expect.stringMatching('⚪'))
-
-    SqlDatabase.LogToConsole = false
-  })
-
   it('LogToConsole fn', async () => {
     const cat = await createEntity(Categories)
 
