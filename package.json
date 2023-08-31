@@ -85,7 +85,7 @@
     "tslib": "^2.2.0",
     "tslint": "~6.1.0",
     "tsx": "^3.12.3",
-    "typedoc": "^0.21.10",
+    "typedoc": "^0.25.0",
     "typedoc-plugin-markdown": "3.10.4",
     "typescript": "^5.2.2",
     "uuid": "^8.3.2",
