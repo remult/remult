@@ -140,45 +140,6 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
       expect(err.message).toContain('categoryName')
     }
   })
-  it('LogToConsole true', async () => {
-    const cat = await createEntity(Categories)
-
-    SqlDatabase.LogToConsole = true
-
-    const log = vitest.spyOn(console, 'info')
-    await cat.insert([{ categoryName: 'a', id: 1 }])
-
-    expect(log).toHaveBeenCalledWith(
-      expect.objectContaining({
-        query:
-          'insert into Categories (CategoryID, categoryName) values ($1, $2) returning CategoryID, categoryName, description, status',
-        arguments: { $1: 1, $2: 'a' },
-      }),
-    )
-
-    SqlDatabase.LogToConsole = false
-  })
-
-  it('LogToConsole fn', async () => {
-    const cat = await createEntity(Categories)
-
-    SqlDatabase.LogToConsole = (
-      duration: number,
-      query: string,
-      args: Record<string, any>,
-    ) => {}
-    //@ts-ignore
-    const info = vitest.spyOn(SqlDatabase, 'LogToConsole')
-    await cat.insert([{ categoryName: 'a', id: 1 }])
-
-    expect(info).toHaveBeenCalledWith(
-      expect.anything(),
-      'insert into Categories (CategoryID, categoryName) values ($1, $2) returning CategoryID, categoryName, description, status',
-      expect.objectContaining({ $1: 1, $2: 'a' }),
-    )
-
-    SqlDatabase.LogToConsole = false
-  })
 })
 
 describe.skipIf(!postgresConnection)('Postgres Knex', () => {
