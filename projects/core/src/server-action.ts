@@ -522,12 +522,12 @@ export function prepareArgsToSend(types: any[], args: any[]) {
       if (args[index] != undefined) {
         let x: FieldOptions = { valueType: paramType }
         x = decorateColumnSettings(x, new Remult())
-        if (x.valueConverter) args[index] = x.valueConverter.toJson(args[index])
         let eo = getEntitySettings(paramType, false)
         if (eo != null) {
           let rh = getEntityRef(args[index])
           args[index] = rh.getId()
         }
+        if (x.valueConverter) args[index] = x.valueConverter.toJson(args[index])
       }
     }
   }

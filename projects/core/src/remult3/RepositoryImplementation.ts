@@ -1000,9 +1000,13 @@ abstract class rowHelperBase<T> {
       ) {
         let val
         let lu = this.lookups.get(col.key)
+        let disable = false
         if (lu)
-          if (includeRelatedEntities) val = lu.toJson()
-          else val = lu.id
+          if (includeRelatedEntities) {
+            val = lu.toJson()
+            disable = true
+            result[col.key] = val
+          } else val = lu.id
         else {
           val = this.instance[col.key]
           if (!this.remult) {
@@ -1014,7 +1018,7 @@ abstract class rowHelperBase<T> {
             }
           }
         }
-        result[col.key] = col.valueConverter.toJson(val)
+        if (!disable) result[col.key] = col.valueConverter.toJson(val)
       }
     }
     return result
@@ -2402,16 +2406,22 @@ export function decorateColumnSettings<valueType>(
         get(target, property) {
           if (target[property] === undefined) {
             if (isIdNumeric === undefined) {
+              if (property === 'inputType') return ''
               isIdNumeric =
                 remult.repo(settings.valueType).metadata.idMetadata.field
                   .valueType === Number
-              if (isIdNumeric) {
-                for (const key of [
-                  'fieldTypeInDb',
-                ] as (keyof ValueConverter<any>)[]) {
-                  //@ts-ignore
-                  target[key] = ValueConverters.Integer[key]
-                }
+
+              for (const key of [
+                'fieldTypeInDb',
+                'toJson',
+                'fromJson',
+                'toDb',
+                'fromDb',
+              ] as (keyof ValueConverter<any>)[]) {
+                //@ts-ignore
+                target[key] = isIdNumeric
+                  ? ValueConverters.Integer[key]
+                  : ValueConverters.String[key]
               }
             }
           }
@@ -2423,6 +2433,7 @@ export function decorateColumnSettings<valueType>(
         },
       })
     } else settings.valueConverter = ValueConverters.Default
+    return settings
   }
   if (!settings.valueConverter.toJson) {
     settings.valueConverter.toJson = (x) => x

@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.22.7]
+
+- Fixed max stack reached in case of reference to self
+
 ## [0.22.6] - 2023-08-10
 
 - Implemented $contains for mongo

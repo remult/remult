@@ -74,7 +74,20 @@ class tableWithPhone extends EntityBase {
   @Field(() => Phone)
   phone: Phone
 }
+
+@Entity('taskTypeRecursive')
+class taskType {
+  @Fields.integer()
+  id = 0
+  @Field(() => taskType, { lazy: true })
+  parent!: taskType
+}
 describe('test object column stored as string', () => {
+  it('test recursive type', async () => {
+    const repo = remult.repo(taskType)
+    expect(repo.fields.parent.valueType).toBe(taskType)
+  })
+
   it('was changed should work correctly', async () => {
     var remult = new Remult(new InMemoryDataProvider())
 
