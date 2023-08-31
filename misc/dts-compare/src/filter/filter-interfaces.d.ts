@@ -1,6 +1,6 @@
 import type { FieldMetadata } from '../column-interfaces';
 import type { Remult } from '../context';
-import type { EntityFilter, EntityMetadata } from '../remult3';
+import type { EntityFilter, EntityMetadata } from '../remult3/remult3';
 export declare class Filter {
     private apply?;
     constructor(apply?: (add: FilterConsumer) => void);
@@ -83,3 +83,4 @@ export interface customFilterInfo<entityType> {
         rawFilterTranslator: (args: any, r: Remult) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>;
     };
 }
+export declare function __updateEntityBasedOnWhere<T>(entityDefs: EntityMetadata<T>, where: EntityFilter<T>, r: T): void;

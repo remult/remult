@@ -3,8 +3,8 @@ import type { UserInfo } from '../src/context';
 import { Remult } from '../src/context';
 import type { DataProvider } from '../src/data-interfaces';
 import type { LiveQueryStorage, SubscriptionServer } from '../src/live-query/SubscriptionServer';
-import type { Repository } from '../src/remult3';
-import { IdEntity } from '../src/remult3';
+import { IdEntity } from '../src/remult3/RepositoryImplementation';
+import type { Repository } from '../src/remult3/remult3';
 import type { queuedJobInfoResponse } from '../src/server-action';
 export interface RemultServerOptions<RequestType> {
     /**Entities to use for the api */
@@ -55,7 +55,7 @@ export interface InitRequestOptions {
     readonly remult: Remult;
 }
 export declare function createRemultServerCore<RequestType>(options: RemultServerOptions<RequestType>, serverCoreOptions: ServerCoreOptions<RequestType>): RemultServer<RequestType>;
-export declare type GenericRequestHandler = (req: GenericRequestInfo, res: GenericResponse, next: VoidFunction) => void;
+export type GenericRequestHandler = (req: GenericRequestInfo, res: GenericResponse, next: VoidFunction) => void;
 export interface ServerHandleResponse {
     data?: any;
     statusCode: number;
@@ -73,10 +73,10 @@ export interface RemultServerCore<RequestType> {
         version?: string;
     }): any;
 }
-export declare type GenericRouter = {
+export type GenericRouter = {
     route(path: string): SpecificRoute;
 };
-export declare type SpecificRoute = {
+export type SpecificRoute = {
     get(handler: GenericRequestHandler): SpecificRoute;
     put(handler: GenericRequestHandler): SpecificRoute;
     post(handler: GenericRequestHandler): SpecificRoute;

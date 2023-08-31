@@ -1,5 +1,5 @@
 import type { DataProvider, EntityDataProvider } from '../data-interfaces';
-import type { EntityMetadata } from '../remult3';
+import type { EntityMetadata } from '../remult3/remult3';
 export interface JsonEntityStorage {
     getItem(entityDbName: string): string | null;
     setItem(entityDbName: string, json: string): any;

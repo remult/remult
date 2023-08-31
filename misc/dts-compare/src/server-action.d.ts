@@ -45,16 +45,6 @@ export interface BackendMethodOptions<type> {
     blockUser?: boolean;
     paramTypes?: any[];
 }
-export declare const actionInfo: {
-    allActions: any[];
-    runningOnServer: boolean;
-    runActionWithoutBlockingUI: <T>(what: () => Promise<T>) => Promise<T>;
-    startBusyWithProgress: () => {
-        progress: (percent: number) => void;
-        close: () => void;
-    };
-};
-export declare const serverActionField: unique symbol;
 export declare function Controller(key: string): (target: any, context?: any) => any;
 export interface ClassMethodDecoratorContextStub<This = unknown, Value extends (this: This, ...args: any) => any = (this: This, ...args: any) => any> {
     readonly kind: 'method';

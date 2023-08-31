@@ -15,7 +15,7 @@ import {
   FieldType,
   Fields,
   IdEntity,
-} from '../../core/src/remult3'
+} from '../../core'
 
 describe('test object column', () => {
   var wsql = new WebSqlDataProvider('test')

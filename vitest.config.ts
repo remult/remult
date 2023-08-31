@@ -8,9 +8,10 @@ export default defineConfig({
     threads: false,
 
     include: [
+      //   './projects/tests/tests/try-test.spec.ts',
       './projects/tests/**/*.spec.ts',
       './projects/tests/**/*.backend-spec.ts',
-      //'./projects/tests/dbs/sql-lite.spec.ts',
+      './projects/tests/dbs/sql-lite.spec.ts',
     ],
     //  reporters: ['dot'],
     globals: false,

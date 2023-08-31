@@ -4,7 +4,7 @@ import { SqlDatabase } from '../../core/src//data-providers/sql-database'
 import { describe, expect, it } from 'vitest'
 import { WebSqlDataProvider } from '../../core/src/data-providers/web-sql-data-provider'
 import { dbNamesOf } from '../../core/src/filter/filter-consumer-bridge-to-sql-request'
-import { Entity, EntityBase, Fields } from '../../core/src/remult3'
+import { Entity, EntityBase, Fields } from '../../core'
 import {
   Categories,
   CompoundIdEntity,

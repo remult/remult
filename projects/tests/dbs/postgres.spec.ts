@@ -1,4 +1,4 @@
-import { beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { beforeAll, beforeEach, describe, expect, it, vitest } from 'vitest'
 import { Entity, Fields, Remult, SqlDatabase, describeClass } from '../../core'
 import {
   PostgresDataProvider,
@@ -11,6 +11,8 @@ import type { ClassType } from '../../core/classType'
 import { allDbTests } from './shared-tests'
 import { entityWithValidations } from './shared-tests/entityWithValidations'
 import { knexTests } from './shared-tests/test-knex'
+import { deleteAll } from './shared-tests/deleteAll'
+import { Categories } from '../tests/remult-3-entities'
 
 PostgresSchemaBuilder.logToConsole = false
 const postgresConnection = process.env.DATABASE_URL
@@ -129,6 +131,67 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
       ).length,
     ).toBe(3)
   })
+  it('test column error', async () => {
+    const c = await createEntity(Categories)
+    await c.insert([{ categoryName: 'a', id: 1 }])
+    try {
+      await remult.repo(testErrorInFromDb).find()
+    } catch (err) {
+      expect(err.message).toContain('categoryName')
+    }
+  })
+  it('LogToConsole true', async () => {
+    const cat = await createEntity(Categories)
+
+    SqlDatabase.LogToConsole = true
+
+    const log = vitest.spyOn(console, 'info')
+    await cat.insert([{ categoryName: 'a', id: 1 }])
+
+    expect(log).toHaveBeenCalledWith(
+      expect.objectContaining({
+        query:
+          'insert into Categories (CategoryID, categoryName) values ($1, $2) returning CategoryID, categoryName, description, status',
+        arguments: { $1: 1, $2: 'a' },
+      }),
+    )
+
+    SqlDatabase.LogToConsole = false
+  })
+
+  it('LogToConsole oneLiner', async () => {
+    const cat = await createEntity(Categories)
+
+    SqlDatabase.LogToConsole = 'oneLiner'
+
+    const info = vitest.spyOn(console, 'info')
+    await cat.insert([{ categoryName: 'a', id: 1 }])
+
+    expect(info).toHaveBeenCalledWith(expect.stringMatching('⚪'))
+
+    SqlDatabase.LogToConsole = false
+  })
+
+  it('LogToConsole fn', async () => {
+    const cat = await createEntity(Categories)
+
+    SqlDatabase.LogToConsole = (
+      duration: number,
+      query: string,
+      args: Record<string, any>,
+    ) => {}
+    //@ts-ignore
+    const info = vitest.spyOn(SqlDatabase, 'LogToConsole')
+    await cat.insert([{ categoryName: 'a', id: 1 }])
+
+    expect(info).toHaveBeenCalledWith(
+      expect.anything(),
+      'insert into Categories (CategoryID, categoryName) values ($1, $2) returning CategoryID, categoryName, description, status',
+      expect.objectContaining({ $1: 1, $2: 'a' }),
+    )
+
+    SqlDatabase.LogToConsole = false
+  })
 })
 
 describe.skipIf(!postgresConnection)('Postgres Knex', () => {
@@ -140,3 +203,17 @@ describe.skipIf(!postgresConnection)('Postgres Knex', () => {
     }),
   )
 })
+
+@Entity('Categories')
+class testErrorInFromDb {
+  @Fields.integer({ dbName: 'CategoryID' })
+  id = 0
+  @Fields.string({
+    valueConverter: {
+      fromDb: (x) => {
+        throw 'error'
+      },
+    },
+  })
+  categoryName = ''
+}

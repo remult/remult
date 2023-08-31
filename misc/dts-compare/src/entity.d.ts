@@ -1,6 +1,6 @@
 import type { Allowed, AllowedForInstance } from './context';
 import type { FieldMetadata } from './column-interfaces';
-import type { EntityFilter, EntityMetadata, EntityOrderBy, EntityRef, FieldsMetadata } from './remult3';
+import type { EntityFilter, EntityMetadata, EntityOrderBy, EntityRef, FieldsMetadata } from './remult3/remult3';
 export interface EntityOptions<entityType = any> {
     /**A human readable name for the entity */
     caption?: string;

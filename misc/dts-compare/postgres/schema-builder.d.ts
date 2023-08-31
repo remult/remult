@@ -1,7 +1,7 @@
 import type { FieldMetadata } from '../src/column-interfaces';
 import type { Remult } from '../src/context';
 import type { SqlDatabase } from '../src/data-providers/sql-database';
-import type { EntityMetadata } from '../src/remult3';
+import type { EntityMetadata } from '../src/remult3/remult3';
 export declare function postgresColumnSyntax(x: FieldMetadata, dbName: string): string;
 export declare function verifyStructureOfAllEntities(db: SqlDatabase, remult: Remult): Promise<void>;
 export declare class PostgresSchemaBuilder {

@@ -1,6 +1,6 @@
 import type { ClassType } from '../classType';
 import type { DataProvider } from './data-interfaces';
-import type { EntityMetadata, EntityRef, FindOptions, Repository } from './remult3';
+import type { EntityMetadata, EntityRef, FindOptions, Repository } from './remult3/remult3';
 import type { ExternalHttpProvider } from './buildRestDataProvider';
 import type { SubscriptionClient, Unsubscribe } from './live-query/SubscriptionChannel';
 import type { SubscriptionServer } from './live-query/SubscriptionServer';
@@ -13,7 +13,7 @@ export declare class RemultAsyncLocalStorage {
     getRemult(): Remult;
     static instance: RemultAsyncLocalStorage;
 }
-declare type myAsyncLocalStorage<T> = {
+type myAsyncLocalStorage<T> = {
     run<R>(store: T, callback: (...args: any[]) => R, ...args: any[]): R;
     getStore(): T;
 };
@@ -76,7 +76,7 @@ export declare class Remult {
         dataProvider: DataProvider;
     }): T;
 }
-export declare type GetArguments<T> = T extends (...args: infer FirstArgument) => any ? FirstArgument : never;
+export type GetArguments<T> = T extends (...args: infer FirstArgument) => any ? FirstArgument : never;
 export interface RemultContext {
 }
 export interface ApiClient {

@@ -12,7 +12,7 @@ import {
   ValueListFieldType,
   ValueListInfo,
   getValueList,
-} from '../../core/src/remult3'
+} from '../../core'
 
 import { describe, expect, it } from 'vitest'
 import {

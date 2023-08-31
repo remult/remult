@@ -2,7 +2,8 @@ import type { Knex } from 'knex';
 import type { Remult } from '../src/context';
 import type { FieldMetadata } from '../src/column-interfaces';
 import type { DataProvider, EntityDataProvider } from '../src/data-interfaces';
-import type { EntityFilter, EntityMetadata, RepositoryOverloads } from '../src/remult3';
+import type { EntityFilter, EntityMetadata } from '../src/remult3/remult3';
+import type { RepositoryOverloads } from '../src/remult3/RepositoryImplementation';
 export declare class KnexDataProvider implements DataProvider {
     knex: Knex;
     constructor(knex: Knex);
@@ -14,7 +15,7 @@ export declare class KnexDataProvider implements DataProvider {
     isProxy?: boolean;
     ensureSchema(entities: EntityMetadata<any>[]): Promise<void>;
 }
-export declare type CustomKnexFilterBuilderFunction = () => Promise<(builder: Knex.QueryBuilder) => void>;
+export type CustomKnexFilterBuilderFunction = () => Promise<(builder: Knex.QueryBuilder) => void>;
 export declare class KnexSchemaBuilder {
     private knex;
     verifyStructureOfAllEntities(remult?: Remult): Promise<void>;

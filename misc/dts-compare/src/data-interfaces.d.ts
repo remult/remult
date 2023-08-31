@@ -1,5 +1,5 @@
 import type { Filter } from './filter/filter-interfaces';
-import type { EntityMetadata, OmitEB } from './remult3';
+import type { EntityMetadata, OmitEB } from './remult3/remult3';
 import { Sort } from './sort';
 export interface DataProvider {
     getEntityDataProvider(entity: EntityMetadata): EntityDataProvider;

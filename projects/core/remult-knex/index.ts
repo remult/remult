@@ -525,9 +525,7 @@ export function buildColumn(
 }
 function logSql<
   T extends {
-    toSQL(): {
-      sql: string
-    }
+    toSQL(): any
   },
 >(who: T) {
   if (KnexSchemaBuilder.logToConsole) console.info(who.toSQL())
