@@ -2,7 +2,7 @@
 
 ### Create a simple todo app with Remult using Next.js
 
-In this tutorial, we are going to create a simple app to manage a task list. We'll use `Next.js`, and Remult as our full-stack CRUD framework. For deployment to production, we'll use [Vercel](https://vercel.com/) and a [Supabase](https://supabase.com/) `PostgreSQL` database.
+In this tutorial, we are going to create a simple app to manage a task list. We'll use `Next.js`, and Remult as our full-stack CRUD framework. For deployment to production, we'll use [Vercel](https://vercel.com/) and a `PostgreSQL` database.
 
 By the end of the tutorial, you should have a basic understanding of Remult and how to use it to accelerate and simplify full stack app development.
 
@@ -21,7 +21,6 @@ You can either **use a starter project** to speed things up, or go through the *
 ## Option 1: Clone the Starter Project
 
 1. Clone the _remult-nextjs-todo_ repository from GitHub and install its dependencies.
-
 
 ```sh
 git clone https://github.com/remult/nextjs-app-starter.git remult-nextjs-todo
@@ -49,11 +48,13 @@ At this point, our starter project is up and running. We are now ready to move t
 ```sh
 npx -y create-next-app@latest remult-nextjs-todo
 ```
+
 Answer the questions as follows:
+
 ```sh
 ✔ Would you like to use TypeScript? ... Yes
-✔ Would you like to use ESLint? ... No 
-✔ Would you like to use Tailwind CSS? ... No 
+✔ Would you like to use ESLint? ... No
+✔ Would you like to use Tailwind CSS? ... No
 ✔ Would you like to use `src/` directory? ...  Yes
 ✔ Would you like to use App Router? (recommended) ... Yes
 ✔ Would you like to customize the default import alias? ... No
@@ -77,17 +78,16 @@ Remult is bootstrapped in a `Next.js` using a [catch all dynamic API route](http
 
 1. Open your IDE.
 
-2. Create an `api` directory within the app folder, and inside it, create a `[...remult]` subdirectory. Inside the `app/api/[...remult]` directory, craft a `route.ts` file with the following code. This file functions as a catch all route for the Next.js API route, effectively managing all incoming API requests. 
+2. Create an `api` directory within the app folder, and inside it, create a `[...remult]` subdirectory. Inside the `app/api/[...remult]` directory, craft a `route.ts` file with the following code. This file functions as a catch all route for the Next.js API route, effectively managing all incoming API requests.
 
 ```ts
 // src/app/api/[...remult]/route.ts
 
-import { remultNextApp } from "remult/remult-next";
+import { remultNextApp } from 'remult/remult-next'
 
-const api = remultNextApp({});
+const api = remultNextApp({})
 
-export const { POST, PUT, DELETE, GET } = api;
-
+export const { POST, PUT, DELETE, GET } = api
 ```
 
 ### Enable TypeScript decorators
@@ -118,7 +118,6 @@ npm run dev
 ```
 
 The default `Next.js` main screen should be displayed.
-
 
 ### Remove Next.js default styles
 
