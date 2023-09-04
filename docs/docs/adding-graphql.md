@@ -11,7 +11,7 @@ To add graphql to a `remult` application follow these steps:
 
 In the `/src/server/index.ts` file add the following code:
 
-```ts{3-4,12-21}
+```ts{3-4,12-22}
 import express from 'express';
 import { remultExpress } from 'remult/remult-express';
 import { createSchema, createYoga } from 'graphql-yoga'
