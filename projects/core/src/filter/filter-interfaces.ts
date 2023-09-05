@@ -470,14 +470,16 @@ export function buildFilterFromRequestParameters(
   let val = filterInfo.get('OR')
   if (val) {
     const array = separateArrayFromInnerArray(val)
+    const or = array.map((v) => ({
+      $or: v.map((x) =>
+        buildFilterFromRequestParameters(entity, {
+          get: (key: string) => x[key],
+        }),
+      ),
+    }))
+    if (or.length == 1) return or[0]
     where.push({
-      $and: array.map((v) => ({
-        $or: v.map((x) =>
-          buildFilterFromRequestParameters(entity, {
-            get: (key: string) => x[key],
-          }),
-        ),
-      })),
+      $and: or,
     })
   }
 
@@ -500,7 +502,7 @@ export function buildFilterFromRequestParameters(
       }
     }
   }
-
+  if (where.length == 1) return where[0]
   return { $and: where }
 
   function separateArrayFromInnerArray(val: any) {

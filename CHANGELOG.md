@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 ## [0.22.7]
 
 - Fixed max stack reached in case of reference to self
+- Improved graphql one to many relations
+- fixed live-query issue with complex filters
 
 ## [0.22.6] - 2023-08-10
 
