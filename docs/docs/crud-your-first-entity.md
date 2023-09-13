@@ -24,6 +24,8 @@ export class Product {
 }
 ```
 
+Alternatively, [generate entities from an existing Postgres database](./entities-codegen-from-db-schema.md).
+
 ## Register the Entity on the Server
 
 All Remult server middleware options contain an `entities` array. Use it to register your Entity.
