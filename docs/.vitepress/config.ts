@@ -142,6 +142,7 @@ export default defineConfig({
                   },
                 ],
               },
+              { text: 'Generate from Existing DB', link: '/docs/entities-codegen-from-db-schema' }
             ],
           },
           {

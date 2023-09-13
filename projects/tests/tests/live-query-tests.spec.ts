@@ -875,6 +875,24 @@ describe('test live query full cycle', () => {
     await pm.flush()
     expect(done).toBe(true)
   })
+  it('test subscription and or condition', async () => {
+    var { repo, pm } = setup2()
+    await repo.insert({ title: 'a1', id: 1 })
+    await repo.insert({ title: 'a2', id: 2 })
+    await repo.insert({ title: 'b1', id: 3 })
+    await repo.insert({ title: 'b2', id: 4 })
+
+    let arr1: eventTestEntity[]
+
+    const u1 = repo
+      .liveQuery({ where: { $or: [{ id: 1 }, { id: 3 }] } })
+      .subscribe((y) => {
+        arr1 = y.applyChanges(arr1)
+      })
+    await pm.flush()
+    expect(arr1.length).toBe(2)
+    u1()
+  })
   it('error on channel open', async () => {
     let { remult } = await setup2()
     remult.apiClient.subscriptionClient = {
@@ -943,11 +961,7 @@ it('Serialize Find Options', async () => {
     limit: 3,
     page: 2,
     where: {
-      $and: [
-        {
-          title: 'noam',
-        },
-      ],
+      title: 'noam',
     },
     orderBy: {
       title: 'desc',
@@ -962,9 +976,27 @@ it('Serialize Find Options1', async () => {
   const r = new Remult().repo(eventTestEntity)
   const findOptions: FindOptions<eventTestEntity> = {
     where: {
-      $and: [
+      title: 'noam',
+    },
+    orderBy: {
+      title: 'desc',
+    },
+  }
+
+  const z = findOptionsToJson(findOptions, r.metadata)
+  const res = findOptionsFromJson(JSON.parse(JSON.stringify(z)), r.metadata)
+  expect(res).toEqual(findOptions)
+})
+it('Serialize Find Options3', async () => {
+  const r = new Remult().repo(eventTestEntity)
+  const findOptions: FindOptions<eventTestEntity> = {
+    where: {
+      $or: [
         {
-          title: 'noam',
+          id: 1,
+        },
+        {
+          id: 2,
         },
       ],
     },

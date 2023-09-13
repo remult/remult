@@ -53,7 +53,7 @@ export class DataApi<T = any> {
       return this.liveQuery(
         res,
         req,
-        undefined,
+        body,
         serializeContext,
         action.substring(liveQueryAction.length),
       )

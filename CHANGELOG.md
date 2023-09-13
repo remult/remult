@@ -2,9 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.22.7]
+## [0.22.7] - 2023-09-05
 
 - Fixed max stack reached in case of reference to self
+- Improved graphql one to many relations
+- Fixed live-query issue with complex filters
+- Refactored tests to use vitest, and latest typescript version
+- Fixed issue with postgres schema builder
+- Fixed schema build to support table name with schema name
+- Cleaned up code and removed angular dependency
 
 ## [0.22.6] - 2023-08-10
 
