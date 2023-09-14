@@ -1097,7 +1097,14 @@ export class rowHelperImplementation<T>
   }
   metadata: EntityMetadata<T>
   getId() {
-    return this.info.idMetadata.getId(this.instance)
+    const getVal = (y: FieldMetadata) => {
+      let z = this.lookups.get(y.key)
+      if (z) return z.id
+      return this.instance[y.key]
+    }
+    if (this.metadata.idMetadata.field instanceof CompoundIdField)
+      return this.metadata.idMetadata.field.fields.map(getVal).join(',')
+    return getVal(this.metadata.idMetadata.field)
   }
   saveMoreOriginalData() {
     this.originalId = this.getId()
@@ -1803,6 +1810,8 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
 
   idMetadata: IdMetadata<T> = {
     getId: (item) => {
+      const ref = getEntityRef(item, false)
+      if (ref) return ref.getId()
       if (this.idMetadata.field instanceof CompoundIdField)
         return this.idMetadata.field.getId(item)
       else return item[this.idMetadata.field.key]

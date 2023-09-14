@@ -19,6 +19,7 @@ export function makeTitle(name: string) {
 
 export class LookupColumn<T> {
   toJson(): any {
+    if (!this.storedItem) return undefined
     if (this.item === null) return null
     return this.repository.toJson(this.item)
   }
