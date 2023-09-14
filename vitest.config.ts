@@ -9,6 +9,7 @@ export default defineConfig({
 
     include: [
       //   './projects/tests/tests/try-test.spec.ts',
+      './projects/core/**/*.spec.ts',
       './projects/tests/**/*.spec.ts',
       './projects/tests/**/*.backend-spec.ts',
       './projects/tests/dbs/sql-lite.spec.ts',

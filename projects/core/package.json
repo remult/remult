@@ -85,6 +85,14 @@
       },
       "import": "./esm/remult-sveltekit.js"
     },
+    "./vite": {
+      "require": "./vite/remult-vite.js",
+      "node": {
+        "require": "./vite/remult-vite.js",
+        "import": "./vite/remult-vite.js"
+      },
+      "import": "./vite/remult-vite.js"
+    },
     "./postgres": {
       "require": "./postgres/index.js",
       "node": {

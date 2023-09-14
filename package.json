@@ -30,6 +30,7 @@
   },
   "private": true,
   "devDependencies": {
+    "@babel/parser": "^7.22.16",
     "@fastify/express": "^2.0.1",
     "@fastify/middie": "^8.0.0",
     "@fastify/swagger-ui": "^1.8.1",
@@ -78,6 +79,7 @@
     "next": "^13.1.6",
     "pg": "^8.3.0",
     "prettier": "^3.0.0",
+    "recast": "^0.23.4",
     "reflect-metadata": "^0.1.13",
     "swagger-ui-express": "^4.1.6",
     "tedious": "^14.1.0",
