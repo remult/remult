@@ -4,7 +4,7 @@ Our todo app is nearly functionally complete, but it still doesn't fulfill a ver
 
 Remult provides a flexible mechanism that enables placing **code-based authorization rules** at various levels of the application's API. To maintain high code cohesion, **entity and field-level authorization code should be placed in entity classes**.
 
-**Remult is completely unopinionated when it comes to user authentication.** You are free to use any kind of authentication mechanism. The only requirement is that you provide Remult with an object which implements the Remult `UserInfo` interface which is defined thus:
+**Remult is completely unopinionated when it comes to user authentication.** You are free to use any kind of authentication mechanism. The only requirement is that you provide Remult with an object which implements the Remult `UserInfo` interface:
 
 ```ts
 export interface UserInfo {
@@ -13,200 +13,36 @@ export interface UserInfo {
   roles?: string[]
 }
 ```
-Our preferred authentication mechanism will require a username and password. Let's use Typescript's augmentation to extend Remault's interface to include these fields.
 
-Create a new file `types/userinfo.d.ts` and add the following:
+In this tutorial, we'll use [Auth.js](https://authjs.dev/) for authentication.
 
-```ts
-import { type UserInfo } from "remult";
+## Tasks CRUD Requires Sign-in
 
-declare module 'remult' {
-  export interface UserInfo {
-    username:string,
-    password:string,
-  }
-}
-```
+This rule is implemented within the `Task` `@Entity` decorator, by modifying the value of the `allowApiCrud` property. This property can be set to a function that accepts a `Remult` argument and returns a `boolean` value. Let's use the `Allow.authenticated` function from Remult.
 
-Now `UserInfo` has 5 fields.
+```ts{4}
+// src/app/shared/Task.ts
 
-## Authentication Using _Basic Auth_
-In this tutorial, we'll use HTTP Basic Auth ([RFC 7617](https://tools.ietf.org/html/rfc7617)) to authenticated users. Basic Auth is very, well... basic, as the credentials are merely encoded and not encrypted or hashed in any way. For this reason, basic authentication is typically used in conjunction with HTTPS (TLS) to provide confidentiality. 
-
-In this tutorial we will not use HTTS. The goal here is to demonstrate how Remult handles authentication and authorization.
-
-In a nutshell, Basic Auth works as follows:
-
-1. The browser makes a request to the server
-2. The server checks whether the request has an "Authorization" header which will obviously not be present the first time the request is received
-3. The server returns a **401 Unauthorized** status and adds a `WWW-Authenticate: Basic realm="Some Name", charset="UTF-8"` header.
-4. When the browser detects the special header, it presents a prompt for the user to enter a username and password.
-5. The browser concatenates the username and password using a colon (`username:password`); encodes the result using `Base64`; sets the `Authorization` header to the encoded data preceeded by the `Basic` keyword (eg `Authorization: Basic c3RldmU6cEBzc3dvcmQ=`) and re-sends the request
-6. The server decodes and verifies the credentials and returns the requested resource if successfull.
-7. The browser caches the `Authorization` header and adds it to all subsequent requests.
-
-To implement this logic, first install `@types/node` as a dev dependency (because of `Buffer`) by invoking `npm install @types/node -D`; then create a new file `src/hooks/handleBasicAuth.ts` with the following content:
-
-```ts
-// src/hooks/handleBasicAuth.ts
-
-import type { Handle } from "@sveltejs/kit";
-import type { UserInfo } from "remult";
-
-const validUsers: UserInfo[] = [
-  {id: "1", name:"Jane", username:"jane", password:"s3cr3t", roles:["admin"]},
-  {id: "2", name:"Steve", username:"steve", password:"p@ssword", roles:[]},
-]
-
-export const handleBasicAuth: Handle = async ({ event, resolve }) => {
-  const authResp = new Response("Not Authorized", {
-    status: 401,
-    headers:{ "WWW-Authenticate": 'Basic realm="Todo App", charset="UTF-8"'}
-  });
-  
-  const authHeader = event.request.headers.get("Authorization");
-  
-  if (!authHeader || !authHeader.startsWith("Basic ")) {
-    return authResp
-  }
-
-  const [username, password] = Buffer
-    .from(authHeader.split(' ')[1], 'base64')
-    .toString()
-    .split(":");
-  
-  const user = validUsers.find(user => 
-    (user.username === username) && (user.password === password)
-  );
-
-  if (!user) {
-    return authResp
-  }
-
-  event.locals.user = user;
-
-  return await resolve(event)
-};
-```
-::: tip Propagating the UserInfo
-After we have authenticated the user, we store the user information in `event.locals.user` such that it can be used inside of other **server** load functions and **server-side** hooks.
-:::
-
-::: tip Securing User Information
-In a more realistic setup, the list of users will most likely reside in a properly secured database or PAAS
-:::
-
-We now need to add `handleBasicAuth` in the middleware sequence **BEFORE** `handleRemult` middleware; so that it is invoked first. Update your `hooks.server.ts`:
-
-```ts
-import { sequence } from "@sveltejs/kit/hooks";
-import { handleRemult } from "./hooks/handleRemult";
-import { handleBasicAuth } from "./hooks/handleBasicAuth";
-
-export const handle = sequence(handleBasicAuth, handleRemult);
-```
-
-Restart the dev server and try to access the tasks list. You will be prompted to enter your username and password. Log in as _steve_ with _p@ssword_. You will then be able to add, edit and delete tasks just like before.
-
-### Displaying User Info on the Frontend
-To display the logged-in user's name in our template, we need to get the user details from `event.locals`. We cannot access `locals` directly in our `+page.svelte` since it is only available server-side. We can however access it from the `load` function inside `+page.server.ts` and send it to the front-end as part of `PageData` -- stripping away sensitive information in the process.
-
-To accomplish this, edit the `load` function inside `+page.server.ts`:
-
-```ts
-// +page.server.ts
-
-export const load = async ({ url, locals }) => {
-  // ...
-  const user = locals?.user;
-
-  return {
-      tasks: structuredClone(tasks),
-      options,
-      user: JSON.stringify(user, ["name", "id", "username"])
-  };
-};
-```
-::: tip
-Notice that in addition to `url`, we are also destructuring the `locals` from the `ServerLoadEvent`.
-:::
-
-Now the user's name, id and username are available in the front-end. Modify `+page.svelte` to display the name:
-
-```svelte
-<script lang="ts">
-  //...
-
-  export let data;
-  export let form;
-  const user = JSON.parse(data.user); //<== 
-
-  // ...
-</script>
-
-<!-- ... -->
-
-<div>
-  <h1>todos</h1>
-  <main>
-    <div><h3>Welcome {user.name},</h3></div>
-
-    <!-- ... -->
-
-  </main>
-</div>
-```
-
-## Authorization
-
-Even though Sveltekit is handing authentication we have not yet linked the authentication to Remult. We need to tie them together, by informing Remult how to get the details of the logged in user.
-
-Edit `hooks/handleRemult.ts` and configure the `getUser` property:
-
-```ts
-// hooks/handleRemult.ts
-
-import { remultSveltekit } from "remult/remult-sveltekit";
-import { Task } from "../shared/Task";
-import { TasksController } from "../shared/TasksController";
-import type { UserInfo } from "remult";
-
-export const handleRemult = remultSveltekit({
-  entities: [Task],
-  controllers: [TasksController],
-  getUser: async (event) => (await event?.locals?.user) as UserInfo
-});
-```
-
-::: tip
-We are instructing Remult to use the `user` information that was saved in the `event.locals` inside of the `handleBasicAuth.ts` hook.
-:::
-
-Remult keeps all authorization rules within the entities - essentially making the entity the single source of truth. Currently the rule `allowApiCrud: true` allows all users to perform CRUD operations. 
-
-Let's change the rules within the `Task` `@Entity` decorator such that only authenticated users can perform CRUD operations; also, only the "admins" can view the tasks - by adding a new `allowApiRead` property:
-
-```ts
-// src/shared.Task.ts
 @Entity("tasks", {
-    allowApiCrud: Allow.authenticated,
-    allowApiRead: "admin"
+    allowApiCrud: Allow.authenticated
 })
 ```
 
 ::: warning Import Allow
-This code requires adding an import of `Allow` from `remult`. You may also need to restart the dev server.
+This code requires adding an import of `Allow` from `remult`.
 :::
 
-After the browser refreshes, **the list of tasks disappears**!! This is because user "steve" does not have the "admin" role, yet `allowApiRead: "admin"` limits "READ"-ing to admins only.
+After the browser refreshes, **the list of tasks disappears** and the user can no longer create new tasks.
 
-Basic Auth does not have a well defined method of logging out a user. To log in as a different user, you will need to exit the browser; open a new window and log in again with different credentials. For testing purposes it would be easier to use a command-line tool, or an API tool such as _Postman_, _Insomnia_ or _Thunder Client_. 
+::: details Inspect the HTTP error returned by the API using cURL
 
-Log in again - this time using "jane" with password "s3cr3t". Jane can view all the tasks. Let's modify the entity so that all authenticated users can at least view all the tasks, but only admins to be able to create, edit and delete tasks:
+```sh
+curl -i http://localhost:3000/api/tasks
+```
 
+:::
 
 ::: danger Authorized server-side code can still modify tasks
-
 Although client CRUD requests to `tasks` API endpoints now require a signed-in user, the API endpoint created for our `setAllCompleted` server function remains available to unauthenticated requests. Since the `allowApiCrud` rule we implemented does not affect the server-side code's ability to use the `Task` entity class for performing database CRUD operations, **the `setAllCompleted` function still works as before**.
 
 To fix this, let's implement the same rule using the `@BackendMethod` decorator of the `setAllCompleted` method of `TasksController`.
@@ -220,14 +56,178 @@ To fix this, let's implement the same rule using the `@BackendMethod` decorator 
 **This code requires adding an import of `Allow` from `remult`.**
 :::
 
-## Field-Level Authorization
+## User Authentication
 
-Besides defining authorization rules at the Entity level, Remult also allows you to define fine-grained rules at the field level inside the `@Fields` decorator. Here below, we allow only the "admins" to be able to update the "title" column.
+Let's set-up `Auth.js` to authenticate users to our app.
+
+### Backend setup
+
+1. Install `auth-core` and `auth-sveltekit`:
+
+   ```sh
+   npm i @auth/core @auth/sveltekit
+   ```
+
+2. `Auth.js` requires a "secret" - a random string used to hash tokens, sign cookies and generate cryptographic keys.
+
+Create a file called `.env.local` at the root of the project, and set the secret `AUTHJS_SECRET` to a random string.
+
+```
+// .env.local
+
+AUTHJS_SECRET=something-secret
+```
+
+:::tip
+You can use an [online UUID generator](https://www.uuidgenerator.net/) to generate a completely random string
+:::
+
+3. Update your `+hooks.server.ts` to handle authentication **BEFORE** calling the Remult middleware - using the `sequence` method:
+
+```ts
+// hooks.server.ts
+
+import { sequence } from '@sveltejs/kit/hooks';
+
+import { remultSveltekit } from 'remult/remult-sveltekit';
+import { Task } from './shared/Task';
+import { TaskController } from './shared/TaskController';
+
+import { SvelteKitAuth } from '@auth/sveltekit';
+import CredentialsProvider from '@auth/core/providers/credentials';
+import { AUTHJS_SECRET } from '$env/static/private';
+
+const usersDB = [
+	{ id: '1', name: 'jane', roles: ['admin'] },
+	{ id: '2', name: 'steve', roles: [] }
+];
+
+function findUser(name?: string | null) {
+	return usersDB.find((user) => user.name.toLowerCase() === name?.toLowerCase());
+}
+
+const handleRemult = remultSveltekit({
+	entities: [Task],
+	controllers: [TaskController],
+	getUser: async (event) => ((await event.locals?.getSession())?.user as UserInfo) || undefined
+});
+
+const handleAuth = SvelteKitAuth({
+	providers: [
+		CredentialsProvider({
+			name: 'Credentials',
+			credentials: {
+				name: { label: 'Name', type: 'text', placeholder: 'Try steve or jane' }
+			},
+			authorize: (credentials) => findUser(credentials?.name as string) || null
+		})
+	],
+
+	secret: AUTHJS_SECRET,
+
+	callbacks: {
+		session: ({ session }) => ({ ...session, user: findUser(session.user?.name) })
+	}
+});
+
+export const handle = sequence(handleAuth, handleRemult);
+```
+
+This (very) simplistic approach use Auth.js [Credentials Provider](https://next-auth.js.org/providers/credentials) to authorize users by looking up the user's name in a predefined list of valid users. 
+
+We've configured the `session` `callback` to include the user info as part of the session data, so that Remult on the frontend will have the authorization info. 
+
+Notice the `getUser` attribute that we have added in Remult's middleware. We use it to supply Remult with the details of the logged-in user's from the session.
+
+### Frontend setup
+
+1. Create a new `+layout.server.ts`. This function simply forwards the session to the frontend `+layout.svelte`:
+
+```ts
+// src/routes/+layout.server.ts
+
+import type { LayoutServerLoad } from './$types';
+
+export const load = (async ({ locals }) => {
+	return {
+		session: await locals.getSession()
+	};
+}) satisfies LayoutServerLoad;
+```
+
+2. Accept the session information into the `data` prop inside the layout file:
+
+```svelte
+// src/routes/+layout.svelte
+
+<script lang="ts">
+	import '../app.css';
+
+  export let data;    // <- add this
+</script>
+
+<slot />
+```
+
+The session information is now available throughout the application as `data.session`
+
+3. In our front-end (`+page.svelte`), we can now display the name of the logged-in user and links for signing in and out:
+
+```svelte
+// src/routes/+page.svelte
+<script lang="ts">
+  // ...
+  export let data;      // <- session information passed down in data
+  export let form;
+
+  const taskRepo = remult.repo(Task);
+  let unSub = () => {};
+  let tasks: Task[] = [];
+  let user = data?.session?.user; // <- add this to get user data
+  // ...
+</script>
+
+<!-- ... -->
+
+<div>
+	<h1>todos</h1>
+	<main>
+		<div>
+			{#if user}
+				<h4>
+					Welcome back, {user.name}
+					{#if user?.roles.includes('admin')}
+						[admin]
+					{/if}
+				</h4>
+				<a href="/auth/signout">Sign Out</a>
+			{:else}
+				<h4>You are not Signed In</h4>
+				<a href="/auth/signin">Sign In</a>
+			{/if}
+		</div>
+		<!-- ... -->
+</div>
+```
+
+The todo app now supports signing in and out, with **all access restricted to signed in users only**.
+
+## Role-based Authorization
+
+Usually, not all application users have the same privileges. You will notice that our `UserInfo` contains a `roles` array. Information contained in this array can be used to enforce role-based authorization.
+
+For our todo app we need to enforce the following authorization rules:
+
+- All signed in users can see the list of tasks.
+- All signed in users can set specific tasks as `completed`.
+- Only users belonging to the `admin` role can create, delete or edit the titles of tasks.
+
+1. Modify the highlighted lines in the `Task` entity class to reflect the top three authorization rules.
 
 ```ts
 // src/shared/Task.ts
 
-import { Allow, Entity, Fields, Validators } from "remult"
+import { Allow, Entity, Fields } from "remult"
 
 @Entity<Task>("tasks", {
   allowApiCrud: Allow.authenticated,
@@ -235,64 +235,74 @@ import { Allow, Entity, Fields, Validators } from "remult"
   allowApiDelete: "admin"
 })
 export class Task {
-  @Fields.uuid()
-  id!: string
+	@Fields.cuid()
+	id!: string;
 
-  @Fields.string({
-    validate: (task) => {
-      if (task.title.length < 3) throw "Too Short"
-    }
+	@Fields.string({
+		validate: (task) => {
+			if (task.title.length < 3) throw 'The title must be at least 3 characters long';
+		},
     allowApiUpdate: "admin"
-  })
-  title = ""
+	})
+	title: string = '';
 
-  @Fields.boolean()
-  completed = false
+	@Fields.boolean()
+	completed: boolean = false;
+
+	@Fields.createdAt()
+	completedAt: Date = new Date();
 }
 ```
 
+If you recall, in our `usersDB`, we defined two users - Jane and Steve; with Jane having been assigned an "admin" role.
+
+**Sign in to the app as _"Steve"_ to test that the actions restricted to `admin` users are not allowed. :lock:**
+
 ## Role-based Authorization on the Frontend
 
-The authorization rules defined in the Entity are also exposed from the repository's `metadata` property and can therefore be used in the Frontend.
+From a user experience perspective it only makes sense that users that can't add or delete, would not see these buttons.
 
-From the end-user's perspective it only makes sense that users that can't add or delete, would not see these buttons.
+Let's reuse the same definitions on the Frontend.
 
-Let's reuse the same definitions on the Frontend to only show the form if the user is allowed to insert
+We'll use the entity's metadata to only show the form if the user is allowed to insert
 
-```svelte
-// src/routes/+page.svelte
+```tsx{4,13}
+// src/components/todo.tsx
 
-// ...
+<main>
+  {taskRepo.metadata.apiInsertAllowed() && (
+    <form onSubmit={addTask}>
+      <input
+        value={newTaskTitle}
+        placeholder="What needs to be done?"
+        onChange={e => setNewTaskTitle(e.target.value)}
+      />
+      <button>Add</button>
+    </form>
+  )}
+  ...
+</main>
+```
 
-{#if taskRepo.metadata.apiInsertAllowed()}
-  <form method="POST" action="?/addTask" use:enhance>
-    <input name="newTaskTitle" placeholder="What needs to be done?" />
-    <button>Add</button>
-  </form>
-{/if}
+And let's do the same for the `delete` button:
 
-// ...
+```tsx{12,14}
+// src/components/todo.tsx
 
-{#each tasks as task (task.id)}
-  <div>
-    <input type="checkbox" 
-      bind:checked={task.completed} 
-      on:change="{() => saveTask(task)}"
+return (
+  <div key={task.id}>
+    <input
+      type="checkbox"
+      checked={task.completed}
+      onChange={e => setCompleted(e.target.checked)}
     />
-    <input type="text" bind:value={ task.title } />
-    <button on:click="{() => saveTask(task)}">Save</button>
-
-    {#if taskRepo.metadata.apiDeleteAllowed()}
-      <form method="POST" action="?/deleteTask" use:enhance>
-        <input name="id" type="hidden" value="{task.id}" />
-        <button>Delete</button>
-      </form>
-    {/if}
-    
+    <input value={task.title} onChange={e => setTitle(e.target.value)} />
+    <button onClick={saveTask}>Save</button>
+    {taskRepo.metadata.apiDeleteAllowed(task) && (
+      <button onClick={deleteTask}>Delete</button>
+    )}
   </div>
-{/each}
-
-// ...
+)
 ```
 
 This way we can keep the frontend consistent with the `api`'s Authorization rules

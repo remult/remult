@@ -1,6 +1,6 @@
 # Validation
 
-Validating user entered data is usually required both on the client-side and on the server-side, often causing a violation of the [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) design principle. **With Remult, validation code can be placed within the entity class, and Remult will run the validation logic on both the frontend and the relevant API requests.**
+Validating user input is usually required both on the client-side and on the server-side, often causing a violation of the [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) design principle. **With Remult, validation code can be placed within the entity class, and Remult will run the validation logic on both the frontend and the relevant API requests.**
 
 ::: warning Handling validation errors
 
@@ -47,7 +47,7 @@ A HTTP **400 Bad Request** error is returned and the validation error text is in
 }
 ```
 
-Our operations done using Form Actions (`addTask` and `deleteTask`) also make direct API calls and as such receive a similar `error` object. As currently configured, we are only picking the `message` property and returning it to the front-end as the `error` property using Sveltekit's `fail`:
+In our form actions, we are destructuring the `message` property of the `error` property in the `try-catch` block and returning it to the front-end using Sveltekit's `fail()`:
 
 ```ts
 // src/routes/+page.server.ts
@@ -66,35 +66,21 @@ export const actions = {
   // ...
 ```
 
-The data returned from a form action automatically populates the `form` property on the `+page.svelte` in much the same way that `load()` populates the `data` property.
+The data returned from a form action automatically populates the `form` property on the `+page.svelte`.
 
-Let's add a `form` property and an alert to show if and when an error is raised:
+We have been using the `form?.success` to conditionally update the UI upon successful actions. We can also use the same `form` property to update the UI when an exception is caught:
 
 ```svelte
 // src/routes/+page.svelte
+  <!-- ... -->
+  {#if form?.success}
+    <div class="alert alert-success">{form.message}</div>
+  {/if}
 
-<script lang="ts">
-  import {remult} from "remult"
-  import { Task } from "../shared/Task";
-  import { enhance } from "$app/forms";
-
-  export let data;
-  export let form;
-  // ...
-</script>
-
-<!-- ... -->
-
-<form method="POST" action="?/addTask" use:enhance>
-  <input name="newTaskTitle" placeholder="What needs to be done?" />
-  <button>Add</button>
-</form>
-
-{#if form?.error}
-  <div class="alert">
-    <h4>{ form?.error}</h4>
-  </div>
-{/if}
+  // add this new block
+  {#if form?.error}
+    <div class="alert alert-error">{form.error}</div>
+  {/if}
 
 <!-- ... -->
 ```
@@ -103,15 +89,11 @@ Let's add a `form` property and an alert to show if and when an error is raised:
 For this change to take effect, you **must manually refresh the browser**.
 :::
 
-After the browser is refreshed, try creating a new `task` - the _"Should not be empty"_ error message is displayed.
-
-The client-side `saveTask` method that does not use Form Actions is already enclosed in a `try-catch` block and will display the relevent alert should Remult return an error.
-
-Try saving an existing task with an empty title.
+After the browser is refreshed, try creating a new `task` - the _"Title: Should not be empty"_ error message is displayed.
 
 ## Custom Validation
 
-Remult does not (_yet_) have a very comprehensive list of built-in validators. However, it accords you the ability to create your own.
+Remult accords you the ability to easly create your own validation rules.
 
 The `validate` property allows an arrow function which accepts an instance of the entity to be validated. This function will be called to validate input on both front-end and back-end.
 

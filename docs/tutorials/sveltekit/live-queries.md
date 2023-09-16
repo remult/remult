@@ -4,55 +4,46 @@
 Live queries are a new feature introduced in version 0.18.
 :::
 
-Our todo list app can have multiple users using it at the same time. However, changes made by one user are not seen by others unless they manually refresh the browser.
+Our todo list app can have multiple users using it at the same time. However, changes made by one user are not seen by others unless they manually refresh their browser.
 
 Let's add realtime multiplayer capabilities to this app.
 
 ## Realtime updated todo list
 
-Let's switch from fetching Tasks once when the React component is loaded, and manually maintaining state for CRUD operations, to using a realtime updated live query subscription **for both initial data fetching and subsequent state changes**.
+Let's switch from fetching Tasks once when the app is loaded (`+page.svelte.load()`), and subscribe to Remult's `liveQuery()` which will  then update our data in realtime **for both initial data fetching and subsequent state changes**.
 
 ```ts
 // src/routes/+page.svelte
 
 <script lang="ts">
-  import { remult } from "remult"
-  import { Task } from "../shared/Task";
-  import { enhance } from "$app/forms";
-  import { browser } from "$app/environment";
-  import { onMount, onDestroy } from 'svelte'
+	import { remult } from 'remult';
+	import { Task } from '../shared/Task';
+	import { enhance } from '$app/forms';
+	import { browser } from '$app/environment';
+	import { onMount, onDestroy } from 'svelte';
 
-  export let data;
-  export let form;
+	export let data;
+	export let form;
 
-  const taskRepo = remult.repo(Task);
-  let unSub = () => {};
-  let tasks:Task[] = [];
+	const taskRepo = remult.repo(Task);
+	let unSub = () => {};
+	//$: tasks = data.tasks;
+	let tasks: Task[] = [];
 
-  onMount(() => {
-    if(browser){
-      unSub = taskRepo
-        .liveQuery(data.options)
-        .subscribe(info => {
-          console.log('INFO:' , info)
-          tasks = (info.applyChanges(tasks))
-        })
-    }else{
-      tasks = data.tasks
-    }
-  });
+	onMount(() => {
+		if (browser) {
+			unSub = taskRepo.liveQuery(data.options).subscribe((info) => {
+				console.log('INFO:', info);
+				tasks = info.applyChanges(tasks);
+			});
+		} else {
+			//tasks = data.tasks
+		}
+	});
 
-  onDestroy(() => {
-    if(browser) unSub();
-  })
-
-  async function saveTask(task: Task) {
-    try {
-      await taskRepo.save(task)
-    } catch (error) {
-      alert((error as { message: string }).message)
-    }
-  }
+	onDestroy(() => {
+		if (browser) unSub();
+	});
 </script>
 <!-- ... -->
 ```
@@ -68,9 +59,7 @@ Let's review the changes:
 
 - The `subscribe` method returns an `unsubscribe` function, which we use in the `onDestroy` hook to unsubscribe when the component unmounts.
 
-- Sveltekit runs the `load` function twice - once on the server (Server-Side Rendering), and another on the client during hydration. We use the `browser` property to determine in which environment the app is running. When the app first runs on the server, we update the tasks list using information from the `load` function. Subsequent updates use the `liveQuery`
-
-2. As all relevant CRUD operations (made by all users) will **immediately update the component's state**, we should remove (if any) the manual adding of new Tasks to the component's state.
+- Sveltekit runs the `load` function twice - once on the server (Server-Side Rendering), and another on the client during hydration. We use the `browser` property to determine in which environment the app is running. We have commented out sections of the app that rely on server-side `load` function. All updates use the `liveQuery`.
 
 Open the todo app in two (or more) browser windows/tabs, make some changes in one window and notice how the others are updated in realtime.
 
