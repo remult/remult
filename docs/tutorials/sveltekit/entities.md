@@ -8,10 +8,7 @@ The `Task` entity class will be used:
 - As a model class for server-side code
 - By `remult` to generate API endpoints, API queries, and database commands
 
-
-
-The `Task` entity class we're creating will have an auto-generated `id` field, a `title` field, a `completed` field and an auto-generated `createdAt` field The entity's API route ("tasks") will include endpoints for all `CRUD` operations. 
-
+The `Task` entity class we're creating will have an auto-generated `id` field, a `title` field, a `completed` field and an auto-generated `createdAt` field. The entity's API route ("tasks") will include endpoints for all `CRUD` operations. 
 
 ## Define the Model
 
@@ -70,7 +67,7 @@ For a complete list of supported field types, see the [Field Types](../../docs/f
 
 3. Register the `Task` entity with Remult by adding `entities: [Task]` to the `options` object that is passed to the `remultSveltekit()` middleware:
 
-```ts{4,7}
+```ts
 // src/hooks.server.ts
 
 import { remultSveltekit } from "remult/remult-sveltekit"
@@ -93,7 +90,7 @@ Now that the `Task` entity is defined, we can start using the REST API to query 
 curl http://localhost:5173/api/tasks -d "{\"title\": \"Clean car\"}" -H "Content-Type: application/json"
 ```
 
-3. Refresh the browser for the url: [http://localhost:5173/api/tasks](http://localhost:5173/api/tasks) and see that the array now contains one item.
+3. Refresh the browser for the url: [http://localhost:5173/api/tasks](http://localhost:5173/api/tasks) and notice that the array now contains one item.
 
 4. The `POST` endpoint can accept a single `Task` or an array of `Task`s. Add a few more tasks:
 
@@ -104,7 +101,7 @@ curl http://localhost:5173/api/tasks -d "[{\"title\": \"Read a book\"},{\"title\
 5. Refresh the browser again, to see that the new tasks were stored in the db.
 
 ::: warning Wait, where is the backend database?
-While remult supports [many relational and non-relational databases](https://remult.dev/docs/databases.html), in this tutorial we start by storing entity data in a backend **JSON file**. Notice that a `db` folder has been created under the root folder, with a `tasks.json` file containing the created tasks.
+While remult supports [many relational and non-relational databases](https://remult.dev/docs/databases.html), in this tutorial we start off by storing entity data in a backend **JSON file**. Notice that a `db` folder has been created under the root folder, with a `tasks.json` file containing the created tasks.
 :::
 
 ## Display the Task List
@@ -152,7 +149,7 @@ Next, let's consume the tasks from the front-end. Replace the contents of `src/r
     {#each tasks as task}
       <div>
         <input type="checkbox" bind:checked={ task.completed } />
-        { task.title }
+        <span>{ task.title }</span>
       </div>
     {/each}
   </main>
@@ -163,11 +160,11 @@ Here's a quick overview of the different parts of the code snippet:
 
 - `taskRepo` is a Remult [Repository](../../docs/ref_repository.md) object used to fetch and create Task entity objects.
 - The `tasks` are returned from `+page.server.ts` and accessible in `+page.svelte` as `data.tasks`. 
-- The content returned from `taskRepo.find()` is not a plain Javascript object (POJO) and cannot be serialized on the front-end. We use [structuredClone](https://developer.mozilla.org/en-US/docs/Web/API/structuredClone) to deep-clone the tasks into a serialable form. structuredClone was introduced in Node.js version 17 - so if you are using an older version, you can substitute `structuredClone(tasks)` with `JSON.parse(JSON.stringify(tasks))`.
+- The content returned from `taskRepo.find()` is not a plain Javascript object (POJO) and cannot be serialized on the front-end. We use [structuredClone](https://developer.mozilla.org/en-US/docs/Web/API/structuredClone) to deep-clone the tasks into a serializable form. structuredClone was introduced in Node.js version 17 - so if you are using an older version, you can substitute `structuredClone(tasks)` with `JSON.parse(JSON.stringify(tasks))`.
 
 After the browser refreshes, the list of tasks appears.
 
-### Styling the Browser Output
+### Styling the Output
 Remult is un-opinionated in as far as front-end styling is concerned. To demonstrate, let's style our app using vanilla CSS.
 
 1. First, create a file `app.css` in `src`:
@@ -225,7 +222,8 @@ input {
     padding: 0.5rem;
 }
 
-input:checked + input {
+input:checked + input,
+input:checked + span {
     text-decoration: line-through;
 }
 
@@ -265,3 +263,7 @@ button {
 ```
 
 ...and voila!, our app should look much better!! Feel free to improve or substitute the styling as you deem fit.
+
+::: tip
+The styles imported into `src/routes/+layout.svelte` will apply to all pages in the app - unless explicitly overriden.
+:::

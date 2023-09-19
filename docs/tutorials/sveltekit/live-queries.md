@@ -10,7 +10,9 @@ Let's add realtime multiplayer capabilities to this app.
 
 ## Realtime updated todo list
 
-Let's switch from fetching Tasks once when the app is loaded (`+page.svelte.load()`), and subscribe to Remult's `liveQuery()` which will  then update our data in realtime **for both initial data fetching and subsequent state changes**.
+Let's switch from fetching Tasks on load (`+page.svelte.load()`), and subscribe to Remult's `liveQuery()` which will  then update our data in realtime **for both initial data fetching and subsequent state changes**.
+
+1. Modify the `<script>` section of `+page.svelte` and apply the changes highlighted:
 
 ```ts
 // src/routes/+page.svelte
@@ -18,17 +20,17 @@ Let's switch from fetching Tasks once when the app is loaded (`+page.svelte.load
 <script lang="ts">
 	import { remult } from 'remult';
 	import { Task } from '../shared/Task';
-	import { enhance } from '$app/forms';
-	import { browser } from '$app/environment';
-	import { onMount, onDestroy } from 'svelte';
+	import { browser } from '$app/environment';		// <-- new import
+	import { onMount, onDestroy } from 'svelte';	// <-- new import
 
 	export let data;
-	export let form;
 
+	//let tasks = data.tasks || [];		// <-- do not load data from the backend
+	let tasks: Task[] = [];			
+	let newTaskTitle = '';
 	const taskRepo = remult.repo(Task);
-	let unSub = () => {};
-	//$: tasks = data.tasks;
-	let tasks: Task[] = [];
+	
+	// ...
 
 	onMount(() => {
 		if (browser) {
@@ -37,7 +39,7 @@ Let's switch from fetching Tasks once when the app is loaded (`+page.svelte.load
 				tasks = info.applyChanges(tasks);
 			});
 		} else {
-			//tasks = data.tasks
+			//tasks = data.tasks;
 		}
 	});
 
@@ -45,13 +47,13 @@ Let's switch from fetching Tasks once when the app is loaded (`+page.svelte.load
 		if (browser) unSub();
 	});
 </script>
+
 <!-- ... -->
 ```
 
 Let's review the changes:
 
-- Instead of calling the `repository`'s `find` method we now call the `liveQuery` method to define the query, and then call its `subscribe` method to establish a subscription which will update the Tasks state in realtime.
-
+- Instead of getting our data from the backend `load` method, we now call the `liveQuery` method to define the query, and then call its `subscribe` method to establish a subscription which will update the Tasks state in realtime. Subscription is done only once after the page has loaded - hence `onMount`.
 - The `subscribe` method accepts a callback with an `info` object that has 3 members:
   - `items` - an up-to-date list of items representing the current result - it's useful for readonly use cases.
   - `applyChanges` - a method that receives an array and applies the changes to it - we use the return value to apply the changes to the existing `tasks` state.
@@ -59,7 +61,23 @@ Let's review the changes:
 
 - The `subscribe` method returns an `unsubscribe` function, which we use in the `onDestroy` hook to unsubscribe when the component unmounts.
 
-- Sveltekit runs the `load` function twice - once on the server (Server-Side Rendering), and another on the client during hydration. We use the `browser` property to determine in which environment the app is running. We have commented out sections of the app that rely on server-side `load` function. All updates use the `liveQuery`.
+2. As all relevant CRUD operations (made by all users) will immediately update the component's state, we should remove the manual adding of new Tasks to the component's state:
+
+```ts
+// src/routes/+page.svelte
+// ...
+const addTask = async () => {
+	try {
+		const newTask = await taskRepo.insert({ title: newTaskTitle });
+		// ^ this no longer needs to be a variable as we are not using it to set the state.
+		// tasks = [...tasks, newTask]; <-- this line is no longer needed
+		newTaskTitle = '';
+	} catch (error) {
+		alert((error as { message: string }).message);
+	}
+};
+// ...
+```
 
 Open the todo app in two (or more) browser windows/tabs, make some changes in one window and notice how the others are updated in realtime.
 

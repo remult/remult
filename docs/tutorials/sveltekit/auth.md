@@ -37,12 +37,14 @@ After the browser refreshes, **the list of tasks disappears** and the user can n
 ::: details Inspect the HTTP error returned by the API using cURL
 
 ```sh
-curl -i http://localhost:3000/api/tasks
+curl -i http://localhost:5173/api/tasks
 ```
 
 :::
 
-::: danger Authorized server-side code can still modify tasks
+### Server-side Authorization
+Open your database (`db/tasks.json`), and click on __Mark All Completed__ and __Mark All Incomplete__ buttons in turn. You will notice that the `completed` field is toggling.
+
 Although client CRUD requests to `tasks` API endpoints now require a signed-in user, the API endpoint created for our `setAllCompleted` server function remains available to unauthenticated requests. Since the `allowApiCrud` rule we implemented does not affect the server-side code's ability to use the `Task` entity class for performing database CRUD operations, **the `setAllCompleted` function still works as before**.
 
 To fix this, let's implement the same rule using the `@BackendMethod` decorator of the `setAllCompleted` method of `TasksController`.
@@ -52,9 +54,11 @@ To fix this, let's implement the same rule using the `@BackendMethod` decorator 
 
 @BackendMethod({ allowed: Allow.authenticated })
 ```
-
+::: warning
 **This code requires adding an import of `Allow` from `remult`.**
 :::
+
+Try toggling the `completed` field and you will notice that we now require to be authenticated - even on the backend.
 
 ## User Authentication
 
@@ -70,19 +74,19 @@ Let's set-up `Auth.js` to authenticate users to our app.
 
 2. `Auth.js` requires a "secret" - a random string used to hash tokens, sign cookies and generate cryptographic keys.
 
-Create a file called `.env.local` at the root of the project, and set the secret `AUTHJS_SECRET` to a random string.
+Create a file called `.env.local` at the root of the project, and set the secret `NEXTAUTH_SECRET` to a random string.
 
 ```
 // .env.local
 
-AUTHJS_SECRET=something-secret
+NEXTAUTH_SECRET=something-secret
 ```
 
 :::tip
 You can use an [online UUID generator](https://www.uuidgenerator.net/) to generate a completely random string
 :::
 
-3. Update your `+hooks.server.ts` to handle authentication **BEFORE** calling the Remult middleware - using the `sequence` method:
+3. In `+hooks.server.ts`, let's add a list of allowed users, a method to fetch a user from this list, and an Auth.js middleware `handleAuth` to handle authentication. Using Sveltekit's `sequence`, we ensure that the auth middleware comes **BEFORE** Remult's middleware:
 
 ```ts
 // hooks.server.ts
@@ -95,7 +99,7 @@ import { TaskController } from './shared/TaskController';
 
 import { SvelteKitAuth } from '@auth/sveltekit';
 import CredentialsProvider from '@auth/core/providers/credentials';
-import { AUTHJS_SECRET } from '$env/static/private';
+import { NEXTAUTH_SECRET } from '$env/static/private';
 
 const usersDB = [
 	{ id: '1', name: 'jane', roles: ['admin'] },
@@ -123,7 +127,7 @@ const handleAuth = SvelteKitAuth({
 		})
 	],
 
-	secret: AUTHJS_SECRET,
+	secret: NEXTAUTH_SECRET,
 
 	callbacks: {
 		session: ({ session }) => ({ ...session, user: findUser(session.user?.name) })
@@ -155,35 +159,20 @@ export const load = (async ({ locals }) => {
 }) satisfies LayoutServerLoad;
 ```
 
-2. Accept the session information into the `data` prop inside the layout file:
-
-```svelte
-// src/routes/+layout.svelte
-
-<script lang="ts">
-	import '../app.css';
-
-  export let data;    // <- add this
-</script>
-
-<slot />
-```
-
 The session information is now available throughout the application as `data.session`
 
-3. In our front-end (`+page.svelte`), we can now display the name of the logged-in user and links for signing in and out:
+2. In our front-end (`+page.svelte`), we can now display the name of the logged-in user and links for signing in and out:
 
 ```svelte
 // src/routes/+page.svelte
 <script lang="ts">
   // ...
-  export let data;      // <- session information passed down in data
-  export let form;
+  export let data;      // <- session information is available here
 
   const taskRepo = remult.repo(Task);
   let unSub = () => {};
   let tasks: Task[] = [];
-  let user = data?.session?.user; // <- add this to get user data
+  let user = data?.session?.user; // <- get user information
   // ...
 </script>
 
@@ -222,7 +211,7 @@ For our todo app we need to enforce the following authorization rules:
 - All signed in users can set specific tasks as `completed`.
 - Only users belonging to the `admin` role can create, delete or edit the titles of tasks.
 
-1. Modify the highlighted lines in the `Task` entity class to reflect the top three authorization rules.
+1. Modify the highlighted lines in the `Task` entity class to enforce the three authorization rules above.
 
 ```ts
 // src/shared/Task.ts
@@ -242,7 +231,7 @@ export class Task {
 		validate: (task) => {
 			if (task.title.length < 3) throw 'The title must be at least 3 characters long';
 		},
-    allowApiUpdate: "admin"
+    	allowApiUpdate: "admin"
 	})
 	title: string = '';
 
@@ -254,9 +243,9 @@ export class Task {
 }
 ```
 
-If you recall, in our `usersDB`, we defined two users - Jane and Steve; with Jane having been assigned an "admin" role.
+In our list of users - `usersDB`; we have defined two users - Jane and Steve; with Jane being assigned an "admin" role.
 
-**Sign in to the app as _"Steve"_ to test that the actions restricted to `admin` users are not allowed. :lock:**
+**Sign in to the app alternating between _"Jane"_ and _"Steve"_ to test that the actions restricted to `admin` users are not allowed. :lock:**
 
 ## Role-based Authorization on the Frontend
 
@@ -266,45 +255,42 @@ Let's reuse the same definitions on the Frontend.
 
 We'll use the entity's metadata to only show the form if the user is allowed to insert
 
-```tsx{4,13}
-// src/components/todo.tsx
+```svelte
+// src/routes/+page.svelte
 
 <main>
-  {taskRepo.metadata.apiInsertAllowed() && (
-    <form onSubmit={addTask}>
-      <input
-        value={newTaskTitle}
-        placeholder="What needs to be done?"
-        onChange={e => setNewTaskTitle(e.target.value)}
-      />
-      <button>Add</button>
-    </form>
-  )}
-  ...
+	<!-- ... -->
+
+	{#if taskRepo.metadata.apiInsertAllowed()}
+		<form method="POST" on:submit|preventDefault={addTask}>
+			<input bind:value={newTaskTitle} placeholder="What needs to be done?" />
+			<button>Add</button>
+		</form>
+	{/if}
+
+	<!-- ... -->
 </main>
 ```
 
 And let's do the same for the `delete` button:
 
-```tsx{12,14}
-// src/components/todo.tsx
+```svelte
+// src/routes/+page.svelte
+<div>
+	<input
+		type="checkbox"
+		bind:checked={task.completed}
+		on:click={(e) => setCompleted(task, e.target.checked)}
+	/>
+	<input name="title" bind:value={task.title} />
+	<button on:click={() => saveTask(task)}>Save</button>
 
-return (
-  <div key={task.id}>
-    <input
-      type="checkbox"
-      checked={task.completed}
-      onChange={e => setCompleted(e.target.checked)}
-    />
-    <input value={task.title} onChange={e => setTitle(e.target.value)} />
-    <button onClick={saveTask}>Save</button>
-    {taskRepo.metadata.apiDeleteAllowed(task) && (
-      <button onClick={deleteTask}>Delete</button>
-    )}
-  </div>
-)
+	{#if taskRepo.metadata.apiDeleteAllowed()}
+		<button on:click={() => deleteTask(task)}>Delete</button>
+	{/if}
+</div>
 ```
 
-This way we can keep the frontend consistent with the `api`'s Authorization rules
+This way we can keep the UI consistent with the `api`'s Authorization rules
 
 - Note We send the `task` to the `apiDeleteAllowed` method, because the `apiDeleteAllowed` option, can be sophisticated and can also be based on the specific item's values.

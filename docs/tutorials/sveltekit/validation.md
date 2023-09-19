@@ -13,7 +13,7 @@ In this tutorial, we will catch these exceptions, and alert the user.
 
 Task titles are required. Let's add a validity check for this rule.
 
-In the `Task` entity class, modify the `Fields.string` decorator for the `title` field to include an object literal argument and set the object's `validate` property to `Validators.required`.
+1. In the `Task` entity class, modify the `Fields.string` decorator for the `title` field to include an object literal argument and set the object's `validate` property to `Validators.required`.
 
 ```ts
 // src/shared/Task.ts
@@ -21,18 +21,42 @@ In the `Task` entity class, modify the `Fields.string` decorator for the `title`
 @Fields.string({
   validate: Validators.required
 })
-title = ""
+title: string = '';
+```
+
+2. In `+page.svelte`, sorround the `addTask` in a `try-catch` block to capture the error:
+```ts
+// src/routes/+page.svelte
+// ...
+const addTask = async () => {
+  try {
+    const newTask = await taskRepo.insert({ title: newTaskTitle });
+    tasks = [...tasks, newTask];
+    newTaskTitle = '';
+  } catch (error) {
+    alert((error as { message: string }).message);
+  }
+};
+// ...
 ```
 
 ::: warning Import Validators
 This code requires adding an import of `Validators` from `remult`.
 :::
 
+::: Manual browser refresh required
+For this change to take effect, you must manually refresh the browser.
+:::
+
+After the browser is refreshed, try creating a new task or saving an existing one with an empty title - the "__Title: Should not be empty__" error message is displayed.
+
+Sorround all the other functions in `try-catch` in a similar manner and notify the user accordingly.
+
 ### Implicit server-side validation
 
 The validation code we've added is called by Remult on the server-side to validate any API calls attempting to modify the `title` field.
 
-Try making the following `POST` http request to the `http://localhost:5173/api/tasks` API route, providing an invalid title.
+Try making the following `POST` http request to the `http://localhost:5173/api/tasks` endpoint, providing an invalid title.
 
 ```sh
 curl -i http://localhost:5173/api/tasks -d "{\"title\": \"\"}" -H "Content-Type: application/json"
@@ -46,50 +70,6 @@ A HTTP **400 Bad Request** error is returned and the validation error text is in
   message: 'Title: Should not be empty'
 }
 ```
-
-In our form actions, we are destructuring the `message` property of the `error` property in the `try-catch` block and returning it to the front-end using Sveltekit's `fail()`:
-
-```ts
-// src/routes/+page.server.ts
-
-// ...
-export const actions = {
-  addTask: async ({ request }) => {
-    try {
-        // ...
-    } catch (error) {
-      return fail(400, { 
-        error: (error as { message: string }).message 
-      });
-    }
-  },
-  // ...
-```
-
-The data returned from a form action automatically populates the `form` property on the `+page.svelte`.
-
-We have been using the `form?.success` to conditionally update the UI upon successful actions. We can also use the same `form` property to update the UI when an exception is caught:
-
-```svelte
-// src/routes/+page.svelte
-  <!-- ... -->
-  {#if form?.success}
-    <div class="alert alert-success">{form.message}</div>
-  {/if}
-
-  // add this new block
-  {#if form?.error}
-    <div class="alert alert-error">{form.error}</div>
-  {/if}
-
-<!-- ... -->
-```
-
-::: warning Manual browser refresh required
-For this change to take effect, you **must manually refresh the browser**.
-:::
-
-After the browser is refreshed, try creating a new `task` - the _"Title: Should not be empty"_ error message is displayed.
 
 ## Custom Validation
 

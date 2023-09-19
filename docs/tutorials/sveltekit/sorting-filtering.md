@@ -8,9 +8,9 @@ Since our database may eventually contain a lot of tasks, it make sense to use a
 
 Let's limit the number of fetched tasks to `20`.
 
-In the `load` function, pass an `options` argument to the `find` method call and set its `limit` property to 20.
+In the `load` function inside our `+page.server.ts`, pass an `options` argument to the `find` method call and set its `limit` property to 20.
 
-```ts{6}
+```ts
 // src/routes/+page.server.ts
 
 export const load = async () => {
@@ -22,7 +22,7 @@ export const load = async () => {
 Depending on the number of tasks that you have added, you may not have enough tasks in the database for this change to have an immediate visible effect, but it will have one later on when we add more tasks.
 
 ::: tip
-To query subsequent pages, use the [Repository.find()](../../docs/ref_repository.md#find) method's `page` option.
+Using `limit` only returns the first page of data. To query subsequent pages, use the [Repository.find()](../../docs/ref_repository.md#find) method's `page` option.
 :::
 
 ## Sorting By Creation Date
@@ -70,7 +70,7 @@ Because the `completed` field is of type `boolean`, the argument is **compile-ti
 :::
 
 ## Dynamic Data Using the Query String
-In Sveltekit, the `load` function has access to the HTTP query string via the [`url.searchParams`](https://kit.svelte.dev/docs/load#using-url-data-url). Let's use this feature to allow for dynamic querrying of our tasks.
+In Sveltekit, the `load` function has access to the HTTP query string via the [`url.searchParams`](https://kit.svelte.dev/docs/load#using-url-data-url). Let's use this feature to allow for dynamic querrying of our tasks using the query string.
 
 The object passed into `find` are of type `FindOptions`. It can be composed outside the function and then passed in. Modify your `+page.server.ts` to match this:
 
@@ -103,7 +103,7 @@ export const load = async ({ url }) => {
     };
 };
 ```
-You can then pass the filters via the query string:
+You can then pass in the filters via the query string:
 - http://localhost:5173 (default)
 - http://localhost:5173/?limit=5 (apply limit)
 - http://localhost:5173/?orderDir=asc (oldest first)
@@ -111,7 +111,9 @@ You can then pass the filters via the query string:
 
 Of course you can mix and match eg `?limit=5&completed=true` to get 5 completed tasks. Play with different filtering values.
 
-### Validating input
+Play with different filtering values, and eventually comment it out, since we do need all the tasks.
+
+### Validating the Query String
 It is important to validate input parameters to ensure safety and conformity; and to also coarce input data into an accepted format. In this example, we coarce `limit` to integer and `completed` into a boolean.
 
 In Remult, the values in `orderBy` are exptected to be `"asc" | "desc" | undefined`. Even though it works, you may have noticed that Typescript is complaining because the input is not guaranteed to conform to this typing.
@@ -129,7 +131,6 @@ To validate `orderBy`, first check validity and then coarce it to placate Typesc
   }
   ...
 ```
-
 
 ::: tip Learn more
 Explore the reference for a [comprehensive list of filtering options](../../docs/entityFilter.md).

@@ -31,7 +31,7 @@ features:
     details: The same type-safe coding style can be used to find and manipulate data in both frontend and backend code.
 
   - title: UI Framework Agnostic
-    details: Use Remult together with React, Angular, Vue.js, or any other UI framework.
+    details: Use Remult together with React, Angular, Vue.js, Sveltekit or any other UI framework.
 
   - title: Easy Setup
     details: Bootstrap in minutes with an Express.js middleware in the backend and an http client wrapper in the frontend.

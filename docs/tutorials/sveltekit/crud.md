@@ -2,16 +2,7 @@
 
 ## Adding new tasks
 
-Now that we can see the list of tasks, it's time to add a few more.
-
-Sveltekit enables us to accomplish the task at hand in a number of ways. Let's investigate two methods:
-
-### 1. Using the "Conventional" Client-Side Method
-Adding a Task using the conventional method involves creating a form  whose Submit event is intercepted client-side (`on:submit|preventDefault={addTask}`) and handled by the `addTask` function that invokes `taskRepo.insert()`. Remult's `insert()` method sends a **POST** request which ultimately.
-
-Using this method, we are responsible for updating the UI - clearing the input form and updating the list of tasks.
-
-To implement this method change your `+page.svelte` as follows:
+Now that we can see the list of tasks, it's time to add a few more. We create a form which executes the `addTask` function that invokes `taskRepo.insert()`. Update your `+page.svelte` as follows:
 
 ```sveltekit
 // src/routes/+page.svelte
@@ -22,18 +13,15 @@ To implement this method change your `+page.svelte` as follows:
 
 	export let data;
 	
-  let tasks = data.tasks;
-  let newTaskTitle = '';
+	let tasks = data.tasks;
+	let newTaskTitle = '';
+
 	const taskRepo = remult.repo(Task);
 
 	const addTask = async () => {
-		try {
-			const newTask = await taskRepo.insert({ title: newTaskTitle });
-			tasks = [...tasks, newTask];
-			newTaskTitle = '';
-		} catch (err) {
-			alert((err as { message: string }).message);
-		}
+		const newTask = await taskRepo.insert({ title: newTaskTitle });
+		tasks = [...tasks, newTask];
+		newTaskTitle = '';
 	};
 </script>
 
@@ -52,101 +40,69 @@ To implement this method change your `+page.svelte` as follows:
 		{#each tasks as task}
 			<div>
 				<input type="checkbox" bind:checked={task.completed} />
-				{task.title}
+				<span>{task.title}</span>
 			</div>
 		{/each}
-
 	</main>
 </div>
 ```
-### 2. Using Form Actions
 
-Sveltekit advocates the use of Form Actions. Using this implementation, a form is submitted to the server in regular fashion - sending a `POST` request(`FormData`) to a function in the back-end. After processing the request, the action responds back (optionally with data); and among other things, reloads the page.
+Try adding a few tasks to see how it works.
 
-When using `<form>`, client-side JavaScript is optional, but you can easily _progressively enhance_ your form interactions with JavaScript to provide the best user experience.
+## Mark Tasks as Completed
+1. Add a `setCompleted` function in the script section as follows:
 
-Remult's repository will work the same way irrespective. 
+```ts
+const setCompleted = async (task: Task, completed: boolean) => {
+	await taskRepo.save( { ...task, completed})
+};
+```
 
-First, we remove the `addTask` function from the front-end, modify the `<form>`'s action; and remove the `on:submit` handler. We also add a special `form` variable that will contain data returned from the back-end. 
+2. Modify the checkbox to invoke the method:
+```svelte
+<div>
+	<input
+		type="checkbox"
+		bind:checked={task.completed}
+		on:click={(e) => setCompleted(task, e.target.checked)}
+	/>
+	{task.title}
+</div>
+```
 
-Here is our altered markup in `src/routes/+page.svelte`:
+## Rename Tasks
+
+To make the tasks in the list updatable, we'll use an `input` element and bind it to the task's `title` property. We'll also add a _Save_ button to commit the changes to the backend database.
+
+Here's the updated `+page.svelte`
 
 ```svelte
 // src/routes/+page.svelte
 
 <script lang="ts">
-	import type { Task } from "../shared/Task";
+	import { remult } from 'remult';
+	import { Task } from '../shared/Task';
+
 	export let data;
-	const tasks:Task[] = data.tasks;
-</script>
 
-<svelte:head>
-	<title>Remult+Sveltekit Todo App</title>
-</svelte:head>
+	let tasks = data.tasks || [];
+	let newTaskTitle = '';
 
-<div>
-  <h1>todos</h1>
-  <main>
-    <form method="POST" action="?/addTask">
-      <input name="newTaskTitle" placeholder="What needs to be done?" />
-      <button>Add</button>
-    </form>
-    
-    {#each tasks as task}
-      <div>
-        <input type="checkbox" bind:checked={ task.completed } />
-        { task.title }
-      </div>
-    {/each}
+	const taskRepo = remult.repo(Task);
 
-  </main>
-</div>
-```
+	const addTask = async () => {
+		const newTask = await taskRepo.insert({ title: newTaskTitle });
+		tasks = [...tasks, newTask];
+		newTaskTitle = '';
+	};
 
-Then, we modify our `+page.server.ts` to add an `actions` object with our `saveTask` function which has now gone server-side:
+	const setCompleted = async (task: Task, completed: boolean) => {
+		await taskRepo.save({ ...task, completed });
+	};
 
-```svelte
-// src/routes/+page.server.ts
-
-import { remult, type FindOptions } from "remult";
-import { Task } from "../shared/Task";
-import { fail } from "@sveltejs/kit";
-
-const taskRepo = remult.repo(Task);
-
-export const load = async ({ url }) => {
-  // ...
-};
-
-export const actions = {
-    addTask: async ({ request }) => {
-        try {
-            const formData = await request.formData();
-            const newTaskTitle = formData.get("newTaskTitle") as string;
-            const newTask = await taskRepo.insert({ title: newTaskTitle });
-            return {
-                success: true,
-                message: 'Task added succesfully',
-                newTask: structuredClone(newTask),
-            };
-        } catch (error) {
-            return fail(400, { error: (error as { message: string }).message });
-        }
-    },
-};
-```
-- Submitting the form in `+page.svelte` will call the `addTask` action in `+page.server.ts`
-- The call to `taskRepo.insert` will make a post request to the Remult server which appends the new task to the repositoy - returning; in this case, a `success` status, a `message`; and the new `Task` object with all it's info (including the id generated by the database). It's upto you whether to return data or not
-- Returned data can be accessed on the front-end using a special `form` variable. We use it in the example below to notify the user.
-
-```svelte
-//src/routes/+page.svelte
-
-<script lang="ts">
-	import type { Task } from "../shared/Task";
-	export let data;
-	export let form; // <--- receive data from form actions
-	const tasks:Task[] = data.tasks;
+	const saveTask = async (task: Task) => {
+		await taskRepo.save({ ...task });
+	};
 </script>
 
 <svelte:head>
@@ -156,31 +112,37 @@ export const actions = {
 <div>
 	<h1>todos</h1>
 	<main>
-		<form method="POST" action="?/addTask">
-			<input name="newTaskTitle" placeholder="What needs to be done?" />
+		<form method="POST" on:submit|preventDefault={addTask}>
+			<input bind:value={newTaskTitle} placeholder="What needs to be done?" />
 			<button>Add</button>
 		</form>
 
-		{#if form?.success}
-			<div class="alert alert-success">{form.message}</div>
-		{/if}
-
 		{#each tasks as task}
 			<div>
-				<input type="checkbox" bind:checked={task.completed} />
-				{task.title}
+				<input
+					type="checkbox"
+					bind:checked={task.completed}
+					on:click={(e) => setCompleted(task, e.target.checked)}
+				/>
+				<input name="title" bind:value={task.title} />
+				<button on:click={() => saveTask(task)}>Save</button>
 			</div>
 		{/each}
 	</main>
 </div>
 
 ```
+- The `saveTask` function saves the task that is passed in. Since the task's title is bound to the `input`, changes are made directly to the task.
 
-Try adding a few tasks to see how it works.
+Make some changes and refresh the browser to verify that the backend database is updated.
+
+::: tip
+You may have to restart the Dev Server, and refresh your browser for these effects to take effect.
+:::
 
 ## Delete Tasks
 
-Let's add a _Delete_ button for each task in the list. We'll wrap each button in a form in which we will also add a hidden input with the id of the task. Clicking on the Delete button will invoke a `deleteTask` function that we will add to the `actions` object in `+page.server.ts`.
+Let's add a _Delete_ button next to the __Save__ button of each task in the list. Add the `deleteTask` function and the __Delete__ button:
 
 To start us off, lets edit the markup in `+page.svelte` to wrap add the Delete button:
 
@@ -230,90 +192,3 @@ export const actions = {
   },
 };
 ```
-
-## Modify Tasks and Mark as Completed
-
-To make the tasks in the list updatable, we'll use an `input` element and bind it to the task's `title` property. We'll also add a _Save_ button to commit the changes to the backend database.
-
-Here's the updated `+page.svelte`
-
-```svelte
-// src/routes/+page.svelte
-
-<script lang="ts">
-	import { enhance } from '$app/forms'; // <- use enhance
-
-	export let data;
-	export let form;
-	$: tasks = data.tasks; // <- make tasks reactive
-</script>
-
-<svelte:head>
-	<title>Remult+Sveltekit Todo App</title>
-</svelte:head>
-
-<div>
-	<h1>todos</h1>
-	<main>
-		<form method="POST" action="?/addTask">
-			<input name="newTaskTitle" placeholder="What needs to be done?" />
-			<button>Add</button>
-		</form>
-
-		{#if form?.success}
-			<div class="alert alert-success">{form.message}</div>
-		{/if}
-
-		{#each tasks as task (task.id)}
-			<form method="POST" use:enhance>
-				<input
-					type="checkbox"
-					name="completed"
-					bind:checked={task.completed}
-					value={task.completed}
-				/>
-				<input name="title" type="text" bind:value={task.title} />
-				<input name="id" type="hidden" value={task.id} />
-        <button formaction="?/saveTask">Save</button>
-				<button formaction="?/deleteTask">Delete</button>
-			</form>
-		{/each}
-	</main>
-</div>
-```
-- The form has two submit buttons targeting two separate form actions
-- We use `enhance` to provide [progressive enhancement](https://kit.svelte.dev/docs/form-actions#progressive-enhancement).
-- We have made the `tasks` reactive so that it updated accordingly even without full page reload
-- We have updated the `{#each}` loop to use `task.id` as a key for improved UI updates
-
-Here is the correspoding action in `+page.server.ts`:
-
-```ts
-// src/routes/+page.server.ts
-
-// ....
-
-export const actions = {
-	// ....
-
-	saveTask: async ({ request }) => {
-		const formData = await request.formData();
-		const id = formData.get('id') as string;
-		const title = formData.get('title') as string;
-		const completed = (formData.get('completed') as unknown as boolean) || undefined;
-		try {
-			taskRepo.update(id, { title, completed });
-			return {
-				success: true,
-				message: 'Task updated succesfully'
-			};
-		} catch (error) {
-			return fail(400, { error: (error as { message: string }).message });
-		}
-	}
-}
-```
-
-::: tip
-You may have to restart the Dev Server, and refresh your browser for these effects to take effect.
-:::

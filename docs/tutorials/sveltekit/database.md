@@ -1,9 +1,9 @@
 # Database
 
-Up until now the todo app has been using a plain JSON file to store the list of tasks. **In production, we'd like to use a `Postgres` database table instead.**
+Up until now the todo app has been using a plain JSON file to store the list of tasks. In production, you will often want to use a proper database. Remult supports a (long) list of relational and non-relational databases. In this tutorial, let's use `Postgres`.
 
 ::: tip Learn more
-See the [Connecting to a Database](../../docs/databases.md) article for the (long) list of relational and non-relational databases Remult supports.
+See the [Connecting to a Database](../../docs/databases.md) article to find out more.
 :::
 
 ::: warning Don't have Postgres installed? Don't have to.
@@ -17,11 +17,19 @@ Don't worry if you don't have Postgres installed locally. In the next step of th
    ```sh
    npm i pg
    ```
+2. Add an environment variables called DATABASE_URL and set it with your connection string:
 
-2. Add the highlighted code to the `api` server module.
+```sh
+// .env.local
 
-   ```ts{5,9-11}
-   // src/server/api.ts
+...
+DATABASE_URL=postgresql://username:password@host:port/dbname[?paramspec]
+```
+
+3. Add a `dataProvider` to Remult's middleware in `hooks.server.ts`.
+
+   ```
+   // hooks.server.ts
 
    //...
 

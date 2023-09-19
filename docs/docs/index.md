@@ -18,3 +18,4 @@ The best way to learn Remult is by following a tutorial of a simple Todo web app
 * [Tutorial with Angular](../tutorials/angular/)
 * [Tutorial with Vue](../tutorials/vue/)
 * [Tutorial with Next.js](../tutorials/react-next/)
+* [Tutorial with Sveltekit](../tutorials/sveltekit/)
