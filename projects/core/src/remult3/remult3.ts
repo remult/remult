@@ -463,3 +463,23 @@ export interface Paginator<entityType> {
   /** the count of the total items in the `query`'s result */
   count(): Promise<number>
 }
+
+export interface RelationInfo {
+  field: string
+  toType: () => any
+}
+
+export type toManyOptions<fromEntity, toEntity, matchIdEntity> =
+  | keyof matchIdEntity
+  | {
+      match?:
+        | keyof matchIdEntity
+        | [keyof fromEntity, keyof toEntity]
+        | [[keyof fromEntity, keyof toEntity]]
+
+      limit?: number
+      where?: EntityFilter<toEntity>
+      orderBy?: EntityOrderBy<toEntity>
+      findOptions?: (entity: fromEntity) => FindOptionsBase<toEntity>
+      included?: boolean
+    }

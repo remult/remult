@@ -32,8 +32,10 @@ import type {
   OmitEB,
   QueryOptions,
   QueryResult,
+  RelationInfo,
   Repository,
   Subscribable,
+  toManyOptions,
 } from './remult3'
 
 import type { Paginator, RefSubscriber, RefSubscriberBase } from './remult3'
@@ -2125,6 +2127,36 @@ export class Fields {
     c?: any,
   ) => void {
     return Field(() => Boolean, ...options)
+  }
+
+  //TODO - don't like first parameter as current Type - it's pshita :)
+  static toMany<entityType, toEntityType>(
+    entity: ClassType<entityType>,
+    toEntityType: () => ClassType<toEntityType>,
+    options: toManyOptions<entityType, toEntityType, toEntityType>,
+  ) {
+    return Field(() => undefined!, {
+      serverExpression: () => [],
+      //@ts-ignore
+      relationInfo: {
+        //field,
+        toType: toEntityType,
+      } as RelationInfo,
+    })
+  }
+  static toOne<entityType, toEntityType>(
+    entity: ClassType<entityType>,
+    toEntityType: () => ClassType<toEntityType>,
+    options?: toManyOptions<entityType, toEntityType, entityType>,
+  ) {
+    return Field(() => undefined!, {
+      serverExpression: () => [],
+      //@ts-ignore
+      relationInfo: {
+        //field,
+        toType: toEntityType,
+      } as RelationInfo,
+    })
   }
 }
 
