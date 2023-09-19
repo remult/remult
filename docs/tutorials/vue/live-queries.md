@@ -12,7 +12,7 @@ Let's add realtime multiplayer capabilities to this app.
 
 Let's switch from fetching Tasks once when the Vue component is loaded, and manually maintaining state for CRUD operations, to using a realtime updated live query subscription **for both initial data fetching and subsequent state changes**.
 
-Adjust the `onMounted` hook in the `App.tsx` file
+Adjust the `onMounted` hook in the `App.vue` file
 
 ```ts{4,6,11}
 // src/App.vue
