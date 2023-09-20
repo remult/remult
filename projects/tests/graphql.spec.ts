@@ -485,7 +485,7 @@ describe('graphql', () => {
           "id": 1,
           "thePriority": 1,
           "title": "task a",
-          "userOnServer": "",
+          "userOnServer": undefined,
         },
         Task {
           "category": null,
@@ -494,7 +494,7 @@ describe('graphql', () => {
           "id": 3,
           "thePriority": 1,
           "title": "task c",
-          "userOnServer": "",
+          "userOnServer": undefined,
         },
       ]
     `)
@@ -531,7 +531,7 @@ describe('graphql', () => {
           "id": 1,
           "thePriority": 1,
           "title": "testing",
-          "userOnServer": "",
+          "userOnServer": undefined,
         },
       ]
     `)
@@ -564,7 +564,7 @@ describe('graphql', () => {
           "id": 1,
           "thePriority": 1,
           "title": "testing",
-          "userOnServer": "",
+          "userOnServer": undefined,
         },
       ]
     `)

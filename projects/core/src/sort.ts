@@ -22,12 +22,13 @@ export class Sort {
     }
     return r
   }
-  compare(a: any, b: any) {
+  compare(a: any, b: any, getFieldKey?: (field: FieldMetadata) => string) {
+    if (!getFieldKey) getFieldKey = (x) => x.key
     let r = 0
     for (let i = 0; i < this.Segments.length; i++) {
       let seg = this.Segments[i]
-      let left = a[seg.field.key]
-      let right = b[seg.field.key]
+      let left = a[getFieldKey(seg.field)]
+      let right = b[getFieldKey(seg.field)]
       if (left > right) r = 1
       else if (left < right) r = -1
       if (r != 0) {
