@@ -1,5 +1,14 @@
-import { describe, it, expect } from 'vitest'
-import { Entity, Fields } from '../../core'
+import { describe, it, expect, beforeEach } from 'vitest'
+import {
+  Entity,
+  Fields,
+  FindFirstOptions,
+  FindOptions,
+  InMemoryDataProvider,
+  Remult,
+} from '../../core'
+import type { ClassType } from '../../core/classType'
+import { TestDataProvider } from '../dbs/TestDataProviderWithStats'
 
 @Entity('categories')
 class Category {
@@ -19,6 +28,14 @@ class Category {
   @Fields.toMany(Category, () => Task, {
     match: [['id', 'secondaryCategoryId']],
     limit: 2,
+    include: {
+      category: true,
+      secondaryCategory: {
+        include: {
+          tasks: true,
+        },
+      },
+    },
     where: {
       completed: true,
     },
@@ -58,8 +75,8 @@ class Category {
     }),
   })
   firstTask: Task
-  @Fields.createdAt()
-  createdAt = new Date()
+  @Fields.date()
+  createdAt = new Date(1976, 5, 16)
 }
 
 @Entity('tasks')
@@ -87,19 +104,69 @@ class Task {
   secondaryCategory2!: Category
 }
 
-describe('test relations', () => {})
-
-type onlyObjectMembersBase<entityType> = {
-  [K in keyof entityType]: entityType[K] extends object
-    ? entityType[K] extends Date
-      ? never
-      : entityType[K]
-    : never
-}
-type onlyObjectMembers<entityType> = {
-  [K in keyof onlyObjectMembersBase<entityType> as K extends keyof onlyObjectMembersBase<entityType>
-    ? K
-    : never]: true
-}
-
-let x: onlyObjectMembers<Category>
+describe('test relations', () => {
+  let remult: Remult
+  function r<entityType>(entity: ClassType<entityType>) {
+    return remult.repo(entity)
+  }
+  beforeEach(async () => {
+    remult = new Remult(new InMemoryDataProvider())
+    const c = await r(Category).insert([
+      { id: 1, name: 'c1' },
+      { id: 2, name: 'c2' },
+      { id: 3, name: 'c3' },
+    ])
+    await r(Task).insert([
+      { id: 1, title: 't1', category: c[0], secondaryCategoryId: 3 },
+      { id: 2, title: 't2', category: c[0], secondaryCategoryId: 3 },
+      {
+        id: 3,
+        title: 't3',
+        category: c[0],
+        secondaryCategoryId: 3,
+        completed: true,
+      },
+      { id: 4, title: 't4', category: c[1], secondaryCategoryId: 2 },
+    ])
+    remult.clearAllCache()
+  })
+  it('no extra data is loaded', async () => {
+    let stats = (remult.dataProvider = TestDataProvider(remult.dataProvider))
+    const t = await r(Task).findFirst({ id: 4 })
+    expect(t.category).toBeUndefined()
+    await new Promise((res) => setTimeout(res, 10))
+    expect(stats.finds).toMatchInlineSnapshot(`
+      [
+        {
+          "entity": "tasks",
+          "where": {
+            "id": 4,
+          },
+        },
+      ]
+    `)
+  })
+  it('loads on demand', async () => {
+    const t = await r(Task).findFirst(
+      { id: 1 },
+      {
+        include: {
+          category: true,
+        },
+      },
+    )
+    expect(t.category).toMatchInlineSnapshot(`
+      Category {
+        "allTasks": undefined,
+        "createdAt": 1976-06-15T22:00:00.000Z,
+        "firstTask": undefined,
+        "id": 1,
+        "name": "c1",
+        "taskSecondary": undefined,
+        "taskSecondary1": undefined,
+        "taskSecondary2": undefined,
+        "tasks": undefined,
+      }
+    `)
+  })
+})

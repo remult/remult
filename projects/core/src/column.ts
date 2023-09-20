@@ -30,11 +30,11 @@ export class LookupColumn<T> {
   }
   waitLoadOf(id: any) {
     if (id === undefined || id === null) return null
-    return this.repository.getCachedByIdAsync(id)
+    return this.repository.getCachedByIdAsync(id, false)
   }
   get(id: any): any {
     if (id === undefined || id === null) return null
-    return this.repository.getCachedById(id)
+    return this.repository.getCachedById(id, this.isManyToOneRelation)
   }
   storedItem: { item: T }
   set(item: T) {
@@ -59,9 +59,10 @@ export class LookupColumn<T> {
     }
   }
 
+  id: idType<T>
   constructor(
     private repository: RepositoryImplementation<T>,
-    public id: idType<T>,
+    private isManyToOneRelation,
   ) {}
 
   get item(): T {

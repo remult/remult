@@ -366,7 +366,7 @@ export function commonDbTests(
     expect(x[0].name).toBe('noam')
   })
 
-  async function createData<T extends CategoriesForTesting>(
+  async function createData<T extends CategoriesForTesting = Categories>(
     doInsert?: (
       insert: (
         id: number,
@@ -376,9 +376,10 @@ export function commonDbTests(
       ) => Promise<void>,
     ) => Promise<void>,
     entity?: {
-      new (): CategoriesForTesting
+      new (): T
     },
   ): Promise<Repository<T>> {
+    //@ts-ignore
     if (!entity) entity = Categories
     let rep = (await createEntity(entity)) as Repository<T>
     if (doInsert)

@@ -29,13 +29,15 @@ import type {
   IdMetadata,
   LiveQuery,
   LiveQueryChangeInfo,
+  MembersToInclude,
   OmitEB,
   QueryOptions,
   QueryResult,
   RelationInfo,
   Repository,
+  RepositoryRelations,
   Subscribable,
-  toManyOptions,
+  relationOptions,
 } from './remult3'
 
 import type { Paginator, RefSubscriber, RefSubscriberBase } from './remult3'
@@ -132,6 +134,9 @@ export class RepositoryImplementation<entityType>
     }
     return r
   }
+  get relations(): RepositoryRelations<entityType> {
+    return {} as any
+  }
 
   private _info: EntityFullInfo<entityType>
   private __edp: EntityDataProvider
@@ -148,14 +153,17 @@ export class RepositoryImplementation<entityType>
     this._info = createOldEntity(entity, remult)
   }
   idCache = new Map<any, any>()
-  getCachedById(id: any): entityType {
+  getCachedById(id: any, doNotLoadIfNotFound: boolean): entityType {
     id = id + ''
-    this.getCachedByIdAsync(id)
+    this.getCachedByIdAsync(id, doNotLoadIfNotFound)
     let r = this.idCache.get(id)
     if (r instanceof Promise) return undefined
     return r
   }
-  async getCachedByIdAsync(id: any): Promise<entityType> {
+  async getCachedByIdAsync(
+    id: any,
+    doNotLoadIfNotFound: boolean,
+  ): Promise<entityType> {
     id = id + ''
     let r = this.idCache.get(id)
     if (r instanceof Promise) return await r
@@ -163,6 +171,7 @@ export class RepositoryImplementation<entityType>
       return r
     }
     this.idCache.set(id, undefined)
+    if (doNotLoadIfNotFound) return undefined
     let row = this.findId(id).then((row) => {
       if (row === undefined) {
         r = null
@@ -412,7 +421,11 @@ export class RepositoryImplementation<entityType>
     }
 
     let rawRows = await this.edp.find(opt)
-    let result = await this.loadManyToOneForManyRows(rawRows, options.load)
+    let result = await this.loadManyToOneForManyRows(
+      rawRows,
+      options.load,
+      options.include,
+    )
     return result
   }
 
@@ -448,6 +461,7 @@ export class RepositoryImplementation<entityType>
   private async loadManyToOneForManyRows(
     rawRows: any[],
     load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[],
+    include?: MembersToInclude<entityType>,
   ) {
     let loadFields: FieldMetadata[] = undefined
     if (load) loadFields = load(this.metadata.fields)
@@ -456,8 +470,10 @@ export class RepositoryImplementation<entityType>
       let ei = getEntitySettings(col.valueType, false)
 
       if (ei) {
-        let load = !col.options.lazy
+        let isRelation: RelationInfo = col.options?.[relationInfoMember]
+        let load = isRelation ? isRelation.autoInclude : !col.options.lazy
         if (loadFields !== undefined) load = loadFields.includes(col)
+        if (include) load = include[col.key]
         if (load) {
           let repo = this.remult.repo(
             col.valueType,
@@ -797,7 +813,7 @@ abstract class rowHelperBase<T> {
       if (ei && remult) {
         let lookup = new LookupColumn(
           remult.repo(col.valueType) as RepositoryImplementation<T>,
-          undefined,
+          Boolean(col?.[relationInfoMember]),
         )
         this.lookups.set(col.key, lookup)
         let val = instance[col.key]
@@ -1305,7 +1321,8 @@ export class rowHelperImplementation<T>
       if (lu) {
         lu.id = data[col.key]
         if (loadItems === undefined) {
-          if (!col.options.lazy) await lu.waitLoad()
+          if (!col.options.lazy && !col.options[relationInfoMember])
+            await lu.waitLoad()
         } else {
           if (loadItems.includes(col)) await lu.waitLoad()
         }
@@ -2133,12 +2150,14 @@ export class Fields {
   static toMany<entityType, toEntityType>(
     entity: ClassType<entityType>,
     toEntityType: () => ClassType<toEntityType>,
-    options: toManyOptions<entityType, toEntityType, toEntityType>,
+    options:
+      | relationOptions<entityType, toEntityType, toEntityType>
+      | keyof toEntityType,
   ) {
     return Field(() => undefined!, {
       serverExpression: () => [],
       //@ts-ignore
-      relationInfo: {
+      [relationInfoMember]: {
         //field,
         toType: toEntityType,
       } as RelationInfo,
@@ -2147,18 +2166,38 @@ export class Fields {
   static toOne<entityType, toEntityType>(
     entity: ClassType<entityType>,
     toEntityType: () => ClassType<toEntityType>,
-    options?: toManyOptions<entityType, toEntityType, entityType>,
+    options?:
+      | relationOptions<entityType, toEntityType, entityType>
+      | keyof entityType,
   ) {
-    return Field(() => undefined!, {
-      serverExpression: () => [],
-      //@ts-ignore
-      relationInfo: {
-        //field,
-        toType: toEntityType,
-      } as RelationInfo,
-    })
+    let op: relationOptions<entityType, toEntityType, entityType> =
+      (typeof options === 'string'
+        ? { match: options }
+        : options) as any as relationOptions<
+        entityType,
+        toEntityType,
+        entityType
+      >
+    if (!options || (!op.match && !op.where && !op.findOptions)) {
+      return Field(toEntityType, {
+        //@ts-ignore
+        [relationInfoMember]: {
+          //field,
+          toType: toEntityType,
+        } as RelationInfo,
+      })
+    } else
+      return Field(() => undefined!, {
+        serverExpression: () => [],
+        //@ts-ignore
+        [relationInfoMember]: {
+          //field,
+          toType: toEntityType,
+        } as RelationInfo,
+      })
   }
 }
+const relationInfoMember = 'relationInfo'
 
 export function isAutoIncrement(f: FieldMetadata) {
   return f.options?.valueConverter?.fieldTypeInDb === 'autoincrement'
