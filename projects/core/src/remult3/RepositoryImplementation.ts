@@ -2155,7 +2155,7 @@ export class Fields {
       | keyof toEntityType,
   ) {
     return Field(() => undefined!, {
-      serverExpression: () => [],
+      serverExpression: () => undefined,
       //@ts-ignore
       [relationInfoMember]: {
         //field,
@@ -2188,7 +2188,7 @@ export class Fields {
       })
     } else
       return Field(() => undefined!, {
-        serverExpression: () => [],
+        serverExpression: () => undefined,
         //@ts-ignore
         [relationInfoMember]: {
           //field,

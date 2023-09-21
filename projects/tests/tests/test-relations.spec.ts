@@ -10,6 +10,14 @@ import {
 import type { ClassType } from '../../core/classType'
 import { TestDataProvider } from '../dbs/TestDataProviderWithStats'
 
+@Entity('company')
+class Company {
+  @Fields.integer()
+  id = 0
+  @Fields.string()
+  companyName = ''
+}
+
 @Entity('categories')
 class Category {
   @Fields.integer()
@@ -77,6 +85,15 @@ class Category {
   firstTask: Task
   @Fields.date()
   createdAt = new Date(1976, 5, 16)
+
+  @Fields.toOne(Category, () => Company)
+  company!: Company
+
+  @Fields.integer()
+  secondaryCompanyId = 0
+
+  @Fields.toOne(Category, () => Company, 'secondaryCompanyId')
+  secondaryCompany: Company
 }
 
 @Entity('tasks')
@@ -111,10 +128,14 @@ describe('test relations', () => {
   }
   beforeEach(async () => {
     remult = new Remult(new InMemoryDataProvider())
+    const comp = await r(Company).insert([
+      { id: 10, companyName: 'comp10' },
+      { id: 20, companyName: 'comp20' },
+    ])
     const c = await r(Category).insert([
-      { id: 1, name: 'c1' },
-      { id: 2, name: 'c2' },
-      { id: 3, name: 'c3' },
+      { id: 1, name: 'c1', company: comp[0], secondaryCompanyId: 20 },
+      { id: 2, name: 'c2', company: comp[0], secondaryCompanyId: 10 },
+      { id: 3, name: 'c3', company: comp[1], secondaryCompanyId: 20 },
     ])
     await r(Task).insert([
       { id: 1, title: 't1', category: c[0], secondaryCategoryId: 3 },
@@ -158,10 +179,13 @@ describe('test relations', () => {
     expect(t.category).toMatchInlineSnapshot(`
       Category {
         "allTasks": undefined,
+        "company": undefined,
         "createdAt": 1976-06-15T22:00:00.000Z,
         "firstTask": undefined,
         "id": 1,
         "name": "c1",
+        "secondaryCompany": undefined,
+        "secondaryCompanyId": 20,
         "taskSecondary": undefined,
         "taskSecondary1": undefined,
         "taskSecondary2": undefined,
