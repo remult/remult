@@ -29,8 +29,8 @@ Don't worry if you don't have Postgres installed locally. In the next step of th
 
    export const api = remultExpress({
      //...
-     dataProvider: createPostgresDataProvider({
-       connectionString: "your connection string"
-     })
+     dataProvider: dataProvider: !process.env["DATABASE_URL"] ? undefined :  createPostgresDataProvider({
+    connectionString: process.env["DATABASE_URL"]
+  })
    })
    ```
