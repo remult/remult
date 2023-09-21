@@ -24,7 +24,6 @@ import type { EntityFilter, EntityMetadata } from '../src/remult3/remult3'
 import type {
   RepositoryImplementation,
   RepositoryOverloads,
-  StringFieldOptions,
 } from '../src/remult3/RepositoryImplementation'
 import {
   getRepository,
@@ -33,6 +32,7 @@ import {
 import { Sort } from '../src/sort'
 import { ValueConverters } from '../src/valueConverters'
 import { resultCompoundIdFilter as resultCompoundIdFilter } from '../src/resultCompoundIdFilter'
+import type { StringFieldOptions } from '../src/remult3/Fields'
 
 export class KnexDataProvider implements DataProvider {
   constructor(public knex: Knex) {}

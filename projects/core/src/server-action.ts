@@ -24,12 +24,12 @@ import type {
   rowHelperImplementation,
 } from './remult3/RepositoryImplementation'
 import {
-  checkTarget,
   decorateColumnSettings,
   getControllerRef,
 } from './remult3/RepositoryImplementation'
 import { getEntityRef, getEntitySettings } from './remult3/getEntityRef'
 import { actionInfo, serverActionField } from './server-action-info'
+import { checkTarget } from './remult3/Fields'
 
 interface inArgs {
   args: any[]

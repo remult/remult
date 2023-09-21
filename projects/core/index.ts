@@ -26,9 +26,6 @@ export {
   LiveQueryChangeInfo,
 } from './src/remult3/remult3'
 export {
-  Field,
-  Fields,
-  IdEntity,
   EntityBase,
   ControllerBase,
   FieldType,
@@ -41,8 +38,9 @@ export {
 } from './src/remult3/RepositoryImplementation'
 export { Entity } from './src/remult3/entity'
 export { getEntityRef } from './src/remult3/getEntityRef'
+export { Field, Fields, StringFieldOptions } from './src/remult3/Fields'
+export { IdEntity } from './src/remult3/IdEntity'
 
-export { StringFieldOptions } from './src/remult3/RepositoryImplementation'
 export { describeClass } from './src/remult3/DecoratorReplacer'
 export { EntityOptions } from './src/entity'
 export {

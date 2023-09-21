@@ -20,7 +20,8 @@ import {
   InMemoryLiveQueryStorage,
   LiveQueryPublisher,
 } from '../src/live-query/SubscriptionServer'
-import { Fields, IdEntity } from '../src/remult3/RepositoryImplementation'
+import { IdEntity } from '../src/remult3/IdEntity'
+import { Fields } from '../src/remult3/Fields'
 
 import { Entity } from '../src/remult3/entity'
 import { getEntityKey } from '../src/remult3/getEntityRef'
