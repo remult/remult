@@ -24,6 +24,7 @@ import type {
   FindFirstOptions,
   FindFirstOptionsBase,
   FindOptions,
+  FindOptionsBase,
   IdMetadata,
   LiveQuery,
   LiveQueryChangeInfo,
@@ -310,22 +311,36 @@ export class RepositoryImplementation<entityType>
       let ref = getEntityRef(entity, false)
       if (ref) return (await ref.save()) as unknown as entityType
     }
-    let ref = this.getRefForExistingRow(
-      entity,
-      id,
-    ) as rowHelperImplementation<entityType>
+    {
+      let ref = getEntityRef(id, false)
+      if (ref) return assign(ref, entity).save()
+    }
+
+    let ref: rowHelperImplementation<entityType>
+    if (typeof id === 'object') {
+      ref = this.getRefForExistingRow(
+        id,
+        this.metadata.idMetadata.getId(id),
+      ) as typeof ref
+      Object.assign(id, entity)
+    } else
+      ref = this.getRefForExistingRow(
+        entity,
+        id,
+      ) as rowHelperImplementation<entityType>
     if (this.dataProvider.isProxy) {
       return await ref.save(Object.keys(entity))
     } else {
-      const r = await this.findId(ref.id, { useCache: false })
+      const r = await ref.reload()
       if (!r) throw new Error('Not Found')
       for (const key in entity) {
         if (Object.prototype.hasOwnProperty.call(entity, key)) {
           let f = ref.fields[key]
-          if (f) r[key] = f.value
+          if (f) r[key] = entity[key]
         }
       }
-      return await getEntityRef(r).save()
+      await this.fixTypes(r)
+      return await ref.save()
     }
   }
 
@@ -469,7 +484,9 @@ export class RepositoryImplementation<entityType>
 
       if (ei) {
         let isRelation: RelationInfo = col.options?.[relationInfoMember]
-        let load = isRelation ? isRelation.autoInclude : !col.options.lazy
+        let load = isRelation
+          ? isRelation.options.autoInclude
+          : !col.options.lazy
         if (loadFields !== undefined) load = loadFields.includes(col)
         if (include) load = include[col.key]
         if (load) {
@@ -492,6 +509,9 @@ export class RepositoryImplementation<entityType>
             await loadManyToOne(repo, toLoad)
           }
         }
+      } else if (col.options[relationInfoMember]) {
+        const rel = col.options[relationInfoMember] as RelationInfo
+        this.remult.repo(rel.toType())
       }
     }
     async function loadManyToOne(
@@ -510,6 +530,33 @@ export class RepositoryImplementation<entityType>
     let result = await Promise.all(
       rawRows.map(async (r) => await this.mapRawDataToResult(r, loadFields)),
     )
+    for (const col of this.metadata.fields) {
+      let ei = getEntitySettings(col.valueType, false)
+      let rel = getRelationInfo(col.options)
+      let incl = include?.[col.key] as FindOptionsBase<any>
+      if (!ei && rel && incl) {
+        const otherRepo = this.remult.repo(rel.toType())
+        if (rel.type === 'toOne') {
+          for (const row of result) {
+            let where: EntityFilter<any>[] = []
+            if (typeof rel.options.match === 'string') {
+              where.push(
+                otherRepo.metadata.idMetadata.getIdFilter(
+                  row[rel.options.match],
+                ),
+              )
+            }
+
+            row[col.key] = await this.remult.repo(rel.toType()).findFirst(
+              { $and: where },
+              {
+                include: incl.include,
+              },
+            )
+          }
+        }
+      }
+    }
     return result
   }
 
@@ -1324,7 +1371,8 @@ export class rowHelperImplementation<T>
         } else {
           if (loadItems.includes(col)) await lu.waitLoad()
         }
-      } else this.instance[col.key] = data[col.key]
+      } else if (!getRelationInfo(col.options))
+        this.instance[col.key] = data[col.key]
     }
     await this.calcServerExpression()
     this.id = this.getId()
@@ -1337,6 +1385,7 @@ export class rowHelperImplementation<T>
 
   private async calcServerExpression() {
     if (isBackend())
+      //[ ] should be changed to be based on data provider
       for (const col of this.info.columnsInfo) {
         if (col.serverExpression) {
           this.instance[col.key] = await col.serverExpression(this.instance)
@@ -2380,3 +2429,7 @@ export type EntityMetadataOverloads<entityType> =
 export type RepositoryOverloads<entityType> =
   | Repository<entityType>
   | ClassType<entityType>
+
+function getRelationInfo(options: FieldOptions) {
+  return options?.[relationInfoMember] as RelationInfo
+}

@@ -280,13 +280,23 @@ export class Fields {
       | relationOptions<entityType, toEntityType, toEntityType>
       | keyof toEntityType,
   ) {
+    let op: relationOptions<entityType, toEntityType, toEntityType> =
+      (typeof options === 'string'
+        ? { match: options }
+        : options) as any as relationOptions<
+        entityType,
+        toEntityType,
+        toEntityType
+      >
     return Field(() => undefined!, {
       serverExpression: () => undefined,
       //@ts-ignore
       [relationInfoMember]: {
         //field,
         toType: toEntityType,
-      } as RelationInfo,
+        options: op,
+        type: 'toMany',
+      } satisfies RelationInfo,
     })
   }
   static toOne<entityType, toEntityType>(
@@ -299,6 +309,8 @@ export class Fields {
     let op: relationOptions<entityType, toEntityType, entityType> =
       (typeof options === 'string'
         ? { match: options }
+        : !options
+        ? {}
         : options) as any as relationOptions<
         entityType,
         toEntityType,
@@ -310,7 +322,9 @@ export class Fields {
         [relationInfoMember]: {
           //field,
           toType: toEntityType,
-        } as RelationInfo,
+          options: op,
+          type: 'toOne',
+        } satisfies RelationInfo,
       })
     } else
       return Field(() => undefined!, {
@@ -319,7 +333,9 @@ export class Fields {
         [relationInfoMember]: {
           //field,
           toType: toEntityType,
-        } as RelationInfo,
+          options: op,
+          type: 'toOne',
+        } satisfies RelationInfo,
       })
   }
 }

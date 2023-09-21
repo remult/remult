@@ -178,19 +178,89 @@ describe('test relations', () => {
     )
     expect(t.category).toMatchInlineSnapshot(`
       Category {
-        "allTasks": undefined,
         "company": undefined,
         "createdAt": 1976-06-16T00:00:00.000Z,
-        "firstTask": undefined,
         "id": 1,
         "name": "c1",
-        "secondaryCompany": undefined,
         "secondaryCompanyId": 20,
-        "taskSecondary": undefined,
-        "taskSecondary1": undefined,
-        "taskSecondary2": undefined,
-        "tasks": undefined,
       }
     `)
+  })
+  it('loads reference to field', async () => {
+    const t = await r(Task).findFirst(
+      { id: 1 },
+      {
+        include: {
+          secondaryCategory: {
+            include: {
+              company: true,
+            },
+          },
+        },
+      },
+    )
+    expect(t.secondaryCategory).toMatchInlineSnapshot(`
+      Category {
+        "company": Company {
+          "companyName": "comp20",
+          "id": 20,
+        },
+        "createdAt": 1976-06-16T00:00:00.000Z,
+        "id": 3,
+        "name": "c3",
+        "secondaryCompanyId": 20,
+      }
+    `)
+    expect(t.secondaryCategory.company.companyName).toBe('comp20')
+    t.title = 't2'
+    const t2 = await r(Task).save(t)
+    expect(t.title).toBe('t2')
+    expect(t.secondaryCategory.company.companyName).toBe('comp20')
+    expect(t2.secondaryCategory.company.companyName).toBe('comp20')
+    expect(
+      (await r(Task).update(t, { title: 't3' })).secondaryCategory.company
+        .companyName,
+    ).toBe('comp20')
+    expect(
+      (await r(Task).save({ ...t, title: 't3' })).secondaryCategory.company
+        .companyName,
+    ).toBe('comp20')
+    expect(
+      (await r(Task).update({ ...t }, { title: 't3' })).secondaryCategory
+        .company.companyName,
+    ).toBe('comp20')
+  })
+  it('test update and return of referenced fields', async () => {
+    const t = await r(Task).findFirst(
+      { id: 1 },
+      {
+        include: {
+          secondaryCategory: {
+            include: {
+              company: true,
+            },
+          },
+        },
+      },
+    )
+
+    expect(
+      (await r(Task).update({ ...t }, { title: 't3' })).secondaryCategory
+        .company.companyName,
+    ).toBe('comp20')
+  })
+  it.skip('loads many', async () => {
+    const t = await r(Category).find({
+      include: {
+        tasks: true,
+      },
+    })
+    expect(
+      t.map(({ id, name, tasks }) => ({
+        id,
+        name,
+        tasks: tasks.map((t) => t.id),
+      })),
+    ).toMatchInlineSnapshot()
   })
 })

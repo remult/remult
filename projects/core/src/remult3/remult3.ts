@@ -467,9 +467,9 @@ export interface Paginator<entityType> {
 }
 
 export interface RelationInfo {
-  autoInclude: boolean
-  field: string
   toType: () => any
+  type: 'toOne' | 'toMany'
+  options: relationOptions<any, any, any>
 }
 
 export type relationOptions<fromEntity, toEntity, matchIdEntity> = {
@@ -483,7 +483,7 @@ export type relationOptions<fromEntity, toEntity, matchIdEntity> = {
   orderBy?: EntityOrderBy<toEntity>
   include?: MembersToInclude<toEntity>
   findOptions?: (entity: fromEntity) => FindOptionsBase<toEntity>
-  included?: boolean
+  autoInclude?: boolean
 }
 
 type ObjectMembersOnly<T> = {
