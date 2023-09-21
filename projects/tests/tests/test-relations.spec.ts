@@ -84,7 +84,7 @@ class Category {
   })
   firstTask: Task
   @Fields.date()
-  createdAt = new Date(1976, 5, 16)
+  createdAt = new Date('1976-06-16T00:00:00.000Z')
 
   @Fields.toOne(Category, () => Company)
   company!: Company
