@@ -180,7 +180,7 @@ describe('test relations', () => {
       Category {
         "allTasks": undefined,
         "company": undefined,
-        "createdAt": 1976-06-15T22:00:00.000Z,
+        "createdAt": 1976-06-16T00:00:00.000Z,
         "firstTask": undefined,
         "id": 1,
         "name": "c1",
