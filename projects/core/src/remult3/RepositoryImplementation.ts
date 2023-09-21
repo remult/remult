@@ -536,24 +536,34 @@ export class RepositoryImplementation<entityType>
       let incl = include?.[col.key] as FindOptionsBase<any>
       if (!ei && rel && incl) {
         const otherRepo = this.remult.repo(rel.toType())
-        if (rel.type === 'toOne') {
-          for (const row of result) {
-            let where: EntityFilter<any>[] = []
-            if (typeof rel.options.match === 'string') {
-              where.push(
-                otherRepo.metadata.idMetadata.getIdFilter(
-                  row[rel.options.match],
-                ),
-              )
+        for (const row of result) {
+          let where: EntityFilter<any>[] = []
+          const match = rel.options.match
+          if (typeof match === 'string') {
+            if (rel.type === 'toOne') {
+              where.push(otherRepo.metadata.idMetadata.getIdFilter(row[match]))
+            } else {
+              where.push({
+                [match]: this.metadata.idMetadata.getId(row),
+              })
+            }
+          } else if (typeof match === 'object')
+            for (const key in match) {
+              if (Object.prototype.hasOwnProperty.call(match, key)) {
+                where.push({ [key]: row[match[key]] })
+              }
             }
 
-            row[col.key] = await this.remult.repo(rel.toType()).findFirst(
-              { $and: where },
-              {
-                include: incl.include,
-              },
-            )
-          }
+          const result = await this.remult.repo(rel.toType()).find({
+            where: { $and: where },
+            include: incl.include,
+          })
+          row[col.key] =
+            rel.type === 'toOne'
+              ? result.length == 0
+                ? undefined
+                : result[0]
+              : result
         }
       }
     }

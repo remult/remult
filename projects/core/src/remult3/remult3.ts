@@ -475,8 +475,9 @@ export interface RelationInfo {
 export type relationOptions<fromEntity, toEntity, matchIdEntity> = {
   match?:
     | keyof matchIdEntity
-    | [keyof fromEntity, keyof toEntity]
-    | [[keyof fromEntity, keyof toEntity]]
+    | {
+        [K in keyof toEntity]?: keyof fromEntity
+      }
 
   limit?: number
   where?: EntityFilter<toEntity>

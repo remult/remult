@@ -34,7 +34,10 @@ class Category {
   })
   taskSecondary1: Task[]
   @Fields.toMany(Category, () => Task, {
-    match: [['id', 'secondaryCategoryId']],
+    //match: [['id', 'secondaryCategoryId']],
+    match: {
+      secondaryCategoryId: 'id',
+    },
     limit: 2,
     include: {
       category: true,
@@ -116,7 +119,7 @@ class Task {
   })
   secondaryCategory1!: Category
   @Fields.toOne(Task, () => Category, {
-    match: ['secondaryCategoryId', 'id'],
+    match: { id: 'secondaryCategoryId' },
   })
   secondaryCategory2!: Category
 }
@@ -196,6 +199,8 @@ describe('test relations', () => {
               company: true,
             },
           },
+          secondaryCategory1: { include: { company: true } },
+          secondaryCategory2: { include: { company: true } },
         },
       },
     )
@@ -212,6 +217,8 @@ describe('test relations', () => {
       }
     `)
     expect(t.secondaryCategory.company.companyName).toBe('comp20')
+    expect(t.secondaryCategory1.company.companyName).toBe('comp20')
+    expect(t.secondaryCategory2.company.companyName).toBe('comp20')
     t.title = 't2'
     const t2 = await r(Task).save(t)
     expect(t.title).toBe('t2')
@@ -249,7 +256,7 @@ describe('test relations', () => {
         .company.companyName,
     ).toBe('comp20')
   })
-  it.skip('loads many', async () => {
+  it('loads many', async () => {
     const t = await r(Category).find({
       include: {
         tasks: true,
@@ -261,6 +268,49 @@ describe('test relations', () => {
         name,
         tasks: tasks.map((t) => t.id),
       })),
-    ).toMatchInlineSnapshot()
+    ).toMatchInlineSnapshot(`
+      [
+        {
+          "id": 1,
+          "name": "c1",
+          "tasks": [
+            1,
+            2,
+            3,
+          ],
+        },
+        {
+          "id": 2,
+          "name": "c2",
+          "tasks": [
+            4,
+          ],
+        },
+        {
+          "id": 3,
+          "name": "c3",
+          "tasks": [],
+        },
+      ]
+    `)
+  })
+  it('load recursive', async () => {
+    const t = await r(Category).find({
+      include: {
+        tasks: {
+          include: {
+            secondaryCategory: true,
+          },
+        },
+      },
+    })
+    expect(t[0].tasks[0].secondaryCategory.id).toBe(3)
+  })
+  it('test match and limit', async () => {
+    const c = await r(Category).findFirst({}, { include: {} })
   })
 })
+//[ ] many to one with id and include
+//[ ] optimize fetches
+//[ ] set a recursion limit for auto load
+//[ ] add repo relations methods
