@@ -298,7 +298,7 @@ Let's reuse the same definitions on the Frontend.
 We'll use the entity's metadata to only show the form if the user is allowed to insert
 
 ```vue{8,23}
-// src/Auth.vue
+// src/App.vue
 
 <template>
   <div>

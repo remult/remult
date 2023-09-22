@@ -9,6 +9,7 @@ import type {
   Unsubscribe,
 } from '../live-query/SubscriptionChannel'
 import type { SortSegment } from '../sort'
+import type { EntityBase } from './RepositoryImplementation'
 
 export interface EntityRef<entityType> extends Subscribable {
   hasErrors(): boolean
@@ -176,10 +177,7 @@ export interface EntityMetadata<entityType = any> {
   readonly idMetadata: IdMetadata<entityType>
 }
 
-export declare type OmitEB<T> = Omit<
-  T,
-  keyof import('./RepositoryImplementation').EntityBase
->
+export declare type OmitEB<T> = Omit<T, keyof EntityBase>
 export declare type idType<entityType> = entityType extends { id?: number }
   ? number
   : entityType extends { id?: string }

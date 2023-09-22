@@ -3,7 +3,7 @@
     <img src="https://github.com/remult/remult/raw/master/docs/public/logo.png" width="140" height="140">
   </a>
   <h1>Remult</h1>
-  <p>A CRUD framework for full-stack TypeScript</p>
+  <p>Full-stack CRUD, simplified, with SSOT TypeScript entities</p>
 	<a href="https://circleci.com/gh/remult/remult/tree/master" rel="nofollow">
 		<img alt="CircleCI" src="https://circleci.com/gh/remult/remult/tree/master.svg?style=shield">
 	</a>
@@ -22,8 +22,6 @@
 	<a href="https://discord.gg/GXHk7ZfuG5" rel="nofollow">
 		<img alt="Join Discord" src="https://badgen.net/discord/online-members/GXHk7ZfuG5?icon=discord&label=Discord"/>
 	</a>
-  <a href="https://twitter.com/intent/tweet?text=Remult%20-%20open-source%20CRUD%20framework%20for%20full-stack%20TypeScript%0A%0A%40remultjs%0A&url=https%3A%2F%2Fgithub.com%2Fremult%2Fremult">
-    <img alt="Twitter URL" src="https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Ftwitter.com%2Fintent%2Ftweet%3Ftext%3DRemult%2520-%2520open-source%2520CRUD%2520framework%2520for%2520full-stack%2520TypeScript%250A%250A%2540remultjs%250A%26url%3Dhttps%253A%252F%252Fgithub.com%252Fremult%252Fremult">
   </a>
 </div>
 
