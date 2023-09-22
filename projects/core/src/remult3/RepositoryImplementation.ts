@@ -33,9 +33,11 @@ import type {
   QueryOptions,
   QueryResult,
   RelationInfo,
+  RelationOptions,
   Repository,
   RepositoryRelations,
   Subscribable,
+  ToManyRepository,
 } from './remult3'
 
 import type { Paginator, RefSubscriber, RefSubscriberBase } from './remult3'
@@ -133,8 +135,18 @@ export class RepositoryImplementation<entityType>
     }
     return r
   }
+  relationsProxy = new Proxy(
+    {},
+    {
+      get: (target: any, key: string) => {
+        const rel = getRelationInfo(this.fields.find(key).options)
+        if (!rel) throw Error(key + ' is not a relation')
+        return new MiniRepo(this, rel)
+      },
+    },
+  )
   get relations(): RepositoryRelations<entityType> {
-    return {} as any
+    return this.relationsProxy as any
   }
 
   private _info: EntityFullInfo<entityType>
@@ -537,27 +549,14 @@ export class RepositoryImplementation<entityType>
       if (!ei && rel && incl) {
         const otherRepo = this.remult.repo(rel.toType())
         for (const row of result) {
-          let where: EntityFilter<any>[] = []
-          const match = rel.options.match
-          if (typeof match === 'string') {
-            if (rel.type === 'toOne') {
-              where.push(otherRepo.metadata.idMetadata.getIdFilter(row[match]))
-            } else {
-              where.push({
-                [match]: this.metadata.idMetadata.getId(row),
-              })
-            }
-          } else if (typeof match === 'object')
-            for (const key in match) {
-              if (Object.prototype.hasOwnProperty.call(match, key)) {
-                where.push({ [key]: row[match[key]] })
-              }
-            }
+          let findOptions = this.findOptionsBasedOnRelation(
+            rel,
+            incl,
+            row,
+            otherRepo,
+          )
 
-          const result = await this.remult.repo(rel.toType()).find({
-            where: { $and: where },
-            include: incl.include,
-          })
+          const result = await this.remult.repo(rel.toType()).find(findOptions)
           row[col.key] =
             rel.type === 'toOne'
               ? result.length == 0
@@ -568,6 +567,52 @@ export class RepositoryImplementation<entityType>
       }
     }
     return result
+  }
+  /*@internal */
+
+  findOptionsBasedOnRelation(
+    rel: RelationInfo,
+    moreFindOptions: FindOptionsBase<any>,
+    row: Awaited<entityType>,
+    otherRepo: Repository<unknown>,
+  ) {
+    let where: EntityFilter<any>[] = []
+    let findOptions: FindOptions<any> = {}
+    let findOptionsSources = [rel.options]
+    if (typeof moreFindOptions === 'object') {
+      findOptionsSources.push(moreFindOptions)
+    }
+    if (rel.options.findOptions)
+      findOptionsSources.push(rel.options.findOptions(row))
+
+    for (const source of findOptionsSources) {
+      if (source.where) where.push(source.where)
+      for (const key of [
+        'limit',
+        'include',
+        'orderBy',
+      ] as (keyof typeof rel.options)[]) {
+        if (source[key]) findOptions[key] = source[key]
+      }
+    }
+    const match = rel.options.match
+    if (typeof match === 'string') {
+      if (rel.type === 'toOne') {
+        where.push(otherRepo.metadata.idMetadata.getIdFilter(row[match]))
+      } else {
+        where.push({
+          [match]: this.metadata.idMetadata.getId(row),
+        })
+      }
+    } else if (typeof match === 'object')
+      for (const key in match) {
+        if (Object.prototype.hasOwnProperty.call(match, key)) {
+          where.push({ [key]: row[match[key]] })
+        }
+      }
+    findOptions.where = { $and: where }
+    if (rel.type === 'toOne') findOptions.limit = 1
+    return findOptions
   }
 
   private async mapRawDataToResult(r: any, loadFields: FieldMetadata[]) {
@@ -2442,4 +2487,54 @@ export type RepositoryOverloads<entityType> =
 
 function getRelationInfo(options: FieldOptions) {
   return options?.[relationInfoMember] as RelationInfo
+}
+class MiniRepo implements ToManyRepository<any, any> {
+  constructor(
+    private origRepo: RepositoryImplementation<any>,
+    private info: RelationInfo,
+  ) {}
+  count(item: OmitEB<any>, where?: EntityFilter<any>): Promise<number> {
+    const otherRepo = this.origRepo.remult.repo(this.info.toType())
+    let findOptions = this.origRepo.findOptionsBasedOnRelation(
+      this.info,
+      { where },
+      item,
+      otherRepo,
+    )
+    return otherRepo.count(findOptions.where)
+  }
+  find(item: OmitEB<any>, options?: FindOptions<any>): Promise<any[]> {
+    const otherRepo = this.origRepo.remult.repo(this.info.toType())
+    let findOptions = this.origRepo.findOptionsBasedOnRelation(
+      this.info,
+      options,
+      item,
+      otherRepo,
+    )
+    return otherRepo.find(findOptions)
+  }
+  insert(item: any, relatedItem: Partial<OmitEB<any>>[]): Promise<any[]>
+  insert(item: any, relatedItem: Partial<OmitEB<any>>): Promise<any>
+  insert(item: any, relatedItem: any): Promise<any[]> | Promise<any> {
+    const otherRepo = this.origRepo.remult.repo(this.info.toType())
+    let findOptions = this.origRepo.findOptionsBasedOnRelation(
+      this.info,
+      undefined,
+      item,
+      otherRepo,
+    )
+    if (Array.isArray(relatedItem)) {
+      return otherRepo.insert(relatedItem.map((x) => updateItem(x)))
+    }
+    return otherRepo.insert(updateItem(relatedItem))
+
+    function updateItem(relatedItem: any): any {
+      __updateEntityBasedOnWhere(
+        otherRepo.metadata,
+        findOptions.where,
+        relatedItem,
+      )
+      return relatedItem
+    }
+  }
 }

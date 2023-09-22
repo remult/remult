@@ -6,9 +6,9 @@ import {
   FindOptions,
   InMemoryDataProvider,
   Remult,
-} from '../../core'
-import type { ClassType } from '../../core/classType'
-import { TestDataProvider } from '../dbs/TestDataProviderWithStats'
+} from '../../../core'
+import type { ClassType } from '../../../core/classType'
+import { TestDataProvider } from '../../dbs/TestDataProviderWithStats'
 
 @Entity('company')
 class Company {
@@ -27,12 +27,12 @@ class Category {
   @Fields.toMany(Category, () => Task, 'category')
   tasks: Task[]
   @Fields.toMany(Category, () => Task, 'secondaryCategoryId')
-  taskSecondary: Task[]
+  tasksSecondary: Task[]
   @Fields.toMany(Category, () => Task, {
     match: 'secondaryCategoryId',
     limit: 2,
   })
-  taskSecondary1: Task[]
+  tasksSecondary1: Task[]
   @Fields.toMany(Category, () => Task, {
     //match: [['id', 'secondaryCategoryId']],
     match: {
@@ -54,7 +54,7 @@ class Category {
       id: 'desc',
     },
   })
-  taskSecondary2: Task[]
+  tasksSecondary2: Task[]
   @Fields.toMany(Category, () => Task, {
     findOptions: (category) => ({
       limit: 2,
@@ -72,6 +72,9 @@ class Category {
   })
   allTasks: Task[]
   @Fields.toOne(Category, () => Task, {
+    orderBy: {
+      id: 'desc',
+    },
     findOptions: (category) => ({
       where: {
         $or: [
@@ -85,7 +88,7 @@ class Category {
       },
     }),
   })
-  firstTask: Task
+  lastTask: Task
   @Fields.date()
   createdAt = new Date('1976-06-16T00:00:00.000Z')
 
@@ -306,11 +309,33 @@ describe('test relations', () => {
     })
     expect(t[0].tasks[0].secondaryCategory.id).toBe(3)
   })
+
   it('test match and limit', async () => {
-    const c = await r(Category).findFirst({}, { include: {} })
+    remult.dataProvider = new InMemoryDataProvider()
+    {
+      const [c1, c2] = await r(Category).insert([
+        { id: 1, name: 'c1' },
+        { id: 2, name: 'c2' },
+      ])
+      await r(Task).insert([
+        { id: 1, category: c1 },
+        { id: 2, category: c2 },
+        { id: 3, category: c1 },
+      ])
+    }
+    {
+      const [c1, c2] = await r(Category).find({
+        include: {
+          lastTask: true,
+        },
+      })
+      expect(c1.lastTask.id).toBe(3)
+      expect(c2.lastTask.id).toBe(2)
+    }
   })
 })
 //[ ] many to one with id and include
 //[ ] optimize fetches
 //[ ] set a recursion limit for auto load
 //[ ] add repo relations methods
+//[ ] test auto include and it's cancelation

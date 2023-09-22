@@ -469,10 +469,10 @@ export interface Paginator<entityType> {
 export interface RelationInfo {
   toType: () => any
   type: 'toOne' | 'toMany'
-  options: relationOptions<any, any, any>
+  options: RelationOptions<any, any, any>
 }
-
-export type relationOptions<fromEntity, toEntity, matchIdEntity> = {
+//[ ] - what to do about count?
+export type RelationOptions<fromEntity, toEntity, matchIdEntity> = {
   match?:
     | keyof matchIdEntity
     | {
@@ -529,4 +529,18 @@ export type ToManyRepository<fromEntity, toEntity> = {
     fromEntity: OmitEB<fromEntity>,
     options?: FindOptions<toEntity>,
   ): Promise<toEntity[]>
+  count(
+    fromEntity: OmitEB<fromEntity>,
+    where?: EntityFilter<toEntity>,
+  ): Promise<number>
+  /**Insert an item or item[] to the related entity */
+
+  insert(
+    item: fromEntity,
+    relatedItem: Partial<OmitEB<toEntity>>[],
+  ): Promise<toEntity[]>
+  insert(
+    item: fromEntity,
+    relatedItem: Partial<OmitEB<toEntity>>,
+  ): Promise<toEntity>
 }

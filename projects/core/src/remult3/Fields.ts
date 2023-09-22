@@ -3,7 +3,7 @@ import { v4 as uuid } from 'uuid'
 import type { ClassType } from '../../classType'
 import type { FieldOptions } from '../column-interfaces'
 import type { Remult } from '../context'
-import type { RelationInfo, relationOptions } from './remult3'
+import type { RelationInfo, RelationOptions } from './remult3'
 import { ValueConverters } from '../valueConverters'
 import { getEntityRef } from './getEntityRef'
 import {
@@ -277,13 +277,13 @@ export class Fields {
     entity: ClassType<entityType>,
     toEntityType: () => ClassType<toEntityType>,
     options:
-      | relationOptions<entityType, toEntityType, toEntityType>
+      | RelationOptions<entityType, toEntityType, toEntityType>
       | keyof toEntityType,
   ) {
-    let op: relationOptions<entityType, toEntityType, toEntityType> =
+    let op: RelationOptions<entityType, toEntityType, toEntityType> =
       (typeof options === 'string'
         ? { match: options }
-        : options) as any as relationOptions<
+        : options) as any as RelationOptions<
         entityType,
         toEntityType,
         toEntityType
@@ -303,15 +303,15 @@ export class Fields {
     entity: ClassType<entityType>,
     toEntityType: () => ClassType<toEntityType>,
     options?:
-      | relationOptions<entityType, toEntityType, entityType>
+      | RelationOptions<entityType, toEntityType, entityType>
       | keyof entityType,
   ) {
-    let op: relationOptions<entityType, toEntityType, entityType> =
+    let op: RelationOptions<entityType, toEntityType, entityType> =
       (typeof options === 'string'
         ? { match: options }
         : !options
         ? {}
-        : options) as any as relationOptions<
+        : options) as any as RelationOptions<
         entityType,
         toEntityType,
         entityType
