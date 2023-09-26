@@ -1156,6 +1156,24 @@ export function commonDbTests(
       expect(aTask.completed).toBe(true)
     }
   })
+  it('test date', async () => {
+    const person = class {
+      id = 0
+      theDate = new Date()
+    }
+    describeClass(person, Entity('person', { allowApiCrud: true }), {
+      id: Fields.integer(),
+      theDate: Fields.date(),
+    })
+    const repo = await createEntity(person)
+    await repo.insert({ theDate: new Date(1976, 5, 16, 8, 32, 0, 0) })
+    expect(await repo.findFirst()).toMatchInlineSnapshot(`
+      person {
+        "id": 0,
+        "theDate": 1976-06-16T06:32:00.000Z,
+      }
+    `)
+  })
   it('task with enum', async () => {
     const r = await createEntity(tasksWithEnum)
     await r.insert({
