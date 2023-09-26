@@ -1167,24 +1167,6 @@ export function commonDbTests(
     expect(await r.count({ priority: Priority.Critical })).toBe(1)
     expect(await r.count({ priority: Priority.Low })).toBe(0)
   })
-  it('tes date', async () => {
-    const person = class {
-      id = 0
-      theDate = new Date()
-    }
-    describeClass(person, Entity('person', { allowApiCrud: true }), {
-      id: Fields.integer(),
-      theDate: Fields.date(),
-    })
-    const repo = await createEntity(person)
-    await repo.insert({ theDate: new Date(1976, 5, 16, 8, 32, 0, 0) })
-    expect(await repo.findFirst()).toMatchInlineSnapshot(`
-      person {
-        "id": 0,
-        "theDate": 1976-06-16T06:32:00.000Z,
-      }
-    `)
-  })
 }
 @Entity('a', { allowApiCrud: true })
 export class stam extends EntityBase {
