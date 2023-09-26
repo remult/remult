@@ -1186,7 +1186,7 @@ export function commonDbTests(
       theDate: Fields.date(),
     })
     const repo = await createEntity(person)
-    await repo.insert({ theDate: new Date(1976, 5, 16, 8, 32, 0, 0) })
+    await repo.insert({ theDate: new Date('1976-06-16T06:32:00.000Z') })
     expect(await repo.findFirst()).toMatchInlineSnapshot(`
       person {
         "id": 0,
