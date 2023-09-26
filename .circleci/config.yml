@@ -25,6 +25,11 @@ jobs:
           MYSQL_ROOT_PASSWORD: MASTERKEY
           MYSQL_DATABASE: test
           MYSQL_PASSWORD: MASTERKEY
+       - image: cimg/mysql:8.0
+        environment:
+          MYSQL_ROOT_PASSWORD: MASTERKEY
+          MYSQL_DATABASE: test
+          MYSQL_PASSWORD: MASTERKEY
     environment:
       DATABASE_URL: postgres://postgres:password@127.0.0.1:5432/test_db # Connection string
     #  MONGO_TEST_URL: $MONGO_TEST_URL
