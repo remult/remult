@@ -466,13 +466,13 @@ export interface Paginator<entityType> {
   count(): Promise<number>
 }
 
+//[ ] - decided to keep, to reduce chance of conflicts
 export interface RelationInfo {
-  toType: () => any //[ ] - move to hidden in relation options //[ ] - make symbol
-  type: 'toOne' | 'toMany' //[ ] - move to hidden in relation options//[ ] - make symbol
-  options: RelationOptions<any, any, any, any> // [ ] remove
+  toType: () => any
+  type: 'toOne' | 'toMany'
 }
 //[ ] - what to do about count?
-//[ ] - field options ?
+
 export type RelationOptions<
   fromEntity,
   toEntity,

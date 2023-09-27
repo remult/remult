@@ -299,12 +299,13 @@ export class Fields {
       FindOptions<toEntityType>
     >
     return Field(() => undefined!, {
+      ...op,
       serverExpression: () => undefined,
       //@ts-ignore
       [relationInfoMember]: {
         //field,
         toType: toEntityType,
-        options: op,
+
         type: 'toMany',
       } satisfies RelationInfo,
     })
@@ -334,22 +335,23 @@ export class Fields {
         !op.findOptions?.where)
     ) {
       return Field(toEntityType, {
+        ...op,
         //@ts-ignore
         [relationInfoMember]: {
           //field,
           toType: toEntityType,
-          options: op,
           type: 'toOne',
         } satisfies RelationInfo,
       })
     } else
       return Field(() => undefined!, {
+        ...op,
         serverExpression: () => undefined,
         //@ts-ignore
         [relationInfoMember]: {
           //field,
           toType: toEntityType,
-          options: op,
+
           type: 'toOne',
         } satisfies RelationInfo,
       })

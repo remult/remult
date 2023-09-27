@@ -139,9 +139,10 @@ export class RepositoryImplementation<entityType>
     {},
     {
       get: (target: any, key: string) => {
-        const rel = getRelationInfo(this.fields.find(key).options)
+        const options = this.fields.find(key).options
+        const rel = getRelationInfo(options)
         if (!rel) throw Error(key + ' is not a relation')
-        return new MiniRepo(this, rel)
+        return new MiniRepo(this, rel, options)
       },
     },
   )
@@ -497,7 +498,7 @@ export class RepositoryImplementation<entityType>
       if (ei) {
         let isRelation: RelationInfo = col.options?.[relationInfoMember]
         let load = isRelation
-          ? isRelation.options.defaultIncluded
+          ? (col.options as RelationOptions<any, any, any>)?.defaultIncluded
           : !col.options.lazy
         if (loadFields !== undefined) load = loadFields.includes(col)
         if (include) load = include[col.key]
@@ -551,6 +552,7 @@ export class RepositoryImplementation<entityType>
         for (const row of result) {
           let findOptions = this.findOptionsBasedOnRelation(
             rel,
+            col.options,
             incl,
             row,
             otherRepo,
@@ -572,6 +574,7 @@ export class RepositoryImplementation<entityType>
 
   findOptionsBasedOnRelation(
     rel: RelationInfo,
+    options: RelationOptions<any, any, any>,
     moreFindOptions: FindOptions<any>,
     row: Awaited<entityType>,
     otherRepo: Repository<unknown>,
@@ -579,10 +582,10 @@ export class RepositoryImplementation<entityType>
     let where: EntityFilter<any>[] = []
     let findOptions: FindOptions<any> = {}
     let findOptionsSources: FindOptions<any>[] = []
-    if (typeof rel.options.findOptions === 'function') {
-      findOptionsSources.push(rel.options.findOptions(row))
-    } else if (typeof rel.options.findOptions === 'object')
-      findOptionsSources.push(rel.options.findOptions)
+    if (typeof options.findOptions === 'function') {
+      findOptionsSources.push(options.findOptions(row))
+    } else if (typeof options.findOptions === 'object')
+      findOptionsSources.push(options.findOptions)
     if (typeof moreFindOptions === 'object') {
       findOptionsSources.push(moreFindOptions)
     }
@@ -599,20 +602,20 @@ export class RepositoryImplementation<entityType>
       }
     }
 
-    if (rel.options.field) {
+    if (options.field) {
       if (rel.type === 'toOne') {
         where.push(
-          otherRepo.metadata.idMetadata.getIdFilter(row[rel.options.field]),
+          otherRepo.metadata.idMetadata.getIdFilter(row[options.field]),
         )
       } else {
         where.push({
-          [rel.options.field]: this.metadata.idMetadata.getId(row),
+          [options.field]: this.metadata.idMetadata.getId(row),
         })
       }
-    } else if (rel.options.fields)
-      for (const key in rel.options.fields) {
-        if (Object.prototype.hasOwnProperty.call(rel.options.fields, key)) {
-          where.push({ [key]: row[rel.options.fields[key]] })
+    } else if (options.fields)
+      for (const key in options.fields) {
+        if (Object.prototype.hasOwnProperty.call(options.fields, key)) {
+          where.push({ [key]: row[options.fields[key]] })
         }
       }
     findOptions.where = { $and: where }
@@ -1995,7 +1998,7 @@ export function FieldType<valueType = any>(
   }
 }
 
-export const relationInfoMember = '!remult!relationInfo' //[ ] - make symbol
+export const relationInfoMember = '!remult!relationInfo' //[ ] - don't want to make symbol - so that users can get to this data if they want  to
 
 export function isAutoIncrement(f: FieldMetadata) {
   return f.options?.valueConverter?.fieldTypeInDb === 'autoincrement'
@@ -2497,11 +2500,13 @@ class MiniRepo implements ToManyRepository<any, any> {
   constructor(
     private origRepo: RepositoryImplementation<any>,
     private info: RelationInfo,
+    private options: RelationOptions<any, any, any>,
   ) {}
   count(item: OmitEB<any>, where?: EntityFilter<any>): Promise<number> {
     const otherRepo = this.origRepo.remult.repo(this.info.toType())
     let findOptions = this.origRepo.findOptionsBasedOnRelation(
       this.info,
+      this.options,
       { where },
       item,
       otherRepo,
@@ -2512,6 +2517,7 @@ class MiniRepo implements ToManyRepository<any, any> {
     const otherRepo = this.origRepo.remult.repo(this.info.toType())
     let findOptions = this.origRepo.findOptionsBasedOnRelation(
       this.info,
+      this.options,
       options,
       item,
       otherRepo,
@@ -2524,6 +2530,7 @@ class MiniRepo implements ToManyRepository<any, any> {
     const otherRepo = this.origRepo.remult.repo(this.info.toType())
     let findOptions = this.origRepo.findOptionsBasedOnRelation(
       this.info,
+      this.options,
       undefined,
       item,
       otherRepo,
