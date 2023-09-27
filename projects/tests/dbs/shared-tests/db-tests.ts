@@ -101,6 +101,26 @@ export function commonDbTests(
     let s = await entityWithValidations.create4RowsInDp(createEntity)
     expect((await s.find({ where: { $or: [{}, { myId: 3 }] } })).length).toBe(4)
   })
+  it('filter with or and and', async () => {
+    let s = await entityWithValidations.create4RowsInDp(createEntity)
+    expect(
+      (
+        await s.find({
+          where: {
+            myId: { '<=': 2 },
+            $or: [
+              {
+                myId: 1,
+              },
+              {
+                myId: 3,
+              },
+            ],
+          },
+        })
+      ).length,
+    ).toBe(1)
+  })
 
   it('entity with different id column still works well', async () => {
     let s = await createEntity(entityWithValidations)

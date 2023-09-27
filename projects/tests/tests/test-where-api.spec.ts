@@ -59,10 +59,51 @@ describe('test where stuff', () => {
     const json = await Filter.fromEntityFilter(repo.metadata, {
       $and: [{ id: [1, 2] }, { id: [2] }],
     }).toJson()
-
     expect(
       await repo.count(Filter.entityFilterFromJson(repo.metadata, json)),
     ).toBe(1)
+  })
+  it('test or and', async () => {
+    const json = await Filter.fromEntityFilter(repo.metadata, {
+      $and: [{ id: [2], $or: [{ id: 1 }, { id: 3 }] }],
+    }).toJson()
+
+    expect(
+      await repo.count(Filter.entityFilterFromJson(repo.metadata, json)),
+    ).toBe(0)
+  })
+  it('test or and json', async () => {
+    let json = {
+      id: 2,
+      OR: [
+        {
+          id: 1,
+        },
+        {
+          id: 3,
+        },
+      ],
+    }
+    expect(Filter.entityFilterFromJson(repo.metadata, json))
+      .toMatchInlineSnapshot(`
+        {
+          "$and": [
+            {
+              "id": 2,
+            },
+            {
+              "$or": [
+                {
+                  "id": 1,
+                },
+                {
+                  "id": 3,
+                },
+              ],
+            },
+          ],
+        }
+      `)
   })
 
   it('test basics', async () => {
