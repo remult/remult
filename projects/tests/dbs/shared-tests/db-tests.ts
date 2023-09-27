@@ -101,6 +101,26 @@ export function commonDbTests(
     let s = await entityWithValidations.create4RowsInDp(createEntity)
     expect((await s.find({ where: { $or: [{}, { myId: 3 }] } })).length).toBe(4)
   })
+  it('filter with or and and', async () => {
+    let s = await entityWithValidations.create4RowsInDp(createEntity)
+    expect(
+      (
+        await s.find({
+          where: {
+            myId: { '<=': 2 },
+            $or: [
+              {
+                myId: 1,
+              },
+              {
+                myId: 3,
+              },
+            ],
+          },
+        })
+      ).length,
+    ).toBe(1)
+  })
 
   it('entity with different id column still works well', async () => {
     let s = await createEntity(entityWithValidations)
@@ -1156,6 +1176,24 @@ export function commonDbTests(
       const aTask = await taskRepo.findId(1, { useCache: false })
       expect(aTask.completed).toBe(true)
     }
+  })
+  it('test date', async () => {
+    const person = class {
+      id = 0
+      theDate = new Date()
+    }
+    describeClass(person, Entity('person', { allowApiCrud: true }), {
+      id: Fields.integer(),
+      theDate: Fields.date(),
+    })
+    const repo = await createEntity(person)
+    await repo.insert({ theDate: new Date('1976-06-16T06:32:00.000Z') })
+    expect(await repo.findFirst()).toMatchInlineSnapshot(`
+      person {
+        "id": 0,
+        "theDate": 1976-06-16T06:32:00.000Z,
+      }
+    `)
   })
   it('task with enum', async () => {
     const r = await createEntity(tasksWithEnum)
