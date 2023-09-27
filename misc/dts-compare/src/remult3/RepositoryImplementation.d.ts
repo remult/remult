@@ -3,23 +3,26 @@ import { LookupColumn } from '../column';
 import type { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from '../column-interfaces';
 import { Remult } from '../context';
 import type { EntityOptions } from '../entity';
-import type { ControllerRef, EntityFilter, EntityMetadata, EntityOrderBy, EntityRef, FieldRef, FieldsMetadata, FieldsRef, FindFirstOptions, FindFirstOptionsBase, FindOptions, IdMetadata, LiveQuery, OmitEB, QueryOptions, QueryResult, Repository, Subscribable } from './remult3';
+import type { ControllerRef, EntityFilter, EntityMetadata, EntityOrderBy, EntityRef, FieldRef, FieldsMetadata, FieldsRef, FindFirstOptions, FindFirstOptionsBase, FindOptions, IdMetadata, LiveQuery, OmitEB, QueryOptions, QueryResult, Repository, RepositoryRelations, Subscribable } from './remult3';
 import type { RefSubscriber } from './remult3';
 import type { entityEventListener } from '../__EntityValueProvider';
 import type { DataProvider, EntityDataProvider, EntityDataProviderFindOptions, ErrorInfo } from '../data-interfaces';
 import type { Unsubscribe } from '../live-query/SubscriptionChannel';
+import type { columnInfo } from './columnInfo';
 export declare class RepositoryImplementation<entityType> implements Repository<entityType> {
     private entity;
     remult: Remult;
     private dataProvider;
     createAfterFilter(orderBy: EntityOrderBy<entityType>, lastRow: entityType): Promise<EntityFilter<entityType>>;
+    relationsProxy: any;
+    get relations(): RepositoryRelations<entityType>;
     private _info;
     private __edp;
     private get edp();
     constructor(entity: ClassType<entityType>, remult: Remult, dataProvider: DataProvider);
     idCache: Map<any, any>;
-    getCachedById(id: any): entityType;
-    getCachedByIdAsync(id: any): Promise<entityType>;
+    getCachedById(id: any, doNotLoadIfNotFound: boolean): entityType;
+    getCachedByIdAsync(id: any, doNotLoadIfNotFound: boolean): Promise<entityType>;
     addToCache(item: entityType): void;
     get metadata(): EntityMetadata<entityType>;
     listeners: entityEventListener<entityType>[];
@@ -218,28 +221,8 @@ declare class EntityFullInfo<T> implements EntityMetadata<T> {
     caption: string;
 }
 export declare function FieldType<valueType = any>(...options: (FieldOptions<any, valueType> | ((options: FieldOptions<any, valueType>, remult: Remult) => void))[]): (target: any, context?: any) => any;
-export declare class Fields {
-    /**
-     * Stored as a JSON.stringify - to store as json use Fields.json
-     */
-    static object<entityType = any, valueType = any>(...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]): (target: any, context: string | ClassFieldDecoratorContextStub<entityType, valueType | undefined>, c?: any) => void;
-    static json<entityType = any, valueType = any>(...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]): (target: any, context: string | ClassFieldDecoratorContextStub<entityType, valueType | undefined>, c?: any) => void;
-    static dateOnly<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]): (target: any, context: string | ClassFieldDecoratorContextStub<entityType, Date | undefined>, c?: any) => void;
-    static date<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]): (target: any, context: string | ClassFieldDecoratorContextStub<entityType, Date | undefined>, c?: any) => void;
-    static integer<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]): (target: any, context: string | ClassFieldDecoratorContextStub<entityType, number | undefined>, c?: any) => void;
-    static autoIncrement<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]): (target: any, context: string | ClassFieldDecoratorContextStub<entityType, number | undefined>, c?: any) => void;
-    static number<entityType = any>(...options: (FieldOptions<entityType, Number> | ((options: FieldOptions<entityType, Number>, remult: Remult) => void))[]): (target: any, context: string | ClassFieldDecoratorContextStub<entityType, number | undefined>, c?: any) => void;
-    static createdAt<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]): (target: any, context: string | ClassFieldDecoratorContextStub<entityType, Date | undefined>, c?: any) => void;
-    static updatedAt<entityType = any>(...options: (FieldOptions<entityType, Date> | ((options: FieldOptions<entityType, Date>, remult: Remult) => void))[]): (target: any, context: string | ClassFieldDecoratorContextStub<entityType, Date | undefined>, c?: any) => void;
-    static uuid<entityType = any>(...options: (FieldOptions<entityType, string> | ((options: FieldOptions<entityType, string>, remult: Remult) => void))[]): (target: any, context: string | ClassFieldDecoratorContextStub<entityType, string | undefined>, c?: any) => void;
-    static cuid<entityType = any>(...options: (FieldOptions<entityType, string> | ((options: FieldOptions<entityType, string>, remult: Remult) => void))[]): (target: any, context: string | ClassFieldDecoratorContextStub<entityType, string | undefined>, c?: any) => void;
-    static string<entityType = any>(...options: (StringFieldOptions<entityType> | ((options: StringFieldOptions<entityType>, remult: Remult) => void))[]): (target: any, context: string | ClassFieldDecoratorContextStub<entityType, string | undefined>, c?: any) => void;
-    static boolean<entityType = any>(...options: (FieldOptions<entityType, boolean> | ((options: FieldOptions<entityType, boolean>, remult: Remult) => void))[]): (target: any, context: string | ClassFieldDecoratorContextStub<entityType, boolean | undefined>, c?: any) => void;
-}
+export declare const relationInfoMember = "!remult!relationInfo";
 export declare function isAutoIncrement(f: FieldMetadata): boolean;
-export interface StringFieldOptions<entityType = any> extends FieldOptions<entityType, string> {
-    maxLength?: number;
-}
 export declare function ValueListFieldType<valueType extends ValueListItem = any>(...options: (ValueListFieldOptions<any, valueType> | ((options: FieldOptions<any, valueType>, remult: Remult) => void))[]): (type: ClassType<valueType>, context?: any) => void;
 export interface ValueListFieldOptions<entityType, valueType> extends FieldOptions<entityType, valueType> {
     getValues?: () => valueType[];
@@ -277,26 +260,9 @@ export interface ClassDecoratorContextStub<Class extends new (...args: any) => a
     readonly name: string | undefined;
     addInitializer(initializer: (this: Class) => void): void;
 }
-/**Decorates fields that should be used as fields.
- * for more info see: [Field Types](https://remult.dev/docs/field-types.html)
- *
- * FieldOptions can be set in two ways:
- * @example
- * // as an object
- * @Fields.string({ includeInApi:false })
- * title='';
- * @example
- * // as an arrow function that receives `remult` as a parameter
- * @Fields.string((options,remult) => options.includeInApi = true)
- * title='';
- */
-export declare function Field<entityType = any, valueType = any>(valueType: () => ClassType<valueType>, ...options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[]): (target: any, context: ClassFieldDecoratorContextStub<entityType, valueType | undefined> | string, c?: any) => void;
 export declare const storableMember: unique symbol;
+export declare function buildOptions<entityType = any, valueType = any>(options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[], remult: Remult): FieldOptions<entityType, valueType>;
 export declare function decorateColumnSettings<valueType>(settings: FieldOptions<any, valueType>, remult: Remult): FieldOptions<any, valueType>;
-interface columnInfo {
-    key: string;
-    settings: (remult: Remult) => FieldOptions;
-}
 export declare class EntityBase {
     get _(): EntityRef<this>;
     save(): Promise<this>;
@@ -304,9 +270,6 @@ export declare class EntityBase {
     delete(): Promise<void>;
     isNew(): boolean;
     get $(): FieldsRef<this>;
-}
-export declare class IdEntity extends EntityBase {
-    id: string;
 }
 export declare class ControllerBase {
     protected remult: Remult;
@@ -328,5 +291,4 @@ export declare function getEntityMetadata<entityType>(entity: EntityMetadataOver
 export declare function getRepository<entityType>(entity: RepositoryOverloads<entityType>): Repository<entityType>;
 export type EntityMetadataOverloads<entityType> = Repository<entityType> | EntityMetadata<entityType> | ClassType<entityType>;
 export type RepositoryOverloads<entityType> = Repository<entityType> | ClassType<entityType>;
-export declare function checkTarget(target: any): void;
 export {};

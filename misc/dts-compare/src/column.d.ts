@@ -3,7 +3,7 @@ import type { RepositoryImplementation } from './remult3/RepositoryImplementatio
 export declare function makeTitle(name: string): string;
 export declare class LookupColumn<T> {
     private repository;
-    id: idType<T>;
+    private isManyToOneRelation;
     toJson(): any;
     setId(val: any): void;
     waitLoadOf(id: any): Promise<T>;
@@ -12,7 +12,8 @@ export declare class LookupColumn<T> {
         item: T;
     };
     set(item: T): void;
-    constructor(repository: RepositoryImplementation<T>, id: idType<T>);
+    id: idType<T>;
+    constructor(repository: RepositoryImplementation<T>, isManyToOneRelation: any);
     get item(): T;
     waitLoad(): Promise<T>;
 }

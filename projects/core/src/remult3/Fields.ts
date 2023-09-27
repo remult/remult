@@ -282,7 +282,7 @@ export class Fields {
   ) {
     let op: RelationOptions<entityType, toEntityType, toEntityType> =
       (typeof options === 'string'
-        ? { match: options }
+        ? { field: options }
         : options) as any as RelationOptions<
         entityType,
         toEntityType,
@@ -308,7 +308,7 @@ export class Fields {
   ) {
     let op: RelationOptions<entityType, toEntityType, entityType> =
       (typeof options === 'string'
-        ? { match: options }
+        ? { field: options }
         : !options
         ? {}
         : options) as any as RelationOptions<
@@ -316,7 +316,13 @@ export class Fields {
         toEntityType,
         entityType
       >
-    if (!options || (!op.match && !op.where && !op.findOptions)) {
+    if (
+      !options ||
+      (!op.fields &&
+        !op.field &&
+        typeof op.findOptions !== 'function' &&
+        !op.findOptions?.where)
+    ) {
       return Field(toEntityType, {
         //@ts-ignore
         [relationInfoMember]: {

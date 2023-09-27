@@ -20,11 +20,13 @@ class Category {
   @Fields.toMany(Category, () => Task, 'categoryId')
   tasks: Task[]
   @Fields.toMany(Category, () => Task, {
-    match: {
+    fields: {
       categoryId: 'id',
     },
-    where: {
-      completed: true,
+    findOptions: {
+      where: {
+        completed: true,
+      },
     },
   })
   completedTask: Task[]

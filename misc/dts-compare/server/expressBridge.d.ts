@@ -3,7 +3,7 @@ import type { UserInfo } from '../src/context';
 import { Remult } from '../src/context';
 import type { DataProvider } from '../src/data-interfaces';
 import type { LiveQueryStorage, SubscriptionServer } from '../src/live-query/SubscriptionServer';
-import { IdEntity } from '../src/remult3/RepositoryImplementation';
+import { IdEntity } from '../src/remult3/IdEntity';
 import type { Repository } from '../src/remult3/remult3';
 import type { queuedJobInfoResponse } from '../src/server-action';
 export interface RemultServerOptions<RequestType> {

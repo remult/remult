@@ -29,29 +29,31 @@ class Category {
   @Fields.toMany(Category, () => Task, 'secondaryCategoryId')
   tasksSecondary: Task[]
   @Fields.toMany(Category, () => Task, {
-    match: 'secondaryCategoryId',
+    field: 'secondaryCategoryId',
     limit: 2,
   })
   tasksSecondary1: Task[]
   @Fields.toMany(Category, () => Task, {
     //match: [['id', 'secondaryCategoryId']],
-    match: {
+    fields: {
       secondaryCategoryId: 'id',
     },
     limit: 2,
-    include: {
-      category: true,
-      secondaryCategory: {
-        include: {
-          tasks: true,
+    findOptions: {
+      include: {
+        category: true,
+        secondaryCategory: {
+          include: {
+            tasks: true,
+          },
         },
       },
-    },
-    where: {
-      completed: true,
-    },
-    orderBy: {
-      id: 'desc',
+      where: {
+        completed: true,
+      },
+      orderBy: {
+        id: 'desc',
+      },
     },
   })
   tasksSecondary2: Task[]
@@ -72,10 +74,10 @@ class Category {
   })
   allTasks: Task[]
   @Fields.toOne(Category, () => Task, {
-    orderBy: {
-      id: 'desc',
-    },
     findOptions: (category) => ({
+      orderBy: {
+        id: 'desc',
+      },
       where: {
         $or: [
           {
@@ -118,11 +120,11 @@ class Task {
   @Fields.toOne(Task, () => Category, 'secondaryCategoryId')
   secondaryCategory!: Category
   @Fields.toOne(Task, () => Category, {
-    match: 'secondaryCategoryId',
+    field: 'secondaryCategoryId',
   })
   secondaryCategory1!: Category
   @Fields.toOne(Task, () => Category, {
-    match: { id: 'secondaryCategoryId' },
+    fields: { id: 'secondaryCategoryId' },
   })
   secondaryCategory2!: Category
 }

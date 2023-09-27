@@ -1,4 +1,4 @@
-import type { ErrorInfo } from '../..'
+import type { ErrorInfo, FieldOptions } from '../..'
 import type { ClassType } from '../../classType'
 import type { entityEventListener } from '../__EntityValueProvider'
 import type { FieldMetadata } from '../column-interfaces'
@@ -467,25 +467,24 @@ export interface Paginator<entityType> {
 }
 
 export interface RelationInfo {
-  toType: () => any
-  type: 'toOne' | 'toMany'
-  options: RelationOptions<any, any, any>
+  toType: () => any //[ ] - move to hidden in relation options //[ ] - make symbol
+  type: 'toOne' | 'toMany' //[ ] - move to hidden in relation options//[ ] - make symbol
+  options: RelationOptions<any, any, any> // [ ] remove
 }
 //[ ] - what to do about count?
+//[ ] - field options ?
 export type RelationOptions<fromEntity, toEntity, matchIdEntity> = {
-  match?:
-    | keyof matchIdEntity
-    | {
-        [K in keyof toEntity]?: keyof fromEntity
-      }
-
-  limit?: number
-  where?: EntityFilter<toEntity>
-  orderBy?: EntityOrderBy<toEntity>
-  include?: MembersToInclude<toEntity>
-  findOptions?: (entity: fromEntity) => FindOptionsBase<toEntity>
-  autoInclude?: boolean
-}
+  fields?: {
+    //[ ] - consider enforcing types
+    [K in keyof toEntity]?: keyof fromEntity
+  }
+  field?: keyof matchIdEntity
+  limit?: number //[ ] - move to find options
+  findOptions?:
+    | FindOptionsBase<toEntity>
+    | ((entity: fromEntity) => FindOptionsBase<toEntity>)
+  defaultIncluded?: boolean
+} & FieldOptions<fromEntity, any>
 
 type ObjectMembersOnly<T> = {
   [K in keyof Pick<

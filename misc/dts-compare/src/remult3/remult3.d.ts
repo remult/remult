@@ -1,4 +1,4 @@
-import type { ErrorInfo } from '../..';
+import type { ErrorInfo, FieldOptions } from '../..';
 import type { ClassType } from '../../classType';
 import type { entityEventListener } from '../__EntityValueProvider';
 import type { FieldMetadata } from '../column-interfaces';
@@ -257,6 +257,7 @@ export interface Repository<entityType> {
      */
     metadata: EntityMetadata<entityType>;
     addEventListener(listener: entityEventListener<entityType>): Unsubscribe;
+    relations: RepositoryRelations<entityType>;
 }
 export interface LiveQuery<entityType> {
     subscribe(next: (info: LiveQueryChangeInfo<entityType>) => void): Unsubscribe;
@@ -331,6 +332,7 @@ export type IdFilter<valueType> = ValueFilter<valueType> | {
 };
 export interface LoadOptions<entityType> {
     load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[];
+    include?: MembersToInclude<entityType>;
 }
 export interface FindOptionsBase<entityType> extends LoadOptions<entityType> {
     /** filters the data
@@ -396,3 +398,39 @@ export interface Paginator<entityType> {
     /** the count of the total items in the `query`'s result */
     count(): Promise<number>;
 }
+export interface RelationInfo {
+    toType: () => any;
+    type: 'toOne' | 'toMany';
+    options: RelationOptions<any, any, any>;
+}
+export type RelationOptions<fromEntity, toEntity, matchIdEntity> = {
+    fields?: {
+        [K in keyof toEntity]?: keyof fromEntity;
+    };
+    field?: keyof matchIdEntity;
+    limit?: number;
+    findOptions?: FindOptionsBase<toEntity> | ((entity: fromEntity) => FindOptionsBase<toEntity>);
+    defaultIncluded?: boolean;
+} & FieldOptions<fromEntity, any>;
+type ObjectMembersOnly<T> = {
+    [K in keyof Pick<T, {
+        [K in keyof T]: T[K] extends object ? T[K] extends Date ? never : K : never;
+    }[keyof T]>]: T[K];
+};
+export type MembersToInclude<T> = {
+    [K in keyof ObjectMembersOnly<T>]?: true | (T[K] extends Array<any> ? FindOptions<T[K][number]> : FindFirstOptions<T[K]>);
+};
+export type RepositoryRelations<entityType> = {
+    [K in keyof ObjectMembersOnly<entityType>]: entityType[K] extends Array<infer R> ? ToManyRepository<entityType, R> : entityType[K] extends infer R ? ToOneRepository<entityType, R> : never;
+};
+export type ToOneRepository<fromEntity, toEntity> = {
+    findFirst(fromEntity: OmitEB<fromEntity>, options?: FindFirstOptions<toEntity>): Promise<toEntity>;
+};
+export type ToManyRepository<fromEntity, toEntity> = {
+    find(fromEntity: OmitEB<fromEntity>, options?: FindOptions<toEntity>): Promise<toEntity[]>;
+    count(fromEntity: OmitEB<fromEntity>, where?: EntityFilter<toEntity>): Promise<number>;
+    /**Insert an item or item[] to the related entity */
+    insert(item: fromEntity, relatedItem: Partial<OmitEB<toEntity>>[]): Promise<toEntity[]>;
+    insert(item: fromEntity, relatedItem: Partial<OmitEB<toEntity>>): Promise<toEntity>;
+};
+export {};

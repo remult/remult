@@ -497,7 +497,7 @@ export class RepositoryImplementation<entityType>
       if (ei) {
         let isRelation: RelationInfo = col.options?.[relationInfoMember]
         let load = isRelation
-          ? isRelation.options.autoInclude
+          ? isRelation.options.defaultIncluded
           : !col.options.lazy
         if (loadFields !== undefined) load = loadFields.includes(col)
         if (include) load = include[col.key]
@@ -578,12 +578,14 @@ export class RepositoryImplementation<entityType>
   ) {
     let where: EntityFilter<any>[] = []
     let findOptions: FindOptions<any> = {}
-    let findOptionsSources = [rel.options]
+    let findOptionsSources: FindOptions<any>[] = []
+    if (typeof rel.options.findOptions === 'function') {
+      findOptionsSources.push(rel.options.findOptions(row))
+    } else if (typeof rel.options.findOptions === 'object')
+      findOptionsSources.push(rel.options.findOptions)
     if (typeof moreFindOptions === 'object') {
       findOptionsSources.push(moreFindOptions)
     }
-    if (rel.options.findOptions)
-      findOptionsSources.push(rel.options.findOptions(row))
 
     for (const source of findOptionsSources) {
       if (source.where) where.push(source.where)
@@ -595,19 +597,21 @@ export class RepositoryImplementation<entityType>
         if (source[key]) findOptions[key] = source[key]
       }
     }
-    const match = rel.options.match
-    if (typeof match === 'string') {
+
+    if (rel.options.field) {
       if (rel.type === 'toOne') {
-        where.push(otherRepo.metadata.idMetadata.getIdFilter(row[match]))
+        where.push(
+          otherRepo.metadata.idMetadata.getIdFilter(row[rel.options.field]),
+        )
       } else {
         where.push({
-          [match]: this.metadata.idMetadata.getId(row),
+          [rel.options.field]: this.metadata.idMetadata.getId(row),
         })
       }
-    } else if (typeof match === 'object')
-      for (const key in match) {
-        if (Object.prototype.hasOwnProperty.call(match, key)) {
-          where.push({ [key]: row[match[key]] })
+    } else if (rel.options.fields)
+      for (const key in rel.options.fields) {
+        if (Object.prototype.hasOwnProperty.call(rel.options.fields, key)) {
+          where.push({ [key]: row[rel.options.fields[key]] })
         }
       }
     findOptions.where = { $and: where }
@@ -1990,7 +1994,7 @@ export function FieldType<valueType = any>(
   }
 }
 
-export const relationInfoMember = 'relationInfo'
+export const relationInfoMember = '!remult!relationInfo' //[ ] - make symbol
 
 export function isAutoIncrement(f: FieldMetadata) {
   return f.options?.valueConverter?.fieldTypeInDb === 'autoincrement'
