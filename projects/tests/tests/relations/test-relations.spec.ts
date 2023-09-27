@@ -334,7 +334,5 @@ describe('test relations', () => {
     }
   })
 })
-//[ ] many to one with id and include
+
 //[ ] optimize fetches
-//[ ] set a recursion limit for auto load
-//[ ] test auto include and it's cancelation
