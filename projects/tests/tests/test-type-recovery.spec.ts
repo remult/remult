@@ -45,7 +45,7 @@ describe('type recovery', () => {
     let r = await repo.save({ id: 1, date: '1976-06-16' as any })
     expect(r.date.getFullYear()).toBe(1976)
   })
-  it.only('test update ', async () => {
+  it('test update ', async () => {
     await repo.insert({ id: 1, date: '1975-06-16' as any })
     let r = await repo.update(1, { date: '1976-06-16' as any })
     expect(r.date.getFullYear()).toBe(1976)
