@@ -469,20 +469,22 @@ export interface Paginator<entityType> {
 export interface RelationInfo {
   toType: () => any //[ ] - move to hidden in relation options //[ ] - make symbol
   type: 'toOne' | 'toMany' //[ ] - move to hidden in relation options//[ ] - make symbol
-  options: RelationOptions<any, any, any> // [ ] remove
+  options: RelationOptions<any, any, any, any> // [ ] remove
 }
 //[ ] - what to do about count?
 //[ ] - field options ?
-export type RelationOptions<fromEntity, toEntity, matchIdEntity> = {
+export type RelationOptions<
+  fromEntity,
+  toEntity,
+  matchIdEntity,
+  optionsType extends FindOptionsBase<toEntity> = FindOptionsBase<toEntity>,
+> = {
   fields?: {
     //[ ] - consider enforcing types
     [K in keyof toEntity]?: keyof fromEntity
   }
   field?: keyof matchIdEntity
-  limit?: number //[ ] - move to find options
-  findOptions?:
-    | FindOptionsBase<toEntity>
-    | ((entity: fromEntity) => FindOptionsBase<toEntity>)
+  findOptions?: optionsType | ((entity: fromEntity) => optionsType)
   defaultIncluded?: boolean
 } & FieldOptions<fromEntity, any>
 

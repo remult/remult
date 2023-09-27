@@ -572,7 +572,7 @@ export class RepositoryImplementation<entityType>
 
   findOptionsBasedOnRelation(
     rel: RelationInfo,
-    moreFindOptions: FindOptionsBase<any>,
+    moreFindOptions: FindOptions<any>,
     row: Awaited<entityType>,
     otherRepo: Repository<unknown>,
   ) {
@@ -593,7 +593,8 @@ export class RepositoryImplementation<entityType>
         'limit',
         'include',
         'orderBy',
-      ] as (keyof typeof rel.options)[]) {
+      ] as (keyof FindOptions<any>)[]) {
+        //@ts-ignore
         if (source[key]) findOptions[key] = source[key]
       }
     }

@@ -3,7 +3,7 @@ import { v4 as uuid } from 'uuid'
 import type { ClassType } from '../../classType'
 import type { FieldOptions } from '../column-interfaces'
 import type { Remult } from '../context'
-import type { RelationInfo, RelationOptions } from './remult3'
+import type { FindOptions, RelationInfo, RelationOptions } from './remult3'
 import { ValueConverters } from '../valueConverters'
 import { getEntityRef } from './getEntityRef'
 import {
@@ -277,17 +277,27 @@ export class Fields {
     entity: ClassType<entityType>,
     toEntityType: () => ClassType<toEntityType>,
     options:
-      | RelationOptions<entityType, toEntityType, toEntityType>
+      | RelationOptions<
+          entityType,
+          toEntityType,
+          toEntityType,
+          FindOptions<toEntityType>
+        >
       | keyof toEntityType,
   ) {
-    let op: RelationOptions<entityType, toEntityType, toEntityType> =
-      (typeof options === 'string'
-        ? { field: options }
-        : options) as any as RelationOptions<
-        entityType,
-        toEntityType,
-        toEntityType
-      >
+    let op: RelationOptions<
+      entityType,
+      toEntityType,
+      toEntityType,
+      FindOptions<toEntityType>
+    > = (typeof options === 'string'
+      ? { field: options }
+      : options) as any as RelationOptions<
+      entityType,
+      toEntityType,
+      toEntityType,
+      FindOptions<toEntityType>
+    >
     return Field(() => undefined!, {
       serverExpression: () => undefined,
       //@ts-ignore
