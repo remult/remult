@@ -37,7 +37,6 @@ import type {
   Repository,
   RepositoryRelations,
   Subscribable,
-  ToManyRepository,
 } from './remult3'
 
 import type { Paginator, RefSubscriber, RefSubscriberBase } from './remult3'
@@ -135,22 +134,35 @@ export class RepositoryImplementation<entityType>
     }
     return r
   }
-  relationsProxy = new Proxy(
-    {},
-    {
+
+  relationsFor(item: entityType) {
+    return new Proxy<RepositoryRelations<entityType>>({} as any, {
       get: (target: any, key: string) => {
         const options = this.fields.find(key).options
         const rel = getRelationInfo(options)
         if (!rel) throw Error(key + ' is not a relation')
-        return new MiniRepo(this, rel, options)
+        let repo = this.remult.repo(
+          rel.toType(),
+        ) as RepositoryImplementation<any>
+
+        let findOptions = this.findOptionsBasedOnRelation(
+          rel,
+          options,
+          undefined,
+          item,
+          repo,
+        )
+        return new RepositoryImplementation(
+          repo.entity,
+          repo.remult,
+          repo.dataProvider,
+          repo._info,
+          findOptions,
+        )
       },
-    },
-  )
-  get relations(): RepositoryRelations<entityType> {
-    return this.relationsProxy as any
+    })
   }
 
-  private _info: EntityFullInfo<entityType>
   private __edp: EntityDataProvider
   private get edp() {
     return this.__edp
@@ -161,9 +173,9 @@ export class RepositoryImplementation<entityType>
     private entity: ClassType<entityType>,
     public remult: Remult,
     private dataProvider: DataProvider,
-  ) {
-    this._info = createOldEntity(entity, remult)
-  }
+    private _info: EntityFullInfo<entityType>,
+    private defaultFindOptions?: FindOptions<entityType>,
+  ) {}
   idCache = new Map<any, any>()
   getCachedById(id: any, doNotLoadIfNotFound: boolean): entityType {
     id = id + ''
@@ -440,6 +452,9 @@ export class RepositoryImplementation<entityType>
   ): Promise<entityType[]> {
     Remult.onFind(this._info, options)
     if (!options) options = {}
+    if (this.defaultFindOptions) {
+      options = { ...this.defaultFindOptions, ...options }
+    }
     let opt = await this.buildEntityDataProviderFindOptions(options)
     if (skipOrderByAndLimit) {
       delete opt.orderBy
@@ -576,7 +591,7 @@ export class RepositoryImplementation<entityType>
     rel: RelationInfo,
     options: RelationOptions<any, any, any>,
     moreFindOptions: FindOptions<any>,
-    row: Awaited<entityType>,
+    row: entityType,
     otherRepo: Repository<unknown>,
   ) {
     let where: EntityFilter<any>[] = []
@@ -778,6 +793,15 @@ export class RepositoryImplementation<entityType>
       }
       this.fixTypes(r)
     }
+    if (this.defaultFindOptions?.where) {
+      __updateEntityBasedOnWhere(
+        this.metadata,
+        this.defaultFindOptions.where,
+        r,
+      )
+      this.fixTypes(r)
+    }
+
     let z = this.getEntityRef(r)
 
     return r
@@ -830,6 +854,13 @@ export class RepositoryImplementation<entityType>
   async translateWhereToFilter(
     where: EntityFilter<entityType>,
   ): Promise<Filter> {
+    if (!where) where = {}
+    if (this.defaultFindOptions?.where) {
+      let z = where
+      where = {
+        $and: [z, this.defaultFindOptions?.where],
+      } as EntityFilter<entityType>
+    }
     if (this.metadata.options.backendPrefilter && !this.dataProvider.isProxy) {
       let z = where
       where = {
@@ -2495,58 +2526,4 @@ export type RepositoryOverloads<entityType> =
 
 function getRelationInfo(options: FieldOptions) {
   return options?.[relationInfoMember] as RelationInfo
-}
-class MiniRepo implements ToManyRepository<any, any> {
-  constructor(
-    private origRepo: RepositoryImplementation<any>,
-    private info: RelationInfo,
-    private options: RelationOptions<any, any, any>,
-  ) {}
-  count(item: OmitEB<any>, where?: EntityFilter<any>): Promise<number> {
-    const otherRepo = this.origRepo.remult.repo(this.info.toType())
-    let findOptions = this.origRepo.findOptionsBasedOnRelation(
-      this.info,
-      this.options,
-      { where },
-      item,
-      otherRepo,
-    )
-    return otherRepo.count(findOptions.where)
-  }
-  find(item: OmitEB<any>, options?: FindOptions<any>): Promise<any[]> {
-    const otherRepo = this.origRepo.remult.repo(this.info.toType())
-    let findOptions = this.origRepo.findOptionsBasedOnRelation(
-      this.info,
-      this.options,
-      options,
-      item,
-      otherRepo,
-    )
-    return otherRepo.find(findOptions)
-  }
-  insert(item: any, relatedItem: Partial<OmitEB<any>>[]): Promise<any[]>
-  insert(item: any, relatedItem: Partial<OmitEB<any>>): Promise<any>
-  insert(item: any, relatedItem: any): Promise<any[]> | Promise<any> {
-    const otherRepo = this.origRepo.remult.repo(this.info.toType())
-    let findOptions = this.origRepo.findOptionsBasedOnRelation(
-      this.info,
-      this.options,
-      undefined,
-      item,
-      otherRepo,
-    )
-    if (Array.isArray(relatedItem)) {
-      return otherRepo.insert(relatedItem.map((x) => updateItem(x)))
-    }
-    return otherRepo.insert(updateItem(relatedItem))
-
-    function updateItem(relatedItem: any): any {
-      __updateEntityBasedOnWhere(
-        otherRepo.metadata,
-        findOptions.where,
-        relatedItem,
-      )
-      return relatedItem
-    }
-  }
 }

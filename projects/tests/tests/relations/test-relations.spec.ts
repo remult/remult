@@ -30,7 +30,9 @@ class Category {
   tasksSecondary: Task[]
   @Fields.toMany(Category, () => Task, {
     field: 'secondaryCategoryId',
-    limit: 2,
+    findOptions: {
+      limit: 2,
+    },
   })
   tasksSecondary1: Task[]
   @Fields.toMany(Category, () => Task, {
@@ -38,8 +40,8 @@ class Category {
     fields: {
       secondaryCategoryId: 'id',
     },
-    limit: 2,
     findOptions: {
+      limit: 2,
       include: {
         category: true,
         secondaryCategory: {

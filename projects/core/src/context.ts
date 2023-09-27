@@ -4,7 +4,10 @@ import { RestDataProvider } from './data-providers/rest-data-provider'
 import { LiveQueryClient } from './live-query/LiveQueryClient'
 import { SseSubscriptionClient } from './live-query/SseSubscriptionClient'
 import { RemultProxy, remult } from './remult-proxy'
-import { RepositoryImplementation } from './remult3/RepositoryImplementation'
+import {
+  RepositoryImplementation,
+  createOldEntity,
+} from './remult3/RepositoryImplementation'
 import type {
   EntityMetadata,
   EntityRef,
@@ -93,7 +96,12 @@ export class Remult {
     if (!r) {
       dpCache.set(
         entity,
-        (r = new RepositoryImplementation(entity, this, dataProvider)),
+        (r = new RepositoryImplementation(
+          entity,
+          this,
+          dataProvider,
+          createOldEntity(entity, this),
+        )),
       )
     }
     return r

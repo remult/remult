@@ -305,7 +305,7 @@ export interface Repository<entityType> {
    */
   metadata: EntityMetadata<entityType>
   addEventListener(listener: entityEventListener<entityType>): Unsubscribe
-  relations: RepositoryRelations<entityType>
+  relationsFor: (item: entityType) => RepositoryRelations<entityType>
 }
 export interface LiveQuery<entityType> {
   subscribe(next: (info: LiveQueryChangeInfo<entityType>) => void): Unsubscribe
@@ -513,35 +513,9 @@ export type RepositoryRelations<entityType> = {
   [K in keyof ObjectMembersOnly<entityType>]: entityType[K] extends Array<
     infer R
   >
-    ? ToManyRepository<entityType, R>
-    : entityType[K] extends infer R
-    ? ToOneRepository<entityType, R>
-    : never
-}
-
-export type ToOneRepository<fromEntity, toEntity> = {
-  findFirst(
-    fromEntity: OmitEB<fromEntity>,
-    options?: FindFirstOptions<toEntity>,
-  ): Promise<toEntity>
-}
-export type ToManyRepository<fromEntity, toEntity> = {
-  find(
-    fromEntity: OmitEB<fromEntity>,
-    options?: FindOptions<toEntity>,
-  ): Promise<toEntity[]>
-  count(
-    fromEntity: OmitEB<fromEntity>,
-    where?: EntityFilter<toEntity>,
-  ): Promise<number>
-  /**Insert an item or item[] to the related entity */
-
-  insert(
-    item: fromEntity,
-    relatedItem: Partial<OmitEB<toEntity>>[],
-  ): Promise<toEntity[]>
-  insert(
-    item: fromEntity,
-    relatedItem: Partial<OmitEB<toEntity>>,
-  ): Promise<toEntity>
+    ? Repository<R>
+    : //[ ] - maybe only for one to many, to begin with?
+      // : entityType[K] extends infer R
+      // ? ToOneRepository<entityType, R>
+      never
 }
