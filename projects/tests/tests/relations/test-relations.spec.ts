@@ -337,5 +337,4 @@ describe('test relations', () => {
 //[ ] many to one with id and include
 //[ ] optimize fetches
 //[ ] set a recursion limit for auto load
-//[ ] add repo relations methods
 //[ ] test auto include and it's cancelation
