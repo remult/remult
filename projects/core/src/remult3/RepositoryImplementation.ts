@@ -451,10 +451,7 @@ export class RepositoryImplementation<entityType>
     } as LiveQuery<entityType>
   }
 
-  async find(
-    options: FindOptions<entityType>,
-    skipOrderByAndLimit = false,
-  ): Promise<entityType[]> {
+  async rawFind(options: FindOptions<entityType>, skipOrderByAndLimit = false) {
     Remult.onFind(this._info, options)
     if (!options) options = {}
     if (this.defaultFindOptions) {
@@ -466,7 +463,14 @@ export class RepositoryImplementation<entityType>
       delete opt.limit
     }
 
-    let rawRows = await this.edp.find(opt)
+    return await this.edp.find(opt)
+  }
+
+  async find(
+    options: FindOptions<entityType>,
+    skipOrderByAndLimit = false,
+  ): Promise<entityType[]> {
+    const rawRows = await this.rawFind(options, skipOrderByAndLimit)
     let result = await this.loadManyToOneForManyRows(
       rawRows,
       options.load,
