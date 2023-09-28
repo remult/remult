@@ -66,6 +66,7 @@ import {
 } from './getEntityRef'
 import { __updateEntityBasedOnWhere } from './__updateEntityBasedOnWhere'
 import type { columnInfo } from './columnInfo'
+import { getRelationInfo, relationInfoMember } from './relationInfoMember'
 //import  { remult } from "../remult-proxy";
 
 let classValidatorValidate:
@@ -2053,8 +2054,6 @@ export function FieldType<valueType = any>(
   }
 }
 
-export const relationInfoMember = '!remult!relationInfo' //[ ] - don't want to make symbol - so that users can get to this data if they want  to
-
 export function isAutoIncrement(f: FieldMetadata) {
   return f.options?.valueConverter?.fieldTypeInDb === 'autoincrement'
 }
@@ -2547,7 +2546,3 @@ export type EntityMetadataOverloads<entityType> =
 export type RepositoryOverloads<entityType> =
   | Repository<entityType>
   | ClassType<entityType>
-
-function getRelationInfo(options: FieldOptions) {
-  return options?.[relationInfoMember] as RelationInfo
-}

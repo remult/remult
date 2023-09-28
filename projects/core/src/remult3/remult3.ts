@@ -473,6 +473,7 @@ export interface RelationInfo {
 }
 //[ ] - what to do about count?
 //[ ] - condition? not to fetch if null etc....
+//[ ] - all these fields will also appear in the where etc... in the typescript api - but we will not enforce them
 export type RelationOptions<
   fromEntity,
   toEntity,

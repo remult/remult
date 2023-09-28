@@ -9,6 +9,10 @@ import {
 } from '../../../core'
 import type { ClassType } from '../../../core/classType'
 import { TestDataProvider } from '../../dbs/TestDataProviderWithStats'
+import {
+  findOptionsFromJson,
+  findOptionsToJson,
+} from '../../../core/src/data-providers/rest-data-provider'
 
 @Entity('company')
 class Company {
@@ -149,7 +153,7 @@ describe('test relations', () => {
     ])
     await r(Task).insert([
       { id: 1, title: 't1', category: c[0], secondaryCategoryId: 3 },
-      { id: 2, title: 't2', category: c[0], secondaryCategoryId: 3 },
+      { id: 2, title: 't2', category: c[1], secondaryCategoryId: 3 },
       {
         id: 3,
         title: 't3',
@@ -282,7 +286,6 @@ describe('test relations', () => {
           "name": "c1",
           "tasks": [
             1,
-            2,
             3,
           ],
         },
@@ -290,6 +293,7 @@ describe('test relations', () => {
           "id": 2,
           "name": "c2",
           "tasks": [
+            2,
             4,
           ],
         },
@@ -336,6 +340,88 @@ describe('test relations', () => {
       expect(c1.lastTask.id).toBe(3)
       expect(c2.lastTask.id).toBe(2)
     }
+  })
+  it('to and from json work', async () => {
+    var c = await r(Category).findFirst()
+    const taskOptions = findOptionsToJson(
+      {
+        where: {
+          category: c,
+        },
+      },
+      r(Task).metadata,
+    )
+    var options = findOptionsToJson(
+      {
+        include: {
+          tasksSecondary: {
+            where: {
+              category: c,
+            },
+          },
+        },
+      },
+      r(Category).metadata,
+    )
+    expect(options.include.tasksSecondary).toEqual(taskOptions)
+    const revisedOptions = findOptionsFromJson(options, r(Category).metadata)
+
+    expect(revisedOptions).toMatchInlineSnapshot(`
+      {
+        "include": {
+          "tasksSecondary": {
+            "where": {
+              "category": 1,
+            },
+          },
+        },
+      }
+    `)
+
+    const cats = await r(Category).find(revisedOptions)
+    expect(
+      cats.map((c) => ({
+        id: c.id,
+        tasksSecondary: c.tasksSecondary.map((t) => t.id),
+      })),
+    ).toMatchInlineSnapshot(`
+      [
+        {
+          "id": 1,
+          "tasksSecondary": [],
+        },
+        {
+          "id": 2,
+          "tasksSecondary": [],
+        },
+        {
+          "id": 3,
+          "tasksSecondary": [
+            1,
+            3,
+          ],
+        },
+      ]
+    `)
+  })
+  it('basic to and from json work', async () => {
+    var c = await r(Category).findFirst({ id: 2 })
+    const taskOptions = findOptionsToJson(
+      {
+        where: {
+          category: c,
+        },
+      },
+      r(Task).metadata,
+    )
+    const revisedOptions = findOptionsFromJson(taskOptions, r(Task).metadata)
+    expect((await r(Task).find(revisedOptions)).map((x) => x.id))
+      .toMatchInlineSnapshot(`
+        [
+          2,
+          4,
+        ]
+      `)
   })
 })
 

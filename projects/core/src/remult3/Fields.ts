@@ -10,8 +10,8 @@ import {
   type ClassFieldDecoratorContextStub,
   buildOptions,
   columnsOfType,
-  relationInfoMember,
 } from './RepositoryImplementation'
+import { relationInfoMember } from './relationInfoMember'
 import type { columnInfo } from './columnInfo'
 
 export class Fields {
