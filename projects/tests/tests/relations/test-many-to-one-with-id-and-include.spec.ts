@@ -6,6 +6,7 @@ import {
   FindOptions,
   InMemoryDataProvider,
   Remult,
+  getEntityRef,
 } from '../../../core'
 import type { ClassType } from '../../../core/classType'
 
@@ -86,7 +87,7 @@ describe('test repository relations', () => {
       }
     `)
   })
-  it('test  fetch category', async () => {
+  it('test  fetch category and include company', async () => {
     expect(
       await r(Task).findFirst(
         {},
@@ -111,5 +112,15 @@ describe('test repository relations', () => {
         "title": "task1",
       }
     `)
+  })
+  it('test fetch category and not include', async () => {
+    const t = await r(Task).findFirst(
+      {},
+      {
+        include: {},
+      },
+    )
+    expect(t.category).toBeUndefined()
+    expect(getEntityRef(t).fields.category.getId()).toBe(1)
   })
 })
