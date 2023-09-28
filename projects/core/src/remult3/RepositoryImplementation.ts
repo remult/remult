@@ -560,9 +560,13 @@ export class RepositoryImplementation<entityType>
       rawRows.map(async (r) => await this.mapRawDataToResult(r, loadFields)),
     )
     for (const col of this.metadata.fields) {
-      let ei = getEntitySettings(col.valueType, false)
       let rel = getRelationInfo(col.options)
-      let incl = include?.[col.key] as FindOptionsBase<any>
+      let incl = (col.options as RelationOptions<any, any, any>)
+        .defaultIncluded as any as FindFirstOptionsBase<any>
+      if (include) {
+        incl = include?.[col.key] as FindOptionsBase<any>
+      }
+
       if (rel && incl) {
         const otherRepo = this.remult.repo(rel.toType())
         for (const row of result) {

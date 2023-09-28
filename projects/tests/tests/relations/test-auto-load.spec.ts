@@ -69,7 +69,7 @@ describe('test repository relations', () => {
     await r(Task).insert({ id: 101, title: 'task1', category: c })
     remult.clearAllCache()
   })
-  it.skip('loads', async () => {
+  it('loads', async () => {
     const c = await r(Category).findFirst()
     expect(c.company.id).toBe(11)
     expect(c.secondCompany.name).toBe('comp2')
