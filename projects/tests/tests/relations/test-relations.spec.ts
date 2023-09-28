@@ -28,18 +28,18 @@ class Category {
   id = 0
   @Fields.string()
   name = ''
-  @Fields.many(Category, () => Task, 'category')
+  @Fields.many(() => Task, 'category')
   tasks: Task[]
-  @Fields.many(Category, () => Task, 'secondaryCategoryId')
+  @Fields.many(() => Task, 'secondaryCategoryId')
   tasksSecondary: Task[]
-  @Fields.many(Category, () => Task, {
+  @Fields.many(() => Task, {
     field: 'secondaryCategoryId',
     findOptions: {
       limit: 2,
     },
   })
   tasksSecondary1: Task[]
-  @Fields.many(Category, () => Task, {
+  @Fields.many<Category, Task>(() => Task, {
     //match: [['id', 'secondaryCategoryId']],
     fields: {
       secondaryCategoryId: 'id',
@@ -63,7 +63,7 @@ class Category {
     },
   })
   tasksSecondary2: Task[]
-  @Fields.many(Category, () => Task, {
+  @Fields.many<Category, Task>(() => Task, {
     findOptions: (category) => ({
       limit: 2,
       where: {
@@ -100,7 +100,7 @@ class Category {
   @Fields.date()
   createdAt = new Date('1976-06-16T00:00:00.000Z')
 
-  @Fields.one(Category, () => Company)
+  @Fields.reference(() => Company)
   company!: Company
 
   @Fields.integer()
@@ -116,7 +116,7 @@ class Task {
   id = 0
   @Fields.string()
   title = ''
-  @Fields.one(Task, () => Category)
+  @Fields.reference(() => Category)
   category!: Category
   @Fields.boolean()
   completed = false
@@ -261,6 +261,7 @@ describe('test relations', () => {
         },
       },
     )
+    expect(t.secondaryCategory.company.companyName).toBe('comp20')
 
     expect(
       (await r(Task).update({ ...t }, { title: 't3' })).secondaryCategory

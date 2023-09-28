@@ -17,9 +17,9 @@ class Category {
   id = 0
   @Fields.string()
   name = ''
-  @Fields.many(Category, () => Task, 'category')
+  @Fields.many(() => Task, 'category')
   tasks: Task[]
-  @Fields.many(Category, () => Task, {
+  @Fields.many(() => Task, {
     field: 'category',
     findOptions: {
       where: {
@@ -38,7 +38,7 @@ class Task {
   title = ''
   @Fields.boolean()
   completed = false
-  @Fields.one(Task, () => Category)
+  @Fields.reference(() => Category)
   category!: Category
 }
 describe('test repository relations', () => {

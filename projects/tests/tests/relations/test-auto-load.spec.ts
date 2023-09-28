@@ -23,7 +23,7 @@ class Category {
   id = 0
   @Fields.string()
   name = ''
-  @Fields.one(Category, () => Company, {
+  @Fields.reference(() => Company, {
     defaultIncluded: true,
   })
   company: Company
@@ -35,7 +35,7 @@ class Category {
     defaultIncluded: true,
   })
   secondCompany: Company
-  @Fields.many(Category, () => Task, {
+  @Fields.many(() => Task, {
     field: 'category',
     defaultIncluded: true,
   })
@@ -50,7 +50,7 @@ class Task {
   title = ''
   @Fields.boolean()
   completed = false
-  @Fields.one(Task, () => Category)
+  @Fields.reference(() => Category)
   category!: Category
 }
 describe('test repository relations', () => {

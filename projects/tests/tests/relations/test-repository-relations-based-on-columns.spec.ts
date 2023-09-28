@@ -17,9 +17,9 @@ class Category {
   id = 0
   @Fields.string()
   name = ''
-  @Fields.many(Category, () => Task, 'categoryId')
+  @Fields.many(() => Task, 'categoryId')
   tasks: Task[]
-  @Fields.many(Category, () => Task, {
+  @Fields.many<Category, Task>(() => Task, {
     fields: {
       categoryId: 'id',
     },
@@ -42,7 +42,9 @@ class Task {
   completed = false
   @Fields.integer()
   categoryId = 0
-  @Fields.one(Task, () => Category)
+  @Fields.one(Task, () => Category, {
+    field: 'categoryId',
+  })
   category!: Category
 }
 

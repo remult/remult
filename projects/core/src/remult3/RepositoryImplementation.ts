@@ -591,7 +591,7 @@ export class RepositoryImplementation<entityType>
             ? []
             : await this.remult.repo(rel.toType()).find(findOptions)
           row[col.key] =
-            rel.type === 'toOne'
+            rel.type !== 'toMany'
               ? result.length == 0
                 ? undefined
                 : result[0]
@@ -651,7 +651,7 @@ export class RepositoryImplementation<entityType>
           where.push({ [key]: row[options.fields[key]] })
         }
       }
-    } else if (rel.type === 'toOne') {
+    } else if (rel.type === 'toOne' || rel.type === 'reference') {
       let val = row[field.key]
       if (val === null) returnNull = true
       else if (typeof val === 'object')

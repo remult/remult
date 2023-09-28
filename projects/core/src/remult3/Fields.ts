@@ -3,7 +3,12 @@ import { v4 as uuid } from 'uuid'
 import type { ClassType } from '../../classType'
 import type { FieldOptions } from '../column-interfaces'
 import type { Remult } from '../context'
-import type { FindOptions, RelationInfo, RelationOptions } from './remult3'
+import type {
+  FindOptions,
+  RelationInfo,
+  RelationOptions,
+  RelationOptionsBase,
+} from './remult3'
 import { ValueConverters } from '../valueConverters'
 import { getEntityRef } from './getEntityRef'
 import {
@@ -272,17 +277,37 @@ export class Fields {
     return Field(() => Boolean, ...options)
   }
 
+  static reference<entityType, toEntityType>( //[ ] docking the move from reference to one will not be fun,since the parameter order changes
+    toEntityType: () => ClassType<toEntityType>,
+    options?: RelationOptionsBase<entityType, toEntityType, entityType>,
+  ) {
+    let op: RelationOptions<entityType, toEntityType, entityType> = (!options
+      ? {}
+      : options) as any as RelationOptions<entityType, toEntityType, entityType>
+
+    return Field(toEntityType, {
+      ...op,
+      //@ts-ignore
+      [relationInfoMember]: {
+        //field,
+        toType: toEntityType,
+        type: 'reference',
+      } satisfies RelationInfo,
+    })
+  }
+
   //TODO - don't like first parameter as current Type - it's pshita :)
   static many<entityType, toEntityType>(
-    entity: ClassType<entityType>,
     toEntityType: () => ClassType<toEntityType>,
     options:
-      | RelationOptions<
+      | (RelationOptions<
           entityType,
           toEntityType,
           toEntityType,
           FindOptions<toEntityType>
-        >
+        > & {
+          fromEntityType?: ClassType<entityType>
+        })
       | keyof toEntityType,
   ) {
     let op: RelationOptions<
@@ -327,34 +352,18 @@ export class Fields {
         toEntityType,
         entityType
       >
-    if (
-      !options ||
-      (!op.fields &&
-        !op.field &&
-        typeof op.findOptions !== 'function' &&
-        !op.findOptions?.where)
-    ) {
-      return Field(toEntityType, {
-        ...op,
-        //@ts-ignore
-        [relationInfoMember]: {
-          //field,
-          toType: toEntityType,
-          type: 'toOne',
-        } satisfies RelationInfo,
-      })
-    } else
-      return Field(() => undefined!, {
-        ...op,
-        serverExpression: () => undefined,
-        //@ts-ignore
-        [relationInfoMember]: {
-          //field,
-          toType: toEntityType,
 
-          type: 'toOne',
-        } satisfies RelationInfo,
-      })
+    return Field(() => undefined!, {
+      ...op,
+      serverExpression: () => undefined,
+      //@ts-ignore
+      [relationInfoMember]: {
+        //field,
+        toType: toEntityType,
+
+        type: 'toOne',
+      } satisfies RelationInfo,
+    })
   }
 }
 

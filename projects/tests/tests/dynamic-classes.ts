@@ -3,6 +3,7 @@ import {
   Entity,
   type OmitEB,
   type EntityOptions,
+  Fields,
 } from '../../core'
 import type { ClassType } from '../../core/classType'
 import type { ClassFieldDecoratorContextStub } from '../../core/src/remult3/RepositoryImplementation'
@@ -41,4 +42,22 @@ export function createEntity<T>(
   describeClass(r, Entity(key, options), members)
   //@ts-ignore
   return r
+}
+
+function test() {
+  const Category = createEntity('c', {
+    id: Fields.cuid(),
+    name: Fields.string(),
+  })
+  const Task = createEntity(
+    'c',
+    {
+      id: Fields.cuid(),
+      title: Fields.string(),
+    },
+    {
+      allowApiCrud: true,
+      saving: (item) => {},
+    },
+  )
 }

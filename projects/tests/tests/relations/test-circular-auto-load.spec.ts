@@ -15,7 +15,7 @@ class Category {
   id = 0
   @Fields.string()
   name = ''
-  @Fields.one(Category, () => Category, { defaultIncluded: true })
+  @Fields.reference(() => Category, { defaultIncluded: true })
   pCategory: Category
   @Fields.integer()
   secondCategoryId = 0

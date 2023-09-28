@@ -470,7 +470,7 @@ export interface Paginator<entityType> {
 export interface RelationInfo {
   //[ ] remult internal
   toType: () => any
-  type: 'toOne' | 'toMany'
+  type: 'reference' | 'toOne' | 'toMany'
 }
 //[ ] V2 - what to do about count?
 //[ ] V2 - condition? not to fetch if null etc....
@@ -487,9 +487,17 @@ export type RelationOptions<
     [K in keyof toEntity]?: keyof fromEntity
   }
   field?: keyof matchIdEntity
+} & RelationOptionsBase<fromEntity, toEntity, optionsType>
+
+export type RelationOptionsBase<
+  fromEntity,
+  toEntity,
+  optionsType extends LoadOptions<toEntity> = LoadOptions<toEntity>,
+> = {
+  //[ ] - remult index
   findOptions?: optionsType | ((entity: fromEntity) => optionsType)
   defaultIncluded?: boolean
-} & FieldOptions<fromEntity, any>
+} & FieldOptions<fromEntity, toEntity>
 
 export type ObjectMembersOnly<T> = {
   //[ ] remult index
