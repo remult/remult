@@ -146,7 +146,7 @@ export class RepositoryImplementation<entityType>
           rel.toType(),
         ) as RepositoryImplementation<any>
 
-        let findOptions = this.findOptionsBasedOnRelation(
+        let { findOptions } = this.findOptionsBasedOnRelation(
           rel,
           field,
           undefined,
@@ -570,7 +570,7 @@ export class RepositoryImplementation<entityType>
       if (rel && incl) {
         const otherRepo = this.remult.repo(rel.toType())
         for (const row of result) {
-          let findOptions = this.findOptionsBasedOnRelation(
+          let { findOptions, returnNull } = this.findOptionsBasedOnRelation(
             rel,
             col,
             incl,
@@ -578,7 +578,9 @@ export class RepositoryImplementation<entityType>
             otherRepo,
           )
 
-          const result = await this.remult.repo(rel.toType()).find(findOptions)
+          const result = returnNull
+            ? []
+            : await this.remult.repo(rel.toType()).find(findOptions)
           row[col.key] =
             rel.type === 'toOne'
               ? result.length == 0
@@ -599,6 +601,7 @@ export class RepositoryImplementation<entityType>
     row: entityType,
     otherRepo: Repository<unknown>,
   ) {
+    let returnNull = false
     let where: EntityFilter<any>[] = []
     let findOptions: FindOptions<any> = {}
     let findOptionsSources: FindOptions<any>[] = []
@@ -641,7 +644,8 @@ export class RepositoryImplementation<entityType>
       }
     } else if (rel.type === 'toOne') {
       let val = row[field.key]
-      if (typeof val === 'object')
+      if (val === null) returnNull = true
+      else if (typeof val === 'object')
         where.push(
           otherRepo.metadata.idMetadata.getIdFilter(
             otherRepo.metadata.idMetadata.getId(val),
@@ -652,7 +656,7 @@ export class RepositoryImplementation<entityType>
 
     findOptions.where = { $and: where }
     if (rel.type === 'toOne') findOptions.limit = 1
-    return findOptions
+    return { findOptions, returnNull }
   }
 
   private async mapRawDataToResult(r: any, loadFields: FieldMetadata[]) {

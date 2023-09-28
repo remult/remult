@@ -472,7 +472,7 @@ export interface RelationInfo {
   type: 'toOne' | 'toMany'
 }
 //[ ] - what to do about count?
-
+//[ ] - condition? not to fetch if null etc....
 export type RelationOptions<
   fromEntity,
   toEntity,
