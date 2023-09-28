@@ -28,18 +28,18 @@ class Category {
   id = 0
   @Fields.string()
   name = ''
-  @Fields.toMany(Category, () => Task, 'category')
+  @Fields.many(Category, () => Task, 'category')
   tasks: Task[]
-  @Fields.toMany(Category, () => Task, 'secondaryCategoryId')
+  @Fields.many(Category, () => Task, 'secondaryCategoryId')
   tasksSecondary: Task[]
-  @Fields.toMany(Category, () => Task, {
+  @Fields.many(Category, () => Task, {
     field: 'secondaryCategoryId',
     findOptions: {
       limit: 2,
     },
   })
   tasksSecondary1: Task[]
-  @Fields.toMany(Category, () => Task, {
+  @Fields.many(Category, () => Task, {
     //match: [['id', 'secondaryCategoryId']],
     fields: {
       secondaryCategoryId: 'id',
@@ -63,7 +63,7 @@ class Category {
     },
   })
   tasksSecondary2: Task[]
-  @Fields.toMany(Category, () => Task, {
+  @Fields.many(Category, () => Task, {
     findOptions: (category) => ({
       limit: 2,
       where: {
@@ -79,7 +79,7 @@ class Category {
     }),
   })
   allTasks: Task[]
-  @Fields.toOne(Category, () => Task, {
+  @Fields.one(Category, () => Task, {
     findOptions: (category) => ({
       orderBy: {
         id: 'desc',
@@ -100,13 +100,13 @@ class Category {
   @Fields.date()
   createdAt = new Date('1976-06-16T00:00:00.000Z')
 
-  @Fields.toOne(Category, () => Company)
+  @Fields.one(Category, () => Company)
   company!: Company
 
   @Fields.integer()
   secondaryCompanyId = 0
 
-  @Fields.toOne(Category, () => Company, 'secondaryCompanyId')
+  @Fields.one(Category, () => Company, 'secondaryCompanyId')
   secondaryCompany: Company
 }
 
@@ -116,20 +116,20 @@ class Task {
   id = 0
   @Fields.string()
   title = ''
-  @Fields.toOne(Task, () => Category)
+  @Fields.one(Task, () => Category)
   category!: Category
   @Fields.boolean()
   completed = false
 
   @Fields.integer()
   secondaryCategoryId = 0
-  @Fields.toOne(Task, () => Category, 'secondaryCategoryId')
+  @Fields.one(Task, () => Category, 'secondaryCategoryId')
   secondaryCategory!: Category
-  @Fields.toOne(Task, () => Category, {
+  @Fields.one(Task, () => Category, {
     field: 'secondaryCategoryId',
   })
   secondaryCategory1!: Category
-  @Fields.toOne(Task, () => Category, {
+  @Fields.one(Task, () => Category, {
     fields: { id: 'secondaryCategoryId' },
   })
   secondaryCategory2!: Category

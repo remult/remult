@@ -15,11 +15,11 @@ class Category {
   id = 0
   @Fields.string()
   name = ''
-  @Fields.toOne(Category, () => Category, { defaultIncluded: true })
+  @Fields.one(Category, () => Category, { defaultIncluded: true })
   pCategory: Category
   @Fields.integer()
   secondCategoryId = 0
-  @Fields.toOne(Category, () => Category, {
+  @Fields.one(Category, () => Category, {
     field: 'secondCategoryId',
     defaultIncluded: true,
   })

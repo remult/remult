@@ -136,7 +136,7 @@ export class RepositoryImplementation<entityType>
     return r
   }
 
-  relationsFor(item: entityType) {
+  relations(item: entityType) {
     return new Proxy<RepositoryRelations<entityType>>({} as any, {
       get: (target: any, key: string) => {
         const field = this.fields.find(key)
@@ -453,7 +453,7 @@ export class RepositoryImplementation<entityType>
 
   async rawFind(options: FindOptions<entityType>, skipOrderByAndLimit = false) {
     Remult.onFind(this._info, options)
-    if (!options) options = {}
+
     if (this.defaultFindOptions) {
       options = { ...this.defaultFindOptions, ...options }
     }
@@ -470,6 +470,7 @@ export class RepositoryImplementation<entityType>
     options: FindOptions<entityType>,
     skipOrderByAndLimit = false,
   ): Promise<entityType[]> {
+    if (!options) options = {}
     const rawRows = await this.rawFind(options, skipOrderByAndLimit)
     let result = await this.loadManyToOneForManyRows(
       rawRows,

@@ -1,7 +1,7 @@
 import type { FieldOptions } from '../column-interfaces'
 import type { RelationInfo } from './remult3'
 
-export const relationInfoMember = '!remult!relationInfo' //[ ] - don't want to make symbol - so that users can get to this data if they want  to
+export const relationInfoMember = '!remult!relationInfo' //[ ] - make symbol and expose in `remult/internals`
 export function getRelationInfo(options: FieldOptions) {
   return options?.[relationInfoMember] as RelationInfo
 }

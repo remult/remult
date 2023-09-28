@@ -305,7 +305,7 @@ export interface Repository<entityType> {
    */
   metadata: EntityMetadata<entityType>
   addEventListener(listener: entityEventListener<entityType>): Unsubscribe
-  relationsFor: (item: entityType) => RepositoryRelations<entityType>
+  relations: (item: entityType) => RepositoryRelations<entityType>
 }
 export interface LiveQuery<entityType> {
   subscribe(next: (info: LiveQueryChangeInfo<entityType>) => void): Unsubscribe
@@ -468,20 +468,22 @@ export interface Paginator<entityType> {
 
 //[ ] - decided to keep, to reduce chance of conflicts
 export interface RelationInfo {
+  //[ ] remult internal
   toType: () => any
   type: 'toOne' | 'toMany'
 }
-//[ ] - what to do about count?
-//[ ] - condition? not to fetch if null etc....
-//[ ] - all these fields will also appear in the where etc... in the typescript api - but we will not enforce them
+//[ ] V2 - what to do about count?
+//[ ] V2 - condition? not to fetch if null etc....
+//[ ] V3 - all these fields will also appear in the where etc... in the typescript api - but we will not enforce them
 export type RelationOptions<
+  //[ ] remult index
   fromEntity,
   toEntity,
   matchIdEntity,
   optionsType extends FindOptionsBase<toEntity> = FindOptionsBase<toEntity>,
 > = {
   fields?: {
-    //[ ] - consider enforcing types
+    //[ ] V2- consider enforcing types
     [K in keyof toEntity]?: keyof fromEntity
   }
   field?: keyof matchIdEntity
@@ -489,7 +491,8 @@ export type RelationOptions<
   defaultIncluded?: boolean
 } & FieldOptions<fromEntity, any>
 
-type ObjectMembersOnly<T> = {
+export type ObjectMembersOnly<T> = {
+  //[ ] remult index
   [K in keyof Pick<
     T,
     {
@@ -503,6 +506,7 @@ type ObjectMembersOnly<T> = {
 }
 
 export type MembersToInclude<T> = {
+  //[ ] remult index
   [K in keyof ObjectMembersOnly<T>]?:
     | true
     | (T[K] extends Array<any>
@@ -511,12 +515,12 @@ export type MembersToInclude<T> = {
 }
 
 export type RepositoryRelations<entityType> = {
+  //[ ] remult index
   [K in keyof ObjectMembersOnly<entityType>]: entityType[K] extends Array<
     infer R
   >
     ? Repository<R>
-    : //[ ] - maybe only for one to many, to begin with?
-      // : entityType[K] extends infer R
-      // ? ToOneRepository<entityType, R>
-      never
+    : entityType[K] extends infer R
+    ? { findOne: (options?: FindOptionsBase<R>) => Promise<R> } //[ ]- add test
+    : never
 }

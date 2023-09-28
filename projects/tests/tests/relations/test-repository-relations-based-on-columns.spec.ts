@@ -17,9 +17,9 @@ class Category {
   id = 0
   @Fields.string()
   name = ''
-  @Fields.toMany(Category, () => Task, 'categoryId')
+  @Fields.many(Category, () => Task, 'categoryId')
   tasks: Task[]
-  @Fields.toMany(Category, () => Task, {
+  @Fields.many(Category, () => Task, {
     fields: {
       categoryId: 'id',
     },
@@ -42,7 +42,7 @@ class Task {
   completed = false
   @Fields.integer()
   categoryId = 0
-  @Fields.toOne(Task, () => Category)
+  @Fields.one(Task, () => Category)
   category!: Category
 }
 
@@ -60,14 +60,14 @@ describe('test repository relations', () => {
       { id: 1, name: 'cat1' },
       { id: 2, name: 'cat2' },
     ])
-    await repo.relationsFor(c).tasks.insert(
+    await repo.relations(c).tasks.insert(
       [1, 2, 4, 5].map((i) => ({
         id: i,
         title: 't' + i.toString(),
         completed: i % 2 == 0,
       })),
     )
-    await repo.relationsFor(c).completedTask.insert(
+    await repo.relations(c).completedTask.insert(
       [6, 7].map((i) => ({
         id: i,
         title: 't' + i.toString(),
@@ -75,7 +75,7 @@ describe('test repository relations', () => {
       })),
     )
     await repo
-      .relationsFor(c2)
+      .relations(c2)
       .tasks.insert([{ id: 3, title: 't3', completed: true }])
     const categories = await repo.find({
       include: {
@@ -119,11 +119,11 @@ describe('test repository relations', () => {
         },
       ]
     `)
-    expect((await repo.relationsFor(c).tasks.find()).length).toBe(6)
-    expect(await repo.relationsFor(c).tasks.count()).toBe(6)
+    expect((await repo.relations(c).tasks.find()).length).toBe(6)
+    expect(await repo.relations(c).tasks.count()).toBe(6)
     expect(
       (
-        await repo.relationsFor(c).tasks.find({
+        await repo.relations(c).tasks.find({
           where: {
             completed: false,
           },
@@ -131,15 +131,15 @@ describe('test repository relations', () => {
       ).length,
     ).toBe(2)
     expect(
-      await repo.relationsFor(c).tasks.count({
+      await repo.relations(c).tasks.count({
         completed: false,
       }),
     ).toBe(2)
-    expect((await repo.relationsFor(c).completedTask.find()).length).toBe(4)
-    expect(await repo.relationsFor(c).completedTask.count()).toBe(4)
+    expect((await repo.relations(c).completedTask.find()).length).toBe(4)
+    expect(await repo.relations(c).completedTask.count()).toBe(4)
     expect(
       (
-        await repo.relationsFor(c).completedTask.find({
+        await repo.relations(c).completedTask.find({
           where: {
             completed: false,
           },
@@ -147,7 +147,7 @@ describe('test repository relations', () => {
       ).length,
     ).toBe(0)
     expect(
-      await repo.relationsFor(c).completedTask.count({
+      await repo.relations(c).completedTask.count({
         completed: false,
       }),
     ).toBe(0)

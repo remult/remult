@@ -23,19 +23,19 @@ class Category {
   id = 0
   @Fields.string()
   name = ''
-  @Fields.toOne(Category, () => Company, {
+  @Fields.one(Category, () => Company, {
     defaultIncluded: true,
   })
   company: Company
 
   @Fields.integer()
   secondCompanyId = 0
-  @Fields.toOne(Category, () => Company, {
+  @Fields.one(Category, () => Company, {
     field: 'secondCompanyId',
     defaultIncluded: true,
   })
   secondCompany: Company
-  @Fields.toMany(Category, () => Task, {
+  @Fields.many(Category, () => Task, {
     field: 'category',
     defaultIncluded: true,
   })
@@ -50,7 +50,7 @@ class Task {
   title = ''
   @Fields.boolean()
   completed = false
-  @Fields.toOne(Task, () => Category)
+  @Fields.one(Task, () => Category)
   category!: Category
 }
 describe('test repository relations', () => {

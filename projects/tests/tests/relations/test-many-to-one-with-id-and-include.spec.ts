@@ -24,7 +24,7 @@ class Category {
   id = 0
   @Fields.string()
   name = ''
-  @Fields.toOne(Category, () => Company)
+  @Fields.one(Category, () => Company)
   company: Company
 }
 
@@ -36,7 +36,7 @@ class Task {
   title = ''
   @Fields.boolean()
   completed = false
-  @Fields.toOne(Task, () => Category)
+  @Fields.one(Task, () => Category)
   category!: Category
 }
 describe('test repository relations', () => {

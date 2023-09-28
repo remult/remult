@@ -273,7 +273,7 @@ export class Fields {
   }
 
   //TODO - don't like first parameter as current Type - it's pshita :)
-  static toMany<entityType, toEntityType>(
+  static many<entityType, toEntityType>(
     entity: ClassType<entityType>,
     toEntityType: () => ClassType<toEntityType>,
     options:
@@ -310,7 +310,7 @@ export class Fields {
       } satisfies RelationInfo,
     })
   }
-  static toOne<entityType, toEntityType>(
+  static one<entityType, toEntityType>(
     entity: ClassType<entityType>,
     toEntityType: () => ClassType<toEntityType>,
     options?:
