@@ -2005,6 +2005,12 @@ describe('CompoundIdPojoEntity', () => {
     await repo.update({ a: 2, b: 20 }, { c: 201 })
     expect((await repo.findFirst({ a: 2, b: 20 })).c).toBe(201)
   })
+  it('test update 2', async () => {
+    var repo = new Remult(new InMemoryDataProvider()).repo(CompoundIdSimple)
+    const c = await repo.insert({ a: 2, b: 20, c: 200 })
+    await repo.update(c, { c: 201 })
+    expect((await repo.findFirst({ a: 2, b: 20 })).c).toBe(201)
+  })
   it('test update change of id fields', async () => {
     var repo = new Remult(new InMemoryDataProvider()).repo(CompoundIdSimple)
     await repo.insert([{ a: 2, b: 20, c: 200 }])

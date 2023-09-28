@@ -339,7 +339,10 @@ export class RepositoryImplementation<entityType>
     }
     {
       let ref = getEntityRef(id, false)
-      if (ref) return assign(ref, entity).save()
+      if (ref) {
+        assign(id, entity)
+        return ref.save()
+      }
     }
 
     let ref: rowHelperImplementation<entityType>
