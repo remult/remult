@@ -138,8 +138,9 @@ export class RepositoryImplementation<entityType>
   relationsFor(item: entityType) {
     return new Proxy<RepositoryRelations<entityType>>({} as any, {
       get: (target: any, key: string) => {
-        const options = this.fields.find(key).options
-        const rel = getRelationInfo(options)
+        const field = this.fields.find(key)
+
+        const rel = getRelationInfo(field.options)
         if (!rel) throw Error(key + ' is not a relation')
         let repo = this.remult.repo(
           rel.toType(),
@@ -147,7 +148,7 @@ export class RepositoryImplementation<entityType>
 
         let findOptions = this.findOptionsBasedOnRelation(
           rel,
-          options,
+          field,
           undefined,
           item,
           repo,
@@ -562,12 +563,12 @@ export class RepositoryImplementation<entityType>
       let ei = getEntitySettings(col.valueType, false)
       let rel = getRelationInfo(col.options)
       let incl = include?.[col.key] as FindOptionsBase<any>
-      if (!ei && rel && incl) {
+      if (rel && incl) {
         const otherRepo = this.remult.repo(rel.toType())
         for (const row of result) {
           let findOptions = this.findOptionsBasedOnRelation(
             rel,
-            col.options,
+            col,
             incl,
             row,
             otherRepo,
@@ -589,7 +590,7 @@ export class RepositoryImplementation<entityType>
 
   findOptionsBasedOnRelation(
     rel: RelationInfo,
-    options: RelationOptions<any, any, any>,
+    field: FieldMetadata,
     moreFindOptions: FindOptions<any>,
     row: entityType,
     otherRepo: Repository<unknown>,
@@ -597,6 +598,7 @@ export class RepositoryImplementation<entityType>
     let where: EntityFilter<any>[] = []
     let findOptions: FindOptions<any> = {}
     let findOptionsSources: FindOptions<any>[] = []
+    const options = field.options as RelationOptions<any, any, any>
     if (typeof options.findOptions === 'function') {
       findOptionsSources.push(options.findOptions(row))
     } else if (typeof options.findOptions === 'object')
@@ -627,12 +629,23 @@ export class RepositoryImplementation<entityType>
           [options.field]: this.metadata.idMetadata.getId(row),
         })
       }
-    } else if (options.fields)
+    } else if (options.fields) {
       for (const key in options.fields) {
         if (Object.prototype.hasOwnProperty.call(options.fields, key)) {
           where.push({ [key]: row[options.fields[key]] })
         }
       }
+    } else if (rel.type === 'toOne') {
+      let val = row[field.key]
+      if (typeof val === 'object')
+        where.push(
+          otherRepo.metadata.idMetadata.getIdFilter(
+            otherRepo.metadata.idMetadata.getId(val),
+          ),
+        )
+      else where.push(otherRepo.metadata.idMetadata.getIdFilter(val))
+    }
+
     findOptions.where = { $and: where }
     if (rel.type === 'toOne') findOptions.limit = 1
     return findOptions

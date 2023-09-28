@@ -86,7 +86,7 @@ describe('test repository relations', () => {
       }
     `)
   })
-  it.skip('test  fetch category', async () => {
+  it('test  fetch category', async () => {
     expect(
       await r(Task).findFirst(
         {},
@@ -100,9 +100,9 @@ describe('test repository relations', () => {
       Task {
         "category": Category {
           "company": Company {
-            "id": 1,
+            "id": 11,
             "name": "comp1",
-          }],
+          },
           "id": 1,
           "name": "cat1",
         },
