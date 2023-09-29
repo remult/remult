@@ -696,7 +696,11 @@ export class RepositoryImplementation<entityType>
     }
 
     findOptions.where = { $and: where }
-    if (rel.type === 'toOne' || rel.type === 'reference') findOptions.limit = 1
+    if (
+      (rel.type === 'toOne' || rel.type === 'reference') &&
+      findOptions.orderBy // I deduce from this that there may be more than one row and we want only the first
+    )
+      findOptions.limit = 1
     return { findOptions, returnNull }
   }
 
