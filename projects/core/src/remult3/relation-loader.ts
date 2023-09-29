@@ -18,7 +18,7 @@ export class RelationLoader {
     this.promises.push(p)
     return p
   }
-  constructor(private remult: Remult) {}
+  constructor() {}
   async resolveAll() {
     if (this.promises.length === 0) return
     const x = this.promises

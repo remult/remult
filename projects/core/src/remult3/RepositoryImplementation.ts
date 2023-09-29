@@ -488,7 +488,7 @@ export class RepositoryImplementation<entityType>
     options: FindOptions<entityType>,
     skipOrderByAndLimit = false,
   ): Promise<entityType[]> {
-    const loader = new RelationLoader(this.remult)
+    const loader = new RelationLoader()
     const result = await this.rawFind(options, skipOrderByAndLimit, loader)
     await loader.resolveAll()
     return result
@@ -512,7 +512,7 @@ export class RepositoryImplementation<entityType>
     jsonItems: any[],
     load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[],
   ) {
-    const loader = new RelationLoader(this.remult)
+    const loader = new RelationLoader()
     return this.loadManyToOneForManyRows(
       jsonItems.map((row) => {
         let result = {}
