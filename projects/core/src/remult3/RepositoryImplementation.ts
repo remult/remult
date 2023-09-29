@@ -8,7 +8,12 @@ import type {
   ValueListItem,
 } from '../column-interfaces'
 import type { AllowedForInstance } from '../context'
-import { Remult, isBackend, queryConfig } from '../context'
+import {
+  Remult,
+  RemultAsyncLocalStorage,
+  isBackend,
+  queryConfig,
+} from '../context'
 import type { EntityOptions } from '../entity'
 import { Filter } from '../filter/filter-interfaces'
 import { Sort } from '../sort'
@@ -67,6 +72,7 @@ import {
 import { __updateEntityBasedOnWhere } from './__updateEntityBasedOnWhere'
 import type { columnInfo } from './columnInfo'
 import { getRelationInfo, relationInfoMember } from './relationInfoMember'
+import { RelationLoader } from './relation-loader'
 //import  { remult } from "../remult-proxy";
 
 let classValidatorValidate:
@@ -451,7 +457,12 @@ export class RepositoryImplementation<entityType>
     } as LiveQuery<entityType>
   }
 
-  async rawFind(options: FindOptions<entityType>, skipOrderByAndLimit = false) {
+  async rawFind(
+    options: FindOptions<entityType>,
+    skipOrderByAndLimit = false,
+    loader: RelationLoader,
+  ) {
+    if (!options) options = {}
     Remult.onFind(this._info, options)
 
     if (this.defaultFindOptions) {
@@ -463,20 +474,23 @@ export class RepositoryImplementation<entityType>
       delete opt.limit
     }
 
-    return await this.edp.find(opt)
+    const rawRows = await this.edp.find(opt)
+    let result = await this.loadManyToOneForManyRows(
+      rawRows,
+      options.load,
+      options.include,
+      loader,
+    )
+    return result
   }
 
   async find(
     options: FindOptions<entityType>,
     skipOrderByAndLimit = false,
   ): Promise<entityType[]> {
-    if (!options) options = {}
-    const rawRows = await this.rawFind(options, skipOrderByAndLimit)
-    let result = await this.loadManyToOneForManyRows(
-      rawRows,
-      options.load,
-      options.include,
-    )
+    const loader = new RelationLoader(this.remult)
+    const result = await this.rawFind(options, skipOrderByAndLimit, loader)
+    await loader.resolveAll()
     return result
   }
 
@@ -498,6 +512,7 @@ export class RepositoryImplementation<entityType>
     jsonItems: any[],
     load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[],
   ) {
+    const loader = new RelationLoader(this.remult)
     return this.loadManyToOneForManyRows(
       jsonItems.map((row) => {
         let result = {}
@@ -507,12 +522,15 @@ export class RepositoryImplementation<entityType>
         return result
       }),
       load,
+      undefined,
+      loader,
     )
   }
   private async loadManyToOneForManyRows(
     rawRows: any[],
-    load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[],
-    include?: MembersToInclude<entityType>,
+    load: (entity: FieldsMetadata<entityType>) => FieldMetadata[],
+    include: MembersToInclude<entityType>,
+    loader: RelationLoader,
   ) {
     let loadFields: FieldMetadata[] = undefined
     if (load) loadFields = load(this.metadata.fields)
@@ -586,16 +604,30 @@ export class RepositoryImplementation<entityType>
             row,
             otherRepo,
           )
-
-          const result = returnNull
-            ? []
-            : await this.remult.repo(rel.toType()).find(findOptions)
-          row[col.key] =
-            rel.type !== 'toMany'
-              ? result.length == 0
-                ? undefined
-                : result[0]
-              : result
+          if (returnNull) row[col.key] = null
+          else {
+            const entityType = rel.toType()
+            const toRepo = this.remult.repo(
+              entityType,
+            ) as RepositoryImplementation<any>
+            loader
+              .load(
+                {
+                  entityType,
+                  find: (options) => toRepo.rawFind(options, false, loader),
+                  metadata: toRepo.metadata,
+                },
+                findOptions,
+              )
+              .then((result) => {
+                row[col.key] =
+                  rel.type !== 'toMany'
+                    ? result.length == 0
+                      ? undefined
+                      : result[0]
+                    : result
+              })
+          }
         }
       }
     }
@@ -664,7 +696,7 @@ export class RepositoryImplementation<entityType>
     }
 
     findOptions.where = { $and: where }
-    if (rel.type === 'toOne') findOptions.limit = 1
+    if (rel.type === 'toOne' || rel.type === 'reference') findOptions.limit = 1
     return { findOptions, returnNull }
   }
 

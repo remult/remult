@@ -424,6 +424,90 @@ describe('test relations', () => {
         ]
       `)
   })
+  it.only('test optimization', async () => {
+    const dp = TestDataProvider(remult.dataProvider)
+    remult.dataProvider = dp
+
+    await r(Task).find({
+      include: {
+        category: {
+          include: {
+            company: true,
+          },
+        },
+        secondaryCategory: {
+          include: {
+            company: true,
+          },
+        },
+      },
+    })
+    expect(dp.finds).toMatchInlineSnapshot(`
+      [
+        {
+          "entity": "tasks",
+          "where": {},
+        },
+        {
+          "entity": "categories",
+          "where": {
+            "id.in": [
+              1,
+              2,
+            ],
+          },
+        },
+        {
+          "entity": "categories",
+          "where": {
+            "id": 1,
+          },
+        },
+        {
+          "entity": "categories",
+          "where": {
+            "id": 2,
+          },
+        },
+        {
+          "entity": "categories",
+          "where": {
+            "id": 3,
+          },
+        },
+        {
+          "entity": "company",
+          "where": {
+            "id": 10,
+          },
+        },
+        {
+          "entity": "company",
+          "where": {
+            "id": 10,
+          },
+        },
+        {
+          "entity": "company",
+          "where": {
+            "id": 20,
+          },
+        },
+        {
+          "entity": "company",
+          "where": {
+            "id": 10,
+          },
+        },
+        {
+          "entity": "company",
+          "where": {
+            "id": 20,
+          },
+        },
+      ]
+    `)
+  })
 })
 
 //[ ] optimize fetches
