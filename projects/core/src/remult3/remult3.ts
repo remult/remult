@@ -532,3 +532,6 @@ export type RepositoryRelations<entityType> = {
     ? { findOne: (options?: FindOptionsBase<R>) => Promise<R> } //[ ]- add test
     : never
 }
+//[ ] - implement find One
+//[ ] - for active record, implement waitLoad
+//[ ] - replace lookup Column with strategy for reference vs lazy
