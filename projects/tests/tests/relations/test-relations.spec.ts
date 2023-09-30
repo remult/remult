@@ -307,6 +307,8 @@ describe('test relations', () => {
     `)
   })
   it('load recursive', async () => {
+    const dp = TestDataProvider(remult.dataProvider)
+    remult.dataProvider = dp
     const t = await r(Category).find({
       include: {
         tasks: {
@@ -315,7 +317,28 @@ describe('test relations', () => {
           },
         },
       },
+      limit: 1,
     })
+    expect(dp.finds).toMatchInlineSnapshot(`
+      [
+        {
+          "entity": "categories",
+          "where": {},
+        },
+        {
+          "entity": "tasks",
+          "where": {
+            "category": 1,
+          },
+        },
+        {
+          "entity": "categories",
+          "where": {
+            "id": 3,
+          },
+        },
+      ]
+    `)
     expect(t[0].tasks[0].secondaryCategory.id).toBe(3)
   })
 
@@ -428,7 +451,7 @@ describe('test relations', () => {
     const dp = TestDataProvider(remult.dataProvider)
     remult.dataProvider = dp
 
-    await r(Task).find({
+    const result = await r(Task).find({
       include: {
         category: {
           include: {
@@ -442,7 +465,6 @@ describe('test relations', () => {
         },
       },
     })
-    // [ ] - need to improve some more
     expect(dp.finds).toMatchInlineSnapshot(`
       [
         {
@@ -452,36 +474,24 @@ describe('test relations', () => {
         {
           "entity": "categories",
           "where": {
-            "id": 1,
-          },
-        },
-        {
-          "entity": "categories",
-          "where": {
-            "id": 2,
-          },
-        },
-        {
-          "entity": "categories",
-          "where": {
-            "id": 3,
+            "id.in": [
+              1,
+              2,
+              3,
+            ],
           },
         },
         {
           "entity": "company",
           "where": {
-            "id": 10,
-          },
-        },
-        {
-          "entity": "company",
-          "where": {
-            "id": 20,
+            "id.in": [
+              10,
+              20,
+            ],
           },
         },
       ]
     `)
+    expect(result[0].category.company.id).toBe(10)
   })
 })
-
-//[ ] optimize fetches
