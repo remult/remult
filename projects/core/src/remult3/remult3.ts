@@ -466,9 +466,7 @@ export interface Paginator<entityType> {
   count(): Promise<number>
 }
 
-//[ ] - decided to keep, to reduce chance of conflicts
 export interface RelationInfo {
-  //[ ] remult internal
   toType: () => any
   type: 'reference' | 'toOne' | 'toMany'
 }
@@ -476,7 +474,6 @@ export interface RelationInfo {
 //[ ] V2 - condition? not to fetch if null etc....
 //[ ] V3 - all these fields will also appear in the where etc... in the typescript api - but we will not enforce them
 export type RelationOptions<
-  //[ ] remult index
   fromEntity,
   toEntity,
   matchIdEntity,
@@ -494,13 +491,11 @@ export type RelationOptionsBase<
   toEntity,
   optionsType extends LoadOptions<toEntity> = LoadOptions<toEntity>,
 > = {
-  //[ ] - remult index
   findOptions?: optionsType | ((entity: fromEntity) => optionsType)
   defaultIncluded?: boolean
 } & FieldOptions<fromEntity, toEntity>
 
 export type ObjectMembersOnly<T> = {
-  //[ ] remult index
   [K in keyof Pick<
     T,
     {
@@ -514,7 +509,6 @@ export type ObjectMembersOnly<T> = {
 }
 
 export type MembersToInclude<T> = {
-  //[ ] remult index
   [K in keyof ObjectMembersOnly<T>]?:
     | true
     | (T[K] extends Array<any>
@@ -523,7 +517,6 @@ export type MembersToInclude<T> = {
 }
 
 export type RepositoryRelations<entityType> = {
-  //[ ] remult index
   [K in keyof ObjectMembersOnly<entityType>]: entityType[K] extends Array<
     infer R
   >
@@ -535,3 +528,4 @@ export type RepositoryRelations<entityType> = {
 //[ ] - implement find One
 //[ ] - for active record, implement waitLoad
 //[ ] - replace lookup Column with strategy for reference vs lazy
+//[ ] - test with live query

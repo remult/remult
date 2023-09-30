@@ -276,10 +276,10 @@ export class Fields {
   ) => void {
     return Field(() => Boolean, ...options)
   }
-
-  static reference<entityType, toEntityType>( //[ ] docking the move from reference to one will not be fun,since the parameter order changes
+  //[ ] docking the move from reference to one will not be fun,since the parameter order changes
+  static reference<entityType, toEntityType>(
     toEntityType: () => ClassType<toEntityType>,
-    options?: RelationOptionsBase<entityType, toEntityType, entityType>,
+    options?: RelationOptionsBase<entityType, toEntityType>,
   ) {
     let op: RelationOptions<entityType, toEntityType, entityType> = (!options
       ? {}
@@ -296,7 +296,6 @@ export class Fields {
     })
   }
 
-  //TODO - don't like first parameter as current Type - it's pshita :)
   static many<entityType, toEntityType>(
     toEntityType: () => ClassType<toEntityType>,
     options:

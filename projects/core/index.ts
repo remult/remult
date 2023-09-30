@@ -24,6 +24,14 @@ export {
   Paginator,
   LiveQuery,
   LiveQueryChangeInfo,
+  Subscribable,
+  RefSubscriber,
+  RefSubscriberBase,
+  RelationOptions,
+  RelationOptionsBase,
+  ObjectMembersOnly,
+  MembersToInclude,
+  RepositoryRelations,
 } from './src/remult3/remult3'
 export {
   EntityBase,
