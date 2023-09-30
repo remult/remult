@@ -30,6 +30,7 @@ import type {
   FindFirstOptionsBase,
   FindOptions,
   FindOptionsBase,
+  IdFieldRef,
   IdMetadata,
   LiveQuery,
   LiveQueryChangeInfo,
@@ -202,8 +203,8 @@ export class RepositoryImplementation<entityType>
     if (this.idCache.has(id)) {
       return r
     }
-    this.idCache.set(id, undefined)
     if (doNotLoadIfNotFound) return undefined
+    this.idCache.set(id, undefined)
     let row = this.findId(id).then((row) => {
       if (row === undefined) {
         r = null
@@ -540,29 +541,31 @@ export class RepositoryImplementation<entityType>
 
       if (ei) {
         let isRelation: RelationInfo = col.options?.[relationInfoMember]
-        let load = isRelation
-          ? (col.options as RelationOptions<any, any, any>)?.defaultIncluded
-          : !col.options.lazy
-        if (loadFields !== undefined) load = loadFields.includes(col)
-        if (include) load = include[col.key]
-        if (load) {
-          let repo = this.remult.repo(
-            col.valueType,
-          ) as RepositoryImplementation<any>
-          let toLoad = []
-          for (const r of rawRows) {
-            let val = r[col.key]
-            if (
-              val !== undefined &&
-              val !== null &&
-              !toLoad.includes(val) &&
-              !repo.idCache.has(val)
-            ) {
-              toLoad.push(val)
+        if (!isRelation) {
+          let load = isRelation
+            ? (col.options as RelationOptions<any, any, any>)?.defaultIncluded
+            : !col.options.lazy
+          if (loadFields !== undefined) load = loadFields.includes(col)
+          if (include) load = include[col.key]
+          if (load) {
+            let repo = this.remult.repo(
+              col.valueType,
+            ) as RepositoryImplementation<any>
+            let toLoad = []
+            for (const r of rawRows) {
+              let val = r[col.key]
+              if (
+                val !== undefined &&
+                val !== null &&
+                !toLoad.includes(val) &&
+                !repo.idCache.has(val)
+              ) {
+                toLoad.push(val)
+              }
             }
-          }
-          if (toLoad.length > 0) {
-            await loadManyToOne(repo, toLoad)
+            if (toLoad.length > 0) {
+              await loadManyToOne(repo, toLoad)
+            }
           }
         }
       } else if (col.options[relationInfoMember]) {
@@ -684,7 +687,12 @@ export class RepositoryImplementation<entityType>
         }
       }
     } else if (rel.type === 'toOne' || rel.type === 'reference') {
-      let val = row[field.key]
+      let val =
+        rel.type === 'reference'
+          ? (
+              getEntityRef(row).fields.find(field.key) as IdFieldRef<any, any>
+            ).getId()
+          : row[field.key]
       if (val === null) returnNull = true
       else if (typeof val === 'object')
         where.push(

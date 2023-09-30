@@ -424,7 +424,7 @@ describe('test relations', () => {
         ]
       `)
   })
-  it.only('test optimization', async () => {
+  it('test optimization', async () => {
     const dp = TestDataProvider(remult.dataProvider)
     remult.dataProvider = dp
 
@@ -452,15 +452,6 @@ describe('test relations', () => {
         {
           "entity": "categories",
           "where": {
-            "id.in": [
-              1,
-              2,
-            ],
-          },
-        },
-        {
-          "entity": "categories",
-          "where": {
             "id": 1,
           },
         },
@@ -474,24 +465,6 @@ describe('test relations', () => {
           "entity": "categories",
           "where": {
             "id": 3,
-          },
-        },
-        {
-          "entity": "company",
-          "where": {
-            "id": 10,
-          },
-        },
-        {
-          "entity": "company",
-          "where": {
-            "id": 10,
-          },
-        },
-        {
-          "entity": "company",
-          "where": {
-            "id": 20,
           },
         },
         {

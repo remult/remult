@@ -31,7 +31,7 @@ describe('test repository relations', () => {
   function r<entityType>(entity: ClassType<entityType>) {
     return remult.repo(entity)
   }
-  it.skip('test that it works', async () => {
+  it('test that it works', async () => {
     remult = new Remult(new InMemoryDataProvider())
     let c = await r(Category).insert({
       id: 1,

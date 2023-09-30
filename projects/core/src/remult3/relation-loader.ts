@@ -22,10 +22,9 @@ export class RelationLoader {
   async resolveAll() {
     if (this.promises.length === 0) return
     const x = this.promises
-    console.log(x.length)
     this.promises = []
     await Promise.all(x)
-    this.resolveAll()
+    await this.resolveAll()
   }
 }
 class EntityLoader {
