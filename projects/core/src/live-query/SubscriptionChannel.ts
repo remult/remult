@@ -20,7 +20,7 @@ export class LiveQuerySubscriber<entityType> {
   subscribeCode: () => void
   unsubscribe: VoidFunction = () => {}
   async setAllItems(result: any[]) {
-    const items = await this.repo.fromJsonArray(result, this.query.options.load)
+    const items = await this.repo.fromJsonArray(result, this.query.options)
     this.forListeners((listener) => {
       listener((x) => {
         return items
@@ -79,7 +79,7 @@ export class LiveQuerySubscriber<entityType> {
       let x = messages.filter(({ type }) => type == 'add' || type == 'replace')
       let loadedItems = await this.repo.fromJsonArray(
         x.map((m) => m.data.item),
-        this.query.options.load,
+        this.query.options,
       )
       for (let index = 0; index < x.length; index++) {
         const element = x[index]

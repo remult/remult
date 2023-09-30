@@ -522,10 +522,8 @@ export type RepositoryRelations<entityType> = {
   >
     ? Repository<R>
     : entityType[K] extends infer R
-    ? { findOne: (options?: FindOptionsBase<R>) => Promise<R> } //[ ]- add test
+    ? { findOne: (options?: FindOptionsBase<R>) => Promise<R> }
     : never
 }
-//[ ] - implement find One
 //[ ] - for active record, implement waitLoad
 //[ ] - replace lookup Column with strategy for reference vs lazy
-//[ ] - test with live query

@@ -6,6 +6,7 @@ import {
   FindOptions,
   InMemoryDataProvider,
   Remult,
+  getEntityRef,
 } from '../../../core'
 import type { ClassType } from '../../../core/classType'
 
@@ -80,5 +81,15 @@ describe('test repository relations', () => {
     expect(c.company).toBeUndefined()
     expect(c.secondCompany).toBeUndefined()
     expect(c.tasks).toBeUndefined()
+  })
+  it('find one works', async () => {
+    const c = await r(Category).findFirst({}, { include: {} })
+    expect(getEntityRef(c).fields.company.getId()).toBe(11)
+    const comp1 = await r(Category).relations(c).company.findOne()
+    const comp2 = await r(Category).relations(c).secondCompany.findOne()
+
+    expect(comp1.id).toBe(11)
+    expect(comp2.id).toBe(12)
+    expect(await r(Category).relations(c).tasks.count()).toBe(1)
   })
 })

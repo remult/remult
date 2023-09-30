@@ -34,6 +34,7 @@ import type {
   IdMetadata,
   LiveQuery,
   LiveQueryChangeInfo,
+  LoadOptions,
   MembersToInclude,
   OmitEB,
   QueryOptions,
@@ -161,13 +162,20 @@ export class RepositoryImplementation<entityType>
           item,
           repo,
         )
-        return new RepositoryImplementation(
+        const toRepo = new RepositoryImplementation(
           repo.entity,
           repo.remult,
           repo.dataProvider,
           repo._info,
           findOptions,
         )
+        if (rel.type === 'toMany') return toRepo
+        else
+          return {
+            findOne: (options?: FindOptionsBase<any>) => {
+              return toRepo.findFirst({}, options)
+            },
+          }
       },
     })
   }
@@ -476,12 +484,7 @@ export class RepositoryImplementation<entityType>
     }
 
     const rawRows = await this.edp.find(opt)
-    let result = await this.loadManyToOneForManyRows(
-      rawRows,
-      options.load,
-      options.include,
-      loader,
-    )
+    let result = await this.loadManyToOneForManyRows(rawRows, options, loader)
     return result
   }
 
@@ -509,12 +512,9 @@ export class RepositoryImplementation<entityType>
     opt.page = options.page
     return opt
   }
-  async fromJsonArray(
-    jsonItems: any[],
-    load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[],
-  ) {
+  async fromJsonArray(jsonItems: any[], loadOptions: LoadOptions<entityType>) {
     const loader = new RelationLoader()
-    return this.loadManyToOneForManyRows(
+    const result = await this.loadManyToOneForManyRows(
       jsonItems.map((row) => {
         let result = {}
         for (const col of this.metadata.fields.toArray()) {
@@ -522,19 +522,19 @@ export class RepositoryImplementation<entityType>
         }
         return result
       }),
-      load,
-      undefined,
+      loadOptions,
       loader,
     )
+    await loader.resolveAll()
+    return result
   }
   private async loadManyToOneForManyRows(
     rawRows: any[],
-    load: (entity: FieldsMetadata<entityType>) => FieldMetadata[],
-    include: MembersToInclude<entityType>,
+    loadOptions: LoadOptions<entityType>,
     loader: RelationLoader,
   ) {
     let loadFields: FieldMetadata[] = undefined
-    if (load) loadFields = load(this.metadata.fields)
+    if (loadOptions?.load) loadFields = loadOptions.load(this.metadata.fields)
 
     for (const col of this.metadata.fields) {
       let ei = getEntitySettings(col.valueType, false)
@@ -546,7 +546,7 @@ export class RepositoryImplementation<entityType>
             ? (col.options as RelationOptions<any, any, any>)?.defaultIncluded
             : !col.options.lazy
           if (loadFields !== undefined) load = loadFields.includes(col)
-          if (include) load = include[col.key]
+          if (loadOptions.include) load = loadOptions.include[col.key]
           if (load) {
             let repo = this.remult.repo(
               col.valueType,
@@ -593,8 +593,8 @@ export class RepositoryImplementation<entityType>
       let rel = getRelationInfo(col.options)
       let incl = (col.options as RelationOptions<any, any, any>)
         .defaultIncluded as any as FindFirstOptionsBase<any>
-      if (include) {
-        incl = include?.[col.key] as FindOptionsBase<any>
+      if (loadOptions?.include) {
+        incl = loadOptions.include[col.key] as FindOptionsBase<any>
       }
 
       if (rel && incl) {
