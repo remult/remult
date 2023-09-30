@@ -1716,7 +1716,18 @@ export class FieldRefImplementation<entityType, valueType>
   }
   async load(): Promise<valueType> {
     let lu = this.rowBase.lookups.get(this.metadata.key)
-    if (lu) {
+    let rel = getRelationInfo(this.metadata.options)
+    if (rel) {
+      if (rel.type === 'toMany') {
+        return (this.container[this.metadata.key] = await this.helper.repository
+          .relations(this.container)
+          [this.metadata.key].find())
+      } else {
+        return (this.container[this.metadata.key] = await this.helper.repository
+          .relations(this.container)
+          [this.metadata.key].findOne())
+      }
+    } else if (lu) {
       if (this.valueChanged()) {
         await lu.waitLoadOf(this.rawOriginalValue())
       }

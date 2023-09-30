@@ -468,7 +468,7 @@ export interface Paginator<entityType> {
 
 export interface RelationInfo {
   toType: () => any
-  type: 'reference' | 'toOne' | 'toMany'
+  type: 'reference' | 'toOne' | 'toMany' //remove to from name
 }
 //[ ] V2 - what to do about count?
 //[ ] V2 - condition? not to fetch if null etc....
@@ -525,5 +525,3 @@ export type RepositoryRelations<entityType> = {
     ? { findOne: (options?: FindOptionsBase<R>) => Promise<R> }
     : never
 }
-//[ ] - for active record, implement waitLoad
-//[ ] - replace lookup Column with strategy for reference vs lazy
