@@ -878,11 +878,11 @@ describe('data api', () => {
     let type = class extends newCategories {}
     Entity<typeof type.prototype>('testE', {
       allowApiUpdate: true,
-      saving: (row, cancel) => {
+      saving: (row, { preventDefault }) => {
         if (startTest) {
           mem.rows['testE'][0].categoryName = 'kuku'
           expect(mem.rows['testE'][0].categoryName).toBe('kuku')
-          cancel()
+          preventDefault()
         }
       },
     })(type)

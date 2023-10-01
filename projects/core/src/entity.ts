@@ -8,6 +8,7 @@ import type {
   EntityOrderBy,
   EntityRef,
   FieldsMetadata,
+  LifeCycleEvent,
 } from './remult3/remult3'
 
 export interface EntityOptions<entityType = any> {
@@ -79,14 +80,20 @@ export interface EntityOptions<entityType = any> {
    */
   saving?: (
     row: entityType,
-    proceedWithoutSavingToDb: () => void,
+    e: LifeCycleEvent<entityType>,
   ) => Promise<any> | any
   /** will be called after the Entity was saved to the data source. */
-  saved?: (row: entityType) => Promise<any> | any
+  saved?: (row: entityType, e: LifeCycleEvent<entityType>) => Promise<any> | any
   /** Will be called before an Entity is deleted. */
-  deleting?: (row: entityType) => Promise<any> | any
+  deleting?: (
+    row: entityType,
+    e: LifeCycleEvent<entityType>,
+  ) => Promise<any> | any
   /** Will be called after an Entity is deleted */
-  deleted?: (row: entityType) => Promise<any> | any
+  deleted?: (
+    row: entityType,
+    e: LifeCycleEvent<entityType>,
+  ) => Promise<any> | any
   /** Will be called when the entity is being validated, usually prior to the `saving` event */
   validation?: (
     row: entityType,

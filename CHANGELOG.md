@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.23.0] TBD
+
+- Added relations
+- Changed the way an entity id is defined
+- fixed json db to support db names
+- added saving life cycle event
+
 ## [0.22.8] 2023-09-27
 
 - Fixed an issue with rest call that had both and & or

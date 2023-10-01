@@ -20,12 +20,12 @@ export interface EntityRef<entityType> extends Subscribable {
   isNew(): boolean //
   wasChanged(): boolean
   wasDeleted(): boolean
-  fields: FieldsRef<entityType> //
+  fields: FieldsRef<entityType>
   error: string
-  getId(): idType<entityType> //
-  getOriginalId(): idType<entityType> //
-  repository: Repository<entityType> //
-  metadata: EntityMetadata<entityType> //
+  getId(): idType<entityType>
+  getOriginalId(): idType<entityType>
+  repository: Repository<entityType>
+  metadata: EntityMetadata<entityType>
   toApiJson(): any
   validate(): Promise<ErrorInfo<entityType> | undefined>
   readonly apiUpdateAllowed: boolean
@@ -33,7 +33,16 @@ export interface EntityRef<entityType> extends Subscribable {
   readonly apiInsertAllowed: boolean
   readonly isLoading: boolean
 }
-//[ ] - add LifeCycleEvent - send it to save/saving/deleted/deleting - and use preventDefault instead of existing name
+export interface LifeCycleEvent<entityType> {
+  isNew: boolean
+  fields: FieldsRef<entityType>
+  id: idType<entityType>
+  originalId: idType<entityType>
+  repository: Repository<entityType>
+  metadata: EntityMetadata<entityType>
+  preventDefault: VoidFunction
+}
+
 export interface ControllerRef<entityType> extends Subscribable {
   hasErrors(): boolean
   fields: FieldsRef<entityType>
@@ -495,7 +504,6 @@ export type RelationOptionsBase<
   optionsType extends LoadOptions<toEntity> = LoadOptions<toEntity>,
 > = {
   findOptions?: optionsType | ((entity: fromEntity) => optionsType)
-  //[ ] - a field with default included currently doesn't get loaded if someone created an include and did not set it to true as well. maybe it should be different, maybe they should set it to false specifically?
   defaultIncluded?: boolean
 } & FieldOptions<fromEntity, toEntity>
 

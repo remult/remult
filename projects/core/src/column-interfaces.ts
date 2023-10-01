@@ -1,6 +1,11 @@
 import type { ClassType } from '../classType'
 import type { Allowed, AllowedForInstance } from './context'
-import type { EntityMetadata, FieldRef, OmitEB } from './remult3/remult3'
+import type {
+  EntityMetadata,
+  FieldRef,
+  LifeCycleEvent,
+  OmitEB,
+} from './remult3/remult3'
 
 export interface FieldOptions<entityType = any, valueType = any> {
   /** A human readable name for the field. Can be used to achieve a consistent caption for a field throughout the app
@@ -50,6 +55,7 @@ export interface FieldOptions<entityType = any, valueType = any> {
   saving?: (
     entity: entityType,
     fieldRef: FieldRef<entityType, valueType>,
+    e: LifeCycleEvent<entityType>, //[ ] not sure if it should be the second parameter
   ) => any | Promise<any>
   /**  An expression that will determine this fields value on the backend and be provided to the front end*/
   serverExpression?: (entity: entityType) => valueType | Promise<valueType>

@@ -32,6 +32,7 @@ import type {
   FindOptionsBase,
   IdFieldRef,
   IdMetadata,
+  LifeCycleEvent,
   LiveQuery,
   LiveQueryChangeInfo,
   LoadOptions,
@@ -1402,15 +1403,13 @@ export class rowHelperImplementation<T>
         // no need
         await this.__validateEntity()
       let doNotSave = false
+      let e = this.buildLifeCycleEvent(() => (doNotSave = true))
       for (const col of this.fields) {
         if (col.metadata.options.saving)
-          await col.metadata.options.saving(this.instance, col)
+          await col.metadata.options.saving(this.instance, col, e)
       }
       if (this.info.entityInfo.saving) {
-        await this.info.entityInfo.saving(
-          this.instance,
-          () => (doNotSave = true),
-        )
+        await this.info.entityInfo.saving(this.instance, e)
       }
 
       this.__assertValidity()
@@ -1465,7 +1464,7 @@ export class rowHelperImplementation<T>
         await this.loadDataFrom(updatedRow)
 
         if (this.info.entityInfo.saved)
-          await this.info.entityInfo.saved(this.instance)
+          await this.info.entityInfo.saved(this.instance, e)
         if (this.repository.listeners)
           for (const listener of this.repository.listeners.filter(
             (x) => x.saved,
@@ -1490,6 +1489,18 @@ export class rowHelperImplementation<T>
     }
   }
 
+  private buildLifeCycleEvent(preventDefault: VoidFunction = () => {}) {
+    return {
+      isNew: this.isNew(),
+      fields: this.fields,
+      id: this.getId(),
+      originalId: this.getOriginalId(),
+      metadata: this.repository.metadata,
+      repository: this.repository,
+      preventDefault: () => preventDefault(),
+    } satisfies LifeCycleEvent<T>
+  }
+
   private getIdFilter(): Filter {
     return Filter.fromEntityFilter(
       this.metadata,
@@ -1499,14 +1510,15 @@ export class rowHelperImplementation<T>
 
   async delete() {
     this.__clearErrorsAndReportChanged()
+    let e = this.buildLifeCycleEvent()
     if (this.info.entityInfo.deleting)
-      await this.info.entityInfo.deleting(this.instance)
+      await this.info.entityInfo.deleting(this.instance, e)
     this.__assertValidity()
 
     try {
       await this.edp.delete(this.id)
       if (this.info.entityInfo.deleted)
-        await this.info.entityInfo.deleted(this.instance)
+        await this.info.entityInfo.deleted(this.instance, e)
 
       if (this.repository.listeners)
         for (const listener of this.repository.listeners.filter(

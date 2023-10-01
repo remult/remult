@@ -1,3 +1,5 @@
+import type { ClassType } from './classType'
+
 /*
  * Public API Surface of remult
  */
@@ -113,6 +115,8 @@ export { Validators } from './src/validators'
 
 export { ValueConverters } from './src/valueConverters'
 export { remult } from './src/remult-proxy'
+import { remult } from './src/remult-proxy'
+
 //export { getId } from './src/remult3/getId';
 
 export {
@@ -129,3 +133,6 @@ export {
   LiveQueryChange,
   Unsubscribe,
 } from './src/live-query/SubscriptionChannel'
+export function repo<entityType>(entity: ClassType<entityType>) {
+  return remult.repo(entity)
+}
