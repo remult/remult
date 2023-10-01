@@ -326,7 +326,7 @@ export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
    *  page:2
    * })
    */
-  limit?: number
+  limit?: number //[ ] - with the "in" optimization, there is a risk around limit or default limit
   /** Determines the page number that will be used to extract the data
    * @example
    * await this.remult.repo(Products).find({
@@ -492,6 +492,7 @@ export type RelationOptionsBase<
   optionsType extends LoadOptions<toEntity> = LoadOptions<toEntity>,
 > = {
   findOptions?: optionsType | ((entity: fromEntity) => optionsType)
+  //[ ] - a field with default included currently doesn't get loaded if someone created an include and did not set it to true as well. maybe it should be different, maybe they should set it to false specifically?
   defaultIncluded?: boolean
 } & FieldOptions<fromEntity, toEntity>
 
@@ -517,9 +518,9 @@ export type MembersToInclude<T> = {
 }
 
 export type RepositoryRelations<entityType> = {
-  [K in keyof ObjectMembersOnly<entityType>]: entityType[K] extends Array<
-    infer R
-  >
+  [K in keyof ObjectMembersOnly<entityType>]-?: NonNullable<
+    entityType[K]
+  > extends Array<infer R>
     ? Repository<R>
     : entityType[K] extends infer R
     ? { findOne: (options?: FindOptionsBase<R>) => Promise<R> }

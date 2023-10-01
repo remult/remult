@@ -18,7 +18,7 @@ class Category {
   @Fields.string()
   name = ''
   @Fields.many(() => Task, 'category')
-  tasks: Task[]
+  tasks?: Task[]
   @Fields.many(() => Task, {
     field: 'category',
     findOptions: {
@@ -81,7 +81,7 @@ describe('test repository relations', () => {
     expect(
       categories.map(({ id, tasks, completedTask }) => ({
         id,
-        tasks: tasks.map((y) => y.id),
+        tasks: tasks!.map((y) => y.id),
         completedTask: completedTask.map((y) => y.id),
       })),
     ).toMatchInlineSnapshot(`
