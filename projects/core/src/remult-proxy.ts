@@ -119,6 +119,11 @@ export class RemultProxy implements Remult {
       get fields() {
         return self.remultFactory().repo(...args).metadata.fields
       },
+      relations: (args2) =>
+        self
+          .remultFactory()
+          .repo(...args)
+          .relations(args2),
       validate: (a, b) =>
         self
           .remultFactory()

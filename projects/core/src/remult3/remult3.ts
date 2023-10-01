@@ -51,7 +51,9 @@ export interface Subscribable {
 }
 
 export type FieldsRef<entityType> = {
-  [Properties in keyof OmitEB<entityType>]: entityType[Properties] extends {
+  [Properties in keyof OmitEB<entityType>]: NonNullable<
+    entityType[Properties]
+  > extends {
     id?: number | string
   }
     ? IdFieldRef<entityType, entityType[Properties]>
@@ -512,9 +514,9 @@ export type ObjectMembersOnly<T> = {
 export type MembersToInclude<T> = {
   [K in keyof ObjectMembersOnly<T>]?:
     | true
-    | (T[K] extends Array<any>
-        ? FindOptions<T[K][number]>
-        : FindFirstOptions<T[K]>)
+    | (NonNullable<T[K]> extends Array<any>
+        ? FindOptions<NonNullable<T[K]>[number]>
+        : FindFirstOptions<NonNullable<T[K]>>)
 }
 
 export type RepositoryRelations<entityType> = {
