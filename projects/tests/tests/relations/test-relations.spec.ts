@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import {
   Entity,
+  Field,
   Fields,
   FindFirstOptions,
   FindOptions,
@@ -13,6 +14,8 @@ import {
   findOptionsFromJson,
   findOptionsToJson,
 } from '../../../core/src/data-providers/rest-data-provider'
+import { TestDataApiResponse } from '../TestDataApiResponse'
+import { createEntity } from '../dynamic-classes'
 
 @Entity('company')
 class Company {
@@ -526,5 +529,65 @@ describe('test relations', () => {
       ]
     `)
     expect(result[0].category!.company.id).toBe(10)
+  })
+  it.only('loads ok also with old field reference', async () => {
+    const td = TestDataProvider()
+    remult.dataProvider = td
+    const Company = createEntity('companies', {
+      id: Fields.integer(),
+      name: Fields.string(),
+    })
+    const Category = createEntity('categories', {
+      id: Fields.integer(),
+      name: Fields.string(),
+      company: Field(() => Company),
+    })
+    const Task = createEntity('tasks', {
+      id: Fields.integer(),
+      title: Fields.string(),
+      category: Field(() => Category),
+    })
+    const [comp1, comp2] = await r(Company).insert([
+      { id: 1, name: 'comp1' },
+      { id: 2, name: 'comp2' },
+    ])
+    const [cat1, cat2] = await r(Category).insert([
+      { id: 1, name: 'cat1', company: comp1 },
+      { id: 2, name: 'cat2', company: comp2 },
+    ])
+    await r(Task).insert([
+      { id: 1, title: 't1', category: cat1 },
+      { id: 2, title: 't2', category: cat2 },
+      { id: 3, title: 't3', category: cat1 },
+    ])
+    remult.clearAllCache()
+    const tasks = await r(Task).query({ include: {} }).getPage(1)
+    expect(tasks.map((y) => y.category.company.id)).toEqual([1, 2, 1])
+    expect(td.finds).toMatchInlineSnapshot(`
+      [
+        {
+          "entity": "tasks",
+          "where": {},
+        },
+        {
+          "entity": "categories",
+          "where": {
+            "id.in": [
+              1,
+              2,
+            ],
+          },
+        },
+        {
+          "entity": "companies",
+          "where": {
+            "id.in": [
+              1,
+              2,
+            ],
+          },
+        },
+      ]
+    `)
   })
 })

@@ -542,11 +542,8 @@ export class RepositoryImplementation<entityType>
       if (ei) {
         let isRelation: RelationInfo = col.options?.[relationInfoMember]
         if (!isRelation) {
-          let load = isRelation
-            ? (col.options as RelationOptions<any, any, any>)?.defaultIncluded
-            : !col.options.lazy
+          let load = !col.options.lazy
           if (loadFields !== undefined) load = loadFields.includes(col)
-          if (loadOptions.include) load = loadOptions.include[col.key]
           if (load) {
             let repo = this.remult.repo(
               col.valueType,
