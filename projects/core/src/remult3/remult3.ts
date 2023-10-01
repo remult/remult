@@ -514,7 +514,7 @@ export type ObjectMembersOnly<T> = {
 
 export type MembersToInclude<T> = {
   [K in keyof ObjectMembersOnly<T>]?:
-    | true
+    | boolean
     | (NonNullable<T[K]> extends Array<any>
         ? FindOptions<NonNullable<T[K]>[number]>
         : FindFirstOptions<NonNullable<T[K]>>)
@@ -528,4 +528,8 @@ export type RepositoryRelations<entityType> = {
     : entityType[K] extends infer R
     ? { findOne: (options?: FindOptionsBase<R>) => Promise<R> }
     : never
+}
+
+export declare type EntityIdFields<entityType> = {
+  [Properties in keyof Partial<OmitEB<entityType>>]?: true
 }

@@ -32,6 +32,7 @@ export {
   ObjectMembersOnly,
   MembersToInclude,
   RepositoryRelations,
+  EntityIdFields,
 } from './src/remult3/remult3'
 export {
   EntityBase,

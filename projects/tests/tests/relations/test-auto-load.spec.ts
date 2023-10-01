@@ -76,14 +76,40 @@ describe('test repository relations', () => {
     expect(c.secondCompany.name).toBe('comp2')
     expect(c.tasks.length).toBe(1)
   })
+  it('loads partial', async () => {
+    const c = await r(Category).findFirst(
+      {},
+      {
+        include: {
+          secondCompany: false,
+        },
+      },
+    )
+    expect(c.company.id).toBe(11)
+    expect(c.secondCompany).toBeUndefined()
+    expect(c.tasks.length).toBe(1)
+  })
+
   it("doesn't loads", async () => {
-    const c = await r(Category).findFirst({}, { include: {} })
+    const c = await r(Category).findFirst(
+      {},
+      {
+        include: {
+          company: false,
+          secondCompany: false,
+          tasks: false,
+        },
+      },
+    )
     expect(c.company).toBeUndefined()
     expect(c.secondCompany).toBeUndefined()
     expect(c.tasks).toBeUndefined()
   })
   it('find one works', async () => {
-    const c = await r(Category).findFirst({}, { include: {} })
+    const c = await r(Category).findFirst(
+      {},
+      { include: { company: false, secondCompany: false, tasks: false } },
+    )
     expect(getEntityRef(c).fields.company.getId()).toBe(11)
     const comp1 = await r(Category).relations(c).company.findOne()
     const comp2 = await r(Category).relations(c).secondCompany.findOne()
@@ -93,7 +119,16 @@ describe('test repository relations', () => {
     expect(await r(Category).relations(c).tasks.count()).toBe(1)
   })
   it('waitLoad works', async () => {
-    const c = await r(Category).findFirst({}, { include: {} })
+    const c = await r(Category).findFirst(
+      {},
+      {
+        include: {
+          company: false,
+          secondCompany: false,
+          tasks: false,
+        },
+      },
+    )
     const ref = getEntityRef(c)
     expect(getEntityRef(c).fields.company.getId()).toBe(11)
     const comp1 = await ref.fields.company.load()

@@ -3,6 +3,7 @@ import type { Allowed, AllowedForInstance } from './context'
 import type { FieldMetadata } from './column-interfaces'
 import type {
   EntityFilter,
+  EntityIdFields,
   EntityMetadata,
   EntityOrderBy,
   EntityRef,
@@ -113,9 +114,10 @@ export interface EntityOptions<entityType = any> {
    * //Multiple columns id
    * @Entity<OrderDetails>("orderDetails", { id:od=> [od.orderId, od.productCode] })
    */
-  id?: (entity: FieldsMetadata<entityType>) => FieldMetadata | FieldMetadata[] //[ ] - make easier to define using similar to order by
+  id?: //[ ] maybe change name to idFields?
+  | EntityIdFields<entityType>
+    | ((entity: FieldsMetadata<entityType>) => FieldMetadata | FieldMetadata[])
   entityRefInit?: (ref: EntityRef<entityType>, row: entityType) => void
   apiRequireId?: Allowed
 }
-//[ ] include false for automatic fields that I don't want
 //[ ] in toOne support where, update & insert

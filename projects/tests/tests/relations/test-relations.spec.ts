@@ -7,6 +7,7 @@ import {
   FindOptions,
   InMemoryDataProvider,
   Remult,
+  remult,
 } from '../../../core'
 import type { ClassType } from '../../../core/classType'
 import { TestDataProvider } from '../../dbs/TestDataProviderWithStats'
@@ -624,5 +625,31 @@ describe('test relations', () => {
     )
     expect(c.company == prevComp).toBe(true)
   })
+})
+it('test new id definition', async () => {
+  const old = createEntity(
+    'old',
+    {
+      a: Fields.number(),
+      b: Fields.number(),
+    },
+    {
+      id: (x) => [x.a, x.b],
+    },
+  )
+  const new_ = createEntity(
+    'new',
+    { a: Fields.number(), b: Fields.number() },
+    {
+      id: {
+        a: true,
+        b: true,
+      },
+    },
+  )
+  expect(remult.repo(old).metadata.idMetadata.getId({ a: 1, b: 2 })).toBe('1,2')
+  expect(remult.repo(new_).metadata.idMetadata.getId({ a: 1, b: 2 })).toBe(
+    '1,2',
+  )
 })
 //[ ] add repo function

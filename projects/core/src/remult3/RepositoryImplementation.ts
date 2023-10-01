@@ -590,7 +590,7 @@ export class RepositoryImplementation<entityType>
       let rel = getRelationInfo(col.options)
       let incl = (col.options as RelationOptions<any, any, any>)
         .defaultIncluded as any as FindFirstOptionsBase<any>
-      if (loadOptions?.include) {
+      if (loadOptions?.include?.[col.key] !== undefined) {
         incl = loadOptions.include[col.key] as FindOptionsBase<any>
       }
 
@@ -1991,7 +1991,10 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
     this.caption = buildCaption(entityInfo.caption, this.key, remult)
 
     if (entityInfo.id) {
-      let r = entityInfo.id(this.fields)
+      let r =
+        typeof entityInfo.id === 'function'
+          ? entityInfo.id(this.fields)
+          : Object.keys(entityInfo.id).map((x) => this.fields.find(x))
       if (Array.isArray(r)) {
         if (r.length > 1) this.idMetadata.field = new CompoundIdField(...r)
         else if (r.length == 1) this.idMetadata.field = r[0]
