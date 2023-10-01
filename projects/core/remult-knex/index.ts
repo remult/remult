@@ -124,8 +124,9 @@ class KnexEntityDataProvider implements EntityDataProvider {
         return +element
       }
     }
+    throw Error("couldn't find count member")
   }
-  async find(options?: EntityDataProviderFindOptions): Promise<any[]> {
+  async find(options: EntityDataProviderFindOptions): Promise<any[]> {
     const e = await this.init()
     let cols = [] as string[]
     let colKeys: FieldMetadata[] = []

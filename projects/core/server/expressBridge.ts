@@ -134,7 +134,7 @@ export function createRemultServerCore<RequestType>(
             console.time('Schema ensured')
           }
           entitiesMetaData.push(
-            ...options.entities.map((e) => remult.repo(e).metadata),
+            ...options.entities!.map((e) => remult.repo(e).metadata),
           )
           if (dp.ensureSchema) {
             startConsoleLog()
@@ -263,7 +263,7 @@ export class RemultServerImplementation<RequestType>
   getEntities(): EntityMetadata<any>[] {
     //TODO - consider using entitiesMetaData - but it may require making it all awaitable
     var r = new Remult()
-    return this.options.entities.map((x) => r.repo(x).metadata)
+    return this.options.entities!.map((x) => r.repo(x).metadata)
   }
 
   runWithSerializedJsonContextData: PerformWithContext = async (
@@ -271,7 +271,7 @@ export class RemultServerImplementation<RequestType>
     entityKey,
     what,
   ) => {
-    for (const e of this.options.entities) {
+    for (const e of this.options.entities!) {
       let key = getEntityKey(e)
       if (key === entityKey) {
         await this.runWithRemult(async (remult) => {
@@ -282,7 +282,7 @@ export class RemultServerImplementation<RequestType>
               {
                 remult,
                 get liveQueryStorage() {
-                  return remult.liveQueryStorage
+                  return remult.liveQueryStorage!
                 },
                 set liveQueryStorage(value: LiveQueryStorage) {
                   remult.liveQueryStorage = value
@@ -316,7 +316,7 @@ export class RemultServerImplementation<RequestType>
   handle(
     req: RequestType,
     gRes?: GenericResponse,
-  ): Promise<ServerHandleResponse> {
+  ): Promise<ServerHandleResponse | undefined> {
     return this.getRouteImpl().handle(req, gRes)
   }
   registeredRouter = false
@@ -324,7 +324,7 @@ export class RemultServerImplementation<RequestType>
     if (this.registeredRouter) throw 'Router already registered'
     this.registeredRouter = true
     {
-      for (const c of this.options.controllers) {
+      for (const c of this.options.controllers!) {
         let z = c[classBackendMethodsArray]
         if (z)
           for (const a of z) {
@@ -345,16 +345,16 @@ export class RemultServerImplementation<RequestType>
                 false,
                 () => true,
                 async (data: jobWasQueuedResult, req, res) => {
-                  let job = await this.queue.getJobInfo(data.queuedJobId)
-                  let userId = undefined
+                  let job = await this.queue.getJobInfo(data.queuedJobId!)
+                  let userId: string | undefined = undefined
                   if (req?.user) userId = req.user.id
-                  if (job.userId == '') job.userId = undefined
+                  if (job.userId == '') job.userId = undefined!
                   if (userId != job.userId) res.forbidden()
                   else res.success(job.info)
                 },
               )
             },
-            doWork: undefined,
+            doWork: undefined!,
           },
           r,
         )

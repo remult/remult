@@ -117,7 +117,7 @@ class Task {
   @Fields.string()
   title = ''
   @Fields.reference(() => Category)
-  category!: Category
+  category?: Category
   @Fields.boolean()
   completed = false
 
@@ -387,7 +387,7 @@ describe('test relations', () => {
       },
       r(Category).metadata,
     )
-    expect(options.include.tasksSecondary).toEqual(taskOptions)
+    expect(options.include!.tasksSecondary).toEqual(taskOptions)
     const revisedOptions = findOptionsFromJson(options, r(Category).metadata)
 
     expect(revisedOptions).toMatchInlineSnapshot(`
@@ -492,6 +492,6 @@ describe('test relations', () => {
         },
       ]
     `)
-    expect(result[0].category.company.id).toBe(10)
+    expect(result[0].category!.company.id).toBe(10)
   })
 })

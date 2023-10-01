@@ -15,31 +15,18 @@
     "importHelpers": true,
     "target": "es2015",
     "skipLibCheck": true,
+    // "strictNullChecks": true, //[ ] - return this - it's a lot of work - but will make our results better
     // "importsNotUsedAsValues": "error",
     // "types": [
     //   "vitest/globals"
     // ],
-    "typeRoots": [
-      "node_modules/@types"
-    ],
-    "lib": [
-      "es2018",
-      "dom",
-      "esnext.asynciterable"
-    ],
+    "typeRoots": ["node_modules/@types"],
+    "lib": ["es2018", "dom", "esnext.asynciterable"],
     "paths": {
-      "remult": [
-        "projects/core"
-      ],
-      "remult/*": [
-        "projects/core/*"
-      ],
-      "@remult/*": [
-        "projects/*"
-      ]
+      "remult": ["projects/core"],
+      "remult/*": ["projects/core/*"],
+      "@remult/*": ["projects/*"]
     }
   },
-  "exclude": [
-    
-  ]
+  "exclude": []
 }

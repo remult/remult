@@ -77,7 +77,7 @@ export class PostgresSchemaBuilder {
       table = splited[0]
     }
 
-    const where = []
+    const where: string[] = []
     if (schema) {
       where.push(
         `table_schema=${cmd.addParameterAndReturnSqlToken(

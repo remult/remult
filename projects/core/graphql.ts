@@ -251,7 +251,7 @@ export function remultGraphql(options: {
         ) => Promise<void>,
       ) => {
         return createResultPromise(async (response, setResult, arg1, req) => {
-          const remult = options.getRemultFromRequest(req)
+          const remult = options.getRemultFromRequest!(req)
           const repo = remult.repo(meta.entityType)
           const dApi = new DataApi(repo, remult)
           await work(dApi, response, setResult, arg1, meta)
@@ -295,7 +295,7 @@ export function remultGraphql(options: {
                   })
                 },
                 error: (err) => {
-                  const modelState = []
+                  const modelState: any[] = []
                   if (err.modelState)
                     for (const key in err.modelState) {
                       modelState.push({

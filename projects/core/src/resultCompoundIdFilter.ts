@@ -3,7 +3,7 @@ import { Filter } from './filter/filter-interfaces'
 
 export function resultCompoundIdFilter(
   idField: CompoundIdField,
-  id: string,
+  id: string | undefined,
   data: any,
 ) {
   return new Filter((add) => {
