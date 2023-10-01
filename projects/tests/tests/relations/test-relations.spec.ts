@@ -268,6 +268,39 @@ describe('test relations', () => {
         .company.companyName,
     ).toBe('comp20')
   })
+  it('test query', async () => {
+    const t = (
+      await r(Task)
+        .query({
+          where: { id: 1 },
+          include: {
+            secondaryCategory: {
+              include: {
+                company: true,
+              },
+            },
+          },
+        })
+        .getPage(1)
+    )[0]
+    expect(t.secondaryCategory.company.companyName).toBe('comp20')
+  })
+  it('test query for await', async () => {
+    const q = r(Task).query({
+      where: { id: 1 },
+      include: {
+        secondaryCategory: {
+          include: {
+            company: true,
+          },
+        },
+      },
+    })
+    for await (const t of q) {
+      expect(t.secondaryCategory.company.companyName).toBe('comp20')
+      return
+    }
+  })
   it('loads many', async () => {
     const t = await r(Category).find({
       include: {

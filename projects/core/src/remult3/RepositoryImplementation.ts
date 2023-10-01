@@ -2438,6 +2438,7 @@ class QueryResultImpl<entityType> implements QueryResult<entityType> {
       limit: this.options.pageSize,
       page: page,
       load: this.options.load,
+      include: this.options.include,
     })
   }
 
@@ -2468,6 +2469,7 @@ class QueryResultImpl<entityType> implements QueryResult<entityType> {
       orderBy: this.options.orderBy,
       limit: this.options.pageSize,
       load: this.options.load,
+      include: this.options.include,
     })
 
     let nextPage: () => Promise<Paginator<entityType>> = undefined
