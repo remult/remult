@@ -1,6 +1,5 @@
 import { ArrayEntityDataProvider } from '../../core/src//data-providers/array-entity-data-provider'
 import { InMemoryDataProvider } from '../../core/src//data-providers/in-memory-database'
-import { OneToMany } from '../../core/src/column'
 import type {
   FieldMetadata,
   FieldOptions,
@@ -591,28 +590,7 @@ describe('value list column without id and caption', () => {
     expect(getValueList(Language).length).toBe(3)
   })
 })
-describe('relation', () => {
-  it('should get values', async () => {
-    let [c] = await insertFourRows()
-    let r = new OneToMany(c, {
-      where: { description: 'x' },
-    })
-    let rows = await r.load()
-    expect(rows.length).toBe(2)
-    let n = await r.create()
-    expect(n.description).toBe('x')
-  })
-  it('should have an array and lazy load it', async () => {
-    let [c] = await insertFourRows()
-    let r = new OneToMany(c, {
-      where: { description: 'x' },
-    })
-    let arr = r.lazyItems
-    expect(arr.length).toBe(0)
-    await r.load()
-    expect(arr.length).toBe(2)
-  })
-})
+
 describe('context', () => {
   it('what', () => {
     var c = new Remult()

@@ -34,7 +34,8 @@ export class LookupColumn<T> {
   }
   get(id: any): any {
     if (id === undefined || id === null) return null
-    return this.repository.getCachedById(id, this.isManyToOneRelation)
+    if (this.isReferenceRelation && !this.storedItem) return undefined
+    return this.repository.getCachedById(id, this.isReferenceRelation)
   }
   storedItem: { item: T }
   set(item: T) {
@@ -44,7 +45,7 @@ export class LookupColumn<T> {
         this.id = item as any
       else {
         let eo = getEntityRef(item, false)
-        if (eo) {
+        if (eo && !this.isReferenceRelation) {
           this.repository.addToCache(item)
           this.id = eo.getId()
         } else {
@@ -62,7 +63,7 @@ export class LookupColumn<T> {
   id: idType<T>
   constructor(
     private repository: RepositoryImplementation<T>,
-    private isManyToOneRelation,
+    private isReferenceRelation,
   ) {}
 
   get item(): T {
@@ -71,41 +72,5 @@ export class LookupColumn<T> {
   }
   async waitLoad() {
     return this.waitLoadOf(this.id)
-  }
-}
-9000
-
-export class OneToMany<T> {
-  constructor(
-    private provider: Repository<T>,
-    private settings?: {
-      create?: (newItem: T) => void
-    } & FindOptions<T>,
-  ) {}
-  private _items: T[]
-  private _currentPromise: Promise<T[]>
-  get lazyItems() {
-    this.load()
-    return this._items
-  }
-  async load() {
-    if (this._currentPromise != null) return this._currentPromise
-    if (this._items === undefined) this._items = []
-    return (this._currentPromise = this.find().then((x) => {
-      this._items.splice(0)
-      this._items.push(...x)
-      return this._items
-    }))
-  }
-
-  private async find(): Promise<T[]> {
-    return this.provider.find(this.settings)
-  }
-  create(item?: Partial<T>): T {
-    let r = this.provider.create()
-    __updateEntityBasedOnWhere(this.provider.metadata, this.settings.where, r)
-    assign(r, item)
-
-    return r
   }
 }

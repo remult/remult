@@ -555,7 +555,7 @@ export class RepositoryImplementation<entityType>
                 val !== undefined &&
                 val !== null &&
                 !toLoad.includes(val) &&
-                !repo.idCache.has(val)
+                !repo.idCache.has(val + '')
               ) {
                 toLoad.push(val)
               }

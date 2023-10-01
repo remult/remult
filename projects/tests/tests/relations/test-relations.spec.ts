@@ -32,16 +32,16 @@ class Category {
   @Fields.string()
   name = ''
   @Fields.many(() => Task, 'category')
-  tasks: Task[]
+  tasks?: Task[]
   @Fields.many(() => Task, 'secondaryCategoryId')
-  tasksSecondary: Task[]
+  tasksSecondary?: Task[]
   @Fields.many(() => Task, {
     field: 'secondaryCategoryId',
     findOptions: {
       limit: 2,
     },
   })
-  tasksSecondary1: Task[]
+  tasksSecondary1?: Task[]
   @Fields.many<Category, Task>(() => Task, {
     //match: [['id', 'secondaryCategoryId']],
     fields: {
@@ -127,15 +127,15 @@ class Task {
   @Fields.integer()
   secondaryCategoryId = 0
   @Fields.one(Task, () => Category, 'secondaryCategoryId')
-  secondaryCategory!: Category
+  secondaryCategory?: Category
   @Fields.one(Task, () => Category, {
     field: 'secondaryCategoryId',
   })
-  secondaryCategory1!: Category
+  secondaryCategory1?: Category
   @Fields.one(Task, () => Category, {
     fields: { id: 'secondaryCategoryId' },
   })
-  secondaryCategory2!: Category
+  secondaryCategory2?: Category
 }
 
 describe('test relations', () => {
@@ -530,7 +530,7 @@ describe('test relations', () => {
     `)
     expect(result[0].category!.company.id).toBe(10)
   })
-  it.only('loads ok also with old field reference', async () => {
+  it('loads ok also with old field reference', async () => {
     const td = TestDataProvider()
     remult.dataProvider = td
     const Company = createEntity('companies', {
@@ -590,4 +590,39 @@ describe('test relations', () => {
       ]
     `)
   })
+
+  it("doesn't share cache with old fields", async () => {
+    remult.dataProvider = new InMemoryDataProvider()
+    const Company = createEntity('companies', {
+      id: Fields.integer(),
+      name: Fields.string(),
+    })
+    const Category = createEntity('categories', {
+      id: Fields.integer(),
+      name: Fields.string(),
+      company: Field(() => Company),
+      companyRef: Fields.reference(() => Company),
+    })
+    const comp = await r(Company).insert({ id: 1, name: 'abc' })
+    await r(Category).insert({
+      id: 1,
+      name: 'cat1',
+      company: comp,
+      companyRef: comp,
+    })
+    let c = await r(Category).findFirst()
+    expect(c.company.id).toBe(1)
+    expect(c.companyRef).toBeUndefined()
+    const prevComp = c.company
+    c = await r(Category).findFirst(
+      {},
+      {
+        include: {
+          companyRef: true,
+        },
+      },
+    )
+    expect(c.company == prevComp).toBe(true)
+  })
 })
+//[ ] add repo function

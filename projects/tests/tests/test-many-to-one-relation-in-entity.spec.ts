@@ -10,7 +10,7 @@ import {
 } from '../../core/src/filter/filter-interfaces'
 import { Language } from './RowProvider.spec'
 
-import { DataApi } from '../../core/src//data-api'
+import { DataApi } from '../../core/src/data-api'
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { actionInfo } from '../../core/src/server-action-info'
