@@ -113,7 +113,9 @@ export interface EntityOptions<entityType = any> {
    * //Multiple columns id
    * @Entity<OrderDetails>("orderDetails", { id:od=> [od.orderId, od.productCode] })
    */
-  id?: (entity: FieldsMetadata<entityType>) => FieldMetadata | FieldMetadata[]
+  id?: (entity: FieldsMetadata<entityType>) => FieldMetadata | FieldMetadata[] //[ ] - make easier to define using similar to order by
   entityRefInit?: (ref: EntityRef<entityType>, row: entityType) => void
   apiRequireId?: Allowed
 }
+//[ ] include false for automatic fields that I don't want
+//[ ] in toOne support where, update & insert

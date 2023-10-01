@@ -17,15 +17,15 @@ export interface EntityRef<entityType> extends Subscribable {
   save(): Promise<entityType>
   reload(): Promise<entityType>
   delete(): Promise<void>
-  isNew(): boolean
+  isNew(): boolean //
   wasChanged(): boolean
   wasDeleted(): boolean
-  fields: FieldsRef<entityType>
+  fields: FieldsRef<entityType> //
   error: string
-  getId(): idType<entityType>
-  getOriginalId(): idType<entityType>
-  repository: Repository<entityType>
-  metadata: EntityMetadata<entityType>
+  getId(): idType<entityType> //
+  getOriginalId(): idType<entityType> //
+  repository: Repository<entityType> //
+  metadata: EntityMetadata<entityType> //
   toApiJson(): any
   validate(): Promise<ErrorInfo<entityType> | undefined>
   readonly apiUpdateAllowed: boolean
@@ -33,6 +33,7 @@ export interface EntityRef<entityType> extends Subscribable {
   readonly apiInsertAllowed: boolean
   readonly isLoading: boolean
 }
+//[ ] - add LifeCycleEvent - send it to save/saving/deleted/deleting - and use preventDefault instead of existing name
 export interface ControllerRef<entityType> extends Subscribable {
   hasErrors(): boolean
   fields: FieldsRef<entityType>
