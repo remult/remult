@@ -1306,6 +1306,9 @@ export class rowHelperImplementation<T>
       this.info.options.entityRefInit(this, instance)
     if (Remult.entityRefInit) Remult.entityRefInit(this, instance)
   }
+  get relations(): RepositoryRelations<T> {
+    return this.repository.relations(this.instance)
+  }
   get apiUpdateAllowed() {
     return this.remult.isAllowedForInstance(
       this.instance,
@@ -1490,14 +1493,16 @@ export class rowHelperImplementation<T>
   }
 
   private buildLifeCycleEvent(preventDefault: VoidFunction = () => {}) {
+    const self = this
     return {
-      isNew: this.isNew(),
-      fields: this.fields,
-      id: this.getId(),
-      originalId: this.getOriginalId(),
-      metadata: this.repository.metadata,
-      repository: this.repository,
+      isNew: self.isNew(),
+      fields: self.fields,
+      id: self.getId(),
+      originalId: self.getOriginalId(),
+      metadata: self.repository.metadata,
+      repository: self.repository,
       preventDefault: () => preventDefault(),
+      relations: self.repository.relations(self.instance),
     } satisfies LifeCycleEvent<T>
   }
 

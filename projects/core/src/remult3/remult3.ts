@@ -28,6 +28,7 @@ export interface EntityRef<entityType> extends Subscribable {
   metadata: EntityMetadata<entityType>
   toApiJson(): any
   validate(): Promise<ErrorInfo<entityType> | undefined>
+  relations: RepositoryRelations<entityType>
   readonly apiUpdateAllowed: boolean
   readonly apiDeleteAllowed: boolean
   readonly apiInsertAllowed: boolean
@@ -41,6 +42,7 @@ export interface LifeCycleEvent<entityType> {
   repository: Repository<entityType>
   metadata: EntityMetadata<entityType>
   preventDefault: VoidFunction
+  relations: RepositoryRelations<entityType>
 }
 
 export interface ControllerRef<entityType> extends Subscribable {
