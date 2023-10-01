@@ -36,7 +36,7 @@ export class eventTestEntity {
   categoryReference: Category
   @Fields.integer()
   categoryId = 0
-  @Fields.one(eventTestEntity, () => Category, 'categoryId')
+  @Fields.one<eventTestEntity, Category>(() => Category, 'categoryId')
   category: Category
   @Fields.many<eventTestEntity, Category>(() => Category, {
     fields: {

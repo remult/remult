@@ -105,7 +105,6 @@ export {
 } from './src/context'
 export { ExternalHttpProvider } from './src/buildRestDataProvider'
 export { SortSegment, Sort } from './src/sort'
-export { OneToMany } from './src/column'
 export { CompoundIdField } from './src/CompoundIdField'
 export { Filter } from './src/filter/filter-interfaces'
 export { UrlBuilder } from './urlBuilder'

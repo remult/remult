@@ -31,7 +31,7 @@ class Category {
 
   @Fields.integer()
   secondCompanyId = 0
-  @Fields.one(Category, () => Company, {
+  @Fields.one<Category, Company>(() => Company, {
     field: 'secondCompanyId',
     defaultIncluded: true,
   })

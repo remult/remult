@@ -57,7 +57,11 @@ class QueryVariation {
     let w = this.whereVariations.get(whereKey)
     if (!w) {
       const keys = Object.keys(where)
-      if (keys.length === 1 && typeof where[keys[0]] !== 'object') {
+      if (
+        keys.length === 1 &&
+        typeof where[keys[0]] !== 'object' &&
+        !findOptions.limit // because merging calls in that case may bring non more rows than the limit
+      ) {
         let inVariation = this.pendingInStatements.get(keys[0])
         if (!inVariation) {
           this.pendingInStatements.set(

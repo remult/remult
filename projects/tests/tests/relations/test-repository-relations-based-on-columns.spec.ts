@@ -42,7 +42,7 @@ class Task {
   completed = false
   @Fields.integer()
   categoryId = 0
-  @Fields.one(Task, () => Category, {
+  @Fields.one<Task, Category>(() => Category, {
     field: 'categoryId',
   })
   category!: Category

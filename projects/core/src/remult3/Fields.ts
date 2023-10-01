@@ -335,7 +335,6 @@ export class Fields {
     })
   }
   static one<entityType, toEntityType>(
-    entity: ClassType<entityType>,
     toEntityType: () => ClassType<toEntityType>,
     options?:
       | RelationOptions<entityType, toEntityType, entityType>

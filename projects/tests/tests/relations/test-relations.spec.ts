@@ -82,7 +82,7 @@ class Category {
     }),
   })
   allTasks: Task[]
-  @Fields.one(Category, () => Task, {
+  @Fields.one<Category, Task>(() => Task, {
     findOptions: (category) => ({
       orderBy: {
         id: 'desc',
@@ -109,7 +109,7 @@ class Category {
   @Fields.integer()
   secondaryCompanyId = 0
 
-  @Fields.one(Category, () => Company, 'secondaryCompanyId')
+  @Fields.one<Category, Company>(() => Company, 'secondaryCompanyId')
   secondaryCompany: Company
 }
 
@@ -126,13 +126,13 @@ class Task {
 
   @Fields.integer()
   secondaryCategoryId = 0
-  @Fields.one(Task, () => Category, 'secondaryCategoryId')
+  @Fields.one<Task, Category>(() => Category, 'secondaryCategoryId')
   secondaryCategory?: Category
-  @Fields.one(Task, () => Category, {
+  @Fields.one<Task, Category>(() => Category, {
     field: 'secondaryCategoryId',
   })
   secondaryCategory1?: Category
-  @Fields.one(Task, () => Category, {
+  @Fields.one<Task, Category>(() => Category, {
     fields: { id: 'secondaryCategoryId' },
   })
   secondaryCategory2?: Category

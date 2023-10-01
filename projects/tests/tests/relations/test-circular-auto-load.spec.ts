@@ -19,7 +19,7 @@ class Category {
   pCategory: Category
   @Fields.integer()
   secondCategoryId = 0
-  @Fields.one(Category, () => Category, {
+  @Fields.one<Category, Category>(() => Category, {
     field: 'secondCategoryId',
     defaultIncluded: true,
   })

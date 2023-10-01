@@ -329,7 +329,7 @@ export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
    *  page:2
    * })
    */
-  limit?: number //[ ] - with the "in" optimization, there is a risk around limit or default limit
+  limit?: number
   /** Determines the page number that will be used to extract the data
    * @example
    * await this.remult.repo(Products).find({
