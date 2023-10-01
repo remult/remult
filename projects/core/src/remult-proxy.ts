@@ -188,7 +188,9 @@ export class RemultProxy implements Remult {
       //@ts-ignore
       addToCache: (a) =>
         (
-          self.remultFactory().repo(...args) as RepositoryImplementation<any>
+          self
+            .remultFactory()
+            .repo(...args) as any as RepositoryImplementation<any>
         ).addToCache(a),
 
       get metadata() {
