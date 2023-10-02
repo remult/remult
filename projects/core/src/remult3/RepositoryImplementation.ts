@@ -1438,7 +1438,7 @@ export class rowHelperImplementation<T>
       let e = this.buildLifeCycleEvent(() => (doNotSave = true))
       for (const col of this.fields) {
         if (col.metadata.options.saving)
-          await col.metadata.options.saving(this.instance, col, e)
+          await col.metadata.options.saving(this.instance, e, col)
       }
       if (this.info.entityInfo.saving) {
         await this.info.entityInfo.saving(this.instance, e)

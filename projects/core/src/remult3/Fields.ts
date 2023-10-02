@@ -169,8 +169,8 @@ export class Fields {
       () => Date,
       {
         allowApiUpdate: false,
-        saving: (_, ref) => {
-          if (getEntityRef(_).isNew()) ref.value = new Date()
+        saving: (_, { isNew }, ref) => {
+          if (isNew) ref.value = new Date()
         },
       },
       ...options,
@@ -192,7 +192,7 @@ export class Fields {
       () => Date,
       {
         allowApiUpdate: false,
-        saving: (_, ref) => {
+        saving: (_, _1, ref) => {
           ref.value = new Date()
         },
       },
@@ -217,7 +217,7 @@ export class Fields {
       {
         allowApiUpdate: false,
         defaultValue: () => uuid(),
-        saving: (_, r) => {
+        saving: (_, _1, r) => {
           if (!r.value) r.value = uuid()
         },
       },
@@ -241,7 +241,7 @@ export class Fields {
       {
         allowApiUpdate: false,
         defaultValue: () => createId(),
-        saving: (_, r) => {
+        saving: (_, _1, r) => {
           if (!r.value) r.value = createId()
         },
       },
@@ -276,22 +276,44 @@ export class Fields {
   ) => void {
     return Field(() => Boolean, ...options)
   }
-  //[ ] docking the move from reference to one will not be fun,since the parameter order changes
-  static reference<entityType, toEntityType>(
-    toEntityType: () => ClassType<toEntityType>,
-    options?: RelationOptionsBase<entityType, toEntityType>,
-  ) {
-    let op: RelationOptions<entityType, toEntityType, entityType> = (!options
-      ? {}
-      : options) as any as RelationOptions<entityType, toEntityType, entityType>
 
-    return Field(toEntityType, {
+  static one<entityType, toEntityType>(
+    toEntityType: () => ClassType<toEntityType>,
+    options?:
+      | RelationOptions<entityType, toEntityType, entityType>
+      | keyof entityType,
+  ) {
+    let op: RelationOptions<entityType, toEntityType, entityType> =
+      (typeof options === 'string'
+        ? { field: options }
+        : !options
+        ? {}
+        : options) as any as RelationOptions<
+        entityType,
+        toEntityType,
+        entityType
+      >
+
+    if (!op.field && !op.fields && !op.findOptions)
+      return Field(toEntityType, {
+        ...op,
+        //@ts-ignore
+        [relationInfoMember]: {
+          //field,
+          toType: toEntityType,
+          type: 'reference',
+        } satisfies RelationInfo,
+      })
+
+    return Field(() => undefined!, {
       ...op,
+      serverExpression: () => undefined,
       //@ts-ignore
       [relationInfoMember]: {
         //field,
         toType: toEntityType,
-        type: 'reference',
+
+        type: 'toOne',
       } satisfies RelationInfo,
     })
   }
@@ -331,35 +353,6 @@ export class Fields {
         toType: toEntityType,
 
         type: 'toMany',
-      } satisfies RelationInfo,
-    })
-  }
-  static one<entityType, toEntityType>(
-    toEntityType: () => ClassType<toEntityType>,
-    options:
-      | RelationOptions<entityType, toEntityType, entityType>
-      | keyof entityType,
-  ) {
-    let op: RelationOptions<entityType, toEntityType, entityType> =
-      (typeof options === 'string'
-        ? { field: options }
-        : !options
-        ? {}
-        : options) as any as RelationOptions<
-        entityType,
-        toEntityType,
-        entityType
-      >
-
-    return Field(() => undefined!, {
-      ...op,
-      serverExpression: () => undefined,
-      //@ts-ignore
-      [relationInfoMember]: {
-        //field,
-        toType: toEntityType,
-
-        type: 'toOne',
       } satisfies RelationInfo,
     })
   }

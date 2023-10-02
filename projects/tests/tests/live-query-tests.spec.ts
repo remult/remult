@@ -32,7 +32,7 @@ export class eventTestEntity {
   selectUser = ''
   @Fields.date()
   birthDate = new Date(1976, 5, 16)
-  @Fields.reference(() => Category)
+  @Fields.one(() => Category)
   categoryReference: Category
   @Fields.integer()
   categoryId = 0

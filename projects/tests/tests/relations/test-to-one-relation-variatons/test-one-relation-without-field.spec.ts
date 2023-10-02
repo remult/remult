@@ -21,7 +21,7 @@ class Task {
   id = 0
   @Fields.string()
   title = ''
-  @Fields.reference<Task, Category>(() => Category)
+  @Fields.one<Task, Category>(() => Category)
   category?: Category
 }
 

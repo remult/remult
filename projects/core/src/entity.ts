@@ -127,5 +127,5 @@ export interface EntityOptions<entityType = any> {
   entityRefInit?: (ref: EntityRef<entityType>, row: entityType) => void
   apiRequireId?: Allowed
 }
-//[ ] in toOne support where, update & insert
+
 //[ ] rename to Relations.toOne

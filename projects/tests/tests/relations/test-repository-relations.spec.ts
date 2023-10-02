@@ -38,7 +38,7 @@ class Task {
   title = ''
   @Fields.boolean()
   completed = false
-  @Fields.reference(() => Category)
+  @Fields.one(() => Category)
   category!: Category
 }
 describe('test repository relations', () => {

@@ -104,7 +104,7 @@ class Category {
   @Fields.date()
   createdAt = new Date('1976-06-16T00:00:00.000Z')
 
-  @Fields.reference(() => Company)
+  @Fields.one(() => Company)
   company!: Company
 
   @Fields.integer()
@@ -120,7 +120,7 @@ class Task {
   id = 0
   @Fields.string()
   title = ''
-  @Fields.reference(() => Category)
+  @Fields.one(() => Category)
   category?: Category
   @Fields.boolean()
   completed = false
@@ -606,7 +606,7 @@ describe('test relations', () => {
       id: Fields.integer(),
       name: Fields.string(),
       company: Field(() => Company),
-      companyRef: Fields.reference(() => Company),
+      companyRef: Fields.one(() => Company),
     })
     const comp = await r(Company).insert({ id: 1, name: 'abc' })
     await r(Category).insert({
