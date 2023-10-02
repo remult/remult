@@ -199,7 +199,9 @@ describe('test relations', () => {
         "company": undefined,
         "createdAt": 1976-06-16T00:00:00.000Z,
         "id": 1,
+        "lastTask": undefined,
         "name": "c1",
+        "secondaryCompany": undefined,
         "secondaryCompanyId": 20,
       }
     `)
@@ -227,7 +229,9 @@ describe('test relations', () => {
         },
         "createdAt": 1976-06-16T00:00:00.000Z,
         "id": 3,
+        "lastTask": undefined,
         "name": "c3",
+        "secondaryCompany": undefined,
         "secondaryCompanyId": 20,
       }
     `)

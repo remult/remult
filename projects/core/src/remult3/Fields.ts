@@ -446,3 +446,4 @@ export function checkTarget(target: any) {
       "Set the 'experimentalDecorators:true' option in your 'tsconfig' or 'jsconfig' (target undefined)",
     )
 }
+//[ ] there is a duplicity between the oneToMany and manyToOne - maybe we should allow some derivation from one to another?

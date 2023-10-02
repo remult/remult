@@ -1,6 +1,12 @@
+import { getRelationInfo } from '../internals'
 import { CompoundIdField } from './CompoundIdField'
 import type { FieldMetadata } from './column-interfaces'
-import type { EntityMetadata, EntityOrderBy } from './remult3/remult3'
+import type {
+  EntityMetadata,
+  EntityOrderBy,
+  RelationInfo,
+  RelationOptions,
+} from './remult3/remult3'
 export class Sort {
   toEntityOrderBy(): EntityOrderBy<any> {
     let result: any = {}
@@ -50,7 +56,8 @@ export class Sort {
         if (Object.prototype.hasOwnProperty.call(orderBy, key)) {
           const element = orderBy[key]
           let field = entityDefs.fields.find(key)
-          if (field) {
+
+          const addSegment = (field: FieldMetadata) => {
             switch (element) {
               case 'desc':
                 sort.Segments.push({ field, isDescending: true })
@@ -58,6 +65,26 @@ export class Sort {
               case 'asc':
                 sort.Segments.push({ field })
             }
+          }
+          if (field) {
+            const rel = getRelationInfo(field.options)
+            const op = field.options as RelationOptions<any, any, any>
+            if (rel?.type === 'toOne') {
+              if (typeof op.field === 'string') {
+                addSegment(entityDefs.fields.find(op.field))
+              } else {
+                if (op.fields) {
+                  for (const key in op.fields) {
+                    if (Object.prototype.hasOwnProperty.call(op.fields, key)) {
+                      const keyInMyEntity = op.fields[key]
+                      addSegment(
+                        entityDefs.fields.find(keyInMyEntity.toString()),
+                      )
+                    }
+                  }
+                }
+              }
+            } else addSegment(field)
           }
         }
       }

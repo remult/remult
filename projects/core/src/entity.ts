@@ -121,10 +121,11 @@ export interface EntityOptions<entityType = any> {
    * //Multiple columns id
    * @Entity<OrderDetails>("orderDetails", { id:od=> [od.orderId, od.productCode] })
    */
-  id?: //[ ] maybe change name to idFields?
-  | EntityIdFields<entityType>
+  id?:
+    | EntityIdFields<entityType>
     | ((entity: FieldsMetadata<entityType>) => FieldMetadata | FieldMetadata[])
   entityRefInit?: (ref: EntityRef<entityType>, row: entityType) => void
   apiRequireId?: Allowed
 }
 //[ ] in toOne support where, update & insert
+//[ ] rename to Relations.toOne

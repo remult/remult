@@ -30,7 +30,7 @@ class Task {
   title = ''
 }
 @Entity<TasksToCategories>('tasksToCategories', {
-  id: (e) => [e.task, e.category],
+  id: { task: true, category: true }, // (e) => [e.task, e.category],
 })
 class TasksToCategories {
   @Field(() => Task, { lazy: true })

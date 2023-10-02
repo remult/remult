@@ -56,7 +56,6 @@ import type {
   EntityDataProviderFindOptions,
   ErrorInfo,
 } from '../data-interfaces'
-import { filterHelper } from '../filter/filter-interfaces'
 import { ValueConverters } from '../valueConverters'
 
 import { findOptionsToJson } from '../data-providers/rest-data-provider'
@@ -131,7 +130,6 @@ export class RepositoryImplementation<entityType>
     let equalToColumn: FieldMetadata[] = []
     for (const s of Sort.translateOrderByToSort(this.metadata, orderBy)
       .Segments) {
-      let ff = new filterHelper(s.field)
       let f: EntityFilter<any> = {}
       for (const c of equalToColumn) {
         f[c.key] = values.get(c.key)
@@ -382,6 +380,8 @@ export class RepositoryImplementation<entityType>
       for (const key in entity) {
         if (Object.prototype.hasOwnProperty.call(entity, key)) {
           let f = ref.fields[key]
+          if (entity[key] === undefined && getRelationInfo(f.metadata.options))
+            continue
           if (f) r[key] = entity[key]
         }
       }
@@ -1063,7 +1063,36 @@ abstract class rowHelperBase<T> {
           enumerable: true,
         })
         lookup.set(val)
-      } else {
+      } else if (getRelationInfo(col)?.type === 'toOne') {
+        let hasVal = instance.hasOwnProperty(col.key)
+        let val = instance[col.key]
+        Object.defineProperty(instance, col.key, {
+          get: () => {
+            return val
+          },
+          set: (newVal) => {
+            val = newVal
+            if (newVal === undefined) return
+
+            const op = col as RelationOptions<any, any, any>
+
+            if (op.field) {
+              this.instance[op.field] = this.remult
+                .repo(getRelationInfo(col).toType())
+                .metadata.idMetadata.getId(newVal)
+            }
+            if (op.fields) {
+              for (const key in op.fields) {
+                if (Object.prototype.hasOwnProperty.call(op.fields, key)) {
+                  const element = op.fields[key]
+                  this.instance[element] = newVal[key]
+                }
+              }
+            }
+          },
+          enumerable: true,
+        })
+        if (hasVal) instance[col.key] = val
       }
     }
   }
@@ -1435,7 +1464,7 @@ export class rowHelperImplementation<T>
         }
       }
 
-      if (this.info.idMetadata.field instanceof CompoundIdField) delete d.id
+      //if (this.info.idMetadata.field instanceof CompoundIdField) delete d.id
       let updatedRow: any
       let isNew = this.isNew()
       try {
@@ -2072,6 +2101,7 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
 
   idMetadata: IdMetadata<T> = {
     getId: (item) => {
+      if (item === undefined || item === null) return item
       const ref = getEntityRef(item, false)
       if (ref) return ref.getId()
       if (this.idMetadata.field instanceof CompoundIdField)
