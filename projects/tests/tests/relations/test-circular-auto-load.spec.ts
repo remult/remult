@@ -5,6 +5,7 @@ import {
   FindFirstOptions,
   FindOptions,
   InMemoryDataProvider,
+  Relations,
   Remult,
 } from '../../../core'
 import type { ClassType } from '../../../core/classType'
@@ -15,11 +16,11 @@ class Category {
   id = 0
   @Fields.string()
   name = ''
-  @Fields.one(() => Category, { defaultIncluded: true })
+  @Relations.toOne(() => Category, { defaultIncluded: true })
   pCategory: Category
   @Fields.integer()
   secondCategoryId = 0
-  @Fields.one<Category, Category>(() => Category, {
+  @Relations.toOne<Category, Category>(() => Category, {
     field: 'secondCategoryId',
     defaultIncluded: true,
   })

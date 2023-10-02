@@ -276,8 +276,9 @@ export class Fields {
   ) => void {
     return Field(() => Boolean, ...options)
   }
-
-  static one<entityType, toEntityType>(
+}
+export class Relations {
+  static toOne<entityType, toEntityType>(
     toEntityType: () => ClassType<toEntityType>,
     options?:
       | RelationOptions<entityType, toEntityType, entityType>
@@ -318,7 +319,7 @@ export class Fields {
     })
   }
 
-  static many<entityType, toEntityType>(
+  static toMany<entityType, toEntityType>(
     toEntityType: () => ClassType<toEntityType>,
     options:
       | (RelationOptions<

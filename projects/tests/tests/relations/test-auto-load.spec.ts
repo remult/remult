@@ -5,6 +5,7 @@ import {
   FindFirstOptions,
   FindOptions,
   InMemoryDataProvider,
+  Relations,
   Remult,
   getEntityRef,
 } from '../../../core'
@@ -24,19 +25,19 @@ class Category {
   id = 0
   @Fields.string()
   name = ''
-  @Fields.one(() => Company, {
+  @Relations.toOne(() => Company, {
     defaultIncluded: true,
   })
   company: Company
 
   @Fields.integer()
   secondCompanyId = 0
-  @Fields.one<Category, Company>(() => Company, {
+  @Relations.toOne<Category, Company>(() => Company, {
     field: 'secondCompanyId',
     defaultIncluded: true,
   })
   secondCompany: Company
-  @Fields.many(() => Task, {
+  @Relations.toMany(() => Task, {
     field: 'category',
     defaultIncluded: true,
   })
@@ -51,7 +52,7 @@ class Task {
   title = ''
   @Fields.boolean()
   completed = false
-  @Fields.one(() => Category)
+  @Relations.toOne(() => Category)
   category!: Category
 }
 describe('test repository relations', () => {

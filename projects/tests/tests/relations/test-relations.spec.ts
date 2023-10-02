@@ -6,6 +6,7 @@ import {
   FindFirstOptions,
   FindOptions,
   InMemoryDataProvider,
+  Relations,
   Remult,
   remult,
 } from '../../../core'
@@ -32,18 +33,18 @@ class Category {
   id = 0
   @Fields.string()
   name = ''
-  @Fields.many(() => Task, 'category')
+  @Relations.toMany(() => Task, 'category')
   tasks?: Task[]
-  @Fields.many(() => Task, 'secondaryCategoryId')
+  @Relations.toMany(() => Task, 'secondaryCategoryId')
   tasksSecondary?: Task[]
-  @Fields.many(() => Task, {
+  @Relations.toMany(() => Task, {
     field: 'secondaryCategoryId',
     findOptions: {
       limit: 2,
     },
   })
   tasksSecondary1?: Task[]
-  @Fields.many<Category, Task>(() => Task, {
+  @Relations.toMany<Category, Task>(() => Task, {
     //match: [['id', 'secondaryCategoryId']],
     fields: {
       secondaryCategoryId: 'id',
@@ -67,7 +68,7 @@ class Category {
     },
   })
   tasksSecondary2: Task[]
-  @Fields.many<Category, Task>(() => Task, {
+  @Relations.toMany<Category, Task>(() => Task, {
     findOptions: (category) => ({
       limit: 2,
       where: {
@@ -83,7 +84,7 @@ class Category {
     }),
   })
   allTasks: Task[]
-  @Fields.one<Category, Task>(() => Task, {
+  @Relations.toOne<Category, Task>(() => Task, {
     findOptions: (category) => ({
       orderBy: {
         id: 'desc',
@@ -104,13 +105,13 @@ class Category {
   @Fields.date()
   createdAt = new Date('1976-06-16T00:00:00.000Z')
 
-  @Fields.one(() => Company)
+  @Relations.toOne(() => Company)
   company!: Company
 
   @Fields.integer()
   secondaryCompanyId = 0
 
-  @Fields.one<Category, Company>(() => Company, 'secondaryCompanyId')
+  @Relations.toOne<Category, Company>(() => Company, 'secondaryCompanyId')
   secondaryCompany: Company
 }
 
@@ -120,20 +121,20 @@ class Task {
   id = 0
   @Fields.string()
   title = ''
-  @Fields.one(() => Category)
+  @Relations.toOne(() => Category)
   category?: Category
   @Fields.boolean()
   completed = false
 
   @Fields.integer()
   secondaryCategoryId = 0
-  @Fields.one<Task, Category>(() => Category, 'secondaryCategoryId')
+  @Relations.toOne<Task, Category>(() => Category, 'secondaryCategoryId')
   secondaryCategory?: Category
-  @Fields.one<Task, Category>(() => Category, {
+  @Relations.toOne<Task, Category>(() => Category, {
     field: 'secondaryCategoryId',
   })
   secondaryCategory1?: Category
-  @Fields.one<Task, Category>(() => Category, {
+  @Relations.toOne<Task, Category>(() => Category, {
     fields: { id: 'secondaryCategoryId' },
   })
   secondaryCategory2?: Category
@@ -606,7 +607,7 @@ describe('test relations', () => {
       id: Fields.integer(),
       name: Fields.string(),
       company: Field(() => Company),
-      companyRef: Fields.one(() => Company),
+      companyRef: Relations.toOne(() => Company),
     })
     const comp = await r(Company).insert({ id: 1, name: 'abc' })
     await r(Category).insert({

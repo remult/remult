@@ -2,6 +2,7 @@ import {
   Entity,
   Fields,
   InMemoryDataProvider,
+  Relations,
   Remult,
   getEntityRef,
 } from '../../../../core'
@@ -31,7 +32,7 @@ class Task {
   title = ''
   @Fields.string()
   categoryId = ''
-  @Fields.one<Task, Category>(() => Category, 'categoryId')
+  @Relations.toOne<Task, Category>(() => Category, 'categoryId')
   category?: Category
 }
 

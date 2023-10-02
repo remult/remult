@@ -5,6 +5,7 @@ import {
   FindFirstOptions,
   FindOptions,
   InMemoryDataProvider,
+  Relations,
   Remult,
 } from '../../../core'
 import type { ClassType } from '../../../core/classType'
@@ -17,9 +18,9 @@ class Category {
   id = 0
   @Fields.string()
   name = ''
-  @Fields.many(() => Task, 'category')
+  @Relations.toMany(() => Task, 'category')
   tasks?: Task[]
-  @Fields.many(() => Task, {
+  @Relations.toMany(() => Task, {
     field: 'category',
     findOptions: {
       where: {
@@ -38,7 +39,7 @@ class Task {
   title = ''
   @Fields.boolean()
   completed = false
-  @Fields.one(() => Category)
+  @Relations.toOne(() => Category)
   category!: Category
 }
 describe('test repository relations', () => {

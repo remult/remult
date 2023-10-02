@@ -5,6 +5,7 @@ import {
   FindFirstOptions,
   FindOptions,
   InMemoryDataProvider,
+  Relations,
   Remult,
 } from '../../../core'
 import type { ClassType } from '../../../core/classType'
@@ -17,9 +18,9 @@ class Category {
   id = 0
   @Fields.string()
   name = ''
-  @Fields.many(() => Task, 'categoryId')
+  @Relations.toMany(() => Task, 'categoryId')
   tasks: Task[]
-  @Fields.many<Category, Task>(() => Task, {
+  @Relations.toMany<Category, Task>(() => Task, {
     fields: {
       categoryId: 'id',
     },
@@ -42,7 +43,7 @@ class Task {
   completed = false
   @Fields.integer()
   categoryId = 0
-  @Fields.one<Task, Category>(() => Category, {
+  @Relations.toOne<Task, Category>(() => Category, {
     field: 'categoryId',
   })
   category!: Category

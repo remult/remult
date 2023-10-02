@@ -49,7 +49,12 @@ export {
 } from './src/remult3/RepositoryImplementation'
 export { Entity } from './src/remult3/entity'
 export { getEntityRef } from './src/remult3/getEntityRef'
-export { Field, Fields, StringFieldOptions } from './src/remult3/Fields'
+export {
+  Field,
+  Fields,
+  StringFieldOptions,
+  Relations,
+} from './src/remult3/Fields'
 export { IdEntity } from './src/remult3/IdEntity'
 
 export { describeClass } from './src/remult3/DecoratorReplacer'

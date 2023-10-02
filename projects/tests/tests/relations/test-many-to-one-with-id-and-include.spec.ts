@@ -5,6 +5,7 @@ import {
   FindFirstOptions,
   FindOptions,
   InMemoryDataProvider,
+  Relations,
   Remult,
   getEntityRef,
 } from '../../../core'
@@ -24,7 +25,7 @@ class Category {
   id = 0
   @Fields.string()
   name = ''
-  @Fields.one(() => Company)
+  @Relations.toOne(() => Company)
   company: Company
 }
 
@@ -36,7 +37,7 @@ class Task {
   title = ''
   @Fields.boolean()
   completed = false
-  @Fields.one(() => Category)
+  @Relations.toOne(() => Category)
   category!: Category
 }
 describe('test repository relations', () => {

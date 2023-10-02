@@ -14,7 +14,7 @@ import {
 } from '../../core/src/live-query/SubscriptionServer'
 import { remult } from '../../core/src/remult-proxy'
 import type { FindOptions } from '../../core'
-import { Entity, Fields, getEntityRef } from '../../core'
+import { Entity, Fields, Relations, getEntityRef } from '../../core'
 import { actionInfo } from '../../core/src/server-action-info'
 import { createMockHttpDataProvider } from '../tests/testHelper'
 import { HttpProviderBridgeToRestDataProviderHttpProvider } from '../../core/src/buildRestDataProvider'
@@ -32,13 +32,13 @@ export class eventTestEntity {
   selectUser = ''
   @Fields.date()
   birthDate = new Date(1976, 5, 16)
-  @Fields.one(() => Category)
+  @Relations.toOne(() => Category)
   categoryReference: Category
   @Fields.integer()
   categoryId = 0
-  @Fields.one<eventTestEntity, Category>(() => Category, 'categoryId')
+  @Relations.toOne<eventTestEntity, Category>(() => Category, 'categoryId')
   category: Category
-  @Fields.many<eventTestEntity, Category>(() => Category, {
+  @Relations.toMany<eventTestEntity, Category>(() => Category, {
     fields: {
       id: 'categoryId',
     },
