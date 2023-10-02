@@ -42,7 +42,7 @@ export interface LifeCycleEvent<entityType> {
   repository: Repository<entityType>
   metadata: EntityMetadata<entityType>
   preventDefault: VoidFunction
-  relations: RepositoryRelations<entityType>
+  relations: RepositoryRelations<entityType> //[ ] - merge with fields?
 }
 
 export interface ControllerRef<entityType> extends Subscribable {
