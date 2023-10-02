@@ -130,9 +130,11 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
         await remult.repo(ent).insert({ id: 1, name: 'a' })
         await remult.repo(ent).insert({ id: 2, name: 'a' })
       })
-    } catch (error) {}
-    // Bring back the old dataprovider
-    remult.dataProvider = old_dataProvider
+    } catch (error) {
+    } finally {
+      // Bring back the old dataprovider
+      remult.dataProvider = old_dataProvider
+    }
 
     // nothing should be inserted
     data = await remult.repo(ent).find()
