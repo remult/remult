@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 - Changed the way an entity id is defined
 - fixed json db to support db names
 - added saving life cycle event
+- added repo function
 
 ## [0.22.8] 2023-09-27
 

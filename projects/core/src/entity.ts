@@ -127,3 +127,5 @@ export interface EntityOptions<entityType = any> {
   entityRefInit?: (ref: EntityRef<entityType>, row: entityType) => void
   apiRequireId?: Allowed
 }
+
+//[ ]  make lazy only on field and not in Field Options
