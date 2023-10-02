@@ -13,6 +13,7 @@ import { allDbTests } from './shared-tests'
 import { entityWithValidations } from './shared-tests/entityWithValidations'
 import { knexTests } from './shared-tests/test-knex'
 
+
 PostgresSchemaBuilder.logToConsole = false
 const postgresConnection = process.env.DATABASE_URL
 describe.skipIf(!postgresConnection)('Postgres Tests', () => {
