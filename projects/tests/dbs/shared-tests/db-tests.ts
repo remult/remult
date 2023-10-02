@@ -3,7 +3,14 @@ import type {
   EntityFilter,
   Repository,
 } from '../../../core/src/remult3/remult3'
-import { Entity, EntityBase, Field, Fields, IdEntity } from '../../../core'
+import {
+  Entity,
+  EntityBase,
+  Field,
+  Fields,
+  IdEntity,
+  SqlDatabase,
+} from '../../../core'
 import { c } from '../../tests/c'
 
 import { v4 as uuid } from 'uuid'
@@ -39,7 +46,7 @@ import {
 } from './entityWithValidations'
 import type { CategoriesForTesting } from '../../tests/remult-3-entities'
 import { ValueConverters } from '../../../core/src/valueConverters'
-import { it } from 'vitest'
+import { it, vi } from 'vitest'
 import { expect } from 'vitest'
 
 export interface DbTestOptions {
@@ -862,6 +869,70 @@ export function commonDbTests(
     }
     expect(await x.count()).toBe(0)
   })
+  it.skipIf(options?.excludeTransactions)(
+    'transaction should fully rollback if one fail',
+    async () => {
+      const originalConsoleError = console.error
+      console.error = vi.fn()
+
+      const entityName = 'test_transaction'
+      let remult = new Remult(getDb())
+      // Was in the test before
+      // await getDb().execute('Drop table if exists ' + entityName)
+      // await getDb().execute(`create table ${entityName}(id int,name varchar UNIQUE)`)
+      // tentative 1
+      const sql = SqlDatabase.getDb(remult)
+      sql.execute('Drop table if exists ' + entityName)
+      sql.execute(`create table ${entityName}(id int,name varchar UNIQUE)`)
+      // tentative 2, working, but I need to set the UNIQUE db constraints! So not good
+      // await getDb().ensureSchema([remult.repo(ent).metadata])
+      // const all = await remult.repo(ent).find()
+      // for (let i = 0; i < all.length; i++) {
+      //   await remult.repo(ent).delete(all[i].id)
+      // }
+      const ent = class {
+        id = 0
+        name = ''
+      }
+      describeClass(ent, Entity(entityName), {
+        id: Fields.integer(),
+        name: Fields.string(),
+      })
+
+      await remult.repo(ent).insert({ id: 1, name: 'a' })
+      try {
+        // error expected
+        await remult.repo(ent).insert({ id: 2, name: 'a' })
+      } catch (error) {}
+
+      let data = await remult.repo(ent).find()
+      expect(data.length).toBe(1)
+
+      // remove everthing
+      await remult.repo(ent).delete(1)
+      data = await remult.repo(ent).find()
+      expect(data.length).toBe(0)
+
+      const old_dataProvider = remult.dataProvider
+      try {
+        await remult.dataProvider.transaction(async (trx) => {
+          remult.dataProvider = trx
+          await remult.repo(ent).insert({ id: 1, name: 'a' })
+          await remult.repo(ent).insert({ id: 2, name: 'a' })
+        })
+      } catch (error) {
+      } finally {
+        // Bring back the old dataprovider
+        remult.dataProvider = old_dataProvider
+      }
+
+      // nothing should be inserted
+      data = await remult.repo(ent).find()
+      expect(data.length).toBe(0)
+
+      console.error = originalConsoleError
+    },
+  )
 
   it('test date', async () => {
     const e = class {

@@ -13,7 +13,6 @@ import { allDbTests } from './shared-tests'
 import { entityWithValidations } from './shared-tests/entityWithValidations'
 import { knexTests } from './shared-tests/test-knex'
 
-
 PostgresSchemaBuilder.logToConsole = false
 const postgresConnection = process.env.DATABASE_URL
 describe.skipIf(!postgresConnection)('Postgres Tests', () => {
@@ -93,55 +92,6 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
         )
         expect(r.rows[0].c).toBe('4')
       })
-  })
-  it('transaction should fully rollback if one faile', async () => {
-    const originalConsoleError = console.error
-    console.error = vi.fn()
-
-    const entityName = 'test_transaction'
-    await db.execute('Drop table if exists ' + entityName)
-    await db.execute(`create table ${entityName}(id int,name varchar UNIQUE)`)
-    const ent = class {
-      id = 0
-      name = ''
-    }
-    describeClass(ent, Entity(entityName), {
-      id: Fields.integer(),
-      name: Fields.string(),
-    })
-
-    await remult.repo(ent).insert({ id: 1, name: 'a' })
-    try {
-      // error expected
-      await remult.repo(ent).insert({ id: 2, name: 'a' })
-    } catch (error) {}
-
-    let data = await remult.repo(ent).find()
-    expect(data.length).toBe(1)
-
-    // remove everthing
-    await remult.repo(ent).delete(1)
-    data = await remult.repo(ent).find()
-    expect(data.length).toBe(0)
-
-    const old_dataProvider = remult.dataProvider
-    try {
-      await remult.dataProvider.transaction(async (trx) => {
-        remult.dataProvider = trx
-        await remult.repo(ent).insert({ id: 1, name: 'a' })
-        await remult.repo(ent).insert({ id: 2, name: 'a' })
-      })
-    } catch (error) {
-    } finally {
-      // Bring back the old dataprovider
-      remult.dataProvider = old_dataProvider
-    }
-
-    // nothing should be inserted
-    data = await remult.repo(ent).find()
-    expect(data.length).toBe(0)
-
-    console.error = originalConsoleError
   })
   it('default order by', async () => {
     let s = await entityWithValidations.create4RowsInDp(createEntity)
