@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [0.23.0] TBD
 
+- Saving/saved/deleting/deleted will now run on the backend
 - Added relations
 - Changed the way an entity id is defined
 - fixed json db to support db names

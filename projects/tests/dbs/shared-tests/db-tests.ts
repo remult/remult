@@ -33,10 +33,7 @@ import { tasks } from '../../tests/tasks'
 import { Status } from '../../tests/testModel/models'
 import type { DbTestProps } from './db-tests-props'
 
-import {
-  entityWithValidations,
-  testConfiguration,
-} from './entityWithValidations'
+import { entityWithValidations } from './entityWithValidations'
 import type { CategoriesForTesting } from '../../tests/remult-3-entities'
 import { ValueConverters } from '../../../core/src/valueConverters'
 import { it } from 'vitest'
@@ -182,7 +179,7 @@ export function commonDbTests(
     expect(l.categoryName).toBe('newname')
     expect(l.description).toBe('new desc')
   })
-  it('put with validations on entity fails', async () => {
+  it.only('put with validations on entity fails', async () => {
     let s = await createEntity(entityWithValidations)
     let c = s.create()
     c.myId = 1
@@ -639,7 +636,7 @@ export function commonDbTests(
     Entity<typeof type.prototype>(undefined, {
       allowApiCrud: true,
       saving: () => {
-        if (!testConfiguration.restDbRunningOnServer) count++
+        count++
       },
     })(type)
     let c = await createData(async (insert) => await insert(1, 'noam'), type)

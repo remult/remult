@@ -1435,15 +1435,17 @@ export class rowHelperImplementation<T>
         // no need
         await this.__validateEntity()
       let doNotSave = false
-      let e = this.buildLifeCycleEvent(() => (doNotSave = true))
-      for (const col of this.fields) {
-        if (col.metadata.options.saving)
-          await col.metadata.options.saving(this.instance, e, col)
-      }
-      if (this.info.entityInfo.saving) {
-        await this.info.entityInfo.saving(this.instance, e)
-      }
 
+      let e = this.buildLifeCycleEvent(() => (doNotSave = true))
+      if (!this.remult.dataProvider.isProxy) {
+        for (const col of this.fields) {
+          if (col.metadata.options.saving)
+            await col.metadata.options.saving(this.instance, e, col)
+        }
+        if (this.info.entityInfo.saving) {
+          await this.info.entityInfo.saving(this.instance, e)
+        }
+      }
       this.__assertValidity()
 
       let d = this.copyDataToObject()
@@ -1494,16 +1496,16 @@ export class rowHelperImplementation<T>
           }
         }
         await this.loadDataFrom(updatedRow)
-
-        if (this.info.entityInfo.saved)
-          await this.info.entityInfo.saved(this.instance, e)
-        if (this.repository.listeners)
-          for (const listener of this.repository.listeners.filter(
-            (x) => x.saved,
-          )) {
-            await listener.saved(this.instance, isNew)
-          }
-
+        if (!this.remult.dataProvider.isProxy) {
+          if (this.info.entityInfo.saved)
+            await this.info.entityInfo.saved(this.instance, e)
+          if (this.repository.listeners)
+            for (const listener of this.repository.listeners.filter(
+              (x) => x.saved,
+            )) {
+              await listener.saved(this.instance, isNew)
+            }
+        }
         await this.repository.remult.liveQueryPublisher.itemChanged(
           this.repository.metadata.key,
           [{ id: this.getId(), oldId: this.getOriginalId(), deleted: false }],
@@ -1545,14 +1547,18 @@ export class rowHelperImplementation<T>
   async delete() {
     this.__clearErrorsAndReportChanged()
     let e = this.buildLifeCycleEvent()
-    if (this.info.entityInfo.deleting)
-      await this.info.entityInfo.deleting(this.instance, e)
+    if (!this.remult.dataProvider.isProxy) {
+      if (this.info.entityInfo.deleting)
+        await this.info.entityInfo.deleting(this.instance, e)
+    }
     this.__assertValidity()
 
     try {
       await this.edp.delete(this.id)
-      if (this.info.entityInfo.deleted)
-        await this.info.entityInfo.deleted(this.instance, e)
+      if (!this.remult.dataProvider.isProxy) {
+        if (this.info.entityInfo.deleted)
+          await this.info.entityInfo.deleted(this.instance, e)
+      }
 
       if (this.repository.listeners)
         for (const listener of this.repository.listeners.filter(
