@@ -50,7 +50,7 @@ export class LiveQueryClient {
         try {
           q.unsubscribe = await client.subscribe(
             key,
-            (value) => this.wrapMessageHandling(() => q.handle(value)),
+            (value) => this.wrapMessageHandling(() => q!.handle(value)),
             (err) => {
               onResult.error(err)
             },
@@ -63,10 +63,10 @@ export class LiveQueryClient {
 
       q.listeners.push(onResult)
       onUnsubscribe = () => {
-        q.listeners.splice(q.listeners.indexOf(onResult), 1)
-        if (q.listeners.length == 0) {
+        q!.listeners.splice(q!.listeners.indexOf(onResult), 1)
+        if (q!.listeners.length == 0) {
           this.channels.delete(key)
-          q.unsubscribe()
+          q!.unsubscribe()
         }
         this.closeIfNoListeners()
       }
@@ -110,7 +110,7 @@ export class LiveQueryClient {
             .getEntityDataProvider(repo.metadata)
             .buildFindRequest(opts)
           const eventTypeKey = createKey()
-          let q = this.queries.get(eventTypeKey)
+          let q = this.queries.get(eventTypeKey)!
           if (!q) {
             this.queries.set(
               eventTypeKey,
@@ -189,12 +189,12 @@ export class LiveQueryClient {
       onUnsubscribe()
     }
   }
-  client: Promise<SubscriptionClientConnection>
+  client?: Promise<SubscriptionClientConnection>
   interval: any
   private openIfNoOpened() {
     if (!this.client) {
       this.interval = setInterval(async () => {
-        const ids = []
+        const ids: string[] = []
         for (const q of this.queries.values()) {
           ids.push(q.queryChannel)
         }
@@ -218,7 +218,7 @@ export class LiveQueryClient {
       }, 30000)
 
       return this.runPromise(
-        (this.client = this.apiProvider().subscriptionClient.openConnection(
+        (this.client = this.apiProvider().subscriptionClient!.openConnection(
           () => {
             for (const q of this.queries.values()) {
               q.subscribeCode()

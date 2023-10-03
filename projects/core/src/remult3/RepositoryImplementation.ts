@@ -533,7 +533,7 @@ export class RepositoryImplementation<entityType>
     rawRows: any[],
     loadOptions: LoadOptions<entityType>,
     loader: RelationLoader,
-  ) {
+  ): Promise<entityType[]> {
     let loadFields: FieldMetadata[] = undefined
     if (loadOptions?.load) loadFields = loadOptions.load(this.metadata.fields)
 

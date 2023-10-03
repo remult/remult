@@ -22,7 +22,7 @@ export class LiveQuerySubscriber<entityType> {
   async setAllItems(result: any[]) {
     const items = await this.repo.fromJsonArray(result, this.query.options)
     this.forListeners((listener) => {
-      listener((x) => {
+      listener(() => {
         return items
       })
     }, this.allItemsMessage(items))
@@ -130,7 +130,7 @@ export class LiveQuerySubscriber<entityType> {
   constructor(
     private repo: RepositoryImplementation<entityType>,
     private query: SubscribeToQueryArgs<entityType>,
-    userId: string,
+    userId: string | undefined,
   ) {
     this.queryChannel = `users:${userId}:queries:${this.id}`
     this.id = this.queryChannel
@@ -200,7 +200,7 @@ export class SubscriptionChannel<messageType> {
   constructor(public channelKey: string) {}
   publish(message: messageType, remult?: Remult) {
     remult = remult || defaultRemult
-    remult.subscriptionServer.publishMessage(this.channelKey, message)
+    remult.subscriptionServer!.publishMessage(this.channelKey, message)
   }
   subscribe(
     next: (message: messageType) => void,

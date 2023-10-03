@@ -10,7 +10,7 @@ export function getEntityRef<entityType>(
   if (!x && throwException)
     throw new Error(
       'item ' +
-        entity.constructor.name +
+        ((entity as any).constructor?.name || entity) +
         ' was not initialized using a context',
     )
   return x
