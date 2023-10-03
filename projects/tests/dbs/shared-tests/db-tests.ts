@@ -877,19 +877,7 @@ export function commonDbTests(
 
       const entityName = 'test_transaction'
       let remult = new Remult(getDb())
-      // Was in the test before
-      // await getDb().execute('Drop table if exists ' + entityName)
-      // await getDb().execute(`create table ${entityName}(id int,name varchar UNIQUE)`)
-      // tentative 1
-      const sql = SqlDatabase.getDb(remult)
-      sql.execute('Drop table if exists ' + entityName)
-      sql.execute(`create table ${entityName}(id int,name varchar UNIQUE)`)
-      // tentative 2, working, but I need to set the UNIQUE db constraints! So not good
-      // await getDb().ensureSchema([remult.repo(ent).metadata])
-      // const all = await remult.repo(ent).find()
-      // for (let i = 0; i < all.length; i++) {
-      //   await remult.repo(ent).delete(all[i].id)
-      // }
+
       const ent = class {
         id = 0
         name = ''
@@ -899,10 +887,16 @@ export function commonDbTests(
         name: Fields.string(),
       })
 
+      await getDb().ensureSchema([remult.repo(ent).metadata])
+      const all = await remult.repo(ent).find()
+      for (let i = 0; i < all.length; i++) {
+        await remult.repo(ent).delete(all[i].id)
+      }
+
       await remult.repo(ent).insert({ id: 1, name: 'a' })
       try {
         // error expected
-        await remult.repo(ent).insert({ id: 2, name: 'a' })
+        await remult.repo(ent).insert({ id: 1, name: 'b' })
       } catch (error) {}
 
       let data = await remult.repo(ent).find()
@@ -918,7 +912,7 @@ export function commonDbTests(
         await remult.dataProvider.transaction(async (trx) => {
           remult.dataProvider = trx
           await remult.repo(ent).insert({ id: 1, name: 'a' })
-          await remult.repo(ent).insert({ id: 2, name: 'a' })
+          await remult.repo(ent).insert({ id: 1, name: 'b' })
         })
       } catch (error) {
       } finally {
