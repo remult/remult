@@ -37,26 +37,26 @@ export class LookupColumn<T> {
     if (this.isReferenceRelation && !this.storedItem) return undefined
     return this.repository.getCachedById(id, this.isReferenceRelation)
   }
-  storedItem: { item: T }
+  storedItem?: { item: T }
   set(item: T) {
     this.storedItem = undefined
     if (item) {
       if (typeof item === 'string' || typeof item === 'number')
         this.id = item as any
       else {
-        let eo = getEntityRef(item, false)
+        let eo = getEntityRef(item as any, false)
         if (eo && !this.isReferenceRelation) {
           this.repository.addToCache(item)
-          this.id = eo.getId()
+          this.id = eo.getId() as any
         } else {
           this.storedItem = { item }
           this.id = item[this.repository.metadata.idMetadata.field.key]
         }
       }
     } else if (item === null) {
-      this.id = null
+      this.id = null!
     } else {
-      this.id = undefined
+      this.id = undefined!
     }
   }
 

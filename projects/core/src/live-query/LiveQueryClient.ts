@@ -26,7 +26,7 @@ export class LiveQueryClient {
   private channels = new Map<string, MessageChannel<any>>()
   constructor(
     private apiProvider: () => ApiClient,
-    private getUserId: () => string,
+    private getUserId: () => string | undefined,
   ) {}
   runPromise<X>(p: Promise<X>) {
     return p

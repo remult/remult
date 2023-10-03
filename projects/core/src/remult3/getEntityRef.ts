@@ -24,7 +24,7 @@ export const entityInfo_key = Symbol('entityInfo_key')
 export function getEntitySettings<T>(
   entity: ClassType<T>,
   throwError = true,
-): EntityOptionsFactory {
+): EntityOptionsFactory | undefined {
   if (entity === undefined)
     if (throwError) {
       throw new Error('Undefined is not an entity :)')

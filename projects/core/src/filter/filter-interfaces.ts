@@ -11,11 +11,7 @@ import { getEntityRef, getEntitySettings } from '../remult3/getEntityRef'
 import { getRelationInfo } from '../remult3/relationInfoMember'
 
 export class Filter {
-  constructor(private apply?: (add: FilterConsumer) => void) {
-    if (!this.apply) {
-      this.apply = () => {}
-    }
-  }
+  constructor(private apply: (add: FilterConsumer) => void) {}
   __applyToConsumer(add: FilterConsumer) {
     this.apply(add)
   }
@@ -103,7 +99,7 @@ export class Filter {
               rel?.type === 'toOne'
                 ? op.fields
                   ? new manyToOneFilterHelper(field, entity.fields, op)
-                  : new toOneFilterHelper(entity.fields[op.field])
+                  : new toOneFilterHelper(entity.fields[op.field!])
                 : new filterHelper(field)
             let found = false
             if (fieldToFilter !== undefined && fieldToFilter != null) {
@@ -582,7 +578,7 @@ export function buildFilterFromRequestParameters(
     if (
       element &&
       element.rawFilterInfo &&
-      element.rawFilterInfo.rawFilterTranslator
+      element.rawFilterInfo.rawFilterTranslator!
     ) {
       let custom = filterInfo.get(customUrlToken + key)
       if (custom !== undefined) {
@@ -601,8 +597,8 @@ export function buildFilterFromRequestParameters(
 
   function separateArrayFromInnerArray(val: any) {
     if (!Array.isArray(val)) return [val]
-    const nonArray = [],
-      array = []
+    const nonArray: any[] = [],
+      array: any[] = []
     for (const v of val) {
       if (Array.isArray(v)) {
         array.push(v)

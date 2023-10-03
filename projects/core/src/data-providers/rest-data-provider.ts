@@ -145,7 +145,7 @@ export class RestEntityDataProvider implements EntityDataProvider {
     return run().then((x) => x.map((y) => this.translateFromJson(y)))
   }
   //@internal
-  buildFindRequest(options: EntityDataProviderFindOptions) {
+  buildFindRequest(options?: EntityDataProviderFindOptions) {
     let url = new UrlBuilder(this.url())
     let filterObject: any
     if (options) {

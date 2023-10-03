@@ -21,13 +21,13 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
       },
     }
   }
+  private rows: any[]
   constructor(
     private entity: EntityMetadata,
-    private rows?: any[],
+    rows?: any[],
   ) {
-    if (!rows) rows = []
-    else {
-    }
+    if (rows === undefined) this.rows = []
+    else this.rows = rows
   }
   __names: EntityDbNamesBase
   async init() {
@@ -44,7 +44,7 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
       if (!f.isServerExpression)
         if (!f.allowNull) {
           if (r[key] === undefined || r[key] === null) {
-            let val = undefined
+            let val: any = undefined
             if (f.valueType === Boolean) val = false
             else if (f.valueType === Number) val = 0
             else if (f.valueType === String) val = ''
@@ -75,13 +75,13 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
       if (options.where) {
         rows = rows.filter((i) => {
           let x = new FilterConsumerBridgeToObject(i, dbNames)
-          options.where.__applyToConsumer(x)
+          options.where!.__applyToConsumer(x)
           return x.ok
         })
       }
       if (options.orderBy) {
         rows = rows.sort((a: any, b: any) => {
-          return options.orderBy.compare(a, b, dbNames.$dbNameOf)
+          return options.orderBy!.compare(a, b, dbNames.$dbNameOf)
         })
       }
       rows = pageArray(rows, options)
@@ -90,6 +90,7 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
       return rows.map((i) => {
         return this.translateFromJson(i, dbNames)
       })
+    return []
   }
   translateFromJson(row: any, dbNames: EntityDbNamesBase) {
     let result = {}
@@ -180,8 +181,8 @@ function pageArray(rows: any[], options?: EntityDataProviderFindOptions) {
   let x = 0
   return rows.filter((i) => {
     x++
-    let max = page * options.limit
-    let min = max - options.limit
+    let max = page * options.limit!
+    let min = max - options.limit!
     return x > min && x <= max
   })
 }

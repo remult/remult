@@ -440,4 +440,4 @@ export function checkTarget(target: any) {
       "Set the 'experimentalDecorators:true' option in your 'tsconfig' or 'jsconfig' (target undefined)",
     )
 }
-//[ ] there is a duplicity between the oneToMany and manyToOne - maybe we should allow some derivation from one to another?
+// I think JY finds it confusing that the field options and relation options are together - but I still think it's good - not sure if it's a transition faze or not

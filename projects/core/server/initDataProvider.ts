@@ -5,8 +5,8 @@ export function initDataProvider(
     | DataProvider
     | Promise<DataProvider>
     | (() => Promise<DataProvider | undefined>),
-) {
-  let dataProvider: Promise<DataProvider>
+): Promise<DataProvider> {
+  let dataProvider: Promise<DataProvider | undefined>
   if (typeof optionsDataProvider === 'function') {
     dataProvider = optionsDataProvider()
   } else dataProvider = Promise.resolve(optionsDataProvider)
@@ -17,5 +17,5 @@ export function initDataProvider(
       './db',
     )
   })
-  return dataProvider
+  return dataProvider as Promise<DataProvider>
 }

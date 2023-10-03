@@ -63,7 +63,7 @@ export class DataApi<T = any> {
       case 'count':
         return this.count(res, req, body)
       case 'endLiveQuery':
-        await this.remult.liveQueryStorage.remove(body.id)
+        await this.remult.liveQueryStorage!.remove(body.id)
         res.success('ok')
         return
       default:
@@ -197,7 +197,7 @@ export class DataApi<T = any> {
         ),
         lastIds: r.r.map((y) => this.repository.metadata.idMetadata.getId(y)),
       }
-      await this.remult.liveQueryStorage.add({
+      await this.remult.liveQueryStorage!.add({
         entityKey: this.repository.metadata.key,
         id: queryChannel,
         data,
@@ -307,7 +307,7 @@ export class DataApi<T = any> {
         return this.repository.getEntityRef(newr).toApiJson()
       }
       if (Array.isArray(body)) {
-        const result = []
+        const result: any[] = []
         await doTransaction(this.remult, async () => {
           for (const item of body) {
             result.push(await insert(item))

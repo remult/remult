@@ -140,7 +140,7 @@ class WebSqlBridgeToSQLCommand implements SqlCommand {
           (t1, r) => resolve(new WebSqlBridgeToSQLQueryResult(r)),
           (t2, err) => {
             reject(err.message)
-            return undefined
+            return false
           },
         )
       }),
@@ -150,12 +150,12 @@ class WebSqlBridgeToSQLCommand implements SqlCommand {
 
 class WebSqlBridgeToSQLQueryResult implements SqlResult {
   getColumnKeyInResultForIndexInSelect(index: number): string {
-    if (this.rows.length == 0) return undefined
+    if (this.rows.length == 0) throw Error('No rows')
     let i = 0
     for (let m in this.rows[0]) {
       if (i++ == index) return m
     }
-    return undefined
+    throw Error('index not found')
   }
 
   //@ts-ignore

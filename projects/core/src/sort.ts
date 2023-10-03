@@ -46,46 +46,43 @@ export class Sort {
   }
   static translateOrderByToSort<T>(
     entityDefs: EntityMetadata<T>,
-    orderBy: EntityOrderBy<T>,
-  ): Sort {
+    orderBy?: EntityOrderBy<T>,
+  ): Sort | undefined {
     if (!orderBy) return undefined
     let sort: Sort
-    if (orderBy) {
-      sort = new Sort()
-      for (const key in orderBy) {
-        if (Object.prototype.hasOwnProperty.call(orderBy, key)) {
-          const element = orderBy[key]
-          let field = entityDefs.fields.find(key)
 
-          const addSegment = (field: FieldMetadata) => {
-            switch (element) {
-              case 'desc':
-                sort.Segments.push({ field, isDescending: true })
-                break
-              case 'asc':
-                sort.Segments.push({ field })
-            }
+    sort = new Sort()
+    for (const key in orderBy) {
+      if (Object.prototype.hasOwnProperty.call(orderBy, key)) {
+        const element = orderBy[key]
+        let field = entityDefs.fields.find(key)
+
+        const addSegment = (field: FieldMetadata) => {
+          switch (element) {
+            case 'desc':
+              sort.Segments.push({ field, isDescending: true })
+              break
+            case 'asc':
+              sort.Segments.push({ field })
           }
-          if (field) {
-            const rel = getRelationInfo(field.options)
-            const op = field.options as RelationOptions<any, any, any>
-            if (rel?.type === 'toOne') {
-              if (typeof op.field === 'string') {
-                addSegment(entityDefs.fields.find(op.field))
-              } else {
-                if (op.fields) {
-                  for (const key in op.fields) {
-                    if (Object.prototype.hasOwnProperty.call(op.fields, key)) {
-                      const keyInMyEntity = op.fields[key]
-                      addSegment(
-                        entityDefs.fields.find(keyInMyEntity.toString()),
-                      )
-                    }
+        }
+        if (field) {
+          const rel = getRelationInfo(field.options)
+          const op = field.options as RelationOptions<any, any, any>
+          if (rel?.type === 'toOne') {
+            if (typeof op.field === 'string') {
+              addSegment(entityDefs.fields.find(op.field))
+            } else {
+              if (op.fields) {
+                for (const key in op.fields) {
+                  if (Object.prototype.hasOwnProperty.call(op.fields, key)) {
+                    const keyInMyEntity = op.fields[key]!
+                    addSegment(entityDefs.fields.find(keyInMyEntity.toString()))
                   }
                 }
               }
-            } else addSegment(field)
-          }
+            }
+          } else addSegment(field)
         }
       }
     }
@@ -93,7 +90,7 @@ export class Sort {
   }
   static createUniqueSort<T>(
     entityMetadata: EntityMetadata<T>,
-    orderBy: Sort,
+    orderBy?: Sort,
   ): Sort {
     if (!orderBy || Object.keys(orderBy).length === 0)
       orderBy = Sort.translateOrderByToSort(
@@ -117,7 +114,7 @@ export class Sort {
   }
   static createUniqueEntityOrderBy<T>(
     entityMetadata: EntityMetadata<T>,
-    orderBy: EntityOrderBy<T>,
+    orderBy?: EntityOrderBy<T>,
   ): EntityOrderBy<T> {
     if (!orderBy || Object.keys(orderBy).length === 0)
       orderBy = entityMetadata.options.defaultOrderBy

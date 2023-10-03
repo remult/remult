@@ -34,7 +34,6 @@ export interface RestDataProviderHttpProvider {
 }
 
 export function extractSort(sort: any): Sort {
-  if (sort instanceof Sort) return sort
   if (sort instanceof Array) {
     let r = new Sort()
     sort.forEach((i) => {
@@ -42,6 +41,7 @@ export function extractSort(sort: any): Sort {
     })
     return r
   }
+  return sort
 }
 
 export interface ErrorInfo<entityType = any> {

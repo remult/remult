@@ -179,7 +179,7 @@ export function commonDbTests(
     expect(l.categoryName).toBe('newname')
     expect(l.description).toBe('new desc')
   })
-  it.only('put with validations on entity fails', async () => {
+  it('put with validations on entity fails', async () => {
     let s = await createEntity(entityWithValidations)
     let c = s.create()
     c.myId = 1

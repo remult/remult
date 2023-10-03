@@ -393,7 +393,7 @@ export class KnexSchemaBuilder {
   async verifyStructureOfAllEntities(remult?: Remult) {
     if (!remult) remult = remultContext
 
-    const entities = allEntities.map((x) => remult.repo(x).metadata)
+    const entities = allEntities.map((x) => remult!.repo(x).metadata)
     this.ensureSchema(entities)
   }
 
@@ -425,11 +425,11 @@ export class KnexSchemaBuilder {
       await logSql(
         this.knex.schema.createTable(e.$entityName, (b) => {
           for (const x of entity.fields) {
-            if (!cols.get(x).readonly || isAutoIncrement(x)) {
-              if (isAutoIncrement(x)) b.increments(cols.get(x).name)
+            if (!cols.get(x)!.readonly || isAutoIncrement(x)) {
+              if (isAutoIncrement(x)) b.increments(cols.get(x)!.name)
               else {
-                buildColumn(x, cols.get(x).name, b, supportsJson(this.knex))
-                if (x == entity.idMetadata.field) b.primary([cols.get(x).name])
+                buildColumn(x, cols.get(x)!.name, b, supportsJson(this.knex))
+                if (x == entity.idMetadata.field) b.primary([cols.get(x)!.name])
               }
             }
           }
