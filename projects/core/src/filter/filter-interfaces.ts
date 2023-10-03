@@ -269,6 +269,8 @@ class filterHelper {
   }
   isIn(val: any[]): Filter {
     val = val.map((x) => this.processVal(x))
+    if (val?.length == 1 && val[0] != undefined && val[0] !== null)
+      return new Filter((add) => add.isEqualTo(this.metadata, val[0]))
     return new Filter((add) => add.isIn(this.metadata, val))
   }
 }

@@ -254,13 +254,25 @@ describe('test one', () => {
   it('test filter in to json', async () => {
     expect(
       entityFilterToJson(repo(Task).metadata, {
-        category: [cat2],
+        category: [cat2, cat3],
       }),
     ).toMatchInlineSnapshot(`
       {
         "categoryId.in": [
           "12,2",
+          "13,3",
         ],
+      }
+    `)
+  })
+  it('test filter in to json b', async () => {
+    expect(
+      entityFilterToJson(repo(Task).metadata, {
+        category: [cat2],
+      }),
+    ).toMatchInlineSnapshot(`
+      {
+        "categoryId": "12,2",
       }
     `)
   })

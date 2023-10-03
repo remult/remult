@@ -208,6 +208,7 @@ describe('test one', () => {
         expect(t.category?.name).toBe('cat2')
       })
   })
+
   it('test filter equal to json', async () => {
     expect(
       entityFilterToJson(repo(Task).metadata, {
@@ -219,19 +220,56 @@ describe('test one', () => {
       }
     `)
   })
-  it('test filter in to json', async () => {
+  it.only('test filter in to json', async () => {
+    expect(
+      entityFilterToJson(repo(Task).metadata, {
+        category: [cat2, cat3],
+      }),
+    ).toMatchInlineSnapshot(`
+      {
+        "categoryId.in": [
+          2,
+          3,
+        ],
+      }
+    `)
+  })
+  it('test filter in to json c', async () => {
+    expect(
+      entityFilterToJson(repo(Task).metadata, {
+        category: [undefined],
+      }),
+    ).toMatchInlineSnapshot(`
+      {
+        "categoryId.in": [
+          null,
+        ],
+      }
+    `)
+  })
+  it('test filter in to json b', async () => {
     expect(
       entityFilterToJson(repo(Task).metadata, {
         category: [cat2],
       }),
     ).toMatchInlineSnapshot(`
       {
-        "categoryId.in": [
-          2,
-        ],
+        "categoryId": 2,
       }
     `)
   })
+  it('test filter in to json b', async () => {
+    expect(
+      entityFilterToJson(repo(Task).metadata, {
+        id: [2],
+      }),
+    ).toMatchInlineSnapshot(`
+      {
+        "id": 2,
+      }
+    `)
+  })
+
   it('test filter not equal to json', async () => {
     expect(
       entityFilterToJson(repo(Task).metadata, {
