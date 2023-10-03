@@ -647,7 +647,7 @@ export class RepositoryImplementation<entityType>
     let where: EntityFilter<any>[] = []
     let findOptions: FindOptions<any> = {}
     let findOptionsSources: FindOptions<any>[] = []
-    const options = field.options as RelationOptions<any, any, any>
+    let options = field.options as RelationOptions<any, any, any>
     if (typeof options.findOptions === 'function') {
       findOptionsSources.push(options.findOptions(row))
     } else if (typeof options.findOptions === 'object')
@@ -665,6 +665,30 @@ export class RepositoryImplementation<entityType>
       ] as (keyof FindOptions<any>)[]) {
         //@ts-ignore
         if (source[key]) findOptions[key] = source[key]
+      }
+    }
+    if (rel.type === 'toMany' && !options.field && !options.fields) {
+      for (const field of otherRepo.fields.toArray()) {
+        const rel = getRelationInfo(field.options)
+        const relOp = field.options as RelationOptions<any, any, any>
+        if (rel)
+          if (rel.type === 'reference') {
+            options = { ...findOptions, field: field.key }
+          } else if (rel.type === 'toOne') {
+            if (relOp.field) {
+              options = { ...options, field: relOp.field }
+            } else if (relOp.fields) {
+              let fields = {}
+              for (const key in relOp.fields) {
+                if (Object.prototype.hasOwnProperty.call(relOp.fields, key)) {
+                  const keyInMyTable = relOp.fields[key]
+                  fields[keyInMyTable] = key
+                }
+              }
+              options = { ...options, fields }
+            }
+            break
+          }
       }
     }
 

@@ -321,7 +321,7 @@ export class Relations {
 
   static toMany<entityType, toEntityType>(
     toEntityType: () => ClassType<toEntityType>,
-    options:
+    options?:
       | (RelationOptions<
           entityType,
           toEntityType,

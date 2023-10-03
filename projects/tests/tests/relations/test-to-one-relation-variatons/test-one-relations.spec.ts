@@ -17,6 +17,8 @@ class Category {
   id = 0
   @Fields.string()
   name = ''
+  @Relations.toMany(() => Task)
+  tasks?: Task[]
 }
 @Entity('task')
 class Task {
@@ -44,6 +46,13 @@ describe('test one', () => {
       [1, 2, 3].map((y) => ({ id: y, name: 'cat' + y })),
     )
     await repo(Task).insert({ id: 1, title: 'task1', categoryId: 1 })
+  })
+  it('test derived many', async () => {
+    expect(
+      (await repo(Category).find({ include: { tasks: true } })).map(
+        (y) => y.tasks!.length,
+      ),
+    ).toEqual([1, 0, 0])
   })
   it('test insert', async () => {
     await repo(Task).insert({ id: 2, category: cat2 })

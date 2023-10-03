@@ -23,6 +23,8 @@ class Category {
   id = 0
   @Fields.string()
   name = ''
+  @Relations.toMany(() => Task)
+  tasks?: Task[]
 }
 @Entity('task')
 class Task {
@@ -55,6 +57,14 @@ describe('test one', () => {
       categoryId: getEntityRef(cat1).getId().toString(),
     })
   })
+  it('test derived many', async () => {
+    expect(
+      (await repo(Category).find({ include: { tasks: true } })).map(
+        (y) => y.tasks!.length,
+      ),
+    ).toEqual([1, 0, 0])
+  })
+
   it('test id', async () => {
     expect(getEntityRef(cat1).getId().toString()).toBe('11,1')
   })
