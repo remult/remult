@@ -373,7 +373,7 @@ export class Relations {
  * title='';
  */
 export function Field<entityType = any, valueType = any>(
-  valueType: () => ClassType<valueType>,
+  valueType: (() => ClassType<valueType>) | undefined,
   ...options: (
     | FieldOptions<entityType, valueType>
     | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void)
@@ -407,7 +407,7 @@ export function Field<entityType = any, valueType = any>(
       return r
     }
     checkTarget(target)
-    let names: columnInfo[] = columnsOfType.get(target.constructor)
+    let names: columnInfo[] = columnsOfType.get(target.constructor)!
     if (!names) {
       names = []
       columnsOfType.set(target.constructor, names)
@@ -440,4 +440,6 @@ export function checkTarget(target: any) {
       "Set the 'experimentalDecorators:true' option in your 'tsconfig' or 'jsconfig' (target undefined)",
     )
 }
-// I think JY finds it confusing that the field options and relation options are together - but I still think it's good - not sure if it's a transition faze or not
+//[ ]  I think JY finds it confusing that the field options and relation options are together - but I still think it's good - not sure if it's a transition faze or not
+//[ ] I wish that when you define a toOne we automagically get the toMany on the other side! 😉
+//[ ] implement to many inference based on to one

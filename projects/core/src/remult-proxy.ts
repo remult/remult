@@ -41,7 +41,7 @@ export class RemultProxy implements Remult {
 
   /* @internal*/
   get liveQueryStorage() {
-    return this.remultFactory().liveQueryStorage
+    return this.remultFactory().liveQueryStorage!
   }
   /* @internal*/
   set liveQueryStorage(val: LiveQueryStorage) {
@@ -113,7 +113,7 @@ export class RemultProxy implements Remult {
     if (!entityCache) {
       self.repoCache.set(args[0], (entityCache = new Map()))
     }
-    let result = entityCache.get(args[1])
+    let result = entityCache.get(args[1]!)
     if (result) return result
     result = {
       get fields() {
@@ -217,7 +217,7 @@ export class RemultProxy implements Remult {
           .repo(...args)
           .update(a, b),
     }
-    entityCache.set(args[1], result)
+    entityCache.set(args[1]!, result!)
     return result
   }
 
@@ -234,7 +234,7 @@ export class RemultProxy implements Remult {
     this.remultFactory().apiClient = client
   }
   get subscriptionServer() {
-    return this.remultFactory().subscriptionServer
+    return this.remultFactory().subscriptionServer!
   }
   set subscriptionServer(value: SubscriptionServer) {
     this.remultFactory().subscriptionServer = value
