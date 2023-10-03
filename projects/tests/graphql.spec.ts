@@ -6,6 +6,7 @@ import {
   FieldType,
   Fields,
   InMemoryDataProvider,
+  Relations,
   Remult,
   describeClass,
 } from '../core'
@@ -24,6 +25,12 @@ class Category {
   id = ''
   @Fields.string()
   name = ''
+
+  @Relations.toMany(() => Task, { field: 'category' })
+  tasksOfcategory?: Task[]
+
+  @Relations.toMany(() => Task, { field: 'category2' })
+  tasksOfcategory2?: Task[]
 }
 
 @Entity('tasks', {
