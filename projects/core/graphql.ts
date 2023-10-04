@@ -1,3 +1,4 @@
+import { getRelationInfo } from './internals'
 import type { ClassType } from './classType'
 import type { EntityMetadata, FieldsMetadata } from './index'
 import { Remult, remult } from './index'
@@ -663,6 +664,12 @@ Select a dedicated page.`,
       }
       const whereTypeFields: string[] = []
       for (const f of meta.fields) {
+        const ri = getRelationInfo(f.options)
+        // let's not consider toMany relations for now
+        if (ri?.type === 'toMany') {
+          break
+        }
+
         if (f.options.includeInApi === false) continue
         let type = 'String'
         switch (f.valueType) {
