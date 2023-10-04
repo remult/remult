@@ -492,22 +492,35 @@ export type RelationOptions<
   toEntity,
   matchIdEntity,
   optionsType extends FindOptionsBase<toEntity> = FindOptionsBase<toEntity>,
-> = {
-  fields?: {
-    //[ ] V2- consider enforcing types
-    [K in keyof toEntity]?: keyof fromEntity
-  }
-  field?: keyof matchIdEntity
-} & RelationOptionsBase<fromEntity, toEntity, optionsType>
+> =
+  // Option 1 fields
+  | ({
+      fields?: {
+        //[ ] V2- consider enforcing types
+        [K in keyof toEntity]?: keyof fromEntity
+      }
+      field?: never
+    } & RelationOptionsBase<fromEntity, toEntity, optionsType, never>)
+  // Option 2 field
+  | ({
+      fields?: never
+      field?: keyof matchIdEntity
+    } & RelationOptionsBase<fromEntity, toEntity, optionsType, never>)
+  // Option 3 dbName
+  | ({
+      fields?: never
+      field?: never
+    } & RelationOptionsBase<fromEntity, toEntity, optionsType>)
 
 export type RelationOptionsBase<
   fromEntity,
   toEntity,
   optionsType extends LoadOptions<toEntity> = LoadOptions<toEntity>,
+  dbNameType = string | never,
 > = {
   findOptions?: optionsType | ((entity: fromEntity) => optionsType)
   defaultIncluded?: boolean
-} & FieldOptions<fromEntity, toEntity>
+} & FieldOptions<fromEntity, toEntity, dbNameType, never>
 
 export type ObjectMembersOnly<T> = {
   [K in keyof Pick<

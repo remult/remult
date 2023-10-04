@@ -682,7 +682,8 @@ export class RepositoryImplementation<entityType>
                 options = { ...findOptions, field: fieldInOtherRepo.key }
               } else if (reverseRel.type === 'toOne') {
                 if (relOp.field) {
-                  options = { ...options, field: relOp.field }
+                  const { fields, dbName, ...rest } = options
+                  options = { ...rest, field: relOp.field }
                 } else if (relOp.fields) {
                   let fields = {}
                   for (const key in relOp.fields) {
@@ -693,7 +694,8 @@ export class RepositoryImplementation<entityType>
                       fields[keyInMyTable] = key
                     }
                   }
-                  options = { ...options, fields }
+                  const { field, dbName, ...rest } = options
+                  options = { ...rest, fields }
                 } else
                   throw Error(
                     `Could not infer fields for the "toMany" relation named:${fieldInOtherRepo.key}. Please specify field/fields`,
