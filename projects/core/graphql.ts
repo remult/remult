@@ -666,7 +666,7 @@ Select a dedicated page.`,
       for (const f of meta.fields) {
         const ri = getRelationInfo(f.options)
         // let's not consider toMany relations for now
-        if (ri && ri.type === 'toMany') {
+        if (ri?.type === 'toMany') {
           break
         }
 
