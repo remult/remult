@@ -887,7 +887,7 @@ export function commonDbTests(
         name: Fields.string(),
       })
 
-      await getDb().ensureSchema([remult.repo(ent).metadata])
+      await createEntity(ent)
       const all = await remult.repo(ent).find()
       for (let i = 0; i < all.length; i++) {
         await remult.repo(ent).delete(all[i].id)
