@@ -48,6 +48,7 @@ export class Sort {
     entityDefs: EntityMetadata<T>,
     orderBy?: EntityOrderBy<T>,
   ): Sort {
+    if (!orderBy) return undefined
     let sort = new Sort()
     if (orderBy)
       for (const key in orderBy) {
@@ -92,7 +93,10 @@ export class Sort {
     entityMetadata: EntityMetadata<T>,
     orderBy?: Sort,
   ): Sort {
-    if (!orderBy || Object.keys(orderBy).length === 0)
+    if (
+      (!orderBy || Object.keys(orderBy).length === 0) &&
+      entityMetadata.options.defaultOrderBy
+    )
       orderBy = Sort.translateOrderByToSort(
         entityMetadata,
         entityMetadata.options.defaultOrderBy,
