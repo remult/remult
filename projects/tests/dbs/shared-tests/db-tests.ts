@@ -875,37 +875,21 @@ export function commonDbTests(
       const originalConsoleError = console.error
       console.error = vi.fn()
 
-      const entityName = 'test_transaction'
-      let remult = new Remult(getDb())
-
       const ent = class {
         id = 0
         name = ''
       }
-      describeClass(ent, Entity(entityName), {
+      describeClass(ent, Entity('test_transaction'), {
         id: Fields.integer(),
         name: Fields.string(),
       })
 
       await createEntity(ent)
+      const remult = await getRemult()
       const all = await remult.repo(ent).find()
       for (let i = 0; i < all.length; i++) {
         await remult.repo(ent).delete(all[i].id)
       }
-
-      await remult.repo(ent).insert({ id: 1, name: 'a' })
-      try {
-        // error expected
-        await remult.repo(ent).insert({ id: 1, name: 'b' })
-      } catch (error) {}
-
-      let data = await remult.repo(ent).find()
-      expect(data.length).toBe(1)
-
-      // remove everthing
-      await remult.repo(ent).delete(1)
-      data = await remult.repo(ent).find()
-      expect(data.length).toBe(0)
 
       const old_dataProvider = remult.dataProvider
       try {
@@ -913,6 +897,9 @@ export function commonDbTests(
           remult.dataProvider = trx
           await remult.repo(ent).insert({ id: 1, name: 'a' })
           await remult.repo(ent).insert({ id: 1, name: 'b' })
+          throw new Error(
+            "in case the db doesn't enforce unique id like mongo doesnt",
+          )
         })
       } catch (error) {
       } finally {
@@ -921,7 +908,7 @@ export function commonDbTests(
       }
 
       // nothing should be inserted
-      data = await remult.repo(ent).find()
+      let data = await remult.repo(ent).find()
       expect(data.length).toBe(0)
 
       console.error = originalConsoleError
