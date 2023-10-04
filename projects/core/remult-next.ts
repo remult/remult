@@ -155,7 +155,7 @@ export function remultNextApp(
     withRemult: <T>(what) => result.withRemultPromise<T>({} as any, what),
   }
 }
-//[ ] - Add handle, similar to handle in next page router.
+// [ ] V1.5 Add handle, similar to handle in next page router.
 export type RemultNextAppServer = RemultServerCore<Request> & {
   GET: (req: Request) => Promise<Response>
   PUT: (req: Request) => Promise<Response>

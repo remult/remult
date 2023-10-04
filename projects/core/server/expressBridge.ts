@@ -36,7 +36,6 @@ import { Action, classBackendMethodsArray } from '../src/server-action'
 import { actionInfo, serverActionField } from '../src/server-action-info'
 import { initDataProvider } from './initDataProvider'
 
-//TODO2 -support pub sub non express servers
 export interface RemultServerOptions<RequestType> {
   /**Entities to use for the api */
   entities?: ClassType<any>[]
@@ -179,7 +178,7 @@ export function createRemultServerCore<RequestType>(
   )
   return bridge
 }
-//TODO  - the type is wrong - it should be RequestType as on the server - also reconsider GenericResponse here, because it's also the server Response
+//TODO V2 - the type is wrong - it should be RequestType as on the server - also reconsider GenericResponse here, because it's also the server Response
 export type GenericRequestHandler = (
   req: GenericRequestInfo,
   res: GenericResponse,
@@ -261,7 +260,7 @@ export class RemultServerImplementation<RequestType>
     })
   }
   getEntities(): EntityMetadata<any>[] {
-    //TODO - consider using entitiesMetaData - but it may require making it all awaitable
+    //TODO V2 - consider using entitiesMetaData - but it may require making it all awaitable
     var r = new Remult()
     return this.options.entities!.map((x) => r.repo(x).metadata)
   }

@@ -97,8 +97,6 @@ export interface LiveQueryChangesListener {
   itemChanged(entityKey: string, changes: itemChange[]): Promise<void>
 }
 
-// TODO2 - PUBNUB
-// TODO2 - https://centrifugal.dev/
 export interface LiveQueryStorage {
   add(query: StoredQuery): Promise<void>
   remove(queryId: string): Promise<void>

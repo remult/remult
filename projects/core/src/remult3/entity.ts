@@ -8,7 +8,6 @@ import type {
   EntityOptionsFactory,
 } from './RepositoryImplementation'
 
-//[ ] YONI - in Typescript 5 I do get the name of the class, what would we like to change because of that?
 /**Decorates classes that should be used as entities.
  * Receives a key and an array of EntityOptions.
  * @example

@@ -441,5 +441,3 @@ export function checkTarget(target: any) {
     )
 }
 //[ ]  I think JY finds it confusing that the field options and relation options are together - but I still think it's good - not sure if it's a transition faze or not
-//[ ] I wish that when you define a toOne we automagically get the toMany on the other side! 😉
-//[ ] implement to many inference based on to one

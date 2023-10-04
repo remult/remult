@@ -320,5 +320,3 @@ describe('test one', () => {
     expect(await r.count({ category: { '!=': [cat1, cat3] } })).toBe(2)
   })
 })
-//[ ] http://localhost:5173/api/dealContacts?contactId=007c1297-6a54-45c2-b0aa-d6b9e41adf13&contactId=007c1297-6a54-45c2-b0aa-d6b9e41adf13
-//[ ] - load shouldnt reach the data provider, limit and page shouldn't be Nan

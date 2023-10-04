@@ -336,7 +336,7 @@ describe('test one', () => {
       createdTasks?: Task[]
       updatedTasks?: Task[]
     }
-    //[ ] - would be nice to support relations in `createClass` syntax
+    //[ ] v1.5 - would be nice to support relations in `createClass` syntax
     describeClass(User, Entity('user1'), {
       id: Fields.integer(),
       name: Fields.string(),
@@ -400,6 +400,9 @@ describe('test one', () => {
     `)
   })
 })
-// [ ] - consider with yoni a better way to create a partial class - that still uses decorators - just would seem like another repo
 //[ ] - give exception on invalid fields
-//[ ]  - remove lazy, and restrict dbname with field and fields
+//[ ]  - remove lazy, and restrict dbname with field and fields - currently JY was able to do it with never, I want to figure out a better solution
+//[ ]  make lazy only on field and not in Field Options
+//[ ] http://localhost:5173/api/dealContacts?contactId=007c1297-6a54-45c2-b0aa-d6b9e41adf13&contactId=007c1297-6a54-45c2-b0aa-d6b9e41adf13
+//[ ] - load shouldnt reach the data provider, limit and page shouldn't be Nan
+//[ ] -  check types errors in hagai familydeliveries
