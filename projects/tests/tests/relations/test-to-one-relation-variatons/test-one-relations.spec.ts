@@ -5,11 +5,13 @@ import {
   Relations,
   Remult,
   Sort,
+  describeClass,
   getEntityRef,
 } from '../../../../core'
 import { describe, it, expect, beforeEach } from 'vitest'
 import type { ClassType } from '../../../../core/classType'
 import { entityFilterToJson } from '../../../../core/src/filter/filter-interfaces'
+import { createEntity } from '../../dynamic-classes'
 
 @Entity('categories')
 class Category {
@@ -220,7 +222,7 @@ describe('test one', () => {
       }
     `)
   })
-  it.only('test filter in to json', async () => {
+  it('test filter in to json', async () => {
     expect(
       entityFilterToJson(repo(Task).metadata, {
         category: [cat2, cat3],
@@ -327,4 +329,75 @@ describe('test one', () => {
       ]
     `)
   })
+  it('test more than one relation', async () => {
+    const User = class {
+      id = 0
+      name = ''
+      createdTasks?: Task[]
+      updatedTasks?: Task[]
+    }
+    //[ ] - would be nice to support relations in `createClass` syntax
+    describeClass(User, Entity('user1'), {
+      id: Fields.integer(),
+      name: Fields.string(),
+      createdTasks: Relations.toMany(() => Task1),
+      updatedTasks: Relations.toMany(() => Task1, 'updateUser'),
+    })
+    const Task1 = class {
+      id = 0
+      title = ''
+      createUser: InstanceType<typeof User>
+      updateUser: InstanceType<typeof User>
+    }
+    describeClass(Task1, Entity('task1'), {
+      id: Fields.integer(),
+      title: Fields.string(),
+      createUser: Relations.toOne(() => User),
+      updateUser: Relations.toOne(() => User),
+    })
+    const [u1, u2] = await repo(User).insert(
+      [1, 2].map((x) => ({ id: x, name: 'user ' + x })),
+    )
+    const t = await repo(Task1).insert({
+      id: 11,
+      title: '',
+      createUser: u1,
+      updateUser: u2,
+    })
+
+    expect(
+      await repo(User)
+        .find({
+          include: {
+            createdTasks: true,
+            updatedTasks: true,
+          },
+        })
+        .then((x) =>
+          x.map((u) => ({
+            user: u.id,
+            created: u.createdTasks.map((t) => t.id),
+            updated: u.updatedTasks.map((t) => t.id),
+          })),
+        ),
+    ).toMatchInlineSnapshot(`
+      [
+        {
+          "created": [
+            11,
+          ],
+          "updated": [],
+          "user": 1,
+        },
+        {
+          "created": [],
+          "updated": [
+            11,
+          ],
+          "user": 2,
+        },
+      ]
+    `)
+  })
 })
+// [ ] - consider with yoni a better way to create a partial class - that still uses decorators - just would seem like another repo
