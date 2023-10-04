@@ -7,12 +7,7 @@ import type {
   OmitEB,
 } from './remult3/remult3'
 
-export interface FieldOptions<
-  entityType = any,
-  valueType = any,
-  dbNameType = string | never,
-  lazyType = boolean | never,
-> {
+export interface FieldOptions<entityType = any, valueType = any> {
   /** A human readable name for the field. Can be used to achieve a consistent caption for a field throughout the app
    * @example
    * <input placeholder={taskRepo.metadata.fields.title.caption}/>
@@ -71,7 +66,7 @@ export interface FieldOptions<
    * @Fields.string({ dbName: '"userName"'})
    * userName=''
    */
-  dbName?: dbNameType
+  dbName?: string
   /** Used or fields that are based on an sql expressions, instead of a physical table column
    * @example
    *
@@ -100,7 +95,7 @@ export interface FieldOptions<
   /** Determines if the referenced entity will be loaded immediately or on demand.
    * @see[Lazy loading of related entities](http://remult.dev/docs/lazy-loading-of-related-entities.html)
    */
-  lazy?: lazyType
+  lazy?: boolean
   /** The value type for this field */
   valueType?: any
   /** The entity type to which this field belongs */

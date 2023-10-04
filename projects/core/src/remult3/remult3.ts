@@ -487,40 +487,46 @@ export interface RelationInfo {
 //[ ] V2 - what to do about count?
 //[ ] V2 - condition? not to fetch if null etc....
 //[ ] V3 - all these fields will also appear in the where etc... in the typescript api - but we will not enforce them
+type RelationOptionsInternal<
+  fromEntity,
+  toEntity,
+  matchIdEntity,
+  optionsType extends FindOptionsBase<toEntity> = FindOptionsBase<toEntity>,
+> = {
+  fields?: {
+    //[ ] V2- consider enforcing types
+    [K in keyof toEntity]?: keyof fromEntity
+  }
+  field?: keyof matchIdEntity
+} & RelationOptionsBase<fromEntity, toEntity, optionsType> & { lazy?: never }
+
 export type RelationOptions<
   fromEntity,
   toEntity,
   matchIdEntity,
   optionsType extends FindOptionsBase<toEntity> = FindOptionsBase<toEntity>,
 > =
-  // Option 1 fields
-  | ({
-      fields?: {
-        //[ ] V2- consider enforcing types
-        [K in keyof toEntity]?: keyof fromEntity
-      }
-      field?: never
-    } & RelationOptionsBase<fromEntity, toEntity, optionsType, never>)
-  // Option 2 field
-  | ({
-      fields?: never
-      field?: keyof matchIdEntity
-    } & RelationOptionsBase<fromEntity, toEntity, optionsType, never>)
-  // Option 3 dbName
-  | ({
-      fields?: never
-      field?: never
-    } & RelationOptionsBase<fromEntity, toEntity, optionsType>)
+  | (Omit<
+      RelationOptionsInternal<fromEntity, toEntity, matchIdEntity, optionsType>,
+      'dbName' | 'fields'
+    > & { dbName?: never; fields?: never })
+  | (Omit<
+      RelationOptionsInternal<fromEntity, toEntity, matchIdEntity, optionsType>,
+      'field' | 'fields'
+    > & { field?: never; fields?: never })
+  | (Omit<
+      RelationOptionsInternal<fromEntity, toEntity, matchIdEntity, optionsType>,
+      'dbName' | 'field'
+    > & { dbName?: never; field?: never })
 
 export type RelationOptionsBase<
   fromEntity,
   toEntity,
   optionsType extends LoadOptions<toEntity> = LoadOptions<toEntity>,
-  dbNameType = string | never,
 > = {
   findOptions?: optionsType | ((entity: fromEntity) => optionsType)
   defaultIncluded?: boolean
-} & FieldOptions<fromEntity, toEntity, dbNameType, never>
+} & FieldOptions<fromEntity, toEntity>
 
 export type ObjectMembersOnly<T> = {
   [K in keyof Pick<
