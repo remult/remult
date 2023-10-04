@@ -23,6 +23,8 @@ class Category {
   id = 0
   @Fields.string()
   name = ''
+  @Relations.toMany(() => Task)
+  tasks?: Task[]
 }
 @Entity('task')
 class Task {
@@ -55,6 +57,14 @@ describe('test one', () => {
       categoryId: getEntityRef(cat1).getId().toString(),
     })
   })
+  it('test derived many', async () => {
+    expect(
+      (await repo(Category).find({ include: { tasks: true } })).map(
+        (y) => y.tasks!.length,
+      ),
+    ).toEqual([1, 0, 0])
+  })
+
   it('test id', async () => {
     expect(getEntityRef(cat1).getId().toString()).toBe('11,1')
   })
@@ -244,13 +254,25 @@ describe('test one', () => {
   it('test filter in to json', async () => {
     expect(
       entityFilterToJson(repo(Task).metadata, {
-        category: [cat2],
+        category: [cat2, cat3],
       }),
     ).toMatchInlineSnapshot(`
       {
         "categoryId.in": [
           "12,2",
+          "13,3",
         ],
+      }
+    `)
+  })
+  it('test filter in to json b', async () => {
+    expect(
+      entityFilterToJson(repo(Task).metadata, {
+        category: [cat2],
+      }),
+    ).toMatchInlineSnapshot(`
+      {
+        "categoryId": "12,2",
       }
     `)
   })
@@ -298,3 +320,5 @@ describe('test one', () => {
     expect(await r.count({ category: { '!=': [cat1, cat3] } })).toBe(2)
   })
 })
+//[ ] http://localhost:5173/api/dealContacts?contactId=007c1297-6a54-45c2-b0aa-d6b9e41adf13&contactId=007c1297-6a54-45c2-b0aa-d6b9e41adf13
+//[ ] - load shouldnt reach the data provider, limit and page shouldn't be Nan

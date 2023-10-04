@@ -473,7 +473,6 @@ export class RepositoryImplementation<entityType>
     loader: RelationLoader,
   ) {
     if (!options) options = {}
-    Remult.onFind(this._info, options)
 
     if (this.defaultFindOptions) {
       options = { ...this.defaultFindOptions, ...options }
@@ -484,6 +483,7 @@ export class RepositoryImplementation<entityType>
       delete opt.limit
     }
 
+    Remult.onFind(this._info, options)
     const rawRows = await this.edp.find(opt)
     let result = await this.loadManyToOneForManyRows(rawRows, options, loader)
     return result
@@ -647,7 +647,7 @@ export class RepositoryImplementation<entityType>
     let where: EntityFilter<any>[] = []
     let findOptions: FindOptions<any> = {}
     let findOptionsSources: FindOptions<any>[] = []
-    const options = field.options as RelationOptions<any, any, any>
+    let options = field.options as RelationOptions<any, any, any>
     if (typeof options.findOptions === 'function') {
       findOptionsSources.push(options.findOptions(row))
     } else if (typeof options.findOptions === 'object')
@@ -665,6 +665,41 @@ export class RepositoryImplementation<entityType>
       ] as (keyof FindOptions<any>)[]) {
         //@ts-ignore
         if (source[key]) findOptions[key] = source[key]
+      }
+    }
+    if (rel.type === 'toMany' && !options.field && !options.fields) {
+      for (const fieldInOtherRepo of otherRepo.fields.toArray()) {
+        if (!options.field && !options.fields) {
+          const reverseRel = getRelationInfo(fieldInOtherRepo.options)
+          const relOp = fieldInOtherRepo.options as RelationOptions<
+            any,
+            any,
+            any
+          >
+          if (reverseRel)
+            if (reverseRel.toType() === this.entity)
+              if (reverseRel.type === 'reference') {
+                options = { ...findOptions, field: fieldInOtherRepo.key }
+              } else if (reverseRel.type === 'toOne') {
+                if (relOp.field) {
+                  options = { ...options, field: relOp.field }
+                } else if (relOp.fields) {
+                  let fields = {}
+                  for (const key in relOp.fields) {
+                    if (
+                      Object.prototype.hasOwnProperty.call(relOp.fields, key)
+                    ) {
+                      const keyInMyTable = relOp.fields[key]
+                      fields[keyInMyTable] = key
+                    }
+                  }
+                  options = { ...options, fields }
+                } else
+                  throw Error(
+                    `Could not infer fields for the "toMany" relation named:${fieldInOtherRepo.key}. Please specify field/fields`,
+                  )
+              }
+        }
       }
     }
 
