@@ -401,3 +401,5 @@ describe('test one', () => {
   })
 })
 // [ ] - consider with yoni a better way to create a partial class - that still uses decorators - just would seem like another repo
+//[ ] - give exception on invalid fields
+//[ ]  - remove lazy, and restrict dbname with field and fields
