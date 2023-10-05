@@ -4,7 +4,7 @@
   "version": "0.23.0-exp.12",
   "scripts": {
     "format": "prettier \"./projects/core/**\" --write",
-    "test": "vitest --ui",
+    "test": "vitest --ui --coverage",
     "build-external-api": "tsc -w -p projects/core/tsconfig.build.json --emitDeclarationOnly --outDir misc/dts-compare",
     "release-core": "npm run build-core && npm run patch-versions",
     "release-core-experimental": "npm run build-core && npm run patch-versions-experimental && cd dist/remult && npm publish  --access public --tag exp",

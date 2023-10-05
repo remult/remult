@@ -8,6 +8,7 @@ import {
   InMemoryDataProvider,
   Relations,
   Remult,
+  describeClass,
   remult,
 } from '../../../core'
 import type { ClassType } from '../../../core/classType'
@@ -630,7 +631,40 @@ describe('test relations', () => {
     )
     expect(c.company == prevComp).toBe(true)
   })
+  it('fails with error field', async () => {
+    const MyTask = class {
+      id = 0
+      category: Category
+    }
+    describeClass(MyTask, Entity('myTask'), {
+      id: Fields.integer(),
+      category: Relations.toOne(() => Category, 'asdf'),
+    })
+    await r(MyTask).insert({ id: 1 })
+    await expect(() =>
+      r(MyTask).find({ include: { category: true } }),
+    ).rejects.toThrowErrorMatchingInlineSnapshot(
+      '"Error for relation: \\"category\\" to \\"categories\\": Field \\"asdf\\" was not found in \\"myTask\\"."',
+    )
+  })
+  it('fails when cant anticipate many', async () => {
+    const MyTask = class {
+      id = 0
+      categories: Category[]
+    }
+    describeClass(MyTask, Entity('asdf'), {
+      id: Fields.integer(),
+      categories: Relations.toMany(() => Category),
+    })
+    await r(MyTask).insert({ id: 1 })
+    await expect(() =>
+      r(MyTask).find({ include: { categories: true } }),
+    ).rejects.toThrowErrorMatchingInlineSnapshot(
+      '"Error for relation: \\"categories\\" to \\"categories\\": No matching field found on target. Please specify field/fields"',
+    )
+  })
 })
+
 it('test new id definition', async () => {
   const old = createEntity(
     'old',

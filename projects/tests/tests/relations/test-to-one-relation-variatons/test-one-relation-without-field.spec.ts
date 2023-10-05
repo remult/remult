@@ -147,7 +147,6 @@ describe('test one', () => {
   })
   it('test repo save b', async () => {
     let t = await repo(Task).findFirst()
-    debugger
     await repo(Task).save({ ...t, title: 'tt' })
     await repo(Task)
       .findFirst(

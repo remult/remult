@@ -667,9 +667,17 @@ export class RepositoryImplementation<entityType>
         if (source[key]) findOptions[key] = source[key]
       }
     }
-    if (rel.type === 'toMany' && !options.field && !options.fields) {
+    function buildError(what: string) {
+      return Error(
+        `Error for relation: "${field.key}" to "${otherRepo.metadata.key}": ` +
+          what,
+      )
+    }
+
+    let hasFields = () => options.field || options.fields
+    if (rel.type === 'toMany' && !hasFields()) {
       for (const fieldInOtherRepo of otherRepo.fields.toArray()) {
-        if (!options.field && !options.fields) {
+        if (!hasFields()) {
           const reverseRel = getRelationInfo(fieldInOtherRepo.options)
           const relOp = fieldInOtherRepo.options as RelationOptions<
             any,
@@ -694,21 +702,35 @@ export class RepositoryImplementation<entityType>
                     }
                   }
                   options = { ...options, fields }
-                } else
-                  throw Error(
-                    `Could not infer fields for the "toMany" relation named:${fieldInOtherRepo.key}. Please specify field/fields`,
-                  )
+                }
               }
         }
       }
+      if (!hasFields())
+        throw buildError(
+          `No matching field found on target. Please specify field/fields`,
+        )
     }
 
+    function requireField(
+      field: string | number | symbol,
+      meta: EntityMetadata,
+    ) {
+      const result = meta.fields.find(field as string)
+      if (!result)
+        throw buildError(
+          `Field "${field as string}" was not found in "${meta.key}".`,
+        )
+      return result
+    }
     if (options.field) {
       if (rel.type === 'toOne') {
+        requireField(options.field as string, this.metadata)
         where.push(
           otherRepo.metadata.idMetadata.getIdFilter(row[options.field]),
         )
       } else {
+        requireField(options.field as string, otherRepo.metadata)
         where.push({
           [options.field]: this.metadata.idMetadata.getId(row),
         })
@@ -716,6 +738,9 @@ export class RepositoryImplementation<entityType>
     } else if (options.fields) {
       for (const key in options.fields) {
         if (Object.prototype.hasOwnProperty.call(options.fields, key)) {
+          requireField(options.fields[key], this.metadata)
+          requireField(key, otherRepo.metadata)
+
           where.push({ [key]: row[options.fields[key]] })
         }
       }
@@ -723,7 +748,9 @@ export class RepositoryImplementation<entityType>
       let val =
         rel.type === 'reference'
           ? (
-              getEntityRef(row).fields.find(field.key) as IdFieldRef<any, any>
+              getEntityRef(row).fields.find(
+                requireField(field.key, this.metadata),
+              ) as IdFieldRef<any, any>
             ).getId()
           : row[field.key]
       if (val === null) returnNull = true

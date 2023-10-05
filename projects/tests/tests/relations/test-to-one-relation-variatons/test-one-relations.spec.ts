@@ -400,7 +400,7 @@ describe('test one', () => {
     `)
   })
 })
-//p1 give exception on invalid fields
+
 //p1 remove lazy, and restrict dbname with field and fields - currently JY was able to do it with never, I want to figure out a better solution
 //p1 make lazy only on field and not in Field Options
 //p1 http://localhost:5173/api/dealContacts?contactId=007c1297-6a54-45c2-b0aa-d6b9e41adf13&contactId=007c1297-6a54-45c2-b0aa-d6b9e41adf13
