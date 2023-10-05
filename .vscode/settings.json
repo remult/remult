@@ -38,5 +38,41 @@
     "websql"
   ],
   "typescript.tsdk": "node_modules\\typescript\\lib",
-  "cSpell.ignoreWords": ["allowapicrud"]
+  "cSpell.ignoreWords": ["allowapicrud"],
+  "todo-tree.highlights.customHighlight": {
+    "BUG": {
+      "icon": "bug"
+    },
+    "HACK": {
+      "icon": "tools"
+    },
+    "FIXME": {
+      "icon": "flame"
+    },
+    "XXX": {
+      "icon": "x"
+    },
+    "[ ]": {
+      "icon": "issue-draft"
+    },
+    "[x]": {
+      "icon": "issue-closed"
+    },
+    "p1": {
+      "icon": "alert-fill",
+      "iconColour": "orange"
+    }
+  },
+  "todo-tree.general.tags": [
+    "BUG",
+    "HACK",
+    "FIXME",
+    "TODO",
+    "XXX",
+    "[ ]",
+    "[x]",
+    "p1",
+    "p1.5",
+    "p2"
+  ]
 }
