@@ -1,15 +1,15 @@
 import type { ErrorInfo } from '../..'
-import type { ClassType } from '../../classType'
-import type { entityEventListener } from '../__EntityValueProvider'
-import type { FieldMetadata } from '../column-interfaces'
-import type { EntityOptions } from '../entity'
+import type { ClassType } from '../../classType.js'
+import type { entityEventListener } from '../__EntityValueProvider.js'
+import type { FieldMetadata } from '../column-interfaces.js'
+import type { EntityOptions } from '../entity.js'
 import type {
   LiveQueryChange,
   SubscriptionListener,
   Unsubscribe,
-} from '../live-query/SubscriptionChannel'
-import type { SortSegment } from '../sort'
-import type { EntityBase } from './RepositoryImplementation'
+} from '../live-query/SubscriptionChannel.js'
+import type { SortSegment } from '../sort.js'
+import type { EntityBase } from './RepositoryImplementation.js'
 
 export interface EntityRef<entityType> extends Subscribable {
   hasErrors(): boolean

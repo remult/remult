@@ -6,7 +6,7 @@ import type {
   PreviewData,
 } from 'next'
 import type { ParsedUrlQuery } from 'querystring'
-import type { ResponseRequiredForSSE } from './SseSubscriptionServer'
+import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
 import type {
   GenericResponse,
   RemultServerCore,

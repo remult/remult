@@ -1,5 +1,5 @@
-import type { CompoundIdField } from './CompoundIdField'
-import { Filter } from './filter/filter-interfaces'
+import type { CompoundIdField } from './CompoundIdField.js'
+import { Filter } from './filter/filter-interfaces.js'
 
 export function resultCompoundIdFilter(
   idField: CompoundIdField,

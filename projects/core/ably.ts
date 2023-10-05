@@ -1,9 +1,9 @@
-import type * as Ably from '../../node_modules/ably'
+import type * as Ably from 'ably/ably'
 import type {
   SubscriptionClient,
   SubscriptionClientConnection,
-} from './src/live-query/SubscriptionChannel'
-import type { SubscriptionServer } from './src/live-query/SubscriptionServer'
+} from './src/live-query/SubscriptionChannel.js'
+import type { SubscriptionServer } from './src/live-query/SubscriptionServer.js'
 
 export class AblySubscriptionClient implements SubscriptionClient {
   constructor(private ably: Ably.Types.RealtimePromise) {}

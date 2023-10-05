@@ -4,8 +4,8 @@ import type {
   RemultServerCore,
   RemultServerImplementation,
   RemultServerOptions,
-} from './server/expressBridge'
-import { createRemultServer } from './server/index'
+} from './server/expressBridge.js'
+import { createRemultServer } from './server/index.js'
 
 export function remultExpress(
   options?: RemultServerOptions<express.Request> & {

@@ -1,33 +1,33 @@
-import type { ClassType } from '../classType'
-import type { DataProvider } from './data-interfaces'
-import { RestDataProvider } from './data-providers/rest-data-provider'
-import { LiveQueryClient } from './live-query/LiveQueryClient'
-import { SseSubscriptionClient } from './live-query/SseSubscriptionClient'
-import { RemultProxy, remult } from './remult-proxy'
-import { RepositoryImplementation } from './remult3/RepositoryImplementation'
+import type { ClassType } from '../classType.js'
+import type { DataProvider } from './data-interfaces.js'
+import { RestDataProvider } from './data-providers/rest-data-provider.js'
+import { LiveQueryClient } from './live-query/LiveQueryClient.js'
+import { SseSubscriptionClient } from './live-query/SseSubscriptionClient.js'
+import { RemultProxy, remult } from './remult-proxy.js'
+import { RepositoryImplementation } from './remult3/RepositoryImplementation.js'
 import type {
   EntityMetadata,
   EntityRef,
   FindOptions,
   Repository,
-} from './remult3/remult3'
-import type { Action } from './server-action'
-import { actionInfo, serverActionField } from './server-action-info'
+} from './remult3/remult3.js'
+import type { Action } from './server-action.js'
+import { actionInfo, serverActionField } from './server-action-info.js'
 
-import type { ExternalHttpProvider } from './buildRestDataProvider'
+import type { ExternalHttpProvider } from './buildRestDataProvider.js'
 import {
   buildRestDataProvider,
   isExternalHttpProvider,
-} from './buildRestDataProvider'
+} from './buildRestDataProvider.js'
 import type {
   SubscriptionClient,
   Unsubscribe,
-} from './live-query/SubscriptionChannel'
+} from './live-query/SubscriptionChannel.js'
 import type {
   LiveQueryChangesListener,
   LiveQueryStorage,
   SubscriptionServer,
-} from './live-query/SubscriptionServer'
+} from './live-query/SubscriptionServer.js'
 
 export class RemultAsyncLocalStorage {
   static enable() {

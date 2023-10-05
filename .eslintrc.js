@@ -24,9 +24,10 @@ module.exports = {
     ecmaVersion: 'latest',
     sourceType: 'module',
   },
-  plugins: ['@typescript-eslint'],
+  plugins: ['@typescript-eslint',"file-extension-in-import-ts"],
   rules: {
     '@typescript-eslint/consistent-type-imports': 'error',
     //    '@typescript-eslint/no-unused-vars': 'error',
+    "file-extension-in-import-ts/file-extension-in-import-ts": "error"
   },
 }

@@ -1,17 +1,17 @@
-import { buildRestDataProvider } from '../buildRestDataProvider'
-import type { ApiClient } from '../context'
-import { RestDataProvider } from '../data-providers/rest-data-provider'
-import type { RepositoryImplementation } from '../remult3/RepositoryImplementation'
-import type { FindOptions, LiveQueryChangeInfo } from '../remult3/remult3'
+import { buildRestDataProvider } from '../buildRestDataProvider.js'
+import type { ApiClient } from '../context.js'
+import { RestDataProvider } from '../data-providers/rest-data-provider.js'
+import type { RepositoryImplementation } from '../remult3/RepositoryImplementation.js'
+import type { FindOptions, LiveQueryChangeInfo } from '../remult3/remult3.js'
 import type {
   SubscriptionClientConnection,
   SubscriptionListener,
   Unsubscribe,
-} from './SubscriptionChannel'
+} from './SubscriptionChannel.js'
 import {
   liveQueryKeepAliveRoute,
   LiveQuerySubscriber,
-} from './SubscriptionChannel'
+} from './SubscriptionChannel.js'
 /* @internal*/
 export class LiveQueryClient {
   wrapMessageHandling(handleMessage) {
@@ -200,7 +200,7 @@ export class LiveQueryClient {
         }
         if (ids.length > 0) {
           let p = this.apiProvider()
-          let { actionInfo } = await import('../server-action-info')
+          let { actionInfo } = await import('../server-action-info.js')
           const invalidIds: string[] = await this.runPromise(
             await actionInfo.runActionWithoutBlockingUI(() =>
               buildRestDataProvider(p.httpClient).post(

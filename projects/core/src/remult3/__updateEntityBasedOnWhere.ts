@@ -1,5 +1,5 @@
-import { Filter } from '../filter/filter-interfaces'
-import type { EntityFilter, EntityMetadata } from './remult3'
+import { Filter } from '../filter/filter-interfaces.js'
+import type { EntityFilter, EntityMetadata } from './remult3.js'
 
 export function __updateEntityBasedOnWhere<T>(
   entityDefs: EntityMetadata<T>,

@@ -2,15 +2,15 @@ import type {
   RemultServer,
   RemultServerOptions,
   ServerCoreOptions,
-} from './expressBridge'
-import { createRemultServerCore } from './expressBridge'
-import { initAsyncHooks } from './initAsyncHooks'
-export { SseSubscriptionServer } from '../SseSubscriptionServer'
-export { DataProviderLiveQueryStorage } from '../live-query/data-provider-live-query-storage'
+} from './expressBridge.js'
+import { createRemultServerCore } from './expressBridge.js'
+import { initAsyncHooks } from './initAsyncHooks.js'
+export { SseSubscriptionServer } from '../SseSubscriptionServer.js'
+export { DataProviderLiveQueryStorage } from '../live-query/data-provider-live-query-storage.js'
 export {
   JsonEntityFileStorage,
   JsonFileDataProvider,
-} from './JsonEntityFileStorage'
+} from './JsonEntityFileStorage.js'
 export {
   GenericRequestHandler,
   GenericRequestInfo,
@@ -23,7 +23,7 @@ export {
   RemultServerOptions,
   SpecificRoute,
   queuedJobInfo,
-} from './expressBridge'
+} from './expressBridge.js'
 export function createRemultServer<RequestType>(
   options: RemultServerOptions<RequestType>,
   serverCoreOptions?: ServerCoreOptions<RequestType>,

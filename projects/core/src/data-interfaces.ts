@@ -1,6 +1,6 @@
-import type { Filter } from './filter/filter-interfaces'
-import type { EntityMetadata, OmitEB } from './remult3/remult3'
-import { Sort } from './sort'
+import type { Filter } from './filter/filter-interfaces.js'
+import type { EntityMetadata, OmitEB } from './remult3/remult3.js'
+import { Sort } from './sort.js'
 
 export interface DataProvider {
   getEntityDataProvider(entity: EntityMetadata): EntityDataProvider

@@ -1,6 +1,6 @@
-import type { ClassType } from '../../classType'
-import type { EntityOptionsFactory } from './RepositoryImplementation'
-import type { EntityRef } from './remult3'
+import type { ClassType } from '../../classType.js'
+import type { EntityOptionsFactory } from './RepositoryImplementation.js'
+import type { EntityRef } from './remult3.js'
 
 export function getEntityRef<entityType>(
   entity: entityType,

@@ -9,16 +9,16 @@ import type {
   Remult,
 } from '.'
 import { CompoundIdField, Filter } from '.'
-import type { EntityDbNamesBase } from './src/filter/filter-consumer-bridge-to-sql-request'
-import { dbNamesOf } from './src/filter/filter-consumer-bridge-to-sql-request'
-import type { FilterConsumer } from './src/filter/filter-interfaces'
-import { remult as remultContext } from './src/remult-proxy'
+import type { EntityDbNamesBase } from './src/filter/filter-consumer-bridge-to-sql-request.js'
+import { dbNamesOf } from './src/filter/filter-consumer-bridge-to-sql-request.js'
+import type { FilterConsumer } from './src/filter/filter-interfaces.js'
+import { remult as remultContext } from './src/remult-proxy.js'
 import type {
   RepositoryImplementation,
   RepositoryOverloads,
-} from './src/remult3/RepositoryImplementation'
-import { getRepository } from './src/remult3/RepositoryImplementation'
-import { resultCompoundIdFilter } from './src/resultCompoundIdFilter'
+} from './src/remult3/RepositoryImplementation.js'
+import { getRepository } from './src/remult3/RepositoryImplementation.js'
+import { resultCompoundIdFilter } from './src/resultCompoundIdFilter.js'
 
 export class MongoDataProvider implements DataProvider {
   constructor(

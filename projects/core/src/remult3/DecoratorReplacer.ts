@@ -1,4 +1,4 @@
-import type { OmitEB } from './remult3'
+import type { OmitEB } from './remult3.js'
 
 type Decorator<T = any> = (a: T, b: string, c?: any) => void
 type Decorators<T> = T extends new (...args: any[]) => infer R

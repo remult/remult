@@ -1,6 +1,6 @@
-import { CompoundIdField } from './CompoundIdField'
-import type { FieldMetadata } from './column-interfaces'
-import type { EntityMetadata, EntityOrderBy } from './remult3/remult3'
+import { CompoundIdField } from './CompoundIdField.js'
+import type { FieldMetadata } from './column-interfaces.js'
+import type { EntityMetadata, EntityOrderBy } from './remult3/remult3.js'
 export class Sort {
   toEntityOrderBy(): EntityOrderBy<any> {
     let result: any = {}

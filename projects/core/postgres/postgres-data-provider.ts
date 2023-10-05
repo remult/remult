@@ -1,14 +1,14 @@
 import type { ClientBase, PoolConfig, QueryResult } from 'pg'
 import { Pool } from 'pg'
-import { Remult } from '../src/context'
-import { SqlDatabase } from '../src/data-providers/sql-database'
-import type { EntityMetadata } from '../src/remult3/remult3'
+import { Remult } from '../src/context.js'
+import { SqlDatabase } from '../src/data-providers/sql-database.js'
+import type { EntityMetadata } from '../src/remult3/remult3.js'
 import type {
   SqlCommand,
   SqlImplementation,
   SqlResult,
-} from '../src/sql-command'
-import { PostgresSchemaBuilder } from './schema-builder'
+} from '../src/sql-command.js'
+import { PostgresSchemaBuilder } from './schema-builder.js'
 
 export interface PostgresPool extends PostgresCommandSource {
   connect(): Promise<PostgresClient>
@@ -142,11 +142,11 @@ export async function createPostgresDataProvider(options?: {
 export async function preparePostgresQueueStorage(sql: SqlDatabase) {
   let c = new Remult()
   c.dataProvider = sql
-  let JobsInQueueEntity = (await import('../server/expressBridge'))
+  let JobsInQueueEntity = (await import('../server/expressBridge.js'))
     .JobsInQueueEntity
   let e = c.repo(JobsInQueueEntity)
   await sql.ensureSchema([e.metadata])
-  return new (await import('../server/expressBridge')).EntityQueueStorage(
+  return new (await import('../server/expressBridge.js')).EntityQueueStorage(
     c.repo(JobsInQueueEntity),
   )
 }

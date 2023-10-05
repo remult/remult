@@ -1,8 +1,8 @@
-import type { FieldMetadata } from '../column-interfaces'
-import type { Remult } from '../context'
-import type { EntityFilter, EntityMetadata } from '../remult3/remult3'
+import type { FieldMetadata } from '../column-interfaces.js'
+import type { Remult } from '../context.js'
+import type { EntityFilter, EntityMetadata } from '../remult3/remult3.js'
 
-import { getEntityRef, getEntitySettings } from '../remult3/getEntityRef'
+import { getEntityRef, getEntitySettings } from '../remult3/getEntityRef.js'
 
 export class Filter {
   constructor(private apply?: (add: FilterConsumer) => void) {

@@ -1,4 +1,4 @@
-import type { ClassType } from '../classType'
+import type { ClassType } from '../classType.js'
 import type {
   Allowed,
   AllowedForInstance,
@@ -7,16 +7,16 @@ import type {
   Remult,
   RemultContext,
   UserInfo,
-} from './context'
-import type { DataProvider } from './data-interfaces'
-import type { LiveQueryClient } from './live-query/LiveQueryClient'
+} from './context.js'
+import type { DataProvider } from './data-interfaces.js'
+import type { LiveQueryClient } from './live-query/LiveQueryClient.js'
 import type {
   LiveQueryChangesListener,
   LiveQueryStorage,
   SubscriptionServer,
-} from './live-query/SubscriptionServer'
-import type { Repository } from './remult3/remult3'
-import type { RepositoryImplementation } from './remult3/RepositoryImplementation'
+} from './live-query/SubscriptionServer.js'
+import type { Repository } from './remult3/remult3.js'
+import type { RepositoryImplementation } from './remult3/RepositoryImplementation.js'
 
 let defaultRemult: Remult
 

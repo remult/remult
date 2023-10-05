@@ -1,12 +1,12 @@
-import type { Remult } from '../context'
-import { allEntities, setControllerSettings } from '../context'
-import type { EntityOptions } from '../entity'
-import type { customFilterInfo } from '../filter/filter-interfaces'
-import { entityInfo, entityInfo_key, getEntitySettings } from './getEntityRef'
+import type { Remult } from '../context.js'
+import { allEntities, setControllerSettings } from '../context.js'
+import type { EntityOptions } from '../entity.js'
+import type { customFilterInfo } from '../filter/filter-interfaces.js'
+import { entityInfo, entityInfo_key, getEntitySettings } from './getEntityRef.js'
 import type {
   ClassDecoratorContextStub,
   EntityOptionsFactory,
-} from './RepositoryImplementation'
+} from './RepositoryImplementation.js'
 
 //[ ] YONI - in Typescript 5 I do get the name of the class, what would we like to change because of that?
 /**Decorates classes that should be used as entities.

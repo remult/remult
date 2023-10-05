@@ -1,5 +1,5 @@
 import type { Handle, RequestEvent } from '@sveltejs/kit'
-import type { ResponseRequiredForSSE } from './SseSubscriptionServer'
+import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
 import type {
   GenericResponse,
   RemultServerCore,

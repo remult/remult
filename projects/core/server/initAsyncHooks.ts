@@ -1,5 +1,5 @@
 import { AsyncLocalStorage } from 'async_hooks'
-import { RemultAsyncLocalStorage } from '../src/context'
+import { RemultAsyncLocalStorage } from '../src/context.js'
 
 let init = false
 

@@ -1,10 +1,10 @@
-import type { ClassType } from '../classType'
+import type { ClassType } from '../classType.js'
 import type {
   FieldMetadata,
   FieldOptions,
   ValueConverter,
-} from './column-interfaces'
-import type { EntityFilter } from './remult3/remult3'
+} from './column-interfaces.js'
+import type { EntityFilter } from './remult3/remult3.js'
 
 export class CompoundIdField implements FieldMetadata<string> {
   fields: FieldMetadata[]

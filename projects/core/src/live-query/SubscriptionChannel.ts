@@ -1,9 +1,9 @@
 import { v4 as uuid } from 'uuid'
-import type { Remult } from '../context'
-import { Sort } from '../sort'
-import { remult as defaultRemult } from '../remult-proxy'
-import type { FindOptions, LiveQueryChangeInfo } from '../remult3/remult3'
-import type { RepositoryImplementation } from '../remult3/RepositoryImplementation'
+import type { Remult } from '../context.js'
+import { Sort } from '../sort.js'
+import { remult as defaultRemult } from '../remult-proxy.js'
+import type { FindOptions, LiveQueryChangeInfo } from '../remult3/remult3.js'
+import type { RepositoryImplementation } from '../remult3/RepositoryImplementation.js'
 
 export const streamUrl = 'stream'
 //@internal

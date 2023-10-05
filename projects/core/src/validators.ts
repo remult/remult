@@ -1,5 +1,5 @@
-import { isBackend } from './context'
-import type { FieldRef } from './remult3/remult3'
+import { isBackend } from './context.js'
+import type { FieldRef } from './remult3/remult3.js'
 
 export class Validators {
   static required = Object.assign(

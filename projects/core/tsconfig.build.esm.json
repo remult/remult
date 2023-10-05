@@ -3,6 +3,7 @@
   "compilerOptions": {
     "outDir": "../../dist/remult/esm",
     "module": "ESNext",
-    "target": "ESNext"
+    "target": "ESNext",
+    "declaration": true
   }
 }

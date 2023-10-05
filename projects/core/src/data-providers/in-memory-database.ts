@@ -1,7 +1,7 @@
-import type { __RowsOfDataForTesting } from '../__RowsOfDataForTesting'
-import type { DataProvider, EntityDataProvider } from '../data-interfaces'
-import type { EntityMetadata } from '../remult3/remult3'
-import { ArrayEntityDataProvider } from './array-entity-data-provider'
+import type { __RowsOfDataForTesting } from '../__RowsOfDataForTesting.js'
+import type { DataProvider, EntityDataProvider } from '../data-interfaces.js'
+import type { EntityMetadata } from '../remult3/remult3.js'
+import { ArrayEntityDataProvider } from './array-entity-data-provider.js'
 
 export class InMemoryDataProvider
   implements DataProvider, __RowsOfDataForTesting

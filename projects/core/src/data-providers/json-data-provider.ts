@@ -2,10 +2,10 @@ import type {
   DataProvider,
   EntityDataProvider,
   EntityDataProviderFindOptions,
-} from '../data-interfaces'
-import type { Filter } from '../filter/filter-interfaces'
-import type { EntityMetadata } from '../remult3/remult3'
-import { ArrayEntityDataProvider } from './array-entity-data-provider'
+} from '../data-interfaces.js'
+import type { Filter } from '../filter/filter-interfaces.js'
+import type { EntityMetadata } from '../remult3/remult3.js'
+import { ArrayEntityDataProvider } from './array-entity-data-provider.js'
 
 export interface JsonEntityStorage {
   getItem(entityDbName: string): string | null

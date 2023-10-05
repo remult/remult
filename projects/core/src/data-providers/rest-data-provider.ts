@@ -3,14 +3,14 @@ import type {
   EntityDataProvider,
   EntityDataProviderFindOptions,
   RestDataProviderHttpProvider,
-} from '../data-interfaces'
+} from '../data-interfaces.js'
 
-import { UrlBuilder } from '../../urlBuilder'
-import { buildRestDataProvider, retry } from '../buildRestDataProvider'
-import type { ApiClient } from '../context'
-import { customUrlToken, Filter } from '../filter/filter-interfaces'
-import type { EntityMetadata, FindOptions } from '../remult3/remult3'
-import { actionInfo } from '../server-action-info'
+import { UrlBuilder } from '../../urlBuilder.js'
+import { buildRestDataProvider, retry } from '../buildRestDataProvider.js'
+import type { ApiClient } from '../context.js'
+import { customUrlToken, Filter } from '../filter/filter-interfaces.js'
+import type { EntityMetadata, FindOptions } from '../remult3/remult3.js'
+import { actionInfo } from '../server-action-info.js'
 
 export class RestDataProvider implements DataProvider {
   constructor(private apiProvider: () => ApiClient) {}
