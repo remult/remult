@@ -497,7 +497,7 @@ export type RelationOptions<
     //[ ] V2- consider enforcing types
     [K in keyof toEntity]?: keyof fromEntity
   }
-  field?: keyof matchIdEntity
+  field?: keyof matchIdEntity //p1 - consider adjusting it to the overloads
 } & RelationOptionsBase<fromEntity, toEntity, optionsType>
 
 export type RelationOptionsBase<
@@ -507,7 +507,7 @@ export type RelationOptionsBase<
 > = {
   findOptions?: optionsType | ((entity: fromEntity) => optionsType)
   defaultIncluded?: boolean
-} & FieldOptions<fromEntity, toEntity>
+} & Pick<FieldOptions, 'caption'>
 
 export type ObjectMembersOnly<T> = {
   [K in keyof Pick<
@@ -543,3 +543,25 @@ export type RepositoryRelations<entityType> = {
 export declare type EntityIdFields<entityType> = {
   [Properties in keyof Partial<OmitEB<entityType>>]?: true
 }
+
+export interface ClassFieldDecoratorContextStub<entityType, valueType> {
+  readonly access: {
+    set(object: entityType, value: valueType): void
+  }
+  readonly name: string
+}
+export interface ClassDecoratorContextStub<
+  Class extends new (...args: any) => any = new (...args: any) => any,
+> {
+  readonly kind: 'class'
+  readonly name: string | undefined
+  addInitializer(initializer: (this: Class) => void): void
+}
+
+export type ClassFieldDecorator<entityType, valueType> = (
+  target: any,
+  context:
+    | string
+    | ClassFieldDecoratorContextStub<entityType, valueType | undefined>,
+  c?: any,
+) => void

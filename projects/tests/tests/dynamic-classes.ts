@@ -4,19 +4,11 @@ import {
   type OmitEB,
   type EntityOptions,
   Fields,
+  type MemberDecorator,
 } from '../../core'
 import type { ClassType } from '../../core/classType'
-import type { ClassFieldDecoratorContextStub } from '../../core/src/remult3/RepositoryImplementation'
 
-export type decoratorReturnType<entityType, valueType> = (
-  target: any,
-  context:
-    | string
-    | ClassFieldDecoratorContextStub<entityType, valueType | undefined>,
-  c?: any,
-) => void
-
-export declare type InferMemberType<type> = type extends decoratorReturnType<
+export declare type InferMemberType<type> = type extends MemberDecorator<
   any,
   infer R
 >

@@ -35,6 +35,8 @@ export {
   MembersToInclude,
   RepositoryRelations,
   EntityIdFields,
+  ClassFieldDecorator as MemberDecorator,
+  ClassFieldDecoratorContextStub,
 } from './src/remult3/remult3'
 export {
   EntityBase,

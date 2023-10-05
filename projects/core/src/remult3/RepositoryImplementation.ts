@@ -2362,20 +2362,6 @@ export function getValueList<T>(
   return ValueListInfo.get<T>(type as ClassType<T>).getValues()
 }
 
-export interface ClassFieldDecoratorContextStub<entityType, valueType> {
-  readonly access: {
-    set(object: entityType, value: valueType): void
-  }
-  readonly name: string
-}
-export interface ClassDecoratorContextStub<
-  Class extends new (...args: any) => any = new (...args: any) => any,
-> {
-  readonly kind: 'class'
-  readonly name: string | undefined
-  addInitializer(initializer: (this: Class) => void): void
-}
-
 export const storableMember = Symbol('storableMember')
 export function buildOptions<entityType = any, valueType = any>(
   options: (

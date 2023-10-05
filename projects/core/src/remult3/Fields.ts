@@ -7,15 +7,11 @@ import type {
   FindOptions,
   RelationInfo,
   RelationOptions,
-  RelationOptionsBase,
+  ClassFieldDecorator,
+  ClassFieldDecoratorContextStub,
 } from './remult3'
 import { ValueConverters } from '../valueConverters'
-import { getEntityRef } from './getEntityRef'
-import {
-  type ClassFieldDecoratorContextStub,
-  buildOptions,
-  columnsOfType,
-} from './RepositoryImplementation'
+import { buildOptions, columnsOfType } from './RepositoryImplementation'
 import { relationInfoMember } from './relationInfoMember'
 import type { columnInfo } from './columnInfo'
 
@@ -28,13 +24,7 @@ export class Fields {
       | FieldOptions<entityType, valueType>
       | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void)
     )[]
-  ): (
-    target: any,
-    context:
-      | string
-      | ClassFieldDecoratorContextStub<entityType, valueType | undefined>,
-    c?: any,
-  ) => void {
+  ): ClassFieldDecorator<entityType, valueType | undefined> {
     return Field(undefined, ...options)
   }
   static json<entityType = any, valueType = any>(
@@ -42,13 +32,7 @@ export class Fields {
       | FieldOptions<entityType, valueType>
       | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void)
     )[]
-  ): (
-    target: any,
-    context:
-      | string
-      | ClassFieldDecoratorContextStub<entityType, valueType | undefined>,
-    c?: any,
-  ) => void {
+  ): ClassFieldDecorator<entityType, valueType | undefined> {
     return Field(
       undefined,
       {
@@ -64,13 +48,7 @@ export class Fields {
       | FieldOptions<entityType, Date>
       | ((options: FieldOptions<entityType, Date>, remult: Remult) => void)
     )[]
-  ): (
-    target: any,
-    context:
-      | string
-      | ClassFieldDecoratorContextStub<entityType, Date | undefined>,
-    c?: any,
-  ) => void {
+  ): ClassFieldDecorator<entityType, Date | undefined> {
     return Field(
       () => Date,
       {
@@ -84,13 +62,7 @@ export class Fields {
       | FieldOptions<entityType, Date>
       | ((options: FieldOptions<entityType, Date>, remult: Remult) => void)
     )[]
-  ): (
-    target: any,
-    context:
-      | string
-      | ClassFieldDecoratorContextStub<entityType, Date | undefined>,
-    c?: any,
-  ) => void {
+  ): ClassFieldDecorator<entityType, Date | undefined> {
     return Field(() => Date, ...options)
   }
   static integer<entityType = any>(
@@ -98,13 +70,7 @@ export class Fields {
       | FieldOptions<entityType, Number>
       | ((options: FieldOptions<entityType, Number>, remult: Remult) => void)
     )[]
-  ): (
-    target: any,
-    context:
-      | string
-      | ClassFieldDecoratorContextStub<entityType, number | undefined>,
-    c?: any,
-  ) => void {
+  ): ClassFieldDecorator<entityType, number | undefined> {
     return Field(
       () => Number,
       {
@@ -118,13 +84,7 @@ export class Fields {
       | FieldOptions<entityType, Number>
       | ((options: FieldOptions<entityType, Number>, remult: Remult) => void)
     )[]
-  ): (
-    target: any,
-    context:
-      | string
-      | ClassFieldDecoratorContextStub<entityType, number | undefined>,
-    c?: any,
-  ) => void {
+  ): ClassFieldDecorator<entityType, number | undefined> {
     return Field(
       () => Number,
       {
@@ -144,13 +104,7 @@ export class Fields {
       | FieldOptions<entityType, Number>
       | ((options: FieldOptions<entityType, Number>, remult: Remult) => void)
     )[]
-  ): (
-    target: any,
-    context:
-      | string
-      | ClassFieldDecoratorContextStub<entityType, number | undefined>,
-    c?: any,
-  ) => void {
+  ): ClassFieldDecorator<entityType, number | undefined> {
     return Field(() => Number, ...options)
   }
   static createdAt<entityType = any>(
@@ -158,13 +112,7 @@ export class Fields {
       | FieldOptions<entityType, Date>
       | ((options: FieldOptions<entityType, Date>, remult: Remult) => void)
     )[]
-  ): (
-    target: any,
-    context:
-      | string
-      | ClassFieldDecoratorContextStub<entityType, Date | undefined>,
-    c?: any,
-  ) => void {
+  ): ClassFieldDecorator<entityType, Date | undefined> {
     return Field(
       () => Date,
       {
@@ -181,13 +129,7 @@ export class Fields {
       | FieldOptions<entityType, Date>
       | ((options: FieldOptions<entityType, Date>, remult: Remult) => void)
     )[]
-  ): (
-    target: any,
-    context:
-      | string
-      | ClassFieldDecoratorContextStub<entityType, Date | undefined>,
-    c?: any,
-  ) => void {
+  ): ClassFieldDecorator<entityType, Date | undefined> {
     return Field(
       () => Date,
       {
@@ -205,13 +147,7 @@ export class Fields {
       | FieldOptions<entityType, string>
       | ((options: FieldOptions<entityType, string>, remult: Remult) => void)
     )[]
-  ): (
-    target: any,
-    context:
-      | string
-      | ClassFieldDecoratorContextStub<entityType, string | undefined>,
-    c?: any,
-  ) => void {
+  ): ClassFieldDecorator<entityType, string | undefined> {
     return Field(
       () => String,
       {
@@ -229,13 +165,7 @@ export class Fields {
       | FieldOptions<entityType, string>
       | ((options: FieldOptions<entityType, string>, remult: Remult) => void)
     )[]
-  ): (
-    target: any,
-    context:
-      | string
-      | ClassFieldDecoratorContextStub<entityType, string | undefined>,
-    c?: any,
-  ) => void {
+  ): ClassFieldDecorator<entityType, string | undefined> {
     return Field(
       () => String,
       {
@@ -253,13 +183,7 @@ export class Fields {
       | StringFieldOptions<entityType>
       | ((options: StringFieldOptions<entityType>, remult: Remult) => void)
     )[]
-  ): (
-    target: any,
-    context:
-      | string
-      | ClassFieldDecoratorContextStub<entityType, string | undefined>,
-    c?: any,
-  ) => void {
+  ): ClassFieldDecorator<entityType, string | undefined> {
     return Field(() => String, ...options)
   }
   static boolean<entityType = any>(
@@ -267,17 +191,46 @@ export class Fields {
       | FieldOptions<entityType, boolean>
       | ((options: FieldOptions<entityType, boolean>, remult: Remult) => void)
     )[]
-  ): (
-    target: any,
-    context:
-      | string
-      | ClassFieldDecoratorContextStub<entityType, boolean | undefined>,
-    c?: any,
-  ) => void {
+  ): ClassFieldDecorator<entityType, boolean | undefined> {
     return Field(() => Boolean, ...options)
   }
 }
 export class Relations {
+  /** A to one relation with an automatically generated field */
+  static toOne<entityType, toEntityType>(
+    toEntityType: () => ClassType<toEntityType>,
+    options?: FieldOptions<entityType, toEntityType> &
+      Pick<
+        RelationOptions<entityType, toEntityType, any, any>,
+        'defaultIncluded'
+      >,
+  ): ClassFieldDecorator<entityType, toEntityType | undefined>
+
+  /** A to one relation with fields defined in the second parameter */
+  static toOne<entityType, toEntityType>(
+    toEntityType: () => ClassType<toEntityType>,
+    fieldInMyEntity?: keyof entityType,
+  ): ClassFieldDecorator<entityType, toEntityType | undefined>
+  /** A to one relation with fields defined in the field/fields parameter */
+  static toOne<entityType, toEntityType>(
+    toEntityType: () => ClassType<toEntityType>,
+    options: Omit<
+      RelationOptions<entityType, toEntityType, entityType>,
+      keyof Pick<RelationOptions<entityType, toEntityType, entityType>, 'field'>
+    >,
+  ): ClassFieldDecorator<entityType, toEntityType | undefined>
+  /** A to one relation with fields defined in the field/fields parameter */
+  static toOne<entityType, toEntityType>(
+    toEntityType: () => ClassType<toEntityType>,
+    options: Omit<
+      RelationOptions<entityType, toEntityType, entityType>,
+      keyof Pick<
+        RelationOptions<entityType, toEntityType, entityType>,
+        'fields'
+      >
+    >,
+  ): ClassFieldDecorator<entityType, toEntityType | undefined>
+
   static toOne<entityType, toEntityType>(
     toEntityType: () => ClassType<toEntityType>,
     options?:
@@ -321,15 +274,27 @@ export class Relations {
 
   static toMany<entityType, toEntityType>(
     toEntityType: () => ClassType<toEntityType>,
+    fieldInToEntity?: keyof toEntityType,
+  ): ClassFieldDecorator<entityType, toEntityType[] | undefined>
+  static toMany<entityType, toEntityType>(
+    toEntityType: () => ClassType<toEntityType>,
+    options: RelationOptions<
+      entityType,
+      toEntityType,
+      toEntityType,
+      FindOptions<toEntityType>
+    >,
+  ): ClassFieldDecorator<entityType, toEntityType[] | undefined>
+
+  static toMany<entityType, toEntityType>(
+    toEntityType: () => ClassType<toEntityType>,
     options?:
-      | (RelationOptions<
+      | RelationOptions<
           entityType,
           toEntityType,
           toEntityType,
           FindOptions<toEntityType>
-        > & {
-          fromEntityType?: ClassType<entityType>
-        })
+        >
       | keyof toEntityType,
   ) {
     let op: RelationOptions<

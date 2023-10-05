@@ -50,6 +50,7 @@ class Category {
     fields: {
       secondaryCategoryId: 'id',
     },
+
     findOptions: {
       limit: 2,
       include: {
@@ -610,6 +611,7 @@ describe('test relations', () => {
       company: Field(() => Company),
       companyRef: Relations.toOne(() => Company),
     })
+
     const comp = await r(Company).insert({ id: 1, name: 'abc' })
     await r(Category).insert({
       id: 1,
