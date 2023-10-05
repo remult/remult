@@ -511,10 +511,10 @@ export class RepositoryImplementation<entityType>
       options.orderBy = this._info.entityInfo.defaultOrderBy
     }
     opt.where = await this.translateWhereToFilter(options.where)
-    opt.orderBy = Sort.translateOrderByToSort(this.metadata, options.orderBy)
-
-    opt.limit = options.limit
-    opt.page = options.page
+    if (options.orderBy)
+      opt.orderBy = Sort.translateOrderByToSort(this.metadata, options.orderBy)
+    if (options.limit !== undefined) opt.limit = options.limit
+    if (options.orderBy !== undefined) opt.page = options.page
     return opt
   }
   async fromJsonArray(jsonItems: any[], loadOptions: LoadOptions<entityType>) {

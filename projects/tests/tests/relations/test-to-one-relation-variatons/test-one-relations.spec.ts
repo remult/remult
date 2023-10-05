@@ -1,5 +1,6 @@
 import {
   Entity,
+  type EntityDataProvider,
   Fields,
   InMemoryDataProvider,
   Relations,
@@ -11,7 +12,6 @@ import {
 import { describe, it, expect, beforeEach } from 'vitest'
 import type { ClassType } from '../../../../core/classType'
 import { entityFilterToJson } from '../../../../core/src/filter/filter-interfaces'
-import { createEntity } from '../../dynamic-classes'
 
 @Entity('categories')
 class Category {
@@ -409,9 +409,39 @@ describe('test one', () => {
       defaultIncluded: true,
     })
   })
+  it('test what reaches the db', async () => {
+    remult.dataProvider = new Proxy(remult.dataProvider, {
+      get: (target, key: keyof typeof remult.dataProvider) => {
+        if (key === 'getEntityDataProvider') {
+          return (args) =>
+            new Proxy<EntityDataProvider>(target[key](args), {
+              get: (target, key: keyof EntityDataProvider) => {
+                if (key === 'find') {
+                  return (options) => {
+                    expect(options).toMatchInlineSnapshot(`
+                      {
+                        "where": Filter {
+                          "apply": [Function],
+                        },
+                      }
+                    `)
+                    return target[key](options)
+                  }
+                }
+                return target[key]
+              },
+            })
+        }
+        return target[key]
+      },
+    })
+    remult.clearAllCache()
+    await remult.repo(Category).find({
+      load: () => [],
+    })
+  })
 })
 
 //p1 http://localhost:5173/api/dealContacts?contactId=007c1297-6a54-45c2-b0aa-d6b9e41adf13&contactId=007c1297-6a54-45c2-b0aa-d6b9e41adf13
-//p1 load shouldnt reach the data provider, limit and page shouldn't be Nan
 //p1 check types errors in hagai familydeliveries
 //y1 rethink with yoni if relations should place it's options in the field options - there may by naming conflicts with users extending options

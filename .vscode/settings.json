@@ -64,7 +64,8 @@
     },
     "y1": {
       "icon": "bell",
-      "iconColour": "orange"
+      "iconColour": "orange",
+      "background": "orange"
     },
     "y2": {
       "icon": "bell",
