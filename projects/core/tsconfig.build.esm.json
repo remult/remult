@@ -4,6 +4,6 @@
     "outDir": "../../dist/remult/esm",
     "module": "ESNext",
     "target": "ESNext",
-    "declaration": true
+    "declaration": false
   }
 }

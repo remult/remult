@@ -1,8 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "outDir": "../../dist/remult/cjs",
-    "declaration": false
+    "outDir": "../../dist/remult"
   },
   "exclude": [
     "src/test.ts",
