@@ -2,8 +2,8 @@ import type { FieldMetadata } from '../column-interfaces';
 import type { Remult } from '../context';
 import type { EntityFilter, EntityMetadata } from '../remult3/remult3';
 export declare class Filter {
-    private apply?;
-    constructor(apply?: (add: FilterConsumer) => void);
+    private apply;
+    constructor(apply: (add: FilterConsumer) => void);
     __applyToConsumer(add: FilterConsumer): void;
     static resolve<entityType>(filter: EntityFilter<entityType> | (() => EntityFilter<entityType> | Promise<EntityFilter<entityType>>)): Promise<EntityFilter<entityType>>;
     static createCustom<entityType>(rawFilterTranslator: (unused: never, r: Remult) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>, key?: string): (() => EntityFilter<entityType>) & customFilterInfo<entityType>;
@@ -13,20 +13,6 @@ export declare class Filter {
     static entityFilterToJson<T>(entityDefs: EntityMetadata<T>, where: EntityFilter<T>): any;
     static entityFilterFromJson<T>(entityDefs: EntityMetadata<T>, packed: any): EntityFilter<T>;
     static translateCustomWhere<T>(r: Filter, entity: EntityMetadata<T>, remult: Remult): Promise<Filter>;
-}
-export declare class filterHelper {
-    metadata: FieldMetadata;
-    constructor(metadata: FieldMetadata);
-    processVal(val: any): any;
-    contains(val: string): Filter;
-    isLessThan(val: any): Filter;
-    isGreaterOrEqualTo(val: any): Filter;
-    isNotIn(values: any[]): Filter;
-    isDifferentFrom(val: any): Filter;
-    isLessOrEqualTo(val: any): Filter;
-    isGreaterThan(val: any): Filter;
-    isEqualTo(val: any): Filter;
-    isIn(val: any[]): Filter;
 }
 export interface FilterConsumer {
     or(orElements: Filter[]): any;

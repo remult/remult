@@ -6,9 +6,9 @@ export declare class Sort {
     Segments: SortSegment[];
     reverse(): Sort;
     compare(a: any, b: any, getFieldKey?: (field: FieldMetadata) => string): number;
-    static translateOrderByToSort<T>(entityDefs: EntityMetadata<T>, orderBy: EntityOrderBy<T>): Sort;
-    static createUniqueSort<T>(entityMetadata: EntityMetadata<T>, orderBy: Sort): Sort;
-    static createUniqueEntityOrderBy<T>(entityMetadata: EntityMetadata<T>, orderBy: EntityOrderBy<T>): EntityOrderBy<T>;
+    static translateOrderByToSort<T>(entityDefs: EntityMetadata<T>, orderBy?: EntityOrderBy<T>): Sort;
+    static createUniqueSort<T>(entityMetadata: EntityMetadata<T>, orderBy?: Sort): Sort;
+    static createUniqueEntityOrderBy<T>(entityMetadata: EntityMetadata<T>, orderBy?: EntityOrderBy<T>): EntityOrderBy<T>;
 }
 export interface SortSegment {
     field: FieldMetadata;

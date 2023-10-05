@@ -15,7 +15,7 @@ export declare class RemultAsyncLocalStorage {
 }
 type myAsyncLocalStorage<T> = {
     run<R>(store: T, callback: (...args: any[]) => R, ...args: any[]): R;
-    getStore(): T;
+    getStore(): T | undefined;
 };
 export declare function isBackend(): boolean;
 export declare class Remult {

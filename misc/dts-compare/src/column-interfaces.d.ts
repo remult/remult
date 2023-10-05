@@ -1,6 +1,6 @@
 import type { ClassType } from '../classType';
 import type { Allowed, AllowedForInstance } from './context';
-import type { EntityMetadata, FieldRef, OmitEB } from './remult3/remult3';
+import type { EntityMetadata, FieldRef, LifeCycleEvent, OmitEB } from './remult3/remult3';
 export interface FieldOptions<entityType = any, valueType = any> {
     /** A human readable name for the field. Can be used to achieve a consistent caption for a field throughout the app
      * @example
@@ -37,7 +37,7 @@ export interface FieldOptions<entityType = any, valueType = any> {
      */
     validate?: ((entity: entityType, fieldRef: FieldRef<entityType, valueType>) => any | Promise<any>) | ((entity: entityType, fieldRef: FieldRef<entityType, valueType>) => any | Promise<any>)[];
     /** Will be fired before this field is saved to the server/database */
-    saving?: (entity: entityType, fieldRef: FieldRef<entityType, valueType>) => any | Promise<any>;
+    saving?: (entity: entityType, e: LifeCycleEvent<entityType>, fieldRef: FieldRef<entityType, valueType>) => any | Promise<any>;
     /**  An expression that will determine this fields value on the backend and be provided to the front end*/
     serverExpression?: (entity: entityType) => valueType | Promise<valueType>;
     /** The name of the column in the database that holds the data for this field. If no name is set, the key will be used instead.

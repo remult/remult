@@ -1,6 +1,5 @@
 import type { RestDataProviderHttpProvider } from './data-interfaces';
-import { RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider';
-export declare function buildRestDataProvider(provider: ExternalHttpProvider | typeof fetch): RestDataProviderHttpProvider | RestDataProviderHttpProviderUsingFetch;
+export declare function buildRestDataProvider(provider: ExternalHttpProvider | typeof fetch): RestDataProviderHttpProvider;
 export declare function isExternalHttpProvider(item: any): boolean;
 export declare class HttpProviderBridgeToRestDataProviderHttpProvider implements RestDataProviderHttpProvider {
     private http;

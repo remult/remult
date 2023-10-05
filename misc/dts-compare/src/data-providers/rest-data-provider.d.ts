@@ -1,6 +1,6 @@
 import type { DataProvider, EntityDataProvider, EntityDataProviderFindOptions, RestDataProviderHttpProvider } from '../data-interfaces';
 import { UrlBuilder } from '../../urlBuilder';
-import type { ApiClient } from '../context';
+import { type ApiClient } from '../context';
 import { Filter } from '../filter/filter-interfaces';
 import type { EntityMetadata } from '../remult3/remult3';
 export declare class RestDataProvider implements DataProvider {

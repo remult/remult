@@ -4,7 +4,7 @@ import type { RepositoryOverloads } from './src/remult3/RepositoryImplementation
 export declare class MongoDataProvider implements DataProvider {
     private db;
     private client;
-    constructor(db: Db, client: MongoClient, options?: {
+    constructor(db: Db, client: MongoClient | undefined, options?: {
         session?: ClientSession;
         disableTransactions?: boolean;
     });

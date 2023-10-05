@@ -1,6 +1,6 @@
 import type { Allowed, AllowedForInstance } from './context';
 import type { FieldMetadata } from './column-interfaces';
-import type { EntityFilter, EntityMetadata, EntityOrderBy, EntityRef, FieldsMetadata } from './remult3/remult3';
+import type { EntityFilter, EntityIdFields, EntityMetadata, EntityOrderBy, EntityRef, FieldsMetadata, LifeCycleEvent } from './remult3/remult3';
 export interface EntityOptions<entityType = any> {
     /**A human readable name for the entity */
     caption?: string;
@@ -60,13 +60,13 @@ export interface EntityOptions<entityType = any> {
      *  }
      *})
      */
-    saving?: (row: entityType, proceedWithoutSavingToDb: () => void) => Promise<any> | any;
+    saving?: (row: entityType, e: LifeCycleEvent<entityType>) => Promise<any> | any;
     /** will be called after the Entity was saved to the data source. */
-    saved?: (row: entityType) => Promise<any> | any;
+    saved?: (row: entityType, e: LifeCycleEvent<entityType>) => Promise<any> | any;
     /** Will be called before an Entity is deleted. */
-    deleting?: (row: entityType) => Promise<any> | any;
+    deleting?: (row: entityType, e: LifeCycleEvent<entityType>) => Promise<any> | any;
     /** Will be called after an Entity is deleted */
-    deleted?: (row: entityType) => Promise<any> | any;
+    deleted?: (row: entityType, e: LifeCycleEvent<entityType>) => Promise<any> | any;
     /** Will be called when the entity is being validated, usually prior to the `saving` event */
     validation?: (row: entityType, ref: EntityRef<entityType>) => Promise<any> | any;
     /** The name of the table in the database that holds the data for this entity.
@@ -89,7 +89,7 @@ export interface EntityOptions<entityType = any> {
      * //Multiple columns id
      * @Entity<OrderDetails>("orderDetails", { id:od=> [od.orderId, od.productCode] })
      */
-    id?: (entity: FieldsMetadata<entityType>) => FieldMetadata | FieldMetadata[];
+    id?: EntityIdFields<entityType> | ((entity: FieldsMetadata<entityType>) => FieldMetadata | FieldMetadata[]);
     entityRefInit?: (ref: EntityRef<entityType>, row: entityType) => void;
     apiRequireId?: Allowed;
 }

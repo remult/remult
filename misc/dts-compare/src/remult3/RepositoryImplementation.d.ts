@@ -3,23 +3,26 @@ import { LookupColumn } from '../column';
 import type { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from '../column-interfaces';
 import { Remult } from '../context';
 import type { EntityOptions } from '../entity';
-import type { ControllerRef, EntityFilter, EntityMetadata, EntityOrderBy, EntityRef, FieldRef, FieldsMetadata, FieldsRef, FindFirstOptions, FindFirstOptionsBase, FindOptions, IdMetadata, LiveQuery, OmitEB, QueryOptions, QueryResult, Repository, RepositoryRelations, Subscribable } from './remult3';
+import type { ControllerRef, EntityFilter, EntityMetadata, EntityOrderBy, EntityRef, FieldRef, FieldsMetadata, FieldsRef, FindFirstOptions, FindFirstOptionsBase, FindOptions, IdMetadata, LiveQuery, LoadOptions, OmitEB, QueryOptions, QueryResult, Repository, RepositoryRelations, Subscribable } from './remult3';
 import type { RefSubscriber } from './remult3';
 import type { entityEventListener } from '../__EntityValueProvider';
 import type { DataProvider, EntityDataProvider, EntityDataProviderFindOptions, ErrorInfo } from '../data-interfaces';
 import type { Unsubscribe } from '../live-query/SubscriptionChannel';
 import type { columnInfo } from './columnInfo';
+import { RelationLoader } from './relation-loader';
+import { getInternalKey } from './repository-internals';
 export declare class RepositoryImplementation<entityType> implements Repository<entityType> {
     private entity;
     remult: Remult;
     private dataProvider;
-    createAfterFilter(orderBy: EntityOrderBy<entityType>, lastRow: entityType): Promise<EntityFilter<entityType>>;
-    relationsProxy: any;
-    get relations(): RepositoryRelations<entityType>;
     private _info;
+    private defaultFindOptions?;
+    [getInternalKey](): this;
+    createAfterFilter(orderBy: EntityOrderBy<entityType>, lastRow: entityType): Promise<EntityFilter<entityType>>;
+    relations(item: entityType): RepositoryRelations<entityType>;
     private __edp;
     private get edp();
-    constructor(entity: ClassType<entityType>, remult: Remult, dataProvider: DataProvider);
+    constructor(entity: ClassType<entityType>, remult: Remult, dataProvider: DataProvider, _info: EntityFullInfo<entityType>, defaultFindOptions?: FindOptions<entityType>);
     idCache: Map<any, any>;
     getCachedById(id: any, doNotLoadIfNotFound: boolean): entityType;
     getCachedByIdAsync(id: any, doNotLoadIfNotFound: boolean): Promise<entityType>;
@@ -49,9 +52,10 @@ export declare class RepositoryImplementation<entityType> implements Repository<
     save(item: Partial<OmitEB<entityType>>[]): Promise<entityType[]>;
     save(item: Partial<OmitEB<entityType>>): Promise<entityType>;
     liveQuery(options?: FindOptions<entityType>): LiveQuery<entityType>;
+    rawFind(options: FindOptions<entityType>, skipOrderByAndLimit: boolean, loader: RelationLoader): Promise<entityType[]>;
     find(options: FindOptions<entityType>, skipOrderByAndLimit?: boolean): Promise<entityType[]>;
     buildEntityDataProviderFindOptions(options: FindOptions<entityType>): Promise<EntityDataProviderFindOptions>;
-    fromJsonArray(jsonItems: any[], load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[]): Promise<Awaited<entityType>[]>;
+    fromJsonArray(jsonItems: any[], loadOptions: LoadOptions<entityType>): Promise<entityType[]>;
     private loadManyToOneForManyRows;
     private mapRawDataToResult;
     toJson(item: entityType | entityType[] | Promise<entityType> | Promise<entityType[]>): any;
@@ -109,6 +113,7 @@ export declare class rowHelperImplementation<T> extends rowHelperBase<T> impleme
     private edp;
     private _isNew;
     constructor(info: EntityFullInfo<T>, instance: T, repository: RepositoryImplementation<T>, edp: EntityDataProvider, remult: Remult, _isNew: boolean);
+    get relations(): RepositoryRelations<T>;
     get apiUpdateAllowed(): boolean;
     get apiDeleteAllowed(): boolean;
     get apiInsertAllowed(): boolean;
@@ -123,6 +128,7 @@ export declare class rowHelperImplementation<T> extends rowHelperBase<T> impleme
     get fields(): FieldsRef<T>;
     private _saving;
     save(onlyTheseFieldsSentOnlyInTheCaseOfProxySaveWithPartialObject?: string[]): Promise<T>;
+    private buildLifeCycleEvent;
     private getIdFilter;
     delete(): Promise<void>;
     loadDataFrom(data: any, loadItems?: FieldMetadata[]): Promise<void>;
@@ -221,7 +227,6 @@ declare class EntityFullInfo<T> implements EntityMetadata<T> {
     caption: string;
 }
 export declare function FieldType<valueType = any>(...options: (FieldOptions<any, valueType> | ((options: FieldOptions<any, valueType>, remult: Remult) => void))[]): (target: any, context?: any) => any;
-export declare const relationInfoMember = "!remult!relationInfo";
 export declare function isAutoIncrement(f: FieldMetadata): boolean;
 export declare function ValueListFieldType<valueType extends ValueListItem = any>(...options: (ValueListFieldOptions<any, valueType> | ((options: FieldOptions<any, valueType>, remult: Remult) => void))[]): (type: ClassType<valueType>, context?: any) => void;
 export interface ValueListFieldOptions<entityType, valueType> extends FieldOptions<entityType, valueType> {
@@ -249,17 +254,6 @@ export declare class ValueListInfo<T extends ValueListItem> implements ValueConv
 export declare function getValueList<T>(field: FieldRef<T>): T[];
 export declare function getValueList<T>(field: FieldMetadata<T>): T[];
 export declare function getValueList<T>(type: ClassType<T>): T[];
-export interface ClassFieldDecoratorContextStub<entityType, valueType> {
-    readonly access: {
-        set(object: entityType, value: valueType): void;
-    };
-    readonly name: string;
-}
-export interface ClassDecoratorContextStub<Class extends new (...args: any) => any = new (...args: any) => any> {
-    readonly kind: 'class';
-    readonly name: string | undefined;
-    addInitializer(initializer: (this: Class) => void): void;
-}
 export declare const storableMember: unique symbol;
 export declare function buildOptions<entityType = any, valueType = any>(options: (FieldOptions<entityType, valueType> | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void))[], remult: Remult): FieldOptions<entityType, valueType>;
 export declare function decorateColumnSettings<valueType>(settings: FieldOptions<any, valueType>, remult: Remult): FieldOptions<any, valueType>;

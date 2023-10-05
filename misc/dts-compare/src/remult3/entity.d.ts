@@ -1,6 +1,6 @@
 import type { Remult } from '../context';
 import type { EntityOptions } from '../entity';
-import type { ClassDecoratorContextStub } from './RepositoryImplementation';
+import type { ClassDecoratorContextStub } from './remult3';
 /**Decorates classes that should be used as entities.
  * Receives a key and an array of EntityOptions.
  * @example

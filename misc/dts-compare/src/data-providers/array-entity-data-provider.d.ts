@@ -4,8 +4,8 @@ import { Filter } from '../filter/filter-interfaces';
 import type { EntityFilter, EntityMetadata } from '../remult3/remult3';
 export declare class ArrayEntityDataProvider implements EntityDataProvider {
     private entity;
-    private rows?;
     static rawFilter(filter: CustomArrayFilter): EntityFilter<any>;
+    private rows;
     constructor(entity: EntityMetadata, rows?: any[]);
     __names: EntityDbNamesBase;
     init(): Promise<EntityDbNamesBase>;

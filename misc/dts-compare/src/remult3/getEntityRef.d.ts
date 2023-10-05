@@ -5,5 +5,5 @@ export declare function getEntityRef<entityType>(entity: entityType, throwExcept
 export declare const entityMember: unique symbol;
 export declare const entityInfo: unique symbol;
 export declare const entityInfo_key: unique symbol;
-export declare function getEntitySettings<T>(entity: ClassType<T>, throwError?: boolean): EntityOptionsFactory;
+export declare function getEntitySettings<T>(entity: ClassType<T>, throwError?: boolean): EntityOptionsFactory | undefined;
 export declare function getEntityKey(entity: ClassType<any>): string;

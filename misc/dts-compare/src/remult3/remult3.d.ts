@@ -23,10 +23,21 @@ export interface EntityRef<entityType> extends Subscribable {
     metadata: EntityMetadata<entityType>;
     toApiJson(): any;
     validate(): Promise<ErrorInfo<entityType> | undefined>;
+    relations: RepositoryRelations<entityType>;
     readonly apiUpdateAllowed: boolean;
     readonly apiDeleteAllowed: boolean;
     readonly apiInsertAllowed: boolean;
     readonly isLoading: boolean;
+}
+export interface LifeCycleEvent<entityType> {
+    isNew: boolean;
+    fields: FieldsRef<entityType>;
+    id: idType<entityType>;
+    originalId: idType<entityType>;
+    repository: Repository<entityType>;
+    metadata: EntityMetadata<entityType>;
+    preventDefault: VoidFunction;
+    relations: RepositoryRelations<entityType>;
 }
 export interface ControllerRef<entityType> extends Subscribable {
     hasErrors(): boolean;
@@ -44,7 +55,7 @@ export interface Subscribable {
     subscribe(listener: RefSubscriber): Unsubscribe;
 }
 export type FieldsRef<entityType> = {
-    [Properties in keyof OmitEB<entityType>]: entityType[Properties] extends {
+    [Properties in keyof OmitEB<entityType>]: NonNullable<entityType[Properties]> extends {
         id?: number | string;
     } ? IdFieldRef<entityType, entityType[Properties]> : FieldRef<entityType, entityType[Properties]>;
 } & {
@@ -257,7 +268,7 @@ export interface Repository<entityType> {
      */
     metadata: EntityMetadata<entityType>;
     addEventListener(listener: entityEventListener<entityType>): Unsubscribe;
-    relations: RepositoryRelations<entityType>;
+    relations: (item: entityType) => RepositoryRelations<entityType>;
 }
 export interface LiveQuery<entityType> {
     subscribe(next: (info: LiveQueryChangeInfo<entityType>) => void): Unsubscribe;
@@ -400,37 +411,43 @@ export interface Paginator<entityType> {
 }
 export interface RelationInfo {
     toType: () => any;
-    type: 'toOne' | 'toMany';
-    options: RelationOptions<any, any, any>;
+    type: 'reference' | 'toOne' | 'toMany';
 }
-export type RelationOptions<fromEntity, toEntity, matchIdEntity> = {
+export type RelationOptions<fromEntity, toEntity, matchIdEntity, optionsType extends FindOptionsBase<toEntity> = FindOptionsBase<toEntity>> = {
     fields?: {
         [K in keyof toEntity]?: keyof fromEntity;
     };
     field?: keyof matchIdEntity;
-    limit?: number;
-    findOptions?: FindOptionsBase<toEntity> | ((entity: fromEntity) => FindOptionsBase<toEntity>);
+} & RelationOptionsBase<fromEntity, toEntity, optionsType>;
+export type RelationOptionsBase<fromEntity, toEntity, optionsType extends LoadOptions<toEntity> = LoadOptions<toEntity>> = {
+    findOptions?: optionsType | ((entity: fromEntity) => optionsType);
     defaultIncluded?: boolean;
-} & FieldOptions<fromEntity, any>;
-type ObjectMembersOnly<T> = {
+} & Pick<FieldOptions, 'caption'>;
+export type ObjectMembersOnly<T> = {
     [K in keyof Pick<T, {
-        [K in keyof T]: T[K] extends object ? T[K] extends Date ? never : K : never;
+        [K in keyof T]: T[K] extends object | undefined | null ? T[K] extends Date | undefined | null ? never : K : never;
     }[keyof T]>]: T[K];
 };
 export type MembersToInclude<T> = {
-    [K in keyof ObjectMembersOnly<T>]?: true | (T[K] extends Array<any> ? FindOptions<T[K][number]> : FindFirstOptions<T[K]>);
+    [K in keyof ObjectMembersOnly<T>]?: boolean | (NonNullable<T[K]> extends Array<any> ? FindOptions<NonNullable<T[K]>[number]> : FindFirstOptions<NonNullable<T[K]>>);
 };
 export type RepositoryRelations<entityType> = {
-    [K in keyof ObjectMembersOnly<entityType>]: entityType[K] extends Array<infer R> ? ToManyRepository<entityType, R> : entityType[K] extends infer R ? ToOneRepository<entityType, R> : never;
+    [K in keyof ObjectMembersOnly<entityType>]-?: NonNullable<entityType[K]> extends Array<infer R> ? Repository<R> : entityType[K] extends infer R ? {
+        findOne: (options?: FindOptionsBase<R>) => Promise<R>;
+    } : never;
 };
-export type ToOneRepository<fromEntity, toEntity> = {
-    findFirst(fromEntity: OmitEB<fromEntity>, options?: FindFirstOptions<toEntity>): Promise<toEntity>;
+export declare type EntityIdFields<entityType> = {
+    [Properties in keyof Partial<OmitEB<entityType>>]?: true;
 };
-export type ToManyRepository<fromEntity, toEntity> = {
-    find(fromEntity: OmitEB<fromEntity>, options?: FindOptions<toEntity>): Promise<toEntity[]>;
-    count(fromEntity: OmitEB<fromEntity>, where?: EntityFilter<toEntity>): Promise<number>;
-    /**Insert an item or item[] to the related entity */
-    insert(item: fromEntity, relatedItem: Partial<OmitEB<toEntity>>[]): Promise<toEntity[]>;
-    insert(item: fromEntity, relatedItem: Partial<OmitEB<toEntity>>): Promise<toEntity>;
-};
-export {};
+export interface ClassFieldDecoratorContextStub<entityType, valueType> {
+    readonly access: {
+        set(object: entityType, value: valueType): void;
+    };
+    readonly name: string;
+}
+export interface ClassDecoratorContextStub<Class extends new (...args: any) => any = new (...args: any) => any> {
+    readonly kind: 'class';
+    readonly name: string | undefined;
+    addInitializer(initializer: (this: Class) => void): void;
+}
+export type ClassFieldDecorator<entityType, valueType> = (target: any, context: string | ClassFieldDecoratorContextStub<entityType, valueType | undefined>, c?: any) => void;

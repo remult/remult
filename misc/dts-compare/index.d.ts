@@ -1,8 +1,9 @@
-export { OmitEB, FieldsMetadata, FieldRef, IdFieldRef, FieldsRef, EntityMetadata, EntityOrderBy, EntityFilter, FindOptions, QueryResult, QueryOptions, Repository, FindFirstOptions, ComparisonValueFilter, ValueFilter, IdFilter, ContainsStringValueFilter, EntityRef, SortSegments, Paginator, LiveQuery, LiveQueryChangeInfo, } from './src/remult3/remult3';
+import type { ClassType } from './classType';
+export { OmitEB, FieldsMetadata, FieldRef, IdFieldRef, FieldsRef, EntityMetadata, EntityOrderBy, EntityFilter, FindOptions, QueryResult, QueryOptions, Repository, FindFirstOptions, ComparisonValueFilter, ValueFilter, IdFilter, ContainsStringValueFilter, EntityRef, SortSegments, Paginator, LiveQuery, LiveQueryChangeInfo, Subscribable, RefSubscriber, RefSubscriberBase, RelationOptions, RelationOptionsBase, ObjectMembersOnly, MembersToInclude, RepositoryRelations, EntityIdFields, ClassFieldDecorator as MemberDecorator, ClassFieldDecoratorContextStub, } from './src/remult3/remult3';
 export { EntityBase, ControllerBase, FieldType, getFields, ValueListFieldType, getValueList, ValueListFieldOptions, ValueListInfo, CaptionTransformer, } from './src/remult3/RepositoryImplementation';
 export { Entity } from './src/remult3/entity';
 export { getEntityRef } from './src/remult3/getEntityRef';
-export { Field, Fields, StringFieldOptions } from './src/remult3/Fields';
+export { Field, Fields, StringFieldOptions, Relations, } from './src/remult3/Fields';
 export { IdEntity } from './src/remult3/IdEntity';
 export { describeClass } from './src/remult3/DecoratorReplacer';
 export { EntityOptions } from './src/entity';
@@ -21,7 +22,6 @@ export { Controller, BackendMethodOptions, BackendMethod, ProgressListener, } fr
 export { Allowed, Allow, Remult, RemultContext, ApiClient, isBackend, AllowedForInstance, EventDispatcher, EventSource, UserInfo, } from './src/context';
 export { ExternalHttpProvider } from './src/buildRestDataProvider';
 export { SortSegment, Sort } from './src/sort';
-export { OneToMany } from './src/column';
 export { CompoundIdField } from './src/CompoundIdField';
 export { Filter } from './src/filter/filter-interfaces';
 export { UrlBuilder } from './urlBuilder';
@@ -30,3 +30,4 @@ export { ValueConverters } from './src/valueConverters';
 export { remult } from './src/remult-proxy';
 export { SubscriptionServer, LiveQueryStorage, StoredQuery, InMemoryLiveQueryStorage, } from './src/live-query/SubscriptionServer';
 export { SubscriptionListener, SubscriptionClientConnection, SubscriptionClient, SubscriptionChannel, LiveQueryChange, Unsubscribe, } from './src/live-query/SubscriptionChannel';
+export declare function repo<entityType>(entity: ClassType<entityType>): import("./src/remult3/remult3").Repository<entityType>;
