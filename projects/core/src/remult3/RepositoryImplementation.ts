@@ -1664,7 +1664,7 @@ export class rowHelperImplementation<T>
 
   private async calcServerExpression() {
     if (isBackend())
-      //[ ] should be changed to be based on data provider
+      //y2 should be changed to be based on data provider - consider naming
       for (const col of this.info.columnsInfo) {
         if (col.serverExpression) {
           this.instance[col.key] = await col.serverExpression(this.instance)

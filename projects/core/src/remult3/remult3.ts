@@ -497,7 +497,7 @@ export type RelationOptions<
     //[ ] V2- consider enforcing types
     [K in keyof toEntity]?: keyof fromEntity
   }
-  field?: keyof matchIdEntity //p1 - consider adjusting it to the overloads
+  field?: keyof matchIdEntity //y1 - consider adjusting it to the overloads
 } & RelationOptionsBase<fromEntity, toEntity, optionsType>
 
 export type RelationOptionsBase<

@@ -411,10 +411,8 @@ describe('test one', () => {
   })
 })
 
+//p1 to json with remult proxy repo gave an error!
 //p1 http://localhost:5173/api/dealContacts?contactId=007c1297-6a54-45c2-b0aa-d6b9e41adf13&contactId=007c1297-6a54-45c2-b0aa-d6b9e41adf13
 //p1 load shouldnt reach the data provider, limit and page shouldn't be Nan
 //p1 check types errors in hagai familydeliveries
-//p1 to json with remult proxy repo gave an error!
-//p1 rethink with yoni if relations should place it's options in the field options - there may by naming conflicts with users extending options
-//p1 reconsider split reference & one for overload clarity
-//p1 check field options of to many - to make sure that it's saving gets an array
+//y1 rethink with yoni if relations should place it's options in the field options - there may by naming conflicts with users extending options

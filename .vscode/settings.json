@@ -61,6 +61,14 @@
     "p1": {
       "icon": "alert-fill",
       "iconColour": "orange"
+    },
+    "y1": {
+      "icon": "bell",
+      "iconColour": "orange"
+    },
+    "y2": {
+      "icon": "bell",
+      "iconColour": "green"
     }
   },
   "todo-tree.general.tags": [
@@ -73,6 +81,8 @@
     "[x]",
     "p1",
     "p1.5",
-    "p2"
+    "p2",
+    "y1",
+    "y2"
   ]
 }
