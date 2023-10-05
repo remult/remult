@@ -312,7 +312,7 @@ export declare type EntityOrderBy<entityType> = {
 export declare type EntityFilter<entityType> = {
     [Properties in keyof Partial<OmitEB<entityType>>]?: (Partial<OmitEB<entityType>>[Properties] extends number | Date | undefined ? ComparisonValueFilter<Partial<OmitEB<entityType>>[Properties]> : Partial<OmitEB<entityType>>[Properties] extends string | undefined ? ContainsStringValueFilter & ComparisonValueFilter<string> : Partial<OmitEB<entityType>>[Properties] extends boolean | undefined ? ValueFilter<boolean> : Partial<OmitEB<entityType>>[Properties] extends {
         id?: string | number;
-    } | undefined ? IdFilter<Partial<OmitEB<entityType>>[Properties]> : ValueFilter<Partial<OmitEB<entityType>>[Properties]>) & ContainsStringValueFilter;
+    } | undefined ? IdFilter<Partial<OmitEB<entityType>>[Properties]> : ValueFilter<Partial<OmitEB<entityType>>[Properties]>) | ContainsStringValueFilter;
 } & {
     $or?: EntityFilter<entityType>[];
     $and?: EntityFilter<entityType>[];
