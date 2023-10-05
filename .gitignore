@@ -42,7 +42,7 @@ Thumbs.db
 distServer/*
 !/distServer/package.json
 dist-server/*
-
+.ssh
 
 
 # vuepress
