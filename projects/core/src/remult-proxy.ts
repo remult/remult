@@ -16,7 +16,7 @@ import type {
   SubscriptionServer,
 } from './live-query/SubscriptionServer'
 import type { Repository } from './remult3/remult3'
-import type { RepositoryImplementation } from './remult3/RepositoryImplementation'
+import { getInternalKey } from './remult3/repository-internals'
 
 let defaultRemult: Remult
 
@@ -119,6 +119,12 @@ export class RemultProxy implements Remult {
       get fields() {
         return self.remultFactory().repo(...args).metadata.fields
       },
+      [getInternalKey]() {
+        return self
+          .remultFactory()
+          .repo(...args)
+          [getInternalKey]()
+      },
       relations: (args2) =>
         self
           .remultFactory()
@@ -190,14 +196,6 @@ export class RemultProxy implements Remult {
           .remultFactory()
           .repo(...args)
           .liveQuery(...args2),
-      //@ts-ignore
-      addToCache: (a) =>
-        (
-          self
-            .remultFactory()
-            .repo(...args) as any as RepositoryImplementation<any>
-        ).addToCache(a),
-
       get metadata() {
         return self.remultFactory().repo(...args).metadata
       },

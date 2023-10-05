@@ -13,12 +13,10 @@ import type { EntityDbNamesBase } from './src/filter/filter-consumer-bridge-to-s
 import { dbNamesOf } from './src/filter/filter-consumer-bridge-to-sql-request'
 import type { FilterConsumer } from './src/filter/filter-interfaces'
 import { remult as remultContext } from './src/remult-proxy'
-import type {
-  RepositoryImplementation,
-  RepositoryOverloads,
-} from './src/remult3/RepositoryImplementation'
+import type { RepositoryOverloads } from './src/remult3/RepositoryImplementation'
 import { getRepository } from './src/remult3/RepositoryImplementation'
 import { resultCompoundIdFilter } from './src/resultCompoundIdFilter'
+import { getRepositoryInternals } from './src/remult3/repository-internals'
 
 export class MongoDataProvider implements DataProvider {
   constructor(
@@ -71,9 +69,7 @@ export class MongoDataProvider implements DataProvider {
     var b = new FilterConsumerBridgeToMongo(await dbNamesOf(repo.metadata))
     b._addWhere = false
     await (
-      await (
-        repo as RepositoryImplementation<entityType>
-      ).translateWhereToFilter(condition)
+      await getRepositoryInternals(repo).translateWhereToFilter(condition)
     ).__applyToConsumer(b)
     let r = await b.resolveWhere()
     return r

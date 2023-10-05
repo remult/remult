@@ -1,8 +1,12 @@
 import { buildRestDataProvider } from '../buildRestDataProvider'
 import type { ApiClient } from '../context'
 import { RestDataProvider } from '../data-providers/rest-data-provider'
-import type { RepositoryImplementation } from '../remult3/RepositoryImplementation'
-import type { FindOptions, LiveQueryChangeInfo } from '../remult3/remult3'
+import type {
+  FindOptions,
+  LiveQueryChangeInfo,
+  Repository,
+} from '../remult3/remult3'
+import { getRepositoryInternals } from '../remult3/repository-internals'
 import type {
   SubscriptionClientConnection,
   SubscriptionListener,
@@ -91,7 +95,7 @@ export class LiveQueryClient {
   }
 
   subscribe<entityType>(
-    repo: RepositoryImplementation<entityType>,
+    repo: Repository<entityType>,
     options: FindOptions<entityType>,
     listener: SubscriptionListener<LiveQueryChangeInfo<entityType>>,
   ) {
@@ -100,7 +104,7 @@ export class LiveQueryClient {
       alive = false
     }
     this.runPromise(
-      (repo as RepositoryImplementation<entityType>)
+      getRepositoryInternals(repo)
         .buildEntityDataProviderFindOptions(options)
         .then((opts) => {
           if (!alive) return

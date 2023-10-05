@@ -75,6 +75,7 @@ import { __updateEntityBasedOnWhere } from './__updateEntityBasedOnWhere'
 import type { columnInfo } from './columnInfo'
 import { getRelationInfo, relationInfoMember } from './relationInfoMember'
 import { RelationLoader } from './relation-loader'
+import { type RepositoryInternal, getInternalKey } from './repository-internals'
 //import  { remult } from "../remult-proxy";
 
 let classValidatorValidate:
@@ -106,6 +107,9 @@ let classValidatorValidate:
 export class RepositoryImplementation<entityType>
   implements Repository<entityType>
 {
+  [getInternalKey]() {
+    return this
+  }
   async createAfterFilter(
     orderBy: EntityOrderBy<entityType>,
     lastRow: entityType,

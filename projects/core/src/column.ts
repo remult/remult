@@ -3,7 +3,7 @@ import { assign } from '../assign'
 import type { FindOptions, idType, Repository } from './remult3/remult3'
 import { __updateEntityBasedOnWhere } from './remult3/__updateEntityBasedOnWhere'
 import { getEntityRef } from './remult3/getEntityRef'
-import type { RepositoryImplementation } from './remult3/RepositoryImplementation'
+import { getRepositoryInternals } from './remult3/repository-internals'
 
 export function makeTitle(name: string) {
   // insert a space before all caps
@@ -30,12 +30,15 @@ export class LookupColumn<T> {
   }
   waitLoadOf(id: any) {
     if (id === undefined || id === null) return null
-    return this.repository.getCachedByIdAsync(id, false)
+    return getRepositoryInternals(this.repository).getCachedByIdAsync(id, false)
   }
   get(id: any): any {
     if (id === undefined || id === null) return null
     if (this.isReferenceRelation && !this.storedItem) return undefined
-    return this.repository.getCachedById(id, this.isReferenceRelation)
+    return getRepositoryInternals(this.repository).getCachedById(
+      id,
+      this.isReferenceRelation,
+    )
   }
   storedItem?: { item: T }
   set(item: T) {
@@ -46,7 +49,7 @@ export class LookupColumn<T> {
       else {
         let eo = getEntityRef(item as any, false)
         if (eo && !this.isReferenceRelation) {
-          this.repository.addToCache(item)
+          getRepositoryInternals(this.repository).addToCache(item)
           this.id = eo.getId() as any
         } else {
           this.storedItem = { item }
@@ -62,7 +65,7 @@ export class LookupColumn<T> {
 
   id: idType<T>
   constructor(
-    private repository: RepositoryImplementation<T>,
+    private repository: Repository<T>,
     private isReferenceRelation,
   ) {}
 

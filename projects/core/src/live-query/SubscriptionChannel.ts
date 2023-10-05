@@ -2,8 +2,12 @@ import { v4 as uuid } from 'uuid'
 import type { Remult } from '../context'
 import { Sort } from '../sort'
 import { remult as defaultRemult } from '../remult-proxy'
-import type { FindOptions, LiveQueryChangeInfo } from '../remult3/remult3'
-import type { RepositoryImplementation } from '../remult3/RepositoryImplementation'
+import type {
+  FindOptions,
+  LiveQueryChangeInfo,
+  Repository,
+} from '../remult3/remult3'
+import { getRepositoryInternals } from '../remult3/repository-internals'
 
 export const streamUrl = 'stream'
 //@internal
@@ -20,7 +24,10 @@ export class LiveQuerySubscriber<entityType> {
   subscribeCode: () => void
   unsubscribe: VoidFunction = () => {}
   async setAllItems(result: any[]) {
-    const items = await this.repo.fromJsonArray(result, this.query.options)
+    const items = await getRepositoryInternals(this.repo).fromJsonArray(
+      result,
+      this.query.options,
+    )
     this.forListeners((listener) => {
       listener(() => {
         return items
@@ -77,7 +84,7 @@ export class LiveQuerySubscriber<entityType> {
   async handle(messages: LiveQueryChange[]) {
     {
       let x = messages.filter(({ type }) => type == 'add' || type == 'replace')
-      let loadedItems = await this.repo.fromJsonArray(
+      let loadedItems = await getRepositoryInternals(this.repo).fromJsonArray(
         x.map((m) => m.data.item),
         this.query.options,
       )
@@ -128,7 +135,7 @@ export class LiveQuerySubscriber<entityType> {
   listeners: SubscriptionListener<LiveQueryChangeInfo<entityType>>[] = []
   id = uuid()
   constructor(
-    private repo: RepositoryImplementation<entityType>,
+    private repo: Repository<entityType>,
     private query: SubscribeToQueryArgs<entityType>,
     userId: string | undefined,
   ) {

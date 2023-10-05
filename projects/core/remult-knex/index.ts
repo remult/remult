@@ -21,10 +21,7 @@ import type {
 } from '../src/data-interfaces'
 import { remult as remultContext } from '../src/remult-proxy'
 import type { EntityFilter, EntityMetadata } from '../src/remult3/remult3'
-import type {
-  RepositoryImplementation,
-  RepositoryOverloads,
-} from '../src/remult3/RepositoryImplementation'
+import type { RepositoryOverloads } from '../src/remult3/RepositoryImplementation'
 import {
   getRepository,
   isAutoIncrement,
@@ -33,6 +30,7 @@ import { Sort } from '../src/sort'
 import { ValueConverters } from '../src/valueConverters'
 import { resultCompoundIdFilter as resultCompoundIdFilter } from '../src/resultCompoundIdFilter'
 import type { StringFieldOptions } from '../src/remult3/Fields'
+import { getRepositoryInternals } from '../src/remult3/repository-internals'
 
 export class KnexDataProvider implements DataProvider {
   constructor(public knex: Knex) {}
@@ -86,9 +84,7 @@ export class KnexDataProvider implements DataProvider {
     )
     b._addWhere = false
     await (
-      await (
-        repo as RepositoryImplementation<entityType>
-      ).translateWhereToFilter(condition)
+      await getRepositoryInternals(repo).translateWhereToFilter(condition)
     ).__applyToConsumer(b)
     let r = await b.resolveWhere()
     return (knex) => r.forEach((y) => y(knex))
