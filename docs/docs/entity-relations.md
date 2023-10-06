@@ -189,7 +189,8 @@ export class Order {
   id = "";
   @Fields.string() // [!code ++]
   customerId = ""; // Custom field to hold the related entity's identifier // [!code ++]
-  @Relations.toOne<Order, Customer>(() => Customer, "customerId")
+  @Relations.toOne<Order, Customer>(() => Customer, "customerId")  // [!code ++]
+  @Relations.toOne(() => Customer) //[!code --]
   customer?: Customer;
   @Fields.number()
   amount = 0;
@@ -202,17 +203,17 @@ In this example, we define a custom field called `customerId`, which stores the 
 
 Use the `@Relations.toOne` decorator to define the relation, specifying the types for the `fromEntity` and `toEntity` in the generic parameters. Additionally, provide the name of the custom field (in this case, `"customerId"`) as the third argument.
 
-```typescript{3-4}
-@Entity("orders")
+```typescript
+@Entity('orders')
 export class Order {
   @Fields.cuid()
-  id = "";
+  id = ''
   @Fields.string()
-  customerId = ""; // Custom field to hold the related entity's identifier
-  @Relations.toOne<Order, Customer>(() => Customer, "customerId")// [!code ++]
-  customer = "";
+  customerId = '' // Custom field to hold the related entity's identifier
+  @Relations.toOne<Order, Customer>(() => Customer, 'customerId') // [!code ++]
+  customer = ''
   @Fields.number()
-  amount = 0;
+  amount = 0
 }
 ```
 
@@ -273,36 +274,36 @@ In some scenarios, establishing a relation between entities requires considering
 
 Let's consider a scenario where both `Order` and `Customer` entities belong to specific branches, and we need also the `branchId` fields to ensure the correct association. First, define your entities with the relevant fields:
 
-```typescript{5-6,16-17,20-25}
-@Entity("customers")
+```typescript
+@Entity('customers')
 export class Customer {
   @Fields.cuid()
-  id = "";
-  @Fields.number()
-  branchId = 0;// [!code ++]
-  @Fields.string()// [!code ++]
-  name = "";
+  id = ''
+  @Fields.number() // [!code ++]
+  branchId = 0 // [!code ++]
   @Fields.string()
-  city = "";
+  name = ''
+  @Fields.string()
+  city = ''
 }
 
-@Entity("orders")
+@Entity('orders')
 export class Order {
   @Fields.cuid()
-  id = "";// [!code ++]
-  @Fields.number()// [!code ++]
-  branchId = 0;
-  @Fields.string({ dbName: "customer" })
-  customerId = "";// [!code ++]
-  @Relations.toOne<Order, Customer>(() => Customer, {// [!code ++]
-    fields: {// [!code ++]
+  id = ''
+  @Fields.number() // [!code ++]
+  branchId = 0 // [!code ++]
+  @Fields.string({ dbName: 'customer' })
+  customerId = ''
+  @Relations.toOne<Order, Customer>(() => Customer, {
+    fields: {
       branchId: 'branchId', // Field from Customer entity : Field from Order// [!code ++]
-      id: 'customerId',// [!code ++]
-    },// [!code ++]
-  })// [!code ++]
-  customer?: Customer;
+      id: 'customerId', // [!code ++]
+    }, // [!code ++]
+  })
+  customer?: Customer
   @Fields.number()
-  amount = 0;
+  amount = 0
 }
 ```
 
