@@ -411,7 +411,46 @@ export type IdFilter<valueType> =
     }
 
 export interface LoadOptions<entityType> {
+  /**
+   * @deprecated The 'load' option is deprecated and will be removed in future versions.
+   * Use 'Relations.toOne' along with the 'include' option instead.
+   *
+   * Example usage:
+   * ```
+   * // Deprecated usage with 'load' option
+   * await remult.repo(Order).find({
+   *   load: (o) => [o.customer],
+   * });
+   *
+   *
+   * // Preferred usage with 'Relations.toOne' and 'include' option
+   * await remult.repo(Order).find({
+   *   include: { customer: true },
+   * });
+   * ```
+   */
   load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[]
+  /**
+   * An option used in the `find` and `findFirst` methods to specify which related entities should be included
+   * when querying the source entity. It allows you to eagerly load related data to avoid N+1 query problems.
+   *
+   * @param include An object specifying the related entities to include, their options, and filtering criteria.
+   *
+   * Example usage:
+   * ```
+   * const orders = await customerRepo.find({
+   *   include: {
+   *     // Include the 'tags' relation for each customer.
+   *     tags: true,
+   *   },
+   * });
+   * ```
+   * In this example, the `tags` relation for each customer will be loaded and included in the query result.
+   *
+   * @see {@link Relations.toMany}
+   * @see {@link Relations.toOne}
+   * @see {@link RelationOptions}
+   */
   include?: MembersToInclude<entityType>
 }
 export interface FindOptionsBase<entityType> extends LoadOptions<entityType> {
@@ -486,6 +525,16 @@ export interface RelationInfo {
 //[ ] V2 - what to do about count?
 //[ ] V2 - condition? not to fetch if null etc....
 //[ ] V3 - all these fields will also appear in the where etc... in the typescript api - but we will not enforce them
+
+/**
+ * Options for configuring a relation between entities.
+ *
+ * @template fromEntity The type of the source entity (the entity defining the relation).
+ * @template toEntity The type of the target entity (the related entity).
+ * @template matchIdEntity The type used for matching IDs in the relation.
+ * @template optionsType The type of find options to apply to the relation (default is FindOptionsBase<toEntity>).
+ */
+
 export type RelationOptions<
   fromEntity,
   toEntity,
@@ -493,18 +542,31 @@ export type RelationOptions<
   optionsType extends FindOptionsBase<toEntity> = FindOptionsBase<toEntity>,
 > = {
   fields?: {
+    /**
+     * An object specifying custom field names for the relation.
+     * Each key represents a field in the related entity, and its value is the corresponding field in the source entity.
+     * For example, `{ customerId: 'id' }` maps the 'customerId' field in the related entity to the 'id' field in the source entity.
+     * This is useful when you want to define custom field mappings for the relation.
+     */
     //[ ] V2- consider enforcing types
     [K in keyof toEntity]?: keyof fromEntity
   }
+  /**
+   * The name of the field for this relation.
+   */
   field?: keyof matchIdEntity //y1 - consider adjusting it to the overloads
-} & RelationOptionsBase<fromEntity, toEntity, optionsType>
-
-export type RelationOptionsBase<
-  fromEntity,
-  toEntity,
-  optionsType extends LoadOptions<toEntity> = LoadOptions<toEntity>,
-> = {
+  /**
+   * Find options to apply to the relation when fetching related entities.
+   * You can specify a predefined set of find options or provide a function that takes the source entity
+   * and returns find options dynamically.
+   * These options allow you to customize how related entities are retrieved.
+   */
   findOptions?: optionsType | ((entity: fromEntity) => optionsType)
+  /**
+   * Determines whether the relation should be included by default when querying the source entity.
+   * When set to true, related entities will be automatically included when querying the source entity.
+   * If false or not specified, related entities will need to be explicitly included using the `include` option.
+   */
   defaultIncluded?: boolean
 } & Pick<FieldOptions, 'caption'>
 
@@ -564,3 +626,6 @@ export type ClassFieldDecorator<entityType, valueType> = (
     | ClassFieldDecoratorContextStub<entityType, valueType | undefined>,
   c?: any,
 ) => void
+
+//p1 - include relations in the api docs
+//p1 - include Relation options in the api docs

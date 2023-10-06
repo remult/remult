@@ -92,8 +92,20 @@ export interface FieldOptions<entityType = any, valueType = any> {
 
   /** The html input type for this field */
   inputType?: string
-  /** Determines if the referenced entity will be loaded immediately or on demand.
-   * @see[Lazy loading of related entities](http://remult.dev/docs/lazy-loading-of-related-entities.html)
+  /**
+   * @deprecated The 'lazy' option is deprecated and will be removed in future versions.
+   * Use 'Relations.toOne' instead.
+   *
+   * Example usage:
+   * ```
+   * // Deprecated usage with 'lazy' option
+   * @Field(() => Customer, { lazy: true })
+   * customer?: Customer;
+   *
+   * // Preferred usage with 'Relations.toOne'
+   * @Relations.toOne(() => Customer)
+   * customer?: Customer;
+   * ```
    */
   lazy?: boolean
   /** The value type for this field */

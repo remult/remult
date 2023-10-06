@@ -196,7 +196,21 @@ export class Fields {
   }
 }
 export class Relations {
-  /** A to one relation with an automatically generated field */
+  /**
+   * Define a to-one relation between entities, indicating a one-to-one relationship.
+   * If no field or fields are provided, it will automatically create a field in the database
+   * to represent the relation.
+   *
+   * @param toEntityType A function that returns the target entity type.
+   * @param options (Optional): An object containing options for configuring the to-one relation.
+   * @returns A decorator function to apply the to-one relation to an entity field.
+   *
+   * Example usage:
+   * ```
+   * @Relations.toOne(() => Customer)
+   * customer?: Customer;
+   * ```
+   */
   static toOne<entityType, toEntityType>(
     toEntityType: () => ClassType<toEntityType>,
     options?: FieldOptions<entityType, toEntityType> &
@@ -205,13 +219,69 @@ export class Relations {
         'defaultIncluded'
       >,
   ): ClassFieldDecorator<entityType, toEntityType | undefined>
-
-  /** A to one relation with fields defined in the second parameter */
+  /**
+   * Define a to-one relation between entities, indicating a one-to-one relationship.
+   * If no `fieldInMyEntity` is provided, this overload will automatically create a field in the database
+   * to represent the relation.
+   *
+   * @param toEntityType A function that returns the target entity type.
+   * @param fieldInMyEntity (Optional): The field in the current entity that represents the relation.
+   *                        Use this if you want to specify a custom field name for the relation.
+   * @returns A decorator function to apply the to-one relation to an entity field.
+   *
+   * Example usage:
+   * ```
+   * @Relations.toOne(() => Customer)
+   * customer?: Customer;
+   * ```
+   */
   static toOne<entityType, toEntityType>(
     toEntityType: () => ClassType<toEntityType>,
     fieldInMyEntity?: keyof entityType,
   ): ClassFieldDecorator<entityType, toEntityType | undefined>
-  /** A to one relation with fields defined in the field/fields parameter */
+  /**
+   * Define a to-one relation between entities, indicating a one-to-one relationship.
+   * This overload allows you to define the relation using options.
+   * If no field or fields are provided, it will automatically create a field in the database
+   * to represent the relation.
+   *
+   * @param toEntityType A function that returns the target entity type.
+   * @param options An object containing options for configuring the to-one relation.
+   *                - field (Optional): The name of the field in the related entity that corresponds to this relation.
+   * @returns A decorator function to apply the virtual to-one relation to an entity field.
+   *
+   * Example usage:
+   * ```
+   * @Relations.toOne(() => Customer, {
+   *   field: "customerId",
+   * })
+   * customer?: Customer;
+   * ```
+   */
+  static toOne<entityType, toEntityType>(
+    toEntityType: () => ClassType<toEntityType>,
+    fieldInMyEntity?: keyof entityType,
+  ): ClassFieldDecorator<entityType, toEntityType | undefined>
+  /**
+   * Define a to-one relation between entities, indicating a one-to-one relationship.
+   * If no field or fields are provided, it will automatically create a field in the database
+   * to represent the relation.
+   *
+   * @param toEntityType A function that returns the target entity type.
+   * @param options An object containing options for configuring the to-one relation.
+   *                - fields (Optional): An object specifying custom field names for the relation.
+   * @returns A decorator function to apply the virtual to-one relation to an entity field.
+   *
+   * Example usage:
+   * ```
+   * @Relations.toOne(() => Customer, {
+   *   fields: {
+   *     customerId: "id",
+   *   },
+   * })
+   * customer?: Customer;
+   * ```
+   */
   static toOne<entityType, toEntityType>(
     toEntityType: () => ClassType<toEntityType>,
     options: Omit<
@@ -271,11 +341,56 @@ export class Relations {
       } satisfies RelationInfo,
     })
   }
-
+  /**
+   * Define a toMany relation between entities, indicating a one-to-many relationship.
+   * This method allows you to establish a relationship where one entity can have multiple related entities.
+   *
+   * @param toEntityType A function that returns the target entity type.
+   * @param fieldInToEntity (Optional) The field in the target entity that represents the relation.
+   *                       Use this if you want to specify a custom field name for the relation.
+   * @returns A decorator function to apply the toMany relation to an entity field.
+   *
+   * Example usage:
+   * ```
+   * @Relations.toMany(() => Order)
+   * orders?: Order[];
+   *
+   * // or with a custom field name:
+   * @Relations.toMany(() => Order, "customerId")
+   * orders?: Order[];
+   * ```
+   */
   static toMany<entityType, toEntityType>(
     toEntityType: () => ClassType<toEntityType>,
     fieldInToEntity?: keyof toEntityType,
   ): ClassFieldDecorator<entityType, toEntityType[] | undefined>
+
+  /**
+   * Define a toMany relation between entities, indicating a one-to-many relationship.
+   * This method allows you to establish a relationship where one entity can have multiple related entities.
+   * You can also specify various options to customize the relation and control related data retrieval.
+   *
+   * @param toEntityType A function that returns the target entity type.
+   * @param options An object containing options for configuring the toMany relation.
+   *                - field (Optional): The field in the target entity that represents the relation.
+   *                  Use this if you want to specify a custom field name for the relation.
+   *                - findOptions (Optional): Customize the options for finding related entities.
+   *                  You can set limits, order, where conditions, and more.
+   * @returns A decorator function to apply the toMany relation to an entity field.
+   *
+   * Example usage:
+   * ```
+   * @Relations.toMany(() => Order, {
+   *   field: "customerOrders",
+   *   findOptions: {
+   *     limit: 10,
+   *     orderBy: { amount: "desc" },
+   *     where: { completed: true },
+   *   },
+   * })
+   * orders?: Order[];
+   * ```
+   */
   static toMany<entityType, toEntityType>(
     toEntityType: () => ClassType<toEntityType>,
     options: RelationOptions<
