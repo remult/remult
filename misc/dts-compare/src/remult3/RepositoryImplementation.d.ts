@@ -105,7 +105,7 @@ declare abstract class rowHelperBase<T> {
     __validateEntity(): Promise<void>;
     __performColumnAndEntityValidations(): Promise<void>;
     toApiJson(includeRelatedEntities?: boolean): any;
-    _updateEntityBasedOnApi(body: any): Promise<void>;
+    _updateEntityBasedOnApi(body: any, ignoreApiAllowed?: boolean): Promise<void>;
 }
 export declare class rowHelperImplementation<T> extends rowHelperBase<T> implements EntityRef<T> {
     private info;

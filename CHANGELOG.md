@@ -12,6 +12,10 @@ All notable changes to this project will be documented in this file.
 - added saving life cycle event
 - added repo function
 
+## [0.22.9] 2023-10-06
+
+- Fixed issue with Entity Backend Method and fields with allow api false #255
+
 ## [0.22.8] 2023-09-27
 
 - Fixed an issue with rest call that had both and & or

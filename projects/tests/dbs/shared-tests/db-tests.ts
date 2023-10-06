@@ -3,7 +3,14 @@ import type {
   EntityFilter,
   Repository,
 } from '../../../core/src/remult3/remult3'
-import { Entity, EntityBase, Field, Fields, IdEntity } from '../../../core'
+import {
+  Entity,
+  EntityBase,
+  Field,
+  Fields,
+  IdEntity,
+  SqlDatabase,
+} from '../../../core'
 import { c } from '../../tests/c'
 
 import { v4 as uuid } from 'uuid'
@@ -36,7 +43,7 @@ import type { DbTestProps } from './db-tests-props'
 import { entityWithValidations } from './entityWithValidations'
 import type { CategoriesForTesting } from '../../tests/remult-3-entities'
 import { ValueConverters } from '../../../core/src/valueConverters'
-import { it } from 'vitest'
+import { it, vi } from 'vitest'
 import { expect } from 'vitest'
 
 export interface DbTestOptions {
@@ -880,6 +887,51 @@ export function commonDbTests(
     }
     expect(await x.count()).toBe(0)
   })
+  it.skipIf(options?.excludeTransactions)(
+    'transaction should fully rollback if one fail',
+    async () => {
+      const originalConsoleError = console.error
+      console.error = vi.fn()
+
+      const ent = class {
+        id = 0
+        name = ''
+      }
+      describeClass(ent, Entity('test_transaction'), {
+        id: Fields.integer(),
+        name: Fields.string(),
+      })
+
+      await createEntity(ent)
+      const remult = await getRemult()
+      const all = await remult.repo(ent).find()
+      for (let i = 0; i < all.length; i++) {
+        await remult.repo(ent).delete(all[i].id)
+      }
+
+      const old_dataProvider = remult.dataProvider
+      try {
+        await remult.dataProvider.transaction(async (trx) => {
+          remult.dataProvider = trx
+          await remult.repo(ent).insert({ id: 1, name: 'a' })
+          await remult.repo(ent).insert({ id: 1, name: 'b' })
+          throw new Error(
+            "in case the db doesn't enforce unique id like mongo doesnt",
+          )
+        })
+      } catch (error) {
+      } finally {
+        // Bring back the old dataprovider
+        remult.dataProvider = old_dataProvider
+      }
+
+      // nothing should be inserted
+      let data = await remult.repo(ent).find()
+      expect(data.length).toBe(0)
+
+      console.error = originalConsoleError
+    },
+  )
 
   it('test date', async () => {
     const e = class {

@@ -192,6 +192,30 @@ describe('test Server method in entity', () => {
     await dataApi.put(t, 1, { ok123: false })
     actionInfo.runningOnServer = false
   })
+  it('test instance backend method insert with allowApiUpdate=false', async () => {
+    class Task extends EntityBase {
+      id = 0
+      title = ''
+      async doAndSave() {
+        this.title = 'done'
+        await this.save()
+        return true
+      }
+    }
+    describeClass(Task, Entity('tttt'), {
+      id: Fields.autoIncrement(),
+      title: Fields.string(),
+      doAndSave: BackendMethod({ allowed: true }),
+    })
+    const t = new Remult().repo(Task).create({ title: '255' })
+    await t.doAndSave()
+    expect(t).toMatchInlineSnapshot(`
+      Task {
+        "id": 1,
+        "title": "done",
+      }
+    `)
+  })
 })
 
 @Entity('a')

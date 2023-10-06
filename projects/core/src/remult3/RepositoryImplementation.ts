@@ -1348,7 +1348,7 @@ abstract class rowHelperBase<T> {
     return result
   }
 
-  async _updateEntityBasedOnApi(body: any) {
+  async _updateEntityBasedOnApi(body: any, ignoreApiAllowed = false) {
     let keys = Object.keys(body)
     for (const col of this.columnsInfo) {
       if (keys.includes(col.key))
@@ -1358,6 +1358,7 @@ abstract class rowHelperBase<T> {
         ) {
           if (
             !this.remult ||
+            ignoreApiAllowed ||
             col.allowApiUpdate === undefined ||
             this.remult.isAllowedForInstance(this.instance, col.allowApiUpdate)
           ) {
