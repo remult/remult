@@ -52,15 +52,16 @@ In Remult, many-to-one relations allow you to establish connections between enti
 
 To establish a many-to-one relation from the `Order` entity to the `Customer` entity, you can use the `@Relations.toOne()` decorator in your entity definition:
 
-```typescript{5}
-@Entity("orders")
+```typescript
+@Entity('orders')
 export class Order {
   @Fields.cuid()
-  id = "";
-  @Relations.toOne(() => Customer)
-  customer?: Customer;
+  id = ''
+  @Fields.string() // [!code --]
+  @Relations.toOne(() => Customer) // [!code ++]
+  customer?: Customer
   @Fields.number()
-  amount = 0;
+  amount = 0
 }
 ```
 
@@ -148,7 +149,7 @@ Sometimes, you may have scenarios where you want a relation to be included by de
 
 ```typescript
 @Relations.toOne(() => Customer, {
-  defaultIncluded: true,
+  defaultIncluded: true, // [!code ++]
 })
 customer = "";
 ```
@@ -160,7 +161,7 @@ In this example, we set `defaultIncluded` to `true` for the `customer` relation 
 ```typescript
 const orders = await orderRepo.find({
   include: {
-    customer: false,
+    customer: false, // [!code ++]
   },
 })
 ```
@@ -186,8 +187,8 @@ In your entity definition, define a custom field that will hold the identifier o
 export class Order {
   @Fields.cuid()
   id = "";
-  @Fields.string()
-  customerId = ""; // Custom field to hold the related entity's identifier
+  @Fields.string() // [!code ++]
+  customerId = ""; // Custom field to hold the related entity's identifier // [!code ++]
   @Relations.toOne<Order, Customer>(() => Customer, "customerId")
   customer?: Customer;
   @Fields.number()
@@ -202,10 +203,17 @@ In this example, we define a custom field called `customerId`, which stores the 
 Use the `@Relations.toOne` decorator to define the relation, specifying the types for the `fromEntity` and `toEntity` in the generic parameters. Additionally, provide the name of the custom field (in this case, `"customerId"`) as the third argument.
 
 ```typescript{3-4}
-@Fields.string()
-customerId = ""; // Custom field to hold the related entity's identifier
-@Relations.toOne<Order, Customer>(() => Customer, "customerId")
-customer = "";
+@Entity("orders")
+export class Order {
+  @Fields.cuid()
+  id = "";
+  @Fields.string()
+  customerId = ""; // Custom field to hold the related entity's identifier
+  @Relations.toOne<Order, Customer>(() => Customer, "customerId")// [!code ++]
+  customer = "";
+  @Fields.number()
+  amount = 0;
+}
 ```
 
 This configuration establishes a relation between `Order` and `Customer` using the `customerId` field as the reference.
@@ -222,12 +230,12 @@ Before making any changes, it's crucial to understand the structure of your exis
 
 When defining the custom field in your entity, use the `dbName` option to specify the name of the database column where the related entity's identifier is stored. This ensures that the custom field (`customerId` in this example) correctly accesses the existing data in your database.
 
-```typescript{5}
+```typescript
 @Entity('orders')
 export class Order {
   @Fields.cuid()
   id = ''
-  @Fields.string({ dbName: 'customer' }) // Use dbName to match existing data
+  @Fields.string({ dbName: 'customer' }) // Use dbName to match existing data // [!code ++]
   customerId = ''
   @Relations.toOne(() => Customer, 'customerId')
   customer?: Customer
@@ -244,7 +252,7 @@ When you require additional customization for a relation field in Remult, you ca
 
 ```typescript
 @Relations.toOne<Order, Customer>(() => Customer, {
-  field: "customerId",
+  field: "customerId", // [!code ++]
   caption: "The Customer",
 })
 ```
@@ -271,8 +279,8 @@ export class Customer {
   @Fields.cuid()
   id = "";
   @Fields.number()
-  branchId = 0;
-  @Fields.string()
+  branchId = 0;// [!code ++]
+  @Fields.string()// [!code ++]
   name = "";
   @Fields.string()
   city = "";
@@ -281,17 +289,17 @@ export class Customer {
 @Entity("orders")
 export class Order {
   @Fields.cuid()
-  id = "";
-  @Fields.number()
+  id = "";// [!code ++]
+  @Fields.number()// [!code ++]
   branchId = 0;
   @Fields.string({ dbName: "customer" })
-  customerId = "";
-  @Relations.toOne<Order, Customer>(() => Customer, {
-    fields: {
-      branchId: 'branchId', // Field from Customer entity : Field from Order
-      id: 'customerId',
-    },
-  })
+  customerId = "";// [!code ++]
+  @Relations.toOne<Order, Customer>(() => Customer, {// [!code ++]
+    fields: {// [!code ++]
+      branchId: 'branchId', // Field from Customer entity : Field from Order// [!code ++]
+      id: 'customerId',// [!code ++]
+    },// [!code ++]
+  })// [!code ++]
   customer?: Customer;
   @Fields.number()
   amount = 0;
@@ -306,10 +314,10 @@ In the `@Relations.toOne` decorator, use the `fields` option to specify the mapp
 
 ```typescript
 @Relations.toOne<Order, Customer>(() => Customer, {
-  fields: {
-    branchId: 'branchId', // Field from Customer entity : Field from Order
-    id: 'customerId',
-  },
+  fields: {// [!code ++]
+    branchId: 'branchId', // Field from Customer entity : Field from Order// [!code ++]
+    id: 'customerId',// [!code ++]
+  },// [!code ++]
 })
 customer?: Customer;
 ```
@@ -361,17 +369,17 @@ In this initial setup:
 
 Now, let's enhance this setup to include a `toMany` relation that allows you to retrieve a customer's orders:
 
-```typescript{9-10}
-@Entity("customers")
+```typescript
+@Entity('customers')
 export class Customer {
   @Fields.cuid()
-  id = "";
+  id = ''
   @Fields.string()
-  name = "";
+  name = ''
   @Fields.string()
-  city = "";
-  @Relations.toMany(() => Order)
-  orders?: Order[];
+  city = ''
+  @Relations.toMany(() => Order) // [!code ++]
+  orders?: Order[] // [!code ++]
 }
 ```
 
