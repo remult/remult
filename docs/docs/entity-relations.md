@@ -274,7 +274,7 @@ In some scenarios, establishing a relation between entities requires considering
 
 Let's consider a scenario where both `Order` and `Customer` entities belong to specific branches, and we need also the `branchId` fields to ensure the correct association. First, define your entities with the relevant fields:
 
-```typescript
+```typescript{}
 @Entity('customers')
 export class Customer {
   @Fields.cuid()
@@ -296,7 +296,7 @@ export class Order {
   @Fields.string({ dbName: 'customer' })
   customerId = ''
   @Relations.toOne<Order, Customer>(() => Customer, {
-    fields: {
+    fields: {//[!code ++]
       branchId: 'branchId', // Field from Customer entity : Field from Order// [!code ++]
       id: 'customerId', // [!code ++]
     }, // [!code ++]
@@ -682,8 +682,6 @@ export class Tag {
   id = ''
   @Fields.string()
   name = ''
-  @Fields.string()
-  color = ''
 }
 ```
 
@@ -703,7 +701,7 @@ export class TagsToCustomers {
   customerId = ''
   @Fields.string()
   tagId = ''
-  @Relations.toOne(() => Tag)
+  @Relations.toOne<TagsToCustomers, Tag>(() => Tag, 'tagId')
   tag?: Tag
 }
 ```
@@ -714,17 +712,17 @@ export class TagsToCustomers {
 
 Now, let's enhance our customer entity with a toMany relationship, enabling us to fetch all of its associated tags effortlessly.
 
-```ts{9-10}
-@Entity("customers")
+```ts
+@Entity('customers')
 export class Customer {
   @Fields.cuid()
-  id = "";
+  id = ''
   @Fields.string()
-  name = "";
+  name = ''
   @Fields.string()
-  city = "";
-  @Relations.toMany(() => TagsToCustomers, "customerId")
-  tags?: TagsToCustomers[];
+  city = ''
+  @Relations.toMany(() => TagsToCustomers, 'customerId') // [!code ++]
+  tags?: TagsToCustomers[] // [!code ++]
 }
 ```
 
@@ -797,20 +795,18 @@ In this code, we're querying the "customer" entity to find a customer named "Abs
   "tags": [
     {
       "customerId": "fki6t24zkykpljvh4jurzs97",
-      "tagId": "",
+      "tagId": "aewm0odq9758nopgph3x7brt",
       "tag": {
         "id": "cf8xv3myluc7pmsgez3p9hn9",
-        "name": "vip",
-        "color": ""
+        "name": "vip"
       }
     },
     {
       "customerId": "fki6t24zkykpljvh4jurzs97",
-      "tagId": "",
+      "tagId": "aewm0odq9758nopgph3x7brt",
       "tag": {
         "id": "aewm0odq9758nopgph3x7brt",
-        "name": "influencer",
-        "color": ""
+        "name": "influencer"
       }
     }
   ]
