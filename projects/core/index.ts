@@ -30,7 +30,6 @@ export {
   RefSubscriber,
   RefSubscriberBase,
   RelationOptions,
-  RelationOptionsBase,
   ObjectMembersOnly,
   MembersToInclude,
   RepositoryRelations,
