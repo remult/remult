@@ -22,7 +22,7 @@
     "prebuild-docs": "tsx docs/misc/fix-errors.ts",
     "build-docs": "cd docs && npm run build",
     "release-docs": "cd docs && npm run publish",
-    "build-ref-ts": "ts-node --project tsconfig.server.json ./docs/tools/docs-work.ts",
+    "build-ref-ts": "tsx ./docs/tools/docs-work.ts",
     "build-ref": "cd docs/tools && build-ref.bat",
     "update-starter": "misc\\update-versions-to-starter-projects.sh",
     "detect-circular": "depcruise projects/core --include-only \"^projects/core\" --output-type dot | dot -T svg > dependency-graph.svg",
