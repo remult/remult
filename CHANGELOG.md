@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.22.9]
+## [0.22.9] 2023-10-06
 
 - Fixed issue with Entity Backend Method and fields with allow api false #255
 
