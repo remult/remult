@@ -1287,7 +1287,8 @@ abstract class rowHelperBase<T> {
         if (val !== undefined && val !== null)
           val = col.valueConverter.fromJson(JSON.parse(JSON.stringify(val)))
       }
-      d[col.key] = val
+      const rel = getRelationInfo(col)
+      if (!rel || rel.type === 'reference') d[col.key] = val
     }
     return d
   }

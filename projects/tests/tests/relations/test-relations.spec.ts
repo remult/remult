@@ -172,6 +172,7 @@ describe('test relations', () => {
     ])
     remult.clearAllCache()
   })
+
   it('no extra data is loaded', async () => {
     let stats = (remult.dataProvider = TestDataProvider(remult.dataProvider))
     const t = await r(Task).findFirst({ id: 4 })
@@ -692,4 +693,27 @@ it('test new id definition', async () => {
   expect(remult.repo(new_).metadata.idMetadata.getId({ a: 1, b: 2 })).toBe(
     '1,2',
   )
+})
+
+it('test null and related field ', async () => {
+  const remult = new Remult(new InMemoryDataProvider())
+
+  const Customer = createEntity('customer', {
+    id: Fields.string(),
+    name: Fields.string(),
+  })
+  const Order = createEntity('orders', {
+    id: Fields.integer(),
+    customerId: Fields.string({ allowNull: true }),
+    customer: Relations.toOne(() => Customer, 'customerId'),
+  })
+  const customers = await remult
+    .repo(Customer)
+    .insert([{ name: 'noam', id: '1' }])
+  await remult.repo(Order).insert({ customerId: customers[0].id })
+
+  const o = await remult
+    .repo(Order)
+    .findFirst({}, { include: { customer: true } })
+  expect(o.customer.name).toBe('noam')
 })
