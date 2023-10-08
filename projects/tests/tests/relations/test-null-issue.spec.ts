@@ -47,4 +47,13 @@ describe('test null issue', () => {
         .customer.name,
     ).toBe('Noam')
   })
+  it('test the null issue b', async () => {
+    let remult = new Remult(new InMemoryDataProvider())
+
+    await remult.repo(Order).insert([{ customerId: null, amount: 15 }])
+    expect(
+      (await remult.repo(Order).find({ include: { customer: true } }))[0]
+        .customer,
+    ).toBe(null)
+  })
 })

@@ -628,7 +628,7 @@ export class RepositoryImplementation<entityType>
                 row[col.key] =
                   rel.type !== 'toMany'
                     ? result.length == 0
-                      ? undefined
+                      ? null
                       : result[0]
                     : result
               })
