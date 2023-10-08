@@ -1077,6 +1077,7 @@ abstract class rowHelperBase<T> {
     protected columnsInfo: FieldOptions[],
     protected instance: T,
     protected remult: Remult,
+    protected isNewRow: boolean,
   ) {
     {
       let fac = remult as RemultProxy
@@ -1132,6 +1133,7 @@ abstract class rowHelperBase<T> {
       } else if (getRelationInfo(col)?.type === 'toOne') {
         let hasVal = instance.hasOwnProperty(col.key)
         let val = instance[col.key]
+        if (isNewRow && !val) hasVal = false
         Object.defineProperty(instance, col.key, {
           get: () => {
             return val
@@ -1388,7 +1390,7 @@ export class rowHelperImplementation<T>
     remult: Remult,
     private _isNew: boolean,
   ) {
-    super(info.columnsInfo, instance, remult)
+    super(info.columnsInfo, instance, remult, _isNew)
     this.metadata = info
     if (_isNew) {
       for (const col of info.columnsInfo) {
@@ -1765,7 +1767,7 @@ export class controllerRefImpl<T = any>
   implements ControllerRef<T>
 {
   constructor(columnsInfo: FieldOptions[], instance: any, remult: Remult) {
-    super(columnsInfo, instance, remult)
+    super(columnsInfo, instance, remult, false)
 
     let _items = []
     let r = {
