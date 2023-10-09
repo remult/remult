@@ -24,6 +24,6 @@
 	"dependencies": {
 		"@auth/core": "^0.7.1",
 		"@auth/sveltekit": "^0.3.1",
-		"remult": "^0.20.0"
+		"remult": "^0.20.6"
 	}
 }
