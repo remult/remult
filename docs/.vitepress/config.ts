@@ -132,17 +132,21 @@ export default defineConfig({
                 link: '/docs/entity-relations',
                 collapsed: true,
                 items: [
-                  {
-                    text: 'Lazy loading',
-                    link: '/docs/lazy-loading-of-related-entities',
-                  },
+                  // {
+                  //   text: 'Lazy loading',
+                  //   link: '/docs/lazy-loading-of-related-entities',
+                  // },
                   {
                     text: 'More on One to Many',
                     link: '/docs/techniques-regarding-one-to-many-relations',
                   },
                 ],
               },
-              { text: 'Generate from Existing DB', link: '/docs/entities-codegen-from-db-schema' }
+              { text: 'Entity Lifecycle Hooks', link: '/docs/lifecycle-hooks' },
+              {
+                text: 'Generate from Existing DB',
+                link: '/docs/entities-codegen-from-db-schema',
+              },
             ],
           },
           {

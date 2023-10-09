@@ -127,38 +127,82 @@ this is the place to run logic that we want to run in any case before an entity 
    *example*
    ```ts
    @Entity<Task>("tasks", {
-   saving: async task => {
-        task.lastUpdated = new Date()
-    }
+     saving: async (task, e) => {
+       if (e.isNew) {
+         task.createdAt = new Date(); // Set the creation date for new tasks.
+       }
+       task.lastUpdated = new Date(); // Update the last updated date.
+     },
    })
    ```
+   
+   
+   *link*
+   LifeCycleEvent object
+   
+   
+   *see*
+   [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
 
 Arguments:
-* **row**
-* **e**
+* **entity** - The instance of the entity being saved.
+* **event** - an
 ## saved
-will be called after the Entity was saved to the data source.
+A hook that runs after an entity has been successfully saved.
+   
+   
+   *link*
+   LifeCycleEvent object
+   
+   
+   *see*
+   [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
 
 Arguments:
-* **row**
+* **entity** - The instance of the entity that was saved.
 * **e**
 ## deleting
-Will be called before an Entity is deleted.
+A hook that runs before an entity is deleted.
+   
+   
+   *link*
+   LifeCycleEvent object
+   
+   
+   *see*
+   [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
 
 Arguments:
-* **row**
+* **entity** - The instance of the entity being deleted.
 * **e**
 ## deleted
-Will be called after an Entity is deleted
+A hook that runs after an entity has been successfully deleted.
+   
+   
+   *link*
+   LifeCycleEvent object
+   
+   
+   *see*
+   [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
 
 Arguments:
-* **row**
+* **entity** - The instance of the entity that was deleted.
 * **e**
 ## validation
-Will be called when the entity is being validated, usually prior to the `saving` event
+A hook that runs to perform validation checks on an entity before saving.
+This hook is also executed on the frontend.
+   
+   
+   *link*
+   LifeCycleEvent object
+   
+   
+   *see*
+   [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
 
 Arguments:
-* **row**
+* **entity** - The instance of the entity being validated.
 * **ref**
 ## dbName
 The name of the table in the database that holds the data for this entity.
@@ -186,14 +230,14 @@ An arrow function that identifies the `id` column to use for this entity
    *example*
    ```ts
    //Single column id
-   @Entity<Products>("products", { id:p=>p.productCode })
+   @Entity<Products>("products", { id: {productCode: true} })
    ```
    
    
    *example*
    ```ts
    //Multiple columns id
-   @Entity<OrderDetails>("orderDetails", { id:od=> [od.orderId, od.productCode] })
+   @Entity<OrderDetails>("orderDetails", { id:{ orderId:true, productCode:true} })
    ```
 ## entityRefInit
 

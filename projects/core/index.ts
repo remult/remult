@@ -139,6 +139,19 @@ export {
   LiveQueryChange,
   Unsubscribe,
 } from './src/live-query/SubscriptionChannel'
+
+/**
+ * A convenient shortcut function to quickly obtain a repository for a specific entity type in Remult.
+ *
+ * @param entity The entity class type for which you want to get a repository.
+ * @returns A repository instance for the specified entity type.
+ *
+ * Example usage:
+ * ```ts
+ * await repo(Task).find()
+ * await repo(Customer).insert()
+ * ```
+ */
 export function repo<entityType>(entity: ClassType<entityType>) {
   return remult.repo(entity)
 }

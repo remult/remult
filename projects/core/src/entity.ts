@@ -8,7 +8,7 @@ import type {
   EntityOrderBy,
   EntityRef,
   FieldsMetadata,
-  LifeCycleEvent,
+  LifecycleEvent,
 } from './remult3/remult3'
 
 export interface EntityOptions<entityType = any> {
@@ -73,31 +73,65 @@ export interface EntityOptions<entityType = any> {
    * this is the place to run logic that we want to run in any case before an entity is saved.
    * @example
    * @Entity<Task>("tasks", {
-   * saving: async task => {
-   *      task.lastUpdated = new Date()
-   *  }
-   *})
+   *   saving: async (task, e) => {
+   *     if (e.isNew) {
+   *       task.createdAt = new Date(); // Set the creation date for new tasks.
+   *     }
+   *     task.lastUpdated = new Date(); // Update the last updated date.
+   *   },
+   * })
+   * @param entity - The instance of the entity being saved.
+   * @param event - an @link LifeCycleEvent object
+   * @see [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
    */
   saving?: (
-    row: entityType,
-    e: LifeCycleEvent<entityType>,
+    entity: entityType,
+    event: LifecycleEvent<entityType>,
   ) => Promise<any> | any
-  /** will be called after the Entity was saved to the data source. */
-  saved?: (row: entityType, e: LifeCycleEvent<entityType>) => Promise<any> | any
-  /** Will be called before an Entity is deleted. */
+  /**
+   * A hook that runs after an entity has been successfully saved.
+   *
+   * @param entity The instance of the entity that was saved.
+   * @param event - an @link LifeCycleEvent object
+   * @see [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
+   */
+  saved?: (
+    entity: entityType,
+    e: LifecycleEvent<entityType>,
+  ) => Promise<any> | any
+  /**
+   * A hook that runs before an entity is deleted.
+   *
+   * @param entity The instance of the entity being deleted.
+   * @param event - an @link LifeCycleEvent object
+   * @see [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
+   */
   deleting?: (
-    row: entityType,
-    e: LifeCycleEvent<entityType>,
+    entity: entityType,
+    e: LifecycleEvent<entityType>,
   ) => Promise<any> | any
-  /** Will be called after an Entity is deleted */
+  /**
+   * A hook that runs after an entity has been successfully deleted.
+   *
+   * @param entity The instance of the entity that was deleted.
+   * @param event - an @link LifeCycleEvent object
+   * @see [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
+   */
   deleted?: (
-    row: entityType,
-    e: LifeCycleEvent<entityType>,
+    entity: entityType,
+    e: LifecycleEvent<entityType>,
   ) => Promise<any> | any
-  /** Will be called when the entity is being validated, usually prior to the `saving` event */
+  /**
+   * A hook that runs to perform validation checks on an entity before saving.
+   * This hook is also executed on the frontend.
+   *
+   * @param entity The instance of the entity being validated.
+   * @param event - an @link LifeCycleEvent object
+   * @see [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
+   */
   validation?: (
-    row: entityType,
-    ref: EntityRef<entityType>,
+    entity: entityType,
+    ref: LifecycleEvent<entityType>,
   ) => Promise<any> | any
   /** The name of the table in the database that holds the data for this entity.
    * If no name is set, the `key` will be used instead.

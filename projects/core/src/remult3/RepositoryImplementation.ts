@@ -32,7 +32,7 @@ import type {
   FindOptionsBase,
   IdFieldRef,
   IdMetadata,
-  LifeCycleEvent,
+  LifecycleEvent,
   LiveQuery,
   LiveQueryChangeInfo,
   LoadOptions,
@@ -1604,7 +1604,7 @@ export class rowHelperImplementation<T>
       repository: self.repository,
       preventDefault: () => preventDefault(),
       relations: self.repository.relations(self.instance),
-    } satisfies LifeCycleEvent<T>
+    } satisfies LifecycleEvent<T>
   }
 
   private getIdFilter(): Filter {
@@ -1706,8 +1706,10 @@ export class rowHelperImplementation<T>
       }
     }
 
-    if (this.info.entityInfo.validation)
-      await this.info.entityInfo.validation(this.instance, this)
+    if (this.info.entityInfo.validation) {
+      let e = this.buildLifeCycleEvent(() => {})
+      await this.info.entityInfo.validation(this.instance, e)
+    }
     if (this.repository.listeners)
       for (const listener of this.repository.listeners.filter(
         (x) => x.validating,

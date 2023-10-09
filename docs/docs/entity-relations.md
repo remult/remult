@@ -274,7 +274,7 @@ In some scenarios, establishing a relation between entities requires considering
 
 Let's consider a scenario where both `Order` and `Customer` entities belong to specific branches, and we need also the `branchId` fields to ensure the correct association. First, define your entities with the relevant fields:
 
-```typescript{}
+```typescript{0}
 @Entity('customers')
 export class Customer {
   @Fields.cuid()

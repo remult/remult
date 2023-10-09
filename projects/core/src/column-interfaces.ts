@@ -3,7 +3,7 @@ import type { Allowed, AllowedForInstance } from './context'
 import type {
   EntityMetadata,
   FieldRef,
-  LifeCycleEvent,
+  LifecycleEvent,
   OmitEB,
 } from './remult3/remult3'
 
@@ -54,7 +54,7 @@ export interface FieldOptions<entityType = any, valueType = any> {
   /** Will be fired before this field is saved to the server/database */
   saving?: (
     entity: entityType,
-    e: LifeCycleEvent<entityType>,
+    e: LifecycleEvent<entityType>,
     fieldRef: FieldRef<entityType, valueType>,
   ) => any | Promise<any>
   /**  An expression that will determine this fields value on the backend and be provided to the front end*/

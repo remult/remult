@@ -4,13 +4,24 @@ All notable changes to this project will be documented in this file.
 
 ## [0.23.0] TBD
 
+- Added Relations - see [Relations](docs/lifecycle-hooks.html)
+- Added LifecycleEvent info for saving,saved,deleting,deleted - see [Entity Lifecycle Hooks](https://remult.dev/docs/lifecycle-hooks.html)
+- Saving, Saved, Deleting, Deleted all run only on the backend now
+- Changed the way an entity id is defined see [Entity id's doc](http://localhost:5173/docs/ref_entity.html#id)
+  Example:
+
+  ```ts
+  @Entity<OrderDetails>("orderDetails", { id: { orderId: true, productCode: true } })
+  ```
+
+- added repo function which is A convenient shortcut function to quickly obtain a repository for a specific entity type in Remult.
+
+  ```ts
+  await repo(Task).find()
+  ```
+
 - Fixed exception with toRawFilter
-- Saving/saved/deleting/deleted will now run on the backend
-- Added relations
-- Changed the way an entity id is defined
 - fixed json db to support db names
-- added saving life cycle event
-- added repo function
 
 ## [0.22.9] 2023-10-06
 

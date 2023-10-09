@@ -34,17 +34,57 @@ export interface EntityRef<entityType> extends Subscribable {
   readonly apiInsertAllowed: boolean
   readonly isLoading: boolean
 }
-export interface LifeCycleEvent<entityType> {
+/**
+ * Represents a lifecycle event associated with an entity instance. These events
+ * are triggered during various stages of the entity's lifecycle, such as validation,
+ * saving, saved, deleting, and deleted.
+ *
+ * @template entityType The type of the entity associated with the event.
+ * @see [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
+ */
+export interface LifecycleEvent<entityType> {
+  /**
+   * Indicates whether the entity is new or existing.
+   */
   isNew: boolean
+
+  /**
+   * A reference to the fields of the entity, providing access to its properties.
+   */
   fields: FieldsRef<entityType>
+
+  /**
+   * The ID of the entity.
+   */
   id: idType<entityType>
+
+  /**
+   * The original ID of the entity, useful for tracking changes.
+   */
   originalId: idType<entityType>
+
+  /**
+   * The repository associated with the entity, providing access to repository methods.
+   */
   repository: Repository<entityType>
+
+  /**
+   * Metadata describing the entity's structure and configuration.
+   */
   metadata: EntityMetadata<entityType>
+
+  /**
+   * A function that can be used to prevent the default behavior associated with
+   * the lifecycle event.
+   */
   preventDefault: VoidFunction
+
+  /**
+   * A reference to the repository relations associated with the entity, providing
+   * access to related entities and their data.
+   */
   relations: RepositoryRelations<entityType>
 }
-
 export interface ControllerRef<entityType> extends Subscribable {
   hasErrors(): boolean
   fields: FieldsRef<entityType>
