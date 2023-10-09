@@ -15,7 +15,6 @@ Arguments:
        page:2
       })
       ```
-      
    * **page** - Determines the page number that will be used to extract the data
       
       
@@ -26,8 +25,30 @@ Arguments:
        page:2
       })
       ```
+   * **include** - An option used in the `find` and `findFirst` methods to specify which related entities should be included
+   when querying the source entity. It allows you to eagerly load related data to avoid N+1 query problems.
       
-   * **load**
+      
+      *param*
+      An object specifying the related entities to include, their options, and filtering criteria.
+      
+      Example usage:
+      ```
+      const orders = await customerRepo.find({
+        include: {
+          // Include the 'tags' relation for each customer.
+          tags: true,
+        },
+      });
+      ```
+      In this example, the `tags` relation for each customer will be loaded and included in the query result.
+      
+      
+      *see*
+       - Relations.toMany
+       - Relations.toOne
+       - RelationOptions
+      
    * **where** - filters the data
       
       
@@ -37,10 +58,8 @@ Arguments:
       ```
       
       
-      
       *see*
       For more usage examples see [EntityFilter](https://remult.dev/docs/entityFilter.html)
-      
    * **orderBy** - Determines the order of items returned .
       
       
@@ -50,12 +69,10 @@ Arguments:
       ```
       
       
-      
       *example*
       ```ts
       await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
       ```
-      
 ## liveQuery
 returns a result array based on the provided options
 
@@ -71,7 +88,6 @@ Arguments:
        page:2
       })
       ```
-      
    * **page** - Determines the page number that will be used to extract the data
       
       
@@ -82,8 +98,30 @@ Arguments:
        page:2
       })
       ```
+   * **include** - An option used in the `find` and `findFirst` methods to specify which related entities should be included
+   when querying the source entity. It allows you to eagerly load related data to avoid N+1 query problems.
       
-   * **load**
+      
+      *param*
+      An object specifying the related entities to include, their options, and filtering criteria.
+      
+      Example usage:
+      ```
+      const orders = await customerRepo.find({
+        include: {
+          // Include the 'tags' relation for each customer.
+          tags: true,
+        },
+      });
+      ```
+      In this example, the `tags` relation for each customer will be loaded and included in the query result.
+      
+      
+      *see*
+       - Relations.toMany
+       - Relations.toOne
+       - RelationOptions
+      
    * **where** - filters the data
       
       
@@ -93,10 +131,8 @@ Arguments:
       ```
       
       
-      
       *see*
       For more usage examples see [EntityFilter](https://remult.dev/docs/entityFilter.html)
-      
    * **orderBy** - Determines the order of items returned .
       
       
@@ -106,12 +142,10 @@ Arguments:
       ```
       
       
-      
       *example*
       ```ts
       await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
       ```
-      
 ## findFirst
 returns the first item that matchers the `where` condition
    
@@ -122,12 +156,10 @@ returns the first item that matchers the `where` condition
    ```
    
    
-   
    *example*
    ```ts
    await taskRepo.findFirst({ completed:false },{ createIfNotFound: true })
    ```
-   
 
 Arguments:
 * **where** - filters the data
@@ -136,7 +168,30 @@ Arguments:
    *see*
    [EntityFilter](http://remult.dev/docs/entityFilter.html)
 * **options**
-   * **load**
+   * **include** - An option used in the `find` and `findFirst` methods to specify which related entities should be included
+   when querying the source entity. It allows you to eagerly load related data to avoid N+1 query problems.
+      
+      
+      *param*
+      An object specifying the related entities to include, their options, and filtering criteria.
+      
+      Example usage:
+      ```
+      const orders = await customerRepo.find({
+        include: {
+          // Include the 'tags' relation for each customer.
+          tags: true,
+        },
+      });
+      ```
+      In this example, the `tags` relation for each customer will be loaded and included in the query result.
+      
+      
+      *see*
+       - Relations.toMany
+       - Relations.toOne
+       - RelationOptions
+      
    * **where** - filters the data
       
       
@@ -146,10 +201,8 @@ Arguments:
       ```
       
       
-      
       *see*
       For more usage examples see [EntityFilter](https://remult.dev/docs/entityFilter.html)
-      
    * **orderBy** - Determines the order of items returned .
       
       
@@ -159,12 +212,10 @@ Arguments:
       ```
       
       
-      
       *example*
       ```ts
       await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
       ```
-      
    * **useCache** - determines if to cache the result, and return the results from cache.
    * **createIfNotFound** - If set to true and an item is not found, it's created and returned
 ## findId
@@ -177,6 +228,11 @@ Arguments:
    * **createIfNotFound** - If set to true and an item is not found, it's created and returned
 ## query
 An alternative form of fetching data from the API server, which is intended for operating on large numbers of entity objects.
+
+It also has it's own paging mechanism that can be used n paging scenarios.
+
+The `query` method doesn't return an array (as the `find` method) and instead returns an `iterable` `QueryResult` object
+which supports iterations using the JavaScript `for await` statement.
    
    
    *example*
@@ -185,11 +241,33 @@ An alternative form of fetching data from the API server, which is intended for 
      // do something.
    }
    ```
-   
 
 Arguments:
 * **options**
-   * **load**
+   * **include** - An option used in the `find` and `findFirst` methods to specify which related entities should be included
+   when querying the source entity. It allows you to eagerly load related data to avoid N+1 query problems.
+      
+      
+      *param*
+      An object specifying the related entities to include, their options, and filtering criteria.
+      
+      Example usage:
+      ```
+      const orders = await customerRepo.find({
+        include: {
+          // Include the 'tags' relation for each customer.
+          tags: true,
+        },
+      });
+      ```
+      In this example, the `tags` relation for each customer will be loaded and included in the query result.
+      
+      
+      *see*
+       - Relations.toMany
+       - Relations.toOne
+       - RelationOptions
+      
    * **where** - filters the data
       
       
@@ -199,10 +277,8 @@ Arguments:
       ```
       
       
-      
       *see*
       For more usage examples see [EntityFilter](https://remult.dev/docs/entityFilter.html)
-      
    * **orderBy** - Determines the order of items returned .
       
       
@@ -212,12 +288,10 @@ Arguments:
       ```
       
       
-      
       *example*
       ```ts
       await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
       ```
-      
    * **pageSize** - The number of items to return in each step
    * **progress** - A callback method to indicate the progress of the iteration
 ## count
@@ -232,7 +306,6 @@ Returns a count of the items matching the criteria.
    ```ts
    await taskRepo.count({ completed:false })
    ```
-   
 
 Arguments:
 * **where** - filters the data
@@ -254,7 +327,6 @@ Validates an item
    // Can also be used to validate specific fields
    const error = repo.validate(task,"title")
    ```
-   
 
 Arguments:
 * **item**
@@ -267,7 +339,6 @@ saves an item or item[] to the data source. It assumes that if an `id` value exi
    ```ts
    await taskRepo.save({...task, completed:true })
    ```
-   
 
 Arguments:
 * **item**
@@ -281,12 +352,10 @@ Insert an item or item[] to the data source
    ```
    
    
-   
    *example*
    ```ts
    await taskRepo.insert([{title:"task a"}, {title:"task b", completed:true }])
    ```
-   
 
 Arguments:
 * **item**
@@ -298,7 +367,6 @@ Updates an item, based on its `id`
    ```ts
    taskRepo.update(task.id,{...task,completed:true})
    ```
-   
 
 Arguments:
 * **id**
@@ -310,6 +378,11 @@ Arguments:
 * **id**
 ## create
 Creates an instance of an item. It'll not be saved to the data source unless `save` or `insert` will be called for that item
+
+Arguments:
+* **item**
+## toJson
+* **toJson**
 
 Arguments:
 * **item**
@@ -333,16 +406,18 @@ Provides information about the fields of the Repository's entity
    console.log(repo.fields.title.caption) // displays the caption of a specific field
    console.log(repo.fields.title.options)// writes the options that were defined for this field
    ```
-   
 ## metadata
 The metadata for the `entity`
    
    
-   *see*
+   *See*
    [EntityMetadata](https://remult.dev/docs/ref_entitymetadata.html)
-   
 ## addEventListener
 * **addEventListener**
 
 Arguments:
 * **listener**
+## relations
+
+Arguments:
+* **item**

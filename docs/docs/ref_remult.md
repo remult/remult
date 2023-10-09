@@ -10,16 +10,12 @@ Return's a `Repository` of the specific entity type
    ```
    
    
-   
    *see*
    [Repository](https://remult.dev/docs/ref_repository.html)
 
 Arguments:
-* **entity**
-    - the entity to use
-* **dataProvider**
-    - an optional alternative data provider to use. Useful for writing to offline storage or an alternative data provider
-   
+* **entity** - the entity to use
+* **dataProvider** - an optional alternative data provider to use. Useful for writing to offline storage or an alternative data provider
 ## user
 Returns the current user's info
 ## authenticated
@@ -34,11 +30,8 @@ checks if the user has any of the roles specified in the parameters
    ```
    
    
-   
    *see*
-   
    [Allowed](https://remult.dev/docs/allowed.html)
-   
 
 Arguments:
 * **roles**
@@ -47,9 +40,7 @@ checks if the user matches the allowedForInstance callback
    
    
    *see*
-   
    [Allowed](https://remult.dev/docs/allowed.html)
-   
 
 Arguments:
 * **instance**
@@ -58,6 +49,10 @@ Arguments:
 The current data provider
 ## constructor
 Creates a new instance of the `remult` object.
+
+Can receive either an HttpProvider or a DataProvider as a parameter - which will be used to fetch data from.
+
+If no provider is specified, `fetch` will be used as an http provider
 
 Arguments:
 * **http**
@@ -69,16 +64,11 @@ Used to call a `backendMethod` using a specific `remult` object
    ```ts
    await remult.call(TasksController.setAll, undefined, true);
    ```
-   
 
 Arguments:
-* **backendMethod**
-    - the backend method to call
-* **classInstance**
-    - the class instance of the backend method, for static backend methods use undefined
-* **args**
-    - the arguments to send to the backend method
-   
+* **backendMethod** - the backend method to call
+* **classInstance** - the class instance of the backend method, for static backend methods use undefined
+* **args** - the arguments to send to the backend method
 ## onFind
 A helper callback that can be used to debug and trace all find operations. Useful in debugging scenarios
 
@@ -95,7 +85,6 @@ Arguments:
        page:2
       })
       ```
-      
    * **page** - Determines the page number that will be used to extract the data
       
       
@@ -106,8 +95,30 @@ Arguments:
        page:2
       })
       ```
+   * **include** - An option used in the `find` and `findFirst` methods to specify which related entities should be included
+   when querying the source entity. It allows you to eagerly load related data to avoid N+1 query problems.
       
-   * **load**
+      
+      *param*
+      An object specifying the related entities to include, their options, and filtering criteria.
+      
+      Example usage:
+      ```
+      const orders = await customerRepo.find({
+        include: {
+          // Include the 'tags' relation for each customer.
+          tags: true,
+        },
+      });
+      ```
+      In this example, the `tags` relation for each customer will be loaded and included in the query result.
+      
+      
+      *see*
+       - Relations.toMany
+       - Relations.toOne
+       - RelationOptions
+      
    * **where** - filters the data
       
       
@@ -117,10 +128,8 @@ Arguments:
       ```
       
       
-      
       *see*
       For more usage examples see [EntityFilter](https://remult.dev/docs/entityFilter.html)
-      
    * **orderBy** - Determines the order of items returned .
       
       
@@ -130,20 +139,28 @@ Arguments:
       ```
       
       
-      
       *example*
       ```ts
       await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
       ```
-      
 ## clearAllCache
 * **clearAllCache**
 ## entityRefInit
 A helper callback that is called whenever an entity is created.
+
+Arguments:
+* **ref**
+* **row**
 ## context
 context information that can be used to store custom information that will be disposed as part of the `remult` object
 ## apiClient
 The api client that will be used by `remult` to perform calls to the `api`
+## run
+* **run**
+
+Arguments:
+* **callback**
+* **options**
 ## liveQueryStorage
 * **liveQueryStorage**
 ## subscriptionServer

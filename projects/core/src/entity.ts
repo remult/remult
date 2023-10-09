@@ -116,10 +116,10 @@ export interface EntityOptions<entityType = any> {
   /** An arrow function that identifies the `id` column to use for this entity
    * @example
    * //Single column id
-   * @Entity<Products>("products", { id:p=>p.productCode })
+   * @Entity<Products>("products", { id: {productCode: true} })
    * @example
    * //Multiple columns id
-   * @Entity<OrderDetails>("orderDetails", { id:od=> [od.orderId, od.productCode] })
+   * @Entity<OrderDetails>("orderDetails", { id:{ orderId:true, productCode:true} })
    */
   id?:
     | EntityIdFields<entityType>

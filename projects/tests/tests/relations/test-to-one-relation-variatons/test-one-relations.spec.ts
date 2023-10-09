@@ -443,5 +443,6 @@ describe('test one', () => {
 })
 
 //p1 http://localhost:5173/api/dealContacts?contactId=007c1297-6a54-45c2-b0aa-d6b9e41adf13&contactId=007c1297-6a54-45c2-b0aa-d6b9e41adf13
+//y1  consider when not included to return an object with just an id.
 
 //y1 rethink with yoni if relations should place it's options in the field options - there may by naming conflicts with users extending options

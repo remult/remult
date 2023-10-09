@@ -3,7 +3,7 @@
 ## entities
 Entities to use for the api
 ## controllers
-Controllers to use for the api
+Controller to use for the api
 ## getUser
 Will be called to get the current user based on the current request
 
@@ -28,23 +28,18 @@ Data Provider to use for the api.
    
    *see*
    [Connecting to a Database](https://remult.dev/docs/databases.html).
-   
 ## ensureSchema
 Will create tables and columns in supporting databases. default: true
    
    
    *description*
-   
    when set to true, it'll create entities that do not exist, and add columns that are missing.
-   
 ## rootPath
 The path to use for the api, default:/api
    
    
    *description*
-   
    If you want to use a different api path adjust this field
-   
 ## defaultGetLimit
 The default limit to use for find requests that did not specify a limit
 ## logApiEndPoints
@@ -53,7 +48,7 @@ When set to true (default) it'll console log each api endpoint that is created
 A subscription server to use for live query and message channels
 ## liveQueryStorage
 A storage to use to store live queries, relevant mostly for serverless scenarios or larger scales
-## requestSerializer
-Used to store the relevent request info for re running a live query
+## contextSerializer
+Used to store the context relevant info for re running a live query
 ## queueStorage
 Storage to use for backend methods that use queue
