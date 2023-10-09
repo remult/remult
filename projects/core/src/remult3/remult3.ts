@@ -581,14 +581,14 @@ export type RelationOptions<
   matchIdEntity,
   optionsType extends FindOptionsBase<toEntity> = FindOptionsBase<toEntity>,
 > = {
+  /**
+   * An object specifying custom field names for the relation.
+   * Each key represents a field in the related entity, and its value is the corresponding field in the source entity.
+   * For example, `{ customerId: 'id' }` maps the 'customerId' field in the related entity to the 'id' field in the source entity.
+   * This is useful when you want to define custom field mappings for the relation.
+   */
+  //[ ] V2- consider enforcing types
   fields?: {
-    /**
-     * An object specifying custom field names for the relation.
-     * Each key represents a field in the related entity, and its value is the corresponding field in the source entity.
-     * For example, `{ customerId: 'id' }` maps the 'customerId' field in the related entity to the 'id' field in the source entity.
-     * This is useful when you want to define custom field mappings for the relation.
-     */
-    //[ ] V2- consider enforcing types
     [K in keyof toEntity]?: keyof fromEntity
   }
   /**
