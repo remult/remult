@@ -697,3 +697,4 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //p1 - update related field with null should respect it's allowed null - otherwise we get a null error for that field.
 //p1 - when the include doesn't find the many to one - it deletes the id!!!
 //y1 - discuss a default date formatter
+//p1 - consider using this in saving etc...
