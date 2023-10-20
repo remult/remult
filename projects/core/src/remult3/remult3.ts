@@ -669,3 +669,31 @@ export type ClassFieldDecorator<entityType, valueType> = (
 
 //p1 - include relations in the api docs
 //p1 - include Relation options in the api docs
+//p1 - fix { allowApiRead: r => r.user.name === 'superman' } } in allowed for instace docs
+//p1 - fix seeallowed in ref_entity
+//p1 - write doc about controlling updates of rows...
+//p1 - 'eventId' autocomplete in task app did not work
+//p1 - need a way to extract the fields from the relation - for generating relation based sql
+//p1 - remult object was used outside context
+// ```
+// sqlExpression: async (e) => {
+//   const v = await dbNamesOf(volunteerInTask)
+//   return `select true from ${v} where ${
+//     v.task
+//   }=${await e.getDbName()}.${await e.fields.id.getDbName()} and ${SqlDatabase.filterToRaw<volunteerInTask>(
+//     repo(volunteerInTask),
+//     {
+//       canceled: false,
+//     }
+//   )}`
+// },
+// })
+// ```
+
+//p2 - consider includeInApi as AllowedForInstance
+//p1 - why didn't this._.relations.statusChanges.insert({})work?
+//p1 - active record with include thinks that the row was change!
+//p1 - add docs for apply changes
+//p1 - update related field with null should respect it's allowed null - otherwise we get a null error for that field.
+//p1 - when the include doesn't find the many to one - it deletes the id!!!
+//y1 - discuss a default date formatter
