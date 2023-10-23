@@ -1101,7 +1101,7 @@ export function translateWhereToRestBody<T>(
   if (!where) return undefined
   const result: any = {}
   for (const field of fields) {
-    if (field.includedInApi === false) continue
+    if (field.options.includeInApi === false) continue
     const condition: any = where[field.key]
     if (condition) {
       const tr = (key: string, what: (val: any) => void) => {
