@@ -1023,8 +1023,8 @@ describe('data api', () => {
       async (insert) => await insert(1, 'noam'),
       type,
     )
-    expect(c.fields.categoryName.includedInApi).toBe(false)
-    expect(c.fields.description.includedInApi).toBe(true)
+    expect(c.fields.categoryName.includedInApi()).toBe(false)
+    expect(c.fields.description.includedInApi()).toBe(true)
 
     var api = new DataApi(c, remult)
     let t = new TestDataApiResponse()

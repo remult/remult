@@ -17,7 +17,7 @@ export interface FieldOptions<entityType = any, valueType = any> {
   allowNull?: boolean
   /** If this field data is included in the api.
    * @see [allowed](http://remult.dev/docs/allowed.html)*/
-  includeInApi?: Allowed
+  includeInApi?: AllowedForInstance<entityType>
   /** If this field data can be updated in the api.
    * @see [allowed](http://remult.dev/docs/allowed.html)*/
   allowApiUpdate?: AllowedForInstance<entityType>
@@ -157,7 +157,7 @@ export interface FieldMetadata<valueType = any, entityType = any> {
    */
   displayValue(item: Partial<OmitEB<entityType>>): string
   apiUpdateAllowed(item?: Partial<OmitEB<entityType>>): boolean
-  readonly includedInApi: boolean
+  includedInApi(item?: Partial<OmitEB<entityType>>): boolean
   /** Adapts the value for usage with html input
    * @example
    * @Fields.dateOnly()

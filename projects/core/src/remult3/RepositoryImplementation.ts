@@ -1323,7 +1323,7 @@ abstract class rowHelperBase<T> {
       if (
         !this.remult ||
         col.includeInApi === undefined ||
-        this.remult.isAllowed(col.includeInApi)
+        this.remult.isAllowedForInstance(this.instance, col.includeInApi)
       ) {
         let val
         let lu = this.lookups.get(col.key)
@@ -1357,7 +1357,7 @@ abstract class rowHelperBase<T> {
       if (keys.includes(col.key))
         if (
           col.includeInApi === undefined ||
-          this.remult.isAllowed(col.includeInApi)
+          this.remult.isAllowedForInstance(this.instance, col.includeInApi)
         ) {
           if (
             !this.remult ||
@@ -2017,10 +2017,11 @@ export class columnDefsImpl implements FieldMetadata {
       .getEntityMetadataWithoutBreakingTheEntity(item)
       .fields.find(this.key).displayValue
   }
-  get includedInApi() {
+  includedInApi(item?: any): boolean {
     if (this.options.includeInApi === undefined) return true
-    return this.remult.isAllowed(this.options.includeInApi) //TODO 2- consolidate other code paths to go through here
+    return this.remult.isAllowedForInstance(item, this.options.includeInApi)
   }
+
   toInput(value: any, inputType?: string): string {
     return this.valueConverter.toInput(value, inputType)
   }
