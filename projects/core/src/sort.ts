@@ -34,8 +34,8 @@ export class Sort {
     for (let i = 0; i < this.Segments.length; i++) {
       let seg = this.Segments[i]
 
-      let left = a[getFieldKey(seg.field)]
-      let right = b[getFieldKey(seg.field)]
+      let left = fixValueForSort(a[getFieldKey(seg.field)])
+      let right = fixValueForSort(b[getFieldKey(seg.field)])
       if (left > right) r = 1
       else if (left < right) r = -1
       if (r != 0) {
@@ -145,4 +145,9 @@ export class Sort {
 export interface SortSegment {
   field: FieldMetadata
   isDescending?: boolean
+}
+function fixValueForSort(a: any) {
+  if (a == undefined || a == null) return a
+  if (a.id !== undefined) return a.id
+  return a
 }
