@@ -31,12 +31,11 @@ export class Sort {
   compare(a: any, b: any, getFieldKey?: (field: FieldMetadata) => string) {
     if (!getFieldKey) getFieldKey = (x) => x.key
     let r = 0
-
     for (let i = 0; i < this.Segments.length; i++) {
       let seg = this.Segments[i]
 
-      let left = makeComparable(a[getFieldKey(seg.field)])
-      let right = makeComparable(b[getFieldKey(seg.field)])
+      let left = a[getFieldKey(seg.field)]
+      let right = b[getFieldKey(seg.field)]
       if (left > right) r = 1
       else if (left < right) r = -1
       if (r != 0) {
@@ -146,13 +145,4 @@ export class Sort {
 export interface SortSegment {
   field: FieldMetadata
   isDescending?: boolean
-}
-
-function makeComparable(x: any) {
-  if (x === undefined || x == null) return undefined
-  if (x instanceof Date) return x.valueOf()
-  if (x['id']) {
-    return x['id']
-  }
-  return x
 }
