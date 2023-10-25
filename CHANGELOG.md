@@ -23,7 +23,8 @@ All notable changes to this project will be documented in this file.
   ```
 
 - Fixed exception with toRawFilter
-- fixed json db to support db names
+- Fixed json db to support db names
+- Fixed issue with sort result after live query
 
 ## [0.22.9] 2023-10-06
 

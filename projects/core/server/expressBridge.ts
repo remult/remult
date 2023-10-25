@@ -1293,3 +1293,5 @@ export interface ServerCoreOptions<RequestType> {
   buildGenericRequestInfo(req: RequestType): GenericRequestInfo
   getRequestBody(req: RequestType): Promise<any>
 }
+
+//p1 - https://codesandbox.io/p/sandbox/fervent-yalow-66m78n?file=%2Fsrc%2Findex.ts%3A35%2C93
