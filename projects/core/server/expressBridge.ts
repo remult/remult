@@ -1250,7 +1250,7 @@ export class RouteImplementation<RequestType> {
     }
     let idPosition = path.lastIndexOf('/')
     if (idPosition >= 0) {
-      lowerPath = path.substring(0, idPosition) + '/:id'
+      lowerPath = lowerPath.substring(0, idPosition) + '/:id'
       m = this.map.get(lowerPath)
       if (m) {
         let h = m.get(req.method.toLowerCase())

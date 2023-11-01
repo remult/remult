@@ -51,4 +51,52 @@ describe('test router impl', async () => {
       }
     `)
   })
+  it('test b', async () => {
+    const r = new RouteImplementation<GenericRequestInfo>({
+      buildGenericRequestInfo: (req) => {
+        return req
+      },
+      getRequestBody: (req) => {
+        return undefined
+      },
+    })
+    let result: any = {}
+    r.route('/aBc').get(async (req, res) => {
+      result.getWorks = true
+      res.json({ ok: true })
+      res.end()
+    })
+    r.route('/aBc/:id').get(async (req, res) => {
+      res.json(req.params)
+    })
+
+    expect(await r.handle({ url: '/aBc', method: 'GET' }))
+      .toMatchInlineSnapshot(`
+      {
+        "data": {
+          "ok": true,
+        },
+        "statusCode": 200,
+      }
+    `)
+    expect(await r.handle({ url: '/aBc/123', method: 'GET' }))
+      .toMatchInlineSnapshot(`
+        {
+          "data": {
+            "id": "123",
+          },
+          "statusCode": 200,
+        }
+      `)
+    expect(
+      await r.handle({ url: '/aBc/sdgbsdfgbfds%2Csdfgsdfgbs', method: 'GET' }),
+    ).toMatchInlineSnapshot(`
+      {
+        "data": {
+          "id": "sdgbsdfgbfds,sdfgsdfgbs",
+        },
+        "statusCode": 200,
+      }
+    `)
+  })
 })
