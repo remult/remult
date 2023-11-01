@@ -1135,7 +1135,7 @@ export class EntityQueueStorage implements QueueStorage {
     return q.id
   }
 }
-class RouteImplementation<RequestType> {
+export class RouteImplementation<RequestType> {
   constructor(private coreOptions: ServerCoreOptions<RequestType>) {}
   map = new Map<string, Map<string, GenericRequestHandler>>()
   route(path: string): SpecificRoute {
@@ -1169,7 +1169,7 @@ class RouteImplementation<RequestType> {
     req: RequestType,
     gRes?: GenericResponse,
   ): Promise<ServerHandleResponse | undefined> {
-    return new Promise<ServerHandleResponse | undefined>((res) => {
+    return new Promise<ServerHandleResponse | undefined>((res, rej) => {
       const response = new (class
         implements GenericResponse, ResponseRequiredForSSE
       {
@@ -1205,7 +1205,11 @@ class RouteImplementation<RequestType> {
           })
         }
       })()
-      this.middleware(req, response, () => res(undefined))
+      try {
+        this.middleware(req, response, () => res(undefined))
+      } catch (err) {
+        rej(err)
+      }
     })
   }
   middleware(origReq: RequestType, res: GenericResponse, next: VoidFunction) {
@@ -1255,7 +1259,7 @@ class RouteImplementation<RequestType> {
             req.params = {}
             origReq['_tempParams'] = req.params
           }
-          req.params.id = path.substring(idPosition + 1)
+          req.params.id = path.substring(idPosition + 1).replace(/%2C/g, ',')
           h(origReq, res, next)
           return
         }

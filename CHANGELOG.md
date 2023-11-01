@@ -25,6 +25,8 @@ All notable changes to this project will be documented in this file.
 - Fixed exception with toRawFilter
 - Fixed json db to support db names
 - Fixed issue with sort result after live query
+- Fix issue with compound id on middleware based servers
+- Added with remult for sveltekit for usage before the remult hook
 
 ## [0.22.9] 2023-10-06
 
