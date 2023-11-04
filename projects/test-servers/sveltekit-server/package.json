@@ -21,6 +21,6 @@
 	"type": "module",
 	"dependencies": {
 		"graphql-yoga": "^3.9.1",
-		"remult": "^0.23.0-exp.21"
+		"remult": "^0.23.0-exp.23"
 	}
 }
