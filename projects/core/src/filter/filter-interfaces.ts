@@ -477,10 +477,11 @@ export function buildFilterFromRequestParameters(
         }),
       ),
     }))
-    if (or.length == 1) return or[0]
-    where.push({
-      $and: or,
-    })
+    if (or.length == 1) where.push(or[0])
+    else
+      where.push({
+        $and: or,
+      })
   }
 
   for (const key in entity.entityType) {

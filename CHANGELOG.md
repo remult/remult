@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.22.9] 2023-10-06
+
+- Fixed issue with Entity Backend Method and fields with allow api false #255
+
+## [0.22.8] 2023-09-27
+
+- Fixed an issue with rest call that had both and & or
+- Fixed an issue regarding the usage of ManyToOne fields as part of the id
+
 ## [0.22.7] - 2023-09-05
 
 - Fixed max stack reached in case of reference to self

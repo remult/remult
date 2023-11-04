@@ -422,7 +422,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
               baseUrl,
               http,
             )
-            await defs._updateEntityBasedOnApi(r.rowInfo.data)
+            await defs._updateEntityBasedOnApi(r.rowInfo.data, true)
             return r.result
           } catch (err) {
             throw defs.catchSaveErrors(err)
