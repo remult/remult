@@ -1,28 +1,24 @@
-import type { MongoClient, Db, FindOptions, ClientSession } from 'mongodb'
-import {
-  CompoundIdField,
+import type { ClientSession, Db, FindOptions, MongoClient } from 'mongodb'
+import type {
   DataProvider,
   EntityDataProvider,
   EntityDataProviderFindOptions,
   EntityFilter,
   EntityMetadata,
   FieldMetadata,
-  Filter,
   Remult,
-  Repository,
 } from '.'
-import {
-  EntityDbNames,
-  dbNamesOf,
-  EntityDbNamesBase,
-} from './src/filter/filter-consumer-bridge-to-sql-request'
-import { FilterConsumer } from './src/filter/filter-interfaces'
-import {
-  getRepository,
+import { CompoundIdField, Filter } from '.'
+import type { EntityDbNamesBase } from './src/filter/filter-consumer-bridge-to-sql-request'
+import { dbNamesOf } from './src/filter/filter-consumer-bridge-to-sql-request'
+import type { FilterConsumer } from './src/filter/filter-interfaces'
+import { remult as remultContext } from './src/remult-proxy'
+import type {
   RepositoryImplementation,
   RepositoryOverloads,
-} from './src/remult3'
-import { remult as remultContext } from './src/remult-proxy'
+} from './src/remult3/RepositoryImplementation'
+import { getRepository } from './src/remult3/RepositoryImplementation'
+import { resultCompoundIdFilter } from './src/resultCompoundIdFilter'
 
 export class MongoDataProvider implements DataProvider {
   constructor(
@@ -156,7 +152,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
       resultFilter = this.entity.idMetadata.getIdFilter(data.id)
     for (const x of this.entity.fields) {
       if (x instanceof CompoundIdField) {
-        resultFilter = x.resultIdFilter(id, data)
+        resultFilter = resultCompoundIdFilter(x, id, data)
       }
     }
     let newR = {}
@@ -283,7 +279,7 @@ class FilterConsumerBridgeToMongo implements FilterConsumer {
   }
   public containsCaseInsensitive(col: FieldMetadata, val: any): void {
     this.add(col, val, '$regex')
-    
+
     // this.promises.push(col.getDbName().then(colName => {
 
     //     this.result.push(b => b.whereRaw(

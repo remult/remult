@@ -1,13 +1,13 @@
-import { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from '../column-interfaces';
-import { EntityOptions } from '../entity';
+import type { ClassType } from '../../classType';
 import { LookupColumn } from '../column';
-import { EntityMetadata, FieldRef, FieldsRef, EntityFilter, FindOptions, Repository, EntityRef, QueryOptions, QueryResult, EntityOrderBy, FieldsMetadata, IdMetadata, FindFirstOptionsBase, FindFirstOptions, OmitEB, Subscribable, ControllerRef } from './remult3';
-import { ClassType } from '../../classType';
+import type { FieldMetadata, FieldOptions, ValueConverter, ValueListItem } from '../column-interfaces';
 import { Remult } from '../context';
-import { entityEventListener } from '../__EntityValueProvider';
-import { DataProvider, EntityDataProvider, EntityDataProviderFindOptions, ErrorInfo } from '../data-interfaces';
-import { RefSubscriber } from '.';
-import { Unsubscribe } from '../live-query/SubscriptionChannel';
+import type { EntityOptions } from '../entity';
+import type { ControllerRef, EntityFilter, EntityMetadata, EntityOrderBy, EntityRef, FieldRef, FieldsMetadata, FieldsRef, FindFirstOptions, FindFirstOptionsBase, FindOptions, IdMetadata, LiveQuery, OmitEB, QueryOptions, QueryResult, Repository, Subscribable } from './remult3';
+import type { RefSubscriber } from './remult3';
+import type { entityEventListener } from '../__EntityValueProvider';
+import type { DataProvider, EntityDataProvider, EntityDataProviderFindOptions, ErrorInfo } from '../data-interfaces';
+import type { Unsubscribe } from '../live-query/SubscriptionChannel';
 export declare class RepositoryImplementation<entityType> implements Repository<entityType> {
     private entity;
     remult: Remult;
@@ -45,10 +45,10 @@ export declare class RepositoryImplementation<entityType> implements Repository<
     private getRefForExistingRow;
     save(item: Partial<OmitEB<entityType>>[]): Promise<entityType[]>;
     save(item: Partial<OmitEB<entityType>>): Promise<entityType>;
-    liveQuery(options?: FindOptions<entityType>): any;
+    liveQuery(options?: FindOptions<entityType>): LiveQuery<entityType>;
     find(options: FindOptions<entityType>, skipOrderByAndLimit?: boolean): Promise<entityType[]>;
     buildEntityDataProviderFindOptions(options: FindOptions<entityType>): Promise<EntityDataProviderFindOptions>;
-    fromJsonArray(jsonItems: any[], load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[]): Promise<entityType[]>;
+    fromJsonArray(jsonItems: any[], load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[]): Promise<Awaited<entityType>[]>;
     private loadManyToOneForManyRows;
     private mapRawDataToResult;
     toJson(item: entityType | entityType[] | Promise<entityType> | Promise<entityType[]>): any;
@@ -61,12 +61,7 @@ export declare class RepositoryImplementation<entityType> implements Repository<
     fixTypes(item: any): Promise<any>;
     findId(id: any, options?: FindFirstOptionsBase<entityType>): Promise<entityType>;
 }
-export declare function __updateEntityBasedOnWhere<T>(entityDefs: EntityMetadata<T>, where: EntityFilter<T>, r: T): void;
-export declare type EntityOptionsFactory = (remult: Remult) => EntityOptions;
-export declare const entityInfo: unique symbol;
-export declare const entityInfo_key: unique symbol;
-export declare function getEntitySettings<T>(entity: ClassType<T>, throwError?: boolean): EntityOptionsFactory;
-export declare function getEntityKey(entity: ClassType<any>): string;
+export type EntityOptionsFactory = (remult: Remult) => EntityOptions;
 export declare const columnsOfType: Map<any, columnInfo[]>;
 export declare function createOldEntity<T>(entity: ClassType<T>, remult: Remult): EntityFullInfo<T>;
 declare abstract class rowHelperBase<T> {
@@ -174,7 +169,6 @@ export declare class FieldRefImplementation<entityType, valueType> implements Fi
     __performValidation(): Promise<void>;
     validate(): Promise<boolean>;
 }
-export declare function getEntityRef<entityType>(entity: entityType, throwException?: boolean): EntityRef<entityType>;
 export declare const CaptionTransformer: {
     transformCaption: (remult: Remult, key: string, caption: string) => string;
 };
@@ -303,31 +297,6 @@ interface columnInfo {
     key: string;
     settings: (remult: Remult) => FieldOptions;
 }
-/**Decorates classes that should be used as entities.
- * Receives a key and an array of EntityOptions.
- * @example
- * import { Entity, Fields } from "remult";
- * @Entity("tasks", {
- *    allowApiCrud: true
- * })
- * export class Task {
- *    @Fields.uuid()
- *    id!: string;
- *    @Fields.string()
- *    title = '';
- *    @Fields.boolean()
- *    completed = false;
- * }
- * @note
- * EntityOptions can be set in two ways:
- * @example
- * // as an object
- * @Entity("tasks",{ allowApiCrud:true })
- * @example
- * // as an arrow function that receives `remult` as a parameter
- * @Entity("tasks", (options,remult) => options.allowApiCrud = true)
- */
-export declare function Entity<entityType>(key: string, ...options: (EntityOptions<entityType extends new (...args: any) => any ? InstanceType<entityType> : entityType> | ((options: EntityOptions<entityType extends new (...args: any) => any ? InstanceType<entityType> : entityType>, remult: Remult) => void))[]): (target: any, info?: ClassDecoratorContextStub<entityType extends new (...args: any) => any ? entityType : never>) => any;
 export declare class EntityBase {
     get _(): EntityRef<this>;
     save(): Promise<this>;
@@ -357,7 +326,7 @@ declare class SubscribableImp implements Subscribable {
 }
 export declare function getEntityMetadata<entityType>(entity: EntityMetadataOverloads<entityType>): EntityMetadata<entityType>;
 export declare function getRepository<entityType>(entity: RepositoryOverloads<entityType>): Repository<entityType>;
-export declare type EntityMetadataOverloads<entityType> = Repository<entityType> | EntityMetadata<entityType> | ClassType<entityType>;
-export declare type RepositoryOverloads<entityType> = Repository<entityType> | ClassType<entityType>;
+export type EntityMetadataOverloads<entityType> = Repository<entityType> | EntityMetadata<entityType> | ClassType<entityType>;
+export type RepositoryOverloads<entityType> = Repository<entityType> | ClassType<entityType>;
 export declare function checkTarget(target: any): void;
 export {};

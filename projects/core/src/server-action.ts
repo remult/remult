@@ -1,37 +1,35 @@
 import 'reflect-metadata'
+import type { packedRowInfo } from './__EntityValueProvider'
+import { buildRestDataProvider } from './buildRestDataProvider'
+import type { FieldOptions } from './column-interfaces'
+import type { AllowedForInstance, ControllerOptions } from './context'
 import {
-  Remult,
-  AllowedForInstance,
-  Allowed,
-  allEntities,
-  ControllerOptions,
-  classHelpers,
   ClassHelper,
-  setControllerSettings,
+  Remult,
+  allEntities,
+  classHelpers,
   doTransaction,
   isBackend,
+  setControllerSettings,
 } from './context'
-import { buildRestDataProvider } from './buildRestDataProvider'
-import { DataApiResponse } from './data-api'
+import type { DataApiResponse } from './data-api'
+import type {
+  DataProvider,
+  RestDataProviderHttpProvider,
+} from './data-interfaces'
 import { SqlDatabase } from './data-providers/sql-database'
-import { packedRowInfo } from './__EntityValueProvider'
-import { DataProvider, RestDataProviderHttpProvider } from './data-interfaces'
-import {
-  getEntityRef,
-  rowHelperImplementation,
-  getFields,
-  decorateColumnSettings,
-  getEntitySettings,
-  getControllerRef,
-  EntityFilter,
-  controllerRefImpl,
-  RepositoryImplementation,
-  FindOptions,
-  Repository,
-  checkTarget,
-} from './remult3'
-import { FieldOptions } from './column-interfaces'
 import { remult } from './remult-proxy'
+import type {
+  controllerRefImpl,
+  rowHelperImplementation,
+} from './remult3/RepositoryImplementation'
+import {
+  checkTarget,
+  decorateColumnSettings,
+  getControllerRef,
+} from './remult3/RepositoryImplementation'
+import { getEntityRef, getEntitySettings } from './remult3/getEntityRef'
+import { actionInfo, serverActionField } from './server-action-info'
 
 interface inArgs {
   args: any[]
@@ -178,20 +176,6 @@ export interface BackendMethodOptions<type> {
   blockUser?: boolean
   paramTypes?: any[]
 }
-
-export const actionInfo = {
-  allActions: [] as any[],
-  runningOnServer: false,
-  runActionWithoutBlockingUI: <T>(what: () => Promise<T>): Promise<T> => {
-    return what()
-  },
-  startBusyWithProgress: () => ({
-    progress: (percent: number) => {},
-    close: () => {},
-  }),
-}
-
-export const serverActionField = Symbol('serverActionField')
 
 interface serverMethodInArgs {
   args: any[]
@@ -538,12 +522,12 @@ export function prepareArgsToSend(types: any[], args: any[]) {
       if (args[index] != undefined) {
         let x: FieldOptions = { valueType: paramType }
         x = decorateColumnSettings(x, new Remult())
-        if (x.valueConverter) args[index] = x.valueConverter.toJson(args[index])
         let eo = getEntitySettings(paramType, false)
         if (eo != null) {
           let rh = getEntityRef(args[index])
           args[index] = rh.getId()
         }
+        if (x.valueConverter) args[index] = x.valueConverter.toJson(args[index])
       }
     }
   }

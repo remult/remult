@@ -1,4 +1,7 @@
-export { Field, Fields, FieldsMetadata, Entity, IdEntity, EntityBase, ControllerBase, FieldRef, IdFieldRef, FieldsRef, EntityMetadata, EntityOrderBy, EntityFilter, FindOptions, QueryResult, QueryOptions, Repository, FieldType, FindFirstOptions, ComparisonValueFilter, ValueFilter, IdFilter, ContainsStringValueFilter, getFields, EntityRef, getEntityRef, SortSegments, ValueListFieldType, getValueList, ValueListFieldOptions, ValueListInfo, OmitEB, Paginator, CaptionTransformer, LiveQuery, LiveQueryChangeInfo, } from './src/remult3';
+export { OmitEB, FieldsMetadata, FieldRef, IdFieldRef, FieldsRef, EntityMetadata, EntityOrderBy, EntityFilter, FindOptions, QueryResult, QueryOptions, Repository, FindFirstOptions, ComparisonValueFilter, ValueFilter, IdFilter, ContainsStringValueFilter, EntityRef, SortSegments, Paginator, LiveQuery, LiveQueryChangeInfo, } from './src/remult3/remult3';
+export { Field, Fields, IdEntity, EntityBase, ControllerBase, FieldType, getFields, ValueListFieldType, getValueList, ValueListFieldOptions, ValueListInfo, CaptionTransformer, } from './src/remult3/RepositoryImplementation';
+export { Entity } from './src/remult3/entity';
+export { getEntityRef } from './src/remult3/getEntityRef';
 export { StringFieldOptions } from './src/remult3/RepositoryImplementation';
 export { describeClass } from './src/remult3/DecoratorReplacer';
 export { EntityOptions } from './src/entity';
@@ -17,7 +20,8 @@ export { Controller, BackendMethodOptions, BackendMethod, ProgressListener, } fr
 export { Allowed, Allow, Remult, RemultContext, ApiClient, isBackend, AllowedForInstance, EventDispatcher, EventSource, UserInfo, } from './src/context';
 export { ExternalHttpProvider } from './src/buildRestDataProvider';
 export { SortSegment, Sort } from './src/sort';
-export { OneToMany, CompoundIdField } from './src/column';
+export { OneToMany } from './src/column';
+export { CompoundIdField } from './src/CompoundIdField';
 export { Filter } from './src/filter/filter-interfaces';
 export { UrlBuilder } from './urlBuilder';
 export { Validators } from './src/validators';

@@ -1,14 +1,15 @@
-import { ClassType } from '../../classType'
-import { FieldMetadata } from '../column-interfaces'
-import {
+import type { ErrorInfo } from '../..'
+import type { ClassType } from '../../classType'
+import type { entityEventListener } from '../__EntityValueProvider'
+import type { FieldMetadata } from '../column-interfaces'
+import type { EntityOptions } from '../entity'
+import type {
   LiveQueryChange,
   SubscriptionListener,
   Unsubscribe,
 } from '../live-query/SubscriptionChannel'
-import { EntityOptions } from '../entity'
-import { SortSegment } from '../sort'
-import { entityEventListener } from '../__EntityValueProvider'
-import { ErrorInfo } from '../..'
+import type { SortSegment } from '../sort'
+import type { EntityBase } from './RepositoryImplementation'
 
 export interface EntityRef<entityType> extends Subscribable {
   hasErrors(): boolean
@@ -176,10 +177,7 @@ export interface EntityMetadata<entityType = any> {
   readonly idMetadata: IdMetadata<entityType>
 }
 
-export declare type OmitEB<T> = Omit<
-  T,
-  keyof import('./RepositoryImplementation').EntityBase
->
+export declare type OmitEB<T> = Omit<T, keyof EntityBase>
 export declare type idType<entityType> = entityType extends { id?: number }
   ? number
   : entityType extends { id?: string }

@@ -1,9 +1,6 @@
 {
-  "extends": "../../tsconfig.json",
+  "extends": "../core/tsconfig.json",
   "compilerOptions": {
-    "experimentalDecorators": true,
-    "types": [
-      "vitest/globals"
-    ],
-  },
+    "noEmit": true
+  }
 }

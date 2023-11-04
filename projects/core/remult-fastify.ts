@@ -1,20 +1,19 @@
 import type {
   FastifyInstance,
   FastifyPluginCallback,
-  RouteHandlerMethod,
   FastifyRequest,
+  RouteHandlerMethod,
 } from 'fastify'
-import { createRemultServer } from './server/index'
-import {
+import type { ResponseRequiredForSSE } from './SseSubscriptionServer'
+import type {
   GenericRequestHandler,
   GenericResponse,
   GenericRouter,
-  RemultServer,
+  RemultServerCore,
   RemultServerOptions,
   SpecificRoute,
-  RemultServerCore,
 } from './server/expressBridge'
-import { ResponseRequiredForSSE } from './SseSubscriptionServer'
+import { createRemultServer } from './server/index'
 
 export function remultFastify(
   options: RemultServerOptions<FastifyRequest>,

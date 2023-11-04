@@ -1,7 +1,7 @@
 /// <reference types="node" />
-import { GenericResponse } from './server/index';
-import { Remult } from './src/context';
-import { SubscriptionServer } from './src/live-query/SubscriptionServer';
+import type { GenericResponse } from './server/index';
+import type { Remult } from './src/context';
+import type { SubscriptionServer } from './src/live-query/SubscriptionServer';
 export declare class SseSubscriptionServer implements SubscriptionServer {
     private canUserConnectToChannel?;
     constructor(canUserConnectToChannel?: (channel: string, remult: Remult) => boolean);

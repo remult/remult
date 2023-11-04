@@ -1,13 +1,13 @@
-import { Allowed, Remult, AllowedForInstance } from './context'
+import type { Allowed, AllowedForInstance } from './context'
 
-import { FieldMetadata } from './column-interfaces'
-import {
-  EntityOrderBy,
-  FieldsMetadata,
+import type { FieldMetadata } from './column-interfaces'
+import type {
   EntityFilter,
-  EntityRef,
   EntityMetadata,
-} from './remult3'
+  EntityOrderBy,
+  EntityRef,
+  FieldsMetadata,
+} from './remult3/remult3'
 
 export interface EntityOptions<entityType = any> {
   /**A human readable name for the entity */
@@ -95,6 +95,10 @@ export interface EntityOptions<entityType = any> {
    * If no name is set, the `key` will be used instead.
    * @example
    * dbName:'myProducts'
+   *
+   * You can also add your schema name to the table name
+   * @example
+   * dbName:'public."myProducts"'
    */
   dbName?: string
   /** For entities that are based on SQL expressions instead of a physical table or view*/

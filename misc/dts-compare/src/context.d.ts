@@ -1,18 +1,22 @@
-import { DataProvider } from './data-interfaces';
-import { EntityMetadata, EntityRef, FindOptions, Repository } from './remult3';
-import { ClassType } from '../classType';
+import type { ClassType } from '../classType';
+import type { DataProvider } from './data-interfaces';
+import type { EntityMetadata, EntityRef, FindOptions, Repository } from './remult3/remult3';
+import type { ExternalHttpProvider } from './buildRestDataProvider';
+import type { SubscriptionClient, Unsubscribe } from './live-query/SubscriptionChannel';
 import type { SubscriptionServer } from './live-query/SubscriptionServer';
-import { ExternalHttpProvider } from './buildRestDataProvider';
-import { SubscriptionClient, Unsubscribe } from './live-query/SubscriptionChannel';
 export declare class RemultAsyncLocalStorage {
     private readonly remultObjectStorage;
     static enable(): void;
     static disable(): void;
-    constructor(remultObjectStorage: import('async_hooks').AsyncLocalStorage<Remult>);
+    constructor(remultObjectStorage: myAsyncLocalStorage<Remult>);
     run(remult: Remult, callback: VoidFunction): void;
     getRemult(): Remult;
     static instance: RemultAsyncLocalStorage;
 }
+type myAsyncLocalStorage<T> = {
+    run<R>(store: T, callback: (...args: any[]) => R, ...args: any[]): R;
+    getStore(): T;
+};
 export declare function isBackend(): boolean;
 export declare class Remult {
     /**Return's a `Repository` of the specific entity type
@@ -72,7 +76,7 @@ export declare class Remult {
         dataProvider: DataProvider;
     }): T;
 }
-export declare type GetArguments<T> = T extends (...args: infer FirstArgument) => any ? FirstArgument : never;
+export type GetArguments<T> = T extends (...args: infer FirstArgument) => any ? FirstArgument : never;
 export interface RemultContext {
 }
 export interface ApiClient {
@@ -127,3 +131,4 @@ export interface itemChange {
     deleted: boolean;
 }
 export declare function doTransaction(remult: Remult, what: () => Promise<void>): Promise<void>;
+export {};

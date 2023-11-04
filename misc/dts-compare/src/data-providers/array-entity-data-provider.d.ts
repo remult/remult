@@ -1,6 +1,6 @@
-import { EntityDataProvider, EntityDataProviderFindOptions } from '../data-interfaces';
+import type { EntityDataProvider, EntityDataProviderFindOptions } from '../data-interfaces';
 import { Filter } from '../filter/filter-interfaces';
-import { EntityMetadata, EntityFilter } from '../remult3';
+import type { EntityFilter, EntityMetadata } from '../remult3/remult3';
 export declare class ArrayEntityDataProvider implements EntityDataProvider {
     private entity;
     private rows?;
@@ -16,7 +16,7 @@ export declare class ArrayEntityDataProvider implements EntityDataProvider {
     delete(id: any): Promise<void>;
     insert(data: any): Promise<any>;
 }
-export declare type CustomArrayFilter = (item: any) => boolean;
+export type CustomArrayFilter = (item: any) => boolean;
 export interface CustomArrayFilterObject {
     arrayFilter: CustomArrayFilter;
 }

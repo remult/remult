@@ -19,6 +19,91 @@ npx degit remult/remult/examples/sveltekit-todo remult-sveltekit-todo
 cd remult-sveltekit-todo
 ```
 
---
+This tutorial assumes you are familiar with `TypeScript` and `Sveltekit`.
 
-🚧 Under construction 🚧
+Before you begin, make sure you have [Node.js](https://nodejs.org) and [git](https://git-scm.com/) installed. <!-- consider specifying Node minimum version with npm -->
+
+# Setup for the Tutorial
+
+This tutorial requires setting up a Sveltekit project, and a few lines of code to add Remult.
+
+## Step-by-step Setup
+
+### Create a Sveltekit project
+
+Create the new Sveltekit project.
+
+```sh
+npm create svelte@latest remult-sveltekit-todo
+```
+
+The command prompts you for information about features to include in the initial app project. Here are the answers used in this tutorial:
+
+1. **Which Svelte app template?**: ... Skeleton Project
+2. **Add type checking with TypeScript?** ... Yes, using TypeScript syntax**
+3. **Select additional options**: ... You may want to include _Prettier_ and _ESLint_ but the options in this step are purely optional.
+
+::: warning Run into issues scaffolding the Vite project?
+See [Vite documentation](https://vitejs.dev/guide/#scaffolding-your-first-vite-project) for help.
+:::
+Once completed, change to the app directory:
+
+```sh
+cd remult-sveltekit-todo
+```
+
+### Install required packages and Remult
+
+```sh
+npm i remult
+```
+
+### Bootstrap Remult
+
+Remult is loaded in the back-end as a server hook
+
+1. Open your IDE.
+
+2. Create a `hooks.server.ts` file in the `src/` folder with the following code:
+
+```ts
+// src/hooks.server.ts
+
+import { remultSveltekit } from "remult/remult-sveltekit"
+
+export const handle = remultSveltekit()
+```
+
+### Final tweaks
+
+Our full stack starter project is almost ready. 
+
+Remult makes use of decorators to enhance regular Typescript classes into entities. Add the following entry to the `compilerOptions` section of the `tsconfig.json` file to enable the use of decorators.
+
+```json{7}
+// tsconfig.json
+
+{
+...
+  "compilerOptions": {
+    ...
+    "experimentalDecorators": true // add this
+   ...
+  }
+...
+}
+
+```
+### Run the app
+
+Open a terminal and start the vite dev server.
+
+```sh
+npm run dev
+```
+
+The default "Sveltekit" app main screen should be available at the default Vite dev server address http://127.0.0.1:5173.
+
+### Setup completed
+
+At this point, our starter project is up and running. We are now ready to move to the [next step of the tutorial](./entities.md) and start creating the task list app.

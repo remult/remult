@@ -1,4 +1,4 @@
-import { RestDataProviderHttpProvider } from './data-interfaces'
+import type { RestDataProviderHttpProvider } from './data-interfaces'
 import { RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider'
 
 export function buildRestDataProvider(

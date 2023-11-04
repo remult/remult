@@ -1,12 +1,8 @@
-import { FieldMetadata } from '../column-interfaces'
-import { Remult } from '../context'
-import {
-  EntityMetadata,
-  EntityFilter,
-  getEntityRef,
-  getEntitySettings,
-  ValueFilter,
-} from '../remult3'
+import type { FieldMetadata } from '../column-interfaces'
+import type { Remult } from '../context'
+import type { EntityFilter, EntityMetadata } from '../remult3/remult3'
+
+import { getEntityRef, getEntitySettings } from '../remult3/getEntityRef'
 
 export class Filter {
   constructor(private apply?: (add: FilterConsumer) => void) {
@@ -474,14 +470,16 @@ export function buildFilterFromRequestParameters(
   let val = filterInfo.get('OR')
   if (val) {
     const array = separateArrayFromInnerArray(val)
+    const or = array.map((v) => ({
+      $or: v.map((x) =>
+        buildFilterFromRequestParameters(entity, {
+          get: (key: string) => x[key],
+        }),
+      ),
+    }))
+    if (or.length == 1) return or[0]
     where.push({
-      $and: array.map((v) => ({
-        $or: v.map((x) =>
-          buildFilterFromRequestParameters(entity, {
-            get: (key: string) => x[key],
-          }),
-        ),
-      })),
+      $and: or,
     })
   }
 
@@ -504,7 +502,7 @@ export function buildFilterFromRequestParameters(
       }
     }
   }
-
+  if (where.length == 1) return where[0]
   return { $and: where }
 
   function separateArrayFromInnerArray(val: any) {
@@ -610,5 +608,34 @@ export interface customFilterInfo<entityType> {
       args: any,
       r: Remult,
     ) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>
+  }
+}
+
+export function __updateEntityBasedOnWhere<T>(
+  entityDefs: EntityMetadata<T>,
+  where: EntityFilter<T>,
+  r: T,
+) {
+  let w = Filter.fromEntityFilter(entityDefs, where)
+  const emptyFunction = () => {}
+  if (w) {
+    w.__applyToConsumer({
+      custom: emptyFunction,
+      databaseCustom: emptyFunction,
+      containsCaseInsensitive: emptyFunction,
+      isDifferentFrom: emptyFunction,
+      isEqualTo: (col, val) => {
+        r[col.key] = val
+      },
+      isGreaterOrEqualTo: emptyFunction,
+      isGreaterThan: emptyFunction,
+      isIn: emptyFunction,
+      isLessOrEqualTo: emptyFunction,
+      isLessThan: emptyFunction,
+      isNotNull: emptyFunction,
+      isNull: emptyFunction,
+
+      or: emptyFunction,
+    })
   }
 }

@@ -1,8 +1,5 @@
-import { ClassType } from '../classType'
 import { InputTypes } from '../inputTypes'
-import { makeTitle } from './column'
-import { ValueConverter, ValueListItem } from './column-interfaces'
-import { storableMember, ValueListFieldOptions } from './remult3'
+import type { ValueConverter } from './column-interfaces'
 
 export class ValueConverters {
   static readonly Date: ValueConverter<Date> = {

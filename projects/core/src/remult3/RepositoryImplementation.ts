@@ -1,74 +1,68 @@
-import {
+import { createId } from '@paralleldrive/cuid2'
+import { v4 as uuid } from 'uuid'
+import type { ClassType } from '../../classType'
+import { LookupColumn, makeTitle } from '../column'
+import { CompoundIdField } from '../CompoundIdField'
+import type {
   FieldMetadata,
   FieldOptions,
   ValueConverter,
   ValueListItem,
 } from '../column-interfaces'
-import { EntityOptions } from '../entity'
-import { CompoundIdField, LookupColumn, makeTitle } from '../column'
-import {
-  EntityMetadata,
-  FieldRef,
-  FieldsRef,
-  EntityFilter,
-  FindOptions,
-  Repository,
-  EntityRef,
-  QueryOptions,
-  QueryResult,
-  EntityOrderBy,
-  FieldsMetadata,
-  IdMetadata,
-  FindFirstOptionsBase,
-  FindFirstOptions,
-  OmitEB,
-  Subscribable,
+import type { AllowedForInstance } from '../context'
+import { Remult, isBackend, queryConfig } from '../context'
+import type { EntityOptions } from '../entity'
+import { Filter } from '../filter/filter-interfaces'
+import { Sort } from '../sort'
+import type {
   ControllerRef,
+  EntityFilter,
+  EntityMetadata,
+  EntityOrderBy,
+  EntityRef,
+  FieldRef,
+  FieldsMetadata,
+  FieldsRef,
+  FindFirstOptions,
+  FindFirstOptionsBase,
+  FindOptions,
+  IdMetadata,
   LiveQuery,
   LiveQueryChangeInfo,
+  OmitEB,
+  QueryOptions,
+  QueryResult,
+  Repository,
+  Subscribable,
 } from './remult3'
-import { ClassType } from '../../classType'
-import {
-  allEntities,
-  Remult,
-  isBackend,
-  queryConfig as queryConfig,
-  setControllerSettings,
-  EventSource,
-  Allowed,
-  AllowedForInstance,
-} from '../context'
-import {
-  AndFilter,
-  customFilterInfo,
-  entityFilterToJson,
-  Filter,
-  FilterConsumer,
-  OrFilter,
-} from '../filter/filter-interfaces'
-import { Sort } from '../sort'
-import { v4 as uuid } from 'uuid'
-import { createId } from '@paralleldrive/cuid2'
 
-import { entityEventListener } from '../__EntityValueProvider'
-import {
+import type { Paginator, RefSubscriber, RefSubscriberBase } from './remult3'
+import { assign } from '../../assign'
+import type { entityEventListener } from '../__EntityValueProvider'
+import type {
   DataProvider,
   EntityDataProvider,
   EntityDataProviderFindOptions,
   ErrorInfo,
 } from '../data-interfaces'
-import { ValueConverters } from '../valueConverters'
 import { filterHelper } from '../filter/filter-interfaces'
-import { assign } from '../../assign'
-import { Paginator, RefSubscriber, RefSubscriberBase } from '.'
+import { ValueConverters } from '../valueConverters'
 
-import { RemultProxy, remult as defaultRemult } from '../remult-proxy'
-import {
+import { findOptionsToJson } from '../data-providers/rest-data-provider'
+import type {
   SubscriptionListener,
   Unsubscribe,
 } from '../live-query/SubscriptionChannel'
-import { findOptionsToJson } from '../data-providers/rest-data-provider'
-//import { remult } from "../remult-proxy";
+import type { RemultProxy } from '../remult-proxy'
+import { remult as defaultRemult } from '../remult-proxy'
+import {
+  entityMember,
+  getEntityKey,
+  getEntityRef,
+  getEntitySettings,
+} from './getEntityRef'
+import { __updateEntityBasedOnWhere } from './__updateEntityBasedOnWhere'
+//import  { remult } from "../remult-proxy";
 
 let classValidatorValidate:
   | ((
@@ -78,7 +72,7 @@ let classValidatorValidate:
       },
     ) => Promise<void>)
   | undefined = undefined
-// import("class-validator".toString())
+// import ("class-validator".toString())
 //     .then((v) => {
 //         classValidatorValidate = (item, ref) => {
 //             return v.validate(item).then(errors => {
@@ -710,7 +704,7 @@ export class RepositoryImplementation<entityType>
   async translateWhereToFilter(
     where: EntityFilter<entityType>,
   ): Promise<Filter> {
-    if (this.metadata.options.backendPrefilter && isBackend()) {
+    if (this.metadata.options.backendPrefilter && !this.dataProvider.isProxy) {
       let z = where
       where = {
         $and: [z, await Filter.resolve(this.metadata.options.backendPrefilter)],
@@ -724,60 +718,8 @@ export class RepositoryImplementation<entityType>
   }
 }
 
-export function __updateEntityBasedOnWhere<T>(
-  entityDefs: EntityMetadata<T>,
-  where: EntityFilter<T>,
-  r: T,
-) {
-  let w = Filter.fromEntityFilter(entityDefs, where)
-  const emptyFunction = () => {}
-  if (w) {
-    w.__applyToConsumer({
-      custom: emptyFunction,
-      databaseCustom: emptyFunction,
-      containsCaseInsensitive: emptyFunction,
-      isDifferentFrom: emptyFunction,
-      isEqualTo: (col, val) => {
-        r[col.key] = val
-      },
-      isGreaterOrEqualTo: emptyFunction,
-      isGreaterThan: emptyFunction,
-      isIn: emptyFunction,
-      isLessOrEqualTo: emptyFunction,
-      isLessThan: emptyFunction,
-      isNotNull: emptyFunction,
-      isNull: emptyFunction,
-
-      or: emptyFunction,
-    })
-  }
-}
-
 export type EntityOptionsFactory = (remult: Remult) => EntityOptions
 
-export const entityInfo = Symbol('entityInfo')
-export const entityInfo_key = Symbol('entityInfo_key')
-const entityMember = Symbol('entityMember')
-export function getEntitySettings<T>(
-  entity: ClassType<T>,
-  throwError = true,
-): EntityOptionsFactory {
-  if (entity === undefined)
-    if (throwError) {
-      throw new Error('Undefined is not an entity :)')
-    } else return undefined
-  let info: EntityOptionsFactory = Reflect.getMetadata(entityInfo, entity)
-  if (!info && throwError)
-    throw new Error(
-      entity.prototype.constructor.name +
-        " is not a known entity, did you forget to set @Entity() or did you forget to add the '@' before the call to Entity?",
-    )
-
-  return info
-}
-export function getEntityKey(entity: ClassType<any>): string {
-  return Reflect.getMetadata(entityInfo_key, entity)
-}
 export const columnsOfType = new Map<any, columnInfo[]>()
 export function createOldEntity<T>(entity: ClassType<T>, remult: Remult) {
   let r: columnInfo[] = columnsOfType.get(entity)
@@ -1058,9 +1000,13 @@ abstract class rowHelperBase<T> {
       ) {
         let val
         let lu = this.lookups.get(col.key)
+        let disable = false
         if (lu)
-          if (includeRelatedEntities) val = lu.toJson()
-          else val = lu.id
+          if (includeRelatedEntities) {
+            val = lu.toJson()
+            disable = true
+            result[col.key] = val
+          } else val = lu.id
         else {
           val = this.instance[col.key]
           if (!this.remult) {
@@ -1072,7 +1018,7 @@ abstract class rowHelperBase<T> {
             }
           }
         }
-        result[col.key] = col.valueConverter.toJson(val)
+        if (!disable) result[col.key] = col.valueConverter.toJson(val)
       }
     }
     return result
@@ -1151,7 +1097,14 @@ export class rowHelperImplementation<T>
   }
   metadata: EntityMetadata<T>
   getId() {
-    return this.info.idMetadata.getId(this.instance)
+    const getVal = (y: FieldMetadata) => {
+      let z = this.lookups.get(y.key)
+      if (z) return z.id
+      return this.instance[y.key]
+    }
+    if (this.metadata.idMetadata.field instanceof CompoundIdField)
+      return this.metadata.idMetadata.field.fields.map(getVal).join(',')
+    return getVal(this.metadata.idMetadata.field)
   }
   saveMoreOriginalData() {
     this.originalId = this.getId()
@@ -1205,15 +1158,21 @@ export class rowHelperImplementation<T>
     return this._columns
   }
   private _saving = false
-  async save(onlyTheseFieldsSentOnlyInTheCaseOfProxySaveWithPartialObject?: string[]): Promise<T> {
+  async save(
+    onlyTheseFieldsSentOnlyInTheCaseOfProxySaveWithPartialObject?: string[],
+  ): Promise<T> {
     try {
       if (this._saving)
         throw new Error('cannot save while entity is already saving')
       this._saving = true
       if (this.wasDeleted()) throw new Error('cannot save a deleted row')
       this.isLoading = true
-      if (onlyTheseFieldsSentOnlyInTheCaseOfProxySaveWithPartialObject===undefined) // no need
-      await this.__validateEntity()
+      if (
+        onlyTheseFieldsSentOnlyInTheCaseOfProxySaveWithPartialObject ===
+        undefined
+      )
+        // no need
+        await this.__validateEntity()
       let doNotSave = false
       for (const col of this.fields) {
         if (col.metadata.options.saving)
@@ -1233,8 +1192,11 @@ export class rowHelperImplementation<T>
       for (const field of this.metadata.fields) {
         if (
           field.dbReadOnly ||
-          (onlyTheseFieldsSentOnlyInTheCaseOfProxySaveWithPartialObject !== undefined &&
-            !onlyTheseFieldsSentOnlyInTheCaseOfProxySaveWithPartialObject.includes(field.key))
+          (onlyTheseFieldsSentOnlyInTheCaseOfProxySaveWithPartialObject !==
+            undefined &&
+            !onlyTheseFieldsSentOnlyInTheCaseOfProxySaveWithPartialObject.includes(
+              field.key,
+            ))
         ) {
           d[field.key] = undefined
           ignoreKeys.push(field.key)
@@ -1640,19 +1602,6 @@ export class FieldRefImplementation<entityType, valueType>
   }
 }
 
-export function getEntityRef<entityType>(
-  entity: entityType,
-  throwException = true,
-): EntityRef<entityType> {
-  let x = entity[entityMember]
-  if (!x && throwException)
-    throw new Error(
-      'item ' +
-        entity.constructor.name +
-        ' was not initialized using a context',
-    )
-  return x
-}
 export const CaptionTransformer = {
   transformCaption: (remult: Remult, key: string, caption: string) => caption,
 }
@@ -1861,6 +1810,8 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
 
   idMetadata: IdMetadata<T> = {
     getId: (item) => {
+      const ref = getEntityRef(item, false)
+      if (ref) return ref.getId()
       if (this.idMetadata.field instanceof CompoundIdField)
         return this.idMetadata.field.getId(item)
       else return item[this.idMetadata.field.key]
@@ -2347,7 +2298,7 @@ export function Field<entityType = any, valueType = any>(
     | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void)
   )[]
 ) {
-  // IMPORTANT!!!! if you call this in another decorator, make sure to set It's return type correctly with the | undefined
+  // import ANT!!!! if you call this in another decorator, make sure to set It's return type correctly with the | undefined
 
   return (
     target,
@@ -2464,16 +2415,22 @@ export function decorateColumnSettings<valueType>(
         get(target, property) {
           if (target[property] === undefined) {
             if (isIdNumeric === undefined) {
+              if (property === 'inputType') return ''
               isIdNumeric =
                 remult.repo(settings.valueType).metadata.idMetadata.field
                   .valueType === Number
-              if (isIdNumeric) {
-                for (const key of [
-                  'fieldTypeInDb',
-                ] as (keyof ValueConverter<any>)[]) {
-                  //@ts-ignore
-                  target[key] = ValueConverters.Integer[key]
-                }
+
+              for (const key of [
+                'fieldTypeInDb',
+                'toJson',
+                'fromJson',
+                'toDb',
+                'fromDb',
+              ] as (keyof ValueConverter<any>)[]) {
+                //@ts-ignore
+                target[key] = isIdNumeric
+                  ? ValueConverters.Integer[key]
+                  : ValueConverters.String[key]
               }
             }
           }
@@ -2485,6 +2442,7 @@ export function decorateColumnSettings<valueType>(
         },
       })
     } else settings.valueConverter = ValueConverters.Default
+    return settings
   }
   if (!settings.valueConverter.toJson) {
     settings.valueConverter.toJson = (x) => x
@@ -2513,103 +2471,6 @@ interface columnInfo {
   key: string
   settings: (remult: Remult) => FieldOptions
 }
-//[ ] YONI - in Typescript 5 I do get the name of the class, what would we like to change because of that?
-
-/**Decorates classes that should be used as entities.
- * Receives a key and an array of EntityOptions.
- * @example
- * import { Entity, Fields } from "remult";
- * @Entity("tasks", {
- *    allowApiCrud: true
- * })
- * export class Task {
- *    @Fields.uuid()
- *    id!: string;
- *    @Fields.string()
- *    title = '';
- *    @Fields.boolean()
- *    completed = false;
- * }
- * @note
- * EntityOptions can be set in two ways:
- * @example
- * // as an object
- * @Entity("tasks",{ allowApiCrud:true })
- * @example
- * // as an arrow function that receives `remult` as a parameter
- * @Entity("tasks", (options,remult) => options.allowApiCrud = true)
- */
-export function Entity<entityType>(
-  key: string,
-  ...options: (
-    | EntityOptions<
-        entityType extends new (...args: any) => any
-          ? InstanceType<entityType>
-          : entityType
-      >
-    | ((
-        options: EntityOptions<
-          entityType extends new (...args: any) => any
-            ? InstanceType<entityType>
-            : entityType
-        >,
-        remult: Remult,
-      ) => void)
-  )[]
-) {
-  return (
-    target,
-    info?: ClassDecoratorContextStub<
-      entityType extends new (...args: any) => any ? entityType : never
-    >,
-  ) => {
-    for (const rawFilterMember in target) {
-      if (Object.prototype.hasOwnProperty.call(target, rawFilterMember)) {
-        const element = target[rawFilterMember] as customFilterInfo<any>
-        if (element?.rawFilterInfo?.rawFilterTranslator) {
-          if (!element.rawFilterInfo.key)
-            element.rawFilterInfo.key = rawFilterMember
-        }
-      }
-    }
-
-    let factory: EntityOptionsFactory = (remult) => {
-      let r = {} as EntityOptions<
-        entityType extends new (...args: any) => any
-          ? InstanceType<entityType>
-          : entityType
-      >
-      for (const o of options) {
-        if (o) {
-          if (typeof o === 'function') o(r, remult)
-          else Object.assign(r, o)
-        }
-      }
-
-      let base = Object.getPrototypeOf(target)
-      if (base) {
-        let baseFactory = getEntitySettings(base, false)
-        if (baseFactory) {
-          let opt = baseFactory(remult)
-          if (opt) {
-            r = {
-              ...opt,
-              ...r,
-            }
-          }
-        }
-      }
-      return r
-    }
-
-    allEntities.push(target)
-    setControllerSettings(target, { key })
-    Reflect.defineMetadata(entityInfo, factory, target)
-    Reflect.defineMetadata(entityInfo_key, key, target)
-    return target
-  }
-}
-
 export class EntityBase {
   get _(): EntityRef<this> {
     return getEntityRef(this)

@@ -1,18 +1,16 @@
-import {
-  EntityDataProvider,
+import type {
   DataProvider,
+  EntityDataProvider,
   EntityDataProviderFindOptions,
   RestDataProviderHttpProvider,
 } from '../data-interfaces'
 
 import { UrlBuilder } from '../../urlBuilder'
-import { customUrlToken, Filter } from '../filter/filter-interfaces'
-import { EntityMetadata, FindOptions } from '../remult3'
-import { ApiClient, Remult } from '../context'
 import { buildRestDataProvider, retry } from '../buildRestDataProvider'
-import { Sort } from '../sort'
-import { SubscribeResult } from '../live-query/SubscriptionChannel'
-import { actionInfo } from '../server-action'
+import type { ApiClient } from '../context'
+import { customUrlToken, Filter } from '../filter/filter-interfaces'
+import type { EntityMetadata, FindOptions } from '../remult3/remult3'
+import { actionInfo } from '../server-action-info'
 
 export class RestDataProvider implements DataProvider {
   constructor(private apiProvider: () => ApiClient) {}

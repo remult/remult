@@ -9,17 +9,27 @@ import type {
   UserInfo,
 } from './context'
 import type { DataProvider } from './data-interfaces'
-import { LiveQueryClient } from './live-query/LiveQueryClient'
+import type { LiveQueryClient } from './live-query/LiveQueryClient'
 import type {
   LiveQueryChangesListener,
   LiveQueryStorage,
   SubscriptionServer,
 } from './live-query/SubscriptionServer'
-import type { Repository, RepositoryImplementation } from './remult3'
+import type { Repository } from './remult3/remult3'
+import type { RepositoryImplementation } from './remult3/RepositoryImplementation'
+
+let defaultRemult: Remult
+
+function defaultFactory() {
+  if (!defaultRemult) {
+    defaultRemult = RemultProxy.defaultRemultFactory()
+  }
+  return defaultRemult
+}
 
 /*@internal*/
 export class RemultProxy implements Remult {
-  static defaultRemult: Remult
+  static defaultRemultFactory: () => Remult
   /* @internal*/
   get liveQuerySubscriber() {
     return this.remultFactory().liveQuerySubscriber
@@ -85,11 +95,11 @@ export class RemultProxy implements Remult {
     return this.remultFactory().clearAllCache()
   }
   /*@internal*/
-  remultFactory = () => RemultProxy.defaultRemult
+  remultFactory = () => defaultFactory()
 
   /*@internal*/
   resetFactory() {
-    this.remultFactory = () => RemultProxy.defaultRemult
+    this.remultFactory = () => defaultFactory()
   }
 
   private repoCache = new Map<
@@ -97,7 +107,7 @@ export class RemultProxy implements Remult {
     Map<DataProvider, Repository<any>>
   >()
   //@ts-ignore
-  repo: typeof RemultProxy.defaultRemult.repo = (...args) => {
+  repo: typeof defaultRemult.repo = (...args) => {
     let self = this
     let entityCache = self.repoCache.get(args[0])
     if (!entityCache) {

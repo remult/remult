@@ -1,8 +1,8 @@
-import { SqlCommandWithParameters } from '../sql-command';
-import { Filter, FilterConsumer } from './filter-interfaces';
-import { FieldMetadata } from '../column-interfaces';
-import { EntityFilter, OmitEB } from '../remult3/remult3';
-import { EntityMetadataOverloads, RepositoryOverloads } from '../remult3';
+import type { FieldMetadata } from '../column-interfaces';
+import type { EntityMetadataOverloads, RepositoryOverloads } from '../remult3/RepositoryImplementation';
+import type { EntityFilter, OmitEB } from '../remult3/remult3';
+import type { SqlCommandWithParameters } from '../sql-command';
+import type { Filter, FilterConsumer } from './filter-interfaces';
 export declare class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
     private r;
     private nameProvider;
@@ -27,7 +27,7 @@ export declare class FilterConsumerBridgeToSqlRequest implements FilterConsumer 
     private addToWhere;
     databaseCustom(databaseCustom: CustomSqlFilterObject): void;
 }
-export declare type CustomSqlFilterBuilderFunction = (builder: CustomSqlFilterBuilder) => void | Promise<any>;
+export type CustomSqlFilterBuilderFunction = (builder: CustomSqlFilterBuilder) => void | Promise<any>;
 export interface CustomSqlFilterObject {
     buildSql: CustomSqlFilterBuilderFunction;
 }

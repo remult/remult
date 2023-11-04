@@ -1,16 +1,12 @@
-import {
+import { CompoundIdField } from '../CompoundIdField'
+import type { FieldMetadata } from '../column-interfaces'
+import type {
   EntityDataProvider,
   EntityDataProviderFindOptions,
 } from '../data-interfaces'
-import {
-  customDatabaseFilterToken,
-  Filter,
-  FilterConsumer,
-} from '../filter/filter-interfaces'
-import { FieldMetadata } from '../column-interfaces'
-import { EntityMetadata, EntityFilter } from '../remult3'
-import { CompoundIdField } from '../column'
-import { Sort } from '../sort'
+import type { FilterConsumer } from '../filter/filter-interfaces'
+import { Filter, customDatabaseFilterToken } from '../filter/filter-interfaces'
+import type { EntityFilter, EntityMetadata } from '../remult3/remult3'
 
 export class ArrayEntityDataProvider implements EntityDataProvider {
   static rawFilter(filter: CustomArrayFilter): EntityFilter<any> {

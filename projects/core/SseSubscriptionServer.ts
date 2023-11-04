@@ -1,10 +1,10 @@
-import { GenericRequestInfo, GenericResponse } from './server/index'
-import { Remult } from './src/context'
-import { ServerEventChannelSubscribeDTO } from './src/live-query/SubscriptionChannel'
-import { SubscriptionServer } from './src/live-query/SubscriptionServer'
-import { DataApiResponse } from './src/data-api'
 import { v4 as uuid } from 'uuid'
+import type { GenericRequestInfo, GenericResponse } from './server/index'
+import type { Remult } from './src/context'
+import type { DataApiResponse } from './src/data-api'
 import { ConnectionNotFoundError } from './src/live-query/SseSubscriptionClient'
+import type { ServerEventChannelSubscribeDTO } from './src/live-query/SubscriptionChannel'
+import type { SubscriptionServer } from './src/live-query/SubscriptionServer'
 
 export class SseSubscriptionServer implements SubscriptionServer {
   //@internal

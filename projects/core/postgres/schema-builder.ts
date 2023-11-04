@@ -1,13 +1,16 @@
-import { FieldMetadata } from '../src/column-interfaces'
-import { Remult, allEntities } from '../src/context'
-import { SqlDatabase } from '../src/data-providers/sql-database'
+import type { FieldMetadata } from '../src/column-interfaces'
+import type { Remult } from '../src/context'
+import { allEntities } from '../src/context'
+import type { SqlDatabase } from '../src/data-providers/sql-database'
+import type { EntityDbNamesBase } from '../src/filter/filter-consumer-bridge-to-sql-request'
 import {
   dbNamesOf,
-  EntityDbNamesBase,
   isDbReadonly,
 } from '../src/filter/filter-consumer-bridge-to-sql-request'
 import { remult as defaultRemult } from '../src/remult-proxy'
-import { EntityMetadata, isAutoIncrement } from '../src/remult3'
+import type { EntityMetadata } from '../src/remult3/remult3'
+import { isAutoIncrement } from '../src/remult3/RepositoryImplementation'
+import type { SqlCommand } from '../src/sql-command'
 import { ValueConverters } from '../src/valueConverters'
 
 export function postgresColumnSyntax(x: FieldMetadata, dbName: string) {
@@ -48,6 +51,59 @@ export async function verifyStructureOfAllEntities(
 export class PostgresSchemaBuilder {
   //@internal
   static logToConsole = true
+
+  private removeQuotes(s: string) {
+    if (s.startsWith('"') && s.endsWith('"')) {
+      return s.substring(1, s.length - 1)
+    }
+    return s.toLocaleLowerCase()
+  }
+
+  private whereTableAndSchema(cmd: SqlCommand, e: EntityDbNamesBase) {
+    let table = ''
+    let schema = ''
+
+    if (this.specifiedSchema) {
+      schema = this.specifiedSchema
+    }
+
+    const splited = e.$entityName.split('.')
+
+    // let's prioritize the specified schema at dbName level
+    if (splited.length > 1) {
+      schema = splited[0]
+      table = splited[1]
+    } else {
+      table = splited[0]
+    }
+
+    const where = []
+    if (schema) {
+      where.push(
+        `table_schema=${cmd.addParameterAndReturnSqlToken(
+          this.removeQuotes(schema),
+        )}`,
+      )
+    }
+    where.push(
+      `table_name=${cmd.addParameterAndReturnSqlToken(
+        this.removeQuotes(table),
+      )}`,
+    )
+
+    return where.join(' AND ')
+  }
+
+  private schemaAndName(e: EntityDbNamesBase) {
+    if (e.$entityName.includes('.')) {
+      return e.$entityName
+    }
+    if (this.specifiedSchema) {
+      return `${this.specifiedSchema}.${e.$entityName}`
+    }
+    return e.$entityName
+  }
+
   async verifyStructureOfAllEntities(remult?: Remult) {
     if (!remult) {
       remult = defaultRemult
@@ -63,6 +119,7 @@ export class PostgresSchemaBuilder {
     }
     await this.ensureSchema(entities)
   }
+
   async ensureSchema(entities: EntityMetadata<any>[]) {
     for (const entity of entities) {
       let e: EntityDbNamesBase = await dbNamesOf(entity)
@@ -85,9 +142,8 @@ export class PostgresSchemaBuilder {
 
     await c
       .execute(
-        'select 1 from information_Schema.tables where table_name=' +
-          c.addParameterAndReturnSqlToken(e.$entityName.toLowerCase()) +
-          this.additionalWhere,
+        `SELECT 1 FROM information_Schema.tables WHERE ` +
+          `${this.whereTableAndSchema(c, e)}`,
       )
       .then(async (r) => {
         if (r.rows.length == 0) {
@@ -105,7 +161,7 @@ export class PostgresSchemaBuilder {
             }
           }
 
-          let sql = 'create table ' + e.$entityName + ' (' + result + '\r\n)'
+          let sql = `CREATE table ${this.schemaAndName(e)} (${result}\r\n)`
           if (PostgresSchemaBuilder.logToConsole) console.info(sql)
           await this.pool.execute(sql)
         }
@@ -125,19 +181,17 @@ export class PostgresSchemaBuilder {
       if (
         (
           await cmd.execute(
-            `select 1   
-        FROM information_schema.columns 
-        WHERE table_name=${cmd.addParameterAndReturnSqlToken(
-          e.$entityName.toLocaleLowerCase(),
-        )} and column_name=${cmd.addParameterAndReturnSqlToken(
-          colName.toLocaleLowerCase(),
-        )}` + this.additionalWhere,
+            `SELECT 1 FROM information_schema.columns WHERE ` +
+              `${this.whereTableAndSchema(cmd, e)} ` +
+              `AND column_name=${cmd.addParameterAndReturnSqlToken(
+                colName.toLocaleLowerCase(),
+              )}`,
           )
         ).rows.length == 0
       ) {
-        let sql = `alter table ${
-          e.$entityName
-        } add column ${postgresColumnSyntax(c(entity), colName)}`
+        let sql =
+          `ALTER table ${this.schemaAndName(e)} ` +
+          `ADD column ${postgresColumnSyntax(c(entity), colName)}`
         if (PostgresSchemaBuilder.logToConsole) console.info(sql)
         await this.pool.execute(sql)
       }
@@ -145,6 +199,7 @@ export class PostgresSchemaBuilder {
       console.error(err)
     }
   }
+
   async verifyAllColumns<T extends EntityMetadata>(entity: T) {
     try {
       let cmd = this.pool.createCommand()
@@ -152,11 +207,8 @@ export class PostgresSchemaBuilder {
 
       let cols = (
         await cmd.execute(
-          `select column_name   
-        FROM information_schema.columns 
-        WHERE table_name=${cmd.addParameterAndReturnSqlToken(
-          e.$entityName.toLocaleLowerCase(),
-        )} ` + this.additionalWhere,
+          `SELECT column_name FROM information_schema.columns WHERE ` +
+            `${this.whereTableAndSchema(cmd, e)}`,
         )
       ).rows.map((x) => x.column_name.toLocaleLowerCase())
       for (const col of entity.fields) {
@@ -165,9 +217,9 @@ export class PostgresSchemaBuilder {
           if (colName.startsWith('"') && colName.endsWith('"'))
             colName = colName.substring(1, colName.length - 1)
           if (!cols.includes(colName)) {
-            let sql = `alter table ${
-              e.$entityName
-            } add column ${postgresColumnSyntax(col, e.$dbNameOf(col))}`
+            let sql =
+              `ALTER table ${this.schemaAndName(e)} ` +
+              `add column ${postgresColumnSyntax(col, e.$dbNameOf(col))}`
             if (PostgresSchemaBuilder.logToConsole) console.info(sql)
             await this.pool.execute(sql)
           }
@@ -177,13 +229,14 @@ export class PostgresSchemaBuilder {
       console.error(err)
     }
   }
-  additionalWhere = ''
+
+  specifiedSchema = ''
   constructor(
     private pool: SqlDatabase,
     schema?: string,
   ) {
     if (schema) {
-      this.additionalWhere = " and table_schema='" + schema + "'"
+      this.specifiedSchema = schema
     }
   }
 }

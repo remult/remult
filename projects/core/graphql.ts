@@ -1,7 +1,8 @@
+import type { ClassType } from './classType'
+import type { EntityMetadata, FieldsMetadata } from './index'
+import { Remult, remult } from './index'
 import type { DataApiResponse } from './src/data-api'
 import { DataApi } from './src/data-api'
-import { EntityMetadata, FieldsMetadata, Remult, remult } from './index'
-import type { ClassType } from './classType'
 
 const v2ConnectionAndPagination = false
 const andImplementation = false
@@ -712,10 +713,11 @@ Select a dedicated page.`,
             }
           })
 
-          // will do: Category.tasks
+          // will do: Category.tasks (actually: Category.tasksOfcategory & tasksOfcategory2)
           const refT = upsertTypes(getMetaType(ref), 'type_impl_node')
+          const keyOf = key + 'Of' + f.key
           refT.fields.push({
-            key,
+            key: keyOf,
             args: queryArgsConnection,
             value: connectionKey,
             order: 10,
@@ -724,7 +726,7 @@ Select a dedicated page.`,
 
           refT.query.resultProcessors.push((r) => {
             const val = r.id
-            r[key] = async (args: any, req: any, gqlInfo: any) => {
+            r[keyOf] = async (args: any, req: any, gqlInfo: any) => {
               return await root[key](
                 {
                   where: { ...args.where, [f.key]: { eq: val } },
@@ -1105,7 +1107,7 @@ export function translateWhereToRestBody<T>(
       }
       tr('nin', (x) => (result[field.key + '.ne'] = x))
       tr('eq', (x) => (result[field.key] = x))
-      tr('contains', (x) => (result[field.key+'.contains'] = x))
+      tr('contains', (x) => (result[field.key + '.contains'] = x))
     }
   }
   if (where.OR) {

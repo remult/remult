@@ -1,5 +1,5 @@
-import { expect, it, describe, beforeEach } from "vitest"
-import { createSchema, createYoga } from "graphql-yoga"
+import { createSchema, createYoga } from 'graphql-yoga'
+import { beforeEach, describe, expect, it } from 'vitest'
 import {
   Entity,
   Field,
@@ -8,67 +8,69 @@ import {
   InMemoryDataProvider,
   Remult,
   describeClass,
-  remult
-} from "../core"
-import { remultGraphql, translateWhereToRestBody } from "../core/graphql"
+} from '../core'
+import { remultGraphql, translateWhereToRestBody } from '../core/graphql'
 
 @FieldType({ displayValue: (_, v) => v?.name })
-@Entity("categories", { allowApiCrud: true })
+@Entity('categories', { allowApiCrud: true })
 class Category {
   @Fields.string({
     allowApiUpdate: false,
     saving: async (_, ref) => {
       // created a consistent id for testing
       ref.value = (await ref.entityRef.repository.count()).toString()
-    }
+    },
   })
-  id = ""
+  id = ''
   @Fields.string()
-  name = ""
+  name = ''
 }
 
-@Entity("tasks", {
-  allowApiCrud: true
+@Entity('tasks', {
+  allowApiCrud: true,
 })
 class Task {
   @Fields.autoIncrement()
   id = 0
 
   @Fields.string({
-    caption: "The Title",
+    caption: 'The Title',
     validate: (task) => {
-      if (task.title?.length < 3) throw Error("Too short")
-    }
+      if (task.title?.length < 3) throw Error('Too short')
+    },
   })
-  title = ""
+  title = ''
 
-  @Fields.boolean({ caption: "Is it completed" })
+  @Fields.boolean({ caption: 'Is it completed' })
   completed = false
 
   @Fields.object({
-    dbName: "the_priority",
-    inputType: "select"
+    dbName: 'the_priority',
+    inputType: 'select',
   })
   thePriority = Priority.High
 
   @Field(() => Category, { allowNull: true })
   category?: Category
 
+  @Field(() => Category, { allowNull: true })
+  category2?: Category
+
   @Fields.string({
     serverExpression: () => {
-      return ""
-    }
+      return ''
+    },
   })
-  userOnServer = ""
+  userOnServer = ''
 }
 
 export enum Priority {
   Low,
   High,
-  Critical
+  Critical,
 }
 
-describe("graphql", () => {
+describe('graphql', () => {
   let remult: Remult
 
   let gql: (gql: string) => Promise<any>
@@ -78,29 +80,30 @@ describe("graphql", () => {
 
     const { typeDefs, resolvers } = remultGraphql({
       entities: [Task, Category],
-      getRemultFromRequest: () => remult
+      getRemultFromRequest: () => remult,
     })
 
     const yoga = createYoga({
       schema: createSchema({
         typeDefs,
-        resolvers
-      })
+        resolvers,
+      }),
     })
 
     gql = async (query: string) => {
       return await yoga.getResultForParams({
         request: {} as any,
         params: {
-          query
-        }
+          query,
+        },
       })
     }
   })
 
   it('test nodes', async () => {
-
-    const cat = await remult.repo(Category).insert([{ name: 'c1' }, { name: 'c2' }])
+    const cat = await remult
+      .repo(Category)
+      .insert([{ name: 'c1' }, { name: 'c2' }])
 
     await remult.repo(Task).insert({ title: 'task a', category: cat[0] })
     await remult.repo(Task).insert({ title: 'task b', category: cat[1] })
@@ -165,28 +168,28 @@ describe("graphql", () => {
     expect(taskNode.data.node.title).toBe('task a')
   })
 
-  it("test where translator", async () => {
+  it('test where translator', async () => {
     const fields = remult.repo(Task).fields
     expect(
       translateWhereToRestBody(fields, {
         where: {
-          title: { eq: "aaa" }
-        }
-      })
+          title: { eq: 'aaa' },
+        },
+      }),
     ).toMatchInlineSnapshot(`
       {
         "title": "aaa",
       }
     `)
   })
-  it("test where translator in", async () => {
+  it('test where translator in', async () => {
     const meta = remult.repo(Task).metadata
     const result = translateWhereToRestBody(meta.fields, {
       where: {
         title: {
-          in: ["aaa", "ccc"]
-        }
-      }
+          in: ['aaa', 'ccc'],
+        },
+      },
     })
     expect(result).toMatchInlineSnapshot(`
       {
@@ -198,10 +201,10 @@ describe("graphql", () => {
     `)
   })
 
-  it("test where", async () => {
+  it('test where', async () => {
     await remult
       .repo(Task)
-      .insert(["aaa", "bbb", "ccc", "ddd"].map((x) => ({ title: x }))),
+      .insert(['aaa', 'bbb', 'ccc', 'ddd'].map((x) => ({ title: x }))),
       expect(
         (
           await gql(`
@@ -210,13 +213,13 @@ describe("graphql", () => {
         totalCount
       }
     }`)
-        ).data.tasks.totalCount
+        ).data.tasks.totalCount,
       ).toBe(4)
   })
-  it("test where eq", async () => {
+  it('test where eq', async () => {
     await remult
       .repo(Task)
-      .insert(["aaa", "bbb", "ccc", "ddd"].map((x) => ({ title: x }))),
+      .insert(['aaa', 'bbb', 'ccc', 'ddd'].map((x) => ({ title: x }))),
       expect(
         (
           await gql(`
@@ -229,13 +232,13 @@ describe("graphql", () => {
         totalCount
       }
     }`)
-        ).data.tasks.totalCount
+        ).data.tasks.totalCount,
       ).toBe(1)
   })
-  it("test where in", async () => {
+  it('test where in', async () => {
     await remult
       .repo(Task)
-      .insert(["aaa", "bbb", "ccc", "ddd"].map((x) => ({ title: x }))),
+      .insert(['aaa', 'bbb', 'ccc', 'ddd'].map((x) => ({ title: x }))),
       expect(
         (
           await gql(`
@@ -248,13 +251,13 @@ describe("graphql", () => {
         totalCount
       }
     }`)
-        ).data.tasks.totalCount
+        ).data.tasks.totalCount,
       ).toBe(2)
   })
-  it("test where or", async () => {
+  it('test where or', async () => {
     await remult
       .repo(Task)
-      .insert(["aaa", "bbb", "ccc", "ddd"].map((x) => ({ title: x }))),
+      .insert(['aaa', 'bbb', 'ccc', 'ddd'].map((x) => ({ title: x }))),
       expect(
         (
           await gql(`
@@ -265,14 +268,14 @@ describe("graphql", () => {
         totalCount
       }
     }`)
-        ).data.tasks.totalCount
+        ).data.tasks.totalCount,
       ).toBe(2)
   })
 
-  it("test where not in", async () => {
+  it('test where not in', async () => {
     await remult
       .repo(Task)
-      .insert(["aaa", "bbb", "ccc", "ddd"].map((x) => ({ title: x }))),
+      .insert(['aaa', 'bbb', 'ccc', 'ddd'].map((x) => ({ title: x }))),
       expect(
         (
           await gql(`
@@ -285,13 +288,13 @@ describe("graphql", () => {
         totalCount
       }
     }`)
-        ).data.tasks.totalCount
+        ).data.tasks.totalCount,
       ).toBe(3)
   })
-  it("test contains", async () => {
+  it('test contains', async () => {
     await remult
       .repo(Task)
-      .insert(["aaa", "bbb", "cbc", "ddd"].map((x) => ({ title: x }))),
+      .insert(['aaa', 'bbb', 'cbc', 'ddd'].map((x) => ({ title: x }))),
       expect(
         (
           await gql(`
@@ -304,28 +307,28 @@ describe("graphql", () => {
         totalCount
       }
     }`)
-        ).data.tasks.totalCount
+        ).data.tasks.totalCount,
       ).toBe(2)
   })
 
-  it("gets related entities", async () => {
+  it('gets related entities', async () => {
     const cat = await remult
       .repo(Category)
-      .insert([{ name: "c1" }, { name: "c2" }])
-    await remult.repo(Task).insert({ title: "task a", category: cat[0] })
-    await remult.repo(Task).insert({ title: "task b", category: cat[1] })
+      .insert([{ name: 'c1' }, { name: 'c2' }])
+    await remult.repo(Task).insert({ title: 'task a', category: cat[0] })
+    await remult.repo(Task).insert({ title: 'task b', category: cat[1] })
 
     const result = await gql(`
     query{
-      tasks{
-        items{
+      tasks {
+        items {
           title
-          category{
+          category {
             name
-            tasks{
+            tasksOfcategory {
               items {
-              title
-            }
+                title
+              }
             }
           }
         }
@@ -339,7 +342,7 @@ describe("graphql", () => {
               {
                 "category": {
                   "name": "c1",
-                  "tasks": {
+                  "tasksOfcategory": {
                     "items": [
                       {
                         "title": "task a",
@@ -352,7 +355,7 @@ describe("graphql", () => {
               {
                 "category": {
                   "name": "c2",
-                  "tasks": {
+                  "tasksOfcategory": {
                     "items": [
                       {
                         "title": "task b",
@@ -367,19 +370,19 @@ describe("graphql", () => {
         },
       }
     `)
-    expect(result.data.tasks.items[0].category.name).toBe("c1")
-    expect(result.data.tasks.items[0].category.tasks.items[0].title).toBe(
-      "task a"
-    )
-    expect(result.data.tasks.items[1].category.name).toBe("c2")
-    expect(result.data.tasks.items[1].category.tasks.items[0].title).toBe(
-      "task b"
-    )
+    expect(result.data.tasks.items[0].category.name).toBe('c1')
+    expect(
+      result.data.tasks.items[0].category.tasksOfcategory.items[0].title,
+    ).toBe('task a')
+    expect(result.data.tasks.items[1].category.name).toBe('c2')
+    expect(
+      result.data.tasks.items[1].category.tasksOfcategory.items[0].title,
+    ).toBe('task b')
   })
-  it("test get single task by id", async () => {
+  it('test get single task by id', async () => {
     const tasks = await remult
       .repo(Task)
-      .insert([{ title: "aaa" }, { title: "bbb" }, { title: "ccc" }])
+      .insert([{ title: 'aaa' }, { title: 'bbb' }, { title: 'ccc' }])
 
     expect(
       await gql(`
@@ -388,7 +391,7 @@ describe("graphql", () => {
         id,
         title
       }
-    }`)
+    }`),
     ).toMatchInlineSnapshot(`
       {
         "data": {
@@ -401,10 +404,10 @@ describe("graphql", () => {
     `)
   })
 
-  it("test count", async () => {
+  it('test count', async () => {
     await remult
       .repo(Task)
-      .insert([{ title: "aaa" }, { title: "bbb" }, { title: "ccc" }])
+      .insert([{ title: 'aaa' }, { title: 'bbb' }, { title: 'ccc' }])
 
     expect(
       await gql(`
@@ -412,7 +415,7 @@ describe("graphql", () => {
       tasks{
         totalCount
       }
-    }`)
+    }`),
     ).toMatchInlineSnapshot(`
       {
         "data": {
@@ -424,10 +427,10 @@ describe("graphql", () => {
     `)
   })
 
-  it("test count two", async () => {
+  it('test count two', async () => {
     await remult
       .repo(Task)
-      .insert([{ title: "aaa" }, { title: "bbb" }, { title: "ccc" }])
+      .insert([{ title: 'aaa' }, { title: 'bbb' }, { title: 'ccc' }])
 
     expect(
       await gql(`
@@ -441,7 +444,7 @@ describe("graphql", () => {
       ){
         totalCount
       }
-    }`)
+    }`),
     ).toMatchInlineSnapshot(`
       {
         "data": {
@@ -452,10 +455,10 @@ describe("graphql", () => {
       }
     `)
   })
-  it("test mutation delete", async () => {
+  it('test mutation delete', async () => {
     await await remult
       .repo(Task)
-      .insert([{ title: "task a" }, { title: "task b" }, { title: "task c" }])
+      .insert([{ title: 'task a' }, { title: 'task b' }, { title: 'task c' }])
 
     expect(
       await gql(`
@@ -463,7 +466,7 @@ describe("graphql", () => {
         deleteTask(id:2) {
           id
         }
-      }`)
+      }`),
     ).toMatchInlineSnapshot(`
       {
         "data": {
@@ -477,6 +480,7 @@ describe("graphql", () => {
       [
         Task {
           "category": null,
+          "category2": null,
           "completed": false,
           "id": 1,
           "thePriority": 1,
@@ -485,6 +489,7 @@ describe("graphql", () => {
         },
         Task {
           "category": null,
+          "category2": null,
           "completed": false,
           "id": 3,
           "thePriority": 1,
@@ -495,7 +500,7 @@ describe("graphql", () => {
     `)
   })
 
-  it("test mutation create", async () => {
+  it('test mutation create', async () => {
     const result = await gql(`
     mutation {
       createTask(input: {title: "testing"}) {
@@ -521,6 +526,7 @@ describe("graphql", () => {
       [
         Task {
           "category": null,
+          "category2": null,
           "completed": false,
           "id": 1,
           "thePriority": 1,
@@ -531,7 +537,7 @@ describe("graphql", () => {
     `)
   })
 
-  it("test mutation create clientMutationId", async () => {
+  it('test mutation create clientMutationId', async () => {
     const result = await gql(`
     mutation {
       createTask(input: {title: "testing"}, clientMutationId: "123yop123") {
@@ -553,6 +559,7 @@ describe("graphql", () => {
       [
         Task {
           "category": null,
+          "category2": null,
           "completed": false,
           "id": 1,
           "thePriority": 1,
@@ -563,8 +570,8 @@ describe("graphql", () => {
     `)
   })
 
-  it("test mutation update", async () => {
-    await remult.repo(Task).insert({ title: "aaa" })
+  it('test mutation update', async () => {
+    await remult.repo(Task).insert({ title: 'aaa' })
 
     const result = await gql(`
     mutation {
@@ -589,7 +596,7 @@ describe("graphql", () => {
     `)
   })
 
-  it("test mutation generic error", async () => {
+  it('test mutation generic error', async () => {
     const result = await gql(`
     mutation {
       createTask(input: {title: "a"}, clientMutationId: "yop") {
@@ -619,7 +626,7 @@ describe("graphql", () => {
     `)
   })
 
-  it("test mutation validation error", async () => {
+  it('test mutation validation error', async () => {
     const result = await gql(`
     mutation {
       createTask(input: {title: "a"}) {
@@ -656,8 +663,8 @@ describe("graphql", () => {
       }
     `)
   })
-  it("test mutation update validation error", async () => {
-    let task= await remult.repo(Task).insert({ title: "task c" })
+  it('test mutation update validation error', async () => {
+    let task = await remult.repo(Task).insert({ title: 'task c' })
     const result = await gql(`
     mutation {
       updateTask(id: ${task.id},patch: {title: "a"}) {
@@ -695,10 +702,10 @@ describe("graphql", () => {
     `)
   })
 
-  it("test graphql", async () => {
-    await remult.repo(Task).insert([{ title: "task c" }])
-    await remult.repo(Task).insert([{ title: "task b" }])
-    await remult.repo(Task).insert([{ title: "task a" }])
+  it('test graphql', async () => {
+    await remult.repo(Task).insert([{ title: 'task c' }])
+    await remult.repo(Task).insert([{ title: 'task b' }])
+    await remult.repo(Task).insert([{ title: 'task a' }])
     expect(await remult.repo(Task).count()).toBe(3)
 
     const result = await gql(`
@@ -739,11 +746,11 @@ describe("graphql", () => {
     `)
   })
 
-  it("test basics", async () => {
+  it('test basics', async () => {
     // rmv removeComments is very handy for testing!
     const { typeDefs } = remultGraphql({
       entities: [Task, Category],
-      removeComments: true
+      removeComments: true,
     })
 
     expect(typeDefs).toMatchInlineSnapshot(`
@@ -770,6 +777,7 @@ describe("graphql", () => {
           completed: Boolean!
           thePriority: String!
           category: Category
+          category2: Category
           userOnServer: String!
           nodeId: ID!
       }
@@ -780,6 +788,7 @@ describe("graphql", () => {
         completed: OrderByDirection
         thePriority: OrderByDirection
         category: OrderByDirection
+        category2: OrderByDirection
       }
 
       input tasksWhere {
@@ -800,6 +809,7 @@ describe("graphql", () => {
           completed: Boolean
           thePriority: String
           category: ID
+          category2: ID
           userOnServer: String
       }
 
@@ -814,6 +824,7 @@ describe("graphql", () => {
           completed: Boolean
           thePriority: String
           category: ID
+          category2: ID
           userOnServer: String
       }
 
@@ -832,7 +843,8 @@ describe("graphql", () => {
       type Category implements Node {
           id: String!
           name: String!
-          tasks(limit: Int, page: Int, orderBy: tasksOrderBy, where: tasksWhere): TaskConnection
+          tasksOfcategory(limit: Int, page: Int, orderBy: tasksOrderBy, where: tasksWhere): TaskConnection
+          tasksOfcategory2(limit: Int, page: Int, orderBy: tasksOrderBy, where: tasksWhere): TaskConnection
           nodeId: ID!
       }
 
@@ -1014,17 +1026,21 @@ describe("graphql", () => {
       "
     `)
   })
-  it("test allow api delete", async () => {
+  it('test allow api delete', async () => {
     const C = class {
       id = 0
     }
-    describeClass(C, Entity("cs", { allowApiCrud: true, allowApiDelete: false }), {
-      id: Fields.integer()
-    })
+    describeClass(
+      C,
+      Entity('cs', { allowApiCrud: true, allowApiDelete: false }),
+      {
+        id: Fields.integer(),
+      },
+    )
     // rmv removeComments is very handy for testing!
     const { typeDefs } = remultGraphql({
       entities: [C],
-      removeComments: true
+      removeComments: true,
     })
 
     expect(typeDefs).toMatchInlineSnapshot(`
@@ -1214,23 +1230,25 @@ describe("graphql", () => {
       "
     `)
   })
-  it("test allow api create", async () => {
+  it('test allow api create', async () => {
     const C = class {
       id = 0
     }
-    describeClass(C, Entity("cs", { allowApiCrud: true, allowApiInsert: false }), {
-      id: Fields.integer()
-    })
+    describeClass(
+      C,
+      Entity('cs', { allowApiCrud: true, allowApiInsert: false }),
+      {
+        id: Fields.integer(),
+      },
+    )
     // rmv removeComments is very handy for testing!
     const { typeDefs } = remultGraphql({
       entities: [C],
-      removeComments: true
+      removeComments: true,
     })
 
     expect(typeDefs).toMatchInlineSnapshot(
-
-      
-    `
+      `
       "type Query {
           c(id: ID!): C
           cs(limit: Int, page: Int, orderBy: csOrderBy, where: csWhere): CConnection
@@ -1411,6 +1429,7 @@ describe("graphql", () => {
           message: String!
       }
       "
-    `)
+    `,
+    )
   })
 })

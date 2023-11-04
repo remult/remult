@@ -11,7 +11,7 @@ To add graphql to a `remult` application follow these steps:
 
 In the `/src/server/index.ts` file add the following code:
 
-```ts{3-4,12-21}
+```ts{3-4,12-22}
 import express from 'express';
 import { remultExpress } from 'remult/remult-express';
 import { createSchema, createYoga } from 'graphql-yoga'
@@ -83,13 +83,14 @@ const { typeDefs, resolvers } = remultGraphql({
 
 const yogaApp = createYoga<RequestEvent>({
   schema: createSchema({
-    typeDefs: createSchema({
-      typeDefs,
-      resolvers
-    })
+    typeDefs,
+    resolvers
   }),
+  // While using Next.js file convention for routing, we need to configure Yoga to use the correct endpoint
+  graphqlEndpoint: '/api/graphql',
+
   fetchAPI: { Response }
 })
 
-export { yogaApp as GET, yogaApp as POST }
+export { yogaApp as GET, yogaApp as OPTIONS, yogaApp as POST }
 ```

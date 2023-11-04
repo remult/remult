@@ -1,14 +1,15 @@
-import { __RowsOfDataForTesting } from '../__RowsOfDataForTesting'
-import { SqlCommand, SqlResult, SqlImplementation } from '../sql-command'
+import type { __RowsOfDataForTesting } from '../__RowsOfDataForTesting'
+import type { SqlCommand, SqlImplementation, SqlResult } from '../sql-command'
 
-import { EntityMetadata, isAutoIncrement } from '../remult3'
-import { FieldMetadata } from '../column-interfaces'
-import { SqlDatabase } from './sql-database'
+import type { FieldMetadata } from '../column-interfaces'
+import type { Remult } from '../context'
 import {
   dbNamesOf,
   isDbReadonly,
 } from '../filter/filter-consumer-bridge-to-sql-request'
-import { Remult } from '../context'
+import type { EntityMetadata } from '../remult3/remult3'
+import { isAutoIncrement } from '../remult3/RepositoryImplementation'
+import { SqlDatabase } from './sql-database'
 //SqlDatabase.LogToConsole = true;
 export class WebSqlDataProvider
   implements SqlImplementation, __RowsOfDataForTesting

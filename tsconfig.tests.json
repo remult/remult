@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": [
+    "./projects/tests/**/*.spec.ts",
+    "./projects/tests/**/*.backend-spec.ts",
+    "./projects/tests/**/*.spec-browser.ts"
+  ]
+}

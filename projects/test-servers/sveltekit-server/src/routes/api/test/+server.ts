@@ -4,4 +4,4 @@ import { Task } from '../../../shared/Task'
 
 export const GET = async () => {
   return json({ result: await remult.repo(Task).count() })
-} 
+}

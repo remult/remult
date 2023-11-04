@@ -1,14 +1,13 @@
-import { SqlCommand, SqlCommandWithParameters, SqlResult } from '../sql-command'
-import { Filter, FilterConsumer } from './filter-interfaces'
-import { FieldMetadata } from '../column-interfaces'
-import { EntityFilter, OmitEB } from '../remult3/remult3'
-import {
-  EntityMetadataOverloads,
-  getEntityMetadata,
-  RepositoryOverloads,
-} from '../remult3'
-import { ClassType } from '../../classType'
+import type { FieldMetadata } from '../column-interfaces'
 import { SqlDatabase } from '../data-providers/sql-database'
+import type {
+  EntityMetadataOverloads,
+  RepositoryOverloads,
+} from '../remult3/RepositoryImplementation'
+import { getEntityMetadata } from '../remult3/RepositoryImplementation'
+import type { EntityFilter, OmitEB } from '../remult3/remult3'
+import type { SqlCommandWithParameters } from '../sql-command'
+import type { Filter, FilterConsumer } from './filter-interfaces'
 
 export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
   private where = ''

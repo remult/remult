@@ -1,11 +1,11 @@
-import { Remult } from '../../index';
+import type { Remult } from '../context';
 export declare const streamUrl = "stream";
 export interface SubscriptionListener<type> {
     next(message: type): void;
     error(err: any): void;
     complete(): void;
 }
-export declare type Unsubscribe = VoidFunction;
+export type Unsubscribe = VoidFunction;
 export interface SubscriptionClientConnection {
     subscribe(channel: string, onMessage: (message: any) => void, onError: (err: any) => void): Promise<Unsubscribe>;
     close(): void;

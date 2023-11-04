@@ -1,54 +1,39 @@
-import {
-  Action,
-  actionInfo,
-  ActionInterface,
-  classBackendMethodsArray,
-  jobWasQueuedResult,
-  myServerAction,
-  queuedJobInfoResponse,
-  serverActionField,
-} from '../src/server-action'
-import type { DataProvider, ErrorInfo, Storage } from '../src/data-interfaces'
-import {
-  DataApi,
-  DataApiRequest,
-  DataApiResponse,
-  serializeError,
-} from '../src/data-api'
-import {
-  allEntities,
-  AllowedForInstance,
-  Remult,
-  RemultAsyncLocalStorage,
-  UserInfo,
-} from '../src/context'
+import type { Response } from 'express'
+import type { ResponseRequiredForSSE } from '../SseSubscriptionServer'
+import { SseSubscriptionServer } from '../SseSubscriptionServer'
 import type { ClassType } from '../classType'
-import {
-  Entity,
-  EntityBase,
-  EntityMetadata,
-  Fields,
-  getEntityKey,
-  IdEntity,
-  Repository,
-} from '../src/remult3'
-import { remult, RemultProxy } from '../src/remult-proxy'
-import {
-  LiveQueryPublisher,
-  LiveQueryStorage,
-  InMemoryLiveQueryStorage,
-  PerformWithContext,
-  SubscriptionServer,
-} from '../src/live-query/SubscriptionServer'
+import type { AllowedForInstance, UserInfo } from '../src/context'
+import { Remult, RemultAsyncLocalStorage, allEntities } from '../src/context'
+import type { DataApiRequest, DataApiResponse } from '../src/data-api'
+import { DataApi, serializeError } from '../src/data-api'
+import type { DataProvider, ErrorInfo, Storage } from '../src/data-interfaces'
 import {
   liveQueryKeepAliveRoute,
   streamUrl,
 } from '../src/live-query/SubscriptionChannel'
-import { initDataProvider } from './initDataProvider'
+import type {
+  LiveQueryStorage,
+  PerformWithContext,
+  SubscriptionServer,
+} from '../src/live-query/SubscriptionServer'
 import {
-  ResponseRequiredForSSE,
-  SseSubscriptionServer,
-} from '../SseSubscriptionServer'
+  InMemoryLiveQueryStorage,
+  LiveQueryPublisher,
+} from '../src/live-query/SubscriptionServer'
+import { Fields, IdEntity } from '../src/remult3/RepositoryImplementation'
+
+import { Entity } from '../src/remult3/entity'
+import { getEntityKey } from '../src/remult3/getEntityRef'
+import type { EntityMetadata, Repository } from '../src/remult3/remult3'
+import type {
+  ActionInterface,
+  jobWasQueuedResult,
+  myServerAction,
+  queuedJobInfoResponse,
+} from '../src/server-action'
+import { Action, classBackendMethodsArray } from '../src/server-action'
+import { actionInfo, serverActionField } from '../src/server-action-info'
+import { initDataProvider } from './initDataProvider'
 
 //TODO2 -support pub sub non express servers
 export interface RemultServerOptions<RequestType> {
@@ -145,7 +130,7 @@ export function createRemultServerCore<RequestType>(
           const startConsoleLog = () => {
             if (started) return
             started = true
-            console.time('Ensure Schema')
+            console.time('Schema ensured')
           }
           entitiesMetaData.push(
             ...options.entities.map((e) => remult.repo(e).metadata),
@@ -163,7 +148,7 @@ export function createRemultServerCore<RequestType>(
               await item.ensureSchema()
             }
           }
-          if (started) console.timeEnd('Ensure Schema')
+          if (started) console.timeEnd('Schema ensured')
         }
         if (options.initApi) await options.initApi(remult)
         res({})
@@ -377,19 +362,11 @@ export class RemultServerImplementation<RequestType>
         const streamPath = this.options.rootPath + '/' + streamUrl
 
         r.route(streamPath).get(
-          this.process(
-            async (
-              remult,
-              req,
-              res,
-              origReq,
-              origRes: import('express').Response,
-            ) => {
-              ;(
-                remult.subscriptionServer as SseSubscriptionServer
-              ).openHttpServerStream(origReq, origRes)
-            },
-          ),
+          this.process(async (remult, req, res, origReq, origRes: Response) => {
+            ;(
+              remult.subscriptionServer as SseSubscriptionServer
+            ).openHttpServerStream(origReq, origRes)
+          }),
         )
         r.route(streamPath + '/subscribe').post(
           this.process(
@@ -398,7 +375,7 @@ export class RemultServerImplementation<RequestType>
               req,
               res,
               reqInfo,
-              origRes: import('express').Response,
+              origRes: Response,
               origReq: RequestType,
             ) => {
               const body = (
@@ -418,7 +395,7 @@ export class RemultServerImplementation<RequestType>
               req,
               res,
               reqInfo,
-              origRes: import('express').Response,
+              origRes: Response,
               origReq: RequestType,
             ) => {
               ;(
@@ -440,7 +417,7 @@ export class RemultServerImplementation<RequestType>
             req,
             res,
             reqInfo,
-            origRes: import('express').Response,
+            origRes: Response,
             origReq: RequestType,
           ) => {
             res.success(

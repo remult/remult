@@ -85,7 +85,7 @@ The starter API server TypeScript project contains a single module that initiali
 
 3. Create an `index.ts` file in the `src/server/` folder with the following code:
 
-```ts
+```ts [index.ts]
 // src/server/index.ts
 
 import express from "express"

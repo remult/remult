@@ -1,10 +1,10 @@
-import { ClassType } from '../../classType';
-import { FieldMetadata } from '../column-interfaces';
-import { LiveQueryChange, SubscriptionListener, Unsubscribe } from '../live-query/SubscriptionChannel';
-import { EntityOptions } from '../entity';
-import { SortSegment } from '../sort';
-import { entityEventListener } from '../__EntityValueProvider';
-import { ErrorInfo } from '../..';
+import type { ErrorInfo } from '../..';
+import type { ClassType } from '../../classType';
+import type { entityEventListener } from '../__EntityValueProvider';
+import type { FieldMetadata } from '../column-interfaces';
+import type { EntityOptions } from '../entity';
+import type { LiveQueryChange, SubscriptionListener, Unsubscribe } from '../live-query/SubscriptionChannel';
+import type { SortSegment } from '../sort';
 export interface EntityRef<entityType> extends Subscribable {
     hasErrors(): boolean;
     undoChanges(): any;
@@ -42,7 +42,7 @@ export declare type RefSubscriber = (() => void) | RefSubscriberBase;
 export interface Subscribable {
     subscribe(listener: RefSubscriber): Unsubscribe;
 }
-export declare type FieldsRef<entityType> = {
+export type FieldsRef<entityType> = {
     [Properties in keyof OmitEB<entityType>]: entityType[Properties] extends {
         id?: number | string;
     } ? IdFieldRef<entityType, entityType[Properties]> : FieldRef<entityType, entityType[Properties]>;
@@ -51,14 +51,14 @@ export declare type FieldsRef<entityType> = {
     [Symbol.iterator]: () => IterableIterator<FieldRef<entityType, any>>;
     toArray(): FieldRef<entityType, any>[];
 };
-export declare type FieldsMetadata<entityType> = {
+export type FieldsMetadata<entityType> = {
     [Properties in keyof OmitEB<entityType>]: FieldMetadata<entityType[Properties], entityType>;
 } & {
     find(fieldMetadataOrKey: FieldMetadata | string): FieldMetadata<any, entityType>;
     [Symbol.iterator]: () => IterableIterator<FieldMetadata<any, entityType>>;
     toArray(): FieldMetadata<any, entityType>[];
 };
-export declare type SortSegments<entityType> = {
+export type SortSegments<entityType> = {
     [Properties in keyof entityType]: SortSegment & {
         descending(): SortSegment;
     };
@@ -304,13 +304,13 @@ export declare type EntityFilter<entityType> = {
     $or?: EntityFilter<entityType>[];
     $and?: EntityFilter<entityType>[];
 };
-export declare type ValueFilter<valueType> = valueType | valueType[] | {
+export type ValueFilter<valueType> = valueType | valueType[] | {
     $ne?: valueType | valueType[];
     '!='?: valueType | valueType[];
     $in?: valueType[];
     $nin?: valueType[];
 };
-export declare type ComparisonValueFilter<valueType> = ValueFilter<valueType> & {
+export type ComparisonValueFilter<valueType> = ValueFilter<valueType> & {
     $gt?: valueType;
     '>'?: valueType;
     $gte?: valueType;
@@ -323,7 +323,7 @@ export declare type ComparisonValueFilter<valueType> = ValueFilter<valueType> & 
 export interface ContainsStringValueFilter {
     $contains?: string;
 }
-export declare type IdFilter<valueType> = ValueFilter<valueType> | {
+export type IdFilter<valueType> = ValueFilter<valueType> | {
     $id: ValueFilter<valueType extends {
         id?: number;
     } ? number : string>;
