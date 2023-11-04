@@ -338,6 +338,14 @@ For **page by page** pagination.
 Select a dedicated page.`,
         },
         {
+          key: 'offset',
+          value: 'Int',
+          comment: `
+For **page by page** pagination.
+Set the offset needed.
+_Side node: if \`page\` arg is set, \`offset\` will be ignored._`,
+        },
+        {
           key: 'orderBy',
           value: `${key}OrderBy`,
           comment: `Remult sorting options`,
@@ -1063,7 +1071,10 @@ function toCamelCase(str: string) {
 }
 
 function bridgeQueryOptionsToDataApiGet(arg1: any) {
-  const { limit, page, orderBy, where } = arg1
+  let { limit, page, orderBy, where, offset } = arg1
+  if (!page && offset) {
+    page = Math.floor(offset / limit) + 1
+  }
   return (key: string) => {
     if (limit && key === '_limit') {
       return limit

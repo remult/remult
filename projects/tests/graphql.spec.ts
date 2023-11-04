@@ -462,6 +462,131 @@ describe('graphql', () => {
       }
     `)
   })
+
+  it('test limit no page no offset', async () => {
+    await remult
+      .repo(Task)
+      .insert([
+        { title: 'aaa' },
+        { title: 'bbb' },
+        { title: 'ccc' },
+        { title: 'ddd' },
+        { title: 'eee' },
+      ])
+
+    const res = await gql(`query {
+  tasks(limit: 2) {
+    totalCount
+    items {
+      title
+    }
+  }
+}`)
+
+    expect(res.data.tasks).toMatchInlineSnapshot(`
+      {
+        "items": [
+          {
+            "title": "aaa",
+          },
+          {
+            "title": "bbb",
+          },
+        ],
+        "totalCount": 5,
+      }
+    `)
+  })
+
+  it('test limit page 2, offset 2', async () => {
+    await remult
+      .repo(Task)
+      .insert([
+        { title: 'aaa' },
+        { title: 'bbb' },
+        { title: 'ccc' },
+        { title: 'ddd' },
+        { title: 'eee' },
+      ])
+
+    const res = await gql(`query {
+        tasks(limit: 2, page: 2) {
+          totalCount
+          items {
+            title
+          }
+        }
+      }`)
+
+    expect(res.data.tasks).toMatchInlineSnapshot(`
+      {
+        "items": [
+          {
+            "title": "ccc",
+          },
+          {
+            "title": "ddd",
+          },
+        ],
+        "totalCount": 5,
+      }
+    `)
+
+    const resOffset = await gql(`query {
+      tasks(limit: 2, offset: 2) {
+        totalCount
+        items {
+          title
+        }
+      }
+    }`)
+
+    expect(resOffset.data.tasks).toMatchObject(res.data.tasks)
+  })
+
+  it('test limit page 3, offset 4', async () => {
+    await remult
+      .repo(Task)
+      .insert([
+        { title: 'aaa' },
+        { title: 'bbb' },
+        { title: 'ccc' },
+        { title: 'ddd' },
+        { title: 'eee' },
+      ])
+
+    const res = await gql(`query {
+        tasks(limit: 2, page: 3) {
+          totalCount
+          items {
+            title
+          }
+        }
+      }`)
+
+    expect(res.data.tasks).toMatchInlineSnapshot(`
+      {
+        "items": [
+          {
+            "title": "eee",
+          },
+        ],
+        "totalCount": 5,
+      }
+    `)
+
+    const resOffset = await gql(`query {
+      tasks(limit: 2, offset: 4) {
+        totalCount
+        items {
+          title
+        }
+      }
+    }`)
+
+    expect(resOffset.data.tasks).toMatchObject(res.data.tasks)
+  })
+
   it('test mutation delete', async () => {
     await await remult
       .repo(Task)
@@ -763,9 +888,9 @@ describe('graphql', () => {
     expect(typeDefs).toMatchInlineSnapshot(`
       "type Query {
           task(id: ID!): Task
-          tasks(limit: Int, page: Int, orderBy: tasksOrderBy, where: tasksWhere): TaskConnection
+          tasks(limit: Int, page: Int, offset: Int, orderBy: tasksOrderBy, where: tasksWhere): TaskConnection
           category(id: ID!): Category
-          categories(limit: Int, page: Int, orderBy: categoriesOrderBy, where: categoriesWhere): CategoryConnection
+          categories(limit: Int, page: Int, offset: Int, orderBy: categoriesOrderBy, where: categoriesWhere): CategoryConnection
           node(nodeId: ID!): Node
       }
 
@@ -850,8 +975,8 @@ describe('graphql', () => {
       type Category implements Node {
           id: String!
           name: String!
-          tasksOfcategory(limit: Int, page: Int, orderBy: tasksOrderBy, where: tasksWhere): TaskConnection
-          tasksOfcategory2(limit: Int, page: Int, orderBy: tasksOrderBy, where: tasksWhere): TaskConnection
+          tasksOfcategory(limit: Int, page: Int, offset: Int, orderBy: tasksOrderBy, where: tasksWhere): TaskConnection
+          tasksOfcategory2(limit: Int, page: Int, offset: Int, orderBy: tasksOrderBy, where: tasksWhere): TaskConnection
           nodeId: ID!
       }
 
@@ -1053,7 +1178,7 @@ describe('graphql', () => {
     expect(typeDefs).toMatchInlineSnapshot(`
       "type Query {
           c(id: ID!): C
-          cs(limit: Int, page: Int, orderBy: csOrderBy, where: csWhere): CConnection
+          cs(limit: Int, page: Int, offset: Int, orderBy: csOrderBy, where: csWhere): CConnection
           node(nodeId: ID!): Node
       }
 
@@ -1258,7 +1383,7 @@ describe('graphql', () => {
       `
       "type Query {
           c(id: ID!): C
-          cs(limit: Int, page: Int, orderBy: csOrderBy, where: csWhere): CConnection
+          cs(limit: Int, page: Int, offset: Int, orderBy: csOrderBy, where: csWhere): CConnection
           node(nodeId: ID!): Node
       }
 
