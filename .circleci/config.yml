@@ -45,6 +45,7 @@ workflows:
   build:
     jobs:
       - node/run:
+          version: 18.18
           name: build
           npm-run: build-core
       - test-remult
