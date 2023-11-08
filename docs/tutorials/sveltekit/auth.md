@@ -159,6 +159,41 @@ We've configured the `session` `callback` to include the user info as part of th
 
 Notice the `getUser` attribute that we have added in Remult's middleware. We use it to supply Remult with the details of the logged-in user's from the session.
 
+::: tip
+In a real life application, you will need to `authorize` your users going to the database. As Auth is done before remult, the remult object is not available yet. Of course, there is a way, use `withRemult` as follows:
+
+```ts
+// old code
+// authorize: (credentials) => findUser(credentials?.name as string) || null,
+
+// new code
+authorize: async (info, request) => {
+  const res = await handleRemult.withRemult({ request } as any, async () => {
+    // remult object is now available
+    let user = await remult.repo(User).findFirst({
+      //... getting your  user based on `info`
+    })
+
+    if (user) {
+      // Don't return everything, just what is needed in the frontend
+      return {
+        id: user.id,
+        name: user.name,
+        roles: user.roles,
+      }
+    }
+
+    // No user found
+    return null
+  })
+
+  return res
+}
+// ...
+```
+
+:::
+
 ### Frontend setup
 
 1. Create a new `+layout.server.ts` to update `remult.user`
