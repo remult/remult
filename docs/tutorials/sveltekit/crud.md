@@ -4,7 +4,7 @@
 
 Now that we can see the list of tasks, it's time to add a few more. We create a form which executes the `addTask` function that invokes `taskRepo.insert()`. Update your `+page.svelte` as follows:
 
-```sveltekit
+```svelte
 // src/routes/+page.svelte
 
 <script lang="ts">
@@ -12,7 +12,7 @@ Now that we can see the list of tasks, it's time to add a few more. We create a 
 	import { Task } from '../shared/Task.js';
 
 	export let data;
-	
+
 	let tasks = data.tasks;
 	let newTaskTitle = '';
 
@@ -50,15 +50,17 @@ Now that we can see the list of tasks, it's time to add a few more. We create a 
 Try adding a few tasks to see how it works.
 
 ## Mark Tasks as Completed
+
 1. Add a `setCompleted` function in the script section as follows:
 
 ```ts
 const setCompleted = async (task: Task, completed: boolean) => {
-	await taskRepo.save( { ...task, completed})
-};
+  await taskRepo.save({ ...task, completed })
+}
 ```
 
 2. Modify the checkbox to invoke the method:
+
 ```svelte
 <div>
 	<input
@@ -132,6 +134,7 @@ Here's the updated `+page.svelte`
 </div>
 
 ```
+
 - The `saveTask` function saves the task that is passed in. Since the task's title is bound to the `input`, changes are made directly to the task.
 
 Make some changes and refresh the browser to verify that the backend database is updated.
@@ -142,7 +145,7 @@ You may have to restart the Dev Server, and refresh your browser for these effec
 
 ## Delete Tasks
 
-Let's add a _Delete_ button next to the __Save__ button of each task in the list. Add the `deleteTask` function and the __Delete__ button:
+Let's add a _Delete_ button next to the **Save** button of each task in the list. Add the `deleteTask` function and the **Delete** button:
 
 To start us off, lets edit the markup in `+page.svelte` to wrap add the Delete button:
 
