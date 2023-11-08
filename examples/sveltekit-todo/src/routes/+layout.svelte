@@ -5,7 +5,7 @@
   export let data: LayoutData
 
   // set this globaly
-  remult.user = data.user
+  $: remult.user = data.user
 </script>
 
 <svelte:head>
