@@ -74,7 +74,7 @@ export const handle = sequence(handleRemult)
 ```ts [src/hooks/handleRemult.ts]
 import { remultSveltekit } from 'remult/remult-sveltekit'
 
-export const handleRemult = remultSveltekit()
+export const handleRemult = remultSveltekit({})
 ```
 
 :::
