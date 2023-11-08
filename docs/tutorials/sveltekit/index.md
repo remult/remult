@@ -6,12 +6,7 @@ In this tutorial, we are going to create a simple app to manage a task list. We'
 
 By the end of the tutorial, you should have a basic understanding of Remult and how to use it to accelerate and simplify full stack app development.
 
-### Prerequisites
-
-This tutorial assumes you are familiar with `SvelteKit`.
-
-## 🚧 You want to have a look at the end result while we are building the tutorial?
-
+::: tip You want to have a look at the end result ?
 You can `degit` the final result and read the `README.md` file in the project to check it out.
 
 ```sh
@@ -19,9 +14,13 @@ npx degit remult/remult/examples/sveltekit-todo remult-sveltekit-todo
 cd remult-sveltekit-todo
 ```
 
-This tutorial assumes you are familiar with `TypeScript` and `Sveltekit`.
+:::
 
-Before you begin, make sure you have [Node.js](https://nodejs.org) and [git](https://git-scm.com/) installed. <!-- consider specifying Node minimum version with npm -->
+### Prerequisites
+
+This tutorial assumes you are familiar with `SvelteKit`.
+
+Before you begin, make sure you have [Node.js](https://nodejs.org) and [git](https://git-scm.com/) installed.
 
 # Setup for the Tutorial
 
@@ -39,13 +38,10 @@ npm create svelte@latest remult-sveltekit-todo
 
 The command prompts you for information about features to include in the initial app project. Here are the answers used in this tutorial:
 
-1. **Which Svelte app template?**: ... Skeleton Project
-2. **Add type checking with TypeScript?** ... Yes, using TypeScript syntax**
+1. **Which Svelte app template?**: ... `Skeleton` Project
+2. **Add type checking with TypeScript?** ... Yes, using `TypeScript` syntax
 3. **Select additional options**: ... You may want to include _Prettier_ and _ESLint_ but the options in this step are purely optional.
 
-::: warning Run into issues scaffolding the Vite project?
-See [Vite documentation](https://vitejs.dev/guide/#scaffolding-your-first-vite-project) for help.
-:::
 Once completed, change to the app directory:
 
 ```sh
@@ -55,7 +51,7 @@ cd remult-sveltekit-todo
 ### Install required packages and Remult
 
 ```sh
-npm i remult
+npm i remult --save-dev
 ```
 
 ### Bootstrap Remult
@@ -64,36 +60,43 @@ Remult is loaded in the back-end as a server hook
 
 1. Open your IDE.
 
-2. Create a `hooks.server.ts` file in the `src/` folder with the following code:
+2. Create a remult handle and add it to your hooks sequence. You can do so by creating these two files:
 
-```ts
-// src/hooks.server.ts
+::: code-group
 
-import { remultSveltekit } from "remult/remult-sveltekit"
+```ts [src/hooks.server.ts]
+import { sequence } from '@sveltejs/kit/hooks'
+import { handleRemult } from './hooks/handleRemult'
 
-export const handle = remultSveltekit()
+export const handle = sequence(handleRemult)
 ```
+
+```ts [src/hooks/handleRemult.ts]
+import { remultSveltekit } from 'remult/remult-sveltekit'
+
+export const handleRemult = remultSveltekit()
+```
+
+:::
 
 ### Final tweaks
 
-Our full stack starter project is almost ready. 
+Our full stack starter project is almost ready.
 
 Remult makes use of decorators to enhance regular Typescript classes into entities. Add the following entry to the `compilerOptions` section of the `tsconfig.json` file to enable the use of decorators.
 
-```json{7}
-// tsconfig.json
+::: code-group
 
+```json [tsconfig.json]
 {
-...
   "compilerOptions": {
-    ...
-    "experimentalDecorators": true // add this
-   ...
+    "experimentalDecorators": true // [!code ++]
   }
-...
 }
-
 ```
+
+:::
+
 ### Run the app
 
 Open a terminal and start the vite dev server.
