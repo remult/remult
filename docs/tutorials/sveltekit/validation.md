@@ -4,7 +4,7 @@ Validating user input is usually required both on the client-side and on the ser
 
 ::: warning Handling validation errors
 
-When a validation error occurs, Remult will throw an exception. 
+When a validation error occurs, Remult will throw an exception.
 
 In this tutorial, we will catch these exceptions, and alert the user.
 :::
@@ -15,8 +15,10 @@ Task titles are required. Let's add a validity check for this rule.
 
 1. In the `Task` entity class, modify the `Fields.string` decorator for the `title` field to include an object literal argument and set the object's `validate` property to `Validators.required`.
 
-```ts
-// src/shared/Task.ts
+::: code-group
+
+```ts [src/shared/Task.ts]
+import { Validators } from 'remult';
 
 @Fields.string({
   validate: Validators.required
@@ -24,31 +26,28 @@ Task titles are required. Let's add a validity check for this rule.
 title: string = '';
 ```
 
+:::
+
 2. In `+page.svelte`, sorround the `addTask` in a `try-catch` block to capture the error:
-```ts
-// src/routes/+page.svelte
-// ...
+
+::: code-group
+
+```svelte [src/routes/+page.svelte]
+let newTaskTitle = ''
 const addTask = async () => {
-  try {
-    const newTask = await taskRepo.insert({ title: newTaskTitle });
-    tasks = [...tasks, newTask];
-    newTaskTitle = '';
-  } catch (error) {
-    alert((error as { message: string }).message);
-  }
-};
-// ...
+  try { // [!code ++]
+    const newTask = await remult.repo(Task).insert({ title: newTaskTitle })
+    tasks = [...tasks, newTask]
+    newTaskTitle = ''
+  } catch (error) { // [!code ++]
+    alert((error as { message: string }).message) // [!code ++]
+  } // [!code ++]
+}
 ```
 
-::: warning Import Validators
-This code requires adding an import of `Validators` from `remult`.
 :::
 
-::: Manual browser refresh required
-For this change to take effect, you must manually refresh the browser.
-:::
-
-After the browser is refreshed, try creating a new task or saving an existing one with an empty title - the "__Title: Should not be empty__" error message is displayed.
+After the browser is refreshed, try creating a new task or saving an existing one with an empty title - the "**Title: Should not be empty**" error message is displayed.
 
 Sorround all the other functions in `try-catch` in a similar manner and notify the user accordingly.
 
@@ -71,6 +70,10 @@ A HTTP **400 Bad Request** error is returned and the validation error text is in
 }
 ```
 
+::: tip
+You should probably update all your code to handle these errors gracefully with `try-catch` blocks.
+:::
+
 ## Custom Validation
 
 Remult accords you the ability to easly create your own validation rules.
@@ -79,9 +82,9 @@ The `validate` property allows an arrow function which accepts an instance of th
 
 Try something like this and see what happens:
 
-```ts
-// src/shared/Task.ts
+::: code-group
 
+```ts [src/shared/Task.ts]
 @Fields.string<Task>({
   validate: (task) => {
     if (task.title.length < 3) throw "The title must be at least 3 characters long"
@@ -89,3 +92,5 @@ Try something like this and see what happens:
 })
 title = ""
 ```
+
+:::

@@ -21,13 +21,9 @@ Now that we can see the list of tasks, it's time to add a few more. We create a 
 
   let newTaskTitle = ""; // [!code ++]
   const addTask = async () => {// [!code ++]
-    try {// [!code ++]
-      const newTask = await remult.repo(Task).insert({ title: newTaskTitle });// [!code ++]
-      tasks = [...tasks, newTask];// [!code ++]
-      newTaskTitle = "";// [!code ++]
-    } catch (error) {// [!code ++]
-      alert((error as { message: string }).message)// [!code ++]
-    }// [!code ++]
+    const newTask = await remult.repo(Task).insert({ title: newTaskTitle });// [!code ++]
+    tasks = [...tasks, newTask];// [!code ++]
+    newTaskTitle = "";// [!code ++]
   };// [!code ++]
 </script>
 
@@ -61,11 +57,7 @@ Try adding a few tasks to see how it works.
 
 ```ts
 const setCompleted = async (task: Task, completed: boolean) => {
-  try {
-    await remult.repo(Task).save({ ...task, completed })
-  } catch (error) {
-    alert((error as { message: string }).message)
-  }
+  await remult.repo(Task).save({ ...task, completed })
 }
 ```
 
@@ -90,11 +82,7 @@ To make the tasks in the list updatable, we'll use an `input` element and bind i
 
 ```ts
 const saveTask = async (task: Task) => {
-  try {
-    await remult.repo(Task).save({ ...task })
-  } catch (error) {
-    alert((error as { message: string }).message)
-  }
+  await remult.repo(Task).save({ ...task })
 }
 ```
 
@@ -130,12 +118,8 @@ Let's add a _Delete_ button next to the **Save** button of each task in the list
 
 ```ts
 const deleteTask = async (task: Task) => {
-  try {
-    await remult.repo(Task).delete(task)
-    tasks = tasks.filter((c) => c.id !== task.id)
-  } catch (error) {
-    alert((error as { message: string }).message)
-  }
+  await remult.repo(Task).delete(task)
+  tasks = tasks.filter((c) => c.id !== task.id)
 }
 ```
 
