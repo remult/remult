@@ -10,74 +10,134 @@ Let's add realtime multiplayer capabilities to this app.
 
 ## Realtime updated todo list
 
-Let's switch from fetching Tasks on load (`+page.svelte.load()`), and subscribe to Remult's `liveQuery()` which will  then update our data in realtime **for both initial data fetching and subsequent state changes**.
+Let's update our component like follows _(make sure you add and remove some lines as indicated)_
 
-1. Modify the `<script>` section of `+page.svelte` and apply the changes highlighted:
+::: code-group
 
-```ts
-// src/routes/+page.svelte
-
+```svelte [/src/routes/+page.svelte]
 <script lang="ts">
-	import { remult } from 'remult';
-	import { Task } from '../shared/Task';
-	import { browser } from '$app/environment';		// <-- new import
-	import { onMount, onDestroy } from 'svelte';	// <-- new import
+  import { remult } from "remult";
+  import { onDestroy, onMount } from "svelte";
+  import { Task } from "../shared/Task";
 
-	export let data;
+  let tasks: Task[] = [];
+  let unSub: (() => void) | null = null;// [!code ++]
 
-	//let tasks = data.tasks || [];		// <-- do not load data from the backend
-	let tasks: Task[] = [];			
-	let newTaskTitle = '';
-	const taskRepo = remult.repo(Task);
-	
-	// ...
+  onMount(async () => {
+    unSub = remult// [!code ++]
+      .repo(Task)// [!code ++]
+      .liveQuery()// [!code ++]
+      .subscribe((info) => {// [!code ++]
+        tasks = info.applyChanges(tasks);// [!code ++]
+      });// [!code ++]
+    // tasks = await remult.repo(Task).find();// [!code --]
+  });
 
-	onMount(() => {
-		if (browser) {
-			unSub = taskRepo.liveQuery(data.options).subscribe((info) => {
-				console.log('INFO:', info);
-				tasks = info.applyChanges(tasks);
-			});
-		} else {
-			//tasks = data.tasks;
-		}
-	});
+  onDestroy(() => {// [!code ++]
+    unSub && unSub();// [!code ++]
+  }); // [!code ++]
 
-	onDestroy(() => {
-		if (browser) unSub();
-	});
+  let newTaskTitle = "";
+  const addTask = async () => {
+    try {
+      const newTask = await remult.repo(Task).insert({ title: newTaskTitle });
+      // tasks = [...tasks, newTask]; // [!code --]
+      newTaskTitle = "";
+    } catch (error) {
+      alert((error as { message: string }).message);
+    }
+  };
+
+  const setCompleted = async (task: Task, completed: boolean) => {
+    try {
+      await remult.repo(Task).save({ ...task, completed });
+    } catch (error) {
+      alert((error as { message: string }).message);
+    }
+  };
+
+  const saveTask = async (task: Task) => {
+    try {
+      await remult.repo(Task).save({ ...task });
+    } catch (error) {
+      alert((error as { message: string }).message);
+    }
+  };
+
+  const deleteTask = async (task: Task) => {
+    try {
+      await remult.repo(Task).delete(task);
+      // tasks = tasks.filter((c) => c.id !== task.id); // [!code --]
+    } catch (error) {
+      alert((error as { message: string }).message);
+    }
+  };
 </script>
 
-<!-- ... -->
+<div>
+  <h1>todos</h1>
+  <main>
+    <form method="POST" on:submit|preventDefault={addTask}>
+      <input bind:value={newTaskTitle} placeholder="What needs to be done?" />
+      <button>Add</button>
+    </form>
+
+    {#each tasks as task}
+      <div>
+        <input
+          type="checkbox"
+          bind:checked={task.completed}
+          on:click={(e) => setCompleted(task, e.target?.checked)}
+        />
+        <input name="title" bind:value={task.title} />
+        <button on:click={() => saveTask(task)}>Save</button>
+        <button on:click={() => deleteTask(task)}>Delete</button>
+      </div>
+    {/each}
+  </main>
+</div>
 ```
 
-Let's review the changes:
+:::
+Let's review the change:
 
-- Instead of getting our data from the backend `load` method, we now call the `liveQuery` method to define the query, and then call its `subscribe` method to establish a subscription which will update the Tasks state in realtime. Subscription is done only once after the page has loaded - hence `onMount`.
+- Instead of calling the `repository`'s `find` method we now call the `liveQuery` method to define the query, and then call its `subscribe` method to establish a subscription which will update the Tasks state in realtime.
 - The `subscribe` method accepts a callback with an `info` object that has 3 members:
-  - `items` - an up-to-date list of items representing the current result - it's useful for readonly use cases.
-  - `applyChanges` - a method that receives an array and applies the changes to it - we use the return value to apply the changes to the existing `tasks` state.
+  - `items` - an up to date list of items representing the current result - it's useful for readonly use cases.
+  - `applyChanges` - a method that receives an array and applies the changes to it - we send that method to the `setTasks` state function, to apply the changes to the existing `tasks` state.
   - `changes` - a detailed list of changes that were received
+- The `subscribe` method returns an `unsubscribe` function, we return it to the `onDestroy` hook so that it'll be called when the component unmounts.
 
-- The `subscribe` method returns an `unsubscribe` function, which we use in the `onDestroy` hook to unsubscribe when the component unmounts.
+2. As all relevant CRUD operations (made by all users) will **immediately update the component's state**, we should remove the manual adding of new Tasks to the component's state:
 
-2. As all relevant CRUD operations (made by all users) will immediately update the component's state, we should remove the manual adding of new Tasks to the component's state:
+::: code-group
 
-```ts
-// src/routes/+page.svelte
-// ...
+```svelte [addTask]
 const addTask = async () => {
-	try {
-		const newTask = await taskRepo.insert({ title: newTaskTitle });
-		// ^ this no longer needs to be a variable as we are not using it to set the state.
-		// tasks = [...tasks, newTask]; <-- this line is no longer needed
-		newTaskTitle = '';
-	} catch (error) {
-		alert((error as { message: string }).message);
-	}
-};
-// ...
+    try {
+      const newTask = await remult.repo(Task).insert({ title: newTaskTitle });
+      // tasks = [...tasks, newTask]; // [!code --]
+      newTaskTitle = "";
+    } catch (error) {
+      alert((error as { message: string }).message);
+    }
+  };
+
+3. Optionally remove other redundant state changing code:
 ```
+
+```ts [deleteTask]
+async function deleteTask(task: Task) {
+  try {
+    await taskRepo.delete(task)
+    //tasks.value = tasks.value.filter((t) => task !== t);  // [!code --]
+  } catch (error) {
+    alert((error as { message: string }).message)
+  }
+}
+```
+
+:::
 
 Open the todo app in two (or more) browser windows/tabs, make some changes in one window and notice how the others are updated in realtime.
 
