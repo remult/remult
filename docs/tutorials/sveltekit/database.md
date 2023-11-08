@@ -17,28 +17,36 @@ Don't worry if you don't have Postgres installed locally. In the next step of th
    ```sh
    npm i pg
    ```
+
 2. Add an environment variables called DATABASE_URL and set it with your connection string:
 
-```sh
-// .env.local
+::: code-group
 
-...
+```sh [.env.local]
 DATABASE_URL=postgresql://username:password@host:port/dbname[?paramspec]
 ```
 
-3. Add a `dataProvider` to Remult's middleware in `hooks.server.ts`.
+:::
 
-   ```
-   // hooks.server.ts
+3. Add a `dataProvider` to Remult's handler.
 
-   //...
+::: code-group
 
-   import { createPostgresDataProvider } from "remult/postgres"
+```ts [src/hooks/handleRemult.ts]
+import { remultSveltekit } from 'remult/remult-sveltekit'
+import { Task } from '../shared/task'
+import { TasksController } from '../shared/tasksController'
+import type { UserInfo } from 'remult'
+import { createPostgresDataProvider } from 'remult/postgres' // [!code ++]
+import { DATABASE_URL } from '$env/static/private' // [!code ++]
 
-   export const api = remultExpress({
-     //...
-     dataProvider: createPostgresDataProvider({
-       connectionString: "your connection string"
-     })
-   })
-   ```
+export const handleRemult = remultSveltekit({
+  entities: [Task],
+  controllers: [TasksController],
+  dataProvider: createPostgresDataProvider({ connectionString: DATABASE_URL }), // [!code ++]
+  getUser: async (event) =>
+    (await event?.locals?.getSession())?.user as UserInfo,
+})
+```
+
+:::

@@ -1,28 +1,29 @@
 # Deployment
 
-You can deploy the application to a standard Node.js server, or a server-less server.
-
-We'll review both options.
-
-## Deploy to a node.js server
-
 Let's deploy the todo app to [railway.app](https://railway.app/).
+
+## Prepare for Production
 
 In order to deploy to a Node.js environment, you need to change Sveltekit's adaptor to `@sveltejs/adapter-node`.
 
 1. Install `adapter-node`:
 
 ```sh
-npm i @sveltejs/adapter-node
+npm i @sveltejs/adapter-node --save-dev
 ```
 
 2. In `svelte.config.js`, change the adapter:
 
-```js
-//import adapter from '@sveltejs/adapter-auto';
-import adapter from '@sveltejs/adapter-node';
-import { vitePreprocess } from '@sveltejs/kit/vite';
+::: code-group
+
+```js [svelte.config.js]
+import adapter from '@sveltejs/adapter-auto' // [!code --]
+import adapter from '@sveltejs/adapter-node' // [!code ++]
+import { vitePreprocess } from '@sveltejs/kit/vite'
 ```
+
+:::
+
 In order to deploy the todo app to [railway](https://railway.app/) you'll need a `railway` account. You'll also need [Railway CLI](https://docs.railway.app/develop/cli#npm) installed, and you'll need to login to railway from the cli, using `railway login`.
 
 Click enter multiple times to answer all its questions with the default answer
@@ -62,71 +63,5 @@ If you run into trouble deploying the app to Railway, try using Railway's [docum
 
 That's it - our application is deployed to production, on a node js server
 
-Next we'll explore deployment to a server-less environment.
-
-## Deploying to a serverless environment
-
-Let's deploy the todo app to [vercel](https://vercel.com/).
-
-Before deploying to Vercel, you need to change Sveltekit's adaptor to `@sveltejs/adapter-vercel`.
-
-1. Install `adapter-vercel`:
-
-```sh
-npm i @sveltejs/adapter-vercel
-```
-
-2. In `svelte.config.js`, change the adapter:
-
-```js
-//import adapter from '@sveltejs/adapter-auto';
-//import adapter from '@sveltejs/adapter-node';
-import adapter from '@sveltejs/adapter-vercel';
-import { vitePreprocess } from '@sveltejs/kit/vite';
-```
-
-### Postgres
-
-We'll use vercel's postgres as out database, and that requires the following changes to the `createPostgresDataProvider` options.
-
-```
-// src/hooks.server.js
-
-const dataProvider = createPostgresDataProvider({
-  connectionString: process.env["POSTGRES_URL"] || process.env["DATABASE_URL"],
-  configuration: {
-    ssl: Boolean(process.env["POSTGRES_URL"]),
-  },
-})
-```
-
-- Vercel sends the connection string using the `POSTGRES_URL` environment variable, other providers use the `DATABASE_URL` - this code supports them both.
-- SSL is required with vercel - but not by the local `pg`, so we condition ssl based on the environment variable.
-
-### Create a github repo
-
-Vercel deploys automatically whenever you push to github, so the first step of deployment is to create a github repo and push all your changes to it.
-
-### Create a vercel project
-
-1. Create a vercel account if you don't already have one.
-2. Goto [https://vercel.com/new](https://vercel.com/new)
-3. Select your `github` repo and click `import`
-4. Configure the project's name and in the `> Environment Variables` section, `NEXTAUTH_SECRET` environment variables
-5. Click `Deploy`
-6. Now we need to define the postgres database.
-7. Wait for vercel to complete it's deployment
-8. Click on `Continue to Dashboard`
-9. Select the `Storage` tab
-10. Create new Database and select Postgres
-11. Accept the terms
-12. Select region and click Create & continue
-13. Click Connect
-14. Click on Settings, Environment Variables and see that the `POSTGRES_URL` and other environment variables were added.
-15. At the time of this article, vercel did not yet automatically redeploy once you configure a database, so in order to redeploy, click on the `Deployments` tab
-16. 3 dots at the end of the deployment line and select `Redeploy` and click `Redeploy`
-17. Once completed click on 'Visit'.
-
-That's it - our application is deployed to production on vercel, play with it and enjoy.
-
+<hr />
 Love Remult?&nbsp;<a href="https://github.com/remult/remult" target="_blank" rel="noopener"> Give our repo a star.⭐</a>
