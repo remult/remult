@@ -65,7 +65,7 @@ export default defineConfig({
 
 That's it!
 
-### Option without `vite`
+### Option without `vite-plugin-striper`
 
 #### Step 1 - replace the File level import with an import in the specific backend method:
 
