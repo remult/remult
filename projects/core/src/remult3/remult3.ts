@@ -700,3 +700,24 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //p1 - consider using this in saving etc...
 //p1 - when subscribe is forbidden - the query still runs after the renew process
 //p1 - JSON FIELD LOST JSON STORAGE WHEN SET INPUT VALUE
+//p1 - doc this:
+/**
+ * //p1 - doc this
+remult.apiClient.httpClient = (
+  input: RequestInfo | URL,
+  init?: RequestInit
+) => {
+  return fetch(input, {
+    ...init,
+    headers: {
+      authorization: 'Bearer ' + sessionStorage.sessionId,
+    },
+    cache: 'no-store',
+  })
+}
+
+&&
+remult.apiClient.url='localhost:3007/api
+
+
+ */
