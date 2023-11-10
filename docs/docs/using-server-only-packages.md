@@ -41,7 +41,33 @@ There are two ways to handle this:
 
 ## Solution 1 - exclude from bundler
 
-### Step 1 - replace the File level import with an import in the specific backend method:
+### Option with `vite`
+
+If you are using `vite` you can add a plugin to remove all `@BackendMethod` from your frontend code.
+Simply add [vite-plugin-striper](https://www.kitql.dev/docs/tools/07_vite-plugin-striper) to your project and configure it like this:
+
+```bash
+npm add vite-plugin-striper --save-dev
+```
+
+::: code-group
+
+```ts [vite.config.ts]
+import { defineConfig } from 'vite'
+import { striper } from 'vite-striper' // [!code ++]
+
+export default defineConfig({
+  plugins: [striper({ decorators: ['BackendMethod'] })], // [!code ++]
+})
+```
+
+:::
+
+That's it!
+
+### Option without `vite`
+
+#### Step 1 - replace the File level import with an import in the specific backend method:
 
 ```ts{1,5}
 // import * as fs from 'fs'; <-- REMOVE THIS LINE
@@ -58,7 +84,7 @@ static async updatePriceOnBackend(priceToUpdate:number,remult?:Remult){
 }
 ```
 
-### Step 2 - Exclude the package from the bundler:
+#### Step 2 - Exclude the package from the bundler:
 
 - If you're using `vite` instruct `vite` not to include the `fs` package in the `frontend` bundle by adding the following JSON to the `vite-config.ts` file:
 
