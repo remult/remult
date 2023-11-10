@@ -1,9 +1,10 @@
 import { defineConfig } from 'vitepress'
 
 const tutorials = [
-  { path: 'react' },
-  { path: 'angular' },
-  { path: 'vue' },
+  { path: "react" },
+  { path: "angular" },
+  { path: "vue" },
+  { title: "SvelteKit", path: "sveltekit" },
   {
     title: 'Next.js',
     path: 'react-next',
