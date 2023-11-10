@@ -55,7 +55,7 @@
     "@vuepress/plugin-back-to-top": "^1.5.2",
     "@vuepress/plugin-medium-zoom": "^1.5.2",
     "ably": "^1.2.33",
-    "axios": "^0.22.0",
+    "axios": "^1.6.0",
     "better-sqlite3": "^7.5.0",
     "class-validator": "^0.13.2",
     "concurrently": "^7.2.2",
