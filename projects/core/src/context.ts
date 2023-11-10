@@ -404,3 +404,4 @@ class transactionLiveQueryPublisher implements LiveQueryChangesListener {
 //p1 - seems that after backend methods relations are loaded for some reason - see trempim - intake doRequest backend method
 //p1 - reconsider the case in tremping where create user id was updated with some user and not the actual user
 //[ ] - when value changes for field with error, clear error - so the user will feel comfortable
+//y1 - require filter argument - and perform validation checks for it - site, id etc.. changelog, status changes etc...,

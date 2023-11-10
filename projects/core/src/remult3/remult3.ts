@@ -699,3 +699,4 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //y1 - discuss a default date formatter
 //p1 - consider using this in saving etc...
 //p1 - when subscribe is forbidden - the query still runs after the renew process
+//p1 - JSON FIELD LOST JSON STORAGE WHEN SET INPUT VALUE
