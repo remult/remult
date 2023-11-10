@@ -7,8 +7,8 @@ This is a [sveltekit](https://kit.svelte.dev/) app
 1. Download the source:
 
    ```bash
-   npx degit remult/remult/examples/sveltekit-todo sveltekit-todo
-   cd sveltekit-todo
+   npx degit remult/remult/examples/sveltekit-todo remult-sveltekit-todo
+   cd remult-sveltekit-todo
    npm i
    ```
 
@@ -24,6 +24,5 @@ This is a [sveltekit](https://kit.svelte.dev/) app
    ```bash
    npm run dev
    ```
-
 
 > To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.

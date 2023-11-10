@@ -1,12 +1,19 @@
 ---
-outline: [2,3]
+outline: [2, 3]
 ---
 
 # Add Remult to your App
 
-::: tip Use this page to add Remult to an existing full-stack app.
+::: tip New Project?
 
-To scaffold a new project, we suggest using one of the [tutorials](../docs/#learn-by-doing).
+We suggest using one of the [tutorials](../docs/#learn-by-doing) to have a fresh good start.
+:::
+
+::: tip Add to your existing project?
+
+You are at the right place, Remult is designed to be added to existing projects.
+
+Embark on the Remult journey at your own pace and start reaping the benefits from day one. Gradual adoption is the preferred route for many, allowing for a smooth integration into your workflow.
 :::
 
 ## Installation
@@ -30,8 +37,8 @@ Here is the code for setting up the Remult middleware:
 ### Express
 
 ```ts
-import express from "express"
-import { remultExpress } from "remult/remult-express"
+import express from 'express'
+import { remultExpress } from 'remult/remult-express'
 
 const app = express()
 
@@ -39,8 +46,8 @@ app.use(
   remultExpress({
     entities: [
       /* entity types */
-    ]
-  })
+    ],
+  }),
 )
 
 app.listen(3000)
@@ -49,9 +56,8 @@ app.listen(3000)
 ### Fastify
 
 ```ts
-import fastify from "fastify"
-import { remultFastify } from "remult/remult-fastify"
-
+import fastify from 'fastify'
+import { remultFastify } from 'remult/remult-fastify'
 ;(async () => {
   const server = fastify()
 
@@ -59,8 +65,8 @@ import { remultFastify } from "remult/remult-fastify"
     remultFastify({
       entities: [
         /* entity types */
-      ]
-    })
+      ],
+    }),
   )
 
   server.listen({ port: 3000 })
@@ -72,29 +78,29 @@ import { remultFastify } from "remult/remult-fastify"
 ```ts
 // src/pages/api/[...remult].ts
 
-import { remultNext } from "remult/remult-next"
+import { remultNext } from 'remult/remult-next'
 
 export default remultNext({
   entities: [
     /* entity types */
-  ]
+  ],
 })
 ```
 
 ### Next.js App Router
+
 ```ts
 // src/app/api/[...remult]/route.ts
 
-import { remultNextApp } from "remult/remult-next";
+import { remultNextApp } from 'remult/remult-next'
 
 export const api = remultNextApp({
   entities: [
     /* entity types */
   ],
-});
+})
 
-export const { GET, POST, PUT, DELETE } = api;
-
+export const { GET, POST, PUT, DELETE } = api
 ```
 
 ### Sveltekit
@@ -102,12 +108,12 @@ export const { GET, POST, PUT, DELETE } = api;
 ```ts
 // src/hooks.server.ts
 
-import { remultSveltekit } from 'remult/remult-sveltekit';
+import { remultSveltekit } from 'remult/remult-sveltekit'
 
 export const handle = remultSveltekit({
   entities: [
     /* entity types */
-  ]
+  ],
 })
 ```
 
@@ -116,9 +122,9 @@ export const handle = remultSveltekit({
 ```ts
 // src/main.ts
 
-import { NestFactory } from "@nestjs/core"
-import { AppModule } from "./app.module"
-import { remultExpress } from "remult/remult-express"
+import { NestFactory } from '@nestjs/core'
+import { AppModule } from './app.module'
+import { remultExpress } from 'remult/remult-express'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
@@ -127,8 +133,8 @@ async function bootstrap() {
     remultExpress({
       entities: [
         /* entity types */
-      ]
-    })
+      ],
+    }),
   )
 
   await app.listen(3000)
@@ -139,9 +145,9 @@ bootstrap()
 ### Koa
 
 ```ts
-import * as koa from "koa"
-import * as bodyParser from "koa-bodyparser"
-import { createRemultServer } from "remult/server"
+import * as koa from 'koa'
+import * as bodyParser from 'koa-bodyparser'
+import { createRemultServer } from 'remult/server'
 
 const app = new koa()
 
@@ -150,7 +156,7 @@ app.use(bodyParser())
 const api = createRemultServer({
   entities: [
     /* entity types */
-  ]
+  ],
 })
 
 app.use(async (ctx, next) => {
@@ -175,14 +181,14 @@ Here is the code for setting up a Remult client instance:
 ### Using Fetch
 
 ```ts
-import { remult } from "remult"
+import { remult } from 'remult'
 ```
 
 ### Using Axios
 
 ```ts
-import axios from "axios"
-import { remult } from "remult"
+import axios from 'axios'
+import { remult } from 'remult'
 
 remult.apiClient.httpClient = axios
 ```
@@ -191,15 +197,15 @@ remult.apiClient.httpClient = axios
 
 ```ts
 //...
-import { HttpClientModule, HttpClient } from "@angular/common/http"
-import { remult } from "remult"
+import { HttpClientModule, HttpClient } from '@angular/common/http'
+import { remult } from 'remult'
 
 @NgModule({
   //...
   imports: [
     //...
-    HttpClientModule
-  ]
+    HttpClientModule,
+  ],
 })
 export class AppModule {
   constructor(http: HttpClient) {
@@ -215,9 +221,15 @@ By default, remult makes data API calls to routes based at the `/api` route of t
 To use a different base URL for API calls (e.g. `https://localhost:3002/api`), set the remult object's `apiClient.url` property.
 
 ```ts
-remult.apiClient.url = "http://localhost:3002/api"
+remult.apiClient.url = 'http://localhost:3002/api'
 ```
 
 ::: warning CORS
 Handling [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) is outside the scope of Remult.
 :::
+
+## Database Initialization
+
+Got a database ready? Fantastic! Unleash the full potential of your existing setup by generating your entities directly from the database itself.
+
+Check out [remult-cli](../docs/entities-codegen-from-db-schema.html) and see how it can one shot generate your entities in no time.

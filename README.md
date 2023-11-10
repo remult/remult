@@ -277,6 +277,7 @@ with a Node.js Express backend.
 - [Tutorial with Angular](https://remult.dev/tutorials/angular/)
 - [Tutorial with Vue](https://remult.dev/tutorials/vue/)
 - [Tutorial with Next.js](https://remult.dev/tutorials/react-next/)
+- [Tutorial with Sveltekit](https://remult.dev/tutorials/sveltekit/)
 
 ## Documentation
 

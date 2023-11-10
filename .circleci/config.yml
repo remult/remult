@@ -11,7 +11,7 @@ orbs:
 jobs:
   test-remult:
     docker:
-      - image: cimg/node:16.16
+      - image: cimg/node:18.18
       - image: cimg/postgres:14.0
         environment:
           POSTGRES_USER: postgres
@@ -45,6 +45,7 @@ workflows:
   build:
     jobs:
       - node/run:
+          version: "18.18"
           name: build
           npm-run: build-core
       - test-remult
