@@ -4,15 +4,41 @@ Our todo app is nearly functionally complete, but it still doesn't fulfill a ver
 
 Remult provides a flexible mechanism that enables placing **code-based authorization rules** at various levels of the application's API. To maintain high code cohesion, **entity and field-level authorization code should be placed in entity classes**.
 
-**Remult is completely unopinionated when it comes to user authentication.** You are free to use any kind of authentication mechanism. The only requirement is that you provide Remult with an object which implements the Remult `UserInfo` interface:
+**Remult is completely unopinionated when it comes to user authentication.** You are free to use any kind of authentication mechanism. The only requirement is that you provide Remult with an object which implements the Remult `UserInfo` interface. You can extend this interface to include any additional information you need to store about your users. _`avatar_url` for example!_
 ::: code-group
 
-```ts [src/app.d.ts]
+```ts [remult UserInfo interface]
 export interface UserInfo {
   id: string
   name?: string
   roles?: string[]
 }
+```
+
+```ts [optional: extend in src/app.d.ts] {17,18,19}
+// See https://kit.svelte.dev/docs/types#app
+// for information about these interfaces
+declare global {
+  namespace App {
+    // interface Error {}
+    // interface Locals {}
+    // interface PageData {}
+    // interface Platform {}
+  }
+}
+
+declare module 'remult' {
+  export interface FieldOptions<entityType, valueType> {
+    placeholder?: string
+  }
+
+  export interface UserInfo {
+    avatar_url?: string
+  }
+}
+
+// You must leave this here!
+export {}
 ```
 
 :::
