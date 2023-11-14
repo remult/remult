@@ -65,6 +65,30 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
     )
   })
 
+  it('ensure on not_public schema', async () => {
+    const db = SqlDatabase.getDb(remult)
+    const entityName = 'auth.test_not_public'
+    // reset the state of the database before the test (make sure we don't have the schema and table)
+    await db.execute('Drop table if exists ' + entityName)
+    await db.execute('DROP SCHEMA IF EXISTS auth')
+    // the test is really starting here
+    const ent = class {
+      id = 0
+      createdAt = new Date()
+      oneMoreColumn = 0
+    }
+    describeClass(ent, Entity(entityName), {
+      id: Fields.integer(),
+      createdAt: Fields.createdAt({ dbName: '"createdAt"' }),
+      oneMoreColumn: Fields.integer(),
+    })
+    await db.ensureSchema([remult.repo(ent).metadata])
+    await remult.repo(ent).insert({ id: 1, oneMoreColumn: 8 })
+    expect((await remult.repo(ent).findFirst()).createdAt.getFullYear()).toBe(
+      new Date().getFullYear(),
+    )
+  })
+
   it('work with native sql', async () => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity)
     const sql = SqlDatabase.getDb(remult)
