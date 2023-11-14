@@ -1,3 +1,4 @@
+import { getRelationInfo } from '../src/remult3/relationInfoMember'
 import type { FieldMetadata } from '../src/column-interfaces'
 import type { Remult } from '../src/context'
 import { allEntities } from '../src/context'
@@ -7,7 +8,7 @@ import {
   dbNamesOf,
   isDbReadonly,
 } from '../src/filter/filter-consumer-bridge-to-sql-request'
-import { remult as defaultRemult } from '../src/remult-proxy'
+import { remult as defaultRemult, remult } from '../src/remult-proxy'
 import type { EntityMetadata } from '../src/remult3/remult3'
 import { isAutoIncrement } from '../src/remult3/RepositoryImplementation'
 import type { SqlCommand } from '../src/sql-command'
@@ -46,6 +47,27 @@ export async function verifyStructureOfAllEntities(
   return await new PostgresSchemaBuilder(db).verifyStructureOfAllEntities(
     remult,
   )
+}
+
+type FOREIGN_KEY_Create = {
+  source_table_schema?: string
+  source_table: string
+  source_column: string
+  foreign_table_schema?: string
+  foreign_table: string
+  foreign_column: string
+  update_cascade?: CascadeOption
+  delete_cascade?: CascadeOption
+}
+
+type CascadeOption = 'CASCADE' | 'NO ACTION' | 'SET NULL' | 'SET DEFAULT'
+
+type FOREIGN_KEY = FOREIGN_KEY_Create & {
+  source_table_schema: string
+  foreign_table_schema: string
+  constraint_name: string
+  update_cascade: CascadeOption
+  delete_cascade: CascadeOption
 }
 
 export class PostgresSchemaBuilder {
@@ -132,6 +154,7 @@ export class PostgresSchemaBuilder {
   }
 
   async ensureSchema(entities: EntityMetadata<any>[]) {
+    let hadError = false
     for (const entity of entities) {
       let e: EntityDbNamesBase = await dbNamesOf(entity)
       try {
@@ -142,8 +165,70 @@ export class PostgresSchemaBuilder {
           }
         }
       } catch (err) {
+        hadError = true
         console.error('failed verify structure of ' + e.$entityName + ' ', err)
       }
+    }
+    // Let's add constrains after all tables are created
+    if (!hadError) {
+      const existing_fk = await this.getExistingForeignKeys()
+      for (const entity of entities) {
+        let e: EntityDbNamesBase = await dbNamesOf(entity)
+        try {
+          if (!entity.options.sqlExpression) {
+            if (e.$entityName.toLowerCase().indexOf('from ') < 0) {
+              await this.verifyAllConstrains(existing_fk, entity)
+            }
+          }
+        } catch (err) {
+          console.error(
+            'failed verify structure of ' + e.$entityName + ' ',
+            err,
+          )
+        }
+      }
+    }
+  }
+
+  async getExistingForeignKeys() {
+    let cmd = this.pool.createCommand()
+    const foreignKeys = await cmd.execute(
+      `SELECT
+				tc.constraint_name,
+				tc.table_schema AS source_table_schema,
+				tc.table_name AS source_table,
+				kcu.column_name AS source_column,
+				ccu.table_schema AS foreign_table_schema,
+				ccu.table_name AS foreign_table,
+				ccu.column_name AS foreign_column,
+				rc.update_rule AS update_cascade,
+				rc.delete_rule AS delete_cascade
+			FROM
+				information_schema.table_constraints AS tc
+				JOIN information_schema.key_column_usage AS kcu
+					ON tc.constraint_name = kcu.constraint_name
+					AND tc.table_schema = kcu.table_schema
+				JOIN information_schema.constraint_column_usage AS ccu
+					ON ccu.constraint_name = tc.constraint_name
+					AND ccu.table_schema = tc.table_schema
+				JOIN information_schema.referential_constraints AS rc
+					ON rc.constraint_name = tc.constraint_name
+					AND rc.constraint_schema = tc.table_schema
+			WHERE
+				tc.constraint_type = 'FOREIGN KEY'
+			`,
+    )
+    return foreignKeys.rows as FOREIGN_KEY[]
+  }
+
+  buildFK(s: FOREIGN_KEY_Create): FOREIGN_KEY {
+    return {
+      constraint_name: `fk_${s.source_table}_${s.source_column}_${s.foreign_table}_${s.foreign_column}`,
+      source_table_schema: s.source_table_schema ?? 'public',
+      foreign_table_schema: s.foreign_table_schema ?? 'public',
+      update_cascade: s.update_cascade ?? 'CASCADE',
+      delete_cascade: s.delete_cascade ?? 'NO ACTION',
+      ...s,
     }
   }
 
@@ -239,6 +324,98 @@ CREATE table ${this.schemaAndName(e)} (${result}\r\n)`
       }
     } catch (err) {
       console.error(err)
+    }
+  }
+
+  async verifyAllConstrains<T extends EntityMetadata>(
+    existing_fk: FOREIGN_KEY[],
+    entity: T,
+  ) {
+    try {
+      let cmd = this.pool.createCommand()
+      let e: EntityDbNamesBase = await dbNamesOf(entity)
+      const needed_fk: FOREIGN_KEY[] = []
+      for (const col of entity.fields) {
+        const info = getRelationInfo(col.options)
+        if (info) {
+          const target = remult.repo(info.toType())
+
+          needed_fk.push(
+            this.buildFK({
+              source_table: e.$entityName,
+              source_column: await col.getDbName(),
+              foreign_table: await target.metadata.getDbName(),
+              foreign_column: 'id', //TODO find the correct target col
+            }),
+          )
+        }
+      }
+
+      const todo = this.compareFKConstraints(existing_fk, needed_fk)
+      for (const fk of todo.to_create) {
+        let sql = `
+  ALTER TABLE ${this.schemaAndName(e)} ADD CONSTRAINT ${fk.constraint_name} 
+  FOREIGN KEY (${fk.source_column}) 
+  REFERENCES ${fk.foreign_table} (${fk.foreign_column}) 
+  ON UPDATE ${fk.update_cascade} 
+  ON DELETE ${fk.delete_cascade};`
+        if (PostgresSchemaBuilder.logToConsole) console.info(sql)
+        await this.pool.execute(sql)
+      }
+
+      for (const { drop, fk } of todo.to_update) {
+        let sql = `
+  DO $$
+  BEGIN
+	  ALTER TABLE ${this.schemaAndName(e)} DROP CONSTRAINT ${drop};	
+    ALTER TABLE ${this.schemaAndName(e)} ADD CONSTRAINT ${fk.constraint_name} 
+    FOREIGN KEY (${fk.source_column}) 
+    REFERENCES ${fk.foreign_table} (${fk.foreign_column}) 
+    ON UPDATE ${fk.update_cascade} 
+    ON DELETE ${fk.delete_cascade};
+  END
+  $$;`
+        if (PostgresSchemaBuilder.logToConsole) console.info(sql)
+        await this.pool.execute(sql)
+      }
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  compareFKConstraints(existing_fk: FOREIGN_KEY[], needed_fk: FOREIGN_KEY[]) {
+    let to_create: FOREIGN_KEY[] = []
+    let to_update: { drop: string; fk: FOREIGN_KEY }[] = []
+    let nothing_to_do: FOREIGN_KEY[] = []
+
+    needed_fk.forEach((needed) => {
+      const dataMatch = existing_fk.find(
+        (existing) =>
+          existing.source_table_schema === needed.source_table_schema &&
+          existing.source_table === needed.source_table &&
+          existing.source_column === needed.source_column &&
+          existing.foreign_table_schema === needed.foreign_table_schema &&
+          existing.foreign_table === needed.foreign_table &&
+          existing.foreign_column === needed.foreign_column &&
+          existing.update_cascade === needed.update_cascade &&
+          existing.delete_cascade === needed.delete_cascade,
+      )
+
+      if (dataMatch) {
+        if (dataMatch.constraint_name === needed.constraint_name) {
+          nothing_to_do.push(needed)
+        } else {
+          to_update.push({ drop: dataMatch.constraint_name, create: needed })
+        }
+      } else {
+        to_create.push(needed)
+      }
+    })
+
+    return {
+      to_create,
+      to_update,
+      nothing_to_do,
     }
   }
 

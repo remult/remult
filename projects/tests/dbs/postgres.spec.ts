@@ -1,5 +1,12 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
-import { Entity, Fields, Remult, SqlDatabase, describeClass } from '../../core'
+import {
+  Entity,
+  Fields,
+  Relations,
+  Remult,
+  SqlDatabase,
+  describeClass,
+} from '../../core'
 import {
   PostgresDataProvider,
   PostgresSchemaBuilder,
@@ -87,6 +94,61 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
     expect((await remult.repo(ent).findFirst()).createdAt.getFullYear()).toBe(
       new Date().getFullYear(),
     )
+  })
+
+  it('ensure constrains', async () => {
+    const db = SqlDatabase.getDb(remult)
+    const entitiesName = ['tasks', 'categories']
+    // reset the state of the database before the test
+    for (const entityName of entitiesName) {
+      await db.execute('Drop table if exists ' + entityName)
+    }
+    // the test is really starting here
+    const Category = class {
+      id = 0
+    }
+    const Task = class {
+      id = 0
+      category = new Category()
+    }
+
+    describeClass(Task, Entity('tasks'), {
+      id: Fields.integer(),
+      category: Relations.toOne(() => Category, { defaultIncluded: true }),
+    })
+    describeClass(Category, Entity('categories'), {
+      id: Fields.integer(),
+    })
+    await db.ensureSchema([
+      remult.repo(Task).metadata,
+      remult.repo(Category).metadata,
+    ])
+    const cate7 = await remult.repo(Category).insert({ id: 7 })
+    await remult.repo(Task).insert({ id: 1, category: cate7 })
+    expect(await remult.repo(Task).findFirst()).toMatchInlineSnapshot(`
+      Task {
+        "category": Category {
+          "id": 7,
+        },
+        "id": 1,
+      }
+    `)
+    try {
+      await remult.repo(Category).delete(7)
+    } catch (error) {
+      expect(error.message).toMatchInlineSnapshot(
+        '"update or delete on table \\"categories\\" violates foreign key constraint \\"fk_tasks_category_categories_id\\" on table \\"tasks\\""',
+      )
+    }
+    // all data should still be here, because if the error
+    expect(await remult.repo(Task).findFirst()).toMatchInlineSnapshot(`
+      Task {
+        "category": Category {
+          "id": 7,
+        },
+        "id": 1,
+      }
+    `)
   })
 
   it('work with native sql', async () => {
