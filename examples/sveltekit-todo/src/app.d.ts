@@ -14,9 +14,11 @@ declare module 'remult' {
     placeholder?: string
   }
 
+  // example of adding a new field to the UserInfo remult interface
   export interface UserInfo {
     avatar_url?: string
   }
 }
 
+// You must leave this here!
 export {}
