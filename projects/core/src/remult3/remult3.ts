@@ -721,3 +721,6 @@ remult.apiClient.url='localhost:3007/api
 
 
  */
+//p1 - with remult promise for remultexpress
+//p1 - 'update tasks set  where id = $1
+//p1 - live query refresh of view on table update

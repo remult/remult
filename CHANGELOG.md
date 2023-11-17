@@ -27,6 +27,7 @@ All notable changes to this project will be documented in this file.
 - Fixed issue with sort result after live query
 - Fix issue with compound id on middleware based servers
 - Added with remult for sveltekit for usage before the remult hook
+- Fixed issue with requireId not respecting in statement #290
 
 ## [0.22.9] 2023-10-06
 

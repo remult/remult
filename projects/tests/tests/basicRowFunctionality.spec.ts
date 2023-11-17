@@ -1261,6 +1261,33 @@ describe('data api', () => {
     await api.get(t, 1)
     d.test()
   })
+  it('apiRequireId in', async () => {
+    let type = class extends newCategories {}
+    Entity('', {
+      apiRequireId: true,
+    })(type)
+    let [c, remult] = await createData(async (i) => {
+      await i(1, 'noam', 'a')
+      await i(2, 'yael', 'b')
+      await i(3, 'yoni', 'a')
+    }, type)
+
+    var api = new DataApi(c, remult)
+
+    var t = new TestDataApiResponse()
+    var d = new Done()
+    t.success = (result) => {
+      expect(result.length).toBe(2)
+      d.ok()
+    }
+    await api.getArray(t, {
+      get: (x) => {
+        if (x == 'id.in') return ['1', '2']
+        return undefined
+      },
+    })
+    d.test()
+  })
   it('delete id  not Allowed for specific row', async () => {
     let type = class extends newCategories {}
     Entity<typeof type.prototype>('', {
