@@ -119,6 +119,7 @@ export class RemultProxy implements Remult {
       get fields() {
         return self.remultFactory().repo(...args).metadata.fields
       },
+
       [getInternalKey]() {
         return self
           .remultFactory()
@@ -130,11 +131,12 @@ export class RemultProxy implements Remult {
           .remultFactory()
           .repo(...args)
           .relations(args2),
-      validate: (a, b) =>
+      validate: (a, ...b) =>
         self
           .remultFactory()
           .repo(...args)
-          .validate(a, b as any),
+          //@ts-ignore
+          .validate(a, ...b),
       addEventListener: (...args2) =>
         self
           .remultFactory()

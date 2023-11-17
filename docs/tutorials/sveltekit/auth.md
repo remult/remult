@@ -5,9 +5,8 @@ Our todo app is nearly functionally complete, but it still doesn't fulfill a ver
 Remult provides a flexible mechanism that enables placing **code-based authorization rules** at various levels of the application's API. To maintain high code cohesion, **entity and field-level authorization code should be placed in entity classes**.
 
 **Remult is completely unopinionated when it comes to user authentication.** You are free to use any kind of authentication mechanism. The only requirement is that you provide Remult with an object which implements the Remult `UserInfo` interface:
-::: code-group
 
-```ts [src/app.d.ts]
+```ts
 export interface UserInfo {
   id: string
   name?: string
@@ -15,7 +14,6 @@ export interface UserInfo {
 }
 ```
 
-:::
 In this tutorial, we'll use [Auth.js](https://authjs.dev/) for authentication.
 
 ## Tasks CRUD Requires Sign-in

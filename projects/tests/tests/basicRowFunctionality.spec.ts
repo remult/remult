@@ -43,7 +43,7 @@ import {
   dbNamesOf,
   FilterConsumerBridgeToSqlRequest,
 } from '../../core/src/filter/filter-consumer-bridge-to-sql-request'
-import { remult } from '../../core/src/remult-proxy'
+import { remult, RemultProxy } from '../../core/src/remult-proxy'
 import { actionInfo } from '../../core/src/server-action-info'
 import { ValueConverters } from '../../core/src/valueConverters'
 import { entityWithValidations } from '../dbs/shared-tests/entityWithValidations'
@@ -317,6 +317,22 @@ describe('data api', () => {
     expect((await repo.validate({ name: '1' })).modelState!.name).toBe(
       'invalid on column',
     )
+    expect(await repo.validate({ name: '123' })).toBeUndefined()
+    expect(await repo.validate({ name: '1' }, 'myId')).toBeUndefined()
+  })
+  it('validation', async () => {
+    let remult = new RemultProxy()
+    remult.remultFactory = () => new Remult(new InMemoryDataProvider())
+    var repo = remult.repo(entityWithValidationsOnColumn)
+    expect((await repo.validate({ name: '1' })).modelState!.name).toBe(
+      'invalid on column',
+    )
+    expect((await repo.validate({ name: '1' }, 'name')).modelState!.name).toBe(
+      'invalid on column',
+    )
+    expect(
+      (await repo.validate({ name: '1' }, 'myId', 'name')).modelState!.name,
+    ).toBe('invalid on column')
     expect(await repo.validate({ name: '123' })).toBeUndefined()
     expect(await repo.validate({ name: '1' }, 'myId')).toBeUndefined()
   })

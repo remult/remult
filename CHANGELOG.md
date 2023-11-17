@@ -29,6 +29,10 @@ All notable changes to this project will be documented in this file.
 - Added with remult for sveltekit for usage before the remult hook
 - Fixed issue with requireId not respecting in statement #290
 
+## [0.22.10] 2023-11-17
+
+- Fixed issue with `repo.validate` without specifying fields
+
 ## [0.22.9] 2023-10-06
 
 - Fixed issue with Entity Backend Method and fields with allow api false #255
