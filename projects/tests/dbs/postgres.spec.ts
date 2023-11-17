@@ -140,7 +140,7 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
         '"update or delete on table \\"categories\\" violates foreign key constraint \\"fk_tasks_category_categories_id\\" on table \\"tasks\\""',
       )
     }
-    // all data should still be here, because if the error
+    // all data should still be here, because of the error
     expect(await remult.repo(Task).findFirst()).toMatchInlineSnapshot(`
       Task {
         "category": Category {
