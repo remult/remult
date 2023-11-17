@@ -136,7 +136,9 @@ export class DataApi<T = any> {
           databaseCustom: () => {},
           isGreaterOrEqualTo: () => {},
           isGreaterThan: () => {},
-          isIn: () => {},
+          isIn: (col) => {
+            if (this.repository.metadata.idMetadata.isIdField(col)) hasId = true
+          },
           isLessOrEqualTo: () => {},
           isLessThan: () => {},
           isNotNull: () => {},
