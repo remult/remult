@@ -49,7 +49,7 @@ export class Task {
 import { remultSveltekit } from 'remult/remult-sveltekit'
 import { Task } from '../shared/Task' // [!code ++]
 
-export const api = remultSveltekit({
+export const handleRemult = remultSveltekit({
   entities: [Task], // [!code ++]
 })
 ```
