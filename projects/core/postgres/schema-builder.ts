@@ -104,6 +104,17 @@ export class PostgresSchemaBuilder {
     return e.$entityName
   }
 
+  private schemaOnly(e: EntityDbNamesBase) {
+    if (e.$entityName.includes('.')) {
+      return e.$entityName.split('.')[0]
+    }
+    if (this.specifiedSchema) {
+      return this.specifiedSchema
+    }
+    // Should default to `public`
+    return 'public'
+  }
+
   async verifyStructureOfAllEntities(remult?: Remult) {
     if (!remult) {
       remult = defaultRemult
@@ -161,7 +172,8 @@ export class PostgresSchemaBuilder {
             }
           }
 
-          let sql = `CREATE table ${this.schemaAndName(e)} (${result}\r\n)`
+          let sql = `CREATE SCHEMA IF NOT EXISTS ${this.schemaOnly(e)};
+CREATE table ${this.schemaAndName(e)} (${result}\r\n)`
           if (PostgresSchemaBuilder.logToConsole) console.info(sql)
           await this.pool.execute(sql)
         }
