@@ -96,9 +96,11 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
     )
   })
 
-  it('ensure constrains', async () => {
+  it('ensure constrains toOne', async () => {
     const db = SqlDatabase.getDb(remult)
-    const entitiesName = ['tasks', 'categories']
+    const tableTask = '"tasks_constrains_toOne"'
+    const tableCategory = '"tasks_constrains_toOne"'
+    const entitiesName = [tableTask, tableCategory]
     // reset the state of the database before the test
     for (const entityName of entitiesName) {
       await db.execute('Drop table if exists ' + entityName)
@@ -112,11 +114,11 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
       category = new Category()
     }
 
-    describeClass(Task, Entity('tasks'), {
+    describeClass(Task, Entity(tableTask), {
       id: Fields.integer(),
       category: Relations.toOne(() => Category, { defaultIncluded: true }),
     })
-    describeClass(Category, Entity('categories'), {
+    describeClass(Category, Entity(tableCategory), {
       id: Fields.integer(),
     })
     await db.ensureSchema([
@@ -137,7 +139,7 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
       await remult.repo(Category).delete(7)
     } catch (error) {
       expect(error.message).toMatchInlineSnapshot(
-        '"update or delete on table \\"categories\\" violates foreign key constraint \\"fk_tasks_category_categories_id\\" on table \\"tasks\\""',
+        '"update or delete on table \\"categories_constrains\\" violates foreign key constraint \\"fk_tasks_constrains_category_categories_constrains_id\\" on table \\"tasks_constrains\\""',
       )
     }
     // all data should still be here, because of the error

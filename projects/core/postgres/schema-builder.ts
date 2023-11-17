@@ -172,6 +172,7 @@ export class PostgresSchemaBuilder {
     // Let's add constrains after all tables are created
     if (!hadError) {
       const existing_fk = await this.getExistingForeignKeys()
+
       for (const entity of entities) {
         let e: EntityDbNamesBase = await dbNamesOf(entity)
         try {
@@ -218,11 +219,12 @@ export class PostgresSchemaBuilder {
 				tc.constraint_type = 'FOREIGN KEY'
 			`,
     )
+
     return foreignKeys.rows as FOREIGN_KEY[]
   }
 
   buildFK(s: FOREIGN_KEY_Create): FOREIGN_KEY {
-    return {
+    let toRet = {
       constraint_name: `fk_${s.source_table}_${s.source_column}_${s.foreign_table}_${s.foreign_column}`,
       source_table_schema: s.source_table_schema ?? 'public',
       foreign_table_schema: s.foreign_table_schema ?? 'public',
@@ -230,6 +232,15 @@ export class PostgresSchemaBuilder {
       delete_cascade: s.delete_cascade ?? 'NO ACTION',
       ...s,
     }
+
+    toRet = {
+      ...toRet,
+      constraint_name: toRet.constraint_name.replace(/"/g, ''),
+      source_table: toRet.source_table.replace(/"/g, ''),
+      foreign_table: toRet.foreign_table.replace(/"/g, ''),
+    }
+
+    return toRet as FOREIGN_KEY
   }
 
   async createIfNotExist(entity: EntityMetadata): Promise<void> {
@@ -332,7 +343,6 @@ CREATE table ${this.schemaAndName(e)} (${result}\r\n)`
     entity: T,
   ) {
     try {
-      let cmd = this.pool.createCommand()
       let e: EntityDbNamesBase = await dbNamesOf(entity)
       const needed_fk: FOREIGN_KEY[] = []
       for (const col of entity.fields) {
@@ -344,40 +354,53 @@ CREATE table ${this.schemaAndName(e)} (${result}\r\n)`
             this.buildFK({
               source_table: e.$entityName,
               source_column: await col.getDbName(),
-              foreign_table: await target.metadata.getDbName(),
-              foreign_column: 'id', //TODO find the correct target col
+              foreign_table: await target.metadata.getDbName(), // TODO NOAM, this is not giving the correct name
+              foreign_column: 'id', //TODO JYC find the correct target col
             }),
           )
         }
       }
 
       const todo = this.compareFKConstraints(existing_fk, needed_fk)
-      for (const fk of todo.to_create) {
-        let sql = `
-  ALTER TABLE ${this.schemaAndName(e)} ADD CONSTRAINT ${fk.constraint_name} 
-  FOREIGN KEY (${fk.source_column}) 
-  REFERENCES ${fk.foreign_table} (${fk.foreign_column}) 
-  ON UPDATE ${fk.update_cascade} 
-  ON DELETE ${fk.delete_cascade};`
-        if (PostgresSchemaBuilder.logToConsole) console.info(sql)
-        await this.pool.execute(sql)
-      }
+      console.log(`todo`, todo)
 
-      for (const { drop, fk } of todo.to_update) {
-        let sql = `
-  DO $$
-  BEGIN
-	  ALTER TABLE ${this.schemaAndName(e)} DROP CONSTRAINT ${drop};	
-    ALTER TABLE ${this.schemaAndName(e)} ADD CONSTRAINT ${fk.constraint_name} 
-    FOREIGN KEY (${fk.source_column}) 
-    REFERENCES ${fk.foreign_table} (${fk.foreign_column}) 
-    ON UPDATE ${fk.update_cascade} 
-    ON DELETE ${fk.delete_cascade};
-  END
-  $$;`
-        if (PostgresSchemaBuilder.logToConsole) console.info(sql)
-        await this.pool.execute(sql)
-      }
+      //     for (const { drop, fk } of todo.to_drop) {
+      //       let sql = `
+      // DO $$
+      // BEGIN
+      //   ALTER TABLE "${fk.source_table_schema}"."${fk.source_table}" DROP CONSTRAINT ${drop};
+      // END
+      // $$;`
+      //       if (PostgresSchemaBuilder.logToConsole) console.info(sql)
+      //       await this.pool.execute(sql)
+      //     }
+
+      // for (const fk of todo.to_create) {
+      //   let sql = `
+      // ALTER TABLE ${this.schemaAndName(e)} ADD CONSTRAINT ${fk.constraint_name}
+      // FOREIGN KEY (${fk.source_column})
+      // REFERENCES ${fk.foreign_table} (${fk.foreign_column})
+      // ON UPDATE ${fk.update_cascade}
+      // ON DELETE ${fk.delete_cascade};`
+      //   if (PostgresSchemaBuilder.logToConsole) console.info(sql)
+      //   await this.pool.execute(sql)
+      // }
+
+      //     for (const { drop, fk } of todo.to_update) {
+      //       let sql = `
+      // DO $$
+      // BEGIN
+      //   ALTER TABLE ${this.schemaAndName(e)} DROP CONSTRAINT ${drop};
+      //   ALTER TABLE ${this.schemaAndName(e)} ADD CONSTRAINT ${fk.constraint_name}
+      //   FOREIGN KEY (${fk.source_column})
+      //   REFERENCES ${fk.foreign_table} (${fk.foreign_column})
+      //   ON UPDATE ${fk.update_cascade}
+      //   ON DELETE ${fk.delete_cascade};
+      // END
+      // $$;`
+      //       if (PostgresSchemaBuilder.logToConsole) console.info(sql)
+      //       await this.pool.execute(sql)
+      //     }
     } catch (err) {
       console.error(err)
     }
@@ -387,6 +410,7 @@ CREATE table ${this.schemaAndName(e)} (${result}\r\n)`
     let to_create: FOREIGN_KEY[] = []
     let to_update: { drop: string; fk: FOREIGN_KEY }[] = []
     let nothing_to_do: FOREIGN_KEY[] = []
+    let to_drop: { drop: string; fk: FOREIGN_KEY }[] = []
 
     needed_fk.forEach((needed) => {
       const dataMatch = existing_fk.find(
@@ -405,10 +429,27 @@ CREATE table ${this.schemaAndName(e)} (${result}\r\n)`
         if (dataMatch.constraint_name === needed.constraint_name) {
           nothing_to_do.push(needed)
         } else {
-          to_update.push({ drop: dataMatch.constraint_name, create: needed })
+          to_update.push({ drop: dataMatch.constraint_name, fk: needed })
         }
       } else {
         to_create.push(needed)
+      }
+    })
+
+    // all existing_fk that are not in any list
+    existing_fk.forEach((existing) => {
+      const f1 = to_create.find(
+        (c) => c.constraint_name === existing.constraint_name,
+      )
+      const f2 = to_update.find(
+        (c) => c.fk.constraint_name === existing.constraint_name,
+      )
+      const f3 = nothing_to_do.find(
+        (c) => c.constraint_name === existing.constraint_name,
+      )
+
+      if (!f1 && !f2 && !f3) {
+        to_drop.push({ drop: existing.constraint_name, fk: existing })
       }
     })
 
@@ -416,6 +457,7 @@ CREATE table ${this.schemaAndName(e)} (${result}\r\n)`
       to_create,
       to_update,
       nothing_to_do,
+      to_drop,
     }
   }
 
