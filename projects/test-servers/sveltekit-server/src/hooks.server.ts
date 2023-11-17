@@ -1,5 +1,5 @@
 import { sequence } from '@sveltejs/kit/hooks'
 
-import { api } from './api.server'
+import { handleRemult } from './hooks/handleRemult'
 
-export const handle = sequence(api)
+export const handle = sequence(handleRemult)
