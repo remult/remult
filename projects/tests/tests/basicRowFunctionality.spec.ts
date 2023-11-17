@@ -1261,7 +1261,7 @@ describe('data api', () => {
     await api.get(t, 1)
     d.test()
   })
-  it.only('apiRequireId in', async () => {
+  it('apiRequireId in', async () => {
     let type = class extends newCategories {}
     Entity('', {
       apiRequireId: true,
