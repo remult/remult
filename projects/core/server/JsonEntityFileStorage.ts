@@ -1,17 +1,19 @@
-import * as fs from 'fs'
-import * as path from 'path'
 import type { JsonEntityStorage } from '../index'
 import { JsonDataProvider } from '../index'
 
 export class JsonEntityFileStorage implements JsonEntityStorage {
-  getItem(entityDbName: string): string {
+  async getItem(entityDbName: string): Promise<string> {
+    const path = await import('path')
+    const fs = await import('fs')
     let fn = path.join(this.folderPath, entityDbName) + '.json'
     if (fs.existsSync(fn)) {
       return fs.readFileSync(fn).toString()
     }
     return undefined
   }
-  setItem(entityDbName: string, json: string) {
+  async setItem(entityDbName: string, json: string) {
+    const path = await import('path')
+    const fs = await import('fs')
     if (!fs.existsSync(this.folderPath)) {
       fs.mkdirSync(this.folderPath)
     }
