@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 - Added Relations - see [Relations](docs/lifecycle-hooks.html)
 - Added LifecycleEvent info for saving,saved,deleting,deleted - see [Entity Lifecycle Hooks](https://remult.dev/docs/lifecycle-hooks.html)
+  - Breaking change - `saving` in `FieldOptions` now has a second parameter if EntityLifeCycle hook - and the fieldRef is the 3rd parameter.
 - Saving, Saved, Deleting, Deleted all run only on the backend now
 - include in api now supports expressions that use the current row
   - Breaking change - instead of `if(repo.fields.name.includedInApi)` you now need `if(repo.fields.name.includedInApi(instance))`

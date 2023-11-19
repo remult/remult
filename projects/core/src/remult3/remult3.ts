@@ -724,3 +724,8 @@ remult.apiClient.url='localhost:3007/api
 //p1 - with remult promise for remultexpress
 //p1 - 'update tasks set  where id = $1
 //p1 - live query refresh of view on table update
+//p1 - Operator '>' cannot be applied to types 'Number' and 'number'.ts(2365) - change fields to <entityType,number> (now it's Number)
+//p1 - Field(()=>String) - doesn't play nice with strict mode - it prevents people from extending basic types
+
+//p1 - filterToRaw should get a dbnames of - and we should create a dbnames of that supports an alias
+//p1 - consider the breaking signature change of saving on field options - the field becomes the 3rd parameter.
