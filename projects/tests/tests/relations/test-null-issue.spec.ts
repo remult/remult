@@ -9,6 +9,7 @@ import {
   Relations,
   SqlDatabase,
 } from '../../../core'
+import { TestDataProvider } from '../../dbs/TestDataProviderWithStats'
 
 @Entity('customers')
 export class Customer {
@@ -48,12 +49,21 @@ describe('test null issue', () => {
     ).toBe('Noam')
   })
   it('test the null issue b', async () => {
-    let remult = new Remult(new InMemoryDataProvider())
+    var t = TestDataProvider()
+    let remult = new Remult(t)
 
     await remult.repo(Order).insert([{ customerId: null, amount: 15 }])
     expect(
       (await remult.repo(Order).find({ include: { customer: true } }))[0]
         .customer,
     ).toBe(null)
+    expect(t.finds).toMatchInlineSnapshot(`
+      [
+        {
+          "entity": "orders",
+          "where": {},
+        },
+      ]
+    `)
   })
 })

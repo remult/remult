@@ -730,9 +730,9 @@ export class RepositoryImplementation<entityType>
     if (options.field) {
       if (rel.type === 'toOne') {
         requireField(options.field as string, this.metadata)
-        where.push(
-          otherRepo.metadata.idMetadata.getIdFilter(row[options.field]),
-        )
+        const val = row[options.field]
+        if (val === null) returnNull = true
+        else where.push(otherRepo.metadata.idMetadata.getIdFilter(val))
       } else {
         requireField(options.field as string, otherRepo.metadata)
         where.push({
