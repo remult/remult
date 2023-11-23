@@ -726,8 +726,8 @@ remult.apiClient.url='localhost:3007/api
 //p1 - mongo db relation based on _id did not work - https://codesandbox.io/p/devbox/mong-db-remult-pch8zc?file=%2Fsrc%2Findex.ts%3A53%2C51
 //y2 - livequery for findfirst (@JY)
 //y2 - #239 - (@JY) add a way to get from fieldMetadata back to entity repo (like we have in fieldRef)
-//y1 - constraints (@JY)
-//y1 - require more column
-//y1 - too much data by mistake
+//p2 - constraints (@JY)
+//p2 - Add ability to process query that comes from the api
+//p2 - too much data by mistake
 //p2 - postgres case sensitive
-//y1 - talk about mongo object id
+//p1 - talk about mongo object id
