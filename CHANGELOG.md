@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.22.11] 2023-11-23
+
+- Improved support for Mongo `ObjectId` field type [#295](https://github.com/remult/remult/issues/295)
+
 ## [0.22.10] 2023-11-17
 
 - Fixed issue with `repo.validate` without specifying fields
