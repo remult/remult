@@ -172,6 +172,9 @@ describe('test relations', () => {
     ])
     remult.clearAllCache()
   })
+  it('test input type', async () => {
+    expect(r(Task).fields.category.inputType).toMatchInlineSnapshot('""')
+  })
 
   it('no extra data is loaded', async () => {
     let stats = (remult.dataProvider = TestDataProvider(remult.dataProvider))

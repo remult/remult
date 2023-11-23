@@ -241,29 +241,6 @@ export class Relations {
   ): ClassFieldDecorator<entityType, toEntityType | undefined>
   /**
    * Define a to-one relation between entities, indicating a one-to-one relationship.
-   * This overload allows you to define the relation using options.
-   * If no field or fields are provided, it will automatically create a field in the database
-   * to represent the relation.
-   *
-   * @param toEntityType A function that returns the target entity type.
-   * @param options An object containing options for configuring the to-one relation.
-   *                - field (Optional): The name of the field in the related entity that corresponds to this relation.
-   * @returns A decorator function to apply the virtual to-one relation to an entity field.
-   *
-   * Example usage:
-   * ```
-   * @Relations.toOne(() => Customer, {
-   *   field: "customerId",
-   * })
-   * customer?: Customer;
-   * ```
-   */
-  static toOne<entityType, toEntityType>(
-    toEntityType: () => ClassType<toEntityType>,
-    fieldInMyEntity?: keyof entityType,
-  ): ClassFieldDecorator<entityType, toEntityType | undefined>
-  /**
-   * Define a to-one relation between entities, indicating a one-to-one relationship.
    * If no field or fields are provided, it will automatically create a field in the database
    * to represent the relation.
    *

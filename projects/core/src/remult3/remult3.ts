@@ -594,7 +594,7 @@ export type RelationOptions<
   /**
    * The name of the field for this relation.
    */
-  field?: keyof matchIdEntity //y1 - consider adjusting it to the overloads
+  field?: keyof matchIdEntity
   /**
    * Find options to apply to the relation when fetching related entities.
    * You can specify a predefined set of find options or provide a function that takes the source entity
@@ -671,36 +671,20 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //p1 - include Relation options in the api docs
 //p1 - fix { allowApiRead: r => r.user.name === 'superman' } } in allowed for instace docs
 //p1 - fix seeallowed in ref_entity
-//p1 - write doc about controlling updates of rows...
-//p1 - 'eventId' autocomplete in task app did not work
-//p1 - need a way to extract the fields from the relation - for generating relation based sql
-//p1 - remult object was used outside context
-// ```
-// sqlExpression: async (e) => {
-//   const v = await dbNamesOf(volunteerInTask)
-//   return `select true from ${v} where ${
-//     v.task
-//   }=${await e.getDbName()}.${await e.fields.id.getDbName()} and ${SqlDatabase.filterToRaw<volunteerInTask>(
-//     repo(volunteerInTask),
-//     {
-//       canceled: false,
-//     }
-//   )}`
-// },
-// })
-// ```
+//p2 - write doc about controlling updates of rows...
 
-//p2 - consider includeInApi as AllowedForInstance
-//p1 - why didn't this._.relations.statusChanges.insert({})work?
+//p2 - need a way to extract the fields from the relation - for generating relation based sql
+
+//p1 - omit functions from fields and relations
+
 //p1 - active record with include thinks that the row was change!
-//p1 - add docs for apply changes
-//p1 - update related field with null should respect it's allowed null - otherwise we get a null error for that field.
+//p2 - add docs for apply changes
 //p1 - when the include doesn't find the many to one - it deletes the id!!!
-//y1 - discuss a default date formatter
-//p1 - consider using this in saving etc...
-//p1 - when subscribe is forbidden - the query still runs after the renew process
-//p1 - JSON FIELD LOST JSON STORAGE WHEN SET INPUT VALUE
-//p1 - doc this:
+//y2 - discuss a default date formatter
+//[ ] - consider using this in saving etc...
+//p2 - when subscribe is forbidden - the query still runs after the renew process
+//p2 - JSON FIELD LOST JSON STORAGE WHEN SET INPUT VALUE
+//p2 - doc this:
 /**
  * //p1 - doc this
 remult.apiClient.httpClient = (
@@ -721,16 +705,25 @@ remult.apiClient.url='localhost:3007/api
 
 
  */
-//p1 - with remult promise for remultexpress
-//p1 - 'update tasks set  where id = $1
-//p1 - live query refresh of view on table update
-//p1 - Operator '>' cannot be applied to types 'Number' and 'number'.ts(2365) - change fields to <entityType,number> (now it's Number)
-//p1 - Field(()=>String) - doesn't play nice with strict mode - it prevents people from extending basic types
+//p2 - with remult promise for remultexpress
+//p2 - 'update tasks set  where id = $1
+//p2 - live query refresh of view on table update
+//p2 - Operator '>' cannot be applied to types 'Number' and 'number'.ts(2365) - change fields to <entityType,number> (now it's Number)
+//p2 - Field(()=>String) - doesn't play nice with strict mode - it prevents people from extending basic types
+//p2 - with remult for remultexpress
+//p1 - Add a with remult promise to Remult!
 
-//p1 - filterToRaw should get a dbnames of - and we should create a dbnames of that supports an alias
-//p1 - consider the breaking signature change of saving on field options - the field becomes the 3rd parameter.
+//p1 - YONI field didn't appear in intelisence of manyToNe
+//p1 - YONI with relation to one, fields doesn't appear well in the overload options when trying to set driver phone on trempim
+//p1 - YONI why didn't this._.relations.statusChanges.insert({})work?
+//p1 - YONI 'taskid' toOne field parameter did not autocomplete in task app - C:\repos\help-zahal\src\app\events\volunteerInTask.ts 49
 
-//p1 - with relation to one, fields doesn't appear well in the overload options when trying to set driver phone on trempim
+//p2 - filterToRaw should get a dbnames of - and we should create a dbnames of that supports an alias
+//p1 - DO NOT BREAK - move fieldref to second parameter, and lifecycle to 3rd consider the breaking signature change of saving on field options - the field becomes the 3rd parameter.
+
 //p1 - test what happens with a many to one relation where the one no longer exist, in all 3 cases (toOne,reference,toone with fields)
 //p1 - findid by default has cache - it sucks!
 //p1 - mongo db relation based on _id did not work - https://codesandbox.io/p/devbox/mong-db-remult-pch8zc?file=%2Fsrc%2Findex.ts%3A53%2C51
+//y2 - livequery for findfirst (@JY)
+//y2 - #239 - (@JY) add a way to get from fieldMetadata back to entity repo (like we have in fieldRef)
+//y1 - constraints (@JY)
