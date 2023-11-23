@@ -727,3 +727,7 @@ remult.apiClient.url='localhost:3007/api
 //y2 - livequery for findfirst (@JY)
 //y2 - #239 - (@JY) add a way to get from fieldMetadata back to entity repo (like we have in fieldRef)
 //y1 - constraints (@JY)
+//y1 - require more column
+//y1 - too much data by mistake
+//p2 - postgres case sensitive
+//y1 - talk about mongo object id
