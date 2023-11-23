@@ -116,5 +116,25 @@ describe.skipIf(!mongoConnectionStringWithoutTransaction)(
 
       //let z = await r.save({ ...x, date: new Date(1978, 2, 15) })
     })
+    it('test object id', async () => {
+      @Entity('tasks')
+      class task {
+        @Fields.string({
+          dbName: '_id',
+          valueConverter: {
+            fieldTypeInDb: 'dbid',
+          },
+        })
+        id: string = ''
+        @Fields.string()
+        title: string = ''
+      }
+      const r = await createEntity(task)
+      const z = await r.insert({ title: 'test' })
+      const x = await r.findId(z.id)
+      expect(x.title).toMatchInlineSnapshot('"test"')
+
+      expect(z.id.length).toEqual('655eebbb455580483d840718'.length)
+    })
   },
 )

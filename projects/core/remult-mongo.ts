@@ -1,4 +1,10 @@
-import type { ClientSession, Db, FindOptions, MongoClient } from 'mongodb'
+import {
+  ObjectId,
+  type ClientSession,
+  type Db,
+  type FindOptions,
+  type MongoClient,
+} from 'mongodb'
 import type {
   DataProvider,
   EntityDataProvider,
@@ -90,14 +96,14 @@ class MongoEntityDataProvider implements EntityDataProvider {
     for (const col of this.entity.fields) {
       let val = row[nameProvider.$dbNameOf(col)]
       if (isNull(val)) val = null
-      result[col.key] = col.valueConverter.fromDb(val)
+      result[col.key] = fromDb(col, val)
     }
     return result
   }
   translateToDb(row: any, nameProvider: EntityDbNamesBase) {
     let result = {}
     for (const col of this.entity.fields) {
-      let val = col.valueConverter.toDb(row[col.key])
+      let val = toDb(col, row[col.key])
       if (val === null) val = NULL
       result[nameProvider.$dbNameOf(col)] = val
     }
@@ -253,7 +259,7 @@ class FilterConsumerBridgeToMongo implements FilterConsumer {
   isIn(col: FieldMetadata, val: any[]): void {
     this.result.push(() => ({
       [this.nameProvider.$dbNameOf(col)]: {
-        $in: val.map((x) => col.valueConverter.toDb(x)),
+        $in: val.map((x) => toDb(col, x)),
       },
     }))
   }
@@ -288,7 +294,7 @@ class FilterConsumerBridgeToMongo implements FilterConsumer {
   private add(col: FieldMetadata, val: any, operator: string) {
     this.result.push(() => ({
       [this.nameProvider.$dbNameOf(col)]: {
-        [operator]: isNull(val) ? val : col.valueConverter.toDb(val),
+        [operator]: isNull(val) ? val : toDb(col, val),
       },
     }))
   }
@@ -305,4 +311,14 @@ class FilterConsumerBridgeToMongo implements FilterConsumer {
     //     }
     //   })());
   }
+}
+function toDb(col: FieldMetadata, val: any) {
+  if (col.valueConverter.fieldTypeInDb == 'dbid')
+    return val ? new ObjectId(val) : val === null ? null : undefined
+  return col.valueConverter.toDb(val)
+}
+function fromDb(col: FieldMetadata, val: any) {
+  if (col.valueConverter.fieldTypeInDb == 'dbid')
+    return val ? val.toHexString() : val === null ? null : undefined
+  return col.valueConverter.fromDb(val)
 }
