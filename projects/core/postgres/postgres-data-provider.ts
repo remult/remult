@@ -1,5 +1,6 @@
 import type { ClientBase, PoolConfig, QueryResult } from 'pg'
-import { Pool } from 'pg'
+import pg from 'pg'
+const { Pool } = pg
 import { Remult } from '../src/context.js'
 import { SqlDatabase } from '../src/data-providers/sql-database.js'
 import type { EntityMetadata } from '../src/remult3/remult3.js'
