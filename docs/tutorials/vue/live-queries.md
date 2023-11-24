@@ -41,7 +41,7 @@ Let's review the change:
 
 2. As all relevant CRUD operations (made by all users) will **immediately update the component's state**, we should remove the manual adding of new Tasks to the component's state:
 
-```ts{7}
+```ts{6}
 // src/App.vue
 
 async function addTask() {
