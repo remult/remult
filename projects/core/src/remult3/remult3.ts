@@ -463,3 +463,5 @@ export interface Paginator<entityType> {
   /** the count of the total items in the `query`'s result */
   count(): Promise<number>
 }
+
+//p2 - fix sql log to console to make more sense
