@@ -70,7 +70,6 @@ app.listen(process.env["PORT"] || 3002, () => console.log("Server started"))
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "module": "commonjs",
-    "emitDecoratorMetadata": true,
     "esModuleInterop": true,
     "noEmit": false,
     "outDir": "dist",
