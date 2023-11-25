@@ -1,10 +1,18 @@
 import { defineConfig } from 'vitepress'
 
 const tutorials = [
-  { path: "react" },
-  { path: "angular" },
-  { path: "vue" },
-  { title: "SvelteKit", path: "sveltekit" },
+  { path: 'react' },
+  {
+    path: 'angular',
+    additionalItems: [
+      {
+        text: 'Appendix: Observable Live Query',
+        link: '/tutorials/angular/appendix-observable-live-query',
+      },
+    ],
+  },
+  { path: 'vue' },
+  { title: 'SvelteKit', path: 'sveltekit' },
   {
     title: 'Next.js',
     path: 'react-next',
@@ -143,7 +151,10 @@ export default defineConfig({
                   },
                 ],
               },
-              { text: 'Generate from Existing DB', link: '/docs/entities-codegen-from-db-schema' }
+              {
+                text: 'Generate from Existing DB',
+                link: '/docs/entities-codegen-from-db-schema',
+              },
             ],
           },
           {
