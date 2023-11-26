@@ -15,11 +15,10 @@ Let's add two buttons to the todo app: "Set all as completed" and "Set all as un
      for (const task of await this.taskRepo.find()) {
        await this.taskRepo.save({ ...task, completed });
      }
-   };
+   }
    ```
 
    The `for` loop iterates the array of `Task` objects returned from the backend, and saves each task back to the backend with a modified value in the `completed` field.
-
 
 2. Add the two buttons to the `TodoComponent` just before the closing `</main>` tag. Both of the buttons' `click` events will call the `setAllCompleted` method with the appropriate value of the `completed` argument.
 
@@ -45,8 +44,8 @@ A simple way to prevent this is to expose an API endpoint for `setAllCompleted` 
 ```ts
 // src/shared/TasksController.ts
 
-import { BackendMethod, remult } from "remult"
-import { Task } from "./Task"
+import { BackendMethod, remult } from 'remult'
+import { Task } from './Task'
 
 export class TasksController {
   @BackendMethod({ allowed: true })

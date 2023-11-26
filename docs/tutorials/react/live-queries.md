@@ -45,7 +45,8 @@ Let's review the change:
 const addTask = async (e: FormEvent) => {
   e.preventDefault()
   try {
-    const newTask = await taskRepo.insert({ title: newTaskTitle })
+    // const newTask = await taskRepo.insert({ title: newTaskTitle }) <- Delete this line
+    await taskRepo.insert({ title: newTaskTitle }) // <- replace with this line
     // setTasks([...tasks, newTask])   <-- this line is no longer needed
     setNewTaskTitle("")
   } catch (error) {

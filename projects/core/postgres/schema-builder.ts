@@ -143,6 +143,7 @@ export class PostgresSchemaBuilder {
         }
       } catch (err) {
         console.error('failed verify structure of ' + e.$entityName + ' ', err)
+        throw err
       }
     }
   }

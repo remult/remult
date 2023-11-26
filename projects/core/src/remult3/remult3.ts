@@ -732,3 +732,4 @@ remult.apiClient.url='localhost:3007/api
 //p2 - postgres case sensitive
 
 //y1 - consider http status code for errors
+//p2 - fix sql log to console to make more sense

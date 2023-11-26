@@ -4,7 +4,7 @@ Validating user entered data is usually required both on the client-side and on 
 
 ::: warning Handling validation errors
 
-When a validation error occurs, Remult will throw an exception. 
+When a validation error occurs, Remult will throw an exception.
 
 In this tutorial, [CRUD operations](crud.md) catch these exceptions, and alert the user.
 We leave it to you to decide how to handle validation errors in your application.
@@ -63,3 +63,7 @@ Try something like this and see what happens:
 })
 title = ""
 ```
+
+::: warning Remove Validators Import
+This code no longer requires the `Validators` import from 'remult' and it should be removed
+:::

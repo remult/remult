@@ -29,6 +29,10 @@ All notable changes to this project will be documented in this file.
 - Fix issue with compound id on middleware based servers
 - Added with remult for sveltekit for usage before the remult hook
 - Fixed issue with requireId not respecting in statement #290
+## [0.22.12] 2023-11-26
+
+- [#297](https://github.com/remult/remult/issues/297) - Crash on ensure schema failure
+
 ## [0.22.11] 2023-11-23
 
 - Improved support for Mongo `ObjectId` field type [#295](https://github.com/remult/remult/issues/295)

@@ -389,8 +389,8 @@ export class KnexSchemaBuilder {
   async verifyStructureOfAllEntities(remult?: Remult) {
     if (!remult) remult = remultContext
 
-    const entities = allEntities.map((x) => remult!.repo(x).metadata)
-    this.ensureSchema(entities)
+    const entities = allEntities.map((x) => remult.repo(x).metadata)
+    await this.ensureSchema(entities)
   }
 
   async ensureSchema(entities: EntityMetadata<any>[]) {
@@ -405,6 +405,7 @@ export class KnexSchemaBuilder {
         }
       } catch (err) {
         console.error('failed ensure schema of ' + e.$entityName + ' ', err)
+        throw err
       }
     }
   }

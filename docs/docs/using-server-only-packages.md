@@ -113,6 +113,44 @@ static async updatePriceOnBackend(priceToUpdate:number,remult?:Remult){
 
 * note that you'll need to restart the react/angular dev server.
 
+### Angular 17
+
+If you're using Angular 17,
+
+1. You'll need to either remove `types` entry in the `tsconfig.app.json` or add the types you need to that types array.
+2. In `angular.json` you'll need to add an entry called `externalDependencies` to the `architect/build/options` key for your project
+
+   ```json{21-23}
+   // angular.json
+
+   {
+     "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+     "version": 1,
+     "newProjectRoot": "projects",
+     "projects": {
+       "remult-angular-todo": {
+         "projectType": "application",
+         "schematics": {},
+         "root": "",
+         "sourceRoot": "src",
+         "prefix": "app",
+         "architect": {
+           "build": {
+             "builder": "@angular-devkit/build-angular:application",
+             "options": {
+               "outputPath": "dist/remult-angular-todo",
+               "index": "src/index.html",
+               "browser": "src/main.ts",
+               "externalDependencies": [
+                 "fs"
+               ],
+               "polyfills": [
+                 "zone.js"
+               ],
+               //...
+             }}}}}}
+   ```
+
 ## Solution 2 - abstract the call
 
 Abstract the call and separate it to backend only files and `inject` it only when we are running on the server.

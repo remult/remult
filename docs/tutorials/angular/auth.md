@@ -88,34 +88,34 @@ npm i --save-dev @types/cookie-session
    ```ts
    // src/server/auth.ts
 
-   import express, { Router } from "express"
-   import type { UserInfo } from "remult"
+   import express, { Router } from 'express'
+   import type { UserInfo } from 'remult'
 
    const validUsers: UserInfo[] = [
-     { id: "1", name: "Jane" },
-     { id: "2", name: "Steve" }
+     { id: '1', name: 'Jane' },
+     { id: '2', name: 'Steve' },
    ]
 
    export const auth = Router()
 
    auth.use(express.json())
 
-   auth.post("/api/signIn", (req, res) => {
-     const user = validUsers.find(user => user.name === req.body.username)
+   auth.post('/api/signIn', (req, res) => {
+     const user = validUsers.find((user) => user.name === req.body.username)
      if (user) {
-       req.session!["user"] = user
+       req.session!['user'] = user
        res.json(user)
      } else {
        res.status(404).json("Invalid user, try 'Steve' or 'Jane'")
      }
    })
 
-   auth.post("/api/signOut", (req, res) => {
-     req.session!["user"] = null
-     res.json("signed out")
+   auth.post('/api/signOut', (req, res) => {
+     req.session!['user'] = null
+     res.json('signed out')
    })
 
-   auth.get("/api/currentUser", (req, res) => res.json(req.session!["user"]))
+   auth.get('/api/currentUser', (req, res) => res.json(req.session!['user']))
    ```
 
    - The (very) simplistic `signIn` endpoint accepts a request body with a `username` property, looks it up in a predefined dictionary of valid users and, if found, sets the user's information to the `user` property of the request's `session`.
@@ -151,55 +151,62 @@ npm i --save-dev @types/cookie-session
    ng g c auth
    ```
 2. Add the highlighted code lines to the `AuthComponent` class file:
+
    ```ts
    // src/app/auth/auth.component.ts
 
-   import { Component, OnInit } from "@angular/core"
-   import { HttpClient } from "@angular/common/http"
-   import { remult, UserInfo } from "remult"
+   import { Component, OnInit } from '@angular/core'
+   import { CommonModule } from '@angular/common'
+   import { UserInfo, remult } from 'remult'
+   import { HttpClient, HttpClientModule } from '@angular/common/http'
+   import { FormsModule } from '@angular/forms'
+   import { TodoComponent } from '../todo/todo.component'
 
    @Component({
-     selector: "app-auth",
-     templateUrl: "./auth.component.html",
-     styleUrls: ["./auth.component.css"]
+     selector: 'app-auth',
+     standalone: true,
+     imports: [CommonModule, FormsModule, TodoComponent, HttpClientModule],
+     templateUrl: './auth.component.html',
+     styleUrl: './auth.component.css',
    })
    export class AuthComponent implements OnInit {
      constructor(private http: HttpClient) {}
 
-     signInUsername = ""
+     signInUsername = ''
      remult = remult
 
      signIn() {
        this.http
-         .post<UserInfo>("/api/signIn", {
-           username: this.signInUsername
+         .post<UserInfo>('/api/signIn', {
+           username: this.signInUsername,
          })
          .subscribe({
-           next: user => {
+           next: (user) => {
              this.remult.user = user
-             this.signInUsername = ""
+             this.signInUsername = ''
            },
-           error: error => alert(error.error)
+           error: (error) => alert(error.error),
          })
      }
 
      signOut() {
        this.http
-         .post("/api/signOut", {})
+         .post('/api/signOut', {})
          .subscribe(() => (this.remult.user = undefined))
      }
 
      ngOnInit() {
        this.http
-         .get<UserInfo>("/api/currentUser")
-         .subscribe(user => (this.remult.user = user))
+         .get<UserInfo>('/api/currentUser')
+         .subscribe((user) => (this.remult.user = user))
      }
    }
    ```
 
 3. Replace the contents of auth.component.html with the following html:
+
    ```html
-   // src/app/auth/auth.component.ts
+   <!-- src/app/auth/auth.component.html -->
 
    <ng-container *ngIf="!remult.authenticated()">
      <h1>todos</h1>
@@ -222,7 +229,29 @@ npm i --save-dev @types/cookie-session
      <app-todo></app-todo>
    </ng-container>
    ```
-4. Change the `app.component.html` to use the `AuthComponent` instead of the `TodoComponent`
+
+4. Replace the `TodoComponent` with the `AuthComponent` in the `AppComponent`
+
+   ```ts{6,12}
+   //src/app/app.component.ts
+
+   import { Component, NgZone } from '@angular/core';
+   import { CommonModule } from '@angular/common';
+   import { RouterOutlet } from '@angular/router';
+   import { AuthComponent } from './auth/auth.component';
+   import { remult } from 'remult';
+
+   @Component({
+     selector: 'app-root',
+     standalone: true,
+     imports: [CommonModule, RouterOutlet, AuthComponent],
+     templateUrl: './app.component.html',
+     styleUrl: './app.component.css',
+   })
+
+   ```
+
+5. Change the `app.component.html` to use the `AuthComponent` instead of the `TodoComponent`
 
    ```html
    <!-- src/app/app.component.html -->
@@ -304,8 +333,9 @@ From a user experience perspective it only makes sense that users that can't add
 Let's reuse the same definitions on the Frontend.
 
 Modify the contents of auth.component.html to only display the form and delete buttons if these operations are allowed based on the entity's metadata:
+
 ```html{5,22}
-<!-- src/app/auth/auth.component.ts -->
+<!-- src/app/auth/auth.component.html -->
 
 <h1>todos</h1>
 <main>
@@ -341,5 +371,4 @@ Modify the contents of auth.component.html to only display the form and delete b
 
 This way we can keep the frontend consistent with the `api`'s Authorization rules
 
-* Note We send the `task` to the `apiDeleteAllowed` method, because the `apiDeleteAllowed` option, can be sophisticated and can also be based on the specific item's values,
-
+- Note We send the `task` to the `apiDeleteAllowed` method, because the `apiDeleteAllowed` option, can be sophisticated and can also be based on the specific item's values,
