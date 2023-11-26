@@ -8,7 +8,7 @@ import type {
   FieldMetadata,
   Remult,
 } from '.'
-import { CompoundIdField, Filter } from '.'
+import { CompoundIdField, Filter } from './index.js'
 import type { EntityDbNamesBase } from './src/filter/filter-consumer-bridge-to-sql-request.js'
 import { dbNamesOf } from './src/filter/filter-consumer-bridge-to-sql-request.js'
 import type { FilterConsumer } from './src/filter/filter-interfaces.js'
