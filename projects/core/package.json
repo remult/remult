@@ -40,7 +40,6 @@
     "./remult-mongo": "./remult-mongo.js",
     "./ably": "./ably.js",
     "./graphql": "./graphql.js",
-    "./src/remult3": "./src/remult3/index.js",
     "./src/server-action": "./src/server-action.js"
   }
 }
