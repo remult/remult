@@ -19,7 +19,7 @@ export default defineConfig({
       enabled: false,
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      include: ['**'],
+      include: ['projects/core/**'],
     },
   },
 })
