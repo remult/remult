@@ -675,8 +675,6 @@ export type ClassFieldDecorator<entityType, valueType> = (
 
 //p2 - need a way to extract the fields from the relation - for generating relation based sql
 
-//p1 - omit functions from fields and relations
-
 //p1 - active record with include thinks that the row was change!
 //p2 - add docs for apply changes
 //p1 - when the include doesn't find the many to one - it deletes the id!!!
@@ -717,6 +715,7 @@ remult.apiClient.url='localhost:3007/api
 //p1 - YONI with relation to one, fields doesn't appear well in the overload options when trying to set driver phone on trempim
 //p1 - YONI why didn't this._.relations.statusChanges.insert({})work?
 //p1 - YONI 'taskid' toOne field parameter did not autocomplete in task app - C:\repos\help-zahal\src\app\events\volunteerInTask.ts 49
+//p1 - YONI omit functions from fields and relations
 
 //p2 - filterToRaw should get a dbnames of - and we should create a dbnames of that supports an alias
 //p1 - DO NOT BREAK - move fieldref to second parameter, and lifecycle to 3rd consider the breaking signature change of saving on field options - the field becomes the 3rd parameter.
