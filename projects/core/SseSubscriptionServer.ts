@@ -1,6 +1,6 @@
 import { v4 as uuid } from 'uuid'
 import type { GenericRequestInfo, GenericResponse } from './server/index.js'
-import { Remult } from './src/context.js'
+import type { Remult } from './src/context.js'
 import type { DataApiResponse } from './src/data-api.js'
 import { ConnectionNotFoundError } from './src/live-query/SseSubscriptionClient.js'
 import type { ServerEventChannelSubscribeDTO } from './src/live-query/SubscriptionChannel.js'

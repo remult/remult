@@ -12,7 +12,7 @@ import type {
   RemultServerCore,
   RemultServerOptions,
 } from './server'
-import { createRemultServer } from './server'
+import { createRemultServer } from './server/index.js'
 
 export function remultNext(
   options?: RemultServerOptions<NextApiRequest>,

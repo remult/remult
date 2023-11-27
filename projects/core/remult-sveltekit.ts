@@ -5,7 +5,7 @@ import type {
   RemultServerCore,
   RemultServerOptions,
 } from './server'
-import { createRemultServer } from './server'
+import { createRemultServer } from './server/index.js'
 
 export function remultSveltekit(
   options?: RemultServerOptions<RequestEvent>,
