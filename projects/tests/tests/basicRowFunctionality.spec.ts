@@ -1972,6 +1972,7 @@ describe('test toPromise', () => {
 
 @Entity<CompoundIdSimple>('CompoundIdPojoEntity', {
   id: (x) => [x.a, x.b],
+  allowApiCrud: true,
 })
 class CompoundIdSimple {
   @Fields.integer()
@@ -2047,6 +2048,29 @@ describe('CompoundIdPojoEntity', () => {
     await repo.insert([{ a: 2, b: 20, c: 200 }])
     await repo.update({ a: 2, b: 20 }, { c: 201 })
     expect((await repo.findFirst({ a: 2, b: 20 })).c).toBe(201)
+  })
+  it('test update_rest', async () => {
+    const r = new Remult(new InMemoryDataProvider())
+    var repo = new Remult(new MockRestDataProvider(r)).repo(CompoundIdSimple)
+    await repo.insert([{ a: 2, b: 20, c: 200 }])
+    await repo.update({ a: 2, b: 20 }, { c: 201 })
+    expect((await repo.findFirst({ a: 2, b: 20 })).c).toBe(201)
+  })
+  it('test another compound update', async () => {
+    @Entity('asdfsa', { allowApiCrud: true, id: { a: true, b: true } })
+    class myEntity {
+      @Fields.integer()
+      a = 0
+      @Fields.integer()
+      b = 0
+      @Fields.integer()
+      c = 0
+    }
+    const r = new Remult(new InMemoryDataProvider())
+    var repo = new Remult(new MockRestDataProvider(r)).repo(myEntity)
+    await repo.insert([{ a: 2, b: 20, c: 200 }])
+    await repo.update({ a: 2, b: 20 }, { c: 0 })
+    expect((await repo.findFirst({ a: 2, b: 20 })).c).toBe(0)
   })
   it('test update 2', async () => {
     var repo = new Remult(new InMemoryDataProvider()).repo(CompoundIdSimple)

@@ -185,7 +185,10 @@ export function createMockHttpDataProvider(
       let result
       r.deleted = () => {}
       try {
-        await dataApi.delete(r, urlSplit[urlSplit.length - 1])
+        await dataApi.delete(
+          r,
+          decodeURIComponent(urlSplit[urlSplit.length - 1]),
+        )
       } finally {
       }
       return result
@@ -227,7 +230,11 @@ export function createMockHttpDataProvider(
         result = data
       }
       try {
-        await dataApi.put(r, urlSplit[urlSplit.length - 1], data)
+        await dataApi.put(
+          r,
+          decodeURIComponent(urlSplit[urlSplit.length - 1]),
+          data,
+        )
       } finally {
       }
       return result

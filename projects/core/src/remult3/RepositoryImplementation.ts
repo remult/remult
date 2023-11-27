@@ -370,7 +370,7 @@ export class RepositoryImplementation<entityType>
         id,
         this.metadata.idMetadata.getId(id),
       ) as typeof ref
-      Object.assign(id, entity)
+      Object.assign(ref.instance, entity)
     } else
       ref = this.getRefForExistingRow(
         entity,
@@ -1075,7 +1075,7 @@ abstract class rowHelperBase<T> {
   }
   constructor(
     protected columnsInfo: FieldOptions[],
-    protected instance: T,
+    public instance: T,
     protected remult: Remult,
     protected isNewRow: boolean,
   ) {
