@@ -34,8 +34,9 @@ export {
   MembersToInclude,
   RepositoryRelations,
   EntityIdFields,
-  ClassFieldDecorator as MemberDecorator,
-  ClassFieldDecoratorContextStub,
+  ClassFieldDecorator,
+  ClassFieldDecoratorContextStub, //n1 consider removing in ts5
+  LifecycleEvent,
 } from './src/remult3/remult3'
 export {
   EntityBase,
