@@ -732,3 +732,4 @@ remult.apiClient.url='localhost:3007/api
 
 //y1 - consider http status code for errors
 //p2 - fix sql log to console to make more sense
+//p1 - type metadata.key - to keyof entity - based on cwis input
