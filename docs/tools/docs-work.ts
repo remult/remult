@@ -149,7 +149,7 @@ class DocFile {
   writeFile() {
     fs.writeFileSync(
       './docs/docs/ref_' + this.fileName.toLowerCase() + '.md',
-      this.s,
+      this.s, //.replace(/\n/g, '\r\n'),
     )
   }
 }

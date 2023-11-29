@@ -59,6 +59,11 @@ Arguments:
 
 Arguments:
 * **item**
+## includedInApi
+* **includedInApi**
+
+Arguments:
+* **item**
 ## toInput
 Adapts the value for usage with html input
    
@@ -89,5 +94,3 @@ Adapts the value for usage with html input
 Arguments:
 * **inputValue**
 * **inputType**
-## includedInApi
-* **includedInApi**
