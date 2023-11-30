@@ -736,3 +736,4 @@ remult.apiClient.url='localhost:3007/api
 //p1 - processError in remult express
 //y1 - should we change relations to be a static const instead of a class (also for fields maybe) what's the point of doing new Relations
 //y1 - add Class type to index of remult - it is used in repo and is important
+//y2 - Backend methods are transactions, it's not intuitive and maybe should be optional / opt in
