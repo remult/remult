@@ -4,11 +4,11 @@ import {
   type OmitEB,
   type EntityOptions,
   Fields,
-  type MemberDecorator,
+  type ClassFieldDecorator,
 } from '../../core'
 import type { ClassType } from '../../core/classType'
 
-export declare type InferMemberType<type> = type extends MemberDecorator<
+export declare type InferMemberType<type> = type extends ClassFieldDecorator<
   any,
   infer R
 >
