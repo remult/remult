@@ -980,7 +980,6 @@ export class RepositoryImplementation<entityType>
     return this.findFirst(
       {},
       {
-        useCache: true,
         ...options,
         where: this.metadata.idMetadata.getIdFilter(id),
       },

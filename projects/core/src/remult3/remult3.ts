@@ -716,7 +716,6 @@ remult.apiClient.url='localhost:3007/api
 //p2 - filterToRaw should get a dbnames of - and we should create a dbnames of that supports an alias
 
 //p1 - test what happens with a many to one relation where the one no longer exist, in all 3 cases (toOne,reference,toone with fields)
-//p1 - findid by default has cache - it sucks!
 
 //y2 - livequery for findfirst (@JY)
 //y2 - #239 - (@JY) add a way to get from fieldMetadata back to entity repo (like we have in fieldRef)
@@ -732,3 +731,4 @@ remult.apiClient.url='localhost:3007/api
 //y1 - should we change relations to be a static const instead of a class (also for fields maybe) what's the point of doing new Relations
 //y1 - add Class type to index of remult - it is used in repo and is important
 //y2 - Backend methods are transactions, it's not intuitive and maybe should be optional / opt in
+//p2 - get backend methods to work when specifying types for date, and entities as poco's

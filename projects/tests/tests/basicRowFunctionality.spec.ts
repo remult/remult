@@ -1717,10 +1717,10 @@ describe('cache', () => {
   })
   it('find id', async () => {
     let [r] = await createData(async (i) => i(1, 'noam'))
-    await r.findId(1)
+    await r.findId(1, { useCache: true })
     await r.find().then((x) => assign(x[0], { categoryName: 'a' }).save())
-    expect((await r.findId(1)).categoryName).toBe('noam')
-    expect((await r.findId(1, { useCache: false })).categoryName).toBe('a')
+    expect((await r.findId(1, { useCache: true })).categoryName).toBe('noam')
+    expect((await r.findId(1)).categoryName).toBe('a')
   })
 })
 
