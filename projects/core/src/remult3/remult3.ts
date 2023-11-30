@@ -709,7 +709,7 @@ remult.apiClient.url='localhost:3007/api
 //p2 - Operator '>' cannot be applied to types 'Number' and 'number'.ts(2365) - change fields to <entityType,number> (now it's Number)
 //p2 - Field(()=>String) - doesn't play nice with strict mode - it prevents people from extending basic types
 //p2 - with remult for remultexpress
-//p1 - Add a with remult promise to Remult!
+//p2 - Add a with remult promise to Remult!
 
 //p1 - YONI field didn't appear in intelisence of manyToNe
 //p1 - YONI with relation to one, fields doesn't appear well in the overload options when trying to set driver phone on trempim
@@ -734,3 +734,5 @@ remult.apiClient.url='localhost:3007/api
 //p2 - fix sql log to console to make more sense
 //p1 - type metadata.key - to keyof entity - based on cwis input
 //p1 - processError in remult express
+//y1 - should we change relations to be a static const instead of a class (also for fields maybe) what's the point of doing new Relations
+//y1 - add Class type to index of remult - it is used in repo and is important
