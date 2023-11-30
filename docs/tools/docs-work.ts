@@ -72,6 +72,14 @@ class DocFile {
     this.s += space + what.replace(/\n/g, '\n' + space) + '\n'
   }
   writeMembers(type: member, indent = 0) {
+    if (!type.children) {
+      if (type.type.type == 'intersection') {
+        type.children = type.type.types
+          .map((t) => t.declaration?.children)
+          .filter((x) => x != undefined)
+          .reduce((a, b) => a.concat(b), [])
+      }
+    }
     if (type.children) {
       try {
         if (type.name === 'Repository')
@@ -186,6 +194,8 @@ try {
     'EntityMetadata',
     'FieldMetadata',
     'RemultServerOptions',
+    'Relations',
+    'RelationOptions',
   ]) {
     let type = findType(typeName)
 
@@ -210,16 +220,25 @@ type Tag = {
   }[]
 }
 
+interface type {
+  name: string
+  type:
+    | 'union'
+    | 'reference'
+    | 'intrinsic'
+    | 'reflection'
+    | 'array'
+    | 'intersection'
+  types: type[]
+  declaration?: member
+}
+
 interface member {
   variant: 'param'
   name: string
   parameters: ({
     name: string
-    type: {
-      name: string
-      type: string
-      types: { name: string }[]
-    }
+    type: type
   } & member)[]
   signatures: member[]
   sources: { line: number }[]
@@ -239,11 +258,7 @@ interface member {
       },
     ]
   }
-  type?: {
-    declaration?: {
-      signatures: member[]
-    }
-  }
+  type?: type
   inheritedFrom: {
     type: string
     name: string
