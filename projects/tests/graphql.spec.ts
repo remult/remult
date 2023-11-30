@@ -17,7 +17,7 @@ import { remultGraphql, translateWhereToRestBody } from '../core/graphql'
 class Category {
   @Fields.string({
     allowApiUpdate: false,
-    saving: async (_, { repository }, ref) => {
+    saving: async (_, ref, { repository }) => {
       // created a consistent id for testing
       ref.value = (await repository.count()).toString()
     },

@@ -117,7 +117,7 @@ export class Fields {
       () => Date,
       {
         allowApiUpdate: false,
-        saving: (_, { isNew }, ref) => {
+        saving: (_, ref, { isNew }) => {
           if (isNew) ref.value = new Date()
         },
       },
@@ -134,7 +134,7 @@ export class Fields {
       () => Date,
       {
         allowApiUpdate: false,
-        saving: (_, _1, ref) => {
+        saving: (_, ref) => {
           ref.value = new Date()
         },
       },
@@ -153,7 +153,7 @@ export class Fields {
       {
         allowApiUpdate: false,
         defaultValue: () => uuid(),
-        saving: (_, _1, r) => {
+        saving: (_, r) => {
           if (!r.value) r.value = uuid()
         },
       },
@@ -171,7 +171,7 @@ export class Fields {
       {
         allowApiUpdate: false,
         defaultValue: () => createId(),
-        saving: (_, _1, r) => {
+        saving: (_, r) => {
           if (!r.value) r.value = createId()
         },
       },

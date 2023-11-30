@@ -1510,7 +1510,7 @@ export class rowHelperImplementation<T>
       if (!this.remult.dataProvider.isProxy) {
         for (const col of this.fields) {
           if (col.metadata.options.saving)
-            await col.metadata.options.saving(this.instance, e, col)
+            await col.metadata.options.saving(this.instance, col, e)
         }
         if (this.info.entityInfo.saving) {
           await this.info.entityInfo.saving(this.instance, e)

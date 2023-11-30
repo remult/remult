@@ -667,10 +667,6 @@ export type ClassFieldDecorator<entityType, valueType> = (
   c?: any,
 ) => void
 
-//p1 - include relations in the api docs
-//p1 - include Relation options in the api docs
-//p1 - fix { allowApiRead: r => r.user.name === 'superman' } } in allowed for instace docs
-//p1 - fix seeallowed in ref_entity
 //p2 - write doc about controlling updates of rows...
 
 //p2 - need a way to extract the fields from the relation - for generating relation based sql
@@ -684,7 +680,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //p2 - JSON FIELD LOST JSON STORAGE WHEN SET INPUT VALUE
 //p2 - doc this:
 /**
- * //p1 - doc this
+ * //p2 - doc this
 remult.apiClient.httpClient = (
   input: RequestInfo | URL,
   init?: RequestInit
@@ -718,7 +714,6 @@ remult.apiClient.url='localhost:3007/api
 //p1 - YONI omit functions from fields and relations
 
 //p2 - filterToRaw should get a dbnames of - and we should create a dbnames of that supports an alias
-//p1 - DO NOT BREAK - move fieldref to second parameter, and lifecycle to 3rd consider the breaking signature change of saving on field options - the field becomes the 3rd parameter.
 
 //p1 - test what happens with a many to one relation where the one no longer exist, in all 3 cases (toOne,reference,toone with fields)
 //p1 - findid by default has cache - it sucks!

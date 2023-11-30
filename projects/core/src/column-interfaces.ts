@@ -54,8 +54,8 @@ export interface FieldOptions<entityType = any, valueType = any> {
   /** Will be fired before this field is saved to the server/database */
   saving?: (
     entity: entityType,
-    e: LifecycleEvent<entityType>,
     fieldRef: FieldRef<entityType, valueType>,
+    e: LifecycleEvent<entityType>,
   ) => any | Promise<any>
   /**  An expression that will determine this fields value on the backend and be provided to the front end*/
   serverExpression?: (entity: entityType) => valueType | Promise<valueType>
