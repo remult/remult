@@ -2038,6 +2038,14 @@ export class columnDefsImpl implements FieldMetadata {
         if (!result) return this.settings.dbName
         return result
       }
+      const rel = getRelationInfo(this.settings)
+      let field =
+        rel?.type === 'toOne' &&
+        ((this.settings as RelationOptions<any, any, any>).field as string)
+      if (field) {
+        let fInfo = this.entityDefs.fields.find(field)
+        if (fInfo) return fInfo.getDbName()
+      }
       return this.settings.dbName
     } finally {
     }

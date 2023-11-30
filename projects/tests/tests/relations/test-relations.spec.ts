@@ -192,6 +192,7 @@ describe('test relations', () => {
       ]
     `)
   })
+
   it('loads on demand', async () => {
     const t = await r(Task).findFirst(
       { id: 1 },
@@ -719,4 +720,9 @@ it('test null and related field ', async () => {
     .repo(Order)
     .findFirst({}, { include: { customer: true } })
   expect(o.customer.name).toBe('noam')
+})
+it('test dbname', async () => {
+  expect(await remult.repo(Task).fields.secondaryCategory.getDbName()).toBe(
+    'secondaryCategoryId',
+  )
 })
