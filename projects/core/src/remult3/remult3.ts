@@ -671,9 +671,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 
 //p2 - need a way to extract the fields from the relation - for generating relation based sql
 
-//p1 - active record with include thinks that the row was change!
 //p2 - add docs for apply changes
-//p1 - when the include doesn't find the many to one - it deletes the id!!!
 //y2 - discuss a default date formatter
 //[ ] - consider using this in saving etc...
 //p2 - when subscribe is forbidden - the query still runs after the renew process
@@ -716,6 +714,10 @@ remult.apiClient.url='localhost:3007/api
 //p2 - filterToRaw should get a dbnames of - and we should create a dbnames of that supports an alias
 
 //p1 - test what happens with a many to one relation where the one no longer exist, in all 3 cases (toOne,reference,toone with fields)
+//p1 - active record with include thinks that the row was change!
+//p1 - when the include doesn't find the many to one - it deletes the id!!!
+//p1 - seems that after backend methods relations are loaded for some reason - see trempim - intake doRequest backend method
+//p1 - reconsider the case in tremping where create user id was updated with some user and not the actual user
 
 //y2 - livequery for findfirst (@JY)
 //y2 - #239 - (@JY) add a way to get from fieldMetadata back to entity repo (like we have in fieldRef)
@@ -724,7 +726,6 @@ remult.apiClient.url='localhost:3007/api
 //p2 - too much data by mistake
 //p2 - postgres case sensitive
 
-//y1 - consider http status code for errors
 //p2 - fix sql log to console to make more sense
 //p2 - type metadata.key - to keyof entity - based on cwis input
 //p2 - processError in remult express

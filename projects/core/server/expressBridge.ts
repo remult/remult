@@ -1297,5 +1297,3 @@ export interface ServerCoreOptions<RequestType> {
   buildGenericRequestInfo(req: RequestType): GenericRequestInfo
   getRequestBody(req: RequestType): Promise<any>
 }
-
-//p1 - implement dbname based on related field https://codesandbox.io/p/sandbox/fervent-yalow-66m78n?file=%2Fsrc%2Findex.ts%3A35%2C93
