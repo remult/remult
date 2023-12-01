@@ -57,4 +57,27 @@ describe('relations to one behavior', () => {
     const task = await r(Task).findFirst({}, { include: { category: true } })
     expect(task.categoryId).toBe(2)
   })
+  it('verify that save does not load relations for no reason', async () => {
+    const task = await r(Task).findFirst({})
+    expect(task).toMatchInlineSnapshot(`
+      Task {
+        "cat2": undefined,
+        "category": undefined,
+        "categoryId": 2,
+        "id": 1,
+        "title": "task 1",
+      }
+    `)
+    task.title += '2'
+    await task.save()
+    expect(task).toMatchInlineSnapshot(`
+      Task {
+        "cat2": undefined,
+        "category": undefined,
+        "categoryId": 2,
+        "id": 1,
+        "title": "task 12",
+      }
+    `)
+  })
 })

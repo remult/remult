@@ -158,13 +158,8 @@ export class RepositoryImplementation<entityType>
           rel.toType(),
         ) as RepositoryImplementation<any>
 
-        let { findOptions } = this.findOptionsBasedOnRelation(
-          rel,
-          field,
-          undefined,
-          item,
-          repo,
-        )
+        let { findOptions, returnNull, returnUndefined } =
+          this.findOptionsBasedOnRelation(rel, field, undefined, item, repo)
         const toRepo = new RepositoryImplementation(
           repo.entity,
           repo.remult,
@@ -176,6 +171,8 @@ export class RepositoryImplementation<entityType>
         else
           return {
             findOne: (options?: FindOptionsBase<any>) => {
+              if (returnNull) return Promise.resolve(null)
+              if (returnUndefined) return Promise.resolve(undefined)
               return toRepo.findFirst({}, options)
             },
           }
@@ -649,6 +646,7 @@ export class RepositoryImplementation<entityType>
     otherRepo: Repository<unknown>,
   ) {
     let returnNull = false
+    let returnUndefined = false
     let where: EntityFilter<any>[] = []
     let findOptions: FindOptions<any> = {}
     let findOptionsSources: FindOptions<any>[] = []
@@ -733,6 +731,7 @@ export class RepositoryImplementation<entityType>
         requireField(options.field as string, this.metadata)
         const val = row[options.field]
         if (val === null) returnNull = true
+        if (val === undefined) returnUndefined = true
         else where.push(otherRepo.metadata.idMetadata.getIdFilter(val))
       } else {
         requireField(options.field as string, otherRepo.metadata)
@@ -759,6 +758,7 @@ export class RepositoryImplementation<entityType>
             ).getId()
           : row[field.key]
       if (val === null) returnNull = true
+      if (val === undefined) returnUndefined = true
       else if (typeof val === 'object')
         where.push(
           otherRepo.metadata.idMetadata.getIdFilter(
@@ -774,7 +774,7 @@ export class RepositoryImplementation<entityType>
       findOptions.orderBy // I deduce from this that there may be more than one row and we want only the first
     )
       findOptions.limit = 1
-    return { findOptions, returnNull }
+    return { findOptions, returnNull, returnUndefined }
   }
 
   private async mapRawDataToResult(r: any, loadFields: FieldMetadata[]) {
@@ -1845,9 +1845,10 @@ export class FieldRefImplementation<entityType, valueType>
           .relations(this.container)
           [this.metadata.key].find())
       } else {
-        return (this.container[this.metadata.key] = await this.helper.repository
+        let val = await this.helper.repository
           .relations(this.container)
-          [this.metadata.key].findOne())
+          [this.metadata.key].findOne()
+        if (val) this.container[this.metadata.key] = val
       }
     } else if (lu) {
       if (this.valueChanged()) {

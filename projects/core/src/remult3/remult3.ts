@@ -713,9 +713,6 @@ remult.apiClient.url='localhost:3007/api
 
 //p2 - filterToRaw should get a dbnames of - and we should create a dbnames of that supports an alias
 
-//p1 - seems that after backend methods relations are loaded for some reason - see trempim - intake doRequest backend method
-//p1 - reconsider the case in tremping where create user id was updated with some user and not the actual user
-
 //y2 - livequery for findfirst (@JY)
 //y2 - #239 - (@JY) add a way to get from fieldMetadata back to entity repo (like we have in fieldRef)
 //p2 - constraints (@JY)
