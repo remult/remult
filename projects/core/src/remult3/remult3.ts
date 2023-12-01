@@ -713,9 +713,6 @@ remult.apiClient.url='localhost:3007/api
 
 //p2 - filterToRaw should get a dbnames of - and we should create a dbnames of that supports an alias
 
-//p1 - test what happens with a many to one relation where the one no longer exist, in all 3 cases (toOne,reference,toone with fields)
-
-//p1 - when the include doesn't find the many to one - it deletes the id!!!
 //p1 - seems that after backend methods relations are loaded for some reason - see trempim - intake doRequest backend method
 //p1 - reconsider the case in tremping where create user id was updated with some user and not the actual user
 
@@ -733,3 +730,4 @@ remult.apiClient.url='localhost:3007/api
 //y1 - add Class type to index of remult - it is used in repo and is important
 //y2 - Backend methods are transactions, it's not intuitive and maybe should be optional / opt in
 //p2 - get backend methods to work when specifying types for date, and entities as poco's
+//p2 - allow find options preprocessor for api calls, to use for authorization

@@ -52,4 +52,9 @@ describe('relations to one behavior', () => {
     const c = await r(Category).findFirst({}, { include: { tasks: true } })
     expect(c._.wasChanged()).toBe(false)
   })
+  it('test missing value', async () => {
+    await r(Task).update(1, { categoryId: 2 })
+    const task = await r(Task).findFirst({}, { include: { category: true } })
+    expect(task.categoryId).toBe(2)
+  })
 })

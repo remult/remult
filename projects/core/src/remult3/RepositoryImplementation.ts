@@ -625,6 +625,7 @@ export class RepositoryImplementation<entityType>
                 findOptions,
               )
               .then((result) => {
+                if (result.length == 0 && rel.type == 'toOne') return
                 row[col.key] =
                   rel.type !== 'toMany'
                     ? result.length == 0
