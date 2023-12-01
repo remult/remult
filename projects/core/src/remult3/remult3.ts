@@ -714,7 +714,7 @@ remult.apiClient.url='localhost:3007/api
 //p2 - filterToRaw should get a dbnames of - and we should create a dbnames of that supports an alias
 
 //p1 - test what happens with a many to one relation where the one no longer exist, in all 3 cases (toOne,reference,toone with fields)
-//p1 - active record with include thinks that the row was change!
+
 //p1 - when the include doesn't find the many to one - it deletes the id!!!
 //p1 - seems that after backend methods relations are loaded for some reason - see trempim - intake doRequest backend method
 //p1 - reconsider the case in tremping where create user id was updated with some user and not the actual user

@@ -1686,7 +1686,8 @@ export class rowHelperImplementation<T>
   wasChanged(): boolean {
     this._subscribers?.reportObserved()
     for (const col of this.fields) {
-      if (col.valueChanged()) return true
+      const rel = getRelationInfo(col.metadata.options)
+      if (!rel || rel.type == 'reference') if (col.valueChanged()) return true
     }
     return false
   }
