@@ -98,5 +98,8 @@
     "argon2": false,
     "password-hash": false,
     "fs": false
+  },
+  "dependencies": {
+    "@hapi/hapi": "^21.3.2"
   }
 }
