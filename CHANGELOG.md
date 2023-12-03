@@ -23,6 +23,7 @@ All notable changes to this project will be documented in this file.
   await repo(Task).find()
   ```
 
+- Added support for (Hapi api server)[https://hapi.dev/]
 - Fixed exception with toRawFilter
 - Fixed json db to support db names
 - Fixed issue with sort result after live query

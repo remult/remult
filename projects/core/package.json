@@ -69,6 +69,14 @@
       },
       "import": "./esm/remult-fastify.js"
     },
+    "./remult-hapi": {
+      "require": "./remult-hapi.js",
+      "node": {
+        "require": "./remult-hapi.js",
+        "import": "./remult-hapi.js"
+      },
+      "import": "./esm/remult-hapi.js"
+    },
     "./remult-fresh": {
       "require": "./remult-fresh.js",
       "node": {
