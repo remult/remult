@@ -728,3 +728,6 @@ remult.apiClient.url='localhost:3007/api
 //y2 - Backend methods are transactions, it's not intuitive and maybe should be optional / opt in
 //p2 - get backend methods to work when specifying types for date, and entities as poco's
 //p2 - allow find options preprocessor for api calls, to use for authorization
+//y2 - remove __dirname from tutorials
+//y2 - add some api testing framework for user unit tests (will help with codesandbox based discussions)
+//y2 - I tihnk there should be a way to throw a forbidden exception

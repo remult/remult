@@ -2,6 +2,7 @@ import Hapi, { type Plugin } from '@hapi/hapi'
 import { PassThrough } from 'stream'
 import { remultHapi } from '../../core/remult-hapi'
 import { Task } from '../shared/Task'
+import { remult } from '../../core/'
 
 const routesPlugin: Plugin<undefined> = {
   name: 'routesPlugin',
@@ -28,11 +29,6 @@ const routesPlugin: Plugin<undefined> = {
       handler: (request, h) => {
         const currentTime = () => new Date().toUTCString()
 
-        const headers = {
-          'Content-Type': 'text/event-stream',
-          Connection: 'keep-alive',
-          'Cache-Control': 'no-cache',
-        }
         let stream = new PassThrough()
 
         const response = h
@@ -69,6 +65,28 @@ const init = async () => {
     plugin: routesPlugin,
     options: {
       // You can pass options to your plugin if needed
+    },
+  })
+  server.route({
+    method: 'GET',
+    path: '/api/test',
+    handler: async (request, h) => {
+      const remult = await api.getRemult(request)
+      return {
+        result: await remult.repo(Task).count(),
+      }
+    },
+  })
+
+  server.route({
+    method: 'GET',
+    path: '/api/test2',
+    handler: async (request, h) => {
+      return api.withRemult(request, async () => {
+        return {
+          result: await remult.repo(Task).count(),
+        }
+      })
     },
   })
 
