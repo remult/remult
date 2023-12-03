@@ -1,10 +1,11 @@
-import { Fields, IdEntity, Relations, type OmitEB } from '../../core'
+import { Fields, IdEntity, Relations, type OmitEB, getEntityRef, repo } from '../../core'
 
-type OmitFunctions<T> = Pick<
-  T,
-  { [K in keyof T]: T[K] extends Function ? never : K }[keyof T]
->
-export declare type EntityOrderBy<entityType> = {
+type OmitFunctions<T> = T
+//  Pick<
+//   T,
+//   { [K in keyof T]: T[K] extends Function ? never : K }[keyof T]
+// >
+export declare type MyEntityOrderBy<entityType> = {
   [Properties in keyof Partial<OmitFunctions<OmitEB<entityType>>>]?:
     | 'asc'
     | 'desc'
@@ -16,13 +17,16 @@ class Person extends IdEntity {
   @Relations.toOne(() => Person)
   parent?: Person
 
-  x: EntityOrderBy<this>
+  x!: MyEntityOrderBy<Person>
   aFunction() {
-    this._.relations
+    
+     
   }
 }
 
-let orderBy: EntityOrderBy<Person> = {
+repo(Person).relations({}).
+
+let orderBy: MyEntityOrderBy<Person> = {
   id: 'asc',
 }
 let p = new Person()
