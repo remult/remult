@@ -196,6 +196,7 @@ export class Fields {
   }
 }
 export class Relations {
+
   /**
    * Define a to-one relation between entities, indicating a one-to-one relationship.
    * If no field or fields are provided, it will automatically create a field in the database
@@ -210,47 +211,27 @@ export class Relations {
    * @Relations.toOne(() => Customer)
    * customer?: Customer;
    * ```
-   */
-  static toOne<entityType, toEntityType>(
-    toEntityType: () => ClassType<toEntityType>,
-    options?: FieldOptions<entityType, toEntityType> &
-      Pick<
-        RelationOptions<entityType, toEntityType, any, any>,
-        'defaultIncluded'
-      >,
-  ): ClassFieldDecorator<entityType, toEntityType | undefined>
-  /**
-   * Define a to-one relation between entities, indicating a one-to-one relationship.
-   * If no `fieldInMyEntity` is provided, this overload will automatically create a field in the database
-   * to represent the relation.
-   *
-   * @param toEntityType A function that returns the target entity type.
-   * @param fieldInMyEntity (Optional): The field in the current entity that represents the relation.
-   *                        Use this if you want to specify a custom field name for the relation.
-   * @returns A decorator function to apply the to-one relation to an entity field.
-   *
-   * Example usage:
    * ```
-   * @Relations.toOne(() => Customer)
+   * Fields.string()
+   * customerId?: string;
+   * 
+   * @Relations.toOne(() => Customer, "customerId")
    * customer?: Customer;
    * ```
-   */
-  static toOne<entityType, toEntityType>(
-    toEntityType: () => ClassType<toEntityType>,
-    fieldInMyEntity?: keyof entityType,
-  ): ClassFieldDecorator<entityType, toEntityType | undefined>
-  /**
-   * Define a to-one relation between entities, indicating a one-to-one relationship.
-   * If no field or fields are provided, it will automatically create a field in the database
-   * to represent the relation.
-   *
-   * @param toEntityType A function that returns the target entity type.
-   * @param options An object containing options for configuring the to-one relation.
-   *                - fields (Optional): An object specifying custom field names for the relation.
-   * @returns A decorator function to apply the virtual to-one relation to an entity field.
-   *
-   * Example usage:
    * ```
+   * Fields.string()
+   * customerId?: string;
+   * 
+   * @Relations.toOne(() => Customer, {
+   *   field: "customerId",
+   *   defaultIncluded: true
+   * })
+   * customer?: Customer;
+   * ```
+   * ```
+   * Fields.string()
+   * customerId?: string;
+   * 
    * @Relations.toOne(() => Customer, {
    *   fields: {
    *     customerId: "id",
@@ -258,29 +239,14 @@ export class Relations {
    * })
    * customer?: Customer;
    * ```
-   */
+  */
   static toOne<entityType, toEntityType>(
     toEntityType: () => ClassType<toEntityType>,
-    options: Omit<
-      RelationOptions<entityType, toEntityType, entityType>,
-      keyof Pick<RelationOptions<entityType, toEntityType, entityType>, 'field'>
-    >,
-  ): ClassFieldDecorator<entityType, toEntityType | undefined>
-  /** A to one relation with fields defined in the field/fields parameter */
-  static toOne<entityType, toEntityType>(
-    toEntityType: () => ClassType<toEntityType>,
-    options: Omit<
-      RelationOptions<entityType, toEntityType, entityType>,
-      keyof Pick<
-        RelationOptions<entityType, toEntityType, entityType>,
-        'fields'
+    options?: FieldOptions<entityType, toEntityType> &
+      Pick<
+        RelationOptions<entityType, toEntityType, any, any>,
+        'defaultIncluded'
       >
-    >,
-  ): ClassFieldDecorator<entityType, toEntityType | undefined>
-
-  static toOne<entityType, toEntityType>(
-    toEntityType: () => ClassType<toEntityType>,
-    options?:
       | RelationOptions<entityType, toEntityType, entityType>
       | keyof entityType,
   ) {
@@ -288,12 +254,12 @@ export class Relations {
       (typeof options === 'string'
         ? { field: options }
         : !options
-        ? {}
-        : options) as any as RelationOptions<
-        entityType,
-        toEntityType,
-        entityType
-      >
+          ? {}
+          : options) as any as RelationOptions<
+            entityType,
+            toEntityType,
+            entityType
+          >
 
     if (!op.field && !op.fields && !op.findOptions)
       return Field(toEntityType, {
@@ -382,11 +348,11 @@ export class Relations {
     toEntityType: () => ClassType<toEntityType>,
     options?:
       | RelationOptions<
-          entityType,
-          toEntityType,
-          toEntityType,
-          FindOptions<toEntityType>
-        >
+        entityType,
+        toEntityType,
+        toEntityType,
+        FindOptions<toEntityType>
+      >
       | keyof toEntityType,
   ) {
     let op: RelationOptions<
@@ -397,11 +363,11 @@ export class Relations {
     > = (typeof options === 'string'
       ? { field: options }
       : options) as any as RelationOptions<
-      entityType,
-      toEntityType,
-      toEntityType,
-      FindOptions<toEntityType>
-    >
+        entityType,
+        toEntityType,
+        toEntityType,
+        FindOptions<toEntityType>
+      >
     return Field(() => undefined!, {
       ...op,
       serverExpression: () => undefined,
