@@ -5,7 +5,7 @@ import type {
   RepositoryOverloads,
 } from '../remult3/RepositoryImplementation'
 import { getEntityMetadata } from '../remult3/RepositoryImplementation'
-import type { EntityFilter, OmitEB } from '../remult3/remult3'
+import type { EntityFilter, OmitEB, OmitFunctions } from '../remult3/remult3'
 import type { SqlCommandWithParameters } from '../sql-command'
 import type { Filter, FilterConsumer } from './filter-interfaces'
 
@@ -198,7 +198,7 @@ export declare type EntityDbNamesBase = {
   toString(): string
 }
 export declare type EntityDbNames<entityType> = {
-  [Properties in keyof Required<OmitEB<entityType>>]: string
+  [Properties in keyof Required<OmitFunctions<OmitEB<entityType>>>]: string
 } & EntityDbNamesBase
 
 export async function dbNamesOf<entityType>(

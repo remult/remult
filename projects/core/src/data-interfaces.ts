@@ -1,5 +1,5 @@
 import type { Filter } from './filter/filter-interfaces'
-import type { EntityMetadata, OmitEB } from './remult3/remult3'
+import type { EntityMetadata, OmitEB, OmitFunctions } from './remult3/remult3'
 import { Sort } from './sort'
 
 export interface DataProvider {
@@ -46,7 +46,9 @@ export function extractSort(sort: any): Sort {
 
 export interface ErrorInfo<entityType = any> {
   message?: string
-  modelState?: { [Properties in keyof Partial<OmitEB<entityType>>]?: string }
+  modelState?: {
+    [Properties in keyof Partial<OmitFunctions<OmitEB<entityType>>>]?: string
+  }
   stack?: string
   exception?: any
   httpStatusCode?: number

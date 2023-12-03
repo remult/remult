@@ -5,6 +5,7 @@ import type { ClassType } from './classType'
  */
 export {
   OmitEB,
+  OmitFunctions,
   FieldsMetadata,
   FieldRef,
   IdFieldRef,

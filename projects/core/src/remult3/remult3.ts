@@ -103,7 +103,7 @@ export interface Subscribable {
 }
 
 export type FieldsRef<entityType> = {
-  [Properties in keyof OmitEB<entityType>]: NonNullable<
+  [Properties in keyof OmitFunctions<OmitEB<entityType>>]: NonNullable<
     entityType[Properties]
   > extends {
     id?: number | string
@@ -116,7 +116,7 @@ export type FieldsRef<entityType> = {
   toArray(): FieldRef<entityType, any>[]
 }
 export type FieldsMetadata<entityType> = {
-  [Properties in keyof OmitEB<entityType>]: FieldMetadata<
+  [Properties in keyof OmitFunctions<OmitEB<entityType>>]: FieldMetadata<
     entityType[Properties],
     entityType
   >
@@ -168,12 +168,12 @@ export interface IdMetadata<entityType = any> {
    * @example
    * repo.metadata.idMetadata.getId(task)
    */
-  getId(item: Partial<OmitEB<entityType>>): any
+  getId(item: Partial<OmitFunctions<OmitEB<entityType>>>): any
   field: FieldMetadata<any>
   getIdFilter(...ids: any[]): EntityFilter<entityType>
   isIdField(col: FieldMetadata): boolean
   createIdInFilter(
-    items: Partial<OmitEB<entityType>>[],
+    items: Partial<OmitFunctions<OmitEB<entityType>>>[],
   ): EntityFilter<entityType>
 }
 
@@ -232,6 +232,10 @@ export interface EntityMetadata<entityType = any> {
 }
 
 export declare type OmitEB<T> = Omit<T, keyof EntityBase>
+export type OmitFunctions<T> = Pick<
+  T,
+  { [K in keyof T]: T[K] extends Function ? never : K }[keyof T]
+>
 export declare type idType<entityType> = entityType extends { id?: number }
   ? number
   : entityType extends { id?: string }
@@ -289,15 +293,17 @@ export interface Repository<entityType> {
    */
   validate(
     item: Partial<entityType>,
-    ...fields: Extract<keyof OmitEB<entityType>, string>[]
+    ...fields: Extract<keyof OmitFunctions<OmitEB<entityType>>, string>[]
   ): Promise<ErrorInfo<entityType> | undefined>
   /** saves an item or item[] to the data source. It assumes that if an `id` value exists, it's an existing row - otherwise it's a new row
    * @example
    * await taskRepo.save({...task, completed:true })
    */
 
-  save(item: Partial<OmitEB<entityType>>[]): Promise<entityType[]>
-  save(item: Partial<OmitEB<entityType>>): Promise<entityType>
+  save(
+    item: Partial<OmitFunctions<OmitEB<entityType>>>[],
+  ): Promise<entityType[]>
+  save(item: Partial<OmitFunctions<OmitEB<entityType>>>): Promise<entityType>
 
   /**Insert an item or item[] to the data source
    * @example
@@ -305,8 +311,10 @@ export interface Repository<entityType> {
    * @example
    * await taskRepo.insert([{title:"task a"}, {title:"task b", completed:true }])
    */
-  insert(item: Partial<OmitEB<entityType>>[]): Promise<entityType[]>
-  insert(item: Partial<OmitEB<entityType>>): Promise<entityType>
+  insert(
+    item: Partial<OmitFunctions<OmitEB<entityType>>>[],
+  ): Promise<entityType[]>
+  insert(item: Partial<OmitFunctions<OmitEB<entityType>>>): Promise<entityType>
 
   /** Updates an item, based on its `id`
    * @example
@@ -318,11 +326,11 @@ export interface Repository<entityType> {
       : entityType extends { id?: string }
       ? string
       : string | number,
-    item: Partial<OmitEB<entityType>>,
+    item: Partial<OmitFunctions<OmitEB<entityType>>>,
   ): Promise<entityType>
   update(
-    id: Partial<OmitEB<entityType>>,
-    item: Partial<OmitEB<entityType>>,
+    id: Partial<OmitFunctions<OmitEB<entityType>>>,
+    item: Partial<OmitFunctions<OmitEB<entityType>>>,
   ): Promise<entityType>
 
   /** Deletes an Item*/
@@ -333,10 +341,10 @@ export interface Repository<entityType> {
       ? string
       : string | number,
   ): Promise<void>
-  delete(item: Partial<OmitEB<entityType>>): Promise<void>
+  delete(item: Partial<OmitFunctions<OmitEB<entityType>>>): Promise<void>
 
   /** Creates an instance of an item. It'll not be saved to the data source unless `save` or `insert` will be called for that item */
-  create(item?: Partial<OmitEB<entityType>>): entityType
+  create(item?: Partial<OmitFunctions<OmitEB<entityType>>>): entityType
 
   toJson(item: Promise<entityType[]>): Promise<any[]>
   toJson(item: entityType[]): any[]
@@ -397,14 +405,16 @@ export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
  * await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
  */
 export declare type EntityOrderBy<entityType> = {
-  [Properties in keyof Partial<OmitEB<entityType>>]?: 'asc' | 'desc'
+  [Properties in keyof Partial<OmitEB<OmitFunctions<entityType>>>]?:
+    | 'asc'
+    | 'desc'
 }
 
 /**Used to filter the desired result set
  * @see [EntityFilter](http://remult.dev/docs/entityFilter.html)
  */
 export declare type EntityFilter<entityType> = {
-  [Properties in keyof Partial<OmitEB<entityType>>]?:
+  [Properties in keyof Partial<OmitEB<OmitFunctions<entityType>>>]?:
     | (Partial<OmitEB<entityType>>[Properties] extends number | Date | undefined
         ? ComparisonValueFilter<Partial<OmitEB<entityType>>[Properties]>
         : Partial<OmitEB<entityType>>[Properties] extends string | undefined
@@ -642,7 +652,7 @@ export type RepositoryRelations<entityType> = {
 }
 
 export declare type EntityIdFields<entityType> = {
-  [Properties in keyof Partial<OmitEB<entityType>>]?: true
+  [Properties in keyof Partial<OmitFunctions<OmitEB<entityType>>>]?: true
 }
 
 export interface ClassFieldDecoratorContextStub<entityType, valueType> {
@@ -709,7 +719,7 @@ remult.apiClient.url='localhost:3007/api
 //y1 - YONI with relation to one, fields doesn't appear well in the overload options when trying to set driver phone on trempim
 //y1 - YONI why didn't this._.relations.statusChanges.insert({})work?
 //y1 - YONI 'taskid' toOne field parameter did not autocomplete in task app - C:\repos\help-zahal\src\app\events\volunteerInTask.ts 49
-//y1 - YONI omit functions from fields and relations
+//y1 - Is OmitFunctions a good name from fields and relations
 
 //p2 - filterToRaw should get a dbnames of - and we should create a dbnames of that supports an alias
 
