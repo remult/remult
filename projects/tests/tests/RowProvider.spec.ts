@@ -684,7 +684,9 @@ class mockColumnDefs implements FieldMetadata {
   displayValue(item: any): string {
     throw new Error('Method not implemented.')
   }
-  includedInApi: boolean
+  includedInApi(item: any): boolean {
+    throw new Error('Method not implemented.')
+  }
   toInput(value: any, inputType?: string): string {
     throw new Error('Method not implemented.')
   }
