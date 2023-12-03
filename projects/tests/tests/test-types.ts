@@ -5,7 +5,7 @@ type OmitFunctions<T> = Pick<
   { [K in keyof T]: T[K] extends Function ? never : K }[keyof T]
 >
 export declare type EntityOrderBy<entityType> = {
-  [Properties in keyof Partial<OmitEB<OmitFunctions<entityType>>>]?:
+  [Properties in keyof Partial<OmitFunctions<OmitEB<entityType>>>]?:
     | 'asc'
     | 'desc'
 }
@@ -16,9 +16,13 @@ class Person extends IdEntity {
   @Relations.toOne(() => Person)
   parent?: Person
 
-  aFunction() {}
+  x: EntityOrderBy<this>
+  aFunction() {
+    this._.relations
+  }
 }
 
 let orderBy: EntityOrderBy<Person> = {
   id: 'asc',
 }
+let p = new Person()

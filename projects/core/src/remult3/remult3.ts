@@ -232,10 +232,11 @@ export interface EntityMetadata<entityType = any> {
 }
 
 export declare type OmitEB<T> = Omit<T, keyof EntityBase>
-export type OmitFunctions<T> = Pick<
-  T,
-  { [K in keyof T]: T[K] extends Function ? never : K }[keyof T]
->
+export type OmitFunctions<T> = T
+//Pick<
+//   T,
+//   { [K in keyof T]: T[K] extends Function ? never : K }[keyof T]
+// >
 export declare type idType<entityType> = entityType extends { id?: number }
   ? number
   : entityType extends { id?: string }
@@ -719,7 +720,7 @@ remult.apiClient.url='localhost:3007/api
 //y1 - YONI with relation to one, fields doesn't appear well in the overload options when trying to set driver phone on trempim
 //y1 - YONI why didn't this._.relations.statusChanges.insert({})work?
 //y1 - YONI 'taskid' toOne field parameter did not autocomplete in task app - C:\repos\help-zahal\src\app\events\volunteerInTask.ts 49
-//y1 - Is OmitFunctions a good name from fields and relations
+//y1 - YONI - trieed to implement this with  OmitFunctions - but it breaks this.$.[something] a good name from fields and relations
 
 //p2 - filterToRaw should get a dbnames of - and we should create a dbnames of that supports an alias
 
