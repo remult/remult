@@ -57,6 +57,10 @@ app.get('/*', (req, res) => {
 app.listen(process.env["PORT"] || 3002, () => console.log("Server started"))
 ```
 
+::: warning Angular versions <17
+If you're using angular version 16 or less, the result path is: `'../remult-angular-todo` - adjust both lines in the `src/server/index.ts` accordingly
+:::
+
 3. Modify the highlighted code in the api server module to prefer a `connectionString` provided by the production host's `DATABASE_URL` environment variable.
 
    ```ts{7}
