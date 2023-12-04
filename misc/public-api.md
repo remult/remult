@@ -1065,7 +1065,10 @@ export type ObjectMembersOnly<T> = {
 }
 //[ ] ObjectKeyword from TBD is not exported
 export declare type OmitEB<T> = Omit<T, keyof EntityBase>
-export type OmitFunctions<T> = T
+export declare type OmitFunctions<T> = {
+  [K in keyof T as T[K] extends Function ? never : K]: T[K]
+}
+//[ ] Function from TBD is not exported
 export interface Paginator<entityType> {
   /** the items in the current page */
   items: entityType[]
