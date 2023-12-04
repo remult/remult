@@ -313,7 +313,7 @@ try {
       parser: 'markdown',
       semi: false,
     })
-    .then((result) => fs.writeFileSync('types.md', result))
+    .then((result) => fs.writeFileSync('./misc/public-api.md', result))
 } catch (err) {
   console.error(err)
 }
