@@ -13,6 +13,7 @@ import type { FilterConsumer } from '../filter/filter-interfaces'
 import { Filter, customDatabaseFilterToken } from '../filter/filter-interfaces'
 import type { EntityFilter, EntityMetadata } from '../remult3/remult3'
 
+//@internal
 export class ArrayEntityDataProvider implements EntityDataProvider {
   static rawFilter(filter: CustomArrayFilter): EntityFilter<any> {
     return {
@@ -21,6 +22,7 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
       },
     }
   }
+  //@internal
   private rows: any[]
   constructor(
     private entity: EntityMetadata,
@@ -29,7 +31,9 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
     if (rows === undefined) this.rows = []
     else this.rows = rows
   }
-  __names: EntityDbNamesBase
+  //@internal
+  private __names: EntityDbNamesBase
+  //@internal
   async init() {
     if (this.__names) return this.__names
     this.__names = await dbNamesOf(this.entity)
@@ -38,6 +42,7 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
     }
     return this.__names
   }
+  //@internal
   private verifyThatRowHasAllNotNullColumns(r: any, names: EntityDbNamesBase) {
     for (const f of this.entity.fields) {
       const key = names.$dbNameOf(f)
@@ -92,6 +97,7 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
       })
     return []
   }
+  //@internal
   translateFromJson(row: any, dbNames: EntityDbNamesBase) {
     let result = {}
     for (const col of this.entity.fields) {
@@ -99,6 +105,7 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
     }
     return result
   }
+  //@internal
   translateToJson(row: any, dbNames: EntityDbNamesBase) {
     let result = {}
     for (const col of this.entity.fields) {
@@ -107,7 +114,7 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
     }
     return result
   }
-
+  //@internal
   private idMatches(id: any, names: EntityDbNamesBase): (item: any) => boolean {
     return (item) => {
       let x = new FilterConsumerBridgeToObject(item, names)
