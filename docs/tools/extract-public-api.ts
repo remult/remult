@@ -1,52 +1,7 @@
-// import * as ts from 'typescript'
-// import * as fs from 'fs'
-
-// const sourceFile = getSourceFile('./projects/core/index.ts') // Replace './src/index.ts' with your source file path
-// const apiDeclarations = extractPublicAPI(sourceFile)
-// generateAPITextFile(apiDeclarations, './publicAPI.txt') // Replace './publicAPI.txt' with your desired output file path
-
-// function getSourceFile(filePath: string): ts.SourceFile {
-//   const host = ts.createCompilerHost({})
-
-//   const program = ts.createProgram({
-//     rootNames: [filePath],
-//     options: {
-//       noEmit: true,
-//       target: ts.ScriptTarget.ES5,
-//       module: ts.ModuleKind.CommonJS,
-//       lib: ['lib.es2015.d.ts', 'lib.dom.d.ts'],
-//     },
-//     host,
-//   })
-
-//   return program.getSourceFile(filePath)
-// }
-
-// function extractPublicAPI(sourceFile: ts.SourceFile): ts.Node[] {
-//   const declarations: ts.Node[] = []
-//   function visit(node: ts.Node) {
-//     if (ts.isExportSpecifier(node)) {
-//       declarations.push(node)
-//     }
-//     ts.forEachChild(node, visit)
-//   }
-//   ts.forEachChild(sourceFile, visit)
-//   return declarations
-// }
-
-// function generateAPITextFile(
-//   apiDeclarations: ts.Node[],
-//   outputFilePath: string,
-// ) {
-//   const apiText = apiDeclarations
-//     .map((declaration) => declaration.getText(sourceFile))
-//     .join('\n\n')
-//   fs.writeFileSync(outputFilePath, apiText)
-// }
-
 import * as ts from 'typescript'
 import * as fs from 'fs'
 import * as path from 'path'
+import * as prettier from 'prettier'
 
 try {
   function isNodeExported(node: ts.Node): boolean {
@@ -64,6 +19,9 @@ try {
 
   function extractTypes(fileName: string, basePath: string, root?: boolean) {
     //result += `\n# ${fileName}: \n\n`
+    if (fileName.endsWith('.js')) {
+      fileName = fileName.substring(0, fileName.length - 3) + '.d.ts'
+    }
 
     const fileContents = fs.readFileSync(fileName, 'utf8')
     const sourceFile = ts.createSourceFile(
@@ -75,61 +33,7 @@ try {
     let depth = -1
 
     const resultTypes = new Map<string, ts.Node>()
-
-    function visit(node: ts.Node): void {
-      if (ts.isExportDeclaration(node)) {
-        if (node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) {
-          const modulePath = path.join(basePath, node.moduleSpecifier.text)
-          let resolvedModulePath = require.resolve(modulePath)
-          if (resolvedModulePath.endsWith('.js')) {
-            resolvedModulePath =
-              resolvedModulePath.substring(0, resolvedModulePath.length - 3) +
-              '.d.ts'
-          }
-          let types = files.get(resolvedModulePath)
-          if (!types) {
-            files.set(
-              resolvedModulePath,
-              (types = extractTypes(
-                resolvedModulePath,
-                path.dirname(resolvedModulePath),
-              )),
-            )
-          }
-          for (const exportElement of node.exportClause?.elements ?? []) {
-            const name = exportElement.name?.text
-            if (!name) {
-              debugger
-            }
-            const type = types.get(name)
-            if (type) {
-              resultTypes.set(name, type)
-            } else debugger
-          }
-        }
-      } else if (
-        ts.isImportDeclaration(node) ||
-        ts.isExportSpecifier(node) ||
-        ts.isInterfaceDeclaration(node) ||
-        ts.isFunctionDeclaration(node) ||
-        ts.isTypeAliasDeclaration(node) ||
-        ts.isClassDeclaration(node) ||
-        true
-      ) {
-        const name = node.name?.text
-        if (name && isNodeExported(node)) {
-          resultTypes.set(name, node)
-          if (false)
-            result +=
-              ' '.repeat(depth * 2) +
-              `${isNodeExported(node)}   ${ts.SyntaxKind[node.kind]}: ${name}\n`
-        }
-      }
-      depth++
-      ts.forEachChild(node, visit)
-      depth--
-    }
-    let checkedTypes = new Set<string>([
+    let okTypes = new Set<string>([
       'Required',
       'Partial',
       'Pick',
@@ -147,7 +51,91 @@ try {
       'VoidFunction',
       'Promise',
       'fetch',
+      'Array',
+      'Number',
+      'IterableIterator',
+      'IteratorResult',
+      'GetArguments',
+      'Boolean',
+      'String',
+      'express.RequestHandler',
+      'express.Response',
+      'express.Request',
+      'Request',
+      'Response',
     ])
+    const otherImports = new Map<string, string>()
+
+    function visit(node: ts.Node): void {
+      if (ts.isExportDeclaration(node)) {
+        if (node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) {
+          const modulePath = path.join(basePath, node.moduleSpecifier.text)
+          let resolvedModulePath = require.resolve(modulePath)
+
+          let types = files.get(resolvedModulePath)
+          if (!types) {
+            files.set(
+              resolvedModulePath,
+              (types = extractTypes(
+                resolvedModulePath,
+                path.dirname(resolvedModulePath),
+              )),
+            )
+          }
+          node.exportClause?.forEachChild((exportElement) => {
+            const name = getName(exportElement)
+            if (!name) {
+              debugger
+            }
+            const type = types.get(name)
+            if (type) {
+              resultTypes.set(name, type)
+            } else debugger
+          })
+        }
+      } else if (
+        ts.isImportDeclaration(node) ||
+        ts.isExportSpecifier(node) ||
+        ts.isInterfaceDeclaration(node) ||
+        ts.isFunctionDeclaration(node) ||
+        ts.isTypeAliasDeclaration(node) ||
+        ts.isClassDeclaration(node) ||
+        true
+      ) {
+        const name = getName(node)
+        if (name && isNodeExported(node)) {
+          resultTypes.set(name, node)
+          if (false)
+            result +=
+              ' '.repeat(depth * 2) +
+              `${isNodeExported(node)}   ${ts.SyntaxKind[node.kind]}: ${name}\n`
+        } else if (root && ts.isImportDeclaration(node)) {
+          let i = node
+          let moduleSpecifier = i.moduleSpecifier.getText().replace(/'/g, '')
+
+          if (
+            (!moduleSpecifier.startsWith(`.`) ||
+              ['./index'].includes(moduleSpecifier)) &&
+            node.importClause?.namedBindings
+          ) {
+            node.importClause.namedBindings.forEachChild((e) => {
+              if (ts.isImportSpecifier(e)) {
+                okTypes.add(e.name.text)
+              }
+            })
+          } else {
+            node.importClause?.namedBindings?.forEachChild((e) => {
+              if (ts.isImportSpecifier(e)) {
+                otherImports.set(e.name.text, moduleSpecifier)
+              }
+            })
+          }
+        }
+      }
+      depth++
+      ts.forEachChild(node, visit)
+      depth--
+    }
 
     visit(sourceFile)
     // result += '\n# End of ' + fileName + '\n'
@@ -165,14 +153,25 @@ try {
 
         iterateAllTypes(node)
         function checkType(node: ts.TypeNode) {
-          if (ts.isTypeLiteralNode(node)) {
+          if (ts.isLiteralTypeNode(node)) {
+            iterateAllTypes(node.literal)
+          } else if (ts.isExpressionWithTypeArguments(node)) {
+            iterateAllTypes(node.expression)
+          } else if (ts.isConditionalTypeNode(node)) {
+            checkType(node.extendsType)
+            checkType(node.trueType)
+            checkType(node.falseType)
+          } else if (ts.isIntersectionTypeNode(node)) {
+            node.types.forEach((t) => checkType(t))
+          } else if (ts.isTypeLiteralNode(node)) {
             node.members.forEach((m) => iterateAllTypes(m))
           } else if (ts.isArrayTypeNode(node)) {
             checkType(node.elementType)
           } else if (ts.isTypeQueryNode(node)) {
             checkName(node.exprName.getText())
           } else if (ts.isFunctionTypeNode(node)) {
-            node.parameters.forEach((p) => checkType(p.type))
+            var f = node
+            f.parameters.forEach((p) => checkType(p.type))
             checkType(node.type)
           } else if (ts.isUnionTypeNode(node)) {
             node.types.forEach((t) => checkType(t))
@@ -180,11 +179,10 @@ try {
             checkType(node.type)
           } else if (ts.isTypeReferenceNode(node)) {
             let name = node.typeName.getText()
-            let pType = ts.SyntaxKind[node.parent.kind]
-            let p1Type = ts.SyntaxKind[node.parent.parent.kind]
-            let p2Type = ts.SyntaxKind[node.parent.parent.parent.kind]
             checkName(name)
           } else if (ts.isParenthesizedTypeNode(node)) {
+            checkType(node.type)
+          } else if (ts.isTypeOperatorNode(node)) {
             checkType(node.type)
           } else if (
             [
@@ -195,11 +193,13 @@ try {
               ts.SyntaxKind.NumberKeyword,
               ts.SyntaxKind.VoidKeyword,
               ts.SyntaxKind.UndefinedKeyword,
+              ts.SyntaxKind.NeverKeyword,
+              ts.SyntaxKind.SymbolKeyword,
             ].includes(node.kind)
           ) {
           } else {
             let theType = ts.SyntaxKind[node.kind]
-            let name = node.name?.text
+            let name = getName(node)
 
             if (!name) {
               name = theType
@@ -208,12 +208,37 @@ try {
           }
 
           function checkName(name: string) {
-            if (name == 'T') {
-              debugger
-            }
-            if (!resultTypes.has(name) && !checkedTypes.has(name)) {
-              result += `//[ ] ${name} is not exported\n`
-              checkedTypes.add(name)
+            if (!resultTypes.has(name) && !okTypes.has(name)) {
+              let p = node.parent
+
+              while (p) {
+                let tp = (p as ts.SignatureDeclarationBase).typeParameters
+                if (tp) {
+                  let found = tp.find((t) => t.name.text == name)
+                  if (found) return
+                }
+                if (ts.isConditionalTypeNode(p)) {
+                  if (ts.isIndexedAccessTypeNode(p.checkType)) {
+                    if (ts.isTypeReferenceNode(p.checkType.indexType)) {
+                      if (p.checkType.indexType.typeName.getText() == name) {
+                        return
+                      }
+                    }
+                  }
+                }
+                if (ts.isMappedTypeNode(p)) {
+                  if (p.typeParameter.name.text == name) {
+                    return
+                  }
+                }
+                p = p.parent
+              }
+              let from = otherImports.get(name)
+              if (!from) {
+                from = 'TBD'
+              }
+              result += `//[ ] ${name} from ${from} is not exported\n`
+              okTypes.add(name)
             }
           }
         }
@@ -257,15 +282,42 @@ try {
         }
       }
 
-      result += '```'
+      result += '```\n\n'
     }
 
     return resultTypes
   }
 
-  // Replace 'index.ts' with the path to your file
-  extractTypes('./dist/remult/index.d.ts', './dist/remult/', true)
-  fs.writeFileSync('types.md', result)
+  const rootPath = `./dist/remult/`
+  const packageJson = JSON.parse(
+    fs.readFileSync(rootPath + 'package.json').toString(),
+  )
+  result += `# Public API\n`
+  for (const key in packageJson.exports) {
+    if (Object.prototype.hasOwnProperty.call(packageJson.exports, key)) {
+      try {
+        const element = packageJson.exports[key]
+        const fileName = element.require
+        const fullFileName = path.join(rootPath, fileName)
+        result += `## ${fileName}\n`
+        console.log(fullFileName)
+        extractTypes(fullFileName, path.dirname(fullFileName), true)
+      } catch (err) {
+        result += `//[ ] !!! ${err}\n`
+      }
+    }
+  }
+
+  prettier
+    .format(result, {
+      parser: 'markdown',
+      semi: false,
+    })
+    .then((result) => fs.writeFileSync('types.md', result))
 } catch (err) {
   console.error(err)
+}
+export function getName(node: ts.Node): string {
+  //@ts-ignore
+  return node.name?.text
 }
