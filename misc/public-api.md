@@ -184,12 +184,12 @@ export declare function Entity<entityType>(
 ) => any
 //[ ] ClassDecoratorContextStub from TBD is not exported
 export declare class EntityBase {
-  get _(): EntityRef<this>
-  save(): Promise<this>
+  get _(): ReturnType<this["getEntityRef"]>
+  save(): Promise<EntityBase>
   assign(values: Partial<Omit<this, keyof EntityBase>>): this
   delete(): Promise<void>
   isNew(): boolean
-  get $(): FieldsRef<this>
+  get $(): ReturnType<this["getEntityRefFields"]>
 }
 export interface EntityDataProvider {
   count(where: Filter): Promise<number>

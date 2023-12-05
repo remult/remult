@@ -2505,8 +2505,16 @@ export function decorateColumnSettings<valueType>(
 }
 
 export class EntityBase {
-  get _(): EntityRef<this> {
+  //@internal
+  getEntityRef(){
     return getEntityRef(this)
+  }
+  //@internal
+  getEntityRefFields(){
+    return getEntityRef(this).fields
+  }
+  get _() {
+    return this.getEntityRef() as unknown as ReturnType<this['getEntityRef']>
   }
   save() {
     return this._.save()
@@ -2522,7 +2530,7 @@ export class EntityBase {
     return this._.isNew()
   }
   get $() {
-    return this._.fields
+    return this.getEntityRefFields() as unknown as ReturnType<this['getEntityRefFields']>
   }
 }
 export class ControllerBase {

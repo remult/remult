@@ -19,12 +19,11 @@ class Person extends IdEntity {
 
   x!: MyEntityOrderBy<Person>
   aFunction() {
-    
-     
+    this.$.name
   }
 }
 
-repo(Person).relations({}).
+//repo(Person).relations({}).
 
 let orderBy: MyEntityOrderBy<Person> = {
   id: 'asc',
