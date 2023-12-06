@@ -384,7 +384,7 @@ export class RepositoryImplementation<entityType>
           let f = ref.fields[key]
           if (entity[key] === undefined && getRelationInfo(f.metadata.options))
             continue
-            //@ts-ignore
+          //@ts-ignore
           if (f) r[key] = entity[key]
         }
       }
@@ -2505,16 +2505,11 @@ export function decorateColumnSettings<valueType>(
 }
 
 export class EntityBase {
-  //@internal
-  getEntityRef(){
+  getEntityRef() {
     return getEntityRef(this)
   }
-  //@internal
-  getEntityRefFields(){
-    return getEntityRef(this).fields
-  }
   get _() {
-    return this.getEntityRef() as unknown as ReturnType<this['getEntityRef']>
+    return getEntityRef(this) as unknown as ReturnType<this['getEntityRef']>
   }
   save() {
     return this._.save()
@@ -2530,7 +2525,7 @@ export class EntityBase {
     return this._.isNew()
   }
   get $() {
-    return this.getEntityRefFields() as unknown as ReturnType<this['getEntityRefFields']>
+    return this._.fields as unknown as this['_']['fields']
   }
 }
 export class ControllerBase {

@@ -621,7 +621,7 @@ export type RelationOptions<
   defaultIncluded?: boolean
 } & Pick<FieldOptions, 'caption'>
 
-export type ObjectMembersOnly<T> = {
+export type ObjectMembersOnly<T> = OmitFunctions<{
   [K in keyof Pick<
     T,
     {
@@ -632,7 +632,7 @@ export type ObjectMembersOnly<T> = {
         : never
     }[keyof T]
   >]: T[K]
-}
+}>
 
 export type MembersToInclude<T> = {
   [K in keyof ObjectMembersOnly<T>]?:

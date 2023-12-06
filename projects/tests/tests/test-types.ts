@@ -1,4 +1,4 @@
-import { Fields, IdEntity, Relations, type OmitEB, getEntityRef, repo } from '../../core'
+import { Fields, IdEntity, Relations, type OmitEB, getEntityRef, repo, ObjectMembersOnly } from '../../../dist/remult'
 
 type OmitFunctions<T> = T
 //  Pick<
@@ -18,12 +18,14 @@ class Person extends IdEntity {
   parent?: Person
 
   x!: MyEntityOrderBy<Person>
-  aFunction() {
+  async aFunction() {
     this.$.name
+    this._.fields.name
+    this._.relations.
   }
 }
 
-//repo(Person).relations({}).
+repo(Person).relations({}).parent
 
 let orderBy: MyEntityOrderBy<Person> = {
   id: 'asc',
