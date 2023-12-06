@@ -41,7 +41,7 @@ export function findOptionsToJson<entityType = any>(
   meta: EntityMetadata<entityType>,
 ) {
   if (options.include) {
-    let newInclude = {}
+    let newInclude: any = {}
     for (const key in options.include) {
       if (Object.prototype.hasOwnProperty.call(options.include, key)) {
         let element = options.include[key]

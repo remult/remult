@@ -1,14 +1,15 @@
-import { Fields, IdEntity, Relations, type OmitEB, getEntityRef, repo, ObjectMembersOnly } from '../../../dist/remult'
+import {
+  Fields,
+  IdEntity,
+  Relations,
+  getEntityRef,
+  repo,
+  ObjectMembersOnly,
+  MembersOnly,
+} from '../../core'
 
-type OmitFunctions<T> = T
-//  Pick<
-//   T,
-//   { [K in keyof T]: T[K] extends Function ? never : K }[keyof T]
-// >
 export declare type MyEntityOrderBy<entityType> = {
-  [Properties in keyof Partial<OmitFunctions<OmitEB<entityType>>>]?:
-    | 'asc'
-    | 'desc'
+  [Properties in keyof Partial<MembersOnly<entityType>>]?: 'asc' | 'desc'
 }
 
 class Person extends IdEntity {
@@ -17,15 +18,14 @@ class Person extends IdEntity {
   @Relations.toOne(() => Person)
   parent?: Person
 
-  x!: MyEntityOrderBy<Person>
   async aFunction() {
     this.$.name
     this._.fields.name
-    this._.relations.
+  }
+  myMethod() {
+    return this._.save()
   }
 }
-
-repo(Person).relations({}).parent
 
 let orderBy: MyEntityOrderBy<Person> = {
   id: 'asc',

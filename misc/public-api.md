@@ -70,6 +70,9 @@ export interface ClassFieldDecoratorContextStub<entityType, valueType> {
   }
   readonly name: string
 }
+export type ClassType<T> = {
+  new (...args: any[]): T
+}
 export type ComparisonValueFilter<valueType> = ValueFilter<valueType> & {
   $gt?: valueType
   ">"?: valueType
@@ -104,7 +107,6 @@ export declare class CompoundIdField implements FieldMetadata<string> {
   valueType: any
   isEqualTo(value: FieldMetadata<string> | string): EntityFilter<any>
 }
-//[ ] ClassType from ./classType is not exported
 export interface ContainsStringValueFilter {
   $contains?: string
 }
@@ -184,9 +186,9 @@ export declare function Entity<entityType>(
 ) => any
 //[ ] ClassDecoratorContextStub from TBD is not exported
 export declare class EntityBase {
-  getEntityRef(): EntityRef<this>
-  get _(): ReturnType<this["getEntityRef"]>
-  save(): Promise<EntityBase>
+  ["י"](): EntityRef<this>
+  get _(): ReturnType<this["י"]>
+  save(): Promise<this>
   assign(values: Partial<Omit<this, keyof EntityBase>>): this
   delete(): Promise<void>
   isNew(): boolean
@@ -206,27 +208,27 @@ export interface EntityDataProviderFindOptions {
   orderBy?: Sort
 }
 export declare type EntityFilter<entityType> = {
-  [Properties in keyof Partial<OmitEB<OmitFunctions<entityType>>>]?:
-    | (Partial<OmitEB<entityType>>[Properties] extends number | Date | undefined
-        ? ComparisonValueFilter<Partial<OmitEB<entityType>>[Properties]>
-        : Partial<OmitEB<entityType>>[Properties] extends string | undefined
+  [Properties in keyof Partial<MembersOnly<entityType>>]?:
+    | (Partial<entityType>[Properties] extends number | Date | undefined
+        ? ComparisonValueFilter<Partial<entityType>[Properties]>
+        : Partial<entityType>[Properties] extends string | undefined
         ? ContainsStringValueFilter & ComparisonValueFilter<string>
-        : Partial<OmitEB<entityType>>[Properties] extends boolean | undefined
+        : Partial<entityType>[Properties] extends boolean | undefined
         ? ValueFilter<boolean>
-        : Partial<OmitEB<entityType>>[Properties] extends
+        : Partial<entityType>[Properties] extends
             | {
                 id?: string | number
               }
             | undefined
-        ? IdFilter<Partial<OmitEB<entityType>>[Properties]>
-        : ValueFilter<Partial<OmitEB<entityType>>[Properties]>)
+        ? IdFilter<Partial<entityType>[Properties]>
+        : ValueFilter<Partial<entityType>[Properties]>)
     | ContainsStringValueFilter
 } & {
   $or?: EntityFilter<entityType>[]
   $and?: EntityFilter<entityType>[]
 }
 export declare type EntityIdFields<entityType> = {
-  [Properties in keyof Partial<OmitFunctions<OmitEB<entityType>>>]?: true
+  [Properties in keyof Partial<MembersOnly<entityType>>]?: true
 }
 export interface EntityMetadata<entityType = any> {
   /** The Entity's key also used as it's url  */
@@ -427,9 +429,7 @@ export interface EntityOptions<entityType = any> {
   apiRequireId?: Allowed
 }
 export declare type EntityOrderBy<entityType> = {
-  [Properties in keyof Partial<OmitEB<OmitFunctions<entityType>>>]?:
-    | "asc"
-    | "desc"
+  [Properties in keyof Partial<MembersOnly<entityType>>]?: "asc" | "desc"
 }
 export interface EntityRef<entityType> extends Subscribable {
   hasErrors(): boolean
@@ -458,7 +458,7 @@ export interface EntityRef<entityType> extends Subscribable {
 export interface ErrorInfo<entityType = any> {
   message?: string
   modelState?: {
-    [Properties in keyof Partial<OmitFunctions<OmitEB<entityType>>>]?: string
+    [Properties in keyof Partial<MembersOnly<entityType>>]?: string
   }
   stack?: string
   exception?: any
@@ -552,9 +552,9 @@ export interface FieldMetadata<valueType = any, entityType = any> {
    * @example
    * repo.fields.createDate.displayValue(task) //will display the date as defined in the `displayValue` option defined for it.
    */
-  displayValue(item: Partial<OmitEB<entityType>>): string
-  apiUpdateAllowed(item?: Partial<OmitEB<entityType>>): boolean
-  includedInApi(item?: Partial<OmitEB<entityType>>): boolean
+  displayValue(item: Partial<entityType>): string
+  apiUpdateAllowed(item?: Partial<entityType>): boolean
+  includedInApi(item?: Partial<entityType>): boolean
   /** Adapts the value for usage with html input
    * @example
    * @Fields.dateOnly()
@@ -777,7 +777,7 @@ export declare class Fields {
   ): ClassFieldDecorator<entityType, boolean | undefined>
 }
 export type FieldsMetadata<entityType> = {
-  [Properties in keyof OmitFunctions<OmitEB<entityType>>]: FieldMetadata<
+  [Properties in keyof MembersOnly<entityType>]: FieldMetadata<
     entityType[Properties],
     entityType
   >
@@ -789,7 +789,7 @@ export type FieldsMetadata<entityType> = {
   toArray(): FieldMetadata<any, entityType>[]
 }
 export type FieldsRef<entityType> = {
-  [Properties in keyof OmitFunctions<OmitEB<entityType>>]: NonNullable<
+  [Properties in keyof MembersOnly<entityType>]: NonNullable<
     entityType[Properties]
   > extends {
     id?: number | string
@@ -1045,6 +1045,13 @@ export interface LiveQueryStorage {
   ): Promise<void>
   keepAliveAndReturnUnknownQueryIds(queryIds: string[]): Promise<string[]>
 }
+export declare type MembersOnly<T> = {
+  [K in keyof Omit<
+    T,
+    keyof Pick<EntityBase, "$" | "_" | "י">
+  > as T[K] extends Function ? never : K]: T[K]
+}
+//[ ] Function from TBD is not exported
 export type MembersToInclude<T> = {
   [K in keyof ObjectMembersOnly<T>]?:
     | boolean
@@ -1052,7 +1059,7 @@ export type MembersToInclude<T> = {
         ? FindOptions<NonNullable<T[K]>[number]>
         : FindFirstOptions<NonNullable<T[K]>>)
 }
-export type ObjectMembersOnly<T> = {
+export type ObjectMembersOnly<T> = MembersOnly<{
   [K in keyof Pick<
     T,
     {
@@ -1063,13 +1070,8 @@ export type ObjectMembersOnly<T> = {
         : never
     }[keyof T]
   >]: T[K]
-}
+}>
 //[ ] ObjectKeyword from TBD is not exported
-export declare type OmitEB<T> = Omit<T, keyof EntityBase>
-export declare type OmitFunctions<T> = {
-  [K in keyof T as T[K] extends Function ? never : K]: T[K]
-}
-//[ ] Function from TBD is not exported
 export interface Paginator<entityType> {
   /** the items in the current page */
   items: entityType[]
@@ -1394,26 +1396,22 @@ export interface Repository<entityType> {
    */
   validate(
     item: Partial<entityType>,
-    ...fields: Extract<keyof OmitFunctions<OmitEB<entityType>>, string>[]
+    ...fields: Extract<keyof MembersOnly<entityType>, string>[]
   ): Promise<ErrorInfo<entityType> | undefined>
   /** saves an item or item[] to the data source. It assumes that if an `id` value exists, it's an existing row - otherwise it's a new row
    * @example
    * await taskRepo.save({...task, completed:true })
    */
-  save(
-    item: Partial<OmitFunctions<OmitEB<entityType>>>[],
-  ): Promise<entityType[]>
-  save(item: Partial<OmitFunctions<OmitEB<entityType>>>): Promise<entityType>
+  save(item: Partial<MembersOnly<entityType>>[]): Promise<entityType[]>
+  save(item: Partial<MembersOnly<entityType>>): Promise<entityType>
   /**Insert an item or item[] to the data source
    * @example
    * await taskRepo.insert({title:"task a"})
    * @example
    * await taskRepo.insert([{title:"task a"}, {title:"task b", completed:true }])
    */
-  insert(
-    item: Partial<OmitFunctions<OmitEB<entityType>>>[],
-  ): Promise<entityType[]>
-  insert(item: Partial<OmitFunctions<OmitEB<entityType>>>): Promise<entityType>
+  insert(item: Partial<MembersOnly<entityType>>[]): Promise<entityType[]>
+  insert(item: Partial<MembersOnly<entityType>>): Promise<entityType>
   /** Updates an item, based on its `id`
    * @example
    * taskRepo.update(task.id,{...task,completed:true})
@@ -1428,11 +1426,11 @@ export interface Repository<entityType> {
         }
       ? string
       : string | number,
-    item: Partial<OmitFunctions<OmitEB<entityType>>>,
+    item: Partial<MembersOnly<entityType>>,
   ): Promise<entityType>
   update(
-    id: Partial<OmitFunctions<OmitEB<entityType>>>,
-    item: Partial<OmitFunctions<OmitEB<entityType>>>,
+    id: Partial<MembersOnly<entityType>>,
+    item: Partial<MembersOnly<entityType>>,
   ): Promise<entityType>
   /** Deletes an Item*/
   delete(
@@ -1446,9 +1444,9 @@ export interface Repository<entityType> {
       ? string
       : string | number,
   ): Promise<void>
-  delete(item: Partial<OmitFunctions<OmitEB<entityType>>>): Promise<void>
+  delete(item: Partial<MembersOnly<entityType>>): Promise<void>
   /** Creates an instance of an item. It'll not be saved to the data source unless `save` or `insert` will be called for that item */
-  create(item?: Partial<OmitFunctions<OmitEB<entityType>>>): entityType
+  create(item?: Partial<MembersOnly<entityType>>): entityType
   toJson(item: Promise<entityType[]>): Promise<any[]>
   toJson(item: entityType[]): any[]
   toJson(item: Promise<entityType>): Promise<any>

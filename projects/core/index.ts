@@ -1,11 +1,11 @@
 import type { ClassType } from './classType'
 
+export type { ClassType } from './classType'
 /*
  * Public API Surface of remult
  */
 export {
-  OmitEB,
-  OmitFunctions,
+  MembersOnly,
   FieldsMetadata,
   FieldRef,
   IdFieldRef,

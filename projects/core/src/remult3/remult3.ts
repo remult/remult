@@ -103,7 +103,7 @@ export interface Subscribable {
 }
 
 export type FieldsRef<entityType> = {
-  [Properties in keyof OmitFunctions<OmitEB<entityType>>]: NonNullable<
+  [Properties in keyof MembersOnly<entityType>]: NonNullable<
     entityType[Properties]
   > extends {
     id?: number | string
@@ -116,7 +116,7 @@ export type FieldsRef<entityType> = {
   toArray(): FieldRef<entityType, any>[]
 }
 export type FieldsMetadata<entityType> = {
-  [Properties in keyof OmitFunctions<OmitEB<entityType>>]: FieldMetadata<
+  [Properties in keyof MembersOnly<entityType>]: FieldMetadata<
     entityType[Properties],
     entityType
   >
@@ -168,12 +168,12 @@ export interface IdMetadata<entityType = any> {
    * @example
    * repo.metadata.idMetadata.getId(task)
    */
-  getId(item: Partial<OmitFunctions<OmitEB<entityType>>>): any
+  getId(item: Partial<MembersOnly<entityType>>): any
   field: FieldMetadata<any>
   getIdFilter(...ids: any[]): EntityFilter<entityType>
   isIdField(col: FieldMetadata): boolean
   createIdInFilter(
-    items: Partial<OmitFunctions<OmitEB<entityType>>>[],
+    items: Partial<MembersOnly<entityType>>[],
   ): EntityFilter<entityType>
 }
 
@@ -231,8 +231,12 @@ export interface EntityMetadata<entityType = any> {
   readonly idMetadata: IdMetadata<entityType>
 }
 
-export declare type OmitEB<T> = Omit<T, keyof EntityBase>
-export declare type OmitFunctions<T> = { [K in keyof T as T[K] extends Function ? never : K]: T[K] }
+export declare type MembersOnly<T> = {
+  [K in keyof Omit<
+    T,
+    keyof Pick<EntityBase, '$' | '_' | 'י'>
+  > as T[K] extends Function ? never : K]: T[K]
+}
 //Pick<
 //   T,
 //   { [K in keyof T]: T[K] extends Function ? never : K }[keyof T]
@@ -294,17 +298,15 @@ export interface Repository<entityType> {
    */
   validate(
     item: Partial<entityType>,
-    ...fields: Extract<keyof OmitFunctions<OmitEB<entityType>>, string>[]
+    ...fields: Extract<keyof MembersOnly<entityType>, string>[]
   ): Promise<ErrorInfo<entityType> | undefined>
   /** saves an item or item[] to the data source. It assumes that if an `id` value exists, it's an existing row - otherwise it's a new row
    * @example
    * await taskRepo.save({...task, completed:true })
    */
 
-  save(
-    item: Partial<OmitFunctions<OmitEB<entityType>>>[],
-  ): Promise<entityType[]>
-  save(item: Partial<OmitFunctions<OmitEB<entityType>>>): Promise<entityType>
+  save(item: Partial<MembersOnly<entityType>>[]): Promise<entityType[]>
+  save(item: Partial<MembersOnly<entityType>>): Promise<entityType>
 
   /**Insert an item or item[] to the data source
    * @example
@@ -312,10 +314,8 @@ export interface Repository<entityType> {
    * @example
    * await taskRepo.insert([{title:"task a"}, {title:"task b", completed:true }])
    */
-  insert(
-    item: Partial<OmitFunctions<OmitEB<entityType>>>[],
-  ): Promise<entityType[]>
-  insert(item: Partial<OmitFunctions<OmitEB<entityType>>>): Promise<entityType>
+  insert(item: Partial<MembersOnly<entityType>>[]): Promise<entityType[]>
+  insert(item: Partial<MembersOnly<entityType>>): Promise<entityType>
 
   /** Updates an item, based on its `id`
    * @example
@@ -327,11 +327,11 @@ export interface Repository<entityType> {
       : entityType extends { id?: string }
       ? string
       : string | number,
-    item: Partial<OmitFunctions<OmitEB<entityType>>>,
+    item: Partial<MembersOnly<entityType>>,
   ): Promise<entityType>
   update(
-    id: Partial<OmitFunctions<OmitEB<entityType>>>,
-    item: Partial<OmitFunctions<OmitEB<entityType>>>,
+    id: Partial<MembersOnly<entityType>>,
+    item: Partial<MembersOnly<entityType>>,
   ): Promise<entityType>
 
   /** Deletes an Item*/
@@ -342,10 +342,10 @@ export interface Repository<entityType> {
       ? string
       : string | number,
   ): Promise<void>
-  delete(item: Partial<OmitFunctions<OmitEB<entityType>>>): Promise<void>
+  delete(item: Partial<MembersOnly<entityType>>): Promise<void>
 
   /** Creates an instance of an item. It'll not be saved to the data source unless `save` or `insert` will be called for that item */
-  create(item?: Partial<OmitFunctions<OmitEB<entityType>>>): entityType
+  create(item?: Partial<MembersOnly<entityType>>): entityType
 
   toJson(item: Promise<entityType[]>): Promise<any[]>
   toJson(item: entityType[]): any[]
@@ -406,27 +406,25 @@ export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
  * await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
  */
 export declare type EntityOrderBy<entityType> = {
-  [Properties in keyof Partial<OmitEB<OmitFunctions<entityType>>>]?:
-    | 'asc'
-    | 'desc'
+  [Properties in keyof Partial<MembersOnly<entityType>>]?: 'asc' | 'desc'
 }
 
 /**Used to filter the desired result set
  * @see [EntityFilter](http://remult.dev/docs/entityFilter.html)
  */
 export declare type EntityFilter<entityType> = {
-  [Properties in keyof Partial<OmitEB<OmitFunctions<entityType>>>]?:
-    | (Partial<OmitEB<entityType>>[Properties] extends number | Date | undefined
-        ? ComparisonValueFilter<Partial<OmitEB<entityType>>[Properties]>
-        : Partial<OmitEB<entityType>>[Properties] extends string | undefined
+  [Properties in keyof Partial<MembersOnly<entityType>>]?:
+    | (Partial<entityType>[Properties] extends number | Date | undefined
+        ? ComparisonValueFilter<Partial<entityType>[Properties]>
+        : Partial<entityType>[Properties] extends string | undefined
         ? ContainsStringValueFilter & ComparisonValueFilter<string>
-        : Partial<OmitEB<entityType>>[Properties] extends boolean | undefined
+        : Partial<entityType>[Properties] extends boolean | undefined
         ? ValueFilter<boolean>
-        : Partial<OmitEB<entityType>>[Properties] extends
+        : Partial<entityType>[Properties] extends
             | { id?: string | number }
             | undefined
-        ? IdFilter<Partial<OmitEB<entityType>>[Properties]>
-        : ValueFilter<Partial<OmitEB<entityType>>[Properties]>)
+        ? IdFilter<Partial<entityType>[Properties]>
+        : ValueFilter<Partial<entityType>[Properties]>)
     | ContainsStringValueFilter
 } & {
   $or?: EntityFilter<entityType>[]
@@ -621,7 +619,7 @@ export type RelationOptions<
   defaultIncluded?: boolean
 } & Pick<FieldOptions, 'caption'>
 
-export type ObjectMembersOnly<T> = OmitFunctions<{
+export type ObjectMembersOnly<T> = MembersOnly<{
   [K in keyof Pick<
     T,
     {
@@ -653,7 +651,7 @@ export type RepositoryRelations<entityType> = {
 }
 
 export declare type EntityIdFields<entityType> = {
-  [Properties in keyof Partial<OmitFunctions<OmitEB<entityType>>>]?: true
+  [Properties in keyof Partial<MembersOnly<entityType>>]?: true
 }
 
 export interface ClassFieldDecoratorContextStub<entityType, valueType> {
@@ -716,9 +714,6 @@ remult.apiClient.url='localhost:3007/api
 //p2 - with remult for remultexpress
 //p2 - Add a with remult promise to Remult!
 
-//y1 - YONI why didn't this._.relations.statusChanges.insert({})work?
-//y1 - YONI - trieed to implement this with  OmitFunctions - but it breaks this.$.[something] a good name from fields and relations
-
 //p2 - filterToRaw should get a dbnames of - and we should create a dbnames of that supports an alias
 
 //y2 - livequery for findfirst (@JY)
@@ -731,8 +726,7 @@ remult.apiClient.url='localhost:3007/api
 //p2 - fix sql log to console to make more sense
 //p2 - type metadata.key - to keyof entity - based on cwis input
 //p2 - processError in remult express
-//y1 - should we change relations to be a static const instead of a class (also for fields maybe) what's the point of doing new Relations
-//y1 - add Class type to index of remult - it is used in repo and is important
+
 //y2 - Backend methods are transactions, it's not intuitive and maybe should be optional / opt in
 //p2 - get backend methods to work when specifying types for date, and entities as poco's
 //p2 - allow find options preprocessor for api calls, to use for authorization

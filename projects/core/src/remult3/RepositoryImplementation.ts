@@ -36,9 +36,7 @@ import type {
   LiveQuery,
   LiveQueryChangeInfo,
   LoadOptions,
-  MembersToInclude,
-  OmitEB,
-  OmitFunctions,
+  MembersOnly,
   QueryOptions,
   QueryResult,
   RelationInfo,
@@ -81,11 +79,11 @@ import { type RepositoryInternal, getInternalKey } from './repository-internals'
 
 let classValidatorValidate:
   | ((
-    item: any,
-    ref: {
-      fields: FieldsRef<any>
-    },
-  ) => Promise<void>)
+      item: any,
+      ref: {
+        fields: FieldsRef<any>
+      },
+    ) => Promise<void>)
   | undefined = undefined
 // import ("class-validator".toString())
 //     .then((v) => {
@@ -193,7 +191,7 @@ export class RepositoryImplementation<entityType>
     private dataProvider: DataProvider,
     private _info: EntityFullInfo<entityType>,
     private defaultFindOptions?: FindOptions<entityType>,
-  ) { }
+  ) {}
   idCache = new Map<any, any>()
   getCachedById(id: any, doNotLoadIfNotFound: boolean): entityType {
     id = id + ''
@@ -278,10 +276,10 @@ export class RepositoryImplementation<entityType>
     item:
       | entityType
       | (entityType extends { id?: number }
-        ? number
-        : entityType extends { id?: string }
-        ? string
-        : string | number),
+          ? number
+          : entityType extends { id?: string }
+          ? string
+          : string | number),
   ): Promise<void> {
     if (typeof item === 'string' || typeof item === 'number')
       return this.edp.delete(item)
@@ -289,10 +287,12 @@ export class RepositoryImplementation<entityType>
       return this.getRefForExistingRow(item as entityType, undefined).delete()
     }
   }
-  insert(item: Partial<OmitFunctions<OmitEB<entityType>>>[]): Promise<entityType[]>
-  insert(item: Partial<OmitFunctions<OmitEB<entityType>>>): Promise<entityType>
+  insert(item: Partial<MembersOnly<entityType>>[]): Promise<entityType[]>
+  insert(item: Partial<MembersOnly<entityType>>): Promise<entityType>
   async insert(
-    entity: Partial<OmitFunctions<OmitEB<entityType>>> | Partial<OmitFunctions<OmitEB<entityType>>>[],
+    entity:
+      | Partial<MembersOnly<entityType>>
+      | Partial<MembersOnly<entityType>>[],
   ): Promise<entityType | entityType[]> {
     if (Array.isArray(entity)) {
       let r = []
@@ -314,8 +314,8 @@ export class RepositoryImplementation<entityType>
     return this.metadata.fields
   }
   async validate(
-    entity: Partial<OmitFunctions<OmitEB<entityType>>>,
-    ...fields: Extract<keyof OmitFunctions<OmitEB<entityType>>, string>[]
+    entity: Partial<MembersOnly<entityType>>,
+    ...fields: Extract<keyof MembersOnly<entityType>, string>[]
   ): Promise<ErrorInfo<entityType> | undefined> {
     {
       let ref: rowHelperImplementation<any> = getEntityRef(entity, false) as any
@@ -340,15 +340,15 @@ export class RepositoryImplementation<entityType>
       : entityType extends { id?: string }
       ? string
       : string | number,
-    item: Partial<OmitFunctions<OmitEB<entityType>>>,
+    item: Partial<MembersOnly<entityType>>,
   ): Promise<entityType>
   update(
-    originalItem: Partial<OmitFunctions<OmitEB<entityType>>>,
-    item: Partial<OmitFunctions<OmitEB<entityType>>>,
+    originalItem: Partial<MembersOnly<entityType>>,
+    item: Partial<MembersOnly<entityType>>,
   ): Promise<entityType>
   async update(
     id: any,
-    entity: Partial<OmitFunctions<OmitEB<entityType>>>,
+    entity: Partial<MembersOnly<entityType>>,
   ): Promise<entityType> {
     {
       let ref = getEntityRef(entity, false)
@@ -377,7 +377,7 @@ export class RepositoryImplementation<entityType>
     if (this.dataProvider.isProxy) {
       return await ref.save(Object.keys(entity))
     } else {
-      const r = await ref.reload()
+      const r =await  ref.reload()
       if (!r) throw new Error('Not Found')
       for (const key in entity) {
         if (Object.prototype.hasOwnProperty.call(entity, key)) {
@@ -394,7 +394,7 @@ export class RepositoryImplementation<entityType>
   }
 
   private getRefForExistingRow(
-    entity: Partial<OmitFunctions<OmitEB<entityType>>>,
+    entity: Partial<MembersOnly<entityType>>,
     id: string | number,
   ) {
     let ref = getEntityRef(entity, false)
@@ -426,10 +426,12 @@ export class RepositoryImplementation<entityType>
     return ref
   }
 
-  save(item: Partial<OmitFunctions<OmitEB<entityType>>>[]): Promise<entityType[]>
-  save(item: Partial<OmitFunctions<OmitEB<entityType>>>): Promise<entityType>
+  save(item: Partial<MembersOnly<entityType>>[]): Promise<entityType[]>
+  save(item: Partial<MembersOnly<entityType>>): Promise<entityType>
   async save(
-    entity: Partial<OmitFunctions<OmitEB<entityType>>> | Partial<OmitFunctions<OmitEB<entityType>>>[],
+    entity:
+      | Partial<MembersOnly<entityType>>
+      | Partial<MembersOnly<entityType>>[],
   ): Promise<entityType | entityType[]> {
     if (Array.isArray(entity)) {
       return Promise.all(entity.map((x) => this.save(x)))
@@ -455,12 +457,12 @@ export class RepositoryImplementation<entityType>
         if (typeof l === 'function') {
           listener = {
             next: l,
-            complete: () => { },
-            error: () => { },
+            complete: () => {},
+            error: () => {},
           }
         }
-        listener.error ??= () => { }
-        listener.complete ??= () => { }
+        listener.error ??= () => {}
+        listener.complete ??= () => {}
         return this.remult.liveQuerySubscriber.subscribe(
           this,
           options,
@@ -675,7 +677,7 @@ export class RepositoryImplementation<entityType>
     function buildError(what: string) {
       return Error(
         `Error for relation: "${field.key}" to "${otherRepo.metadata.key}": ` +
-        what,
+          what,
       )
     }
 
@@ -754,10 +756,10 @@ export class RepositoryImplementation<entityType>
       let val =
         rel.type === 'reference'
           ? (
-            getEntityRef(row).fields.find(
-              requireField(field.key, this.metadata),
-            ) as IdFieldRef<any, any>
-          ).getId()
+              getEntityRef(row).fields.find(
+                requireField(field.key, this.metadata),
+              ) as IdFieldRef<any, any>
+            ).getId()
           : row[field.key]
       if (val === null) returnNull = true
       if (val === undefined) returnUndefined = true
@@ -926,7 +928,7 @@ export class RepositoryImplementation<entityType>
     return this.metadata.fields.toArray().filter((x) => keys.includes(x.key))
   }
 
-  create(item?: Partial<OmitFunctions<OmitEB<entityType>>>): entityType {
+  create(item?: Partial<MembersOnly<entityType>>): entityType {
     let r = new this.entity(this.remult)
     if (item) {
       for (const field of this.fieldsOf(item)) {
@@ -1301,7 +1303,7 @@ abstract class rowHelperBase<T> {
     this.originalValues = this.copyDataToObject()
     this.saveMoreOriginalData()
   }
-  saveMoreOriginalData() { }
+  saveMoreOriginalData() {}
   async validate() {
     this.__clearErrorsAndReportChanged()
     if (classValidatorValidate)
@@ -1318,7 +1320,7 @@ abstract class rowHelperBase<T> {
     await this.__performColumnAndEntityValidations()
     this.__assertValidity()
   }
-  async __performColumnAndEntityValidations() { }
+  async __performColumnAndEntityValidations() {}
   toApiJson(includeRelatedEntities = false) {
     let result: any = {}
     for (const col of this.columnsInfo) {
@@ -1595,7 +1597,7 @@ export class rowHelperImplementation<T>
     }
   }
 
-  private buildLifeCycleEvent(preventDefault: VoidFunction = () => { }) {
+  private buildLifeCycleEvent(preventDefault: VoidFunction = () => {}) {
     const self = this
     return {
       isNew: self.isNew(),
@@ -1710,7 +1712,7 @@ export class rowHelperImplementation<T>
     }
 
     if (this.info.entityInfo.validation) {
-      let e = this.buildLifeCycleEvent(() => { })
+      let e = this.buildLifeCycleEvent(() => {})
       await this.info.entityInfo.validation(this.instance, e)
     }
     if (this.repository.listeners)
@@ -1845,11 +1847,11 @@ export class FieldRefImplementation<entityType, valueType>
       if (rel.type === 'toMany') {
         return (this.container[this.metadata.key] = await this.helper.repository
           .relations(this.container)
-        [this.metadata.key].find())
+          [this.metadata.key].find())
       } else {
         let val = await this.helper.repository
           .relations(this.container)
-        [this.metadata.key].findOne()
+          [this.metadata.key].findOne()
         if (val) this.container[this.metadata.key] = val
       }
     } else if (lu) {
@@ -2265,7 +2267,7 @@ export function ValueListFieldType<valueType extends ValueListItem = any>(
   return (type: ClassType<valueType>, context?) => {
     FieldType<valueType>(
       (o) => {
-        ; (o.valueConverter = ValueListInfo.get(type)),
+        ;(o.valueConverter = ValueListInfo.get(type)),
           (o.displayValue = (item, val) => val?.caption)
       },
       ...options,
@@ -2329,7 +2331,7 @@ export class ValueListInfo<T extends ValueListItem>
     } else
       throw new Error(
         `ValueType not yet initialized, did you forget to call @ValueListFieldType on ` +
-        valueListType,
+          valueListType,
       )
   }
 
@@ -2505,14 +2507,14 @@ export function decorateColumnSettings<valueType>(
 }
 
 export class EntityBase {
-  getEntityRef() {
+  ['י']() {
     return getEntityRef(this)
   }
   get _() {
-    return getEntityRef(this) as unknown as ReturnType<this['getEntityRef']>
+    return getEntityRef(this) as unknown as ReturnType<this['י']>
   }
   save() {
-    return this._.save()
+    return getEntityRef(this).save()
   }
   assign(values: Partial<Omit<this, keyof EntityBase>>) {
     assign(this, values)
@@ -2685,9 +2687,9 @@ class SubscribableImp implements Subscribable {
     listener:
       | (() => void)
       | {
-        reportChanged: () => void
-        reportObserved: () => void
-      },
+          reportChanged: () => void
+          reportObserved: () => void
+        },
   ): Unsubscribe {
     let list: {
       reportChanged: () => void
@@ -2696,7 +2698,7 @@ class SubscribableImp implements Subscribable {
     if (typeof listener === 'function')
       list = {
         reportChanged: () => listener(),
-        reportObserved: () => { },
+        reportObserved: () => {},
       }
     else list = listener
 

@@ -1,7 +1,6 @@
 import {
   describeClass,
   Entity,
-  type OmitEB,
   type EntityOptions,
   Fields,
   type ClassFieldDecorator,
@@ -20,7 +19,7 @@ export declare type InferMemberType<type> = type extends ClassFieldDecorator<
   : InferredType<type>
 
 export declare type InferredType<type> = {
-  [member in keyof OmitEB<type>]: InferMemberType<type[member]>
+  [member in keyof type]: InferMemberType<type[member]>
 }
 
 export function createEntity<T>(
