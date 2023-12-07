@@ -19,13 +19,16 @@ import { Filter } from '../filter/filter-interfaces'
 import { Sort } from '../sort'
 import type {
   ControllerRef,
+  ControllerRefForEntityBase,
   EntityFilter,
   EntityMetadata,
   EntityOrderBy,
   EntityRef,
+  EntityRefForEntityBase,
   FieldRef,
   FieldsMetadata,
   FieldsRef,
+  FieldsRefForEntityBase,
   FindFirstOptions,
   FindFirstOptionsBase,
   FindOptions,
@@ -1731,7 +1734,7 @@ function prepareColumnInfo(r: columnInfo[], remult: Remult): FieldOptions[] {
 export function getFields<fieldsContainerType>(
   container: fieldsContainerType,
   remult?: Remult,
-): FieldsRef<fieldsContainerType> {
+) {
   return getControllerRef(container, remult).fields
 }
 export function getControllerRef<fieldsContainerType>(
@@ -2507,11 +2510,8 @@ export function decorateColumnSettings<valueType>(
 }
 
 export class EntityBase {
-  ['י']() {
-    return getEntityRef(this)
-  }
   get _() {
-    return getEntityRef(this) as unknown as ReturnType<this['י']>
+    return getEntityRef(this) as unknown as EntityRefForEntityBase<this>
   }
   save() {
     return getEntityRef(this).save()
@@ -2527,7 +2527,7 @@ export class EntityBase {
     return this._.isNew()
   }
   get $() {
-    return this._.fields as unknown as this['_']['fields']
+    return this._.fields
   }
 }
 export class ControllerBase {
@@ -2540,10 +2540,10 @@ export class ControllerBase {
     return this
   }
   get $() {
-    return getFields(this, this.remult)
+    return getFields(this, this.remult) as unknown as FieldsRefForEntityBase<this>
   }
   get _() {
-    return getControllerRef(this, this.remult)
+    return getControllerRef(this, this.remult) as unknown as ControllerRefForEntityBase<this>
   }
 }
 
