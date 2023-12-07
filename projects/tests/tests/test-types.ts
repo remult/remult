@@ -2,10 +2,10 @@ import {
   Fields,
   IdEntity,
   Relations,
+  type MembersOnly,
+  getFields,
+  FieldsRef,
   getEntityRef,
-  repo,
-  ObjectMembersOnly,
-  MembersOnly,
 } from '../../core'
 
 export declare type MyEntityOrderBy<entityType> = {
@@ -31,3 +31,12 @@ let orderBy: MyEntityOrderBy<Person> = {
   id: 'asc',
 }
 let p = new Person()
+
+class xx {
+  name = ''
+
+  parent: xx
+  doSomething() {
+    getEntityRef<xx>(this).relations.parent
+  }
+}
