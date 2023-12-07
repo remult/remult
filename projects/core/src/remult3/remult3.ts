@@ -734,3 +734,8 @@ remult.apiClient.url='localhost:3007/api
 //y2 - add some api testing framework for user unit tests (will help with codesandbox based discussions)
 //y2 - I tihnk there should be a way to throw a forbidden exception
 //p2 - conside law-q db based on schema issue - I think that while running the dataProvider function, we should have a valid remult - maybe even have a valid remult, that will be valid until api is run
+//p2 - allow api read to also support instance and filter.
+//p2 - investigate why did lawq didn't run after build - even though it ran with tsx
+//y1 - we should really reconsider allow null by default to be true - I think that what we're doing is confusing for most . In my case I added a volunteer relation, and didn't set any value to it - and I get an error that null value is not allowed for it
+//p1 - in lawq - even if we didn't change the volunteer (a reference relation to one) it was precieved by the save command as a value change and caused an update to the db.
+//p1 - in lawq - the volunteer field was with allow null false, and yet rows were inserted without a value there.
