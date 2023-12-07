@@ -34,14 +34,28 @@ export class LookupColumn<T> {
   }
   get(id: any): any {
     if (id === undefined || id === null) return null
-    if (this.isReferenceRelation && !this.storedItem) return undefined
-    return getRepositoryInternals(this.repository).getCachedById(
+
+    const result = getRepositoryInternals(this.repository).getCachedById(
       id,
       this.isReferenceRelation,
     )
+    if (this.isReferenceRelation && !this.storedItem) {
+      if (!this.allowNull && (this.id === 0 || this.id === '')) return null
+      return undefined
+    }
+    return result
   }
   storedItem?: { item: T }
   set(item: T) {
+    if (
+      item === null &&
+      !this.allowNull &&
+      this.isReferenceRelation &&
+      (this.id == 0 || this.id == '')
+    ) {
+      this.storedItem = { item: null }
+      return
+    }
     this.storedItem = undefined
     if (item) {
       if (typeof item === 'string' || typeof item === 'number')
@@ -67,6 +81,7 @@ export class LookupColumn<T> {
   constructor(
     private repository: Repository<T>,
     private isReferenceRelation,
+    private allowNull,
   ) {}
 
   get item(): T {

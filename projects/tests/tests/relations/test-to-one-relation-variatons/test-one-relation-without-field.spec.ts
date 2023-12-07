@@ -8,6 +8,7 @@ import {
 } from '../../../../core'
 import { describe, it, expect, beforeEach } from 'vitest'
 import type { ClassType } from '../../../../core/classType'
+import { TestDataProvider } from '../../../dbs/TestDataProviderWithStats'
 
 @Entity('categories')
 class Category {
@@ -27,6 +28,35 @@ class Task {
   @Relations.toOne<Task, Category>(() => Category)
   category?: Category
 }
+it('test that update only has updated fields', async () => {
+  const test = TestDataProvider()
+  const remult = new Remult()
+  remult.dataProvider = test
+  await remult.repo(Task).insert({ id: 2, title: 'task2' })
+  const t = await remult
+    .repo(Task)
+    .findFirst({}, { include: { category: true } })
+  t.title += '1'
+  await getEntityRef(t).save()
+  expect(await remult.repo(Task).findFirst()).toMatchInlineSnapshot(`
+    Task {
+      "category": null,
+      "id": 2,
+      "title": "task21",
+    }
+  `)
+  expect(test.updates).toMatchInlineSnapshot(`
+    [
+      {
+        "data": {
+          "title": "task21",
+        },
+        "entity": "task",
+        "id": 2,
+      },
+    ]
+  `)
+})
 
 describe('test one', () => {
   let remult: Remult
@@ -43,6 +73,7 @@ describe('test one', () => {
     )
     await repo(Task).insert({ id: 1, title: 'task1', category: cat1 })
   })
+
   it('test derived many', async () => {
     expect(
       (await repo(Category).find({ include: { tasks: true } })).map(

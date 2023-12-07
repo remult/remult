@@ -377,7 +377,7 @@ export class RepositoryImplementation<entityType>
     if (this.dataProvider.isProxy) {
       return await ref.save(Object.keys(entity))
     } else {
-      const r =await  ref.reload()
+      const r = await ref.reload()
       if (!r) throw new Error('Not Found')
       for (const key in entity) {
         if (Object.prototype.hasOwnProperty.call(entity, key)) {
@@ -761,6 +761,7 @@ export class RepositoryImplementation<entityType>
               ) as IdFieldRef<any, any>
             ).getId()
           : row[field.key]
+      if (!field.allowNull && (val === 0 || val === '')) val = null
       if (val === null) returnNull = true
       if (val === undefined) returnUndefined = true
       else if (typeof val === 'object')
@@ -1096,6 +1097,7 @@ abstract class rowHelperBase<T> {
         let lookup = new LookupColumn(
           remult.repo(col.valueType) as RepositoryImplementation<T>,
           Boolean(col?.[relationInfoMember]),
+          col.allowNull,
         )
         this.lookups.set(col.key, lookup)
         let val = instance[col.key]
@@ -1281,19 +1283,27 @@ abstract class rowHelperBase<T> {
     this._subscribers?.reportObserved()
     return !!!this.error && this.errors == undefined
   }
-  copyDataToObject() {
+  copyDataToObject(isNew: boolean = false) {
     let d: any = {}
     for (const col of this.columnsInfo) {
       let lu = this.lookups.get(col.key)
       let val: any = undefined
+      const rel = getRelationInfo(col)
       if (lu) val = lu.id
       else val = this.instance[col.key]
+      if (rel && isNew && !col.allowNull && (val === undefined || null)) {
+        if (
+          this.remult.repo(rel.toType()).metadata.idMetadata.field.valueType ===
+          Number
+        )
+          val = 0
+        else val = ''
+      }
       if (val !== undefined) {
         val = col.valueConverter.toJson(val)
         if (val !== undefined && val !== null)
           val = col.valueConverter.fromJson(JSON.parse(JSON.stringify(val)))
       }
-      const rel = getRelationInfo(col)
       if (!rel || rel.type === 'reference') d[col.key] = val
     }
     return d
@@ -1522,7 +1532,7 @@ export class rowHelperImplementation<T>
       }
       this.__assertValidity()
 
-      let d = this.copyDataToObject()
+      let d = this.copyDataToObject(this.isNew())
       let ignoreKeys = []
       for (const field of this.metadata.fields) {
         if (

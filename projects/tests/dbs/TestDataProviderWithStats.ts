@@ -12,6 +12,7 @@ export function TestDataProvider<T extends DataProvider = InMemoryDataProvider>(
   dataProvider?: T,
 ) {
   let finds: { entity: any; where: any }[] = []
+  let updates: { entity: string; id: any; data: any }[] = []
   if (!dataProvider) dataProvider = new InMemoryDataProvider() as any as T
   const result = new Proxy(dataProvider, {
     //@ts-ignore
@@ -28,6 +29,12 @@ export function TestDataProvider<T extends DataProvider = InMemoryDataProvider>(
                   })
                   return target[p](x)
                 }
+              else if (p === 'update') {
+                return (id, data) => {
+                  updates.push({ entity: e.key, id, data })
+                  return target[p](id, data)
+                }
+              }
               return target[p]
             },
           })
@@ -35,5 +42,5 @@ export function TestDataProvider<T extends DataProvider = InMemoryDataProvider>(
       return target[p]
     },
   })
-  return Object.assign(result, { finds })
+  return Object.assign(result, { finds, updates })
 }
