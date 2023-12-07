@@ -11,7 +11,7 @@ import type {
 import type { SortSegment } from '../sort'
 import type { EntityBase } from './RepositoryImplementation'
 
-export interface EntityRef<entityType> extends Subscribable {
+export interface EntityRefBase<entityType> extends Subscribable {
   hasErrors(): boolean
   undoChanges()
   save(): Promise<entityType>
@@ -20,7 +20,6 @@ export interface EntityRef<entityType> extends Subscribable {
   isNew(): boolean //
   wasChanged(): boolean
   wasDeleted(): boolean
-  fields: FieldsRef<entityType>
   error: string
   getId(): idType<entityType>
   getOriginalId(): idType<entityType>
@@ -28,12 +27,23 @@ export interface EntityRef<entityType> extends Subscribable {
   metadata: EntityMetadata<entityType>
   toApiJson(): any
   validate(): Promise<ErrorInfo<entityType> | undefined>
-  relations: RepositoryRelations<entityType>
   readonly apiUpdateAllowed: boolean
   readonly apiDeleteAllowed: boolean
   readonly apiInsertAllowed: boolean
   readonly isLoading: boolean
 }
+
+export interface EntityRef<entityType> extends EntityRefBase<entityType> {
+  fields: FieldsRef<entityType>
+  relations: RepositoryRelations<entityType>
+}
+
+export interface EntityRefForEntityBase<entityType>
+  extends EntityRefBase<entityType> {
+  fields: FieldsRefForEntityBase<entityType>
+  relations: RepositoryRelationsForEntityBase<entityType>
+}
+
 /**
  * Represents a lifecycle event associated with an entity instance. These events
  * are triggered during various stages of the entity's lifecycle, such as validation,
@@ -85,13 +95,21 @@ export interface LifecycleEvent<entityType> {
    */
   relations: RepositoryRelations<entityType>
 }
-export interface ControllerRef<entityType> extends Subscribable {
+export interface ControllerRefBase<entityType> extends Subscribable {
   hasErrors(): boolean
-  fields: FieldsRef<entityType>
   error: string
   validate(): Promise<ErrorInfo<entityType> | undefined>
   readonly isLoading: boolean
 }
+
+export interface ControllerRef<entityType> extends ControllerRefBase<entityType> {
+  fields: FieldsRef<entityType>
+}
+
+export interface ControllerRefForEntityBase<entityType> extends ControllerRefBase<entityType> {
+  fields: FieldsRefForEntityBase<entityType>
+}
+
 export interface RefSubscriberBase {
   reportChanged: () => void
   reportObserved: () => void
@@ -102,15 +120,7 @@ export interface Subscribable {
   subscribe(listener: RefSubscriber): Unsubscribe
 }
 
-export type FieldsRef<entityType> = {
-  [Properties in keyof MembersOnly<entityType>]: NonNullable<
-    entityType[Properties]
-  > extends {
-    id?: number | string
-  }
-    ? IdFieldRef<entityType, entityType[Properties]>
-    : FieldRef<entityType, entityType[Properties]>
-} & {
+export type FieldsRefBase<entityType> = {
   find(fieldMetadataOrKey: FieldMetadata | string): FieldRef<entityType, any>
   [Symbol.iterator]: () => IterableIterator<FieldRef<entityType, any>>
   toArray(): FieldRef<entityType, any>[]
@@ -126,6 +136,26 @@ export type FieldsMetadata<entityType> = {
   ): FieldMetadata<any, entityType>
   [Symbol.iterator]: () => IterableIterator<FieldMetadata<any, entityType>>
   toArray(): FieldMetadata<any, entityType>[]
+}
+
+export type FieldsRef<entityType> = FieldsRefBase<entityType> & {
+  [Properties in keyof MembersOnly<entityType>]: NonNullable<
+    entityType[Properties]
+  > extends {
+    id?: number | string
+  }
+    ? IdFieldRef<entityType, entityType[Properties]>
+    : FieldRef<entityType, entityType[Properties]>
+}
+
+export type FieldsRefForEntityBase<entityType> = FieldsRefBase<entityType> & {
+  [Properties in keyof Omit<entityType, keyof EntityBase>]: NonNullable<
+    entityType[Properties]
+  > extends {
+    id?: number | string
+  }
+    ? IdFieldRef<entityType, entityType[Properties]>
+    : FieldRef<entityType, entityType[Properties]>
 }
 
 export type SortSegments<entityType> = {
@@ -232,10 +262,7 @@ export interface EntityMetadata<entityType = any> {
 }
 
 export declare type MembersOnly<T> = {
-  [K in keyof Omit<
-    T,
-    keyof Pick<EntityBase, '$' | '_' | 'י'>
-  > as T[K] extends Function ? never : K]: T[K]
+  [K in keyof T as T[K] extends Function ? never : K]: T[K]
 }
 //Pick<
 //   T,
@@ -642,6 +669,16 @@ export type MembersToInclude<T> = {
 
 export type RepositoryRelations<entityType> = {
   [K in keyof ObjectMembersOnly<entityType>]-?: NonNullable<
+    entityType[K]
+  > extends Array<infer R>
+    ? Repository<R>
+    : entityType[K] extends infer R
+    ? { findOne: (options?: FindOptionsBase<R>) => Promise<R> }
+    : never
+}
+
+export type RepositoryRelationsForEntityBase<entityType> = {
+  [K in keyof Omit<entityType, keyof EntityBase>]-?: NonNullable<
     entityType[K]
   > extends Array<infer R>
     ? Repository<R>

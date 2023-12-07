@@ -2,14 +2,18 @@ import {
   Fields,
   IdEntity,
   Relations,
-  type MembersOnly,
-  getFields,
   FieldsRef,
   getEntityRef,
+  repo,
+  ObjectMembersOnly,
+  getFields,
+  type EntityBase,
 } from '../../core'
 
 export declare type MyEntityOrderBy<entityType> = {
-  [Properties in keyof Partial<MembersOnly<entityType>>]?: 'asc' | 'desc'
+  [Properties in keyof Partial<
+    MembersOnly<entityType>
+  >]?: entityType[Properties]
 }
 
 class Person extends IdEntity {
@@ -19,12 +23,11 @@ class Person extends IdEntity {
   parent?: Person
 
   async aFunction() {
-    this.$.name
-    this._.fields.name
+    this._.relations
   }
-  myMethod() {
-    return this._.save()
-  }
+
+  f = new Promise(() => this.$.name)
+  g = () => this.$
 }
 
 let orderBy: MyEntityOrderBy<Person> = {
@@ -32,11 +35,17 @@ let orderBy: MyEntityOrderBy<Person> = {
 }
 let p = new Person()
 
-class xx {
-  name = ''
+type KeysNotOfAType<TSchema, Type> = {
+  [key in keyof TSchema]: TSchema extends EntityBase
+    ? key
+    : NonNullable<TSchema[key]> extends Type
+    ? never
+    : key
+}[keyof TSchema]
 
-  parent: xx
-  doSomething() {
-    getEntityRef<xx>(this).relations.parent
-  }
+type OmitFunctions<entityType> = {
+  [Properties in KeysNotOfAType<entityType, Function>]: entityType[Properties]
 }
+
+type MembersOnly<T> = OmitFunctions<Omit<T, keyof Pick<EntityBase, '$' | '_'>>>
+const x: MembersOnly<Person>

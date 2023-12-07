@@ -117,10 +117,11 @@ export declare class ControllerBase {
   protected remult: Remult
   constructor(remult?: Remult)
   assign(values: Partial<Omit<this, keyof EntityBase>>): this
-  get $(): FieldsRef<this>
-  get _(): ControllerRef<this>
+  get $(): FieldsRefForEntityBase<this>
+  get _(): ControllerRefForEntityBase<this>
 }
-//[ ] ControllerRef from TBD is not exported
+//[ ] FieldsRefForEntityBase from TBD is not exported
+//[ ] ControllerRefForEntityBase from TBD is not exported
 export declare class CustomSqlFilterBuilder {
   private r
   constructor(r: SqlCommandWithParameters)
@@ -186,14 +187,14 @@ export declare function Entity<entityType>(
 ) => any
 //[ ] ClassDecoratorContextStub from TBD is not exported
 export declare class EntityBase {
-  ["י"](): EntityRef<this>
-  get _(): ReturnType<this["י"]>
+  get _(): EntityRefForEntityBase<this>
   save(): Promise<this>
   assign(values: Partial<Omit<this, keyof EntityBase>>): this
   delete(): Promise<void>
   isNew(): boolean
-  get $(): this["_"]["fields"]
+  get $(): FieldsRefForEntityBase<this>
 }
+//[ ] EntityRefForEntityBase from TBD is not exported
 export interface EntityDataProvider {
   count(where: Filter): Promise<number>
   find(options?: EntityDataProviderFindOptions): Promise<Array<any>>
@@ -431,30 +432,10 @@ export interface EntityOptions<entityType = any> {
 export declare type EntityOrderBy<entityType> = {
   [Properties in keyof Partial<MembersOnly<entityType>>]?: "asc" | "desc"
 }
-export interface EntityRef<entityType> extends Subscribable {
-  hasErrors(): boolean
-  undoChanges(): any
-  save(): Promise<entityType>
-  reload(): Promise<entityType>
-  delete(): Promise<void>
-  isNew(): boolean
-  wasChanged(): boolean
-  wasDeleted(): boolean
+export interface EntityRef<entityType> extends EntityRefBase<entityType> {
   fields: FieldsRef<entityType>
-  error: string
-  getId(): idType<entityType>
-  getOriginalId(): idType<entityType>
-  repository: Repository<entityType>
-  metadata: EntityMetadata<entityType>
-  toApiJson(): any
-  validate(): Promise<ErrorInfo<entityType> | undefined>
   relations: RepositoryRelations<entityType>
-  readonly apiUpdateAllowed: boolean
-  readonly apiDeleteAllowed: boolean
-  readonly apiInsertAllowed: boolean
-  readonly isLoading: boolean
 }
-//[ ] idType from TBD is not exported
 export interface ErrorInfo<entityType = any> {
   message?: string
   modelState?: {
@@ -788,7 +769,7 @@ export type FieldsMetadata<entityType> = {
   [Symbol.iterator]: () => IterableIterator<FieldMetadata<any, entityType>>
   toArray(): FieldMetadata<any, entityType>[]
 }
-export type FieldsRef<entityType> = {
+export type FieldsRef<entityType> = FieldsRefBase<entityType> & {
   [Properties in keyof MembersOnly<entityType>]: NonNullable<
     entityType[Properties]
   > extends {
@@ -796,11 +777,8 @@ export type FieldsRef<entityType> = {
   }
     ? IdFieldRef<entityType, entityType[Properties]>
     : FieldRef<entityType, entityType[Properties]>
-} & {
-  find(fieldMetadataOrKey: FieldMetadata | string): FieldRef<entityType, any>
-  [Symbol.iterator]: () => IterableIterator<FieldRef<entityType, any>>
-  toArray(): FieldRef<entityType, any>[]
 }
+//[ ] FieldsRefBase from TBD is not exported
 export declare function FieldType<valueType = any>(
   ...options: (
     | FieldOptions<any, valueType>
@@ -1000,6 +978,7 @@ export interface LifecycleEvent<entityType> {
    */
   relations: RepositoryRelations<entityType>
 }
+//[ ] idType from TBD is not exported
 export interface LiveQuery<entityType> {
   subscribe(next: (info: LiveQueryChangeInfo<entityType>) => void): Unsubscribe
   subscribe(
@@ -1046,10 +1025,7 @@ export interface LiveQueryStorage {
   keepAliveAndReturnUnknownQueryIds(queryIds: string[]): Promise<string[]>
 }
 export declare type MembersOnly<T> = {
-  [K in keyof Omit<
-    T,
-    keyof Pick<EntityBase, "$" | "_" | "י">
-  > as T[K] extends Function ? never : K]: T[K]
+  [K in keyof T as T[K] extends Function ? never : K]: T[K]
 }
 //[ ] Function from TBD is not exported
 export type MembersToInclude<T> = {
