@@ -118,10 +118,31 @@ export declare class ControllerBase {
   constructor(remult?: Remult)
   assign(values: Partial<Omit<this, keyof EntityBase>>): this
   get $(): FieldsRefForEntityBase<this>
-  get _(): ControllerRefForEntityBase<this>
+  get _(): ControllerRefForControllerBase<this>
 }
-//[ ] FieldsRefForEntityBase from TBD is not exported
-//[ ] ControllerRefForEntityBase from TBD is not exported
+export interface ControllerRef<entityType>
+  extends ControllerRefBase<entityType> {
+  fields: FieldsRef<entityType>
+}
+export interface ControllerRefBase<entityType> extends Subscribable {
+  hasErrors(): boolean
+  error: string
+  validate(): Promise<ErrorInfo<entityType> | undefined>
+  readonly isLoading: boolean
+}
+export interface ControllerRefForControllerBase<entityType>
+  extends ControllerRefBase<entityType> {
+  fields: FieldsRefForEntityBase<entityType>
+}
+export interface customFilterInfo<entityType> {
+  rawFilterInfo: {
+    key: string
+    rawFilterTranslator: (
+      args: any,
+      r: Remult,
+    ) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>
+  }
+}
 export declare class CustomSqlFilterBuilder {
   private r
   constructor(r: SqlCommandWithParameters)
@@ -135,12 +156,13 @@ export declare class CustomSqlFilterBuilder {
     condition: EntityFilter<entityType>,
   ): Promise<string>
 }
-//[ ] SqlCommandWithParameters from TBD is not exported
 //[ ] RepositoryOverloads from TBD is not exported
+export type CustomSqlFilterBuilderFunction = (
+  builder: CustomSqlFilterBuilder,
+) => void | Promise<any>
 export interface CustomSqlFilterObject {
   buildSql: CustomSqlFilterBuilderFunction
 }
-//[ ] CustomSqlFilterBuilderFunction from TBD is not exported
 export interface DataProvider {
   getEntityDataProvider(entity: EntityMetadata): EntityDataProvider
   transaction(
@@ -153,7 +175,6 @@ export declare function dbNamesOf<entityType>(
   repo: EntityMetadataOverloads<entityType>,
 ): Promise<EntityDbNames<entityType>>
 //[ ] EntityMetadataOverloads from TBD is not exported
-//[ ] EntityDbNames from TBD is not exported
 export declare function describeClass<classType>(
   classType: classType,
   classDecorator: ((x: any, context?: any) => any) | undefined,
@@ -194,7 +215,6 @@ export declare class EntityBase {
   isNew(): boolean
   get $(): FieldsRefForEntityBase<this>
 }
-//[ ] EntityRefForEntityBase from TBD is not exported
 export interface EntityDataProvider {
   count(where: Filter): Promise<number>
   find(options?: EntityDataProviderFindOptions): Promise<Array<any>>
@@ -208,6 +228,10 @@ export interface EntityDataProviderFindOptions {
   page?: number
   orderBy?: Sort
 }
+export declare type EntityDbNames<entityType> = {
+  [Properties in keyof Required<MembersOnly<entityType>>]: string
+} & EntityDbNamesBase
+//[ ] EntityDbNamesBase from TBD is not exported
 export declare type EntityFilter<entityType> = {
   [Properties in keyof Partial<MembersOnly<entityType>>]?:
     | (Partial<entityType>[Properties] extends number | Date | undefined
@@ -282,7 +306,6 @@ export interface EntityMetadata<entityType = any> {
   /** Metadata for the Entity's id */
   readonly idMetadata: IdMetadata<entityType>
 }
-//[ ] IdMetadata from TBD is not exported
 export interface EntityOptions<entityType = any> {
   /**A human readable name for the entity */
   caption?: string
@@ -435,6 +458,11 @@ export declare type EntityOrderBy<entityType> = {
 export interface EntityRef<entityType> extends EntityRefBase<entityType> {
   fields: FieldsRef<entityType>
   relations: RepositoryRelations<entityType>
+}
+export interface EntityRefForEntityBase<entityType>
+  extends EntityRefBase<entityType> {
+  fields: FieldsRefForEntityBase<entityType>
+  relations: RepositoryRelationsForEntityBase<entityType>
 }
 export interface ErrorInfo<entityType = any> {
   message?: string
@@ -778,7 +806,20 @@ export type FieldsRef<entityType> = FieldsRefBase<entityType> & {
     ? IdFieldRef<entityType, entityType[Properties]>
     : FieldRef<entityType, entityType[Properties]>
 }
-//[ ] FieldsRefBase from TBD is not exported
+export type FieldsRefBase<entityType> = {
+  find(fieldMetadataOrKey: FieldMetadata | string): FieldRef<entityType, any>
+  [Symbol.iterator]: () => IterableIterator<FieldRef<entityType, any>>
+  toArray(): FieldRef<entityType, any>[]
+}
+export type FieldsRefForEntityBase<entityType> = FieldsRefBase<entityType> & {
+  [Properties in keyof Omit<entityType, keyof EntityBase>]: NonNullable<
+    entityType[Properties]
+  > extends {
+    id?: number | string
+  }
+    ? IdFieldRef<entityType, entityType[Properties]>
+    : FieldRef<entityType, entityType[Properties]>
+}
 export declare function FieldType<valueType = any>(
   ...options: (
     | FieldOptions<any, valueType>
@@ -831,11 +872,32 @@ export declare class Filter {
     remult: Remult,
   ): Promise<Filter>
 }
-//[ ] FilterConsumer from TBD is not exported
-//[ ] customFilterInfo from TBD is not exported
+export interface FilterConsumer {
+  or(orElements: Filter[]): any
+  isEqualTo(col: FieldMetadata, val: any): void
+  isDifferentFrom(col: FieldMetadata, val: any): void
+  isNull(col: FieldMetadata): void
+  isNotNull(col: FieldMetadata): void
+  isGreaterOrEqualTo(col: FieldMetadata, val: any): void
+  isGreaterThan(col: FieldMetadata, val: any): void
+  isLessOrEqualTo(col: FieldMetadata, val: any): void
+  isLessThan(col: FieldMetadata, val: any): void
+  containsCaseInsensitive(col: FieldMetadata, val: any): void
+  isIn(col: FieldMetadata, val: any[]): void
+  custom(key: string, customItem: any): void
+  databaseCustom(databaseCustom: any): void
+}
 export interface FindFirstOptions<entityType>
   extends FindOptionsBase<entityType>,
     FindFirstOptionsBase<entityType> {}
+export interface FindFirstOptionsBase<entityType>
+  extends LoadOptions<entityType> {
+  /** determines if to cache the result, and return the results from cache.
+   */
+  useCache?: boolean
+  /** If set to true and an item is not found, it's created and returned*/
+  createIfNotFound?: boolean
+}
 export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
   /** Determines the number of rows returned by the request, on the browser the default is 100 rows
    * @example
@@ -853,6 +915,21 @@ export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
    * })
    */
   page?: number
+}
+export interface FindOptionsBase<entityType> extends LoadOptions<entityType> {
+  /** filters the data
+   * @example
+   * await taskRepo.find({where: { completed:false }})
+   * @see For more usage examples see [EntityFilter](https://remult.dev/docs/entityFilter.html)
+   */
+  where?: EntityFilter<entityType>
+  /** Determines the order of items returned .
+   * @example
+   * await this.remult.repo(Products).find({ orderBy: { name: "asc" }})
+   * @example
+   * await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
+   */
+  orderBy?: EntityOrderBy<entityType>
 }
 export declare function getEntityRef<entityType>(
   entity: entityType,
@@ -900,6 +977,19 @@ export type IdFilter<valueType> =
           : string
       >
     }
+export interface IdMetadata<entityType = any> {
+  /** Extracts the id value of an entity item. Useful in cases where the id column is not called id
+   * @example
+   * repo.metadata.idMetadata.getId(task)
+   */
+  getId(item: Partial<MembersOnly<entityType>>): any
+  field: FieldMetadata<any>
+  getIdFilter(...ids: any[]): EntityFilter<entityType>
+  isIdField(col: FieldMetadata): boolean
+  createIdInFilter(
+    items: Partial<MembersOnly<entityType>>[],
+  ): EntityFilter<entityType>
+}
 export declare class InMemoryDataProvider
   implements DataProvider, __RowsOfDataForTesting
 {
@@ -1027,7 +1117,6 @@ export interface LiveQueryStorage {
 export declare type MembersOnly<T> = {
   [K in keyof T as T[K] extends Function ? never : K]: T[K]
 }
-//[ ] Function from TBD is not exported
 export type MembersToInclude<T> = {
   [K in keyof ObjectMembersOnly<T>]?:
     | boolean
@@ -1047,7 +1136,6 @@ export type ObjectMembersOnly<T> = MembersOnly<{
     }[keyof T]
   >]: T[K]
 }>
-//[ ] ObjectKeyword from TBD is not exported
 export interface Paginator<entityType> {
   /** the items in the current page */
   items: entityType[]
@@ -1129,7 +1217,6 @@ export type RelationOptions<
    */
   defaultIncluded?: boolean
 } & Pick<FieldOptions, "caption">
-//[ ] FindOptionsBase from TBD is not exported
 export declare class Relations {
   /**
    * Define a to-one relation between entities, indicating a one-to-one relationship.
@@ -1321,7 +1408,6 @@ export interface RemultContext {}
 export declare function repo<entityType>(
   entity: ClassType<entityType>,
 ): import("./src/remult3/remult3").Repository<entityType>
-//[ ] LastTypeNode from TBD is not exported
 export interface Repository<entityType> {
   /** returns a result array based on the provided options */
   find(options?: FindOptions<entityType>): Promise<entityType[]>
@@ -1445,7 +1531,6 @@ export interface Repository<entityType> {
   addEventListener(listener: entityEventListener<entityType>): Unsubscribe
   relations: (item: entityType) => RepositoryRelations<entityType>
 }
-//[ ] FindFirstOptionsBase from TBD is not exported
 //[ ] entityEventListener from TBD is not exported
 export type RepositoryRelations<entityType> = {
   [K in keyof ObjectMembersOnly<entityType>]-?: NonNullable<
@@ -1459,6 +1544,17 @@ export type RepositoryRelations<entityType> = {
     : never
 }
 //[ ] R from TBD is not exported
+export type RepositoryRelationsForEntityBase<entityType> = {
+  [K in keyof Omit<entityType, keyof EntityBase>]-?: NonNullable<
+    entityType[K]
+  > extends Array<infer R>
+    ? Repository<R>
+    : entityType[K] extends infer R
+    ? {
+        findOne: (options?: FindOptionsBase<R>) => Promise<R>
+      }
+    : never
+}
 export declare class RestDataProvider implements DataProvider {
   private apiProvider
   constructor(apiProvider: () => ApiClient)
@@ -1509,6 +1605,9 @@ export type SortSegments<entityType> = {
 }
 export interface SqlCommand extends SqlCommandWithParameters {
   execute(sql: string): Promise<SqlResult>
+}
+export interface SqlCommandWithParameters {
+  addParameterAndReturnSqlToken(val: any): string
 }
 export declare class SqlDatabase implements DataProvider {
   private sql

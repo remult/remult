@@ -14,6 +14,7 @@ export {
   EntityOrderBy,
   EntityFilter,
   FindOptions,
+  FindOptionsBase,
   QueryResult,
   QueryOptions,
   Repository,
@@ -38,6 +39,15 @@ export {
   ClassFieldDecorator,
   ClassFieldDecoratorContextStub, //n1 consider removing in ts5
   LifecycleEvent,
+  FieldsRefBase,
+  FieldsRefForEntityBase,
+  RepositoryRelationsForEntityBase,
+  ControllerRefForControllerBase,
+  ControllerRefBase,
+  ControllerRef,
+  EntityRefForEntityBase,
+  IdMetadata,
+  FindFirstOptionsBase,
 } from './src/remult3/remult3'
 export {
   EntityBase,
@@ -69,7 +79,12 @@ export {
   ErrorInfo,
   RestDataProviderHttpProvider,
 } from './src/data-interfaces' //V
-export { SqlCommand, SqlImplementation, SqlResult } from './src/sql-command' //V
+export {
+  SqlCommand,
+  SqlCommandWithParameters,
+  SqlImplementation,
+  SqlResult,
+} from './src/sql-command' //V
 export {
   FieldMetadata,
   FieldOptions,
@@ -83,10 +98,13 @@ export { InMemoryDataProvider } from './src/data-providers/in-memory-database' /
 export { ArrayEntityDataProvider } from './src/data-providers/array-entity-data-provider' //V
 export { WebSqlDataProvider } from './src/data-providers/web-sql-data-provider' //V
 export { SqlDatabase } from './src/data-providers/sql-database' //V
+
 export {
   CustomSqlFilterObject,
   CustomSqlFilterBuilder,
   dbNamesOf,
+  CustomSqlFilterBuilderFunction,
+  EntityDbNames,
 } from './src/filter/filter-consumer-bridge-to-sql-request'
 
 export {
@@ -117,7 +135,11 @@ export {
 export { ExternalHttpProvider } from './src/buildRestDataProvider'
 export { SortSegment, Sort } from './src/sort'
 export { CompoundIdField } from './src/CompoundIdField'
-export { Filter } from './src/filter/filter-interfaces'
+export {
+  Filter,
+  FilterConsumer,
+  customFilterInfo,
+} from './src/filter/filter-interfaces'
 export { UrlBuilder } from './urlBuilder'
 export { Validators } from './src/validators'
 

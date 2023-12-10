@@ -39,6 +39,7 @@ try {
       'Pick',
       'Omit',
       'Record',
+      'Function',
       'Exclude',
       'Extract',
       'NonNullable',
@@ -195,6 +196,8 @@ try {
               ts.SyntaxKind.UndefinedKeyword,
               ts.SyntaxKind.NeverKeyword,
               ts.SyntaxKind.SymbolKeyword,
+              ts.SyntaxKind.ObjectKeyword,
+              ts.SyntaxKind.LastTypeNode,
             ].includes(node.kind)
           ) {
           } else {

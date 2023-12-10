@@ -19,7 +19,7 @@ import { Filter } from '../filter/filter-interfaces'
 import { Sort } from '../sort'
 import type {
   ControllerRef,
-  ControllerRefForEntityBase,
+  ControllerRefForControllerBase,
   EntityFilter,
   EntityMetadata,
   EntityOrderBy,
@@ -2550,10 +2550,16 @@ export class ControllerBase {
     return this
   }
   get $() {
-    return getFields(this, this.remult) as unknown as FieldsRefForEntityBase<this>
+    return getFields(
+      this,
+      this.remult,
+    ) as unknown as FieldsRefForEntityBase<this>
   }
   get _() {
-    return getControllerRef(this, this.remult) as unknown as ControllerRefForEntityBase<this>
+    return getControllerRef(
+      this,
+      this.remult,
+    ) as unknown as ControllerRefForControllerBase<this>
   }
 }
 

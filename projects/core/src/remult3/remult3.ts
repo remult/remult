@@ -102,11 +102,13 @@ export interface ControllerRefBase<entityType> extends Subscribable {
   readonly isLoading: boolean
 }
 
-export interface ControllerRef<entityType> extends ControllerRefBase<entityType> {
+export interface ControllerRef<entityType>
+  extends ControllerRefBase<entityType> {
   fields: FieldsRef<entityType>
 }
 
-export interface ControllerRefForEntityBase<entityType> extends ControllerRefBase<entityType> {
+export interface ControllerRefForControllerBase<entityType>
+  extends ControllerRefBase<entityType> {
   fields: FieldsRefForEntityBase<entityType>
 }
 
