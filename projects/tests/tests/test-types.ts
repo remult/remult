@@ -2,12 +2,9 @@ import {
   Fields,
   IdEntity,
   Relations,
-  FieldsRef,
-  getEntityRef,
+  EntityBase,
+  EntityFilter,
   repo,
-  ObjectMembersOnly,
-  getFields,
-  type EntityBase,
 } from '../../core'
 
 export declare type MyEntityOrderBy<entityType> = {
@@ -49,3 +46,20 @@ type OmitFunctions<entityType> = {
 
 type MembersOnly<T> = OmitFunctions<Omit<T, keyof Pick<EntityBase, '$' | '_'>>>
 const x: MembersOnly<Person>
+
+class HelperBase extends EntityBase {
+  id = 0
+  name = ''
+  date?:Date
+}
+class Helper extends HelperBase {
+  title = ''
+}
+
+let f: EntityFilter<HelperBase> = {}
+
+let f2: EntityFilter<Helper> = {
+  ...f,
+}
+
+repo(HelperBase).fields.

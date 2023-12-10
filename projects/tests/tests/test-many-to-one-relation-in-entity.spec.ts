@@ -284,7 +284,9 @@ describe('many to one relation', () => {
     await c.save()
     await p.save()
     expect(p.category).toBeNull()
-    ;(p._ as rowHelperImplementation<Products>)._updateEntityBasedOnApi({
+    ;(
+      p._ as unknown as rowHelperImplementation<Products>
+    )._updateEntityBasedOnApi({
       category: 1,
     })
     expect(p.$.category.inputValue).toBe('1')

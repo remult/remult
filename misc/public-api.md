@@ -1115,7 +1115,9 @@ export interface LiveQueryStorage {
   keepAliveAndReturnUnknownQueryIds(queryIds: string[]): Promise<string[]>
 }
 export declare type MembersOnly<T> = {
-  [K in keyof T as T[K] extends Function ? never : K]: T[K]
+  [K in keyof Omit<T, keyof EntityBase> as T[K] extends Function
+    ? never
+    : K]: T[K]
 }
 export type MembersToInclude<T> = {
   [K in keyof ObjectMembersOnly<T>]?:

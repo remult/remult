@@ -264,7 +264,9 @@ export interface EntityMetadata<entityType = any> {
 }
 
 export declare type MembersOnly<T> = {
-  [K in keyof T as T[K] extends Function ? never : K]: T[K]
+  [K in keyof Omit<T, keyof EntityBase> as T[K] extends Function
+    ? never
+    : K]: T[K]
 }
 //Pick<
 //   T,
