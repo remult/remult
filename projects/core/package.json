@@ -69,6 +69,14 @@
       },
       "import": "./esm/remult-fastify.js"
     },
+    "./remult-hapi": {
+      "require": "./remult-hapi.js",
+      "node": {
+        "require": "./remult-hapi.js",
+        "import": "./remult-hapi.js"
+      },
+      "import": "./esm/remult-hapi.js"
+    },
     "./remult-fresh": {
       "require": "./remult-fresh.js",
       "node": {
@@ -133,21 +141,13 @@
       },
       "import": "./esm/graphql.js"
     },
-    "./src/remult3": {
-      "require": "./src/remult3/index.js",
+    "./internals": {
+      "require": "./internals.js",
       "node": {
-        "require": "./src/remult3/index.js",
-        "import": "./src/remult3/index.js"
+        "require": "./internals.js",
+        "import": "./internals.js"
       },
-      "import": "./esm/src/remult3/index.js"
-    },
-    "./src/server-action": {
-      "require": "./src/server-action.js",
-      "node": {
-        "require": "./src/server-action.js",
-        "import": "./src/server-action.js"
-      },
-      "import": "./esm/src/server-action.js"
+      "import": "./esm/internals.js"
     }
   }
 }

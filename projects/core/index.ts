@@ -1,8 +1,11 @@
+import type { ClassType } from './classType'
+
+export type { ClassType } from './classType'
 /*
  * Public API Surface of remult
  */
 export {
-  OmitEB,
+  MembersOnly,
   FieldsMetadata,
   FieldRef,
   IdFieldRef,
@@ -11,6 +14,7 @@ export {
   EntityOrderBy,
   EntityFilter,
   FindOptions,
+  FindOptionsBase,
   QueryResult,
   QueryOptions,
   Repository,
@@ -24,11 +28,28 @@ export {
   Paginator,
   LiveQuery,
   LiveQueryChangeInfo,
+  Subscribable,
+  RefSubscriber,
+  RefSubscriberBase,
+  RelationOptions,
+  ObjectMembersOnly,
+  MembersToInclude,
+  RepositoryRelations,
+  EntityIdFields,
+  ClassFieldDecorator,
+  ClassFieldDecoratorContextStub, //n1 consider removing in ts5
+  LifecycleEvent,
+  FieldsRefBase,
+  FieldsRefForEntityBase,
+  RepositoryRelationsForEntityBase,
+  ControllerRefForControllerBase,
+  ControllerRefBase,
+  ControllerRef,
+  EntityRefForEntityBase,
+  IdMetadata,
+  FindFirstOptionsBase,
 } from './src/remult3/remult3'
 export {
-  Field,
-  Fields,
-  IdEntity,
   EntityBase,
   ControllerBase,
   FieldType,
@@ -41,8 +62,14 @@ export {
 } from './src/remult3/RepositoryImplementation'
 export { Entity } from './src/remult3/entity'
 export { getEntityRef } from './src/remult3/getEntityRef'
+export {
+  Field,
+  Fields,
+  StringFieldOptions,
+  Relations,
+} from './src/remult3/Fields'
+export { IdEntity } from './src/remult3/IdEntity'
 
-export { StringFieldOptions } from './src/remult3/RepositoryImplementation'
 export { describeClass } from './src/remult3/DecoratorReplacer'
 export { EntityOptions } from './src/entity'
 export {
@@ -52,7 +79,12 @@ export {
   ErrorInfo,
   RestDataProviderHttpProvider,
 } from './src/data-interfaces' //V
-export { SqlCommand, SqlImplementation, SqlResult } from './src/sql-command' //V
+export {
+  SqlCommand,
+  SqlCommandWithParameters,
+  SqlImplementation,
+  SqlResult,
+} from './src/sql-command' //V
 export {
   FieldMetadata,
   FieldOptions,
@@ -66,10 +98,13 @@ export { InMemoryDataProvider } from './src/data-providers/in-memory-database' /
 export { ArrayEntityDataProvider } from './src/data-providers/array-entity-data-provider' //V
 export { WebSqlDataProvider } from './src/data-providers/web-sql-data-provider' //V
 export { SqlDatabase } from './src/data-providers/sql-database' //V
+
 export {
   CustomSqlFilterObject,
   CustomSqlFilterBuilder,
   dbNamesOf,
+  CustomSqlFilterBuilderFunction,
+  EntityDbNames,
 } from './src/filter/filter-consumer-bridge-to-sql-request'
 
 export {
@@ -99,14 +134,19 @@ export {
 } from './src/context'
 export { ExternalHttpProvider } from './src/buildRestDataProvider'
 export { SortSegment, Sort } from './src/sort'
-export { OneToMany } from './src/column'
 export { CompoundIdField } from './src/CompoundIdField'
-export { Filter } from './src/filter/filter-interfaces'
+export {
+  Filter,
+  FilterConsumer,
+  customFilterInfo,
+} from './src/filter/filter-interfaces'
 export { UrlBuilder } from './urlBuilder'
 export { Validators } from './src/validators'
 
 export { ValueConverters } from './src/valueConverters'
 export { remult } from './src/remult-proxy'
+import { remult } from './src/remult-proxy'
+
 //export { getId } from './src/remult3/getId';
 
 export {
@@ -123,3 +163,19 @@ export {
   LiveQueryChange,
   Unsubscribe,
 } from './src/live-query/SubscriptionChannel'
+
+/**
+ * A convenient shortcut function to quickly obtain a repository for a specific entity type in Remult.
+ *
+ * @param entity The entity class type for which you want to get a repository.
+ * @returns A repository instance for the specified entity type.
+ *
+ * Example usage:
+ * ```ts
+ * await repo(Task).find()
+ * await repo(Customer).insert()
+ * ```
+ */
+export function repo<entityType>(entity: ClassType<entityType>) {
+  return remult.repo(entity)
+}

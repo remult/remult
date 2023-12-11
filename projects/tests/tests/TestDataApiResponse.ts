@@ -18,6 +18,6 @@ export class TestDataApiResponse implements DataApiResponse {
     throw new Error('not found')
   }
   error(data) {
-    throw new Error('error: ' + data + ' ' + JSON.stringify(data))
+    throw data
   }
 }

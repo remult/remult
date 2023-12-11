@@ -47,7 +47,7 @@ class JsonEntityDataProvider implements EntityDataProvider {
       this.loadEntityData((dp, save) => dp.find(options)),
     ))
   }
-  count(where?: Filter): Promise<number> {
+  count(where: Filter): Promise<number> {
     return (this.p = this.p.then(() =>
       this.loadEntityData((dp, save) => dp.count(where)),
     ))

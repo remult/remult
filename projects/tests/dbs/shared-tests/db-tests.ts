@@ -40,10 +40,7 @@ import { tasks } from '../../tests/tasks'
 import { Status } from '../../tests/testModel/models'
 import type { DbTestProps } from './db-tests-props'
 
-import {
-  entityWithValidations,
-  testConfiguration,
-} from './entityWithValidations'
+import { entityWithValidations } from './entityWithValidations'
 import type { CategoriesForTesting } from '../../tests/remult-3-entities'
 import { ValueConverters } from '../../../core/src/valueConverters'
 import { it, vi } from 'vitest'
@@ -393,7 +390,7 @@ export function commonDbTests(
     expect(x[0].name).toBe('noam')
   })
 
-  async function createData<T extends CategoriesForTesting>(
+  async function createData<T extends CategoriesForTesting = Categories>(
     doInsert?: (
       insert: (
         id: number,
@@ -403,9 +400,10 @@ export function commonDbTests(
       ) => Promise<void>,
     ) => Promise<void>,
     entity?: {
-      new (): CategoriesForTesting
+      new (): T
     },
   ): Promise<Repository<T>> {
+    //@ts-ignore
     if (!entity) entity = Categories
     let rep = (await createEntity(entity)) as Repository<T>
     if (doInsert)
@@ -645,7 +643,7 @@ export function commonDbTests(
     Entity<typeof type.prototype>(undefined, {
       allowApiCrud: true,
       saving: () => {
-        if (!testConfiguration.restDbRunningOnServer) count++
+        count++
       },
     })(type)
     let c = await createData(async (insert) => await insert(1, 'noam'), type)
@@ -1300,3 +1298,4 @@ export enum PriorityWithString {
   High = 'High',
   Critical = 'Critical',
 }
+//[ ] - test typing issue with hagai on Family Deliveries

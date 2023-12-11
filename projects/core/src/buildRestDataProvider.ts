@@ -3,9 +3,9 @@ import { RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-da
 
 export function buildRestDataProvider(
   provider: ExternalHttpProvider | typeof fetch,
-) {
+): RestDataProviderHttpProvider {
   if (!provider) return new RestDataProviderHttpProviderUsingFetch()
-  let httpDataProvider: RestDataProviderHttpProvider
+  let httpDataProvider: RestDataProviderHttpProvider | undefined
 
   if (!httpDataProvider) {
     if (isExternalHttpProvider(provider)) {
@@ -19,12 +19,12 @@ export function buildRestDataProvider(
       httpDataProvider = new RestDataProviderHttpProviderUsingFetch(provider)
     }
   }
-  return httpDataProvider
+  return httpDataProvider!
 }
 
 export function isExternalHttpProvider(item: any) {
   let http: ExternalHttpProvider = item as ExternalHttpProvider
-  if (http && http.get && http.put && http.post && http.delete) return true
+  if (http && http.get! && http.put! && http.post! && http.delete!) return true
   return false
 }
 export class HttpProviderBridgeToRestDataProviderHttpProvider

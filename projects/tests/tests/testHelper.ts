@@ -19,7 +19,6 @@ import {
   actionInfo,
   serverActionField,
 } from '../../core/src/server-action-info'
-import { testConfiguration } from '../dbs/shared-tests/entityWithValidations'
 import { TestDataApiResponse } from './TestDataApiResponse'
 
 //actionInfo.runningOnServer = false;
@@ -186,10 +185,11 @@ export function createMockHttpDataProvider(
       let result
       r.deleted = () => {}
       try {
-        testConfiguration.restDbRunningOnServer = true
-        await dataApi.delete(r, urlSplit[urlSplit.length - 1])
+        await dataApi.delete(
+          r,
+          decodeURIComponent(urlSplit[urlSplit.length - 1]),
+        )
       } finally {
-        testConfiguration.restDbRunningOnServer = false
       }
       return result
     },
@@ -201,10 +201,8 @@ export function createMockHttpDataProvider(
         result = data
       }
       try {
-        testConfiguration.restDbRunningOnServer = true
         await dataApi.httpGet(r, urlToReq(url), async () => '')
       } finally {
-        testConfiguration.restDbRunningOnServer = false
       }
       return result
     },
@@ -219,10 +217,8 @@ export function createMockHttpDataProvider(
         result = data
       }
       try {
-        testConfiguration.restDbRunningOnServer = true
         await dataApi.httpPost(r, urlToReq(url), data, async () => ({}))
       } finally {
-        testConfiguration.restDbRunningOnServer = false
       }
       return result
     },
@@ -234,10 +230,12 @@ export function createMockHttpDataProvider(
         result = data
       }
       try {
-        testConfiguration.restDbRunningOnServer = true
-        await dataApi.put(r, urlSplit[urlSplit.length - 1], data)
+        await dataApi.put(
+          r,
+          decodeURIComponent(urlSplit[urlSplit.length - 1]),
+          data,
+        )
       } finally {
-        testConfiguration.restDbRunningOnServer = false
       }
       return result
     },

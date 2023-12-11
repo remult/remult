@@ -1,4 +1,4 @@
-import type { ErrorInfo } from '../..'
+import type { ErrorInfo, FieldOptions } from '../..'
 import type { ClassType } from '../../classType'
 import type { entityEventListener } from '../__EntityValueProvider'
 import type { FieldMetadata } from '../column-interfaces'
@@ -11,16 +11,15 @@ import type {
 import type { SortSegment } from '../sort'
 import type { EntityBase } from './RepositoryImplementation'
 
-export interface EntityRef<entityType> extends Subscribable {
+export interface EntityRefBase<entityType> extends Subscribable {
   hasErrors(): boolean
   undoChanges()
   save(): Promise<entityType>
   reload(): Promise<entityType>
   delete(): Promise<void>
-  isNew(): boolean
+  isNew(): boolean //
   wasChanged(): boolean
   wasDeleted(): boolean
-  fields: FieldsRef<entityType>
   error: string
   getId(): idType<entityType>
   getOriginalId(): idType<entityType>
@@ -33,13 +32,86 @@ export interface EntityRef<entityType> extends Subscribable {
   readonly apiInsertAllowed: boolean
   readonly isLoading: boolean
 }
-export interface ControllerRef<entityType> extends Subscribable {
-  hasErrors(): boolean
+
+export interface EntityRef<entityType> extends EntityRefBase<entityType> {
   fields: FieldsRef<entityType>
+  relations: RepositoryRelations<entityType>
+}
+
+export interface EntityRefForEntityBase<entityType>
+  extends EntityRefBase<entityType> {
+  fields: FieldsRefForEntityBase<entityType>
+  relations: RepositoryRelationsForEntityBase<entityType>
+}
+
+/**
+ * Represents a lifecycle event associated with an entity instance. These events
+ * are triggered during various stages of the entity's lifecycle, such as validation,
+ * saving, saved, deleting, and deleted.
+ *
+ * @template entityType The type of the entity associated with the event.
+ * @see [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
+ */
+export interface LifecycleEvent<entityType> {
+  /**
+   * Indicates whether the entity is new or existing.
+   */
+  isNew: boolean
+
+  /**
+   * A reference to the fields of the entity, providing access to its properties.
+   */
+  fields: FieldsRef<entityType>
+
+  /**
+   * The ID of the entity.
+   */
+  id: idType<entityType>
+
+  /**
+   * The original ID of the entity, useful for tracking changes.
+   */
+  originalId: idType<entityType>
+
+  /**
+   * The repository associated with the entity, providing access to repository methods.
+   */
+  repository: Repository<entityType>
+
+  /**
+   * Metadata describing the entity's structure and configuration.
+   */
+  metadata: EntityMetadata<entityType>
+
+  /**
+   * A function that can be used to prevent the default behavior associated with
+   * the lifecycle event.
+   */
+  preventDefault: VoidFunction
+
+  /**
+   * A reference to the repository relations associated with the entity, providing
+   * access to related entities and their data.
+   */
+  relations: RepositoryRelations<entityType>
+}
+export interface ControllerRefBase<entityType> extends Subscribable {
+  hasErrors(): boolean
   error: string
   validate(): Promise<ErrorInfo<entityType> | undefined>
   readonly isLoading: boolean
 }
+
+export interface ControllerRef<entityType>
+  extends ControllerRefBase<entityType> {
+  fields: FieldsRef<entityType>
+}
+
+export interface ControllerRefForControllerBase<entityType>
+  extends ControllerRefBase<entityType> {
+  fields: FieldsRefForEntityBase<entityType>
+}
+
 export interface RefSubscriberBase {
   reportChanged: () => void
   reportObserved: () => void
@@ -50,19 +122,13 @@ export interface Subscribable {
   subscribe(listener: RefSubscriber): Unsubscribe
 }
 
-export type FieldsRef<entityType> = {
-  [Properties in keyof OmitEB<entityType>]: entityType[Properties] extends {
-    id?: number | string
-  }
-    ? IdFieldRef<entityType, entityType[Properties]>
-    : FieldRef<entityType, entityType[Properties]>
-} & {
+export type FieldsRefBase<entityType> = {
   find(fieldMetadataOrKey: FieldMetadata | string): FieldRef<entityType, any>
   [Symbol.iterator]: () => IterableIterator<FieldRef<entityType, any>>
   toArray(): FieldRef<entityType, any>[]
 }
 export type FieldsMetadata<entityType> = {
-  [Properties in keyof OmitEB<entityType>]: FieldMetadata<
+  [Properties in keyof MembersOnly<entityType>]: FieldMetadata<
     entityType[Properties],
     entityType
   >
@@ -72,6 +138,26 @@ export type FieldsMetadata<entityType> = {
   ): FieldMetadata<any, entityType>
   [Symbol.iterator]: () => IterableIterator<FieldMetadata<any, entityType>>
   toArray(): FieldMetadata<any, entityType>[]
+}
+
+export type FieldsRef<entityType> = FieldsRefBase<entityType> & {
+  [Properties in keyof MembersOnly<entityType>]: NonNullable<
+    entityType[Properties]
+  > extends {
+    id?: number | string
+  }
+    ? IdFieldRef<entityType, entityType[Properties]>
+    : FieldRef<entityType, entityType[Properties]>
+}
+
+export type FieldsRefForEntityBase<entityType> = FieldsRefBase<entityType> & {
+  [Properties in keyof Omit<entityType, keyof EntityBase>]: NonNullable<
+    entityType[Properties]
+  > extends {
+    id?: number | string
+  }
+    ? IdFieldRef<entityType, entityType[Properties]>
+    : FieldRef<entityType, entityType[Properties]>
 }
 
 export type SortSegments<entityType> = {
@@ -114,12 +200,12 @@ export interface IdMetadata<entityType = any> {
    * @example
    * repo.metadata.idMetadata.getId(task)
    */
-  getId(item: Partial<OmitEB<entityType>>): any
+  getId(item: Partial<MembersOnly<entityType>>): any
   field: FieldMetadata<any>
   getIdFilter(...ids: any[]): EntityFilter<entityType>
   isIdField(col: FieldMetadata): boolean
   createIdInFilter(
-    items: Partial<OmitEB<entityType>>[],
+    items: Partial<MembersOnly<entityType>>[],
   ): EntityFilter<entityType>
 }
 
@@ -177,7 +263,15 @@ export interface EntityMetadata<entityType = any> {
   readonly idMetadata: IdMetadata<entityType>
 }
 
-export declare type OmitEB<T> = Omit<T, keyof EntityBase>
+export declare type MembersOnly<T> = {
+  [K in keyof Omit<T, keyof EntityBase> as T[K] extends Function
+    ? never
+    : K]: T[K]
+}
+//Pick<
+//   T,
+//   { [K in keyof T]: T[K] extends Function ? never : K }[keyof T]
+// >
 export declare type idType<entityType> = entityType extends { id?: number }
   ? number
   : entityType extends { id?: string }
@@ -235,15 +329,15 @@ export interface Repository<entityType> {
    */
   validate(
     item: Partial<entityType>,
-    ...fields: Extract<keyof OmitEB<entityType>, string>[]
+    ...fields: Extract<keyof MembersOnly<entityType>, string>[]
   ): Promise<ErrorInfo<entityType> | undefined>
   /** saves an item or item[] to the data source. It assumes that if an `id` value exists, it's an existing row - otherwise it's a new row
    * @example
    * await taskRepo.save({...task, completed:true })
    */
 
-  save(item: Partial<OmitEB<entityType>>[]): Promise<entityType[]>
-  save(item: Partial<OmitEB<entityType>>): Promise<entityType>
+  save(item: Partial<MembersOnly<entityType>>[]): Promise<entityType[]>
+  save(item: Partial<MembersOnly<entityType>>): Promise<entityType>
 
   /**Insert an item or item[] to the data source
    * @example
@@ -251,8 +345,8 @@ export interface Repository<entityType> {
    * @example
    * await taskRepo.insert([{title:"task a"}, {title:"task b", completed:true }])
    */
-  insert(item: Partial<OmitEB<entityType>>[]): Promise<entityType[]>
-  insert(item: Partial<OmitEB<entityType>>): Promise<entityType>
+  insert(item: Partial<MembersOnly<entityType>>[]): Promise<entityType[]>
+  insert(item: Partial<MembersOnly<entityType>>): Promise<entityType>
 
   /** Updates an item, based on its `id`
    * @example
@@ -264,11 +358,11 @@ export interface Repository<entityType> {
       : entityType extends { id?: string }
       ? string
       : string | number,
-    item: Partial<OmitEB<entityType>>,
+    item: Partial<MembersOnly<entityType>>,
   ): Promise<entityType>
   update(
-    id: Partial<OmitEB<entityType>>,
-    item: Partial<OmitEB<entityType>>,
+    id: Partial<MembersOnly<entityType>>,
+    item: Partial<MembersOnly<entityType>>,
   ): Promise<entityType>
 
   /** Deletes an Item*/
@@ -279,10 +373,10 @@ export interface Repository<entityType> {
       ? string
       : string | number,
   ): Promise<void>
-  delete(item: Partial<OmitEB<entityType>>): Promise<void>
+  delete(item: Partial<MembersOnly<entityType>>): Promise<void>
 
   /** Creates an instance of an item. It'll not be saved to the data source unless `save` or `insert` will be called for that item */
-  create(item?: Partial<OmitEB<entityType>>): entityType
+  create(item?: Partial<MembersOnly<entityType>>): entityType
 
   toJson(item: Promise<entityType[]>): Promise<any[]>
   toJson(item: entityType[]): any[]
@@ -305,6 +399,7 @@ export interface Repository<entityType> {
    */
   metadata: EntityMetadata<entityType>
   addEventListener(listener: entityEventListener<entityType>): Unsubscribe
+  relations: (item: entityType) => RepositoryRelations<entityType>
 }
 export interface LiveQuery<entityType> {
   subscribe(next: (info: LiveQueryChangeInfo<entityType>) => void): Unsubscribe
@@ -342,27 +437,26 @@ export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
  * await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
  */
 export declare type EntityOrderBy<entityType> = {
-  [Properties in keyof Partial<OmitEB<entityType>>]?: 'asc' | 'desc'
+  [Properties in keyof Partial<MembersOnly<entityType>>]?: 'asc' | 'desc'
 }
 
 /**Used to filter the desired result set
  * @see [EntityFilter](http://remult.dev/docs/entityFilter.html)
  */
 export declare type EntityFilter<entityType> = {
-  [Properties in keyof Partial<OmitEB<entityType>>]?: (Partial<
-    OmitEB<entityType>
-  >[Properties] extends number | Date | undefined
-    ? ComparisonValueFilter<Partial<OmitEB<entityType>>[Properties]>
-    : Partial<OmitEB<entityType>>[Properties] extends string | undefined
-    ? ContainsStringValueFilter & ComparisonValueFilter<string>
-    : Partial<OmitEB<entityType>>[Properties] extends boolean | undefined
-    ? ValueFilter<boolean>
-    : Partial<OmitEB<entityType>>[Properties] extends
-        | { id?: string | number }
-        | undefined
-    ? IdFilter<Partial<OmitEB<entityType>>[Properties]>
-    : ValueFilter<Partial<OmitEB<entityType>>[Properties]>) &
-    ContainsStringValueFilter
+  [Properties in keyof Partial<MembersOnly<entityType>>]?:
+    | (Partial<entityType>[Properties] extends number | Date | undefined
+        ? ComparisonValueFilter<Partial<entityType>[Properties]>
+        : Partial<entityType>[Properties] extends string | undefined
+        ? ContainsStringValueFilter & ComparisonValueFilter<string>
+        : Partial<entityType>[Properties] extends boolean | undefined
+        ? ValueFilter<boolean>
+        : Partial<entityType>[Properties] extends
+            | { id?: string | number }
+            | undefined
+        ? IdFilter<Partial<entityType>[Properties]>
+        : ValueFilter<Partial<entityType>[Properties]>)
+    | ContainsStringValueFilter
 } & {
   $or?: EntityFilter<entityType>[]
   $and?: EntityFilter<entityType>[]
@@ -397,7 +491,47 @@ export type IdFilter<valueType> =
     }
 
 export interface LoadOptions<entityType> {
+  /**
+   * @deprecated The 'load' option is deprecated and will be removed in future versions.
+   * Use 'Relations.toOne' along with the 'include' option instead.
+   *
+   * Example usage:
+   * ```
+   * // Deprecated usage with 'load' option
+   * await remult.repo(Order).find({
+   *   load: (o) => [o.customer],
+   * });
+   *
+   *
+   * // Preferred usage with 'Relations.toOne' and 'include' option
+   * await remult.repo(Order).find({
+   *   include: { customer: true },
+   * });
+   * ```
+   */
   load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[]
+  /**
+   * An option used in the `find` and `findFirst` methods to specify which related entities should be included
+   * when querying the source entity. It allows you to eagerly load related data to avoid N+1 query problems.
+   *
+   * @param include An object specifying the related entities to include, their options, and filtering criteria.
+   *
+   * Example usage:
+   * ```
+   * const orders = await customerRepo.find({
+   *   include: {
+   *     // Include the 'tags' relation for each customer.
+   *     tags: true,
+   *   },
+   * });
+   * ```
+   * In this example, the `tags` relation for each customer will be loaded and included in the query result.
+   *
+   * @see {@link Relations.toMany}
+   * @see {@link Relations.toOne}
+   * @see {@link RelationOptions}
+   */
+  include?: MembersToInclude<entityType>
 }
 export interface FindOptionsBase<entityType> extends LoadOptions<entityType> {
   /** filters the data
@@ -464,4 +598,191 @@ export interface Paginator<entityType> {
   count(): Promise<number>
 }
 
+export interface RelationInfo {
+  toType: () => any
+  type: 'reference' | 'toOne' | 'toMany' //remove to from name
+}
+//[ ] V2 - what to do about count?
+//[ ] V2 - condition? not to fetch if null etc....
+//[ ] V3 - all these fields will also appear in the where etc... in the typescript api - but we will not enforce them
+
+/**
+ * Options for configuring a relation between entities.
+ *
+ * @template fromEntity The type of the source entity (the entity defining the relation).
+ * @template toEntity The type of the target entity (the related entity).
+ * @template matchIdEntity The type used for matching IDs in the relation.
+ * @template optionsType The type of find options to apply to the relation (default is FindOptionsBase<toEntity>).
+ */
+
+export type RelationOptions<
+  fromEntity,
+  toEntity,
+  matchIdEntity,
+  optionsType extends FindOptionsBase<toEntity> = FindOptionsBase<toEntity>,
+> = {
+  /**
+   * An object specifying custom field names for the relation.
+   * Each key represents a field in the related entity, and its value is the corresponding field in the source entity.
+   * For example, `{ customerId: 'id' }` maps the 'customerId' field in the related entity to the 'id' field in the source entity.
+   * This is useful when you want to define custom field mappings for the relation.
+   */
+  //[ ] V2- consider enforcing types
+  fields?: {
+    [K in keyof toEntity]?: keyof fromEntity
+  }
+  /**
+   * The name of the field for this relation.
+   */
+  field?: keyof matchIdEntity
+  /**
+   * Find options to apply to the relation when fetching related entities.
+   * You can specify a predefined set of find options or provide a function that takes the source entity
+   * and returns find options dynamically.
+   * These options allow you to customize how related entities are retrieved.
+   */
+  findOptions?: optionsType | ((entity: fromEntity) => optionsType)
+  /**
+   * Determines whether the relation should be included by default when querying the source entity.
+   * When set to true, related entities will be automatically included when querying the source entity.
+   * If false or not specified, related entities will need to be explicitly included using the `include` option.
+   */
+  defaultIncluded?: boolean
+} & Pick<FieldOptions, 'caption'>
+
+export type ObjectMembersOnly<T> = MembersOnly<{
+  [K in keyof Pick<
+    T,
+    {
+      [K in keyof T]: T[K] extends object | undefined | null
+        ? T[K] extends Date | undefined | null
+          ? never
+          : K
+        : never
+    }[keyof T]
+  >]: T[K]
+}>
+
+export type MembersToInclude<T> = {
+  [K in keyof ObjectMembersOnly<T>]?:
+    | boolean
+    | (NonNullable<T[K]> extends Array<any>
+        ? FindOptions<NonNullable<T[K]>[number]>
+        : FindFirstOptions<NonNullable<T[K]>>)
+}
+
+export type RepositoryRelations<entityType> = {
+  [K in keyof ObjectMembersOnly<entityType>]-?: NonNullable<
+    entityType[K]
+  > extends Array<infer R>
+    ? Repository<R>
+    : entityType[K] extends infer R
+    ? { findOne: (options?: FindOptionsBase<R>) => Promise<R> }
+    : never
+}
+
+export type RepositoryRelationsForEntityBase<entityType> = {
+  [K in keyof Omit<entityType, keyof EntityBase>]-?: NonNullable<
+    entityType[K]
+  > extends Array<infer R>
+    ? Repository<R>
+    : entityType[K] extends infer R
+    ? { findOne: (options?: FindOptionsBase<R>) => Promise<R> }
+    : never
+}
+
+export declare type EntityIdFields<entityType> = {
+  [Properties in keyof Partial<MembersOnly<entityType>>]?: true
+}
+
+export interface ClassFieldDecoratorContextStub<entityType, valueType> {
+  readonly access: {
+    set(object: entityType, value: valueType): void
+  }
+  readonly name: string
+}
+export interface ClassDecoratorContextStub<
+  Class extends new (...args: any) => any = new (...args: any) => any,
+> {
+  readonly kind: 'class'
+  readonly name: string | undefined
+  addInitializer(initializer: (this: Class) => void): void
+}
+
+export type ClassFieldDecorator<entityType, valueType> = (
+  target: any,
+  context:
+    | string
+    | ClassFieldDecoratorContextStub<entityType, valueType | undefined>,
+  c?: any,
+) => void
+
+//p2 - write doc about controlling updates of rows...
+
+//p2 - need a way to extract the fields from the relation - for generating relation based sql
+
+//p2 - add docs for apply changes
+//y2 - discuss a default date formatter
+//[ ] - consider using this in saving etc...
+//p2 - when subscribe is forbidden - the query still runs after the renew process
+//p2 - JSON FIELD LOST JSON STORAGE WHEN SET INPUT VALUE
+//p2 - doc this:
+/**
+ * //p2 - doc this
+remult.apiClient.httpClient = (
+  input: RequestInfo | URL,
+  init?: RequestInit
+) => {
+  return fetch(input, {
+    ...init,
+    headers: {
+      authorization: 'Bearer ' + sessionStorage.sessionId,
+    },
+    cache: 'no-store',
+  })
+}
+
+&&
+remult.apiClient.url='localhost:3007/api
+
+
+ */
+//p2 - with remult promise for remultexpress
+//p2 - 'update tasks set  where id = $1
+//p2 - live query refresh of view on table update
+//p2 - Operator '>' cannot be applied to types 'Number' and 'number'.ts(2365) - change fields to <entityType,number> (now it's Number)
+//p2 - Field(()=>String) - doesn't play nice with strict mode - it prevents people from extending basic types
+//p2 - with remult for remultexpress
+//p2 - Add a with remult promise to Remult!
+
+//p2 - filterToRaw should get a dbnames of - and we should create a dbnames of that supports an alias
+
+//y2 - livequery for findfirst (@JY)
+//y2 - #239 - (@JY) add a way to get from fieldMetadata back to entity repo (like we have in fieldRef)
+//p2 - constraints (@JY)
+//p2 - Add ability to process query that comes from the api
+//p2 - too much data by mistake
+//p2 - postgres case sensitive
+
 //p2 - fix sql log to console to make more sense
+//p2 - type metadata.key - to keyof entity - based on cwis input
+//p2 - processError in remult express
+
+//y2 - Backend methods are transactions, it's not intuitive and maybe should be optional / opt in
+//p2 - get backend methods to work when specifying types for date, and entities as poco's
+//p2 - allow find options preprocessor for api calls, to use for authorization
+//y2 - remove __dirname from tutorials
+//y2 - add some api testing framework for user unit tests (will help with codesandbox based discussions)
+//y2 - I tihnk there should be a way to throw a forbidden exception
+//p2 - conside law-q db based on schema issue - I think that while running the dataProvider function, we should have a valid remult - maybe even have a valid remult, that will be valid until api is run
+//p2 - allow api read to also support instance and filter.
+//p2 - investigate why did lawq didn't run after build - even though it ran with tsx
+//y2 - we should really reconsider allow null by default to be true - I think that what we're doing is confusing for most . In my case I added a volunteer relation, and didn't set any value to it - and I get an error that null value is not allowed for it
+/**
+* our default is allow null false.
+* for sql databases we add a db default of 0/''/false
+* when we set a relation to null - we update the related field to null
+* we do not enforce allow null false (mongo, json it'll get stored)
+
+ */
+//y2 - i had a question about find first's different syntax from find that confused a user

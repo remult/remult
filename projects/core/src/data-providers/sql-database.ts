@@ -27,13 +27,13 @@ import { remult as defaultRemult } from '../remult-proxy'
 import type { EntityFilter, EntityMetadata } from '../remult3/remult3'
 import type {
   EntityBase,
-  RepositoryImplementation,
   RepositoryOverloads,
 } from '../remult3/RepositoryImplementation'
 import { getRepository } from '../remult3/RepositoryImplementation'
 import type { SortSegment } from '../sort'
 import { Sort } from '../sort'
 import { ValueConverters } from '../valueConverters'
+import { getRepositoryInternals } from '../remult3/repository-internals'
 
 // @dynamic
 export class SqlDatabase implements DataProvider {
@@ -137,9 +137,7 @@ export class SqlDatabase implements DataProvider {
     )
     b._addWhere = false
     await (
-      await (r as RepositoryImplementation<entityType>).translateWhereToFilter(
-        condition,
-      )
+      await getRepositoryInternals(r).translateWhereToFilter(condition)
     ).__applyToConsumer(b)
     return await b.resolveWhere()
   }

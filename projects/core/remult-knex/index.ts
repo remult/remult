@@ -21,11 +21,7 @@ import type {
 } from '../src/data-interfaces'
 import { remult as remultContext } from '../src/remult-proxy'
 import type { EntityFilter, EntityMetadata } from '../src/remult3/remult3'
-import type {
-  RepositoryImplementation,
-  RepositoryOverloads,
-  StringFieldOptions,
-} from '../src/remult3/RepositoryImplementation'
+import type { RepositoryOverloads } from '../src/remult3/RepositoryImplementation'
 import {
   getRepository,
   isAutoIncrement,
@@ -33,6 +29,8 @@ import {
 import { Sort } from '../src/sort'
 import { ValueConverters } from '../src/valueConverters'
 import { resultCompoundIdFilter as resultCompoundIdFilter } from '../src/resultCompoundIdFilter'
+import type { StringFieldOptions } from '../src/remult3/Fields'
+import { getRepositoryInternals } from '../src/remult3/repository-internals'
 
 export class KnexDataProvider implements DataProvider {
   constructor(public knex: Knex) {}
@@ -86,9 +84,7 @@ export class KnexDataProvider implements DataProvider {
     )
     b._addWhere = false
     await (
-      await (
-        repo as RepositoryImplementation<entityType>
-      ).translateWhereToFilter(condition)
+      await getRepositoryInternals(repo).translateWhereToFilter(condition)
     ).__applyToConsumer(b)
     let r = await b.resolveWhere()
     return (knex) => r.forEach((y) => y(knex))
@@ -124,8 +120,9 @@ class KnexEntityDataProvider implements EntityDataProvider {
         return +element
       }
     }
+    throw Error("couldn't find count member")
   }
-  async find(options?: EntityDataProviderFindOptions): Promise<any[]> {
+  async find(options: EntityDataProviderFindOptions): Promise<any[]> {
     const e = await this.init()
     let cols = [] as string[]
     let colKeys: FieldMetadata[] = []
@@ -425,11 +422,11 @@ export class KnexSchemaBuilder {
       await logSql(
         this.knex.schema.createTable(e.$entityName, (b) => {
           for (const x of entity.fields) {
-            if (!cols.get(x).readonly || isAutoIncrement(x)) {
-              if (isAutoIncrement(x)) b.increments(cols.get(x).name)
+            if (!cols.get(x)!.readonly || isAutoIncrement(x)) {
+              if (isAutoIncrement(x)) b.increments(cols.get(x)!.name)
               else {
-                buildColumn(x, cols.get(x).name, b, supportsJson(this.knex))
-                if (x == entity.idMetadata.field) b.primary([cols.get(x).name])
+                buildColumn(x, cols.get(x)!.name, b, supportsJson(this.knex))
+                if (x == entity.idMetadata.field) b.primary([cols.get(x)!.name])
               }
             }
           }

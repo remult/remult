@@ -20,7 +20,8 @@ import {
   InMemoryLiveQueryStorage,
   LiveQueryPublisher,
 } from '../src/live-query/SubscriptionServer'
-import { Fields, IdEntity } from '../src/remult3/RepositoryImplementation'
+import { IdEntity } from '../src/remult3/IdEntity'
+import { Fields } from '../src/remult3/Fields'
 
 import { Entity } from '../src/remult3/entity'
 import { getEntityKey } from '../src/remult3/getEntityRef'
@@ -35,7 +36,6 @@ import { Action, classBackendMethodsArray } from '../src/server-action'
 import { actionInfo, serverActionField } from '../src/server-action-info'
 import { initDataProvider } from './initDataProvider'
 
-//TODO2 -support pub sub non express servers
 export interface RemultServerOptions<RequestType> {
   /**Entities to use for the api */
   entities?: ClassType<any>[]
@@ -133,7 +133,7 @@ export function createRemultServerCore<RequestType>(
             console.time('Schema ensured')
           }
           entitiesMetaData.push(
-            ...options.entities.map((e) => remult.repo(e).metadata),
+            ...options.entities!.map((e) => remult.repo(e).metadata),
           )
           if (dp.ensureSchema) {
             startConsoleLog()
@@ -178,7 +178,7 @@ export function createRemultServerCore<RequestType>(
   )
   return bridge
 }
-//TODO  - the type is wrong - it should be RequestType as on the server - also reconsider GenericResponse here, because it's also the server Response
+//TODO V2 - the type is wrong - it should be RequestType as on the server - also reconsider GenericResponse here, because it's also the server Response
 export type GenericRequestHandler = (
   req: GenericRequestInfo,
   res: GenericResponse,
@@ -260,9 +260,9 @@ export class RemultServerImplementation<RequestType>
     })
   }
   getEntities(): EntityMetadata<any>[] {
-    //TODO - consider using entitiesMetaData - but it may require making it all awaitable
+    //TODO V2 - consider using entitiesMetaData - but it may require making it all awaitable
     var r = new Remult()
-    return this.options.entities.map((x) => r.repo(x).metadata)
+    return this.options.entities!.map((x) => r.repo(x).metadata)
   }
 
   runWithSerializedJsonContextData: PerformWithContext = async (
@@ -270,7 +270,7 @@ export class RemultServerImplementation<RequestType>
     entityKey,
     what,
   ) => {
-    for (const e of this.options.entities) {
+    for (const e of this.options.entities!) {
       let key = getEntityKey(e)
       if (key === entityKey) {
         await this.runWithRemult(async (remult) => {
@@ -281,7 +281,7 @@ export class RemultServerImplementation<RequestType>
               {
                 remult,
                 get liveQueryStorage() {
-                  return remult.liveQueryStorage
+                  return remult.liveQueryStorage!
                 },
                 set liveQueryStorage(value: LiveQueryStorage) {
                   remult.liveQueryStorage = value
@@ -315,7 +315,7 @@ export class RemultServerImplementation<RequestType>
   handle(
     req: RequestType,
     gRes?: GenericResponse,
-  ): Promise<ServerHandleResponse> {
+  ): Promise<ServerHandleResponse | undefined> {
     return this.getRouteImpl().handle(req, gRes)
   }
   registeredRouter = false
@@ -323,7 +323,7 @@ export class RemultServerImplementation<RequestType>
     if (this.registeredRouter) throw 'Router already registered'
     this.registeredRouter = true
     {
-      for (const c of this.options.controllers) {
+      for (const c of this.options.controllers!) {
         let z = c[classBackendMethodsArray]
         if (z)
           for (const a of z) {
@@ -344,16 +344,16 @@ export class RemultServerImplementation<RequestType>
                 false,
                 () => true,
                 async (data: jobWasQueuedResult, req, res) => {
-                  let job = await this.queue.getJobInfo(data.queuedJobId)
-                  let userId = undefined
+                  let job = await this.queue.getJobInfo(data.queuedJobId!)
+                  let userId: string | undefined = undefined
                   if (req?.user) userId = req.user.id
-                  if (job.userId == '') job.userId = undefined
+                  if (job.userId == '') job.userId = undefined!
                   if (userId != job.userId) res.forbidden()
                   else res.success(job.info)
                 },
               )
             },
-            doWork: undefined,
+            doWork: undefined!,
           },
           r,
         )
@@ -1087,7 +1087,7 @@ export class EntityQueueStorage implements QueueStorage {
   }
 
   async getJobInfo(queuedJobId: string): Promise<queuedJobInfo> {
-    let q = await this.repo.findId(queuedJobId, { useCache: false })
+    let q = await this.repo.findId(queuedJobId)
     let lastProgress: Date = undefined
     return {
       userId: q.userId,
@@ -1135,7 +1135,7 @@ export class EntityQueueStorage implements QueueStorage {
     return q.id
   }
 }
-class RouteImplementation<RequestType> {
+export class RouteImplementation<RequestType> {
   constructor(private coreOptions: ServerCoreOptions<RequestType>) {}
   map = new Map<string, Map<string, GenericRequestHandler>>()
   route(path: string): SpecificRoute {
@@ -1169,7 +1169,7 @@ class RouteImplementation<RequestType> {
     req: RequestType,
     gRes?: GenericResponse,
   ): Promise<ServerHandleResponse | undefined> {
-    return new Promise<ServerHandleResponse | undefined>((res) => {
+    return new Promise<ServerHandleResponse | undefined>((res, rej) => {
       const response = new (class
         implements GenericResponse, ResponseRequiredForSSE
       {
@@ -1205,7 +1205,11 @@ class RouteImplementation<RequestType> {
           })
         }
       })()
-      this.middleware(req, response, () => res(undefined))
+      try {
+        this.middleware(req, response, () => res(undefined))
+      } catch (err) {
+        rej(err)
+      }
     })
   }
   middleware(origReq: RequestType, res: GenericResponse, next: VoidFunction) {
@@ -1246,7 +1250,7 @@ class RouteImplementation<RequestType> {
     }
     let idPosition = path.lastIndexOf('/')
     if (idPosition >= 0) {
-      lowerPath = path.substring(0, idPosition) + '/:id'
+      lowerPath = lowerPath.substring(0, idPosition) + '/:id'
       m = this.map.get(lowerPath)
       if (m) {
         let h = m.get(req.method.toLowerCase())
@@ -1255,7 +1259,7 @@ class RouteImplementation<RequestType> {
             req.params = {}
             origReq['_tempParams'] = req.params
           }
-          req.params.id = path.substring(idPosition + 1)
+          req.params.id = path.substring(idPosition + 1).replace(/%2C/g, ',')
           h(origReq, res, next)
           return
         }

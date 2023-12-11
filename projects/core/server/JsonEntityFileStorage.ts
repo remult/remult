@@ -4,12 +4,12 @@ import type { JsonEntityStorage } from '../index'
 import { JsonDataProvider } from '../index'
 
 export class JsonEntityFileStorage implements JsonEntityStorage {
-  getItem(entityDbName: string): string {
+  getItem(entityDbName: string) {
     let fn = path.join(this.folderPath, entityDbName) + '.json'
     if (fs.existsSync(fn)) {
       return fs.readFileSync(fn).toString()
     }
-    return undefined
+    return null
   }
   setItem(entityDbName: string, json: string) {
     if (!fs.existsSync(this.folderPath)) {

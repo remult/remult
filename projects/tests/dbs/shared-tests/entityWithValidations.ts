@@ -2,13 +2,12 @@ import type { Remult, Repository } from '../../../core'
 import { Entity, EntityBase, Fields } from '../../../core'
 import type { ClassType } from '../../../core/classType'
 
-export var testConfiguration = { restDbRunningOnServer: false }
 @Entity<entityWithValidations>('', {
   allowApiCrud: true,
   saving: async (t) => {
     if (!t.name || t.name.length < 3) t._.fields.name.error = 'invalid'
-    if (!testConfiguration.restDbRunningOnServer)
-      entityWithValidations.savingRowCount++
+
+    entityWithValidations.savingRowCount++
   },
 })
 export class entityWithValidations extends EntityBase {

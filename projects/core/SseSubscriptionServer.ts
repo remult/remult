@@ -16,7 +16,7 @@ export class SseSubscriptionServer implements SubscriptionServer {
   ) {
     for (const c of this.connections) {
       if (c.connectionId === clientId) {
-        if (this.canUserConnectToChannel(channel, remult)) {
+        if (this.canUserConnectToChannel!(channel, remult)) {
           if (remove) delete c.channels[channel]
           else c.channels[channel] = true
           res.success({ status: 'ok' })

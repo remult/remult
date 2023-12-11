@@ -117,6 +117,26 @@ export const handle = remultSveltekit({
 })
 ```
 
+### Hapi
+
+```ts
+import { type Plugin, server } from '@hapi/hapi'
+import { remultHapi } from 'remult/remult-hapi'
+;(async () => {
+  const hapi = server({ port: 3000 })
+
+  await hapi.register(
+    remultHapi({
+      entities: [
+        /* entity types */
+      ],
+    }),
+  )
+
+  hapi.start()
+})()
+```
+
 ### Nest
 
 ```ts

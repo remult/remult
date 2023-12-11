@@ -3,12 +3,9 @@ import { allEntities, setControllerSettings } from '../context'
 import type { EntityOptions } from '../entity'
 import type { customFilterInfo } from '../filter/filter-interfaces'
 import { entityInfo, entityInfo_key, getEntitySettings } from './getEntityRef'
-import type {
-  ClassDecoratorContextStub,
-  EntityOptionsFactory,
-} from './RepositoryImplementation'
+import type { EntityOptionsFactory } from './RepositoryImplementation'
+import type { ClassDecoratorContextStub } from './remult3'
 
-//[ ] YONI - in Typescript 5 I do get the name of the class, what would we like to change because of that?
 /**Decorates classes that should be used as entities.
  * Receives a key and an array of EntityOptions.
  * @example

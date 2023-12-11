@@ -79,7 +79,13 @@ export function remultSveltekit(
   return Object.assign(handler, {
     getRemult: (req) => result.getRemult(req),
     openApiDoc: (options: { title: string }) => result.openApiDoc(options),
+    withRemult<T>(request: RequestEvent, what: () => Promise<T>): Promise<T> {
+      return result.withRemultPromise(request, what)
+    },
   })
 }
 
-export type RemultSveltekitServer = RemultServerCore<RequestEvent> & Handle
+export type RemultSveltekitServer = RemultServerCore<RequestEvent> &
+  Handle & {
+    withRemult<T>(request: RequestEvent, what: () => Promise<T>): Promise<T>
+  }

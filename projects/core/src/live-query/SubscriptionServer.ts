@@ -1,6 +1,7 @@
 import type { itemChange } from '../context'
 import { findOptionsFromJson } from '../data-providers/rest-data-provider'
 import type { Repository } from '../remult3/remult3'
+import type { LiveQueryChange } from './SubscriptionChannel'
 
 export interface SubscriptionServer {
   publishMessage<T>(channel: string, message: T): Promise<void>
@@ -32,7 +33,7 @@ export class LiveQueryPublisher implements LiveQueryChangesListener {
           query.requestJson,
           entityKey,
           async (repo) => {
-            const messages = []
+            const messages: LiveQueryChange[] = []
             const currentItems = await repo.find(
               findOptionsFromJson(query.findOptionsJson, repo.metadata),
             )
@@ -96,8 +97,6 @@ export interface LiveQueryChangesListener {
   itemChanged(entityKey: string, changes: itemChange[]): Promise<void>
 }
 
-// TODO2 - PUBNUB
-// TODO2 - https://centrifugal.dev/
 export interface LiveQueryStorage {
   add(query: StoredQuery): Promise<void>
   remove(queryId: string): Promise<void>
@@ -116,7 +115,7 @@ export class InMemoryLiveQueryStorage implements LiveQueryStorage {
     this.debugFileSaver(this.queries)
   }
   async keepAliveAndReturnUnknownQueryIds(ids: string[]): Promise<string[]> {
-    const result = []
+    const result: string[] = []
     for (const id of ids) {
       let q = this.queries.find((q) => q.id === id)
       if (q) {

@@ -1,3 +1,4 @@
+import { getRelationInfo } from './internals'
 import type { ClassType } from './classType'
 import type { EntityMetadata, FieldsMetadata } from './index'
 import { Remult, remult } from './index'
@@ -251,7 +252,7 @@ export function remultGraphql(options: {
         ) => Promise<void>,
       ) => {
         return createResultPromise(async (response, setResult, arg1, req) => {
-          const remult = options.getRemultFromRequest(req)
+          const remult = options.getRemultFromRequest!(req)
           const repo = remult.repo(meta.entityType)
           const dApi = new DataApi(repo, remult)
           await work(dApi, response, setResult, arg1, meta)
@@ -295,7 +296,7 @@ export function remultGraphql(options: {
                   })
                 },
                 error: (err) => {
-                  const modelState = []
+                  const modelState: any[] = []
                   if (err.modelState)
                     for (const key in err.modelState) {
                       modelState.push({
@@ -335,6 +336,14 @@ _Side note: \`Math.ceil(totalCount / limit)\` to determine how many pages there 
           comment: `
 For **page by page** pagination.
 Select a dedicated page.`,
+        },
+        {
+          key: 'offset',
+          value: 'Int',
+          comment: `
+For **page by page** pagination.
+Set the offset needed.
+_Side node: if \`page\` arg is set, \`offset\` will be ignored._`,
         },
         {
           key: 'orderBy',
@@ -663,6 +672,12 @@ Select a dedicated page.`,
       }
       const whereTypeFields: string[] = []
       for (const f of meta.fields) {
+        const ri = getRelationInfo(f.options)
+        // let's not consider toMany relations for now
+        if (ri?.type === 'toMany') {
+          break
+        }
+
         if (f.options.includeInApi === false) continue
         let type = 'String'
         switch (f.valueType) {
@@ -1056,7 +1071,10 @@ function toCamelCase(str: string) {
 }
 
 function bridgeQueryOptionsToDataApiGet(arg1: any) {
-  const { limit, page, orderBy, where } = arg1
+  let { limit, page, orderBy, where, offset } = arg1
+  if (!page && offset) {
+    page = Math.floor(offset / limit) + 1
+  }
   return (key: string) => {
     if (limit && key === '_limit') {
       return limit
@@ -1094,7 +1112,7 @@ export function translateWhereToRestBody<T>(
   if (!where) return undefined
   const result: any = {}
   for (const field of fields) {
-    if (field.includedInApi === false) continue
+    if (field.options.includeInApi === false) continue
     const condition: any = where[field.key]
     if (condition) {
       const tr = (key: string, what: (val: any) => void) => {

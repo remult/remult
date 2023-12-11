@@ -19,21 +19,19 @@ import type { EntityDbNamesBase } from './src/filter/filter-consumer-bridge-to-s
 import { dbNamesOf } from './src/filter/filter-consumer-bridge-to-sql-request'
 import type { FilterConsumer } from './src/filter/filter-interfaces'
 import { remult as remultContext } from './src/remult-proxy'
-import type {
-  RepositoryImplementation,
-  RepositoryOverloads,
-} from './src/remult3/RepositoryImplementation'
+import type { RepositoryOverloads } from './src/remult3/RepositoryImplementation'
 import { getRepository } from './src/remult3/RepositoryImplementation'
 import { resultCompoundIdFilter } from './src/resultCompoundIdFilter'
+import { getRepositoryInternals } from './src/remult3/repository-internals'
 
 export class MongoDataProvider implements DataProvider {
   constructor(
     private db: Db,
-    private client: MongoClient,
+    private client: MongoClient | undefined,
     options?: { session?: ClientSession; disableTransactions?: boolean },
   ) {
     this.session = options?.session
-    this.disableTransactions = options?.disableTransactions
+    this.disableTransactions = Boolean(options?.disableTransactions)
   }
   session?: ClientSession
   disableTransactions = false
@@ -51,6 +49,8 @@ export class MongoDataProvider implements DataProvider {
     if (this.disableTransactions) {
       await action(this)
     } else {
+      if (!this.client)
+        throw new Error("Can't use transactions within transactions")
       let session = await this.client.startSession()
 
       session.startTransaction()
@@ -75,9 +75,7 @@ export class MongoDataProvider implements DataProvider {
     var b = new FilterConsumerBridgeToMongo(await dbNamesOf(repo.metadata))
     b._addWhere = false
     await (
-      await (
-        repo as RepositoryImplementation<entityType>
-      ).translateWhereToFilter(condition)
+      await getRepositoryInternals(repo).translateWhereToFilter(condition)
     ).__applyToConsumer(b)
     let r = await b.resolveWhere()
     return r
@@ -119,7 +117,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
 
     return await collection.countDocuments(w, { session: this.session })
   }
-  async find(options?: EntityDataProviderFindOptions): Promise<any[]> {
+  async find(options: EntityDataProviderFindOptions): Promise<any[]> {
     let { collection, e } = await this.collection()
     let x = new FilterConsumerBridgeToMongo(e)
     if (options?.where) options.where.__applyToConsumer(x)
@@ -236,13 +234,13 @@ class FilterConsumerBridgeToMongo implements FilterConsumer {
   or(orElements: Filter[]) {
     this.promises.push(
       (async () => {
-        let result = []
+        let result: any[] = []
         for (const element of orElements) {
           let f = new FilterConsumerBridgeToMongo(this.nameProvider)
           f._addWhere = false
           element.__applyToConsumer(f)
           let where = await f.resolveWhere()
-          if (where?.$and?.length > 0) {
+          if (where?.$and?.length) {
             result.push(where)
           } else return //since empty or is all rows;
         }

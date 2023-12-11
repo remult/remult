@@ -21,7 +21,7 @@ export class SseSubscriptionClient implements SubscriptionClient {
         source.close()
       },
       async subscribe(channel, handler) {
-        let listeners = channels.get(channel)
+        let listeners = channels.get(channel)!
 
         if (!listeners) {
           channels.set(channel, (listeners = []))

@@ -1,6 +1,12 @@
+import { getRelationInfo } from '../internals'
 import { CompoundIdField } from './CompoundIdField'
 import type { FieldMetadata } from './column-interfaces'
-import type { EntityMetadata, EntityOrderBy } from './remult3/remult3'
+import type {
+  EntityMetadata,
+  EntityOrderBy,
+  RelationInfo,
+  RelationOptions,
+} from './remult3/remult3'
 export class Sort {
   toEntityOrderBy(): EntityOrderBy<any> {
     let result: any = {}
@@ -22,12 +28,14 @@ export class Sort {
     }
     return r
   }
-  compare(a: any, b: any) {
+  compare(a: any, b: any, getFieldKey?: (field: FieldMetadata) => string) {
+    if (!getFieldKey) getFieldKey = (x) => x.key
     let r = 0
     for (let i = 0; i < this.Segments.length; i++) {
       let seg = this.Segments[i]
-      let left = a[seg.field.key]
-      let right = b[seg.field.key]
+
+      let left = fixValueForSort(a[getFieldKey(seg.field)])
+      let right = fixValueForSort(b[getFieldKey(seg.field)])
       if (left > right) r = 1
       else if (left < right) r = -1
       if (r != 0) {
@@ -39,17 +47,17 @@ export class Sort {
   }
   static translateOrderByToSort<T>(
     entityDefs: EntityMetadata<T>,
-    orderBy: EntityOrderBy<T>,
+    orderBy?: EntityOrderBy<T>,
   ): Sort {
     if (!orderBy) return undefined
-    let sort: Sort
-    if (orderBy) {
-      sort = new Sort()
+    let sort = new Sort()
+    if (orderBy)
       for (const key in orderBy) {
         if (Object.prototype.hasOwnProperty.call(orderBy, key)) {
           const element = orderBy[key]
           let field = entityDefs.fields.find(key)
-          if (field) {
+
+          const addSegment = (field: FieldMetadata) => {
             switch (element) {
               case 'desc':
                 sort.Segments.push({ field, isDescending: true })
@@ -58,16 +66,38 @@ export class Sort {
                 sort.Segments.push({ field })
             }
           }
+          if (field) {
+            const rel = getRelationInfo(field.options)
+            const op = field.options as RelationOptions<any, any, any>
+            if (rel?.type === 'toOne') {
+              if (typeof op.field === 'string') {
+                addSegment(entityDefs.fields.find(op.field))
+              } else {
+                if (op.fields) {
+                  for (const key in op.fields) {
+                    if (Object.prototype.hasOwnProperty.call(op.fields, key)) {
+                      const keyInMyEntity = op.fields[key]!
+                      addSegment(
+                        entityDefs.fields.find(keyInMyEntity.toString()),
+                      )
+                    }
+                  }
+                }
+              }
+            } else addSegment(field)
+          }
         }
       }
-    }
     return sort
   }
   static createUniqueSort<T>(
     entityMetadata: EntityMetadata<T>,
-    orderBy: Sort,
+    orderBy?: Sort,
   ): Sort {
-    if (!orderBy || Object.keys(orderBy).length === 0)
+    if (
+      (!orderBy || Object.keys(orderBy).length === 0) &&
+      entityMetadata.options.defaultOrderBy
+    )
       orderBy = Sort.translateOrderByToSort(
         entityMetadata,
         entityMetadata.options.defaultOrderBy,
@@ -89,7 +119,7 @@ export class Sort {
   }
   static createUniqueEntityOrderBy<T>(
     entityMetadata: EntityMetadata<T>,
-    orderBy: EntityOrderBy<T>,
+    orderBy?: EntityOrderBy<T>,
   ): EntityOrderBy<T> {
     if (!orderBy || Object.keys(orderBy).length === 0)
       orderBy = entityMetadata.options.defaultOrderBy
@@ -115,4 +145,9 @@ export class Sort {
 export interface SortSegment {
   field: FieldMetadata
   isDescending?: boolean
+}
+function fixValueForSort(a: any) {
+  if (a == undefined || a == null) return a
+  if (a.id !== undefined) return a.id
+  return a
 }

@@ -1,5 +1,3 @@
-import { createId } from '@paralleldrive/cuid2'
-import { v4 as uuid } from 'uuid'
 import type { ClassType } from '../../classType'
 import { LookupColumn, makeTitle } from '../column'
 import { CompoundIdField } from '../CompoundIdField'
@@ -10,29 +8,44 @@ import type {
   ValueListItem,
 } from '../column-interfaces'
 import type { AllowedForInstance } from '../context'
-import { Remult, isBackend, queryConfig } from '../context'
+import {
+  Remult,
+  RemultAsyncLocalStorage,
+  isBackend,
+  queryConfig,
+} from '../context'
 import type { EntityOptions } from '../entity'
 import { Filter } from '../filter/filter-interfaces'
 import { Sort } from '../sort'
 import type {
   ControllerRef,
+  ControllerRefForControllerBase,
   EntityFilter,
   EntityMetadata,
   EntityOrderBy,
   EntityRef,
+  EntityRefForEntityBase,
   FieldRef,
   FieldsMetadata,
   FieldsRef,
+  FieldsRefForEntityBase,
   FindFirstOptions,
   FindFirstOptionsBase,
   FindOptions,
+  FindOptionsBase,
+  IdFieldRef,
   IdMetadata,
+  LifecycleEvent,
   LiveQuery,
   LiveQueryChangeInfo,
-  OmitEB,
+  LoadOptions,
+  MembersOnly,
   QueryOptions,
   QueryResult,
+  RelationInfo,
+  RelationOptions,
   Repository,
+  RepositoryRelations,
   Subscribable,
 } from './remult3'
 
@@ -45,7 +58,6 @@ import type {
   EntityDataProviderFindOptions,
   ErrorInfo,
 } from '../data-interfaces'
-import { filterHelper } from '../filter/filter-interfaces'
 import { ValueConverters } from '../valueConverters'
 
 import { findOptionsToJson } from '../data-providers/rest-data-provider'
@@ -62,6 +74,10 @@ import {
   getEntitySettings,
 } from './getEntityRef'
 import { __updateEntityBasedOnWhere } from './__updateEntityBasedOnWhere'
+import type { columnInfo } from './columnInfo'
+import { getRelationInfo, relationInfoMember } from './relationInfoMember'
+import { RelationLoader } from './relation-loader'
+import { type RepositoryInternal, getInternalKey } from './repository-internals'
 //import  { remult } from "../remult-proxy";
 
 let classValidatorValidate:
@@ -93,6 +109,9 @@ let classValidatorValidate:
 export class RepositoryImplementation<entityType>
   implements Repository<entityType>
 {
+  [getInternalKey]() {
+    return this
+  }
   async createAfterFilter(
     orderBy: EntityOrderBy<entityType>,
     lastRow: entityType,
@@ -117,7 +136,6 @@ export class RepositoryImplementation<entityType>
     let equalToColumn: FieldMetadata[] = []
     for (const s of Sort.translateOrderByToSort(this.metadata, orderBy)
       .Segments) {
-      let ff = new filterHelper(s.field)
       let f: EntityFilter<any> = {}
       for (const c of equalToColumn) {
         f[c.key] = values.get(c.key)
@@ -131,7 +149,39 @@ export class RepositoryImplementation<entityType>
     return r
   }
 
-  private _info: EntityFullInfo<entityType>
+  relations(item: entityType) {
+    return new Proxy<RepositoryRelations<entityType>>({} as any, {
+      get: (target: any, key: string) => {
+        const field = this.fields.find(key)
+
+        const rel = getRelationInfo(field.options)
+        if (!rel) throw Error(key + ' is not a relation')
+        let repo = this.remult.repo(
+          rel.toType(),
+        ) as RepositoryImplementation<any>
+
+        let { findOptions, returnNull, returnUndefined } =
+          this.findOptionsBasedOnRelation(rel, field, undefined, item, repo)
+        const toRepo = new RepositoryImplementation(
+          repo.entity,
+          repo.remult,
+          repo.dataProvider,
+          repo._info,
+          findOptions,
+        )
+        if (rel.type === 'toMany') return toRepo
+        else
+          return {
+            findOne: (options?: FindOptionsBase<any>) => {
+              if (returnNull) return Promise.resolve(null)
+              if (returnUndefined) return Promise.resolve(undefined)
+              return toRepo.findFirst({}, options)
+            },
+          }
+      },
+    })
+  }
+
   private __edp: EntityDataProvider
   private get edp() {
     return this.__edp
@@ -142,24 +192,28 @@ export class RepositoryImplementation<entityType>
     private entity: ClassType<entityType>,
     public remult: Remult,
     private dataProvider: DataProvider,
-  ) {
-    this._info = createOldEntity(entity, remult)
-  }
+    private _info: EntityFullInfo<entityType>,
+    private defaultFindOptions?: FindOptions<entityType>,
+  ) {}
   idCache = new Map<any, any>()
-  getCachedById(id: any): entityType {
+  getCachedById(id: any, doNotLoadIfNotFound: boolean): entityType {
     id = id + ''
-    this.getCachedByIdAsync(id)
+    this.getCachedByIdAsync(id, doNotLoadIfNotFound)
     let r = this.idCache.get(id)
     if (r instanceof Promise) return undefined
     return r
   }
-  async getCachedByIdAsync(id: any): Promise<entityType> {
+  async getCachedByIdAsync(
+    id: any,
+    doNotLoadIfNotFound: boolean,
+  ): Promise<entityType> {
     id = id + ''
     let r = this.idCache.get(id)
     if (r instanceof Promise) return await r
     if (this.idCache.has(id)) {
       return r
     }
+    if (doNotLoadIfNotFound) return undefined
     this.idCache.set(id, undefined)
     let row = this.findId(id).then((row) => {
       if (row === undefined) {
@@ -236,10 +290,12 @@ export class RepositoryImplementation<entityType>
       return this.getRefForExistingRow(item as entityType, undefined).delete()
     }
   }
-  insert(item: Partial<OmitEB<entityType>>[]): Promise<entityType[]>
-  insert(item: Partial<OmitEB<entityType>>): Promise<entityType>
+  insert(item: Partial<MembersOnly<entityType>>[]): Promise<entityType[]>
+  insert(item: Partial<MembersOnly<entityType>>): Promise<entityType>
   async insert(
-    entity: Partial<OmitEB<entityType>> | Partial<OmitEB<entityType>>[],
+    entity:
+      | Partial<MembersOnly<entityType>>
+      | Partial<MembersOnly<entityType>>[],
   ): Promise<entityType | entityType[]> {
     if (Array.isArray(entity)) {
       let r = []
@@ -248,7 +304,7 @@ export class RepositoryImplementation<entityType>
       }
       return r
     } else {
-      let ref = getEntityRef(entity, false) as EntityRef<entityType>
+      let ref = getEntityRef(entity, false) as unknown as EntityRef<entityType>
       if (ref) {
         if (!ref.isNew()) throw 'Item is not new'
         return await ref.save()
@@ -261,8 +317,8 @@ export class RepositoryImplementation<entityType>
     return this.metadata.fields
   }
   async validate(
-    entity: Partial<OmitEB<entityType>>,
-    ...fields: Extract<keyof OmitEB<entityType>, string>[]
+    entity: Partial<MembersOnly<entityType>>,
+    ...fields: Extract<keyof MembersOnly<entityType>, string>[]
   ): Promise<ErrorInfo<entityType> | undefined> {
     {
       let ref: rowHelperImplementation<any> = getEntityRef(entity, false) as any
@@ -287,41 +343,61 @@ export class RepositoryImplementation<entityType>
       : entityType extends { id?: string }
       ? string
       : string | number,
-    item: Partial<OmitEB<entityType>>,
+    item: Partial<MembersOnly<entityType>>,
   ): Promise<entityType>
   update(
-    originalItem: Partial<OmitEB<entityType>>,
-    item: Partial<OmitEB<entityType>>,
+    originalItem: Partial<MembersOnly<entityType>>,
+    item: Partial<MembersOnly<entityType>>,
   ): Promise<entityType>
   async update(
     id: any,
-    entity: Partial<OmitEB<entityType>>,
+    entity: Partial<MembersOnly<entityType>>,
   ): Promise<entityType> {
     {
       let ref = getEntityRef(entity, false)
       if (ref) return (await ref.save()) as unknown as entityType
     }
-    let ref = this.getRefForExistingRow(
-      entity,
-      id,
-    ) as rowHelperImplementation<entityType>
+    {
+      let ref = getEntityRef(id, false)
+      if (ref) {
+        assign(id, entity)
+        return ref.save()
+      }
+    }
+
+    let ref: rowHelperImplementation<entityType>
+    if (typeof id === 'object') {
+      ref = this.getRefForExistingRow(
+        id,
+        this.metadata.idMetadata.getId(id),
+      ) as unknown as typeof ref
+      Object.assign(ref.instance, entity)
+    } else
+      ref = this.getRefForExistingRow(
+        entity,
+        id,
+      ) as unknown as rowHelperImplementation<entityType>
     if (this.dataProvider.isProxy) {
       return await ref.save(Object.keys(entity))
     } else {
-      const r = await this.findId(ref.id, { useCache: false })
+      const r = await ref.reload()
       if (!r) throw new Error('Not Found')
       for (const key in entity) {
         if (Object.prototype.hasOwnProperty.call(entity, key)) {
           let f = ref.fields[key]
-          if (f) r[key] = f.value
+          if (entity[key] === undefined && getRelationInfo(f.metadata.options))
+            continue
+          //@ts-ignore
+          if (f) r[key] = entity[key]
         }
       }
-      return await getEntityRef(r).save()
+      await this.fixTypes(r)
+      return await ref.save()
     }
   }
 
   private getRefForExistingRow(
-    entity: Partial<OmitEB<entityType>>,
+    entity: Partial<MembersOnly<entityType>>,
     id: string | number,
   ) {
     let ref = getEntityRef(entity, false)
@@ -353,15 +429,17 @@ export class RepositoryImplementation<entityType>
     return ref
   }
 
-  save(item: Partial<OmitEB<entityType>>[]): Promise<entityType[]>
-  save(item: Partial<OmitEB<entityType>>): Promise<entityType>
+  save(item: Partial<MembersOnly<entityType>>[]): Promise<entityType[]>
+  save(item: Partial<MembersOnly<entityType>>): Promise<entityType>
   async save(
-    entity: Partial<OmitEB<entityType>> | Partial<OmitEB<entityType>>[],
+    entity:
+      | Partial<MembersOnly<entityType>>
+      | Partial<MembersOnly<entityType>>[],
   ): Promise<entityType | entityType[]> {
     if (Array.isArray(entity)) {
       return Promise.all(entity.map((x) => this.save(x)))
     } else {
-      let ref = getEntityRef(entity, false) as EntityRef<entityType>
+      let ref = getEntityRef(entity, false) as unknown as EntityRef<entityType>
       if (ref) return await ref.save()
       else if (entity instanceof EntityBase) {
         return await this.getEntityRef(entity as unknown as entityType).save()
@@ -397,20 +475,35 @@ export class RepositoryImplementation<entityType>
     } as LiveQuery<entityType>
   }
 
-  async find(
+  async rawFind(
     options: FindOptions<entityType>,
     skipOrderByAndLimit = false,
-  ): Promise<entityType[]> {
-    Remult.onFind(this._info, options)
+    loader: RelationLoader,
+  ) {
     if (!options) options = {}
+
+    if (this.defaultFindOptions) {
+      options = { ...this.defaultFindOptions, ...options }
+    }
     let opt = await this.buildEntityDataProviderFindOptions(options)
     if (skipOrderByAndLimit) {
       delete opt.orderBy
       delete opt.limit
     }
 
-    let rawRows = await this.edp.find(opt)
-    let result = await this.loadManyToOneForManyRows(rawRows, options.load)
+    Remult.onFind(this._info, options)
+    const rawRows = await this.edp.find(opt)
+    let result = await this.loadManyToOneForManyRows(rawRows, options, loader)
+    return result
+  }
+
+  async find(
+    options: FindOptions<entityType>,
+    skipOrderByAndLimit = false,
+  ): Promise<entityType[]> {
+    const loader = new RelationLoader()
+    const result = await this.rawFind(options, skipOrderByAndLimit, loader)
+    await loader.resolveAll()
     return result
   }
 
@@ -422,17 +515,15 @@ export class RepositoryImplementation<entityType>
       options.orderBy = this._info.entityInfo.defaultOrderBy
     }
     opt.where = await this.translateWhereToFilter(options.where)
-    opt.orderBy = Sort.translateOrderByToSort(this.metadata, options.orderBy)
-
-    opt.limit = options.limit
-    opt.page = options.page
+    if (options.orderBy !== undefined)
+      opt.orderBy = Sort.translateOrderByToSort(this.metadata, options.orderBy)
+    if (options.limit !== undefined) opt.limit = options.limit
+    if (options.page !== undefined) opt.page = options.page
     return opt
   }
-  async fromJsonArray(
-    jsonItems: any[],
-    load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[],
-  ) {
-    return this.loadManyToOneForManyRows(
+  async fromJsonArray(jsonItems: any[], loadOptions: LoadOptions<entityType>) {
+    const loader = new RelationLoader()
+    const result = await this.loadManyToOneForManyRows(
       jsonItems.map((row) => {
         let result = {}
         for (const col of this.metadata.fields.toArray()) {
@@ -440,42 +531,52 @@ export class RepositoryImplementation<entityType>
         }
         return result
       }),
-      load,
+      loadOptions,
+      loader,
     )
+    await loader.resolveAll()
+    return result
   }
   private async loadManyToOneForManyRows(
     rawRows: any[],
-    load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[],
-  ) {
+    loadOptions: LoadOptions<entityType>,
+    loader: RelationLoader,
+  ): Promise<entityType[]> {
     let loadFields: FieldMetadata[] = undefined
-    if (load) loadFields = load(this.metadata.fields)
+    if (loadOptions?.load) loadFields = loadOptions.load(this.metadata.fields)
 
     for (const col of this.metadata.fields) {
       let ei = getEntitySettings(col.valueType, false)
 
       if (ei) {
-        let load = !col.options.lazy
-        if (loadFields !== undefined) load = loadFields.includes(col)
-        if (load) {
-          let repo = this.remult.repo(
-            col.valueType,
-          ) as RepositoryImplementation<any>
-          let toLoad = []
-          for (const r of rawRows) {
-            let val = r[col.key]
-            if (
-              val !== undefined &&
-              val !== null &&
-              !toLoad.includes(val) &&
-              !repo.idCache.has(val)
-            ) {
-              toLoad.push(val)
+        let isRelation: RelationInfo = col.options?.[relationInfoMember]
+        if (!isRelation) {
+          let load = !col.options.lazy
+          if (loadFields !== undefined) load = loadFields.includes(col)
+          if (load) {
+            let repo = this.remult.repo(
+              col.valueType,
+            ) as RepositoryImplementation<any>
+            let toLoad = []
+            for (const r of rawRows) {
+              let val = r[col.key]
+              if (
+                val !== undefined &&
+                val !== null &&
+                !toLoad.includes(val) &&
+                !repo.idCache.has(val + '')
+              ) {
+                toLoad.push(val)
+              }
+            }
+            if (toLoad.length > 0) {
+              await loadManyToOne(repo, toLoad)
             }
           }
-          if (toLoad.length > 0) {
-            await loadManyToOne(repo, toLoad)
-          }
         }
+      } else if (col.options[relationInfoMember]) {
+        const rel = col.options[relationInfoMember] as RelationInfo
+        this.remult.repo(rel.toType())
       }
     }
     async function loadManyToOne(
@@ -494,7 +595,194 @@ export class RepositoryImplementation<entityType>
     let result = await Promise.all(
       rawRows.map(async (r) => await this.mapRawDataToResult(r, loadFields)),
     )
+    for (const col of this.metadata.fields) {
+      let rel = getRelationInfo(col.options)
+      let incl = (col.options as RelationOptions<any, any, any>)
+        .defaultIncluded as any as FindFirstOptionsBase<any>
+      if (loadOptions?.include?.[col.key] !== undefined) {
+        incl = loadOptions.include[col.key] as FindOptionsBase<any>
+      }
+
+      if (rel && incl) {
+        const otherRepo = this.remult.repo(rel.toType())
+        for (const row of result) {
+          let { findOptions, returnNull } = this.findOptionsBasedOnRelation(
+            rel,
+            col,
+            incl,
+            row,
+            otherRepo,
+          )
+          if (returnNull) row[col.key] = null
+          else {
+            const entityType = rel.toType()
+            const toRepo = this.remult.repo(
+              entityType,
+            ) as RepositoryImplementation<any>
+            loader
+              .load(
+                {
+                  entityType,
+                  find: (options) => toRepo.rawFind(options, false, loader),
+                  metadata: toRepo.metadata,
+                },
+                findOptions,
+              )
+              .then((result) => {
+                if (result.length == 0 && rel.type == 'toOne') return
+                row[col.key] =
+                  rel.type !== 'toMany'
+                    ? result.length == 0
+                      ? null
+                      : result[0]
+                    : result
+              })
+          }
+        }
+      }
+    }
     return result
+  }
+  /*@internal */
+
+  findOptionsBasedOnRelation(
+    rel: RelationInfo,
+    field: FieldMetadata,
+    moreFindOptions: FindOptions<any>,
+    row: entityType,
+    otherRepo: Repository<unknown>,
+  ) {
+    let returnNull = false
+    let returnUndefined = false
+    let where: EntityFilter<any>[] = []
+    let findOptions: FindOptions<any> = {}
+    let findOptionsSources: FindOptions<any>[] = []
+    let options = field.options as RelationOptions<any, any, any>
+    if (typeof options.findOptions === 'function') {
+      findOptionsSources.push(options.findOptions(row))
+    } else if (typeof options.findOptions === 'object')
+      findOptionsSources.push(options.findOptions)
+    if (typeof moreFindOptions === 'object') {
+      findOptionsSources.push(moreFindOptions)
+    }
+
+    for (const source of findOptionsSources) {
+      if (source.where) where.push(source.where)
+      for (const key of [
+        'limit',
+        'include',
+        'orderBy',
+      ] as (keyof FindOptions<any>)[]) {
+        //@ts-ignore
+        if (source[key]) findOptions[key] = source[key]
+      }
+    }
+    function buildError(what: string) {
+      return Error(
+        `Error for relation: "${field.key}" to "${otherRepo.metadata.key}": ` +
+          what,
+      )
+    }
+
+    let hasFields = () => options.field || options.fields
+    if (rel.type === 'toMany' && !hasFields()) {
+      for (const fieldInOtherRepo of otherRepo.fields.toArray()) {
+        if (!hasFields()) {
+          const reverseRel = getRelationInfo(fieldInOtherRepo.options)
+          const relOp = fieldInOtherRepo.options as RelationOptions<
+            any,
+            any,
+            any
+          >
+          if (reverseRel)
+            if (reverseRel.toType() === this.entity)
+              if (reverseRel.type === 'reference') {
+                options = { ...findOptions, field: fieldInOtherRepo.key }
+              } else if (reverseRel.type === 'toOne') {
+                if (relOp.field) {
+                  options = { ...options, field: relOp.field }
+                } else if (relOp.fields) {
+                  let fields = {}
+                  for (const key in relOp.fields) {
+                    if (
+                      Object.prototype.hasOwnProperty.call(relOp.fields, key)
+                    ) {
+                      const keyInMyTable = relOp.fields[key]
+                      fields[keyInMyTable] = key
+                    }
+                  }
+                  options = { ...options, fields }
+                }
+              }
+        }
+      }
+      if (!hasFields())
+        throw buildError(
+          `No matching field found on target. Please specify field/fields`,
+        )
+    }
+
+    function requireField(
+      field: string | number | symbol,
+      meta: EntityMetadata,
+    ) {
+      const result = meta.fields.find(field as string)
+      if (!result)
+        throw buildError(
+          `Field "${field as string}" was not found in "${meta.key}".`,
+        )
+      return result
+    }
+    if (options.field) {
+      if (rel.type === 'toOne') {
+        requireField(options.field as string, this.metadata)
+        const val = row[options.field]
+        if (val === null) returnNull = true
+        if (val === undefined) returnUndefined = true
+        else where.push(otherRepo.metadata.idMetadata.getIdFilter(val))
+      } else {
+        requireField(options.field as string, otherRepo.metadata)
+        where.push({
+          [options.field]: this.metadata.idMetadata.getId(row),
+        })
+      }
+    } else if (options.fields) {
+      for (const key in options.fields) {
+        if (Object.prototype.hasOwnProperty.call(options.fields, key)) {
+          requireField(options.fields[key], this.metadata)
+          requireField(key, otherRepo.metadata)
+
+          where.push({ [key]: row[options.fields[key]] })
+        }
+      }
+    } else if (rel.type === 'toOne' || rel.type === 'reference') {
+      let val =
+        rel.type === 'reference'
+          ? (
+              getEntityRef(row).fields.find(
+                requireField(field.key, this.metadata),
+              ) as IdFieldRef<any, any>
+            ).getId()
+          : row[field.key]
+      if (!field.allowNull && (val === 0 || val === '')) val = null
+      if (val === null) returnNull = true
+      if (val === undefined) returnUndefined = true
+      else if (typeof val === 'object')
+        where.push(
+          otherRepo.metadata.idMetadata.getIdFilter(
+            otherRepo.metadata.idMetadata.getId(val),
+          ),
+        )
+      else where.push(otherRepo.metadata.idMetadata.getIdFilter(val))
+    }
+
+    findOptions.where = { $and: where }
+    if (
+      (rel.type === 'toOne' || rel.type === 'reference') &&
+      findOptions.orderBy // I deduce from this that there may be more than one row and we want only the first
+    )
+      findOptions.limit = 1
+    return { findOptions, returnNull, returnUndefined }
   }
 
   private async mapRawDataToResult(r: any, loadFields: FieldMetadata[]) {
@@ -644,7 +932,7 @@ export class RepositoryImplementation<entityType>
     return this.metadata.fields.toArray().filter((x) => keys.includes(x.key))
   }
 
-  create(item?: Partial<OmitEB<entityType>>): entityType {
+  create(item?: Partial<MembersOnly<entityType>>): entityType {
     let r = new this.entity(this.remult)
     if (item) {
       for (const field of this.fieldsOf(item)) {
@@ -652,6 +940,15 @@ export class RepositoryImplementation<entityType>
       }
       this.fixTypes(r)
     }
+    if (this.defaultFindOptions?.where) {
+      __updateEntityBasedOnWhere(
+        this.metadata,
+        this.defaultFindOptions.where,
+        r,
+      )
+      this.fixTypes(r)
+    }
+
     let z = this.getEntityRef(r)
 
     return r
@@ -692,7 +989,6 @@ export class RepositoryImplementation<entityType>
     return this.findFirst(
       {},
       {
-        useCache: true,
         ...options,
         where: this.metadata.idMetadata.getIdFilter(id),
       },
@@ -704,6 +1000,13 @@ export class RepositoryImplementation<entityType>
   async translateWhereToFilter(
     where: EntityFilter<entityType>,
   ): Promise<Filter> {
+    if (!where) where = {}
+    if (this.defaultFindOptions?.where) {
+      let z = where
+      where = {
+        $and: [z, this.defaultFindOptions?.where],
+      } as EntityFilter<entityType>
+    }
     if (this.metadata.options.backendPrefilter && !this.dataProvider.isProxy) {
       let z = where
       where = {
@@ -780,8 +1083,9 @@ abstract class rowHelperBase<T> {
   }
   constructor(
     protected columnsInfo: FieldOptions[],
-    protected instance: T,
+    public instance: T,
     protected remult: Remult,
+    protected isNewRow: boolean,
   ) {
     {
       let fac = remult as RemultProxy
@@ -795,7 +1099,8 @@ abstract class rowHelperBase<T> {
       if (ei && remult) {
         let lookup = new LookupColumn(
           remult.repo(col.valueType) as RepositoryImplementation<T>,
-          undefined,
+          Boolean(col?.[relationInfoMember]),
+          col.allowNull,
         )
         this.lookups.set(col.key, lookup)
         let val = instance[col.key]
@@ -834,7 +1139,37 @@ abstract class rowHelperBase<T> {
           enumerable: true,
         })
         lookup.set(val)
-      } else {
+      } else if (getRelationInfo(col)?.type === 'toOne') {
+        let hasVal = instance.hasOwnProperty(col.key)
+        let val = instance[col.key]
+        if (isNewRow && !val) hasVal = false
+        Object.defineProperty(instance, col.key, {
+          get: () => {
+            return val
+          },
+          set: (newVal) => {
+            val = newVal
+            if (newVal === undefined) return
+
+            const op = col as RelationOptions<any, any, any>
+
+            if (op.field) {
+              this.instance[op.field] = this.remult
+                .repo(getRelationInfo(col).toType())
+                .metadata.idMetadata.getId(newVal)
+            }
+            if (op.fields) {
+              for (const key in op.fields) {
+                if (Object.prototype.hasOwnProperty.call(op.fields, key)) {
+                  const element = op.fields[key]
+                  this.instance[element] = newVal[key]
+                }
+              }
+            }
+          },
+          enumerable: true,
+        })
+        if (hasVal) instance[col.key] = val
       }
     }
   }
@@ -951,19 +1286,28 @@ abstract class rowHelperBase<T> {
     this._subscribers?.reportObserved()
     return !!!this.error && this.errors == undefined
   }
-  copyDataToObject() {
+  copyDataToObject(isNew: boolean = false) {
     let d: any = {}
     for (const col of this.columnsInfo) {
       let lu = this.lookups.get(col.key)
       let val: any = undefined
+      const rel = getRelationInfo(col)
       if (lu) val = lu.id
       else val = this.instance[col.key]
+      if (rel && isNew && !col.allowNull && (val === undefined || null)) {
+        if (
+          this.remult.repo(rel.toType()).metadata.idMetadata.field.valueType ===
+          Number
+        )
+          val = 0
+        else val = ''
+      }
       if (val !== undefined) {
         val = col.valueConverter.toJson(val)
         if (val !== undefined && val !== null)
           val = col.valueConverter.fromJson(JSON.parse(JSON.stringify(val)))
       }
-      d[col.key] = val
+      if (!rel || rel.type === 'reference') d[col.key] = val
     }
     return d
   }
@@ -996,7 +1340,7 @@ abstract class rowHelperBase<T> {
       if (
         !this.remult ||
         col.includeInApi === undefined ||
-        this.remult.isAllowed(col.includeInApi)
+        this.remult.isAllowedForInstance(this.instance, col.includeInApi)
       ) {
         let val
         let lu = this.lookups.get(col.key)
@@ -1030,7 +1374,7 @@ abstract class rowHelperBase<T> {
       if (keys.includes(col.key))
         if (
           col.includeInApi === undefined ||
-          this.remult.isAllowed(col.includeInApi)
+          this.remult.isAllowedForInstance(this.instance, col.includeInApi)
         ) {
           if (
             !this.remult ||
@@ -1063,7 +1407,7 @@ export class rowHelperImplementation<T>
     remult: Remult,
     private _isNew: boolean,
   ) {
-    super(info.columnsInfo, instance, remult)
+    super(info.columnsInfo, instance, remult, _isNew)
     this.metadata = info
     if (_isNew) {
       for (const col of info.columnsInfo) {
@@ -1077,6 +1421,9 @@ export class rowHelperImplementation<T>
     if (this.info.options.entityRefInit)
       this.info.options.entityRefInit(this, instance)
     if (Remult.entityRefInit) Remult.entityRefInit(this, instance)
+  }
+  get relations(): RepositoryRelations<T> {
+    return this.repository.relations(this.instance)
   }
   get apiUpdateAllowed() {
     return this.remult.isAllowedForInstance(
@@ -1175,20 +1522,20 @@ export class rowHelperImplementation<T>
         // no need
         await this.__validateEntity()
       let doNotSave = false
-      for (const col of this.fields) {
-        if (col.metadata.options.saving)
-          await col.metadata.options.saving(this.instance, col)
-      }
-      if (this.info.entityInfo.saving) {
-        await this.info.entityInfo.saving(
-          this.instance,
-          () => (doNotSave = true),
-        )
-      }
 
+      let e = this.buildLifeCycleEvent(() => (doNotSave = true))
+      if (!this.remult.dataProvider.isProxy) {
+        for (const col of this.fields) {
+          if (col.metadata.options.saving)
+            await col.metadata.options.saving(this.instance, col, e)
+        }
+        if (this.info.entityInfo.saving) {
+          await this.info.entityInfo.saving(this.instance, e)
+        }
+      }
       this.__assertValidity()
 
-      let d = this.copyDataToObject()
+      let d = this.copyDataToObject(this.isNew())
       let ignoreKeys = []
       for (const field of this.metadata.fields) {
         if (
@@ -1206,7 +1553,7 @@ export class rowHelperImplementation<T>
         }
       }
 
-      if (this.info.idMetadata.field instanceof CompoundIdField) delete d.id
+      //if (this.info.idMetadata.field instanceof CompoundIdField) delete d.id
       let updatedRow: any
       let isNew = this.isNew()
       try {
@@ -1236,16 +1583,16 @@ export class rowHelperImplementation<T>
           }
         }
         await this.loadDataFrom(updatedRow)
-
-        if (this.info.entityInfo.saved)
-          await this.info.entityInfo.saved(this.instance)
-        if (this.repository.listeners)
-          for (const listener of this.repository.listeners.filter(
-            (x) => x.saved,
-          )) {
-            await listener.saved(this.instance, isNew)
-          }
-
+        if (!this.remult.dataProvider.isProxy) {
+          if (this.info.entityInfo.saved)
+            await this.info.entityInfo.saved(this.instance, e)
+          if (this.repository.listeners)
+            for (const listener of this.repository.listeners.filter(
+              (x) => x.saved,
+            )) {
+              await listener.saved(this.instance, isNew)
+            }
+        }
         await this.repository.remult.liveQueryPublisher.itemChanged(
           this.repository.metadata.key,
           [{ id: this.getId(), oldId: this.getOriginalId(), deleted: false }],
@@ -1263,6 +1610,20 @@ export class rowHelperImplementation<T>
     }
   }
 
+  private buildLifeCycleEvent(preventDefault: VoidFunction = () => {}) {
+    const self = this
+    return {
+      isNew: self.isNew(),
+      fields: self.fields,
+      id: self.getId(),
+      originalId: self.getOriginalId(),
+      metadata: self.repository.metadata,
+      repository: self.repository,
+      preventDefault: () => preventDefault(),
+      relations: self.repository.relations(self.instance),
+    } satisfies LifecycleEvent<T>
+  }
+
   private getIdFilter(): Filter {
     return Filter.fromEntityFilter(
       this.metadata,
@@ -1272,14 +1633,19 @@ export class rowHelperImplementation<T>
 
   async delete() {
     this.__clearErrorsAndReportChanged()
-    if (this.info.entityInfo.deleting)
-      await this.info.entityInfo.deleting(this.instance)
+    let e = this.buildLifeCycleEvent()
+    if (!this.remult.dataProvider.isProxy) {
+      if (this.info.entityInfo.deleting)
+        await this.info.entityInfo.deleting(this.instance, e)
+    }
     this.__assertValidity()
 
     try {
       await this.edp.delete(this.id)
-      if (this.info.entityInfo.deleted)
-        await this.info.entityInfo.deleted(this.instance)
+      if (!this.remult.dataProvider.isProxy) {
+        if (this.info.entityInfo.deleted)
+          await this.info.entityInfo.deleted(this.instance, e)
+      }
 
       if (this.repository.listeners)
         for (const listener of this.repository.listeners.filter(
@@ -1304,11 +1670,13 @@ export class rowHelperImplementation<T>
       if (lu) {
         lu.id = data[col.key]
         if (loadItems === undefined) {
-          if (!col.options.lazy) await lu.waitLoad()
+          if (!col.options.lazy && !col.options[relationInfoMember])
+            await lu.waitLoad()
         } else {
           if (loadItems.includes(col)) await lu.waitLoad()
         }
-      } else this.instance[col.key] = data[col.key]
+      } else if (!getRelationInfo(col.options))
+        this.instance[col.key] = data[col.key]
     }
     await this.calcServerExpression()
     this.id = this.getId()
@@ -1321,6 +1689,7 @@ export class rowHelperImplementation<T>
 
   private async calcServerExpression() {
     if (isBackend())
+      //y2 should be changed to be based on data provider - consider naming
       for (const col of this.info.columnsInfo) {
         if (col.serverExpression) {
           this.instance[col.key] = await col.serverExpression(this.instance)
@@ -1335,7 +1704,8 @@ export class rowHelperImplementation<T>
   wasChanged(): boolean {
     this._subscribers?.reportObserved()
     for (const col of this.fields) {
-      if (col.valueChanged()) return true
+      const rel = getRelationInfo(col.metadata.options)
+      if (!rel || rel.type == 'reference') if (col.valueChanged()) return true
     }
     return false
   }
@@ -1354,8 +1724,10 @@ export class rowHelperImplementation<T>
       }
     }
 
-    if (this.info.entityInfo.validation)
-      await this.info.entityInfo.validation(this.instance, this)
+    if (this.info.entityInfo.validation) {
+      let e = this.buildLifeCycleEvent(() => {})
+      await this.info.entityInfo.validation(this.instance, e)
+    }
     if (this.repository.listeners)
       for (const listener of this.repository.listeners.filter(
         (x) => x.validating,
@@ -1372,7 +1744,7 @@ function prepareColumnInfo(r: columnInfo[], remult: Remult): FieldOptions[] {
 export function getFields<fieldsContainerType>(
   container: fieldsContainerType,
   remult?: Remult,
-): FieldsRef<fieldsContainerType> {
+) {
   return getControllerRef(container, remult).fields
 }
 export function getControllerRef<fieldsContainerType>(
@@ -1415,7 +1787,7 @@ export class controllerRefImpl<T = any>
   implements ControllerRef<T>
 {
   constructor(columnsInfo: FieldOptions[], instance: any, remult: Remult) {
-    super(columnsInfo, instance, remult)
+    super(columnsInfo, instance, remult, false)
 
     let _items = []
     let r = {
@@ -1483,7 +1855,19 @@ export class FieldRefImplementation<entityType, valueType>
   }
   async load(): Promise<valueType> {
     let lu = this.rowBase.lookups.get(this.metadata.key)
-    if (lu) {
+    let rel = getRelationInfo(this.metadata.options)
+    if (rel) {
+      if (rel.type === 'toMany') {
+        return (this.container[this.metadata.key] = await this.helper.repository
+          .relations(this.container)
+          [this.metadata.key].find())
+      } else {
+        let val = await this.helper.repository
+          .relations(this.container)
+          [this.metadata.key].findOne()
+        if (val) this.container[this.metadata.key] = val
+      }
+    } else if (lu) {
       if (this.valueChanged()) {
         await lu.waitLoadOf(this.rawOriginalValue())
       }
@@ -1652,10 +2036,11 @@ export class columnDefsImpl implements FieldMetadata {
       .getEntityMetadataWithoutBreakingTheEntity(item)
       .fields.find(this.key).displayValue
   }
-  get includedInApi() {
+  includedInApi(item?: any): boolean {
     if (this.options.includeInApi === undefined) return true
-    return this.remult.isAllowed(this.options.includeInApi) //TODO 2- consolidate other code paths to go through here
+    return this.remult.isAllowedForInstance(item, this.options.includeInApi)
   }
+
   toInput(value: any, inputType?: string): string {
     return this.valueConverter.toInput(value, inputType)
   }
@@ -1672,6 +2057,14 @@ export class columnDefsImpl implements FieldMetadata {
         } else result = this.settings.sqlExpression
         if (!result) return this.settings.dbName
         return result
+      }
+      const rel = getRelationInfo(this.settings)
+      let field =
+        rel?.type === 'toOne' &&
+        ((this.settings as RelationOptions<any, any, any>).field as string)
+      if (field) {
+        let fInfo = this.entityDefs.fields.find(field)
+        if (fInfo) return fInfo.getDbName()
       }
       return this.settings.dbName
     } finally {
@@ -1750,7 +2143,10 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
     this.caption = buildCaption(entityInfo.caption, this.key, remult)
 
     if (entityInfo.id) {
-      let r = entityInfo.id(this.fields)
+      let r =
+        typeof entityInfo.id === 'function'
+          ? entityInfo.id(this.fields)
+          : Object.keys(entityInfo.id).map((x) => this.fields.find(x))
       if (Array.isArray(r)) {
         if (r.length > 1) this.idMetadata.field = new CompoundIdField(...r)
         else if (r.length == 1) this.idMetadata.field = r[0]
@@ -1811,6 +2207,7 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
 
   idMetadata: IdMetadata<T> = {
     getId: (item) => {
+      if (item === undefined || item === null) return item
       const ref = getEntityRef(item, false)
       if (ref) return ref.getId()
       if (this.idMetadata.field instanceof CompoundIdField)
@@ -1870,272 +2267,10 @@ export function FieldType<valueType = any>(
   }
 }
 
-export class Fields {
-  /**
-   * Stored as a JSON.stringify - to store as json use Fields.json
-   */
-  static object<entityType = any, valueType = any>(
-    ...options: (
-      | FieldOptions<entityType, valueType>
-      | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void)
-    )[]
-  ): (
-    target: any,
-    context:
-      | string
-      | ClassFieldDecoratorContextStub<entityType, valueType | undefined>,
-    c?: any,
-  ) => void {
-    return Field(undefined, ...options)
-  }
-  static json<entityType = any, valueType = any>(
-    ...options: (
-      | FieldOptions<entityType, valueType>
-      | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void)
-    )[]
-  ): (
-    target: any,
-    context:
-      | string
-      | ClassFieldDecoratorContextStub<entityType, valueType | undefined>,
-    c?: any,
-  ) => void {
-    return Field(
-      undefined,
-      {
-        valueConverter: {
-          fieldTypeInDb: 'json',
-        },
-      },
-      ...options,
-    )
-  }
-  static dateOnly<entityType = any>(
-    ...options: (
-      | FieldOptions<entityType, Date>
-      | ((options: FieldOptions<entityType, Date>, remult: Remult) => void)
-    )[]
-  ): (
-    target: any,
-    context:
-      | string
-      | ClassFieldDecoratorContextStub<entityType, Date | undefined>,
-    c?: any,
-  ) => void {
-    return Field(
-      () => Date,
-      {
-        valueConverter: ValueConverters.DateOnly,
-      },
-      ...options,
-    )
-  }
-  static date<entityType = any>(
-    ...options: (
-      | FieldOptions<entityType, Date>
-      | ((options: FieldOptions<entityType, Date>, remult: Remult) => void)
-    )[]
-  ): (
-    target: any,
-    context:
-      | string
-      | ClassFieldDecoratorContextStub<entityType, Date | undefined>,
-    c?: any,
-  ) => void {
-    return Field(() => Date, ...options)
-  }
-  static integer<entityType = any>(
-    ...options: (
-      | FieldOptions<entityType, Number>
-      | ((options: FieldOptions<entityType, Number>, remult: Remult) => void)
-    )[]
-  ): (
-    target: any,
-    context:
-      | string
-      | ClassFieldDecoratorContextStub<entityType, number | undefined>,
-    c?: any,
-  ) => void {
-    return Field(
-      () => Number,
-      {
-        valueConverter: ValueConverters.Integer,
-      },
-      ...options,
-    )
-  }
-  static autoIncrement<entityType = any>(
-    ...options: (
-      | FieldOptions<entityType, Number>
-      | ((options: FieldOptions<entityType, Number>, remult: Remult) => void)
-    )[]
-  ): (
-    target: any,
-    context:
-      | string
-      | ClassFieldDecoratorContextStub<entityType, number | undefined>,
-    c?: any,
-  ) => void {
-    return Field(
-      () => Number,
-      {
-        allowApiUpdate: false,
-        dbReadOnly: true,
-        valueConverter: {
-          ...ValueConverters.Integer,
-          fieldTypeInDb: 'autoincrement',
-        },
-      },
-      ...options,
-    )
-  }
-
-  static number<entityType = any>(
-    ...options: (
-      | FieldOptions<entityType, Number>
-      | ((options: FieldOptions<entityType, Number>, remult: Remult) => void)
-    )[]
-  ): (
-    target: any,
-    context:
-      | string
-      | ClassFieldDecoratorContextStub<entityType, number | undefined>,
-    c?: any,
-  ) => void {
-    return Field(() => Number, ...options)
-  }
-  static createdAt<entityType = any>(
-    ...options: (
-      | FieldOptions<entityType, Date>
-      | ((options: FieldOptions<entityType, Date>, remult: Remult) => void)
-    )[]
-  ): (
-    target: any,
-    context:
-      | string
-      | ClassFieldDecoratorContextStub<entityType, Date | undefined>,
-    c?: any,
-  ) => void {
-    return Field(
-      () => Date,
-      {
-        allowApiUpdate: false,
-        saving: (_, ref) => {
-          if (getEntityRef(_).isNew()) ref.value = new Date()
-        },
-      },
-      ...options,
-    )
-  }
-  static updatedAt<entityType = any>(
-    ...options: (
-      | FieldOptions<entityType, Date>
-      | ((options: FieldOptions<entityType, Date>, remult: Remult) => void)
-    )[]
-  ): (
-    target: any,
-    context:
-      | string
-      | ClassFieldDecoratorContextStub<entityType, Date | undefined>,
-    c?: any,
-  ) => void {
-    return Field(
-      () => Date,
-      {
-        allowApiUpdate: false,
-        saving: (_, ref) => {
-          ref.value = new Date()
-        },
-      },
-      ...options,
-    )
-  }
-
-  static uuid<entityType = any>(
-    ...options: (
-      | FieldOptions<entityType, string>
-      | ((options: FieldOptions<entityType, string>, remult: Remult) => void)
-    )[]
-  ): (
-    target: any,
-    context:
-      | string
-      | ClassFieldDecoratorContextStub<entityType, string | undefined>,
-    c?: any,
-  ) => void {
-    return Field(
-      () => String,
-      {
-        allowApiUpdate: false,
-        defaultValue: () => uuid(),
-        saving: (_, r) => {
-          if (!r.value) r.value = uuid()
-        },
-      },
-      ...options,
-    )
-  }
-  static cuid<entityType = any>(
-    ...options: (
-      | FieldOptions<entityType, string>
-      | ((options: FieldOptions<entityType, string>, remult: Remult) => void)
-    )[]
-  ): (
-    target: any,
-    context:
-      | string
-      | ClassFieldDecoratorContextStub<entityType, string | undefined>,
-    c?: any,
-  ) => void {
-    return Field(
-      () => String,
-      {
-        allowApiUpdate: false,
-        defaultValue: () => createId(),
-        saving: (_, r) => {
-          if (!r.value) r.value = createId()
-        },
-      },
-      ...options,
-    )
-  }
-  static string<entityType = any>(
-    ...options: (
-      | StringFieldOptions<entityType>
-      | ((options: StringFieldOptions<entityType>, remult: Remult) => void)
-    )[]
-  ): (
-    target: any,
-    context:
-      | string
-      | ClassFieldDecoratorContextStub<entityType, string | undefined>,
-    c?: any,
-  ) => void {
-    return Field(() => String, ...options)
-  }
-  static boolean<entityType = any>(
-    ...options: (
-      | FieldOptions<entityType, boolean>
-      | ((options: FieldOptions<entityType, boolean>, remult: Remult) => void)
-    )[]
-  ): (
-    target: any,
-    context:
-      | string
-      | ClassFieldDecoratorContextStub<entityType, boolean | undefined>,
-    c?: any,
-  ) => void {
-    return Field(() => Boolean, ...options)
-  }
-}
-
 export function isAutoIncrement(f: FieldMetadata) {
   return f.options?.valueConverter?.fieldTypeInDb === 'autoincrement'
 }
-export interface StringFieldOptions<entityType = any>
-  extends FieldOptions<entityType, string> {
-  maxLength?: number
-}
+
 export function ValueListFieldType<valueType extends ValueListItem = any>(
   ...options: (
     | ValueListFieldOptions<any, valueType>
@@ -2265,92 +2400,8 @@ export function getValueList<T>(
   return ValueListInfo.get<T>(type as ClassType<T>).getValues()
 }
 
-export interface ClassFieldDecoratorContextStub<entityType, valueType> {
-  readonly access: {
-    set(object: entityType, value: valueType): void
-  }
-  readonly name: string
-}
-export interface ClassDecoratorContextStub<
-  Class extends new (...args: any) => any = new (...args: any) => any,
-> {
-  readonly kind: 'class'
-  readonly name: string | undefined
-  addInitializer(initializer: (this: Class) => void): void
-}
-
-/**Decorates fields that should be used as fields.
- * for more info see: [Field Types](https://remult.dev/docs/field-types.html)
- *
- * FieldOptions can be set in two ways:
- * @example
- * // as an object
- * @Fields.string({ includeInApi:false })
- * title='';
- * @example
- * // as an arrow function that receives `remult` as a parameter
- * @Fields.string((options,remult) => options.includeInApi = true)
- * title='';
- */
-export function Field<entityType = any, valueType = any>(
-  valueType: () => ClassType<valueType>,
-  ...options: (
-    | FieldOptions<entityType, valueType>
-    | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void)
-  )[]
-) {
-  // import ANT!!!! if you call this in another decorator, make sure to set It's return type correctly with the | undefined
-
-  return (
-    target,
-    context:
-      | ClassFieldDecoratorContextStub<entityType, valueType | undefined>
-      | string,
-    c?,
-  ) => {
-    const key = typeof context === 'string' ? context : context.name.toString()
-    let factory = (remult: Remult) => {
-      let r = buildOptions(options, remult)
-      if (!r.valueType && valueType) {
-        r.valueType = valueType()
-      }
-      if (!r.key) {
-        r.key = key
-      }
-      if (!r.dbName) r.dbName = r.key
-      let type = r.valueType
-      if (!type) {
-        type = Reflect.getMetadata('design:type', target, key)
-        r.valueType = type
-      }
-      if (!r.target) r.target = target
-      return r
-    }
-    checkTarget(target)
-    let names: columnInfo[] = columnsOfType.get(target.constructor)
-    if (!names) {
-      names = []
-      columnsOfType.set(target.constructor, names)
-    }
-
-    let set = names.find((x) => x.key == key)
-    if (!set)
-      names.push({
-        key,
-        settings: factory,
-      })
-    else {
-      let prev = set.settings
-      set.settings = (c) => {
-        let prevO = prev(c)
-        let curr = factory(c)
-        return Object.assign(prevO, curr)
-      }
-    }
-  }
-}
 export const storableMember = Symbol('storableMember')
-function buildOptions<entityType = any, valueType = any>(
+export function buildOptions<entityType = any, valueType = any>(
   options: (
     | FieldOptions<entityType, valueType>
     | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void)
@@ -2468,16 +2519,12 @@ export function decorateColumnSettings<valueType>(
   return settings
 }
 
-interface columnInfo {
-  key: string
-  settings: (remult: Remult) => FieldOptions
-}
 export class EntityBase {
-  get _(): EntityRef<this> {
-    return getEntityRef(this)
+  get _() {
+    return getEntityRef(this) as unknown as EntityRefForEntityBase<this>
   }
   save() {
-    return this._.save()
+    return getEntityRef(this).save()
   }
   assign(values: Partial<Omit<this, keyof EntityBase>>) {
     assign(this, values)
@@ -2493,10 +2540,6 @@ export class EntityBase {
     return this._.fields
   }
 }
-export class IdEntity extends EntityBase {
-  @Fields.uuid()
-  id: string
-}
 export class ControllerBase {
   protected remult: Remult
   constructor(remult?: Remult) {
@@ -2507,10 +2550,16 @@ export class ControllerBase {
     return this
   }
   get $() {
-    return getFields(this, this.remult)
+    return getFields(
+      this,
+      this.remult,
+    ) as unknown as FieldsRefForEntityBase<this>
   }
   get _() {
-    return getControllerRef(this, this.remult)
+    return getControllerRef(
+      this,
+      this.remult,
+    ) as unknown as ControllerRefForControllerBase<this>
   }
 }
 
@@ -2534,6 +2583,7 @@ class QueryResultImpl<entityType> implements QueryResult<entityType> {
       limit: this.options.pageSize,
       page: page,
       load: this.options.load,
+      include: this.options.include,
     })
   }
 
@@ -2564,6 +2614,7 @@ class QueryResultImpl<entityType> implements QueryResult<entityType> {
       orderBy: this.options.orderBy,
       limit: this.options.pageSize,
       load: this.options.load,
+      include: this.options.include,
     })
 
     let nextPage: () => Promise<Paginator<entityType>> = undefined
@@ -2702,10 +2753,3 @@ export type EntityMetadataOverloads<entityType> =
 export type RepositoryOverloads<entityType> =
   | Repository<entityType>
   | ClassType<entityType>
-
-export function checkTarget(target: any) {
-  if (!target)
-    throw new Error(
-      "Set the 'experimentalDecorators:true' option in your 'tsconfig' or 'jsconfig' (target undefined)",
-    )
-}
