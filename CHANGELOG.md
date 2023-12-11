@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.23.1] TBD
+
+- Fixed case insensitivity in contains for mongo db
+
 ## [0.23.0] 2023-12-11
 
 - Added Relations - see [Relations](docs/lifecycle-hooks.html)

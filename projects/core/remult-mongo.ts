@@ -282,7 +282,7 @@ class FilterConsumerBridgeToMongo implements FilterConsumer {
     this.add(col, val, '$lt')
   }
   public containsCaseInsensitive(col: FieldMetadata, val: any): void {
-    this.add(col, val, '$regex')
+    this.add(col, val, '$regex', { $options: 'i' })
 
     // this.promises.push(col.getDbName().then(colName => {
 
@@ -291,10 +291,16 @@ class FilterConsumerBridgeToMongo implements FilterConsumer {
     // }));
   }
 
-  private add(col: FieldMetadata, val: any, operator: string) {
+  private add(
+    col: FieldMetadata,
+    val: any,
+    operator: string,
+    moreOptions?: any,
+  ) {
     this.result.push(() => ({
       [this.nameProvider.$dbNameOf(col)]: {
         [operator]: isNull(val) ? val : toDb(col, val),
+        ...moreOptions,
       },
     }))
   }

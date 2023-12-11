@@ -970,7 +970,7 @@ export function commonDbTests(
     })
     const r = await createEntity(e)
     await r.insert({ a: 1, firstName: 'noam' })
-    let item = await r.findFirst({ firstName: { $contains: 'oa' } })
+    let item = await r.findFirst({ firstName: { $contains: 'oA' } })
     expect(item.firstName).toBe('noam')
   })
   it.skipIf(options?.excludeLiveQuery)('test live query storage', async () => {
