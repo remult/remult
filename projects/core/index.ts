@@ -95,7 +95,6 @@ export {
 } from './src/column-interfaces' // revisit input type
 export { RestDataProvider } from './src/data-providers/rest-data-provider' //V
 export { InMemoryDataProvider } from './src/data-providers/in-memory-database' //V
-export { ArrayEntityDataProvider } from './src/data-providers/array-entity-data-provider' //V
 export { WebSqlDataProvider } from './src/data-providers/web-sql-data-provider' //V
 export { SqlDatabase } from './src/data-providers/sql-database' //V
 
