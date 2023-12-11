@@ -786,3 +786,4 @@ remult.apiClient.url='localhost:3007/api
 
  */
 //y2 - i had a question about find first's different syntax from find that confused a user
+//p2 - allowApiUpdate should be false for include in api false
