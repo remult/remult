@@ -8,6 +8,13 @@
       "problemMatcher": ["$tsc-watch"],
       "label": "npm: build-tests",
       "detail": "tsc --watch -p tsconfig.tests.json"
+    },
+    {
+      "type": "npm",
+      "script": "release",
+      "problemMatcher": ["$tsc"],
+      "label": "npm: release",
+      "detail": "npm run build && npm run patch-versions"
     }
   ]
 }
