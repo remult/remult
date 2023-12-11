@@ -6,7 +6,7 @@ In Remult, entity relations play a useful role in modeling and navigating the co
 
 To experiment with these entities online, you can access the following CodeSandbox link, which is preconfigured with these two entities and a postgres database:
 
-[CodeSandbox - Remult Entity Relations Example](https://codesandbox.io/p/sandbox/blue-paper-6gk7mf?file=%2Fsrc%2Findex.ts%3A12%2C1-13%2C20)
+[CodeSandbox - Remult Entity Relations Example](https://codesandbox.io/p/devbox/remult-postgres-demo-f934f8)
 
 Feel free to explore and experiment with the provided entities and their relations in the CodeSandbox environment.
 
