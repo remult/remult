@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.23.1] TBD
+## [0.23.1] 2023-12-12
 
 - Fixed case insensitivity in contains for mongo db
 
