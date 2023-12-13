@@ -54,7 +54,7 @@ npm add vite-plugin-striper --save-dev
 
 ```ts [vite.config.ts]
 import { defineConfig } from 'vite'
-import { striper } from 'vite-striper' // [!code ++]
+import { striper } from 'vite-plugin-striper' // [!code ++]
 
 export default defineConfig({
   plugins: [striper({ decorators: ['BackendMethod'] })], // [!code ++]
