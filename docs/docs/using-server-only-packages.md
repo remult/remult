@@ -47,7 +47,7 @@ If you are using `vite` you can add a plugin to remove all `@BackendMethod` from
 Simply add [vite-plugin-striper](https://www.kitql.dev/docs/tools/07_vite-plugin-striper) to your project and configure it like this:
 
 ```bash
-npm add vite-plugin-striper --save-dev
+npm i --save-dev vite-plugin-striper
 ```
 
 ::: code-group
@@ -57,7 +57,10 @@ import { defineConfig } from 'vite'
 import { striper } from 'vite-plugin-striper' // [!code ++]
 
 export default defineConfig({
-  plugins: [striper({ decorators: ['BackendMethod'] })], // [!code ++]
+  plugins: [
+    react(),
+    striper({ decorators: ['BackendMethod'] }), // [!code ++]
+  ],
 })
 ```
 
