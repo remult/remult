@@ -602,9 +602,6 @@ export interface RelationInfo {
   toType: () => any
   type: 'reference' | 'toOne' | 'toMany' //remove to from name
 }
-//[ ] V2 - what to do about count?
-//[ ] V2 - condition? not to fetch if null etc....
-//[ ] V3 - all these fields will also appear in the where etc... in the typescript api - but we will not enforce them
 
 /**
  * Options for configuring a relation between entities.
@@ -717,66 +714,63 @@ export type ClassFieldDecorator<entityType, valueType> = (
   c?: any,
 ) => void
 
-//p2 - write doc about controlling updates of rows...
-
-//p2 - need a way to extract the fields from the relation - for generating relation based sql
-
-//p2 - add docs for apply changes
-//y2 - discuss a default date formatter
-//[ ] - consider using this in saving etc...
-//p2 - when subscribe is forbidden - the query still runs after the renew process
-//p2 - JSON FIELD LOST JSON STORAGE WHEN SET INPUT VALUE
-//p2 - doc this:
+//p1 - with remult promise for remultexpress
+//p1 - postgres case sensitive
+//p1 - fix sql log to console to make more sense
+//y1 - Add a with remult promise to Remult!
+//y1 - filterToRaw should get a dbnames of - and we should create a dbnames of that supports an alias
+//y1 - Backend methods are transactions, it's not intuitive and maybe should be optional / opt in
+//y1 - i had a question about find first's different syntax from find that confused a user
+//y1 - Write some ctrl g
+//y1 - allow api read to also support instance and filter. - problem with promise
+//y1 - I think there should be a way to throw a forbidden exception
+//p2 -   processError in remult express
+//p2 -   allow find options preprocessor for api calls, to use for authorization
+//p1 - write doc about controlling updates of rows...
+//p1 - need a way to extract the fields from the relation - for generating relation based sql
+//p1 - add docs for apply changes
+//p1 - when subscribe is forbidden - the query still runs after the renew process
+//p1 - JSON FIELD LOST JSON STORAGE WHEN SET INPUT VALUE
+//p1 - 'update tasks set  where id = $1
+//p1 - doc this:
 /**
  * //p2 - doc this
 remult.apiClient.httpClient = (
   input: RequestInfo | URL,
   init?: RequestInit
-) => {
-  return fetch(input, {
-    ...init,
-    headers: {
-      authorization: 'Bearer ' + sessionStorage.sessionId,
-    },
-    cache: 'no-store',
-  })
+  ) => {
+    return fetch(input, {
+      ...init,
+      headers: {
+        authorization: 'Bearer ' + sessionStorage.sessionId,
+      },
+      cache: 'no-store',
+    })
 }
 
 &&
 remult.apiClient.url='localhost:3007/api
 
 
- */
-//p2 - with remult promise for remultexpress
-//p2 - 'update tasks set  where id = $1
-//p2 - live query refresh of view on table update
-//p2 - Operator '>' cannot be applied to types 'Number' and 'number'.ts(2365) - change fields to <entityType,number> (now it's Number)
-//p2 - Field(()=>String) - doesn't play nice with strict mode - it prevents people from extending basic types
-//p2 - with remult for remultexpress
-//p2 - Add a with remult promise to Remult!
+*/
 
-//p2 - filterToRaw should get a dbnames of - and we should create a dbnames of that supports an alias
+//y2 - discuss a default date formatter
+//y2 - add some api testing framework for user unit tests (will help with codesandbox based discussions)
+//y2 - live query refresh of view on table update
+//y2 - Operator '>' cannot be applied to types 'Number' and 'number'.ts(2365) - change fields to <entityType,number> (now it's Number)
+//y2 - Field(()=>String) - doesn't play nice with strict mode - it prevents people from extending basic types
 
 //y2 - livequery for findfirst (@JY)
 //y2 - #239 - (@JY) add a way to get from fieldMetadata back to entity repo (like we have in fieldRef)
 //p2 - constraints (@JY)
-//p2 - Add ability to process query that comes from the api
-//p2 - too much data by mistake
-//p2 - postgres case sensitive
 
-//p2 - fix sql log to console to make more sense
 //p2 - type metadata.key - to keyof entity - based on cwis input
-//p2 - processError in remult express
 
-//y2 - Backend methods are transactions, it's not intuitive and maybe should be optional / opt in
 //p2 - get backend methods to work when specifying types for date, and entities as poco's
-//p2 - allow find options preprocessor for api calls, to use for authorization
 //y2 - remove __dirname from tutorials
-//y2 - add some api testing framework for user unit tests (will help with codesandbox based discussions)
-//y2 - I tihnk there should be a way to throw a forbidden exception
+//p2 - when value changes for field with error, clear error - so the user will feel comfortable
 //p2 - conside law-q db based on schema issue - I think that while running the dataProvider function, we should have a valid remult - maybe even have a valid remult, that will be valid until api is run
-//p2 - allow api read to also support instance and filter.
-//p2 - investigate why did lawq didn't run after build - even though it ran with tsx
+
 //y2 - we should really reconsider allow null by default to be true - I think that what we're doing is confusing for most . In my case I added a volunteer relation, and didn't set any value to it - and I get an error that null value is not allowed for it
 /**
 * our default is allow null false.
@@ -785,5 +779,9 @@ remult.apiClient.url='localhost:3007/api
 * we do not enforce allow null false (mongo, json it'll get stored)
 
  */
-//y2 - i had a question about find first's different syntax from find that confused a user
+
 //p2 - allowApiUpdate should be false for include in api false
+
+//[ ] V2 - what to do about for relations count?
+//[ ] V2 - condition? not to fetch if null etc....
+//[ ] V3 - all these fields will also appear in the where etc... in the typescript api - but we will not enforce them

@@ -24,7 +24,6 @@ export class LiveQueryPublisher implements LiveQueryChangesListener {
   runPromise(p: Promise<any>) {}
   debugFileSaver = (x: any) => {}
   async itemChanged(entityKey: string, changes: itemChange[]) {
-    //TODO 2 - optimize so that the user will get their messages first. Based on user id
     await this.liveQueryStorage().forEach(
       entityKey,
       async ({ query: q, setData }) => {

@@ -401,5 +401,3 @@ class transactionLiveQueryPublisher implements LiveQueryChangesListener {
     }
   }
 }
-//p2 - when value changes for field with error, clear error - so the user will feel comfortable
-//y2 - require filter argument - and perform validation checks for it - site, id etc.. changelog, status changes etc...,

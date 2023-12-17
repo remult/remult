@@ -225,7 +225,6 @@ export class RepositoryImplementation<entityType>
     this.idCache.set(id, row)
     return await row
   }
-  //TODO2 - Used to prevent unnecessary many to one relations
   addToCache(item: entityType) {
     if (item) this.idCache.set(this.getEntityRef(item).getId() + '', item)
   }
@@ -2163,7 +2162,7 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
       : this.getEntityMetadataWithoutBreakingTheEntity(item).apiUpdateAllowed
   }
   get apiReadAllowed() {
-    if (this.options.allowApiRead === undefined) return true //TODO2 - consider that this default may be confusing, since it's different from all others.
+    if (this.options.allowApiRead === undefined) return true
     return this.remult.isAllowed(this.options.allowApiRead)
   }
   apiDeleteAllowed(item: T) {
