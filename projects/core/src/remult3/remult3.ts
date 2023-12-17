@@ -714,6 +714,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
   c?: any,
 ) => void
 
+//p1 - sql-expression for knex
 //p1 - with remult promise for remultexpress
 //p1 - postgres case sensitive
 //p1 - fix sql log to console to make more sense
