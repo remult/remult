@@ -1,7 +1,7 @@
 import type * as Knex from 'knex'
 import { beforeAll, beforeEach, expect, it } from 'vitest'
 import { allDbTests } from '.'
-import { Remult, dbNamesOf } from '../../../core'
+import { Entity, Fields, Remult, dbNamesOf } from '../../../core'
 import type { ClassType } from '../../../core/classType'
 import { KnexDataProvider, KnexSchemaBuilder } from '../../../core/remult-knex'
 import { entityWithValidations } from './entityWithValidations'
@@ -110,5 +110,24 @@ export function knexTests(knex: Knex.Knex) {
     let s = await entityWithValidations.create4RowsInDp(createEntity)
     await s.update(1, { name: 'updated name' })
     expect((await s.find()).map((x) => x.myId)).toEqual([1, 2, 3, 4])
+  })
+  it.skip('test sql expression', async () => {
+    @Entity('testSqlExpression')
+    class testSqlExpression {
+      @Fields.integer()
+      a = 0
+      @Fields.integer()
+      b = 0
+      @Fields.integer({ sqlExpression: () => `a+b` })
+      c = 0
+    }
+    const r = await createEntity(testSqlExpression)
+    const t = await r.insert([
+      { a: 1, b: 5 },
+      { a: 2, b: 1 },
+    ])
+    expect(t[0].c).toBe(6)
+    expect(await r.count({ c: 3 })).toBe(1)
+    expect((await r.find({ orderBy: { c: 'desc' } }))[0].c).toBe(3)
   })
 }

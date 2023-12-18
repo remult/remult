@@ -715,13 +715,21 @@ export type ClassFieldDecorator<entityType, valueType> = (
 ) => void
 
 //p1 - sql-expression for knex
-//p1 - with remult promise for remultexpress
 //p1 - postgres case sensitive
-//p1 - fix sql log to console to make more sense
+
+/*p1 - with remult async for remultexpress
+rename withremultpromise to that withRemultAsync
+expose live query storage in remult
+
+request optional - and depends on that run `getUser` & `initRequest`
+*/
 //y1 - Add a with remult promise to Remult!
+//p1 - fix sql log to console to make more sense
+//p1 - add schema option to create postgres data provider
 //y1 - filterToRaw should get a dbnames of - and we should create a dbnames of that supports an alias
 //y1 - Backend methods are transactions, it's not intuitive and maybe should be optional / opt in
 //y1 - i had a question about find first's different syntax from find that confused a user
+//y1 - not contains - meni request
 //y1 - Write some ctrl g
 //y1 - allow api read to also support instance and filter. - problem with promise
 //y1 - I think there should be a way to throw a forbidden exception
@@ -733,6 +741,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //p1 - when subscribe is forbidden - the query still runs after the renew process
 //p1 - JSON FIELD LOST JSON STORAGE WHEN SET INPUT VALUE
 //p1 - 'update tasks set  where id = $1
+//y2 - consider multi tenancies
 //p1 - doc this:
 /**
  * //p2 - doc this
