@@ -1,4 +1,8 @@
-# Relations between entities
+# Relations Between Entities 🚀
+
+::: tip New Feature
+Relations are a new feature introduced in version 0.23.
+:::
 
 ### Understanding Entity Relations in Remult
 
@@ -44,7 +48,7 @@ The `Order` entity represents transactions or purchases made by customers. Each 
 
 Throughout the following discussion, we will explore how to define and use relations between these entities, enabling you to create sophisticated data models and efficiently query and manipulate data using Remult. Whether you are dealing with one-to-one, one-to-many, or many-to-many relationships, understanding entity relations is essential for building robust and feature-rich applications with Remult.
 
-## Many-to-One Relation
+## Simple Many-to-One
 
 In Remult, many-to-one relations allow you to establish connections between entities, where multiple records of one entity are associated with a single record in another entity. Let's delve into a common use case of a many-to-one relation, specifically the relationship between the `Order` and `Customer` entities.
 
@@ -67,7 +71,7 @@ export class Order {
 
 In this example, each `Order` is associated with a single `Customer`. The `customer` property in the `Order` entity represents this relationship.
 
-## Including the Relation in a Query
+### Including the Relation in a Query
 
 When querying data that involves a many-to-one relation, you can use the `include` option to specify which related entity you want to include in the result set. In this case, we want to include the associated `Customer` when querying `Order` records.
 
@@ -128,7 +132,7 @@ const singleOrder = await orderRepo.findFirst(
 )
 ```
 
-## Relation Loading
+### Relation Loading
 
 In Remult, by default, a relation is not loaded unless explicitly specified in the `include` statement of a query. This behavior ensures that you only load the related data you require for a specific task, optimizing performance and minimizing unnecessary data retrieval.
 
@@ -170,15 +174,15 @@ In this query, we override the default behavior by explicitly setting `customer:
 
 By combining the default behavior with the ability to override it in specific queries, Remult provides you with fine-grained control over relation loading, ensuring that you can optimize data retrieval based on your application's requirements and performance considerations.
 
-# Advanced Relation Configuration in Remult
+## Advanced Many-to-One
 
 In certain scenarios, you may require more granular control over the behavior of relations and want to access specific related data without loading the entire related entity. Remult provides advanced configuration options to meet these requirements. Let's explore how to achieve this level of control through advanced relation configurations.
 
-## Custom Relation Field
+### Custom Relation Field
 
 In Remult, you can define custom relation fields that allow you to access the `id` without loading the entire related entity. To define a custom relation field, follow these steps:
 
-### Step 1: Define a Custom Field in the Entity
+#### Step 1: Define a Custom Field in the Entity
 
 In your entity definition, define a custom field that will hold the identifier or key of the related entity. This field serves as a reference to the related entity without loading the entity itself.
 
@@ -199,7 +203,7 @@ export class Order {
 
 In this example, we define a custom field called `customerId`, which stores the identifier of the related `Customer` entity.
 
-### Step 2: Define the Relation Using `toOne`
+#### Step 2: Define the Relation Using `toOne`
 
 Use the `@Relations.toOne` decorator to define the relation, specifying the types for the `fromEntity` and `toEntity` in the generic parameters. Additionally, provide the name of the custom field (in this case, `"customerId"`) as the third argument.
 
@@ -266,11 +270,11 @@ In this example, we use the `field` option to define a custom relation between t
 
 Using the `field` option provides you with granular control over how the relation field is configured and accessed in your Remult application. You can customize various aspects of the relation to meet your specific requirements, enhance documentation, and improve the overall usability of your codebase.
 
-## Relation Based on Multiple Fields
+### Relation Based on Multiple Fields
 
 In some scenarios, establishing a relation between entities requires considering multiple fields to ensure the correct association. Remult provides the flexibility to define relations based on multiple fields using the `fields` option. Here's how to create a relation based on multiple fields in Remult:
 
-### Defining Entities
+#### Defining Entities
 
 Let's consider a scenario where both `Order` and `Customer` entities belong to specific branches, and we need also the `branchId` fields to ensure the correct association. First, define your entities with the relevant fields:
 
@@ -309,7 +313,7 @@ export class Order {
 
 In this example, we have two entities: `Customer` and `Order`. Both entities have a `branchId` field that represents the branch they belong to. To create a relation based on these fields, we specify the `fields` option in the relation configuration.
 
-### Using the `fields` Option
+#### Using the `fields` Option
 
 In the `@Relations.toOne` decorator, use the `fields` option to specify the mapping between fields in the related entity (`Customer`) and your entity (`Order`). Each entry in the `fields` object corresponds to a field in the related entity and maps it to a field in your entity.
 
@@ -332,7 +336,7 @@ This ensures that the relation between `Order` and `Customer` is based on both t
 
 By utilizing the `fields` option, you can create relations that consider multiple fields, ensuring accurate and meaningful associations between your entities in Remult.
 
-## One-to-Many Relation
+## One-to-Many
 
 In Remult, you can easily define a `toMany` relation to retrieve multiple related records. Let's consider a scenario where you want to retrieve a list of orders for each customer. We'll start with the basic `toOne` relation example and then add a `toMany` relation to achieve this:
 
@@ -544,7 +548,7 @@ The `where` option specified within `include` will be combined with the `where` 
 
 Using `include` in this way allows you to fine-tune the behavior of your `toMany` relation to meet the specific requirements of each query, making Remult a powerful tool for building flexible and customized data retrieval logic in your application.
 
-## Relations Repository Methods
+## Repository `relations`
 
 In Remult, managing relationships between entities is a crucial aspect of working with your data. When dealing with a `toMany` relationship, Remult provides you with powerful tools through the repository's `relations` property to handle related rows efficiently, whether you want to retrieve them or insert new related records.
 
@@ -657,7 +661,7 @@ In this code:
 
 Using the `activeRecord` pattern and direct access to relations simplifies the management of related data, making it more intuitive and efficient.
 
-## Many-to-Many Relation:
+## Many-to-Many
 
 In Remult, you can effectively handle many-to-many relationships between entities by using an intermediate table. This approach is especially useful when you need to associate multiple instances of one entity with multiple instances of another entity. In this section, we'll walk through the process of defining and working with many-to-many relationships using this intermediate table concept.
 

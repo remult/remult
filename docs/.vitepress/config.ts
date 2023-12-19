@@ -96,7 +96,7 @@ export default defineConfig({
               { text: 'CRUD Operations', link: `/tutorials/${t.path}/crud` },
               { text: 'Validation', link: `/tutorials/${t.path}/validation` },
               {
-                text: 'Live Queries 🚀',
+                text: 'Live Queries',
                 link: `/tutorials/${t.path}/live-queries`,
               },
               {
@@ -137,7 +137,7 @@ export default defineConfig({
             items: [
               { text: 'Fields', link: '/docs/field-types' },
               {
-                text: 'Relations',
+                text: 'Relations 🚀',
                 link: '/docs/entity-relations',
                 // collapsed: true,
                 // items: [

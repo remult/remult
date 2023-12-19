@@ -1,8 +1,4 @@
-# Live Queries :rocket:
-
-::: tip New Feature
-Live queries are a new feature introduced in version 0.18.
-:::
+# Live Queries
 
 Our todo list app can have multiple users using it at the same time. However, changes made by one user are not seen by others unless they manually refresh the browser.
 
