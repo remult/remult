@@ -973,6 +973,21 @@ export function commonDbTests(
     let item = await r.findFirst({ firstName: { $contains: 'oA' } })
     expect(item.firstName).toBe('noam')
   })
+  it('test not-contains with names with casing', async () => {
+    const e = class {
+      a = 0
+      firstName = ''
+    }
+    describeClass(e, Entity('testNameContains', { allowApiCrud: true }), {
+      a: Fields.number(),
+      firstName: Fields.string(),
+    })
+    const r = await createEntity(e)
+    await r.insert({ a: 1, firstName: 'noam' })
+    await r.insert({ a: 2, firstName: 'abc' })
+    let item = await r.find({ where: { firstName: { $notContains: 'oA' } } })
+    expect(item.length).toBe(1)
+  })
   it.skipIf(options?.excludeLiveQuery)('test live query storage', async () => {
     await createEntity(LiveQueryStorageEntity)
     const s = new DataProviderLiveQueryStorage(getDb())

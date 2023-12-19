@@ -483,6 +483,7 @@ export type ComparisonValueFilter<valueType> = ValueFilter<valueType> & {
 }
 export interface ContainsStringValueFilter {
   $contains?: string
+  $notContains?: string
 }
 export type IdFilter<valueType> =
   | ValueFilter<valueType>
