@@ -1,6 +1,6 @@
-# Entity Life Cycle Hooks
+# Entity Lifecycle Hooks
 
-In Remult, you can take advantage of Entity Life Cycle Hooks to add custom logic and actions at specific stages of an entity's life cycle. There are five life cycle events available: `validation`, `saving`, `saved`, `deleting`, and `deleted`. These hooks allow you to perform actions or validations when specific events occur in the entity's life cycle.
+In Remult, you can take advantage of Entity Lifecycle Hooks to add custom logic and actions at specific stages of an entity's lifecycle. There are five lifecycle events available: `validation`, `saving`, `saved`, `deleting`, and `deleted`. These hooks allow you to perform actions or validations when specific events occur in the entity's lifecycle.
 
 ## Validation
 
@@ -79,7 +79,7 @@ You can use the field `saving` hook to perform specialized actions on individual
 
 ## Lifecycle Event Args
 
-Each life cycle event receives an instance of the relevant entity and an event args of type `LifecycleEvent`. The `LifecycleEvent` object provides various fields and methods to interact with the entity and its context. Here are the fields available in the `LifecycleEvent`:
+Each lifecycle event receives an instance of the relevant entity and an event args of type `LifecycleEvent`. The `LifecycleEvent` object provides various fields and methods to interact with the entity and its context. Here are the fields available in the `LifecycleEvent`:
 
 - `isNew`: A boolean indicating whether the entity is new (being created).
 - `fields`: A reference to the entity's fields, allowing you to access and modify field values.
@@ -92,7 +92,7 @@ Each life cycle event receives an instance of the relevant entity and an event a
 
 ## Example Usage
 
-Here's an example of how to use Entity Life Cycle Hooks to add custom logic to the `saving` event:
+Here's an example of how to use Entity Lifecycle Hooks to add custom logic to the `saving` event:
 
 ```ts
 @Entity<Task>("tasks", {
@@ -107,4 +107,4 @@ Here's an example of how to use Entity Life Cycle Hooks to add custom logic to t
 
 In this example, we've defined a `saving` event for the `Task` entity. When a task is being saved, the event handler is called. If the task is new (not yet saved), we set its `createdAt` field to the current date. In either case, we update the `lastUpdated` field with the current date.
 
-Entity Life Cycle Hooks provide a powerful way to customize the behavior of your entities and ensure that specific actions or validations are performed at the right time in the entity's life cycle. You can use these hooks to streamline your application's data management and enforce business rules.
+Entity Lifecycle Hooks provide a powerful way to customize the behavior of your entities and ensure that specific actions or validations are performed at the right time in the entity's lifecycle. You can use these hooks to streamline your application's data management and enforce business rules.
