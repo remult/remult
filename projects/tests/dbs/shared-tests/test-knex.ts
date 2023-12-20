@@ -112,14 +112,18 @@ export function knexTests(knex: Knex.Knex) {
     await s.update(1, { name: 'updated name' })
     expect((await s.find()).map((x) => x.myId)).toEqual([1, 2, 3, 4])
   })
-  it.skip('test sql expression', async () => {
+  it('test sql expression', async () => {
+    let knex = KnexDataProvider.getDb(remult)
+
     @Entity('testSqlExpression')
     class testSqlExpression {
       @Fields.integer()
       a = 0
       @Fields.integer()
       b = 0
-      @Fields.integer({ sqlExpression: () => `a+b` })
+      @Fields.integer({
+        sqlExpression: () => knex.ref('a') + '+' + knex.ref('b'),
+      })
       c = 0
     }
     const r = await createEntity(testSqlExpression)
@@ -129,6 +133,6 @@ export function knexTests(knex: Knex.Knex) {
     ])
     expect(t[0].c).toBe(6)
     expect(await r.count({ c: 3 })).toBe(1)
-    expect((await r.find({ orderBy: { c: 'desc' } }))[0].c).toBe(3)
+    expect((await r.find({ orderBy: { c: 'desc' } }))[0].c).toBe(6)
   })
 }
