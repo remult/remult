@@ -35,7 +35,16 @@ export class PostgresDataProvider implements SqlImplementation {
   createCommand(): SqlCommand {
     return new PostgresBridgeToSQLCommand(this.pool)
   }
-  constructor(private pool: PostgresPool) {}
+  constructor(
+    private pool: PostgresPool,
+    public wrapName: (name: string) => string = (name) =>
+      name
+        .split('.')
+        .map((name) =>
+          name.startsWith('"') ? name : '"' + name.replace(/"/g, '""') + '"',
+        )
+        .join('.'),
+  ) {}
   async ensureSchema(entities: EntityMetadata<any>[]): Promise<void> {
     var db = new SqlDatabase(this)
     var sb = new PostgresSchemaBuilder(db)
@@ -82,7 +91,7 @@ class PostgresBridgeToSQLCommand implements SqlCommand {
     this.values.push(val)
     return '$' + this.values.length
   }
-  execute(sql: string): Promise<SqlResult> {
+  async execute(sql: string): Promise<SqlResult> {
     return this.source
       .query(sql, this.values)
       .then((r) => new PostgresBridgeToSQLQueryResult(r))
@@ -99,17 +108,16 @@ class PostgresBridgeToSQLQueryResult implements SqlResult {
   rows: any[]
 }
 
-export async function createPostgresConnection(options?: {
-  connectionString?: string
-  sslInDev?: boolean
-  configuration?: 'heroku' | PoolConfig
-}) {
+export async function createPostgresConnection(
+  options?: Parameters<typeof createPostgresDataProvider>[0],
+) {
   return createPostgresDataProvider(options)
 }
 export async function createPostgresDataProvider(options?: {
   connectionString?: string
   sslInDev?: boolean
   configuration?: 'heroku' | PoolConfig
+  wrapName?: (name: string) => string
 }) {
   if (!options) options = {}
   let config: PoolConfig = {}
@@ -133,7 +141,9 @@ export async function createPostgresDataProvider(options?: {
     config.connectionString = options.connectionString
   }
 
-  const db = new SqlDatabase(new PostgresDataProvider(new Pool(config)))
+  const db = new SqlDatabase(
+    new PostgresDataProvider(new Pool(config), options?.wrapName),
+  )
   let remult = new Remult()
   remult.dataProvider = db
   return db

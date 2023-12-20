@@ -26,7 +26,9 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
   var db: SqlDatabase
   let remult: Remult
   beforeAll(async () => {
-    db = await createPostgresConnection()
+    db = await createPostgresConnection({
+      //wrapName: (x) => x,
+    })
   })
   beforeEach(() => {
     remult = new Remult(db)
@@ -35,7 +37,8 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
   async function createEntity(entity: ClassType<any>) {
     let repo = remult.repo(entity)
     await db.execute(
-      'drop table if exists ' + (await dbNamesOf(repo.metadata)).$entityName,
+      'drop table if exists ' +
+        (await dbNamesOf(repo.metadata, db.wrapName)).$entityName,
     )
     await db.ensureSchema([repo.metadata])
     return repo
@@ -161,7 +164,7 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
       ).length,
     ).toBe(3)
   })
-  it('test column error', async () => {
+  it.only('test column error', async () => {
     const c = await createEntity(Categories)
     await c.insert([{ categoryName: 'a', id: 1 }])
     try {

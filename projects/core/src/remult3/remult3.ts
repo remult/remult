@@ -791,6 +791,8 @@ remult.apiClient.url='localhost:3007/api
 //p2 - conside law-q db based on schema issue - I think that while running the dataProvider function, we should have a valid remult - maybe even have a valid remult, that will be valid until api is run
 
 //y2 - we should really reconsider allow null by default to be true - I think that what we're doing is confusing for most . In my case I added a volunteer relation, and didn't set any value to it - and I get an error that null value is not allowed for it
+
+//p1 - add a follow up doc to the tutorial on how to user a real user table for the users
 /**
 * our default is allow null false.
 * for sql databases we add a db default of 0/''/false

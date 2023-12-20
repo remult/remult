@@ -1,3 +1,4 @@
+import { wrap } from 'module'
 import type { FieldMetadata } from '../column-interfaces'
 import { SqlDatabase } from '../data-providers/sql-database'
 import type {
@@ -207,7 +208,8 @@ export function isDbReadonly<entityType>(
   return (
     field.dbReadOnly ||
     field.isServerExpression ||
-    dbNames.$dbNameOf(field) != field.options.dbName
+    (field.options.sqlExpression &&
+      field.options.dbName != dbNames.$dbNameOf(field))
   )
 }
 
@@ -222,11 +224,12 @@ export declare type EntityDbNames<entityType> = {
 
 export async function dbNamesOf<entityType>(
   repo: EntityMetadataOverloads<entityType>,
+  wrapName: (name: string) => string = (x) => x,
 ): Promise<EntityDbNames<entityType>> {
   var meta = getEntityMetadata(repo)
 
   const result: EntityDbNamesBase = {
-    $entityName: await entityDbName(meta),
+    $entityName: await entityDbName(meta, wrapName),
     toString: () => result.$entityName,
     $dbNameOf: (field: FieldMetadata | string) => {
       var key: string
@@ -236,12 +239,15 @@ export async function dbNamesOf<entityType>(
     },
   }
   for (const field of meta.fields) {
-    result[field.key] = await fieldDbName(field, meta)
+    result[field.key] = await fieldDbName(field, meta, wrapName)
   }
   return result as EntityDbNames<entityType>
 }
 
-export async function entityDbName(metadata: EntityMetadata) {
+export async function entityDbName(
+  metadata: EntityMetadata,
+  wrapName: (name: string) => string = (x) => x,
+) {
   if (metadata.options.sqlExpression) {
     if (typeof metadata.options.sqlExpression === 'string')
       return metadata.options.sqlExpression
@@ -249,9 +255,13 @@ export async function entityDbName(metadata: EntityMetadata) {
       return await metadata.options.sqlExpression(metadata)
     }
   }
-  return metadata.options.dbName
+  return wrapName(metadata.options.dbName)
 }
-export async function fieldDbName(f: FieldMetadata, meta: EntityMetadata) {
+export async function fieldDbName(
+  f: FieldMetadata,
+  meta: EntityMetadata,
+  wrapName: (name: string) => string = (x) => x,
+) {
   try {
     if (f.options.sqlExpression) {
       let result: string
@@ -267,9 +277,9 @@ export async function fieldDbName(f: FieldMetadata, meta: EntityMetadata) {
       ((f.options as RelationOptions<any, any, any>).field as string)
     if (field) {
       let fInfo = meta.fields.find(field)
-      if (fInfo) return fieldDbName(fInfo, meta)
+      if (fInfo) return fieldDbName(fInfo, meta, wrapName)
     }
-    return f.options.dbName
+    return wrapName(f.options.dbName)
   } finally {
   }
 }
