@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.23.24] 2023-12-20
+
+- Fixed Live query to also work in init api [#306](https://github.com/remult/remult/issues/306)
+
 ## [0.23.3] 2023-12-19
 
 - Added support for notContains filter option

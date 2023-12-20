@@ -2,11 +2,20 @@ import express from 'express'
 import { createSchema, createYoga } from 'graphql-yoga'
 import { remultGraphql } from '../../core/graphql'
 import { remultExpress } from '../../core/remult-express'
+import { repo } from '../../core'
 import { remult } from '../../core/src/remult-proxy'
 import { Task } from '../shared/Task'
 
 const app = express()
-const api = remultExpress({ entities: [Task] })
+const api = remultExpress({
+  entities: [Task],
+  initApi: async () => {
+    setInterval(async () => {
+      const t = await repo(Task).findFirst()
+      await repo(Task).update(t, { title: new Date().toString() })
+    }, 1000)
+  },
+})
 app.use(api)
 app.get('/api/test', api.withRemult, async (req, res) => {
   res.json({ result: await remult.repo(Task).count() })
