@@ -10,7 +10,7 @@ Relations are a new feature introduced in version 0.23.
 
 ### Understanding Entity Relations in Remult
 
-In Remult, entity relations play a useful role in modeling and navigating the complex relationships that exist within your data. To illustrate this concept, we will use two primary entities: `Customer` and `Order`. These entities will serve as the foundation for discussing various types of relations and how to define and work with them in your Remult application.
+In Remult, entity relations play a useful role in modeling and navigating the complex relationships that exist within your data. To illustrate this concept, we will use two primary entities: `Customer` and `Order`. These entities will serve as the foundation for discussing various types of relations and how to define and work with them .
 
 To experiment with these entities online, you can access the following CodeSandbox link, which is preconfigured with these two entities and a postgres database:
 
@@ -120,7 +120,7 @@ Here's an example result of running `JSON.stringify` on the `orders` array:
 ]
 ```
 
-As shown in the result, each `Order` object contains a nested `customer` object, which holds the details of the associated customer, including their `id`, `name`, and `city`. This structured data allows you to work seamlessly with the many-to-one relationship between `Order` and `Customer` entities in your Remult application.
+As shown in the result, each `Order` object contains a nested `customer` object, which holds the details of the associated customer, including their `id`, `name`, and `city`. This structured data allows you to work seamlessly with the many-to-one relationship between `Order` and `Customer` entities .
 
 ### Querying a Single Item
 
@@ -275,7 +275,7 @@ In this example, we use the `field` option to define a custom relation between t
 
 2. **Additional Configuration**: In addition to specifying the `field`, you can include other options as well. In this example, we set the `caption` option to provide a descriptive caption for the relation field.
 
-Using the `field` option provides you with granular control over how the relation field is configured and accessed in your Remult application. You can customize various aspects of the relation to meet your specific requirements, enhance documentation, and improve the overall usability of your codebase.
+Using the `field` option provides you with granular control over how the relation field is configured and accessed . You can customize various aspects of the relation to meet your specific requirements, enhance documentation, and improve the overall usability of your codebase.
 
 ### Relation Based on Multiple Fields
 
@@ -460,7 +460,7 @@ In this example:
 
 - Each order record within the `orders` array includes properties like `id` and `amount`.
 
-This structured result allows you to easily navigate and manipulate the data in your Remult application. You can access customer information as well as the details of their associated orders, making it convenient to work with related records in your application's logic and UI.
+This structured result allows you to easily navigate and manipulate the data . You can access customer information as well as the details of their associated orders, making it convenient to work with related records in your application's logic and UI.
 
 ### Specifying Reference Fields
 
@@ -592,7 +592,7 @@ Here, you first search for a customer with the name "Abshire Inc." After locatin
 
 #### Contextual Repository: Tailored Operations for Related Data
 
-The `relations` method serves as a specialized repository, tightly associated with the particular customer you supply to it. This dedicated repository offers a tailored context for performing operations related to the specific customer's connection to orders. It enables you to seamlessly find related records, insert new ones, calculate counts, and perform other relevant actions within the precise scope of that customer's relationship with orders. This versatile capability streamlines the management of intricate relationships in your Remult application, ensuring your data interactions remain organized and efficient.
+The `relations` method serves as a specialized repository, tightly associated with the particular customer you supply to it. This dedicated repository offers a tailored context for performing operations related to the specific customer's connection to orders. It enables you to seamlessly find related records, insert new ones, calculate counts, and perform other relevant actions within the precise scope of that customer's relationship with orders. This versatile capability streamlines the management of intricate relationships in your application, ensuring your data interactions remain organized and efficient.
 
 Remult's repository methods empower you to seamlessly manage and interact with related data, making it easier to work with complex data structures and relationships in your applications. Whether you need to insert related records or load unfetched relations, these tools provide the flexibility and control you need to handle your data efficiently.
 
