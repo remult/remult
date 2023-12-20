@@ -241,7 +241,7 @@ export async function dbNamesOf<entityType>(
   return result as EntityDbNames<entityType>
 }
 
-async function entityDbName(metadata: EntityMetadata) {
+export async function entityDbName(metadata: EntityMetadata) {
   if (metadata.options.sqlExpression) {
     if (typeof metadata.options.sqlExpression === 'string')
       return metadata.options.sqlExpression
@@ -251,7 +251,7 @@ async function entityDbName(metadata: EntityMetadata) {
   }
   return metadata.options.dbName
 }
-async function fieldDbName(f: FieldMetadata, meta: EntityMetadata) {
+export async function fieldDbName(f: FieldMetadata, meta: EntityMetadata) {
   try {
     if (f.options.sqlExpression) {
       let result: string

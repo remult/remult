@@ -78,6 +78,10 @@ import type { columnInfo } from './columnInfo'
 import { getRelationInfo, relationInfoMember } from './relationInfoMember'
 import { RelationLoader } from './relation-loader'
 import { type RepositoryInternal, getInternalKey } from './repository-internals'
+import {
+  entityDbName,
+  fieldDbName,
+} from '../filter/filter-consumer-bridge-to-sql-request'
 //import  { remult } from "../remult-proxy";
 
 let classValidatorValidate:
@@ -2047,6 +2051,9 @@ export class columnDefsImpl implements FieldMetadata {
     return this.valueConverter.fromInput(inputValue, inputType)
   }
 
+  async getDbName() {
+    return fieldDbName(this, this.entityDefs)
+  }
   options: FieldOptions<any, any>
   target: ClassType<any>
   readonly: boolean
@@ -2152,6 +2159,9 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
     let result = getEntityRef(item, false)
     if (result) return result
     return this.remult.repo(this.entityType).getEntityRef({ ...item })
+  }
+  getDbName(): Promise<string> {
+    return entityDbName(this)
   }
 
   idMetadata: IdMetadata<T> = {
