@@ -109,6 +109,7 @@ export declare class CompoundIdField implements FieldMetadata<string> {
 }
 export interface ContainsStringValueFilter {
   $contains?: string
+  $notContains?: string
 }
 export declare function Controller(
   key: string,
@@ -883,6 +884,7 @@ export interface FilterConsumer {
   isLessOrEqualTo(col: FieldMetadata, val: any): void
   isLessThan(col: FieldMetadata, val: any): void
   containsCaseInsensitive(col: FieldMetadata, val: any): void
+  notContainsCaseInsensitive(col: FieldMetadata, val: any): void
   isIn(col: FieldMetadata, val: any[]): void
   custom(key: string, customItem: any): void
   databaseCustom(databaseCustom: any): void

@@ -30,17 +30,18 @@ https://mySite.com/api/products?price.gte=5&price.lte=10
 
 ### Filter Operators
 
-| operator  | description           | example                                            |
-| --------- | --------------------- | -------------------------------------------------- |
-| `none`    | Equal To              | price=10                                           |
-| .ne       | Not Equal             | price.ne=10                                        |
-| .in       | is in json array      | price.in=%5B10%2C20%5D _(url encoded - `[10,20]`)_ |
-| .contains | Contains a string     | name.contains=ee                                   |
-| .gt       | Greater than          | price.gt=10                                        |
-| .gte      | Greater than or equal | price.gte=10                                       |
-| .lt       | Lesser than           | price.lt=10                                        |
-| .lte      | Lesser than or equal  | price.lte=10                                       |
-| .null     | is or is not null     | price.null=true                                    |
+| operator     | description           | example                                            |
+| ------------ | --------------------- | -------------------------------------------------- |
+| `none`       | Equal To              | price=10                                           |
+| .ne          | Not Equal             | price.ne=10                                        |
+| .in          | is in json array      | price.in=%5B10%2C20%5D _(url encoded - `[10,20]`)_ |
+| .contains    | Contains a string     | name.contains=ee                                   |
+| .notContains | Not contains a string | name.notContains=ee                                |
+| .gt          | Greater than          | price.gt=10                                        |
+| .gte         | Greater than or equal | price.gte=10                                       |
+| .lt          | Lesser than           | price.lt=10                                        |
+| .lte         | Lesser than or equal  | price.lte=10                                       |
+| .null        | is or is not null     | price.null=true                                    |
 
 - you can add several filter conditions using the `&` operator.
 

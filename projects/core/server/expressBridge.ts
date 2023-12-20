@@ -119,43 +119,6 @@ export function createRemultServerCore<RequestType>(
   if (options.ensureSchema === undefined) options.ensureSchema = true
 
   RemultAsyncLocalStorage.enable()
-  const entitiesMetaData: EntityMetadata[] = []
-
-  dataProvider = dataProvider.then(async (dp) => {
-    var remult = new Remult(dp)
-    await new Promise((res) => {
-      RemultAsyncLocalStorage.instance.run(remult, async () => {
-        if (options.ensureSchema) {
-          let started = false
-          const startConsoleLog = () => {
-            if (started) return
-            started = true
-            console.time('Schema ensured')
-          }
-          entitiesMetaData.push(
-            ...options.entities!.map((e) => remult.repo(e).metadata),
-          )
-          if (dp.ensureSchema) {
-            startConsoleLog()
-            await dp.ensureSchema(entitiesMetaData)
-          }
-          for (const item of [
-            options.liveQueryStorage,
-            options.queueStorage,
-          ] as any as Storage[]) {
-            if (item?.ensureSchema) {
-              startConsoleLog()
-              await item.ensureSchema()
-            }
-          }
-          if (started) console.timeEnd('Schema ensured')
-        }
-        if (options.initApi) await options.initApi(remult)
-        res({})
-      })
-    })
-    return dp
-  })
 
   {
     let allControllers: ClassType<any>[] = []
@@ -174,7 +137,6 @@ export function createRemultServerCore<RequestType>(
     options,
     dataProvider,
     serverCoreOptions,
-    entitiesMetaData,
   )
   return bridge
 }
@@ -236,14 +198,50 @@ export class RemultServerImplementation<RequestType>
   constructor(
     public queue: inProcessQueueHandler,
     public options: RemultServerOptions<any>,
-    public dataProvider: DataProvider | Promise<DataProvider>,
+    public dataProvider: Promise<DataProvider>,
     private coreOptions: ServerCoreOptions<RequestType>,
-    private entitiesMetaData: EntityMetadata[],
   ) {
     if (options.liveQueryStorage)
       this.liveQueryStorage = options.liveQueryStorage
     if (options.subscriptionServer)
       this.subscriptionServer = options.subscriptionServer
+    const entitiesMetaData: EntityMetadata[] = []
+
+    this.dataProvider = dataProvider.then(async (dp) => {
+      await this.runWithRemult(
+        async (remult) => {
+          remult.dataProvider = dp
+          if (options.ensureSchema) {
+            let started = false
+            const startConsoleLog = () => {
+              if (started) return
+              started = true
+              console.time('Schema ensured')
+            }
+            entitiesMetaData.push(
+              ...options.entities!.map((e) => remult.repo(e).metadata),
+            )
+            if (dp.ensureSchema) {
+              startConsoleLog()
+              await dp.ensureSchema(entitiesMetaData)
+            }
+            for (const item of [
+              options.liveQueryStorage,
+              options.queueStorage,
+            ] as any as Storage[]) {
+              if (item?.ensureSchema) {
+                startConsoleLog()
+                await item.ensureSchema()
+              }
+            }
+            if (started) console.timeEnd('Schema ensured')
+          }
+          if (options.initApi) await options.initApi(remult)
+        },
+        { skipDataProvider: true },
+      )
+      return dp
+    })
   }
   withRemultPromise<T>(
     request: RequestType,
@@ -514,14 +512,18 @@ export class RemultServerImplementation<RequestType>
   }
 
   //runs with remult but without init request
-  private async runWithRemult(what: (remult: Remult) => Promise<any>) {
+  private async runWithRemult(
+    what: (remult: Remult) => Promise<any>,
+    options?: { skipDataProvider: boolean },
+  ) {
     let remult = new Remult()
     remult.liveQueryPublisher = new LiveQueryPublisher(
       () => remult.subscriptionServer,
       () => remult.liveQueryStorage,
       this.runWithSerializedJsonContextData,
     )
-    remult.dataProvider = await this.dataProvider
+    if (!options?.skipDataProvider)
+      remult.dataProvider = await this.dataProvider
     remult.subscriptionServer = this.subscriptionServer
     remult.liveQueryStorage = this.liveQueryStorage
     await new Promise((res) => {

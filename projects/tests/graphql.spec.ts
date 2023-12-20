@@ -317,6 +317,25 @@ describe('graphql', () => {
         ).data.tasks.totalCount,
       ).toBe(2)
   })
+  it('test not contains', async () => {
+    await remult
+      .repo(Task)
+      .insert(['aaa', 'bbb', 'cbc', 'ddd'].map((x) => ({ title: x }))),
+      expect(
+        (
+          await gql(`
+    query{
+      tasks(where:{
+        title:{
+          notContains:"d"
+        }
+      }){
+        totalCount
+      }
+    }`)
+        ).data.tasks.totalCount,
+      ).toBe(3)
+  })
 
   it('gets related entities', async () => {
     const cat = await remult
@@ -1032,6 +1051,7 @@ describe('graphql', () => {
           lt: String
           lte: String
           contains: String
+          notContains: String
       }
 
       input WhereStringNullable {
@@ -1044,6 +1064,7 @@ describe('graphql', () => {
           lt: String
           lte: String
           contains: String
+          notContains: String
           null: Boolean
       }
 
@@ -1236,6 +1257,7 @@ describe('graphql', () => {
           lt: String
           lte: String
           contains: String
+          notContains: String
       }
 
       input WhereStringNullable {
@@ -1248,6 +1270,7 @@ describe('graphql', () => {
           lt: String
           lte: String
           contains: String
+          notContains: String
           null: Boolean
       }
 
@@ -1437,6 +1460,7 @@ describe('graphql', () => {
           lt: String
           lte: String
           contains: String
+          notContains: String
       }
 
       input WhereStringNullable {
@@ -1449,6 +1473,7 @@ describe('graphql', () => {
           lt: String
           lte: String
           contains: String
+          notContains: String
           null: Boolean
       }
 

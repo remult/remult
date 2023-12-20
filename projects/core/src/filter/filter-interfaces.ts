@@ -144,6 +144,10 @@ export class Filter {
                       found = true
                       result.push(fh.contains(element))
                       break
+                    case '$notContains':
+                      found = true
+                      result.push(fh.notContains(element))
+                      break
                   }
                 }
               }
@@ -232,6 +236,11 @@ class filterHelper {
   contains(val: string): Filter {
     return new Filter((add) => add.containsCaseInsensitive(this.metadata, val))
   }
+  notContains(val: string): Filter {
+    return new Filter((add) =>
+      add.notContainsCaseInsensitive(this.metadata, val),
+    )
+  }
   isLessThan(val: any): Filter {
     val = this.processVal(val)
     return new Filter((add) => add.isLessThan(this.metadata, val))
@@ -291,6 +300,9 @@ class manyToOneFilterHelper implements filterHelper {
     throw new Error('Invalid for Many To One Relation Field')
   }
   contains(val: string): Filter {
+    throw new Error('Invalid for Many To One Relation Field')
+  }
+  notContains(val: string): Filter {
     throw new Error('Invalid for Many To One Relation Field')
   }
   isLessThan(val: any): Filter {
@@ -364,6 +376,7 @@ export interface FilterConsumer {
   isLessOrEqualTo(col: FieldMetadata, val: any): void
   isLessThan(col: FieldMetadata, val: any): void
   containsCaseInsensitive(col: FieldMetadata, val: any): void
+  notContainsCaseInsensitive(col: FieldMetadata, val: any): void
   isIn(col: FieldMetadata, val: any[]): void
   custom(key: string, customItem: any): void
   databaseCustom(databaseCustom: any): void
@@ -475,6 +488,9 @@ export class FilterSerializer implements FilterConsumer {
   public containsCaseInsensitive(col: FieldMetadata, val: any): void {
     this.add(col.key + '.contains', val)
   }
+  public notContainsCaseInsensitive(col: FieldMetadata, val: any): void {
+    this.add(col.key + '.notContains', val)
+  }
 }
 
 export function entityFilterToJson<T>(
@@ -557,6 +573,7 @@ export function buildFilterFromRequestParameters(
     }
 
     addFilter('.contains', (val) => ({ $contains: val }), false, true)
+    addFilter('.notContains', (val) => ({ $notContains: val }), false, true)
   })
   let val = filterInfo.get('OR')
   if (val) {
@@ -667,6 +684,9 @@ class customTranslator implements FilterConsumer {
   containsCaseInsensitive(col: FieldMetadata<any>, val: any): void {
     this.commands.push((x) => x.containsCaseInsensitive(col, val))
   }
+  notContainsCaseInsensitive(col: FieldMetadata<any>, val: any): void {
+    this.commands.push((x) => x.notContainsCaseInsensitive(col, val))
+  }
 
   isIn(col: FieldMetadata<any>, val: any[]): void {
     this.commands.push((x) => x.isIn(col, val))
@@ -715,6 +735,7 @@ export function __updateEntityBasedOnWhere<T>(
       custom: emptyFunction,
       databaseCustom: emptyFunction,
       containsCaseInsensitive: emptyFunction,
+      notContainsCaseInsensitive: emptyFunction,
       isDifferentFrom: emptyFunction,
       isEqualTo: (col, val) => {
         r[col.key] = val

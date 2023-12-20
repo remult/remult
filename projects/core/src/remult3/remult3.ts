@@ -483,6 +483,7 @@ export type ComparisonValueFilter<valueType> = ValueFilter<valueType> & {
 }
 export interface ContainsStringValueFilter {
   $contains?: string
+  $notContains?: string
 }
 export type IdFilter<valueType> =
   | ValueFilter<valueType>
@@ -716,6 +717,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 
 //p1 - sql-expression for knex
 //p1 - postgres case sensitive
+//p1 - filterToRaw should get a dbnames of - and we should create a dbnames of that supports an alias
 
 /*p1 - with remult async for remultexpress
 rename withremultpromise to that withRemultAsync
@@ -723,16 +725,22 @@ expose live query storage in remult
 
 request optional - and depends on that run `getUser` & `initRequest`
 */
+//y1 - consider moving the request to be second parameter of with remult async
 //y1 - Add a with remult promise to Remult!
+//y1 - Backend methods are transactions, it's not intuitive and maybe should be optional / opt in
+//y1 - how to run a transaction as a user
+//p1 - enum column
 //p1 - fix sql log to console to make more sense
 //p1 - add schema option to create postgres data provider
-//y1 - filterToRaw should get a dbnames of - and we should create a dbnames of that supports an alias
-//y1 - Backend methods are transactions, it's not intuitive and maybe should be optional / opt in
-//y1 - i had a question about find first's different syntax from find that confused a user
-//y1 - not contains - meni request
-//y1 - Write some ctrl g
-//y1 - allow api read to also support instance and filter. - problem with promise
-//y1 - I think there should be a way to throw a forbidden exception
+//p1 - find one i had a question about find first's different syntax from find that confused a user
+//p1 - I think there should be a way to throw a forbidden exception
+//p1 - Write some ctrl g
+//y1 - get backend methods to work when specifying types for date, and entities as poco's
+//y1 - required
+//y1 - reconsider validators
+//y1 - message for invalid valie
+//y1 - message for relation that is missing
+//p1 - more column types
 //p2 -   processError in remult express
 //p2 -   allow find options preprocessor for api calls, to use for authorization
 //p1 - write doc about controlling updates of rows...
@@ -742,6 +750,7 @@ request optional - and depends on that run `getUser` & `initRequest`
 //p1 - JSON FIELD LOST JSON STORAGE WHEN SET INPUT VALUE
 //p1 - 'update tasks set  where id = $1
 //y2 - consider multi tenancies
+//y2 - allow api read to also support instance and filter. - problem with promise
 //p1 - doc this:
 /**
  * //p2 - doc this
@@ -776,7 +785,6 @@ remult.apiClient.url='localhost:3007/api
 
 //p2 - type metadata.key - to keyof entity - based on cwis input
 
-//p2 - get backend methods to work when specifying types for date, and entities as poco's
 //y2 - remove __dirname from tutorials
 //p2 - when value changes for field with error, clear error - so the user will feel comfortable
 //p2 - conside law-q db based on schema issue - I think that while running the dataProvider function, we should have a valid remult - maybe even have a valid remult, that will be valid until api is run
