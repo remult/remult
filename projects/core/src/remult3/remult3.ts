@@ -256,9 +256,6 @@ export interface EntityMetadata<entityType = any> {
    * }
    */
   apiInsertAllowed(item?: entityType): boolean
-
-  /** Returns the dbName - based on it's `dbName` option and it's `sqlExpression` option */
-  getDbName(): Promise<string>
   /** Metadata for the Entity's id */
   readonly idMetadata: IdMetadata<entityType>
 }

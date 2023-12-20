@@ -2047,28 +2047,6 @@ export class columnDefsImpl implements FieldMetadata {
     return this.valueConverter.fromInput(inputValue, inputType)
   }
 
-  async getDbName() {
-    try {
-      if (this.settings.sqlExpression) {
-        let result: string
-        if (typeof this.settings.sqlExpression === 'function') {
-          result = await this.settings.sqlExpression(this.entityDefs)
-        } else result = this.settings.sqlExpression
-        if (!result) return this.settings.dbName
-        return result
-      }
-      const rel = getRelationInfo(this.settings)
-      let field =
-        rel?.type === 'toOne' &&
-        ((this.settings as RelationOptions<any, any, any>).field as string)
-      if (field) {
-        let fInfo = this.entityDefs.fields.find(field)
-        if (fInfo) return fInfo.getDbName()
-      }
-      return this.settings.dbName
-    } finally {
-    }
-  }
   options: FieldOptions<any, any>
   target: ClassType<any>
   readonly: boolean
@@ -2077,16 +2055,7 @@ export class columnDefsImpl implements FieldMetadata {
   allowNull: boolean
 
   caption: string
-  get dbName() {
-    let result
-    if (this.settings.sqlExpression) {
-      if (typeof this.settings.sqlExpression === 'function') {
-        result = this.settings.sqlExpression(this.entityDefs)
-      } else result = this.settings.sqlExpression
-    }
-    if (result) return result
-    return this.settings.dbName
-  }
+
   inputType: string
   key: string
   get dbReadOnly() {
@@ -2183,25 +2152,6 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
     let result = getEntityRef(item, false)
     if (result) return result
     return this.remult.repo(this.entityType).getEntityRef({ ...item })
-  }
-  dbNamePromise: Promise<string>
-  getDbName(): Promise<string> {
-    if (this.dbNamePromise) return this.dbNamePromise
-    if (!this.options.sqlExpression) {
-      this.dbNamePromise = Promise.resolve(this.options.dbName)
-    }
-    if (typeof this.options.sqlExpression === 'string')
-      this.dbNamePromise = Promise.resolve(this.options.sqlExpression)
-    else if (typeof this.options.sqlExpression === 'function') {
-      let r = this.options.sqlExpression(this)
-      if (r instanceof Promise) this.dbNamePromise = r
-      else if (r) this.dbNamePromise = Promise.resolve(r)
-    }
-    this.dbNamePromise = this.dbNamePromise.then((x) => {
-      if (!x) return this.options.dbName
-      return x
-    })
-    return this.dbNamePromise
   }
 
   idMetadata: IdMetadata<T> = {

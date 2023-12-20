@@ -5,7 +5,13 @@ import type {
   RepositoryOverloads,
 } from '../remult3/RepositoryImplementation'
 import { getEntityMetadata } from '../remult3/RepositoryImplementation'
-import type { EntityFilter, MembersOnly } from '../remult3/remult3'
+import { getRelationInfo } from '../remult3/relationInfoMember'
+import type {
+  EntityFilter,
+  EntityMetadata,
+  MembersOnly,
+  RelationOptions,
+} from '../remult3/remult3'
 import type { SqlCommandWithParameters } from '../sql-command'
 import type { Filter, FilterConsumer } from './filter-interfaces'
 
@@ -220,7 +226,7 @@ export async function dbNamesOf<entityType>(
   var meta = getEntityMetadata(repo)
 
   const result: EntityDbNamesBase = {
-    $entityName: await meta.getDbName(),
+    $entityName: await entityDbName(meta),
     toString: () => result.$entityName,
     $dbNameOf: (field: FieldMetadata | string) => {
       var key: string
@@ -230,7 +236,40 @@ export async function dbNamesOf<entityType>(
     },
   }
   for (const field of meta.fields) {
-    result[field.key] = await field.getDbName()
+    result[field.key] = await fieldDbName(field, meta)
   }
   return result as EntityDbNames<entityType>
+}
+
+async function entityDbName(metadata: EntityMetadata) {
+  if (metadata.options.sqlExpression) {
+    if (typeof metadata.options.sqlExpression === 'string')
+      return metadata.options.sqlExpression
+    else if (typeof metadata.options.sqlExpression === 'function') {
+      return await metadata.options.sqlExpression(metadata)
+    }
+  }
+  return metadata.options.dbName
+}
+async function fieldDbName(f: FieldMetadata, meta: EntityMetadata) {
+  try {
+    if (f.options.sqlExpression) {
+      let result: string
+      if (typeof f.options.sqlExpression === 'function') {
+        result = await f.options.sqlExpression(meta)
+      } else result = f.options.sqlExpression
+      if (!result) return f.options.dbName
+      return result
+    }
+    const rel = getRelationInfo(f.options)
+    let field =
+      rel?.type === 'toOne' &&
+      ((f.options as RelationOptions<any, any, any>).field as string)
+    if (field) {
+      let fInfo = meta.fields.find(field)
+      if (fInfo) return fieldDbName(fInfo, meta)
+    }
+    return f.options.dbName
+  } finally {
+  }
 }

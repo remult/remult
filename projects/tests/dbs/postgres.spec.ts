@@ -1,5 +1,12 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
-import { Entity, Fields, Remult, SqlDatabase, describeClass } from '../../core'
+import {
+  Entity,
+  Fields,
+  Remult,
+  SqlDatabase,
+  dbNamesOf,
+  describeClass,
+} from '../../core'
 import {
   PostgresDataProvider,
   PostgresSchemaBuilder,
@@ -28,7 +35,7 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
   async function createEntity(entity: ClassType<any>) {
     let repo = remult.repo(entity)
     await db.execute(
-      'drop table if exists ' + (await repo.metadata.getDbName()),
+      'drop table if exists ' + (await dbNamesOf(repo.metadata)).$entityName,
     )
     await db.ensureSchema([repo.metadata])
     return repo
