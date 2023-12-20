@@ -715,7 +715,6 @@ export type ClassFieldDecorator<entityType, valueType> = (
   c?: any,
 ) => void
 
-//p1 - not contains - meni request
 //p1 - sql-expression for knex
 //p1 - postgres case sensitive
 //p1 - filterToRaw should get a dbnames of - and we should create a dbnames of that supports an alias
@@ -735,7 +734,7 @@ request optional - and depends on that run `getUser` & `initRequest`
 //p1 - add schema option to create postgres data provider
 //p1 - find one i had a question about find first's different syntax from find that confused a user
 //p1 - I think there should be a way to throw a forbidden exception
-//y1 - Write some ctrl g
+//p1 - Write some ctrl g
 //y1 - get backend methods to work when specifying types for date, and entities as poco's
 //y1 - required
 //y1 - reconsider validators
