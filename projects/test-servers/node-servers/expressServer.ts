@@ -9,12 +9,6 @@ import { Task } from '../shared/Task'
 const app = express()
 const api = remultExpress({
   entities: [Task],
-  initApi: async () => {
-    setInterval(async () => {
-      const t = await repo(Task).findFirst()
-      await repo(Task).update(t, { title: new Date().toString() })
-    }, 1000)
-  },
 })
 app.use(api)
 app.get('/api/test', api.withRemult, async (req, res) => {
