@@ -77,7 +77,7 @@ export class PostgresSchemaBuilder {
       table = splited[0]
     }
 
-    const where = []
+    const where: string[] = []
     if (schema) {
       where.push(
         `table_schema=${cmd.addParameterAndReturnSqlToken(
@@ -102,6 +102,17 @@ export class PostgresSchemaBuilder {
       return `${this.specifiedSchema}.${e.$entityName}`
     }
     return e.$entityName
+  }
+
+  private schemaOnly(e: EntityDbNamesBase) {
+    if (e.$entityName.includes('.')) {
+      return e.$entityName.split('.')[0]
+    }
+    if (this.specifiedSchema) {
+      return this.specifiedSchema
+    }
+    // Should default to `public`
+    return 'public'
   }
 
   async verifyStructureOfAllEntities(remult?: Remult) {
@@ -132,6 +143,7 @@ export class PostgresSchemaBuilder {
         }
       } catch (err) {
         console.error('failed verify structure of ' + e.$entityName + ' ', err)
+        throw err
       }
     }
   }
@@ -161,7 +173,8 @@ export class PostgresSchemaBuilder {
             }
           }
 
-          let sql = `CREATE table ${this.schemaAndName(e)} (${result}\r\n)`
+          let sql = `CREATE SCHEMA IF NOT EXISTS ${this.schemaOnly(e)};
+CREATE table ${this.schemaAndName(e)} (${result}\r\n)`
           if (PostgresSchemaBuilder.logToConsole) console.info(sql)
           await this.pool.execute(sql)
         }

@@ -1,4 +1,10 @@
-import type { ClientSession, Db, FindOptions, MongoClient } from 'mongodb'
+import {
+  ObjectId,
+  type ClientSession,
+  type Db,
+  type FindOptions,
+  type MongoClient,
+} from 'mongodb'
 import type {
   DataProvider,
   EntityDataProvider,
@@ -8,26 +14,24 @@ import type {
   FieldMetadata,
   Remult,
 } from '.'
-import { CompoundIdField, Filter } from './index.js'
+import { CompoundIdField, Filter } from 'index.js'
 import type { EntityDbNamesBase } from './src/filter/filter-consumer-bridge-to-sql-request.js'
 import { dbNamesOf } from './src/filter/filter-consumer-bridge-to-sql-request.js'
 import type { FilterConsumer } from './src/filter/filter-interfaces.js'
 import { remult as remultContext } from './src/remult-proxy.js'
-import type {
-  RepositoryImplementation,
-  RepositoryOverloads,
-} from './src/remult3/RepositoryImplementation.js'
+import type { RepositoryOverloads } from './src/remult3/RepositoryImplementation.js'
 import { getRepository } from './src/remult3/RepositoryImplementation.js'
 import { resultCompoundIdFilter } from './src/resultCompoundIdFilter.js'
+import { getRepositoryInternals } from './src/remult3/repository-internals.js'
 
 export class MongoDataProvider implements DataProvider {
   constructor(
     private db: Db,
-    private client: MongoClient,
+    private client: MongoClient | undefined,
     options?: { session?: ClientSession; disableTransactions?: boolean },
   ) {
     this.session = options?.session
-    this.disableTransactions = options?.disableTransactions
+    this.disableTransactions = Boolean(options?.disableTransactions)
   }
   session?: ClientSession
   disableTransactions = false
@@ -45,6 +49,8 @@ export class MongoDataProvider implements DataProvider {
     if (this.disableTransactions) {
       await action(this)
     } else {
+      if (!this.client)
+        throw new Error("Can't use transactions within transactions")
       let session = await this.client.startSession()
 
       session.startTransaction()
@@ -69,9 +75,7 @@ export class MongoDataProvider implements DataProvider {
     var b = new FilterConsumerBridgeToMongo(await dbNamesOf(repo.metadata))
     b._addWhere = false
     await (
-      await (
-        repo as RepositoryImplementation<entityType>
-      ).translateWhereToFilter(condition)
+      await getRepositoryInternals(repo).translateWhereToFilter(condition)
     ).__applyToConsumer(b)
     let r = await b.resolveWhere()
     return r
@@ -92,14 +96,14 @@ class MongoEntityDataProvider implements EntityDataProvider {
     for (const col of this.entity.fields) {
       let val = row[nameProvider.$dbNameOf(col)]
       if (isNull(val)) val = null
-      result[col.key] = col.valueConverter.fromDb(val)
+      result[col.key] = fromDb(col, val)
     }
     return result
   }
   translateToDb(row: any, nameProvider: EntityDbNamesBase) {
     let result = {}
     for (const col of this.entity.fields) {
-      let val = col.valueConverter.toDb(row[col.key])
+      let val = toDb(col, row[col.key])
       if (val === null) val = NULL
       result[nameProvider.$dbNameOf(col)] = val
     }
@@ -113,7 +117,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
 
     return await collection.countDocuments(w, { session: this.session })
   }
-  async find(options?: EntityDataProviderFindOptions): Promise<any[]> {
+  async find(options: EntityDataProviderFindOptions): Promise<any[]> {
     let { collection, e } = await this.collection()
     let x = new FilterConsumerBridgeToMongo(e)
     if (options?.where) options.where.__applyToConsumer(x)
@@ -230,13 +234,13 @@ class FilterConsumerBridgeToMongo implements FilterConsumer {
   or(orElements: Filter[]) {
     this.promises.push(
       (async () => {
-        let result = []
+        let result: any[] = []
         for (const element of orElements) {
           let f = new FilterConsumerBridgeToMongo(this.nameProvider)
           f._addWhere = false
           element.__applyToConsumer(f)
           let where = await f.resolveWhere()
-          if (where?.$and?.length > 0) {
+          if (where?.$and?.length) {
             result.push(where)
           } else return //since empty or is all rows;
         }
@@ -255,7 +259,7 @@ class FilterConsumerBridgeToMongo implements FilterConsumer {
   isIn(col: FieldMetadata, val: any[]): void {
     this.result.push(() => ({
       [this.nameProvider.$dbNameOf(col)]: {
-        $in: val.map((x) => col.valueConverter.toDb(x)),
+        $in: val.map((x) => toDb(col, x)),
       },
     }))
   }
@@ -278,19 +282,29 @@ class FilterConsumerBridgeToMongo implements FilterConsumer {
     this.add(col, val, '$lt')
   }
   public containsCaseInsensitive(col: FieldMetadata, val: any): void {
-    this.add(col, val, '$regex')
-
-    // this.promises.push(col.getDbName().then(colName => {
-
-    //     this.result.push(b => b.whereRaw(
-    //         'lower (' + colName + ") like lower ('%" + val.replace(/'/g, '\'\'') + "%')"));
-    // }));
+    this.add(col, val, '$regex', { $options: 'i' })
   }
-
-  private add(col: FieldMetadata, val: any, operator: string) {
+  public notContainsCaseInsensitive(col: FieldMetadata, val: any): void {
     this.result.push(() => ({
       [this.nameProvider.$dbNameOf(col)]: {
-        [operator]: isNull(val) ? val : col.valueConverter.toDb(val),
+        $not: {
+          $regex: isNull(val) ? val : toDb(col, val),
+          $options: 'i',
+        },
+      },
+    }))
+  }
+
+  private add(
+    col: FieldMetadata,
+    val: any,
+    operator: string,
+    moreOptions?: any,
+  ) {
+    this.result.push(() => ({
+      [this.nameProvider.$dbNameOf(col)]: {
+        [operator]: isNull(val) ? val : toDb(col, val),
+        ...moreOptions,
       },
     }))
   }
@@ -307,4 +321,14 @@ class FilterConsumerBridgeToMongo implements FilterConsumer {
     //     }
     //   })());
   }
+}
+function toDb(col: FieldMetadata, val: any) {
+  if (col.valueConverter.fieldTypeInDb == 'dbid')
+    return val ? new ObjectId(val) : val === null ? null : undefined
+  return col.valueConverter.toDb(val)
+}
+function fromDb(col: FieldMetadata, val: any) {
+  if (col.valueConverter.fieldTypeInDb == 'dbid')
+    return val ? val.toHexString() : val === null ? null : undefined
+  return col.valueConverter.fromDb(val)
 }

@@ -16,7 +16,7 @@ import type {
   SubscriptionServer,
 } from './live-query/SubscriptionServer.js'
 import type { Repository } from './remult3/remult3.js'
-import type { RepositoryImplementation } from './remult3/RepositoryImplementation.js'
+import { getInternalKey } from './remult3/repository-internals.js'
 
 let defaultRemult: Remult
 
@@ -41,7 +41,7 @@ export class RemultProxy implements Remult {
 
   /* @internal*/
   get liveQueryStorage() {
-    return this.remultFactory().liveQueryStorage
+    return this.remultFactory().liveQueryStorage!
   }
   /* @internal*/
   set liveQueryStorage(val: LiveQueryStorage) {
@@ -113,17 +113,30 @@ export class RemultProxy implements Remult {
     if (!entityCache) {
       self.repoCache.set(args[0], (entityCache = new Map()))
     }
-    let result = entityCache.get(args[1])
+    let result = entityCache.get(args[1]!)
     if (result) return result
     result = {
       get fields() {
         return self.remultFactory().repo(...args).metadata.fields
       },
-      validate: (a, b) =>
+
+      [getInternalKey]() {
+        return self
+          .remultFactory()
+          .repo(...args)
+          [getInternalKey]()
+      },
+      relations: (args2) =>
         self
           .remultFactory()
           .repo(...args)
-          .validate(a, b as any),
+          .relations(args2),
+      validate: (a, ...b) =>
+        self
+          .remultFactory()
+          .repo(...args)
+          //@ts-ignore
+          .validate(a, ...b),
       addEventListener: (...args2) =>
         self
           .remultFactory()
@@ -185,12 +198,6 @@ export class RemultProxy implements Remult {
           .remultFactory()
           .repo(...args)
           .liveQuery(...args2),
-      //@ts-ignore
-      addToCache: (a) =>
-        (
-          self.remultFactory().repo(...args) as RepositoryImplementation<any>
-        ).addToCache(a),
-
       get metadata() {
         return self.remultFactory().repo(...args).metadata
       },
@@ -210,7 +217,7 @@ export class RemultProxy implements Remult {
           .repo(...args)
           .update(a, b),
     }
-    entityCache.set(args[1], result)
+    entityCache.set(args[1]!, result!)
     return result
   }
 
@@ -227,7 +234,7 @@ export class RemultProxy implements Remult {
     this.remultFactory().apiClient = client
   }
   get subscriptionServer() {
-    return this.remultFactory().subscriptionServer
+    return this.remultFactory().subscriptionServer!
   }
   set subscriptionServer(value: SubscriptionServer) {
     this.remultFactory().subscriptionServer = value

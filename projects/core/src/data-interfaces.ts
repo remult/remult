@@ -1,5 +1,5 @@
 import type { Filter } from './filter/filter-interfaces.js'
-import type { EntityMetadata, OmitEB } from './remult3/remult3.js'
+import type { EntityMetadata, MembersOnly } from './remult3/remult3.js'
 import { Sort } from './sort.js'
 
 export interface DataProvider {
@@ -34,7 +34,6 @@ export interface RestDataProviderHttpProvider {
 }
 
 export function extractSort(sort: any): Sort {
-  if (sort instanceof Sort) return sort
   if (sort instanceof Array) {
     let r = new Sort()
     sort.forEach((i) => {
@@ -42,11 +41,14 @@ export function extractSort(sort: any): Sort {
     })
     return r
   }
+  return sort
 }
 
 export interface ErrorInfo<entityType = any> {
   message?: string
-  modelState?: { [Properties in keyof Partial<OmitEB<entityType>>]?: string }
+  modelState?: {
+    [Properties in keyof Partial<MembersOnly<entityType>>]?: string
+  }
   stack?: string
   exception?: any
   httpStatusCode?: number

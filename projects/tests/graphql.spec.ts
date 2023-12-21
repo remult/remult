@@ -6,6 +6,7 @@ import {
   FieldType,
   Fields,
   InMemoryDataProvider,
+  Relations,
   Remult,
   describeClass,
 } from '../core'
@@ -16,14 +17,20 @@ import { remultGraphql, translateWhereToRestBody } from '../core/graphql'
 class Category {
   @Fields.string({
     allowApiUpdate: false,
-    saving: async (_, ref) => {
+    saving: async (_, ref, { repository }) => {
       // created a consistent id for testing
-      ref.value = (await ref.entityRef.repository.count()).toString()
+      ref.value = (await repository.count()).toString()
     },
   })
   id = ''
   @Fields.string()
   name = ''
+
+  @Relations.toMany(() => Task, { field: 'category' })
+  tasksOfcategory?: Task[]
+
+  @Relations.toMany(() => Task, { field: 'category2' })
+  tasksOfcategory2?: Task[]
 }
 
 @Entity('tasks', {
@@ -310,6 +317,25 @@ describe('graphql', () => {
         ).data.tasks.totalCount,
       ).toBe(2)
   })
+  it('test not contains', async () => {
+    await remult
+      .repo(Task)
+      .insert(['aaa', 'bbb', 'cbc', 'ddd'].map((x) => ({ title: x }))),
+      expect(
+        (
+          await gql(`
+    query{
+      tasks(where:{
+        title:{
+          notContains:"d"
+        }
+      }){
+        totalCount
+      }
+    }`)
+        ).data.tasks.totalCount,
+      ).toBe(3)
+  })
 
   it('gets related entities', async () => {
     const cat = await remult
@@ -455,6 +481,131 @@ describe('graphql', () => {
       }
     `)
   })
+
+  it('test limit no page no offset', async () => {
+    await remult
+      .repo(Task)
+      .insert([
+        { title: 'aaa' },
+        { title: 'bbb' },
+        { title: 'ccc' },
+        { title: 'ddd' },
+        { title: 'eee' },
+      ])
+
+    const res = await gql(`query {
+  tasks(limit: 2) {
+    totalCount
+    items {
+      title
+    }
+  }
+}`)
+
+    expect(res.data.tasks).toMatchInlineSnapshot(`
+      {
+        "items": [
+          {
+            "title": "aaa",
+          },
+          {
+            "title": "bbb",
+          },
+        ],
+        "totalCount": 5,
+      }
+    `)
+  })
+
+  it('test limit page 2, offset 2', async () => {
+    await remult
+      .repo(Task)
+      .insert([
+        { title: 'aaa' },
+        { title: 'bbb' },
+        { title: 'ccc' },
+        { title: 'ddd' },
+        { title: 'eee' },
+      ])
+
+    const res = await gql(`query {
+        tasks(limit: 2, page: 2) {
+          totalCount
+          items {
+            title
+          }
+        }
+      }`)
+
+    expect(res.data.tasks).toMatchInlineSnapshot(`
+      {
+        "items": [
+          {
+            "title": "ccc",
+          },
+          {
+            "title": "ddd",
+          },
+        ],
+        "totalCount": 5,
+      }
+    `)
+
+    const resOffset = await gql(`query {
+      tasks(limit: 2, offset: 2) {
+        totalCount
+        items {
+          title
+        }
+      }
+    }`)
+
+    expect(resOffset.data.tasks).toMatchObject(res.data.tasks)
+  })
+
+  it('test limit page 3, offset 4', async () => {
+    await remult
+      .repo(Task)
+      .insert([
+        { title: 'aaa' },
+        { title: 'bbb' },
+        { title: 'ccc' },
+        { title: 'ddd' },
+        { title: 'eee' },
+      ])
+
+    const res = await gql(`query {
+        tasks(limit: 2, page: 3) {
+          totalCount
+          items {
+            title
+          }
+        }
+      }`)
+
+    expect(res.data.tasks).toMatchInlineSnapshot(`
+      {
+        "items": [
+          {
+            "title": "eee",
+          },
+        ],
+        "totalCount": 5,
+      }
+    `)
+
+    const resOffset = await gql(`query {
+      tasks(limit: 2, offset: 4) {
+        totalCount
+        items {
+          title
+        }
+      }
+    }`)
+
+    expect(resOffset.data.tasks).toMatchObject(res.data.tasks)
+  })
+
   it('test mutation delete', async () => {
     await await remult
       .repo(Task)
@@ -485,7 +636,7 @@ describe('graphql', () => {
           "id": 1,
           "thePriority": 1,
           "title": "task a",
-          "userOnServer": "",
+          "userOnServer": undefined,
         },
         Task {
           "category": null,
@@ -494,7 +645,7 @@ describe('graphql', () => {
           "id": 3,
           "thePriority": 1,
           "title": "task c",
-          "userOnServer": "",
+          "userOnServer": undefined,
         },
       ]
     `)
@@ -531,7 +682,7 @@ describe('graphql', () => {
           "id": 1,
           "thePriority": 1,
           "title": "testing",
-          "userOnServer": "",
+          "userOnServer": undefined,
         },
       ]
     `)
@@ -564,7 +715,7 @@ describe('graphql', () => {
           "id": 1,
           "thePriority": 1,
           "title": "testing",
-          "userOnServer": "",
+          "userOnServer": undefined,
         },
       ]
     `)
@@ -756,9 +907,9 @@ describe('graphql', () => {
     expect(typeDefs).toMatchInlineSnapshot(`
       "type Query {
           task(id: ID!): Task
-          tasks(limit: Int, page: Int, orderBy: tasksOrderBy, where: tasksWhere): TaskConnection
+          tasks(limit: Int, page: Int, offset: Int, orderBy: tasksOrderBy, where: tasksWhere): TaskConnection
           category(id: ID!): Category
-          categories(limit: Int, page: Int, orderBy: categoriesOrderBy, where: categoriesWhere): CategoryConnection
+          categories(limit: Int, page: Int, offset: Int, orderBy: categoriesOrderBy, where: categoriesWhere): CategoryConnection
           node(nodeId: ID!): Node
       }
 
@@ -843,8 +994,8 @@ describe('graphql', () => {
       type Category implements Node {
           id: String!
           name: String!
-          tasksOfcategory(limit: Int, page: Int, orderBy: tasksOrderBy, where: tasksWhere): TaskConnection
-          tasksOfcategory2(limit: Int, page: Int, orderBy: tasksOrderBy, where: tasksWhere): TaskConnection
+          tasksOfcategory(limit: Int, page: Int, offset: Int, orderBy: tasksOrderBy, where: tasksWhere): TaskConnection
+          tasksOfcategory2(limit: Int, page: Int, offset: Int, orderBy: tasksOrderBy, where: tasksWhere): TaskConnection
           nodeId: ID!
       }
 
@@ -900,6 +1051,7 @@ describe('graphql', () => {
           lt: String
           lte: String
           contains: String
+          notContains: String
       }
 
       input WhereStringNullable {
@@ -912,6 +1064,7 @@ describe('graphql', () => {
           lt: String
           lte: String
           contains: String
+          notContains: String
           null: Boolean
       }
 
@@ -1046,7 +1199,7 @@ describe('graphql', () => {
     expect(typeDefs).toMatchInlineSnapshot(`
       "type Query {
           c(id: ID!): C
-          cs(limit: Int, page: Int, orderBy: csOrderBy, where: csWhere): CConnection
+          cs(limit: Int, page: Int, offset: Int, orderBy: csOrderBy, where: csWhere): CConnection
           node(nodeId: ID!): Node
       }
 
@@ -1104,6 +1257,7 @@ describe('graphql', () => {
           lt: String
           lte: String
           contains: String
+          notContains: String
       }
 
       input WhereStringNullable {
@@ -1116,6 +1270,7 @@ describe('graphql', () => {
           lt: String
           lte: String
           contains: String
+          notContains: String
           null: Boolean
       }
 
@@ -1251,7 +1406,7 @@ describe('graphql', () => {
       `
       "type Query {
           c(id: ID!): C
-          cs(limit: Int, page: Int, orderBy: csOrderBy, where: csWhere): CConnection
+          cs(limit: Int, page: Int, offset: Int, orderBy: csOrderBy, where: csWhere): CConnection
           node(nodeId: ID!): Node
       }
 
@@ -1305,6 +1460,7 @@ describe('graphql', () => {
           lt: String
           lte: String
           contains: String
+          notContains: String
       }
 
       input WhereStringNullable {
@@ -1317,6 +1473,7 @@ describe('graphql', () => {
           lt: String
           lte: String
           contains: String
+          notContains: String
           null: Boolean
       }
 

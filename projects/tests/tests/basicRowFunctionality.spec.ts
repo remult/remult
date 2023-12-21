@@ -43,7 +43,7 @@ import {
   dbNamesOf,
   FilterConsumerBridgeToSqlRequest,
 } from '../../core/src/filter/filter-consumer-bridge-to-sql-request'
-import { remult } from '../../core/src/remult-proxy'
+import { remult, RemultProxy } from '../../core/src/remult-proxy'
 import { actionInfo } from '../../core/src/server-action-info'
 import { ValueConverters } from '../../core/src/valueConverters'
 import { entityWithValidations } from '../dbs/shared-tests/entityWithValidations'
@@ -317,6 +317,22 @@ describe('data api', () => {
     expect((await repo.validate({ name: '1' })).modelState!.name).toBe(
       'invalid on column',
     )
+    expect(await repo.validate({ name: '123' })).toBeUndefined()
+    expect(await repo.validate({ name: '1' }, 'myId')).toBeUndefined()
+  })
+  it('validation', async () => {
+    let remult = new RemultProxy()
+    remult.remultFactory = () => new Remult(new InMemoryDataProvider())
+    var repo = remult.repo(entityWithValidationsOnColumn)
+    expect((await repo.validate({ name: '1' })).modelState!.name).toBe(
+      'invalid on column',
+    )
+    expect((await repo.validate({ name: '1' }, 'name')).modelState!.name).toBe(
+      'invalid on column',
+    )
+    expect(
+      (await repo.validate({ name: '1' }, 'myId', 'name')).modelState!.name,
+    ).toBe('invalid on column')
     expect(await repo.validate({ name: '123' })).toBeUndefined()
     expect(await repo.validate({ name: '1' }, 'myId')).toBeUndefined()
   })
@@ -878,11 +894,11 @@ describe('data api', () => {
     let type = class extends newCategories {}
     Entity<typeof type.prototype>('testE', {
       allowApiUpdate: true,
-      saving: (row, cancel) => {
+      saving: (row, { preventDefault }) => {
         if (startTest) {
           mem.rows['testE'][0].categoryName = 'kuku'
           expect(mem.rows['testE'][0].categoryName).toBe('kuku')
-          cancel()
+          preventDefault()
         }
       },
     })(type)
@@ -1023,8 +1039,8 @@ describe('data api', () => {
       async (insert) => await insert(1, 'noam'),
       type,
     )
-    expect(c.fields.categoryName.includedInApi).toBe(false)
-    expect(c.fields.description.includedInApi).toBe(true)
+    expect(c.fields.categoryName.includedInApi()).toBe(false)
+    expect(c.fields.description.includedInApi()).toBe(true)
 
     var api = new DataApi(c, remult)
     let t = new TestDataApiResponse()
@@ -1259,6 +1275,33 @@ describe('data api', () => {
       d.ok()
     }
     await api.get(t, 1)
+    d.test()
+  })
+  it('apiRequireId in', async () => {
+    let type = class extends newCategories {}
+    Entity('', {
+      apiRequireId: true,
+    })(type)
+    let [c, remult] = await createData(async (i) => {
+      await i(1, 'noam', 'a')
+      await i(2, 'yael', 'b')
+      await i(3, 'yoni', 'a')
+    }, type)
+
+    var api = new DataApi(c, remult)
+
+    var t = new TestDataApiResponse()
+    var d = new Done()
+    t.success = (result) => {
+      expect(result.length).toBe(2)
+      d.ok()
+    }
+    await api.getArray(t, {
+      get: (x) => {
+        if (x == 'id.in') return ['1', '2']
+        return undefined
+      },
+    })
     d.test()
   })
   it('delete id  not Allowed for specific row', async () => {
@@ -1674,10 +1717,10 @@ describe('cache', () => {
   })
   it('find id', async () => {
     let [r] = await createData(async (i) => i(1, 'noam'))
-    await r.findId(1)
+    await r.findId(1, { useCache: true })
     await r.find().then((x) => assign(x[0], { categoryName: 'a' }).save())
-    expect((await r.findId(1)).categoryName).toBe('noam')
-    expect((await r.findId(1, { useCache: false })).categoryName).toBe('a')
+    expect((await r.findId(1, { useCache: true })).categoryName).toBe('noam')
+    expect((await r.findId(1)).categoryName).toBe('a')
   })
 })
 
@@ -1929,6 +1972,7 @@ describe('test toPromise', () => {
 
 @Entity<CompoundIdSimple>('CompoundIdPojoEntity', {
   id: (x) => [x.a, x.b],
+  allowApiCrud: true,
 })
 class CompoundIdSimple {
   @Fields.integer()
@@ -2003,6 +2047,35 @@ describe('CompoundIdPojoEntity', () => {
     var repo = new Remult(new InMemoryDataProvider()).repo(CompoundIdSimple)
     await repo.insert([{ a: 2, b: 20, c: 200 }])
     await repo.update({ a: 2, b: 20 }, { c: 201 })
+    expect((await repo.findFirst({ a: 2, b: 20 })).c).toBe(201)
+  })
+  it('test update_rest', async () => {
+    const r = new Remult(new InMemoryDataProvider())
+    var repo = new Remult(new MockRestDataProvider(r)).repo(CompoundIdSimple)
+    await repo.insert([{ a: 2, b: 20, c: 200 }])
+    await repo.update({ a: 2, b: 20 }, { c: 201 })
+    expect((await repo.findFirst({ a: 2, b: 20 })).c).toBe(201)
+  })
+  it('test another compound update', async () => {
+    @Entity('asdfsa', { allowApiCrud: true, id: { a: true, b: true } })
+    class myEntity {
+      @Fields.integer()
+      a = 0
+      @Fields.integer()
+      b = 0
+      @Fields.integer()
+      c = 0
+    }
+    const r = new Remult(new InMemoryDataProvider())
+    var repo = new Remult(new MockRestDataProvider(r)).repo(myEntity)
+    await repo.insert([{ a: 2, b: 20, c: 200 }])
+    await repo.update({ a: 2, b: 20 }, { c: 0 })
+    expect((await repo.findFirst({ a: 2, b: 20 })).c).toBe(0)
+  })
+  it('test update 2', async () => {
+    var repo = new Remult(new InMemoryDataProvider()).repo(CompoundIdSimple)
+    const c = await repo.insert({ a: 2, b: 20, c: 200 })
+    await repo.update(c, { c: 201 })
     expect((await repo.findFirst({ a: 2, b: 20 })).c).toBe(201)
   })
   it('test update change of id fields', async () => {

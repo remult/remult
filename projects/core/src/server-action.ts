@@ -24,12 +24,12 @@ import type {
   rowHelperImplementation,
 } from './remult3/RepositoryImplementation.js'
 import {
-  checkTarget,
   decorateColumnSettings,
   getControllerRef,
 } from './remult3/RepositoryImplementation.js'
 import { getEntityRef, getEntitySettings } from './remult3/getEntityRef.js'
 import { actionInfo, serverActionField } from './server-action-info.js'
+import { checkTarget } from './remult3/Fields.js'
 
 interface inArgs {
   args: any[]
@@ -422,7 +422,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
               baseUrl,
               http,
             )
-            await defs._updateEntityBasedOnApi(r.rowInfo.data)
+            await defs._updateEntityBasedOnApi(r.rowInfo.data, true)
             return r.result
           } catch (err) {
             throw defs.catchSaveErrors(err)

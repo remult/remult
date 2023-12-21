@@ -1,5 +1,5 @@
 import type { EntityFilter, FindOptions, Repository } from '../../core'
-import { Entity, EntityBase, Fields } from '../../core'
+import { Entity, EntityBase, Fields, SqlDatabase, remult } from '../../core'
 import { RestDataProvider } from '../../core/src//data-providers/rest-data-provider'
 import {
   Filter,
@@ -20,6 +20,7 @@ import { Done } from './Done'
 import { TestDataApiResponse } from './TestDataApiResponse'
 import { entityForrawFilter } from './entityForCustomFilter'
 import { testRestDb } from './testHelper'
+import { createEntity } from './dynamic-classes'
 
 describe('test where stuff', () => {
   let repo: Repository<CategoriesForTesting>
@@ -568,5 +569,46 @@ describe('missing fields are added in array column', async () => {
     }
     x.$and.push({})
     let z: EntityFilter<taskWithNull> = x
+  })
+  it('test toToRawFilter', async () => {
+    const repo = remult.repo(taskWithNull)
+
+    expect(
+      await SqlDatabase.filterToRaw(repo, { completed: true }),
+    ).toMatchInlineSnapshot('"completed = true"')
+  })
+  it('test toToRawFilter b', async () => {
+    const repo = remult.repo(taskWithNull)
+
+    expect(
+      await SqlDatabase.filterToRaw(
+        new Remult(new InMemoryDataProvider()).repo(taskWithNull),
+        { completed: true },
+      ),
+    ).toMatchInlineSnapshot('"completed = true"')
+  })
+  it('test toToRawFilter and api prefilter', async () => {
+    const e = createEntity(
+      'tasks',
+      {
+        id: Fields.number(),
+        title: Fields.string(),
+        archive: Fields.boolean(),
+      },
+      {
+        backendPrefilter: () => ({ archive: false }),
+      },
+    )
+    var db = remult.dataProvider
+    remult.dataProvider = new InMemoryDataProvider()
+    try {
+      const repo = remult.repo(e)
+
+      expect(
+        await SqlDatabase.filterToRaw(repo, { id: [1, 2] }),
+      ).toMatchInlineSnapshot('"id in (1,2) and archive = false"')
+    } finally {
+      remult.dataProvider = db
+    }
   })
 })

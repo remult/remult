@@ -49,3 +49,5 @@ export class Categories extends EntityBase {
   @Field(() => Status)
   status: Status
 }
+
+//p2 - remult subscription server is undefined on init ap- causing a crash on insert - trempim

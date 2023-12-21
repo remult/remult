@@ -1,7 +1,7 @@
 import type { Db } from 'mongodb'
 import { MongoClient } from 'mongodb'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
-import { Remult } from '../../core'
+import { Fields, Remult } from '../../core'
 import type { ClassType } from '../../core/classType'
 import { MongoDataProvider } from '../../core/remult-mongo'
 import { entityWithValidations } from './shared-tests/entityWithValidations'

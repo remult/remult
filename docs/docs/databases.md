@@ -155,6 +155,25 @@ app.use(
 )
 ```
 
+### Using ObjectId in Mongodb
+
+To indicate that a column is of type object id, change it's `dbFieldType` to `dbid`
+
+```ts
+@Entity('tasks')#
+class task {
+  @Fields.string({
+    dbName: '_id',
+    valueConverter: {
+      fieldTypeInDb: 'dbid',
+    },
+  })
+  id: string = ''
+  @Fields.string()
+  title: string = ''
+}
+```
+
 ## SQLite
 
 Install knex and sqlite3:
@@ -294,31 +313,31 @@ Although the common use case of `Remult` on the front end, is to call the backen
 ### Local Storage
 
 ```ts
-import { JsonDataProvider, Remult } from "remult"
+import { JsonDataProvider, Remult } from 'remult'
 export const remultLocalStorage = new Remult(new JsonDataProvider(localStorage))
 ```
 
 ### Session Storage
 
 ```ts
-import { JsonDataProvider, Remult } from "remult"
+import { JsonDataProvider, Remult } from 'remult'
 export const remultSessionStorage = new Remult(
-  new JsonDataProvider(sessionStorage)
+  new JsonDataProvider(sessionStorage),
 )
 ```
 
 ### Web Sql
 
 ```ts
-import { Remult, SqlDatabase, WebSqlDataProvider } from "remult"
+import { Remult, SqlDatabase, WebSqlDataProvider } from 'remult'
 export const remultWebSql = new Remult(
-  new SqlDatabase(new WebSqlDataProvider("db"))
+  new SqlDatabase(new WebSqlDataProvider('db')),
 )
 ```
 
 ### In Memory object array
 
 ```ts
-import { Remult, InMemoryDataProvider } from "remult"
+import { Remult, InMemoryDataProvider } from 'remult'
 export const remult = new Remult(new InMemoryDataProvider())
 ```

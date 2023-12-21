@@ -1,9 +1,19 @@
 import { defineConfig } from 'vitepress'
+import { tabsMarkdownPlugin } from 'vitepress-plugin-tabs'
 
 const tutorials = [
   { path: 'react' },
-  { path: 'angular' },
+  {
+    path: 'angular',
+    additionalItems: [
+      {
+        text: 'Appendix: Observable Live Query',
+        link: '/tutorials/angular/appendix-observable-live-query',
+      },
+    ],
+  },
   { path: 'vue' },
+  { title: 'SvelteKit', path: 'sveltekit' },
   {
     title: 'Next.js',
     path: 'react-next',
@@ -65,7 +75,7 @@ export default defineConfig({
     ],
     search: { provider: 'local', options: {} },
     socialLinks: [
-      { icon: 'twitter', link: 'https://twitter.com/RemultJs' },
+      { icon: 'x', link: 'https://twitter.com/RemultJs' },
       { icon: 'youtube', link: 'https://www.youtube.com/@remult6539' },
       { icon: 'discord', link: 'https://discord.gg/GXHk7ZfuG5' },
       { icon: 'github', link: 'https://github.com/remult/remult' },
@@ -87,7 +97,7 @@ export default defineConfig({
               { text: 'CRUD Operations', link: `/tutorials/${t.path}/crud` },
               { text: 'Validation', link: `/tutorials/${t.path}/validation` },
               {
-                text: 'Live Queries 🚀',
+                text: 'Live Queries',
                 link: `/tutorials/${t.path}/live-queries`,
               },
               {
@@ -128,21 +138,25 @@ export default defineConfig({
             items: [
               { text: 'Fields', link: '/docs/field-types' },
               {
-                text: 'Relations',
+                text: 'Relations 🚀',
                 link: '/docs/entity-relations',
-                collapsed: true,
-                items: [
-                  {
-                    text: 'Lazy loading',
-                    link: '/docs/lazy-loading-of-related-entities',
-                  },
-                  {
-                    text: 'More on One to Many',
-                    link: '/docs/techniques-regarding-one-to-many-relations',
-                  },
-                ],
+                // collapsed: true,
+                // items: [
+                //   // {
+                //   //   text: 'Lazy loading',
+                //   //   link: '/docs/lazy-loading-of-related-entities',
+                //   // },
+                //   {
+                //     text: 'More on One to Many',
+                //     link: '/docs/techniques-regarding-one-to-many-relations',
+                //   },
+                // ],
               },
-              { text: 'Generate from Existing DB', link: '/docs/entities-codegen-from-db-schema' }
+              { text: 'Lifecycle Hooks', link: '/docs/lifecycle-hooks' },
+              {
+                text: 'Generate from Existing DB',
+                link: '/docs/entities-codegen-from-db-schema',
+              },
             ],
           },
           {
@@ -195,6 +209,8 @@ export default defineConfig({
             items: [
               { text: 'Entity', link: '/docs/ref_entity' },
               { text: 'Field', link: '/docs/ref_field' },
+              { text: 'Relations', link: '/docs/ref_relations' },
+              { text: 'RelationOptions', link: '/docs/ref_relationoptions' },
               { text: 'Remult', link: '/docs/ref_remult' },
               { text: 'Repository', link: '/docs/ref_repository' },
               {
@@ -230,6 +246,11 @@ export default defineConfig({
 
     footer: {
       message: 'MIT Licensed | Made by the Remult team with ❤️',
+    },
+  },
+  markdown: {
+    config(md) {
+      md.use(tabsMarkdownPlugin)
     },
   },
 })

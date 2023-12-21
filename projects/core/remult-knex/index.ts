@@ -21,11 +21,7 @@ import type {
 } from '../src/data-interfaces.js'
 import { remult as remultContext } from '../src/remult-proxy.js'
 import type { EntityFilter, EntityMetadata } from '../src/remult3/remult3.js'
-import type {
-  RepositoryImplementation,
-  RepositoryOverloads,
-  StringFieldOptions,
-} from '../src/remult3/RepositoryImplementation.js'
+import type { RepositoryOverloads } from '../src/remult3/RepositoryImplementation.js'
 import {
   getRepository,
   isAutoIncrement,
@@ -33,6 +29,8 @@ import {
 import { Sort } from '../src/sort.js'
 import { ValueConverters } from '../src/valueConverters.js'
 import { resultCompoundIdFilter as resultCompoundIdFilter } from '../src/resultCompoundIdFilter.js'
+import type { StringFieldOptions } from '../src/remult3/Fields.js'
+import { getRepositoryInternals } from '../src/remult3/repository-internals.js'
 
 export class KnexDataProvider implements DataProvider {
   constructor(public knex: Knex) {}
@@ -86,9 +84,7 @@ export class KnexDataProvider implements DataProvider {
     )
     b._addWhere = false
     await (
-      await (
-        repo as RepositoryImplementation<entityType>
-      ).translateWhereToFilter(condition)
+      await getRepositoryInternals(repo).translateWhereToFilter(condition)
     ).__applyToConsumer(b)
     let r = await b.resolveWhere()
     return (knex) => r.forEach((y) => y(knex))
@@ -124,8 +120,9 @@ class KnexEntityDataProvider implements EntityDataProvider {
         return +element
       }
     }
+    throw Error("couldn't find count member")
   }
-  async find(options?: EntityDataProviderFindOptions): Promise<any[]> {
+  async find(options: EntityDataProviderFindOptions): Promise<any[]> {
     const e = await this.init()
     let cols = [] as string[]
     let colKeys: FieldMetadata[] = []
@@ -362,6 +359,18 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
     )
     this.promises.push((async () => {})())
   }
+  public notContainsCaseInsensitive(col: FieldMetadata, val: any): void {
+    this.result.push((b) =>
+      b.whereRaw(
+        'not lower (' +
+          b.client.ref(this.nameProvider.$dbNameOf(col)) +
+          ") like lower ('%" +
+          val.replace(/'/g, "''") +
+          "%')",
+      ),
+    )
+    this.promises.push((async () => {})())
+  }
 
   private add(col: FieldMetadata, val: any, operator: string) {
     this.result.push((b) =>
@@ -393,7 +402,7 @@ export class KnexSchemaBuilder {
     if (!remult) remult = remultContext
 
     const entities = allEntities.map((x) => remult.repo(x).metadata)
-    this.ensureSchema(entities)
+    await this.ensureSchema(entities)
   }
 
   async ensureSchema(entities: EntityMetadata<any>[]) {
@@ -408,6 +417,7 @@ export class KnexSchemaBuilder {
         }
       } catch (err) {
         console.error('failed ensure schema of ' + e.$entityName + ' ', err)
+        throw err
       }
     }
   }
@@ -424,11 +434,11 @@ export class KnexSchemaBuilder {
       await logSql(
         this.knex.schema.createTable(e.$entityName, (b) => {
           for (const x of entity.fields) {
-            if (!cols.get(x).readonly || isAutoIncrement(x)) {
-              if (isAutoIncrement(x)) b.increments(cols.get(x).name)
+            if (!cols.get(x)!.readonly || isAutoIncrement(x)) {
+              if (isAutoIncrement(x)) b.increments(cols.get(x)!.name)
               else {
-                buildColumn(x, cols.get(x).name, b, supportsJson(this.knex))
-                if (x == entity.idMetadata.field) b.primary([cols.get(x).name])
+                buildColumn(x, cols.get(x)!.name, b, supportsJson(this.knex))
+                if (x == entity.idMetadata.field) b.primary([cols.get(x)!.name])
               }
             }
           }

@@ -10,7 +10,7 @@ import {
 } from '../../core/src/filter/filter-interfaces'
 import { Language } from './RowProvider.spec'
 
-import { DataApi } from '../../core/src//data-api'
+import { DataApi } from '../../core/src/data-api'
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { actionInfo } from '../../core/src/server-action-info'
@@ -284,7 +284,9 @@ describe('many to one relation', () => {
     await c.save()
     await p.save()
     expect(p.category).toBeNull()
-    ;(p._ as rowHelperImplementation<Products>)._updateEntityBasedOnApi({
+    ;(
+      p._ as unknown as rowHelperImplementation<Products>
+    )._updateEntityBasedOnApi({
       category: 1,
     })
     expect(p.$.category.inputValue).toBe('1')

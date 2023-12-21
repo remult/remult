@@ -29,6 +29,7 @@ This tutorial requires setting up an Angular project, an API server project, and
 You can either **use a starter project** to speed things up, or go through the **step-by-step setup**.
 
 ## Option 1: Clone the Starter Project
+
 1. Clone the _angular-express-starter_ repository from GitHub and install its dependencies.
 
 ```sh
@@ -85,7 +86,7 @@ The starter API server TypeScript project contains a single module that initiali
 
 2. Add the following entry to the `compilerOptions` section of the `tsconfig.json` file to enable the use of Synthetic Default Imports and ES Module Interop in the app.
 
-```json{6-7}
+```json{7-8}
 // tsconfig.json
 
 {
@@ -108,11 +109,11 @@ The starter API server TypeScript project contains a single module that initiali
 ```ts
 // src/server/index.ts
 
-import express from "express"
+import express from 'express'
 
 const app = express()
 
-app.listen(3002, () => console.log("Server started"))
+app.listen(3002, () => console.log('Server started'))
 ```
 
 ### Bootstrap Remult in the back-end
@@ -124,7 +125,7 @@ Remult is loaded in the back-end as an `Express middleware`.
 ```ts
 // src/server/api.ts
 
-import { remultExpress } from "remult/remult-express"
+import { remultExpress } from 'remult/remult-express'
 
 export const api = remultExpress()
 ```
@@ -141,31 +142,6 @@ const app = express()
 app.use(api)
 
 app.listen(3002, () => console.log("Server started"))
-```
-
-### Add Angular Modules
-
-In the Angular app we'll be using Angular's `HttpClientModule` and `FormsModule`.
-
-We'll modify the `app.module.ts` file to load Angular's `HttpClientModule` and `FormsModule`.
-
-```ts{5-6,12}
-// src/app/app.module.ts
-
-import { NgModule } from "@angular/core"
-import { BrowserModule } from "@angular/platform-browser"
-import { HttpClientModule } from "@angular/common/http"
-import { FormsModule } from "@angular/forms"
-
-import { AppComponent } from "./app.component"
-
-@NgModule({
-  declarations: [AppComponent],
-  imports: [BrowserModule, HttpClientModule, FormsModule],
-  providers: [],
-  bootstrap: [AppComponent]
-})
-export class AppModule {}
 ```
 
 ### Final tweaks

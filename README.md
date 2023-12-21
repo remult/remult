@@ -22,7 +22,6 @@
 	<a href="https://discord.gg/GXHk7ZfuG5" rel="nofollow">
 		<img alt="Join Discord" src="https://badgen.net/discord/online-members/GXHk7ZfuG5?icon=discord&label=Discord"/>
 	</a>
-  </a>
 </div>
 
 <br/>
@@ -101,14 +100,14 @@ npm i remult
 ```ts
 // shared/product.ts
 
-import { Entity, Fields } from "remult"
+import { Entity, Fields } from 'remult'
 
-@Entity("products", {
-  allowApiCrud: true
+@Entity('products', {
+  allowApiCrud: true,
 })
 export class Product {
   @Fields.string()
-  name = ""
+  name = ''
 
   @Fields.number()
   unitPrice = 0
@@ -120,17 +119,17 @@ export class Product {
 ```ts
 // backend/index.ts
 
-import express from "express"
-import { remultExpress } from "remult/remult-express"
-import { Product } from "../shared/product"
+import express from 'express'
+import { remultExpress } from 'remult/remult-express'
+import { Product } from '../shared/product'
 
 const port = 3001
 const app = express()
 
 app.use(
   remultExpress({
-    entities: [Product]
-  })
+    entities: [Product],
+  }),
 )
 
 app.listen(port, () => {
@@ -151,13 +150,13 @@ app.listen(port, () => {
 ```ts
 // frontend/code.ts
 
-import { remult } from "remult"
-import { Product } from "../shared/product"
+import { remult } from 'remult'
+import { Product } from '../shared/product'
 
 async function increasePriceOfTofu(priceIncrease: number) {
   const productsRepo = remult.repo(Product)
 
-  const product = await productsRepo.findFirst({ name: "Tofu" }) // filter is passed through API request all the way to the db
+  const product = await productsRepo.findFirst({ name: 'Tofu' }) // filter is passed through API request all the way to the db
   product.unitPrice += priceIncrease
   productsRepo.save(product) // mutation request updates the db with no boilerplate code
 }
@@ -179,32 +178,32 @@ static async increasePriceOfTofu(priceIncrease: number) {
 ### :ballot_box_with_check: Data validation and constraints - defined once
 
 ```ts
-import { Entity, Fields, Validators } from "remult"
+import { Entity, Fields, Validators } from 'remult'
 
-@Entity("products", {
-  allowApiCrud: true
+@Entity('products', {
+  allowApiCrud: true,
 })
 export class Product {
   @Fields.string({
-    validate: Validators.required
+    validate: Validators.required,
   })
-  name = ""
+  name = ''
 
   @Fields.string<Product>({
     validate: (product) => {
       if (product.description.trim().length < 50) {
-        throw "too short"
+        throw 'too short'
       }
-    }
+    },
   })
-  description = ""
+  description = ''
 
   @Fields.number({
     validate: (_, field) => {
       if (field.value < 0) {
-        field.error = "must not be less than 0" // or: throw "must not be less than 0";
+        field.error = 'must not be less than 0' // or: throw "must not be less than 0";
       }
-    }
+    },
   })
   unitPrice = 0
 }
@@ -233,20 +232,20 @@ try {
 ### :lock: Secure the API with fine-grained authorization
 
 ```ts
-@Entity<Article>("Articles", {
+@Entity<Article>('Articles', {
   allowApiRead: true,
   allowApiInsert: (_, remult) => remult.authenticated(),
-  allowApiUpdate: (article, remult) => article.author.id == remult.user.id
+  allowApiUpdate: (article, remult) => article.author.id == remult.user.id,
 })
 export class Article {
   @Fields.string({ allowApiUpdate: false })
-  slug = ""
+  slug = ''
 
   @Field(() => Profile, { allowApiUpdate: false })
   author!: Profile
 
   @Fields.string()
-  content = ""
+  content = ''
 }
 ```
 
@@ -278,6 +277,7 @@ with a Node.js Express backend.
 - [Tutorial with Angular](https://remult.dev/tutorials/angular/)
 - [Tutorial with Vue](https://remult.dev/tutorials/vue/)
 - [Tutorial with Next.js](https://remult.dev/tutorials/react-next/)
+- [Tutorial with Sveltekit](https://remult.dev/tutorials/sveltekit/)
 
 ## Documentation
 

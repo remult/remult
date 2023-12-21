@@ -23,58 +23,46 @@ class DocFile {
       switch (m.name) {
         case 'where':
           m.comment = {
-            shortText: 'filters the data',
-            tags: [
+            summary: [{ kind: 'text', text: 'filters the data' }],
+            blockTags: [
               {
                 tag: 'see',
-                text: '[EntityFilter](http://remult.dev/docs/entityFilter.html)',
+                content: [
+                  {
+                    kind: 'text',
+                    text: '[EntityFilter](http://remult.dev/docs/entityFilter.html)',
+                  },
+                ],
               },
             ],
           }
           break
       }
     }
-    if (!m.comment?.shortText) {
+    let shortText = m.comment?.summary?.length
+      ? m.comment.summary.map((x) => x.text).join('')
+      : undefined
+    if (!shortText) {
+      if (m.name === '__type') return
       this.writeLine('* **' + m.name + '**', indent)
       return
     }
 
-    if (m.comment.shortText) {
-      if (indent == 0 && m.kindString != 'Parameter')
-        this.writeLine(m.comment.shortText, indent)
-      else
-        this.writeLine('* **' + m.name + '** - ' + m.comment.shortText, indent)
+    if (shortText) {
+      if (indent == 0 && m.variant != 'param') this.writeLine(shortText, indent)
+      else this.writeLine('* **' + m.name + '** - ' + shortText, indent)
     }
     if (m.name == 'Entity') {
     }
-    if (m.comment.tags) {
-      let lastExample: Tag = undefined
-      let tags: Tag[] = []
-      for (const t of m.comment.tags) {
-        if (t.tag == 'example') {
-          lastExample = t
-        }
-        if (t.tag.startsWith('entity') || t.tag.startsWith('field')) {
-          if (t.text.startsWith('\n   ')) lastExample.text += '\n   '
-          else lastExample.text += '\n'
-          lastExample.text +=
-            '@' + t.tag[0].toUpperCase() + t.tag.substring(1) + t.text
-          continue
-        }
-        tags.push(t)
-      }
 
-      for (const t of tags) {
+    if (m.comment.blockTags)
+      for (const t of m.comment?.blockTags) {
+        if (t.tag.startsWith('@')) t.tag = t.tag.substring(1)
         this.writeLine('\n\n*' + t.tag + '*', indent + 1)
-        let text = t.text
-        if (t.tag == 'example') {
-          if (!text.endsWith('\n')) text += '\n'
-          text = '```ts' + text + '```\n'
-        }
+        let text = t.content.map((x) => x.text).join('')
 
         this.writeLine(text, indent + 1)
       }
-    }
   }
   writeLine(what: string, indent: number) {
     let space = ''
@@ -84,11 +72,28 @@ class DocFile {
     this.s += space + what.replace(/\n/g, '\n' + space) + '\n'
   }
   writeMembers(type: member, indent = 0) {
+    if (!type.children) {
+      if (type.type.type == 'intersection') {
+        type.children = type.type.types
+          .map((t) => t.declaration?.children)
+          .filter((x) => x != undefined)
+          .reduce((a, b) => a.concat(b), [])
+      }
+    }
     if (type.children) {
       try {
         if (type.name === 'Repository')
           type.children.sort((a, b) => a.id - b.id)
         else type.children.sort((a, b) => a.sources[0].line - b.sources[0].line)
+        for (const child of type.children) {
+          if (!child.comment) {
+            const sig = child.type?.declaration?.signatures?.[0]
+            if (sig) {
+              child.comment = sig.comment
+              child.signatures = child.type?.declaration?.signatures
+            }
+          }
+        }
         const itemsWithComment = type.children.filter(
           (x) => x.comment || x.signatures?.filter((s) => s.comment),
         )
@@ -152,7 +157,7 @@ class DocFile {
   writeFile() {
     fs.writeFileSync(
       './docs/docs/ref_' + this.fileName.toLowerCase() + '.md',
-      this.s,
+      this.s, //.replace(/\n/g, '\r\n'),
     )
   }
 }
@@ -165,7 +170,6 @@ function findType(type: string) {
   }
   return r
 }
-
 try {
   for (const pairs of [
     ['Entity', 'EntityOptions'],
@@ -190,6 +194,8 @@ try {
     'EntityMetadata',
     'FieldMetadata',
     'RemultServerOptions',
+    'Relations',
+    'RelationOptions',
   ]) {
     let type = findType(typeName)
 
@@ -208,19 +214,31 @@ try {
 
 type Tag = {
   tag: string
-  text: string
+  content: {
+    kind: string
+    text: string
+  }[]
+}
+
+interface type {
+  name: string
+  type:
+    | 'union'
+    | 'reference'
+    | 'intrinsic'
+    | 'reflection'
+    | 'array'
+    | 'intersection'
+  types: type[]
+  declaration?: member
 }
 
 interface member {
-  kindString: 'Parameter'
+  variant: 'param'
   name: string
   parameters: ({
     name: string
-    type: {
-      name: string
-      type: string
-      types: { name: string }[]
-    }
+    type: type
   } & member)[]
   signatures: member[]
   sources: { line: number }[]
@@ -231,10 +249,16 @@ interface member {
   id: number
   children: member[]
   comment: {
-    shortText?: string
     text?: string
-    tags: Tag[]
+    blockTags: Tag[]
+    summary: [
+      {
+        kind: string
+        text: string
+      },
+    ]
   }
+  type?: type
   inheritedFrom: {
     type: string
     name: string

@@ -1,15 +1,17 @@
 import type { FieldMetadata } from '../column-interfaces.js'
 import type { Remult } from '../context.js'
-import type { EntityFilter, EntityMetadata } from '../remult3/remult3.js'
+import type {
+  EntityFilter,
+  EntityMetadata,
+  FieldsMetadata,
+  RelationOptions,
+} from '../remult3/remult3.js'
 
 import { getEntityRef, getEntitySettings } from '../remult3/getEntityRef.js'
+import { getRelationInfo } from '../remult3/relationInfoMember.js'
 
 export class Filter {
-  constructor(private apply?: (add: FilterConsumer) => void) {
-    if (!this.apply) {
-      this.apply = () => {}
-    }
-  }
+  constructor(private apply: (add: FilterConsumer) => void) {}
   __applyToConsumer(add: FilterConsumer) {
     this.apply(add)
   }
@@ -90,7 +92,15 @@ export class Filter {
           } else if (key == customDatabaseFilterToken) {
             result.push(new Filter((x) => x.databaseCustom(fieldToFilter)))
           } else {
-            let fh = new filterHelper(entity.fields[key])
+            const field = entity.fields[key]
+            const rel = getRelationInfo(field.options)
+            const op = field.options as RelationOptions<any, any, any>
+            let fh =
+              rel?.type === 'toOne'
+                ? op.fields
+                  ? new manyToOneFilterHelper(field, entity.fields, op)
+                  : new toOneFilterHelper(entity.fields[op.field!])
+                : new filterHelper(field)
             let found = false
             if (fieldToFilter !== undefined && fieldToFilter != null) {
               if (fieldToFilter.$id) fieldToFilter = fieldToFilter.$id
@@ -133,6 +143,10 @@ export class Filter {
                     case '$contains':
                       found = true
                       result.push(fh.contains(element))
+                      break
+                    case '$notContains':
+                      found = true
+                      result.push(fh.notContains(element))
                       break
                   }
                 }
@@ -205,7 +219,8 @@ export class Filter {
     return r
   }
 }
-export class filterHelper {
+
+class filterHelper {
   constructor(public metadata: FieldMetadata) {}
 
   processVal(val: any) {
@@ -220,6 +235,11 @@ export class filterHelper {
 
   contains(val: string): Filter {
     return new Filter((add) => add.containsCaseInsensitive(this.metadata, val))
+  }
+  notContains(val: string): Filter {
+    return new Filter((add) =>
+      add.notContainsCaseInsensitive(this.metadata, val),
+    )
   }
   isLessThan(val: any): Filter {
     val = this.processVal(val)
@@ -258,7 +278,91 @@ export class filterHelper {
   }
   isIn(val: any[]): Filter {
     val = val.map((x) => this.processVal(x))
+    if (val?.length == 1 && val[0] != undefined && val[0] !== null)
+      return new Filter((add) => add.isEqualTo(this.metadata, val[0]))
     return new Filter((add) => add.isIn(this.metadata, val))
+  }
+}
+class toOneFilterHelper extends filterHelper {
+  processVal(val: any) {
+    if (!val) return null
+    if (typeof val === 'string' || typeof val === 'number') return val
+    return getEntityRef(val).getId()
+  }
+}
+class manyToOneFilterHelper implements filterHelper {
+  constructor(
+    public metadata: FieldMetadata,
+    public fields: FieldsMetadata<any>,
+    public relationOptions: RelationOptions<any, any, any>,
+  ) {}
+  processVal(val: any) {
+    throw new Error('Invalid for Many To One Relation Field')
+  }
+  contains(val: string): Filter {
+    throw new Error('Invalid for Many To One Relation Field')
+  }
+  notContains(val: string): Filter {
+    throw new Error('Invalid for Many To One Relation Field')
+  }
+  isLessThan(val: any): Filter {
+    throw new Error('Invalid for Many To One Relation Field')
+  }
+  isGreaterOrEqualTo(val: any): Filter {
+    throw new Error('Invalid for Many To One Relation Field')
+  }
+  isNotIn(values: any[]): Filter {
+    return new Filter((add) => {
+      values.forEach((v) => this.isDifferentFrom(v).__applyToConsumer(add))
+    })
+  }
+  isDifferentFrom(val: any): Filter {
+    return new Filter((add) => {
+      const or: Filter[] = []
+
+      for (const key in this.relationOptions.fields) {
+        if (
+          Object.prototype.hasOwnProperty.call(this.relationOptions.fields, key)
+        ) {
+          const keyInMyEntity = this.relationOptions.fields[key] as string
+          or.push(
+            new Filter((add) =>
+              new filterHelper(this.fields.find(keyInMyEntity))
+                .isDifferentFrom(val[key])
+                .__applyToConsumer(add),
+            ),
+          )
+        }
+      }
+      add.or(or)
+    })
+  }
+  isLessOrEqualTo(val: any): Filter {
+    throw new Error('Invalid for Many To One Relation Field')
+  }
+  isGreaterThan(val: any): Filter {
+    throw new Error('Invalid for Many To One Relation Field')
+  }
+  isEqualTo(val: any): Filter {
+    return new Filter((add) => {
+      for (const key in this.relationOptions.fields) {
+        if (
+          Object.prototype.hasOwnProperty.call(this.relationOptions.fields, key)
+        ) {
+          const keyInMyEntity = this.relationOptions.fields[key] as string
+
+          new filterHelper(this.fields.find(keyInMyEntity))
+            .isEqualTo(val[key])
+            .__applyToConsumer(add)
+        }
+      }
+    })
+  }
+
+  isIn(val: any[]): Filter {
+    return new Filter((add) => {
+      add.or(val.map((v) => this.isEqualTo(v)))
+    })
   }
 }
 export interface FilterConsumer {
@@ -272,6 +376,7 @@ export interface FilterConsumer {
   isLessOrEqualTo(col: FieldMetadata, val: any): void
   isLessThan(col: FieldMetadata, val: any): void
   containsCaseInsensitive(col: FieldMetadata, val: any): void
+  notContainsCaseInsensitive(col: FieldMetadata, val: any): void
   isIn(col: FieldMetadata, val: any[]): void
   custom(key: string, customItem: any): void
   databaseCustom(databaseCustom: any): void
@@ -383,6 +488,9 @@ export class FilterSerializer implements FilterConsumer {
   public containsCaseInsensitive(col: FieldMetadata, val: any): void {
     this.add(col.key + '.contains', val)
   }
+  public notContainsCaseInsensitive(col: FieldMetadata, val: any): void {
+    this.add(col.key + '.notContains', val)
+  }
 }
 
 export function entityFilterToJson<T>(
@@ -442,7 +550,6 @@ export function buildFilterFromRequestParameters(
         }
       }
     }
-    let c = new filterHelper(col)
     addFilter('', (val) => val)
     addFilter('.gt', (val) => ({ $gt: val }))
     addFilter('.gte', (val) => ({ $gte: val }))
@@ -466,6 +573,7 @@ export function buildFilterFromRequestParameters(
     }
 
     addFilter('.contains', (val) => ({ $contains: val }), false, true)
+    addFilter('.notContains', (val) => ({ $notContains: val }), false, true)
   })
   let val = filterInfo.get('OR')
   if (val) {
@@ -489,7 +597,7 @@ export function buildFilterFromRequestParameters(
     if (
       element &&
       element.rawFilterInfo &&
-      element.rawFilterInfo.rawFilterTranslator
+      element.rawFilterInfo.rawFilterTranslator!
     ) {
       let custom = filterInfo.get(customUrlToken + key)
       if (custom !== undefined) {
@@ -508,8 +616,8 @@ export function buildFilterFromRequestParameters(
 
   function separateArrayFromInnerArray(val: any) {
     if (!Array.isArray(val)) return [val]
-    const nonArray = [],
-      array = []
+    const nonArray: any[] = [],
+      array: any[] = []
     for (const v of val) {
       if (Array.isArray(v)) {
         array.push(v)
@@ -576,6 +684,9 @@ class customTranslator implements FilterConsumer {
   containsCaseInsensitive(col: FieldMetadata<any>, val: any): void {
     this.commands.push((x) => x.containsCaseInsensitive(col, val))
   }
+  notContainsCaseInsensitive(col: FieldMetadata<any>, val: any): void {
+    this.commands.push((x) => x.notContainsCaseInsensitive(col, val))
+  }
 
   isIn(col: FieldMetadata<any>, val: any[]): void {
     this.commands.push((x) => x.isIn(col, val))
@@ -624,6 +735,7 @@ export function __updateEntityBasedOnWhere<T>(
       custom: emptyFunction,
       databaseCustom: emptyFunction,
       containsCaseInsensitive: emptyFunction,
+      notContainsCaseInsensitive: emptyFunction,
       isDifferentFrom: emptyFunction,
       isEqualTo: (col, val) => {
         r[col.key] = val
@@ -640,3 +752,6 @@ export function __updateEntityBasedOnWhere<T>(
     })
   }
 }
+
+// toRaw of default remult threw and exception
+// toRaw didn't respect

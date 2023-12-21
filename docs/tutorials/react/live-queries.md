@@ -1,8 +1,4 @@
-# Live Queries :rocket:
-
-::: tip New Feature
-Live queries are a new feature introduced in version 0.18.
-:::
+# Live Queries
 
 Our todo list app can have multiple users using it at the same time. However, changes made by one user are not seen by others unless they manually refresh the browser.
 
@@ -45,7 +41,8 @@ Let's review the change:
 const addTask = async (e: FormEvent) => {
   e.preventDefault()
   try {
-    const newTask = await taskRepo.insert({ title: newTaskTitle })
+    // const newTask = await taskRepo.insert({ title: newTaskTitle }) <- Delete this line
+    await taskRepo.insert({ title: newTaskTitle }) // <- replace with this line
     // setTasks([...tasks, newTask])   <-- this line is no longer needed
     setNewTaskTitle("")
   } catch (error) {

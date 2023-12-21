@@ -13,6 +13,7 @@ export function __updateEntityBasedOnWhere<T>(
       custom: emptyFunction,
       databaseCustom: emptyFunction,
       containsCaseInsensitive: emptyFunction,
+      notContainsCaseInsensitive: emptyFunction,
       isDifferentFrom: emptyFunction,
       isEqualTo: (col, val) => {
         r[col.key] = val

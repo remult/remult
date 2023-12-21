@@ -17,7 +17,9 @@ export class CompoundIdField implements FieldMetadata<string> {
   displayValue(item: any): string {
     throw new Error('Method not implemented.')
   }
-  includedInApi: boolean
+  includedInApi(item: any): boolean {
+    throw new Error('Method not implemented.')
+  }
   toInput(value: string, inputType?: string): string {
     throw new Error('Method not implemented.')
   }

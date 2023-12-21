@@ -4,7 +4,10 @@ import { RestDataProvider } from './data-providers/rest-data-provider.js'
 import { LiveQueryClient } from './live-query/LiveQueryClient.js'
 import { SseSubscriptionClient } from './live-query/SseSubscriptionClient.js'
 import { RemultProxy, remult } from './remult-proxy.js'
-import { RepositoryImplementation } from './remult3/RepositoryImplementation.js'
+import {
+  RepositoryImplementation,
+  createOldEntity,
+} from './remult3/RepositoryImplementation.js'
 import type {
   EntityMetadata,
   EntityRef,
@@ -62,7 +65,7 @@ export class RemultAsyncLocalStorage {
 }
 type myAsyncLocalStorage<T> = {
   run<R>(store: T, callback: (...args: any[]) => R, ...args: any[]): R
-  getStore(): T
+  getStore(): T | undefined
 }
 
 export function isBackend() {
@@ -93,7 +96,12 @@ export class Remult {
     if (!r) {
       dpCache.set(
         entity,
-        (r = new RepositoryImplementation(entity, this, dataProvider)),
+        (r = new RepositoryImplementation(
+          entity,
+          this,
+          dataProvider,
+          createOldEntity(entity, this),
+        ) as Repository<any>),
       )
     }
     return r
@@ -112,7 +120,7 @@ export class Remult {
    * [Allowed](https://remult.dev/docs/allowed.html)
    */
   isAllowed(roles?: Allowed): boolean {
-    if (roles == undefined) return undefined
+    if (roles == undefined) return undefined!
     if (roles instanceof Array) {
       for (const role of roles) {
         if (this.isAllowed(role) === true) {
@@ -127,7 +135,7 @@ export class Remult {
     }
     if (typeof roles === 'boolean') return roles
     if (typeof roles === 'string')
-      if (this.user?.roles?.indexOf(roles.toString()) >= 0) return true
+      if (this.user?.roles?.includes(roles.toString())) return true
 
     return false
   }
@@ -149,6 +157,7 @@ export class Remult {
     } else if (typeof allowed === 'function') {
       return allowed(instance, this)
     } else return this.isAllowed(allowed as Allowed)
+    return undefined!
   }
   /** The current data provider */
   dataProvider: DataProvider = new RestDataProvider(() => this.apiClient)
@@ -249,7 +258,7 @@ export class Remult {
     RemultAsyncLocalStorage.instance.run(remult, () => {
       r = callback()
     })
-    return r
+    return r!
   }
 }
 

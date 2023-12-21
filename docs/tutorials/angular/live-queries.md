@@ -1,8 +1,4 @@
-# Live Queries :rocket:
-
-::: tip New Feature
-Live queries are a new feature introduced in version 0.18.
-:::
+# Live Queries
 
 Our todo list app can have multiple users using it at the same time. However, changes made by one user are not seen by others unless they manually refresh the browser.
 
@@ -10,15 +6,15 @@ Let's add realtime multiplayer capabilities to this app.
 
 ## One Time Setup
 
-We'll need angular to run it's change detection when we receive messages from the backend - to do that we'll add the following code to `AppModule`
+We'll need angular to run it's change detection when we receive messages from the backend - to do that we'll add the following code to `AppComponent`
 
 ```ts{3-5,7-9}
-// src/app/app.module.ts
+// src/app/app.component.ts
 
-import { NgModule, NgZone } from "@angular/core"
+import { Component, NgZone } from '@angular/core';
 import { remult } from "remult"
 //...
-export class AppModule {
+export class AppComponent {
   constructor(zone: NgZone) {
     remult.apiClient.wrapMessageHandling = handler => zone.run(() => handler())
   }
@@ -33,9 +29,11 @@ Let's switch from fetching Tasks once when the Angular component is loaded, and 
 
 Modify the `TodoComponent` with the following changes
 
-```ts{3,7,9-10,15,17-19}
+```ts{3,5,9,11-12,17,19-21}
 // src/app/todo/todo.component.ts
 
+import { Component, OnDestroy, OnInit } from '@angular/core';
+...
 export class TodoComponent implements OnInit, OnDestroy {
   //...
   taskRepo = remult.repo(Task)

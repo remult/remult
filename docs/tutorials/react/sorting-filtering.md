@@ -47,6 +47,7 @@ useEffect(() => {
     .then(setTasks)
 }, [])
 ```
+
 ## Server side Filtering
 
 Remult supports sending filter rules to the server to query only the tasks that we need.
@@ -73,7 +74,9 @@ Because the `completed` field is of type `boolean`, the argument is **compile-ti
 
 Play with different filtering values, and eventually comment it out, since we do need all the tasks
 
-```ts{6}
+```ts{8}
+// src/App.tsx
+
 useEffect(() => {
   taskRepo
     .find({

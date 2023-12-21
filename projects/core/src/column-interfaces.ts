@@ -1,6 +1,10 @@
 import type { ClassType } from '../classType.js'
 import type { Allowed, AllowedForInstance } from './context.js'
-import type { EntityMetadata, FieldRef, OmitEB } from './remult3/remult3.js'
+import type {
+  EntityMetadata,
+  FieldRef,
+  LifecycleEvent,
+} from './remult3/remult3.js'
 
 export interface FieldOptions<entityType = any, valueType = any> {
   /** A human readable name for the field. Can be used to achieve a consistent caption for a field throughout the app
@@ -12,7 +16,7 @@ export interface FieldOptions<entityType = any, valueType = any> {
   allowNull?: boolean
   /** If this field data is included in the api.
    * @see [allowed](http://remult.dev/docs/allowed.html)*/
-  includeInApi?: Allowed
+  includeInApi?: AllowedForInstance<entityType>
   /** If this field data can be updated in the api.
    * @see [allowed](http://remult.dev/docs/allowed.html)*/
   allowApiUpdate?: AllowedForInstance<entityType>
@@ -50,6 +54,7 @@ export interface FieldOptions<entityType = any, valueType = any> {
   saving?: (
     entity: entityType,
     fieldRef: FieldRef<entityType, valueType>,
+    e: LifecycleEvent<entityType>,
   ) => any | Promise<any>
   /**  An expression that will determine this fields value on the backend and be provided to the front end*/
   serverExpression?: (entity: entityType) => valueType | Promise<valueType>
@@ -86,8 +91,20 @@ export interface FieldOptions<entityType = any, valueType = any> {
 
   /** The html input type for this field */
   inputType?: string
-  /** Determines if the referenced entity will be loaded immediately or on demand.
-   * @see[Lazy loading of related entities](http://remult.dev/docs/lazy-loading-of-related-entities.html)
+  /**
+   * @deprecated The 'lazy' option is deprecated and will be removed in future versions.
+   * Use 'Relations.toOne' instead.
+   *
+   * Example usage:
+   * ```
+   * // Deprecated usage with 'lazy' option
+   * @Field(() => Customer, { lazy: true })
+   * customer?: Customer;
+   *
+   * // Preferred usage with 'Relations.toOne'
+   * @Relations.toOne(() => Customer)
+   * customer?: Customer;
+   * ```
    */
   lazy?: boolean
   /** The value type for this field */
@@ -137,9 +154,9 @@ export interface FieldMetadata<valueType = any, entityType = any> {
    * @example
    * repo.fields.createDate.displayValue(task) //will display the date as defined in the `displayValue` option defined for it.
    */
-  displayValue(item: Partial<OmitEB<entityType>>): string
-  apiUpdateAllowed(item?: Partial<OmitEB<entityType>>): boolean
-  readonly includedInApi: boolean
+  displayValue(item: Partial<entityType>): string
+  apiUpdateAllowed(item?: Partial<entityType>): boolean
+  includedInApi(item?: Partial<entityType>): boolean
   /** Adapts the value for usage with html input
    * @example
    * @Fields.dateOnly()

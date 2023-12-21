@@ -19,17 +19,17 @@ The `Task` entity class we're creating will have an auto-generated `id` field, a
 ```ts
 // src/shared/Task.ts
 
-import { Entity, Fields } from "remult"
+import { Entity, Fields } from 'remult'
 
-@Entity("tasks", {
-  allowApiCrud: true
+@Entity('tasks', {
+  allowApiCrud: true,
 })
 export class Task {
   @Fields.cuid()
-  id = ""
+  id = ''
 
   @Fields.string()
-  title = ""
+  title = ''
 
   @Fields.boolean()
   completed = false
@@ -106,10 +106,10 @@ In the `src` folder create a `components` folder and in it create a `todo.tsx` f
 ```tsx
 // src/components/todo.tsx
 
-"use client"
-import { useEffect, useState } from "react"
-import { remult } from "remult"
-import { Task } from "../shared/Task"
+'use client'
+import { useEffect, useState } from 'react'
+import { remult } from 'remult'
+import { Task } from '../shared/Task'
 
 const taskRepo = remult.repo(Task)
 
@@ -149,12 +149,12 @@ Replace the contents of `src/app/page.tsx` with the following code:
 
 ```tsx
 // src/app/page.tsx
-import Todo from "../components/todo"
+
+import Todo from '../components/todo'
 
 export default function Home() {
   return <Todo />
 }
 ```
-
 
 After the browser refreshes, the list of tasks appears.

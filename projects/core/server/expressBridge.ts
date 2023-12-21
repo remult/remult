@@ -6,7 +6,11 @@ import type { AllowedForInstance, UserInfo } from '../src/context.js'
 import { Remult, RemultAsyncLocalStorage, allEntities } from '../src/context.js'
 import type { DataApiRequest, DataApiResponse } from '../src/data-api.js'
 import { DataApi, serializeError } from '../src/data-api.js'
-import type { DataProvider, ErrorInfo, Storage } from '../src/data-interfaces.js'
+import type {
+  DataProvider,
+  ErrorInfo,
+  Storage,
+} from '../src/data-interfaces.js'
 import {
   liveQueryKeepAliveRoute,
   streamUrl,
@@ -20,7 +24,8 @@ import {
   InMemoryLiveQueryStorage,
   LiveQueryPublisher,
 } from '../src/live-query/SubscriptionServer.js'
-import { Fields, IdEntity } from '../src/remult3/RepositoryImplementation.js'
+import { IdEntity } from '../src/remult3/IdEntity.js'
+import { Fields } from '../src/remult3/Fields.js'
 
 import { Entity } from '../src/remult3/entity.js'
 import { getEntityKey } from '../src/remult3/getEntityRef.js'
@@ -35,7 +40,6 @@ import { Action, classBackendMethodsArray } from '../src/server-action.js'
 import { actionInfo, serverActionField } from '../src/server-action-info.js'
 import { initDataProvider } from './initDataProvider.js'
 
-//TODO2 -support pub sub non express servers
 export interface RemultServerOptions<RequestType> {
   /**Entities to use for the api */
   entities?: ClassType<any>[]
@@ -119,43 +123,6 @@ export function createRemultServerCore<RequestType>(
   if (options.ensureSchema === undefined) options.ensureSchema = true
 
   RemultAsyncLocalStorage.enable()
-  const entitiesMetaData: EntityMetadata[] = []
-
-  dataProvider = dataProvider.then(async (dp) => {
-    var remult = new Remult(dp)
-    await new Promise((res) => {
-      RemultAsyncLocalStorage.instance.run(remult, async () => {
-        if (options.ensureSchema) {
-          let started = false
-          const startConsoleLog = () => {
-            if (started) return
-            started = true
-            console.time('Schema ensured')
-          }
-          entitiesMetaData.push(
-            ...options.entities.map((e) => remult.repo(e).metadata),
-          )
-          if (dp.ensureSchema) {
-            startConsoleLog()
-            await dp.ensureSchema(entitiesMetaData)
-          }
-          for (const item of [
-            options.liveQueryStorage,
-            options.queueStorage,
-          ] as any as Storage[]) {
-            if (item?.ensureSchema) {
-              startConsoleLog()
-              await item.ensureSchema()
-            }
-          }
-          if (started) console.timeEnd('Schema ensured')
-        }
-        if (options.initApi) await options.initApi(remult)
-        res({})
-      })
-    })
-    return dp
-  })
 
   {
     let allControllers: ClassType<any>[] = []
@@ -174,11 +141,10 @@ export function createRemultServerCore<RequestType>(
     options,
     dataProvider,
     serverCoreOptions,
-    entitiesMetaData,
   )
   return bridge
 }
-//TODO  - the type is wrong - it should be RequestType as on the server - also reconsider GenericResponse here, because it's also the server Response
+//TODO V2 - the type is wrong - it should be RequestType as on the server - also reconsider GenericResponse here, because it's also the server Response
 export type GenericRequestHandler = (
   req: GenericRequestInfo,
   res: GenericResponse,
@@ -236,14 +202,50 @@ export class RemultServerImplementation<RequestType>
   constructor(
     public queue: inProcessQueueHandler,
     public options: RemultServerOptions<any>,
-    public dataProvider: DataProvider | Promise<DataProvider>,
+    public dataProvider: Promise<DataProvider>,
     private coreOptions: ServerCoreOptions<RequestType>,
-    private entitiesMetaData: EntityMetadata[],
   ) {
     if (options.liveQueryStorage)
       this.liveQueryStorage = options.liveQueryStorage
     if (options.subscriptionServer)
       this.subscriptionServer = options.subscriptionServer
+    const entitiesMetaData: EntityMetadata[] = []
+
+    this.dataProvider = dataProvider.then(async (dp) => {
+      await this.runWithRemult(
+        async (remult) => {
+          remult.dataProvider = dp
+          if (options.ensureSchema) {
+            let started = false
+            const startConsoleLog = () => {
+              if (started) return
+              started = true
+              console.time('Schema ensured')
+            }
+            entitiesMetaData.push(
+              ...options.entities!.map((e) => remult.repo(e).metadata),
+            )
+            if (dp.ensureSchema) {
+              startConsoleLog()
+              await dp.ensureSchema(entitiesMetaData)
+            }
+            for (const item of [
+              options.liveQueryStorage,
+              options.queueStorage,
+            ] as any as Storage[]) {
+              if (item?.ensureSchema) {
+                startConsoleLog()
+                await item.ensureSchema()
+              }
+            }
+            if (started) console.timeEnd('Schema ensured')
+          }
+          if (options.initApi) await options.initApi(remult)
+        },
+        { skipDataProvider: true },
+      )
+      return dp
+    })
   }
   withRemultPromise<T>(
     request: RequestType,
@@ -260,9 +262,9 @@ export class RemultServerImplementation<RequestType>
     })
   }
   getEntities(): EntityMetadata<any>[] {
-    //TODO - consider using entitiesMetaData - but it may require making it all awaitable
+    //TODO V2 - consider using entitiesMetaData - but it may require making it all awaitable
     var r = new Remult()
-    return this.options.entities.map((x) => r.repo(x).metadata)
+    return this.options.entities!.map((x) => r.repo(x).metadata)
   }
 
   runWithSerializedJsonContextData: PerformWithContext = async (
@@ -270,7 +272,7 @@ export class RemultServerImplementation<RequestType>
     entityKey,
     what,
   ) => {
-    for (const e of this.options.entities) {
+    for (const e of this.options.entities!) {
       let key = getEntityKey(e)
       if (key === entityKey) {
         await this.runWithRemult(async (remult) => {
@@ -281,7 +283,7 @@ export class RemultServerImplementation<RequestType>
               {
                 remult,
                 get liveQueryStorage() {
-                  return remult.liveQueryStorage
+                  return remult.liveQueryStorage!
                 },
                 set liveQueryStorage(value: LiveQueryStorage) {
                   remult.liveQueryStorage = value
@@ -315,7 +317,7 @@ export class RemultServerImplementation<RequestType>
   handle(
     req: RequestType,
     gRes?: GenericResponse,
-  ): Promise<ServerHandleResponse> {
+  ): Promise<ServerHandleResponse | undefined> {
     return this.getRouteImpl().handle(req, gRes)
   }
   registeredRouter = false
@@ -323,7 +325,7 @@ export class RemultServerImplementation<RequestType>
     if (this.registeredRouter) throw 'Router already registered'
     this.registeredRouter = true
     {
-      for (const c of this.options.controllers) {
+      for (const c of this.options.controllers!) {
         let z = c[classBackendMethodsArray]
         if (z)
           for (const a of z) {
@@ -344,16 +346,16 @@ export class RemultServerImplementation<RequestType>
                 false,
                 () => true,
                 async (data: jobWasQueuedResult, req, res) => {
-                  let job = await this.queue.getJobInfo(data.queuedJobId)
-                  let userId = undefined
+                  let job = await this.queue.getJobInfo(data.queuedJobId!)
+                  let userId: string | undefined = undefined
                   if (req?.user) userId = req.user.id
-                  if (job.userId == '') job.userId = undefined
+                  if (job.userId == '') job.userId = undefined!
                   if (userId != job.userId) res.forbidden()
                   else res.success(job.info)
                 },
               )
             },
-            doWork: undefined,
+            doWork: undefined!,
           },
           r,
         )
@@ -514,14 +516,18 @@ export class RemultServerImplementation<RequestType>
   }
 
   //runs with remult but without init request
-  private async runWithRemult(what: (remult: Remult) => Promise<any>) {
+  private async runWithRemult(
+    what: (remult: Remult) => Promise<any>,
+    options?: { skipDataProvider: boolean },
+  ) {
     let remult = new Remult()
     remult.liveQueryPublisher = new LiveQueryPublisher(
       () => remult.subscriptionServer,
       () => remult.liveQueryStorage,
       this.runWithSerializedJsonContextData,
     )
-    remult.dataProvider = await this.dataProvider
+    if (!options?.skipDataProvider)
+      remult.dataProvider = await this.dataProvider
     remult.subscriptionServer = this.subscriptionServer
     remult.liveQueryStorage = this.liveQueryStorage
     await new Promise((res) => {
@@ -1087,7 +1093,7 @@ export class EntityQueueStorage implements QueueStorage {
   }
 
   async getJobInfo(queuedJobId: string): Promise<queuedJobInfo> {
-    let q = await this.repo.findId(queuedJobId, { useCache: false })
+    let q = await this.repo.findId(queuedJobId)
     let lastProgress: Date = undefined
     return {
       userId: q.userId,
@@ -1135,7 +1141,7 @@ export class EntityQueueStorage implements QueueStorage {
     return q.id
   }
 }
-class RouteImplementation<RequestType> {
+export class RouteImplementation<RequestType> {
   constructor(private coreOptions: ServerCoreOptions<RequestType>) {}
   map = new Map<string, Map<string, GenericRequestHandler>>()
   route(path: string): SpecificRoute {
@@ -1169,7 +1175,7 @@ class RouteImplementation<RequestType> {
     req: RequestType,
     gRes?: GenericResponse,
   ): Promise<ServerHandleResponse | undefined> {
-    return new Promise<ServerHandleResponse | undefined>((res) => {
+    return new Promise<ServerHandleResponse | undefined>((res, rej) => {
       const response = new (class
         implements GenericResponse, ResponseRequiredForSSE
       {
@@ -1205,7 +1211,11 @@ class RouteImplementation<RequestType> {
           })
         }
       })()
-      this.middleware(req, response, () => res(undefined))
+      try {
+        this.middleware(req, response, () => res(undefined))
+      } catch (err) {
+        rej(err)
+      }
     })
   }
   middleware(origReq: RequestType, res: GenericResponse, next: VoidFunction) {
@@ -1246,7 +1256,7 @@ class RouteImplementation<RequestType> {
     }
     let idPosition = path.lastIndexOf('/')
     if (idPosition >= 0) {
-      lowerPath = path.substring(0, idPosition) + '/:id'
+      lowerPath = lowerPath.substring(0, idPosition) + '/:id'
       m = this.map.get(lowerPath)
       if (m) {
         let h = m.get(req.method.toLowerCase())
@@ -1255,7 +1265,7 @@ class RouteImplementation<RequestType> {
             req.params = {}
             origReq['_tempParams'] = req.params
           }
-          req.params.id = path.substring(idPosition + 1)
+          req.params.id = path.substring(idPosition + 1).replace(/%2C/g, ',')
           h(origReq, res, next)
           return
         }

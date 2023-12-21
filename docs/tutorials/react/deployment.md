@@ -66,19 +66,13 @@ app.listen(process.env["PORT"] || 3002, () => console.log("Server started"))
 // tsconfig.server.json
 
 {
-  "extends": "./tsconfig.json",
   "compilerOptions": {
-    "module": "commonjs",
-    "moduleResolution": "Node16",
-    "allowImportingTsExtensions": false,
-    "resolveJsonModule": false,
-    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
     "esModuleInterop": true,
-    "noEmit": false,
     "outDir": "dist",
     "rootDir": "src"
   },
-  "include": ["src/server/index.ts"]
+  "include": ["src/server/**/*", "src/shared/**/*"]
 }
 ```
 

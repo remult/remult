@@ -1,5 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import type { EntityDataProvider, EntityMetadata } from '../../core'
+import type {
+  DataProvider,
+  EntityDataProvider,
+  EntityMetadata,
+} from '../../core'
 import {
   Entity,
   Field,
@@ -9,6 +13,7 @@ import {
   describeClass,
   remult,
 } from '../../core'
+import { TestDataProvider } from './TestDataProviderWithStats'
 
 @Entity('categories')
 class Category {
@@ -25,7 +30,7 @@ class Task {
   title = ''
 }
 @Entity<TasksToCategories>('tasksToCategories', {
-  id: (e) => [e.task, e.category],
+  id: { task: true, category: true }, // (e) => [e.task, e.category],
 })
 class TasksToCategories {
   @Field(() => Task, { lazy: true })
@@ -42,32 +47,10 @@ class ExtraTaskInfo {
 }
 
 describe('test lazy loading timing', () => {
-  let finds: { entity: any; where: any }[] = []
   const remult = new Remult()
+  let stats: TestDataProvider
   beforeEach(() => {
-    const mem = new InMemoryDataProvider()
-    remult.dataProvider = new Proxy(mem, {
-      get(target, p: keyof typeof mem) {
-        if (p === 'getEntityDataProvider') {
-          return (e: EntityMetadata) =>
-            new Proxy(mem.getEntityDataProvider(e), {
-              get(target, p: keyof EntityDataProvider) {
-                if (p === 'find')
-                  return (x) => {
-                    finds.push({
-                      entity: e.key,
-                      where: x?.where?.toJson(),
-                    })
-                    return target[p](x)
-                  }
-                return target[p]
-              },
-            })
-        }
-        return target[p]
-      },
-    })
-    finds = []
+    stats = remult.dataProvider = TestDataProvider(new InMemoryDataProvider())
   })
   it('test many to many table with id based on relations', async () => {
     await remult.repo(TasksToCategories).insert({
@@ -82,7 +65,7 @@ describe('test lazy loading timing', () => {
     remult.clearAllCache()
     await remult.repo(TasksToCategories).find()
     await new Promise((resolve) => setTimeout(resolve, 10))
-    expect(finds).toMatchInlineSnapshot(`
+    expect(stats.finds).toMatchInlineSnapshot(`
       [
         {
           "entity": "tasksToCategories",
@@ -101,7 +84,7 @@ describe('test lazy loading timing', () => {
     remult.clearAllCache()
     await remult.repo(ExtraTaskInfo).find()
     await new Promise((resolve) => setTimeout(resolve, 10))
-    expect(finds).toMatchInlineSnapshot(`
+    expect(stats.finds).toMatchInlineSnapshot(`
       [
         {
           "entity": "extraTask",
@@ -122,7 +105,7 @@ describe('test lazy loading timing', () => {
       .repo(ExtraTaskInfo)
       .toJson(await remult.repo(ExtraTaskInfo).find())
     await new Promise((resolve) => setTimeout(resolve, 10))
-    expect(finds).toMatchInlineSnapshot(`
+    expect(stats.finds).toMatchInlineSnapshot(`
       [
         {
           "entity": "extraTask",

@@ -1,6 +1,6 @@
 # QueryResult
 The result of a call to the `query` method in the `Repository` object.
-## [Symbol.asyncIterator]
+## [asyncIterator]
 returns an iterator that iterates the rows in the result using a paging mechanism
    
    
@@ -10,18 +10,17 @@ returns an iterator that iterates the rows in the result using a paging mechanis
      await taskRepo.save({ ...task, completed });
    }
    ```
-   
 ## count
 returns the number of rows that match the query criteria
-## forEach
-Performs an operation on all the items matching the query criteria
-
-Arguments:
-* **what**
+## paginator
+Returns a `Paginator` object that is used for efficient paging
 ## getPage
 gets the items in a specific page
 
 Arguments:
 * **pageNumber**
-## paginator
-Returns a `Paginator` object that is used for efficient paging
+## forEach
+Performs an operation on all the items matching the query criteria
+
+Arguments:
+* **what**

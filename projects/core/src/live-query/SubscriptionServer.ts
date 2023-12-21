@@ -1,6 +1,7 @@
 import type { itemChange } from '../context.js'
 import { findOptionsFromJson } from '../data-providers/rest-data-provider.js'
 import type { Repository } from '../remult3/remult3.js'
+import type { LiveQueryChange } from './SubscriptionChannel.js'
 
 export interface SubscriptionServer {
   publishMessage<T>(channel: string, message: T): Promise<void>
@@ -23,7 +24,6 @@ export class LiveQueryPublisher implements LiveQueryChangesListener {
   runPromise(p: Promise<any>) {}
   debugFileSaver = (x: any) => {}
   async itemChanged(entityKey: string, changes: itemChange[]) {
-    //TODO 2 - optimize so that the user will get their messages first. Based on user id
     await this.liveQueryStorage().forEach(
       entityKey,
       async ({ query: q, setData }) => {
@@ -32,7 +32,7 @@ export class LiveQueryPublisher implements LiveQueryChangesListener {
           query.requestJson,
           entityKey,
           async (repo) => {
-            const messages = []
+            const messages: LiveQueryChange[] = []
             const currentItems = await repo.find(
               findOptionsFromJson(query.findOptionsJson, repo.metadata),
             )
@@ -96,8 +96,6 @@ export interface LiveQueryChangesListener {
   itemChanged(entityKey: string, changes: itemChange[]): Promise<void>
 }
 
-// TODO2 - PUBNUB
-// TODO2 - https://centrifugal.dev/
 export interface LiveQueryStorage {
   add(query: StoredQuery): Promise<void>
   remove(queryId: string): Promise<void>
@@ -116,7 +114,7 @@ export class InMemoryLiveQueryStorage implements LiveQueryStorage {
     this.debugFileSaver(this.queries)
   }
   async keepAliveAndReturnUnknownQueryIds(ids: string[]): Promise<string[]> {
-    const result = []
+    const result: string[] = []
     for (const id of ids) {
       let q = this.queries.find((q) => q.id === id)
       if (q) {

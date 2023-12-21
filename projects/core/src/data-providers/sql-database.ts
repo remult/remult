@@ -22,18 +22,21 @@ import {
   dbNamesOf,
   isDbReadonly,
 } from '../filter/filter-consumer-bridge-to-sql-request.js'
-import { Filter, customDatabaseFilterToken } from '../filter/filter-interfaces.js'
+import {
+  Filter,
+  customDatabaseFilterToken,
+} from '../filter/filter-interfaces.js'
 import { remult as defaultRemult } from '../remult-proxy.js'
 import type { EntityFilter, EntityMetadata } from '../remult3/remult3.js'
 import type {
   EntityBase,
-  RepositoryImplementation,
   RepositoryOverloads,
 } from '../remult3/RepositoryImplementation.js'
 import { getRepository } from '../remult3/RepositoryImplementation.js'
 import type { SortSegment } from '../sort.js'
 import { Sort } from '../sort.js'
 import { ValueConverters } from '../valueConverters.js'
+import { getRepositoryInternals } from '../remult3/repository-internals.js'
 
 // @dynamic
 export class SqlDatabase implements DataProvider {
@@ -137,9 +140,7 @@ export class SqlDatabase implements DataProvider {
     )
     b._addWhere = false
     await (
-      await (r as RepositoryImplementation<entityType>).translateWhereToFilter(
-        condition,
-      )
+      await getRepositoryInternals(r).translateWhereToFilter(condition)
     ).__applyToConsumer(b)
     return await b.resolveWhere()
   }

@@ -17,7 +17,7 @@ npm i @types/compression --save-dev
 
 2. Add the highlighted code lines to `src/server/index.ts`, and modify the `app.listen` function's `port` argument to prefer a port number provided by the production host's `PORT` environment variable.
 
-```ts{7-9,17-18,21-26}
+```ts{7-9,17-25,29-37}
 // src/server/index.ts
 
 import express from "express"
@@ -34,17 +34,32 @@ app.use(
     secret: process.env["SESSION_SECRET"] || "my secret"
   })
 )
-app.use(helmet())
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        'script-src-attr': ["'unsafe-inline'"],
+      },
+    },
+  })
+)
 app.use(compression())
 app.use(auth)
 app.use(api)
-app.use(express.static(path.join(__dirname, "../remult-angular-todo")))
-app.get("/*", (req, res) => {
-  res.sendFile(path.join(__dirname, "../remult-angular-todo", "index.html"))
-})
+
+app.use(express.static(path.join(__dirname, '../remult-angular-todo/browser')));
+app.get('/*', (req, res) => {
+  res.sendFile(
+    path.join(__dirname, '../remult-angular-todo/browser', 'index.html')
+  );
+});
 
 app.listen(process.env["PORT"] || 3002, () => console.log("Server started"))
 ```
+
+::: warning Angular versions <17
+If you're using angular version 16 or less, the result path is: `'../remult-angular-todo` - adjust both lines in the `src/server/index.ts` accordingly
+:::
 
 3. Modify the highlighted code in the api server module to prefer a `connectionString` provided by the production host's `DATABASE_URL` environment variable.
 
@@ -70,7 +85,6 @@ app.listen(process.env["PORT"] || 3002, () => console.log("Server started"))
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "module": "commonjs",
-    "emitDecoratorMetadata": true,
     "esModuleInterop": true,
     "noEmit": false,
     "outDir": "dist",

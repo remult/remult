@@ -37,7 +37,7 @@ export function remultExpress(
     getRemult: (req) => server.getRemult(req),
     openApiDoc: (options: { title: string }) => server.openApiDoc(options),
     withRemult: (req, res, next) => server.withRemult(req, res, next),
-    // [ ]- add with remult promise
+    // [ ] V1.5 add with remult promise
   })
 }
 

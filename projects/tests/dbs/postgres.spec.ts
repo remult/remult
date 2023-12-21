@@ -1,4 +1,4 @@
-import { beforeAll, beforeEach, describe, expect, it, vitest } from 'vitest'
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { Entity, Fields, Remult, SqlDatabase, describeClass } from '../../core'
 import {
   PostgresDataProvider,
@@ -8,11 +8,10 @@ import {
 
 import * as Knex from 'knex'
 import type { ClassType } from '../../core/classType'
+import { Categories } from '../tests/remult-3-entities'
 import { allDbTests } from './shared-tests'
 import { entityWithValidations } from './shared-tests/entityWithValidations'
 import { knexTests } from './shared-tests/test-knex'
-import { deleteAll } from './shared-tests/deleteAll'
-import { Categories } from '../tests/remult-3-entities'
 
 PostgresSchemaBuilder.logToConsole = false
 const postgresConnection = process.env.DATABASE_URL
@@ -49,6 +48,30 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
     const entityName = 'test_naming'
     await db.execute('Drop table if exists ' + entityName)
     await db.execute(`create table ${entityName}(id int,"createdAt" Date)`)
+    const ent = class {
+      id = 0
+      createdAt = new Date()
+      oneMoreColumn = 0
+    }
+    describeClass(ent, Entity(entityName), {
+      id: Fields.integer(),
+      createdAt: Fields.createdAt({ dbName: '"createdAt"' }),
+      oneMoreColumn: Fields.integer(),
+    })
+    await db.ensureSchema([remult.repo(ent).metadata])
+    await remult.repo(ent).insert({ id: 1, oneMoreColumn: 8 })
+    expect((await remult.repo(ent).findFirst()).createdAt.getFullYear()).toBe(
+      new Date().getFullYear(),
+    )
+  })
+
+  it('ensure on not_public schema', async () => {
+    const db = SqlDatabase.getDb(remult)
+    const entityName = 'auth.test_not_public'
+    // reset the state of the database before the test (make sure we don't have the schema and table)
+    await db.execute('Drop table if exists ' + entityName)
+    await db.execute('DROP SCHEMA IF EXISTS auth')
+    // the test is really starting here
     const ent = class {
       id = 0
       createdAt = new Date()

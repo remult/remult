@@ -3,7 +3,14 @@ import type {
   EntityFilter,
   Repository,
 } from '../../../core/src/remult3/remult3'
-import { Entity, EntityBase, Field, Fields, IdEntity } from '../../../core'
+import {
+  Entity,
+  EntityBase,
+  Field,
+  Fields,
+  IdEntity,
+  SqlDatabase,
+} from '../../../core'
 import { c } from '../../tests/c'
 
 import { v4 as uuid } from 'uuid'
@@ -33,13 +40,10 @@ import { tasks } from '../../tests/tasks'
 import { Status } from '../../tests/testModel/models'
 import type { DbTestProps } from './db-tests-props'
 
-import {
-  entityWithValidations,
-  testConfiguration,
-} from './entityWithValidations'
+import { entityWithValidations } from './entityWithValidations'
 import type { CategoriesForTesting } from '../../tests/remult-3-entities'
 import { ValueConverters } from '../../../core/src/valueConverters'
-import { it } from 'vitest'
+import { it, vi } from 'vitest'
 import { expect } from 'vitest'
 
 export interface DbTestOptions {
@@ -386,7 +390,7 @@ export function commonDbTests(
     expect(x[0].name).toBe('noam')
   })
 
-  async function createData<T extends CategoriesForTesting>(
+  async function createData<T extends CategoriesForTesting = Categories>(
     doInsert?: (
       insert: (
         id: number,
@@ -396,9 +400,10 @@ export function commonDbTests(
       ) => Promise<void>,
     ) => Promise<void>,
     entity?: {
-      new (): CategoriesForTesting
+      new (): T
     },
   ): Promise<Repository<T>> {
+    //@ts-ignore
     if (!entity) entity = Categories
     let rep = (await createEntity(entity)) as Repository<T>
     if (doInsert)
@@ -638,7 +643,7 @@ export function commonDbTests(
     Entity<typeof type.prototype>(undefined, {
       allowApiCrud: true,
       saving: () => {
-        if (!testConfiguration.restDbRunningOnServer) count++
+        count++
       },
     })(type)
     let c = await createData(async (insert) => await insert(1, 'noam'), type)
@@ -882,6 +887,51 @@ export function commonDbTests(
     }
     expect(await x.count()).toBe(0)
   })
+  it.skipIf(options?.excludeTransactions)(
+    'transaction should fully rollback if one fail',
+    async () => {
+      const originalConsoleError = console.error
+      console.error = vi.fn()
+
+      const ent = class {
+        id = 0
+        name = ''
+      }
+      describeClass(ent, Entity('test_transaction'), {
+        id: Fields.integer(),
+        name: Fields.string(),
+      })
+
+      await createEntity(ent)
+      const remult = await getRemult()
+      const all = await remult.repo(ent).find()
+      for (let i = 0; i < all.length; i++) {
+        await remult.repo(ent).delete(all[i].id)
+      }
+
+      const old_dataProvider = remult.dataProvider
+      try {
+        await remult.dataProvider.transaction(async (trx) => {
+          remult.dataProvider = trx
+          await remult.repo(ent).insert({ id: 1, name: 'a' })
+          await remult.repo(ent).insert({ id: 1, name: 'b' })
+          throw new Error(
+            "in case the db doesn't enforce unique id like mongo doesnt",
+          )
+        })
+      } catch (error) {
+      } finally {
+        // Bring back the old dataprovider
+        remult.dataProvider = old_dataProvider
+      }
+
+      // nothing should be inserted
+      let data = await remult.repo(ent).find()
+      expect(data.length).toBe(0)
+
+      console.error = originalConsoleError
+    },
+  )
 
   it('test date', async () => {
     const e = class {
@@ -920,8 +970,23 @@ export function commonDbTests(
     })
     const r = await createEntity(e)
     await r.insert({ a: 1, firstName: 'noam' })
-    let item = await r.findFirst({ firstName: { $contains: 'oa' } })
+    let item = await r.findFirst({ firstName: { $contains: 'oA' } })
     expect(item.firstName).toBe('noam')
+  })
+  it('test not-contains with names with casing', async () => {
+    const e = class {
+      a = 0
+      firstName = ''
+    }
+    describeClass(e, Entity('testNameContains', { allowApiCrud: true }), {
+      a: Fields.number(),
+      firstName: Fields.string(),
+    })
+    const r = await createEntity(e)
+    await r.insert({ a: 1, firstName: 'noam' })
+    await r.insert({ a: 2, firstName: 'abc' })
+    let item = await r.find({ where: { firstName: { $notContains: 'oA' } } })
+    expect(item.length).toBe(1)
   })
   it.skipIf(options?.excludeLiveQuery)('test live query storage', async () => {
     await createEntity(LiveQueryStorageEntity)
@@ -1248,3 +1313,4 @@ export enum PriorityWithString {
   High = 'High',
   Critical = 'Critical',
 }
+//[ ] - test typing issue with hagai on Family Deliveries

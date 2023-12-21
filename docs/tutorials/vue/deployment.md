@@ -60,36 +60,15 @@ app.listen(process.env["PORT"] || 3002, () => console.log("Server started"))
    })
    ```
 
-1. In the root folder, create a TypeScript configuration file `tsconfig.server.json` for the build of the server project using TypeScript.
-
-```json
-// tsconfig.server.json
-
-{
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "module": "commonjs",
-    "moduleResolution": "Node16",
-    "allowImportingTsExtensions": false,
-    "resolveJsonModule": false,
-    "emitDecoratorMetadata": true,
-    "preserveValueImports": false,
-    "outDir": "dist",
-    "rootDir": "src"
-  },
-  "include": ["src/server/index.ts"]
-}
-```
-
-5. Modify the project's `build` npm script to additionally transpile the API server's TypeScript code to JavaScript (using `tsc`).
+4. Modify the project's `build` npm script to additionally transpile the API server's TypeScript code to JavaScript (using `tsc`).
 
 ```json
 // package.json
 
-"build": "run-p type-check build-only && tsc -p tsconfig.server.json",
+"build": "run-p type-check \"build-only {@}\" -- && tsc -p tsconfig.server.json"
 ```
 
-6. Add `start` npm script to start the production Node.js server.
+5. Add `start` npm script to start the production Node.js server.
 
 ```json
 // package.json

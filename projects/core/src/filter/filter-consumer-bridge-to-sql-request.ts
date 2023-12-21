@@ -5,7 +5,7 @@ import type {
   RepositoryOverloads,
 } from '../remult3/RepositoryImplementation.js'
 import { getEntityMetadata } from '../remult3/RepositoryImplementation.js'
-import type { EntityFilter, OmitEB } from '../remult3/remult3.js'
+import type { EntityFilter, MembersOnly } from '../remult3/remult3.js'
 import type { SqlCommandWithParameters } from '../sql-command.js'
 import type { Filter, FilterConsumer } from './filter-interfaces.js'
 
@@ -122,6 +122,19 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
       })(),
     )
   }
+  public notContainsCaseInsensitive(col: FieldMetadata, val: any): void {
+    this.promises.push(
+      (async () => {
+        this.addToWhere(
+          'not lower (' +
+            this.nameProvider.$dbNameOf(col) +
+            ") like lower ('%" +
+            val.replace(/'/g, "''") +
+            "%')",
+        )
+      })(),
+    )
+  }
 
   private add(col: FieldMetadata, val: any, operator: string) {
     this.promises.push(
@@ -198,7 +211,7 @@ export declare type EntityDbNamesBase = {
   toString(): string
 }
 export declare type EntityDbNames<entityType> = {
-  [Properties in keyof Required<OmitEB<entityType>>]: string
+  [Properties in keyof Required<MembersOnly<entityType>>]: string
 } & EntityDbNamesBase
 
 export async function dbNamesOf<entityType>(

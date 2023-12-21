@@ -2,8 +2,12 @@ import { v4 as uuid } from 'uuid'
 import type { Remult } from '../context.js'
 import { Sort } from '../sort.js'
 import { remult as defaultRemult } from '../remult-proxy.js'
-import type { FindOptions, LiveQueryChangeInfo } from '../remult3/remult3.js'
-import type { RepositoryImplementation } from '../remult3/RepositoryImplementation.js'
+import type {
+  FindOptions,
+  LiveQueryChangeInfo,
+  Repository,
+} from '../remult3/remult3.js'
+import { getRepositoryInternals } from '../remult3/repository-internals.js'
 
 export const streamUrl = 'stream'
 //@internal
@@ -20,9 +24,12 @@ export class LiveQuerySubscriber<entityType> {
   subscribeCode: () => void
   unsubscribe: VoidFunction = () => {}
   async setAllItems(result: any[]) {
-    const items = await this.repo.fromJsonArray(result, this.query.options.load)
+    const items = await getRepositoryInternals(this.repo).fromJsonArray(
+      result,
+      this.query.options,
+    )
     this.forListeners((listener) => {
-      listener((x) => {
+      listener(() => {
         return items
       })
     }, this.allItemsMessage(items))
@@ -77,9 +84,9 @@ export class LiveQuerySubscriber<entityType> {
   async handle(messages: LiveQueryChange[]) {
     {
       let x = messages.filter(({ type }) => type == 'add' || type == 'replace')
-      let loadedItems = await this.repo.fromJsonArray(
+      let loadedItems = await getRepositoryInternals(this.repo).fromJsonArray(
         x.map((m) => m.data.item),
-        this.query.options.load,
+        this.query.options,
       )
       for (let index = 0; index < x.length; index++) {
         const element = x[index]
@@ -128,9 +135,9 @@ export class LiveQuerySubscriber<entityType> {
   listeners: SubscriptionListener<LiveQueryChangeInfo<entityType>>[] = []
   id = uuid()
   constructor(
-    private repo: RepositoryImplementation<entityType>,
+    private repo: Repository<entityType>,
     private query: SubscribeToQueryArgs<entityType>,
-    userId: string,
+    userId: string | undefined,
   ) {
     this.queryChannel = `users:${userId}:queries:${this.id}`
     this.id = this.queryChannel
@@ -200,7 +207,7 @@ export class SubscriptionChannel<messageType> {
   constructor(public channelKey: string) {}
   publish(message: messageType, remult?: Remult) {
     remult = remult || defaultRemult
-    remult.subscriptionServer.publishMessage(this.channelKey, message)
+    remult.subscriptionServer!.publishMessage(this.channelKey, message)
   }
   subscribe(
     next: (message: messageType) => void,

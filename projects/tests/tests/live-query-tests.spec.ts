@@ -14,7 +14,7 @@ import {
 } from '../../core/src/live-query/SubscriptionServer'
 import { remult } from '../../core/src/remult-proxy'
 import type { FindOptions } from '../../core'
-import { Entity, Fields, getEntityRef } from '../../core'
+import { Entity, Fields, Relations, getEntityRef } from '../../core'
 import { actionInfo } from '../../core/src/server-action-info'
 import { createMockHttpDataProvider } from '../tests/testHelper'
 import { HttpProviderBridgeToRestDataProviderHttpProvider } from '../../core/src/buildRestDataProvider'
@@ -32,6 +32,25 @@ export class eventTestEntity {
   selectUser = ''
   @Fields.date()
   birthDate = new Date(1976, 5, 16)
+  @Relations.toOne(() => Category)
+  categoryReference: Category
+  @Fields.integer()
+  categoryId = 0
+  @Relations.toOne<eventTestEntity, Category>(() => Category, 'categoryId')
+  category: Category
+  @Relations.toMany<eventTestEntity, Category>(() => Category, {
+    fields: {
+      id: 'categoryId',
+    },
+  })
+  categories: Category[]
+}
+@Entity('categories', { allowApiCrud: true })
+export class Category {
+  @Fields.integer()
+  id = 0
+  @Fields.string()
+  name = ''
 }
 
 async function setup1() {
@@ -419,6 +438,45 @@ describe('test live query full cycle', () => {
     await pm.flush()
     expect(result1[0].title).toBe('noam')
     expect(result1[0].birthDate.getFullYear()).toBe(1976)
+    u()
+  })
+  it('test relations work', async () => {
+    var { repo, pm, remult } = setup2()
+    const category = await remult
+      .repo(Category)
+      .insert({ id: 11, name: 'cat1' })
+    await repo.insert({
+      id: 1,
+      title: 'noam',
+      categoryReference: category,
+      categoryId: 11,
+    })
+    let items: eventTestEntity[] = []
+    const u = repo
+      .liveQuery({
+        include: {
+          categories: true,
+          category: true,
+          categoryReference: true,
+        },
+      })
+      .subscribe(({ applyChanges: reducer }) => (items = reducer(items)))
+    await pm.flush()
+    expect(items.length).toBe(1)
+    expect(items[0].category.id).toBe(11)
+    expect(items[0].categoryReference.id).toBe(11)
+    expect(items[0].categories.length).toBe(1)
+    await repo.insert({
+      id: 2,
+      title: 'yael',
+      categoryReference: category,
+      categoryId: 11,
+    })
+    await pm.flush()
+    expect(items.length).toBe(2)
+    expect(items[1].category.id).toBe(11)
+    expect(items[1].categoryReference.id).toBe(11)
+    expect(items[1].categories.length).toBe(1)
     u()
   })
   it('test delete works', async () => {

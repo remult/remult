@@ -41,7 +41,36 @@ There are two ways to handle this:
 
 ## Solution 1 - exclude from bundler
 
-### Step 1 - replace the File level import with an import in the specific backend method:
+### Option with `vite`
+
+If you are using `vite` you can add a plugin to remove all `@BackendMethod` from your frontend code.
+Simply add [vite-plugin-striper](https://www.kitql.dev/docs/tools/07_vite-plugin-striper) to your project and configure it like this:
+
+```bash
+npm i --save-dev vite-plugin-striper
+```
+
+::: code-group
+
+```ts [vite.config.ts]
+import { defineConfig } from 'vite'
+import { striper } from 'vite-plugin-striper' // [!code ++]
+
+export default defineConfig({
+  plugins: [
+    react(),
+    striper({ decorators: ['BackendMethod'] }), // [!code ++]
+  ],
+})
+```
+
+:::
+
+That's it!
+
+### Option without `vite-plugin-striper`
+
+#### Step 1 - replace the File level import with an import in the specific backend method:
 
 ```ts{1,5}
 // import * as fs from 'fs'; <-- REMOVE THIS LINE
@@ -58,7 +87,7 @@ static async updatePriceOnBackend(priceToUpdate:number,remult?:Remult){
 }
 ```
 
-### Step 2 - Exclude the package from the bundler:
+#### Step 2 - Exclude the package from the bundler:
 
 - If you're using `vite` instruct `vite` not to include the `fs` package in the `frontend` bundle by adding the following JSON to the `vite-config.ts` file:
 
@@ -86,6 +115,44 @@ static async updatePriceOnBackend(priceToUpdate:number,remult?:Remult){
   ```
 
 * note that you'll need to restart the react/angular dev server.
+
+### Angular 17
+
+If you're using Angular 17,
+
+1. You'll need to either remove `types` entry in the `tsconfig.app.json` or add the types you need to that types array.
+2. In `angular.json` you'll need to add an entry called `externalDependencies` to the `architect/build/options` key for your project
+
+   ```json{21-23}
+   // angular.json
+
+   {
+     "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+     "version": 1,
+     "newProjectRoot": "projects",
+     "projects": {
+       "remult-angular-todo": {
+         "projectType": "application",
+         "schematics": {},
+         "root": "",
+         "sourceRoot": "src",
+         "prefix": "app",
+         "architect": {
+           "build": {
+             "builder": "@angular-devkit/build-angular:application",
+             "options": {
+               "outputPath": "dist/remult-angular-todo",
+               "index": "src/index.html",
+               "browser": "src/main.ts",
+               "externalDependencies": [
+                 "fs"
+               ],
+               "polyfills": [
+                 "zone.js"
+               ],
+               //...
+             }}}}}}
+   ```
 
 ## Solution 2 - abstract the call
 

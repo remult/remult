@@ -3,13 +3,13 @@ import { CompoundIdField, Entity, EntityBase, Fields } from '../../core'
 import type { FieldMetadata } from '../../core/src/column-interfaces'
 import { Remult, queryConfig } from '../../core/src/context'
 import { entityFilterToJson } from '../../core/src/filter/filter-interfaces'
-import type { RepositoryImplementation } from '../../core/src/remult3/RepositoryImplementation'
 import { Sort } from '../../core/src/sort'
 import { createData } from './createData'
 import { Categories } from './remult-3-entities'
 
 import { describe, expect, it } from 'vitest'
 import { testRestDb } from './testHelper'
+import { getRepositoryInternals } from '../../core/src/remult3/repository-internals'
 
 describe('test paged foreach ', () => {
   queryConfig.defaultPageSize = 2
@@ -239,7 +239,7 @@ describe('test paged foreach ', () => {
   })
   it('test make sort unique', async () => {
     const remult = new Remult()
-    const e = remult.repo(Categories) as RepositoryImplementation<Categories>
+    const e = remult.repo(Categories)
     function test(
       orderBy: EntityOrderBy<Categories>,
       ...sort: FieldMetadata[]
@@ -284,7 +284,7 @@ describe('test paged foreach ', () => {
   it('create rows after filter compound id', async () => {
     const remult = new Remult()
 
-    const eDefs = remult.repo(theTable) as RepositoryImplementation<theTable>
+    const eDefs = remult.repo(theTable)
     const e = eDefs.create()
     e.a = 'a'
     e.b = 'b'
@@ -297,7 +297,7 @@ describe('test paged foreach ', () => {
         JSON.stringify(
           await entityFilterToJson(
             eDefs.metadata,
-            await eDefs.createAfterFilter(orderBy, e),
+            await getRepositoryInternals(eDefs).createAfterFilter(orderBy, e),
           ),
         ),
       ).toEqual(
@@ -316,13 +316,16 @@ describe('test paged foreach ', () => {
   it('create rows after filter, values are frozen when filter is created', async () => {
     const remult = new Remult()
 
-    const eDefs = remult.repo(theTable) as RepositoryImplementation<theTable>
+    const eDefs = remult.repo(theTable)
     const e = eDefs.create()
     e.a = 'a'
     e.b = 'b'
     e.c = 'c'
 
-    const f = await eDefs.createAfterFilter({ a: 'asc', b: 'asc' }, e)
+    const f = await getRepositoryInternals(eDefs).createAfterFilter(
+      { a: 'asc', b: 'asc' },
+      e,
+    )
     e.a = '1'
     e.b = '2'
     expect(JSON.stringify(await entityFilterToJson(eDefs.metadata, f))).toEqual(
@@ -335,7 +338,7 @@ describe('test paged foreach ', () => {
   })
   it('serialize filter with or', async () => {
     const remult = new Remult()
-    const eDefs = remult.repo(theTable) as RepositoryImplementation<theTable>
+    const eDefs = remult.repo(theTable)
     eDefs.create()
 
     async function test(expectedWhere: EntityFilter<theTable>, expected: any) {

@@ -3,7 +3,7 @@ import { assign } from '../assign.js'
 import type { FindOptions, idType, Repository } from './remult3/remult3.js'
 import { __updateEntityBasedOnWhere } from './remult3/__updateEntityBasedOnWhere.js'
 import { getEntityRef } from './remult3/getEntityRef.js'
-import type { RepositoryImplementation } from './remult3/RepositoryImplementation.js'
+import { getRepositoryInternals } from './remult3/repository-internals.js'
 
 export function makeTitle(name: string) {
   // insert a space before all caps
@@ -30,38 +30,58 @@ export class LookupColumn<T> {
   }
   waitLoadOf(id: any) {
     if (id === undefined || id === null) return null
-    return this.repository.getCachedByIdAsync(id)
+    return getRepositoryInternals(this.repository).getCachedByIdAsync(id, false)
   }
   get(id: any): any {
     if (id === undefined || id === null) return null
-    return this.repository.getCachedById(id)
+
+    const result = getRepositoryInternals(this.repository).getCachedById(
+      id,
+      this.isReferenceRelation,
+    )
+    if (this.isReferenceRelation && !this.storedItem) {
+      if (!this.allowNull && (this.id === 0 || this.id === '')) return null
+      return undefined
+    }
+    return result
   }
-  storedItem: { item: T }
+  storedItem?: { item: T }
   set(item: T) {
+    if (
+      item === null &&
+      !this.allowNull &&
+      this.isReferenceRelation &&
+      (this.id == 0 || this.id == '')
+    ) {
+      this.storedItem = { item: null }
+      return
+    }
     this.storedItem = undefined
     if (item) {
       if (typeof item === 'string' || typeof item === 'number')
         this.id = item as any
       else {
-        let eo = getEntityRef(item, false)
-        if (eo) {
-          this.repository.addToCache(item)
-          this.id = eo.getId()
+        let eo = getEntityRef(item as any, false)
+        if (eo && !this.isReferenceRelation) {
+          getRepositoryInternals(this.repository).addToCache(item)
+          this.id = eo.getId() as any
         } else {
           this.storedItem = { item }
           this.id = item[this.repository.metadata.idMetadata.field.key]
         }
       }
     } else if (item === null) {
-      this.id = null
+      this.id = null!
     } else {
-      this.id = undefined
+      this.id = undefined!
     }
   }
 
+  id: idType<T>
   constructor(
-    private repository: RepositoryImplementation<T>,
-    public id: idType<T>,
+    private repository: Repository<T>,
+    private isReferenceRelation,
+    private allowNull,
   ) {}
 
   get item(): T {
@@ -70,41 +90,5 @@ export class LookupColumn<T> {
   }
   async waitLoad() {
     return this.waitLoadOf(this.id)
-  }
-}
-9000
-
-export class OneToMany<T> {
-  constructor(
-    private provider: Repository<T>,
-    private settings?: {
-      create?: (newItem: T) => void
-    } & FindOptions<T>,
-  ) {}
-  private _items: T[]
-  private _currentPromise: Promise<T[]>
-  get lazyItems() {
-    this.load()
-    return this._items
-  }
-  async load() {
-    if (this._currentPromise != null) return this._currentPromise
-    if (this._items === undefined) this._items = []
-    return (this._currentPromise = this.find().then((x) => {
-      this._items.splice(0)
-      this._items.push(...x)
-      return this._items
-    }))
-  }
-
-  private async find(): Promise<T[]> {
-    return this.provider.find(this.settings)
-  }
-  create(item?: Partial<T>): T {
-    let r = this.provider.create()
-    __updateEntityBasedOnWhere(this.provider.metadata, this.settings.where, r)
-    assign(r, item)
-
-    return r
   }
 }

@@ -98,11 +98,11 @@ The starter API server TypeScript project contains a single module that initiali
 ```ts
 // src/server/index.ts
 
-import express from "express"
+import express from 'express'
 
 const app = express()
 
-app.listen(3002, () => console.log("Server started"))
+app.listen(3002, () => console.log('Server started'))
 ```
 
 ### Bootstrap Remult in the back-end
@@ -114,7 +114,7 @@ Remult is loaded in the back-end as an `Express middleware`.
 ```ts
 // src/server/api.ts
 
-import { remultExpress } from "remult/remult-express"
+import { remultExpress } from 'remult/remult-express'
 
 export const api = remultExpress()
 ```
@@ -139,10 +139,10 @@ Our full stack starter project is almost ready. Let's complete these final confi
 
 #### Enable TypeScript decorators in the Vue app
 
-Add the following entry to the `compilerOptions` section of the `tsconfig.json` file to enable the use of decorators in the Vue app.
+Add the following entry to the `compilerOptions` section of the `tsconfig.app.json` file to enable the use of decorators in the Vue app.
 
 ```json{7}
-// tsconfig.json
+// tsconfig.app.json
 
 {
 ...
@@ -154,6 +154,22 @@ Add the following entry to the `compilerOptions` section of the `tsconfig.json` 
 ...
 }
 
+```
+
+#### Create the server tsconfig file
+
+In the root folder, create a TypeScript configuration file `tsconfig.server.json` for the server project.
+
+```ts
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "esModuleInterop": true,
+    "outDir": "dist",
+    "rootDir": "src"
+  },
+  "include": ["src/server/**/*", "src/shared/**/*"]
+}
 ```
 
 #### Proxy API requests from Vue DevServer (vite) to the API server
@@ -193,7 +209,7 @@ npm run dev
 ```json
 // package.json
 
-"dev-node": "tsx watch src/server"
+"dev-node": "tsx watch --tsconfig tsconfig.server.json src/server"
 ```
 
 3. Open another terminal and start the `node` server
@@ -204,7 +220,7 @@ npm run dev-node
 
 The server is now running and listening on port 3002. `tsx` is watching for file changes and will restart the server when code changes are saved.
 
-The default "Vue" app main screen should be available at the default Vite dev server address http://127.0.0.1:5173.
+The default "Vue" app main screen should be available at the default Vite dev server address http://localhost:5173.
 
 ### Remove Vue default styles
 

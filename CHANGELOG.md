@@ -2,6 +2,64 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.23.24] 2023-12-20
+
+- Fixed Live query to also work in init api [#306](https://github.com/remult/remult/issues/306)
+
+## [0.23.3] 2023-12-19
+
+- Added support for notContains filter option
+
+## [0.23.1] 2023-12-12
+
+- Fixed case insensitivity in contains for mongo db
+
+## [0.23.0] 2023-12-11
+
+- Added Relations - see [Relations](docs/lifecycle-hooks.html)
+- Added LifecycleEvent info for saving,saved,deleting,deleted - see [Entity Lifecycle Hooks](https://remult.dev/docs/lifecycle-hooks.html)
+  - Breaking change - `saving` in `FieldOptions` now has a second parameter if EntityLifeCycle hook - and the fieldRef is the 3rd parameter.
+- Saving, Saved, Deleting, Deleted all run only on the backend now
+- include in api now supports expressions that use the current row
+  - Breaking change - instead of `if(repo.fields.name.includedInApi)` you now need `if(repo.fields.name.includedInApi(instance))`
+- Changed the way an entity id is defined see [Entity id's doc](http://localhost:5173/docs/ref_entity.html#id)
+  Example:
+
+  ```ts
+  @Entity<OrderDetails>("orderDetails", { id: { orderId: true, productCode: true } })
+  ```
+
+- added repo function which is A convenient shortcut function to quickly obtain a repository for a specific entity type in Remult.
+
+  ```ts
+  await repo(Task).find()
+  ```
+
+- Added support for (Hapi api server)[https://hapi.dev/]
+- Fixed exception with toRawFilter
+- Fixed json db to support db names
+- Fixed issue with sort result after live query
+- Fix issue with compound id on middleware based servers
+- Added with remult for sveltekit for usage before the remult hook
+- Fixed issue with requireId not respecting in statement #290
+- `findId` was changed to no longer use cache by default
+
+## [0.22.12] 2023-11-26
+
+- [#297](https://github.com/remult/remult/issues/297) - Crash on ensure schema failure
+
+## [0.22.11] 2023-11-23
+
+- Improved support for Mongo `ObjectId` field type [#295](https://github.com/remult/remult/issues/295)
+
+## [0.22.10] 2023-11-17
+
+- Fixed issue with `repo.validate` without specifying fields
+
+## [0.22.9] 2023-10-06
+
+- Fixed issue with Entity Backend Method and fields with allow api false #255
+
 ## [0.22.8] 2023-09-27
 
 - Fixed an issue with rest call that had both and & or

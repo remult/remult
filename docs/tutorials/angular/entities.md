@@ -19,17 +19,17 @@ The `Task` entity class we're creating will have an auto-generated `id` field, a
 ```ts
 // src/shared/Task.ts
 
-import { Entity, Fields } from "remult"
+import { Entity, Fields } from 'remult'
 
-@Entity("tasks", {
-  allowApiCrud: true
+@Entity('tasks', {
+  allowApiCrud: true,
 })
 export class Task {
   @Fields.cuid()
-  id = ""
+  id = ''
 
   @Fields.string()
-  title = ""
+  title = ''
 
   @Fields.boolean()
   completed = false
@@ -72,7 +72,7 @@ Now that the `Task` entity is defined, we can start using the REST API to query 
 
 1. Open a browser with the url: [http://localhost:3002/api/tasks](http://localhost:3002/api/tasks), and you'll see that you get an empty array.
 
-2. Use `curl` to `POST` a new task - *Clean car*.
+2. Use `curl` to `POST` a new task - _Clean car_.
 
 ```sh
 curl http://localhost:3002/api/tasks -d "{\"title\": \"Clean car\"}" -H "Content-Type: application/json"
@@ -85,6 +85,7 @@ curl http://localhost:3002/api/tasks -d "{\"title\": \"Clean car\"}" -H "Content
 ```sh
 curl http://localhost:3002/api/tasks -d "[{\"title\": \"Read a book\"},{\"title\": \"Take a nap\", \"completed\":true },{\"title\": \"Pay bills\"},{\"title\": \"Do laundry\"}]" -H "Content-Type: application/json"
 ```
+
 - Note that the `POST` endpoint can accept a single `Task` or an array of `Task`s.
 
 5. Refresh the browser again, to see that the tasks were stored in the db.
@@ -103,9 +104,40 @@ Let's start developing the web app by displaying the list of existing tasks in a
    ng g c todo
    ```
 
-2. Replace the `app.components.html` to use the `todo` component.
+2. Import the new component in the `app.component.ts`
 
-3. ```html
+   ```ts{8,18}
+   //src/app/app.component.ts
+
+   import { Component } from '@angular/core';
+   import { CommonModule } from '@angular/common';
+   import { RouterOutlet } from '@angular/router';
+   import { HttpClientModule } from '@angular/common/http';
+   import { FormsModule } from '@angular/forms';
+   import { TodoComponent } from './todo/todo.component';
+
+   @Component({
+     selector: 'app-root',
+     standalone: true,
+     imports: [
+       CommonModule,
+       RouterOutlet,
+       HttpClientModule,
+       FormsModule,
+       TodoComponent,
+     ],
+     templateUrl: './app.component.html',
+     styleUrl: './app.component.css',
+   })
+   export class AppComponent {
+     title = 'remult-angular-todo';
+   }
+
+   ```
+
+3. Replace the `app.components.html` to use the `todo` component.
+
+   ```html
    <!-- src/app/app.component.html -->
 
    <app-todo></app-todo>
@@ -113,29 +145,34 @@ Let's start developing the web app by displaying the list of existing tasks in a
 
 4. Add the highlighted code lines to the `TodoComponent` class file:
 
-   ```ts{4-5,12-17}
+   ```ts{5-7,12,,17-21}
    // src/app/todo/todo.component.ts
 
-   import { Component, OnInit } from '@angular/core';
+   import { Component } from '@angular/core';
+   import { CommonModule } from '@angular/common';
+   import { FormsModule } from '@angular/forms';
    import { remult } from 'remult';
    import { Task } from '../../shared/Task';
-   
+
    @Component({
      selector: 'app-todo',
+     standalone: true,
+     imports: [CommonModule, FormsModule],
      templateUrl: './todo.component.html',
-     styleUrls: ['./todo.component.css']
+     styleUrl: './todo.component.css',
    })
-   export class TodoComponent implements OnInit {
-     taskRepo = remult.repo(Task)
-     tasks: Task[] = []
+   export class TodoComponent {
+     taskRepo = remult.repo(Task);
+     tasks: Task[] = [];
      ngOnInit() {
-       this.taskRepo.find().then(items => this.tasks = items)
+       this.taskRepo.find().then((items) => (this.tasks = items));
      }
    }
    ```
 
    Here's a quick overview of the different parts of the code snippet:
 
+   - We've imported the `FormsModule` for angular's forms support
    - `taskRepo` is a Remult [Repository](../../docs/ref_repository.md) object used to fetch and create Task entity objects.
    - `tasks` is a Task array.
    - The `ngOnInit` method calls theRemult [repository](../../docs/ref_repository.md)'s [find](../../docs/ref_repository.md#find) method to fetch tasks from the server, once when the component is loaded.
