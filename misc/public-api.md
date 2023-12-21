@@ -1411,7 +1411,7 @@ export declare class Remult {
 export interface RemultContext {}
 export declare function repo<entityType>(
   entity: ClassType<entityType>,
-): import("./src/remult3/remult3").Repository<entityType>
+): import("./src/remult3/remult3.js").Repository<entityType>
 export interface Repository<entityType> {
   /** returns a result array based on the provided options */
   find(options?: FindOptions<entityType>): Promise<entityType[]>
@@ -1851,7 +1851,7 @@ export declare function remultExpress(
     bodySizeLimit?: string
   },
 ): RemultExpressServer
-//[ ] RemultServerOptions from ./server/expressBridge is not exported
+//[ ] RemultServerOptions from ./server/expressBridge.js is not exported
 export type RemultExpressServer = express.RequestHandler &
   RemultServerCore<express.Request> & {
     withRemult: (
@@ -1860,7 +1860,7 @@ export type RemultExpressServer = express.RequestHandler &
       next: VoidFunction,
     ) => void
   }
-//[ ] RemultServerCore from ./server/expressBridge is not exported
+//[ ] RemultServerCore from ./server/expressBridge.js is not exported
 ```
 
 ## ./remult-next.js
@@ -1909,7 +1909,7 @@ export declare function createRemultServer<RequestType>(
   options: RemultServerOptions<RequestType>,
   serverCoreOptions?: ServerCoreOptions<RequestType>,
 ): RemultServer<RequestType>
-//[ ] ServerCoreOptions from ./expressBridge is not exported
+//[ ] ServerCoreOptions from ./expressBridge.js is not exported
 export declare class DataProviderLiveQueryStorage
   implements LiveQueryStorage, Storage
 {
@@ -2229,12 +2229,12 @@ export declare class SseSubscriptionServer implements SubscriptionServer {
 export declare function remultFastify(
   options: RemultServerOptions<FastifyRequest>,
 ): RemultFastifyServer
-//[ ] RemultServerOptions from ./server/expressBridge is not exported
+//[ ] RemultServerOptions from ./server/expressBridge.js is not exported
 export type RemultFastifyServer = FastifyPluginCallback &
   RemultServerCore<FastifyRequest> & {
     withRemult<T>(req: FastifyRequest, what: () => Promise<T>): Promise<T>
   }
-//[ ] RemultServerCore from ./server/expressBridge is not exported
+//[ ] RemultServerCore from ./server/expressBridge.js is not exported
 ```
 
 ## ./remult-hapi.js
@@ -2271,7 +2271,7 @@ export declare function remultFresh(
   options: RemultServerOptions<FreshRequest>,
   response: FreshResponse,
 ): RemultFresh
-//[ ] RemultServerOptions from ./server/expressBridge is not exported
+//[ ] RemultServerOptions from ./server/expressBridge.js is not exported
 export interface RemultFresh extends RemultServerCore<FreshRequest> {
   handle(req: FreshRequest, ctx: FreshContext): Promise<any>
 }
@@ -2304,7 +2304,7 @@ export declare function postgresColumnSyntax(
   x: FieldMetadata,
   dbName: string,
 ): string
-//[ ] FieldMetadata from ../src/column-interfaces is not exported
+//[ ] FieldMetadata from ../src/column-interfaces.js is not exported
 export declare class PostgresSchemaBuilder {
   private pool
   private removeQuotes
@@ -2322,9 +2322,9 @@ export declare class PostgresSchemaBuilder {
   specifiedSchema: string
   constructor(pool: SqlDatabase, schema?: string)
 }
-//[ ] Remult from ../src/context is not exported
-//[ ] EntityMetadata from ../src/remult3/remult3 is not exported
-//[ ] SqlDatabase from ../src/data-providers/sql-database is not exported
+//[ ] Remult from ../src/context.js is not exported
+//[ ] EntityMetadata from ../src/remult3/remult3.js is not exported
+//[ ] SqlDatabase from ../src/data-providers/sql-database.js is not exported
 export declare function verifyStructureOfAllEntities(
   db: SqlDatabase,
   remult: Remult,
@@ -2340,7 +2340,7 @@ export declare function buildColumn(
   b: Knex.CreateTableBuilder,
   supportsJson?: boolean,
 ): void
-//[ ] FieldMetadata from ../src/column-interfaces is not exported
+//[ ] FieldMetadata from ../src/column-interfaces.js is not exported
 //[ ] Knex.CreateTableBuilder from TBD is not exported
 export declare function createKnexDataProvider(
   config: Knex.Config,
@@ -2366,12 +2366,12 @@ export declare class KnexDataProvider implements DataProvider {
   isProxy?: boolean
   ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
 }
-//[ ] Remult from ../src/context is not exported
-//[ ] EntityMetadata from ../src/remult3/remult3 is not exported
-//[ ] EntityDataProvider from ../src/data-interfaces is not exported
-//[ ] DataProvider from ../src/data-interfaces is not exported
-//[ ] EntityFilter from ../src/remult3/remult3 is not exported
-//[ ] RepositoryOverloads from ../src/remult3/RepositoryImplementation is not exported
+//[ ] Remult from ../src/context.js is not exported
+//[ ] EntityMetadata from ../src/remult3/remult3.js is not exported
+//[ ] EntityDataProvider from ../src/data-interfaces.js is not exported
+//[ ] DataProvider from ../src/data-interfaces.js is not exported
+//[ ] EntityFilter from ../src/remult3/remult3.js is not exported
+//[ ] RepositoryOverloads from ../src/remult3/RepositoryImplementation.js is not exported
 export declare class KnexSchemaBuilder {
   private knex
   verifyStructureOfAllEntities(remult?: Remult): Promise<void>
@@ -2427,7 +2427,7 @@ export declare class MongoDataProvider implements DataProvider {
 //[ ] EntityMetadata from . is not exported
 //[ ] EntityDataProvider from . is not exported
 //[ ] DataProvider from . is not exported
-//[ ] RepositoryOverloads from ./src/remult3/RepositoryImplementation is not exported
+//[ ] RepositoryOverloads from ./src/remult3/RepositoryImplementation.js is not exported
 //[ ] EntityFilter from . is not exported
 ```
 
@@ -2442,7 +2442,7 @@ export declare class AblySubscriptionClient implements SubscriptionClient {
   ): Promise<SubscriptionClientConnection>
 }
 //[ ] Ably.Types.RealtimePromise from TBD is not exported
-//[ ] SubscriptionClientConnection from ./src/live-query/SubscriptionChannel is not exported
+//[ ] SubscriptionClientConnection from ./src/live-query/SubscriptionChannel.js is not exported
 export declare class AblySubscriptionServer implements SubscriptionServer {
   private ably
   constructor(ably: Ably.Types.RestPromise)
@@ -2466,7 +2466,8 @@ export declare function remultGraphql(options: {
   rootValue: Record<string, any>
   typeDefs: string
 }
-//[ ] ClassType from ./classType is not exported
+//[ ] ClassType from ./classType.js is not exported
+//[ ] Remult from ./index.js is not exported
 ```
 
 ## ./internals.js
