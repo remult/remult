@@ -201,7 +201,7 @@ export class Order {
   @Fields.string() // [!code ++]
   customerId = ""; // Custom field to hold the related entity's identifier // [!code ++]
   @Relations.toOne<Order, Customer>(() => Customer, "customerId")  // [!code ++]
-  @Relations.toOne(() => Customer) //[!code --]
+  @Relations.toOne(() => Customer) // [!code --]
   customer?: Customer;
   @Fields.number()
   amount = 0;

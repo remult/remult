@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitepress'
+import { tabsMarkdownPlugin } from 'vitepress-plugin-tabs'
 
 const tutorials = [
   { path: 'react' },
@@ -74,7 +75,7 @@ export default defineConfig({
     ],
     search: { provider: 'local', options: {} },
     socialLinks: [
-      { icon: 'twitter', link: 'https://twitter.com/RemultJs' },
+      { icon: 'x', link: 'https://twitter.com/RemultJs' },
       { icon: 'youtube', link: 'https://www.youtube.com/@remult6539' },
       { icon: 'discord', link: 'https://discord.gg/GXHk7ZfuG5' },
       { icon: 'github', link: 'https://github.com/remult/remult' },
@@ -245,6 +246,11 @@ export default defineConfig({
 
     footer: {
       message: 'MIT Licensed | Made by the Remult team with ❤️',
+    },
+  },
+  markdown: {
+    config(md) {
+      md.use(tabsMarkdownPlugin)
     },
   },
 })

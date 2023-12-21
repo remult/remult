@@ -1,8 +1,14 @@
 /* .vitepress/theme/custom.css */
 :root {
-  --vp-c-brand: #0066c8;
-  --vp-c-brand-light: #0066c8;
-  --vp-c-brand-lighter: #0066c8;
-  --vp-c-brand-dark: #004993;
-  --vp-c-brand-darker: #00286c;
+  --vp-c-brand-1: rgb(0, 102, 200);
+  --vp-c-brand-2: rgb(0, 102, 200);
+  --vp-c-brand-3: rgb(0, 102, 200);
+  --vp-c-brand-soft: rgb(0, 102, 200, 0.14);
+}
+
+.dark {
+  --vp-c-brand-1: rgb(0, 153, 300);
+  --vp-c-brand-2: rgb(0, 153, 300);
+  --vp-c-brand-3: rgb(0, 153, 300);
+  --vp-c-brand-soft: rgb(0, 153, 300, 0.14);
 }
