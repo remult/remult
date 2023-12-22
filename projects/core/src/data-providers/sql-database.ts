@@ -126,6 +126,7 @@ export class SqlDatabase implements DataProvider {
     repo: RepositoryOverloads<entityType>,
     condition: EntityFilter<entityType>,
     sqlCommand?: SqlCommandWithParameters,
+    dbNames?: EntityDbNamesBase,
   ) {
     if (!sqlCommand) {
       sqlCommand = new myDummySQLCommand()
@@ -134,7 +135,7 @@ export class SqlDatabase implements DataProvider {
 
     var b = new FilterConsumerBridgeToSqlRequest(
       sqlCommand,
-      await dbNamesOf(r.metadata),
+      dbNames || (await dbNamesOf(r.metadata)),
     )
     b._addWhere = false
     await (
