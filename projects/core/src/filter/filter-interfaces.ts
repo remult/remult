@@ -1,5 +1,5 @@
 import type { FieldMetadata } from '../column-interfaces'
-import type { Remult } from '../context'
+import { Remult } from '../context'
 import type {
   EntityFilter,
   EntityMetadata,
@@ -103,7 +103,8 @@ export class Filter {
                 : new filterHelper(field)
             let found = false
             if (fieldToFilter !== undefined && fieldToFilter != null) {
-              if (fieldToFilter.$id) fieldToFilter = fieldToFilter.$id
+              if (fieldToFilter.$id !== undefined)
+                fieldToFilter = fieldToFilter.$id
               for (const key in fieldToFilter) {
                 if (Object.prototype.hasOwnProperty.call(fieldToFilter, key)) {
                   const element = fieldToFilter[key]
@@ -226,7 +227,19 @@ class filterHelper {
   processVal(val: any) {
     let ei = getEntitySettings(this.metadata.valueType, false)
     if (ei) {
-      if (!val) return null
+      if (!val) {
+        if (val === null && !this.metadata.allowNull) {
+          const rel = getRelationInfo(this.metadata.options)
+          if (rel?.type === 'reference')
+            if (
+              new Remult().repo(rel.toType()).metadata.idMetadata.field.options
+                .valueType === Number
+            )
+              return 0
+            else return ''
+        }
+        return null
+      }
       if (typeof val === 'string' || typeof val === 'number') return val
       return getEntityRef(val).getId()
     }

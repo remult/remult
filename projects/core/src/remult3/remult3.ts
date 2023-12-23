@@ -715,6 +715,9 @@ export type ClassFieldDecorator<entityType, valueType> = (
   c?: any,
 ) => void
 
+//p1 - issue with relation that is allow null false, without a value - we set it to 0, but I couldn't filter on it using null! or using $id:0
+//p1 - in tree like shape, got an error of circular json reference with parent folder and child folders
+
 //p1 - sql-expression for knex
 //p1 - postgres case sensitive
 //p1 - filterToRaw should get a dbnames of - and we should create a dbnames of that supports an alias
