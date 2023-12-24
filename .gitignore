@@ -77,3 +77,4 @@ projects/test-servers/next-app-server/db
 projects/test-servers/next-server/db
 projects/test-servers/sveltekit-server/db
 test-results.json
+test-results.xml
