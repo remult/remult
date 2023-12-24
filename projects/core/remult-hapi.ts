@@ -46,7 +46,6 @@ export function remultHapi(
             let r: GenericResponse & ResponseRequiredForSSE = {
               status(statusCode) {
                 status = statusCode
-                console.log(statusCode)
                 return r
               },
               end() {

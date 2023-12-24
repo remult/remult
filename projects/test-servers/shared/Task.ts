@@ -33,9 +33,9 @@ export class Task {
   }
   @BackendMethod({ allowed: true, queue: true, paramTypes: [ProgressListener] })
   static async testQueuedJob(progress?: ProgressListener) {
-    for (let i = 0; i < 10; i++) {
-      await new Promise((res) => setTimeout(res, 20))
-      progress.progress(i / 10)
+    for (let i = 0; i < 3; i++) {
+      await new Promise((res) => setTimeout(res, 100))
+      progress.progress(i / 3)
     }
   }
 }
