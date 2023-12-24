@@ -728,6 +728,7 @@ expose live query storage in remult
 
 request optional - and depends on that run `getUser` & `initRequest`
 */
+//y1 - What I would like is to make a copy of the item (without getting it from the server again)
 //y1 - consider moving the request to be second parameter of with remult async
 //y1 - Add a with remult promise to Remult!
 //y1 - Backend methods are transactions, it's not intuitive and maybe should be optional / opt in
