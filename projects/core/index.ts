@@ -1,6 +1,6 @@
-import type { ClassType } from './classType'
+import type { ClassType } from './classType.js'
 
-export type { ClassType } from './classType'
+export type { ClassType } from './classType.js'
 /*
  * Public API Surface of remult
  */

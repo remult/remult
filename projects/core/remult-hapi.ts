@@ -13,8 +13,8 @@ import {
   type GenericRequestHandler,
   type GenericResponse,
   type GenericRouter,
-} from './server'
-import type { ResponseRequiredForSSE } from './SseSubscriptionServer'
+} from './server/index.js'
+import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
 import { PassThrough } from 'stream'
 
 export function remultHapi(

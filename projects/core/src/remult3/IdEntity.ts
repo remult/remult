@@ -1,5 +1,5 @@
-import { Fields } from './Fields'
-import { EntityBase } from './RepositoryImplementation'
+import { Fields } from './Fields.js'
+import { EntityBase } from './RepositoryImplementation.js'
 
 export class IdEntity extends EntityBase {
   @Fields.uuid()

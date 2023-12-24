@@ -1,12 +1,12 @@
-import type { EntityDataProviderFindOptions } from '../data-interfaces'
-import type { Filter } from '../filter/filter-interfaces'
+import type { EntityDataProviderFindOptions } from '../data-interfaces.js'
+import type { Filter } from '../filter/filter-interfaces.js'
 import type {
   EntityFilter,
   EntityOrderBy,
   FindOptions,
   LoadOptions,
   Repository,
-} from './remult3'
+} from './remult3.js'
 
 export interface RepositoryInternal<entityType> {
   createAfterFilter(

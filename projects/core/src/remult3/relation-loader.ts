@@ -1,8 +1,8 @@
-import { findOptionsToJson } from '../data-providers/rest-data-provider'
-import { getEntityRef } from './getEntityRef'
-import type { RelationLoaderHelper } from './relation-loader-types'
-import { getRelationInfo } from './relationInfoMember'
-import type { FindOptions, IdFieldRef } from './remult3'
+import { findOptionsToJson } from '../data-providers/rest-data-provider.js'
+import { getEntityRef } from './getEntityRef.js'
+import type { RelationLoaderHelper } from './relation-loader-types.js'
+import { getRelationInfo } from './relationInfoMember.js'
+import type { FindOptions, IdFieldRef } from './remult3.js'
 
 export class RelationLoader {
   entityLoaders = new Map<any, EntityLoader>()
