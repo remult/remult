@@ -1869,7 +1869,7 @@ export type RemultExpressServer = express.RequestHandler &
 export declare function remultNext(
   options?: RemultServerOptions<NextApiRequest>,
 ): RemultNextServer
-//[ ] RemultServerOptions from ./server is not exported
+//[ ] RemultServerOptions from ./server/index.js is not exported
 export declare function remultNextApp(
   options?: RemultServerOptions<Request>,
 ): RemultNextAppServer
@@ -1880,7 +1880,7 @@ export type RemultNextAppServer = RemultServerCore<Request> & {
   DELETE: (req: Request) => Promise<Response>
   withRemult<T>(what: () => Promise<T>): Promise<T>
 }
-//[ ] RemultServerCore from ./server is not exported
+//[ ] RemultServerCore from ./server/index.js is not exported
 export type RemultNextServer = RemultServerCore<NextApiRequest> &
   NextApiHandler & {
     getServerSideProps<
@@ -2243,12 +2243,12 @@ export type RemultFastifyServer = FastifyPluginCallback &
 export declare function remultHapi(
   options: RemultServerOptions<Request>,
 ): RemultHapiServer
-//[ ] RemultServerOptions from ./server is not exported
+//[ ] RemultServerOptions from ./server/index.js is not exported
 export type RemultHapiServer = Plugin<any, any> &
   RemultServerCore<Request> & {
     withRemult<T>(req: Request, what: () => Promise<T>): Promise<T>
   }
-//[ ] RemultServerCore from ./server is not exported
+//[ ] RemultServerCore from ./server/index.js is not exported
 ```
 
 ## ./remult-fresh.js
@@ -2423,12 +2423,12 @@ export declare class MongoDataProvider implements DataProvider {
       }
   >
 }
-//[ ] Remult from . is not exported
-//[ ] EntityMetadata from . is not exported
-//[ ] EntityDataProvider from . is not exported
-//[ ] DataProvider from . is not exported
+//[ ] Remult from ./index.js is not exported
+//[ ] EntityMetadata from ./index.js is not exported
+//[ ] EntityDataProvider from ./index.js is not exported
+//[ ] DataProvider from ./index.js is not exported
 //[ ] RepositoryOverloads from ./src/remult3/RepositoryImplementation.js is not exported
-//[ ] EntityFilter from . is not exported
+//[ ] EntityFilter from ./index.js is not exported
 ```
 
 ## ./ably.js
