@@ -33,6 +33,11 @@ export class Fields {
       | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, valueType | undefined> {
+    let op = options as FieldOptions<any, valueType>
+    if (op.valueConverter && !op.valueConverter.fieldTypeInDb)
+      //@ts-ignore
+      op.valueConverter.fieldTypeInDb = 'json'
+
     return Field(
       undefined,
       {
@@ -196,7 +201,6 @@ export class Fields {
   }
 }
 export class Relations {
-
   /**
    * Define a to-one relation between entities, indicating a one-to-one relationship.
    * If no field or fields are provided, it will automatically create a field in the database
@@ -214,14 +218,14 @@ export class Relations {
    * ```
    * Fields.string()
    * customerId?: string;
-   * 
+   *
    * @Relations.toOne(() => Customer, "customerId")
    * customer?: Customer;
    * ```
    * ```
    * Fields.string()
    * customerId?: string;
-   * 
+   *
    * @Relations.toOne(() => Customer, {
    *   field: "customerId",
    *   defaultIncluded: true
@@ -231,7 +235,7 @@ export class Relations {
    * ```
    * Fields.string()
    * customerId?: string;
-   * 
+   *
    * @Relations.toOne(() => Customer, {
    *   fields: {
    *     customerId: "id",
@@ -239,14 +243,15 @@ export class Relations {
    * })
    * customer?: Customer;
    * ```
-  */
+   */
   static toOne<entityType, toEntityType>(
     toEntityType: () => ClassType<toEntityType>,
-    options?: FieldOptions<entityType, toEntityType> &
-      Pick<
-        RelationOptions<entityType, toEntityType, any, any>,
-        'defaultIncluded'
-      >
+    options?:
+      | (FieldOptions<entityType, toEntityType> &
+          Pick<
+            RelationOptions<entityType, toEntityType, any, any>,
+            'defaultIncluded'
+          >)
       | RelationOptions<entityType, toEntityType, entityType>
       | keyof entityType,
   ) {
@@ -254,12 +259,12 @@ export class Relations {
       (typeof options === 'string'
         ? { field: options }
         : !options
-          ? {}
-          : options) as any as RelationOptions<
-            entityType,
-            toEntityType,
-            entityType
-          >
+        ? {}
+        : options) as any as RelationOptions<
+        entityType,
+        toEntityType,
+        entityType
+      >
 
     if (!op.field && !op.fields && !op.findOptions)
       return Field(toEntityType, {
@@ -348,11 +353,11 @@ export class Relations {
     toEntityType: () => ClassType<toEntityType>,
     options?:
       | RelationOptions<
-        entityType,
-        toEntityType,
-        toEntityType,
-        FindOptions<toEntityType>
-      >
+          entityType,
+          toEntityType,
+          toEntityType,
+          FindOptions<toEntityType>
+        >
       | keyof toEntityType,
   ) {
     let op: RelationOptions<
@@ -363,11 +368,11 @@ export class Relations {
     > = (typeof options === 'string'
       ? { field: options }
       : options) as any as RelationOptions<
-        entityType,
-        toEntityType,
-        toEntityType,
-        FindOptions<toEntityType>
-      >
+      entityType,
+      toEntityType,
+      toEntityType,
+      FindOptions<toEntityType>
+    >
     return Field(() => undefined!, {
       ...op,
       serverExpression: () => undefined,
