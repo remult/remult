@@ -51,9 +51,9 @@ export class SseSubscriptionClient implements SubscriptionClient {
 
         function createConnection() {
           if (source) source.close()
-          source = new EventSource(remult.apiClient.url + '/' + streamUrl, {
-            withCredentials: true,
-          })
+          source = SseSubscriptionClient.createEventSource(
+            remult.apiClient.url + '/' + streamUrl,
+          )
           source.onmessage = (e) => {
             let message = JSON.parse(e.data)
             const listeners = channels.get(message.channel)
@@ -98,6 +98,11 @@ export class SseSubscriptionClient implements SubscriptionClient {
         await createConnectionPromise()
       }
     }
+  }
+  static createEventSource(url: string) {
+    return new EventSource(url, {
+      withCredentials: true,
+    })
   }
 }
 

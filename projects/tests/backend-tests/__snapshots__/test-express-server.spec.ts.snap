@@ -1,0 +1,525 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`test express server > test open api 1`] = `
+{
+  "components": {
+    "schemas": {
+      "InvalidResponse": {
+        "properties": {
+          "message": {
+            "type": "string",
+          },
+          "modelState": {
+            "type": "object",
+          },
+        },
+        "type": "object",
+      },
+      "tasks": {
+        "properties": {
+          "completed": {
+            "type": "boolean",
+          },
+          "id": {
+            "type": "string",
+          },
+          "title": {
+            "type": "string",
+          },
+        },
+        "type": "object",
+      },
+      "tasksMutation": {
+        "properties": {
+          "completed": {
+            "type": "boolean",
+          },
+          "title": {
+            "type": "string",
+          },
+        },
+        "type": "object",
+      },
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http",
+      },
+    },
+  },
+  "info": {
+    "title": "tasks",
+    "version": "1.0.0",
+  },
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/jobStatusInQueue": {
+      "post": {
+        "produces": [
+          "application/json",
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "args": {
+                    "items": {
+                      "type": "string",
+                    },
+                    "type": "array",
+                  },
+                },
+                "type": "object",
+              },
+            },
+          },
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Created",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvalidResponse",
+                },
+              },
+            },
+            "description": "Error: Bad Request",
+          },
+          "403": {
+            "description": "forbidden",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "tags": [
+          "Static Backend Methods",
+        ],
+      },
+    },
+    "/api/tasks": {
+      "get": {
+        "description": "return an array of tasks. supports filter operators. For more info on filtering [see this article](https://remult.dev/docs/rest-api.html#filter)",
+        "parameters": [
+          {
+            "description": "limit the number of returned rows, default 100",
+            "in": "query",
+            "name": "_limit",
+            "required": false,
+            "schema": {
+              "type": "integer",
+            },
+            "style": "simple",
+          },
+          {
+            "description": "to be used for paging",
+            "in": "query",
+            "name": "_page",
+            "required": false,
+            "schema": {
+              "type": "integer",
+            },
+          },
+          {
+            "description": "the columns to sort on",
+            "in": "query",
+            "name": "_sort",
+            "required": false,
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "description": "the sort order to user for the columns in \`_sort\`",
+            "in": "query",
+            "name": "_order",
+            "required": false,
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "description": "filter equal to id. See [more filtering options](https://remult.dev/docs/rest-api.html#filter)",
+            "in": "query",
+            "name": "id",
+            "required": false,
+            "style": "simple",
+            "type": "string",
+          },
+          {
+            "description": "filter equal to title. See [more filtering options](https://remult.dev/docs/rest-api.html#filter)",
+            "in": "query",
+            "name": "title",
+            "required": false,
+            "style": "simple",
+            "type": "string",
+          },
+          {
+            "description": "filter equal to completed. See [more filtering options](https://remult.dev/docs/rest-api.html#filter)",
+            "in": "query",
+            "name": "completed",
+            "required": false,
+            "style": "simple",
+            "type": "boolean",
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/tasks",
+                  },
+                  "type": "array",
+                },
+              },
+            },
+            "description": "returns an array of tasks",
+          },
+        },
+        "tags": [
+          "tasks",
+        ],
+      },
+      "post": {
+        "produces": [
+          "application/json",
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/tasksMutation",
+              },
+            },
+          },
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tasks",
+                },
+              },
+            },
+            "description": "Created",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvalidResponse",
+                },
+              },
+            },
+            "description": "Error: Bad Request",
+          },
+        },
+        "tags": [
+          "tasks",
+        ],
+      },
+    },
+    "/api/tasks/{id}": {
+      "delete": {
+        "parameters": [
+          {
+            "description": "id of tasks",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "produces": [
+          "application/json",
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvalidResponse",
+                },
+              },
+            },
+            "description": "Error: Bad Request",
+          },
+        },
+        "tags": [
+          "tasks",
+        ],
+      },
+      "get": {
+        "parameters": [
+          {
+            "description": "id of tasks",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tasks",
+                },
+              },
+            },
+          },
+        },
+        "tags": [
+          "tasks",
+        ],
+      },
+      "put": {
+        "parameters": [
+          {
+            "description": "id of tasks",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "produces": [
+          "application/json",
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/tasksMutation",
+              },
+            },
+          },
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tasks",
+                },
+              },
+            },
+            "description": "successful operation",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvalidResponse",
+                },
+              },
+            },
+            "description": "Error: Bad Request",
+          },
+        },
+        "tags": [
+          "tasks",
+        ],
+      },
+    },
+    "/api/testForbidden": {
+      "post": undefined,
+    },
+    "/api/testInjectedRemult": {
+      "post": {
+        "produces": [
+          "application/json",
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "args": {
+                    "items": {
+                      "type": "string",
+                    },
+                    "type": "array",
+                  },
+                },
+                "type": "object",
+              },
+            },
+          },
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Created",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvalidResponse",
+                },
+              },
+            },
+            "description": "Error: Bad Request",
+          },
+        },
+        "tags": [
+          "Static Backend Methods",
+        ],
+      },
+    },
+    "/api/testQueuedJob": {
+      "post": {
+        "produces": [
+          "application/json",
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "args": {
+                    "items": {
+                      "type": "string",
+                    },
+                    "type": "array",
+                  },
+                },
+                "type": "object",
+              },
+            },
+          },
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Created",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvalidResponse",
+                },
+              },
+            },
+            "description": "Error: Bad Request",
+          },
+        },
+        "tags": [
+          "Static Backend Methods",
+        ],
+      },
+    },
+    "/api/testStaticRemult": {
+      "post": {
+        "produces": [
+          "application/json",
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "args": {
+                    "items": {
+                      "type": "string",
+                    },
+                    "type": "array",
+                  },
+                },
+                "type": "object",
+              },
+            },
+          },
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Created",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvalidResponse",
+                },
+              },
+            },
+            "description": "Error: Bad Request",
+          },
+        },
+        "tags": [
+          "Static Backend Methods",
+        ],
+      },
+    },
+  },
+}
+`;
