@@ -4,7 +4,7 @@ import type {
   GenericResponse,
   RemultServerCore,
   RemultServerOptions,
-} from './server'
+} from './server/index.js'
 import { createRemultServer } from './server/index.js'
 
 export function remultSveltekit(

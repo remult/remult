@@ -2283,12 +2283,12 @@ export interface RemultFresh extends RemultServerCore<FreshRequest> {
 export declare function remultSveltekit(
   options?: RemultServerOptions<RequestEvent>,
 ): RemultSveltekitServer
-//[ ] RemultServerOptions from ./server is not exported
+//[ ] RemultServerOptions from ./server/index.js is not exported
 export type RemultSveltekitServer = RemultServerCore<RequestEvent> &
   Handle & {
     withRemult<T>(request: RequestEvent, what: () => Promise<T>): Promise<T>
   }
-//[ ] RemultServerCore from ./server is not exported
+//[ ] RemultServerCore from ./server/index.js is not exported
 ```
 
 ## ./postgres/index.js
