@@ -1,15 +1,15 @@
-import type { __RowsOfDataForTesting } from '../__RowsOfDataForTesting'
-import type { SqlCommand, SqlImplementation, SqlResult } from '../sql-command'
+import type { __RowsOfDataForTesting } from '../__RowsOfDataForTesting.js'
+import type { SqlCommand, SqlImplementation, SqlResult } from '../sql-command.js'
 
-import type { FieldMetadata } from '../column-interfaces'
-import type { Remult } from '../context'
+import type { FieldMetadata } from '../column-interfaces.js'
+import type { Remult } from '../context.js'
 import {
   dbNamesOf,
   isDbReadonly,
-} from '../filter/filter-consumer-bridge-to-sql-request'
-import type { EntityMetadata } from '../remult3/remult3'
-import { isAutoIncrement } from '../remult3/RepositoryImplementation'
-import { SqlDatabase } from './sql-database'
+} from '../filter/filter-consumer-bridge-to-sql-request.js'
+import type { EntityMetadata } from '../remult3/remult3.js'
+import { isAutoIncrement } from '../remult3/RepositoryImplementation.js'
+import { SqlDatabase } from './sql-database.js'
 //SqlDatabase.LogToConsole = true;
 export class WebSqlDataProvider
   implements SqlImplementation, __RowsOfDataForTesting

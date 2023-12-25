@@ -1,9 +1,9 @@
-import { getRelationInfo } from './internals'
-import type { ClassType } from './classType'
-import type { EntityMetadata, FieldsMetadata } from './index'
-import { Remult, remult } from './index'
-import type { DataApiResponse } from './src/data-api'
-import { DataApi } from './src/data-api'
+import { getRelationInfo } from './internals.js'
+import type { ClassType } from './classType.js'
+import type { EntityMetadata, FieldsMetadata } from './index.js'
+import { Remult, remult } from './index.js'
+import type { DataApiResponse } from './src/data-api.js'
+import { DataApi } from './src/data-api.js'
 
 const v2ConnectionAndPagination = false
 const andImplementation = false

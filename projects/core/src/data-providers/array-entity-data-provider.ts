@@ -1,17 +1,20 @@
-import { CompoundIdField } from '../CompoundIdField'
-import type { FieldMetadata } from '../column-interfaces'
+import { CompoundIdField } from '../CompoundIdField.js'
+import type { FieldMetadata } from '../column-interfaces.js'
 import type {
   EntityDataProvider,
   EntityDataProviderFindOptions,
-} from '../data-interfaces'
+} from '../data-interfaces.js'
 import {
   type EntityDbNamesBase,
   dbNamesOf,
   isDbReadonly,
-} from '../filter/filter-consumer-bridge-to-sql-request'
-import type { FilterConsumer } from '../filter/filter-interfaces'
-import { Filter, customDatabaseFilterToken } from '../filter/filter-interfaces'
-import type { EntityFilter, EntityMetadata } from '../remult3/remult3'
+} from '../filter/filter-consumer-bridge-to-sql-request.js'
+import type { FilterConsumer } from '../filter/filter-interfaces.js'
+import {
+  Filter,
+  customDatabaseFilterToken,
+} from '../filter/filter-interfaces.js'
+import type { EntityFilter, EntityMetadata } from '../remult3/remult3.js'
 
 //@internal
 export class ArrayEntityDataProvider implements EntityDataProvider {

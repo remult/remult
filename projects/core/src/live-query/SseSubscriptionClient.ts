@@ -1,12 +1,12 @@
-import { buildRestDataProvider } from '../buildRestDataProvider'
-import { remult } from '../remult-proxy'
-import { actionInfo } from '../server-action-info'
+import { buildRestDataProvider } from '../buildRestDataProvider.js'
+import { remult } from '../remult-proxy.js'
+import { actionInfo } from '../server-action-info.js'
 import type {
   ServerEventChannelSubscribeDTO,
   SubscriptionClient,
   SubscriptionClientConnection,
-} from './SubscriptionChannel'
-import { streamUrl } from './SubscriptionChannel'
+} from './SubscriptionChannel.js'
+import { streamUrl } from './SubscriptionChannel.js'
 export class SseSubscriptionClient implements SubscriptionClient {
   openConnection(
     onReconnect: VoidFunction,

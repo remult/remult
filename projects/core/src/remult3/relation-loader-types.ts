@@ -1,5 +1,5 @@
-import type { ClassType } from '../../classType'
-import type { EntityMetadata, FindOptions } from './remult3'
+import type { ClassType } from '../../classType.js'
+import type { EntityMetadata, FindOptions } from './remult3.js'
 
 export interface RelationLoaderHelper<toEntity> {
   metadata: EntityMetadata<toEntity>

@@ -6,13 +6,13 @@ import type {
   PreviewData,
 } from 'next'
 import type { ParsedUrlQuery } from 'querystring'
-import type { ResponseRequiredForSSE } from './SseSubscriptionServer'
+import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
 import type {
   GenericResponse,
   RemultServerCore,
   RemultServerOptions,
-} from './server'
-import { createRemultServer } from './server'
+} from './server/index.js'
+import { createRemultServer } from './server/index.js'
 
 export function remultNext(
   options?: RemultServerOptions<NextApiRequest>,

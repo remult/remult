@@ -1,7 +1,7 @@
-import type { itemChange } from '../context'
-import { findOptionsFromJson } from '../data-providers/rest-data-provider'
-import type { Repository } from '../remult3/remult3'
-import type { LiveQueryChange } from './SubscriptionChannel'
+import type { itemChange } from '../context.js'
+import { findOptionsFromJson } from '../data-providers/rest-data-provider.js'
+import type { Repository } from '../remult3/remult3.js'
+import type { LiveQueryChange } from './SubscriptionChannel.js'
 
 export interface SubscriptionServer {
   publishMessage<T>(channel: string, message: T): Promise<void>

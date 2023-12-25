@@ -1,8 +1,8 @@
 import 'reflect-metadata'
-import type { packedRowInfo } from './__EntityValueProvider'
-import { buildRestDataProvider } from './buildRestDataProvider'
-import type { FieldOptions } from './column-interfaces'
-import type { AllowedForInstance, ControllerOptions } from './context'
+import type { packedRowInfo } from './__EntityValueProvider.js'
+import { buildRestDataProvider } from './buildRestDataProvider.js'
+import type { FieldOptions } from './column-interfaces.js'
+import type { AllowedForInstance, ControllerOptions } from './context.js'
 import {
   ClassHelper,
   Remult,
@@ -11,25 +11,25 @@ import {
   doTransaction,
   isBackend,
   setControllerSettings,
-} from './context'
-import type { DataApiResponse } from './data-api'
+} from './context.js'
+import type { DataApiResponse } from './data-api.js'
 import type {
   DataProvider,
   RestDataProviderHttpProvider,
-} from './data-interfaces'
-import { SqlDatabase } from './data-providers/sql-database'
-import { remult } from './remult-proxy'
+} from './data-interfaces.js'
+import { SqlDatabase } from './data-providers/sql-database.js'
+import { remult } from './remult-proxy.js'
 import type {
   controllerRefImpl,
   rowHelperImplementation,
-} from './remult3/RepositoryImplementation'
+} from './remult3/RepositoryImplementation.js'
 import {
   decorateColumnSettings,
   getControllerRef,
-} from './remult3/RepositoryImplementation'
-import { getEntityRef, getEntitySettings } from './remult3/getEntityRef'
-import { actionInfo, serverActionField } from './server-action-info'
-import { checkTarget } from './remult3/Fields'
+} from './remult3/RepositoryImplementation.js'
+import { getEntityRef, getEntitySettings } from './remult3/getEntityRef.js'
+import { actionInfo, serverActionField } from './server-action-info.js'
+import { checkTarget } from './remult3/Fields.js'
 
 interface inArgs {
   args: any[]

@@ -10,13 +10,15 @@
   },
   "dependencies": {
     "@types/node": "20.1.0",
-    "@types/react": "18.2.6",
     "@types/react-dom": "18.2.4",
     "next": "13.5.4",
     "next-auth": "^4.22.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "remult": "^0.21.1-exp.0",
+    "remult": "^0.23.0-esm.7",
     "typescript": "5.0.4"
+  },
+  "devDependencies": {
+    "@types/react": "18.2.45"
   }
 }

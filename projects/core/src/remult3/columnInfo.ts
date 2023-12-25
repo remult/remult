@@ -1,5 +1,5 @@
-import type { FieldOptions } from '../column-interfaces'
-import { Remult } from '../context'
+import type { FieldOptions } from '../column-interfaces.js'
+import type { Remult } from '../context.js'
 
 export interface columnInfo {
   key: string

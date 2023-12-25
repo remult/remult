@@ -4,7 +4,7 @@ import type {
   FastifyRequest,
   RouteHandlerMethod,
 } from 'fastify'
-import type { ResponseRequiredForSSE } from './SseSubscriptionServer'
+import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
 import type {
   GenericRequestHandler,
   GenericResponse,
@@ -12,8 +12,8 @@ import type {
   RemultServerCore,
   RemultServerOptions,
   SpecificRoute,
-} from './server/expressBridge'
-import { createRemultServer } from './server/index'
+} from './server/expressBridge.js'
+import { createRemultServer } from './server/index.js'
 
 export function remultFastify(
   options: RemultServerOptions<FastifyRequest>,

@@ -1,5 +1,5 @@
-import { InputTypes } from '../inputTypes'
-import type { ValueConverter } from './column-interfaces'
+import { InputTypes } from '../inputTypes.js'
+import type { ValueConverter } from './column-interfaces.js'
 
 export class ValueConverters {
   static readonly Date: ValueConverter<Date> = {

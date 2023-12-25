@@ -13,16 +13,16 @@ import type {
   EntityMetadata,
   FieldMetadata,
   Remult,
-} from '.'
-import { CompoundIdField, Filter } from '.'
-import type { EntityDbNamesBase } from './src/filter/filter-consumer-bridge-to-sql-request'
-import { dbNamesOf } from './src/filter/filter-consumer-bridge-to-sql-request'
-import type { FilterConsumer } from './src/filter/filter-interfaces'
-import { remult as remultContext } from './src/remult-proxy'
-import type { RepositoryOverloads } from './src/remult3/RepositoryImplementation'
-import { getRepository } from './src/remult3/RepositoryImplementation'
-import { resultCompoundIdFilter } from './src/resultCompoundIdFilter'
-import { getRepositoryInternals } from './src/remult3/repository-internals'
+} from './index.js'
+import { CompoundIdField, Filter } from './index.js'
+import type { EntityDbNamesBase } from './src/filter/filter-consumer-bridge-to-sql-request.js'
+import { dbNamesOf } from './src/filter/filter-consumer-bridge-to-sql-request.js'
+import type { FilterConsumer } from './src/filter/filter-interfaces.js'
+import { remult as remultContext } from './src/remult-proxy.js'
+import type { RepositoryOverloads } from './src/remult3/RepositoryImplementation.js'
+import { getRepository } from './src/remult3/RepositoryImplementation.js'
+import { resultCompoundIdFilter } from './src/resultCompoundIdFilter.js'
+import { getRepositoryInternals } from './src/remult3/repository-internals.js'
 
 export class MongoDataProvider implements DataProvider {
   constructor(

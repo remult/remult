@@ -1,14 +1,14 @@
-import type { FieldMetadata } from '../column-interfaces'
-import { Remult } from '../context'
+import type { FieldMetadata } from '../column-interfaces.js'
+import { Remult } from '../context.js'
 import type {
   EntityFilter,
   EntityMetadata,
   FieldsMetadata,
   RelationOptions,
-} from '../remult3/remult3'
+} from '../remult3/remult3.js'
 
-import { getEntityRef, getEntitySettings } from '../remult3/getEntityRef'
-import { getRelationInfo } from '../remult3/relationInfoMember'
+import { getEntityRef, getEntitySettings } from '../remult3/getEntityRef.js'
+import { getRelationInfo } from '../remult3/relationInfoMember.js'
 
 export class Filter {
   constructor(private apply: (add: FilterConsumer) => void) {}

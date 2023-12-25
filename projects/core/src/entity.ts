@@ -1,6 +1,6 @@
-import type { Allowed, AllowedForInstance } from './context'
+import type { Allowed, AllowedForInstance } from './context.js'
 
-import type { FieldMetadata } from './column-interfaces'
+import type { FieldMetadata } from './column-interfaces.js'
 import type {
   EntityFilter,
   EntityIdFields,
@@ -9,7 +9,7 @@ import type {
   EntityRef,
   FieldsMetadata,
   LifecycleEvent,
-} from './remult3/remult3'
+} from './remult3/remult3.js'
 
 export interface EntityOptions<entityType = any> {
   /**A human readable name for the entity */

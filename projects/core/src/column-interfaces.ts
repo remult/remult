@@ -1,10 +1,10 @@
-import type { ClassType } from '../classType'
-import type { Allowed, AllowedForInstance } from './context'
+import type { ClassType } from '../classType.js'
+import type { Allowed, AllowedForInstance } from './context.js'
 import type {
   EntityMetadata,
   FieldRef,
   LifecycleEvent,
-} from './remult3/remult3'
+} from './remult3/remult3.js'
 
 export interface FieldOptions<entityType = any, valueType = any> {
   /** A human readable name for the field. Can be used to achieve a consistent caption for a field throughout the app

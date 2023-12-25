@@ -1,19 +1,19 @@
 import { createId } from '@paralleldrive/cuid2'
 import { v4 as uuid } from 'uuid'
-import type { ClassType } from '../../classType'
-import type { FieldOptions } from '../column-interfaces'
-import type { Remult } from '../context'
+import type { ClassType } from '../../classType.js'
+import type { FieldOptions } from '../column-interfaces.js'
+import type { Remult } from '../context.js'
 import type {
   FindOptions,
   RelationInfo,
   RelationOptions,
   ClassFieldDecorator,
   ClassFieldDecoratorContextStub,
-} from './remult3'
-import { ValueConverters } from '../valueConverters'
-import { buildOptions, columnsOfType } from './RepositoryImplementation'
-import { relationInfoMember } from './relationInfoMember'
-import type { columnInfo } from './columnInfo'
+} from './remult3.js'
+import { ValueConverters } from '../valueConverters.js'
+import { buildOptions, columnsOfType } from './RepositoryImplementation.js'
+import { relationInfoMember } from './relationInfoMember.js'
+import type { columnInfo } from './columnInfo.js'
 
 export class Fields {
   /**

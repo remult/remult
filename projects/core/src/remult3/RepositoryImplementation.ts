@@ -1,22 +1,22 @@
-import type { ClassType } from '../../classType'
-import { LookupColumn, makeTitle } from '../column'
-import { CompoundIdField } from '../CompoundIdField'
+import type { ClassType } from '../../classType.js'
+import { LookupColumn, makeTitle } from '../column.js'
+import { CompoundIdField } from '../CompoundIdField.js'
 import type {
   FieldMetadata,
   FieldOptions,
   ValueConverter,
   ValueListItem,
-} from '../column-interfaces'
-import type { AllowedForInstance } from '../context'
+} from '../column-interfaces.js'
+import type { AllowedForInstance } from '../context.js'
 import {
   Remult,
   RemultAsyncLocalStorage,
   isBackend,
   queryConfig,
-} from '../context'
-import type { EntityOptions } from '../entity'
-import { Filter } from '../filter/filter-interfaces'
-import { Sort } from '../sort'
+} from '../context.js'
+import type { EntityOptions } from '../entity.js'
+import { Filter } from '../filter/filter-interfaces.js'
+import { Sort } from '../sort.js'
 import type {
   ControllerRef,
   ControllerRefForControllerBase,
@@ -47,37 +47,40 @@ import type {
   Repository,
   RepositoryRelations,
   Subscribable,
-} from './remult3'
+} from './remult3.js'
 
-import type { Paginator, RefSubscriber, RefSubscriberBase } from './remult3'
-import { assign } from '../../assign'
-import type { entityEventListener } from '../__EntityValueProvider'
+import type { Paginator, RefSubscriber, RefSubscriberBase } from './remult3.js'
+import { assign } from '../../assign.js'
+import type { entityEventListener } from '../__EntityValueProvider.js'
 import type {
   DataProvider,
   EntityDataProvider,
   EntityDataProviderFindOptions,
   ErrorInfo,
-} from '../data-interfaces'
-import { ValueConverters } from '../valueConverters'
+} from '../data-interfaces.js'
+import { ValueConverters } from '../valueConverters.js'
 
-import { findOptionsToJson } from '../data-providers/rest-data-provider'
+import { findOptionsToJson } from '../data-providers/rest-data-provider.js'
 import type {
   SubscriptionListener,
   Unsubscribe,
-} from '../live-query/SubscriptionChannel'
-import type { RemultProxy } from '../remult-proxy'
-import { remult as defaultRemult } from '../remult-proxy'
+} from '../live-query/SubscriptionChannel.js'
+import type { RemultProxy } from '../remult-proxy.js'
+import { remult as defaultRemult } from '../remult-proxy.js'
 import {
   entityMember,
   getEntityKey,
   getEntityRef,
   getEntitySettings,
-} from './getEntityRef'
-import { __updateEntityBasedOnWhere } from './__updateEntityBasedOnWhere'
-import type { columnInfo } from './columnInfo'
-import { getRelationInfo, relationInfoMember } from './relationInfoMember'
-import { RelationLoader } from './relation-loader'
-import { type RepositoryInternal, getInternalKey } from './repository-internals'
+} from './getEntityRef.js'
+import { __updateEntityBasedOnWhere } from './__updateEntityBasedOnWhere.js'
+import type { columnInfo } from './columnInfo.js'
+import { getRelationInfo, relationInfoMember } from './relationInfoMember.js'
+import { RelationLoader } from './relation-loader.js'
+import {
+  type RepositoryInternal,
+  getInternalKey,
+} from './repository-internals.js'
 //import  { remult } from "../remult-proxy";
 
 let classValidatorValidate:

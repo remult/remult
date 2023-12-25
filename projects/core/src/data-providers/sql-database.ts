@@ -1,39 +1,42 @@
-import { CompoundIdField } from '../CompoundIdField'
+import { CompoundIdField } from '../CompoundIdField.js'
 import type {
   DataProvider,
   EntityDataProvider,
   EntityDataProviderFindOptions,
-} from '../data-interfaces'
+} from '../data-interfaces.js'
 import type {
   SqlCommand,
   SqlCommandWithParameters,
   SqlImplementation,
   SqlResult,
-} from '../sql-command'
+} from '../sql-command.js'
 
-import type { FieldMetadata } from '../column-interfaces'
-import type { Remult } from '../context'
+import type { FieldMetadata } from '../column-interfaces.js'
+import type { Remult } from '../context.js'
 import type {
   CustomSqlFilterBuilderFunction,
   EntityDbNamesBase,
-} from '../filter/filter-consumer-bridge-to-sql-request'
+} from '../filter/filter-consumer-bridge-to-sql-request.js'
 import {
   FilterConsumerBridgeToSqlRequest,
   dbNamesOf,
   isDbReadonly,
-} from '../filter/filter-consumer-bridge-to-sql-request'
-import { Filter, customDatabaseFilterToken } from '../filter/filter-interfaces'
-import { remult as defaultRemult } from '../remult-proxy'
-import type { EntityFilter, EntityMetadata } from '../remult3/remult3'
+} from '../filter/filter-consumer-bridge-to-sql-request.js'
+import {
+  Filter,
+  customDatabaseFilterToken,
+} from '../filter/filter-interfaces.js'
+import { remult as defaultRemult } from '../remult-proxy.js'
+import type { EntityFilter, EntityMetadata } from '../remult3/remult3.js'
 import type {
   EntityBase,
   RepositoryOverloads,
-} from '../remult3/RepositoryImplementation'
-import { getRepository } from '../remult3/RepositoryImplementation'
-import type { SortSegment } from '../sort'
-import { Sort } from '../sort'
-import { ValueConverters } from '../valueConverters'
-import { getRepositoryInternals } from '../remult3/repository-internals'
+} from '../remult3/RepositoryImplementation.js'
+import { getRepository } from '../remult3/RepositoryImplementation.js'
+import type { SortSegment } from '../sort.js'
+import { Sort } from '../sort.js'
+import { ValueConverters } from '../valueConverters.js'
+import { getRepositoryInternals } from '../remult3/repository-internals.js'
 
 // @dynamic
 export class SqlDatabase implements DataProvider {

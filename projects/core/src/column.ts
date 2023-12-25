@@ -1,9 +1,9 @@
-import { assign } from '../assign'
+import { assign } from '../assign.js'
 
-import type { FindOptions, idType, Repository } from './remult3/remult3'
-import { __updateEntityBasedOnWhere } from './remult3/__updateEntityBasedOnWhere'
-import { getEntityRef } from './remult3/getEntityRef'
-import { getRepositoryInternals } from './remult3/repository-internals'
+import type { FindOptions, idType, Repository } from './remult3/remult3.js'
+import { __updateEntityBasedOnWhere } from './remult3/__updateEntityBasedOnWhere.js'
+import { getEntityRef } from './remult3/getEntityRef.js'
+import { getRepositoryInternals } from './remult3/repository-internals.js'
 
 export function makeTitle(name: string) {
   // insert a space before all caps

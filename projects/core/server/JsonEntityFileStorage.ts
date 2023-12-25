@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import type { JsonEntityStorage } from '../index'
-import { JsonDataProvider } from '../index'
+import type { JsonEntityStorage } from '../index.js'
+import { JsonDataProvider } from '../index.js'
 
 export class JsonEntityFileStorage implements JsonEntityStorage {
   getItem(entityDbName: string) {

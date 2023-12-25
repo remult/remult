@@ -1,12 +1,12 @@
-import { getRelationInfo } from '../internals'
-import { CompoundIdField } from './CompoundIdField'
-import type { FieldMetadata } from './column-interfaces'
+import { getRelationInfo } from '../internals.js'
+import { CompoundIdField } from './CompoundIdField.js'
+import type { FieldMetadata } from './column-interfaces.js'
 import type {
   EntityMetadata,
   EntityOrderBy,
   RelationInfo,
   RelationOptions,
-} from './remult3/remult3'
+} from './remult3/remult3.js'
 export class Sort {
   toEntityOrderBy(): EntityOrderBy<any> {
     let result: any = {}

@@ -1,36 +1,36 @@
 import type { Knex } from 'knex'
-import type { Remult } from '../src/context'
-import { allEntities } from '../src/context'
-import type { EntityDbNamesBase } from '../src/filter/filter-consumer-bridge-to-sql-request'
+import type { Remult } from '../src/context.js'
+import { allEntities } from '../src/context.js'
+import type { EntityDbNamesBase } from '../src/filter/filter-consumer-bridge-to-sql-request.js'
 import {
   dbNamesOf,
   isDbReadonly,
-} from '../src/filter/filter-consumer-bridge-to-sql-request'
-import type { FilterConsumer } from '../src/filter/filter-interfaces'
+} from '../src/filter/filter-consumer-bridge-to-sql-request.js'
+import type { FilterConsumer } from '../src/filter/filter-interfaces.js'
 import {
   customDatabaseFilterToken,
   Filter,
-} from '../src/filter/filter-interfaces'
+} from '../src/filter/filter-interfaces.js'
 
-import { CompoundIdField } from '../src/CompoundIdField'
-import type { FieldMetadata } from '../src/column-interfaces'
+import { CompoundIdField } from '../src/CompoundIdField.js'
+import type { FieldMetadata } from '../src/column-interfaces.js'
 import type {
   DataProvider,
   EntityDataProvider,
   EntityDataProviderFindOptions,
-} from '../src/data-interfaces'
-import { remult as remultContext } from '../src/remult-proxy'
-import type { EntityFilter, EntityMetadata } from '../src/remult3/remult3'
-import type { RepositoryOverloads } from '../src/remult3/RepositoryImplementation'
+} from '../src/data-interfaces.js'
+import { remult as remultContext } from '../src/remult-proxy.js'
+import type { EntityFilter, EntityMetadata } from '../src/remult3/remult3.js'
+import type { RepositoryOverloads } from '../src/remult3/RepositoryImplementation.js'
 import {
   getRepository,
   isAutoIncrement,
-} from '../src/remult3/RepositoryImplementation'
-import { Sort } from '../src/sort'
-import { ValueConverters } from '../src/valueConverters'
-import { resultCompoundIdFilter as resultCompoundIdFilter } from '../src/resultCompoundIdFilter'
-import type { StringFieldOptions } from '../src/remult3/Fields'
-import { getRepositoryInternals } from '../src/remult3/repository-internals'
+} from '../src/remult3/RepositoryImplementation.js'
+import { Sort } from '../src/sort.js'
+import { ValueConverters } from '../src/valueConverters.js'
+import { resultCompoundIdFilter as resultCompoundIdFilter } from '../src/resultCompoundIdFilter.js'
+import type { StringFieldOptions } from '../src/remult3/Fields.js'
+import { getRepositoryInternals } from '../src/remult3/repository-internals.js'
 
 export class KnexDataProvider implements DataProvider {
   constructor(public knex: Knex) {}

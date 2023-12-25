@@ -1,2 +1,2 @@
-export * from './postgres-data-provider'
-export * from './schema-builder'
+export * from './postgres-data-provider.js'
+export * from './schema-builder.js'

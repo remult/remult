@@ -9,10 +9,10 @@ export {
   RemultServerOptions,
   SpecificRoute,
   RemultServer,
-} from './expressBridge'
+} from './expressBridge.js'
 export {
   JsonEntityFileStorage,
   JsonFileDataProvider,
-} from './JsonEntityFileStorage'
-export { SseSubscriptionServer } from '../SseSubscriptionServer'
-export { DataProviderLiveQueryStorage } from '../live-query/data-provider-live-query-storage'
+} from './JsonEntityFileStorage.js'
+export { SseSubscriptionServer } from '../SseSubscriptionServer.js'
+export { DataProviderLiveQueryStorage } from '../live-query/data-provider-live-query-storage.js'

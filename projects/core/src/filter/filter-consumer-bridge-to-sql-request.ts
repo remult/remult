@@ -1,13 +1,13 @@
-import type { FieldMetadata } from '../column-interfaces'
-import { SqlDatabase } from '../data-providers/sql-database'
+import type { FieldMetadata } from '../column-interfaces.js'
+import { SqlDatabase } from '../data-providers/sql-database.js'
 import type {
   EntityMetadataOverloads,
   RepositoryOverloads,
-} from '../remult3/RepositoryImplementation'
-import { getEntityMetadata } from '../remult3/RepositoryImplementation'
-import type { EntityFilter, MembersOnly } from '../remult3/remult3'
-import type { SqlCommandWithParameters } from '../sql-command'
-import type { Filter, FilterConsumer } from './filter-interfaces'
+} from '../remult3/RepositoryImplementation.js'
+import { getEntityMetadata } from '../remult3/RepositoryImplementation.js'
+import type { EntityFilter, MembersOnly } from '../remult3/remult3.js'
+import type { SqlCommandWithParameters } from '../sql-command.js'
+import type { Filter, FilterConsumer } from './filter-interfaces.js'
 
 export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
   private where = ''

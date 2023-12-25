@@ -1,4 +1,11 @@
 {
   "extends": "./tsconfig.json",
-  "exclude": ["src/test.ts", "**/*.spec.ts", "**/*.backend-spec.ts"]
+  "compilerOptions": {
+    "outDir": "../../dist/remult"
+  },
+  "exclude": [
+    "src/test.ts",
+    "**/*.spec.ts",
+    "**/*.backend-spec.ts"
+  ]
 }

@@ -1,4 +1,4 @@
-import type { DataProvider } from '../src/data-interfaces'
+import type { DataProvider } from '../src/data-interfaces.js'
 
 export function initDataProvider(
   optionsDataProvider?:
@@ -13,7 +13,7 @@ export function initDataProvider(
 
   dataProvider = dataProvider.then(async (dp) => {
     if (dp) return dp
-    return new (await import('./JsonEntityFileStorage')).JsonFileDataProvider(
+    return new (await import('./JsonEntityFileStorage.js')).JsonFileDataProvider(
       './db',
     )
   })

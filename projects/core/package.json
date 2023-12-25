@@ -2,18 +2,23 @@
   "name": "remult",
   "version": "0.15.0",
   "description": "A CRUD framework for full-stack TypeScript",
-  "types": "index.d.ts",
-  "module": "esm/index.js",
-  "homepage": "https://remult.dev/",
+  "homepage": "https://remult.dev",
   "repository": {
     "type": "git",
     "url": "https://github.com/remult/remult.git",
     "directory": "projects/core"
   },
   "license": "MIT",
-  "author": {
-    "name": "Noam Honig"
-  },
+  "contributors": [
+    {
+      "name": "Noam Honig",
+      "email": "noam.honig@gmail.com"
+    },
+    {
+      "name": "Yoni Rapoport",
+      "email": "yoni.rapoport@gmail.com"
+    }
+  ],
   "dependencies": {
     "@paralleldrive/cuid2": "^2.2.1",
     "uuid": "^8.3.2",
@@ -21,133 +26,21 @@
     "tslib": "^2.3.1"
   },
   "exports": {
-    ".": {
-      "require": "./index.js",
-      "node": {
-        "require": "./index.js",
-        "import": "./index.js"
-      },
-      "import": "./esm/index.js"
-    },
-    "./remult-express": {
-      "require": "./remult-express.js",
-      "node": {
-        "require": "./remult-express.js",
-        "import": "./remult-express.js"
-      },
-      "import": "./esm/remult-express.js"
-    },
-    "./remult-next": {
-      "require": "./remult-next.js",
-      "node": {
-        "require": "./remult-next.js",
-        "import": "./remult-next.js"
-      },
-      "import": "./esm/remult-next.js"
-    },
-    "./server": {
-      "require": "./server/index.js",
-      "node": {
-        "require": "./server/index.js",
-        "import": "./server/index.js"
-      },
-      "import": "./esm/server/index.js"
-    },
-    "./server/core": {
-      "require": "./server/core.js",
-      "node": {
-        "require": "./server/core.js",
-        "import": "./server/core.js"
-      },
-      "import": "./esm/server/core.js"
-    },
-    "./remult-fastify": {
-      "require": "./remult-fastify.js",
-      "node": {
-        "require": "./remult-fastify.js",
-        "import": "./remult-fastify.js"
-      },
-      "import": "./esm/remult-fastify.js"
-    },
-    "./remult-hapi": {
-      "require": "./remult-hapi.js",
-      "node": {
-        "require": "./remult-hapi.js",
-        "import": "./remult-hapi.js"
-      },
-      "import": "./esm/remult-hapi.js"
-    },
-    "./remult-fresh": {
-      "require": "./remult-fresh.js",
-      "node": {
-        "require": "./remult-fresh.js",
-        "import": "./remult-fresh.js"
-      },
-      "import": "./esm/remult-fresh.js"
-    },
-    "./remult-sveltekit": {
-      "require": "./remult-sveltekit.js",
-      "node": {
-        "require": "./remult-sveltekit.js",
-        "import": "./remult-sveltekit.js"
-      },
-      "import": "./esm/remult-sveltekit.js"
-    },
-    "./postgres": {
-      "require": "./postgres/index.js",
-      "node": {
-        "require": "./postgres/index.js",
-        "import": "./postgres/index.js"
-      },
-      "import": "./esm/postgres/index.js"
-    },
-    "./postgres/schema-builder": {
-      "require": "./postgres/schema-builder.js",
-      "node": {
-        "require": "./postgres/schema-builder.js",
-        "import": "./postgres/schema-builder.js"
-      },
-      "import": "./esm/postgres/schema-builder.js"
-    },
-    "./remult-knex": {
-      "require": "./remult-knex/index.js",
-      "node": {
-        "require": "./remult-knex/index.js",
-        "import": "./remult-knex/index.js"
-      },
-      "import": "./esm/remult-knex/index.js"
-    },
-    "./remult-mongo": {
-      "require": "./remult-mongo.js",
-      "node": {
-        "require": "./remult-mongo.js",
-        "import": "./remult-mongo.js"
-      },
-      "import": "./esm/remult-mongo.js"
-    },
-    "./ably": {
-      "require": "./ably.js",
-      "node": {
-        "require": "./ably.js",
-        "import": "./ably.js"
-      },
-      "import": "./esm/ably.js"
-    },
-    "./graphql": {
-      "require": "./graphql.js",
-      "node": {
-        "require": "./graphql.js",
-        "import": "./graphql.js"
-      },
-      "import": "./esm/graphql.js"
-    },
-    "./internals": {
-      "require": "./internals.js",
-      "node": {
-        "require": "./internals.js",
-        "import": "./internals.js"
-      },
-      "import": "./esm/internals.js"
-    }
+    ".": "./index.js",
+    "./remult-express": "./remult-express.js",
+    "./remult-next": "./remult-next.js",
+    "./server": "./server/index.js",
+    "./server/core": "./server/core.js",
+    "./remult-fastify": "./remult-fastify.js",
+    "./remult-hapi": "./remult-hapi.js",
+    "./remult-fresh": "./remult-fresh.js",
+    "./remult-sveltekit": "./remult-sveltekit.js",
+    "./postgres": "./postgres/index.js",
+    "./postgres/schema-builder": "./postgres/schema-builder.js",
+    "./remult-knex": "./remult-knex/index.js",
+    "./remult-mongo": "./remult-mongo.js",
+    "./ably": "./ably.js",
+    "./graphql": "./graphql.js",
+    "./internals": "./internals.js"
   }
 }

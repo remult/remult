@@ -1,21 +1,25 @@
-import { getRelationInfo } from '../internals'
-import type { Remult } from './context'
-import { doTransaction } from './context'
-import type { ErrorInfo } from './data-interfaces'
+import { getRelationInfo } from '../internals.js'
+import type { Remult } from './context.js'
+import { doTransaction } from './context.js'
+import type { ErrorInfo } from './data-interfaces.js'
 import {
   findOptionsToJson,
   liveQueryAction,
-} from './data-providers/rest-data-provider'
+} from './data-providers/rest-data-provider.js'
 import {
   Filter,
   buildFilterFromRequestParameters,
   customUrlToken,
-} from './filter/filter-interfaces'
-import type { QueryData } from './live-query/SubscriptionServer'
-import type { EntityFilter, FindOptions, Repository } from './remult3/remult3'
-import type { rowHelperImplementation } from './remult3/RepositoryImplementation'
+} from './filter/filter-interfaces.js'
+import type { QueryData } from './live-query/SubscriptionServer.js'
+import type {
+  EntityFilter,
+  FindOptions,
+  Repository,
+} from './remult3/remult3.js'
+import type { rowHelperImplementation } from './remult3/RepositoryImplementation.js'
 
-import { ForbiddenError } from './server-action'
+import { ForbiddenError } from './server-action.js'
 
 export class DataApi<T = any> {
   constructor(

@@ -1,40 +1,44 @@
 import type { Response } from 'express'
-import type { ResponseRequiredForSSE } from '../SseSubscriptionServer'
-import { SseSubscriptionServer } from '../SseSubscriptionServer'
-import type { ClassType } from '../classType'
-import type { AllowedForInstance, UserInfo } from '../src/context'
-import { Remult, RemultAsyncLocalStorage, allEntities } from '../src/context'
-import type { DataApiRequest, DataApiResponse } from '../src/data-api'
-import { DataApi, serializeError } from '../src/data-api'
-import type { DataProvider, ErrorInfo, Storage } from '../src/data-interfaces'
+import type { ResponseRequiredForSSE } from '../SseSubscriptionServer.js'
+import { SseSubscriptionServer } from '../SseSubscriptionServer.js'
+import type { ClassType } from '../classType.js'
+import type { AllowedForInstance, UserInfo } from '../src/context.js'
+import { Remult, RemultAsyncLocalStorage, allEntities } from '../src/context.js'
+import type { DataApiRequest, DataApiResponse } from '../src/data-api.js'
+import { DataApi, serializeError } from '../src/data-api.js'
+import type {
+  DataProvider,
+  ErrorInfo,
+  Storage,
+} from '../src/data-interfaces.js'
 import {
   liveQueryKeepAliveRoute,
   streamUrl,
-} from '../src/live-query/SubscriptionChannel'
+} from '../src/live-query/SubscriptionChannel.js'
 import type {
   LiveQueryStorage,
   PerformWithContext,
   SubscriptionServer,
-} from '../src/live-query/SubscriptionServer'
+} from '../src/live-query/SubscriptionServer.js'
 import {
   InMemoryLiveQueryStorage,
   LiveQueryPublisher,
-} from '../src/live-query/SubscriptionServer'
-import { IdEntity } from '../src/remult3/IdEntity'
-import { Fields } from '../src/remult3/Fields'
+} from '../src/live-query/SubscriptionServer.js'
+import { IdEntity } from '../src/remult3/IdEntity.js'
+import { Fields } from '../src/remult3/Fields.js'
 
-import { Entity } from '../src/remult3/entity'
-import { getEntityKey } from '../src/remult3/getEntityRef'
-import type { EntityMetadata, Repository } from '../src/remult3/remult3'
+import { Entity } from '../src/remult3/entity.js'
+import { getEntityKey } from '../src/remult3/getEntityRef.js'
+import type { EntityMetadata, Repository } from '../src/remult3/remult3.js'
 import type {
   ActionInterface,
   jobWasQueuedResult,
   myServerAction,
   queuedJobInfoResponse,
-} from '../src/server-action'
-import { Action, classBackendMethodsArray } from '../src/server-action'
-import { actionInfo, serverActionField } from '../src/server-action-info'
-import { initDataProvider } from './initDataProvider'
+} from '../src/server-action.js'
+import { Action, classBackendMethodsArray } from '../src/server-action.js'
+import { actionInfo, serverActionField } from '../src/server-action-info.js'
+import { initDataProvider } from './initDataProvider.js'
 
 export interface RemultServerOptions<RequestType> {
   /**Entities to use for the api */
