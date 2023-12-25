@@ -41,6 +41,7 @@
     "./remult-mongo": "./remult-mongo.js",
     "./ably": "./ably.js",
     "./graphql": "./graphql.js",
-    "./internals": "./internals.js"
+    "./internals": "./internals.js",
+    "./remult-nuxt": "./remult-nuxt.js"
   }
 }

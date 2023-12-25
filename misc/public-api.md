@@ -2523,3 +2523,17 @@ export interface RelationInfo {
   type: "reference" | "toOne" | "toMany"
 }
 ```
+
+## ./remult-nuxt.js
+
+```ts
+export declare function remultNuxt(
+  options: RemultServerOptions<H3Event>,
+): RemultNuxtServer
+//[ ] RemultServerOptions from ./server/index.js is not exported
+export type RemultNuxtServer = RemultServerCore<H3Event> &
+  ((event: H3Event) => Promise<any>) & {
+    withRemult<T>(event: H3Event, what: () => Promise<T>): Promise<T>
+  }
+//[ ] RemultServerCore from ./server/index.js is not exported
+```
