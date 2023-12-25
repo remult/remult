@@ -23,7 +23,7 @@ describe('test sql implementation', () => {
   }
   let commands: string[] = []
   const db = new SqlDatabase({
-    wrapName: (name) => '[' + name + ']',
+    wrapIdentifier: (name) => '[' + name + ']',
     createCommand: () =>
       ({
         addParameterAndReturnSqlToken(val: any) {
@@ -65,7 +65,7 @@ describe('test sql implementation', () => {
           completed: true,
         },
         undefined,
-        await dbNamesOf(repo, db.wrapName),
+        await dbNamesOf(repo, db.wrapIdentifier),
       ),
     ).toMatchInlineSnapshot('"[completed] = true"')
   })
@@ -77,7 +77,7 @@ describe('test sql implementation', () => {
           completed: true,
         },
         undefined,
-        new Proxy(await dbNamesOf(repo, db.wrapName), {
+        new Proxy(await dbNamesOf(repo, db.wrapIdentifier), {
           get(target, p, receiver) {
             return (col) => 'alias.' + target[p](col)
           },

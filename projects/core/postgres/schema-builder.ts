@@ -123,7 +123,10 @@ export class PostgresSchemaBuilder {
     const entities: EntityMetadata[] = []
     for (const entityClass of [...allEntities].reverse()) {
       let entity = remult.repo(entityClass).metadata
-      let e: EntityDbNamesBase = await dbNamesOf(entity, this.pool.wrapName)
+      let e: EntityDbNamesBase = await dbNamesOf(
+        entity,
+        this.pool.wrapIdentifier,
+      )
       if (completed.has(e.$entityName)) continue
       completed.add(e.$entityName)
       entities.push(entity)
@@ -133,7 +136,10 @@ export class PostgresSchemaBuilder {
 
   async ensureSchema(entities: EntityMetadata<any>[]) {
     for (const entity of entities) {
-      let e: EntityDbNamesBase = await dbNamesOf(entity, this.pool.wrapName)
+      let e: EntityDbNamesBase = await dbNamesOf(
+        entity,
+        this.pool.wrapIdentifier,
+      )
       try {
         if (!entity.options.sqlExpression) {
           if (e.$entityName.toLowerCase().indexOf('from ') < 0) {
@@ -150,7 +156,7 @@ export class PostgresSchemaBuilder {
 
   async createIfNotExist(entity: EntityMetadata): Promise<void> {
     var c = this.pool.createCommand()
-    let e: EntityDbNamesBase = await dbNamesOf(entity, this.pool.wrapName)
+    let e: EntityDbNamesBase = await dbNamesOf(entity, this.pool.wrapIdentifier)
 
     await c
       .execute(
@@ -185,7 +191,7 @@ CREATE table ${this.schemaAndName(e)} (${result}\r\n)`
     entity: T,
     c: (e: T) => FieldMetadata,
   ) {
-    let e: EntityDbNamesBase = await dbNamesOf(entity, this.pool.wrapName)
+    let e: EntityDbNamesBase = await dbNamesOf(entity, this.pool.wrapIdentifier)
     if (isDbReadonly(c(entity), e)) return
     try {
       let cmd = this.pool.createCommand()
@@ -216,7 +222,10 @@ CREATE table ${this.schemaAndName(e)} (${result}\r\n)`
   async verifyAllColumns<T extends EntityMetadata>(entity: T) {
     try {
       let cmd = this.pool.createCommand()
-      let e: EntityDbNamesBase = await dbNamesOf(entity, this.pool.wrapName)
+      let e: EntityDbNamesBase = await dbNamesOf(
+        entity,
+        this.pool.wrapIdentifier,
+      )
 
       let cols = (
         await cmd.execute(

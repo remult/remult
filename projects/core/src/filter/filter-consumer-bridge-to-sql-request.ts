@@ -224,12 +224,12 @@ export declare type EntityDbNames<entityType> = {
 
 export async function dbNamesOf<entityType>(
   repo: EntityMetadataOverloads<entityType>,
-  wrapName: (name: string) => string = (x) => x,
+  wrapIdentifier: (name: string) => string = (x) => x,
 ): Promise<EntityDbNames<entityType>> {
   var meta = getEntityMetadata(repo)
 
   const result: EntityDbNamesBase = {
-    $entityName: await entityDbName(meta, wrapName),
+    $entityName: await entityDbName(meta, wrapIdentifier),
     toString: () => result.$entityName,
     $dbNameOf: (field: FieldMetadata | string) => {
       var key: string
@@ -239,14 +239,14 @@ export async function dbNamesOf<entityType>(
     },
   }
   for (const field of meta.fields) {
-    result[field.key] = await fieldDbName(field, meta, wrapName)
+    result[field.key] = await fieldDbName(field, meta, wrapIdentifier)
   }
   return result as EntityDbNames<entityType>
 }
 
 export async function entityDbName(
   metadata: EntityMetadata,
-  wrapName: (name: string) => string = (x) => x,
+  wrapIdentifier: (name: string) => string = (x) => x,
 ) {
   if (metadata.options.sqlExpression) {
     if (typeof metadata.options.sqlExpression === 'string')
@@ -255,12 +255,12 @@ export async function entityDbName(
       return await metadata.options.sqlExpression(metadata)
     }
   }
-  return wrapName(metadata.options.dbName)
+  return wrapIdentifier(metadata.options.dbName)
 }
 export async function fieldDbName(
   f: FieldMetadata,
   meta: EntityMetadata,
-  wrapName: (name: string) => string = (x) => x,
+  wrapIdentifier: (name: string) => string = (x) => x,
 ) {
   try {
     if (f.options.sqlExpression) {
@@ -277,9 +277,9 @@ export async function fieldDbName(
       ((f.options as RelationOptions<any, any, any>).field as string)
     if (field) {
       let fInfo = meta.fields.find(field)
-      if (fInfo) return fieldDbName(fInfo, meta, wrapName)
+      if (fInfo) return fieldDbName(fInfo, meta, wrapIdentifier)
     }
-    return wrapName(f.options.dbName)
+    return wrapIdentifier(f.options.dbName)
   } finally {
   }
 }

@@ -48,7 +48,7 @@ export class SqlDatabase implements DataProvider {
   async execute(sql: string) {
     return await this.createCommand().execute(sql)
   }
-  wrapName: (name: string) => string = (x) => x
+  wrapIdentifier: (name: string) => string = (x) => x
   /* @internal*/
   _getSourceSql() {
     return this.sql
@@ -162,7 +162,7 @@ export class SqlDatabase implements DataProvider {
    */
   public static durationThreshold = 0
   constructor(private sql: SqlImplementation) {
-    if (sql.wrapName) this.wrapName = (x) => sql.wrapName(x)
+    if (sql.wrapIdentifier) this.wrapIdentifier = (x) => sql.wrapIdentifier(x)
   }
   private createdEntities: string[] = []
 }
@@ -241,7 +241,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
   ) {}
   async init() {
     let dbNameProvider: EntityDbNamesBase = await dbNamesOf(this.entity, (x) =>
-      this.sql.wrapName(x),
+      this.sql.wrapIdentifier(x),
     )
     await this.iAmUsed(dbNameProvider)
     return dbNameProvider

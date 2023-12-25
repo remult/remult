@@ -38,7 +38,7 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
     let repo = remult.repo(entity)
     await db.execute(
       'drop table if exists ' +
-        (await dbNamesOf(repo.metadata, db.wrapName)).$entityName,
+        (await dbNamesOf(repo.metadata, db.wrapIdentifier)).$entityName,
     )
     await db.ensureSchema([repo.metadata])
     return repo

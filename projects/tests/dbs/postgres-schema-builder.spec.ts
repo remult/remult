@@ -26,7 +26,9 @@ describe.skipIf(!connectionString)(
   'Test postgres schema builder with quoted names',
   () => {
     beforeEach(async () => {
-      db = await createPostgresDataProvider({ wrapName: (x) => x }) //connection string is in a .env file placed in the `tests` folder with key `DATABASE_URL`
+      db = await createPostgresDataProvider({
+        caseInsensitiveIdentifiers: true,
+      }) //connection string is in a .env file placed in the `tests` folder with key `DATABASE_URL`
       remult.dataProvider = db
 
       // clean up the test database
@@ -244,7 +246,7 @@ describe.skipIf(!connectionString)(
 
       const repo = remult.repo(Task)
 
-      const t = await dbNamesOf(repo, db.wrapName)
+      const t = await dbNamesOf(repo, db.wrapIdentifier)
       expect(t.$entityName).toBe('"Task"')
 
       var sb = new PostgresSchemaBuilder(db)
@@ -396,7 +398,7 @@ describe.skipIf(!connectionString)(
       expect(result.rows[0].table_schema).toBe('not_public')
     })
     it('wrap woks good with schema', () => {
-      expect(db.wrapName('public.Task')).toBe('"public"."Task"')
+      expect(db.wrapIdentifier('public.Task')).toBe('"public"."Task"')
     })
 
     it('schema builder with default schema & overwritten at entity level', async () => {
@@ -596,7 +598,7 @@ describe.skipIf(!connectionString)(
       expect(result.rows[0].table_schema).toBe('not_public')
     })
     it('test correct wrapping', () =>
-      expect(db.wrapName('public."Task"')).toBe('"public"."Task"'))
+      expect(db.wrapIdentifier('public."Task"')).toBe('"public"."Task"'))
 
     it('schema builder with default schema & overwritten at entity level', async () => {
       var sb = new PostgresSchemaBuilder(db, 'not_public')

@@ -37,7 +37,7 @@ export class PostgresDataProvider implements SqlImplementation {
   }
   constructor(
     private pool: PostgresPool,
-    public wrapName: (name: string) => string = (name) =>
+    public wrapIdentifier: (name: string) => string = (name) =>
       name
         .split('.')
         .map((name) =>
@@ -117,7 +117,8 @@ export async function createPostgresDataProvider(options?: {
   connectionString?: string
   sslInDev?: boolean
   configuration?: 'heroku' | PoolConfig
-  wrapName?: (name: string) => string
+  wrapIdentifier?: (name: string) => string
+  caseInsensitiveIdentifiers?: boolean
 }) {
   if (!options) options = {}
   let config: PoolConfig = {}
@@ -142,7 +143,11 @@ export async function createPostgresDataProvider(options?: {
   }
 
   const db = new SqlDatabase(
-    new PostgresDataProvider(new Pool(config), options?.wrapName),
+    new PostgresDataProvider(
+      new Pool(config),
+      options?.wrapIdentifier ||
+        (options.caseInsensitiveIdentifiers && ((name) => name)),
+    ),
   )
   let remult = new Remult()
   remult.dataProvider = db
