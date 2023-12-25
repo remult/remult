@@ -721,19 +721,20 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //p1 - V - fix sql log to console to make more sense
 
 /*p1 - with remult async for remultexpress
+//p1 - Add a with remult to Remult!
+//p1 - add schema option to create postgres data provider
+//p1 - getEntityRefClone  What I would like is to make a copy of the item (without getting it from the server again)
+
 rename withremultpromise to that withRemultAsync
 expose live query storage in remult
 
 request optional - and depends on that run `getUser` & `initRequest`
 */
-//y1 - What I would like is to make a copy of the item (without getting it from the server again)
 //y1 - from the crm-demo(https://crm-demo.up.railway.app/deals), after editing a deal: - _updateEntityBasedOnApi
-//y1 - consider moving the request to be second parameter of with remult async
-//y1 - Add a with remult promise to Remult!
+
 //y1 - Backend methods are transactions, it's not intuitive and maybe should be optional / opt in
 //y1 - how to run a transaction as a user
 //p1 - enum column
-//p1 - add schema option to create postgres data provider
 //p1 - find one i had a question about find first's different syntax from find that confused a user
 //p1 - I think there should be a way to throw a forbidden exception
 //p1 - Write some ctrl g
