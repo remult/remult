@@ -71,7 +71,7 @@ describe('test object column', () => {
     let sqlr = (
       await db.execute(
         'select phone1,phone2,phone3 from ' +
-          (await x._.repository.metadata.getDbName()),
+          (await x._.repository.metadata.options.dbName),
       )
     ).rows[0]
     expect(sqlr.phone1).toBe('')
@@ -86,7 +86,7 @@ describe('test object column', () => {
     sqlr = (
       await db.execute(
         'select phone1,phone2,phone3 from ' +
-          (await x._.repository.metadata.getDbName()),
+          (await x._.repository.metadata.options.dbName),
       )
     ).rows[0]
     expect(sqlr.phone1).toBe('123')
@@ -101,7 +101,7 @@ describe('test object column', () => {
     sqlr = (
       await db.execute(
         'select phone1,phone2,phone3 from ' +
-          (await x._.repository.metadata.getDbName()),
+          (await x._.repository.metadata.options.dbName),
       )
     ).rows[0]
     expect(sqlr.phone1).toBe('')
@@ -182,7 +182,8 @@ describe('test object column', () => {
     expect(x.tags).toEqual(['a', 'b'])
     let sqlr = (
       await db.execute(
-        'select tags,tags2 from ' + (await x._.repository.metadata.getDbName()),
+        'select tags,tags2 from ' +
+          (await x._.repository.metadata.options.dbName),
       )
     ).rows[0]
     expect(sqlr.tags).toBe(JSON.stringify(['a', 'b']))

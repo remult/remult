@@ -8,6 +8,7 @@ import {
   InMemoryDataProvider,
   Relations,
   Remult,
+  dbNamesOf,
   describeClass,
   remult,
 } from '../../../core'
@@ -722,7 +723,7 @@ it('test null and related field ', async () => {
   expect(o.customer.name).toBe('noam')
 })
 it('test dbname', async () => {
-  expect(await remult.repo(Task).fields.secondaryCategory.getDbName()).toBe(
+  expect((await dbNamesOf(remult.repo(Task))).secondaryCategory).toBe(
     'secondaryCategoryId',
   )
 })

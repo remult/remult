@@ -55,7 +55,12 @@ export interface BackendMethodOptions<type> {
   paramTypes?: any[]
 }
 export const CaptionTransformer: {
-  transformCaption: (remult: Remult, key: string, caption: string) => string
+  transformCaption: (
+    remult: Remult,
+    key: string,
+    caption: string,
+    entityMetaData: EntityMetadata<any>,
+  ) => string
 }
 export type ClassFieldDecorator<entityType, valueType> = (
   target: any,
@@ -174,6 +179,7 @@ export interface DataProvider {
 }
 export declare function dbNamesOf<entityType>(
   repo: EntityMetadataOverloads<entityType>,
+  wrapIdentifier?: (name: string) => string,
 ): Promise<EntityDbNames<entityType>>
 //[ ] EntityMetadataOverloads from TBD is not exported
 export declare function describeClass<classType>(
@@ -302,7 +308,8 @@ export interface EntityMetadata<entityType = any> {
    * }
    */
   apiInsertAllowed(item?: entityType): boolean
-  /** Returns the dbName - based on it's `dbName` option and it's `sqlExpression` option */
+  /**
+   * @deprecated Returns the dbName - based on it's `dbName` option and it's `sqlExpression` option */
   getDbName(): Promise<string>
   /** Metadata for the Entity's id */
   readonly idMetadata: IdMetadata<entityType>
@@ -550,7 +557,8 @@ export interface FieldMetadata<valueType = any, entityType = any> {
    * Task == taskRepo.metadata.fields.title.target //will return true
    */
   readonly target: ClassType<valueType>
-  /** Returns the dbName - based on it's `dbName` option and it's `sqlExpression` option */
+  /**
+   * @deprecated Returns the dbName - based on it's `dbName` option and it's `sqlExpression` option */
   getDbName(): Promise<string>
   /** Indicates if this field is based on a server express */
   readonly isServerExpression: boolean
@@ -661,7 +669,7 @@ export interface FieldOptions<entityType = any, valueType = any> {
   /** an arrow function that translates the value to a display value */
   displayValue?: (entity: entityType, value: valueType) => string
   /** an arrow function that determines the default value of the field, when the entity is created using the `repo.create` method */
-  defaultValue?: (entity: entityType) => valueType | Promise<valueType>
+  defaultValue?: (entity: entityType) => valueType
   /** The html input type for this field */
   inputType?: string
   /**
@@ -1618,6 +1626,7 @@ export declare class SqlDatabase implements DataProvider {
   static getDb(remult?: Remult): SqlDatabase
   createCommand(): SqlCommand
   execute(sql: string): Promise<SqlResult>
+  wrapIdentifier: (name: string) => string
   ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
   getEntityDataProvider(entity: EntityMetadata): EntityDataProvider
   transaction(
@@ -1628,6 +1637,7 @@ export declare class SqlDatabase implements DataProvider {
     repo: RepositoryOverloads<entityType>,
     condition: EntityFilter<entityType>,
     sqlCommand?: SqlCommandWithParameters,
+    dbNames?: EntityDbNamesBase,
   ): Promise<string>
   /**
    * `false` _(default)_ - No logging
@@ -1656,6 +1666,7 @@ export interface SqlImplementation {
   entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void>
   ensureSchema?(entities: EntityMetadata[]): Promise<void>
   supportsJsonColumnType?: boolean
+  wrapIdentifier?(name: string): string
 }
 export interface SqlResult {
   rows: any[]
@@ -2294,7 +2305,81 @@ export type RemultSveltekitServer = RemultServerCore<RequestEvent> &
 ## ./postgres/index.js
 
 ```ts
-
+export declare function createPostgresConnection(
+  options?: Parameters<typeof createPostgresDataProvider>[0],
+): Promise<SqlDatabase>
+//[ ] IndexedAccessType from TBD is not exported
+//[ ] SqlDatabase from TBD is not exported
+export declare function createPostgresDataProvider(options?: {
+  connectionString?: string
+  sslInDev?: boolean
+  configuration?: "heroku" | PoolConfig
+  wrapIdentifier?: (name: string) => string
+  caseInsensitiveIdentifiers?: boolean
+  schema?: string
+}): Promise<SqlDatabase>
+//[ ] PoolConfig from TBD is not exported
+export interface PostgresClient extends PostgresCommandSource {
+  release(): void
+}
+export declare function postgresColumnSyntax(
+  x: FieldMetadata,
+  dbName: string,
+): string
+//[ ] FieldMetadata from TBD is not exported
+export interface PostgresCommandSource {
+  query(queryText: string, values?: any[]): Promise<QueryResult>
+}
+//[ ] QueryResult from TBD is not exported
+export declare class PostgresDataProvider implements SqlImplementation {
+  private pool
+  private options?
+  supportsJsonColumnType: boolean
+  static getDb(remult?: Remult): ClientBase
+  entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void>
+  getLimitSqlSyntax(limit: number, offset: number): string
+  createCommand(): SqlCommand
+  constructor(
+    pool: PostgresPool,
+    options?: {
+      wrapIdentifier?: (name: string) => string
+      schema?: string
+    },
+  )
+  wrapIdentifier: (name: any) => any
+  ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
+  transaction(
+    action: (dataProvider: SqlImplementation) => Promise<void>,
+  ): Promise<void>
+}
+//[ ] Remult from TBD is not exported
+//[ ] ClientBase from TBD is not exported
+//[ ] EntityMetadata from TBD is not exported
+//[ ] SqlCommand from TBD is not exported
+//[ ] SqlImplementation from TBD is not exported
+export interface PostgresPool extends PostgresCommandSource {
+  connect(): Promise<PostgresClient>
+}
+export declare class PostgresSchemaBuilder {
+  private pool
+  private removeQuotes
+  private whereTableAndSchema
+  private schemaAndName
+  private schemaOnly
+  verifyStructureOfAllEntities(remult?: Remult): Promise<void>
+  ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
+  createIfNotExist(entity: EntityMetadata): Promise<void>
+  addColumnIfNotExist<T extends EntityMetadata>(
+    entity: T,
+    c: (e: T) => FieldMetadata,
+  ): Promise<void>
+  verifyAllColumns<T extends EntityMetadata>(entity: T): Promise<void>
+  specifiedSchema: string
+  constructor(pool: SqlDatabase, schema?: string)
+}
+export declare function preparePostgresQueueStorage(
+  sql: SqlDatabase,
+): Promise<import("../server/expressBridge.js").EntityQueueStorage>
 ```
 
 ## ./postgres/schema-builder.js

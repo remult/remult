@@ -5,7 +5,13 @@ import type {
   RepositoryOverloads,
 } from '../remult3/RepositoryImplementation.js'
 import { getEntityMetadata } from '../remult3/RepositoryImplementation.js'
-import type { EntityFilter, MembersOnly } from '../remult3/remult3.js'
+import { getRelationInfo } from '../remult3/relationInfoMember.js'
+import type {
+  EntityFilter,
+  EntityMetadata,
+  MembersOnly,
+  RelationOptions,
+} from '../remult3/remult3.js'
 import type { SqlCommandWithParameters } from '../sql-command.js'
 import type { Filter, FilterConsumer } from './filter-interfaces.js'
 
@@ -201,7 +207,8 @@ export function isDbReadonly<entityType>(
   return (
     field.dbReadOnly ||
     field.isServerExpression ||
-    dbNames.$dbNameOf(field) != field.options.dbName
+    (field.options.sqlExpression &&
+      field.options.dbName != dbNames.$dbNameOf(field))
   )
 }
 
@@ -216,11 +223,12 @@ export declare type EntityDbNames<entityType> = {
 
 export async function dbNamesOf<entityType>(
   repo: EntityMetadataOverloads<entityType>,
+  wrapIdentifier: (name: string) => string = (x) => x,
 ): Promise<EntityDbNames<entityType>> {
   var meta = getEntityMetadata(repo)
 
   const result: EntityDbNamesBase = {
-    $entityName: await meta.getDbName(),
+    $entityName: await entityDbName(meta, wrapIdentifier),
     toString: () => result.$entityName,
     $dbNameOf: (field: FieldMetadata | string) => {
       var key: string
@@ -230,7 +238,47 @@ export async function dbNamesOf<entityType>(
     },
   }
   for (const field of meta.fields) {
-    result[field.key] = await field.getDbName()
+    result[field.key] = await fieldDbName(field, meta, wrapIdentifier)
   }
   return result as EntityDbNames<entityType>
+}
+
+export async function entityDbName(
+  metadata: EntityMetadata,
+  wrapIdentifier: (name: string) => string = (x) => x,
+) {
+  if (metadata.options.sqlExpression) {
+    if (typeof metadata.options.sqlExpression === 'string')
+      return metadata.options.sqlExpression
+    else if (typeof metadata.options.sqlExpression === 'function') {
+      return await metadata.options.sqlExpression(metadata)
+    }
+  }
+  return wrapIdentifier(metadata.options.dbName)
+}
+export async function fieldDbName(
+  f: FieldMetadata,
+  meta: EntityMetadata,
+  wrapIdentifier: (name: string) => string = (x) => x,
+) {
+  try {
+    if (f.options.sqlExpression) {
+      let result: string
+      if (typeof f.options.sqlExpression === 'function') {
+        result = await f.options.sqlExpression(meta)
+      } else result = f.options.sqlExpression
+      if (!result) return f.options.dbName
+      return result
+    }
+    const rel = getRelationInfo(f.options)
+    let field =
+      rel?.type === 'toOne' &&
+      ((f.options as RelationOptions<any, any, any>).field as string)
+    if (field) {
+      let fInfo = meta.fields.find(field)
+      if (fInfo) return fieldDbName(fInfo, meta, wrapIdentifier)
+    }
+    return wrapIdentifier(f.options.dbName)
+  } finally {
+  }
 }

@@ -1,7 +1,7 @@
 import type { Db } from 'mongodb'
 import { MongoClient } from 'mongodb'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
-import { Fields, Remult } from '../../core'
+import { Fields, Remult, dbNamesOf } from '../../core'
 import type { ClassType } from '../../core/classType'
 import { MongoDataProvider } from '../../core/remult-mongo'
 import { entityWithValidations } from './shared-tests/entityWithValidations'
@@ -16,7 +16,9 @@ describe.skipIf(!mongoConnectionString)('mongo with Transaction', () => {
 
   async function createEntity(entity: ClassType<any>) {
     let repo = remult.repo(entity)
-    await mongoDb.collection(await repo.metadata.getDbName()).deleteMany({})
+    await mongoDb
+      .collection((await dbNamesOf(repo.metadata)).$entityName)
+      .deleteMany({})
 
     return repo
   }

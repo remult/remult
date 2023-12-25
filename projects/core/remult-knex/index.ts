@@ -124,7 +124,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
   }
   async find(options: EntityDataProviderFindOptions): Promise<any[]> {
     const e = await this.init()
-    let cols = [] as string[]
+    let cols = [] as any[]
     let colKeys: FieldMetadata[] = []
     for (const x of this.entity.fields) {
       if (x.isServerExpression) {
@@ -174,7 +174,16 @@ class KnexEntityDataProvider implements EntityDataProvider {
     })
   }
   async init() {
-    return (await dbNamesOf(this.entity)) as EntityDbNamesBase
+    const r = (await dbNamesOf(this.entity)) as EntityDbNamesBase
+    return {
+      $dbNameOf: (f) => {
+        let fm = f as FieldMetadata
+        if (fm.options.sqlExpression)
+          return this.knex.raw(r.$dbNameOf(f)) as unknown as string
+        return r.$dbNameOf(f)
+      },
+      $entityName: r.$entityName,
+    } satisfies EntityDbNamesBase
   }
   async update(id: any, data: any): Promise<any> {
     const e = await this.init()

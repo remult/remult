@@ -33,7 +33,7 @@ class JsonEntityDataProvider implements EntityDataProvider {
     what: (dp: EntityDataProvider, save: () => void) => any,
   ): Promise<any> {
     let data = []
-    let dbName = await this.entity.getDbName()
+    let dbName = await this.entity.options.dbName
     let s = this.helper.getItem(dbName)
     if (s) data = JSON.parse(s)
     let dp = new ArrayEntityDataProvider(this.entity, data)

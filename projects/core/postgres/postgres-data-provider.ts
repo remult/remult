@@ -36,10 +36,29 @@ export class PostgresDataProvider implements SqlImplementation {
   createCommand(): SqlCommand {
     return new PostgresBridgeToSQLCommand(this.pool)
   }
-  constructor(private pool: PostgresPool) {}
+  constructor(
+    private pool: PostgresPool,
+    private options?: {
+      wrapIdentifier?: (name: string) => string
+      schema?: string
+    },
+  ) {
+    if (options.wrapIdentifier) this.wrapIdentifier = options.wrapIdentifier
+    if (options.schema) {
+      this.pool = new PostgresSchemaWrapper(pool, options.schema)
+    }
+  }
+  wrapIdentifier = (name) =>
+    name
+      .split('.')
+      .map((name) =>
+        name.startsWith('"') ? name : '"' + name.replace(/"/g, '""') + '"',
+      )
+      .join('.')
+
   async ensureSchema(entities: EntityMetadata<any>[]): Promise<void> {
     var db = new SqlDatabase(this)
-    var sb = new PostgresSchemaBuilder(db)
+    var sb = new PostgresSchemaBuilder(db, this.options?.schema)
     await sb.ensureSchema(entities)
   }
 
@@ -83,7 +102,7 @@ class PostgresBridgeToSQLCommand implements SqlCommand {
     this.values.push(val)
     return '$' + this.values.length
   }
-  execute(sql: string): Promise<SqlResult> {
+  async execute(sql: string): Promise<SqlResult> {
     return this.source
       .query(sql, this.values)
       .then((r) => new PostgresBridgeToSQLQueryResult(r))
@@ -100,17 +119,18 @@ class PostgresBridgeToSQLQueryResult implements SqlResult {
   rows: any[]
 }
 
-export async function createPostgresConnection(options?: {
-  connectionString?: string
-  sslInDev?: boolean
-  configuration?: 'heroku' | PoolConfig
-}) {
+export async function createPostgresConnection(
+  options?: Parameters<typeof createPostgresDataProvider>[0],
+) {
   return createPostgresDataProvider(options)
 }
 export async function createPostgresDataProvider(options?: {
   connectionString?: string
   sslInDev?: boolean
   configuration?: 'heroku' | PoolConfig
+  wrapIdentifier?: (name: string) => string
+  caseInsensitiveIdentifiers?: boolean
+  schema?: string
 }) {
   if (!options) options = {}
   let config: PoolConfig = {}
@@ -134,7 +154,14 @@ export async function createPostgresDataProvider(options?: {
     config.connectionString = options.connectionString
   }
 
-  const db = new SqlDatabase(new PostgresDataProvider(new Pool(config)))
+  const db = new SqlDatabase(
+    new PostgresDataProvider(new Pool(config), {
+      wrapIdentifier:
+        options?.wrapIdentifier ||
+        (options.caseInsensitiveIdentifiers && ((name) => name)),
+      schema: options.schema,
+    }),
+  )
   let remult = new Remult()
   remult.dataProvider = db
   return db
@@ -150,4 +177,25 @@ export async function preparePostgresQueueStorage(sql: SqlDatabase) {
   return new (await import('../server/expressBridge.js')).EntityQueueStorage(
     c.repo(JobsInQueueEntity),
   )
+}
+export class PostgresSchemaWrapper implements PostgresPool {
+  constructor(
+    private pool: PostgresPool,
+    private schema: string,
+  ) {}
+
+  async connect(): Promise<PostgresClient> {
+    let r = await this.pool.connect()
+
+    await r.query('set search_path to ' + this.schema)
+    return r
+  }
+  async query(queryText: string, values?: any[]): Promise<QueryResult> {
+    let c = await this.connect()
+    try {
+      return await c.query(queryText, values)
+    } finally {
+      c.release()
+    }
+  }
 }

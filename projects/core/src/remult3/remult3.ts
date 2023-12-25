@@ -257,7 +257,8 @@ export interface EntityMetadata<entityType = any> {
    */
   apiInsertAllowed(item?: entityType): boolean
 
-  /** Returns the dbName - based on it's `dbName` option and it's `sqlExpression` option */
+  /**
+   * @deprecated Returns the dbName - based on it's `dbName` option and it's `sqlExpression` option */
   getDbName(): Promise<string>
   /** Metadata for the Entity's id */
   readonly idMetadata: IdMetadata<entityType>
@@ -719,6 +720,8 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //p1 - V - postgres case sensitive
 //p1 - V - filterToRaw should get a dbnames of - and we should create a dbnames of that supports an alias
 //p1 - V - fix sql log to console to make more sense
+//p1 - V - change wrap name to wrapIdentifier, case insensitive identifiers
+//p1 - v add schema option to create postgres data provider
 
 /*p1 - with remult async for remultexpress
 //p1 - Add a with remult to Remult!
@@ -792,6 +795,8 @@ remult.apiClient.url='localhost:3007/api
 //p2 - conside law-q db based on schema issue - I think that while running the dataProvider function, we should have a valid remult - maybe even have a valid remult, that will be valid until api is run
 
 //y2 - we should really reconsider allow null by default to be true - I think that what we're doing is confusing for most . In my case I added a volunteer relation, and didn't set any value to it - and I get an error that null value is not allowed for it
+
+//p1 - add a follow up doc to the tutorial on how to user a real user table for the users
 /**
 * our default is allow null false.
 * for sql databases we add a db default of 0/''/false

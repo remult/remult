@@ -60,7 +60,7 @@ describe('test sql database expressions', () => {
     expect(isDbReadonly(x.metadata.fields.col, n)).toBe(true)
   })
   it('test asyync dbname', async () => {
-    let z = await remult.repo(testServerExpression1).metadata.getDbName()
+    let z = (await dbNamesOf(remult.repo(testServerExpression1))).$entityName
     expect(z).toBe('testServerExpression1')
   })
 })
@@ -81,7 +81,7 @@ class testSqlExpression extends EntityBase {
   code: number
   @Fields.number<testSqlExpression>({
     sqlExpression: async (x) => {
-      return (await x.fields.code.getDbName()) + ' * 5'
+      return (await x.fields.code.options.dbName) + ' * 5'
     },
   })
   testExpression: number

@@ -3,7 +3,7 @@ import { allDbTests } from './shared-tests'
 import { MongoDataProvider } from '../../core/remult-mongo'
 import type { Db } from 'mongodb'
 import { MongoClient } from 'mongodb'
-import { Entity, Fields, Remult, describeClass } from '../../core'
+import { Entity, Fields, Remult, dbNamesOf, describeClass } from '../../core'
 import type { ClassType } from '../../core/classType'
 import { Categories } from '../tests/remult-3-entities'
 
@@ -27,7 +27,8 @@ describe.skipIf(!mongoConnectionStringWithoutTransaction)(
     })
     async function createEntity(entity: ClassType<any>) {
       let repo = remult.repo(entity)
-      await mongoDb.collection(await repo.metadata.getDbName()).deleteMany({})
+      const dbNames = await dbNamesOf(repo.metadata)
+      await mongoDb.collection(dbNames.$entityName).deleteMany({})
 
       return repo
     }
@@ -103,15 +104,21 @@ describe.skipIf(!mongoConnectionStringWithoutTransaction)(
       let x = await r.insert({ id: 1, date: new Date(1976, 5, 16) })
 
       expect(
-        (await mongoDb.collection(await r.metadata.getDbName()).findOne())
-          .date instanceof Date,
+        (
+          await mongoDb
+            .collection((await dbNamesOf(r.metadata)).$entityName)
+            .findOne()
+        ).date instanceof Date,
       ).toBe(true)
       x.date = new Date(1978, 2, 15)
       await r.save(x)
 
       expect(
-        (await mongoDb.collection(await r.metadata.getDbName()).findOne())
-          .date instanceof Date,
+        (
+          await mongoDb
+            .collection((await dbNamesOf(r.metadata)).$entityName)
+            .findOne()
+        ).date instanceof Date,
       ).toBe(true)
 
       //let z = await r.save({ ...x, date: new Date(1978, 2, 15) })

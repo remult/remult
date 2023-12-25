@@ -51,6 +51,7 @@ export class SqlDatabase implements DataProvider {
   async execute(sql: string) {
     return await this.createCommand().execute(sql)
   }
+  wrapIdentifier: (name: string) => string = (x) => x
   /* @internal*/
   _getSourceSql() {
     return this.sql
@@ -128,6 +129,7 @@ export class SqlDatabase implements DataProvider {
     repo: RepositoryOverloads<entityType>,
     condition: EntityFilter<entityType>,
     sqlCommand?: SqlCommandWithParameters,
+    dbNames?: EntityDbNamesBase,
   ) {
     if (!sqlCommand) {
       sqlCommand = new myDummySQLCommand()
@@ -136,7 +138,7 @@ export class SqlDatabase implements DataProvider {
 
     var b = new FilterConsumerBridgeToSqlRequest(
       sqlCommand,
-      await dbNamesOf(r.metadata),
+      dbNames || (await dbNamesOf(r.metadata)),
     )
     b._addWhere = false
     await (
@@ -162,7 +164,9 @@ export class SqlDatabase implements DataProvider {
    * Threshold in milliseconds for logging queries to the console.
    */
   public static durationThreshold = 0
-  constructor(private sql: SqlImplementation) {}
+  constructor(private sql: SqlImplementation) {
+    if (sql.wrapIdentifier) this.wrapIdentifier = (x) => sql.wrapIdentifier(x)
+  }
   private createdEntities: string[] = []
 }
 
@@ -215,13 +219,16 @@ class LogSQLCommand implements SqlCommand {
           } else if (typeof this.logToConsole === 'function') {
             this.logToConsole(duration, sql, this.args)
           } else {
-            console.info({ query: sql, arguments: this.args, duration })
+            console.info(sql + '\n', { arguments: this.args, duration })
           }
         }
       }
       return r
     } catch (err) {
-      console.error({ error: err, query: sql, arguments: this.args })
+      console.error((err.message || 'Sql Error') + ':\n', sql, {
+        arguments: this.args,
+        error: err,
+      })
       throw err
     }
   }
@@ -236,7 +243,9 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     private strategy: SqlImplementation,
   ) {}
   async init() {
-    let dbNameProvider: EntityDbNamesBase = await dbNamesOf(this.entity)
+    let dbNameProvider: EntityDbNamesBase = await dbNamesOf(this.entity, (x) =>
+      this.sql.wrapIdentifier(x),
+    )
     await this.iAmUsed(dbNameProvider)
     return dbNameProvider
   }
@@ -461,11 +470,11 @@ async function bulkInsert<entityType extends EntityBase>(
     const c = db.createCommand()
     let sql =
       'insert into ' +
-      (await items[0]._.metadata.getDbName()) +
+      (await items[0]._.metadata.options.dbName) +
       ' (' +
       (
         await Promise.all(
-          items[0]._.metadata.fields.toArray().map((f) => f.getDbName()),
+          items[0]._.metadata.fields.toArray().map((f) => f.options.dbName),
         )
       ).join(',') +
       ') values '

@@ -142,7 +142,8 @@ export interface FieldMetadata<valueType = any, entityType = any> {
    * Task == taskRepo.metadata.fields.title.target //will return true
    */
   readonly target: ClassType<valueType>
-  /** Returns the dbName - based on it's `dbName` option and it's `sqlExpression` option */
+  /**
+   * @deprecated Returns the dbName - based on it's `dbName` option and it's `sqlExpression` option */
   getDbName(): Promise<string>
   /** Indicates if this field is based on a server express */
   readonly isServerExpression: boolean

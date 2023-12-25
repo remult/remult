@@ -8,7 +8,10 @@ import type {
 import { Allow, Remult } from '../../core/src/context'
 
 import { describe, expect, it } from 'vitest'
-import { FilterConsumerBridgeToSqlRequest } from '../../core/src/filter/filter-consumer-bridge-to-sql-request'
+import {
+  dbNamesOf,
+  FilterConsumerBridgeToSqlRequest,
+} from '../../core/src/filter/filter-consumer-bridge-to-sql-request'
 import { Validators } from '../../core/src/validators'
 
 import type { EntityMetadata, FindOptions } from '../../core'
@@ -431,10 +434,10 @@ describe('decorator inheritance', () => {
     let c = new Remult()
     let defsA = c.repo(typeA).metadata
     expect(defsA.key).toBe('typeA')
-    expect(await defsA.getDbName()).toBe('dbnameA')
+    expect((await dbNamesOf(defsA)).$entityName).toBe('dbnameA')
     let defsB = c.repo(typeB).metadata
     expect(defsB.key).toBe('typeB')
-    expect(await defsB.getDbName()).toBe('dbnameA')
+    expect((await dbNamesOf(defsB)).$entityName).toBe('dbnameA')
   })
 })
 describe('order by api', () => {

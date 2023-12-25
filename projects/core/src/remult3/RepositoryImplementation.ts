@@ -81,6 +81,10 @@ import {
   type RepositoryInternal,
   getInternalKey,
 } from './repository-internals.js'
+import {
+  entityDbName,
+  fieldDbName,
+} from '../filter/filter-consumer-bridge-to-sql-request.js'
 //import  { remult } from "../remult-proxy";
 
 let classValidatorValidate:
@@ -2001,18 +2005,24 @@ export class FieldRefImplementation<entityType, valueType>
 }
 
 export const CaptionTransformer = {
-  transformCaption: (remult: Remult, key: string, caption: string) => caption,
+  transformCaption: (
+    remult: Remult,
+    key: string,
+    caption: string,
+    entityMetaData: EntityMetadata<any>,
+  ) => caption,
 }
 export function buildCaption(
   caption: string | ((remult: Remult) => string),
   key: string,
   remult: Remult,
+  metaData: EntityMetadata<any>,
 ): string {
   let result: string
   if (typeof caption === 'function') {
     if (remult) result = caption(remult)
   } else if (caption) result = caption
-  result = CaptionTransformer.transformCaption(remult, key, result)
+  result = CaptionTransformer.transformCaption(remult, key, result, metaData)
   if (result) return result
   if (key) return makeTitle(key)
   return ''
@@ -2037,7 +2047,12 @@ export class columnDefsImpl implements FieldMetadata {
     if (typeof this.settings.allowApiUpdate === 'boolean')
       this.readonly = this.settings.allowApiUpdate
     if (!this.inputType) this.inputType = this.valueConverter.inputType
-    this.caption = buildCaption(settings.caption, settings.key, remult)
+    this.caption = buildCaption(
+      settings.caption,
+      settings.key,
+      remult,
+      entityDefs,
+    )
   }
   apiUpdateAllowed(item?: any): boolean {
     if (this.options.allowApiUpdate === undefined) return true
@@ -2062,26 +2077,7 @@ export class columnDefsImpl implements FieldMetadata {
   }
 
   async getDbName() {
-    try {
-      if (this.settings.sqlExpression) {
-        let result: string
-        if (typeof this.settings.sqlExpression === 'function') {
-          result = await this.settings.sqlExpression(this.entityDefs)
-        } else result = this.settings.sqlExpression
-        if (!result) return this.settings.dbName
-        return result
-      }
-      const rel = getRelationInfo(this.settings)
-      let field =
-        rel?.type === 'toOne' &&
-        ((this.settings as RelationOptions<any, any, any>).field as string)
-      if (field) {
-        let fInfo = this.entityDefs.fields.find(field)
-        if (fInfo) return fInfo.getDbName()
-      }
-      return this.settings.dbName
-    } finally {
-    }
+    return fieldDbName(this, this.entityDefs)
   }
   options: FieldOptions<any, any>
   target: ClassType<any>
@@ -2091,16 +2087,7 @@ export class columnDefsImpl implements FieldMetadata {
   allowNull: boolean
 
   caption: string
-  get dbName() {
-    let result
-    if (this.settings.sqlExpression) {
-      if (typeof this.settings.sqlExpression === 'function') {
-        result = this.settings.sqlExpression(this.entityDefs)
-      } else result = this.settings.sqlExpression
-    }
-    if (result) return result
-    return this.settings.dbName
-  }
+
   inputType: string
   key: string
   get dbReadOnly() {
@@ -2153,7 +2140,7 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
 
     this.fields = r as unknown as FieldsMetadata<T>
 
-    this.caption = buildCaption(entityInfo.caption, this.key, remult)
+    this.caption = buildCaption(entityInfo.caption, this.key, remult, this)
 
     if (entityInfo.id) {
       let r =
@@ -2198,24 +2185,8 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
     if (result) return result
     return this.remult.repo(this.entityType).getEntityRef({ ...item })
   }
-  dbNamePromise: Promise<string>
   getDbName(): Promise<string> {
-    if (this.dbNamePromise) return this.dbNamePromise
-    if (!this.options.sqlExpression) {
-      this.dbNamePromise = Promise.resolve(this.options.dbName)
-    }
-    if (typeof this.options.sqlExpression === 'string')
-      this.dbNamePromise = Promise.resolve(this.options.sqlExpression)
-    else if (typeof this.options.sqlExpression === 'function') {
-      let r = this.options.sqlExpression(this)
-      if (r instanceof Promise) this.dbNamePromise = r
-      else if (r) this.dbNamePromise = Promise.resolve(r)
-    }
-    this.dbNamePromise = this.dbNamePromise.then((x) => {
-      if (!x) return this.options.dbName
-      return x
-    })
-    return this.dbNamePromise
+    return entityDbName(this)
   }
 
   idMetadata: IdMetadata<T> = {

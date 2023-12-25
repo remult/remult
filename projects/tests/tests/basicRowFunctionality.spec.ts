@@ -1661,11 +1661,13 @@ describe('test data list', () => {
     let type = class extends Categories {}
     Entity('testName', { dbName: 'test' })(type)
     let r = new Remult().repo(type)
-    expect(await r.metadata.getDbName()).toBe('test')
+    expect((await dbNamesOf(r.metadata)).$entityName).toBe('test')
   })
   it('dbname of entity can use column names', async () => {
     let r = new Remult().repo(EntityWithLateBoundDbName)
-    expect(await r.metadata.getDbName()).toBe('(select CategoryID)')
+    expect((await dbNamesOf(r.metadata)).$entityName).toBe(
+      '(select CategoryID)',
+    )
   })
 })
 describe('test date storage', () => {
@@ -1688,7 +1690,7 @@ class myEntity {}
 describe('', () => {
   it('dbname of entity string works when key is not defined', async () => {
     let r = new Remult().repo(myEntity)
-    expect(await r.metadata.getDbName()).toBe('myEntity')
+    expect((await dbNamesOf(r.metadata)).$entityName).toBe('myEntity')
     expect(r.metadata.key).toBe('myEntity')
     expect(getEntityKey(myEntity)).toBeUndefined()
   })
