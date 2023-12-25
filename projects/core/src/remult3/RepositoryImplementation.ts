@@ -1991,18 +1991,24 @@ export class FieldRefImplementation<entityType, valueType>
 }
 
 export const CaptionTransformer = {
-  transformCaption: (remult: Remult, key: string, caption: string) => caption,
+  transformCaption: (
+    remult: Remult,
+    key: string,
+    caption: string,
+    entityMetaData: EntityMetadata<any>,
+  ) => caption,
 }
 export function buildCaption(
   caption: string | ((remult: Remult) => string),
   key: string,
   remult: Remult,
+  metaData: EntityMetadata<any>,
 ): string {
   let result: string
   if (typeof caption === 'function') {
     if (remult) result = caption(remult)
   } else if (caption) result = caption
-  result = CaptionTransformer.transformCaption(remult, key, result)
+  result = CaptionTransformer.transformCaption(remult, key, result, metaData)
   if (result) return result
   if (key) return makeTitle(key)
   return ''
@@ -2027,7 +2033,12 @@ export class columnDefsImpl implements FieldMetadata {
     if (typeof this.settings.allowApiUpdate === 'boolean')
       this.readonly = this.settings.allowApiUpdate
     if (!this.inputType) this.inputType = this.valueConverter.inputType
-    this.caption = buildCaption(settings.caption, settings.key, remult)
+    this.caption = buildCaption(
+      settings.caption,
+      settings.key,
+      remult,
+      entityDefs,
+    )
   }
   apiUpdateAllowed(item?: any): boolean {
     if (this.options.allowApiUpdate === undefined) return true
@@ -2115,7 +2126,7 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
 
     this.fields = r as unknown as FieldsMetadata<T>
 
-    this.caption = buildCaption(entityInfo.caption, this.key, remult)
+    this.caption = buildCaption(entityInfo.caption, this.key, remult, this)
 
     if (entityInfo.id) {
       let r =
