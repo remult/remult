@@ -715,9 +715,10 @@ export type ClassFieldDecorator<entityType, valueType> = (
   c?: any,
 ) => void
 
-//p1 - sql-expression for knex
-//p1 - postgres case sensitive
-//p1 - filterToRaw should get a dbnames of - and we should create a dbnames of that supports an alias
+//p1 - V - sql-expression for knex
+//p1 - V - postgres case sensitive
+//p1 - V - filterToRaw should get a dbnames of - and we should create a dbnames of that supports an alias
+//p1 - V - fix sql log to console to make more sense
 
 /*p1 - with remult async for remultexpress
 rename withremultpromise to that withRemultAsync
@@ -725,12 +726,13 @@ expose live query storage in remult
 
 request optional - and depends on that run `getUser` & `initRequest`
 */
+//y1 - What I would like is to make a copy of the item (without getting it from the server again)
+//y1 - from the crm-demo(https://crm-demo.up.railway.app/deals), after editing a deal: - _updateEntityBasedOnApi
 //y1 - consider moving the request to be second parameter of with remult async
 //y1 - Add a with remult promise to Remult!
 //y1 - Backend methods are transactions, it's not intuitive and maybe should be optional / opt in
 //y1 - how to run a transaction as a user
 //p1 - enum column
-//p1 - fix sql log to console to make more sense
 //p1 - add schema option to create postgres data provider
 //p1 - find one i had a question about find first's different syntax from find that confused a user
 //p1 - I think there should be a way to throw a forbidden exception
@@ -738,7 +740,7 @@ request optional - and depends on that run `getUser` & `initRequest`
 //y1 - get backend methods to work when specifying types for date, and entities as poco's
 //y1 - required
 //y1 - reconsider validators
-//y1 - message for invalid valie
+//y1 - message for invalid value
 //y1 - message for relation that is missing
 //p1 - more column types
 //p2 -   processError in remult express
@@ -747,7 +749,6 @@ request optional - and depends on that run `getUser` & `initRequest`
 //p1 - need a way to extract the fields from the relation - for generating relation based sql
 //p1 - add docs for apply changes
 //p1 - when subscribe is forbidden - the query still runs after the renew process
-//p1 - JSON FIELD LOST JSON STORAGE WHEN SET INPUT VALUE
 //p1 - 'update tasks set  where id = $1
 //y2 - consider multi tenancies
 //y2 - allow api read to also support instance and filter. - problem with promise

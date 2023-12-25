@@ -2,7 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.23.24] 2023-12-20
+## [0.23.5] 2023-12-23
+
+- Fixed `toOne` relation filter null for non nullable fields to work
+- Fixed `toOne` relation filter on $id:0 failed to work
+- Fixed wrongful loading of `toMany` relation on api with `defaultIncluded`
+
+## [0.23.4] 2023-12-20
 
 - Fixed Live query to also work in init api [#306](https://github.com/remult/remult/issues/306)
 

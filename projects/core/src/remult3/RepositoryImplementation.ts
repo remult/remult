@@ -1296,7 +1296,12 @@ abstract class rowHelperBase<T> {
       const rel = getRelationInfo(col)
       if (lu) val = lu.id
       else val = this.instance[col.key]
-      if (rel && isNew && !col.allowNull && (val === undefined || null)) {
+      if (
+        rel &&
+        isNew &&
+        !col.allowNull &&
+        (val === undefined || val === null)
+      ) {
         if (
           this.remult.repo(rel.toType()).metadata.idMetadata.field.valueType ===
           Number
@@ -1304,12 +1309,14 @@ abstract class rowHelperBase<T> {
           val = 0
         else val = ''
       }
-      if (val !== undefined) {
-        val = col.valueConverter.toJson(val)
-        if (val !== undefined && val !== null)
-          val = col.valueConverter.fromJson(JSON.parse(JSON.stringify(val)))
+      if (!rel || rel.type === 'reference') {
+        if (val !== undefined) {
+          val = col.valueConverter.toJson(val)
+          if (val !== undefined && val !== null)
+            val = col.valueConverter.fromJson(JSON.parse(JSON.stringify(val)))
+        }
+        d[col.key] = val
       }
-      if (!rel || rel.type === 'reference') d[col.key] = val
     }
     return d
   }
@@ -1354,12 +1361,16 @@ abstract class rowHelperBase<T> {
             result[col.key] = val
           } else val = lu.id
         else {
-          val = this.instance[col.key]
-          if (!this.remult) {
-            if (val) {
-              let eo = getEntitySettings(val.constructor, false)
-              if (eo) {
-                val = getEntityRef(val).getId()
+          if (getRelationInfo(col) && !includeRelatedEntities) {
+            disable = true
+          } else {
+            val = this.instance[col.key]
+            if (!this.remult) {
+              if (val) {
+                let eo = getEntitySettings(val.constructor, false)
+                if (eo) {
+                  val = getEntityRef(val).getId()
+                }
               }
             }
           }

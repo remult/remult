@@ -1,3 +1,4 @@
+import { getRelationInfo } from '../internals.js'
 import type { Remult } from './context.js'
 import { doTransaction } from './context.js'
 import type { ErrorInfo } from './data-interfaces.js'
@@ -11,7 +12,11 @@ import {
   customUrlToken,
 } from './filter/filter-interfaces.js'
 import type { QueryData } from './live-query/SubscriptionServer.js'
-import type { EntityFilter, FindOptions, Repository } from './remult3/remult3.js'
+import type {
+  EntityFilter,
+  FindOptions,
+  Repository,
+} from './remult3/remult3.js'
 import type { rowHelperImplementation } from './remult3/RepositoryImplementation.js'
 
 import { ForbiddenError } from './server-action.js'
@@ -105,7 +110,10 @@ export class DataApi<T = any> {
     request: DataApiRequest,
     filterBody: any,
   ) {
-    let findOptions: FindOptions<T> = { load: () => [] }
+    let findOptions: FindOptions<T> = {
+      load: () => [],
+      include: this.includeNone(),
+    }
     findOptions.where = await this.buildWhere(request, filterBody)
 
     if (request) {
@@ -159,6 +167,17 @@ export class DataApi<T = any> {
       )
     })
     return { r, findOptions }
+  }
+
+  private includeNone() {
+    let include = {}
+
+    for (const field of this.repository.metadata.fields) {
+      if (getRelationInfo(field.options)) {
+        include[field.key] = false
+      }
+    }
+    return include
   }
 
   async getArray(
@@ -262,6 +281,7 @@ export class DataApi<T = any> {
       await this.repository
         .find({
           where: { $and: where } as EntityFilter<any>,
+          include: this.includeNone(),
         })
         .then(async (r) => {
           if (r.length == 0) response.notFound()

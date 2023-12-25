@@ -13,7 +13,8 @@ export default defineConfig({
       './projects/tests/**/*.backend-spec.ts',
       './projects/tests/dbs/sql-lite.spec.ts',
     ],
-    //  reporters: ['dot'],
+    reporters: ['default', 'junit'],
+    outputFile: './test-results.xml',
     globals: false,
     coverage: {
       enabled: false,
