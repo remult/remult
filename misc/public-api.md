@@ -174,6 +174,7 @@ export interface DataProvider {
 }
 export declare function dbNamesOf<entityType>(
   repo: EntityMetadataOverloads<entityType>,
+  wrapName?: (name: string) => string,
 ): Promise<EntityDbNames<entityType>>
 //[ ] EntityMetadataOverloads from TBD is not exported
 export declare function describeClass<classType>(
@@ -302,7 +303,8 @@ export interface EntityMetadata<entityType = any> {
    * }
    */
   apiInsertAllowed(item?: entityType): boolean
-  /** Returns the dbName - based on it's `dbName` option and it's `sqlExpression` option */
+  /**
+   * @deprecated Returns the dbName - based on it's `dbName` option and it's `sqlExpression` option */
   getDbName(): Promise<string>
   /** Metadata for the Entity's id */
   readonly idMetadata: IdMetadata<entityType>
@@ -550,7 +552,8 @@ export interface FieldMetadata<valueType = any, entityType = any> {
    * Task == taskRepo.metadata.fields.title.target //will return true
    */
   readonly target: ClassType<valueType>
-  /** Returns the dbName - based on it's `dbName` option and it's `sqlExpression` option */
+  /**
+   * @deprecated Returns the dbName - based on it's `dbName` option and it's `sqlExpression` option */
   getDbName(): Promise<string>
   /** Indicates if this field is based on a server express */
   readonly isServerExpression: boolean
@@ -1618,6 +1621,7 @@ export declare class SqlDatabase implements DataProvider {
   static getDb(remult?: Remult): SqlDatabase
   createCommand(): SqlCommand
   execute(sql: string): Promise<SqlResult>
+  wrapName: (name: string) => string
   ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
   getEntityDataProvider(entity: EntityMetadata): EntityDataProvider
   transaction(
@@ -1628,6 +1632,7 @@ export declare class SqlDatabase implements DataProvider {
     repo: RepositoryOverloads<entityType>,
     condition: EntityFilter<entityType>,
     sqlCommand?: SqlCommandWithParameters,
+    dbNames?: EntityDbNamesBase,
   ): Promise<string>
   /**
    * `false` _(default)_ - No logging
@@ -1656,6 +1661,7 @@ export interface SqlImplementation {
   entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void>
   ensureSchema?(entities: EntityMetadata[]): Promise<void>
   supportsJsonColumnType?: boolean
+  wrapName?(name: string): string
 }
 export interface SqlResult {
   rows: any[]

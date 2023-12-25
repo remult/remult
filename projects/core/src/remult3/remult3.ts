@@ -720,6 +720,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //p1 - V - postgres case sensitive
 //p1 - V - filterToRaw should get a dbnames of - and we should create a dbnames of that supports an alias
 //p1 - V - fix sql log to console to make more sense
+//p1 - change wrap name to wrapIdentifier, case insensitive identifiers
 
 /*p1 - with remult async for remultexpress
 rename withremultpromise to that withRemultAsync
