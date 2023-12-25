@@ -1,4 +1,4 @@
-import type { ClientBase, PoolConfig, QueryResult } from 'pg'
+import type { ClientBase, PoolConfig, QueryResult, PoolClient } from 'pg'
 import { Pool } from 'pg'
 import { Remult } from '../src/context'
 import { SqlDatabase } from '../src/data-providers/sql-database'
@@ -37,17 +37,27 @@ export class PostgresDataProvider implements SqlImplementation {
   }
   constructor(
     private pool: PostgresPool,
-    public wrapIdentifier: (name: string) => string = (name) =>
-      name
-        .split('.')
-        .map((name) =>
-          name.startsWith('"') ? name : '"' + name.replace(/"/g, '""') + '"',
-        )
-        .join('.'),
-  ) {}
+    private options?: {
+      wrapIdentifier?: (name: string) => string
+      schema?: string
+    },
+  ) {
+    if (options.wrapIdentifier) this.wrapIdentifier = options.wrapIdentifier
+    if (options.schema) {
+      this.pool = new PostgresSchemaWrapper(pool, options.schema)
+    }
+  }
+  wrapIdentifier = (name) =>
+    name
+      .split('.')
+      .map((name) =>
+        name.startsWith('"') ? name : '"' + name.replace(/"/g, '""') + '"',
+      )
+      .join('.')
+
   async ensureSchema(entities: EntityMetadata<any>[]): Promise<void> {
     var db = new SqlDatabase(this)
-    var sb = new PostgresSchemaBuilder(db)
+    var sb = new PostgresSchemaBuilder(db, this.options?.schema)
     await sb.ensureSchema(entities)
   }
 
@@ -119,6 +129,7 @@ export async function createPostgresDataProvider(options?: {
   configuration?: 'heroku' | PoolConfig
   wrapIdentifier?: (name: string) => string
   caseInsensitiveIdentifiers?: boolean
+  schema?: string
 }) {
   if (!options) options = {}
   let config: PoolConfig = {}
@@ -143,11 +154,12 @@ export async function createPostgresDataProvider(options?: {
   }
 
   const db = new SqlDatabase(
-    new PostgresDataProvider(
-      new Pool(config),
-      options?.wrapIdentifier ||
+    new PostgresDataProvider(new Pool(config), {
+      wrapIdentifier:
+        options?.wrapIdentifier ||
         (options.caseInsensitiveIdentifiers && ((name) => name)),
-    ),
+      schema: options.schema,
+    }),
   )
   let remult = new Remult()
   remult.dataProvider = db
@@ -164,4 +176,25 @@ export async function preparePostgresQueueStorage(sql: SqlDatabase) {
   return new (await import('../server/expressBridge')).EntityQueueStorage(
     c.repo(JobsInQueueEntity),
   )
+}
+export class PostgresSchemaWrapper implements PostgresPool {
+  constructor(
+    private pool: PostgresPool,
+    private schema: string,
+  ) {}
+
+  async connect(): Promise<PostgresClient> {
+    let r = await this.pool.connect()
+
+    await r.query('set search_path to ' + this.schema)
+    return r
+  }
+  async query(queryText: string, values?: any[]): Promise<QueryResult> {
+    let c = await this.connect()
+    try {
+      return await c.query(queryText, values)
+    } finally {
+      c.release()
+    }
+  }
 }

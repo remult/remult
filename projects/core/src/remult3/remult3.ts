@@ -720,7 +720,8 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //p1 - V - postgres case sensitive
 //p1 - V - filterToRaw should get a dbnames of - and we should create a dbnames of that supports an alias
 //p1 - V - fix sql log to console to make more sense
-//p1 - change wrap name to wrapIdentifier, case insensitive identifiers
+//p1 - V - change wrap name to wrapIdentifier, case insensitive identifiers
+//p1 - v add schema option to create postgres data provider
 
 /*p1 - with remult async for remultexpress
 rename withremultpromise to that withRemultAsync
@@ -733,7 +734,6 @@ request optional - and depends on that run `getUser` & `initRequest`
 //y1 - Backend methods are transactions, it's not intuitive and maybe should be optional / opt in
 //y1 - how to run a transaction as a user
 //p1 - enum column
-//p1 - add schema option to create postgres data provider
 //p1 - find one i had a question about find first's different syntax from find that confused a user
 //p1 - I think there should be a way to throw a forbidden exception
 //p1 - Write some ctrl g
