@@ -6,20 +6,23 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- **PostgresDataProvider:**
-  - **BREAKING CHANGE:** Column & table names are now quoted (e.g., `"firstName"`) to enforce specific casing in PostgreSQL.
-    - To revert to case-insensitive identifiers, set `caseInsensitiveIdentifiers: true` when using `createPostgresDataProvider`.
+- **BREAKING CHANGE: PostgresDataProvider:** Column & table names are now quoted (e.g., `"firstName"`) to enforce specific casing in PostgreSQL.
+  - To revert to case-insensitive identifiers, set `caseInsensitiveIdentifiers: true` when using `createPostgresDataProvider`.
 
 ### Added
 
+- ESM support for NodeJS
+- Support for (nuxt)[https://nuxt.com/] Fullstack framework
 - Support for the `sqlExpression` field option in entities using the `knex` data provider.
-- `dbName` attribute in `EntityMetadata` & `FieldMetadata`.
-- `dbNames` as an optional parameter in the `filterToRaw` method of `SqlDatabase`.
 - `schema` parameter to `PostgresDataProvider` & `createPostgresDataProvider`.
 - `findOne` method in `Repository` with a unified `options` parameter for simplicity.
 - `withRemultAsync` function in `remultExpress` for contexts outside the normal request lifecycle.
 - `withRemult` function for obtaining a valid remult context in server scenarios.
-- Inclusion of `EntityMetadata` in the `CaptionTransformer.transformCaption` method.
+- Inclusion of `EntityMetadata` in `CaptionTransformer.transformCaption` method.
+- `dbName` attribute in `EntityMetadata` & `FieldMetadata`.
+- `wrapIdentifier` optional parameter in `dbNamesOf` function.
+- `dbNames` as an optional parameter in the `filterToRaw` method of `SqlDatabase`.
+- `wrapIdentifier` method in `SqlDatabase` for wrapping identifiers before sending to the database.
 
 ### Deprecated
 
