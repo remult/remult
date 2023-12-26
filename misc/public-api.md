@@ -2400,6 +2400,7 @@ export declare class PostgresDataProvider implements SqlImplementation {
     pool: PostgresPool,
     options?: {
       wrapIdentifier?: (name: string) => string
+      caseInsensitiveIdentifiers?: boolean
       schema?: string
     },
   )
