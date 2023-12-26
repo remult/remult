@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.23.6] 2023-12-26
+
+- Fixed issue where delete by id on the backend, didn't go through the deleting hook
+
 ## [0.23.5] 2023-12-23
 
 - Fixed `toOne` relation filter null for non nullable fields to work

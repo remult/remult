@@ -2017,6 +2017,41 @@ describe('CompoundIdPojoEntity', () => {
     await repo.delete({ a: 2, b: 20 })
     expect((await repo.find()).map((x) => x.a)).toEqual([1, 3])
   })
+  it('test that delete id works right', async () => {
+    let wasHere = false
+    @Entity('tasks', {
+      deleted: () => (wasHere = true),
+    })
+    class Task {
+      @Fields.integer()
+      id = 0
+      @Fields.string()
+      name = ''
+    }
+    const repo = new Remult(new InMemoryDataProvider()).repo(Task)
+    await repo.insert({ id: 1, name: 'a' })
+    await repo.delete(1)
+    expect(wasHere).toBe(true)
+  })
+  it('test that delete id works right 2', async () => {
+    let origValue = ''
+    @Entity<Task>('tasks', {
+      deleted: (task) => (origValue = task.name),
+      id: { id1: true, id2: true },
+    })
+    class Task {
+      @Fields.integer()
+      id1 = 0
+      @Fields.integer()
+      id2 = 0
+      @Fields.string()
+      name = ''
+    }
+    const repo = new Remult(new InMemoryDataProvider()).repo(Task)
+    await repo.insert({ id1: 1, id2: 1, name: 'a' })
+    await repo.delete({ id1: 1, id2: 1 })
+    expect(origValue).toBe('a')
+  })
   it('test save', async () => {
     var repo = new Remult(new InMemoryDataProvider()).repo(CompoundIdSimple)
     await repo.insert([
