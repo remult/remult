@@ -1387,6 +1387,7 @@ export declare class Remult {
   constructor(http: ExternalHttpProvider | typeof fetch | ApiClient)
   constructor(p: DataProvider)
   constructor()
+  liveQueryStorage?: LiveQueryStorage
   subscriptionServer?: SubscriptionServer
   /** Used to call a `backendMethod` using a specific `remult` object
    * @example
@@ -1410,11 +1411,11 @@ export declare class Remult {
   /** The api client that will be used by `remult` to perform calls to the `api` */
   apiClient: ApiClient
   static run<T>(
-    callback: () => T,
-    options: {
-      dataProvider: DataProvider
+    callback: (remult: any) => Promise<T>,
+    options?: {
+      dataProvider?: DataProvider
     },
-  ): T
+  ): Promise<T>
 }
 export interface RemultContext {}
 export declare function repo<entityType>(
@@ -2003,7 +2004,10 @@ export interface RemultServer<RequestType>
     req: RequestType,
     gRes?: GenericResponse,
   ): Promise<ServerHandleResponse | undefined>
-  withRemultAsync<T>(request: RequestType, what: () => Promise<T>): Promise<T>
+  withRemultAsync<T>(
+    request: RequestType | undefined,
+    what: () => Promise<T>,
+  ): Promise<T>
 }
 //[ ] ServerHandleResponse from TBD is not exported
 export interface RemultServerCore<RequestType> {
@@ -2161,7 +2165,10 @@ export interface RemultServer<RequestType>
     req: RequestType,
     gRes?: GenericResponse,
   ): Promise<ServerHandleResponse | undefined>
-  withRemultAsync<T>(request: RequestType, what: () => Promise<T>): Promise<T>
+  withRemultAsync<T>(
+    request: RequestType | undefined,
+    what: () => Promise<T>,
+  ): Promise<T>
 }
 //[ ] ServerHandleResponse from TBD is not exported
 export interface RemultServerOptions<RequestType> {
@@ -2244,9 +2251,10 @@ export declare function remultFastify(
 //[ ] RemultServerOptions from ./server/expressBridge.js is not exported
 export type RemultFastifyServer = FastifyPluginCallback &
   RemultServerCore<FastifyRequest> & {
-    withRemult<T>(req: FastifyRequest, what: () => Promise<T>): Promise<T>
+    withRemult: RemultServer<FastifyRequest>["withRemultAsync"]
   }
 //[ ] RemultServerCore from ./server/expressBridge.js is not exported
+//[ ] RemultServer from ./server/expressBridge.js is not exported
 ```
 
 ## ./remult-hapi.js
@@ -2258,9 +2266,10 @@ export declare function remultHapi(
 //[ ] RemultServerOptions from ./server/index.js is not exported
 export type RemultHapiServer = Plugin<any, any> &
   RemultServerCore<Request> & {
-    withRemult<T>(req: Request, what: () => Promise<T>): Promise<T>
+    withRemult: RemultServer<Request>["withRemultAsync"]
   }
 //[ ] RemultServerCore from ./server/index.js is not exported
+//[ ] RemultServer from ./server/index.js is not exported
 ```
 
 ## ./remult-fresh.js
@@ -2298,9 +2307,10 @@ export declare function remultSveltekit(
 //[ ] RemultServerOptions from ./server/index.js is not exported
 export type RemultSveltekitServer = RemultServerCore<RequestEvent> &
   Handle & {
-    withRemult<T>(request: RequestEvent, what: () => Promise<T>): Promise<T>
+    withRemult: RemultServer<RequestEvent>["withRemultAsync"]
   }
 //[ ] RemultServerCore from ./server/index.js is not exported
+//[ ] RemultServer from ./server/index.js is not exported
 ```
 
 ## ./postgres/index.js
@@ -2619,7 +2629,8 @@ export declare function remultNuxt(
 //[ ] RemultServerOptions from ./server/index.js is not exported
 export type RemultNuxtServer = RemultServerCore<H3Event> &
   ((event: H3Event) => Promise<any>) & {
-    withRemult<T>(event: H3Event, what: () => Promise<T>): Promise<T>
+    withRemult: RemultServer<H3Event>["withRemultAsync"]
   }
 //[ ] RemultServerCore from ./server/index.js is not exported
+//[ ] RemultServer from ./server/index.js is not exported
 ```
