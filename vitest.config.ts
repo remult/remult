@@ -6,6 +6,7 @@ config()
 export default defineConfig({
   test: {
     threads: false,
+    fileParallelism: false,
 
     include: [
       //   './projects/tests/tests/try-test.spec.ts',

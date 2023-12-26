@@ -111,6 +111,7 @@ export class SqlDatabase implements DataProvider {
               x.entityIsUsedForTheFirstTime(y),
             transaction: (z) => x.transaction(z),
             supportsJsonColumnType: this.sql.supportsJsonColumnType,
+            wrapIdentifier: this.wrapIdentifier,
           }),
         )
       } finally {

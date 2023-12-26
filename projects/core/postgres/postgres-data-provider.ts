@@ -79,6 +79,7 @@ export class PostgresDataProvider implements SqlImplementation {
         supportsJsonColumnType: this.supportsJsonColumnType,
         //@ts-ignore
         pool: client,
+        wrapIdentifier: this.wrapIdentifier,
       })
       await client.query('COMMIT')
     } catch (err) {
