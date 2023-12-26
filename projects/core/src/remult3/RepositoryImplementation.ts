@@ -2017,6 +2017,35 @@ export class FieldRefImplementation<entityType, valueType>
 }
 
 export const CaptionTransformer = {
+  /**
+   * Transforms the caption of a column based on custom rules or criteria.
+   *
+   * This method can be assigned an arrow function that dynamically alters the
+   * caption of a column. It is particularly useful for internationalization,
+   * applying specific labeling conventions, or any other custom caption transformation
+   * logic that your application requires.
+   *
+   * @param {Remult} remult - The Remult context, providing access to various framework features.
+   * @param {string} key - The key (name) of the field whose caption is being transformed.
+   * @param {string} caption - The original caption of the field.
+   * @param {EntityMetadata<any>} entityMetaData - Metadata of the entity that the field belongs to.
+   * @returns {string} The transformed caption for the field. If no transformation is applied,
+   *                   the original caption is returned.
+   *
+   * @example
+   * // Example of translating a field caption to French
+   * CaptionTransformer.transformCaption = (
+   *   remult, key, caption, entityMetaData
+   * ) => {
+   *   if (key === 'firstName') {
+   *     return 'Prénom'; // French translation for 'firstName'
+   *   }
+   *   return caption;
+   * };
+   *
+   * // Usage
+   * const firstNameCaption = repo(Person).fields.firstName.caption; // Returns 'Prénom'
+   */
   transformCaption: (
     remult: Remult,
     key: string,

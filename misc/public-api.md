@@ -55,6 +55,35 @@ export interface BackendMethodOptions<type> {
   paramTypes?: any[]
 }
 export const CaptionTransformer: {
+  /**
+   * Transforms the caption of a column based on custom rules or criteria.
+   *
+   * This method can be assigned an arrow function that dynamically alters the
+   * caption of a column. It is particularly useful for internationalization,
+   * applying specific labeling conventions, or any other custom caption transformation
+   * logic that your application requires.
+   *
+   * @param {Remult} remult - The Remult context, providing access to various framework features.
+   * @param {string} key - The key (name) of the field whose caption is being transformed.
+   * @param {string} caption - The original caption of the field.
+   * @param {EntityMetadata<any>} entityMetaData - Metadata of the entity that the field belongs to.
+   * @returns {string} The transformed caption for the field. If no transformation is applied,
+   *                   the original caption is returned.
+   *
+   * @example
+   * // Example of translating a field caption to French
+   * CaptionTransformer.transformCaption = (
+   *   remult, key, caption, entityMetaData
+   * ) => {
+   *   if (key === 'firstName') {
+   *     return 'Prénom'; // French translation for 'firstName'
+   *   }
+   *   return caption;
+   * };
+   *
+   * // Usage
+   * const firstNameCaption = repo(Person).fields.firstName.caption; // Returns 'Prénom'
+   */
   transformCaption: (
     remult: Remult,
     key: string,
@@ -272,6 +301,10 @@ export interface EntityMetadata<entityType = any> {
    * <h1>Create a new item in {taskRepo.metadata.caption}</h1>
    */
   readonly caption: string
+  /** The name of the table in the database that holds the data for this entity.
+   * If no name is set in the entity options, the `key` will be used instead.
+   */
+  readonly dbName: string
   /** The options send to the `Entity`'s decorator */
   readonly options: EntityOptions
   /** The class type of the entity */
@@ -543,6 +576,13 @@ export interface FieldMetadata<valueType = any, entityType = any> {
    * <input placeholder={taskRepo.metadata.fields.title.caption}/>
    */
   readonly caption: string
+  /** The name of the column in the database that holds the data for this field. If no name is set, the key will be used instead.
+   * @example
+   *
+   * @Fields.string({ dbName: 'userName'})
+   * userName=''
+   */
+  dbName: string
   /** The field's value type (number,string etc...) */
   readonly valueType: any
   /** The options sent to this field's decorator */
@@ -642,10 +682,9 @@ export interface FieldOptions<entityType = any, valueType = any> {
   /**  An expression that will determine this fields value on the backend and be provided to the front end*/
   serverExpression?: (entity: entityType) => valueType | Promise<valueType>
   /** The name of the column in the database that holds the data for this field. If no name is set, the key will be used instead.
-   * Be aware that if you are using postgres and want to keep your casing, you have to escape your string with double quotes.
    * @example
    *
-   * @Fields.string({ dbName: '"userName"'})
+   * @Fields.string({ dbName: 'userName'})
    * userName=''
    */
   dbName?: string
@@ -1410,12 +1449,6 @@ export declare class Remult {
   readonly context: RemultContext
   /** The api client that will be used by `remult` to perform calls to the `api` */
   apiClient: ApiClient
-  static run<T>(
-    callback: (remult: any) => Promise<T>,
-    options?: {
-      dataProvider?: DataProvider
-    },
-  ): Promise<T>
 }
 export interface RemultContext {}
 export declare function repo<entityType>(
@@ -1436,6 +1469,13 @@ export interface Repository<entityType> {
     where?: EntityFilter<entityType>,
     options?: FindFirstOptions<entityType>,
   ): Promise<entityType>
+  /** returns the first item that matchers the `where` condition
+   * @example
+   * await taskRepo.findOne({ where:{ completed:false }})
+   * @example
+   * await taskRepo.findFirst({ where:{ completed:false }, createIfNotFound: true })
+   *      */
+  findOne(options?: FindFirstOptions<entityType>): Promise<entityType>
   /** returns the items that matches the idm the result is cached unless specified differently in the `options` parameter */
   findId(
     id: idType<entityType>,
@@ -1852,6 +1892,12 @@ export declare class WebSqlDataProvider
   private addColumnSqlSyntax
   toString(): string
 }
+export declare function withRemult<T>(
+  callback: (remult: any) => Promise<T>,
+  options?: {
+    dataProvider?: DataProvider
+  },
+): Promise<T>
 ````
 
 ## ./remult-express.js

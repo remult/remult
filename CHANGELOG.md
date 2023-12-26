@@ -2,6 +2,37 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.24.0] TBD
+
+### Changed
+
+- **PostgresDataProvider:**
+  - **BREAKING CHANGE:** Column & table names are now quoted (e.g., `"firstName"`) to enforce specific casing in PostgreSQL.
+    - To revert to case-insensitive identifiers, set `caseInsensitiveIdentifiers: true` when using `createPostgresDataProvider`.
+
+### Added
+
+- Support for the `sqlExpression` field option in entities using the `knex` data provider.
+- `dbName` attribute in `EntityMetadata` & `FieldMetadata`.
+- `dbNames` as an optional parameter in the `filterToRaw` method of `SqlDatabase`.
+- `schema` parameter to `PostgresDataProvider` & `createPostgresDataProvider`.
+- `findOne` method in `Repository` with a unified `options` parameter for simplicity.
+- `withRemultAsync` function in `remultExpress` for contexts outside the normal request lifecycle.
+- `withRemult` function for obtaining a valid remult context in server scenarios.
+- Inclusion of `EntityMetadata` in the `CaptionTransformer.transformCaption` method.
+
+### Deprecated
+
+- `getDbName` method in `EntityMetadata` & `FieldMetadata` (to be removed in future versions).
+
+### Removed
+
+- `run` method from `Remult`.
+
+### Renamed
+
+- `withRemultPromise` to `withRemultAsync` in `RemultServer`.
+
 ## [0.23.5] 2023-12-23
 
 - Fixed `toOne` relation filter null for non nullable fields to work

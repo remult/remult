@@ -221,6 +221,10 @@ export interface EntityMetadata<entityType = any> {
    * <h1>Create a new item in {taskRepo.metadata.caption}</h1>
    */
   readonly caption: string
+  /** The name of the table in the database that holds the data for this entity.
+   * If no name is set in the entity options, the `key` will be used instead.
+   */
+  readonly dbName: string
   /** The options send to the `Entity`'s decorator */
   readonly options: EntityOptions
   /** The class type of the entity */
