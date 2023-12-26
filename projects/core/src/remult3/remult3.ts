@@ -295,6 +295,13 @@ export interface Repository<entityType> {
     where?: EntityFilter<entityType>,
     options?: FindFirstOptions<entityType>,
   ): Promise<entityType>
+  /** returns the first item that matchers the `where` condition
+   * @example
+   * await taskRepo.findOne({ where:{ completed:false }})
+   * @example
+   * await taskRepo.findFirst({ where:{ completed:false }, createIfNotFound: true })
+   *      */
+  findOne(options?: FindFirstOptions<entityType>): Promise<entityType>
   /** returns the items that matches the idm the result is cached unless specified differently in the `options` parameter */
   findId(
     id: idType<entityType>,
@@ -725,9 +732,10 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //p1 - v - add schema option to create postgres data provider
 /*p1 - V -  with remult async for remultexpress
 //y1 - lint tests (reference to js)
-//p1 - withRemult function Add a with remult to Remult! - there is an existing one called Remult.run
+//p1 - V withRemult function Add a with remult to Remult! - there is an existing one called Remult.run
 //p1 - V -  dbname to metadata consider making dbname in the field metadata options - non optional, so it'll be clear that it always have value - something like require the specific key - or move it to the metadata field
 //p1 - V - getEntityRefClone  What I would like is to make a copy of the item (without getting it from the server again)
+//p1 - V find one i had a question about find first's different syntax from find that confused a user
 
 rename V - withremultpromise to that withRemultAsync
 expose live query storage in remult
@@ -739,7 +747,6 @@ request optional - and depends on that run `getUser` & `initRequest`
 //y2 - Backend methods are transactions, it's not intuitive and maybe should be optional / opt in
 //y2 - how to run a transaction as a user
 //p1 - enum column
-//p1 - find one i had a question about find first's different syntax from find that confused a user
 //p1 - I think there should be a way to throw a forbidden exception
 //p1 - Write some ctrl g
 //y2 - get backend methods to work when specifying types for date, and entities as poco's

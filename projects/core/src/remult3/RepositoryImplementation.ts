@@ -873,21 +873,10 @@ export class RepositoryImplementation<entityType>
     return this.edp.count(await this.translateWhereToFilter(where))
   }
   private cache = new Map<string, cacheEntityInfo<entityType>>()
-  async findFirst(
-    where?: EntityFilter<entityType>,
+  async findOne(
     options?: FindFirstOptions<entityType>,
     skipOrderByAndLimit = false,
-  ): Promise<entityType> {
-    if (!options) options = {}
-    if (where) {
-      if (options.where) {
-        let w = options.where
-        options.where = {
-          $and: [w, where],
-        } as EntityFilter<entityType>
-      } else options.where = where
-    }
-
+  ) {
     let r: Promise<entityType>
     let cacheInfo: cacheEntityInfo<entityType>
     if (options.useCache) {
@@ -931,6 +920,22 @@ export class RepositoryImplementation<entityType>
       })
     }
     return r
+  }
+  async findFirst(
+    where?: EntityFilter<entityType>,
+    options?: FindFirstOptions<entityType>,
+    skipOrderByAndLimit = false,
+  ): Promise<entityType> {
+    if (!options) options = {}
+    if (where) {
+      if (options.where) {
+        let w = options.where
+        options.where = {
+          $and: [w, where],
+        } as EntityFilter<entityType>
+      } else options.where = where
+    }
+    return this.findOne(options, skipOrderByAndLimit)
   }
 
   private fieldsOf(item: any) {
