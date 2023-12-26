@@ -7,6 +7,7 @@ import {
   InMemoryDataProvider,
   describeClass,
   remult,
+  withRemult,
 } from '../core'
 import { Remult, RemultAsyncLocalStorage } from '../core/src/context.js'
 
@@ -36,7 +37,7 @@ describe('backend method context awareness', () => {
       )
       RemultAsyncLocalStorage.enable()
       let ok = false
-      await Remult.run(
+      await withRemult(
         async () => {
           let x = remult.user
           ok = true
@@ -59,7 +60,7 @@ describe('backend method context awareness', () => {
       RemultAsyncLocalStorage.enable()
       let ok = false
       expect(
-        await Remult.run(
+        await withRemult(
           async () => {
             let x = remult.user
             ok = true
@@ -84,7 +85,7 @@ describe('backend method context awareness', () => {
       RemultAsyncLocalStorage.enable()
       let ok = false
       expect(
-        await Remult.run(
+        await withRemult(
           async () => {
             remult.dataProvider = new InMemoryDataProvider()
             var c = class {
@@ -119,7 +120,7 @@ describe('backend method context awareness', () => {
     describeClass(c, undefined, undefined, {
       testingContextAwareness: BackendMethod({ allowed: false }),
     })
-    await Remult.run(
+    await withRemult(
       async () => {
         remult.dataProvider = new InMemoryDataProvider()
         c.testingContextAwareness()

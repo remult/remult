@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import EventSource from 'eventsource'
 import { Task } from '../../test-servers/shared/Task.js'
-import { Remult, remult } from '../../core'
+import { Remult, remult, withRemult } from '../../core'
 import axios from 'axios'
 
 import { actionInfo } from '../../core/internals.js'
@@ -18,9 +18,9 @@ export function allServerTests(
 ) {
   initAsyncHooks()
 
-  function withRemult(what: () => Promise<void>): () => Promise<void> {
+  function withRemultForTest(what: () => Promise<void>): () => Promise<void> {
     return () => {
-      return Remult.run(async () => {
+      return withRemult(async () => {
         remult.apiClient.httpClient = axios
         remult.apiClient.url = `http://127.0.0.1:${port}/api`
         SseSubscriptionClient.createEventSource = (url) => new EventSource(url)
@@ -32,7 +32,7 @@ export function allServerTests(
 
   it(
     'works',
-    withRemult(async () => {
+    withRemultForTest(async () => {
       const repo = await create3Tasks()
       const tasks = await repo.find({ where: { completed: true } })
       expect(tasks.length).toBe(1)
@@ -42,7 +42,7 @@ export function allServerTests(
   )
   it(
     'test regular api call',
-    withRemult(async () => {
+    withRemultForTest(async () => {
       await create3Tasks()
       let result = await axios.get<{ result: number }>(
         remult.apiClient.url + '/test',
@@ -52,7 +52,7 @@ export function allServerTests(
   )
   it(
     'test multiple items',
-    withRemult(async () => {
+    withRemultForTest(async () => {
       const repo = await create3Tasks()
       expect(
         await repo.count({
@@ -63,7 +63,7 @@ export function allServerTests(
   )
   it(
     'validation',
-    withRemult(async () => {
+    withRemultForTest(async () => {
       const r = await create3Tasks()
       let err = undefined
       try {
@@ -82,8 +82,8 @@ export function allServerTests(
   )
   it(
     'forbidden',
-    withRemult(
-      withRemult(async () => {
+    withRemultForTest(
+      withRemultForTest(async () => {
         let err = undefined
         try {
           await Task.testForbidden()
@@ -96,7 +96,7 @@ export function allServerTests(
   )
   it(
     'test queued job',
-    withRemult(async () => {
+    withRemultForTest(async () => {
       let x = actionInfo.startBusyWithProgress
       let progress: number[] = []
       let close = false
@@ -122,7 +122,7 @@ export function allServerTests(
   )
   it.skipIf(options?.skipAsyncHooks)(
     'test static remult',
-    withRemult(
+    withRemultForTest(
       async () => {
         const r = await create3Tasks()
         expect(await Task.testStaticRemult()).toBe(3)
@@ -133,14 +133,14 @@ export function allServerTests(
   )
   it(
     'test injected remult',
-    withRemult(async () => {
+    withRemultForTest(async () => {
       const r = await create3Tasks()
       expect(await Task.testInjectedRemult()).toBe(3)
     }),
   )
   it(
     'test http 404',
-    withRemult(async () => {
+    withRemultForTest(async () => {
       const repo = create3Tasks()
       const task = await (await repo).findFirst()
       let result = await axios.get<{ id: string }>(
@@ -160,7 +160,7 @@ export function allServerTests(
   )
   it(
     'test http 201',
-    withRemult(async () => {
+    withRemultForTest(async () => {
       let result = await axios.post<{ title: string; id: string }>(
         remult.apiClient.url + '/tasks',
         {
@@ -179,7 +179,7 @@ export function allServerTests(
 
   it.skipIf(options?.skipLiveQuery)(
     'test live query',
-    withRemult(async () => {
+    withRemultForTest(async () => {
       const repo = await create3Tasks()
       let tasks: Task[] = []
       let unsubscribe: VoidFunction

@@ -247,26 +247,6 @@ export class Remult {
     url: '/api',
     subscriptionClient: new SseSubscriptionClient(),
   }
-  static run<T>(
-    callback: (remult) => Promise<T>,
-    options?: {
-      dataProvider?: DataProvider
-    },
-  ) {
-    const remult = new Remult()
-    if (options?.dataProvider) remult.dataProvider = options.dataProvider
-    let r: Promise<T>
-    RemultAsyncLocalStorage.instance.run(remult, () => {
-      r = new Promise<T>(async (res, rej) => {
-        try {
-          res(await callback(remult))
-        } catch (err) {
-          rej(err)
-        }
-      })
-    })
-    return r!
-  }
 }
 
 RemultProxy.defaultRemultFactory = () => new Remult()
@@ -407,4 +387,24 @@ class transactionLiveQueryPublisher implements LiveQueryChangesListener {
       await this.orig.itemChanged(key, this.transactionItems.get(key))
     }
   }
+}
+export function withRemult<T>(
+  callback: (remult) => Promise<T>,
+  options?: {
+    dataProvider?: DataProvider
+  },
+) {
+  const remult = new Remult()
+  if (options?.dataProvider) remult.dataProvider = options.dataProvider
+  let r: Promise<T>
+  RemultAsyncLocalStorage.instance.run(remult, () => {
+    r = new Promise<T>(async (res, rej) => {
+      try {
+        res(await callback(remult))
+      } catch (err) {
+        rej(err)
+      }
+    })
+  })
+  return r!
 }

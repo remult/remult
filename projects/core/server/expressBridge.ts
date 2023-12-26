@@ -3,7 +3,12 @@ import type { ResponseRequiredForSSE } from '../SseSubscriptionServer.js'
 import { SseSubscriptionServer } from '../SseSubscriptionServer.js'
 import type { ClassType } from '../classType.js'
 import type { AllowedForInstance, UserInfo } from '../src/context.js'
-import { Remult, RemultAsyncLocalStorage, allEntities } from '../src/context.js'
+import {
+  Remult,
+  RemultAsyncLocalStorage,
+  allEntities,
+  withRemult,
+} from '../src/context.js'
 import type { DataApiRequest, DataApiResponse } from '../src/data-api.js'
 import { DataApi, serializeError } from '../src/data-api.js'
 import type {
@@ -522,7 +527,7 @@ export class RemultServerImplementation<RequestType>
     what: (remult: Remult) => Promise<T>,
     options?: { skipDataProvider: boolean },
   ) {
-    return await Remult.run(async (remult) => {
+    return await withRemult(async (remult) => {
       var x = remult
       x.liveQueryPublisher = new LiveQueryPublisher(
         () => remult.subscriptionServer,

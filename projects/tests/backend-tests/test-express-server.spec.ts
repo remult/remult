@@ -5,7 +5,7 @@ import {
 } from '../../core/remult-express.js'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { Task } from '../../test-servers/shared/Task.js'
-import { Remult, remult } from '../../core'
+import { Remult, remult, withRemult } from '../../core'
 import { RemultAsyncLocalStorage } from '../../core/src/context.js'
 import { allServerTests } from './all-server-tests.js'
 import { initAsyncHooks } from '../../core/server/initAsyncHooks.js'
@@ -68,10 +68,10 @@ it('test remult run', async () => {
       '"remult object was requested outside of a valid context, try running it within initApi or a remult request cycle"',
     )
     let result = ''
-    const test1 = await Remult.run(async () => {
+    const test1 = await withRemult(async () => {
       remult.user = { id: '1', name: 'test' }
       result += remult.user.id
-      Remult.run(async () => {
+      withRemult(async () => {
         remult.user = { id: '2', name: 'test2' }
         result += remult.user.id
       })

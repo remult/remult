@@ -123,6 +123,7 @@ export {
   Allowed,
   Allow,
   Remult,
+  withRemult,
   RemultContext,
   ApiClient,
   isBackend,
