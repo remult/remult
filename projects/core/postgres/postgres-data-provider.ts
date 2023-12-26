@@ -45,7 +45,7 @@ export class PostgresDataProvider implements SqlImplementation {
     },
   ) {
     if (options?.wrapIdentifier) this.wrapIdentifier = options.wrapIdentifier
-    if (!options?.wrapIdentifier && options.caseInsensitiveIdentifiers)
+    if (!options?.wrapIdentifier && options?.caseInsensitiveIdentifiers)
       this.wrapIdentifier = (name) => name
 
     if (options.schema) {
