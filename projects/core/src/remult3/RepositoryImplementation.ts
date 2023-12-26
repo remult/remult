@@ -2054,6 +2054,8 @@ export class columnDefsImpl implements FieldMetadata {
     if (typeof this.settings.allowApiUpdate === 'boolean')
       this.readonly = this.settings.allowApiUpdate
     if (!this.inputType) this.inputType = this.valueConverter.inputType
+    this.dbName = settings.dbName
+    if (this.dbName == undefined) this.dbName = settings.key
     this.caption = buildCaption(
       settings.caption,
       settings.key,
@@ -2094,6 +2096,7 @@ export class columnDefsImpl implements FieldMetadata {
   allowNull: boolean
 
   caption: string
+  dbName: string
 
   inputType: string
   key: string

@@ -723,13 +723,11 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //p1 - V - fix sql log to console to make more sense
 //p1 - V - change wrap name to wrapIdentifier, case insensitive identifiers
 //p1 - v - add schema option to create postgres data provider
-
 /*p1 - V -  with remult async for remultexpress
 //y1 - lint tests (reference to js)
-//p1 - V - add schema option to create postgres data provider
 //p1 - withRemult function Add a with remult to Remult! - there is an existing one called Remult.run
-//p1 - dbname to metadata consider making dbname in the field metadata options - non optional, so it'll be clear that it always have value - something like require the specific key - or move it to the metadata field
-//p1 -V - getEntityRefClone  What I would like is to make a copy of the item (without getting it from the server again)
+//p1 - V -  dbname to metadata consider making dbname in the field metadata options - non optional, so it'll be clear that it always have value - something like require the specific key - or move it to the metadata field
+//p1 - V - getEntityRefClone  What I would like is to make a copy of the item (without getting it from the server again)
 
 rename V - withremultpromise to that withRemultAsync
 expose live query storage in remult
