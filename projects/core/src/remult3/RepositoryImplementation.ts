@@ -290,11 +290,19 @@ export class RepositoryImplementation<entityType>
           ? string
           : string | number),
   ): Promise<void> {
+    const ref = getEntityRef(item, false)
+    if (ref) return ref.delete()
+
     if (typeof item === 'string' || typeof item === 'number')
-      return this.edp.delete(item)
-    else {
-      return this.getRefForExistingRow(item as entityType, undefined).delete()
-    }
+      if (this.dataProvider.isProxy) return this.edp.delete(item)
+      else {
+        let ref2 = await this.findId(item)
+        if (ref2) return await getEntityRef(ref2).delete()
+      }
+
+    let ref2 = this.getRefForExistingRow(item as entityType, undefined)
+    if (!this.dataProvider.isProxy) await ref2.reload()
+    return ref2.delete()
   }
   insert(item: Partial<MembersOnly<entityType>>[]): Promise<entityType[]>
   insert(item: Partial<MembersOnly<entityType>>): Promise<entityType>
