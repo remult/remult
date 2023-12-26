@@ -1347,10 +1347,11 @@ abstract class rowHelperBase<T> {
     this.__assertValidity()
   }
   async __performColumnAndEntityValidations() {}
-  toApiJson(includeRelatedEntities = false) {
+  toApiJson(includeRelatedEntities = false, notJustApi = false) {
     let result: any = {}
     for (const col of this.columnsInfo) {
       if (
+        notJustApi ||
         !this.remult ||
         col.includeInApi === undefined ||
         this.remult.isAllowedForInstance(this.instance, col.includeInApi)
@@ -1439,6 +1440,12 @@ export class rowHelperImplementation<T>
       this.info.options.entityRefInit(this, instance)
     if (Remult.entityRefInit) Remult.entityRefInit(this, instance)
   }
+
+  clone() {
+    const data = this.toApiJson(true, true)
+    return this.repository.fromJson(data, this.isNew())
+  }
+
   get relations(): RepositoryRelations<T> {
     return this.repository.relations(this.instance)
   }
