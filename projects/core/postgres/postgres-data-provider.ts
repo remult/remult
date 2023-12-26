@@ -40,10 +40,14 @@ export class PostgresDataProvider implements SqlImplementation {
     private pool: PostgresPool,
     private options?: {
       wrapIdentifier?: (name: string) => string
+      caseInsensitiveIdentifiers?: boolean
       schema?: string
     },
   ) {
-    if (options.wrapIdentifier) this.wrapIdentifier = options.wrapIdentifier
+    if (options?.wrapIdentifier) this.wrapIdentifier = options.wrapIdentifier
+    if (!options?.wrapIdentifier && options.caseInsensitiveIdentifiers)
+      this.wrapIdentifier = (name) => name
+
     if (options.schema) {
       this.pool = new PostgresSchemaWrapper(pool, options.schema)
     }
@@ -157,9 +161,8 @@ export async function createPostgresDataProvider(options?: {
 
   const db = new SqlDatabase(
     new PostgresDataProvider(new Pool(config), {
-      wrapIdentifier:
-        options?.wrapIdentifier ||
-        (options.caseInsensitiveIdentifiers && ((name) => name)),
+      wrapIdentifier: options.wrapIdentifier,
+      caseInsensitiveIdentifiers: options.caseInsensitiveIdentifiers,
       schema: options.schema,
     }),
   )
