@@ -733,19 +733,20 @@ expose live query storage in remult
 
 request optional - and depends on that run `getUser` & `initRequest`
 */
-//y1 - from the crm-demo(https://crm-demo.up.railway.app/deals), after editing a deal: - _updateEntityBasedOnApi
+//y1 - consider making dbname in the field metadata options - non optional, so it'll be clear that it always have value - something like require the specific key - or move it to the metadata field
+//y2 - from the crm-demo(https://crm-demo.up.railway.app/deals), after editing a deal: - _updateEntityBasedOnApi
 
-//y1 - Backend methods are transactions, it's not intuitive and maybe should be optional / opt in
-//y1 - how to run a transaction as a user
+//y2 - Backend methods are transactions, it's not intuitive and maybe should be optional / opt in
+//y2 - how to run a transaction as a user
 //p1 - enum column
 //p1 - find one i had a question about find first's different syntax from find that confused a user
 //p1 - I think there should be a way to throw a forbidden exception
 //p1 - Write some ctrl g
-//y1 - get backend methods to work when specifying types for date, and entities as poco's
-//y1 - required
-//y1 - reconsider validators
-//y1 - message for invalid value
-//y1 - message for relation that is missing
+//y2 - get backend methods to work when specifying types for date, and entities as poco's
+//y2 - required
+//y2 - reconsider validators
+//y2 - message for invalid value
+//y2 - message for relation that is missing
 //p1 - more column types
 //p2 -   processError in remult express
 //p2 -   allow find options preprocessor for api calls, to use for authorization
