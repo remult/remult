@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - **BREAKING CHANGE: PostgresDataProvider:** Column & table names are now quoted (e.g., `"firstName"`) to enforce specific casing in PostgreSQL.
-  - To revert to case-insensitive identifiers, set `caseInsensitiveIdentifiers: true` when using `createPostgresDataProvider`.
+  - To revert to the old (version < 0.24) case-insensitive identifiers, set `caseInsensitiveIdentifiers: true` when using `createPostgresDataProvider`.
 
 ### Added
 
