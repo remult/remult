@@ -721,14 +721,14 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //p1 - V - filterToRaw should get a dbnames of - and we should create a dbnames of that supports an alias
 //p1 - V - fix sql log to console to make more sense
 //p1 - V - change wrap name to wrapIdentifier, case insensitive identifiers
-//p1 - v add schema option to create postgres data provider
+//p1 - v - add schema option to create postgres data provider
 
-/*p1 - with remult async for remultexpress
-//p1 - Add a with remult to Remult!
-//p1 - add schema option to create postgres data provider
+/*p1 - V -  with remult async for remultexpress
+//y1 - Add a with remult to Remult! - there is an existing one called Remult.run
+//p1 - V - add schema option to create postgres data provider
 //p1 - getEntityRefClone  What I would like is to make a copy of the item (without getting it from the server again)
 
-rename withremultpromise to that withRemultAsync
+rename V - withremultpromise to that withRemultAsync
 expose live query storage in remult
 
 request optional - and depends on that run `getUser` & `initRequest`

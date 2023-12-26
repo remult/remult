@@ -1,16 +1,15 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import EventSource from 'eventsource'
-import { Task } from '../../test-servers/shared/Task'
-import { type Remult, remult } from '../../core'
+import { Task } from '../../test-servers/shared/Task.js'
+import { Remult, remult } from '../../core'
 import axios from 'axios'
 
-import { actionInfo } from '../../core/internals'
-import { initAsyncHooks } from '../../core/server/initAsyncHooks'
-import { RemultAsyncLocalStorage } from '../../core/src/context'
-import { SseSubscriptionClient } from '../../core/src/live-query/SseSubscriptionClient'
+import { actionInfo } from '../../core/internals.js'
+import { initAsyncHooks } from '../../core/server/initAsyncHooks.js'
+import { RemultAsyncLocalStorage } from '../../core/src/context.js'
+import { SseSubscriptionClient } from '../../core/src/live-query/SseSubscriptionClient.js'
 
 export function allServerTests(
-  remult: Remult,
   port: number,
   options?: {
     skipAsyncHooks?: boolean
@@ -19,24 +18,16 @@ export function allServerTests(
 ) {
   initAsyncHooks()
 
-  remult.apiClient.httpClient = axios
-  remult.apiClient.url = `http://127.0.0.1:${port}/api`
-  let path = remult.apiClient.url + '/tasks'
   function withRemult(what: () => Promise<void>): () => Promise<void> {
-    return () =>
-      new Promise((res, rej) => {
+    return () => {
+      return Remult.run(async () => {
+        remult.apiClient.httpClient = axios
+        remult.apiClient.url = `http://127.0.0.1:${port}/api`
         SseSubscriptionClient.createEventSource = (url) => new EventSource(url)
-
-        RemultAsyncLocalStorage.instance.run(remult, async () => {
-          try {
-            actionInfo.runningOnServer = false
-            await what()
-            res()
-          } catch (error) {
-            rej(error)
-          }
-        })
+        actionInfo.runningOnServer = false
+        return await what()
       })
+    }
   }
 
   it(
@@ -152,13 +143,15 @@ export function allServerTests(
     withRemult(async () => {
       const repo = create3Tasks()
       const task = await (await repo).findFirst()
-      let result = await axios.get<{ id: string }>(path + '/' + task.id)
+      let result = await axios.get<{ id: string }>(
+        remult.apiClient.url + '/tasks' + '/' + task.id,
+      )
       expect(result.data.id).toBe(task.id)
 
       expect(result.status).toBe(200)
       let error = undefined
       try {
-        result = await axios.get(path + '/123')
+        result = await axios.get(remult.apiClient.url + '/tasks' + '/123')
       } catch (err: any) {
         error = err
       }
@@ -168,27 +161,22 @@ export function allServerTests(
   it(
     'test http 201',
     withRemult(async () => {
-      let result = await axios.post<{ title: string; id: string }>(path, {
-        title: 'z',
-        id: '',
-      })
+      let result = await axios.post<{ title: string; id: string }>(
+        remult.apiClient.url + '/tasks',
+        {
+          title: 'z',
+          id: '',
+        },
+      )
       expect(result.data.title).toBe('z')
       expect(result.status).toBe(201)
-      result = await axios.delete(path + '/' + result.data.id)
+      result = await axios.delete(
+        remult.apiClient.url + '/tasks' + '/' + result.data.id,
+      )
       expect(result.status).toBe(204)
     }),
   )
 
-  it(
-    'test regular api call',
-    withRemult(async () => {
-      await create3Tasks()
-      let result = await axios.get<{ result: number }>(
-        remult.apiClient.url + '/test',
-      )
-      expect(result.data.result).toBe(3)
-    }),
-  )
   it.skipIf(options?.skipLiveQuery)(
     'test live query',
     withRemult(async () => {

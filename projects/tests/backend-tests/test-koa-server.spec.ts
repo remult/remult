@@ -1,14 +1,12 @@
 import koa from 'koa'
 import bodyParser from 'koa-bodyparser'
-import { createRemultServer } from '../../core/server/index'
+import { createRemultServer } from '../../core/server/index.js'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { Task } from '../../test-servers/shared/Task'
-import { Remult, remult } from '../../core'
-import { RemultAsyncLocalStorage } from '../../core/src/context'
-import { allServerTests } from './all-server-tests'
+import { Task } from '../../test-servers/shared/Task.js'
+import { RemultAsyncLocalStorage } from '../../core/src/context.js'
+import { allServerTests } from './all-server-tests.js'
 
 describe('test koa server', async () => {
-  let remult = new Remult()
   let destroy: () => Promise<void>
   let port = 3002
 
@@ -38,7 +36,7 @@ describe('test koa server', async () => {
       }
     })
   })
-  allServerTests(remult, port, { skipLiveQuery: true })
+  allServerTests(port, { skipLiveQuery: true })
   afterAll(async () => {
     RemultAsyncLocalStorage.disable()
     return destroy()

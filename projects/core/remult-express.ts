@@ -1,6 +1,7 @@
 import * as express from 'express'
 
 import type {
+  RemultServer,
   RemultServerCore,
   RemultServerImplementation,
   RemultServerOptions,
@@ -37,7 +38,7 @@ export function remultExpress(
     getRemult: (req) => server.getRemult(req),
     openApiDoc: (options: { title: string }) => server.openApiDoc(options),
     withRemult: (req, res, next) => server.withRemult(req, res, next),
-    // [ ] V1.5 add with remult promise
+    withRemultAsync: <T>(req, what) => server.withRemultAsync<T>(req, what),
   })
 }
 
@@ -48,4 +49,4 @@ export type RemultExpressServer = express.RequestHandler &
       res: express.Response,
       next: VoidFunction,
     ) => void
-  }
+  } & Pick<RemultServer<express.Request>, 'withRemultAsync'>

@@ -6,6 +6,7 @@ import {
   RemultServerCore,
   RemultServerOptions,
   createRemultServer,
+  RemultServer,
 } from './server/index.js'
 
 export function remultNuxt(
@@ -57,12 +58,12 @@ export function remultNuxt(
     getRemult: (req) => result.getRemult(req),
     openApiDoc: (options: { title: string }) => result.openApiDoc(options),
     withRemult<T>(event: H3Event, what: () => Promise<T>): Promise<T> {
-      return result.withRemultPromise(event, what)
+      return result.withRemultAsync(event, what)
     },
   })
 }
 
 export type RemultNuxtServer = RemultServerCore<H3Event> &
   ((event: H3Event) => Promise<any>) & {
-    withRemult<T>(event: H3Event, what: () => Promise<T>): Promise<T>
+    withRemult: RemultServer<H3Event>['withRemultAsync']
   }

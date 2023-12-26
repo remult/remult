@@ -1,13 +1,12 @@
 import { type Plugin, server } from '@hapi/hapi'
-import { remultHapi } from '../../core/remult-hapi'
+import { remultHapi } from '../../core/remult-hapi.js'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { Task } from '../../test-servers/shared/Task'
+import { Task } from '../../test-servers/shared/Task.js'
 import { Remult, remult } from '../../core'
-import { RemultAsyncLocalStorage } from '../../core/src/context'
-import { allServerTests } from './all-server-tests'
+import { RemultAsyncLocalStorage } from '../../core/src/context.js'
+import { allServerTests } from './all-server-tests.js'
 
 describe('test hapi server', async () => {
-  let remult = new Remult()
   let destroy: () => Promise<void>
   let port = 3010
 
@@ -33,7 +32,7 @@ describe('test hapi server', async () => {
       }
     })
   })
-  allServerTests(remult, port)
+  allServerTests(port)
   afterAll(async () => {
     RemultAsyncLocalStorage.disable()
     return destroy()

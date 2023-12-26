@@ -39,6 +39,7 @@ import type {
 import { Action, classBackendMethodsArray } from '../src/server-action.js'
 import { actionInfo, serverActionField } from '../src/server-action-info.js'
 import { initDataProvider } from './initDataProvider.js'
+import { remult } from '../src/remult-proxy.js'
 
 export interface RemultServerOptions<RequestType> {
   /**Entities to use for the api */
@@ -163,7 +164,10 @@ export interface RemultServer<RequestType>
     req: RequestType,
     gRes?: GenericResponse,
   ): Promise<ServerHandleResponse | undefined>
-  withRemultPromise<T>(request: RequestType, what: () => Promise<T>): Promise<T>
+  withRemultAsync<T>(
+    request: RequestType | undefined,
+    what: () => Promise<T>,
+  ): Promise<T>
 }
 
 export interface RemultServerCore<RequestType> {
@@ -247,10 +251,8 @@ export class RemultServerImplementation<RequestType>
       return dp
     })
   }
-  withRemultPromise<T>(
-    request: RequestType,
-    what: () => Promise<T>,
-  ): Promise<T> {
+  withRemultAsync<T>(request: RequestType, what: () => Promise<T>): Promise<T> {
+    if (!request) return this.runWithRemult(what)
     return new Promise<any>((resolve, error) => {
       return this.withRemult(request, undefined!, () => {
         try {
@@ -516,24 +518,21 @@ export class RemultServerImplementation<RequestType>
   }
 
   //runs with remult but without init request
-  private async runWithRemult(
-    what: (remult: Remult) => Promise<any>,
+  private async runWithRemult<T>(
+    what: (remult: Remult) => Promise<T>,
     options?: { skipDataProvider: boolean },
   ) {
-    let remult = new Remult()
-    remult.liveQueryPublisher = new LiveQueryPublisher(
-      () => remult.subscriptionServer,
-      () => remult.liveQueryStorage,
-      this.runWithSerializedJsonContextData,
-    )
-    if (!options?.skipDataProvider)
-      remult.dataProvider = await this.dataProvider
-    remult.subscriptionServer = this.subscriptionServer
-    remult.liveQueryStorage = this.liveQueryStorage
-    await new Promise((res) => {
-      RemultAsyncLocalStorage.instance.run(remult, async () => {
-        res(await what(remult))
-      })
+    return await Remult.run(async (remult) => {
+      var x = remult
+      x.liveQueryPublisher = new LiveQueryPublisher(
+        () => remult.subscriptionServer,
+        () => remult.liveQueryStorage,
+        this.runWithSerializedJsonContextData,
+      )
+      if (!options?.skipDataProvider) x.dataProvider = await this.dataProvider
+      x.subscriptionServer = this.subscriptionServer
+      x.liveQueryStorage = this.liveQueryStorage
+      return await what(x)
     })
   }
 

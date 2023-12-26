@@ -4,6 +4,7 @@ import type {
   GenericResponse,
   RemultServerCore,
   RemultServerOptions,
+  RemultServer,
 } from './server/index.js'
 import { createRemultServer } from './server/index.js'
 
@@ -80,12 +81,12 @@ export function remultSveltekit(
     getRemult: (req) => result.getRemult(req),
     openApiDoc: (options: { title: string }) => result.openApiDoc(options),
     withRemult<T>(request: RequestEvent, what: () => Promise<T>): Promise<T> {
-      return result.withRemultPromise(request, what)
+      return result.withRemultAsync(request, what)
     },
   })
 }
 
 export type RemultSveltekitServer = RemultServerCore<RequestEvent> &
   Handle & {
-    withRemult<T>(request: RequestEvent, what: () => Promise<T>): Promise<T>
+    withRemult: RemultServer<RequestEvent>['withRemultAsync']
   }

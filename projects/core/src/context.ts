@@ -49,9 +49,10 @@ export class RemultAsyncLocalStorage {
   constructor(
     private readonly remultObjectStorage: myAsyncLocalStorage<Remult>,
   ) {}
-  run(remult: Remult, callback: VoidFunction) {
-    if (this.remultObjectStorage) this.remultObjectStorage.run(remult, callback)
-    else callback()
+  run(remult: Remult, callback: (remult: Remult) => void) {
+    if (this.remultObjectStorage)
+      this.remultObjectStorage.run(remult, () => callback(remult))
+    else callback(remult)
   }
   getRemult() {
     if (!this.remultObjectStorage) {
@@ -193,7 +194,7 @@ export class Remult {
         this.apiClient.wrapMessageHandling = apiClient.wrapMessageHandling
     }
   }
-  /* @internal*/
+
   liveQueryStorage?: LiveQueryStorage
   subscriptionServer?: SubscriptionServer
   /* @internal*/
@@ -247,16 +248,22 @@ export class Remult {
     subscriptionClient: new SseSubscriptionClient(),
   }
   static run<T>(
-    callback: () => T,
-    options: {
-      dataProvider: DataProvider
+    callback: (remult) => Promise<T>,
+    options?: {
+      dataProvider?: DataProvider
     },
   ) {
     const remult = new Remult()
-    if (options.dataProvider) remult.dataProvider = options.dataProvider
-    let r: T
+    if (options?.dataProvider) remult.dataProvider = options.dataProvider
+    let r: Promise<T>
     RemultAsyncLocalStorage.instance.run(remult, () => {
-      r = callback()
+      r = new Promise<T>(async (res, rej) => {
+        try {
+          res(await callback(remult))
+        } catch (err) {
+          rej(err)
+        }
+      })
     })
     return r!
   }

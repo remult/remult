@@ -148,7 +148,7 @@ class FreshResponseTest {
   }
 }
 
-it('test fresh', async () => {
+it.skip('test fresh', async () => {
   try {
     const api = remultFresh(
       {

@@ -1870,8 +1870,9 @@ export type RemultExpressServer = express.RequestHandler &
       res: express.Response,
       next: VoidFunction,
     ) => void
-  }
+  } & Pick<RemultServer<express.Request>, "withRemultAsync">
 //[ ] RemultServerCore from ./server/expressBridge.js is not exported
+//[ ] RemultServer from ./server/expressBridge.js is not exported
 ```
 
 ## ./remult-next.js
@@ -2002,7 +2003,7 @@ export interface RemultServer<RequestType>
     req: RequestType,
     gRes?: GenericResponse,
   ): Promise<ServerHandleResponse | undefined>
-  withRemultPromise<T>(request: RequestType, what: () => Promise<T>): Promise<T>
+  withRemultAsync<T>(request: RequestType, what: () => Promise<T>): Promise<T>
 }
 //[ ] ServerHandleResponse from TBD is not exported
 export interface RemultServerCore<RequestType> {
@@ -2160,7 +2161,7 @@ export interface RemultServer<RequestType>
     req: RequestType,
     gRes?: GenericResponse,
   ): Promise<ServerHandleResponse | undefined>
-  withRemultPromise<T>(request: RequestType, what: () => Promise<T>): Promise<T>
+  withRemultAsync<T>(request: RequestType, what: () => Promise<T>): Promise<T>
 }
 //[ ] ServerHandleResponse from TBD is not exported
 export interface RemultServerOptions<RequestType> {

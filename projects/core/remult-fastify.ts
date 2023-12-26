@@ -12,6 +12,7 @@ import type {
   RemultServerCore,
   RemultServerOptions,
   SpecificRoute,
+  RemultServer,
 } from './server/expressBridge.js'
 import { createRemultServer } from './server/index.js'
 
@@ -85,11 +86,11 @@ export function remultFastify(
   return Object.assign(pluginFunction, {
     getRemult: (x) => api.getRemult(x),
     openApiDoc: (x) => api.openApiDoc(x),
-    withRemult: <T>(req, what) => api.withRemultPromise<T>(req, what),
+    withRemult: <T>(req, what) => api.withRemultAsync<T>(req, what),
   })
 }
 
 export type RemultFastifyServer = FastifyPluginCallback &
   RemultServerCore<FastifyRequest> & {
-    withRemult<T>(req: FastifyRequest, what: () => Promise<T>): Promise<T>
+    withRemult: RemultServer<FastifyRequest>['withRemultAsync']
   }

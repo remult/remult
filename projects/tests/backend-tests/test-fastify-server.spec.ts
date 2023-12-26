@@ -1,14 +1,13 @@
 import fastify from 'fastify'
-import { remultFastify } from '../../core/remult-fastify'
+import { remultFastify } from '../../core/remult-fastify.js'
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { Task } from '../../test-servers/shared/Task'
+import { Task } from '../../test-servers/shared/Task.js'
 import { Remult, remult } from '../../core'
-import { RemultAsyncLocalStorage } from '../../core/src/context'
-import { allServerTests } from './all-server-tests'
+import { RemultAsyncLocalStorage } from '../../core/src/context.js'
+import { allServerTests } from './all-server-tests.js'
 
 describe('test fastify server', async () => {
-  let remult = new Remult()
   let destroy: () => Promise<void>
   let port = 3003
 
@@ -31,7 +30,7 @@ describe('test fastify server', async () => {
       }
     })
   })
-  allServerTests(remult, port)
+  allServerTests(port)
   afterAll(async () => {
     RemultAsyncLocalStorage.disable()
     return destroy()

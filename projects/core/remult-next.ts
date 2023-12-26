@@ -152,7 +152,7 @@ export function remultNextApp(
     POST: handler,
     PUT: handler,
     DELETE: handler,
-    withRemult: <T>(what) => result.withRemultPromise<T>({} as any, what),
+    withRemult: <T>(what) => result.withRemultAsync<T>({} as any, what),
   }
 }
 // [ ] V1.5 Add handle, similar to handle in next page router.

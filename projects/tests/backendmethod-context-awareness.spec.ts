@@ -8,7 +8,7 @@ import {
   describeClass,
   remult,
 } from '../core'
-import { Remult, RemultAsyncLocalStorage } from '../core/src/context'
+import { Remult, RemultAsyncLocalStorage } from '../core/src/context.js'
 
 describe('backend method context awareness', () => {
   it('getting error when async was initialized', async () => {
@@ -29,15 +29,15 @@ describe('backend method context awareness', () => {
     }
     expect(ok).toBe(true)
   })
-  it('test run works', () => {
+  it('test run works', async () => {
     try {
       RemultAsyncLocalStorage.instance = new RemultAsyncLocalStorage(
         new AsyncLocalStorage(),
       )
       RemultAsyncLocalStorage.enable()
       let ok = false
-      Remult.run(
-        () => {
+      await Remult.run(
+        async () => {
           let x = remult.user
           ok = true
         },
@@ -51,7 +51,7 @@ describe('backend method context awareness', () => {
       RemultAsyncLocalStorage.disable()
     }
   })
-  it('test run works and returns', () => {
+  it('test run works and returns', async () => {
     try {
       RemultAsyncLocalStorage.instance = new RemultAsyncLocalStorage(
         new AsyncLocalStorage(),
@@ -59,8 +59,8 @@ describe('backend method context awareness', () => {
       RemultAsyncLocalStorage.enable()
       let ok = false
       expect(
-        Remult.run(
-          () => {
+        await Remult.run(
+          async () => {
             let x = remult.user
             ok = true
             return 77
@@ -120,7 +120,7 @@ describe('backend method context awareness', () => {
       testingContextAwareness: BackendMethod({ allowed: false }),
     })
     await Remult.run(
-      () => {
+      async () => {
         remult.dataProvider = new InMemoryDataProvider()
         c.testingContextAwareness()
       },

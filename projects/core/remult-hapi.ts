@@ -13,6 +13,7 @@ import {
   type GenericRequestHandler,
   type GenericResponse,
   type GenericRouter,
+  type RemultServer,
 } from './server/index.js'
 import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
 import { PassThrough } from 'stream'
@@ -131,11 +132,11 @@ export function remultHapi(
   return Object.assign(routesPlugin, {
     getRemult: (x) => api.getRemult(x),
     openApiDoc: (x) => api.openApiDoc(x),
-    withRemult: <T>(req, what) => api.withRemultPromise<T>(req, what),
+    withRemult: <T>(req, what) => api.withRemultAsync<T>(req, what),
   })
 }
 
 export type RemultHapiServer = Plugin<any, any> &
   RemultServerCore<Request> & {
-    withRemult<T>(req: Request, what: () => Promise<T>): Promise<T>
+    withRemult: RemultServer<Request>['withRemultAsync']
   }

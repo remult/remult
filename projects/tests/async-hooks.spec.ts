@@ -1,8 +1,8 @@
 import { AsyncLocalStorage } from 'async_hooks'
 import { expect, it } from 'vitest'
-import { Remult, RemultAsyncLocalStorage } from '../core/src/context'
+import { Remult, RemultAsyncLocalStorage } from '../core/src/context.js'
 
-import { remult } from '../core/src/remult-proxy'
+import { remult } from '../core/src/remult-proxy.js'
 
 it('test async hooks and static remult', async () => {
   let gotException = true
