@@ -12,7 +12,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - ESM support for NodeJS
-- Support for (nuxt)[https://nuxt.com/] Fullstack framework
+- Support for [nuxt](https://nuxt.com/) Fullstack framework
 - Support for the `sqlExpression` field option in entities using the `knex` data provider.
 - `schema` parameter to `PostgresDataProvider` & `createPostgresDataProvider`.
 - `findOne` method in `Repository` with a unified `options` parameter for simplicity.
