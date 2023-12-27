@@ -551,7 +551,15 @@ export interface ExternalHttpProvider {
       }
 }
 export declare function Field<entityType = any, valueType = any>(
-  valueType: (() => ClassType<valueType>) | undefined,
+  valueType:
+    | (() => valueType extends number
+        ? Number
+        : valueType extends string
+        ? String
+        : valueType extends boolean
+        ? Boolean
+        : ClassType<valueType>)
+    | undefined,
   ...options: (
     | FieldOptions<entityType, valueType>
     | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void)
@@ -780,20 +788,20 @@ export declare class Fields {
   ): ClassFieldDecorator<entityType, Date | undefined>
   static integer<entityType = any>(
     ...options: (
-      | FieldOptions<entityType, Number>
-      | ((options: FieldOptions<entityType, Number>, remult: Remult) => void)
+      | FieldOptions<entityType, number>
+      | ((options: FieldOptions<entityType, number>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, number | undefined>
   static autoIncrement<entityType = any>(
     ...options: (
-      | FieldOptions<entityType, Number>
-      | ((options: FieldOptions<entityType, Number>, remult: Remult) => void)
+      | FieldOptions<entityType, number>
+      | ((options: FieldOptions<entityType, number>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, number | undefined>
   static number<entityType = any>(
     ...options: (
-      | FieldOptions<entityType, Number>
-      | ((options: FieldOptions<entityType, Number>, remult: Remult) => void)
+      | FieldOptions<entityType, number>
+      | ((options: FieldOptions<entityType, number>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, number | undefined>
   static createdAt<entityType = any>(
