@@ -736,6 +736,8 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //p1 - v - add schema option to create postgres data provider
 /*p1 - V -  with remult async for remultexpress
 //y1 - lint tests (reference to js)
+//p1 - V Operator '>' cannot be applied to types 'Number' and 'number'.ts(2365) - change fields to <entityType,number> (now it's Number)
+//p1 - V Field(()=>String) - doesn't play nice with strict mode - it prevents people from extending basic types
 //p1 - V withRemult function Add a with remult to Remult! - there is an existing one called Remult.run
 //p1 - V -  dbname to metadata consider making dbname in the field metadata options - non optional, so it'll be clear that it always have value - something like require the specific key - or move it to the metadata field
 //p1 - V - getEntityRefClone  What I would like is to make a copy of the item (without getting it from the server again)
@@ -793,8 +795,6 @@ remult.apiClient.url='localhost:3007/api
 //y2 - discuss a default date formatter
 //y2 - add some api testing framework for user unit tests (will help with codesandbox based discussions)
 //y2 - live query refresh of view on table update
-//y2 - Operator '>' cannot be applied to types 'Number' and 'number'.ts(2365) - change fields to <entityType,number> (now it's Number)
-//y2 - Field(()=>String) - doesn't play nice with strict mode - it prevents people from extending basic types
 
 //y2 - livequery for findfirst (@JY)
 //y2 - #239 - (@JY) add a way to get from fieldMetadata back to entity repo (like we have in fieldRef)

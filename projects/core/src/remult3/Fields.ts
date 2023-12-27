@@ -72,8 +72,8 @@ export class Fields {
   }
   static integer<entityType = any>(
     ...options: (
-      | FieldOptions<entityType, Number>
-      | ((options: FieldOptions<entityType, Number>, remult: Remult) => void)
+      | FieldOptions<entityType, number>
+      | ((options: FieldOptions<entityType, number>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, number | undefined> {
     return Field(
@@ -86,8 +86,8 @@ export class Fields {
   }
   static autoIncrement<entityType = any>(
     ...options: (
-      | FieldOptions<entityType, Number>
-      | ((options: FieldOptions<entityType, Number>, remult: Remult) => void)
+      | FieldOptions<entityType, number>
+      | ((options: FieldOptions<entityType, number>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, number | undefined> {
     return Field(
@@ -106,8 +106,8 @@ export class Fields {
 
   static number<entityType = any>(
     ...options: (
-      | FieldOptions<entityType, Number>
-      | ((options: FieldOptions<entityType, Number>, remult: Remult) => void)
+      | FieldOptions<entityType, number>
+      | ((options: FieldOptions<entityType, number>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, number | undefined> {
     return Field(() => Number, ...options)
@@ -267,6 +267,7 @@ export class Relations {
       >
 
     if (!op.field && !op.fields && !op.findOptions)
+      //@ts-ignore
       return Field(toEntityType, {
         ...op,
         //@ts-ignore
@@ -401,7 +402,15 @@ export class Relations {
  * title='';
  */
 export function Field<entityType = any, valueType = any>(
-  valueType: (() => ClassType<valueType>) | undefined,
+  valueType:
+    | (() => valueType extends number
+        ? Number
+        : valueType extends string
+        ? String
+        : valueType extends boolean
+        ? Boolean
+        : ClassType<valueType>)
+    | undefined,
   ...options: (
     | FieldOptions<entityType, valueType>
     | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void)
