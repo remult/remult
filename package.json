@@ -25,7 +25,8 @@
     "update-starter": "misc\\update-versions-to-starter-projects.sh",
     "detect-circular": "depcruise projects/core --include-only \"^projects/core\" --output-type dot | dot -T svg > dependency-graph.svg",
     "dc": "depcruise projects/core --include-only \"^projects/core\" --output-to ./tmp/dependency-violations.html --output-type err-html | dot -T svg > dependency-graph.svg ",
-    "lint-dist": "eslint -c projects/core/.eslintrc.js dist/remult/**/*.js"
+    "lint-dist": "eslint -c projects/core/.eslintrc.js dist/remult/**/*.js",
+    "test-servers:nuxt:setup": "cd projects/test-servers/nuxt-server && npm i && copyfiles ../../../dist/remult node_moduels/remult && npm run build"
   },
   "private": true,
   "devDependencies": {
