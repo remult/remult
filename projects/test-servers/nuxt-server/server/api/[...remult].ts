@@ -1,8 +1,8 @@
 import { remultNuxt } from 'remult/remult-nuxt'
 import { Task } from '~/shared/Task.js'
 
-export default defineEventHandler(
-  remultNuxt({
-    entities: [Task],
-  }),
-)
+export const api = remultNuxt({
+  entities: [Task],
+})
+
+export default defineEventHandler(api)

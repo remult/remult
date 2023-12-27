@@ -35,6 +35,9 @@ jobs:
       - checkout
       - node/install-packages
       - run:
+          name: Setup Test Servers
+          command: npm run test-servers:setup-all
+      - run:
           name: Run Tests
           command: npm run test:ci
       - codecov/upload

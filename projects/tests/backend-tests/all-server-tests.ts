@@ -8,6 +8,30 @@ import { actionInfo } from '../../core/internals.js'
 import { initAsyncHooks } from '../../core/server/initAsyncHooks.js'
 import { RemultAsyncLocalStorage } from '../../core/src/context.js'
 import { SseSubscriptionClient } from '../../core/src/live-query/SseSubscriptionClient.js'
+import express from 'express'
+
+export function testAsExpressMW(
+  port: number,
+  handler: (req, res, next) => void,
+) {
+  let destroy: () => Promise<void>
+
+  beforeAll(async () => {
+    return new Promise(async (res) => {
+      const app = express()
+      app.use(handler)
+      let connection = app.listen(port, () => res())
+      destroy = async () => {
+        return new Promise((res) => connection.close(() => res()))
+      }
+    })
+  })
+  allServerTests(port)
+  afterAll(async () => {
+    RemultAsyncLocalStorage.disable()
+    return destroy()
+  })
+}
 
 export function allServerTests(
   port: number,
