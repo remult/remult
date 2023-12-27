@@ -36,7 +36,9 @@ jobs:
       - node/install-packages
       - run:
           name: Setup Test Servers
-          command: npm run build && npm run test-servers:setup-all
+          command: |
+            shopt -s globstar
+            npm run build && npm run test-servers:setup-all
       - run:
           name: Run Tests
           command: npm run test:ci
