@@ -16,7 +16,8 @@ jobs:
       - run:
           name: Setup Test Servers
           command: |
-            shopt 
+            shopt -s globstar
+            shopt
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
