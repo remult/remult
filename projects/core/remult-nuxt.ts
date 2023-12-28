@@ -1,13 +1,13 @@
-import { ResponseRequiredForSSE } from 'SseSubscriptionServer.js'
+import type { ResponseRequiredForSSE } from 'SseSubscriptionServer.js'
 import type { H3Event } from 'h3'
-import { readBody } from 'h3'
-import {
+import { readBody, setResponseStatus } from 'h3'
+import type {
   GenericResponse,
   RemultServerCore,
   RemultServerOptions,
-  createRemultServer,
   RemultServer,
 } from './server/index.js'
+import { createRemultServer } from './server/index.js'
 
 export function remultNuxt(
   options: RemultServerOptions<H3Event>,
@@ -50,6 +50,7 @@ export function remultNuxt(
       })
     }
     if (r) {
+      if (r.statusCode !== 200) setResponseStatus(event, r.statusCode)
       return r.data
     }
   }
@@ -57,8 +58,8 @@ export function remultNuxt(
   return Object.assign(handler, {
     getRemult: (req) => result.getRemult(req),
     openApiDoc: (options: { title: string }) => result.openApiDoc(options),
-    withRemult<T>(event: H3Event, what: () => Promise<T>): Promise<T> {
-      return result.withRemultAsync(event, what)
+    withRemult<T>(request: H3Event, what: () => Promise<T>): Promise<T> {
+      return result.withRemultAsync(request, what)
     },
   })
 }
