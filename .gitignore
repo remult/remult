@@ -68,13 +68,8 @@ docs/.vitepress/cache
 docs/.vitepress/dist
 
 /db
-examples/nextjs-todo/db
-examples/nextjs-app-router-todo/db
+examples/*/db
 test.heapsnapshot
-examples/sveltekit-todo/db
-projects/test-servers/deno-fresh/db
-projects/test-servers/next-app-server/db
-projects/test-servers/next-server/db
-projects/test-servers/sveltekit-server/db
+projects/test-servers/*/db
 test-results.json
 test-results.xml

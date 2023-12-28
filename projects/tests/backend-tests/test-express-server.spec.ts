@@ -7,34 +7,19 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { Task } from '../../test-servers/shared/Task.js'
 import { Remult, remult, withRemult } from '../../core'
 import { RemultAsyncLocalStorage } from '../../core/src/context.js'
-import { allServerTests } from './all-server-tests.js'
+import { allServerTests, testAsExpressMW } from './all-server-tests.js'
 import { initAsyncHooks } from '../../core/server/initAsyncHooks.js'
 
 describe('test express server', async () => {
-  let destroy: () => Promise<void>
-  let port = 3004
-  let api: RemultExpressServer
-  beforeAll(async () => {
-    return new Promise((res) => {
-      const app = express()
-      api = remultExpress({
-        entities: [Task],
-      })
-      app.use(api)
-      app.get('/api/test', api.withRemult, async (req, res) => {
-        res.json({ result: await remult.repo(Task).count() })
-      })
-      let connection = app.listen(port, () => res())
-      destroy = async () => {
-        return new Promise((res) => connection.close(() => res()))
-      }
-    })
+  let api = remultExpress({
+    entities: [Task],
   })
-  allServerTests(port)
-  afterAll(async () => {
-    RemultAsyncLocalStorage.disable()
-    return destroy()
+  const app = express.Router()
+  app.use(api)
+  app.get('/api/test', api.withRemult, async (req, res) => {
+    res.json({ result: await remult.repo(Task).count() })
   })
+  testAsExpressMW(3004, app)
   it('test open api', async () => {
     expect(api.openApiDoc({ title: 'tasks' })).toMatchSnapshot()
   })
