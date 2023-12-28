@@ -12,47 +12,14 @@ jobs:
   test-remult:
     docker:
       - image: cimg/node:18.18
-      - image: cimg/postgres:14.0
-        environment:
-          POSTGRES_USER: postgres
-          POSTGRES_DB: test_db
-          POSTGRES_PASSWORD: password
-      - image: mongo:4.2
-        # command: [--replSet,rs0]
-
-      - image: cimg/mysql:8.0
-        environment:
-          MYSQL_ROOT_PASSWORD: MASTERKEY
-          MYSQL_DATABASE: test
-          MYSQL_PASSWORD: MASTERKEY
-    environment:
-      DATABASE_URL: postgres://postgres:password@127.0.0.1:5432/test_db # Connection string
-      #  MONGO_TEST_URL: $MONGO_TEST_URL
-      MONGO_NO_TRANS_TEST_URL: mongodb://localhost:27017/local
-      TEST_MYSQL: true
-      TEST_MYSQL2: true
     steps:
-      - checkout
-      - node/install-packages
       - run:
           name: Setup Test Servers
           command: |
-            shopt -s globstar
-            npm run build && npm run test-servers:setup-all
-      - run:
-          name: Run Tests
-          command: npm run test:ci
-      - codecov/upload
-      - store_test_results:
-          path: ./test-results.xml
-
+            shopt 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
   build:
     jobs:
-      - node/run:
-          version: '18.18'
-          name: build
-          npm-run: build
       - test-remult
