@@ -742,7 +742,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //p1 - V -  dbname to metadata consider making dbname in the field metadata options - non optional, so it'll be clear that it always have value - something like require the specific key - or move it to the metadata field
 //p1 - V - getEntityRefClone  What I would like is to make a copy of the item (without getting it from the server again)
 //p1 - V find one i had a question about find first's different syntax from find that confused a user
-
+//p1 - https://dexie.org/
 rename V - withremultpromise to that withRemultAsync
 expose live query storage in remult
 
