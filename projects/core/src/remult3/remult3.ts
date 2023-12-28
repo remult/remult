@@ -728,26 +728,6 @@ export type ClassFieldDecorator<entityType, valueType> = (
   c?: any,
 ) => void
 
-//p1 - V - sql-expression for knex
-//p1 - V - postgres case sensitive
-//p1 - V - filterToRaw should get a dbnames of - and we should create a dbnames of that supports an alias
-//p1 - V - fix sql log to console to make more sense
-//p1 - V - change wrap name to wrapIdentifier, case insensitive identifiers
-//p1 - v - add schema option to create postgres data provider
-/*p1 - V -  with remult async for remultexpress
-//y1 - lint tests (reference to js)
-//p1 - V Operator '>' cannot be applied to types 'Number' and 'number'.ts(2365) - change fields to <entityType,number> (now it's Number)
-//p1 - V Field(()=>String) - doesn't play nice with strict mode - it prevents people from extending basic types
-//p1 - V withRemult function Add a with remult to Remult! - there is an existing one called Remult.run
-//p1 - V -  dbname to metadata consider making dbname in the field metadata options - non optional, so it'll be clear that it always have value - something like require the specific key - or move it to the metadata field
-//p1 - V - getEntityRefClone  What I would like is to make a copy of the item (without getting it from the server again)
-//p1 - V find one i had a question about find first's different syntax from find that confused a user
-//p1 - https://dexie.org/
-rename V - withremultpromise to that withRemultAsync
-expose live query storage in remult
-
-request optional - and depends on that run `getUser` & `initRequest`
-*/
 //y2 - from the crm-demo(https://crm-demo.up.railway.app/deals), after editing a deal: - _updateEntityBasedOnApi
 
 //y2 - Backend methods are transactions, it's not intuitive and maybe should be optional / opt in
