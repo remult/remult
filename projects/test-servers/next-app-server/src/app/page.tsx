@@ -1,4 +1,4 @@
-"use client"
+'use client'
 import Image from 'next/image'
 import styles from './page.module.css'
 import { signIn, useSession } from 'next-auth/react'
@@ -9,10 +9,7 @@ export default function Home() {
   return (
     <>
       <button onClick={() => signIn()}>Sign In</button>
-      <pre>
-        {JSON.stringify(session.data?.user,undefined)}
-      </pre>
+      <pre>{JSON.stringify(session.data?.user, undefined)}</pre>
     </>
-
   )
 }

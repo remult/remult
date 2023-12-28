@@ -28,7 +28,8 @@
     "lint-dist": "eslint -c projects/core/.eslintrc.js dist/remult/**/*.js",
     "test-servers:nuxt:setup": "cd projects/test-servers/nuxt-server && npm i --force && cd ../../../ && copyfiles ./dist/remult/**/* projects/test-servers/nuxt-server/node_modules/remult -u 2 --verbose && cd projects/test-servers/nuxt-server && npm run build",
     "test-servers:sveltekit:setup": "cd projects/test-servers/sveltekit-server && npm i --force && cd ../../../ && copyfiles ./dist/remult/**/* projects/test-servers/sveltekit-server/node_modules/remult -u 2 --verbose && cd projects/test-servers/sveltekit-server && npm run build",
-    "test-servers:setup-all": "run-s test-servers:*:setup"
+    "test-servers:setup-all": "run-s test-servers:*:setup",
+    "test-servers:next:setup": "cd projects/test-servers/next-server && npm i --force && cd ../../../ && copyfiles ./dist/remult/**/* projects/test-servers/next-server/node_modules/remult -u 2 --verbose && cd projects/test-servers/next-server && npm run build"
   },
   "private": true,
   "devDependencies": {
