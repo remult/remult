@@ -1782,31 +1782,35 @@ export declare class Validators {
   static required: ((
     entity: any,
     col: FieldRef<any, string>,
-    message?: any,
-  ) => void) & {
+    message?: string,
+  ) => Promise<void>) & {
     withMessage: (
       message: string,
-    ) => (entity: any, col: FieldRef<any, string>) => void
+    ) => (entity: any, col: FieldRef<any, string>) => Promise<void>
     defaultMessage: string
+    hasError: (entity: any, col: FieldRef<any, string>) => Promise<boolean>
   }
   static unique: ((
     entity: any,
     col: FieldRef<any, any>,
-    message?: any,
+    message?: string,
   ) => Promise<void>) & {
     withMessage: (
       message: string,
     ) => (entity: any, col: FieldRef<any, any>) => Promise<void>
     defaultMessage: string
+    hasError: (entity: any, col: FieldRef<any, any>) => Promise<boolean>
   }
   static uniqueOnBackend: ((
     entity: any,
     col: FieldRef<any, any>,
-    message?: any,
+    message?: string,
   ) => Promise<void>) & {
     withMessage: (
       message: string,
     ) => (entity: any, col: FieldRef<any, any>) => Promise<void>
+    defaultMessage: string
+    hasError: (entity: any, col: FieldRef<any, any>) => Promise<boolean>
   }
 }
 export interface ValueConverter<valueType> {
