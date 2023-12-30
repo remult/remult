@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.24.1] TBD
+## [0.24.1] [2023-12-30]
 
 - Improved JsonDataProvider to support promise for load and save, useful in all sorts of cases
 - Fixed issue with ESM on NodeJS - Module '"remult/postgres"' has no exported member 'createPostgresDataProvider'.
