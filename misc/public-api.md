@@ -1086,8 +1086,8 @@ export declare class JsonDataProvider implements DataProvider {
   ): Promise<void>
 }
 export interface JsonEntityStorage {
-  getItem(entityDbName: string): string | null
-  setItem(entityDbName: string, json: string): any
+  getItem(entityDbName: string): string | null | Promise<string | null>
+  setItem(entityDbName: string, json: string): void | Promise<void>
 }
 export interface LifecycleEvent<entityType> {
   /**
