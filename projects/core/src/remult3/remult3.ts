@@ -734,6 +734,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
  All I could find is correspondance around evolu :) the guy I met in prague last year
  Indexed db was also annoying with it's upgrade process etc...
  I'm OPFS & json for now. - merge branch ipfs
+//y1 - tried to upgrade vitest, nuxt tests are failing with loading uuid - sounds familiar? 
 //y2 - from the crm-demo(https://crm-demo.up.railway.app/deals), after editing a deal: - _updateEntityBasedOnApi
 
 //y2 - Backend methods are transactions, it's not intuitive and maybe should be optional / opt in
