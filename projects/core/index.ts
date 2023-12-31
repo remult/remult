@@ -111,7 +111,7 @@ export {
   JsonDataProvider,
   JsonEntityStorage,
 } from './src/data-providers/json-data-provider.js' //V
-export { IpfsEntityFileStorage } from './src/data-providers/ipfs-data-provider.js'
+export { OpfsEntityStorage } from './src/data-providers/opfs-entity-storage.js'
 
 //export * from './src/data-api'; //reconsider if to make internal
 export {

@@ -1,6 +1,6 @@
 import type { JsonEntityStorage } from './json-data-provider.js'
 
-export class IpfsEntityFileStorage implements JsonEntityStorage {
+export class OpfsEntityStorage implements JsonEntityStorage {
   //@internal
   opfsRoot?: FileSystemDirectoryHandle
   async getItem(entityDbName: string) {
