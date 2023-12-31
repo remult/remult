@@ -728,13 +728,9 @@ export type ClassFieldDecorator<entityType, valueType> = (
   c?: any,
 ) => void
 
-/*y1 - investigated sqlite in web, the chrome recommendation seemed hardly used - 
-- https://developer.chrome.com/blog/sqlite-wasm-in-the-browser-backed-by-the-origin-private-file-system/
-- https://www.npmjs.com/package/@sqlite.org/sqlite-wasm
- All I could find is correspondance around evolu :) the guy I met in prague last year
- Indexed db was also annoying with it's upgrade process etc...
- I'm OPFS & json for now. - merge branch ipfs
-//y1 - tried to upgrade vitest, nuxt tests are failing with loading uuid - sounds familiar? 
+//y1 - tried to upgrade vitest, nuxt tests are failing with loading uuid - sounds familiar?
+//p1 - Release sql js
+//p1 - add after mutation
 //y2 - from the crm-demo(https://crm-demo.up.railway.app/deals), after editing a deal: - _updateEntityBasedOnApi
 
 //y2 - Backend methods are transactions, it's not intuitive and maybe should be optional / opt in
