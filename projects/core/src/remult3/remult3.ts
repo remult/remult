@@ -733,7 +733,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 - https://www.npmjs.com/package/@sqlite.org/sqlite-wasm
  All I could find is correspondance around evolu :) the guy I met in prague last year
  Indexed db was also annoying with it's upgrade process etc...
- I'm OPFS & json for now.
+ I'm OPFS & json for now. - merge branch ipfs
 //y2 - from the crm-demo(https://crm-demo.up.railway.app/deals), after editing a deal: - _updateEntityBasedOnApi
 
 //y2 - Backend methods are transactions, it's not intuitive and maybe should be optional / opt in
