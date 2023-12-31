@@ -652,7 +652,7 @@ describe('test relations', () => {
     await expect(() =>
       r(MyTask).find({ include: { category: true } }),
     ).rejects.toThrowErrorMatchingInlineSnapshot(
-      '"Error for relation: \\"category\\" to \\"categories\\": Field \\"asdf\\" was not found in \\"myTask\\"."',
+      `[Error: Error for relation: "category" to "categories": Field "asdf" was not found in "myTask".]`,
     )
   })
   it('fails when cant anticipate many', async () => {
@@ -668,7 +668,7 @@ describe('test relations', () => {
     await expect(() =>
       r(MyTask).find({ include: { categories: true } }),
     ).rejects.toThrowErrorMatchingInlineSnapshot(
-      '"Error for relation: \\"categories\\" to \\"categories\\": No matching field found on target. Please specify field/fields"',
+      `[Error: Error for relation: "categories" to "categories": No matching field found on target. Please specify field/fields]`,
     )
   })
 })

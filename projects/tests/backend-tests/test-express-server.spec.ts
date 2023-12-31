@@ -50,7 +50,7 @@ it('test remult run', async () => {
   try {
     initAsyncHooks()
     expect(() => remult.user).toThrowErrorMatchingInlineSnapshot(
-      '"remult object was requested outside of a valid context, try running it within initApi or a remult request cycle"',
+      `[Error: remult object was requested outside of a valid context, try running it within initApi or a remult request cycle]`,
     )
     let result = ''
     const test1 = await withRemult(async () => {
