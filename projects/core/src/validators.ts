@@ -6,10 +6,12 @@ export class Validators {
   /*y1 - consider breaking the validate method signature or adding another method called `isValid` that returns a boolean | string or promise of them with an Event parameter that looks like:
     {
       entity: entityType
-      col: FieldRef<any, valueType>
+      field: FieldRef<any, valueType>
       value: valueType
+      originalValue: valueType
       isNew: boolean
-      wasChanged: boolean
+      valueChanged: boolean
+      metadata: FieldMetadata
       options: FieldOptions<valueType>
     }
   */
@@ -17,7 +19,7 @@ export class Validators {
   //y1 - https://github.com/validatorjs/validator.js
   //y1 - consider that required has specific meaning in forms, needs and asterisk in the caption
   //y1 - maybe not null is a validation?
-  //y1  -consider placing from json exceptions errors as validations error (like zod parse)
+
   static required = buildValidationMethod<string>(
     async (_, col) =>
       col.value && typeof col.value === 'string' && col.value.trim().length > 0,
@@ -159,6 +161,7 @@ function buildValidationMethod_2<valueType, args>(
 
 const containsA = buildValidationMethod<string>(
     (_, col) => col.value?.includes('a'),
+    'asdfafdsa',
   ),
   containsA1 = buildValidationMethod_<string>(
     ({ value }) => value?.includes('a'),
@@ -178,8 +181,43 @@ const containsA = buildValidationMethod<string>(
 
 const validators: FieldOptions<any, string>['validate'] = [
   Validators.required,
+  Validators.required.withMessage('asdf'),
   containsA,
   containsA1,
+  containsA.withMessage('The message'),
   contains2({ char: 'b' }),
+  contains2({ char: 'b' }, 'the message'),
   contains3('c'),
 ]
+
+// create basic validator, lambda value , default message & generic type for the parameter
+/* required to support being called with optional message :
+* - support string argument in validation
+* - validators.required
+* - validators.required("message")
+* - validators.required()
+* - same for unique and unique on backend.
+* - deprecate withMessage
+
+* - valueValidator create two basic validators - with and without args.
+* - create a basic validator with args and message
+* - valueValidator - basic translation of validators
+* - createValueValidator
+* - createValueValidator with options
+* - email
+* - in
+* - url
+* - regex
+* - enum
+* - not null
+* - required - !=0 !='' != null != undefined
+* - max length should be enforced? from options - where the default message will be from the validators
+* - should enforce integer
+* - relation exists
+* - required as field option
+//y1  -consider placing from json exceptions errors as validations error (like zod parse)
+*/
+// view issue
+//p1 - symbol for!!
+//p1 - globalThis for that is static
+//p1 - remove reflect metadata
