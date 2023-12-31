@@ -1,5 +1,5 @@
 import type { itemChange } from '../context.js'
-import { findOptionsFromJson } from '../data-providers/rest-data-provider.js'
+import { findOptionsFromJson } from '../data-providers/findOptionsFromJson.js'
 import type { Repository } from '../remult3/remult3.js'
 import type { LiveQueryChange } from './SubscriptionChannel.js'
 

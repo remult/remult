@@ -1,10 +1,7 @@
 import type { EntityFilter, FindOptions, Repository } from '../../core'
 import { Entity, EntityBase, Fields, SqlDatabase, remult } from '../../core'
 import { RestDataProvider } from '../../core/src//data-providers/rest-data-provider'
-import {
-  Filter,
-  customUrlToken,
-} from '../../core/src//filter/filter-interfaces'
+import { Filter } from '../../core/src//filter/filter-interfaces'
 import { DataApi } from '../../core/src/data-api'
 import { InMemoryDataProvider } from '../../core/src/data-providers/in-memory-database'
 import { insertFourRows } from './RowProvider.spec'
@@ -21,6 +18,7 @@ import { TestDataApiResponse } from './TestDataApiResponse'
 import { entityForrawFilter } from './entityForCustomFilter'
 import { testRestDb } from './testHelper'
 import { createEntity } from './dynamic-classes'
+import { customUrlToken } from '../../core/src/filter/customUrlToken'
 
 describe('test where stuff', () => {
   let repo: Repository<CategoriesForTesting>

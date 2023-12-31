@@ -14,12 +14,10 @@ import {
 } from '../../../core'
 import type { ClassType } from '../../../core/classType'
 import { TestDataProvider } from '../../dbs/TestDataProviderWithStats'
-import {
-  findOptionsFromJson,
-  findOptionsToJson,
-} from '../../../core/src/data-providers/rest-data-provider'
 import { TestDataApiResponse } from '../TestDataApiResponse'
 import { createEntity } from '../dynamic-classes'
+import { findOptionsToJson } from '../../../core/src/data-providers/findOptionsToJson'
+import { findOptionsFromJson } from '../../../core/src/data-providers/findOptionsFromJson'
 
 @Entity('company')
 class Company {

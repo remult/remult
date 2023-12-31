@@ -60,7 +60,7 @@ import type {
 } from '../data-interfaces.js'
 import { ValueConverters } from '../valueConverters.js'
 
-import { findOptionsToJson } from '../data-providers/rest-data-provider.js'
+import { findOptionsToJson } from '../data-providers/findOptionsToJson.js'
 import type {
   SubscriptionListener,
   Unsubscribe,

@@ -7,11 +7,11 @@ import type {
 
 import { UrlBuilder } from '../../urlBuilder.js'
 import { buildRestDataProvider, retry } from '../buildRestDataProvider.js'
-import { Remult, type ApiClient } from '../context.js'
-import { customUrlToken, Filter } from '../filter/filter-interfaces.js'
-import type { EntityMetadata, FindOptions } from '../remult3/remult3.js'
+import type { ApiClient } from '../context.js'
+import { type Filter } from '../filter/filter-interfaces.js'
+import { customUrlToken } from '../filter/customUrlToken.js'
+import type { EntityMetadata } from '../remult3/remult3.js'
 import { actionInfo } from '../server-action-info.js'
-import { getRelationInfo } from '../remult3/relationInfoMember.js'
 
 export class RestDataProvider implements DataProvider {
   constructor(private apiProvider: () => ApiClient) {}
@@ -35,86 +35,6 @@ export class RestDataProvider implements DataProvider {
   }
   isProxy = true
 }
-//@internal
-export function findOptionsToJson<entityType = any>(
-  options: FindOptions<entityType>,
-  meta: EntityMetadata<entityType>,
-) {
-  if (options.include) {
-    let newInclude: any = {}
-    for (const key in options.include) {
-      if (Object.prototype.hasOwnProperty.call(options.include, key)) {
-        let element = options.include[key]
-        if (typeof element === 'object') {
-          const rel = getRelationInfo(meta.fields.find(key).options)
-          if (rel) {
-            element = findOptionsToJson(
-              element,
-              new Remult().repo(rel.toType()).metadata,
-            )
-          }
-        }
-        newInclude[key] = element
-      }
-    }
-    options = { ...options, include: newInclude }
-  }
-  if (options.where)
-    options = {
-      ...options,
-      where: Filter.entityFilterToJson(meta, options.where),
-    }
-  if (options.load)
-    options = {
-      ...options,
-      load: options.load(meta.fields).map((y) => y.key) as any,
-    }
-  return options
-}
-//@internal
-export function findOptionsFromJson(
-  json: any,
-  meta: EntityMetadata,
-): FindOptions<any> {
-  let r: any = {}
-  for (const key of [
-    'limit',
-    'page',
-    'where',
-    'orderBy',
-    'include',
-  ] as (keyof FindOptions<any>)[]) {
-    if (json[key] !== undefined) {
-      if (key === 'where') {
-        r[key] = Filter.entityFilterFromJson(meta, json.where)
-      } else if (key === 'include') {
-        let newInclude = { ...json[key] }
-
-        for (const key in newInclude) {
-          if (Object.prototype.hasOwnProperty.call(newInclude, key)) {
-            let element = newInclude[key]
-            if (typeof element === 'object') {
-              const rel = getRelationInfo(meta.fields.find(key).options)
-              if (rel) {
-                element = findOptionsFromJson(
-                  element,
-                  new Remult().repo(rel.toType()).metadata,
-                )
-              }
-            }
-            newInclude[key] = element
-          }
-        }
-        r[key] = newInclude
-      } else r[key] = json[key]
-    }
-  }
-  if (json.load) {
-    r.load = (z) => json.load.map((y) => z.find(y))
-  }
-  return r
-}
-
 export class RestEntityDataProvider implements EntityDataProvider {
   constructor(
     private url: () => string,

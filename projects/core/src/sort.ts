@@ -1,6 +1,6 @@
-import { getRelationInfo } from '../internals.js'
 import { CompoundIdField } from './CompoundIdField.js'
 import type { FieldMetadata } from './column-interfaces.js'
+import { getRelationInfo } from './remult3/relationInfoMember.js'
 import type {
   EntityMetadata,
   EntityOrderBy,

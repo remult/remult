@@ -1,4 +1,4 @@
-import { findOptionsToJson } from '../data-providers/rest-data-provider.js'
+import { findOptionsToJson } from '../data-providers/findOptionsToJson.js'
 import { getEntityRef } from './getEntityRef.js'
 import type { RelationLoaderHelper } from './relation-loader-types.js'
 import { getRelationInfo } from './relationInfoMember.js'

@@ -1,10 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { Remult, queryConfig } from '../../core/src/context'
 import { InMemoryDataProvider } from '../../core/src/data-providers/in-memory-database'
-import {
-  findOptionsFromJson,
-  findOptionsToJson,
-} from '../../core/src/data-providers/rest-data-provider'
 import { LiveQueryClient } from '../../core/src/live-query/LiveQueryClient'
 import type { LiveQueryChange } from '../../core/src/live-query/SubscriptionChannel'
 import { SubscriptionChannel } from '../../core/src/live-query/SubscriptionChannel'
@@ -19,6 +15,8 @@ import { actionInfo } from '../../core/src/server-action-info'
 import { createMockHttpDataProvider } from '../tests/testHelper'
 import { HttpProviderBridgeToRestDataProviderHttpProvider } from '../../core/src/buildRestDataProvider'
 import { DataApi } from '../../core/src/data-api'
+import { findOptionsToJson } from '../../core/src/data-providers/findOptionsToJson'
+import { findOptionsFromJson } from '../../core/src/data-providers/findOptionsFromJson'
 
 const joc = expect.objectContaining
 

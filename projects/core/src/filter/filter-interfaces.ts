@@ -9,6 +9,7 @@ import type {
 
 import { getEntityRef, getEntitySettings } from '../remult3/getEntityRef.js'
 import { getRelationInfo } from '../remult3/relationInfoMember.js'
+import { customUrlToken } from './customUrlToken.js'
 
 export class Filter {
   constructor(private apply: (add: FilterConsumer) => void) {}
@@ -423,7 +424,6 @@ export class OrFilter extends Filter {
   }
 }
 
-export const customUrlToken = '$custom$'
 export const customDatabaseFilterToken = '$db$'
 const customArrayToken = '$an array'
 export class FilterSerializer implements FilterConsumer {
