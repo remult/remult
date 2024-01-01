@@ -169,6 +169,9 @@ const containsA = buildValidationMethod<string>(
   containsA11 = buildValidationMethod_<string>(
     ({ value }) => value?.includes('a') || 'must contain a',
   ),
+  containsA111 = buildValidationMethod_<string>(
+    ({ value }) => value?.includes('a') || 'must contain a',
+  ),
   contains2 = buildValidationMethod2<string, { char: string }>(
     (_, col, { char }) => col.value?.includes(char),
   ),
