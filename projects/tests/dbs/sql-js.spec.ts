@@ -1,7 +1,7 @@
 import { it, describe, expect, beforeEach } from 'vitest'
 import { Remult, SqlDatabase } from '../../core'
 import initSqlJs from 'sql.js'
-import { SqlJsDataProvider } from '../../core/src/data-providers/sql-js-data-provider.js'
+import { SqlJsDataProvider } from '../../core/remult-sql-js.js'
 import { allDbTests } from './shared-tests'
 
 describe('Sql JS', () => {

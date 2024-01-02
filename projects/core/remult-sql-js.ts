@@ -1,23 +1,24 @@
-import type { EntityMetadata } from '../remult3/remult3.js'
+import type { EntityMetadata } from './src/remult3/remult3.js'
 import type {
   SqlCommand,
   SqlImplementation,
   SqlResult,
-} from '../sql-command.js'
+} from './src/sql-command.js'
 import type { Database, QueryExecResult } from 'sql.js'
-import { SqlDatabase } from './sql-database.js'
+import { SqlDatabase } from './src/data-providers/sql-database.js'
 import {
   dbNamesOf,
   isDbReadonly,
-} from '../filter/filter-consumer-bridge-to-sql-request.js'
-import { isAutoIncrement } from '../remult3/RepositoryImplementation.js'
-import type { FieldMetadata } from '../column-interfaces.js'
+} from './src/filter/filter-consumer-bridge-to-sql-request.js'
+import { isAutoIncrement } from './src/remult3/RepositoryImplementation.js'
+import type { FieldMetadata } from './src/column-interfaces.js'
 
 export class SqlJsDataProvider implements SqlImplementation {
   constructor(private db: Promise<Database>) {}
   getLimitSqlSyntax(limit: number, offset: number) {
     return ' limit ' + limit + ' offset ' + offset
   }
+  afterMutation?: VoidFunction
   createCommand(): SqlCommand {
     return new SqlJsCommand(this.db)
   }
