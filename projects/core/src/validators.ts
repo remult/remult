@@ -58,7 +58,7 @@ function buildValidationMethod<valueType>(
     message?: string,
   ) => {
     const valid = await isValid(entity, col)
-    if (typeof valid === 'string') col.error = valid
+    if (typeof valid === 'string' && valid.length > 0) col.error = valid
     else if (!valid) col.error = message || defaultMessage
   }
 
