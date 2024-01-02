@@ -2006,13 +2006,19 @@ export class FieldRefImplementation<entityType, valueType>
 
   async __performValidation() {
     try {
-      let x = typeof this.settings.validate
+      const processValidation = (result: any) => {
+        if (result !== true && result !== undefined && !this.error) {
+          if (typeof result === 'string' && result.length > 0)
+            this.error = result
+          else this.error = 'invalid value'
+        }
+      }
       if (Array.isArray(this.settings.validate)) {
         for (const v of this.settings.validate) {
-          await v(this.container, this)
+          processValidation(await v(this.container, this))
         }
       } else if (typeof this.settings.validate === 'function')
-        await this.settings.validate(this.container, this)
+        processValidation(await this.settings.validate(this.container, this))
     } catch (error) {
       if (typeof error === 'string') this.error = error
       else this.error = error.message

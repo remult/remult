@@ -49,9 +49,22 @@ function buildValidationMethod<valueType>(
     entity: any,
     col: FieldRef<any, valueType>,
   ) => Promise<boolean | string> | boolean | string,
-  //y1 consider changing to a function that gets the column, value and parameters and returns a string
+
   defaultMessage = 'Invalid Value',
-) {
+): ((
+  entity: any,
+  col: FieldRef<any, valueType>,
+  message?: string,
+) => Promise<void>) & {
+  withMessage: (
+    message: string,
+  ) => (entity: any, col: FieldRef<any, valueType>) => Promise<void>
+  defaultMessage: string
+  isValid: (
+    entity: any,
+    col: FieldRef<any, valueType>,
+  ) => Promise<boolean | string> | boolean | string
+} {
   const result = async (
     entity: any,
     col: FieldRef<any, valueType>,
@@ -194,15 +207,17 @@ const validators: FieldOptions<any, string>['validate'] = [
 ]
 
 // create basic validator, lambda value , default message & generic type for the parameter
-/* required to support being called with optional message :
+/*
+ y1 - required to support being called with optional message :
+ * - validators.required("message")
+ * - validators.required()
+ * - validators.required
 * - support string argument in validation
-* - validators.required
-* - validators.required("message")
-* - validators.required()
 * - same for unique and unique on backend.
 * - deprecate withMessage
+*/
 
-* - valueValidator create two basic validators - with and without args.
+/* - valueValidator create two basic validators - with and without args.
 * - create a basic validator with args and message
 * - valueValidator - basic translation of validators
 * - createValueValidator
