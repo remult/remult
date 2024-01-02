@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.24.2] TBD
+
+- Added Origin Private File System Storage to store entities in the front end
+  ```ts
+  const db = new JsonDataProvider(new JsonEntityOpfsStorage())
+  repo(Task, db)
+    .find()
+    .then((tasks) => console.table(tasks))
+  ```
+- Added `SqlJsDataProvider` for use with front end sqlite implementation [sql.js](https://sql.js.org/)
+- Fixed issue where `findOne` didn't work
+
+## [0.24.1] 2023-12-30
+
+- Improved JsonDataProvider to support promise for load and save, useful in all sorts of cases
+- Fixed issue with ESM on NodeJS - Module '"remult/postgres"' has no exported member 'createPostgresDataProvider'.
+
 ## [0.24.0] 2023-12-29
 
 ### Changed

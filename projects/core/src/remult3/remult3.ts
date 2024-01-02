@@ -728,6 +728,8 @@ export type ClassFieldDecorator<entityType, valueType> = (
   c?: any,
 ) => void
 
+//y1 - tried to upgrade vitest, nuxt tests are failing with loading uuid - sounds familiar?
+
 //y2 - from the crm-demo(https://crm-demo.up.railway.app/deals), after editing a deal: - _updateEntityBasedOnApi
 
 //y2 - Backend methods are transactions, it's not intuitive and maybe should be optional / opt in

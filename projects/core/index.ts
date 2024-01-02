@@ -1,4 +1,5 @@
 import type { ClassType } from './classType.js'
+import type { DataProvider } from './src/data-interfaces.js'
 
 export type { ClassType } from './classType.js'
 /*
@@ -110,6 +111,7 @@ export {
   JsonDataProvider,
   JsonEntityStorage,
 } from './src/data-providers/json-data-provider.js' //V
+export { JsonEntityOpfsStorage } from './src/data-providers/json-entity-opfs-storage.js'
 
 //export * from './src/data-api'; //reconsider if to make internal
 export {
@@ -176,6 +178,9 @@ export {
  * await repo(Customer).insert()
  * ```
  */
-export function repo<entityType>(entity: ClassType<entityType>) {
-  return remult.repo(entity)
+export function repo<entityType>(
+  entity: ClassType<entityType>,
+  dataProvider?: DataProvider,
+) {
+  return remult.repo(entity, dataProvider)
 }

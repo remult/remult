@@ -81,7 +81,7 @@ class testSqlExpression extends EntityBase {
   code: number
   @Fields.number<testSqlExpression>({
     sqlExpression: async (x) => {
-      return (await x.fields.code.options.dbName) + ' * 5'
+      return (await x.fields.code.dbName) + ' * 5'
     },
   })
   testExpression: number

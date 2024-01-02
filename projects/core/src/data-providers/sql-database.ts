@@ -392,6 +392,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     statement += ' returning ' + select
 
     return r.execute(statement).then((sqlResult) => {
+      this.sql._getSourceSql().afterMutation?.()
       return this.buildResultRow(colKeys, sqlResult.rows[0], sqlResult)
     })
   }
@@ -405,7 +406,9 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     ).__applyToConsumer(f)
     let statement = 'delete from ' + e.$entityName
     statement += await f.resolveWhere()
-    return r.execute(statement).then(() => {})
+    return r.execute(statement).then(() => {
+      this.sql._getSourceSql().afterMutation?.()
+    })
   }
   async insert(data: any): Promise<any> {
     let e = await this.init()
@@ -436,9 +439,10 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
 
     let { colKeys, select } = this.buildSelect(e)
     statement += ' returning ' + select
-    return await r
-      .execute(statement)
-      .then((sql) => this.buildResultRow(colKeys, sql.rows[0], sql))
+    return await r.execute(statement).then((sql) => {
+      this.sql._getSourceSql().afterMutation?.()
+      return this.buildResultRow(colKeys, sql.rows[0], sql)
+    })
   }
 }
 
@@ -471,11 +475,11 @@ async function bulkInsert<entityType extends EntityBase>(
     const c = db.createCommand()
     let sql =
       'insert into ' +
-      (await items[0]._.metadata.options.dbName) +
+      (await items[0]._.metadata.dbName) +
       ' (' +
       (
         await Promise.all(
-          items[0]._.metadata.fields.toArray().map((f) => f.options.dbName),
+          items[0]._.metadata.fields.toArray().map((f) => f.dbName),
         )
       ).join(',') +
       ') values '

@@ -207,8 +207,7 @@ export function isDbReadonly<entityType>(
   return (
     field.dbReadOnly ||
     field.isServerExpression ||
-    (field.options.sqlExpression &&
-      field.options.dbName != dbNames.$dbNameOf(field))
+    (field.options.sqlExpression && field.dbName != dbNames.$dbNameOf(field))
   )
 }
 
@@ -254,7 +253,7 @@ export async function entityDbName(
       return await metadata.options.sqlExpression(metadata)
     }
   }
-  return wrapIdentifier(metadata.options.dbName)
+  return wrapIdentifier(metadata.dbName)
 }
 export async function fieldDbName(
   f: FieldMetadata,
@@ -267,7 +266,7 @@ export async function fieldDbName(
       if (typeof f.options.sqlExpression === 'function') {
         result = await f.options.sqlExpression(meta)
       } else result = f.options.sqlExpression
-      if (!result) return f.options.dbName
+      if (!result) return f.dbName
       return result
     }
     const rel = getRelationInfo(f.options)
@@ -278,7 +277,7 @@ export async function fieldDbName(
       let fInfo = meta.fields.find(field)
       if (fInfo) return fieldDbName(fInfo, meta, wrapIdentifier)
     }
-    return wrapIdentifier(f.options.dbName)
+    return wrapIdentifier(f.dbName)
   } finally {
   }
 }

@@ -1076,6 +1076,10 @@ export declare class InMemoryLiveQueryStorage implements LiveQueryStorage {
     }) => Promise<void>,
   ): Promise<void>
 }
+export declare class IpfsEntityFileStorage implements JsonEntityStorage {
+  getItem(entityDbName: string): Promise<string>
+  setItem(entityDbName: string, json: string): Promise<void>
+}
 export declare function isBackend(): boolean
 export declare class JsonDataProvider implements DataProvider {
   private storage
@@ -1086,8 +1090,8 @@ export declare class JsonDataProvider implements DataProvider {
   ): Promise<void>
 }
 export interface JsonEntityStorage {
-  getItem(entityDbName: string): string | null
-  setItem(entityDbName: string, json: string): any
+  getItem(entityDbName: string): string | null | Promise<string | null>
+  setItem(entityDbName: string, json: string): void | Promise<void>
 }
 export interface LifecycleEvent<entityType> {
   /**
@@ -1461,6 +1465,7 @@ export declare class Remult {
 export interface RemultContext {}
 export declare function repo<entityType>(
   entity: ClassType<entityType>,
+  dataProvider?: DataProvider,
 ): import("./src/remult3/remult3.js").Repository<entityType>
 export interface Repository<entityType> {
   /** returns a result array based on the provided options */

@@ -8,6 +8,7 @@ export interface SqlImplementation {
   ensureSchema?(entities: EntityMetadata[]): Promise<void>
   supportsJsonColumnType?: boolean
   wrapIdentifier?(name: string): string
+  afterMutation?: VoidFunction
 }
 
 export interface SqlCommand extends SqlCommandWithParameters {

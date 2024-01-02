@@ -1,12 +1,12 @@
 {
   "name": "remult-mono-repo",
   "description": "See projects/core for the remult core package.json. This package.json is used for remult/core development, test projects and experimental work. See ",
-  "version": "0.24.0",
+  "version": "0.24.2-exp.0",
   "scripts": {
     "format": "prettier \"./projects/core/**\" --write",
     "test": "vitest --ui --coverage",
-    "release": "npm run build && npm run patch-versions",
-    "release-experimental": "npm run build && npm run patch-versions-experimental && cd dist/remult && npm publish  --access public --tag exp",
+    "release": "rimraf dist && npm run build && npm run patch-versions",
+    "release-experimental": "rimraf dist && npm run build && npm run patch-versions-experimental && cd dist/remult && npm publish  --access public --tag exp",
     "build": "tsc -p projects/core/tsconfig.build.json && tsc -p projects/core/tsconfig.build.esm.json && tsx misc/build-packagejson-core.ts && npm run lint-dist && copyfiles README.md dist/remult && copyfiles LICENSE dist/remult && tsx misc/extract-public-api.ts",
     "build-tests": "tsc -p tsconfig.tests.json",
     "build-watch": "concurrently \"tsc -w -p projects/core/tsconfig.build.esm.json\" \"tsc -w -p projects/core/tsconfig.build.json\"",
@@ -36,6 +36,7 @@
     "@fastify/express": "^2.0.1",
     "@fastify/middie": "^8.0.0",
     "@fastify/swagger-ui": "^1.8.1",
+    "@hapi/hapi": "^21.3.2",
     "@koa/router": "^12.0.0",
     "@microsoft/fetch-event-source": "^2.0.1",
     "@paralleldrive/cuid2": "^2.2.1",
@@ -48,6 +49,7 @@
     "@types/mssql": "^4.0.10",
     "@types/node": "^14.18.43",
     "@types/pg": "^8.6.3",
+    "@types/sql.js": "^1.4.9",
     "@types/swagger-ui-express": "^4.1.3",
     "@types/websql": "0.0.27",
     "@typescript-eslint/eslint-plugin": "^6.4.1",
@@ -67,6 +69,7 @@
     "dotenv": "^8.1.0",
     "eslint": "^8.56.0",
     "eslint-plugin-file-extension-in-import-ts": "^1.0.2",
+    "eventsource": "^2.0.2",
     "express": "^4.17.3",
     "express-graphql": "^0.12.0",
     "fastify": "^4.10.2",
@@ -85,6 +88,8 @@
     "pg": "^8.3.0",
     "prettier": "^3.0.0",
     "reflect-metadata": "^0.1.13",
+    "rimraf": "^5.0.5",
+    "sql.js": "^1.9.0",
     "swagger-ui-express": "^4.1.6",
     "tedious": "^14.1.0",
     "ts-node": "^8.10.2",
@@ -105,9 +110,5 @@
     "argon2": false,
     "password-hash": false,
     "fs": false
-  },
-  "dependencies": {
-    "@hapi/hapi": "^21.3.2",
-    "eventsource": "^2.0.2"
   }
 }

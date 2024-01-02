@@ -8,8 +8,8 @@ import type { EntityMetadata } from '../remult3/remult3.js'
 import { ArrayEntityDataProvider } from './array-entity-data-provider.js'
 
 export interface JsonEntityStorage {
-  getItem(entityDbName: string): string | null
-  setItem(entityDbName: string, json: string)
+  getItem(entityDbName: string): string | null | Promise<string | null>
+  setItem(entityDbName: string, json: string): void | Promise<void>
 }
 
 export class JsonDataProvider implements DataProvider {
@@ -30,15 +30,17 @@ class JsonEntityDataProvider implements EntityDataProvider {
     private helper: JsonEntityStorage,
   ) {}
   async loadEntityData(
-    what: (dp: EntityDataProvider, save: () => void) => any,
+    what: (dp: EntityDataProvider, save: () => Promise<void>) => any,
   ): Promise<any> {
     let data = []
-    let dbName = await this.entity.options.dbName
-    let s = this.helper.getItem(dbName)
+    let dbName = await this.entity.dbName
+    let s = await this.helper.getItem(dbName)
     if (s) data = JSON.parse(s)
     let dp = new ArrayEntityDataProvider(this.entity, data)
-    return what(dp, () =>
-      this.helper.setItem(dbName, JSON.stringify(data, undefined, 2)),
+    return what(
+      dp,
+      async () =>
+        await this.helper.setItem(dbName, JSON.stringify(data, undefined, 2)),
     )
   }
   p: Promise<any> = Promise.resolve()
@@ -56,8 +58,8 @@ class JsonEntityDataProvider implements EntityDataProvider {
   update(id: any, data: any): Promise<any> {
     return (this.p = this.p.then(() =>
       this.loadEntityData((dp, save) =>
-        dp.update(id, data).then((x) => {
-          save()
+        dp.update(id, data).then(async (x) => {
+          await save()
           return x
         }),
       ),
@@ -66,8 +68,8 @@ class JsonEntityDataProvider implements EntityDataProvider {
   delete(id: any): Promise<void> {
     return (this.p = this.p.then(() =>
       this.loadEntityData((dp, save) =>
-        dp.delete(id).then((x) => {
-          save()
+        dp.delete(id).then(async (x) => {
+          await save()
           return x
         }),
       ),
@@ -76,8 +78,8 @@ class JsonEntityDataProvider implements EntityDataProvider {
   async insert(data: any): Promise<any> {
     return (this.p = this.p.then(() =>
       this.loadEntityData((dp, save) =>
-        dp.insert(data).then((x) => {
-          save()
+        dp.insert(data).then(async (x) => {
+          await save()
           return x
         }),
       ),
