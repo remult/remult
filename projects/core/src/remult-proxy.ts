@@ -167,6 +167,11 @@ export class RemultProxy implements Remult {
           .remultFactory()
           .repo(...args)
           .findFirst(...args2),
+      findOne: (...args2) =>
+        self
+          .remultFactory()
+          .repo(...args)
+          .findOne(...args2),
       findId: (a, b) =>
         self
           .remultFactory()
