@@ -63,14 +63,14 @@ export function knexTests(knex: Knex.Knex) {
   it('work with native knex', async () => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity)
     const knex = KnexDataProvider.getDb(remult)
-    const r = await knex(repo.metadata.options.dbName!).count()
+    const r = await knex(repo.metadata.dbName!).count()
     expect(getKnexCount(r)).toBe(4)
   })
   it('work with native knex2', async () => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity)
     await remult.dataProvider.transaction(async (db) => {
       const sql = KnexDataProvider.getDb(new Remult(db))
-      const r = await sql(repo.metadata.options.dbName!).count()
+      const r = await sql(repo.metadata.dbName!).count()
       expect(getKnexCount(r)).toBe(4)
     })
   })
@@ -81,7 +81,7 @@ export function knexTests(knex: Knex.Knex) {
         await s.find({
           where: KnexDataProvider.rawFilter(async () => {
             return (build) =>
-              build.whereIn(s.metadata.fields.myId.options.dbName, [1, 3])
+              build.whereIn(s.metadata.fields.myId.dbName, [1, 3])
           }),
         })
       ).length,
@@ -96,7 +96,7 @@ export function knexTests(knex: Knex.Knex) {
             $or: [
               KnexDataProvider.rawFilter(async () => {
                 return (build) =>
-                  build.whereIn(s.metadata.fields.myId.options.dbName, [1, 3])
+                  build.whereIn(s.metadata.fields.myId.dbName, [1, 3])
               }),
               {
                 myId: 4,

@@ -57,7 +57,7 @@ describe('websql', () => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity)
     const sql = SqlDatabase.getDb(remult)
     const r = await sql.execute(
-      'select count(*) as c from ' + repo.metadata.options.dbName!,
+      'select count(*) as c from ' + repo.metadata.dbName!,
     )
     expect(r.rows[0].c).toBe(4)
   })
@@ -67,7 +67,7 @@ describe('websql', () => {
     await new Promise((res) => {
       sql.transaction((y) => {
         y.executeSql(
-          'select count(*) as c from ' + repo.metadata.options.dbName!,
+          'select count(*) as c from ' + repo.metadata.dbName!,
           undefined,
           (_, r) => {
             expect(r.rows[0].c).toBe(4)

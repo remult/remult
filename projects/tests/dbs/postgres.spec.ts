@@ -103,8 +103,7 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity)
     const sql = SqlDatabase.getDb(remult)
     const r = await sql.execute(
-      'select count(*) as c from ' +
-        db.wrapIdentifier(repo.metadata.options.dbName!),
+      'select count(*) as c from ' + db.wrapIdentifier(repo.metadata.dbName),
     )
     expect(r.rows[0].c).toBe('4')
   })
@@ -112,8 +111,7 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity)
     const sql = PostgresDataProvider.getDb(remult)
     const r = await sql.query(
-      'select count(*) as c from ' +
-        db.wrapIdentifier(repo.metadata.options.dbName!),
+      'select count(*) as c from ' + db.wrapIdentifier(repo.metadata.dbName),
     )
     expect(r.rows[0].c).toBe('4')
   })
@@ -125,7 +123,7 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
         const sql = PostgresDataProvider.getDb(new Remult(new SqlDatabase(x)))
         const r = await sql.query(
           'select count(*) as c from ' +
-            db.wrapIdentifier(repo.metadata.options.dbName!),
+            db.wrapIdentifier(repo.metadata.dbName),
         )
         expect(r.rows[0].c).toBe('4')
       })
@@ -143,8 +141,7 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
         await s.find({
           where: SqlDatabase.rawFilter(async (build) => {
             build.sql =
-              db.wrapIdentifier(s.metadata.fields.myId.options.dbName) +
-              ' in (1,3)'
+              db.wrapIdentifier(s.metadata.fields.myId.dbName) + ' in (1,3)'
           }),
         })
       ).length,
@@ -159,8 +156,7 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
             $or: [
               SqlDatabase.rawFilter(async (build) => {
                 build.sql =
-                  db.wrapIdentifier(s.metadata.fields.myId.options.dbName) +
-                  ' in (1,3)'
+                  db.wrapIdentifier(s.metadata.fields.myId.dbName) + ' in (1,3)'
               }),
               {
                 myId: 2,

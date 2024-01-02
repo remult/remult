@@ -152,7 +152,7 @@ describe('test server expression value', () => {
           b: Fields.string({ dbName: 'bb' }),
           c: Fields.string({ sqlExpression: () => 'cc' }),
           d: Fields.string({
-            sqlExpression: async (e) => e.fields.c.options.dbName + 'dd',
+            sqlExpression: async (e) => e.fields.c.dbName + 'dd',
           }),
           e: Fields.string<InstanceType<typeof myClass>>({
             sqlExpression: async (e) => {

@@ -475,11 +475,11 @@ async function bulkInsert<entityType extends EntityBase>(
     const c = db.createCommand()
     let sql =
       'insert into ' +
-      (await items[0]._.metadata.options.dbName) +
+      (await items[0]._.metadata.dbName) +
       ' (' +
       (
         await Promise.all(
-          items[0]._.metadata.fields.toArray().map((f) => f.options.dbName),
+          items[0]._.metadata.fields.toArray().map((f) => f.dbName),
         )
       ).join(',') +
       ') values '

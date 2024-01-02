@@ -2177,7 +2177,7 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
       this.options.allowApiRead = true
     if (!this.key) this.key = entityType.name
     if (!entityInfo.dbName) entityInfo.dbName = this.key
-
+    this.dbName = entityInfo.dbName
     let _items = []
     let r = {
       find: (c: FieldMetadata<any> | string) =>

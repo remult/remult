@@ -48,7 +48,7 @@ describe.skipIf(!mongoConnectionString)('mongo with Transaction', () => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity)
     const mongo = MongoDataProvider.getDb(remult)
     const r = await (
-      await mongo.db.collection(repo.metadata.options.dbName!)
+      await mongo.db.collection(repo.metadata.dbName!)
     ).countDocuments(
       await MongoDataProvider.filterToRaw(repo, { myId: [1, 2] }),
     )
@@ -58,7 +58,7 @@ describe.skipIf(!mongoConnectionString)('mongo with Transaction', () => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity)
     const mongo = MongoDataProvider.getDb(remult)
     const r = await (
-      await mongo.db.collection(repo.metadata.options.dbName!)
+      await mongo.db.collection(repo.metadata.dbName!)
     ).countDocuments()
     expect(r).toBe(4)
   })

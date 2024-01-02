@@ -37,7 +37,7 @@ describe('test json database', () => {
       .repo(entityWithAutoId)
       .insert([{ name: 'a' }, { name: 'b' }, { name: 'c' }])
     expect(
-      mem.rows[await remult.repo(entityWithAutoId).metadata.options.dbName],
+      mem.rows[await remult.repo(entityWithAutoId).metadata.dbName],
     ).toEqual([
       { id: 1, name: 'a' },
       { id: 2, name: 'b' },
