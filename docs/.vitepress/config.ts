@@ -123,14 +123,13 @@ export default defineConfig({
             items: [
               { text: 'Introduction', link: '/docs/' },
               {
-                text: 'Add Remult to your App',
-                link: '/docs/add-remult-to-your-app',
+                text: 'Quickstart',
+                link: '/docs/quickstart',
               },
               {
-                text: 'CRUD your first Entity',
-                link: '/docs/crud-your-first-entity',
+                text: 'Example Apps',
+                link: '/docs/example-apps',
               },
-              { text: 'Connecting to a Database', link: '/docs/databases' },
             ],
           },
           {
