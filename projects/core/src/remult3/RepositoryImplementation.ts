@@ -2090,9 +2090,31 @@ export class columnDefsImpl implements FieldMetadata {
   ) {
     this.options = this.settings
     this.target = this.settings.target
-    this.valueConverter = this.settings.valueConverter as Required<
-      ValueConverter<any>
-    >
+    this.valueConverter = new Proxy(this.settings.valueConverter, {
+      get: (target, prop) => {
+        let result = target[prop]
+        if (typeof result === 'function') {
+          return (...args) => {
+            try {
+              return target[prop](...args)
+            } catch (err: any) {
+              const error = `${String(
+                prop,
+              )} failed for value ${args?.[0]}. Error: ${
+                typeof err === 'string' ? err : err.message
+              }`
+              throw {
+                message: this.caption + ': ' + error,
+                modelState: {
+                  [this.key]: error,
+                },
+              } as ErrorInfo
+            }
+          }
+        }
+        return result
+      },
+    }) as Required<ValueConverter<any>>
     this.allowNull = !!this.settings.allowNull
     this.valueType = this.settings.valueType
     this.key = this.settings.key

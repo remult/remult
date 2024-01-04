@@ -223,7 +223,7 @@ y1 - relation exist should happen on backend (or non proxy)
 * V - relation exists
 * V - max length should be enforced? from options - where the default message will be from the validators
 * V - required as field option
-//y1  -consider placing from json exceptions errors as validations error (like zod parse)
+//V - consider placing from json exceptions errors as validations error (like zod parse)
 */
 // view issue
 //p1 - symbol for!!

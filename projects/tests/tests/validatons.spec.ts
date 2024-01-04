@@ -619,7 +619,7 @@ describe('validation tests', () => {
       }
     `)
   })
-  it.skip('test value converters error', async () => {
+  it('test value converters error', async () => {
     await expect(() =>
       remult
         .repo(
@@ -643,7 +643,7 @@ describe('validation tests', () => {
     }
   `)
   })
-  it.skip('test value converters error', async () => {
+  it('test value converters error', async () => {
     await expect(() =>
       remult
         .repo(
