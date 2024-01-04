@@ -166,7 +166,7 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
     let j = this.translateToJson(data, names)
     let idf = this.entity.idMetadata.field
     if (!(idf instanceof CompoundIdField)) {
-      if (idf.options.valueConverter?.fieldTypeInDb === 'autoincrement') {
+      if (idf.valueConverter.fieldTypeInDb === 'autoincrement') {
         j[idf.key] = 1
         for (const row of this.rows) {
           if (row[idf.key] >= j[idf.key]) j[idf.key] = row[idf.key] + 1

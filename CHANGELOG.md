@@ -15,10 +15,10 @@ All notable changes to this project will be documented in this file.
 - Added support for return value for validations - true || undefined are valid, string will provide the message. For example:
   ```ts
   @Fields.string({
-    validate:(task)=>task.title>5 || "too short"
+    validate:(task)=> task.title > 5 || "too short"
   })
   ```
--
+- Added `clone` to `EntityRef`
 - Fixed issue where `findOne` didn't work
 
 ## [0.24.1] 2023-12-30

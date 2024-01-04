@@ -14,6 +14,8 @@ export interface FieldOptions<entityType = any, valueType = any> {
   caption?: string
   /** If it can store null in the database */
   allowNull?: boolean
+  /** If a value is required */
+  required?: boolean
   /** If this field data is included in the api.
    * @see [allowed](http://remult.dev/docs/allowed.html)*/
   includeInApi?: AllowedForInstance<entityType>
@@ -44,11 +46,21 @@ export interface FieldOptions<entityType = any, valueType = any> {
     | ((
         entity: entityType,
         fieldRef: FieldRef<entityType, valueType>,
-      ) => any | Promise<any>)
+      ) =>
+        | boolean
+        | string
+        | void
+        | undefined
+        | Promise<boolean | string | void | undefined>)
     | ((
         entity: entityType,
         fieldRef: FieldRef<entityType, valueType>,
-      ) => any | Promise<any>)[]
+      ) =>
+        | boolean
+        | string
+        | void
+        | undefined
+        | Promise<boolean | string | void | undefined>)[]
 
   /** Will be fired before this field is saved to the server/database */
   saving?: (

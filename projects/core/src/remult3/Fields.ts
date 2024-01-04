@@ -14,6 +14,7 @@ import { ValueConverters } from '../valueConverters.js'
 import { buildOptions, columnsOfType } from './RepositoryImplementation.js'
 import { relationInfoMember } from './relationInfoMember.js'
 import type { columnInfo } from './columnInfo.js'
+import { Validators } from '../validators.js'
 
 export class Fields {
   /**
@@ -428,6 +429,15 @@ export function Field<entityType = any, valueType = any>(
     const key = typeof context === 'string' ? context : context.name.toString()
     let factory = (remult: Remult) => {
       let r = buildOptions(options, remult)
+      if (r.required) {
+        r.validate = addValidator(r.validate, Validators.required)
+      }
+      if ((r as StringFieldOptions).maxLength) {
+        r.validate = addValidator(
+          r.validate,
+          Validators.maxLength((r as StringFieldOptions).maxLength!),
+        )
+      }
       if (!r.valueType && valueType) {
         r.valueType = valueType()
       }
@@ -476,4 +486,22 @@ export function checkTarget(target: any) {
     throw new Error(
       "Set the 'experimentalDecorators:true' option in your 'tsconfig' or 'jsconfig' (target undefined)",
     )
+}
+function addValidator(
+  validators: FieldOptions['validate'],
+  newValidator: FieldOptions['validate'],
+  atStart = false,
+) {
+  if (!newValidator) return
+  const newValidators = Array.isArray(newValidator)
+    ? newValidator
+    : [newValidator]
+  const validatorsArray = Array.isArray(validators)
+    ? validators
+    : validators
+    ? [validators]
+    : []
+  return atStart
+    ? [...newValidators, ...validatorsArray]
+    : [...validatorsArray, ...newValidators]
 }

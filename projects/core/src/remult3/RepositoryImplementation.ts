@@ -846,9 +846,10 @@ export class RepositoryImplementation<entityType>
     for (const col of this.fieldsOf(json)) {
       let ei = getEntitySettings(col.valueType, false)
       if (ei) {
-        result[col.key] = this.remult
-          .repo(col.valueType)
-          .fromJson(json[col.key])
+        let val = json[col.key]
+        if (typeof val === 'string' || typeof val === 'number')
+          result[col.key] = val
+        else result[col.key] = this.remult.repo(col.valueType).fromJson(val)
       } else {
         if (json[col.key] !== undefined) {
           result[col.key] = col.valueConverter.fromJson(json[col.key])
@@ -887,6 +888,7 @@ export class RepositoryImplementation<entityType>
   ) {
     let r: Promise<entityType>
     let cacheInfo: cacheEntityInfo<entityType>
+    if (!options) options = {}
     if (options.useCache) {
       let f = findOptionsToJson(options, this.metadata)
       let key = JSON.stringify(f)
@@ -1903,6 +1905,7 @@ export class FieldRefImplementation<entityType, valueType>
           .relations(this.container)
           [this.metadata.key].findOne()
         if (val) this.container[this.metadata.key] = val
+        else return null
       }
     } else if (lu) {
       if (this.valueChanged()) {
