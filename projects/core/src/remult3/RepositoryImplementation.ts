@@ -47,6 +47,7 @@ import type {
   Repository,
   RepositoryRelations,
   Subscribable,
+  ValidateFieldEvent,
 } from './remult3.js'
 
 import type { Paginator, RefSubscriber, RefSubscriberBase } from './remult3.js'
@@ -1105,8 +1106,8 @@ abstract class rowHelperBase<T> {
   constructor(
     protected fieldsMetadata: FieldMetadata[],
     public instance: T,
-    protected remult: Remult,
-    protected isNewRow: boolean,
+    public remult: Remult,
+    public isNewRow: boolean,
   ) {
     {
       let fac = remult as RemultProxy
@@ -2012,12 +2013,34 @@ export class FieldRefImplementation<entityType, valueType>
           else this.error = 'invalid value'
         }
       }
-      if (Array.isArray(this.settings.validate)) {
-        for (const v of this.settings.validate) {
-          processValidation(await v(this.container, this))
+      if (this.settings.validate) {
+        let self = this
+        let event: ValidateFieldEvent<any> = {
+          entityRef: this.entityRef,
+          get error() {
+            return self.error
+          },
+          set error(value) {
+            self.error = value
+          },
+          isNew: self.rowBase.isNewRow,
+          load: () => self.load(),
+          metadata: self.metadata,
+          originalValue: self.originalValue,
+          value: self.value,
+          valueChanged: () => self.valueChanged(),
+          originalValueIsNull: () => self.originalValueIsNull(),
+          valueIsNull: () => self.valueIsNull(),
+          isBackend: () => !self.rowBase?.remult?.dataProvider?.isProxy,
         }
-      } else if (typeof this.settings.validate === 'function')
-        processValidation(await this.settings.validate(this.container, this))
+
+        if (Array.isArray(this.settings.validate)) {
+          for (const v of this.settings.validate) {
+            processValidation(await v(this.container, event))
+          }
+        } else if (typeof this.settings.validate === 'function')
+          processValidation(await this.settings.validate(this.container, event))
+      }
     } catch (error) {
       if (typeof error === 'string') this.error = error
       else this.error = error.message

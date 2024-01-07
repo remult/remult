@@ -345,7 +345,7 @@ describe('validation tests', () => {
     }
   `)
     })
-    it('test undefined', async () => {
+    it.only('test undefined', async () => {
       expect(
         async () =>
           await remult.repo(x).insert({

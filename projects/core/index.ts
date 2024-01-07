@@ -6,6 +6,7 @@ export type { ClassType } from './classType.js'
  * Public API Surface of remult
  */
 export {
+  ValidateFieldEvent,
   MembersOnly,
   FieldsMetadata,
   FieldRef,
@@ -145,7 +146,14 @@ export {
 export { UrlBuilder } from './urlBuilder.js'
 export {
   Validators,
+  ValidationMessage,
+  ValueValidationMessage,
+  Validator,
+  ValidatorWithArgs,
   valueValidator,
+  createValidator,
+  createValidatorWithArgs,
+  createValueValidatorWithArgs,
   createValueValidator,
 } from './src/validators.js'
 

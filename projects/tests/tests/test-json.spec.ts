@@ -14,7 +14,9 @@ describe('test tasks', () => {
     let storage = ''
     let db = new JsonDataProvider({
       getItem: () => storage,
-      setItem: (x, y) => (storage = y),
+      setItem: (x, y) => {
+        storage = y
+      },
     })
     let cont = new Remult()
     cont.dataProvider = db

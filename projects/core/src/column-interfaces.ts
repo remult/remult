@@ -4,6 +4,7 @@ import type {
   EntityMetadata,
   FieldRef,
   LifecycleEvent,
+  ValidateFieldEvent,
 } from './remult3/remult3.js'
 
 export interface FieldOptions<entityType = any, valueType = any> {
@@ -43,24 +44,8 @@ export interface FieldOptions<entityType = any, valueType = any> {
    * })
    */
   validate?:
-    | ((
-        entity: entityType,
-        fieldRef: FieldRef<entityType, valueType>,
-      ) =>
-        | boolean
-        | string
-        | void
-        | undefined
-        | Promise<boolean | string | void | undefined>)
-    | ((
-        entity: entityType,
-        fieldRef: FieldRef<entityType, valueType>,
-      ) =>
-        | boolean
-        | string
-        | void
-        | undefined
-        | Promise<boolean | string | void | undefined>)[]
+    | FieldValidator<entityType, valueType>
+    | FieldValidator<entityType, valueType>[]
 
   /** Will be fired before this field is saved to the server/database */
   saving?: (
@@ -207,9 +192,13 @@ export interface ValueConverter<valueType> {
 
 export declare type FieldValidator<entityType = any, valueType = any> = (
   entity: entityType,
-  fieldRef: FieldRef<entityType, valueType>,
-) => void | Promise<void>
-
+  event: ValidateFieldEvent<entityType, valueType>,
+) =>
+  | boolean
+  | string
+  | void
+  | undefined
+  | Promise<boolean | string | void | undefined>
 export declare type ValueOrExpression<valueType> = valueType | (() => valueType)
 
 export function valueOrExpressionToValue<valueType>(

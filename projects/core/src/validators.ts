@@ -1,33 +1,38 @@
-import type { FieldOptions } from '../index.js'
+import type { FieldValidator } from './column-interfaces.js'
 import { isBackend } from './context.js'
-import type { FieldRef } from './remult3/remult3.js'
+import type { ValidateFieldEvent } from './remult3/remult3.js'
 
 export class Validators {
-  static required = buildValidationMethod<any>(
-    async (_, col) =>
-      col.value != null &&
-      col.value != undefined &&
-      col.value !== '' &&
-      col.value != 0,
+  static required = createValidator<any>(
+    async (_, e) =>
+      e.value != null && e.value != undefined && e.value !== '' && e.value != 0,
 
     'Should not be empty',
   )
 
-  static unique = buildValidationMethod<any>(async (_, col) => {
-    if (!col.entityRef)
+  static unique = createValidator<any>(async (_, e) => {
+    if (!e.entityRef)
       throw 'unique validation may only work on columns that are attached to an entity'
-    if (col.entityRef.isNew() || col.valueChanged()) {
+
+    if (e.isBackend() && (e.isNew || e.valueChanged())) {
       return (
-        (await col.entityRef.repository.count({
-          [col.metadata.key]: col.value,
+        (await e.entityRef.repository.count({
+          [e.metadata.key]: e.value,
         })) == 0
       )
     } else return true
   }, 'already exists')
-
-  static uniqueOnBackend = buildValidationMethod<any>(async (_, col) => {
-    if (isBackend()) return Validators.unique.isValid(_, col)
-    return true
+  /**
+   * @deprecated is `unique` instead - it also runs only on the backend
+   */
+  static uniqueOnBackend = createValidator<any>(async (_, e) => {
+    if (e.isBackend() && (e.isNew || e.valueChanged())) {
+      return (
+        (await e.entityRef.repository.count({
+          [e.metadata.key]: e.value,
+        })) == 0
+      )
+    } else return true
   }, Validators.unique.defaultMessage)
 
   static regex = createValueValidatorWithArgs<string, RegExp>((val, regex) =>
@@ -41,87 +46,85 @@ export class Validators {
     (val) => !!new URL(val),
     'Invalid Url',
   )
-  static in = createValueValidatorWithArgs<any, any[]>((val, values) =>
-    values.includes(val),
+  static in = createValueValidatorWithArgs<any, any[]>(
+    (val, values) => values.includes(val),
+    (values) => `Value must be one of ${values.join(', ')}`,
   )
 
   static notNull = createValueValidator(
     (val) => val != null,
     'Should not be null',
   )
-  static enum = createValueValidatorWithArgs((value, enumObj) =>
-    Object.values(enumObj).includes(value),
+  static enum = createValueValidatorWithArgs(
+    (value, enumObj) => Object.values(enumObj).includes(value),
+    (enumObj) => `Value must be one of ${Object.values(enumObj).join(', ')}`,
   )
-  static relationExists = buildValidationMethod<any>(async (_, col) => {
-    if (col.valueIsNull()) return true
-    return Boolean(await col.load())
+  static relationExists = createValidator<any>(async (_, e) => {
+    if (e.valueIsNull()) return true
+    if (!e.isBackend()) return true
+    return Boolean(await e.load())
   }, 'Relation value does not exist')
 
   static maxLength = createValueValidatorWithArgs<string, number>(
     (val, maxLength) => val.length <= maxLength,
-    'Value too long',
+    (maxLength) => `Value must be at most ${maxLength} characters`,
   )
 
   static defaultMessage = 'Invalid value'
 }
 
-function buildValidationMethod<valueType>(
-  isValid: (
+export type Validator<valueType> = FieldValidator<any, valueType> &
+  ((message?: string) => FieldValidator<any, valueType>) & {
+    defaultMessage: ValidationMessage<valueType, undefined>
+    /**
+     * @deprecated  use (message:string) instead - for example: Validators.required("Is needed")
+     */
+    withMessage(message: string): FieldValidator<any, valueType>
+  }
+
+export function createValidator<valueType>(
+  validate: (
     entity: any,
-    col: FieldRef<any, valueType>,
+    e: ValidateFieldEvent<any, valueType>,
   ) => Promise<boolean | string> | boolean | string,
-  defaultMessage?: string,
-): ((
-  entity: any,
-  col: FieldRef<any, valueType>,
-  message?: string,
-) => Promise<void>) &
-  ((
-    message?: string,
-  ) => (
-    entity: any,
-    col: FieldRef<any, valueType>,
-    message?: string,
-  ) => Promise<void>) & {
-    //@deprecated use required('message') instead
-    withMessage: (
-      message: string,
-    ) => (entity: any, col: FieldRef<any, valueType>) => Promise<void>
-    defaultMessage: string
-    isValid: (
-      entity: any,
-      col: FieldRef<any, valueType>,
-    ) => Promise<boolean | string> | boolean | string
-  } {
+  defaultMessage?: ValidationMessage<valueType, undefined>,
+): Validator<valueType> {
   const validation = async (
     entity: any,
-    col: FieldRef<any, valueType>,
+    e: ValidateFieldEvent<any, valueType>,
     message?: string,
   ) => {
-    const valid = await isValid(entity, col)
-    if (typeof valid === 'string' && valid.length > 0) col.error = valid
-    else if (!valid) col.error = message || defaultMessage
+    const valid = await validate(entity, e)
+    if (typeof valid === 'string' && valid.length > 0) e.error = valid
+    else if (!valid)
+      e.error =
+        message ||
+        (typeof defaultMessage === 'function' &&
+          defaultMessage(entity, e, undefined)) ||
+        (defaultMessage as string) ||
+        Validators.defaultMessage
   }
   const result = (
     entityOrMessage: any,
-    col?: FieldRef<any, valueType>,
+    e?: ValidateFieldEvent<any, valueType>,
     message?: string,
   ) => {
     if (
       typeof entityOrMessage === 'string' ||
-      (entityOrMessage === undefined && col === undefined)
+      (entityOrMessage === undefined && e === undefined)
     ) {
-      return async (entity, ref, message) =>
-        await validation(entity, ref, entityOrMessage || message)
+      return async (entity, e, message) =>
+        await validation(entity, e, entityOrMessage || message)
     }
-    return validation(entityOrMessage, col!, message)
+    return validation(entityOrMessage, e!, message)
   }
 
   //@ts-ignore
   return Object.assign(result, {
     withMessage:
-      (message: string) => async (entity: any, col: FieldRef<any, valueType>) =>
-        result(entity, col, message),
+      (message: string) =>
+      async (entity: any, e: ValidateFieldEvent<any, valueType>) =>
+        result(entity, e, message),
 
     get defaultMessage() {
       return defaultMessage
@@ -129,7 +132,7 @@ function buildValidationMethod<valueType>(
     set defaultMessage(val) {
       defaultMessage = val
     },
-    isValid,
+    isValid: validate,
   })
 }
 
@@ -137,46 +140,86 @@ export function valueValidator<valueType>(
   validate: (value: valueType) => boolean | string | Promise<boolean | string>,
   message?: string,
 ) {
-  return (entity: any, col: FieldRef<any, valueType>) =>
-    validate(col.value) || message || false
+  return (entity: any, e: ValidateFieldEvent<any, valueType>) =>
+    validate(e.value) || message || false
 }
 
 export function createValueValidator<valueType>(
   validate: (value: valueType) => boolean | string | Promise<boolean | string>,
-  message?: string,
+  message?: ValidationMessage<valueType, undefined>,
 ) {
-  return buildValidationMethod<valueType>(
-    (_, col) => validate(col.value),
-    message,
-  )
+  return createValidator<valueType>((_, e) => {
+    if (e.value === undefined || e.value === null) return true
+    return validate(e.value)
+  }, message)
 }
 export function createValueValidatorWithArgs<valueType, argsType>(
   validate: (
     value: valueType,
     args: argsType,
   ) => boolean | string | Promise<boolean | string>,
-  message?: string,
-) {
-  return createValidator<valueType, argsType>(
-    (_, col, args) => validate(col.value, args),
-    message,
+  defaultMessage?: ValueValidationMessage<argsType>,
+): ValidatorWithArgs<valueType, argsType> & {
+  defaultMessage: ValueValidationMessage<argsType>
+} {
+  const result = createValidatorWithArgs<valueType, argsType>(
+    (_, e, args) => {
+      if (e.value === undefined || e.value === null) return true
+      return validate(e.value, args)
+    },
+    (_, e, args) =>
+      (typeof defaultMessage === 'function' && defaultMessage(args)) ||
+      (defaultMessage as string),
   )
+  return Object.assign((entity, e) => result(entity, e), {
+    get defaultMessage() {
+      return defaultMessage
+    },
+    set defaultMessage(val) {
+      defaultMessage = val
+    },
+  })
 }
-export function createValidator<valueType, args>(
-  isValid: (
+
+export type ValueValidationMessage<argsType> =
+  | string
+  | ((args: argsType) => string)
+
+export type ValidationMessage<valueType, argsType> =
+  | string
+  | ((
+      entity: any,
+      event: ValidateFieldEvent<any, valueType>,
+      args: argsType,
+    ) => string)
+
+export type ValidatorWithArgs<valueType, argsType> = (
+  args: argsType,
+  message?: string,
+) => FieldValidator<any, valueType>
+
+export function createValidatorWithArgs<valueType, argsType>(
+  validate: (
     entity: any,
-    col: FieldRef<any, valueType>,
-    args: args,
+    e: ValidateFieldEvent<any, valueType>,
+    args: argsType,
   ) => Promise<boolean | string> | boolean | string,
-  defaultMessage?: string,
-) {
+  defaultMessage: ValidationMessage<valueType, argsType>,
+): ValidatorWithArgs<valueType, argsType> & {
+  defaultMessage: ValidationMessage<valueType, argsType>
+} {
   const result =
-    (args: args, message?: string) =>
-    async (entity: any, col: FieldRef<any, valueType>) => {
-      const valid = await isValid(entity, col, args)
-      if (typeof valid === 'string') col.error = valid
+    (args: argsType, message?: string) =>
+    async (entity: any, e: ValidateFieldEvent<any, valueType>) => {
+      const valid = await validate(entity, e, args)
+      if (typeof valid === 'string') e.error = valid
       else if (!valid)
-        col.error = message || defaultMessage || Validators.defaultMessage
+        e.error =
+          message || defaultMessage
+            ? typeof defaultMessage === 'function'
+              ? defaultMessage(entity, e, args)
+              : defaultMessage
+            : Validators.defaultMessage
     }
 
   return Object.assign(result, {
@@ -186,7 +229,6 @@ export function createValidator<valueType, args>(
     set defaultMessage(val) {
       defaultMessage = val
     },
-    isValid,
   })
 }
 
@@ -200,15 +242,16 @@ V - same for unique and unique on backend.
 V - deprecate withMessage
 
      https://github.com/colinhacks/zod/blob/3e4f71e857e75da722bd7e735b6d657a70682df2/src/locales/en.ts#L98
-//p1 - string | (args)=>string
-//p1 - string | (entity,ref,args)=>string
-//p1 - simple validator not to validate undefined | null
-//p1 - all validators should not throw exception on empty values - it should value
-//p1 - add IsBackend to LifeCycleEvent
-//p1 - Implement validateFieldEvent
-//p1 - make unique only backend
-//p1 - depricate uniqeOnBackend
-y1 - relation exist should happen on backend (or non proxy)
+//V - string | (args)=>string
+//V - string | (entity,ref,args)=>string
+//V - simple validator not to validate undefined | null
+//V - all validators should not throw exception on empty values - it should value
+//V - add IsBackend to LifeCycleEvent
+//V - Implement validateFieldEvent
+//V - make unique only backend
+//V - depricate uniqeOnBackend
+//V - relation exist should happen on backend (or non proxy)
+//V - added isNew to ValidateFieldEvent
 */
 
 /* 

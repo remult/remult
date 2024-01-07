@@ -169,30 +169,36 @@ export interface ControllerRefForControllerBase<entityType>
   extends ControllerRefBase<entityType> {
   fields: FieldsRefForEntityBase<entityType>
 }
+export declare function createValidator<valueType>(
+  validate: (
+    entity: any,
+    e: ValidateFieldEvent<any, valueType>,
+  ) => Promise<boolean | string> | boolean | string,
+  defaultMessage?: ValidationMessage<valueType, undefined>,
+): Validator<valueType>
+export declare function createValidatorWithArgs<valueType, argsType>(
+  validate: (
+    entity: any,
+    e: ValidateFieldEvent<any, valueType>,
+    args: argsType,
+  ) => Promise<boolean | string> | boolean | string,
+  defaultMessage: ValidationMessage<valueType, argsType>,
+): ValidatorWithArgs<valueType, argsType> & {
+  defaultMessage: ValidationMessage<valueType, argsType>
+}
 export declare function createValueValidator<valueType>(
   validate: (value: valueType) => boolean | string | Promise<boolean | string>,
-  message?: string,
-): ((
-  entity: any,
-  col: FieldRef<any, valueType>,
-  message?: string,
-) => Promise<void>) &
-  ((
-    message?: string,
-  ) => (
-    entity: any,
-    col: FieldRef<any, valueType>,
-    message?: string,
-  ) => Promise<void>) & {
-    withMessage: (
-      message: string,
-    ) => (entity: any, col: FieldRef<any, valueType>) => Promise<void>
-    defaultMessage: string
-    isValid: (
-      entity: any,
-      col: FieldRef<any, valueType>,
-    ) => string | boolean | Promise<string | boolean>
-  }
+  message?: ValidationMessage<valueType, undefined>,
+): Validator<valueType>
+export declare function createValueValidatorWithArgs<valueType, argsType>(
+  validate: (
+    value: valueType,
+    args: argsType,
+  ) => boolean | string | Promise<boolean | string>,
+  defaultMessage?: ValueValidationMessage<argsType>,
+): ValidatorWithArgs<valueType, argsType> & {
+  defaultMessage: ValueValidationMessage<argsType>
+}
 export interface customFilterInfo<entityType> {
   rawFilterInfo: {
     key: string
@@ -699,24 +705,8 @@ export interface FieldOptions<entityType = any, valueType = any> {
    * })
    */
   validate?:
-    | ((
-        entity: entityType,
-        fieldRef: FieldRef<entityType, valueType>,
-      ) =>
-        | boolean
-        | string
-        | void
-        | undefined
-        | Promise<boolean | string | void | undefined>)
-    | ((
-        entity: entityType,
-        fieldRef: FieldRef<entityType, valueType>,
-      ) =>
-        | boolean
-        | string
-        | void
-        | undefined
-        | Promise<boolean | string | void | undefined>)[]
+    | FieldValidator<entityType, valueType>
+    | FieldValidator<entityType, valueType>[]
   /** Will be fired before this field is saved to the server/database */
   saving?: (
     entity: entityType,
@@ -920,8 +910,13 @@ export declare function FieldType<valueType = any>(
 ): (target: any, context?: any) => any
 export declare type FieldValidator<entityType = any, valueType = any> = (
   entity: entityType,
-  fieldRef: FieldRef<entityType, valueType>,
-) => void | Promise<void>
+  event: ValidateFieldEvent<entityType, valueType>,
+) =>
+  | boolean
+  | string
+  | void
+  | undefined
+  | Promise<boolean | string | void | undefined>
 export declare class Filter {
   private apply
   constructor(apply: (add: FilterConsumer) => void)
@@ -1820,201 +1815,64 @@ export interface UserInfo {
   name?: string
   roles?: string[]
 }
+export interface ValidateFieldEvent<entityType = any, valueType = any> {
+  error: string
+  value: valueType
+  originalValue: valueType
+  valueChanged(): boolean
+  entityRef: EntityRef<entityType>
+  metadata: FieldMetadata<valueType>
+  load(): Promise<valueType>
+  valueIsNull(): boolean
+  originalValueIsNull(): boolean
+  isBackend(): boolean
+  isNew: boolean
+}
+export type ValidationMessage<valueType, argsType> =
+  | string
+  | ((
+      entity: any,
+      event: ValidateFieldEvent<any, valueType>,
+      args: argsType,
+    ) => string)
+export type Validator<valueType> = FieldValidator<any, valueType> &
+  ((message?: string) => FieldValidator<any, valueType>) & {
+    defaultMessage: ValidationMessage<valueType, undefined>
+    /**
+     * @deprecated  use (message:string) instead - for example: Validators.required("Is needed")
+     */
+    withMessage(message: string): FieldValidator<any, valueType>
+  }
 export declare class Validators {
-  static required: ((
-    entity: any,
-    col: FieldRef<any, any>,
-    message?: string,
-  ) => Promise<void>) &
-    ((
-      message?: string,
-    ) => (
-      entity: any,
-      col: FieldRef<any, any>,
-      message?: string,
-    ) => Promise<void>) & {
-      withMessage: (
-        message: string,
-      ) => (entity: any, col: FieldRef<any, any>) => Promise<void>
-      defaultMessage: string
-      isValid: (
-        entity: any,
-        col: FieldRef<any, any>,
-      ) => string | boolean | Promise<string | boolean>
-    }
-  static unique: ((
-    entity: any,
-    col: FieldRef<any, any>,
-    message?: string,
-  ) => Promise<void>) &
-    ((
-      message?: string,
-    ) => (
-      entity: any,
-      col: FieldRef<any, any>,
-      message?: string,
-    ) => Promise<void>) & {
-      withMessage: (
-        message: string,
-      ) => (entity: any, col: FieldRef<any, any>) => Promise<void>
-      defaultMessage: string
-      isValid: (
-        entity: any,
-        col: FieldRef<any, any>,
-      ) => string | boolean | Promise<string | boolean>
-    }
-  static uniqueOnBackend: ((
-    entity: any,
-    col: FieldRef<any, any>,
-    message?: string,
-  ) => Promise<void>) &
-    ((
-      message?: string,
-    ) => (
-      entity: any,
-      col: FieldRef<any, any>,
-      message?: string,
-    ) => Promise<void>) & {
-      withMessage: (
-        message: string,
-      ) => (entity: any, col: FieldRef<any, any>) => Promise<void>
-      defaultMessage: string
-      isValid: (
-        entity: any,
-        col: FieldRef<any, any>,
-      ) => string | boolean | Promise<string | boolean>
-    }
-  static regex: ((
-    args: RegExp,
-    message?: string,
-  ) => (entity: any, col: FieldRef<any, string>) => Promise<void>) & {
-    defaultMessage: string
-    isValid: (
-      entity: any,
-      col: FieldRef<any, string>,
-      args: RegExp,
-    ) => string | boolean | Promise<string | boolean>
+  static required: Validator<any>
+  static unique: Validator<any>
+  /**
+   * @deprecated is `unique` instead - it also runs only on the backend
+   */
+  static uniqueOnBackend: Validator<any>
+  static regex: ValidatorWithArgs<string, RegExp> & {
+    defaultMessage: ValueValidationMessage<RegExp>
   }
-  static email: ((
-    entity: any,
-    col: FieldRef<any, string>,
-    message?: string,
-  ) => Promise<void>) &
-    ((
-      message?: string,
-    ) => (
-      entity: any,
-      col: FieldRef<any, string>,
-      message?: string,
-    ) => Promise<void>) & {
-      withMessage: (
-        message: string,
-      ) => (entity: any, col: FieldRef<any, string>) => Promise<void>
-      defaultMessage: string
-      isValid: (
-        entity: any,
-        col: FieldRef<any, string>,
-      ) => string | boolean | Promise<string | boolean>
-    }
-  static url: ((
-    entity: any,
-    col: FieldRef<any, string>,
-    message?: string,
-  ) => Promise<void>) &
-    ((
-      message?: string,
-    ) => (
-      entity: any,
-      col: FieldRef<any, string>,
-      message?: string,
-    ) => Promise<void>) & {
-      withMessage: (
-        message: string,
-      ) => (entity: any, col: FieldRef<any, string>) => Promise<void>
-      defaultMessage: string
-      isValid: (
-        entity: any,
-        col: FieldRef<any, string>,
-      ) => string | boolean | Promise<string | boolean>
-    }
-  static in: ((
-    args: any[],
-    message?: string,
-  ) => (entity: any, col: FieldRef<any, any>) => Promise<void>) & {
-    defaultMessage: string
-    isValid: (
-      entity: any,
-      col: FieldRef<any, any>,
-      args: any[],
-    ) => string | boolean | Promise<string | boolean>
+  static email: Validator<string>
+  static url: Validator<string>
+  static in: ValidatorWithArgs<any, any[]> & {
+    defaultMessage: ValueValidationMessage<any[]>
   }
-  static notNull: ((
-    entity: any,
-    col: FieldRef<any, unknown>,
-    message?: string,
-  ) => Promise<void>) &
-    ((
-      message?: string,
-    ) => (
-      entity: any,
-      col: FieldRef<any, unknown>,
-      message?: string,
-    ) => Promise<void>) & {
-      withMessage: (
-        message: string,
-      ) => (entity: any, col: FieldRef<any, unknown>) => Promise<void>
-      defaultMessage: string
-      isValid: (
-        entity: any,
-        col: FieldRef<any, unknown>,
-      ) => string | boolean | Promise<string | boolean>
-    }
-  static enum: ((
-    args: unknown,
-    message?: string,
-  ) => (entity: any, col: FieldRef<any, unknown>) => Promise<void>) & {
-    defaultMessage: string
-    isValid: (
-      entity: any,
-      col: FieldRef<any, unknown>,
-      args: unknown,
-    ) => string | boolean | Promise<string | boolean>
+  static notNull: Validator<unknown>
+  static enum: ValidatorWithArgs<unknown, unknown> & {
+    defaultMessage: ValueValidationMessage<unknown>
   }
-  static relationExists: ((
-    entity: any,
-    col: FieldRef<any, any>,
-    message?: string,
-  ) => Promise<void>) &
-    ((
-      message?: string,
-    ) => (
-      entity: any,
-      col: FieldRef<any, any>,
-      message?: string,
-    ) => Promise<void>) & {
-      withMessage: (
-        message: string,
-      ) => (entity: any, col: FieldRef<any, any>) => Promise<void>
-      defaultMessage: string
-      isValid: (
-        entity: any,
-        col: FieldRef<any, any>,
-      ) => string | boolean | Promise<string | boolean>
-    }
-  static maxLength: ((
-    args: number,
-    message?: string,
-  ) => (entity: any, col: FieldRef<any, string>) => Promise<void>) & {
-    defaultMessage: string
-    isValid: (
-      entity: any,
-      col: FieldRef<any, string>,
-      args: number,
-    ) => string | boolean | Promise<string | boolean>
+  static relationExists: Validator<any>
+  static maxLength: ValidatorWithArgs<string, number> & {
+    defaultMessage: ValueValidationMessage<number>
   }
   static defaultMessage: string
 }
 //[ ] RegExp from TBD is not exported
+export type ValidatorWithArgs<valueType, argsType> = (
+  args: argsType,
+  message?: string,
+) => FieldValidator<any, valueType>
 export interface ValueConverter<valueType> {
   fromJson?(val: any): valueType
   toJson?(val: valueType): any
@@ -2085,12 +1943,15 @@ export interface ValueListItem {
   caption?: any
 }
 export declare type ValueOrExpression<valueType> = valueType | (() => valueType)
+export type ValueValidationMessage<argsType> =
+  | string
+  | ((args: argsType) => string)
 export declare function valueValidator<valueType>(
   validate: (value: valueType) => boolean | string | Promise<boolean | string>,
   message?: string,
 ): (
   entity: any,
-  col: FieldRef<any, valueType>,
+  e: ValidateFieldEvent<any, valueType>,
 ) => string | boolean | Promise<string | boolean>
 export declare class WebSqlDataProvider
   implements SqlImplementation, __RowsOfDataForTesting

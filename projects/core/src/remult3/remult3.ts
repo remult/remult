@@ -56,6 +56,7 @@ export interface ValidateFieldEvent<entityType = any, valueType = any> {
   valueIsNull(): boolean
   originalValueIsNull(): boolean
   isBackend(): boolean
+  isNew: boolean
 }
 
 /**
