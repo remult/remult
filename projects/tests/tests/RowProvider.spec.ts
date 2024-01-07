@@ -274,7 +274,7 @@ describe('test row provider', () => {
     }
     EntityDecorator('')(type)
     Fields.string<typeof type.prototype>({
-      validate: (entity, col) => Validators.required(entity, col, 'm'),
+      validate: (entity, col) => Validators.required('m')(entity, col),
     })(type.prototype, 'a')
     var c = remult.repo(type)
     var cat = c.create()

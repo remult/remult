@@ -4,6 +4,7 @@ import type {
   EntityMetadata,
   FieldRef,
   LifecycleEvent,
+  ValidateFieldEvent,
 } from './remult3/remult3.js'
 
 export interface FieldOptions<entityType = any, valueType = any> {
@@ -14,6 +15,8 @@ export interface FieldOptions<entityType = any, valueType = any> {
   caption?: string
   /** If it can store null in the database */
   allowNull?: boolean
+  /** If a value is required */
+  required?: boolean
   /** If this field data is included in the api.
    * @see [allowed](http://remult.dev/docs/allowed.html)*/
   includeInApi?: AllowedForInstance<entityType>
@@ -25,6 +28,10 @@ export interface FieldOptions<entityType = any, valueType = any> {
    * @Fields.string({
    *   validate: Validators.required
    * })
+   * * @example
+   * @Fields.string<Task>({
+   *    validate: task=>task.title.length>3 ||  "Too Short"
+   * })
    * @example
    * @Fields.string<Task>({
    *    validate: task=>{
@@ -34,21 +41,15 @@ export interface FieldOptions<entityType = any, valueType = any> {
    * })
    * @example
    * @Fields.string({
-   *    validate: (_, fieldRef)=>{
-   *      if (fieldRef.value.length<3)
-   *          fieldRef.error = "Too Short";
+   *    validate: (_, fieldValidationEvent)=>{
+   *      if (fieldValidationEvent.value.length < 3)
+   *          fieldValidationEvent.error = "Too Short";
    *   }
    * })
    */
   validate?:
-    | ((
-        entity: entityType,
-        fieldRef: FieldRef<entityType, valueType>,
-      ) => any | Promise<any>)
-    | ((
-        entity: entityType,
-        fieldRef: FieldRef<entityType, valueType>,
-      ) => any | Promise<any>)[]
+    | FieldValidator<entityType, valueType>
+    | FieldValidator<entityType, valueType>[]
 
   /** Will be fired before this field is saved to the server/database */
   saving?: (
@@ -195,9 +196,13 @@ export interface ValueConverter<valueType> {
 
 export declare type FieldValidator<entityType = any, valueType = any> = (
   entity: entityType,
-  fieldRef: FieldRef<entityType, valueType>,
-) => void | Promise<void>
-
+  event: ValidateFieldEvent<entityType, valueType>,
+) =>
+  | boolean
+  | string
+  | void
+  | undefined
+  | Promise<boolean | string | void | undefined>
 export declare type ValueOrExpression<valueType> = valueType | (() => valueType)
 
 export function valueOrExpressionToValue<valueType>(

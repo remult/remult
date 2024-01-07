@@ -47,6 +47,7 @@ import type {
   Repository,
   RepositoryRelations,
   Subscribable,
+  ValidateFieldEvent,
 } from './remult3.js'
 
 import type { Paginator, RefSubscriber, RefSubscriberBase } from './remult3.js'
@@ -846,9 +847,10 @@ export class RepositoryImplementation<entityType>
     for (const col of this.fieldsOf(json)) {
       let ei = getEntitySettings(col.valueType, false)
       if (ei) {
-        result[col.key] = this.remult
-          .repo(col.valueType)
-          .fromJson(json[col.key])
+        let val = json[col.key]
+        if (typeof val === 'string' || typeof val === 'number')
+          result[col.key] = val
+        else result[col.key] = this.remult.repo(col.valueType).fromJson(val)
       } else {
         if (json[col.key] !== undefined) {
           result[col.key] = col.valueConverter.fromJson(json[col.key])
@@ -887,6 +889,7 @@ export class RepositoryImplementation<entityType>
   ) {
     let r: Promise<entityType>
     let cacheInfo: cacheEntityInfo<entityType>
+    if (!options) options = {}
     if (options.useCache) {
       let f = findOptionsToJson(options, this.metadata)
       let key = JSON.stringify(f)
@@ -1101,10 +1104,10 @@ abstract class rowHelperBase<T> {
     this._subscribers?.reportChanged()
   }
   constructor(
-    protected columnsInfo: FieldOptions[],
+    protected fieldsMetadata: FieldMetadata[],
     public instance: T,
-    protected remult: Remult,
-    protected isNewRow: boolean,
+    public remult: Remult,
+    public isNewRow: boolean,
   ) {
     {
       let fac = remult as RemultProxy
@@ -1112,13 +1115,13 @@ abstract class rowHelperBase<T> {
         remult = fac.remultFactory()
       }
     }
-    for (const col of columnsInfo) {
+    for (const col of fieldsMetadata) {
       let ei = getEntitySettings(col.valueType, false)
 
       if (ei && remult) {
         let lookup = new LookupColumn(
           remult.repo(col.valueType) as RepositoryImplementation<T>,
-          Boolean(col?.[relationInfoMember]),
+          Boolean(getRelationInfo(col.options)),
           col.allowNull,
         )
         this.lookups.set(col.key, lookup)
@@ -1158,7 +1161,7 @@ abstract class rowHelperBase<T> {
           enumerable: true,
         })
         lookup.set(val)
-      } else if (getRelationInfo(col)?.type === 'toOne') {
+      } else if (getRelationInfo(col.options)?.type === 'toOne') {
         let hasVal = instance.hasOwnProperty(col.key)
         let val = instance[col.key]
         if (isNewRow && !val) hasVal = false
@@ -1170,11 +1173,11 @@ abstract class rowHelperBase<T> {
             val = newVal
             if (newVal === undefined) return
 
-            const op = col as RelationOptions<any, any, any>
+            const op = col.options as RelationOptions<any, any, any>
 
             if (op.field) {
               this.instance[op.field] = this.remult
-                .repo(getRelationInfo(col).toType())
+                .repo(getRelationInfo(col.options).toType())
                 .metadata.idMetadata.getId(newVal)
             }
             if (op.fields) {
@@ -1202,7 +1205,7 @@ abstract class rowHelperBase<T> {
   initSubscribers() {
     if (!this._subscribers) {
       this._subscribers = new SubscribableImp()
-      for (const col of this.columnsInfo) {
+      for (const col of this.fieldsMetadata) {
         let ei = getEntitySettings(col.valueType, false)
         let refImpl = this.fields.find(col.key) as FieldRefImplementation<
           any,
@@ -1254,7 +1257,7 @@ abstract class rowHelperBase<T> {
       message: this.error,
     }
     if (!error.message) {
-      for (const col of this.columnsInfo) {
+      for (const col of this.fieldsMetadata) {
         if (this.errors[col.key]) {
           error.message =
             this.fields[col.key].metadata.caption + ': ' + this.errors[col.key]
@@ -1307,10 +1310,10 @@ abstract class rowHelperBase<T> {
   }
   copyDataToObject(isNew: boolean = false) {
     let d: any = {}
-    for (const col of this.columnsInfo) {
+    for (const col of this.fieldsMetadata) {
       let lu = this.lookups.get(col.key)
       let val: any = undefined
-      const rel = getRelationInfo(col)
+      const rel = getRelationInfo(col.options)
       if (lu) val = lu.id
       else val = this.instance[col.key]
       if (
@@ -1362,13 +1365,8 @@ abstract class rowHelperBase<T> {
   async __performColumnAndEntityValidations() {}
   toApiJson(includeRelatedEntities = false, notJustApi = false) {
     let result: any = {}
-    for (const col of this.columnsInfo) {
-      if (
-        notJustApi ||
-        !this.remult ||
-        col.includeInApi === undefined ||
-        this.remult.isAllowedForInstance(this.instance, col.includeInApi)
-      ) {
+    for (const col of this.fieldsMetadata) {
+      if (notJustApi || !this.remult || col.includedInApi(this.instance)) {
         let val
         let lu = this.lookups.get(col.key)
         let disable = false
@@ -1379,7 +1377,7 @@ abstract class rowHelperBase<T> {
             result[col.key] = val
           } else val = lu.id
         else {
-          if (getRelationInfo(col) && !includeRelatedEntities) {
+          if (getRelationInfo(col.options) && !includeRelatedEntities) {
             disable = true
           } else {
             val = this.instance[col.key]
@@ -1401,17 +1399,13 @@ abstract class rowHelperBase<T> {
 
   async _updateEntityBasedOnApi(body: any, ignoreApiAllowed = false) {
     let keys = Object.keys(body)
-    for (const col of this.columnsInfo) {
+    for (const col of this.fieldsMetadata) {
       if (keys.includes(col.key))
-        if (
-          col.includeInApi === undefined ||
-          this.remult.isAllowedForInstance(this.instance, col.includeInApi)
-        ) {
+        if (col.includedInApi(this.instance)) {
           if (
             !this.remult ||
             ignoreApiAllowed ||
-            col.allowApiUpdate === undefined ||
-            this.remult.isAllowedForInstance(this.instance, col.allowApiUpdate)
+            col.apiUpdateAllowed(this.instance)
           ) {
             let lu = this.lookups.get(col.key)
             if (lu) lu.id = body[col.key]
@@ -1438,14 +1432,15 @@ export class rowHelperImplementation<T>
     remult: Remult,
     private _isNew: boolean,
   ) {
-    super(info.columnsInfo, instance, remult, _isNew)
+    super(info.fieldsMetadata, instance, remult, _isNew)
     this.metadata = info
     if (_isNew) {
-      for (const col of info.columnsInfo) {
-        if (col.defaultValue && instance[col.key] === undefined) {
-          if (typeof col.defaultValue === 'function') {
-            instance[col.key] = col.defaultValue(instance)
-          } else if (!instance[col.key]) instance[col.key] = col.defaultValue
+      for (const col of info.fieldsMetadata) {
+        if (col.options.defaultValue && instance[col.key] === undefined) {
+          if (typeof col.options.defaultValue === 'function') {
+            instance[col.key] = col.options.defaultValue(instance)
+          } else if (!instance[col.key])
+            instance[col.key] = col.options.defaultValue
         }
       }
     }
@@ -1526,11 +1521,11 @@ export class rowHelperImplementation<T>
         [Symbol.iterator]: () => _items[Symbol.iterator](),
         toArray: () => _items,
       }
-      for (const c of this.info.columnsInfo) {
+      for (const c of this.info.fieldsMetadata) {
         _items.push(
           (r[c.key] = new FieldRefImplementation(
+            c.options,
             c,
-            this.info.fields[c.key],
             this.instance,
             this,
             this,
@@ -1727,9 +1722,11 @@ export class rowHelperImplementation<T>
   private async calcServerExpression() {
     if (isBackend())
       //y2 should be changed to be based on data provider - consider naming
-      for (const col of this.info.columnsInfo) {
-        if (col.serverExpression) {
-          this.instance[col.key] = await col.serverExpression(this.instance)
+      for (const col of this.info.fieldsMetadata) {
+        if (col.options.serverExpression) {
+          this.instance[col.key] = await col.options.serverExpression(
+            this.instance,
+          )
         }
       }
   }
@@ -1748,11 +1745,11 @@ export class rowHelperImplementation<T>
   }
 
   async __performColumnAndEntityValidations() {
-    for (const c of this.columnsInfo) {
-      if (c.validate) {
+    for (const c of this.fieldsMetadata) {
+      if (c.options.validate) {
         let col = new FieldRefImplementation(
+          c.options,
           c,
-          this.info.fields[c.key],
           this.instance,
           this,
           this,
@@ -1811,7 +1808,9 @@ export function getControllerRef<fieldsContainerType>(
     }
 
     container[controllerColumns] = result = new controllerRefImpl(
-      prepareColumnInfo(columnSettings, remultVar),
+      prepareColumnInfo(columnSettings, remultVar).map(
+        (x) => new columnDefsImpl(x, undefined, remultVar),
+      ),
       container,
       remultVar,
     )
@@ -1823,7 +1822,7 @@ export class controllerRefImpl<T = any>
   extends rowHelperBase<T>
   implements ControllerRef<T>
 {
-  constructor(columnsInfo: FieldOptions[], instance: any, remult: Remult) {
+  constructor(columnsInfo: FieldMetadata[], instance: any, remult: Remult) {
     super(columnsInfo, instance, remult, false)
 
     let _items = []
@@ -1837,8 +1836,8 @@ export class controllerRefImpl<T = any>
     for (const col of columnsInfo) {
       _items.push(
         (r[col.key] = new FieldRefImplementation<any, any>(
+          col.options,
           col,
-          new columnDefsImpl(col, undefined, remult),
           instance,
           undefined,
           this,
@@ -1903,6 +1902,7 @@ export class FieldRefImplementation<entityType, valueType>
           .relations(this.container)
           [this.metadata.key].findOne()
         if (val) this.container[this.metadata.key] = val
+        else return null
       }
     } else if (lu) {
       if (this.valueChanged()) {
@@ -2006,13 +2006,41 @@ export class FieldRefImplementation<entityType, valueType>
 
   async __performValidation() {
     try {
-      let x = typeof this.settings.validate
-      if (Array.isArray(this.settings.validate)) {
-        for (const v of this.settings.validate) {
-          await v(this.container, this)
+      const processValidation = (result: any) => {
+        if (result !== true && result !== undefined && !this.error) {
+          if (typeof result === 'string' && result.length > 0)
+            this.error = result
+          else this.error = 'invalid value'
         }
-      } else if (typeof this.settings.validate === 'function')
-        await this.settings.validate(this.container, this)
+      }
+      if (this.settings.validate) {
+        let self = this
+        let event: ValidateFieldEvent<any> = {
+          entityRef: this.entityRef,
+          get error() {
+            return self.error
+          },
+          set error(value) {
+            self.error = value
+          },
+          isNew: self.rowBase.isNewRow,
+          load: () => self.load(),
+          metadata: self.metadata,
+          originalValue: self.originalValue,
+          value: self.value,
+          valueChanged: () => self.valueChanged(),
+          originalValueIsNull: () => self.originalValueIsNull(),
+          valueIsNull: () => self.valueIsNull(),
+          isBackend: () => !self.rowBase?.remult?.dataProvider?.isProxy,
+        }
+
+        if (Array.isArray(this.settings.validate)) {
+          for (const v of this.settings.validate) {
+            processValidation(await v(this.container, event))
+          }
+        } else if (typeof this.settings.validate === 'function')
+          processValidation(await this.settings.validate(this.container, event))
+      }
     } catch (error) {
       if (typeof error === 'string') this.error = error
       else this.error = error.message
@@ -2085,9 +2113,31 @@ export class columnDefsImpl implements FieldMetadata {
   ) {
     this.options = this.settings
     this.target = this.settings.target
-    this.valueConverter = this.settings.valueConverter as Required<
-      ValueConverter<any>
-    >
+    this.valueConverter = new Proxy(this.settings.valueConverter, {
+      get: (target, prop) => {
+        let result = target[prop]
+        if (typeof result === 'function') {
+          return (...args) => {
+            try {
+              return target[prop](...args)
+            } catch (err: any) {
+              const error = `${String(
+                prop,
+              )} failed for value ${args?.[0]}. Error: ${
+                typeof err === 'string' ? err : err.message
+              }`
+              throw {
+                message: this.caption + ': ' + error,
+                modelState: {
+                  [this.key]: error,
+                },
+              } as ErrorInfo
+            }
+          }
+        }
+        return result
+      },
+    }) as Required<ValueConverter<any>>
     this.allowNull = !!this.settings.allowNull
     this.valueType = this.settings.valueType
     this.key = this.settings.key
@@ -2150,9 +2200,10 @@ export class columnDefsImpl implements FieldMetadata {
 }
 class EntityFullInfo<T> implements EntityMetadata<T> {
   options: EntityOptions<T>
+  fieldsMetadata: FieldMetadata[] = []
 
   constructor(
-    public columnsInfo: FieldOptions[],
+    columnsInfo: FieldOptions[],
     public entityInfo: EntityOptions,
     private remult: Remult,
     public readonly entityType: ClassType<T>,
@@ -2178,16 +2229,15 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
     if (!this.key) this.key = entityType.name
     if (!entityInfo.dbName) entityInfo.dbName = this.key
     this.dbName = entityInfo.dbName
-    let _items = []
     let r = {
       find: (c: FieldMetadata<any> | string) =>
         r[typeof c === 'string' ? c : c.key],
-      [Symbol.iterator]: () => _items[Symbol.iterator](),
-      toArray: () => _items,
+      [Symbol.iterator]: () => this.fieldsMetadata[Symbol.iterator](),
+      toArray: () => this.fieldsMetadata,
     }
 
     for (const x of columnsInfo) {
-      _items.push((r[x.key] = new columnDefsImpl(x, this, remult)))
+      this.fieldsMetadata.push((r[x.key] = new columnDefsImpl(x, this, remult)))
     }
 
     this.fields = r as unknown as FieldsMetadata<T>
