@@ -28,6 +28,10 @@ export interface FieldOptions<entityType = any, valueType = any> {
    * @Fields.string({
    *   validate: Validators.required
    * })
+   * * @example
+   * @Fields.string<Task>({
+   *    validate: task=>task.title.length>3 ||  "Too Short"
+   * })
    * @example
    * @Fields.string<Task>({
    *    validate: task=>{
@@ -37,9 +41,9 @@ export interface FieldOptions<entityType = any, valueType = any> {
    * })
    * @example
    * @Fields.string({
-   *    validate: (_, fieldRef)=>{
-   *      if (fieldRef.value.length<3)
-   *          fieldRef.error = "Too Short";
+   *    validate: (_, fieldValidationEvent)=>{
+   *      if (fieldValidationEvent.value.length < 3)
+   *          fieldValidationEvent.error = "Too Short";
    *   }
    * })
    */
