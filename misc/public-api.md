@@ -1076,10 +1076,6 @@ export declare class InMemoryLiveQueryStorage implements LiveQueryStorage {
     }) => Promise<void>,
   ): Promise<void>
 }
-export declare class IpfsEntityFileStorage implements JsonEntityStorage {
-  getItem(entityDbName: string): Promise<string>
-  setItem(entityDbName: string, json: string): Promise<void>
-}
 export declare function isBackend(): boolean
 export declare class JsonDataProvider implements DataProvider {
   private storage
@@ -1088,6 +1084,10 @@ export declare class JsonDataProvider implements DataProvider {
   transaction(
     action: (dataProvider: DataProvider) => Promise<void>,
   ): Promise<void>
+}
+export declare class JsonEntityOpfsStorage implements JsonEntityStorage {
+  getItem(entityDbName: string): Promise<string>
+  setItem(entityDbName: string, json: string): Promise<void>
 }
 export interface JsonEntityStorage {
   getItem(entityDbName: string): string | null | Promise<string | null>
@@ -1721,6 +1721,7 @@ export interface SqlImplementation {
   ensureSchema?(entities: EntityMetadata[]): Promise<void>
   supportsJsonColumnType?: boolean
   wrapIdentifier?(name: string): string
+  afterMutation?: VoidFunction
 }
 export interface SqlResult {
   rows: any[]
@@ -2585,6 +2586,29 @@ export declare class MongoDataProvider implements DataProvider {
 //[ ] DataProvider from ./index.js is not exported
 //[ ] RepositoryOverloads from ./src/remult3/RepositoryImplementation.js is not exported
 //[ ] EntityFilter from ./index.js is not exported
+```
+
+## ./remult-sql-js.js
+
+```ts
+export declare class SqlJsDataProvider implements SqlImplementation {
+  private db
+  constructor(db: Promise<Database>)
+  getLimitSqlSyntax(limit: number, offset: number): string
+  afterMutation?: VoidFunction
+  createCommand(): SqlCommand
+  transaction(action: (sql: SqlImplementation) => Promise<void>): Promise<void>
+  entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void>
+  ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
+  dropTable(entity: EntityMetadata): Promise<void>
+  private addColumnSqlSyntax
+  createTable(entity: EntityMetadata<any>): Promise<void>
+  supportsJsonColumnType?: boolean
+  wrapIdentifier?(name: string): string
+}
+//[ ] SqlCommand from ./src/sql-command.js is not exported
+//[ ] SqlImplementation from ./src/sql-command.js is not exported
+//[ ] EntityMetadata from ./src/remult3/remult3.js is not exported
 ```
 
 ## ./ably.js
