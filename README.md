@@ -27,9 +27,9 @@
 <br/>
 
 <div align="center">
-  <a href="#getting-started">Getting Started</a> |
-  <a href="#documentation">Documentation</a> |
-  <a href="#example-apps">Example Apps</a>
+  <a href="#tutorials">Tutorials</a> |
+  <a href="https://remult.dev/docs/quickstart">Quickstart</a> |
+  <a href="https://remult.dev/docs/example-apps">Example Apps</a>
 </div>
 
 <hr/>
@@ -268,7 +268,7 @@ numerous ways:
   [Backend Methods](https://remult.dev/docs/backendMethods.html)
 - Roll-your-own low-level endpoints (Express, Fastify, koa, others…)
 
-## Getting started
+## Tutorials
 
 The best way to learn Remult is by following a tutorial of a simple Todo web app
 with a Node.js Express backend.

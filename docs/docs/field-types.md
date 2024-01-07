@@ -8,8 +8,6 @@ There are also several built in Field decorators for common use case:
 
 A field of type string
 
-_example_
-
 ```ts
 @Fields.string()
 title = '';
@@ -17,9 +15,7 @@ title = '';
 
 ### @Fields.number
 
-Just like typescript, by default any number is a decimal (or float).
-
-_example_
+Just like TypeScript, by default any number is a decimal (or float).
 
 ```ts
 @Fields.number()
@@ -30,16 +26,12 @@ price = 1.5
 
 For cases where you don't want to have decimal values, you can use the `@Fields.integer` decorator
 
-_example_
-
 ```ts
 @Fields.integer()
 quantity = 0;
 ```
 
 ### @Fields.boolean
-
-_example_
 
 ```ts
 @Fields.boolean()
@@ -48,8 +40,6 @@ completed = false
 
 ### @Fields.date
 
-_example_
-
 ```ts
 @Fields.date()
 statusDate = new Date()
@@ -57,10 +47,8 @@ statusDate = new Date()
 
 ### @Fields.dateOnly
 
-Just like typescript, by default any `Date` field includes the time as well.
+Just like TypeScript, by default any `Date` field includes the time as well.
 For cases where you only want a date, and don't want to meddle with time and time zone issues, use the `@Fields.dateOnly`
-
-_example_
 
 ```ts
 @Fields.dateOnly()
@@ -69,9 +57,7 @@ birthDate?:Date;
 
 ### @Fields.createdAt
 
-Automatically set on the backend on insert, and can't be set through the api
-
-_example_
+Automatically set on the backend on insert, and can't be set through the API
 
 ```ts
 @Fields.createdAt()
@@ -80,9 +66,7 @@ createdAt = new Date()
 
 ### @Fields.updatedAt
 
-Automatically set on the backend on update, and can't be set through the api
-
-_example_
+Automatically set on the backend on update, and can't be set through the API
 
 ```ts
 @Fields.updatedAt()
@@ -93,7 +77,7 @@ updatedAt = new Date()
 
 ### @Fields.uuid
 
-This id value is determined on the backend on insert, and can't be updated through the api.
+This id value is determined on the backend on insert, and can't be updated through the API.
 
 ```ts
 @Fields.uuid()
@@ -102,7 +86,7 @@ id:string
 
 ### @Fields.cuid
 
-This id value is determined on the backend on insert, and can't be updated through the api.
+This id value is determined on the backend on insert, and can't be updated through the API.
 
 ```ts
 @Fields.cuid()
@@ -111,7 +95,7 @@ id:string
 
 ### @Fields.autoIncrement
 
-This id value is determined by the underlying database on insert, and can't be updated through the api.
+This id value is determined by the underlying database on insert, and can't be updated through the API.
 
 ```ts
 @Fields.autoIncrement()
@@ -122,97 +106,55 @@ id:number
 
 Enum fields will work just like any other basic type.
 
-```ts{9-10,13-17}
-@Entity("tasks", {
-  allowApiCrud: true
-})
-export class Task extends IdEntity {
-  @Fields.string()
-  title = ""
-  @Fields.boolean()
-  completed = false
-  @Fields.object()
-  priority = Priority.Low
-}
-
-export enum Priority {
-  Low,
-  High,
-  Critical
-}
-```
-
-String enums will also work
-
-```ts{9-10,13-17}
-@Entity("tasks", {
-  allowApiCrud: true
-})
-export class Task extends IdEntity {
-  @Fields.string()
-  title = ""
-  @Fields.boolean()
-  completed = false
-  @Fields.object()
-  priority = Priority.Low
-}
-
-export enum Priority {
-  Low = "Low",
-  High = "High",
-  Critical = "Critical"
-}
+```ts
+@Fields.object()
+priority = Priority.Low
 ```
 
 ## JSON Field
 
-You can store JSON data and arrays in fields
-_example_
+You can store JSON data and arrays in fields.
 
-```ts{9-10}
-@Entity("tasks", {
-  allowApiCrud: true
-})
-export class Task extends IdEntity {
-  @Fields.string()
-  title = ""
-  @Fields.boolean()
-  completed = false
-  @Fields.json()
-  tags: string[] = []
-}
+```ts
+@Fields.json()
+tags: string[] = []
 ```
 
-## Change the way values are saved to the db
+## MongoDB ObjectId Field
+
+To indicate that a field is of type object id, change it's `fieldTypeInDb` to `dbid`.
+
+```ts
+@Fields.string({
+  dbName: '_id',
+  valueConverter: {
+    fieldTypeInDb: 'dbid',
+  },
+})
+id: string = ''
+```
+
+## Customize DB Value Conversions
 
 Sometimes you want to control how data is saved to the db, or the dto object.
 You can do that using the `valueConverter` option.
 
 For example, the following code will save the `tags` as a comma separated string in the db.
 
-```ts{9-15}
-@Entity("tasks", {
-  allowApiCrud: true
+```ts
+@Fields.object<Task, string[]>({
+  valueConverter: {
+    toDb: x => (x ? x.join(",") : undefined),
+    fromDb: x => (x ? x.split(",") : undefined)
+  }
 })
-export class Task extends IdEntity {
-  @Fields.string()
-  title = ""
-  @Fields.boolean()
-  completed = false
-  @Fields.object<Task, string[]>({
-    valueConverter: {
-      toDb: x => (x ? x.join(",") : undefined),
-      fromDb: x => (x ? x.split(",") : undefined)
-    }
-  })
-  tags: string[] = []
-}
+tags: string[] = []
 ```
 
 You can also refactor it to create your own FieldType
 
 ```ts
-import { Field, FieldOptions, Remult } from "remult"
+import { Field, FieldOptions, Remult } from 'remult'
 
 export function CommaSeparatedStringArrayField<entityType = any>(
   ...options: (
@@ -223,11 +165,11 @@ export function CommaSeparatedStringArrayField<entityType = any>(
   return Fields.object(
     {
       valueConverter: {
-        toDb: x => (x ? x.join(",") : undefined),
-        fromDb: x => (x ? x.split(",") : undefined)
-      }
+        toDb: (x) => (x ? x.join(',') : undefined),
+        fromDb: (x) => (x ? x.split(',') : undefined),
+      },
     },
-    ...options
+    ...options,
   )
 }
 ```
@@ -235,17 +177,8 @@ export function CommaSeparatedStringArrayField<entityType = any>(
 And then use it:
 
 ```ts{9}
-@Entity("tasks", {
-  allowApiCrud: true
-})
-export class Task extends IdEntity {
-  @Fields.string()
-  title = ""
-  @Fields.boolean()
-  completed = false
-  @CommaSeparatedStringArrayField()
-  tags: string[] = []
-}
+@CommaSeparatedStringArrayField()
+tags: string[] = []
 ```
 
 There are several ready made valueConverters included in the `remult` package, which can be found in `remult/valueConverters`
@@ -256,58 +189,47 @@ Sometimes you may want a field type to be a class, you can do that, you just nee
 
 For example:
 
-```ts{9-30}
-@Entity("tasks", {
-  allowApiCrud: true
-})
-export class Task extends IdEntity {
-  @Fields.string()
-  title = ""
-  @Fields.boolean()
-  completed = false
-  @Field<Task, Phone>(() => Phone, {
-    valueConverter: {
-      fromJson: x => (x ? new Phone(x) : undefined!),
-      toJson: x => (x ? x.phone : undefined!)
-    }
-  })
-  phone?: Phone
-}
-
+```ts
 export class Phone {
   constructor(public phone: string) {}
   call() {
-    window.open("tel:" + this.phone)
+    window.open('tel:' + this.phone)
   }
+}
+
+@Entity('contacts')
+export class Contact {
+  //...
+  @Field<Contact, Phone>(() => Phone, {
+    valueConverter: {
+      fromJson: (x) => (x ? new Phone(x) : undefined!),
+      toJson: (x) => (x ? x.phone : undefined!),
+    },
+  })
+  phone?: Phone
 }
 ```
 
 Alternatively you can decorate the `Phone` class with the `FieldType` decorator, so that whenever you use it, its `valueConverter` will be used.
 
-```ts{10,14-19}
-@Entity("tasks", {
-  allowApiCrud: true
-})
-export class Task extends IdEntity {
-  @Fields.string()
-  title = ""
-  @Fields.boolean()
-  completed = false
-
-  @Field(() => Phone)
-  phone?: Phone
-}
-
+```ts
 @FieldType<Phone>({
   valueConverter: {
-    fromJson: x => (x ? new Phone(x) : undefined!),
-    toJson: x => (x ? x.phone : undefined!)
-  }
+    fromJson: (x) => (x ? new Phone(x) : undefined!),
+    toJson: (x) => (x ? x.phone : undefined!),
+  },
 })
 export class Phone {
   constructor(public phone: string) {}
   call() {
-    window.open("tel:" + this.phone)
+    window.open('tel:' + this.phone)
   }
+}
+
+@Entity('contacts')
+export class Contact {
+  //...
+  @Field(() => Phone)
+  phone?: Phone
 }
 ```
