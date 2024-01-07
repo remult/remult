@@ -99,8 +99,8 @@ export function Entity<entityType>(
 
     allEntities.push(target)
     setControllerSettings(target, { key })
-    Reflect.defineMetadata(entityInfo, factory, target)
-    Reflect.defineMetadata(entityInfo_key, key, target)
+    target[entityInfo] = factory
+    target[entityInfo_key] = key
     return target
   }
 }

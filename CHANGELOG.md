@@ -56,6 +56,7 @@ All notable changes to this project will be documented in this file.
 
 - Added `clone` to `EntityRef`
 - Fixed issue where `findOne` didn't work
+- Fixed issue where exception `XXX is not a known entity, did you forget to set @Entity() or did you forget to add the '@' before the call to Entity?` was thrown in cases where multiple instances of remult were in memory
 
 ## [0.24.1] 2023-12-30
 

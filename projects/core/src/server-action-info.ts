@@ -10,4 +10,4 @@ export const actionInfo = {
   }),
 }
 
-export const serverActionField = Symbol('serverActionField')
+export const serverActionField = Symbol.for('serverActionField')

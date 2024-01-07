@@ -76,7 +76,7 @@ describe('Test sync from and to json', () => {
     }
   })
 
-  it.only('test that it works', () => {
+  it('test that it works', () => {
     let theJson = repo.toJson(task1)
 
     let forTest = { ...theJson }

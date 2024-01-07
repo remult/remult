@@ -1770,7 +1770,7 @@ export class rowHelperImplementation<T>
       }
   }
 }
-const controllerColumns = Symbol('controllerColumns')
+const controllerColumns = Symbol.for('controllerColumns')
 function prepareColumnInfo(r: columnInfo[], remult: Remult): FieldOptions[] {
   return r.map((x) => decorateColumnSettings(x.settings(remult), remult))
 }
@@ -2348,7 +2348,7 @@ export function FieldType<valueType = any>(
     }
     options.splice(0, 0, { valueType: target })
 
-    Reflect.defineMetadata(storableMember, options, target)
+    target[storableMember] = options
     return target
   }
 }
@@ -2406,10 +2406,10 @@ export class ValueListInfo<T extends ValueListItem>
     if (this.isNumeric) {
       this.fieldTypeInDb = 'integer'
     }
-    var options = Reflect.getMetadata(
-      storableMember,
-      this.valueListType,
-    ) as ValueListFieldOptions<any, any>[]
+    var options = this.valueListType[storableMember] as ValueListFieldOptions<
+      any,
+      any
+    >[]
 
     if (options) {
       for (const op of options) {
@@ -2486,7 +2486,7 @@ export function getValueList<T>(
   return ValueListInfo.get<T>(type as ClassType<T>).getValues()
 }
 
-export const storableMember = Symbol('storableMember')
+export const storableMember = Symbol.for('storableMember')
 export function buildOptions<entityType = any, valueType = any>(
   options: (
     | FieldOptions<entityType, valueType>
@@ -2509,10 +2509,7 @@ export function decorateColumnSettings<valueType>(
   remult: Remult,
 ) {
   if (settings.valueType) {
-    let settingsOnTypeLevel = Reflect.getMetadata(
-      storableMember,
-      settings.valueType,
-    )
+    let settingsOnTypeLevel = settings.valueType[storableMember]
     if (settingsOnTypeLevel) {
       settings = {
         ...buildOptions(settingsOnTypeLevel, remult),
