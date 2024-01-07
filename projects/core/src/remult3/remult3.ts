@@ -45,6 +45,19 @@ export interface EntityRefForEntityBase<entityType>
   relations: RepositoryRelationsForEntityBase<entityType>
 }
 
+export interface ValidateFieldEvent<entityType = any, valueType = any> {
+  error: string
+  value: valueType
+  originalValue: valueType
+  valueChanged(): boolean
+  entityRef: EntityRef<entityType>
+  metadata: FieldMetadata<valueType>
+  load(): Promise<valueType>
+  valueIsNull(): boolean
+  originalValueIsNull(): boolean
+  isBackend(): boolean
+}
+
 /**
  * Represents a lifecycle event associated with an entity instance. These events
  * are triggered during various stages of the entity's lifecycle, such as validation,
@@ -196,6 +209,7 @@ export interface FieldRef<entityType = any, valueType = any>
   originalValueIsNull(): boolean
   validate(): Promise<boolean>
 }
+
 export interface IdMetadata<entityType = any> {
   /** Extracts the id value of an entity item. Useful in cases where the id column is not called id
    * @example
@@ -773,7 +787,8 @@ remult.apiClient.url='localhost:3007/api
 
 
 */
-
+//p2 - document validators
+//p2 - and validators to reference
 //y2 - discuss a default date formatter
 //y2 - add some api testing framework for user unit tests (will help with codesandbox based discussions)
 //y2 - live query refresh of view on table update
@@ -804,3 +819,6 @@ remult.apiClient.url='localhost:3007/api
 //[ ] V2 - what to do about for relations count?
 //[ ] V2 - condition? not to fetch if null etc....
 //[ ] V3 - all these fields will also appear in the where etc... in the typescript api - but we will not enforce them
+
+//y2 - consider if field types should include validation in them by default (string,number that it's not NaN etc...) and if so, what message?
+//y2 - should enforce integer - currently we probably round / truncate it

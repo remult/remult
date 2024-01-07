@@ -169,6 +169,30 @@ export interface ControllerRefForControllerBase<entityType>
   extends ControllerRefBase<entityType> {
   fields: FieldsRefForEntityBase<entityType>
 }
+export declare function createValueValidator<valueType>(
+  validate: (value: valueType) => boolean | string | Promise<boolean | string>,
+  message?: string,
+): ((
+  entity: any,
+  col: FieldRef<any, valueType>,
+  message?: string,
+) => Promise<void>) &
+  ((
+    message?: string,
+  ) => (
+    entity: any,
+    col: FieldRef<any, valueType>,
+    message?: string,
+  ) => Promise<void>) & {
+    withMessage: (
+      message: string,
+    ) => (entity: any, col: FieldRef<any, valueType>) => Promise<void>
+    defaultMessage: string
+    isValid: (
+      entity: any,
+      col: FieldRef<any, valueType>,
+    ) => string | boolean | Promise<string | boolean>
+  }
 export interface customFilterInfo<entityType> {
   rawFilterInfo: {
     key: string
@@ -646,6 +670,8 @@ export interface FieldOptions<entityType = any, valueType = any> {
   caption?: string
   /** If it can store null in the database */
   allowNull?: boolean
+  /** If a value is required */
+  required?: boolean
   /** If this field data is included in the api.
    * @see [allowed](http://remult.dev/docs/allowed.html)*/
   includeInApi?: AllowedForInstance<entityType>
@@ -676,11 +702,21 @@ export interface FieldOptions<entityType = any, valueType = any> {
     | ((
         entity: entityType,
         fieldRef: FieldRef<entityType, valueType>,
-      ) => any | Promise<any>)
+      ) =>
+        | boolean
+        | string
+        | void
+        | undefined
+        | Promise<boolean | string | void | undefined>)
     | ((
         entity: entityType,
         fieldRef: FieldRef<entityType, valueType>,
-      ) => any | Promise<any>)[]
+      ) =>
+        | boolean
+        | string
+        | void
+        | undefined
+        | Promise<boolean | string | void | undefined>)[]
   /** Will be fired before this field is saved to the server/database */
   saving?: (
     entity: entityType,
@@ -1076,10 +1112,6 @@ export declare class InMemoryLiveQueryStorage implements LiveQueryStorage {
     }) => Promise<void>,
   ): Promise<void>
 }
-export declare class IpfsEntityFileStorage implements JsonEntityStorage {
-  getItem(entityDbName: string): Promise<string>
-  setItem(entityDbName: string, json: string): Promise<void>
-}
 export declare function isBackend(): boolean
 export declare class JsonDataProvider implements DataProvider {
   private storage
@@ -1088,6 +1120,10 @@ export declare class JsonDataProvider implements DataProvider {
   transaction(
     action: (dataProvider: DataProvider) => Promise<void>,
   ): Promise<void>
+}
+export declare class JsonEntityOpfsStorage implements JsonEntityStorage {
+  getItem(entityDbName: string): Promise<string>
+  setItem(entityDbName: string, json: string): Promise<void>
 }
 export interface JsonEntityStorage {
   getItem(entityDbName: string): string | null | Promise<string | null>
@@ -1721,6 +1757,7 @@ export interface SqlImplementation {
   ensureSchema?(entities: EntityMetadata[]): Promise<void>
   supportsJsonColumnType?: boolean
   wrapIdentifier?(name: string): string
+  afterMutation?: VoidFunction
 }
 export interface SqlResult {
   rows: any[]
@@ -1786,38 +1823,198 @@ export interface UserInfo {
 export declare class Validators {
   static required: ((
     entity: any,
-    col: FieldRef<any, string>,
+    col: FieldRef<any, any>,
     message?: string,
-  ) => Promise<void>) & {
-    withMessage: (
-      message: string,
-    ) => (entity: any, col: FieldRef<any, string>) => Promise<void>
-    defaultMessage: string
-    hasError: (entity: any, col: FieldRef<any, string>) => Promise<boolean>
-  }
+  ) => Promise<void>) &
+    ((
+      message?: string,
+    ) => (
+      entity: any,
+      col: FieldRef<any, any>,
+      message?: string,
+    ) => Promise<void>) & {
+      withMessage: (
+        message: string,
+      ) => (entity: any, col: FieldRef<any, any>) => Promise<void>
+      defaultMessage: string
+      isValid: (
+        entity: any,
+        col: FieldRef<any, any>,
+      ) => string | boolean | Promise<string | boolean>
+    }
   static unique: ((
     entity: any,
     col: FieldRef<any, any>,
     message?: string,
-  ) => Promise<void>) & {
-    withMessage: (
-      message: string,
-    ) => (entity: any, col: FieldRef<any, any>) => Promise<void>
-    defaultMessage: string
-    hasError: (entity: any, col: FieldRef<any, any>) => Promise<boolean>
-  }
+  ) => Promise<void>) &
+    ((
+      message?: string,
+    ) => (
+      entity: any,
+      col: FieldRef<any, any>,
+      message?: string,
+    ) => Promise<void>) & {
+      withMessage: (
+        message: string,
+      ) => (entity: any, col: FieldRef<any, any>) => Promise<void>
+      defaultMessage: string
+      isValid: (
+        entity: any,
+        col: FieldRef<any, any>,
+      ) => string | boolean | Promise<string | boolean>
+    }
   static uniqueOnBackend: ((
     entity: any,
     col: FieldRef<any, any>,
     message?: string,
-  ) => Promise<void>) & {
-    withMessage: (
-      message: string,
-    ) => (entity: any, col: FieldRef<any, any>) => Promise<void>
+  ) => Promise<void>) &
+    ((
+      message?: string,
+    ) => (
+      entity: any,
+      col: FieldRef<any, any>,
+      message?: string,
+    ) => Promise<void>) & {
+      withMessage: (
+        message: string,
+      ) => (entity: any, col: FieldRef<any, any>) => Promise<void>
+      defaultMessage: string
+      isValid: (
+        entity: any,
+        col: FieldRef<any, any>,
+      ) => string | boolean | Promise<string | boolean>
+    }
+  static regex: ((
+    args: RegExp,
+    message?: string,
+  ) => (entity: any, col: FieldRef<any, string>) => Promise<void>) & {
     defaultMessage: string
-    hasError: (entity: any, col: FieldRef<any, any>) => Promise<boolean>
+    isValid: (
+      entity: any,
+      col: FieldRef<any, string>,
+      args: RegExp,
+    ) => string | boolean | Promise<string | boolean>
   }
+  static email: ((
+    entity: any,
+    col: FieldRef<any, string>,
+    message?: string,
+  ) => Promise<void>) &
+    ((
+      message?: string,
+    ) => (
+      entity: any,
+      col: FieldRef<any, string>,
+      message?: string,
+    ) => Promise<void>) & {
+      withMessage: (
+        message: string,
+      ) => (entity: any, col: FieldRef<any, string>) => Promise<void>
+      defaultMessage: string
+      isValid: (
+        entity: any,
+        col: FieldRef<any, string>,
+      ) => string | boolean | Promise<string | boolean>
+    }
+  static url: ((
+    entity: any,
+    col: FieldRef<any, string>,
+    message?: string,
+  ) => Promise<void>) &
+    ((
+      message?: string,
+    ) => (
+      entity: any,
+      col: FieldRef<any, string>,
+      message?: string,
+    ) => Promise<void>) & {
+      withMessage: (
+        message: string,
+      ) => (entity: any, col: FieldRef<any, string>) => Promise<void>
+      defaultMessage: string
+      isValid: (
+        entity: any,
+        col: FieldRef<any, string>,
+      ) => string | boolean | Promise<string | boolean>
+    }
+  static in: ((
+    args: any[],
+    message?: string,
+  ) => (entity: any, col: FieldRef<any, any>) => Promise<void>) & {
+    defaultMessage: string
+    isValid: (
+      entity: any,
+      col: FieldRef<any, any>,
+      args: any[],
+    ) => string | boolean | Promise<string | boolean>
+  }
+  static notNull: ((
+    entity: any,
+    col: FieldRef<any, unknown>,
+    message?: string,
+  ) => Promise<void>) &
+    ((
+      message?: string,
+    ) => (
+      entity: any,
+      col: FieldRef<any, unknown>,
+      message?: string,
+    ) => Promise<void>) & {
+      withMessage: (
+        message: string,
+      ) => (entity: any, col: FieldRef<any, unknown>) => Promise<void>
+      defaultMessage: string
+      isValid: (
+        entity: any,
+        col: FieldRef<any, unknown>,
+      ) => string | boolean | Promise<string | boolean>
+    }
+  static enum: ((
+    args: unknown,
+    message?: string,
+  ) => (entity: any, col: FieldRef<any, unknown>) => Promise<void>) & {
+    defaultMessage: string
+    isValid: (
+      entity: any,
+      col: FieldRef<any, unknown>,
+      args: unknown,
+    ) => string | boolean | Promise<string | boolean>
+  }
+  static relationExists: ((
+    entity: any,
+    col: FieldRef<any, any>,
+    message?: string,
+  ) => Promise<void>) &
+    ((
+      message?: string,
+    ) => (
+      entity: any,
+      col: FieldRef<any, any>,
+      message?: string,
+    ) => Promise<void>) & {
+      withMessage: (
+        message: string,
+      ) => (entity: any, col: FieldRef<any, any>) => Promise<void>
+      defaultMessage: string
+      isValid: (
+        entity: any,
+        col: FieldRef<any, any>,
+      ) => string | boolean | Promise<string | boolean>
+    }
+  static maxLength: ((
+    args: number,
+    message?: string,
+  ) => (entity: any, col: FieldRef<any, string>) => Promise<void>) & {
+    defaultMessage: string
+    isValid: (
+      entity: any,
+      col: FieldRef<any, string>,
+      args: number,
+    ) => string | boolean | Promise<string | boolean>
+  }
+  static defaultMessage: string
 }
+//[ ] RegExp from TBD is not exported
 export interface ValueConverter<valueType> {
   fromJson?(val: any): valueType
   toJson?(val: valueType): any
@@ -1888,6 +2085,13 @@ export interface ValueListItem {
   caption?: any
 }
 export declare type ValueOrExpression<valueType> = valueType | (() => valueType)
+export declare function valueValidator<valueType>(
+  validate: (value: valueType) => boolean | string | Promise<boolean | string>,
+  message?: string,
+): (
+  entity: any,
+  col: FieldRef<any, valueType>,
+) => string | boolean | Promise<string | boolean>
 export declare class WebSqlDataProvider
   implements SqlImplementation, __RowsOfDataForTesting
 {
@@ -2591,6 +2795,29 @@ export declare class MongoDataProvider implements DataProvider {
 //[ ] EntityFilter from ./index.js is not exported
 ```
 
+## ./remult-sql-js.js
+
+```ts
+export declare class SqlJsDataProvider implements SqlImplementation {
+  private db
+  constructor(db: Promise<Database>)
+  getLimitSqlSyntax(limit: number, offset: number): string
+  afterMutation?: VoidFunction
+  createCommand(): SqlCommand
+  transaction(action: (sql: SqlImplementation) => Promise<void>): Promise<void>
+  entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void>
+  ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
+  dropTable(entity: EntityMetadata): Promise<void>
+  private addColumnSqlSyntax
+  createTable(entity: EntityMetadata<any>): Promise<void>
+  supportsJsonColumnType?: boolean
+  wrapIdentifier?(name: string): string
+}
+//[ ] SqlCommand from ./src/sql-command.js is not exported
+//[ ] SqlImplementation from ./src/sql-command.js is not exported
+//[ ] EntityMetadata from ./src/remult3/remult3.js is not exported
+```
+
 ## ./ably.js
 
 ```ts
@@ -2656,17 +2883,18 @@ export declare class controllerRefImpl<T = any>
   extends rowHelperBase<T>
   implements ControllerRef<T>
 {
-  constructor(columnsInfo: FieldOptions[], instance: any, remult: Remult)
+  constructor(columnsInfo: FieldMetadata[], instance: any, remult: Remult)
   __performColumnAndEntityValidations(): Promise<void>
   fields: FieldsRef<T>
 }
-//[ ] FieldOptions from TBD is not exported
+//[ ] FieldMetadata from TBD is not exported
 //[ ] Remult from TBD is not exported
 //[ ] FieldsRef from TBD is not exported
 export declare function decorateColumnSettings<valueType>(
   settings: FieldOptions<any, valueType>,
   remult: Remult,
 ): FieldOptions<any, valueType>
+//[ ] FieldOptions from TBD is not exported
 export declare function getControllerRef<fieldsContainerType>(
   container: fieldsContainerType,
   remultArg?: Remult,

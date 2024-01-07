@@ -198,13 +198,16 @@ V * - validators.required()
 V * - validators.required
 V - same for unique and unique on backend.
 V - deprecate withMessage
-y1 - consider making this `validators.create` createWithArgs | `validators.value` 
-y1 - consider if field types should include validation in them by default (string,number that it's not NaN etc...) and if so, what message?
-y1 - should enforce integer - currently we probably round / truncate it
-y1 - message should support seeing the values - like x is not a valid email, etc...
+
      https://github.com/colinhacks/zod/blob/3e4f71e857e75da722bd7e735b6d657a70682df2/src/locales/en.ts#L98
-y1 = default message of create simple validator should match which signature :)
-y1 - should all other validations allow null/ undefined so the user will used required & ?
+//p1 - string | (args)=>string
+//p1 - string | (entity,ref,args)=>string
+//p1 - simple validator not to validate undefined | null
+//p1 - all validators should not throw exception on empty values - it should value
+//p1 - add IsBackend to LifeCycleEvent
+//p1 - Implement validateFieldEvent
+//p1 - make unique only backend
+//p1 - depricate uniqeOnBackend
 y1 - relation exist should happen on backend (or non proxy)
 */
 
