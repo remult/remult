@@ -46,18 +46,26 @@ export class Validators {
     (val) => !!new URL(val),
     'Invalid Url',
   )
-  static in = createValueValidatorWithArgs<any, any[]>(
-    (val, values) => values.includes(val),
-    (values) => `Value must be one of ${values.join(', ')}`,
-  )
+  static in: <T>(
+    value: readonly T[],
+    withMessage?: ValueValidationMessage<T[]>,
+  ) => FieldValidator<any, T> & {
+    withMessage: ValueValidationMessage<T[]>
+  } = createValueValidatorWithArgs(
+    <T>(val: T, values: T[]) => values.includes(val),
+    <T>(values: T[]) => `Value must be one of ${values.join(', ')}`,
+  ) as any
 
   static notNull = createValueValidator(
     (val) => val != null,
     'Should not be null',
   )
-  static enum = createValueValidatorWithArgs(
+  static enum = createValueValidatorWithArgs<any, any>(
     (value, enumObj) => Object.values(enumObj).includes(value),
-    (enumObj) => `Value must be one of ${Object.values(enumObj).join(', ')}`,
+    (enumObj) =>
+      `Value must be one of ${Object.values(enumObj)
+        .filter((x) => typeof enumObj[x as any] !== 'number')
+        .join(', ')}`,
   )
   static relationExists = createValidator<any>(async (_, e) => {
     if (e.valueIsNull()) return true
@@ -74,12 +82,16 @@ export class Validators {
 }
 
 export type Validator<valueType> = FieldValidator<any, valueType> &
-  ((message?: string) => FieldValidator<any, valueType>) & {
+  ((
+    message?: ValidationMessage<valueType, undefined>,
+  ) => FieldValidator<any, valueType>) & {
     defaultMessage: ValidationMessage<valueType, undefined>
     /**
      * @deprecated  use (message:string) instead - for example: Validators.required("Is needed")
      */
-    withMessage(message: string): FieldValidator<any, valueType>
+    withMessage(
+      message: ValidationMessage<valueType, undefined>,
+    ): FieldValidator<any, valueType>
   }
 
 export function createValidator<valueType>(
@@ -92,13 +104,14 @@ export function createValidator<valueType>(
   const validation = async (
     entity: any,
     e: ValidateFieldEvent<any, valueType>,
-    message?: string,
+    message?: ValidationMessage<valueType, undefined>,
   ) => {
     const valid = await validate(entity, e)
     if (typeof valid === 'string' && valid.length > 0) e.error = valid
     else if (!valid)
       e.error =
-        message ||
+        (typeof message === 'function' && message(entity, e, undefined)) ||
+        (message as string) ||
         (typeof defaultMessage === 'function' &&
           defaultMessage(entity, e, undefined)) ||
         (defaultMessage as string) ||
@@ -107,10 +120,11 @@ export function createValidator<valueType>(
   const result = (
     entityOrMessage: any,
     e?: ValidateFieldEvent<any, valueType>,
-    message?: string,
+    message?: ValidationMessage<valueType, undefined>,
   ) => {
     if (
       typeof entityOrMessage === 'string' ||
+      entityOrMessage === 'function' ||
       (entityOrMessage === undefined && e === undefined)
     ) {
       return async (entity, e, message) =>
@@ -122,7 +136,7 @@ export function createValidator<valueType>(
   //@ts-ignore
   return Object.assign(result, {
     withMessage:
-      (message: string) =>
+      (message: ValidationMessage<valueType, undefined>) =>
       async (entity: any, e: ValidateFieldEvent<any, valueType>) =>
         result(entity, e, message),
 
@@ -138,20 +152,20 @@ export function createValidator<valueType>(
 
 export function valueValidator<valueType>(
   validate: (value: valueType) => boolean | string | Promise<boolean | string>,
-  message?: string,
+  defaultMessage?: string,
 ) {
   return (entity: any, e: ValidateFieldEvent<any, valueType>) =>
-    validate(e.value) || message || false
+    validate(e.value) || defaultMessage || false
 }
 
 export function createValueValidator<valueType>(
   validate: (value: valueType) => boolean | string | Promise<boolean | string>,
-  message?: ValidationMessage<valueType, undefined>,
+  defaultMessage?: ValidationMessage<valueType, undefined>,
 ) {
   return createValidator<valueType>((_, e) => {
     if (e.value === undefined || e.value === null) return true
     return validate(e.value)
-  }, message)
+  }, defaultMessage)
 }
 export function createValueValidatorWithArgs<valueType, argsType>(
   validate: (
@@ -195,7 +209,7 @@ export type ValidationMessage<valueType, argsType> =
 
 export type ValidatorWithArgs<valueType, argsType> = (
   args: argsType,
-  message?: string,
+  message?: ValidationMessage<valueType, argsType>,
 ) => FieldValidator<any, valueType>
 
 export function createValidatorWithArgs<valueType, argsType>(
@@ -270,6 +284,9 @@ V - deprecate withMessage
 * V - max length should be enforced? from options - where the default message will be from the validators
 * V - required as field option
 //V - consider placing from json exceptions errors as validations error (like zod parse)
+// V - fix in type
+// V - fix number enum type
+// V - fix message that is sent as argument to validator to also support function
 */
 // view issue
 //p1 - symbol for!!

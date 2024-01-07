@@ -209,14 +209,14 @@ describe('validation tests', () => {
       async () => await remult.repo(x).insert({ id: 0 }),
     ).rejects.toThrowErrorMatchingInlineSnapshot(
       `
-    {
-      "message": "Id: must be bigger",
-      "modelState": {
-        "id": "must be bigger",
-        "id2": "shouldn't be bigger",
-      },
-    }
-  `,
+      {
+        "message": "Id: must be bigger",
+        "modelState": {
+          "id": "must be bigger",
+          "id2": "must be bigger",
+        },
+      }
+    `,
     )
   })
 
@@ -235,18 +235,77 @@ describe('validation tests', () => {
     }
     expect(async () => await remult.repo(x).insert({ id: 'd' as any })).rejects
       .toThrowErrorMatchingInlineSnapshot(`
-    {
-      "message": "Id: Invalid value",
-      "modelState": {
-        "id": "Invalid value",
-      },
-    }
-  `)
+      {
+        "message": "Id: Value must be one of 0, 1, 2",
+        "modelState": {
+          "id": "Value must be one of 0, 1, 2",
+        },
+      }
+    `)
     expect(await remult.repo(x).insert({ id: e.c })).toMatchInlineSnapshot(`
     x {
       "id": 2,
     }
   `)
+  })
+  it('test in ', async () => {
+    await expect(async () =>
+      remult
+        .repo(
+          createEntity('x', {
+            id: Fields.number({
+              validate: Validators.in([1, 2, 3]),
+            }),
+          }),
+        )
+        .insert({ id: 4 }),
+    ).rejects.toThrowErrorMatchingInlineSnapshot(`
+      {
+        "message": "Id: Value must be one of 1, 2, 3",
+        "modelState": {
+          "id": "Value must be one of 1, 2, 3",
+        },
+      }
+    `)
+  })
+  it('test in ', async () => {
+    const optionalValues = ['new', 'old', 'used'] as const
+    await expect(async () =>
+      remult
+        .repo(
+          createEntity('x', {
+            id: Fields.object<any, (typeof optionalValues)[number]>({
+              validate: Validators.in(optionalValues),
+            }),
+          }),
+        )
+        .insert({ id: 'newxxx' as any }),
+    ).rejects.toThrowErrorMatchingInlineSnapshot(`
+      {
+        "message": "Id: Value must be one of new, old, used",
+        "modelState": {
+          "id": "Value must be one of new, old, used",
+        },
+      }
+    `)
+  })
+  it('test in 2', async () => {
+    const optionalValues = ['new', 'old', 'used'] as const
+    await expect(
+      await remult
+        .repo(
+          createEntity('x', {
+            id: Fields.object<any, (typeof optionalValues)[number]>({
+              validate: Validators.in(optionalValues),
+            }),
+          }),
+        )
+        .insert({ id: 'new' }),
+    ).toMatchInlineSnapshot(`
+      r {
+        "id": "new",
+      }
+    `)
   })
 
   it('test enum 2', async () => {
@@ -265,13 +324,13 @@ describe('validation tests', () => {
 
     await expect(async () => await remult.repo(x).insert({ id: 'd' as any }))
       .rejects.toThrowErrorMatchingInlineSnapshot(`
-    {
-      "message": "Id: Invalid value",
-      "modelState": {
-        "id": "Invalid value",
-      },
-    }
-  `)
+      {
+        "message": "Id: Value must be one of 0, 1, 2",
+        "modelState": {
+          "id": "Value must be one of 0, 1, 2",
+        },
+      }
+    `)
 
     expect(await remult.repo(x).insert({ id: e.c })).toMatchInlineSnapshot(`
     x {
@@ -295,13 +354,13 @@ describe('validation tests', () => {
     }
     expect(async () => await remult.repo(x).insert({ id: 'd' as any })).rejects
       .toThrowErrorMatchingInlineSnapshot(`
-    {
-      "message": "Id: Invalid value",
-      "modelState": {
-        "id": "Invalid value",
-      },
-    }
-  `)
+      {
+        "message": "Id: Value must be one of a, b, c",
+        "modelState": {
+          "id": "Value must be one of a, b, c",
+        },
+      }
+    `)
 
     expect(await remult.repo(x).insert({ id: e.c })).toMatchInlineSnapshot(`
     x {
@@ -313,6 +372,42 @@ describe('validation tests', () => {
       .toMatchInlineSnapshot(`
     x {
       "id": "b",
+    }
+  `)
+  })
+  it('test enum 4', async () => {
+    enum e {
+      a = 'x',
+      b = 'y',
+      c = 'z',
+    }
+    @Entity('x', {})
+    class x {
+      @Fields.object({
+        validate: Validators.enum(e),
+      })
+      id: e
+    }
+    expect(async () => await remult.repo(x).insert({ id: 'd' as any })).rejects
+      .toThrowErrorMatchingInlineSnapshot(`
+      {
+        "message": "Id: Value must be one of x, y, z",
+        "modelState": {
+          "id": "Value must be one of x, y, z",
+        },
+      }
+    `)
+
+    expect(await remult.repo(x).insert({ id: e.c })).toMatchInlineSnapshot(`
+      x {
+        "id": "z",
+      }
+    `)
+
+    expect(await remult.repo(x).insert({ id: 'x' as any }))
+      .toMatchInlineSnapshot(`
+    x {
+      "id": "x",
     }
   `)
   })
@@ -345,7 +440,7 @@ describe('validation tests', () => {
     }
   `)
     })
-    it.only('test undefined', async () => {
+    it('test undefined', async () => {
       expect(
         async () =>
           await remult.repo(x).insert({
@@ -606,9 +701,9 @@ describe('validation tests', () => {
     await expect(remult.repo(x).insert({ id: '1234567' })).rejects
       .toMatchInlineSnapshot(`
       {
-        "message": "Id: Value too long",
+        "message": "Id: Value must be at most 5 characters",
         "modelState": {
-          "id": "Value too long",
+          "id": "Value must be at most 5 characters",
         },
       }
     `)

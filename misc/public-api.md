@@ -188,7 +188,7 @@ export declare function createValidatorWithArgs<valueType, argsType>(
 }
 export declare function createValueValidator<valueType>(
   validate: (value: valueType) => boolean | string | Promise<boolean | string>,
-  message?: ValidationMessage<valueType, undefined>,
+  defaultMessage?: ValidationMessage<valueType, undefined>,
 ): Validator<valueType>
 export declare function createValueValidatorWithArgs<valueType, argsType>(
   validate: (
@@ -1840,12 +1840,16 @@ export type ValidationMessage<valueType, argsType> =
       args: argsType,
     ) => string)
 export type Validator<valueType> = FieldValidator<any, valueType> &
-  ((message?: string) => FieldValidator<any, valueType>) & {
+  ((
+    message?: ValidationMessage<valueType, undefined>,
+  ) => FieldValidator<any, valueType>) & {
     defaultMessage: ValidationMessage<valueType, undefined>
     /**
      * @deprecated  use (message:string) instead - for example: Validators.required("Is needed")
      */
-    withMessage(message: string): FieldValidator<any, valueType>
+    withMessage(
+      message: ValidationMessage<valueType, undefined>,
+    ): FieldValidator<any, valueType>
   }
 export declare class Validators {
   static required: Validator<any>
@@ -1859,12 +1863,15 @@ export declare class Validators {
   }
   static email: Validator<string>
   static url: Validator<string>
-  static in: ValidatorWithArgs<any, any[]> & {
-    defaultMessage: ValueValidationMessage<any[]>
+  static in: <T>(
+    value: readonly T[],
+    withMessage?: ValueValidationMessage<T[]>,
+  ) => FieldValidator<any, T> & {
+    withMessage: ValueValidationMessage<T[]>
   }
   static notNull: Validator<unknown>
-  static enum: ValidatorWithArgs<unknown, unknown> & {
-    defaultMessage: ValueValidationMessage<unknown>
+  static enum: ValidatorWithArgs<any, any> & {
+    defaultMessage: ValueValidationMessage<any>
   }
   static relationExists: Validator<any>
   static maxLength: ValidatorWithArgs<string, number> & {
@@ -1875,7 +1882,7 @@ export declare class Validators {
 //[ ] RegExp from TBD is not exported
 export type ValidatorWithArgs<valueType, argsType> = (
   args: argsType,
-  message?: string,
+  message?: ValidationMessage<valueType, argsType>,
 ) => FieldValidator<any, valueType>
 export interface ValueConverter<valueType> {
   fromJson?(val: any): valueType
@@ -1952,7 +1959,7 @@ export type ValueValidationMessage<argsType> =
   | ((args: argsType) => string)
 export declare function valueValidator<valueType>(
   validate: (value: valueType) => boolean | string | Promise<boolean | string>,
-  message?: string,
+  defaultMessage?: string,
 ): (
   entity: any,
   e: ValidateFieldEvent<any, valueType>,
