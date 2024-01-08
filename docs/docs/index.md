@@ -32,7 +32,7 @@ Explore the flexibility of Remult through different learning paths tailored to m
 
 Use this [Quickstart](./quickstart.md) guide to quickly setup and try out Remult or add Remult to an existing app.
 
-### Browse [Example Apps](./examples-apps.md)
+### Browse [Example Apps](./example-apps.md)
 
 ### Video Tutorials
 
