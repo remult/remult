@@ -4,6 +4,37 @@ All notable changes to this project will be documented in this file.
 
 ## [0.24.2] TBD
 
+### Improvement for validators
+
+- Added `required` as a `FieldOption`
+- Added validation for `maxLength` in `StringFieldOptions`
+- Added the following validators to the `Validators` class:
+  - regex
+  - email
+  - url
+  - in
+  - notNull
+  - enum
+  - relationExists,
+  - maxLength
+- Added support for return value for validations - true || undefined are valid, string will provide the message. For example:
+  ```ts
+  @Fields.string({
+    validate:(task)=> task.title.length > 5 || "too short"
+  })
+  ```
+- Added the `valueValidator` helper function:
+  ```ts
+  @Fields.string({
+    validate: valueValidator(value => value.length > 5)
+  })
+  ```
+- Added helper functions to create validators, `createValueValidator`, `createValueValidatorWithArgs`, `createValidator` & `createValidatorWithArgs`
+- Added a `ValidateFieldEvent` object as the second parameter of the `validate` function
+- Adjusted the `unique` validator to only run on the backend
+
+### New Frontend Data Providers
+
 - Added Origin Private File System Storage to store entities in the front end
   ```ts
   const db = new JsonDataProvider(new JsonEntityOpfsStorage())
@@ -12,7 +43,20 @@ All notable changes to this project will be documented in this file.
     .then((tasks) => console.table(tasks))
   ```
 - Added `SqlJsDataProvider` for use with front end sqlite implementation [sql.js](https://sql.js.org/)
+  ```ts
+  const db = new SqlDatabase(
+    new SqlJsDataProvider(initSqlJs().then((x) => new x.Database())),
+  )
+  repo(Task, db)
+    .find()
+    .then((tasks) => console.table(tasks))
+  ```
+
+### Other
+
+- Added `clone` to `EntityRef`
 - Fixed issue where `findOne` didn't work
+- Fixed issue where exception `XXX is not a known entity, did you forget to set @Entity() or did you forget to add the '@' before the call to Entity?` was thrown in cases where multiple instances of remult were in memory
 
 ## [0.24.1] 2023-12-30
 

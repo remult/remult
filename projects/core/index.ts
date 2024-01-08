@@ -6,6 +6,7 @@ export type { ClassType } from './classType.js'
  * Public API Surface of remult
  */
 export {
+  ValidateFieldEvent,
   MembersOnly,
   FieldsMetadata,
   FieldRef,
@@ -143,7 +144,18 @@ export {
   customFilterInfo,
 } from './src/filter/filter-interfaces.js'
 export { UrlBuilder } from './urlBuilder.js'
-export { Validators } from './src/validators.js'
+export {
+  Validators,
+  ValidationMessage,
+  ValueValidationMessage,
+  Validator,
+  ValidatorWithArgs,
+  valueValidator,
+  createValidator,
+  createValidatorWithArgs,
+  createValueValidatorWithArgs,
+  createValueValidator,
+} from './src/validators.js'
 
 export { ValueConverters } from './src/valueConverters.js'
 export { remult } from './src/remult-proxy.js'

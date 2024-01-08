@@ -16,10 +16,10 @@ export function getEntityRef<entityType>(
   return x
 }
 
-export const entityMember = Symbol('entityMember')
+export const entityMember = Symbol.for('entityMember')
 
-export const entityInfo = Symbol('entityInfo')
-export const entityInfo_key = Symbol('entityInfo_key')
+export const entityInfo = Symbol.for('entityInfo')
+export const entityInfo_key = Symbol.for('entityInfo_key')
 
 export function getEntitySettings<T>(
   entity: ClassType<T>,
@@ -29,7 +29,7 @@ export function getEntitySettings<T>(
     if (throwError) {
       throw new Error('Undefined is not an entity :)')
     } else return undefined
-  let info: EntityOptionsFactory = Reflect.getMetadata(entityInfo, entity)
+  let info: EntityOptionsFactory = entity[entityInfo]
   if (!info && throwError)
     throw new Error(
       entity.prototype.constructor.name +
@@ -39,5 +39,5 @@ export function getEntitySettings<T>(
   return info
 }
 export function getEntityKey(entity: ClassType<any>): string {
-  return Reflect.getMetadata(entityInfo_key, entity)
+  return entity[entityInfo_key]
 }

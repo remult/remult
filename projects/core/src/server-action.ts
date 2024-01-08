@@ -570,7 +570,7 @@ export async function prepareReceivedArgs(
   return args
 }
 
-export const classBackendMethodsArray = Symbol('classBackendMethodsArray')
+export const classBackendMethodsArray = Symbol.for('classBackendMethodsArray')
 
 export interface ActionInterface {
   doWork: (
