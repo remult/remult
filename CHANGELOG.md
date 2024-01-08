@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.24.2] TBD
+## [0.25.0] TBD
 
 ### Improvement for validators
 
@@ -30,7 +30,8 @@ All notable changes to this project will be documented in this file.
   })
   ```
 - Added helper functions to create validators, `createValueValidator`, `createValueValidatorWithArgs`, `createValidator` & `createValidatorWithArgs`
-- Added a `ValidateFieldEvent` object as the second parameter of the `validate` function
+- Changed signature of `FieldOptions`.`validate` the receive `ValidateFieldEvent` object as the second parameter instead of `FieldRef`
+- Updated Signature of `required` and `unique` based on api change
 - Adjusted the `unique` validator to only run on the backend
 
 ### New Frontend Data Providers

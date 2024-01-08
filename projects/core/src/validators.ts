@@ -245,3 +245,6 @@ export function createValidatorWithArgs<valueType, argsType>(
     },
   })
 }
+//y1 - talk about the 3rd parameter as message
+//y1 - talk about the changed signature breaking existing validations and preventing the usage of unique outside the normal flow
+//y1 - talk about the defaultMessage value now being a function that get's too many arguments, that makes it's reuse that much harder
