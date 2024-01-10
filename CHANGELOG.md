@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.25.0] TBD
+## [0.25.0] 2024-01-10
 
 ### Improvement for validators
 
