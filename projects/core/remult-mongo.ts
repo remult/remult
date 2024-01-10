@@ -164,7 +164,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
     for (const f of this.entity.fields) {
       if (!f.dbReadOnly && !f.isServerExpression) {
         if (keys.includes(f.key)) {
-          newR[f.key] = f.valueConverter.toDb(data[f.key])
+          newR[f.key] = toDb(f, data[f.key])
         }
       }
     }
