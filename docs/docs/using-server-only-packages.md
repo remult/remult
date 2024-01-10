@@ -44,22 +44,22 @@ There are two ways to handle this:
 ### Option with `vite`
 
 If you are using `vite` you can add a plugin to remove all `@BackendMethod` from your frontend code.
-Simply add [vite-plugin-striper](https://www.kitql.dev/docs/tools/07_vite-plugin-striper) to your project and configure it like this:
+Simply add [vite-plugin-stripper](https://www.kitql.dev/docs/tools/07_vite-plugin-stripper) to your project and configure it like this:
 
 ```bash
-npm i --save-dev vite-plugin-striper
+npm i --save-dev vite-plugin-stripper
 ```
 
 ::: code-group
 
 ```ts [vite.config.ts]
 import { defineConfig } from 'vite'
-import { striper } from 'vite-plugin-striper' // [!code ++]
+import { stripper } from 'vite-plugin-stripper' // [!code ++]
 
 export default defineConfig({
   plugins: [
     react(),
-    striper({ decorators: ['BackendMethod'] }), // [!code ++]
+    stripper({ decorators: ['BackendMethod'] }), // [!code ++]
   ],
 })
 ```
@@ -68,7 +68,7 @@ export default defineConfig({
 
 That's it!
 
-### Option without `vite-plugin-striper`
+### Option without `vite-plugin-stripper`
 
 #### Step 1 - replace the File level import with an import in the specific backend method:
 
