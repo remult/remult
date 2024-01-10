@@ -823,3 +823,4 @@ remult.apiClient.url='localhost:3007/api
 
 //y2 - consider if field types should include validation in them by default (string,number that it's not NaN etc...) and if so, what message?
 //y2 - should enforce integer - currently we probably round / truncate it
+//p1 - adjust react tutorial to esm
