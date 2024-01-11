@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.25.1] 2024-01-11
+
+- Fixed issue where `defaultGetLimit` caused issues with include queries
+
 ## [0.25.0] 2024-01-10
 
 ### Improvement for validators
@@ -123,9 +127,8 @@ All notable changes to this project will be documented in this file.
 
 ## [0.23.0] 2023-12-11
 
-- Added Relations - see [Relations](docs/lifecycle-hooks.html)
+- Added Relations - see [Relations](https://remult.dev/docs/entity-relations.html)
 - Added LifecycleEvent info for saving,saved,deleting,deleted - see [Entity Lifecycle Hooks](https://remult.dev/docs/lifecycle-hooks.html)
-  - Breaking change - `saving` in `FieldOptions` now has a second parameter if EntityLifeCycle hook - and the fieldRef is the 3rd parameter.
 - Saving, Saved, Deleting, Deleted all run only on the backend now
 - include in api now supports expressions that use the current row
   - Breaking change - instead of `if(repo.fields.name.includedInApi)` you now need `if(repo.fields.name.includedInApi(instance))`

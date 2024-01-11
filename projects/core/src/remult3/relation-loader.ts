@@ -108,7 +108,7 @@ class QueryVariation {
   >()
 }
 class PendingInStatements {
-  resolve() {
+  async resolve() {
     const values = [...this.values.values()]
     if (values.length == 1) {
       this.rel.find(this.options).then(values[0].resolve, values[0].reject)
@@ -116,29 +116,35 @@ class PendingInStatements {
     }
     var op = { ...this.options }
     op.where = { [this.key]: values.map((v) => v.value) }
-    this.rel.find(op).then(
-      (val) => {
-        for (const value of this.values.values()) {
-          value.resolve(
-            val.filter((x) => {
-              const ref = getEntityRef(x)
-              const field = ref.fields.find(this.key)
-              const rel = getRelationInfo(field.metadata.options)
-              const val =
-                rel?.type === 'reference'
-                  ? (field as IdFieldRef<any, any>).getId()
-                  : x[this.key]
-              return value.value == val
-            }),
-          )
-        }
-      },
-      (err) => {
-        for (const value of this.values.values()) {
-          value.reject(err)
-        }
-      },
-    )
+    op.limit = 1000
+    op.page = 1
+    let vals = []
+    try {
+      while (true) {
+        const val = await this.rel.find(op)
+        vals.push(...val)
+        if (val.length < op.limit) break
+        op.page++
+      }
+      for (const value of this.values.values()) {
+        value.resolve(
+          vals.filter((x) => {
+            const ref = getEntityRef(x)
+            const field = ref.fields.find(this.key)
+            const rel = getRelationInfo(field.metadata.options)
+            const val =
+              rel?.type === 'reference'
+                ? (field as IdFieldRef<any, any>).getId()
+                : x[this.key]
+            return value.value == val
+          }),
+        )
+      }
+    } catch (err) {
+      for (const value of this.values.values()) {
+        value.reject(err)
+      }
+    }
   }
   find(where: any): Promise<any[]> {
     const val = where[this.key]
