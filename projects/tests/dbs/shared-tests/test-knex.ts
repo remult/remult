@@ -5,8 +5,12 @@ import { Entity, Fields, Remult, dbNamesOf } from '../../../core'
 import type { ClassType } from '../../../core/classType'
 import { KnexDataProvider, KnexSchemaBuilder } from '../../../core/remult-knex'
 import { entityWithValidations } from './entityWithValidations'
+import { DbTestProps } from './db-tests-props'
 KnexSchemaBuilder.logToConsole = false
-export function knexTests(knex: Knex.Knex) {
+export function knexTests(
+  knex: Knex.Knex,
+  otherTests?: (props: DbTestProps) => void,
+) {
   var db: KnexDataProvider
   let remult: Remult
   beforeAll(async () => {})
@@ -22,6 +26,15 @@ export function knexTests(knex: Knex.Knex) {
     return repo
   }
   allDbTests({
+    getDb() {
+      return db
+    },
+    getRemult() {
+      return remult
+    },
+    createEntity,
+  })
+  otherTests?.({
     getDb() {
       return db
     },

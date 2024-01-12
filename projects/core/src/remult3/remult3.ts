@@ -742,7 +742,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
     | ClassFieldDecoratorContextStub<entityType, valueType | undefined>,
   c?: any,
 ) => void
-//y1 - discuss limit and include queries
+//y1 - number default storage in knex is decimal and it by default has 8,2 - meaning only 999,999 - I think it should be way bigger than that. in firefly we do at least 18
 //y1 - tried to upgrade vitest, nuxt tests are failing with loading uuid - sounds familiar?
 
 //y2 - from the crm-demo(https://crm-demo.up.railway.app/deals), after editing a deal: - _updateEntityBasedOnApi
