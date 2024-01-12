@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest'
+import { describe, it, expect, beforeAll, afterEach } from 'vitest'
 import {
   Entity,
   FieldRef,
@@ -16,6 +16,7 @@ import {
 } from '../../core/src/validators'
 import { beforeEach } from 'vitest'
 import { createEntity } from './dynamic-classes'
+import { validateHeaderName } from 'http'
 describe('validation tests', () => {
   const remult = new Remult(new InMemoryDataProvider())
   beforeEach(() => {
@@ -38,6 +39,39 @@ describe('validation tests', () => {
       },
     }
   `)
+  })
+  beforeEach(() => {
+    let x = Validators.required.defaultMessage
+    return () => (Validators.required.defaultMessage = x)
+  })
+  it('test custom message', async () => {
+    Validators.required.defaultMessage = 'a custom message'
+    expect(Validators.required.defaultMessage).toBe('a custom message')
+  })
+
+  it('test it', async () => {
+    expect(Validators.required.defaultMessage).toMatchInlineSnapshot(
+      '"Should not be empty"',
+    )
+  })
+  it('test required validator 2', async () => {
+    Validators.required.defaultMessage = 'a custom message'
+    @Entity('x', {})
+    class x {
+      @Fields.number()
+      id = 0
+      @Fields.string({ validate: Validators.required })
+      title = ''
+    }
+    await expect(async () => await remult.repo(x).insert({ id: 1 })).rejects
+      .toThrowErrorMatchingInlineSnapshot(`
+        {
+          "message": "Title: a custom message",
+          "modelState": {
+            "title": "a custom message",
+          },
+        }
+      `)
   })
   it('test basic validation with exception', async () => {
     @Entity('x', {})
@@ -689,6 +723,25 @@ describe('validation tests', () => {
         }
       `)
     })
+  })
+  it('test max length', async () => {
+    await expect(
+      async () =>
+        await remult
+          .repo(
+            createEntity('x', {
+              id: Fields.string({ validate: Validators.minLength(5) }),
+            }),
+          )
+          .insert({ id: '1234' }),
+    ).rejects.toThrowErrorMatchingInlineSnapshot(`
+      {
+        "message": "Id: Value must be at least 5 characters",
+        "modelState": {
+          "id": "Value must be at least 5 characters",
+        },
+      }
+    `)
   })
   it('test max length', async () => {
     @Entity('x', {})

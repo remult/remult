@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.25.2] 2024-01-12
+
+- Fix the `defaultMessage` of validators
+- Added Validators.minLength
+
 ## [0.25.1] 2024-01-11
 
 - Fixed issue where `defaultGetLimit` caused issues with include queries
