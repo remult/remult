@@ -1877,6 +1877,9 @@ export declare class Validators {
   static maxLength: ValidatorWithArgs<string, number> & {
     defaultMessage: ValueValidationMessage<number>
   }
+  static minLength: ValidatorWithArgs<string, number> & {
+    defaultMessage: ValueValidationMessage<number>
+  }
   static defaultMessage: string
 }
 //[ ] RegExp from TBD is not exported
