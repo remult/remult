@@ -742,7 +742,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
     | ClassFieldDecoratorContextStub<entityType, valueType | undefined>,
   c?: any,
 ) => void
-//y1 - number default storage in knex is decimal and it by default has 8,2 - meaning only 999,999 - I think it should be way bigger than that. in firefly we do at least 18
+//y1 - number default storage in knex is decimal and it by default has 8,2 - meaning only 999,999 - I think it should be way bigger than that. in firefly we do at least 18 - https://discord.com/channels/975754286384418847/1195162533447876658
 //y1 - tried to upgrade vitest, nuxt tests are failing with loading uuid - sounds familiar?
 
 //y2 - from the crm-demo(https://crm-demo.up.railway.app/deals), after editing a deal: - _updateEntityBasedOnApi
@@ -824,3 +824,4 @@ remult.apiClient.url='localhost:3007/api
 //y2 - consider if field types should include validation in them by default (string,number that it's not NaN etc...) and if so, what message?
 //y2 - should enforce integer - currently we probably round / truncate it
 //p1 - adjust react tutorial to esm
+//p1 - write docs on with remult - and usage in init api
