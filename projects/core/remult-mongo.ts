@@ -323,12 +323,36 @@ class FilterConsumerBridgeToMongo implements FilterConsumer {
   }
 }
 function toDb(col: FieldMetadata, val: any) {
-  if (col.valueConverter.fieldTypeInDb == 'dbid')
-    return val ? new ObjectId(val) : val === null ? null : undefined
-  return col.valueConverter.toDb(val)
+  switch (col.valueConverter.fieldTypeInDb) {
+    case 'dbid': return val ? new ObjectId(val) : val === null ? null : undefined;
+    case 'dbid[]': {
+      if (!val) {
+        return val === null ? null : undefined
+      }
+      if (typeof val === 'string') {
+        val = val.split(',');
+      }
+      if (Array.isArray(val)) {
+        return val.map(e => new ObjectId(e));
+      }
+    }
+    default: return col.valueConverter.toDb(val)
+  }
 }
 function fromDb(col: FieldMetadata, val: any) {
-  if (col.valueConverter.fieldTypeInDb == 'dbid')
-    return val ? val.toHexString() : val === null ? null : undefined
-  return col.valueConverter.fromDb(val)
+  switch (col.valueConverter.fieldTypeInDb) {
+    case 'dbid': return val ? val.toHexString() : val === null ? null : undefined;
+    case 'dbid[]': {
+      if (!val) {
+        return val === null ? null : undefined
+      }
+      if (typeof val === 'string') {
+        val = val.split(',');
+      }
+      if (Array.isArray(val)) {
+        return val.map(e => new ObjectId(e));
+      }
+    }
+    default: return col.valueConverter.fromDb(val)
+  }
 }
