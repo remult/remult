@@ -77,6 +77,10 @@ export class Validators {
     (val, maxLength) => val.length <= maxLength,
     (maxLength) => `Value must be at most ${maxLength} characters`,
   )
+  static minLength = createValueValidatorWithArgs<string, number>(
+    (val, minLength) => val.length >= minLength,
+    (maxLength) => `Value must be at least ${maxLength} characters`,
+  )
 
   static defaultMessage = 'Invalid value'
 }
@@ -132,21 +136,21 @@ export function createValidator<valueType>(
     }
     return validation(entityOrMessage, e!, message)
   }
-
+  Object.defineProperty(result, 'defaultMessage', {
+    get: () => {
+      return defaultMessage
+    },
+    set: (val) => {
+      defaultMessage = val
+    },
+    enumerable: true,
+  })
   //@ts-ignore
   return Object.assign(result, {
     withMessage:
       (message: ValidationMessage<valueType, undefined>) =>
       async (entity: any, e: ValidateFieldEvent<any, valueType>) =>
         result(entity, e, message),
-
-    get defaultMessage() {
-      return defaultMessage
-    },
-    set defaultMessage(val) {
-      defaultMessage = val
-    },
-    isValid: validate,
   })
 }
 
@@ -245,6 +249,3 @@ export function createValidatorWithArgs<valueType, argsType>(
     },
   })
 }
-//y1 - talk about the 3rd parameter as message
-//y1 - talk about the changed signature breaking existing validations and preventing the usage of unique outside the normal flow
-//y1 - talk about the defaultMessage value now being a function that get's too many arguments, that makes it's reuse that much harder

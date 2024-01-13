@@ -57,7 +57,7 @@ Additionally, you can define a field-specific `saving` hook that allows you to p
 
 ```ts
 @Fields.Date<Task>({
-  saving: (task, e, fieldRef) => {
+  saving: (task, fieldRef, e) => {
     if (e.isNew) task.createdAt = new Date()
   },
 })
@@ -68,7 +68,7 @@ or using the fieldRef
 
 ```ts
 @Fields.Date({
-  saving: (_, e, fieldRef) => {
+  saving: (_, fieldRef, e) => {
     if (e.isNew) fieldRef.value = new Date()
   },
 })

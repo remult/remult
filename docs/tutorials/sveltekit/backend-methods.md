@@ -112,7 +112,7 @@ With Remult backend methods, argument types are compile-time checked. :thumbsup:
 :::
 
 ::: tip
-You might need `vite-plugin-striper` as a devDependency to build your application for production.
+You might need `vite-plugin-stripper` as a devDependency to build your application for production.
 :::
 
 After the browser is refreshed, the _"Set all..."_ buttons function exactly the same but now makes only a single request to the back, and is faster.
