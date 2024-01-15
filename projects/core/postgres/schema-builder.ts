@@ -6,6 +6,7 @@ import type { EntityDbNamesBase } from '../src/filter/filter-consumer-bridge-to-
 import {
   dbNamesOf,
   isDbReadonly,
+  shouldNotCreateField,
 } from '../src/filter/filter-consumer-bridge-to-sql-request.js'
 import { remult as defaultRemult } from '../src/remult-proxy.js'
 import type { EntityMetadata } from '../src/remult3/remult3.js'
@@ -167,7 +168,7 @@ export class PostgresSchemaBuilder {
         if (r.rows.length == 0) {
           let result = ''
           for (const x of entity.fields) {
-            if (!isDbReadonly(x, e) || isAutoIncrement(x)) {
+            if (!shouldNotCreateField(x, e) || isAutoIncrement(x)) {
               if (result.length != 0) result += ','
               result += '\r\n  '
 
@@ -192,7 +193,7 @@ CREATE table ${this.schemaAndName(e)} (${result}\r\n)`
     c: (e: T) => FieldMetadata,
   ) {
     let e: EntityDbNamesBase = await dbNamesOf(entity, this.pool.wrapIdentifier)
-    if (isDbReadonly(c(entity), e)) return
+    if (shouldNotCreateField(c(entity), e)) return
     try {
       let cmd = this.pool.createCommand()
 
@@ -234,7 +235,7 @@ CREATE table ${this.schemaAndName(e)} (${result}\r\n)`
         )
       ).rows.map((x) => x.column_name.toLocaleLowerCase())
       for (const col of entity.fields) {
-        if (!isDbReadonly(col, e)) {
+        if (!shouldNotCreateField(col, e)) {
           let colName = e.$dbNameOf(col).toLocaleLowerCase()
           if (colName.startsWith('"') && colName.endsWith('"'))
             colName = colName.substring(1, colName.length - 1)

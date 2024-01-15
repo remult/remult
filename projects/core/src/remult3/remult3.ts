@@ -788,6 +788,12 @@ remult.apiClient.url='localhost:3007/api
 
 
 */
+
+//p1 -check if checouknt doesn't respect allow read (I think)
+//p1 - fix multiple instances of remult: the defaultRemult and async local hook - and columnsOfType - all can be tests with a vite project loading `remult-admin`
+//p1 - crm demo graphql error
+//p1 - allow api update only for new rows
+//p1 - getFields didn't work for kobi in the home component
 //p2 - document validators
 //p2 - and validators to reference
 //y2 - discuss a default date formatter

@@ -6,6 +6,7 @@ import type { ClassType } from '../../../core/classType'
 import { KnexDataProvider, KnexSchemaBuilder } from '../../../core/remult-knex'
 import { entityWithValidations } from './entityWithValidations'
 import { DbTestProps } from './db-tests-props'
+import { SqlDbTests } from './sql-db-tests'
 KnexSchemaBuilder.logToConsole = false
 export function knexTests(
   knex: Knex.Knex,
@@ -26,6 +27,15 @@ export function knexTests(
     return repo
   }
   allDbTests({
+    getDb() {
+      return db
+    },
+    getRemult() {
+      return remult
+    },
+    createEntity,
+  })
+  SqlDbTests({
     getDb() {
       return db
     },

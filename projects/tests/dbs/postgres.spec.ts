@@ -12,6 +12,7 @@ import {
   PostgresSchemaBuilder,
   createPostgresConnection,
 } from '../../core/postgres'
+import { createEntity as createEntityClass } from '../tests/dynamic-classes'
 
 import * as Knex from 'knex'
 import type { ClassType } from '../../core/classType'
@@ -19,6 +20,7 @@ import { Categories } from '../tests/remult-3-entities'
 import { allDbTests } from './shared-tests'
 import { entityWithValidations } from './shared-tests/entityWithValidations'
 import { knexTests } from './shared-tests/test-knex'
+import { SqlDbTests } from './shared-tests/sql-db-tests'
 
 PostgresSchemaBuilder.logToConsole = false
 const postgresConnection = process.env.DATABASE_URL
@@ -44,6 +46,15 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
     return repo
   }
   allDbTests({
+    getDb() {
+      return db
+    },
+    getRemult() {
+      return remult
+    },
+    createEntity,
+  })
+  SqlDbTests({
     getDb() {
       return db
     },

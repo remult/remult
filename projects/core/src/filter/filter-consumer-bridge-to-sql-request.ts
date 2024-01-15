@@ -210,6 +210,15 @@ export function isDbReadonly<entityType>(
     (field.options.sqlExpression && field.dbName != dbNames.$dbNameOf(field))
   )
 }
+export function shouldNotCreateField<entityType>(
+  field: FieldMetadata,
+  dbNames: EntityDbNames<entityType>,
+) {
+  return (
+    field.isServerExpression ||
+    (field.options.sqlExpression && field.dbName != dbNames.$dbNameOf(field))
+  )
+}
 
 export declare type EntityDbNamesBase = {
   $entityName: string

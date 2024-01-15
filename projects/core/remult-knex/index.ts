@@ -5,6 +5,7 @@ import type { EntityDbNamesBase } from '../src/filter/filter-consumer-bridge-to-
 import {
   dbNamesOf,
   isDbReadonly,
+  shouldNotCreateField,
 } from '../src/filter/filter-consumer-bridge-to-sql-request.js'
 import type { FilterConsumer } from '../src/filter/filter-interfaces.js'
 import {
@@ -437,7 +438,7 @@ export class KnexSchemaBuilder {
       for (const f of entity.fields) {
         cols.set(f, {
           name: e.$dbNameOf(f),
-          readonly: isDbReadonly(f, e),
+          readonly: shouldNotCreateField(f, e),
         })
       }
       await logSql(
@@ -461,7 +462,7 @@ export class KnexSchemaBuilder {
     c: (e: T) => FieldMetadata,
   ) {
     let e: EntityDbNamesBase = await dbNamesOf(entity)
-    if (isDbReadonly(c(entity), e)) return
+    if (shouldNotCreateField(c(entity), e)) return
 
     let col = c(entity)
     let colName = e.$dbNameOf(col)
@@ -478,7 +479,7 @@ export class KnexSchemaBuilder {
     let e = await dbNamesOf(entity)
     try {
       for (const col of entity.fields.toArray()) {
-        if (!isDbReadonly(col, e)) {
+        if (!shouldNotCreateField(col, e)) {
           await this.addColumnIfNotExist(entity, () => col)
         }
       }
