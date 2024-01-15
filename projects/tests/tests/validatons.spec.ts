@@ -815,4 +815,15 @@ describe('validation tests', () => {
       }
     `)
   })
+  it('test unique works', async () => {
+    const repo = remult.repo(
+      createEntity('x', {
+        id: Fields.string({ validate: Validators.unique }),
+        name: Fields.string(),
+      }),
+    )
+    const r = await repo.insert({ id: '1', name: 'a' })
+    r.name = 'b'
+    await getEntityRef(r).save()
+  })
 })

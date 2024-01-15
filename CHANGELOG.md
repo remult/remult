@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.25.4] 2024-01-15
+
+- Fixed issue where a new row that was saved, changed again and saved again - provide wrong `isNew:true` value for field validate
+
 ## [0.25.3] 2024-01-15
 
 - Fixed [#320](https://github.com/remult/remult/issues/320), dbReadonly columns are not created in the db

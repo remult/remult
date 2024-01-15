@@ -2023,7 +2023,7 @@ export class FieldRefImplementation<entityType, valueType>
           set error(value) {
             self.error = value
           },
-          isNew: self.rowBase.isNewRow,
+          isNew: this.entityRef?.isNew(),
           load: () => self.load(),
           metadata: self.metadata,
           originalValue: self.originalValue,
