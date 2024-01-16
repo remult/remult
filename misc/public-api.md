@@ -2719,7 +2719,7 @@ export declare class AblySubscriptionServer implements SubscriptionServer {
 export declare function remultGraphql(options: {
   removeComments?: boolean
   entities: ClassType<any>[]
-  getRemultFromRequest?: (req: any) => Remult
+  getRemultFromRequest?: (req: any) => Promise<Remult>
 }): {
   resolvers: {
     Query: Record<string, unknown>

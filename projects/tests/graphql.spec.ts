@@ -26,11 +26,10 @@ class Category {
   @Fields.string()
   name = ''
 
-  @Relations.toMany(() => Task, { field: 'category' })
-  tasksOfcategory?: Task[]
-
   @Relations.toMany(() => Task, { field: 'category2' })
-  tasksOfcategory2?: Task[]
+  tasksWithCategory2SetToMe?: Task[]
+  @Relations.toMany<Category, Task>(() => Task, { field: 'category3_id' })
+  tasksWithCategory3SetToMe?: Task[]
 }
 
 @Entity('tasks', {
@@ -60,9 +59,13 @@ class Task {
   @Field(() => Category, { allowNull: true })
   category?: Category
 
-  @Field(() => Category, { allowNull: true })
+  @Relations.toOne(() => Category, { allowNull: true })
   category2?: Category
 
+  @Fields.string({ allowNull: true })
+  category3_id = ''
+  @Relations.toOne(() => Category, { field: 'category3_id', allowNull: true })
+  category3: Category
   @Fields.string({
     serverExpression: () => {
       return ''
@@ -87,7 +90,7 @@ describe('graphql', () => {
 
     const { typeDefs, resolvers } = remultGraphql({
       entities: [Task, Category],
-      getRemultFromRequest: () => remult,
+      getRemultFromRequest: async () => remult,
     })
 
     const yoga = createYoga({
@@ -112,8 +115,18 @@ describe('graphql', () => {
       .repo(Category)
       .insert([{ name: 'c1' }, { name: 'c2' }])
 
-    await remult.repo(Task).insert({ title: 'task a', category: cat[0] })
-    await remult.repo(Task).insert({ title: 'task b', category: cat[1] })
+    await remult.repo(Task).insert({
+      title: 'task a',
+      category: cat[0],
+      category2: cat[1],
+      category3_id: cat[1].id,
+    })
+    await remult.repo(Task).insert({
+      title: 'task b',
+      category: cat[1],
+      category2: cat[1],
+      category3: cat[0],
+    })
 
     const tasks: any = await gql(`
     query{
@@ -122,6 +135,13 @@ describe('graphql', () => {
           title,
           nodeId,
           category{
+            nodeId
+          }
+          category2{
+            nodeId
+          }
+          category3_id
+          category3{
             nodeId
           }
         }
@@ -137,6 +157,13 @@ describe('graphql', () => {
                 "category": {
                   "nodeId": "Category:0",
                 },
+                "category2": {
+                  "nodeId": "Category:1",
+                },
+                "category3": {
+                  "nodeId": "Category:1",
+                },
+                "category3_id": "1",
                 "nodeId": "Task:1",
                 "title": "task a",
               },
@@ -144,6 +171,13 @@ describe('graphql', () => {
                 "category": {
                   "nodeId": "Category:1",
                 },
+                "category2": {
+                  "nodeId": "Category:1",
+                },
+                "category3": {
+                  "nodeId": "Category:0",
+                },
+                "category3_id": "0",
                 "nodeId": "Task:2",
                 "title": "task b",
               },
@@ -341,8 +375,18 @@ describe('graphql', () => {
     const cat = await remult
       .repo(Category)
       .insert([{ name: 'c1' }, { name: 'c2' }])
-    await remult.repo(Task).insert({ title: 'task a', category: cat[0] })
-    await remult.repo(Task).insert({ title: 'task b', category: cat[1] })
+    await remult.repo(Task).insert({
+      title: 'task a',
+      category: cat[0],
+      category2: cat[1],
+      category3_id: cat[1].id,
+    })
+    await remult.repo(Task).insert({
+      title: 'task b',
+      category: cat[1],
+      category2: cat[1],
+      category3: cat[0],
+    })
 
     const result = await gql(`
     query{
@@ -353,6 +397,16 @@ describe('graphql', () => {
             name
             tasksOfcategory {
               items {
+                title
+              }
+            }
+            tasksWithCategory2SetToMe{
+              items{
+                title
+              }
+            }
+            tasksWithCategory3SetToMe{
+              items{
                 title
               }
             }
@@ -375,6 +429,16 @@ describe('graphql', () => {
                       },
                     ],
                   },
+                  "tasksWithCategory2SetToMe": {
+                    "items": [],
+                  },
+                  "tasksWithCategory3SetToMe": {
+                    "items": [
+                      {
+                        "title": "task b",
+                      },
+                    ],
+                  },
                 },
                 "title": "task a",
               },
@@ -385,6 +449,23 @@ describe('graphql', () => {
                     "items": [
                       {
                         "title": "task b",
+                      },
+                    ],
+                  },
+                  "tasksWithCategory2SetToMe": {
+                    "items": [
+                      {
+                        "title": "task a",
+                      },
+                      {
+                        "title": "task b",
+                      },
+                    ],
+                  },
+                  "tasksWithCategory3SetToMe": {
+                    "items": [
+                      {
+                        "title": "task a",
                       },
                     ],
                   },
@@ -632,6 +713,8 @@ describe('graphql', () => {
         Task {
           "category": null,
           "category2": null,
+          "category3": undefined,
+          "category3_id": "",
           "completed": false,
           "id": 1,
           "thePriority": 1,
@@ -641,6 +724,8 @@ describe('graphql', () => {
         Task {
           "category": null,
           "category2": null,
+          "category3": undefined,
+          "category3_id": "",
           "completed": false,
           "id": 3,
           "thePriority": 1,
@@ -678,6 +763,8 @@ describe('graphql', () => {
         Task {
           "category": null,
           "category2": null,
+          "category3": undefined,
+          "category3_id": "",
           "completed": false,
           "id": 1,
           "thePriority": 1,
@@ -711,6 +798,8 @@ describe('graphql', () => {
         Task {
           "category": null,
           "category2": null,
+          "category3": undefined,
+          "category3_id": "",
           "completed": false,
           "id": 1,
           "thePriority": 1,
@@ -929,6 +1018,8 @@ describe('graphql', () => {
           thePriority: String!
           category: Category
           category2: Category
+          category3_id: String
+          category3: Category
           userOnServer: String!
           nodeId: ID!
       }
@@ -940,6 +1031,7 @@ describe('graphql', () => {
         thePriority: OrderByDirection
         category: OrderByDirection
         category2: OrderByDirection
+        category3_id: OrderByDirection
       }
 
       input tasksWhere {
@@ -947,6 +1039,7 @@ describe('graphql', () => {
         title: WhereString
         completed: WhereBoolean
         thePriority: WhereString
+        category3_id: WhereStringNullable
         OR: [tasksWhere!]
       }
 
@@ -961,6 +1054,7 @@ describe('graphql', () => {
           thePriority: String
           category: ID
           category2: ID
+          category3_id: String
           userOnServer: String
       }
 
@@ -976,6 +1070,7 @@ describe('graphql', () => {
           thePriority: String
           category: ID
           category2: ID
+          category3_id: String
           userOnServer: String
       }
 
@@ -995,7 +1090,8 @@ describe('graphql', () => {
           id: String!
           name: String!
           tasksOfcategory(limit: Int, page: Int, offset: Int, orderBy: tasksOrderBy, where: tasksWhere): TaskConnection
-          tasksOfcategory2(limit: Int, page: Int, offset: Int, orderBy: tasksOrderBy, where: tasksWhere): TaskConnection
+          tasksWithCategory2SetToMe(limit: Int, page: Int, offset: Int, orderBy: tasksOrderBy, where: tasksWhere): TaskConnection
+          tasksWithCategory3SetToMe(limit: Int, page: Int, offset: Int, orderBy: tasksOrderBy, where: tasksWhere): TaskConnection
           nodeId: ID!
       }
 

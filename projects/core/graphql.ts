@@ -62,10 +62,10 @@ let _removeComments = false
 export function remultGraphql(options: {
   removeComments?: boolean
   entities: ClassType<any>[]
-  getRemultFromRequest?: (req: any) => Remult
+  getRemultFromRequest?: (req: any) => Promise<Remult>
 }) {
   if (!options.getRemultFromRequest) {
-    options.getRemultFromRequest = () => remult
+    options.getRemultFromRequest = async () => remult
   }
   const { removeComments } = {
     removeComments: false,
@@ -252,7 +252,7 @@ export function remultGraphql(options: {
         ) => Promise<void>,
       ) => {
         return createResultPromise(async (response, setResult, arg1, req) => {
-          const remult = options.getRemultFromRequest!(req)
+          const remult = await options.getRemultFromRequest!(req)
           const repo = remult.repo(meta.entityType)
           const dApi = new DataApi(repo, remult)
           await work(dApi, response, setResult, arg1, meta)
@@ -321,73 +321,7 @@ export function remultGraphql(options: {
         )
       }
 
-      const queryArgsConnection: Arg[] = [
-        {
-          key: 'limit',
-          value: 'Int',
-          comment: `
-For **page by page** pagination.
-Limit the number of result. 
-_Side note: \`Math.ceil(totalCount / limit)\` to determine how many pages there are._`,
-        },
-        {
-          key: 'page',
-          value: 'Int',
-          comment: `
-For **page by page** pagination.
-Select a dedicated page.`,
-        },
-        {
-          key: 'offset',
-          value: 'Int',
-          comment: `
-For **page by page** pagination.
-Set the offset needed.
-_Side node: if \`page\` arg is set, \`offset\` will be ignored._`,
-        },
-        {
-          key: 'orderBy',
-          value: `${key}OrderBy`,
-          comment: `Remult sorting options`,
-        },
-        {
-          key: 'where',
-          value: `${key}Where`,
-          comment: `Remult filtering options`,
-        },
-      ]
-      if (v2ConnectionAndPagination) {
-        queryArgsConnection.push(
-          {
-            key: 'first',
-            value: 'Int',
-            comment: `
-        For **forward cursor** pagination
-        Takes the \`first\`: \`n\` elements from the list.`,
-          },
-          {
-            key: 'after',
-            value: 'String',
-            comment: `
-        For **forward cursor** pagination
-        \`after\` this \`cursor\`.`,
-          },
-          {
-            key: 'last',
-            value: 'Int',
-            comment: `
-        For **backward cursor** pagination
-        Takes the \`last\`: \`n\` elements from the list.`,
-          },
-          {
-            key: 'before',
-            value: 'String',
-            comment: `
-        For **backward cursor** pagination
-        \`before\` this \`cursor\`.`,
-          },
-        )
-      }
+      const queryArgsConnection: Arg[] = getQueryArgsConnection(key)
       const getSingleEntityKey = toCamelCase(getMetaType(meta))
       root_query.fields.push({
         key: getSingleEntityKey,
@@ -674,9 +608,6 @@ _Side node: if \`page\` arg is set, \`offset\` will be ignored._`,
       for (const f of meta.fields) {
         const ri = getRelationInfo(f.options)
         // let's not consider toMany relations for now
-        if (ri?.type === 'toMany') {
-          break
-        }
 
         if (f.options.includeInApi === false) continue
         let type = 'String'
@@ -695,12 +626,77 @@ _Side node: if \`page\` arg is set, \`offset\` will be ignored._`,
             }
             break
         }
-        const ref = entities.find((i: any) => i.entityType === f.valueType)
         currentType.query.resultProcessors.push((r) => {
           r[nodeIdKey] = () =>
             getMetaType(meta) + ':' + meta.idMetadata.getId(r)
         })
-        if (ref !== undefined) {
+        let ref = entities.find((i: any) => i.entityType === f.valueType)
+        let notARealField = false
+        if (ri) {
+          {
+            const refType = ri.toType()
+            ref = entities.find((i: any) => i.entityType === refType)
+          }
+          notARealField = ri.type === 'toOne' || ri.type === 'toMany'
+          const refKey = ref.key
+          switch (ri.type) {
+            case 'reference':
+            case 'toOne':
+              currentType.fields.push({
+                key: f.key,
+                value: `${getMetaType(ref)}${f.allowNull ? '' : '!'}`,
+                comment: f.caption,
+              })
+              currentType.query.resultProcessors.push((r) => {
+                const val =
+                  r[ri.type == 'reference' ? f.key : (f.options as any).field] //p1 - fix
+                if (val === null || val === undefined) return null
+                r[f.key] = async (args: any, req: any, gqlInfo: any) => {
+                  const queryResult: any[] = await (
+                    await root[refKey](
+                      {
+                        ...args.where,
+                        where: { id: { eq: val } },
+                        options: { limit: 1 },
+                      },
+                      req,
+                      gqlInfo,
+                    )
+                  ).items()
+                  if (queryResult.length > 0) return queryResult[0]
+                  return null
+                }
+              })
+              break
+            case 'toMany':
+              // will do: Category.tasks (actually: Category.tasksOfcategory & tasksOfcategory2)
+
+              currentType.fields.push({
+                key: f.key,
+                args: getQueryArgsConnection(refKey),
+                value: `${getMetaType(ref)}Connection`,
+                order: 10,
+                comment: `List all \`${getMetaType(meta)}\` of \`${refKey}\``,
+              })
+
+              currentType.query.resultProcessors.push((r) => {
+                const val = r.id
+                r[f.key] = async (args: any, req: any, gqlInfo: any) => {
+                  return await root[ref.key](
+                    {
+                      where: {
+                        ...args.where,
+                        [(f.options as any).field /*//p1 to fix*/]: { eq: val },
+                      },
+                      options: { ...args.limit, ...args.page, ...args.orderBy },
+                    },
+                    req,
+                    gqlInfo,
+                  )
+                }
+              })
+          }
+        } else if (ref !== undefined) {
           // will do: Task.category
           currentType.fields.push({
             key: f.key,
@@ -768,13 +764,14 @@ _Side node: if \`page\` arg is set, \`offset\` will be ignored._`,
         const it_is_not_at_ref = ref === undefined
 
         // where
-        if (it_is_not_at_ref && !f.isServerExpression) {
+        if (it_is_not_at_ref && !f.isServerExpression && !notARealField) {
           whereTypeFields.push(
             `${f.key}: Where${type}${f.allowNull ? 'Nullable' : ''}`,
           )
         }
 
-        const includeInUpdateOrInsert = f.options.allowApiUpdate !== false
+        const includeInUpdateOrInsert =
+          f.options.allowApiUpdate !== false && !notARealField
         const updateType = it_is_not_at_ref ? type : 'ID'
         if (includeInUpdateOrInsert) {
           // create
@@ -973,6 +970,77 @@ _Side node: if \`page\` arg is set, \`offset\` will be ignored._`,
       .join(`\n\n`)}
 `,
   }
+}
+
+function getQueryArgsConnection(key: string) {
+  const queryArgsConnection: Arg[] = [
+    {
+      key: 'limit',
+      value: 'Int',
+      comment: `
+For **page by page** pagination.
+Limit the number of result. 
+_Side note: \`Math.ceil(totalCount / limit)\` to determine how many pages there are._`,
+    },
+    {
+      key: 'page',
+      value: 'Int',
+      comment: `
+For **page by page** pagination.
+Select a dedicated page.`,
+    },
+    {
+      key: 'offset',
+      value: 'Int',
+      comment: `
+For **page by page** pagination.
+Set the offset needed.
+_Side node: if \`page\` arg is set, \`offset\` will be ignored._`,
+    },
+    {
+      key: 'orderBy',
+      value: `${key}OrderBy`,
+      comment: `Remult sorting options`,
+    },
+    {
+      key: 'where',
+      value: `${key}Where`,
+      comment: `Remult filtering options`,
+    },
+  ]
+  if (v2ConnectionAndPagination) {
+    queryArgsConnection.push(
+      {
+        key: 'first',
+        value: 'Int',
+        comment: `
+        For **forward cursor** pagination
+        Takes the \`first\`: \`n\` elements from the list.`,
+      },
+      {
+        key: 'after',
+        value: 'String',
+        comment: `
+        For **forward cursor** pagination
+        \`after\` this \`cursor\`.`,
+      },
+      {
+        key: 'last',
+        value: 'Int',
+        comment: `
+        For **backward cursor** pagination
+        Takes the \`last\`: \`n\` elements from the list.`,
+      },
+      {
+        key: 'before',
+        value: 'String',
+        comment: `
+        For **backward cursor** pagination
+        \`before\` this \`cursor\`.`,
+      },
+    )
+  }
+  return queryArgsConnection
 }
 
 // For cursor pagination (v2)

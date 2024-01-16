@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.25.5] TBD
+
+- Fixed an issue with GraphQL and relations
+
 ## [0.25.4] 2024-01-15
 
 - Fixed issue where a new row that was saved, changed again and saved again - provide wrong `isNew:true` value for field validate
