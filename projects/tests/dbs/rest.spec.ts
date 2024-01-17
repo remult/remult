@@ -47,7 +47,7 @@ describe('Rest', () => {
     })
     await repoServer(task).insert({ id: 1, title: 'hello', done: false })
     expect(await repo(task).findFirst()).toMatchInlineSnapshot(`
-      r {
+      tasks {
         "done": false,
         "id": 1,
         "title": undefined,
@@ -66,12 +66,12 @@ describe('Rest', () => {
     ])
     expect(await repo(task).find()).toMatchInlineSnapshot(`
       [
-        r {
+        tasks {
           "done": false,
           "id": 1,
           "title": "hello",
         },
-        r {
+        tasks {
           "done": false,
           "id": 2,
           "title": undefined,
@@ -93,7 +93,7 @@ describe('Rest', () => {
 
     expect(await repo(task).find()).toMatchInlineSnapshot(`
       [
-        r {
+        tasks {
           "done": false,
           "id": 1,
           "title": undefined,
@@ -102,7 +102,7 @@ describe('Rest', () => {
     `)
     expect(await repoServer(task).find()).toMatchInlineSnapshot(`
       [
-        r {
+        tasks {
           "done": false,
           "id": 1,
           "title": "hello",

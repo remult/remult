@@ -336,7 +336,7 @@ describe('validation tests', () => {
         )
         .insert({ id: 'new' }),
     ).toMatchInlineSnapshot(`
-      r {
+      x {
         "id": "new",
       }
     `)
