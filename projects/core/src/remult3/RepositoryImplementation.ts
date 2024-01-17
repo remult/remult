@@ -164,9 +164,7 @@ export class RepositoryImplementation<entityType>
 
         const rel = getRelationInfo(field.options)
         if (!rel) throw Error(key + ' is not a relation')
-        let repo = this.remult.repo(
-          rel.toType(),
-        ) as RepositoryImplementation<any>
+        let repo = rel.toRepo as RepositoryImplementation<any>
 
         let { findOptions, returnNull, returnUndefined } =
           this.findOptionsBasedOnRelation(rel, field, undefined, item, repo)
