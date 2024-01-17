@@ -15,7 +15,7 @@ export function SqlDbTests({ createEntity, getRemult, getDb }: DbTestProps) {
     )
     const result = await e.insert({ id: 1, a: 1, b: 2 })
     expect(result).toMatchInlineSnapshot(`
-      r {
+      x {
         "a": 1,
         "b": 0,
         "c": 6,

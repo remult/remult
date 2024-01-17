@@ -11,6 +11,7 @@ import {
   describeClass,
 } from '../core'
 import { remultGraphql, translateWhereToRestBody } from '../core/graphql'
+import { createEntity } from './tests/dynamic-classes'
 
 @FieldType({ displayValue: (_, v) => v?.name })
 @Entity('categories', { allowApiCrud: true })
@@ -1481,6 +1482,183 @@ describe('graphql', () => {
       "
     `)
   })
+  it.only('test naming issue', async () => {
+    const C = createEntity('ContactTag', {
+      id: Fields.number(),
+    })
+
+    const { typeDefs } = remultGraphql({
+      entities: [C],
+      removeComments: true,
+    })
+
+    expect(typeDefs).toMatchInlineSnapshot(`
+      "type Query {
+          singleContactTag(id: ID!): ContactTag
+          ContactTag(limit: Int, page: Int, offset: Int, orderBy: ContactTagOrderBy, where: ContactTagWhere): ContactTagConnection
+          node(nodeId: ID!): Node
+      }
+
+
+
+      type ContactTag implements Node {
+          id: Float!
+          nodeId: ID!
+      }
+
+      input ContactTagOrderBy {
+        id: OrderByDirection
+      }
+
+      input ContactTagWhere {
+        id: WhereFloat
+        OR: [ContactTagWhere!]
+      }
+
+      type ContactTagConnection {
+          totalCount: Int!
+          items: [ContactTag!]!
+      }
+
+      input WhereString {
+          eq: String
+          ne: String
+          in: [String!]
+          nin: [String!]
+          gt: String
+          gte: String
+          lt: String
+          lte: String
+          contains: String
+          notContains: String
+      }
+
+      input WhereStringNullable {
+          eq: String
+          ne: String
+          in: [String!]
+          nin: [String!]
+          gt: String
+          gte: String
+          lt: String
+          lte: String
+          contains: String
+          notContains: String
+          null: Boolean
+      }
+
+      input WhereInt {
+          eq: Int
+          ne: Int
+          in: [Int!]
+          nin: [Int!]
+          gt: Int
+          gte: Int
+          lt: Int
+          lte: Int
+      }
+
+      input WhereIntNullable {
+          eq: Int
+          ne: Int
+          in: [Int!]
+          nin: [Int!]
+          gt: Int
+          gte: Int
+          lt: Int
+          lte: Int
+          null: Boolean
+      }
+
+      input WhereFloat {
+          eq: Float
+          ne: Float
+          in: [Float!]
+          nin: [Float!]
+          gt: Float
+          gte: Float
+          lt: Float
+          lte: Float
+      }
+
+      input WhereFloatNullable {
+          eq: Float
+          ne: Float
+          in: [Float!]
+          nin: [Float!]
+          gt: Float
+          gte: Float
+          lt: Float
+          lte: Float
+          null: Boolean
+      }
+
+      input WhereBoolean {
+          eq: Boolean
+          ne: Boolean
+          in: [Boolean!]
+          nin: [Boolean!]
+      }
+
+      input WhereBooleanNullable {
+          eq: Boolean
+          ne: Boolean
+          in: [Boolean!]
+          nin: [Boolean!]
+          null: Boolean
+      }
+
+      input WhereID {
+          eq: ID
+          ne: ID
+          in: [ID!]
+          nin: [ID!]
+      }
+
+      input WhereIDNullable {
+          eq: ID
+          ne: ID
+          in: [ID!]
+          nin: [ID!]
+          null: Boolean
+      }
+
+      enum OrderByDirection {
+          ASC
+          DESC
+      }
+
+      interface Node {
+          nodeId: ID!
+      }
+
+      union ErrorDetail = ValidationError | ForbiddenError | NotFoundError
+
+      interface Error {
+          message: String!
+      }
+
+      type ValidationError implements Error {
+          message: String!
+          modelState: [ValidationErrorModelState!]!
+      }
+
+      type ValidationErrorModelState {
+          field: String!
+          message: String!
+      }
+
+      type ForbiddenError implements Error {
+          message: String!
+      }
+
+      type NotFoundError implements Error {
+          message: String!
+      }
+      "
+    `)
+  })
+
   it('test allow api create', async () => {
     const C = class {
       id = 0

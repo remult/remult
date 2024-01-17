@@ -27,12 +27,12 @@ export function createEntity<T>(
   members: T,
   options?: EntityOptions<InferredType<T>>,
 ): { new (...args: any[]): InferredType<T> } {
-  const r = class {} as ClassType<InferredType<T>>
+  const z = { [key]: class {} as ClassType<InferredType<T>> }
 
   //@ts-ignore
-  describeClass(r, Entity(key, options), members)
+  describeClass(z[key], Entity(key, options), members)
   //@ts-ignore
-  return r
+  return z[key]
 }
 
 function test() {

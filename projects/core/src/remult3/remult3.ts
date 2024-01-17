@@ -789,15 +789,13 @@ remult.apiClient.url='localhost:3007/api
 
 
 */
-//p1 - investigate angular starter kit init request error
-//p1 - fix angular starter kit await set password
-//p1- fix angular starter kit with value list in uitoolsservice
-//p1 - fix angular starter kit to latest version as well
-//p1 -check if checouknt doesn't respect allow read (I think)
-//p1 - fix multiple instances of remult: the defaultRemult and async local hook - and columnsOfType - all can be tests with a vite project loading `remult-admin`
+
 //p1 - crm demo graphql error
+//p1 - fix multiple instances of remult: the defaultRemult and async local hook - and columnsOfType - all can be tests with a vite project loading `remult-admin`
+//p1 -check if checouknt doesn't respect allow read (I think)
 //p1 - allow api update only for new rows
 //p1 - getFields didn't work for kobi in the home component
+//p1 - https://codesandbox.io/p/devbox/demo-sql-expression-wqvj4g
 //p2 - document validators
 //p2 - and validators to reference
 //y2 - discuss a default date formatter

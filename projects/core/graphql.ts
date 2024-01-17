@@ -322,7 +322,9 @@ export function remultGraphql(options: {
       }
 
       const queryArgsConnection: Arg[] = getQueryArgsConnection(key)
-      const getSingleEntityKey = toCamelCase(getMetaType(meta))
+      let getSingleEntityKey = toCamelCase(getMetaType(meta))
+      if (getSingleEntityKey === toCamelCase(key))
+        getSingleEntityKey = 'single' + key
       root_query.fields.push({
         key: getSingleEntityKey,
         args: [argId],

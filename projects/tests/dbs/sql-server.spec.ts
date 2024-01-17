@@ -35,7 +35,7 @@ describe.skipIf(!process.env['TESTS_SQL_SERVER'])('Knex Sql Server', () => {
         await r.insert({ id: 1, val: 123456789 })
         expect(await r.find()).toMatchInlineSnapshot(`
           [
-            r {
+            test {
               "id": 1,
               "val": 123456789,
             },
