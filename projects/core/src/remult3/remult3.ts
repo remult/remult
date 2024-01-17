@@ -630,6 +630,7 @@ export interface Paginator<entityType> {
 export interface RelationInfo {
   toType: () => any
   type: 'reference' | 'toOne' | 'toMany' //remove to from name
+  toRepo: Repository<any>
 }
 
 /**

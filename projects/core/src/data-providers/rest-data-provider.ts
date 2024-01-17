@@ -7,7 +7,7 @@ import type {
 
 import { UrlBuilder } from '../../urlBuilder.js'
 import { buildRestDataProvider, retry } from '../buildRestDataProvider.js'
-import { Remult, type ApiClient } from '../context.js'
+import type { ApiClient } from '../context.js'
 import { customUrlToken, Filter } from '../filter/filter-interfaces.js'
 import type { EntityMetadata, FindOptions } from '../remult3/remult3.js'
 import { actionInfo } from '../server-action-info.js'
@@ -48,10 +48,7 @@ export function findOptionsToJson<entityType = any>(
         if (typeof element === 'object') {
           const rel = getRelationInfo(meta.fields.find(key).options)
           if (rel) {
-            element = findOptionsToJson(
-              element,
-              new Remult().repo(rel.toType()).metadata,
-            )
+            element = findOptionsToJson(element, rel.toRepo.metadata)
           }
         }
         newInclude[key] = element
@@ -96,10 +93,7 @@ export function findOptionsFromJson(
             if (typeof element === 'object') {
               const rel = getRelationInfo(meta.fields.find(key).options)
               if (rel) {
-                element = findOptionsFromJson(
-                  element,
-                  new Remult().repo(rel.toType()).metadata,
-                )
+                element = findOptionsFromJson(element, rel.toRepo.metadata)
               }
             }
             newInclude[key] = element

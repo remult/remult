@@ -1,5 +1,5 @@
 import type { FieldMetadata } from '../column-interfaces.js'
-import { Remult } from '../context.js'
+import type { Remult } from '../context.js'
 import type {
   EntityFilter,
   EntityMetadata,
@@ -232,8 +232,7 @@ class filterHelper {
           const rel = getRelationInfo(this.metadata.options)
           if (rel?.type === 'reference')
             if (
-              new Remult().repo(rel.toType()).metadata.idMetadata.field.options
-                .valueType === Number
+              rel.toRepo.metadata.idMetadata.field.options.valueType === Number
             )
               return 0
             else return ''

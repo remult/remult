@@ -276,6 +276,7 @@ export class Relations {
           //field,
           toType: toEntityType,
           type: 'reference',
+          toRepo: undefined!,
         } satisfies RelationInfo,
       })
 
@@ -288,6 +289,7 @@ export class Relations {
         toType: toEntityType,
 
         type: 'toOne',
+        toRepo: undefined!,
       } satisfies RelationInfo,
     })
   }
@@ -384,6 +386,7 @@ export class Relations {
         toType: toEntityType,
 
         type: 'toMany',
+        toRepo: undefined!,
       } satisfies RelationInfo,
     })
   }

@@ -31,6 +31,7 @@ import type {
   LiveQueryStorage,
   SubscriptionServer,
 } from './live-query/SubscriptionServer.js'
+import { getRelationInfo } from '../internals.js'
 
 export class RemultAsyncLocalStorage {
   static enable() {
@@ -104,6 +105,16 @@ export class Remult {
           createOldEntity(entity, this),
         ) as Repository<any>),
       )
+
+      for (const field of r.fields.toArray()) {
+        const r = getRelationInfo(field.options)
+        if (r) {
+          if (!(r as any)['^']) {
+            ;(r as any)['^'] = true
+            r.toRepo = this.repo(r.toType())
+          }
+        }
+      }
     }
     return r
   }
