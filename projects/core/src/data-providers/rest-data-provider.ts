@@ -11,7 +11,7 @@ import type { ApiClient } from '../context.js'
 import { customUrlToken, Filter } from '../filter/filter-interfaces.js'
 import type { EntityMetadata, FindOptions } from '../remult3/remult3.js'
 import { actionInfo } from '../server-action-info.js'
-import { getRelationInfo } from '../remult3/relationInfoMember.js'
+import { getRelationFieldInfo } from '../remult3/relationInfoMember.js'
 
 export class RestDataProvider implements DataProvider {
   constructor(private apiProvider: () => ApiClient) {}
@@ -46,7 +46,7 @@ export function findOptionsToJson<entityType = any>(
       if (Object.prototype.hasOwnProperty.call(options.include, key)) {
         let element = options.include[key]
         if (typeof element === 'object') {
-          const rel = getRelationInfo(meta.fields.find(key).options)
+          const rel = getRelationFieldInfo(meta.fields.find(key))
           if (rel) {
             element = findOptionsToJson(element, rel.toRepo.metadata)
           }
@@ -91,7 +91,7 @@ export function findOptionsFromJson(
           if (Object.prototype.hasOwnProperty.call(newInclude, key)) {
             let element = newInclude[key]
             if (typeof element === 'object') {
-              const rel = getRelationInfo(meta.fields.find(key).options)
+              const rel = getRelationFieldInfo(meta.fields.find(key))
               if (rel) {
                 element = findOptionsFromJson(element, rel.toRepo.metadata)
               }

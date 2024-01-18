@@ -20,7 +20,7 @@ import {
 } from '../../../core/src/data-providers/rest-data-provider'
 import { TestDataApiResponse } from '../TestDataApiResponse'
 import { createEntity } from '../dynamic-classes'
-import { getRelationInfo } from '../../../core/internals'
+import { getRelationFieldInfo } from '../../../core/src/remult3/relationInfoMember'
 
 @Entity('company')
 class Company {
@@ -178,7 +178,7 @@ describe('test relations', () => {
     expect(r(Task).fields.category.inputType).toMatchInlineSnapshot('""')
   })
   it('test fields info', async () => {
-    const rl = getRelationInfo(r(Task).fields.category.options)
+    const rl = getRelationFieldInfo(r(Task).fields.category)
     expect(await rl.toRepo.count()).toMatchInlineSnapshot('3')
   })
 

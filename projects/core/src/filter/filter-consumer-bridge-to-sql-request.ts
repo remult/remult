@@ -5,7 +5,7 @@ import type {
   RepositoryOverloads,
 } from '../remult3/RepositoryImplementation.js'
 import { getEntityMetadata } from '../remult3/RepositoryImplementation.js'
-import { getRelationInfo } from '../remult3/relationInfoMember.js'
+import { getRelationFieldInfo } from '../remult3/relationInfoMember.js'
 import type {
   EntityFilter,
   EntityMetadata,
@@ -278,7 +278,7 @@ export async function fieldDbName(
       if (!result) return f.dbName
       return result
     }
-    const rel = getRelationInfo(f.options)
+    const rel = getRelationFieldInfo(f)
     let field =
       rel?.type === 'toOne' &&
       ((f.options as RelationOptions<any, any, any>).field as string)

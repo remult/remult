@@ -31,7 +31,7 @@ import type {
   LiveQueryStorage,
   SubscriptionServer,
 } from './live-query/SubscriptionServer.js'
-import { getRelationInfo } from '../internals.js'
+import { verifyFieldRelationInfo } from './remult3/relationInfoMember.js'
 
 export class RemultAsyncLocalStorage {
   static enable() {
@@ -106,15 +106,7 @@ export class Remult {
         ) as Repository<any>),
       )
 
-      for (const field of r.fields.toArray()) {
-        const r = getRelationInfo(field.options)
-        if (r) {
-          if (!(r as any)['^']) {
-            ;(r as any)['^'] = true
-            r.toRepo = this.repo(r.toType())
-          }
-        }
-      }
+      verifyFieldRelationInfo(r, this, dataProvider)
     }
     return r
   }

@@ -627,12 +627,6 @@ export interface Paginator<entityType> {
   count(): Promise<number>
 }
 
-export interface RelationInfo {
-  toType: () => any
-  type: 'reference' | 'toOne' | 'toMany' //remove to from name
-  toRepo: Repository<any>
-}
-
 /**
  * Options for configuring a relation between entities.
  *
@@ -790,7 +784,8 @@ remult.apiClient.url='localhost:3007/api
 
 
 */
-
+//p1 - remult-admin doesn't handle primary key that has compound column
+//p1 - remult-admin didn't show a update for a table with a uniqua that is numeric
 //p1 - crm demo graphql error
 //p1 - fix multiple instances of remult: the defaultRemult and async local hook - and columnsOfType - all can be tests with a vite project loading `remult-admin`
 //p1 -check if checouknt doesn't respect allow read (I think)

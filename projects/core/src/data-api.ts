@@ -1,4 +1,3 @@
-import { getRelationInfo } from '../internals.js'
 import type { Remult } from './context.js'
 import { doTransaction } from './context.js'
 import type { ErrorInfo } from './data-interfaces.js'
@@ -12,6 +11,7 @@ import {
   customUrlToken,
 } from './filter/filter-interfaces.js'
 import type { QueryData } from './live-query/SubscriptionServer.js'
+import { getRelationFieldInfo } from './remult3/relationInfoMember.js'
 import type {
   EntityFilter,
   FindOptions,
@@ -173,7 +173,7 @@ export class DataApi<T = any> {
     let include = {}
 
     for (const field of this.repository.metadata.fields) {
-      if (getRelationInfo(field.options)) {
+      if (getRelationFieldInfo(field)) {
         include[field.key] = false
       }
     }

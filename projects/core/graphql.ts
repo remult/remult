@@ -1,4 +1,4 @@
-import { getRelationInfo } from './internals.js'
+import { getRelationFieldInfo } from './internals.js'
 import type { ClassType } from './classType.js'
 import type { EntityMetadata, FieldsMetadata } from './index.js'
 import { Remult, remult } from './index.js'
@@ -608,8 +608,7 @@ export function remultGraphql(options: {
       }
       const whereTypeFields: string[] = []
       for (const f of meta.fields) {
-        const ri = getRelationInfo(f.options)
-        // let's not consider toMany relations for now
+        const ri = getRelationFieldInfo(f)
 
         if (f.options.includeInApi === false) continue
         let type = 'String'
@@ -636,7 +635,7 @@ export function remultGraphql(options: {
         let notARealField = false
         if (ri) {
           {
-            const refType = ri.toType()
+            const refType = ri.toEntity
             ref = entities.find((i: any) => i.entityType === refType)
           }
           notARealField = ri.type === 'toOne' || ri.type === 'toMany'

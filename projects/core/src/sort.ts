@@ -1,10 +1,9 @@
-import { getRelationInfo } from '../internals.js'
 import { CompoundIdField } from './CompoundIdField.js'
 import type { FieldMetadata } from './column-interfaces.js'
+import { getRelationFieldInfo } from './remult3/relationInfoMember.js'
 import type {
   EntityMetadata,
   EntityOrderBy,
-  RelationInfo,
   RelationOptions,
 } from './remult3/remult3.js'
 export class Sort {
@@ -67,8 +66,8 @@ export class Sort {
             }
           }
           if (field) {
-            const rel = getRelationInfo(field.options)
-            const op = field.options as RelationOptions<any, any, any>
+            const rel = getRelationFieldInfo(field)
+            const op = field.options as RelationOptions<any, any, any> //p1 - fix
             if (rel?.type === 'toOne') {
               if (typeof op.field === 'string') {
                 addSegment(entityDefs.fields.find(op.field))

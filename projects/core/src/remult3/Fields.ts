@@ -5,16 +5,15 @@ import type { FieldOptions } from '../column-interfaces.js'
 import type { Remult } from '../context.js'
 import type {
   FindOptions,
-  RelationInfo,
   RelationOptions,
   ClassFieldDecorator,
   ClassFieldDecoratorContextStub,
 } from './remult3.js'
 import { ValueConverters } from '../valueConverters.js'
 import { buildOptions, columnsOfType } from './RepositoryImplementation.js'
-import { relationInfoMember } from './relationInfoMember.js'
 import type { columnInfo } from './columnInfo.js'
 import { Validators } from '../validators.js'
+import { relationInfoMemberInOptions } from './relationInfoMember.js'
 
 export class Fields {
   /**
@@ -271,26 +270,13 @@ export class Relations {
       //@ts-ignore
       return Field(toEntityType, {
         ...op,
-        //@ts-ignore
-        [relationInfoMember]: {
-          //field,
-          toType: toEntityType,
-          type: 'reference',
-          toRepo: undefined!,
-        } satisfies RelationInfo,
+        ...relationInfoMemberInOptions(toEntityType, 'reference'),
       })
 
     return Field(() => undefined!, {
       ...op,
       serverExpression: () => undefined,
-      //@ts-ignore
-      [relationInfoMember]: {
-        //field,
-        toType: toEntityType,
-
-        type: 'toOne',
-        toRepo: undefined!,
-      } satisfies RelationInfo,
+      ...relationInfoMemberInOptions(toEntityType, 'toOne'),
     })
   }
   /**
@@ -380,14 +366,7 @@ export class Relations {
     return Field(() => undefined!, {
       ...op,
       serverExpression: () => undefined,
-      //@ts-ignore
-      [relationInfoMember]: {
-        //field,
-        toType: toEntityType,
-
-        type: 'toMany',
-        toRepo: undefined!,
-      } satisfies RelationInfo,
+      ...relationInfoMemberInOptions(toEntityType, 'toMany'),
     })
   }
 }

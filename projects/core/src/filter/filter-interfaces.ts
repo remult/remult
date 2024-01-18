@@ -8,7 +8,7 @@ import type {
 } from '../remult3/remult3.js'
 
 import { getEntityRef, getEntitySettings } from '../remult3/getEntityRef.js'
-import { getRelationInfo } from '../remult3/relationInfoMember.js'
+import { getRelationFieldInfo } from '../remult3/relationInfoMember.js'
 
 export class Filter {
   constructor(private apply: (add: FilterConsumer) => void) {}
@@ -93,7 +93,7 @@ export class Filter {
             result.push(new Filter((x) => x.databaseCustom(fieldToFilter)))
           } else {
             const field = entity.fields[key]
-            const rel = getRelationInfo(field.options)
+            const rel = getRelationFieldInfo(field)
             const op = field.options as RelationOptions<any, any, any>
             let fh =
               rel?.type === 'toOne'
@@ -229,7 +229,7 @@ class filterHelper {
     if (ei) {
       if (!val) {
         if (val === null && !this.metadata.allowNull) {
-          const rel = getRelationInfo(this.metadata.options)
+          const rel = getRelationFieldInfo(this.metadata)
           if (rel?.type === 'reference')
             if (
               rel.toRepo.metadata.idMetadata.field.options.valueType === Number

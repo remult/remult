@@ -1,7 +1,7 @@
 import { findOptionsToJson } from '../data-providers/rest-data-provider.js'
 import { getEntityRef } from './getEntityRef.js'
 import type { RelationLoaderHelper } from './relation-loader-types.js'
-import { getRelationInfo } from './relationInfoMember.js'
+import { getRelationFieldInfo } from './relationInfoMember.js'
 import type { FindOptions, IdFieldRef } from './remult3.js'
 
 export class RelationLoader {
@@ -131,7 +131,7 @@ class PendingInStatements {
           vals.filter((x) => {
             const ref = getEntityRef(x)
             const field = ref.fields.find(this.key)
-            const rel = getRelationInfo(field.metadata.options)
+            const rel = getRelationFieldInfo(field.metadata)
             const val =
               rel?.type === 'reference'
                 ? (field as IdFieldRef<any, any>).getId()

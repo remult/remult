@@ -42,7 +42,6 @@ import type {
   MembersOnly,
   QueryOptions,
   QueryResult,
-  RelationInfo,
   RelationOptions,
   Repository,
   RepositoryRelations,
@@ -76,7 +75,10 @@ import {
 } from './getEntityRef.js'
 import { __updateEntityBasedOnWhere } from './__updateEntityBasedOnWhere.js'
 import type { columnInfo } from './columnInfo.js'
-import { getRelationInfo, relationInfoMember } from './relationInfoMember.js'
+import {
+  type RelationFieldInfo,
+  getRelationFieldInfo,
+} from './relationInfoMember.js'
 import { RelationLoader } from './relation-loader.js'
 import {
   type RepositoryInternal,
@@ -162,7 +164,7 @@ export class RepositoryImplementation<entityType>
       get: (target: any, key: string) => {
         const field = this.fields.find(key)
 
-        const rel = getRelationInfo(field.options)
+        const rel = getRelationFieldInfo(field)
         if (!rel) throw Error(key + ' is not a relation')
         let repo = rel.toRepo as RepositoryImplementation<any>
 
@@ -398,7 +400,7 @@ export class RepositoryImplementation<entityType>
       for (const key in entity) {
         if (Object.prototype.hasOwnProperty.call(entity, key)) {
           let f = ref.fields[key]
-          if (entity[key] === undefined && getRelationInfo(f.metadata.options))
+          if (entity[key] === undefined && getRelationFieldInfo(f.metadata))
             continue
           //@ts-ignore
           if (f) r[key] = entity[key]
@@ -562,7 +564,7 @@ export class RepositoryImplementation<entityType>
       let ei = getEntitySettings(col.valueType, false)
 
       if (ei) {
-        let isRelation: RelationInfo = col.options?.[relationInfoMember]
+        let isRelation = getRelationFieldInfo(col)
         if (!isRelation) {
           let load = !col.options.lazy
           if (loadFields !== undefined) load = loadFields.includes(col)
@@ -587,9 +589,6 @@ export class RepositoryImplementation<entityType>
             }
           }
         }
-      } else if (col.options[relationInfoMember]) {
-        const rel = col.options[relationInfoMember] as RelationInfo
-        this.remult.repo(rel.toType())
       }
     }
     async function loadManyToOne(
@@ -609,7 +608,7 @@ export class RepositoryImplementation<entityType>
       rawRows.map(async (r) => await this.mapRawDataToResult(r, loadFields)),
     )
     for (const col of this.metadata.fields) {
-      let rel = getRelationInfo(col.options)
+      let rel = getRelationFieldInfo(col)
       let incl = (col.options as RelationOptions<any, any, any>)
         .defaultIncluded as any as FindFirstOptionsBase<any>
       if (loadOptions?.include?.[col.key] !== undefined) {
@@ -617,7 +616,7 @@ export class RepositoryImplementation<entityType>
       }
 
       if (rel && incl) {
-        const otherRepo = this.remult.repo(rel.toType())
+        const otherRepo = rel.toRepo
         for (const row of result) {
           let { findOptions, returnNull } = this.findOptionsBasedOnRelation(
             rel,
@@ -628,10 +627,8 @@ export class RepositoryImplementation<entityType>
           )
           if (returnNull) row[col.key] = null
           else {
-            const entityType = rel.toType()
-            const toRepo = this.remult.repo(
-              entityType,
-            ) as RepositoryImplementation<any>
+            const entityType = rel.toEntity
+            const toRepo = otherRepo as RepositoryImplementation<any>
             loader
               .load(
                 {
@@ -659,7 +656,7 @@ export class RepositoryImplementation<entityType>
   /*@internal */
 
   findOptionsBasedOnRelation(
-    rel: RelationInfo,
+    rel: RelationFieldInfo,
     field: FieldMetadata,
     moreFindOptions: FindOptions<any>,
     row: entityType,
@@ -701,14 +698,14 @@ export class RepositoryImplementation<entityType>
     if (rel.type === 'toMany' && !hasFields()) {
       for (const fieldInOtherRepo of otherRepo.fields.toArray()) {
         if (!hasFields()) {
-          const reverseRel = getRelationInfo(fieldInOtherRepo.options)
+          const reverseRel = getRelationFieldInfo(fieldInOtherRepo)
           const relOp = fieldInOtherRepo.options as RelationOptions<
             any,
             any,
             any
           >
           if (reverseRel)
-            if (reverseRel.toType() === this.entity)
+            if (reverseRel.toEntity === this.entity)
               if (reverseRel.type === 'reference') {
                 options = { ...findOptions, field: fieldInOtherRepo.key }
               } else if (reverseRel.type === 'toOne') {
@@ -1119,7 +1116,7 @@ abstract class rowHelperBase<T> {
       if (ei && remult) {
         let lookup = new LookupColumn(
           remult.repo(col.valueType) as RepositoryImplementation<T>,
-          Boolean(getRelationInfo(col.options)),
+          Boolean(getRelationFieldInfo(col)),
           col.allowNull,
         )
         this.lookups.set(col.key, lookup)
@@ -1159,7 +1156,7 @@ abstract class rowHelperBase<T> {
           enumerable: true,
         })
         lookup.set(val)
-      } else if (getRelationInfo(col.options)?.type === 'toOne') {
+      } else if (getRelationFieldInfo(col)?.type === 'toOne') {
         let hasVal = instance.hasOwnProperty(col.key)
         let val = instance[col.key]
         if (isNewRow && !val) hasVal = false
@@ -1174,9 +1171,10 @@ abstract class rowHelperBase<T> {
             const op = col.options as RelationOptions<any, any, any>
 
             if (op.field) {
-              this.instance[op.field] = this.remult
-                .repo(getRelationInfo(col.options).toType())
-                .metadata.idMetadata.getId(newVal)
+              this.instance[op.field] =
+                getRelationFieldInfo(col).toRepo.metadata.idMetadata.getId(
+                  newVal,
+                )
             }
             if (op.fields) {
               for (const key in op.fields) {
@@ -1311,7 +1309,7 @@ abstract class rowHelperBase<T> {
     for (const col of this.fieldsMetadata) {
       let lu = this.lookups.get(col.key)
       let val: any = undefined
-      const rel = getRelationInfo(col.options)
+      const rel = getRelationFieldInfo(col)
       if (lu) val = lu.id
       else val = this.instance[col.key]
       if (
@@ -1320,11 +1318,7 @@ abstract class rowHelperBase<T> {
         !col.allowNull &&
         (val === undefined || val === null)
       ) {
-        if (
-          this.remult.repo(rel.toType()).metadata.idMetadata.field.valueType ===
-          Number
-        )
-          val = 0
+        if (rel.toRepo.metadata.idMetadata.field.valueType === Number) val = 0
         else val = ''
       }
       if (!rel || rel.type === 'reference') {
@@ -1375,7 +1369,7 @@ abstract class rowHelperBase<T> {
             result[col.key] = val
           } else val = lu.id
         else {
-          if (getRelationInfo(col.options) && !includeRelatedEntities) {
+          if (getRelationFieldInfo(col) && !includeRelatedEntities) {
             disable = true
           } else {
             val = this.instance[col.key]
@@ -1700,12 +1694,12 @@ export class rowHelperImplementation<T>
       if (lu) {
         lu.id = data[col.key]
         if (loadItems === undefined) {
-          if (!col.options.lazy && !col.options[relationInfoMember])
+          if (!col.options.lazy && !getRelationFieldInfo(col))
             await lu.waitLoad()
         } else {
           if (loadItems.includes(col)) await lu.waitLoad()
         }
-      } else if (!getRelationInfo(col.options))
+      } else if (!getRelationFieldInfo(col))
         this.instance[col.key] = data[col.key]
     }
     await this.calcServerExpression()
@@ -1736,7 +1730,7 @@ export class rowHelperImplementation<T>
   wasChanged(): boolean {
     this._subscribers?.reportObserved()
     for (const col of this.fields) {
-      const rel = getRelationInfo(col.metadata.options)
+      const rel = getRelationFieldInfo(col.metadata)
       if (!rel || rel.type == 'reference') if (col.valueChanged()) return true
     }
     return false
@@ -1889,7 +1883,7 @@ export class FieldRefImplementation<entityType, valueType>
   }
   async load(): Promise<valueType> {
     let lu = this.rowBase.lookups.get(this.metadata.key)
-    let rel = getRelationInfo(this.metadata.options)
+    let rel = getRelationFieldInfo(this.metadata)
     if (rel) {
       if (rel.type === 'toMany') {
         return (this.container[this.metadata.key] = await this.helper.repository
