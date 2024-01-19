@@ -688,103 +688,13 @@ export class RepositoryImplementation<entityType>
         if (source[key]) findOptions[key] = source[key]
       }
     }
-    let relationField = rel.options.field
-    let relFields: RelationFields = {
-      fields: rel.options.fields,
-      compoundIdField: undefined,
-    }
-
-    function buildError(what: string) {
-      return Error(
-        `Error for relation: "${field.key}" to "${otherRepo.metadata.key}": ` +
-          what,
-      )
-    }
-
-    let hasFields = () => relationField || relFields.fields
-    if (rel.type === 'toMany' && !hasFields()) {
-      for (const fieldInOtherRepo of otherRepo.fields.toArray()) {
-        if (!hasFields()) {
-          const reverseRel = getRelationFieldInfo(fieldInOtherRepo)
-          const relOp = fieldInOtherRepo.options as RelationOptions<
-            any,
-            any,
-            any
-          >
-          if (reverseRel)
-            if (reverseRel.toEntity === this.entity)
-              if (reverseRel.type === 'reference') {
-                relationField = fieldInOtherRepo.key
-              } else if (reverseRel.type === 'toOne') {
-                if (relOp.field) {
-                  relationField = relOp.field
-                } else if (relOp.fields) {
-                  let fields = {}
-                  for (const key in relOp.fields) {
-                    if (
-                      Object.prototype.hasOwnProperty.call(relOp.fields, key)
-                    ) {
-                      const keyInMyTable = relOp.fields[key]
-                      fields[keyInMyTable] = key
-                    }
-                  }
-                  relFields.fields = fields
-                }
-              }
-        }
-      }
-      if (!hasFields())
-        throw buildError(
-          `No matching field found on target. Please specify field/fields`,
-        )
-    }
-
-    function requireField(
-      field: string | number | symbol,
-      meta: EntityMetadata,
-    ) {
-      const result = meta.fields.find(field as string)
-      if (!result)
-        throw buildError(
-          `Field "${field as string}" was not found in "${meta.key}".`,
-        )
-      return result
-    }
-
-    if (rel.type === 'reference') {
-      relationField = field.key
-    }
-    if (relationField) {
-      if (rel.type === 'toOne' || rel.type === 'reference') {
-        if (otherRepo.metadata.idMetadata.field instanceof CompoundIdField) {
-          relFields.compoundIdField = relationField
-        } else
-          relFields.fields = {
-            [otherRepo.metadata.idMetadata.field.key]: relationField,
-          }
-      } else {
-        if (this.metadata.idMetadata.field instanceof CompoundIdField) {
-          relFields.compoundIdField = relationField
-        } else
-          relFields.fields = {
-            [relationField]: this.metadata.idMetadata.field.key,
-          }
-      }
-    }
-    for (const key in relFields.fields) {
-      if (Object.prototype.hasOwnProperty.call(relFields.fields, key)) {
-        requireField(key, otherRepo.metadata)
-        requireField(relFields.fields[key], this.metadata)
-      }
-    }
+    const relFields = rel.getFields()
 
     const getFieldValue = (key: string) => {
       let val =
         rel.type === 'reference'
           ? (
-              getEntityRef(row).fields.find(
-                requireField(field.key, this.metadata),
-              ) as IdFieldRef<any, any>
+              getEntityRef(row).fields.find(field.key) as IdFieldRef<any, any>
             ).getId()
           : row[key]
       if (rel.type === 'toOne' || rel.type === 'reference') {
