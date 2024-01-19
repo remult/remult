@@ -750,21 +750,21 @@ export class RepositoryImplementation<entityType>
         )
       return result
     }
-    let compoundIdField: string | undefined
+
     if (rel.type === 'reference') {
       relationField = field.key
     }
     if (relationField) {
       if (rel.type === 'toOne' || rel.type === 'reference') {
         if (otherRepo.metadata.idMetadata.field instanceof CompoundIdField) {
-          compoundIdField = relationField
+          relFields.compoundIdField = relationField
         } else
           relFields.fields = {
             [otherRepo.metadata.idMetadata.field.key]: relationField,
           }
       } else {
         if (this.metadata.idMetadata.field instanceof CompoundIdField) {
-          compoundIdField = relationField
+          relFields.compoundIdField = relationField
         } else
           relFields.fields = {
             [relationField]: this.metadata.idMetadata.field.key,
@@ -795,28 +795,22 @@ export class RepositoryImplementation<entityType>
       }
       return val
     }
-    if (compoundIdField)
+    if (relFields.compoundIdField)
       if (rel.type === 'toMany') {
-        where.push({ [compoundIdField]: this.metadata.idMetadata.getId(row) })
+        where.push({
+          [relFields.compoundIdField]: this.metadata.idMetadata.getId(row),
+        })
       } else {
         where.push(
           otherRepo.metadata.idMetadata.getIdFilter(
-            getFieldValue(compoundIdField),
+            getFieldValue(relFields.compoundIdField),
           ),
         )
       }
 
     for (const key in relFields.fields) {
       if (Object.prototype.hasOwnProperty.call(relFields.fields, key)) {
-        let val = getFieldValue(relFields.fields[key])
-        if (compoundIdField) {
-          if (rel.type === 'toMany') {
-            where.push({ [key]: this.metadata.idMetadata.getId(row) })
-          } else {
-            where.push(otherRepo.metadata.idMetadata.getIdFilter(val))
-          }
-          break
-        } else where.push({ [key]: val })
+        where.push({ [key]: getFieldValue(relFields.fields[key]) })
       }
     }
 

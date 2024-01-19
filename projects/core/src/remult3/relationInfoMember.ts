@@ -41,6 +41,7 @@ export interface RelationFieldInfo {
   options: RelationOptions<any, any, any>
   toEntity: any
   toRepo: Repository<any>
+  //getFields(): RelationFields
 }
 export interface RelationFields {
   fields: Record<string, string>
