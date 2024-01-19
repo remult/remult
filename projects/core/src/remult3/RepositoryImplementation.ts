@@ -78,6 +78,7 @@ import type { columnInfo } from './columnInfo.js'
 import {
   type RelationFieldInfo,
   getRelationFieldInfo,
+  type RelationFields,
 } from './relationInfoMember.js'
 import { RelationLoader } from './relation-loader.js'
 import {
@@ -667,11 +668,11 @@ export class RepositoryImplementation<entityType>
     let where: EntityFilter<any>[] = []
     let findOptions: FindOptions<any> = {}
     let findOptionsSources: FindOptions<any>[] = []
-    let options = rel.options
-    if (typeof options.findOptions === 'function') {
-      findOptionsSources.push(options.findOptions(row))
-    } else if (typeof options.findOptions === 'object')
-      findOptionsSources.push(options.findOptions)
+
+    if (typeof rel.options.findOptions === 'function') {
+      findOptionsSources.push(rel.options.findOptions(row))
+    } else if (typeof rel.options.findOptions === 'object')
+      findOptionsSources.push(rel.options.findOptions)
     if (typeof moreFindOptions === 'object') {
       findOptionsSources.push(moreFindOptions)
     }
@@ -687,6 +688,12 @@ export class RepositoryImplementation<entityType>
         if (source[key]) findOptions[key] = source[key]
       }
     }
+    let relationField = rel.options.field
+    let relFields: RelationFields = {
+      fields: rel.options.fields,
+      compoundIdField: undefined,
+    }
+
     function buildError(what: string) {
       return Error(
         `Error for relation: "${field.key}" to "${otherRepo.metadata.key}": ` +
@@ -694,7 +701,7 @@ export class RepositoryImplementation<entityType>
       )
     }
 
-    let hasFields = () => options.field || options.fields
+    let hasFields = () => relationField || relFields.fields
     if (rel.type === 'toMany' && !hasFields()) {
       for (const fieldInOtherRepo of otherRepo.fields.toArray()) {
         if (!hasFields()) {
@@ -707,10 +714,10 @@ export class RepositoryImplementation<entityType>
           if (reverseRel)
             if (reverseRel.toEntity === this.entity)
               if (reverseRel.type === 'reference') {
-                options = { ...findOptions, field: fieldInOtherRepo.key }
+                relationField = fieldInOtherRepo.key
               } else if (reverseRel.type === 'toOne') {
                 if (relOp.field) {
-                  options = { ...options, field: relOp.field }
+                  relationField = relOp.field
                 } else if (relOp.fields) {
                   let fields = {}
                   for (const key in relOp.fields) {
@@ -721,7 +728,7 @@ export class RepositoryImplementation<entityType>
                       fields[keyInMyTable] = key
                     }
                   }
-                  options = { ...options, fields }
+                  relFields.fields = fields
                 }
               }
         }
@@ -745,29 +752,29 @@ export class RepositoryImplementation<entityType>
     }
     let compoundIdField: string | undefined
     if (rel.type === 'reference') {
-      options.field = field.key
+      relationField = field.key
     }
-    if (options.field) {
+    if (relationField) {
       if (rel.type === 'toOne' || rel.type === 'reference') {
         if (otherRepo.metadata.idMetadata.field instanceof CompoundIdField) {
-          compoundIdField = options.field
+          compoundIdField = relationField
         } else
-          options.fields = {
-            [otherRepo.metadata.idMetadata.field.key]: options.field,
+          relFields.fields = {
+            [otherRepo.metadata.idMetadata.field.key]: relationField,
           }
       } else {
         if (this.metadata.idMetadata.field instanceof CompoundIdField) {
-          compoundIdField = options.field
+          compoundIdField = relationField
         } else
-          options.fields = {
-            [options.field]: this.metadata.idMetadata.field.key,
+          relFields.fields = {
+            [relationField]: this.metadata.idMetadata.field.key,
           }
       }
     }
-    for (const key in options?.fields) {
-      if (Object.prototype.hasOwnProperty.call(options.fields, key)) {
+    for (const key in relFields.fields) {
+      if (Object.prototype.hasOwnProperty.call(relFields.fields, key)) {
         requireField(key, otherRepo.metadata)
-        requireField(options.fields[key], this.metadata)
+        requireField(relFields.fields[key], this.metadata)
       }
     }
 
@@ -799,9 +806,9 @@ export class RepositoryImplementation<entityType>
         )
       }
 
-    for (const key in options.fields) {
-      if (Object.prototype.hasOwnProperty.call(options.fields, key)) {
-        let val = getFieldValue(options.fields[key])
+    for (const key in relFields.fields) {
+      if (Object.prototype.hasOwnProperty.call(relFields.fields, key)) {
+        let val = getFieldValue(relFields.fields[key])
         if (compoundIdField) {
           if (rel.type === 'toMany') {
             where.push({ [key]: this.metadata.idMetadata.getId(row) })

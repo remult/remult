@@ -42,6 +42,10 @@ export interface RelationFieldInfo {
   toEntity: any
   toRepo: Repository<any>
 }
+export interface RelationFields {
+  fields: Record<string, string>
+  compoundIdField: string | undefined
+}
 export function verifyFieldRelationInfo(
   repo: Repository<any>,
   remult: Remult,
