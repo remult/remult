@@ -1482,7 +1482,7 @@ describe('graphql', () => {
       "
     `)
   })
-  it.only('test naming issue', async () => {
+  it('test naming issue', async () => {
     const C = createEntity('ContactTag', {
       id: Fields.number(),
     })
