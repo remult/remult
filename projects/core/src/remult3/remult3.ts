@@ -650,12 +650,12 @@ export type RelationOptions<
    */
   //[ ] V2- consider enforcing types
   fields?: {
-    [K in keyof toEntity]?: keyof fromEntity
+    [K in keyof toEntity]?: keyof fromEntity & string
   }
   /**
    * The name of the field for this relation.
    */
-  field?: keyof matchIdEntity
+  field?: keyof matchIdEntity & string
   /**
    * Find options to apply to the relation when fetching related entities.
    * You can specify a predefined set of find options or provide a function that takes the source entity

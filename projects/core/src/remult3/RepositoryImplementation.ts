@@ -667,7 +667,7 @@ export class RepositoryImplementation<entityType>
     let where: EntityFilter<any>[] = []
     let findOptions: FindOptions<any> = {}
     let findOptionsSources: FindOptions<any>[] = []
-    let options = field.options as RelationOptions<any, any, any>
+    let options = rel.options
     if (typeof options.findOptions === 'function') {
       findOptionsSources.push(options.findOptions(row))
     } else if (typeof options.findOptions === 'object')
@@ -743,29 +743,35 @@ export class RepositoryImplementation<entityType>
         )
       return result
     }
+    let compoundIdField: string | undefined
+    if (rel.type === 'reference') {
+      options.field = field.key
+    }
     if (options.field) {
-      if (rel.type === 'toOne') {
-        requireField(options.field as string, this.metadata)
-        const val = row[options.field]
-        if (val === null) returnNull = true
-        if (val === undefined) returnUndefined = true
-        else where.push(otherRepo.metadata.idMetadata.getIdFilter(val))
+      if (rel.type === 'toOne' || rel.type === 'reference') {
+        if (otherRepo.metadata.idMetadata.field instanceof CompoundIdField) {
+          compoundIdField = options.field
+        } else
+          options.fields = {
+            [otherRepo.metadata.idMetadata.field.key]: options.field,
+          }
       } else {
-        requireField(options.field as string, otherRepo.metadata)
-        where.push({
-          [options.field]: this.metadata.idMetadata.getId(row),
-        })
+        if (this.metadata.idMetadata.field instanceof CompoundIdField) {
+          compoundIdField = options.field
+        } else
+          options.fields = {
+            [options.field]: this.metadata.idMetadata.field.key,
+          }
       }
-    } else if (options.fields) {
-      for (const key in options.fields) {
-        if (Object.prototype.hasOwnProperty.call(options.fields, key)) {
-          requireField(options.fields[key], this.metadata)
-          requireField(key, otherRepo.metadata)
+    }
+    for (const key in options?.fields) {
+      if (Object.prototype.hasOwnProperty.call(options.fields, key)) {
+        requireField(key, otherRepo.metadata)
+        requireField(options.fields[key], this.metadata)
+      }
+    }
 
-          where.push({ [key]: row[options.fields[key]] })
-        }
-      }
-    } else if (rel.type === 'toOne' || rel.type === 'reference') {
+    const getFieldValue = (key: string) => {
       let val =
         rel.type === 'reference'
           ? (
@@ -773,17 +779,38 @@ export class RepositoryImplementation<entityType>
                 requireField(field.key, this.metadata),
               ) as IdFieldRef<any, any>
             ).getId()
-          : row[field.key]
-      if (!field.allowNull && (val === 0 || val === '')) val = null
-      if (val === null) returnNull = true
-      if (val === undefined) returnUndefined = true
-      else if (typeof val === 'object')
+          : row[key]
+      if (rel.type === 'toOne' || rel.type === 'reference') {
+        if (val === null) returnNull = true
+        else if (val === undefined) returnUndefined = true
+        else if (rel.type === 'reference' && typeof val === 'object')
+          val = otherRepo.metadata.idMetadata.getId(val)
+      }
+      return val
+    }
+    if (compoundIdField)
+      if (rel.type === 'toMany') {
+        where.push({ [compoundIdField]: this.metadata.idMetadata.getId(row) })
+      } else {
         where.push(
           otherRepo.metadata.idMetadata.getIdFilter(
-            otherRepo.metadata.idMetadata.getId(val),
+            getFieldValue(compoundIdField),
           ),
         )
-      else where.push(otherRepo.metadata.idMetadata.getIdFilter(val))
+      }
+
+    for (const key in options.fields) {
+      if (Object.prototype.hasOwnProperty.call(options.fields, key)) {
+        let val = getFieldValue(options.fields[key])
+        if (compoundIdField) {
+          if (rel.type === 'toMany') {
+            where.push({ [key]: this.metadata.idMetadata.getId(row) })
+          } else {
+            where.push(otherRepo.metadata.idMetadata.getIdFilter(val))
+          }
+          break
+        } else where.push({ [key]: val })
+      }
     }
 
     findOptions.where = { $and: where }
@@ -1180,7 +1207,7 @@ abstract class rowHelperBase<T> {
               for (const key in op.fields) {
                 if (Object.prototype.hasOwnProperty.call(op.fields, key)) {
                   const element = op.fields[key]
-                  this.instance[element] = newVal[key]
+                  this.instance[element] = newVal == null ? null : newVal[key]
                 }
               }
             }

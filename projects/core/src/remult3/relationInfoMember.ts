@@ -38,7 +38,7 @@ export function getRelationFieldInfo(field: FieldMetadata) {
 
 export interface RelationFieldInfo {
   type: 'reference' | 'toOne' | 'toMany'
-
+  options: RelationOptions<any, any, any>
   toEntity: any
   toRepo: Repository<any>
 }
@@ -55,6 +55,7 @@ export function verifyFieldRelationInfo(
         field[fieldRelationInfo] = {
           type: r.type,
           toEntity,
+          options: field.options,
           toRepo: remult.repo(toEntity, dp),
         } satisfies RelationFieldInfo
       }
