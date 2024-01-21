@@ -738,32 +738,33 @@ export type ClassFieldDecorator<entityType, valueType> = (
   c?: any,
 ) => void
 //y1 - number default storage in knex is decimal and it by default has 8,2 - meaning only 999,999 - I think it should be way bigger than that. in firefly we do at least 18 - https://discord.com/channels/975754286384418847/1195162533447876658
+//y1 - talk about the parameter issue with backend methods
 //y1 - tried to upgrade vitest, nuxt tests are failing with loading uuid - sounds familiar?
 
 //y2 - from the crm-demo(https://crm-demo.up.railway.app/deals), after editing a deal: - _updateEntityBasedOnApi
 
 //y2 - Backend methods are transactions, it's not intuitive and maybe should be optional / opt in
 //y2 - how to run a transaction as a user
-//p1 - enum column
-//p1 - I think there should be a way to throw a forbidden exception
-//p1 - Write some ctrl g
+//p2 - enum column
+//p2 - I think there should be a way to throw a forbidden exception
+
 //y2 - get backend methods to work when specifying types for date, and entities as poco's
 //y2 - required
 //y2 - reconsider validators
 //y2 - message for invalid value
 //y2 - message for relation that is missing
-//p1 - more column types
+//p2 - more column types
 //p2 -   processError in remult express
 //p2 -   allow find options preprocessor for api calls, to use for authorization
-//p1 - write doc about controlling updates of rows...
+//p2 - write doc about controlling updates of rows...
 //p1 - need a way to extract the fields from the relation - for generating relation based sql
 //p1 - when doing this, work on graphql relation with fields not just field
-//p1 - add docs for apply changes
-//p1 - when subscribe is forbidden - the query still runs after the renew process
-//p1 - 'update tasks set  where id = $1
+//p2 - add docs for apply changes
+//p2 - when subscribe is forbidden - the query still runs after the renew process
+//p2 - 'update tasks set  where id = $1
 //y2 - consider multi tenancies
 //y2 - allow api read to also support instance and filter. - problem with promise
-//p1 - doc this:
+//p2 - doc this:
 /**
  * //p2 - doc this
 remult.apiClient.httpClient = (
@@ -786,12 +787,10 @@ remult.apiClient.url='localhost:3007/api
 */
 //p1 - remult-admin doesn't handle primary key that has compound column
 //p1 - remult-admin didn't show a update for a table with a uniqua that is numeric
-//p1 - crm demo graphql error
-//p1 - fix multiple instances of remult: the defaultRemult and async local hook - and columnsOfType - all can be tests with a vite project loading `remult-admin`
 //p1 -check if checouknt doesn't respect allow read (I think)
 //p1 - allow api update only for new rows
 //p1 - getFields didn't work for kobi in the home component
-//p1 - https://codesandbox.io/p/devbox/demo-sql-expression-wqvj4g
+//p1 - add to docs  https://codesandbox.io/p/devbox/demo-sql-expression-wqvj4g
 //p2 - document validators
 //p2 - and validators to reference
 //y2 - discuss a default date formatter

@@ -67,7 +67,7 @@ export class Sort {
           }
           if (field) {
             const rel = getRelationFieldInfo(field)
-            const op = field.options as RelationOptions<any, any, any> //p1 - fix
+            const op = rel.options
             if (rel?.type === 'toOne') {
               if (typeof op.field === 'string') {
                 addSegment(entityDefs.fields.find(op.field))
