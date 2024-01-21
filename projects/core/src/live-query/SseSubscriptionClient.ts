@@ -1,6 +1,6 @@
 import { buildRestDataProvider } from '../buildRestDataProvider.js'
 import { remult } from '../remult-proxy.js'
-import { actionInfo } from '../server-action-info.js'
+import { remultStatic } from '../remult-static.js'
 import type {
   ServerEventChannelSubscribeDTO,
   SubscriptionClient,
@@ -31,7 +31,7 @@ export class SseSubscriptionClient implements SubscriptionClient {
         return () => {
           listeners.splice(listeners.indexOf(handler, 1))
           if (listeners.length == 0) {
-            actionInfo.runActionWithoutBlockingUI(() =>
+            remultStatic.actionInfo.runActionWithoutBlockingUI(() =>
               provider.post(
                 remult.apiClient.url + '/' + streamUrl + '/unsubscribe',
                 {
@@ -85,15 +85,17 @@ export class SseSubscriptionClient implements SubscriptionClient {
       })
     return createConnectionPromise()
     async function subscribeToChannel(channel: string) {
-      const result = await actionInfo.runActionWithoutBlockingUI(() => {
-        return provider.post(
-          remult.apiClient.url + '/' + streamUrl + '/subscribe',
-          {
-            channel: channel,
-            clientId: connectionId,
-          } as ServerEventChannelSubscribeDTO,
-        )
-      })
+      const result = await remultStatic.actionInfo.runActionWithoutBlockingUI(
+        () => {
+          return provider.post(
+            remult.apiClient.url + '/' + streamUrl + '/subscribe',
+            {
+              channel: channel,
+              clientId: connectionId,
+            } as ServerEventChannelSubscribeDTO,
+          )
+        },
+      )
       if (result === ConnectionNotFoundError) {
         await createConnectionPromise()
       }

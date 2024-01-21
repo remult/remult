@@ -15,11 +15,9 @@ import { SqlDatabase } from '../../core/src/data-providers/sql-database'
 import { WebSqlDataProvider } from '../../core/src/data-providers/web-sql-data-provider'
 import { remult } from '../../core/src/remult-proxy'
 import type { EntityMetadata } from '../../core'
-import {
-  actionInfo,
-  serverActionField,
-} from '../../core/src/server-action-info'
+import { serverActionField } from '../../core/src/server-action-info'
 import { TestDataApiResponse } from './TestDataApiResponse'
+import { actionInfo } from '../../core/internals'
 
 //actionInfo.runningOnServer = false;
 

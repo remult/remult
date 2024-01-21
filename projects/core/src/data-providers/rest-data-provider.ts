@@ -10,8 +10,8 @@ import { buildRestDataProvider, retry } from '../buildRestDataProvider.js'
 import type { ApiClient } from '../context.js'
 import { customUrlToken, Filter } from '../filter/filter-interfaces.js'
 import type { EntityMetadata, FindOptions } from '../remult3/remult3.js'
-import { actionInfo } from '../server-action-info.js'
 import { getRelationFieldInfo } from '../remult3/relationInfoMember.js'
+import { remultStatic } from '../remult-static.js'
 
 export class RestDataProvider implements DataProvider {
   constructor(private apiProvider: () => ApiClient) {}
@@ -187,7 +187,7 @@ export class RestEntityDataProvider implements EntityDataProvider {
         return {
           result,
           unsubscribe: async () => {
-            return actionInfo.runActionWithoutBlockingUI(() =>
+            return remultStatic.actionInfo.runActionWithoutBlockingUI(() =>
               this.http().post(this.url() + '?__action=endLiveQuery', {
                 id: queryId,
               }),

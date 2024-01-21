@@ -1,5 +1,6 @@
-import type { Remult } from '..'
-import type { RemultAsyncLocalStorage } from './context.js'
+import type { ClassType } from '../classType.js'
+import type { ClassHelper, Remult, RemultAsyncLocalStorage } from './context.js'
+import type { columnInfo } from './remult3/columnInfo.js'
 
 const remultStaticKey = Symbol.for('remult-static1')
 
@@ -7,6 +8,21 @@ let x = {
   defaultRemultFactory: undefined as () => Remult,
   defaultRemult: undefined as Remult,
   asyncContext: undefined as RemultAsyncLocalStorage,
+  columnsOfType: new Map<any, columnInfo[]>(),
+  allEntities: [] as ClassType<any>[],
+  classHelpers: new Map<any, ClassHelper>(),
+  actionInfo: {
+    allActions: [] as any[],
+    runningOnServer: false,
+    runActionWithoutBlockingUI: <T>(what: () => Promise<T>): Promise<T> => {
+      return what()
+    },
+    startBusyWithProgress: () => ({
+      progress: (percent: number) => {},
+      close: () => {},
+    }),
+  },
+  captionTransformer: undefined as any,
 }
 
 if (

@@ -1,5 +1,5 @@
 import type { Remult } from '../context.js'
-import { allEntities, setControllerSettings } from '../context.js'
+import { setControllerSettings } from '../context.js'
 import type { EntityOptions } from '../entity.js'
 import type { customFilterInfo } from '../filter/filter-interfaces.js'
 import {
@@ -9,6 +9,7 @@ import {
 } from './getEntityRef.js'
 import type { EntityOptionsFactory } from './RepositoryImplementation.js'
 import type { ClassDecoratorContextStub } from './remult3.js'
+import { remultStatic } from '../remult-static.js'
 
 /**Decorates classes that should be used as entities.
  * Receives a key and an array of EntityOptions.
@@ -97,7 +98,7 @@ export function Entity<entityType>(
       return r
     }
 
-    allEntities.push(target)
+    remultStatic.allEntities.push(target)
     setControllerSettings(target, { key })
     target[entityInfo] = factory
     target[entityInfo_key] = key

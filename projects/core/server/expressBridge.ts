@@ -3,12 +3,7 @@ import type { ResponseRequiredForSSE } from '../SseSubscriptionServer.js'
 import { SseSubscriptionServer } from '../SseSubscriptionServer.js'
 import type { ClassType } from '../classType.js'
 import type { AllowedForInstance, UserInfo } from '../src/context.js'
-import {
-  Remult,
-  RemultAsyncLocalStorage,
-  allEntities,
-  withRemult,
-} from '../src/context.js'
+import { Remult, RemultAsyncLocalStorage, withRemult } from '../src/context.js'
 import type { DataApiRequest, DataApiResponse } from '../src/data-api.js'
 import { DataApi, serializeError } from '../src/data-api.js'
 import type {
@@ -42,9 +37,10 @@ import type {
   queuedJobInfoResponse,
 } from '../src/server-action.js'
 import { Action, classBackendMethodsArray } from '../src/server-action.js'
-import { actionInfo, serverActionField } from '../src/server-action-info.js'
+import { serverActionField } from '../src/server-action-info.js'
 import { initDataProvider } from './initDataProvider.js'
 import { remult } from '../src/remult-proxy.js'
+import { remultStatic } from '../src/remult-static.js'
 
 export interface RemultServerOptions<RequestType> {
   /**Entities to use for the api */
@@ -116,7 +112,7 @@ export function createRemultServerCore<RequestType>(
     options.subscriptionServer = new SseSubscriptionServer()
   }
   if (options.logApiEndPoints === undefined) options.logApiEndPoints = true
-  actionInfo.runningOnServer = true
+  remultStatic.actionInfo.runningOnServer = true
   if (options.defaultGetLimit) {
     DataApi.defaultGetLimit = options.defaultGetLimit
   }
@@ -132,7 +128,7 @@ export function createRemultServerCore<RequestType>(
 
   {
     let allControllers: ClassType<any>[] = []
-    if (!options.entities) options.entities = [...allEntities]
+    if (!options.entities) options.entities = [...remultStatic.allEntities]
 
     if (options.entities) allControllers.push(...options.entities)
     if (options.controllers) allControllers.push(...options.controllers)
@@ -141,7 +137,7 @@ export function createRemultServerCore<RequestType>(
 
   if (options.rootPath === undefined) options.rootPath = '/api'
 
-  actionInfo.runningOnServer = true
+  remultStatic.actionInfo.runningOnServer = true
   let bridge = new RemultServerImplementation<RequestType>(
     new inProcessQueueHandler(options.queueStorage),
     options,
@@ -1301,7 +1297,10 @@ export class JobsInQueueEntity extends IdEntity {
   progress: number
 }
 
-allEntities.splice(allEntities.indexOf(JobsInQueueEntity), 1)
+remultStatic.allEntities.splice(
+  remultStatic.allEntities.indexOf(JobsInQueueEntity),
+  1,
+)
 
 export interface ServerCoreOptions<RequestType> {
   buildGenericRequestInfo(req: RequestType): GenericRequestInfo

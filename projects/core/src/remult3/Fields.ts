@@ -10,10 +10,11 @@ import type {
   ClassFieldDecoratorContextStub,
 } from './remult3.js'
 import { ValueConverters } from '../valueConverters.js'
-import { buildOptions, columnsOfType } from './RepositoryImplementation.js'
+import { buildOptions } from './RepositoryImplementation.js'
 import type { columnInfo } from './columnInfo.js'
 import { Validators } from '../validators.js'
 import { relationInfoMemberInOptions } from './relationInfoMember.js'
+import { remultStatic } from '../remult-static.js'
 
 export class Fields {
   /**
@@ -436,10 +437,12 @@ export function Field<entityType = any, valueType = any>(
       return r
     }
     checkTarget(target)
-    let names: columnInfo[] = columnsOfType.get(target.constructor)!
+    let names: columnInfo[] = remultStatic.columnsOfType.get(
+      target.constructor,
+    )!
     if (!names) {
       names = []
-      columnsOfType.set(target.constructor, names)
+      remultStatic.columnsOfType.set(target.constructor, names)
     }
 
     let set = names.find((x) => x.key == key)

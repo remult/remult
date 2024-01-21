@@ -44,7 +44,7 @@ import {
   FilterConsumerBridgeToSqlRequest,
 } from '../../core/src/filter/filter-consumer-bridge-to-sql-request'
 import { remult, RemultProxy } from '../../core/src/remult-proxy'
-import { actionInfo } from '../../core/src/server-action-info'
+
 import { ValueConverters } from '../../core/src/valueConverters'
 import { entityWithValidations } from '../dbs/shared-tests/entityWithValidations'
 import { CompoundIdEntity } from './entities-for-tests'
@@ -55,6 +55,7 @@ import {
   isAutoIncrement,
 } from '../../core/src/remult3/RepositoryImplementation'
 import { getEntityKey } from '../../core/src/remult3/getEntityRef'
+import { actionInfo } from '../../core/internals'
 
 //SqlDatabase.LogToConsole = true;
 

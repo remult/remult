@@ -15,10 +15,11 @@ import {
 import { remult } from '../../core/src/remult-proxy'
 import type { FindOptions } from '../../core'
 import { Entity, Fields, Relations, getEntityRef } from '../../core'
-import { actionInfo } from '../../core/src/server-action-info'
+
 import { createMockHttpDataProvider } from '../tests/testHelper'
 import { HttpProviderBridgeToRestDataProviderHttpProvider } from '../../core/src/buildRestDataProvider'
 import { DataApi } from '../../core/src/data-api'
+import { actionInfo } from '../../core/internals'
 
 const joc = expect.objectContaining
 

@@ -1,6 +1,6 @@
 import type { Knex } from 'knex'
 import type { Remult } from '../src/context.js'
-import { allEntities } from '../src/context.js'
+
 import type { EntityDbNamesBase } from '../src/filter/filter-consumer-bridge-to-sql-request.js'
 import {
   dbNamesOf,
@@ -32,6 +32,7 @@ import { ValueConverters } from '../src/valueConverters.js'
 import { resultCompoundIdFilter as resultCompoundIdFilter } from '../src/resultCompoundIdFilter.js'
 import type { StringFieldOptions } from '../src/remult3/Fields.js'
 import { getRepositoryInternals } from '../src/remult3/repository-internals.js'
+import { remultStatic } from '../src/remult-static.js'
 
 export class KnexDataProvider implements DataProvider {
   constructor(public knex: Knex) {}
@@ -411,7 +412,9 @@ export class KnexSchemaBuilder {
   async verifyStructureOfAllEntities(remult?: Remult) {
     if (!remult) remult = remultContext
 
-    const entities = allEntities.map((x) => remult.repo(x).metadata)
+    const entities = remultStatic.allEntities.map(
+      (x) => remult.repo(x).metadata,
+    )
     await this.ensureSchema(entities)
   }
 

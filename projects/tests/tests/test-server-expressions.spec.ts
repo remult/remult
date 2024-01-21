@@ -5,7 +5,7 @@ import { describeClass } from '../../core/src//remult3/DecoratorReplacer'
 import { Remult } from '../../core/src/context'
 import { dbNamesOf } from '../../core/src/filter/filter-consumer-bridge-to-sql-request'
 import { remult } from '../../core/src/remult-proxy'
-import { actionInfo } from '../../core/src/server-action-info'
+import { actionInfo } from '../../core/internals'
 
 describe('test server expression value', () => {
   beforeEach(() => {

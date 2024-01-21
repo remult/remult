@@ -1,5 +1,5 @@
 import { initDataProvider } from '../server/initDataProvider.js'
-import { allEntities, Remult } from '../src/context.js'
+import { Remult } from '../src/context.js'
 import type { DataProvider, Storage } from '../src/data-interfaces.js'
 import type {
   LiveQueryStorage,
@@ -9,6 +9,7 @@ import type { Repository } from '../src/remult3/remult3.js'
 import { EntityBase } from '../src/remult3/RepositoryImplementation.js'
 import { Fields } from '../src/remult3/Fields.js'
 import { Entity } from '../src/remult3/entity.js'
+import { remultStatic } from '../src/remult-static.js'
 
 export class DataProviderLiveQueryStorage implements LiveQueryStorage, Storage {
   repo: Promise<Repository<LiveQueryStorageEntity>>
@@ -94,4 +95,7 @@ export class LiveQueryStorageEntity extends EntityBase {
   @Fields.string()
   lastUsedIso = new Date().toISOString()
 }
-allEntities.splice(allEntities.indexOf(LiveQueryStorageEntity), 1)
+remultStatic.allEntities.splice(
+  remultStatic.allEntities.indexOf(LiveQueryStorageEntity),
+  1,
+)

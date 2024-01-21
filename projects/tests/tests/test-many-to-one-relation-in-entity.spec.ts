@@ -13,11 +13,11 @@ import { Language } from './RowProvider.spec'
 import { DataApi } from '../../core/src/data-api'
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { actionInfo } from '../../core/src/server-action-info'
 import { Done } from './Done'
 import { Categories, Products } from './entities-for-tests'
 import { h } from './h'
 import { TestDataApiResponse } from './TestDataApiResponse'
+import { actionInfo } from '../../core/internals'
 
 @Entity('products')
 class ProductsEager extends EntityBase {

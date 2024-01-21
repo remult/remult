@@ -110,7 +110,7 @@ export class RemultProxy implements Remult {
       get fields() {
         return self.remultFactory().repo(...args).metadata.fields
       },
-
+      //@ts-ignore
       [getInternalKey]() {
         return self
           .remultFactory()

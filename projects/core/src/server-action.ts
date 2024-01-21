@@ -6,8 +6,6 @@ import type { AllowedForInstance, ControllerOptions } from './context.js'
 import {
   ClassHelper,
   Remult,
-  allEntities,
-  classHelpers,
   doTransaction,
   isBackend,
   setControllerSettings,
@@ -28,8 +26,9 @@ import {
   getControllerRef,
 } from './remult3/RepositoryImplementation.js'
 import { getEntityRef, getEntitySettings } from './remult3/getEntityRef.js'
-import { actionInfo, serverActionField } from './server-action-info.js'
+import { serverActionField } from './server-action-info.js'
 import { checkTarget } from './remult3/Fields.js'
+import { remultStatic } from './remult-static.js'
 
 interface inArgs {
   args: any[]
@@ -56,10 +55,10 @@ export abstract class Action<inParam, outParam> implements ActionInterface {
     let r = await http.post(baseUrl + '/' + this.actionUrl, pIn)
     let p: jobWasQueuedResult = r
     if (p && p.queuedJobId) {
-      let progress = actionInfo.startBusyWithProgress()
+      let progress = remultStatic.actionInfo.startBusyWithProgress()
       try {
         let runningJob: queuedJobInfoResponse
-        await actionInfo.runActionWithoutBlockingUI(async () => {
+        await remultStatic.actionInfo.runActionWithoutBlockingUI(async () => {
           while (!runningJob || !runningJob.done) {
             if (runningJob)
               await new Promise((res) =>
@@ -238,7 +237,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
       serverAction.doWork = async (args, self, url, http) => {
         args = prepareArgsToSend(types, args)
         if (options.blockUser === false) {
-          return await actionInfo.runActionWithoutBlockingUI(
+          return await remultStatic.actionInfo.runActionWithoutBlockingUI(
             async () => (await serverAction.run({ args }, url, http)).data,
           )
         } else return (await serverAction.run({ args }, url, http)).data
@@ -259,10 +258,10 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
 
     var types: any[] = Reflect.getMetadata('design:paramtypes', target, key)
     if (options.paramTypes) types = options.paramTypes
-    let x = classHelpers.get(target.constructor)
+    let x = remultStatic.classHelpers.get(target.constructor)
     if (!x) {
       x = new ClassHelper()
-      classHelpers.set(target.constructor, x)
+      remultStatic.classHelpers.set(target.constructor, x)
     }
     let serverAction: ActionInterface = {
       __register(
@@ -304,7 +303,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                     remult.dataProvider,
                     res,
                   )
-                  if (allEntities.includes(constructor)) {
+                  if (remultStatic.allEntities.includes(constructor)) {
                     let repo = remult.repo(constructor)
                     let y: any
 
@@ -385,7 +384,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
       ): Promise<any> {
         args = prepareArgsToSend(types, args)
 
-        if (allEntities.includes(target.constructor)) {
+        if (remultStatic.allEntities.includes(target.constructor)) {
           let defs = getEntityRef(self) as rowHelperImplementation<any>
           await defs.__validateEntity()
           let classOptions = x.classes.get(self.constructor)
@@ -487,7 +486,7 @@ function registerAction(target: any, resultMethod: any) {
   ;(
     target[classBackendMethodsArray] || (target[classBackendMethodsArray] = [])
   ).push(resultMethod)
-  actionInfo.allActions.push(resultMethod)
+  remultStatic.actionInfo.allActions.push(resultMethod)
 }
 
 function isCustomUndefined(x: any) {

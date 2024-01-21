@@ -15,7 +15,7 @@ import type {
   Repository,
 } from './remult3/remult3.js'
 import type { Action } from './server-action.js'
-import { actionInfo, serverActionField } from './server-action-info.js'
+import { serverActionField } from './server-action-info.js'
 
 import type { ExternalHttpProvider } from './buildRestDataProvider.js'
 import {
@@ -73,7 +73,7 @@ type myAsyncLocalStorage<T> = {
 }
 
 export function isBackend() {
-  return actionInfo.runningOnServer || !remult.dataProvider.isProxy
+  return remultStatic.actionInfo.runningOnServer || !remult.dataProvider.isProxy
 }
 
 export class Remult {
@@ -275,12 +275,10 @@ export interface ApiClient {
   wrapMessageHandling?: (x: VoidFunction) => void
 }
 
-export const allEntities: ClassType<any>[] = []
 export interface ControllerOptions {
   key: string
 }
 
-export const classHelpers = new Map<any, ClassHelper>()
 export class ClassHelper {
   classes = new Map<any, ControllerOptions>()
 }
@@ -288,8 +286,8 @@ export class ClassHelper {
 export function setControllerSettings(target: any, options: ControllerOptions) {
   let r = target
   while (true) {
-    let helper = classHelpers.get(r)
-    if (!helper) classHelpers.set(r, (helper = new ClassHelper()))
+    let helper = remultStatic.classHelpers.get(r)
+    if (!helper) remultStatic.classHelpers.set(r, (helper = new ClassHelper()))
     helper.classes.set(target, options)
     let p = Object.getPrototypeOf(r.prototype)
     if (p == null) break

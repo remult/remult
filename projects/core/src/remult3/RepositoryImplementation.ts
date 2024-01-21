@@ -89,6 +89,7 @@ import {
   entityDbName,
   fieldDbName,
 } from '../filter/filter-consumer-bridge-to-sql-request.js'
+import { remultStatic } from '../remult-static.js'
 //import  { remult } from "../remult-proxy";
 
 let classValidatorValidate:
@@ -978,17 +979,16 @@ export class RepositoryImplementation<entityType>
 
 export type EntityOptionsFactory = (remult: Remult) => EntityOptions
 
-export const columnsOfType = new Map<any, columnInfo[]>()
 export function createOldEntity<T>(entity: ClassType<T>, remult: Remult) {
-  let r: columnInfo[] = columnsOfType.get(entity)
-  if (!r) columnsOfType.set(entity, (r = []))
+  let r: columnInfo[] = remultStatic.columnsOfType.get(entity)
+  if (!r) remultStatic.columnsOfType.set(entity, (r = []))
 
   let info = getEntitySettings(entity)(remult)
   let key = getEntityKey(entity)
 
   let base = Object.getPrototypeOf(entity)
   while (base != null) {
-    let baseCols = columnsOfType.get(base)
+    let baseCols = remultStatic.columnsOfType.get(base)
     if (baseCols) {
       r.unshift(...baseCols.filter((x) => !r.find((y) => y.key == x.key)))
     }
@@ -1721,12 +1721,17 @@ export function getControllerRef<fieldsContainerType>(
   ] as controllerRefImpl<fieldsContainerType>
   if (!result) result = container[entityMember]
   if (!result) {
-    let columnSettings: columnInfo[] = columnsOfType.get(container.constructor)
+    let columnSettings: columnInfo[] = remultStatic.columnsOfType.get(
+      container.constructor,
+    )
     if (!columnSettings)
-      columnsOfType.set(container.constructor, (columnSettings = []))
+      remultStatic.columnsOfType.set(
+        container.constructor,
+        (columnSettings = []),
+      )
     let base = Object.getPrototypeOf(container.constructor)
     while (base != null) {
-      let baseCols = columnsOfType.get(base)
+      let baseCols = remultStatic.columnsOfType.get(base)
       if (baseCols) {
         columnSettings.unshift(
           ...baseCols.filter(
@@ -1981,8 +1986,7 @@ export class FieldRefImplementation<entityType, valueType>
     return !!!this.error
   }
 }
-
-export const CaptionTransformer = {
+let tempCaptionTransformer = {
   /**
    * Transforms the caption of a column based on custom rules or criteria.
    *
@@ -2019,6 +2023,10 @@ export const CaptionTransformer = {
     entityMetaData: EntityMetadata<any>,
   ) => caption,
 }
+
+export const CaptionTransformer =
+  remultStatic.captionTransformer ||
+  (remultStatic.captionTransformer = tempCaptionTransformer)
 export function buildCaption(
   caption: string | ((remult: Remult) => string),
   key: string,
