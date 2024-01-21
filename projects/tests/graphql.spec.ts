@@ -394,20 +394,29 @@ describe('graphql', () => {
       tasks {
         items {
           title
+          nodeId
           category {
             name
+            nodeId
             tasksOfcategory {
               items {
                 title
+                nodeId
+                category {
+                  nodeId
+                  name
+                }
               }
             }
             tasksWithCategory2SetToMe{
               items{
+                nodeId
                 title
               }
             }
             tasksWithCategory3SetToMe{
               items{
+                nodeId
                 title
               }
             }
@@ -423,9 +432,15 @@ describe('graphql', () => {
               {
                 "category": {
                   "name": "c1",
+                  "nodeId": "Category:0",
                   "tasksOfcategory": {
                     "items": [
                       {
+                        "category": {
+                          "name": "c1",
+                          "nodeId": "Category:0",
+                        },
+                        "nodeId": "Task:1",
                         "title": "task a",
                       },
                     ],
@@ -436,19 +451,27 @@ describe('graphql', () => {
                   "tasksWithCategory3SetToMe": {
                     "items": [
                       {
+                        "nodeId": "Task:2",
                         "title": "task b",
                       },
                     ],
                   },
                 },
+                "nodeId": "Task:1",
                 "title": "task a",
               },
               {
                 "category": {
                   "name": "c2",
+                  "nodeId": "Category:1",
                   "tasksOfcategory": {
                     "items": [
                       {
+                        "category": {
+                          "name": "c2",
+                          "nodeId": "Category:1",
+                        },
+                        "nodeId": "Task:2",
                         "title": "task b",
                       },
                     ],
@@ -456,9 +479,11 @@ describe('graphql', () => {
                   "tasksWithCategory2SetToMe": {
                     "items": [
                       {
+                        "nodeId": "Task:1",
                         "title": "task a",
                       },
                       {
+                        "nodeId": "Task:2",
                         "title": "task b",
                       },
                     ],
@@ -466,11 +491,13 @@ describe('graphql', () => {
                   "tasksWithCategory3SetToMe": {
                     "items": [
                       {
+                        "nodeId": "Task:1",
                         "title": "task a",
                       },
                     ],
                   },
                 },
+                "nodeId": "Task:2",
                 "title": "task b",
               },
             ],

@@ -1,3 +1,4 @@
+import type { FieldMetadata } from '../column-interfaces.js'
 import type { EntityDataProviderFindOptions } from '../data-interfaces.js'
 import type { Filter } from '../filter/filter-interfaces.js'
 import type {
@@ -24,6 +25,14 @@ export interface RepositoryInternal<entityType> {
   getCachedById(id: any, doNotLoadIfNotFound: boolean): entityType
   getCachedByIdAsync(id: any, doNotLoadIfNotFound: boolean): Promise<entityType>
   addToCache(item: entityType)
+  getFocusedRelationRepo(
+    field: FieldMetadata,
+    item: any,
+  ): {
+    toRepo: Repository<any>
+    returnNull: boolean
+    returnUndefined: boolean
+  }
 }
 export function getRepositoryInternals<entityType>(
   repo: Repository<entityType>,

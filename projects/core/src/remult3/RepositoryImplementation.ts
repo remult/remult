@@ -119,7 +119,7 @@ let classValidatorValidate:
 //     });
 
 export class RepositoryImplementation<entityType>
-  implements Repository<entityType>
+  implements Repository<entityType>, RepositoryInternal<entityType>
 {
   [getInternalKey]() {
     return this
@@ -168,17 +168,9 @@ export class RepositoryImplementation<entityType>
 
         const rel = getRelationFieldInfo(field)
         if (!rel) throw Error(key + ' is not a relation')
-        let repo = rel.toRepo as RepositoryImplementation<any>
+        const { toRepo, returnNull, returnUndefined } =
+          this.getFocusedRelationRepo(field, item)
 
-        let { findOptions, returnNull, returnUndefined } =
-          this.findOptionsBasedOnRelation(rel, field, undefined, item, repo)
-        const toRepo = new RepositoryImplementation(
-          repo.entity,
-          repo.remult,
-          repo.dataProvider,
-          repo._info,
-          findOptions,
-        )
         if (rel.type === 'toMany') return toRepo
         else
           return {
@@ -190,6 +182,21 @@ export class RepositoryImplementation<entityType>
           }
       },
     })
+  }
+  getFocusedRelationRepo(field: FieldMetadata, item: entityType) {
+    const rel = getRelationFieldInfo(field)
+    let repo = rel.toRepo as RepositoryImplementation<any>
+
+    let { findOptions, returnNull, returnUndefined } =
+      this.findOptionsBasedOnRelation(rel, field, undefined, item, repo)
+    const toRepo = new RepositoryImplementation(
+      repo.entity,
+      repo.remult,
+      repo.dataProvider,
+      repo._info,
+      findOptions,
+    )
+    return { toRepo, returnNull, returnUndefined }
   }
 
   private __edp: EntityDataProvider

@@ -1,9 +1,10 @@
 import { getRelationFieldInfo } from './internals.js'
 import type { ClassType } from './classType.js'
-import type { EntityMetadata, FieldsMetadata } from './index.js'
+import type { EntityMetadata, FieldsMetadata, Repository } from './index.js'
 import { Remult, remult } from './index.js'
 import type { DataApiResponse } from './src/data-api.js'
 import { DataApi } from './src/data-api.js'
+import { getRepositoryInternals } from './src/remult3/repository-internals.js'
 
 const v2ConnectionAndPagination = false
 const andImplementation = false
@@ -40,7 +41,7 @@ type GraphQLType = {
     orderBy: string[]
     whereType: string[]
     whereTypeSubFields: string[]
-    resultProcessors: ((item: any) => void)[]
+    resultProcessors: ((item: any, origItem: any) => void)[]
   }
   mutation: {
     create: {
@@ -242,6 +243,22 @@ export function remultGraphql(options: {
         }
       }
 
+      const handleRequestWithDataApiContextBasedOnRepo = (
+        repo: Repository<any>,
+        work: (
+          dataApi: DataApi,
+          response: DataApiResponse,
+          setResult: (result: any) => void,
+          arg1: any,
+          meta: EntityMetadata,
+        ) => Promise<void>,
+      ) => {
+        return createResultPromise(async (response, setResult, arg1, req) => {
+          const dApi = new DataApi(repo, remult)
+          await work(dApi, response, setResult, arg1, repo.metadata)
+        })
+      }
+
       const handleRequestWithDataApiContext = (
         work: (
           dataApi: DataApi,
@@ -338,7 +355,8 @@ export function remultGraphql(options: {
             {
               ...response,
               success: (y) => {
-                currentType.query.resultProcessors.forEach((z) => z(y))
+                const orig = { ...y }
+                currentType.query.resultProcessors.forEach((z) => z(y, orig))
                 setResult(y)
               },
             },
@@ -404,41 +422,16 @@ export function remultGraphql(options: {
 
       root[key] = handleRequestWithDataApiContext(
         async (dApi, response, setResult, arg1: any, meta: EntityMetadata) => {
-          setResult({
-            [itemsKey]: createResultPromise(async (response, setResult) => {
-              await dApi.getArray(
-                {
-                  ...response,
-                  success: (x: any) => {
-                    setResult(
-                      x.map((y: any) => {
-                        currentType.query.resultProcessors.forEach((z) => z(y))
-                        return y
-                      }),
-                    )
-                  },
-                },
-                {
-                  get: bridgeQueryOptionsToDataApiGet(arg1),
-                },
-                translateWhereToRestBody(meta.fields, arg1),
-              )
-            }),
-            [totalCountKey]: createResultPromise(
-              async (response, setResult) => {
-                await dApi.count(
-                  {
-                    ...response,
-                    success: (x) => setResult(x.count),
-                  },
-                  {
-                    get: bridgeQueryOptionsToDataApiGet(arg1),
-                  },
-                  translateWhereToRestBody(meta.fields, arg1),
-                )
-              },
-            ),
-          })
+          connectionImplementation(
+            setResult,
+            itemsKey,
+            createResultPromise,
+            dApi,
+            currentType,
+            arg1,
+            meta,
+            totalCountKey,
+          )
         },
       )
 
@@ -496,7 +489,8 @@ export function remultGraphql(options: {
               {
                 ...response,
                 created: (y) => {
-                  currentType.query.resultProcessors.forEach((z) => z(y))
+                  const orig = { ...y }
+                  currentType.query.resultProcessors.forEach((z) => z(y, orig))
                   setResult({
                     [toCamelCase(getMetaType(meta))]: y,
                   })
@@ -547,7 +541,8 @@ export function remultGraphql(options: {
               {
                 ...response,
                 success: (y) => {
-                  currentType.query.resultProcessors.forEach((z) => z(y))
+                  const orig = { ...y }
+                  currentType.query.resultProcessors.forEach((z) => z(y, orig))
                   setResult({
                     [toCamelCase(getMetaType(meta))]: y,
                   })
@@ -648,24 +643,41 @@ export function remultGraphql(options: {
                 value: `${getMetaType(ref)}${f.allowNull ? '' : '!'}`,
                 comment: f.caption,
               })
-              currentType.query.resultProcessors.push((r) => {
-                const val =
-                  r[ri.type == 'reference' ? f.key : (f.options as any).field] //p1 - fix
-                if (val === null || val === undefined) return null
+              currentType.query.resultProcessors.push((r, orig) => {
                 r[f.key] = async (args: any, req: any, gqlInfo: any) => {
-                  const queryResult: any[] = await (
-                    await root[refKey](
-                      {
-                        ...args.where,
-                        where: { id: { eq: val } },
-                        options: { limit: 1 },
-                      },
-                      req,
-                      gqlInfo,
+                  const remult = await options.getRemultFromRequest!(req)
+                  const myRepo = remult.repo(meta.entityType)
+                  const item = myRepo.fromJson(orig)
+                  let { toRepo, returnNull, returnUndefined } =
+                    getRepositoryInternals(myRepo).getFocusedRelationRepo(
+                      myRepo.fields.find(f),
+                      item,
                     )
-                  ).items()
-                  if (queryResult.length > 0) return queryResult[0]
-                  return null
+                  if (returnNull || returnUndefined) return null
+                  const result: any =
+                    await handleRequestWithDataApiContextBasedOnRepo(
+                      toRepo,
+                      async (
+                        dApi,
+                        response,
+                        setResult,
+                        arg1: any,
+                        meta: EntityMetadata,
+                      ) => {
+                        return await connectionImplementation(
+                          setResult,
+                          itemsKey,
+                          createResultPromise,
+                          dApi,
+                          upsertTypes(getMetaType(ref)),
+                          arg1,
+                          meta,
+                          totalCountKey,
+                        )
+                      },
+                    )({ ...args, options: { limit: 1 } }, req)
+                  const resultItems = await result.items()
+                  return resultItems[0]
                 }
               })
               break
@@ -681,19 +693,32 @@ export function remultGraphql(options: {
               })
 
               currentType.query.resultProcessors.push((r) => {
-                const val = r.id
                 r[f.key] = async (args: any, req: any, gqlInfo: any) => {
-                  return await root[ref.key](
-                    {
-                      where: {
-                        ...args.where,
-                        [(f.options as any).field /*//p1 to fix*/]: { eq: val },
-                      },
-                      options: { ...args.limit, ...args.page, ...args.orderBy },
+                  const remult = await options.getRemultFromRequest!(req)
+                  const myRepo = remult.repo(meta.entityType)
+                  const item = myRepo.fromJson(r)
+                  let relRepo = myRepo.relations(item)[f.key] as Repository<any>
+                  return handleRequestWithDataApiContextBasedOnRepo(
+                    relRepo,
+                    async (
+                      dApi,
+                      response,
+                      setResult,
+                      arg1: any,
+                      meta: EntityMetadata,
+                    ) => {
+                      return await connectionImplementation(
+                        setResult,
+                        itemsKey,
+                        createResultPromise,
+                        dApi,
+                        upsertTypes(getMetaType(ref)),
+                        arg1,
+                        meta,
+                        totalCountKey,
+                      )
                     },
-                    req,
-                    gqlInfo,
-                  )
+                  )(args, req)
                 }
               })
           }
@@ -970,6 +995,59 @@ export function remultGraphql(options: {
       })
       .join(`\n\n`)}
 `,
+  }
+
+  function connectionImplementation(
+    setResult: (result: any) => void,
+    itemsKey: string,
+    createResultPromise: (
+      work: (
+        response: DataApiResponse,
+        setResult: (result: any) => void,
+        arg1: any,
+        req: any,
+      ) => Promise<void>,
+    ) => (arg1: any, req: any) => Promise<unknown>,
+    dApi: DataApi<any>,
+    currentType: GraphQLType,
+    arg1: any,
+    meta: EntityMetadata<any>,
+    totalCountKey: string,
+  ) {
+    setResult({
+      [itemsKey]: createResultPromise(async (response, setResult) => {
+        await dApi.getArray(
+          {
+            ...response,
+            success: (x: any) => {
+              setResult(
+                x.map((y: any) => {
+                  const orig = { ...y }
+                  currentType.query.resultProcessors.forEach((z) => z(y, orig))
+                  return y
+                }),
+              )
+            },
+          },
+          {
+            get: bridgeQueryOptionsToDataApiGet(arg1),
+          },
+          translateWhereToRestBody(meta.fields, arg1),
+        )
+      }),
+      [totalCountKey]: createResultPromise(async (response, setResult) => {
+        await dApi.count(
+          {
+            ...response,
+            success: (x) => setResult(x.count),
+          },
+          {
+            get: bridgeQueryOptionsToDataApiGet(arg1),
+          },
+          translateWhereToRestBody(meta.fields, arg1),
+        )
+      }),
+    })
   }
 }
 
