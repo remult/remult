@@ -27,7 +27,8 @@ let x = {
 }
 
 if (
-  process.env['IGNORE_GLOBAL_REMULT_IN_TESTS'] ||
+  (typeof process !== 'undefined' &&
+    process.env['IGNORE_GLOBAL_REMULT_IN_TESTS']) ||
   typeof globalThis[remultStaticKey] === 'undefined'
 ) {
   globalThis[remultStaticKey] = x
