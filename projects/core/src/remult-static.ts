@@ -1,6 +1,7 @@
 import type { ClassType } from '../classType.js'
 import type { ClassHelper, Remult, RemultAsyncLocalStorage } from './context.js'
 import type { columnInfo } from './remult3/columnInfo.js'
+import type { EntityMetadata } from './remult3/remult3.js'
 
 const remultStaticKey = Symbol.for('remult-static1')
 

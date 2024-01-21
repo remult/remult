@@ -1986,7 +1986,16 @@ export class FieldRefImplementation<entityType, valueType>
     return !!!this.error
   }
 }
-let tempCaptionTransformer = {
+let tempCaptionTransformer: (typeof remultStatic)['captionTransformer'] = {
+  transformCaption: (
+    remult: Remult,
+    key: string,
+    caption: string,
+    entityMetaData: EntityMetadata<any>,
+  ) => caption,
+}
+
+export const CaptionTransformer: {
   /**
    * Transforms the caption of a column based on custom rules or criteria.
    *
@@ -2021,10 +2030,8 @@ let tempCaptionTransformer = {
     key: string,
     caption: string,
     entityMetaData: EntityMetadata<any>,
-  ) => caption,
-}
-
-export const CaptionTransformer =
+  ) => string
+} =
   remultStatic.captionTransformer ||
   (remultStatic.captionTransformer = tempCaptionTransformer)
 export function buildCaption(

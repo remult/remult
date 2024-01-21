@@ -1295,12 +1295,12 @@ export type RelationOptions<
    * This is useful when you want to define custom field mappings for the relation.
    */
   fields?: {
-    [K in keyof toEntity]?: keyof fromEntity
+    [K in keyof toEntity]?: keyof fromEntity & string
   }
   /**
    * The name of the field for this relation.
    */
-  field?: keyof matchIdEntity
+  field?: keyof matchIdEntity & string
   /**
    * Find options to apply to the relation when fetching related entities.
    * You can specify a predefined set of find options or provide a function that takes the source entity
@@ -2780,10 +2780,23 @@ export declare function getEntitySettings<T>(
   throwError?: boolean,
 ): EntityOptionsFactory | undefined
 //[ ] EntityOptionsFactory from TBD is not exported
+export declare function getRelationFieldInfo(
+  field: FieldMetadata,
+): RelationFieldInfo
 export declare function getRelationInfo(options: FieldOptions): RelationInfo
+export interface RelationFieldInfo {
+  type: "reference" | "toOne" | "toMany"
+  options: RelationOptions<any, any, any>
+  toEntity: any
+  toRepo: Repository<any>
+  getFields(): RelationFields
+}
+//[ ] RelationOptions from TBD is not exported
+//[ ] Repository from TBD is not exported
+//[ ] RelationFields from TBD is not exported
 export interface RelationInfo {
   toType: () => any
-  type: "reference" | "toOne" | "toMany"
+  type: RelationFieldInfo["type"]
 }
 ```
 

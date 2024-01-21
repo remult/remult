@@ -255,7 +255,11 @@ export class Relations {
           >)
       | RelationOptions<entityType, toEntityType, entityType>
       | keyof entityType,
-  ) {
+  ): (
+    target: any,
+    context: string | ClassFieldDecoratorContextStub<any, toEntityType>,
+    c?: any,
+  ) => void {
     let op: RelationOptions<entityType, toEntityType, entityType> =
       (typeof options === 'string'
         ? { field: options }
