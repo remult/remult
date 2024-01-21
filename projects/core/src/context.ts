@@ -3,7 +3,7 @@ import type { DataProvider } from './data-interfaces.js'
 import { RestDataProvider } from './data-providers/rest-data-provider.js'
 import { LiveQueryClient } from './live-query/LiveQueryClient.js'
 import { SseSubscriptionClient } from './live-query/SseSubscriptionClient.js'
-import { RemultProxy, remult } from './remult-proxy.js'
+import { type RemultProxy, remult } from './remult-proxy.js'
 import {
   RepositoryImplementation,
   createOldEntity,
@@ -32,11 +32,12 @@ import type {
   SubscriptionServer,
 } from './live-query/SubscriptionServer.js'
 import { verifyFieldRelationInfo } from './remult3/relationInfoMember.js'
+import { remultStatic } from './remult-static.js'
 
 export class RemultAsyncLocalStorage {
   static enable() {
     ;(remult as RemultProxy).remultFactory = () => {
-      const r = RemultAsyncLocalStorage.instance.getRemult()
+      const r = remultStatic.asyncContext.getRemult()
       if (r) return r
       else
         throw new Error(
@@ -63,8 +64,9 @@ export class RemultAsyncLocalStorage {
     }
     return this.remultObjectStorage.getStore()
   }
-  static instance = new RemultAsyncLocalStorage(undefined!)
 }
+if (!remultStatic.asyncContext)
+  remultStatic.asyncContext = new RemultAsyncLocalStorage(undefined!)
 type myAsyncLocalStorage<T> = {
   run<R>(store: T, callback: (...args: any[]) => R, ...args: any[]): R
   getStore(): T | undefined
@@ -252,7 +254,7 @@ export class Remult {
   }
 }
 
-RemultProxy.defaultRemultFactory = () => new Remult()
+remultStatic.defaultRemultFactory = () => new Remult()
 export type GetArguments<T> = T extends (...args: infer FirstArgument) => any
   ? FirstArgument
   : never
@@ -400,7 +402,7 @@ export function withRemult<T>(
   const remult = new Remult()
   if (options?.dataProvider) remult.dataProvider = options.dataProvider
   let r: Promise<T>
-  RemultAsyncLocalStorage.instance.run(remult, () => {
+  remultStatic.asyncContext.run(remult, () => {
     r = new Promise<T>(async (res, rej) => {
       try {
         res(await callback(remult))

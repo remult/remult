@@ -33,4 +33,4 @@ export function getRepositoryInternals<entityType>(
   throw Error('Error getting repository internal from ' + repo)
 }
 
-export const getInternalKey = 'getInternal'
+export const getInternalKey = Symbol.for('getInternal')

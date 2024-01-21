@@ -25,3 +25,5 @@ export default defineConfig({
     },
   },
 })
+
+process.env['IGNORE_GLOBAL_REMULT_IN_TESTS'] = true

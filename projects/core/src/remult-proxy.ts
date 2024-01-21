@@ -15,21 +15,12 @@ import type {
   LiveQueryStorage,
   SubscriptionServer,
 } from './live-query/SubscriptionServer.js'
+import { defaultFactory, remultStatic } from './remult-static.js'
 import type { Repository } from './remult3/remult3.js'
 import { getInternalKey } from './remult3/repository-internals.js'
 
-let defaultRemult: Remult
-
-function defaultFactory() {
-  if (!defaultRemult) {
-    defaultRemult = RemultProxy.defaultRemultFactory()
-  }
-  return defaultRemult
-}
-
 /*@internal*/
 export class RemultProxy implements Remult {
-  static defaultRemultFactory: () => Remult
   /* @internal*/
   get liveQuerySubscriber() {
     return this.remultFactory().liveQuerySubscriber
@@ -107,7 +98,7 @@ export class RemultProxy implements Remult {
     Map<DataProvider, Repository<any>>
   >()
   //@ts-ignore
-  repo: typeof defaultRemult.repo = (...args) => {
+  repo: Remult['repo'] = (...args) => {
     let self = this
     let entityCache = self.repoCache.get(args[0])
     if (!entityCache) {

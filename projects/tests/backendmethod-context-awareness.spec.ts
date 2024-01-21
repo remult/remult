@@ -10,12 +10,13 @@ import {
   withRemult,
 } from '../core'
 import { Remult, RemultAsyncLocalStorage } from '../core/src/context.js'
+import { remultStatic } from '../core/src/remult-static'
 
 describe('backend method context awareness', () => {
   it('getting error when async was initialized', async () => {
     let ok = true
     try {
-      RemultAsyncLocalStorage.instance = new RemultAsyncLocalStorage(
+      remultStatic.asyncContext = new RemultAsyncLocalStorage(
         new AsyncLocalStorage(),
       )
       RemultAsyncLocalStorage.enable()
@@ -25,14 +26,14 @@ describe('backend method context awareness', () => {
     } catch {
       ok = true
     } finally {
-      RemultAsyncLocalStorage.instance = new RemultAsyncLocalStorage(undefined!)
+      remultStatic.asyncContext = new RemultAsyncLocalStorage(undefined!)
       RemultAsyncLocalStorage.disable()
     }
     expect(ok).toBe(true)
   })
   it('test run works', async () => {
     try {
-      RemultAsyncLocalStorage.instance = new RemultAsyncLocalStorage(
+      remultStatic.asyncContext = new RemultAsyncLocalStorage(
         new AsyncLocalStorage(),
       )
       RemultAsyncLocalStorage.enable()
@@ -48,13 +49,13 @@ describe('backend method context awareness', () => {
       )
       expect(ok).toBe(true)
     } finally {
-      RemultAsyncLocalStorage.instance = new RemultAsyncLocalStorage(undefined!)
+      remultStatic.asyncContext = new RemultAsyncLocalStorage(undefined!)
       RemultAsyncLocalStorage.disable()
     }
   })
   it('test run works and returns', async () => {
     try {
-      RemultAsyncLocalStorage.instance = new RemultAsyncLocalStorage(
+      remultStatic.asyncContext = new RemultAsyncLocalStorage(
         new AsyncLocalStorage(),
       )
       RemultAsyncLocalStorage.enable()
@@ -73,13 +74,13 @@ describe('backend method context awareness', () => {
       ).toBe(77)
       expect(ok).toBe(true)
     } finally {
-      RemultAsyncLocalStorage.instance = new RemultAsyncLocalStorage(undefined!)
+      remultStatic.asyncContext = new RemultAsyncLocalStorage(undefined!)
       RemultAsyncLocalStorage.disable()
     }
   })
   it('test run works and returns Promise', async () => {
     try {
-      RemultAsyncLocalStorage.instance = new RemultAsyncLocalStorage(
+      remultStatic.asyncContext = new RemultAsyncLocalStorage(
         new AsyncLocalStorage(),
       )
       RemultAsyncLocalStorage.enable()
@@ -105,7 +106,7 @@ describe('backend method context awareness', () => {
       ).toBe(2)
       expect(ok).toBe(true)
     } finally {
-      RemultAsyncLocalStorage.instance = new RemultAsyncLocalStorage(undefined!)
+      remultStatic.asyncContext = new RemultAsyncLocalStorage(undefined!)
       RemultAsyncLocalStorage.disable()
     }
   })
