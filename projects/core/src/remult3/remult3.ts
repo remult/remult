@@ -737,7 +737,6 @@ export type ClassFieldDecorator<entityType, valueType> = (
     | ClassFieldDecoratorContextStub<entityType, valueType | undefined>,
   c?: any,
 ) => void
-//y1 - another toOne scenario - for a one to one relation, where the other table has my id in one of its fields.
 //y1 - number default storage in knex is decimal and it by default has 8,2 - meaning only 999,999 - I think it should be way bigger than that. in firefly we do at least 18 - https://discord.com/channels/975754286384418847/1195162533447876658
 //y1 - talk about the parameter issue with backend methods
 //y1 - tried to upgrade vitest, nuxt tests are failing with loading uuid - sounds familiar?
