@@ -52,7 +52,7 @@ export interface BackendMethodOptions<type> {
   queue?: boolean
   /** EXPERIMENTAL: Determines if the user should be blocked while this `BackendMethod` is running*/
   blockUser?: boolean
-  paramTypes?: any[]
+  paramTypes?: any[] | (() => any[])
 }
 export const CaptionTransformer: {
   /**

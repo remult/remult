@@ -173,7 +173,7 @@ export interface BackendMethodOptions<type> {
   queue?: boolean
   /** EXPERIMENTAL: Determines if the user should be blocked while this `BackendMethod` is running*/
   blockUser?: boolean
-  paramTypes?: any[]
+  paramTypes?: any[] | (() => any[])
 }
 
 interface serverMethodInArgs {
@@ -225,7 +225,11 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
     checkTarget(target)
     if (target.prototype !== undefined) {
       var types: any[] = Reflect.getMetadata('design:paramtypes', target, key)
-      if (options.paramTypes) types = options.paramTypes
+      if (options.paramTypes)
+        types =
+          typeof options.paramTypes === 'function'
+            ? options.paramTypes()
+            : options.paramTypes
       // if types are undefined - you've forgot to set: "emitDecoratorMetadata":true
 
       let serverAction = new myServerAction(
@@ -257,7 +261,11 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
     }
 
     var types: any[] = Reflect.getMetadata('design:paramtypes', target, key)
-    if (options.paramTypes) types = options.paramTypes
+    if (options.paramTypes)
+      types =
+        typeof options.paramTypes === 'function'
+          ? options.paramTypes()
+          : options.paramTypes
     let x = remultStatic.classHelpers.get(target.constructor)
     if (!x) {
       x = new ClassHelper()

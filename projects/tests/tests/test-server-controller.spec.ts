@@ -91,6 +91,10 @@ class testBasics {
   static async testDate(d: Date) {
     return d.getFullYear()
   }
+  @BackendMethod({ allowed: true, paramTypes: () => [Date] })
+  static async testDate2(d: Date) {
+    return d.getFullYear()
+  }
   @BackendMethod({ allowed: false })
   static async testForbidden2() {}
   @BackendMethod({ allowed: true, paramTypes: [myType] })
@@ -358,6 +362,7 @@ describe('test Server Controller basics', () => {
     tb.theDate = new Date(1976, 6, 16)
     expect(await tb.testDate()).toBe(1976)
   })
+
   it('test server Method Date on server', async () => {
     let tb = new testBasics(c)
     tb.theDate = new Date(1976, 6, 16)
@@ -378,6 +383,10 @@ describe('test Server Controller basics', () => {
   })
   it('test server function Date', async () => {
     let r = await testBasics.testDate(new Date(1976, 6, 16))
+    expect(r).toBe(1976)
+  })
+  it('test server function Date 2', async () => {
+    let r = await testBasics.testDate2(new Date(1976, 6, 16))
     expect(r).toBe(1976)
   })
   it('test server function custom type', async () => {
