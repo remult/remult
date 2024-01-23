@@ -2793,7 +2793,10 @@ export interface RelationFieldInfo {
 }
 //[ ] RelationOptions from TBD is not exported
 //[ ] Repository from TBD is not exported
-//[ ] RelationFields from TBD is not exported
+export interface RelationFields {
+  fields: Record<string, string>
+  compoundIdField: string | undefined
+}
 export interface RelationInfo {
   toType: () => any
   type: RelationFieldInfo["type"]
