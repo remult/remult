@@ -127,7 +127,7 @@ export class ForbiddenError extends Error {
 export class myServerAction extends Action<inArgs, result> {
   constructor(
     name: string,
-    private types: any[],
+    private types: () => any[],
     private options: BackendMethodOptions<any>,
     public originalMethod: (args: any[]) => any,
   ) {
@@ -146,7 +146,7 @@ export class myServerAction extends Action<inArgs, result> {
         throw new ForbiddenError()
 
       info.args = await prepareReceivedArgs(
-        this.types,
+        this.types(),
         info.args,
         remult,
         ds,
@@ -223,23 +223,26 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
     const originalMethod = descriptor ? descriptor.value : target
     let result = originalMethod
     checkTarget(target)
-    if (target.prototype !== undefined) {
+    function getTypes() {
       var types: any[] = Reflect.getMetadata('design:paramtypes', target, key)
       if (options.paramTypes)
         types =
           typeof options.paramTypes === 'function'
             ? options.paramTypes()
             : options.paramTypes
+      return types
+    }
+    if (target.prototype !== undefined) {
       // if types are undefined - you've forgot to set: "emitDecoratorMetadata":true
 
       let serverAction = new myServerAction(
         (options?.apiPrefix ? options.apiPrefix + '/' : '') + key,
-        types,
+        () => getTypes(),
         options,
         (args) => originalMethod.apply(undefined, args),
       )
       serverAction.doWork = async (args, self, url, http) => {
-        args = prepareArgsToSend(types, args)
+        args = prepareArgsToSend(getTypes(), args)
         if (options.blockUser === false) {
           return await remultStatic.actionInfo.runActionWithoutBlockingUI(
             async () => (await serverAction.run({ args }, url, http)).data,
@@ -260,12 +263,6 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
       } else return result
     }
 
-    var types: any[] = Reflect.getMetadata('design:paramtypes', target, key)
-    if (options.paramTypes)
-      types =
-        typeof options.paramTypes === 'function'
-          ? options.paramTypes()
-          : options.paramTypes
     let x = remultStatic.classHelpers.get(target.constructor)
     if (!x) {
       x = new ClassHelper()
@@ -305,7 +302,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                 let r: serverMethodOutArgs
                 await doTransaction(remult, async () => {
                   d.args = await prepareReceivedArgs(
-                    types,
+                    getTypes(),
                     d.args,
                     remult,
                     remult.dataProvider,
@@ -390,7 +387,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
         baseUrl?: string,
         http?: RestDataProviderHttpProvider,
       ): Promise<any> {
-        args = prepareArgsToSend(types, args)
+        args = prepareArgsToSend(getTypes(), args)
 
         if (remultStatic.allEntities.includes(target.constructor)) {
           let defs = getEntityRef(self) as rowHelperImplementation<any>

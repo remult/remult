@@ -828,3 +828,10 @@ remult.apiClient.url='localhost:3007/api
 //y2 - should enforce integer - currently we probably round / truncate it
 //p1 - adjust react tutorial to esm
 //p1 - write docs on with remult - and usage in init api
+/*y1 - discuss sql stuff:
+     https://discord.com/channels/975754286384418847/975754286384418852/1198997156678357043
+     https://codesandbox.io/p/devbox/demo-sql-expression-forked-f94p6m?file=%2Fsrc%2Findex.ts%3A21%2C3-21%2C12&workspaceId=c0f7eccf-c151-423b-ac8e-0f0f3e1ad350
+     https://codesandbox.io/p/devbox/demo-sql-expression-forked-c2jhyc?file=%2Fsrc%2Findex.ts%3A37%2C50&workspaceId=7e9d0505-ea79-46f1-8973-50cadde4fa96
+
+
+*/

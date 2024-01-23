@@ -5,6 +5,7 @@ export {
   getRelationFieldInfo,
   RelationFieldInfo,
   RelationInfo,
+  RelationFields,
 } from './src/remult3/relationInfoMember.js'
 export {
   decorateColumnSettings,
