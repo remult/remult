@@ -509,7 +509,6 @@ function supportsJsonLoadingAndSaving(knex: Knex) {
   if (
     client?.includes('sqlite3') ||
     client?.includes('mssql') ||
-    client?.includes('mysql2') ||
     client?.includes('mysql')
   )
     return false
