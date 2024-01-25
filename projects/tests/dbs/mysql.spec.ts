@@ -1,6 +1,7 @@
-import { describe } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import * as Knex from 'knex'
 import { knexTests } from './shared-tests/test-knex'
+import { KnexDataProvider } from '../../core/remult-knex'
 
 describe.skipIf(!process.env['TEST_MYSQL'])('mysql', () => {
   knexTests(
@@ -15,6 +16,7 @@ describe.skipIf(!process.env['TEST_MYSQL'])('mysql', () => {
       },
       //debug: true
     }),
+    (props) => {},
   )
 })
 

@@ -43,7 +43,7 @@ export class KnexDataProvider implements DataProvider {
   }
 
   getEntityDataProvider(entity: EntityMetadata<any>): EntityDataProvider {
-    if (!supportsJson(this.knex))
+    if (!supportsJsonLoadingAndSaving(this.knex))
       for (const f of entity.fields.toArray()) {
         if (f.valueConverter.fieldTypeInDb === 'json') {
           //@ts-ignore
@@ -54,6 +54,7 @@ export class KnexDataProvider implements DataProvider {
           }
         }
       }
+
     return new KnexEntityDataProvider(entity, this.knex)
   }
   async transaction(
@@ -450,7 +451,12 @@ export class KnexSchemaBuilder {
             if (!cols.get(x)!.readonly || isAutoIncrement(x)) {
               if (isAutoIncrement(x)) b.increments(cols.get(x)!.name)
               else {
-                buildColumn(x, cols.get(x)!.name, b, supportsJson(this.knex))
+                buildColumn(
+                  x,
+                  cols.get(x)!.name,
+                  b,
+                  supportsJsonDataStorage(this.knex),
+                )
                 if (x == entity.idMetadata.field) b.primary([cols.get(x)!.name])
               }
             }
@@ -473,7 +479,7 @@ export class KnexSchemaBuilder {
     if (!(await this.knex.schema.hasColumn(e.$entityName, colName))) {
       await logSql(
         this.knex.schema.alterTable(e.$entityName, (b) => {
-          buildColumn(col, colName, b, supportsJson(this.knex))
+          buildColumn(col, colName, b, supportsJsonDataStorage(this.knex))
         }),
       )
     }
@@ -493,11 +499,17 @@ export class KnexSchemaBuilder {
   additionalWhere = ''
   constructor(private knex: Knex) {}
 }
-function supportsJson(knex: Knex) {
+function supportsJsonDataStorage(knex: Knex) {
+  const client: string = knex.client.config.client
+  if (client?.includes('sqlite3') || client?.includes('mssql')) return false
+  return true
+}
+function supportsJsonLoadingAndSaving(knex: Knex) {
   const client: string = knex.client.config.client
   if (
     client?.includes('sqlite3') ||
     client?.includes('mssql') ||
+    client?.includes('mysql2') ||
     client?.includes('mysql')
   )
     return false
