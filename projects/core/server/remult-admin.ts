@@ -1,12 +1,50 @@
+/**FROM */
+import fs from 'fs'
+function getHtml() {
+  return fs.readFileSync('tmp/index.html', 'utf8')
+}
+/**TO */
+
+import { remult } from '../src/remult-proxy.js'
+import { CompoundIdField } from '../src/CompoundIdField.js'
 import {
-  ClassType,
-  Remult,
-  remult,
-  repo,
-  Filter,
-  CompoundIdField,
-} from 'remult'
-import { getRelationFieldInfo } from 'remult/internals'
+  type RelationFields,
+  getRelationFieldInfo,
+} from '../src/remult3/relationInfoMember.js'
+import { Filter } from '../src/filter/filter-interfaces.js'
+import type { ClassType } from '../classType.js'
+
+export interface EntityUIInfo {
+  key: string
+  caption: string
+  fields: FieldUIInfo[]
+  ids: Record<string, true>
+  relations: EntityRelationToManyInfo[]
+}
+export interface EntityRelationToManyInfo extends RelationFields {
+  entityKey: string
+  where?: any
+}
+
+export interface FieldUIInfo {
+  key: string
+  valFieldKey: string
+  caption: string
+  type: 'json' | 'string' | 'number' | 'boolean'
+  relationToOne?: FieldRelationToOneInfo
+}
+export interface FieldRelationToOneInfo extends RelationFields {
+  entityKey: string
+  idField: string
+  captionField: string
+  where?: any
+}
+export interface AdminOptions extends DisplayOptions {
+  entities: ClassType<any>[]
+}
+export interface DisplayOptions {
+  baseUrl?: string
+}
 
 export default function remultAdminHtml(options: AdminOptions) {
   let optionsFromServer = { ...options }
@@ -16,7 +54,7 @@ export default function remultAdminHtml(options: AdminOptions) {
     '<!--PLACE_HERE-->',
     `<script >const entities = ${JSON.stringify(buildEntityInfo(options))}
     const optionsFromServer = ${JSON.stringify(optionsFromServer)}
-    </script>`
+    </script>`,
   )
 }
 
@@ -40,13 +78,13 @@ export function buildEntityInfo(options: AdminOptions) {
       const info = getRelationFieldInfo(x)
       if (info) {
         const relInfo = info.getFields()
-        const relRepo = repo(info.toEntity)
+        const relRepo = remult.repo(info.toEntity)
         const where =
           typeof info.options.findOptions === 'object' &&
           info.options.findOptions.where
             ? Filter.entityFilterToJson(
                 relRepo.metadata,
-                info.options.findOptions.where
+                info.options.findOptions.where,
               )
             : undefined
         const idField = relRepo.metadata.idMetadata.field.key
@@ -102,17 +140,3 @@ export function buildEntityInfo(options: AdminOptions) {
   }
   return entities
 }
-
-/**FROM */
-import fs from 'fs'
-import {
-  AdminOptions,
-  EntityRelationToManyInfo,
-  EntityUIInfo,
-  FieldRelationToOneInfo,
-  FieldUIInfo,
-} from './entity-info'
-function getHtml() {
-  return fs.readFileSync('tmp/index.html', 'utf8')
-}
-/**TO */

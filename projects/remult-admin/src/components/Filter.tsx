@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import { FieldUIInfo } from '../../lib/entity-info'
+import { FieldUIInfo } from '../../../core/server/remult-admin'
 import {
   ComparisonValueFilter,
   ContainsStringValueFilter,
   EntityFilter,
-} from 'remult'
+} from '../../../core/src/remult3/remult3'
 
 const defaultFilter: {
   key: string
@@ -42,7 +42,7 @@ export default function Filter({
         ...defaultFilter,
         key:
           fields.find(
-            (x) => x.key != 'id' && !filterValues.find((y) => y.key == x.key)
+            (x) => x.key != 'id' && !filterValues.find((y) => y.key == x.key),
           )?.key || '',
       },
     ])
@@ -66,8 +66,8 @@ export default function Filter({
             function set(key: keyof typeof field, value: any) {
               setFilterValues(
                 filterValues.map((x, j) =>
-                  i === j ? { ...x, [key]: value } : x
-                )
+                  i === j ? { ...x, [key]: value } : x,
+                ),
               )
             }
 
@@ -78,7 +78,7 @@ export default function Filter({
                     .filter(
                       (x) =>
                         x.key == field.key ||
-                        !filterValues.find((y) => y.key == x.key)
+                        !filterValues.find((y) => y.key == x.key),
                     )
                     .map((x) => (
                       <option

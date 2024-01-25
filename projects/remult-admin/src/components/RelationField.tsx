@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { FieldUIInfo } from '../../lib/entity-info'
+import { FieldUIInfo } from '../../../core/server/remult-admin'
 import { God } from '../God'
 import { SelectDialog } from './SelectDialog'
 

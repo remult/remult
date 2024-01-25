@@ -434,7 +434,10 @@ export function Field<entityType = any, valueType = any>(
       if (!r.dbName) r.dbName = r.key
       let type = r.valueType
       if (!type) {
-        type = Reflect.getMetadata('design:type', target, key)
+        type =
+          typeof Reflect.getMetadata == 'function'
+            ? Reflect.getMetadata('design:type', target, key)
+            : []
         r.valueType = type
       }
       if (!r.target) r.target = target

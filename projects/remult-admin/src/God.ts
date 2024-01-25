@@ -1,14 +1,17 @@
-import { Entity, Fields, Repository, repo } from 'remult'
+import { remult } from '../../core/src/remult-proxy'
 import {
   EntityUIInfo,
   FieldRelationToOneInfo,
   FieldUIInfo,
-} from '../lib/entity-info'
+} from '../../core/server/remult-admin'
+import { Repository } from '../../core/src/remult3/remult3'
+import { Fields } from '../../core/src/remult3/Fields'
+import { Entity } from '../../core/src/remult3/entity'
 
 export class God {
   async getItemsForSelect(
     relation: FieldRelationToOneInfo,
-    search: string | undefined
+    search: string | undefined,
   ) {
     const repo = this.tables.find((t) => t.key == relation.entityKey)!.repo
     return (
@@ -65,7 +68,7 @@ export class God {
       })(C)
       return {
         ...info,
-        repo: repo(C),
+        repo: remult.repo(C),
       }
     })
   }

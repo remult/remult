@@ -1,9 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ErrorInfo } from 'remult'
+
 import { EditableField } from './EditableField'
-import { EntityRelationToManyInfo, FieldUIInfo } from '../../lib/entity-info'
+import {
+  EntityRelationToManyInfo,
+  FieldUIInfo,
+} from '../../../core/server/remult-admin'
 import { God } from '../God'
 import { Table } from './table'
+import { ErrorInfo } from '../../../core/src/data-interfaces'
 
 export function EditableRow({
   row,
@@ -25,7 +29,7 @@ export function EditableRow({
   const [value, setValue] = useState(row)
   const [error, setError] = useState<ErrorInfo>()
   const [relation, setRelation] = useState<EntityRelationToManyInfo | false>(
-    false
+    false,
   )
   const relationWhere = useMemo(() => {
     const result: any = {}
@@ -42,14 +46,14 @@ export function EditableRow({
     () =>
       typeof relation === 'object' &&
       god.tables.find((x) => x.key === relation.entityKey),
-    [relation]
+    [relation],
   )
   useEffect(() => {
     setValue(row)
   }, [row])
   const changed = useMemo(
     () => Boolean(columns.find((x) => value[x.key] != row[x.key])),
-    [value, row]
+    [value, row],
   )
   async function doSave() {
     try {

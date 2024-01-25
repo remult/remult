@@ -5,8 +5,8 @@ import express from 'vite3-plugin-express'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), viteSingleFile(), , express('src/test-project/server/')],
-  server: { proxy: { '/api': 'http://localhost:3002' } },
+  plugins: [react(), viteSingleFile(), , express('src/server/')],
+
   define: {
     __DEV__: process.env.DEV === 'true',
   },

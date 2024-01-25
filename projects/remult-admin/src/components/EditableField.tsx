@@ -1,4 +1,4 @@
-import { FieldUIInfo } from '../../lib/entity-info'
+import { FieldUIInfo } from '../../../core/server/remult-admin'
 import { God } from '../God'
 import { RelationField } from './RelationField'
 import {

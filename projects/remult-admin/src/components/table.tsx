@@ -1,9 +1,17 @@
 import { useEffect, useState } from 'react'
-import { EntityOrderBy, Repository, FindOptions, EntityFilter } from 'remult'
-import { EntityRelationToManyInfo, FieldUIInfo } from '../../lib/entity-info'
+
+import {
+  EntityRelationToManyInfo,
+  FieldUIInfo,
+} from '../../../core/server/remult-admin'
 import { EditableRow } from './EditableRow'
 import Filter from './Filter'
 import { God } from '../God'
+import {
+  EntityFilter,
+  FindOptions,
+  Repository,
+} from '../../../core/src/remult3/remult3'
 
 export function Table({
   columns,

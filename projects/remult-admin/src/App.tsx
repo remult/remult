@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 
 import { Table } from './components/table'
-import { DisplayOptions, EntityUIInfo } from '../lib/entity-info'
+import { DisplayOptions, EntityUIInfo } from '../../core/server/remult-admin'
 import {
   BrowserRouter,
   Routes,

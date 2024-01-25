@@ -1,7 +1,7 @@
 import { FC } from 'react'
 import { Handle, NodeProps, Position } from 'reactflow'
 import './Entity.css'
-import { EntityUIInfo } from '../../../lib/entity-info'
+import { EntityUIInfo } from '../../../../core/server/remult-admin'
 
 export const EntityNode: FC<NodeProps<EntityUIInfo>> = ({ data }) => {
   return (

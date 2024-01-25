@@ -1,4 +1,6 @@
-import { Entity, Fields, Relations, Validators } from 'remult'
+import { Fields, Relations } from '../../../../core/src/remult3/Fields'
+import { Entity } from '../../../../core/src/remult3/entity'
+import { Validators } from '../../../../core/src/validators'
 
 @Entity('customers', {
   allowApiCrud: true,

@@ -15,7 +15,7 @@ import 'reactflow/dist/style.css'
 
 import { EntityNode } from './Entity'
 import { useCallback, useEffect } from 'react'
-import { EntityUIInfo } from '../../../lib/entity-info'
+import { EntityUIInfo } from '../../../../core/server/remult-admin'
 
 const initialNodes: Node<EntityUIInfo>[] = []
 const initialEdges: Edge[] = []
@@ -44,7 +44,7 @@ export function Erd({ god }: { god: God }) {
                     node!,
                     nodes.find((n) => n.id === e.target)!,
                     e.sourceHandle!,
-                    e.targetHandle!
+                    e.targetHandle!,
                   ),
                 }
               } else if (e.target === node.id) {
@@ -54,13 +54,13 @@ export function Erd({ god }: { god: God }) {
                     nodes.find((n) => n.id === e.source)!,
                     node!,
                     e.sourceHandle!,
-                    e.targetHandle!
+                    e.targetHandle!,
                   ),
                 }
               }
 
               return e
-            })
+            }),
           )
         }
       })
@@ -68,10 +68,10 @@ export function Erd({ god }: { god: God }) {
       onNodesChange(nodeChanges)
       localStorage.setItem(
         'erd',
-        JSON.stringify(nodes.map((x) => ({ id: x.id, position: x.position })))
+        JSON.stringify(nodes.map((x) => ({ id: x.id, position: x.position }))),
       )
     },
-    [onNodesChange, setEdges, nodes, edges]
+    [onNodesChange, setEdges, nodes, edges],
   )
 
   useEffect(() => {
@@ -97,7 +97,7 @@ export function Erd({ god }: { god: God }) {
     for (const entity of god.tables) {
       function createEdge(
         toEntity: string,
-        relationFields: Record<string, string>
+        relationFields: Record<string, string>,
       ) {
         const target = god.tables.find((x) => x.key === toEntity)
 
@@ -156,7 +156,7 @@ function returnHandles(
   sourceNode: Node,
   targetNode: Node,
   sourceField: string,
-  targetField: string
+  targetField: string,
 ) {
   return {
     sourceHandle:

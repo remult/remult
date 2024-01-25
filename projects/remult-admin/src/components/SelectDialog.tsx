@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { FieldRelationToOneInfo, FieldUIInfo } from '../../lib/entity-info'
+import {
+  FieldRelationToOneInfo,
+  FieldUIInfo,
+} from '../../../core/server/remult-admin'
 import { God } from '../God'
 
 export function SelectDialog({
