@@ -16,7 +16,25 @@ describe.skipIf(!process.env['TEST_MYSQL'])('mysql', () => {
       },
       //debug: true
     }),
-    (props) => {},
+    (props) => {
+      it('test json', async () => {
+        const db = props.getDb() as KnexDataProvider
+        await db.knex.schema.dropTableIfExists('testJson')
+
+        await db.knex.schema.createTable('testJson', (t) => {
+          t.integer('id')
+          t.json('js')
+        })
+        await db.knex('testJson').insert({ id: 1, js: { a: 1, b: 2 } })
+        expect(await db.knex('testJson').where({ id: 1 }).first())
+          .toMatchInlineSnapshot(`
+          RowDataPacket {
+            "id": 1,
+            "js": "{\\"a\\": 1, \\"b\\": 2}",
+          }
+        `)
+      })
+    },
   )
 })
 
@@ -32,5 +50,27 @@ describe.skipIf(!process.env['TEST_MYSQL2'])('mysql2', () => {
       },
       //debug: true
     }),
+    (props) => {
+      it('test json', async () => {
+        const db = props.getDb() as KnexDataProvider
+        await db.knex.schema.dropTableIfExists('testJson')
+
+        await db.knex.schema.createTable('testJson', (t) => {
+          t.integer('id')
+          t.json('js')
+        })
+        await db.knex('testJson').insert({ id: 1, js: { a: 1, b: 2 } })
+        expect(await db.knex('testJson').where({ id: 1 }).first())
+          .toMatchInlineSnapshot(`
+            {
+              "id": 1,
+              "js": {
+                "a": 1,
+                "b": 2,
+              },
+            }
+          `)
+      })
+    },
   )
 })
