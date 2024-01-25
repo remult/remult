@@ -633,6 +633,11 @@ export function remultGraphql(options: {
             const refType = ri.toEntity
             ref = entities.find((i: any) => i.entityType === refType)
           }
+          if (!ref) {
+            throw new Error(
+              `Entity "${ri.toEntity.name}" that is used by the relation "${f.key}" in "${meta.entityType.name}" was not found in the 'entities' array.`,
+            )
+          }
           notARealField = ri.type === 'toOne' || ri.type === 'toMany'
           const refKey = ref.key
           switch (ri.type) {
@@ -692,11 +697,11 @@ export function remultGraphql(options: {
                 comment: `List all \`${getMetaType(meta)}\` of \`${refKey}\``,
               })
 
-              currentType.query.resultProcessors.push((r) => {
+              currentType.query.resultProcessors.push((r, y) => {
                 r[f.key] = async (args: any, req: any, gqlInfo: any) => {
                   const remult = await options.getRemultFromRequest!(req)
                   const myRepo = remult.repo(meta.entityType)
-                  const item = myRepo.fromJson(r)
+                  const item = myRepo.fromJson(y)
                   let relRepo = myRepo.relations(item)[f.key] as Repository<any>
                   return handleRequestWithDataApiContextBasedOnRepo(
                     relRepo,

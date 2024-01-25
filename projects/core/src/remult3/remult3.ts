@@ -741,6 +741,18 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //y1 - talk about the parameter issue with backend methods
 //y1 - tried to upgrade vitest, nuxt tests are failing with loading uuid - sounds familiar?
 
+//p1 - live query with include
+//p1 - relation from order details to order gave a compound id info - and it is not true - same for the relation to product
+//p1 - include admin in remult
+//p1 - new row when there are relations, looks funny (see product)
+//p1 - the + row in the bottom should extend to the full width
+
+/*y2 - 
+  @Fields.string<Category>({
+    allowApiUpdate: (c) => getEntityRef(c).isNew(),
+  })
+  Description = ""*/
+
 //y2 - from the crm-demo(https://crm-demo.up.railway.app/deals), after editing a deal: - _updateEntityBasedOnApi
 
 //y2 - Backend methods are transactions, it's not intuitive and maybe should be optional / opt in

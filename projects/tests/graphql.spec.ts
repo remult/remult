@@ -13,6 +13,22 @@ import {
 import { remultGraphql, translateWhereToRestBody } from '../core/graphql'
 import { createEntity } from './tests/dynamic-classes'
 
+@Entity('categoriesmore', {
+  allowApiCrud: true,
+})
+class CategoryMore {
+  @Fields.cuid()
+  id!: string
+
+  @Fields.string()
+  moreInfo = ''
+
+  @Fields.string({ allowNull: true })
+  category_id = ''
+  @Relations.toOne(() => Category, { field: 'category_id', allowNull: true })
+  category: Category
+}
+
 @FieldType({ displayValue: (_, v) => v?.name })
 @Entity('categories', { allowApiCrud: true })
 class Category {
@@ -31,6 +47,14 @@ class Category {
   tasksWithCategory2SetToMe?: Task[]
   @Relations.toMany<Category, Task>(() => Task, { field: 'category3_id' })
   tasksWithCategory3SetToMe?: Task[]
+
+  @Relations.toOne<Category, CategoryMore>(() => CategoryMore, {
+    fields: {
+      category_id: 'id',
+    },
+    allowNull: true,
+  })
+  categorymore?: CategoryMore
 }
 
 @Entity('tasks', {
@@ -90,7 +114,7 @@ describe('graphql', () => {
     remult = new Remult(new InMemoryDataProvider())
 
     const { typeDefs, resolvers } = remultGraphql({
-      entities: [Task, Category],
+      entities: [Task, Category, CategoryMore],
       getRemultFromRequest: async () => remult,
     })
 
@@ -1013,11 +1037,20 @@ describe('graphql', () => {
       }
     `)
   })
+  it('test fail with partial entities', async () => {
+    // rmv removeComments is very handy for testing!
+    expect(() =>
+      remultGraphql({
+        entities: [Task, Category],
+        removeComments: true,
+      }),
+    ).toThrowErrorMatchingInlineSnapshot('"Entity \\"CategoryMore\\" that is used by the relation \\"categorymore\\" in \\"Category\\" was not found in the \'entities\' array."')
+  })
 
   it('test basics', async () => {
     // rmv removeComments is very handy for testing!
     const { typeDefs } = remultGraphql({
-      entities: [Task, Category],
+      entities: [Task, Category, CategoryMore],
       removeComments: true,
     })
 
@@ -1027,6 +1060,8 @@ describe('graphql', () => {
           tasks(limit: Int, page: Int, offset: Int, orderBy: tasksOrderBy, where: tasksWhere): TaskConnection
           category(id: ID!): Category
           categories(limit: Int, page: Int, offset: Int, orderBy: categoriesOrderBy, where: categoriesWhere): CategoryConnection
+          categoryMore(id: ID!): CategoryMore
+          categoriesmore(limit: Int, page: Int, offset: Int, orderBy: categoriesmoreOrderBy, where: categoriesmoreWhere): CategoryMoreConnection
           node(nodeId: ID!): Node
       }
 
@@ -1037,6 +1072,9 @@ describe('graphql', () => {
           createCategory(input: CreateCategoryInput!, clientMutationId: String): CreateCategoryPayload
           updateCategory(id: ID!, patch: UpdateCategoryInput!, clientMutationId: String): UpdateCategoryPayload
           deleteCategory(id: ID!, clientMutationId: String): DeleteCategoryPayload
+          createCategoryMore(input: CreateCategoryMoreInput!, clientMutationId: String): CreateCategoryMorePayload
+          updateCategoryMore(id: ID!, patch: UpdateCategoryMoreInput!, clientMutationId: String): UpdateCategoryMorePayload
+          deleteCategoryMore(id: ID!, clientMutationId: String): DeleteCategoryMorePayload
       }
 
       type Task implements Node {
@@ -1117,6 +1155,7 @@ describe('graphql', () => {
       type Category implements Node {
           id: String!
           name: String!
+          categorymore: CategoryMore
           tasksOfcategory(limit: Int, page: Int, offset: Int, orderBy: tasksOrderBy, where: tasksWhere): TaskConnection
           tasksWithCategory2SetToMe(limit: Int, page: Int, offset: Int, orderBy: tasksOrderBy, where: tasksWhere): TaskConnection
           tasksWithCategory3SetToMe(limit: Int, page: Int, offset: Int, orderBy: tasksOrderBy, where: tasksWhere): TaskConnection
@@ -1160,6 +1199,60 @@ describe('graphql', () => {
       }
 
       type DeleteCategoryPayload {
+          id: ID
+          error: ErrorDetail
+          clientMutationId: String
+      }
+
+      type CategoryMore implements Node {
+          id: String!
+          moreInfo: String!
+          category_id: String
+          category: Category
+          nodeId: ID!
+      }
+
+      input categoriesmoreOrderBy {
+        id: OrderByDirection
+        moreInfo: OrderByDirection
+        category_id: OrderByDirection
+      }
+
+      input categoriesmoreWhere {
+        id: WhereString
+        moreInfo: WhereString
+        category_id: WhereStringNullable
+        OR: [categoriesmoreWhere!]
+      }
+
+      type CategoryMoreConnection {
+          totalCount: Int!
+          items: [CategoryMore!]!
+      }
+
+      input CreateCategoryMoreInput {
+          moreInfo: String
+          category_id: String
+      }
+
+      type CreateCategoryMorePayload {
+          categoryMore: CategoryMore
+          error: ErrorDetail
+          clientMutationId: String
+      }
+
+      input UpdateCategoryMoreInput {
+          moreInfo: String
+          category_id: String
+      }
+
+      type UpdateCategoryMorePayload {
+          categoryMore: CategoryMore
+          error: ErrorDetail
+          clientMutationId: String
+      }
+
+      type DeleteCategoryMorePayload {
           id: ID
           error: ErrorDetail
           clientMutationId: String
