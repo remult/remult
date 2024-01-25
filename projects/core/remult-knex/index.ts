@@ -54,6 +54,17 @@ export class KnexDataProvider implements DataProvider {
           }
         }
       }
+    else if (this.knex.client.config.client === 'mysql2') {
+      for (const f of entity.fields.toArray()) {
+        if (f.valueConverter.fieldTypeInDb === 'json') {
+          //@ts-ignore
+          f.valueConverter = {
+            ...f.valueConverter,
+            toDb: ValueConverters.JsonString.toDb,
+          }
+        }
+      }
+    }
 
     return new KnexEntityDataProvider(entity, this.knex)
   }

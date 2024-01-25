@@ -59,7 +59,9 @@ describe.skipIf(!process.env['TEST_MYSQL2'])('mysql2', () => {
           t.integer('id')
           t.json('js')
         })
-        await db.knex('testJson').insert({ id: 1, js: { a: 1, b: 2 } })
+        await db
+          .knex('testJson')
+          .insert({ id: 1, js: JSON.stringify({ a: 1, b: 2 }) })
         expect(await db.knex('testJson').where({ id: 1 }).first())
           .toMatchInlineSnapshot(`
             {
@@ -70,6 +72,20 @@ describe.skipIf(!process.env['TEST_MYSQL2'])('mysql2', () => {
               },
             }
           `)
+        await db
+          .knex('testJson')
+          .update({ js: JSON.stringify({ a: 11, b: 22 }) })
+          .where({ id: 1 })
+        expect(await db.knex('testJson').where({ id: 1 }).first())
+          .toMatchInlineSnapshot(`
+          {
+            "id": 1,
+            "js": {
+              "a": 11,
+              "b": 22,
+            },
+          }
+        `)
       })
     },
   )

@@ -1050,6 +1050,16 @@ export function commonDbTests(
     })
     let item = await r.findFirst()
     expect(item.person).toEqual({ firstName: 'noam', lastName: 'honig' })
+    await r.update(1, { person: { firstName: 'maayan', lastName: 'honig' } })
+    expect(await r.findFirst()).toMatchInlineSnapshot(`
+      testObjectJson {
+        "id": 1,
+        "person": {
+          "firstName": "maayan",
+          "lastName": "honig",
+        },
+      }
+    `)
   })
   it('test json structure', async () => {
     const e = class {
