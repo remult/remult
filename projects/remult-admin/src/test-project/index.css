@@ -1,0 +1,113 @@
+body {
+  --border-color: #0000001a;
+  --background-color: white;
+  color: #323338;
+  height: 100vh;
+}
+.root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+thead {
+  position: sticky;
+  top: 0;
+  background-color: var(--background-color);
+  z-index: 2;
+}
+thead ::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0; /* Align to the bottom of the thead */
+  height: 1px; /* Height of the border */
+  background-color: var(--border-color);
+  z-index: 1; /* Ensure it's above the thead content but below the sticky cell if any */
+}
+th {
+  text-align: center;
+}
+th,
+td {
+  border: 1px solid var(--border-color);
+  padding: 0.5rem;
+
+  vertical-align: middle;
+}
+.table-container {
+  overflow-x: auto;
+}
+div {
+}
+.action-tab {
+  position: sticky;
+  right: 0;
+  background-color: var(--background-color);
+  white-space: nowrap;
+}
+td.action-tab {
+  padding: 0rem;
+}
+.action-tab::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 1px; /* Width of the border */
+  background-color: var(--border-color); /* Color of the border */
+}
+
+button {
+  cursor: pointer;
+  padding: 0.5rem;
+  border: 2px solid var(--border-color);
+  border-radius: 0.5rem;
+  white-space: nowrap;
+  height: 2.5rem;
+}
+.icon-button {
+  width: 2.5rem;
+  border: 0;
+  border-radius: 3rem;
+  transition: transform 0.2s; /* Animation lasts 0.6s */
+  transform-origin: center; /* Ensures the element rotates around its center */
+}
+
+.icon-button.open {
+  transform: rotate(90deg); /* Rotate the element 360 degrees on hover */
+}
+
+button:hover,
+.tab:hover {
+  background-color: rgb(229, 231, 235);
+}
+button:active,
+.tab:active {
+  background-color: rgb(209, 213, 219);
+}
+
+.tab {
+  padding: 0.5rem;
+  display: inline-block;
+  margin-bottom: 0.5rem;
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+}
+.tab:hover {
+  cursor: pointer;
+}
+
+.tab.active {
+  border-bottom: 2px solid rgb(0, 115, 234);
+}
+
+dialog * {
+  all: revert;
+}
+.page-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}

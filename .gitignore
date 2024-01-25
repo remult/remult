@@ -73,3 +73,7 @@ test.heapsnapshot
 projects/test-servers/*/db
 test-results.json
 test-results.xml
+projects/remult-admin/db/customers.json
+projects/remult-admin/db/Order Details.json
+projects/remult-admin/db/orders.json
+projects/remult-admin/db/Products.json
