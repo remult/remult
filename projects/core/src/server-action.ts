@@ -224,7 +224,10 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
     let result = originalMethod
     checkTarget(target)
     function getTypes() {
-      var types: any[] = Reflect.getMetadata('design:paramtypes', target, key)
+      var types: any[] =
+        typeof Reflect.getMetadata == 'function'
+          ? Reflect.getMetadata('design:paramtypes', target, key)
+          : []
       if (options.paramTypes)
         types =
           typeof options.paramTypes === 'function'

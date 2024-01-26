@@ -41,6 +41,7 @@ import { serverActionField } from '../src/server-action-info.js'
 import { initDataProvider } from './initDataProvider.js'
 import { remult } from '../src/remult-proxy.js'
 import { remultStatic } from '../src/remult-static.js'
+import remultAdminHtml from './remult-admin.js'
 
 export interface RemultServerOptions<RequestType> {
   /**Entities to use for the api */
@@ -91,6 +92,8 @@ export interface RemultServerOptions<RequestType> {
     serialize(remult: Remult): Promise<any>
     deserialize(json: any, options: InitRequestOptions): Promise<void>
   }
+  /** When set to true, will display an admin ui in the `/api/admin` url */
+  admin?: boolean
 
   /** Storage to use for backend methods that use queue */
   queueStorage?: QueueStorage
@@ -155,6 +158,7 @@ export type GenericRequestHandler = (
 
 export interface ServerHandleResponse {
   data?: any
+  html?: string
   statusCode: number
 }
 export interface RemultServer<RequestType>
@@ -194,6 +198,7 @@ export interface GenericRequestInfo {
 
 export interface GenericResponse {
   json(data: any)
+  send(html: string)
   status(statusCode: number): GenericResponse //exists for express and next and not in opine(In opine it's setStatus)
   end()
 }
@@ -362,7 +367,19 @@ export class RemultServerImplementation<RequestType>
           },
           r,
         )
-
+      if (this.options.admin) {
+        r.route(this.options.rootPath + '/admin*').get(
+          this.process(async (remult, req, res, orig, origResponse) => {
+            origResponse.send(
+              remultAdminHtml({
+                remult: remult,
+                entities: this.options.entities,
+                baseUrl: this.options.rootPath + '/admin',
+              }),
+            )
+          }),
+        )
+      }
       if (this.options.subscriptionServer instanceof SseSubscriptionServer) {
         const streamPath = this.options.rootPath + '/' + streamUrl
 
@@ -1144,13 +1161,18 @@ export class EntityQueueStorage implements QueueStorage {
 export class RouteImplementation<RequestType> {
   constructor(private coreOptions: ServerCoreOptions<RequestType>) {}
   map = new Map<string, Map<string, GenericRequestHandler>>()
+  starRoutes: { route: string; handler: Map<string, GenericRequestHandler> }[] =
+    []
   route(path: string): SpecificRoute {
     //consider using:
     //* https://raw.githubusercontent.com/cmorten/opine/main/src/utils/pathToRegex.ts
     //* https://github.com/pillarjs/path-to-regexp
     let r = path.toLowerCase()
     let m = new Map<string, GenericRequestHandler>()
+
     this.map.set(r, m)
+    if (path.endsWith('*'))
+      this.starRoutes.push({ route: r.substring(0, r.length - 1), handler: m })
     const route = {
       get: (h: GenericRequestHandler) => {
         m.set('get', h)
@@ -1199,6 +1221,10 @@ export class RouteImplementation<RequestType> {
           if (gRes !== undefined) gRes.json(data)
           res({ statusCode: this.statusCode, data })
         }
+        send(html: string) {
+          if (gRes !== undefined) gRes.send(html)
+          res({ statusCode: this.statusCode, html })
+        }
         status(statusCode: number): GenericResponse {
           if (gRes !== undefined) gRes.status(statusCode)
           this.statusCode = statusCode
@@ -1246,6 +1272,13 @@ export class RouteImplementation<RequestType> {
     }
     let lowerPath = path.toLowerCase()
     let m = this.map.get(lowerPath)
+    if (!m)
+      for (const route of this.starRoutes) {
+        if (lowerPath.startsWith(route.route)) {
+          m = route.handler
+          break
+        }
+      }
 
     if (m) {
       let h = m.get(req.method.toLowerCase())
@@ -1254,6 +1287,7 @@ export class RouteImplementation<RequestType> {
         return
       }
     }
+
     let idPosition = path.lastIndexOf('/')
     if (idPosition >= 0) {
       lowerPath = lowerPath.substring(0, idPosition) + '/:id'

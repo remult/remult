@@ -31,6 +31,7 @@ export function remultSveltekit(
       const response: GenericResponse & ResponseRequiredForSSE = {
         end: () => {},
         json: () => {},
+        send: () => {},
         status: () => {
           return response
         },
@@ -66,6 +67,13 @@ export function remultSveltekit(
         return sseResponse
       }
       if (responseFromRemultHandler) {
+        if (responseFromRemultHandler.html)
+          return new Response(responseFromRemultHandler.html, {
+            status: responseFromRemultHandler.statusCode,
+            headers: {
+              'Content-Type': 'text/html',
+            },
+          })
         return new Response(JSON.stringify(responseFromRemultHandler.data), {
           status: responseFromRemultHandler.statusCode,
         })

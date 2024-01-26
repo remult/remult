@@ -52,6 +52,9 @@ export function remultHapi(
               end() {
                 res(h.response().code(status))
               },
+              send(html) {
+                res(h.response(html).code(status))
+              },
               json(data) {
                 res(h.response(data).code(status))
               },

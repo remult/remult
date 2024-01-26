@@ -11,7 +11,7 @@
     "build-tests": "tsc -p tsconfig.tests.json",
     "build-watch": "concurrently \"tsc -w -p projects/core/tsconfig.build.esm.json\" \"tsc -w -p projects/core/tsconfig.build.json\"",
     "all-servers": "concurrently -k -n \"koa,fastify,express,mw,deno-fresh,mwc,next,svelteKit,next-app\" -c \"bgBlue.bold,bgGreen.bold,bgCyan.bold,bgYellow.bold\" \"tsx --tsconfig tsconfig.server.json projects/test-servers/node-servers/koaServer.ts\" \"npm run fastify-server\" \"tsx --tsconfig tsconfig.server.json projects/test-servers/node-servers/expressServer.ts\" \"tsx --tsconfig tsconfig.server.json projects/test-servers/node-servers/middlewareServer.ts\" \"cd projects/test-servers/deno-fresh && deno task start\" \"tsx --tsconfig tsconfig.server.json projects/test-servers/node-servers/middlewareCore.ts\" \"cd projects/test-servers/next-server && npm run dev\" \"cd projects/test-servers/sveltekit-server && npm run dev\" \"cd projects/test-servers/next-app-server && npm run dev\" ",
-    "fastify-server": "tsx --tsconfig tsconfig.server.json projects/test-servers/node-servers/fastifyServer.ts",
+    "fastify-server": "tsx watch --tsconfig tsconfig.server.json projects/test-servers/node-servers/fastifyServer.ts",
     "test:ci": "vitest run --coverage",
     "patch-versions-experimental": " FOR /F %i in ('npm version prerelease -preid \"exp\" -m \"release %s\"') DO git push origin %i && npm run update-versions",
     "patch-versions": " FOR /F %i in ('npm version patch -m \"release %s\"') DO git push origin %i && npm run update-versions",
@@ -29,7 +29,8 @@
     "test-servers:nuxt:setup": "cd projects/test-servers/nuxt-server && npm i --force && tsx ../../../misc/copyRemultToNodeModules.ts && npm run build",
     "test-servers:sveltekit:setup": "cd projects/test-servers/sveltekit-server && npm i --force && tsx ../../../misc/copyRemultToNodeModules.ts && npm run build",
     "test-servers:setup-all": "run-p test-servers:*:setup",
-    "test-servers:next:setup": "cd projects/test-servers/next-server && npm i --force && tsx ../../../misc/copyRemultToNodeModules.ts && npm run build"
+    "test-servers:next:setup": "cd projects/test-servers/next-server && npm i --force && tsx ../../../misc/copyRemultToNodeModules.ts && npm run build",
+    "test-servers:next-app:setup": "cd projects/test-servers/next-app-server && npm i --force && tsx ../../../misc/copyRemultToNodeModules.ts && npm run build"
   },
   "private": true,
   "devDependencies": {

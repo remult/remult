@@ -99,4 +99,47 @@ describe('test router impl', async () => {
       }
     `)
   })
+  it('test *', async () => {
+    const r = new RouteImplementation<GenericRequestInfo>({
+      buildGenericRequestInfo: (req) => {
+        return req
+      },
+      getRequestBody: (req) => {
+        return undefined
+      },
+    })
+    let result: any = {}
+    r.route('/a*').get(async (req, res) => {
+      result.getWorks = true
+      res.json({ ok: true })
+      res.end()
+    })
+
+    expect(await r.handle({ url: '/a', method: 'GET' })).toMatchInlineSnapshot(`
+      {
+        "data": {
+          "ok": true,
+        },
+        "statusCode": 200,
+      }
+    `)
+    expect(await r.handle({ url: '/a/', method: 'GET' }))
+      .toMatchInlineSnapshot(`
+    {
+      "data": {
+        "ok": true,
+      },
+      "statusCode": 200,
+    }
+  `)
+    expect(await r.handle({ url: '/a/tasks', method: 'GET' }))
+      .toMatchInlineSnapshot(`
+      {
+        "data": {
+          "ok": true,
+        },
+        "statusCode": 200,
+      }
+    `)
+  })
 })
