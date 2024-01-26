@@ -2204,7 +2204,7 @@ export interface RemultServerOptions<RequestType> {
     serialize(remult: Remult): Promise<any>
     deserialize(json: any, options: InitRequestOptions): Promise<void>
   }
-  /** When set to true, will display an admin ui in the `/api/$admin` url */
+  /** When set to true, will display an admin ui in the `/api/admin` url */
   admin?: boolean
   /** Storage to use for backend methods that use queue */
   queueStorage?: QueueStorage
@@ -2364,7 +2364,7 @@ export interface RemultServerOptions<RequestType> {
     serialize(remult: Remult): Promise<any>
     deserialize(json: any, options: InitRequestOptions): Promise<void>
   }
-  /** When set to true, will display an admin ui in the `/api/$admin` url */
+  /** When set to true, will display an admin ui in the `/api/admin` url */
   admin?: boolean
   /** Storage to use for backend methods that use queue */
   queueStorage?: QueueStorage
