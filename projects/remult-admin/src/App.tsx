@@ -88,7 +88,7 @@ export default App
 
 //[ ] - support compound id (order details)
 //[ ] - relation from product to supplier one to many, did not present in the erd
-
+//[ ] - focus indication for buttons
 //[ ] - support where on relations (select from table of tables etc....)
 //[ ] - store erd positions
 //[ ] - support more complex relations

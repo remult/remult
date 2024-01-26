@@ -1,11 +1,3 @@
-/**FROM */
-import fs from 'fs'
-function getHtml() {
-  return fs.readFileSync('tmp/index.html', 'utf8')
-}
-/**TO */
-
-import { remult } from '../src/remult-proxy.js'
 import { CompoundIdField } from '../src/CompoundIdField.js'
 import {
   type RelationFields,
@@ -13,6 +5,8 @@ import {
 } from '../src/remult3/relationInfoMember.js'
 import { Filter } from '../src/filter/filter-interfaces.js'
 import type { ClassType } from '../classType.js'
+import type { Remult } from '../src/context.js'
+import { getHtml } from './get-remult-admin-html.js'
 
 export interface EntityUIInfo {
   key: string
@@ -41,6 +35,7 @@ export interface FieldRelationToOneInfo extends RelationFields {
 }
 export interface AdminOptions extends DisplayOptions {
   entities: ClassType<any>[]
+  remult: Remult
 }
 export interface DisplayOptions {
   baseUrl?: string
@@ -60,7 +55,9 @@ export default function remultAdminHtml(options: AdminOptions) {
 
 export function buildEntityInfo(options: AdminOptions) {
   const entities: EntityUIInfo[] = []
-  for (const metadata of options.entities.map((e) => remult.repo(e).metadata)) {
+  for (const metadata of options.entities.map(
+    (e) => options.remult.repo(e).metadata,
+  )) {
     let fields: FieldUIInfo[] = []
     let relations: EntityRelationToManyInfo[] = []
 
@@ -78,7 +75,7 @@ export function buildEntityInfo(options: AdminOptions) {
       const info = getRelationFieldInfo(x)
       if (info) {
         const relInfo = info.getFields()
-        const relRepo = remult.repo(info.toEntity)
+        const relRepo = options.remult.repo(info.toEntity)
         const where =
           typeof info.options.findOptions === 'object' &&
           info.options.findOptions.where

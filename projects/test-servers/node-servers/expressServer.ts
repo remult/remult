@@ -9,6 +9,7 @@ import { Task } from '../shared/Task'
 const app = express()
 const api = remultExpress({
   entities: [Task],
+  admin: true,
 })
 app.use(api)
 app.get('/api/test', api.withRemult, async (req, res) => {

@@ -29,6 +29,9 @@ export function remultFastify(
         end() {
           res.send()
         },
+        send(html) {
+          res.type('text/html').send(html)
+        },
         json(data) {
           res.send(data)
         },

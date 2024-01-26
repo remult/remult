@@ -6,6 +6,7 @@ import { authOptions } from '../auth/[...nextauth]/route'
 
 export const api = remultNextApp({
   entities: [Task],
+  admin: true,
   // using next auth experimental version based on: https://codevoweb.com/setup-and-use-nextauth-in-nextjs-13-app-directory/
   getUser: async () => {
     return (await getServerSession(authOptions))?.user as UserInfo

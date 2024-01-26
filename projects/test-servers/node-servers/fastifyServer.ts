@@ -5,7 +5,7 @@ import { remult } from '../../core/src/remult-proxy'
 import { Task } from '../shared/Task'
 ;(async () => {
   const server = fastify()
-  const api = remultFastify({ entities: [Task] })
+  const api = remultFastify({ entities: [Task], admin: true })
   const openApiDocument = api.openApiDoc({ title: 'tasks' })
   fs.writeFileSync(
     '/temp/test.json',
