@@ -755,7 +755,7 @@ describe('graphql', () => {
       {
         "data": {
           "deleteTask": {
-            "id": "2",
+            "id": 2,
           },
         },
       }
@@ -1147,7 +1147,7 @@ describe('graphql', () => {
       }
 
       type DeleteTaskPayload {
-          id: ID
+          id: Int
           error: ErrorDetail
           clientMutationId: String
       }
@@ -1199,7 +1199,7 @@ describe('graphql', () => {
       }
 
       type DeleteCategoryPayload {
-          id: ID
+          id: String
           error: ErrorDetail
           clientMutationId: String
       }
@@ -1253,7 +1253,7 @@ describe('graphql', () => {
       }
 
       type DeleteCategoryMorePayload {
-          id: ID
+          id: String
           error: ErrorDetail
           clientMutationId: String
       }
@@ -1839,7 +1839,7 @@ describe('graphql', () => {
       }
 
       type DeleteCPayload {
-          id: ID
+          id: Int
           error: ErrorDetail
           clientMutationId: String
       }
