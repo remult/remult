@@ -744,6 +744,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //y1 - tried to upgrade vitest, nuxt tests are failing with loading uuid - sounds familiar?
 //y1 - I think that the tests you've setup cover next app router - I added to the setup, but not sure where else
 
+//p1 - Small thing, I get SvelteKitError: Not found: /vite.svg
 //p1 - live query with include
 //p1 - relation from order details to order gave a compound id info - and it is not true - same for the relation to product
 //p1 - include admin in remult
