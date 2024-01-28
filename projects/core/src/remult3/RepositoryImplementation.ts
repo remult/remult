@@ -2205,7 +2205,8 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
         if (r.length > 1) this.idMetadata.field = new CompoundIdField(...r)
         else if (r.length == 1) this.idMetadata.field = r[0]
       } else this.idMetadata.field = r
-    } else {
+    }
+    if (!this.idMetadata.field) {
       if (this.fields['id']) this.idMetadata.field = this.fields['id']
       else this.idMetadata.field = [...this.fields][0]
     }
