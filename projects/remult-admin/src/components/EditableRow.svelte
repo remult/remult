@@ -13,13 +13,39 @@
   export let deleteAction: () => Promise<void> = () => Promise.resolve()
   export let columns: FieldUIInfo[]
   export let relations: EntityRelationToManyInfo[]
-  export let god: God
   export let rowId: any
 
-  let value = row
+  $: value = row
+  $: error = undefined
+  let relation: false | EntityRelationToManyInfo
+  $: relation = false
+
+  async function doSave() {
+    try {
+      error = undefined
+      await save(value)
+    } catch (err: any) {
+      alert(err.message)
+      error = err
+    }
+  }
 </script>
 
 <tr>
+  {#if relations.length > 0}
+    <td>
+      <button
+        title="Relations"
+        on:click={() => (relation = relation ? false : relations[0])}
+      >
+        {#if relation}
+          &or;
+        {:else}
+          &gt;
+        {/if}
+      </button>
+    </td>
+  {/if}
   {#each columns as x}
     <td>
       <EditableField
@@ -36,7 +62,6 @@
           //     },
           //   })
         }}
-        {god}
       />
 
       <!-- {error?.modelState?.[x.key] && (

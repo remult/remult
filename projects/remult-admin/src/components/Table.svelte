@@ -10,12 +10,10 @@
   } from '../../../core/server/remult-admin'
   import { onDestroy, onMount } from 'svelte'
   import EditableRow from './EditableRow.svelte'
-  import { God } from '../God'
 
   export let columns: FieldUIInfo[]
   export let relations: EntityRelationToManyInfo[]
   export let repo: Repository<any>
-  export let god: God
   export let parentRelation: Record<string, any> = {}
 
   let options: FindOptions<any> = {}
@@ -23,22 +21,29 @@
   let items = []
   let unSub: (() => void) | null = null
 
-  onMount(() => {
-    repo
+  const reSub = () => {
+    if (unSub) {
+      unSub()
+    }
+
+    unSub = repo
       .liveQuery({
-        // ...options,
+        ...options,
         // where: {
         //   $and: [userFilter, { ...parentRelation }],
         // },
       })
       .subscribe((info) => {
         items = info.applyChanges(items)
-        console.log(`ddd`, items)
       })
-  })
+  }
+
   onDestroy(() => {
     unSub && unSub()
   })
+
+  // trick to make sure reSub is called when repo changes
+  $: repo && reSub()
 
   const toggleOrderBy = (key: string) => {
     let dir = options.orderBy?.[key]
@@ -53,6 +58,9 @@
   <table>
     <thead>
       <tr>
+        {#if relations.length > 0}
+          <td />
+        {/if}
         {#each columns as column}
           <th on:click={() => toggleOrderBy(column.key)}>
             {column.caption}
@@ -77,7 +85,6 @@
           deleteAction={() => repo.delete(row)}
           {columns}
           {relations}
-          {god}
         />
       {/each}
     </tbody>

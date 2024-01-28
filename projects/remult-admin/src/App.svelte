@@ -6,6 +6,9 @@
   import { onMount } from 'svelte'
   import { God } from './God'
   import { godStore } from './stores/GodStore'
+  import active from 'svelte-spa-router/active'
+
+  export let params: { wild?: string } = {}
 
   const routes = {
     '/': Schema,
@@ -15,13 +18,33 @@
   }
 </script>
 
-<a href="#/">Schema</a>
+<a
+  href="#/"
+  use:active={{
+    path: `/`,
+    className: 'active',
+  }}>Schema</a
+>
 {#each $godStore?.tables ?? [] as t}
   <div>
-    <a href="#/entity/{t.key}">
+    <a
+      href="#/entity/{t.key}"
+      use:active={{
+        path: `/entity/${t.key}`,
+        className: 'active',
+      }}
+    >
       {t.caption}
     </a>
   </div>
 {/each}
 
 <Router {routes} />
+
+<style>
+  /* Style for "active" links; need to mark this :global because the router adds the class directly */
+  :global(a.active) {
+    color: blue;
+    font-weight: bold;
+  }
+</style>

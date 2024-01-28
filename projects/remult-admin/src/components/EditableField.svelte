@@ -8,7 +8,6 @@
 
   export let value: any
   export let info: FieldUIInfo
-  export let god: God
 </script>
 
 <input {value} on:change />
