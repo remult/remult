@@ -10,4 +10,4 @@
   export let info: FieldUIInfo
 </script>
 
-<input {value} on:change />
+<input bind:value on:change />

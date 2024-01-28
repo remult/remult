@@ -24,6 +24,7 @@
     "@types/react": "^18.0.27",
     "@types/react-dom": "^18.0.10",
     "@vitejs/plugin-react": "^4.2.1",
+    "@xyflow/svelte": "^0.0.35",
     "express": "^4.18.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

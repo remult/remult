@@ -16,9 +16,10 @@
   export let repo: Repository<any>
   export let parentRelation: Record<string, any> = {}
 
-  let options: FindOptions<any> = {}
+  let options: FindOptions<any> = { limit: 25, page: 1 }
 
   let items = []
+  let totalRows = -1
   let unSub: (() => void) | null = null
 
   const reSub = () => {
@@ -33,8 +34,14 @@
         //   $and: [userFilter, { ...parentRelation }],
         // },
       })
-      .subscribe((info) => {
+      .subscribe(async (info) => {
         items = info.applyChanges(items)
+        totalRows = await repo.count({
+          $and: [
+            //userFilter, { ...parentRelation }
+          ],
+        })
+        //.then(setTotalRows)
       })
   }
 
@@ -43,7 +50,12 @@
   })
 
   // trick to make sure reSub is called when repo changes
-  $: repo && reSub()
+  $: repo && options && reSub()
+
+  $: from = ((options.page || 1) - 1) * options.limit + 1
+  $: to = ((options.page || 1) - 1) * options.limit + (items?.length || 0)
+
+  let newRow = undefined
 
   const toggleOrderBy = (key: string) => {
     let dir = options.orderBy?.[key]
@@ -57,6 +69,59 @@
 <div>
   <table>
     <thead>
+      {#if !newRow}
+        <tr>
+          <td colSpan={columns.length + 1 + (relations.length > 0 ? 1 : 0)}>
+            <div style="display: flex; justify-content: space-between;">
+              <span>
+                <b>{repo.metadata.caption}</b>
+
+                <button
+                  on:click={() => {
+                    newRow = repo.create({ ...parentRelation })
+                  }}>+</button
+                >
+              </span>
+              <span>
+                <button
+                  disabled={(options.page || 1) === 1}
+                  on:click={() => {
+                    options = { ...options, page: (options.page || 2) - 1 }
+                  }}
+                >
+                  &lt;
+                </button>
+
+                {from + ' - ' + to} of {totalRows}
+
+                <button
+                  disabled={to >= totalRows}
+                  on:click={() => {
+                    options = { ...options, page: (options.page || 1) + 1 }
+                  }}
+                >
+                  &gt;
+                </button>
+              </span>
+            </div>
+          </td>
+        </tr>
+      {:else}
+        <EditableRow
+          rowId={undefined}
+          row={newRow}
+          {columns}
+          {relations}
+          deleteAction={async () => {
+            newRow = undefined
+          }}
+          save={async (item) => {
+            await repo.insert(item)
+            newRow = undefined
+          }}
+        />
+      {/if}
+
       <tr>
         {#if relations.length > 0}
           <td />
@@ -71,7 +136,7 @@
               : ''}
           </th>
         {/each}
-        <th>Actions </th>
+        <th align="right">Actions</th>
       </tr>
     </thead>
     <tbody>

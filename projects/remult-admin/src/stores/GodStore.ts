@@ -10,7 +10,9 @@ function createStore() {
   if (import.meta.env.DEV) {
     fetch('/api/dev-admin')
       .then((res) => res.json())
-      .then((json) => set(new God(json)))
+      .then((json) => {
+        set(new God(json))
+      })
   } else {
     set(new God(entities))
   }
