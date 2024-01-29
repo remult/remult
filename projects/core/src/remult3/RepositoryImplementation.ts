@@ -959,7 +959,6 @@ export class RepositoryImplementation<entityType>
     )
   }
 
-  /* @internal*/
   async translateWhereToFilter(
     where: EntityFilter<entityType>,
   ): Promise<Filter> {
