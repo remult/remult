@@ -23,8 +23,8 @@ export function RelationField({
   }, [value])
   return (
     <div>
-      <button onClick={() => setDialogOpen(true)}>🔎</button>
       {displayValue}
+      <button className="icon-button" onClick={() => setDialogOpen(true)}>🔎</button>
       {dialogOpen && (
         <SelectDialog
           relation={info.relationToOne!}

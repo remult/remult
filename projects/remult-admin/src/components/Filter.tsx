@@ -59,8 +59,8 @@ export default function Filter({
       >
         Filter
       </button>
-      <dialog ref={ref}>
-        <strong>filter:</strong>
+      <dialog ref={ref} className="filter">
+        <strong>Filter</strong>
         <div>
           {filterValues?.map((field, i) => {
             function set(key: keyof typeof field, value: any) {
@@ -72,7 +72,7 @@ export default function Filter({
             }
 
             return (
-              <div key={field.key}>
+              <div className="filter__group" key={field.key}>
                 <select onChange={(e) => set('key', e.target.value)}>
                   {fields
                     .filter(
@@ -106,18 +106,16 @@ export default function Filter({
                   onChange={(e) => set('value', e.target.value)}
                 />
                 <button
+                  className="button-icon"
                   onClick={() =>
                     setFilterValues(filterValues.filter((x) => x != field))
                   }
-                >
-                  x
-                </button>
-              </div>
+                ><svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2.23254" y="0.796844" width="24" height="2.03049" transform="rotate(45 2.23254 0.796844)" fill="black"/><rect x="0.796875" y="17.7673" width="24" height="2.03049" transform="rotate(-45 0.796875 17.7673)" fill="black"/></svg></button>
+              </div>  
             )
           })}
-          <button onClick={addFilter}>Add</button>
-          <div>
-            <button onClick={() => applyFilterValues()}>apply</button>
+          <button className="filter__add" onClick={addFilter}>Add</button>
+          <div className="filter__actions">
             <button
               onClick={() => {
                 ref.current?.close()
@@ -125,6 +123,7 @@ export default function Filter({
             >
               Cancel
             </button>
+            <button onClick={() => applyFilterValues()}>Apply</button>
           </div>
         </div>
       </dialog>
