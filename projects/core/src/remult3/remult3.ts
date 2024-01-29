@@ -758,12 +758,11 @@ export type ClassFieldDecorator<entityType, valueType> = (
 
 //p1 - Small thing, I get SvelteKitError: Not found: /vite.svg
 //p1 - understand the to many relation for the admin, based on the to one
-//p1 - live query with include
 //p1 - relation from order details to order gave a compound id info - and it is not true - same for the relation to product
-//p1 - include admin in remult
+//p1 - live query with include
 //p1 - new row when there are relations, looks funny (see product)
 //p1 - the + row in the bottom should extend to the full width
-//p1 - adjust angular starter kit for latest angular (as is in tutorial)
+//p1 - adjust angular tutorial starter kit for latest angular (as is in tutorial)
 
 /*y2 - 
   @Fields.string<Category>({
