@@ -44,20 +44,17 @@ function App() {
     <>
       <BrowserRouter basename={options?.baseUrl}>
         <div className="app-holder">
-
           <div className="main-navigation">
-            <div className="main-navigation__title">
-              Remult Admin
-            </div>
+            <div className="main-navigation__title">Remult Admin</div>
 
-            <NavLink className="tab" to="erd">
-              ERD
-            </NavLink>
             {god?.tables.map((t) => (
               <NavLink className="tab" key={t.key} to={t.key}>
                 {t.caption}
               </NavLink>
             ))}
+            <NavLink className="tab" to="erd">
+              🚀 Diagram
+            </NavLink>
           </div>
 
           <div className="main-content">
@@ -92,7 +89,6 @@ function App() {
               />
             </Routes>
           </div>
-
         </div>
       </BrowserRouter>
     </>
