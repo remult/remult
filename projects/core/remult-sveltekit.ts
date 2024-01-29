@@ -76,6 +76,7 @@ export function remultSveltekit(
           })
         return new Response(JSON.stringify(responseFromRemultHandler.data), {
           status: responseFromRemultHandler.statusCode,
+          headers: (await resolve(event)).headers,
         })
       }
     }
