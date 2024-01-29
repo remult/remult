@@ -140,6 +140,10 @@ describe('graphql', () => {
       .repo(Category)
       .insert([{ name: 'c1' }, { name: 'c2' }])
 
+    const catMore = await remult
+      .repo(CategoryMore)
+      .insert([{ moreInfo: 'more info for c1', category_id: cat[0].id }])
+
     await remult.repo(Task).insert({
       title: 'task a',
       category: cat[0],
@@ -157,17 +161,34 @@ describe('graphql', () => {
     query{
       tasks{
         items{
+          id
           title,
           nodeId,
           category{
+            id
             nodeId
+            categorymore{
+              id
+              nodeId
+              moreInfo
+            }
           }
           category2{
             nodeId
+            categorymore{
+              id
+              nodeId
+              moreInfo
+            }
           }
           category3_id
           category3{
             nodeId
+            categorymore{
+              id
+              nodeId
+              moreInfo
+            }
           }
         }
       }
@@ -180,29 +201,47 @@ describe('graphql', () => {
             "items": [
               {
                 "category": {
+                  "categorymore": {
+                    "id": "${catMore[0].id}",
+                    "moreInfo": "more info for c1",
+                    "nodeId": "CategoryMore:${catMore[0].id}",
+                  },
+                  "id": "0",
                   "nodeId": "Category:0",
                 },
                 "category2": {
+                  "categorymore": null,
                   "nodeId": "Category:1",
                 },
                 "category3": {
+                  "categorymore": null,
                   "nodeId": "Category:1",
                 },
                 "category3_id": "1",
+                "id": 1,
                 "nodeId": "Task:1",
                 "title": "task a",
               },
               {
                 "category": {
+                  "categorymore": null,
+                  "id": "1",
                   "nodeId": "Category:1",
                 },
                 "category2": {
+                  "categorymore": null,
                   "nodeId": "Category:1",
                 },
                 "category3": {
+                  "categorymore": {
+                    "id": "${catMore[0].id}",
+                    "moreInfo": "more info for c1",
+                    "nodeId": "CategoryMore:${catMore[0].id}",
+                  },
                   "nodeId": "Category:0",
                 },
                 "category3_id": "0",
+                "id": 2,
                 "nodeId": "Task:2",
                 "title": "task b",
               },
@@ -755,7 +794,7 @@ describe('graphql', () => {
       {
         "data": {
           "deleteTask": {
-            "id": "2",
+            "id": 2,
           },
         },
       }
@@ -1147,7 +1186,7 @@ describe('graphql', () => {
       }
 
       type DeleteTaskPayload {
-          id: ID
+          id: Int
           error: ErrorDetail
           clientMutationId: String
       }
@@ -1199,7 +1238,7 @@ describe('graphql', () => {
       }
 
       type DeleteCategoryPayload {
-          id: ID
+          id: String
           error: ErrorDetail
           clientMutationId: String
       }
@@ -1253,7 +1292,7 @@ describe('graphql', () => {
       }
 
       type DeleteCategoryMorePayload {
-          id: ID
+          id: String
           error: ErrorDetail
           clientMutationId: String
       }
@@ -1839,7 +1878,7 @@ describe('graphql', () => {
       }
 
       type DeleteCPayload {
-          id: ID
+          id: Int
           error: ErrorDetail
           clientMutationId: String
       }
