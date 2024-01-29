@@ -30,6 +30,14 @@ function App() {
       setOptions(optionsFromServer)
     }
   }, [])
+
+  // if window less than 1024px, add hide-navigation to body
+  useEffect(() => {
+    if (window.innerWidth < 1024) {
+      document.body.classList.add('hide-navigation')
+    }
+  }, [])
+
   if (!god) return <div>Loading...</div>
 
   return (
