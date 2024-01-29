@@ -35,46 +35,57 @@ function App() {
   return (
     <>
       <BrowserRouter basename={options?.baseUrl}>
-        <div>
-          <NavLink className="tab" to="erd">
-            ERD
-          </NavLink>
-          {god?.tables.map((t) => (
-            <NavLink className="tab" key={t.key} to={t.key}>
-              {t.caption}
-            </NavLink>
-          ))}
-        </div>
-        <Routes>
-          <Route path="erd" element={<Erd god={god} />} />
-          {god?.tables.map((table) => (
-            <Route
-              key={table.key}
-              path={table.key}
-              element={
-                <Table
-                  god={god}
-                  columns={table.fields}
-                  repo={table.repo}
-                  relations={table.relations}
-                />
-              }
-            />
-          ))}
+        <div class="app-holder">
 
-          <Route
-            path="/"
-            element={
-              <Navigate
-                to={
-                  god?.tables && god?.tables.length > 0
-                    ? god?.tables[0].key
-                    : '/'
+          <div class="main-navigation">
+            <div class="main-navigation__title">
+              Remult Admin
+            </div>
+
+            <NavLink className="tab" to="erd">
+              ERD
+            </NavLink>
+            {god?.tables.map((t) => (
+              <NavLink className="tab" key={t.key} to={t.key}>
+                {t.caption}
+              </NavLink>
+            ))}
+          </div>
+
+          <div class="main-content">
+            <Routes>
+              <Route path="erd" element={<Erd god={god} />} />
+              {god?.tables.map((table) => (
+                <Route
+                  key={table.key}
+                  path={table.key}
+                  element={
+                    <Table
+                      god={god}
+                      columns={table.fields}
+                      repo={table.repo}
+                      relations={table.relations}
+                    />
+                  }
+                />
+              ))}
+
+              <Route
+                path="/"
+                element={
+                  <Navigate
+                    to={
+                      god?.tables && god?.tables.length > 0
+                        ? god?.tables[0].key
+                        : '/'
+                    }
+                  />
                 }
               />
-            }
-          />
-        </Routes>
+            </Routes>
+          </div>
+
+        </div>
       </BrowserRouter>
     </>
   )
