@@ -102,6 +102,10 @@ tr.extended tr input{
   flex-wrap: wrap;
 }
 
+.extended__holder .icon-button:has(.hamburger-icon) {
+  display: none;
+}
+
 .extended__links {
   display: flex;
   justify-content: flex-start;
@@ -138,7 +142,7 @@ td {
 
 th:first-child,
 td:first-child {
-  width: calc(var(--cell-height) - 1px);
+  min-width: calc(var(--cell-height) - 1px);
   border-left: 0;
   position: sticky;
   left: 0;
@@ -147,7 +151,7 @@ td:first-child {
 }
 
 td:has(.icon-button),
-td:has(.icon-button) button {
+td:has(.icon-button) button:has(svg) {
   width: calc(var(--cell-height) - 1px);
 }
 
