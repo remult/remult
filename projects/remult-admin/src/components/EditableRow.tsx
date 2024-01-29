@@ -121,7 +121,7 @@ export function EditableRow({
         <td className="action-tab">
           {changed && (
             <>
-              <button className="icon-button" title="Cancel" onClick={doSave}>
+              <button className="icon-button" title="Save" onClick={doSave}>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -139,7 +139,7 @@ export function EditableRow({
               </button>
               <button
                 className="icon-button"
-                title="Save"
+                title="Cancel"
                 onClick={() => {
                   setValue(row)
                   setError(undefined)
@@ -193,31 +193,36 @@ export function EditableRow({
         </td>
       </tr>
       {relation && (
-        <tr>
+        <tr className="extended">
           <td></td>
-          <td colSpan={columns.length + 1}>
-            {relations.map((r) => (
-              <a
-                key={r.entityKey}
-                className={'tab ' + (r === relation ? 'active' : '')}
-                href=""
-                onClick={(e) => {
-                  setRelation(r)
-                  e.preventDefault()
-                }}
-              >
-                {god.tables.find((x) => x.key === r.entityKey)!.caption}
-              </a>
-            ))}
-            {relationTable && typeof relation === 'object' && (
-              <Table
-                columns={relationTable.fields}
-                god={god}
-                relations={relationTable.relations}
-                repo={relationTable.repo}
-                parentRelation={relationWhere}
-              />
-            )}
+          <td colSpan={columns.length + 2}>
+            <div className="extended__holder">
+              <div className="extended__links">
+              {relations.map((r) => (
+                <a
+                  key={r.entityKey}
+                  className={'tab ' + (r === relation ? 'active' : '')}
+                  href=""
+                  onClick={(e) => {
+                    setRelation(r)
+                    e.preventDefault()
+                  }}
+                >
+                  {god.tables.find((x) => x.key === r.entityKey)!.caption}
+                </a>
+              ))}
+              </div>
+
+              {relationTable && typeof relation === 'object' && (
+                <Table
+                  columns={relationTable.fields}
+                  god={god}
+                  relations={relationTable.relations}
+                  repo={relationTable.repo}
+                  parentRelation={relationWhere}
+                />
+              )}
+            </div>
           </td>
         </tr>
       )}
