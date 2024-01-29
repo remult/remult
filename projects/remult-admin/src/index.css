@@ -138,6 +138,7 @@ td {
 
 th:first-child,
 td:first-child {
+  width: calc(var(--cell-height) - 1px);
   border-left: 0;
   position: sticky;
   left: 0;
@@ -145,8 +146,9 @@ td:first-child {
   z-index: 1;
 }
 
-td:has(.icon-button) {
-  width: var(--cell-height);
+td:has(.icon-button),
+td:has(.icon-button) button {
+  width: calc(var(--cell-height) - 1px);
 }
 
 td input {
@@ -234,10 +236,6 @@ button:active,
   width: 100%;
 }
 
-dialog * {
-  all: revert;
-}
-
 dialog {
   border: 1px solid var(--border-color);
   padding: .5rem;
@@ -249,10 +247,28 @@ dialog form {
   display: flex;
 }
 
-dialog form input {
+dialog input,
+dialog select,
+dialog button {
+  border: 1px solid var(--border-color);
+  border-radius: 0;
   padding: 0.2rem .5rem;
   margin-bottom: .5rem;
   min-width: auto !important;
+  height: var(--cell-height);
+}
+
+dialog button.button-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: var(--cell-height);
+  height: var(--cell-height);
+}
+
+dialog button.button-icon svg {
+  width: 14px;
+  height: var(--cell-height);
 }
 
 .page-bar {
@@ -358,4 +374,65 @@ body.hide-navigation .main-navigation {
 body.hide-navigation .main-content {
   max-width: 100%;
   transform: translateX(0);
+}
+
+.hamburger-icon rect {
+  transition: 0.2s ease-in-out all;
+
+}
+
+body:not(.hide-navigation) .hamburger-icon rect:first-child {
+  transform: rotate(35deg) translate(-3px, 4px);
+}
+
+body:not(.hide-navigation) .hamburger-icon rect:nth-child(2) {
+  transform: translateX(1px);
+}
+
+body:not(.hide-navigation) .hamburger-icon rect:last-child {
+  transform: rotate(-35deg) translate(-17px, -8px);
+}
+
+
+.filter strong {
+  display: block;
+  margin-top: .5rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.filter__group {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
+
+.filter__group .button-icon {
+  margin-left: auto;
+  border: none;
+}
+
+.filter__actions {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  padding: .5rem;
+  width: 100%;
+}
+
+.filter__actions button {
+  border: none;
+  padding: .5rem;
+  margin: 0;
+}
+
+.filter__actions button:last-of-type {
+  background: #e4e4e6;
+}
+
+.filter__add {
+  margin-left: auto;
+  border: none;
 }
