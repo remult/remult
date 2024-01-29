@@ -193,11 +193,11 @@ export function EditableRow({
         </td>
       </tr>
       {relation && (
-        <tr class="extended">
+        <tr className="extended">
           <td></td>
           <td colSpan={columns.length + 2}>
-            <div class="extended__holder">
-              <div class="extended__links">
+            <div className="extended__holder">
+              <div className="extended__links">
               {relations.map((r) => (
                 <a
                   key={r.entityKey}

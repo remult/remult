@@ -35,10 +35,10 @@ function App() {
   return (
     <>
       <BrowserRouter basename={options?.baseUrl}>
-        <div class="app-holder">
+        <div className="app-holder">
 
-          <div class="main-navigation">
-            <div class="main-navigation__title">
+          <div className="main-navigation">
+            <div className="main-navigation__title">
               Remult Admin
             </div>
 
@@ -52,7 +52,7 @@ function App() {
             ))}
           </div>
 
-          <div class="main-content">
+          <div className="main-content">
             <Routes>
               <Route path="erd" element={<Erd god={god} />} />
               {god?.tables.map((table) => (
