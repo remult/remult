@@ -1,6 +1,6 @@
 import { getRelationFieldInfo } from './internals.js'
 import type { ClassType } from './classType.js'
-import type { EntityMetadata, FieldsMetadata, Repository } from './index.js'
+import type { EntityMetadata, FieldMetadata, FieldsMetadata, Repository } from './index.js'
 import { Remult, remult } from './index.js'
 import type { DataApiResponse } from './src/data-api.js'
 import { DataApi } from './src/data-api.js'
@@ -228,7 +228,7 @@ export function remultGraphql(options: {
               error: (x: any) => (err = x),
               forbidden: () => (err = 'forbidden'),
               notFound: () => (err = 'not found'),
-              progress: () => {},
+              progress: () => { },
             }
             work(response, (x) => (result = x), arg1, req)
               .then(() => {
@@ -573,10 +573,11 @@ export function remultGraphql(options: {
 
         currentType.mutation.delete.payload = upsertTypes(deletePayload)
         const deletedResultKey = `id`
+        const type = getGraphqlBaseType(meta.fields.find('id'))
         currentType.mutation.delete.payload.fields.push(
           {
             key: deletedResultKey,
-            value: 'ID',
+            value: `${type}`,
           },
           argErrorDetail,
           argClientMutationId,
@@ -606,22 +607,7 @@ export function remultGraphql(options: {
         const ri = getRelationFieldInfo(f)
 
         if (f.options.includeInApi === false) continue
-        let type = 'String'
-        switch (f.valueType) {
-          case Boolean:
-            type = 'Boolean'
-            break
-          case Number:
-            {
-              if (
-                f.valueConverter?.fieldTypeInDb === 'integer' ||
-                f.valueConverter?.fieldTypeInDb === 'autoincrement'
-              )
-                type = 'Int'
-              else type = 'Float'
-            }
-            break
-        }
+        const type = getGraphqlBaseType(f)
         currentType.query.resultProcessors.push((r) => {
           r[nodeIdKey] = () =>
             getMetaType(meta) + ':' + meta.idMetadata.getId(r)
@@ -979,14 +965,14 @@ export function remultGraphql(options: {
           kind === 'union'
             ? `union ${key} = ${fields.map((field) => field.key).join(' | ')}`
             : blockFormat({
-                prefix,
-                data: fields
-                  .sort(
-                    (a, b) => (a.order ? a.order : 0) - (b.order ? b.order : 0),
-                  )
-                  .map((field) => fieldFormat(field)),
-                comment: comment ?? `The ${kind} for \`${key}\``,
-              })
+              prefix,
+              data: fields
+                .sort(
+                  (a, b) => (a.order ? a.order : 0) - (b.order ? b.order : 0),
+                )
+                .map((field) => fieldFormat(field)),
+              comment: comment ?? `The ${kind} for \`${key}\``,
+            })
 
         const orderByStr =
           orderBy.length > 0 ? `\n\n${orderBy.join('\n\n')}` : ``
@@ -1200,15 +1186,34 @@ function fieldFormat(field: Field) {
     strComment = ``
   }
 
-  let key_value = `${field.key}${
-    field.args ? `${argsFormat(field.args)}` : ``
-  }: ${field.value}`
+  let key_value = `${field.key}${field.args ? `${argsFormat(field.args)}` : ``
+    }: ${field.value}`
   // It's an enum
   if (typeof field.value === 'object') {
     key_value = `${field.key}`
   }
 
   return `${strComment}  ${key_value}`
+}
+
+function getGraphqlBaseType(field: FieldMetadata) {
+  let type = 'String'
+        switch (field.valueType) {
+          case Boolean:
+            type = 'Boolean'
+            break
+          case Number:
+            {
+              if (
+                field.valueConverter?.fieldTypeInDb === 'integer' ||
+                field.valueConverter?.fieldTypeInDb === 'autoincrement'
+              )
+                type = 'Int'
+              else type = 'Float'
+            }
+            break
+        }
+  return type
 }
 
 function getMetaType(entityMeta: EntityMetadata) {

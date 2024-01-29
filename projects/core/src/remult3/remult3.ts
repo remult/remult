@@ -738,19 +738,31 @@ export type ClassFieldDecorator<entityType, valueType> = (
   c?: any,
 ) => void
 
+/*y1 - workshop
+
+* Experiment with doing this with version control - so the students can follow changes
+* Prepare stackblitz
+
+
+# influencer:
+  * review react summit
+# 
+
 //y1 - admin url!
 //y1 - number default storage in knex is decimal and it by default has 8,2 - meaning only 999,999 - I think it should be way bigger than that. in firefly we do at least 18 - https://discord.com/channels/975754286384418847/1195162533447876658
 //y1 - talk about the parameter issue with backend methods
 //y1 - tried to upgrade vitest, nuxt tests are failing with loading uuid - sounds familiar?
 //y1 - I think that the tests you've setup cover next app router - I added to the setup, but not sure where else
+//y1 - select data provider per entity https://discord.com/channels/975754286384418847/976006081748807690/1201415305885397003
+
 
 //p1 - Small thing, I get SvelteKitError: Not found: /vite.svg
-//p1 - live query with include
+//p1 - understand the to many relation for the admin, based on the to one
 //p1 - relation from order details to order gave a compound id info - and it is not true - same for the relation to product
-//p1 - include admin in remult
+//p1 - live query with include
 //p1 - new row when there are relations, looks funny (see product)
 //p1 - the + row in the bottom should extend to the full width
-//p1 - adjust angular starter kit for latest angular (as is in tutorial)
+//p1 - adjust angular tutorial starter kit for latest angular (as is in tutorial)
 
 /*y2 - 
   @Fields.string<Category>({
