@@ -337,6 +337,7 @@ dialog button.button-icon svg {
 }
 
 .main-navigation {
+  min-height: 100%;
   position: fixed;
   left: 0;
   display: flex;
