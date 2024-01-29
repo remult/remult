@@ -50,11 +50,17 @@ thead::before {
 
 th {
   text-align: center;
+  white-space: nowrap;
+  padding: 0 .5rem;
 }
 
 tr {
   height: var(--cell-height);
   position: relative;
+}
+
+td > div:not(.extended__holder) {
+  padding: 0 .5rem;
 }
 
 tbody tr:nth-child(2n + 1):not(.extended),
@@ -225,6 +231,23 @@ button:active,
 
 dialog * {
   all: revert;
+}
+
+dialog {
+  border: 1px solid var(--border-color);
+  padding: .5rem;
+  border-radius: 5px;
+}
+
+dialog form {
+  width: auto;
+  display: flex;
+}
+
+dialog form input {
+  padding: 0.2rem .5rem;
+  margin-bottom: .5rem;
+  min-width: auto !important;
 }
 
 .page-bar {
