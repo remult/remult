@@ -4,7 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [0.25.5] TBD
 
-- Fixed an issue with GraphQL and relations
+- Added `admin` option to servers, enabling the `/api/admin` route with a built in entity explorer
+- Fixed multiple issues with GraphQL and relations
+- Improved support for esm/cjs in same process scenario
+- Enabled json storage type for mysql & mysql2 knex adapters
+- Fixed issue in case of missing `reflect-metadata`
+- 
 
 ## [0.25.4] 2024-01-15
 
