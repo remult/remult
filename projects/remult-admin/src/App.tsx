@@ -101,6 +101,9 @@ export default App
 //[V] - live refresh doesn't work
 //[V] - update id doesn't work
 
+//[ ] - add focus indication for icon button (for moving to it with tab)
+//[ ] - tables for one to many relations - actions, don't stick to the right
+
 //[ ] - support compound id (order details)
 //[ ] - relation from product to supplier one to many, did not present in the erd
 //[ ] - focus indication for buttons

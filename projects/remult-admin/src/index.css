@@ -24,9 +24,6 @@ body {
   height: 100%;
 }
 
-table {
-  min-width: 100%;
-}
 
 thead {
   height: var(--cell-height);
@@ -89,9 +86,7 @@ tr.extended th {
   white-space: nowrap;
 }
 
-tr.extended tr input{
-  min-width: 200px
-}
+
 
 .extended__holder {
   background: var(--background-color);
@@ -145,7 +140,6 @@ td:first-child {
   min-width: calc(var(--cell-height) - 1px);
   border-left: 0;
   position: sticky;
-  left: 0;
   background-color: var(--background-color);
   z-index: 1;
 }
@@ -160,7 +154,6 @@ td input {
   padding: 0 .5rem;
   display: flex;
   height: 100%;
-  width: 100%;
 }
 
 td input:focus {
