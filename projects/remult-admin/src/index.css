@@ -337,6 +337,7 @@ dialog button.button-icon svg {
 }
 
 .main-navigation {
+  height: 100vh;
   min-height: 100%;
   position: fixed;
   left: 0;
@@ -348,9 +349,14 @@ dialog button.button-icon svg {
   background: #f5f5f7;
   border-right: 1px solid #e5e7eb;
   transition: 0.2s ease-in-out all;
+  overflow-y: auto;
+  padding-top: var(--cell-height);
 }
 
 .main-navigation__title {
+  top: 0;
+  position: fixed;
+  background: var(--background-color-gray);
   height: var(--cell-height);
   border-bottom: 1px solid #e5e7eb;
   display: flex;
@@ -359,7 +365,7 @@ dialog button.button-icon svg {
   align-items: center;
   font-size: .8rem;
   font-weight: 600;
-  width: 100%;
+  width: calc(var(--navigation-width) - 1px);
   text-align: center;
 }
 
