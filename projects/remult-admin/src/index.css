@@ -81,7 +81,13 @@ tr.extended > td:first-child {
 
 tr.extended td {
   border-left: 0;
+  max-width: calc(100vw - var(--navigation-width));
 }
+
+.hide-navigation tr.extended td {
+  max-width: 100vw;
+}
+
 
 tr.extended th {
   background: white !important; /* sorry, quickfix */
