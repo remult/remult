@@ -89,10 +89,6 @@ tr.extended th {
   white-space: nowrap;
 }
 
-tr.extended tr input{
-  min-width: 200px
-}
-
 .extended__holder {
   background: var(--background-color);
   border: 1px solid var(--border-color);
@@ -140,14 +136,25 @@ td {
   vertical-align: middle;
 }
 
-th:first-child,
-td:first-child {
+td:first-child:has(button) {
   min-width: calc(var(--cell-height) - 1px);
   border-left: 0;
   position: sticky;
   left: 0;
   background-color: var(--background-color);
   z-index: 1;
+}
+
+td:first-child:has(button)::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -1px;
+  width: 1px;
+  height: 100%;
+  background: var(--background-color);
+  z-index: 1;
+  border-right: 1px solid var(--border-color);
 }
 
 td:has(.icon-button),
@@ -161,6 +168,16 @@ td input {
   display: flex;
   height: 100%;
   width: 100%;
+}
+
+td .field-spacer {
+  height: 0;
+  padding: 0 0.5rem;
+  display: block;
+  overflow: hidden;
+  pointer-events: none;
+  min-width: 100px;
+  max-width: 400px;
 }
 
 td input:focus {
