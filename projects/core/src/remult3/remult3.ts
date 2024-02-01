@@ -817,6 +817,7 @@ remult.apiClient.url='localhost:3007/api
 //p1 - remult-admin doesn't handle primary key that has compound column
 //p1 - remult-admin didn't show a update for a table with a uniqua that is numeric
 //p1 -check if checouknt doesn't respect allow read (I think)
+//p1 - when a tasks table exists in a different schema - we get many errors
 //p1 - allow api update only for new rows
 //p1 - getFields didn't work for kobi in the home component
 //p1 - add to docs  https://codesandbox.io/p/devbox/demo-sql-expression-wqvj4g
