@@ -74,10 +74,34 @@ export function remultSveltekit(
               'Content-Type': 'text/html',
             },
           })
-        return new Response(JSON.stringify(responseFromRemultHandler.data), {
-          status: responseFromRemultHandler.statusCode,
-          //  headers: (await resolve(event)).headers,
-        })
+
+        // JYC Small hack to silence "Not found" error while we resolve to get computed headers.
+        const originalStderrWrite = process.stderr.write.bind(process.stderr)
+        process.stderr.write = (...args) => {
+          // only "Not found" error will be silenced
+          if (typeof args[0] === 'string' && args[0].includes('Not found')) {
+            return true // Indicates the writing was successful
+          }
+          return originalStderrWrite(...args)
+        }
+        // perform the resolve
+        const headersComputed = (await resolve(event))?.headers
+        // bring back the original stderr.write
+        process.stderr.write = originalStderrWrite
+
+        // remove non usefull headers
+        headersComputed.delete('content-length')
+        headersComputed.delete('x-sveltekit-page')
+
+        const res = new Response(
+          JSON.stringify(responseFromRemultHandler.data),
+          {
+            status: responseFromRemultHandler.statusCode,
+            headers: headersComputed,
+          },
+        )
+
+        return res
       }
     }
     return new Promise<Response>((res) => {
