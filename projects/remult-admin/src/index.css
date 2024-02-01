@@ -81,16 +81,18 @@ tr.extended > td:first-child {
 
 tr.extended td {
   border-left: 0;
+  max-width: calc(100vw - var(--navigation-width));
 }
+
+.hide-navigation tr.extended td {
+  max-width: 100vw;
+}
+
 
 tr.extended th {
   background: white !important; /* sorry, quickfix */
   padding: 0 .5rem;
   white-space: nowrap;
-}
-
-tr.extended tr input{
-  min-width: 200px
 }
 
 .extended__holder {
@@ -140,14 +142,25 @@ td {
   vertical-align: middle;
 }
 
-th:first-child,
-td:first-child {
+td:first-child:has(button) {
   min-width: calc(var(--cell-height) - 1px);
   border-left: 0;
   position: sticky;
   left: 0;
   background-color: var(--background-color);
   z-index: 1;
+}
+
+td:first-child:has(button)::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -1px;
+  width: 1px;
+  height: 100%;
+  background: var(--background-color);
+  z-index: 1;
+  border-right: 1px solid var(--border-color);
 }
 
 td:has(.icon-button),
@@ -161,6 +174,16 @@ td input {
   display: flex;
   height: 100%;
   width: 100%;
+}
+
+td .field-spacer {
+  height: 0;
+  padding: 0 0.5rem;
+  display: block;
+  overflow: hidden;
+  pointer-events: none;
+  min-width: 100px;
+  max-width: 400px;
 }
 
 td input:focus {
@@ -337,6 +360,7 @@ dialog button.button-icon svg {
 }
 
 .main-navigation {
+  height: 100vh;
   min-height: 100%;
   position: fixed;
   left: 0;
@@ -348,9 +372,14 @@ dialog button.button-icon svg {
   background: #f5f5f7;
   border-right: 1px solid #e5e7eb;
   transition: 0.2s ease-in-out all;
+  overflow-y: auto;
+  padding-top: var(--cell-height);
 }
 
 .main-navigation__title {
+  top: 0;
+  position: fixed;
+  background: var(--background-color-gray);
   height: var(--cell-height);
   border-bottom: 1px solid #e5e7eb;
   display: flex;
@@ -359,7 +388,7 @@ dialog button.button-icon svg {
   align-items: center;
   font-size: .8rem;
   font-weight: 600;
-  width: 100%;
+  width: calc(var(--navigation-width) - 1px);
   text-align: center;
 }
 
