@@ -767,6 +767,30 @@ describe('validation tests', () => {
       }
     `)
   })
+  it('test min length', async () => {
+    @Entity('x', {})
+    class x {
+      @Fields.string({
+        minLength: 2,
+      })
+      id = ''
+    }
+    await expect(remult.repo(x).insert({ id: 'o' })).rejects
+      .toMatchInlineSnapshot(`
+      {
+        "message": "Id: Value must be at least 2 characters",
+        "modelState": {
+          "id": "Value must be at least 2 characters",
+        },
+      }
+    `)
+    expect(remult.repo(x).insert({ id: '1234' })).resolves
+      .toMatchInlineSnapshot(`
+      x {
+        "id": "1234",
+      }
+    `)
+  })
   it('test value converters error', async () => {
     await expect(() =>
       remult
