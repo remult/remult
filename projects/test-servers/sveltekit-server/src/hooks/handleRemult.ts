@@ -1,8 +1,9 @@
 import type { RequestEvent } from '@sveltejs/kit'
-import { remultSveltekit } from 'remult/remult-sveltekit'
+
 import { Task } from '../shared/Task'
 import { TasksController } from '../shared/TasksController'
 import { remult } from 'remult'
+import { remultSveltekit } from './remult-sveltekit'
 
 export const handleRemult = remultSveltekit({
   entities: [Task],
