@@ -78,10 +78,14 @@ export function remultSveltekit(
       })
       return res
     }
+    return  new Response('Not Found', {
+      status: 404,
+    })
   }
   const handler: Handle = async ({ event, resolve }) => {
-    if (event.url.pathname.startsWith(options.rootPath)) {
-      return serverHandler(event)
+    if (event.url.pathname.startsWith(options!.rootPath!)) {
+      const result = await serverHandler(event)
+      if (result != null && result?.status != 404) return result
     }
     return new Promise<Response>((res) => {
       result.withRemult(event, undefined!, async () => {

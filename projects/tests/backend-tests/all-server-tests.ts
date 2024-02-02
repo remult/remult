@@ -13,6 +13,9 @@ import express from 'express'
 export function testAsExpressMW(
   port: number,
   handler: (req, res, next) => void,
+  additionalTests?: (
+    withRemultForTest: (what: () => Promise<void>) => () => Promise<void>,
+  ) => void,
 ) {
   let destroy: () => Promise<void>
 
@@ -26,7 +29,7 @@ export function testAsExpressMW(
       }
     })
   })
-  allServerTests(port)
+  allServerTests(port, {}, additionalTests)
   afterAll(async () => {
     RemultAsyncLocalStorage.disable()
     return destroy()
@@ -39,6 +42,9 @@ export function allServerTests(
     skipAsyncHooks?: boolean
     skipLiveQuery?: boolean
   },
+  additionalTests?: (
+    withRemultForTest: (what: () => Promise<void>) => () => Promise<void>,
+  ) => void,
 ) {
   initAsyncHooks()
 
@@ -53,6 +59,7 @@ export function allServerTests(
       })
     }
   }
+  additionalTests?.(withRemultForTest)
 
   it(
     'works',

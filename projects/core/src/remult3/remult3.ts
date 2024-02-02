@@ -821,6 +821,7 @@ remult.apiClient.url='localhost:3007/api
 //p1 - allow api update only for new rows
 //p1 - getFields didn't work for kobi in the home component
 //p1 - add to docs  https://codesandbox.io/p/devbox/demo-sql-expression-wqvj4g
+//y1 - talk about export api is not possible in +server - how did we face that in others, and how do we doc it
 //p2 - document validators
 //p2 - and validators to reference
 //y2 - discuss a default date formatter
