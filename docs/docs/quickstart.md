@@ -75,11 +75,13 @@ export const { GET, POST, PUT, DELETE } = api
 ```
 
 ```ts [Sveltekit]
-// src/hooks.server.ts
+// src/routes/api/[...remult]/+server.ts
 
 import { remultSveltekit } from 'remult/remult-sveltekit'
 
-export const handle = remultSveltekit({}) // [!code highlight]
+export const _api = remultNextApp({}) // [!code highlight]
+
+export const { GET, POST, PUT, DELETE } = _api
 ```
 
 <!-- prettier-ignore-start -->

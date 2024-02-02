@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 - Improved support for esm/cjs in same process scenario
 - Enabled json storage type for mysql & mysql2 knex adapters
 - Fixed issue in case of missing `reflect-metadata`
-- 
+- Added a recommended way to use remult in `sveltekit` using `api/[...remult]/+server.ts` route instead of a hook
 
 ## [0.25.4] 2024-01-15
 
