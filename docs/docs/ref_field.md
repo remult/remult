@@ -75,6 +75,9 @@ An arrow function that'll be used to perform validations on it
      }
    })
    ```
+
+Check out also all [builtin validation](./ref_validation.md).
+
 ## saving
 Will be fired before this field is saved to the server/database
 
