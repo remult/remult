@@ -425,6 +425,12 @@ export function Field<entityType = any, valueType = any>(
           Validators.maxLength((r as StringFieldOptions).maxLength!),
         )
       }
+      if ((r as StringFieldOptions).minLength) {
+        r.validate = addValidator(
+          r.validate,
+          Validators.minLength((r as StringFieldOptions).minLength!),
+        )
+      }
       if (!r.valueType && valueType) {
         r.valueType = valueType()
       }
@@ -472,6 +478,7 @@ export function Field<entityType = any, valueType = any>(
 export interface StringFieldOptions<entityType = any>
   extends FieldOptions<entityType, string> {
   maxLength?: number
+  minLength?: number
 }
 export function checkTarget(target: any) {
   if (!target)
