@@ -1,5 +1,6 @@
 import type { ClassType } from './classType.js'
 import type { DataProvider } from './src/data-interfaces.js'
+export { ArrayEntityDataProvider } from './src/data-providers/array-entity-data-provider.js'
 
 export type { ClassType } from './classType.js'
 /*
