@@ -2456,6 +2456,10 @@ export declare function remultSveltekit(
 export type RemultSveltekitServer = RemultServerCore<RequestEvent> &
   Handle & {
     withRemult: RemultServer<RequestEvent>["withRemultAsync"]
+    GET: RequestHandler
+    PUT: RequestHandler
+    POST: RequestHandler
+    DELETE: RequestHandler
   }
 //[ ] RemultServerCore from ./server/index.js is not exported
 //[ ] RemultServer from ./server/index.js is not exported
