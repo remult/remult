@@ -1770,6 +1770,7 @@ export interface StoredQuery {
 export interface StringFieldOptions<entityType = any>
   extends FieldOptions<entityType, string> {
   maxLength?: number
+  minLength?: number
 }
 export interface Subscribable {
   subscribe(listener: RefSubscriber): Unsubscribe
