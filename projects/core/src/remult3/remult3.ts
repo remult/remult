@@ -814,6 +814,7 @@ remult.apiClient.url='localhost:3007/api
 
 
 */
+//p1 - allow conditional admin - like allowed 
 //p1 - remult-admin doesn't handle primary key that has compound column
 //p1 - remult-admin didn't show a update for a table with a uniqua that is numeric
 //p1 -check if checouknt doesn't respect allow read (I think)
@@ -821,6 +822,8 @@ remult.apiClient.url='localhost:3007/api
 //p1 - allow api update only for new rows
 //p1 - getFields didn't work for kobi in the home component
 //p1 - add to docs  https://codesandbox.io/p/devbox/demo-sql-expression-wqvj4g
+//p1 - ValueListFieldType - the decorator gives an error in react vite project - see langulage yedidya
+
 //y1 - talk about export api is not possible in +server - how did we face that in others, and how do we doc it
 //p2 - document validators
 //p2 - and validators to reference

@@ -2055,6 +2055,49 @@ describe('CompoundIdPojoEntity', () => {
     await repo.delete({ id1: 1, id2: 1 })
     expect(origValue).toBe('a')
   })
+  it('test compound id with string and empty values', async () => {
+    @Entity('t1', {
+      allowApiCrud: true,
+      id: { a: true, b: true, c: true },
+    })
+    class myT {
+      @Fields.string()
+      a = ''
+      @Fields.string()
+      b = ''
+      @Fields.string()
+      c = ''
+      @Fields.string()
+      d = ''
+    }
+    const mem = new InMemoryDataProvider()
+    const r = new Remult(new MockRestDataProvider(new Remult(mem))).repo(myT)
+    await r.insert({ a: 'a', b: '', c: 'c', d: 'd' })
+    await r.update({ a: 'a', b: '', c: 'c' }, { d: 'd1' })
+    expect(await r.find()).toMatchInlineSnapshot(`
+      [
+        myT {
+          "a": "a",
+          "b": "",
+          "c": "c",
+          "d": "d1",
+        },
+      ]
+    `)
+    expect(mem.rows).toMatchInlineSnapshot(`
+      {
+        "t1": [
+          {
+            "a": "a",
+            "b": "",
+            "c": "c",
+            "d": "d1",
+          },
+        ],
+      }
+    `)
+  })
+
   it('test that no id works', async () => {
     let origValue = ''
     @Entity<Task>('tasks', {
