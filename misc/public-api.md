@@ -336,7 +336,7 @@ export interface EntityMetadata<entityType = any> {
    */
   readonly dbName: string
   /** The options send to the `Entity`'s decorator */
-  readonly options: EntityOptions
+  readonly options: EntityOptions<entityType>
   /** The class type of the entity */
   readonly entityType: ClassType<entityType>
   /** true if the current user is allowed to update an entity instance
