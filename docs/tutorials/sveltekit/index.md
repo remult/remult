@@ -56,28 +56,25 @@ npm i remult --save-dev
 
 ### Bootstrap Remult
 
-Remult is loaded in the back-end as a server hook
-
 1. Open your IDE.
 
-2. Create a remult handle and add it to your hooks sequence. You can do so by creating these two files:
+2. Create a remult api route like this:
 
 ::: code-group
 
-```ts [src/hooks.server.ts]
-import { sequence } from '@sveltejs/kit/hooks'
-import { handleRemult } from './hooks/handleRemult'
-
-export const handle = sequence(handleRemult)
-```
-
-```ts [src/hooks/handleRemult.ts]
+```ts [src/routes/api/[...remult]/+server.ts]
 import { remultSveltekit } from 'remult/remult-sveltekit'
 
-export const handleRemult = remultSveltekit({})
+export const _api = remultSveltekit({})
+
+export const { GET, POST, PUT, DELETE } = _api
 ```
 
 :::
+
+_Side node 1: we export `_api` as we will need it later._
+
+_Side node 2: We need an underscore as it's a special SvelteKit file. You can also create `remultSveltekit()` in another file and name it as you want._
 
 ### Final tweaks
 
@@ -105,7 +102,7 @@ Open a terminal and start the vite dev server.
 npm run dev
 ```
 
-The default "Sveltekit" app main screen should be available at the default Vite dev server address http://127.0.0.1:5173.
+The default "Sveltekit" app main screen should be available at the default Vite dev server address http://localhost:5173.
 
 ### Setup completed
 

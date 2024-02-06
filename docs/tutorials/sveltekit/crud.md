@@ -30,7 +30,7 @@ Now that we can see the list of tasks, it's time to add a few more. We create a 
 <div>
   <h1>todos</h1>
   <main>
-    <form method="POST" on:submit|preventDefault={addTask}>// [!code ++]
+    <form on:submit|preventDefault={addTask}>// [!code ++]
       <input bind:value={newTaskTitle} placeholder="What needs to be done?" />// [!code ++]
       <button>Add</button>// [!code ++]
     </form>// [!code ++]

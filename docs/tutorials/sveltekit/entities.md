@@ -41,21 +41,6 @@ export class Task {
 
 :::
 
-3. Register the `Task` entity with Remult by adding `entities: [Task]` to the `options` object that is passed to the remult hook:
-
-::: code-group
-
-```ts [src/hooks/handleRemult.ts]
-import { remultSveltekit } from 'remult/remult-sveltekit'
-import { Task } from '../shared/Task' // [!code ++]
-
-export const handleRemult = remultSveltekit({
-  entities: [Task], // [!code ++]
-})
-```
-
-:::
-
 The [@Entity](../../docs/ref_entity.md) decorator tells Remult that this class is an entity class. The decorator accepts a `key` argument (used to name the API route and as the default database collection/table name), and an optional `options` object of type `EntityOptions`. This is used to define entity-related properties and operations, discussed in the next sections of this tutorial.
 
 Initially, we are going to allow all CRUD operations on tasks, by setting the option [allowApiCrud](../../docs/ref_entity.md#allowapicrud) to `true`.
@@ -68,6 +53,21 @@ The [@Fields.createdAt](../../docs/field-types.md#fields-createdat) decorator te
 
 ::: tip
 For a complete list of supported field types, see the [Field Types](../../docs/field-types.md) section in the Remult documentation.
+:::
+
+3. Register the `Task` entity with Remult by adding `entities: [Task]` to the `options` object that is passed to the remult hook:
+
+::: code-group
+
+```ts [src/routes/api/[...remult]/+server.ts]
+import { remultSveltekit } from 'remult/remult-sveltekit'
+import { Task } from '../../../shared/Task' // [!code ++]
+
+export const handleRemult = remultSveltekit({
+  entities: [Task], // [!code ++]
+})
+```
+
 :::
 
 ## Test the API
