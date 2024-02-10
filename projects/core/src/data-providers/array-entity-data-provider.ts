@@ -16,7 +16,6 @@ import {
 } from '../filter/filter-interfaces.js'
 import type { EntityFilter, EntityMetadata } from '../remult3/remult3.js'
 
-//@internal
 export class ArrayEntityDataProvider implements EntityDataProvider {
   static rawFilter(filter: CustomArrayFilter): EntityFilter<any> {
     return {

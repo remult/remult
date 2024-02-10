@@ -32,6 +32,17 @@ export interface ApiClient {
   subscriptionClient?: SubscriptionClient
   wrapMessageHandling?: (x: VoidFunction) => void
 }
+export declare class ArrayEntityDataProvider implements EntityDataProvider {
+  private entity
+  static rawFilter(filter: CustomArrayFilter): EntityFilter<any>
+  constructor(entity: EntityMetadata, rows?: any[])
+  count(where?: Filter): Promise<number>
+  find(options?: EntityDataProviderFindOptions): Promise<any[]>
+  update(id: any, data: any): Promise<any>
+  delete(id: any): Promise<void>
+  insert(data: any): Promise<any>
+}
+//[ ] CustomArrayFilter from TBD is not exported
 export declare function BackendMethod<type = any>(
   options: BackendMethodOptions<type>,
 ): (
