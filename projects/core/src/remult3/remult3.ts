@@ -748,13 +748,14 @@ export type ClassFieldDecorator<entityType, valueType> = (
   * review react summit
 # 
 
+//y1 - support get with backend method, with url search params as the first parameter, & url as second parameter
 //y1 - admin url!
 //y1 - number default storage in knex is decimal and it by default has 8,2 - meaning only 999,999 - I think it should be way bigger than that. in firefly we do at least 18 - https://discord.com/channels/975754286384418847/1195162533447876658
 //y1 - talk about the parameter issue with backend methods
 //y1 - tried to upgrade vitest, nuxt tests are failing with loading uuid - sounds familiar?
 //y1 - I think that the tests you've setup cover next app router - I added to the setup, but not sure where else
 //y1 - select data provider per entity https://discord.com/channels/975754286384418847/976006081748807690/1201415305885397003
-
+//y1 - talk about modules in init express with entities/controllers,initRequest,initApi
 
 //p1 - Small thing, I get SvelteKitError: Not found: /vite.svg
 //p1 - understand the to many relation for the admin, based on the to one
@@ -814,7 +815,7 @@ remult.apiClient.url='localhost:3007/api
 
 
 */
-//p1 - allow conditional admin - like allowed 
+//p1 - allow conditional admin - like allowed
 //p1 - remult-admin doesn't handle primary key that has compound column
 //p1 - remult-admin didn't show a update for a table with a uniqua that is numeric
 //p1 -check if checouknt doesn't respect allow read (I think)
