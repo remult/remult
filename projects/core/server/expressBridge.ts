@@ -2,7 +2,7 @@ import type { Response } from 'express'
 import type { ResponseRequiredForSSE } from '../SseSubscriptionServer.js'
 import { SseSubscriptionServer } from '../SseSubscriptionServer.js'
 import type { ClassType } from '../classType.js'
-import type { AllowedForInstance, UserInfo } from '../src/context.js'
+import type { Allowed, AllowedForInstance, UserInfo } from '../src/context.js'
 import { Remult, RemultAsyncLocalStorage, withRemult } from '../src/context.js'
 import type { DataApiRequest, DataApiResponse } from '../src/data-api.js'
 import { DataApi, serializeError } from '../src/data-api.js'
@@ -92,8 +92,12 @@ export interface RemultServerOptions<RequestType> {
     serialize(remult: Remult): Promise<any>
     deserialize(json: any, options: InitRequestOptions): Promise<void>
   }
-  /** When set to true, will display an admin ui in the `/api/admin` url */
-  admin?: boolean
+  /** When set to true, will display an admin ui in the `/api/admin` url.
+   * Can also be set to an arrow function for fine grained control
+   * @example
+   * allowed: ()=> remult.isAllowed('admin')
+   */
+  admin?: Allowed
 
   /** Storage to use for backend methods that use queue */
   queueStorage?: QueueStorage
@@ -367,16 +371,18 @@ export class RemultServerImplementation<RequestType>
           },
           r,
         )
-      if (this.options.admin) {
+      if (this.options.admin !== undefined && this.options.admin !== false) {
         r.route(this.options.rootPath + '/admin*').get(
           this.process(async (remult, req, res, orig, origResponse) => {
-            origResponse.send(
-              remultAdminHtml({
-                remult: remult,
-                entities: this.options.entities,
-                baseUrl: this.options.rootPath + '/admin',
-              }),
-            )
+            if (remult.isAllowed(this.options.admin))
+              origResponse.send(
+                remultAdminHtml({
+                  remult: remult,
+                  entities: this.options.entities,
+                  baseUrl: this.options.rootPath + '/admin',
+                }),
+              )
+            else res.notFound()
           }),
         )
       }

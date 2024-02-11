@@ -2216,14 +2216,19 @@ export interface RemultServerOptions<RequestType> {
     serialize(remult: Remult): Promise<any>
     deserialize(json: any, options: InitRequestOptions): Promise<void>
   }
-  /** When set to true, will display an admin ui in the `/api/admin` url */
-  admin?: boolean
+  /** When set to true, will display an admin ui in the `/api/admin` url.
+   * Can also be set to an arrow function for fine grained control
+   * @example
+   * allowed: ()=> remult.isAllowed('admin')
+   */
+  admin?: Allowed
   /** Storage to use for backend methods that use queue */
   queueStorage?: QueueStorage
 }
 //[ ] ClassType from TBD is not exported
 //[ ] UserInfo from TBD is not exported
 //[ ] SubscriptionServer from TBD is not exported
+//[ ] Allowed from TBD is not exported
 export type SpecificRoute = {
   get(handler: GenericRequestHandler): SpecificRoute
   put(handler: GenericRequestHandler): SpecificRoute
@@ -2376,8 +2381,12 @@ export interface RemultServerOptions<RequestType> {
     serialize(remult: Remult): Promise<any>
     deserialize(json: any, options: InitRequestOptions): Promise<void>
   }
-  /** When set to true, will display an admin ui in the `/api/admin` url */
-  admin?: boolean
+  /** When set to true, will display an admin ui in the `/api/admin` url.
+   * Can also be set to an arrow function for fine grained control
+   * @example
+   * allowed: ()=> remult.isAllowed('admin')
+   */
+  admin?: Allowed
   /** Storage to use for backend methods that use queue */
   queueStorage?: QueueStorage
 }
@@ -2387,6 +2396,7 @@ export interface RemultServerOptions<RequestType> {
 //[ ] Remult from TBD is not exported
 //[ ] SubscriptionServer from TBD is not exported
 //[ ] LiveQueryStorage from TBD is not exported
+//[ ] Allowed from TBD is not exported
 export type SpecificRoute = {
   get(handler: GenericRequestHandler): SpecificRoute
   put(handler: GenericRequestHandler): SpecificRoute
