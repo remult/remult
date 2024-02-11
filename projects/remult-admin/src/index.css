@@ -181,6 +181,16 @@ td .field-spacer {
   max-width: 400px;
 }
 
+td .field-spacer {
+  height: 0;
+  padding: 0 0.5rem;
+  display: block;
+  overflow: hidden;
+  pointer-events: none;
+  min-width: 100px;
+  max-width: 400px;
+}
+
 td input:focus {
   box-shadow: 0 0 0 2px rgb(0, 123, 255) inset;
 }
