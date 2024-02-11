@@ -100,8 +100,12 @@ tr.extended th {
   border: 1px solid var(--border-color);
   margin: .5rem;
   display: flex;
-  width: calc(100% - 1rem);
+  width: calc(100vw - var(--navigation-width) - 1rem);
   flex-wrap: wrap;
+}
+
+.hide-navigation .extended__holder {
+  width: calc(100vw - 1rem);
 }
 
 .extended__holder .icon-button:has(.hamburger-icon) {
