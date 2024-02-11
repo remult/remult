@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.25.5] TBD
+## [0.25.5] 2024-02-11
 
 - Added `admin` option to servers, enabling the `/api/admin` route with a built in entity explorer
 - Fixed multiple issues with GraphQL and relations
