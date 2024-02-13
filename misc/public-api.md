@@ -1721,7 +1721,7 @@ export interface SqlCommand extends SqlCommandWithParameters {
 export interface SqlCommandWithParameters {
   addParameterAndReturnSqlToken(val: any): string
 }
-export declare class SqlDatabase implements DataProvider {
+export declare class SqlDatabase implements DataProvider, HasWrapIdentifier {
   private sql
   static getDb(remult?: Remult): SqlDatabase
   createCommand(): SqlCommand
@@ -1759,14 +1759,13 @@ export declare class SqlDatabase implements DataProvider {
   constructor(sql: SqlImplementation)
   private createdEntities
 }
-export interface SqlImplementation {
+export interface SqlImplementation extends HasWrapIdentifier {
   getLimitSqlSyntax(limit: number, offset: number): any
   createCommand(): SqlCommand
   transaction(action: (sql: SqlImplementation) => Promise<void>): Promise<void>
   entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void>
   ensureSchema?(entities: EntityMetadata[]): Promise<void>
   supportsJsonColumnType?: boolean
-  wrapIdentifier?(name: string): string
   afterMutation?: VoidFunction
 }
 export interface SqlResult {
@@ -2621,10 +2620,13 @@ export type CustomKnexFilterBuilderFunction = () => Promise<
   (builder: Knex.QueryBuilder) => void
 >
 //[ ] Knex.QueryBuilder from TBD is not exported
-export declare class KnexDataProvider implements DataProvider {
+export declare class KnexDataProvider
+  implements DataProvider, HasWrapIdentifier
+{
   knex: Knex
   constructor(knex: Knex)
   static getDb(remult?: Remult): Knex<any, any[]>
+  wrapIdentifier: (name: string) => string
   getEntityDataProvider(entity: EntityMetadata<any>): EntityDataProvider
   transaction(
     action: (dataProvider: DataProvider) => Promise<void>,
