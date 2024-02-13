@@ -5,6 +5,7 @@ import type {
   EntityDataProviderFindOptions,
 } from '../data-interfaces.js'
 import type {
+  HasWrapIdentifier,
   SqlCommand,
   SqlCommandWithParameters,
   SqlImplementation,
@@ -39,7 +40,7 @@ import { ValueConverters } from '../valueConverters.js'
 import { getRepositoryInternals } from '../remult3/repository-internals.js'
 
 // @dynamic
-export class SqlDatabase implements DataProvider {
+export class SqlDatabase implements DataProvider, HasWrapIdentifier {
   static getDb(remult?: Remult) {
     const r = (remult || defaultRemult).dataProvider as SqlDatabase
     if (!r.createCommand) throw 'the data provider is not an SqlDatabase'

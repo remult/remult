@@ -33,14 +33,16 @@ import { resultCompoundIdFilter as resultCompoundIdFilter } from '../src/resultC
 import type { StringFieldOptions } from '../src/remult3/Fields.js'
 import { getRepositoryInternals } from '../src/remult3/repository-internals.js'
 import { remultStatic } from '../src/remult-static.js'
+import type { HasWrapIdentifier } from '../src/sql-command.js'
 
-export class KnexDataProvider implements DataProvider {
+export class KnexDataProvider implements DataProvider, HasWrapIdentifier {
   constructor(public knex: Knex) {}
   static getDb(remult?: Remult) {
     const r = (remult || remultContext).dataProvider as KnexDataProvider
     if (!r.knex) throw 'the data provider is not an KnexDataProvider'
     return r.knex
   }
+  wrapIdentifier: (name: string) => string = (x) => this.knex.ref(x) + ''
 
   getEntityDataProvider(entity: EntityMetadata<any>): EntityDataProvider {
     if (!supportsJsonLoadingAndSaving(this.knex))
@@ -94,7 +96,7 @@ export class KnexDataProvider implements DataProvider {
   ) {
     const repo = getRepository(entity)
     var b = new FilterConsumerBridgeToKnexRequest(
-      await dbNamesOf(repo.metadata),
+      await dbNamesOf(repo.metadata, (x) => x),
     )
     b._addWhere = false
     await (
@@ -188,7 +190,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
     })
   }
   async init() {
-    const r = (await dbNamesOf(this.entity)) as EntityDbNamesBase
+    const r = (await dbNamesOf(this.entity, (x) => x)) as EntityDbNamesBase
     return {
       $dbNameOf: (f) => {
         let fm = f as FieldMetadata
@@ -432,7 +434,7 @@ export class KnexSchemaBuilder {
 
   async ensureSchema(entities: EntityMetadata<any>[]) {
     for (const entity of entities) {
-      let e: EntityDbNamesBase = await dbNamesOf(entity)
+      let e: EntityDbNamesBase = await dbNamesOf(entity, (x) => x)
       try {
         if (!entity.options.sqlExpression) {
           if (e.$entityName.toLowerCase().indexOf('from ') < 0) {
@@ -447,7 +449,7 @@ export class KnexSchemaBuilder {
     }
   }
   async createIfNotExist(entity: EntityMetadata): Promise<void> {
-    const e: EntityDbNamesBase = await dbNamesOf(entity)
+    const e: EntityDbNamesBase = await dbNamesOf(entity, (x) => x)
     if (!(await this.knex.schema.hasTable(e.$entityName))) {
       let cols = new Map<FieldMetadata, { name: string; readonly: boolean }>()
       for (const f of entity.fields) {
@@ -481,7 +483,7 @@ export class KnexSchemaBuilder {
     entity: T,
     c: (e: T) => FieldMetadata,
   ) {
-    let e: EntityDbNamesBase = await dbNamesOf(entity)
+    let e: EntityDbNamesBase = await dbNamesOf(entity, (x) => x)
     if (shouldNotCreateField(c(entity), e)) return
 
     let col = c(entity)
@@ -496,7 +498,7 @@ export class KnexSchemaBuilder {
     }
   }
   async verifyAllColumns<T extends EntityMetadata>(entity: T) {
-    let e = await dbNamesOf(entity)
+    let e = await dbNamesOf(entity, (x) => x)
     try {
       for (const col of entity.fields.toArray()) {
         if (!shouldNotCreateField(col, e)) {

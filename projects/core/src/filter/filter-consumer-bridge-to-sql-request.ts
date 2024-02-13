@@ -1,5 +1,6 @@
 import type { FieldMetadata } from '../column-interfaces.js'
 import { SqlDatabase } from '../data-providers/sql-database.js'
+import { remult } from '../remult-proxy.js'
 import type {
   EntityMetadataOverloads,
   RepositoryOverloads,
@@ -12,7 +13,10 @@ import type {
   MembersOnly,
   RelationOptions,
 } from '../remult3/remult3.js'
-import type { SqlCommandWithParameters } from '../sql-command.js'
+import type {
+  HasWrapIdentifier,
+  SqlCommandWithParameters,
+} from '../sql-command.js'
 import type { Filter, FilterConsumer } from './filter-interfaces.js'
 
 export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
@@ -231,10 +235,13 @@ export declare type EntityDbNames<entityType> = {
 
 export async function dbNamesOf<entityType>(
   repo: EntityMetadataOverloads<entityType>,
-  wrapIdentifier: (name: string) => string = (x) => x,
+  wrapIdentifier?: (name: string) => string,
 ): Promise<EntityDbNames<entityType>> {
   var meta = getEntityMetadata(repo)
-
+  if (!wrapIdentifier) {
+    wrapIdentifier = (remult.dataProvider as HasWrapIdentifier).wrapIdentifier
+  }
+  if (!wrapIdentifier) wrapIdentifier = (x) => x
   const result: EntityDbNamesBase = {
     $entityName: await entityDbName(meta, wrapIdentifier),
     toString: () => result.$entityName,
@@ -273,7 +280,14 @@ export async function fieldDbName(
     if (f.options.sqlExpression) {
       let result: string
       if (typeof f.options.sqlExpression === 'function') {
-        result = await f.options.sqlExpression(meta)
+        const prev = f.options.sqlExpression
+        try {
+          f.options.sqlExpression =
+            "recursive sqlExpression call for field '" + f.key + "'. "
+          result = await prev(meta)
+        } finally {
+          f.options.sqlExpression = prev
+        }
       } else result = f.options.sqlExpression
       if (!result) return f.dbName
       return result
