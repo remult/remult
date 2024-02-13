@@ -38,7 +38,7 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
   //@internal
   async init() {
     if (this.__names) return this.__names
-    this.__names = await dbNamesOf(this.entity)
+    this.__names = await dbNamesOf(this.entity, (x) => x)
     for (const r of this.rows) {
       this.verifyThatRowHasAllNotNullColumns(r, this.__names)
     }
