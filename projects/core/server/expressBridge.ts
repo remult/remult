@@ -571,11 +571,15 @@ export class RemultServerImplementation<RequestType>
     ) => Promise<void>,
   ) {
     return async (req: RequestType, origRes: GenericResponse) => {
-      const genReq = this.coreOptions.buildGenericRequestInfo(req)
-      if (!genReq.query) {
-        genReq.query = req['_tempQuery']
+      const genReq = req
+        ? this.coreOptions.buildGenericRequestInfo(req)
+        : undefined
+      if (req) {
+        if (!genReq.query) {
+          genReq.query = req['_tempQuery']
+        }
+        if (!genReq.params) genReq.params = req['_tempParams']
       }
-      if (!genReq.params) genReq.params = req['_tempParams']
       let myReq = new ExpressRequestBridgeToDataApiRequest(genReq)
       let myRes = new ExpressResponseBridgeToDataApiResponse(origRes, req)
       await this.runWithRemult(async (remult) => {
@@ -976,10 +980,10 @@ export class RemultServerImplementation<RequestType>
 
 class ExpressRequestBridgeToDataApiRequest implements DataApiRequest {
   get(key: string): any {
-    return this.r.query[key]
+    return this.r?.query[key]
   }
 
-  constructor(private r: GenericRequestInfo) {}
+  constructor(private r: GenericRequestInfo | undefined) {}
 }
 class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
   forbidden(): void {
@@ -990,7 +994,7 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
   }
   constructor(
     private r: GenericResponse,
-    private req: GenericRequestInfo,
+    private req: GenericRequestInfo | undefined,
   ) {}
   progress(progress: number): void {}
 
@@ -1014,8 +1018,8 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
     console.error({
       message: data.message,
       stack: data.stack?.split('\n'),
-      url: this.req.url,
-      method: this.req.method,
+      url: this.req?.url,
+      method: this.req?.method,
     })
     this.setStatus(400).json(data)
   }

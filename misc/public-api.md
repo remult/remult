@@ -2060,6 +2060,10 @@ export type RemultNextServer = RemultServerCore<NextApiRequest> &
     >(
       getServerPropsFunction: GetServerSideProps<P, Q, D>,
     ): GetServerSideProps<P, Q, D>
+    withRemult<T>(
+      req: NextApiRequest | undefined,
+      what: () => Promise<T>,
+    ): Promise<T>
     /** Creates a `next.js` handler with remult defined in the correct context
      * @see
      * https://remult.dev/tutorials/react-next/appendix-1-get-server-side-props.html#using-remult-in-a-next-js-api-handler

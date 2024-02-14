@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 - improved dbNamesOf of to use by default the wrapIdentifier of the current data provider if no wrap identifier was provided
 - Added support for using dbNamesOf in an sql expression for that same entity
+- Added `withRemult` to next js page router
 
 ## [0.25.5] 2024-02-11
 
