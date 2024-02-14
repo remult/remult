@@ -180,7 +180,7 @@ export interface RemultServer<RequestType>
 }
 
 export interface RemultServerCore<RequestType> {
-  getRemult(req: RequestType): Promise<Remult>
+  getRemult(req?: RequestType): Promise<Remult>
   openApiDoc(options: { title: string; version?: string }): any
 }
 
@@ -610,6 +610,7 @@ export class RemultServerImplementation<RequestType>
   }
   async getRemult(req: RequestType) {
     let remult: Remult
+    if (!req) return await this.runWithRemult(async (c) => (remult = c))
     await this.process(async (c) => {
       remult = c
     })(req, undefined)
