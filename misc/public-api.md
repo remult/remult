@@ -2169,7 +2169,7 @@ export interface RemultServer<RequestType>
 }
 //[ ] ServerHandleResponse from TBD is not exported
 export interface RemultServerCore<RequestType> {
-  getRemult(req: RequestType): Promise<Remult>
+  getRemult(req?: RequestType): Promise<Remult>
   openApiDoc(options: { title: string; version?: string }): any
 }
 export interface RemultServerOptions<RequestType> {
