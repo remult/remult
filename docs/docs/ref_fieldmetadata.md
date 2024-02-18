@@ -20,6 +20,15 @@ A human readable caption for the field. Can be used to achieve a consistent capt
    ```ts
    <input placeholder={taskRepo.metadata.fields.title.caption}/>
    ```
+## dbName
+The name of the column in the database that holds the data for this field. If no name is set, the key will be used instead.
+   
+   
+   *example*
+   ```ts
+   @Fields.string({ dbName: 'userName'})
+   userName=''
+   ```
 ## options
 The options sent to this field's decorator
 ## inputType
@@ -36,7 +45,7 @@ The class that contains this field
    Task == taskRepo.metadata.fields.title.target //will return true
    ```
 ## getDbName
-Returns the dbName - based on it's `dbName` option and it's `sqlExpression` option
+* **getDbName**
 ## isServerExpression
 Indicates if this field is based on a server express
 ## dbReadOnly

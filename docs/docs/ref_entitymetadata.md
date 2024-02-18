@@ -14,6 +14,9 @@ A human readable caption for the entity. Can be used to achieve a consistent cap
    ```ts
    <h1>Create a new item in {taskRepo.metadata.caption}</h1>
    ```
+## dbName
+The name of the table in the database that holds the data for this entity.
+If no name is set in the entity options, the `key` will be used instead.
 ## options
 The options send to the `Entity`'s decorator
 ## apiUpdateAllowed
@@ -70,6 +73,6 @@ true if the current user is allowed to create an entity instance
 Arguments:
 * **item**
 ## getDbName
-Returns the dbName - based on it's `dbName` option and it's `sqlExpression` option
+* **getDbName**
 ## idMetadata
 Metadata for the Entity's id
