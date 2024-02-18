@@ -182,18 +182,110 @@ export interface FieldMetadata<valueType = any, entityType = any> {
    */
   fromInput(inputValue: string, inputType?: string): valueType
 }
+/**
+ * Interface for converting values between different formats, such as in-memory objects, database storage,
+ * JSON data transfer objects (DTOs), and HTML input elements.
+ *
+ * @template valueType The type of the value that the converter handles.
+ */
 export interface ValueConverter<valueType> {
+  /**
+   * Converts a value from a JSON DTO to the valueType. This method is typically used when receiving data
+   * from a REST API call or deserializing a JSON payload.
+   *
+   * @param val The value to convert.
+   * @returns The converted value.
+   *
+   * @example
+   * fromJson: val => new Date(val)
+   */
   fromJson?(val: any): valueType
+
+  /**
+   * Converts a value of valueType to a JSON DTO. This method is typically used when sending data
+   * to a REST API or serializing an object to a JSON payload.
+   *
+   * @param val The value to convert.
+   * @returns The converted value.
+   *
+   * @example
+   * toJson: val => val?.toISOString()
+   */
   toJson?(val: valueType): any
+
+  /**
+   * Converts a value from the database format to the valueType.
+   *
+   * @param val The value to convert.
+   * @returns The converted value.
+   *
+   * @example
+   * fromDb: val => new Date(val)
+   */
   fromDb?(val: any): valueType
+
+  /**
+   * Converts a value of valueType to the database format.
+   *
+   * @param val The value to convert.
+   * @returns The converted value.
+   *
+   * @example
+   * toDb: val => val?.toISOString()
+   */
   toDb?(val: valueType): any
+
+  /**
+   * Converts a value of valueType to a string suitable for an HTML input element.
+   *
+   * @param val The value to convert.
+   * @param inputType The type of the input element (optional).
+   * @returns The converted value as a string.
+   *
+   * @example
+   * toInput: (val, inputType) => val?.toISOString().substring(0, 10)
+   */
   toInput?(val: valueType, inputType?: string): string
+
+  /**
+   * Converts a string from an HTML input element to the valueType.
+   *
+   * @param val The value to convert.
+   * @param inputType The type of the input element (optional).
+   * @returns The converted value.
+   *
+   * @example
+   * fromInput: (val, inputType) => new Date(val)
+   */
   fromInput?(val: string, inputType?: string): valueType
+
+  /**
+   * Returns a displayable string representation of a value of valueType.
+   *
+   * @param val The value to convert.
+   * @returns The displayable string.
+   *
+   * @example
+   * displayValue: val => val?.toLocaleDateString()
+   */
   displayValue?(val: valueType): string
+
+  /**
+   * Specifies the storage type used in the database for this field.
+   *
+   * @example
+   * readonly fieldTypeInDb = 'decimal(18,2)';
+   */
   readonly fieldTypeInDb?: string
+
+  /**
+   * Specifies the type of HTML input element suitable for values of valueType.
+   *
+   * @example
+   * readonly inputType = 'date';
+   */
   readonly inputType?: string
 }
-
 export declare type FieldValidator<entityType = any, valueType = any> = (
   entity: entityType,
   event: ValidateFieldEvent<entityType, valueType>,

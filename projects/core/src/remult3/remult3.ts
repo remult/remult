@@ -429,15 +429,82 @@ export interface Repository<entityType> {
   addEventListener(listener: entityEventListener<entityType>): Unsubscribe
   relations: (item: entityType) => RepositoryRelations<entityType>
 }
+/**
+ * The `LiveQuery` interface represents a live query that allows subscribing to changes in the query results.
+ *
+ * @template entityType The entity type for the live query.
+ */
 export interface LiveQuery<entityType> {
+  /**
+   * Subscribes to changes in the live query results.
+   *
+   * @param {(info: LiveQueryChangeInfo<entityType>) => void} next A function that will be called with information about changes in the query results.
+   * @returns {Unsubscribe} A function that can be used to unsubscribe from the live query.
+   *
+   * @example
+   * // Subscribing to changes in a live query
+   * const unsubscribe = taskRepo
+   *   .liveQuery({
+   *     limit: 20,
+   *     orderBy: { createdAt: 'asc' }
+   *     //where: { completed: true },
+   *   })
+   *   .subscribe(info => setTasks(info.applyChanges));
+   *
+   * // Later, to unsubscribe
+   * unsubscribe();
+   */
   subscribe(next: (info: LiveQueryChangeInfo<entityType>) => void): Unsubscribe
+
+  /**
+   * Subscribes to changes in the live query results using a `SubscriptionListener` object.
+   *
+   * @param {Partial<SubscriptionListener<LiveQueryChangeInfo<entityType>>>} listener An object that implements the `SubscriptionListener` interface.
+   * @returns {Unsubscribe} A function that can be used to unsubscribe from the live query.
+   */
   subscribe(
     listener: Partial<SubscriptionListener<LiveQueryChangeInfo<entityType>>>,
   ): Unsubscribe
 }
+/**
+ * The `LiveQueryChangeInfo` interface represents information about changes in the results of a live query.
+ *
+ * @template entityType The entity type for the live query.
+ */
 export interface LiveQueryChangeInfo<entityType> {
+  /**
+   * The updated array of result items.
+   *
+   * @type {entityType[]}
+   */
   items: entityType[]
+
+  /**
+   * The changes received in the specific message. The change types can be "all" (replace all), "add", "replace", or "remove".
+   *
+   * @type {LiveQueryChange[]}
+   */
   changes: LiveQueryChange[]
+
+  /**
+   * Applies the changes received in the message to an existing array. This method is particularly useful with React
+   * to update the component's state based on the live query changes.
+   *
+   * @param {entityType[] | undefined} prevState The previous state of the array of result items.
+   * @returns {entityType[]} The updated array of result items after applying the changes.
+   *
+   * @example
+   * // Using applyChanges in a React component with useEffect hook
+   * useEffect(() => {
+   *   return taskRepo
+   *     .liveQuery({
+   *       limit: 20,
+   *       orderBy: { createdAt: 'asc' }
+   *       //where: { completed: true },
+   *     })
+   *     .subscribe(info => setTasks(info.applyChanges));
+   * }, []);
+   */
   applyChanges(prevState: entityType[] | undefined): entityType[]
 }
 export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
@@ -748,112 +815,81 @@ export type ClassFieldDecorator<entityType, valueType> = (
   * review react summit
 # 
 
-//y1 - support get with backend method, with url search params as the first parameter, & url as second parameter
-//y1 - admin url!
+//y1 - getFields didn't work for kobi in the home component
+//y1 - talk about export api is not possible in +server - how did we face that in others, and how do we doc it - ended up using _api
 //y1 - number default storage in knex is decimal and it by default has 8,2 - meaning only 999,999 - I think it should be way bigger than that. in firefly we do at least 18 - https://discord.com/channels/975754286384418847/1195162533447876658
-//y1 - talk about the parameter issue with backend methods
-//y1 - tried to upgrade vitest, nuxt tests are failing with loading uuid - sounds familiar?
-//y1 - I think that the tests you've setup cover next app router - I added to the setup, but not sure where else
-//y1 - select data provider per entity https://discord.com/channels/975754286384418847/976006081748807690/1201415305885397003
+//y1 - admin url!
 //y1 - talk about modules in init express with entities/controllers,initRequest,initApi
-
-//p1 - Small thing, I get SvelteKitError: Not found: /vite.svg
-//p1 - understand the to many relation for the admin, based on the to one
-//p1 - relation from order details to order gave a compound id info - and it is not true - same for the relation to product
-//p1 - live query with include
-//p1 - new row when there are relations, looks funny (see product)
-//p1 - the + row in the bottom should extend to the full width
-//p1 - adjust angular tutorial starter kit for latest angular (as is in tutorial)
+//y1 - tried to upgrade vitest, nuxt tests are failing with loading uuid - sounds familiar?
+//y1 - I think that the tests you've setup don't cover next app router - I added to the setup, but not sure where else
+//y1 - support get with backend method, with url search params as the first parameter, & url as second parameter
+//y1 - talk about the parameter issue with backend methods
+//y1 - select data provider per entity https://discord.com/channels/975754286384418847/976006081748807690/1201415305885397003
+//y2 - live query refresh of view on table update
+//y2 - livequery for findfirst (@JY)
 
 /*y2 - 
+//y2 - allow api update only for new rows
   @Fields.string<Category>({
     allowApiUpdate: (c) => getEntityRef(c).isNew(),
   })
   Description = ""*/
+//y2 - get backend methods to work when specifying types for date, and entities as poco's
+//y2 - conside law-q db based on schema issue - I think that while running the dataProvider function, we should have a valid remult - maybe even have a valid remult, that will be valid until api is run
+//y2 - #239 - (@JY) add a way to get from fieldMetadata back to entity repo (like we have in fieldRef)
+//y2 - constraints (@JY)
+
+// remult admin
+//p1 - Small thing, I get SvelteKitError: Not found: /vite.svg
+//p1 - understand the to many relation for the admin, based on the to one
+//p1 - relation from order details to order gave a compound id info - and it is not true - same for the relation to product
+//p1 - new row when there are relations, looks funny (see product)
+//p1 - the + row in the bottom should extend to the full width
+//p1 - need a way to extract the fields from the relation - for generating relation based sql
+//p1 - allow conditional admin - like allowed
+//p1 - remult-admin doesn't handle primary key that has compound column
+//p1 - remult-admin didn't show a update for a table with a uniqua that is numeric
+
+//remult
+//p1 -check if count doesn't respect allow read (I think)
+//p1 - when a tasks table exists in a different schema - we get many errors
+//p1 - live query with include
+//p1 - adjust angular tutorial starter kit for latest angular (as is in tutorial)
+//p2 - I think there should be a way to throw a forbidden exception
+//p2 - processError in remult express
+//p2 - allow find options preprocessor for api calls, to use for authorization
+//p2 - when subscribe is forbidden - the query still runs after the renew process
+//p2 - 'update tasks set  where id = $1
+//p1 - ValueListFieldType - the decorator gives an error in react vite project - see langulage yedidya
+//p2 - type metadata.key - to keyof entity - based on cwis input
+//y2 - remove __dirname from tutorials
+//p2 - when value changes for field with error, clear error - so the user will feel comfortable
+//p2 - allowApiUpdate should be false for include in api false
+
+//docs
+//p1 - write docs on with remult - and usage in init api
+//p2 - write doc about controlling updates of rows...
+//p2 - make sure that internal members do not appear in the documentation - try running it on the d.ts instead of the code itself.
+
+//------
 
 //y2 - from the crm-demo(https://crm-demo.up.railway.app/deals), after editing a deal: - _updateEntityBasedOnApi
 
 //y2 - Backend methods are transactions, it's not intuitive and maybe should be optional / opt in
 //y2 - how to run a transaction as a user
 //p2 - enum column
-//p2 - I think there should be a way to throw a forbidden exception
 
-//y2 - get backend methods to work when specifying types for date, and entities as poco's
-//y2 - required
-//y2 - reconsider validators
 //y2 - message for invalid value
 //y2 - message for relation that is missing
-//p2 - more column types
-//p2 -   processError in remult express
-//p2 -   allow find options preprocessor for api calls, to use for authorization
-//p2 - write doc about controlling updates of rows...
-//p1 - need a way to extract the fields from the relation - for generating relation based sql
-//p1 - when doing this, work on graphql relation with fields not just field
-//p2 - add docs for apply changes
-//p2 - when subscribe is forbidden - the query still runs after the renew process
-//p2 - 'update tasks set  where id = $1
 //y2 - consider multi tenancies
 //y2 - allow api read to also support instance and filter. - problem with promise
-//p2 - doc this:
-/**
- * //p2 - doc this
-remult.apiClient.httpClient = (
-  input: RequestInfo | URL,
-  init?: RequestInit
-  ) => {
-    return fetch(input, {
-      ...init,
-      headers: {
-        authorization: 'Bearer ' + sessionStorage.sessionId,
-      },
-      cache: 'no-store',
-    })
-}
 
-&&
-remult.apiClient.url='localhost:3007/api
+//p2 - more column types
 
-
-*/
-//p1 - allow conditional admin - like allowed
-//p1 - remult-admin doesn't handle primary key that has compound column
-//p1 - remult-admin didn't show a update for a table with a uniqua that is numeric
-//p1 -check if checouknt doesn't respect allow read (I think)
-//p1 - when a tasks table exists in a different schema - we get many errors
-//p1 - allow api update only for new rows
-//p1 - getFields didn't work for kobi in the home component
-//p1 - add to docs  https://codesandbox.io/p/devbox/demo-sql-expression-wqvj4g
-//p1 - ValueListFieldType - the decorator gives an error in react vite project - see langulage yedidya
-
-//y1 - talk about export api is not possible in +server - how did we face that in others, and how do we doc it
 //p2 - document validators
 //p2 - and validators to reference
 //y2 - discuss a default date formatter
 //y2 - add some api testing framework for user unit tests (will help with codesandbox based discussions)
-//y2 - live query refresh of view on table update
-
-//y2 - livequery for findfirst (@JY)
-//y2 - #239 - (@JY) add a way to get from fieldMetadata back to entity repo (like we have in fieldRef)
-//p2 - constraints (@JY)
-
-//p2 - type metadata.key - to keyof entity - based on cwis input
-
-//y2 - remove __dirname from tutorials
-//p2 - when value changes for field with error, clear error - so the user will feel comfortable
-//p2 - conside law-q db based on schema issue - I think that while running the dataProvider function, we should have a valid remult - maybe even have a valid remult, that will be valid until api is run
-
-//y2 - we should really reconsider allow null by default to be true - I think that what we're doing is confusing for most . In my case I added a volunteer relation, and didn't set any value to it - and I get an error that null value is not allowed for it
-
-//p1 - add a follow up doc to the tutorial on how to user a real user table for the users
-/**
-* our default is allow null false.
-* for sql databases we add a db default of 0/''/false
-* when we set a relation to null - we update the related field to null
-* we do not enforce allow null false (mongo, json it'll get stored)
-
- */
-
-//p2 - allowApiUpdate should be false for include in api false
 
 //[ ] V2 - what to do about for relations count?
 //[ ] V2 - condition? not to fetch if null etc....
@@ -862,14 +898,3 @@ remult.apiClient.url='localhost:3007/api
 //y2 - consider if field types should include validation in them by default (string,number that it's not NaN etc...) and if so, what message?
 //y2 - should enforce integer - currently we probably round / truncate it
 //p1 - adjust react tutorial to esm
-//p1 - write docs on with remult - and usage in init api
-//p1 - document value converter - including field type in the db
-/*y1 - discuss sql stuff:
-     https://discord.com/channels/975754286384418847/975754286384418852/1198997156678357043
-     https://codesandbox.io/p/devbox/demo-sql-expression-forked-f94p6m?file=%2Fsrc%2Findex.ts%3A21%2C3-21%2C12&workspaceId=c0f7eccf-c151-423b-ac8e-0f0f3e1ad350
-     https://codesandbox.io/p/devbox/demo-sql-expression-forked-c2jhyc?file=%2Fsrc%2Findex.ts%3A37%2C50&workspaceId=7e9d0505-ea79-46f1-8973-50cadde4fa96
-
-
-*/
-//p1 - make dbNames of have a default wrapIdentifier based on the current data provider
-//p1 - prevent circular in sql expression

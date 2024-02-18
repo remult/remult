@@ -38,7 +38,7 @@ import { Validators } from 'remult'
 title = ''
 ```
 
-Is supports array of validators as well :
+It supports array of validators as well :
 
 ```ts
 import { Validators } from 'remult'
@@ -47,7 +47,7 @@ import { Validators } from 'remult'
    validate: [
       Validators.minLength(5),
       Validators.maxLength(10),
-      (task)=> task.titlestartsWith('No') || "Need to start with No"
+      (task)=> task.title.startsWith('No') || "Need to start with No"
    ]
 })
 title = ''
@@ -70,13 +70,13 @@ title = ''
 Also in custom validator you can check if you are in the backend or not :
 
 ```ts
-import { Validators } from 'remult'
+import { Validators, isBackend } from 'remult'
 
 @Fields.string({
    validate: [
       Validators.unique(),
       (task) => {
-         if (Remult.isBackend) {
+         if (isBackend()) {
             // check something else...
             // throw "a custom message"
          }

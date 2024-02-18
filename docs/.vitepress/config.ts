@@ -139,17 +139,13 @@ export default defineConfig({
               {
                 text: 'Relations 🚀',
                 link: '/docs/entity-relations',
-                // collapsed: true,
-                // items: [
-                //   // {
-                //   //   text: 'Lazy loading',
-                //   //   link: '/docs/lazy-loading-of-related-entities',
-                //   // },
-                //   {
-                //     text: 'More on One to Many',
-                //     link: '/docs/techniques-regarding-one-to-many-relations',
-                //   },
-                // ],
+                collapsed: true,
+                items: [
+                  {
+                    text: 'Filtering and Relations',
+                    link: '/docs/filtering-and-relations',
+                  },
+                ],
               },
               { text: 'Lifecycle Hooks', link: '/docs/lifecycle-hooks' },
               {
@@ -208,10 +204,12 @@ export default defineConfig({
             items: [
               { text: 'Entity', link: '/docs/ref_entity' },
               { text: 'Field', link: '/docs/ref_field' },
-              { text: 'Validation', link: '/docs/ref_validation' },
+              { text: 'ValueConverter', link: '/docs/ref_valueconverter' },
+              { text: 'Validation', link: '/docs/validation' },
               { text: 'Relations', link: '/docs/ref_relations' },
               { text: 'RelationOptions', link: '/docs/ref_relationoptions' },
               { text: 'Remult', link: '/docs/ref_remult' },
+              { text: 'ApiClient', link: '/docs/ref_apiclient' },
               { text: 'Repository', link: '/docs/ref_repository' },
               {
                 text: 'RemultServerOptions',
@@ -224,6 +222,18 @@ export default defineConfig({
               { text: 'BackendMethod', link: '/docs/ref_backendmethod' },
               { text: 'QueryResult', link: '/docs/ref_queryresult' },
               { text: 'Paginator', link: '/docs/ref_paginator' },
+              { text: 'LiveQuery', link: '/docs/ref_livequery' },
+              {
+                text: 'LiveQueryChangeInfo',
+                link: '/docs/ref_livequerychangeinfo',
+              },
+              { text: 'Filter', link: '/docs/ref_filter' },
+              { text: 'Sort', link: '/docs/ref_sort' },
+              {
+                text: 'SubscriptionChannel',
+                link: '/docs/ref_subscriptionchannel',
+              },
+
               { text: 'REST API Spec', link: '/docs/rest-api' },
             ],
           },

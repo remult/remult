@@ -18,18 +18,72 @@ export declare type AllowedForInstance<T> =
   | string[]
   | ((entity?: T, c?: Remult) => boolean)
 export interface ApiClient {
-  /** The http client to use when making api calls.
+  /**
+   * The HTTP client to use when making API calls. It can be set to a function with the `fetch` signature
+   * or an object that has `post`, `put`, `delete`, and `get` methods. This can also be used to inject
+   * logic before each HTTP call, such as adding authorization headers.
+   *
    * @example
+   * // Using Axios
    * remult.apiClient.httpClient = axios;
+   *
    * @example
-   * remult.apiClient.httpClient = httpClient;//angular http client
+   * // Using Angular HttpClient
+   * remult.apiClient.httpClient = httpClient;
+   *
    * @example
-   * remult.apiClient.httpClient = fetch; //this is the default
+   * // Using fetch (default)
+   * remult.apiClient.httpClient = fetch;
+   *
+   * @example
+   * // Adding bearer token authorization
+   * remult.apiClient.httpClient = (input: RequestInfo | URL, init?: RequestInit) => {
+   *   return fetch(input, {
+   *     ...init,
+   *     headers: {
+   *       authorization: 'Bearer ' + sessionStorage.sessionId,
+   *     },
+   *     cache: 'no-store',
+   *   });
+   * };
    */
   httpClient?: ExternalHttpProvider | typeof fetch
-  /** The base url to for making api calls */
+  /**
+   * The base URL for making API calls. By default, it is set to '/api'. It can be modified to be relative
+   * or to use a different domain for the server.
+   *
+   * @example
+   * // Relative URL
+   * remult.apiClient.url = './api';
+   *
+   * @example
+   * // Different domain
+   * remult.apiClient.url = 'https://example.com/api';
+   */
   url?: string
+  /**
+   * The subscription client used for real-time data updates. By default, it is set to use Server-Sent Events (SSE).
+   * It can be set to any subscription provider as illustrated in the Remult tutorial for deploying to a serverless environment.
+   *
+   * @see https://remult.dev/tutorials/react-next/deployment.html#deploying-to-a-serverless-environment
+   */
   subscriptionClient?: SubscriptionClient
+  /**
+   * A function that wraps message handling for subscriptions. This is useful for executing some code before
+   * or after any message arrives from the subscription. For example, in Angular, this can be used to trigger
+   * a render by calling the `NgZone` run method.
+   *
+   * @example
+   * // Angular example
+   * import { Component, NgZone } from '@angular/core';
+   * import { remult } from "remult";
+   *
+   * export class AppComponent {
+   *   constructor(zone: NgZone) {
+   *     remult.apiClient.wrapMessageHandling = handler => zone.run(() => handler());
+   *   }
+   * }
+   */
   wrapMessageHandling?: (x: VoidFunction) => void
 }
 export declare class ArrayEntityDataProvider implements EntityDataProvider {
@@ -934,13 +988,34 @@ export declare type FieldValidator<entityType = any, valueType = any> = (
   | Promise<boolean | string | void | undefined>
 export declare class Filter {
   private apply
-  constructor(apply: (add: FilterConsumer) => void)
-  __applyToConsumer(add: FilterConsumer): void
-  static resolve<entityType>(
-    filter:
-      | EntityFilter<entityType>
-      | (() => EntityFilter<entityType> | Promise<EntityFilter<entityType>>),
-  ): Promise<EntityFilter<entityType>>
+  /**
+   * Creates a custom filter. Custom filters are evaluated on the backend, ensuring security and efficiency.
+   * When the filter is used in the frontend, only its name is sent to the backend via the API,
+   * where the filter gets translated and applied in a safe manner.
+   *
+   * @template entityType The entity type for the filter.
+   * @param {function(): EntityFilter<entityType>} rawFilterTranslator A function that returns an `EntityFilter`.
+   * @param {string} [key] An optional unique identifier for the custom filter.
+   * @returns {function(): EntityFilter<entityType>} A function that returns an `EntityFilter` of type `entityType`.
+   *
+   * @example
+   * // In an entity class, add a static method for the custom filter
+   * static titleLengthFilter = Filter.createCustom<Task>(() => {
+   *   return SqlDatabase.rawFilter((whereFragment) => {
+   *     whereFragment.sql = 'length(title) > 10';
+   *   });
+   * });
+   *
+   * // Usage
+   * console.table(
+   *   await remult.repo(Task).find({
+   *     where: Task.titleLengthFilter()
+   *   })
+   * );
+   * @see
+   * [Sql filter and Custom filter](/docs/custom-filter.html)
+   * [Filtering and Relations](/docs/filtering-and-relations.html)
+   */
   static createCustom<entityType>(
     rawFilterTranslator: (
       unused: never,
@@ -948,6 +1023,42 @@ export declare class Filter {
     ) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>,
     key?: string,
   ): (() => EntityFilter<entityType>) & customFilterInfo<entityType>
+  /**
+   * Creates a custom filter. Custom filters are evaluated on the backend, ensuring security and efficiency.
+   * When the filter is used in the frontend, only its name and value arguments are sent to the backend via the API,
+   * where the filter gets translated and applied in a safe manner.
+   *
+   * @template entityType The entity type for the filter.
+   * @template argsType The type of the argument for the filter.
+   * @param {function(argsType, Remult): EntityFilter<entityType>} rawFilterTranslator A function that takes an argument of type `argsType` and an instance of `Remult`, and returns an `EntityFilter`.
+   * @param {string} [key] An optional unique identifier for the custom filter.
+   * @returns {function(argsType): EntityFilter<entityType>} A function that takes an argument of type `argsType` and returns an `EntityFilter` of type `entityType`.
+   *
+   * @example
+   * // In an entity class, add a static method for the custom filter with parameters
+   * static filterCity = Filter.createCustom<Order, { city: string }>(
+   *   async ({ city }) => {
+   *     const orders = await dbNamesOf(Order);
+   *     const customers = await dbNamesOf(Customer);
+   *     return SqlDatabase.rawFilter(async (whereFragment) => {
+   *       whereFragment.sql = `${orders.customer} in
+   *              (select ${customers.id}
+   *                 from ${customers}
+   *                where ${await whereFragment.filterToRaw(Customer, { city })})`;
+   *     });
+   *   }
+   * );
+   *
+   * // Usage
+   * const cityFilter = Order.filterCity({ city: 'New York' });
+   * const ordersInNewYork = await remult.repo(Order).find({ where: cityFilter });
+   *
+   * // The filter is sent to the backend as:
+   * // http://127.0.0.1:3002/api/orders?%24custom%24filterCity=%7B%22city%22%3A%22New%20York%22%7D
+   * @see
+   * [Sql filter and Custom filter](/docs/custom-filter.html)
+   * [Filtering and Relations](/docs/filtering-and-relations.html)
+   */
   static createCustom<entityType, argsType>(
     rawFilterTranslator: (
       args: argsType,
@@ -955,24 +1066,64 @@ export declare class Filter {
     ) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>,
     key?: string,
   ): ((y: argsType) => EntityFilter<entityType>) & customFilterInfo<entityType>
-  static fromEntityFilter<T>(
-    entity: EntityMetadata<T>,
-    whereItem: EntityFilter<T>,
-  ): Filter
-  toJson(): any
+  /**
+   * Translates an `EntityFilter` to a plain JSON object that can be stored or transported.
+   *
+   * @template T The entity type for the filter.
+   * @param {EntityMetadata<T>} entityDefs The metadata of the entity associated with the filter.
+   * @param {EntityFilter<T>} where The `EntityFilter` to be translated.
+   * @returns {any} A plain JSON object representing the `EntityFilter`.
+   *
+   * @example
+   * // Assuming `Task` is an entity class
+   * const jsonFilter = Filter.entityFilterToJson(Task, { completed: true });
+   * // `jsonFilter` can now be stored or transported as JSON
+   */
   static entityFilterToJson<T>(
     entityDefs: EntityMetadata<T>,
     where: EntityFilter<T>,
   ): any
+  /**
+   * Translates a plain JSON object back into an `EntityFilter`.
+   *
+   * @template T The entity type for the filter.
+   * @param {EntityMetadata<T>} entityDefs The metadata of the entity associated with the filter.
+   * @param {any} packed The plain JSON object representing the `EntityFilter`.
+   * @returns {EntityFilter<T>} The reconstructed `EntityFilter`.
+   *
+   * @example
+   * // Assuming `Task` is an entity class and `jsonFilter` is a JSON object representing an EntityFilter
+   * const taskFilter = Filter.entityFilterFromJson(Task, jsonFilter);
+   * // Using the reconstructed `EntityFilter` in a query
+   * const tasks = await remult.repo(Task).find({ where: taskFilter });
+   * for (const task of tasks) {
+   *   // Do something for each task based on the filter
+   * }
+   */
   static entityFilterFromJson<T>(
     entityDefs: EntityMetadata<T>,
     packed: any,
   ): EntityFilter<T>
-  static translateCustomWhere<T>(
-    r: Filter,
+  /**
+   * Converts an `EntityFilter` to a `Filter` that can be used by the `DataProvider`. This method is
+   * mainly used internally.
+   *
+   * @template T The entity type for the filter.
+   * @param {EntityMetadata<T>} entity The metadata of the entity associated with the filter.
+   * @param {EntityFilter<T>} whereItem The `EntityFilter` to be converted.
+   * @returns {Filter} A `Filter` instance that can be used by the `DataProvider`.
+   *
+   * @example
+   * // Assuming `Task` is an entity class and `taskFilter` is an EntityFilter
+   * const filter = Filter.fromEntityFilter(Task, taskFilter);
+   * // `filter` can now be used with the DataProvider
+   */
+  static fromEntityFilter<T>(
     entity: EntityMetadata<T>,
-    remult: Remult,
-  ): Promise<Filter>
+    whereItem: EntityFilter<T>,
+  ): Filter
+  constructor(apply: (add: FilterConsumer) => void)
+  __applyToConsumer(add: FilterConsumer): void
 }
 export interface FilterConsumer {
   or(orElements: Filter[]): any
@@ -1685,22 +1836,71 @@ export interface RestDataProviderHttpProvider {
 }
 export declare class Sort {
   toEntityOrderBy(): EntityOrderBy<any>
+  /**
+   * Constructs a `Sort` instance with the provided sort segments.
+   *
+   * @param {...SortSegment[]} segments The sort segments to be included in the sort criteria.
+   */
   constructor(...segments: SortSegment[])
+  /**
+   * The segments of the sort criteria.
+   *
+   * @type {SortSegment[]}
+   */
   Segments: SortSegment[]
+  /**
+   * Reverses the sort order of the current sort criteria.
+   *
+   * @returns {Sort} A new `Sort` instance with the reversed sort order.
+   */
   reverse(): Sort
+  /**
+   * Compares two objects based on the current sort criteria.
+   *
+   * @param {any} a The first object to compare.
+   * @param {any} b The second object to compare.
+   * @param {function(FieldMetadata): string} [getFieldKey] An optional function to get the field key for comparison.
+   * @returns {number} A negative value if `a` should come before `b`, a positive value if `a` should come after `b`, or zero if they are equal.
+   */
   compare(
     a: any,
     b: any,
     getFieldKey?: (field: FieldMetadata) => string,
   ): number
+  /**
+   * Translates an `EntityOrderBy` to a `Sort` instance.
+   *
+   * @template T The entity type for the order by.
+   * @param {EntityMetadata<T>} entityDefs The metadata of the entity associated with the order by.
+   * @param {EntityOrderBy<T>} [orderBy] The `EntityOrderBy` to be translated.
+   * @returns {Sort} A `Sort` instance representing the translated order by.
+   */
   static translateOrderByToSort<T>(
     entityDefs: EntityMetadata<T>,
     orderBy?: EntityOrderBy<T>,
   ): Sort
+  /**
+   * Creates a unique `Sort` instance based on the provided `Sort` and the entity metadata.
+   * This ensures that the sort criteria result in a unique ordering of entities.
+   *
+   * @template T The entity type for the sort.
+   * @param {EntityMetadata<T>} entityMetadata The metadata of the entity associated with the sort.
+   * @param {Sort} [orderBy] The `Sort` instance to be made unique.
+   * @returns {Sort} A `Sort` instance representing the unique sort criteria.
+   */
   static createUniqueSort<T>(
     entityMetadata: EntityMetadata<T>,
     orderBy?: Sort,
   ): Sort
+  /**
+   * Creates a unique `EntityOrderBy` based on the provided `EntityOrderBy` and the entity metadata.
+   * This ensures that the order by criteria result in a unique ordering of entities.
+   *
+   * @template T The entity type for the order by.
+   * @param {EntityMetadata<T>} entityMetadata The metadata of the entity associated with the order by.
+   * @param {EntityOrderBy<T>} [orderBy] The `EntityOrderBy` to be made unique.
+   * @returns {EntityOrderBy<T>} An `EntityOrderBy` representing the unique order by criteria.
+   */
   static createUniqueEntityOrderBy<T>(
     entityMetadata: EntityMetadata<T>,
     orderBy?: EntityOrderBy<T>,
@@ -1787,12 +1987,36 @@ export interface Subscribable {
 }
 export declare class SubscriptionChannel<messageType> {
   channelKey: string
+  /**
+   * Constructs a new `SubscriptionChannel` instance.
+   *
+   * @param {string} channelKey The key that identifies the channel.
+   */
   constructor(channelKey: string)
+  /**
+   * Publishes a message to the channel. This method should only be used on the backend.
+   *
+   * @param {messageType} message The message to be published.
+   * @param {Remult} [remult] An optional instance of Remult to use for publishing the message.
+   */
   publish(message: messageType, remult?: Remult): void
+  /**
+   * Subscribes to messages from the channel. This method should only be used on the frontend.
+   *
+   * @param {(message: messageType) => void} next A function that will be called with each message received.
+   * @param {Remult} [remult] An optional instance of Remult to use for the subscription.
+   * @returns {Promise<Unsubscribe>} A promise that resolves to a function that can be used to unsubscribe from the channel.
+   */
   subscribe(
     next: (message: messageType) => void,
     remult?: Remult,
   ): Promise<Unsubscribe>
+  /**
+   * Subscribes to messages from the channel using a `SubscriptionListener` object.
+   *
+   * @param {Partial<SubscriptionListener<messageType>>} listener An object that implements the `SubscriptionListener` interface.
+   * @returns {Promise<Unsubscribe>} A promise that resolves to a function that can be used to unsubscribe from the channel.
+   */
   subscribe(
     listener: Partial<SubscriptionListener<messageType>>,
   ): Promise<Unsubscribe>
@@ -1899,14 +2123,93 @@ export type ValidatorWithArgs<valueType, argsType> = (
   message?: ValidationMessage<valueType, argsType>,
 ) => FieldValidator<any, valueType>
 export interface ValueConverter<valueType> {
+  /**
+   * Converts a value from a JSON DTO to the valueType. This method is typically used when receiving data
+   * from a REST API call or deserializing a JSON payload.
+   *
+   * @param val The value to convert.
+   * @returns The converted value.
+   *
+   * @example
+   * fromJson: val => new Date(val)
+   */
   fromJson?(val: any): valueType
+  /**
+   * Converts a value of valueType to a JSON DTO. This method is typically used when sending data
+   * to a REST API or serializing an object to a JSON payload.
+   *
+   * @param val The value to convert.
+   * @returns The converted value.
+   *
+   * @example
+   * toJson: val => val?.toISOString()
+   */
   toJson?(val: valueType): any
+  /**
+   * Converts a value from the database format to the valueType.
+   *
+   * @param val The value to convert.
+   * @returns The converted value.
+   *
+   * @example
+   * fromDb: val => new Date(val)
+   */
   fromDb?(val: any): valueType
+  /**
+   * Converts a value of valueType to the database format.
+   *
+   * @param val The value to convert.
+   * @returns The converted value.
+   *
+   * @example
+   * toDb: val => val?.toISOString()
+   */
   toDb?(val: valueType): any
+  /**
+   * Converts a value of valueType to a string suitable for an HTML input element.
+   *
+   * @param val The value to convert.
+   * @param inputType The type of the input element (optional).
+   * @returns The converted value as a string.
+   *
+   * @example
+   * toInput: (val, inputType) => val?.toISOString().substring(0, 10)
+   */
   toInput?(val: valueType, inputType?: string): string
+  /**
+   * Converts a string from an HTML input element to the valueType.
+   *
+   * @param val The value to convert.
+   * @param inputType The type of the input element (optional).
+   * @returns The converted value.
+   *
+   * @example
+   * fromInput: (val, inputType) => new Date(val)
+   */
   fromInput?(val: string, inputType?: string): valueType
+  /**
+   * Returns a displayable string representation of a value of valueType.
+   *
+   * @param val The value to convert.
+   * @returns The displayable string.
+   *
+   * @example
+   * displayValue: val => val?.toLocaleDateString()
+   */
   displayValue?(val: valueType): string
+  /**
+   * Specifies the storage type used in the database for this field.
+   *
+   * @example
+   * readonly fieldTypeInDb = 'decimal(18,2)';
+   */
   readonly fieldTypeInDb?: string
+  /**
+   * Specifies the type of HTML input element suitable for values of valueType.
+   *
+   * @example
+   * readonly inputType = 'date';
+   */
   readonly inputType?: string
 }
 export declare class ValueConverters {

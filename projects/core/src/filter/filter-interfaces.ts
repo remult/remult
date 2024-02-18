@@ -10,19 +10,39 @@ import type {
 import { getEntityRef, getEntitySettings } from '../remult3/getEntityRef.js'
 import { getRelationFieldInfo } from '../remult3/relationInfoMember.js'
 
+/**
+ * The `Filter` class is a helper class that focuses on filter-related concerns. It provides methods
+ * for creating and applying filters in queries.
+ */
 export class Filter {
-  constructor(private apply: (add: FilterConsumer) => void) {}
-  __applyToConsumer(add: FilterConsumer) {
-    this.apply(add)
-  }
-  static async resolve<entityType>(
-    filter:
-      | EntityFilter<entityType>
-      | (() => EntityFilter<entityType> | Promise<EntityFilter<entityType>>),
-  ): Promise<EntityFilter<entityType>> {
-    if (typeof filter === 'function') return await filter()
-    return filter
-  }
+  /**
+   * Creates a custom filter. Custom filters are evaluated on the backend, ensuring security and efficiency.
+   * When the filter is used in the frontend, only its name is sent to the backend via the API,
+   * where the filter gets translated and applied in a safe manner.
+   *
+   * @template entityType The entity type for the filter.
+   * @param {function(): EntityFilter<entityType>} rawFilterTranslator A function that returns an `EntityFilter`.
+   * @param {string} [key] An optional unique identifier for the custom filter.
+   * @returns {function(): EntityFilter<entityType>} A function that returns an `EntityFilter` of type `entityType`.
+   *
+   * @example
+   * // In an entity class, add a static method for the custom filter
+   * static titleLengthFilter = Filter.createCustom<Task>(() => {
+   *   return SqlDatabase.rawFilter((whereFragment) => {
+   *     whereFragment.sql = 'length(title) > 10';
+   *   });
+   * });
+   *
+   * // Usage
+   * console.table(
+   *   await remult.repo(Task).find({
+   *     where: Task.titleLengthFilter()
+   *   })
+   * );
+   * @see
+   * [Sql filter and Custom filter](/docs/custom-filter.html)
+   * [Filtering and Relations](/docs/filtering-and-relations.html)
+   */
 
   //@ts-ignore
   static createCustom<entityType>(
@@ -32,6 +52,42 @@ export class Filter {
     ) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>,
     key?: string,
   ): (() => EntityFilter<entityType>) & customFilterInfo<entityType>
+  /**
+   * Creates a custom filter. Custom filters are evaluated on the backend, ensuring security and efficiency.
+   * When the filter is used in the frontend, only its name and value arguments are sent to the backend via the API,
+   * where the filter gets translated and applied in a safe manner.
+   *
+   * @template entityType The entity type for the filter.
+   * @template argsType The type of the argument for the filter.
+   * @param {function(argsType, Remult): EntityFilter<entityType>} rawFilterTranslator A function that takes an argument of type `argsType` and an instance of `Remult`, and returns an `EntityFilter`.
+   * @param {string} [key] An optional unique identifier for the custom filter.
+   * @returns {function(argsType): EntityFilter<entityType>} A function that takes an argument of type `argsType` and returns an `EntityFilter` of type `entityType`.
+   *
+   * @example
+   * // In an entity class, add a static method for the custom filter with parameters
+   * static filterCity = Filter.createCustom<Order, { city: string }>(
+   *   async ({ city }) => {
+   *     const orders = await dbNamesOf(Order);
+   *     const customers = await dbNamesOf(Customer);
+   *     return SqlDatabase.rawFilter(async (whereFragment) => {
+   *       whereFragment.sql = `${orders.customer} in
+   *              (select ${customers.id}
+   *                 from ${customers}
+   *                where ${await whereFragment.filterToRaw(Customer, { city })})`;
+   *     });
+   *   }
+   * );
+   *
+   * // Usage
+   * const cityFilter = Order.filterCity({ city: 'New York' });
+   * const ordersInNewYork = await remult.repo(Order).find({ where: cityFilter });
+   *
+   * // The filter is sent to the backend as:
+   * // http://127.0.0.1:3002/api/orders?%24custom%24filterCity=%7B%22city%22%3A%22New%20York%22%7D
+   * @see
+   * [Sql filter and Custom filter](/docs/custom-filter.html)
+   * [Filtering and Relations](/docs/filtering-and-relations.html)
+   */
   static createCustom<entityType, argsType>(
     rawFilterTranslator: (
       args: argsType,
@@ -62,6 +118,66 @@ export class Filter {
     ) as ((y: argsType) => EntityFilter<entityType>) &
       customFilterInfo<entityType>
   }
+
+  /**
+   * Translates an `EntityFilter` to a plain JSON object that can be stored or transported.
+   *
+   * @template T The entity type for the filter.
+   * @param {EntityMetadata<T>} entityDefs The metadata of the entity associated with the filter.
+   * @param {EntityFilter<T>} where The `EntityFilter` to be translated.
+   * @returns {any} A plain JSON object representing the `EntityFilter`.
+   *
+   * @example
+   * // Assuming `Task` is an entity class
+   * const jsonFilter = Filter.entityFilterToJson(Task, { completed: true });
+   * // `jsonFilter` can now be stored or transported as JSON
+   */
+  static entityFilterToJson<T>(
+    entityDefs: EntityMetadata<T>,
+    where: EntityFilter<T>,
+  ): any {
+    return Filter.fromEntityFilter(entityDefs, where).toJson()
+  }
+
+  /**
+   * Translates a plain JSON object back into an `EntityFilter`.
+   *
+   * @template T The entity type for the filter.
+   * @param {EntityMetadata<T>} entityDefs The metadata of the entity associated with the filter.
+   * @param {any} packed The plain JSON object representing the `EntityFilter`.
+   * @returns {EntityFilter<T>} The reconstructed `EntityFilter`.
+   *
+   * @example
+   * // Assuming `Task` is an entity class and `jsonFilter` is a JSON object representing an EntityFilter
+   * const taskFilter = Filter.entityFilterFromJson(Task, jsonFilter);
+   * // Using the reconstructed `EntityFilter` in a query
+   * const tasks = await remult.repo(Task).find({ where: taskFilter });
+   * for (const task of tasks) {
+   *   // Do something for each task based on the filter
+   * }
+   */
+  static entityFilterFromJson<T>(
+    entityDefs: EntityMetadata<T>,
+    packed: any,
+  ): EntityFilter<T> {
+    return buildFilterFromRequestParameters(entityDefs, {
+      get: (key: string) => packed[key],
+    })
+  }
+  /**
+   * Converts an `EntityFilter` to a `Filter` that can be used by the `DataProvider`. This method is
+   * mainly used internally.
+   *
+   * @template T The entity type for the filter.
+   * @param {EntityMetadata<T>} entity The metadata of the entity associated with the filter.
+   * @param {EntityFilter<T>} whereItem The `EntityFilter` to be converted.
+   * @returns {Filter} A `Filter` instance that can be used by the `DataProvider`.
+   *
+   * @example
+   * // Assuming `Task` is an entity class and `taskFilter` is an EntityFilter
+   * const filter = Filter.fromEntityFilter(Task, taskFilter);
+   * // `filter` can now be used with the DataProvider
+   */
   static fromEntityFilter<T>(
     entity: EntityMetadata<T>,
     whereItem: EntityFilter<T>,
@@ -167,27 +283,27 @@ export class Filter {
     }
     return new AndFilter(...result)
   }
+  constructor(private apply: (add: FilterConsumer) => void) {}
+  __applyToConsumer(add: FilterConsumer) {
+    this.apply(add)
+  }
 
+  //@internal
+  static async resolve<entityType>(
+    filter:
+      | EntityFilter<entityType>
+      | (() => EntityFilter<entityType> | Promise<EntityFilter<entityType>>),
+  ): Promise<EntityFilter<entityType>> {
+    if (typeof filter === 'function') return await filter()
+    return filter
+  }
+  //@internal
   toJson() {
     let r = new FilterSerializer()
     this.__applyToConsumer(r)
     return r.result
   }
-  static entityFilterToJson<T>(
-    entityDefs: EntityMetadata<T>,
-    where: EntityFilter<T>,
-  ) {
-    return Filter.fromEntityFilter(entityDefs, where).toJson()
-  }
-  static entityFilterFromJson<T>(
-    entityDefs: EntityMetadata<T>,
-    packed: any,
-  ): EntityFilter<T> {
-    return buildFilterFromRequestParameters(entityDefs, {
-      get: (key: string) => packed[key],
-    })
-  }
-
+  //@internal
   static async translateCustomWhere<T>(
     r: Filter,
     entity: EntityMetadata<T>,

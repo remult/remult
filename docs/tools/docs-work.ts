@@ -196,6 +196,13 @@ try {
     'RemultServerOptions',
     'Relations',
     'RelationOptions',
+    'ValueConverter',
+    'ApiClient',
+    'Filter',
+    'Sort',
+    'SubscriptionChannel',
+    'LiveQuery',
+    'LiveQueryChangeInfo',
   ]) {
     let type = findType(typeName)
 
