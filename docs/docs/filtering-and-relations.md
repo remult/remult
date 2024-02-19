@@ -134,7 +134,7 @@ export class Order {
 export class Order {
   //...
   @Fields.string<Order>({
-    sqlExpression: async (orderMetadata) => {
+    sqlExpression: async () => {
       const customer = await dbNamesOf(Customer)
       const order = await dbNamesOf(Order)
       return `(
