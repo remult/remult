@@ -819,6 +819,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //y1 - talk about export api is not possible in +server - how did we face that in others, and how do we doc it - ended up using _api
 //y1 - number default storage in knex is decimal and it by default has 8,2 - meaning only 999,999 - I think it should be way bigger than that. in firefly we do at least 18 - https://discord.com/channels/975754286384418847/1195162533447876658
 //y1 - admin url!
+//y1 - consider sql expression gets a dbnames of it's own (that already has the "tableName" defined correctly) maybe also the filter translator
 //y1 - talk about modules in init express with entities/controllers,initRequest,initApi
 //y1 - tried to upgrade vitest, nuxt tests are failing with loading uuid - sounds familiar?
 //y1 - I think that the tests you've setup don't cover next app router - I added to the setup, but not sure where else
