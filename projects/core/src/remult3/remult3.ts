@@ -867,8 +867,6 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //p2 - allowApiUpdate should be false for include in api false
 
 //docs
-//p1 - write docs on with remult - and usage in init api
-//p2 - write doc about controlling updates of rows...
 //p2 - make sure that internal members do not appear in the documentation - try running it on the d.ts instead of the code itself.
 
 //------

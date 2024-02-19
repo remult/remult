@@ -171,6 +171,15 @@ export default defineConfig({
             ],
           },
           {
+            text: 'Guides',
+            items: [
+              {
+                text: 'Access Control',
+                link: '/docs/access-control',
+              },
+            ],
+          },
+          {
             text: 'Escape Hatches',
 
             items: [
@@ -180,7 +189,7 @@ export default defineConfig({
                 link: '/docs/running-sql-on-the-server',
               },
               {
-                text: 'Remult within Express Routes',
+                text: 'Using Remult in Non-Remult Routes',
                 link: '/docs/using-remult-in-custom-backend-code',
               },
               {
