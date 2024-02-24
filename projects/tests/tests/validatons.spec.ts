@@ -247,7 +247,7 @@ describe('validation tests', () => {
         "message": "Id: must be bigger",
         "modelState": {
           "id": "must be bigger",
-          "id2": "must be bigger",
+          "id2": "shouldn't be bigger",
         },
       }
     `,
@@ -298,6 +298,29 @@ describe('validation tests', () => {
         "message": "Id: Value must be one of 1, 2, 3",
         "modelState": {
           "id": "Value must be one of 1, 2, 3",
+        },
+      }
+    `)
+  })
+  it('test in ', async () => {
+    await expect(async () =>
+      remult
+        .repo(
+          createEntity('x', {
+            id: Fields.number({
+              validate: Validators.in(
+                [1, 2, 3],
+                (x) => 'invalid value: ' + x.join(', '),
+              ),
+            }),
+          }),
+        )
+        .insert({ id: 4 }),
+    ).rejects.toThrowErrorMatchingInlineSnapshot(`
+      {
+        "message": "Id: invalid value: 1, 2, 3",
+        "modelState": {
+          "id": "invalid value: 1, 2, 3",
         },
       }
     `)
