@@ -368,7 +368,10 @@ export declare type EntityFilter<entityType> = {
     | (Partial<entityType>[Properties] extends number | Date | undefined
         ? ComparisonValueFilter<Partial<entityType>[Properties]>
         : Partial<entityType>[Properties] extends string | undefined
-        ? ContainsStringValueFilter & ComparisonValueFilter<string>
+        ?
+            | Partial<entityType>[Properties]
+            | (ContainsStringValueFilter &
+                ComparisonValueFilter<Partial<entityType>[Properties]>)
         : Partial<entityType>[Properties] extends boolean | undefined
         ? ValueFilter<boolean>
         : Partial<entityType>[Properties] extends
@@ -383,6 +386,7 @@ export declare type EntityFilter<entityType> = {
   $or?: EntityFilter<entityType>[]
   $and?: EntityFilter<entityType>[]
 }
+//[ ] IndexedAccessType from TBD is not exported
 export declare type EntityIdFields<entityType> = {
   [Properties in keyof Partial<MembersOnly<entityType>>]?: true
 }
@@ -923,12 +927,15 @@ export declare class Fields {
       | ((options: FieldOptions<entityType, string>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, string | undefined>
-  static string<entityType = any>(
+  static string<entityType = any, valueType = string>(
     ...options: (
-      | StringFieldOptions<entityType>
-      | ((options: StringFieldOptions<entityType>, remult: Remult) => void)
+      | StringFieldOptions<entityType, valueType>
+      | ((
+          options: StringFieldOptions<entityType, valueType>,
+          remult: Remult,
+        ) => void)
     )[]
-  ): ClassFieldDecorator<entityType, string | undefined>
+  ): ClassFieldDecorator<entityType, valueType | undefined>
   static boolean<entityType = any>(
     ...options: (
       | FieldOptions<entityType, boolean>
@@ -1328,7 +1335,32 @@ export interface LifecycleEvent<entityType> {
 }
 //[ ] idType from TBD is not exported
 export interface LiveQuery<entityType> {
+  /**
+   * Subscribes to changes in the live query results.
+   *
+   * @param {(info: LiveQueryChangeInfo<entityType>) => void} next A function that will be called with information about changes in the query results.
+   * @returns {Unsubscribe} A function that can be used to unsubscribe from the live query.
+   *
+   * @example
+   * // Subscribing to changes in a live query
+   * const unsubscribe = taskRepo
+   *   .liveQuery({
+   *     limit: 20,
+   *     orderBy: { createdAt: 'asc' }
+   *     //where: { completed: true },
+   *   })
+   *   .subscribe(info => setTasks(info.applyChanges));
+   *
+   * // Later, to unsubscribe
+   * unsubscribe();
+   */
   subscribe(next: (info: LiveQueryChangeInfo<entityType>) => void): Unsubscribe
+  /**
+   * Subscribes to changes in the live query results using a `SubscriptionListener` object.
+   *
+   * @param {Partial<SubscriptionListener<LiveQueryChangeInfo<entityType>>>} listener An object that implements the `SubscriptionListener` interface.
+   * @returns {Unsubscribe} A function that can be used to unsubscribe from the live query.
+   */
   subscribe(
     listener: Partial<SubscriptionListener<LiveQueryChangeInfo<entityType>>>,
   ): Unsubscribe
@@ -1356,8 +1388,37 @@ export declare type LiveQueryChange =
       }
     }
 export interface LiveQueryChangeInfo<entityType> {
+  /**
+   * The updated array of result items.
+   *
+   * @type {entityType[]}
+   */
   items: entityType[]
+  /**
+   * The changes received in the specific message. The change types can be "all" (replace all), "add", "replace", or "remove".
+   *
+   * @type {LiveQueryChange[]}
+   */
   changes: LiveQueryChange[]
+  /**
+   * Applies the changes received in the message to an existing array. This method is particularly useful with React
+   * to update the component's state based on the live query changes.
+   *
+   * @param {entityType[] | undefined} prevState The previous state of the array of result items.
+   * @returns {entityType[]} The updated array of result items after applying the changes.
+   *
+   * @example
+   * // Using applyChanges in a React component with useEffect hook
+   * useEffect(() => {
+   *   return taskRepo
+   *     .liveQuery({
+   *       limit: 20,
+   *       orderBy: { createdAt: 'asc' }
+   *       //where: { completed: true },
+   *     })
+   *     .subscribe(info => setTasks(info.applyChanges));
+   * }, []);
+   */
   applyChanges(prevState: entityType[] | undefined): entityType[]
 }
 export interface LiveQueryStorage {
@@ -1835,6 +1896,11 @@ export interface RestDataProviderHttpProvider {
   get(url: string): Promise<any>
 }
 export declare class Sort {
+  /**
+   * Translates the current `Sort` instance into an `EntityOrderBy` object.
+   *
+   * @returns {EntityOrderBy<any>} An `EntityOrderBy` object representing the sort criteria.
+   */
   toEntityOrderBy(): EntityOrderBy<any>
   /**
    * Constructs a `Sort` instance with the provided sort segments.
@@ -1977,8 +2043,8 @@ export interface StoredQuery {
   id: string
   data: any
 }
-export interface StringFieldOptions<entityType = any>
-  extends FieldOptions<entityType, string> {
+export interface StringFieldOptions<entityType = any, valueType = string>
+  extends FieldOptions<entityType, valueType> {
   maxLength?: number
   minLength?: number
 }

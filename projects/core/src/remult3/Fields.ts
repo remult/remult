@@ -184,13 +184,16 @@ export class Fields {
       ...options,
     )
   }
-  static string<entityType = any>(
+  static string<entityType = any, valueType = string>(
     ...options: (
-      | StringFieldOptions<entityType>
-      | ((options: StringFieldOptions<entityType>, remult: Remult) => void)
+      | StringFieldOptions<entityType, valueType>
+      | ((
+          options: StringFieldOptions<entityType, valueType>,
+          remult: Remult,
+        ) => void)
     )[]
-  ): ClassFieldDecorator<entityType, string | undefined> {
-    return Field(() => String, ...options)
+  ): ClassFieldDecorator<entityType, valueType | undefined> {
+    return Field<entityType, valueType>(() => String as any, ...options)
   }
   static boolean<entityType = any>(
     ...options: (
@@ -475,8 +478,8 @@ export function Field<entityType = any, valueType = any>(
   }
 }
 
-export interface StringFieldOptions<entityType = any>
-  extends FieldOptions<entityType, string> {
+export interface StringFieldOptions<entityType = any, valueType = string>
+  extends FieldOptions<entityType, valueType> {
   maxLength?: number
   minLength?: number
 }

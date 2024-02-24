@@ -50,7 +50,7 @@ const x: MembersOnly<Person>
 class HelperBase extends EntityBase {
   id = 0
   name = ''
-  date?:Date
+  date?: Date
 }
 class Helper extends HelperBase {
   title = ''
@@ -61,5 +61,3 @@ let f: EntityFilter<HelperBase> = {}
 let f2: EntityFilter<Helper> = {
   ...f,
 }
-
-repo(HelperBase).fields.

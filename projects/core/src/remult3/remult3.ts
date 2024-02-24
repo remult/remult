@@ -543,7 +543,10 @@ export declare type EntityFilter<entityType> = {
     | (Partial<entityType>[Properties] extends number | Date | undefined
         ? ComparisonValueFilter<Partial<entityType>[Properties]>
         : Partial<entityType>[Properties] extends string | undefined
-        ? ContainsStringValueFilter & ComparisonValueFilter<string>
+        ?
+            | Partial<entityType>[Properties]
+            | (ContainsStringValueFilter &
+                ComparisonValueFilter<Partial<entityType>[Properties]>)
         : Partial<entityType>[Properties] extends boolean | undefined
         ? ValueFilter<boolean>
         : Partial<entityType>[Properties] extends
@@ -841,6 +844,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //y2 - constraints (@JY)
 
 // remult admin
+
 //p1 - Small thing, I get SvelteKitError: Not found: /vite.svg
 //p1 - understand the to many relation for the admin, based on the to one
 //p1 - relation from order details to order gave a compound id info - and it is not true - same for the relation to product
@@ -852,6 +856,8 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //p1 - remult-admin didn't show a update for a table with a uniqua that is numeric
 
 //remult
+//p1 - better support union types (status, etc... so it'll work also in filter etc...)
+//p1 - add tablename parameter for dbNamesOf
 //p1 -check if count doesn't respect allow read (I think)
 //p1 - when a tasks table exists in a different schema - we get many errors
 //p1 - live query with include
