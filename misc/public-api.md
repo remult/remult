@@ -1131,6 +1131,23 @@ export declare class Filter {
   ): Filter
   constructor(apply: (add: FilterConsumer) => void)
   __applyToConsumer(add: FilterConsumer): void
+  /**
+   * Resolves an entity filter.
+   *
+   * This method takes a filter which can be either an instance of `EntityFilter`
+   * or a function that returns an instance of `EntityFilter` or a promise that
+   * resolves to an instance of `EntityFilter`. It then resolves the filter if it
+   * is a function and returns the resulting `EntityFilter`.
+   *
+   * @template entityType The type of the entity that the filter applies to.
+   * @param {EntityFilter<entityType> | (() => EntityFilter<entityType> | Promise<EntityFilter<entityType>>)} filter The filter to resolve.
+   * @returns {Promise<EntityFilter<entityType>>} The resolved entity filter.
+   */
+  static resolve<entityType>(
+    filter:
+      | EntityFilter<entityType>
+      | (() => EntityFilter<entityType> | Promise<EntityFilter<entityType>>),
+  ): Promise<EntityFilter<entityType>>
 }
 export interface FilterConsumer {
   or(orElements: Filter[]): any
