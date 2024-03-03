@@ -54,4 +54,5 @@ export function SqlDbTests({ createEntity, getRemult, getDb }: DbTestProps) {
       remult.dataProvider = dp
     }
   })
+  it('test performance', async () => {})
 }
