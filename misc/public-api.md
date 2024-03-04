@@ -2049,6 +2049,7 @@ export interface SqlImplementation extends HasWrapIdentifier {
   entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void>
   ensureSchema?(entities: EntityMetadata[]): Promise<void>
   supportsJsonColumnType?: boolean
+  orderByNullsFirst?: boolean
   afterMutation?: VoidFunction
 }
 export interface SqlResult {
@@ -2831,6 +2832,23 @@ export type RemultHapiServer = Plugin<any, any> &
 //[ ] RemultServer from ./server/index.js is not exported
 ```
 
+## ./remult-hono.js
+
+```ts
+export declare function remultHono(
+  options: RemultServerOptions<Context<Env, "", BlankInput>>,
+): RemultHonoServer
+//[ ] RemultServerOptions from ./server/index.js is not exported
+export type RemultHonoServer = Hono &
+  RemultServerCore<Context<Env, "", BlankInput>> & {
+    withRemult: <T>(
+      c: Context<Env, "", BlankInput>,
+      what: () => Promise<T>,
+    ) => Promise<T>
+  }
+//[ ] RemultServerCore from ./server/index.js is not exported
+```
+
 ## ./remult-fresh.js
 
 ```ts
@@ -2891,6 +2909,7 @@ export declare function createPostgresDataProvider(options?: {
   wrapIdentifier?: (name: string) => string
   caseInsensitiveIdentifiers?: boolean
   schema?: string
+  orderByNullsFirst?: boolean
 }): Promise<SqlDatabase>
 //[ ] PoolConfig from TBD is not exported
 export interface PostgresClient extends PostgresCommandSource {
@@ -2919,10 +2938,12 @@ export declare class PostgresDataProvider implements SqlImplementation {
       wrapIdentifier?: (name: string) => string
       caseInsensitiveIdentifiers?: boolean
       schema?: string
+      orderByNullsFirst?: boolean
     },
   )
   wrapIdentifier: (name: any) => any
   ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
+  orderByNullsFirst?: boolean
   transaction(
     action: (dataProvider: SqlImplementation) => Promise<void>,
   ): Promise<void>
