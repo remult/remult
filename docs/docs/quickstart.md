@@ -112,6 +112,17 @@ import { remultHapi } from 'remult/remult-hapi'
 ```
 <!-- prettier-ignore-end -->
 
+```ts [Hono]
+import { Hono } from 'hono'
+import { remultHono } from 'remult/remult-hono'
+
+const app = new Hono()
+
+remultHono(app, {}) // [!code highlight]
+
+export default app
+```
+
 ```ts [Nest]
 // src/main.ts
 
