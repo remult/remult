@@ -42,11 +42,14 @@ export class PostgresDataProvider implements SqlImplementation {
       wrapIdentifier?: (name: string) => string
       caseInsensitiveIdentifiers?: boolean
       schema?: string
+      orderByNullsFirst?: boolean
     },
   ) {
     if (options?.wrapIdentifier) this.wrapIdentifier = options.wrapIdentifier
     if (!options?.wrapIdentifier && options?.caseInsensitiveIdentifiers)
       this.wrapIdentifier = (name) => name
+    if (options.orderByNullsFirst)
+      this.orderByNullsFirst = options.orderByNullsFirst
 
     if (options?.schema) {
       this.pool = new PostgresSchemaWrapper(pool, options.schema)
@@ -65,7 +68,7 @@ export class PostgresDataProvider implements SqlImplementation {
     var sb = new PostgresSchemaBuilder(db, this.options?.schema)
     await sb.ensureSchema(entities)
   }
-
+  orderByNullsFirst?: boolean
   async transaction(
     action: (dataProvider: SqlImplementation) => Promise<void>,
   ) {
@@ -84,6 +87,7 @@ export class PostgresDataProvider implements SqlImplementation {
         //@ts-ignore
         pool: client,
         wrapIdentifier: this.wrapIdentifier,
+        orderByNullsFirst: this.orderByNullsFirst,
       })
       await client.query('COMMIT')
     } catch (err) {
@@ -136,6 +140,7 @@ export async function createPostgresDataProvider(options?: {
   wrapIdentifier?: (name: string) => string
   caseInsensitiveIdentifiers?: boolean
   schema?: string
+  orderByNullsFirst?: boolean
 }) {
   if (!options) options = {}
   let config: PoolConfig = {}
@@ -164,6 +169,7 @@ export async function createPostgresDataProvider(options?: {
       wrapIdentifier: options.wrapIdentifier,
       caseInsensitiveIdentifiers: options.caseInsensitiveIdentifiers,
       schema: options.schema,
+      orderByNullsFirst: options.orderByNullsFirst,
     }),
   )
   let remult = new Remult()

@@ -308,6 +308,10 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
 
           select += e.$dbNameOf(c.field)
           if (c.isDescending) select += ' desc'
+          if (this.sql._getSourceSql().orderByNullsFirst) {
+            if (c.isDescending) select += ' nulls last'
+            else select += ' nulls first'
+          }
         }
       }
 

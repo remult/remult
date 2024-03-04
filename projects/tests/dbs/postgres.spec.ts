@@ -85,6 +85,24 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
       new Date().getFullYear(),
     )
   })
+  it('null last', async () => {
+    @Entity('myEntity')
+    class MyEntity {
+      @Fields.number()
+      id = 0
+      @Fields.number({ allowNull: true })
+      value: number | null = 0
+    }
+    const r = await createEntity(MyEntity)
+    await r.insert([
+      { id: 1, value: null },
+      { id: 2, value: 2 },
+      { id: 3, value: 3 },
+    ])
+    expect(
+      (await r.find({ orderBy: { value: 'asc' } })).map((x) => x.value),
+    ).toEqual([2, 3, null])
+  })
 
   it('ensure on not_public schema', async () => {
     const db = SqlDatabase.getDb(remult)
@@ -186,6 +204,65 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
     } catch (err) {
       expect(err.message).toContain('categoryName')
     }
+  })
+})
+describe.skipIf(!postgresConnection)('Postgres null first', () => {
+  var db: SqlDatabase
+  let remult: Remult
+  beforeAll(async () => {
+    db = await createPostgresConnection({
+      //wrapName: (x) => x,
+      orderByNullsFirst: true,
+    })
+  })
+  beforeEach(() => {
+    remult = new Remult(db)
+  })
+
+  async function createEntity(entity: ClassType<any>) {
+    let repo = remult.repo(entity)
+    await db.execute(
+      'drop table if exists ' +
+        (await dbNamesOf(repo.metadata, db.wrapIdentifier)).$entityName,
+    )
+    await db.ensureSchema([repo.metadata])
+    return repo
+  }
+  it('null last', async () => {
+    @Entity('myEntity')
+    class MyEntity {
+      @Fields.number()
+      id = 0
+      @Fields.number({ allowNull: true })
+      value: number | null = 0
+    }
+    const r = await createEntity(MyEntity)
+    await r.insert([
+      { id: 1, value: null },
+      { id: 2, value: 2 },
+      { id: 3, value: 3 },
+    ])
+    expect(
+      (await r.find({ orderBy: { value: 'desc' } })).map((x) => x.value),
+    ).toEqual([3, 2, null])
+  })
+  it('null first', async () => {
+    @Entity('myEntity')
+    class MyEntity {
+      @Fields.number()
+      id = 0
+      @Fields.number({ allowNull: true })
+      value: number | null = 0
+    }
+    const r = await createEntity(MyEntity)
+    await r.insert([
+      { id: 1, value: null },
+      { id: 2, value: 2 },
+      { id: 3, value: 3 },
+    ])
+    expect(
+      (await r.find({ orderBy: { value: 'asc' } })).map((x) => x.value),
+    ).toEqual([null, 2, 3])
   })
 })
 
