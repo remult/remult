@@ -102,6 +102,24 @@ import { remultFastify } from 'remult/remult-fastify'
 
 <!-- prettier-ignore-end -->
 
+== Hono
+
+<!-- prettier-ignore-start -->
+```ts 
+import { Hono } from 'hono'
+import { remultHono } from 'remult/remult-hono'
+
+const app = new Hono()
+
+const api = remultHono({}) 
+app.get('/test1', api.withRemult, async (c) => // [!code highlight]
+  c.text('hello ' + (await repo(Task).count())),
+)
+app.route('', api)
+
+export default app
+```
+
 == Next.js app router
 
 ```ts

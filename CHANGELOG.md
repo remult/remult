@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [0.25.6] TBD
 
 - Added support for `orderByNullsFirst` in `PostgresDataProvider` to change the default postgres behavior where nulls are last
+- Added support for [Hono](https://hono.dev/) web framework
 - improved dbNamesOf of to use by default the wrapIdentifier of the current data provider if no wrap identifier was provided
 - Added support for using dbNamesOf in an sql expression for that same entity
 - Added `withRemult` to next js page router
