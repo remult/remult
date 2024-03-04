@@ -14,9 +14,10 @@ describe('test holo server', async () => {
 
   beforeAll(async () => {
     const app = new Hono()
-    const api = remultHono(app, {
+    const api = remultHono({
       entities: [Task],
     })
+    app.route('', api)
     app.get('/api/test', api.withRemult, async (c) =>
       c.json({
         result: await remult.repo(Task).count(),

@@ -1,4 +1,4 @@
-import type { Context, Env, Hono } from 'hono'
+import { type Context, type Env, Hono } from 'hono'
 import type { BlankInput } from 'hono/types'
 import { streamSSE, type SSEStreamingApi } from 'hono/streaming'
 import {
@@ -12,9 +12,9 @@ import {
 } from './server/index.js'
 import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
 export function remultHono(
-  app: Hono,
   options: RemultServerOptions<Context<Env, '', BlankInput>>,
 ): RemultHonoServer {
+  let app = new Hono()
   const api = createRemultServer(options, {
     buildGenericRequestInfo: (c) => {
       return {
@@ -108,17 +108,16 @@ export function remultHono(
     },
   }
   api.registerRouter(honoRouter)
-  return {
+  return Object.assign(app, {
     getRemult: (c) => api.getRemult(c),
     openApiDoc: (options) => api.openApiDoc(options),
     withRemult: async (c, what) => api.withRemultAsync(c, what),
+  } as Pick<RemultHonoServer, 'getRemult' | 'openApiDoc' | 'withRemult'>)
+}
+export type RemultHonoServer = Hono &
+  RemultServerCore<Context<Env, '', BlankInput>> & {
+    withRemult: <T>(
+      c: Context<Env, '', BlankInput>,
+      what: () => Promise<T>,
+    ) => Promise<T>
   }
-}
-export type RemultHonoServer = RemultServerCore<
-  Context<Env, '', BlankInput>
-> & {
-  withRemult: <T>(
-    c: Context<Env, '', BlankInput>,
-    what: () => Promise<T>,
-  ) => Promise<T>
-}

@@ -111,10 +111,11 @@ import { remultHono } from 'remult/remult-hono'
 
 const app = new Hono()
 
-const api = remultHono(app, {}) // [!code highlight]
-app.get('/test1', api.withRemult, async (c) =>
+const api = remultHono({}) 
+app.get('/test1', api.withRemult, async (c) => // [!code highlight]
   c.text('hello ' + (await repo(Task).count())),
 )
+app.route('', api)
 
 export default app
 ```

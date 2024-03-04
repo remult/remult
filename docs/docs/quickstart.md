@@ -118,7 +118,8 @@ import { remultHono } from 'remult/remult-hono'
 
 const app = new Hono()
 
-remultHono(app, {}) // [!code highlight]
+const api = remultHono({}) // [!code highlight]
+app.route('', api) // [!code highlight]
 
 export default app
 ```
