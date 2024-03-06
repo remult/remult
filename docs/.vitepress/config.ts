@@ -1,4 +1,4 @@
-import { withMermaid } from 'vitepress-plugin-mermaid'
+import { defineConfig } from 'vitepress'
 import { tabsMarkdownPlugin } from 'vitepress-plugin-tabs'
 
 const tutorials = [
@@ -22,7 +22,7 @@ const tutorials = [
 ]
 
 // https://vitepress.dev/reference/site-config
-export default withMermaid({
+export default defineConfig({
   title: 'Remult',
   description:
     'Build Full-stack, End-to-end Type-safe CRUD Apps without the Boilerplate',
