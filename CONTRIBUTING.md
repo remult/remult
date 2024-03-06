@@ -35,3 +35,13 @@ npm run test projects/tests/backend-tests/test-sveltekit-server.spec.ts
 # in a third terminal (run only sveltekit build)
 npm run test-servers:sveltekit:setup
 ```
+
+### You want to contribute to the documentation ?
+
+The documentation is written in markdown and is located in the `docs` folder. You can run the documentation locally with the following command:
+
+```bash
+npm run docs
+```
+
+_Note that each file starting with `_ref` are generated from the code itself and should not be edited manually. You can edit the jsdoc directly, and next generation will update docs._
