@@ -1050,8 +1050,8 @@ abstract class rowHelperBase<T> {
   ) {
     {
       let fac = remult as RemultProxy
-      if (fac != null && fac.remultFactory) {
-        remult = fac.remultFactory()
+      if (fac != null && fac.iAmRemultProxy) {
+        remult = remultStatic.remultFactory()
       }
     }
     for (const col of fieldsMetadata) {

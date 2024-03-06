@@ -303,9 +303,13 @@ export interface DataProvider {
 }
 export declare function dbNamesOf<entityType>(
   repo: EntityMetadataOverloads<entityType>,
-  wrapIdentifier?: (name: string) => string,
+  wrapIdentifierOrOptions?: ((name: string) => string) | dbNamesOfOptions,
 ): Promise<EntityDbNames<entityType>>
 //[ ] EntityMetadataOverloads from TBD is not exported
+export interface dbNamesOfOptions {
+  wrapIdentifier?: (name: string) => string
+  tableName?: boolean | string
+}
 export declare function describeClass<classType>(
   classType: classType,
   classDecorator: ((x: any, context?: any) => any) | undefined,

@@ -105,6 +105,7 @@ export {
   CustomSqlFilterObject,
   CustomSqlFilterBuilder,
   dbNamesOf,
+  dbNamesOfOptions,
   CustomSqlFilterBuilderFunction,
   EntityDbNames,
 } from './src/filter/filter-consumer-bridge-to-sql-request.js'

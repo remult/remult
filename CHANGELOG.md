@@ -5,9 +5,22 @@ All notable changes to this project will be documented in this file.
 ## [0.25.6] TBD
 
 - Added support for `orderByNullsFirst` in `PostgresDataProvider` to change the default postgres behavior where nulls are last
-- Added support for [Hono](https://hono.dev/) web framework
+- Added support for `tableName` option argument for `dbNamesOf` that'll add the table name to each field
+  Before:
+  ```ts
+  const orders = await dbNamesOf(Order)
+  return `(select count(*) from ${orders} where ${orders}.${orders.id}=1)
+  ```
+  Now:
+  ```ts
+  const orders = await dbNamesOf(Order, { tableNames:true })
+  return `(select count(*) from ${orders} where ${orders.id}=1)
+  ```
 - improved dbNamesOf of to use by default the wrapIdentifier of the current data provider if no wrap identifier was provided
 - Added support for using dbNamesOf in an sql expression for that same entity
+- Improved performance of dbNamesOf
+- Added support for [Hono](https://hono.dev/) web framework
+- Improved support for Mono repo scenario [#355](https://github.com/remult/remult/issues/355)
 - Added `withRemult` to next js page router
 - Fixed custom message to some validators (in etc...)
 - Improved support for union string fields

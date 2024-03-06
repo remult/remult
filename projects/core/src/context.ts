@@ -32,11 +32,11 @@ import type {
   SubscriptionServer,
 } from './live-query/SubscriptionServer.js'
 import { verifyFieldRelationInfo } from './remult3/relationInfoMember.js'
-import { remultStatic } from './remult-static.js'
+import { remultStatic, resetFactory } from './remult-static.js'
 
 export class RemultAsyncLocalStorage {
   static enable() {
-    ;(remult as RemultProxy).remultFactory = () => {
+    remultStatic.remultFactory = () => {
       const r = remultStatic.asyncContext.getRemult()
       if (r) return r
       else
@@ -46,7 +46,7 @@ export class RemultAsyncLocalStorage {
     }
   }
   static disable() {
-    ;(remult as RemultProxy).resetFactory()
+    resetFactory()
   }
   constructor(
     private readonly remultObjectStorage: myAsyncLocalStorage<Remult>,

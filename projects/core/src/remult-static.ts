@@ -7,6 +7,7 @@ const remultStaticKey = Symbol.for('remult-static1')
 
 let x = {
   defaultRemultFactory: undefined as () => Remult,
+  remultFactory: undefined as () => Remult,
   defaultRemult: undefined as Remult,
   asyncContext: undefined as RemultAsyncLocalStorage,
   columnsOfType: new Map<any, columnInfo[]>(),
@@ -44,3 +45,7 @@ export function defaultFactory() {
   }
   return remultStatic.defaultRemult
 }
+export function resetFactory() {
+  remultStatic.remultFactory = () => defaultFactory()
+}
+resetFactory()

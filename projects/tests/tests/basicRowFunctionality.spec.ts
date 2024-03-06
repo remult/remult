@@ -56,6 +56,7 @@ import {
 } from '../../core/src/remult3/RepositoryImplementation'
 import { getEntityKey } from '../../core/src/remult3/getEntityRef'
 import { actionInfo } from '../../core/internals'
+import { remultStatic, resetFactory } from '../../core/src/remult-static'
 
 //SqlDatabase.LogToConsole = true;
 
@@ -322,20 +323,23 @@ describe('data api', () => {
     expect(await repo.validate({ name: '1' }, 'myId')).toBeUndefined()
   })
   it('validation', async () => {
-    let remult = new RemultProxy()
-    remult.remultFactory = () => new Remult(new InMemoryDataProvider())
-    var repo = remult.repo(entityWithValidationsOnColumn)
-    expect((await repo.validate({ name: '1' })).modelState!.name).toBe(
-      'invalid on column',
-    )
-    expect((await repo.validate({ name: '1' }, 'name')).modelState!.name).toBe(
-      'invalid on column',
-    )
-    expect(
-      (await repo.validate({ name: '1' }, 'myId', 'name')).modelState!.name,
-    ).toBe('invalid on column')
-    expect(await repo.validate({ name: '123' })).toBeUndefined()
-    expect(await repo.validate({ name: '1' }, 'myId')).toBeUndefined()
+    try {
+      remultStatic.remultFactory = () => new Remult(new InMemoryDataProvider())
+      var repo = remult.repo(entityWithValidationsOnColumn)
+      expect((await repo.validate({ name: '1' })).modelState!.name).toBe(
+        'invalid on column',
+      )
+      expect(
+        (await repo.validate({ name: '1' }, 'name')).modelState!.name,
+      ).toBe('invalid on column')
+      expect(
+        (await repo.validate({ name: '1' }, 'myId', 'name')).modelState!.name,
+      ).toBe('invalid on column')
+      expect(await repo.validate({ name: '123' })).toBeUndefined()
+      expect(await repo.validate({ name: '1' }, 'myId')).toBeUndefined()
+    } finally {
+      resetFactory()
+    }
   })
   it('validate with validations on column fails 1', async () => {
     let remult = new Remult(new InMemoryDataProvider())

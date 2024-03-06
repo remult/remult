@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { InMemoryDataProvider } from '../../core/src//data-providers/in-memory-database'
-import { Entity, EntityBase, Fields } from '../../core'
+import { Entity, EntityBase, Fields, SqlDatabase } from '../../core'
 import { describeClass } from '../../core/src//remult3/DecoratorReplacer'
 import { Remult } from '../../core/src/context'
 import { dbNamesOf } from '../../core/src/filter/filter-consumer-bridge-to-sql-request'
@@ -134,6 +134,7 @@ describe('test server expression value', () => {
     expect(item.createdAt).toEqual(c)
     expect(item.createdAt).not.toEqual(item.updatedAt)
   })
+
   it('test recursive db names', async () => {
     const myClass = class {
       a: string
@@ -198,3 +199,48 @@ class testServerExpression extends EntityBase {
   })
   testPromise: number
 }
+describe('test dbnames with table name', () => {
+  @Entity('testTableName')
+  class testTableName extends EntityBase {
+    @Fields.number()
+    code: number
+    @Fields.number({ sqlExpression: () => '5' })
+    sqlExpression: number
+  }
+  it('test without table name', async () => {
+    const r = await dbNamesOf(remult.repo(testTableName))
+    expect(r.$entityName).toBe('testTableName')
+    expect(r.code).toBe('code')
+    expect(r.sqlExpression).toBe('5')
+  })
+  it('test with table name', async () => {
+    const r = await dbNamesOf(remult.repo(testTableName), {
+      tableName: true,
+      wrapIdentifier: (name: string) => `"${name}"`,
+    })
+
+    expect(r.$entityName).toBe('"testTableName"')
+    expect(r.code).toBe('"testTableName"."code"')
+    expect(r.sqlExpression).toBe('5')
+    expect(
+      await SqlDatabase.filterToRaw(
+        testTableName,
+        {
+          code: 1,
+        },
+        undefined,
+        r,
+      ),
+    ).toBe('"testTableName"."code" = 1')
+  })
+  it('test with table name', async () => {
+    const r = await dbNamesOf(remult.repo(testTableName), {
+      tableName: 'al',
+      wrapIdentifier: (name: string) => `"${name}"`,
+    })
+
+    expect(r.$entityName).toBe('"testTableName"')
+    expect(r.code).toBe('"al"."code"')
+    expect(r.sqlExpression).toBe('5')
+  })
+})

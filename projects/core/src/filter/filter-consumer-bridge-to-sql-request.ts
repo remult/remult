@@ -233,17 +233,27 @@ export declare type EntityDbNames<entityType> = {
   [Properties in keyof Required<MembersOnly<entityType>>]: string
 } & EntityDbNamesBase
 
+export interface dbNamesOfOptions {
+  wrapIdentifier?: (name: string) => string
+  tableName?: boolean | string
+}
 export async function dbNamesOf<entityType>(
   repo: EntityMetadataOverloads<entityType>,
-  wrapIdentifier?: (name: string) => string,
+  wrapIdentifierOrOptions?: ((name: string) => string) | dbNamesOfOptions,
 ): Promise<EntityDbNames<entityType>> {
+  let options =
+    typeof wrapIdentifierOrOptions === 'function'
+      ? { wrapIdentifier: wrapIdentifierOrOptions }
+      : wrapIdentifierOrOptions || {}
   var meta = getEntityMetadata(repo)
-  if (!wrapIdentifier) {
-    wrapIdentifier = (remult.dataProvider as HasWrapIdentifier).wrapIdentifier
+  if (!options.wrapIdentifier) {
+    options.wrapIdentifier = (
+      remult.dataProvider as HasWrapIdentifier
+    ).wrapIdentifier
   }
-  if (!wrapIdentifier) wrapIdentifier = (x) => x
+  if (!options.wrapIdentifier) options.wrapIdentifier = (x) => x
   const result: EntityDbNamesBase = {
-    $entityName: await entityDbName(meta, wrapIdentifier),
+    $entityName: await entityDbName(meta, options.wrapIdentifier),
     toString: () => result.$entityName,
     $dbNameOf: (field: FieldMetadata | string) => {
       var key: string
@@ -253,7 +263,14 @@ export async function dbNamesOf<entityType>(
     },
   }
   for (const field of meta.fields) {
-    result[field.key] = await fieldDbName(field, meta, wrapIdentifier)
+    let r = await fieldDbName(field, meta, options.wrapIdentifier)
+    if (!field.options.sqlExpression)
+      if (typeof options.tableName === 'string')
+        r = options.wrapIdentifier(options.tableName) + '.' + r
+      else if (options.tableName === true) {
+        r = result.$entityName + '.' + r
+      }
+    result[field.key] = r
   }
   return result as EntityDbNames<entityType>
 }
@@ -285,8 +302,8 @@ export async function fieldDbName(
           f.options.sqlExpression =
             "recursive sqlExpression call for field '" + f.key + "'. "
           result = await prev(meta)
+          f.options.sqlExpression = () => result
         } finally {
-          f.options.sqlExpression = prev
         }
       } else result = f.options.sqlExpression
       if (!result) return f.dbName

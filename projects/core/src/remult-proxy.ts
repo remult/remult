@@ -22,75 +22,70 @@ import { getInternalKey } from './remult3/repository-internals.js'
 /*@internal*/
 export class RemultProxy implements Remult {
   /* @internal*/
+  iAmRemultProxy =true
+  /* @internal*/
   get liveQuerySubscriber() {
-    return this.remultFactory().liveQuerySubscriber
+    return remultStatic.remultFactory().liveQuerySubscriber
   }
   /* @internal*/
   set liveQuerySubscriber(val: LiveQueryClient) {
-    this.remultFactory().liveQuerySubscriber = val
+    remultStatic.remultFactory().liveQuerySubscriber = val
   }
 
   /* @internal*/
   get liveQueryStorage() {
-    return this.remultFactory().liveQueryStorage!
+    return remultStatic.remultFactory().liveQueryStorage!
   }
   /* @internal*/
   set liveQueryStorage(val: LiveQueryStorage) {
-    this.remultFactory().liveQueryStorage = val
+    remultStatic.remultFactory().liveQueryStorage = val
   }
 
   /* @internal*/
   get liveQueryPublisher() {
-    return this.remultFactory().liveQueryPublisher
+    return remultStatic.remultFactory().liveQueryPublisher
   }
   /* @internal*/
   set liveQueryPublisher(val: LiveQueryChangesListener) {
-    this.remultFactory().liveQueryPublisher = val
+    remultStatic.remultFactory().liveQueryPublisher = val
   }
   call<T extends (...args: any[]) => Promise<any>>(
     backendMethod: T,
     self?: any,
     ...args: GetArguments<T>
   ): ReturnType<T> {
-    return this.remultFactory().call(backendMethod, self, ...args)
+    return remultStatic.remultFactory().call(backendMethod, self, ...args)
   }
   get context(): RemultContext {
-    return this.remultFactory().context
+    return remultStatic.remultFactory().context
   }
 
   get dataProvider(): DataProvider {
-    return this.remultFactory().dataProvider
+    return remultStatic.remultFactory().dataProvider
   }
   set dataProvider(provider: DataProvider) {
-    this.remultFactory().dataProvider = provider
+    remultStatic.remultFactory().dataProvider = provider
   }
   /*@internal*/
   get repCache(): Map<DataProvider, Map<ClassType<any>, Repository<any>>> {
-    return this.remultFactory().repCache
+    return remultStatic.remultFactory().repCache
   }
 
   authenticated(): boolean {
-    return this.remultFactory().authenticated()
+    return remultStatic.remultFactory().authenticated()
   }
   isAllowed(roles?: Allowed): boolean {
-    return this.remultFactory().isAllowed(roles)
+    return remultStatic.remultFactory().isAllowed(roles)
   }
   isAllowedForInstance(
     instance: any,
     allowed?: AllowedForInstance<any>,
   ): boolean {
-    return this.remultFactory().isAllowedForInstance(instance, allowed)
+    return remultStatic.remultFactory().isAllowedForInstance(instance, allowed)
   }
 
   clearAllCache() {
-    return this.remultFactory().clearAllCache()
-  }
-  /*@internal*/
-  remultFactory = () => defaultFactory()
-
-  /*@internal*/
-  resetFactory() {
-    this.remultFactory = () => defaultFactory()
+    return remultStatic.remultFactory().clearAllCache()
   }
 
   private repoCache = new Map<
@@ -99,16 +94,16 @@ export class RemultProxy implements Remult {
   >()
   //@ts-ignore
   repo: Remult['repo'] = (...args) => {
-    let self = this
-    let entityCache = self.repoCache.get(args[0])
+    let self = remultStatic
+    let entityCache = this.repoCache.get(args[0])
     if (!entityCache) {
-      self.repoCache.set(args[0], (entityCache = new Map()))
+      this.repoCache.set(args[0], (entityCache = new Map()))
     }
     let result = entityCache.get(args[1]!)
     if (result) return result
     result = {
       get fields() {
-        return self.remultFactory().repo(...args).metadata.fields
+        return remultStatic.remultFactory().repo(...args).metadata.fields
       },
       //@ts-ignore
       [getInternalKey]() {
@@ -195,7 +190,7 @@ export class RemultProxy implements Remult {
           .repo(...args)
           .liveQuery(...args2),
       get metadata() {
-        return self.remultFactory().repo(...args).metadata
+        return remultStatic.remultFactory().repo(...args).metadata
       },
       query: (...args2) =>
         self
@@ -218,22 +213,22 @@ export class RemultProxy implements Remult {
   }
 
   get user() {
-    return this.remultFactory().user
+    return remultStatic.remultFactory().user
   }
   set user(info: UserInfo | undefined) {
-    this.remultFactory().user = info
+    remultStatic.remultFactory().user = info
   }
   get apiClient(): ApiClient {
-    return this.remultFactory().apiClient
+    return remultStatic.remultFactory().apiClient
   }
   set apiClient(client: ApiClient) {
-    this.remultFactory().apiClient = client
+    remultStatic.remultFactory().apiClient = client
   }
   get subscriptionServer() {
-    return this.remultFactory().subscriptionServer!
+    return remultStatic.remultFactory().subscriptionServer!
   }
   set subscriptionServer(value: SubscriptionServer) {
-    this.remultFactory().subscriptionServer = value
+    remultStatic.remultFactory().subscriptionServer = value
   }
 }
 
