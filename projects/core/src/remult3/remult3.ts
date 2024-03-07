@@ -241,7 +241,7 @@ export interface EntityMetadata<entityType = any> {
    */
   readonly dbName: string
   /** The options send to the `Entity`'s decorator */
-  readonly options: EntityOptions<entityType>
+  readonly options: EntityOptions
   /** The class type of the entity */
   readonly entityType: ClassType<entityType>
   /** true if the current user is allowed to update an entity instance
@@ -427,7 +427,7 @@ export interface Repository<entityType> {
    */
   metadata: EntityMetadata<entityType>
   addEventListener(listener: entityEventListener<entityType>): Unsubscribe
-  relations: (item: entityType) => RepositoryRelations<entityType>
+  relations(item: entityType): RepositoryRelations<entityType>
 }
 /**
  * The `LiveQuery` interface represents a live query that allows subscribing to changes in the query results.

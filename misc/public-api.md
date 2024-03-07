@@ -409,7 +409,7 @@ export interface EntityMetadata<entityType = any> {
    */
   readonly dbName: string
   /** The options send to the `Entity`'s decorator */
-  readonly options: EntityOptions<entityType>
+  readonly options: EntityOptions
   /** The class type of the entity */
   readonly entityType: ClassType<entityType>
   /** true if the current user is allowed to update an entity instance
@@ -1874,7 +1874,7 @@ export interface Repository<entityType> {
    */
   metadata: EntityMetadata<entityType>
   addEventListener(listener: entityEventListener<entityType>): Unsubscribe
-  relations: (item: entityType) => RepositoryRelations<entityType>
+  relations(item: entityType): RepositoryRelations<entityType>
 }
 //[ ] entityEventListener from TBD is not exported
 export type RepositoryRelations<entityType> = {
