@@ -31,11 +31,15 @@ export class Order {
 }
 ```
 
-## Advanced Filtering
-
+::: tip Use Case in this article
 Let's say that we want to filter all the orders of customers who are in London.
 
-### Option 1 use In Statement
+Let's have a look at the different options to achieve this.
+:::
+
+## Option 1 - Use In Statement
+
+Add the `where` inline to the `find` method.
 
 ```ts
 console.table(
@@ -50,6 +54,8 @@ console.table(
   }),
 )
 ```
+
+## Option 2 - Prepare entity
 
 We can refactor this to a custom filter that will be easier to use and will run on the backend
 
@@ -79,7 +85,7 @@ console.table(
 )
 ```
 
-#### Using Sql Capabilities
+## Option 3 - Prepare entity (SQL)
 
 We can improve on the custom filter by using the database's in statement capabilities:
 
@@ -127,7 +133,7 @@ export class Order {
 }
 ```
 
-### Option 2 use SqlExpression field
+## Option 4 - sqlExpression field
 
 ```ts
 @Entity('orders', { allowApiCrud: true })
@@ -159,3 +165,32 @@ console.table(
   }),
 )
 ```
+
+::: details Side Note
+In this option, `city` is always calculated, and the `sqlExpression` is always executed. Not a big deal, but it's woth mentioning. (Check out Option 5 for a solution)
+:::
+
+## Option 5 - Dedicated entity
+
+```ts
+export class OrderWithCity extends Order {
+  @Fields.string<Order>({
+    sqlExpression: async () => {
+      const customer = await dbNamesOf(Customer)
+      const order = await dbNamesOf(Order)
+      return `(
+          select ${customer.city}
+            from ${customer}
+           where ${customer.id} = ${order.customer}
+          )`
+    },
+  })
+  city = ''
+}
+```
+
+Like this, in your code, you can use `OrderWithCity` or `Order` depending on your needs.
+
+::: tip
+As `OrderWithCity` extends `Order`, everything in `Order` is also available in `OrderWithCity` 🎉.
+:::
