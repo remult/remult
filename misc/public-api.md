@@ -2178,7 +2178,7 @@ export declare class Validators {
   static required: Validator<any>
   static unique: Validator<any>
   /**
-   * @deprecated is `unique` instead - it also runs only on the backend
+   * @deprecated use `unique` instead - it also runs only on the backend
    */
   static uniqueOnBackend: Validator<any>
   static regex: ValidatorWithArgs<string, RegExp> & {
