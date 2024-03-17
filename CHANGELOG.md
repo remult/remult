@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.25.6] TBD
+## [0.25.6] 2024-03-17
 
 - Added support for `orderByNullsFirst` in `PostgresDataProvider` to change the default postgres behavior where nulls are last
 - Added support for `tableName` option argument for `dbNamesOf` that'll add the table name to each field
