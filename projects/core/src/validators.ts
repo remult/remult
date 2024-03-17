@@ -23,7 +23,7 @@ export class Validators {
     } else return true
   }, 'already exists')
   /**
-   * @deprecated is `unique` instead - it also runs only on the backend
+   * @deprecated use `unique` instead - it also runs only on the backend
    */
   static uniqueOnBackend = createValidator<any>(async (_, e) => {
     if (e.isBackend() && (e.isNew || e.valueChanged())) {
