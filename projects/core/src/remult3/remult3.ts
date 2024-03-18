@@ -819,8 +819,8 @@ export type ClassFieldDecorator<entityType, valueType> = (
 # 
 
 //y1 - getFields didn't work for kobi in the home component
-//p1 - JYC - change name of add parameter and .... to token - param
-//p1 - Hint names for sql parameters
+
+
 //p1 - add section to Fields doc, explaining field type in db
 /*p1 - JYC - Delete many, update many, insert many
   - post + __action=delet
