@@ -822,7 +822,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //p1 - JYC - change name of add parameter and .... to token - param
 //p1 - Hint names for sql parameters
 //p1 - add section to Fields doc, explaining field type in db
-/*y1 - JYC - Delete many, update many, insert many
+/*p1 - JYC - Delete many, update many, insert many
   - post + __action=delet
   */
 //p1 - JYC - there should be a required that says not null or undefined, but space, 0 etc... should be ok - NOAM- check if removing zero is good enough
@@ -840,6 +840,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //y1 - support get with backend method, with url search params as the first parameter, & url as second parameter
 //y1 - talk about the parameter issue with backend methods
 //y1 - select data provider per entity https://discord.com/channels/975754286384418847/976006081748807690/1201415305885397003
+//y1 - migrations
 //y2 - live query refresh of view on table update
 //y2 - livequery for findfirst (@JY)
 
