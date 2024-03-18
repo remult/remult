@@ -101,9 +101,7 @@ export class Order {
         whereFragment.sql = `customer in 
             (select id 
                from customers 
-              where city = ${whereFragment.addParameterAndReturnSqlToken(
-                city,
-              )})`
+              where city = ${whereFragment.param(city)})`
       })
     },
   )

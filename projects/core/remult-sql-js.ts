@@ -91,7 +91,10 @@ class SqlJsCommand implements SqlCommand {
     if (this.i == 0) return new SqlJsSqlResult((await this.db).exec(sql))
     return new SqlJsSqlResult((await this.db).exec(sql, this.values))
   }
-  addParameterAndReturnSqlToken(val: any): string {
+  addParameterAndReturnSqlToken(val: any) {
+    return this.param(val)
+  }
+  param(val: any): string {
     if (val instanceof Date) val = val.valueOf()
     const key = ':' + ++this.i
     this.values[key] = val

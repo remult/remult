@@ -80,17 +80,9 @@ export class PostgresSchemaBuilder {
 
     const where: string[] = []
     if (schema) {
-      where.push(
-        `table_schema=${cmd.addParameterAndReturnSqlToken(
-          this.removeQuotes(schema),
-        )}`,
-      )
+      where.push(`table_schema=${cmd.param(this.removeQuotes(schema))}`)
     }
-    where.push(
-      `table_name=${cmd.addParameterAndReturnSqlToken(
-        this.removeQuotes(table),
-      )}`,
-    )
+    where.push(`table_name=${cmd.param(this.removeQuotes(table))}`)
 
     return where.join(' AND ')
   }
@@ -203,9 +195,7 @@ CREATE table ${this.schemaAndName(e)} (${result}\r\n)`
           await cmd.execute(
             `SELECT 1 FROM information_schema.columns WHERE ` +
               `${this.whereTableAndSchema(cmd, e)} ` +
-              `AND column_name=${cmd.addParameterAndReturnSqlToken(
-                colName.toLocaleLowerCase(),
-              )}`,
+              `AND column_name=${cmd.param(colName.toLocaleLowerCase())}`,
           )
         ).rows.length == 0
       ) {

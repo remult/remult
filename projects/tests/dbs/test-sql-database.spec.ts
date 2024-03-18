@@ -31,6 +31,12 @@ describe('test sql implementation', () => {
             return "'" + val.replace(/'/g, "''") + "'"
           return val
         },
+        param(val: any) {
+          if (typeof val === 'string')
+            return "'" + val.replace(/'/g, "''") + "'"
+          return val
+        },
+
         execute: async (sql) => {
           commands.push(sql)
           return {

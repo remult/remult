@@ -98,8 +98,10 @@ export class SqlDatabase implements DataProvider, HasWrapIdentifier {
             createCommand: () => {
               let c = x.createCommand()
               return {
-                addParameterAndReturnSqlToken: (x) =>
-                  c.addParameterAndReturnSqlToken(x),
+                addParameterAndReturnSqlToken: (val: any) => {
+                  return c.param(val)
+                },
+                param: (x) => c.param(x),
                 execute: async (sql) => {
                   if (completed)
                     throw "can't run a command after the transaction was completed"
@@ -194,8 +196,11 @@ class LogSQLCommand implements SqlCommand {
   ) {}
 
   args: any = {}
-  addParameterAndReturnSqlToken(val: any): string {
-    let r = this.origin.addParameterAndReturnSqlToken(val)
+  addParameterAndReturnSqlToken(val: any) {
+    return this.param(val)
+  }
+  param(val: any, name?: string): string {
+    let r = this.origin.param(val)
     this.args[r] = val
     return r
   }
@@ -386,8 +391,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
           if (!added) added = true
           else statement += ', '
 
-          statement +=
-            e.$dbNameOf(x) + ' = ' + r.addParameterAndReturnSqlToken(v)
+          statement += e.$dbNameOf(x) + ' = ' + r.param(v)
         }
       }
     }
@@ -435,7 +439,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
           }
 
           cols += e.$dbNameOf(x)
-          vals += r.addParameterAndReturnSqlToken(v)
+          vals += r.param(v)
         }
       }
     }
@@ -455,7 +459,10 @@ class myDummySQLCommand implements SqlCommand {
   execute(sql: string): Promise<SqlResult> {
     throw new Error('Method not implemented.')
   }
-  addParameterAndReturnSqlToken(val: any): string {
+  addParameterAndReturnSqlToken(val: any) {
+    return this.param(val)
+  }
+  param(val: any): string {
     if (val === null) return 'null'
     if (val instanceof Date) val = val.toISOString()
     if (typeof val == 'string') {
@@ -494,11 +501,7 @@ async function bulkInsert<entityType extends EntityBase>(
         (row) =>
           '(' +
           row.$.toArray()
-            .map((f) =>
-              c.addParameterAndReturnSqlToken(
-                f.metadata.valueConverter.toDb!(f.value),
-              ),
-            )
+            .map((f) => c.param(f.metadata.valueConverter.toDb!(f.value)))
             .join(', ') +
           ')',
       )

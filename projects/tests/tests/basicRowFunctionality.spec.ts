@@ -1519,6 +1519,7 @@ describe('compound id', () => {
     let f = new FilterConsumerBridgeToSqlRequest(
       {
         addParameterAndReturnSqlToken: (x) => x,
+        param: (x) => x,
       },
       n,
     )
@@ -1542,6 +1543,7 @@ describe('compound id', () => {
     let f = new FilterConsumerBridgeToSqlRequest(
       {
         addParameterAndReturnSqlToken: (x) => x,
+        param: (x) => x,
       },
       n,
     )

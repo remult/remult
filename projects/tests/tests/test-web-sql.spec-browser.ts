@@ -29,9 +29,9 @@ it('test that it works with sql', async () => {
           (x.sql =
             e.id +
             ' in (' +
-            x.addParameterAndReturnSqlToken(1) +
+            x.param(1) +
             ',' +
-            x.addParameterAndReturnSqlToken(3, c.metadata.fields.id) +
+            x.param(3, c.metadata.fields.id) +
             ')'),
       ),
     ),

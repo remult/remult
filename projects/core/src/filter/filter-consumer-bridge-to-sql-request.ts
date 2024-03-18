@@ -89,11 +89,7 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
             this.nameProvider.$dbNameOf(col) +
               ' in (' +
               val
-                .map((x) =>
-                  this.r.addParameterAndReturnSqlToken(
-                    col.valueConverter.toDb(x),
-                  ),
-                )
+                .map((x) => this.r.param(col.valueConverter.toDb(x)))
                 .join(',') +
               ')',
           )
@@ -154,7 +150,7 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
           ' ' +
           operator +
           ' ' +
-          this.r.addParameterAndReturnSqlToken(col.valueConverter.toDb(val))
+          this.r.param(col.valueConverter.toDb(val))
         this.addToWhere(x)
       })(),
     )
@@ -189,12 +185,16 @@ export interface CustomSqlFilterObject {
 export class CustomSqlFilterBuilder {
   constructor(private r: SqlCommandWithParameters) {}
   sql: string = ''
-  addParameterAndReturnSqlToken<valueType>(
-    val: valueType,
-    field?: FieldMetadata<valueType>,
-  ): string {
-    if (field) val = field.valueConverter.toDb(val)
-    return this.r.addParameterAndReturnSqlToken(val)
+  /** @deprecated @deprecated use `param` instead*/
+  addParameterAndReturnSqlToken(val: any) {
+    return this.param(val)
+  }
+  param<valueType>(val: valueType, field?: FieldMetadata<valueType>): string {
+    if (typeof field === 'object' && field.valueConverter.toDb) {
+      val = field.valueConverter.toDb(val)
+    }
+
+    return this.r.param(val)
   }
   async filterToRaw<entityType>(
     repo: RepositoryOverloads<entityType>,

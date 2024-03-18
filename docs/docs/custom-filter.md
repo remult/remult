@@ -70,13 +70,13 @@ export class Task {
     async ({ minLength }) => {
       return SqlDatabase.rawFilter((whereFragment) => {
         whereFragment.sql = 'length(title)>'
-          + whereFragment.addParameterAndReturnSqlToken(minLength)
+          + whereFragment.param(minLength)
       })
     });
 }
 ```
 
-- We use `addParameterAndReturnSqlToken` to prevent sql injection, the sql that will be generated from this will look like this:
+- We use the `param` method to prevent sql injection, the sql that will be generated from this will look like this:
   ```sql
   select id, title, completed from tasks where length(title)>$1
   ```

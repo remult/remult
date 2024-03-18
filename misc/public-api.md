@@ -278,10 +278,9 @@ export declare class CustomSqlFilterBuilder {
   private r
   constructor(r: SqlCommandWithParameters)
   sql: string
-  addParameterAndReturnSqlToken<valueType>(
-    val: valueType,
-    field?: FieldMetadata<valueType>,
-  ): string
+  /** @deprecated @deprecated use `param` instead*/
+  addParameterAndReturnSqlToken(val: any): string
+  param<valueType>(val: valueType, field?: FieldMetadata<valueType>): string
   filterToRaw<entityType>(
     repo: RepositoryOverloads<entityType>,
     condition: EntityFilter<entityType>,
@@ -2007,7 +2006,9 @@ export interface SqlCommand extends SqlCommandWithParameters {
   execute(sql: string): Promise<SqlResult>
 }
 export interface SqlCommandWithParameters {
+  /** @deprecated @deprecated use `param` instead*/
   addParameterAndReturnSqlToken(val: any): string
+  param(val: any): string
 }
 export declare class SqlDatabase implements DataProvider, HasWrapIdentifier {
   private sql

@@ -67,6 +67,7 @@ describe('grid filter stuff', () => {
     let x = new FilterConsumerBridgeToSqlRequest(
       {
         addParameterAndReturnSqlToken: () => '',
+        param: () => '',
       },
       {
         $entityName: '',
@@ -83,6 +84,7 @@ describe('grid filter stuff', () => {
     let x = new FilterConsumerBridgeToSqlRequest(
       {
         addParameterAndReturnSqlToken: () => '',
+        param: () => '',
       },
       {
         $entityName: '',

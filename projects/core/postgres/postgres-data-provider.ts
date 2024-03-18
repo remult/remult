@@ -106,7 +106,10 @@ export interface PostgresCommandSource {
 class PostgresBridgeToSQLCommand implements SqlCommand {
   constructor(private source: PostgresCommandSource) {}
   values: any[] = []
-  addParameterAndReturnSqlToken(val: any): string {
+  addParameterAndReturnSqlToken(val: any) {
+    return this.param(val)
+  }
+  param(val: any): string {
     if (Array.isArray(val)) val = JSON.stringify(val)
     this.values.push(val)
     return '$' + this.values.length
