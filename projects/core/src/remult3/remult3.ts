@@ -841,7 +841,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //y1 - talk about the parameter issue with backend methods
 //y1 - select data provider per entity https://discord.com/channels/975754286384418847/976006081748807690/1201415305885397003
 //y1 - migrations
-//y2 - live query refresh of view on table update
+//y1 - live query refresh of view on table update
 //y2 - livequery for findfirst (@JY)
 
 /*y2 - 
