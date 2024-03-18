@@ -819,6 +819,11 @@ export type ClassFieldDecorator<entityType, valueType> = (
 # 
 
 //y1 - getFields didn't work for kobi in the home component
+//y1 - Hint names for sql parameters
+//y1 - change name of add parameter and .... to token
+//y1 - JYC - add some integrity checks on delete
+//y1 - JYC - there should be a required that says not null or undefined, but space, 0 etc... should be ok
+
 //y1 - talk about export api is not possible in +server - how did we face that in others, and how do we doc it - ended up using _api
 //y1 - number default storage in knex is decimal and it by default has 8,2 - meaning only 999,999 - I think it should be way bigger than that. in firefly we do at least 18 - https://discord.com/channels/975754286384418847/1195162533447876658
 //y1 - admin url!

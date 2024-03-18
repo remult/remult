@@ -19,6 +19,27 @@ Here's how you can use remult in this context, according to the server you're us
 ::: tabs
 == Express
 
+### withRemult middleware
+
+You can use remult as an express middleware for a specific route, using `api.withRemult`
+
+```ts{1}
+app.post('/api/customSetAll', api.withRemult, async (req, res) => {
+  // ....
+})
+```
+
+Or as an express middleware for multiple routes
+
+```ts
+app.use(api.withRemult) // [!code highlight]
+app.post('/api/customSetAll', async (req, res) => {
+  // ....
+})
+```
+
+### withRemultAsync promise wrapper
+
 Use the `api.withRemultAsync` method in promises
 
 ```ts
@@ -31,16 +52,16 @@ const api = remultExpress({
   entities:[Task]
 })
 app.post('/api/customSetAll', async (req, res) => {
-  if (!remult.authenticated()) {
-    res.sendStatus(403);
-    return;
-  }
-  if (!remult.isAllowed("admin")) {
-    res.sendStatus(403);
-    return;
-  }
   // use remult in a specific piece of code // [!code highlight]
   await api.withRemultAsync(req, async ()=> { // [!code highlight]
+    if (!remult.authenticated()) {
+      res.sendStatus(403);
+      return;
+    }
+    if (!remult.isAllowed("admin")) {
+      res.sendStatus(403);
+      return;
+    }
     const taskRepo = remult.repo(Task);
     for (const task of await taskRepo.find()) {
       task.completed = req.body.completed;
@@ -59,23 +80,6 @@ setInterval(async () => {
     // ....
   })
 }, 10000)
-```
-
-You can use remult as an express middleware
-
-```ts
-app.use(api.withRemult) // [!code highlight]
-app.post('/api/customSetAll', async (req, res) => {
-  // ....
-})
-```
-
-Or as an express middleware for a specific route
-
-```ts{1}
-app.post('/api/customSetAll', api.withRemult, async (req, res) => {
-  // ....
-})
 ```
 
 == Fastify
