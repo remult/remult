@@ -536,7 +536,7 @@ export function buildColumn(
 ) {
   if (x.valueType == Number) {
     if (!x.valueConverter.fieldTypeInDb) {
-      let c = b.decimal(dbName)
+      let c = b.decimal(dbName, 18, 2)
       if (!x.allowNull) {
         c.defaultTo(0).notNullable()
       }
