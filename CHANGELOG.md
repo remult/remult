@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 ##[0.25.7] TBD
 
 - Default number storage in knex, previously was decimal(8,2) now, decimal(18,2)
--
+- Fixed issue where exception throws in `initRequest` or `getUser` caused server to crash, instead of return a bad request error
 
 ## [0.25.6] 2024-03-17
 

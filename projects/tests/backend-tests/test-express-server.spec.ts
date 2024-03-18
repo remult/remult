@@ -3,7 +3,7 @@ import {
   type RemultExpressServer,
   remultExpress,
 } from '../../core/remult-express.js'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { Task, test_compound_id } from '../../test-servers/shared/Task.js'
 import {
   InMemoryDataProvider,
@@ -17,9 +17,17 @@ import { allServerTests, testAsExpressMW } from './all-server-tests.js'
 import { initAsyncHooks } from '../../core/server/initAsyncHooks.js'
 
 describe('test express server', async () => {
+  let throwExceptionOnGetUser = false
+  beforeEach(() => {
+    throwExceptionOnGetUser = false
+  })
   let api = remultExpress({
     entities: [Task, test_compound_id],
     dataProvider: new InMemoryDataProvider(),
+    getUser: async () => {
+      if (throwExceptionOnGetUser) throw 'not allowed'
+      return undefined
+    },
   })
   const app = express.Router()
   app.use(api)
@@ -42,6 +50,22 @@ describe('test express server', async () => {
               "d": "d1",
             },
           ]
+        `)
+      }),
+    )
+    it(
+      'test exception on get user',
+      withRemult(async () => {
+        const r = repo(test_compound_id)
+        throwExceptionOnGetUser = true
+
+        await expect(() =>
+          r.find(),
+        ).rejects.toThrowErrorMatchingInlineSnapshot(`
+          {
+            "httpStatusCode": 400,
+            "message": "not allowed",
+          }
         `)
       }),
     )

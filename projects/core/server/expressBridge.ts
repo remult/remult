@@ -582,30 +582,34 @@ export class RemultServerImplementation<RequestType>
       }
       let myReq = new ExpressRequestBridgeToDataApiRequest(genReq)
       let myRes = new ExpressResponseBridgeToDataApiResponse(origRes, req)
-      await this.runWithRemult(async (remult) => {
-        if (req) {
-          let user
-          if (this.options.getUser) user = await this.options.getUser(req)
-          else {
-            user = req['user']
-            if (!user) user = req['auth']
-          }
-          if (user) remult.user = user
+      try {
+        await this.runWithRemult(async (remult) => {
+          if (req) {
+            let user
+            if (this.options.getUser) user = await this.options.getUser(req)
+            else {
+              user = req['user']
+              if (!user) user = req['auth']
+            }
+            if (user) remult.user = user
 
-          if (this.options.initRequest) {
-            await this.options.initRequest(req, {
-              remult,
-              get liveQueryStorage() {
-                return remult.liveQueryStorage
-              },
-              set liveQueryStorage(value: LiveQueryStorage) {
-                remult.liveQueryStorage = value
-              },
-            })
+            if (this.options.initRequest) {
+              await this.options.initRequest(req, {
+                remult,
+                get liveQueryStorage() {
+                  return remult.liveQueryStorage
+                },
+                set liveQueryStorage(value: LiveQueryStorage) {
+                  remult.liveQueryStorage = value
+                },
+              })
+            }
           }
-        }
-        await what(remult, myReq, myRes, genReq, origRes, req)
-      })
+          await what(remult, myReq, myRes, genReq, origRes, req)
+        })
+      } catch (err: any) {
+        myRes.error(serializeError(err))
+      }
     }
   }
   async getRemult(req: RequestType) {
