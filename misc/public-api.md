@@ -89,8 +89,9 @@ export interface ApiClient {
 }
 export declare class ArrayEntityDataProvider implements EntityDataProvider {
   private entity
+  private rows
   static rawFilter(filter: CustomArrayFilter): EntityFilter<any>
-  constructor(entity: EntityMetadata, rows?: any[])
+  constructor(entity: EntityMetadata, rows: () => any[])
   count(where?: Filter): Promise<number>
   find(options?: EntityDataProviderFindOptions): Promise<any[]>
   update(id: any, data: any): Promise<any>
@@ -1839,6 +1840,13 @@ export interface Repository<entityType> {
     id: Partial<MembersOnly<entityType>>,
     item: Partial<MembersOnly<entityType>>,
   ): Promise<entityType>
+  /**
+   * Updates all items that match the `where` condition.
+   */
+  updateMany(
+    where: EntityFilter<entityType>,
+    item: Partial<MembersOnly<entityType>>,
+  ): Promise<number>
   /** Deletes an Item*/
   delete(
     id: entityType extends {
@@ -1852,6 +1860,10 @@ export interface Repository<entityType> {
       : string | number,
   ): Promise<void>
   delete(item: Partial<MembersOnly<entityType>>): Promise<void>
+  /**
+   * Deletes all items that match the `where` condition.
+   */
+  deleteMany(where: EntityFilter<entityType>): Promise<number>
   /** Creates an instance of an item. It'll not be saved to the data source unless `save` or `insert` will be called for that item */
   create(item?: Partial<MembersOnly<entityType>>): entityType
   toJson(item: Promise<entityType[]>): Promise<any[]>

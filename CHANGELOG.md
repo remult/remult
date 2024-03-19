@@ -4,12 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ##[0.25.7] TBD
 
+- Added `deleteMany` and `updateMany`
+- When `insert` is called in the front-end with an array of items, a single POST call is made to the server
+- Renamed `addParameterAndReturnSqlToken` to `param`. `addParameterAndReturnSqlToken` will be deprecated in future versions
 - Default number storage in knex, previously was decimal(8,2) now, decimal(18,2)
 - Fixed issue where exception throws in `initRequest` or `getUser` caused server to crash, instead of return a bad request error
-- Renamed `addParameterAndReturnSqlToken` to `param`. `addParameterAndReturnSqlToken` will be deprecated in future versions
 - Changed required to allow 0 as a value - so only null, undefined and empty strings are considered invalid for a required field
 - Fixed an issue where `backendPrefilter` was not applied to id based `update`, `save` or `delete` in the backend
-- When `insert` is called in the front-end with an array of items, a single POST call is made to the server
 
 ## [0.25.6] 2024-03-17
 

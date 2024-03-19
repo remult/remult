@@ -9,13 +9,19 @@ export class InMemoryDataProvider
   async transaction(
     action: (dataProvider: DataProvider) => Promise<void>,
   ): Promise<void> {
-    await action(this)
+    let before = JSON.stringify(this.rows)
+    try {
+      await action(this)
+    } catch (e) {
+      this.rows = JSON.parse(before)
+      throw e
+    }
   }
   rows: any = {}
   public getEntityDataProvider(entity: EntityMetadata): EntityDataProvider {
     let name = entity.key
     if (!this.rows[name]) this.rows[name] = []
-    return new ArrayEntityDataProvider(entity, this.rows[name])
+    return new ArrayEntityDataProvider(entity, () => this.rows[name])
   }
   toString() {
     return 'InMemoryDataProvider'

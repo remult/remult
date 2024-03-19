@@ -406,7 +406,7 @@ describe('data api', () => {
     let ctx = new Remult()
     ctx.dataProvider = {
       getEntityDataProvider: (x) => {
-        let r = new ArrayEntityDataProvider(x, [{ id: 1 }])
+        let r = new ArrayEntityDataProvider(x, () => [{ id: 1 }])
         r.delete = () => {
           throw 'ERROR'
         }
@@ -1225,15 +1225,18 @@ describe('data api', () => {
       await i(2, 'yael', 'b')
       await i(3, 'yoni', 'a')
     }, type)
-
-    var api = new DataApi(c, remult)
-    let t = new TestDataApiResponse()
-    let d = new Done()
-    t.forbidden = () => {
-      d.ok()
-    }
-    await api.delete(t, 2)
-    d.test()
+    const r = new Remult(new MockRestDataProvider(remult)).repo(type)
+    await expect(() => r.delete(2)).rejects.toThrowErrorMatchingInlineSnapshot(`
+      {
+        "message": "Forbidden",
+      }
+    `)
+    await expect(() => r.deleteMany({})).rejects
+      .toThrowErrorMatchingInlineSnapshot(`
+      {
+        "message": "Forbidden",
+      }
+    `)
   })
 
   it('apiRequireId', async () => {
@@ -1321,20 +1324,28 @@ describe('data api', () => {
       await i(2, 'yael', 'b')
       await i(3, 'yoni', 'a')
     }, type)
+    const r = new Remult(new MockRestDataProvider(remult)).repo(type)
+    await expect(() => r.delete(2)).rejects.toThrowErrorMatchingInlineSnapshot(`
+      {
+        "message": "Forbidden",
+      }
+    `)
+    await expect(() => r.deleteMany({ id: 2 })).rejects
+      .toThrowErrorMatchingInlineSnapshot(`
+      {
+        "message": "Forbidden",
+      }
+    `)
+    await expect(() => r.deleteMany({})).rejects
+      .toThrowErrorMatchingInlineSnapshot(`
+      {
+        "message": "Forbidden",
+      }
+    `)
+    expect(await r.count()).toBe(3)
 
-    var api = new DataApi(c, remult)
-    let t = new TestDataApiResponse()
-    let d = new Done()
-    t.forbidden = () => {
-      d.ok()
-    }
-    await api.delete(t, 2)
-    d.test()
-    t = new TestDataApiResponse()
-    d = new Done()
-    t.deleted = () => d.ok()
-    await api.delete(t, 1)
-    d.test()
+    await r.delete(1)
+    expect(await r.count()).toBe(2)
   })
   it('update id  not Allowed for specific row', async () => {
     let type = class extends newCategories {}
@@ -1348,25 +1359,39 @@ describe('data api', () => {
       await i(2, 'yael', 'b')
       await i(3, 'yoni', 'a')
     }, type)
-    var api = new DataApi(c, remult)
-    let t = new TestDataApiResponse()
-    let d = new Done()
-    t.forbidden = () => {
-      d.ok()
+    const r = new Remult(new MockRestDataProvider(remult)).repo(type)
+    expect(r.metadata.apiUpdateAllowed({ id: 2 } as any)).toBe(false)
+    expect(r.metadata.apiUpdateAllowed({ id: 1 } as any)).toBe(true)
+    await expect(() => r.update(2, { categoryName: 'noam 1' })).rejects
+      .toThrowErrorMatchingInlineSnapshot(`
+      {
+        "message": "Forbidden",
+      }
+    `)
+    await expect(() => r.updateMany({}, { categoryName: 'noam 1' })).rejects
+      .toThrowErrorMatchingInlineSnapshot(`
+    {
+      "message": "Forbidden",
     }
-    await api.put(t, 2, {
-      categoryName: 'noam 1',
-    })
-    d.test()
-    expect(c.metadata.apiUpdateAllowed({ id: 2 } as any)).toBe(false)
-    expect(c.metadata.apiUpdateAllowed({ id: 1 } as any)).toBe(true)
-    t = new TestDataApiResponse()
-    d = new Done()
-    t.success = () => d.ok()
-    await api.put(t, 1, {
-      categoryName: 'noam 1',
-    })
-    d.test()
+  `)
+    expect(
+      (await r.find()).map(({ id, categoryName }) => ({ id, categoryName })),
+    ).toMatchInlineSnapshot(`
+      [
+        {
+          "categoryName": "noam",
+          "id": 1,
+        },
+        {
+          "categoryName": "yael",
+          "id": 2,
+        },
+        {
+          "categoryName": "yoni",
+          "id": 3,
+        },
+      ]
+    `)
   })
   it('insert id  not Allowed for specific row', async () => {
     let type = class extends newCategories {}

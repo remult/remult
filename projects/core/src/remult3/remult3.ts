@@ -392,6 +392,13 @@ export interface Repository<entityType> {
     id: Partial<MembersOnly<entityType>>,
     item: Partial<MembersOnly<entityType>>,
   ): Promise<entityType>
+  /**
+   * Updates all items that match the `where` condition.
+   */
+  updateMany(
+    where: EntityFilter<entityType>,
+    item: Partial<MembersOnly<entityType>>,
+  ): Promise<number>
 
   /** Deletes an Item*/
   delete(
@@ -402,6 +409,10 @@ export interface Repository<entityType> {
       : string | number,
   ): Promise<void>
   delete(item: Partial<MembersOnly<entityType>>): Promise<void>
+  /**
+   * Deletes all items that match the `where` condition.
+   */
+  deleteMany(where: EntityFilter<entityType>): Promise<number>
 
   /** Creates an instance of an item. It'll not be saved to the data source unless `save` or `insert` will be called for that item */
   create(item?: Partial<MembersOnly<entityType>>): entityType
@@ -822,17 +833,13 @@ export type ClassFieldDecorator<entityType, valueType> = (
 
 
 //p1 - add section to Fields doc, explaining field type in db
-/*p1 - JYC - Delete many, update many, insert many
-//p1 - @jycouet regarding required - are you ok with leaving '' as not a good value? (0 will be a good value)
-
-  - post + __action=delet
-  */
-//p1 - JYC - there should be a required that says not null or undefined, but space, 0 etc... should be ok - NOAM- check if removing zero is good enough
 /*y1 - Talk JYC - JYC - add some integrity checks on delete
   - soft delete
   - delete restrict (implicit, or user selected - and if so, how) (delete & update of id)
 
 */
+//y1 תגיד - updateMany צריך להחזיר את השורות שעודכנו (כמו update או insert) או כמה שורות עודכנו (כמו deleteMany)
+
 /*y1 currency.ts:10 Uncaught TypeError: Currency_1 is not a constructor
 
 @ValueListFieldType()

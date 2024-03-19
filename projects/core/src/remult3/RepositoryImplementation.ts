@@ -57,7 +57,7 @@ import type {
   EntityDataProvider,
   EntityDataProviderFindOptions,
   ErrorInfo,
-  RemoteEntityDataProvider,
+  ProxyEntityDataProvider,
 } from '../data-interfaces.js'
 import { ValueConverters } from '../valueConverters.js'
 
@@ -354,7 +354,7 @@ export class RepositoryImplementation<entityType>
         }
         return Promise.all(
           (
-            await (this.edp as any as RemoteEntityDataProvider).insertMany(raw)
+            await (this.edp as any as ProxyEntityDataProvider).insertMany(raw)
           ).map((item, i) => refs[i].processInsertResponseDto(item)),
         )
       } else {
@@ -396,6 +396,25 @@ export class RepositoryImplementation<entityType>
         if (!hasError) return undefined
         return ref.buildErrorInfoObject()
       }
+    }
+  }
+  async updateMany(
+    where: EntityFilter<entityType>,
+    set: Partial<MembersOnly<entityType>>,
+  ): Promise<number> {
+    if (this.dataProvider.isProxy) {
+      return (this.edp as any as ProxyEntityDataProvider).updateMany(
+        await this.translateWhereToFilter(where),
+        set,
+      )
+    } else {
+      let updated = 0
+      for await (const item of this.query({ where })) {
+        assign(item, set)
+        await getEntityRef(item).save()
+        updated++
+      }
+      return updated
     }
   }
   update(
@@ -860,6 +879,21 @@ export class RepositoryImplementation<entityType>
   async count(where?: EntityFilter<entityType>): Promise<number> {
     return this.edp.count(await this.translateWhereToFilter(where))
   }
+  async deleteMany(where: EntityFilter<entityType>): Promise<number> {
+    if (this.dataProvider.isProxy) {
+      return (this.edp as any as ProxyEntityDataProvider).deleteMany(
+        await this.translateWhereToFilter(where),
+      )
+    } else {
+      let deleted = 0
+      for await (const item of this.query({ where })) {
+        await getEntityRef(item).delete()
+        deleted++
+      }
+      return deleted
+    }
+  }
+
   private cache = new Map<string, cacheEntityInfo<entityType>>()
   async findOne(
     options?: FindFirstOptions<entityType>,
