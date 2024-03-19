@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 - Default number storage in knex, previously was decimal(8,2) now, decimal(18,2)
 - Fixed issue where exception throws in `initRequest` or `getUser` caused server to crash, instead of return a bad request error
 - Renamed `addParameterAndReturnSqlToken` to `param`. `addParameterAndReturnSqlToken` will be deprecated in future versions
+- Changed required to allow 0 as a value - so only null, undefined and empty strings are considered invalid for a required field
 
 ## [0.25.6] 2024-03-17
 

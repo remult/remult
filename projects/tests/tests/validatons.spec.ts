@@ -492,7 +492,6 @@ describe('validation tests', () => {
       "message": "Id: Should not be empty",
       "modelState": {
         "id": "Should not be empty",
-        "id2": "Should not be empty",
       },
     }
   `)
@@ -575,7 +574,6 @@ describe('validation tests', () => {
       "message": "Id: Should not be empty",
       "modelState": {
         "id": "Should not be empty",
-        "id2": "Should not be empty",
       },
     }
   `)

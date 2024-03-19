@@ -823,6 +823,8 @@ export type ClassFieldDecorator<entityType, valueType> = (
 
 //p1 - add section to Fields doc, explaining field type in db
 /*p1 - JYC - Delete many, update many, insert many
+//p1 - @jycouet regarding required - are you ok with leaving '' as not a good value? (0 will be a good value)
+
   - post + __action=delet
   */
 //p1 - JYC - there should be a required that says not null or undefined, but space, 0 etc... should be ok - NOAM- check if removing zero is good enough

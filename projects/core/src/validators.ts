@@ -4,8 +4,7 @@ import type { ValidateFieldEvent } from './remult3/remult3.js'
 
 export class Validators {
   static required = createValidator<any>(
-    async (_, e) =>
-      e.value != null && e.value != undefined && e.value !== '' && e.value != 0,
+    async (_, e) => e.value != null && e.value != undefined && e.value !== '',
 
     'Should not be empty',
   )
