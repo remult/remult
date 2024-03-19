@@ -833,7 +833,23 @@ export type ClassFieldDecorator<entityType, valueType> = (
   - delete restrict (implicit, or user selected - and if so, how) (delete & update of id)
 
 */
+/*y1 currency.ts:10 Uncaught TypeError: Currency_1 is not a constructor
 
+@ValueListFieldType()
+export class Currency {
+  constructor(
+    public id: number,
+    public caption: string,
+    public symbol: string
+  ) {}
+  static shekel = new Currency(1, 'Shekel', '₪');
+  static dollar = new Currency(2, 'Dollar', '$');
+  static euro = new Currency(3, 'Euro', '€');
+  static pound = new Currency(4, 'Pound', '£');
+  static yen = new Currency(5, 'Yen', '¥');
+}
+
+*/
 //y1 - admin url!
 //y1 - consider sql expression gets a dbnames of it's own (that already has the "tableName" defined correctly) maybe also the filter translator
 //y1 - talk about modules in init express with entities/controllers,initRequest,initApi
@@ -844,6 +860,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //y1 - select data provider per entity https://discord.com/channels/975754286384418847/976006081748807690/1201415305885397003
 //y1 - migrations
 //y1 - live query refresh of view on table update
+//y1 - main vs master
 //y2 - livequery for findfirst (@JY)
 
 /*y2 - 

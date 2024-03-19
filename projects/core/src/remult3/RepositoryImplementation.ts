@@ -121,6 +121,12 @@ let classValidatorValidate:
 export class RepositoryImplementation<entityType>
   implements Repository<entityType>, RepositoryInternal<entityType>
 {
+  notFoundError(id: any) {
+    return {
+      message: `id ${id} not found in entity ${this.metadata.key}`,
+      httpStatusCode: 404,
+    } satisfies ErrorInfo<any>
+  }
   [getInternalKey]() {
     return this
   }
@@ -307,7 +313,8 @@ export class RepositoryImplementation<entityType>
       if (this.dataProvider.isProxy) return this.edp.delete(item)
       else {
         let ref2 = await this.findId(item)
-        if (ref2) return await getEntityRef(ref2).delete()
+        if (!ref2) throw this.notFoundError(item)
+        return await getEntityRef(ref2).delete()
       }
 
     let ref2 = this.getRefForExistingRow(item as entityType, undefined)
@@ -405,7 +412,7 @@ export class RepositoryImplementation<entityType>
       return await ref.save(Object.keys(entity))
     } else {
       const r = await ref.reload()
-      if (!r) throw new Error('Not Found')
+      if (!r) throw this.notFoundError(ref.id)
       for (const key in entity) {
         if (Object.prototype.hasOwnProperty.call(entity, key)) {
           let f = ref.fields[key]
@@ -1438,10 +1445,13 @@ export class rowHelperImplementation<T>
     this.__clearErrorsAndReportChanged()
   }
   async reload(): Promise<T> {
-    await this.edp.find({ where: this.getIdFilter() }).then(async (newData) => {
-      await this.loadDataFrom(newData[0])
-      this.saveOriginalData()
-    })
+    await this.edp
+      .find({ where: await this.getIdFilter() })
+      .then(async (newData) => {
+        if (newData.length === 0) throw this.repository.notFoundError(this.id)
+        await this.loadDataFrom(newData[0])
+        this.saveOriginalData()
+      })
     this._reportChangedToEntityAndFields()
     return this.instance
   }
@@ -1545,7 +1555,9 @@ export class rowHelperImplementation<T>
           }
           if (!wasChanged) return this.instance
           if (doNotSave) {
-            updatedRow = (await this.edp.find({ where: this.getIdFilter() }))[0]
+            updatedRow = (
+              await this.edp.find({ where: await this.getIdFilter() })
+            )[0]
           } else {
             updatedRow = await this.edp.update(this.id, changesOnly)
           }
@@ -1592,9 +1604,8 @@ export class rowHelperImplementation<T>
     } satisfies LifecycleEvent<T>
   }
 
-  private getIdFilter(): Filter {
-    return Filter.fromEntityFilter(
-      this.metadata,
+  private async getIdFilter(): Promise<Filter> {
+    return await this.repository.translateWhereToFilter(
       this.repository.metadata.idMetadata.getIdFilter(this.id),
     )
   }
