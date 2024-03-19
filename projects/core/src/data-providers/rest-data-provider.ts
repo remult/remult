@@ -2,6 +2,7 @@ import type {
   DataProvider,
   EntityDataProvider,
   EntityDataProviderFindOptions,
+  RemoteEntityDataProvider,
   RestDataProviderHttpProvider,
 } from '../data-interfaces.js'
 
@@ -109,12 +110,15 @@ export function findOptionsFromJson(
   return r
 }
 
-export class RestEntityDataProvider implements EntityDataProvider {
+export class RestEntityDataProvider
+  implements EntityDataProvider, RemoteEntityDataProvider
+{
   constructor(
     private url: () => string,
     private http: () => RestDataProviderHttpProvider,
     private entity: EntityMetadata,
   ) {}
+
   translateFromJson(row: any) {
     let result = {}
     for (const col of this.entity.fields) {
@@ -219,6 +223,14 @@ export class RestEntityDataProvider implements EntityDataProvider {
     return this.http()
       .post(this.url(), this.translateToJson(data))
       .then((y) => this.translateFromJson(y))
+  }
+  insertMany(data: any[]): Promise<any[]> {
+    return this.http()
+      .post(
+        this.url(),
+        data.map((data) => this.translateToJson(data)),
+      )
+      .then((y) => y.map((y) => this.translateFromJson(y)))
   }
 }
 

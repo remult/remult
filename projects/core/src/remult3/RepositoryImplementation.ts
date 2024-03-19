@@ -57,6 +57,7 @@ import type {
   EntityDataProvider,
   EntityDataProviderFindOptions,
   ErrorInfo,
+  RemoteEntityDataProvider,
 } from '../data-interfaces.js'
 import { ValueConverters } from '../valueConverters.js'
 
@@ -329,11 +330,40 @@ export class RepositoryImplementation<entityType>
       | Partial<MembersOnly<entityType>>[],
   ): Promise<entityType | entityType[]> {
     if (Array.isArray(entity)) {
-      let r = []
-      for (const item of entity) {
-        r.push(await this.insert(item))
+      if (this.dataProvider.isProxy) {
+        let refs: rowHelperImplementation<entityType>[] = []
+        let raw = []
+        for (const item of entity) {
+          let ref = getEntityRef(
+            entity,
+            false,
+          ) as unknown as rowHelperImplementation<entityType>
+          if (ref) {
+            if (!ref.isNew()) throw 'Item is not new'
+          } else {
+            ref = (await this.getEntityRef(
+              this.create(item),
+            )) as rowHelperImplementation<entityType>
+          }
+          refs.push(ref)
+          raw.push(
+            await (
+              ref as rowHelperImplementation<entityType>
+            ).buildDtoForInsert(),
+          )
+        }
+        return Promise.all(
+          (
+            await (this.edp as any as RemoteEntityDataProvider).insertMany(raw)
+          ).map((item, i) => refs[i].processInsertResponseDto(item)),
+        )
+      } else {
+        let r = []
+        for (const item of entity) {
+          r.push(await this.insert(item))
+        }
+        return r
       }
-      return r
     } else {
       let ref = getEntityRef(entity, false) as unknown as EntityRef<entityType>
       if (ref) {
@@ -1588,6 +1618,28 @@ export class rowHelperImplementation<T>
       this._reportChangedToEntityAndFields()
       this._saving = false
     }
+  }
+  async processInsertResponseDto(updatedRow: any): Promise<T> {
+    await this.loadDataFrom(updatedRow)
+    this.saveOriginalData()
+    this._isNew = false
+    return this.instance
+  }
+  async buildDtoForInsert(): Promise<any> {
+    await this.__validateEntity()
+    this.__assertValidity()
+
+    let d = this.copyDataToObject(this.isNew())
+    let ignoreKeys = []
+    for (const field of this.metadata.fields) {
+      if (field.dbReadOnly) {
+        d[field.key] = undefined
+        ignoreKeys.push(field.key)
+        let f = this.fields.find(field)
+        f.value = f.originalValue
+      }
+    }
+    return d
   }
 
   private buildLifeCycleEvent(preventDefault: VoidFunction = () => {}) {

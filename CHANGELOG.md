@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - Renamed `addParameterAndReturnSqlToken` to `param`. `addParameterAndReturnSqlToken` will be deprecated in future versions
 - Changed required to allow 0 as a value - so only null, undefined and empty strings are considered invalid for a required field
 - Fixed an issue where `backendPrefilter` was not applied to id based `update`, `save` or `delete` in the backend
+- When `insert` is called in the front-end with an array of items, a single POST call is made to the server
 
 ## [0.25.6] 2024-03-17
 
