@@ -24,9 +24,6 @@ body {
   height: 100%;
 }
 
-table {
-  min-width: 100%;
-}
 
 thead {
   height: var(--cell-height);
@@ -150,7 +147,6 @@ td:first-child:has(button) {
   min-width: calc(var(--cell-height) - 1px);
   border-left: 0;
   position: sticky;
-  left: 0;
   background-color: var(--background-color);
   z-index: 1;
 }
@@ -177,7 +173,26 @@ td input {
   padding: 0 .5rem;
   display: flex;
   height: 100%;
-  width: 100%;
+}
+
+td .field-spacer {
+  height: 0;
+  padding: 0 0.5rem;
+  display: block;
+  overflow: hidden;
+  pointer-events: none;
+  min-width: 100px;
+  max-width: 400px;
+}
+
+td .field-spacer {
+  height: 0;
+  padding: 0 0.5rem;
+  display: block;
+  overflow: hidden;
+  pointer-events: none;
+  min-width: 100px;
+  max-width: 400px;
 }
 
 td .field-spacer {

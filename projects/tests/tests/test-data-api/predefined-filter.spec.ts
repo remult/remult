@@ -4,10 +4,16 @@ import { TestDataApiResponse } from '../TestDataApiResponse'
 
 import { DataApi } from '../../../core/src/data-api'
 
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { Remult } from '../../../core/src/context'
 import { Filter } from '../../../core/src/filter/filter-interfaces'
-import { Entity as EntityDecorator } from '../../../core'
+import {
+  Entity,
+  Entity as EntityDecorator,
+  EntityFilter,
+  Fields,
+  InMemoryDataProvider,
+} from '../../../core'
 import { Categories as newCategories } from '../remult-3-entities'
 import { testAsIfOnBackend } from '../testHelper'
 
@@ -296,6 +302,121 @@ describe('data api', () => {
     })
     expect((await c.findFirst({ id: 1 })).categoryName).toBe('noam')
     expect((await c.findId(1)).categoryName).toBe('noam')
+  })
+})
+
+describe('test backend filter and update', () => {
+  @Entity('t', { allowApiCrud: true, backendPrefilter: () => backendFilter })
+  class t {
+    @Fields.integer()
+    id: number
+    @Fields.string()
+    name: string
+  }
+  var remult = new Remult()
+  let backendFilter: EntityFilter<t> = {}
+  let r = remult.repo(t)
+  beforeEach(async () => {
+    backendFilter = {}
+    remult = new Remult(new InMemoryDataProvider())
+    r = remult.repo(t)
+    await remult.repo(t).insert([
+      { id: 1, name: 'noam' },
+      { id: 2, name: 'yael' },
+      { id: 3, name: 'yoni' },
+    ])
+  })
+
+  it('works', async () => {
+    expect(await remult.repo(t).count()).toBe(3)
+    backendFilter = { id: [1, 3] }
+    expect(await remult.repo(t).count()).toBe(2)
+  })
+  it('update fails', async () => {
+    backendFilter = { id: 1 }
+    await expect(() => r.update(2, { name: 'z' })).rejects
+      .toThrowErrorMatchingInlineSnapshot(`
+      {
+        "httpStatusCode": 404,
+        "message": "id 2 not found in entity t",
+      }
+    `)
+    expect(await r.findId(2)).toBeUndefined()
+    backendFilter = {}
+    expect(await r.findId(2)).toMatchInlineSnapshot(`
+      t {
+        "id": 2,
+        "name": "yael",
+      }
+    `)
+  })
+  it('update fails 2', async () => {
+    await r.delete(2)
+    await expect(() => r.update(2, { name: 'z' })).rejects
+      .toThrowErrorMatchingInlineSnapshot(`
+      {
+        "httpStatusCode": 404,
+        "message": "id 2 not found in entity t",
+      }
+    `)
+  })
+  it('save fails 2', async () => {
+    const item = await r.findId(2)
+    await r.delete(2)
+    item.name = 'z'
+    await expect(() => r.save(item)).rejects.toThrowErrorMatchingInlineSnapshot(
+      '"couldn\'t find id to update: 2"',
+    )
+  })
+  it('save fails', async () => {
+    backendFilter = { id: 1 }
+    await expect(() => r.save({ id: 2, name: 'z' })).rejects
+      .toThrowErrorMatchingInlineSnapshot(`
+      {
+        "httpStatusCode": 404,
+        "message": "id 2 not found in entity t",
+      }
+    `)
+    backendFilter = {}
+    expect(await r.findId(2)).toMatchInlineSnapshot(`
+        t {
+          "id": 2,
+          "name": "yael",
+        }
+      `)
+  })
+  it('delete fails', async () => {
+    backendFilter = { id: 1 }
+    await expect(() => r.delete({ id: 2 })).rejects
+      .toThrowErrorMatchingInlineSnapshot(`
+      {
+        "httpStatusCode": 404,
+        "message": "id 2 not found in entity t",
+      }
+    `)
+    backendFilter = {}
+    expect(await r.findId(2)).toMatchInlineSnapshot(`
+        t {
+          "id": 2,
+          "name": "yael",
+        }
+      `)
+  })
+  it('delete fails', async () => {
+    backendFilter = { id: 1 }
+    await expect(() => r.delete(2)).rejects.toThrowErrorMatchingInlineSnapshot(`
+      {
+        "httpStatusCode": 404,
+        "message": "id 2 not found in entity t",
+      }
+    `)
+    backendFilter = {}
+    expect(await r.findId(2)).toMatchInlineSnapshot(`
+        t {
+          "id": 2,
+          "name": "yael",
+        }
+      `)
   })
 })
 

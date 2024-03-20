@@ -104,6 +104,9 @@ export class myDummySQLCommand implements SqlCommand {
     throw new Error('Method not implemented.')
   }
   addParameterAndReturnSqlToken(val: any): string {
+    return this.param(val)
+  }
+  param(val: any): string {
     if (val === null) return 'null'
     if (val instanceof Date) val = val.toISOString()
     if (typeof val == 'string') {

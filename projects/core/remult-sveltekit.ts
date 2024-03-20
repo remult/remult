@@ -1,4 +1,4 @@
-import type { Handle, RequestEvent } from '@sveltejs/kit'
+import type { Handle, RequestEvent, RequestHandler } from '@sveltejs/kit'
 import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
 import type {
   GenericResponse,
@@ -23,62 +23,69 @@ export function remultSveltekit(
     }),
     getRequestBody: (event) => event.request.json(),
   })
-  const handler: Handle = async ({ event, resolve }) => {
-    if (event.url.pathname.startsWith(options.rootPath)) {
-      let sseResponse: Response | undefined = undefined
-      event.locals['_tempOnClose'] = () => {}
+  const serverHandler: RequestHandler = async (event) => {
+    let sseResponse: Response | undefined = undefined
+    event.locals['_tempOnClose'] = () => {}
 
-      const response: GenericResponse & ResponseRequiredForSSE = {
-        end: () => {},
-        json: () => {},
-        send: () => {},
-        status: () => {
-          return response
-        },
-        write: () => {},
-        writeHead: (status, headers) => {
-          if (status === 200 && headers) {
-            const contentType = headers['Content-Type']
-            if (contentType === 'text/event-stream') {
-              const messages: string[] = []
-              response.write = (x) => messages.push(x)
-              const stream = new ReadableStream({
-                start: (controller) => {
-                  for (const message of messages) {
-                    controller.enqueue(message)
-                  }
-                  response.write = (data) => {
-                    controller.enqueue(data)
-                  }
-                },
-                cancel: () => {
-                  response.write = () => {}
-                  event.locals['_tempOnClose']()
-                },
-              })
-              sseResponse = new Response(stream, { headers })
-            }
+    const response: GenericResponse & ResponseRequiredForSSE = {
+      end: () => {},
+      json: () => {},
+      send: () => {},
+      status: () => {
+        return response
+      },
+      write: () => {},
+      writeHead: (status, headers) => {
+        if (status === 200 && headers) {
+          const contentType = headers['Content-Type']
+          if (contentType === 'text/event-stream') {
+            const messages: string[] = []
+            response.write = (x) => messages.push(x)
+            const stream = new ReadableStream({
+              start: (controller) => {
+                for (const message of messages) {
+                  controller.enqueue(message)
+                }
+                response.write = (data) => {
+                  controller.enqueue(data)
+                }
+              },
+              cancel: () => {
+                response.write = () => {}
+                event.locals['_tempOnClose']()
+              },
+            })
+            sseResponse = new Response(stream, { headers })
           }
-        },
-      }
+        }
+      },
+    }
 
-      const responseFromRemultHandler = await result.handle(event, response)
-      if (sseResponse !== undefined) {
-        return sseResponse
-      }
-      if (responseFromRemultHandler) {
-        if (responseFromRemultHandler.html)
-          return new Response(responseFromRemultHandler.html, {
-            status: responseFromRemultHandler.statusCode,
-            headers: {
-              'Content-Type': 'text/html',
-            },
-          })
-        return new Response(JSON.stringify(responseFromRemultHandler.data), {
+    const responseFromRemultHandler = await result.handle(event, response)
+    if (sseResponse !== undefined) {
+      return sseResponse
+    }
+    if (responseFromRemultHandler) {
+      if (responseFromRemultHandler.html)
+        return new Response(responseFromRemultHandler.html, {
           status: responseFromRemultHandler.statusCode,
-          //  headers: (await resolve(event)).headers,
+          headers: {
+            'Content-Type': 'text/html',
+          },
         })
-      }
+      const res = new Response(JSON.stringify(responseFromRemultHandler.data), {
+        status: responseFromRemultHandler.statusCode,
+      })
+      return res
+    }
+    return  new Response('Not Found', {
+      status: 404,
+    })
+  }
+  const handler: Handle = async ({ event, resolve }) => {
+    if (event.url.pathname.startsWith(options!.rootPath!)) {
+      const result = await serverHandler(event)
+      if (result != null && result?.status != 404) return result
     }
     return new Promise<Response>((res) => {
       result.withRemult(event, undefined!, async () => {
@@ -92,10 +99,18 @@ export function remultSveltekit(
     withRemult<T>(request: RequestEvent, what: () => Promise<T>): Promise<T> {
       return result.withRemultAsync(request, what)
     },
+    GET: serverHandler,
+    PUT: serverHandler,
+    POST: serverHandler,
+    DELETE: serverHandler,
   })
 }
 
 export type RemultSveltekitServer = RemultServerCore<RequestEvent> &
   Handle & {
     withRemult: RemultServer<RequestEvent>['withRemultAsync']
+    GET: RequestHandler
+    PUT: RequestHandler
+    POST: RequestHandler
+    DELETE: RequestHandler
   }

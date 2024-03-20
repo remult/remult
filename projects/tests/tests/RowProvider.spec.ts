@@ -67,6 +67,7 @@ describe('grid filter stuff', () => {
     let x = new FilterConsumerBridgeToSqlRequest(
       {
         addParameterAndReturnSqlToken: () => '',
+        param: () => '',
       },
       {
         $entityName: '',
@@ -83,6 +84,7 @@ describe('grid filter stuff', () => {
     let x = new FilterConsumerBridgeToSqlRequest(
       {
         addParameterAndReturnSqlToken: () => '',
+        param: () => '',
       },
       {
         $entityName: '',
@@ -671,8 +673,8 @@ describe('test ', () => {
 })
 
 export class myDp extends ArrayEntityDataProvider {
-  constructor(entity: EntityMetadata) {
-    super(entity, [])
+  constructor(entity: EntityMetadata, rows = []) {
+    super(entity, () => rows)
   }
   public update(id: any, data: any): Promise<any> {
     throw new Error('what')

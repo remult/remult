@@ -4,8 +4,7 @@ import type { ValidateFieldEvent } from './remult3/remult3.js'
 
 export class Validators {
   static required = createValidator<any>(
-    async (_, e) =>
-      e.value != null && e.value != undefined && e.value !== '' && e.value != 0,
+    async (_, e) => e.value != null && e.value != undefined && e.value !== '',
 
     'Should not be empty',
   )
@@ -23,7 +22,7 @@ export class Validators {
     } else return true
   }, 'already exists')
   /**
-   * @deprecated is `unique` instead - it also runs only on the backend
+   * @deprecated use `unique` instead - it also runs only on the backend
    */
   static uniqueOnBackend = createValidator<any>(async (_, e) => {
     if (e.isBackend() && (e.isNew || e.valueChanged())) {
@@ -180,7 +179,7 @@ export function createValueValidatorWithArgs<valueType, argsType>(
 ): ValidatorWithArgs<valueType, argsType> & {
   defaultMessage: ValueValidationMessage<argsType>
 } {
-  const result = createValidatorWithArgs<valueType, argsType>(
+  const result = createValidatorWithArgsInternal<valueType, argsType>(
     (_, e, args) => {
       if (e.value === undefined || e.value === null) return true
       return validate(e.value, args)
@@ -188,6 +187,7 @@ export function createValueValidatorWithArgs<valueType, argsType>(
     (_, e, args) =>
       (typeof defaultMessage === 'function' && defaultMessage(args)) ||
       (defaultMessage as string),
+    true,
   )
   return Object.assign((entity, e) => result(entity, e), {
     get defaultMessage() {
@@ -226,18 +226,36 @@ export function createValidatorWithArgs<valueType, argsType>(
 ): ValidatorWithArgs<valueType, argsType> & {
   defaultMessage: ValidationMessage<valueType, argsType>
 } {
+  return createValidatorWithArgsInternal(validate, defaultMessage)
+}
+function createValidatorWithArgsInternal<valueType, argsType>(
+  validate: (
+    entity: any,
+    e: ValidateFieldEvent<any, valueType>,
+    args: argsType,
+  ) => Promise<boolean | string> | boolean | string,
+  defaultMessage: ValidationMessage<valueType, argsType>,
+  isValueValidator = false,
+): ValidatorWithArgs<valueType, argsType> & {
+  defaultMessage: ValidationMessage<valueType, argsType>
+} {
   const result =
-    (args: argsType, message?: string) =>
+    (args: argsType, message?: ValidationMessage<valueType, argsType>) =>
     async (entity: any, e: ValidateFieldEvent<any, valueType>) => {
       const valid = await validate(entity, e, args)
       if (typeof valid === 'string') e.error = valid
       else if (!valid)
-        e.error =
-          message || defaultMessage
-            ? typeof defaultMessage === 'function'
-              ? defaultMessage(entity, e, args)
-              : defaultMessage
-            : Validators.defaultMessage
+        e.error = message
+          ? typeof message === 'function'
+            ? isValueValidator
+              ? (message as any as (args: argsType) => string)(args)
+              : message(entity, e, args)
+            : message
+          : defaultMessage
+          ? typeof defaultMessage === 'function'
+            ? defaultMessage(entity, e, args)
+            : defaultMessage
+          : Validators.defaultMessage
     }
 
   return Object.assign(result, {

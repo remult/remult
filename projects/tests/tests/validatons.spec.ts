@@ -247,7 +247,7 @@ describe('validation tests', () => {
         "message": "Id: must be bigger",
         "modelState": {
           "id": "must be bigger",
-          "id2": "must be bigger",
+          "id2": "shouldn't be bigger",
         },
       }
     `,
@@ -298,6 +298,29 @@ describe('validation tests', () => {
         "message": "Id: Value must be one of 1, 2, 3",
         "modelState": {
           "id": "Value must be one of 1, 2, 3",
+        },
+      }
+    `)
+  })
+  it('test in ', async () => {
+    await expect(async () =>
+      remult
+        .repo(
+          createEntity('x', {
+            id: Fields.number({
+              validate: Validators.in(
+                [1, 2, 3],
+                (x) => 'invalid value: ' + x.join(', '),
+              ),
+            }),
+          }),
+        )
+        .insert({ id: 4 }),
+    ).rejects.toThrowErrorMatchingInlineSnapshot(`
+      {
+        "message": "Id: invalid value: 1, 2, 3",
+        "modelState": {
+          "id": "invalid value: 1, 2, 3",
         },
       }
     `)
@@ -469,7 +492,6 @@ describe('validation tests', () => {
       "message": "Id: Should not be empty",
       "modelState": {
         "id": "Should not be empty",
-        "id2": "Should not be empty",
       },
     }
   `)
@@ -552,7 +574,6 @@ describe('validation tests', () => {
       "message": "Id: Should not be empty",
       "modelState": {
         "id": "Should not be empty",
-        "id2": "Should not be empty",
       },
     }
   `)
@@ -757,6 +778,30 @@ describe('validation tests', () => {
         "message": "Id: Value must be at most 5 characters",
         "modelState": {
           "id": "Value must be at most 5 characters",
+        },
+      }
+    `)
+    expect(remult.repo(x).insert({ id: '1234' })).resolves
+      .toMatchInlineSnapshot(`
+      x {
+        "id": "1234",
+      }
+    `)
+  })
+  it('test min length', async () => {
+    @Entity('x', {})
+    class x {
+      @Fields.string({
+        minLength: 2,
+      })
+      id = ''
+    }
+    await expect(remult.repo(x).insert({ id: 'o' })).rejects
+      .toMatchInlineSnapshot(`
+      {
+        "message": "Id: Value must be at least 2 characters",
+        "modelState": {
+          "id": "Value must be at least 2 characters",
         },
       }
     `)

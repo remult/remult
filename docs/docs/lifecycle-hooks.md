@@ -16,6 +16,7 @@ In Remult, you can take advantage of Entity Lifecycle Hooks to add custom logic 
     },
   })
   ```
+  You can run custom validation like in this example, and you can also use [builtin validation](./validation.md).
 
 ## Saving
 

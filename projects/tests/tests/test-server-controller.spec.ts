@@ -18,6 +18,8 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { InMemoryDataProvider } from '../../core/src//data-providers/in-memory-database'
 import { describeClass } from '../../core/src//remult3/DecoratorReplacer'
 import { remult, RemultProxy } from '../../core/src/remult-proxy'
+import { remultStatic, resetFactory } from '../../core/src/remult-static'
+import { RepositoryImplementation } from '../../core/src/remult3/RepositoryImplementation.js'
 
 @ValueListFieldType()
 export class myType {
@@ -286,26 +288,29 @@ describe('test Server Controller basics', () => {
     expect(r.result).toBe('hello noam')
   })
   it('test backend method caller with proxy', async () => {
-    const p = new RemultProxy()
-    {
-      const c = new Remult({
-        url: 'xx',
-        httpClient: {
-          delete: () => undefined,
-          get: () => undefined,
-          post: async (url, data) => {
-            expect(url).toBe('xx/sf')
-            expect(data.args[0]).toEqual('noam')
-            return { data: { result: 'hello noam' } }
+    try {
+      {
+        const c = new Remult({
+          url: 'xx',
+          httpClient: {
+            delete: () => undefined,
+            get: () => undefined,
+            post: async (url, data) => {
+              expect(url).toBe('xx/sf')
+              expect(data.args[0]).toEqual('noam')
+              return { data: { result: 'hello noam' } }
+            },
+            put: () => undefined,
           },
-          put: () => undefined,
-        },
-      })
+        })
 
-      p.remultFactory = () => c
+        globalThis.remultFactory = () => c
+      }
+      const r = await remult.call(testBasics.sf, undefined, 'noam')
+      expect(r.result).toBe('hello noam')
+    } finally {
+      resetFactory()
     }
-    const r = await p.call(testBasics.sf, undefined, 'noam')
-    expect(r.result).toBe('hello noam')
   })
   it('test backend method instance method', async () => {
     const c = new Remult({
@@ -326,24 +331,28 @@ describe('test Server Controller basics', () => {
     expect(r.result).toBe('hello noam')
   })
   it('test backend method instance method with proxy', async () => {
-    const c = new Remult({
-      url: 'xx',
-      httpClient: {
-        delete: () => undefined,
-        get: () => undefined,
-        post: async (url, data) => {
-          expect(url).toBe('xx/1/doIt')
-          return { result: { result: 'hello noam' }, fields: {} }
+    try {
+      const c = new Remult({
+        url: 'xx',
+        httpClient: {
+          delete: () => undefined,
+          get: () => undefined,
+          post: async (url, data) => {
+            expect(url).toBe('xx/1/doIt')
+            return { result: { result: 'hello noam' }, fields: {} }
+          },
+          put: () => undefined,
         },
-        put: () => undefined,
-      },
-    })
-    const p = new RemultProxy()
-    p.remultFactory = () => c
-    const b = new testBasics(remult)
-    const r = await p.call(b.doIt, b)
+      })
 
-    expect(r.result).toBe('hello noam')
+      globalThis.remultFactory = () => c
+      const b = new testBasics(remult)
+      const r = await c.call(b.doIt, b)
+
+      expect(r.result).toBe('hello noam')
+    } finally {
+      resetFactory()
+    }
   })
   it('test server function', async () => {
     let r = await testBasics.sf('noam')
@@ -485,14 +494,14 @@ describe('test Server Controller basics', () => {
     let remult2 = new Remult(new InMemoryDataProvider())
     let remultProxy = new RemultProxy()
     let repo = remultProxy.repo(testEntity)
-    remultProxy.remultFactory = () => remult1
+    remultStatic.remultFactory = () => remult1
     expect(await repo.count()).toBe(1)
-    remultProxy.remultFactory = () => remult2
+    remultStatic.remultFactory = () => remult2
     expect(await repo.count()).toBe(0)
     let z = await repo.save({ name: 'b' })
     expect(z.name).toBe('b')
     expect(await repo.count()).toBe(1)
-    remultProxy.remultFactory = () => remult1
+    remultStatic.remultFactory = () => remult1
     expect(
       await repo.find({
         where: {
@@ -528,3 +537,22 @@ class child extends parent {
     return { p: this.parentField, c: this.childField }
   }
 }
+describe("test proxy implementation doesn't meet something", () => {
+  it('test remult proxy', async () => {
+    const r = new Remult(new InMemoryDataProvider()).repo(testEntity)
+    const c = new RemultProxy().repo(testEntity)
+    let missing: string[] = []
+    for (const key of Object.getOwnPropertyNames(r)) {
+      if (!c[key]) missing.push(key)
+    }
+    for (const key of Object.getOwnPropertyNames(
+      RepositoryImplementation.prototype,
+    )) {
+      if (!c[key]) missing.push(key)
+    }
+
+    expect(missing.filter((x) => !x.startsWith('_'))).toMatchInlineSnapshot(`
+      []
+    `)
+  })
+})

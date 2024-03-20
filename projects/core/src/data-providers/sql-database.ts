@@ -5,6 +5,7 @@ import type {
   EntityDataProviderFindOptions,
 } from '../data-interfaces.js'
 import type {
+  HasWrapIdentifier,
   SqlCommand,
   SqlCommandWithParameters,
   SqlImplementation,
@@ -39,7 +40,7 @@ import { ValueConverters } from '../valueConverters.js'
 import { getRepositoryInternals } from '../remult3/repository-internals.js'
 
 // @dynamic
-export class SqlDatabase implements DataProvider {
+export class SqlDatabase implements DataProvider, HasWrapIdentifier {
   static getDb(remult?: Remult) {
     const r = (remult || defaultRemult).dataProvider as SqlDatabase
     if (!r.createCommand) throw 'the data provider is not an SqlDatabase'
@@ -97,8 +98,10 @@ export class SqlDatabase implements DataProvider {
             createCommand: () => {
               let c = x.createCommand()
               return {
-                addParameterAndReturnSqlToken: (x) =>
-                  c.addParameterAndReturnSqlToken(x),
+                addParameterAndReturnSqlToken: (val: any) => {
+                  return c.param(val)
+                },
+                param: (x) => c.param(x),
                 execute: async (sql) => {
                   if (completed)
                     throw "can't run a command after the transaction was completed"
@@ -143,7 +146,7 @@ export class SqlDatabase implements DataProvider {
     )
     b._addWhere = false
     await (
-      await getRepositoryInternals(r).translateWhereToFilter(condition)
+      await getRepositoryInternals(r)._translateWhereToFilter(condition)
     ).__applyToConsumer(b)
     return await b.resolveWhere()
   }
@@ -193,8 +196,11 @@ class LogSQLCommand implements SqlCommand {
   ) {}
 
   args: any = {}
-  addParameterAndReturnSqlToken(val: any): string {
-    let r = this.origin.addParameterAndReturnSqlToken(val)
+  addParameterAndReturnSqlToken(val: any) {
+    return this.param(val)
+  }
+  param(val: any, name?: string): string {
+    let r = this.origin.param(val)
     this.args[r] = val
     return r
   }
@@ -307,6 +313,10 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
 
           select += e.$dbNameOf(c.field)
           if (c.isDescending) select += ' desc'
+          if (this.sql._getSourceSql().orderByNullsFirst) {
+            if (c.isDescending) select += ' nulls last'
+            else select += ' nulls first'
+          }
         }
       }
 
@@ -381,8 +391,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
           if (!added) added = true
           else statement += ', '
 
-          statement +=
-            e.$dbNameOf(x) + ' = ' + r.addParameterAndReturnSqlToken(v)
+          statement += e.$dbNameOf(x) + ' = ' + r.param(v)
         }
       }
     }
@@ -430,7 +439,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
           }
 
           cols += e.$dbNameOf(x)
-          vals += r.addParameterAndReturnSqlToken(v)
+          vals += r.param(v)
         }
       }
     }
@@ -450,7 +459,10 @@ class myDummySQLCommand implements SqlCommand {
   execute(sql: string): Promise<SqlResult> {
     throw new Error('Method not implemented.')
   }
-  addParameterAndReturnSqlToken(val: any): string {
+  addParameterAndReturnSqlToken(val: any) {
+    return this.param(val)
+  }
+  param(val: any): string {
     if (val === null) return 'null'
     if (val instanceof Date) val = val.toISOString()
     if (typeof val == 'string') {
@@ -489,11 +501,7 @@ async function bulkInsert<entityType extends EntityBase>(
         (row) =>
           '(' +
           row.$.toArray()
-            .map((f) =>
-              c.addParameterAndReturnSqlToken(
-                f.metadata.valueConverter.toDb!(f.value),
-              ),
-            )
+            .map((f) => c.param(f.metadata.valueConverter.toDb!(f.value)))
             .join(', ') +
           ')',
       )

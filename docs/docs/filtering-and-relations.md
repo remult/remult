@@ -1,4 +1,4 @@
-# Techniques regarding one to many relations
+# Filtering and Relations
 
 In this article, we'll discuss several relevant techniques for one-to-many relations.
 Consider the following scenario where we have a customer entity and an Orders entity.
@@ -6,60 +6,46 @@ Consider the following scenario where we have a customer entity and an Orders en
 We'll use the following entities and data for this article.
 
 ```ts
-import { Entity, Field, Fields, remult } from 'remult'
+import { Entity, Field, Fields, remult, Relations } from 'remult'
 
-@Entity('customers', { allowApiCrud: true })
+@Entity('customers')
 export class Customer {
-  @Fields.uuid()
-  id!: string
+  @Fields.autoIncrement()
+  id = 0
   @Fields.string()
   name = ''
   @Fields.string()
   city = ''
+  @Relations.toMany(() => Order)
+  orders?: Order[]
 }
 
-@Entity('orders', { allowApiCrud: true })
+@Entity('orders')
 export class Order {
-  @Fields.uuid()
-  id!: string
-  @Field(() => Customer)
+  @Fields.autoIncrement()
+  id = 0
+  @Relations.toOne(() => Customer)
   customer!: Customer
   @Fields.number()
   amount = 0
 }
-
-export async function seed() {
-  const customerRepo = remult.repo(Customer)
-  if ((await customerRepo.count()) === 0) {
-    const customers = await customerRepo.insert([
-      { name: 'Fay, Ebert and Sporer', city: 'London' },
-      { name: 'Abshire Inc', city: 'New York' },
-      { name: 'Larkin - Fadel', city: 'London' },
-    ])
-    await remult.repo(Order).insert([
-      { customer: customers[0], amount: 10 },
-      { customer: customers[0], amount: 15 },
-      { customer: customers[1], amount: 40 },
-      { customer: customers[1], amount: 5 },
-      { customer: customers[1], amount: 7 },
-      { customer: customers[2], amount: 90 },
-      { customer: customers[2], amount: 3 },
-    ])
-  }
-}
 ```
 
-## Advanced Filtering
-
+::: tip Use Case in this article
 Let's say that we want to filter all the orders of customers who are in London.
 
-### Option 1 use In Statement
+Let's have a look at the different options to achieve this.
+:::
+
+## Option 1 - Use In Statement
+
+Add the `where` inline to the `find` method.
 
 ```ts
 console.table(
-  await remult.repo(Order).find({
+  await repo(Order).find({
     where: {
-      customer: await remult.repo(Customer).find({
+      customer: await repo(Customer).find({
         where: {
           city: 'London',
         },
@@ -69,15 +55,19 @@ console.table(
 )
 ```
 
+## Option 2 - Prepare entity
+
 We can refactor this to a custom filter that will be easier to use and will run on the backend
 
 ```ts
+import { Filter } from 'remult'
+
 @Entity('orders', { allowApiCrud: true })
 export class Order {
   //...
   static filterCity = Filter.createCustom<Order, { city: string }>(
     async ({ city }) => ({
-      customer: await remult.repo(Customer).find({ where: { city } }),
+      customer: await repo(Customer).find({ where: { city } }),
     }),
   )
 }
@@ -87,7 +77,7 @@ And then we can use it:
 
 ```ts
 console.table(
-  await remult.repo(Order).find({
+  await repo(Order).find({
     where: Order.filterCity({
       city: 'London',
     }),
@@ -95,11 +85,13 @@ console.table(
 )
 ```
 
-#### Using Sql Capabilities
+## Option 3 - Prepare entity (SQL)
 
 We can improve on the custom filter by using the database's in statement capabilities:
 
 ```ts
+import { SqlDatabase } from 'remult'
+
 @Entity('orders', { allowApiCrud: true })
 export class Order {
   //...
@@ -109,9 +101,7 @@ export class Order {
         whereFragment.sql = `customer in 
             (select id 
                from customers 
-              where city = ${whereFragment.addParameterAndReturnSqlToken(
-                city,
-              )})`
+              where city = ${whereFragment.param(city)})`
       })
     },
   )
@@ -121,6 +111,8 @@ export class Order {
 We can also reuse the entity definitions by using `dbNamesOf` and `filterToRaw`
 
 ```ts
+import { dbNamesOf } from 'remult'
+
 @Entity('orders', { allowApiCrud: true })
 export class Order {
   //...
@@ -139,21 +131,20 @@ export class Order {
 }
 ```
 
-### Option 2 use SqlExpression field
+## Option 4 - sqlExpression field
 
 ```ts
 @Entity('orders', { allowApiCrud: true })
 export class Order {
   //...
   @Fields.string<Order>({
-    sqlExpression: async (orderMetadata) => {
+    sqlExpression: async () => {
       const customer = await dbNamesOf(Customer)
+      const order = await dbNamesOf(Order)
       return `(
           select ${customer.city}
             from ${customer}
-           where ${
-             customer.id
-           } = ${await orderMetadata.fields.customer.getDbName()}
+           where ${customer.id} = ${order.customer}
           )`
     },
   })
@@ -162,14 +153,42 @@ export class Order {
 ```
 
 - This adds a calculated `city` field to the `Order` entity that we can use to order by or filter
-- Note that we didn't use `dbNamesOf(Order)` because it'll try to extract the dbName of all fields and `sqlExpressions` which will cause a stack overflow
 
 ```ts
 console.table(
-  await remult.repo(Order).find({
+  await repo(Order).find({
     where: {
       city: 'London',
     },
   }),
 )
 ```
+
+::: details Side Note
+In this option, `city` is always calculated, and the `sqlExpression` is always executed. Not a big deal, but it's woth mentioning. (Check out Option 5 for a solution)
+:::
+
+## Option 5 - Dedicated entity
+
+```ts
+export class OrderWithCity extends Order {
+  @Fields.string<Order>({
+    sqlExpression: async () => {
+      const customer = await dbNamesOf(Customer)
+      const order = await dbNamesOf(Order)
+      return `(
+          select ${customer.city}
+            from ${customer}
+           where ${customer.id} = ${order.customer}
+          )`
+    },
+  })
+  city = ''
+}
+```
+
+Like this, in your code, you can use `OrderWithCity` or `Order` depending on your needs.
+
+::: tip
+As `OrderWithCity` extends `Order`, everything in `Order` is also available in `OrderWithCity` 🎉.
+:::

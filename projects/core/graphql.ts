@@ -1,7 +1,12 @@
 import { getRelationFieldInfo } from './internals.js'
 import type { ClassType } from './classType.js'
-import type { EntityMetadata, FieldMetadata, FieldsMetadata, Repository } from './index.js'
-import { Remult, remult } from './index.js'
+import type {
+  EntityMetadata,
+  FieldMetadata,
+  FieldsMetadata,
+  Repository,
+} from './index.js'
+import { CompoundIdField, Remult, remult } from './index.js'
 import type { DataApiResponse } from './src/data-api.js'
 import { DataApi } from './src/data-api.js'
 import { getRepositoryInternals } from './src/remult3/repository-internals.js'
@@ -228,7 +233,7 @@ export function remultGraphql(options: {
               error: (x: any) => (err = x),
               forbidden: () => (err = 'forbidden'),
               notFound: () => (err = 'not found'),
-              progress: () => { },
+              progress: () => {},
             }
             work(response, (x) => (result = x), arg1, req)
               .then(() => {
@@ -573,7 +578,10 @@ export function remultGraphql(options: {
 
         currentType.mutation.delete.payload = upsertTypes(deletePayload)
         const deletedResultKey = `id`
-        const type = getGraphqlBaseType(meta.fields.find('id'))
+        const type =
+          meta.idMetadata.field instanceof CompoundIdField
+            ? 'String'
+            : getGraphqlBaseType(meta.idMetadata.field)
         currentType.mutation.delete.payload.fields.push(
           {
             key: deletedResultKey,
@@ -640,7 +648,7 @@ export function remultGraphql(options: {
                   const myRepo = remult.repo(meta.entityType)
                   const item = myRepo.fromJson(orig)
                   let { toRepo, returnNull, returnUndefined } =
-                    getRepositoryInternals(myRepo).getFocusedRelationRepo(
+                    getRepositoryInternals(myRepo)._getFocusedRelationRepo(
                       myRepo.fields.find(f),
                       item,
                     )
@@ -965,14 +973,14 @@ export function remultGraphql(options: {
           kind === 'union'
             ? `union ${key} = ${fields.map((field) => field.key).join(' | ')}`
             : blockFormat({
-              prefix,
-              data: fields
-                .sort(
-                  (a, b) => (a.order ? a.order : 0) - (b.order ? b.order : 0),
-                )
-                .map((field) => fieldFormat(field)),
-              comment: comment ?? `The ${kind} for \`${key}\``,
-            })
+                prefix,
+                data: fields
+                  .sort(
+                    (a, b) => (a.order ? a.order : 0) - (b.order ? b.order : 0),
+                  )
+                  .map((field) => fieldFormat(field)),
+                comment: comment ?? `The ${kind} for \`${key}\``,
+              })
 
         const orderByStr =
           orderBy.length > 0 ? `\n\n${orderBy.join('\n\n')}` : ``
@@ -1186,8 +1194,9 @@ function fieldFormat(field: Field) {
     strComment = ``
   }
 
-  let key_value = `${field.key}${field.args ? `${argsFormat(field.args)}` : ``
-    }: ${field.value}`
+  let key_value = `${field.key}${
+    field.args ? `${argsFormat(field.args)}` : ``
+  }: ${field.value}`
   // It's an enum
   if (typeof field.value === 'object') {
     key_value = `${field.key}`
@@ -1198,21 +1207,21 @@ function fieldFormat(field: Field) {
 
 function getGraphqlBaseType(field: FieldMetadata) {
   let type = 'String'
-        switch (field.valueType) {
-          case Boolean:
-            type = 'Boolean'
-            break
-          case Number:
-            {
-              if (
-                field.valueConverter?.fieldTypeInDb === 'integer' ||
-                field.valueConverter?.fieldTypeInDb === 'autoincrement'
-              )
-                type = 'Int'
-              else type = 'Float'
-            }
-            break
-        }
+  switch (field.valueType) {
+    case Boolean:
+      type = 'Boolean'
+      break
+    case Number:
+      {
+        if (
+          field.valueConverter?.fieldTypeInDb === 'integer' ||
+          field.valueConverter?.fieldTypeInDb === 'autoincrement'
+        )
+          type = 'Int'
+        else type = 'Float'
+      }
+      break
+  }
   return type
 }
 

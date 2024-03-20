@@ -21,8 +21,8 @@ export function knexTests(
   })
   async function createEntity(entity: ClassType<any>) {
     let repo = remult.repo(entity)
-    const dbNames = await dbNamesOf(repo.metadata)
-    await knex.schema.dropTableIfExists(await dbNames.$entityName)
+
+    await knex.schema.dropTableIfExists(repo.metadata.dbName!)
     await db.ensureSchema([repo.metadata])
     return repo
   }

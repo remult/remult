@@ -155,12 +155,6 @@ Arguments:
 context information that can be used to store custom information that will be disposed as part of the `remult` object
 ## apiClient
 The api client that will be used by `remult` to perform calls to the `api`
-## run
-* **run**
-
-Arguments:
-* **callback**
-* **options**
 ## liveQueryStorage
 * **liveQueryStorage**
 ## subscriptionServer

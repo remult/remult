@@ -1,5 +1,6 @@
 import type { ClassType } from './classType.js'
 import type { DataProvider } from './src/data-interfaces.js'
+export { ArrayEntityDataProvider } from './src/data-providers/array-entity-data-provider.js'
 
 export type { ClassType } from './classType.js'
 /*
@@ -104,6 +105,7 @@ export {
   CustomSqlFilterObject,
   CustomSqlFilterBuilder,
   dbNamesOf,
+  dbNamesOfOptions,
   CustomSqlFilterBuilderFunction,
   EntityDbNames,
 } from './src/filter/filter-consumer-bridge-to-sql-request.js'

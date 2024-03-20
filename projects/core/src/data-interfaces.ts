@@ -20,6 +20,11 @@ export interface EntityDataProvider {
   delete(id: any): Promise<void>
   insert(data: any): Promise<any>
 }
+export interface ProxyEntityDataProvider {
+  insertMany(data: any[]): Promise<any[]>
+  deleteMany(where: Filter): Promise<number>
+  updateMany(where: Filter, data: any): Promise<number>
+}
 export interface EntityDataProviderFindOptions {
   where?: Filter
   limit?: number

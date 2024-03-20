@@ -39,3 +39,17 @@ export class Task {
     }
   }
 }
+@Entity('test_compound_id', {
+  allowApiCrud: true,
+  id: { a: true, b: true, c: true },
+})
+export class test_compound_id {
+  @Fields.string()
+  a = ''
+  @Fields.string()
+  b = ''
+  @Fields.string()
+  c = ''
+  @Fields.string()
+  d = ''
+}

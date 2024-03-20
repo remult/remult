@@ -75,7 +75,7 @@ export class MongoDataProvider implements DataProvider {
     var b = new FilterConsumerBridgeToMongo(await dbNamesOf(repo.metadata))
     b._addWhere = false
     await (
-      await getRepositoryInternals(repo).translateWhereToFilter(condition)
+      await getRepositoryInternals(repo)._translateWhereToFilter(condition)
     ).__applyToConsumer(b)
     let r = await b.resolveWhere()
     return r

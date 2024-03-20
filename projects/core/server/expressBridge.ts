@@ -2,7 +2,7 @@ import type { Response } from 'express'
 import type { ResponseRequiredForSSE } from '../SseSubscriptionServer.js'
 import { SseSubscriptionServer } from '../SseSubscriptionServer.js'
 import type { ClassType } from '../classType.js'
-import type { AllowedForInstance, UserInfo } from '../src/context.js'
+import type { Allowed, AllowedForInstance, UserInfo } from '../src/context.js'
 import { Remult, RemultAsyncLocalStorage, withRemult } from '../src/context.js'
 import type { DataApiRequest, DataApiResponse } from '../src/data-api.js'
 import { DataApi, serializeError } from '../src/data-api.js'
@@ -92,8 +92,12 @@ export interface RemultServerOptions<RequestType> {
     serialize(remult: Remult): Promise<any>
     deserialize(json: any, options: InitRequestOptions): Promise<void>
   }
-  /** When set to true, will display an admin ui in the `/api/admin` url */
-  admin?: boolean
+  /** When set to true, will display an admin ui in the `/api/admin` url.
+   * Can also be set to an arrow function for fine grained control
+   * @example
+   * allowed: ()=> remult.isAllowed('admin')
+   */
+  admin?: Allowed
 
   /** Storage to use for backend methods that use queue */
   queueStorage?: QueueStorage
@@ -176,7 +180,7 @@ export interface RemultServer<RequestType>
 }
 
 export interface RemultServerCore<RequestType> {
-  getRemult(req: RequestType): Promise<Remult>
+  getRemult(req?: RequestType): Promise<Remult>
   openApiDoc(options: { title: string; version?: string }): any
 }
 
@@ -367,16 +371,18 @@ export class RemultServerImplementation<RequestType>
           },
           r,
         )
-      if (this.options.admin) {
+      if (this.options.admin !== undefined && this.options.admin !== false) {
         r.route(this.options.rootPath + '/admin*').get(
           this.process(async (remult, req, res, orig, origResponse) => {
-            origResponse.send(
-              remultAdminHtml({
-                remult: remult,
-                entities: this.options.entities,
-                baseUrl: this.options.rootPath + '/admin',
-              }),
-            )
+            if (remult.isAllowed(this.options.admin))
+              origResponse.send(
+                remultAdminHtml({
+                  remult: remult,
+                  entities: this.options.entities,
+                  baseUrl: this.options.rootPath + '/admin',
+                }),
+              )
+            else res.notFound()
           }),
         )
       }
@@ -565,41 +571,50 @@ export class RemultServerImplementation<RequestType>
     ) => Promise<void>,
   ) {
     return async (req: RequestType, origRes: GenericResponse) => {
-      const genReq = this.coreOptions.buildGenericRequestInfo(req)
-      if (!genReq.query) {
-        genReq.query = req['_tempQuery']
+      const genReq = req
+        ? this.coreOptions.buildGenericRequestInfo(req)
+        : undefined
+      if (req) {
+        if (!genReq.query) {
+          genReq.query = req['_tempQuery']
+        }
+        if (!genReq.params) genReq.params = req['_tempParams']
       }
-      if (!genReq.params) genReq.params = req['_tempParams']
       let myReq = new ExpressRequestBridgeToDataApiRequest(genReq)
       let myRes = new ExpressResponseBridgeToDataApiResponse(origRes, req)
-      await this.runWithRemult(async (remult) => {
-        if (req) {
-          let user
-          if (this.options.getUser) user = await this.options.getUser(req)
-          else {
-            user = req['user']
-            if (!user) user = req['auth']
-          }
-          if (user) remult.user = user
+      try {
+        await this.runWithRemult(async (remult) => {
+          if (req) {
+            let user
+            if (this.options.getUser) user = await this.options.getUser(req)
+            else {
+              user = req['user']
+              if (!user) user = req['auth']
+            }
+            if (user) remult.user = user
 
-          if (this.options.initRequest) {
-            await this.options.initRequest(req, {
-              remult,
-              get liveQueryStorage() {
-                return remult.liveQueryStorage
-              },
-              set liveQueryStorage(value: LiveQueryStorage) {
-                remult.liveQueryStorage = value
-              },
-            })
+            if (this.options.initRequest) {
+              await this.options.initRequest(req, {
+                remult,
+                get liveQueryStorage() {
+                  return remult.liveQueryStorage
+                },
+                set liveQueryStorage(value: LiveQueryStorage) {
+                  remult.liveQueryStorage = value
+                },
+              })
+            }
           }
-        }
-        await what(remult, myReq, myRes, genReq, origRes, req)
-      })
+          await what(remult, myReq, myRes, genReq, origRes, req)
+        })
+      } catch (err: any) {
+        myRes.error(serializeError(err))
+      }
     }
   }
   async getRemult(req: RequestType) {
     let remult: Remult
+    if (!req) return await this.runWithRemult(async (c) => (remult = c))
     await this.process(async (c) => {
       remult = c
     })(req, undefined)
@@ -970,10 +985,10 @@ export class RemultServerImplementation<RequestType>
 
 class ExpressRequestBridgeToDataApiRequest implements DataApiRequest {
   get(key: string): any {
-    return this.r.query[key]
+    return this.r?.query[key]
   }
 
-  constructor(private r: GenericRequestInfo) {}
+  constructor(private r: GenericRequestInfo | undefined) {}
 }
 class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
   forbidden(): void {
@@ -984,7 +999,7 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
   }
   constructor(
     private r: GenericResponse,
-    private req: GenericRequestInfo,
+    private req: GenericRequestInfo | undefined,
   ) {}
   progress(progress: number): void {}
 
@@ -1008,8 +1023,8 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
     console.error({
       message: data.message,
       stack: data.stack?.split('\n'),
-      url: this.req.url,
-      method: this.req.method,
+      url: this.req?.url,
+      method: this.req?.method,
     })
     this.setStatus(400).json(data)
   }

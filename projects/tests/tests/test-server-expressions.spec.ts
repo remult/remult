@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { InMemoryDataProvider } from '../../core/src//data-providers/in-memory-database'
-import { Entity, EntityBase, Fields } from '../../core'
+import { Entity, EntityBase, Fields, SqlDatabase } from '../../core'
 import { describeClass } from '../../core/src//remult3/DecoratorReplacer'
 import { Remult } from '../../core/src/context'
 import { dbNamesOf } from '../../core/src/filter/filter-consumer-bridge-to-sql-request'
@@ -134,54 +134,56 @@ describe('test server expression value', () => {
     expect(item.createdAt).toEqual(c)
     expect(item.createdAt).not.toEqual(item.updatedAt)
   })
-  if (false)
-    it('test recursive db names', async () => {
-      const myClass = class {
-        a: string
-        b: string
-        c: string
-        d: string
-        e: string
-        f: string
-      }
-      describeClass(
-        myClass,
-        Entity<InstanceType<typeof myClass>>('test-recursive-db-names'),
-        {
-          a: Fields.string(),
-          b: Fields.string({ dbName: 'bb' }),
-          c: Fields.string({ sqlExpression: () => 'cc' }),
-          d: Fields.string({
-            sqlExpression: async (e) => e.fields.c.dbName + 'dd',
-          }),
-          e: Fields.string<InstanceType<typeof myClass>>({
-            sqlExpression: async (e) => {
-              const n = await dbNamesOf(e)
-              return n.c + 'ee'
-            },
-          }),
-          f: Fields.string<InstanceType<typeof myClass>>({
-            sqlExpression: async (e) => {
-              const n = await dbNamesOf(e)
-              return n.f + 'ff'
-            },
-          }),
-        },
-      )
-      const r = await dbNamesOf(remult.repo(myClass))
-      expect(r.a).toBe('a')
-      expect(r.b).toBe('bb')
-      expect(r.c).toBe('cc')
-      expect(r.d).toBe('ccdd')
-      expect(r.e).toBe('ccee')
-      expect(r.f).toBe("Recursive getDbName call for field 'f'. ff")
-      const z = await dbNamesOf(remult.repo(myClass).metadata)
-      expect(z.a).toBe('a')
-      const zz = await dbNamesOf(myClass)
-      expect(zz.a).toBe('a')
-      const zzz = await dbNamesOf(testServerExpression)
-      expect(zzz.code).toBe('code')
-    })
+
+  it('test recursive db names', async () => {
+    const myClass = class {
+      a: string
+      b: string
+      c: string
+      d: string
+      e: string
+      f: string
+    }
+    describeClass(
+      myClass,
+      Entity<InstanceType<typeof myClass>>('test-recursive-db-names'),
+      {
+        a: Fields.string(),
+        b: Fields.string({ dbName: 'bb' }),
+        c: Fields.string({ sqlExpression: () => 'cc' }),
+        d: Fields.string({
+          sqlExpression: async (e) => e.fields.c.dbName + 'dd',
+        }),
+        e: Fields.string<InstanceType<typeof myClass>>({
+          sqlExpression: async (e) => {
+            const n = await dbNamesOf(e)
+            return n.c + 'ee'
+          },
+        }),
+        f: Fields.string<InstanceType<typeof myClass>>({
+          sqlExpression: async (e) => {
+            const n = await dbNamesOf(e)
+            return n.f + 'ff'
+          },
+        }),
+      },
+    )
+    const r = await dbNamesOf(remult.repo(myClass))
+    expect(r.a).toBe('a')
+    expect(r.b).toBe('bb')
+    expect(r.c).toBe('cc')
+    expect(r.d).toBe('cdd')
+    expect(r.e).toBe('ccee')
+    expect(r.f).toMatchInlineSnapshot(
+      '"recursive sqlExpression call for field \'f\'. ff"',
+    )
+    const z = await dbNamesOf(remult.repo(myClass).metadata)
+    expect(z.a).toBe('a')
+    const zz = await dbNamesOf(myClass)
+    expect(zz.a).toBe('a')
+    const zzz = await dbNamesOf(testServerExpression)
+    expect(zzz.code).toBe('code')
+  })
 })
 
 @Entity('testServerExpression')
@@ -197,3 +199,48 @@ class testServerExpression extends EntityBase {
   })
   testPromise: number
 }
+describe('test dbnames with table name', () => {
+  @Entity('testTableName')
+  class testTableName extends EntityBase {
+    @Fields.number()
+    code: number
+    @Fields.number({ sqlExpression: () => '5' })
+    sqlExpression: number
+  }
+  it('test without table name', async () => {
+    const r = await dbNamesOf(remult.repo(testTableName))
+    expect(r.$entityName).toBe('testTableName')
+    expect(r.code).toBe('code')
+    expect(r.sqlExpression).toBe('5')
+  })
+  it('test with table name', async () => {
+    const r = await dbNamesOf(remult.repo(testTableName), {
+      tableName: true,
+      wrapIdentifier: (name: string) => `"${name}"`,
+    })
+
+    expect(r.$entityName).toBe('"testTableName"')
+    expect(r.code).toBe('"testTableName"."code"')
+    expect(r.sqlExpression).toBe('5')
+    expect(
+      await SqlDatabase.filterToRaw(
+        testTableName,
+        {
+          code: 1,
+        },
+        undefined,
+        r,
+      ),
+    ).toBe('"testTableName"."code" = 1')
+  })
+  it('test with table name', async () => {
+    const r = await dbNamesOf(remult.repo(testTableName), {
+      tableName: 'al',
+      wrapIdentifier: (name: string) => `"${name}"`,
+    })
+
+    expect(r.$entityName).toBe('"testTableName"')
+    expect(r.code).toBe('"al"."code"')
+    expect(r.sqlExpression).toBe('5')
+  })
+})

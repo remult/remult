@@ -75,11 +75,26 @@ export const { GET, POST, PUT, DELETE } = api
 ```
 
 ```ts [Sveltekit]
-// src/hooks.server.ts
+// src/routes/api/[...remult]/+server.ts
 
 import { remultSveltekit } from 'remult/remult-sveltekit'
 
-export const handle = remultSveltekit({}) // [!code highlight]
+export const _api = remultNextApp({}) // [!code highlight]
+
+export const { GET, POST, PUT, DELETE } = _api
+```
+
+```ts [nuxt.js]
+// server/api/[...remult].ts
+
+import { remultNuxt } from 'remult/remult-nuxt'
+import { Task } from '~/shared/Task.js'
+
+export const api = remultNuxt({
+  entities: [Task],
+})
+
+export default defineEventHandler(api)
 ```
 
 <!-- prettier-ignore-start -->
@@ -96,6 +111,18 @@ import { remultHapi } from 'remult/remult-hapi'
 })()
 ```
 <!-- prettier-ignore-end -->
+
+```ts [Hono]
+import { Hono } from 'hono'
+import { remultHono } from 'remult/remult-hono'
+
+const app = new Hono()
+
+const api = remultHono({}) // [!code highlight]
+app.route('', api) // [!code highlight]
+
+export default app
+```
 
 ```ts [Nest]
 // src/main.ts
@@ -177,6 +204,24 @@ app.use(
 )
 ```
 
+Or use your existing postgres connection
+
+```ts
+import { Pool } from 'pg'
+import { SqlDatabase } from 'remult'
+import { PostgresDataProvider } from 'remult/postgres'
+import { remultExpress } from 'remult/remult-express'
+const pg = new Pool({
+  connectionString: '....',
+})
+const app = express()
+app.use(
+  remultExpress({
+    dataProvider: new SqlDatabase(new PostgresDataProvider(pg)),
+  }),
+)
+```
+
 == MySQL
 
 Install knex and mysql2:
@@ -207,6 +252,28 @@ app.use(
       }
     })
   })
+)
+```
+
+Or use your existing knex provider
+
+```ts
+import express from 'express'
+import { KnexDataProvider } from 'remult/remult-knex'
+import { remultExpress } from 'remult/remult-express'
+import knex from 'knex'
+
+const knexDb = knex({
+  client: 'pg',
+  connection: '...',
+})
+
+const app = express()
+
+app.use(
+  remultExpress({
+    dataProvider: new KnexDataProvider(knexDb), // [!code highlight]
+  }),
 )
 ```
 
@@ -269,6 +336,28 @@ app.use(
 )
 ```
 
+Or use your existing knex provider
+
+```ts
+import express from 'express'
+import { KnexDataProvider } from 'remult/remult-knex'
+import { remultExpress } from 'remult/remult-express'
+import knex from 'knex'
+
+const knexDb = knex({
+  client: 'pg',
+  connection: '...',
+})
+
+const app = express()
+
+app.use(
+  remultExpress({
+    dataProvider: new KnexDataProvider(knexDb), // [!code highlight]
+  }),
+)
+```
+
 == Microsoft SQL Server
 
 Install knex and tedious:
@@ -309,6 +398,28 @@ app.use(
 )
 ```
 
+Or use your existing knex provider
+
+```ts
+import express from 'express'
+import { KnexDataProvider } from 'remult/remult-knex'
+import { remultExpress } from 'remult/remult-express'
+import knex from 'knex'
+
+const knexDb = knex({
+  client: 'pg',
+  connection: '...',
+})
+
+const app = express()
+
+app.use(
+  remultExpress({
+    dataProvider: new KnexDataProvider(knexDb), // [!code highlight]
+  }),
+)
+```
+
 == Oracle
 
 Install knex and oracledb:
@@ -340,6 +451,28 @@ app.use(
       }
     })
   })
+)
+```
+
+Or use your existing knex provider
+
+```ts
+import express from 'express'
+import { KnexDataProvider } from 'remult/remult-knex'
+import { remultExpress } from 'remult/remult-express'
+import knex from 'knex'
+
+const knexDb = knex({
+  client: 'pg',
+  connection: '...',
+})
+
+const app = express()
+
+app.use(
+  remultExpress({
+    dataProvider: new KnexDataProvider(knexDb), // [!code highlight]
+  }),
 )
 ```
 

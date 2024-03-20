@@ -1,5 +1,9 @@
 import type { __RowsOfDataForTesting } from '../__RowsOfDataForTesting.js'
-import type { SqlCommand, SqlImplementation, SqlResult } from '../sql-command.js'
+import type {
+  SqlCommand,
+  SqlImplementation,
+  SqlResult,
+} from '../sql-command.js'
 
 import type { FieldMetadata } from '../column-interfaces.js'
 import type { Remult } from '../context.js'
@@ -117,7 +121,10 @@ class WebSqlBridgeToSQLCommand implements SqlCommand {
   //@ts-ignore
   constructor(private source: Database) {}
   values: any[] = []
-  addParameterAndReturnSqlToken(val: any): string {
+  addParameterAndReturnSqlToken(val: any) {
+    return this.param(val)
+  }
+  param(val: any): string {
     this.values.push(val)
     return '~' + this.values.length + '~'
   }

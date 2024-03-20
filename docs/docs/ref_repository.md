@@ -218,12 +218,103 @@ Arguments:
       ```
    * **useCache** - determines if to cache the result, and return the results from cache.
    * **createIfNotFound** - If set to true and an item is not found, it's created and returned
+## findOne
+returns the first item that matchers the `where` condition
+   
+   
+   *example*
+   ```ts
+   await taskRepo.findOne({ where:{ completed:false }})
+   ```
+   
+   
+   *example*
+   ```ts
+   await taskRepo.findFirst({ where:{ completed:false }, createIfNotFound: true })
+   ```
+
+Arguments:
+* **options**
+   * **include** - An option used in the `find` and `findFirst` methods to specify which related entities should be included
+   when querying the source entity. It allows you to eagerly load related data to avoid N+1 query problems.
+      
+      
+      *param*
+      An object specifying the related entities to include, their options, and filtering criteria.
+      
+      Example usage:
+      ```
+      const orders = await customerRepo.find({
+        include: {
+          // Include the 'tags' relation for each customer.
+          tags: true,
+        },
+      });
+      ```
+      In this example, the `tags` relation for each customer will be loaded and included in the query result.
+      
+      
+      *see*
+       - Relations.toMany
+       - Relations.toOne
+       - RelationOptions
+      
+   * **where** - filters the data
+      
+      
+      *example*
+      ```ts
+      await taskRepo.find({where: { completed:false }})
+      ```
+      
+      
+      *see*
+      For more usage examples see [EntityFilter](https://remult.dev/docs/entityFilter.html)
+   * **orderBy** - Determines the order of items returned .
+      
+      
+      *example*
+      ```ts
+      await this.remult.repo(Products).find({ orderBy: { name: "asc" }})
+      ```
+      
+      
+      *example*
+      ```ts
+      await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
+      ```
+   * **useCache** - determines if to cache the result, and return the results from cache.
+   * **createIfNotFound** - If set to true and an item is not found, it's created and returned
 ## findId
 returns the items that matches the idm the result is cached unless specified differently in the `options` parameter
 
 Arguments:
 * **id**
 * **options**
+   * **include** - An option used in the `find` and `findFirst` methods to specify which related entities should be included
+   when querying the source entity. It allows you to eagerly load related data to avoid N+1 query problems.
+      
+      
+      *param*
+      An object specifying the related entities to include, their options, and filtering criteria.
+      
+      Example usage:
+      ```
+      const orders = await customerRepo.find({
+        include: {
+          // Include the 'tags' relation for each customer.
+          tags: true,
+        },
+      });
+      ```
+      In this example, the `tags` relation for each customer will be loaded and included in the query result.
+      
+      
+      *see*
+       - Relations.toMany
+       - Relations.toOne
+       - RelationOptions
+      
    * **useCache** - determines if to cache the result, and return the results from cache.
    * **createIfNotFound** - If set to true and an item is not found, it's created and returned
 ## query

@@ -67,6 +67,10 @@ export class DataApi<T = any> {
         return this.getArray(res, req, body)
       case 'count':
         return this.count(res, req, body)
+      case 'deleteMany':
+        return this.deleteMany(res, req, body)
+      case 'updateMany':
+        return this.updateMany(res, req, body)
       case 'endLiveQuery':
         await this.remult.liveQueryStorage!.remove(body.id)
         res.success('ok')
@@ -99,6 +103,27 @@ export class DataApi<T = any> {
         count: +(await this.repository.count(
           await this.buildWhere(request, filterBody),
         )),
+      })
+    } catch (err) {
+      response.error(err)
+    }
+  }
+  async deleteMany(
+    response: DataApiResponse,
+    request: DataApiRequest,
+    filterBody?: any,
+  ) {
+    try {
+      return await doTransaction(this.remult, async () => {
+        let deleted = 0
+        for await (const x of this.repository.query({
+          where: await this.buildWhere(request, filterBody),
+          include: this.includeNone(),
+        })) {
+          await this.actualDelete(x)
+          deleted++
+        }
+        response.success({ deleted })
       })
     } catch (err) {
       response.error(err)
@@ -292,26 +317,52 @@ export class DataApi<T = any> {
       response.error(err)
     }
   }
+  async updateMany(
+    response: DataApiResponse,
+    request: DataApiRequest,
+    body?: any,
+  ) {
+    try {
+      return await doTransaction(this.remult, async () => {
+        let updated = 0
+        for await (const x of this.repository.query({
+          where: await this.buildWhere(request, body.where),
+          include: this.includeNone(),
+        })) {
+          await this.actualUpdate(x, body.set)
+          updated++
+        }
+        response.success({ updated })
+      })
+    } catch (err) {
+      response.error(err)
+    }
+  }
+  async actualUpdate(row: any, body: any) {
+    let ref = this.repository.getEntityRef(row) as rowHelperImplementation<T>
+    await ref._updateEntityBasedOnApi(body)
+    if (!ref.apiUpdateAllowed) {
+      throw new ForbiddenError()
+    }
+    await ref.save()
+    return ref
+  }
   async put(response: DataApiResponse, id: any, body: any) {
     await this.doOnId(response, id, async (row) => {
-      let ref = this.repository.getEntityRef(row) as rowHelperImplementation<T>
-      await ref._updateEntityBasedOnApi(body)
-      if (!ref.apiUpdateAllowed) {
-        response.forbidden()
-        return
-      }
-      await ref.save()
+      const ref = await this.actualUpdate(row, body)
       response.success(ref.toApiJson())
     })
+  }
+  async actualDelete(row: any) {
+    if (!this.repository.getEntityRef(row).apiDeleteAllowed) {
+      throw new ForbiddenError()
+    }
+    await this.repository.getEntityRef(row).delete()
   }
 
   async delete(response: DataApiResponse, id: any) {
     await this.doOnId(response, id, async (row) => {
-      if (!this.repository.getEntityRef(row).apiDeleteAllowed) {
-        response.forbidden()
-        return
-      }
-      await this.repository.getEntityRef(row).delete()
+      await this.actualDelete(row)
       response.deleted()
     })
   }

@@ -49,7 +49,7 @@ describe.skipIf(!connectionString)(
 
       const repo = remult.repo(Task)
 
-      const t = await dbNamesOf(repo)
+      const t = await dbNamesOf(repo, (x) => x)
       expect(t.$entityName).toBe('"Task"')
 
       var sb = new PostgresSchemaBuilder(db)
@@ -111,7 +111,9 @@ describe.skipIf(!connectionString)(
         name = ''
       }
       const repo2 = remult.repo(Task2)
-      expect((await dbNamesOf(repo2)).$entityName).toBe('public."Task"')
+      expect((await dbNamesOf(repo2, (x) => x)).$entityName).toBe(
+        'public."Task"',
+      )
       await sb.createIfNotExist(repo2.metadata)
       await repo2.insert({ id: '2', name: 'u2' })
       expect(await repo2.find()).toMatchInlineSnapshot(`
@@ -163,7 +165,9 @@ describe.skipIf(!connectionString)(
         firstName = ''
       }
       const repo2 = remult.repo(Task2)
-      expect((await dbNamesOf(repo2)).$entityName).toBe('public."Task"')
+      expect((await dbNamesOf(repo2, (x) => x)).$entityName).toBe(
+        'public."Task"',
+      )
       await sb.ensureSchema([repo1.metadata, repo2.metadata])
 
       await repo2.insert({ id: '2', name: 'u2', firstName: 'yop' })
@@ -308,7 +312,7 @@ describe.skipIf(!connectionString)(
         name = ''
       }
       const repo2 = remult.repo(Task2)
-      expect((await dbNamesOf(repo2)).$entityName).toBe('public.Task')
+      expect((await dbNamesOf(repo2, (x) => x)).$entityName).toBe('public.Task')
       await sb.createIfNotExist(repo2.metadata)
       await repo2.insert({ id: '2', name: 'u2' })
       expect(await repo2.find()).toMatchInlineSnapshot(`
@@ -360,7 +364,7 @@ describe.skipIf(!connectionString)(
         firstName = ''
       }
       const repo2 = remult.repo(Task2)
-      expect((await dbNamesOf(repo2)).$entityName).toBe('public.Task')
+      expect((await dbNamesOf(repo2, (x) => x)).$entityName).toBe('public.Task')
       await sb.ensureSchema([repo1.metadata, repo2.metadata])
 
       await repo2.insert({ id: '2', name: 'u2', firstName: 'yop' })
@@ -446,7 +450,7 @@ describe.skipIf(!connectionString)(
 
       const repo = remult.repo(Task)
 
-      const t = await dbNamesOf(repo)
+      const t = await dbNamesOf(repo, (x) => x)
       expect(t.$entityName).toBe('"Task"')
 
       var sb = new PostgresSchemaBuilder(db)
@@ -508,7 +512,9 @@ describe.skipIf(!connectionString)(
         name = ''
       }
       const repo2 = remult.repo(Task2)
-      expect((await dbNamesOf(repo2)).$entityName).toBe('public."Task"')
+      expect((await dbNamesOf(repo2, (x) => x)).$entityName).toBe(
+        'public."Task"',
+      )
       await sb.createIfNotExist(repo2.metadata)
       await repo2.insert({ id: '2', name: 'u2' })
       expect(await repo2.find()).toMatchInlineSnapshot(`
@@ -560,7 +566,9 @@ describe.skipIf(!connectionString)(
         firstName = ''
       }
       const repo2 = remult.repo(Task2)
-      expect((await dbNamesOf(repo2)).$entityName).toBe('public."Task"')
+      expect((await dbNamesOf(repo2, (x) => x)).$entityName).toBe(
+        'public."Task"',
+      )
       await sb.ensureSchema([repo1.metadata, repo2.metadata])
 
       await repo2.insert({ id: '2', name: 'u2', firstName: 'yop' })
@@ -709,7 +717,7 @@ describe.skipIf(!connectionString)(
         name = ''
       }
       const repo2 = remult.repo(Task2)
-      expect((await dbNamesOf(repo2)).$entityName).toBe(
+      expect((await dbNamesOf(repo2, (x) => x)).$entityName).toBe(
         'test_other_schema.Task',
       )
       await sb.createIfNotExist(repo2.metadata)
@@ -763,7 +771,7 @@ describe.skipIf(!connectionString)(
         firstName = ''
       }
       const repo2 = remult.repo(Task2)
-      expect((await dbNamesOf(repo2)).$entityName).toBe(
+      expect((await dbNamesOf(repo2, (x) => x)).$entityName).toBe(
         'test_other_schema.Task',
       )
       await sb.ensureSchema([repo1.metadata, repo2.metadata])

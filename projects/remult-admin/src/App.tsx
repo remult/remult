@@ -44,20 +44,17 @@ function App() {
     <>
       <BrowserRouter basename={options?.baseUrl}>
         <div className="app-holder">
-
           <div className="main-navigation">
-            <div className="main-navigation__title">
-              Remult Admin
-            </div>
+            <div className="main-navigation__title">Remult Admin</div>
 
-            <NavLink className="tab" to="erd">
-              ERD
-            </NavLink>
             {god?.tables.map((t) => (
               <NavLink className="tab" key={t.key} to={t.key}>
                 {t.caption}
               </NavLink>
             ))}
+            <NavLink className="tab" to="erd">
+              🚀 Diagram
+            </NavLink>
           </div>
 
           <div className="main-content">
@@ -92,7 +89,6 @@ function App() {
               />
             </Routes>
           </div>
-
         </div>
       </BrowserRouter>
     </>
@@ -104,6 +100,9 @@ export default App
 //[V] - doesn't update well
 //[V] - live refresh doesn't work
 //[V] - update id doesn't work
+
+//[ ] - add focus indication for icon button (for moving to it with tab)
+//[ ] - tables for one to many relations - actions, don't stick to the right
 
 //[ ] - support compound id (order details)
 //[ ] - relation from product to supplier one to many, did not present in the erd

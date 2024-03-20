@@ -31,6 +31,8 @@ A human readable name for the field. Can be used to achieve a consistent caption
    ```
 ## allowNull
 If it can store null in the database
+## required
+If a value is required
 ## includeInApi
 If this field data is included in the api.
    
@@ -52,6 +54,15 @@ An arrow function that'll be used to perform validations on it
    @Fields.string({
      validate: Validators.required
    })
+   *
+   ```
+   
+   
+   *example*
+   ```ts
+   @Fields.string<Task>({
+      validate: task=>task.title.length>3 ||  "Too Short"
+   })
    ```
    
    
@@ -69,9 +80,9 @@ An arrow function that'll be used to perform validations on it
    *example*
    ```ts
    @Fields.string({
-      validate: (_, fieldRef)=>{
-        if (fieldRef.value.length<3)
-            fieldRef.error = "Too Short";
+      validate: (_, fieldValidationEvent)=>{
+        if (fieldValidationEvent.value.length < 3)
+            fieldValidationEvent.error = "Too Short";
      }
    })
    ```
@@ -80,8 +91,8 @@ Will be fired before this field is saved to the server/database
 
 Arguments:
 * **entity**
-* **e**
 * **fieldRef**
+* **e**
 ## serverExpression
 An expression that will determine this fields value on the backend and be provided to the front end
 
@@ -89,12 +100,11 @@ Arguments:
 * **entity**
 ## dbName
 The name of the column in the database that holds the data for this field. If no name is set, the key will be used instead.
-Be aware that if you are using postgres and want to keep your casing, you have to escape your string with double quotes.
    
    
    *example*
    ```ts
-   @Fields.string({ dbName: '"userName"'})
+   @Fields.string({ dbName: 'userName'})
    userName=''
    ```
 ## sqlExpression

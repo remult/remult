@@ -2,9 +2,48 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.25.5] TBD
+##[0.25.7] TBD
 
-- Fixed an issue with GraphQL and relations
+- Added `deleteMany` and `updateMany`
+- When `insert` is called in the front-end with an array of items, a single POST call is made to the server
+- Renamed `addParameterAndReturnSqlToken` to `param`. `addParameterAndReturnSqlToken` will be deprecated in future versions
+- Default number storage in knex, previously was decimal(8,2) now, decimal(18,2)
+- Fixed issue where exception throws in `initRequest` or `getUser` caused server to crash, instead of return a bad request error
+- Changed required to allow 0 as a value - so only null, undefined and empty strings are considered invalid for a required field
+- Fixed an issue where `backendPrefilter` was not applied to id based `update`, `save` or `delete` in the backend
+
+## [0.25.6] 2024-03-17
+
+- Added support for `orderByNullsFirst` in `PostgresDataProvider` to change the default postgres behavior where nulls are last
+- Added support for `tableName` option argument for `dbNamesOf` that'll add the table name to each field
+  Before:
+  ```ts
+  const orders = await dbNamesOf(Order)
+  return `(select count(*) from ${orders} where ${orders}.${orders.id}=1)
+  ```
+  Now:
+  ```ts
+  const orders = await dbNamesOf(Order, { tableNames:true })
+  return `(select count(*) from ${orders} where ${orders.id}=1)
+  ```
+- improved dbNamesOf of to use by default the wrapIdentifier of the current data provider if no wrap identifier was provided
+- Added support for using dbNamesOf in an sql expression for that same entity
+- Improved performance of dbNamesOf
+- Added support for [Hono](https://hono.dev/) web framework
+- Improved support for Mono repo scenario [#355](https://github.com/remult/remult/issues/355)
+- Added `withRemult` to next js page router
+- Fixed custom message to some validators (in etc...)
+- Improved support for union string fields
+
+## [0.25.5] 2024-02-11
+
+- Added `admin` option to servers, enabling the `/api/admin` route with a built in entity explorer
+- Fixed multiple issues with GraphQL and relations
+- Improved support for esm/cjs in same process scenario
+- Enabled json storage type for mysql & mysql2 knex adapters
+- Fixed issue in case of missing `reflect-metadata`
+- Added a recommended way to use remult in `sveltekit` using `api/[...remult]/+server.ts` route instead of a hook
+- Added ArrayEntityDataProvider to the external api
 
 ## [0.25.4] 2024-01-15
 

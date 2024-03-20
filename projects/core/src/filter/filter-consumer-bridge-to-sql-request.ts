@@ -1,5 +1,6 @@
 import type { FieldMetadata } from '../column-interfaces.js'
 import { SqlDatabase } from '../data-providers/sql-database.js'
+import { remult } from '../remult-proxy.js'
 import type {
   EntityMetadataOverloads,
   RepositoryOverloads,
@@ -12,7 +13,10 @@ import type {
   MembersOnly,
   RelationOptions,
 } from '../remult3/remult3.js'
-import type { SqlCommandWithParameters } from '../sql-command.js'
+import type {
+  HasWrapIdentifier,
+  SqlCommandWithParameters,
+} from '../sql-command.js'
 import type { Filter, FilterConsumer } from './filter-interfaces.js'
 
 export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
@@ -85,11 +89,7 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
             this.nameProvider.$dbNameOf(col) +
               ' in (' +
               val
-                .map((x) =>
-                  this.r.addParameterAndReturnSqlToken(
-                    col.valueConverter.toDb(x),
-                  ),
-                )
+                .map((x) => this.r.param(col.valueConverter.toDb(x)))
                 .join(',') +
               ')',
           )
@@ -150,7 +150,7 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
           ' ' +
           operator +
           ' ' +
-          this.r.addParameterAndReturnSqlToken(col.valueConverter.toDb(val))
+          this.r.param(col.valueConverter.toDb(val))
         this.addToWhere(x)
       })(),
     )
@@ -185,12 +185,16 @@ export interface CustomSqlFilterObject {
 export class CustomSqlFilterBuilder {
   constructor(private r: SqlCommandWithParameters) {}
   sql: string = ''
-  addParameterAndReturnSqlToken<valueType>(
-    val: valueType,
-    field?: FieldMetadata<valueType>,
-  ): string {
-    if (field) val = field.valueConverter.toDb(val)
-    return this.r.addParameterAndReturnSqlToken(val)
+  /** @deprecated @deprecated use `param` instead*/
+  addParameterAndReturnSqlToken(val: any) {
+    return this.param(val)
+  }
+  param<valueType>(val: valueType, field?: FieldMetadata<valueType>): string {
+    if (typeof field === 'object' && field.valueConverter.toDb) {
+      val = field.valueConverter.toDb(val)
+    }
+
+    return this.r.param(val)
   }
   async filterToRaw<entityType>(
     repo: RepositoryOverloads<entityType>,
@@ -229,14 +233,27 @@ export declare type EntityDbNames<entityType> = {
   [Properties in keyof Required<MembersOnly<entityType>>]: string
 } & EntityDbNamesBase
 
+export interface dbNamesOfOptions {
+  wrapIdentifier?: (name: string) => string
+  tableName?: boolean | string
+}
 export async function dbNamesOf<entityType>(
   repo: EntityMetadataOverloads<entityType>,
-  wrapIdentifier: (name: string) => string = (x) => x,
+  wrapIdentifierOrOptions?: ((name: string) => string) | dbNamesOfOptions,
 ): Promise<EntityDbNames<entityType>> {
+  let options =
+    typeof wrapIdentifierOrOptions === 'function'
+      ? { wrapIdentifier: wrapIdentifierOrOptions }
+      : wrapIdentifierOrOptions || {}
   var meta = getEntityMetadata(repo)
-
+  if (!options.wrapIdentifier) {
+    options.wrapIdentifier = (
+      remult.dataProvider as HasWrapIdentifier
+    ).wrapIdentifier
+  }
+  if (!options.wrapIdentifier) options.wrapIdentifier = (x) => x
   const result: EntityDbNamesBase = {
-    $entityName: await entityDbName(meta, wrapIdentifier),
+    $entityName: await entityDbName(meta, options.wrapIdentifier),
     toString: () => result.$entityName,
     $dbNameOf: (field: FieldMetadata | string) => {
       var key: string
@@ -246,7 +263,14 @@ export async function dbNamesOf<entityType>(
     },
   }
   for (const field of meta.fields) {
-    result[field.key] = await fieldDbName(field, meta, wrapIdentifier)
+    let r = await fieldDbName(field, meta, options.wrapIdentifier)
+    if (!field.options.sqlExpression)
+      if (typeof options.tableName === 'string')
+        r = options.wrapIdentifier(options.tableName) + '.' + r
+      else if (options.tableName === true) {
+        r = result.$entityName + '.' + r
+      }
+    result[field.key] = r
   }
   return result as EntityDbNames<entityType>
 }
@@ -273,7 +297,14 @@ export async function fieldDbName(
     if (f.options.sqlExpression) {
       let result: string
       if (typeof f.options.sqlExpression === 'function') {
-        result = await f.options.sqlExpression(meta)
+        const prev = f.options.sqlExpression
+        try {
+          f.options.sqlExpression =
+            "recursive sqlExpression call for field '" + f.key + "'. "
+          result = await prev(meta)
+          f.options.sqlExpression = () => result
+        } finally {
+        }
       } else result = f.options.sqlExpression
       if (!result) return f.dbName
       return result

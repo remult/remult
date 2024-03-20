@@ -50,5 +50,14 @@ A subscription server to use for live query and message channels
 A storage to use to store live queries, relevant mostly for serverless scenarios or larger scales
 ## contextSerializer
 Used to store the context relevant info for re running a live query
+## admin
+When set to true, will display an admin ui in the `/api/admin` url.
+Can also be set to an arrow function for fine grained control
+   
+   
+   *example*
+   ```ts
+   allowed: ()=> remult.isAllowed('admin')
+   ```
 ## queueStorage
 Storage to use for backend methods that use queue

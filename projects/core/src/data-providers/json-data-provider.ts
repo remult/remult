@@ -36,7 +36,7 @@ class JsonEntityDataProvider implements EntityDataProvider {
     let dbName = await this.entity.dbName
     let s = await this.helper.getItem(dbName)
     if (s) data = JSON.parse(s)
-    let dp = new ArrayEntityDataProvider(this.entity, data)
+    let dp = new ArrayEntityDataProvider(this.entity, () => data)
     return what(
       dp,
       async () =>

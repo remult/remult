@@ -10,22 +10,25 @@ import type {
 } from './remult3.js'
 
 export interface RepositoryInternal<entityType> {
-  createAfterFilter(
+  _createAfterFilter(
     orderBy: EntityOrderBy<entityType>,
     lastRow: entityType,
   ): Promise<EntityFilter<entityType>>
-  fromJsonArray(
+  _fromJsonArray(
     jsonItems: any[],
     loadOptions: LoadOptions<entityType>,
   ): Promise<entityType[]>
-  buildEntityDataProviderFindOptions(
+  _buildEntityDataProviderFindOptions(
     options: FindOptions<entityType>,
   ): Promise<EntityDataProviderFindOptions>
-  translateWhereToFilter(where: EntityFilter<entityType>): Promise<Filter>
-  getCachedById(id: any, doNotLoadIfNotFound: boolean): entityType
-  getCachedByIdAsync(id: any, doNotLoadIfNotFound: boolean): Promise<entityType>
-  addToCache(item: entityType)
-  getFocusedRelationRepo(
+  _translateWhereToFilter(where: EntityFilter<entityType>): Promise<Filter>
+  _getCachedById(id: any, doNotLoadIfNotFound: boolean): entityType
+  _getCachedByIdAsync(
+    id: any,
+    doNotLoadIfNotFound: boolean,
+  ): Promise<entityType>
+  _addToCache(item: entityType)
+  _getFocusedRelationRepo(
     field: FieldMetadata,
     item: any,
   ): {

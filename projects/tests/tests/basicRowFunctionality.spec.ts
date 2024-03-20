@@ -56,6 +56,7 @@ import {
 } from '../../core/src/remult3/RepositoryImplementation'
 import { getEntityKey } from '../../core/src/remult3/getEntityRef'
 import { actionInfo } from '../../core/internals'
+import { remultStatic, resetFactory } from '../../core/src/remult-static'
 
 //SqlDatabase.LogToConsole = true;
 
@@ -322,20 +323,23 @@ describe('data api', () => {
     expect(await repo.validate({ name: '1' }, 'myId')).toBeUndefined()
   })
   it('validation', async () => {
-    let remult = new RemultProxy()
-    remult.remultFactory = () => new Remult(new InMemoryDataProvider())
-    var repo = remult.repo(entityWithValidationsOnColumn)
-    expect((await repo.validate({ name: '1' })).modelState!.name).toBe(
-      'invalid on column',
-    )
-    expect((await repo.validate({ name: '1' }, 'name')).modelState!.name).toBe(
-      'invalid on column',
-    )
-    expect(
-      (await repo.validate({ name: '1' }, 'myId', 'name')).modelState!.name,
-    ).toBe('invalid on column')
-    expect(await repo.validate({ name: '123' })).toBeUndefined()
-    expect(await repo.validate({ name: '1' }, 'myId')).toBeUndefined()
+    try {
+      remultStatic.remultFactory = () => new Remult(new InMemoryDataProvider())
+      var repo = remult.repo(entityWithValidationsOnColumn)
+      expect((await repo.validate({ name: '1' })).modelState!.name).toBe(
+        'invalid on column',
+      )
+      expect(
+        (await repo.validate({ name: '1' }, 'name')).modelState!.name,
+      ).toBe('invalid on column')
+      expect(
+        (await repo.validate({ name: '1' }, 'myId', 'name')).modelState!.name,
+      ).toBe('invalid on column')
+      expect(await repo.validate({ name: '123' })).toBeUndefined()
+      expect(await repo.validate({ name: '1' }, 'myId')).toBeUndefined()
+    } finally {
+      resetFactory()
+    }
   })
   it('validate with validations on column fails 1', async () => {
     let remult = new Remult(new InMemoryDataProvider())
@@ -402,7 +406,7 @@ describe('data api', () => {
     let ctx = new Remult()
     ctx.dataProvider = {
       getEntityDataProvider: (x) => {
-        let r = new ArrayEntityDataProvider(x, [{ id: 1 }])
+        let r = new ArrayEntityDataProvider(x, () => [{ id: 1 }])
         r.delete = () => {
           throw 'ERROR'
         }
@@ -1221,15 +1225,18 @@ describe('data api', () => {
       await i(2, 'yael', 'b')
       await i(3, 'yoni', 'a')
     }, type)
-
-    var api = new DataApi(c, remult)
-    let t = new TestDataApiResponse()
-    let d = new Done()
-    t.forbidden = () => {
-      d.ok()
-    }
-    await api.delete(t, 2)
-    d.test()
+    const r = new Remult(new MockRestDataProvider(remult)).repo(type)
+    await expect(() => r.delete(2)).rejects.toThrowErrorMatchingInlineSnapshot(`
+      {
+        "message": "Forbidden",
+      }
+    `)
+    await expect(() => r.deleteMany({})).rejects
+      .toThrowErrorMatchingInlineSnapshot(`
+      {
+        "message": "Forbidden",
+      }
+    `)
   })
 
   it('apiRequireId', async () => {
@@ -1317,20 +1324,28 @@ describe('data api', () => {
       await i(2, 'yael', 'b')
       await i(3, 'yoni', 'a')
     }, type)
+    const r = new Remult(new MockRestDataProvider(remult)).repo(type)
+    await expect(() => r.delete(2)).rejects.toThrowErrorMatchingInlineSnapshot(`
+      {
+        "message": "Forbidden",
+      }
+    `)
+    await expect(() => r.deleteMany({ id: 2 })).rejects
+      .toThrowErrorMatchingInlineSnapshot(`
+      {
+        "message": "Forbidden",
+      }
+    `)
+    await expect(() => r.deleteMany({})).rejects
+      .toThrowErrorMatchingInlineSnapshot(`
+      {
+        "message": "Forbidden",
+      }
+    `)
+    expect(await r.count()).toBe(3)
 
-    var api = new DataApi(c, remult)
-    let t = new TestDataApiResponse()
-    let d = new Done()
-    t.forbidden = () => {
-      d.ok()
-    }
-    await api.delete(t, 2)
-    d.test()
-    t = new TestDataApiResponse()
-    d = new Done()
-    t.deleted = () => d.ok()
-    await api.delete(t, 1)
-    d.test()
+    await r.delete(1)
+    expect(await r.count()).toBe(2)
   })
   it('update id  not Allowed for specific row', async () => {
     let type = class extends newCategories {}
@@ -1344,25 +1359,39 @@ describe('data api', () => {
       await i(2, 'yael', 'b')
       await i(3, 'yoni', 'a')
     }, type)
-    var api = new DataApi(c, remult)
-    let t = new TestDataApiResponse()
-    let d = new Done()
-    t.forbidden = () => {
-      d.ok()
+    const r = new Remult(new MockRestDataProvider(remult)).repo(type)
+    expect(r.metadata.apiUpdateAllowed({ id: 2 } as any)).toBe(false)
+    expect(r.metadata.apiUpdateAllowed({ id: 1 } as any)).toBe(true)
+    await expect(() => r.update(2, { categoryName: 'noam 1' })).rejects
+      .toThrowErrorMatchingInlineSnapshot(`
+      {
+        "message": "Forbidden",
+      }
+    `)
+    await expect(() => r.updateMany({}, { categoryName: 'noam 1' })).rejects
+      .toThrowErrorMatchingInlineSnapshot(`
+    {
+      "message": "Forbidden",
     }
-    await api.put(t, 2, {
-      categoryName: 'noam 1',
-    })
-    d.test()
-    expect(c.metadata.apiUpdateAllowed({ id: 2 } as any)).toBe(false)
-    expect(c.metadata.apiUpdateAllowed({ id: 1 } as any)).toBe(true)
-    t = new TestDataApiResponse()
-    d = new Done()
-    t.success = () => d.ok()
-    await api.put(t, 1, {
-      categoryName: 'noam 1',
-    })
-    d.test()
+  `)
+    expect(
+      (await r.find()).map(({ id, categoryName }) => ({ id, categoryName })),
+    ).toMatchInlineSnapshot(`
+      [
+        {
+          "categoryName": "noam",
+          "id": 1,
+        },
+        {
+          "categoryName": "yael",
+          "id": 2,
+        },
+        {
+          "categoryName": "yoni",
+          "id": 3,
+        },
+      ]
+    `)
   })
   it('insert id  not Allowed for specific row', async () => {
     let type = class extends newCategories {}
@@ -1515,6 +1544,7 @@ describe('compound id', () => {
     let f = new FilterConsumerBridgeToSqlRequest(
       {
         addParameterAndReturnSqlToken: (x) => x,
+        param: (x) => x,
       },
       n,
     )
@@ -1538,6 +1568,7 @@ describe('compound id', () => {
     let f = new FilterConsumerBridgeToSqlRequest(
       {
         addParameterAndReturnSqlToken: (x) => x,
+        param: (x) => x,
       },
       n,
     )
@@ -2055,6 +2086,49 @@ describe('CompoundIdPojoEntity', () => {
     await repo.delete({ id1: 1, id2: 1 })
     expect(origValue).toBe('a')
   })
+  it('test compound id with string and empty values', async () => {
+    @Entity('t1', {
+      allowApiCrud: true,
+      id: { a: true, b: true, c: true },
+    })
+    class myT {
+      @Fields.string()
+      a = ''
+      @Fields.string()
+      b = ''
+      @Fields.string()
+      c = ''
+      @Fields.string()
+      d = ''
+    }
+    const mem = new InMemoryDataProvider()
+    const r = new Remult(new MockRestDataProvider(new Remult(mem))).repo(myT)
+    await r.insert({ a: 'a', b: '', c: 'c', d: 'd' })
+    await r.update({ a: 'a', b: '', c: 'c' }, { d: 'd1' })
+    expect(await r.find()).toMatchInlineSnapshot(`
+      [
+        myT {
+          "a": "a",
+          "b": "",
+          "c": "c",
+          "d": "d1",
+        },
+      ]
+    `)
+    expect(mem.rows).toMatchInlineSnapshot(`
+      {
+        "t1": [
+          {
+            "a": "a",
+            "b": "",
+            "c": "c",
+            "d": "d1",
+          },
+        ],
+      }
+    `)
+  })
+
   it('test that no id works', async () => {
     let origValue = ''
     @Entity<Task>('tasks', {
