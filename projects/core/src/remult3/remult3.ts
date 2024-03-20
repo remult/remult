@@ -833,6 +833,9 @@ export type ClassFieldDecorator<entityType, valueType> = (
 
 
 //p1 - add section to Fields doc, explaining field type in db
+//p1 - add section about union type
+//p1 - add section about value list field type
+
 /*y1 - Talk JYC - JYC - add some integrity checks on delete
   - soft delete
   - delete restrict (implicit, or user selected - and if so, how) (delete & update of id)
@@ -841,6 +844,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //y1 תגיד - updateMany צריך להחזיר את השורות שעודכנו (כמו update או insert) או כמה שורות עודכנו (כמו deleteMany)
 
 /*y1 currency.ts:10 Uncaught TypeError: Currency_1 is not a constructor
+//p1 - ValueListFieldType - the decorator gives an error in react vite project - see langulage yedidya
 
 @ValueListFieldType()
 export class Currency {
@@ -857,6 +861,8 @@ export class Currency {
 }
 
 */
+//y1 - allow api read to also support instance and filter. - problem with promise
+
 //y1 - admin url!
 //y1 - consider sql expression gets a dbnames of it's own (that already has the "tableName" defined correctly) maybe also the filter translator
 //y1 - talk about modules in init express with entities/controllers,initRequest,initApi
@@ -881,22 +887,21 @@ export class Currency {
 //y2 - #239 - (@JY) add a way to get from fieldMetadata back to entity repo (like we have in fieldRef)
 //y2 - constraints (@JY)
 
-// remult admin
+/*p2 remult admin
 
-//p1 - Small thing, I get SvelteKitError: Not found: /vite.svg
-//p1 - understand the to many relation for the admin, based on the to one
-//p1 - relation from order details to order gave a compound id info - and it is not true - same for the relation to product
-//p1 - new row when there are relations, looks funny (see product)
-//p1 - the + row in the bottom should extend to the full width
-//p1 - need a way to extract the fields from the relation - for generating relation based sql
-//p1 - allow conditional admin - like allowed
-//p1 - remult-admin doesn't handle primary key that has compound column
-//p1 - remult-admin didn't show a update for a table with a uniqua that is numeric
-
+ - Small thing, I get SvelteKitError: Not found: /vite.svg
+ - understand the to many relation for the admin, based on the to one
+ - relation from order details to order gave a compound id info - and it is not true - same for the relation to product
+ - new row when there are relations, looks funny (see product)
+ - the + row in the bottom should extend to the full width
+ - need a way to extract the fields from the relation - for generating relation based sql
+ - allow conditional admin - like allowed
+ - remult-admin doesn't handle primary key that has compound column
+ - remult-admin didn't show a update for a table with a uniqua that is numeric
+*/
 //remult
 //p1 - better support union types (status, etc... so it'll work also in filter etc...)
-//p1 - add tablename parameter for dbNamesOf
-//p1 -check if count doesn't respect allow read (I think)
+
 //p1 - when a tasks table exists in a different schema - we get many errors
 //p1 - live query with include
 //p1 - adjust angular tutorial starter kit for latest angular (as is in tutorial)
@@ -905,7 +910,7 @@ export class Currency {
 //p2 - allow find options preprocessor for api calls, to use for authorization
 //p2 - when subscribe is forbidden - the query still runs after the renew process
 //p2 - 'update tasks set  where id = $1
-//p1 - ValueListFieldType - the decorator gives an error in react vite project - see langulage yedidya
+
 //p2 - type metadata.key - to keyof entity - based on cwis input
 //y2 - remove __dirname from tutorials
 //p2 - when value changes for field with error, clear error - so the user will feel comfortable
@@ -925,7 +930,6 @@ export class Currency {
 //y2 - message for invalid value
 //y2 - message for relation that is missing
 //y2 - consider multi tenancies
-//y2 - allow api read to also support instance and filter. - problem with promise
 
 //p2 - more column types
 
