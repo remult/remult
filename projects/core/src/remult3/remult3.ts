@@ -845,7 +845,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 
 /*y1 currency.ts:10 Uncaught TypeError: Currency_1 is not a constructor
 // - ValueListFieldType - the decorator gives an error in react vite project - see langulage yedidya
-
+//typescript 5.1.6
 @ValueListFieldType()
 export class Currency {
   constructor(
@@ -863,12 +863,15 @@ export class Currency {
 */
 //y1 - allow api read to also support instance and filter. - problem with promise
 
-//y1 - admin url!
+//y1 - admin url1 - pocketbase use /_ for the admin
 //y1 - consider sql expression gets a dbnames of it's own (that already has the "tableName" defined correctly) maybe also the filter translator
-//y1 - talk about modules in init express with entities/controllers,initRequest,initApi
+/*y1 - talk about modules in init express with entities/controllers,initRequest,initApi
+ - support get with backend method, with url search params as the first parameter, & url as second parameter
+   - support returning redirect, and plain html (For sign in scenarios)
+
+ */
 //y1 - tried to upgrade vitest, nuxt tests are failing with loading uuid - sounds familiar?
 //y1 - I think that the tests you've setup don't cover next app router - I added to the setup, but not sure where else
-//y1 - support get with backend method, with url search params as the first parameter, & url as second parameter
 //y1 - talk about the parameter issue with backend methods
 //y1 - select data provider per entity https://discord.com/channels/975754286384418847/976006081748807690/1201415305885397003
 //y1 - migrations
