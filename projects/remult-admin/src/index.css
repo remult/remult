@@ -97,8 +97,12 @@ tr.extended th {
   border: 1px solid var(--border-color);
   margin: .5rem;
   display: flex;
-  width: calc(100% - 1rem);
+  width: calc(100vw - var(--navigation-width) - 1rem);
   flex-wrap: wrap;
+}
+
+.hide-navigation .extended__holder {
+  width: calc(100vw - 1rem);
 }
 
 .extended__holder .icon-button:has(.hamburger-icon) {
@@ -169,6 +173,16 @@ td input {
   padding: 0 .5rem;
   display: flex;
   height: 100%;
+}
+
+td .field-spacer {
+  height: 0;
+  padding: 0 0.5rem;
+  display: block;
+  overflow: hidden;
+  pointer-events: none;
+  min-width: 100px;
+  max-width: 400px;
 }
 
 td .field-spacer {

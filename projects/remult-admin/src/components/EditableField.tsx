@@ -27,6 +27,7 @@ export function EditableField({
   if (info.type == 'json') {
     return <EditableJson {...{ value, onChange, info, god }} />
   } else {
+
     return (
       <>
         <input value={value} onChange={(e) => onChange(e.target.value)} />
