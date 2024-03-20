@@ -845,6 +845,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 
 /*y1 currency.ts:10 Uncaught TypeError: Currency_1 is not a constructor
 // - ValueListFieldType - the decorator gives an error in react vite project - see langulage yedidya
+// happens in target 2022, ts<5.1.6
 //typescript 5.1.6
 @ValueListFieldType()
 export class Currency {
