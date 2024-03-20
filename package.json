@@ -103,7 +103,7 @@
     "type-fest": "^4.3.3",
     "typedoc": "^0.25.0",
     "typedoc-plugin-markdown": "3.10.4",
-    "typescript": "^5.4.2",
+    "typescript": "^5.2.2",
     "uuid": "^8.3.2",
     "vitest": "^0.34.3",
     "webdriverio": "^8.15.10"

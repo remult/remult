@@ -3,13 +3,13 @@ import { isBackend } from './context.js'
 import type { ValidateFieldEvent } from './remult3/remult3.js'
 
 export class Validators {
-  static required = createValidator<any>(
+  static required = createValidator<unknown>(
     async (_, e) => e.value != null && e.value != undefined && e.value !== '',
 
     'Should not be empty',
   )
 
-  static unique = createValidator<any>(async (_, e) => {
+  static unique = createValidator<unknown>(async (_, e) => {
     if (!e.entityRef)
       throw 'unique validation may only work on columns that are attached to an entity'
 
@@ -24,7 +24,7 @@ export class Validators {
   /**
    * @deprecated use `unique` instead - it also runs only on the backend
    */
-  static uniqueOnBackend = createValidator<any>(async (_, e) => {
+  static uniqueOnBackend = createValidator<unknown>(async (_, e) => {
     if (e.isBackend() && (e.isNew || e.valueChanged())) {
       return (
         (await e.entityRef.repository.count({
@@ -48,7 +48,7 @@ export class Validators {
   static in: <T>(
     value: readonly T[],
     withMessage?: ValueValidationMessage<T[]>,
-  ) => FieldValidator<any, T> & {
+  ) => FieldValidator<unknown, T> & {
     withMessage: ValueValidationMessage<T[]>
   } = createValueValidatorWithArgs(
     <T>(val: T, values: T[]) => values.includes(val),
@@ -59,14 +59,14 @@ export class Validators {
     (val) => val != null,
     'Should not be null',
   )
-  static enum = createValueValidatorWithArgs<any, any>(
+  static enum = createValueValidatorWithArgs<unknown, unknown>(
     (value, enumObj) => Object.values(enumObj).includes(value),
     (enumObj) =>
       `Value must be one of ${Object.values(enumObj)
         .filter((x) => typeof enumObj[x as any] !== 'number')
         .join(', ')}`,
   )
-  static relationExists = createValidator<any>(async (_, e) => {
+  static relationExists = createValidator<unknown>(async (_, e) => {
     if (e.valueIsNull()) return true
     if (!e.isBackend()) return true
     return Boolean(await e.load())
@@ -84,17 +84,17 @@ export class Validators {
   static defaultMessage = 'Invalid value'
 }
 
-export type Validator<valueType> = FieldValidator<any, valueType> &
+export type Validator<valueType> = FieldValidator<unknown, valueType> &
   ((
     message?: ValidationMessage<valueType, undefined>,
-  ) => FieldValidator<any, valueType>) & {
+  ) => FieldValidator<unknown, valueType>) & {
     defaultMessage: ValidationMessage<valueType, undefined>
     /**
      * @deprecated  use (message:string) instead - for example: Validators.required("Is needed")
      */
     withMessage(
       message: ValidationMessage<valueType, undefined>,
-    ): FieldValidator<any, valueType>
+    ): FieldValidator<unknown, valueType>
   }
 
 export function createValidator<valueType>(

@@ -2176,25 +2176,25 @@ export type ValidationMessage<valueType, argsType> =
       event: ValidateFieldEvent<any, valueType>,
       args: argsType,
     ) => string)
-export type Validator<valueType> = FieldValidator<any, valueType> &
+export type Validator<valueType> = FieldValidator<unknown, valueType> &
   ((
     message?: ValidationMessage<valueType, undefined>,
-  ) => FieldValidator<any, valueType>) & {
+  ) => FieldValidator<unknown, valueType>) & {
     defaultMessage: ValidationMessage<valueType, undefined>
     /**
      * @deprecated  use (message:string) instead - for example: Validators.required("Is needed")
      */
     withMessage(
       message: ValidationMessage<valueType, undefined>,
-    ): FieldValidator<any, valueType>
+    ): FieldValidator<unknown, valueType>
   }
 export declare class Validators {
-  static required: Validator<any>
-  static unique: Validator<any>
+  static required: Validator<unknown>
+  static unique: Validator<unknown>
   /**
    * @deprecated use `unique` instead - it also runs only on the backend
    */
-  static uniqueOnBackend: Validator<any>
+  static uniqueOnBackend: Validator<unknown>
   static regex: ValidatorWithArgs<string, RegExp> & {
     defaultMessage: ValueValidationMessage<RegExp>
   }
@@ -2203,14 +2203,14 @@ export declare class Validators {
   static in: <T>(
     value: readonly T[],
     withMessage?: ValueValidationMessage<T[]>,
-  ) => FieldValidator<any, T> & {
+  ) => FieldValidator<unknown, T> & {
     withMessage: ValueValidationMessage<T[]>
   }
   static notNull: Validator<unknown>
-  static enum: ValidatorWithArgs<any, any> & {
-    defaultMessage: ValueValidationMessage<any>
+  static enum: ValidatorWithArgs<unknown, unknown> & {
+    defaultMessage: ValueValidationMessage<unknown>
   }
-  static relationExists: Validator<any>
+  static relationExists: Validator<unknown>
   static maxLength: ValidatorWithArgs<string, number> & {
     defaultMessage: ValueValidationMessage<number>
   }
