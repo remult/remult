@@ -22,7 +22,7 @@ import { getInternalKey } from './remult3/repository-internals.js'
 /*@internal*/
 export class RemultProxy implements Remult {
   /* @internal*/
-  iAmRemultProxy =true
+  iAmRemultProxy = true
   /* @internal*/
   get liveQuerySubscriber() {
     return remultStatic.remultFactory().liveQuerySubscriber
@@ -143,6 +143,16 @@ export class RemultProxy implements Remult {
           .remultFactory()
           .repo(...args)
           .delete(args2),
+      deleteMany: (args2) =>
+        self
+          .remultFactory()
+          .repo(...args)
+          .deleteMany(args2),
+      updateMany: (...args2) =>
+        self
+          .remultFactory()
+          .repo(...args)
+          .updateMany(...args2),
       find: (...args2) =>
         self
           .remultFactory()
