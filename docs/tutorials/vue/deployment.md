@@ -51,14 +51,21 @@ app.listen(process.env["PORT"] || 3002, () => console.log("Server started"))
    // src/server/api.ts
 
    //...
+   const DATABASE_URL = process.env["DATABASE_URL"];
+
    export const api = remultExpress({
-     //...
-     dataProvider: createPostgresConnection({
-       connectionString: process.env["DATABASE_URL"] || "your connection string"
-     })
-     //...
-   })
+    dataProvider: DATABASE_URL
+      ? createPostgresDataProvider({ connectionString: DATABASE_URL })
+      : undefined,
+      //...
+    })
    ```
+
+::: warning Note
+In order to connect to a local PostgresDB, add `DATABASE_URL` to an .env file, or simply replace `process.env["DATABASE_URL"]` with your `connectionString`.
+
+If no `DATABASE_URL` has found, it'll fallback to our local JSON files
+:::
 
 4. Modify the project's `build` npm script to additionally transpile the API server's TypeScript code to JavaScript (using `tsc`).
 
