@@ -1,0 +1,12 @@
+{
+  "name": "shared",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "remult": "^0.25.6"
+  }
+}
