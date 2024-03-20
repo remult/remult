@@ -831,7 +831,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 
 //y1 - getFields didn't work for kobi in the home component
 
-
+//p1 - processError in remult express
 //p1 - add section to Fields doc, explaining field type in db
 //p1 - add section about union type
 //p1 - add section about value list field type
@@ -844,7 +844,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //y1 תגיד - updateMany צריך להחזיר את השורות שעודכנו (כמו update או insert) או כמה שורות עודכנו (כמו deleteMany)
 
 /*y1 currency.ts:10 Uncaught TypeError: Currency_1 is not a constructor
-//p1 - ValueListFieldType - the decorator gives an error in react vite project - see langulage yedidya
+// - ValueListFieldType - the decorator gives an error in react vite project - see langulage yedidya
 
 @ValueListFieldType()
 export class Currency {
@@ -906,7 +906,7 @@ export class Currency {
 //p1 - live query with include
 //p1 - adjust angular tutorial starter kit for latest angular (as is in tutorial)
 //p2 - I think there should be a way to throw a forbidden exception
-//p2 - processError in remult express
+
 //p2 - allow find options preprocessor for api calls, to use for authorization
 //p2 - when subscribe is forbidden - the query still runs after the renew process
 //p2 - 'update tasks set  where id = $1
