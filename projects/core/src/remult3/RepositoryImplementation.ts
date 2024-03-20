@@ -122,7 +122,7 @@ let classValidatorValidate:
 export class RepositoryImplementation<entityType>
   implements Repository<entityType>, RepositoryInternal<entityType>
 {
-  notFoundError(id: any) {
+  _notFoundError(id: any) {
     return {
       message: `id ${id} not found in entity ${this.metadata.key}`,
       httpStatusCode: 404,
@@ -131,7 +131,7 @@ export class RepositoryImplementation<entityType>
   [getInternalKey]() {
     return this
   }
-  async createAfterFilter(
+  async _createAfterFilter(
     orderBy: EntityOrderBy<entityType>,
     lastRow: entityType,
   ): Promise<EntityFilter<entityType>> {
@@ -176,7 +176,7 @@ export class RepositoryImplementation<entityType>
         const rel = getRelationFieldInfo(field)
         if (!rel) throw Error(key + ' is not a relation')
         const { toRepo, returnNull, returnUndefined } =
-          this.getFocusedRelationRepo(field, item)
+          this._getFocusedRelationRepo(field, item)
 
         if (rel.type === 'toMany') return toRepo
         else
@@ -190,16 +190,16 @@ export class RepositoryImplementation<entityType>
       },
     })
   }
-  getFocusedRelationRepo(field: FieldMetadata, item: entityType) {
+  _getFocusedRelationRepo(field: FieldMetadata, item: entityType) {
     const rel = getRelationFieldInfo(field)
     let repo = rel.toRepo as RepositoryImplementation<any>
 
     let { findOptions, returnNull, returnUndefined } =
-      this.findOptionsBasedOnRelation(rel, field, undefined, item, repo)
+      this._findOptionsBasedOnRelation(rel, field, undefined, item, repo)
     const toRepo = new RepositoryImplementation(
-      repo.entity,
-      repo.remult,
-      repo.dataProvider,
+      repo._entity,
+      repo._remult,
+      repo._dataProvider,
       repo._info,
       findOptions,
     )
@@ -207,50 +207,50 @@ export class RepositoryImplementation<entityType>
   }
 
   private __edp: EntityDataProvider
-  private get edp() {
+  private get _edp() {
     return this.__edp
       ? this.__edp
-      : (this.__edp = this.dataProvider.getEntityDataProvider(this.metadata))
+      : (this.__edp = this._dataProvider.getEntityDataProvider(this.metadata))
   }
   constructor(
-    private entity: ClassType<entityType>,
-    public remult: Remult,
-    private dataProvider: DataProvider,
+    private _entity: ClassType<entityType>,
+    public _remult: Remult,
+    private _dataProvider: DataProvider,
     private _info: EntityFullInfo<entityType>,
-    private defaultFindOptions?: FindOptions<entityType>,
+    private _defaultFindOptions?: FindOptions<entityType>,
   ) {}
-  idCache = new Map<any, any>()
-  getCachedById(id: any, doNotLoadIfNotFound: boolean): entityType {
+  _idCache = new Map<any, any>()
+  _getCachedById(id: any, doNotLoadIfNotFound: boolean): entityType {
     id = id + ''
-    this.getCachedByIdAsync(id, doNotLoadIfNotFound)
-    let r = this.idCache.get(id)
+    this._getCachedByIdAsync(id, doNotLoadIfNotFound)
+    let r = this._idCache.get(id)
     if (r instanceof Promise) return undefined
     return r
   }
-  async getCachedByIdAsync(
+  async _getCachedByIdAsync(
     id: any,
     doNotLoadIfNotFound: boolean,
   ): Promise<entityType> {
     id = id + ''
-    let r = this.idCache.get(id)
+    let r = this._idCache.get(id)
     if (r instanceof Promise) return await r
-    if (this.idCache.has(id)) {
+    if (this._idCache.has(id)) {
       return r
     }
     if (doNotLoadIfNotFound) return undefined
-    this.idCache.set(id, undefined)
+    this._idCache.set(id, undefined)
     let row = this.findId(id).then((row) => {
       if (row === undefined) {
         r = null
       } else r = row
-      this.idCache.set(id, r)
+      this._idCache.set(id, r)
       return r
     })
-    this.idCache.set(id, row)
+    this._idCache.set(id, row)
     return await row
   }
-  addToCache(item: entityType) {
-    if (item) this.idCache.set(this.getEntityRef(item).getId() + '', item)
+  _addToCache(item: entityType) {
+    if (item) this._idCache.set(this.getEntityRef(item).getId() + '', item)
   }
 
   get metadata(): EntityMetadata<entityType> {
@@ -273,13 +273,13 @@ export class RepositoryImplementation<entityType>
   getEntityRef(entity: entityType): EntityRef<entityType> {
     let x = entity[entityMember]
     if (!x) {
-      this.fixTypes(entity)
+      this._fixTypes(entity)
       x = new rowHelperImplementation(
         this._info,
         entity,
         this,
-        this.edp,
-        this.remult,
+        this._edp,
+        this._remult,
         true,
       )
       Object.defineProperty(entity, entityMember, {
@@ -311,15 +311,15 @@ export class RepositoryImplementation<entityType>
     if (ref) return ref.delete()
 
     if (typeof item === 'string' || typeof item === 'number')
-      if (this.dataProvider.isProxy) return this.edp.delete(item)
+      if (this._dataProvider.isProxy) return this._edp.delete(item)
       else {
         let ref2 = await this.findId(item)
-        if (!ref2) throw this.notFoundError(item)
+        if (!ref2) throw this._notFoundError(item)
         return await getEntityRef(ref2).delete()
       }
 
-    let ref2 = this.getRefForExistingRow(item as entityType, undefined)
-    if (!this.dataProvider.isProxy) await ref2.reload()
+    let ref2 = this._getRefForExistingRow(item as entityType, undefined)
+    if (!this._dataProvider.isProxy) await ref2.reload()
     return ref2.delete()
   }
   insert(item: Partial<MembersOnly<entityType>>[]): Promise<entityType[]>
@@ -330,7 +330,7 @@ export class RepositoryImplementation<entityType>
       | Partial<MembersOnly<entityType>>[],
   ): Promise<entityType | entityType[]> {
     if (Array.isArray(entity)) {
-      if (this.dataProvider.isProxy) {
+      if (this._dataProvider.isProxy) {
         let refs: rowHelperImplementation<entityType>[] = []
         let raw = []
         for (const item of entity) {
@@ -354,7 +354,7 @@ export class RepositoryImplementation<entityType>
         }
         return Promise.all(
           (
-            await (this.edp as any as ProxyEntityDataProvider).insertMany(raw)
+            await (this._edp as any as ProxyEntityDataProvider).insertMany(raw)
           ).map((item, i) => refs[i].processInsertResponseDto(item)),
         )
       } else {
@@ -402,9 +402,9 @@ export class RepositoryImplementation<entityType>
     where: EntityFilter<entityType>,
     set: Partial<MembersOnly<entityType>>,
   ): Promise<number> {
-    if (this.dataProvider.isProxy) {
-      return (this.edp as any as ProxyEntityDataProvider).updateMany(
-        await this.translateWhereToFilter(where),
+    if (this._dataProvider.isProxy) {
+      return (this._edp as any as ProxyEntityDataProvider).updateMany(
+        await this._translateWhereToFilter(where),
         set,
       )
     } else {
@@ -447,21 +447,21 @@ export class RepositoryImplementation<entityType>
 
     let ref: rowHelperImplementation<entityType>
     if (typeof id === 'object') {
-      ref = this.getRefForExistingRow(
+      ref = this._getRefForExistingRow(
         id,
         this.metadata.idMetadata.getId(id),
       ) as unknown as typeof ref
       Object.assign(ref.instance, entity)
     } else
-      ref = this.getRefForExistingRow(
+      ref = this._getRefForExistingRow(
         entity,
         id,
       ) as unknown as rowHelperImplementation<entityType>
-    if (this.dataProvider.isProxy) {
+    if (this._dataProvider.isProxy) {
       return await ref.save(Object.keys(entity))
     } else {
       const r = await ref.reload()
-      if (!r) throw this.notFoundError(ref.id)
+      if (!r) throw this._notFoundError(ref.id)
       for (const key in entity) {
         if (Object.prototype.hasOwnProperty.call(entity, key)) {
           let f = ref.fields[key]
@@ -471,29 +471,29 @@ export class RepositoryImplementation<entityType>
           if (f) r[key] = entity[key]
         }
       }
-      await this.fixTypes(r)
+      await this._fixTypes(r)
       return await ref.save()
     }
   }
 
-  private getRefForExistingRow(
+  private _getRefForExistingRow(
     entity: Partial<MembersOnly<entityType>>,
     id: string | number,
   ) {
     let ref = getEntityRef(entity, false)
     if (!ref) {
-      const instance = new this.entity(this.remult)
+      const instance = new this._entity(this._remult)
 
-      for (const field of this.fieldsOf(entity)) {
+      for (const field of this._fieldsOf(entity)) {
         instance[field.key] = entity[field.key]
       }
-      this.fixTypes(instance)
+      this._fixTypes(instance)
       let row = new rowHelperImplementation(
         this._info,
         instance,
         this,
-        this.edp,
-        this.remult,
+        this._edp,
+        this._remult,
         false,
       )
       if (typeof id === 'object') id = this.metadata.idMetadata.getId(id)
@@ -546,7 +546,7 @@ export class RepositoryImplementation<entityType>
         }
         listener.error ??= () => {}
         listener.complete ??= () => {}
-        return this.remult.liveQuerySubscriber.subscribe(
+        return this._remult.liveQuerySubscriber.subscribe(
           this,
           options,
           listener,
@@ -555,25 +555,25 @@ export class RepositoryImplementation<entityType>
     } as LiveQuery<entityType>
   }
 
-  async rawFind(
+  async _rawFind(
     options: FindOptions<entityType>,
     skipOrderByAndLimit = false,
     loader: RelationLoader,
   ) {
     if (!options) options = {}
 
-    if (this.defaultFindOptions) {
-      options = { ...this.defaultFindOptions, ...options }
+    if (this._defaultFindOptions) {
+      options = { ...this._defaultFindOptions, ...options }
     }
-    let opt = await this.buildEntityDataProviderFindOptions(options)
+    let opt = await this._buildEntityDataProviderFindOptions(options)
     if (skipOrderByAndLimit) {
       delete opt.orderBy
       delete opt.limit
     }
 
     Remult.onFind(this._info, options)
-    const rawRows = await this.edp.find(opt)
-    let result = await this.loadManyToOneForManyRows(rawRows, options, loader)
+    const rawRows = await this._edp.find(opt)
+    let result = await this._loadManyToOneForManyRows(rawRows, options, loader)
     return result
   }
 
@@ -582,28 +582,28 @@ export class RepositoryImplementation<entityType>
     skipOrderByAndLimit = false,
   ): Promise<entityType[]> {
     const loader = new RelationLoader()
-    const result = await this.rawFind(options, skipOrderByAndLimit, loader)
+    const result = await this._rawFind(options, skipOrderByAndLimit, loader)
     await loader.resolveAll()
     return result
   }
 
-  async buildEntityDataProviderFindOptions(options: FindOptions<entityType>) {
+  async _buildEntityDataProviderFindOptions(options: FindOptions<entityType>) {
     let opt: EntityDataProviderFindOptions = {}
 
     opt = {}
     if (!options.orderBy || Object.keys(options.orderBy).length === 0) {
       options.orderBy = this._info.entityInfo.defaultOrderBy
     }
-    opt.where = await this.translateWhereToFilter(options.where)
+    opt.where = await this._translateWhereToFilter(options.where)
     if (options.orderBy !== undefined)
       opt.orderBy = Sort.translateOrderByToSort(this.metadata, options.orderBy)
     if (options.limit !== undefined) opt.limit = options.limit
     if (options.page !== undefined) opt.page = options.page
     return opt
   }
-  async fromJsonArray(jsonItems: any[], loadOptions: LoadOptions<entityType>) {
+  async _fromJsonArray(jsonItems: any[], loadOptions: LoadOptions<entityType>) {
     const loader = new RelationLoader()
-    const result = await this.loadManyToOneForManyRows(
+    const result = await this._loadManyToOneForManyRows(
       jsonItems.map((row) => {
         let result = {}
         for (const col of this.metadata.fields.toArray()) {
@@ -617,7 +617,7 @@ export class RepositoryImplementation<entityType>
     await loader.resolveAll()
     return result
   }
-  private async loadManyToOneForManyRows(
+  private async _loadManyToOneForManyRows(
     rawRows: any[],
     loadOptions: LoadOptions<entityType>,
     loader: RelationLoader,
@@ -634,7 +634,7 @@ export class RepositoryImplementation<entityType>
           let load = !col.options.lazy
           if (loadFields !== undefined) load = loadFields.includes(col)
           if (load) {
-            let repo = this.remult.repo(
+            let repo = this._remult.repo(
               col.valueType,
             ) as RepositoryImplementation<any>
             let toLoad = []
@@ -644,7 +644,7 @@ export class RepositoryImplementation<entityType>
                 val !== undefined &&
                 val !== null &&
                 !toLoad.includes(val) &&
-                !repo.idCache.has(val + '')
+                !repo._idCache.has(val + '')
               ) {
                 toLoad.push(val)
               }
@@ -665,12 +665,12 @@ export class RepositoryImplementation<entityType>
         true,
       )
       for (const r of rows) {
-        repo.addToCache(r)
+        repo._addToCache(r)
       }
     }
 
     let result = await Promise.all(
-      rawRows.map(async (r) => await this.mapRawDataToResult(r, loadFields)),
+      rawRows.map(async (r) => await this._mapRawDataToResult(r, loadFields)),
     )
     for (const col of this.metadata.fields) {
       let rel = getRelationFieldInfo(col)
@@ -683,7 +683,7 @@ export class RepositoryImplementation<entityType>
       if (rel && incl) {
         const otherRepo = rel.toRepo
         for (const row of result) {
-          let { findOptions, returnNull } = this.findOptionsBasedOnRelation(
+          let { findOptions, returnNull } = this._findOptionsBasedOnRelation(
             rel,
             col,
             incl,
@@ -698,7 +698,7 @@ export class RepositoryImplementation<entityType>
               .load(
                 {
                   entityType,
-                  find: (options) => toRepo.rawFind(options, false, loader),
+                  find: (options) => toRepo._rawFind(options, false, loader),
                   metadata: toRepo.metadata,
                 },
                 findOptions,
@@ -720,7 +720,7 @@ export class RepositoryImplementation<entityType>
   }
   /*@internal */
 
-  findOptionsBasedOnRelation(
+  _findOptionsBasedOnRelation(
     rel: RelationFieldInfo,
     field: FieldMetadata,
     moreFindOptions: FindOptions<any>,
@@ -797,15 +797,15 @@ export class RepositoryImplementation<entityType>
     return { findOptions, returnNull, returnUndefined }
   }
 
-  private async mapRawDataToResult(r: any, loadFields: FieldMetadata[]) {
+  private async _mapRawDataToResult(r: any, loadFields: FieldMetadata[]) {
     if (!r) return undefined
-    let x = new this.entity(this.remult)
+    let x = new this._entity(this._remult)
     let helper = new rowHelperImplementation(
       this._info,
       x,
       this,
-      this.edp,
-      this.remult,
+      this._edp,
+      this._remult,
       false,
     )
     Object.defineProperty(x, entityMember, {
@@ -840,21 +840,21 @@ export class RepositoryImplementation<entityType>
     if (json === null || json === undefined) return json
     if (Array.isArray(json))
       return json.map((item) => this.fromJson(item, newRow))
-    let result = new this.entity(this.remult)
-    for (const col of this.fieldsOf(json)) {
+    let result = new this._entity(this._remult)
+    for (const col of this._fieldsOf(json)) {
       let ei = getEntitySettings(col.valueType, false)
       if (ei) {
         let val = json[col.key]
         if (typeof val === 'string' || typeof val === 'number')
           result[col.key] = val
-        else result[col.key] = this.remult.repo(col.valueType).fromJson(val)
+        else result[col.key] = this._remult.repo(col.valueType).fromJson(val)
       } else {
         if (json[col.key] !== undefined) {
           result[col.key] = col.valueConverter.fromJson(json[col.key])
         }
       }
     }
-    this.fixTypes(result)
+    this._fixTypes(result)
     if (newRow) {
       return this.create(result)
     } else {
@@ -862,8 +862,8 @@ export class RepositoryImplementation<entityType>
         this._info,
         result,
         this,
-        this.edp,
-        this.remult,
+        this._edp,
+        this._remult,
         false,
       )
 
@@ -877,12 +877,12 @@ export class RepositoryImplementation<entityType>
   }
 
   async count(where?: EntityFilter<entityType>): Promise<number> {
-    return this.edp.count(await this.translateWhereToFilter(where))
+    return this._edp.count(await this._translateWhereToFilter(where))
   }
   async deleteMany(where: EntityFilter<entityType>): Promise<number> {
-    if (this.dataProvider.isProxy) {
-      return (this.edp as any as ProxyEntityDataProvider).deleteMany(
-        await this.translateWhereToFilter(where),
+    if (this._dataProvider.isProxy) {
+      return (this._edp as any as ProxyEntityDataProvider).deleteMany(
+        await this._translateWhereToFilter(where),
       )
     } else {
       let deleted = 0
@@ -894,7 +894,7 @@ export class RepositoryImplementation<entityType>
     }
   }
 
-  private cache = new Map<string, cacheEntityInfo<entityType>>()
+  private _cache = new Map<string, cacheEntityInfo<entityType>>()
   async findOne(
     options?: FindFirstOptions<entityType>,
     skipOrderByAndLimit = false,
@@ -905,21 +905,21 @@ export class RepositoryImplementation<entityType>
     if (options.useCache) {
       let f = findOptionsToJson(options, this.metadata)
       let key = JSON.stringify(f)
-      cacheInfo = this.cache.get(key)
+      cacheInfo = this._cache.get(key)
       if (cacheInfo !== undefined) {
         if (
           cacheInfo.value &&
           this.getEntityRef(cacheInfo.value).wasDeleted()
         ) {
           cacheInfo = undefined
-          this.cache.delete(key)
-        } else return this.cache.get(key).promise
+          this._cache.delete(key)
+        } else return this._cache.get(key).promise
       } else {
         cacheInfo = {
           value: undefined,
           promise: undefined,
         }
-        this.cache.set(key, cacheInfo)
+        this._cache.set(key, cacheInfo)
       }
     }
 
@@ -961,34 +961,34 @@ export class RepositoryImplementation<entityType>
     return this.findOne(options, skipOrderByAndLimit)
   }
 
-  private fieldsOf(item: any) {
+  private _fieldsOf(item: any) {
     let keys = Object.keys(item)
     return this.metadata.fields.toArray().filter((x) => keys.includes(x.key))
   }
 
   create(item?: Partial<MembersOnly<entityType>>): entityType {
-    let r = new this.entity(this.remult)
+    let r = new this._entity(this._remult)
     if (item) {
-      for (const field of this.fieldsOf(item)) {
+      for (const field of this._fieldsOf(item)) {
         r[field.key] = item[field.key]
       }
-      this.fixTypes(r)
+      this._fixTypes(r)
     }
-    if (this.defaultFindOptions?.where) {
+    if (this._defaultFindOptions?.where) {
       __updateEntityBasedOnWhere(
         this.metadata,
-        this.defaultFindOptions.where,
+        this._defaultFindOptions.where,
         r,
       )
-      this.fixTypes(r)
+      this._fixTypes(r)
     }
 
     let z = this.getEntityRef(r)
 
     return r
   }
-  async fixTypes(item: any) {
-    for (const field of this.fieldsOf(item)) {
+  async _fixTypes(item: any) {
+    for (const field of this._fieldsOf(item)) {
       const val = item[field.key]
       if (val !== null && val !== undefined) {
         if (field.valueType === Date && !(val instanceof Date))
@@ -1030,25 +1030,25 @@ export class RepositoryImplementation<entityType>
     )
   }
 
-  async translateWhereToFilter(
+  async _translateWhereToFilter(
     where: EntityFilter<entityType>,
   ): Promise<Filter> {
     if (!where) where = {}
-    if (this.defaultFindOptions?.where) {
+    if (this._defaultFindOptions?.where) {
       let z = where
       where = {
-        $and: [z, this.defaultFindOptions?.where],
+        $and: [z, this._defaultFindOptions?.where],
       } as EntityFilter<entityType>
     }
-    if (this.metadata.options.backendPrefilter && !this.dataProvider.isProxy) {
+    if (this.metadata.options.backendPrefilter && !this._dataProvider.isProxy) {
       let z = where
       where = {
         $and: [z, await Filter.resolve(this.metadata.options.backendPrefilter)],
       } as EntityFilter<entityType>
     }
     let r = await Filter.fromEntityFilter(this.metadata, where)
-    if (r && !this.dataProvider.isProxy) {
-      r = await Filter.translateCustomWhere(r, this.metadata, this.remult)
+    if (r && !this._dataProvider.isProxy) {
+      r = await Filter.translateCustomWhere(r, this.metadata, this._remult)
     }
     return r
   }
@@ -1512,7 +1512,7 @@ export class rowHelperImplementation<T>
     await this.edp
       .find({ where: await this.getIdFilter() })
       .then(async (newData) => {
-        if (newData.length === 0) throw this.repository.notFoundError(this.id)
+        if (newData.length === 0) throw this.repository._notFoundError(this.id)
         await this.loadDataFrom(newData[0])
         this.saveOriginalData()
       })
@@ -1637,7 +1637,7 @@ export class rowHelperImplementation<T>
               await listener.saved(this.instance, isNew)
             }
         }
-        await this.repository.remult.liveQueryPublisher.itemChanged(
+        await this.repository._remult.liveQueryPublisher.itemChanged(
           this.repository.metadata.key,
           [{ id: this.getId(), oldId: this.getOriginalId(), deleted: false }],
         )
@@ -1691,7 +1691,7 @@ export class rowHelperImplementation<T>
   }
 
   private async getIdFilter(): Promise<Filter> {
-    return await this.repository.translateWhereToFilter(
+    return await this.repository._translateWhereToFilter(
       this.repository.metadata.idMetadata.getIdFilter(this.id),
     )
   }
@@ -1718,7 +1718,7 @@ export class rowHelperImplementation<T>
         )) {
           await listener.deleted(this.instance)
         }
-      await this.repository.remult.liveQueryPublisher.itemChanged(
+      await this.repository._remult.liveQueryPublisher.itemChanged(
         this.repository.metadata.key,
         [{ id: this.getId(), oldId: this.getOriginalId(), deleted: true }],
       )
@@ -2752,7 +2752,7 @@ class QueryResultImpl<entityType> implements QueryResult<entityType> {
     let nextPage: () => Promise<Paginator<entityType>> = undefined
     let hasNextPage = items.length == this.options.pageSize
     if (hasNextPage) {
-      let nextPageFilter = await this.repo.createAfterFilter(
+      let nextPageFilter = await this.repo._createAfterFilter(
         this.options.orderBy,
         items[items.length - 1],
       )

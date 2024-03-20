@@ -19,6 +19,7 @@ import { InMemoryDataProvider } from '../../core/src//data-providers/in-memory-d
 import { describeClass } from '../../core/src//remult3/DecoratorReplacer'
 import { remult, RemultProxy } from '../../core/src/remult-proxy'
 import { remultStatic, resetFactory } from '../../core/src/remult-static'
+import { RepositoryImplementation } from '../../core/src/remult3/RepositoryImplementation.js'
 
 @ValueListFieldType()
 export class myType {
@@ -536,3 +537,22 @@ class child extends parent {
     return { p: this.parentField, c: this.childField }
   }
 }
+describe("test proxy implementation doesn't meet something", () => {
+  it('test remult proxy', async () => {
+    const r = new Remult(new InMemoryDataProvider()).repo(testEntity)
+    const c = new RemultProxy().repo(testEntity)
+    let missing: string[] = []
+    for (const key of Object.getOwnPropertyNames(r)) {
+      if (!c[key]) missing.push(key)
+    }
+    for (const key of Object.getOwnPropertyNames(
+      RepositoryImplementation.prototype,
+    )) {
+      if (!c[key]) missing.push(key)
+    }
+
+    expect(missing.filter((x) => !x.startsWith('_'))).toMatchInlineSnapshot(`
+      []
+    `)
+  })
+})

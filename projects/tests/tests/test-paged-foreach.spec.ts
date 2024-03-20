@@ -297,7 +297,7 @@ describe('test paged foreach ', () => {
         JSON.stringify(
           await entityFilterToJson(
             eDefs.metadata,
-            await getRepositoryInternals(eDefs).createAfterFilter(orderBy, e),
+            await getRepositoryInternals(eDefs)._createAfterFilter(orderBy, e),
           ),
         ),
       ).toEqual(
@@ -322,7 +322,7 @@ describe('test paged foreach ', () => {
     e.b = 'b'
     e.c = 'c'
 
-    const f = await getRepositoryInternals(eDefs).createAfterFilter(
+    const f = await getRepositoryInternals(eDefs)._createAfterFilter(
       { a: 'asc', b: 'asc' },
       e,
     )

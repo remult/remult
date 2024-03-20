@@ -24,7 +24,7 @@ export class LiveQuerySubscriber<entityType> {
   subscribeCode: () => void
   unsubscribe: VoidFunction = () => {}
   async setAllItems(result: any[]) {
-    const items = await getRepositoryInternals(this.repo).fromJsonArray(
+    const items = await getRepositoryInternals(this.repo)._fromJsonArray(
       result,
       this.query.options,
     )
@@ -84,7 +84,7 @@ export class LiveQuerySubscriber<entityType> {
   async handle(messages: LiveQueryChange[]) {
     {
       let x = messages.filter(({ type }) => type == 'add' || type == 'replace')
-      let loadedItems = await getRepositoryInternals(this.repo).fromJsonArray(
+      let loadedItems = await getRepositoryInternals(this.repo)._fromJsonArray(
         x.map((m) => m.data.item),
         this.query.options,
       )

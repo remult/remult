@@ -648,7 +648,7 @@ export function remultGraphql(options: {
                   const myRepo = remult.repo(meta.entityType)
                   const item = myRepo.fromJson(orig)
                   let { toRepo, returnNull, returnUndefined } =
-                    getRepositoryInternals(myRepo).getFocusedRelationRepo(
+                    getRepositoryInternals(myRepo)._getFocusedRelationRepo(
                       myRepo.fields.find(f),
                       item,
                     )

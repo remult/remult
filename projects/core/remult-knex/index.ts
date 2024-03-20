@@ -100,7 +100,7 @@ export class KnexDataProvider implements DataProvider, HasWrapIdentifier {
     )
     b._addWhere = false
     await (
-      await getRepositoryInternals(repo).translateWhereToFilter(condition)
+      await getRepositoryInternals(repo)._translateWhereToFilter(condition)
     ).__applyToConsumer(b)
     let r = await b.resolveWhere()
     return (knex) => r.forEach((y) => y(knex))

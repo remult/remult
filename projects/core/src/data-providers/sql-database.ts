@@ -146,7 +146,7 @@ export class SqlDatabase implements DataProvider, HasWrapIdentifier {
     )
     b._addWhere = false
     await (
-      await getRepositoryInternals(r).translateWhereToFilter(condition)
+      await getRepositoryInternals(r)._translateWhereToFilter(condition)
     ).__applyToConsumer(b)
     return await b.resolveWhere()
   }
