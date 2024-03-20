@@ -87,5 +87,8 @@
     "p2",
     "y1",
     "y2"
-  ]
+  ],
+  "search.exclude": {
+    "./dist/**/*": true
+  }
 }
