@@ -64,7 +64,7 @@ app.listen(process.env["PORT"] || 3002, () => console.log("Server started"))
 ::: warning Note
 In order to connect to a local PostgresDB, add `DATABASE_URL` to an .env file, or simply replace `process.env["DATABASE_URL"]` with your `connectionString`.
 
-If no `DATABASE_URL` has found, it'll fallback to our local JSON files
+If no `DATABASE_URL` has found, it'll fallback to our local JSON files.
 :::
 
 4. Modify the project's `build` npm script to additionally transpile the API server's TypeScript code to JavaScript (using `tsc`).

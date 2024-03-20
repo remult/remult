@@ -64,7 +64,7 @@ app.listen(process.env["PORT"] || 3002, () => console.log("Server started"))
 ::: warning Note
 In order to connect to a local PostgresDB, add `DATABASE_URL` to an .env file, or simply replace `process.env["DATABASE_URL"]` with your `connectionString`.
 
-If no `DATABASE_URL` has found, it'll fallback to our local JSON files
+If no `DATABASE_URL` has found, it'll fallback to our local JSON files.
 :::
 
 4. In the root folder, create a TypeScript configuration file `tsconfig.server.json` for the build of the server project using TypeScript.
