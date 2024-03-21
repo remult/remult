@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [0.25.7] TBD
 
+- Fixed typing issue with validators and typescript 5.4
 - Added `deleteMany` and `updateMany`
 - When `insert` is called in the front-end with an array of items, a single POST call is made to the server
 - Renamed `addParameterAndReturnSqlToken` to `param`. `addParameterAndReturnSqlToken` will be deprecated in future versions
