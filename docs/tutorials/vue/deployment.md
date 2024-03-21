@@ -47,7 +47,7 @@ app.listen(process.env["PORT"] || 3002, () => console.log("Server started"))
 
 3. Modify the highlighted code in the api server module to prefer a `connectionString` provided by the production host's `DATABASE_URL` environment variable.
 
-   ```ts{7}
+   ```ts{4,7-9}
    // src/server/api.ts
 
    //...

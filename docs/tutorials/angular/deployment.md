@@ -63,7 +63,7 @@ If you're using angular version 16 or less, the result path is: `'../remult-angu
 
 3. Modify the highlighted code in the api server module to prefer a `connectionString` provided by the production host's `DATABASE_URL` environment variable.
 
-   ```ts{7}
+   ```ts{4,7-9}
    // src/server/api.ts
 
    //...
