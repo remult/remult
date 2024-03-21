@@ -462,11 +462,30 @@ Updates an item, based on its `id`
 Arguments:
 * **id**
 * **item**
+## updateMany
+Updates all items that match the `where` condition.
+
+Arguments:
+* **where** - filters the data
+   
+   
+   *see*
+   [EntityFilter](http://remult.dev/docs/entityFilter.html)
+* **item**
 ## delete
 Deletes an Item
 
 Arguments:
 * **id**
+## deleteMany
+Deletes all items that match the `where` condition.
+
+Arguments:
+* **where** - filters the data
+   
+   
+   *see*
+   [EntityFilter](http://remult.dev/docs/entityFilter.html)
 ## create
 Creates an instance of an item. It'll not be saved to the data source unless `save` or `insert` will be called for that item
 
@@ -509,6 +528,7 @@ The metadata for the `entity`
 Arguments:
 * **listener**
 ## relations
+* **relations**
 
 Arguments:
 * **item**

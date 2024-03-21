@@ -66,8 +66,9 @@ It can be set to any subscription provider as illustrated in the Remult tutorial
    https://remult.dev/tutorials/react-next/deployment.html#deploying-to-a-serverless-environment
 ## wrapMessageHandling
 A function that wraps message handling for subscriptions. This is useful for executing some code before
-or after any message arrives from the subscription. For example, in Angular, this can be used to trigger
-a render by calling the `NgZone` run method.
+or after any message arrives from the subscription.
+For example, in Angular, to refresh a specific part of the UI,
+you can call the `NgZone` run method at this time.
    
    
    *example*

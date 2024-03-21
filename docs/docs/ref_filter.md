@@ -106,10 +106,19 @@ Arguments:
 Arguments:
 * **add**
 ## resolve
-* **resolve**
+Resolves an entity filter.
+
+This method takes a filter which can be either an instance of `EntityFilter`
+or a function that returns an instance of `EntityFilter` or a promise that
+resolves to an instance of `EntityFilter`. It then resolves the filter if it
+is a function and returns the resulting `EntityFilter`.
+   
+   
+   *returns*
+   The resolved entity filter.
 
 Arguments:
-* **filter**
+* **filter** - The filter to resolve.
 ## toJson
 * **toJson**
 ## translateCustomWhere
