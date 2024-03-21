@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.25.7] TBD
+## [0.25.7] 2024-03-21
 
 - Fixed typing issue with validators and typescript 5.4
 - Added `deleteMany` and `updateMany`
