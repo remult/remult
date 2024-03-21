@@ -43,10 +43,19 @@ import { DATABASE_URL } from '$env/static/private' // [!code ++]
 export const handleRemult = remultSveltekit({
   entities: [Task],
   controllers: [TasksController],
-  dataProvider: createPostgresDataProvider({ connectionString: DATABASE_URL }), // [!code ++]
+  dataProvider: DATABASE_URL // [!code ++]
+    ? createPostgresDataProvider({ connectionString: DATABASE_URL }) // [!code ++]
+    : undefined, // [!code ++]
   getUser: async (event) =>
     (await event?.locals?.getSession())?.user as UserInfo,
 })
 ```
+
+Once the application restarts, it'll try to use postgres as the data source for your application.
+
+If `DATABASE_URL` has found, it'll automatically create the tasks table for you - as you'll see in the terminal window.
+
+If no `DATABASE_URL` has found, it'll just fallback to our local JSON files.
+
 
 :::
