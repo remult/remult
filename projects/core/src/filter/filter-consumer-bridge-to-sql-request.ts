@@ -223,6 +223,15 @@ export function shouldNotCreateField<entityType>(
     (field.options.sqlExpression && field.dbName != dbNames.$dbNameOf(field))
   )
 }
+export function shouldCreateEntity(
+  entity: EntityMetadata<any>,
+  e: EntityDbNamesBase,
+) {
+  return (
+    !entity.options.sqlExpression &&
+    e.$entityName.toLowerCase().indexOf('from ') < 0
+  )
+}
 
 export declare type EntityDbNamesBase = {
   $entityName: string

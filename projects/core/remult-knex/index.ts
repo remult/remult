@@ -5,6 +5,7 @@ import type { EntityDbNamesBase } from '../src/filter/filter-consumer-bridge-to-
 import {
   dbNamesOf,
   isDbReadonly,
+  shouldCreateEntity,
   shouldNotCreateField,
 } from '../src/filter/filter-consumer-bridge-to-sql-request.js'
 import type { FilterConsumer } from '../src/filter/filter-interfaces.js'
@@ -34,6 +35,10 @@ import type { StringFieldOptions } from '../src/remult3/Fields.js'
 import { getRepositoryInternals } from '../src/remult3/repository-internals.js'
 import { remultStatic } from '../src/remult-static.js'
 import type { HasWrapIdentifier } from '../src/sql-command.js'
+import type {
+  MigrationBuilder,
+  MigrationStepBuilder,
+} from '../migrations/index.js'
 
 export class KnexDataProvider implements DataProvider, HasWrapIdentifier {
   constructor(public knex: Knex) {}
@@ -420,7 +425,7 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
   }
 }
 
-export class KnexSchemaBuilder {
+export class KnexSchemaBuilder implements MigrationBuilder {
   //@internal
   static logToConsole = true
   async verifyStructureOfAllEntities(remult?: Remult) {
@@ -436,11 +441,9 @@ export class KnexSchemaBuilder {
     for (const entity of entities) {
       let e: EntityDbNamesBase = await dbNamesOf(entity, (x) => x)
       try {
-        if (!entity.options.sqlExpression) {
-          if (e.$entityName.toLowerCase().indexOf('from ') < 0) {
-            await this.createIfNotExist(entity)
-            await this.verifyAllColumns(entity)
-          }
+        if (shouldCreateEntity(entity, e)) {
+          await this.createIfNotExist(entity)
+          await this.verifyAllColumns(entity)
         }
       } catch (err) {
         console.error('failed ensure schema of ' + e.$entityName + ' ', err)
@@ -451,37 +454,43 @@ export class KnexSchemaBuilder {
   async createIfNotExist(entity: EntityMetadata): Promise<void> {
     const e: EntityDbNamesBase = await dbNamesOf(entity, (x) => x)
     if (!(await this.knex.schema.hasTable(e.$entityName))) {
-      let cols = new Map<FieldMetadata, { name: string; readonly: boolean }>()
-      for (const f of entity.fields) {
-        cols.set(f, {
-          name: e.$dbNameOf(f),
-          readonly: shouldNotCreateField(f, e),
-        })
-      }
-      await logSql(
-        this.knex.schema.createTable(e.$entityName, (b) => {
-          for (const x of entity.fields) {
-            if (!cols.get(x)!.readonly || isAutoIncrement(x)) {
-              if (isAutoIncrement(x)) b.increments(cols.get(x)!.name)
-              else {
-                buildColumn(
-                  x,
-                  cols.get(x)!.name,
-                  b,
-                  supportsJsonDataStorage(this.knex),
-                )
-                if (x == entity.idMetadata.field) b.primary([cols.get(x)!.name])
-              }
-            }
-          }
-        }),
-      )
+      await logSql(this.createTableKnexCommand(entity, e))
     }
   }
 
-  async addColumnIfNotExist<T extends EntityMetadata>(
-    entity: T,
-    c: (e: T) => FieldMetadata,
+  private createTableKnexCommand(
+    entity: EntityMetadata<any>,
+    e: EntityDbNamesBase,
+  ) {
+    let cols = new Map<FieldMetadata, { name: string; readonly: boolean }>()
+    for (const f of entity.fields) {
+      cols.set(f, {
+        name: e.$dbNameOf(f),
+        readonly: shouldNotCreateField(f, e),
+      })
+    }
+
+    return this.knex.schema.createTable(e.$entityName, (b) => {
+      for (const x of entity.fields) {
+        if (!cols.get(x)!.readonly || isAutoIncrement(x)) {
+          if (isAutoIncrement(x)) b.increments(cols.get(x)!.name)
+          else {
+            buildColumn(
+              x,
+              cols.get(x)!.name,
+              b,
+              supportsJsonDataStorage(this.knex),
+            )
+            if (x == entity.idMetadata.field) b.primary([cols.get(x)!.name])
+          }
+        }
+      }
+    })
+  }
+
+  async addColumnIfNotExist(
+    entity: EntityMetadata,
+    c: (e: EntityMetadata) => FieldMetadata,
   ) {
     let e: EntityDbNamesBase = await dbNamesOf(entity, (x) => x)
     if (shouldNotCreateField(c(entity), e)) return
@@ -490,13 +499,19 @@ export class KnexSchemaBuilder {
     let colName = e.$dbNameOf(col)
 
     if (!(await this.knex.schema.hasColumn(e.$entityName, colName))) {
-      await logSql(
-        this.knex.schema.alterTable(e.$entityName, (b) => {
-          buildColumn(col, colName, b, supportsJsonDataStorage(this.knex))
-        }),
-      )
+      await logSql(this.createColumnKnexCommand(e, col, colName))
     }
   }
+  private createColumnKnexCommand(
+    e: EntityDbNamesBase,
+    col: FieldMetadata<any, any>,
+    colName: string,
+  ): Knex.SchemaBuilder {
+    return this.knex.schema.alterTable(e.$entityName, (b) => {
+      buildColumn(col, colName, b, supportsJsonDataStorage(this.knex))
+    })
+  }
+
   async verifyAllColumns<T extends EntityMetadata>(entity: T) {
     let e = await dbNamesOf(entity, (x) => x)
     try {
@@ -511,6 +526,26 @@ export class KnexSchemaBuilder {
   }
   additionalWhere = ''
   constructor(private knex: Knex) {}
+  async createTable(
+    entity: EntityMetadata<any>,
+    builder: MigrationStepBuilder,
+  ): Promise<void> {
+    let e: EntityDbNamesBase = await dbNamesOf(entity, (x) => x)
+    this.createTableKnexCommand(entity, e)
+      .toSQL()
+      .forEach((sql) => builder.addSql(sql.sql))
+  }
+  async createColumn(
+    entity: EntityMetadata<any>,
+    field: FieldMetadata<any, any>,
+    builder: MigrationStepBuilder,
+  ): Promise<void> {
+    let e: EntityDbNamesBase = await dbNamesOf(entity, (x) => x)
+
+    await this.createColumnKnexCommand(e, field, e.$dbNameOf(field))
+      .toSQL()
+      .forEach((sql) => builder.addSql(sql.sql))
+  }
 }
 function supportsJsonDataStorage(knex: Knex) {
   const client: string = knex.client.config.client

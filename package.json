@@ -99,7 +99,7 @@
     "ts-node-dev": "^1.1.8",
     "tslib": "^2.2.0",
     "tslint": "~6.1.0",
-    "tsx": "^3.12.3",
+    "tsx": "^4.7.1",
     "type-fest": "^4.3.3",
     "typedoc": "^0.25.0",
     "typedoc-plugin-markdown": "3.10.4",

@@ -1,3 +1,7 @@
+import type {
+  MigrationBuilder,
+  MigrationStepBuilder,
+} from '../migrations/index.js'
 import type { FieldMetadata } from '../src/column-interfaces.js'
 import type { Remult } from '../src/context.js'
 import type { SqlDatabase } from '../src/data-providers/sql-database.js'
@@ -5,6 +9,7 @@ import type { EntityDbNamesBase } from '../src/filter/filter-consumer-bridge-to-
 import {
   dbNamesOf,
   isDbReadonly,
+  shouldCreateEntity,
   shouldNotCreateField,
 } from '../src/filter/filter-consumer-bridge-to-sql-request.js'
 import { remult as defaultRemult } from '../src/remult-proxy.js'
@@ -49,7 +54,7 @@ export async function verifyStructureOfAllEntities(
   )
 }
 
-export class PostgresSchemaBuilder {
+export class PostgresSchemaBuilder implements MigrationBuilder {
   //@internal
   static logToConsole = true
 
@@ -134,11 +139,9 @@ export class PostgresSchemaBuilder {
         this.pool.wrapIdentifier,
       )
       try {
-        if (!entity.options.sqlExpression) {
-          if (e.$entityName.toLowerCase().indexOf('from ') < 0) {
-            await this.createIfNotExist(entity)
-            await this.verifyAllColumns(entity)
-          }
+        if (shouldCreateEntity(entity, e)) {
+          await this.createIfNotExist(entity)
+          await this.verifyAllColumns(entity)
         }
       } catch (err) {
         console.error('failed verify structure of ' + e.$entityName + ' ', err)
@@ -158,26 +161,53 @@ export class PostgresSchemaBuilder {
       )
       .then(async (r) => {
         if (r.rows.length == 0) {
-          let result = ''
-          for (const x of entity.fields) {
-            if (!shouldNotCreateField(x, e) || isAutoIncrement(x)) {
-              if (result.length != 0) result += ','
-              result += '\r\n  '
-
-              if (isAutoIncrement(x)) result += e.$dbNameOf(x) + ' serial'
-              else {
-                result += postgresColumnSyntax(x, e.$dbNameOf(x))
-              }
-              if (x == entity.idMetadata.field) result += ' primary key'
-            }
-          }
-
-          let sql = `CREATE SCHEMA IF NOT EXISTS ${this.schemaOnly(e)};
-CREATE table ${this.schemaAndName(e)} (${result}\r\n)`
+          const sql = await this.createTableScript(entity)
           if (PostgresSchemaBuilder.logToConsole) console.info(sql)
           await this.pool.execute(sql)
         }
       })
+  }
+  async createColumn(
+    entity: EntityMetadata<unknown>,
+    field: FieldMetadata<any, unknown>,
+    builder: MigrationStepBuilder,
+  ) {
+    builder.addSql(await this.createColumnScript(entity, field))
+  }
+  private async createColumnScript(
+    entity: EntityMetadata<unknown>,
+    field: FieldMetadata<any, unknown>,
+  ) {
+    let e: EntityDbNamesBase = await dbNamesOf(entity, this.pool.wrapIdentifier)
+    return (
+      `ALTER table ${this.schemaAndName(e)} ` +
+      `ADD column ${postgresColumnSyntax(field, e.$dbNameOf(field))}`
+    )
+  }
+
+  async createTable(entity: EntityMetadata, builder: MigrationStepBuilder) {
+    builder.addSql(await this.createTableScript(entity))
+  }
+
+  private async createTableScript(entity: EntityMetadata<any>) {
+    let result = ''
+    let e: EntityDbNamesBase = await dbNamesOf(entity, this.pool.wrapIdentifier)
+    for (const x of entity.fields) {
+      if (!shouldNotCreateField(x, e) || isAutoIncrement(x)) {
+        if (result.length != 0) result += ','
+        result += '\r\n  '
+
+        if (isAutoIncrement(x)) result += e.$dbNameOf(x) + ' serial'
+        else {
+          result += postgresColumnSyntax(x, e.$dbNameOf(x))
+        }
+        if (x == entity.idMetadata.field) result += ' primary key'
+      }
+    }
+
+    let sql = `CREATE SCHEMA IF NOT EXISTS ${this.schemaOnly(e)};
+CREATE table ${this.schemaAndName(e)} (${result}\r\n)`
+    return sql
   }
 
   async addColumnIfNotExist<T extends EntityMetadata>(
@@ -199,9 +229,8 @@ CREATE table ${this.schemaAndName(e)} (${result}\r\n)`
           )
         ).rows.length == 0
       ) {
-        let sql =
-          `ALTER table ${this.schemaAndName(e)} ` +
-          `ADD column ${postgresColumnSyntax(c(entity), colName)}`
+        let sql = await this.createColumnScript(entity, c(entity))
+
         if (PostgresSchemaBuilder.logToConsole) console.info(sql)
         await this.pool.execute(sql)
       }

@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "entities": {
+    "tasks": {
+      "key": "tasks",
+      "className": "Task",
+      "columns": {
+        "id": {
+          "key": "id"
+        },
+        "title": {
+          "key": "title"
+        }
+      }
+    }
+  }
+}
