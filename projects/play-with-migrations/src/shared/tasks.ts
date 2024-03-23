@@ -8,4 +8,6 @@ export class Task {
   id = ''
   @Fields.string()
   title = ''
+  @Fields.boolean()
+  completed = false
 }

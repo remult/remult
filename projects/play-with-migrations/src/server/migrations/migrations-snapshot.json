@@ -10,6 +10,9 @@
         },
         "title": {
           "key": "title"
+        },
+        "completed": {
+          "key": "completed"
         }
       }
     }

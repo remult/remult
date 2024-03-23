@@ -1,3 +1,4 @@
+// consider replacing with https://www.npmjs.com/package/ts-morph
 import * as ts from 'typescript'
 import * as fs from 'fs'
 import * as path from 'path'

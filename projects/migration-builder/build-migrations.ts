@@ -40,8 +40,8 @@ export async function buildMigrations({
         if (!shouldNotCreateField(field, e)) {
           const column = entitySnapshot.columns[e.$dbNameOf(field)]
           if (!column) {
+            if (createColumns) await sb.createColumn(meta, field, stepsBuilder)
             entitySnapshot.columns[e.$dbNameOf(field)] = { key: field.key }
-            await sb.createColumn(meta, field, stepsBuilder)
           }
         }
       }
