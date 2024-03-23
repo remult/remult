@@ -829,10 +829,19 @@ export type ClassFieldDecorator<entityType, valueType> = (
   * review react summit
 # 
 
+//y1 - migrations
+  https://gitkraken.dev/link/dnNjb2RlOi8vZWFtb2Rpby5naXRsZW5zL2xpbmsvci9mMDgzMWU0OWIyODJkMDlkNTA0NTcxYjYwNmUzNTMwODQ3NGIwY2M2L2YvcHJvamVjdHMvcGxheS13aXRoLW1pZ3JhdGlvbnMvc3JjL3NlcnZlci9idWlsZC1taWdyYXRpb25zLnRzP3VybD1odHRwcyUzQSUyRiUyRmdpdGh1Yi5jb20lMkZyZW11bHQlMkZyZW11bHQuZ2l0?origin=gitlens
+/*p1 - processError in remult express
+- Should we merge (notFound,error,forbidden) into one method in `DataApiResponse` type?
+  https://gitkraken.dev/link/dnNjb2RlOi8vZWFtb2Rpby5naXRsZW5zL2xpbmsvci9mMDgzMWU0OWIyODJkMDlkNTA0NTcxYjYwNmUzNTMwODQ3NGIwY2M2L2YvcHJvamVjdHMvY29yZS9zcmMvZGF0YS1hcGkudHM%2FdXJsPWh0dHBzJTNBJTJGJTJGZ2l0aHViLmNvbSUyRnJlbXVsdCUyRnJlbXVsdC5naXQ%3D?origin=gitlens
+- The api of the `processError` should recieve an `ErrorInfo` object and return an `ErrorInfo` object? or should it return something more in the line, 
+  of httpStatus and errorBody. - currently the `serializeError` method is used to build the response
+  https://gitkraken.dev/link/dnNjb2RlOi8vZWFtb2Rpby5naXRsZW5zL2xpbmsvci9mMDgzMWU0OWIyODJkMDlkNTA0NTcxYjYwNmUzNTMwODQ3NGIwY2M2L2YvcHJvamVjdHMvY29yZS9zcmMvZGF0YS1hcGkudHM%2FdXJsPWh0dHBzJTNBJTJGJTJGZ2l0aHViLmNvbSUyRnJlbXVsdCUyRnJlbXVsdC5naXQmbGluZXM9NDI1?origin=gitlens
+  - I think there should be a way to throw a forbidden exception
+*/
+
 //y1 - getFields didn't work for kobi in the home component
 
-//p1 - processError in remult express
-//p1 - I think there should be a way to throw a forbidden exception
 //p1 - add section to Fields doc, explaining field type in db
 //p1 - add section about union type
 //p1 - add section about value list field type
@@ -875,7 +884,6 @@ export class Currency {
 //y1 - I think that the tests you've setup don't cover next app router - I added to the setup, but not sure where else
 //y1 - talk about the parameter issue with backend methods
 //y1 - select data provider per entity https://discord.com/channels/975754286384418847/976006081748807690/1201415305885397003
-//y1 - migrations
 //y1 - live query refresh of view on table update
 //y1 - main vs master
 //y2 - livequery for findfirst (@JY)
