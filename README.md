@@ -5,23 +5,17 @@
   <h1>Remult</h1>
   <p>Full-stack CRUD, simplified, with SSOT TypeScript entities</p>
 	<a href="https://circleci.com/gh/remult/remult/tree/master" rel="nofollow">
-		<img alt="CircleCI" src="https://circleci.com/gh/remult/remult/tree/master.svg?style=shield">
-	</a>
+		<img alt="CircleCI" src="https://circleci.com/gh/remult/remult/tree/master.svg?style=shield"></a>
 	<a href="https://codecov.io/gh/remult/remult" rel="nofollow">
-        	<img src="https://codecov.io/gh/remult/remult/branch/master/graph/badge.svg?token=LYWQRUN3D1"/>
-      	</a>
+        	<img src="https://codecov.io/gh/remult/remult/branch/master/graph/badge.svg?token=LYWQRUN3D1"/></a>
     	<a href="https://raw.githubusercontent.com/remult/remult/master/LICENSE" rel="nofollow">
-		<img alt="GitHub license" src="https://img.shields.io/badge/license-MIT-blue.svg">
-	</a>
+		<img alt="GitHub license" src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
 	<a href="https://www.npmjs.com/package/remult" rel="nofollow">
-		<img alt="npm version" src="https://badge.fury.io/js/remult.svg">
-	</a>
+		<img alt="npm version" src="https://badge.fury.io/js/remult.svg"></a>
 	<a href="https://www.npmjs.com/package/remult" rel="nofollow">
-		<img alt="npm downloads" src="https://img.shields.io/npm/dm/remult">
-	</a>
+		<img alt="npm downloads" src="https://img.shields.io/npm/dm/remult"></a>
 	<a href="https://discord.gg/GXHk7ZfuG5" rel="nofollow">
-		<img alt="Join Discord" src="https://badgen.net/discord/online-members/GXHk7ZfuG5?icon=discord&label=Discord"/>
-	</a>
+		<img alt="Join Discord" src="https://badgen.net/discord/members/GXHk7ZfuG5?icon=discord&label=Discord"/></a>
 </div>
 
 <br/>
