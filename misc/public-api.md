@@ -2064,12 +2064,8 @@ export declare class SqlDatabase
    */
   static durationThreshold: number
   constructor(sql: SqlImplementation)
-  provideMigrationBuilder: (builder: MigrationCode) => MigrationBuilder
-  isProxy?: boolean
   private createdEntities
 }
-//[ ] MigrationCode from TBD is not exported
-//[ ] MigrationBuilder from TBD is not exported
 export interface SqlImplementation extends HasWrapIdentifier {
   getLimitSqlSyntax(limit: number, offset: number): any
   createCommand(): SqlCommand
@@ -3091,7 +3087,6 @@ export declare class KnexDataProvider
 {
   knex: Knex
   constructor(knex: Knex)
-  provideMigrationBuilder(builder: MigrationCode): MigrationBuilder
   createCommand(): SqlCommand
   execute(sql: string): Promise<SqlResult>
   static getDb(remult?: Remult): Knex<any, any[]>
@@ -3108,8 +3103,6 @@ export declare class KnexDataProvider
   isProxy?: boolean
   ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
 }
-//[ ] MigrationCode from ../migrations/migration-types.js is not exported
-//[ ] MigrationBuilder from ../migrations/migration-types.js is not exported
 //[ ] SqlCommand from ../src/sql-command.js is not exported
 //[ ] SqlResult from ../src/sql-command.js is not exported
 //[ ] Remult from ../src/context.js is not exported
@@ -3217,15 +3210,15 @@ export declare class SqlJsDataProvider implements SqlImplementation {
 export declare function generateMigrations(options: {
   entities: any[]
   dataProvider: Promise<DataProvider> | DataProvider
-  migrationsDir?: string
-  snapshotFileName?: string
-  migrationsTSFilename?: string
+  migrationsFolder?: string
+  snapshotFile?: string
+  migrationsTSFile?: string
 }): Promise<void>
 //[ ] DataProvider from TBD is not exported
 export declare function migrate(options: {
   migrations: Migrations
   dataProvider?: Promise<DataProvider> | DataProvider
-  migrationTableName?: string
+  migrationsTable?: string
 }): Promise<void>
 export type Migrations = Record<
   number,

@@ -17,17 +17,17 @@ import { isOfType } from '../src/isOfType.js'
 export async function generateMigrations(options: {
   entities: any[]
   dataProvider: Promise<DataProvider> | DataProvider
-  migrationsDir?: string
-  snapshotFileName?: string
-  migrationsTSFilename?: string
+  migrationsFolder?: string
+  snapshotFile?: string
+  migrationsTSFile?: string
 }) {
   const migrationDir =
-    options.migrationsDir || path.join(process.cwd(), 'src/server/migrations')
+    options.migrationsFolder ||
+    path.join(process.cwd(), 'src/server/migrations')
   const snapshotFileName =
-    options.snapshotFileName ||
-    path.join(migrationDir, 'migrations-snapshot.json')
+    options.snapshotFile || path.join(migrationDir, 'migrations-snapshot.json')
   const migrationsTSFilename =
-    options.migrationsTSFilename || path.join(migrationDir, 'migrations.ts')
+    options.migrationsTSFile || path.join(migrationDir, 'migrations.ts')
   const dataProvider = await options.dataProvider
 
   for (const p of [snapshotFileName, migrationsTSFilename]) {

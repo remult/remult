@@ -187,8 +187,8 @@ export class SqlDatabase
       this.provideMigrationBuilder = sql.provideMigrationBuilder
     }
   }
+  /* @internal */
   provideMigrationBuilder: (builder: MigrationCode) => MigrationBuilder
-  isProxy?: boolean
   private createdEntities: string[] = []
 }
 

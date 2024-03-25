@@ -15,10 +15,10 @@ export async function migrate(options: {
   migrations: Migrations
   dataProvider?: Promise<DataProvider> | DataProvider
 
-  migrationTableName?: string
+  migrationsTable?: string
 }) {
   let migrationTableName =
-    options.migrationTableName || '__remult_migration_version'
+    options.migrationsTable || '__remult_migrations_version'
 
   const dataProvider = options.dataProvider
     ? await options.dataProvider

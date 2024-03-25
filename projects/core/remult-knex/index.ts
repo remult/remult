@@ -54,6 +54,7 @@ export class KnexDataProvider
     CanBuildMigrations
 {
   constructor(public knex: Knex) {}
+  /* @internal */
   provideMigrationBuilder(builder: MigrationCode): MigrationBuilder {
     var sb = new KnexSchemaBuilder(this.knex)
     return {
