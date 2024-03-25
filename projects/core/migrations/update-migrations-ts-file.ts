@@ -19,7 +19,7 @@ export async function updateMigrationsFile(filePath: string, steps: string[]) {
   }
 
   const importPath = 'remult/migrations'
-  const importName = 'MigrationSteps'
+  const importName = 'Migrations'
   // Load the file
   const sourceFile = ts.createSourceFile(
     filePath,

@@ -128,6 +128,7 @@ export class SqlDatabase
             transaction: (z) => x.transaction(z),
             supportsJsonColumnType: this.sql.supportsJsonColumnType,
             wrapIdentifier: this.wrapIdentifier,
+            end: this.end,
           }),
         )
       } finally {
@@ -186,10 +187,13 @@ export class SqlDatabase
     if (isOfType<CanBuildMigrations>(sql, 'provideMigrationBuilder')) {
       this.provideMigrationBuilder = sql.provideMigrationBuilder
     }
+    if (isOfType(sql, 'end')) this.end = () => sql.end()
   }
   /* @internal */
   provideMigrationBuilder: (builder: MigrationCode) => MigrationBuilder
   private createdEntities: string[] = []
+
+  end: () => Promise<void>
 }
 
 const icons = new Map<string, string>([

@@ -2065,6 +2065,7 @@ export declare class SqlDatabase
   static durationThreshold: number
   constructor(sql: SqlImplementation)
   private createdEntities
+  end: () => Promise<void>
 }
 export interface SqlImplementation extends HasWrapIdentifier {
   getLimitSqlSyntax(limit: number, offset: number): any
@@ -2074,6 +2075,7 @@ export interface SqlImplementation extends HasWrapIdentifier {
   ensureSchema?(entities: EntityMetadata[]): Promise<void>
   supportsJsonColumnType?: boolean
   orderByNullsFirst?: boolean
+  end(): Promise<void>
   afterMutation?: VoidFunction
 }
 export interface SqlResult {
@@ -2397,7 +2399,7 @@ export declare class WebSqlDataProvider
     [tableName: string]: any
   }
   constructor(databaseName: string, databaseSize?: number)
-  static getDb(remult?: Remult): any
+  end(): Promise<void>
   getLimitSqlSyntax(limit: number, offset: number): string
   entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void>
   ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
@@ -2985,6 +2987,7 @@ export declare class PostgresDataProvider
       orderByNullsFirst?: boolean
     },
   )
+  end(): Promise<void>
   provideMigrationBuilder(builder: MigrationCode): MigrationBuilder
   wrapIdentifier: (name: any) => any
   ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
@@ -3002,6 +3005,7 @@ export declare class PostgresDataProvider
 //[ ] SqlImplementation from TBD is not exported
 export interface PostgresPool extends PostgresCommandSource {
   connect(): Promise<PostgresClient>
+  end(): Promise<void>
 }
 export declare class PostgresSchemaBuilder {
   private pool
@@ -3087,6 +3091,7 @@ export declare class KnexDataProvider
 {
   knex: Knex
   constructor(knex: Knex)
+  end(): Promise<void>
   createCommand(): SqlCommand
   execute(sql: string): Promise<SqlResult>
   static getDb(remult?: Remult): Knex<any, any[]>
@@ -3187,6 +3192,8 @@ export declare class MongoDataProvider implements DataProvider {
 export declare class SqlJsDataProvider implements SqlImplementation {
   private db
   constructor(db: Promise<Database>)
+  orderByNullsFirst?: boolean
+  end(): Promise<void>
   getLimitSqlSyntax(limit: number, offset: number): string
   afterMutation?: VoidFunction
   createCommand(): SqlCommand
@@ -3209,16 +3216,24 @@ export declare class SqlJsDataProvider implements SqlImplementation {
 ```ts
 export declare function generateMigrations(options: {
   entities: any[]
-  dataProvider: Promise<DataProvider> | DataProvider
+  dataProvider:
+    | DataProvider
+    | Promise<DataProvider>
+    | (() => Promise<DataProvider | undefined>)
   migrationsFolder?: string
   snapshotFile?: string
   migrationsTSFile?: string
+  endConnection?: boolean
 }): Promise<void>
 //[ ] DataProvider from TBD is not exported
 export declare function migrate(options: {
   migrations: Migrations
-  dataProvider?: Promise<DataProvider> | DataProvider
+  dataProvider:
+    | DataProvider
+    | Promise<DataProvider>
+    | (() => Promise<DataProvider | undefined>)
   migrationsTable?: string
+  endConnection?: boolean
 }): Promise<void>
 export type Migrations = Record<
   number,

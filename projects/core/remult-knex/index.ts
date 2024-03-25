@@ -54,6 +54,9 @@ export class KnexDataProvider
     CanBuildMigrations
 {
   constructor(public knex: Knex) {}
+  end() {
+    return this.knex.destroy()
+  }
   /* @internal */
   provideMigrationBuilder(builder: MigrationCode): MigrationBuilder {
     var sb = new KnexSchemaBuilder(this.knex)

@@ -1,4 +1,5 @@
 import type { ClientBase, PoolConfig, QueryResult } from 'pg'
+import { remult as defaultRemult } from '../src/remult-proxy.js'
 import pg from 'pg'
 const { Pool } = pg
 import { Remult } from '../src/context.js'
@@ -18,6 +19,7 @@ import type {
 
 export interface PostgresPool extends PostgresCommandSource {
   connect(): Promise<PostgresClient>
+  end(): Promise<void>
 }
 export interface PostgresClient extends PostgresCommandSource {
   release(): void
@@ -28,8 +30,9 @@ export class PostgresDataProvider
 {
   supportsJsonColumnType = true
   static getDb(remult?: Remult): ClientBase {
-    const sql = SqlDatabase.getDb(remult)
-    const me = sql._getSourceSql() as PostgresDataProvider
+    const r = (remult || defaultRemult).dataProvider as SqlDatabase
+    if (!r._getSourceSql) throw 'the data provider is not an SqlDatabase'
+    const me = r._getSourceSql() as PostgresDataProvider
     if (!me.pool) {
       throw 'the data provider is not a PostgresDataProvider'
     }
@@ -61,6 +64,9 @@ export class PostgresDataProvider
     if (options?.schema) {
       this.pool = new PostgresSchemaWrapper(pool, options.schema)
     }
+  }
+  end() {
+    return this.pool.end()
   }
   provideMigrationBuilder(builder: MigrationCode): MigrationBuilder {
     var db = new SqlDatabase(this)
@@ -229,5 +235,8 @@ export class PostgresSchemaWrapper implements PostgresPool {
     } finally {
       c.release()
     }
+  }
+  end() {
+    return this.pool.end()
   }
 }

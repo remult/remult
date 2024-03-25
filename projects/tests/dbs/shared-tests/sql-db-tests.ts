@@ -143,7 +143,7 @@ export function SqlDbTests({
     `)
   })
   describe.skipIf(skipMigrations)('test migrations', () => {
-    const migrationTableName = 'remult_migrations'
+    const migrationsTable = 'remult_migrations'
     let db: SqlCommandFactory
     let remult: Remult
     @Entity('tasks')
@@ -164,7 +164,7 @@ export function SqlDbTests({
       db = cast<SqlCommandFactory>(getDb(), 'createCommand')
       remult = getRemult()
       for (const iterator of [
-        migrationTableName,
+        migrationsTable,
         remult.repo(Task).metadata.dbName,
       ]) {
         try {
@@ -196,7 +196,12 @@ export function SqlDbTests({
         migrationBuilder,
       })
       expect(Object.keys(migrations).length).toBe(1)
-      await migrate({ migrations, dataProvider: getDb(), migrationTableName })
+      await migrate({
+        migrations,
+        dataProvider: getDb(),
+        migrationsTable,
+        endConnection: false,
+      })
       expect(await remult.repo(Task).find()).toMatchInlineSnapshot('[]')
       await expect(() => remult.repo(TaskEnhanced).find()).rejects.toThrow()
       snapshot = await compareMigrationSnapshot({
@@ -205,7 +210,12 @@ export function SqlDbTests({
         migrationBuilder,
       })
       expect(Object.keys(migrations).length).toBe(3)
-      await migrate({ migrations, dataProvider: getDb(), migrationTableName })
+      await migrate({
+        migrations,
+        dataProvider: getDb(),
+        migrationsTable,
+        endConnection: false,
+      })
       expect(await remult.repo(TaskEnhanced).find()).toMatchInlineSnapshot('[]')
     })
     it('test migrations transactions', async () => {
@@ -228,7 +238,7 @@ export function SqlDbTests({
               },
             },
             dataProvider: getDb(),
-            migrationTableName,
+            migrationsTable,
           }),
       ).rejects.toThrow('error')
 
@@ -257,7 +267,8 @@ export function SqlDbTests({
                 },
               },
               dataProvider: getDb(),
-              migrationTableName,
+              migrationsTable,
+              endConnection: false,
             }),
         ).rejects.toThrow('error')
         const db = cast<SqlCommandFactory>(getDb(), 'createCommand')

@@ -8,6 +8,7 @@ export interface SqlImplementation extends HasWrapIdentifier {
   ensureSchema?(entities: EntityMetadata[]): Promise<void>
   supportsJsonColumnType?: boolean
   orderByNullsFirst?: boolean
+  end(): Promise<void>
 
   afterMutation?: VoidFunction
 }

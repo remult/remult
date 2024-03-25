@@ -13,13 +13,18 @@ import {
   type MigrationCode,
 } from './migration-types.js'
 import { isOfType } from '../src/isOfType.js'
+import { initDataProvider } from '../server/initDataProvider.js'
 
 export async function generateMigrations(options: {
   entities: any[]
-  dataProvider: Promise<DataProvider> | DataProvider
+  dataProvider:
+    | DataProvider
+    | Promise<DataProvider>
+    | (() => Promise<DataProvider | undefined>)
   migrationsFolder?: string
   snapshotFile?: string
   migrationsTSFile?: string
+  endConnection?: boolean
 }) {
   const migrationDir =
     options.migrationsFolder ||
@@ -28,7 +33,7 @@ export async function generateMigrations(options: {
     options.snapshotFile || path.join(migrationDir, 'migrations-snapshot.json')
   const migrationsTSFilename =
     options.migrationsTSFile || path.join(migrationDir, 'migrations.ts')
-  const dataProvider = await options.dataProvider
+  const dataProvider = await initDataProvider(options.dataProvider)
 
   for (const p of [snapshotFileName, migrationsTSFilename]) {
     if (!fs.existsSync(path.dirname(p))) {
@@ -72,4 +77,7 @@ export async function generateMigrations(options: {
       `async (${hasSql ? '{sql}' : ''})=>{\n${steps.join('\n')}\n}`,
     ])
   fs.writeFileSync(snapshotFileName, JSON.stringify(snapshot, null, 2))
+  if (options.endConnection !== false && isOfType(dataProvider, 'end')) {
+    await dataProvider.end()
+  }
 }

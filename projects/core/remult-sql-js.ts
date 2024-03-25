@@ -16,6 +16,10 @@ import type { FieldMetadata } from './src/column-interfaces.js'
 
 export class SqlJsDataProvider implements SqlImplementation {
   constructor(private db: Promise<Database>) {}
+  orderByNullsFirst?: boolean
+  async end(): Promise<void> {
+    ;(await this.db).close()
+  }
   getLimitSqlSyntax(limit: number, offset: number) {
     return ' limit ' + limit + ' offset ' + offset
   }

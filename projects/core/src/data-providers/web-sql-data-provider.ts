@@ -37,15 +37,7 @@ export class WebSqlDataProvider
       databaseSize,
     )
   }
-  // return instance of websql.Database class - see @types/websql
-  static getDb(remult?: Remult): any {
-    const sql = SqlDatabase.getDb(remult)
-    const me = sql._getSourceSql() as WebSqlDataProvider
-    if (!me.db) {
-      throw 'the data provider is not a WebSqlDataProvider'
-    }
-    return me.db
-  }
+  async end() {}
 
   getLimitSqlSyntax(limit: number, offset: number) {
     return ' limit ' + limit + ' offset ' + offset
