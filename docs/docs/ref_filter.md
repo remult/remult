@@ -7,11 +7,11 @@ When the filter is used in the frontend, only its name is sent to the backend vi
 where the filter gets translated and applied in a safe manner.
    
    
-   *returns*
+   #### returns:
    A function that returns an `EntityFilter` of type `entityType`.
    
    
-   *example*
+   #### example:
    ```ts
    // In an entity class, add a static method for the custom filter
    static titleLengthFilter = Filter.createCustom<Task>(() => {
@@ -29,7 +29,7 @@ where the filter gets translated and applied in a safe manner.
    ```
    
    
-   *see*
+   #### see:
    [Sql filter and Custom filter](/docs/custom-filter.html)
    [Filtering and Relations](/docs/filtering-and-relations.html)
 
@@ -40,11 +40,11 @@ Arguments:
 Translates an `EntityFilter` to a plain JSON object that can be stored or transported.
    
    
-   *returns*
+   #### returns:
    A plain JSON object representing the `EntityFilter`.
    
    
-   *example*
+   #### example:
    ```ts
    // Assuming `Task` is an entity class
    const jsonFilter = Filter.entityFilterToJson(Task, { completed: true });
@@ -58,11 +58,11 @@ Arguments:
 Translates a plain JSON object back into an `EntityFilter`.
    
    
-   *returns*
+   #### returns:
    The reconstructed `EntityFilter`.
    
    
-   *example*
+   #### example:
    ```ts
    // Assuming `Task` is an entity class and `jsonFilter` is a JSON object representing an EntityFilter
    const taskFilter = Filter.entityFilterFromJson(Task, jsonFilter);
@@ -81,11 +81,11 @@ Converts an `EntityFilter` to a `Filter` that can be used by the `DataProvider`.
 mainly used internally.
    
    
-   *returns*
+   #### returns:
    A `Filter` instance that can be used by the `DataProvider`.
    
    
-   *example*
+   #### example:
    ```ts
    // Assuming `Task` is an entity class and `taskFilter` is an EntityFilter
    const filter = Filter.fromEntityFilter(Task, taskFilter);
@@ -114,7 +114,7 @@ resolves to an instance of `EntityFilter`. It then resolves the filter if it
 is a function and returns the resulting `EntityFilter`.
    
    
-   *returns*
+   #### returns:
    The resolved entity filter.
 
 Arguments:

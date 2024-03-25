@@ -3,7 +3,7 @@ The `SubscriptionChannel` class is used to send messages from the backend to the
 using the same mechanism used by live queries.
    
    
-   *example*
+   #### example:
    ```ts
    // Defined in code that is shared between the frontend and the backend
    const statusChange = new SubscriptionChannel<{ oldStatus: number, newStatus: number }>("statusChange");
@@ -35,7 +35,7 @@ Arguments:
 Subscribes to messages from the channel. This method should only be used on the frontend.
    
    
-   *returns*
+   #### returns:
    A promise that resolves to a function that can be used to unsubscribe from the channel.
 
 Arguments:

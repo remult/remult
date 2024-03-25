@@ -12,12 +12,23 @@ import { cast, isOfType } from '../src/isOfType.js'
 import type { SqlCommandFactory } from '../src/sql-command.js'
 import type { MigrationUtils, Migrations } from './migration-types.js'
 
+/**
+ * Applies migration scripts to update the database schema.
+ *
+ * @param options - Configuration options for applying migrations.
+ * @param options.migrations - An object containing the migration scripts, each keyed by a unique identifier.
+ * @param options.dataProvider - The data provider instance or a function returning a promise of the data provider.
+ * @param options.migrationsTable - (Optional) The name of the table that tracks applied migrations. Default is '__remult_migrations_version'.
+ * @param options.endConnection - (Optional) Determines whether to close the database connection after applying migrations. Default is true.
+* @see [Migrations](http://remult.dev/docs/migrations.html) 
+*/
 export async function migrate(options: {
   migrations: Migrations
   dataProvider:
     | DataProvider
     | Promise<DataProvider>
     | (() => Promise<DataProvider | undefined>)
+  // default __remult_migrations_version
   migrationsTable?: string
   endConnection?: boolean
 }) {

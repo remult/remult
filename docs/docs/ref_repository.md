@@ -8,7 +8,7 @@ Arguments:
    * **limit** - Determines the number of rows returned by the request, on the browser the default is 100 rows
       
       
-      *example*
+      #### example:
       ```ts
       await this.remult.repo(Products).find({
        limit:10,
@@ -18,7 +18,7 @@ Arguments:
    * **page** - Determines the page number that will be used to extract the data
       
       
-      *example*
+      #### example:
       ```ts
       await this.remult.repo(Products).find({
        limit:10,
@@ -29,7 +29,7 @@ Arguments:
    when querying the source entity. It allows you to eagerly load related data to avoid N+1 query problems.
       
       
-      *param*
+      #### param:
       An object specifying the related entities to include, their options, and filtering criteria.
       
       Example usage:
@@ -44,7 +44,7 @@ Arguments:
       In this example, the `tags` relation for each customer will be loaded and included in the query result.
       
       
-      *see*
+      #### see:
        - Relations.toMany
        - Relations.toOne
        - RelationOptions
@@ -52,24 +52,24 @@ Arguments:
    * **where** - filters the data
       
       
-      *example*
+      #### example:
       ```ts
       await taskRepo.find({where: { completed:false }})
       ```
       
       
-      *see*
+      #### see:
       For more usage examples see [EntityFilter](https://remult.dev/docs/entityFilter.html)
    * **orderBy** - Determines the order of items returned .
       
       
-      *example*
+      #### example:
       ```ts
       await this.remult.repo(Products).find({ orderBy: { name: "asc" }})
       ```
       
       
-      *example*
+      #### example:
       ```ts
       await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
       ```
@@ -81,7 +81,7 @@ Arguments:
    * **limit** - Determines the number of rows returned by the request, on the browser the default is 100 rows
       
       
-      *example*
+      #### example:
       ```ts
       await this.remult.repo(Products).find({
        limit:10,
@@ -91,7 +91,7 @@ Arguments:
    * **page** - Determines the page number that will be used to extract the data
       
       
-      *example*
+      #### example:
       ```ts
       await this.remult.repo(Products).find({
        limit:10,
@@ -102,7 +102,7 @@ Arguments:
    when querying the source entity. It allows you to eagerly load related data to avoid N+1 query problems.
       
       
-      *param*
+      #### param:
       An object specifying the related entities to include, their options, and filtering criteria.
       
       Example usage:
@@ -117,7 +117,7 @@ Arguments:
       In this example, the `tags` relation for each customer will be loaded and included in the query result.
       
       
-      *see*
+      #### see:
        - Relations.toMany
        - Relations.toOne
        - RelationOptions
@@ -125,24 +125,24 @@ Arguments:
    * **where** - filters the data
       
       
-      *example*
+      #### example:
       ```ts
       await taskRepo.find({where: { completed:false }})
       ```
       
       
-      *see*
+      #### see:
       For more usage examples see [EntityFilter](https://remult.dev/docs/entityFilter.html)
    * **orderBy** - Determines the order of items returned .
       
       
-      *example*
+      #### example:
       ```ts
       await this.remult.repo(Products).find({ orderBy: { name: "asc" }})
       ```
       
       
-      *example*
+      #### example:
       ```ts
       await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
       ```
@@ -150,13 +150,13 @@ Arguments:
 returns the first item that matchers the `where` condition
    
    
-   *example*
+   #### example:
    ```ts
    await taskRepo.findFirst({ completed:false })
    ```
    
    
-   *example*
+   #### example:
    ```ts
    await taskRepo.findFirst({ completed:false },{ createIfNotFound: true })
    ```
@@ -165,14 +165,14 @@ Arguments:
 * **where** - filters the data
    
    
-   *see*
+   #### see:
    [EntityFilter](http://remult.dev/docs/entityFilter.html)
 * **options**
    * **include** - An option used in the `find` and `findFirst` methods to specify which related entities should be included
    when querying the source entity. It allows you to eagerly load related data to avoid N+1 query problems.
       
       
-      *param*
+      #### param:
       An object specifying the related entities to include, their options, and filtering criteria.
       
       Example usage:
@@ -187,7 +187,7 @@ Arguments:
       In this example, the `tags` relation for each customer will be loaded and included in the query result.
       
       
-      *see*
+      #### see:
        - Relations.toMany
        - Relations.toOne
        - RelationOptions
@@ -195,24 +195,24 @@ Arguments:
    * **where** - filters the data
       
       
-      *example*
+      #### example:
       ```ts
       await taskRepo.find({where: { completed:false }})
       ```
       
       
-      *see*
+      #### see:
       For more usage examples see [EntityFilter](https://remult.dev/docs/entityFilter.html)
    * **orderBy** - Determines the order of items returned .
       
       
-      *example*
+      #### example:
       ```ts
       await this.remult.repo(Products).find({ orderBy: { name: "asc" }})
       ```
       
       
-      *example*
+      #### example:
       ```ts
       await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
       ```
@@ -222,13 +222,13 @@ Arguments:
 returns the first item that matchers the `where` condition
    
    
-   *example*
+   #### example:
    ```ts
    await taskRepo.findOne({ where:{ completed:false }})
    ```
    
    
-   *example*
+   #### example:
    ```ts
    await taskRepo.findFirst({ where:{ completed:false }, createIfNotFound: true })
    ```
@@ -239,7 +239,7 @@ Arguments:
    when querying the source entity. It allows you to eagerly load related data to avoid N+1 query problems.
       
       
-      *param*
+      #### param:
       An object specifying the related entities to include, their options, and filtering criteria.
       
       Example usage:
@@ -254,7 +254,7 @@ Arguments:
       In this example, the `tags` relation for each customer will be loaded and included in the query result.
       
       
-      *see*
+      #### see:
        - Relations.toMany
        - Relations.toOne
        - RelationOptions
@@ -262,24 +262,24 @@ Arguments:
    * **where** - filters the data
       
       
-      *example*
+      #### example:
       ```ts
       await taskRepo.find({where: { completed:false }})
       ```
       
       
-      *see*
+      #### see:
       For more usage examples see [EntityFilter](https://remult.dev/docs/entityFilter.html)
    * **orderBy** - Determines the order of items returned .
       
       
-      *example*
+      #### example:
       ```ts
       await this.remult.repo(Products).find({ orderBy: { name: "asc" }})
       ```
       
       
-      *example*
+      #### example:
       ```ts
       await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
       ```
@@ -295,7 +295,7 @@ Arguments:
    when querying the source entity. It allows you to eagerly load related data to avoid N+1 query problems.
       
       
-      *param*
+      #### param:
       An object specifying the related entities to include, their options, and filtering criteria.
       
       Example usage:
@@ -310,7 +310,7 @@ Arguments:
       In this example, the `tags` relation for each customer will be loaded and included in the query result.
       
       
-      *see*
+      #### see:
        - Relations.toMany
        - Relations.toOne
        - RelationOptions
@@ -326,7 +326,7 @@ The `query` method doesn't return an array (as the `find` method) and instead re
 which supports iterations using the JavaScript `for await` statement.
    
    
-   *example*
+   #### example:
    ```ts
    for await (const task of taskRepo.query()) {
      // do something.
@@ -339,7 +339,7 @@ Arguments:
    when querying the source entity. It allows you to eagerly load related data to avoid N+1 query problems.
       
       
-      *param*
+      #### param:
       An object specifying the related entities to include, their options, and filtering criteria.
       
       Example usage:
@@ -354,7 +354,7 @@ Arguments:
       In this example, the `tags` relation for each customer will be loaded and included in the query result.
       
       
-      *see*
+      #### see:
        - Relations.toMany
        - Relations.toOne
        - RelationOptions
@@ -362,24 +362,24 @@ Arguments:
    * **where** - filters the data
       
       
-      *example*
+      #### example:
       ```ts
       await taskRepo.find({where: { completed:false }})
       ```
       
       
-      *see*
+      #### see:
       For more usage examples see [EntityFilter](https://remult.dev/docs/entityFilter.html)
    * **orderBy** - Determines the order of items returned .
       
       
-      *example*
+      #### example:
       ```ts
       await this.remult.repo(Products).find({ orderBy: { name: "asc" }})
       ```
       
       
-      *example*
+      #### example:
       ```ts
       await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
       ```
@@ -389,11 +389,11 @@ Arguments:
 Returns a count of the items matching the criteria.
    
    
-   *see*
+   #### see:
    [EntityFilter](http://remult.dev/docs/entityFilter.html)
    
    
-   *example*
+   #### example:
    ```ts
    await taskRepo.count({ completed:false })
    ```
@@ -402,13 +402,13 @@ Arguments:
 * **where** - filters the data
    
    
-   *see*
+   #### see:
    [EntityFilter](http://remult.dev/docs/entityFilter.html)
 ## validate
 Validates an item
    
    
-   *example*
+   #### example:
    ```ts
    const error = repo.validate(task);
    if (error){
@@ -426,7 +426,7 @@ Arguments:
 saves an item or item[] to the data source. It assumes that if an `id` value exists, it's an existing row - otherwise it's a new row
    
    
-   *example*
+   #### example:
    ```ts
    await taskRepo.save({...task, completed:true })
    ```
@@ -437,13 +437,13 @@ Arguments:
 Insert an item or item[] to the data source
    
    
-   *example*
+   #### example:
    ```ts
    await taskRepo.insert({title:"task a"})
    ```
    
    
-   *example*
+   #### example:
    ```ts
    await taskRepo.insert([{title:"task a"}, {title:"task b", completed:true }])
    ```
@@ -454,7 +454,7 @@ Arguments:
 Updates an item, based on its `id`
    
    
-   *example*
+   #### example:
    ```ts
    taskRepo.update(task.id,{...task,completed:true})
    ```
@@ -469,7 +469,7 @@ Arguments:
 * **where** - filters the data
    
    
-   *see*
+   #### see:
    [EntityFilter](http://remult.dev/docs/entityFilter.html)
 * **item**
 ## delete
@@ -484,7 +484,7 @@ Arguments:
 * **where** - filters the data
    
    
-   *see*
+   #### see:
    [EntityFilter](http://remult.dev/docs/entityFilter.html)
 ## create
 Creates an instance of an item. It'll not be saved to the data source unless `save` or `insert` will be called for that item
@@ -511,7 +511,7 @@ Arguments:
 Provides information about the fields of the Repository's entity
    
    
-   *example*
+   #### example:
    ```ts
    console.log(repo.fields.title.caption) // displays the caption of a specific field
    console.log(repo.fields.title.options)// writes the options that were defined for this field
@@ -520,7 +520,7 @@ Provides information about the fields of the Repository's entity
 The metadata for the `entity`
    
    
-   *See*
+   #### See:
    [EntityMetadata](https://remult.dev/docs/ref_entitymetadata.html)
 ## addEventListener
 * **addEventListener**

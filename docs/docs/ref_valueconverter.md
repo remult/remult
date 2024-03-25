@@ -6,11 +6,11 @@ Converts a value from a JSON DTO to the valueType. This method is typically used
 from a REST API call or deserializing a JSON payload.
    
    
-   *returns*
+   #### returns:
    The converted value.
    
    
-   *example*
+   #### example:
    ```ts
    fromJson: val => new Date(val)
    ```
@@ -22,11 +22,11 @@ Converts a value of valueType to a JSON DTO. This method is typically used when 
 to a REST API or serializing an object to a JSON payload.
    
    
-   *returns*
+   #### returns:
    The converted value.
    
    
-   *example*
+   #### example:
    ```ts
    toJson: val => val?.toISOString()
    ```
@@ -37,11 +37,11 @@ Arguments:
 Converts a value from the database format to the valueType.
    
    
-   *returns*
+   #### returns:
    The converted value.
    
    
-   *example*
+   #### example:
    ```ts
    fromDb: val => new Date(val)
    ```
@@ -52,11 +52,11 @@ Arguments:
 Converts a value of valueType to the database format.
    
    
-   *returns*
+   #### returns:
    The converted value.
    
    
-   *example*
+   #### example:
    ```ts
    toDb: val => val?.toISOString()
    ```
@@ -67,11 +67,11 @@ Arguments:
 Converts a value of valueType to a string suitable for an HTML input element.
    
    
-   *returns*
+   #### returns:
    The converted value as a string.
    
    
-   *example*
+   #### example:
    ```ts
    toInput: (val, inputType) => val?.toISOString().substring(0, 10)
    ```
@@ -83,11 +83,11 @@ Arguments:
 Converts a string from an HTML input element to the valueType.
    
    
-   *returns*
+   #### returns:
    The converted value.
    
    
-   *example*
+   #### example:
    ```ts
    fromInput: (val, inputType) => new Date(val)
    ```
@@ -99,11 +99,11 @@ Arguments:
 Returns a displayable string representation of a value of valueType.
    
    
-   *returns*
+   #### returns:
    The displayable string.
    
    
-   *example*
+   #### example:
    ```ts
    displayValue: val => val?.toLocaleDateString()
    ```
@@ -114,7 +114,7 @@ Arguments:
 Specifies the storage type used in the database for this field.
    
    
-   *example*
+   #### example:
    ```ts
    readonly fieldTypeInDb = 'decimal(18,2)';
    ```
@@ -122,7 +122,7 @@ Specifies the storage type used in the database for this field.
 Specifies the type of HTML input element suitable for values of valueType.
    
    
-   *example*
+   #### example:
    ```ts
    readonly inputType = 'date';
    ```

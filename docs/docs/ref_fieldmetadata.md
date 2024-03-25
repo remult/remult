@@ -6,7 +6,7 @@ The field's value type (number,string etc...)
 The field's member name in an object.
    
    
-   *example*
+   #### example:
    ```ts
    const taskRepo = remult.repo(Task);
    console.log(taskRepo.metadata.fields.title.key);
@@ -16,7 +16,7 @@ The field's member name in an object.
 A human readable caption for the field. Can be used to achieve a consistent caption for a field throughout the app
    
    
-   *example*
+   #### example:
    ```ts
    <input placeholder={taskRepo.metadata.fields.title.caption}/>
    ```
@@ -24,7 +24,7 @@ A human readable caption for the field. Can be used to achieve a consistent capt
 The name of the column in the database that holds the data for this field. If no name is set, the key will be used instead.
    
    
-   *example*
+   #### example:
    ```ts
    @Fields.string({ dbName: 'userName'})
    userName=''
@@ -39,7 +39,7 @@ if null is allowed for this field
 The class that contains this field
    
    
-   *example*
+   #### example:
    ```ts
    const taskRepo = remult.repo(Task);
    Task == taskRepo.metadata.fields.title.target //will return true
@@ -56,7 +56,7 @@ the Value converter for this field
 Get the display value for a specific item
    
    
-   *example*
+   #### example:
    ```ts
    repo.fields.createDate.displayValue(task) //will display the date as defined in the `displayValue` option defined for it.
    ```
@@ -77,7 +77,7 @@ Arguments:
 Adapts the value for usage with html input
    
    
-   *example*
+   #### example:
    ```ts
    @Fields.dateOnly()
    birthDate = new Date(1976,5,16)
@@ -92,7 +92,7 @@ Arguments:
 Adapts the value for usage with html input
    
    
-   *example*
+   #### example:
    ```ts
    @Fields.dateOnly()
    birthDate = new Date(1976,5,16)

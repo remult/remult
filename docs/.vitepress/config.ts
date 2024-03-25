@@ -148,6 +148,7 @@ export default defineConfig({
                 ],
               },
               { text: 'Lifecycle Hooks', link: '/docs/lifecycle-hooks' },
+              { text: 'Migrations', link: '/docs/migrations' },
               {
                 text: 'Generate from Existing DB',
                 link: '/docs/entities-codegen-from-db-schema',
@@ -242,6 +243,11 @@ export default defineConfig({
                 text: 'SubscriptionChannel',
                 link: '/docs/ref_subscriptionchannel',
               },
+              {
+                text: 'generateMigrations',
+                link: '/docs/ref_generatemigrations',
+              },
+              { text: 'migrate', link: '/docs/ref_migrate' },
 
               { text: 'REST API Spec', link: '/docs/rest-api' },
             ],

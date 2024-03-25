@@ -5,7 +5,7 @@ for more info see: [Field Types](https://remult.dev/docs/field-types.html)
 FieldOptions can be set in two ways:
    
    
-   *example*
+   #### example:
    ```ts
    // as an object
    @Fields.string({ includeInApi:false })
@@ -13,7 +13,7 @@ FieldOptions can be set in two ways:
    ```
    
    
-   *example*
+   #### example:
    ```ts
    // as an arrow function that receives `remult` as a parameter
    @Fields.string((options,remult) => options.includeInApi = true)
@@ -25,7 +25,7 @@ The value type for this field
 A human readable name for the field. Can be used to achieve a consistent caption for a field throughout the app
    
    
-   *example*
+   #### example:
    ```ts
    <input placeholder={taskRepo.metadata.fields.title.caption}/>
    ```
@@ -37,19 +37,19 @@ If a value is required
 If this field data is included in the api.
    
    
-   *see*
+   #### see:
    [allowed](http://remult.dev/docs/allowed.html)
 ## allowApiUpdate
 If this field data can be updated in the api.
    
    
-   *see*
+   #### see:
    [allowed](http://remult.dev/docs/allowed.html)
 ## validate
 An arrow function that'll be used to perform validations on it
    
    
-   *example*
+   #### example:
    ```ts
    @Fields.string({
      validate: Validators.required
@@ -58,7 +58,7 @@ An arrow function that'll be used to perform validations on it
    ```
    
    
-   *example*
+   #### example:
    ```ts
    @Fields.string<Task>({
       validate: task=>task.title.length>3 ||  "Too Short"
@@ -66,7 +66,7 @@ An arrow function that'll be used to perform validations on it
    ```
    
    
-   *example*
+   #### example:
    ```ts
    @Fields.string<Task>({
       validate: task=>{
@@ -77,7 +77,7 @@ An arrow function that'll be used to perform validations on it
    ```
    
    
-   *example*
+   #### example:
    ```ts
    @Fields.string({
       validate: (_, fieldValidationEvent)=>{
@@ -102,7 +102,7 @@ Arguments:
 The name of the column in the database that holds the data for this field. If no name is set, the key will be used instead.
    
    
-   *example*
+   #### example:
    ```ts
    @Fields.string({ dbName: 'userName'})
    userName=''
@@ -111,7 +111,7 @@ The name of the column in the database that holds the data for this field. If no
 Used or fields that are based on an sql expressions, instead of a physical table column
    
    
-   *example*
+   #### example:
    ```ts
    @Fields.integer({
      sqlExpression:e=> 'length(title)'

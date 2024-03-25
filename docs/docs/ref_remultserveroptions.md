@@ -26,19 +26,19 @@ Arguments:
 Data Provider to use for the api.
    
    
-   *see*
+   #### see:
    [Connecting to a Database](https://remult.dev/docs/databases.html).
 ## ensureSchema
 Will create tables and columns in supporting databases. default: true
    
    
-   *description*
+   #### description:
    when set to true, it'll create entities that do not exist, and add columns that are missing.
 ## rootPath
 The path to use for the api, default:/api
    
    
-   *description*
+   #### description:
    If you want to use a different api path adjust this field
 ## defaultGetLimit
 The default limit to use for find requests that did not specify a limit
@@ -55,7 +55,7 @@ When set to true, will display an admin ui in the `/api/admin` url.
 Can also be set to an arrow function for fine grained control
    
    
-   *example*
+   #### example:
    ```ts
    allowed: ()=> remult.isAllowed('admin')
    ```
@@ -65,3 +65,8 @@ Storage to use for backend methods that use queue
 
 Arguments:
 * **info**
+   * **req**
+   * **entity**
+   * **exception**
+   * **httpStatusCode**
+   * **responseBody**

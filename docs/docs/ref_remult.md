@@ -4,13 +4,13 @@
 Return's a `Repository` of the specific entity type
    
    
-   *example*
+   #### example:
    ```ts
    const taskRepo = remult.repo(Task);
    ```
    
    
-   *see*
+   #### see:
    [Repository](https://remult.dev/docs/ref_repository.html)
 
 Arguments:
@@ -24,13 +24,13 @@ Checks if a user was authenticated
 checks if the user has any of the roles specified in the parameters
    
    
-   *example*
+   #### example:
    ```ts
    remult.isAllowed("admin")
    ```
    
    
-   *see*
+   #### see:
    [Allowed](https://remult.dev/docs/allowed.html)
 
 Arguments:
@@ -39,7 +39,7 @@ Arguments:
 checks if the user matches the allowedForInstance callback
    
    
-   *see*
+   #### see:
    [Allowed](https://remult.dev/docs/allowed.html)
 
 Arguments:
@@ -60,7 +60,7 @@ Arguments:
 Used to call a `backendMethod` using a specific `remult` object
    
    
-   *example*
+   #### example:
    ```ts
    await remult.call(TasksController.setAll, undefined, true);
    ```
@@ -78,7 +78,7 @@ Arguments:
    * **limit** - Determines the number of rows returned by the request, on the browser the default is 100 rows
       
       
-      *example*
+      #### example:
       ```ts
       await this.remult.repo(Products).find({
        limit:10,
@@ -88,7 +88,7 @@ Arguments:
    * **page** - Determines the page number that will be used to extract the data
       
       
-      *example*
+      #### example:
       ```ts
       await this.remult.repo(Products).find({
        limit:10,
@@ -99,7 +99,7 @@ Arguments:
    when querying the source entity. It allows you to eagerly load related data to avoid N+1 query problems.
       
       
-      *param*
+      #### param:
       An object specifying the related entities to include, their options, and filtering criteria.
       
       Example usage:
@@ -114,7 +114,7 @@ Arguments:
       In this example, the `tags` relation for each customer will be loaded and included in the query result.
       
       
-      *see*
+      #### see:
        - Relations.toMany
        - Relations.toOne
        - RelationOptions
@@ -122,24 +122,24 @@ Arguments:
    * **where** - filters the data
       
       
-      *example*
+      #### example:
       ```ts
       await taskRepo.find({where: { completed:false }})
       ```
       
       
-      *see*
+      #### see:
       For more usage examples see [EntityFilter](https://remult.dev/docs/entityFilter.html)
    * **orderBy** - Determines the order of items returned .
       
       
-      *example*
+      #### example:
       ```ts
       await this.remult.repo(Products).find({ orderBy: { name: "asc" }})
       ```
       
       
-      *example*
+      #### example:
       ```ts
       await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
       ```

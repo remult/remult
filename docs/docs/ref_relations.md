@@ -7,7 +7,7 @@ Define a toMany relation between entities, indicating a one-to-many relationship
 This method allows you to establish a relationship where one entity can have multiple related entities.
    
    
-   *returns*
+   #### returns:
    A decorator function to apply the toMany relation to an entity field.
    
    Example usage:
@@ -30,7 +30,7 @@ If no field or fields are provided, it will automatically create a field in the 
 to represent the relation.
    
    
-   *returns*
+   #### returns:
    A decorator function to apply the to-one relation to an entity field.
    
    Example usage:

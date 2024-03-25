@@ -6,28 +6,28 @@ or an object that has `post`, `put`, `delete`, and `get` methods. This can also 
 logic before each HTTP call, such as adding authorization headers.
    
    
-   *example*
+   #### example:
    ```ts
    // Using Axios
    remult.apiClient.httpClient = axios;
    ```
    
    
-   *example*
+   #### example:
    ```ts
    // Using Angular HttpClient
    remult.apiClient.httpClient = httpClient;
    ```
    
    
-   *example*
+   #### example:
    ```ts
    // Using fetch (default)
    remult.apiClient.httpClient = fetch;
    ```
    
    
-   *example*
+   #### example:
    ```ts
    // Adding bearer token authorization
    remult.apiClient.httpClient = (input: RequestInfo | URL, init?: RequestInit) => {
@@ -45,14 +45,14 @@ The base URL for making API calls. By default, it is set to '/api'. It can be mo
 or to use a different domain for the server.
    
    
-   *example*
+   #### example:
    ```ts
    // Relative URL
    remult.apiClient.url = './api';
    ```
    
    
-   *example*
+   #### example:
    ```ts
    // Different domain
    remult.apiClient.url = 'https://example.com/api';
@@ -62,7 +62,7 @@ The subscription client used for real-time data updates. By default, it is set t
 It can be set to any subscription provider as illustrated in the Remult tutorial for deploying to a serverless environment.
    
    
-   *see*
+   #### see:
    https://remult.dev/tutorials/react-next/deployment.html#deploying-to-a-serverless-environment
 ## wrapMessageHandling
 A function that wraps message handling for subscriptions. This is useful for executing some code before
@@ -71,7 +71,7 @@ For example, in Angular, to refresh a specific part of the UI,
 you can call the `NgZone` run method at this time.
    
    
-   *example*
+   #### example:
    ```ts
    // Angular example
    import { Component, NgZone } from '@angular/core';

@@ -4,11 +4,11 @@ The `LiveQuery` interface represents a live query that allows subscribing to cha
 Subscribes to changes in the live query results.
    
    
-   *returns*
+   #### returns:
    A function that can be used to unsubscribe from the live query.
    
    
-   *example*
+   #### example:
    ```ts
    // Subscribing to changes in a live query
    const unsubscribe = taskRepo

@@ -9,11 +9,11 @@ Applies the changes received in the message to an existing array. This method is
 to update the component's state based on the live query changes.
    
    
-   *returns*
+   #### returns:
    The updated array of result items after applying the changes.
    
    
-   *example*
+   #### example:
    ```ts
    // Using applyChanges in a React component with useEffect hook
    useEffect(() => {

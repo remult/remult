@@ -5,7 +5,7 @@ but it provides a few useful functions for working with sorting.
 Translates the current `Sort` instance into an `EntityOrderBy` object.
    
    
-   *returns*
+   #### returns:
    An `EntityOrderBy` object representing the sort criteria.
 ## constructor
 Constructs a `Sort` instance with the provided sort segments.
@@ -18,13 +18,13 @@ The segments of the sort criteria.
 Reverses the sort order of the current sort criteria.
    
    
-   *returns*
+   #### returns:
    A new `Sort` instance with the reversed sort order.
 ## compare
 Compares two objects based on the current sort criteria.
    
    
-   *returns*
+   #### returns:
    A negative value if `a` should come before `b`, a positive value if `a` should come after `b`, or zero if they are equal.
 
 Arguments:
@@ -35,7 +35,7 @@ Arguments:
 Translates an `EntityOrderBy` to a `Sort` instance.
    
    
-   *returns*
+   #### returns:
    A `Sort` instance representing the translated order by.
 
 Arguments:
@@ -46,7 +46,7 @@ Creates a unique `Sort` instance based on the provided `Sort` and the entity met
 This ensures that the sort criteria result in a unique ordering of entities.
    
    
-   *returns*
+   #### returns:
    A `Sort` instance representing the unique sort criteria.
 
 Arguments:
@@ -57,7 +57,7 @@ Creates a unique `EntityOrderBy` based on the provided `EntityOrderBy` and the e
 This ensures that the order by criteria result in a unique ordering of entities.
    
    
-   *returns*
+   #### returns:
    An `EntityOrderBy` representing the unique order by criteria.
 
 Arguments:

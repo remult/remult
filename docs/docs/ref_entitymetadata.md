@@ -10,7 +10,7 @@ Metadata for the Entity's fields
 A human readable caption for the entity. Can be used to achieve a consistent caption for a field throughout the app
    
    
-   *example*
+   #### example:
    ```ts
    <h1>Create a new item in {taskRepo.metadata.caption}</h1>
    ```
@@ -23,7 +23,7 @@ The options send to the `Entity`'s decorator
 true if the current user is allowed to update an entity instance
    
    
-   *example*
+   #### example:
    ```ts
    const taskRepo = remult.repo(Task);
    if (taskRepo.metadata.apiUpdateAllowed(task)){
@@ -37,7 +37,7 @@ Arguments:
 true if the current user is allowed to read from entity
    
    
-   *example*
+   #### example:
    ```ts
    const taskRepo = remult.repo(Task);
    if (taskRepo.metadata.apiReadAllowed){
@@ -48,7 +48,7 @@ true if the current user is allowed to read from entity
 true if the current user is allowed to delete an entity instance
    
    
-   *example*
+   #### example:
    ```ts
    const taskRepo = remult.repo(Task);
    if (taskRepo.metadata.apiDeleteAllowed(task)){
@@ -62,7 +62,7 @@ Arguments:
 true if the current user is allowed to create an entity instance
    
    
-   *example*
+   #### example:
    ```ts
    const taskRepo = remult.repo(Task);
    if (taskRepo.metadata.apiInsertAllowed(task)){

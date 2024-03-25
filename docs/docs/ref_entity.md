@@ -3,7 +3,7 @@ Decorates classes that should be used as entities.
 Receives a key and an array of EntityOptions.
    
    
-   *example*
+   #### example:
    ```ts
    import  { Entity, Fields } from "remult";
    @Entity("tasks", {
@@ -20,18 +20,18 @@ Receives a key and an array of EntityOptions.
    ```
    
    
-   *note*
+   #### note:
    EntityOptions can be set in two ways:
    
    
-   *example*
+   #### example:
    ```ts
    // as an object
    @Entity("tasks",{ allowApiCrud:true })
    ```
    
    
-   *example*
+   #### example:
    ```ts
    // as an arrow function that receives `remult` as a parameter
    @Entity("tasks", (options,remult) => options.allowApiCrud = true)
@@ -42,11 +42,11 @@ A human readable name for the entity
 Determines if this Entity is available for get requests using Rest Api
    
    
-   *description*
+   #### description:
    Determines if one has any access to the data of an entity.
    
    
-   *see*
+   #### see:
     - [allowed](http://remult.dev/docs/allowed.html)
     - to restrict data based on a criteria, use [apiPrefilter](https://remult.dev/docs/ref_entity.html#apiprefilter)
    
@@ -54,19 +54,19 @@ Determines if this Entity is available for get requests using Rest Api
 Determines if this entity can be updated through the api.
    
    
-   *see*
+   #### see:
    [allowed](http://remult.dev/docs/allowed.html)
 ## allowApiDelete
 Determines if entries for this entity can be deleted through the api.
    
    
-   *see*
+   #### see:
    [allowed](http://remult.dev/docs/allowed.html)
 ## allowApiInsert
 Determines if new entries for this entity can be posted through the api.
    
    
-   *see*
+   #### see:
    [allowed](http://remult.dev/docs/allowed.html)
 ## allowApiCrud
 sets  the `allowApiUpdate`, `allowApiDelete` and `allowApiInsert` properties in a single set
@@ -74,47 +74,47 @@ sets  the `allowApiUpdate`, `allowApiDelete` and `allowApiInsert` properties in 
 A filter that determines which rows can be queries using the api.
    
    
-   *description*
+   #### description:
    Use apiPrefilter in cases where you to restrict data based on user profile
    
    
-   *example*
+   #### example:
    ```ts
    apiPrefilter: { archive:false }
    ```
    
    
-   *example*
+   #### example:
    ```ts
    apiPrefilter: ()=> remult.isAllowed("admin")?{}:{ archive:false }
    ```
    
    
-   *see*
+   #### see:
    [EntityFilter](http://remult.dev/docs/entityFilter.html)
 ## backendPrefilter
 A filter that will be used for all queries from this entity both from the API and from within the backend.
    
    
-   *example*
+   #### example:
    ```ts
    backendPrefilter: { archive:false }
    ```
    
    
-   *see*
+   #### see:
    [EntityFilter](http://remult.dev/docs/entityFilter.html)
 ## defaultOrderBy
 An order by to be used, in case no order by was specified
    
    
-   *example*
+   #### example:
    ```ts
    defaultOrderBy: { name: "asc" }
    ```
    
    
-   *example*
+   #### example:
    ```ts
    defaultOrderBy: { price: "desc", name: "asc" }
    ```
@@ -124,7 +124,7 @@ If the `error` property of the entity's ref or any of its fields will be set, th
 this is the place to run logic that we want to run in any case before an entity is saved.
    
    
-   *example*
+   #### example:
    ```ts
    @Entity<Task>("tasks", {
      saving: async (task, e) => {
@@ -137,11 +137,11 @@ this is the place to run logic that we want to run in any case before an entity 
    ```
    
    
-   *link*
+   #### link:
    LifeCycleEvent object
    
    
-   *see*
+   #### see:
    [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
 
 Arguments:
@@ -151,11 +151,11 @@ Arguments:
 A hook that runs after an entity has been successfully saved.
    
    
-   *link*
+   #### link:
    LifeCycleEvent object
    
    
-   *see*
+   #### see:
    [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
 
 Arguments:
@@ -165,11 +165,11 @@ Arguments:
 A hook that runs before an entity is deleted.
    
    
-   *link*
+   #### link:
    LifeCycleEvent object
    
    
-   *see*
+   #### see:
    [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
 
 Arguments:
@@ -179,11 +179,11 @@ Arguments:
 A hook that runs after an entity has been successfully deleted.
    
    
-   *link*
+   #### link:
    LifeCycleEvent object
    
    
-   *see*
+   #### see:
    [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
 
 Arguments:
@@ -194,11 +194,11 @@ A hook that runs to perform validation checks on an entity before saving.
 This hook is also executed on the frontend.
    
    
-   *link*
+   #### link:
    LifeCycleEvent object
    
    
-   *see*
+   #### see:
    [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
 
 Arguments:
@@ -209,7 +209,7 @@ The name of the table in the database that holds the data for this entity.
 If no name is set, the `key` will be used instead.
    
    
-   *example*
+   #### example:
    ```ts
    dbName:'myProducts'
    
@@ -217,7 +217,7 @@ If no name is set, the `key` will be used instead.
    ```
    
    
-   *example*
+   #### example:
    ```ts
    dbName:'public."myProducts"'
    ```
@@ -227,14 +227,14 @@ For entities that are based on SQL expressions instead of a physical table or vi
 An arrow function that identifies the `id` column to use for this entity
    
    
-   *example*
+   #### example:
    ```ts
    //Single column id
    @Entity<Products>("products", { id: {productCode: true} })
    ```
    
    
-   *example*
+   #### example:
    ```ts
    //Multiple columns id
    @Entity<OrderDetails>("orderDetails", { id:{ orderId:true, productCode:true} })
