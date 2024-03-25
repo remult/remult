@@ -61,3 +61,7 @@ Can also be set to an arrow function for fine grained control
    ```
 ## queueStorage
 Storage to use for backend methods that use queue
+## error
+
+Arguments:
+* **info**
