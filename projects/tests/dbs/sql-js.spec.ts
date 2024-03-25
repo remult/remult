@@ -3,6 +3,8 @@ import { Remult, SqlDatabase } from '../../core'
 import initSqlJs from 'sql.js'
 import { SqlJsDataProvider } from '../../core/remult-sql-js.js'
 import { allDbTests } from './shared-tests'
+import { SqlDbTests } from './shared-tests/sql-db-tests.js'
+import type { DbTestProps } from './shared-tests/db-tests-props.js'
 
 describe('Sql JS', () => {
   let db: SqlDatabase
@@ -13,20 +15,19 @@ describe('Sql JS', () => {
     )
     remult = new Remult(db)
   })
-  allDbTests(
-    {
-      getDb() {
-        return db
-      },
-      getRemult() {
-        return remult
-      },
-      createEntity: async (entity) => remult.repo(entity),
+  const props: DbTestProps = {
+    getDb() {
+      return db
     },
-    {
-      excludeTransactions: true,
+    getRemult() {
+      return remult
     },
-  )
+    createEntity: async (entity) => remult.repo(entity),
+  }
+  allDbTests(props, {
+    excludeTransactions: true,
+  })
+  SqlDbTests({ ...props, skipMigrations: true })
   it('start works', async () => {
     await db.execute('create table x (id int)')
     await db.execute('insert into x values (1)')

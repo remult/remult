@@ -1,21 +1,17 @@
-import { dbNamesOf, repo } from 'remult'
+import { repo } from '../index.js'
 import {
+  dbNamesOf,
   shouldCreateEntity,
   shouldNotCreateField,
-} from '../core/src/filter/filter-consumer-bridge-to-sql-request.js'
-import {
-  MigrationBuilder,
-  MigrationStepBuilder,
-} from '../core/migrations/index.js'
+} from '../src/filter/filter-consumer-bridge-to-sql-request.js'
+import type { MigrationBuilder } from './migration-types.js'
 
-export async function buildMigrations({
+export async function compareMigrationSnapshot({
   entities,
-  stepsBuilder,
   snapshot,
-  migrationBuilder: sb,
+  migrationBuilder: migrationBuilder,
 }: {
   entities: any[]
-  stepsBuilder: MigrationStepBuilder
   snapshot: EntitiesSnapshot
   migrationBuilder: MigrationBuilder
 }) {
@@ -29,7 +25,7 @@ export async function buildMigrations({
       let createColumns = true
       if (!entitySnapshot) {
         createColumns = false
-        await sb.createTable(meta, stepsBuilder)
+        await migrationBuilder.createTable(meta)
         entitySnapshot = snapshot.entities[e.$entityName] = {
           key: meta.key,
           className: meta.entityType.name,
@@ -40,7 +36,7 @@ export async function buildMigrations({
         if (!shouldNotCreateField(field, e)) {
           const column = entitySnapshot.columns[e.$dbNameOf(field)]
           if (!column) {
-            if (createColumns) await sb.createColumn(meta, field, stepsBuilder)
+            if (createColumns) await migrationBuilder.addColumn(meta, field)
             entitySnapshot.columns[e.$dbNameOf(field)] = { key: field.key }
           }
         }

@@ -9,6 +9,7 @@ import { SqlDatabase } from './src/data-providers/sql-database.js'
 import {
   dbNamesOf,
   isDbReadonly,
+  shouldNotCreateField,
 } from './src/filter/filter-consumer-bridge-to-sql-request.js'
 import { isAutoIncrement } from './src/remult3/RepositoryImplementation.js'
 import type { FieldMetadata } from './src/column-interfaces.js'
@@ -57,7 +58,7 @@ export class SqlJsDataProvider implements SqlImplementation {
     let result = ''
     let e = await dbNamesOf(entity)
     for (const x of entity.fields) {
-      if (!isDbReadonly(x, e) || isAutoIncrement(x)) {
+      if (!shouldNotCreateField(x, e) || isAutoIncrement(x)) {
         if (result.length != 0) result += ','
         result += '\r\n  '
         if (isAutoIncrement(x)) {

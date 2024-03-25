@@ -1,7 +1,7 @@
 import type * as Knex from 'knex'
 import { beforeAll, beforeEach, expect, it } from 'vitest'
 import { allDbTests } from '.'
-import { Entity, Fields, Remult, dbNamesOf } from '../../../core'
+import { Entity, Fields, Remult, SqlDatabase, dbNamesOf } from '../../../core'
 import type { ClassType } from '../../../core/classType'
 import { KnexDataProvider, KnexSchemaBuilder } from '../../../core/remult-knex'
 import { entityWithValidations } from './entityWithValidations'
@@ -36,6 +36,8 @@ export function knexTests(
     createEntity,
   })
   SqlDbTests({
+    doesNotSupportDdlTransactions:
+      knex.client.config.client.startsWith('mysql'),
     getDb() {
       return db
     },

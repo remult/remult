@@ -1,8 +1,6 @@
 // consider replacing with https://www.npmjs.com/package/ts-morph
 import * as ts from 'typescript'
 import * as fs from 'fs'
-import * as path from 'path'
-import * as prettier from 'prettier'
 
 export async function updateMigrationsFile(filePath: string, steps: string[]) {
   let maxStep = -1
@@ -149,9 +147,21 @@ export async function updateMigrationsFile(filePath: string, steps: string[]) {
   }
   let code = ts.createPrinter().printFile(updatedSourceFile)
   try {
-    code = await prettier.format(code, {
-      parser: 'typescript',
-    })
+    let prettier: any
+    try {
+      prettier = await import('prettier' + '')
+    } catch (err) {
+      console.warn(
+        'error importing prettier,for better formatting run `npm i -D prettier`. Writing raw code to file.',
+      )
+    }
+    if (prettier) {
+      let options = await prettier.resolveConfig()
+      code = await prettier.format(code, {
+        ...options,
+        parser: 'typescript',
+      })
+    }
   } catch (err) {
     console.log('error formatting code, writing raw code to file.')
   }

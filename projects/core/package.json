@@ -41,6 +41,7 @@
     "./remult-knex": "./remult-knex/index.js",
     "./remult-mongo": "./remult-mongo.js",
     "./remult-sql-js": "./remult-sql-js.js",
+    "./migrations": "./migrations/index.js",
     "./ably": "./ably.js",
     "./graphql": "./graphql.js",
     "./internals": "./internals.js",

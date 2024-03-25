@@ -819,27 +819,30 @@ export type ClassFieldDecorator<entityType, valueType> = (
   c?: any,
 ) => void
 
-/*y1 - workshop
+//p1 - migrations - in docs empesize that mysql doesn't support transactions in ddl, in docs empesize destroy for knex - // await dataProvider.knex.destroy()
 
-* Experiment with doing this with version control - so the students can follow changes
-* Prepare stackblitz
-
-
-# influencer:
-  * review react summit
-# 
-
-//y1 - migrations
-  https://gitkraken.dev/link/dnNjb2RlOi8vZWFtb2Rpby5naXRsZW5zL2xpbmsvci9mMDgzMWU0OWIyODJkMDlkNTA0NTcxYjYwNmUzNTMwODQ3NGIwY2M2L2YvcHJvamVjdHMvcGxheS13aXRoLW1pZ3JhdGlvbnMvc3JjL3NlcnZlci9idWlsZC1taWdyYXRpb25zLnRzP3VybD1odHRwcyUzQSUyRiUyRmdpdGh1Yi5jb20lMkZyZW11bHQlMkZyZW11bHQuZ2l0?origin=gitlens
+//https://gitkraken.dev/link/dnNjb2RlOi8vZWFtb2Rpby5naXRsZW5zL2xpbmsvci9mMDgzMWU0OWIyODJkMDlkNTA0NTcxYjYwNmUzNTMwODQ3NGIwY2M2L2YvcHJvamVjdHMvcGxheS13aXRoLW1pZ3JhdGlvbnMvc3JjL3NlcnZlci9idWlsZC1taWdyYXRpb25zLnRzP3VybD1odHRwcyUzQSUyRiUyRmdpdGh1Yi5jb20lMkZyZW11bHQlMkZyZW11bHQuZ2l0?origin=gitlens
 /*p1 - processError in remult express
 - Should we merge (notFound,error,forbidden) into one method in `DataApiResponse` type?
-  https://gitkraken.dev/link/dnNjb2RlOi8vZWFtb2Rpby5naXRsZW5zL2xpbmsvci9mMDgzMWU0OWIyODJkMDlkNTA0NTcxYjYwNmUzNTMwODQ3NGIwY2M2L2YvcHJvamVjdHMvY29yZS9zcmMvZGF0YS1hcGkudHM%2FdXJsPWh0dHBzJTNBJTJGJTJGZ2l0aHViLmNvbSUyRnJlbXVsdCUyRnJlbXVsdC5naXQ%3D?origin=gitlens
+https://gitkraken.dev/link/dnNjb2RlOi8vZWFtb2Rpby5naXRsZW5zL2xpbmsvci9mMDgzMWU0OWIyODJkMDlkNTA0NTcxYjYwNmUzNTMwODQ3NGIwY2M2L2YvcHJvamVjdHMvY29yZS9zcmMvZGF0YS1hcGkudHM%2FdXJsPWh0dHBzJTNBJTJGJTJGZ2l0aHViLmNvbSUyRnJlbXVsdCUyRnJlbXVsdC5naXQ%3D?origin=gitlens
 - The api of the `processError` should recieve an `ErrorInfo` object and return an `ErrorInfo` object? or should it return something more in the line, 
-  of httpStatus and errorBody. - currently the `serializeError` method is used to build the response
-  https://gitkraken.dev/link/dnNjb2RlOi8vZWFtb2Rpby5naXRsZW5zL2xpbmsvci9mMDgzMWU0OWIyODJkMDlkNTA0NTcxYjYwNmUzNTMwODQ3NGIwY2M2L2YvcHJvamVjdHMvY29yZS9zcmMvZGF0YS1hcGkudHM%2FdXJsPWh0dHBzJTNBJTJGJTJGZ2l0aHViLmNvbSUyRnJlbXVsdCUyRnJlbXVsdC5naXQmbGluZXM9NDI1?origin=gitlens
-  - I think there should be a way to throw a forbidden exception
+of httpStatus and errorBody. - currently the `serializeError` method is used to build the response
+https://gitkraken.dev/link/dnNjb2RlOi8vZWFtb2Rpby5naXRsZW5zL2xpbmsvci9mMDgzMWU0OWIyODJkMDlkNTA0NTcxYjYwNmUzNTMwODQ3NGIwY2M2L2YvcHJvamVjdHMvY29yZS9zcmMvZGF0YS1hcGkudHM%2FdXJsPWh0dHBzJTNBJTJGJTJGZ2l0aHViLmNvbSUyRnJlbXVsdCUyRnJlbXVsdC5naXQmbGluZXM9NDI1?origin=gitlens
+- I think there should be a way to throw a forbidden exception
 */
 
+//p1 - cleanup root directory of reult
+//p1 - in this video I'll use remult to turn a frontend app to a fullstack app
+/*y1 - discuss using delete & put - with url query language for deleteMany and updateMany - 
+  - put & delete, similar to get
+  - add where to count, deleteMany,updateMany,
+  - prevent delete all and update all - must have meaningful where.
+    - try forcing this also in typescript
+
+  - protect against deleting of all rows by mistake
+  - https://github.com/remult/remult/issues/221#issuecomment-2016519746
+
+*/
 //y1 - getFields didn't work for kobi in the home component
 
 //p1 - add section to Fields doc, explaining field type in db

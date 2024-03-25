@@ -13,6 +13,9 @@
         },
         "completed": {
           "key": "completed"
+        },
+        "createdAt": {
+          "key": "createdAt"
         }
       }
     }

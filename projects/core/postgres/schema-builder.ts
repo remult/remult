@@ -1,7 +1,3 @@
-import type {
-  MigrationBuilder,
-  MigrationStepBuilder,
-} from '../migrations/index.js'
 import type { FieldMetadata } from '../src/column-interfaces.js'
 import type { Remult } from '../src/context.js'
 import type { SqlDatabase } from '../src/data-providers/sql-database.js'
@@ -32,7 +28,7 @@ export function postgresColumnSyntax(x: FieldMetadata, dbName: string) {
   } else if (x.valueType == Date) {
     if (!x.valueConverter.fieldTypeInDb)
       if (x.valueConverter == ValueConverters.DateOnly) result += ' date'
-      else result += ' timestamp'
+      else result += ' timestamptz'
     else result += ' ' + x.valueConverter.fieldTypeInDb
   } else if (x.valueType == Boolean)
     result += ' boolean' + (x.allowNull ? '' : ' default false not null')
@@ -54,7 +50,7 @@ export async function verifyStructureOfAllEntities(
   )
 }
 
-export class PostgresSchemaBuilder implements MigrationBuilder {
+export class PostgresSchemaBuilder {
   //@internal
   static logToConsole = true
 
@@ -167,14 +163,9 @@ export class PostgresSchemaBuilder implements MigrationBuilder {
         }
       })
   }
-  async createColumn(
-    entity: EntityMetadata<unknown>,
-    field: FieldMetadata<any, unknown>,
-    builder: MigrationStepBuilder,
-  ) {
-    builder.addSql(await this.createColumnScript(entity, field))
-  }
-  private async createColumnScript(
+
+  /* @internal*/
+  async getAddColumnScript(
     entity: EntityMetadata<unknown>,
     field: FieldMetadata<any, unknown>,
   ) {
@@ -184,12 +175,8 @@ export class PostgresSchemaBuilder implements MigrationBuilder {
       `ADD column ${postgresColumnSyntax(field, e.$dbNameOf(field))}`
     )
   }
-
-  async createTable(entity: EntityMetadata, builder: MigrationStepBuilder) {
-    builder.addSql(await this.createTableScript(entity))
-  }
-
-  private async createTableScript(entity: EntityMetadata<any>) {
+  /* @internal*/
+  async createTableScript(entity: EntityMetadata<any>) {
     let result = ''
     let e: EntityDbNamesBase = await dbNamesOf(entity, this.pool.wrapIdentifier)
     for (const x of entity.fields) {
@@ -229,7 +216,7 @@ CREATE table ${this.schemaAndName(e)} (${result}\r\n)`
           )
         ).rows.length == 0
       ) {
-        let sql = await this.createColumnScript(entity, c(entity))
+        let sql = await this.getAddColumnScript(entity, c(entity))
 
         if (PostgresSchemaBuilder.logToConsole) console.info(sql)
         await this.pool.execute(sql)

@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.25.8] TBD
+
+- Changed postgres schema builder to use `timestamptz` instead of `timestamp`
+- `KnexDataProvider` now supports all `execute` and `createCommand` and can be used with any `SqlDatabase` functionality
+
 ## [0.25.7] 2024-03-21
 
 - Fixed typing issue with validators and typescript 5.4

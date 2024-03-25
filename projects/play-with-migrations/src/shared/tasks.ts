@@ -10,4 +10,6 @@ export class Task {
   title = ''
   @Fields.boolean()
   completed = false
+  @Fields.createdAt()
+  createdAt = new Date()
 }

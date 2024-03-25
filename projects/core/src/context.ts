@@ -417,16 +417,25 @@ export interface itemChange {
   deleted: boolean
 }
 
-export async function doTransaction(remult: Remult, what: () => Promise<void>) {
+export async function doTransaction(
+  remult: Remult,
+  what: (dp: DataProvider) => Promise<void>,
+) {
   const trans = new transactionLiveQueryPublisher(remult.liveQueryPublisher)
   let ok = true
-  const result = await remult.dataProvider.transaction(async (ds) => {
-    remult.dataProvider = ds
-    remult.liveQueryPublisher = trans
-    await what()
-    ok = true
-  })
-  if (ok) await trans.flush()
+  const prev = remult.dataProvider
+  try {
+    await remult.dataProvider.transaction(async (ds) => {
+      remult.dataProvider = ds
+      remult.liveQueryPublisher = trans
+      await what(ds)
+      ok = true
+    })
+
+    if (ok) await trans.flush()
+  } finally {
+    remult.dataProvider = prev
+  }
 }
 class transactionLiveQueryPublisher implements LiveQueryChangesListener {
   constructor(private orig: LiveQueryChangesListener) {}

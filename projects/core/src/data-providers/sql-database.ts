@@ -7,6 +7,7 @@ import type {
 import type {
   HasWrapIdentifier,
   SqlCommand,
+  SqlCommandFactory,
   SqlCommandWithParameters,
   SqlImplementation,
   SqlResult,
@@ -38,13 +39,25 @@ import type { SortSegment } from '../sort.js'
 import { Sort } from '../sort.js'
 import { ValueConverters } from '../valueConverters.js'
 import { getRepositoryInternals } from '../remult3/repository-internals.js'
+import type {
+  CanBuildMigrations,
+  MigrationBuilder,
+  MigrationCode,
+} from '../../migrations/migration-types.js'
+import { isOfType } from '../isOfType.js'
 
 // @dynamic
-export class SqlDatabase implements DataProvider, HasWrapIdentifier {
+export class SqlDatabase
+  implements
+    DataProvider,
+    HasWrapIdentifier,
+    CanBuildMigrations,
+    SqlCommandFactory
+{
   static getDb(remult?: Remult) {
     const r = (remult || defaultRemult).dataProvider as SqlDatabase
-    if (!r.createCommand) throw 'the data provider is not an SqlDatabase'
-    return r
+    if (isOfType<SqlCommandFactory>(r, 'createCommand')) return r
+    else throw 'the data provider is not an SqlCommandFactory'
   }
   createCommand(): SqlCommand {
     return new LogSQLCommand(this.sql.createCommand(), SqlDatabase.LogToConsole)
@@ -170,7 +183,12 @@ export class SqlDatabase implements DataProvider, HasWrapIdentifier {
   public static durationThreshold = 0
   constructor(private sql: SqlImplementation) {
     if (sql.wrapIdentifier) this.wrapIdentifier = (x) => sql.wrapIdentifier(x)
+    if (isOfType<CanBuildMigrations>(sql, 'provideMigrationBuilder')) {
+      this.provideMigrationBuilder = sql.provideMigrationBuilder
+    }
   }
+  provideMigrationBuilder: (builder: MigrationCode) => MigrationBuilder
+  isProxy?: boolean
   private createdEntities: string[] = []
 }
 

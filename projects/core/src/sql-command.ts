@@ -15,6 +15,11 @@ export interface HasWrapIdentifier {
   wrapIdentifier?(name: string): string
 }
 
+export interface SqlCommandFactory extends HasWrapIdentifier {
+  createCommand(): SqlCommand
+  execute(sql: string): Promise<SqlResult>
+}
+
 export interface SqlCommand extends SqlCommandWithParameters {
   execute(sql: string): Promise<SqlResult>
 }

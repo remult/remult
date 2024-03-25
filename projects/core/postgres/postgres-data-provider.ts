@@ -10,6 +10,11 @@ import type {
   SqlResult,
 } from '../src/sql-command.js'
 import { PostgresSchemaBuilder } from './schema-builder.js'
+import type {
+  CanBuildMigrations,
+  MigrationBuilder,
+  MigrationCode,
+} from '../migrations/migration-types.js'
 
 export interface PostgresPool extends PostgresCommandSource {
   connect(): Promise<PostgresClient>
@@ -18,7 +23,9 @@ export interface PostgresClient extends PostgresCommandSource {
   release(): void
 }
 
-export class PostgresDataProvider implements SqlImplementation {
+export class PostgresDataProvider
+  implements SqlImplementation, CanBuildMigrations
+{
   supportsJsonColumnType = true
   static getDb(remult?: Remult): ClientBase {
     const sql = SqlDatabase.getDb(remult)
@@ -53,6 +60,18 @@ export class PostgresDataProvider implements SqlImplementation {
 
     if (options?.schema) {
       this.pool = new PostgresSchemaWrapper(pool, options.schema)
+    }
+  }
+  provideMigrationBuilder(builder: MigrationCode): MigrationBuilder {
+    var db = new SqlDatabase(this)
+    var sb = new PostgresSchemaBuilder(db, this.options?.schema)
+    return {
+      addColumn: async (meta, field) => {
+        builder.addSql(await sb.getAddColumnScript(meta, field))
+      },
+      createTable: async (meta) => {
+        builder.addSql(await sb.createTableScript(meta))
+      },
     }
   }
   wrapIdentifier = (name) =>

@@ -2022,7 +2022,13 @@ export interface SqlCommandWithParameters {
   addParameterAndReturnSqlToken(val: any): string
   param(val: any): string
 }
-export declare class SqlDatabase implements DataProvider, HasWrapIdentifier {
+export declare class SqlDatabase
+  implements
+    DataProvider,
+    HasWrapIdentifier,
+    CanBuildMigrations,
+    SqlCommandFactory
+{
   private sql
   static getDb(remult?: Remult): SqlDatabase
   createCommand(): SqlCommand
@@ -2058,8 +2064,12 @@ export declare class SqlDatabase implements DataProvider, HasWrapIdentifier {
    */
   static durationThreshold: number
   constructor(sql: SqlImplementation)
+  provideMigrationBuilder: (builder: MigrationCode) => MigrationBuilder
+  isProxy?: boolean
   private createdEntities
 }
+//[ ] MigrationCode from TBD is not exported
+//[ ] MigrationBuilder from TBD is not exported
 export interface SqlImplementation extends HasWrapIdentifier {
   getLimitSqlSyntax(limit: number, offset: number): any
   createCommand(): SqlCommand
@@ -2632,11 +2642,20 @@ export interface RemultServerOptions<RequestType> {
   admin?: Allowed
   /** Storage to use for backend methods that use queue */
   queueStorage?: QueueStorage
+  error?: (info: {
+    req: RequestType
+    entity?: EntityMetadata
+    exception?: any
+    httpStatusCode: number
+    responseBody: any
+    sendError: (httpStatusCode: number, body: any) => void
+  }) => Promise<void>
 }
 //[ ] ClassType from TBD is not exported
 //[ ] UserInfo from TBD is not exported
 //[ ] SubscriptionServer from TBD is not exported
 //[ ] Allowed from TBD is not exported
+//[ ] EntityMetadata from TBD is not exported
 export type SpecificRoute = {
   get(handler: GenericRequestHandler): SpecificRoute
   put(handler: GenericRequestHandler): SpecificRoute
@@ -2797,6 +2816,14 @@ export interface RemultServerOptions<RequestType> {
   admin?: Allowed
   /** Storage to use for backend methods that use queue */
   queueStorage?: QueueStorage
+  error?: (info: {
+    req: RequestType
+    entity?: EntityMetadata
+    exception?: any
+    httpStatusCode: number
+    responseBody: any
+    sendError: (httpStatusCode: number, body: any) => void
+  }) => Promise<void>
 }
 //[ ] ClassType from TBD is not exported
 //[ ] UserInfo from TBD is not exported
@@ -2805,6 +2832,7 @@ export interface RemultServerOptions<RequestType> {
 //[ ] SubscriptionServer from TBD is not exported
 //[ ] LiveQueryStorage from TBD is not exported
 //[ ] Allowed from TBD is not exported
+//[ ] EntityMetadata from TBD is not exported
 export type SpecificRoute = {
   get(handler: GenericRequestHandler): SpecificRoute
   put(handler: GenericRequestHandler): SpecificRoute
@@ -2942,7 +2970,9 @@ export interface PostgresCommandSource {
   query(queryText: string, values?: any[]): Promise<QueryResult>
 }
 //[ ] QueryResult from TBD is not exported
-export declare class PostgresDataProvider implements SqlImplementation {
+export declare class PostgresDataProvider
+  implements SqlImplementation, CanBuildMigrations
+{
   private pool
   private options?
   supportsJsonColumnType: boolean
@@ -2959,6 +2989,7 @@ export declare class PostgresDataProvider implements SqlImplementation {
       orderByNullsFirst?: boolean
     },
   )
+  provideMigrationBuilder(builder: MigrationCode): MigrationBuilder
   wrapIdentifier: (name: any) => any
   ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
   orderByNullsFirst?: boolean
@@ -2970,6 +3001,8 @@ export declare class PostgresDataProvider implements SqlImplementation {
 //[ ] ClientBase from TBD is not exported
 //[ ] EntityMetadata from TBD is not exported
 //[ ] SqlCommand from TBD is not exported
+//[ ] MigrationCode from TBD is not exported
+//[ ] MigrationBuilder from TBD is not exported
 //[ ] SqlImplementation from TBD is not exported
 export interface PostgresPool extends PostgresCommandSource {
   connect(): Promise<PostgresClient>
@@ -3050,10 +3083,17 @@ export type CustomKnexFilterBuilderFunction = () => Promise<
 >
 //[ ] Knex.QueryBuilder from TBD is not exported
 export declare class KnexDataProvider
-  implements DataProvider, HasWrapIdentifier
+  implements
+    DataProvider,
+    HasWrapIdentifier,
+    SqlCommandFactory,
+    CanBuildMigrations
 {
   knex: Knex
   constructor(knex: Knex)
+  provideMigrationBuilder(builder: MigrationCode): MigrationBuilder
+  createCommand(): SqlCommand
+  execute(sql: string): Promise<SqlResult>
   static getDb(remult?: Remult): Knex<any, any[]>
   wrapIdentifier: (name: string) => string
   getEntityDataProvider(entity: EntityMetadata<any>): EntityDataProvider
@@ -3068,6 +3108,10 @@ export declare class KnexDataProvider
   isProxy?: boolean
   ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
 }
+//[ ] MigrationCode from ../migrations/migration-types.js is not exported
+//[ ] MigrationBuilder from ../migrations/migration-types.js is not exported
+//[ ] SqlCommand from ../src/sql-command.js is not exported
+//[ ] SqlResult from ../src/sql-command.js is not exported
 //[ ] Remult from ../src/context.js is not exported
 //[ ] EntityMetadata from ../src/remult3/remult3.js is not exported
 //[ ] EntityDataProvider from ../src/data-interfaces.js is not exported
@@ -3079,14 +3123,25 @@ export declare class KnexSchemaBuilder {
   verifyStructureOfAllEntities(remult?: Remult): Promise<void>
   ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
   createIfNotExist(entity: EntityMetadata): Promise<void>
-  addColumnIfNotExist<T extends EntityMetadata>(
-    entity: T,
-    c: (e: T) => FieldMetadata,
+  createTableKnexCommand(
+    entity: EntityMetadata<any>,
+    e: EntityDbNamesBase,
+  ): Knex.SchemaBuilder
+  addColumnIfNotExist(
+    entity: EntityMetadata,
+    c: (e: EntityMetadata) => FieldMetadata,
   ): Promise<void>
+  createColumnKnexCommand(
+    e: EntityDbNamesBase,
+    col: FieldMetadata<any, any>,
+    colName: string,
+  ): Knex.SchemaBuilder
   verifyAllColumns<T extends EntityMetadata>(entity: T): Promise<void>
   additionalWhere: string
   constructor(knex: Knex)
 }
+//[ ] EntityDbNamesBase from ../src/filter/filter-consumer-bridge-to-sql-request.js is not exported
+//[ ] Knex.SchemaBuilder from TBD is not exported
 ```
 
 ## ./remult-mongo.js
@@ -3154,6 +3209,31 @@ export declare class SqlJsDataProvider implements SqlImplementation {
 //[ ] SqlCommand from ./src/sql-command.js is not exported
 //[ ] SqlImplementation from ./src/sql-command.js is not exported
 //[ ] EntityMetadata from ./src/remult3/remult3.js is not exported
+```
+
+## ./migrations/index.js
+
+```ts
+export declare function generateMigrations(options: {
+  entities: any[]
+  dataProvider: Promise<DataProvider> | DataProvider
+  migrationsDir?: string
+  snapshotFileName?: string
+  migrationsTSFilename?: string
+}): Promise<void>
+//[ ] DataProvider from TBD is not exported
+export declare function migrate(options: {
+  migrations: Migrations
+  dataProvider?: Promise<DataProvider> | DataProvider
+  migrationTableName?: string
+}): Promise<void>
+export type Migrations = Record<
+  number,
+  (utils: MigrationUtils) => Promise<unknown>
+>
+export type MigrationUtils = {
+  sql(sql: string): Promise<unknown>
+}
 ```
 
 ## ./ably.js

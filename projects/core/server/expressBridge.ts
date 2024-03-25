@@ -101,7 +101,17 @@ export interface RemultServerOptions<RequestType> {
 
   /** Storage to use for backend methods that use queue */
   queueStorage?: QueueStorage
+
+  error?: (info: {
+    req: RequestType
+    entity?: EntityMetadata
+    exception?: any
+    httpStatusCode: number
+    responseBody: any
+    sendError: (httpStatusCode: number, body: any) => void
+  }) => Promise<void>
 }
+
 export interface InitRequestOptions {
   liveQueryStorage: LiveQueryStorage
   readonly remult: Remult
