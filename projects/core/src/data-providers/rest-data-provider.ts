@@ -192,8 +192,7 @@ export class RestEntityDataProvider
       }
       if (action) u.add('__action', action)
       if (filterObject || forcePost) {
-        if (!body) body = filterObject
-        else body = { ...body, where: filterObject }
+        body = { ...body, where: filterObject }
         return this.http().post(u.url, body)
       } else return this.http().get(u.url)
     }

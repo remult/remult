@@ -606,7 +606,9 @@ describe('data api', () => {
         },
       },
       {
-        'status.in': [1, 2],
+        where: {
+          'status.in': [1, 2],
+        },
       },
     )
     d.test()
@@ -634,7 +636,9 @@ describe('data api', () => {
         },
       },
       {
-        OR: [{ status: 1 }, { status: 2 }],
+        where: {
+          OR: [{ status: 1 }, { status: 2 }],
+        },
       },
     )
     d.test()
