@@ -2030,7 +2030,7 @@ export declare class SqlDatabase
     SqlCommandFactory
 {
   private sql
-  static getDb(remult?: Remult): SqlDatabase
+  static getDb(dataProvider?: DataProvider): SqlDatabase
   createCommand(): SqlCommand
   execute(sql: string): Promise<SqlResult>
   wrapIdentifier: (name: string) => string
@@ -2640,6 +2640,27 @@ export interface RemultServerOptions<RequestType> {
   admin?: Allowed
   /** Storage to use for backend methods that use queue */
   queueStorage?: QueueStorage
+  /**
+   * This method is called whenever there is an error in the API lifecycle.
+   *
+   * @param info - Information about the error.
+   * @param info.req - The request object.
+   * @param info.entity - (Optional) The entity metadata associated with the error, if applicable.
+   * @param info.exception - (Optional) The exception object or error that occurred.
+   * @param info.httpStatusCode - The HTTP status code.
+   * @param info.responseBody - The body of the response.
+   * @param info.sendError - A method to send a custom error response. Call this method with the desired HTTP status code and response body.
+   *
+   * @returns A promise that resolves when the error handling is complete.
+   * @example
+   * export const api = remultExpress({
+   *   error: async (e) => {
+   *     if (e.httpStatusCode == 500) {
+   *       e.sendError(500, { message: "An error occurred" })
+   *     }
+   *   }
+   * })
+   */
   error?: (info: {
     req: RequestType
     entity?: EntityMetadata
@@ -2814,6 +2835,27 @@ export interface RemultServerOptions<RequestType> {
   admin?: Allowed
   /** Storage to use for backend methods that use queue */
   queueStorage?: QueueStorage
+  /**
+   * This method is called whenever there is an error in the API lifecycle.
+   *
+   * @param info - Information about the error.
+   * @param info.req - The request object.
+   * @param info.entity - (Optional) The entity metadata associated with the error, if applicable.
+   * @param info.exception - (Optional) The exception object or error that occurred.
+   * @param info.httpStatusCode - The HTTP status code.
+   * @param info.responseBody - The body of the response.
+   * @param info.sendError - A method to send a custom error response. Call this method with the desired HTTP status code and response body.
+   *
+   * @returns A promise that resolves when the error handling is complete.
+   * @example
+   * export const api = remultExpress({
+   *   error: async (e) => {
+   *     if (e.httpStatusCode == 500) {
+   *       e.sendError(500, { message: "An error occurred" })
+   *     }
+   *   }
+   * })
+   */
   error?: (info: {
     req: RequestType
     entity?: EntityMetadata
@@ -2974,7 +3016,7 @@ export declare class PostgresDataProvider
   private pool
   private options?
   supportsJsonColumnType: boolean
-  static getDb(remult?: Remult): ClientBase
+  static getDb(dataProvider?: DataProvider): ClientBase
   entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void>
   getLimitSqlSyntax(limit: number, offset: number): string
   createCommand(): SqlCommand
@@ -2996,7 +3038,7 @@ export declare class PostgresDataProvider
     action: (dataProvider: SqlImplementation) => Promise<void>,
   ): Promise<void>
 }
-//[ ] Remult from TBD is not exported
+//[ ] DataProvider from TBD is not exported
 //[ ] ClientBase from TBD is not exported
 //[ ] EntityMetadata from TBD is not exported
 //[ ] SqlCommand from TBD is not exported
@@ -3024,6 +3066,7 @@ export declare class PostgresSchemaBuilder {
   specifiedSchema: string
   constructor(pool: SqlDatabase, schema?: string)
 }
+//[ ] Remult from TBD is not exported
 export declare function preparePostgresQueueStorage(
   sql: SqlDatabase,
 ): Promise<import("../server/expressBridge.js").EntityQueueStorage>
@@ -3094,7 +3137,7 @@ export declare class KnexDataProvider
   end(): Promise<void>
   createCommand(): SqlCommand
   execute(sql: string): Promise<SqlResult>
-  static getDb(remult?: Remult): Knex<any, any[]>
+  static getDb(dataProvider?: DataProvider): Knex<any, any[]>
   wrapIdentifier: (name: string) => string
   getEntityDataProvider(entity: EntityMetadata<any>): EntityDataProvider
   transaction(
@@ -3110,10 +3153,9 @@ export declare class KnexDataProvider
 }
 //[ ] SqlCommand from ../src/sql-command.js is not exported
 //[ ] SqlResult from ../src/sql-command.js is not exported
-//[ ] Remult from ../src/context.js is not exported
+//[ ] DataProvider from ../src/data-interfaces.js is not exported
 //[ ] EntityMetadata from ../src/remult3/remult3.js is not exported
 //[ ] EntityDataProvider from ../src/data-interfaces.js is not exported
-//[ ] DataProvider from ../src/data-interfaces.js is not exported
 //[ ] EntityFilter from ../src/remult3/remult3.js is not exported
 //[ ] RepositoryOverloads from ../src/remult3/RepositoryImplementation.js is not exported
 export declare class KnexSchemaBuilder {
@@ -3138,6 +3180,7 @@ export declare class KnexSchemaBuilder {
   additionalWhere: string
   constructor(knex: Knex)
 }
+//[ ] Remult from ../src/context.js is not exported
 //[ ] EntityDbNamesBase from ../src/filter/filter-consumer-bridge-to-sql-request.js is not exported
 //[ ] Knex.SchemaBuilder from TBD is not exported
 ```
@@ -3158,7 +3201,7 @@ export declare class MongoDataProvider implements DataProvider {
   )
   session?: ClientSession
   disableTransactions: boolean
-  static getDb(remult?: Remult): {
+  static getDb(dataProvider?: DataProvider): {
     db: Db
     session: ClientSession
   }
@@ -3178,10 +3221,9 @@ export declare class MongoDataProvider implements DataProvider {
       }
   >
 }
-//[ ] Remult from ./index.js is not exported
+//[ ] DataProvider from ./index.js is not exported
 //[ ] EntityMetadata from ./index.js is not exported
 //[ ] EntityDataProvider from ./index.js is not exported
-//[ ] DataProvider from ./index.js is not exported
 //[ ] RepositoryOverloads from ./src/remult3/RepositoryImplementation.js is not exported
 //[ ] EntityFilter from ./index.js is not exported
 ```
