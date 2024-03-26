@@ -8,7 +8,7 @@ import { migrate, generateMigrations } from '../../../core/migrations/index.js'
     await generateMigrations({
       entities,
       dataProvider,
-      migrationsDir: 'projects/play-with-migrations/src/server/migrations',
+      migrationsFolder: 'projects/play-with-migrations/src/server/migrations',
     })
   } else {
     const m = migrate({

@@ -819,9 +819,6 @@ export type ClassFieldDecorator<entityType, valueType> = (
   c?: any,
 ) => void
 
-//p1 - migrations - in docs empesize that mysql doesn't support transactions in ddl, in docs empesize destroy for knex - // await dataProvider.knex.destroy()
-
-//https://gitkraken.dev/link/dnNjb2RlOi8vZWFtb2Rpby5naXRsZW5zL2xpbmsvci9mMDgzMWU0OWIyODJkMDlkNTA0NTcxYjYwNmUzNTMwODQ3NGIwY2M2L2YvcHJvamVjdHMvcGxheS13aXRoLW1pZ3JhdGlvbnMvc3JjL3NlcnZlci9idWlsZC1taWdyYXRpb25zLnRzP3VybD1odHRwcyUzQSUyRiUyRmdpdGh1Yi5jb20lMkZyZW11bHQlMkZyZW11bHQuZ2l0?origin=gitlens
 /*p1 - processError in remult express
 - Should we merge (notFound,error,forbidden) into one method in `DataApiResponse` type?
 https://gitkraken.dev/link/dnNjb2RlOi8vZWFtb2Rpby5naXRsZW5zL2xpbmsvci9mMDgzMWU0OWIyODJkMDlkNTA0NTcxYjYwNmUzNTMwODQ3NGIwY2M2L2YvcHJvamVjdHMvY29yZS9zcmMvZGF0YS1hcGkudHM%2FdXJsPWh0dHBzJTNBJTJGJTJGZ2l0aHViLmNvbSUyRnJlbXVsdCUyRnJlbXVsdC5naXQ%3D?origin=gitlens
