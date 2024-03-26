@@ -14,6 +14,7 @@ import type { QueryData } from './live-query/SubscriptionServer.js'
 import { getRelationFieldInfo } from './remult3/relationInfoMember.js'
 import type {
   EntityFilter,
+  EntityMetadata,
   FindOptions,
   Repository,
 } from './remult3/remult3.js'
@@ -105,7 +106,7 @@ export class DataApi<T = any> {
         )),
       })
     } catch (err) {
-      response.error(err)
+      response.error(err, this.repository.metadata)
     }
   }
   async deleteMany(
@@ -126,7 +127,7 @@ export class DataApi<T = any> {
         response.success({ deleted })
       })
     } catch (err) {
-      response.error(err)
+      response.error(err, this.repository.metadata)
     }
   }
 
@@ -220,7 +221,7 @@ export class DataApi<T = any> {
       response.success(r)
     } catch (err) {
       if (err.isForbiddenError) response.forbidden()
-      else response.error(err)
+      else response.error(err, this.repository.metadata)
     }
   }
   async liveQuery(
@@ -252,7 +253,7 @@ export class DataApi<T = any> {
       response.success(r.r)
     } catch (err) {
       if (err.isForbiddenError) response.forbidden()
-      else response.error(err)
+      else response.error(err, this.repository.metadata)
     }
   }
   private async buildWhere(
@@ -310,11 +311,20 @@ export class DataApi<T = any> {
         })
         .then(async (r) => {
           if (r.length == 0) response.notFound()
-          else if (r.length > 1) response.error({ message: 'id is not unique' })
+          else if (r.length > 1)
+            response.error(
+              {
+                message:
+                  `id "${id}" is not unique for entity ` +
+                  this.repository.metadata.key,
+              },
+              this.repository.metadata,
+              500,
+            )
           else await what(r[0])
         })
     } catch (err) {
-      response.error(err)
+      response.error(err, this.repository.metadata)
     }
   }
   async updateMany(
@@ -335,7 +345,7 @@ export class DataApi<T = any> {
         response.success({ updated })
       })
     } catch (err) {
-      response.error(err)
+      response.error(err, this.repository.metadata)
     }
   }
   async actualUpdate(row: any, body: any) {
@@ -391,7 +401,7 @@ export class DataApi<T = any> {
       } else response.created(await insert(body))
     } catch (err) {
       if (err.isForbiddenError) response.forbidden()
-      else response.error(err)
+      else response.error(err, this.repository.metadata)
     }
   }
 }
@@ -401,7 +411,11 @@ export interface DataApiResponse {
   deleted(): void
   created(data: any): void
   notFound(): void
-  error(data: ErrorInfo): void
+  error(
+    data: ErrorInfo,
+    entity: EntityMetadata | undefined,
+    statusCode?: number | undefined,
+  ): void
   forbidden(): void
   progress(progress: number): void
 }

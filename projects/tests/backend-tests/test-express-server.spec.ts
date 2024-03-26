@@ -15,15 +15,19 @@ import {
 import { RemultAsyncLocalStorage } from '../../core/src/context.js'
 import { allServerTests, testAsExpressMW } from './all-server-tests.js'
 import { initAsyncHooks } from '../../core/server/initAsyncHooks.js'
+import type { RemultServerOptions } from '../../core/server/index.js'
 
 describe('test express server', async () => {
   let throwExceptionOnGetUser = false
+  let errorHandler: RemultServerOptions<unknown>['error']
   beforeEach(() => {
     throwExceptionOnGetUser = false
+    errorHandler = undefined
   })
   let api = remultExpress({
     entities: [Task, test_compound_id],
     dataProvider: new InMemoryDataProvider(),
+    error: (e) => errorHandler?.(e),
     getUser: async () => {
       if (throwExceptionOnGetUser) throw 'not allowed'
       return undefined
@@ -35,6 +39,23 @@ describe('test express server', async () => {
     res.json({ result: await remult.repo(Task).count() })
   })
   testAsExpressMW(3004, app, (withRemult) => {
+    it(
+      'test error handler',
+      withRemult(async () => {
+        const r = repo(test_compound_id)
+        errorHandler = async (e) => {
+          expect(e).toMatchInlineSnapshot()
+          e.sendError(432, e.responseBody)
+        }
+        await expect(() => r.delete(1232131)).rejects
+          .toThrowErrorMatchingInlineSnapshot(`
+          {
+            "httpStatusCode": 432,
+            "message": "Request failed with status code 404",
+          }
+        `)
+      }),
+    )
     it(
       'test one more thing',
       withRemult(async () => {
@@ -59,9 +80,8 @@ describe('test express server', async () => {
         const r = repo(test_compound_id)
         throwExceptionOnGetUser = true
 
-        await expect(() =>
-          r.find(),
-        ).rejects.toThrowErrorMatchingInlineSnapshot(`
+        await expect(() => r.find()).rejects
+          .toThrowErrorMatchingInlineSnapshot(`
           {
             "httpStatusCode": 400,
             "message": "not allowed",
@@ -96,6 +116,7 @@ it('test with express remult async ', async () => {
   ).toBe(undefined)
   expect(initRequest).toEqual([])
 })
+
 it('test remult run', async () => {
   try {
     initAsyncHooks()

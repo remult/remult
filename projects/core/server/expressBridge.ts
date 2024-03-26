@@ -618,7 +618,7 @@ export class RemultServerImplementation<RequestType>
           await what(remult, myReq, myRes, genReq, origRes, req)
         })
       } catch (err: any) {
-        myRes.error(serializeError(err))
+        myRes.error(err, undefined)
       }
     }
   }
@@ -1010,6 +1010,7 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
   constructor(
     private r: GenericResponse,
     private req: GenericRequestInfo | undefined,
+    private handleError?: RemultServerOptions<GenericRequestInfo>['error'],
   ) {}
   progress(progress: number): void {}
 
@@ -1028,15 +1029,45 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
     this.setStatus(404).end()
   }
 
-  public error(data: ErrorInfo): void {
-    data = serializeError(data)
-    console.error({
-      message: data.message,
-      stack: data.stack?.split('\n'),
-      url: this.req?.url,
-      method: this.req?.method,
+  public async error(
+    exception: ErrorInfo,
+    entity: EntityMetadata,
+    httpStatusCode?: number,
+  ) {
+    let data = serializeError(exception)
+    if (!httpStatusCode) {
+      if (data.modelState) {
+        httpStatusCode = 400
+      } else {
+        httpStatusCode = 500
+      }
+    }
+    let responseSent = false
+    const sendError = (httpStatusCode, body) => {
+      if (responseSent) {
+        throw Error('Error response already sent')
+      }
+      responseSent = true
+      console.error({
+        message: body.message,
+        httpStatusCode,
+        stack: data.stack?.split('\n'),
+        url: this.req?.url,
+        method: this.req?.method,
+      })
+      this.setStatus(httpStatusCode).json(body)
+    }
+    await this.handleError?.({
+      httpStatusCode,
+      req: this.req,
+      entity,
+      exception,
+      responseBody: data,
+      sendError,
     })
-    this.setStatus(400).json(data)
+    if (!responseSent) {
+      sendError(httpStatusCode, data)
+    }
   }
 }
 
