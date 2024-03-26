@@ -17,7 +17,7 @@
     "patch-versions": " FOR /F %i in ('npm version patch -m \"release %s\"') DO git push origin %i && npm run update-versions",
     "update-versions": "ts-node --project tsconfig.server.json ./misc/update-versions.ts",
     "docs": "cd docs && npm run dev",
-    "prebuild-docs": "tsx docs/misc/fix-errors.ts",
+    "prebuild-docs": "tsx docs/tools/fix-errors.ts",
     "build-docs": "cd docs && npm run build",
     "release-docs": "cd docs && npm run publish",
     "build-ref-ts": "tsx ./docs/tools/docs-work.ts",
