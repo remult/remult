@@ -237,7 +237,9 @@ export class Article {
 
 ```ts
 await repo(Categories).find({
-  orderBy: { name: 'asc ' },
+  orderBy: {
+    name: 'asc ',
+  },
   include: {
     products: {
       where: {
