@@ -82,6 +82,20 @@ export function allServerTests(
     }),
   )
   it(
+    'test task with empty Id',
+    withRemultForTest(async () => {
+      await create3Tasks()
+      await Task.insertRowWithEmptyId()
+      let item = await remult.repo(Task).findId('')
+      expect(item.title).toBe('empty')
+      item.title += 1
+      item = await remult.repo(Task).save(item)
+      expect(item.title).toBe('empty1')
+      await remult.repo(Task).delete(item)
+      expect(await remult.repo(Task).count()).toBe(3)
+    }),
+  )
+  it(
     'test multiple items',
     withRemultForTest(async () => {
       const repo = await create3Tasks()

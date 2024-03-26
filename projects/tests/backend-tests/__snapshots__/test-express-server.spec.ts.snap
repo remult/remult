@@ -72,6 +72,60 @@ exports[`test express server > test open api 1`] = `
   },
   "openapi": "3.0.0",
   "paths": {
+    "/api/insertRowWithEmptyId": {
+      "post": {
+        "produces": [
+          "application/json",
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "args": {
+                    "items": {
+                      "type": "string",
+                    },
+                    "type": "array",
+                  },
+                },
+                "type": "object",
+              },
+            },
+          },
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Created",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvalidResponse",
+                },
+              },
+            },
+            "description": "Error: Bad Request",
+          },
+        },
+        "tags": [
+          "Static Backend Methods",
+        ],
+      },
+    },
     "/api/jobStatusInQueue": {
       "post": {
         "produces": [
