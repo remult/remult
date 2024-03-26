@@ -539,6 +539,7 @@ describe('test datetime column', () => {
     let x = class {
       name = 'noam'
       myDate = new Date(1976, 5, 16)
+      num = 7
     }
 
     describeClass(x, Entity('myEntity'), {
@@ -546,17 +547,22 @@ describe('test datetime column', () => {
       myDate: Fields.dateOnly<InstanceType<typeof x>>({
         displayValue: (z) => z.name + z.myDate.getFullYear(),
       }),
+      num: Fields.number(),
     })
     var repo = new Remult().repo(x)
     let y: InstanceType<typeof x> = {
       name: 'noam',
       myDate: new Date(1976, 5, 16),
+      num: 0,
     }
     expect(repo.fields.myDate.displayValue(y)).toBe('noam1976')
     expect(repo.fields.myDate.toInput(new Date(1976, 5, 16))).toBe('1976-06-16')
     expect(repo.fields.myDate.fromInput('1976-06-16')).toEqual(
       new Date(1976, 5, 16),
     )
+    // @ts-expect-error first arg should be a string,
+    // but in case we pass the value of html <input />, it can be a number already
+    expect(repo.fields.num.fromInput(0, 'number')).toEqual(0)
   })
 
   it('date Storage works 1', () => {

@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [0.25.8] TBD
 
+- Fixed ValueConverters Number fromInput handle 0 as a valid value
 - Added support for migrations, see [Migrations](https://remult.dev/docs/migrations.html)
 - Added an `error` hook to `RemultServerOptions` that is called whenever whenever there is an error in the API lifecycle. See [RemultServerOptions](https://remult.dev/docs/ref_remultserveroptions.html#error)
 - Changed postgres schema builder to use `timestamptz` instead of `timestamp`
