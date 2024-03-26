@@ -219,7 +219,8 @@ export class RestEntityDataProvider
   public update(id: any, data: any): Promise<any> {
     return this.http()
       .put(
-        this.url() + '/' + encodeURIComponent(id),
+        this.url() +
+          (id != '' ? '/' + encodeURIComponent(id) : '?__action=emptyId'),
         this.toJsonOfIncludedKeys(data),
       )
       .then((y) => this.translateFromJson(y))
@@ -235,8 +236,15 @@ export class RestEntityDataProvider
     return result
   }
 
-  public delete(id: any): Promise<void> {
-    return this.http().delete(this.url() + '/' + encodeURIComponent(id))
+  async delete(id: any): Promise<void> {
+    if (id == '')
+      await this.deleteMany(
+        Filter.fromEntityFilter(
+          this.entity,
+          this.entity.idMetadata.getIdFilter(id),
+        ),
+      )
+    else return this.http().delete(this.url() + '/' + encodeURIComponent(id))
   }
 
   public insert(data: any): Promise<any> {

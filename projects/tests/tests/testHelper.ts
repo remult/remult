@@ -228,11 +228,14 @@ export function createMockHttpDataProvider(
         result = data
       }
       try {
-        await dataApi.put(
-          r,
-          decodeURIComponent(urlSplit[urlSplit.length - 1]),
-          data,
-        )
+        if (urlSplit.length == 1)
+          await dataApi.updateMany(r, urlToReq(url), data)
+        else
+          await dataApi.put(
+            r,
+            decodeURIComponent(urlSplit[urlSplit.length - 1]),
+            data,
+          )
       } finally {
       }
       return result

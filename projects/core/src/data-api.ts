@@ -278,7 +278,7 @@ export class DataApi<T = any> {
         }),
       )
     }
-    if (body)
+    if (body?.where)
       where.push(
         Filter.entityFilterFromJson(this.repository.metadata, body.where),
       )
@@ -329,6 +329,10 @@ export class DataApi<T = any> {
     body?: any,
   ) {
     try {
+      const action = request?.get('__action')
+      if (action == 'emptyId') {
+        return this.put(response, '', body)
+      }
       return await doTransaction(this.remult, async () => {
         let updated = 0
         for await (const x of this.repository.query({

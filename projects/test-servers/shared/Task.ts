@@ -10,7 +10,7 @@ import { createId } from '@paralleldrive/cuid2'
 @Entity<Task>('tasks', {
   allowApiCrud: true,
   saving: (task) => {
-    if (task.__setEmptyId) task.id = ''
+    if (task.title.startsWith('empty')) task.id = ''
   },
 })
 export class Task {
@@ -36,7 +36,6 @@ export class Task {
   @Fields.boolean()
   completed = false
 
-  __setEmptyId = false
   @BackendMethod({ allowed: false })
   static testForbidden() {}
   @BackendMethod({ allowed: true })
@@ -47,14 +46,7 @@ export class Task {
   static async testInjectedRemult(remult?: Remult) {
     return await remult!.repo(Task).count()
   }
-  @BackendMethod({ allowed: true })
-  static async insertRowWithEmptyId() {
-    let item = remult.repo(Task).create({ title: 'empty' })
-    item.__setEmptyId = true
-    item = await getEntityRef(item).save()
-    //
-    expect(item.id).toBe('')
-  }
+
   @BackendMethod({ allowed: true, queue: true, paramTypes: [ProgressListener] })
   static async testQueuedJob(progress?: ProgressListener) {
     for (let i = 0; i < 3; i++) {
