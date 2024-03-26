@@ -43,7 +43,7 @@ export const dataProvider = createPostgresDataProvider({
 
 ### 2. Adjust the API Configuration
 
-Next, adjust your `api.ts` file to use the configurations from the `config.ts` file:
+Next, adjust your `api.ts` file to use the configurations from the `config.ts` file, and disable the `ensureSchema` migrations:
 
 ```ts
 import { remultExpress } from 'remult/remult-express'
@@ -52,6 +52,7 @@ import { dataProvider, entities } from './config'
 export const api = remultExpress({
   entities,
   dataProvider,
+  ensureSchema: false,
 })
 ```
 
@@ -184,6 +185,15 @@ You have a couple of options for when and how to run your migrations:
   This approach ensures that the migrations are applied each time the API initializes. Note that the `migrate` and `generateMigrations` functions typically close the connection used by the `dataProvider` when they complete. In this code, we disable this behavior using the `endConnection: false` option, instructing the `migrate` function to keep the `dataProvider` connection open when it completes.
 
 Choose the approach that best fits your application's deployment and initialization process.
+
+### Migration Philosophy: Embracing Backward Compatibility
+
+We believe in designing migrations with a backward compatibility mindset. This approach ensures that older versions of the code can operate smoothly with newer versions of the database. To achieve this, we recommend:
+
+- Never dropping columns or tables.
+- Instead of altering a column, adding a new column and copying the data to it as part of the migration process.
+
+This philosophy minimizes disruptions and ensures a smoother transition during database schema updates.
 
 ### Manually Triggering `ensureSchema`
 
