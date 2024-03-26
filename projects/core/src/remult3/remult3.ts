@@ -819,15 +819,6 @@ export type ClassFieldDecorator<entityType, valueType> = (
   c?: any,
 ) => void
 
-/*p1 - processError in remult express
-- Should we merge (notFound,error,forbidden) into one method in `DataApiResponse` type?
-https://gitkraken.dev/link/dnNjb2RlOi8vZWFtb2Rpby5naXRsZW5zL2xpbmsvci9mMDgzMWU0OWIyODJkMDlkNTA0NTcxYjYwNmUzNTMwODQ3NGIwY2M2L2YvcHJvamVjdHMvY29yZS9zcmMvZGF0YS1hcGkudHM%2FdXJsPWh0dHBzJTNBJTJGJTJGZ2l0aHViLmNvbSUyRnJlbXVsdCUyRnJlbXVsdC5naXQ%3D?origin=gitlens
-- The api of the `processError` should recieve an `ErrorInfo` object and return an `ErrorInfo` object? or should it return something more in the line, 
-of httpStatus and errorBody. - currently the `serializeError` method is used to build the response
-https://gitkraken.dev/link/dnNjb2RlOi8vZWFtb2Rpby5naXRsZW5zL2xpbmsvci9mMDgzMWU0OWIyODJkMDlkNTA0NTcxYjYwNmUzNTMwODQ3NGIwY2M2L2YvcHJvamVjdHMvY29yZS9zcmMvZGF0YS1hcGkudHM%2FdXJsPWh0dHBzJTNBJTJGJTJGZ2l0aHViLmNvbSUyRnJlbXVsdCUyRnJlbXVsdC5naXQmbGluZXM9NDI1?origin=gitlens
-- I think there should be a way to throw a forbidden exception
-*/
-
 //p1 - in this video I'll use remult to turn a frontend app to a fullstack app
 /*p1 - discuss using delete & put - with url query language for deleteMany and updateMany - 
 - put & delete, similar to get

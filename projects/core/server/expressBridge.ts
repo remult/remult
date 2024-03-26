@@ -32,6 +32,7 @@ import { getEntityKey } from '../src/remult3/getEntityRef.js'
 import type { EntityMetadata, Repository } from '../src/remult3/remult3.js'
 import type {
   ActionInterface,
+  ForbiddenError,
   jobWasQueuedResult,
   myServerAction,
   queuedJobInfoResponse,
@@ -42,6 +43,7 @@ import { initDataProvider } from './initDataProvider.js'
 import { remult } from '../src/remult-proxy.js'
 import { remultStatic } from '../src/remult-static.js'
 import remultAdminHtml from './remult-admin.js'
+import { isOfType } from '../src/isOfType.js'
 
 export interface RemultServerOptions<RequestType> {
   /**Entities to use for the api */
@@ -101,7 +103,27 @@ export interface RemultServerOptions<RequestType> {
 
   /** Storage to use for backend methods that use queue */
   queueStorage?: QueueStorage
-
+  /**
+   * This method is called whenever there is an error in the API lifecycle.
+   *
+   * @param info - Information about the error.
+   * @param info.req - The request object.
+   * @param info.entity - (Optional) The entity metadata associated with the error, if applicable.
+   * @param info.exception - (Optional) The exception object or error that occurred.
+   * @param info.httpStatusCode - The HTTP status code.
+   * @param info.responseBody - The body of the response.
+   * @param info.sendError - A method to send a custom error response. Call this method with the desired HTTP status code and response body.
+   *
+   * @returns A promise that resolves when the error handling is complete.
+   * @example
+   * export const api = remultExpress({
+   *   error: async (e) => {
+   *     if (e.httpStatusCode == 500) {
+   *       e.sendError(500, { message: "An error occurred" })
+   *     }
+   *   }
+   * })
+   */
   error?: (info: {
     req: RequestType
     entity?: EntityMetadata
@@ -591,7 +613,11 @@ export class RemultServerImplementation<RequestType>
         if (!genReq.params) genReq.params = req['_tempParams']
       }
       let myReq = new ExpressRequestBridgeToDataApiRequest(genReq)
-      let myRes = new ExpressResponseBridgeToDataApiResponse(origRes, req)
+      let myRes = new ExpressResponseBridgeToDataApiResponse(
+        origRes,
+        req,
+        this.options.error,
+      )
       try {
         await this.runWithRemult(async (remult) => {
           if (req) {
@@ -1002,7 +1028,7 @@ class ExpressRequestBridgeToDataApiRequest implements DataApiRequest {
 }
 class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
   forbidden(): void {
-    this.setStatus(403).end()
+    this.error({ message: 'Forbidden' }, undefined, 403)
   }
   setStatus(status: number) {
     return this.r.status(status)
@@ -1010,7 +1036,9 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
   constructor(
     private r: GenericResponse,
     private req: GenericRequestInfo | undefined,
-    private handleError?: RemultServerOptions<GenericRequestInfo>['error'],
+    private handleError:
+      | RemultServerOptions<GenericRequestInfo>['error']
+      | undefined,
   ) {}
   progress(progress: number): void {}
 
@@ -1026,7 +1054,7 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
   }
 
   public notFound(): void {
-    this.setStatus(404).end()
+    this.error({ message: 'Forbidden' }, undefined, 404)
   }
 
   public async error(
@@ -1036,7 +1064,14 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
   ) {
     let data = serializeError(exception)
     if (!httpStatusCode) {
-      if (data.modelState) {
+      if (data.httpStatusCode) {
+        httpStatusCode = data.httpStatusCode
+      } else if (
+        isOfType<ForbiddenError>(exception, 'isForbiddenError') &&
+        exception.isForbiddenError
+      ) {
+        httpStatusCode = 403
+      } else if (data.modelState) {
         httpStatusCode = 400
       } else {
         httpStatusCode = 500
@@ -1071,9 +1106,6 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
   }
 }
 
-function throwError() {
-  throw 'Invalid'
-}
 class inProcessQueueHandler {
   constructor(private storage: QueueStorage) {}
   async submitJob(url: string, req: Remult, body: any): Promise<string> {

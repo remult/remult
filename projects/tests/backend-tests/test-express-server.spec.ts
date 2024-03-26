@@ -11,6 +11,7 @@ import {
   remult,
   repo,
   withRemult,
+  type ErrorInfo,
 } from '../../core'
 import { RemultAsyncLocalStorage } from '../../core/src/context.js'
 import { allServerTests, testAsExpressMW } from './all-server-tests.js'
@@ -29,7 +30,11 @@ describe('test express server', async () => {
     dataProvider: new InMemoryDataProvider(),
     error: (e) => errorHandler?.(e),
     getUser: async () => {
-      if (throwExceptionOnGetUser) throw 'not allowed'
+      if (throwExceptionOnGetUser)
+        throw {
+          httpStatusCode: 403,
+          message: 'not allowed',
+        } satisfies ErrorInfo
       return undefined
     },
   })
@@ -43,15 +48,28 @@ describe('test express server', async () => {
       'test error handler',
       withRemult(async () => {
         const r = repo(test_compound_id)
-        errorHandler = async (e) => {
-          expect(e).toMatchInlineSnapshot()
+        errorHandler = async ({ req, ...e }) => {
+          expect({ ...e, req: Boolean(req) }).toMatchInlineSnapshot(`
+            {
+              "entity": undefined,
+              "exception": {
+                "message": "Forbidden",
+              },
+              "httpStatusCode": 404,
+              "req": true,
+              "responseBody": {
+                "message": "Forbidden",
+              },
+              "sendError": [Function],
+            }
+          `)
           e.sendError(432, e.responseBody)
         }
         await expect(() => r.delete(1232131)).rejects
           .toThrowErrorMatchingInlineSnapshot(`
           {
             "httpStatusCode": 432,
-            "message": "Request failed with status code 404",
+            "message": "Forbidden",
           }
         `)
       }),
@@ -83,7 +101,7 @@ describe('test express server', async () => {
         await expect(() => r.find()).rejects
           .toThrowErrorMatchingInlineSnapshot(`
           {
-            "httpStatusCode": 400,
+            "httpStatusCode": 403,
             "message": "not allowed",
           }
         `)
