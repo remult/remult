@@ -100,6 +100,14 @@ export function allServerTests(
     }),
   )
   it(
+    'delete many 3',
+    withRemultForTest(async () => {
+      await create3Tasks()
+      expect(await repo(Task).deleteMany({ title: { $ne: 'b' } })).toBe(2)
+      expect(await repo(Task).count()).toBe(1)
+    }),
+  )
+  it(
     'update many',
     withRemultForTest(async () => {
       await create3Tasks()
@@ -108,6 +116,50 @@ export function allServerTests(
       ).toBe(2)
       expect(await repo(Task).count({ title: 'dd' })).toBe(2)
       expect(await repo(Task).count({ title: { '!=': 'dd' } })).toBe(1)
+    }),
+  )
+  it(
+    'update many 3',
+    withRemultForTest(async () => {
+      await create3Tasks()
+      expect(
+        await repo(Task).updateMany({ title: { $ne: 'b' } }, { title: 'dd' }),
+      ).toBe(2)
+      expect(await repo(Task).count({ title: 'dd' })).toBe(2)
+      expect(await repo(Task).count({ title: { '!=': 'dd' } })).toBe(1)
+    }),
+  )
+  it.only(
+    'update with url params',
+    withRemultForTest(async () => {
+      await create3Tasks()
+      expect(
+        (
+          await axios.put(remult.apiClient.url + '/tasks' + '?title.ne=b', {
+            title: 'dd',
+          })
+        ).data,
+      ).toMatchInlineSnapshot(`
+        {
+          "updated": 2,
+        }
+      `)
+      expect(await repo(Task).count({ title: 'dd' })).toBe(2)
+    }),
+  )
+  it(
+    'delete with url params',
+    withRemultForTest(async () => {
+      await create3Tasks()
+      expect(
+        (await axios.delete(remult.apiClient.url + '/tasks' + '?title.ne=b'))
+          .data,
+      ).toMatchInlineSnapshot(`
+        {
+          "deleted": 2,
+        }
+      `)
+      expect(await repo(Task).count()).toBe(1)
     }),
   )
   it(

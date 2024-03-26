@@ -535,11 +535,7 @@ export class RemultServerImplementation<RequestType>
       )
       .delete(
         this.process(async (c, req, res, _, __, orig) =>
-          dataApiFactory(c).deleteMany(
-            res,
-            req,
-            await this.coreOptions.getRequestBody(orig),
-          ),
+          dataApiFactory(c).deleteMany(res, req, undefined),
         ),
       )
       .post(

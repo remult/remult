@@ -819,18 +819,19 @@ export type ClassFieldDecorator<entityType, valueType> = (
   c?: any,
 ) => void
 
-//p1 - in this video I'll use remult to turn a frontend app to a fullstack app
+//y1 - reconsider adding where to all in case of post - it is a breaking change and no longer required
+//y1 - review that with deleteMany, and updateMany I've taken a similar approach to get, that when the filter is complex, we go to post.
+//y1 - should the remult api be deleteMany({id:[1,2]}) or deleteMany({where:{id:[1,2]}})
 /*p1 - discuss using delete & put - with url query language for deleteMany and updateMany - 
 - put & delete, similar to get
-- add where to count, deleteMany,updateMany,
 - prevent delete all and update all - must have meaningful where.
-- try forcing this also in typescript
 
 - protect against deleting of all rows by mistake
 - https://github.com/remult/remult/issues/221#issuecomment-2016519746
 
 */
 
+//p1 - in this video I'll use remult to turn a frontend app to a fullstack app
 //y1 - getFields didn't work for kobi in the home component
 
 //p1 - document offline support

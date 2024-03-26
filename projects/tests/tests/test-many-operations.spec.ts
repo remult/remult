@@ -60,7 +60,7 @@ describe('test rest many operations', () => {
     `)
     expect(await r.count()).toBe(0)
   })
-  it('test delete many', async () => {
+  it.only('test delete many', async () => {
     await r.insert([
       { id: 1, name: 'a' },
       { id: 2, name: 'b' },

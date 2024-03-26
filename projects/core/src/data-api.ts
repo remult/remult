@@ -71,7 +71,7 @@ export class DataApi<T = any> {
       case 'deleteMany':
         return this.deleteMany(res, req, body)
       case 'updateMany':
-        return this.updateMany(res, req, body)
+        return this.updateManyImplementation(res, req, body)
       case 'endLiveQuery':
         await this.remult.liveQueryStorage!.remove(body.id)
         res.success('ok')
@@ -326,13 +326,23 @@ export class DataApi<T = any> {
   async updateMany(
     response: DataApiResponse,
     request: DataApiRequest,
-    body?: any,
+    body: any,
+  ) {
+    const action = request?.get('__action')
+    if (action == 'emptyId') {
+      return this.put(response, '', body)
+    }
+    return this.updateManyImplementation(response, request, {
+      where: undefined,
+      set: body,
+    })
+  }
+  async updateManyImplementation(
+    response: DataApiResponse,
+    request: DataApiRequest,
+    body: { where: any; set: any },
   ) {
     try {
-      const action = request?.get('__action')
-      if (action == 'emptyId') {
-        return this.put(response, '', body)
-      }
       return await doTransaction(this.remult, async () => {
         let updated = 0
         for await (const x of this.repository.query({

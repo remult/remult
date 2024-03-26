@@ -179,14 +179,20 @@ export function createMockHttpDataProvider(
   return new HttpProviderBridgeToRestDataProviderHttpProvider({
     delete: async (url) => {
       let urlSplit = url.split('/')
+
       let r = new TestDataApiResponse()
       let result
       r.deleted = () => {}
+      r.success = (data) => {
+        result = data
+      }
       try {
-        await dataApi.delete(
-          r,
-          decodeURIComponent(urlSplit[urlSplit.length - 1]),
-        )
+        if (urlSplit.length == 1) await dataApi.deleteMany(r, urlToReq(url))
+        else
+          await dataApi.delete(
+            r,
+            decodeURIComponent(urlSplit[urlSplit.length - 1]),
+          )
       } finally {
       }
       return result
