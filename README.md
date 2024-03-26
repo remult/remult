@@ -285,6 +285,15 @@ numerous ways:
   [Backend Methods](https://remult.dev/docs/backendMethods.html)
 - Roll-your-own low-level endpoints (Express, Fastify, koa, others…)
 
+## Installation
+
+The _remult_ package is one and the same for both the frontend bundle and the
+backend. Install it once for a monolith project or per-repo in a monorepo.
+
+```sh
+npm i remult
+```
+
 ## Tutorials
 
 The best way to learn Remult is by following a tutorial of a simple Todo web app
@@ -344,15 +353,6 @@ low-code, BaaS) or partial abstraction (MVC frameworks, GraphQL, ORMs, API
 generators, code generators), and tend to be opinionated regarding the
 development tool-chain, deployment environment, configuration/conventions or
 DSL. Remult attempts to strike a better balance.
-
-## Installation
-
-The _remult_ package is one and the same for both the frontend bundle and the
-backend. Install it once for a monolith project or per-repo in a monorepo.
-
-```sh
-npm i remult
-```
 
 ## Contributing
 
