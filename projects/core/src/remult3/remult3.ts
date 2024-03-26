@@ -825,6 +825,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 /*p1 - discuss using delete & put - with url query language for deleteMany and updateMany - 
 - put & delete, similar to get
 - prevent delete all and update all - must have meaningful where.
+- update open api
 
 - protect against deleting of all rows by mistake
 - https://github.com/remult/remult/issues/221#issuecomment-2016519746

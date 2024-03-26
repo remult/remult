@@ -129,7 +129,7 @@ export function allServerTests(
       expect(await repo(Task).count({ title: { '!=': 'dd' } })).toBe(1)
     }),
   )
-  it.only(
+  it(
     'update with url params',
     withRemultForTest(async () => {
       await create3Tasks()
