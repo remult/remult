@@ -21,13 +21,6 @@ export const api = remultExpress({
 
 While `ensureSchema` provides a basic level of migration support, Remult also offers a more extensive migration solution for managing complex schema changes. We'll explore this advanced migration solution in the following sections of this document.
 
-::: tip Prettier
-The migration generator uses `prettier` to format the generated code for better readability and consistency. If you don't already have `prettier` installed in your project, we recommend installing it as a development dependency using the following command:
-
-```sh
-npm i -D prettier
-```
-
 ## Quick Start: Introducing Migrations to Your Application
 
 Introducing migrations to your Remult application involves a few straightforward steps. The goal is to ensure that your migrations and API share the same data provider and entity definitions. Here's how you can do it:
@@ -63,6 +56,15 @@ export const api = remultExpress({
 ```
 
 ### 3. Generate the migration
+
+::: tip Prettier
+The migration generator uses `prettier` to format the generated code for better readability and consistency. If you don't already have `prettier` installed in your project, we recommend installing it as a development dependency using the following command:
+
+```sh
+npm i -D prettier
+```
+
+:::
 
 To enable automatic generation of migration scripts, follow these steps:
 
