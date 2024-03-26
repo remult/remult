@@ -39,7 +39,7 @@ backend ORM**.
 - :sparkles: Input validation, defined once, runs both on the backend and on the frontend for best UX
 - :lock: Fine-grained code-based API authorization
 - :zap: Zero-boilerplate CRUD API routes with paging, sorting, and filtering for Express / Fastify / Next.js / Nuxt / Sveltekit / Nest / Hapi / Hono / Koa others...
-- :page_with_curl: Works with Postgres / MySQL / MongoDB / SQLite / Sql Server / Oracle ...
+- :page_with_curl: Database - Postgres / MySQL / MongoDB / SQLite / Sql Server / Oracle ...
 - :relieved: Can be easly added to your existing projects
 - :mega: **NEW - Zero-boilerplate realtime live-queries**
 
@@ -174,7 +174,7 @@ export class Product {
 }
 ```
 
-### Enforced in frontend:
+#### Enforced in frontend:
 
 ```ts
 try {
@@ -193,7 +193,7 @@ try {
 }
 ```
 
-### Enforced in backend:
+#### Enforced in backend:
 
 ```ts
 // POST '/api/products' BODY: { "name":"", "unitPrice":-1 }
@@ -213,21 +213,27 @@ try {
 @Entity<Article>('Articles', {
   allowApiRead: true,
   allowApiInsert: Allow.authenticated,
-  allowApiUpdate: (article) => article.author.id == remult.user.id,
+  allowApiUpdate: (article) => article.author == remult.user.id,
+  apiPrefilter: () => {
+    if (remult.isAllowed('admin')) return {}
+    return {
+      author: remult.user.id,
+    }
+  },
 })
 export class Article {
   @Fields.string({ allowApiUpdate: false })
   slug = ''
 
-  @Relations.toOne(() => Profile, { allowApiUpdate: false })
-  author!: Profile
+  @Fields.string({ allowApiUpdate: false })
+  authorId = remult.user!.id
 
   @Fields.string()
   content = ''
 }
 ```
 
-### Relations
+### :rocket: Relations
 
 ```ts
 await repo(Categories).find({
@@ -235,9 +241,7 @@ await repo(Categories).find({
   include: {
     products: {
       where: {
-        where: {
-          unitPrice: { $gt: 5 },
-        },
+        unitPrice: { $gt: 5 },
       },
     },
   },
