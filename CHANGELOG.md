@@ -4,8 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [0.25.8] TBD
 
+- Added support for migrations, see [Migrations](https://remult.dev/docs/migrations.html)
 - Changed postgres schema builder to use `timestamptz` instead of `timestamp`
 - `KnexDataProvider` now supports all `execute` and `createCommand` and can be used with any `SqlDatabase` functionality
+- **Breaking Change** changed the signature of `getDb` to recieve `DataProvider` as parameter instead of `Remult`
 
 ## [0.25.7] 2024-03-21
 

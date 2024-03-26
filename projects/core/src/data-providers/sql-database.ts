@@ -54,8 +54,8 @@ export class SqlDatabase
     CanBuildMigrations,
     SqlCommandFactory
 {
-  static getDb(remult?: Remult) {
-    const r = (remult || defaultRemult).dataProvider as SqlDatabase
+  static getDb(dataProvider?: DataProvider) {
+    const r = (dataProvider || defaultRemult.dataProvider) as SqlDatabase
     if (isOfType<SqlCommandFactory>(r, 'createCommand')) return r
     else throw 'the data provider is not an SqlCommandFactory'
   }

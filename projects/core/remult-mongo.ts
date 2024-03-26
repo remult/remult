@@ -35,8 +35,8 @@ export class MongoDataProvider implements DataProvider {
   }
   session?: ClientSession
   disableTransactions = false
-  static getDb(remult?: Remult) {
-    const r = (remult || remultContext).dataProvider as MongoDataProvider
+  static getDb(dataProvider?: DataProvider) {
+    const r = (dataProvider || remultContext.dataProvider) as MongoDataProvider
     if (!r.db) throw 'the data provider is not a MongoDataProvider'
     return { db: r.db, session: r.session }
   }

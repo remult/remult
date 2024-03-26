@@ -55,28 +55,13 @@ describe('websql', () => {
   )
   it('work with native sql', async () => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity)
-    const sql = SqlDatabase.getDb(remult)
+    const sql = SqlDatabase.getDb(remult.dataProvider)
     const r = await sql.execute(
       'select count(*) as c from ' + repo.metadata.dbName!,
     )
     expect(r.rows[0].c).toBe(4)
   })
-  it('work with native sql2', async () => {
-    const repo = await entityWithValidations.create4RowsInDp(createEntity)
-    const sql = WebSqlDataProvider.getDb(remult)
-    await new Promise((res) => {
-      sql.transaction((y) => {
-        y.executeSql(
-          'select count(*) as c from ' + repo.metadata.dbName!,
-          undefined,
-          (_, r) => {
-            expect(r.rows[0].c).toBe(4)
-            res({})
-          },
-        )
-      })
-    })
-  })
+
   it('test getEntityDbNames', async () => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity)
     const e = await dbNamesOf(repo)
@@ -97,7 +82,7 @@ describe('websql', () => {
   })
   it('test work with filter', async () => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity)
-    const command = SqlDatabase.getDb(remult).createCommand()
+    const command = SqlDatabase.getDb(remult.dataProvider).createCommand()
     const e = await dbNamesOf(repo)
     expect(
       `select ${e.myId}, ${
@@ -138,6 +123,7 @@ describe('websql', () => {
         entityIsUsedForTheFirstTime: (e) => sql.entityIsUsedForTheFirstTime(e),
         getLimitSqlSyntax: (a, b) => sql.getLimitSqlSyntax(a, b),
         transaction: (what) => what(sql),
+        end: async () => {},
       })
 
       await db.transaction(async (dp) => {
@@ -161,6 +147,7 @@ describe('websql', () => {
       entityIsUsedForTheFirstTime: (e) => sql.entityIsUsedForTheFirstTime(e),
       getLimitSqlSyntax: (a, b) => sql.getLimitSqlSyntax(a, b),
       transaction: (what) => what(sql),
+      end: async () => {},
     })
     let repo: Repository<Categories>
     await db.transaction(async (dp) => {

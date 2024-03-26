@@ -87,7 +87,7 @@ export function SqlDbTests({
     const repo = await entityWithValidations.create4RowsInDp(createEntity)
     const remult = getRemult()
 
-    let f = SqlDatabase.getDb(remult)
+    let f = SqlDatabase.getDb(remult.dataProvider)
     const e = await dbNamesOf(repo, f.wrapIdentifier)
 
     expect(
@@ -113,7 +113,7 @@ export function SqlDbTests({
     const repo = await entityWithValidations.create4RowsInDp(createEntity)
     const remult = getRemult()
 
-    let f = SqlDatabase.getDb(remult)
+    let f = SqlDatabase.getDb(remult.dataProvider)
     const e = await dbNamesOf(repo, f.wrapIdentifier)
     const c = f.createCommand()
     const result = await c.execute(

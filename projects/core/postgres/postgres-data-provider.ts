@@ -16,6 +16,7 @@ import type {
   MigrationBuilder,
   MigrationCode,
 } from '../migrations/migration-types.js'
+import type { DataProvider } from '../index.js'
 
 export interface PostgresPool extends PostgresCommandSource {
   connect(): Promise<PostgresClient>
@@ -29,8 +30,8 @@ export class PostgresDataProvider
   implements SqlImplementation, CanBuildMigrations
 {
   supportsJsonColumnType = true
-  static getDb(remult?: Remult): ClientBase {
-    const r = (remult || defaultRemult).dataProvider as SqlDatabase
+  static getDb(dataProvider?: DataProvider): ClientBase {
+    const r = (dataProvider || defaultRemult.dataProvider) as SqlDatabase
     if (!r._getSourceSql) throw 'the data provider is not an SqlDatabase'
     const me = r._getSourceSql() as PostgresDataProvider
     if (!me.pool) {

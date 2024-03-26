@@ -65,7 +65,7 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
   })
 
   it('ensure schema with dbNames that have quotes', async () => {
-    const db = SqlDatabase.getDb(remult)
+    const db = SqlDatabase.getDb(remult.dataProvider)
     const entityName = 'test_naming'
     await db.execute('Drop table if exists ' + entityName)
     await db.execute(`create table ${entityName}(id int,"createdAt" Date)`)
@@ -105,7 +105,7 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
   })
 
   it('ensure on not_public schema', async () => {
-    const db = SqlDatabase.getDb(remult)
+    const db = SqlDatabase.getDb(remult.dataProvider)
     const entityName = 'auth.test_not_public'
     // reset the state of the database before the test (make sure we don't have the schema and table)
     await db.execute('Drop table if exists ' + entityName)
@@ -130,7 +130,7 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
 
   it('work with native sql', async () => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity)
-    const sql = SqlDatabase.getDb(remult)
+    const sql = SqlDatabase.getDb(remult.dataProvider)
     const r = await sql.execute(
       'select count(*) as c from ' + db.wrapIdentifier(repo.metadata.dbName),
     )
@@ -138,7 +138,7 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
   })
   it('work with native sql2', async () => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity)
-    const sql = PostgresDataProvider.getDb(remult)
+    const sql = PostgresDataProvider.getDb(remult.dataProvider)
     const r = await sql.query(
       'select count(*) as c from ' + db.wrapIdentifier(repo.metadata.dbName),
     )
@@ -146,10 +146,10 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
   })
   it('work with native sql3', async () => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity)
-    await SqlDatabase.getDb(remult)
+    await SqlDatabase.getDb(remult.dataProvider)
       ._getSourceSql()
       .transaction(async (x) => {
-        const sql = PostgresDataProvider.getDb(new Remult(new SqlDatabase(x)))
+        const sql = PostgresDataProvider.getDb(new SqlDatabase(x))
         const r = await sql.query(
           'select count(*) as c from ' +
             db.wrapIdentifier(repo.metadata.dbName),

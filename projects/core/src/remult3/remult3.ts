@@ -840,12 +840,7 @@ https://gitkraken.dev/link/dnNjb2RlOi8vZWFtb2Rpby5naXRsZW5zL2xpbmsvci9mMDgzMWU0O
   - https://github.com/remult/remult/issues/221#issuecomment-2016519746
 
 */
-/*p1 -  I want to change the signature of getDb from getting optional remult, to getting optional dataProvider.
 
-In most cases you will not send anything - and it'll be by default remult.dataProvider.
-
-I just findmyself creating remults to extract the data provider :)
-*/
 //y1 - getFields didn't work for kobi in the home component
 
 //p1 - add section to Fields doc, explaining field type in db

@@ -86,8 +86,8 @@ export class KnexDataProvider
   execute(sql: string): Promise<SqlResult> {
     return this.createCommand().execute(sql)
   }
-  static getDb(remult?: Remult) {
-    const r = (remult || remultContext).dataProvider as KnexDataProvider
+  static getDb(dataProvider?: DataProvider) {
+    const r = (dataProvider || remultContext.dataProvider) as KnexDataProvider
     if (!r.knex) throw 'the data provider is not an KnexDataProvider'
     return r.knex
   }
