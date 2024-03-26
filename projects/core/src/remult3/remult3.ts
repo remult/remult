@@ -828,21 +828,21 @@ https://gitkraken.dev/link/dnNjb2RlOi8vZWFtb2Rpby5naXRsZW5zL2xpbmsvci9mMDgzMWU0O
 - I think there should be a way to throw a forbidden exception
 */
 
-//p1 - cleanup root directory of reult
 //p1 - in this video I'll use remult to turn a frontend app to a fullstack app
 /*p1 - discuss using delete & put - with url query language for deleteMany and updateMany - 
-  - put & delete, similar to get
-  - add where to count, deleteMany,updateMany,
-  - prevent delete all and update all - must have meaningful where.
-    - try forcing this also in typescript
+- put & delete, similar to get
+- add where to count, deleteMany,updateMany,
+- prevent delete all and update all - must have meaningful where.
+- try forcing this also in typescript
 
-  - protect against deleting of all rows by mistake
-  - https://github.com/remult/remult/issues/221#issuecomment-2016519746
+- protect against deleting of all rows by mistake
+- https://github.com/remult/remult/issues/221#issuecomment-2016519746
 
 */
 
 //y1 - getFields didn't work for kobi in the home component
 
+//p1 - document offline support
 //p1 - add section to Fields doc, explaining field type in db
 //p1 - add section about union type
 //p1 - add section about value list field type
