@@ -30,6 +30,8 @@ export interface ApiClient {
    * @example
    * // Using Angular HttpClient
    * remult.apiClient.httpClient = httpClient;
+   * @see
+   * If you want to add headers using angular httpClient, see: https://medium.com/angular-shots/shot-3-how-to-add-http-headers-to-every-request-in-angular-fab3d10edc26
    *
    * @example
    * // Using fetch (default)
@@ -1825,15 +1827,7 @@ export interface Repository<entityType> {
    * taskRepo.update(task.id,{...task,completed:true})
    */
   update(
-    id: entityType extends {
-      id?: number
-    }
-      ? number
-      : entityType extends {
-          id?: string
-        }
-      ? string
-      : string | number,
+    id: idType<entityType>,
     item: Partial<MembersOnly<entityType>>,
   ): Promise<entityType>
   update(
@@ -1848,17 +1842,7 @@ export interface Repository<entityType> {
     item: Partial<MembersOnly<entityType>>,
   ): Promise<number>
   /** Deletes an Item*/
-  delete(
-    id: entityType extends {
-      id?: number
-    }
-      ? number
-      : entityType extends {
-          id?: string
-        }
-      ? string
-      : string | number,
-  ): Promise<void>
+  delete(id: idType<entityType>): Promise<void>
   delete(item: Partial<MembersOnly<entityType>>): Promise<void>
   /**
    * Deletes all items that match the `where` condition.

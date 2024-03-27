@@ -48,6 +48,7 @@ describe('test sql implementation', () => {
     async entityIsUsedForTheFirstTime(entity) {},
     getLimitSqlSyntax: () => '',
     transaction: undefined,
+    end: async () => {},
   } satisfies SqlImplementation)
   const repo = new Remult(db).repo(task)
   it('test basic select', async () => {
