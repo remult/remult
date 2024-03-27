@@ -1296,9 +1296,9 @@ export function translateWhereToRestBody<T>(
     }
   }
   if (where.OR) {
-    result.OR = where.OR.map((where: any) =>
-      translateWhereToRestBody(fields, { where }),
+    result.OR = where.OR.map(
+      (where: any) => translateWhereToRestBody(fields, { where }).where,
     )
   }
-  return result
+  return { where: result }
 }

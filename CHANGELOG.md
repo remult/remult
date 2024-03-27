@@ -6,10 +6,14 @@ All notable changes to this project will be documented in this file.
 
 - Added support for migrations, see [Migrations](https://remult.dev/docs/migrations.html)
 - Added an `error` hook to `RemultServerOptions` that is called whenever whenever there is an error in the API lifecycle. See [RemultServerOptions](https://remult.dev/docs/ref_remultserveroptions.html#error)
-- Fixed ValueConverters Number fromInput handle 0 as a valid value
+- Added an exception when calling `updateMany` or `dleleteMany` without a filter - to protect against accidental deleting / updating all data
+- Added updateMany and deleteMany to OpenAPI (swagger)
+- Fixed an issue with entity ids that included date
 - Changed postgres schema builder to use `timestamptz` instead of `timestamp`
 - `KnexDataProvider` now supports all `execute` and `createCommand` and can be used with any `SqlDatabase` functionality
 - **Breaking Change** changed the signature of `getDb` to recieve `DataProvider` as parameter instead of `Remult`
+- **Breaking Change** Changed the POST rest api queries to include the filter under the `where` key in the body - previously it included the filter as the body itself.
+- Fixed ValueConverters Number fromInput handle 0 as a valid value
 
 ## [0.25.7] 2024-03-21
 

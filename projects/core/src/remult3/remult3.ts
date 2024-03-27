@@ -161,8 +161,8 @@ export type FieldsRef<entityType> = FieldsRefBase<entityType> & {
   > extends {
     id?: number | string
   }
-    ? IdFieldRef<entityType, entityType[Properties]>
-    : FieldRef<entityType, entityType[Properties]>
+  ? IdFieldRef<entityType, entityType[Properties]>
+  : FieldRef<entityType, entityType[Properties]>
 }
 
 export type FieldsRefForEntityBase<entityType> = FieldsRefBase<entityType> & {
@@ -171,8 +171,8 @@ export type FieldsRefForEntityBase<entityType> = FieldsRefBase<entityType> & {
   > extends {
     id?: number | string
   }
-    ? IdFieldRef<entityType, entityType[Properties]>
-    : FieldRef<entityType, entityType[Properties]>
+  ? IdFieldRef<entityType, entityType[Properties]>
+  : FieldRef<entityType, entityType[Properties]>
 }
 
 export type SortSegments<entityType> = {
@@ -286,8 +286,8 @@ export interface EntityMetadata<entityType = any> {
 
 export declare type MembersOnly<T> = {
   [K in keyof Omit<T, keyof EntityBase> as T[K] extends Function
-    ? never
-    : K]: T[K]
+  ? never
+  : K]: T[K]
 }
 //Pick<
 //   T,
@@ -541,21 +541,21 @@ export declare type EntityOrderBy<entityType> = {
  */
 export declare type EntityFilter<entityType> = {
   [Properties in keyof Partial<MembersOnly<entityType>>]?:
-    | (Partial<entityType>[Properties] extends number | Date | undefined
-        ? ComparisonValueFilter<Partial<entityType>[Properties]>
-        : Partial<entityType>[Properties] extends string | undefined
-        ?
-            | Partial<entityType>[Properties]
-            | (ContainsStringValueFilter &
-                ComparisonValueFilter<Partial<entityType>[Properties]>)
-        : Partial<entityType>[Properties] extends boolean | undefined
-        ? ValueFilter<boolean>
-        : Partial<entityType>[Properties] extends
-            | { id?: string | number }
-            | undefined
-        ? IdFilter<Partial<entityType>[Properties]>
-        : ValueFilter<Partial<entityType>[Properties]>)
-    | ContainsStringValueFilter
+  | (Partial<entityType>[Properties] extends number | Date | undefined
+    ? ComparisonValueFilter<Partial<entityType>[Properties]>
+    : Partial<entityType>[Properties] extends string | undefined
+    ?
+    | Partial<entityType>[Properties]
+    | (ContainsStringValueFilter &
+      ComparisonValueFilter<Partial<entityType>[Properties]>)
+    : Partial<entityType>[Properties] extends boolean | undefined
+    ? ValueFilter<boolean>
+    : Partial<entityType>[Properties] extends
+    | { id?: string | number }
+    | undefined
+    ? IdFilter<Partial<entityType>[Properties]>
+    : ValueFilter<Partial<entityType>[Properties]>)
+  | ContainsStringValueFilter
 } & {
   $or?: EntityFilter<entityType>[]
   $and?: EntityFilter<entityType>[]
@@ -565,11 +565,11 @@ export type ValueFilter<valueType> =
   | valueType
   | valueType[]
   | {
-      $ne?: valueType | valueType[]
-      '!='?: valueType | valueType[]
-      $in?: valueType[]
-      $nin?: valueType[]
-    }
+    $ne?: valueType | valueType[]
+    '!='?: valueType | valueType[]
+    $in?: valueType[]
+    $nin?: valueType[]
+  }
 export type ComparisonValueFilter<valueType> = ValueFilter<valueType> & {
   $gt?: valueType
   '>'?: valueType
@@ -587,8 +587,8 @@ export interface ContainsStringValueFilter {
 export type IdFilter<valueType> =
   | ValueFilter<valueType>
   | {
-      $id: ValueFilter<valueType extends { id?: number } ? number : string>
-    }
+    $id: ValueFilter<valueType extends { id?: number } ? number : string>
+  }
 
 export interface LoadOptions<entityType> {
   /**
@@ -650,7 +650,7 @@ export interface FindOptionsBase<entityType> extends LoadOptions<entityType> {
 }
 export interface FindFirstOptions<entityType>
   extends FindOptionsBase<entityType>,
-    FindFirstOptionsBase<entityType> {}
+  FindFirstOptionsBase<entityType> { }
 export interface FindFirstOptionsBase<entityType>
   extends LoadOptions<entityType> {
   /** determines if to cache the result, and return the results from cache.
@@ -747,40 +747,40 @@ export type ObjectMembersOnly<T> = MembersOnly<{
     T,
     {
       [K in keyof T]: T[K] extends object | undefined | null
-        ? T[K] extends Date | undefined | null
-          ? never
-          : K
-        : never
+      ? T[K] extends Date | undefined | null
+      ? never
+      : K
+      : never
     }[keyof T]
   >]: T[K]
 }>
 
 export type MembersToInclude<T> = {
   [K in keyof ObjectMembersOnly<T>]?:
-    | boolean
-    | (NonNullable<T[K]> extends Array<any>
-        ? FindOptions<NonNullable<T[K]>[number]>
-        : FindFirstOptions<NonNullable<T[K]>>)
+  | boolean
+  | (NonNullable<T[K]> extends Array<any>
+    ? FindOptions<NonNullable<T[K]>[number]>
+    : FindFirstOptions<NonNullable<T[K]>>)
 }
 
 export type RepositoryRelations<entityType> = {
   [K in keyof ObjectMembersOnly<entityType>]-?: NonNullable<
     entityType[K]
   > extends Array<infer R>
-    ? Repository<R>
-    : entityType[K] extends infer R
-    ? { findOne: (options?: FindOptionsBase<R>) => Promise<R> }
-    : never
+  ? Repository<R>
+  : entityType[K] extends infer R
+  ? { findOne: (options?: FindOptionsBase<R>) => Promise<R> }
+  : never
 }
 
 export type RepositoryRelationsForEntityBase<entityType> = {
   [K in keyof Omit<entityType, keyof EntityBase>]-?: NonNullable<
     entityType[K]
   > extends Array<infer R>
-    ? Repository<R>
-    : entityType[K] extends infer R
-    ? { findOne: (options?: FindOptionsBase<R>) => Promise<R> }
-    : never
+  ? Repository<R>
+  : entityType[K] extends infer R
+  ? { findOne: (options?: FindOptionsBase<R>) => Promise<R> }
+  : never
 }
 
 export declare type EntityIdFields<entityType> = {
@@ -809,20 +809,13 @@ export type ClassFieldDecorator<entityType, valueType> = (
   c?: any,
 ) => void
 
+
+
+//p1 - should the remult api be deleteMany({id:[1,2]}) or deleteMany({where:{id:[1,2]}})
+
 //p1 - in this video I'll use remult to turn a frontend app to a fullstack app
-/*p1 - discuss using delete & put - with url query language for deleteMany and updateMany - 
-- put & delete, similar to get
-- add where to count, deleteMany,updateMany,
-- prevent delete all and update all - must have meaningful where.
-- try forcing this also in typescript
-
-- protect against deleting of all rows by mistake
-- https://github.com/remult/remult/issues/221#issuecomment-2016519746
-
-*/
-
 //y1 - getFields didn't work for kobi in the home component
-
+//y1 - consider replacing all errors with error classes that extend the base Error class
 //p1 - document offline support
 //p1 - add section to Fields doc, explaining field type in db
 //p1 - add section about union type
@@ -870,7 +863,7 @@ export class Currency {
 //y1 - main vs master
 //y2 - livequery for findfirst (@JY)
 
-/*y2 - 
+/*y2 -
 //y2 - allow api update only for new rows
   @Fields.string<Category>({
     allowApiUpdate: (c) => getEntityRef(c).isNew(),

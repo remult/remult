@@ -389,6 +389,7 @@ export class RepositoryImplementation<entityType>
     where: EntityFilter<entityType>,
     set: Partial<MembersOnly<entityType>>,
   ): Promise<number> {
+    Filter.throwErrorIfFilterIsEmpty(where, 'updateMany')
     if (this._dataProvider.isProxy) {
       return (this._edp as any as ProxyEntityDataProvider).updateMany(
         await this._translateWhereToFilter(where),
@@ -863,6 +864,7 @@ export class RepositoryImplementation<entityType>
     return this._edp.count(await this._translateWhereToFilter(where))
   }
   async deleteMany(where: EntityFilter<entityType>): Promise<number> {
+    Filter.throwErrorIfFilterIsEmpty(where, 'deleteMany')
     if (this._dataProvider.isProxy) {
       return (this._edp as any as ProxyEntityDataProvider).deleteMany(
         await this._translateWhereToFilter(where),
@@ -1473,7 +1475,7 @@ export class rowHelperImplementation<T>
       return this.instance[y.key]
     }
     if (this.metadata.idMetadata.field instanceof CompoundIdField)
-      return this.metadata.idMetadata.field.fields.map(getVal).join(',')
+      return this.metadata.idMetadata.field.getId(getVal)
     return getVal(this.metadata.idMetadata.field)
   }
   saveMoreOriginalData() {

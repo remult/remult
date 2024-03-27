@@ -1,14 +1,28 @@
-import { Remult, ProgressListener } from '../../core'
+import { Remult, ProgressListener, getEntityRef } from '../../core'
 import { isBackend } from '../../core'
 import { remult } from '../../core/src/remult-proxy'
 import { Entity, Fields } from '../../core'
 import { BackendMethod } from '../../core/src/server-action'
 import { Validators } from '../../core/src/validators'
+import { expect } from 'vitest'
+import { createId } from '@paralleldrive/cuid2'
 
-@Entity('tasks', {
+@Entity<Task>('tasks', {
   allowApiCrud: true,
+  saving: (task) => {
+    if (task.title.startsWith('empty')) task.id = ''
+  },
 })
 export class Task {
+  // @Fields.string<Task>({
+  //   allowApiUpdate: false,
+  //   saving: (task) => {
+  //     if (!task.id) {
+  //       if (task.__setEmptyId) task.id = ''
+  //       else task.id = createId()
+  //     }
+  //   },
+  // })
   @Fields.uuid()
   id!: string
 
@@ -21,6 +35,7 @@ export class Task {
 
   @Fields.boolean()
   completed = false
+
   @BackendMethod({ allowed: false })
   static testForbidden() {}
   @BackendMethod({ allowed: true })
@@ -31,6 +46,7 @@ export class Task {
   static async testInjectedRemult(remult?: Remult) {
     return await remult!.repo(Task).count()
   }
+
   @BackendMethod({ allowed: true, queue: true, paramTypes: [ProgressListener] })
   static async testQueuedJob(progress?: ProgressListener) {
     for (let i = 0; i < 3; i++) {

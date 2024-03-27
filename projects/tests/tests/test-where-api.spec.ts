@@ -383,8 +383,10 @@ describe('custom filter', () => {
         },
       },
       {
-        $custom$filter: {
-          oneAndThree: true,
+        where: {
+          $custom$filter: {
+            oneAndThree: true,
+          },
         },
       },
     )
@@ -413,8 +415,10 @@ describe('custom filter', () => {
         },
       },
       {
-        $custom$filter: {
-          oneAndThree: true,
+        where: {
+          $custom$filter: {
+            oneAndThree: true,
+          },
         },
       },
     )

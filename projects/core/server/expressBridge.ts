@@ -526,16 +526,16 @@ export class RemultServerImplementation<RequestType>
       )
       .put(
         this.process(async (c, req, res, _, __, orig) =>
-          dataApiFactory(c).put(
+          dataApiFactory(c).updateMany(
             res,
-            '',
+            req,
             await this.coreOptions.getRequestBody(orig),
           ),
         ),
       )
       .delete(
-        this.process(async (c, req, res, orig) =>
-          dataApiFactory(c).delete(res, ''),
+        this.process(async (c, req, res, _, __, orig) =>
+          dataApiFactory(c).deleteMany(res, req, undefined),
         ),
       )
       .post(
@@ -811,6 +811,17 @@ export class RemultServerImplementation<RequestType>
         }
 
         let apiPath: any = (spec.paths[this.options.rootPath + '/' + key] = {})
+        let itemInBody = {
+          requestBody: {
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/' + mutationKey,
+                },
+              },
+            },
+          },
+        }
         let apiPathWithId: any = (spec.paths[
           this.options.rootPath + '/' + key + '/{id}'
         ] = {})
@@ -866,23 +877,81 @@ export class RemultServerImplementation<RequestType>
             },
           },
         })
+        apiPath.delete = secure(meta.options.allowApiDelete, true, {
+          description:
+            'deletes row of ' +
+            key +
+            '. supports filter operators. For more info on filtering [see this article](https://remult.dev/docs/rest-api.html#filter)',
+          parameters: [...parameters],
+          responses: {
+            '400': {
+              description: 'Error: Bad Request',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/InvalidResponse',
+                  },
+                },
+              },
+            },
+            '200': {
+              description: 'returns the number of deleted rows ' + key,
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      deleted: {
+                        type: 'number',
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        })
+        apiPath.put = secure(meta.options.allowApiDelete, true, {
+          description:
+            'updates row of ' +
+            key +
+            '. supports filter operators. For more info on filtering [see this article](https://remult.dev/docs/rest-api.html#filter)',
+          parameters: [...parameters],
+          ...itemInBody,
+          responses: {
+            '400': {
+              description: 'Error: Bad Request',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/InvalidResponse',
+                  },
+                },
+              },
+            },
+            '200': {
+              description: 'returns the number of updated rows ' + key,
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      updated: {
+                        type: 'number',
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        })
         let idParameter = {
           name: 'id',
           in: 'path',
           description: 'id of ' + key,
           required: true,
           schema: { type: 'string' },
-        }
-        let itemInBody = {
-          requestBody: {
-            content: {
-              'application/json': {
-                schema: {
-                  $ref: '#/components/schemas/' + mutationKey,
-                },
-              },
-            },
-          },
         }
 
         apiPath.post = secure(meta.options.allowApiInsert, false, {

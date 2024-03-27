@@ -26,7 +26,7 @@ export class DataApi<T = any> {
   constructor(
     private repository: Repository<T>,
     private remult: Remult,
-  ) {}
+  ) { }
   httpGet(
     res: DataApiResponse,
     req: DataApiRequest,
@@ -55,7 +55,16 @@ export class DataApi<T = any> {
     serializeContext: () => Promise<any>,
   ) {
     const action = req?.get('__action')
-    if (action?.startsWith(liveQueryAction))
+    function validateWhereInBody() {
+      if (!body?.where) {
+        throw {
+          message: `POST with action ${action} must have a where clause in the body`,
+          httpStatusCode: 400,
+        } satisfies ErrorInfo
+      }
+    }
+    if (action?.startsWith(liveQueryAction)) {
+      validateWhereInBody()
       return this.liveQuery(
         res,
         req,
@@ -63,15 +72,20 @@ export class DataApi<T = any> {
         serializeContext,
         action.substring(liveQueryAction.length),
       )
+    }
     switch (action) {
       case 'get':
+        validateWhereInBody()
         return this.getArray(res, req, body)
       case 'count':
+        validateWhereInBody()
         return this.count(res, req, body)
       case 'deleteMany':
+        validateWhereInBody()
         return this.deleteMany(res, req, body)
       case 'updateMany':
-        return this.updateMany(res, req, body)
+        validateWhereInBody()
+        return this.updateManyImplementation(res, req, body)
       case 'endLiveQuery':
         await this.remult.liveQueryStorage!.remove(body.id)
         res.success('ok')
@@ -90,11 +104,7 @@ export class DataApi<T = any> {
       response.success(this.repository.getEntityRef(row).toApiJson()),
     )
   }
-  async count(
-    response: DataApiResponse,
-    request: DataApiRequest,
-    filterBody?: any,
-  ) {
+  async count(response: DataApiResponse, request: DataApiRequest, body?: any) {
     if (!this.repository.metadata.apiReadAllowed) {
       response.forbidden()
       return
@@ -102,7 +112,7 @@ export class DataApi<T = any> {
     try {
       response.success({
         count: +(await this.repository.count(
-          await this.buildWhere(request, filterBody),
+          await this.buildWhere(request, body),
         )),
       })
     } catch (err) {
@@ -112,13 +122,15 @@ export class DataApi<T = any> {
   async deleteMany(
     response: DataApiResponse,
     request: DataApiRequest,
-    filterBody?: any,
+    body?: any,
   ) {
     try {
+      let deleted = 0
+      let where = await this.buildWhere(request, body)
+      Filter.throwErrorIfFilterIsEmpty(where, 'deleteMany')
       return await doTransaction(this.remult, async () => {
-        let deleted = 0
         for await (const x of this.repository.query({
-          where: await this.buildWhere(request, filterBody),
+          where,
           include: this.includeNone(),
         })) {
           await this.actualDelete(x)
@@ -134,13 +146,13 @@ export class DataApi<T = any> {
   async getArrayImpl(
     response: DataApiResponse,
     request: DataApiRequest,
-    filterBody: any,
+    body: any,
   ) {
     let findOptions: FindOptions<T> = {
       load: () => [],
       include: this.includeNone(),
     }
-    findOptions.where = await this.buildWhere(request, filterBody)
+    findOptions.where = await this.buildWhere(request, body)
 
     if (request) {
       let sort = <string>request.get('_sort')
@@ -161,25 +173,25 @@ export class DataApi<T = any> {
       )
       if (w) {
         w.__applyToConsumer({
-          containsCaseInsensitive: () => {},
-          notContainsCaseInsensitive: () => {},
-          isDifferentFrom: () => {},
+          containsCaseInsensitive: () => { },
+          notContainsCaseInsensitive: () => { },
+          isDifferentFrom: () => { },
           isEqualTo: (col, val) => {
             if (this.repository.metadata.idMetadata.isIdField(col)) hasId = true
           },
-          custom: () => {},
-          databaseCustom: () => {},
-          isGreaterOrEqualTo: () => {},
-          isGreaterThan: () => {},
+          custom: () => { },
+          databaseCustom: () => { },
+          isGreaterOrEqualTo: () => { },
+          isGreaterThan: () => { },
           isIn: (col) => {
             if (this.repository.metadata.idMetadata.isIdField(col)) hasId = true
           },
-          isLessOrEqualTo: () => {},
-          isLessThan: () => {},
-          isNotNull: () => {},
-          isNull: () => {},
+          isLessOrEqualTo: () => { },
+          isLessThan: () => { },
+          isNotNull: () => { },
+          isNull: () => { },
 
-          or: () => {},
+          or: () => { },
         })
       }
       if (!hasId) {
@@ -209,14 +221,14 @@ export class DataApi<T = any> {
   async getArray(
     response: DataApiResponse,
     request: DataApiRequest,
-    filterBody?: any,
+    body?: any,
   ) {
     if (!this.repository.metadata.apiReadAllowed) {
       response.forbidden()
       return
     }
     try {
-      const { r } = await this.getArrayImpl(response, request, filterBody)
+      const { r } = await this.getArrayImpl(response, request, body)
 
       response.success(r)
     } catch (err) {
@@ -227,7 +239,7 @@ export class DataApi<T = any> {
   async liveQuery(
     response: DataApiResponse,
     request: DataApiRequest,
-    filterBody: any,
+    body: any,
     serializeContext: () => Promise<any>,
     queryChannel: string,
   ) {
@@ -236,7 +248,7 @@ export class DataApi<T = any> {
       return
     }
     try {
-      const r = await this.getArrayImpl(response, request, filterBody)
+      const r = await this.getArrayImpl(response, request, body)
       const data: QueryData = {
         requestJson: await serializeContext(),
         findOptionsJson: findOptionsToJson(
@@ -258,7 +270,7 @@ export class DataApi<T = any> {
   }
   private async buildWhere(
     request: DataApiRequest,
-    filterBody: any,
+    body: any,
   ): Promise<EntityFilter<any>> {
     var where: EntityFilter<any>[] = []
     if (this.repository.metadata.options.apiPrefilter) {
@@ -282,9 +294,9 @@ export class DataApi<T = any> {
         }),
       )
     }
-    if (filterBody)
+    if (body?.where)
       where.push(
-        Filter.entityFilterFromJson(this.repository.metadata, filterBody),
+        Filter.entityFilterFromJson(this.repository.metadata, body.where),
       )
     return { $and: where }
   }
@@ -330,13 +342,29 @@ export class DataApi<T = any> {
   async updateMany(
     response: DataApiResponse,
     request: DataApiRequest,
-    body?: any,
+    body: any,
+  ) {
+    const action = request?.get('__action')
+    if (action == 'emptyId') {
+      return this.put(response, '', body)
+    }
+    let where = await this.buildWhere(request, body)
+    Filter.throwErrorIfFilterIsEmpty(where, 'updateMany')
+    return this.updateManyImplementation(response, request, {
+      where: undefined,
+      set: body,
+    })
+  }
+  async updateManyImplementation(
+    response: DataApiResponse,
+    request: DataApiRequest,
+    body: { where: any; set: any },
   ) {
     try {
       return await doTransaction(this.remult, async () => {
         let updated = 0
         for await (const x of this.repository.query({
-          where: await this.buildWhere(request, body.where),
+          where: await this.buildWhere(request, body),
           include: this.includeNone(),
         })) {
           await this.actualUpdate(x, body.set)

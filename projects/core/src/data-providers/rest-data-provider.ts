@@ -139,12 +139,12 @@ export class RestEntityDataProvider
     return run('count').then((r) => +r.count)
   }
   public async deleteMany(where: Filter): Promise<number> {
-    const { run } = this.buildFindRequest({ where }, true)
+    const { run } = this.buildFindRequest({ where }, 'delete')
     return run('deleteMany').then((r) => +r.deleted)
   }
   public async updateMany(where: Filter, data: any): Promise<number> {
-    const { run } = this.buildFindRequest({ where }, true)
-    return run('updateMany', { set: this.toJsonOfIncludedKeys(data) }).then(
+    const { run } = this.buildFindRequest({ where }, 'put')
+    return run('updateMany', this.toJsonOfIncludedKeys(data)).then(
       (r) => +r.updated,
     )
   }
@@ -153,16 +153,17 @@ export class RestEntityDataProvider
     return run().then((x) => x.map((y) => this.translateFromJson(y)))
   }
   //@internal
-  buildFindRequest(options: EntityDataProviderFindOptions, forcePost = false) {
+  buildFindRequest(
+    options: EntityDataProviderFindOptions,
+    method?: 'delete' | 'put' | 'get',
+  ) {
+    if (!method) method = 'get'
     let url = new UrlBuilder(this.url())
     let filterObject: any
     if (options) {
       if (options.where) {
         filterObject = options.where.toJson() //        options.where.__applyToConsumer(new FilterConsumnerBridgeToUrlBuilder(url));
-        if (
-          !forcePost &&
-          addFilterToUrlAndReturnTrueIfSuccessful(filterObject, url)
-        )
+        if (addFilterToUrlAndReturnTrueIfSuccessful(filterObject, url))
           filterObject = undefined
       }
       if (options.orderBy && options.orderBy.Segments) {
@@ -191,11 +192,10 @@ export class RestEntityDataProvider
         action = 'get'
       }
       if (action) u.add('__action', action)
-      if (filterObject || forcePost) {
-        if (!body) body = filterObject
-        else body = { ...body, where: filterObject }
+      if (filterObject) {
+        body = { set: body, where: filterObject }
         return this.http().post(u.url, body)
-      } else return this.http().get(u.url)
+      } else return this.http()[method](u.url, body)
     }
 
     return {
@@ -220,7 +220,8 @@ export class RestEntityDataProvider
   public update(id: any, data: any): Promise<any> {
     return this.http()
       .put(
-        this.url() + '/' + encodeURIComponent(id),
+        this.url() +
+          (id != '' ? '/' + encodeURIComponent(id) : '?__action=emptyId'),
         this.toJsonOfIncludedKeys(data),
       )
       .then((y) => this.translateFromJson(y))
@@ -236,8 +237,15 @@ export class RestEntityDataProvider
     return result
   }
 
-  public delete(id: any): Promise<void> {
-    return this.http().delete(this.url() + '/' + encodeURIComponent(id))
+  async delete(id: any): Promise<void> {
+    if (id == '')
+      await this.deleteMany(
+        Filter.fromEntityFilter(
+          this.entity,
+          this.entity.idMetadata.getIdFilter(id),
+        ),
+      )
+    else return this.http().delete(this.url() + '/' + encodeURIComponent(id))
   }
 
   public insert(data: any): Promise<any> {
