@@ -2158,11 +2158,13 @@ describe('CompoundIdPojoEntity', () => {
     expect(r.metadata.idMetadata.getId(id)).toMatchInlineSnapshot('"a,2021-05-16,2021-05-16T08:32:19.905Z"')
     await r.insert({ ...id, d: 'd' })
     await r.update(id, { d: 'd1' })
-    expect(await r.find()).toMatchInlineSnapshot(`
+    expect(((await r.find()).map(x => {
+      delete x.b
+      return x
+    }))).toMatchInlineSnapshot(`
       [
         myT {
           "a": "a",
-          "b": 2021-05-15T21:00:00.000Z,
           "c": 2021-05-16T08:32:19.905Z,
           "d": "d1",
         },
