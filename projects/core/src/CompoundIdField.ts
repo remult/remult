@@ -30,10 +30,16 @@ export class CompoundIdField implements FieldMetadata<string> {
     return Promise.resolve('')
   }
   getId(instance: any) {
+    let get = (field: FieldMetadata) => {
+      return instance[field.key]
+    }
+    if (typeof instance === 'function') {
+      get = instance;
+    }
     let r = ''
     this.fields.forEach((c) => {
       if (r.length > 0) r += ','
-      r += instance[c.key]
+      r += c.valueConverter.toJson(get(c))
     })
     return r
   }
@@ -59,7 +65,7 @@ export class CompoundIdField implements FieldMetadata<string> {
     let val = value.toString()
     let id = val.split(',')
     this.fields.forEach((c, i) => {
-      result[c.key] = id[i]
+      result[c.key] = c.valueConverter.fromJson(id[i])
     })
     return result
   }

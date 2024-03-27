@@ -26,7 +26,7 @@ export class DataApi<T = any> {
   constructor(
     private repository: Repository<T>,
     private remult: Remult,
-  ) {}
+  ) { }
   httpGet(
     res: DataApiResponse,
     req: DataApiRequest,
@@ -55,7 +55,16 @@ export class DataApi<T = any> {
     serializeContext: () => Promise<any>,
   ) {
     const action = req?.get('__action')
-    if (action?.startsWith(liveQueryAction))
+    function validateWhereInBody() {
+      if (!body?.where) {
+        throw {
+          message: `POST with action ${action} must have a where clause in the body`,
+          httpStatusCode: 400,
+        } satisfies ErrorInfo
+      }
+    }
+    if (action?.startsWith(liveQueryAction)) {
+      validateWhereInBody()
       return this.liveQuery(
         res,
         req,
@@ -63,14 +72,19 @@ export class DataApi<T = any> {
         serializeContext,
         action.substring(liveQueryAction.length),
       )
+    }
     switch (action) {
       case 'get':
+        validateWhereInBody()
         return this.getArray(res, req, body)
       case 'count':
+        validateWhereInBody()
         return this.count(res, req, body)
       case 'deleteMany':
+        validateWhereInBody()
         return this.deleteMany(res, req, body)
       case 'updateMany':
+        validateWhereInBody()
         return this.updateManyImplementation(res, req, body)
       case 'endLiveQuery':
         await this.remult.liveQueryStorage!.remove(body.id)
@@ -159,25 +173,25 @@ export class DataApi<T = any> {
       )
       if (w) {
         w.__applyToConsumer({
-          containsCaseInsensitive: () => {},
-          notContainsCaseInsensitive: () => {},
-          isDifferentFrom: () => {},
+          containsCaseInsensitive: () => { },
+          notContainsCaseInsensitive: () => { },
+          isDifferentFrom: () => { },
           isEqualTo: (col, val) => {
             if (this.repository.metadata.idMetadata.isIdField(col)) hasId = true
           },
-          custom: () => {},
-          databaseCustom: () => {},
-          isGreaterOrEqualTo: () => {},
-          isGreaterThan: () => {},
+          custom: () => { },
+          databaseCustom: () => { },
+          isGreaterOrEqualTo: () => { },
+          isGreaterThan: () => { },
           isIn: (col) => {
             if (this.repository.metadata.idMetadata.isIdField(col)) hasId = true
           },
-          isLessOrEqualTo: () => {},
-          isLessThan: () => {},
-          isNotNull: () => {},
-          isNull: () => {},
+          isLessOrEqualTo: () => { },
+          isLessThan: () => { },
+          isNotNull: () => { },
+          isNull: () => { },
 
-          or: () => {},
+          or: () => { },
         })
       }
       if (!hasId) {

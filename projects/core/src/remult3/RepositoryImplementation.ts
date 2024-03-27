@@ -95,11 +95,11 @@ import { remultStatic } from '../remult-static.js'
 
 let classValidatorValidate:
   | ((
-      item: any,
-      ref: {
-        fields: FieldsRef<any>
-      },
-    ) => Promise<void>)
+    item: any,
+    ref: {
+      fields: FieldsRef<any>
+    },
+  ) => Promise<void>)
   | undefined = undefined
 // import ("class-validator".toString())
 //     .then((v) => {
@@ -218,7 +218,7 @@ export class RepositoryImplementation<entityType>
     private _dataProvider: DataProvider,
     private _info: EntityFullInfo<entityType>,
     private _defaultFindOptions?: FindOptions<entityType>,
-  ) {}
+  ) { }
   _idCache = new Map<any, any>()
   _getCachedById(id: any, doNotLoadIfNotFound: boolean): entityType {
     id = id + ''
@@ -302,10 +302,10 @@ export class RepositoryImplementation<entityType>
     item:
       | entityType
       | (entityType extends { id?: number }
-          ? number
-          : entityType extends { id?: string }
-          ? string
-          : string | number),
+        ? number
+        : entityType extends { id?: string }
+        ? string
+        : string | number),
   ): Promise<void> {
     const ref = getEntityRef(item, false)
     if (ref) return ref.delete()
@@ -541,12 +541,12 @@ export class RepositoryImplementation<entityType>
         if (typeof l === 'function') {
           listener = {
             next: l,
-            complete: () => {},
-            error: () => {},
+            complete: () => { },
+            error: () => { },
           }
         }
-        listener.error ??= () => {}
-        listener.complete ??= () => {}
+        listener.error ??= () => { }
+        listener.complete ??= () => { }
         return this._remult.liveQuerySubscriber.subscribe(
           this,
           options,
@@ -759,8 +759,8 @@ export class RepositoryImplementation<entityType>
       let val =
         rel.type === 'reference'
           ? (
-              getEntityRef(row).fields.find(field.key) as IdFieldRef<any, any>
-            ).getId()
+            getEntityRef(row).fields.find(field.key) as IdFieldRef<any, any>
+          ).getId()
           : row[key]
       if (rel.type === 'toOne' || rel.type === 'reference') {
         if (val === null) returnNull = true
@@ -1354,7 +1354,7 @@ abstract class rowHelperBase<T> {
     this.originalValues = this.copyDataToObject()
     this.saveMoreOriginalData()
   }
-  saveMoreOriginalData() {}
+  saveMoreOriginalData() { }
   async validate() {
     this.__clearErrorsAndReportChanged()
     if (classValidatorValidate)
@@ -1371,7 +1371,7 @@ abstract class rowHelperBase<T> {
     await this.__performColumnAndEntityValidations()
     this.__assertValidity()
   }
-  async __performColumnAndEntityValidations() {}
+  async __performColumnAndEntityValidations() { }
   toApiJson(includeRelatedEntities = false, notJustApi = false) {
     let result: any = {}
     for (const col of this.fieldsMetadata) {
@@ -1492,7 +1492,7 @@ export class rowHelperImplementation<T>
       return this.instance[y.key]
     }
     if (this.metadata.idMetadata.field instanceof CompoundIdField)
-      return this.metadata.idMetadata.field.fields.map(getVal).join(',')
+      return this.metadata.idMetadata.field.getId(getVal)
     return getVal(this.metadata.idMetadata.field)
   }
   saveMoreOriginalData() {
@@ -1678,7 +1678,7 @@ export class rowHelperImplementation<T>
     return d
   }
 
-  private buildLifeCycleEvent(preventDefault: VoidFunction = () => {}) {
+  private buildLifeCycleEvent(preventDefault: VoidFunction = () => { }) {
     const self = this
     return {
       isNew: self.isNew(),
@@ -1794,7 +1794,7 @@ export class rowHelperImplementation<T>
     }
 
     if (this.info.entityInfo.validation) {
-      let e = this.buildLifeCycleEvent(() => {})
+      let e = this.buildLifeCycleEvent(() => { })
       await this.info.entityInfo.validation(this.instance, e)
     }
     if (this.repository.listeners)
@@ -1936,11 +1936,11 @@ export class FieldRefImplementation<entityType, valueType>
       if (rel.type === 'toMany') {
         return (this.container[this.metadata.key] = await this.helper.repository
           .relations(this.container)
-          [this.metadata.key].find())
+        [this.metadata.key].find())
       } else {
         let val = await this.helper.repository
           .relations(this.container)
-          [this.metadata.key].findOne()
+        [this.metadata.key].findOne()
         if (val) this.container[this.metadata.key] = val
         else return null
       }
@@ -2173,9 +2173,8 @@ export class columnDefsImpl implements FieldMetadata {
             } catch (err: any) {
               const error = `${String(
                 prop,
-              )} failed for value ${args?.[0]}. Error: ${
-                typeof err === 'string' ? err : err.message
-              }`
+              )} failed for value ${args?.[0]}. Error: ${typeof err === 'string' ? err : err.message
+                }`
               throw {
                 message: this.caption + ': ' + error,
                 modelState: {
@@ -2417,7 +2416,7 @@ export function ValueListFieldType<valueType extends ValueListItem = any>(
   return (type: ClassType<valueType>, context?) => {
     FieldType<valueType>(
       (o) => {
-        ;(o.valueConverter = ValueListInfo.get(type)),
+        ; (o.valueConverter = ValueListInfo.get(type)),
           (o.displayValue = (item, val) => val?.caption)
       },
       ...options,
@@ -2481,7 +2480,7 @@ export class ValueListInfo<T extends ValueListItem>
     } else
       throw new Error(
         `ValueType not yet initialized, did you forget to call @ValueListFieldType on ` +
-          valueListType,
+        valueListType,
       )
   }
 
@@ -2837,9 +2836,9 @@ class SubscribableImp implements Subscribable {
     listener:
       | (() => void)
       | {
-          reportChanged: () => void
-          reportObserved: () => void
-        },
+        reportChanged: () => void
+        reportObserved: () => void
+      },
   ): Unsubscribe {
     let list: {
       reportChanged: () => void
@@ -2848,7 +2847,7 @@ class SubscribableImp implements Subscribable {
     if (typeof listener === 'function')
       list = {
         reportChanged: () => listener(),
-        reportObserved: () => {},
+        reportObserved: () => { },
       }
     else list = listener
 
