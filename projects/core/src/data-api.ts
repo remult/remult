@@ -111,10 +111,12 @@ export class DataApi<T = any> {
     body?: any,
   ) {
     try {
+      let deleted = 0
+      let where = await this.buildWhere(request, body)
+      Filter.throwErrorIfFilterIsEmpty(where, 'deleteMany')
       return await doTransaction(this.remult, async () => {
-        let deleted = 0
         for await (const x of this.repository.query({
-          where: await this.buildWhere(request, body),
+          where,
           include: this.includeNone(),
         })) {
           await this.actualDelete(x)
@@ -332,6 +334,8 @@ export class DataApi<T = any> {
     if (action == 'emptyId') {
       return this.put(response, '', body)
     }
+    let where = await this.buildWhere(request, body)
+    Filter.throwErrorIfFilterIsEmpty(where, 'updateMany')
     return this.updateManyImplementation(response, request, {
       where: undefined,
       set: body,
