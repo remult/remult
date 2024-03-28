@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 - Added support for migrations, see [Migrations](https://remult.dev/docs/migrations.html)
 - Added an `error` hook to `RemultServerOptions` that is called whenever whenever there is an error in the API lifecycle. See [RemultServerOptions](https://remult.dev/docs/ref_remultserveroptions.html#error)
-- Added an exception when calling `updateMany` or `dleleteMany` without a filter - to protect against accidental deleting / updating all data
+- Added an exception when calling `updateMany` or `deleteMany` without a filter - to protect against accidental deleting / updating all data
 - Added updateMany and deleteMany to OpenAPI (swagger)
 - Fixed an issue with entity ids that included date
 - Changed postgres schema builder to use `timestamptz` instead of `timestamp`
