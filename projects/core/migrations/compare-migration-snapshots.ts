@@ -42,8 +42,8 @@ export async function compareMigrationSnapshot({
         }
       }
     }
-    return snapshot
   }
+  return snapshot
 }
 
 export function emptySnapshot() {
