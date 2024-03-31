@@ -11,6 +11,8 @@ All notable changes to this project will be documented in this file.
 - Fixed an issue with entity ids that included date
 - Changed postgres schema builder to use `timestamptz` instead of `timestamp`
 - `KnexDataProvider` now supports all `execute` and `createCommand` and can be used with any `SqlDatabase` functionality
+- **Breaking Change** changed the signature of `updateMany` and `deleteMany` to require a `where` parameter:
+  `repo(Task).delete({ where:{ completed:tr}})`
 - **Breaking Change** changed the signature of `getDb` to recieve `DataProvider` as parameter instead of `Remult`
 - **Breaking Change** Changed the POST rest api queries to include the filter under the `where` key in the body - previously it included the filter as the body itself.
 - Fixed ValueConverters Number fromInput handle 0 as a valid value

@@ -1235,7 +1235,7 @@ describe('data api', () => {
         "message": "Forbidden",
       }
     `)
-    await expect(() => r.deleteMany({ id: { '!=': -1 } })).rejects
+    await expect(() => r.deleteMany({ where: { id: { '!=': -1 } } })).rejects
       .toThrowErrorMatchingInlineSnapshot(`
       {
         "message": "Forbidden",
@@ -1334,13 +1334,13 @@ describe('data api', () => {
         "message": "Forbidden",
       }
     `)
-    await expect(() => r.deleteMany({ id: 2 })).rejects
+    await expect(() => r.deleteMany({ where: { id: 2 } })).rejects
       .toThrowErrorMatchingInlineSnapshot(`
       {
         "message": "Forbidden",
       }
     `)
-    await expect(() => r.deleteMany({ id: { '!=': -1 } })).rejects
+    await expect(() => r.deleteMany({ where: { id: { '!=': -1 } } })).rejects
       .toThrowErrorMatchingInlineSnapshot(`
       {
         "message": "Forbidden",
@@ -1373,7 +1373,7 @@ describe('data api', () => {
       }
     `)
     await expect(() =>
-      r.updateMany({ id: { '!=': -1 } }, { categoryName: 'noam 1' }),
+      r.updateMany({ where: { id: { '!=': -1 } } }, { categoryName: 'noam 1' }),
     ).rejects.toThrowErrorMatchingInlineSnapshot(`
     {
       "message": "Forbidden",

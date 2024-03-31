@@ -85,7 +85,7 @@ export function allServerTests(
     'delete many',
     withRemultForTest(async () => {
       await create3Tasks()
-      expect(await repo(Task).deleteMany({ title: ['a', 'c'] })).toBe(2)
+      expect(await repo(Task).deleteMany({ where: { title: ['a', 'c'] } })).toBe(2)
       expect(await repo(Task).count()).toBe(1)
     }),
   )
@@ -94,7 +94,7 @@ export function allServerTests(
     withRemultForTest(async () => {
       await create3Tasks()
       expect(
-        await repo(Task).deleteMany({ $or: [{ title: 'a' }, { title: 'c' }] }),
+        await repo(Task).deleteMany({ where: { $or: [{ title: 'a' }, { title: 'c' }] } }),
       ).toBe(2)
       expect(await repo(Task).count()).toBe(1)
     }),
@@ -103,7 +103,7 @@ export function allServerTests(
     'delete many 3',
     withRemultForTest(async () => {
       await create3Tasks()
-      expect(await repo(Task).deleteMany({ title: { $ne: 'b' } })).toBe(2)
+      expect(await repo(Task).deleteMany({ where: { title: { $ne: 'b' } } })).toBe(2)
       expect(await repo(Task).count()).toBe(1)
     }),
   )
@@ -112,7 +112,7 @@ export function allServerTests(
     withRemultForTest(async () => {
       await create3Tasks()
       expect(
-        await repo(Task).updateMany({ title: ['a', 'c'] }, { title: 'dd' }),
+        await repo(Task).updateMany({ where: { title: ['a', 'c'] } }, { title: 'dd' }),
       ).toBe(2)
       expect(await repo(Task).count({ title: 'dd' })).toBe(2)
       expect(await repo(Task).count({ title: { '!=': 'dd' } })).toBe(1)
@@ -123,7 +123,7 @@ export function allServerTests(
     withRemultForTest(async () => {
       await create3Tasks()
       expect(
-        await repo(Task).updateMany({ title: { $ne: 'b' } }, { title: 'dd' }),
+        await repo(Task).updateMany({ where: { title: { $ne: 'b' } } }, { title: 'dd' }),
       ).toBe(2)
       expect(await repo(Task).count({ title: 'dd' })).toBe(2)
       expect(await repo(Task).count({ title: { '!=': 'dd' } })).toBe(1)
@@ -168,7 +168,7 @@ export function allServerTests(
       await create3Tasks()
       expect(
         await repo(Task).updateMany(
-          { $or: [{ title: 'a' }, { title: 'c' }] },
+          { where: { $or: [{ title: 'a' }, { title: 'c' }] } },
           { title: 'dd' },
         ),
       ).toBe(2)
@@ -353,7 +353,7 @@ export function allServerTests(
   async function create3Tasks() {
     const taskRepo = remult.repo(Task)
 
-    await taskRepo.deleteMany({ id: { '!=': null! } })
+    await taskRepo.deleteMany({ where: { id: { '!=': null! } } })
 
     expect(await taskRepo.count()).toBe(0)
     await taskRepo.insert([
