@@ -1838,7 +1838,9 @@ export interface Repository<entityType> {
    * Updates all items that match the `where` condition.
    */
   updateMany(
-    where: EntityFilter<entityType>,
+    options: {
+      where: EntityFilter<entityType>
+    },
     item: Partial<MembersOnly<entityType>>,
   ): Promise<number>
   /** Deletes an Item*/
@@ -1847,7 +1849,7 @@ export interface Repository<entityType> {
   /**
    * Deletes all items that match the `where` condition.
    */
-  deleteMany(where: EntityFilter<entityType>): Promise<number>
+  deleteMany(options: { where: EntityFilter<entityType> }): Promise<number>
   /** Creates an instance of an item. It'll not be saved to the data source unless `save` or `insert` will be called for that item */
   create(item?: Partial<MembersOnly<entityType>>): entityType
   toJson(item: Promise<entityType[]>): Promise<any[]>
