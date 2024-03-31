@@ -100,11 +100,6 @@ Arguments:
 
 Arguments:
 * **apply**
-## __applyToConsumer
-* **__applyToConsumer**
-
-Arguments:
-* **add**
 ## resolve
 Resolves an entity filter.
 
@@ -121,10 +116,3 @@ Arguments:
 * **filter** - The filter to resolve.
 ## toJson
 * **toJson**
-## translateCustomWhere
-* **translateCustomWhere**
-
-Arguments:
-* **r**
-* **entity**
-* **remult**
