@@ -820,6 +820,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //p1 - admin url1 - pocketbase use /_ for the admin //{allowed?:Allowed,url?:string}
 //p1 - Validate for NAN
 //p1 - Make async hooks gracefully handle non async hooks environment
+//p1 - chain validators with options
 
 
 //y2 - should we validate relations

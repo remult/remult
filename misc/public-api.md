@@ -928,12 +928,66 @@ export declare class Fields {
       | ((options: FieldOptions<entityType, string>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, string | undefined>
+  /**
+   * A CUID (Collision Resistant Unique Identifier) field.
+   * This id value is determined on the backend on insert, and can't be updated through the API.
+   * The CUID is generated using the `@paralleldrive/cuid2` npm package.
+   */
   static cuid<entityType = any>(
     ...options: (
       | FieldOptions<entityType, string>
       | ((options: FieldOptions<entityType, string>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, string | undefined>
+  /**
+   * Defines a field that can hold a value from a specified set of string literals.
+   * @param {() => readonly valueType[]} optionalValues - A function that returns an array of allowed string literals.
+   * @returns {ClassFieldDecorator<entityType, valueType | undefined>} - A class field decorator.
+   *
+   * @example
+   
+   * class MyEntity {
+   *   .@Fields.literal(() => ['open', 'closed', 'frozen', 'in progress'] as const)
+   *   status: 'open' | 'closed' | 'frozen' | 'in progress' = 'open';
+   * }
+   
+   *
+   * // This defines a field `status` in `MyEntity` that can only hold the values 'open', 'closed', 'frozen', or 'in progress'.
+   *
+   * @example
+   * // For better reusability and maintainability:
+   
+   * const statuses = ['open', 'closed', 'frozen', 'in progress'] as const;
+   * type StatusType = typeof statuses[number];
+   *
+   * class MyEntity {
+   *   .@Fields.literal(() => statuses)
+   *   status: StatusType = 'open';
+   * }
+   
+   *
+   * // This approach allows easy management and updates of the allowed values for the `status` field.
+   */
+  static literal<entityType = any, valueType extends string = any>(
+    optionalValues: () => readonly valueType[],
+    ...options: (
+      | StringFieldOptions<entityType, valueType>
+      | ((
+          options: StringFieldOptions<entityType, valueType>,
+          remult: Remult,
+        ) => void)
+    )[]
+  ): ClassFieldDecorator<entityType, valueType | undefined>
+  static enum<entityType = any, theEnum = any>(
+    enumType: () => theEnum,
+    ...options: (
+      | FieldOptions<entityType, theEnum[keyof theEnum]>
+      | ((
+          options: FieldOptions<entityType, theEnum[keyof theEnum]>,
+          remult: Remult,
+        ) => void)
+    )[]
+  ): ClassFieldDecorator<entityType, theEnum[keyof theEnum] | undefined>
   static string<entityType = any, valueType = string>(
     ...options: (
       | StringFieldOptions<entityType, valueType>
@@ -2294,17 +2348,23 @@ export interface ValueConverter<valueType> {
    */
   displayValue?(val: valueType): string
   /**
-   * Specifies the storage type used in the database for this field.
+   * Specifies the storage type used in the database for this field. This can be used to explicitly define the data type and precision of the field in the database.
    *
    * @example
-   * readonly fieldTypeInDb = 'decimal(18,2)';
+   * // Define a field with a specific decimal precision in the database
+   * @Fields.number({
+   *   valueConverter: {
+   *     fieldTypeInDb: 'decimal(18,8)'
+   *   }
+   * })
+   * price=0;
    */
   readonly fieldTypeInDb?: string
   /**
    * Specifies the type of HTML input element suitable for values of valueType.
    *
    * @example
-   * readonly inputType = 'date';
+   * inputType = 'date';
    */
   readonly inputType?: string
 }
