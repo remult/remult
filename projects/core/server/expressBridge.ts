@@ -64,9 +64,9 @@ export interface RemultServerOptions<RequestType> {
    * @see [Connecting to a Database](https://remult.dev/docs/databases.html).
    */
   dataProvider?:
-    | DataProvider
-    | Promise<DataProvider>
-    | (() => Promise<DataProvider | undefined>)
+  | DataProvider
+  | Promise<DataProvider>
+  | (() => Promise<DataProvider | undefined>)
   /** Will create tables and columns in supporting databases. default: true
    *
    * @description
@@ -99,7 +99,7 @@ export interface RemultServerOptions<RequestType> {
    * @example
    * allowed: ()=> remult.isAllowed('admin')
    */
-  admin?: Allowed
+  admin?: Allowed //{allowed?:Allowed,url?:string}
 
   /** Storage to use for backend methods that use queue */
   queueStorage?: QueueStorage
@@ -423,7 +423,7 @@ export class RemultServerImplementation<RequestType>
 
         r.route(streamPath).get(
           this.process(async (remult, req, res, origReq, origRes: Response) => {
-            ;(
+            ; (
               remult.subscriptionServer as SseSubscriptionServer
             ).openHttpServerStream(origReq, origRes)
           }),
@@ -458,7 +458,7 @@ export class RemultServerImplementation<RequestType>
               origRes: Response,
               origReq: RequestType,
             ) => {
-              ;(
+              ; (
                 remult.subscriptionServer as SseSubscriptionServer
               ).subscribeToChannel(
                 await this.coreOptions.getRequestBody(origReq),
@@ -760,12 +760,12 @@ export class RemultServerImplementation<RequestType>
             f.valueType == String
               ? 'string'
               : f.valueType == Boolean
-              ? 'boolean'
-              : f.valueType == Date
-              ? 'string'
-              : f.valueType == Number
-              ? 'number'
-              : 'object'
+                ? 'boolean'
+                : f.valueType == Date
+                  ? 'string'
+                  : f.valueType == Number
+                    ? 'number'
+                    : 'object'
           if (f.options.includeInApi !== false) {
             properties[f.key] = {
               type,
@@ -1093,7 +1093,7 @@ class ExpressRequestBridgeToDataApiRequest implements DataApiRequest {
     return this.r?.query[key]
   }
 
-  constructor(private r: GenericRequestInfo | undefined) {}
+  constructor(private r: GenericRequestInfo | undefined) { }
 }
 class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
   forbidden(): void {
@@ -1108,8 +1108,8 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
     private handleError:
       | RemultServerOptions<GenericRequestInfo>['error']
       | undefined,
-  ) {}
-  progress(progress: number): void {}
+  ) { }
+  progress(progress: number): void { }
 
   public success(data: any): void {
     this.r.json(data)
@@ -1176,7 +1176,7 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
 }
 
 class inProcessQueueHandler {
-  constructor(private storage: QueueStorage) {}
+  constructor(private storage: QueueStorage) { }
   async submitJob(url: string, req: Remult, body: any): Promise<string> {
     let id = await this.storage.createJob(
       url,
@@ -1260,7 +1260,7 @@ export interface QueueStorage {
 }
 let test = 0
 export class EntityQueueStorage implements QueueStorage {
-  constructor(private repo: Repository<JobsInQueueEntity>) {}
+  constructor(private repo: Repository<JobsInQueueEntity>) { }
   sync: Promise<any> = Promise.resolve()
   doSync<T>(what: () => Promise<T>) {
     return (this.sync = this.sync.then(() => what()))
@@ -1316,7 +1316,7 @@ export class EntityQueueStorage implements QueueStorage {
   }
 }
 export class RouteImplementation<RequestType> {
-  constructor(private coreOptions: ServerCoreOptions<RequestType>) {}
+  constructor(private coreOptions: ServerCoreOptions<RequestType>) { }
   map = new Map<string, Map<string, GenericRequestHandler>>()
   starRoutes: { route: string; handler: Map<string, GenericRequestHandler> }[] =
     []
@@ -1356,13 +1356,12 @@ export class RouteImplementation<RequestType> {
   ): Promise<ServerHandleResponse | undefined> {
     return new Promise<ServerHandleResponse | undefined>((res, rej) => {
       const response = new (class
-        implements GenericResponse, ResponseRequiredForSSE
-      {
+        implements GenericResponse, ResponseRequiredForSSE {
         write(data: string): void {
-          ;(gRes as any as ResponseRequiredForSSE).write(data)
+          ; (gRes as any as ResponseRequiredForSSE).write(data)
         }
         writeHead(statusCode: number, headers: any): void {
-          ;(gRes as any as ResponseRequiredForSSE).writeHead(
+          ; (gRes as any as ResponseRequiredForSSE).writeHead(
             statusCode,
             headers,
           )

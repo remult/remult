@@ -92,6 +92,8 @@ import {
   fieldDbName,
 } from '../filter/filter-consumer-bridge-to-sql-request.js'
 import { remultStatic } from '../remult-static.js'
+import { addValidatorKey } from './addValidatorKey.js'
+import { Validators } from '../validators.js'
 //import  { remult } from "../remult-proxy";
 
 let classValidatorValidate:
@@ -2401,6 +2403,7 @@ export function ValueListFieldType<valueType extends ValueListItem = any>(
       (o) => {
         ; (o.valueConverter = ValueListInfo.get(type)),
           (o.displayValue = (item, val) => val?.caption)
+        o.validate = (entity, ref) => Validators.in(ValueListInfo.get(type).getValues())(entity, ref)
       },
       ...options,
     )(type, context)

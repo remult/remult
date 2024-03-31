@@ -8,13 +8,13 @@ import {
   entityFilterToJson,
   Filter,
 } from '../../core/src/filter/filter-interfaces'
-import { Language } from './RowProvider.spec'
+
 
 import { DataApi } from '../../core/src/data-api'
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { Done } from './Done'
-import { Categories, Products } from './entities-for-tests'
+import { Categories, Language, Products } from './entities-for-tests'
 import { h } from './h'
 import { TestDataApiResponse } from './TestDataApiResponse'
 import { actionInfo } from '../../core/internals'
@@ -284,11 +284,11 @@ describe('many to one relation', () => {
     await c.save()
     await p.save()
     expect(p.category).toBeNull()
-    ;(
-      p._ as unknown as rowHelperImplementation<Products>
-    )._updateEntityBasedOnApi({
-      category: 1,
-    })
+      ; (
+        p._ as unknown as rowHelperImplementation<Products>
+      )._updateEntityBasedOnApi({
+        category: 1,
+      })
     expect(p.$.category.inputValue).toBe('1')
     await p.$.category.load()
     expect(p.category.id).toBe(c.id)

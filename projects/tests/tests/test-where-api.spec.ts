@@ -7,7 +7,7 @@ import {
 } from '../../core/src//filter/filter-interfaces'
 import { DataApi } from '../../core/src/data-api'
 import { InMemoryDataProvider } from '../../core/src/data-providers/in-memory-database'
-import { insertFourRows } from './RowProvider.spec'
+
 import type { CategoriesForTesting } from './remult-3-entities'
 import { Categories } from './remult-3-entities'
 
@@ -21,6 +21,7 @@ import { TestDataApiResponse } from './TestDataApiResponse'
 import { entityForrawFilter } from './entityForCustomFilter'
 import { testRestDb } from './testHelper'
 import { createEntity } from './dynamic-classes'
+import { insertFourRows } from './entities-for-tests.js'
 
 describe('test where stuff', () => {
   let repo: Repository<CategoriesForTesting>
@@ -459,7 +460,7 @@ function x<
   CaseReducers extends SliceCaseReducers<{
     test?: WritableDraft<entityForrawFilter>[]
   }>,
->(what: CaseReducers) {}
+>(what: CaseReducers) { }
 //reproduce typescript bug with recursive types
 x<{
   addComment: (

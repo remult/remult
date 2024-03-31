@@ -48,8 +48,8 @@ export interface FieldOptions<entityType = any, valueType = any> {
    * })
    */
   validate?:
-    | FieldValidator<entityType, valueType>
-    | FieldValidator<entityType, valueType>[]
+  | FieldValidator<entityType, valueType>
+  | FieldValidator<entityType, valueType>[]
 
   /** Will be fired before this field is saved to the server/database */
   saving?: (
@@ -77,8 +77,8 @@ export interface FieldOptions<entityType = any, valueType = any> {
    * title='';
    */
   sqlExpression?:
-    | string
-    | ((entity: EntityMetadata<entityType>) => string | Promise<string>)
+  | string
+  | ((entity: EntityMetadata<entityType>) => string | Promise<string>)
   /** For fields that shouldn't be part of an update or insert statement */
   dbReadOnly?: boolean
   /** The value converter to be used when loading and saving this field */
@@ -271,18 +271,24 @@ export interface ValueConverter<valueType> {
   displayValue?(val: valueType): string
 
   /**
-   * Specifies the storage type used in the database for this field.
+   * Specifies the storage type used in the database for this field. This can be used to explicitly define the data type and precision of the field in the database.
    *
    * @example
-   * readonly fieldTypeInDb = 'decimal(18,2)';
+   * // Define a field with a specific decimal precision in the database
+   * @Fields.number({
+   *   valueConverter: {
+   *     fieldTypeInDb: 'decimal(18,8)'
+   *   }
+   * })
+   * price=0;
    */
-  readonly fieldTypeInDb?: string
+  readonly fieldTypeInDb?: string;
 
   /**
    * Specifies the type of HTML input element suitable for values of valueType.
    *
    * @example
-   * readonly inputType = 'date';
+   * inputType = 'date';
    */
   readonly inputType?: string
 }

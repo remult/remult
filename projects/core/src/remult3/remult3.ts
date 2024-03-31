@@ -811,18 +811,36 @@ export type ClassFieldDecorator<entityType, valueType> = (
 
 
 
-//p1 - should the remult api be deleteMany({id:[1,2]}) or deleteMany({where:{id:[1,2]}})
-//p1 - document cuid entity, usage of https://www.npmjs.com/package/@paralleldrive/cuid2
-//p1 - example of creating your own id column
+
+
+
+
+
+//p1 - `preprocessApiFindOptions`,  naming - allow find options preprocessor for api calls, to use for authorization
+//p1 - admin url1 - pocketbase use /_ for the admin //{allowed?:Allowed,url?:string}
+//p1 - Validate for NAN
+//p1 - Make async hooks gracefully handle non async hooks environment
+
+
+//y2 - should we validate relations
+
+
+
+//y1 - consider replacing all errors with error classes that extend the base Error class
+//y2 - consider if field types should include validation in them by default (string,number that it's not NaN etc...) and if so, what message?
+//y2 - should enforce integer - currently we probably round / truncate it
+
+/*y1 - talk about modules in init express with entities/controllers,initRequest,initApi
+ - support get with backend method, with url search params as the first parameter, & url as second parameter
+   - support returning redirect, and plain html (For sign in scenarios)
+
+ */
 
 
 //p1 - in this video I'll use remult to turn a frontend app to a fullstack app
 //y1 - getFields didn't work for kobi in the home component
-//y1 - consider replacing all errors with error classes that extend the base Error class
 //p1 - document offline support
-//p1 - add section to Fields doc, explaining field type in db
-//p1 - add section about union type
-//p1 - add section about value list field type
+
 
 /*y1 - Talk JYC - JYC - add some integrity checks on delete
   - soft delete
@@ -830,34 +848,9 @@ export type ClassFieldDecorator<entityType, valueType> = (
 
 */
 
-/*y1 currency.ts:10 Uncaught TypeError: Currency_1 is not a constructor
-// - ValueListFieldType - the decorator gives an error in react vite project - see langulage yedidya
-// happens in target 2022, ts<5.1.6
-//typescript 5.1.6
-@ValueListFieldType()
-export class Currency {
-  constructor(
-    public id: number,
-    public caption: string,
-    public symbol: string
-  ) {}
-  static shekel = new Currency(1, 'Shekel', '₪');
-  static dollar = new Currency(2, 'Dollar', '$');
-  static euro = new Currency(3, 'Euro', '€');
-  static pound = new Currency(4, 'Pound', '£');
-  static yen = new Currency(5, 'Yen', '¥');
-}
 
-*/
-//y1 - allow api read to also support instance and filter. - problem with promise
-
-//y1 - admin url1 - pocketbase use /_ for the admin
 //y1 - consider sql expression gets a dbnames of it's own (that already has the "tableName" defined correctly) maybe also the filter translator
-/*y1 - talk about modules in init express with entities/controllers,initRequest,initApi
- - support get with backend method, with url search params as the first parameter, & url as second parameter
-   - support returning redirect, and plain html (For sign in scenarios)
 
- */
 //y1 - tried to upgrade vitest, nuxt tests are failing with loading uuid - sounds familiar?
 //y1 - I think that the tests you've setup don't cover next app router - I added to the setup, but not sure where else
 //y1 - talk about the parameter issue with backend methods
@@ -873,8 +866,6 @@ export class Currency {
   })
   Description = ""*/
 //y2 - get backend methods to work when specifying types for date, and entities as poco's
-//y2 - conside law-q db based on schema issue - I think that while running the dataProvider function, we should have a valid remult - maybe even have a valid remult, that will be valid until api is run
-//y2 - #239 - (@JY) add a way to get from fieldMetadata back to entity repo (like we have in fieldRef)
 //y2 - constraints (@JY)
 
 /*p2 remult admin
@@ -890,13 +881,13 @@ export class Currency {
  - remult-admin didn't show a update for a table with a uniqua that is numeric
 */
 //remult
-//p1 - better support union types (status, etc... so it'll work also in filter etc...)
+
 
 //p1 - when a tasks table exists in a different schema - we get many errors
 //p1 - live query with include
 //p1 - adjust angular tutorial starter kit for latest angular (as is in tutorial)
 
-//p2 - allow find options preprocessor for api calls, to use for authorization
+
 //p2 - when subscribe is forbidden - the query still runs after the renew process
 //p2 - 'update tasks set  where id = $1
 
@@ -906,7 +897,7 @@ export class Currency {
 //p2 - allowApiUpdate should be false for include in api false
 
 //docs
-//p2 - make sure that internal members do not appear in the documentation - try running it on the d.ts instead of the code itself.
+
 
 //------
 
@@ -914,23 +905,20 @@ export class Currency {
 
 //y2 - Backend methods are transactions, it's not intuitive and maybe should be optional / opt in
 //y2 - how to run a transaction as a user
-//p2 - enum column
 
-//y2 - message for invalid value
+
+
 //y2 - message for relation that is missing
 //y2 - consider multi tenancies
 
-//p2 - more column types
 
-//p2 - document validators
+
+
 //p2 - and validators to reference
 //y2 - discuss a default date formatter
 //y2 - add some api testing framework for user unit tests (will help with codesandbox based discussions)
 
 //[ ] V2 - what to do about for relations count?
 //[ ] V2 - condition? not to fetch if null etc....
-//[ ] V3 - all these fields will also appear in the where etc... in the typescript api - but we will not enforce them
 
-//y2 - consider if field types should include validation in them by default (string,number that it's not NaN etc...) and if so, what message?
-//y2 - should enforce integer - currently we probably round / truncate it
 //p1 - adjust react tutorial to esm
