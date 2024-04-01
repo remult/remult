@@ -72,6 +72,7 @@ if (!remultStatic.asyncContext)
 export type RemultAsyncLocalStorageCore<T> = {
   run<R>(store: T, callback: () => Promise<R>): Promise<R>
   getStore(): T | undefined
+  wasImplemented: 'yes'
 }
 
 export function isBackend() {
