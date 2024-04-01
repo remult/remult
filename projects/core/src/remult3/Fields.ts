@@ -12,11 +12,14 @@ import type {
 import { ValueConverters } from '../valueConverters.js'
 import { buildOptions } from './RepositoryImplementation.js'
 import type { columnInfo } from './columnInfo.js'
-import { Validators, createValueValidator } from '../validators.js'
+import { Validators, createValueValidator, getEnumValues } from '../validators.js'
 import { relationInfoMemberInOptions } from './relationInfoMember.js'
 import { remultStatic } from '../remult-static.js'
 import { addValidatorKey } from './addValidatorKey.js'
 
+const validateNumber = createValueValidator((x: number) => {
+  return !isNaN(x) && isFinite(x)
+}) as unknown as FieldOptions['validate']
 export class Fields {
   /**
    * Stored as a JSON.stringify - to store as json use Fields.json
@@ -82,9 +85,7 @@ export class Fields {
       () => Number,
       {
         valueConverter: ValueConverters.Integer,
-        validate: createValueValidator((x: number) => {
-          return !isNaN(x) && isFinite(x)
-        }) as unknown as FieldOptions['validate'],
+        validate: validateNumber,
       },
       ...options,
     )
@@ -116,9 +117,7 @@ export class Fields {
     )[]
   ): ClassFieldDecorator<entityType, number | undefined> {
     return Field(() => Number, {
-      validate: createValueValidator((x: number) => {
-        return !isNaN(x) && isFinite(x)
-      }) as unknown as FieldOptions['validate'],
+      validate: validateNumber,
     }, ...options)
   }
   static createdAt<entityType = any>(
@@ -262,8 +261,7 @@ export class Fields {
       (options) => {
         if (valueConverter === undefined) {
           let enumObj = enumType();
-          let enumValues = Object.values(enumObj)
-            .filter((x) => typeof enumObj[x as any] !== 'number')
+          let enumValues = getEnumValues(enumObj)
           valueConverter = enumValues.find(x => typeof x === "string") ? ValueConverters.String : ValueConverters.Integer
         }
         if (!options.valueConverter) {
@@ -472,6 +470,8 @@ export class Relations {
     })
   }
 }
+
+
 
 /**Decorates fields that should be used as fields.
  * for more info see: [Field Types](https://remult.dev/docs/field-types.html)

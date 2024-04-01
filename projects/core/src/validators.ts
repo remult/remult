@@ -63,8 +63,7 @@ export class Validators {
   static enum = createValueValidatorWithArgs<unknown, unknown>(
     (value, enumObj) => Object.values(enumObj).includes(value),
     (enumObj) =>
-      `Value must be one of ${Object.values(enumObj)
-        .filter((x) => typeof enumObj[x as any] !== 'number')
+      `Value must be one of ${getEnumValues(enumObj)
         .join(', ')}`,
   )
   static relationExists = createValidator<unknown>(async (_, e) => {
@@ -267,4 +266,10 @@ function createValidatorWithArgsInternal<valueType, argsType>(
       defaultMessage = val
     },
   })
+}
+
+
+export function getEnumValues<theEnum = any>(enumObj: theEnum) {
+  return Object.values(enumObj)
+    .filter((x) => typeof enumObj[x as any] !== 'number')
 }
