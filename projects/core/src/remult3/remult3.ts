@@ -819,7 +819,9 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //p1 - `preprocessApiFindOptions`,  naming - allow find options preprocessor for api calls, to use for authorization
 //p1 - admin url1 - pocketbase use /_ for the admin //{allowed?:Allowed,url?:string}
 //p1 - Make async hooks gracefully handle non async hooks environment
-
+//p1 - implement generic sqlite support better-sqlite3/ bun sqlite
+//p1 - article auth.js with express
+//p1 - document offline support
 
 
 //y2 - should we validate relations
@@ -827,7 +829,6 @@ export type ClassFieldDecorator<entityType, valueType> = (
 
 
 //y1 - consider replacing all errors with error classes that extend the base Error class
-//y2 - consider if field types should include validation in them by default (string,number that it's not NaN etc...) and if so, what message?
 //y2 - should enforce integer - currently we probably round / truncate it
 
 /*y1 - talk about modules in init express with entities/controllers,initRequest,initApi
@@ -838,8 +839,6 @@ export type ClassFieldDecorator<entityType, valueType> = (
 
 
 //p1 - in this video I'll use remult to turn a frontend app to a fullstack app
-//y1 - getFields didn't work for kobi in the home component
-//p1 - document offline support
 
 
 /*y1 - Talk JYC - JYC - add some integrity checks on delete
