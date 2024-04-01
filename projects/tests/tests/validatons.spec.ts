@@ -503,7 +503,7 @@ describe('validation tests', () => {
   `)
   })
 
-  it.only('test enum 3', async () => {
+  it('test enum 3', async () => {
     enum e {
       a = 'a',
       b = 'b',
@@ -985,5 +985,31 @@ describe('validation tests', () => {
     const r = await repo.insert({ id: '1', name: 'a' })
     r.name = 'b'
     await getEntityRef(r).save()
+  })
+  it("test number with nan", async () => {
+    const repo = remult.repo(createEntity('x', {
+      id: Fields.number()
+    }))
+    await expect(() => repo.insert({ id: NaN })).rejects.toThrowErrorMatchingInlineSnapshot(`
+      {
+        "message": "Id: Invalid value",
+        "modelState": {
+          "id": "Invalid value",
+        },
+      }
+    `)
+  })
+  it("test integer with nan", async () => {
+    const repo = remult.repo(createEntity('x', {
+      id: Fields.integer()
+    }))
+    await expect(() => repo.insert({ id: NaN })).rejects.toThrowErrorMatchingInlineSnapshot(`
+      {
+        "message": "Id: Invalid value",
+        "modelState": {
+          "id": "Invalid value",
+        },
+      }
+    `)
   })
 })

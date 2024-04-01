@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - Added updateMany and deleteMany to OpenAPI (swagger)
 - Added `@Fields.literal` and `@Fields.enum`
 - `@ValueListFieldType` now validates that the value exists in the list
+- Added validation for `@Fields.number` & `Fields.integer` that the value is a valid number
 - Fixed an issue with entity ids that included date
 - Changed postgres schema builder to use `timestamptz` instead of `timestamp`
 - `KnexDataProvider` now supports all `execute` and `createCommand` and can be used with any `SqlDatabase` functionality

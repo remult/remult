@@ -12,7 +12,7 @@ import type {
 import { ValueConverters } from '../valueConverters.js'
 import { buildOptions } from './RepositoryImplementation.js'
 import type { columnInfo } from './columnInfo.js'
-import { Validators } from '../validators.js'
+import { Validators, createValueValidator } from '../validators.js'
 import { relationInfoMemberInOptions } from './relationInfoMember.js'
 import { remultStatic } from '../remult-static.js'
 import { addValidatorKey } from './addValidatorKey.js'
@@ -82,6 +82,9 @@ export class Fields {
       () => Number,
       {
         valueConverter: ValueConverters.Integer,
+        validate: createValueValidator((x: number) => {
+          return !isNaN(x) && isFinite(x)
+        }) as unknown as FieldOptions['validate'],
       },
       ...options,
     )
@@ -112,7 +115,11 @@ export class Fields {
       | ((options: FieldOptions<entityType, number>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, number | undefined> {
-    return Field(() => Number, ...options)
+    return Field(() => Number, {
+      validate: createValueValidator((x: number) => {
+        return !isNaN(x) && isFinite(x)
+      }) as unknown as FieldOptions['validate'],
+    }, ...options)
   }
   static createdAt<entityType = any>(
     ...options: (
