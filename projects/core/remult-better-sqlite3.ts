@@ -37,13 +37,7 @@ class BetterSqlite3Command implements SqlCommand {
 }
 export class BetterSqlite3SqlResult implements SqlResult {
   constructor(private result: any[]) {
-    this.rows =
-      result.map((row) =>
-        Object.keys(row).reduce(
-          (prev, curr) => ({ ...prev, [curr]: row[curr] }),
-          {},
-        ),
-      )
+    this.rows = result
   }
   rows: any[]
   getColumnKeyInResultForIndexInSelect(index: number): string {

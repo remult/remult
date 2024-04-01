@@ -819,7 +819,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //p1 - implement generic sqlite support better-sqlite3/ bun sqlite
 //p1 - `preprocessApiFindOptions`,  naming - allow find options preprocessor for api calls, to use for authorization
 //p1 - admin url1 - pocketbase use /_ for the admin //{allowed?:Allowed,url?:string}
-
+//p1 - document new sqlite providers
 //p1 - article auth.js with express
 //p1 - document offline support
 //p1 - fix getting started article

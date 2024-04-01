@@ -3326,6 +3326,20 @@ export declare class BetterSqlite3SqlResult implements SqlResult {
 }
 ```
 
+## ./remult-bun-sqlite.js
+
+```ts
+export declare class BunSqliteDataProvider extends SqliteCoreDataProvider {
+  constructor(db: Database)
+}
+type Database = {
+  close(): void
+  query(sql: string): {
+    all(args?: any): any[]
+  }
+}
+```
+
 ## ./migrations/index.js
 
 ```ts
