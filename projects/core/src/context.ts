@@ -49,21 +49,11 @@ export class RemultAsyncLocalStorage {
     resetFactory()
   }
   constructor(
-    private readonly remultObjectStorage: myAsyncLocalStorage<Remult>,
+    private readonly remultObjectStorage: RemultAsyncLocalStorageCore<Remult>,
   ) { }
   async run<T>(remult: Remult, callback: (remult: Remult) => Promise<T>): Promise<T> {
     if (this.remultObjectStorage) {
-      let r: Promise<T>
-      this.remultObjectStorage.run(remult, () => {
-        r = new Promise<T>(async (res, rej) => {
-          try {
-            res(await callback(remult))
-          } catch (err) {
-            rej(err)
-          }
-        })
-      })
-      return r;
+      return this.remultObjectStorage.run(remult, () => callback(remult))
     }
     else
       return callback(remult)
@@ -79,8 +69,8 @@ export class RemultAsyncLocalStorage {
 }
 if (!remultStatic.asyncContext)
   remultStatic.asyncContext = new RemultAsyncLocalStorage(undefined!)
-type myAsyncLocalStorage<T> = {
-  run<R>(store: T, callback: (...args: any[]) => R, ...args: any[]): R
+export type RemultAsyncLocalStorageCore<T> = {
+  run<R>(store: T, callback: () => Promise<R>): Promise<R>
   getStore(): T | undefined
 }
 
