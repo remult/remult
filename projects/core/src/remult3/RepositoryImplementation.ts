@@ -92,8 +92,8 @@ import {
   fieldDbName,
 } from '../filter/filter-consumer-bridge-to-sql-request.js'
 import { remultStatic } from '../remult-static.js'
-import { addValidatorKey } from './addValidatorKey.js'
 import { Validators } from '../validators.js'
+import { addValidator } from './addValidator.js'
 //import  { remult } from "../remult-proxy";
 
 let classValidatorValidate:
@@ -2534,7 +2534,11 @@ export function buildOptions<entityType = any, valueType = any>(
   for (const o of options) {
     if (o) {
       if (typeof o === 'function') o(r, remult)
-      else Object.assign(r, o)
+      else {
+        const { validate, ...otherOptions } = o;
+        r.validate = addValidator(r.validate, validate)
+        Object.assign(r, otherOptions)
+      }
     }
   }
   return r
@@ -2547,10 +2551,8 @@ export function decorateColumnSettings<valueType>(
   if (settings.valueType) {
     let settingsOnTypeLevel = settings.valueType[storableMember]
     if (settingsOnTypeLevel) {
-      settings = {
-        ...buildOptions(settingsOnTypeLevel, remult),
-        ...settings,
-      }
+      settings = buildOptions([...settingsOnTypeLevel, settings], remult)
+
     }
   }
 

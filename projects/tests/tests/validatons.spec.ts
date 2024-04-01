@@ -999,6 +999,19 @@ describe('validation tests', () => {
       }
     `)
   })
+  it("test number with nan and required", async () => {
+    const repo = remult.repo(createEntity('x', {
+      id: Fields.number({ validate: Validators.required })
+    }))
+    await expect(() => repo.insert({ id: NaN })).rejects.toThrowErrorMatchingInlineSnapshot(`
+      {
+        "message": "Id: Invalid value",
+        "modelState": {
+          "id": "Invalid value",
+        },
+      }
+    `)
+  })
   it("test integer with nan", async () => {
     const repo = remult.repo(createEntity('x', {
       id: Fields.integer()

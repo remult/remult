@@ -15,7 +15,7 @@ import type { columnInfo } from './columnInfo.js'
 import { Validators, createValueValidator, getEnumValues } from '../validators.js'
 import { relationInfoMemberInOptions } from './relationInfoMember.js'
 import { remultStatic } from '../remult-static.js'
-import { addValidatorKey } from './addValidatorKey.js'
+import { addValidator } from './addValidator.js'
 
 const validateNumber = createValueValidator((x: number) => {
   return !isNaN(x) && isFinite(x)
@@ -234,9 +234,7 @@ export class Fields {
   ): ClassFieldDecorator<entityType, valueType | undefined> {
     return Fields.string(
       {
-        //@ts-ignore
-        [addValidatorKey]: (
-          entity, event) => Validators.in(optionalValues())(entity, event)
+        validate: (entity, event) => Validators.in(optionalValues())(entity, event)
       },
       ...options)
 
@@ -255,7 +253,7 @@ export class Fields {
       enumType()!
       ,
       {
-        [addValidatorKey]: (entity, event) => Validators.enum(enumType())(entity, event)
+        validate: (entity, event) => Validators.enum(enumType())(entity, event)
       },
       ...options,
       (options) => {
@@ -514,11 +512,9 @@ export function Field<entityType = any, valueType = any>(
     let factory = (remult: Remult) => {
       let r = buildOptions(options, remult)
       if (r.required) {
-        r.validate = addValidator(r.validate, Validators.required)
+        r.validate = addValidator(r.validate, Validators.required, true)
       }
-      if (r[addValidatorKey]) {
-        r.validate = addValidator(r.validate, r[addValidatorKey])
-      }
+
       if ((r as StringFieldOptions).maxLength) {
         r.validate = addValidator(
           r.validate,
@@ -586,21 +582,4 @@ export function checkTarget(target: any) {
       "Set the 'experimentalDecorators:true' option in your 'tsconfig' or 'jsconfig' (target undefined)",
     )
 }
-function addValidator(
-  validators: FieldOptions['validate'],
-  newValidator: FieldOptions['validate'],
-  atStart = false,
-) {
-  if (!newValidator) return
-  const newValidators = Array.isArray(newValidator)
-    ? newValidator
-    : [newValidator]
-  const validatorsArray = Array.isArray(validators)
-    ? validators
-    : validators
-      ? [validators]
-      : []
-  return atStart
-    ? [...newValidators, ...validatorsArray]
-    : [...validatorsArray, ...newValidators]
-}
+

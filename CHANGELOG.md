@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 - `@ValueListFieldType` now validates that the value exists in the list
 - Added validation for `@Fields.number` & `Fields.integer` that the value is a valid number
 - Fixed an issue with entity ids that included date
+- Fixed an issue with chaining of validators that in some cases caused a validator to be overwritten
 - Changed postgres schema builder to use `timestamptz` instead of `timestamp`
 - `KnexDataProvider` now supports all `execute` and `createCommand` and can be used with any `SqlDatabase` functionality
 - **Breaking Change** changed the signature of `updateMany` and `deleteMany` to require a `where` parameter:
