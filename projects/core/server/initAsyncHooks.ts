@@ -49,7 +49,7 @@ export class SequentialRemultAsyncLocalStorageCore<T> implements RemultAsyncLoca
   async run<R>(store: T, callback: () => Promise<R>): Promise<R> {
 
     let log = (msg: string) => {
-      console.log(msg)
+
     }
     if (false) {
       let stack = new Error().stack;
