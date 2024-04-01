@@ -1,17 +1,19 @@
 import { it, describe, expect, beforeEach } from 'vitest'
 import { Remult, SqlDatabase } from '../../core'
-import initSqlJs from 'sql.js'
-import { SqlJsDataProvider } from '../../core/remult-sql-js.js'
-import { allDbTests } from './shared-tests'
+
+import { BetterSqlite3DataProvider } from '../../core/remult-better-sqlite3.js'
+
 import { SqlDbTests } from './shared-tests/sql-db-tests.js'
 import type { DbTestProps } from './shared-tests/db-tests-props.js'
+import Database from 'better-sqlite3'
+import { allDbTests } from './shared-tests/index.js'
 
-describe('Sql JS', () => {
+describe('better-sqlite3', () => {
   let db: SqlDatabase
   let remult: Remult
   beforeEach(async () => {
     db = new SqlDatabase(
-      new SqlJsDataProvider(initSqlJs().then((x) => new x.Database())),
+      new BetterSqlite3DataProvider(new Database(':memory:')),
     )
     remult = new Remult(db)
   })

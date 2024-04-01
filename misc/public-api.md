@@ -3277,14 +3277,24 @@ export declare class MongoDataProvider implements DataProvider {
 ## ./remult-sql-js.js
 
 ```ts
-export declare class SqlJsDataProvider implements SqlImplementation {
-  private db
+export declare class SqlJsDataProvider extends SqliteCoreDataProvider {
   constructor(db: Promise<Database>)
+}
+```
+
+## ./remult-sqlite-core.js
+
+```ts
+export declare class SqliteCoreDataProvider
+  implements SqlImplementation, CanBuildMigrations
+{
+  createCommand: () => SqlCommand
+  end: () => Promise<void>
+  constructor(createCommand: () => SqlCommand, end: () => Promise<void>)
   orderByNullsFirst?: boolean
-  end(): Promise<void>
   getLimitSqlSyntax(limit: number, offset: number): string
   afterMutation?: VoidFunction
-  createCommand(): SqlCommand
+  provideMigrationBuilder(builder: MigrationCode): MigrationBuilder
   transaction(action: (sql: SqlImplementation) => Promise<void>): Promise<void>
   entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void>
   ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
@@ -3292,11 +3302,28 @@ export declare class SqlJsDataProvider implements SqlImplementation {
   private addColumnSqlSyntax
   createTable(entity: EntityMetadata<any>): Promise<void>
   supportsJsonColumnType?: boolean
+  private getCreateTableSql
   wrapIdentifier?(name: string): string
 }
 //[ ] SqlCommand from ./src/sql-command.js is not exported
+//[ ] MigrationCode from ./migrations/migration-types.js is not exported
+//[ ] MigrationBuilder from ./migrations/migration-types.js is not exported
 //[ ] SqlImplementation from ./src/sql-command.js is not exported
 //[ ] EntityMetadata from ./src/remult3/remult3.js is not exported
+```
+
+## ./remult-better-sqlite3.js
+
+```ts
+export declare class BetterSqlite3DataProvider extends SqliteCoreDataProvider {
+  constructor(db: Database)
+}
+export declare class BetterSqlite3SqlResult implements SqlResult {
+  private result
+  constructor(result: any[])
+  rows: any[]
+  getColumnKeyInResultForIndexInSelect(index: number): string
+}
 ```
 
 ## ./migrations/index.js

@@ -49,11 +49,10 @@ import { isOfType } from '../isOfType.js'
 // @dynamic
 export class SqlDatabase
   implements
-    DataProvider,
-    HasWrapIdentifier,
-    CanBuildMigrations,
-    SqlCommandFactory
-{
+  DataProvider,
+  HasWrapIdentifier,
+  CanBuildMigrations,
+  SqlCommandFactory {
   static getDb(dataProvider?: DataProvider) {
     const r = (dataProvider || defaultRemult.dataProvider) as SqlDatabase
     if (isOfType<SqlCommandFactory>(r, 'createCommand')) return r
@@ -185,7 +184,7 @@ export class SqlDatabase
   constructor(private sql: SqlImplementation) {
     if (sql.wrapIdentifier) this.wrapIdentifier = (x) => sql.wrapIdentifier(x)
     if (isOfType<CanBuildMigrations>(sql, 'provideMigrationBuilder')) {
-      this.provideMigrationBuilder = sql.provideMigrationBuilder
+      this.provideMigrationBuilder = x => sql.provideMigrationBuilder(x)
     }
     if (isOfType(sql, 'end')) this.end = () => sql.end()
   }
@@ -215,7 +214,7 @@ class LogSQLCommand implements SqlCommand {
   constructor(
     private origin: SqlCommand,
     private logToConsole: typeof SqlDatabase.LogToConsole,
-  ) {}
+  ) { }
 
   args: any = {}
   addParameterAndReturnSqlToken(val: any) {
@@ -270,7 +269,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     private sql: SqlDatabase,
     private iAmUsed: (e: EntityDbNamesBase) => Promise<void>,
     private strategy: SqlImplementation,
-  ) {}
+  ) { }
   async init() {
     let dbNameProvider: EntityDbNamesBase = await dbNamesOf(this.entity, (x) =>
       this.sql.wrapIdentifier(x),
@@ -424,6 +423,8 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
 
     return r.execute(statement).then((sqlResult) => {
       this.sql._getSourceSql().afterMutation?.()
+      if (sqlResult.rows.length != 1)
+        throw new Error('Failed to update row with id ' + id + ", rows updated: " + sqlResult.rows.length)
       return this.buildResultRow(colKeys, sqlResult.rows[0], sqlResult)
     })
   }

@@ -14,7 +14,7 @@ export function knexTests(
 ) {
   var db: KnexDataProvider
   let remult: Remult
-  beforeAll(async () => {})
+  beforeAll(async () => { })
   beforeEach(() => {
     db = new KnexDataProvider(knex)
     remult = new Remult(db)

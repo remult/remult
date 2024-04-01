@@ -117,8 +117,7 @@ export function SqlDbTests({
     const e = await dbNamesOf(repo, f.wrapIdentifier)
     const c = f.createCommand()
     const result = await c.execute(
-      `select ${e.myId}, ${e.name} from ${e.$entityName} where ${
-        e.myId
+      `select ${e.myId}, ${e.name} from ${e.$entityName} where ${e.myId
       } in (${c.param(1)},${c.param(2)})`,
     )
 
@@ -169,7 +168,7 @@ export function SqlDbTests({
       ]) {
         try {
           await db.execute('drop table  ' + db.wrapIdentifier(iterator))
-        } catch {}
+        } catch { }
       }
     })
     it('test migrations', async () => {
@@ -181,8 +180,8 @@ export function SqlDbTests({
         'provideMigrationBuilder',
       ).provideMigrationBuilder({
         addSql: (s) =>
-          (migrations[Object.keys(migrations).length] = async ({ sql }) =>
-            await sql(s)),
+        (migrations[Object.keys(migrations).length] = async ({ sql }) =>
+          await sql(s)),
         addComment: () => {
           throw Error('not implemented')
         },
@@ -255,7 +254,7 @@ export function SqlDbTests({
                 0: async ({ sql }) => {
                   try {
                     await sql(`drop table ${tableName}`)
-                  } catch {}
+                  } catch { }
                 },
                 1: async ({ sql }) => {
                   await sql(`create table ${tableName}(id int)`)
