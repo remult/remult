@@ -1,25 +1,37 @@
 # Migrations
 
-Migrations are essential for maintaining alignment between your application's evolving features and its underlying database schema. They enable structured updates to the database, reflecting changes in the application's data structures and logic over time. This ensures consistency and reliability as your project grows.
+Managing database schemas is crucial in web development. Traditional migration approaches introduce complexity and risks. Remult, designed for data-driven web apps with TypeScript, offers a simpler method.
 
-## Automatic Schema Validation with `ensureSchema`
+## You Don't Necessarily Need Migrations
 
-Remult provides an automatic schema validation feature called `ensureSchema` that ensures consistency between your entities and the database schema. When your application loads, `ensureSchema` verifies that all entities and their corresponding columns exist in the database. It automatically adds any missing tables or columns, ensuring that your database schema matches your application's entities.
+Migration files are standard but can complicate database schema management. They're prone to errors, potentially leading to conflicts or downtime. Remult proposes a streamlined alternative: automatic schema synchronization. This approach simplifies schema management by ensuring your database schema aligns with your application code without the manual overhead of traditional migrations.
 
-It's important to note that `ensureSchema` is designed with safety in mind. It **never removes or alters existing tables or columns**. This behavior ensures that your application can easily revert to a previous version without losing compatibility with the database.
+### Embracing Schema Synchronization with Remult
 
-This automatic schema validation offers a convenient starting point for developing your application. It reduces the initial setup effort and helps maintain consistency as your application evolves.
+Remult offers an alternative: automatic schema synchronization. **By default, Remult checks for and synchronizes your database schema with the entity types** provided in the `RemultServerOptions.entities` property when the server loads. This feature automatically adds any missing tables or columns, significantly simplifying schema management.
 
-If needed, you can disable this feature by setting the `ensureSchema` option to `false` in your Remult server configuration.
+::: tip No Data Loss with Remult's Safe Schema Updates
+**Remult's schema synchronization** ensures **safe and automatic updates** to your database schema. By only adding new tables or columns without altering existing ones, Remult prevents data loss. This design offers a secure way to evolve your application's database schema.
+:::
 
-```ts
-export const api = remultExpress({
-  //...
-  ensureSchema: false,
+#### Disabling Automatic Schema Synchronization
+
+For manual control, Remult allows disabling automatic schema synchronization:
+
+```typescript
+const api = remultExpress({
+  entities: [], // Your entities here
+  ensureSchema: false, // Disables automatic schema synchronization, Default: true
 })
 ```
 
-While `ensureSchema` provides a basic level of migration support, Remult also offers a more extensive migration solution for managing complex schema changes. We'll explore this advanced migration solution in the following sections of this document.
+#### Manually Triggering Schema Synchronization
+
+In certain scenarios, you might want to manually trigger the `ensureSchema` function to ensure that your database schema is up-to-date with your entity definitions. Here's how you can do it:
+
+```ts
+remult.dataProvider.ensureSchema!(entities.map((x) => remult.repo(x).metadata))
+```
 
 ## Quick Start: Introducing Migrations to Your Application
 
@@ -194,15 +206,3 @@ We believe in designing migrations with a backward compatibility mindset. This a
 - Instead of altering a column, adding a new column and copying the data to it as part of the migration process.
 
 This philosophy minimizes disruptions and ensures a smoother transition during database schema updates.
-
-### Manually Triggering `ensureSchema`
-
-In certain scenarios, you might want to manually trigger the `ensureSchema` function to ensure that your database schema is up-to-date with your entity definitions. Here's how you can do it:
-
-```ts
-remult.dataProvider.ensureSchema!(entities.map((x) => remult.repo(x).metadata))
-```
-
-In this code snippet, the `ensureSchema` function is called on the `dataProvider` associated with your Remult instance. It is passed an array of entity metadata, obtained by mapping over the `entities` array and using the `remult.repo()` function to get the repository for each entity, and then accessing its `metadata` property.
-
-This manual invocation of `ensureSchema` ensures that any missing tables or columns are added to the database schema to reflect the current state of your entities.
