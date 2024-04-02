@@ -1,8 +1,30 @@
+<style>
+  .container {
+  display: flex;
+  align-items: center;
+  justify-content: center
+}
+
+img {
+  max-width: 100%;
+  max-height:100%;
+}
+
+.text {
+  font-size: 32px;
+  padding-left: 10px;
+  padding-bottom: 10px;
+}
+  </style>
+
 <div align="center">
-  <a href="http://remult.dev/">
-    <img src="https://github.com/remult/remult/raw/master/docs/public/logo.png" width="140" height="140">
-  </a>
-  <h1>Remult</h1>
+    <div class="container">
+      <div class="image">
+        <img src="https://github.com/remult/remult/raw/master/docs/public/logo.png" width="80" height="80">
+      </div>
+      <div class="text">Remult</div>
+    </div>
+
   <p>Full-stack CRUD, simplified, with SSOT TypeScript entities</p>
 	<a href="https://circleci.com/gh/remult/remult/tree/master" rel="nofollow">
 		<img alt="CircleCI" src="https://circleci.com/gh/remult/remult/tree/master.svg?style=shield"></a>
@@ -31,23 +53,25 @@
 
 ## What is Remult?
 
-**Remult** is a full-stack CRUD framework that uses your **TypeScript entities
-as a single source of truth for your API, frontend type-safe API client and
-backend ORM**.
+Remult uses **TypeScript entities** as a single source of truth for: ✅ CRUD + Realtime API, ✅ frontend type-safe API client, and
+✅ backend ORM.
 
+- :zap: Zero-boilerplate CRUD + Realtime API with paging, sorting, and filtering
 - :ok_hand: Fullstack type-safety for API queries, mutations and RPC, without code generation
 - :sparkles: Input validation, defined once, runs both on the backend and on the frontend for best UX
 - :lock: Fine-grained code-based API authorization
-- :zap: Zero-boilerplate CRUD API routes with paging, sorting, and filtering for Express / Fastify / Next.js / Nuxt / Sveltekit / Nest / Hapi / Hono / Koa others...
-- :page_with_curl: Database - Postgres / MySQL / MongoDB / SQLite / Sql Server / Oracle ...
-- :relieved: Can be easly added to your existing projects
-- :mega: **NEW - Zero-boilerplate realtime live-queries**
+- :relieved: Incrementally adoptable
+- :rocket: Production ready
 
-## Usage
+**Remult supports all major databases**, including: PostgreSQL, MySQL, SQLite, MongoDB, MSSQL and Oracle.
 
-### Consistent Type-safe Query language that works both on **Frontend** and **Backend**
+**Remult is frontend and backend framework agnostic** and comes with adapters for Express, Fastify, Next.js, Nuxt, SvelteKit, Nest, Koa, Hapi and Hono.
+
+Remult promotes a consistent, **type-safe query syntax for both frontend and Backend code**:
 
 ```ts
+// Frontend - GET: /api/products?_limit=10&unitPrice.gt=5,_sort=name
+// Backend  - 'select name, unitPrice from products where unitPrice > 5 order by name limit 10'
 await repo(Product).find({
   limit: 10,
   orderBy: {
@@ -57,18 +81,13 @@ await repo(Product).find({
     unitPrice: { $gt: 5 },
   },
 })
-// Frontend: GET: '/api/products?_limit=10&unitPrice.gt=5,_sort=name'
-// Backend: select name, unitPrice from products where unitprice > 5 order by name limit 10
-```
 
-### Type-safe Data Manipulation that works both on **Frontend** and **Backend**
-
-```ts
+// Frontend - PUT: '/api/products/product7' (body: { "unitPrice" : 7 })
+// Backend  - 'update products set unitPrice = 7 where id = product7'
 await repo(Product).update('product7', { unitPrice: 7 })
-
-// Frontend: PUT: '/api/products/product7 Body:{ "unitPrice" : 7 }'
-// Backend: update products set unitPrice = 7 where id = ?
 ```
+
+## Usage
 
 ### Define schema in code
 
@@ -92,7 +111,9 @@ export class Product {
 }
 ```
 
-### Setup API backend using Express / Fastify / Next.js / Nuxt / Sveltekit / Nest / Hapi / Hono / Koa
+### Add backend API with a [single line of code](https://remult.dev/docs/quickstart#server-side-initialization)
+
+_Example:_
 
 ```ts
 // backend/index.ts
@@ -101,53 +122,62 @@ import express from 'express'
 import { remultExpress } from 'remult/remult-express'
 import { Product } from '../shared/product'
 
-const port = 3001
 const app = express()
 
 app.use(
+  // other adapters: Fastify, Next.js, Nuxt, SvelteKit, Nest, Koa, Hapi and Hono
   remultExpress({
     entities: [Product],
+    // supports: PostgreSQL, MySQL, SQLite, MongoDB, MSSQL and Oracle
+    dataProvider: createPostgresDataProvider({
+      connectionString: 'postgres://user:password@host:5432/database"',
+    }),
   }),
 )
 
-app.listen(port, () => {
-  console.log(`Example API listening at http://localhost:${port}`)
-})
+app.listen()
 ```
 
-Automatic **CRUD Rest API**, and support for **OpenAPI** & **GraphQL**
+Remult adds route handlers for a fully functional REST API and realtime live-query endpoints, optionally including an [Open API](https://remult.dev/docs/adding-swagger) spec and a [GraphQL](https://remult.dev/docs/adding-graphql) endpoint
 
-See [Quickstart - Server-side Initialization](https://remult.dev/docs/quickstart#server-side-initialization) for Fastify / Next.js / Nuxt / Sveltekit / Nest / Hapi / Hono / Koa
-
-### Easy Database configuration for Postgres / MySQL / MongoDB / SQLite / Sql Server / Oracle / others
+### Fetch data with type-safe frontend code
 
 ```ts
-remultExpress({
-  entities,
-  dataProvider: createPostgresDataProvider({
-    connectionString: 'postgres://user:password@host:5432/database"',
-  }),
-})
-```
+const [products, setProducts] = useState<Product[]>([])
 
-See [Quickstart - Conneting a Database](https://remult.dev/docs/quickstart#connecting-a-database) for databases configuration
+useEffect(() => {
+  repo(Product)
+    .find({
+      limit: 10,
+      orderBy: {
+        name: 'asc',
+      },
+      where: {
+        unitPrice: { $gt: 5 },
+      },
+    })
+    .then(setProducts)
+}, [])
+```
 
 ### :mega: Realtime Live Queries
 
 ```ts
-repo(Product)
-  .liveQuery({
-    limit: 10,
-    orderBy: {
-      name: 'asc',
-    },
-    where: {
-      unitPrice: { $gt: 5 },
-    },
-  })
-  .subscribe((info) => {
-    console.log(info.items)
-  })
+useEffect(() => {
+  return repo(Product)
+    .liveQuery({
+      limit: 10,
+      orderBy: {
+        name: 'asc',
+      },
+      where: {
+        unitPrice: { $gt: 5 },
+      },
+    })
+    .subscribe((info) => {
+      setProducts(info.applyChanges)
+    })
+}, [])
 ```
 
 ### :ballot_box_with_check: Data validation and constraints - defined once
@@ -262,9 +292,9 @@ export class Category {
 }
 ```
 
-### Built-in admin UI
+### Automatic admin UI
 
-![admin UI](https://private-user-images.githubusercontent.com/16635859/303906644-067558d3-7587-4c24-ae84-38bbfe9390af.gif?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MTE0MzYxMzYsIm5iZiI6MTcxMTQzNTgzNiwicGF0aCI6Ii8xNjYzNTg1OS8zMDM5MDY2NDQtMDY3NTU4ZDMtNzU4Ny00YzI0LWFlODQtMzhiYmZlOTM5MGFmLmdpZj9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNDAzMjYlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQwMzI2VDA2NTAzNlomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTdlNTY1ZTNjODRiOGM3Y2RjZWIyZTBjMGZlNDU0MTg4Zjc3NzUxNGIzMDhhZTk4Yzg2ZTIyZDkzNjA4M2U0NzImWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.Om8eVpH24_tQRZh40P6wQSu5rQOT26PaeTsUYAF8V8g)
+![Automatic admin UI](static/images/admin-ui.gif)
 
 ## What about complex CRUD?
 
@@ -279,8 +309,7 @@ numerous ways:
   [entity lifecycle hooks](https://remult.dev/docs/ref_entity.html#saving)
   (before/after saving/deleting)
 - Backend only updatable fields (e.g. “last updated at”)
-- Many-to-one [relations](https://remult.dev/docs/entity-relations.html) with
-  [lazy/eager loading](https://remult.dev/docs/lazy-loading-of-related-entities.html)
+- [Relations](https://remult.dev/docs/entity-relations.html)
 - Roll-your-own type-safe endpoints with
   [Backend Methods](https://remult.dev/docs/backendMethods.html)
 - Roll-your-own low-level endpoints (Express, Fastify, koa, others…)
@@ -304,6 +333,8 @@ with a Node.js Express backend.
 - [Tutorial with Vue](https://remult.dev/tutorials/vue/)
 - [Tutorial with Next.js](https://remult.dev/tutorials/react-next/)
 - [Tutorial with Sveltekit](https://remult.dev/tutorials/sveltekit/)
+
+## Demo
 
 <a href="https://www.youtube.com/watch?v=rEoScmSVNUE" target="_blank">
   <p align="center">
