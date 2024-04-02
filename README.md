@@ -1,11 +1,5 @@
 <div align="center">
-    <div style="display: flex;  align-items: center;  justify-content: center">
-      <div style="max-width: 100%; max-height:100%;">
-        <img src="https://github.com/remult/remult/raw/master/docs/public/logo.png" width="80" height="80">
-      </div>
-      <div style="font-size: 32px; padding-left: 10px; padding-bottom: 10px;">Remult</div>
-    </div>
-
+  <h1>Remult</h1>
   <p>Full-stack CRUD, simplified, with SSOT TypeScript entities</p>
 	<a href="https://circleci.com/gh/remult/remult/tree/master" rel="nofollow">
 		<img alt="CircleCI" src="https://circleci.com/gh/remult/remult/tree/master.svg?style=shield"></a>
@@ -37,18 +31,17 @@
 Remult uses **TypeScript entities** as a single source of truth for: ✅ CRUD + Realtime API, ✅ frontend type-safe API client, and
 ✅ backend ORM.
 
-- :zap: Zero-boilerplate CRUD + Realtime API with paging, sorting, and filtering
-- :ok_hand: Fullstack type-safety for API queries, mutations and RPC, without code generation
-- :sparkles: Input validation, defined once, runs both on the backend and on the frontend for best UX
-- :lock: Fine-grained code-based API authorization
+- :zap: **Zero-boilerplate CRUD + Realtime API** with paging, sorting, and filtering
+- :ok_hand: **Fullstack type-safety** for API queries, mutations and RPC, without code generation
+- :sparkles: Input validation, **defined once**, runs both on the backend and on the frontend for best UX
+- :lock: Fine-grained **code-based API authorization**
 - :relieved: Incrementally adoptable
-- :rocket: Production ready
 
 **Remult supports all major databases**, including: PostgreSQL, MySQL, SQLite, MongoDB, MSSQL and Oracle.
 
 **Remult is frontend and backend framework agnostic** and comes with adapters for Express, Fastify, Next.js, Nuxt, SvelteKit, Nest, Koa, Hapi and Hono.
 
-Remult promotes a consistent, **type-safe query syntax for both frontend and Backend code**:
+Remult promotes a **consistent query syntax for both frontend and Backend code**:
 
 ```ts
 // Frontend - GET: /api/products?_limit=10&unitPrice.gt=5,_sort=name
@@ -100,16 +93,15 @@ _Example:_
 // backend/index.ts
 
 import express from 'express'
-import { remultExpress } from 'remult/remult-express'
+import { remultExpress } from 'remult/remult-express' // adapters for: Fastify, Next.js, Nuxt, SvelteKit, Nest, more...
+import { createPostgresDataProvider } from "remult/postgres" // supported: PostgreSQL, MySQL, SQLite, MongoDB, MSSQL and Oracle
 import { Product } from '../shared/product'
 
 const app = express()
 
 app.use(
-  // other adapters: Fastify, Next.js, Nuxt, SvelteKit, Nest, Koa, Hapi and Hono
   remultExpress({
     entities: [Product],
-    // supports: PostgreSQL, MySQL, SQLite, MongoDB, MSSQL and Oracle
     dataProvider: createPostgresDataProvider({
       connectionString: 'postgres://user:password@host:5432/database"',
     }),
@@ -192,7 +184,7 @@ try {
   await repo(Product).insert({ name: '', unitPrice: -1 })
 } catch (e: any) {
   console.error(e)
-  /* Browser console will display a structured error that can be used to show the correct ror next to the correct html input
+/* Detailed error object ->
 {
   "modelState": {
     "name": "Should not be empty",
