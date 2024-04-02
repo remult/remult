@@ -11,13 +11,14 @@ import {
 } from '../core'
 import { Remult, RemultAsyncLocalStorage } from '../core/src/context.js'
 import { remultStatic } from '../core/src/remult-static'
+import { AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore } from '../core/server/initAsyncHooks.js'
 
 describe('backend method context awareness', () => {
   it('getting error when async was initialized', async () => {
     let ok = true
     try {
       remultStatic.asyncContext = new RemultAsyncLocalStorage(
-        new AsyncLocalStorage(),
+        new AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore(),
       )
       RemultAsyncLocalStorage.enable()
       if (remult.authenticated()) {
@@ -34,7 +35,7 @@ describe('backend method context awareness', () => {
   it('test run works', async () => {
     try {
       remultStatic.asyncContext = new RemultAsyncLocalStorage(
-        new AsyncLocalStorage(),
+        new AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore(),
       )
       RemultAsyncLocalStorage.enable()
       let ok = false
@@ -56,7 +57,7 @@ describe('backend method context awareness', () => {
   it('test run works and returns', async () => {
     try {
       remultStatic.asyncContext = new RemultAsyncLocalStorage(
-        new AsyncLocalStorage(),
+        new AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore(),
       )
       RemultAsyncLocalStorage.enable()
       let ok = false
@@ -81,7 +82,7 @@ describe('backend method context awareness', () => {
   it('test run works and returns Promise', async () => {
     try {
       remultStatic.asyncContext = new RemultAsyncLocalStorage(
-        new AsyncLocalStorage(),
+        new AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore(),
       )
       RemultAsyncLocalStorage.enable()
       let ok = false

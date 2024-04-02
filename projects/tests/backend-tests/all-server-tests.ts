@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import EventSource from 'eventsource'
 import { Task } from '../../test-servers/shared/Task.js'
-import { Remult, remult, withRemult } from '../../core'
+import { Remult, remult, repo, withRemult } from '../../core'
 import axios from 'axios'
 
 import { actionInfo } from '../../core/internals.js'
@@ -79,6 +79,122 @@ export function allServerTests(
         remult.apiClient.url + '/test',
       )
       expect(result.data.result).toBe(3)
+    }),
+  )
+  it(
+    'delete many',
+    withRemultForTest(async () => {
+      await create3Tasks()
+      expect(await repo(Task).deleteMany({ where: { title: ['a', 'c'] } })).toBe(2)
+      expect(await repo(Task).count()).toBe(1)
+    }),
+  )
+  it(
+    'delete many 2',
+    withRemultForTest(async () => {
+      await create3Tasks()
+      expect(
+        await repo(Task).deleteMany({ where: { $or: [{ title: 'a' }, { title: 'c' }] } }),
+      ).toBe(2)
+      expect(await repo(Task).count()).toBe(1)
+    }),
+  )
+  it(
+    'delete many 3',
+    withRemultForTest(async () => {
+      await create3Tasks()
+      expect(await repo(Task).deleteMany({ where: { title: { $ne: 'b' } } })).toBe(2)
+      expect(await repo(Task).count()).toBe(1)
+    }),
+  )
+  it(
+    'update many',
+    withRemultForTest(async () => {
+      await create3Tasks()
+      expect(
+        await repo(Task).updateMany({ where: { title: ['a', 'c'] } }, { title: 'dd' }),
+      ).toBe(2)
+      expect(await repo(Task).count({ title: 'dd' })).toBe(2)
+      expect(await repo(Task).count({ title: { '!=': 'dd' } })).toBe(1)
+    }),
+  )
+  it(
+    'update many 3',
+    withRemultForTest(async () => {
+      await create3Tasks()
+      expect(
+        await repo(Task).updateMany({ where: { title: { $ne: 'b' } } }, { title: 'dd' }),
+      ).toBe(2)
+      expect(await repo(Task).count({ title: 'dd' })).toBe(2)
+      expect(await repo(Task).count({ title: { '!=': 'dd' } })).toBe(1)
+    }),
+  )
+  it(
+    'update with url params',
+    withRemultForTest(async () => {
+      await create3Tasks()
+      expect(
+        (
+          await axios.put(remult.apiClient.url + '/tasks' + '?title.ne=b', {
+            title: 'dd',
+          })
+        ).data,
+      ).toMatchInlineSnapshot(`
+        {
+          "updated": 2,
+        }
+      `)
+      expect(await repo(Task).count({ title: 'dd' })).toBe(2)
+    }),
+  )
+  it(
+    'delete with url params',
+    withRemultForTest(async () => {
+      await create3Tasks()
+      expect(
+        (await axios.delete(remult.apiClient.url + '/tasks' + '?title.ne=b'))
+          .data,
+      ).toMatchInlineSnapshot(`
+        {
+          "deleted": 2,
+        }
+      `)
+      expect(await repo(Task).count()).toBe(1)
+    }),
+  )
+  it(
+    'update many 2',
+    withRemultForTest(async () => {
+      await create3Tasks()
+      expect(
+        await repo(Task).updateMany(
+          { where: { $or: [{ title: 'a' }, { title: 'c' }] } },
+          { title: 'dd' },
+        ),
+      ).toBe(2)
+      expect(await repo(Task).count({ title: 'dd' })).toBe(2)
+      expect(await repo(Task).count({ title: { '!=': 'dd' } })).toBe(1)
+    }),
+  )
+  it(
+    'test task with empty Id',
+    withRemultForTest(async () => {
+      await create3Tasks()
+      expect(await repo(Task).insert({ title: 'empty' }))
+        .toMatchInlineSnapshot(`
+        Task {
+          "completed": false,
+          "id": "",
+          "title": "empty",
+        }
+      `)
+      let item = await remult.repo(Task).findId('')
+      expect(item.title).toBe('empty')
+      item.title += 1
+      item = await remult.repo(Task).save(item)
+      expect(item.title).toBe('empty1')
+      await remult.repo(Task).delete(item)
+      expect(await remult.repo(Task).count()).toBe(3)
     }),
   )
   it(
@@ -236,9 +352,9 @@ export function allServerTests(
   )
   async function create3Tasks() {
     const taskRepo = remult.repo(Task)
-    for (const task of await taskRepo.find()) {
-      await taskRepo.delete(task)
-    }
+
+    await taskRepo.deleteMany({ where: { id: { '!=': null! } } })
+
     expect(await taskRepo.count()).toBe(0)
     await taskRepo.insert([
       { title: 'a' },

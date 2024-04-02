@@ -1,7 +1,7 @@
 import { createId } from '@paralleldrive/cuid2'
 import { v4 as uuid } from 'uuid'
 import type { ClassType } from '../../classType.js'
-import type { FieldOptions } from '../column-interfaces.js'
+import type { FieldOptions, ValueConverter } from '../column-interfaces.js'
 import type { Remult } from '../context.js'
 import type {
   FindOptions,
@@ -12,10 +12,14 @@ import type {
 import { ValueConverters } from '../valueConverters.js'
 import { buildOptions } from './RepositoryImplementation.js'
 import type { columnInfo } from './columnInfo.js'
-import { Validators } from '../validators.js'
+import { Validators, createValueValidator, getEnumValues } from '../validators.js'
 import { relationInfoMemberInOptions } from './relationInfoMember.js'
 import { remultStatic } from '../remult-static.js'
+import { addValidator } from './addValidator.js'
 
+const validateNumber = createValueValidator((x: number) => {
+  return !isNaN(x) && isFinite(x)
+}) as unknown as FieldOptions['validate']
 export class Fields {
   /**
    * Stored as a JSON.stringify - to store as json use Fields.json
@@ -81,6 +85,7 @@ export class Fields {
       () => Number,
       {
         valueConverter: ValueConverters.Integer,
+        validate: validateNumber,
       },
       ...options,
     )
@@ -111,7 +116,9 @@ export class Fields {
       | ((options: FieldOptions<entityType, number>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, number | undefined> {
-    return Field(() => Number, ...options)
+    return Field(() => Number, {
+      validate: validateNumber,
+    }, ...options)
   }
   static createdAt<entityType = any>(
     ...options: (
@@ -166,6 +173,12 @@ export class Fields {
       ...options,
     )
   }
+  /**
+ * A CUID (Collision Resistant Unique Identifier) field.
+ * This id value is determined on the backend on insert, and can't be updated through the API.
+ * The CUID is generated using the `@paralleldrive/cuid2` npm package.
+ */
+
   static cuid<entityType = any>(
     ...options: (
       | FieldOptions<entityType, string>
@@ -184,13 +197,90 @@ export class Fields {
       ...options,
     )
   }
+
+  /**
+ * Defines a field that can hold a value from a specified set of string literals.
+ * @param {() => readonly valueType[]} optionalValues - A function that returns an array of allowed string literals.
+ * @returns {ClassFieldDecorator<entityType, valueType | undefined>} - A class field decorator.
+ * 
+ * @example
+ 
+ * class MyEntity {
+ *   .@Fields.literal(() => ['open', 'closed', 'frozen', 'in progress'] as const)
+ *   status: 'open' | 'closed' | 'frozen' | 'in progress' = 'open';
+ * }
+ 
+ * 
+ * // This defines a field `status` in `MyEntity` that can only hold the values 'open', 'closed', 'frozen', or 'in progress'.
+ * 
+ * @example
+ * // For better reusability and maintainability:
+ 
+ * const statuses = ['open', 'closed', 'frozen', 'in progress'] as const;
+ * type StatusType = typeof statuses[number];
+ * 
+ * class MyEntity {
+ *   .@Fields.literal(() => statuses)
+ *   status: StatusType = 'open';
+ * }
+ 
+ * 
+ * // This approach allows easy management and updates of the allowed values for the `status` field.
+ */
+  static literal<entityType = any, valueType extends string = any>(optionalValues: () => readonly valueType[], ...options: (
+    | StringFieldOptions<entityType, valueType>
+    | ((options: StringFieldOptions<entityType, valueType>, remult: Remult) => void)
+  )[]
+  ): ClassFieldDecorator<entityType, valueType | undefined> {
+    return Fields.string(
+      {
+        validate: (entity, event) => Validators.in(optionalValues())(entity, event)
+      },
+      ...options)
+
+  }
+
+  static enum<entityType = any, theEnum = any>(
+    enumType: () => theEnum,
+    ...options: (
+      | FieldOptions<entityType, theEnum[keyof theEnum]>
+      | ((options: FieldOptions<entityType, theEnum[keyof theEnum]>, remult: Remult) => void)
+    )[]
+  ): ClassFieldDecorator<entityType, theEnum[keyof theEnum] | undefined> {
+    let valueConverter: ValueConverter<any>
+    return Field(() =>
+      //@ts-ignore
+      enumType()!
+      ,
+      {
+        validate: (entity, event) => Validators.enum(enumType())(entity, event)
+      },
+      ...options,
+      (options) => {
+        if (valueConverter === undefined) {
+          let enumObj = enumType();
+          let enumValues = getEnumValues(enumObj)
+          valueConverter = enumValues.find(x => typeof x === "string") ? ValueConverters.String : ValueConverters.Integer
+        }
+        if (!options.valueConverter) {
+          options.valueConverter = valueConverter
+
+        } else if (!options.valueConverter.fieldTypeInDb) {
+          //@ts-ignore
+          options.valueConverter.fieldTypeInDb = valueConverter.fieldTypeInDb;
+        }
+      }
+
+
+    )
+  }
   static string<entityType = any, valueType = string>(
     ...options: (
       | StringFieldOptions<entityType, valueType>
       | ((
-          options: StringFieldOptions<entityType, valueType>,
-          remult: Remult,
-        ) => void)
+        options: StringFieldOptions<entityType, valueType>,
+        remult: Remult,
+      ) => void)
     )[]
   ): ClassFieldDecorator<entityType, valueType | undefined> {
     return Field<entityType, valueType>(() => String as any, ...options)
@@ -252,10 +342,10 @@ export class Relations {
     toEntityType: () => ClassType<toEntityType>,
     options?:
       | (FieldOptions<entityType, toEntityType> &
-          Pick<
-            RelationOptions<entityType, toEntityType, any, any>,
-            'defaultIncluded'
-          >)
+        Pick<
+          RelationOptions<entityType, toEntityType, any, any>,
+          'defaultIncluded'
+        >)
       | RelationOptions<entityType, toEntityType, entityType>
       | keyof entityType,
   ): (
@@ -267,12 +357,12 @@ export class Relations {
       (typeof options === 'string'
         ? { field: options }
         : !options
-        ? {}
-        : options) as any as RelationOptions<
-        entityType,
-        toEntityType,
-        entityType
-      >
+          ? {}
+          : options) as any as RelationOptions<
+            entityType,
+            toEntityType,
+            entityType
+          >
 
     if (!op.field && !op.fields && !op.findOptions)
       //@ts-ignore
@@ -351,11 +441,11 @@ export class Relations {
     toEntityType: () => ClassType<toEntityType>,
     options?:
       | RelationOptions<
-          entityType,
-          toEntityType,
-          toEntityType,
-          FindOptions<toEntityType>
-        >
+        entityType,
+        toEntityType,
+        toEntityType,
+        FindOptions<toEntityType>
+      >
       | keyof toEntityType,
   ) {
     let op: RelationOptions<
@@ -366,11 +456,11 @@ export class Relations {
     > = (typeof options === 'string'
       ? { field: options }
       : options) as any as RelationOptions<
-      entityType,
-      toEntityType,
-      toEntityType,
-      FindOptions<toEntityType>
-    >
+        entityType,
+        toEntityType,
+        toEntityType,
+        FindOptions<toEntityType>
+      >
     return Field(() => undefined!, {
       ...op,
       serverExpression: () => undefined,
@@ -378,6 +468,8 @@ export class Relations {
     })
   }
 }
+
+
 
 /**Decorates fields that should be used as fields.
  * for more info see: [Field Types](https://remult.dev/docs/field-types.html)
@@ -395,12 +487,12 @@ export class Relations {
 export function Field<entityType = any, valueType = any>(
   valueType:
     | (() => valueType extends number
-        ? Number
-        : valueType extends string
-        ? String
-        : valueType extends boolean
-        ? Boolean
-        : ClassType<valueType>)
+      ? Number
+      : valueType extends string
+      ? String
+      : valueType extends boolean
+      ? Boolean
+      : ClassType<valueType>)
     | undefined,
   ...options: (
     | FieldOptions<entityType, valueType>
@@ -420,8 +512,9 @@ export function Field<entityType = any, valueType = any>(
     let factory = (remult: Remult) => {
       let r = buildOptions(options, remult)
       if (r.required) {
-        r.validate = addValidator(r.validate, Validators.required)
+        r.validate = addValidator(r.validate, Validators.required, true)
       }
+
       if ((r as StringFieldOptions).maxLength) {
         r.validate = addValidator(
           r.validate,
@@ -489,21 +582,4 @@ export function checkTarget(target: any) {
       "Set the 'experimentalDecorators:true' option in your 'tsconfig' or 'jsconfig' (target undefined)",
     )
 }
-function addValidator(
-  validators: FieldOptions['validate'],
-  newValidator: FieldOptions['validate'],
-  atStart = false,
-) {
-  if (!newValidator) return
-  const newValidators = Array.isArray(newValidator)
-    ? newValidator
-    : [newValidator]
-  const validatorsArray = Array.isArray(validators)
-    ? validators
-    : validators
-    ? [validators]
-    : []
-  return atStart
-    ? [...newValidators, ...validatorsArray]
-    : [...validatorsArray, ...newValidators]
-}
+

@@ -49,12 +49,14 @@ export class RemultAsyncLocalStorage {
     resetFactory()
   }
   constructor(
-    private readonly remultObjectStorage: myAsyncLocalStorage<Remult>,
-  ) {}
-  run(remult: Remult, callback: (remult: Remult) => void) {
-    if (this.remultObjectStorage)
-      this.remultObjectStorage.run(remult, () => callback(remult))
-    else callback(remult)
+    private readonly remultObjectStorage: RemultAsyncLocalStorageCore<Remult>,
+  ) { }
+  async run<T>(remult: Remult, callback: (remult: Remult) => Promise<T>): Promise<T> {
+    if (this.remultObjectStorage) {
+      return this.remultObjectStorage.run(remult, () => callback(remult))
+    }
+    else
+      return callback(remult)
   }
   getRemult() {
     if (!this.remultObjectStorage) {
@@ -67,9 +69,10 @@ export class RemultAsyncLocalStorage {
 }
 if (!remultStatic.asyncContext)
   remultStatic.asyncContext = new RemultAsyncLocalStorage(undefined!)
-type myAsyncLocalStorage<T> = {
-  run<R>(store: T, callback: (...args: any[]) => R, ...args: any[]): R
+export type RemultAsyncLocalStorageCore<T> = {
+  run<R>(store: T, callback: () => Promise<R>): Promise<R>
   getStore(): T | undefined
+  wasImplemented: 'yes'
 }
 
 export function isBackend() {
@@ -204,7 +207,7 @@ export class Remult {
   subscriptionServer?: SubscriptionServer
   /* @internal*/
   liveQueryPublisher: LiveQueryChangesListener = {
-    itemChanged: async () => {},
+    itemChanged: async () => { },
   }
 
   //@ts-ignore // type error of typescript regarding args that doesn't appear in my normal development
@@ -239,7 +242,7 @@ export class Remult {
   )
 
   /** A helper callback that can be used to debug and trace all find operations. Useful in debugging scenarios */
-  static onFind = (metadata: EntityMetadata, options: FindOptions<any>) => {}
+  static onFind = (metadata: EntityMetadata, options: FindOptions<any>) => { }
   clearAllCache(): any {
     this.repCache.clear()
   }
@@ -258,7 +261,7 @@ remultStatic.defaultRemultFactory = () => new Remult()
 export type GetArguments<T> = T extends (...args: infer FirstArgument) => any
   ? FirstArgument
   : never
-export interface RemultContext {}
+export interface RemultContext { }
 /**
  * Interface for configuring the API client used by Remult to perform HTTP calls to the backend.
  */
@@ -275,6 +278,8 @@ export interface ApiClient {
    * @example
    * // Using Angular HttpClient
    * remult.apiClient.httpClient = httpClient;
+   * @see
+   * If you want to add headers using angular httpClient, see: https://medium.com/angular-shots/shot-3-how-to-add-http-headers-to-every-request-in-angular-fab3d10edc26
    *
    * @example
    * // Using fetch (default)
@@ -438,7 +443,7 @@ export async function doTransaction(
   }
 }
 class transactionLiveQueryPublisher implements LiveQueryChangesListener {
-  constructor(private orig: LiveQueryChangesListener) {}
+  constructor(private orig: LiveQueryChangesListener) { }
   transactionItems = new Map<string, itemChange[]>()
   async itemChanged(entityKey: string, changes: itemChange[]) {
     let items = this.transactionItems.get(entityKey)
@@ -469,15 +474,7 @@ export function withRemult<T>(
 ) {
   const remult = new Remult()
   if (options?.dataProvider) remult.dataProvider = options.dataProvider
-  let r: Promise<T>
-  remultStatic.asyncContext.run(remult, () => {
-    r = new Promise<T>(async (res, rej) => {
-      try {
-        res(await callback(remult))
-      } catch (err) {
-        rej(err)
-      }
-    })
-  })
-  return r!
+
+  return remultStatic.asyncContext.run(remult, r => callback(r))
+
 }

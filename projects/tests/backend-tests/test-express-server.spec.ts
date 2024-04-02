@@ -11,21 +11,30 @@ import {
   remult,
   repo,
   withRemult,
+  type ErrorInfo,
 } from '../../core'
 import { RemultAsyncLocalStorage } from '../../core/src/context.js'
 import { allServerTests, testAsExpressMW } from './all-server-tests.js'
 import { initAsyncHooks } from '../../core/server/initAsyncHooks.js'
+import type { RemultServerOptions } from '../../core/server/index.js'
 
 describe('test express server', async () => {
   let throwExceptionOnGetUser = false
+  let errorHandler: RemultServerOptions<unknown>['error']
   beforeEach(() => {
     throwExceptionOnGetUser = false
+    errorHandler = undefined
   })
   let api = remultExpress({
     entities: [Task, test_compound_id],
     dataProvider: new InMemoryDataProvider(),
+    error: (e) => errorHandler?.(e),
     getUser: async () => {
-      if (throwExceptionOnGetUser) throw 'not allowed'
+      if (throwExceptionOnGetUser)
+        throw {
+          httpStatusCode: 403,
+          message: 'not allowed',
+        } satisfies ErrorInfo
       return undefined
     },
   })
@@ -35,6 +44,36 @@ describe('test express server', async () => {
     res.json({ result: await remult.repo(Task).count() })
   })
   testAsExpressMW(3004, app, (withRemult) => {
+    it(
+      'test error handler',
+      withRemult(async () => {
+        const r = repo(test_compound_id)
+        errorHandler = async ({ req, ...e }) => {
+          expect({ ...e, req: Boolean(req) }).toMatchInlineSnapshot(`
+            {
+              "entity": undefined,
+              "exception": {
+                "message": "Forbidden",
+              },
+              "httpStatusCode": 404,
+              "req": true,
+              "responseBody": {
+                "message": "Forbidden",
+              },
+              "sendError": [Function],
+            }
+          `)
+          e.sendError(432, e.responseBody)
+        }
+        await expect(() => r.delete(1232131)).rejects
+          .toThrowErrorMatchingInlineSnapshot(`
+          {
+            "httpStatusCode": 432,
+            "message": "Forbidden",
+          }
+        `)
+      }),
+    )
     it(
       'test one more thing',
       withRemult(async () => {
@@ -59,11 +98,10 @@ describe('test express server', async () => {
         const r = repo(test_compound_id)
         throwExceptionOnGetUser = true
 
-        await expect(() =>
-          r.find(),
-        ).rejects.toThrowErrorMatchingInlineSnapshot(`
+        await expect(() => r.find()).rejects
+          .toThrowErrorMatchingInlineSnapshot(`
           {
-            "httpStatusCode": 400,
+            "httpStatusCode": 403,
             "message": "not allowed",
           }
         `)
@@ -96,6 +134,7 @@ it('test with express remult async ', async () => {
   ).toBe(undefined)
   expect(initRequest).toEqual([])
 })
+
 it('test remult run', async () => {
   try {
     initAsyncHooks()

@@ -52,7 +52,8 @@ export class Validators {
     withMessage: ValueValidationMessage<T[]>
   } = createValueValidatorWithArgs(
     <T>(val: T, values: T[]) => values.includes(val),
-    <T>(values: T[]) => `Value must be one of ${values.join(', ')}`,
+    <T>(values: T[]) => `Value must be one of ${values.map(y =>
+      typeof y === "object" ? y['id'] !== undefined ? y['id'] : y.toString() : y).join(', ')}`,
   ) as any
 
   static notNull = createValueValidator(
@@ -62,8 +63,7 @@ export class Validators {
   static enum = createValueValidatorWithArgs<unknown, unknown>(
     (value, enumObj) => Object.values(enumObj).includes(value),
     (enumObj) =>
-      `Value must be one of ${Object.values(enumObj)
-        .filter((x) => typeof enumObj[x as any] !== 'number')
+      `Value must be one of ${getEnumValues(enumObj)
         .join(', ')}`,
   )
   static relationExists = createValidator<unknown>(async (_, e) => {
@@ -148,8 +148,8 @@ export function createValidator<valueType>(
   return Object.assign(result, {
     withMessage:
       (message: ValidationMessage<valueType, undefined>) =>
-      async (entity: any, e: ValidateFieldEvent<any, valueType>) =>
-        result(entity, e, message),
+        async (entity: any, e: ValidateFieldEvent<any, valueType>) =>
+          result(entity, e, message),
   })
 }
 
@@ -206,10 +206,10 @@ export type ValueValidationMessage<argsType> =
 export type ValidationMessage<valueType, argsType> =
   | string
   | ((
-      entity: any,
-      event: ValidateFieldEvent<any, valueType>,
-      args: argsType,
-    ) => string)
+    entity: any,
+    event: ValidateFieldEvent<any, valueType>,
+    args: argsType,
+  ) => string)
 
 export type ValidatorWithArgs<valueType, argsType> = (
   args: argsType,
@@ -241,22 +241,22 @@ function createValidatorWithArgsInternal<valueType, argsType>(
 } {
   const result =
     (args: argsType, message?: ValidationMessage<valueType, argsType>) =>
-    async (entity: any, e: ValidateFieldEvent<any, valueType>) => {
-      const valid = await validate(entity, e, args)
-      if (typeof valid === 'string') e.error = valid
-      else if (!valid)
-        e.error = message
-          ? typeof message === 'function'
-            ? isValueValidator
-              ? (message as any as (args: argsType) => string)(args)
-              : message(entity, e, args)
-            : message
-          : defaultMessage
-          ? typeof defaultMessage === 'function'
-            ? defaultMessage(entity, e, args)
+      async (entity: any, e: ValidateFieldEvent<any, valueType>) => {
+        const valid = await validate(entity, e, args)
+        if (typeof valid === 'string') e.error = valid
+        else if (!valid)
+          e.error = message
+            ? typeof message === 'function'
+              ? isValueValidator
+                ? (message as any as (args: argsType) => string)(args)
+                : message(entity, e, args)
+              : message
             : defaultMessage
-          : Validators.defaultMessage
-    }
+              ? typeof defaultMessage === 'function'
+                ? defaultMessage(entity, e, args)
+                : defaultMessage
+              : Validators.defaultMessage
+      }
 
   return Object.assign(result, {
     get defaultMessage() {
@@ -266,4 +266,10 @@ function createValidatorWithArgsInternal<valueType, argsType>(
       defaultMessage = val
     },
   })
+}
+
+
+export function getEnumValues<theEnum = any>(enumObj: theEnum) {
+  return Object.values(enumObj)
+    .filter((x) => typeof enumObj[x as any] !== 'number')
 }

@@ -38,6 +38,9 @@ jobs:
           name: Setup Test Servers
           command: npm run build && npm run test-servers:setup-all
       - run:
+          name: Build Tests
+          command: npm run build-tests
+      - run:
           name: Run Tests
           command: npm run test:ci
       - codecov/upload

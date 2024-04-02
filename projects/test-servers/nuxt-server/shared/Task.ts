@@ -8,8 +8,11 @@ import {
   remult,
 } from 'remult'
 
-@Entity('tasks', {
+@Entity<Task>('tasks', {
   allowApiCrud: true,
+  saving: (task) => {
+    if (task.title.startsWith('empty')) task.id = ''
+  },
 })
 export class Task {
   @Fields.uuid()

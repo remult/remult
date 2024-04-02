@@ -607,7 +607,9 @@ export function commonDbTests(
         },
       },
       {
-        'status.in': '[1, 2]',
+        where: {
+          'status.in': '[1, 2]',
+        },
       },
     )
     d.test()

@@ -30,6 +30,8 @@ export interface ApiClient {
    * @example
    * // Using Angular HttpClient
    * remult.apiClient.httpClient = httpClient;
+   * @see
+   * If you want to add headers using angular httpClient, see: https://medium.com/angular-shots/shot-3-how-to-add-http-headers-to-every-request-in-angular-fab3d10edc26
    *
    * @example
    * // Using fetch (default)
@@ -926,12 +928,66 @@ export declare class Fields {
       | ((options: FieldOptions<entityType, string>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, string | undefined>
+  /**
+   * A CUID (Collision Resistant Unique Identifier) field.
+   * This id value is determined on the backend on insert, and can't be updated through the API.
+   * The CUID is generated using the `@paralleldrive/cuid2` npm package.
+   */
   static cuid<entityType = any>(
     ...options: (
       | FieldOptions<entityType, string>
       | ((options: FieldOptions<entityType, string>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, string | undefined>
+  /**
+   * Defines a field that can hold a value from a specified set of string literals.
+   * @param {() => readonly valueType[]} optionalValues - A function that returns an array of allowed string literals.
+   * @returns {ClassFieldDecorator<entityType, valueType | undefined>} - A class field decorator.
+   *
+   * @example
+   
+   * class MyEntity {
+   *   .@Fields.literal(() => ['open', 'closed', 'frozen', 'in progress'] as const)
+   *   status: 'open' | 'closed' | 'frozen' | 'in progress' = 'open';
+   * }
+   
+   *
+   * // This defines a field `status` in `MyEntity` that can only hold the values 'open', 'closed', 'frozen', or 'in progress'.
+   *
+   * @example
+   * // For better reusability and maintainability:
+   
+   * const statuses = ['open', 'closed', 'frozen', 'in progress'] as const;
+   * type StatusType = typeof statuses[number];
+   *
+   * class MyEntity {
+   *   .@Fields.literal(() => statuses)
+   *   status: StatusType = 'open';
+   * }
+   
+   *
+   * // This approach allows easy management and updates of the allowed values for the `status` field.
+   */
+  static literal<entityType = any, valueType extends string = any>(
+    optionalValues: () => readonly valueType[],
+    ...options: (
+      | StringFieldOptions<entityType, valueType>
+      | ((
+          options: StringFieldOptions<entityType, valueType>,
+          remult: Remult,
+        ) => void)
+    )[]
+  ): ClassFieldDecorator<entityType, valueType | undefined>
+  static enum<entityType = any, theEnum = any>(
+    enumType: () => theEnum,
+    ...options: (
+      | FieldOptions<entityType, theEnum[keyof theEnum]>
+      | ((
+          options: FieldOptions<entityType, theEnum[keyof theEnum]>,
+          remult: Remult,
+        ) => void)
+    )[]
+  ): ClassFieldDecorator<entityType, theEnum[keyof theEnum] | undefined>
   static string<entityType = any, valueType = string>(
     ...options: (
       | StringFieldOptions<entityType, valueType>
@@ -1825,15 +1881,7 @@ export interface Repository<entityType> {
    * taskRepo.update(task.id,{...task,completed:true})
    */
   update(
-    id: entityType extends {
-      id?: number
-    }
-      ? number
-      : entityType extends {
-          id?: string
-        }
-      ? string
-      : string | number,
+    id: idType<entityType>,
     item: Partial<MembersOnly<entityType>>,
   ): Promise<entityType>
   update(
@@ -1844,26 +1892,18 @@ export interface Repository<entityType> {
    * Updates all items that match the `where` condition.
    */
   updateMany(
-    where: EntityFilter<entityType>,
+    options: {
+      where: EntityFilter<entityType>
+    },
     item: Partial<MembersOnly<entityType>>,
   ): Promise<number>
   /** Deletes an Item*/
-  delete(
-    id: entityType extends {
-      id?: number
-    }
-      ? number
-      : entityType extends {
-          id?: string
-        }
-      ? string
-      : string | number,
-  ): Promise<void>
+  delete(id: idType<entityType>): Promise<void>
   delete(item: Partial<MembersOnly<entityType>>): Promise<void>
   /**
    * Deletes all items that match the `where` condition.
    */
-  deleteMany(where: EntityFilter<entityType>): Promise<number>
+  deleteMany(options: { where: EntityFilter<entityType> }): Promise<number>
   /** Creates an instance of an item. It'll not be saved to the data source unless `save` or `insert` will be called for that item */
   create(item?: Partial<MembersOnly<entityType>>): entityType
   toJson(item: Promise<entityType[]>): Promise<any[]>
@@ -2030,7 +2070,7 @@ export declare class SqlDatabase
     SqlCommandFactory
 {
   private sql
-  static getDb(remult?: Remult): SqlDatabase
+  static getDb(dataProvider?: DataProvider): SqlDatabase
   createCommand(): SqlCommand
   execute(sql: string): Promise<SqlResult>
   wrapIdentifier: (name: string) => string
@@ -2308,17 +2348,23 @@ export interface ValueConverter<valueType> {
    */
   displayValue?(val: valueType): string
   /**
-   * Specifies the storage type used in the database for this field.
+   * Specifies the storage type used in the database for this field. This can be used to explicitly define the data type and precision of the field in the database.
    *
    * @example
-   * readonly fieldTypeInDb = 'decimal(18,2)';
+   * // Define a field with a specific decimal precision in the database
+   * @Fields.number({
+   *   valueConverter: {
+   *     fieldTypeInDb: 'decimal(18,8)'
+   *   }
+   * })
+   * price=0;
    */
   readonly fieldTypeInDb?: string
   /**
    * Specifies the type of HTML input element suitable for values of valueType.
    *
    * @example
-   * readonly inputType = 'date';
+   * inputType = 'date';
    */
   readonly inputType?: string
 }
@@ -2640,6 +2686,27 @@ export interface RemultServerOptions<RequestType> {
   admin?: Allowed
   /** Storage to use for backend methods that use queue */
   queueStorage?: QueueStorage
+  /**
+   * This method is called whenever there is an error in the API lifecycle.
+   *
+   * @param info - Information about the error.
+   * @param info.req - The request object.
+   * @param info.entity - (Optional) The entity metadata associated with the error, if applicable.
+   * @param info.exception - (Optional) The exception object or error that occurred.
+   * @param info.httpStatusCode - The HTTP status code.
+   * @param info.responseBody - The body of the response.
+   * @param info.sendError - A method to send a custom error response. Call this method with the desired HTTP status code and response body.
+   *
+   * @returns A promise that resolves when the error handling is complete.
+   * @example
+   * export const api = remultExpress({
+   *   error: async (e) => {
+   *     if (e.httpStatusCode == 500) {
+   *       e.sendError(500, { message: "An error occurred" })
+   *     }
+   *   }
+   * })
+   */
   error?: (info: {
     req: RequestType
     entity?: EntityMetadata
@@ -2814,6 +2881,27 @@ export interface RemultServerOptions<RequestType> {
   admin?: Allowed
   /** Storage to use for backend methods that use queue */
   queueStorage?: QueueStorage
+  /**
+   * This method is called whenever there is an error in the API lifecycle.
+   *
+   * @param info - Information about the error.
+   * @param info.req - The request object.
+   * @param info.entity - (Optional) The entity metadata associated with the error, if applicable.
+   * @param info.exception - (Optional) The exception object or error that occurred.
+   * @param info.httpStatusCode - The HTTP status code.
+   * @param info.responseBody - The body of the response.
+   * @param info.sendError - A method to send a custom error response. Call this method with the desired HTTP status code and response body.
+   *
+   * @returns A promise that resolves when the error handling is complete.
+   * @example
+   * export const api = remultExpress({
+   *   error: async (e) => {
+   *     if (e.httpStatusCode == 500) {
+   *       e.sendError(500, { message: "An error occurred" })
+   *     }
+   *   }
+   * })
+   */
   error?: (info: {
     req: RequestType
     entity?: EntityMetadata
@@ -2974,7 +3062,7 @@ export declare class PostgresDataProvider
   private pool
   private options?
   supportsJsonColumnType: boolean
-  static getDb(remult?: Remult): ClientBase
+  static getDb(dataProvider?: DataProvider): ClientBase
   entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void>
   getLimitSqlSyntax(limit: number, offset: number): string
   createCommand(): SqlCommand
@@ -2996,7 +3084,7 @@ export declare class PostgresDataProvider
     action: (dataProvider: SqlImplementation) => Promise<void>,
   ): Promise<void>
 }
-//[ ] Remult from TBD is not exported
+//[ ] DataProvider from TBD is not exported
 //[ ] ClientBase from TBD is not exported
 //[ ] EntityMetadata from TBD is not exported
 //[ ] SqlCommand from TBD is not exported
@@ -3024,6 +3112,7 @@ export declare class PostgresSchemaBuilder {
   specifiedSchema: string
   constructor(pool: SqlDatabase, schema?: string)
 }
+//[ ] Remult from TBD is not exported
 export declare function preparePostgresQueueStorage(
   sql: SqlDatabase,
 ): Promise<import("../server/expressBridge.js").EntityQueueStorage>
@@ -3094,7 +3183,7 @@ export declare class KnexDataProvider
   end(): Promise<void>
   createCommand(): SqlCommand
   execute(sql: string): Promise<SqlResult>
-  static getDb(remult?: Remult): Knex<any, any[]>
+  static getDb(dataProvider?: DataProvider): Knex<any, any[]>
   wrapIdentifier: (name: string) => string
   getEntityDataProvider(entity: EntityMetadata<any>): EntityDataProvider
   transaction(
@@ -3110,10 +3199,9 @@ export declare class KnexDataProvider
 }
 //[ ] SqlCommand from ../src/sql-command.js is not exported
 //[ ] SqlResult from ../src/sql-command.js is not exported
-//[ ] Remult from ../src/context.js is not exported
+//[ ] DataProvider from ../src/data-interfaces.js is not exported
 //[ ] EntityMetadata from ../src/remult3/remult3.js is not exported
 //[ ] EntityDataProvider from ../src/data-interfaces.js is not exported
-//[ ] DataProvider from ../src/data-interfaces.js is not exported
 //[ ] EntityFilter from ../src/remult3/remult3.js is not exported
 //[ ] RepositoryOverloads from ../src/remult3/RepositoryImplementation.js is not exported
 export declare class KnexSchemaBuilder {
@@ -3138,6 +3226,7 @@ export declare class KnexSchemaBuilder {
   additionalWhere: string
   constructor(knex: Knex)
 }
+//[ ] Remult from ../src/context.js is not exported
 //[ ] EntityDbNamesBase from ../src/filter/filter-consumer-bridge-to-sql-request.js is not exported
 //[ ] Knex.SchemaBuilder from TBD is not exported
 ```
@@ -3158,7 +3247,7 @@ export declare class MongoDataProvider implements DataProvider {
   )
   session?: ClientSession
   disableTransactions: boolean
-  static getDb(remult?: Remult): {
+  static getDb(dataProvider?: DataProvider): {
     db: Db
     session: ClientSession
   }
@@ -3178,10 +3267,9 @@ export declare class MongoDataProvider implements DataProvider {
       }
   >
 }
-//[ ] Remult from ./index.js is not exported
+//[ ] DataProvider from ./index.js is not exported
 //[ ] EntityMetadata from ./index.js is not exported
 //[ ] EntityDataProvider from ./index.js is not exported
-//[ ] DataProvider from ./index.js is not exported
 //[ ] RepositoryOverloads from ./src/remult3/RepositoryImplementation.js is not exported
 //[ ] EntityFilter from ./index.js is not exported
 ```

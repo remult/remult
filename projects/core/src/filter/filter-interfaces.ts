@@ -9,12 +9,50 @@ import type {
 
 import { getEntityRef, getEntitySettings } from '../remult3/getEntityRef.js'
 import { getRelationFieldInfo } from '../remult3/relationInfoMember.js'
+import type { ErrorInfo } from '../data-interfaces.js'
 
 /**
  * The `Filter` class is a helper class that focuses on filter-related concerns. It provides methods
  * for creating and applying filters in queries.
  */
 export class Filter {
+  //@internal
+  static throwErrorIfFilterIsEmpty(
+    where: EntityFilter<any>,
+    methodName: string,
+  ) {
+    if (Filter.isFilterEmpty(where)) {
+      throw {
+        message: `${methodName}: requires a filter to protect against accidental delete/update of all rows`,
+        httpStatusCode: 400,
+      } satisfies ErrorInfo
+    }
+  }
+  //@internal
+  static isFilterEmpty(where: EntityFilter<unknown>) {
+    if (where.$and) {
+      for (const a of where.$and) {
+        if (!Filter.isFilterEmpty(a)) {
+          return false
+        }
+      }
+    }
+    if (where.$or) {
+      for (const a of where.$or) {
+        if (Filter.isFilterEmpty(a)) {
+          return true
+        }
+      }
+      return false
+    }
+    if (
+      Object.keys(where).filter((x) => !['$or', '$and'].includes(x)).length == 0
+    ) {
+      return true
+    }
+
+    return false
+  }
   /**
    * Creates a custom filter. Custom filters are evaluated on the backend, ensuring security and efficiency.
    * When the filter is used in the frontend, only its name is sent to the backend via the API,

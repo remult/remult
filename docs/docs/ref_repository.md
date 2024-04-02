@@ -466,11 +466,12 @@ Arguments:
 Updates all items that match the `where` condition.
 
 Arguments:
-* **where** - filters the data
-   
-   
-   #### see:
-   [EntityFilter](http://remult.dev/docs/entityFilter.html)
+* **options**
+   * **where** - filters the data
+      
+      
+      #### see:
+      [EntityFilter](http://remult.dev/docs/entityFilter.html)
 * **item**
 ## delete
 Deletes an Item
@@ -481,11 +482,12 @@ Arguments:
 Deletes all items that match the `where` condition.
 
 Arguments:
-* **where** - filters the data
-   
-   
-   #### see:
-   [EntityFilter](http://remult.dev/docs/entityFilter.html)
+* **options**
+   * **where** - filters the data
+      
+      
+      #### see:
+      [EntityFilter](http://remult.dev/docs/entityFilter.html)
 ## create
 Creates an instance of an item. It'll not be saved to the data source unless `save` or `insert` will be called for that item
 

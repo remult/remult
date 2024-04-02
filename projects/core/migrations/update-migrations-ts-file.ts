@@ -1,5 +1,5 @@
 // consider replacing with https://www.npmjs.com/package/ts-morph
-import * as ts from 'typescript'
+import ts from 'typescript'
 import * as fs from 'fs'
 
 export async function updateMigrationsFile(filePath: string, steps: string[]) {

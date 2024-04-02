@@ -62,11 +62,29 @@ Can also be set to an arrow function for fine grained control
 ## queueStorage
 Storage to use for backend methods that use queue
 ## error
+This method is called whenever there is an error in the API lifecycle.
+   
+   
+   #### returns:
+   A promise that resolves when the error handling is complete.
+   
+   
+   #### example:
+   ```ts
+   export const api = remultExpress({
+     error: async (e) => {
+       if (e.httpStatusCode == 500) {
+         e.sendError(500, { message: "An error occurred" })
+       }
+     }
+   })
+   ```
 
 Arguments:
-* **info**
-   * **req**
-   * **entity**
-   * **exception**
-   * **httpStatusCode**
-   * **responseBody**
+* **info** - Information about the error.
+   * **req** - The request object.
+   * **entity** - (Optional) The entity metadata associated with the error, if applicable.
+   * **exception** - (Optional) The exception object or error that occurred.
+   * **httpStatusCode** - The HTTP status code.
+   * **responseBody** - The body of the response.
+   * **__type** - A method to send a custom error response. Call this method with the desired HTTP status code and response body.

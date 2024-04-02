@@ -1,5 +1,5 @@
 export function isOfType<T>(obj: any, checkMethod: keyof T): obj is T {
-  return typeof obj[checkMethod] === 'function'
+  return typeof obj[checkMethod] !== 'undefined'
 }
 export function cast<T>(obj: any, checkMethod: keyof T): T {
   if (isOfType<T>(obj, checkMethod)) {

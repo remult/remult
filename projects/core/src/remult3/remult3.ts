@@ -161,8 +161,8 @@ export type FieldsRef<entityType> = FieldsRefBase<entityType> & {
   > extends {
     id?: number | string
   }
-    ? IdFieldRef<entityType, entityType[Properties]>
-    : FieldRef<entityType, entityType[Properties]>
+  ? IdFieldRef<entityType, entityType[Properties]>
+  : FieldRef<entityType, entityType[Properties]>
 }
 
 export type FieldsRefForEntityBase<entityType> = FieldsRefBase<entityType> & {
@@ -171,8 +171,8 @@ export type FieldsRefForEntityBase<entityType> = FieldsRefBase<entityType> & {
   > extends {
     id?: number | string
   }
-    ? IdFieldRef<entityType, entityType[Properties]>
-    : FieldRef<entityType, entityType[Properties]>
+  ? IdFieldRef<entityType, entityType[Properties]>
+  : FieldRef<entityType, entityType[Properties]>
 }
 
 export type SortSegments<entityType> = {
@@ -286,17 +286,17 @@ export interface EntityMetadata<entityType = any> {
 
 export declare type MembersOnly<T> = {
   [K in keyof Omit<T, keyof EntityBase> as T[K] extends Function
-    ? never
-    : K]: T[K]
+  ? never
+  : K]: T[K]
 }
 //Pick<
 //   T,
 //   { [K in keyof T]: T[K] extends Function ? never : K }[keyof T]
 // >
-export declare type idType<entityType> = entityType extends { id?: number }
-  ? number
-  : entityType extends { id?: string }
-  ? string
+export declare type idType<entityType> = entityType extends {
+  id?: infer U
+}
+  ? U
   : string | number
 /**used to perform CRUD operations on an `entityType` */
 export interface Repository<entityType> {
@@ -381,11 +381,7 @@ export interface Repository<entityType> {
    * taskRepo.update(task.id,{...task,completed:true})
    */
   update(
-    id: entityType extends { id?: number }
-      ? number
-      : entityType extends { id?: string }
-      ? string
-      : string | number,
+    id: idType<entityType>,
     item: Partial<MembersOnly<entityType>>,
   ): Promise<entityType>
   update(
@@ -396,23 +392,17 @@ export interface Repository<entityType> {
    * Updates all items that match the `where` condition.
    */
   updateMany(
-    where: EntityFilter<entityType>,
+    options: { where: EntityFilter<entityType> },
     item: Partial<MembersOnly<entityType>>,
   ): Promise<number>
 
   /** Deletes an Item*/
-  delete(
-    id: entityType extends { id?: number }
-      ? number
-      : entityType extends { id?: string }
-      ? string
-      : string | number,
-  ): Promise<void>
+  delete(id: idType<entityType>): Promise<void>
   delete(item: Partial<MembersOnly<entityType>>): Promise<void>
   /**
    * Deletes all items that match the `where` condition.
    */
-  deleteMany(where: EntityFilter<entityType>): Promise<number>
+  deleteMany(options: { where: EntityFilter<entityType> }): Promise<number>
 
   /** Creates an instance of an item. It'll not be saved to the data source unless `save` or `insert` will be called for that item */
   create(item?: Partial<MembersOnly<entityType>>): entityType
@@ -551,21 +541,21 @@ export declare type EntityOrderBy<entityType> = {
  */
 export declare type EntityFilter<entityType> = {
   [Properties in keyof Partial<MembersOnly<entityType>>]?:
-    | (Partial<entityType>[Properties] extends number | Date | undefined
-        ? ComparisonValueFilter<Partial<entityType>[Properties]>
-        : Partial<entityType>[Properties] extends string | undefined
-        ?
-            | Partial<entityType>[Properties]
-            | (ContainsStringValueFilter &
-                ComparisonValueFilter<Partial<entityType>[Properties]>)
-        : Partial<entityType>[Properties] extends boolean | undefined
-        ? ValueFilter<boolean>
-        : Partial<entityType>[Properties] extends
-            | { id?: string | number }
-            | undefined
-        ? IdFilter<Partial<entityType>[Properties]>
-        : ValueFilter<Partial<entityType>[Properties]>)
-    | ContainsStringValueFilter
+  | (Partial<entityType>[Properties] extends number | Date | undefined
+    ? ComparisonValueFilter<Partial<entityType>[Properties]>
+    : Partial<entityType>[Properties] extends string | undefined
+    ?
+    | Partial<entityType>[Properties]
+    | (ContainsStringValueFilter &
+      ComparisonValueFilter<Partial<entityType>[Properties]>)
+    : Partial<entityType>[Properties] extends boolean | undefined
+    ? ValueFilter<boolean>
+    : Partial<entityType>[Properties] extends
+    | { id?: string | number }
+    | undefined
+    ? IdFilter<Partial<entityType>[Properties]>
+    : ValueFilter<Partial<entityType>[Properties]>)
+  | ContainsStringValueFilter
 } & {
   $or?: EntityFilter<entityType>[]
   $and?: EntityFilter<entityType>[]
@@ -575,11 +565,11 @@ export type ValueFilter<valueType> =
   | valueType
   | valueType[]
   | {
-      $ne?: valueType | valueType[]
-      '!='?: valueType | valueType[]
-      $in?: valueType[]
-      $nin?: valueType[]
-    }
+    $ne?: valueType | valueType[]
+    '!='?: valueType | valueType[]
+    $in?: valueType[]
+    $nin?: valueType[]
+  }
 export type ComparisonValueFilter<valueType> = ValueFilter<valueType> & {
   $gt?: valueType
   '>'?: valueType
@@ -597,8 +587,8 @@ export interface ContainsStringValueFilter {
 export type IdFilter<valueType> =
   | ValueFilter<valueType>
   | {
-      $id: ValueFilter<valueType extends { id?: number } ? number : string>
-    }
+    $id: ValueFilter<valueType extends { id?: number } ? number : string>
+  }
 
 export interface LoadOptions<entityType> {
   /**
@@ -660,7 +650,7 @@ export interface FindOptionsBase<entityType> extends LoadOptions<entityType> {
 }
 export interface FindFirstOptions<entityType>
   extends FindOptionsBase<entityType>,
-    FindFirstOptionsBase<entityType> {}
+  FindFirstOptionsBase<entityType> { }
 export interface FindFirstOptionsBase<entityType>
   extends LoadOptions<entityType> {
   /** determines if to cache the result, and return the results from cache.
@@ -757,40 +747,40 @@ export type ObjectMembersOnly<T> = MembersOnly<{
     T,
     {
       [K in keyof T]: T[K] extends object | undefined | null
-        ? T[K] extends Date | undefined | null
-          ? never
-          : K
-        : never
+      ? T[K] extends Date | undefined | null
+      ? never
+      : K
+      : never
     }[keyof T]
   >]: T[K]
 }>
 
 export type MembersToInclude<T> = {
   [K in keyof ObjectMembersOnly<T>]?:
-    | boolean
-    | (NonNullable<T[K]> extends Array<any>
-        ? FindOptions<NonNullable<T[K]>[number]>
-        : FindFirstOptions<NonNullable<T[K]>>)
+  | boolean
+  | (NonNullable<T[K]> extends Array<any>
+    ? FindOptions<NonNullable<T[K]>[number]>
+    : FindFirstOptions<NonNullable<T[K]>>)
 }
 
 export type RepositoryRelations<entityType> = {
   [K in keyof ObjectMembersOnly<entityType>]-?: NonNullable<
     entityType[K]
   > extends Array<infer R>
-    ? Repository<R>
-    : entityType[K] extends infer R
-    ? { findOne: (options?: FindOptionsBase<R>) => Promise<R> }
-    : never
+  ? Repository<R>
+  : entityType[K] extends infer R
+  ? { findOne: (options?: FindOptionsBase<R>) => Promise<R> }
+  : never
 }
 
 export type RepositoryRelationsForEntityBase<entityType> = {
   [K in keyof Omit<entityType, keyof EntityBase>]-?: NonNullable<
     entityType[K]
   > extends Array<infer R>
-    ? Repository<R>
-    : entityType[K] extends infer R
-    ? { findOne: (options?: FindOptionsBase<R>) => Promise<R> }
-    : never
+  ? Repository<R>
+  : entityType[K] extends infer R
+  ? { findOne: (options?: FindOptionsBase<R>) => Promise<R> }
+  : never
 }
 
 export declare type EntityIdFields<entityType> = {
@@ -819,32 +809,34 @@ export type ClassFieldDecorator<entityType, valueType> = (
   c?: any,
 ) => void
 
-/*p1 - processError in remult express
-- Should we merge (notFound,error,forbidden) into one method in `DataApiResponse` type?
-https://gitkraken.dev/link/dnNjb2RlOi8vZWFtb2Rpby5naXRsZW5zL2xpbmsvci9mMDgzMWU0OWIyODJkMDlkNTA0NTcxYjYwNmUzNTMwODQ3NGIwY2M2L2YvcHJvamVjdHMvY29yZS9zcmMvZGF0YS1hcGkudHM%2FdXJsPWh0dHBzJTNBJTJGJTJGZ2l0aHViLmNvbSUyRnJlbXVsdCUyRnJlbXVsdC5naXQ%3D?origin=gitlens
-- The api of the `processError` should recieve an `ErrorInfo` object and return an `ErrorInfo` object? or should it return something more in the line, 
-of httpStatus and errorBody. - currently the `serializeError` method is used to build the response
-https://gitkraken.dev/link/dnNjb2RlOi8vZWFtb2Rpby5naXRsZW5zL2xpbmsvci9mMDgzMWU0OWIyODJkMDlkNTA0NTcxYjYwNmUzNTMwODQ3NGIwY2M2L2YvcHJvamVjdHMvY29yZS9zcmMvZGF0YS1hcGkudHM%2FdXJsPWh0dHBzJTNBJTJGJTJGZ2l0aHViLmNvbSUyRnJlbXVsdCUyRnJlbXVsdC5naXQmbGluZXM9NDI1?origin=gitlens
-- I think there should be a way to throw a forbidden exception
-*/
 
-/*p1 - discuss using delete & put - with url query language for deleteMany and updateMany - 
-  - put & delete, similar to get
-  - add where to count, deleteMany,updateMany,
-  - prevent delete all and update all - must have meaningful where.
-    - try forcing this also in typescript
 
-  - protect against deleting of all rows by mistake
-  - https://github.com/remult/remult/issues/221#issuecomment-2016519746
 
-*/
+
+//p1 - `preprocessApiFindOptions`,  naming - allow find options preprocessor for api calls, to use for authorization
+//p1 - admin url1 - pocketbase use /_ for the admin //{allowed?:Allowed,url?:string}
+//p1 - Make async hooks gracefully handle non async hooks environment
+//p1 - implement generic sqlite support better-sqlite3/ bun sqlite
+//p1 - article auth.js with express
+//p1 - document offline support
+
+
+//y2 - should we validate relations
+
+
+
+//y1 - consider replacing all errors with error classes that extend the base Error class
+//y2 - should enforce integer - currently we probably round / truncate it
+
+/*y1 - talk about modules in init express with entities/controllers,initRequest,initApi
+ - support get with backend method, with url search params as the first parameter, & url as second parameter
+   - support returning redirect, and plain html (For sign in scenarios)
+
+ */
+
 
 //p1 - in this video I'll use remult to turn a frontend app to a fullstack app
-//y1 - getFields didn't work for kobi in the home component
 
-//p1 - add section to Fields doc, explaining field type in db
-//p1 - add section about union type
-//p1 - add section about value list field type
 
 /*y1 - Talk JYC - JYC - add some integrity checks on delete
   - soft delete
@@ -852,34 +844,9 @@ https://gitkraken.dev/link/dnNjb2RlOi8vZWFtb2Rpby5naXRsZW5zL2xpbmsvci9mMDgzMWU0O
 
 */
 
-/*y1 currency.ts:10 Uncaught TypeError: Currency_1 is not a constructor
-// - ValueListFieldType - the decorator gives an error in react vite project - see langulage yedidya
-// happens in target 2022, ts<5.1.6
-//typescript 5.1.6
-@ValueListFieldType()
-export class Currency {
-  constructor(
-    public id: number,
-    public caption: string,
-    public symbol: string
-  ) {}
-  static shekel = new Currency(1, 'Shekel', '₪');
-  static dollar = new Currency(2, 'Dollar', '$');
-  static euro = new Currency(3, 'Euro', '€');
-  static pound = new Currency(4, 'Pound', '£');
-  static yen = new Currency(5, 'Yen', '¥');
-}
 
-*/
-//y1 - allow api read to also support instance and filter. - problem with promise
-
-//y1 - admin url1 - pocketbase use /_ for the admin
 //y1 - consider sql expression gets a dbnames of it's own (that already has the "tableName" defined correctly) maybe also the filter translator
-/*y1 - talk about modules in init express with entities/controllers,initRequest,initApi
- - support get with backend method, with url search params as the first parameter, & url as second parameter
-   - support returning redirect, and plain html (For sign in scenarios)
 
- */
 //y1 - tried to upgrade vitest, nuxt tests are failing with loading uuid - sounds familiar?
 //y1 - I think that the tests you've setup don't cover next app router - I added to the setup, but not sure where else
 //y1 - talk about the parameter issue with backend methods
@@ -888,15 +855,13 @@ export class Currency {
 //y1 - main vs master
 //y2 - livequery for findfirst (@JY)
 
-/*y2 - 
+/*y2 -
 //y2 - allow api update only for new rows
   @Fields.string<Category>({
     allowApiUpdate: (c) => getEntityRef(c).isNew(),
   })
   Description = ""*/
 //y2 - get backend methods to work when specifying types for date, and entities as poco's
-//y2 - conside law-q db based on schema issue - I think that while running the dataProvider function, we should have a valid remult - maybe even have a valid remult, that will be valid until api is run
-//y2 - #239 - (@JY) add a way to get from fieldMetadata back to entity repo (like we have in fieldRef)
 //y2 - constraints (@JY)
 
 /*p2 remult admin
@@ -912,13 +877,13 @@ export class Currency {
  - remult-admin didn't show a update for a table with a uniqua that is numeric
 */
 //remult
-//p1 - better support union types (status, etc... so it'll work also in filter etc...)
+
 
 //p1 - when a tasks table exists in a different schema - we get many errors
 //p1 - live query with include
 //p1 - adjust angular tutorial starter kit for latest angular (as is in tutorial)
 
-//p2 - allow find options preprocessor for api calls, to use for authorization
+
 //p2 - when subscribe is forbidden - the query still runs after the renew process
 //p2 - 'update tasks set  where id = $1
 
@@ -928,7 +893,7 @@ export class Currency {
 //p2 - allowApiUpdate should be false for include in api false
 
 //docs
-//p2 - make sure that internal members do not appear in the documentation - try running it on the d.ts instead of the code itself.
+
 
 //------
 
@@ -936,23 +901,20 @@ export class Currency {
 
 //y2 - Backend methods are transactions, it's not intuitive and maybe should be optional / opt in
 //y2 - how to run a transaction as a user
-//p2 - enum column
 
-//y2 - message for invalid value
+
+
 //y2 - message for relation that is missing
 //y2 - consider multi tenancies
 
-//p2 - more column types
 
-//p2 - document validators
+
+
 //p2 - and validators to reference
 //y2 - discuss a default date formatter
 //y2 - add some api testing framework for user unit tests (will help with codesandbox based discussions)
 
 //[ ] V2 - what to do about for relations count?
 //[ ] V2 - condition? not to fetch if null etc....
-//[ ] V3 - all these fields will also appear in the where etc... in the typescript api - but we will not enforce them
 
-//y2 - consider if field types should include validation in them by default (string,number that it's not NaN etc...) and if so, what message?
-//y2 - should enforce integer - currently we probably round / truncate it
 //p1 - adjust react tutorial to esm

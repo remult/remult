@@ -283,7 +283,9 @@ describe('graphql', () => {
       }),
     ).toMatchInlineSnapshot(`
       {
-        "title": "aaa",
+        "where": {
+          "title": "aaa",
+        },
       }
     `)
   })
@@ -298,10 +300,12 @@ describe('graphql', () => {
     })
     expect(result).toMatchInlineSnapshot(`
       {
-        "title.in": [
-          "aaa",
-          "ccc",
-        ],
+        "where": {
+          "title.in": [
+            "aaa",
+            "ccc",
+          ],
+        },
       }
     `)
   })
@@ -1083,7 +1087,9 @@ describe('graphql', () => {
         entities: [Task, Category],
         removeComments: true,
       }),
-    ).toThrowErrorMatchingInlineSnapshot('"Entity \\"CategoryMore\\" that is used by the relation \\"categorymore\\" in \\"Category\\" was not found in the \'entities\' array."')
+    ).toThrowErrorMatchingInlineSnapshot(
+      '"Entity \\"CategoryMore\\" that is used by the relation \\"categorymore\\" in \\"Category\\" was not found in the \'entities\' array."',
+    )
   })
 
   it('test basics', async () => {

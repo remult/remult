@@ -20,6 +20,10 @@ logic before each HTTP call, such as adding authorization headers.
    ```
    
    
+   #### see:
+   If you want to add headers using angular httpClient, see: https://medium.com/angular-shots/shot-3-how-to-add-http-headers-to-every-request-in-angular-fab3d10edc26
+   
+   
    #### example:
    ```ts
    // Using fetch (default)

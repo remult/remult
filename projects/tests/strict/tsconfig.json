@@ -1,7 +1,9 @@
 {
   "compilerOptions": {
+    "rootDir": ".",
     "strict": true,
     "experimentalDecorators": true,
-    "noEmit": true
+    "noEmit": true,
+    "skipLibCheck": true
   }
 }

@@ -1,6 +1,7 @@
-import { Entity, EntityBase, Field, Fields } from '../../core'
+import { Entity, EntityBase, Field, Fields, ValueListFieldType } from '../../core'
+import { createData } from './createData.js'
 
-import { Language } from './RowProvider.spec'
+
 
 @Entity('categories')
 export class Categories extends EntityBase {
@@ -43,4 +44,29 @@ export class CompoundIdEntity extends EntityBase {
   b: number
   @Fields.integer()
   c: number
+}
+
+@ValueListFieldType({
+  getValues: () => [
+    Language.Hebrew,
+    Language.Russian,
+    new Language(20, 'אמהרית'),
+  ],
+})
+export class Language {
+  static Hebrew = new Language(0, 'עברית')
+  static Russian = new Language(10, 'רוסית')
+  constructor(
+    public id: number,
+    public caption: string,
+  ) { }
+}
+
+export async function insertFourRows() {
+  return createData(async (i) => {
+    await i(1, 'noam', 'x')
+    await i(4, 'yael', 'x')
+    await i(2, 'yoni', 'y')
+    await i(3, 'maayan', 'y')
+  })
 }

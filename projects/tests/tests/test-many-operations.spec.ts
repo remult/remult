@@ -5,6 +5,8 @@ import {
   InMemoryDataProvider,
   Remult,
   Repository,
+  type EntityFilter,
+  Filter,
 } from '../../core/index.js'
 import { MockRestDataProvider } from './testHelper.js'
 
@@ -60,6 +62,24 @@ describe('test rest many operations', () => {
     `)
     expect(await r.count()).toBe(0)
   })
+  it('test delete many without a filter shoud throw', async () => {
+    await expect(() => r.deleteMany({ where: {} })).rejects
+      .toThrowErrorMatchingInlineSnapshot(`
+      {
+        "httpStatusCode": 400,
+        "message": "deleteMany: requires a filter to protect against accidental delete/update of all rows",
+      }
+    `)
+  })
+  it('test update many without a filter shoud throw', async () => {
+    await expect(() => r.updateMany({ where: {} }, {})).rejects
+      .toThrowErrorMatchingInlineSnapshot(`
+      {
+        "httpStatusCode": 400,
+        "message": "updateMany: requires a filter to protect against accidental delete/update of all rows",
+      }
+    `)
+  })
   it('test delete many', async () => {
     await r.insert([
       { id: 1, name: 'a' },
@@ -67,7 +87,7 @@ describe('test rest many operations', () => {
       { id: 3, name: 'c' },
       { id: 4, name: 'd' },
     ])
-    expect(await r.deleteMany({ id: [1, 3, 4] })).toBe(3)
+    expect(await r.deleteMany({ where: { id: [1, 3, 4] } })).toBe(3)
     expect(await r.count()).toBe(1)
   })
   it('test update many', async () => {
@@ -77,7 +97,7 @@ describe('test rest many operations', () => {
       { id: 3, name: 'c' },
       { id: 4, name: 'd' },
     ])
-    expect(await r.updateMany({ id: [1, 3, 4] }, { name: 'z' })).toBe(3)
+    expect(await r.updateMany({ where: { id: [1, 3, 4] } }, { name: 'z' })).toBe(3)
     expect(await r.count({ name: 'z' })).toBe(3)
   })
 })
@@ -94,7 +114,7 @@ describe('test many operations with repo', () => {
       { id: 3, name: 'c' },
       { id: 4, name: 'd' },
     ])
-    expect(await r.deleteMany({ id: [1, 3, 4] })).toBe(3)
+    expect(await r.deleteMany({ where: { id: [1, 3, 4] } })).toBe(3)
     expect(await r.count()).toBe(1)
   })
   it('test update many', async () => {
@@ -105,8 +125,36 @@ describe('test many operations with repo', () => {
       { id: 4, name: 'd' },
     ])
     expect(
-      await r.updateMany({ id: [1, 3, 4] }, { name: 'z' }),
+      await r.updateMany({ where: { id: [1, 3, 4] } }, { name: 'z' }),
     ).toMatchInlineSnapshot('3')
     expect(await r.count({ name: 'z' })).toBe(3)
+  })
+  it('test delete many without a filter should throw', async () => {
+    await expect(() => r.deleteMany({ where: {} })).rejects
+      .toThrowErrorMatchingInlineSnapshot(`
+      {
+        "httpStatusCode": 400,
+        "message": "deleteMany: requires a filter to protect against accidental delete/update of all rows",
+      }
+    `)
+  })
+  it('test filter variations', async () => {
+    function test(filter: EntityFilter<e>, empty: boolean) {
+      expect(Filter.isFilterEmpty(filter)).toBe(empty)
+    }
+    test({ $or: [{ id: 1 }, { id: 2 }] }, false)
+    test({ $or: [{ id: 1 }, {}] }, true)
+    test({}, true)
+    test({ id: 1 }, false)
+    test({ id: [1, 2] }, false)
+  })
+  it('test update many without a filter shoud throw', async () => {
+    await expect(() => r.updateMany({ where: {} }, {})).rejects
+      .toThrowErrorMatchingInlineSnapshot(`
+      {
+        "httpStatusCode": 400,
+        "message": "updateMany: requires a filter to protect against accidental delete/update of all rows",
+      }
+    `)
   })
 })
