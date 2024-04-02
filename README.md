@@ -1,28 +1,9 @@
-<style>
-  .container {
-  display: flex;
-  align-items: center;
-  justify-content: center
-}
-
-img {
-  max-width: 100%;
-  max-height:100%;
-}
-
-.text {
-  font-size: 32px;
-  padding-left: 10px;
-  padding-bottom: 10px;
-}
-  </style>
-
 <div align="center">
-    <div class="container">
-      <div class="image">
+    <div style="display: flex;  align-items: center;  justify-content: center">
+      <div style="max-width: 100%; max-height:100%;">
         <img src="https://github.com/remult/remult/raw/master/docs/public/logo.png" width="80" height="80">
       </div>
-      <div class="text">Remult</div>
+      <div style="font-size: 32px; padding-left: 10px; padding-bottom: 10px;">Remult</div>
     </div>
 
   <p>Full-stack CRUD, simplified, with SSOT TypeScript entities</p>
