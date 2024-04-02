@@ -1,5 +1,11 @@
 import * as fs from 'fs'
-const exclude = ["repCache", "throwErrorIfFilterIsEmpty", "isFilterEmpty", "translateCustomWhere", "__applyToConsumer"]
+const exclude = [
+  'repCache',
+  'throwErrorIfFilterIsEmpty',
+  'isFilterEmpty',
+  'translateCustomWhere',
+  '__applyToConsumer',
+]
 
 var api: {
   children: member[]
@@ -15,7 +21,7 @@ var api: {
 
 class DocFile {
   s: string = ''
-  constructor(private fileName: string) { }
+  constructor(private fileName: string) {}
   addTitle(name: string) {
     this.s += '# ' + name + '\n'
   }
@@ -103,7 +109,7 @@ class DocFile {
           ...itemsWithComment,
           ...type.children.filter((x) => !itemsWithComment.includes(x)),
         ]
-      } catch { }
+      } catch {}
       if (type.name === 'Repository' && false)
         console.table(
           type.children.map((c) => ({
@@ -132,7 +138,7 @@ class DocFile {
           if (
             s.parameters &&
             indent ==
-            0 /* to prevent the parameters of load, in find options etc... */
+              0 /* to prevent the parameters of load, in find options etc... */
           ) {
             this.writeLine('', indent)
             this.writeLine('Arguments:', indent)
@@ -211,7 +217,8 @@ try {
     'SubscriptionChannel',
     'LiveQuery',
     'LiveQueryChangeInfo',
-
+    'FilterInfo',
+    'PreprocessFilterInfo',
     'migrate',
     'generateMigrations',
   ]) {
@@ -242,12 +249,12 @@ type Tag = {
 interface type {
   name: string
   type:
-  | 'union'
-  | 'reference'
-  | 'intrinsic'
-  | 'reflection'
-  | 'array'
-  | 'intersection'
+    | 'union'
+    | 'reference'
+    | 'intrinsic'
+    | 'reflection'
+    | 'array'
+    | 'intersection'
   types: type[]
   declaration?: member
 }

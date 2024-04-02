@@ -476,20 +476,65 @@ export interface EntityOptions<entityType = any> {
   allowApiInsert?: AllowedForInstance<entityType>
   /** sets  the `allowApiUpdate`, `allowApiDelete` and `allowApiInsert` properties in a single set */
   allowApiCrud?: Allowed
-  /** A filter that determines which rows can be queries using the api.
-   * @description
-   * Use apiPrefilter in cases where you to restrict data based on user profile
-   * @example
-   * apiPrefilter: { archive:false }
+  /**
+   * An optional filter that determines which rows can be queried using the API.
+   * This filter is applied to all CRUD operations to ensure that only authorized data is accessible.
+   *
+   * Use `apiPrefilter` to restrict data based on user profile or other conditions.
    *
    * @example
-   * apiPrefilter: ()=> remult.isAllowed("admin")?{}:{ archive:false }
-   * @see [EntityFilter](http://remult.dev/docs/entityFilter.html)
+   * // Only include non-archived items in API responses
+   * apiPrefilter: { archive: false }
    *
+   * @example
+   * // Allow admins to access all rows, but restrict non-admins to non-archived items
+   * apiPrefilter: () => remult.isAllowed("admin") ? {} : { archive: false }
+   *
+   * @see [EntityFilter](https://remult.dev/docs/access-control.html#filtering-accessible-rows)
    */
   apiPrefilter?:
     | EntityFilter<entityType>
     | (() => EntityFilter<entityType> | Promise<EntityFilter<entityType>>)
+  /**
+   * An optional function that allows for preprocessing or modifying the EntityFilter for a specific entity type
+   * before it is used in API CRUD operations. This function can be used to enforce additional access control
+   * rules or adjust the filter based on the current context or specific request.
+   *
+   * @template entityType The type of the entity being filtered.
+   * @param filter The initial EntityFilter for the entity type.
+   * @param info Additional information and utilities for preprocessing the filter.
+   * @returns The modified EntityFilter or a Promise that resolves to the modified EntityFilter.
+   *
+   * @example
+   * ```typescript
+   * @Entity<Task>("tasks", {
+   *   apiPreprocessFilter: async (filter, { getFilterInfo }) => {
+   *     // Ensure that users can only query tasks for specific customers
+   *     const info = await getFilterInfo();
+   *     if (!info.preciseValues.customerId) {
+   *       throw new ForbiddenError("You must specify a valid customerId filter");
+   *     }
+   *     return filter;
+   *   }
+   * })
+   * ```
+   */
+  apiPreprocessFilter?: (
+    filter: EntityFilter<entityType>,
+    info: PreprocessFilterInfo<entityType>,
+  ) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>
+  /**
+   * Similar to apiPreprocessFilter, but for backend operations.
+   *
+   * @template entityType The type of the entity being filtered.
+   * @param filter The initial EntityFilter for the entity type.
+   * @param info Additional information and utilities for preprocessing the filter.
+   * @returns The modified EntityFilter or a Promise that resolves to the modified EntityFilter.
+   */
+  backendPreprocessFilter?: (
+    filter: EntityFilter<entityType>,
+    info: PreprocessFilterInfo<entityType>,
+  ) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>
   /** A filter that will be used for all queries from this entity both from the API and from within the backend.
    * @example
    * backendPrefilter: { archive:false }
@@ -1057,6 +1102,32 @@ export declare type FieldValidator<entityType = any, valueType = any> = (
 export declare class Filter {
   private apply
   /**
+     * Retrieves information about a filter, including precise values for each property.
+     * @template entityType The type of the entity being filtered.
+     * @param metadata The metadata of the entity being filtered.
+     * @param filter The filter to analyze.
+     * @returns A promise that resolves to a FilterInfo object containing the filter information.
+     * @example
+     * const info = await Filter.getInfo(meta, {
+     *   status: { $ne: 'active' },
+     *   $or: [
+     *     { customerId: ["1", "2"] },
+     *     { customerId: "3" }
+     *   ]
+     * });
+     * console.log(info.preciseValues);
+     * // Output:
+     * // {
+     * //   "customerId": ["1", "2", "3"], // Precise values inferred from the filter
+     * //   "status": undefined,           // Cannot infer precise values for 'status'
+     * // }
+    
+     */
+  static getInfo<entityType>(
+    metadata: EntityMetadata<entityType>,
+    filter: EntityFilter<entityType>,
+  ): Promise<FilterInfo<entityType>>
+  /**
    * Creates a custom filter. Custom filters are evaluated on the backend, ensuring security and efficiency.
    * When the filter is used in the frontend, only its name is sent to the backend via the API,
    * where the filter gets translated and applied in a safe manner.
@@ -1226,6 +1297,28 @@ export interface FilterConsumer {
   custom(key: string, customItem: any): void
   databaseCustom(databaseCustom: any): void
 }
+export interface FilterInfo<entityType> {
+  /**
+   * A mapping of property names to arrays of precise values for those properties.
+   * @example
+   * const info = await Filter.getInfo(meta, {
+   *   status: { $ne: 'active' },
+   *   $or: [
+   *     { customerId: ["1", "2"] },
+   *     { customerId: "3" }
+   *   ]
+   * });
+   * console.log(info.preciseValues);
+   * // Output:
+   * // {
+   * //   "customerId": ["1", "2", "3"], // Precise values inferred from the filter
+   * //   "status": undefined,           // Cannot infer precise values for 'status'
+   * // }
+   */
+  preciseValues: {
+    [Properties in keyof entityType]?: entityType[Properties][]
+  }
+}
 export interface FindFirstOptions<entityType>
   extends FindOptionsBase<entityType>,
     FindFirstOptionsBase<entityType> {}
@@ -1269,6 +1362,10 @@ export interface FindOptionsBase<entityType> extends LoadOptions<entityType> {
    * await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
    */
   orderBy?: EntityOrderBy<entityType>
+}
+export declare class ForbiddenError extends Error {
+  constructor(message?: string)
+  isForbiddenError: true
 }
 export declare function getEntityRef<entityType>(
   entity: entityType,
@@ -1544,6 +1641,22 @@ export interface Paginator<entityType> {
   nextPage(): Promise<Paginator<entityType>>
   /** the count of the total items in the `query`'s result */
   count(): Promise<number>
+}
+export interface PreprocessFilterInfo<entityType> {
+  /**
+   * Metadata of the entity being filtered.
+   */
+  metadata: EntityMetadata<entityType>
+  /**
+     * Retrieves filter information for a given filter or the current filter being preprocessed if no filter is provided.
+     * @param filter Optional filter to analyze. If not provided, the current filter being preprocessed is used.
+     * @returns A promise that resolves to a FilterInfo object containing the filter information.
+     
+    * {@Link FilterInfo }
+     */
+  getFilterInfo(
+    filter?: EntityFilter<entityType>,
+  ): Promise<FilterInfo<entityType>>
 }
 export declare class ProgressListener {
   private res

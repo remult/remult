@@ -1027,11 +1027,19 @@ export class RepositoryImplementation<entityType>
         $and: [z, this._defaultFindOptions?.where],
       } as EntityFilter<entityType>
     }
-    if (this.metadata.options.backendPrefilter && !this._dataProvider.isProxy) {
-      let z = where
-      where = {
-        $and: [z, await Filter.resolve(this.metadata.options.backendPrefilter)],
-      } as EntityFilter<entityType>
+    if (!this._dataProvider.isProxy) {
+      if (this.metadata.options.backendPreprocessFilter) {
+        where = await this.metadata.options.backendPreprocessFilter(where, {
+          metadata: this.metadata,
+          getFilterInfo: (filter) => Filter.getInfo(this.metadata, filter || where)
+        })
+      }
+      if (this.metadata.options.backendPrefilter) {
+        let z = where
+        where = {
+          $and: [z, await Filter.resolve(this.metadata.options.backendPrefilter)],
+        } as EntityFilter<entityType>
+      }
     }
     let r = await Filter.fromEntityFilter(this.metadata, where)
     if (r && !this._dataProvider.isProxy) {

@@ -161,8 +161,8 @@ export type FieldsRef<entityType> = FieldsRefBase<entityType> & {
   > extends {
     id?: number | string
   }
-  ? IdFieldRef<entityType, entityType[Properties]>
-  : FieldRef<entityType, entityType[Properties]>
+    ? IdFieldRef<entityType, entityType[Properties]>
+    : FieldRef<entityType, entityType[Properties]>
 }
 
 export type FieldsRefForEntityBase<entityType> = FieldsRefBase<entityType> & {
@@ -171,8 +171,8 @@ export type FieldsRefForEntityBase<entityType> = FieldsRefBase<entityType> & {
   > extends {
     id?: number | string
   }
-  ? IdFieldRef<entityType, entityType[Properties]>
-  : FieldRef<entityType, entityType[Properties]>
+    ? IdFieldRef<entityType, entityType[Properties]>
+    : FieldRef<entityType, entityType[Properties]>
 }
 
 export type SortSegments<entityType> = {
@@ -286,8 +286,8 @@ export interface EntityMetadata<entityType = any> {
 
 export declare type MembersOnly<T> = {
   [K in keyof Omit<T, keyof EntityBase> as T[K] extends Function
-  ? never
-  : K]: T[K]
+    ? never
+    : K]: T[K]
 }
 //Pick<
 //   T,
@@ -541,21 +541,21 @@ export declare type EntityOrderBy<entityType> = {
  */
 export declare type EntityFilter<entityType> = {
   [Properties in keyof Partial<MembersOnly<entityType>>]?:
-  | (Partial<entityType>[Properties] extends number | Date | undefined
-    ? ComparisonValueFilter<Partial<entityType>[Properties]>
-    : Partial<entityType>[Properties] extends string | undefined
-    ?
-    | Partial<entityType>[Properties]
-    | (ContainsStringValueFilter &
-      ComparisonValueFilter<Partial<entityType>[Properties]>)
-    : Partial<entityType>[Properties] extends boolean | undefined
-    ? ValueFilter<boolean>
-    : Partial<entityType>[Properties] extends
-    | { id?: string | number }
-    | undefined
-    ? IdFilter<Partial<entityType>[Properties]>
-    : ValueFilter<Partial<entityType>[Properties]>)
-  | ContainsStringValueFilter
+    | (Partial<entityType>[Properties] extends number | Date | undefined
+        ? ComparisonValueFilter<Partial<entityType>[Properties]>
+        : Partial<entityType>[Properties] extends string | undefined
+        ?
+            | Partial<entityType>[Properties]
+            | (ContainsStringValueFilter &
+                ComparisonValueFilter<Partial<entityType>[Properties]>)
+        : Partial<entityType>[Properties] extends boolean | undefined
+        ? ValueFilter<boolean>
+        : Partial<entityType>[Properties] extends
+            | { id?: string | number }
+            | undefined
+        ? IdFilter<Partial<entityType>[Properties]>
+        : ValueFilter<Partial<entityType>[Properties]>)
+    | ContainsStringValueFilter
 } & {
   $or?: EntityFilter<entityType>[]
   $and?: EntityFilter<entityType>[]
@@ -565,11 +565,11 @@ export type ValueFilter<valueType> =
   | valueType
   | valueType[]
   | {
-    $ne?: valueType | valueType[]
-    '!='?: valueType | valueType[]
-    $in?: valueType[]
-    $nin?: valueType[]
-  }
+      $ne?: valueType | valueType[]
+      '!='?: valueType | valueType[]
+      $in?: valueType[]
+      $nin?: valueType[]
+    }
 export type ComparisonValueFilter<valueType> = ValueFilter<valueType> & {
   $gt?: valueType
   '>'?: valueType
@@ -587,8 +587,8 @@ export interface ContainsStringValueFilter {
 export type IdFilter<valueType> =
   | ValueFilter<valueType>
   | {
-    $id: ValueFilter<valueType extends { id?: number } ? number : string>
-  }
+      $id: ValueFilter<valueType extends { id?: number } ? number : string>
+    }
 
 export interface LoadOptions<entityType> {
   /**
@@ -650,7 +650,7 @@ export interface FindOptionsBase<entityType> extends LoadOptions<entityType> {
 }
 export interface FindFirstOptions<entityType>
   extends FindOptionsBase<entityType>,
-  FindFirstOptionsBase<entityType> { }
+    FindFirstOptionsBase<entityType> {}
 export interface FindFirstOptionsBase<entityType>
   extends LoadOptions<entityType> {
   /** determines if to cache the result, and return the results from cache.
@@ -747,40 +747,40 @@ export type ObjectMembersOnly<T> = MembersOnly<{
     T,
     {
       [K in keyof T]: T[K] extends object | undefined | null
-      ? T[K] extends Date | undefined | null
-      ? never
-      : K
-      : never
+        ? T[K] extends Date | undefined | null
+          ? never
+          : K
+        : never
     }[keyof T]
   >]: T[K]
 }>
 
 export type MembersToInclude<T> = {
   [K in keyof ObjectMembersOnly<T>]?:
-  | boolean
-  | (NonNullable<T[K]> extends Array<any>
-    ? FindOptions<NonNullable<T[K]>[number]>
-    : FindFirstOptions<NonNullable<T[K]>>)
+    | boolean
+    | (NonNullable<T[K]> extends Array<any>
+        ? FindOptions<NonNullable<T[K]>[number]>
+        : FindFirstOptions<NonNullable<T[K]>>)
 }
 
 export type RepositoryRelations<entityType> = {
   [K in keyof ObjectMembersOnly<entityType>]-?: NonNullable<
     entityType[K]
   > extends Array<infer R>
-  ? Repository<R>
-  : entityType[K] extends infer R
-  ? { findOne: (options?: FindOptionsBase<R>) => Promise<R> }
-  : never
+    ? Repository<R>
+    : entityType[K] extends infer R
+    ? { findOne: (options?: FindOptionsBase<R>) => Promise<R> }
+    : never
 }
 
 export type RepositoryRelationsForEntityBase<entityType> = {
   [K in keyof Omit<entityType, keyof EntityBase>]-?: NonNullable<
     entityType[K]
   > extends Array<infer R>
-  ? Repository<R>
-  : entityType[K] extends infer R
-  ? { findOne: (options?: FindOptionsBase<R>) => Promise<R> }
-  : never
+    ? Repository<R>
+    : entityType[K] extends infer R
+    ? { findOne: (options?: FindOptionsBase<R>) => Promise<R> }
+    : never
 }
 
 export declare type EntityIdFields<entityType> = {
@@ -809,20 +809,18 @@ export type ClassFieldDecorator<entityType, valueType> = (
   c?: any,
 ) => void
 
+//p1 - It's good that there is no migrations added. (I also don't like automatic deletion), and it can be done manually if needed.
+//p1 - Maybe migrations-snapshots.json should have fields deleted to have a one to one representation of the db?
 
+//y1 - discuss the typing issue with relations in this case vs the ValueListFieldTypes
+//y1 - JYC log the migration request
+//y1 - JYC health check approach
 
-
-
-
-
-
-//p1 - implement generic sqlite support better-sqlite3/ bun sqlite
-//p1 - `preprocessApiFindOptions`,  naming - allow find options preprocessor for api calls, to use for authorization
 //p1 - admin url1 - pocketbase use /_ for the admin //{allowed?:Allowed,url?:string}
 //p1 - document new sqlite providers
 //p1 - article auth.js with express
 //p1 - document offline support
-//p1 - fix getting started article
+//p1 - fix getting started article with using your own database connection
 
 //y2 - should we validate relations
 
@@ -837,16 +835,13 @@ export type ClassFieldDecorator<entityType, valueType> = (
 
  */
 
-
 //p1 - in this video I'll use remult to turn a frontend app to a fullstack app
-
 
 /*y1 - Talk JYC - JYC - add some integrity checks on delete
   - soft delete
   - delete restrict (implicit, or user selected - and if so, how) (delete & update of id)
 
 */
-
 
 //y1 - consider sql expression gets a dbnames of it's own (that already has the "tableName" defined correctly) maybe also the filter translator
 
@@ -881,11 +876,9 @@ export type ClassFieldDecorator<entityType, valueType> = (
 */
 //remult
 
-
 //p1 - when a tasks table exists in a different schema - we get many errors
 //p1 - live query with include
 //p1 - adjust angular tutorial starter kit for latest angular (as is in tutorial)
-
 
 //p2 - when subscribe is forbidden - the query still runs after the renew process
 //p2 - 'update tasks set  where id = $1
@@ -897,7 +890,6 @@ export type ClassFieldDecorator<entityType, valueType> = (
 
 //docs
 
-
 //------
 
 //y2 - from the crm-demo(https://crm-demo.up.railway.app/deals), after editing a deal: - _updateEntityBasedOnApi
@@ -905,13 +897,8 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //y2 - Backend methods are transactions, it's not intuitive and maybe should be optional / opt in
 //y2 - how to run a transaction as a user
 
-
-
 //y2 - message for relation that is missing
 //y2 - consider multi tenancies
-
-
-
 
 //p2 - and validators to reference
 //y2 - discuss a default date formatter

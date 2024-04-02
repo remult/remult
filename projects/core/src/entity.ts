@@ -8,8 +8,10 @@ import type {
   EntityOrderBy,
   EntityRef,
   FieldsMetadata,
+  FindOptions,
   LifecycleEvent,
 } from './remult3/remult3.js'
+import type { FilterInfo } from './filter/filter-interfaces.js'
 
 export interface EntityOptions<entityType = any> {
   /**A human readable name for the entity */
@@ -37,20 +39,67 @@ export interface EntityOptions<entityType = any> {
   /** sets  the `allowApiUpdate`, `allowApiDelete` and `allowApiInsert` properties in a single set */
   allowApiCrud?: Allowed
 
-  /** A filter that determines which rows can be queries using the api.
-   * @description
-   * Use apiPrefilter in cases where you to restrict data based on user profile
-   * @example
-   * apiPrefilter: { archive:false }
+  /**
+   * An optional filter that determines which rows can be queried using the API.
+   * This filter is applied to all CRUD operations to ensure that only authorized data is accessible.
+   *
+   * Use `apiPrefilter` to restrict data based on user profile or other conditions.
    *
    * @example
-   * apiPrefilter: ()=> remult.isAllowed("admin")?{}:{ archive:false }
-   * @see [EntityFilter](http://remult.dev/docs/entityFilter.html)
+   * // Only include non-archived items in API responses
+   * apiPrefilter: { archive: false }
    *
+   * @example
+   * // Allow admins to access all rows, but restrict non-admins to non-archived items
+   * apiPrefilter: () => remult.isAllowed("admin") ? {} : { archive: false }
+   *
+   * @see [EntityFilter](https://remult.dev/docs/access-control.html#filtering-accessible-rows)
    */
   apiPrefilter?:
     | EntityFilter<entityType>
     | (() => EntityFilter<entityType> | Promise<EntityFilter<entityType>>)
+
+  /**
+   * An optional function that allows for preprocessing or modifying the EntityFilter for a specific entity type
+   * before it is used in API CRUD operations. This function can be used to enforce additional access control
+   * rules or adjust the filter based on the current context or specific request.
+   *
+   * @template entityType The type of the entity being filtered.
+   * @param filter The initial EntityFilter for the entity type.
+   * @param info Additional information and utilities for preprocessing the filter.
+   * @returns The modified EntityFilter or a Promise that resolves to the modified EntityFilter.
+   *
+   * @example
+   * ```typescript
+   * @Entity<Task>("tasks", {
+   *   apiPreprocessFilter: async (filter, { getFilterInfo }) => {
+   *     // Ensure that users can only query tasks for specific customers
+   *     const info = await getFilterInfo();
+   *     if (!info.preciseValues.customerId) {
+   *       throw new ForbiddenError("You must specify a valid customerId filter");
+   *     }
+   *     return filter;
+   *   }
+   * })
+   * ```
+   */
+  apiPreprocessFilter?: (
+    filter: EntityFilter<entityType>,
+    info: PreprocessFilterInfo<entityType>,
+  ) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>
+
+  /**
+   * Similar to apiPreprocessFilter, but for backend operations.
+   *
+   * @template entityType The type of the entity being filtered.
+   * @param filter The initial EntityFilter for the entity type.
+   * @param info Additional information and utilities for preprocessing the filter.
+   * @returns The modified EntityFilter or a Promise that resolves to the modified EntityFilter.
+   */
+  backendPreprocessFilter?: (
+    filter: EntityFilter<entityType>,
+    info: PreprocessFilterInfo<entityType>,
+  ) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>
 
   /** A filter that will be used for all queries from this entity both from the API and from within the backend.
    * @example
@@ -160,4 +209,26 @@ export interface EntityOptions<entityType = any> {
     | ((entity: FieldsMetadata<entityType>) => FieldMetadata | FieldMetadata[])
   entityRefInit?: (ref: EntityRef<entityType>, row: entityType) => void
   apiRequireId?: Allowed
+}
+
+/**
+ * Provides additional information and utilities for preprocessing filters in API and backend operations.
+ * @template entityType The type of the entity being filtered.
+ */
+export interface PreprocessFilterInfo<entityType> {
+  /**
+   * Metadata of the entity being filtered.
+   */
+  metadata: EntityMetadata<entityType>
+
+  /**
+   * Retrieves filter information for a given filter or the current filter being preprocessed if no filter is provided.
+   * @param filter Optional filter to analyze. If not provided, the current filter being preprocessed is used.
+   * @returns A promise that resolves to a FilterInfo object containing the filter information.
+   
+  * {@Link FilterInfo }
+   */
+  getFilterInfo(
+    filter?: EntityFilter<entityType>,
+  ): Promise<FilterInfo<entityType>>
 }

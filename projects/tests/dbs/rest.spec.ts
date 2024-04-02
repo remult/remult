@@ -1,7 +1,7 @@
 import { expect, it, beforeAll, beforeEach, describe } from 'vitest'
 import { createPostgresConnection } from '../../core/postgres'
 import type { DataProvider, SqlDatabase } from '../../core'
-import { Fields, InMemoryDataProvider, Remult, getEntityRef } from '../../core'
+import { Fields, Filter, ForbiddenError, InMemoryDataProvider, Remult, getEntityRef } from '../../core'
 import type { ClassType } from '../../core/classType'
 import { allDbTests } from './shared-tests'
 import { MockRestDataProvider } from '../tests/testHelper'
@@ -110,4 +110,62 @@ describe('Rest', () => {
       ]
     `)
   })
+  it("test forbidden on saving", async () => {
+    const task = createEntity('tasks', {
+      id: Fields.integer(),
+      title: Fields.string(),
+      done: Fields.boolean(),
+    }, {
+      allowApiCrud: true,
+      saving: () => { throw new ForbiddenError('field title is not allowed to update') }
+    })
+
+    await expect(repo(task).insert({ id: 1, title: 'world' })).rejects.toThrowErrorMatchingInlineSnapshot(`
+      {
+        "message": "field title is not allowed to update",
+      }
+    `)
+  })
+  it("test forbidden on apiPreprocessFilter", async () => {
+    const task = createEntity('tasks', {
+      id: Fields.integer(),
+      title: Fields.string(),
+      done: Fields.boolean(),
+    }, {
+      allowApiCrud: true,
+      apiPreprocessFilter: async (filter, { getFilterInfo }) => {
+        const info = await getFilterInfo()
+        if (!info.preciseValues.done) {
+          throw new ForbiddenError("You must specify a done filter");
+        }
+        return filter;
+      }
+    })
+    expect(await repo(task).find({ where: { done: true } })).toMatchInlineSnapshot('[]')
+    expect(await repoServer(task).find({})).toMatchInlineSnapshot('[]')
+    await expect(() => repo(task).find({})).rejects.toThrowErrorMatchingInlineSnapshot(`
+      {
+        "message": "didnt expect forbidden:",
+      }
+    `)
+  })
+  it("test forbidden on apiPreprocessFilter", async () => {
+    const task = createEntity('tasks', {
+      id: Fields.integer(),
+      title: Fields.string(),
+      done: Fields.boolean(),
+    }, {
+      allowApiCrud: true,
+      backendPreprocessFilter: async (filter, { getFilterInfo }) => {
+        const info = await getFilterInfo()
+        if (!info.preciseValues.done) {
+          throw new ForbiddenError("You must specify a done filter");
+        }
+        return filter;
+      }
+    })
+    expect(await repoServer(task).find({ where: { done: true } })).toMatchInlineSnapshot('[]')
+    await expect(() => repoServer(task).find({})).rejects.toThrowErrorMatchingInlineSnapshot('"You must specify a done filter"')
+  })
 })
+

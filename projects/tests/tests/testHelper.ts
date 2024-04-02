@@ -154,7 +154,7 @@ function urlToReq(url: string) {
 }
 
 export class MockRestDataProvider implements DataProvider {
-  constructor(private remult: Remult) {}
+  constructor(private remult: Remult) { }
   getEntityDataProvider(metadata: EntityMetadata<any>): EntityDataProvider {
     let dataApi = new DataApi(
       this.remult.repo(metadata.entityType),
@@ -182,7 +182,7 @@ export function createMockHttpDataProvider(
 
       let r = new TestDataApiResponse()
       let result
-      r.deleted = () => {}
+      r.deleted = () => { }
       r.success = (data) => {
         result = data
       }
@@ -219,6 +219,9 @@ export function createMockHttpDataProvider(
       }
       r.success = (data) => {
         result = data
+      }
+      r.forbidden = message => {
+        throw Error(message || "forbidden");
       }
       try {
         await dataApi.httpPost(r, urlToReq(url), data, async () => ({}))

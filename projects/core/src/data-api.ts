@@ -279,25 +279,33 @@ export class DataApi<T = any> {
       else where.push(this.repository.metadata.options.apiPrefilter)
     }
     if (request) {
-      where.push(
-        buildFilterFromRequestParameters(this.repository.metadata, {
-          get: (key) => {
-            let result = request.get(key)
-            if (
-              key.startsWith(customUrlToken) &&
-              result &&
-              typeof result === 'string'
-            )
-              return JSON.parse(result)
-            return result
+      let f = buildFilterFromRequestParameters(this.repository.metadata, {
+        get: (key) => {
+          let result = body?.where?.[key]
+          if (result !== undefined)
+            return result;
+
+          result = request.get(key)
+          if (
+            key.startsWith(customUrlToken) &&
+            result &&
+            typeof result === 'string'
+          )
+            return JSON.parse(result)
+          return result
+        },
+      })
+      if (this.repository.metadata.options.apiPreprocessFilter) {
+        f = await this.repository.metadata.options.apiPreprocessFilter(f, {
+          metadata: this.repository.metadata,
+          getFilterInfo: async (filter?: EntityFilter<any>) => {
+            return Filter.getInfo(this.repository.metadata, filter || f)
           },
-        }),
-      )
+        })
+      }
+      where.push(f)
     }
-    if (body?.where)
-      where.push(
-        Filter.entityFilterFromJson(this.repository.metadata, body.where),
-      )
+
     return { $and: where }
   }
 
@@ -428,7 +436,7 @@ export class DataApi<T = any> {
         response.created(result)
       } else response.created(await insert(body))
     } catch (err) {
-      if (err.isForbiddenError) response.forbidden()
+      if (err.isForbiddenError) response.forbidden(err.message)
       else response.error(err, this.repository.metadata)
     }
   }
@@ -444,7 +452,7 @@ export interface DataApiResponse {
     entity: EntityMetadata | undefined,
     statusCode?: number | undefined,
   ): void
-  forbidden(): void
+  forbidden(message?: string): void
   progress(progress: number): void
 }
 

@@ -155,7 +155,7 @@ describe('test paged foreach ', () => {
     expect(p.hasNextPage).toBe(false)
   })
   it('paginate2', async () => {
-    testRestDb(async ({ remult }) => {
+    await testRestDb(async ({ remult }) => {
       const c = remult.repo(Categories)
       await c.insert([
         { id: 1, categoryName: 'aoam' },

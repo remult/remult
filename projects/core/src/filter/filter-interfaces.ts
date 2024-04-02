@@ -53,6 +53,37 @@ export class Filter {
 
     return false
   }
+
+  /**
+   * Retrieves information about a filter, including precise values for each property.
+   * @template entityType The type of the entity being filtered.
+   * @param metadata The metadata of the entity being filtered.
+   * @param filter The filter to analyze.
+   * @returns A promise that resolves to a FilterInfo object containing the filter information.
+   * @example
+   * const info = await Filter.getInfo(meta, {
+   *   status: { $ne: 'active' },
+   *   $or: [
+   *     { customerId: ["1", "2"] },
+   *     { customerId: "3" }
+   *   ]
+   * });
+   * console.log(info.preciseValues);
+   * // Output:
+   * // {
+   * //   "customerId": ["1", "2", "3"], // Precise values inferred from the filter
+   * //   "status": undefined,           // Cannot infer precise values for 'status'
+   * // }
+  
+   */
+  static async getInfo<entityType>(
+    metadata: EntityMetadata<entityType>,
+    filter: EntityFilter<entityType>,
+  ): Promise<FilterInfo<entityType>> {
+    const result = new preciseValuesCollector()
+    await Filter.fromEntityFilter(metadata, filter).__applyToConsumer(result)
+    return result
+  }
   /**
    * Creates a custom filter. Custom filters are evaluated on the backend, ensuring security and efficiency.
    * When the filter is used in the frontend, only its name is sent to the backend via the API,
@@ -683,7 +714,20 @@ export function buildFilterFromRequestParameters(
     get: (key: string) => any
   },
 ): EntityFilter<any> {
-  let where: EntityFilter<any>[] = []
+  let where: EntityFilter<any> = {}
+
+  function addAnd(what: EntityFilter<any>) {
+    if (!where.$and) {
+      where.$and = []
+    }
+    where.$and.push(what)
+  }
+  function addToFilterObject(key: string, val: any) {
+    if (where[key] === undefined) where[key] = val
+    else {
+      addAnd({ [key]: val })
+    }
+  }
 
   ;[...entity.fields].forEach((col) => {
     function addFilter(
@@ -708,7 +752,7 @@ export function buildFilterFromRequestParameters(
           }
           let f = theFilter(theVal)
           if (f !== undefined) {
-            where.push({ [col.key]: f })
+            addToFilterObject(col.key, f)
           }
         }
         if (!jsonArray && val instanceof Array) {
@@ -740,10 +784,10 @@ export function buildFilterFromRequestParameters(
         case 'y':
         case 'true':
         case 'yes':
-          where.push({ [col.key]: null })
+          addToFilterObject(col.key, null)
           break
         default:
-          where.push({ [col.key]: { $ne: null } })
+          addToFilterObject(col.key, { $ne: null })
           break
       }
     }
@@ -761,11 +805,17 @@ export function buildFilterFromRequestParameters(
         }),
       ),
     }))
-    if (or.length == 1) where.push(or[0])
-    else
-      where.push({
+    if (or.length == 1) {
+      if (!where.$or) {
+        where.$or = or[0].$or
+      } else {
+        where.$or.push(or[0].$or)
+      }
+    } else {
+      addAnd({
         $and: or,
       })
+    }
   }
 
   for (const key in entity.entityType) {
@@ -779,7 +829,7 @@ export function buildFilterFromRequestParameters(
       if (custom !== undefined) {
         const addItem = (item: any) => {
           if (item[customArrayToken] != undefined) item = item[customArrayToken]
-          where.push({ [customUrlToken + key]: item })
+          addToFilterObject(customUrlToken + key, item)
         }
         if (Array.isArray(custom)) {
           custom.forEach((item) => addItem(item))
@@ -787,8 +837,7 @@ export function buildFilterFromRequestParameters(
       }
     }
   }
-  if (where.length == 1) return where[0]
-  return { $and: where }
+  return where
 
   function separateArrayFromInnerArray(val: any) {
     if (!Array.isArray(val)) return [val]
@@ -929,5 +978,113 @@ export function __updateEntityBasedOnWhere<T>(
   }
 }
 
-// toRaw of default remult threw and exception
-// toRaw didn't respect
+/**
+ * Represents information about a filter, including precise values for each property.
+ * @template entityType The type of the entity being filtered.
+ */
+export interface FilterInfo<entityType> {
+  /**
+   * A mapping of property names to arrays of precise values for those properties.
+   * @example
+   * const info = await Filter.getInfo(meta, {
+   *   status: { $ne: 'active' },
+   *   $or: [
+   *     { customerId: ["1", "2"] },
+   *     { customerId: "3" }
+   *   ]
+   * });
+   * console.log(info.preciseValues);
+   * // Output:
+   * // {
+   * //   "customerId": ["1", "2", "3"], // Precise values inferred from the filter
+   * //   "status": undefined,           // Cannot infer precise values for 'status'
+   * // }
+   */
+  preciseValues: { [Properties in keyof entityType]?: entityType[Properties][] }
+}
+
+class preciseValuesCollector<entityType>
+  implements FilterConsumer, FilterInfo<entityType>
+{
+  bad = new Set<string>()
+
+  preciseValues: {
+    [Properties in keyof entityType]?: entityType[Properties][]
+  } = {}
+
+  ok(col: string, ...val: any[]) {
+    if (this.bad.has(col)) return
+    let x = this.preciseValues[col]
+    if (!x) {
+      this.preciseValues[col] = [...val]
+    } else {
+      x.push(...val.filter((y) => !x.includes(y)))
+    }
+  }
+  notOk(col: string) {
+    if (this.bad.has(col)) return
+    this.bad.add(col)
+    this.preciseValues[col] = undefined
+  }
+  or(orElements: Filter[]) {
+    const result = orElements.map((or) => {
+      let x = new preciseValuesCollector<entityType>()
+      or.__applyToConsumer(x)
+      return x
+    })
+    for (const or of result) {
+      for (const key in or.preciseValues) {
+        if (Object.prototype.hasOwnProperty.call(or.preciseValues, key)) {
+          const element = or.preciseValues[key]
+          if (element) this.ok(key, ...element)
+        }
+      }
+      for (const key of or.bad) {
+        this.notOk(key)
+      }
+    }
+    for (const key in this.preciseValues) {
+      if (Object.prototype.hasOwnProperty.call(this.preciseValues, key)) {
+        for (const r of result) {
+          const element = r.preciseValues[key]
+          if (!element) this.notOk(key)
+        }
+      }
+    }
+  }
+  isEqualTo(col: FieldMetadata<any, any>, val: any): void {
+    this.ok(col.key, val)
+  }
+  isDifferentFrom(col: FieldMetadata<any, any>, val: any): void {
+    this.notOk(col.key)
+  }
+  isNull(col: FieldMetadata<any, any>): void {
+    this.ok(col.key, null)
+  }
+  isNotNull(col: FieldMetadata<any, any>): void {
+    this.notOk(col.key)
+  }
+  isGreaterOrEqualTo(col: FieldMetadata<any, any>, val: any): void {
+    this.notOk(col.key)
+  }
+  isGreaterThan(col: FieldMetadata<any, any>, val: any): void {
+    this.notOk(col.key)
+  }
+  isLessOrEqualTo(col: FieldMetadata<any, any>, val: any): void {
+    this.notOk(col.key)
+  }
+  isLessThan(col: FieldMetadata<any, any>, val: any): void {
+    this.notOk(col.key)
+  }
+  containsCaseInsensitive(col: FieldMetadata<any, any>, val: any): void {
+    this.notOk(col.key)
+  }
+  notContainsCaseInsensitive(col: FieldMetadata<any, any>, val: any): void {
+    this.notOk(col.key)
+  }
+  isIn(col: FieldMetadata<any, any>, val: any[]): void {
+    this.ok(col.key, ...val)
+  }
+  custom(key: string, customItem: any): void {}
+  databaseCustom(databaseCustom: any): void {}
+}

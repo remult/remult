@@ -1,5 +1,13 @@
 import type { EntityFilter, FindOptions, Repository } from '../../core'
-import { Entity, EntityBase, Fields, SqlDatabase, remult } from '../../core'
+import {
+  Entity,
+  EntityBase,
+  Field,
+  Fields,
+  SqlDatabase,
+  remult,
+  repo,
+} from '../../core'
 import { RestDataProvider } from '../../core/src//data-providers/rest-data-provider'
 import {
   Filter,
@@ -21,7 +29,8 @@ import { TestDataApiResponse } from './TestDataApiResponse'
 import { entityForrawFilter } from './entityForCustomFilter'
 import { testRestDb } from './testHelper'
 import { createEntity } from './dynamic-classes'
-import { insertFourRows } from './entities-for-tests.js'
+import { Language, insertFourRows } from './entities-for-tests.js'
+import { Relations } from '../../core/index.js'
 
 describe('test where stuff', () => {
   let repo: Repository<CategoriesForTesting>
@@ -52,6 +61,42 @@ describe('test where stuff', () => {
     const json = await Filter.fromEntityFilter(repo.metadata, {
       $and: [{ id: 1 }, { id: 2 }],
     }).toJson()
+
+    expect(
+      await repo.count(Filter.entityFilterFromJson(repo.metadata, json)),
+    ).toBe(0)
+  })
+  it('test or and And values', async () => {
+    const json = await Filter.fromEntityFilter(repo.metadata, {
+      $and: [
+        {
+          $or: [{ categoryName: '1' }, { categoryName: '1' }],
+        },
+        {
+          $or: [{ id: 1 }, { id: 2 }],
+        },
+      ],
+    }).toJson()
+    expect(json).toMatchInlineSnapshot(`
+      {
+        "OR": [
+          {
+            "categoryName": "1",
+          },
+          {
+            "categoryName": "1",
+          },
+          [
+            {
+              "id": 1,
+            },
+            {
+              "id": 2,
+            },
+          ],
+        ],
+      }
+    `)
 
     expect(
       await repo.count(Filter.entityFilterFromJson(repo.metadata, json)),
@@ -89,21 +134,15 @@ describe('test where stuff', () => {
     expect(Filter.entityFilterFromJson(repo.metadata, json))
       .toMatchInlineSnapshot(`
         {
-          "$and": [
+          "$or": [
             {
-              "id": 2,
+              "id": 1,
             },
             {
-              "$or": [
-                {
-                  "id": 1,
-                },
-                {
-                  "id": 3,
-                },
-              ],
+              "id": 3,
             },
           ],
+          "id": 2,
         }
       `)
   })
@@ -460,7 +499,7 @@ function x<
   CaseReducers extends SliceCaseReducers<{
     test?: WritableDraft<entityForrawFilter>[]
   }>,
->(what: CaseReducers) { }
+>(what: CaseReducers) {}
 //reproduce typescript bug with recursive types
 x<{
   addComment: (
@@ -615,5 +654,112 @@ describe('missing fields are added in array column', async () => {
     } finally {
       remult.dataProvider = db
     }
+  })
+})
+
+describe('Filter.getPreciseFilterValuesForKey', () => {
+  @Entity('category')
+  class Category {
+    @Fields.string()
+    id = ''
+    @Fields.string()
+    name = ''
+  }
+  @Entity('orders')
+  class order {
+    @Fields.string()
+    id = ''
+    @Fields.string()
+    customerId: string = ''
+    @Fields.string()
+    status: string = ''
+    @Field(() => Language)
+    language = Language.Hebrew
+    @Relations.toOne(() => order)
+    parentOrder?: order
+    @Relations.toOne(() => Category)
+    category?: Category
+  }
+  const meta = repo(order).metadata
+  it('Should work with value list field type', async () => {
+    const info = await Filter.getInfo(meta, {
+      language: Language.Russian,
+      parentOrder: { $id: '123' },
+    })
+
+    expect(info.preciseValues.language).toEqual([Language.Russian])
+  })
+  it('should work with relation 1', async () => {
+    const info = await Filter.getInfo(meta, { parentOrder: { $id: '123' } })
+    expect(info.preciseValues.parentOrder).toEqual(['123'])
+  })
+  it('should work with relation 2', async () => {
+    const info = await Filter.getInfo(meta, { category: { $id: '123' } })
+    expect(info.preciseValues.category).toEqual(['123'])
+  })
+
+  it('should return an array of values for a filter with multiple fields, including the target keys', async () => {
+    const info = await Filter.getInfo(meta, {
+      customerId: '123',
+      status: 'active',
+    })
+
+    expect(info.preciseValues.customerId).toEqual(['123'])
+    expect(info.preciseValues.status).toEqual(['active'])
+  })
+
+  it('should return undefined for a filter with multiple fields, where one of the target keys has a non-equality operator', async () => {
+    const info = await Filter.getInfo(meta, {
+      customerId: { $gt: '123' },
+      status: 'active',
+    })
+    expect(info.preciseValues.customerId).toBeUndefined()
+    expect(info.preciseValues.status).toEqual(['active'])
+  })
+
+  it('should return an array of values for an $or filter with multiple fields, including the target keys', async () => {
+    const info = await Filter.getInfo(meta, {
+      $or: [
+        { customerId: '123', status: 'active' },
+        { customerId: '456', status: 'inactive' },
+      ],
+    })
+    expect(info.preciseValues.customerId).toEqual(['123', '456'])
+    expect(info.preciseValues.status).toEqual(['active', 'inactive'])
+  })
+
+  it('should return undefined for an $or filter with multiple fields, where one path does not include one of the target keys', async () => {
+    const info = await Filter.getInfo(meta, {
+      $or: [{ customerId: '123', status: 'active' }, { customerId: '456' }],
+    })
+    expect(info.preciseValues.customerId).toEqual(['123', '456'])
+    expect(info.preciseValues.status).toBeUndefined()
+  })
+
+  it('should return undefined for an $or filter with multiple fields, where one path has a non-equality operator for one of the target keys', async () => {
+    const info = await Filter.getInfo(meta, {
+      $or: [
+        { customerId: '123', status: 'active' },
+        { customerId: { $gt: '200' }, status: 'inactive' },
+      ],
+    })
+    expect(info.preciseValues.customerId).toBeUndefined()
+    expect(info.preciseValues.status).toEqual(['active', 'inactive'])
+  })
+  it('doc', async () => {
+    const info = await Filter.getInfo(meta, {
+      status: { $ne: 'active' },
+      $or: [{ customerId: ['1', '2'] }, { customerId: '3' }],
+    })
+    expect(info.preciseValues).toMatchInlineSnapshot(`
+      {
+        "customerId": [
+          "1",
+          "2",
+          "3",
+        ],
+        "status": undefined,
+      }
+    `)
   })
 })

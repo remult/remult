@@ -60,20 +60,59 @@ To limit the rows a user has access to, use the `apiPrefilter` option:
 
 The `apiPrefilter` adds a filter to all CRUD API requests, ensuring that only authorized data is accessible through the API.
 
-However, it's important to note that this filter does not affect backend queries, such as those executed through backend methods or non-Remult routes.
+### Preprocessing Filters for API Requests
+
+For more complex scenarios, you can use `apiPreprocessFilter` to dynamically modify the filter based on the specific request and additional filter information:
+
+```ts
+@Entity<Task>("tasks", {
+  apiPreprocessFilter: async (filter, {getFilterInfo}) => {
+    // Ensure that users can only query tasks for specific customers
+    const info = await getFilterInfo();
+    if (!info.preciseValues.customerId) {
+      throw new ForbiddenError("You must specify a valid customerId filter");
+    }
+    return filter;
+  }
+})
+```
+
+In this example, `apiPreprocessFilter` uses the `getFilterInfo` method to ensure that users must specify a valid `customerId` filter when querying tasks, allowing for more granular control over the data that is accessible through the API.
+
+**Note:** The `preciseValues` property in the `FilterInfo` object includes the actual values that are used in the filter. For example, in the code sample above, if the `customerId` filter specifies the values `'1'`, `'2'`, and `'3'`, then `info.preciseValues.customerId` will be an array containing these values. This allows you to check and enforce specific filter criteria in your preprocessing logic.
+
+This added note explains the significance of the `preciseValues` property and how it includes the actual values used in the filter, providing an example for clarity.
+
+### Warning: API Filters Do Not Affect Backend Queries
+
+It's important to note that `apiPrefilter` and `apiPreprocessFilter` only apply to API requests. They do not affect backend queries, such as those executed through backend methods or non-Remult routes.
 
 For instance, in a sign-in scenario, a backend method might need to check all user records to verify a user's existence without exposing all user data through the API. Once authenticated, the user should only have access to their own record for updates.
 
-To apply similar filtering logic to backend queries, you can use the `backendPrefilter` option. This ensures that even backend operations adhere to the specified access control rules.
+### Backend Filters for Consistent Access Control
+
+To apply similar filtering logic to backend queries, you can use `backendPrefilter` and `backendPreprocessFilter`:
 
 ```ts
 @Entity<Task>("tasks", {
   backendPrefilter: () => {
-    if (remult.isAllowed("admin")) return {} // Admins can access all rows
-    return { owner: remult.user!.id } // Non-admins can only access their own rows
+    // Admins can access all rows
+    if (remult.isAllowed("admin")) return {}
+    // Non-admins can only access rows where they are the owner
+    return { owner: remult.user!.id }
   },
+  backendPreprocessFilter: async (filter, {getFilterInfo}) => {
+    // Apply additional filtering logic for backend queries
+    const info = await getFilterInfo(filter);
+    if (!info.preciseValues.owner) {
+      throw new ForbiddenError("You must specify a valid owner filter");
+    }
+    return filter;
+  }
 })
 ```
+
+In this example, `backendPrefilter` and `backendPreprocessFilter` ensure that non-admin users can only access their own tasks in backend queries, providing consistent access control across both API and backend operations.
 
 ## Field-Level Authorization
 

@@ -74,7 +74,7 @@ export {
 export { IdEntity } from './src/remult3/IdEntity.js'
 
 export { describeClass } from './src/remult3/DecoratorReplacer.js'
-export { EntityOptions } from './src/entity.js'
+export { EntityOptions, PreprocessFilterInfo } from './src/entity.js'
 export {
   DataProvider,
   EntityDataProvider,
@@ -122,6 +122,7 @@ export {
   BackendMethodOptions,
   BackendMethod,
   ProgressListener,
+  ForbiddenError,
 } from './src/server-action.js'
 
 export {
@@ -144,6 +145,7 @@ export {
   Filter,
   FilterConsumer,
   customFilterInfo,
+  FilterInfo,
 } from './src/filter/filter-interfaces.js'
 export { UrlBuilder } from './urlBuilder.js'
 export {
