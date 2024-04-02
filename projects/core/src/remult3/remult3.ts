@@ -811,6 +811,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 
 //p1 - It's good that there is no migrations added. (I also don't like automatic deletion), and it can be done manually if needed.
 //p1 - Maybe migrations-snapshots.json should have fields deleted to have a one to one representation of the db?
+//p1 - I needed to modify the changes Field of changeLog entity to @Fields.json() to be nvarchar(max) too. Why is @Fields.object() only nvarchar(255) ? Or is it default size and can be adjusted?
 
 //y1 - discuss the typing issue with relations in this case vs the ValueListFieldTypes
 //y1 - JYC log the migration request
