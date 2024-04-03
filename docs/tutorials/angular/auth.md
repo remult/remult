@@ -332,10 +332,10 @@ From a user experience perspective it only makes sense that users that can't add
 
 Let's reuse the same definitions on the Frontend.
 
-Modify the contents of auth.component.html to only display the form and delete buttons if these operations are allowed based on the entity's metadata:
+Modify the contents of todo.component.html to only display the form and delete buttons if these operations are allowed based on the entity's metadata:
 
 ```html{5,22}
-<!-- src/app/auth/auth.component.html -->
+<!-- src/app/todo/todo.component.html -->
 
 <h1>todos</h1>
 <main>
