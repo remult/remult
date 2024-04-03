@@ -28,7 +28,7 @@
     "tsx": "^3.12.3",
     "typescript": "^5.3.3",
     "vanilla-jsoneditor": "^0.21.2",
-    "vite": "^5.0.12",
+    "vite": "^5.0.13",
     "vite-plugin-singlefile": "^0.13.5",
     "vite3-plugin-express": "^0.1.3"
   },
