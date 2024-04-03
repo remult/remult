@@ -1,8 +1,10 @@
 // consider replacing with https://www.npmjs.com/package/ts-morph
-import ts from 'typescript'
-import * as fs from 'fs'
+
+import type ts from 'typescript'
 
 export async function updateMigrationsFile(filePath: string, steps: string[]) {
+  const ts = await import('typescript')
+  const fs = await import('fs')
   let maxStep = -1
 
   function buildSteps() {

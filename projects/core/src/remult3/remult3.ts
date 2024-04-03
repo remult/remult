@@ -814,9 +814,9 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //p1 - I needed to modify the changes Field of changeLog entity to @Fields.json() to be nvarchar(max) too. Why is @Fields.object() only nvarchar(255) ? Or is it default size and can be adjusted?
 //p1 - Filter.toJson should be public
 //p1 - improve type augmentation doc with specific of the file and with the export trick
-//p1 - JY build issue
+//y1 - JY build issue
 //p1 - JY issue with the generate migration
-
+//y1 - migration default folder should be source/migrations (also docs?)
 //y1 - discuss the typing issue with relations in this case vs the ValueListFieldTypes
 //y1 - JYC log the migration request
 //y1 - JYC health check approach
