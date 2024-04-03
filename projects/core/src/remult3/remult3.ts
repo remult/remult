@@ -296,7 +296,11 @@ export declare type MembersOnly<T> = {
 export declare type idType<entityType> = entityType extends {
   id?: infer U
 }
-  ? U
+  ? U extends string
+    ? string
+    : U extends number
+    ? number
+    : string | number
   : string | number
 /**used to perform CRUD operations on an `entityType` */
 export interface Repository<entityType> {
