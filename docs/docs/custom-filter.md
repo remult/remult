@@ -288,6 +288,16 @@ Order By "id"
 
 In this SQL query, the `Customer` table is aliased as `"c"`, and this alias is used throughout the query to ensure consistency with the entity definitions and to handle complex join scenarios effectively.
 
+### SQL-Based Custom Filters: Unleashing the Power of Composability
+
+The greatest advantage of using SQL-based custom filters lies in their composability and the ability to handle complex situations. By breaking down filtering logic into smaller, atomic custom filters, developers can compose these filters to create more sophisticated and nuanced filtering criteria. This modular approach not only enhances the readability and maintainability of the code but also allows for greater flexibility in constructing complex queries.
+
+For instance, consider a scenario where you need to filter orders based on multiple criteria, such as status, creation year, customer location, and order value. By creating separate custom filters for each of these criteria, you can easily combine them to form a comprehensive filtering solution. This composability ensures that your filtering logic can adapt to various requirements without becoming convoluted or difficult to manage.
+
+Furthermore, the ability to handle complex situations is a significant advantage of SQL-based custom filters. By leveraging the raw power of SQL, you can perform advanced operations such as subqueries, joins, and aggregate functions directly within your filters. This opens up a wide range of possibilities for data analysis and manipulation, enabling you to tackle complex filtering scenarios with ease.
+
+In summary, the composability of SQL-based custom filters, coupled with their ability to handle complex situations, makes them an invaluable tool for developers seeking to create flexible, efficient, and powerful data filtering solutions in their web applications.
+
 ### Using Raw Filters with Different Data Providers
 
 Custom filters with raw filters are not limited to SQL databases. You can also use raw filters with other data providers, such as Knex or an in-memory JSON data provider. This flexibility allows you to leverage the power of raw filters in various contexts, depending on your application's needs.
