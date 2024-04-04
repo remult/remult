@@ -2423,8 +2423,13 @@ export function ValueListFieldType<valueType extends ValueListItem = any>(
       (o) => {
         ;(o.valueConverter = ValueListInfo.get(type)),
           (o.displayValue = (item, val) => val?.caption)
-        o.validate = (entity, ref) =>
-          Validators.in(ValueListInfo.get(type).getValues())(entity, ref)
+        o.validate = (entity, ref) => {
+          const values = ValueListInfo.get(type).getValues()
+          if (ref.value && !values.find((v) => v === ref.value)) {
+            ref.value = values.find((v) => v.id === ref.value.id) || ref.value
+          }
+          return Validators.in(values)(entity, ref)
+        }
       },
       ...options,
     )(type, context)

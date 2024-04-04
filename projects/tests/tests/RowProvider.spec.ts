@@ -38,8 +38,6 @@ import { createData } from './createData'
 import { decorateColumnSettings } from '../../core/src/remult3/RepositoryImplementation'
 import { insertFourRows, Language } from './entities-for-tests.js'
 
-
-
 describe('grid filter stuff', () => {
   it('filter with contains', async () => {
     let x = new FilterConsumerBridgeToSqlRequest(
@@ -109,7 +107,7 @@ describe('Closed List  column', () => {
     expect(e._.toApiJson().l).toBe(10)
     e.l = {
       id: 99,
-      caption: 'bla'
+      caption: 'bla',
     }
     await expect(() => e.save()).rejects.toThrowErrorMatchingInlineSnapshot(`
       {
@@ -119,6 +117,15 @@ describe('Closed List  column', () => {
         },
       }
     `)
+  })
+  it('test with validation', async () => {
+    let c = new Remult().repo(entityWithValueList, new InMemoryDataProvider())
+    let e = c.create()
+
+    e.l = {
+      ...Language.Russian,
+    }
+    expect((await e.save()).l).toBe(Language.Russian)
   })
   it('test with entity and data defined on type', async () => {
     let c = new Remult().repo(entityWithValueList, new InMemoryDataProvider())
@@ -151,7 +158,7 @@ class valueList {
   constructor(
     public id?: string,
     public caption?: string,
-  ) { }
+  ) {}
 }
 
 @Entity('entity with value list')
@@ -371,7 +378,7 @@ describe('test row provider', () => {
     try {
       await c._.save()
       throw 'Shouldnt have reached this'
-    } catch (err) { }
+    } catch (err) {}
     expect(c.categoryName).toBe('bla bla')
   })
   it('update should fail nicely', async () => {
@@ -418,9 +425,9 @@ describe('test row provider', () => {
 })
 
 @Entity('typeA', { dbName: 'dbnameA' })
-class typeA extends EntityBase { }
+class typeA extends EntityBase {}
 @Entity('typeB')
-class typeB extends typeA { }
+class typeB extends typeA {}
 describe('decorator inheritance', () => {
   it('entity extends', async () => {
     let c = new Remult()
@@ -624,9 +631,9 @@ it('test http provider for remult', async () => {
     get: async (url) => {
       return { count: 7 }
     },
-    delete: async () => { },
-    put: async () => { },
-    post: async () => { },
+    delete: async () => {},
+    put: async () => {},
+    post: async () => {},
   })
   // expect(await toPromise(Promise.resolve(7))).toBe(7);
   expect(await remult.repo(TestCategories1).count()).toBe(7)
@@ -678,7 +685,7 @@ export class myDp extends ArrayEntityDataProvider {
 }
 
 class mockColumnDefs implements FieldMetadata {
-  constructor(public dbName: string) { }
+  constructor(public dbName: string) {}
   apiUpdateAllowed(item: any): boolean {
     throw new Error('Method not implemented.')
   }
