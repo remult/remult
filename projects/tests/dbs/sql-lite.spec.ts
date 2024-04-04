@@ -10,8 +10,6 @@ describe('Sql Lite', () => {
       connection: {
         filename: ':memory:',
       },
-
-      debug: true,
     }),
     ({ getDb }) => {
       it('test ddl', async () => {

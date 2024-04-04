@@ -9,109 +9,153 @@ tags:
   - RemultContext
   - context
 ---
-# Custom options
-There are many use cases where you want to add your own options to the `FieldOptions` or the `EntityOptions` and have them available in that Entity's metadata.
 
-You can do that using [Typescript Module Augmentation](https://www.typescriptlang.org/docs/handbook/declaration-merging.html#module-augmentation)
+# Extensibility
 
-To demo that, let's say that we want to have a custom `placeholderText` options to be set in the Field decorator, and later used in our UI.
+[Module Augmentation](https://www.typescriptlang.org/docs/handbook/declaration-merging.html#module-augmentation) in TypeScript allows you to extend existing types with custom properties or methods. This enhances the functionality of third-party libraries like `remult` without altering their source code, enabling seamless integration of custom features while maintaining type safety.
 
-Follow these Steps:
-1. In a typescript file that is visible throughout your project add the following code:
+In Remult, you can use TypeScript's module augmentation to enhance your application with custom features. Here are some examples:
+
+1. **Add more fields to the User object:** Extend the `UserInfo` interface to include additional fields like `email` and `phone`.
+2. **Add custom options/metadata to fields and entities:** Extend the `FieldOptions` or `EntityOptions` interfaces to include custom properties such as `placeholderText` or `helpText`.
+3. **Add fields/methods to the `remult.context` object:** Extend the `RemultContext` interface to include additional properties or methods that can be accessed throughout your code.
+
+## Setting Up the types.d.ts File for Custom Type Extensions
+
+To set up the `types.d.ts` file for custom type extensions in Remult:
+
+1. **Create a TypeScript Declaration File:** Add a file named `types.d.ts` in the `src` folder of your project. This file will be used to declare custom type extensions, such as additional user info fields.
+
    ```ts
+   // src/types.d.ts
+   export {}
+
    declare module 'remult' {
-       export interface FieldOptions<entityType, valueType> {
-           placeholderText?: string
-       }
-   }
-   ```
-   This will add the optional `placeholderText` property to the `FieldOptions` interface
-2. In your entity, set the `placeholderText` value.
-   ```ts{7}
-   import { Entity, Fields } from "remult";
-   @Entity("tasks", { allowApiCrud: true })
-   export class Task {
-       @Fields.uuid()
-       id!: string;
-       @Fields.string({
-         placeholderText:'Please enter a task title'
-       })
-       title = '';
-       @Fields.boolean()
-       completed = false;
-   }
-   ```
-3. Use that property in your UI
-   ```html
-   <input placeholder={taskRepo.metadata.fields.title.options.placeholderText}/>
-   ```
-
-### Augmenting `UserInfo` interface
-If you want to have more information in `remult.user` you can augment the `UserInfo` interface
-```ts
-declare module 'remult' {
-    export interface UserInfo {
-      phone:string,
-      email:string
-    }
-}
-```
-
-
-Then later in the code, you can use it just like any other `UserInfo` property
-```ts
-console.log(remult.user.phone);
-```
-
-# Augmenting remult's `context` property
-
-You can augment remult's context property in a similar way:
-```ts
-declare module 'remult' {
-    export interface RemultContext {
-      // anything you want
-    }
-}
-```
-
-One use case for this, is to include information from the request, and use that information in an entity or a backend method.
-
-Here's an example:
-1. Add a custom property `origin` to `RemultContext`
-   ```ts
-   declare module 'remult' {
-     export interface RemultContext {
-        origin?: string
+     interface UserInfo {
+       phone: string // [!code highlight]
+       email: string // [!code highlight]
      }
-   }  
-   ```
-2. Set the `origin` property in the `initRequest` method in the `api.ts` file.
-   ```ts
-   export const api = remultExpress({
-     initRequest: async (_, req) => {
-         remult.context.origin = req.headers.origin;
-     },
-     entities: [Task],
-     //...
-   ```
-3. Use it anywhere in the code:
-   ```ts
-   @BackendMethod({ allowed: Roles.admin })
-   static async doSomethingImportant() {
-      console.log(remult.context.origin);
    }
    ```
-   or
-   ```ts
-   @Entity<Task>("tasks", {
-      saving:task=>{
-            task.lastUpdateDate = new Date();
-            task.lastUpdateUser = remult.user?.name;
-            task.lastUpdateOrigin = remult.context.origin;
-      },
-      //...
+
+   The `export {}` is required to indicate that this file is a module, as per the [Vue.js documentation on augmenting global properties](https://vuejs.org/guide/typescript/options-api.html#augmenting-global-properties).
+
+2. **Include the Declaration File in tsconfig:** Make sure that the `types.d.ts` file is included in the `include` section of your `tsconfig.json` file. If you have a separate `tsconfig` for the server, ensure that it's also added there.
+
+   ```json
+   // tsconfig.server.json
+   {
+     "compilerOptions": {
+       //...
+     },
+     "include": ["src/server/**/*", "src/shared/**/*", "src/types.d.ts"] // [!code highlight]
+   }
    ```
-   
 
+3. **Utilize the Custom Fields in Your Code:** Once you've defined custom fields in the `types.d.ts` file and ensured they're included in your `tsconfig.json`, you can start using them throughout your application. For instance, if you've added `phone` and `email` to the `UserInfo` interface, you can access these properties in your code as follows:
 
-For more info see the [Augmenting Global Properties](https://vuejs.org/guide/typescript/options-api.html#augmenting-global-properties) article in `vue.js` docs.
+   ```ts
+   // Accessing custom user info fields
+   console.log(remult.user.phone)
+   console.log(remult.user.email)
+   ```
+
+   This enables you to seamlessly integrate the new fields into your application's logic and user interface.
+
+## Enhancing Field and Entity Definitions with Custom Options
+
+One of the key motivations for adding custom options to `FieldOptions` or `EntityOptions` is to maintain consistency and centralize the definition of entities and fields in your application. By keeping these definitions close to the entity or field, you ensure a single source of truth for your application's data model. This approach enhances maintainability and readability, as all relevant information and metadata about an entity or field are located in one place. Additionally, it allows for easier integration with UI components, as custom options like `placeholderText` can be directly accessed and used in your frontend code.
+
+For adding custom options to `FieldOptions` or `EntityOptions`, such as `placeholderText`:
+
+1. **Extend FieldOptions:** In your `types.d.ts` file, extend the `FieldOptions` interface to include your custom options. For example:
+
+   ```ts
+   declare module 'remult' {
+     interface FieldOptions<entityType, valueType> {
+       placeholderText?: string // [!code highlight]
+     }
+   }
+
+   export {}
+   ```
+
+2. **Set Custom Option:** Specify the `placeholderText` in your entity field options:
+
+   ```ts
+   import { Entity, Fields } from 'remult'
+
+   @Entity('tasks', { allowApiCrud: true })
+   export class Task {
+     @Fields.uuid()
+     id!: string
+
+     @Fields.string({
+       placeholderText: 'Please enter a task title', // [!code highlight]
+     })
+     title = ''
+
+     @Fields.boolean()
+     completed = false
+   }
+   ```
+
+3. **Use in UI:** Access the custom option in your UI components:
+
+   ```html{2}
+   <input
+     placeholder="{taskRepo.fields.title.options.placeholderText}"
+   />
+   ```
+
+By following these steps, you can extend `FieldOptions` with custom options that can be utilized throughout your project.
+
+### Extending Remult's `context` Property for Request-Specific Information
+
+Augmenting Remult's `context` property is particularly useful because it allows you to store and access request-specific information throughout your code. This can be especially handy for including data from the request and utilizing it in entities or backend methods.
+
+For example, you can add a custom property `origin` to the `RemultContext` interface:
+
+```ts
+declare module 'remult' {
+  export interface RemultContext {
+    origin?: string // [!code highlight]
+  }
+}
+```
+
+Then, set the `origin` property in the `initRequest` option in the `api.ts` file:
+
+```ts
+export const api = remultExpress({
+  initRequest: async (_, req) => {
+    remult.context.origin = req.headers.origin // [!code highlight]
+  },
+  entities: [Task],
+  //...
+})
+```
+
+You can now use the `origin` property anywhere in your code, for example:
+
+```ts
+@BackendMethod({ allowed: Roles.admin })
+static async doSomethingImportant() {
+  console.log(remult.context.origin); // [!code highlight]
+}
+```
+
+or in an entity's saving event:
+
+```ts
+@Entity<Task>("tasks", {
+  saving: task => {
+    task.lastUpdateDate = new Date();
+    task.lastUpdateUser = remult.user?.name;
+    task.lastUpdateOrigin = remult.context.origin; // [!code highlight]
+  },
+  //...
+});
+```
+
+By leveraging module augmentation, you can tailor Remult to your specific needs, adding custom options and extending interfaces to suit your application's requirements.

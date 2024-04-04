@@ -815,13 +815,8 @@ export type ClassFieldDecorator<entityType, valueType> = (
 
 //y1 - JY suggestion of having generate as part of the ensure schema - not sure
 //y1 - currently for string fields we default for 255 in knex (which is their default) why not just use text (varchar max) - and only use exact length when one is provided?
-//p1 - I needed to modify the changes Field of changeLog entity to @Fields.json() to be nvarchar(max) too. Why is @Fields.object() only nvarchar(255) ? Or is it default size and can be adjusted?
 //p1 - improve type augmentation doc with specific of the file and with the export trick - fix code samples to init request error
-
 //p1 - document custom filter without sql
-
-//y1!! - JY build issue
-
 //p1 - admin url1 - pocketbase use /_ for the admin //{allowed?:Allowed,url?:string}
 //p1 - document new sqlite providers
 //p1 - article auth.js with express
