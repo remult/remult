@@ -1,11 +1,13 @@
 import {
   Entity,
   EntityBase,
+  FieldOptions,
+  FieldValidator,
   Fields,
   FieldsRef,
   Validators,
   repo,
-} from '../../../dist/remult'
+} from 'remult'
 
 class E extends EntityBase {
   a = ''
@@ -34,4 +36,9 @@ export class Task {
     validate: Validators.unique('Has to be Unique'),
   })
   nom3?: string
+}
+
+function dateOnly<entityType = any>(o?: FieldOptions<entityType, Date>) {
+  const validate: FieldValidator<entityType, Date>[] = []
+  validate.push(Validators.required)
 }
