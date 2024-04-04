@@ -1334,7 +1334,9 @@ export interface FilterInfo<entityType> {
    * // }
    */
   preciseValues: {
-    [Properties in keyof entityType]?: entityType[Properties][]
+    [Properties in keyof MembersOnly<entityType>]?: Partial<
+      entityType[Properties]
+    >[]
   }
 }
 export interface FindFirstOptions<entityType>
