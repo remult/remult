@@ -1,6 +1,34 @@
 # Filter
 The `Filter` class is a helper class that focuses on filter-related concerns. It provides methods
 for creating and applying filters in queries.
+## getInfo
+Retrieves information about a filter, including precise values for each property.
+   
+   
+   #### returns:
+   A promise that resolves to a FilterInfo object containing the filter information.
+   
+   
+   #### example:
+   ```ts
+   const info = await Filter.getInfo(meta, {
+     status: { $ne: 'active' },
+     $or: [
+       { customerId: ["1", "2"] },
+       { customerId: "3" }
+     ]
+   });
+   console.log(info.preciseValues);
+   // Output:
+   // {
+   //   "customerId": ["1", "2", "3"], // Precise values inferred from the filter
+   //   "status": undefined,           // Cannot infer precise values for 'status'
+   // }
+   ```
+
+Arguments:
+* **metadata** - The metadata of the entity being filtered.
+* **filter** - The filter to analyze.
 ## createCustom
 Creates a custom filter. Custom filters are evaluated on the backend, ensuring security and efficiency.
 When the filter is used in the frontend, only its name is sent to the backend via the API,

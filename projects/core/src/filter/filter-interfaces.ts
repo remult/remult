@@ -85,6 +85,27 @@ export class Filter {
     return result
   }
   /**
+   * Retrieves information about a filter, including precise values for each property.
+   * @template entityType The type of the entity being filtered.
+   * @param metadata The metadata of the entity being filtered.
+   * @param filter The filter to analyze.
+   * @returns A promise that resolves to a FilterInfo object containing the filter information.
+   * @example
+   * const info = await where.getInfo();
+   * console.log(info.preciseValues);
+   * // Output:
+   * // {
+   * //   "customerId": ["1", "2", "3"], // Precise values inferred from the filter
+   * //   "status": undefined,           // Cannot infer precise values for 'status'
+   * // }
+  
+   */
+  async getInfo<entityType>(): Promise<FilterInfo<entityType>> {
+    const result = new preciseValuesCollector()
+    await this.__applyToConsumer(result)
+    return result
+  }
+  /**
    * Creates a custom filter. Custom filters are evaluated on the backend, ensuring security and efficiency.
    * When the filter is used in the frontend, only its name is sent to the backend via the API,
    * where the filter gets translated and applied in a safe manner.
@@ -376,7 +397,7 @@ export class Filter {
     if (typeof filter === 'function') return await filter()
     return filter
   }
-  //@internal
+
   toJson() {
     let r = new FilterSerializer()
     this.__applyToConsumer(r)

@@ -3466,7 +3466,7 @@ export declare function generateMigrations(options: {
   snapshotFile?: string
   migrationsTSFile?: string
   endConnection?: boolean
-}): Promise<void>
+}): Promise<boolean>
 //[ ] DataProvider from TBD is not exported
 export declare function migrate(options: {
   migrations: Migrations
@@ -3476,6 +3476,11 @@ export declare function migrate(options: {
     | (() => Promise<DataProvider | undefined>)
   migrationsTable?: string
   endConnection?: boolean
+  beforeMigration?: (info: { index: number }) => void | Promise<void>
+  afterMigration?: (info: {
+    index: number
+    duration: number
+  }) => void | Promise<void>
 }): Promise<void>
 export type Migrations = Record<
   number,

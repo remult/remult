@@ -809,24 +809,30 @@ export type ClassFieldDecorator<entityType, valueType> = (
   c?: any,
 ) => void
 
-//p1 - It's good that there is no migrations added. (I also don't like automatic deletion), and it can be done manually if needed.
-//p1 - Maybe migrations-snapshots.json should have fields deleted to have a one to one representation of the db?
+//p1 DOC DONE - It's good that there is no migrations added. (I also don't like automatic deletion), and it can be done manually if needed.
+//p1 DOC DONE - Maybe migrations-snapshots.json should have fields deleted to have a one to one representation of the db?
+//p1 DOC DONE - @JYT - should I write to console on generate migrations, what are the changes that I've found / the migration step id / not changes found
+//p1 DOC DONE - re-discuss endConnection - default false - explain in docs
+//p1 DONE - JYC log the migration request - beforeMigration. afterMigration
+//p1 DONE - migration default folder should be source/migrations (also docs?)
+//p1 DONE - @JYT run all migrations in a single transaction? or transaction per step?
+
+//p1 Done - Filter.toJson should be public
 //p1 - I needed to modify the changes Field of changeLog entity to @Fields.json() to be nvarchar(max) too. Why is @Fields.object() only nvarchar(255) ? Or is it default size and can be adjusted?
-//p1 - Filter.toJson should be public
-//p1 - improve type augmentation doc with specific of the file and with the export trick
-//y1 - JY build issue
-//p1 - JY issue with the generate migration
-//y1 - migration default folder should be source/migrations (also docs?)
-//y1 - discuss the typing issue with relations in this case vs the ValueListFieldTypes
-//y1 - JYC log the migration request
-//y1 - JYC health check approach
+//p1 - improve type augmentation doc with specific of the file and with the export trick - fix code samples to init reqiest error
+
+//p1 - document custom filter without sql
+
+//y1!! - JY build issue
+//p1 - discuss the typing issue with relations in this case vs the ValueListFieldTypes - return partial with id values.
 
 //p1 - admin url1 - pocketbase use /_ for the admin //{allowed?:Allowed,url?:string}
 //p1 - document new sqlite providers
 //p1 - article auth.js with express
 //p1 - document offline support
 //p1 - fix getting started article with using your own database connection
-
+//p1 - create foreign key constraints in user code
+//p1 - https://github.com/vuejs/vitepress/issues/3154#issuecomment-1784612839
 //y2 - should we validate relations
 
 //y1 - dependency of live query tables

@@ -9,20 +9,16 @@ import { migrate, generateMigrations } from '../../../core/migrations/index.js'
       entities,
       dataProvider,
       migrationsFolder: 'projects/play-with-migrations/src/server/migrations',
+      endConnection: false,
     })
   } else {
     const m = migrate({
       migrations,
       dataProvider,
+      endConnection: false,
     })
   }
   //
   // await dataProvider.knex.destroy()
   console.log('Done')
 })()
-
-/*Yoni Goldberg
-- Each migration sql as separate steps (alter etc....)
-- Migration code file
-- what is the motivation for recording in the db each migration that was executed?
-*/

@@ -3,7 +3,9 @@
 import type ts from 'typescript'
 
 export async function updateMigrationsFile(filePath: string, steps: string[]) {
-  const ts = await import('typescript')
+  let ts = await import('typescript')
+  //@ts-ignore
+  if (ts.default) ts = ts.default
   const fs = await import('fs')
   let maxStep = -1
 

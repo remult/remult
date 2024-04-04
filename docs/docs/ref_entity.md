@@ -71,27 +71,65 @@ Determines if new entries for this entity can be posted through the api.
 ## allowApiCrud
 sets  the `allowApiUpdate`, `allowApiDelete` and `allowApiInsert` properties in a single set
 ## apiPrefilter
-A filter that determines which rows can be queries using the api.
-   
-   
-   #### description:
-   Use apiPrefilter in cases where you to restrict data based on user profile
+An optional filter that determines which rows can be queried using the API.
+This filter is applied to all CRUD operations to ensure that only authorized data is accessible.
+
+Use `apiPrefilter` to restrict data based on user profile or other conditions.
    
    
    #### example:
    ```ts
-   apiPrefilter: { archive:false }
+   // Only include non-archived items in API responses
+   apiPrefilter: { archive: false }
    ```
    
    
    #### example:
    ```ts
-   apiPrefilter: ()=> remult.isAllowed("admin")?{}:{ archive:false }
+   // Allow admins to access all rows, but restrict non-admins to non-archived items
+   apiPrefilter: () => remult.isAllowed("admin") ? {} : { archive: false }
    ```
    
    
    #### see:
-   [EntityFilter](http://remult.dev/docs/entityFilter.html)
+   [EntityFilter](https://remult.dev/docs/access-control.html#filtering-accessible-rows)
+## apiPreprocessFilter
+An optional function that allows for preprocessing or modifying the EntityFilter for a specific entity type
+before it is used in API CRUD operations. This function can be used to enforce additional access control
+rules or adjust the filter based on the current context or specific request.
+   
+   
+   #### returns:
+   The modified EntityFilter or a Promise that resolves to the modified EntityFilter.
+   
+   
+   #### example:
+   ```typescript
+   @Entity<Task>("tasks", {
+     apiPreprocessFilter: async (filter, { getFilterInfo }) => {
+       // Ensure that users can only query tasks for specific customers
+       const info = await getFilterInfo();
+       if (!info.preciseValues.customerId) {
+         throw new ForbiddenError("You must specify a valid customerId filter");
+       }
+       return filter;
+     }
+   })
+   ```
+
+Arguments:
+* **filter** - The initial EntityFilter for the entity type.
+* **info** - Additional information and utilities for preprocessing the filter.
+## backendPreprocessFilter
+Similar to apiPreprocessFilter, but for backend operations.
+   
+   
+   #### returns:
+   The modified EntityFilter or a Promise that resolves to the modified EntityFilter.
+
+Arguments:
+* **filter** - The initial EntityFilter for the entity type.
+* **info** - Additional information and utilities for preprocessing the filter.
 ## backendPrefilter
 A filter that will be used for all queries from this entity both from the API and from within the backend.
    

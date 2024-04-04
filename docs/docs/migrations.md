@@ -53,6 +53,40 @@ export const dataProvider = createPostgresDataProvider({
 })
 ```
 
+:::tip Using environment variables
+In most cases, the connection string for your database will not be hard-coded but stored in an environment variable for security and flexibility. A common practice is to use a `.env` file to store environment variables in development and load them using the `dotenv` npm package. Here's how you can set it up:
+
+1. Install the `dotenv` package:
+
+   ```sh
+   npm install dotenv
+   ```
+
+2. Create a `.env` file in the root of your project and add your database connection string:
+
+   ```env
+   DATABASE_URL=your_connection_string
+   ```
+
+3. At the beginning of your `src/server/config.ts` file, load the environment variables:
+
+   ```ts
+   import { config } from 'dotenv'
+   config()
+   ```
+
+4. Access the connection string using `process.env`:
+
+   ```ts
+   export const dataProvider = createPostgresDataProvider({
+     connectionString: process.env['DATABASE_URL'],
+   })
+   ```
+
+By following these steps, you ensure that your application securely and flexibly manages the database connection string.
+
+:::
+
 ### 2. Adjust the API Configuration
 
 Next, adjust your `api.ts` file to use the configurations from the `config.ts` file, and disable the `ensureSchema` migrations:
@@ -84,6 +118,7 @@ To enable automatic generation of migration scripts, follow these steps:
 1. **Create the Migrations Folder:** In your `src/server` directory, create a new folder named `migrations`. This folder will hold all your migration scripts.
 
 2. **Create the Migration Generator File:** Inside the `migrations` folder, create a file named `generate-migrations.ts`. This file will contain the script that generates migration scripts based on changes in your entities.
+   Here's the revised section:
 
 3. **Populate the Generator File:** Add the following code to `generate-migrations.ts`:
 
@@ -91,10 +126,14 @@ To enable automatic generation of migration scripts, follow these steps:
    import { generateMigrations } from 'remult/migrations'
    import { dataProvider, entities } from '../config'
 
-   generateMigrations({ dataProvider, entities })
+   generateMigrations({
+     dataProvider, // The data provider for your database
+     entities, // Entity classes to include in the migration
+     endConnection: true, // Close the database connection after generating migrations (useful for standalone scripts)
+   })
    ```
 
-   This script imports the `generateMigrations` function from the `remult/migrations` module and your application's `dataProvider` and `entities` from the `config.js` file. When executed, it generates migration scripts that reflect the changes in your entities.
+   This script generates migration scripts based on changes in your entities. If you're calling this method on a server where the database connection should remain open, omit the `endConnection` parameter or set it to `false`.
 
 4. **Generate Migrations:** To generate the migration scripts, run the `generate-migrations.ts` script using the following command:
 
@@ -128,14 +167,6 @@ To enable automatic generation of migration scripts, follow these steps:
 
       It's important to note that each migration can include any code that the developer wishes to include, not just SQL statements. The `sql` parameter is provided to facilitate running SQL commands, but you can also include other logic or code as needed. Additionally, developers are encouraged to add their own custom migrations to address specific requirements or changes that may not be covered by automatically generated migrations. This flexibility allows for a more tailored approach to managing database schema changes.
 
-      #### Transactional Migrations
-
-      Each migration runs within a transaction, which means that either all the database changes in that script succeed or fail as a unit. This ensures that your database remains in a consistent state, even if something goes wrong during the migration process.
-
-      However, it's worth noting that some databases, like MySQL, do not support rolling back structural changes as part of a transaction. This means that if you make changes to the database schema (such as adding or dropping tables or columns) and something goes wrong, those changes might not be automatically rolled back. Developers need to be aware of this limitation and plan their migrations accordingly to avoid leaving the database in an inconsistent state.
-
-      Always consult your database's documentation to understand the specifics of transaction support and plan your migrations accordingly.
-
 ### 4. Run the Migrations
 
 To apply the migrations to your database, you'll need to create a script that executes them.
@@ -154,10 +185,17 @@ To apply the migrations to your database, you'll need to create a script that ex
    migrate({
      dataProvider,
      migrations,
+     endConnection: true, // Close the database connection after applying migrations
    })
    ```
 
-   This script imports the `migrate` function from the `remult/migrations` module, your application's `dataProvider` from the `config` file, and the `migrations` from the `migrations.ts` file. It then calls the `migrate` function to apply the migrations to your database.
+   This script sets up the migration process. The `migrate` function checks the last migration executed on the database and runs all subsequent migrations based on their index in the `migrations` file. The entire call to `migrate` is executed in a transaction, ensuring that either all required migration steps are executed or none at all, maintaining the integrity of your database schema.
+
+   ::: warning Warning: Database Transaction Support for Structural Changes
+   It's important to note that some databases, like MySQL, do not support rolling back structural changes as part of a transaction. This means that if you make changes to the database schema (such as adding or dropping tables or columns) and something goes wrong, those changes might not be automatically rolled back. Developers need to be aware of this limitation and plan their migrations accordingly to avoid leaving the database in an inconsistent state.
+
+   Always consult your database's documentation to understand the specifics of transaction support and plan your migrations accordingly.
+   :::
 
 3. **Execute the Script:** Run the migration script using the following command:
 
@@ -188,7 +226,7 @@ You have a couple of options for when and how to run your migrations:
       await migrate({
         dataProvider: remult.dataProvider,
         migrations,
-        endConnection: false,
+        endConnection: false, //it's the default :)
       })
     },
   })

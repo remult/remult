@@ -19,8 +19,10 @@ import {
 } from '../../../core/migrations/compare-migration-snapshots.js'
 import {
   CanBuildMigrations,
+  DefaultMigrationBuilder,
   type Migrations,
 } from '../../../core/migrations/migration-types.js'
+import { KnexDataProvider } from '../../../core/remult-knex/index.js'
 
 export function SqlDbTests({
   createEntity,
@@ -117,7 +119,8 @@ export function SqlDbTests({
     const e = await dbNamesOf(repo, f.wrapIdentifier)
     const c = f.createCommand()
     const result = await c.execute(
-      `select ${e.myId}, ${e.name} from ${e.$entityName} where ${e.myId
+      `select ${e.myId}, ${e.name} from ${e.$entityName} where ${
+        e.myId
       } in (${c.param(1)},${c.param(2)})`,
     )
 
@@ -168,31 +171,36 @@ export function SqlDbTests({
       ]) {
         try {
           await db.execute('drop table  ' + db.wrapIdentifier(iterator))
-        } catch { }
+        } catch {}
       }
     })
     it('test migrations', async () => {
       await expect(() => remult.repo(Task).find()).rejects.toThrow()
       let migrations: Migrations = {}
       let snapshot = emptySnapshot()
-      let migrationBuilder = cast<CanBuildMigrations>(
-        getDb(),
-        'provideMigrationBuilder',
-      ).provideMigrationBuilder({
+      let code = {
         addSql: (s) =>
-        (migrations[Object.keys(migrations).length] = async ({ sql }) =>
-          await sql(s)),
+          (migrations[Object.keys(migrations).length] = async ({ sql }) =>
+            await sql(s)),
         addComment: () => {
           throw Error('not implemented')
         },
         addTypescriptCode: () => {
           throw Error('not implemented')
         },
-      })
+      }
+      let migrationBuilder = new DefaultMigrationBuilder(
+        code,
+        cast<CanBuildMigrations>(
+          getDb(),
+          'provideMigrationBuilder',
+        ).provideMigrationBuilder(code),
+      )
       snapshot = await compareMigrationSnapshot({
         entities: [Task],
         snapshot: snapshot,
         migrationBuilder,
+        reporter: () => {},
       })
       expect(Object.keys(migrations).length).toBe(1)
       await migrate({
@@ -207,6 +215,7 @@ export function SqlDbTests({
         entities: [TaskEnhanced],
         snapshot: snapshot,
         migrationBuilder,
+        reporter: () => {},
       })
       expect(Object.keys(migrations).length).toBe(3)
       await migrate({
@@ -241,27 +250,37 @@ export function SqlDbTests({
           }),
       ).rejects.toThrow('error')
 
-      expect(await repo.count()).toBe(3)
+      expect(await repo.count()).toBe(4)
     })
+
     it.skipIf(doesNotSupportDdlTransactions)(
       'test migrations transactions and ddl',
       async () => {
-        const tableName = 'xyz'
+        const db = cast<SqlCommandFactory>(getDb(), 'createCommand')
+        const tableName = db.wrapIdentifier('xyz1')
+        try {
+          await cast(getDb(), 'execute').execute(`drop table ${tableName}`)
+        } catch {}
         await expect(
           async () =>
             await migrate({
               migrations: {
-                0: async ({ sql }) => {
-                  try {
-                    await sql(`drop table ${tableName}`)
-                  } catch { }
-                },
                 1: async ({ sql }) => {
                   await sql(`create table ${tableName}(id int)`)
                 },
                 2: async ({ sql }) => {
                   await sql('insert into ' + tableName + ' values (1)')
                   await sql(`alter table ${tableName} add  x int`)
+                  expect(
+                    ((await sql('select * from ' + tableName)) as any).rows,
+                  ).toMatchInlineSnapshot(`
+                    [
+                      {
+                        "id": 1,
+                        "x": null,
+                      },
+                    ]
+                  `)
                   throw 'error'
                 },
               },
@@ -270,13 +289,10 @@ export function SqlDbTests({
               endConnection: false,
             }),
         ).rejects.toThrow('error')
-        const db = cast<SqlCommandFactory>(getDb(), 'createCommand')
+
         await expect(() =>
-          db.execute(`select id,x from ${tableName}`),
+          db.execute(`select * from ${tableName}`),
         ).rejects.toThrow()
-        expect(
-          (await db.execute(`select id from ${tableName}`)).rows,
-        ).toMatchInlineSnapshot('[]')
       },
     )
   })

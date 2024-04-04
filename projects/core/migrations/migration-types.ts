@@ -7,6 +7,8 @@ export interface CanBuildMigrations {
 export interface MigrationBuilder {
   createTable(meta: EntityMetadata): Promise<void>
   addColumn(meta: EntityMetadata, field: FieldMetadata): Promise<void>
+  removeTable?(entityDbName: string): unknown
+  removeColumn?($entityName: string, columnDbName: string): unknown
 }
 
 export interface MigrationCode {
@@ -43,13 +45,36 @@ export type MigrationUtils = {
   sql(sql: string): Promise<unknown>
 }
 
-export class DefaultMigrationBuilder implements MigrationBuilder {
-  constructor(public code: MigrationCode) {}
+export class DefaultMigrationBuilder implements Required<MigrationBuilder> {
+  constructor(
+    public code: MigrationCode,
+    private wrapped?: MigrationBuilder,
+  ) {}
   async createTable(meta: EntityMetadata): Promise<void> {
-    this.code.addComment('create table ' + meta.entityType.name)
+    if (this.wrapped?.createTable) {
+      await this.wrapped.createTable(meta)
+    } else this.code.addComment('TODO: implement create table ' + meta.dbName)
   }
 
   async addColumn(meta: EntityMetadata, field: FieldMetadata): Promise<void> {
-    this.code.addComment('add column ' + meta.entityType.name + '.' + field.key)
+    if (this.wrapped?.addColumn) {
+      await this.wrapped.addColumn(meta, field)
+    } else
+      this.code.addComment(
+        'TODO: implement add column ' + meta.dbName + '.' + field.dbName,
+      )
+  }
+  async removeTable(entityDbName: string): Promise<void> {
+    if (this.wrapped?.removeTable) {
+      await this.wrapped.removeTable(entityDbName)
+    } else this.code.addComment('TODO: implement remove table ' + entityDbName)
+  }
+  async removeColumn(entityName: string, columnDbName: string): Promise<void> {
+    if (this.wrapped?.removeColumn) {
+      await this.wrapped.removeColumn(entityName, columnDbName)
+    } else
+      this.code.addComment(
+        'TODO: implement remove column ' + entityName + '.' + columnDbName,
+      )
   }
 }

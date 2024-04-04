@@ -111,12 +111,18 @@ Returns a displayable string representation of a value of valueType.
 Arguments:
 * **val** - The value to convert.
 ## fieldTypeInDb
-Specifies the storage type used in the database for this field.
+Specifies the storage type used in the database for this field. This can be used to explicitly define the data type and precision of the field in the database.
    
    
    #### example:
    ```ts
-   readonly fieldTypeInDb = 'decimal(18,2)';
+   // Define a field with a specific decimal precision in the database
+   @Fields.number({
+     valueConverter: {
+       fieldTypeInDb: 'decimal(18,8)'
+     }
+   })
+   price=0;
    ```
 ## inputType
 Specifies the type of HTML input element suitable for values of valueType.
@@ -124,5 +130,5 @@ Specifies the type of HTML input element suitable for values of valueType.
    
    #### example:
    ```ts
-   readonly inputType = 'date';
+   inputType = 'date';
    ```

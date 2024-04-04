@@ -63,6 +63,17 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
     },
     createEntity,
   })
+  it('test transactions and ddl', async () => {
+    const db = SqlDatabase.getDb(remult.dataProvider)
+    await expect(() =>
+      db.transaction(async (db: SqlDatabase) => {
+        await db.execute('drop table if exists test_transactions')
+        await db.execute('create table test_transactions(id int)')
+        await db.execute('insert into test_transactions values (1)')
+        throw new Error('error')
+      }),
+    ).rejects.toThrowErrorMatchingInlineSnapshot('"error"')
+  })
 
   it('ensure schema with dbNames that have quotes', async () => {
     const db = SqlDatabase.getDb(remult.dataProvider)
