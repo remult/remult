@@ -815,6 +815,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 
 //y1 - JY suggestion of having generate as part of the ensure schema - not sure
 //y1 - currently for string fields we default for 255 in knex (which is their default) why not just use text (varchar max) - and only use exact length when one is provided?
+//y1 - consider changing the sql raw filter to return the sql, instead of setting the sql property
 //p1 - document custom filter without sql
 //p1 - admin url1 - pocketbase use /_ for the admin //{allowed?:Allowed,url?:string}
 //p1 - document new sqlite providers

@@ -1,7 +1,10 @@
 import type { Knex } from 'knex'
 import type { Remult } from '../src/context.js'
 
-import type { EntityDbNamesBase } from '../src/filter/filter-consumer-bridge-to-sql-request.js'
+import {
+  type CustomSqlFilterObject,
+  type EntityDbNamesBase,
+} from '../src/filter/filter-consumer-bridge-to-sql-request.js'
 import {
   dbNamesOf,
   isDbReadonly,
@@ -456,13 +459,19 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
     )
   }
 
-  databaseCustom(databaseCustom: {
-    buildKnex: CustomKnexFilterBuilderFunction
-  }): void {
+  databaseCustom(
+    databaseCustom: {
+      buildKnex: CustomKnexFilterBuilderFunction
+    } & CustomSqlFilterObject,
+  ): void {
     this.promises.push(
       (async () => {
         if (databaseCustom?.buildKnex) {
           this.result.push(await databaseCustom.buildKnex())
+          if (databaseCustom.buildSql) {
+            // const build = new CustomSqlFilterBuilder()
+            //   await databaseCustom.buildSql(build)
+          }
         }
       })(),
     )
