@@ -813,22 +813,14 @@ export type ClassFieldDecorator<entityType, valueType> = (
   c?: any,
 ) => void
 
-//p1 DOC DONE - It's good that there is no migrations added. (I also don't like automatic deletion), and it can be done manually if needed.
-//p1 DOC DONE - Maybe migrations-snapshots.json should have fields deleted to have a one to one representation of the db?
-//p1 DOC DONE - @JYT - should I write to console on generate migrations, what are the changes that I've found / the migration step id / not changes found
-//p1 DOC DONE - re-discuss endConnection - default false - explain in docs
-//p1 DONE - JYC log the migration request - beforeMigration. afterMigration
-//p1 DONE - migration default folder should be source/migrations (also docs?)
-//p1 DONE - @JYT run all migrations in a single transaction? or transaction per step?
-
-//p1 Done - Filter.toJson should be public
+//y1 - JY suggestion of having generate as part of the ensure schema - not sure
+//y1 - currently for string fields we default for 255 in knex (which is their default) why not just use text (varchar max) - and only use exact length when one is provided?
 //p1 - I needed to modify the changes Field of changeLog entity to @Fields.json() to be nvarchar(max) too. Why is @Fields.object() only nvarchar(255) ? Or is it default size and can be adjusted?
-//p1 - improve type augmentation doc with specific of the file and with the export trick - fix code samples to init reqiest error
+//p1 - improve type augmentation doc with specific of the file and with the export trick - fix code samples to init request error
 
 //p1 - document custom filter without sql
 
 //y1!! - JY build issue
-//p1 - discuss the typing issue with relations in this case vs the ValueListFieldTypes - return partial with id values.
 
 //p1 - admin url1 - pocketbase use /_ for the admin //{allowed?:Allowed,url?:string}
 //p1 - document new sqlite providers
@@ -841,9 +833,14 @@ export type ClassFieldDecorator<entityType, valueType> = (
 
 //y1 - dependency of live query tables
 
+//y1 - consider the bot that updates dependencies
+
 //y1 - consider replacing all errors with error classes that extend the base Error class
 //y2 - should enforce integer - currently we probably round / truncate it
-
+//y1 - talk about filter on objects that are not loaded -  {
+//category: repo(CompoundId).create({ company: 7, index: 3, name: '' }),
+//    }
+//y1 - consider id to also support keyof (id:['company','index'])
 /*y1 - talk about modules in init express with entities/controllers,initRequest,initApi
  - support get with backend method, with url search params as the first parameter, & url as second parameter
    - support returning redirect, and plain html (For sign in scenarios)

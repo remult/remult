@@ -48,11 +48,12 @@ import type {
 
 export class KnexDataProvider
   implements
-  DataProvider,
-  HasWrapIdentifier,
-  SqlCommandFactory,
-  CanBuildMigrations {
-  constructor(public knex: Knex) { }
+    DataProvider,
+    HasWrapIdentifier,
+    SqlCommandFactory,
+    CanBuildMigrations
+{
+  constructor(public knex: Knex) {}
   end() {
     return this.knex.destroy()
   }
@@ -168,7 +169,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
   constructor(
     private entity: EntityMetadata<any>,
     private knex: Knex,
-  ) { }
+  ) {}
   async count(where: Filter): Promise<number> {
     const e = await this.init()
     const br = new FilterConsumerBridgeToKnexRequest(e)
@@ -359,7 +360,7 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
     return this.result
   }
 
-  constructor(private nameProvider: EntityDbNamesBase) { }
+  constructor(private nameProvider: EntityDbNamesBase) {}
 
   custom(key: string, customItem: any): void {
     throw new Error('Custom filter should be translated before it gets here')
@@ -424,25 +425,25 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
     this.result.push((b) =>
       b.whereRaw(
         'lower (' +
-        b.client.ref(this.nameProvider.$dbNameOf(col)) +
-        ") like lower ('%" +
-        val.replace(/'/g, "''") +
-        "%')",
+          b.client.ref(this.nameProvider.$dbNameOf(col)) +
+          ") like lower ('%" +
+          val.replace(/'/g, "''") +
+          "%')",
       ),
     )
-    this.promises.push((async () => { })())
+    this.promises.push((async () => {})())
   }
   public notContainsCaseInsensitive(col: FieldMetadata, val: any): void {
     this.result.push((b) =>
       b.whereRaw(
         'not lower (' +
-        b.client.ref(this.nameProvider.$dbNameOf(col)) +
-        ") like lower ('%" +
-        val.replace(/'/g, "''") +
-        "%')",
+          b.client.ref(this.nameProvider.$dbNameOf(col)) +
+          ") like lower ('%" +
+          val.replace(/'/g, "''") +
+          "%')",
       ),
     )
-    this.promises.push((async () => { })())
+    this.promises.push((async () => {})())
   }
 
   private add(col: FieldMetadata, val: any, operator: string) {
@@ -565,7 +566,7 @@ export class KnexSchemaBuilder {
     }
   }
   additionalWhere = ''
-  constructor(private knex: Knex) { }
+  constructor(private knex: Knex) {}
 }
 function supportsJsonDataStorage(knex: Knex) {
   const client: string = knex.client.config.client
@@ -618,10 +619,16 @@ export function buildColumn(
       }
     } else if (x.valueConverter.fieldTypeInDb == 'json')
       if (supportsJson) b.json(dbName)
-      else b.text(dbName)
+      else {
+        let c = b.text(dbName)
+        if (!x.allowNull) c.defaultTo('').notNullable()
+      }
     else b.specificType(dbName, x.valueConverter.fieldTypeInDb)
-  } else {
+  } else if (x.valueType === String) {
     let c = b.string(dbName, (<StringFieldOptions>x.options).maxLength)
+    if (!x.allowNull) c.defaultTo('').notNullable()
+  } else {
+    let c = b.text(dbName)
     if (!x.allowNull) c.defaultTo('').notNullable()
   }
 }
@@ -649,7 +656,7 @@ function translateValueAndHandleArrayAndHandleArray(
 }
 
 class KnexBridgeToSQLCommand implements SqlCommand {
-  constructor(private source: Knex) { }
+  constructor(private source: Knex) {}
   values = {}
   i = 0
   addParameterAndReturnSqlToken(val: any) {
@@ -657,7 +664,7 @@ class KnexBridgeToSQLCommand implements SqlCommand {
   }
   param(val: any): string {
     if (Array.isArray(val)) val = JSON.stringify(val)
-    const key = ':' + (this.i++)
+    const key = ':' + this.i++
     this.values[key.substring(1)] = val
     return key
   }

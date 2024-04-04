@@ -4,6 +4,7 @@ import type {
   EntityFilter,
   EntityMetadata,
   FieldsMetadata,
+  MembersOnly,
   RelationOptions,
 } from '../remult3/remult3.js'
 
@@ -1021,31 +1022,73 @@ export interface FilterInfo<entityType> {
    * //   "status": undefined,           // Cannot infer precise values for 'status'
    * // }
    */
-  preciseValues: { [Properties in keyof entityType]?: entityType[Properties][] }
+  preciseValues: {
+    [Properties in keyof MembersOnly<entityType>]?: Partial<
+      entityType[Properties]
+    >[]
+  }
 }
 
 class preciseValuesCollector<entityType>
   implements FilterConsumer, FilterInfo<entityType>
 {
-  bad = new Set<string>()
-
+  private rawValues: Record<
+    string,
+    {
+      field: FieldMetadata
+      values: any[]
+      bad: boolean
+    }
+  > = {}
   preciseValues: {
     [Properties in keyof entityType]?: entityType[Properties][]
-  } = {}
+  } = new Proxy<any>(this.rawValues, {
+    get: (target, prop) => {
+      if (prop in target) {
+        let result = target[prop as string]
+        if (result.bad) return undefined
+        if (result.values.length > 0) {
+          const relInfo = getRelationFieldInfo(result.field)
+          if (relInfo) {
+            if (relInfo.type === 'reference') {
+              return result.values.map((x) => {
+                return relInfo.toRepo.metadata.idMetadata.getIdFilter(x)
+              })
+            } else
+              throw new Error(
+                'Only relations toOne without field are supported.',
+              )
+          }
+          return result.values
+        }
+      }
+      return undefined
+    },
+  })
 
-  ok(col: string, ...val: any[]) {
-    if (this.bad.has(col)) return
-    let x = this.preciseValues[col]
+  ok(col: FieldMetadata, ...val: any[]) {
+    let x = this.rawValues[col.key]
     if (!x) {
-      this.preciseValues[col] = [...val]
+      this.rawValues[col.key] = {
+        field: col,
+        bad: false,
+        values: [...val],
+      }
     } else {
-      x.push(...val.filter((y) => !x.includes(y)))
+      x.values.push(...val.filter((y) => !x.values.includes(y)))
     }
   }
-  notOk(col: string) {
-    if (this.bad.has(col)) return
-    this.bad.add(col)
-    this.preciseValues[col] = undefined
+  notOk(col: FieldMetadata) {
+    let x = this.rawValues[col.key]
+    if (!x) {
+      this.rawValues[col.key] = {
+        field: col,
+        bad: true,
+        values: [],
+      }
+    } else {
+      x.bad = true
+    }
   }
   or(orElements: Filter[]) {
     const result = orElements.map((or) => {
@@ -1054,57 +1097,59 @@ class preciseValuesCollector<entityType>
       return x
     })
     for (const or of result) {
-      for (const key in or.preciseValues) {
-        if (Object.prototype.hasOwnProperty.call(or.preciseValues, key)) {
-          const element = or.preciseValues[key]
-          if (element) this.ok(key, ...element)
+      for (const key in or.rawValues) {
+        if (Object.prototype.hasOwnProperty.call(or.rawValues, key)) {
+          const element = or.rawValues[key]
+          if (element) {
+            if (element.bad) this.notOk(element.field)
+            else {
+              this.ok(element.field, ...element.values)
+            }
+          }
         }
       }
-      for (const key of or.bad) {
-        this.notOk(key)
-      }
     }
-    for (const key in this.preciseValues) {
-      if (Object.prototype.hasOwnProperty.call(this.preciseValues, key)) {
+    for (const key in this.rawValues) {
+      if (Object.prototype.hasOwnProperty.call(this.rawValues, key)) {
         for (const r of result) {
-          const element = r.preciseValues[key]
-          if (!element) this.notOk(key)
+          const element = r.rawValues[key]
+          if (!element) this.notOk(this.rawValues[key].field)
         }
       }
     }
   }
   isEqualTo(col: FieldMetadata<any, any>, val: any): void {
-    this.ok(col.key, val)
+    this.ok(col, val)
   }
   isDifferentFrom(col: FieldMetadata<any, any>, val: any): void {
-    this.notOk(col.key)
+    this.notOk(col)
   }
   isNull(col: FieldMetadata<any, any>): void {
-    this.ok(col.key, null)
+    this.ok(col, null)
   }
   isNotNull(col: FieldMetadata<any, any>): void {
-    this.notOk(col.key)
+    this.notOk(col)
   }
   isGreaterOrEqualTo(col: FieldMetadata<any, any>, val: any): void {
-    this.notOk(col.key)
+    this.notOk(col)
   }
   isGreaterThan(col: FieldMetadata<any, any>, val: any): void {
-    this.notOk(col.key)
+    this.notOk(col)
   }
   isLessOrEqualTo(col: FieldMetadata<any, any>, val: any): void {
-    this.notOk(col.key)
+    this.notOk(col)
   }
   isLessThan(col: FieldMetadata<any, any>, val: any): void {
-    this.notOk(col.key)
+    this.notOk(col)
   }
   containsCaseInsensitive(col: FieldMetadata<any, any>, val: any): void {
-    this.notOk(col.key)
+    this.notOk(col)
   }
   notContainsCaseInsensitive(col: FieldMetadata<any, any>, val: any): void {
-    this.notOk(col.key)
+    this.notOk(col)
   }
   isIn(col: FieldMetadata<any, any>, val: any[]): void {
-    this.ok(col.key, ...val)
+    this.ok(col, ...val)
   }
   custom(key: string, customItem: any): void {}
   databaseCustom(databaseCustom: any): void {}

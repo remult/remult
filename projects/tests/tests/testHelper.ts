@@ -18,6 +18,11 @@ import type { EntityMetadata } from '../../core'
 import { serverActionField } from '../../core/src/server-action-info'
 import { TestDataApiResponse } from './TestDataApiResponse'
 import { actionInfo } from '../../core/internals'
+import type {
+  CanBuildMigrations,
+  MigrationBuilder,
+} from '../../core/migrations/migration-types.js'
+import { cast } from '../../core/src/isOfType.js'
 
 //actionInfo.runningOnServer = false;
 
@@ -154,7 +159,7 @@ function urlToReq(url: string) {
 }
 
 export class MockRestDataProvider implements DataProvider {
-  constructor(private remult: Remult) { }
+  constructor(private remult: Remult) {}
   getEntityDataProvider(metadata: EntityMetadata<any>): EntityDataProvider {
     let dataApi = new DataApi(
       this.remult.repo(metadata.entityType),
@@ -182,7 +187,7 @@ export function createMockHttpDataProvider(
 
       let r = new TestDataApiResponse()
       let result
-      r.deleted = () => { }
+      r.deleted = () => {}
       r.success = (data) => {
         result = data
       }
@@ -220,8 +225,8 @@ export function createMockHttpDataProvider(
       r.success = (data) => {
         result = data
       }
-      r.forbidden = message => {
-        throw Error(message || "forbidden");
+      r.forbidden = (message) => {
+        throw Error(message || 'forbidden')
       }
       try {
         await dataApi.httpPost(r, urlToReq(url), data, async () => ({}))
@@ -250,4 +255,27 @@ export function createMockHttpDataProvider(
       return result
     },
   })
+}
+
+export async function testMigrationScript(
+  db: DataProvider,
+  what: (n: MigrationBuilder) => Promise<void>,
+) {
+  let result: string
+  const m = cast<CanBuildMigrations>(
+    db,
+    'provideMigrationBuilder',
+  ).provideMigrationBuilder({
+    addComment: () => {
+      throw 'not implemented'
+    },
+    addSql: (sql) => {
+      result = sql
+    },
+    addTypescriptCode: () => {
+      throw 'not implemented'
+    },
+  })
+  await what(m)
+  return result
 }

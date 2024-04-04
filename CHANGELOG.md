@@ -16,11 +16,12 @@ All notable changes to this project will be documented in this file.
 - Added support for `bun:sqlite`
 - Added a generic implementation for `sqlite` that can be easily extended to any provider
 - Added `ForbiddenError` to the api
-- Added `apiPreprocessFilter` and `backendPreprocessFilter
+- Added `apiPreprocessFilter` and `backendPreprocessFilter`
 - Added a way to analyze filter and query it - `Filter.getInfo`
 - Fixed an issue with entity ids that included date
 - Fixed an issue with chaining of validators that in some cases caused a validator to be overwritten
 - Changed postgres schema builder to use `timestamptz` instead of `timestamp`
+- Changed the default storage of `@Fields.object` to `text` (varchar max) instead of string 255
 - `KnexDataProvider` now supports all `execute` and `createCommand` and can be used with any `SqlDatabase` functionality
 - **Breaking Change** changed the signature of `updateMany` and `deleteMany` to require a `where` parameter:
   `repo(Task).delete({ where:{ completed:tr}})`

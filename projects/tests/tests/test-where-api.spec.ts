@@ -691,11 +691,60 @@ describe('Filter.getPreciseFilterValuesForKey', () => {
   })
   it('should work with relation 1', async () => {
     const info = await Filter.getInfo(meta, { parentOrder: { $id: '123' } })
-    expect(info.preciseValues.parentOrder).toEqual(['123'])
+    expect(info.preciseValues.parentOrder[0].id).toEqual('123')
   })
   it('should work with relation 2', async () => {
     const info = await Filter.getInfo(meta, { category: { $id: '123' } })
-    expect(info.preciseValues.category).toEqual(['123'])
+    expect(info.preciseValues.category[0].id).toEqual('123')
+  })
+  it('should work with relation with non common id', async () => {
+    @Entity('xx')
+    class IdThatIsNotId {
+      @Fields.integer()
+      index = 0
+      @Fields.string()
+      name = ''
+    }
+    @Entity('yy')
+    class Product {
+      @Fields.string()
+      id = ''
+      @Relations.toOne(() => IdThatIsNotId)
+      category?: IdThatIsNotId
+    }
+    const meta = repo(Product).metadata
+
+    const info = await Filter.getInfo(meta, {
+      category: repo(IdThatIsNotId).create({ index: 3, name: '' }),
+    })
+    expect(info.preciseValues.category[0].index).toEqual(3)
+  })
+  it('should work with compound', async () => {
+    @Entity<CompoundId>('xx', {
+      id: { company: true, index: true },
+    })
+    class CompoundId {
+      @Fields.integer()
+      company = 0
+      @Fields.integer()
+      index = 0
+      @Fields.string()
+      name = ''
+    }
+    @Entity('yy')
+    class Product {
+      @Fields.string()
+      id = ''
+      @Relations.toOne(() => CompoundId)
+      category?: CompoundId
+    }
+    const meta = repo(Product).metadata
+
+    const info = await Filter.getInfo(meta, {
+      category: repo(CompoundId).create({ company: 7, index: 3, name: '' }),
+    })
+    expect(info.preciseValues.category[0].index).toEqual(3)
+    expect(info.preciseValues.category[0].company).toEqual(7)
   })
 
   it('should return an array of values for a filter with multiple fields, including the target keys', async () => {
@@ -751,7 +800,7 @@ describe('Filter.getPreciseFilterValuesForKey', () => {
       status: { $ne: 'active' },
       $or: [{ customerId: ['1', '2'] }, { customerId: '3' }],
     })
-    expect(info.preciseValues).toMatchInlineSnapshot(`
+    expect({ ...info.preciseValues }).toMatchInlineSnapshot(`
       {
         "customerId": [
           "1",
