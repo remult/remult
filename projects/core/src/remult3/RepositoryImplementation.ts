@@ -2043,7 +2043,7 @@ export class FieldRefImplementation<entityType, valueType>
       ) != JSON.stringify(this.metadata.valueConverter.toJson(val))
     )
   }
-  entityRef: EntityRef<any>
+  entityRef: EntityRef<entityType>
 
   async __performValidation() {
     try {
