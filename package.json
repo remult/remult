@@ -31,8 +31,7 @@
     "test-servers:setup-all": "run-p test-servers:*:setup",
     "test-servers:next:setup": "cd projects/test-servers/next-server && npm i --force && tsx ../../../misc/copyRemultToNodeModules.ts && npm run build",
     "test-servers:next-app:setup": "cd projects/test-servers/next-app-server && npm i --force && tsx ../../../misc/copyRemultToNodeModules.ts && npm run build",
-    "test-latest-typescript-build-orig": "cd projects/tests/test-build-with-latest-typescript && npm i && npm run build",
-    "test-latest-typescript-build": "cd projects/tests/test-build-with-latest-typescript && npm i"
+    "test-latest-typescript-build": "cd projects/tests/test-build-with-latest-typescript && npm i && npm run build"
   },
   "private": true,
   "devDependencies": {

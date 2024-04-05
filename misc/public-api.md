@@ -277,7 +277,9 @@ export interface customFilterInfo<entityType> {
     ) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>
   }
 }
-export declare class CustomSqlFilterBuilder {
+export declare class CustomSqlFilterBuilder
+  implements SqlCommandWithParameters
+{
   private r
   constructor(r: SqlCommandWithParameters)
   sql: string
@@ -2237,9 +2239,12 @@ export declare class SqlDatabase
    */
   static durationThreshold: number
   constructor(sql: SqlImplementation)
+  provideMigrationBuilder: (builder: MigrationCode) => MigrationBuilder
   private createdEntities
   end: () => Promise<void>
 }
+//[ ] MigrationCode from TBD is not exported
+//[ ] MigrationBuilder from TBD is not exported
 export interface SqlImplementation extends HasWrapIdentifier {
   getLimitSqlSyntax(limit: number, offset: number): any
   createCommand(): SqlCommand
