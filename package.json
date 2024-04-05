@@ -30,7 +30,8 @@
     "test-servers:sveltekit:setup": "cd projects/test-servers/sveltekit-server && npm i --force && tsx ../../../misc/copyRemultToNodeModules.ts && npm run build",
     "test-servers:setup-all": "run-p test-servers:*:setup",
     "test-servers:next:setup": "cd projects/test-servers/next-server && npm i --force && tsx ../../../misc/copyRemultToNodeModules.ts && npm run build",
-    "test-servers:next-app:setup": "cd projects/test-servers/next-app-server && npm i --force && tsx ../../../misc/copyRemultToNodeModules.ts && npm run build"
+    "test-servers:next-app:setup": "cd projects/test-servers/next-app-server && npm i --force && tsx ../../../misc/copyRemultToNodeModules.ts && npm run build",
+    "test-latest-typescript-build": "cd projects/tests/test-build-with-latest-typescript && npm i && npm run build"
   },
   "private": true,
   "devDependencies": {
@@ -59,8 +60,6 @@
     "@vitest/browser": "^0.34.3",
     "@vitest/coverage-v8": "^0.34.3",
     "@vitest/ui": "^0.34.6",
-    "@vuepress/plugin-back-to-top": "^1.5.2",
-    "@vuepress/plugin-medium-zoom": "^1.5.2",
     "ably": "^1.2.33",
     "axios": "^0.22.0",
     "better-sqlite3": "^9.1.1",
