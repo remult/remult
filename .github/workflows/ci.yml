@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    name: Builds & Tests
+    name: Test latest typescript build with public api
     runs-on: ubuntu-latest
 
     steps:
