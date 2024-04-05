@@ -832,7 +832,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //p1 - add test that some projects with typing issue, and reference to dist test for typing issues
 
 //y1 - dependency of live query tables
-
+//p1 - see why mongo tests do not run anymore
 //y1 - consider the bot that updates dependencies
 
 //y1 - consider replacing all errors with error classes that extend the base Error class
