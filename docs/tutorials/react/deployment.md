@@ -68,6 +68,7 @@ app.listen(process.env["PORT"] || 3002, () => console.log("Server started"))
 {
   "compilerOptions": {
     "experimentalDecorators": true,
+    "skipLibCheck": true,
     "esModuleInterop": true,
     "outDir": "dist",
     "rootDir": "src"
