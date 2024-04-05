@@ -152,10 +152,9 @@ export function SqlDbTests({
           where: {
             myId: [1, 2, 3, 4],
             $or: [
-              SqlDatabase.rawFilter(
-                async ({ param, wrapIdentifier }) =>
-                  wrapIdentifier('myId') + ` in (${param(2)},${param(3)})`,
-              ),
+              SqlDatabase.rawFilter(async ({ param, wrapIdentifier }) => {
+                return wrapIdentifier('myId') + ` in (${param(2)},${param(3)})`
+              }),
               SqlDatabase.rawFilter(async ({ filterToRaw }) =>
                 filterToRaw(repo, { myId: [9, 10] }),
               ),

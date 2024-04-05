@@ -48,6 +48,7 @@ describe('grid filter stuff', () => {
       {
         $entityName: '',
         $dbNameOf: () => 'col',
+        wrapIdentifier: (x) => x,
       },
     )
 
@@ -65,6 +66,7 @@ describe('grid filter stuff', () => {
       {
         $entityName: '',
         $dbNameOf: () => 'col',
+        wrapIdentifier: (x) => x,
       },
     )
 

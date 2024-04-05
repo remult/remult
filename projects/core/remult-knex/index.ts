@@ -121,7 +121,7 @@ export class KnexDataProvider
       }
     }
 
-    return new KnexEntityDataProvider(entity, this.knex)
+    return new KnexEntityDataProvider(entity, this.knex, this.wrapIdentifier)
   }
   async transaction(
     action: (dataProvider: DataProvider) => Promise<void>,
@@ -146,10 +146,12 @@ export class KnexDataProvider
   static async filterToRaw<entityType>(
     entity: RepositoryOverloads<entityType>,
     condition: EntityFilter<entityType>,
+    wrapIdentifier?: (name: string) => string,
   ) {
     const repo = getRepository(entity)
     var b = new FilterConsumerBridgeToKnexRequest(
       await dbNamesOf(repo.metadata, (x) => x),
+      wrapIdentifier,
     )
     b._addWhere = false
     await (
@@ -173,10 +175,14 @@ class KnexEntityDataProvider implements EntityDataProvider {
   constructor(
     private entity: EntityMetadata<any>,
     private knex: Knex,
+    private rawSqlWrapIdentifier: (name: string) => string,
   ) {}
   async count(where: Filter): Promise<number> {
     const e = await this.init()
-    const br = new FilterConsumerBridgeToKnexRequest(e)
+    const br = new FilterConsumerBridgeToKnexRequest(
+      e,
+      this.rawSqlWrapIdentifier,
+    )
     where.__applyToConsumer(br)
     let r = await br.resolveWhere()
     const result = await this.knex(e.$entityName)
@@ -204,7 +210,10 @@ class KnexEntityDataProvider implements EntityDataProvider {
     }
     let query = this.knex(e.$entityName).select(cols)
     if (options?.where) {
-      const br = new FilterConsumerBridgeToKnexRequest(e)
+      const br = new FilterConsumerBridgeToKnexRequest(
+        e,
+        this.rawSqlWrapIdentifier,
+      )
       options.where.__applyToConsumer(br)
       let r = await br.resolveWhere()
       query.where((b) => r.forEach((y) => y(b)))
@@ -257,7 +266,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
   }
   async update(id: any, data: any): Promise<any> {
     const e = await this.init()
-    let f = new FilterConsumerBridgeToKnexRequest(e)
+    let f = new FilterConsumerBridgeToKnexRequest(e, this.rawSqlWrapIdentifier)
     Filter.fromEntityFilter(
       this.entity,
       this.entity.idMetadata.getIdFilter(id),
@@ -289,7 +298,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
   }
   async delete(id: any): Promise<void> {
     const e = await this.init()
-    let f = new FilterConsumerBridgeToKnexRequest(e)
+    let f = new FilterConsumerBridgeToKnexRequest(e, this.rawSqlWrapIdentifier)
     Filter.fromEntityFilter(
       this.entity,
       this.entity.idMetadata.getIdFilter(id),
@@ -365,7 +374,10 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
     return this.result
   }
 
-  constructor(private nameProvider: EntityDbNamesBase) {}
+  constructor(
+    private innerNameProvider: EntityDbNamesBase,
+    private rawSqlWrapIdentifier: (name: string) => string,
+  ) {}
 
   custom(key: string, customItem: any): void {
     throw new Error('Custom filter should be translated before it gets here')
@@ -376,7 +388,10 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
       (async () => {
         const result = [] as ((builder: Knex.QueryBuilder) => void)[]
         for (const element of orElements) {
-          let f = new FilterConsumerBridgeToKnexRequest(this.nameProvider)
+          let f = new FilterConsumerBridgeToKnexRequest(
+            this.innerNameProvider,
+            this.rawSqlWrapIdentifier,
+          )
           f._addWhere = false
           element.__applyToConsumer(f)
           let where = await f.resolveWhere()
@@ -395,15 +410,17 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
     )
   }
   isNull(col: FieldMetadata): void {
-    this.result.push((b) => b.whereNull(this.nameProvider.$dbNameOf(col)))
+    this.result.push((b) => b.whereNull(this.innerNameProvider.$dbNameOf(col)))
   }
   isNotNull(col: FieldMetadata): void {
-    this.result.push((b) => b.whereNotNull(this.nameProvider.$dbNameOf(col)))
+    this.result.push((b) =>
+      b.whereNotNull(this.innerNameProvider.$dbNameOf(col)),
+    )
   }
   isIn(col: FieldMetadata, val: any[]): void {
     this.result.push((knex) =>
       knex.whereIn(
-        this.nameProvider.$dbNameOf(col),
+        this.innerNameProvider.$dbNameOf(col),
         val.map((x) => translateValueAndHandleArrayAndHandleArray(col, x)),
       ),
     )
@@ -430,7 +447,7 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
     this.result.push((b) =>
       b.whereRaw(
         'lower (' +
-          b.client.ref(this.nameProvider.$dbNameOf(col)) +
+          b.client.ref(this.innerNameProvider.$dbNameOf(col)) +
           ") like lower ('%" +
           val.replace(/'/g, "''") +
           "%')",
@@ -442,7 +459,7 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
     this.result.push((b) =>
       b.whereRaw(
         'not lower (' +
-          b.client.ref(this.nameProvider.$dbNameOf(col)) +
+          b.client.ref(this.innerNameProvider.$dbNameOf(col)) +
           ") like lower ('%" +
           val.replace(/'/g, "''") +
           "%')",
@@ -454,7 +471,7 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
   private add(col: FieldMetadata, val: any, operator: string) {
     this.result.push((b) =>
       b.where(
-        this.nameProvider.$dbNameOf(col),
+        this.innerNameProvider.$dbNameOf(col),
         operator,
         translateValueAndHandleArrayAndHandleArray(col, val),
       ),
@@ -473,10 +490,7 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
         }
         if (databaseCustom?.buildSql) {
           let r = new KnexCommandHelper()
-          const item = new CustomSqlFilterBuilder(
-            r,
-            this.nameProvider.wrapIdentifier,
-          )
+          const item = new CustomSqlFilterBuilder(r, this.rawSqlWrapIdentifier)
           let sql = await databaseCustom.buildSql(item)
           if (typeof sql !== 'string') sql = item.sql
 
