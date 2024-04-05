@@ -828,7 +828,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //y2 - should we validate relations
 
 //y1 - dependency of live query tables
-
+//p1 - see why mongo tests do not run anymore
 //y1 - consider the bot that updates dependencies
 
 //y1 - consider replacing all errors with error classes that extend the base Error class
