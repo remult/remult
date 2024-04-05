@@ -75,6 +75,7 @@ If no `DATABASE_URL` has found, it'll fallback to our local JSON files.
 {
   "compilerOptions": {
     "experimentalDecorators": true,
+    "skipLibCheck": true,
     "esModuleInterop": true,
     "outDir": "dist",
     "rootDir": "src"

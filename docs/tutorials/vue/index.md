@@ -160,10 +160,11 @@ Add the following entry to the `compilerOptions` section of the `tsconfig.app.js
 
 In the root folder, create a TypeScript configuration file `tsconfig.server.json` for the server project.
 
-```ts
+```json
 {
   "compilerOptions": {
     "experimentalDecorators": true,
+    "skipLibCheck": true,
     "esModuleInterop": true,
     "outDir": "dist",
     "rootDir": "src"
