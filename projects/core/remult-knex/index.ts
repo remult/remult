@@ -2,6 +2,7 @@ import type { Knex } from 'knex'
 import type { Remult } from '../src/context.js'
 
 import {
+  CustomSqlFilterBuilder,
   type CustomSqlFilterObject,
   type EntityDbNamesBase,
 } from '../src/filter/filter-consumer-bridge-to-sql-request.js'
@@ -468,10 +469,12 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
       (async () => {
         if (databaseCustom?.buildKnex) {
           this.result.push(await databaseCustom.buildKnex())
-          if (databaseCustom.buildSql) {
-            // const build = new CustomSqlFilterBuilder()
-            //   await databaseCustom.buildSql(build)
-          }
+        }
+        if (databaseCustom?.buildSql) {
+          let r = new KnexCommandHelper()
+          const build = new CustomSqlFilterBuilder(r)
+          await databaseCustom.buildSql(build)
+          this.result.push((b) => b.whereRaw(build.sql, r.values))
         }
       })(),
     )
@@ -663,9 +666,24 @@ function translateValueAndHandleArrayAndHandleArray(
   if (Array.isArray(result)) return JSON.stringify(result)
   return result
 }
+class KnexCommandHelper {
+  values = {}
+  i = 0
+  addParameterAndReturnSqlToken(val: any) {
+    return this.param(val)
+  }
+  param(val: any): string {
+    if (Array.isArray(val)) val = JSON.stringify(val)
+    const key = ':' + this.i++
+    this.values[key.substring(1)] = val
+    return key
+  }
+}
 
-class KnexBridgeToSQLCommand implements SqlCommand {
-  constructor(private source: Knex) {}
+class KnexBridgeToSQLCommand extends KnexCommandHelper implements SqlCommand {
+  constructor(private source: Knex) {
+    super()
+  }
   values = {}
   i = 0
   addParameterAndReturnSqlToken(val: any) {

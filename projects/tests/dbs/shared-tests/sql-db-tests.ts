@@ -114,14 +114,14 @@ export function SqlDbTests({
       ]
     `)
   })
-  it.skipIf(true)('test raw filter across databases', async () => {
+  it('test raw filter across databases', async () => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity)
     expect(
       (
         await repo.find({
           where: {
             myId: [1, 2, 3, 4],
-            $and: [
+            $or: [
               SqlDatabase.rawFilter(async (build) => {
                 build.sql =
                   cast<HasWrapIdentifier>(
@@ -129,6 +129,14 @@ export function SqlDbTests({
                     'wrapIdentifier',
                   ).wrapIdentifier('myId') +
                   ` in (${build.param(2)},${build.param(3)})`
+              }),
+              SqlDatabase.rawFilter(async (build) => {
+                build.sql =
+                  cast<HasWrapIdentifier>(
+                    getDb(),
+                    'wrapIdentifier',
+                  ).wrapIdentifier('myId') +
+                  ` in (${build.param(9)},${build.param(10)})`
               }),
             ],
           },

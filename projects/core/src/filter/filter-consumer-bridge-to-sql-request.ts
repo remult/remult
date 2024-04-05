@@ -182,7 +182,7 @@ export type CustomSqlFilterBuilderFunction = (
 export interface CustomSqlFilterObject {
   buildSql: CustomSqlFilterBuilderFunction
 }
-export class CustomSqlFilterBuilder {
+export class CustomSqlFilterBuilder implements SqlCommandWithParameters {
   constructor(private r: SqlCommandWithParameters) {}
   sql: string = ''
   /** @deprecated @deprecated use `param` instead*/
