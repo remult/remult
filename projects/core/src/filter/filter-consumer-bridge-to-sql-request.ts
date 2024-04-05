@@ -166,10 +166,15 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
     this.promises.push(
       (async () => {
         if (databaseCustom?.buildSql) {
-          let item = new CustomSqlFilterBuilder(this.r)
-          await databaseCustom.buildSql(item)
-          if (item.sql) {
-            this.addToWhere('(' + item.sql + ')')
+          let item = new CustomSqlFilterBuilder(
+            this.r,
+            this.nameProvider.wrapIdentifier,
+          )
+          let sql = await databaseCustom.buildSql(item)
+          if (typeof sql !== 'string') sql = item.sql
+
+          if (sql) {
+            this.addToWhere('(' + sql + ')')
           }
         }
       })(),
@@ -178,29 +183,44 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
 }
 export type CustomSqlFilterBuilderFunction = (
   builder: CustomSqlFilterBuilder,
-) => void | Promise<any>
+) => void | Promise<any> | string
 export interface CustomSqlFilterObject {
   buildSql: CustomSqlFilterBuilderFunction
 }
-export class CustomSqlFilterBuilder implements SqlCommandWithParameters {
-  constructor(private r: SqlCommandWithParameters) {}
+export class CustomSqlFilterBuilder
+  implements SqlCommandWithParameters, HasWrapIdentifier
+{
+  constructor(
+    private r: SqlCommandWithParameters,
+    public wrapIdentifier: (name: string) => string,
+  ) {
+    this.param.bind(this)
+    this.filterToRaw.bind(this)
+  }
+
   sql: string = ''
   /** @deprecated @deprecated use `param` instead*/
   addParameterAndReturnSqlToken(val: any) {
     return this.param(val)
   }
-  param<valueType>(val: valueType, field?: FieldMetadata<valueType>): string {
+  param = <valueType>(val: valueType, field?: FieldMetadata<valueType>) => {
     if (typeof field === 'object' && field.valueConverter.toDb) {
       val = field.valueConverter.toDb(val)
     }
 
     return this.r.param(val)
   }
-  async filterToRaw<entityType>(
+  filterToRaw = async <entityType>(
     repo: RepositoryOverloads<entityType>,
     condition: EntityFilter<entityType>,
-  ) {
-    return SqlDatabase.filterToRaw(repo, condition, this)
+  ) => {
+    return SqlDatabase.filterToRaw(
+      repo,
+      condition,
+      this,
+      undefined,
+      this.wrapIdentifier,
+    )
   }
 }
 
@@ -237,6 +257,7 @@ export declare type EntityDbNamesBase = {
   $entityName: string
   $dbNameOf(field: FieldMetadata<any> | string): string
   toString(): string
+  wrapIdentifier: (name: string) => string
 }
 export declare type EntityDbNames<entityType> = {
   [Properties in keyof Required<MembersOnly<entityType>>]: string
@@ -270,6 +291,7 @@ export async function dbNamesOf<entityType>(
       else key = field.key
       return result[key]
     },
+    wrapIdentifier: options.wrapIdentifier,
   }
   for (const field of meta.fields) {
     let r = await fieldDbName(field, meta, options.wrapIdentifier)

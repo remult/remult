@@ -252,6 +252,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
         return r.$dbNameOf(f)
       },
       $entityName: r.$entityName,
+      wrapIdentifier: r.wrapIdentifier,
     } satisfies EntityDbNamesBase
   }
   async update(id: any, data: any): Promise<any> {
@@ -472,9 +473,16 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
         }
         if (databaseCustom?.buildSql) {
           let r = new KnexCommandHelper()
-          const build = new CustomSqlFilterBuilder(r)
-          await databaseCustom.buildSql(build)
-          this.result.push((b) => b.whereRaw(build.sql, r.values))
+          const item = new CustomSqlFilterBuilder(
+            r,
+            this.nameProvider.wrapIdentifier,
+          )
+          let sql = await databaseCustom.buildSql(item)
+          if (typeof sql !== 'string') sql = item.sql
+
+          if (sql) {
+            this.result.push((b) => b.whereRaw(sql, r.values))
+          }
         }
       })(),
     )

@@ -819,6 +819,9 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //y1 - consider changing the sql raw filter to return the sql, instead of setting the sql property
 
 //p1 - admin url1 - pocketbase use /_ for the admin //{allowed?:Allowed,url?:string}
+//p1 - rewrite the filterToRow use case document
+//p1 - fix js docs of rawFilter and all it's examples
+//p1 - fix js docs of custom filter
 //p1 - document new sqlite providers
 //p1 - article auth.js with express
 //p1 - document offline support

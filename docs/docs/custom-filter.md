@@ -190,9 +190,9 @@ static activeOrders = Filter.createCustom<
       $lt: new Date(year + 1, 0, 1),
     },
     $and: [
-      SqlDatabase.rawFilter((builder) => {
-        builder.sql = `"customerId" in (select id from customers where city = ${builder.param(customerCity)})`
-      }),
+      SqlDatabase.rawFilter(({param}) =>
+        `"customerId" in (select id from customers where city = ${param(customerCity)})`
+      ),
     ],
   }
 })
@@ -252,10 +252,10 @@ static activeOrders = Filter.createCustom<
       $lt: new Date(year + 1, 0, 1),
     },
     $and: [
-      SqlDatabase.rawFilter((builder) => {
-        builder.sql = `${order.customerId} in (select ${customer.id} from ${customer.tableName} as c
-           where c.${customer.city} = ${builder.param(customerCity)})`
-      }),
+      SqlDatabase.rawFilter(({param}) =>
+        `${order.customerId} in (select ${customer.id} from ${customer.tableName} as c
+           where c.${customer.city} = ${param(customerCity)})`
+      ),
     ],
   }
 })

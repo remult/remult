@@ -144,6 +144,27 @@ export function SqlDbTests({
       ).length,
     ).toBe(2)
   })
+  it('test raw filter across databases with new syntax', async () => {
+    const repo = await entityWithValidations.create4RowsInDp(createEntity)
+    expect(
+      (
+        await repo.find({
+          where: {
+            myId: [1, 2, 3, 4],
+            $or: [
+              SqlDatabase.rawFilter(
+                async ({ param, wrapIdentifier }) =>
+                  wrapIdentifier('myId') + ` in (${param(2)},${param(3)})`,
+              ),
+              SqlDatabase.rawFilter(async ({ filterToRaw }) =>
+                filterToRaw(repo, { myId: [9, 10] }),
+              ),
+            ],
+          },
+        })
+      ).length,
+    ).toBe(2)
+  })
   it('test sql command factory with params', async () => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity)
     const remult = getRemult()

@@ -148,6 +148,7 @@ export class SqlDatabase
     condition: EntityFilter<entityType>,
     sqlCommand?: SqlCommandWithParameters,
     dbNames?: EntityDbNamesBase,
+    wrapIdentifier: (name: string) => string = (x) => x,
   ) {
     if (!sqlCommand) {
       sqlCommand = new myDummySQLCommand()
@@ -156,7 +157,7 @@ export class SqlDatabase
 
     var b = new FilterConsumerBridgeToSqlRequest(
       sqlCommand,
-      dbNames || (await dbNamesOf(r.metadata)),
+      dbNames || (await dbNamesOf(r.metadata, wrapIdentifier)),
     )
     b._addWhere = false
     await (

@@ -18,11 +18,12 @@ All notable changes to this project will be documented in this file.
 - Added `ForbiddenError` to the api
 - Added `apiPreprocessFilter` and `backendPreprocessFilter`
 - Added a way to analyze filter and query it - `Filter.getInfo`
+- Improved the api of `rawFilter` so it can now return the sql where to be added to the command
 - Fixed an issue with entity ids that included date
 - Fixed an issue with chaining of validators that in some cases caused a validator to be overwritten
-- Changed postgres schema builder to use `timestamptz` instead of `timestamp`
-- Changed the default storage of `@Fields.object` to `text` (varchar max) instead of string 255
 - `KnexDataProvider` now supports all `execute` and `createCommand` and can be used with any `SqlDatabase` functionality
+- Changed postgres schema builder to use `timestamptz` instead of `timestamp`
+- Changed the default storage of `@Fields.object` to `text` (varchar max) instead of string 255 in `knex` and `sqlite`
 - **Breaking Change** changed the signature of `updateMany` and `deleteMany` to require a `where` parameter:
   `repo(Task).delete({ where:{ completed:tr}})`
 - **Breaking Change** changed the signature of `getDb` to recieve `DataProvider` as parameter instead of `Remult`

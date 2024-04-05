@@ -25,7 +25,7 @@ export interface SqlCommand extends SqlCommandWithParameters {
   execute(sql: string): Promise<SqlResult>
 }
 export interface SqlCommandWithParameters {
-  /** @deprecated @deprecated use `param` instead*/
+  /** @deprecated use `param` instead*/
   addParameterAndReturnSqlToken(val: any): string
   // Adds a parameter to the command and returns the token to be used in the sql
   param(val: any): string

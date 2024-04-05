@@ -96,14 +96,11 @@ import { SqlDatabase } from 'remult'
 export class Order {
   //...
   static filterCity = Filter.createCustom<Order, { city: string }>(
-    async ({ city }) => {
-      return SqlDatabase.rawFilter((whereFragment) => {
-        whereFragment.sql = `customer in 
-            (select id 
-               from customers 
-              where city = ${whereFragment.param(city)})`
-      })
-    },
+    async ({ city }) =>
+      SqlDatabase.rawFilter(
+        ({ param }) =>
+          `customer in (select id from customers where city = ${param(city)})`,
+      ),
   )
 }
 ```
@@ -120,12 +117,13 @@ export class Order {
     async ({ city }) => {
       const orders = await dbNamesOf(Order)
       const customers = await dbNamesOf(Customer)
-      return SqlDatabase.rawFilter(async (whereFragment) => {
-        whereFragment.sql = `${orders.customer} in 
+      return SqlDatabase.rawFilter(
+        async ({ filterToRaw }) =>
+          `${orders.customer} in 
                (select ${customers.id} 
                   from ${customers} 
-                 where ${await whereFragment.filterToRaw(Customer, { city })})`
-      })
+                 where ${await filterToRaw(Customer, { city })})`,
+      )
     },
   )
 }
