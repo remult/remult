@@ -827,6 +827,10 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //p1 - https://github.com/vuejs/vitepress/issues/3154#issuecomment-1784612839
 //y2 - should we validate relations
 
+//p1 - add build step to tutorials, so people will test their build in the tutorial before deploying to the cloud (and also that the application runs).
+
+//p1 - add test that some projects with typing issue, and reference to dist test for typing issues
+
 //y1 - dependency of live query tables
 
 //y1 - consider the bot that updates dependencies
