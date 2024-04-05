@@ -47,6 +47,7 @@ import type {
   RepositoryRelations,
   Subscribable,
   ValidateFieldEvent,
+  idType,
 } from './remult3.js'
 
 import type { Paginator, RefSubscriber, RefSubscriberBase } from './remult3.js'
@@ -290,23 +291,9 @@ export class RepositoryImplementation<entityType>
     }
     return x
   }
-  async delete(
-    id: entityType extends { id?: number }
-      ? number
-      : entityType extends { id?: string }
-      ? string
-      : string | number,
-  ): Promise<void>
+  async delete(id: idType<entityType>): Promise<void>
   async delete(item: entityType): Promise<void>
-  async delete(
-    item:
-      | entityType
-      | (entityType extends { id?: number }
-          ? number
-          : entityType extends { id?: string }
-          ? string
-          : string | number),
-  ): Promise<void> {
+  async delete(item: entityType | idType<entityType>): Promise<void> {
     const ref = getEntityRef(item, false)
     if (ref) return ref.delete()
 
@@ -418,11 +405,7 @@ export class RepositoryImplementation<entityType>
     }
   }
   update(
-    id: entityType extends { id?: number }
-      ? number
-      : entityType extends { id?: string }
-      ? string
-      : string | number,
+    id: idType<entityType>,
     item: Partial<MembersOnly<entityType>>,
   ): Promise<entityType>
   update(

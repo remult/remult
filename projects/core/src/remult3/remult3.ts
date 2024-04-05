@@ -293,10 +293,14 @@ export declare type MembersOnly<T> = {
 //   T,
 //   { [K in keyof T]: T[K] extends Function ? never : K }[keyof T]
 // >
-export declare type idType<entityType> = entityType extends { id?: number }
-  ? number
-  : entityType extends { id?: string }
-  ? string
+export declare type idType<entityType> = entityType extends {
+  id?: infer U
+}
+  ? U extends string
+    ? string
+    : U extends number
+    ? number
+    : string | number
   : string | number
 /**used to perform CRUD operations on an `entityType` */
 export interface Repository<entityType> {
@@ -381,11 +385,7 @@ export interface Repository<entityType> {
    * taskRepo.update(task.id,{...task,completed:true})
    */
   update(
-    id: entityType extends { id?: number }
-      ? number
-      : entityType extends { id?: string }
-      ? string
-      : string | number,
+    id: idType<entityType>,
     item: Partial<MembersOnly<entityType>>,
   ): Promise<entityType>
   update(
@@ -401,13 +401,7 @@ export interface Repository<entityType> {
   ): Promise<number>
 
   /** Deletes an Item*/
-  delete(
-    id: entityType extends { id?: number }
-      ? number
-      : entityType extends { id?: string }
-      ? string
-      : string | number,
-  ): Promise<void>
+  delete(id: idType<entityType>): Promise<void>
   delete(item: Partial<MembersOnly<entityType>>): Promise<void>
   /**
    * Deletes all items that match the `where` condition.

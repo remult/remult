@@ -1825,15 +1825,7 @@ export interface Repository<entityType> {
    * taskRepo.update(task.id,{...task,completed:true})
    */
   update(
-    id: entityType extends {
-      id?: number
-    }
-      ? number
-      : entityType extends {
-          id?: string
-        }
-      ? string
-      : string | number,
+    id: idType<entityType>,
     item: Partial<MembersOnly<entityType>>,
   ): Promise<entityType>
   update(
@@ -1848,17 +1840,7 @@ export interface Repository<entityType> {
     item: Partial<MembersOnly<entityType>>,
   ): Promise<number>
   /** Deletes an Item*/
-  delete(
-    id: entityType extends {
-      id?: number
-    }
-      ? number
-      : entityType extends {
-          id?: string
-        }
-      ? string
-      : string | number,
-  ): Promise<void>
+  delete(id: idType<entityType>): Promise<void>
   delete(item: Partial<MembersOnly<entityType>>): Promise<void>
   /**
    * Deletes all items that match the `where` condition.
