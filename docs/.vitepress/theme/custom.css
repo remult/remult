@@ -4,6 +4,27 @@
   --vp-c-brand-2: rgb(0, 102, 200);
   --vp-c-brand-3: rgb(0, 102, 200);
   --vp-c-brand-soft: rgb(0, 102, 200, 0.14);
+
+  /* start dark code samples */
+  --vp-code-block-color: rgba(255, 255, 245, 0.86);
+  --vp-code-block-bg: #161618;
+  --vp-code-block-divider-color: #000000;
+
+  --vp-code-lang-color: rgba(235, 235, 245, 0.38);
+
+  --vp-code-line-highlight-color: #000000;
+  --vp-code-line-number-color: rgba(235, 235, 245, 0.38);
+
+  --vp-code-copy-code-border-color: rgba(82, 82, 89, 0.32);
+  --vp-code-copy-code-bg: #252529;
+  --vp-code-copy-code-hover-border-color: rgba(82, 82, 89, 0.32);
+  --vp-code-copy-code-hover-bg: #323238;
+  --vp-code-copy-code-active-text: rgba(255, 255, 245, 0.86);
+
+  --vp-code-tab-text-color: rgba(235, 235, 245, 0.6);
+  --vp-code-tab-hover-text-color: rgba(255, 255, 245, 0.86);
+  --vp-code-tab-active-text-color: rgba(255, 255, 245, 0.86);
+  /* end dark code samples*/
 }
 
 .dark {
