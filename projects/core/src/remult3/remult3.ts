@@ -824,7 +824,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 
 //p1 - admin url1 - pocketbase use /_ for the admin //{allowed?:Allowed,url?:string}
 //p2
-//p2  - fix validators cache
+//y1 - fix validators cache
 //y2 - should we validate relations
 
 //y1 - dependency of live query tables
