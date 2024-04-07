@@ -29,6 +29,24 @@ Retrieves information about a filter, including precise values for each property
 Arguments:
 * **metadata** - The metadata of the entity being filtered.
 * **filter** - The filter to analyze.
+## getInfo
+Retrieves information about a filter, including precise values for each property.
+   
+   
+   #### returns:
+   A promise that resolves to a FilterInfo object containing the filter information.
+   
+   
+   #### example:
+   ```ts
+   const info = await where.getInfo();
+   console.log(info.preciseValues);
+   // Output:
+   // {
+   //   "customerId": ["1", "2", "3"], // Precise values inferred from the filter
+   //   "status": undefined,           // Cannot infer precise values for 'status'
+   // }
+   ```
 ## createCustom
 Creates a custom filter. Custom filters are evaluated on the backend, ensuring security and efficiency.
 When the filter is used in the frontend, only its name is sent to the backend via the API,
@@ -41,19 +59,24 @@ where the filter gets translated and applied in a safe manner.
    
    #### example:
    ```ts
-   // In an entity class, add a static method for the custom filter
-   static titleLengthFilter = Filter.createCustom<Task>(() => {
-     return SqlDatabase.rawFilter((whereFragment) => {
-       whereFragment.sql = 'length(title) > 10';
-     });
-   });
-   
+   class Order {
+    //...
+    static activeOrdersFor = Filter.createCustom<Order, { year: number }>(
+      async ({ year }) => {
+        return {
+          status: ['created', 'confirmed', 'pending', 'blocked', 'delayed'],
+          createdAt: {
+            $gte: new Date(year, 0, 1),
+            $lt: new Date(year + 1, 0, 1),
+          },
+        }
+      },
+    )
+   }
    // Usage
-   console.table(
-     await remult.repo(Task).find({
-       where: Task.titleLengthFilter()
-     })
-   );
+   await repo(Order).find({
+    where: Order.activeOrders({ year }),
+   })
    ```
    
    
