@@ -218,7 +218,7 @@ export class RepositoryImplementation<entityType>
   constructor(
     private _entity: ClassType<entityType>,
     public _remult: Remult,
-    private _dataProvider: DataProvider,
+    public _dataProvider: DataProvider,
     private _info: EntityFullInfo<entityType>,
     private _defaultFindOptions?: FindOptions<entityType>,
   ) {}
@@ -380,7 +380,7 @@ export class RepositoryImplementation<entityType>
         ref.__clearErrorsAndReportChanged()
         let hasError = false
         for (const f of fields) {
-          if (!(await ref.fields.find(f).validate())) hasError = true
+          if (!(await ref.fields.find(f as string).validate())) hasError = true
         }
         if (!hasError) return undefined
         return ref.buildErrorInfoObject()
@@ -744,7 +744,10 @@ export class RepositoryImplementation<entityType>
       let val =
         rel.type === 'reference'
           ? (
-              getEntityRef(row).fields.find(field.key) as IdFieldRef<any, any>
+              getEntityRef(row).fields.find(field.key) as IdFieldRef<
+                entityType,
+                any
+              >
             ).getId()
           : row[key]
       if (rel.type === 'toOne' || rel.type === 'reference') {
@@ -1146,7 +1149,7 @@ abstract class rowHelperBase<T> {
               this._subscribers.reportObserved()
               if (!refImpl) {
                 refImpl = this.fields.find(col.key) as FieldRefImplementation<
-                  any,
+                  T,
                   any
                 >
                 if (!refImpl._subscribers) {
@@ -1162,7 +1165,7 @@ abstract class rowHelperBase<T> {
             this._subscribers?.reportChanged()
             if (!refImpl) {
               refImpl = this.fields.find(col.key) as FieldRefImplementation<
-                any,
+                T,
                 any
               >
               if (!refImpl._subscribers) {
@@ -1222,7 +1225,7 @@ abstract class rowHelperBase<T> {
       for (const col of this.fieldsMetadata) {
         let ei = getEntitySettings(col.valueType, false)
         let refImpl = this.fields.find(col.key) as FieldRefImplementation<
-          any,
+          T,
           any
         >
         refImpl._subscribers = new SubscribableImp()
@@ -1313,7 +1316,7 @@ abstract class rowHelperBase<T> {
     if (this._subscribers) {
       this._subscribers.reportChanged()
       for (const field of this.fields) {
-        let ref = field as FieldRefImplementation<any, any>
+        let ref = field as FieldRefImplementation<T, any>
         ref._subscribers.reportChanged()
       }
     }
@@ -1569,7 +1572,7 @@ export class rowHelperImplementation<T>
       let doNotSave = false
 
       let e = this.buildLifeCycleEvent(() => (doNotSave = true))
-      if (!this.remult.dataProvider.isProxy) {
+      if (!this.repository._dataProvider.isProxy) {
         for (const col of this.fields) {
           if (col.metadata.options.saving)
             await col.metadata.options.saving(this.instance, col, e)
@@ -1630,7 +1633,7 @@ export class rowHelperImplementation<T>
           }
         }
         await this.loadDataFrom(updatedRow)
-        if (!this.remult.dataProvider.isProxy) {
+        if (!this.repository._dataProvider.isProxy) {
           if (this.info.entityInfo.saved)
             await this.info.entityInfo.saved(this.instance, e)
           if (this.repository.listeners)
@@ -1702,7 +1705,7 @@ export class rowHelperImplementation<T>
   async delete() {
     this.__clearErrorsAndReportChanged()
     let e = this.buildLifeCycleEvent()
-    if (!this.remult.dataProvider.isProxy) {
+    if (!this.repository._dataProvider.isProxy) {
       if (this.info.entityInfo.deleting)
         await this.info.entityInfo.deleting(this.instance, e)
     }
@@ -1710,7 +1713,7 @@ export class rowHelperImplementation<T>
 
     try {
       await this.edp.delete(this.id)
-      if (!this.remult.dataProvider.isProxy) {
+      if (!this.repository._dataProvider.isProxy) {
         if (this.info.entityInfo.deleted)
           await this.info.entityInfo.deleted(this.instance, e)
       }
