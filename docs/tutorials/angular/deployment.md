@@ -120,6 +120,17 @@ If no `DATABASE_URL` has found, it'll fallback to our local JSON files.
 
 The todo app is now ready for deployment to production.
 
+## Test Locally
+
+To test the application locally run
+
+```sh
+npm run build
+npm run start
+```
+
+Now navigate to http://localhost3002 and test the application locally
+
 ## Deploy to Railway
 
 In order to deploy the todo app to [railway](https://railway.app/) you'll need a `railway` account. You'll also need [Railway CLI](https://docs.railway.app/develop/cli#npm) installed, and you'll need to login to railway from the cli, using `railway login`.
