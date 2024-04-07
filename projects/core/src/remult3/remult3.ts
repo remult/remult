@@ -818,23 +818,19 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //y1 - currently for string fields we default for 255 in knex (which is their default) why not just use text (varchar max) - and only use exact length when one is provided?
 //y1 - consider changing the sql raw filter to return the sql, instead of setting the sql property
 
-//p1 - admin url1 - pocketbase use /_ for the admin //{allowed?:Allowed,url?:string}
-//p1 - rewrite the filterToRow use case document
-//p1 - fix js docs of rawFilter and all it's examples
-//p1 - fix js docs of custom filter
-//p1 - document new sqlite providers
-//p1 - article auth.js with express
-//p1 - document offline support
-
-//p1 - fix getting started article with using your own database connection
-//p1 - switch master to main
-//p1 - create foreign key constraints in user code
-//p1 - https://github.com/vuejs/vitepress/issues/3154#issuecomment-1784612839
-//y2 - should we validate relations
+//p1 - remult.repo(task,db) wasn't aware it was not in proxy mode
 
 //p1 - add build step to tutorials, so people will test their build in the tutorial before deploying to the cloud (and also that the application runs).
+//p1 - https://github.com/vuejs/vitepress/issues/3154#issuecomment-1784612839
 
-//p1 - add test that some projects with typing issue, and reference to dist test for typing issues
+//p1 - rewrite the filterToRow use case document
+//p1 - article auth.js with express
+
+//p1 - switch master to main
+//p1 - create foreign key constraints in user code
+
+//p1 - admin url1 - pocketbase use /_ for the admin //{allowed?:Allowed,url?:string}
+//y2 - should we validate relations
 
 //y1 - dependency of live query tables
 //p1 - see why mongo tests do not run anymore
@@ -908,7 +904,9 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //docs
 
 //------
-
+//y2 - wrap identifier for custom filter & sql expression
+//y2 - Should we create a separate implementation of command - one that the user uses, and another that the database implements (with only the bear necesities) - for example, to provide a second paramter called field for toDb conversions
+//y2 - should we simply inherit from SqlDataProvider - and send the required parameter in the call to the base class - I think that new SqlDatabase(new PostgresDataProvider()) is a bilt combersome
 //y2 - from the crm-demo(https://crm-demo.up.railway.app/deals), after editing a deal: - _updateEntityBasedOnApi
 
 //y2 - Backend methods are transactions, it's not intuitive and maybe should be optional / opt in

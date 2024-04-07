@@ -264,7 +264,7 @@ import { remultExpress } from 'remult/remult-express'
 import knex from 'knex'
 
 const knexDb = knex({
-  client: 'pg',
+  client: '...',
   connection: '...',
 })
 
@@ -311,50 +311,25 @@ app.use(
 Install knex and sqlite3:
 
 ```sh
-npm i knex sqlite3
+npm i sqlite3
 ```
 
 Set the `dataProvider` property:
 
-```ts{3,9-15}
+```ts{3,10-12}
 import express from "express"
 import { remultExpress } from "remult/remult-express"
-import { createKnexDataProvider } from "remult/remult-knex"
+import {SqlDatabase } from "remult"
+import { BetterSqlite3DataProvider } from "remult/remult-better-sqlite3"
 
 const app = express()
 
 app.use(
   remultExpress({
-    dataProvider: createKnexDataProvider({
-      // Knex client configuration for SQLite
-      client: "sqlite3",
-      connection: {
-        filename: "./mydb.sqlite"
-      }
-    })
+    dataProvider: new SqlDatabase(
+      new BetterSqlite3DataProvider(new Database('./mydb.sqlite')),
+    )
   })
-)
-```
-
-Or use your existing knex provider
-
-```ts
-import express from 'express'
-import { KnexDataProvider } from 'remult/remult-knex'
-import { remultExpress } from 'remult/remult-express'
-import knex from 'knex'
-
-const knexDb = knex({
-  client: 'pg',
-  connection: '...',
-})
-
-const app = express()
-
-app.use(
-  remultExpress({
-    dataProvider: new KnexDataProvider(knexDb), // [!code highlight]
-  }),
 )
 ```
 
@@ -407,7 +382,7 @@ import { remultExpress } from 'remult/remult-express'
 import knex from 'knex'
 
 const knexDb = knex({
-  client: 'pg',
+  client: '...',
   connection: '...',
 })
 
@@ -463,7 +438,7 @@ import { remultExpress } from 'remult/remult-express'
 import knex from 'knex'
 
 const knexDb = knex({
-  client: 'pg',
+  client: '...',
   connection: '...',
 })
 

@@ -136,6 +136,16 @@ export class SqlDatabase
       }
     })
   }
+  /**
+   * Creates a raw filter for entity filtering.
+   * @param {CustomSqlFilterBuilderFunction} build - The custom SQL filter builder function.
+   * @returns {EntityFilter<any>} - The entity filter with a custom SQL filter.
+   * @example
+   * SqlDatabase.rawFilter(({param}) =>
+        `"customerId" in (select id from customers where city = ${param(customerCity)})`
+      )
+   * @see [Leveraging Database Capabilities with Raw SQL in Custom Filters](https://remult.dev/docs/custom-filter.html#leveraging-database-capabilities-with-raw-sql-in-custom-filters)
+   */
   static rawFilter(build: CustomSqlFilterBuilderFunction): EntityFilter<any> {
     return {
       [customDatabaseFilterToken]: {

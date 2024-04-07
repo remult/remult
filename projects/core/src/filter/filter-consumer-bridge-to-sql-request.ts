@@ -181,12 +181,22 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
     )
   }
 }
-export type CustomSqlFilterBuilderFunction = (
-  builder: CustomSqlFilterBuilder,
-) => void | Promise<any> | string
 export interface CustomSqlFilterObject {
   buildSql: CustomSqlFilterBuilderFunction
 }
+/**
+ * Represents a custom SQL filter builder function.
+ * @callback CustomSqlFilterBuilderFunction
+ * @param {CustomSqlFilterBuilder} builder - The custom SQL filter builder instance.
+ * @returns {void | Promise<string> | string} - The result of the custom SQL filter builder function.
+ */
+export type CustomSqlFilterBuilderFunction = (
+  builder: CustomSqlFilterBuilder,
+) => void | Promise<string> | string
+
+/**
+ * Represents a custom SQL filter builder.
+ */
 export class CustomSqlFilterBuilder
   implements SqlCommandWithParameters, HasWrapIdentifier
 {
@@ -199,10 +209,16 @@ export class CustomSqlFilterBuilder
   }
 
   sql: string = ''
-  /** @deprecated @deprecated use `param` instead*/
+  /** @deprecated  use `param` instead*/
   addParameterAndReturnSqlToken(val: any) {
     return this.param(val)
   }
+  /**
+   * Adds a parameter value.
+   * @param {valueType} val - The value to add as a parameter.
+   * @param {FieldMetadata<valueType>} [field] - The field metadata.
+   * @returns {string} - The SQL token.
+   */
   param = <valueType>(val: valueType, field?: FieldMetadata<valueType>) => {
     if (typeof field === 'object' && field.valueConverter.toDb) {
       val = field.valueConverter.toDb(val)
@@ -210,6 +226,12 @@ export class CustomSqlFilterBuilder
 
     return this.r.param(val)
   }
+  /**
+   * Converts an entity filter into a raw SQL condition - and appends to it any `backendPrefilter` and `backendPreprocessFilter`
+   * @param {RepositoryOverloads<entityType>} repo - The repository.
+   * @param {EntityFilter<entityType>} condition - The entity filter.
+   * @returns {Promise<string>} - The raw SQL.
+   */
   filterToRaw = async <entityType>(
     repo: RepositoryOverloads<entityType>,
     condition: EntityFilter<entityType>,

@@ -1,144 +1,141 @@
-# Using the underlying database
+# Accessing the Underlying Database in Remult
 
-We understand that remult doesn't cover every use case of querying data from the database, and in some cases you may want to access the underlying database itself on the backend.
-
-Here's the way to do that, based on the `remult` object.
-
-Note that this code can only run on the backend.
+While Remult provides a powerful abstraction for working with databases, there might be scenarios where you need to access the underlying database directly. This could be for performing complex queries, optimizations, or other database-specific operations that are not covered by Remult's API.
 
 :::warning
-Running custom SQL is dangerous and prone to SQL injection hacking. Avoid building custom SQL using values that are sent as parameters from outside the server.
-
-Always use the `param` method to generate database parameters (like the `$1` that you can see in the query) - this can help you reduce the risk of SQL injection
+Directly executing custom SQL can be dangerous and prone to SQL injection attacks. Always use parameterized queries and the `param` method provided by Remult to safely include user input in your queries.
 :::
 
-## SqlDatabase
+## Accessing SQL Databases
 
-`SqlDatabase` provides a level of abstraction around all sql based implementations (postgres, websql and more to come);
+For SQL-based databases, Remult provides the SqlDatabase class to interact directly with the database and allows you to run raw SQL queries directly. This is useful for executing complex queries that involve operations like GROUP BY, bulk updates, and other advanced SQL features.
 
-This can help if you want to switch sql database sometimes in the future.
+### Basic SQL Query
 
-### Simple sql
-
-```ts
-const tasks = await dbNamesOf(Task)
+```typescript
 const sql = SqlDatabase.getDb()
-const r = await sql.execute(`select count(*) as c from ${tasks}`)
-console.log(r.rows[0].c)
+const result = await sql.execute('SELECT COUNT(*) AS count FROM tasks')
+console.log(result.rows[0].count)
 ```
 
-- The `dbNamesOf` function returns an object that exposes the db names of the entity and it's fields. This improves maintainability and allows for better searches in the code
+This approach is straightforward but can lead to inconsistencies if the database schema changes.
 
-Another example:
+#### the `dbNamesOf` function:
 
-```ts
+The `dbNamesOf` function dynamically retrieves the database table and column names based on your entity definitions, ensuring that your queries stay in sync with your data model. This enhances consistency, maintainability, and searchability in your code.
+
+```typescript
 const tasks = await dbNamesOf(Task)
 const sql = SqlDatabase.getDb()
-console.table(
-  await sql.execute(
-    `select ${tasks.title}, ${tasks.completed} 
-     from ${tasks}`,
-  ),
-)
+const result = await sql.execute(`SELECT COUNT(*) AS count FROM ${tasks}`)
+console.log(result.rows[0].count)
 ```
 
-### Using bound parameters
+##### Create index example
 
-```ts
+```typescript
+const tasks = await dbNamesOf(Task)
+const sql = SqlDatabase.getDb()
+await sql.execute(`CREATE INDEX idx_task_title ON ${tasks}(${tasks.title});`)
+```
+
+### Using Bound Parameters
+
+The `param` method safely incorporates user input into the query, reducing the risk of SQL injection by using parameterized queries.
+
+```typescript
 const priceToUpdate = 5
 const products = await dbNamesOf(Product)
 const sql = SqlDatabase.getDb()
 let command = sql.createCommand()
 await command.execute(
-  `update ${products} 
-      set ${products.price} = 
-          ${products.price} + ${command.param(+priceToUpdate)}`,
+  `UPDATE ${products} SET ${products.price} = ${
+    products.price
+  } + ${command.param(priceToUpdate)}`,
 )
 ```
 
-When executed with `priceToUpdate = 5`, this code will run the following SQL:
+When executed, this code will run the following SQL:
 
 ```sql
-update products set price = price + $1
+UPDATE products SET price = price + $1
 Arguments: { '$1': 5 }
 ```
 
-### Leveraging EntityFilter for Sql Databases
+### Leveraging EntityFilter for SQL Databases
 
-Sometimes in our sql, we may want to use EntityFilters as sql filters, this is particularly useful if we have refactored complex filters in our code and we want to reuse them.
+The `filterToRaw` function converts Remult's `EntityFilter` objects into SQL where clauses, enabling you to incorporate complex filtering logic defined in your models into custom SQL queries. This allows for reusability and integration with backend filters.
 
-we can use the `filterToRaw` utility function for that:
+#### Benefits of filterToRaw
 
-```ts
-const tasks = await dbNamesOf(Task)
-const sql = await SqlDatabase.getDb()
+- **Reusability**: Allows you to reuse complex filters defined in your Remult models in custom SQL queries.
+- **Integration**: Respects any **backendPrefilter** and **backendPreprocessFilter** applied to your entities, ensuring consistent access control and data manipulation rules.
+
+```typescript
+const order = await dbNamesOf(Order)
+const sql = SqlDatabase.getDb()
 const command = sql.createCommand()
-console.table(
-  await command.execute(
-    `select ${tasks.title}, ${tasks.completed} from ${tasks}
-    where ${await SqlDatabase.filterToRaw(Task, { id: [1, 3] }, command)}`,
-  ),
+const filterSql = await SqlDatabase.filterToRaw(
+  Order,
+  {
+    status: ['created', 'confirmed', 'pending', 'blocked', 'delayed'],
+    createdAt: {
+      $gte: new Date(year, 0, 1),
+      $lt: new Date(year + 1, 0, 1),
+    },
+  },
+  command,
 )
+const result = await command.execute(
+  `SELECT COUNT(*) FROM ${order} WHERE ${filterSql}`,
+)
+console.log(result.rows[0].count)
 ```
 
-will result in the following sql:
+Resulting SQL:
 
 ```sql
-select title, completed from tasks where id in (1, 3)
+SELECT COUNT(*) FROM "orders"
+WHERE "status" IN ($1, $2, $3, $4, $5) AND "createdAt" >= $6 AND "createdAt" < $7
 ```
 
-#### We can also use this with bound parameters
+Using `customFilter`:
 
-```ts
-const tasks = await dbNamesOf(Task)
-const sql = await SqlDatabase.getDb()
+```typescript
+const order = await dbNamesOf(Order)
+const sql = SqlDatabase.getDb()
 const command = sql.createCommand()
-console.table(
-  await command.execute(
-    `select ${tasks.title}, ${tasks.completed} from ${tasks}
-      where ${await SqlDatabase.filterToRaw(Task, { id: [1, 3] }, command)}`,
-  ),
+const filterSql = await SqlDatabase.filterToRaw(
+  Order,
+  Order.activeOrders({ year, customerCity: 'London' }),
+  command,
 )
+const result = await command.execute(
+  `SELECT COUNT(*) FROM ${order} WHERE ${filterSql}`,
+)
+console.log(result.rows[0].count)
 ```
 
-This will result in the following sql:
+Resulting SQL:
 
 ```sql
-select title, completed from tasks where id in ($1, $2)
-Arguments: { '$1': 1, '$2': 3 }
+SELECT COUNT(*) FROM "orders"
+WHERE "status" IN ($1, $2, $3, $4, $5) AND "createdAt" >= $6 AND "createdAt" < $7 AND ("orders"."customerId" IN (
+      SELECT "customers"."id" FROM "customers"
+             WHERE "customers"."city" = $8
+        ))
 ```
 
-### Logs
-
-You may want to log the `sql` that is being executed, simply do:
-
-```ts
-SqlDatabase.LogToConsole = true
-```
-
-You could also use another formats line `onLiner` or even provide your own logger `function` to do your own things.
-
-You want to log only slow queries? `SqlDatabase.durationThreshold` is the property for you! _(default is 0 milliseconds, which means log everything)_.
+## Accessing Other Databases
 
 ## Knex
 
-```ts
+```typescript
 const tasks = await dbNamesOf(Task)
 const knex = KnexDataProvider.getDb()
-const r = await knex(tasks.$entityName).count()
-console.log(r[0].count)
-```
+const result = await knex(tasks.$entityName).count()
 
-- Note that we use the `$entityName` to get the entity name of the table.
-
-Another example:
-
-```ts
-const tasks = await dbNamesOf(Task)
-const knex = await KnexDataProvider.getDb()
-console.table(
-  await knex(tasks.$entityName).select(tasks.title, tasks.completed),
-)
+console.log(result[0].count)
 ```
 
 ### Leveraging EntityFilter for Knex
@@ -181,14 +178,6 @@ const r = await sql.query(`select count(*) as c from ${tasks}`)
 console.log(r.rows[0].c)
 ```
 
-## websql
+## Conclusion
 
-```ts
-const tasks = await dbNamesOf(Task)
-const sql = WebSqlDataProvider.getDb()
-sql.transaction((y) => {
-  y.executeSql(`select count(*) as c from ${tasks}`, undefined, (_, r) => {
-    console.log(r.rows[0].c)
-  })
-})
-```
+Accessing the underlying database directly in Remult provides the flexibility to handle complex use cases that might not be covered by the ORM layer. However, it's important to use this capability judiciously and securely, especially when dealing with user input, to avoid potential security vulnerabilities like SQL injection. By leveraging utilities like `dbNamesOf` and `filterToRaw

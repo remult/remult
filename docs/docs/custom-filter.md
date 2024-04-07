@@ -28,7 +28,7 @@ In the following sections, we'll explore how to implement custom filters in this
 
 Consider a scenario where you have an `Order` entity, and you frequently need to filter orders that are considered "active" based on their status and creation year. Without custom filters, your code might look something like this:
 
-```javascript
+```ts
 await repo(Order).find({
   where: {
     status: ['created', 'confirmed', 'pending', 'blocked', 'delayed'],
@@ -50,20 +50,20 @@ This code is not only repetitive but also clutters your application, making it h
 
 Custom filters allow you to refactor your filtering logic into a reusable and declarative component. Here's how you can define a custom filter for active orders:
 
-```javascript
+```ts
 class Order {
   //...
   static activeOrdersFor = Filter.createCustom<Order, { year: number }>(
     async ({ year }) => {
       return {
-        status: ["created", "confirmed", "pending", "blocked", "delayed"],
+        status: ['created', 'confirmed', 'pending', 'blocked', 'delayed'],
         createdAt: {
           $gte: new Date(year, 0, 1),
           $lt: new Date(year + 1, 0, 1),
         },
-      };
-    }
-  );
+      }
+    },
+  )
 }
 ```
 
@@ -75,7 +75,7 @@ class Order {
 
 Now, you can use this custom filter in your queries:
 
-```javascript
+```ts
 await repo(Order).find({
   where: Order.activeOrders({ year }),
 })
@@ -93,7 +93,7 @@ One of the key advantages of custom filters is their ability to be composed with
 
 Let's take a closer look at the example you provided:
 
-```javascript
+```ts
 await repo(Order).find({
   where: {
     customerId: '123',
@@ -113,23 +113,20 @@ By using the `$and` operator, we're able to combine the custom filter with a reg
 
 The power of composability doesn't stop there. You can also combine multiple custom filters to create even more specific filters. For example, suppose you have another custom filter called `highValueOrders` that filters orders based on their total value:
 
-```javascript
+```ts
 class Order {
   //...
-  static highValueOrders =
-    Filter.createCustom <
-    Order >
-    (() => {
-      return {
-        totalValue: { $gt: 1000 },
-      }
-    })
+  static highValueOrders = Filter.createCustom<Order>(() => {
+    return {
+      totalValue: { $gt: 1000 },
+    }
+  })
 }
 ```
 
 You can then combine this with the `activeOrders` filter to find high-value active orders for a specific year:
 
-```javascript
+```ts
 await repo(Order).find({
   where: {
     $and: [Order.activeOrders({ year }), Order.highValueOrders()],
@@ -145,7 +142,7 @@ One of the significant advantages of custom filters is that they are evaluated o
 
 Let's examine the example you provided:
 
-```javascript
+```ts
 static activeOrders = Filter.createCustom<
   Order,
   { year: number; customerCity: string }
@@ -178,7 +175,7 @@ Since custom filters are **evaluated on the backend**, you have the opportunity 
 
 Let's modify the `activeOrders` custom filter to use a raw SQL query for filtering orders based on the customer's city:
 
-```javascript
+```ts
 static activeOrders = Filter.createCustom<
   Order,
   { year: number; customerCity: string }
@@ -190,9 +187,9 @@ static activeOrders = Filter.createCustom<
       $lt: new Date(year + 1, 0, 1),
     },
     $and: [
-      SqlDatabase.rawFilter(({param}) =>
-        `"customerId" in (select id from customers where city = ${param(customerCity)})`
-      ),
+      SqlDatabase.rawFilter(({param}) =>  // [!code highlight]
+        `"customerId" in (select id from customers where city = ${param(customerCity)})` // [!code highlight]
+      ), // [!code highlight]
     ],
   }
 })
@@ -221,7 +218,7 @@ Order By "id"
 
 Using the custom filter remains straightforward:
 
-```javascript
+```ts
 await repo(Order).find({
   where: Order.activeOrders({ year: 2024, customerCity: 'New York' }),
 })
@@ -233,17 +230,17 @@ The `dbNamesOf` utility function can be customized to include the table name in 
 
 Here's an updated example of the `activeOrders` custom filter using `dbNamesOf` with table names and aliases:
 
-```javascript
+```ts
 static activeOrders = Filter.createCustom<
   Order,
   { year: number; customerCity: string }
 >(async ({ year, customerCity }) => {
-  const order = await dbNamesOf(Order, {
-    tableName: true,
+  const order = await dbNamesOf(Order, { // [!code highlight]
+    tableName: true, // [!code highlight]
   })
-  const customer = await dbNamesOf(Customer, {
-    tableName: "c",
-  })
+  const customer = await dbNamesOf(Customer, { // [!code highlight]
+    tableName: "c", // [!code highlight]
+  }) // [!code highlight]
 
   return {
     status: ["created", "confirmed", "pending", "blocked", "delayed"],
@@ -252,9 +249,9 @@ static activeOrders = Filter.createCustom<
       $lt: new Date(year + 1, 0, 1),
     },
     $and: [
-      SqlDatabase.rawFilter(({param}) =>
-        `${order.customerId} in (select ${customer.id} from ${customer.tableName} as c
-           where c.${customer.city} = ${param(customerCity)})`
+      SqlDatabase.rawFilter(({param}) => // [!code highlight]
+        `${order.customerId} in (select ${customer.id} from ${customer} as c // [!code highlight]
+           where c.${customer.city} = ${param(customerCity)})` // [!code highlight]
       ),
     ],
   }

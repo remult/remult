@@ -102,7 +102,6 @@ export { WebSqlDataProvider } from './src/data-providers/web-sql-data-provider.j
 export { SqlDatabase } from './src/data-providers/sql-database.js' //V
 
 export {
-  CustomSqlFilterObject,
   CustomSqlFilterBuilder,
   dbNamesOf,
   dbNamesOfOptions,

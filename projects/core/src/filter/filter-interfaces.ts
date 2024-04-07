@@ -117,19 +117,26 @@ export class Filter {
    * @returns {function(): EntityFilter<entityType>} A function that returns an `EntityFilter` of type `entityType`.
    *
    * @example
-   * // In an entity class, add a static method for the custom filter
-   * static titleLengthFilter = Filter.createCustom<Task>(() => {
-   *   return SqlDatabase.rawFilter((whereFragment) => {
-   *     whereFragment.sql = 'length(title) > 10';
-   *   });
-   * });
-   *
+   *  class Order {
+   *  //...
+   *  static activeOrdersFor = Filter.createCustom<Order, { year: number }>(
+   *    async ({ year }) => {
+   *      return {
+   *        status: ['created', 'confirmed', 'pending', 'blocked', 'delayed'],
+   *        createdAt: {
+   *          $gte: new Date(year, 0, 1),
+   *          $lt: new Date(year + 1, 0, 1),
+   *        },
+   *      }
+   *    },
+   *  )
+   *}
    * // Usage
-   * console.table(
-   *   await remult.repo(Task).find({
-   *     where: Task.titleLengthFilter()
-   *   })
-   * );
+   * await repo(Order).find({
+   *  where: Order.activeOrders({ year }),
+   *})
+
+
    * @see
    * [Sql filter and Custom filter](/docs/custom-filter.html)
    * [Filtering and Relations](/docs/filtering-and-relations.html)
@@ -145,36 +152,35 @@ export class Filter {
   ): (() => EntityFilter<entityType>) & customFilterInfo<entityType>
   /**
    * Creates a custom filter. Custom filters are evaluated on the backend, ensuring security and efficiency.
-   * When the filter is used in the frontend, only its name and value arguments are sent to the backend via the API,
+   * When the filter is used in the frontend, only its name is sent to the backend via the API,
    * where the filter gets translated and applied in a safe manner.
    *
    * @template entityType The entity type for the filter.
-   * @template argsType The type of the argument for the filter.
-   * @param {function(argsType, Remult): EntityFilter<entityType>} rawFilterTranslator A function that takes an argument of type `argsType` and an instance of `Remult`, and returns an `EntityFilter`.
+   * @param {function(): EntityFilter<entityType>} rawFilterTranslator A function that returns an `EntityFilter`.
    * @param {string} [key] An optional unique identifier for the custom filter.
-   * @returns {function(argsType): EntityFilter<entityType>} A function that takes an argument of type `argsType` and returns an `EntityFilter` of type `entityType`.
+   * @returns {function(): EntityFilter<entityType>} A function that returns an `EntityFilter` of type `entityType`.
    *
    * @example
-   * // In an entity class, add a static method for the custom filter with parameters
-   * static filterCity = Filter.createCustom<Order, { city: string }>(
-   *   async ({ city }) => {
-   *     const orders = await dbNamesOf(Order);
-   *     const customers = await dbNamesOf(Customer);
-   *     return SqlDatabase.rawFilter(async (whereFragment) => {
-   *       whereFragment.sql = `${orders.customer} in
-   *              (select ${customers.id}
-   *                 from ${customers}
-   *                where ${await whereFragment.filterToRaw(Customer, { city })})`;
-   *     });
-   *   }
-   * );
-   *
+   *  class Order {
+   *  //...
+   *  static activeOrdersFor = Filter.createCustom<Order, { year: number }>(
+   *    async ({ year }) => {
+   *      return {
+   *        status: ['created', 'confirmed', 'pending', 'blocked', 'delayed'],
+   *        createdAt: {
+   *          $gte: new Date(year, 0, 1),
+   *          $lt: new Date(year + 1, 0, 1),
+   *        },
+   *      }
+   *    },
+   *  )
+   *}
    * // Usage
-   * const cityFilter = Order.filterCity({ city: 'New York' });
-   * const ordersInNewYork = await remult.repo(Order).find({ where: cityFilter });
-   *
-   * // The filter is sent to the backend as:
-   * // http://127.0.0.1:3002/api/orders?%24custom%24filterCity=%7B%22city%22%3A%22New%20York%22%7D
+   * await repo(Order).find({
+   *  where: Order.activeOrders({ year }),
+   *})
+
+   
    * @see
    * [Sql filter and Custom filter](/docs/custom-filter.html)
    * [Filtering and Relations](/docs/filtering-and-relations.html)

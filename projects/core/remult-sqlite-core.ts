@@ -13,10 +13,19 @@ import {
 } from './src/filter/filter-consumer-bridge-to-sql-request.js'
 import { isAutoIncrement } from './src/remult3/RepositoryImplementation.js'
 import type { FieldMetadata } from './src/column-interfaces.js'
-import type { CanBuildMigrations, MigrationBuilder, MigrationCode } from './migrations/migration-types.js'
+import type {
+  CanBuildMigrations,
+  MigrationBuilder,
+  MigrationCode,
+} from './migrations/migration-types.js'
 
-export class SqliteCoreDataProvider implements SqlImplementation, CanBuildMigrations {
-  constructor(public createCommand: () => SqlCommand, public end: () => Promise<void>) { }
+export class SqliteCoreDataProvider
+  implements SqlImplementation, CanBuildMigrations
+{
+  constructor(
+    public createCommand: () => SqlCommand,
+    public end: () => Promise<void>,
+  ) {}
 
   orderByNullsFirst?: boolean
 
@@ -26,44 +35,38 @@ export class SqliteCoreDataProvider implements SqlImplementation, CanBuildMigrat
 
   afterMutation?: VoidFunction
 
-
   provideMigrationBuilder(builder: MigrationCode): MigrationBuilder {
-    let self = this;
+    let self = this
     return {
       createTable: async (entity: EntityMetadata<any>) => {
-        builder.addSql(await self.getCreateTableSql(entity));
+        builder.addSql(await self.getCreateTableSql(entity))
       },
       addColumn: async (entity: EntityMetadata<any>, field: FieldMetadata) => {
-        let e = await dbNamesOf(entity);
-        let sql = `alter table ${e.$entityName} add column ${self.addColumnSqlSyntax(field, e.$dbNameOf(field))}`;
-        builder.addSql(sql);
-      }
+        let e = await dbNamesOf(entity)
+        let sql = `alter table ${
+          e.$entityName
+        } add column ${self.addColumnSqlSyntax(field, e.$dbNameOf(field))}`
+        builder.addSql(sql)
+      },
     }
   }
 
   async transaction(
     action: (sql: SqlImplementation) => Promise<void>,
   ): Promise<void> {
-
-
-    this.createCommand().execute("Begin Transaction");
+    this.createCommand().execute('Begin Transaction')
     try {
       await action(this)
-      this.createCommand().execute("Commit");
-    }
-    catch (err) {
-      this.createCommand().execute("Rollback");
+      this.createCommand().execute('Commit')
+    } catch (err) {
+      this.createCommand().execute('Rollback')
       throw err
     }
-
-
   }
-  async entityIsUsedForTheFirstTime(entity: EntityMetadata) {
-
-  }
+  async entityIsUsedForTheFirstTime(entity: EntityMetadata) {}
   async ensureSchema(entities: EntityMetadata<any>[]): Promise<void> {
     for (const entity of entities) {
-      await this.createTable(entity)
+      await this.createTableIfNotExist(entity)
     }
   }
 
@@ -84,7 +87,7 @@ export class SqliteCoreDataProvider implements SqlImplementation, CanBuildMigrat
     } else result += ' text' + (x.allowNull ? ' ' : " default '' not null ")
     return result
   }
-  async createTable(entity: EntityMetadata<any>) {
+  async createTableIfNotExist(entity: EntityMetadata<any>) {
     let sql = await this.getCreateTableSql(entity)
     if (SqlDatabase.LogToConsole) console.log(sql)
     await this.createCommand().execute(sql)
@@ -110,7 +113,8 @@ export class SqliteCoreDataProvider implements SqlImplementation, CanBuildMigrat
         }
       }
     }
-    let sql = 'create table if not exists ' + e.$entityName + ' (' + result + '\r\n)'
+    let sql =
+      'create table if not exists ' + e.$entityName + ' (' + result + '\r\n)'
 
     return sql
   }
