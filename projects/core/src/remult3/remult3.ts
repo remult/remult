@@ -819,8 +819,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 
 //p1 - article auth.js with express
 
-//p1 - switch master to main
-//p1 - create foreign key constraints in user code
+//p2 - create foreign key constraints in user code - https://codesandbox.io/p/devbox/fk-validator-tdshcs
 
 //p1 - admin url1 - pocketbase use /_ for the admin //{allowed?:Allowed,url?:string}
 //p2
@@ -871,7 +870,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //y2 - constraints (@JY)
 
 /*p2 remult admin
-
+ - when making a change and canceling - the changed value still appears
  - Small thing, I get SvelteKitError: Not found: /vite.svg
  - understand the to many relation for the admin, based on the to one
  - relation from order details to order gave a compound id info - and it is not true - same for the relation to product
