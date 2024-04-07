@@ -188,11 +188,11 @@ export interface CustomSqlFilterObject {
  * Represents a custom SQL filter builder function.
  * @callback CustomSqlFilterBuilderFunction
  * @param {CustomSqlFilterBuilder} builder - The custom SQL filter builder instance.
- * @returns {void | Promise<string> | string} - The result of the custom SQL filter builder function.
+ * @returns {void | string | Promise<string | void> } - The result of the custom SQL filter builder function.
  */
 export type CustomSqlFilterBuilderFunction = (
   builder: CustomSqlFilterBuilder,
-) => void | Promise<string> | string
+) => void | string | Promise<string | void>
 
 /**
  * Represents a custom SQL filter builder.

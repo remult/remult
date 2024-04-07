@@ -313,7 +313,7 @@ export declare class CustomSqlFilterBuilder
 //[ ] RepositoryOverloads from TBD is not exported
 export type CustomSqlFilterBuilderFunction = (
   builder: CustomSqlFilterBuilder,
-) => void | Promise<string> | string
+) => void | string | Promise<string | void>
 export interface DataProvider {
   getEntityDataProvider(entity: EntityMetadata): EntityDataProvider
   transaction(
