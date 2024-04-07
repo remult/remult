@@ -813,7 +813,6 @@ export type ClassFieldDecorator<entityType, valueType> = (
   c?: any,
 ) => void
 
-//p1 - fix validators cache
 //y1 - JY suggestion of having generate as part of the ensure schema - not sure
 //y1 - currently for string fields we default for 255 in knex (which is their default) why not just use text (varchar max) - and only use exact length when one is provided?
 //y1 - consider changing the sql raw filter to return the sql, instead of setting the sql property
@@ -823,13 +822,14 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //p1 - add build step to tutorials, so people will test their build in the tutorial before deploying to the cloud (and also that the application runs).
 //p1 - https://github.com/vuejs/vitepress/issues/3154#issuecomment-1784612839
 
-//p1 - rewrite the filterToRow use case document
 //p1 - article auth.js with express
 
 //p1 - switch master to main
 //p1 - create foreign key constraints in user code
 
 //p1 - admin url1 - pocketbase use /_ for the admin //{allowed?:Allowed,url?:string}
+//p2
+//p2  - fix validators cache
 //y2 - should we validate relations
 
 //y1 - dependency of live query tables

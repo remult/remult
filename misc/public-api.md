@@ -278,26 +278,42 @@ export interface customFilterInfo<entityType> {
   }
 }
 export declare class CustomSqlFilterBuilder
-  implements SqlCommandWithParameters
+  implements SqlCommandWithParameters, HasWrapIdentifier
 {
   private r
-  constructor(r: SqlCommandWithParameters)
+  wrapIdentifier: (name: string) => string
+  constructor(
+    r: SqlCommandWithParameters,
+    wrapIdentifier: (name: string) => string,
+  )
   sql: string
-  /** @deprecated @deprecated use `param` instead*/
+  /** @deprecated  use `param` instead*/
   addParameterAndReturnSqlToken(val: any): string
-  param<valueType>(val: valueType, field?: FieldMetadata<valueType>): string
-  filterToRaw<entityType>(
+  /**
+   * Adds a parameter value.
+   * @param {valueType} val - The value to add as a parameter.
+   * @param {FieldMetadata<valueType>} [field] - The field metadata.
+   * @returns {string} - The SQL token.
+   */
+  param: <valueType>(
+    val: valueType,
+    field?: FieldMetadata<valueType, any>,
+  ) => string
+  /**
+   * Converts an entity filter into a raw SQL condition - and appends to it any `backendPrefilter` and `backendPreprocessFilter`
+   * @param {RepositoryOverloads<entityType>} repo - The repository.
+   * @param {EntityFilter<entityType>} condition - The entity filter.
+   * @returns {Promise<string>} - The raw SQL.
+   */
+  filterToRaw: <entityType>(
     repo: RepositoryOverloads<entityType>,
     condition: EntityFilter<entityType>,
-  ): Promise<string>
+  ) => Promise<string>
 }
 //[ ] RepositoryOverloads from TBD is not exported
 export type CustomSqlFilterBuilderFunction = (
   builder: CustomSqlFilterBuilder,
-) => void | Promise<any>
-export interface CustomSqlFilterObject {
-  buildSql: CustomSqlFilterBuilderFunction
-}
+) => void | Promise<string> | string
 export interface DataProvider {
   getEntityDataProvider(entity: EntityMetadata): EntityDataProvider
   transaction(
@@ -1147,33 +1163,40 @@ export declare class Filter {
      */
   getInfo<entityType>(): Promise<FilterInfo<entityType>>
   /**
-   * Creates a custom filter. Custom filters are evaluated on the backend, ensuring security and efficiency.
-   * When the filter is used in the frontend, only its name is sent to the backend via the API,
-   * where the filter gets translated and applied in a safe manner.
-   *
-   * @template entityType The entity type for the filter.
-   * @param {function(): EntityFilter<entityType>} rawFilterTranslator A function that returns an `EntityFilter`.
-   * @param {string} [key] An optional unique identifier for the custom filter.
-   * @returns {function(): EntityFilter<entityType>} A function that returns an `EntityFilter` of type `entityType`.
-   *
-   * @example
-   * // In an entity class, add a static method for the custom filter
-   * static titleLengthFilter = Filter.createCustom<Task>(() => {
-   *   return SqlDatabase.rawFilter((whereFragment) => {
-   *     whereFragment.sql = 'length(title) > 10';
-   *   });
-   * });
-   *
-   * // Usage
-   * console.table(
-   *   await remult.repo(Task).find({
-   *     where: Task.titleLengthFilter()
-   *   })
-   * );
-   * @see
-   * [Sql filter and Custom filter](/docs/custom-filter.html)
-   * [Filtering and Relations](/docs/filtering-and-relations.html)
-   */
+     * Creates a custom filter. Custom filters are evaluated on the backend, ensuring security and efficiency.
+     * When the filter is used in the frontend, only its name is sent to the backend via the API,
+     * where the filter gets translated and applied in a safe manner.
+     *
+     * @template entityType The entity type for the filter.
+     * @param {function(): EntityFilter<entityType>} rawFilterTranslator A function that returns an `EntityFilter`.
+     * @param {string} [key] An optional unique identifier for the custom filter.
+     * @returns {function(): EntityFilter<entityType>} A function that returns an `EntityFilter` of type `entityType`.
+     *
+     * @example
+     *  class Order {
+     *  //...
+     *  static activeOrdersFor = Filter.createCustom<Order, { year: number }>(
+     *    async ({ year }) => {
+     *      return {
+     *        status: ['created', 'confirmed', 'pending', 'blocked', 'delayed'],
+     *        createdAt: {
+     *          $gte: new Date(year, 0, 1),
+     *          $lt: new Date(year + 1, 0, 1),
+     *        },
+     *      }
+     *    },
+     *  )
+     *}
+     * // Usage
+     * await repo(Order).find({
+     *  where: Order.activeOrders({ year }),
+     *})
+  
+  
+     * @see
+     * [Sql filter and Custom filter](/docs/custom-filter.html)
+     * [Filtering and Relations](/docs/filtering-and-relations.html)
+     */
   static createCustom<entityType>(
     rawFilterTranslator: (
       unused: never,
@@ -1182,41 +1205,40 @@ export declare class Filter {
     key?: string,
   ): (() => EntityFilter<entityType>) & customFilterInfo<entityType>
   /**
-   * Creates a custom filter. Custom filters are evaluated on the backend, ensuring security and efficiency.
-   * When the filter is used in the frontend, only its name and value arguments are sent to the backend via the API,
-   * where the filter gets translated and applied in a safe manner.
-   *
-   * @template entityType The entity type for the filter.
-   * @template argsType The type of the argument for the filter.
-   * @param {function(argsType, Remult): EntityFilter<entityType>} rawFilterTranslator A function that takes an argument of type `argsType` and an instance of `Remult`, and returns an `EntityFilter`.
-   * @param {string} [key] An optional unique identifier for the custom filter.
-   * @returns {function(argsType): EntityFilter<entityType>} A function that takes an argument of type `argsType` and returns an `EntityFilter` of type `entityType`.
-   *
-   * @example
-   * // In an entity class, add a static method for the custom filter with parameters
-   * static filterCity = Filter.createCustom<Order, { city: string }>(
-   *   async ({ city }) => {
-   *     const orders = await dbNamesOf(Order);
-   *     const customers = await dbNamesOf(Customer);
-   *     return SqlDatabase.rawFilter(async (whereFragment) => {
-   *       whereFragment.sql = `${orders.customer} in
-   *              (select ${customers.id}
-   *                 from ${customers}
-   *                where ${await whereFragment.filterToRaw(Customer, { city })})`;
-   *     });
-   *   }
-   * );
-   *
-   * // Usage
-   * const cityFilter = Order.filterCity({ city: 'New York' });
-   * const ordersInNewYork = await remult.repo(Order).find({ where: cityFilter });
-   *
-   * // The filter is sent to the backend as:
-   * // http://127.0.0.1:3002/api/orders?%24custom%24filterCity=%7B%22city%22%3A%22New%20York%22%7D
-   * @see
-   * [Sql filter and Custom filter](/docs/custom-filter.html)
-   * [Filtering and Relations](/docs/filtering-and-relations.html)
-   */
+     * Creates a custom filter. Custom filters are evaluated on the backend, ensuring security and efficiency.
+     * When the filter is used in the frontend, only its name is sent to the backend via the API,
+     * where the filter gets translated and applied in a safe manner.
+     *
+     * @template entityType The entity type for the filter.
+     * @param {function(): EntityFilter<entityType>} rawFilterTranslator A function that returns an `EntityFilter`.
+     * @param {string} [key] An optional unique identifier for the custom filter.
+     * @returns {function(): EntityFilter<entityType>} A function that returns an `EntityFilter` of type `entityType`.
+     *
+     * @example
+     *  class Order {
+     *  //...
+     *  static activeOrdersFor = Filter.createCustom<Order, { year: number }>(
+     *    async ({ year }) => {
+     *      return {
+     *        status: ['created', 'confirmed', 'pending', 'blocked', 'delayed'],
+     *        createdAt: {
+     *          $gte: new Date(year, 0, 1),
+     *          $lt: new Date(year + 1, 0, 1),
+     *        },
+     *      }
+     *    },
+     *  )
+     *}
+     * // Usage
+     * await repo(Order).find({
+     *  where: Order.activeOrders({ year }),
+     *})
+  
+     
+     * @see
+     * [Sql filter and Custom filter](/docs/custom-filter.html)
+     * [Filtering and Relations](/docs/filtering-and-relations.html)
+     */
   static createCustom<entityType, argsType>(
     rawFilterTranslator: (
       args: argsType,
@@ -2193,7 +2215,7 @@ export interface SqlCommand extends SqlCommandWithParameters {
   execute(sql: string): Promise<SqlResult>
 }
 export interface SqlCommandWithParameters {
-  /** @deprecated @deprecated use `param` instead*/
+  /** @deprecated use `param` instead*/
   addParameterAndReturnSqlToken(val: any): string
   param(val: any): string
 }
@@ -2214,12 +2236,23 @@ export declare class SqlDatabase
   transaction(
     action: (dataProvider: DataProvider) => Promise<void>,
   ): Promise<void>
+  /**
+     * Creates a raw filter for entity filtering.
+     * @param {CustomSqlFilterBuilderFunction} build - The custom SQL filter builder function.
+     * @returns {EntityFilter<any>} - The entity filter with a custom SQL filter.
+     * @example
+     * SqlDatabase.rawFilter(({param}) =>
+          `"customerId" in (select id from customers where city = ${param(customerCity)})`
+        )
+     * @see [Leveraging Database Capabilities with Raw SQL in Custom Filters](https://remult.dev/docs/custom-filter.html#leveraging-database-capabilities-with-raw-sql-in-custom-filters)
+     */
   static rawFilter(build: CustomSqlFilterBuilderFunction): EntityFilter<any>
   static filterToRaw<entityType>(
     repo: RepositoryOverloads<entityType>,
     condition: EntityFilter<entityType>,
     sqlCommand?: SqlCommandWithParameters,
     dbNames?: EntityDbNamesBase,
+    wrapIdentifier?: (name: string) => string,
   ): Promise<string>
   /**
    * `false` _(default)_ - No logging
@@ -3331,6 +3364,7 @@ export declare class KnexDataProvider
   static filterToRaw<entityType>(
     entity: RepositoryOverloads<entityType>,
     condition: EntityFilter<entityType>,
+    wrapIdentifier?: (name: string) => string,
   ): Promise<(knex: any) => void>
   isProxy?: boolean
   ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
@@ -3438,7 +3472,7 @@ export declare class SqliteCoreDataProvider
   ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
   dropTable(entity: EntityMetadata): Promise<void>
   private addColumnSqlSyntax
-  createTable(entity: EntityMetadata<any>): Promise<void>
+  createTableIfNotExist(entity: EntityMetadata<any>): Promise<void>
   supportsJsonColumnType?: boolean
   private getCreateTableSql
   wrapIdentifier?(name: string): string

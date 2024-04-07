@@ -495,7 +495,7 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
           if (typeof sql !== 'string') sql = item.sql
 
           if (sql) {
-            this.result.push((b) => b.whereRaw(sql, r.values))
+            this.result.push((b) => b.whereRaw(sql as string, r.values))
           }
         }
       })(),
