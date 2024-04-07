@@ -817,8 +817,6 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //y1 - currently for string fields we default for 255 in knex (which is their default) why not just use text (varchar max) - and only use exact length when one is provided?
 //y1 - consider changing the sql raw filter to return the sql, instead of setting the sql property
 
-//p1 - add build step to tutorials, so people will test their build in the tutorial before deploying to the cloud (and also that the application runs).
-
 //p1 - article auth.js with express
 
 //p1 - switch master to main
