@@ -590,25 +590,24 @@ export function remultGraphql(options: {
           argErrorDetail,
           argClientMutationId,
         )
-        root[deleteResolverKey] = handleMutationWithErrors(
-          async (dApi, response, setResult, arg1: any, req: any) => {
-            await dApi.delete(
-              {
-                ...response,
-                deleted: () => {
-                  setResult({ [deletedResultKey]: arg1.id })
-                },
-              },
-              arg1.id,
-            )
-          },
-        )
         resolversMutation[deleteResolverKey] = (
           origItem: any,
           args: any,
           req: any,
-          gqlInfo: any,
-        ) => root[deleteResolverKey](args, req, gqlInfo)
+        ) =>
+          handleMutationWithErrors(
+            async (dApi, response, setResult, arg1: any, req: any) => {
+              await dApi.delete(
+                {
+                  ...response,
+                  deleted: () => {
+                    setResult({ [deletedResultKey]: arg1.id })
+                  },
+                },
+                arg1.id,
+              )
+            },
+          )(args, req)
       }
       const whereTypeFields: string[] = []
       for (const f of meta.fields) {
