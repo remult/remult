@@ -2,12 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.25.9] TBD
+## [0.26.0] TBD
 
 - Added support for migrations, see [Migrations](https://remult.dev/docs/migrations.html)
 - Added an `error` hook to `RemultServerOptions` that is called whenever whenever there is an error in the API lifecycle. See [RemultServerOptions](https://remult.dev/docs/ref_remultserveroptions.html#error)
 - Added an exception when calling `updateMany` or `deleteMany` without a filter - to protect against accidental deleting / updating all data
-- Added updateMany and deleteMany to OpenAPI (swagger)
+- Added updateMany and deleteMany to OpenAPI (swagger) & graphql
 - Added exception for updateMany and deleteMany where no where was provided
 - Added `@Fields.literal` and `@Fields.enum`
 - `@ValueListFieldType` now validates that the value exists in the list

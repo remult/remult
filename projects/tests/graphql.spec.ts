@@ -830,6 +830,47 @@ describe('graphql', () => {
       ]
     `)
   })
+  it('test mutation delete many', async () => {
+    await await remult
+      .repo(Task)
+      .insert([{ title: 'task a' }, { title: 'task b' }, { title: 'task c' }])
+
+    expect(
+      await gql(`
+      mutation delete{
+        deleteManyTasks(where:{
+          title:{
+            lte:"task b"
+          }
+        }) {
+          deleted
+        }
+      }`),
+    ).toMatchInlineSnapshot(`
+      {
+        "data": {
+          "deleteManyTasks": {
+            "deleted": 2,
+          },
+        },
+      }
+    `)
+    expect(await remult.repo(Task).find()).toMatchInlineSnapshot(`
+      [
+        Task {
+          "category": null,
+          "category2": null,
+          "category3": undefined,
+          "category3_id": "",
+          "completed": false,
+          "id": 3,
+          "thePriority": 1,
+          "title": "task c",
+          "userOnServer": undefined,
+        },
+      ]
+    `)
+  })
 
   it('test mutation create', async () => {
     const result = await gql(`
@@ -905,6 +946,32 @@ describe('graphql', () => {
     `)
   })
 
+  it('test mutation update Many', async () => {
+    await remult
+      .repo(Task)
+      .insert([{ title: 'task a' }, { title: 'task b' }, { title: 'task c' }])
+
+    const result = await gql(`
+    mutation {
+      updateManyTasks(where:{
+        title:{
+          lte:"task b"
+        }
+      }, patch: {title: "bbb"}) {
+        updated
+      }
+    }`)
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "data": {
+          "updateManyTasks": {
+            "updated": 2,
+          },
+        },
+      }
+    `)
+    expect(await remult.repo(Task).count({ title: 'bbb' })).toBe(2)
+  })
   it('test mutation update', async () => {
     await remult.repo(Task).insert({ title: 'aaa' })
 
@@ -1113,13 +1180,19 @@ describe('graphql', () => {
       type Mutation {
           createTask(input: CreateTaskInput!, clientMutationId: String): CreateTaskPayload
           updateTask(id: ID!, patch: UpdateTaskInput!, clientMutationId: String): UpdateTaskPayload
+          updateManyTasks(where: tasksWhere!, patch: UpdateTaskInput!, clientMutationId: String): UpdateManyTasksPayload
           deleteTask(id: ID!, clientMutationId: String): DeleteTaskPayload
+          deleteManyTasks(where: tasksWhere!, clientMutationId: String): DeleteManyTasksPayload
           createCategory(input: CreateCategoryInput!, clientMutationId: String): CreateCategoryPayload
           updateCategory(id: ID!, patch: UpdateCategoryInput!, clientMutationId: String): UpdateCategoryPayload
+          updateManyCategories(where: categoriesWhere!, patch: UpdateCategoryInput!, clientMutationId: String): UpdateManyCategoriesPayload
           deleteCategory(id: ID!, clientMutationId: String): DeleteCategoryPayload
+          deleteManyCategories(where: categoriesWhere!, clientMutationId: String): DeleteManyCategoriesPayload
           createCategoryMore(input: CreateCategoryMoreInput!, clientMutationId: String): CreateCategoryMorePayload
           updateCategoryMore(id: ID!, patch: UpdateCategoryMoreInput!, clientMutationId: String): UpdateCategoryMorePayload
+          updateManyCategoriesmore(where: categoriesmoreWhere!, patch: UpdateCategoryMoreInput!, clientMutationId: String): UpdateManyCategoriesmorePayload
           deleteCategoryMore(id: ID!, clientMutationId: String): DeleteCategoryMorePayload
+          deleteManyCategoriesmore(where: categoriesmoreWhere!, clientMutationId: String): DeleteManyCategoriesmorePayload
       }
 
       type Task implements Node {
@@ -1191,8 +1264,20 @@ describe('graphql', () => {
           clientMutationId: String
       }
 
+      type UpdateManyTasksPayload {
+          updated: Int!
+          error: ErrorDetail
+          clientMutationId: String
+      }
+
       type DeleteTaskPayload {
           id: Int
+          error: ErrorDetail
+          clientMutationId: String
+      }
+
+      type DeleteManyTasksPayload {
+          deleted: Int!
           error: ErrorDetail
           clientMutationId: String
       }
@@ -1243,8 +1328,20 @@ describe('graphql', () => {
           clientMutationId: String
       }
 
+      type UpdateManyCategoriesPayload {
+          updated: Int!
+          error: ErrorDetail
+          clientMutationId: String
+      }
+
       type DeleteCategoryPayload {
           id: String
+          error: ErrorDetail
+          clientMutationId: String
+      }
+
+      type DeleteManyCategoriesPayload {
+          deleted: Int!
           error: ErrorDetail
           clientMutationId: String
       }
@@ -1297,8 +1394,20 @@ describe('graphql', () => {
           clientMutationId: String
       }
 
+      type UpdateManyCategoriesmorePayload {
+          updated: Int!
+          error: ErrorDetail
+          clientMutationId: String
+      }
+
       type DeleteCategoryMorePayload {
           id: String
+          error: ErrorDetail
+          clientMutationId: String
+      }
+
+      type DeleteManyCategoriesmorePayload {
+          deleted: Int!
           error: ErrorDetail
           clientMutationId: String
       }
@@ -1468,6 +1577,7 @@ describe('graphql', () => {
       type Mutation {
           createC(input: CreateCInput!, clientMutationId: String): CreateCPayload
           updateC(id: ID!, patch: UpdateCInput!, clientMutationId: String): UpdateCPayload
+          updateManyCs(where: csWhere!, patch: UpdateCInput!, clientMutationId: String): UpdateManyCsPayload
       }
 
       type C implements Node {
@@ -1505,6 +1615,12 @@ describe('graphql', () => {
 
       type UpdateCPayload {
           c: C
+          error: ErrorDetail
+          clientMutationId: String
+      }
+
+      type UpdateManyCsPayload {
+          updated: Int!
           error: ErrorDetail
           clientMutationId: String
       }
@@ -1851,7 +1967,9 @@ describe('graphql', () => {
 
       type Mutation {
           updateC(id: ID!, patch: UpdateCInput!, clientMutationId: String): UpdateCPayload
+          updateManyCs(where: csWhere!, patch: UpdateCInput!, clientMutationId: String): UpdateManyCsPayload
           deleteC(id: ID!, clientMutationId: String): DeleteCPayload
+          deleteManyCs(where: csWhere!, clientMutationId: String): DeleteManyCsPayload
       }
 
       type C implements Node {
@@ -1883,8 +2001,20 @@ describe('graphql', () => {
           clientMutationId: String
       }
 
+      type UpdateManyCsPayload {
+          updated: Int!
+          error: ErrorDetail
+          clientMutationId: String
+      }
+
       type DeleteCPayload {
           id: Int
+          error: ErrorDetail
+          clientMutationId: String
+      }
+
+      type DeleteManyCsPayload {
+          deleted: Int!
           error: ErrorDetail
           clientMutationId: String
       }

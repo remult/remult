@@ -243,7 +243,7 @@ export function createMockHttpDataProvider(
       }
       try {
         if (urlSplit.length == 1)
-          await dataApi.updateMany(r, urlToReq(url), data)
+          await dataApi.updateManyThroughPutRequest(r, urlToReq(url), data)
         else
           await dataApi.put(
             r,

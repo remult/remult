@@ -349,7 +349,7 @@ export class DataApi<T = any> {
       response.error(err, this.repository.metadata)
     }
   }
-  async updateMany(
+  async updateManyThroughPutRequest(
     response: DataApiResponse,
     request: DataApiRequest,
     body: any,
@@ -358,8 +358,7 @@ export class DataApi<T = any> {
     if (action == 'emptyId') {
       return this.put(response, '', body)
     }
-    let where = await this.buildWhere(request, body)
-    Filter.throwErrorIfFilterIsEmpty(where, 'updateMany')
+
     return this.updateManyImplementation(response, request, {
       where: undefined,
       set: body,
@@ -371,10 +370,12 @@ export class DataApi<T = any> {
     body: { where: any; set: any },
   ) {
     try {
+      let where = await this.buildWhere(request, body)
+      Filter.throwErrorIfFilterIsEmpty(where, 'deleteMany')
       return await doTransaction(this.remult, async () => {
         let updated = 0
         for await (const x of this.repository.query({
-          where: await this.buildWhere(request, body),
+          where,
           include: this.includeNone(),
         })) {
           await this.actualUpdate(x, body.set)
