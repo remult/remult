@@ -1038,8 +1038,8 @@ export class RepositoryImplementation<entityType>
       if (this.metadata.options.backendPreprocessFilter) {
         where = await this.metadata.options.backendPreprocessFilter(where, {
           metadata: this.metadata,
-          getFilterInfo: (filter) =>
-            Filter.getInfo(this.metadata, filter || where),
+          getFilterPreciseValues: (filter) =>
+            Filter.getPreciseValues(this.metadata, filter || where),
         })
       }
       if (this.metadata.options.backendPrefilter) {

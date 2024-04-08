@@ -268,15 +268,6 @@ export declare function createValueValidatorWithArgs<valueType, argsType>(
 ): ValidatorWithArgs<valueType, argsType> & {
   defaultMessage: ValueValidationMessage<argsType>
 }
-export interface customFilterInfo<entityType> {
-  rawFilterInfo: {
-    key: string
-    rawFilterTranslator: (
-      args: any,
-      r: Remult,
-    ) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>
-  }
-}
 export declare class CustomSqlFilterBuilder
   implements SqlCommandWithParameters, HasWrapIdentifier
 {
@@ -526,10 +517,10 @@ export interface EntityOptions<entityType = any> {
    * @example
    * ```typescript
    * @Entity<Task>("tasks", {
-   *   apiPreprocessFilter: async (filter, { getFilterInfo }) => {
+   *   apiPreprocessFilter: async (filter, { getPreciseValues }) => {
    *     // Ensure that users can only query tasks for specific customers
-   *     const info = await getFilterInfo();
-   *     if (!info.preciseValues.customerId) {
+   *     const preciseValues = await getPreciseValues();
+   *     if (!preciseValues.customerId) {
    *       throw new ForbiddenError("You must specify a valid customerId filter");
    *     }
    *     return filter;
@@ -539,7 +530,7 @@ export interface EntityOptions<entityType = any> {
    */
   apiPreprocessFilter?: (
     filter: EntityFilter<entityType>,
-    info: PreprocessFilterInfo<entityType>,
+    info: PreprocessFilterEvent<entityType>,
   ) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>
   /**
    * Similar to apiPreprocessFilter, but for backend operations.
@@ -551,7 +542,7 @@ export interface EntityOptions<entityType = any> {
    */
   backendPreprocessFilter?: (
     filter: EntityFilter<entityType>,
-    info: PreprocessFilterInfo<entityType>,
+    info: PreprocessFilterEvent<entityType>,
   ) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>
   /** A filter that will be used for all queries from this entity both from the API and from within the backend.
    * @example
@@ -662,6 +653,7 @@ export interface EntityOptions<entityType = any> {
   entityRefInit?: (ref: EntityRef<entityType>, row: entityType) => void
   apiRequireId?: Allowed
 }
+//[ ] PreprocessFilterEvent from TBD is not exported
 export declare type EntityOrderBy<entityType> = {
   [Properties in keyof Partial<MembersOnly<entityType>>]?: "asc" | "desc"
 }
@@ -1120,20 +1112,20 @@ export declare type FieldValidator<entityType = any, valueType = any> = (
 export declare class Filter {
   private apply
   /**
-     * Retrieves information about a filter, including precise values for each property.
+     * Retrieves precise values for each property in a filter for an entity.
      * @template entityType The type of the entity being filtered.
      * @param metadata The metadata of the entity being filtered.
      * @param filter The filter to analyze.
-     * @returns A promise that resolves to a FilterInfo object containing the filter information.
+     * @returns A promise that resolves to a FilterPreciseValues object containing the precise values for each property.
      * @example
-     * const info = await Filter.getInfo(meta, {
+     * const preciseValues = await Filter.getPreciseValues(meta, {
      *   status: { $ne: 'active' },
      *   $or: [
      *     { customerId: ["1", "2"] },
      *     { customerId: "3" }
      *   ]
      * });
-     * console.log(info.preciseValues);
+     * console.log(preciseValues);
      * // Output:
      * // {
      * //   "customerId": ["1", "2", "3"], // Precise values inferred from the filter
@@ -1141,19 +1133,19 @@ export declare class Filter {
      * // }
     
      */
-  static getInfo<entityType>(
+  static getPreciseValues<entityType>(
     metadata: EntityMetadata<entityType>,
     filter: EntityFilter<entityType>,
-  ): Promise<FilterInfo<entityType>>
+  ): Promise<FilterPreciseValues<entityType>>
   /**
-     * Retrieves information about a filter, including precise values for each property.
+     * Retrieves precise values for each property in a filter for an entity.
      * @template entityType The type of the entity being filtered.
      * @param metadata The metadata of the entity being filtered.
      * @param filter The filter to analyze.
-     * @returns A promise that resolves to a FilterInfo object containing the filter information.
+     * @returns A promise that resolves to a FilterPreciseValues object containing the precise values for each property.
      * @example
-     * const info = await where.getInfo();
-     * console.log(info.preciseValues);
+     * const preciseValues = await where.getPreciseValues();
+     * console.log(preciseValues);
      * // Output:
      * // {
      * //   "customerId": ["1", "2", "3"], // Precise values inferred from the filter
@@ -1161,14 +1153,14 @@ export declare class Filter {
      * // }
     
      */
-  getInfo<entityType>(): Promise<FilterInfo<entityType>>
+  getPreciseValues<entityType>(): Promise<FilterPreciseValues<entityType>>
   /**
      * Creates a custom filter. Custom filters are evaluated on the backend, ensuring security and efficiency.
      * When the filter is used in the frontend, only its name is sent to the backend via the API,
      * where the filter gets translated and applied in a safe manner.
      *
      * @template entityType The entity type for the filter.
-     * @param {function(): EntityFilter<entityType>} rawFilterTranslator A function that returns an `EntityFilter`.
+     * @param {function(): EntityFilter<entityType>} translator A function that returns an `EntityFilter`.
      * @param {string} [key] An optional unique identifier for the custom filter.
      * @returns {function(): EntityFilter<entityType>} A function that returns an `EntityFilter` of type `entityType`.
      *
@@ -1198,7 +1190,7 @@ export declare class Filter {
      * [Filtering and Relations](/docs/filtering-and-relations.html)
      */
   static createCustom<entityType>(
-    rawFilterTranslator: (
+    translator: (
       unused: never,
       r: Remult,
     ) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>,
@@ -1210,7 +1202,7 @@ export declare class Filter {
      * where the filter gets translated and applied in a safe manner.
      *
      * @template entityType The entity type for the filter.
-     * @param {function(): EntityFilter<entityType>} rawFilterTranslator A function that returns an `EntityFilter`.
+     * @param {function(): EntityFilter<entityType>} translator A function that returns an `EntityFilter`.
      * @param {string} [key] An optional unique identifier for the custom filter.
      * @returns {function(): EntityFilter<entityType>} A function that returns an `EntityFilter` of type `entityType`.
      *
@@ -1240,7 +1232,7 @@ export declare class Filter {
      * [Filtering and Relations](/docs/filtering-and-relations.html)
      */
   static createCustom<entityType, argsType>(
-    rawFilterTranslator: (
+    translator: (
       args: argsType,
       r: Remult,
     ) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>,
@@ -1323,6 +1315,7 @@ export declare class Filter {
   ): Promise<EntityFilter<entityType>>
   toJson(): any
 }
+//[ ] customFilterInfo from TBD is not exported
 export interface FilterConsumer {
   or(orElements: Filter[]): any
   isEqualTo(col: FieldMetadata, val: any): void
@@ -1339,29 +1332,10 @@ export interface FilterConsumer {
   custom(key: string, customItem: any): void
   databaseCustom(databaseCustom: any): void
 }
-export interface FilterInfo<entityType> {
-  /**
-   * A mapping of property names to arrays of precise values for those properties.
-   * @example
-   * const info = await Filter.getInfo(meta, {
-   *   status: { $ne: 'active' },
-   *   $or: [
-   *     { customerId: ["1", "2"] },
-   *     { customerId: "3" }
-   *   ]
-   * });
-   * console.log(info.preciseValues);
-   * // Output:
-   * // {
-   * //   "customerId": ["1", "2", "3"], // Precise values inferred from the filter
-   * //   "status": undefined,           // Cannot infer precise values for 'status'
-   * // }
-   */
-  preciseValues: {
-    [Properties in keyof MembersOnly<entityType>]?: Partial<
-      entityType[Properties]
-    >[]
-  }
+export type FilterPreciseValues<entityType> = {
+  [Properties in keyof MembersOnly<entityType>]?: Partial<
+    entityType[Properties]
+  >[]
 }
 export interface FindFirstOptions<entityType>
   extends FindOptionsBase<entityType>,
@@ -1685,22 +1659,6 @@ export interface Paginator<entityType> {
   nextPage(): Promise<Paginator<entityType>>
   /** the count of the total items in the `query`'s result */
   count(): Promise<number>
-}
-export interface PreprocessFilterInfo<entityType> {
-  /**
-   * Metadata of the entity being filtered.
-   */
-  metadata: EntityMetadata<entityType>
-  /**
-     * Retrieves filter information for a given filter or the current filter being preprocessed if no filter is provided.
-     * @param filter Optional filter to analyze. If not provided, the current filter being preprocessed is used.
-     * @returns A promise that resolves to a FilterInfo object containing the filter information.
-     
-    * {@Link FilterInfo }
-     */
-  getFilterInfo(
-    filter?: EntityFilter<entityType>,
-  ): Promise<FilterInfo<entityType>>
 }
 export declare class ProgressListener {
   private res

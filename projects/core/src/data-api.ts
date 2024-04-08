@@ -26,7 +26,7 @@ export class DataApi<T = any> {
   constructor(
     private repository: Repository<T>,
     private remult: Remult,
-  ) { }
+  ) {}
   httpGet(
     res: DataApiResponse,
     req: DataApiRequest,
@@ -173,25 +173,25 @@ export class DataApi<T = any> {
       )
       if (w) {
         w.__applyToConsumer({
-          containsCaseInsensitive: () => { },
-          notContainsCaseInsensitive: () => { },
-          isDifferentFrom: () => { },
+          containsCaseInsensitive: () => {},
+          notContainsCaseInsensitive: () => {},
+          isDifferentFrom: () => {},
           isEqualTo: (col, val) => {
             if (this.repository.metadata.idMetadata.isIdField(col)) hasId = true
           },
-          custom: () => { },
-          databaseCustom: () => { },
-          isGreaterOrEqualTo: () => { },
-          isGreaterThan: () => { },
+          custom: () => {},
+          databaseCustom: () => {},
+          isGreaterOrEqualTo: () => {},
+          isGreaterThan: () => {},
           isIn: (col) => {
             if (this.repository.metadata.idMetadata.isIdField(col)) hasId = true
           },
-          isLessOrEqualTo: () => { },
-          isLessThan: () => { },
-          isNotNull: () => { },
-          isNull: () => { },
+          isLessOrEqualTo: () => {},
+          isLessThan: () => {},
+          isNotNull: () => {},
+          isNull: () => {},
 
-          or: () => { },
+          or: () => {},
         })
       }
       if (!hasId) {
@@ -282,8 +282,7 @@ export class DataApi<T = any> {
       let f = buildFilterFromRequestParameters(this.repository.metadata, {
         get: (key) => {
           let result = body?.where?.[key]
-          if (result !== undefined)
-            return result;
+          if (result !== undefined) return result
 
           result = request.get(key)
           if (
@@ -298,8 +297,11 @@ export class DataApi<T = any> {
       if (this.repository.metadata.options.apiPreprocessFilter) {
         f = await this.repository.metadata.options.apiPreprocessFilter(f, {
           metadata: this.repository.metadata,
-          getFilterInfo: async (filter?: EntityFilter<any>) => {
-            return Filter.getInfo(this.repository.metadata, filter || f)
+          getFilterPreciseValues: async (filter?: EntityFilter<any>) => {
+            return Filter.getPreciseValues(
+              this.repository.metadata,
+              filter || f,
+            )
           },
         })
       }

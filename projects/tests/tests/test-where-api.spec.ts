@@ -682,20 +682,24 @@ describe('Filter.getPreciseFilterValuesForKey', () => {
   }
   const meta = repo(order).metadata
   it('Should work with value list field type', async () => {
-    const info = await Filter.getInfo(meta, {
+    const preciseValues = await Filter.getPreciseValues(meta, {
       language: Language.Russian,
       parentOrder: { $id: '123' },
     })
 
-    expect(info.preciseValues.language).toEqual([Language.Russian])
+    expect(preciseValues.language).toEqual([Language.Russian])
   })
   it('should work with relation 1', async () => {
-    const info = await Filter.getInfo(meta, { parentOrder: { $id: '123' } })
-    expect(info.preciseValues.parentOrder[0].id).toEqual('123')
+    const preciseValues = await Filter.getPreciseValues(meta, {
+      parentOrder: { $id: '123' },
+    })
+    expect(preciseValues.parentOrder[0].id).toEqual('123')
   })
   it('should work with relation 2', async () => {
-    const info = await Filter.getInfo(meta, { category: { $id: '123' } })
-    expect(info.preciseValues.category[0].id).toEqual('123')
+    const preciseValues = await Filter.getPreciseValues(meta, {
+      category: { $id: '123' },
+    })
+    expect(preciseValues.category[0].id).toEqual('123')
   })
   it('should work with relation with non common id', async () => {
     @Entity('xx')
@@ -714,10 +718,10 @@ describe('Filter.getPreciseFilterValuesForKey', () => {
     }
     const meta = repo(Product).metadata
 
-    const info = await Filter.getInfo(meta, {
+    const preciseValues = await Filter.getPreciseValues(meta, {
       category: repo(IdThatIsNotId).create({ index: 3, name: '' }),
     })
-    expect(info.preciseValues.category[0].index).toEqual(3)
+    expect(preciseValues.category[0].index).toEqual(3)
   })
   it('should work with compound', async () => {
     @Entity<CompoundId>('xx', {
@@ -740,67 +744,67 @@ describe('Filter.getPreciseFilterValuesForKey', () => {
     }
     const meta = repo(Product).metadata
 
-    const info = await Filter.getInfo(meta, {
+    const preciseValues = await Filter.getPreciseValues(meta, {
       category: repo(CompoundId).create({ company: 7, index: 3, name: '' }),
     })
-    expect(info.preciseValues.category[0].index).toEqual(3)
-    expect(info.preciseValues.category[0].company).toEqual(7)
+    expect(preciseValues.category[0].index).toEqual(3)
+    expect(preciseValues.category[0].company).toEqual(7)
   })
 
   it('should return an array of values for a filter with multiple fields, including the target keys', async () => {
-    const info = await Filter.getInfo(meta, {
+    const preciseValues = await Filter.getPreciseValues(meta, {
       customerId: '123',
       status: 'active',
     })
 
-    expect(info.preciseValues.customerId).toEqual(['123'])
-    expect(info.preciseValues.status).toEqual(['active'])
+    expect(preciseValues.customerId).toEqual(['123'])
+    expect(preciseValues.status).toEqual(['active'])
   })
 
   it('should return undefined for a filter with multiple fields, where one of the target keys has a non-equality operator', async () => {
-    const info = await Filter.getInfo(meta, {
+    const preciseValues = await Filter.getPreciseValues(meta, {
       customerId: { $gt: '123' },
       status: 'active',
     })
-    expect(info.preciseValues.customerId).toBeUndefined()
-    expect(info.preciseValues.status).toEqual(['active'])
+    expect(preciseValues.customerId).toBeUndefined()
+    expect(preciseValues.status).toEqual(['active'])
   })
 
   it('should return an array of values for an $or filter with multiple fields, including the target keys', async () => {
-    const info = await Filter.getInfo(meta, {
+    const preciseValues = await Filter.getPreciseValues(meta, {
       $or: [
         { customerId: '123', status: 'active' },
         { customerId: '456', status: 'inactive' },
       ],
     })
-    expect(info.preciseValues.customerId).toEqual(['123', '456'])
-    expect(info.preciseValues.status).toEqual(['active', 'inactive'])
+    expect(preciseValues.customerId).toEqual(['123', '456'])
+    expect(preciseValues.status).toEqual(['active', 'inactive'])
   })
 
   it('should return undefined for an $or filter with multiple fields, where one path does not include one of the target keys', async () => {
-    const info = await Filter.getInfo(meta, {
+    const preciseValues = await Filter.getPreciseValues(meta, {
       $or: [{ customerId: '123', status: 'active' }, { customerId: '456' }],
     })
-    expect(info.preciseValues.customerId).toEqual(['123', '456'])
-    expect(info.preciseValues.status).toBeUndefined()
+    expect(preciseValues.customerId).toEqual(['123', '456'])
+    expect(preciseValues.status).toBeUndefined()
   })
 
   it('should return undefined for an $or filter with multiple fields, where one path has a non-equality operator for one of the target keys', async () => {
-    const info = await Filter.getInfo(meta, {
+    const preciseValues = await Filter.getPreciseValues(meta, {
       $or: [
         { customerId: '123', status: 'active' },
         { customerId: { $gt: '200' }, status: 'inactive' },
       ],
     })
-    expect(info.preciseValues.customerId).toBeUndefined()
-    expect(info.preciseValues.status).toEqual(['active', 'inactive'])
+    expect(preciseValues.customerId).toBeUndefined()
+    expect(preciseValues.status).toEqual(['active', 'inactive'])
   })
   it('doc', async () => {
-    const info = await Filter.getInfo(meta, {
+    const preciseValues = await Filter.getPreciseValues(meta, {
       status: { $ne: 'active' },
       $or: [{ customerId: ['1', '2'] }, { customerId: '3' }],
     })
-    expect({ ...info.preciseValues }).toMatchInlineSnapshot(`
+    expect({ ...preciseValues }).toMatchInlineSnapshot(`
       {
         "customerId": [
           "1",

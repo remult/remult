@@ -56,20 +56,20 @@ export class Filter {
   }
 
   /**
-   * Retrieves information about a filter, including precise values for each property.
+   * Retrieves precise values for each property in a filter for an entity.
    * @template entityType The type of the entity being filtered.
    * @param metadata The metadata of the entity being filtered.
    * @param filter The filter to analyze.
-   * @returns A promise that resolves to a FilterInfo object containing the filter information.
+   * @returns A promise that resolves to a FilterPreciseValues object containing the precise values for each property.
    * @example
-   * const info = await Filter.getInfo(meta, {
+   * const preciseValues = await Filter.getPreciseValues(meta, {
    *   status: { $ne: 'active' },
    *   $or: [
    *     { customerId: ["1", "2"] },
    *     { customerId: "3" }
    *   ]
    * });
-   * console.log(info.preciseValues);
+   * console.log(preciseValues);
    * // Output:
    * // {
    * //   "customerId": ["1", "2", "3"], // Precise values inferred from the filter
@@ -77,23 +77,23 @@ export class Filter {
    * // }
   
    */
-  static async getInfo<entityType>(
+  static async getPreciseValues<entityType>(
     metadata: EntityMetadata<entityType>,
     filter: EntityFilter<entityType>,
-  ): Promise<FilterInfo<entityType>> {
+  ): Promise<FilterPreciseValues<entityType>> {
     const result = new preciseValuesCollector()
     await Filter.fromEntityFilter(metadata, filter).__applyToConsumer(result)
-    return result
+    return result.preciseValues
   }
   /**
-   * Retrieves information about a filter, including precise values for each property.
+   * Retrieves precise values for each property in a filter for an entity.
    * @template entityType The type of the entity being filtered.
    * @param metadata The metadata of the entity being filtered.
    * @param filter The filter to analyze.
-   * @returns A promise that resolves to a FilterInfo object containing the filter information.
+   * @returns A promise that resolves to a FilterPreciseValues object containing the precise values for each property.
    * @example
-   * const info = await where.getInfo();
-   * console.log(info.preciseValues);
+   * const preciseValues = await where.getPreciseValues();
+   * console.log(preciseValues);
    * // Output:
    * // {
    * //   "customerId": ["1", "2", "3"], // Precise values inferred from the filter
@@ -101,10 +101,12 @@ export class Filter {
    * // }
   
    */
-  async getInfo<entityType>(): Promise<FilterInfo<entityType>> {
+  async getPreciseValues<entityType>(): Promise<
+    FilterPreciseValues<entityType>
+  > {
     const result = new preciseValuesCollector()
     await this.__applyToConsumer(result)
-    return result
+    return result.preciseValues
   }
   /**
    * Creates a custom filter. Custom filters are evaluated on the backend, ensuring security and efficiency.
@@ -1007,37 +1009,28 @@ export function __updateEntityBasedOnWhere<T>(
 }
 
 /**
- * Represents information about a filter, including precise values for each property.
- * @template entityType The type of the entity being filtered.
+ * A mapping of property names to arrays of precise values for those properties.
+ * @example
+ * const preciseValues = await getPreciseValues(meta, {
+ *   status: { $ne: 'active' },
+ *   $or: [
+ *     { customerId: ["1", "2"] },
+ *     { customerId: "3" }
+ *   ]
+ * });
+ * console.log(preciseValues);
+ * // Output:
+ * // {
+ * //   "customerId": ["1", "2", "3"], // Precise values inferred from the filter
+ * //   "status": undefined,           // Cannot infer precise values for 'status'
+ * // }
  */
-export interface FilterInfo<entityType> {
-  /**
-   * A mapping of property names to arrays of precise values for those properties.
-   * @example
-   * const info = await Filter.getInfo(meta, {
-   *   status: { $ne: 'active' },
-   *   $or: [
-   *     { customerId: ["1", "2"] },
-   *     { customerId: "3" }
-   *   ]
-   * });
-   * console.log(info.preciseValues);
-   * // Output:
-   * // {
-   * //   "customerId": ["1", "2", "3"], // Precise values inferred from the filter
-   * //   "status": undefined,           // Cannot infer precise values for 'status'
-   * // }
-   */
-  preciseValues: {
-    [Properties in keyof MembersOnly<entityType>]?: Partial<
-      entityType[Properties]
-    >[]
-  }
+export type FilterPreciseValues<entityType> = {
+  [Properties in keyof MembersOnly<entityType>]?: Partial<
+    entityType[Properties]
+  >[]
 }
-
-class preciseValuesCollector<entityType>
-  implements FilterConsumer, FilterInfo<entityType>
-{
+class preciseValuesCollector<entityType> implements FilterConsumer {
   private rawValues: Record<
     string,
     {

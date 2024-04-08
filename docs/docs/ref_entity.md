@@ -106,10 +106,10 @@ rules or adjust the filter based on the current context or specific request.
    #### example:
    ```typescript
    @Entity<Task>("tasks", {
-     apiPreprocessFilter: async (filter, { getFilterInfo }) => {
+     apiPreprocessFilter: async (filter, { getPreciseValues }) => {
        // Ensure that users can only query tasks for specific customers
-       const info = await getFilterInfo();
-       if (!info.preciseValues.customerId) {
+       const preciseValues = await getPreciseValues();
+       if (!preciseValues.customerId) {
          throw new ForbiddenError("You must specify a valid customerId filter");
        }
        return filter;

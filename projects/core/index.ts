@@ -74,7 +74,10 @@ export {
 export { IdEntity } from './src/remult3/IdEntity.js'
 
 export { describeClass } from './src/remult3/DecoratorReplacer.js'
-export { EntityOptions, PreprocessFilterInfo } from './src/entity.js'
+export {
+  EntityOptions,
+  PreprocessFilterEvent as PreprocessFilterInfo,
+} from './src/entity.js'
 export {
   DataProvider,
   EntityDataProvider,
@@ -143,7 +146,7 @@ export { CompoundIdField } from './src/CompoundIdField.js'
 export {
   Filter,
   FilterConsumer,
-  FilterInfo,
+  FilterPreciseValues,
 } from './src/filter/filter-interfaces.js'
 export { UrlBuilder } from './urlBuilder.js'
 export {

@@ -17,7 +17,7 @@ All notable changes to this project will be documented in this file.
 - Added a generic implementation for `sqlite` that can be easily extended to any provider
 - Added `ForbiddenError` to the api
 - Added `apiPreprocessFilter` and `backendPreprocessFilter`
-- Added a way to analyze filter and query it - `Filter.getInfo`
+- Added a way to analyze filter and query it - `Filter.getPreciseValues` which returns a FilterPreciseValues object containing the precise values for each property
 - Improved the api of `rawFilter` so it can now return the sql where to be added to the command
 - Fixed an issue with entity ids that inclu
 - Fixed an issue with repo(Entity,dataProvider) - where saving wasn't fired because of wrong isProxy inference

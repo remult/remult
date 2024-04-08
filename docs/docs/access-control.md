@@ -66,10 +66,10 @@ For more complex scenarios, you can use `apiPreprocessFilter` to dynamically mod
 
 ```ts
 @Entity<Task>("tasks", {
-  apiPreprocessFilter: async (filter, {getFilterInfo}) => {
+  apiPreprocessFilter: async (filter, {getPreciseValues}) => {
     // Ensure that users can only query tasks for specific customers
-    const info = await getFilterInfo();
-    if (!info.preciseValues.customerId) {
+    const preciseValues = await getPreciseValues();
+    if (!preciseValues.customerId) {
       throw new ForbiddenError("You must specify a valid customerId filter");
     }
     return filter;
@@ -77,9 +77,9 @@ For more complex scenarios, you can use `apiPreprocessFilter` to dynamically mod
 })
 ```
 
-In this example, `apiPreprocessFilter` uses the `getFilterInfo` method to ensure that users must specify a valid `customerId` filter when querying tasks, allowing for more granular control over the data that is accessible through the API.
+In this example, `apiPreprocessFilter` uses the `getPreciseValues` method to ensure that users must specify a valid `customerId` filter when querying tasks, allowing for more granular control over the data that is accessible through the API.
 
-**Note:** The `preciseValues` property in the `FilterInfo` object includes the actual values that are used in the filter. For example, in the code sample above, if the `customerId` filter specifies the values `'1'`, `'2'`, and `'3'`, then `info.preciseValues.customerId` will be an array containing these values. This allows you to check and enforce specific filter criteria in your preprocessing logic.
+**Note:** The `preciseValues` object includes the actual values that are used in the filter. For example, in the code sample above, if the `customerId` filter specifies the values `'1'`, `'2'`, and `'3'`, then `preciseValues.customerId` will be an array containing these values. This allows you to check and enforce specific filter criteria in your preprocessing logic.
 
 This added note explains the significance of the `preciseValues` property and how it includes the actual values used in the filter, providing an example for clarity.
 
@@ -101,10 +101,10 @@ To apply similar filtering logic to backend queries, you can use `backendPrefilt
     // Non-admins can only access rows where they are the owner
     return { owner: remult.user!.id }
   },
-  backendPreprocessFilter: async (filter, {getFilterInfo}) => {
+  backendPreprocessFilter: async (filter, {getPreciseValues}) => {
     // Apply additional filtering logic for backend queries
-    const info = await getFilterInfo(filter);
-    if (!info.preciseValues.owner) {
+    const preciseValues = await getPreciseValues(filter);
+    if (!preciseValues.owner) {
       throw new ForbiddenError("You must specify a valid owner filter");
     }
     return filter;

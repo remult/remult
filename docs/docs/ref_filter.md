@@ -1,24 +1,24 @@
 # Filter
 The `Filter` class is a helper class that focuses on filter-related concerns. It provides methods
 for creating and applying filters in queries.
-## getInfo
-Retrieves information about a filter, including precise values for each property.
+## getPreciseValues
+Retrieves precise values for each property in a filter for an entity.
    
    
    #### returns:
-   A promise that resolves to a FilterInfo object containing the filter information.
+   A promise that resolves to a FilterPreciseValues object containing the precise values for each property.
    
    
    #### example:
    ```ts
-   const info = await Filter.getInfo(meta, {
+   const preciseValues = await Filter.getPreciseValues(meta, {
      status: { $ne: 'active' },
      $or: [
        { customerId: ["1", "2"] },
        { customerId: "3" }
      ]
    });
-   console.log(info.preciseValues);
+   console.log(preciseValues);
    // Output:
    // {
    //   "customerId": ["1", "2", "3"], // Precise values inferred from the filter
@@ -29,18 +29,18 @@ Retrieves information about a filter, including precise values for each property
 Arguments:
 * **metadata** - The metadata of the entity being filtered.
 * **filter** - The filter to analyze.
-## getInfo
-Retrieves information about a filter, including precise values for each property.
+## getPreciseValues
+Retrieves precise values for each property in a filter for an entity.
    
    
    #### returns:
-   A promise that resolves to a FilterInfo object containing the filter information.
+   A promise that resolves to a FilterPreciseValues object containing the precise values for each property.
    
    
    #### example:
    ```ts
-   const info = await where.getInfo();
-   console.log(info.preciseValues);
+   const preciseValues = await where.getPreciseValues();
+   console.log(preciseValues);
    // Output:
    // {
    //   "customerId": ["1", "2", "3"], // Precise values inferred from the filter
@@ -85,7 +85,7 @@ where the filter gets translated and applied in a safe manner.
    [Filtering and Relations](/docs/filtering-and-relations.html)
 
 Arguments:
-* **rawFilterTranslator** - A function that returns an `EntityFilter`.
+* **translator** - A function that returns an `EntityFilter`.
 * **key** - An optional unique identifier for the custom filter.
 ## entityFilterToJson
 Translates an `EntityFilter` to a plain JSON object that can be stored or transported.

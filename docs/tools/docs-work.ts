@@ -201,26 +201,27 @@ try {
   }
 
   for (const typeName of [
-    'Remult',
-    'Repository',
-    'QueryResult',
-    'Paginator',
-    'EntityMetadata',
-    'FieldMetadata',
-    'RemultServerOptions',
+    'ValueConverter',
     'Relations',
     'RelationOptions',
-    'ValueConverter',
+    'Remult',
     'ApiClient',
+    'Repository',
+    'RemultServerOptions',
+    'EntityMetadata',
+    'FieldMetadata',
+    'QueryResult',
+    'Paginator',
+    'LiveQuery',
+    'LiveQueryChangeInfo',
     'Filter',
     'Sort',
     'SubscriptionChannel',
-    'LiveQuery',
-    'LiveQueryChangeInfo',
-    'FilterInfo',
-    'PreprocessFilterInfo',
-    'migrate',
     'generateMigrations',
+    'migrate',
+
+    'FilterPreciseValues',
+    //    'PreprocessFilterEvent',
   ]) {
     let type = findType(typeName)
 

@@ -2,12 +2,12 @@
 Provides additional information and utilities for preprocessing filters in API and backend operations.
 ## metadata
 Metadata of the entity being filtered.
-## getFilterInfo
-Retrieves filter information for a given filter or the current filter being preprocessed if no filter is provided.
+## getFilterPreciseValues
+Retrieves precise values for each property in a filter for an entity.
    
    
    #### returns:
-   A promise that resolves to a FilterInfo object containing the filter information.
+   A promise that resolves to a FilterPreciseValues object containing the precise values for each property.
    
    FilterInfo
 
