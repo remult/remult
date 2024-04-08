@@ -278,7 +278,7 @@ export default defineConfig({
     },
   },
   markdown: {
-    theme: 'dark-plus',
+    //    theme: 'dark-plus',
     config(md) {
       md.use(tabsMarkdownPlugin)
     },

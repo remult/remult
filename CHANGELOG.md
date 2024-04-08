@@ -2,35 +2,58 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.26.0] TBD
+## [0.26.0] 2024-04-08
 
-- Added support for migrations, see [Migrations](https://remult.dev/docs/migrations.html)
-- Added an `error` hook to `RemultServerOptions` that is called whenever whenever there is an error in the API lifecycle. See [RemultServerOptions](https://remult.dev/docs/ref_remultserveroptions.html#error)
-- Added an exception when calling `updateMany` or `deleteMany` without a filter - to protect against accidental deleting / updating all data
+### Features
+
+- Added support for migrations. See [Migrations](https://remult.dev/docs/migrations.html).
+- Added an `error` hook to `RemultServerOptions` that is called whenever there is an error in the API lifecycle. See [RemultServerOptions](https://remult.dev/docs/ref_remultserveroptions.html#error).
+- Added `ForbiddenError` to the API, you can throw it anywhere in the request lifecycle to sdisplay a forbidden 401 error.
+- Added [`@Fields.literal`] (https://remult.dev/docs/field-types.html#literal-fields-union-of-string-values) and [`@Fields.enum`](https://remult.dev/docs/field-types.html#enum-field).
+- Added support for `better-sqlite3` without knex, see [Connection a Database](https://remult.dev/docs/quickstart.html#connecting-a-database).
+- Added support for `bun:sqlite` [#387](https://github.com/remult/remult/issues/387#issuecomment-2030070423).
+- Added a generic implementation for `sqlite` that can be easily extended to any provider.
+- Added `apiPreprocessFilter` and `backendPreprocessFilter`, see [access control](https://remult.dev/docs/access-control.html#preprocessing-filters-for-api-requests).
+- Added a way to analyze filter and query it - `Filter.getPreciseValues`, which returns a `FilterPreciseValues` object containing the precise values for each property. see [access control](https://remult.dev/docs/access-control.html#preprocessing-filters-for-api-requests).
+- Added an exception when calling `updateMany` or `deleteMany` without a filter - to protect against accidental deleting/updating all data.
 - Added updateMany and deleteMany to OpenAPI (swagger) & graphql
-- Added exception for updateMany and deleteMany where no where was provided
-- Added `@Fields.literal` and `@Fields.enum`
-- `@ValueListFieldType` now validates that the value exists in the list
-- Added validation for `@Fields.number` & `Fields.integer` that the value is a valid number
-- Added "basic" supports for environments where async hooks doesn't work well - mostly for dev machines
-- Added support for `better-sqlite3` without knex
-- Added support for `bun:sqlite`
-- Added a generic implementation for `sqlite` that can be easily extended to any provider
-- Added `ForbiddenError` to the api
-- Added `apiPreprocessFilter` and `backendPreprocessFilter`
-- Added a way to analyze filter and query it - `Filter.getPreciseValues` which returns a FilterPreciseValues object containing the precise values for each property
-- Improved the api of `rawFilter` so it can now return the sql where to be added to the command
-- Fixed an issue with entity ids that included date
-- Fixed an issue with repo(Entity,dataProvider) - where saving wasn't fired because of wrong isProxy inference
-- Fixed an issue with chaining of validators that in some cases caused a validator to be overwritten
-- `KnexDataProvider` now supports all `execute` and `createCommand` and can be used with any `SqlDatabase` functionality
-- Changed postgres schema builder to use `timestamptz` instead of `timestamp`
-- Changed the default storage of `@Fields.object` to `text` (varchar max) instead of string 255 in `knex` and `sqlite`
-- **Breaking Change** changed the signature of `updateMany` and `deleteMany` to require a `where` parameter:
-  `repo(Task).delete({ where:{ completed:tr}})`
-- **Breaking Change** changed the signature of `getDb` to recieve `DataProvider` as parameter instead of `Remult`
-- **Breaking Change** Changed the POST rest api queries to include the filter under the `where` key in the body - previously it included the filter as the body itself.
-- Fixed ValueConverters Number fromInput handle 0 as a valid value
+
+### Improvements
+
+- Added validation for `@Fields.number` & `Fields.integer` that the value is a valid number.
+- Added "basic" supports for environments where async hooks doesn't work well - mostly for web based dev machines.
+- Improved the API of `rawFilter` so it can now return the SQL where to be added to the command. see [Leveraging Custom Filters for Enhanced Data Filtering](https://remult.dev/docs/custom-filter.html#leveraging-database-capabilities-with-raw-sql-in-custom-filters)
+- `KnexDataProvider` now supports all `execute` and `createCommand` and can be used with any `SqlDatabase` functionality.
+- Changed postgres schema builder to use `timestamptz` instead of `timestamp`.
+- Changed the default storage of `@Fields.object` to `text` (varchar max) instead of string 255 in `knex` and `sqlite`.
+
+### Documentation Updates
+
+- Added or rewrote the following articles:
+  - [Migrations](https://remult.dev/docs/migrations.html)
+  - [Access Control](https://remult.dev/docs/access-control.html)
+  - [Custom/SQL Filter](https://remult.dev/docs/custom-filter.html)
+  - [Direct Database Access](https://remult.dev/docs/running-sql-on-the-server.html)
+  - [Extensibility](https://remult.dev/docs/custom-options.html)
+  - Lots of `jsdocs` improvements
+
+### Bug Fixes
+
+- Fixed an issue with entity ids that included date.
+- Fixed an issue with `repo(Entity,dataProvider)` - where saving wasn't fired because of wrong `isProxy` inference.
+- Fixed an issue with chaining of validators that in some cases caused a validator to be overwritten.
+- Fixed `ValueConverters` `Number` `fromInput` handle 0 as a valid value.
+
+### Breaking Changes
+
+- Changed the signature of `updateMany` and `deleteMany` to require a `where` parameter: `repo(Task).delete({ where: { completed: true } })`.
+- Changed the signature of `getDb` to receive `DataProvider` as a parameter instead of `Remult`.
+- Changed the POST REST API queries to include the filter under the `where` key in the body - previously, it included the filter as the body itself.
+
+### New Contributors
+
+- @eylonshm made their first contribution in https://github.com/remult/remult/pull/376
+- @daan-vdv made their first contribution in https://github.com/remult/remult/pull/397
 
 ## [0.25.8] 2024-04-05
 

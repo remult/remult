@@ -308,7 +308,7 @@ app.use(
 
 == SQLite
 
-Install knex and sqlite3:
+Install better-sqlite3:
 
 ```sh
 npm i better-sqlite3
