@@ -112,7 +112,7 @@ export class Filter {
    * where the filter gets translated and applied in a safe manner.
    *
    * @template entityType The entity type for the filter.
-   * @param {function(): EntityFilter<entityType>} rawFilterTranslator A function that returns an `EntityFilter`.
+   * @param {function(): EntityFilter<entityType>} translator A function that returns an `EntityFilter`.
    * @param {string} [key] An optional unique identifier for the custom filter.
    * @returns {function(): EntityFilter<entityType>} A function that returns an `EntityFilter` of type `entityType`.
    *
@@ -144,7 +144,7 @@ export class Filter {
 
   //@ts-ignore
   static createCustom<entityType>(
-    rawFilterTranslator: (
+    translator: (
       unused: never,
       r: Remult,
     ) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>,
@@ -156,7 +156,7 @@ export class Filter {
    * where the filter gets translated and applied in a safe manner.
    *
    * @template entityType The entity type for the filter.
-   * @param {function(): EntityFilter<entityType>} rawFilterTranslator A function that returns an `EntityFilter`.
+   * @param {function(): EntityFilter<entityType>} translator A function that returns an `EntityFilter`.
    * @param {string} [key] An optional unique identifier for the custom filter.
    * @returns {function(): EntityFilter<entityType>} A function that returns an `EntityFilter` of type `entityType`.
    *
@@ -186,21 +186,21 @@ export class Filter {
    * [Filtering and Relations](/docs/filtering-and-relations.html)
    */
   static createCustom<entityType, argsType>(
-    rawFilterTranslator: (
+    translator: (
       args: argsType,
       r: Remult,
     ) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>,
     key?: string,
   ): ((y: argsType) => EntityFilter<entityType>) & customFilterInfo<entityType>
   static createCustom<entityType, argsType>(
-    rawFilterTranslator: (
+    translator: (
       args: argsType,
       r: Remult,
     ) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>,
     key = '',
   ): ((y: argsType) => EntityFilter<entityType>) &
     customFilterInfo<entityType> {
-    let rawFilterInfo = { key: key, rawFilterTranslator }
+    let rawFilterInfo = { key: key, rawFilterTranslator: translator }
     return Object.assign(
       (x: any) => {
         let z = {}

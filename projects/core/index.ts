@@ -143,7 +143,6 @@ export { CompoundIdField } from './src/CompoundIdField.js'
 export {
   Filter,
   FilterConsumer,
-  customFilterInfo,
   FilterInfo,
 } from './src/filter/filter-interfaces.js'
 export { UrlBuilder } from './urlBuilder.js'
