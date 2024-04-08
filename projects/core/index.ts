@@ -74,10 +74,7 @@ export {
 export { IdEntity } from './src/remult3/IdEntity.js'
 
 export { describeClass } from './src/remult3/DecoratorReplacer.js'
-export {
-  EntityOptions,
-  PreprocessFilterEvent as PreprocessFilterInfo,
-} from './src/entity.js'
+export { EntityOptions, PreprocessFilterEvent } from './src/entity.js'
 export {
   DataProvider,
   EntityDataProvider,

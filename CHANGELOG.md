@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 - Added an `error` hook to `RemultServerOptions` that is called whenever whenever there is an error in the API lifecycle. See [RemultServerOptions](https://remult.dev/docs/ref_remultserveroptions.html#error)
 - Added an exception when calling `updateMany` or `deleteMany` without a filter - to protect against accidental deleting / updating all data
 - Added updateMany and deleteMany to OpenAPI (swagger)
+- Added exception for updateMany and deleteMany where no where was provided
 - Added `@Fields.literal` and `@Fields.enum`
 - `@ValueListFieldType` now validates that the value exists in the list
 - Added validation for `@Fields.number` & `Fields.integer` that the value is a valid number
@@ -19,7 +20,7 @@ All notable changes to this project will be documented in this file.
 - Added `apiPreprocessFilter` and `backendPreprocessFilter`
 - Added a way to analyze filter and query it - `Filter.getPreciseValues` which returns a FilterPreciseValues object containing the precise values for each property
 - Improved the api of `rawFilter` so it can now return the sql where to be added to the command
-- Fixed an issue with entity ids that inclu
+- Fixed an issue with entity ids that included date
 - Fixed an issue with repo(Entity,dataProvider) - where saving wasn't fired because of wrong isProxy inference
 - Fixed an issue with chaining of validators that in some cases caused a validator to be overwritten
 - `KnexDataProvider` now supports all `execute` and `createCommand` and can be used with any `SqlDatabase` functionality

@@ -311,7 +311,7 @@ app.use(
 Install knex and sqlite3:
 
 ```sh
-npm i sqlite3
+npm i better-sqlite3
 ```
 
 Set the `dataProvider` property:

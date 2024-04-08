@@ -511,7 +511,7 @@ export interface EntityOptions<entityType = any> {
    *
    * @template entityType The type of the entity being filtered.
    * @param filter The initial EntityFilter for the entity type.
-   * @param info Additional information and utilities for preprocessing the filter.
+   * @param event Additional information and utilities for preprocessing the filter.
    * @returns The modified EntityFilter or a Promise that resolves to the modified EntityFilter.
    *
    * @example
@@ -530,19 +530,19 @@ export interface EntityOptions<entityType = any> {
    */
   apiPreprocessFilter?: (
     filter: EntityFilter<entityType>,
-    info: PreprocessFilterEvent<entityType>,
+    event: PreprocessFilterEvent<entityType>,
   ) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>
   /**
    * Similar to apiPreprocessFilter, but for backend operations.
    *
    * @template entityType The type of the entity being filtered.
    * @param filter The initial EntityFilter for the entity type.
-   * @param info Additional information and utilities for preprocessing the filter.
+   * @param event Additional information and utilities for preprocessing the filter.
    * @returns The modified EntityFilter or a Promise that resolves to the modified EntityFilter.
    */
   backendPreprocessFilter?: (
     filter: EntityFilter<entityType>,
-    info: PreprocessFilterEvent<entityType>,
+    event: PreprocessFilterEvent<entityType>,
   ) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>
   /** A filter that will be used for all queries from this entity both from the API and from within the backend.
    * @example
@@ -653,7 +653,6 @@ export interface EntityOptions<entityType = any> {
   entityRefInit?: (ref: EntityRef<entityType>, row: entityType) => void
   apiRequireId?: Allowed
 }
-//[ ] PreprocessFilterEvent from TBD is not exported
 export declare type EntityOrderBy<entityType> = {
   [Properties in keyof Partial<MembersOnly<entityType>>]?: "asc" | "desc"
 }
@@ -1659,6 +1658,22 @@ export interface Paginator<entityType> {
   nextPage(): Promise<Paginator<entityType>>
   /** the count of the total items in the `query`'s result */
   count(): Promise<number>
+}
+export interface PreprocessFilterEvent<entityType> {
+  /**
+   * Metadata of the entity being filtered.
+   */
+  metadata: EntityMetadata<entityType>
+  /**
+     * Retrieves precise values for each property in a filter for an entity.
+     * @param filter Optional filter to analyze. If not provided, the current filter being preprocessed is used.
+     * @returns A promise that resolves to a FilterPreciseValues object containing the precise values for each property.
+     
+    * {@Link FilterPreciseValues }
+     */
+  getFilterPreciseValues(
+    filter?: EntityFilter<entityType>,
+  ): Promise<FilterPreciseValues<entityType>>
 }
 export declare class ProgressListener {
   private res

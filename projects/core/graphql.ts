@@ -540,30 +540,32 @@ export function remultGraphql(options: {
           argErrorDetail,
           argClientMutationId,
         )
-        root[updateResolverKey] = handleMutationWithErrors(
-          async (dApi, response, setResult, arg1: any, req: any) => {
-            await dApi.put(
-              {
-                ...response,
-                success: (y) => {
-                  const orig = { ...y }
-                  currentType.query.resultProcessors.forEach((z) => z(y, orig))
-                  setResult({
-                    [toCamelCase(getMetaType(meta))]: y,
-                  })
-                },
-              },
-              arg1.id,
-              arg1.patch,
-            )
-          },
-        )
         resolversMutation[updateResolverKey] = (
           origItem: any,
           args: any,
           req: any,
           gqlInfo: any,
-        ) => root[updateResolverKey](args, req, gqlInfo)
+        ) =>
+          handleMutationWithErrors(
+            async (dApi, response, setResult, arg1: any, req: any) => {
+              await dApi.put(
+                {
+                  ...response,
+                  success: (y) => {
+                    const orig = { ...y }
+                    currentType.query.resultProcessors.forEach((z) =>
+                      z(y, orig),
+                    )
+                    setResult({
+                      [toCamelCase(getMetaType(meta))]: y,
+                    })
+                  },
+                },
+                arg1.id,
+                arg1.patch,
+              )
+            },
+          )(args, req)
       }
       if (checkCanExist(meta.options.allowApiDelete)) {
         // delete

@@ -66,7 +66,7 @@ export interface EntityOptions<entityType = any> {
    *
    * @template entityType The type of the entity being filtered.
    * @param filter The initial EntityFilter for the entity type.
-   * @param info Additional information and utilities for preprocessing the filter.
+   * @param event Additional information and utilities for preprocessing the filter.
    * @returns The modified EntityFilter or a Promise that resolves to the modified EntityFilter.
    *
    * @example
@@ -85,7 +85,7 @@ export interface EntityOptions<entityType = any> {
    */
   apiPreprocessFilter?: (
     filter: EntityFilter<entityType>,
-    info: PreprocessFilterEvent<entityType>,
+    event: PreprocessFilterEvent<entityType>,
   ) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>
 
   /**
@@ -93,12 +93,12 @@ export interface EntityOptions<entityType = any> {
    *
    * @template entityType The type of the entity being filtered.
    * @param filter The initial EntityFilter for the entity type.
-   * @param info Additional information and utilities for preprocessing the filter.
+   * @param event Additional information and utilities for preprocessing the filter.
    * @returns The modified EntityFilter or a Promise that resolves to the modified EntityFilter.
    */
   backendPreprocessFilter?: (
     filter: EntityFilter<entityType>,
-    info: PreprocessFilterEvent<entityType>,
+    event: PreprocessFilterEvent<entityType>,
   ) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>
 
   /** A filter that will be used for all queries from this entity both from the API and from within the backend.
