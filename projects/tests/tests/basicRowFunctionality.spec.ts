@@ -27,6 +27,9 @@ import {
   Field,
   Fields,
   FieldType,
+  type Repository,
+  type EntityFilter,
+  type MembersOnly,
 } from '../../core'
 
 import axios from 'axios'
@@ -2523,3 +2526,51 @@ class mockResponse implements Response {
     throw new Error('Method not implemented.')
   }
 }
+describe('test basic upsert function ', () => {
+  var remult: Remult
+  beforeEach(() => {
+    remult = new Remult(new InMemoryDataProvider())
+  })
+
+  async function upsert<entityType>(
+    repo: Repository<entityType>,
+    options: {
+      where: EntityFilter<entityType>
+      create: Partial<MembersOnly<entityType>>
+      update: Partial<MembersOnly<entityType>>
+    },
+  ) {
+    const item = await repo.findFirst(options.where)
+    if (item) {
+      return await repo.update(item, options.update)
+    } else return await repo.insert(options.create)
+  }
+  it('test upsert', async () => {
+    let item = await upsert(remult.repo(Categories), {
+      where: {
+        id: 1,
+      },
+      create: {
+        id: 1,
+        categoryName: 'a',
+      },
+      update: {
+        categoryName: 'updated',
+      },
+    })
+    expect(item.categoryName).toBe('a')
+    item = await upsert(remult.repo(Categories), {
+      where: {
+        id: 1,
+      },
+      create: {
+        id: 1,
+        categoryName: 'a',
+      },
+      update: {
+        categoryName: 'updated',
+      },
+    })
+    expect(item.categoryName).toBe('updated')
+  })
+})
