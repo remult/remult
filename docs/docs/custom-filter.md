@@ -252,7 +252,7 @@ static activeOrders = Filter.createCustom<
     $and: [
       SqlDatabase.rawFilter(({param}) => // [!code highlight]
         `${order.customerId} in (select ${customer.id} from ${customer} as c // [!code highlight]
-           where c.${customer.city} = ${param(customerCity)})` // [!code highlight]
+           where ${customer.city} = ${param(customerCity)})` // [!code highlight]
       ),
     ],
   }
