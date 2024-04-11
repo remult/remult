@@ -163,11 +163,12 @@ static activeOrders = Filter.createCustom<
 
 In this example, the custom filter `activeOrders` now takes an additional parameter `customerCity`. The filter performs a database query to fetch all customers from the specified city. It then uses the IDs of these customers to filter orders that belong to them. This is combined with the existing criteria of filtering orders based on their status and creation year.
 
-### Key Points
+::: tip Key Points
 
 - **Backend Evaluation:** The filter is evaluated on the backend, where it has access to the database and can perform efficient queries. This offloads complex data processing from the frontend to the backend, where it can be handled more effectively.
 - **Complex Filtering:** By leveraging backend capabilities, you can create filters that involve complex operations, such as fetching related data from other tables or entities (in this case, fetching customers based on their city).
 - **Asynchronous Operations:** Notice the use of `async` in the filter definition. This allows you to perform asynchronous operations, such as database queries, within your custom filter.
+  :::
 
 ## Leveraging Database Capabilities with Raw SQL in Custom Filters
 
