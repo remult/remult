@@ -294,6 +294,8 @@ For instance, consider a scenario where you need to filter orders based on multi
 
 Furthermore, the ability to handle complex situations is a significant advantage of SQL-based custom filters. By leveraging the raw power of SQL, you can perform advanced operations such as subqueries, joins, and aggregate functions directly within your filters. This opens up a wide range of possibilities for data analysis and manipulation, enabling you to tackle complex filtering scenarios with ease.
 
+SQL is a language that is widely recognized and understood by AI technologies such as ChatGPT, Copilot and others. This makes it possible to generate highly optimized queries with ease. These AI technologies can assist in writing SQL queries, ensuring they are efficient and effective. This is particularly beneficial when dealing with complex data structures and large datasets, where writing optimal queries can be challenging. With the assistance of AI, developers can focus more on the logic of their applications, while the AI handles the intricacies of SQL query optimization.
+
 In summary, the composability of SQL-based custom filters, coupled with their ability to handle complex situations, makes them an invaluable tool for developers seeking to create flexible, efficient, and powerful data filtering solutions in their web applications.
 
 ### Using Raw Filters with Different Data Providers
