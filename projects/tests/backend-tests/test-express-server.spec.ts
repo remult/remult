@@ -53,12 +53,12 @@ describe('test express server', async () => {
             {
               "entity": undefined,
               "exception": {
-                "message": "Forbidden",
+                "message": "NotFound",
               },
               "httpStatusCode": 404,
               "req": true,
               "responseBody": {
-                "message": "Forbidden",
+                "message": "NotFound",
               },
               "sendError": [Function],
             }
@@ -69,7 +69,7 @@ describe('test express server', async () => {
           .toThrowErrorMatchingInlineSnapshot(`
           {
             "httpStatusCode": 432,
-            "message": "Forbidden",
+            "message": "NotFound",
           }
         `)
       }),
