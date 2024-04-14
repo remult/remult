@@ -812,11 +812,11 @@ export type ClassFieldDecorator<entityType, valueType> = (
     | ClassFieldDecoratorContextStub<entityType, valueType | undefined>,
   c?: any,
 ) => void
+//p1 - fix async hooks
 
 //p1 - add documentation for bun sqlite
 //p1 - fix dark background to also work on groups
-//p1 - fix async hooks
-//p1 - 404 returns forbidden
+
 //p1 - reconsider update many, maybe the second parameter should be in a set option
 
 //y1 - JY suggestion of having generate as part of the ensure schema - not sure
