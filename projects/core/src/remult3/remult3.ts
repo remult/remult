@@ -815,7 +815,6 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //p1 - fix async hooks
 
 //p1 - add documentation for bun sqlite
-//p1 - fix dark background to also work on groups
 
 //p1 - reconsider update many, maybe the second parameter should be in a set option
 
