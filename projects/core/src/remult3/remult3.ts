@@ -823,32 +823,29 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //p1 - write active record article
 //p1 - maybe add decorator comment in the readme as well (I heard you've lost me in decorators) - and improve the describeClass function
 //p1 - return error on connection error
+//p1 - reconsider update many, maybe the second parameter should be in a set option - break existing
+//p1 - consider upsert (where,set)
+//p1 - consider id to also support keyof (id:['company','index'])
 
-//y1 - reconsider update many, maybe the second parameter should be in a set option
-
-//y1 - JY suggestion of having generate as part of the ensure schema - not sure
-//y1 - currently for string fields we default for 255 in knex (which is their default) why not just use text (varchar max) - and only use exact length when one is provided?
-
-//y1 - consider upsert
+//y2 - JY suggestion of having generate as part of the ensure schema - not sure
+//y2 - currently for string fields we default for 255 in knex (which is their default) why not just use text (varchar max) - and only use exact length when one is provided?
 
 //p2 - create foreign key constraints in user code - https://codesandbox.io/p/devbox/fk-validator-tdshcs
 
 //p1 - admin url1 - pocketbase use /_ for the admin //{allowed?:Allowed,url?:string}
 
 //p2 - article auth.js with express - played with it, requires type="module" and a few more configurations - https://github.com/noam-honig/express-auth
-//y1 - fix validators cache
+//y2 - fix validators cache
 //y2 - should we validate relations
 
-//y1 - dependency of live query tables
+//y1 - dependency of live query tables  live query refresh of view on table update
 //p1 - see why mongo tests do not run anymore
-//y1 - consider the bot that updates dependencies
 
-//y1 - consider replacing all errors with error classes that extend the base Error class
+//y2 - consider replacing all errors with error classes that extend the base Error class
 //y2 - should enforce integer - currently we probably round / truncate it
 //y1 - talk about filter on objects that are not loaded -  {
 //category: repo(CompoundId).create({ company: 7, index: 3, name: '' }),
 //    }
-//y1 - consider id to also support keyof (id:['company','index'])
 /*y1 - talk about modules in init express with entities/controllers,initRequest,initApi
  - support get with backend method, with url search params as the first parameter, & url as second parameter
    - support returning redirect, and plain html (For sign in scenarios)
@@ -857,7 +854,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 
 //p1 - in this video I'll use remult to turn a frontend app to a fullstack app
 
-/*y1 - Talk JYC - JYC - add some integrity checks on delete
+/*y2 - Talk JYC - JYC - add some integrity checks on delete
   - soft delete
   - delete restrict (implicit, or user selected - and if so, how) (delete & update of id)
 
@@ -866,10 +863,9 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //y1 - consider sql expression gets a dbnames of it's own (that already has the "tableName" defined correctly) maybe also the filter translator
 
 //y1 - tried to upgrade vitest, nuxt tests are failing with loading uuid - sounds familiar?
-//y1 - I think that the tests you've setup don't cover next app router - I added to the setup, but not sure where else
+
 //y1 - talk about the parameter issue with backend methods
-//y1 - select data provider per entity https://discord.com/channels/975754286384418847/976006081748807690/1201415305885397003
-//y1 - live query refresh of view on table update
+
 //y1 - main vs master
 //y2 - livequery for findfirst (@JY)
 
