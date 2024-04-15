@@ -813,13 +813,18 @@ export type ClassFieldDecorator<entityType, valueType> = (
   c?: any,
 ) => void
 
+//p1 - release solid start with example project
 //p1 - add documentation for bun sqlite
 //p1 - fix dark background to also work on groups
+//p1 - describe entity
+//p1 - prepare the createEntity discussion
 //p1 - fix async hooks
 //p1 - write active record article
+//p1 - maybe add decorator comment in the readme as well (I heard you've lost me in decorators) - and improve the describeClass function
+//p1 - return error on connection error
 //y1 - JY suggestion of having generate as part of the ensure schema - not sure
 //y1 - currently for string fields we default for 255 in knex (which is their default) why not just use text (varchar max) - and only use exact length when one is provided?
-//y1 - consider changing the sql raw filter to return the sql, instead of setting the sql property
+
 //y1 - consider upsert
 
 //p2 - create foreign key constraints in user code - https://codesandbox.io/p/devbox/fk-validator-tdshcs
