@@ -28,6 +28,7 @@ export default defineConfig({
     'Build Full-stack, End-to-end Type-safe CRUD Apps without the Boilerplate',
   lastUpdated: true,
   ignoreDeadLinks: 'localhostLinks',
+  cleanUrls: true,
 
   head: [
     ['link', { href: '/favicon.png', rel: 'icon', type: 'image/png' }],
@@ -52,7 +53,7 @@ export default defineConfig({
   themeConfig: {
     logo: '/logo.png',
     editLink: {
-      pattern: 'https://github.com/remult/remult/edit/master/docs/:path',
+      pattern: 'https://github.com/remult/remult/edit/main/docs/:path',
     },
     nav: [
       {

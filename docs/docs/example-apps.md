@@ -14,12 +14,12 @@ A CRM app built using a React + [MUI](https://mui.com) frontend and an Express +
 
 ### Todo example with Next.js App Router
 
-- [Source code](https://github.com/remult/remult/tree/master/examples/nextjs-app-router-todo)
+- [Source code](https://github.com/remult/remult/tree/main/examples/nextjs-app-router-todo)
 
 ### Todo example with SvelteKit
 
-- [Source code](https://github.com/remult/remult/tree/master/examples/sveltekit-todo)
+- [Source code](https://github.com/remult/remult/tree/main/examples/sveltekit-todo)
 
 ### Todo example with Nuxt3
 
-- [Source code](https://github.com/remult/remult/tree/master/examples/nuxt-todo)
+- [Source code](https://github.com/remult/remult/tree/main/examples/nuxt-todo)
