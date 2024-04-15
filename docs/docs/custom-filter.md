@@ -163,11 +163,12 @@ static activeOrders = Filter.createCustom<
 
 In this example, the custom filter `activeOrders` now takes an additional parameter `customerCity`. The filter performs a database query to fetch all customers from the specified city. It then uses the IDs of these customers to filter orders that belong to them. This is combined with the existing criteria of filtering orders based on their status and creation year.
 
-### Key Points
+::: tip Key Points
 
 - **Backend Evaluation:** The filter is evaluated on the backend, where it has access to the database and can perform efficient queries. This offloads complex data processing from the frontend to the backend, where it can be handled more effectively.
 - **Complex Filtering:** By leveraging backend capabilities, you can create filters that involve complex operations, such as fetching related data from other tables or entities (in this case, fetching customers based on their city).
 - **Asynchronous Operations:** Notice the use of `async` in the filter definition. This allows you to perform asynchronous operations, such as database queries, within your custom filter.
+  :::
 
 ## Leveraging Database Capabilities with Raw SQL in Custom Filters
 
@@ -251,7 +252,7 @@ static activeOrders = Filter.createCustom<
     $and: [
       SqlDatabase.rawFilter(({param}) => // [!code highlight]
         `${order.customerId} in (select ${customer.id} from ${customer} as c // [!code highlight]
-           where c.${customer.city} = ${param(customerCity)})` // [!code highlight]
+           where ${customer.city} = ${param(customerCity)})` // [!code highlight]
       ),
     ],
   }
@@ -292,6 +293,8 @@ The greatest advantage of using SQL-based custom filters lies in their composabi
 For instance, consider a scenario where you need to filter orders based on multiple criteria, such as status, creation year, customer location, and order value. By creating separate custom filters for each of these criteria, you can easily combine them to form a comprehensive filtering solution. This composability ensures that your filtering logic can adapt to various requirements without becoming convoluted or difficult to manage.
 
 Furthermore, the ability to handle complex situations is a significant advantage of SQL-based custom filters. By leveraging the raw power of SQL, you can perform advanced operations such as subqueries, joins, and aggregate functions directly within your filters. This opens up a wide range of possibilities for data analysis and manipulation, enabling you to tackle complex filtering scenarios with ease.
+
+SQL is a language that is widely recognized and understood by AI technologies such as ChatGPT, Copilot and others. This makes it possible to generate highly optimized queries with ease. These AI technologies can assist in writing SQL queries, ensuring they are efficient and effective. This is particularly beneficial when dealing with complex data structures and large datasets, where writing optimal queries can be challenging. With the assistance of AI, developers can focus more on the logic of their applications, while the AI handles the intricacies of SQL query optimization.
 
 In summary, the composability of SQL-based custom filters, coupled with their ability to handle complex situations, makes them an invaluable tool for developers seeking to create flexible, efficient, and powerful data filtering solutions in their web applications.
 

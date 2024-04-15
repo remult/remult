@@ -1,11 +1,11 @@
 <div align="center">
   <h1>Remult</h1>
   <p>Full-stack CRUD, simplified, with SSOT TypeScript entities</p>
-	<a href="https://circleci.com/gh/remult/remult/tree/master" rel="nofollow">
-		<img alt="CircleCI" src="https://circleci.com/gh/remult/remult/tree/master.svg?style=shield"></a>
+	<a href="https://circleci.com/gh/remult/remult/tree/main" rel="nofollow">
+		<img alt="CircleCI" src="https://circleci.com/gh/remult/remult/tree/main.svg?style=shield"></a>
 	<a href="https://codecov.io/gh/remult/remult" rel="nofollow">
-        	<img src="https://codecov.io/gh/remult/remult/branch/master/graph/badge.svg?token=LYWQRUN3D1"/></a>
-    	<a href="https://raw.githubusercontent.com/remult/remult/master/LICENSE" rel="nofollow">
+        	<img src="https://codecov.io/gh/remult/remult/branch/main/graph/badge.svg?token=LYWQRUN3D1"/></a>
+    	<a href="https://raw.githubusercontent.com/remult/remult/main/LICENSE" rel="nofollow">
 		<img alt="GitHub license" src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
 	<a href="https://www.npmjs.com/package/remult" rel="nofollow">
 		<img alt="npm version" src="https://badge.fury.io/js/remult.svg"></a>
@@ -94,7 +94,7 @@ _Example:_
 
 import express from 'express'
 import { remultExpress } from 'remult/remult-express' // adapters for: Fastify, Next.js, Nuxt, SvelteKit, Nest, more...
-import { createPostgresDataProvider } from "remult/postgres" // supported: PostgreSQL, MySQL, SQLite, MongoDB, MSSQL and Oracle
+import { createPostgresDataProvider } from 'remult/postgres' // supported: PostgreSQL, MySQL, SQLite, MongoDB, MSSQL and Oracle
 import { Product } from '../shared/product'
 
 const app = express()
@@ -184,7 +184,7 @@ try {
   await repo(Product).insert({ name: '', unitPrice: -1 })
 } catch (e: any) {
   console.error(e)
-/* Detailed error object ->
+  /* Detailed error object ->
 {
   "modelState": {
     "name": "Should not be empty",
@@ -311,7 +311,7 @@ with a Node.js Express backend.
 
 <a href="https://www.youtube.com/watch?v=rEoScmSVNUE" target="_blank">
   <p align="center">
-    <img src="https://github.com/remult/remult/raw/master/static/images/video-thumbnail.jpg" alt="Video thumbnail"  />
+    <img src="https://github.com/remult/remult/raw/main/static/images/video-thumbnail.jpg" alt="Video thumbnail"  />
   </p>
 </a>
 

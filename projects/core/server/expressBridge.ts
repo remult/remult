@@ -1123,7 +1123,7 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
   }
 
   public notFound(): void {
-    this.error({ message: 'Forbidden' }, undefined, 404)
+    this.error({ message: 'NotFound' }, undefined, 404)
   }
 
   public async error(
