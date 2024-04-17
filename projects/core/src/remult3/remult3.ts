@@ -826,6 +826,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //p1 - reconsider update many, maybe the second parameter should be in a set option - break existing
 //p1 - consider upsert (where,set)
 //p1 - consider id to also support keyof (id:['company','index'])
+//p1 - consider including the admin in the tutorial - and maybe even in the demo when we setup the api
 
 //y2 - JY suggestion of having generate as part of the ensure schema - not sure
 //y2 - currently for string fields we default for 255 in knex (which is their default) why not just use text (varchar max) - and only use exact length when one is provided?
@@ -834,7 +835,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 
 //p1 - admin url1 - pocketbase use /_ for the admin //{allowed?:Allowed,url?:string}
 
-//p2 - article auth.js with express - played with it, requires type="module" and a few more configurations - https://github.com/noam-honig/express-auth
+//p1 - article auth.js with express - played with it, requires type="module" and a few more configurations - https://github.com/noam-honig/express-auth
 //y2 - fix validators cache
 //y2 - should we validate relations
 
