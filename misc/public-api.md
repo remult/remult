@@ -178,13 +178,13 @@ export type ClassType<T> = {
 }
 export type ComparisonValueFilter<valueType> = ValueFilter<valueType> & {
   $gt?: valueType
-  ">"?: valueType
+  '>'?: valueType
   $gte?: valueType
-  ">="?: valueType
+  '>='?: valueType
   $lt?: valueType
-  "<"?: valueType
+  '<'?: valueType
   $lte?: valueType
-  "<="?: valueType
+  '<='?: valueType
 }
 export declare class CompoundIdField implements FieldMetadata<string> {
   fields: FieldMetadata[]
@@ -654,7 +654,7 @@ export interface EntityOptions<entityType = any> {
   apiRequireId?: Allowed
 }
 export declare type EntityOrderBy<entityType> = {
-  [Properties in keyof Partial<MembersOnly<entityType>>]?: "asc" | "desc"
+  [Properties in keyof Partial<MembersOnly<entityType>>]?: 'asc' | 'desc'
 }
 export interface EntityRef<entityType> extends EntityRefBase<entityType> {
   fields: FieldsRef<entityType>
@@ -1559,22 +1559,22 @@ export interface LiveQuery<entityType> {
 }
 export declare type LiveQueryChange =
   | {
-      type: "all"
+      type: 'all'
       data: any[]
     }
   | {
-      type: "add"
+      type: 'add'
       data: any
     }
   | {
-      type: "replace"
+      type: 'replace'
       data: {
         oldId: any
         item: any
       }
     }
   | {
-      type: "remove"
+      type: 'remove'
       data: {
         id: any
       }
@@ -1745,7 +1745,7 @@ export type RelationOptions<
    * If false or not specified, related entities will need to be explicitly included using the `include` option.
    */
   defaultIncluded?: boolean
-} & Pick<FieldOptions, "caption">
+} & Pick<FieldOptions, 'caption'>
 export declare class Relations {
   /**
    * Define a to-one relation between entities, indicating a one-to-one relationship.
@@ -1796,7 +1796,7 @@ export declare class Relations {
       | (FieldOptions<entityType, toEntityType> &
           Pick<
             RelationOptions<entityType, toEntityType, any, any>,
-            "defaultIncluded"
+            'defaultIncluded'
           >)
       | RelationOptions<entityType, toEntityType, entityType>
       | keyof entityType,
@@ -1932,7 +1932,7 @@ export interface RemultContext {}
 export declare function repo<entityType>(
   entity: ClassType<entityType>,
   dataProvider?: DataProvider,
-): import("./src/remult3/remult3.js").Repository<entityType>
+): import('./src/remult3/remult3.js').Repository<entityType>
 export interface Repository<entityType> {
   /** returns a result array based on the provided options */
   find(options?: FindOptions<entityType>): Promise<entityType[]>
@@ -2238,7 +2238,7 @@ export declare class SqlDatabase
    */
   static LogToConsole:
     | boolean
-    | "oneLiner"
+    | 'oneLiner'
     | ((duration: number, query: string, args: Record<string, any>) => void)
   /**
    * Threshold in milliseconds for logging queries to the console.
@@ -2529,7 +2529,7 @@ export type ValueFilter<valueType> =
   | valueType[]
   | {
       $ne?: valueType | valueType[]
-      "!="?: valueType | valueType[]
+      '!='?: valueType | valueType[]
       $in?: valueType[]
       $nin?: valueType[]
     }
@@ -2627,12 +2627,12 @@ export type RemultExpressServer = express.RequestHandler &
       res: express.Response,
       next: VoidFunction,
     ) => void
-  } & Pick<RemultServer<express.Request>, "withRemultAsync">
+  } & Pick<RemultServer<express.Request>, 'withRemultAsync'>
 //[ ] RemultServerCore from ./server/expressBridge.js is not exported
 //[ ] RemultServer from ./server/expressBridge.js is not exported
 ```
 
-## ./remult-next.js
+## ./remult-SolidStart
 
 ```ts
 export declare function remultNext(
@@ -2667,7 +2667,7 @@ export type RemultNextServer = RemultServerCore<NextApiRequest> &
       req: NextApiRequest | undefined,
       what: () => Promise<T>,
     ): Promise<T>
-    /** Creates a `next.js` handler with remult defined in the correct context
+    /** Creates a `SolidStart` handler with remult defined in the correct context
      * @see
      * https://remult.dev/tutorials/react-next/appendix-1-get-server-side-props.html#using-remult-in-a-next-js-api-handler
      */
@@ -3087,7 +3087,7 @@ export declare function remultFastify(
 //[ ] RemultServerOptions from ./server/expressBridge.js is not exported
 export type RemultFastifyServer = FastifyPluginCallback &
   RemultServerCore<FastifyRequest> & {
-    withRemult: RemultServer<FastifyRequest>["withRemultAsync"]
+    withRemult: RemultServer<FastifyRequest>['withRemultAsync']
   }
 //[ ] RemultServerCore from ./server/expressBridge.js is not exported
 //[ ] RemultServer from ./server/expressBridge.js is not exported
@@ -3102,7 +3102,7 @@ export declare function remultHapi(
 //[ ] RemultServerOptions from ./server/index.js is not exported
 export type RemultHapiServer = Plugin<any, any> &
   RemultServerCore<Request> & {
-    withRemult: RemultServer<Request>["withRemultAsync"]
+    withRemult: RemultServer<Request>['withRemultAsync']
   }
 //[ ] RemultServerCore from ./server/index.js is not exported
 //[ ] RemultServer from ./server/index.js is not exported
@@ -3112,13 +3112,13 @@ export type RemultHapiServer = Plugin<any, any> &
 
 ```ts
 export declare function remultHono(
-  options: RemultServerOptions<Context<Env, "", BlankInput>>,
+  options: RemultServerOptions<Context<Env, '', BlankInput>>,
 ): RemultHonoServer
 //[ ] RemultServerOptions from ./server/index.js is not exported
 export type RemultHonoServer = Hono &
-  RemultServerCore<Context<Env, "", BlankInput>> & {
+  RemultServerCore<Context<Env, '', BlankInput>> & {
     withRemult: <T>(
-      c: Context<Env, "", BlankInput>,
+      c: Context<Env, '', BlankInput>,
       what: () => Promise<T>,
     ) => Promise<T>
   }
@@ -3160,7 +3160,7 @@ export declare function remultSveltekit(
 //[ ] RemultServerOptions from ./server/index.js is not exported
 export type RemultSveltekitServer = RemultServerCore<RequestEvent> &
   Handle & {
-    withRemult: RemultServer<RequestEvent>["withRemultAsync"]
+    withRemult: RemultServer<RequestEvent>['withRemultAsync']
     GET: RequestHandler
     PUT: RequestHandler
     POST: RequestHandler
@@ -3181,7 +3181,7 @@ export declare function createPostgresConnection(
 export declare function createPostgresDataProvider(options?: {
   connectionString?: string
   sslInDev?: boolean
-  configuration?: "heroku" | PoolConfig
+  configuration?: 'heroku' | PoolConfig
   wrapIdentifier?: (name: string) => string
   caseInsensitiveIdentifiers?: boolean
   schema?: string
@@ -3259,7 +3259,7 @@ export declare class PostgresSchemaBuilder {
 //[ ] Remult from TBD is not exported
 export declare function preparePostgresQueueStorage(
   sql: SqlDatabase,
-): Promise<import("../server/expressBridge.js").EntityQueueStorage>
+): Promise<import('../server/expressBridge.js').EntityQueueStorage>
 ```
 
 ## ./postgres/schema-builder.js
@@ -3615,7 +3615,7 @@ export declare function getRelationFieldInfo(
 ): RelationFieldInfo
 export declare function getRelationInfo(options: FieldOptions): RelationInfo
 export interface RelationFieldInfo {
-  type: "reference" | "toOne" | "toMany"
+  type: 'reference' | 'toOne' | 'toMany'
   options: RelationOptions<any, any, any>
   toEntity: any
   toRepo: Repository<any>
@@ -3629,7 +3629,7 @@ export interface RelationFields {
 }
 export interface RelationInfo {
   toType: () => any
-  type: RelationFieldInfo["type"]
+  type: RelationFieldInfo['type']
 }
 ```
 
@@ -3642,7 +3642,7 @@ export declare function remultNuxt(
 //[ ] RemultServerOptions from ./server/index.js is not exported
 export type RemultNuxtServer = RemultServerCore<H3Event> &
   ((event: H3Event) => Promise<any>) & {
-    withRemult: RemultServer<H3Event>["withRemultAsync"]
+    withRemult: RemultServer<H3Event>['withRemultAsync']
   }
 //[ ] RemultServerCore from ./server/index.js is not exported
 //[ ] RemultServer from ./server/index.js is not exported

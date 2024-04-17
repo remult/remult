@@ -48,6 +48,7 @@
     "./ably": "./ably.js",
     "./graphql": "./graphql.js",
     "./internals": "./internals.js",
-    "./remult-nuxt": "./remult-nuxt.js"
+    "./remult-nuxt": "./remult-nuxt.js",
+    "./remult-solid-start": "./remult-solid-start.js"
   }
 }
