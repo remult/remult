@@ -6,7 +6,7 @@ Remult provides a flexible mechanism that enables placing **code-based authoriza
 
 **Remult is completely unopinionated when it comes to user authentication.** You are free to use any kind of authentication mechanism, and only required to provide Remult with an object which implements the Remult `UserInfo` interface.
 
-In this tutorial, we'll use [NextAuth.js](https://next-auth.js.org/) for authentication.
+In this tutorial, we'll use method outlined in the [Authentication](https://start.solidjs.com/advanced/session/) article of `SolidStart`
 
 ## Tasks CRUD Requires Sign-in
 
@@ -51,83 +51,71 @@ To fix this, let's implement the same rule using the `@BackendMethod` decorator 
 
 ## User Authentication
 
-Let's set-up `NextAuth.js` to authenticate users to our app.
+Let's set-up `SolidStart` authentication to authenticate users to our app.
 
 ### Backend setup
 
-1. Install `next-auth`:
-
-   ```sh
-   npm i next-auth
-   ```
-
-2. `NextAuth` requires a "secret" used to encrypt the NextAuth.js JWT, see [Options | NextAuth.js](https://next-auth.js.org/configuration/options#nextauth_secret) for more info.
-
-   Create a file called `.env.local` and set the `NEXTAUTH_SECRET` to a random string.
-
-   ```
-   // .env.local
-
-   NEXTAUTH_SECRET=something-secret
-   ```
-
-   :::tip
-   you can use an [online UUID generator](https://www.uuidgenerator.net/) to generate a completely random string
-   :::
-
-3. Create an `auth` folder within the 'api' folder, and inside it, create a `[...nextauth]` subdirectory. Inside the `app/api/auth/[...nextauth]` directory, craft a `route.ts` file with the following code.
+1. Create an `auth.ts` file in the `src` folder with the following code.
 
    ```ts
-   // src/app/api/auth/[...nextauth]/route.ts
+   // src/auth.ts
 
-   import NextAuth, { getServerSession } from 'next-auth/next'
-   import Credentials from 'next-auth/providers/credentials'
-   import { UserInfo } from 'remult'
+   import { action, cache, redirect } from '@solidjs/router'
+   import { useSession } from 'vinxi/http'
+   import type { UserInfo } from 'remult'
 
    const validUsers: UserInfo[] = [
      { id: '1', name: 'Jane' },
      { id: '2', name: 'Steve' },
    ]
-   function findUser(name?: string | null) {
-     return validUsers.find((user) => user.name === name)
+
+   export async function getSession() {
+     'use server'
+     return await useSession<{ user?: UserInfo }>({
+       password:
+         process.env['SESSION_SECRET'] ||
+         'Something secret used for development only',
+     })
    }
 
-   const auth = NextAuth({
-     providers: [
-       Credentials({
-         credentials: {
-           name: {
-             placeholder: 'Try Steve or Jane',
-           },
-         },
-         authorize: (credentials) => findUser(credentials?.name) || null,
-       }),
-     ],
-     callbacks: {
-       session: ({ session }) => ({
-         ...session,
-         user: findUser(session.user?.name),
-       }),
-     },
-   })
-   export { auth as GET, auth as POST }
+   export const loginAction = action(async (formData: FormData) => {
+     'use server'
+     const username = String(formData.get('username'))
+     try {
+       const session = await getSession()
+       const user = validUsers.find((x) => x.name === username)
+       if (!user) throw Error("Invalid user, try 'Steve' or 'Jane'")
+       await session.update({ user })
+     } catch (err) {
+       return err as Error
+     }
+     throw redirect('/')
+   }, 'login')
+   export const logoutAction = action(async () => {
+     'use server'
+     const session = await getSession()
 
-   export async function getUserOnServer() {
-     const session = await getServerSession()
-     return findUser(session?.user?.name)
-   }
+     await session.update({ user: null! })
+     throw redirect('/')
+   }, 'logout')
+
+   export const getUser = cache(async () => {
+     'use server'
+     const session = await getSession()
+     return session.data
+   }, 'user')
    ```
 
-This (very) simplistic NextAuth.js [Credentials](https://next-auth.js.org/providers/credentials) authorizes users by looking up the user's name in a predefined list of valid users.
+   - The (very) simplistic `loginAction` endpoint accepts a `FormData` with a `username` property, looks it up in a predefined dictionary of valid users and, if found, sets the user's information to the `user` property of the request's `session`.
 
-We've configured the `session` `callback` to include the user info as part of the session info, so that remult on the frontend will have the authorization info.
+   - The `logoutAction` endpoint clears the `user` value from the current session.
 
-### Frontend setup
+   - The `getUser` function extracts the value of the current user from the session and returns it.
 
-1. Create a `src/components/auth.tsx` file, and place the following code to it:
+2. Create a `src/routes/login.tsx` file, and place the following code to it:
 
    ```tsx
-   // src/components/auth.tsx
+   // src/routes/login.tsx
 
    import { signIn, signOut, useSession } from 'next-auth/solid'
    import { onMount } from 'solid'
@@ -152,7 +140,7 @@ We've configured the `session` `callback` to include the user info as part of th
    }
    ```
 
-2. Update the `src/app/page.tsx` with the highlighted changes:
+3. Update the `src/app/page.tsx` with the highlighted changes:
 
    ```tsx{3-5,9-11}
    // src/app/page.tsx

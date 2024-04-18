@@ -4,7 +4,7 @@ Validating user entered data is usually required both on the client-side and on 
 
 ::: warning Handling validation errors
 
-When a validation error occurs, Remult will throw an exception. 
+When a validation error occurs, Remult will throw an exception.
 
 In this tutorial, [CRUD operations](crud.md) catch these exceptions, and alert the user.
 We leave it to you to decide how to handle validation errors in your application.
@@ -27,10 +27,6 @@ title = ""
 
 ::: warning Import Validators
 This code requires adding an import of `Validators` from `remult`.
-:::
-
-::: warning Manual browser refresh required
-For this change to take effect, you **must manually refresh the browser**.
 :::
 
 After the browser is refreshed, try creating a new `task` or saving an existing one with an empty title - the _"Should not be empty"_ error message is displayed.

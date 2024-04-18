@@ -814,6 +814,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 ) => void
 //p1 - fix async hooks
 
+//p1 - prevent default in delete should not delete - and check proceed from there
 //p1 - release solid start with example project
 //p1 - add documentation for bun sqlite
 //p1 - fix dark background to also work on groups
@@ -827,6 +828,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //p1 - consider upsert (where,set)
 //p1 - consider id to also support keyof (id:['company','index'])
 //p1 - consider including the admin in the tutorial - and maybe even in the demo when we setup the api
+//p1 -
 
 //y2 - JY suggestion of having generate as part of the ensure schema - not sure
 //y2 - currently for string fields we default for 255 in knex (which is their default) why not just use text (varchar max) - and only use exact length when one is provided?

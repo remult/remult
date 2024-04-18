@@ -11,7 +11,7 @@ Let's add two buttons to the todo app: "Set all as completed" and "Set all as un
    ```ts
    // src/routes/index.tsx
 
-   const setAllCompleted = async (completed: boolean) => {
+   async function setAllCompleted(completed: boolean) {
      for (const task of await taskRepo.find()) {
        await taskRepo.save({ ...task, completed })
      }
@@ -51,7 +51,6 @@ export class TasksController {
   @BackendMethod({ allowed: true })
   static async setAllCompleted(completed: boolean) {
     const taskRepo = remult.repo(Task)
-
     for (const task of await taskRepo.find()) {
       await taskRepo.save({ ...task, completed })
     }
@@ -69,7 +68,7 @@ The `@BackendMethod` decorator tells Remult to expose the method as an API endpo
 // src/api.ts
 
 //...
-import { TasksController } from "../../../shared/TaskController"
+import { TasksController } from "./shared/TasksController.js"
 
 export const api = remultSolidStart({
   //...
@@ -82,7 +81,7 @@ export const api = remultSolidStart({
 ```tsx{4}
 // src/routes/index.tsx
 
-const setAllCompleted = async (completed: boolean) => {
+async function setAllCompleted(completed: boolean) {
   await TasksController.setAllCompleted(completed)
 }
 ```
