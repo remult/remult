@@ -7,7 +7,7 @@ describe('soft delete', async () => {
     repo = new Remult(new InMemoryDataProvider()).repo
   })
   it('test delete', async () => {
-    @Entity('tasks', {
+    @Entity<Task>('tasks', {
       deleting: async (t, e) => {
         e.preventDefault()
         await e.repository.update(t, { deleted: true })
