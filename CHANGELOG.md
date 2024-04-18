@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.26.1] 2024-04-18
+
+- Fixed issue where 404 return an error - forbidden instead of not found
+- Fixed an issue where `preventDefault` in `deleting` did not work
+
 ## [0.26.0] 2024-04-08
 
 ## Features

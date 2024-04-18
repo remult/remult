@@ -1704,15 +1704,15 @@ export class rowHelperImplementation<T>
 
   async delete() {
     this.__clearErrorsAndReportChanged()
-    let e = this.buildLifeCycleEvent()
+    let doDelete = true
+    let e = this.buildLifeCycleEvent(() => (doDelete = false))
     if (!this.repository._dataProvider.isProxy) {
       if (this.info.entityInfo.deleting)
         await this.info.entityInfo.deleting(this.instance, e)
     }
     this.__assertValidity()
-
     try {
-      await this.edp.delete(this.id)
+      if (doDelete) await this.edp.delete(this.id)
       if (!this.repository._dataProvider.isProxy) {
         if (this.info.entityInfo.deleted)
           await this.info.entityInfo.deleted(this.instance, e)
