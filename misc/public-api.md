@@ -39,15 +39,22 @@ export interface ApiClient {
    *
    * @example
    * // Adding bearer token authorization
-   * remult.apiClient.httpClient = (input: RequestInfo | URL, init?: RequestInit) => {
+   * remult.apiClient.httpClient = (
+   *   input: RequestInfo | URL,
+   *   init?: RequestInit
+   * ) => {
    *   return fetch(input, {
    *     ...init,
-   *     headers: {
-   *       authorization: 'Bearer ' + sessionStorage.sessionId,
-   *     },
+   *     headers: authToken
+   *       ? {
+   *           ...init?.headers,
+   *           authorization: 'Bearer ' + authToken,
+   *         }
+   *       : init?.headers,
+   *
    *     cache: 'no-store',
-   *   });
-   * };
+   *   })
+   * }
    */
   httpClient?: ExternalHttpProvider | typeof fetch
   /**
@@ -1873,7 +1880,7 @@ export declare class Remult {
    * @param entity - the entity to use
    * @param dataProvider - an optional alternative data provider to use. Useful for writing to offline storage or an alternative data provider
    */
-  repo<T>(entity: ClassType<T>, dataProvider?: DataProvider): Repository<T>
+  repo: <T>(entity: ClassType<T>, dataProvider?: DataProvider) => Repository<T>
   /** Returns the current user's info */
   user?: UserInfo
   /** Checks if a user was authenticated */
