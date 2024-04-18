@@ -50,13 +50,14 @@ export class RemultAsyncLocalStorage {
   }
   constructor(
     private readonly remultObjectStorage: RemultAsyncLocalStorageCore<Remult>,
-  ) { }
-  async run<T>(remult: Remult, callback: (remult: Remult) => Promise<T>): Promise<T> {
+  ) {}
+  async run<T>(
+    remult: Remult,
+    callback: (remult: Remult) => Promise<T>,
+  ): Promise<T> {
     if (this.remultObjectStorage) {
       return this.remultObjectStorage.run(remult, () => callback(remult))
-    }
-    else
-      return callback(remult)
+    } else return callback(remult)
   }
   getRemult() {
     if (!this.remultObjectStorage) {
@@ -87,10 +88,10 @@ export class Remult {
    * @param entity - the entity to use
    * @param dataProvider - an optional alternative data provider to use. Useful for writing to offline storage or an alternative data provider
    */
-  public repo<T>(
+  public repo = <T>(
     entity: ClassType<T>,
     dataProvider?: DataProvider,
-  ): Repository<T> {
+  ): Repository<T> => {
     if (dataProvider === undefined) dataProvider = this.dataProvider
     let dpCache = this.repCache.get(dataProvider)
     if (!dpCache)
@@ -207,7 +208,7 @@ export class Remult {
   subscriptionServer?: SubscriptionServer
   /* @internal*/
   liveQueryPublisher: LiveQueryChangesListener = {
-    itemChanged: async () => { },
+    itemChanged: async () => {},
   }
 
   //@ts-ignore // type error of typescript regarding args that doesn't appear in my normal development
@@ -242,7 +243,7 @@ export class Remult {
   )
 
   /** A helper callback that can be used to debug and trace all find operations. Useful in debugging scenarios */
-  static onFind = (metadata: EntityMetadata, options: FindOptions<any>) => { }
+  static onFind = (metadata: EntityMetadata, options: FindOptions<any>) => {}
   clearAllCache(): any {
     this.repCache.clear()
   }
@@ -261,7 +262,7 @@ remultStatic.defaultRemultFactory = () => new Remult()
 export type GetArguments<T> = T extends (...args: infer FirstArgument) => any
   ? FirstArgument
   : never
-export interface RemultContext { }
+export interface RemultContext {}
 /**
  * Interface for configuring the API client used by Remult to perform HTTP calls to the backend.
  */
@@ -443,7 +444,7 @@ export async function doTransaction(
   }
 }
 class transactionLiveQueryPublisher implements LiveQueryChangesListener {
-  constructor(private orig: LiveQueryChangesListener) { }
+  constructor(private orig: LiveQueryChangesListener) {}
   transactionItems = new Map<string, itemChange[]>()
   async itemChanged(entityKey: string, changes: itemChange[]) {
     let items = this.transactionItems.get(entityKey)
@@ -475,6 +476,5 @@ export function withRemult<T>(
   const remult = new Remult()
   if (options?.dataProvider) remult.dataProvider = options.dataProvider
 
-  return remultStatic.asyncContext.run(remult, r => callback(r))
-
+  return remultStatic.asyncContext.run(remult, (r) => callback(r))
 }
