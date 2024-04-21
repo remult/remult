@@ -814,21 +814,20 @@ export type ClassFieldDecorator<entityType, valueType> = (
 ) => void
 
 //y1 - https://discord.com/channels/975754286384418847/1230386433093533698/1230386433093533698
-//y1 - fix async hooks - was it fixed?
 
-//p1 - prevent default in delete should not delete - and check proceed from there
-//p1 - release solid start with example project
+//y1 - fix async hooks - was it fixed?
+//p1 - consider upsert (where,set)
+//p1 - consider id to also support keyof (id:['company','index'])
+
+//p1 - reconsider update many, maybe the second parameter should be in a set option - break existing
 //p1 - add documentation for bun sqlite
-//p1 - fix dark background to also work on groups
+
 //p1 - describe entity
 //p1 - prepare the createEntity discussion
-//p1 - fix async hooks
+
 //p1 - write active record article
 //p1 - maybe add decorator comment in the readme as well (I heard you've lost me in decorators) - and improve the describeClass function
 //p1 - return error on connection error
-//p1 - reconsider update many, maybe the second parameter should be in a set option - break existing
-//p1 - consider upsert (where,set)
-//p1 - consider id to also support keyof (id:['company','index'])
 //p1 - consider including the admin in the tutorial - and maybe even in the demo when we setup the api
 //p1 -
 
@@ -837,7 +836,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 
 //p2 - create foreign key constraints in user code - https://codesandbox.io/p/devbox/fk-validator-tdshcs
 
-//p1 - admin url1 - pocketbase use /_ for the admin //{allowed?:Allowed,url?:string} also checkout the admin* as it should probably be something else.
+//p1 - admin url1 - pocketbase use /_ for the admin //{allowed?:Allowed,url?:string} also checkout the admin* as it should probably be something else and didn't work in hono
 
 //p1 - article auth.js with express - played with it, requires type="module" and a few more configurations - https://github.com/noam-honig/express-auth
 //y2 - fix validators cache
