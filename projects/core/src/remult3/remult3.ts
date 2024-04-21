@@ -816,6 +816,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //y1 - https://discord.com/channels/975754286384418847/1230386433093533698/1230386433093533698
 //y1 - fix async hooks - was it fixed?
 
+//p1 - prevent default in delete should not delete - and check proceed from there
 //p1 - release solid start with example project
 //p1 - add documentation for bun sqlite
 //p1 - fix dark background to also work on groups
@@ -829,13 +830,14 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //p1 - consider upsert (where,set)
 //p1 - consider id to also support keyof (id:['company','index'])
 //p1 - consider including the admin in the tutorial - and maybe even in the demo when we setup the api
+//p1 -
 
 //y2 - JY suggestion of having generate as part of the ensure schema - not sure
 //y2 - currently for string fields we default for 255 in knex (which is their default) why not just use text (varchar max) - and only use exact length when one is provided?
 
 //p2 - create foreign key constraints in user code - https://codesandbox.io/p/devbox/fk-validator-tdshcs
 
-//p1 - admin url1 - pocketbase use /_ for the admin //{allowed?:Allowed,url?:string}
+//p1 - admin url1 - pocketbase use /_ for the admin //{allowed?:Allowed,url?:string} also checkout the admin* as it should probably be something else.
 
 //p1 - article auth.js with express - played with it, requires type="module" and a few more configurations - https://github.com/noam-honig/express-auth
 //y2 - fix validators cache

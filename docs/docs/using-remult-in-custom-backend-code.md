@@ -188,6 +188,56 @@ export const handle = sequence(
 
 <!-- prettier-ignore-start -->
 
+== SolidStart
+
+You can use the `withRemult` method in specific routes
+
+```ts
+// src/routes/api/test.ts
+
+import { remult } from 'remult'
+import { Task } from '../../../shared/Task'
+import { _api } from '../[...remult]/+server'
+
+export function GET() {
+  return api.withRemult(event, async () =>
+    ({ result: await remult.repo(Task).count() }),
+  )
+}
+```
+
+You can also use the same method for any "use server" function
+```ts
+export function getCount(){
+  return api.withRemult(event, async () =>
+   ({ result: await remult.repo(Task).count() }),
+  )
+}
+```
+
+You can also define the withRemult as a hook, to make remult available throughout the application
+
+```ts
+// src/hooks.server.ts
+import type { Handle } from '@sveltejs/kit'
+import { sequence } from '@sveltejs/kit/hooks'
+import { _api } from './routes/api/[...remult]/+server'
+
+/**
+ * Handle remult server side
+ */
+const handleRemult: Handle = async ({ event, resolve }) => {
+  return await _api.withRemult(event, async () => await resolve(event))
+}
+
+export const handle = sequence(
+  // Handle remult server side
+  handleRemult,
+)
+```
+
+<!-- prettier-ignore-start -->
+
 == Hapi
 ```ts 
 import { type Plugin, server } from '@hapi/hapi'

@@ -3654,3 +3654,21 @@ export type RemultNuxtServer = RemultServerCore<H3Event> &
 //[ ] RemultServerCore from ./server/index.js is not exported
 //[ ] RemultServer from ./server/index.js is not exported
 ```
+
+## ./remult-solid-start.js
+
+```ts
+export declare function remultSolidStart(
+  options: RemultServerOptions<RequestEvent>,
+): RemultSolidStartServer
+//[ ] RemultServerOptions from ./server/index.js is not exported
+export type RemultSolidStartServer = RemultServerCore<RequestEvent> & {
+  withRemult<T>(what: () => Promise<T>): Promise<T>
+  GET: RequestHandler
+  PUT: RequestHandler
+  POST: RequestHandler
+  DELETE: RequestHandler
+}
+//[ ] RemultServerCore from ./server/index.js is not exported
+type RequestHandler = (event: RequestEvent) => Promise<Response>
+```

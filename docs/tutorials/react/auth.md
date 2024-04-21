@@ -88,34 +88,34 @@ npm i --save-dev @types/cookie-session
    ```ts
    // src/server/auth.ts
 
-   import express, { Router } from "express"
-   import type { UserInfo } from "remult"
+   import express, { Router } from 'express'
+   import type { UserInfo } from 'remult'
 
    const validUsers: UserInfo[] = [
-     { id: "1", name: "Jane" },
-     { id: "2", name: "Steve" }
+     { id: '1', name: 'Jane' },
+     { id: '2', name: 'Steve' },
    ]
 
    export const auth = Router()
 
    auth.use(express.json())
 
-   auth.post("/api/signIn", (req, res) => {
-     const user = validUsers.find(user => user.name === req.body.username)
+   auth.post('/api/signIn', (req, res) => {
+     const user = validUsers.find((user) => user.name === req.body.username)
      if (user) {
-       req.session!["user"] = user
+       req.session!['user'] = user
        res.json(user)
      } else {
        res.status(404).json("Invalid user, try 'Steve' or 'Jane'")
      }
    })
 
-   auth.post("/api/signOut", (req, res) => {
-     req.session!["user"] = null
-     res.json("signed out")
+   auth.post('/api/signOut', (req, res) => {
+     req.session!['user'] = null
+     res.json('signed out')
    })
 
-   auth.get("/api/currentUser", (req, res) => res.json(req.session!["user"]))
+   auth.get('/api/currentUser', (req, res) => res.json(req.session!['user']))
    ```
 
    - The (very) simplistic `signIn` endpoint accepts a request body with a `username` property, looks it up in a predefined dictionary of valid users and, if found, sets the user's information to the `user` property of the request's `session`.

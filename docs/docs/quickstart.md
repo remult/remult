@@ -79,7 +79,7 @@ export const { GET, POST, PUT, DELETE } = api
 
 import { remultSveltekit } from 'remult/remult-sveltekit'
 
-export const _api = remultNextApp({}) // [!code highlight]
+export const _api = remultSveltekit({}) // [!code highlight]
 
 export const { GET, POST, PUT, DELETE } = _api
 ```

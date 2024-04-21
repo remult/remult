@@ -8,23 +8,23 @@ Since our database may eventually contain a lot of tasks, it make sense to use a
 
 Let's limit the number of fetched tasks to `20`.
 
-In the `useEffect` hook defined in the `Todo` component, pass an `options` argument to the `find` method call and set its `limit` property to 20.
+In the `onMount` hook defined in the `Todo` component, pass an `options` argument to the `find` method call and set its `limit` property to 20.
 
-```ts{9-13}
-// src/components/todo.tsx
+```ts{11}
+// src/components/Todo.tsx
 
 //...
 
 export default function Todo() {
   //...
 
-  useEffect(() => {
+  onMount(() =>
     taskRepo
       .find({
-        limit: 20
+        limit: 20,
       })
       .then(setTasks)
-  }, [])
+  )
 
   //...
 }
@@ -40,32 +40,32 @@ To query subsequent pages, use the [Repository.find()](../../docs/ref_repository
 
 We would like old tasks to appear first in the list, and new tasks to appear last. Let's sort the tasks by their `createdAt` field.
 
-In the `useEffect` hook, set the `orderBy` property of the `find` method call's `option` argument to an object that contains the fields you want to sort by.
+In the `onMount` hook, set the `orderBy` property of the `find` method call's `option` argument to an object that contains the fields you want to sort by.
 Use "asc" and "desc" to determine the sort order.
 
 ```ts{7}
-// src/components/todo.tsx
+// src/components/Todo.tsx
 
-useEffect(() => {
+onMount(() =>
   taskRepo
     .find({
       limit: 20,
       orderBy: { createdAt: "asc" }
     })
     .then(setTasks)
-}, [])
+)
 ```
 
 ## Server Side Filtering
 
 Remult supports sending filter rules to the server to query only the tasks that we need.
 
-Adjust the `useEffect` hook to fetch only `completed` tasks.
+Adjust the `onMount` hook to fetch only `completed` tasks.
 
 ```ts{8}
-// src/components/todo.tsx
+// src/components/Todo.tsx
 
-useEffect(() => {
+onMount(() =>
   taskRepo
     .find({
       limit: 20,
@@ -73,7 +73,7 @@ useEffect(() => {
       where: { completed: true }
     })
     .then(setTasks)
-}, [])
+)
 ```
 
 ::: warning Note
@@ -83,7 +83,7 @@ Because the `completed` field is of type `boolean`, the argument is **compile-ti
 Play with different filtering values, and eventually comment it out, since we do need all the tasks
 
 ```ts{6}
-  useEffect(() => {
+  onMount(() =>
     taskRepo
       .find({
         limit: 20,
@@ -91,7 +91,7 @@ Play with different filtering values, and eventually comment it out, since we do
         //where: { completed: true },
       })
       .then(setTasks);
-  }, []);
+  );
 ```
 
 ::: tip Learn more
