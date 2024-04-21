@@ -3,7 +3,6 @@ import type {
   GenericResponse,
   RemultServerCore,
   RemultServerOptions,
-  RemultServer,
 } from './server/index.js'
 import { createRemultServer } from './server/index.js'
 import type { APIEvent } from '@solidjs/start/server' // don't remove - augments requestEvent

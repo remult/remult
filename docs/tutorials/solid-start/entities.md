@@ -47,12 +47,9 @@ export class Task {
 import { remultSolidStart } from "remult/remult-solid-start"
 import { Task } from "./shared/Task"
 
-const api = remultSolidStart({
+export const api = remultSolidStart({
   entities: [Task]
 })
-
-export const { POST, PUT, DELETE, GET } = api
-
 ```
 
 The [@Entity](../../docs/ref_entity.md) decorator tells Remult this class is an entity class. The decorator accepts a `key` argument (used to name the API route and as a default database collection/table name), and an `options` argument used to define entity-related properties and operations, discussed in the next sections of this tutorial.
@@ -113,8 +110,6 @@ export const api = remultSolidStart({
   entities: [Task],
   admin: true, // Enable the Admin UI
 })
-
-export const { POST, PUT, DELETE, GET } = api
 ```
 
 ### Accessing and Using the Admin UI
@@ -133,10 +128,12 @@ Navigate to `http://localhost:3000/api/admin` to access the Admin UI. Here, you 
 
 Let's start developing the web app by displaying the list of existing tasks in a solid component.
 
-Edit the `src/routes/index.tsx` file
+In the `src/components` folder create a `Todo.tsx` file and place the following code in it:
+
+Edit the `src/components/Todo.tsx` file
 
 ```tsx
-// src/routes/index.tsx
+// src/components/Todo.tsx
 
 import { repo } from 'remult'
 import { createStore } from 'solid-js/store'
@@ -149,21 +146,18 @@ export default function Todo() {
   const [tasks, setTasks] = createStore<Task[]>([])
   onMount(() => taskRepo.find().then(setTasks))
   return (
-    <div>
-      <h1>Todos</h1>
-      <main>
-        <For each={tasks}>
-          {(task) => {
-            return (
-              <div>
-                <input type="checkbox" checked={task.completed} />
-                {task.title}
-              </div>
-            )
-          }}
-        </For>
-      </main>
-    </div>
+    <main>
+      <For each={tasks}>
+        {(task) => {
+          return (
+            <div>
+              <input type="checkbox" checked={task.completed} />
+              {task.title}
+            </div>
+          )
+        }}
+      </For>
+    </main>
   )
 }
 ```
@@ -173,5 +167,24 @@ Here's a quick overview of the different parts of the code snippet:
 - `taskRepo` is a Remult [Repository](../../docs/ref_repository.md) object used to fetch and create Task entity objects.
 - `tasks` is a Task array solid store to hold the list of tasks.
 - solid's onMount hook is used to call the Remult [repository](../../docs/ref_repository.md)'s [find](../../docs/ref_repository.md#find) method to fetch tasks from the server once when the solid component is loaded.
+
+### Display the todo Component
+
+Replace the contents of `src/routes/index.tsx` with the following code:
+
+```tsx
+// src/routes/index.tsx
+
+import Todo from '../components/Todo.jsx'
+
+export default function Home() {
+  return (
+    <div>
+      <h1>Todos</h1>
+      <Todo />
+    </div>
+  )
+}
+```
 
 After the browser refreshes, the list of tasks appears.

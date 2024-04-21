@@ -19,7 +19,7 @@ Task titles are required. Let's add a validity check for this rule.
 ```ts{3-5}
 // src/shared/Task.ts
 
-@Fields.string({
+@Fields.string<Task>({
   validate: Validators.required
 })
 title = ""
@@ -53,9 +53,7 @@ Try something like this and see what happens:
 // src/shared/Task.ts
 
 @Fields.string<Task>({
-  validate: (task) => {
-    if (task.title.length < 3) throw "Too Short"
-  }
+  validate: (task) => task.title.length > 2 || "Too Short",
 })
 title = ""
 ```

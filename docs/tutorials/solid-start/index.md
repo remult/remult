@@ -93,7 +93,7 @@ Remult is bootstrapped in a `SolidStart` using a [catch all dynamic API route](h
 3. In the `routes` directory within the `src` folder, create an `api` directory. Inside the `src/routes/api/` directory, craft a `[...remult].ts` file with the following code. This file functions as a catch all route for the SolidStart API route, effectively managing all incoming API requests.
 
    ```ts
-   // src/api/src/api.ts
+   // src/routes/api/[...remult].ts
 
    import { api } from '../../api.js'
 
@@ -106,11 +106,11 @@ To enable TypeScript decorators:
 
 1. Install the required plugin
    ```sh
-   npm i -D @babel/plugin-proposal-decorators
+   npm i -D @babel/plugin-proposal-decorators @babel/plugin-transform-class-properties
    ```
 2. Add the following entry to the `app.config.ts` file to enable the use of decorators in the solid start app.
 
-   ```ts{6-11}
+   ```ts{6-14}
    // app.config.ts
 
    import { defineConfig } from "@solidjs/start/config"
@@ -119,7 +119,10 @@ To enable TypeScript decorators:
      //@ts-ignore
      solid: {
        babel: {
-         plugins: [["@babel/plugin-proposal-decorators", { version: "2023-11" }]],
+         plugins: [
+            ["@babel/plugin-proposal-decorators", { version: "legacy" }],
+            ["@babel/plugin-transform-class-properties"],
+          ],
        },
      },
    })
@@ -161,14 +164,6 @@ The default `SolidStart` main screen should be displayed.
          <FileRoutes />
        </Router>
      )
-   }
-   ```
-
-2. Replace the content of `src/routes/index.tsx` with the following code:
-
-   ```tsx
-   export default function Home() {
-     return <h1>Todos</h1>
    }
    ```
 

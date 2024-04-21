@@ -60,9 +60,9 @@ Let's set-up `SolidStart` authentication to authenticate users to our app.
    ```ts
    // src/auth.ts
 
-   import { action, cache, redirect } from '@solidjs/router'
+   import { action, redirect } from '@solidjs/router'
    import { useSession } from 'vinxi/http'
-   import type { UserInfo } from 'remult'
+   import { type UserInfo } from 'remult'
 
    const validUsers: UserInfo[] = [
      { id: '1', name: 'Jane' },
@@ -91,24 +91,23 @@ Let's set-up `SolidStart` authentication to authenticate users to our app.
      }
      throw redirect('/')
    }, 'login')
-   export const logoutAction = action(async () => {
+
+   export async function logout() {
      'use server'
      const session = await getSession()
-
      await session.update({ user: null! })
-     throw redirect('/')
-   }, 'logout')
+   }
 
-   export const getUser = cache(async () => {
+   export async function getUser() {
      'use server'
      const session = await getSession()
-     return session.data
-   }, 'user')
+     return session?.data?.user
+   }
    ```
 
    - The (very) simplistic `loginAction` endpoint accepts a `FormData` with a `username` property, looks it up in a predefined dictionary of valid users and, if found, sets the user's information to the `user` property of the request's `session`.
 
-   - The `logoutAction` endpoint clears the `user` value from the current session.
+   - The `logout` function clears the `user` value from the current session.
 
    - The `getUser` function extracts the value of the current user from the session and returns it.
 
@@ -117,59 +116,87 @@ Let's set-up `SolidStart` authentication to authenticate users to our app.
    ```tsx
    // src/routes/login.tsx
 
-   import { signIn, signOut, useSession } from 'next-auth/solid'
-   import { onMount } from 'solid'
-   import { UserInfo, remult } from 'remult'
-   import Todo from './todo'
-
-   export default function Auth() {
-     const session = useSession()
-     remult.user = session.data?.user as UserInfo
-
-     onMount(() =>
-       if (session.status === 'unauthenticated') signIn()
-     }, [session])
-     if (session.status !== 'authenticated') return <></>
-     return (
-       <div>
-         Hello {remult.user?.name}{' '}
-         <button onClick={() => signOut()}>Sign Out</button>
-         <Todo />
-       </div>
-     )
-   }
-   ```
-
-3. Update the `src/app/page.tsx` with the highlighted changes:
-
-   ```tsx{3-5,9-11}
-   // src/app/page.tsx
-
-   "use client"
-   import { SessionProvider } from "next-auth/solid"
-   import Auth from "../components/auth"
+   import { useSubmission } from '@solidjs/router'
+   import { loginAction } from '../auth.js'
+   import { Show } from 'solid-js'
 
    export default function Home() {
+     const sub = useSubmission(loginAction)
      return (
-       <SessionProvider>
-         <Auth />
-       </SessionProvider>
+       <>
+         <h1>Login</h1>
+         <main>
+           <form action={loginAction} method="post">
+             <input
+               type="text"
+               name="username"
+               placeholder="Username, try Steve or Jane"
+             />
+             <button>Sign in</button>
+           </form>
+           <Show when={sub.result?.message}>{sub.result?.message}</Show>
+         </main>
+       </>
      )
    }
    ```
+
+3. Replace the content of the `src/routes/index.tsx` file with the following code:
+
+   ```tsx
+   // src/routes/index.tsx
+
+   import { getUser, logout } from '../auth.js'
+   import { useNavigate } from '@solidjs/router'
+   import { Show, createSignal, onMount } from 'solid-js'
+   import { remult } from 'remult'
+   import Todo from '../components/Todo.jsx'
+
+   export default function Home() {
+     const [authenticated, setAuthenticated] = createSignal(false)
+     const navigate = useNavigate()
+
+     onMount(async () => {
+       remult.user = await getUser()
+       if (remult.authenticated()) setAuthenticated(true)
+       else navigate('/login')
+     })
+
+     return (
+       <Show when={authenticated()}>
+         <h1>Todos</h1>
+         <header>
+           Hello {remult.user?.name}
+           <button
+             onClick={async () => logout().then(() => navigate('/login'))}
+           >
+             Logout
+           </button>
+         </header>
+         <Todo />
+       </Show>
+     )
+   }
+   ```
+
+   - We use the `onMount` hook the update the `remult.user` in the `frontend`, based on the user from the current session. That user info can then be used in the front-end for user roles based content
+
+::: warning Solid Hydration error or page not found
+As we were working on this tutorial with the rc version of solid start we got this error - we found that clearing the browsers storage and hard refreshing the site (Ctrl F5) solves it.
+:::
 
 ### Connect remult-solid-start On the Backend
 
-Once an authentication flow is established, integrating it with Remult in the backend is as simple as providing Remult with a `getUser` function that uses the `getUserOnServer` function we've created in `auth/[...nextauth]/route.ts`
+Once an authentication flow is established, integrating it with Remult in the backend is as simple as providing Remult with a `getUser` function from the `src/auth.ts`
 
 ```ts{3,7}
 // src/api.ts
 
-import { getUserOnServer } from "../auth/[...nextauth]/route"
+import { getUser } from "./auth.js"
 
-const api = remultSolidStart({
+export const api = remultSolidStart({
   //...
-  getUser: getUserOnServer,
+  getUser,
 })
 //...
 ```
@@ -201,9 +228,7 @@ export class Task {
   id!: string
 
   @Fields.string({
-    validate: (task) => {
-      if (task.title.length < 3) throw "Too Short"
-    }
+    validate: (task) => task.title.length > 2 || "Too Short",
     allowApiUpdate: "admin"
   })
   title = ""
@@ -216,7 +241,7 @@ export class Task {
 2. Let's give the user _"Jane"_ the `admin` role by modifying the `roles` array of her `validUsers` entry.
 
 ```ts{4}
-// src/app/api/auth/[...nextauth]/route.ts
+// src/auth.ts
 
 const validUsers = [
   { id: "1", name: "Jane", roles: ["admin"] },
@@ -235,42 +260,48 @@ Let's reuse the same definitions on the Frontend.
 We'll use the entity's metadata to only show the form if the user is allowed to insert
 
 ```tsx{4,13}
-// src/routes/index.tsx
+// src/components/Todo.tsx
 
 <main>
-  {taskRepo.metadata.apiInsertAllowed() && (
+  <Show when={taskRepo.metadata.apiInsertAllowed()}>
     <form onSubmit={addTask}>
       <input
-        value={newTaskTitle}
+        value={newTaskTitle()}
         placeholder="What needs to be done?"
-        onChange={e => setNewTaskTitle(e.target.value)}
+        onInput={(e) => setNewTaskTitle(e.currentTarget.value)}
       />
       <button>Add</button>
     </form>
-  )}
+  </Show>
   ...
 </main>
 ```
 
+::: warning Import Show
+This code requires adding an import of `Show` from `solid-js`.
+:::
+
 And let's do the same for the `delete` button:
 
-```tsx{12,14}
-// src/routes/index.tsx
+```tsx{15,17}
+// src/components/Todo.tsx
 
 return (
-  <div key={task.id}>
+  <div>
     <input
       type="checkbox"
       checked={task.completed}
-      onChange={e => setCompleted(e.target.checked)}
+      oninput={(e) => setCompleted(e.target.checked)}
     />
-    <input value={task.title} onChange={e => setTitle(e.target.value)} />
+    <input
+      value={task.title}
+      onInput={(e) => setTasks(i(), "title", e.target.value)}
+    />
     <button onClick={saveTask}>Save</button>
-    {taskRepo.metadata.apiDeleteAllowed(task) && (
+    <Show when={taskRepo.metadata.apiDeleteAllowed()}>
       <button onClick={deleteTask}>Delete</button>
-    )}
+    </Show>
   </div>
-)
 ```
 
 This way we can keep the frontend consistent with the `api`'s Authorization rules

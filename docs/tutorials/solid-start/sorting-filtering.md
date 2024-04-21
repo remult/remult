@@ -10,8 +10,8 @@ Let's limit the number of fetched tasks to `20`.
 
 In the `onMount` hook defined in the `Todo` component, pass an `options` argument to the `find` method call and set its `limit` property to 20.
 
-```ts{9-13}
-// src/routes/index.tsx
+```ts{11}
+// src/components/Todo.tsx
 
 //...
 
@@ -44,7 +44,7 @@ In the `onMount` hook, set the `orderBy` property of the `find` method call's `o
 Use "asc" and "desc" to determine the sort order.
 
 ```ts{7}
-// src/routes/index.tsx
+// src/components/Todo.tsx
 
 onMount(() =>
   taskRepo
@@ -63,7 +63,7 @@ Remult supports sending filter rules to the server to query only the tasks that 
 Adjust the `onMount` hook to fetch only `completed` tasks.
 
 ```ts{8}
-// src/routes/index.tsx
+// src/components/Todo.tsx
 
 onMount(() =>
   taskRepo

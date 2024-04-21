@@ -8,10 +8,10 @@ Let's add realtime multiplayer capabilities to this app.
 
 Let's switch from fetching Tasks once when the solid component is loaded, and manually maintaining state for CRUD operations, to using a realtime updated live query subscription **for both initial data fetching and subsequent state changes**.
 
-1. Modify the contents of the `onMount` hook in the `src/routes/index.tsx` file
+1. Modify the contents of the `onMount` hook in the `src/components/Todo.tsx` file
 
-```ts{4,11}
-// src/routes/index.tsx
+```ts{4,6,11}
+// src/components/Todo.tsx
 
 onMount(() =>
   onCleanup(
@@ -33,12 +33,16 @@ Let's review the change:
   - `items` - an up to date list of items representing the current result - it's useful for readonly use cases.
   - `applyChanges` - a method that receives an array and applies the changes to it - we send that method to the `setTasks` state function, to apply the changes to the existing `tasks` state.
   - `changes` - a detailed list of changes that were received
-- The `subscribe` method returns an `unsubscribe` function which we use send to the `onCleanup` function, so that it'll be called when the component unmounts.
+- The `subscribe` method returns an `unsubscribe` function which we send to the `onCleanup` function, so that it'll be called when the component unmounts.
+
+::: warning Import onCleanup
+This code requires adding an import of `onCleanup` from `solid-js`.
+:::
 
 2. As all relevant CRUD operations (made by all users) will **immediately update the component's state**, we should remove the manual adding of new Tasks to the component's state:
 
 ```ts{7}
-// src/routes/index.tsx
+// src/components/Todo.tsx
 
 async function addTask(e: Event) {
   e.preventDefault()
@@ -56,7 +60,7 @@ async function addTask(e: Event) {
 3. Optionally remove other redundant state changing code:
 
 ```tsx{7-9,21}
-// src/routes/index.tsx
+// src/components/Todo.tsx
 
 //...
 <For each={tasks}>

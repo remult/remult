@@ -9,7 +9,7 @@ Let's add two buttons to the todo app: "Set all as completed" and "Set all as un
 1. Add a `setAllCompleted` async function to the `Todo` function component, which accepts a `completed` boolean argument and sets the value of the `completed` field of all the tasks accordingly.
 
    ```ts
-   // src/routes/index.tsx
+   // src/components/Todo.tsx
 
    async function setAllCompleted(completed: boolean) {
      for (const task of await taskRepo.find()) {
@@ -23,7 +23,7 @@ Let's add two buttons to the todo app: "Set all as completed" and "Set all as un
 2. Add the two buttons to the return section of the `Todo` component, just before the closing `</main>` tag. Both of the buttons' `onClick` events will call the `setAllCompleted` method with the appropriate value of the `completed` argument.
 
    ```tsx
-   // src/routes/index.tsx
+   // src/components/Todo.tsx
 
    <div>
      <button onClick={() => setAllCompleted(true)}>Set All Completed</button>
@@ -44,13 +44,13 @@ A simple way to prevent this is to expose an API endpoint for `setAllCompleted` 
 ```ts
 // src/shared/TasksController.ts
 
-import { BackendMethod, remult } from 'remult'
+import { BackendMethod, repo } from 'remult'
 import { Task } from './Task'
 
 export class TasksController {
   @BackendMethod({ allowed: true })
   static async setAllCompleted(completed: boolean) {
-    const taskRepo = remult.repo(Task)
+    const taskRepo = repo(Task)
     for (const task of await taskRepo.find()) {
       await taskRepo.save({ ...task, completed })
     }
@@ -79,7 +79,7 @@ export const api = remultSolidStart({
 3. Replace the `for` iteration in the `setAllCompleted` function of the `Todo`component with a call to the`setAllCompleted`method in the`TasksController`.
 
 ```tsx{4}
-// src/routes/index.tsx
+// src/components/Todo.tsx
 
 async function setAllCompleted(completed: boolean) {
   await TasksController.setAllCompleted(completed)
@@ -87,7 +87,7 @@ async function setAllCompleted(completed: boolean) {
 ```
 
 ::: warning Import TasksController
-Remember to add an import of `TasksController` in `src/routes/index.tsx`.
+Remember to add an import of `TasksController` in `src/components/Todo.tsx`.
 :::
 
 ::: tip Note
