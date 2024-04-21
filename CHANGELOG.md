@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.26.2] 2024-04-21
+
+- Added support for SolidStart https://remult.dev/tutorials/solid-start/
+
 ## [0.26.1] 2024-04-18
 
 - Fixed issue where 404 return an error - forbidden instead of not found
