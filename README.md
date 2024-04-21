@@ -39,7 +39,7 @@ Remult uses **TypeScript entities** as a single source of truth for: ✅ CRUD + 
 
 **Remult supports all major databases**, including: PostgreSQL, MySQL, SQLite, MongoDB, MSSQL and Oracle.
 
-**Remult is frontend and backend framework agnostic** and comes with adapters for Express, Fastify, Next.js, SolidStart, Nuxt, SvelteKit, Nest, Koa, Hapi and Hono.
+**Remult is frontend and backend framework agnostic** and comes with adapters for Express, Fastify, Next.js, Nuxt, SvelteKit, SolidStart, Nest, Koa, Hapi and Hono.
 
 Remult promotes a **consistent query syntax for both frontend and Backend code**:
 
@@ -93,7 +93,7 @@ _Example:_
 // backend/index.ts
 
 import express from 'express'
-import { remultExpress } from 'remult/remult-express' // adapters for: Fastify,Next.js,  SolidStart, Nuxt, SvelteKit, Nest, more...
+import { remultExpress } from 'remult/remult-express' // adapters for: Fastify,Next.js, Nuxt, SvelteKit, SolidStart, Nest, more...
 import { createPostgresDataProvider } from 'remult/postgres' // supported: PostgreSQL, MySQL, SQLite, MongoDB, MSSQL and Oracle
 import { Product } from '../shared/product'
 
