@@ -6,6 +6,16 @@ In this tutorial, we are going to create a simple app to manage a task list. We'
 
 By the end of the tutorial, you should have a basic understanding of Remult and how to use it to accelerate and simplify full stack app development.
 
+::: tip You want to have a look at the end result ?
+You can `degit` the final result and read the `README.md` file in the project to check it out.
+
+```sh
+npx degit remult/remult/examples/solid-start-todo remult-solid-start-todo
+cd remult-solid-start-todo
+```
+
+:::
+
 ### Prerequisites
 
 This tutorial assumes you are familiar with `TypeScript`, `Solid` and `SolidStart`.
@@ -169,7 +179,7 @@ The default `SolidStart` main screen should be displayed.
 
 ### Remove SolidStart default styles
 
-The SolidStart default styles won't fit our todo app. If you'd like a nice-looking app, replace the contents of `src/app.css` with [this CSS file](https://raw.githubusercontent.com/remult/solid-start-app-starter/main/src/src/app.css). Otherwise, you can simply **delete the contents of `src/app.css`**.
+The SolidStart default styles won't fit our todo app. If you'd like a nice-looking app, replace the contents of `src/app.css` with [this CSS file](https://raw.githubusercontent.com/remult/solid-start-app-starter/main/src/app.css). Otherwise, you can simply **delete the contents of `src/app.css`**.
 
 ### Setup completed
 

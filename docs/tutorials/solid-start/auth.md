@@ -182,7 +182,7 @@ Let's set-up `SolidStart` authentication to authenticate users to our app.
    - We use the `onMount` hook the update the `remult.user` in the `frontend`, based on the user from the current session. That user info can then be used in the front-end for user roles based content
 
 ::: warning Solid Hydration error or page not found
-As we were working on this tutorial with the rc version of solid start we got this error - we found that clearing the browsers storage and hard refreshing the site (Ctrl F5) solves it.
+As we were working on this tutorial with the rc version of solid start we got this error - we found that **hard refreshing the site (Ctrl F5) solves it**.
 :::
 
 ### Connect remult-solid-start On the Backend
