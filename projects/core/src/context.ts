@@ -88,10 +88,10 @@ export class Remult {
    * @param entity - the entity to use
    * @param dataProvider - an optional alternative data provider to use. Useful for writing to offline storage or an alternative data provider
    */
-  public repo<T>(
+  public repo = <T>(
     entity: ClassType<T>,
     dataProvider?: DataProvider,
-  ): Repository<T> {
+  ): Repository<T> => {
     if (dataProvider === undefined) dataProvider = this.dataProvider
     let dpCache = this.repCache.get(dataProvider)
     if (!dpCache)

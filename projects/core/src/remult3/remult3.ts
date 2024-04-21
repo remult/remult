@@ -812,7 +812,9 @@ export type ClassFieldDecorator<entityType, valueType> = (
     | ClassFieldDecoratorContextStub<entityType, valueType | undefined>,
   c?: any,
 ) => void
-//p1 - fix async hooks
+
+//y1 - https://discord.com/channels/975754286384418847/1230386433093533698/1230386433093533698
+//y1 - fix async hooks - was it fixed?
 
 //p1 - prevent default in delete should not delete - and check proceed from there
 //p1 - release solid start with example project

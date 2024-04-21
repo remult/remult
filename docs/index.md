@@ -4,16 +4,16 @@ layout: home
 titleTemplate: Fullstack Type-safe CRUD & Realtime
 
 hero:
-  name: "remult"
-  text: "Fullstack Type-safe CRUD & Realtime"
-  tagline: "Boost your TypeScript stack with SSOT entities and say goodbye to boilerplate code."
-  image: 
+  name: 'remult'
+  text: 'Fullstack Type-safe CRUD & Realtime'
+  tagline: 'Boost your TypeScript stack with SSOT entities and say goodbye to boilerplate code.'
+  image:
     src: /logo.png
     alt: Remult
   actions:
     - theme: brand
-      text: Get Started
-      link: /docs/
+      text: Quickstart
+      link: /docs/quickstart
     - theme: alt
       text: View on GitHub
       link: https://github.com/remult/remult
@@ -29,7 +29,7 @@ features:
 
   - icon: ⭐
     title: Framework Agnostic
-    details: "Use Remult with any UI framework, web framework or meta-framework, including: React, Vue, Svelte, Angular, Express, Fastify, NestJS, Next.js, SvelteKit..."
+    details: 'Use Remult with any UI framework, web framework or meta-framework, including: React, Vue, Svelte, Angular, Express, Fastify, NestJS, Next.js, SvelteKit...'
 
   - icon: 📋
     title: Highly Declarative

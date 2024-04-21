@@ -316,20 +316,21 @@ npm i better-sqlite3
 
 Set the `dataProvider` property:
 
-```ts{3,10-12}
-import express from "express"
-import { remultExpress } from "remult/remult-express"
-import {SqlDatabase } from "remult"
-import { BetterSqlite3DataProvider } from "remult/remult-better-sqlite3"
+```ts
+import express from 'express'
+import { remultExpress } from 'remult/remult-express'
+import { SqlDatabase } from 'remult' // [!code highlight]
+import Database from 'better-sqlite3' // [!code highlight]
+import { BetterSqlite3DataProvider } from 'remult/remult-better-sqlite3' // [!code highlight]
 
 const app = express()
 
 app.use(
   remultExpress({
-    dataProvider: new SqlDatabase(
-      new BetterSqlite3DataProvider(new Database('./mydb.sqlite')),
-    )
-  })
+    dataProvider: new SqlDatabase( // [!code highlight]
+      new BetterSqlite3DataProvider(new Database('./mydb.sqlite')), // [!code highlight]
+    ), // [!code highlight]
+  }),
 )
 ```
 
