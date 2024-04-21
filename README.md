@@ -39,7 +39,7 @@ Remult uses **TypeScript entities** as a single source of truth for: ✅ CRUD + 
 
 **Remult supports all major databases**, including: PostgreSQL, MySQL, SQLite, MongoDB, MSSQL and Oracle.
 
-**Remult is frontend and backend framework agnostic** and comes with adapters for Express, Fastify, SolidStart, Nuxt, SvelteKit, Nest, Koa, Hapi and Hono.
+**Remult is frontend and backend framework agnostic** and comes with adapters for Express, Fastify, Next.js, SolidStart, Nuxt, SvelteKit, Nest, Koa, Hapi and Hono.
 
 Remult promotes a **consistent query syntax for both frontend and Backend code**:
 
@@ -93,7 +93,7 @@ _Example:_
 // backend/index.ts
 
 import express from 'express'
-import { remultExpress } from 'remult/remult-express' // adapters for: Fastify, SolidStart, Nuxt, SvelteKit, Nest, more...
+import { remultExpress } from 'remult/remult-express' // adapters for: Fastify,Next.js,  SolidStart, Nuxt, SvelteKit, Nest, more...
 import { createPostgresDataProvider } from 'remult/postgres' // supported: PostgreSQL, MySQL, SQLite, MongoDB, MSSQL and Oracle
 import { Product } from '../shared/product'
 
@@ -304,8 +304,9 @@ with a Node.js Express backend.
 - [Tutorial with React](https://remult.dev/tutorials/react/)
 - [Tutorial with Angular](https://remult.dev/tutorials/angular/)
 - [Tutorial with Vue](https://remult.dev/tutorials/vue/)
-- [Tutorial with SolidStart](https://remult.dev/tutorials/react-next/)
+- [Tutorial with Next.js](https://remult.dev/tutorials/react-next/)
 - [Tutorial with Sveltekit](https://remult.dev/tutorials/sveltekit/)
+- [Tutorial with SolidStart](https://remult.dev/tutorials/react-next/)
 
 ## Demo
 

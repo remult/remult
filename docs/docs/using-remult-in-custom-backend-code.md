@@ -195,14 +195,13 @@ You can use the `withRemult` method in specific routes
 ```ts
 // src/routes/api/test.ts
 
-import { json, type RequestHandler } from '@sveltejs/kit'
 import { remult } from 'remult'
 import { Task } from '../../../shared/Task'
 import { _api } from '../[...remult]/+server'
 
 export function GET() {
   return api.withRemult(event, async () =>
-    json({ result: await remult.repo(Task).count() }),
+    ({ result: await remult.repo(Task).count() }),
   )
 }
 ```

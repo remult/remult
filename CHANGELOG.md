@@ -403,9 +403,9 @@ All notable changes to this project will be documented in this file.
 
 ## [0.20.0] - 2023-05-08
 
-- Added `handle` method for using remult in `SolidStart` api handlers. see [using remult in a SolidStart api handler](https://remult.dev/tutorials/react-next/appendix-1-get-server-side-props.html#using-remult-in-a-next-js-api-handler)
+- Added `handle` method for using remult in `next.js` api handlers. see [using remult in a next.js api handler](https://remult.dev/tutorials/react-next/appendix-1-get-server-side-props.html#using-remult-in-a-next-js-api-handler)
 - Added `remult-sveltekit` see [Add remult to your project](https://remult.dev/docs/add-remult-to-your-app.html#sveltekit)
-- Added support for `SolidStart` App Router. See [Add remult to your project](https://remult.dev/docs/add-remult-to-your-app.html#next-js-app-router)
+- Added support for `next.js` App Router. See [Add remult to your project](https://remult.dev/docs/add-remult-to-your-app.html#next-js-app-router)
 
 ## [0.19.0] - 2023-03-26
 

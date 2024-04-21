@@ -1,6 +1,6 @@
 ## Next App Router Sample
 
-This is a [SolidStart](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/SolidStart/tree/canary/packages/create-next-app).
+This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
 
@@ -27,4 +27,4 @@ This is a [SolidStart](https://nextjs.org/) project bootstrapped with [`create-n
 
 ## Learn More
 
-To learn more about remult and SolidStart checkout remult's [SolidStart tutorial](http://remult.dev/tutorials/react-next/)
+To learn more about remult and Next.js checkout remult's [Next.js tutorial](http://remult.dev/tutorials/react-next/)
