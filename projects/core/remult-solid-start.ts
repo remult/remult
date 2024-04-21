@@ -1,3 +1,4 @@
+import { getRequestEvent, type RequestEvent } from 'solid-js/web'
 import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
 import type {
   GenericResponse,
@@ -6,7 +7,6 @@ import type {
 } from './server/index.js'
 import { createRemultServer } from './server/index.js'
 import type { APIEvent } from '@solidjs/start/server' // don't remove - augments requestEvent
-import { getRequestEvent, type RequestEvent } from 'solid-js/web'
 
 export function remultSolidStart(
   options: RemultServerOptions<RequestEvent>,

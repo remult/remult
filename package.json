@@ -25,7 +25,7 @@
     "update-starter": "misc\\update-versions-to-starter-projects.sh",
     "detect-circular": "rem - .dependency-cruiser.js moved to misc folder. depcruise projects/core --include-only \"^projects/core\" --output-type dot | dot -T svg > dependency-graph.svg",
     "dc": "rem - .dependency-cruiser.js moved to misc folder. depcruise projects/core --include-only \"^projects/core\" --output-to ./tmp/dependency-violations.html --output-type err-html | dot -T svg > dependency-graph.svg ",
-    "lint-dist": "eslint -c projects/core/.eslintrc.js dist/remult/**/*.js",
+    "lint-dist": "rem eslint -c projects/core/.eslintrc.js dist/remult/**/*.js",
     "test-servers:nuxt:setup": "cd projects/test-servers/nuxt-server && npm i --force && tsx ../../../misc/copyRemultToNodeModules.ts && npm run build",
     "test-servers:sveltekit:setup": "cd projects/test-servers/sveltekit-server && npm i --force && tsx ../../../misc/copyRemultToNodeModules.ts && npm run build",
     "test-servers:setup-all": "run-p test-servers:*:setup",
