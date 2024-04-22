@@ -15,6 +15,7 @@ describe.skipIf(process.env['SKIP_KOA'])('test koa server', async () => {
       const app = new koa()
       const api = createRemultServer({
         entities: [Task],
+        admin: true,
       })
       app.use(bodyParser())
       app.use(async (ctx, next) => {
