@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.26.3] 2024-04-22
+
+- Fixed issue with delete on Hono with session middleware
+- Fixed an issue with admin not working with Hono@4.2
+
 ## [0.26.2] 2024-04-21
 
 - Added support for SolidStart https://remult.dev/tutorials/solid-start/
