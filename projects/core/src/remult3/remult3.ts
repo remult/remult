@@ -818,6 +818,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //y1 - fix async hooks - was it fixed?
 //p1 - consider upsert (where,set)
 //p1 - consider id to also support keyof (id:['company','index'])
+//p1 - wait a second to close stream
 
 //p1 - reconsider update many, maybe the second parameter should be in a set option - break existing
 //p1 - add documentation for bun sqlite
