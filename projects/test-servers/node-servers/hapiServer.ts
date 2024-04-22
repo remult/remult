@@ -59,7 +59,7 @@ const init = async () => {
     host: '127.0.0.1',
   })
 
-  const api = remultHapi({ entities: [Task] })
+  const api = remultHapi({ entities: [Task], admin: true })
   await server.register(api)
   await server.register({
     plugin: routesPlugin,

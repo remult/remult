@@ -114,6 +114,7 @@ import { remultHapi } from 'remult/remult-hapi'
 
 ```ts [Hono]
 import { Hono } from 'hono'
+import { serve } from '@hono/node-server'
 import { remultHono } from 'remult/remult-hono'
 
 const app = new Hono()
@@ -121,7 +122,7 @@ const app = new Hono()
 const api = remultHono({}) // [!code highlight]
 app.route('', api) // [!code highlight]
 
-export default app
+serve(app)
 ```
 
 ```ts [Nest]
