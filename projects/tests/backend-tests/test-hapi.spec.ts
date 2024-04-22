@@ -15,6 +15,8 @@ describe('test hapi server', async () => {
       const app = server({ port })
       const api = remultHapi({
         entities: [Task],
+
+        admin: true,
       })
       await app.register(api)
       app.route({

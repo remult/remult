@@ -3,4 +3,5 @@ import { Task } from '../../shared/Task'
 
 export default remultNext({
   entities: [Task],
+  admin: true,
 })

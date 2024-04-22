@@ -16,6 +16,7 @@ describe('test fastify server', async () => {
       const app = fastify()
       const api = remultFastify({
         entities: [Task],
+        admin: true,
       })
       await app.register(api)
       app.get('/api/test', async (req, res) => {

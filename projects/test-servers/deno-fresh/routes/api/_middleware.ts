@@ -6,6 +6,7 @@ import { Task } from '../../shared/task.ts'
 export const api = remultFresh(
   {
     entities: [Task],
+    admin:true
   },
   Response,
 )

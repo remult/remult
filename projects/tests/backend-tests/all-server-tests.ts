@@ -85,7 +85,9 @@ export function allServerTests(
     'delete many',
     withRemultForTest(async () => {
       await create3Tasks()
-      expect(await repo(Task).deleteMany({ where: { title: ['a', 'c'] } })).toBe(2)
+      expect(
+        await repo(Task).deleteMany({ where: { title: ['a', 'c'] } }),
+      ).toBe(2)
       expect(await repo(Task).count()).toBe(1)
     }),
   )
@@ -94,7 +96,9 @@ export function allServerTests(
     withRemultForTest(async () => {
       await create3Tasks()
       expect(
-        await repo(Task).deleteMany({ where: { $or: [{ title: 'a' }, { title: 'c' }] } }),
+        await repo(Task).deleteMany({
+          where: { $or: [{ title: 'a' }, { title: 'c' }] },
+        }),
       ).toBe(2)
       expect(await repo(Task).count()).toBe(1)
     }),
@@ -103,7 +107,9 @@ export function allServerTests(
     'delete many 3',
     withRemultForTest(async () => {
       await create3Tasks()
-      expect(await repo(Task).deleteMany({ where: { title: { $ne: 'b' } } })).toBe(2)
+      expect(
+        await repo(Task).deleteMany({ where: { title: { $ne: 'b' } } }),
+      ).toBe(2)
       expect(await repo(Task).count()).toBe(1)
     }),
   )
@@ -112,7 +118,10 @@ export function allServerTests(
     withRemultForTest(async () => {
       await create3Tasks()
       expect(
-        await repo(Task).updateMany({ where: { title: ['a', 'c'] } }, { title: 'dd' }),
+        await repo(Task).updateMany(
+          { where: { title: ['a', 'c'] } },
+          { title: 'dd' },
+        ),
       ).toBe(2)
       expect(await repo(Task).count({ title: 'dd' })).toBe(2)
       expect(await repo(Task).count({ title: { '!=': 'dd' } })).toBe(1)
@@ -123,7 +132,10 @@ export function allServerTests(
     withRemultForTest(async () => {
       await create3Tasks()
       expect(
-        await repo(Task).updateMany({ where: { title: { $ne: 'b' } } }, { title: 'dd' }),
+        await repo(Task).updateMany(
+          { where: { title: { $ne: 'b' } } },
+          { title: 'dd' },
+        ),
       ).toBe(2)
       expect(await repo(Task).count({ title: 'dd' })).toBe(2)
       expect(await repo(Task).count({ title: { '!=': 'dd' } })).toBe(1)
@@ -148,20 +160,46 @@ export function allServerTests(
     }),
   )
   it(
-    'delete with url params',
+    'admin',
     withRemultForTest(async () => {
       await create3Tasks()
+      expect((await axios.get(remult.apiClient.url + '/admin')).status).toBe(
+        200,
+      )
+    }),
+  )
+  it(
+    'admin/',
+    withRemultForTest(async () => {
+      await create3Tasks()
+      expect((await axios.get(remult.apiClient.url + '/admin/')).status).toBe(
+        200,
+      )
+    }),
+  )
+  it(
+    'admin/tasks',
+    withRemultForTest(async () => {
       expect(
-        (await axios.delete(remult.apiClient.url + '/tasks' + '?title.ne=b'))
-          .data,
-      ).toMatchInlineSnapshot(`
+        (await axios.get(remult.apiClient.url + '/admin/tasks')).status,
+      ).toBe(200)
+    }),
+  ),
+    it(
+      'delete with url params',
+      withRemultForTest(async () => {
+        await create3Tasks()
+        expect(
+          (await axios.delete(remult.apiClient.url + '/tasks' + '?title.ne=b'))
+            .data,
+        ).toMatchInlineSnapshot(`
         {
           "deleted": 2,
         }
       `)
-      expect(await repo(Task).count()).toBe(1)
-    }),
-  )
+        expect(await repo(Task).count()).toBe(1)
+      }),
+    )
   it(
     'update many 2',
     withRemultForTest(async () => {
