@@ -78,7 +78,7 @@ export function remultHono(
                 },
                 end: () => {
                   if (sse) sse.close()
-                  else res(c.text(''))
+                  else res(c.body(null))
                 },
                 send: (data: string) => {
                   res(c.html(data))
