@@ -41,7 +41,6 @@ export function remultHono(
 
   let honoRouter: GenericRouter = {
     route(path) {
-      if (path.endsWith('*')) path = path.substring(0, path.length - 1) + '.*'
       let r = {
         get(handler) {
           app.get(path, honoHandler(handler))

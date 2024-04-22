@@ -16,6 +16,7 @@ describe('test holo server', async () => {
     const app = new Hono()
     const api = remultHono({
       entities: [Task],
+      admin: true,
     })
     app.route('', api)
     app.get('/api/test', api.withRemult, async (c) =>

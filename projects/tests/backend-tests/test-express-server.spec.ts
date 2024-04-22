@@ -3,7 +3,7 @@ import {
   type RemultExpressServer,
   remultExpress,
 } from '../../core/remult-express.js'
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { Task, test_compound_id } from '../../test-servers/shared/Task.js'
 import {
   InMemoryDataProvider,
@@ -28,6 +28,7 @@ describe('test express server', async () => {
   let api = remultExpress({
     entities: [Task, test_compound_id],
     dataProvider: new InMemoryDataProvider(),
+    admin: true,
     error: (e) => errorHandler?.(e),
     getUser: async () => {
       if (throwExceptionOnGetUser)
