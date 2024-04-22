@@ -837,7 +837,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 
 //p2 - create foreign key constraints in user code - https://codesandbox.io/p/devbox/fk-validator-tdshcs
 
-//p1 - admin url1 - pocketbase use /_ for the admin //{allowed?:Allowed,url?:string} also checkout the admin* as it should probably be something else and didn't work in hono
+//p2 - admin url1 - pocketbase use /_ for the admin //{allowed?:Allowed,url?:string} also checkout the admin* as it should probably be something else and didn't work in hono
 
 //p1 - article auth.js with express - played with it, requires type="module" and a few more configurations - https://github.com/noam-honig/express-auth
 //y2 - fix validators cache
