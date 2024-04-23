@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.26.4] TBD
+
+- `getValueList` now supports `@Fields.literal` & `@Fields.enum` (on top of `ValueListType`)
+
 ## [0.26.3] 2024-04-22
 
 - Fixed issue with delete on Hono with session middleware

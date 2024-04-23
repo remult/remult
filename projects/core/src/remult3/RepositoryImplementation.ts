@@ -94,6 +94,7 @@ import {
 import { remultStatic } from '../remult-static.js'
 import { Validators } from '../validators.js'
 import { addValidator } from './addValidator.js'
+import { isOfType } from '../isOfType.js'
 //import  { remult } from "../remult-proxy";
 
 let classValidatorValidate:
@@ -2539,19 +2540,21 @@ export function getValueList<T>(type: ClassType<T>): T[]
 export function getValueList<T>(
   type: ClassType<T> | FieldMetadata<T> | FieldRef<T>,
 ): T[] {
-  {
-    const fr = (type as FieldRef<T>)?.metadata?.valueType
-    if (fr) return ValueListInfo.get<T>(fr).getValues()
-  }
-  {
-    const fr = (type as FieldMetadata<T>)?.valueType
-    if (fr) return ValueListInfo.get<T>(fr).getValues()
-  }
+  let meta = (type as FieldRef<T>)?.metadata
+  if (!meta && isOfType<FieldMetadata<T>>(type, 'options')) meta = type
 
-  return ValueListInfo.get<T>(type as ClassType<T>).getValues()
+  type = meta?.valueType || type
+  if (type) {
+    var options = type[storableMember] as ValueListFieldOptions<any, any>[]
+    if (options) return ValueListInfo.get(type as ClassType<T>).getValues()
+  }
+  let optionalValues = meta?.options[fieldOptionalValuesFunctionKey]
+  if (optionalValues) return optionalValues()
+  return undefined
 }
 
 export const storableMember = Symbol.for('storableMember')
+export const fieldOptionalValuesFunctionKey = Symbol.for('fieldOptionalValues')
 export function buildOptions<entityType = any, valueType = any>(
   options: (
     | FieldOptions<entityType, valueType>
