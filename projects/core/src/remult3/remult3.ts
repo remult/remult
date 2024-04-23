@@ -819,6 +819,8 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //p1 - consider upsert (where,set)
 //p1 - consider id to also support keyof (id:['company','index'])
 //p1 - wait a second to close stream
+//p1 - add solid tutorial to the getting started page
+//p1 - update the examples section
 
 //p1 - reconsider update many, maybe the second parameter should be in a set option - break existing
 //p1 - add documentation for bun sqlite
