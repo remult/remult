@@ -86,7 +86,7 @@ If no `DATABASE_URL` has found, it'll fallback to our local JSON files.
     "esModuleInterop": true,
     "outDir": "dist",
     "rootDir": "src",
-    "module": "esnext"
+    "module": "nodenext"
   },
   "include": ["src/server/**/*", "src/shared/**/*"]
 }
