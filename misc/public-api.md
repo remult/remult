@@ -2832,7 +2832,10 @@ export interface RemultServerOptions<RequestType> {
   /** When set to true, will display an admin ui in the `/api/admin` url.
    * Can also be set to an arrow function for fine grained control
    * @example
-   * allowed: ()=> remult.isAllowed('admin')
+   * admin: true
+   * @example
+   * admin: ()=> remult.isAllowed('admin')
+   * @see [allowed](http://remult.dev/docs/allowed.html)
    */
   admin?: Allowed
   /** Storage to use for backend methods that use queue */
@@ -3027,7 +3030,10 @@ export interface RemultServerOptions<RequestType> {
   /** When set to true, will display an admin ui in the `/api/admin` url.
    * Can also be set to an arrow function for fine grained control
    * @example
-   * allowed: ()=> remult.isAllowed('admin')
+   * admin: true
+   * @example
+   * admin: ()=> remult.isAllowed('admin')
+   * @see [allowed](http://remult.dev/docs/allowed.html)
    */
   admin?: Allowed
   /** Storage to use for backend methods that use queue */

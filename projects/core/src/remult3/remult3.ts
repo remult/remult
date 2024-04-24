@@ -821,7 +821,8 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //p1 - wait a second to close stream
 //p1 - add solid tutorial to the getting started page
 //p1 - update the examples section
-
+//p1 - support dbnamesof in sqlexpression of entity
+//p1 - adjust sql expression of entity docs to include a union example
 //p1 - reconsider update many, maybe the second parameter should be in a set option - break existing
 //p1 - add documentation for bun sqlite
 

@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.26.4] TBD
+## [0.26.4] 2024-04-24
 
 - `getValueList` now supports `@Fields.literal` & `@Fields.enum` (on top of `ValueListType`)
 
