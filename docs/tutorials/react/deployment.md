@@ -120,16 +120,13 @@ npm run start
 ```
 
 
+
 NOTA BENE :
 Since we deploied an ESM module,to make it work in a target computer, you will have to deploy this package.json  file, otherwise, you will be facing 
 problems loading esm module as cjs modules :
 {
 type : "module"
 }
-
-
-
-
 
 Now navigate to http://localhost3002 and test the application locally
 

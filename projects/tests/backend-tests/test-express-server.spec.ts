@@ -3,7 +3,7 @@ import {
   type RemultExpressServer,
   remultExpress,
 } from '../../core/remult-express.js'
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { Task, test_compound_id } from '../../test-servers/shared/Task.js'
 import {
   InMemoryDataProvider,
@@ -28,6 +28,7 @@ describe('test express server', async () => {
   let api = remultExpress({
     entities: [Task, test_compound_id],
     dataProvider: new InMemoryDataProvider(),
+    admin: true,
     error: (e) => errorHandler?.(e),
     getUser: async () => {
       if (throwExceptionOnGetUser)
@@ -53,12 +54,12 @@ describe('test express server', async () => {
             {
               "entity": undefined,
               "exception": {
-                "message": "Forbidden",
+                "message": "NotFound",
               },
               "httpStatusCode": 404,
               "req": true,
               "responseBody": {
-                "message": "Forbidden",
+                "message": "NotFound",
               },
               "sendError": [Function],
             }
@@ -69,7 +70,7 @@ describe('test express server', async () => {
           .toThrowErrorMatchingInlineSnapshot(`
           {
             "httpStatusCode": 432,
-            "message": "Forbidden",
+            "message": "NotFound",
           }
         `)
       }),

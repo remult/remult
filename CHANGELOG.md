@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.26.4] TBD
+
+- `getValueList` now supports `@Fields.literal` & `@Fields.enum` (on top of `ValueListType`)
+
+## [0.26.3] 2024-04-22
+
+- Fixed issue with delete on Hono with session middleware
+- Fixed an issue with admin not working with Hono@4.2
+
+## [0.26.2] 2024-04-21
+
+- Added support for SolidStart https://remult.dev/tutorials/solid-start/
+
+## [0.26.1] 2024-04-18
+
+- Fixed issue where 404 return an error - forbidden instead of not found
+- Fixed an issue where `preventDefault` in `deleting` did not work
+
 ## [0.26.0] 2024-04-08
 
 ## Features

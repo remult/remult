@@ -8,6 +8,7 @@ import {
   Remult,
   Validators,
   getEntityRef,
+  getValueList,
   valueValidator,
 } from '../../core'
 import {
@@ -266,8 +267,8 @@ describe('validation tests', () => {
       @Fields.enum<x, typeof e>(() => e, {
         saving: (_, x) => {
           x.value == e.a
-          let z = x.value;
-        }
+          let z = x.value
+        },
       })
       id: e
     }
@@ -286,8 +287,11 @@ describe('validation tests', () => {
       "id": 2,
     }
   `)
-    expect(remult.repo(x).metadata.fields.id.valueConverter.fieldTypeInDb).toBe(ValueConverters.Integer.fieldTypeInDb)
-    expect(cast<InMemoryDataProvider>(remult.dataProvider, 'rows').rows).toMatchInlineSnapshot(`
+    expect(remult.repo(x).metadata.fields.id.valueConverter.fieldTypeInDb).toBe(
+      ValueConverters.Integer.fieldTypeInDb,
+    )
+    expect(cast<InMemoryDataProvider>(remult.dataProvider, 'rows').rows)
+      .toMatchInlineSnapshot(`
       {
         "x": [
           {
@@ -296,7 +300,6 @@ describe('validation tests', () => {
         ],
       }
     `)
-
   })
 
   it('test enum', async () => {
@@ -321,13 +324,12 @@ describe('validation tests', () => {
         },
       }
     `)
-
   })
   it('test enum string', async () => {
     enum e {
-      a = "a",
-      b = "b",
-      c = "c",
+      a = 'a',
+      b = 'b',
+      c = 'c',
     }
     @Entity('x', {})
     class x {
@@ -350,8 +352,6 @@ describe('validation tests', () => {
         "id": "c",
       }
     `)
-
-
   })
   it('test in ', async () => {
     await expect(async () =>
@@ -451,18 +451,22 @@ describe('validation tests', () => {
       }
     `)
   })
+  it('getValueList works on literals', async () => {
+    const repo = remult.repo(
+      createEntity('x', { id: Fields.literal(() => ['a', 'b', 'c'] as const) }),
+    )
+    const valueList = getValueList(repo.fields.id)
+    expect(valueList).toEqual(['a', 'b', 'c'])
+  })
   it('test in 4', async () => {
-
-    @Entity("x")
+    @Entity('x')
     class testEntity {
       @Fields.literal(() => ['open', 'closed'] as const)
       status: 'open' | 'closed' = 'open'
-
     }
     await expect(
       await remult
-        .repo(
-          testEntity)
+        .repo(testEntity)
 
         .insert({ status: 'open' }),
     ).toMatchInlineSnapshot(`
@@ -529,8 +533,9 @@ describe('validation tests', () => {
       "id": "c",
     }
   `)
-    expect(remult.repo(x).fields.id.valueConverter.toJson(e.a)).toBe("a")
-    expect(cast<InMemoryDataProvider>(remult.dataProvider, 'rows').rows).toMatchInlineSnapshot(`
+    expect(remult.repo(x).fields.id.valueConverter.toJson(e.a)).toBe('a')
+    expect(cast<InMemoryDataProvider>(remult.dataProvider, 'rows').rows)
+      .toMatchInlineSnapshot(`
   {
     "x": [
       {
@@ -546,6 +551,7 @@ describe('validation tests', () => {
       "id": "b",
     }
   `)
+    expect(getValueList(remult.repo(x).fields.id)).toEqual(['a', 'b', 'c'])
   })
   it('test enum 4', async () => {
     enum e {
@@ -560,7 +566,8 @@ describe('validation tests', () => {
       })
       id: e
     }
-    expect(async () => await remult.repo(x).insert({ id: 'd' as any })).rejects
+    const repo = remult.repo(x)
+    expect(async () => await repo.insert({ id: 'd' as any })).rejects
       .toThrowErrorMatchingInlineSnapshot(`
       {
         "message": "Id: Value must be one of x, y, z",
@@ -570,14 +577,13 @@ describe('validation tests', () => {
       }
     `)
 
-    expect(await remult.repo(x).insert({ id: e.c })).toMatchInlineSnapshot(`
+    expect(await repo.insert({ id: e.c })).toMatchInlineSnapshot(`
       x {
         "id": "z",
       }
     `)
 
-    expect(await remult.repo(x).insert({ id: 'x' as any }))
-      .toMatchInlineSnapshot(`
+    expect(await repo.insert({ id: 'x' as any })).toMatchInlineSnapshot(`
     x {
       "id": "x",
     }
@@ -986,11 +992,14 @@ describe('validation tests', () => {
     r.name = 'b'
     await getEntityRef(r).save()
   })
-  it("test number with nan", async () => {
-    const repo = remult.repo(createEntity('x', {
-      id: Fields.number()
-    }))
-    await expect(() => repo.insert({ id: NaN })).rejects.toThrowErrorMatchingInlineSnapshot(`
+  it('test number with nan', async () => {
+    const repo = remult.repo(
+      createEntity('x', {
+        id: Fields.number(),
+      }),
+    )
+    await expect(() => repo.insert({ id: NaN })).rejects
+      .toThrowErrorMatchingInlineSnapshot(`
       {
         "message": "Id: Invalid value",
         "modelState": {
@@ -999,11 +1008,14 @@ describe('validation tests', () => {
       }
     `)
   })
-  it("test number with nan and required", async () => {
-    const repo = remult.repo(createEntity('x', {
-      id: Fields.number({ validate: Validators.required })
-    }))
-    await expect(() => repo.insert({ id: NaN })).rejects.toThrowErrorMatchingInlineSnapshot(`
+  it('test number with nan and required', async () => {
+    const repo = remult.repo(
+      createEntity('x', {
+        id: Fields.number({ validate: Validators.required }),
+      }),
+    )
+    await expect(() => repo.insert({ id: NaN })).rejects
+      .toThrowErrorMatchingInlineSnapshot(`
       {
         "message": "Id: Invalid value",
         "modelState": {
@@ -1012,11 +1024,14 @@ describe('validation tests', () => {
       }
     `)
   })
-  it("test integer with nan", async () => {
-    const repo = remult.repo(createEntity('x', {
-      id: Fields.integer()
-    }))
-    await expect(() => repo.insert({ id: NaN })).rejects.toThrowErrorMatchingInlineSnapshot(`
+  it('test integer with nan', async () => {
+    const repo = remult.repo(
+      createEntity('x', {
+        id: Fields.integer(),
+      }),
+    )
+    await expect(() => repo.insert({ id: NaN })).rejects
+      .toThrowErrorMatchingInlineSnapshot(`
       {
         "message": "Id: Invalid value",
         "modelState": {

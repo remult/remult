@@ -94,7 +94,7 @@ npm run build
 npm run start
 ```
 
-Now navigate to http://localhost3002 and test the application locally
+Now navigate to http://localhost:3002 and test the application locally
 
 ## Deploy to Railway
 

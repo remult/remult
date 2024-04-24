@@ -404,8 +404,8 @@ export class RemultServerImplementation<RequestType>
           r,
         )
       if (this.options.admin !== undefined && this.options.admin !== false) {
-        r.route(this.options.rootPath + '/admin*').get(
-          this.process(async (remult, req, res, orig, origResponse) => {
+        const admin = this.process(
+          async (remult, req, res, orig, origResponse) => {
             if (remult.isAllowed(this.options.admin))
               origResponse.send(
                 remultAdminHtml({
@@ -415,8 +415,11 @@ export class RemultServerImplementation<RequestType>
                 }),
               )
             else res.notFound()
-          }),
+          },
         )
+        r.route(this.options.rootPath + '/admin/:id').get(admin)
+        r.route(this.options.rootPath + '/admin/').get(admin)
+        r.route(this.options.rootPath + '/admin').get(admin)
       }
       if (this.options.subscriptionServer instanceof SseSubscriptionServer) {
         const streamPath = this.options.rootPath + '/' + streamUrl
@@ -1123,7 +1126,7 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
   }
 
   public notFound(): void {
-    this.error({ message: 'Forbidden' }, undefined, 404)
+    this.error({ message: 'NotFound' }, undefined, 404)
   }
 
   public async error(

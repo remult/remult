@@ -19,6 +19,7 @@ const tutorials = [
     path: 'react-next',
     additionalItems: [], // [{ text: "Appendix: Server-side Rendering", link: '/tutorials/react-next/appendix-1-get-server-side-props' }]
   },
+  { title: 'SolidStart', path: 'solid-start' },
 ]
 
 // https://vitepress.dev/reference/site-config
@@ -279,7 +280,7 @@ export default defineConfig({
     },
   },
   markdown: {
-    //    theme: 'dark-plus',
+    theme: 'dark-plus',
     config(md) {
       md.use(tabsMarkdownPlugin)
     },
