@@ -5,6 +5,7 @@ Let's deploy the todo app to [railway.app](https://railway.app/).
 ## Prepare for Production
 
 In this tutorial, we'll deploy both the React app and the API server as [one server-side app](https://create-react-app.dev/docs/deployment/#other-solutions), and redirect all non-API requests to return the React app.
+We will deploy an ESM server project
 In addition, to follow a few basic production best practices, we'll use [compression](https://www.npmjs.com/package/compression) middleware to improve performance and [helmet](https://www.npmjs.com/package/helmet) middleware for security
 
 1. Install `compression` and `helmet`.
@@ -15,17 +16,23 @@ npm i @types/compression --save-dev
 ```
 
 2. Add the highlighted code lines to `src/server/index.ts`, and modify the `app.listen` function's `port` argument to prefer a port number provided by the production host's `PORT` environment variable.
+NOTA BENE : You will need to add ".js" extension to imported files 
 
 ```ts{7-9,17-18,21-26}
 // src/server/index.ts
 
 import express from "express"
-import { api } from "./api"
+import { api } from "./api.js"
 import session from "cookie-session"
 import { auth } from "./auth"
 import helmet from "helmet"
 import compression from "compression"
 import path from "path"
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 
 const app = express()
 app.use(
@@ -78,7 +85,8 @@ If no `DATABASE_URL` has found, it'll fallback to our local JSON files.
     "skipLibCheck": true,
     "esModuleInterop": true,
     "outDir": "dist",
-    "rootDir": "src"
+    "rootDir": "src",
+    "module": "esnext"
   },
   "include": ["src/server/**/*", "src/shared/**/*"]
 }
@@ -110,6 +118,18 @@ To test the application locally run
 npm run build
 npm run start
 ```
+
+
+NOTA BENE :
+Since we deploied an ESM module,to make it work in a target computer, you will have to deploy this package.json  file, otherwise, you will be facing 
+problems loading esm module as cjs modules :
+{
+type : "module"
+}
+
+
+
+
 
 Now navigate to http://localhost3002 and test the application locally
 
