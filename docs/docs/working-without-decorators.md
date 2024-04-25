@@ -4,7 +4,7 @@ If you prefer to work without decorators, or use `remult` in a javascript projec
 ## Entity
 ::: code-group
 
-```sh [TS]
+```ts [Typescript]
 import { Entity, Fields, describeClass } from "remult";
 
 export class Task {
@@ -23,7 +23,7 @@ describeClass(Task,
   })
 ```
 
-```sh [JS]
+```js [Javascript]
 import { Entity, Fields, describeClass } from "remult";
 
 export class Task {
