@@ -816,6 +816,13 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //y1 - https://discord.com/channels/975754286384418847/1230386433093533698/1230386433093533698
 
 //y1 - fix async hooks - was it fixed?
+//y1 - repo batch - for multiple operations:
+/*
+  const result = await repo.batch(x=>({
+    data:x.find(),
+    count:x.count()
+  }))
+*/
 //p1 - consider upsert (where,set)
 //p1 - consider id to also support keyof (id:['company','index'])
 //p1 - wait a second to close stream

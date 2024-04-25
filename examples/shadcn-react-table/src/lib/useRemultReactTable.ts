@@ -1,11 +1,11 @@
 import {
-  type AccessorColumnDef,
+  type ColumnDef,
   type ColumnFiltersState,
   type PaginationState,
   type RowData,
   type SortingState,
 } from '@tanstack/react-table'
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect } from 'react'
 import type {
   EntityFilter,
   EntityOrderBy,
@@ -19,30 +19,16 @@ export type RemultReactTableProps<entityType> = {
   columns?: {
     build: (props: {
       build: (
-        fields: (string & keyof entityType)[],
-      ) => AccessorColumnDef<entityType, any>[]
-    }) => AccessorColumnDef<entityType, any>[]
+        ...fields: (string & keyof entityType)[]
+      ) => ColumnDef<entityType, any>[]
+    }) => ColumnDef<entityType, any>[]
     deps?: React.DependencyList
   }
 }
 
 export function useRemultReactTableServerSidePagingSortingAndFiltering<
-  entityType,
+  entityType
 >(repo: Repository<entityType>, props?: RemultReactTableProps<entityType>) {
-  const columns = useMemo(
-    () =>
-      props?.columns?.build({
-        build: (fields) => buildColumns(repo, fields),
-      }) ??
-      buildColumns(
-        repo,
-        repo.fields
-          .toArray()
-          .filter((f) => f.key != 'id')
-          .map((f) => f.key) as any,
-      ),
-    props?.columns?.deps ?? [],
-  )
   const [columnFilters, onColumnFiltersChange] =
     React.useState<ColumnFiltersState>([])
   const [data, setData] = React.useState<entityType[]>([])
@@ -59,6 +45,7 @@ export function useRemultReactTableServerSidePagingSortingAndFiltering<
       //@ts-expect-error typing unknown stuff
       where[id] = value?.[0] as ValueFilter<any>
     }
+    console.log(where)
     return { $and: [where, props?.fixedWhere!] } as EntityFilter<entityType>
   }, [JSON.stringify(columnFilters)])
 
@@ -84,7 +71,6 @@ export function useRemultReactTableServerSidePagingSortingAndFiltering<
   }, [pageIndex, pageSize, sorting, where])
   return {
     data,
-    columns,
     rowCount,
     state: {
       columnFilters,
@@ -95,22 +81,6 @@ export function useRemultReactTableServerSidePagingSortingAndFiltering<
     onSortingChange,
     onColumnFiltersChange,
   }
-}
-function buildColumns<entityType>(
-  repo: Repository<entityType>,
-  fields: (string & keyof entityType)[],
-): AccessorColumnDef<entityType, any>[] {
-  return fields.map((field) => {
-    const fieldMeta = repo.fields.find(field)
-    return {
-      accessorKey: field,
-      header: fieldMeta.caption,
-      cell: (info) => info.getValue(),
-      meta: {
-        field: fieldMeta,
-      },
-    }
-  })
 }
 
 import '@tanstack/react-table' //or vue, svelte, solid, qwik, etc.
