@@ -186,7 +186,10 @@ export function buildFilterColumns<entityType>(
     placeholder: field.caption,
     options: getValueList(field)?.map((value) =>
       typeof value === 'string'
-        ? { caption: value, id: value }
+        ? {
+            caption: field.options.displayValue?.(undefined!, value) || value,
+            id: value,
+          }
         : {
             caption: value.caption,
             id: value.id,

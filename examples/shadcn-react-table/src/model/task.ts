@@ -1,4 +1,5 @@
 import { Entity, Fields, Validators } from 'remult'
+import { capitalize } from '../lib/utils.ts'
 
 export const statusOptions = [
   'todo',
@@ -30,11 +31,17 @@ export class Task {
   code = ''
   @Fields.string()
   title = ''
-  @Fields.literal(() => statusOptions)
+  @Fields.literal(() => statusOptions, {
+    displayValue: (_, value) => capitalize(value),
+  })
   status: Status = 'todo'
-  @Fields.literal(() => labelOptions)
+  @Fields.literal(() => labelOptions, {
+    displayValue: (_, value) => capitalize(value),
+  })
   label: Label = 'bug'
-  @Fields.literal(() => priorityOptions)
+  @Fields.literal(() => priorityOptions, {
+    displayValue: (_, value) => capitalize(value),
+  })
   priority: Priority = 'low'
   @Fields.date({
     dbName: 'created_at',

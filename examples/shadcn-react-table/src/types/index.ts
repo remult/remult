@@ -1,4 +1,4 @@
-import type { FilterOperator } from '../config/data-table.ts'
+import type { FilterOperator } from '../config/filter-operators.ts'
 
 export interface SearchParams {
   [key: string]: string | string[] | undefined

@@ -3,7 +3,7 @@ import type { DataTableFilterOption } from '@/types'
 import { TrashIcon } from '@radix-ui/react-icons'
 import type { Table } from '@tanstack/react-table'
 
-import { dataTableConfig } from '@/config/data-table'
+import { dataTableConfig } from '@/config/filter-operators'
 import { cn } from '@/lib/utils'
 import { useDebounce } from '@/hooks/use-debounce'
 import { Button } from '@/components/ui/button'
@@ -71,6 +71,8 @@ export function DataTableFilterItem<TData>({
       filterValue = selectedOperator.process(filterValues)
     else if (debounceValue) {
       filterValue = selectedOperator.process(debounceValue)
+    } else if (selectedOperator.applyWhenNoValue) {
+      filterValue = selectedOperator.process('')
     }
     column?.setFilterValue(filterValue ? [filterValue] : undefined)
   }, [filterValues, selectedOperator, debounceValue])
