@@ -53,7 +53,7 @@ export function DataTableAdvancedToolbar<TData>({
       )}
       {...props}
     >
-      <div className="ml-auto flex items-center gap-2">
+      <div className=" flex items-center gap-2">
         <div className={cn('flex items-center gap-2')}>
           {selectedOptions.map((selectedOption) => (
             <DataTableFilterItem
