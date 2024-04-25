@@ -2,7 +2,9 @@
 If you prefer to work without decorators, or use `remult` in a javascript project (without typescript) you can use the following:
 
 ## Entity
-```ts{8-16}
+::: code-group
+
+```sh [TS]
 import { Entity, Fields, describeClass } from "remult";
 
 export class Task {
@@ -20,6 +22,28 @@ describeClass(Task,
     completed: Fields.boolean()
   })
 ```
+
+```sh [JS]
+import { Entity, Fields, describeClass } from "remult";
+
+export class Task {
+  id;
+  title = '';
+  completed = false;
+}
+describeClass(Task,
+  Entity("tasks", {
+    allowApiCrud: true
+  }),
+  {
+    id: Fields.uuid(),
+    title: Fields.string(),
+    completed: Fields.boolean()
+  })
+```
+
+:::
+
 This is the same entity that is detailed in the [Entities section of the tutorial](https://remult.dev/tutorials/react/entities.html)
 
 ## Static BackendMethod
