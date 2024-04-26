@@ -17,6 +17,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 import { TaskRowAction } from './task-row-actions.tsx'
+import { TasksTableFloatingBar } from './tasks-table-floating-bar.tsx'
 
 export const taskRepo = repo(Task)
 function TasksTable() {
@@ -68,7 +69,13 @@ function TasksTable() {
     [],
   )
   return (
-    <DataTable table={table} filterFields={filterFields}>
+    <DataTable
+      table={table}
+      filterFields={filterFields}
+      floatingBar={
+        <TasksTableFloatingBar table={table} reloadData={t.reloadData} />
+      }
+    >
       <CreateTaskDialog onAdd={(newTask) => t.addRow(newTask)} />
     </DataTable>
   )

@@ -20,7 +20,7 @@ export type RemultReactTableProps<entityType> = {
 export function useRemultReactTableServerSidePagingSortingAndFiltering<
   entityType,
 >(repo: Repository<entityType>, props?: RemultReactTableProps<entityType>) {
-  const [refresh, reloadData] = React.useState({})
+  const [refresh, setRefresh] = React.useState({})
   const [columnFilters, onColumnFiltersChange] =
     React.useState<ColumnFiltersState>([])
   const [data, setData] = React.useState<entityType[]>([])
@@ -87,7 +87,7 @@ export function useRemultReactTableServerSidePagingSortingAndFiltering<
       setData((data) => data.filter((r) => r !== row))
       setRowCount(rowCount - 1)
     },
-    reloadData,
+    reloadData: () => setRefresh({}),
   }
 }
 export function fieldsOf<entityType>(
