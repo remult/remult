@@ -1,5 +1,4 @@
 import {
-  type ColumnDef,
   type ColumnFiltersState,
   type PaginationState,
   type RowData,
@@ -15,6 +14,7 @@ import type {
 } from 'remult'
 export type RemultReactTableProps<entityType> = {
   fixedWhere?: EntityFilter<entityType>
+  liveQuery?: boolean
 }
 
 export function useRemultReactTableServerSidePagingSortingAndFiltering<
@@ -50,15 +50,17 @@ export function useRemultReactTableServerSidePagingSortingAndFiltering<
       //@ts-expect-error typing unknown stuff
       orderBy[sort.id as keyof entityType] = sort.desc ? 'desc' : 'asc'
     }
-
-    repo
-      .find({
-        orderBy,
-        where,
-        limit: pageSize,
-        page: pageIndex + 1,
-      })
-      .then((x) => setData(() => x))
+    const options = {
+      orderBy,
+      where,
+      limit: pageSize,
+      page: pageIndex + 1,
+    }
+    if (!props?.liveQuery) repo.find(options).then((x) => setData(() => x))
+    else
+      return repo
+        .liveQuery(options)
+        .subscribe((info) => setData(info.applyChanges))
   }, [pageIndex, pageSize, sorting, where, refresh])
   return {
     tableProps: {
@@ -76,18 +78,28 @@ export function useRemultReactTableServerSidePagingSortingAndFiltering<
       manualSorting: true,
       manualFiltering: true,
     },
+    /** disabled and not needed in live query */
     addRow: (row: entityType) => {
+      if (props?.liveQuery) return
       setData((data) => [row, ...data])
       setRowCount(rowCount + 1)
     },
+    /** disabled and not needed in live query */
     replaceRow: (originalRow: entityType, newRow: entityType) => {
+      if (props?.liveQuery) return
       setData((data) => data.map((row) => (row === originalRow ? newRow : row)))
     },
+    /** disabled and not needed in live query */
     removeRow: (row: entityType) => {
+      if (props?.liveQuery) return
       setData((data) => data.filter((r) => r !== row))
       setRowCount(rowCount - 1)
     },
-    reloadData: () => setRefresh({}),
+    /** disabled and not needed in live query */
+    reloadData: () => {
+      if (props?.liveQuery) return
+      setRefresh({})
+    },
   }
 }
 export function fieldsOf<entityType>(

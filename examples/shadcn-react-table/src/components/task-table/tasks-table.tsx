@@ -21,7 +21,9 @@ import { TasksTableFloatingBar } from './tasks-table-floating-bar.tsx'
 
 export const taskRepo = repo(Task)
 function TasksTable() {
-  const t = useRemultReactTableServerSidePagingSortingAndFiltering(taskRepo)
+  const t = useRemultReactTableServerSidePagingSortingAndFiltering(taskRepo, {
+    liveQuery: true,
+  })
 
   const columns = React.useMemo<ColumnDef<Task>[]>(() => {
     return [
