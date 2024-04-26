@@ -15,20 +15,12 @@ import type {
 } from 'remult'
 export type RemultReactTableProps<entityType> = {
   fixedWhere?: EntityFilter<entityType>
-
-  columns?: {
-    build: (props: {
-      build: (
-        ...fields: (string & keyof entityType)[]
-      ) => ColumnDef<entityType, any>[]
-    }) => ColumnDef<entityType, any>[]
-    deps?: React.DependencyList
-  }
 }
 
 export function useRemultReactTableServerSidePagingSortingAndFiltering<
-  entityType
+  entityType,
 >(repo: Repository<entityType>, props?: RemultReactTableProps<entityType>) {
+  const [refresh, reloadData] = React.useState({})
   const [columnFilters, onColumnFiltersChange] =
     React.useState<ColumnFiltersState>([])
   const [data, setData] = React.useState<entityType[]>([])
@@ -45,14 +37,13 @@ export function useRemultReactTableServerSidePagingSortingAndFiltering<
       //@ts-expect-error typing unknown stuff
       where[id] = value?.[0] as ValueFilter<any>
     }
-    console.log(where)
     return { $and: [where, props?.fixedWhere!] } as EntityFilter<entityType>
   }, [JSON.stringify(columnFilters)])
 
   useEffect(() => {
     const r = repo
     r.count(where).then(setRowCount)
-  }, [where])
+  }, [where, refresh])
   useEffect(() => {
     const orderBy: EntityOrderBy<entityType> = {}
     for (const sort of sorting) {
@@ -68,25 +59,50 @@ export function useRemultReactTableServerSidePagingSortingAndFiltering<
         page: pageIndex + 1,
       })
       .then((x) => setData(() => x))
-  }, [pageIndex, pageSize, sorting, where])
+  }, [pageIndex, pageSize, sorting, where, refresh])
   return {
-    data,
-    rowCount,
-    state: {
-      columnFilters,
-      sorting,
-      pagination: { pageIndex, pageSize },
+    tableProps: {
+      data,
+      rowCount,
+      state: {
+        columnFilters,
+        sorting,
+        pagination: { pageIndex, pageSize },
+      },
+      onPaginationChange,
+      onSortingChange,
+      onColumnFiltersChange,
+      manualPagination: true,
+      manualSorting: true,
+      manualFiltering: true,
     },
-    onPaginationChange,
-    onSortingChange,
-    onColumnFiltersChange,
+    addRow: (row: entityType) => {
+      setData((data) => [row, ...data])
+      setRowCount(rowCount + 1)
+    },
+    replaceRow: (originalRow: entityType, newRow: entityType) => {
+      setData((data) => data.map((row) => (row === originalRow ? newRow : row)))
+    },
+    removeRow: (row: entityType) => {
+      setData((data) => data.filter((r) => r !== row))
+      setRowCount(rowCount - 1)
+    },
+    reloadData,
   }
 }
+export function fieldsOf<entityType>(
+  repo: Repository<entityType>,
+  ...fields: (string & keyof entityType)[]
+) {
+  return fields
+    ? fields.map((key) => repo.fields.find(key))
+    : repo.fields.toArray().filter((x) => x.key != 'id')
+}
 
-import '@tanstack/react-table' //or vue, svelte, solid, qwik, etc.
+import '@tanstack/react-table'
 
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData extends RowData, TValue> {
-    field?: FieldMetadata<TData, TValue>
+    field?: FieldMetadata<TValue, TData>
   }
 }

@@ -840,6 +840,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //p1 - maybe add decorator comment in the readme as well (I heard you've lost me in decorators) - and improve the describeClass function
 //p1 - return error on connection error
 //p1 - consider including the admin in the tutorial - and maybe even in the demo when we setup the api
+//p1 - reconsider key typing to be keyof & string
 //p2 -fix remult admin not to load the html into memory until used
 
 //y2 - JY suggestion of having generate as part of the ensure schema - not sure

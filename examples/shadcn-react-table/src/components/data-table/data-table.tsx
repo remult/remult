@@ -19,15 +19,13 @@ import {
 
 import { DataTablePagination } from './data-table-pagination'
 import { getValueList, type Repository } from 'remult'
-import {
-  useRemultReactTableServerSidePagingSortingAndFiltering,
-  type RemultReactTableProps,
-} from '../../lib/useRemultReactTable.ts'
+import { fieldsOf } from '../../lib/use-remult-react-table.ts'
 import { DataTableColumnHeader } from './data-table-column-header.tsx'
 import { DataTableAdvancedToolbar } from './data-table-advanced-toolbar.tsx'
 import type { DataTableFilterField } from '../../types/index.ts'
+import { Checkbox } from '../ui/checkbox.tsx'
 
-interface DataTableProps<TData> {
+interface DataTableProps<TData> extends React.PropsWithChildren {
   /**
    * The table instance returned from useDataTable hook with pagination, sorting, filtering, etc.
    * @type TanstackTable<TData>
@@ -48,13 +46,13 @@ export function DataTable<TData>({
   table,
   floatingBar = null,
   filterFields,
+  children,
 }: DataTableProps<TData>) {
   return (
     <div className="w-full space-y-2.5 overflow-auto">
-      <DataTableAdvancedToolbar
-        table={table}
-        filterFields={filterFields}
-      ></DataTableAdvancedToolbar>
+      <DataTableAdvancedToolbar table={table} filterFields={filterFields}>
+        {children}
+      </DataTableAdvancedToolbar>
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -113,46 +111,40 @@ export function DataTable<TData>({
   )
 }
 
-export function useRemultReactTable<entityType>(
-  repo: Repository<entityType>,
-  props?: RemultReactTableProps<entityType>,
-) {
-  const columns = React.useMemo(
-    () =>
-      props?.columns?.build({
-        build: (...fields) => buildColumns(repo, ...fields),
-      }) ?? buildColumns(repo),
-    props?.columns?.deps ?? [],
-  )
-  const {
-    data,
-    rowCount,
-    state,
-    onColumnFiltersChange,
-    onPaginationChange,
-    onSortingChange,
-  } = useRemultReactTableServerSidePagingSortingAndFiltering(repo, props)
-
-  return useReactTable({
-    data,
-    columns,
-    rowCount,
-    state,
-    onPaginationChange,
-    onSortingChange,
-    onColumnFiltersChange,
-    manualPagination: true,
-    manualSorting: true,
-    manualFiltering: true,
-    getCoreRowModel: getCoreRowModel(),
-  })
+export function selectColumn<entityType>(): ColumnDef<entityType> {
+  return {
+    id: 'select',
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && 'indeterminate')
+        }
+        onCheckedChange={(value: any) =>
+          table.toggleAllPageRowsSelected(!!value)
+        }
+        aria-label="Select all"
+        className="translate-y-0.5"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value: any) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+        className="translate-y-0.5"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  }
 }
 
-function buildColumns<entityType>(
+export function buildColumns<entityType>(
   repo: Repository<entityType>,
   ...fields: (string & keyof entityType)[]
 ): ColumnDef<entityType, unknown>[] {
-  return fieldsOf(repo, fields).map((field) => {
+  return fieldsOf(repo, ...fields).map((field) => {
     return {
       accessorKey: field.key,
       header: ({ column }) => (
@@ -167,20 +159,12 @@ function buildColumns<entityType>(
     }
   })
 }
-function fieldsOf<entityType>(
-  repo: Repository<entityType>,
-  fields?: (string & keyof entityType)[],
-) {
-  return fields
-    ? fields.map((key) => repo.fields.find(key))
-    : repo.fields.toArray().filter((x) => x.key != 'id')
-}
 
 export function buildFilterColumns<entityType>(
   repo: Repository<entityType>,
   ...fields: (string & keyof entityType)[]
 ): DataTableFilterField<entityType>[] {
-  return fieldsOf(repo, fields).map((field) => ({
+  return fieldsOf(repo, ...fields).map((field) => ({
     caption: field.caption,
     key: field.key as keyof entityType,
     placeholder: field.caption,

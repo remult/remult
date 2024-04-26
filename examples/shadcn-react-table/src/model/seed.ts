@@ -1,13 +1,13 @@
-import { repo } from 'remult'
+import { repo, type DataProvider } from 'remult'
 import { faker } from '@faker-js/faker'
 import { Task, labelOptions, priorityOptions, statusOptions } from './task.ts'
 
-export async function seed() {
+export async function seed(dataProvider?: DataProvider) {
   console.log('Seeding data...')
   for (let index = 0; index < 1000; index++) {
     try {
-      await repo(Task).insert({
-        code: `TASK-${faker.number.int({ min: 1000, max: 9999 }).toString()}`,
+      await repo(Task, dataProvider).insert({
+        code: `TASK-${(1000 + index).toString()}`,
         title: faker.hacker
           .phrase()
           .replace(/^./, (letter) => letter.toUpperCase()),

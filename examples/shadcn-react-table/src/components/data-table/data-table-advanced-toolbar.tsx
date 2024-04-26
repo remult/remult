@@ -89,8 +89,9 @@ export function DataTableAdvancedToolbar<TData>({
             </DataTableFilterCombobox>
           ) : null}
         </div>
-        {children}
 
+        <div className="ml-auto"></div>
+        {children}
         <DataTableViewOptions table={table} />
       </div>
     </div>

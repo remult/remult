@@ -22,24 +22,44 @@ export type Priority = (typeof priorityOptions)[number]
 
 @Entity('tasks', {
   allowApiCrud: true,
-  dbName: 'shadcn_tasks',
 })
 export class Task {
   @Fields.cuid()
   id = ''
-  @Fields.string({ caption: 'Task', validate: Validators.unique })
+  @Fields.string<Task>({
+    caption: 'Task',
+    validate: Validators.unique,
+    allowApiUpdate: false,
+    saving: async (task, e) => {
+      if (!task.code) {
+        const maxTaskCodeRow = await e.entityRef.repository.findOne({
+          orderBy: { code: 'desc' },
+        })
+        task.code = `TASK-${(
+          parseInt(maxTaskCodeRow?.code?.split('-')[1] || '0') + 1
+        )
+          .toString()
+          .padStart(4, '0')}`
+      }
+    },
+  })
   code = ''
-  @Fields.string()
+  @Fields.string({
+    validate: Validators.required,
+  })
   title = ''
   @Fields.literal(() => statusOptions, {
+    validate: Validators.required,
     displayValue: (_, value) => capitalize(value),
   })
   status: Status = 'todo'
   @Fields.literal(() => labelOptions, {
+    validate: Validators.required,
     displayValue: (_, value) => capitalize(value),
   })
   label: Label = 'bug'
   @Fields.literal(() => priorityOptions, {
+    validate: Validators.required,
     displayValue: (_, value) => capitalize(value),
   })
   priority: Priority = 'low'
