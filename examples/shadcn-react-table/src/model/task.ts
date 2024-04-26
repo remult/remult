@@ -1,24 +1,8 @@
 import { Entity, Fields, Validators } from 'remult'
 import { capitalize } from '../lib/utils.ts'
-
-export const statusOptions = [
-  'todo',
-  'in-progress',
-  'done',
-  'canceled',
-] as const
-export type Status = (typeof statusOptions)[number]
-
-export const labelOptions = [
-  'bug',
-  'feature',
-  'enhancement',
-  'documentation',
-] as const
-export type Label = (typeof labelOptions)[number]
-
-export const priorityOptions = ['low', 'medium', 'high'] as const
-export type Priority = (typeof priorityOptions)[number]
+import { statusOptions, type Status } from './status.ts'
+import { labelOptions, type Label } from './label.ts'
+import { priorityOptions, type Priority } from './priority.ts'
 
 @Entity('tasks', {
   allowApiCrud: true,
@@ -31,6 +15,7 @@ export class Task {
     validate: Validators.unique,
     allowApiUpdate: false,
     saving: async (task, e) => {
+      // Generate a unique code for the task
       if (!task.code) {
         const maxTaskCodeRow = await e.entityRef.repository.findOne({
           orderBy: { code: 'desc' },
@@ -52,13 +37,13 @@ export class Task {
     validate: Validators.required,
     displayValue: (_, value) => capitalize(value),
   })
-  status: Status = 'todo'
-  @Fields.literal(() => labelOptions, {
+  label: Label = 'bug'
+  @Fields.literal(() => priorityOptions, {
     validate: Validators.required,
     displayValue: (_, value) => capitalize(value),
   })
-  label: Label = 'bug'
-  @Fields.literal(() => priorityOptions, {
+  status: Status = 'todo'
+  @Fields.literal(() => labelOptions, {
     validate: Validators.required,
     displayValue: (_, value) => capitalize(value),
   })

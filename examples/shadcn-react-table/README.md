@@ -1,13 +1,26 @@
 # Shadcn React Table
 
-This examples demos server side sorting / filtering / paging using remult with shadcn design
-
 [Open in stackblitz](https://stackblitz.com/github/remult/remult/tree/main/examples/shadcn-react-table)
 
-Based on Shadcn tasks example:
-https://ui.shadcn.com/examples/tasks
-and this table example
-https://table.sadmn.com/
+This examples demos:
+
+- Typed Server side sorting, filtering & paging from the frontend
+- Full CRUD capabilities
+- Single source of truth for:
+  - typing
+  - Database structure
+  - rest api
+  - frontend & api validation
+  - Frontend query language
+  - UI metadata (grid columns, and form fields)
+- live query
+- Using remult with react-hook-forms
+- remult admin (`/api/admin`)
+
+## Inspired by
+
+- https://ui.shadcn.com/examples/tasks
+- https://table.sadmn.com/
 
 To run this example:
 
