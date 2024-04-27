@@ -1,7 +1,5 @@
 import * as React from 'react'
 import { TrashIcon } from '@radix-ui/react-icons'
-import { type Row } from '@tanstack/react-table'
-
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
