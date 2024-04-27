@@ -826,6 +826,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //p1 - consider upsert (where,set)
 //p1 - consider id to also support keyof (id:['company','index'])
 //p1 - wait a second to close stream
+//p1 - fix in error to hae a colon at it's end
 //p1 - add solid tutorial to the getting started page
 //p1 - update the examples section
 //p1 - support dbnamesof in sqlexpression of entity
