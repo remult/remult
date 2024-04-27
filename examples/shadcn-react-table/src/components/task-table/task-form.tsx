@@ -19,15 +19,11 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import {
-  Task,
-  labelOptions,
-  priorityOptions,
-  statusOptions,
-} from '../../model/task.ts'
-import { getValueList, repo } from 'remult'
+import { Task } from '../../model/task.ts'
+import { repo, type ValueListItem } from 'remult'
 import { repoResolver } from '../../lib/repo-resolver.ts'
 import { fieldsOf } from '../../lib/use-remult-react-table.ts'
+import { getFieldSelectInfo } from '../../lib/valueListFieldTypeHelpers.ts'
 
 export function TaskForm({
   onSubmit,
@@ -69,42 +65,49 @@ export function TaskForm({
             </FormItem>
           )}
         />
-        {fieldsOf(repo(Task), 'label', 'status', 'priority').map((meta) => (
-          <FormField
-            key={meta.key}
-            control={form.control}
-            name={meta.key as keyof Task}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{meta.caption}</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value as string}
-                >
-                  <FormControl>
-                    <SelectTrigger className="capitalize">
-                      <SelectValue placeholder={'Select a ' + meta.caption} />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectGroup>
-                      {getValueList(meta).map((item) => (
-                        <SelectItem
-                          key={item}
-                          value={item}
-                          className="capitalize"
-                        >
-                          {item}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        ))}
+        {fieldsOf(repo(Task), 'label', 'status', 'priority').map((meta) => {
+          const selectInfo = getFieldSelectInfo(meta)
+          return (
+            <FormField
+              key={meta.key}
+              control={form.control}
+              name={meta.key as keyof Task}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{meta.caption}</FormLabel>
+                  <Select
+                    onValueChange={(id) =>
+                      field.onChange(selectInfo?.idFromValue(id))
+                    }
+                    defaultValue={selectInfo?.idFromValue(field.value)}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="capitalize">
+                        <SelectValue placeholder={'Select a ' + meta.caption} />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectGroup>
+                        {selectInfo
+                          ?.getValueList()
+                          .map((item: ValueListItem) => (
+                            <SelectItem
+                              key={item.id}
+                              value={item.id}
+                              className="capitalize"
+                            >
+                              {item.caption}
+                            </SelectItem>
+                          ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )
+        })}
 
         <DialogFooter className="gap-2 pt-2 sm:space-x-0">
           <DialogClose asChild>

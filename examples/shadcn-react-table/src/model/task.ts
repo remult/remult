@@ -1,8 +1,8 @@
-import { Entity, Fields, Validators } from 'remult'
+import { Entity, Field, Fields, Validators } from 'remult'
 import { capitalize } from '../lib/utils.ts'
 import { statusOptions, type Status } from './status.ts'
 import { labelOptions, type Label } from './label.ts'
-import { priorityOptions, type Priority } from './priority.ts'
+import { Priority } from './priority.ts'
 
 @Entity('tasks', {
   allowApiCrud: true,
@@ -33,21 +33,23 @@ export class Task {
     validate: Validators.required,
   })
   title = ''
-  @Fields.literal(() => statusOptions, {
-    validate: Validators.required,
-    displayValue: (_, value) => capitalize(value),
-  })
-  label: Label = 'bug'
-  @Fields.literal(() => priorityOptions, {
-    validate: Validators.required,
-    displayValue: (_, value) => capitalize(value),
-  })
-  status: Status = 'todo'
   @Fields.literal(() => labelOptions, {
     validate: Validators.required,
     displayValue: (_, value) => capitalize(value),
   })
-  priority: Priority = 'low'
+  label: Label = 'bug'
+
+  @Fields.literal(() => statusOptions, {
+    validate: Validators.required,
+    displayValue: (_, value) => capitalize(value),
+  })
+  status: Status = 'todo'
+
+  @Field(() => Priority, {
+    validate: Validators.required,
+  })
+  priority = Priority.low
+
   @Fields.date({
     dbName: 'created_at',
     allowApiUpdate: false,

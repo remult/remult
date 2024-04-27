@@ -27,6 +27,7 @@ import { getValueList, repo } from 'remult'
 import { toast } from 'sonner'
 import { getErrorMessage } from '../../lib/utils.ts'
 import { DeleteTasksDialog } from './delete-task-dialog.tsx'
+import { getFieldSelectInfo } from '../../lib/valueListFieldTypeHelpers.ts'
 
 interface TasksTableFloatingBarProps {
   table: Table<Task>
@@ -62,6 +63,7 @@ export function TasksTableFloatingBar({
       )
     })
   }
+  const prioritySelectInfo = getFieldSelectInfo(repo(Task).fields.priority)!
 
   return (
     <div className="fixed inset-x-0 bottom-4 z-50 w-full px-4">
@@ -130,8 +132,10 @@ export function TasksTableFloatingBar({
               </SelectContent>
             </Select>
             <Select
-              onValueChange={(priority: Task['priority']) =>
-                updateTasks({ priority })
+              onValueChange={(priority) =>
+                updateTasks({
+                  priority: prioritySelectInfo?.valueFromId(priority),
+                })
               }
             >
               <Tooltip>
@@ -153,13 +157,9 @@ export function TasksTableFloatingBar({
               </Tooltip>
               <SelectContent align="center">
                 <SelectGroup>
-                  {getValueList(repo(Task).fields.priority).map((priority) => (
-                    <SelectItem
-                      key={priority}
-                      value={priority}
-                      className="capitalize"
-                    >
-                      {priority}
+                  {prioritySelectInfo.getValueList().map(({ id, caption }) => (
+                    <SelectItem key={id} value={id}>
+                      {caption}
                     </SelectItem>
                   ))}
                 </SelectGroup>

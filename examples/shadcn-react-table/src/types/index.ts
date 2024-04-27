@@ -23,6 +23,6 @@ export interface DataTableFilterOption<TData> {
   caption: string
   key: keyof TData
   options: Option[]
-  filterValues?: string[]
+  filterValues?: any[]
   filterOperator?: FilterOperator
 }

@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/select'
 
 import { DataTableAdvancedFacetedFilter } from './data-table-advanced-faceted-filter'
+import { getFieldSelectInfo } from '../../lib/valueListFieldTypeHelpers.ts'
 
 interface DataTableFilterItemProps<TData> {
   table: Table<TData>
@@ -58,18 +59,19 @@ export function DataTableFilterItem<TData>({
   const debounceValue = useDebounce(value, 500)
   const [open, setOpen] = React.useState(defaultOpen)
   const [selectedOperator, setSelectedOperator] = React.useState(
-    operators.find(
-      (c) =>
-        selectedOptions.find((item) => item.key === column?.id)?.filterOperator,
-    ) ?? operators[0],
+    selectedOptions.find((item) => item.key === column?.id)?.filterOperator ??
+      operators[0],
   )
 
   // Update query string
   React.useEffect(() => {
     let filterValue = undefined
-    if (filterValues.length > 0)
-      filterValue = selectedOperator.process(filterValues)
-    else if (debounceValue) {
+    if (filterValues.length > 0) {
+      const selectInfo = getFieldSelectInfo(column?.columnDef?.meta?.field)
+      filterValue = selectedOperator.process(
+        filterValues.map((f) => selectInfo?.valueFromId(f)),
+      )
+    } else if (debounceValue) {
       filterValue = selectedOperator.process(debounceValue)
     } else if (selectedOperator.applyWhenNoValue) {
       filterValue = selectedOperator.process('')
