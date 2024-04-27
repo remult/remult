@@ -33,17 +33,17 @@ export class Task {
     validate: Validators.required,
   })
   title = ''
-  @Fields.literal(() => statusOptions, {
+  @Fields.literal(() => labelOptions, {
     validate: Validators.required,
     displayValue: (_, value) => capitalize(value),
   })
   label: Label = 'bug'
-  @Fields.literal(() => priorityOptions, {
+  @Fields.literal(() => statusOptions, {
     validate: Validators.required,
     displayValue: (_, value) => capitalize(value),
   })
   status: Status = 'todo'
-  @Fields.literal(() => labelOptions, {
+  @Fields.literal(() => priorityOptions, {
     validate: Validators.required,
     displayValue: (_, value) => capitalize(value),
   })
