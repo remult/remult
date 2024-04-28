@@ -57,8 +57,18 @@ Can also be set to an arrow function for fine grained control
    
    #### example:
    ```ts
-   allowed: ()=> remult.isAllowed('admin')
+   admin: true
    ```
+   
+   
+   #### example:
+   ```ts
+   admin: ()=> remult.isAllowed('admin')
+   ```
+   
+   
+   #### see:
+   [allowed](http://remult.dev/docs/allowed.html)
 ## queueStorage
 Storage to use for backend methods that use queue
 ## error

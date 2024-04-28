@@ -825,22 +825,18 @@ export type ClassFieldDecorator<entityType, valueType> = (
   }))
 */
 
-//p1 - support dbnamesof in sqlexpression of entity
-//p1 - fix in error to have a colon at it's end
-//y1 - consider id to also support keyof (id:['company','index']) - had problem with | (keyof Partial<entityType>)[] & `entity`
+//p1 - adjust react tutorial to esm
 //p1 - add solid tutorial to the getting started page
 //p1 - update the examples section
-//p1 - adjust sql expression of entity docs to include a union example
 //p1 - add documentation for bun sqlite
 //p1 - consider upsert (where,set)
 //p1 - wait a second to close stream
-//p1 - adjust react tutorial to esm
+//y1 - consider id to also support keyof (id:['company','index']) - had problem with | (keyof Partial<entityType>)[] & `entity`
 
 //p1 - describe entity
 //p1 - prepare the createEntity discussion
 
 //p1 - write active record article
-//p1 - maybe add decorator comment in the readme as well (I heard you've lost me in decorators) - and improve the describeClass function
 //p1 - return error on connection error
 //p1 - consider including the admin in the tutorial - and maybe even in the demo when we setup the api
 //p1 - reconsider key typing to be keyof & string

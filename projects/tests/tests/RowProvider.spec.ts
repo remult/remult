@@ -113,9 +113,9 @@ describe('Closed List  column', () => {
     }
     await expect(() => e.save()).rejects.toThrowErrorMatchingInlineSnapshot(`
       {
-        "message": "L: Value must be one of 0, 10, 20",
+        "message": "L: Value must be one of: 0, 10, 20",
         "modelState": {
-          "l": "Value must be one of 0, 10, 20",
+          "l": "Value must be one of: 0, 10, 20",
         },
       }
     `)

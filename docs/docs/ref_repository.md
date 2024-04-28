@@ -472,7 +472,7 @@ Arguments:
       
       #### see:
       [EntityFilter](http://remult.dev/docs/entityFilter.html)
-* **item**
+   * **set**
 ## delete
 Deletes an Item
 

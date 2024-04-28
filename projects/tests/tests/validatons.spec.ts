@@ -366,9 +366,9 @@ describe('validation tests', () => {
         .insert({ id: 4 }),
     ).rejects.toThrowErrorMatchingInlineSnapshot(`
       {
-        "message": "Id: Value must be one of 1, 2, 3",
+        "message": "Id: Value must be one of: 1, 2, 3",
         "modelState": {
-          "id": "Value must be one of 1, 2, 3",
+          "id": "Value must be one of: 1, 2, 3",
         },
       }
     `)
@@ -410,9 +410,9 @@ describe('validation tests', () => {
         .insert({ id: 'newxxx' as any }),
     ).rejects.toThrowErrorMatchingInlineSnapshot(`
       {
-        "message": "Id: Value must be one of new, old, used",
+        "message": "Id: Value must be one of: new, old, used",
         "modelState": {
-          "id": "Value must be one of new, old, used",
+          "id": "Value must be one of: new, old, used",
         },
       }
     `)

@@ -336,7 +336,14 @@ export async function entityDbName(
     if (typeof metadata.options.sqlExpression === 'string')
       return metadata.options.sqlExpression
     else if (typeof metadata.options.sqlExpression === 'function') {
-      return await metadata.options.sqlExpression(metadata)
+      const prev = metadata.options.sqlExpression
+      try {
+        metadata.options.sqlExpression =
+          "recursive sqlExpression call for entity '" + metadata.key + "'. "
+        return await prev(metadata)
+      } finally {
+        metadata.options.sqlExpression = prev
+      }
     }
   }
   return wrapIdentifier(metadata.dbName)

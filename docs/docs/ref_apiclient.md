@@ -34,15 +34,22 @@ logic before each HTTP call, such as adding authorization headers.
    #### example:
    ```ts
    // Adding bearer token authorization
-   remult.apiClient.httpClient = (input: RequestInfo | URL, init?: RequestInit) => {
+   remult.apiClient.httpClient = (
+     input: RequestInfo | URL,
+     init?: RequestInit
+   ) => {
      return fetch(input, {
        ...init,
-       headers: {
-         authorization: 'Bearer ' + sessionStorage.sessionId,
-       },
+       headers: authToken
+         ? {
+             ...init?.headers,
+             authorization: 'Bearer ' + authToken,
+           }
+         : init?.headers,
+   
        cache: 'no-store',
-     });
-   };
+     })
+   }
    ```
 ## url
 The base URL for making API calls. By default, it is set to '/api'. It can be modified to be relative

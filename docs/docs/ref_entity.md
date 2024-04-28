@@ -119,7 +119,7 @@ rules or adjust the filter based on the current context or specific request.
 
 Arguments:
 * **filter** - The initial EntityFilter for the entity type.
-* **info** - Additional information and utilities for preprocessing the filter.
+* **event** - Additional information and utilities for preprocessing the filter.
 ## backendPreprocessFilter
 Similar to apiPreprocessFilter, but for backend operations.
    
@@ -129,7 +129,7 @@ Similar to apiPreprocessFilter, but for backend operations.
 
 Arguments:
 * **filter** - The initial EntityFilter for the entity type.
-* **info** - Additional information and utilities for preprocessing the filter.
+* **event** - Additional information and utilities for preprocessing the filter.
 ## backendPrefilter
 A filter that will be used for all queries from this entity both from the API and from within the backend.
    
@@ -261,6 +261,21 @@ If no name is set, the `key` will be used instead.
    ```
 ## sqlExpression
 For entities that are based on SQL expressions instead of a physical table or view
+   
+   
+   #### example:
+   ```ts
+   @Entity('people',{
+   sqlExpression:`select id,name from employees
+        union all select id,name from contractors`,
+   })
+   export class Person{
+   @Fields.string()
+   id=''
+   @Fields.string()
+   name=''
+   }
+   ```
 ## id
 An arrow function that identifies the `id` column to use for this entity
    
