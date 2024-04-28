@@ -308,7 +308,7 @@ with a Node.js Express backend.
 - [Tutorial with Vue](https://remult.dev/tutorials/vue/)
 - [Tutorial with Next.js](https://remult.dev/tutorials/react-next/)
 - [Tutorial with Sveltekit](https://remult.dev/tutorials/sveltekit/)
-- [Tutorial with SolidStart](https://remult.dev/tutorials/react-next/)
+- [Tutorial with SolidStart](https://remult.dev/tutorials/solid-start/)
 
 ## Demo
 
