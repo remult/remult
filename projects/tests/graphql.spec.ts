@@ -11,7 +11,7 @@ import {
   describeClass,
 } from '../core'
 import { remultGraphql, translateWhereToRestBody } from '../core/graphql'
-import { createEntity } from './tests/dynamic-classes'
+import { entity } from './tests/dynamic-classes'
 
 @Entity('categoriesmore', {
   allowApiCrud: true,
@@ -1764,7 +1764,7 @@ describe('graphql', () => {
     `)
   })
   it('test naming issue', async () => {
-    const C = createEntity('ContactTag', {
+    const C = entity('ContactTag', {
       id: Fields.number(),
     })
 

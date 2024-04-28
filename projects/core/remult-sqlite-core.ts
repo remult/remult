@@ -103,7 +103,7 @@ export class SqliteCoreDataProvider
         result += '\r\n  '
         if (isAutoIncrement(x)) {
           if (x.key != entity.idMetadata.field.key)
-            throw 'in web sql, autoincrement is only allowed for primary key'
+            throw 'in sqlite, autoincrement is only allowed for primary key'
           result += e.$dbNameOf(x) + ' integer primary key autoincrement'
         } else {
           result += this.addColumnSqlSyntax(x, e.$dbNameOf(x))

@@ -1,4 +1,3 @@
-import { CompoundIdField } from '../CompoundIdField.js'
 import type {
   DataProvider,
   EntityDataProvider,
@@ -328,14 +327,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
         let first = true
         let segs: SortSegment[] = []
         for (const s of options.orderBy.Segments) {
-          if (s.field instanceof CompoundIdField) {
-            segs.push(
-              ...s.field.fields.map((c) => ({
-                field: c,
-                isDescending: s.isDescending,
-              })),
-            )
-          } else segs.push(s)
+          segs.push(s)
         }
         for (const c of segs) {
           if (first) {
@@ -414,8 +406,6 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     let added = false
 
     for (const x of this.entity.fields) {
-      if (x instanceof CompoundIdField) {
-      }
       if (isDbReadonly(x, e)) {
       } else if (data[x.key] !== undefined) {
         let v = x.valueConverter.toDb(data[x.key])

@@ -218,6 +218,7 @@ export interface IdMetadata<entityType = any> {
    */
   getId(item: Partial<MembersOnly<entityType>>): any
   field: FieldMetadata<any>
+  fields: FieldMetadata<unknown>[]
   getIdFilter(...ids: any[]): EntityFilter<entityType>
   isIdField(col: FieldMetadata): boolean
   createIdInFilter(
@@ -824,9 +825,9 @@ export type ClassFieldDecorator<entityType, valueType> = (
   }))
 */
 //p1 - consider upsert (where,set)
-//p1 - consider id to also support keyof (id:['company','index'])
+//y1 - consider id to also support keyof (id:['company','index']) - had problem with | (keyof Partial<entityType>)[] & `entity`
 //p1 - wait a second to close stream
-//p1 - fix in error to hae a colon at it's end
+//p1 - fix in error to have a colon at it's end
 //p1 - add solid tutorial to the getting started page
 //p1 - update the examples section
 //p1 - support dbnamesof in sqlexpression of entity

@@ -22,7 +22,7 @@ export declare type InferredType<type> = {
   [member in keyof type]: InferMemberType<type[member]>
 }
 
-export function createEntity<T>(
+export function entity<T>(
   key: string,
   members: T,
   options?: EntityOptions<InferredType<T>>,
@@ -36,11 +36,11 @@ export function createEntity<T>(
 }
 
 function test() {
-  const Category = createEntity('c', {
+  const Category = entity('c', {
     id: Fields.cuid(),
     name: Fields.string(),
   })
-  const Task = createEntity(
+  const Task = entity(
     'c',
     {
       id: Fields.cuid(),

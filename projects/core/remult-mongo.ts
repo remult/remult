@@ -14,14 +14,13 @@ import type {
   FieldMetadata,
   Remult,
 } from './index.js'
-import { CompoundIdField, Filter } from './index.js'
+import { Filter } from './index.js'
 import type { EntityDbNamesBase } from './src/filter/filter-consumer-bridge-to-sql-request.js'
 import { dbNamesOf } from './src/filter/filter-consumer-bridge-to-sql-request.js'
 import type { FilterConsumer } from './src/filter/filter-interfaces.js'
 import { remult as remultContext } from './src/remult-proxy.js'
 import type { RepositoryOverloads } from './src/remult3/RepositoryImplementation.js'
 import { getRepository } from './src/remult3/RepositoryImplementation.js'
-import { resultCompoundIdFilter } from './src/resultCompoundIdFilter.js'
 import { getRepositoryInternals } from './src/remult3/repository-internals.js'
 
 export class MongoDataProvider implements DataProvider {
@@ -154,11 +153,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
     let resultFilter = this.entity.idMetadata.getIdFilter(id)
     if (data.id != undefined)
       resultFilter = this.entity.idMetadata.getIdFilter(data.id)
-    for (const x of this.entity.fields) {
-      if (x instanceof CompoundIdField) {
-        resultFilter = resultCompoundIdFilter(x, id, data)
-      }
-    }
+
     let newR = {}
     let keys = Object.keys(data)
     for (const f of this.entity.fields) {

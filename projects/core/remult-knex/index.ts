@@ -17,8 +17,6 @@ import {
   customDatabaseFilterToken,
   Filter,
 } from '../src/filter/filter-interfaces.js'
-
-import { CompoundIdField } from '../src/CompoundIdField.js'
 import type { FieldMetadata } from '../src/column-interfaces.js'
 import type {
   DataProvider,
@@ -34,7 +32,6 @@ import {
 } from '../src/remult3/RepositoryImplementation.js'
 import { Sort } from '../src/sort.js'
 import { ValueConverters } from '../src/valueConverters.js'
-import { resultCompoundIdFilter as resultCompoundIdFilter } from '../src/resultCompoundIdFilter.js'
 import type { StringFieldOptions } from '../src/remult3/Fields.js'
 import { getRepositoryInternals } from '../src/remult3/repository-internals.js'
 import { remultStatic } from '../src/remult-static.js'
@@ -311,19 +308,12 @@ class KnexEntityDataProvider implements EntityDataProvider {
   async insert(data: any): Promise<any> {
     const e = await this.init()
     let resultFilter: Filter
-    if (this.entity.idMetadata.field instanceof CompoundIdField)
-      resultFilter = resultCompoundIdFilter(
-        this.entity.idMetadata.field,
-        undefined,
-        data,
-      )
-    else
-      resultFilter = Filter.fromEntityFilter(
-        this.entity,
-        this.entity.idMetadata.getIdFilter(
-          data[this.entity.idMetadata.field.key],
-        ),
-      )
+    resultFilter = Filter.fromEntityFilter(
+      this.entity,
+      this.entity.idMetadata.getIdFilter(
+        data[this.entity.idMetadata.field.key],
+      ),
+    )
     let insertObject = {}
     for (const x of this.entity.fields) {
       if (isDbReadonly(x, e)) {
@@ -556,10 +546,10 @@ export class KnexSchemaBuilder {
               b,
               supportsJsonDataStorage(this.knex),
             )
-            if (x == entity.idMetadata.field) b.primary([cols.get(x)!.name])
           }
         }
       }
+      b.primary(entity.idMetadata.fields.map((f) => e.$dbNameOf(f)))
     })
   }
 

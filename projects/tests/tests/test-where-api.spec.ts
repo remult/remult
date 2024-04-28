@@ -28,7 +28,7 @@ import { Done } from './Done'
 import { TestDataApiResponse } from './TestDataApiResponse'
 import { entityForrawFilter } from './entityForCustomFilter'
 import { testRestDb } from './testHelper'
-import { createEntity } from './dynamic-classes'
+import { entity } from './dynamic-classes'
 import { Language, insertFourRows } from './entities-for-tests.js'
 import { Relations } from '../../core/index.js'
 
@@ -632,7 +632,7 @@ describe('missing fields are added in array column', async () => {
     ).toMatchInlineSnapshot('"completed = true"')
   })
   it('test toToRawFilter and api prefilter', async () => {
-    const e = createEntity(
+    const e = entity(
       'tasks',
       {
         id: Fields.number(),
