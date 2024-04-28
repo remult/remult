@@ -826,6 +826,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 */
 
 //p1 - adjust react tutorial to esm
+//p1 - fix next tutorial to work
 //p1 - add solid tutorial to the getting started page
 //p1 - update the examples section
 //p1 - add documentation for bun sqlite
