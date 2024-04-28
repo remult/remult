@@ -642,7 +642,19 @@ export interface EntityOptions<entityType = any> {
    * dbName:'public."myProducts"'
    */
   dbName?: string
-  /** For entities that are based on SQL expressions instead of a physical table or view*/
+  /** For entities that are based on SQL expressions instead of a physical table or view
+   * @example
+   * .@Entity('people',{
+   * sqlExpression:`select id,name from employees
+   *      union all select id,name from contractors`,
+   * })
+   * export class Person{
+   * .@Fields.string()
+   * id=''
+   * .@Fields.string()
+   * name=''
+   * }
+   */
   sqlExpression?:
     | string
     | ((entity: EntityMetadata<entityType>) => string | Promise<string>)
@@ -2029,12 +2041,10 @@ export interface Repository<entityType> {
   /**
    * Updates all items that match the `where` condition.
    */
-  updateMany(
-    options: {
-      where: EntityFilter<entityType>
-    },
-    item: Partial<MembersOnly<entityType>>,
-  ): Promise<number>
+  updateMany(options: {
+    where: EntityFilter<entityType>
+    set: Partial<MembersOnly<entityType>>
+  }): Promise<number>
   /** Deletes an Item*/
   delete(id: idType<entityType>): Promise<void>
   delete(item: Partial<MembersOnly<entityType>>): Promise<void>
