@@ -12,7 +12,7 @@ import {
 import type { ClassType } from '../../core/classType'
 import { allDbTests } from './shared-tests'
 import { MockRestDataProvider } from '../tests/testHelper'
-import { createEntity } from '../tests/dynamic-classes'
+import { entity } from '../tests/dynamic-classes'
 
 describe('Rest', () => {
   var db: DataProvider
@@ -47,7 +47,7 @@ describe('Rest', () => {
     },
   )
   it('test api allowed', async () => {
-    const task = createEntity('tasks', {
+    const task = entity('tasks', {
       id: Fields.integer(),
       title: Fields.string({ includeInApi: false }),
       done: Fields.boolean(),
@@ -62,7 +62,7 @@ describe('Rest', () => {
     `)
   })
   it('test api allowed with condition', async () => {
-    const task = createEntity('tasks', {
+    const task = entity('tasks', {
       id: Fields.integer(),
       title: Fields.string({ includeInApi: (t: { id: number }) => t.id == 1 }),
       done: Fields.boolean(),
@@ -87,7 +87,7 @@ describe('Rest', () => {
     `)
   })
   it('test api allowed only for new rows', async () => {
-    const task = createEntity(
+    const task = entity(
       'tasks',
       {
         id: Fields.integer(),
@@ -118,7 +118,7 @@ describe('Rest', () => {
     `)
   })
   it('test forbidden on saving', async () => {
-    const task = createEntity(
+    const task = entity(
       'tasks',
       {
         id: Fields.integer(),
@@ -141,7 +141,7 @@ describe('Rest', () => {
     `)
   })
   it('test forbidden on apiPreprocessFilter', async () => {
-    const task = createEntity(
+    const task = entity(
       'tasks',
       {
         id: Fields.integer(),
@@ -171,7 +171,7 @@ describe('Rest', () => {
     `)
   })
   it('test forbidden on apiPreprocessFilter', async () => {
-    const task = createEntity(
+    const task = entity(
       'tasks',
       {
         id: Fields.integer(),

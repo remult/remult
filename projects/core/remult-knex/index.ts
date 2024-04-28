@@ -546,6 +546,10 @@ export class KnexSchemaBuilder {
     }
 
     return this.knex.schema.createTable(e.$entityName, (b) => {
+      let idFields = [entity.idMetadata.field]
+      if (entity.idMetadata.field instanceof CompoundIdField) {
+        idFields = entity.idMetadata.field.fields
+      }
       for (const x of entity.fields) {
         if (!cols.get(x)!.readonly || isAutoIncrement(x)) {
           if (isAutoIncrement(x)) b.increments(cols.get(x)!.name)
@@ -556,10 +560,10 @@ export class KnexSchemaBuilder {
               b,
               supportsJsonDataStorage(this.knex),
             )
-            if (x == entity.idMetadata.field) b.primary([cols.get(x)!.name])
           }
         }
       }
+      b.primary(idFields.map((f) => f.key))
     })
   }
 

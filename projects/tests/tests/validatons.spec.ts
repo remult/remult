@@ -16,7 +16,7 @@ import {
   createValueValidatorWithArgs,
 } from '../../core/src/validators'
 import { beforeEach } from 'vitest'
-import { createEntity } from './dynamic-classes'
+import { entity } from './dynamic-classes'
 import { validateHeaderName } from 'http'
 import { cast } from '../../core/src/isOfType.js'
 import { ValueConverters } from '../../core/index.js'
@@ -357,7 +357,7 @@ describe('validation tests', () => {
     await expect(async () =>
       remult
         .repo(
-          createEntity('x', {
+          entity('x', {
             id: Fields.number({
               validate: Validators.in([1, 2, 3]),
             }),
@@ -377,7 +377,7 @@ describe('validation tests', () => {
     await expect(async () =>
       remult
         .repo(
-          createEntity('x', {
+          entity('x', {
             id: Fields.number({
               validate: Validators.in(
                 [1, 2, 3],
@@ -401,7 +401,7 @@ describe('validation tests', () => {
     await expect(async () =>
       remult
         .repo(
-          createEntity('x', {
+          entity('x', {
             id: Fields.object<any, (typeof optionalValues)[number]>({
               validate: Validators.in(optionalValues),
             }),
@@ -422,7 +422,7 @@ describe('validation tests', () => {
     await expect(
       await remult
         .repo(
-          createEntity('x', {
+          entity('x', {
             id: Fields.object<any, (typeof optionalValues)[number]>({
               validate: Validators.in(optionalValues),
             }),
@@ -440,7 +440,7 @@ describe('validation tests', () => {
     await expect(
       await remult
         .repo(
-          createEntity('x', {
+          entity('x', {
             id: Fields.literal(() => optionalValues),
           }),
         )
@@ -453,7 +453,7 @@ describe('validation tests', () => {
   })
   it('getValueList works on literals', async () => {
     const repo = remult.repo(
-      createEntity('x', { id: Fields.literal(() => ['a', 'b', 'c'] as const) }),
+      entity('x', { id: Fields.literal(() => ['a', 'b', 'c'] as const) }),
     )
     const valueList = getValueList(repo.fields.id)
     expect(valueList).toEqual(['a', 'b', 'c'])
@@ -871,7 +871,7 @@ describe('validation tests', () => {
       async () =>
         await remult
           .repo(
-            createEntity('x', {
+            entity('x', {
               id: Fields.string({ validate: Validators.minLength(5) }),
             }),
           )
@@ -937,7 +937,7 @@ describe('validation tests', () => {
     await expect(() =>
       remult
         .repo(
-          createEntity('x', {
+          entity('x', {
             id: Fields.number({
               valueConverter: {
                 toJson: () => {
@@ -961,7 +961,7 @@ describe('validation tests', () => {
     await expect(() =>
       remult
         .repo(
-          createEntity('x', {
+          entity('x', {
             id: Fields.number({
               valueConverter: {
                 toJson: () => {
@@ -983,7 +983,7 @@ describe('validation tests', () => {
   })
   it('test unique works', async () => {
     const repo = remult.repo(
-      createEntity('x', {
+      entity('x', {
         id: Fields.string({ validate: Validators.unique }),
         name: Fields.string(),
       }),
@@ -994,7 +994,7 @@ describe('validation tests', () => {
   })
   it('test number with nan', async () => {
     const repo = remult.repo(
-      createEntity('x', {
+      entity('x', {
         id: Fields.number(),
       }),
     )
@@ -1010,7 +1010,7 @@ describe('validation tests', () => {
   })
   it('test number with nan and required', async () => {
     const repo = remult.repo(
-      createEntity('x', {
+      entity('x', {
         id: Fields.number({ validate: Validators.required }),
       }),
     )
@@ -1026,7 +1026,7 @@ describe('validation tests', () => {
   })
   it('test integer with nan', async () => {
     const repo = remult.repo(
-      createEntity('x', {
+      entity('x', {
         id: Fields.integer(),
       }),
     )

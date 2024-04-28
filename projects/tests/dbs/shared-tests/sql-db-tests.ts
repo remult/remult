@@ -1,6 +1,6 @@
 import { it, expect, describe, beforeEach } from 'vitest'
 import { DbTestProps } from './db-tests-props'
-import { createEntity as createEntityClass } from '../../tests/dynamic-classes'
+import { entity as createEntityClass } from '../../tests/dynamic-classes'
 import {
   Entity,
   Fields,

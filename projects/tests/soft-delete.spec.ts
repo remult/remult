@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest'
-import { createEntity } from './tests/dynamic-classes'
+import { entity } from './tests/dynamic-classes'
 import { Entity, Fields, InMemoryDataProvider, Remult, remult } from '../core'
 describe('soft delete', async () => {
   let repo = remult.repo

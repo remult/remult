@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import * as Knex from 'knex'
 import { knexTests } from './shared-tests/test-knex'
-import { createEntity as createEntityClass } from '../tests/dynamic-classes'
+import { entity as createEntityClass, entity } from '../tests/dynamic-classes'
 import { Entity, Fields, type DataProvider } from '../../core'
 import type {
   CanBuildMigrations,
@@ -52,6 +52,26 @@ describe.skipIf(!process.env['TESTS_SQL_SERVER'])('Knex Sql Server', () => {
           ),
         ).toMatchInlineSnapshot(
           '"ALTER TABLE [my] ADD [name] nvarchar(255) not null CONSTRAINT [my_name_default] DEFAULT \'\'"',
+        )
+      })
+      it.only('test primary key on multiple id column entity', async () => {
+        const e = await createEntity(
+          entity(
+            't',
+            {
+              id: Fields.number(),
+              id2: Fields.number(),
+              name: Fields.string(),
+            },
+            {
+              id: { id: true, id2: true },
+            },
+          ),
+        )
+        expect(
+          await testMigrationScript(getDb(), (m) => m.createTable(e.metadata)),
+        ).toMatchInlineSnapshot(
+          '"CREATE TABLE [t] ([id] decimal(18, 2) not null CONSTRAINT [t_id_default] DEFAULT \'0\', [id2] decimal(18, 2) not null CONSTRAINT [t_id2_default] DEFAULT \'0\', [name] nvarchar(255) not null CONSTRAINT [t_name_default] DEFAULT \'\', CONSTRAINT [t_pkey] PRIMARY KEY ([id], [id2]))"',
         )
       })
       it('test long number', async () => {

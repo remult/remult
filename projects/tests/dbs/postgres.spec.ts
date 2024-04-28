@@ -12,7 +12,7 @@ import {
   PostgresSchemaBuilder,
   createPostgresConnection,
 } from '../../core/postgres'
-import { createEntity as createEntityClass } from '../tests/dynamic-classes'
+import { entity as createEntityClass } from '../tests/dynamic-classes'
 
 import * as Knex from 'knex'
 import type { ClassType } from '../../core/classType'
