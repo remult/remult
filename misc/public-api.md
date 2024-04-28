@@ -1444,6 +1444,7 @@ export interface IdMetadata<entityType = any> {
    */
   getId(item: Partial<MembersOnly<entityType>>): any
   field: FieldMetadata<any>
+  fields: FieldMetadata<unknown>[]
   getIdFilter(...ids: any[]): EntityFilter<entityType>
   isIdField(col: FieldMetadata): boolean
   createIdInFilter(

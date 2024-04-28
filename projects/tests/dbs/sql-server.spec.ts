@@ -54,7 +54,7 @@ describe.skipIf(!process.env['TESTS_SQL_SERVER'])('Knex Sql Server', () => {
           '"ALTER TABLE [my] ADD [name] nvarchar(255) not null CONSTRAINT [my_name_default] DEFAULT \'\'"',
         )
       })
-      it.only('test primary key on multiple id column entity', async () => {
+      it('test primary key on multiple id column entity', async () => {
         const e = await createEntity(
           entity(
             't',
@@ -71,7 +71,7 @@ describe.skipIf(!process.env['TESTS_SQL_SERVER'])('Knex Sql Server', () => {
         expect(
           await testMigrationScript(getDb(), (m) => m.createTable(e.metadata)),
         ).toMatchInlineSnapshot(
-          '"CREATE TABLE [t] ([id] decimal(18, 2) not null CONSTRAINT [t_id_default] DEFAULT \'0\', [id2] decimal(18, 2) not null CONSTRAINT [t_id2_default] DEFAULT \'0\', [name] nvarchar(255) not null CONSTRAINT [t_name_default] DEFAULT \'\', CONSTRAINT [t_pkey] PRIMARY KEY ([id], [id2]))"',
+          "\"CREATE TABLE [t] ([id] decimal(18, 2) not null CONSTRAINT [t_id_default] DEFAULT '0', [id2] decimal(18, 2) not null CONSTRAINT [t_id2_default] DEFAULT '0', [name] nvarchar(255) not null CONSTRAINT [t_name_default] DEFAULT '', CONSTRAINT [t_pkey] PRIMARY KEY ([id], [id2]))\"",
         )
       })
       it('test long number', async () => {

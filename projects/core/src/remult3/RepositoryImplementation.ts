@@ -2357,6 +2357,11 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
       else return item[this.idMetadata.field.key]
     },
     field: undefined,
+    get fields() {
+      return this.field instanceof CompoundIdField
+        ? this.field.fields
+        : [this.field]
+    },
     createIdInFilter: (items: T[]): EntityFilter<any> => {
       if (items.length > 0)
         return {

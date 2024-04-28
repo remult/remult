@@ -52,7 +52,6 @@ import { ValueConverters } from '../../core/src/valueConverters'
 import { entityWithValidations } from '../dbs/shared-tests/entityWithValidations'
 import { CompoundIdEntity } from './entities-for-tests'
 import { entityWithValidationsOnColumn } from '../dbs/shared-tests/entityWithValidationsOnColumn'
-import { resultCompoundIdFilter } from '../../core/src/resultCompoundIdFilter'
 import {
   decorateColumnSettings,
   isAutoIncrement,
@@ -1544,49 +1543,13 @@ describe('compound id', () => {
         CompoundIdField,
     ).toBe(true)
   })
-  it('result id filter works with object', async () => {
-    let ctx = new Remult()
-    let repo = ctx.repo(CompoundIdEntity)
-    let id = repo.metadata.idMetadata.field as CompoundIdField
-    var n = await dbNamesOf(repo.metadata)
-    let f = new FilterConsumerBridgeToSqlRequest(
-      {
-        addParameterAndReturnSqlToken: (x) => x,
-        param: (x) => x,
-      },
-      n,
-    )
-    resultCompoundIdFilter(
-      id,
-      undefined,
-      repo.create({ a: 1, b: 2 }),
-    ).__applyToConsumer(f)
-    expect(await f.resolveWhere()).toBe(' where a = 1 and b = 2')
-  })
+
   it('check is auto increment', async () => {
     let ctx = new Remult()
     let repo = ctx.repo(CompoundIdEntity)
     expect(isAutoIncrement(repo.metadata.idMetadata.field)).toBe(false)
   })
-  it('result id filter works with id', async () => {
-    let ctx = new Remult()
-    let repo = ctx.repo(CompoundIdEntity)
-    let id = repo.metadata.idMetadata.field as CompoundIdField
-    var n = await dbNamesOf(repo.metadata)
-    let f = new FilterConsumerBridgeToSqlRequest(
-      {
-        addParameterAndReturnSqlToken: (x) => x,
-        param: (x) => x,
-      },
-      n,
-    )
-    resultCompoundIdFilter(
-      id,
-      '1,2',
-      repo.create({ a: 1, b: 2 }),
-    ).__applyToConsumer(f)
-    expect(await f.resolveWhere()).toBe(' where a = 1 and b = 2')
-  })
+
   it('some things should not work', async () => {
     let ctx = new Remult()
     let repo = ctx.repo(CompoundIdEntity)

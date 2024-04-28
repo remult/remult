@@ -12,7 +12,7 @@ import {
   PostgresSchemaBuilder,
   createPostgresConnection,
 } from '../../core/postgres'
-import { entity as createEntityClass } from '../tests/dynamic-classes'
+import { entity as createEntityClass, entity } from '../tests/dynamic-classes'
 
 import * as Knex from 'knex'
 import type { ClassType } from '../../core/classType'
@@ -21,6 +21,7 @@ import { allDbTests } from './shared-tests'
 import { entityWithValidations } from './shared-tests/entityWithValidations'
 import { knexTests } from './shared-tests/test-knex'
 import { SqlDbTests } from './shared-tests/sql-db-tests'
+import { testMigrationScript } from '../tests/testHelper.js'
 
 PostgresSchemaBuilder.logToConsole = false
 const postgresConnection = process.env.DATABASE_URL
@@ -62,6 +63,32 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
       return remult
     },
     createEntity,
+  })
+  it('test primary key on multiple id column entity', async () => {
+    const e = await createEntity(
+      entity(
+        't',
+        {
+          id: Fields.number(),
+          id2: Fields.number(),
+          name: Fields.string(),
+        },
+        {
+          id: { id: true, id2: true },
+        },
+      ),
+    )
+    expect(
+      await testMigrationScript(db, (m) => m.createTable(e.metadata)),
+    ).toMatchInlineSnapshot(`
+      "CREATE SCHEMA IF NOT EXISTS public;
+      CREATE table \\"t\\" (
+        \\"id\\" numeric default 0 not null,
+        \\"id2\\" numeric default 0 not null,
+        \\"name\\" varchar default '' not null,
+         primary key (\\"id\\",\\"id2\\")
+      )"
+    `)
   })
   it('test transactions and ddl', async () => {
     const db = SqlDatabase.getDb(remult.dataProvider)

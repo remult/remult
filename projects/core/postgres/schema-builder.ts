@@ -188,9 +188,11 @@ export class PostgresSchemaBuilder {
         else {
           result += postgresColumnSyntax(x, e.$dbNameOf(x))
         }
-        if (x == entity.idMetadata.field) result += ' primary key'
       }
     }
+    result += `,\r\n   primary key (${entity.idMetadata.fields
+      .map((f) => e.$dbNameOf(f))
+      .join(',')})`
 
     let sql = `CREATE SCHEMA IF NOT EXISTS ${this.schemaOnly(e)};
 CREATE table ${this.schemaAndName(e)} (${result}\r\n)`

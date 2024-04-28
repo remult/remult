@@ -1,4 +1,3 @@
-import { CompoundIdField } from '../src/CompoundIdField.js'
 import {
   type RelationFields,
   getRelationFieldInfo,
@@ -63,11 +62,9 @@ export function buildEntityInfo(options: AdminOptions) {
     let relations: EntityRelationToManyInfo[] = []
 
     let ids: Record<string, true> = {}
-    if (metadata.idMetadata.field instanceof CompoundIdField) {
-      for (const field of metadata.idMetadata.field.fields) {
-        ids[field.key] = true
-      }
-    } else ids[metadata.idMetadata.field.key] = true
+    for (const f of metadata.idMetadata.fields) {
+      ids[f.key] = true
+    }
 
     for (const x of metadata.fields.toArray()) {
       if (!x.includedInApi(undefined)) continue

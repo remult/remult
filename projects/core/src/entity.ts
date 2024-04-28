@@ -207,6 +207,7 @@ export interface EntityOptions<entityType = any> {
   id?:
     | EntityIdFields<entityType>
     | ((entity: FieldsMetadata<entityType>) => FieldMetadata | FieldMetadata[])
+
   entityRefInit?: (ref: EntityRef<entityType>, row: entityType) => void
   apiRequireId?: Allowed
 }
