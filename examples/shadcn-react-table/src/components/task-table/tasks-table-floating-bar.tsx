@@ -41,18 +41,16 @@ export function TasksTableFloatingBar({
   const [showDeleteTaskDialog, setShowDeleteTaskDialog] = React.useState(false)
 
   const [isPending, startTransition] = React.useTransition()
-  function updateTasks(value: Partial<Task>) {
+  function updateTasks(set: Partial<Task>) {
     startTransition(() => {
       toast.promise(
         repo(Task)
-          .updateMany(
-            {
-              where: {
-                id: rows.map((row) => row.original.id),
-              },
+          .updateMany({
+            where: {
+              id: rows.map((row) => row.original.id),
             },
-            value,
-          )
+            set,
+          })
           .then(reloadData),
         {
           loading: 'Updating...',

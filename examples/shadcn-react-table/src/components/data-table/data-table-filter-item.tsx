@@ -58,10 +58,8 @@ export function DataTableFilterItem<TData>({
   const debounceValue = useDebounce(value, 500)
   const [open, setOpen] = React.useState(defaultOpen)
   const [selectedOperator, setSelectedOperator] = React.useState(
-    operators.find(
-      (c) =>
-        selectedOptions.find((item) => item.key === column?.id)?.filterOperator,
-    ) ?? operators[0],
+    selectedOptions.find((item) => item.key === column?.id)?.filterOperator ??
+      operators[0],
   )
 
   // Update query string

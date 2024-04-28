@@ -10,7 +10,6 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-  CommandSeparator,
 } from '@/components/ui/command'
 import {
   Popover,
@@ -37,9 +36,6 @@ export function DataTableFilterCombobox<TData>({
 }: DataTableFilterComboboxProps<TData>) {
   const [value, setValue] = React.useState('')
   const [open, setOpen] = React.useState(false)
-  const [selectedOption, setSelectedOption] = React.useState<
-    DataTableFilterOption<TData>
-  >(options[0] ?? ({} as DataTableFilterOption<TData>))
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -69,8 +65,8 @@ export function DataTableFilterCombobox<TData>({
                 .filter(
                   (option) =>
                     !selectedOptions.some(
-                      (selectedOption) => selectedOption.key === option.key
-                    )
+                      (selectedOption) => selectedOption.key === option.key,
+                    ),
                 )
                 .map((option) => (
                   <CommandItem
@@ -80,7 +76,6 @@ export function DataTableFilterCombobox<TData>({
                     onSelect={(currentValue) => {
                       setValue(currentValue === value ? '' : currentValue)
                       setOpen(false)
-                      setSelectedOption(option)
                       setSelectedOptions((prev) => {
                         return [...prev, { ...option }]
                       })

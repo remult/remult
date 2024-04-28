@@ -1,10 +1,7 @@
 import * as React from 'react'
 import {
   flexRender,
-  getCoreRowModel,
-  useReactTable,
   type ColumnDef,
-  type DisplayColumnDef,
   type Table as TanstackTable,
 } from '@tanstack/react-table'
 

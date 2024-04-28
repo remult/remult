@@ -15,12 +15,12 @@ const selectableOperators = [
   },
   {
     label: 'Is empty',
-    process: (val: any) => null,
+    process: (_: any) => null,
     applyWhenNoValue: true,
   },
   {
     label: 'Is not empty',
-    process: (val: any) => ({ $ne: null }) satisfies ValueFilter<any>,
+    process: (_: any) => ({ $ne: null }) satisfies ValueFilter<any>,
     applyWhenNoValue: true,
   },
 ] satisfies FilterOperator[]
