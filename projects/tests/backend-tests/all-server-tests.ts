@@ -118,10 +118,10 @@ export function allServerTests(
     withRemultForTest(async () => {
       await create3Tasks()
       expect(
-        await repo(Task).updateMany(
-          { where: { title: ['a', 'c'] } },
-          { title: 'dd' },
-        ),
+        await repo(Task).updateMany({
+          where: { title: ['a', 'c'] },
+          set: { title: 'dd' },
+        }),
       ).toBe(2)
       expect(await repo(Task).count({ title: 'dd' })).toBe(2)
       expect(await repo(Task).count({ title: { '!=': 'dd' } })).toBe(1)
@@ -132,10 +132,10 @@ export function allServerTests(
     withRemultForTest(async () => {
       await create3Tasks()
       expect(
-        await repo(Task).updateMany(
-          { where: { title: { $ne: 'b' } } },
-          { title: 'dd' },
-        ),
+        await repo(Task).updateMany({
+          where: { title: { $ne: 'b' } },
+          set: { title: 'dd' },
+        }),
       ).toBe(2)
       expect(await repo(Task).count({ title: 'dd' })).toBe(2)
       expect(await repo(Task).count({ title: { '!=': 'dd' } })).toBe(1)
@@ -205,10 +205,10 @@ export function allServerTests(
     withRemultForTest(async () => {
       await create3Tasks()
       expect(
-        await repo(Task).updateMany(
-          { where: { $or: [{ title: 'a' }, { title: 'c' }] } },
-          { title: 'dd' },
-        ),
+        await repo(Task).updateMany({
+          where: { $or: [{ title: 'a' }, { title: 'c' }] },
+          set: { title: 'dd' },
+        }),
       ).toBe(2)
       expect(await repo(Task).count({ title: 'dd' })).toBe(2)
       expect(await repo(Task).count({ title: { '!=': 'dd' } })).toBe(1)

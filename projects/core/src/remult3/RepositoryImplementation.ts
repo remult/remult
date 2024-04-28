@@ -388,10 +388,13 @@ export class RepositoryImplementation<entityType>
       }
     }
   }
-  async updateMany(
-    { where }: { where: EntityFilter<entityType> },
-    set: Partial<MembersOnly<entityType>>,
-  ): Promise<number> {
+  async updateMany({
+    where,
+    set,
+  }: {
+    where: EntityFilter<entityType>
+    set: Partial<MembersOnly<entityType>>
+  }): Promise<number> {
     Filter.throwErrorIfFilterIsEmpty(where, 'updateMany')
     if (this._dataProvider.isProxy) {
       return (this._edp as any as ProxyEntityDataProvider).updateMany(

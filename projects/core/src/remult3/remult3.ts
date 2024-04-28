@@ -396,10 +396,10 @@ export interface Repository<entityType> {
   /**
    * Updates all items that match the `where` condition.
    */
-  updateMany(
-    options: { where: EntityFilter<entityType> },
-    item: Partial<MembersOnly<entityType>>,
-  ): Promise<number>
+  updateMany(options: {
+    where: EntityFilter<entityType>
+    set: Partial<MembersOnly<entityType>>
+  }): Promise<number>
 
   /** Deletes an Item*/
   delete(id: idType<entityType>): Promise<void>
@@ -824,16 +824,17 @@ export type ClassFieldDecorator<entityType, valueType> = (
     count:x.count()
   }))
 */
-//p1 - consider upsert (where,set)
-//y1 - consider id to also support keyof (id:['company','index']) - had problem with | (keyof Partial<entityType>)[] & `entity`
-//p1 - wait a second to close stream
+
+//p1 - support dbnamesof in sqlexpression of entity
 //p1 - fix in error to have a colon at it's end
+//y1 - consider id to also support keyof (id:['company','index']) - had problem with | (keyof Partial<entityType>)[] & `entity`
 //p1 - add solid tutorial to the getting started page
 //p1 - update the examples section
-//p1 - support dbnamesof in sqlexpression of entity
 //p1 - adjust sql expression of entity docs to include a union example
-//p1 - reconsider update many, maybe the second parameter should be in a set option - break existing - FIX SHADC TABLE DEMO!!
 //p1 - add documentation for bun sqlite
+//p1 - consider upsert (where,set)
+//p1 - wait a second to close stream
+//p1 - adjust react tutorial to esm
 
 //p1 - describe entity
 //p1 - prepare the createEntity discussion
@@ -942,5 +943,3 @@ export type ClassFieldDecorator<entityType, valueType> = (
 
 //[ ] V2 - what to do about for relations count?
 //[ ] V2 - condition? not to fetch if null etc....
-
-//p1 - adjust react tutorial to esm

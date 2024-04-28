@@ -1375,7 +1375,10 @@ describe('data api', () => {
       }
     `)
     await expect(() =>
-      r.updateMany({ where: { id: { '!=': -1 } } }, { categoryName: 'noam 1' }),
+      r.updateMany({
+        where: { id: { '!=': -1 } },
+        set: { categoryName: 'noam 1' },
+      }),
     ).rejects.toThrowErrorMatchingInlineSnapshot(`
     {
       "message": "Forbidden",

@@ -72,7 +72,7 @@ describe('test rest many operations', () => {
     `)
   })
   it('test update many without a filter shoud throw', async () => {
-    await expect(() => r.updateMany({ where: {} }, {})).rejects
+    await expect(() => r.updateMany({ where: {}, set: {} })).rejects
       .toThrowErrorMatchingInlineSnapshot(`
       {
         "httpStatusCode": 400,
@@ -97,7 +97,9 @@ describe('test rest many operations', () => {
       { id: 3, name: 'c' },
       { id: 4, name: 'd' },
     ])
-    expect(await r.updateMany({ where: { id: [1, 3, 4] } }, { name: 'z' })).toBe(3)
+    expect(
+      await r.updateMany({ where: { id: [1, 3, 4] }, set: { name: 'z' } }),
+    ).toBe(3)
     expect(await r.count({ name: 'z' })).toBe(3)
   })
 })
@@ -125,7 +127,7 @@ describe('test many operations with repo', () => {
       { id: 4, name: 'd' },
     ])
     expect(
-      await r.updateMany({ where: { id: [1, 3, 4] } }, { name: 'z' }),
+      await r.updateMany({ where: { id: [1, 3, 4] }, set: { name: 'z' } }),
     ).toMatchInlineSnapshot('3')
     expect(await r.count({ name: 'z' })).toBe(3)
   })
@@ -149,7 +151,7 @@ describe('test many operations with repo', () => {
     test({ id: [1, 2] }, false)
   })
   it('test update many without a filter shoud throw', async () => {
-    await expect(() => r.updateMany({ where: {} }, {})).rejects
+    await expect(() => r.updateMany({ where: {}, set: {} })).rejects
       .toThrowErrorMatchingInlineSnapshot(`
       {
         "httpStatusCode": 400,

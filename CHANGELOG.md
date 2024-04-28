@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [0.26.5] TBD
 
 - Fixed primary key was not created for entities that had more than one id column using knex or postgres
+- **Breaking change** - changed the api of `updateMany` to receive a `set` option, instead of second parameter for the set
 
 ## [0.26.4] 2024-04-24
 
