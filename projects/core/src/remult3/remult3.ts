@@ -826,8 +826,6 @@ export type ClassFieldDecorator<entityType, valueType> = (
   }))
 */
 
-//p1 - add solid tutorial to the getting started page
-//p1 - update the examples section
 //p1 - add documentation for bun sqlite
 //p1 - consider upsert (where,set)
 //p1 - wait a second to close stream
