@@ -120,7 +120,7 @@ If you get an error `error TS5096: Option 'allowImportingTsExtensions' can only 
 You are getting the error because somewhere in your code you've imported from `.ts` instead of `.js` - fix it and build again
 :::
 
-Now navigate to http://localhost3002 and test the application locally
+Now navigate to http://localhost:3002 and test the application locally
 
 ## Deploy to Railway
 

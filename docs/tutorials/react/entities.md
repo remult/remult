@@ -118,7 +118,7 @@ export const api = remultExpress({
 
 ### Accessing and Using the Admin UI
 
-Navigate to `http://localhost:3000/api/admin` to access the Admin UI. Here, you can perform CRUD operations on your entities, view their relationships via the Diagram entry, and ensure secure management with the same validations and authorizations as your application.
+Navigate to `http://localhost:5173/api/admin` to access the Admin UI. Here, you can perform CRUD operations on your entities, view their relationships via the Diagram entry, and ensure secure management with the same validations and authorizations as your application.
 
 ![Remult Admin](/remult-admin.png)
 

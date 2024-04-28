@@ -125,13 +125,17 @@ export const api = remultExpress()
 // src/server/index.ts
 
 import express from "express"
-import { api } from "./api"
+import { api } from "./api.js"
 
 const app = express()
 app.use(api)
 
 app.listen(3002, () => console.log("Server started"))
 ```
+
+::: warning ESM
+In this tutorial we will be using `esm` for the node.js server - that means that where ever we import a file we have to include the `.js` suffix for it as we did above in the `import { api } from "./api.js` statement
+:::
 
 ### Final tweaks
 
@@ -167,7 +171,8 @@ In the root folder, create a TypeScript configuration file `tsconfig.server.json
     "skipLibCheck": true,
     "esModuleInterop": true,
     "outDir": "dist",
-    "rootDir": "src"
+    "rootDir": "src",
+    "module": "nodenext"
   },
   "include": ["src/server/**/*", "src/shared/**/*"]
 }
