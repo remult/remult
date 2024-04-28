@@ -54,7 +54,7 @@ describe('Sql Lite', () => {
         expect(
           await testMigrationScript(getDb(), (m) => m.createTable(e.metadata)),
         ).toMatchInlineSnapshot(
-          "\"CREATE TABLE [t] ([id] decimal(18, 2) not null CONSTRAINT [t_id_default] DEFAULT '0', [id2] decimal(18, 2) not null CONSTRAINT [t_id2_default] DEFAULT '0', [name] nvarchar(255) not null CONSTRAINT [t_name_default] DEFAULT '', CONSTRAINT [t_pkey] PRIMARY KEY ([id], [id2]))\"",
+          '"create table `t` (`id` float not null default \'0\', `id2` float not null default \'0\', `name` varchar(255) not null default \'\', primary key (`id`, `id2`))"',
         )
       })
     },
