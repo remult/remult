@@ -5,7 +5,9 @@ Let's deploy the todo app to [railway.app](https://railway.app/).
 ## Prepare for Production
 
 In this tutorial, we'll deploy both the React app and the API server as [one server-side app](https://create-react-app.dev/docs/deployment/#other-solutions), and redirect all non-API requests to return the React app.
-We will deploy an ESM server project
+
+We will deploy an ESM node server project
+
 In addition, to follow a few basic production best practices, we'll use [compression](https://www.npmjs.com/package/compression) middleware to improve performance and [helmet](https://www.npmjs.com/package/helmet) middleware for security
 
 1. Install `compression` and `helmet`.
@@ -16,9 +18,8 @@ npm i @types/compression --save-dev
 ```
 
 2. Add the highlighted code lines to `src/server/index.ts`, and modify the `app.listen` function's `port` argument to prefer a port number provided by the production host's `PORT` environment variable.
-NOTA BENE : You will need to add ".js" extension to imported files 
 
-```ts{7-9,17-18,21-26}
+```ts{7-8,16-17,20-26}
 // src/server/index.ts
 
 import express from "express"
@@ -27,12 +28,6 @@ import session from "cookie-session"
 import { auth } from "./auth"
 import helmet from "helmet"
 import compression from "compression"
-import path from "path"
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 
 const app = express()
 app.use(
@@ -44,12 +39,12 @@ app.use(helmet())
 app.use(compression())
 app.use(auth)
 app.use(api)
-app.use(express.static(path.join(__dirname, "../")))
+const frontendFiles = process.cwd() + "/dist";
+app.use(express.static(frontendFiles));
 app.get("/*", (_, res) => {
-  res.sendFile(path.join(__dirname, "../", "index.html"))
-})
-
-app.listen(process.env["PORT"] || 3002, () => console.log("Server started"))
+  res.sendFile(frontendFiles + "/index.html");
+});
+app.listen(process.env["PORT"] || 3002, () => console.log("Server started"));
 ```
 
 3. Modify the highlighted code in the api server module to prefer a `connectionString` provided by the production host's `DATABASE_URL` environment variable.
@@ -119,14 +114,11 @@ npm run build
 npm run start
 ```
 
+::: warning Build Errors
+If you get an error `error TS5096: Option 'allowImportingTsExtensions' can only be used when either 'noEmit' or 'emitDeclarationOnly' is set.` do not set the `emitDeclarationOnly` flag!
 
-
-NOTA BENE :
-Since we deploied an ESM module,to make it work in a target computer, you will have to deploy this package.json  file, otherwise, you will be facing 
-problems loading esm module as cjs modules :
-{
-type : "module"
-}
+You are getting the error because somewhere in your code you've imported from `.ts` instead of `.js` - fix it and build again
+:::
 
 Now navigate to http://localhost3002 and test the application locally
 

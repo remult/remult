@@ -101,7 +101,7 @@ While remult supports [many relational and non-relational databases](https://rem
 
 ### Enabling the Admin UI
 
-Add the Admin UI to your Solid Start application by setting the `admin` option to `true` in the `remultSolidStart()` configuration in your `src/api.ts` file:
+Add the Admin UI to your Next.js application by setting the `admin` option to `true` in the `remultNextApp()` configuration in your `src/app/api/[...remult]/route.ts` file:
 
 ```ts
 // src/app/api/[...remult]/route.ts
