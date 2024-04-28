@@ -84,7 +84,9 @@ export class Product {
   unitPrice = 0
 }
 ```
-
+> [!NOTE] 
+> Don't like decorators? we have full support for [Working without decorators](https://remult.dev/docs/working-without-decorators)
+> 
 ### Add backend API with a [single line of code](https://remult.dev/docs/quickstart#server-side-initialization)
 
 _Example:_
