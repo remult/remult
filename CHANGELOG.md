@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.26.6] 2024-04-29
+
+- Minor fix to async_hooks fallback for running on stackblitz
+
 ## [0.26.5] 2024-04-28
 
 - **Breaking change** - changed the api of `updateMany` to receive a `set` option, instead of second parameter for the set
