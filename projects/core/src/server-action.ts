@@ -41,7 +41,7 @@ export abstract class Action<inParam, outParam> implements ActionInterface {
     private actionUrl: string,
     private queue: boolean,
     private allowed: AllowedForInstance<any>,
-  ) { }
+  ) {}
 
   static apiUrlForJobStatus = 'jobStatusInQueue'
   async run(
@@ -290,9 +290,9 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
 
           reg(
             controllerOptions.key +
-            '/' +
-            (options?.apiPrefix ? options.apiPrefix + '/' : '') +
-            key,
+              '/' +
+              (options?.apiPrefix ? options.apiPrefix + '/' : '') +
+              key,
             options ? options.queue : false,
             options.allowed,
             async (d: serverMethodInArgs, req, res) => {
@@ -411,9 +411,9 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
               ) => Promise<serverMethodOutArgs>
             })(
               classOptions.key +
-              '/' +
-              (options?.apiPrefix ? options.apiPrefix + '/' : '') +
-              key,
+                '/' +
+                (options?.apiPrefix ? options.apiPrefix + '/' : '') +
+                key,
               options ? options.queue : false,
               options.allowed,
             ).run(
@@ -449,9 +449,9 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
               ) => Promise<serverMethodOutArgs>
             })(
               x.classes.get(self.constructor).key +
-              '/' +
-              (options?.apiPrefix ? options.apiPrefix + '/' : '') +
-              key,
+                '/' +
+                (options?.apiPrefix ? options.apiPrefix + '/' : '') +
+                key,
               options ? options.queue : false,
               options.allowed,
             ).run(
@@ -491,7 +491,7 @@ const customUndefined = {
   _isUndefined: true,
 }
 function registerAction(target: any, resultMethod: any) {
-  ; (
+  ;(
     target[classBackendMethodsArray] || (target[classBackendMethodsArray] = [])
   ).push(resultMethod)
   remultStatic.actionInfo.allActions.push(resultMethod)
@@ -511,7 +511,7 @@ export interface queuedJobInfoResponse {
   progress?: number
 }
 export class ProgressListener {
-  constructor(private res: DataApiResponse) { }
+  constructor(private res: DataApiResponse) {}
   progress(progress: number) {
     this.res.progress(progress)
   }

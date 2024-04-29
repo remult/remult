@@ -1,15 +1,24 @@
-import { Entity, Fields, Validators } from 'remult'
+import { Entity, Fields, Validators, remult } from 'remult'
 import { capitalize } from '../lib/utils.ts'
 import { statusOptions, type Status } from './status.ts'
 import { labelOptions, type Label } from './label.ts'
 import { priorityOptions, type Priority } from './priority.ts'
 
-@Entity('tasks', {
+@Entity<Task>('tasks', {
   allowApiCrud: true,
+  // * Role based operations:
+  // allowApiDelete:"admin"
+
+  // * Prefiltering data based on user role
+  // apiPrefilter: () => {
+  //   if (remult.isAllowed('admin')) return {}
+  //   return { createdBy: remult.user!.id }
+  // },
 })
 export class Task {
   @Fields.cuid()
   id = ''
+
   @Fields.string<Task>({
     caption: 'Task',
     validate: Validators.unique,
@@ -29,33 +38,45 @@ export class Task {
     },
   })
   code = ''
+
   @Fields.string({
     validate: Validators.required,
   })
   title = ''
+
   @Fields.literal(() => labelOptions, {
     validate: Validators.required,
     displayValue: (_, value) => capitalize(value),
   })
   label: Label = 'bug'
+
   @Fields.literal(() => statusOptions, {
     validate: Validators.required,
     displayValue: (_, value) => capitalize(value),
   })
   status: Status = 'todo'
+
   @Fields.literal(() => priorityOptions, {
     validate: Validators.required,
     displayValue: (_, value) => capitalize(value),
   })
   priority: Priority = 'low'
+
   @Fields.date({
     dbName: 'created_at',
-    allowApiUpdate: false,
+    allowApiUpdate: false, // no one should be able to update this field
     displayValue: (_, value) => value?.toLocaleDateString(),
   })
   createdAt = new Date()
+
   @Fields.updatedAt({
     dbName: 'updated_at',
   })
   updatedAt = new Date()
+
+  @Fields.string({
+    includeInApi: 'admin',
+    allowApiUpdate: false,
+  })
+  createdBy = remult.user?.id
 }

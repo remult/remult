@@ -73,7 +73,11 @@ export {
 } from './src/remult3/Fields.js'
 export { IdEntity } from './src/remult3/IdEntity.js'
 
-export { describeClass } from './src/remult3/DecoratorReplacer.js'
+export {
+  describeClass,
+  describeBackendMethods,
+  describeEntity,
+} from './src/remult3/classDescribers.js'
 export { EntityOptions, PreprocessFilterEvent } from './src/entity.js'
 export {
   DataProvider,

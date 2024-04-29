@@ -16,7 +16,10 @@ import { ActionTestConfig, testAsIfOnBackend } from './testHelper'
 
 import { beforeEach, describe, expect, it } from 'vitest'
 import { InMemoryDataProvider } from '../../core/src//data-providers/in-memory-database'
-import { describeClass } from '../../core/src//remult3/DecoratorReplacer'
+import {
+  describeBackendMethods,
+  describeClass,
+} from '../../core/src/remult3/classDescribers'
 import { remult, RemultProxy } from '../../core/src/remult-proxy'
 import { remultStatic, resetFactory } from '../../core/src/remult-static'
 import { RepositoryImplementation } from '../../core/src/remult3/RepositoryImplementation.js'
@@ -135,14 +138,14 @@ class testBasics {
     return z.toString()
   }
 }
-describeClass(testBasics, undefined, undefined, {
-  staticBackendMethodWithoutDecorator: BackendMethod({ allowed: true }),
+describeBackendMethods(testBasics, {
+  staticBackendMethodWithoutDecorator: { allowed: true },
 })
-describeClass(testBasics, undefined, undefined, {
-  staticBackendMethodWithoutDecoratorWithRemult: BackendMethod({
+describeBackendMethods(testBasics, {
+  staticBackendMethodWithoutDecoratorWithRemult: {
     allowed: true,
     paramTypes: [Remult],
-  }),
+  },
 })
 describeClass(testBasics, undefined, {
   backendMethodWithoutDecorator: BackendMethod({ allowed: true }),
@@ -442,8 +445,8 @@ describe('test Server Controller basics', () => {
         return isBackend().toString()
       }
     }
-    describeClass(myClass, undefined, undefined, {
-      doSomething2222: BackendMethod({ allowed: true, apiPrefix: 'myPrefix' }),
+    describeBackendMethods(myClass, {
+      doSomething2222: { allowed: true, apiPrefix: 'myPrefix' },
     })
     expect(await myClass.doSomething2222()).toBe('true')
   })

@@ -584,6 +584,8 @@ export class RemultServerImplementation<RequestType>
     what: (remult: Remult) => Promise<T>,
     options?: { skipDataProvider: boolean },
   ) {
+    let dataProvider: DataProvider
+    if (!options?.skipDataProvider) dataProvider = await this.dataProvider
     return await withRemult(async (remult) => {
       var x = remult
       x.liveQueryPublisher = new LiveQueryPublisher(
@@ -591,7 +593,7 @@ export class RemultServerImplementation<RequestType>
         () => remult.liveQueryStorage,
         this.runWithSerializedJsonContextData,
       )
-      if (!options?.skipDataProvider) x.dataProvider = await this.dataProvider
+      if (!options?.skipDataProvider) x.dataProvider = dataProvider
       x.subscriptionServer = this.subscriptionServer
       x.liveQueryStorage = this.liveQueryStorage
       return await what(x)

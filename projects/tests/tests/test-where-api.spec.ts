@@ -23,7 +23,10 @@ import { ArrayEntityDataProvider } from '../../core/src//data-providers/array-en
 
 import { beforeAll, describe, expect, it } from 'vitest'
 import { Remult } from '../../core/src//context'
-import { describeClass } from '../../core/src//remult3/DecoratorReplacer'
+import {
+  describeClass,
+  describeEntity,
+} from '../../core/src/remult3/classDescribers'
 import { Done } from './Done'
 import { TestDataApiResponse } from './TestDataApiResponse'
 import { entityForrawFilter } from './entityForCustomFilter'
@@ -345,16 +348,18 @@ describe('custom filter', () => {
       id = 0
       title = ''
     }
-    describeClass(
+    describeEntity(
       myEntity,
-      Entity('test', {
-        defaultOrderBy: {
-          title: 'asc',
-        },
-      }),
+      'test',
+
       {
         id: Fields.integer(),
         title: Fields.string(),
+      },
+      {
+        defaultOrderBy: {
+          title: 'asc',
+        },
       },
     )
 

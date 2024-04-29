@@ -23,7 +23,7 @@ import {
   Filter,
   entityFilterToJson,
 } from '../../../core/src/filter/filter-interfaces'
-import { describeClass } from '../../../core/src/remult3/DecoratorReplacer'
+import { describeClass } from '../../../core/src/remult3/classDescribers'
 import { Validators } from '../../../core/src/validators'
 import { Done } from '../../tests/Done'
 import { TestDataApiResponse } from '../../tests/TestDataApiResponse'
@@ -400,7 +400,7 @@ export function commonDbTests(
       ) => Promise<void>,
     ) => Promise<void>,
     entity?: {
-      new(): T
+      new (): T
     },
   ): Promise<Repository<T>> {
     //@ts-ignore
@@ -428,7 +428,7 @@ export function commonDbTests(
   }
 
   it('Insert', async () => {
-    let forCat = await createData(async (x) => { })
+    let forCat = await createData(async (x) => {})
     let rows = await forCat.find()
     expect(rows.length).toBe(0)
     let c = forCat.create()
@@ -615,7 +615,7 @@ export function commonDbTests(
     d.test()
   })
   it('entity order by works', async () => {
-    let type = class extends newCategories { }
+    let type = class extends newCategories {}
     Entity<typeof type.prototype>('', {
       defaultOrderBy: { categoryName: 'asc' },
     })(type)
@@ -641,7 +641,7 @@ export function commonDbTests(
   })
   it('put with validation works', async () => {
     let count = 0
-    let type = class extends newCategories { }
+    let type = class extends newCategories {}
     Entity<typeof type.prototype>(undefined, {
       allowApiCrud: true,
       saving: () => {

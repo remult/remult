@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { InMemoryDataProvider } from '../../core/src//data-providers/in-memory-database'
 import { Entity, EntityBase, Fields, SqlDatabase } from '../../core'
-import { describeClass } from '../../core/src//remult3/DecoratorReplacer'
+import { describeClass } from '../../core/src/remult3/classDescribers'
 import { Remult } from '../../core/src/context'
 import { dbNamesOf } from '../../core/src/filter/filter-consumer-bridge-to-sql-request'
 import { remult } from '../../core/src/remult-proxy'

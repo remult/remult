@@ -12,6 +12,7 @@ import {
 import { Remult, RemultAsyncLocalStorage } from '../core/src/context.js'
 import { remultStatic } from '../core/src/remult-static'
 import { AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore } from '../core/server/initAsyncHooks.js'
+import { describeBackendMethods } from '../core/src/remult3/classDescribers.js'
 
 describe('backend method context awareness', () => {
   it('getting error when async was initialized', async () => {
@@ -119,8 +120,8 @@ describe('backend method context awareness', () => {
         wasCalled = true
       }
     }
-    describeClass(c, undefined, undefined, {
-      testingContextAwareness: BackendMethod({ allowed: false }),
+    describeBackendMethods(c, {
+      testingContextAwareness: { allowed: false },
     })
     await withRemult(
       async () => {

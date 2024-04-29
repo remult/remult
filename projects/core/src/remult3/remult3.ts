@@ -814,10 +814,24 @@ export type ClassFieldDecorator<entityType, valueType> = (
   c?: any,
 ) => void
 
+//p1 - remove controller and instance backend methods from the regular backend method article
+//p1 - describe entity
+//p1 - fix includeInApi documentation - figure out why we can't see the see?
+
 //y2 - soft-delete-discussion https://discord.com/channels/975754286384418847/1230386433093533698/1230386433093533698
 
-//y1 - In the esm version of our tutorial - the imports are automatically .ts and not .js
+//y1 - In the esm version of our tutorial - the imports are automatically .ts and not .js in react and not in vue
+//y1 - talk about insert with relations
 //y1 - consider id to also support keyof (id:['company','index']) - had problem with | (keyof Partial<entityType>)[] & `entity`
+//y1 - change exp version to preview?
+//y1 - talk about insert / update / delete with relations
+/*
+  repo(Order).insert({},{
+  relations:{
+    orderItems:[{},{},{}]
+  }
+})
+*/
 //y1 - repo batch - for multiple operations:
 /*
   const result = await repo.batch(x=>({
@@ -825,12 +839,10 @@ export type ClassFieldDecorator<entityType, valueType> = (
     count:x.count()
   }))
 */
-
 //p1 - add documentation for bun sqlite
 //p1 - consider upsert (where,set)
 //p1 - wait a second to close stream
 
-//p1 - describe entity
 //p1 - prepare the createEntity discussion
 
 //p1 - write active record article

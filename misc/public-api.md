@@ -329,14 +329,26 @@ export interface dbNamesOfOptions {
   wrapIdentifier?: (name: string) => string
   tableName?: boolean | string
 }
+export declare function describeBackendMethods<T>(
+  classType: T,
+  backendMethods: {
+    [K in keyof T]?: BackendMethodOptions<unknown>
+  },
+): void
 export declare function describeClass<classType>(
   classType: classType,
-  classDecorator: ((x: any, context?: any) => any) | undefined,
-  members?: Decorators<classType> | undefined,
-  staticMembers?: StaticDecorators<classType>,
+  classDescriber: ((x: any, context?: any) => any) | undefined,
+  members?: FieldsDescriptor<classType> | undefined,
+  staticMembers?: StaticMemberDescriptors<classType>,
 ): void
-//[ ] Decorators from TBD is not exported
-//[ ] StaticDecorators from TBD is not exported
+//[ ] FieldsDescriptor from TBD is not exported
+//[ ] StaticMemberDescriptors from TBD is not exported
+export declare function describeEntity<entityType extends ClassType<any>>(
+  classType: entityType,
+  key: string,
+  fields: FieldsDescriptor<entityType>,
+  options?: EntityOptions<InstanceType<entityType>>,
+): void
 export declare function Entity<entityType>(
   key: string,
   ...options: (

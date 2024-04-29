@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.26.7] TBD
+
+- Added `describeEntity` and `describeBackendMethods` for better decorator-less support
+
 ## [0.26.6] 2024-04-29
 
 - Minor fix to async_hooks fallback for running on stackblitz

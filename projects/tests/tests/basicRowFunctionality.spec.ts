@@ -35,7 +35,7 @@ import {
 import axios from 'axios'
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { assign } from '../../core/assign'
-import { describeClass } from '../../core/src//remult3/DecoratorReplacer'
+import { describeClass } from '../../core/src/remult3/classDescribers'
 import {
   HttpProviderBridgeToRestDataProviderHttpProvider,
   retry,

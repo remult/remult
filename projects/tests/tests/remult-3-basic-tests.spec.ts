@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { InMemoryDataProvider } from '../../core/src//data-providers/in-memory-database'
 import { Entity, Field, Fields, getEntityRef } from '../../core'
-import { describeClass } from '../../core/src//remult3/DecoratorReplacer'
+import {
+  describeClass,
+  describeEntity,
+} from '../../core/src/remult3/classDescribers'
 import { Remult } from '../../core/src/context'
 import { Categories, Products } from './remult-3-entities'
 import { MockRestDataProvider } from './testHelper'
@@ -211,10 +214,15 @@ describe('remult-3-basics', () => {
       id = 0
       category!: Categories
     }
-    describeClass(product, Entity('pr', { allowApiCrud: true }), {
-      id: Fields.number(),
-      category: Field(() => Categories),
-    })
+    describeEntity(
+      product,
+      'pr',
+      {
+        id: Fields.number(),
+        category: Field(() => Categories),
+      },
+      { allowApiCrud: true },
+    )
 
     var sr = new Remult(new InMemoryDataProvider())
     var dp = new MockRestDataProvider(sr)
