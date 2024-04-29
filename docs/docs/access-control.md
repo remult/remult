@@ -246,7 +246,7 @@ function UserComponent({ user }: { user: User }) {
 
 ## Additional Resources
 
-Check out this informative [YouTube video](https://www.youtube.com/watch?v=9lWQwAUcKEM&t=391s). It discusses the concepts covered in this article and provides practical examples to help you understand how to implement robust access control in your applications.
+Check out this informative [YouTube video](https://www.youtube.com/watch?v=9lWQwAUcKEM). It discusses the concepts covered in this article and provides practical examples to help you understand how to implement robust access control in your applications.
 
 ---
 
