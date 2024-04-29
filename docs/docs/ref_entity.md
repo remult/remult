@@ -55,19 +55,25 @@ Determines if this entity can be updated through the api.
    
    
    #### see:
-   [allowed](http://remult.dev/docs/allowed.html)
+    - [allowed](http://remult.dev/docs/allowed.html)
+    - [Access Control](https://remult.dev/docs/access-control)
+   
 ## allowApiDelete
 Determines if entries for this entity can be deleted through the api.
    
    
    #### see:
-   [allowed](http://remult.dev/docs/allowed.html)
+    - [allowed](http://remult.dev/docs/allowed.html)
+    - [Access Control](https://remult.dev/docs/access-control)
+   
 ## allowApiInsert
 Determines if new entries for this entity can be posted through the api.
    
    
    #### see:
-   [allowed](http://remult.dev/docs/allowed.html)
+    - [allowed](http://remult.dev/docs/allowed.html)
+    - [Access Control](https://remult.dev/docs/access-control)
+   
 ## allowApiCrud
 sets  the `allowApiUpdate`, `allowApiDelete` and `allowApiInsert` properties in a single set
 ## apiPrefilter
@@ -265,14 +271,14 @@ For entities that are based on SQL expressions instead of a physical table or vi
    
    #### example:
    ```ts
-   @Entity('people',{
+   .@Entity('people',{
    sqlExpression:`select id,name from employees
         union all select id,name from contractors`,
    })
    export class Person{
-   @Fields.string()
+   .@Fields.string()
    id=''
-   @Fields.string()
+   .@Fields.string()
    name=''
    }
    ```

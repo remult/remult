@@ -28,13 +28,19 @@ export interface EntityOptions<entityType = any> {
 
   /**
    * Determines if this entity can be updated through the api.
-   * @see [allowed](http://remult.dev/docs/allowed.html)*/
+   * @see [allowed](http://remult.dev/docs/allowed.html)
+   * @see [Access Control](https://remult.dev/docs/access-control)
+   * */
   allowApiUpdate?: AllowedForInstance<entityType>
   /** Determines if entries for this entity can be deleted through the api.
-   * @see [allowed](http://remult.dev/docs/allowed.html)*/
+   * @see [allowed](http://remult.dev/docs/allowed.html)
+   * @see [Access Control](https://remult.dev/docs/access-control)
+   * */
   allowApiDelete?: AllowedForInstance<entityType>
   /** Determines if new entries for this entity can be posted through the api.
-   * @see [allowed](http://remult.dev/docs/allowed.html)*/
+   * @see [allowed](http://remult.dev/docs/allowed.html)
+   * @see [Access Control](https://remult.dev/docs/access-control)
+   * */
   allowApiInsert?: AllowedForInstance<entityType>
   /** sets  the `allowApiUpdate`, `allowApiDelete` and `allowApiInsert` properties in a single set */
   allowApiCrud?: Allowed

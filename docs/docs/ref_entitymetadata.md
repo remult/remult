@@ -14,27 +14,38 @@ A human readable caption for the entity. Can be used to achieve a consistent cap
    ```ts
    <h1>Create a new item in {taskRepo.metadata.caption}</h1>
    ```
+   
+   
+   #### see:
+   EntityOptions.caption
 ## dbName
 The name of the table in the database that holds the data for this entity.
 If no name is set in the entity options, the `key` will be used instead.
+   
+   
+   #### see:
+   EntityOptions.dbName
 ## options
 The options send to the `Entity`'s decorator
+   
+   
+   #### see:
+   EntityOptions
 ## apiUpdateAllowed
 true if the current user is allowed to update an entity instance
    
    
-   #### example:
-   ```ts
-   const taskRepo = remult.repo(Task);
-   if (taskRepo.metadata.apiUpdateAllowed(task)){
-     // Allow user to edit the entity
-   }
-   ```
+   #### see:
+   * @example
 
 Arguments:
 * **item**
 ## apiReadAllowed
 true if the current user is allowed to read from entity
+   
+   
+   #### see:
+   EntityOptions.allowApiRead
    
    
    #### example:
@@ -46,6 +57,11 @@ true if the current user is allowed to read from entity
    ```
 ## apiDeleteAllowed
 true if the current user is allowed to delete an entity instance
+*
+   
+   
+   #### see:
+   EntityOptions.allowApiDelete
    
    
    #### example:
@@ -62,6 +78,10 @@ Arguments:
 true if the current user is allowed to create an entity instance
    
    
+   #### see:
+   EntityOptions.allowApiInsert
+   
+   
    #### example:
    ```ts
    const taskRepo = remult.repo(Task);
@@ -76,3 +96,7 @@ Arguments:
 * **getDbName**
 ## idMetadata
 Metadata for the Entity's id
+   
+   
+   #### see:
+   EntityOptions.id for configuration

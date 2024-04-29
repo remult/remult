@@ -17,11 +17,33 @@ export interface FieldOptions<entityType = any, valueType = any> {
   allowNull?: boolean
   /** If a value is required */
   required?: boolean
-  /** If this field data is included in the api.
-   * @see [allowed](http://remult.dev/docs/allowed.html)*/
+  /**
+   * Specifies whether this field should be included in the API. This can be configured
+   * based on access control levels.
+   * @example
+   * // Do not include in the API
+   * @Fields.string({ includeInApi: false })
+   * password = '';
+   * // Include in the API for 'admin' only
+   * @Fields.number({ includeInApi: 'admin' })
+   * salary = 0;
+   * @see [allowed](https://remult.dev/docs/allowed.html)
+   * @see [Access Control](https://remult.dev/docs/access-control)
+   * @type {AllowedForInstance<entityType>}
+   */
   includeInApi?: AllowedForInstance<entityType>
-  /** If this field data can be updated in the api.
-   * @see [allowed](http://remult.dev/docs/allowed.html)*/
+
+  /**
+   * Determines whether this field can be updated via the API. This setting can also
+   * be controlled based on user roles or other access control checks.
+   * @example
+   * // Prevent API from updating this field
+   * @Fields.string({ allowApiUpdate: false })
+   * createdBy = remult.user?.id;
+   * @see [allowed](https://remult.dev/docs/allowed.html)
+   * @see [Access Control](https://remult.dev/docs/access-control)
+   * @type {AllowedForInstance<entityType>}
+   */
   allowApiUpdate?: AllowedForInstance<entityType>
   /** An arrow function that'll be used to perform validations on it
    * @example
@@ -48,8 +70,8 @@ export interface FieldOptions<entityType = any, valueType = any> {
    * })
    */
   validate?:
-  | FieldValidator<entityType, valueType>
-  | FieldValidator<entityType, valueType>[]
+    | FieldValidator<entityType, valueType>
+    | FieldValidator<entityType, valueType>[]
 
   /** Will be fired before this field is saved to the server/database */
   saving?: (
@@ -77,8 +99,8 @@ export interface FieldOptions<entityType = any, valueType = any> {
    * title='';
    */
   sqlExpression?:
-  | string
-  | ((entity: EntityMetadata<entityType>) => string | Promise<string>)
+    | string
+    | ((entity: EntityMetadata<entityType>) => string | Promise<string>)
   /** For fields that shouldn't be part of an update or insert statement */
   dbReadOnly?: boolean
   /** The value converter to be used when loading and saving this field */
@@ -126,6 +148,7 @@ export interface FieldMetadata<valueType = any, entityType = any> {
   /** A human readable caption for the field. Can be used to achieve a consistent caption for a field throughout the app
    * @example
    * <input placeholder={taskRepo.metadata.fields.title.caption}/>
+   * @see {@link FieldOptions#caption} for configuration details
    */
   readonly caption: string
   /** The name of the column in the database that holds the data for this field. If no name is set, the key will be used instead.
@@ -133,6 +156,7 @@ export interface FieldMetadata<valueType = any, entityType = any> {
    *
    * @Fields.string({ dbName: 'userName'})
    * userName=''
+   * @see {@link FieldOptions#dbName} for configuration details
    */
   dbName: string
   /** The field's value type (number,string etc...) */
@@ -141,7 +165,10 @@ export interface FieldMetadata<valueType = any, entityType = any> {
   readonly options: FieldOptions
   /** The `inputType` relevant for this field, determined by the options sent to it's decorator and the valueConverter in these options */
   readonly inputType: string
-  /** if null is allowed for this field */
+  /** if null is allowed for this field
+   * @see {@link FieldOptions#allowNull} for configuration details
+   *
+   */
   readonly allowNull: boolean
   /** The class that contains this field
    * @example
@@ -154,16 +181,46 @@ export interface FieldMetadata<valueType = any, entityType = any> {
   getDbName(): Promise<string>
   /** Indicates if this field is based on a server express */
   readonly isServerExpression: boolean
-  /** indicates that this field should only be included in select statement, and excluded from update or insert. useful for db generated ids etc... */
+  /** indicates that this field should only be included in select statement, and excluded from update or insert. useful for db generated ids etc...
+   * @see {@link FieldOptions#dbReadOnly} for configuration details
+   */
   readonly dbReadOnly: boolean
   /** the Value converter for this field */
   readonly valueConverter: Required<ValueConverter<valueType>>
   /** Get the display value for a specific item
+   * @see {@link FieldOptions#displayValue} for configuration details
    * @example
    * repo.fields.createDate.displayValue(task) //will display the date as defined in the `displayValue` option defined for it.
    */
   displayValue(item: Partial<entityType>): string
+  /**
+ * Determines if the current user is allowed to update a specific entity instance.
+ 
+ * @example
+ * const taskRepo = remult.repo(Task);
+ * // Check if the current user is allowed to update a specific task
+ * if (taskRepo.metadata.apiUpdateAllowed(task)){
+ *   // Allow user to edit the entity
+ * }
+ * @see {@link FieldOptions#allowApiUpdate} for configuration details
+ * @param {Partial<entityType>} item - Partial entity instance to check permissions against.
+ * @returns {boolean} True if the update is allowed.
+ */
   apiUpdateAllowed(item?: Partial<entityType>): boolean
+
+  /**
+   * Determines if a specific entity field should be included in the API based on the current user's permissions.
+   * This method checks visibility permissions for a field within a partial entity instance.
+   * @example
+   * const employeeRepo = remult.repo(Employee);
+   * // Determine if the 'salary' field of an employee should be visible in the API for the current user
+   * if (employeeRepo.fields.salary.includedInApi({ id: 123, name: 'John Doe' })) {
+   *   // The salary field is included in the API
+   * }
+   * @see {@link FieldOptions#includeInApi} for configuration details
+   * @param {Partial<entityType>} item - The partial entity instance used to evaluate field visibility.
+   * @returns {boolean} True if the field is included in the API.
+   */
   includedInApi(item?: Partial<entityType>): boolean
   /** Adapts the value for usage with html input
    * @example
@@ -171,6 +228,7 @@ export interface FieldMetadata<valueType = any, entityType = any> {
    * birthDate = new Date(1976,5,16)
    * //...
    * input.value = repo.fields.birthDate.toInput(person) // will return '1976-06-16'
+   * @see {@link ValueConverter#toInput} for configuration details
    */
   toInput(value: valueType, inputType?: string): string
   /** Adapts the value for usage with html input
@@ -179,6 +237,7 @@ export interface FieldMetadata<valueType = any, entityType = any> {
    * birthDate = new Date(1976,5,16)
    * //...
    * person.birthDate = repo.fields.birthDate.fromInput(personFormState) // will return Date
+   * @see {@link ValueConverter#fromInput} for configuration details
    */
   fromInput(inputValue: string, inputType?: string): valueType
 }
@@ -282,7 +341,7 @@ export interface ValueConverter<valueType> {
    * })
    * price=0;
    */
-  readonly fieldTypeInDb?: string;
+  readonly fieldTypeInDb?: string
 
   /**
    * Specifies the type of HTML input element suitable for values of valueType.

@@ -235,17 +235,22 @@ export interface EntityMetadata<entityType = any> {
   /** A human readable caption for the entity. Can be used to achieve a consistent caption for a field throughout the app
    * @example
    * <h1>Create a new item in {taskRepo.metadata.caption}</h1>
+   * @see {@link EntityOptions.caption}
    */
   readonly caption: string
   /** The name of the table in the database that holds the data for this entity.
    * If no name is set in the entity options, the `key` will be used instead.
+   * @see {@link EntityOptions.dbName}
    */
   readonly dbName: string
-  /** The options send to the `Entity`'s decorator */
+  /** The options send to the `Entity`'s decorator
+   * @see {@link EntityOptions}
+   */
   readonly options: EntityOptions
   /** The class type of the entity */
   readonly entityType: ClassType<entityType>
   /** true if the current user is allowed to update an entity instance
+   * @see {@link EntityOptions.allowApiUpdate
    * @example
    * const taskRepo = remult.repo(Task);
    * if (taskRepo.metadata.apiUpdateAllowed(task)){
@@ -254,6 +259,7 @@ export interface EntityMetadata<entityType = any> {
    */
   apiUpdateAllowed(item?: entityType): boolean
   /** true if the current user is allowed to read from entity
+   * @see {@link EntityOptions.allowApiRead}
    * @example
    * const taskRepo = remult.repo(Task);
    * if (taskRepo.metadata.apiReadAllowed){
@@ -262,6 +268,7 @@ export interface EntityMetadata<entityType = any> {
    */
   readonly apiReadAllowed: boolean
   /** true if the current user is allowed to delete an entity instance
+   * * @see {@link EntityOptions.allowApiDelete}
    * @example
    * const taskRepo = remult.repo(Task);
    * if (taskRepo.metadata.apiDeleteAllowed(task)){
@@ -270,6 +277,7 @@ export interface EntityMetadata<entityType = any> {
    */
   apiDeleteAllowed(item?: entityType): boolean
   /** true if the current user is allowed to create an entity instance
+   * @see {@link EntityOptions.allowApiInsert}
    * @example
    * const taskRepo = remult.repo(Task);
    * if (taskRepo.metadata.apiInsertAllowed(task)){
@@ -281,7 +289,10 @@ export interface EntityMetadata<entityType = any> {
   /**
    * @deprecated Returns the dbName - based on it's `dbName` option and it's `sqlExpression` option */
   getDbName(): Promise<string>
-  /** Metadata for the Entity's id */
+  /** Metadata for the Entity's id
+   * @see {@link EntityOptions.id} for configuration
+   *
+   */
   readonly idMetadata: IdMetadata<entityType>
 }
 
