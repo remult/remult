@@ -159,6 +159,21 @@ export default defineConfig({
                 text: 'Offline Support',
                 link: '/docs/offline-support',
               },
+              {
+                text: 'Active Record & EntityBase',
+                link: '/docs/active-record',
+                collapsed: true,
+                items: [
+                  {
+                    text: 'Entity Backend Methods',
+                    link: '/docs/entity-backend-methods',
+                  },
+                  {
+                    text: 'Mutable Controllers',
+                    link: '/docs/mutable-controllers',
+                  },
+                ],
+              },
             ],
           },
           {
@@ -167,13 +182,10 @@ export default defineConfig({
               {
                 text: 'Backend Methods',
                 link: '/docs/backendMethods',
-                collapsed: true,
-                items: [
-                  {
-                    text: 'Server-only Dependencies',
-                    link: '/docs/using-server-only-packages',
-                  },
-                ],
+              },
+              {
+                text: 'Server-only Dependencies',
+                link: '/docs/using-server-only-packages',
               },
             ],
           },
@@ -256,6 +268,36 @@ export default defineConfig({
               { text: 'migrate', link: '/docs/ref_migrate' },
 
               { text: 'REST API Spec', link: '/docs/rest-api' },
+              {
+                text: 'Active Record & Mutable',
+                collapsed: true,
+                items: [
+                  {
+                    text: 'EntityBase',
+                    link: '/docs/ref_entitybase',
+                  },
+                  {
+                    link: '/docs/ref_identity',
+                    text: 'IdEntity',
+                  },
+                  {
+                    link: '/docs/ref_entityref',
+                    text: 'EntityRef',
+                  },
+                  {
+                    link: '/docs/ref_fieldref',
+                    text: 'FieldRef',
+                  },
+                  {
+                    link: '/docs/ref_getentityref',
+                    text: 'getEntityRef',
+                  },
+                  {
+                    link: '/docs/ref_getfields',
+                    text: 'getFields',
+                  },
+                ],
+              },
             ],
           },
         ],

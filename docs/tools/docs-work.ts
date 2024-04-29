@@ -221,6 +221,13 @@ try {
     'migrate',
 
     'FilterPreciseValues',
+    'EntityRef',
+    'FieldRef',
+    'EntityBase',
+    'IdEntity',
+    'getEntityRef',
+    'getFields',
+
     //    'PreprocessFilterEvent',
   ]) {
     let type = findType(typeName)

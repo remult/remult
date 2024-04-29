@@ -245,7 +245,7 @@ export interface PreprocessFilterEvent<entityType> {
    * @param filter Optional filter to analyze. If not provided, the current filter being preprocessed is used.
    * @returns A promise that resolves to a FilterPreciseValues object containing the precise values for each property.
    
-  * {@Link FilterPreciseValues }
+  * @see {@Link FilterPreciseValues }
    */
   getFilterPreciseValues(
     filter?: EntityFilter<entityType>,
