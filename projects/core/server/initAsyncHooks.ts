@@ -18,7 +18,7 @@ export function initAsyncHooks() {
     await Promise.resolve()
     if (test.getStore() === undefined) {
       console.log(
-        "async_hooks.AsyncLocalStorage not working, using stub implementation (You're probably running on stackblitz, this will work on a normal nodejs environment",
+        "async_hooks.AsyncLocalStorage not working, using stub implementation (You're probably running on stackblitz, this will work on a normal nodejs environment)",
       )
       remultStatic.asyncContext = new RemultAsyncLocalStorage(
         new SequentialRemultAsyncLocalStorageCore(),
