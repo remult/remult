@@ -94,6 +94,7 @@
     "reflect-metadata": "^0.1.13",
     "rimraf": "^5.0.5",
     "sql.js": "^1.9.0",
+    "sqlite3": "^5.1.7",
     "swagger-ui-express": "^4.1.6",
     "tedious": "^14.1.0",
     "ts-node": "^8.10.2",

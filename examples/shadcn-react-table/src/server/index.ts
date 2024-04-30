@@ -24,6 +24,9 @@ app.use(
           // If using JsonDataProvider, first insert the rows in memory and then save them to a file
           const mem = new InMemoryDataProvider()
           await seed(mem)
+          if (!fs.existsSync('./db')) {
+            fs.mkdirSync('./db')
+          }
           fs.writeFileSync(
             `./db/${taskRepo.metadata.dbName}.json`,
             JSON.stringify(mem.rows[taskRepo.metadata.dbName]),
