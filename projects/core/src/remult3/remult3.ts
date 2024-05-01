@@ -825,10 +825,6 @@ export type ClassFieldDecorator<entityType, valueType> = (
   c?: any,
 ) => void
 
-//p1 - remove controller and instance backend methods from the regular backend method article
-//p1 - describe entity
-//p1 - fix includeInApi documentation - figure out why we can't see the see?
-
 //y2 - soft-delete-discussion https://discord.com/channels/975754286384418847/1230386433093533698/1230386433093533698
 
 //y1 - In the esm version of our tutorial - the imports are automatically .ts and not .js in react and not in vue
@@ -850,16 +846,15 @@ export type ClassFieldDecorator<entityType, valueType> = (
     count:x.count()
   }))
 */
-//p1 - add documentation for bun sqlite
+
 //p1 - consider upsert (where,set)
 //p1 - wait a second to close stream
 
 //p1 - prepare the createEntity discussion
 
-//p1 - write active record article
 //p1 - return error on connection error
-//p1 - consider including the admin in the tutorial - and maybe even in the demo when we setup the api
 //p1 - reconsider key typing to be keyof & string
+//p1 - article on displayValue including it's definition for entities that is used in relations
 //p2 -fix remult admin not to load the html into memory until used
 
 //y2 - JY suggestion of having generate as part of the ensure schema - not sure
