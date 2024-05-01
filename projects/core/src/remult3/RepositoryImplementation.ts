@@ -1637,6 +1637,7 @@ export class rowHelperImplementation<T>
           }
         }
         await this.loadDataFrom(updatedRow)
+        e.id = this.getId()
         if (!this.repository._dataProvider.isProxy) {
           if (this.info.entityInfo.saved)
             await this.info.entityInfo.saved(this.instance, e)
