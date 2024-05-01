@@ -1,11 +1,11 @@
 # Example Apps
 
-## Todo MVC example with React and Express
+## Todo MVC example with React, Vite and Express
 
 - [Source code](https://github.com/remult/TodoMVC-eample)
 - [CodeSandbox](https://codesandbox.io/s/github/remult/TodoMVC-example?file=/src/frontend/App.tsx)
 
-## CRM Demo
+## CRM Demo with React, Vite and Express
 
 A CRM app built using a React + [MUI](https://mui.com) frontend and an Express + Postgres backend.
 
@@ -25,6 +25,13 @@ Example of using remult with react table - most basic design, with server side s
 
 - [Open in stackblitz](https://stackblitz.com/github/remult/remult/tree/main/examples/tanstack-react-table)
 - [Source Code](https://www.github.com/remult/remult/tree/main/examples/tanstack-react-table)
+
+## Ready to play
+
+An environment to reproduce issues using stackblitz, with optional sqlite database
+
+- [Open in stackblitz](https://stackblitz.com/github/noam-honig/ready-to-play)
+- [Source Code](https://www.github.com/noam-honig/ready-to-play)
 
 ## Todo Examples:
 
