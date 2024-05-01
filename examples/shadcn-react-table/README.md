@@ -17,6 +17,12 @@ This examples demos:
 - Using remult with react-hook-forms
 - remult admin (`/api/admin`)
 
+## Checkout source
+
+```sh
+npx degit https://github.com/remult/remult/examples/shadcn-react-table
+```
+
 ## Inspired by
 
 - https://ui.shadcn.com/examples/tasks

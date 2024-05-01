@@ -21,6 +21,10 @@ Feel free to explore and experiment with the provided entities and their relatio
 #### Customer Entity
 
 ```typescript
+// customer.ts
+
+import { Entity, Fields } from 'remult'
+
 @Entity('customers')
 export class Customer {
   @Fields.cuid()
@@ -37,6 +41,10 @@ The `Customer` entity represents individuals or organizations with attributes su
 #### Order Entity
 
 ```typescript
+// order.ts
+
+import { Entity, Fields } from 'remult'
+
 @Entity('orders')
 export class Order {
   @Fields.cuid()
@@ -61,6 +69,11 @@ In Remult, many-to-one relations allow you to establish connections between enti
 To establish a many-to-one relation from the `Order` entity to the `Customer` entity, you can use the `@Relations.toOne()` decorator in your entity definition:
 
 ```typescript
+// order.ts
+
+import { Entity, Fields, Relations } from 'remult'
+import { Customer } from '../customer.js'
+
 @Entity('orders')
 export class Order {
   @Fields.cuid()
