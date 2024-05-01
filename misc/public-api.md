@@ -3594,12 +3594,6 @@ export declare class BetterSqlite3SqlResult implements SqlResult {
 export declare class Sqlite3DataProvider extends SqliteCoreDataProvider {
   constructor(db: Database)
 }
-export declare class Sqlite3SqlResult implements SqlResult {
-  private result
-  constructor(result: any[])
-  rows: any[]
-  getColumnKeyInResultForIndexInSelect(index: number): string
-}
 ```
 
 ## ./remult-bun-sqlite.js
