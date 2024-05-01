@@ -46,6 +46,7 @@ import type {
   MigrationBuilder,
   MigrationCode,
 } from '../migrations/migration-types.js'
+import { getRowAfterUpdate } from '../src/data-providers/sql-database.js'
 
 export class KnexDataProvider
   implements
@@ -269,10 +270,6 @@ class KnexEntityDataProvider implements EntityDataProvider {
       this.entity.idMetadata.getIdFilter(id),
     ).__applyToConsumer(f)
 
-    let resultFilter = this.entity.idMetadata.getIdFilter(id)
-    if (data.id != undefined)
-      resultFilter = this.entity.idMetadata.getIdFilter(data.id)
-
     let updateObject = {}
     for (const x of this.entity.fields) {
       if (isDbReadonly(x, e)) {
@@ -289,9 +286,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
     await this.knex(e.$entityName)
       .update(updateObject)
       .where((b) => where.forEach((w) => w(b)))
-    return this.find({
-      where: Filter.fromEntityFilter(this.entity, resultFilter),
-    }).then((y) => y[0])
+    return getRowAfterUpdate(this.entity, this, data, id, 'update')
   }
   async delete(id: any): Promise<void> {
     const e = await this.init()
@@ -307,13 +302,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
   }
   async insert(data: any): Promise<any> {
     const e = await this.init()
-    let resultFilter: Filter
-    resultFilter = Filter.fromEntityFilter(
-      this.entity,
-      this.entity.idMetadata.getIdFilter(
-        data[this.entity.idMetadata.field.key],
-      ),
-    )
+
     let insertObject = {}
     for (const x of this.entity.fields) {
       if (isDbReadonly(x, e)) {
@@ -340,13 +329,13 @@ class KnexEntityDataProvider implements EntityDataProvider {
         newId = result[0].id
       }
 
-      resultFilter = new Filter((x) =>
-        x.isEqualTo(this.entity.idMetadata.field, newId),
-      )
+      return this.find({
+        where: new Filter((x) =>
+          x.isEqualTo(this.entity.idMetadata.field, newId),
+        ),
+      }).then((y) => y[0])
     } else await insert
-    return this.find({ where: resultFilter }).then((y) => {
-      return y[0]
-    })
+    return getRowAfterUpdate(this.entity, this, data, undefined, 'insert')
   }
 }
 class FilterConsumerBridgeToKnexRequest implements FilterConsumer {

@@ -1,5 +1,5 @@
-import { SqlCommand, SqlResult } from '../core/index.js'
-import { SqliteCoreDataProvider } from '../core/remult-sqlite-core.js'
+import { SqlCommand, SqlResult } from './index.js'
+import { SqliteCoreDataProvider } from './remult-sqlite-core.js'
 import { Database } from 'sqlite3'
 
 export class Sqlite3DataProvider extends SqliteCoreDataProvider {
@@ -9,6 +9,7 @@ export class Sqlite3DataProvider extends SqliteCoreDataProvider {
       async () => {
         db.close()
       },
+      true,
     )
   }
 }
@@ -18,11 +19,16 @@ class Sqlite3Command implements SqlCommand {
   constructor(private db: Database) {}
   async execute(sql: string): Promise<SqlResult> {
     return new Promise<SqlResult>((resolve, error) => {
-      this.db.all(sql, this.values, (err, rows) => {
-        console.log(sql, rows)
-        if (err) error(err)
-        else resolve(new Sqlite3SqlResult(rows))
-      })
+      if (sql.startsWith('insert into')) {
+        this.db.run(sql, this.values, function (err, rows) {
+          if (err) error(err)
+          else resolve(new Sqlite3SqlResult([this.lastID]))
+        })
+      } else
+        this.db.all(sql, this.values, (err, rows) => {
+          if (err) error(err)
+          else resolve(new Sqlite3SqlResult(rows))
+        })
     })
   }
   addParameterAndReturnSqlToken(val: any) {
@@ -36,7 +42,7 @@ class Sqlite3Command implements SqlCommand {
     return key
   }
 }
-export class Sqlite3SqlResult implements SqlResult {
+class Sqlite3SqlResult implements SqlResult {
   constructor(private result: any[]) {
     this.rows = result
   }

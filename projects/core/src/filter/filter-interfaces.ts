@@ -452,7 +452,7 @@ class filterHelper {
   processVal(val: any) {
     let ei = getEntitySettings(this.metadata.valueType, false)
     if (ei) {
-      if (!val) {
+      if (val === undefined || val === null) {
         if (val === null && !this.metadata.allowNull) {
           const rel = getRelationFieldInfo(this.metadata)
           if (rel?.type === 'reference')

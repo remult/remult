@@ -22,6 +22,7 @@ import { remult as remultContext } from './src/remult-proxy.js'
 import type { RepositoryOverloads } from './src/remult3/RepositoryImplementation.js'
 import { getRepository } from './src/remult3/RepositoryImplementation.js'
 import { getRepositoryInternals } from './src/remult3/repository-internals.js'
+import { getRowAfterUpdate } from './src/data-providers/sql-database.js'
 
 export class MongoDataProvider implements DataProvider {
   constructor(
@@ -150,9 +151,6 @@ class MongoEntityDataProvider implements EntityDataProvider {
       this.entity,
       this.entity.idMetadata.getIdFilter(id),
     ).__applyToConsumer(f)
-    let resultFilter = this.entity.idMetadata.getIdFilter(id)
-    if (data.id != undefined)
-      resultFilter = this.entity.idMetadata.getIdFilter(data.id)
 
     let newR = {}
     let keys = Object.keys(data)
@@ -170,9 +168,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
       },
       { session: this.session },
     )
-    return this.find({
-      where: Filter.fromEntityFilter(this.entity, resultFilter),
-    }).then((y) => y[0])
+    return getRowAfterUpdate(this.entity, this, data, id, 'update')
   }
   async delete(id: any): Promise<void> {
     const { e, collection } = await this.collection()

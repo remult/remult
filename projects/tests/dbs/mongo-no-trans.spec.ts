@@ -46,7 +46,7 @@ describe.skipIf(!mongoConnectionStringWithoutTransaction)(
       },
       {
         excludeTransactions: true,
-        doesNotWorkForMongoNeedToInvestigate: true,
+        skipAutoIncrement: true,
       },
     )
     it('test mongo without transaction', async () => {

@@ -309,6 +309,10 @@ app.use(
 
 == SQLite
 
+There are several sqlite providers supported
+
+### Better-sqlite3
+
 Install better-sqlite3:
 
 ```sh
@@ -330,6 +334,86 @@ app.use(
   remultExpress({
     dataProvider: new SqlDatabase( // [!code highlight]
       new BetterSqlite3DataProvider(new Database('./mydb.sqlite')), // [!code highlight]
+    ), // [!code highlight]
+  }),
+)
+```
+
+### sqlite3
+
+This version of sqlite3 works even on stackblitz
+
+Install sqlite3:
+
+```sh
+npm i sqlite3
+```
+
+Set the `dataProvider` property:
+
+```ts
+import express from 'express'
+import { remultExpress } from 'remult/remult-express'
+import { SqlDatabase } from 'remult' // [!code highlight]
+import Database from 'sqlite3' // [!code highlight]
+import { Sqlite3DataProvider } from 'remult/remult-sqlite3' // [!code highlight]
+
+const app = express()
+
+app.use(
+  remultExpress({
+    dataProvider: new SqlDatabase( // [!code highlight]
+      new Sqlite3DataProvider(new Database('./mydb.sqlite')), // [!code highlight]
+    ), // [!code highlight]
+  }),
+)
+```
+
+### bun:sqlite
+
+Set the `dataProvider` property:
+
+```ts
+import express from 'express'
+import { remultExpress } from 'remult/remult-express'
+import { SqlDatabase } from 'remult' // [!code highlight]
+import { Database } from 'bun:sqlite' // [!code highlight]
+import { BunSqliteDataProvider } from 'remult/remult-bun-sqlite' // [!code highlight]
+
+const app = express()
+
+app.use(
+  remultExpress({
+    dataProvider: new SqlDatabase( // [!code highlight]
+      new BunSqliteDataProvider(new Database('./mydb.sqlite')), // [!code highlight]
+    ), // [!code highlight]
+  }),
+)
+```
+
+### sql.js
+
+Install sqlite3:
+
+```sh
+npm i sql.js
+```
+
+Set the `dataProvider` property:
+
+```ts
+import express from 'express'
+import { remultExpress } from 'remult/remult-express'
+import { SqlDatabase } from 'remult' // [!code highlight]
+import initSqlJs from 'sql.js' // [!code highlight]
+import { SqlJsDataProvider } from 'remult/remult-sql-js' // [!code highlight]
+
+const app = express()
+
+app.use(
+  remultExpress({
+    dataProvider: new SqlDatabase( // [!code highlight]
+      new SqlJsDataProvider(initSqlJs().then((x) => new x.Database())), // [!code highlight]
     ), // [!code highlight]
   }),
 )
