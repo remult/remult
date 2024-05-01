@@ -1,5 +1,5 @@
-import { SqlCommand, SqlResult } from '../core/index.js'
-import { SqliteCoreDataProvider } from '../core/remult-sqlite-core.js'
+import { SqlCommand, SqlResult } from './index.js'
+import { SqliteCoreDataProvider } from './remult-sqlite-core.js'
 import { Database } from 'sqlite3'
 
 export class Sqlite3DataProvider extends SqliteCoreDataProvider {
@@ -42,7 +42,7 @@ class Sqlite3Command implements SqlCommand {
     return key
   }
 }
-export class Sqlite3SqlResult implements SqlResult {
+class Sqlite3SqlResult implements SqlResult {
   constructor(private result: any[]) {
     this.rows = result
   }
