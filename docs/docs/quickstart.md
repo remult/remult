@@ -355,7 +355,7 @@ Set the `dataProvider` property:
 import express from 'express'
 import { remultExpress } from 'remult/remult-express'
 import { SqlDatabase } from 'remult' // [!code highlight]
-import Database from 'sqlite3' // [!code highlight]
+import sqlite3 from 'sqlite3' // [!code highlight]
 import { Sqlite3DataProvider } from 'remult/remult-sqlite3' // [!code highlight]
 
 const app = express()
@@ -363,7 +363,7 @@ const app = express()
 app.use(
   remultExpress({
     dataProvider: new SqlDatabase( // [!code highlight]
-      new Sqlite3DataProvider(new Database('./mydb.sqlite')), // [!code highlight]
+      new Sqlite3DataProvider(new sqlite3.Database('./mydb.sqlite')), // [!code highlight]
     ), // [!code highlight]
   }),
 )
