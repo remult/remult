@@ -2362,6 +2362,8 @@ export interface SqlImplementation extends HasWrapIdentifier {
   entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void>
   ensureSchema?(entities: EntityMetadata[]): Promise<void>
   supportsJsonColumnType?: boolean
+  /** true by default */
+  doesNotSupportReturningSyntax?: boolean
   orderByNullsFirst?: boolean
   end(): Promise<void>
   afterMutation?: VoidFunction
@@ -3545,7 +3547,12 @@ export declare class SqliteCoreDataProvider
 {
   createCommand: () => SqlCommand
   end: () => Promise<void>
-  constructor(createCommand: () => SqlCommand, end: () => Promise<void>)
+  doesNotSupportReturningSyntax: boolean
+  constructor(
+    createCommand: () => SqlCommand,
+    end: () => Promise<void>,
+    doesNotSupportReturningSyntax?: boolean,
+  )
   orderByNullsFirst?: boolean
   getLimitSqlSyntax(limit: number, offset: number): string
   afterMutation?: VoidFunction
@@ -3574,6 +3581,20 @@ export declare class BetterSqlite3DataProvider extends SqliteCoreDataProvider {
   constructor(db: Database)
 }
 export declare class BetterSqlite3SqlResult implements SqlResult {
+  private result
+  constructor(result: any[])
+  rows: any[]
+  getColumnKeyInResultForIndexInSelect(index: number): string
+}
+```
+
+## ./remult-sqlite3.js
+
+```ts
+export declare class Sqlite3DataProvider extends SqliteCoreDataProvider {
+  constructor(db: Database)
+}
+export declare class Sqlite3SqlResult implements SqlResult {
   private result
   constructor(result: any[])
   rows: any[]

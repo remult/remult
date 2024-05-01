@@ -41,7 +41,7 @@ describe.skipIf(!mongoConnectionString)('mongo with Transaction', () => {
       createEntity,
     },
     {
-      doesNotWorkForMongoNeedToInvestigate: true,
+      skipAutoIncrement: true,
     },
   )
   it('work with native mongo and condition', async () => {

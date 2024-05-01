@@ -9,6 +9,7 @@ export class Sqlite3DataProvider extends SqliteCoreDataProvider {
       async () => {
         db.close()
       },
+      true,
     )
   }
 }
@@ -18,11 +19,16 @@ class Sqlite3Command implements SqlCommand {
   constructor(private db: Database) {}
   async execute(sql: string): Promise<SqlResult> {
     return new Promise<SqlResult>((resolve, error) => {
-      this.db.all(sql, this.values, (err, rows) => {
-        console.log(sql, rows)
-        if (err) error(err)
-        else resolve(new Sqlite3SqlResult(rows))
-      })
+      if (sql.startsWith('insert into')) {
+        this.db.run(sql, this.values, function (err, rows) {
+          if (err) error(err)
+          else resolve(new Sqlite3SqlResult([this.lastID]))
+        })
+      } else
+        this.db.all(sql, this.values, (err, rows) => {
+          if (err) error(err)
+          else resolve(new Sqlite3SqlResult(rows))
+        })
     })
   }
   addParameterAndReturnSqlToken(val: any) {

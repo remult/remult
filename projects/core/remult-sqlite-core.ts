@@ -25,6 +25,7 @@ export class SqliteCoreDataProvider
   constructor(
     public createCommand: () => SqlCommand,
     public end: () => Promise<void>,
+    public doesNotSupportReturningSyntax = false,
   ) {}
 
   orderByNullsFirst?: boolean

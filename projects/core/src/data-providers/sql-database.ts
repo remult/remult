@@ -33,7 +33,10 @@ import type {
   EntityBase,
   RepositoryOverloads,
 } from '../remult3/RepositoryImplementation.js'
-import { getRepository } from '../remult3/RepositoryImplementation.js'
+import {
+  getRepository,
+  isAutoIncrement,
+} from '../remult3/RepositoryImplementation.js'
 import type { SortSegment } from '../sort.js'
 import { Sort } from '../sort.js'
 import { ValueConverters } from '../valueConverters.js'
@@ -396,11 +399,6 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
   async update(id: any, data: any): Promise<any> {
     let e = await this.init()
     let r = this.sql.createCommand()
-    let f = new FilterConsumerBridgeToSqlRequest(r, e)
-    Filter.fromEntityFilter(
-      this.entity,
-      this.entity.idMetadata.getIdFilter(id),
-    ).__applyToConsumer(f)
 
     let statement = 'update ' + e.$entityName + ' set '
     let added = false
@@ -417,13 +415,20 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
         }
       }
     }
+    const idFilter = this.entity.idMetadata.getIdFilter(id)
 
+    let f = new FilterConsumerBridgeToSqlRequest(r, e)
+    Filter.fromEntityFilter(this.entity, idFilter).__applyToConsumer(f)
     statement += await f.resolveWhere()
     let { colKeys, select } = this.buildSelect(e)
-    statement += ' returning ' + select
+    if (!this.sql._getSourceSql().doesNotSupportReturningSyntax)
+      statement += ' returning ' + select
 
     return r.execute(statement).then((sqlResult) => {
       this.sql._getSourceSql().afterMutation?.()
+      if (this.sql._getSourceSql().doesNotSupportReturningSyntax) {
+        return getRowAfterUpdate(this.entity, this, data, id, 'update')
+      }
       if (sqlResult.rows.length != 1)
         throw new Error(
           'Failed to update row with id ' +
@@ -434,6 +439,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
       return this.buildResultRow(colKeys, sqlResult.rows[0], sqlResult)
     })
   }
+
   async delete(id: any): Promise<void> {
     let e = await this.init()
     let r = this.sql.createCommand()
@@ -476,9 +482,27 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     let statement = `insert into ${e.$entityName} (${cols}) values (${vals})`
 
     let { colKeys, select } = this.buildSelect(e)
-    statement += ' returning ' + select
+    if (!this.sql._getSourceSql().doesNotSupportReturningSyntax)
+      statement += ' returning ' + select
     return await r.execute(statement).then((sql) => {
       this.sql._getSourceSql().afterMutation?.()
+      if (this.sql._getSourceSql().doesNotSupportReturningSyntax) {
+        if (isAutoIncrement(this.entity.idMetadata.field)) {
+          const id = sql.rows[0] as Number
+          if (typeof id !== 'number')
+            throw new Error(
+              'Auto increment, for a database that is does not support returning syntax, should return an array with the single last added id. Instead it returned: ' +
+                JSON.stringify(id),
+            )
+          return this.find({
+            where: new Filter((x) =>
+              x.isEqualTo(this.entity.idMetadata.field, id),
+            ),
+          }).then((r) => r[0])
+        } else {
+          return getRowAfterUpdate(this.entity, this, data, undefined, 'insert')
+        }
+      }
       return this.buildResultRow(colKeys, sql.rows[0], sql)
     })
   }
@@ -538,4 +562,29 @@ async function bulkInsert<entityType extends EntityBase>(
 
     await c.execute(sql)
   }
+}
+
+export function getRowAfterUpdate<entityType>(
+  meta: EntityMetadata<entityType>,
+  dataProvider: EntityDataProvider,
+  data: any,
+  id: any,
+  operation: string,
+): any {
+  const idFilter = id !== undefined ? meta.idMetadata.getIdFilter(id) : {}
+  return dataProvider
+    .find({
+      where: new Filter((x) => {
+        for (const field of meta.idMetadata.fields) {
+          x.isEqualTo(field, data[field.key] ?? idFilter[field.key])
+        }
+      }),
+    })
+    .then((r) => {
+      if (r.length != 1)
+        throw new Error(
+          `Failed to ${operation} row - result contained ${r.length} rows`,
+        )
+      return r[0]
+    })
 }
