@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.26.8] 2024-05-01
+
+- Added support for `sqlite3` that runs on stackblitz
+- Fixed issues with knex when id columns are being updated
+- Fixed issues with mongo when id columns are being updated
+
 ## [0.26.7] 2024-05-01
 
 - Fixed issue with id being empty in some cases in the saved hook
