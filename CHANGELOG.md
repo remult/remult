@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.26.7] TBD
+## [0.26.7] 2024-05-01
 
 - Fixed issue with id being empty in some cases in the saved hook
 - Added `describeEntity` and `describeBackendMethods` for better decorator-less support
