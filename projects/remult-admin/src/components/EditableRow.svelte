@@ -4,9 +4,8 @@
     EntityUIInfo,
     FieldUIInfo,
   } from '../../../core/server/remult-admin'
+  import { god } from '../global.svelte'
 
-  import { God } from '../God'
-  import { godStore } from '../stores/GodStore'
   import EditableField from './EditableField.svelte'
   import Table from './Table.svelte'
 
@@ -27,7 +26,7 @@
   $: relationTable =
     relation &&
     typeof relation === 'object' &&
-    $godStore.tables.find((x) => {
+    god.tables.find((x) => {
       return relation ? x.key === relation.entityKey : false
     })
   $: change = Boolean(columns.find((x) => value[x.key] !== rowFrozzen[x.key]))
@@ -138,7 +137,7 @@
             relation = r
           }}
         >
-          {$godStore.tables.find((x) => x.key === r.entityKey).caption}
+          {god.tables.find((x) => x.key === r.entityKey).caption}
         </button>
       {/each}
 

@@ -4,9 +4,9 @@
   import NotFound from './routes/NotFound.svelte'
   import Entity from './routes/Entity.svelte'
   import { onMount } from 'svelte'
-  import { God } from './God'
-  import { godStore } from './stores/GodStore'
+  import { God } from './God.svelte'
   import active from 'svelte-spa-router/active'
+  import { god } from './global.svelte'
 
   // export let params: { wild?: string } = {}
 
@@ -25,7 +25,7 @@
     className: 'active',
   }}>Schema</a
 >
-{#each $godStore?.tables ?? [] as t}
+{#each god?.tables ?? [] as t}
   <div>
     <a
       href="#/entity/{t.key}"

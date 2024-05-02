@@ -6,7 +6,7 @@ import {
 } from '../../../core/server/remult-admin'
 import { EditableRow } from './EditableRow'
 import Filter from './Filter'
-import { God } from '../God'
+import { God } from '../God.svelte'
 import {
   EntityFilter,
   FindOptions,
@@ -62,55 +62,90 @@ export function Table({
     setOptions({ ...options, orderBy: { [key]: dir } })
   }
 
-
   return (
     <>
       <div className="page-bar">
-
-          <button
-            className="icon-button"
-            onClick={() => {
-              const nav = document.querySelector('body')
-              nav?.classList.toggle('hide-navigation')
-            }}
+        <button
+          className="icon-button"
+          onClick={() => {
+            const nav = document.querySelector('body')
+            nav?.classList.toggle('hide-navigation')
+          }}
+        >
+          <svg
+            className="hamburger-icon"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
           >
-          <svg className="hamburger-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect y="4.68134" width="24" height="2.03049" fill="black"/><rect y="10.9847" width="24" height="2.03049" fill="black"/><rect y="17.2882" width="24" height="2.03049" fill="black"/></svg>
-          </button>
+            <rect y="4.68134" width="24" height="2.03049" fill="black" />
+            <rect y="10.9847" width="24" height="2.03049" fill="black" />
+            <rect y="17.2882" width="24" height="2.03049" fill="black" />
+          </svg>
+        </button>
 
-          <div className="page-bar__title">{repo.metadata.caption}</div>
+        <div className="page-bar__title">{repo.metadata.caption}</div>
 
-          <Filter
-            fields={columns}
-            filter={userFilter}
-            setFilter={(where) => setUserFilter(where)}
-          />
+        <Filter
+          fields={columns}
+          filter={userFilter}
+          setFilter={(where) => setUserFilter(where)}
+        />
 
-          <span>
-            {((options.page || 1) - 1) * options.limit! +
-              1 +
-              ' - ' +
-              (((options.page || 1) - 1) * options.limit! +
-                (items?.length || 0))}{' '}
-            of {totalRows}
-          </span>
+        <span>
+          {((options.page || 1) - 1) * options.limit! +
+            1 +
+            ' - ' +
+            (((options.page || 1) - 1) * options.limit! +
+              (items?.length || 0))}{' '}
+          of {totalRows}
+        </span>
 
-          <button
-            className="icon-button"
-            onClick={() =>
-              setOptions({ ...options, page: (options.page || 2) - 1 })
-            }
+        <button
+          className="icon-button"
+          onClick={() =>
+            setOptions({ ...options, page: (options.page || 2) - 1 })
+          }
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="w-6 h-6"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
-          </button>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15.75 19.5 8.25 12l7.5-7.5"
+            />
+          </svg>
+        </button>
 
-          <button
-            className="icon-button"
-            onClick={() =>
-              setOptions({ ...options, page: (options.page || 1) + 1 })
-            }
+        <button
+          className="icon-button"
+          onClick={() =>
+            setOptions({ ...options, page: (options.page || 1) + 1 })
+          }
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="w-6 h-6"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg>
-          </button>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="m8.25 4.5 7.5 7.5-7.5 7.5"
+            />
+          </svg>
+        </button>
       </div>
 
       <div className="table-container">

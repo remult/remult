@@ -1,5 +1,5 @@
 import { FieldUIInfo } from '../../../core/server/remult-admin'
-import { God } from '../God'
+import { God } from '../God.svelte'
 import { RelationField } from './RelationField'
 import {
   Content,
@@ -27,7 +27,6 @@ export function EditableField({
   if (info.type == 'json') {
     return <EditableJson {...{ value, onChange, info, god }} />
   } else {
-
     return (
       <>
         <input value={value} onChange={(e) => onChange(e.target.value)} />

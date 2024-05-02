@@ -5,7 +5,7 @@ import {
   EntityRelationToManyInfo,
   FieldUIInfo,
 } from '../../../core/server/remult-admin'
-import { God } from '../God'
+import { God } from '../God.svelte'
 import { Table } from './table'
 import { ErrorInfo } from '../../../core/src/data-interfaces'
 
@@ -198,19 +198,19 @@ export function EditableRow({
           <td colSpan={columns.length + 2}>
             <div className="extended__holder">
               <div className="extended__links">
-              {relations.map((r) => (
-                <a
-                  key={r.entityKey}
-                  className={'tab ' + (r === relation ? 'active' : '')}
-                  href=""
-                  onClick={(e) => {
-                    setRelation(r)
-                    e.preventDefault()
-                  }}
-                >
-                  {god.tables.find((x) => x.key === r.entityKey)!.caption}
-                </a>
-              ))}
+                {relations.map((r) => (
+                  <a
+                    key={r.entityKey}
+                    className={'tab ' + (r === relation ? 'active' : '')}
+                    href=""
+                    onClick={(e) => {
+                      setRelation(r)
+                      e.preventDefault()
+                    }}
+                  >
+                    {god.tables.find((x) => x.key === r.entityKey)!.caption}
+                  </a>
+                ))}
               </div>
 
               {relationTable && typeof relation === 'object' && (

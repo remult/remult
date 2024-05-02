@@ -13,7 +13,7 @@
 
   export let columns: FieldUIInfo[]
   export let relations: EntityRelationToManyInfo[]
-  export let repo: Repository<any>
+  export let repo: Repository<unknown>
   export let parentRelation: Record<string, any> = {}
 
   let options: FindOptions<any> = { limit: 25, page: 1 }

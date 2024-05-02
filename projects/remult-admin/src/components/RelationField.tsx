@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { FieldUIInfo } from '../../../core/server/remult-admin'
-import { God } from '../God'
+import { God } from '../God.svelte'
 import { SelectDialog } from './SelectDialog'
 
 export function RelationField({
@@ -24,7 +24,9 @@ export function RelationField({
   return (
     <div>
       {displayValue}
-      <button className="icon-button" onClick={() => setDialogOpen(true)}>🔎</button>
+      <button className="icon-button" onClick={() => setDialogOpen(true)}>
+        🔎
+      </button>
       {dialogOpen && (
         <SelectDialog
           relation={info.relationToOne!}

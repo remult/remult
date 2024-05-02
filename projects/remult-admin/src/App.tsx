@@ -10,7 +10,7 @@ import {
   Navigate,
   NavLink,
 } from 'react-router-dom'
-import { God } from './God'
+import { God } from './God.svelte'
 import { Erd } from './components/erd/erd'
 
 declare const entities: EntityUIInfo[]

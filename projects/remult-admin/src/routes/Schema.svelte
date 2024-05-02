@@ -13,9 +13,10 @@
 
   import '@xyflow/svelte/dist/style.css'
 
-  import { godStore } from '../stores/GodStore'
   import EntityNode from '../components/flow/EntityNode.svelte'
   import { calcOptimisedDefaultPlacement } from '../components/flow/calc'
+  import { onMount, untrack } from 'svelte'
+  import { god } from '../global.svelte'
 
   const nodes = writable<Node[]>([])
   const edges = writable<Edge[]>([])
@@ -24,83 +25,81 @@
     entity: EntityNode,
   }
 
-  $effect(() => {
-    if ($godStore) {
-      const data = calcOptimisedDefaultPlacement($godStore)
-      // console.log(`data`, data)
+  const init = () => {
+    const data = calcOptimisedDefaultPlacement(god.tables)
+    // console.log(`data`, data)
 
-      const localNodes = data.map((data, i) => ({
-        id: data.table.key,
-        position: data.position,
-        data: data.table,
-        type: 'entity',
-      }))
-      // const localNodes = $godStore.tables.map((data, i) => ({
-      //   id: data.key,
-      //   position: { x: i * 150, y: 0 },
-      //   data,
-      //   type: 'entity',
-      // }))
-      const saved = localStorage.getItem('erd')
-      if (saved) {
-        const savedNodes = JSON.parse(saved) as {
-          id: string
-          position: { x: number; y: number }
-        }[]
-        for (const savedNode of savedNodes) {
-          const node = localNodes.find((x) => x.id === savedNode.id)
-          if (node) node.position = savedNode.position
-        }
+    const localNodes = data.map((data, i) => ({
+      id: data.table.key,
+      position: data.position,
+      data: data.table,
+      type: 'entity',
+    }))
+    // const localNodes = $godStore.tables.map((data, i) => ({
+    //   id: data.key,
+    //   position: { x: i * 150, y: 0 },
+    //   data,
+    //   type: 'entity',
+    // }))
+    const saved = localStorage.getItem('erd')
+    if (saved) {
+      const savedNodes = JSON.parse(saved) as {
+        id: string
+        position: { x: number; y: number }
+      }[]
+      for (const savedNode of savedNodes) {
+        const node = localNodes.find((x) => x.id === savedNode.id)
+        if (node) node.position = savedNode.position
       }
-      nodes.set(localNodes)
+    }
+    nodes.set(localNodes)
 
-      const localEdges: Edge[] = []
+    const localEdges: Edge[] = []
 
-      for (const entity of $godStore.tables) {
-        function createEdge(
-          toEntity: string,
-          relationFields: Record<string, string>,
-        ) {
-          const target = $godStore.tables.find((x) => x.key === toEntity)
+    for (const entity of god.tables) {
+      function createEdge(
+        toEntity: string,
+        relationFields: Record<string, string>,
+      ) {
+        const target = god.tables.find((x) => x.key === toEntity)
 
-          if (target) {
-            const sourceNode = localNodes.find((x) => x.id === entity.key)!
-            const targetNode = localNodes.find((x) => x.id === target.key)!
-            for (const key in relationFields) {
-              if (Object.prototype.hasOwnProperty.call(relationFields, key)) {
-                const element = relationFields[key]
-                localEdges.push({
-                  id: `${entity.key}-${element}-to-one`,
-                  source: sourceNode.id,
-                  target: targetNode.id,
-                  ...returnHandles(sourceNode, targetNode, element, key),
-                })
-              }
+        if (target) {
+          const sourceNode = localNodes.find((x) => x.id === entity.key)!
+          const targetNode = localNodes.find((x) => x.id === target.key)!
+          for (const key in relationFields) {
+            if (Object.prototype.hasOwnProperty.call(relationFields, key)) {
+              const element = relationFields[key]
+              localEdges.push({
+                id: `${entity.key}-${element}-to-one`,
+                source: sourceNode.id,
+                target: targetNode.id,
+                ...returnHandles(sourceNode, targetNode, element, key),
+              })
             }
           }
         }
-        for (const field of entity.fields) {
-          if (field.relationToOne) {
-            createEdge(
-              field.relationToOne?.entityKey,
-              field.relationToOne.fields,
-            )
-          }
-        }
-        for (const relation of entity.relations) {
-          const target = $godStore.tables.find(
-            (x) => x.key === relation.entityKey,
-          )
-
-          if (target) {
-            createEdge(relation.entityKey, relation.fields)
-          }
+      }
+      for (const field of entity.fields) {
+        if (field.relationToOne) {
+          createEdge(field.relationToOne?.entityKey, field.relationToOne.fields)
         }
       }
-      // console.table(localEdges)
-      edges.set(localEdges)
+      for (const relation of entity.relations) {
+        const target = god.tables.find((x) => x.key === relation.entityKey)
+
+        if (target) {
+          createEdge(relation.entityKey, relation.fields)
+        }
+      }
     }
-  })
+    // console.table(localEdges)
+    edges.set(localEdges)
+  }
+
+  // $effect(() => {
+  //   init()
+  // })
+  // $derived()
 
   function returnHandles(
     sourceNode: Node,
@@ -129,6 +128,9 @@
 </script>
 
 <div style="height:100vh;">
+  <button onclick={() => init()}
+    >Load... tmp workaround... I don't know about $effect, $derived, ...</button
+  >
   {#if $nodes.length > 0}
     <SvelteFlowProvider>
       <SvelteFlow {nodes} {edges} {nodeTypes} fitView>

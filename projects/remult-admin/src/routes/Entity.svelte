@@ -1,16 +1,14 @@
 <script lang="ts">
   import Table from '../components/Table.svelte'
-  import { godStore } from '../stores/GodStore'
+  import { god } from '../global.svelte'
 
   type Props = { params: { wild?: string } }
   let { params = {} }: Props = $props()
 
-  let table: (typeof $godStore.tables)[0] = $state(undefined)
+  let table: (typeof god.tables)[0] = $state(undefined)
 
   $effect(() => {
-    if ($godStore) {
-      table = $godStore.tables.find((c) => c.key === params.wild)
-    }
+    table = god.tables.find((c) => c.key === params.wild)
   })
 </script>
 

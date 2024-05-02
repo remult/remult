@@ -10,7 +10,7 @@ import ReactFlow, {
   getIncomers,
   Edge,
 } from 'reactflow'
-import { God } from '../../God'
+import { God } from '../../God.svelte'
 import 'reactflow/dist/style.css'
 
 import { EntityNode } from './Entity'

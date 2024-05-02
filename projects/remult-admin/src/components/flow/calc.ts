@@ -1,6 +1,9 @@
-import { God } from '../../God'
+import { Repository } from '../../../../core'
+import { EntityUIInfo } from '../../../../core/server/remult-admin'
 
-export const calcOptimisedDefaultPlacement = (god: God) => {
+export const calcOptimisedDefaultPlacement = (
+  tables: (EntityUIInfo & { repo: Repository<unknown> })[],
+) => {
   const numColumns = 8
   const tableWidth = 250
   const rowHeight = 32
@@ -19,7 +22,7 @@ export const calcOptimisedDefaultPlacement = (god: God) => {
   let isLeft = true
 
   // First pass: Place tables and calculate column heights
-  for (let table of god.tables) {
+  for (let table of tables) {
     let tableHeight = (table.fields.length + 1) * rowHeight + tableHeightSpace
     const mins = Math.min(...columns)
     let columnIndex = isLeft ? columns.indexOf(mins) : columns.lastIndexOf(mins)

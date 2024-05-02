@@ -3,7 +3,7 @@ import {
   FieldRelationToOneInfo,
   FieldUIInfo,
 } from '../../../core/server/remult-admin'
-import { God } from '../God'
+import { God } from '../God.svelte'
 
 export function SelectDialog({
   relation,
