@@ -3,7 +3,7 @@ Decorates classes that should be used as entities.
 Receives a key and an array of EntityOptions.
    
    
-   *example*
+   #### example:
    ```ts
    import  { Entity, Fields } from "remult";
    @Entity("tasks", {
@@ -20,18 +20,18 @@ Receives a key and an array of EntityOptions.
    ```
    
    
-   *note*
+   #### note:
    EntityOptions can be set in two ways:
    
    
-   *example*
+   #### example:
    ```ts
    // as an object
    @Entity("tasks",{ allowApiCrud:true })
    ```
    
    
-   *example*
+   #### example:
    ```ts
    // as an arrow function that receives `remult` as a parameter
    @Entity("tasks", (options,remult) => options.allowApiCrud = true)
@@ -42,11 +42,11 @@ A human readable name for the entity
 Determines if this Entity is available for get requests using Rest Api
    
    
-   *description*
+   #### description:
    Determines if one has any access to the data of an entity.
    
    
-   *see*
+   #### see:
     - [allowed](http://remult.dev/docs/allowed.html)
     - to restrict data based on a criteria, use [apiPrefilter](https://remult.dev/docs/ref_entity.html#apiprefilter)
    
@@ -54,67 +54,111 @@ Determines if this Entity is available for get requests using Rest Api
 Determines if this entity can be updated through the api.
    
    
-   *see*
-   [allowed](http://remult.dev/docs/allowed.html)
+   #### see:
+    - [allowed](http://remult.dev/docs/allowed.html)
+    - [Access Control](https://remult.dev/docs/access-control)
+   
 ## allowApiDelete
 Determines if entries for this entity can be deleted through the api.
    
    
-   *see*
-   [allowed](http://remult.dev/docs/allowed.html)
+   #### see:
+    - [allowed](http://remult.dev/docs/allowed.html)
+    - [Access Control](https://remult.dev/docs/access-control)
+   
 ## allowApiInsert
 Determines if new entries for this entity can be posted through the api.
    
    
-   *see*
-   [allowed](http://remult.dev/docs/allowed.html)
+   #### see:
+    - [allowed](http://remult.dev/docs/allowed.html)
+    - [Access Control](https://remult.dev/docs/access-control)
+   
 ## allowApiCrud
 sets  the `allowApiUpdate`, `allowApiDelete` and `allowApiInsert` properties in a single set
 ## apiPrefilter
-A filter that determines which rows can be queries using the api.
+An optional filter that determines which rows can be queried using the API.
+This filter is applied to all CRUD operations to ensure that only authorized data is accessible.
+
+Use `apiPrefilter` to restrict data based on user profile or other conditions.
    
    
-   *description*
-   Use apiPrefilter in cases where you to restrict data based on user profile
-   
-   
-   *example*
+   #### example:
    ```ts
-   apiPrefilter: { archive:false }
+   // Only include non-archived items in API responses
+   apiPrefilter: { archive: false }
    ```
    
    
-   *example*
+   #### example:
    ```ts
-   apiPrefilter: ()=> remult.isAllowed("admin")?{}:{ archive:false }
+   // Allow admins to access all rows, but restrict non-admins to non-archived items
+   apiPrefilter: () => remult.isAllowed("admin") ? {} : { archive: false }
    ```
    
    
-   *see*
-   [EntityFilter](http://remult.dev/docs/entityFilter.html)
+   #### see:
+   [EntityFilter](https://remult.dev/docs/access-control.html#filtering-accessible-rows)
+## apiPreprocessFilter
+An optional function that allows for preprocessing or modifying the EntityFilter for a specific entity type
+before it is used in API CRUD operations. This function can be used to enforce additional access control
+rules or adjust the filter based on the current context or specific request.
+   
+   
+   #### returns:
+   The modified EntityFilter or a Promise that resolves to the modified EntityFilter.
+   
+   
+   #### example:
+   ```typescript
+   @Entity<Task>("tasks", {
+     apiPreprocessFilter: async (filter, { getPreciseValues }) => {
+       // Ensure that users can only query tasks for specific customers
+       const preciseValues = await getPreciseValues();
+       if (!preciseValues.customerId) {
+         throw new ForbiddenError("You must specify a valid customerId filter");
+       }
+       return filter;
+     }
+   })
+   ```
+
+Arguments:
+* **filter** - The initial EntityFilter for the entity type.
+* **event** - Additional information and utilities for preprocessing the filter.
+## backendPreprocessFilter
+Similar to apiPreprocessFilter, but for backend operations.
+   
+   
+   #### returns:
+   The modified EntityFilter or a Promise that resolves to the modified EntityFilter.
+
+Arguments:
+* **filter** - The initial EntityFilter for the entity type.
+* **event** - Additional information and utilities for preprocessing the filter.
 ## backendPrefilter
 A filter that will be used for all queries from this entity both from the API and from within the backend.
    
    
-   *example*
+   #### example:
    ```ts
    backendPrefilter: { archive:false }
    ```
    
    
-   *see*
+   #### see:
    [EntityFilter](http://remult.dev/docs/entityFilter.html)
 ## defaultOrderBy
 An order by to be used, in case no order by was specified
    
    
-   *example*
+   #### example:
    ```ts
    defaultOrderBy: { name: "asc" }
    ```
    
    
-   *example*
+   #### example:
    ```ts
    defaultOrderBy: { price: "desc", name: "asc" }
    ```
@@ -124,7 +168,7 @@ If the `error` property of the entity's ref or any of its fields will be set, th
 this is the place to run logic that we want to run in any case before an entity is saved.
    
    
-   *example*
+   #### example:
    ```ts
    @Entity<Task>("tasks", {
      saving: async (task, e) => {
@@ -137,11 +181,11 @@ this is the place to run logic that we want to run in any case before an entity 
    ```
    
    
-   *link*
+   #### link:
    LifeCycleEvent object
    
    
-   *see*
+   #### see:
    [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
 
 Arguments:
@@ -151,11 +195,11 @@ Arguments:
 A hook that runs after an entity has been successfully saved.
    
    
-   *link*
+   #### link:
    LifeCycleEvent object
    
    
-   *see*
+   #### see:
    [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
 
 Arguments:
@@ -165,11 +209,11 @@ Arguments:
 A hook that runs before an entity is deleted.
    
    
-   *link*
+   #### link:
    LifeCycleEvent object
    
    
-   *see*
+   #### see:
    [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
 
 Arguments:
@@ -179,11 +223,11 @@ Arguments:
 A hook that runs after an entity has been successfully deleted.
    
    
-   *link*
+   #### link:
    LifeCycleEvent object
    
    
-   *see*
+   #### see:
    [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
 
 Arguments:
@@ -194,11 +238,11 @@ A hook that runs to perform validation checks on an entity before saving.
 This hook is also executed on the frontend.
    
    
-   *link*
+   #### link:
    LifeCycleEvent object
    
    
-   *see*
+   #### see:
    [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
 
 Arguments:
@@ -209,7 +253,7 @@ The name of the table in the database that holds the data for this entity.
 If no name is set, the `key` will be used instead.
    
    
-   *example*
+   #### example:
    ```ts
    dbName:'myProducts'
    
@@ -217,24 +261,39 @@ If no name is set, the `key` will be used instead.
    ```
    
    
-   *example*
+   #### example:
    ```ts
    dbName:'public."myProducts"'
    ```
 ## sqlExpression
 For entities that are based on SQL expressions instead of a physical table or view
+   
+   
+   #### example:
+   ```ts
+   .@Entity('people',{
+   sqlExpression:`select id,name from employees
+        union all select id,name from contractors`,
+   })
+   export class Person{
+   .@Fields.string()
+   id=''
+   .@Fields.string()
+   name=''
+   }
+   ```
 ## id
 An arrow function that identifies the `id` column to use for this entity
    
    
-   *example*
+   #### example:
    ```ts
    //Single column id
    @Entity<Products>("products", { id: {productCode: true} })
    ```
    
    
-   *example*
+   #### example:
    ```ts
    //Multiple columns id
    @Entity<OrderDetails>("orderDetails", { id:{ orderId:true, productCode:true} })

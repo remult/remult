@@ -1,5 +1,13 @@
 import type { EntityFilter, FindOptions, Repository } from '../../core'
-import { Entity, EntityBase, Fields, SqlDatabase, remult } from '../../core'
+import {
+  Entity,
+  EntityBase,
+  Field,
+  Fields,
+  SqlDatabase,
+  remult,
+  repo,
+} from '../../core'
 import { RestDataProvider } from '../../core/src//data-providers/rest-data-provider'
 import {
   Filter,
@@ -7,7 +15,7 @@ import {
 } from '../../core/src//filter/filter-interfaces'
 import { DataApi } from '../../core/src/data-api'
 import { InMemoryDataProvider } from '../../core/src/data-providers/in-memory-database'
-import { insertFourRows } from './RowProvider.spec'
+
 import type { CategoriesForTesting } from './remult-3-entities'
 import { Categories } from './remult-3-entities'
 
@@ -15,12 +23,17 @@ import { ArrayEntityDataProvider } from '../../core/src//data-providers/array-en
 
 import { beforeAll, describe, expect, it } from 'vitest'
 import { Remult } from '../../core/src//context'
-import { describeClass } from '../../core/src//remult3/DecoratorReplacer'
+import {
+  describeClass,
+  describeEntity,
+} from '../../core/src/remult3/classDescribers'
 import { Done } from './Done'
 import { TestDataApiResponse } from './TestDataApiResponse'
 import { entityForrawFilter } from './entityForCustomFilter'
 import { testRestDb } from './testHelper'
-import { createEntity } from './dynamic-classes'
+import { entity } from './dynamic-classes'
+import { Language, insertFourRows } from './entities-for-tests.js'
+import { Relations } from '../../core/index.js'
 
 describe('test where stuff', () => {
   let repo: Repository<CategoriesForTesting>
@@ -51,6 +64,42 @@ describe('test where stuff', () => {
     const json = await Filter.fromEntityFilter(repo.metadata, {
       $and: [{ id: 1 }, { id: 2 }],
     }).toJson()
+
+    expect(
+      await repo.count(Filter.entityFilterFromJson(repo.metadata, json)),
+    ).toBe(0)
+  })
+  it('test or and And values', async () => {
+    const json = await Filter.fromEntityFilter(repo.metadata, {
+      $and: [
+        {
+          $or: [{ categoryName: '1' }, { categoryName: '1' }],
+        },
+        {
+          $or: [{ id: 1 }, { id: 2 }],
+        },
+      ],
+    }).toJson()
+    expect(json).toMatchInlineSnapshot(`
+      {
+        "OR": [
+          {
+            "categoryName": "1",
+          },
+          {
+            "categoryName": "1",
+          },
+          [
+            {
+              "id": 1,
+            },
+            {
+              "id": 2,
+            },
+          ],
+        ],
+      }
+    `)
 
     expect(
       await repo.count(Filter.entityFilterFromJson(repo.metadata, json)),
@@ -88,21 +137,15 @@ describe('test where stuff', () => {
     expect(Filter.entityFilterFromJson(repo.metadata, json))
       .toMatchInlineSnapshot(`
         {
-          "$and": [
+          "$or": [
             {
-              "id": 2,
+              "id": 1,
             },
             {
-              "$or": [
-                {
-                  "id": 1,
-                },
-                {
-                  "id": 3,
-                },
-              ],
+              "id": 3,
             },
           ],
+          "id": 2,
         }
       `)
   })
@@ -305,16 +348,18 @@ describe('custom filter', () => {
       id = 0
       title = ''
     }
-    describeClass(
+    describeEntity(
       myEntity,
-      Entity('test', {
-        defaultOrderBy: {
-          title: 'asc',
-        },
-      }),
+      'test',
+
       {
         id: Fields.integer(),
         title: Fields.string(),
+      },
+      {
+        defaultOrderBy: {
+          title: 'asc',
+        },
       },
     )
 
@@ -383,8 +428,10 @@ describe('custom filter', () => {
         },
       },
       {
-        $custom$filter: {
-          oneAndThree: true,
+        where: {
+          $custom$filter: {
+            oneAndThree: true,
+          },
         },
       },
     )
@@ -413,8 +460,10 @@ describe('custom filter', () => {
         },
       },
       {
-        $custom$filter: {
-          oneAndThree: true,
+        where: {
+          $custom$filter: {
+            oneAndThree: true,
+          },
         },
       },
     )
@@ -588,7 +637,7 @@ describe('missing fields are added in array column', async () => {
     ).toMatchInlineSnapshot('"completed = true"')
   })
   it('test toToRawFilter and api prefilter', async () => {
-    const e = createEntity(
+    const e = entity(
       'tasks',
       {
         id: Fields.number(),
@@ -610,5 +659,165 @@ describe('missing fields are added in array column', async () => {
     } finally {
       remult.dataProvider = db
     }
+  })
+})
+
+describe('Filter.getPreciseFilterValuesForKey', () => {
+  @Entity('category')
+  class Category {
+    @Fields.string()
+    id = ''
+    @Fields.string()
+    name = ''
+  }
+  @Entity('orders')
+  class order {
+    @Fields.string()
+    id = ''
+    @Fields.string()
+    customerId: string = ''
+    @Fields.string()
+    status: string = ''
+    @Field(() => Language)
+    language = Language.Hebrew
+    @Relations.toOne(() => order)
+    parentOrder?: order
+    @Relations.toOne(() => Category)
+    category?: Category
+  }
+  const meta = repo(order).metadata
+  it('Should work with value list field type', async () => {
+    const preciseValues = await Filter.getPreciseValues(meta, {
+      language: Language.Russian,
+      parentOrder: { $id: '123' },
+    })
+
+    expect(preciseValues.language).toEqual([Language.Russian])
+  })
+  it('should work with relation 1', async () => {
+    const preciseValues = await Filter.getPreciseValues(meta, {
+      parentOrder: { $id: '123' },
+    })
+    expect(preciseValues.parentOrder[0].id).toEqual('123')
+  })
+  it('should work with relation 2', async () => {
+    const preciseValues = await Filter.getPreciseValues(meta, {
+      category: { $id: '123' },
+    })
+    expect(preciseValues.category[0].id).toEqual('123')
+  })
+  it('should work with relation with non common id', async () => {
+    @Entity('xx')
+    class IdThatIsNotId {
+      @Fields.integer()
+      index = 0
+      @Fields.string()
+      name = ''
+    }
+    @Entity('yy')
+    class Product {
+      @Fields.string()
+      id = ''
+      @Relations.toOne(() => IdThatIsNotId)
+      category?: IdThatIsNotId
+    }
+    const meta = repo(Product).metadata
+
+    const preciseValues = await Filter.getPreciseValues(meta, {
+      category: repo(IdThatIsNotId).create({ index: 3, name: '' }),
+    })
+    expect(preciseValues.category[0].index).toEqual(3)
+  })
+  it('should work with compound', async () => {
+    @Entity<CompoundId>('xx', {
+      id: { company: true, index: true },
+    })
+    class CompoundId {
+      @Fields.integer()
+      company = 0
+      @Fields.integer()
+      index = 0
+      @Fields.string()
+      name = ''
+    }
+    @Entity('yy')
+    class Product {
+      @Fields.string()
+      id = ''
+      @Relations.toOne(() => CompoundId)
+      category?: CompoundId
+    }
+    const meta = repo(Product).metadata
+
+    const preciseValues = await Filter.getPreciseValues(meta, {
+      category: repo(CompoundId).create({ company: 7, index: 3, name: '' }),
+    })
+    expect(preciseValues.category[0].index).toEqual(3)
+    expect(preciseValues.category[0].company).toEqual(7)
+  })
+
+  it('should return an array of values for a filter with multiple fields, including the target keys', async () => {
+    const preciseValues = await Filter.getPreciseValues(meta, {
+      customerId: '123',
+      status: 'active',
+    })
+
+    expect(preciseValues.customerId).toEqual(['123'])
+    expect(preciseValues.status).toEqual(['active'])
+  })
+
+  it('should return undefined for a filter with multiple fields, where one of the target keys has a non-equality operator', async () => {
+    const preciseValues = await Filter.getPreciseValues(meta, {
+      customerId: { $gt: '123' },
+      status: 'active',
+    })
+    expect(preciseValues.customerId).toBeUndefined()
+    expect(preciseValues.status).toEqual(['active'])
+  })
+
+  it('should return an array of values for an $or filter with multiple fields, including the target keys', async () => {
+    const preciseValues = await Filter.getPreciseValues(meta, {
+      $or: [
+        { customerId: '123', status: 'active' },
+        { customerId: '456', status: 'inactive' },
+      ],
+    })
+    expect(preciseValues.customerId).toEqual(['123', '456'])
+    expect(preciseValues.status).toEqual(['active', 'inactive'])
+  })
+
+  it('should return undefined for an $or filter with multiple fields, where one path does not include one of the target keys', async () => {
+    const preciseValues = await Filter.getPreciseValues(meta, {
+      $or: [{ customerId: '123', status: 'active' }, { customerId: '456' }],
+    })
+    expect(preciseValues.customerId).toEqual(['123', '456'])
+    expect(preciseValues.status).toBeUndefined()
+  })
+
+  it('should return undefined for an $or filter with multiple fields, where one path has a non-equality operator for one of the target keys', async () => {
+    const preciseValues = await Filter.getPreciseValues(meta, {
+      $or: [
+        { customerId: '123', status: 'active' },
+        { customerId: { $gt: '200' }, status: 'inactive' },
+      ],
+    })
+    expect(preciseValues.customerId).toBeUndefined()
+    expect(preciseValues.status).toEqual(['active', 'inactive'])
+  })
+  it('doc', async () => {
+    const preciseValues = await Filter.getPreciseValues(meta, {
+      status: { $ne: 'active' },
+      $or: [{ customerId: ['1', '2'] }, { customerId: '3' }],
+    })
+    expect({ ...preciseValues }).toMatchInlineSnapshot(`
+      {
+        "customerId": [
+          "1",
+          "2",
+          "3",
+        ],
+        "status": undefined,
+      }
+    `)
   })
 })

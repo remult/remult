@@ -1,0 +1,16 @@
+{
+  "name": "bun-react-hono-monorepo-todo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start:frontend": "cd packages/frontend && bun install && bun run start",
+    "start:backend": "cd packages/backend && bun install && bun run start",
+    "boot:app": "bun run concurrently \"bun:start:*\""
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

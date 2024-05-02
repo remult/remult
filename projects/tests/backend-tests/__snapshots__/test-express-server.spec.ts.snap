@@ -40,6 +40,23 @@ exports[`test express server > test open api 1`] = `
         },
         "type": "object",
       },
+      "test_compound_id": {
+        "properties": {
+          "a": {
+            "type": "string",
+          },
+          "b": {
+            "type": "string",
+          },
+          "c": {
+            "type": "string",
+          },
+          "d": {
+            "type": "string",
+          },
+        },
+        "type": "object",
+      },
     },
     "securitySchemes": {
       "bearerAuth": {
@@ -118,6 +135,65 @@ exports[`test express server > test open api 1`] = `
       },
     },
     "/api/tasks": {
+      "delete": {
+        "description": "deletes row of tasks. supports filter operators. For more info on filtering [see this article](https://remult.dev/docs/rest-api.html#filter)",
+        "parameters": [
+          {
+            "description": "filter equal to id. See [more filtering options](https://remult.dev/docs/rest-api.html#filter)",
+            "in": "query",
+            "name": "id",
+            "required": false,
+            "style": "simple",
+            "type": "string",
+          },
+          {
+            "description": "filter equal to title. See [more filtering options](https://remult.dev/docs/rest-api.html#filter)",
+            "in": "query",
+            "name": "title",
+            "required": false,
+            "style": "simple",
+            "type": "string",
+          },
+          {
+            "description": "filter equal to completed. See [more filtering options](https://remult.dev/docs/rest-api.html#filter)",
+            "in": "query",
+            "name": "completed",
+            "required": false,
+            "style": "simple",
+            "type": "boolean",
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "deleted": {
+                      "type": "number",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "returns the number of deleted rows tasks",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvalidResponse",
+                },
+              },
+            },
+            "description": "Error: Bad Request",
+          },
+        },
+        "tags": [
+          "tasks",
+        ],
+      },
       "get": {
         "description": "return an array of tasks. supports filter operators. For more info on filtering [see this article](https://remult.dev/docs/rest-api.html#filter)",
         "parameters": [
@@ -225,6 +301,74 @@ exports[`test express server > test open api 1`] = `
               },
             },
             "description": "Created",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvalidResponse",
+                },
+              },
+            },
+            "description": "Error: Bad Request",
+          },
+        },
+        "tags": [
+          "tasks",
+        ],
+      },
+      "put": {
+        "description": "updates row of tasks. supports filter operators. For more info on filtering [see this article](https://remult.dev/docs/rest-api.html#filter)",
+        "parameters": [
+          {
+            "description": "filter equal to id. See [more filtering options](https://remult.dev/docs/rest-api.html#filter)",
+            "in": "query",
+            "name": "id",
+            "required": false,
+            "style": "simple",
+            "type": "string",
+          },
+          {
+            "description": "filter equal to title. See [more filtering options](https://remult.dev/docs/rest-api.html#filter)",
+            "in": "query",
+            "name": "title",
+            "required": false,
+            "style": "simple",
+            "type": "string",
+          },
+          {
+            "description": "filter equal to completed. See [more filtering options](https://remult.dev/docs/rest-api.html#filter)",
+            "in": "query",
+            "name": "completed",
+            "required": false,
+            "style": "simple",
+            "type": "boolean",
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/tasksMutation",
+              },
+            },
+          },
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "updated": {
+                      "type": "number",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "returns the number of updated rows tasks",
           },
           "400": {
             "content": {
@@ -517,6 +661,395 @@ exports[`test express server > test open api 1`] = `
         },
         "tags": [
           "Static Backend Methods",
+        ],
+      },
+    },
+    "/api/test_compound_id": {
+      "delete": {
+        "description": "deletes row of test_compound_id. supports filter operators. For more info on filtering [see this article](https://remult.dev/docs/rest-api.html#filter)",
+        "parameters": [
+          {
+            "description": "filter equal to a. See [more filtering options](https://remult.dev/docs/rest-api.html#filter)",
+            "in": "query",
+            "name": "a",
+            "required": false,
+            "style": "simple",
+            "type": "string",
+          },
+          {
+            "description": "filter equal to b. See [more filtering options](https://remult.dev/docs/rest-api.html#filter)",
+            "in": "query",
+            "name": "b",
+            "required": false,
+            "style": "simple",
+            "type": "string",
+          },
+          {
+            "description": "filter equal to c. See [more filtering options](https://remult.dev/docs/rest-api.html#filter)",
+            "in": "query",
+            "name": "c",
+            "required": false,
+            "style": "simple",
+            "type": "string",
+          },
+          {
+            "description": "filter equal to d. See [more filtering options](https://remult.dev/docs/rest-api.html#filter)",
+            "in": "query",
+            "name": "d",
+            "required": false,
+            "style": "simple",
+            "type": "string",
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "deleted": {
+                      "type": "number",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "returns the number of deleted rows test_compound_id",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvalidResponse",
+                },
+              },
+            },
+            "description": "Error: Bad Request",
+          },
+        },
+        "tags": [
+          "test_compound_id",
+        ],
+      },
+      "get": {
+        "description": "return an array of test_compound_id. supports filter operators. For more info on filtering [see this article](https://remult.dev/docs/rest-api.html#filter)",
+        "parameters": [
+          {
+            "description": "limit the number of returned rows, default 100",
+            "in": "query",
+            "name": "_limit",
+            "required": false,
+            "schema": {
+              "type": "integer",
+            },
+            "style": "simple",
+          },
+          {
+            "description": "to be used for paging",
+            "in": "query",
+            "name": "_page",
+            "required": false,
+            "schema": {
+              "type": "integer",
+            },
+          },
+          {
+            "description": "the columns to sort on",
+            "in": "query",
+            "name": "_sort",
+            "required": false,
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "description": "the sort order to user for the columns in \`_sort\`",
+            "in": "query",
+            "name": "_order",
+            "required": false,
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "description": "filter equal to a. See [more filtering options](https://remult.dev/docs/rest-api.html#filter)",
+            "in": "query",
+            "name": "a",
+            "required": false,
+            "style": "simple",
+            "type": "string",
+          },
+          {
+            "description": "filter equal to b. See [more filtering options](https://remult.dev/docs/rest-api.html#filter)",
+            "in": "query",
+            "name": "b",
+            "required": false,
+            "style": "simple",
+            "type": "string",
+          },
+          {
+            "description": "filter equal to c. See [more filtering options](https://remult.dev/docs/rest-api.html#filter)",
+            "in": "query",
+            "name": "c",
+            "required": false,
+            "style": "simple",
+            "type": "string",
+          },
+          {
+            "description": "filter equal to d. See [more filtering options](https://remult.dev/docs/rest-api.html#filter)",
+            "in": "query",
+            "name": "d",
+            "required": false,
+            "style": "simple",
+            "type": "string",
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/test_compound_id",
+                  },
+                  "type": "array",
+                },
+              },
+            },
+            "description": "returns an array of test_compound_id",
+          },
+        },
+        "tags": [
+          "test_compound_id",
+        ],
+      },
+      "post": {
+        "produces": [
+          "application/json",
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/test_compound_id",
+              },
+            },
+          },
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/test_compound_id",
+                },
+              },
+            },
+            "description": "Created",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvalidResponse",
+                },
+              },
+            },
+            "description": "Error: Bad Request",
+          },
+        },
+        "tags": [
+          "test_compound_id",
+        ],
+      },
+      "put": {
+        "description": "updates row of test_compound_id. supports filter operators. For more info on filtering [see this article](https://remult.dev/docs/rest-api.html#filter)",
+        "parameters": [
+          {
+            "description": "filter equal to a. See [more filtering options](https://remult.dev/docs/rest-api.html#filter)",
+            "in": "query",
+            "name": "a",
+            "required": false,
+            "style": "simple",
+            "type": "string",
+          },
+          {
+            "description": "filter equal to b. See [more filtering options](https://remult.dev/docs/rest-api.html#filter)",
+            "in": "query",
+            "name": "b",
+            "required": false,
+            "style": "simple",
+            "type": "string",
+          },
+          {
+            "description": "filter equal to c. See [more filtering options](https://remult.dev/docs/rest-api.html#filter)",
+            "in": "query",
+            "name": "c",
+            "required": false,
+            "style": "simple",
+            "type": "string",
+          },
+          {
+            "description": "filter equal to d. See [more filtering options](https://remult.dev/docs/rest-api.html#filter)",
+            "in": "query",
+            "name": "d",
+            "required": false,
+            "style": "simple",
+            "type": "string",
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/test_compound_id",
+              },
+            },
+          },
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "updated": {
+                      "type": "number",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "returns the number of updated rows test_compound_id",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvalidResponse",
+                },
+              },
+            },
+            "description": "Error: Bad Request",
+          },
+        },
+        "tags": [
+          "test_compound_id",
+        ],
+      },
+    },
+    "/api/test_compound_id/{id}": {
+      "delete": {
+        "parameters": [
+          {
+            "description": "id of test_compound_id",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "produces": [
+          "application/json",
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvalidResponse",
+                },
+              },
+            },
+            "description": "Error: Bad Request",
+          },
+        },
+        "tags": [
+          "test_compound_id",
+        ],
+      },
+      "get": {
+        "parameters": [
+          {
+            "description": "id of test_compound_id",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/test_compound_id",
+                },
+              },
+            },
+          },
+        },
+        "tags": [
+          "test_compound_id",
+        ],
+      },
+      "put": {
+        "parameters": [
+          {
+            "description": "id of test_compound_id",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "produces": [
+          "application/json",
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/test_compound_id",
+              },
+            },
+          },
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/test_compound_id",
+                },
+              },
+            },
+            "description": "successful operation",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvalidResponse",
+                },
+              },
+            },
+            "description": "Error: Bad Request",
+          },
+        },
+        "tags": [
+          "test_compound_id",
         ],
       },
     },

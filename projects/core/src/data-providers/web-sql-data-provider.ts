@@ -1,5 +1,9 @@
 import type { __RowsOfDataForTesting } from '../__RowsOfDataForTesting.js'
-import type { SqlCommand, SqlImplementation, SqlResult } from '../sql-command.js'
+import type {
+  SqlCommand,
+  SqlImplementation,
+  SqlResult,
+} from '../sql-command.js'
 
 import type { FieldMetadata } from '../column-interfaces.js'
 import type { Remult } from '../context.js'
@@ -33,15 +37,7 @@ export class WebSqlDataProvider
       databaseSize,
     )
   }
-  // return instance of websql.Database class - see @types/websql
-  static getDb(remult?: Remult): any {
-    const sql = SqlDatabase.getDb(remult)
-    const me = sql._getSourceSql() as WebSqlDataProvider
-    if (!me.db) {
-      throw 'the data provider is not a WebSqlDataProvider'
-    }
-    return me.db
-  }
+  async end() {}
 
   getLimitSqlSyntax(limit: number, offset: number) {
     return ' limit ' + limit + ' offset ' + offset
@@ -117,7 +113,10 @@ class WebSqlBridgeToSQLCommand implements SqlCommand {
   //@ts-ignore
   constructor(private source: Database) {}
   values: any[] = []
-  addParameterAndReturnSqlToken(val: any): string {
+  addParameterAndReturnSqlToken(val: any) {
+    return this.param(val)
+  }
+  param(val: any): string {
     this.values.push(val)
     return '~' + this.values.length + '~'
   }

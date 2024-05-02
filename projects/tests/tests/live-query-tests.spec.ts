@@ -194,7 +194,7 @@ class PromiseResolver {
       let p = this.promises
       this.promises = []
 
-      await Promise.all(p).catch((err) => {})
+      await Promise.all(p).catch((err) => { })
     }
   }
 }
@@ -203,7 +203,7 @@ describe('Live Query Client', () => {
   it('registers once', async () => {
     let open = 0
     let get = 0
-    let sendMessage = (x) => {}
+    let sendMessage = (x) => { }
     const lqc = new LiveQueryClient(
       () => ({
         subscriptionClient: {
@@ -215,7 +215,7 @@ describe('Live Query Client', () => {
               },
               async subscribe(channel, onMessage) {
                 sendMessage = (x) => onMessage([x])
-                return () => {}
+                return () => { }
               },
             }
           },
@@ -231,7 +231,7 @@ describe('Live Query Client', () => {
             ]
           },
           put: () => undefined,
-          post: async () => {},
+          post: async () => { },
           delete: () => undefined,
         },
       }),
@@ -296,8 +296,8 @@ describe('Live Query Client', () => {
       serverRepo as any,
       {},
       {
-        complete: () => {},
-        error: () => {},
+        complete: () => { },
+        error: () => { },
         next: ({ applyChanges: reducer }) => {
           result1 = reducer(result1) as any
         },
@@ -344,7 +344,7 @@ describe('test live query full cycle', () => {
     var dataApi = new DataApi(repo, remult)
     const clientStatus = {
       connected: true,
-      reconnect: () => {},
+      reconnect: () => { },
     }
     let unsubscribeCount = 0
 
@@ -361,7 +361,7 @@ describe('test live query full cycle', () => {
               const channels: string[] = []
 
               return {
-                close() {},
+                close() { },
                 async subscribe(channel, onMessage) {
                   channels.push(channel)
                   mh.push((c, message) => {
@@ -590,7 +590,7 @@ describe('test live query full cycle', () => {
               mh = mh.filter((h) => h !== handler)
             }
           },
-          close: () => {},
+          close: () => { },
         }
       },
     }
@@ -663,7 +663,7 @@ describe('test live query full cycle', () => {
               mh = mh.filter((h) => h !== handler)
             }
           },
-          close: () => {},
+          close: () => { },
         }
       },
     }
@@ -738,7 +738,7 @@ describe('test live query full cycle', () => {
               mh = mh.filter((h) => h !== handler)
             }
           },
-          close: () => {},
+          close: () => { },
         }
       },
     }
@@ -960,7 +960,7 @@ describe('test live query full cycle', () => {
           subscribe(channel, onMessage) {
             throw 'the error'
           },
-          close() {},
+          close() { },
         }
       },
     }
@@ -989,9 +989,9 @@ describe('test live query full cycle', () => {
         return {
           async subscribe(channel, onMessage, onError) {
             onError('had error')
-            return () => {}
+            return () => { }
           },
-          close() {},
+          close() { },
         }
       },
     }
@@ -1112,8 +1112,8 @@ it('test channel subscribe', async () => {
     },
   }
   let pr = new PromiseResolver(remult.liveQuerySubscriber)
-  let r = await mc.subscribe(() => {})
-  let r2 = await mc.subscribe(() => {})
+  let r = await mc.subscribe(() => { })
+  let r2 = await mc.subscribe(() => { })
   await pr.flush()
   expect(sub).toBe(1)
   r()
@@ -1138,7 +1138,7 @@ describe('test failure', () => {
           subscribe(channel, onMessage) {
             throw 'the error'
           },
-          close() {},
+          close() { },
         }
       },
     }
@@ -1179,7 +1179,7 @@ describe('test failure', () => {
               unSubCount++
             }
           },
-          close() {},
+          close() { },
         }
       },
     }
@@ -1188,7 +1188,7 @@ describe('test failure', () => {
     cr.repo(eventTestEntity)
       .liveQuery()
       .subscribe({
-        next: (x) => {},
+        next: (x) => { },
         error: () => (errorHappened = true),
       })
     await pm.flush()
@@ -1214,7 +1214,7 @@ describe('test failure', () => {
           subscribe(channel, onMessage) {
             throw 'the error'
           },
-          close() {},
+          close() { },
         }
       },
     }

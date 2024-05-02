@@ -19,7 +19,7 @@ import {
   findOptionsToJson,
 } from '../../../core/src/data-providers/rest-data-provider'
 import { TestDataApiResponse } from '../TestDataApiResponse'
-import { createEntity } from '../dynamic-classes'
+import { entity } from '../dynamic-classes'
 import { getRelationFieldInfo } from '../../../core/src/remult3/relationInfoMember'
 
 @Entity('company')
@@ -552,16 +552,16 @@ describe('test relations', () => {
   it('loads ok also with old field reference', async () => {
     const td = TestDataProvider()
     remult.dataProvider = td
-    const Company = createEntity('companies', {
+    const Company = entity('companies', {
       id: Fields.integer(),
       name: Fields.string(),
     })
-    const Category = createEntity('categories', {
+    const Category = entity('categories', {
       id: Fields.integer(),
       name: Fields.string(),
       company: Field(() => Company),
     })
-    const Task = createEntity('tasks', {
+    const Task = entity('tasks', {
       id: Fields.integer(),
       title: Fields.string(),
       category: Field(() => Category),
@@ -612,11 +612,11 @@ describe('test relations', () => {
 
   it("doesn't share cache with old fields", async () => {
     remult.dataProvider = new InMemoryDataProvider()
-    const Company = createEntity('companies', {
+    const Company = entity('companies', {
       id: Fields.integer(),
       name: Fields.string(),
     })
-    const Category = createEntity('categories', {
+    const Category = entity('categories', {
       id: Fields.integer(),
       name: Fields.string(),
       company: Field(() => Company),
@@ -679,7 +679,7 @@ describe('test relations', () => {
 })
 
 it('test new id definition', async () => {
-  const old = createEntity(
+  const old = entity(
     'old',
     {
       a: Fields.number(),
@@ -689,7 +689,7 @@ it('test new id definition', async () => {
       id: (x) => [x.a, x.b],
     },
   )
-  const new_ = createEntity(
+  const new_ = entity(
     'new',
     { a: Fields.number(), b: Fields.number() },
     {
@@ -708,11 +708,11 @@ it('test new id definition', async () => {
 it('test null and related field ', async () => {
   const remult = new Remult(new InMemoryDataProvider())
 
-  const Customer = createEntity('customer', {
+  const Customer = entity('customer', {
     id: Fields.string(),
     name: Fields.string(),
   })
-  const Order = createEntity('orders', {
+  const Order = entity('orders', {
     id: Fields.integer(),
     customerId: Fields.string({ allowNull: true }),
     customer: Relations.toOne(() => Customer, 'customerId'),

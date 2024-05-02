@@ -1,4 +1,11 @@
 import * as fs from 'fs'
+const exclude = [
+  'repCache',
+  'throwErrorIfFilterIsEmpty',
+  'isFilterEmpty',
+  'translateCustomWhere',
+  '__applyToConsumer',
+]
 
 var api: {
   children: member[]
@@ -58,7 +65,8 @@ class DocFile {
     if (m.comment.blockTags)
       for (const t of m.comment?.blockTags) {
         if (t.tag.startsWith('@')) t.tag = t.tag.substring(1)
-        this.writeLine('\n\n*' + t.tag + '*', indent + 1)
+        this.writeLine('\n\n#### ' + t.tag + ':', indent + 1)
+
         let text = t.content.map((x) => x.text).join('')
 
         this.writeLine(text, indent + 1)
@@ -73,7 +81,7 @@ class DocFile {
   }
   writeMembers(type: member, indent = 0) {
     if (!type.children) {
-      if (type.type.type == 'intersection') {
+      if (type.type?.type == 'intersection') {
         type.children = type.type.types
           .map((t) => t.declaration?.children)
           .filter((x) => x != undefined)
@@ -114,46 +122,53 @@ class DocFile {
 
       for (const m of type.children) {
         if (m.flags.isPrivate) continue
-        if (m.name == 'repCache') continue
+        if (exclude.includes(m.name)) continue
         if (indent == 0) this.writeLine(header(indent + 2, m.name), indent)
-        if (!m.signatures) this.writeMemberComments(m, indent)
-        if (m.signatures) {
-          for (const s of m.signatures) {
-            this.writeMemberComments(s, indent)
-            {
-              if (
-                s.parameters &&
-                indent ==
-                  0 /* to prevent the parameters of load, in find options etc... */
-              ) {
-                this.writeLine('', indent)
-                this.writeLine('Arguments:', indent)
-                for (const p of s.parameters) {
-                  this.writeMemberComments(p, indent)
-                  if (p.comment?.text)
-                    this.writeLine(' - ' + p.comment?.text, indent + 1)
-                  if (p.type.type == 'union') {
-                    for (const pp of p.type.types) {
-                      if (pp.name)
-                        if (pp.name.includes('Options')) {
-                          let o = findType(pp.name)
-                          this.writeMembers(o, indent + 1)
-                        }
-                    }
-                  } else if (p.type.name)
-                    if (p.type.name.includes('Options')) {
-                      let o = findType(p.type.name)
-                      this.writeMembers(o, indent + 1)
-                    }
-                }
-              }
-            }
-            break
-          }
-        }
+
+        this.writeMemberSignatures(m, indent)
       }
     }
   }
+  writeMemberSignatures(m: member, indent: number) {
+    if (!m.signatures) this.writeMemberComments(m, indent)
+    else if (m.signatures) {
+      for (const s of m.signatures) {
+        this.writeMemberComments(s, indent)
+        {
+          if (
+            s.parameters &&
+            indent ==
+              0 /* to prevent the parameters of load, in find options etc... */
+          ) {
+            this.writeLine('', indent)
+            this.writeLine('Arguments:', indent)
+            for (const p of s.parameters) {
+              this.writeMemberComments(p, indent)
+              if (p.comment?.text)
+                this.writeLine(' - ' + p.comment?.text, indent + 1)
+              if (p.type.type == 'union') {
+                for (const pp of p.type.types) {
+                  if (pp.name)
+                    if (pp.name.includes('Options')) {
+                      let o = findType(pp.name)
+                      this.writeMembers(o, indent + 1)
+                    }
+                }
+              } else if (p.type.type == 'reflection') {
+                this.writeMembers(p.type.declaration, indent + 1)
+              } else if (p.type.name)
+                if (p.type.name.includes('Options')) {
+                  let o = findType(p.type.name)
+                  this.writeMembers(o, indent + 1)
+                }
+            }
+          }
+        }
+        break
+      }
+    }
+  }
+
   writeFile() {
     fs.writeFileSync(
       './docs/docs/ref_' + this.fileName.toLowerCase() + '.md',
@@ -163,12 +178,11 @@ class DocFile {
 }
 
 function findType(type: string) {
-  let r = api.children[0].children.find((e) => e.name == type)
-  if (!r) r = api.children[1].children.find((e) => e.name == type)
-  if (!r) {
-    throw new Error("Couldn't find type " + type)
+  for (const c of api.children) {
+    let r = c.children.find((e) => e.name == type)
+    if (r) return r
   }
-  return r
+  throw new Error("Couldn't find type " + type)
 }
 try {
   for (const pairs of [
@@ -187,21 +201,41 @@ try {
   }
 
   for (const typeName of [
-    'Remult',
-    'Repository',
-    'QueryResult',
-    'Paginator',
-    'EntityMetadata',
-    'FieldMetadata',
-    'RemultServerOptions',
+    'ValueConverter',
     'Relations',
     'RelationOptions',
+    'Remult',
+    'ApiClient',
+    'Repository',
+    'RemultServerOptions',
+    'EntityMetadata',
+    'FieldMetadata',
+    'QueryResult',
+    'Paginator',
+    'LiveQuery',
+    'LiveQueryChangeInfo',
+    'Filter',
+    'Sort',
+    'SubscriptionChannel',
+    'generateMigrations',
+    'migrate',
+
+    'FilterPreciseValues',
+    'EntityRef',
+    'FieldRef',
+    'EntityBase',
+    'IdEntity',
+    'getEntityRef',
+    'getFields',
+
+    //    'PreprocessFilterEvent',
   ]) {
     let type = findType(typeName)
 
     let f = new DocFile(type.name)
     f.addTitle(type.name)
-    f.writeMemberComments(type)
+    //    f.writeMemberComments(type)
+    f.writeMemberSignatures(type, 0)
     f.writeMembers(type)
     f.writeFile()
   }

@@ -12,7 +12,7 @@ import {
   PostgresSchemaBuilder,
   createPostgresConnection,
 } from '../../core/postgres'
-import { createEntity as createEntityClass } from '../tests/dynamic-classes'
+import { entity as createEntityClass, entity } from '../tests/dynamic-classes'
 
 import * as Knex from 'knex'
 import type { ClassType } from '../../core/classType'
@@ -21,6 +21,7 @@ import { allDbTests } from './shared-tests'
 import { entityWithValidations } from './shared-tests/entityWithValidations'
 import { knexTests } from './shared-tests/test-knex'
 import { SqlDbTests } from './shared-tests/sql-db-tests'
+import { testMigrationScript } from '../tests/testHelper.js'
 
 PostgresSchemaBuilder.logToConsole = false
 const postgresConnection = process.env.DATABASE_URL
@@ -63,9 +64,46 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
     },
     createEntity,
   })
+  it('test primary key on multiple id column entity', async () => {
+    const e = await createEntity(
+      entity(
+        't',
+        {
+          id: Fields.number(),
+          id2: Fields.number(),
+          name: Fields.string(),
+        },
+        {
+          id: { id: true, id2: true },
+        },
+      ),
+    )
+    expect(
+      await testMigrationScript(db, (m) => m.createTable(e.metadata)),
+    ).toMatchInlineSnapshot(`
+      "CREATE SCHEMA IF NOT EXISTS public;
+      CREATE table \\"t\\" (
+        \\"id\\" numeric default 0 not null,
+        \\"id2\\" numeric default 0 not null,
+        \\"name\\" varchar default '' not null,
+         primary key (\\"id\\",\\"id2\\")
+      )"
+    `)
+  })
+  it('test transactions and ddl', async () => {
+    const db = SqlDatabase.getDb(remult.dataProvider)
+    await expect(() =>
+      db.transaction(async (db: SqlDatabase) => {
+        await db.execute('drop table if exists test_transactions')
+        await db.execute('create table test_transactions(id int)')
+        await db.execute('insert into test_transactions values (1)')
+        throw new Error('error')
+      }),
+    ).rejects.toThrowErrorMatchingInlineSnapshot('"error"')
+  })
 
   it('ensure schema with dbNames that have quotes', async () => {
-    const db = SqlDatabase.getDb(remult)
+    const db = SqlDatabase.getDb(remult.dataProvider)
     const entityName = 'test_naming'
     await db.execute('Drop table if exists ' + entityName)
     await db.execute(`create table ${entityName}(id int,"createdAt" Date)`)
@@ -85,9 +123,27 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
       new Date().getFullYear(),
     )
   })
+  it('null last', async () => {
+    @Entity('myEntity')
+    class MyEntity {
+      @Fields.number()
+      id = 0
+      @Fields.number({ allowNull: true })
+      value: number | null = 0
+    }
+    const r = await createEntity(MyEntity)
+    await r.insert([
+      { id: 1, value: null },
+      { id: 2, value: 2 },
+      { id: 3, value: 3 },
+    ])
+    expect(
+      (await r.find({ orderBy: { value: 'asc' } })).map((x) => x.value),
+    ).toEqual([2, 3, null])
+  })
 
   it('ensure on not_public schema', async () => {
-    const db = SqlDatabase.getDb(remult)
+    const db = SqlDatabase.getDb(remult.dataProvider)
     const entityName = 'auth.test_not_public'
     // reset the state of the database before the test (make sure we don't have the schema and table)
     await db.execute('Drop table if exists ' + entityName)
@@ -112,7 +168,7 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
 
   it('work with native sql', async () => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity)
-    const sql = SqlDatabase.getDb(remult)
+    const sql = SqlDatabase.getDb(remult.dataProvider)
     const r = await sql.execute(
       'select count(*) as c from ' + db.wrapIdentifier(repo.metadata.dbName),
     )
@@ -120,7 +176,7 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
   })
   it('work with native sql2', async () => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity)
-    const sql = PostgresDataProvider.getDb(remult)
+    const sql = PostgresDataProvider.getDb(remult.dataProvider)
     const r = await sql.query(
       'select count(*) as c from ' + db.wrapIdentifier(repo.metadata.dbName),
     )
@@ -128,10 +184,10 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
   })
   it('work with native sql3', async () => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity)
-    await SqlDatabase.getDb(remult)
+    await SqlDatabase.getDb(remult.dataProvider)
       ._getSourceSql()
       .transaction(async (x) => {
-        const sql = PostgresDataProvider.getDb(new Remult(new SqlDatabase(x)))
+        const sql = PostgresDataProvider.getDb(new SqlDatabase(x))
         const r = await sql.query(
           'select count(*) as c from ' +
             db.wrapIdentifier(repo.metadata.dbName),
@@ -186,6 +242,65 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
     } catch (err) {
       expect(err.message).toContain('categoryName')
     }
+  })
+})
+describe.skipIf(!postgresConnection)('Postgres null first', () => {
+  var db: SqlDatabase
+  let remult: Remult
+  beforeAll(async () => {
+    db = await createPostgresConnection({
+      //wrapName: (x) => x,
+      orderByNullsFirst: true,
+    })
+  })
+  beforeEach(() => {
+    remult = new Remult(db)
+  })
+
+  async function createEntity(entity: ClassType<any>) {
+    let repo = remult.repo(entity)
+    await db.execute(
+      'drop table if exists ' +
+        (await dbNamesOf(repo.metadata, db.wrapIdentifier)).$entityName,
+    )
+    await db.ensureSchema([repo.metadata])
+    return repo
+  }
+  it('null last', async () => {
+    @Entity('myEntity')
+    class MyEntity {
+      @Fields.number()
+      id = 0
+      @Fields.number({ allowNull: true })
+      value: number | null = 0
+    }
+    const r = await createEntity(MyEntity)
+    await r.insert([
+      { id: 1, value: null },
+      { id: 2, value: 2 },
+      { id: 3, value: 3 },
+    ])
+    expect(
+      (await r.find({ orderBy: { value: 'desc' } })).map((x) => x.value),
+    ).toEqual([3, 2, null])
+  })
+  it('null first', async () => {
+    @Entity('myEntity')
+    class MyEntity {
+      @Fields.number()
+      id = 0
+      @Fields.number({ allowNull: true })
+      value: number | null = 0
+    }
+    const r = await createEntity(MyEntity)
+    await r.insert([
+      { id: 1, value: null },
+      { id: 2, value: 2 },
+      { id: 3, value: 3 },
+    ])
+    expect(
+      (await r.find({ orderBy: { value: 'asc' } })).map((x) => x.value),
+    ).toEqual([null, 2, 3])
   })
 })
 

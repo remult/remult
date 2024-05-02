@@ -11,13 +11,15 @@ import {
 } from '../core'
 import { Remult, RemultAsyncLocalStorage } from '../core/src/context.js'
 import { remultStatic } from '../core/src/remult-static'
+import { AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore } from '../core/server/initAsyncHooks.js'
+import { describeBackendMethods } from '../core/src/remult3/classDescribers.js'
 
 describe('backend method context awareness', () => {
   it('getting error when async was initialized', async () => {
     let ok = true
     try {
       remultStatic.asyncContext = new RemultAsyncLocalStorage(
-        new AsyncLocalStorage(),
+        new AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore(),
       )
       RemultAsyncLocalStorage.enable()
       if (remult.authenticated()) {
@@ -34,7 +36,7 @@ describe('backend method context awareness', () => {
   it('test run works', async () => {
     try {
       remultStatic.asyncContext = new RemultAsyncLocalStorage(
-        new AsyncLocalStorage(),
+        new AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore(),
       )
       RemultAsyncLocalStorage.enable()
       let ok = false
@@ -56,7 +58,7 @@ describe('backend method context awareness', () => {
   it('test run works and returns', async () => {
     try {
       remultStatic.asyncContext = new RemultAsyncLocalStorage(
-        new AsyncLocalStorage(),
+        new AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore(),
       )
       RemultAsyncLocalStorage.enable()
       let ok = false
@@ -81,7 +83,7 @@ describe('backend method context awareness', () => {
   it('test run works and returns Promise', async () => {
     try {
       remultStatic.asyncContext = new RemultAsyncLocalStorage(
-        new AsyncLocalStorage(),
+        new AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore(),
       )
       RemultAsyncLocalStorage.enable()
       let ok = false
@@ -118,8 +120,8 @@ describe('backend method context awareness', () => {
         wasCalled = true
       }
     }
-    describeClass(c, undefined, undefined, {
-      testingContextAwareness: BackendMethod({ allowed: false }),
+    describeBackendMethods(c, {
+      testingContextAwareness: { allowed: false },
     })
     await withRemult(
       async () => {

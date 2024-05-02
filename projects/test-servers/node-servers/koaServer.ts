@@ -6,7 +6,7 @@ import { Task } from '../shared/Task'
 
 const app = new koa()
 
-const api = createRemultServer({ entities: [Task] })
+const api = createRemultServer({ entities: [Task], admin: true })
 app.use(bodyParser())
 app.use(async (ctx, next) => {
   const r = await api.handle(ctx.request)

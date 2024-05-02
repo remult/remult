@@ -131,7 +131,7 @@ npm i --save-dev @types/cookie-session
 
    //...
 
-   import { auth } from "./auth"
+   import { auth } from "./auth.js"
 
    const app = express()
    app.use(

@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "esModuleInterop": true,
+    "outDir": "dist",
+    "rootDir": "src",
+    "baseUrl": ".",
+    "paths": {
+      "remult": ["../../../dist/remult"],
+      "remult/*": ["../../../dist/remult/*"]
+    }
+  },
+  "include": ["src"]
+}

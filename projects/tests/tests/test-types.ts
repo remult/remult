@@ -34,10 +34,10 @@ let p = new Person()
 
 type KeysNotOfAType<TSchema, Type> = {
   [key in keyof TSchema]: TSchema extends EntityBase
-    ? key
-    : NonNullable<TSchema[key]> extends Type
-    ? never
-    : key
+  ? key
+  : NonNullable<TSchema[key]> extends Type
+  ? never
+  : key
 }[keyof TSchema]
 
 type OmitFunctions<entityType> = {
@@ -50,7 +50,7 @@ const x: MembersOnly<Person>
 class HelperBase extends EntityBase {
   id = 0
   name = ''
-  date?:Date
+  date?: Date
 }
 class Helper extends HelperBase {
   title = ''
@@ -62,4 +62,3 @@ let f2: EntityFilter<Helper> = {
   ...f,
 }
 
-repo(HelperBase).fields.

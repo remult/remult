@@ -1,11 +1,11 @@
 import type { DataApiResponse } from '../../core/src/data-api'
 
 export class TestDataApiResponse implements DataApiResponse {
-  progress(progress: number): void {}
+  progress(progress: number): void { }
   success(data: any): void {
     throw new Error('didnt expect success: ' + JSON.stringify(data))
   }
-  forbidden() {
+  forbidden(data?: string) {
     throw new Error('didnt expect forbidden:')
   }
   created(data: any): void {

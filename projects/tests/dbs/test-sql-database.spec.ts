@@ -31,6 +31,12 @@ describe('test sql implementation', () => {
             return "'" + val.replace(/'/g, "''") + "'"
           return val
         },
+        param(val: any) {
+          if (typeof val === 'string')
+            return "'" + val.replace(/'/g, "''") + "'"
+          return val
+        },
+
         execute: async (sql) => {
           commands.push(sql)
           return {
@@ -42,6 +48,7 @@ describe('test sql implementation', () => {
     async entityIsUsedForTheFirstTime(entity) {},
     getLimitSqlSyntax: () => '',
     transaction: undefined,
+    end: async () => {},
   } satisfies SqlImplementation)
   const repo = new Remult(db).repo(task)
   it('test basic select', async () => {

@@ -106,7 +106,7 @@ export class LiveQueryClient {
     }
     this.runPromise(
       getRepositoryInternals(repo)
-        .buildEntityDataProviderFindOptions(options)
+        ._buildEntityDataProviderFindOptions(options)
         .then((opts) => {
           if (!alive) return
           const { createKey, subscribe } = new RestDataProvider(

@@ -26,13 +26,7 @@ export class entityForrawFilter extends EntityBase {
         $and: [
           SqlDatabase.rawFilter(
             async (x) =>
-              (x.sql =
-                e.id +
-                ' in (' +
-                x.addParameterAndReturnSqlToken(1) +
-                ',' +
-                x.addParameterAndReturnSqlToken(3) +
-                ')'),
+              (x.sql = e.id + ' in (' + x.param(1) + ',' + x.param(3) + ')'),
           ),
           ArrayEntityDataProvider.rawFilter((x) => x.id == 1 || x.id == 3),
         ],

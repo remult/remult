@@ -7,7 +7,7 @@ import { assign } from '../../core/assign'
 import { dWithPrefilter } from './dWithPrefilter'
 
 import { beforeEach, describe, expect, it } from 'vitest'
-import { describeClass } from '../../core/src//remult3/DecoratorReplacer'
+import { describeClass } from '../../core/src/remult3/classDescribers'
 
 @Entity('testServerMethodOnEntity')
 class testServerMethodOnEntity extends EntityBase {

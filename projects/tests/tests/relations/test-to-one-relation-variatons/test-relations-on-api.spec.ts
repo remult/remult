@@ -115,7 +115,15 @@ describe('Test relations on api', () => {
           category: { $id: 0 },
         },
       }),
-    ).toMatchInlineSnapshot('[]')
+    ).toMatchInlineSnapshot(`
+      [
+        Product {
+          "category": null,
+          "id": 2,
+          "name": "a",
+        },
+      ]
+    `)
   })
 
   it('should return a value too', async () => {

@@ -75,11 +75,26 @@ export const { GET, POST, PUT, DELETE } = api
 ```
 
 ```ts [Sveltekit]
-// src/hooks.server.ts
+// src/routes/api/[...remult]/+server.ts
 
 import { remultSveltekit } from 'remult/remult-sveltekit'
 
-export const handle = remultSveltekit({}) // [!code highlight]
+export const _api = remultSveltekit({}) // [!code highlight]
+
+export const { GET, POST, PUT, DELETE } = _api
+```
+
+```ts [nuxt.js]
+// server/api/[...remult].ts
+
+import { remultNuxt } from 'remult/remult-nuxt'
+import { Task } from '~/shared/Task.js'
+
+export const api = remultNuxt({
+  entities: [Task],
+})
+
+export default defineEventHandler(api)
 ```
 
 <!-- prettier-ignore-start -->
@@ -96,6 +111,19 @@ import { remultHapi } from 'remult/remult-hapi'
 })()
 ```
 <!-- prettier-ignore-end -->
+
+```ts [Hono]
+import { Hono } from 'hono'
+import { serve } from '@hono/node-server'
+import { remultHono } from 'remult/remult-hono'
+
+const app = new Hono()
+
+const api = remultHono({}) // [!code highlight]
+app.route('', api) // [!code highlight]
+
+serve(app)
+```
 
 ```ts [Nest]
 // src/main.ts
@@ -177,6 +205,24 @@ app.use(
 )
 ```
 
+Or use your existing postgres connection
+
+```ts
+import { Pool } from 'pg'
+import { SqlDatabase } from 'remult'
+import { PostgresDataProvider } from 'remult/postgres'
+import { remultExpress } from 'remult/remult-express'
+const pg = new Pool({
+  connectionString: '....',
+})
+const app = express()
+app.use(
+  remultExpress({
+    dataProvider: new SqlDatabase(new PostgresDataProvider(pg)),
+  }),
+)
+```
+
 == MySQL
 
 Install knex and mysql2:
@@ -207,6 +253,28 @@ app.use(
       }
     })
   })
+)
+```
+
+Or use your existing knex provider
+
+```ts
+import express from 'express'
+import { KnexDataProvider } from 'remult/remult-knex'
+import { remultExpress } from 'remult/remult-express'
+import knex from 'knex'
+
+const knexDb = knex({
+  client: '...',
+  connection: '...',
+})
+
+const app = express()
+
+app.use(
+  remultExpress({
+    dataProvider: new KnexDataProvider(knexDb), // [!code highlight]
+  }),
 )
 ```
 
@@ -241,31 +309,113 @@ app.use(
 
 == SQLite
 
-Install knex and sqlite3:
+There are several sqlite providers supported
+
+### Better-sqlite3
+
+Install better-sqlite3:
 
 ```sh
-npm i knex sqlite3
+npm i better-sqlite3
 ```
 
 Set the `dataProvider` property:
 
-```ts{3,9-15}
-import express from "express"
-import { remultExpress } from "remult/remult-express"
-import { createKnexDataProvider } from "remult/remult-knex"
+```ts
+import express from 'express'
+import { remultExpress } from 'remult/remult-express'
+import { SqlDatabase } from 'remult' // [!code highlight]
+import Database from 'better-sqlite3' // [!code highlight]
+import { BetterSqlite3DataProvider } from 'remult/remult-better-sqlite3' // [!code highlight]
 
 const app = express()
 
 app.use(
   remultExpress({
-    dataProvider: createKnexDataProvider({
-      // Knex client configuration for SQLite
-      client: "sqlite3",
-      connection: {
-        filename: "./mydb.sqlite"
-      }
-    })
-  })
+    dataProvider: new SqlDatabase( // [!code highlight]
+      new BetterSqlite3DataProvider(new Database('./mydb.sqlite')), // [!code highlight]
+    ), // [!code highlight]
+  }),
+)
+```
+
+### sqlite3
+
+This version of sqlite3 works even on stackblitz
+
+Install sqlite3:
+
+```sh
+npm i sqlite3
+```
+
+Set the `dataProvider` property:
+
+```ts
+import express from 'express'
+import { remultExpress } from 'remult/remult-express'
+import { SqlDatabase } from 'remult' // [!code highlight]
+import sqlite3 from 'sqlite3' // [!code highlight]
+import { Sqlite3DataProvider } from 'remult/remult-sqlite3' // [!code highlight]
+
+const app = express()
+
+app.use(
+  remultExpress({
+    dataProvider: new SqlDatabase( // [!code highlight]
+      new Sqlite3DataProvider(new sqlite3.Database('./mydb.sqlite')), // [!code highlight]
+    ), // [!code highlight]
+  }),
+)
+```
+
+### bun:sqlite
+
+Set the `dataProvider` property:
+
+```ts
+import express from 'express'
+import { remultExpress } from 'remult/remult-express'
+import { SqlDatabase } from 'remult' // [!code highlight]
+import { Database } from 'bun:sqlite' // [!code highlight]
+import { BunSqliteDataProvider } from 'remult/remult-bun-sqlite' // [!code highlight]
+
+const app = express()
+
+app.use(
+  remultExpress({
+    dataProvider: new SqlDatabase( // [!code highlight]
+      new BunSqliteDataProvider(new Database('./mydb.sqlite')), // [!code highlight]
+    ), // [!code highlight]
+  }),
+)
+```
+
+### sql.js
+
+Install sqlite3:
+
+```sh
+npm i sql.js
+```
+
+Set the `dataProvider` property:
+
+```ts
+import express from 'express'
+import { remultExpress } from 'remult/remult-express'
+import { SqlDatabase } from 'remult' // [!code highlight]
+import initSqlJs from 'sql.js' // [!code highlight]
+import { SqlJsDataProvider } from 'remult/remult-sql-js' // [!code highlight]
+
+const app = express()
+
+app.use(
+  remultExpress({
+    dataProvider: new SqlDatabase( // [!code highlight]
+      new SqlJsDataProvider(initSqlJs().then((x) => new x.Database())), // [!code highlight]
+    ), // [!code highlight]
+  }),
 )
 ```
 
@@ -309,6 +459,28 @@ app.use(
 )
 ```
 
+Or use your existing knex provider
+
+```ts
+import express from 'express'
+import { KnexDataProvider } from 'remult/remult-knex'
+import { remultExpress } from 'remult/remult-express'
+import knex from 'knex'
+
+const knexDb = knex({
+  client: '...',
+  connection: '...',
+})
+
+const app = express()
+
+app.use(
+  remultExpress({
+    dataProvider: new KnexDataProvider(knexDb), // [!code highlight]
+  }),
+)
+```
+
 == Oracle
 
 Install knex and oracledb:
@@ -340,6 +512,28 @@ app.use(
       }
     })
   })
+)
+```
+
+Or use your existing knex provider
+
+```ts
+import express from 'express'
+import { KnexDataProvider } from 'remult/remult-knex'
+import { remultExpress } from 'remult/remult-express'
+import knex from 'knex'
+
+const knexDb = knex({
+  client: '...',
+  connection: '...',
+})
+
+const app = express()
+
+app.use(
+  remultExpress({
+    dataProvider: new KnexDataProvider(knexDb), // [!code highlight]
+  }),
 )
 ```
 

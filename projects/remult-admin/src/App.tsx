@@ -30,51 +30,66 @@ function App() {
       setOptions(optionsFromServer)
     }
   }, [])
+
+  // if window less than 1024px, add hide-navigation to body
+  useEffect(() => {
+    if (window.innerWidth < 1024) {
+      document.body.classList.add('hide-navigation')
+    }
+  }, [])
+
   if (!god) return <div>Loading...</div>
 
   return (
     <>
       <BrowserRouter basename={options?.baseUrl}>
-        <div>
-          <NavLink className="tab" to="erd">
-            ERD
-          </NavLink>
-          {god?.tables.map((t) => (
-            <NavLink className="tab" key={t.key} to={t.key}>
-              {t.caption}
-            </NavLink>
-          ))}
-        </div>
-        <Routes>
-          <Route path="erd" element={<Erd god={god} />} />
-          {god?.tables.map((table) => (
-            <Route
-              key={table.key}
-              path={table.key}
-              element={
-                <Table
-                  god={god}
-                  columns={table.fields}
-                  repo={table.repo}
-                  relations={table.relations}
-                />
-              }
-            />
-          ))}
+        <div className="app-holder">
+          <div className="main-navigation">
+            <div className="main-navigation__title">Remult Admin</div>
 
-          <Route
-            path="/"
-            element={
-              <Navigate
-                to={
-                  god?.tables && god?.tables.length > 0
-                    ? god?.tables[0].key
-                    : '/'
+            {god?.tables.map((t) => (
+              <NavLink className="tab" key={t.key} to={t.key}>
+                {t.caption}
+              </NavLink>
+            ))}
+            <NavLink className="tab" to="erd">
+              🚀 Diagram
+            </NavLink>
+          </div>
+
+          <div className="main-content">
+            <Routes>
+              <Route path="erd" element={<Erd god={god} />} />
+              {god?.tables.map((table) => (
+                <Route
+                  key={table.key}
+                  path={table.key}
+                  element={
+                    <Table
+                      god={god}
+                      columns={table.fields}
+                      repo={table.repo}
+                      relations={table.relations}
+                    />
+                  }
+                />
+              ))}
+
+              <Route
+                path="/"
+                element={
+                  <Navigate
+                    to={
+                      god?.tables && god?.tables.length > 0
+                        ? god?.tables[0].key
+                        : '/'
+                    }
+                  />
                 }
               />
-            }
-          />
-        </Routes>
+            </Routes>
+          </div>
+        </div>
       </BrowserRouter>
     </>
   )
@@ -85,6 +100,9 @@ export default App
 //[V] - doesn't update well
 //[V] - live refresh doesn't work
 //[V] - update id doesn't work
+
+//[ ] - add focus indication for icon button (for moving to it with tab)
+//[ ] - tables for one to many relations - actions, don't stick to the right
 
 //[ ] - support compound id (order details)
 //[ ] - relation from product to supplier one to many, did not present in the erd

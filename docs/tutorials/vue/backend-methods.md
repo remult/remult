@@ -45,7 +45,7 @@ A simple way to prevent this is to expose an API endpoint for `setAllCompleted` 
 // src/shared/TasksController.ts
 
 import { BackendMethod, remult } from "remult"
-import { Task } from "./Task"
+import { Task } from "./Task.js"
 
 export class TasksController {
   @BackendMethod({ allowed: true })
@@ -69,7 +69,7 @@ The `@BackendMethod` decorator tells Remult to expose the method as an API endpo
 // src/server/api.ts
 
 //...
-import { TasksController } from "../shared/TasksController"
+import { TasksController } from "../shared/TasksController.js"
 
 export const api = remultExpress({
   //...

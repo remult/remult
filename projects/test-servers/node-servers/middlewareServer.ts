@@ -6,7 +6,7 @@ import { Task } from '../shared/Task'
 const app = express()
 app.use(express.json())
 
-const api = createRemultServer({ entities: [Task] })
+const api = createRemultServer({ entities: [Task], admin: true })
 app.use(async (req, res, next) => {
   ;(await api.handle(req, res)) || next()
 })

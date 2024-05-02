@@ -1,5 +1,6 @@
 import type { ClassType } from './classType.js'
 import type { DataProvider } from './src/data-interfaces.js'
+export { ArrayEntityDataProvider } from './src/data-providers/array-entity-data-provider.js'
 
 export type { ClassType } from './classType.js'
 /*
@@ -72,8 +73,12 @@ export {
 } from './src/remult3/Fields.js'
 export { IdEntity } from './src/remult3/IdEntity.js'
 
-export { describeClass } from './src/remult3/DecoratorReplacer.js'
-export { EntityOptions } from './src/entity.js'
+export {
+  describeClass,
+  describeBackendMethods,
+  describeEntity,
+} from './src/remult3/classDescribers.js'
+export { EntityOptions, PreprocessFilterEvent } from './src/entity.js'
 export {
   DataProvider,
   EntityDataProvider,
@@ -101,9 +106,9 @@ export { WebSqlDataProvider } from './src/data-providers/web-sql-data-provider.j
 export { SqlDatabase } from './src/data-providers/sql-database.js' //V
 
 export {
-  CustomSqlFilterObject,
   CustomSqlFilterBuilder,
   dbNamesOf,
+  dbNamesOfOptions,
   CustomSqlFilterBuilderFunction,
   EntityDbNames,
 } from './src/filter/filter-consumer-bridge-to-sql-request.js'
@@ -120,6 +125,7 @@ export {
   BackendMethodOptions,
   BackendMethod,
   ProgressListener,
+  ForbiddenError,
 } from './src/server-action.js'
 
 export {
@@ -141,7 +147,7 @@ export { CompoundIdField } from './src/CompoundIdField.js'
 export {
   Filter,
   FilterConsumer,
-  customFilterInfo,
+  FilterPreciseValues,
 } from './src/filter/filter-interfaces.js'
 export { UrlBuilder } from './urlBuilder.js'
 export {

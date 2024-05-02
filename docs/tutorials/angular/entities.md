@@ -94,6 +94,24 @@ curl http://localhost:3002/api/tasks -d "[{\"title\": \"Read a book\"},{\"title\
 While remult supports [many relational and non-relational databases](https://remult.dev/docs/databases.html), in this tutorial we start by storing entity data in a backend **JSON file**. Notice that a `db` folder has been created under the root folder, with a `tasks.json` file containing the created tasks.
 :::
 
+## Admin UI
+
+### Enabling the Admin UI
+
+Add the Admin UI to your Angular application by setting the `admin` option to `true` in the `remultExpress()` configuration in your `src/server/api.ts` file:
+
+```ts
+// src/server/api.ts
+
+import { remultExpress } from 'remult/remult-express'
+import { Task } from '../shared/Task'
+
+export const api = remultExpress({
+  entities: [Task],
+  admin: true, // Enable the Admin UI
+})
+```
+
 ## Display the Task List
 
 Let's start developing the web app by displaying the list of existing tasks in an Angular component.

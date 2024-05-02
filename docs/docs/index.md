@@ -27,6 +27,7 @@ Explore the flexibility of Remult through different learning paths tailored to m
 - [Tutorial with Vue](../tutorials/vue/)
 - [Tutorial with Next.js](../tutorials/react-next/)
 - [Tutorial with Sveltekit](../tutorials/sveltekit/)
+- [Tutorial with SolidStart](../tutorials/solid-start/)
 
 ### Quickstart
 

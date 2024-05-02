@@ -2,7 +2,7 @@ import type { Response } from 'express'
 import type { ResponseRequiredForSSE } from '../SseSubscriptionServer.js'
 import { SseSubscriptionServer } from '../SseSubscriptionServer.js'
 import type { ClassType } from '../classType.js'
-import type { AllowedForInstance, UserInfo } from '../src/context.js'
+import type { Allowed, AllowedForInstance, UserInfo } from '../src/context.js'
 import { Remult, RemultAsyncLocalStorage, withRemult } from '../src/context.js'
 import type { DataApiRequest, DataApiResponse } from '../src/data-api.js'
 import { DataApi, serializeError } from '../src/data-api.js'
@@ -32,6 +32,7 @@ import { getEntityKey } from '../src/remult3/getEntityRef.js'
 import type { EntityMetadata, Repository } from '../src/remult3/remult3.js'
 import type {
   ActionInterface,
+  ForbiddenError,
   jobWasQueuedResult,
   myServerAction,
   queuedJobInfoResponse,
@@ -42,6 +43,7 @@ import { initDataProvider } from './initDataProvider.js'
 import { remult } from '../src/remult-proxy.js'
 import { remultStatic } from '../src/remult-static.js'
 import remultAdminHtml from './remult-admin.js'
+import { isOfType } from '../src/isOfType.js'
 
 export interface RemultServerOptions<RequestType> {
   /**Entities to use for the api */
@@ -92,12 +94,49 @@ export interface RemultServerOptions<RequestType> {
     serialize(remult: Remult): Promise<any>
     deserialize(json: any, options: InitRequestOptions): Promise<void>
   }
-  /** When set to true, will display an admin ui in the `/api/admin` url */
-  admin?: boolean
+  /** When set to true, will display an admin ui in the `/api/admin` url.
+   * Can also be set to an arrow function for fine grained control
+   * @example
+   * admin: true
+   * @example
+   * admin: ()=> remult.isAllowed('admin')
+   * @see [allowed](http://remult.dev/docs/allowed.html)
+   */
+  admin?: Allowed //{allowed?:Allowed,url?:string}
 
   /** Storage to use for backend methods that use queue */
   queueStorage?: QueueStorage
+  /**
+   * This method is called whenever there is an error in the API lifecycle.
+   *
+   * @param info - Information about the error.
+   * @param info.req - The request object.
+   * @param info.entity - (Optional) The entity metadata associated with the error, if applicable.
+   * @param info.exception - (Optional) The exception object or error that occurred.
+   * @param info.httpStatusCode - The HTTP status code.
+   * @param info.responseBody - The body of the response.
+   * @param info.sendError - A method to send a custom error response. Call this method with the desired HTTP status code and response body.
+   *
+   * @returns A promise that resolves when the error handling is complete.
+   * @example
+   * export const api = remultExpress({
+   *   error: async (e) => {
+   *     if (e.httpStatusCode == 500) {
+   *       e.sendError(500, { message: "An error occurred" })
+   *     }
+   *   }
+   * })
+   */
+  error?: (info: {
+    req: RequestType
+    entity?: EntityMetadata
+    exception?: any
+    httpStatusCode: number
+    responseBody: any
+    sendError: (httpStatusCode: number, body: any) => void
+  }) => Promise<void>
 }
+
 export interface InitRequestOptions {
   liveQueryStorage: LiveQueryStorage
   readonly remult: Remult
@@ -176,7 +215,7 @@ export interface RemultServer<RequestType>
 }
 
 export interface RemultServerCore<RequestType> {
-  getRemult(req: RequestType): Promise<Remult>
+  getRemult(req?: RequestType): Promise<Remult>
   openApiDoc(options: { title: string; version?: string }): any
 }
 
@@ -367,18 +406,23 @@ export class RemultServerImplementation<RequestType>
           },
           r,
         )
-      if (this.options.admin) {
-        r.route(this.options.rootPath + '/admin*').get(
-          this.process(async (remult, req, res, orig, origResponse) => {
-            origResponse.send(
-              remultAdminHtml({
-                remult: remult,
-                entities: this.options.entities,
-                baseUrl: this.options.rootPath + '/admin',
-              }),
-            )
-          }),
+      if (this.options.admin !== undefined && this.options.admin !== false) {
+        const admin = this.process(
+          async (remult, req, res, orig, origResponse) => {
+            if (remult.isAllowed(this.options.admin))
+              origResponse.send(
+                remultAdminHtml({
+                  remult: remult,
+                  entities: this.options.entities,
+                  baseUrl: this.options.rootPath + '/admin',
+                }),
+              )
+            else res.notFound()
+          },
         )
+        r.route(this.options.rootPath + '/admin/:id').get(admin)
+        r.route(this.options.rootPath + '/admin/').get(admin)
+        r.route(this.options.rootPath + '/admin').get(admin)
       }
       if (this.options.subscriptionServer instanceof SseSubscriptionServer) {
         const streamPath = this.options.rootPath + '/' + streamUrl
@@ -488,16 +532,16 @@ export class RemultServerImplementation<RequestType>
       )
       .put(
         this.process(async (c, req, res, _, __, orig) =>
-          dataApiFactory(c).put(
+          dataApiFactory(c).updateManyThroughPutRequest(
             res,
-            '',
+            req,
             await this.coreOptions.getRequestBody(orig),
           ),
         ),
       )
       .delete(
-        this.process(async (c, req, res, orig) =>
-          dataApiFactory(c).delete(res, ''),
+        this.process(async (c, req, res, _, __, orig) =>
+          dataApiFactory(c).deleteMany(res, req, undefined),
         ),
       )
       .post(
@@ -540,6 +584,8 @@ export class RemultServerImplementation<RequestType>
     what: (remult: Remult) => Promise<T>,
     options?: { skipDataProvider: boolean },
   ) {
+    let dataProvider: DataProvider
+    if (!options?.skipDataProvider) dataProvider = await this.dataProvider
     return await withRemult(async (remult) => {
       var x = remult
       x.liveQueryPublisher = new LiveQueryPublisher(
@@ -547,7 +593,7 @@ export class RemultServerImplementation<RequestType>
         () => remult.liveQueryStorage,
         this.runWithSerializedJsonContextData,
       )
-      if (!options?.skipDataProvider) x.dataProvider = await this.dataProvider
+      if (!options?.skipDataProvider) x.dataProvider = dataProvider
       x.subscriptionServer = this.subscriptionServer
       x.liveQueryStorage = this.liveQueryStorage
       return await what(x)
@@ -565,41 +611,54 @@ export class RemultServerImplementation<RequestType>
     ) => Promise<void>,
   ) {
     return async (req: RequestType, origRes: GenericResponse) => {
-      const genReq = this.coreOptions.buildGenericRequestInfo(req)
-      if (!genReq.query) {
-        genReq.query = req['_tempQuery']
-      }
-      if (!genReq.params) genReq.params = req['_tempParams']
-      let myReq = new ExpressRequestBridgeToDataApiRequest(genReq)
-      let myRes = new ExpressResponseBridgeToDataApiResponse(origRes, req)
-      await this.runWithRemult(async (remult) => {
-        if (req) {
-          let user
-          if (this.options.getUser) user = await this.options.getUser(req)
-          else {
-            user = req['user']
-            if (!user) user = req['auth']
-          }
-          if (user) remult.user = user
-
-          if (this.options.initRequest) {
-            await this.options.initRequest(req, {
-              remult,
-              get liveQueryStorage() {
-                return remult.liveQueryStorage
-              },
-              set liveQueryStorage(value: LiveQueryStorage) {
-                remult.liveQueryStorage = value
-              },
-            })
-          }
+      const genReq = req
+        ? this.coreOptions.buildGenericRequestInfo(req)
+        : undefined
+      if (req) {
+        if (!genReq.query) {
+          genReq.query = req['_tempQuery']
         }
-        await what(remult, myReq, myRes, genReq, origRes, req)
-      })
+        if (!genReq.params) genReq.params = req['_tempParams']
+      }
+      let myReq = new ExpressRequestBridgeToDataApiRequest(genReq)
+      let myRes = new ExpressResponseBridgeToDataApiResponse(
+        origRes,
+        req,
+        this.options.error,
+      )
+      try {
+        await this.runWithRemult(async (remult) => {
+          if (req) {
+            let user
+            if (this.options.getUser) user = await this.options.getUser(req)
+            else {
+              user = req['user']
+              if (!user) user = req['auth']
+            }
+            if (user) remult.user = user
+
+            if (this.options.initRequest) {
+              await this.options.initRequest(req, {
+                remult,
+                get liveQueryStorage() {
+                  return remult.liveQueryStorage
+                },
+                set liveQueryStorage(value: LiveQueryStorage) {
+                  remult.liveQueryStorage = value
+                },
+              })
+            }
+          }
+          await what(remult, myReq, myRes, genReq, origRes, req)
+        })
+      } catch (err: any) {
+        myRes.error(err, undefined)
+      }
     }
   }
   async getRemult(req: RequestType) {
     let remult: Remult
+    if (!req) return await this.runWithRemult(async (c) => (remult = c))
     await this.process(async (c) => {
       remult = c
     })(req, undefined)
@@ -760,6 +819,17 @@ export class RemultServerImplementation<RequestType>
         }
 
         let apiPath: any = (spec.paths[this.options.rootPath + '/' + key] = {})
+        let itemInBody = {
+          requestBody: {
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/' + mutationKey,
+                },
+              },
+            },
+          },
+        }
         let apiPathWithId: any = (spec.paths[
           this.options.rootPath + '/' + key + '/{id}'
         ] = {})
@@ -815,23 +885,81 @@ export class RemultServerImplementation<RequestType>
             },
           },
         })
+        apiPath.delete = secure(meta.options.allowApiDelete, true, {
+          description:
+            'deletes row of ' +
+            key +
+            '. supports filter operators. For more info on filtering [see this article](https://remult.dev/docs/rest-api.html#filter)',
+          parameters: [...parameters],
+          responses: {
+            '400': {
+              description: 'Error: Bad Request',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/InvalidResponse',
+                  },
+                },
+              },
+            },
+            '200': {
+              description: 'returns the number of deleted rows ' + key,
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      deleted: {
+                        type: 'number',
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        })
+        apiPath.put = secure(meta.options.allowApiDelete, true, {
+          description:
+            'updates row of ' +
+            key +
+            '. supports filter operators. For more info on filtering [see this article](https://remult.dev/docs/rest-api.html#filter)',
+          parameters: [...parameters],
+          ...itemInBody,
+          responses: {
+            '400': {
+              description: 'Error: Bad Request',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/InvalidResponse',
+                  },
+                },
+              },
+            },
+            '200': {
+              description: 'returns the number of updated rows ' + key,
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      updated: {
+                        type: 'number',
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        })
         let idParameter = {
           name: 'id',
           in: 'path',
           description: 'id of ' + key,
           required: true,
           schema: { type: 'string' },
-        }
-        let itemInBody = {
-          requestBody: {
-            content: {
-              'application/json': {
-                schema: {
-                  $ref: '#/components/schemas/' + mutationKey,
-                },
-              },
-            },
-          },
         }
 
         apiPath.post = secure(meta.options.allowApiInsert, false, {
@@ -970,21 +1098,24 @@ export class RemultServerImplementation<RequestType>
 
 class ExpressRequestBridgeToDataApiRequest implements DataApiRequest {
   get(key: string): any {
-    return this.r.query[key]
+    return this.r?.query[key]
   }
 
-  constructor(private r: GenericRequestInfo) {}
+  constructor(private r: GenericRequestInfo | undefined) {}
 }
 class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
   forbidden(): void {
-    this.setStatus(403).end()
+    this.error({ message: 'Forbidden' }, undefined, 403)
   }
   setStatus(status: number) {
     return this.r.status(status)
   }
   constructor(
     private r: GenericResponse,
-    private req: GenericRequestInfo,
+    private req: GenericRequestInfo | undefined,
+    private handleError:
+      | RemultServerOptions<GenericRequestInfo>['error']
+      | undefined,
   ) {}
   progress(progress: number): void {}
 
@@ -1000,24 +1131,58 @@ class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
   }
 
   public notFound(): void {
-    this.setStatus(404).end()
+    this.error({ message: 'NotFound' }, undefined, 404)
   }
 
-  public error(data: ErrorInfo): void {
-    data = serializeError(data)
-    console.error({
-      message: data.message,
-      stack: data.stack?.split('\n'),
-      url: this.req.url,
-      method: this.req.method,
+  public async error(
+    exception: ErrorInfo,
+    entity: EntityMetadata,
+    httpStatusCode?: number,
+  ) {
+    let data = serializeError(exception)
+    if (!httpStatusCode) {
+      if (data.httpStatusCode) {
+        httpStatusCode = data.httpStatusCode
+      } else if (
+        isOfType<ForbiddenError>(exception, 'isForbiddenError') &&
+        exception.isForbiddenError
+      ) {
+        httpStatusCode = 403
+      } else if (data.modelState) {
+        httpStatusCode = 400
+      } else {
+        httpStatusCode = 500
+      }
+    }
+    let responseSent = false
+    const sendError = (httpStatusCode, body) => {
+      if (responseSent) {
+        throw Error('Error response already sent')
+      }
+      responseSent = true
+      console.error({
+        message: body.message,
+        httpStatusCode,
+        stack: data.stack?.split('\n'),
+        url: this.req?.url,
+        method: this.req?.method,
+      })
+      this.setStatus(httpStatusCode).json(body)
+    }
+    await this.handleError?.({
+      httpStatusCode,
+      req: this.req,
+      entity,
+      exception,
+      responseBody: data,
+      sendError,
     })
-    this.setStatus(400).json(data)
+    if (!responseSent) {
+      sendError(httpStatusCode, data)
+    }
   }
 }
 
-function throwError() {
-  throw 'Invalid'
-}
 class inProcessQueueHandler {
   constructor(private storage: QueueStorage) {}
   async submitJob(url: string, req: Remult, body: any): Promise<string> {

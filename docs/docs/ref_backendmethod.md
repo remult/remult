@@ -6,7 +6,7 @@ Determines when this `BackendMethod` can execute, see: [Allowed](https://remult.
 Used to determine the route for the BackendMethod.
    
    
-   *example*
+   #### example:
    ```ts
    {allowed:true, apiPrefix:'someFolder/'}
    ```

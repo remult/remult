@@ -20,7 +20,6 @@ Let's add two buttons to the todo app: "Set all as completed" and "Set all as un
 
    The `for` loop iterates the array of `Task` objects returned from the backend, and saves each task back to the backend with a modified value in the `completed` field.
 
-
 2. Add the two buttons to the return section of the `App` component, just before the closing `</main>` tag. Both of the buttons' `onClick` events will call the `setAllCompleted` method with the appropriate value of the `completed` argument.
 
    ```tsx
@@ -45,8 +44,8 @@ A simple way to prevent this is to expose an API endpoint for `setAllCompleted` 
 ```ts
 // src/shared/TasksController.ts
 
-import { BackendMethod, remult } from "remult"
-import { Task } from "./Task"
+import { BackendMethod, remult } from 'remult'
+import { Task } from './Task.js'
 
 export class TasksController {
   @BackendMethod({ allowed: true })
@@ -70,7 +69,7 @@ The `@BackendMethod` decorator tells Remult to expose the method as an API endpo
 // src/server/api.ts
 
 //...
-import { TasksController } from "../shared/TasksController"
+import { TasksController } from "../shared/TasksController.js"
 
 export const api = remultExpress({
   //...

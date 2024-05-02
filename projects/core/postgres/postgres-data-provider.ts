@@ -1,4 +1,5 @@
 import type { ClientBase, PoolConfig, QueryResult } from 'pg'
+import { remult as defaultRemult } from '../src/remult-proxy.js'
 import pg from 'pg'
 const { Pool } = pg
 import { Remult } from '../src/context.js'
@@ -10,19 +11,29 @@ import type {
   SqlResult,
 } from '../src/sql-command.js'
 import { PostgresSchemaBuilder } from './schema-builder.js'
+import type {
+  CanBuildMigrations,
+  MigrationBuilder,
+  MigrationCode,
+} from '../migrations/migration-types.js'
+import type { DataProvider } from '../index.js'
 
 export interface PostgresPool extends PostgresCommandSource {
   connect(): Promise<PostgresClient>
+  end(): Promise<void>
 }
 export interface PostgresClient extends PostgresCommandSource {
   release(): void
 }
 
-export class PostgresDataProvider implements SqlImplementation {
+export class PostgresDataProvider
+  implements SqlImplementation, CanBuildMigrations
+{
   supportsJsonColumnType = true
-  static getDb(remult?: Remult): ClientBase {
-    const sql = SqlDatabase.getDb(remult)
-    const me = sql._getSourceSql() as PostgresDataProvider
+  static getDb(dataProvider?: DataProvider): ClientBase {
+    const r = (dataProvider || defaultRemult.dataProvider) as SqlDatabase
+    if (!r._getSourceSql) throw 'the data provider is not an SqlDatabase'
+    const me = r._getSourceSql() as PostgresDataProvider
     if (!me.pool) {
       throw 'the data provider is not a PostgresDataProvider'
     }
@@ -42,14 +53,32 @@ export class PostgresDataProvider implements SqlImplementation {
       wrapIdentifier?: (name: string) => string
       caseInsensitiveIdentifiers?: boolean
       schema?: string
+      orderByNullsFirst?: boolean
     },
   ) {
     if (options?.wrapIdentifier) this.wrapIdentifier = options.wrapIdentifier
     if (!options?.wrapIdentifier && options?.caseInsensitiveIdentifiers)
       this.wrapIdentifier = (name) => name
+    if (options.orderByNullsFirst)
+      this.orderByNullsFirst = options.orderByNullsFirst
 
     if (options?.schema) {
       this.pool = new PostgresSchemaWrapper(pool, options.schema)
+    }
+  }
+  end() {
+    return this.pool.end()
+  }
+  provideMigrationBuilder(builder: MigrationCode): MigrationBuilder {
+    var db = new SqlDatabase(this)
+    var sb = new PostgresSchemaBuilder(db, this.options?.schema)
+    return {
+      addColumn: async (meta, field) => {
+        builder.addSql(await sb.getAddColumnScript(meta, field))
+      },
+      createTable: async (meta) => {
+        builder.addSql(await sb.createTableScript(meta))
+      },
     }
   }
   wrapIdentifier = (name) =>
@@ -65,7 +94,7 @@ export class PostgresDataProvider implements SqlImplementation {
     var sb = new PostgresSchemaBuilder(db, this.options?.schema)
     await sb.ensureSchema(entities)
   }
-
+  orderByNullsFirst?: boolean
   async transaction(
     action: (dataProvider: SqlImplementation) => Promise<void>,
   ) {
@@ -84,6 +113,7 @@ export class PostgresDataProvider implements SqlImplementation {
         //@ts-ignore
         pool: client,
         wrapIdentifier: this.wrapIdentifier,
+        orderByNullsFirst: this.orderByNullsFirst,
       })
       await client.query('COMMIT')
     } catch (err) {
@@ -102,7 +132,10 @@ export interface PostgresCommandSource {
 class PostgresBridgeToSQLCommand implements SqlCommand {
   constructor(private source: PostgresCommandSource) {}
   values: any[] = []
-  addParameterAndReturnSqlToken(val: any): string {
+  addParameterAndReturnSqlToken(val: any) {
+    return this.param(val)
+  }
+  param(val: any): string {
     if (Array.isArray(val)) val = JSON.stringify(val)
     this.values.push(val)
     return '$' + this.values.length
@@ -136,6 +169,7 @@ export async function createPostgresDataProvider(options?: {
   wrapIdentifier?: (name: string) => string
   caseInsensitiveIdentifiers?: boolean
   schema?: string
+  orderByNullsFirst?: boolean
 }) {
   if (!options) options = {}
   let config: PoolConfig = {}
@@ -164,6 +198,7 @@ export async function createPostgresDataProvider(options?: {
       wrapIdentifier: options.wrapIdentifier,
       caseInsensitiveIdentifiers: options.caseInsensitiveIdentifiers,
       schema: options.schema,
+      orderByNullsFirst: options.orderByNullsFirst,
     }),
   )
   let remult = new Remult()
@@ -201,5 +236,8 @@ export class PostgresSchemaWrapper implements PostgresPool {
     } finally {
       c.release()
     }
+  }
+  end() {
+    return this.pool.end()
   }
 }

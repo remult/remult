@@ -41,12 +41,12 @@ describe.skipIf(!mongoConnectionString)('mongo with Transaction', () => {
       createEntity,
     },
     {
-      doesNotWorkForMongoNeedToInvestigate: true,
+      skipAutoIncrement: true,
     },
   )
   it('work with native mongo and condition', async () => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity)
-    const mongo = MongoDataProvider.getDb(remult)
+    const mongo = MongoDataProvider.getDb(remult.dataProvider)
     const r = await (
       await mongo.db.collection(repo.metadata.dbName!)
     ).countDocuments(
@@ -56,7 +56,7 @@ describe.skipIf(!mongoConnectionString)('mongo with Transaction', () => {
   })
   it('work with native mongo', async () => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity)
-    const mongo = MongoDataProvider.getDb(remult)
+    const mongo = MongoDataProvider.getDb(remult.dataProvider)
     const r = await (
       await mongo.db.collection(repo.metadata.dbName!)
     ).countDocuments()
