@@ -1,5 +1,11 @@
 import type { EntityFilter, EntityOrderBy } from '../../core'
-import { CompoundIdField, Entity, EntityBase, Fields } from '../../core'
+import {
+  CompoundIdField,
+  Entity,
+  EntityBase,
+  Fields,
+  InMemoryDataProvider,
+} from '../../core'
 import type { FieldMetadata } from '../../core/src/column-interfaces'
 import { Remult, queryConfig } from '../../core/src/context'
 import { entityFilterToJson } from '../../core/src/filter/filter-interfaces'
@@ -10,6 +16,7 @@ import { Categories } from './remult-3-entities'
 import { describe, expect, it } from 'vitest'
 import { testRestDb } from './testHelper'
 import { getRepositoryInternals } from '../../core/src/remult3/repository-internals'
+import { entity } from './dynamic-classes.js'
 
 describe('test paged foreach ', () => {
   queryConfig.defaultPageSize = 2
@@ -236,6 +243,27 @@ describe('test paged foreach ', () => {
       expect(x.id).toBe(++i)
     }
     expect(i).toBe(5)
+  })
+  it('test createUniqueSort with multiple Id Columns', async () => {
+    const task = new Remult(new InMemoryDataProvider()).repo(
+      entity(
+        'task',
+        { a: Fields.number(), b: Fields.number(), c: Fields.number() },
+        {
+          id: {
+            a: true,
+            b: true,
+          },
+        },
+      ),
+    )
+    expect(Sort.createUniqueEntityOrderBy(task.metadata))
+      .toMatchInlineSnapshot(`
+      {
+        "a": "asc",
+        "b": "asc",
+      }
+    `)
   })
   it('test make sort unique', async () => {
     const remult = new Remult()

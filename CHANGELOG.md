@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.26.9] 2024-05-02
+
+- Fix order by error with multiple id columns
+
 ## [0.26.8] 2024-05-01
 
 - Added support for `sqlite3` that runs on stackblitz

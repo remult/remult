@@ -182,22 +182,13 @@ export class Sort {
   ): EntityOrderBy<T> {
     if (!orderBy || Object.keys(orderBy).length === 0)
       orderBy = entityMetadata.options.defaultOrderBy
-    if (!orderBy)
-      orderBy = {
-        [entityMetadata.idMetadata.field.key]: 'asc',
-      } as EntityOrderBy<T>
+    if (!orderBy) orderBy = {} as EntityOrderBy<T>
     else orderBy = { ...orderBy }
-
-    if (entityMetadata.idMetadata.field instanceof CompoundIdField) {
-      for (const field of entityMetadata.idMetadata.field.fields) {
-        if (!orderBy[field.key]) {
-          orderBy[field.key] = 'asc'
-        }
+    for (const field of entityMetadata.idMetadata.fields) {
+      if (!orderBy[field.key]) {
+        orderBy[field.key] = 'asc'
       }
-    } else if (!orderBy[entityMetadata.idMetadata.field.key]) {
-      orderBy[entityMetadata.idMetadata.field.key] = 'asc'
     }
-
     return orderBy
   }
 }
