@@ -24,78 +24,83 @@
     entity: EntityNode,
   }
 
-  const init = () => {
-    const data = calcOptimisedDefaultPlacement($godStore)
-    // console.log(`data`, data)
+  $effect(() => {
+    if ($godStore) {
+      const data = calcOptimisedDefaultPlacement($godStore)
+      // console.log(`data`, data)
 
-    const localNodes = data.map((data, i) => ({
-      id: data.table.key,
-      position: data.position,
-      data: data.table,
-      type: 'entity',
-    }))
-    // const localNodes = $godStore.tables.map((data, i) => ({
-    //   id: data.key,
-    //   position: { x: i * 150, y: 0 },
-    //   data,
-    //   type: 'entity',
-    // }))
-    const saved = localStorage.getItem('erd')
-    if (saved) {
-      const savedNodes = JSON.parse(saved) as {
-        id: string
-        position: { x: number; y: number }
-      }[]
-      for (const savedNode of savedNodes) {
-        const node = localNodes.find((x) => x.id === savedNode.id)
-        if (node) node.position = savedNode.position
+      const localNodes = data.map((data, i) => ({
+        id: data.table.key,
+        position: data.position,
+        data: data.table,
+        type: 'entity',
+      }))
+      // const localNodes = $godStore.tables.map((data, i) => ({
+      //   id: data.key,
+      //   position: { x: i * 150, y: 0 },
+      //   data,
+      //   type: 'entity',
+      // }))
+      const saved = localStorage.getItem('erd')
+      if (saved) {
+        const savedNodes = JSON.parse(saved) as {
+          id: string
+          position: { x: number; y: number }
+        }[]
+        for (const savedNode of savedNodes) {
+          const node = localNodes.find((x) => x.id === savedNode.id)
+          if (node) node.position = savedNode.position
+        }
       }
-    }
-    nodes.set(localNodes)
+      nodes.set(localNodes)
 
-    const localEdges: Edge[] = []
+      const localEdges: Edge[] = []
 
-    for (const entity of $godStore.tables) {
-      function createEdge(
-        toEntity: string,
-        relationFields: Record<string, string>,
-      ) {
-        const target = $godStore.tables.find((x) => x.key === toEntity)
+      for (const entity of $godStore.tables) {
+        function createEdge(
+          toEntity: string,
+          relationFields: Record<string, string>,
+        ) {
+          const target = $godStore.tables.find((x) => x.key === toEntity)
 
-        if (target) {
-          const sourceNode = localNodes.find((x) => x.id === entity.key)!
-          const targetNode = localNodes.find((x) => x.id === target.key)!
-          for (const key in relationFields) {
-            if (Object.prototype.hasOwnProperty.call(relationFields, key)) {
-              const element = relationFields[key]
-              localEdges.push({
-                id: `${entity.key}-${element}-to-one`,
-                source: sourceNode.id,
-                target: targetNode.id,
-                ...returnHandles(sourceNode, targetNode, element, key),
-              })
+          if (target) {
+            const sourceNode = localNodes.find((x) => x.id === entity.key)!
+            const targetNode = localNodes.find((x) => x.id === target.key)!
+            for (const key in relationFields) {
+              if (Object.prototype.hasOwnProperty.call(relationFields, key)) {
+                const element = relationFields[key]
+                localEdges.push({
+                  id: `${entity.key}-${element}-to-one`,
+                  source: sourceNode.id,
+                  target: targetNode.id,
+                  ...returnHandles(sourceNode, targetNode, element, key),
+                })
+              }
             }
           }
         }
-      }
-      for (const field of entity.fields) {
-        if (field.relationToOne) {
-          createEdge(field.relationToOne?.entityKey, field.relationToOne.fields)
+        for (const field of entity.fields) {
+          if (field.relationToOne) {
+            createEdge(
+              field.relationToOne?.entityKey,
+              field.relationToOne.fields,
+            )
+          }
         }
-      }
-      for (const relation of entity.relations) {
-        const target = $godStore.tables.find(
-          (x) => x.key === relation.entityKey,
-        )
+        for (const relation of entity.relations) {
+          const target = $godStore.tables.find(
+            (x) => x.key === relation.entityKey,
+          )
 
-        if (target) {
-          createEdge(relation.entityKey, relation.fields)
+          if (target) {
+            createEdge(relation.entityKey, relation.fields)
+          }
         }
       }
+      // console.table(localEdges)
+      edges.set(localEdges)
     }
-    // console.table(localEdges)
-    edges.set(localEdges)
-  }
+  })
 
   function returnHandles(
     sourceNode: Node,
@@ -121,14 +126,6 @@
       return sp.slice(0, sp.length - 2).join('-')
     return id
   }
-
-  // $effect(() => {
-  //   console.log('godStore')
-  //   if ($godStore) {
-  //     init()
-  //   }
-  // })
-  $: $godStore && init()
 </script>
 
 <div style="height:100vh;">
