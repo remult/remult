@@ -1,4 +1,3 @@
-import { CompoundIdField } from './CompoundIdField.js'
 import type { FieldMetadata } from './column-interfaces.js'
 import { getRelationFieldInfo } from './remult3/relationInfoMember.js'
 import type {
@@ -151,18 +150,11 @@ export class Sort {
         entityMetadata,
         entityMetadata.options.defaultOrderBy,
       )
-    if (!orderBy) orderBy = new Sort({ field: entityMetadata.idMetadata.field })
-
-    if (entityMetadata.idMetadata.field instanceof CompoundIdField) {
-      for (const field of entityMetadata.idMetadata.field.fields) {
-        if (!orderBy.Segments.find((x) => x.field == field)) {
-          orderBy.Segments.push({ field: field })
-        }
+    if (!orderBy) orderBy = new Sort()
+    for (const field of entityMetadata.idMetadata.fields) {
+      if (!orderBy.Segments.find((x) => x.field == field)) {
+        orderBy.Segments.push({ field: field })
       }
-    } else if (
-      !orderBy.Segments.find((x) => x.field == entityMetadata.idMetadata.field)
-    ) {
-      orderBy.Segments.push({ field: entityMetadata.idMetadata.field })
     }
     return orderBy
   }

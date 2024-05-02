@@ -265,6 +265,27 @@ describe('test paged foreach ', () => {
       }
     `)
   })
+  it('test createUniqueSort with multiple Id Columns', async () => {
+    const task = new Remult(new InMemoryDataProvider()).repo(
+      entity(
+        'task',
+        { a: Fields.number(), b: Fields.number(), c: Fields.number() },
+        {
+          id: {
+            a: true,
+            b: true,
+          },
+        },
+      ),
+    )
+    expect(Sort.createUniqueSort(task.metadata).toEntityOrderBy())
+      .toMatchInlineSnapshot(`
+      {
+        "a": "asc",
+        "b": "asc",
+      }
+    `)
+  })
   it('test make sort unique', async () => {
     const remult = new Remult()
     const e = remult.repo(Categories)
