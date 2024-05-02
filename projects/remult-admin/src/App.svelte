@@ -8,7 +8,7 @@
   import { godStore } from './stores/GodStore'
   import active from 'svelte-spa-router/active'
 
-  export let params: { wild?: string } = {}
+  // export let params: { wild?: string } = {}
 
   const routes = {
     '/': Schema,

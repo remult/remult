@@ -1,10 +1,11 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import { writable } from 'svelte/store'
   import {
     SvelteFlow,
     Background,
     Controls,
     MiniMap,
+    SvelteFlowProvider,
     type Node,
     type NodeTypes,
     type Edge,
@@ -23,11 +24,10 @@
     entity: EntityNode,
   }
 
-  $: $godStore && init()
-
   const init = () => {
+    console.log('init')
     const data = calcOptimisedDefaultPlacement($godStore)
-    console.log(`data`, data)
+    // console.log(`data`, data)
 
     const localNodes = data.map((data, i) => ({
       id: data.table.key,
@@ -59,7 +59,7 @@
     for (const entity of $godStore.tables) {
       function createEdge(
         toEntity: string,
-        relationFields: Record<string, string>
+        relationFields: Record<string, string>,
       ) {
         const target = $godStore.tables.find((x) => x.key === toEntity)
 
@@ -86,7 +86,7 @@
       }
       for (const relation of entity.relations) {
         const target = $godStore.tables.find(
-          (x) => x.key === relation.entityKey
+          (x) => x.key === relation.entityKey,
         )
 
         if (target) {
@@ -94,7 +94,7 @@
         }
       }
     }
-    console.table(localEdges)
+    // console.table(localEdges)
     edges.set(localEdges)
   }
 
@@ -102,7 +102,7 @@
     sourceNode: Node,
     targetNode: Node,
     sourceField: string,
-    targetField: string
+    targetField: string,
   ) {
     return {
       sourceHandle:
@@ -122,14 +122,28 @@
       return sp.slice(0, sp.length - 2).join('-')
     return id
   }
+
+  // $effect(() => {
+  //   console.log('godStore')
+  //   if ($godStore) {
+  //     init()
+  //   }
+  // })
+  $: $godStore && init()
 </script>
 
 <div style="height:100vh;">
-  <SvelteFlow {nodes} {edges} {nodeTypes} fitView>
-    <Background patternColor="#aaa" gap={16} />
-    <Controls />
-    <MiniMap zoomable pannable height={120} />
-  </SvelteFlow>
+  {#if $nodes.length > 0}
+    <SvelteFlowProvider>
+      <SvelteFlow {nodes} {edges} {nodeTypes} fitView>
+        <Background patternColor="#aaa" gap={16} />
+        <Controls />
+        <MiniMap zoomable pannable height={120} />
+      </SvelteFlow>
+    </SvelteFlowProvider>
+  {:else}
+    Building the diagram...
+  {/if}
 </div>
 
 <style>
@@ -158,10 +172,104 @@
     border: none;
     line-height: 1.4;
     width: 225px;
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 15%), 0 2px 4px -1px rgb(0 0 0 / 8%);
+    box-shadow:
+      0 4px 6px -1px rgb(0 0 0 / 15%),
+      0 2px 4px -1px rgb(0 0 0 / 8%);
   }
 
   :global(.annotation .svelte-flow__handle) {
     display: none;
+  }
+</style> -->
+
+<script>
+  import { writable } from 'svelte/store'
+  import { onMount } from 'svelte'
+  import {
+    SvelteFlow,
+    SvelteFlowProvider,
+    Background,
+    Controls,
+    MiniMap,
+  } from '@xyflow/svelte'
+
+  import '@xyflow/svelte/dist/style.css'
+
+  const nodes = writable([])
+  const edges = writable([])
+
+  onMount(() => {
+    console.log('cc')
+    const { nodes: initialNodes, edges: initialEdges } = createNodesAndEdges(
+      15,
+      30,
+    )
+    $nodes = initialNodes
+    $edges = initialEdges
+  })
+
+  function createNodesAndEdges(xNodes = 10, yNodes = 10) {
+    const nodes = []
+    const edges = []
+    let nodeId = 1
+    let recentNodeId = null
+
+    for (let y = 0; y < yNodes; y++) {
+      for (let x = 0; x < xNodes; x++) {
+        const position = { x: x * 100, y: y * 50 }
+        const data = { label: `Node ${nodeId}` }
+        const node = {
+          id: `stress-${nodeId.toString()}`,
+          style: 'width: 50px; fontSize: 11pt;',
+          data,
+          position,
+        }
+        nodes.push(node)
+
+        if (recentNodeId && nodeId <= xNodes * yNodes) {
+          edges.push({
+            id: `${x}-${y}`,
+            source: `stress-${recentNodeId.toString()}`,
+            target: `stress-${nodeId.toString()}`,
+          })
+        }
+
+        recentNodeId = nodeId
+        nodeId++
+      }
+    }
+
+    return { nodes, edges }
+  }
+
+  function updatePos() {
+    $nodes.forEach((node) => {
+      node.position = {
+        x: Math.random() * 1500,
+        y: Math.random() * 1500,
+      }
+    })
+    $nodes = $nodes
+    console.log(`$nodes`, $nodes)
+  }
+</script>
+
+<div style="height:100vh;">
+  <SvelteFlowProvider>
+    <SvelteFlow {nodes} {edges} minZoom={0} fitView>
+      <button on:click={updatePos} class="scramble-button"> change pos </button>
+      <!-- <Background /> -->
+      <!-- <MiniMap /> -->
+      <!-- <Controls /> -->
+    </SvelteFlow>
+  </SvelteFlowProvider>
+</div>
+
+<style>
+  .scramble-button {
+    position: absolute;
+    right: 10px;
+    top: 30px;
+    z-index: 4;
   }
 </style>

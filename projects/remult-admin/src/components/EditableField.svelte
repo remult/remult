@@ -6,8 +6,11 @@
   } from '../../../core/server/remult-admin'
   import { God } from '../God'
 
-  export let value: any
-  export let info: FieldUIInfo
+  let { value = $bindable(), ...props } = $props()
+
+  // export let value: any
+  // export let info: FieldUIInfo
 </script>
 
-<input bind:value on:change />
+<input bind:value {...props} />
+<!-- on:Change -->

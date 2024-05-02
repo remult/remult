@@ -16,6 +16,8 @@
   export let columns: FieldUIInfo[]
   export let relations: EntityRelationToManyInfo[]
   export let rowId: any
+  // TODO TO REMOVE
+  const tmpRmvWarning = rowId
 
   let error = undefined
   let relation: false | EntityRelationToManyInfo = false
@@ -25,7 +27,9 @@
   $: relationTable =
     relation &&
     typeof relation === 'object' &&
-    $godStore.tables.find((x) => x.key === relation.entityKey)
+    $godStore.tables.find((x) => {
+      return relation ? x.key === relation.entityKey : false
+    })
   $: change = Boolean(columns.find((x) => value[x.key] !== rowFrozzen[x.key]))
 
   const relationWhere = {}
@@ -126,7 +130,7 @@
 </tr>
 {#if relation}
   <tr>
-    <td />
+    <td></td>
     <td colSpan={columns.length + 1}>
       {#each relations as r}
         <button

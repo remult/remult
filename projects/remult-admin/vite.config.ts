@@ -6,9 +6,19 @@ import { svelte } from '@sveltejs/vite-plugin-svelte'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    svelte(),
-    react(),
+    svelte({
+      onwarn(warning, defaultHandler) {
+        // Do not show 3rd party warnings
+        if (warning.filename.includes('node_modules')) return
+
+        defaultHandler(warning)
+      },
+    }),
+
+    // react(),
+
     viteSingleFile(),
+
     {
       name: 'local-express',
       configureServer: async (server: any) => {

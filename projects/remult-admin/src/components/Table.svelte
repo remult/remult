@@ -119,12 +119,12 @@
             await repo.insert(item)
             newRow = undefined
           }}
-        />
+        ></EditableRow>
       {/if}
 
       <tr>
         {#if relations.length > 0}
-          <td />
+          <td></td>
         {/if}
         {#each columns as column}
           <th on:click={() => toggleOrderBy(column.key)}>
