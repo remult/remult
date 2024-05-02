@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.26.9] 2024-05-02
+## [0.26.10] 2024-05-02
 
 - Fix order by error with multiple id columns
 
