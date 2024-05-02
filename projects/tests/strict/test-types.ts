@@ -42,3 +42,8 @@ function dateOnly<entityType = any>(o?: FieldOptions<entityType, Date>) {
   const validate: FieldValidator<entityType, Date>[] = []
   validate.push(Validators.required)
 }
+
+function string<entityType = unknown, valueType = string>() {
+  const validate: FieldValidator<entityType, valueType>[] = []
+  validate.push(Validators.required)
+}
