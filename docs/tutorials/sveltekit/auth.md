@@ -94,7 +94,7 @@ You can use an [online UUID generator](https://www.uuidgenerator.net/) to genera
 import type { Handle } from '@sveltejs/kit'
 import { sequence } from '@sveltejs/kit/hooks'
 import { SvelteKitAuth } from '@auth/sveltekit'
-import Credentials from '@auth/core/providers/credentials'
+import Credentials from '@auth/sveltekit/providers/credentials'
 import { _api } from './routes/api/[...remult]/+server'
 import type { UserInfo } from 'remult'
 
