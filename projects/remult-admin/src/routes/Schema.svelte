@@ -20,6 +20,7 @@
 
   const nodes = writable<Node[]>([])
   const edges = writable<Edge[]>([])
+  // SVELTE-5: $state() => writable ??
 
   const nodeTypes: NodeTypes = {
     entity: EntityNode,
@@ -96,10 +97,10 @@
     edges.set(localEdges)
   }
 
-  // $effect(() => {
-  //   init()
-  // })
-  // $derived()
+  onMount(async () => {
+    await god.init()
+    init()
+  })
 
   function returnHandles(
     sourceNode: Node,
@@ -128,9 +129,6 @@
 </script>
 
 <div style="height:100vh;">
-  <button onclick={() => init()}
-    >Load... tmp workaround... I don't know about $effect, $derived, ...</button
-  >
   {#if $nodes.length > 0}
     <SvelteFlowProvider>
       <SvelteFlow {nodes} {edges} {nodeTypes} fitView>

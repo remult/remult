@@ -17,7 +17,7 @@ export class God {
     this.tables = []
 
     // RUNE We can't await in the constructor... What is a good pattern to use here?
-    this.init()
+    // this.init()
   }
 
   async init() {

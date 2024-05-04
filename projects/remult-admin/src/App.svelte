@@ -10,6 +10,10 @@
 
   // export let params: { wild?: string } = {}
 
+  onMount(async () => {
+    await god.init()
+  })
+
   const routes = {
     '/': Schema,
     '/entity/*': Entity,
