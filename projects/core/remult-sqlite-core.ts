@@ -43,7 +43,7 @@ export class SqliteCoreDataProvider
         builder.addSql(await self.getCreateTableSql(entity))
       },
       addColumn: async (entity: EntityMetadata<any>, field: FieldMetadata) => {
-        let e = await dbNamesOf(entity)
+        let e = await dbNamesOf(entity, this.wrapIdentifier)
         let sql = `alter table ${
           e.$entityName
         } add column ${self.addColumnSqlSyntax(field, e.$dbNameOf(field))}`
@@ -72,7 +72,7 @@ export class SqliteCoreDataProvider
   }
 
   async dropTable(entity: EntityMetadata) {
-    let e = await dbNamesOf(entity)
+    let e = await dbNamesOf(entity, this.wrapIdentifier)
     let sql = 'drop  table if exists ' + e.$entityName
     if (SqlDatabase.LogToConsole) console.info(sql)
     await this.createCommand().execute(sql)
@@ -97,7 +97,7 @@ export class SqliteCoreDataProvider
   supportsJsonColumnType?: boolean
   private async getCreateTableSql(entity: EntityMetadata<any>) {
     let result = ''
-    let e = await dbNamesOf(entity)
+    let e = await dbNamesOf(entity, this.wrapIdentifier)
     for (const x of entity.fields) {
       if (!shouldNotCreateField(x, e) || isAutoIncrement(x)) {
         if (result.length != 0) result += ','
@@ -120,7 +120,8 @@ export class SqliteCoreDataProvider
     return sql
   }
 
-  wrapIdentifier?(name: string): string {
-    return name
+  wrapIdentifier(name: string): string {
+    //return name
+    return '`' + name + '`'
   }
 }

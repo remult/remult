@@ -1386,6 +1386,16 @@ export function commonDbTests(
     }
   `)
   })
+  it('strange names work', async () => {
+    const e = createEntity(
+      entity('x', {
+        id: Fields.number(),
+        order: Fields.number(),
+        user: Fields.string(),
+      }),
+    )
+    await e
+  })
   it('test compound id', async () => {
     const e = await createEntity(
       entity(

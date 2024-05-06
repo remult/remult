@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.26.11] TBD
+
+- Fixed error in sqlite with reserved column names such as order etc...
+
 ## [0.26.10] 2024-05-02
 
 - Fix order by error with multiple id columns

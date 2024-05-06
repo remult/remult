@@ -67,12 +67,12 @@ describe('Sql JS', () => {
     expect(
       await testMigrationScript(db, (m) => m.addColumn(e, e.fields.object)),
     ).toMatchInlineSnapshot(
-      '"alter table my add column object text default \'\' not null "',
+      '"alter table `my` add column `object` text default \'\' not null "',
     )
     expect(
       await testMigrationScript(db, (m) => m.addColumn(e, e.fields.name)),
     ).toMatchInlineSnapshot(
-      '"alter table my add column name text default \'\' not null "',
+      '"alter table `my` add column `name` text default \'\' not null "',
     )
   })
 })
