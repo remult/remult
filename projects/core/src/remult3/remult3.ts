@@ -828,6 +828,10 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //y2 - soft-delete-discussion https://discord.com/channels/975754286384418847/1230386433093533698/1230386433093533698
 
 //y1 - In the esm version of our tutorial - the imports are automatically .ts and not .js in react and not in vue
+/*y1 - The retry on server error is too wide (error 500, basically any server error) 50 retries is annoying
+  - vite doesn't say proxy error, so we can't listen to that to know that we are in dev
+  - Our SSE has it's own separate retry every 500 ms that is also problematic
+  - when using concurrently - on any server error - the terminal is flooded by the error messages
 //y1 - consider id to also support keyof (id:['company','index']) - had problem with | (keyof Partial<entityType>)[] & `entity`
 //y2 - readonly key: keyof MembersOnly<entityType> & string
 
