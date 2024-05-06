@@ -1,5 +1,6 @@
 # Shadcn React Table
 
+[Live Demo](https://table.up.railway.app/)
 [Open in stackblitz](https://stackblitz.com/github/remult/remult/tree/main/examples/shadcn-react-table)
 
 This examples demos:

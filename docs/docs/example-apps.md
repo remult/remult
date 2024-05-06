@@ -16,6 +16,7 @@ A CRM app built using a React + [MUI](https://mui.com) frontend and an Express +
 
 Using remult with server side sorting, filtering, paging & CRUD
 
+- [Live demo](https://table.up.railway.app/)
 - [Open in stackblitz](https://stackblitz.com/github/remult/remult/tree/main/examples/shadcn-react-table)
 - [Source Code](https://www.github.com/remult/remult/tree/main/examples/shadcn-react-table)
 

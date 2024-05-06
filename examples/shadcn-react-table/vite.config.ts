@@ -10,4 +10,7 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    port: Number(process.env['PORT'] ?? 5173),
+  },
 })
