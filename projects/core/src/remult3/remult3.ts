@@ -834,6 +834,9 @@ export type ClassFieldDecorator<entityType, valueType> = (
   - when using concurrently - on any server error - the terminal is flooded by the error messages
 //y1 - consider id to also support keyof (id:['company','index']) - had problem with | (keyof Partial<entityType>)[] & `entity`
 //y2 - readonly key: keyof MembersOnly<entityType> & string
+//y1 TODO - In the esm version of our tutorial - the imports are automatically .ts and not .js in react and not in vue
+//y1 TODO - consider id to also support keyof (id:['company','index']) - had problem with | (keyof Partial<entityType>)[] & `entity`
+//y1 TODO -  readonly key: keyof MembersOnly<entityType> & string
 
 //y1 - talk about insert / update / delete with relations
 /*
@@ -861,7 +864,6 @@ export type ClassFieldDecorator<entityType, valueType> = (
 //p1 - article on displayValue including it's definition for entities that is used in relations
 //p2 -fix remult admin not to load the html into memory until used
 
-//y2 - JY suggestion of having generate as part of the ensure schema - not sure
 //y2 - currently for string fields we default for 255 in knex (which is their default) why not just use text (varchar max) - and only use exact length when one is provided?
 
 //p2 - create foreign key constraints in user code - https://codesandbox.io/p/devbox/fk-validator-tdshcs
