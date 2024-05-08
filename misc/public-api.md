@@ -3565,7 +3565,7 @@ export declare class SqliteCoreDataProvider
   createTableIfNotExist(entity: EntityMetadata<any>): Promise<void>
   supportsJsonColumnType?: boolean
   private getCreateTableSql
-  wrapIdentifier?(name: string): string
+  wrapIdentifier(name: string): string
 }
 //[ ] SqlCommand from ./src/sql-command.js is not exported
 //[ ] MigrationCode from ./migrations/migration-types.js is not exported
