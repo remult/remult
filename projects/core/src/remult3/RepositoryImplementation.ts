@@ -342,10 +342,9 @@ export class RepositoryImplementation<entityType>
             ).buildDtoForInsert(),
           )
         }
-        return Promise.all(
-          (
-            await (this._edp as any as ProxyEntityDataProvider).insertMany(raw)
-          ).map((item, i) => refs[i].processInsertResponseDto(item)),
+        return promiseAll(
+          await (this._edp as any as ProxyEntityDataProvider).insertMany(raw),
+          (item, i) => refs[i].processInsertResponseDto(item),
         )
       } else {
         let r = []
@@ -507,7 +506,7 @@ export class RepositoryImplementation<entityType>
       | Partial<MembersOnly<entityType>>[],
   ): Promise<entityType | entityType[]> {
     if (Array.isArray(entity)) {
-      return Promise.all(entity.map((x) => this.save(x)))
+      return promiseAll(entity, (x) => this.save(x))
     } else {
       let ref = getEntityRef(entity, false) as unknown as EntityRef<entityType>
       if (ref) return await ref.save()
@@ -659,8 +658,9 @@ export class RepositoryImplementation<entityType>
       }
     }
 
-    let result = await Promise.all(
-      rawRows.map(async (r) => await this._mapRawDataToResult(r, loadFields)),
+    let result = await promiseAll(
+      rawRows,
+      async (r) => await this._mapRawDataToResult(r, loadFields),
     )
     for (const col of this.metadata.fields) {
       let rel = getRelationFieldInfo(col)
@@ -1266,7 +1266,7 @@ abstract class rowHelperBase<T> {
 
   lookups = new Map<string, LookupColumn<any>>()
   async waitLoad() {
-    await Promise.all([...this.lookups.values()].map((x) => x.waitLoad()))
+    await promiseAll([...this.lookups.values()], (x) => x.waitLoad())
   }
   errors: { [key: string]: string }
   protected __assertValidity() {
@@ -1433,7 +1433,7 @@ abstract class rowHelperBase<T> {
           }
         }
     }
-    await Promise.all([...this.fields].map((x) => x.load()))
+    await promiseAll([...this.fields], (x) => x.load())
   }
 }
 
@@ -2914,3 +2914,15 @@ export type EntityMetadataOverloads<entityType> =
 export type RepositoryOverloads<entityType> =
   | Repository<entityType>
   | ClassType<entityType>
+
+async function promiseAll<T, Y>(
+  array: T[],
+  mapToPromise: (val: T, index: number) => Promise<Y>,
+) {
+  const result = []
+  for (let index = 0; index < array.length; index++) {
+    const element = array[index]
+    result.push(await mapToPromise(element, index))
+  }
+  return result
+}
