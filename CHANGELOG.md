@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [0.26.11] TBD
 
 - Fixed error in sqlite with reserved column names such as order etc...
+- #427 - Changed the retry on error 500, to 4 times instead of 50 or infinite that was before.
 
 ## [0.26.10] 2024-05-02
 

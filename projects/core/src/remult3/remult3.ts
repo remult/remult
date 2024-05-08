@@ -825,6 +825,10 @@ export type ClassFieldDecorator<entityType, valueType> = (
   c?: any,
 ) => void
 
+export const flags = {
+  error500RetryCount: 4,
+}
+
 //y2 - soft-delete-discussion https://discord.com/channels/975754286384418847/1230386433093533698/1230386433093533698
 
 //y1 - In the esm version of our tutorial - the imports are automatically .ts and not .js in react and not in vue

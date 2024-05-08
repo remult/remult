@@ -1,6 +1,7 @@
 import { buildRestDataProvider } from '../buildRestDataProvider.js'
 import { remult } from '../remult-proxy.js'
 import { remultStatic } from '../remult-static.js'
+import { flags } from '../remult3/remult3.js'
 import type {
   ServerEventChannelSubscribeDTO,
   SubscriptionClient,
@@ -48,6 +49,7 @@ export class SseSubscriptionClient implements SubscriptionClient {
     const createConnectionPromise = () =>
       new Promise<SubscriptionClientConnection>((res) => {
         createConnection()
+        let retryCount = 0
 
         function createConnection() {
           if (source) source.close()
@@ -62,9 +64,11 @@ export class SseSubscriptionClient implements SubscriptionClient {
           source.onerror = (e) => {
             console.error('Live Query Event Source Error', e)
             source.close()
-            setTimeout(() => {
-              createConnection()
-            }, 500)
+            if (retryCount++ < flags.error500RetryCount) {
+              setTimeout(() => {
+                createConnection()
+              }, 500)
+            }
           }
 
           source.addEventListener('connectionId', async (e) => {
