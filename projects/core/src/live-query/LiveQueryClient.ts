@@ -84,8 +84,7 @@ export class LiveQueryClient {
       onUnsubscribe = () => {}
     }
   }
-
-  private closeIfNoListeners() {
+  private _actuallyClose() {
     if (this.client)
       if (this.queries.size === 0 && this.channels.size === 0) {
         this.runPromise(this.client.then((x) => x.close()))
@@ -93,6 +92,12 @@ export class LiveQueryClient {
         clearInterval(this.interval)
         this.interval = undefined
       }
+  }
+  keepAliveMs = 1000
+  private closeIfNoListeners() {
+    setTimeout(() => {
+      this._actuallyClose()
+    }, this.keepAliveMs)
   }
 
   subscribe<entityType>(

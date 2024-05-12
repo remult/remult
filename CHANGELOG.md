@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - Fixed error when id was not found in ArrayEntityDataProvider to include the entity name
 - Fixed filterToRaw to use the current database `wrapIdentifier` when none is provided.
 - Fixed endless retry on error 500 - now it'll retry 4 times 500ms apart.
+- Fixed live query to not disconnect and reconnect if unsubscribe and resubscribe happen in the same second
 
 ## [0.26.10] 2024-05-02
 
