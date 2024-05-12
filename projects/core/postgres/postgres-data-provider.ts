@@ -209,13 +209,13 @@ export async function createPostgresDataProvider(options?: {
 export async function preparePostgresQueueStorage(sql: SqlDatabase) {
   let c = new Remult()
   c.dataProvider = sql
-  let JobsInQueueEntity = (await import('../server/expressBridge.js'))
+  let JobsInQueueEntity = (await import('../server/remult-api-server.js'))
     .JobsInQueueEntity
   let e = c.repo(JobsInQueueEntity)
   await sql.ensureSchema([e.metadata])
-  return new (await import('../server/expressBridge.js')).EntityQueueStorage(
-    c.repo(JobsInQueueEntity),
-  )
+  return new (
+    await import('../server/remult-api-server.js')
+  ).EntityQueueStorage(c.repo(JobsInQueueEntity))
 }
 export class PostgresSchemaWrapper implements PostgresPool {
   constructor(

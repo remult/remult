@@ -144,7 +144,7 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
       }
     }
     throw new Error(
-      `ArrayEntityDataProvider: Couldn't find row with id ${id} in entity ${this.entity.key} to update`,
+      `ArrayEntityDataProvider: Couldn't find row with id "${id}" in entity "${this.entity.key}" to update`,
     )
   }
   async delete(id: any): Promise<void> {
@@ -157,7 +157,7 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
       }
     }
     throw new Error(
-      `ArrayEntityDataProvider: Couldn't find row with id ${id} in entity ${this.entity.key} to delete`,
+      `ArrayEntityDataProvider: Couldn't find row with id "${id}" in entity "${this.entity.key}" to delete`,
     )
   }
   async insert(data: any): Promise<any> {

@@ -365,7 +365,7 @@ describe('test backend filter and update', () => {
     await r.delete(2)
     item.name = 'z'
     await expect(() => r.save(item)).rejects.toThrowErrorMatchingInlineSnapshot(
-      '"couldn\'t find id to update: 2"',
+      '"ArrayEntityDataProvider: Couldn\'t find row with id \\"2\\" in entity \\"t\\" to update"',
     )
   })
   it('save fails', async () => {

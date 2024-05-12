@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   type GenericRequestInfo,
   RouteImplementation,
-} from '../../core/server/expressBridge'
+} from '../../core/server/remult-api-server'
 describe('test router impl', async () => {
   it('test a', async () => {
     const r = new RouteImplementation<GenericRequestInfo>({
