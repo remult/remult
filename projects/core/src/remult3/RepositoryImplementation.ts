@@ -1433,7 +1433,10 @@ abstract class rowHelperBase<T> {
           }
         }
     }
-    await promiseAll([...this.fields], (x) => x.load())
+    await promiseAll(
+      [...this.fields].filter((f) => !getRelationFieldInfo(f.metadata)),
+      (x) => x.load(),
+    )
   }
 }
 
