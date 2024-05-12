@@ -143,7 +143,9 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
         return Promise.resolve(this.translateFromJson(this.rows()[i], names))
       }
     }
-    throw new Error("couldn't find id to update: " + id)
+    throw new Error(
+      `ArrayEntityDataProvider: Couldn't find row with id ${id} in entity ${this.entity.key} to update`,
+    )
   }
   async delete(id: any): Promise<void> {
     const names = await this.init()
@@ -154,7 +156,9 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
         return Promise.resolve()
       }
     }
-    throw new Error("couldn't find id to delete: " + id)
+    throw new Error(
+      `ArrayEntityDataProvider: Couldn't find row with id ${id} in entity ${this.entity.key} to delete`,
+    )
   }
   async insert(data: any): Promise<any> {
     const names = await this.init()
