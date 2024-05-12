@@ -831,7 +831,8 @@ export const flags = {
 
 //y2 - soft-delete-discussion https://discord.com/channels/975754286384418847/1230386433093533698/1230386433093533698
 //y1 - live query with count #436
-//y1 - live query errort that appears in tests but I can't understand why - `open connection error `
+//y1 - live query error that appears in tests but I can't understand why - `open connection error `
+//y1 - https://github.com/remult/remult/pull/437
 
 //y1 TODO - In the esm version of our tutorial - the imports are automatically .ts and not .js in react and not in vue
 //y1 TODO - consider id to also support keyof (id:['company','index']) - had problem with | (keyof Partial<entityType>)[] & `entity`
