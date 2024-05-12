@@ -88,6 +88,33 @@ export function SqlDbTests({
       remult.dataProvider = dp
     }
   })
+  it('test filter to raw', async () => {
+    const dp = remult.dataProvider
+    try {
+      remult.dataProvider = getDb()
+      @Entity('x_aTb')
+      class c {
+        @Fields.number()
+        id = 0
+        @Fields.number()
+        order = 0
+      }
+
+      const e = await createEntity(c)
+      await e.insert([
+        { id: 2, order: 1 },
+        { id: 3, order: 2 },
+      ])
+      const result = await e.find({
+        where: SqlDatabase.rawFilter(async ({ filterToRaw }) =>
+          SqlDatabase.filterToRaw(e, { order: 1 }),
+        ),
+      })
+      expect(result.length).toBe(1)
+    } finally {
+      remult.dataProvider = dp
+    }
+  })
   it('test sql command factory', async () => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity)
     const remult = getRemult()

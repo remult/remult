@@ -160,7 +160,7 @@ export class SqlDatabase
     condition: EntityFilter<entityType>,
     sqlCommand?: SqlCommandWithParameters,
     dbNames?: EntityDbNamesBase,
-    wrapIdentifier: (name: string) => string = (x) => x,
+    wrapIdentifier?: (name: string) => string,
   ) {
     if (!sqlCommand) {
       sqlCommand = new myDummySQLCommand()
