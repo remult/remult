@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - Fixed filterToRaw to use the current database `wrapIdentifier` when none is provided.
 - Fixed endless retry on error 500 - now it'll retry 4 times 500ms apart.
 - Fixed live query to not disconnect and reconnect if unsubscribe and resubscribe happen in the same second
+- Fixed live query when subscribe is forbidden - the query still runs after the renew process
 
 ## [0.26.10] 2024-05-02
 

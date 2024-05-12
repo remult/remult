@@ -206,7 +206,7 @@ export class LiveQueryClient {
       this.interval = setInterval(async () => {
         const ids: string[] = []
         for (const q of this.queries.values()) {
-          ids.push(q.queryChannel)
+          if (q.gotAnyResult) ids.push(q.queryChannel)
         }
         if (ids.length > 0) {
           let p = this.apiProvider()

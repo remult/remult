@@ -932,7 +932,6 @@ export const flags = {
 
 //p1 - adjust angular tutorial starter kit for latest angular (as is in tutorial)
 
-//p2 - when subscribe is forbidden - the query still runs after the renew process
 //p2 - 'update tasks set  where id = $1
 
 //p2 - type metadata.key - to keyof entity - based on cwis input
