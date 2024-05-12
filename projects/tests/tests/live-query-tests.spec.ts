@@ -20,6 +20,7 @@ import { createMockHttpDataProvider } from '../tests/testHelper'
 import { HttpProviderBridgeToRestDataProviderHttpProvider } from '../../core/src/buildRestDataProvider'
 import { DataApi } from '../../core/src/data-api'
 import { actionInfo } from '../../core/internals'
+import { cast } from '../../core/src/isOfType.js'
 
 const joc = expect.objectContaining
 
@@ -194,7 +195,7 @@ class PromiseResolver {
       let p = this.promises
       this.promises = []
 
-      await Promise.all(p).catch((err) => { })
+      await Promise.all(p).catch((err) => {})
     }
   }
 }
@@ -203,7 +204,7 @@ describe('Live Query Client', () => {
   it('registers once', async () => {
     let open = 0
     let get = 0
-    let sendMessage = (x) => { }
+    let sendMessage = (x) => {}
     const lqc = new LiveQueryClient(
       () => ({
         subscriptionClient: {
@@ -215,7 +216,7 @@ describe('Live Query Client', () => {
               },
               async subscribe(channel, onMessage) {
                 sendMessage = (x) => onMessage([x])
-                return () => { }
+                return () => {}
               },
             }
           },
@@ -231,12 +232,126 @@ describe('Live Query Client', () => {
             ]
           },
           put: () => undefined,
-          post: async () => { },
+          post: async () => {},
           delete: () => undefined,
         },
       }),
       () => serverRemult.user?.id,
     )
+    lqc.keepAliveMs = 0
+    let p = new PromiseResolver(lqc)
+    const serverRemult = new Remult(new InMemoryDataProvider())
+    serverRemult.liveQuerySubscriber = lqc
+    const serverRepo = serverRemult.repo(eventTestEntity)
+    let closeSub1: VoidFunction
+    let closeSub2: VoidFunction
+    let result1: eventTestEntity[]
+    let result2: eventTestEntity[]
+    closeSub1 = serverRepo
+      .liveQuery()
+      .subscribe(({ applyChanges: reducer }) => {
+        result1 = reducer(result1)
+      })
+    closeSub2 = serverRepo
+      .liveQuery()
+      .subscribe(({ applyChanges: reducer }) => {
+        result2 = reducer(result2)
+      })
+    await p.flush()
+    expect(open).toBe(1)
+    expect(get).toBe(1)
+    expect(result1[0].title).toBe('noam')
+    expect(result2[0].title).toBe('noam')
+    sendMessage({
+      type: 'replace',
+      data: {
+        oldId: 1,
+        item: {
+          id: 1,
+          title: 'noam1',
+        },
+      },
+    } as LiveQueryChange)
+    await p.flush()
+    expect(result1[0].title).toBe('noam1')
+    expect(result2[0].title).toBe('noam1')
+    closeSub1()
+    await p.flush()
+    sendMessage({
+      type: 'replace',
+      data: {
+        oldId: 1,
+        item: {
+          id: 1,
+          title: 'noam2',
+        },
+      },
+    } as LiveQueryChange)
+    await p.flush()
+    expect(result1[0].title).toBe('noam1')
+    expect(result2[0].title).toBe('noam2')
+    closeSub2()
+    await new Promise((r) => setTimeout(r, 10))
+    await p.flush()
+    expect(open).toBe(0)
+    get = 0
+    closeSub1 = lqc.subscribe(
+      serverRepo as any,
+      {},
+      {
+        complete: () => {},
+        error: () => {},
+        next: ({ applyChanges: reducer }) => {
+          result1 = reducer(result1) as any
+        },
+      },
+    )
+    await p.flush()
+    expect(open).toBe(1)
+    expect(get).toBe(1)
+    closeSub1()
+    await new Promise((r) => setTimeout(r, 10))
+    await p.flush()
+    expect(open).toBe(0)
+  })
+  it('reuses closed connection', async () => {
+    let open = 0
+    let get = 0
+    let sendMessage = (x) => {}
+    const lqc = new LiveQueryClient(
+      () => ({
+        subscriptionClient: {
+          async openConnection(onMessage) {
+            open++
+            return {
+              close() {
+                open--
+              },
+              async subscribe(channel, onMessage) {
+                sendMessage = (x) => onMessage([x])
+                return () => {}
+              },
+            }
+          },
+        },
+        httpClient: {
+          get: async (url) => {
+            get++
+            return [
+              {
+                id: 1,
+                title: 'noam',
+              },
+            ]
+          },
+          put: () => undefined,
+          post: async () => {},
+          delete: () => undefined,
+        },
+      }),
+      () => serverRemult.user?.id,
+    )
+    lqc.keepAliveMs = 100
     let p = new PromiseResolver(lqc)
     const serverRemult = new Remult(new InMemoryDataProvider())
     serverRemult.liveQuerySubscriber = lqc
@@ -290,14 +405,14 @@ describe('Live Query Client', () => {
     expect(result2[0].title).toBe('noam2')
     closeSub2()
     await p.flush()
-    expect(open).toBe(0)
+    expect(open).toBe(1)
     get = 0
     closeSub1 = lqc.subscribe(
       serverRepo as any,
       {},
       {
-        complete: () => { },
-        error: () => { },
+        complete: () => {},
+        error: () => {},
         next: ({ applyChanges: reducer }) => {
           result1 = reducer(result1) as any
         },
@@ -307,6 +422,9 @@ describe('Live Query Client', () => {
     expect(open).toBe(1)
     expect(get).toBe(1)
     closeSub1()
+    await p.flush()
+    expect(open).toBe(1)
+    await new Promise((r) => setTimeout(r, 100))
     await p.flush()
     expect(open).toBe(0)
   })
@@ -344,7 +462,7 @@ describe('test live query full cycle', () => {
     var dataApi = new DataApi(repo, remult)
     const clientStatus = {
       connected: true,
-      reconnect: () => { },
+      reconnect: () => {},
     }
     let unsubscribeCount = 0
 
@@ -361,7 +479,7 @@ describe('test live query full cycle', () => {
               const channels: string[] = []
 
               return {
-                close() { },
+                close() {},
                 async subscribe(channel, onMessage) {
                   channels.push(channel)
                   mh.push((c, message) => {
@@ -590,7 +708,7 @@ describe('test live query full cycle', () => {
               mh = mh.filter((h) => h !== handler)
             }
           },
-          close: () => { },
+          close: () => {},
         }
       },
     }
@@ -663,7 +781,7 @@ describe('test live query full cycle', () => {
               mh = mh.filter((h) => h !== handler)
             }
           },
-          close: () => { },
+          close: () => {},
         }
       },
     }
@@ -738,7 +856,7 @@ describe('test live query full cycle', () => {
               mh = mh.filter((h) => h !== handler)
             }
           },
-          close: () => { },
+          close: () => {},
         }
       },
     }
@@ -960,7 +1078,7 @@ describe('test live query full cycle', () => {
           subscribe(channel, onMessage) {
             throw 'the error'
           },
-          close() { },
+          close() {},
         }
       },
     }
@@ -989,9 +1107,9 @@ describe('test live query full cycle', () => {
         return {
           async subscribe(channel, onMessage, onError) {
             onError('had error')
-            return () => { }
+            return () => {}
           },
-          close() { },
+          close() {},
         }
       },
     }
@@ -1112,8 +1230,12 @@ it('test channel subscribe', async () => {
     },
   }
   let pr = new PromiseResolver(remult.liveQuerySubscriber)
-  let r = await mc.subscribe(() => { })
-  let r2 = await mc.subscribe(() => { })
+  cast<LiveQueryClient>(
+    remult.liveQuerySubscriber,
+    'keepAliveMs',
+  ).keepAliveMs = 0
+  let r = await mc.subscribe(() => {})
+  let r2 = await mc.subscribe(() => {})
   await pr.flush()
   expect(sub).toBe(1)
   r()
@@ -1124,6 +1246,11 @@ it('test channel subscribe', async () => {
   expect(sub).toBe(0)
   r()
   r2()
+  await new Promise((res) =>
+    setTimeout(() => {
+      res({})
+    }, 50),
+  )
   await pr.flush()
   expect(sub).toBe(0)
   expect(close).toBe(1)
@@ -1138,7 +1265,7 @@ describe('test failure', () => {
           subscribe(channel, onMessage) {
             throw 'the error'
           },
-          close() { },
+          close() {},
         }
       },
     }
@@ -1179,7 +1306,7 @@ describe('test failure', () => {
               unSubCount++
             }
           },
-          close() { },
+          close() {},
         }
       },
     }
@@ -1188,7 +1315,7 @@ describe('test failure', () => {
     cr.repo(eventTestEntity)
       .liveQuery()
       .subscribe({
-        next: (x) => { },
+        next: (x) => {},
         error: () => (errorHappened = true),
       })
     await pm.flush()
@@ -1214,7 +1341,7 @@ describe('test failure', () => {
           subscribe(channel, onMessage) {
             throw 'the error'
           },
-          close() { },
+          close() {},
         }
       },
     }
@@ -1245,9 +1372,13 @@ describe('test failure', () => {
     var cr = new Remult(
       createMockHttpDataProvider(new DataApi(r.repo(eventTestEntity), r)),
     )
-    cr.apiClient.subscriptionClient = {
-      openConnection: async () => {
-        throw 'open connection error'
+    let i = 0
+    cr.apiClient = {
+      ...cr.apiClient,
+      subscriptionClient: {
+        openConnection: () => {
+          return Promise.reject('open connection error ' + i++)
+        },
       },
     }
     let pm = new PromiseResolver(cr.liveQuerySubscriber)

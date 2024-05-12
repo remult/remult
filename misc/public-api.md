@@ -2725,7 +2725,7 @@ export declare function remultExpress(
     bodySizeLimit?: string
   },
 ): RemultExpressServer
-//[ ] RemultServerOptions from ./server/expressBridge.js is not exported
+//[ ] RemultServerOptions from ./server/remult-api-server.js is not exported
 export type RemultExpressServer = express.RequestHandler &
   RemultServerCore<express.Request> & {
     withRemult: (
@@ -2734,8 +2734,8 @@ export type RemultExpressServer = express.RequestHandler &
       next: VoidFunction,
     ) => void
   } & Pick<RemultServer<express.Request>, "withRemultAsync">
-//[ ] RemultServerCore from ./server/expressBridge.js is not exported
-//[ ] RemultServer from ./server/expressBridge.js is not exported
+//[ ] RemultServerCore from ./server/remult-api-server.js is not exported
+//[ ] RemultServer from ./server/remult-api-server.js is not exported
 ```
 
 ## ./remult-next.js
@@ -2788,7 +2788,7 @@ export declare function createRemultServer<RequestType>(
   options: RemultServerOptions<RequestType>,
   serverCoreOptions?: ServerCoreOptions<RequestType>,
 ): RemultServer<RequestType>
-//[ ] ServerCoreOptions from ./expressBridge.js is not exported
+//[ ] ServerCoreOptions from ./remult-api-server.js is not exported
 export declare class DataProviderLiveQueryStorage
   implements LiveQueryStorage, Storage
 {
@@ -3196,13 +3196,13 @@ export declare class SseSubscriptionServer implements SubscriptionServer {
 export declare function remultFastify(
   options: RemultServerOptions<FastifyRequest>,
 ): RemultFastifyServer
-//[ ] RemultServerOptions from ./server/expressBridge.js is not exported
+//[ ] RemultServerOptions from ./server/remult-api-server.js is not exported
 export type RemultFastifyServer = FastifyPluginCallback &
   RemultServerCore<FastifyRequest> & {
     withRemult: RemultServer<FastifyRequest>["withRemultAsync"]
   }
-//[ ] RemultServerCore from ./server/expressBridge.js is not exported
-//[ ] RemultServer from ./server/expressBridge.js is not exported
+//[ ] RemultServerCore from ./server/remult-api-server.js is not exported
+//[ ] RemultServer from ./server/remult-api-server.js is not exported
 ```
 
 ## ./remult-hapi.js
@@ -3257,7 +3257,7 @@ export declare function remultFresh(
   options: RemultServerOptions<FreshRequest>,
   response: FreshResponse,
 ): RemultFresh
-//[ ] RemultServerOptions from ./server/expressBridge.js is not exported
+//[ ] RemultServerOptions from ./server/remult-api-server.js is not exported
 export interface RemultFresh extends RemultServerCore<FreshRequest> {
   handle(req: FreshRequest, ctx: FreshContext): Promise<any>
 }
@@ -3371,7 +3371,7 @@ export declare class PostgresSchemaBuilder {
 //[ ] Remult from TBD is not exported
 export declare function preparePostgresQueueStorage(
   sql: SqlDatabase,
-): Promise<import("../server/expressBridge.js").EntityQueueStorage>
+): Promise<import("../server/remult-api-server.js").EntityQueueStorage>
 ```
 
 ## ./postgres/schema-builder.js
@@ -3725,6 +3725,9 @@ export declare function decorateColumnSettings<valueType>(
   remult: Remult,
 ): FieldOptions<any, valueType>
 //[ ] FieldOptions from TBD is not exported
+export const flags: {
+  error500RetryCount: number
+}
 export declare function getControllerRef<fieldsContainerType>(
   container: fieldsContainerType,
   remultArg?: Remult,

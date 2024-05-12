@@ -20,10 +20,12 @@ export class LiveQuerySubscriber<entityType> {
       ),
     )
   }
+  gotAnyResult = false
   queryChannel: string
   subscribeCode: () => void
   unsubscribe: VoidFunction = () => {}
   async setAllItems(result: any[]) {
+    this.gotAnyResult = true
     const items = await getRepositoryInternals(this.repo)._fromJsonArray(
       result,
       this.query.options,
