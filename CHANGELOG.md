@@ -6,9 +6,10 @@ All notable changes to this project will be documented in this file.
 
 - Fixed error in sqlite with reserved column names such as order etc...
 - #427 - Changed the retry on error 500, to 4 times instead of 50 or infinite that was before.
-- #426 - Fixed to not trigger all relations to one before saving and around read write json
+- **Potential breaking change** #426 - Fixed to not trigger all relations to one load before saving and around read write json
 - Fixed error when id was not found in ArrayEntityDataProvider to include the entity name
 - Fixed filterToRaw to use the current database `wrapIdentifier` when none is provided.
+- Fixed endless retry on error 500 - now it'll retry 4 times 500ms apart.
 
 ## [0.26.10] 2024-05-02
 
