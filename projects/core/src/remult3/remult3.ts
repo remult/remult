@@ -830,14 +830,8 @@ export const flags = {
 }
 
 //y2 - soft-delete-discussion https://discord.com/channels/975754286384418847/1230386433093533698/1230386433093533698
+//y1 - live query with count #436
 
-//y1 - In the esm version of our tutorial - the imports are automatically .ts and not .js in react and not in vue
-/*y1 - The retry on server error is too wide (error 500, basically any server error) 50 retries is annoying
-  - vite doesn't say proxy error, so we can't listen to that to know that we are in dev
-  - Our SSE has it's own separate retry every 500 ms that is also problematic
-  - when using concurrently - on any server error - the terminal is flooded by the error messages
-//y1 - consider id to also support keyof (id:['company','index']) - had problem with | (keyof Partial<entityType>)[] & `entity`
-//y2 - readonly key: keyof MembersOnly<entityType> & string
 //y1 TODO - In the esm version of our tutorial - the imports are automatically .ts and not .js in react and not in vue
 //y1 TODO - consider id to also support keyof (id:['company','index']) - had problem with | (keyof Partial<entityType>)[] & `entity`
 //y1 TODO -  readonly key: keyof MembersOnly<entityType> & string
@@ -864,8 +858,9 @@ export const flags = {
 //p1 - prepare the createEntity discussion
 
 //p1 - return error on connection error
-//p1 - reconsider key typing to be keyof & string
+
 //p1 - article on displayValue including it's definition for entities that is used in relations
+//p1 - article auth.js with express - played with it, requires type="module" and a few more configurations - https://github.com/noam-honig/express-auth
 //p2 -fix remult admin not to load the html into memory until used
 
 //y2 - currently for string fields we default for 255 in knex (which is their default) why not just use text (varchar max) - and only use exact length when one is provided?
@@ -874,7 +869,6 @@ export const flags = {
 
 //p2 - admin url1 - pocketbase use /_ for the admin //{allowed?:Allowed,url?:string} also checkout the admin* as it should probably be something else and didn't work in hono
 
-//p1 - article auth.js with express - played with it, requires type="module" and a few more configurations - https://github.com/noam-honig/express-auth
 //y2 - fix validators cache
 //y2 - should we validate relations
 
@@ -934,6 +928,7 @@ export const flags = {
 
 //p1 - when a tasks table exists in a different schema - we get many errors
 //p1 - live query with include
+
 //p1 - adjust angular tutorial starter kit for latest angular (as is in tutorial)
 
 //p2 - when subscribe is forbidden - the query still runs after the renew process
