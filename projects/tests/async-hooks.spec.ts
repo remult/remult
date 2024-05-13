@@ -143,6 +143,9 @@ describe('test with remult within get user & init request', () => {
   it('test with remult within get user & init request', async () => {
     const t = entity('t', { id: Fields.string() })
     var mem = new InMemoryDataProvider()
+    remultStatic.asyncContext = new RemultAsyncLocalStorage(
+      new AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore(),
+    )
     const api = remultExpress({
       dataProvider: mem,
       initApi: async (req) => {
@@ -155,6 +158,31 @@ describe('test with remult within get user & init request', () => {
     const result = await api.withRemultAsync({} as any, () =>
       repo(t).findFirst(),
     )
+    expect(result.id).toBe('1')
+  })
+  afterEach(() => {
+    RemultAsyncLocalStorage.disable()
+    remultStatic.asyncContext = new RemultAsyncLocalStorage(undefined)
+  })
+})
+
+describe('test default data provider based in init api server', () => {
+  it('test default data provider based in init api server', async () => {
+    const t = entity('t', { id: Fields.string() })
+    var mem = new InMemoryDataProvider()
+    remultStatic.asyncContext = new RemultAsyncLocalStorage(
+      new AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore(),
+    )
+    const api = remultExpress({
+      dataProvider: mem,
+      initApi: async (req) => {
+        await repo(t).insert({ id: '1' })
+      },
+      getUser: async (req) => {
+        return withRemult(() => repo(t).findFirst())
+      },
+    })
+    const result = await withRemult(() => repo(t).findFirst())
     expect(result.id).toBe('1')
   })
   afterEach(() => {

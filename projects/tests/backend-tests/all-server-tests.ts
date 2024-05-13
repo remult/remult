@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import EventSource from 'eventsource'
 import { Task } from '../../test-servers/shared/Task.js'
-import { Remult, remult, repo, withRemult } from '../../core'
+import { Remult, RestDataProvider, remult, repo, withRemult } from '../../core'
 import axios from 'axios'
 
 import { actionInfo } from '../../core/internals.js'
@@ -51,6 +51,7 @@ export function allServerTests(
   function withRemultForTest(what: () => Promise<void>): () => Promise<void> {
     return () => {
       return withRemult(async () => {
+        remult.dataProvider = new RestDataProvider(() => remult.apiClient)
         remult.apiClient.httpClient = axios
         remult.apiClient.url = `http://127.0.0.1:${port}/api`
         SseSubscriptionClient.createEventSource = (url) => new EventSource(url)

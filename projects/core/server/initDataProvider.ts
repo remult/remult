@@ -1,10 +1,14 @@
 import type { DataProvider } from '../src/data-interfaces.js'
+import { remultStatic } from '../src/remult-static'
 
 export function initDataProvider(
-  optionsDataProvider?:
+  optionsDataProvider:
     | DataProvider
     | Promise<DataProvider>
-    | (() => Promise<DataProvider | undefined>),
+    | (() => Promise<DataProvider | undefined>)
+    | undefined,
+  useStaticDefault: boolean,
+  defaultDataProvider: () => Promise<DataProvider>,
 ): Promise<DataProvider> {
   let dataProvider: Promise<DataProvider | undefined>
   if (typeof optionsDataProvider === 'function') {
@@ -13,9 +17,9 @@ export function initDataProvider(
 
   dataProvider = dataProvider.then(async (dp) => {
     if (dp) return dp
-    return new (await import('./JsonEntityFileStorage.js')).JsonFileDataProvider(
-      './db',
-    )
+    if (useStaticDefault) dp = await remultStatic.defaultDataProvider()
+    if (dp) return dp
+    return defaultDataProvider?.()
   })
   return dataProvider as Promise<DataProvider>
 }

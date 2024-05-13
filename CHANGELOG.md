@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [0.26.12] TBD
 
 - Fixed an issue with stack overflow when calling `withRemult` from within `getUser` - relevant to next auth - `session` hook
+- The `static` withRemult will now use the dataProvider provider in the remultServer options by default
 
 ## [0.26.11] 2024-05-13
 

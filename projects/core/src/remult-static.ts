@@ -1,5 +1,6 @@
 import type { ClassType } from '../classType.js'
 import type { ClassHelper, Remult, RemultAsyncLocalStorage } from './context.js'
+import { DataProvider } from './data-interfaces'
 import type { columnInfo } from './remult3/columnInfo.js'
 import type { EntityMetadata } from './remult3/remult3.js'
 
@@ -25,6 +26,7 @@ let x = {
     }),
   },
   captionTransformer: undefined as any,
+  defaultDataProvider: () => undefined as Promise<DataProvider | undefined>,
 }
 
 if (

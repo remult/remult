@@ -44,6 +44,7 @@ import { remult } from '../src/remult-proxy.js'
 import { remultStatic } from '../src/remult-static.js'
 import remultAdminHtml from './remult-admin.js'
 import { isOfType } from '../src/isOfType.js'
+import { initDataProviderOrJson } from './initDataProviderOrJson'
 
 export interface RemultServerOptions<RequestType> {
   /**Entities to use for the api */
@@ -163,7 +164,8 @@ export function createRemultServerCore<RequestType>(
     options.queueStorage = new InMemoryQueueStorage()
   }
 
-  let dataProvider = initDataProvider(options.dataProvider)
+  let dataProvider = initDataProviderOrJson(options.dataProvider)
+  remultStatic.defaultDataProvider = () => dataProvider
   if (options.ensureSchema === undefined) options.ensureSchema = true
 
   RemultAsyncLocalStorage.enable()
@@ -586,18 +588,23 @@ export class RemultServerImplementation<RequestType>
   ) {
     let dataProvider: DataProvider
     if (!options?.skipDataProvider) dataProvider = await this.dataProvider
-    return await withRemult(async (remult) => {
-      var x = remult
-      x.liveQueryPublisher = new LiveQueryPublisher(
-        () => remult.subscriptionServer,
-        () => remult.liveQueryStorage,
-        this.runWithSerializedJsonContextData,
-      )
-      if (!options?.skipDataProvider) x.dataProvider = dataProvider
-      x.subscriptionServer = this.subscriptionServer
-      x.liveQueryStorage = this.liveQueryStorage
-      return await what(x)
-    })
+    return await withRemult(
+      async (remult) => {
+        var x = remult
+        x.liveQueryPublisher = new LiveQueryPublisher(
+          () => remult.subscriptionServer,
+          () => remult.liveQueryStorage,
+          this.runWithSerializedJsonContextData,
+        )
+        if (!options?.skipDataProvider) x.dataProvider = dataProvider
+        x.subscriptionServer = this.subscriptionServer
+        x.liveQueryStorage = this.liveQueryStorage
+        return await what(x)
+      },
+      {
+        dataProvider,
+      },
+    )
   }
 
   process(

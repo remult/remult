@@ -33,6 +33,7 @@ import type {
 } from './live-query/SubscriptionServer.js'
 import { verifyFieldRelationInfo } from './remult3/relationInfoMember.js'
 import { remultStatic, resetFactory } from './remult-static.js'
+import { initDataProvider } from '../server/initDataProvider'
 
 export class RemultAsyncLocalStorage {
   static enable() {
@@ -485,14 +486,22 @@ class transactionLiveQueryPublisher implements LiveQueryChangesListener {
     }
   }
 }
-export function withRemult<T>(
+export async function withRemult<T>(
   callback: (remult) => Promise<T>,
   options?: {
-    dataProvider?: DataProvider
+    dataProvider?:
+      | DataProvider
+      | Promise<DataProvider>
+      | (() => Promise<DataProvider | undefined>)
   },
 ) {
   const remult = new Remult()
-  if (options?.dataProvider) remult.dataProvider = options.dataProvider
+
+  remult.dataProvider = await initDataProvider(
+    options?.dataProvider,
+    true,
+    async () => remult.dataProvider,
+  )
 
   return remultStatic.asyncContext.run(remult, (r) => callback(r))
 }

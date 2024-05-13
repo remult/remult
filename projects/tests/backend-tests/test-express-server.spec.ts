@@ -146,7 +146,7 @@ it('test remult run', async () => {
     const test1 = await withRemult(async () => {
       remult.user = { id: '1', name: 'test' }
       result += remult.user.id
-      withRemult(async () => {
+      await withRemult(async () => {
         remult.user = { id: '2', name: 'test2' }
         result += remult.user.id
       })
