@@ -419,6 +419,41 @@ app.use(
 )
 ```
 
+### Turso
+
+Install turso:
+
+```sh
+npm install @libsql/client
+```
+
+Set the `dataProvider` property:
+
+<!-- prettier-ignore-start -->
+```ts
+import express from 'express'
+import { remultExpress } from 'remult/remult-express'
+import { SqlDatabase } from 'remult' // [!code highlight]
+import { createClient } from '@libsql/client' // [!code highlight]
+import { TursoDataProvider } from 'remult/remult-turso' // [!code highlight]
+
+const app = express()
+
+app.use(
+  remultExpress({
+    dataProvider: new SqlDatabase( // [!code highlight]
+      new TursoDataProvider( // [!code highlight]
+        createClient({ // [!code highlight]
+          url: process.env.TURSO_DATABASE_URL, // [!code highlight]
+          authToken: process.env.TURSO_AUTH_TOKEN, // [!code highlight]
+        }), // [!code highlight]
+      ), // [!code highlight]
+    ), // [!code highlight]
+  }),
+)
+```
+<!-- prettier-ignore-end -->
+
 == Microsoft SQL Server
 
 Install knex and tedious:

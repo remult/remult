@@ -55,12 +55,12 @@ export class SqliteCoreDataProvider
   async transaction(
     action: (sql: SqlImplementation) => Promise<void>,
   ): Promise<void> {
-    this.createCommand().execute('Begin Transaction')
+    await this.createCommand().execute('Begin Transaction')
     try {
       await action(this)
-      this.createCommand().execute('Commit')
+      await this.createCommand().execute('Commit')
     } catch (err) {
-      this.createCommand().execute('Rollback')
+      await this.createCommand().execute('Rollback')
       throw err
     }
   }

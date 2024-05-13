@@ -1,6 +1,6 @@
 import { SqlCommand, SqlResult } from './index.js'
 import { SqliteCoreDataProvider } from './remult-sqlite-core.js'
-import { Database } from 'sqlite3'
+import type { Database } from 'sqlite3'
 
 export class Sqlite3DataProvider extends SqliteCoreDataProvider {
   constructor(db: Database) {

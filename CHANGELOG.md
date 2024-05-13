@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - Fixed filterToRaw to use the current database `wrapIdentifier` when none is provided.
 - Fixed endless retry on error 500 - now it'll retry 4 times 500ms apart.
 - Fixed error when sql expression sometimes translated wrongfully to a recursion error
+- Added support for [Turso](https://turso.tech/) db
 
 ## [0.26.10] 2024-05-02
 
