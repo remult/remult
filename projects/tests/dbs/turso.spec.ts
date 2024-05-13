@@ -1,23 +1,26 @@
-import { it, describe, expect, beforeEach } from 'vitest'
+import { it, describe, expect, beforeEach, beforeAll } from 'vitest'
 import { Remult, SqlDatabase } from '../../core'
 
 import { SqlDbTests } from './shared-tests/sql-db-tests.js'
 import type { DbTestProps } from './shared-tests/db-tests-props.js'
 
 import { allDbTests } from './shared-tests/index.js'
-import { createClient } from '@libsql/client'
+import { Client, createClient } from '@libsql/client'
 
 import { TursoDataProvider } from '../../core/remult-turso.js'
 
 const TURSO_DATABASE_URL = process.env.TURSO_DATABASE_URL
 const TURSO_AUTH_TOKEN = process.env.TURSO_AUTH_TOKEN
 describe.skipIf(!TURSO_DATABASE_URL)('turso', () => {
-  const client = createClient({
-    url: TURSO_DATABASE_URL,
-    authToken: TURSO_AUTH_TOKEN,
-  })
+  let client: Client
   let db: SqlDatabase
   let remult: Remult
+  beforeAll(() => {
+    client = createClient({
+      url: TURSO_DATABASE_URL,
+      authToken: TURSO_AUTH_TOKEN,
+    })
+  })
   beforeEach(async () => {
     db = new SqlDatabase(new TursoDataProvider(client))
     remult = new Remult(db)
