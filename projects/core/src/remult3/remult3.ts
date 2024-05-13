@@ -853,7 +853,7 @@ export const flags = {
     count:x.count()
   }))
 */
-
+//p1 - consider in json storage, to store the json without spaces
 //p1 - consider upsert (where,set)
 //y1 - wait a second to close stream -see pr
 //p1 - Consider enforcing serial operations on JSON database to prevent data loss

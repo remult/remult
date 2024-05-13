@@ -17,6 +17,6 @@
   },
   "dependencies": {
     "next-auth": "4.22.5",
-    "remult": "latest"
+    "remult": "^0.26.11"
   }
 }
