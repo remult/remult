@@ -21,7 +21,7 @@ This examples demos:
 ## Checkout source
 
 ```sh
-npx degit https://github.com/remult/remult/examples/shadcn-react-table
+npx degit https://github.com/remult/remult/examples/shadcn-react-table shadcn-react-table
 ```
 
 ## Inspired by
