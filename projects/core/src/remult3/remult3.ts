@@ -853,7 +853,8 @@ export const flags = {
 */
 
 //p1 - consider upsert (where,set)
-//p1 - wait a second to close stream
+//y1 - wait a second to close stream -see pr
+//p1 - Consider enforcing serial operations on JSON database to prevent data loss
 
 //p1 - prepare the createEntity discussion
 
@@ -931,6 +932,7 @@ export const flags = {
 
 //p1 - adjust angular tutorial starter kit for latest angular (as is in tutorial)
 
+//y2 - Fix problem with promise all in sql expression recurssion - when using PromiseAll in row relation loading, some sql expressions appear is recursion call even if they are not
 //p2 - when subscribe is forbidden - the query still runs after the renew process
 //p2 - 'update tasks set  where id = $1
 
