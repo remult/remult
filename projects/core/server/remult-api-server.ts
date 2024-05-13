@@ -626,34 +626,49 @@ export class RemultServerImplementation<RequestType>
         req,
         this.options.error,
       )
-      try {
-        await this.runWithRemult(async (remult) => {
-          if (req) {
-            let user
-            if (this.options.getUser) user = await this.options.getUser(req)
-            else {
-              user = req['user']
-              if (!user) user = req['auth']
-            }
-            if (user) remult.user = user
+      if (remultStatic.asyncContext.isInInitRequest())
+        return await what(
+          remultStatic.asyncContext.getStore()!.remult,
+          myReq,
+          myRes,
+          genReq,
+          origRes,
+          req,
+        )
+      else
+        try {
+          await this.runWithRemult(async (remult) => {
+            if (req) {
+              remultStatic.asyncContext.setInInitRequest(true)
+              try {
+                let user
+                if (this.options.getUser) user = await this.options.getUser(req)
+                else {
+                  user = req['user']
+                  if (!user) user = req['auth']
+                }
+                if (user) remult.user = user
 
-            if (this.options.initRequest) {
-              await this.options.initRequest(req, {
-                remult,
-                get liveQueryStorage() {
-                  return remult.liveQueryStorage
-                },
-                set liveQueryStorage(value: LiveQueryStorage) {
-                  remult.liveQueryStorage = value
-                },
-              })
+                if (this.options.initRequest) {
+                  await this.options.initRequest(req, {
+                    remult,
+                    get liveQueryStorage() {
+                      return remult.liveQueryStorage
+                    },
+                    set liveQueryStorage(value: LiveQueryStorage) {
+                      remult.liveQueryStorage = value
+                    },
+                  })
+                }
+              } finally {
+                remultStatic.asyncContext.setInInitRequest(false)
+              }
             }
-          }
-          await what(remult, myReq, myRes, genReq, origRes, req)
-        })
-      } catch (err: any) {
-        myRes.error(err, undefined)
-      }
+            await what(remult, myReq, myRes, genReq, origRes, req)
+          })
+        } catch (err: any) {
+          myRes.error(err, undefined)
+        }
     }
   }
   async getRemult(req: RequestType) {

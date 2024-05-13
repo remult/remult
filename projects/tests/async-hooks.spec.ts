@@ -9,11 +9,14 @@ import {
   SequentialRemultAsyncLocalStorageCore,
   StubRemultAsyncLocalStorageCore,
 } from '../core/server/initAsyncHooks.js'
+import { remultExpress } from '../core/remult-express'
+import { entity } from './tests/dynamic-classes'
+import { Fields, InMemoryDataProvider, repo, withRemult } from '../core'
 
 it('test async hooks and static remult', async () => {
   let gotException = true
   try {
-    remultStatic.asyncContext.getRemult()
+    remultStatic.asyncContext.getStore()
     gotException = false
   } catch {}
   expect(gotException).toBe(true)
@@ -21,7 +24,7 @@ it('test async hooks and static remult', async () => {
     new AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore(),
   )
   try {
-    expect(remultStatic.asyncContext.getRemult()).toBe(undefined)
+    expect(remultStatic.asyncContext.getStore()).toBe(undefined)
     RemultAsyncLocalStorage.enable()
     try {
       remult.isAllowed(false)
@@ -134,5 +137,28 @@ describe('test stub async hooks', () => {
       })
     })
     expect(result).toBe(1)
+  })
+})
+describe('test with remult within get user & init request', () => {
+  it('test with remult within get user & init request', async () => {
+    const t = entity('t', { id: Fields.string() })
+    var mem = new InMemoryDataProvider()
+    const api = remultExpress({
+      dataProvider: mem,
+      initApi: async (req) => {
+        await repo(t).insert({ id: '1' })
+      },
+      getUser: async (req) => {
+        return api.withRemultAsync({} as any, () => repo(t).findFirst())
+      },
+    })
+    const result = await api.withRemultAsync({} as any, () =>
+      repo(t).findFirst(),
+    )
+    expect(result.id).toBe('1')
+  })
+  afterEach(() => {
+    RemultAsyncLocalStorage.disable()
+    remultStatic.asyncContext = new RemultAsyncLocalStorage(undefined)
   })
 })

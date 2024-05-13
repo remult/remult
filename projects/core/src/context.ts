@@ -37,8 +37,8 @@ import { remultStatic, resetFactory } from './remult-static.js'
 export class RemultAsyncLocalStorage {
   static enable() {
     remultStatic.remultFactory = () => {
-      const r = remultStatic.asyncContext.getRemult()
-      if (r) return r
+      const r = remultStatic.asyncContext.getStore()
+      if (r) return r.remult
       else
         throw new Error(
           'remult object was requested outside of a valid context, try running it within initApi or a remult request cycle',
@@ -49,17 +49,28 @@ export class RemultAsyncLocalStorage {
     resetFactory()
   }
   constructor(
-    private readonly remultObjectStorage: RemultAsyncLocalStorageCore<Remult>,
+    private readonly remultObjectStorage: RemultAsyncLocalStorageCore<{
+      remult: Remult
+      inInitRequest?: boolean
+    }>,
   ) {}
   async run<T>(
     remult: Remult,
     callback: (remult: Remult) => Promise<T>,
   ): Promise<T> {
     if (this.remultObjectStorage) {
-      return this.remultObjectStorage.run(remult, () => callback(remult))
+      return this.remultObjectStorage.run({ remult }, () => callback(remult))
     } else return callback(remult)
   }
-  getRemult() {
+  isInInitRequest() {
+    return this.remultObjectStorage?.getStore()?.inInitRequest
+  }
+  setInInitRequest(val: boolean) {
+    const store = this.remultObjectStorage?.getStore()
+    if (!store) return
+    store.inInitRequest = val
+  }
+  getStore() {
     if (!this.remultObjectStorage) {
       throw new Error(
         "can't use static remult in this environment, `async_hooks` were not initialized",

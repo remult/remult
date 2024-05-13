@@ -829,10 +829,12 @@ export const flags = {
   error500RetryCount: 4,
 }
 
-//y2 - soft-delete-discussion https://discord.com/channels/975754286384418847/1230386433093533698/1230386433093533698
-//y1 - discuss next auth withRemult paradox
 //y1 - live query with count #436
-//y1 - maybe the default withRemult should by default use the data provider set by the remultExpress
+//y1 - https://github.com/remult/remult/discussions/438
+
+//p1 - discuss next auth withRemult paradox
+//p1 - maybe the default withRemult should by default use the data provider set by the remultExpress
+//p1 - withRemult to support the full  range of data provider.
 
 //y1 TODO - In the esm version of our tutorial - the imports are automatically .ts and not .js in react and not in vue
 //y1 TODO - consider id to also support keyof (id:['company','index']) - had problem with | (keyof Partial<entityType>)[] & `entity`
@@ -840,7 +842,7 @@ export const flags = {
 
 //y1 - talk about insert / update / delete with relations
 /*
-  repo(Order).insert({},{
+repo(Order).insert({},{
   relations:{
     orderItems:[{},{},{}]
   }
@@ -848,15 +850,16 @@ export const flags = {
 */
 //y1 - repo batch - for multiple operations:
 /*
-  const result = await repo.batch(x=>({
-    data:x.find(),
-    count:x.count()
-  }))
+const result = await repo.batch(x=>({
+  data:x.find(),
+  count:x.count()
+}))
 */
 //p1 - consider in json storage, to store the json without spaces
 //p1 - consider upsert (where,set)
 //y1 - wait a second to close stream -see pr
 //p1 - Consider enforcing serial operations on JSON database to prevent data loss
+//y2 - soft-delete-discussion https://discord.com/channels/975754286384418847/1230386433093533698/1230386433093533698
 
 //p1 - prepare the createEntity discussion
 
