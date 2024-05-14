@@ -2757,7 +2757,10 @@ export type RemultNextAppServer = RemultServerCore<Request> & {
   PUT: (req: Request) => Promise<Response>
   POST: (req: Request) => Promise<Response>
   DELETE: (req: Request) => Promise<Response>
-  withRemult<T>(what: () => Promise<T>): Promise<T>
+  withRemult<T>(
+    what: () => Promise<T>,
+    disableInitUserAndRequest?: boolean,
+  ): Promise<T>
 }
 //[ ] RemultServerCore from ./server/index.js is not exported
 export type RemultNextServer = RemultServerCore<NextApiRequest> &
@@ -3799,7 +3802,10 @@ export declare function remultSolidStart(
 ): RemultSolidStartServer
 //[ ] RemultServerOptions from ./server/index.js is not exported
 export type RemultSolidStartServer = RemultServerCore<RequestEvent> & {
-  withRemult<T>(what: () => Promise<T>): Promise<T>
+  withRemult<T>(
+    what: () => Promise<T>,
+    disableInitUserAndRequest?: boolean,
+  ): Promise<T>
   GET: RequestHandler
   PUT: RequestHandler
   POST: RequestHandler
