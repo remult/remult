@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 - Fixed an issue with stack overflow when calling `withRemult` from within `getUser` - relevant to next auth - `session` hook
 - The `static` withRemult will now use the dataProvider provider in the remultServer options by default
+- Changed json storage to save json in a non formatted way (condensed), and added a `formatted` option to control it. By default JsonFile storage is `formatted`
 
 ## [0.26.11] 2024-05-13
 
