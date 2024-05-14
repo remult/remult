@@ -300,14 +300,19 @@ export class RemultServerImplementation<RequestType>
   }
   withRemultAsync<T>(request: RequestType, what: () => Promise<T>): Promise<T> {
     if (!request) return this.runWithRemult(what)
-    return new Promise<any>((resolve, error) => {
-      return this.withRemult(request, undefined!, () => {
-        try {
-          what().then(resolve).catch(error)
-        } catch (err) {
-          error(err)
-        }
-      })
+
+    return new Promise<any>(async (resolve, error) => {
+      try {
+        return await this.withRemult(request, undefined!, async () => {
+          try {
+            what().then(resolve).catch(error)
+          } catch (err) {
+            error(err)
+          }
+        })
+      } catch (err) {
+        error(err)
+      }
     })
   }
   getEntities(): EntityMetadata<any>[] {
@@ -348,9 +353,13 @@ export class RemultServerImplementation<RequestType>
     throw new Error("Couldn't find entity " + entityKey)
   }
   subscriptionServer: SubscriptionServer
-  withRemult = (req: RequestType, res: GenericResponse, next: VoidFunction) => {
-    this.process(async () => {
-      next()
+  withRemult = async (
+    req: RequestType,
+    res: GenericResponse,
+    next: VoidFunction,
+  ) => {
+    await this.process(async () => {
+      await next()
     })(req, res)
   }
 
@@ -627,23 +636,23 @@ export class RemultServerImplementation<RequestType>
         }
         if (!genReq.params) genReq.params = req['_tempParams']
       }
-      let myReq = new ExpressRequestBridgeToDataApiRequest(genReq)
-      let myRes = new ExpressResponseBridgeToDataApiResponse(
+      let myReq = new RequestBridgeToDataApiRequest(genReq)
+      let myRes = new ResponseBridgeToDataApiResponse(
         origRes,
         req,
         this.options.error,
       )
-      if (remultStatic.asyncContext.isInInitRequest())
-        return await what(
-          remultStatic.asyncContext.getStore()!.remult,
-          myReq,
-          myRes,
-          genReq,
-          origRes,
-          req,
-        )
-      else
-        try {
+      try {
+        if (remultStatic.asyncContext.isInInitRequest())
+          return await what(
+            remultStatic.asyncContext.getStore()!.remult,
+            myReq,
+            myRes,
+            genReq,
+            origRes,
+            req,
+          )
+        else
           await this.runWithRemult(async (remult) => {
             if (req) {
               remultStatic.asyncContext.setInInitRequest(true)
@@ -673,9 +682,10 @@ export class RemultServerImplementation<RequestType>
             }
             await what(remult, myReq, myRes, genReq, origRes, req)
           })
-        } catch (err: any) {
-          myRes.error(err, undefined)
-        }
+      } catch (err: any) {
+        if (origRes) myRes.error(err, undefined)
+        else throw err
+      }
     }
   }
   async getRemult(req: RequestType) {
@@ -1118,14 +1128,14 @@ export class RemultServerImplementation<RequestType>
   }[] = []
 }
 
-class ExpressRequestBridgeToDataApiRequest implements DataApiRequest {
+class RequestBridgeToDataApiRequest implements DataApiRequest {
   get(key: string): any {
     return this.r?.query[key]
   }
 
   constructor(private r: GenericRequestInfo | undefined) {}
 }
-class ExpressResponseBridgeToDataApiResponse implements DataApiResponse {
+class ResponseBridgeToDataApiResponse implements DataApiResponse {
   forbidden(): void {
     this.error({ message: 'Forbidden' }, undefined, 403)
   }
