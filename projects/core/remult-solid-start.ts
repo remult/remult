@@ -98,8 +98,14 @@ export function remultSolidStart(
   return Object.assign(handler, {
     getRemult: (req: RequestEvent) => result.getRemult(req),
     openApiDoc: (options: { title: string }) => result.openApiDoc(options),
-    async withRemult<T>(what: () => Promise<T>): Promise<T> {
-      return result.withRemultAsync(await getRequestEvent(), what)
+    async withRemult<T>(
+      what: () => Promise<T>,
+      disableInitUserAndRequest: boolean,
+    ): Promise<T> {
+      return result.withRemultAsync(
+        disableInitUserAndRequest ? undefined : await getRequestEvent(),
+        what,
+      )
     },
     GET: serverHandler,
     PUT: serverHandler,
@@ -110,7 +116,10 @@ export function remultSolidStart(
 type RequestHandler = (event: RequestEvent) => Promise<Response>
 export type RemultSolidStartServer = RemultServerCore<RequestEvent> & {
   // Handle &
-  withRemult<T>(what: () => Promise<T>): Promise<T>
+  withRemult<T>(
+    what: () => Promise<T>,
+    disableInitUserAndRequest?: boolean,
+  ): Promise<T>
   GET: RequestHandler
   PUT: RequestHandler
   POST: RequestHandler

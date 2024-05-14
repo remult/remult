@@ -165,7 +165,11 @@ export function remultNextApp(
     POST: handler,
     PUT: handler,
     DELETE: handler,
-    withRemult: <T>(what) => result.withRemultAsync<T>({} as any, what),
+    withRemult: <T>(what, disableInitUserAndRequest) =>
+      result.withRemultAsync<T>(
+        disableInitUserAndRequest ? undefined : ({} as any),
+        what,
+      ),
   }
 }
 // [ ] V1.5 Add handle, similar to handle in next page router.
@@ -174,5 +178,8 @@ export type RemultNextAppServer = RemultServerCore<Request> & {
   PUT: (req: Request) => Promise<Response>
   POST: (req: Request) => Promise<Response>
   DELETE: (req: Request) => Promise<Response>
-  withRemult<T>(what: () => Promise<T>): Promise<T>
+  withRemult<T>(
+    what: () => Promise<T>,
+    disableInitUserAndRequest?: boolean,
+  ): Promise<T>
 }
