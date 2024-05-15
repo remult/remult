@@ -829,11 +829,11 @@ export const flags = {
   error500RetryCount: 4,
 }
 
-//y1 - discuss next auth withRemult paradox - the gift that keeps on giving - it's doing something crazy there!!
+//y1 TODO - discuss next auth withRemult paradox - the gift that keeps on giving - it's doing something crazy there!!
 //p1 - review starter and examples and separate remult * auth from the routes
+//p1 - https://github.com/remult/remult/discussions/438
 
 //y1 - live query with count #436
-//y1 - https://github.com/remult/remult/discussions/438
 
 //y1 TODO - In the esm version of our tutorial - the imports are automatically .ts and not .js in react and not in vue
 //y1 TODO - consider id to also support keyof (id:['company','index']) - had problem with | (keyof Partial<entityType>)[] & `entity`
