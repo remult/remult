@@ -70,7 +70,7 @@ Follow these steps only if you want to use `liveQuery` in the app
 6. Configure `ably` as the `subscriptionServer`
 
    ```ts{4-5,8-10}
-   // src/app/api/[...remult]/route.ts
+   // src/api.ts
 
    //...
    import ably from "ably/promises"
@@ -89,13 +89,13 @@ Follow these steps only if you want to use `liveQuery` in the app
    ```ts
    // src/app/api/getAblyToken/route.ts
 
-   import ably from "ably/promises"
-   import { NextResponse } from "next/server"
+   import ably from 'ably/promises'
+   import { NextResponse } from 'next/server'
 
    export async function POST() {
      const token = await new ably.Rest(
-       process.env["ABLY_API_KEY"]!
-     ).auth.createTokenRequest({ capability: { "*": ["subscribe"] } })
+       process.env['ABLY_API_KEY']!,
+     ).auth.createTokenRequest({ capability: { '*': ['subscribe'] } })
      return NextResponse.json(token)
    }
    ```
@@ -124,7 +124,7 @@ Follow these steps only if you want to use `liveQuery` in the app
 9) Configure `remultNextApp` to store live-queries in the `dataProvider`
 
    ```ts{4,6,8-9}
-   // src/api/[...remult]/route.ts
+   // src/api.ts
 
    //...
    import { DataProviderLiveQueryStorage } from "remult/server"
@@ -144,7 +144,7 @@ Let's deploy the todo app to [vercel](https://vercel.com/).
 We'll use vercel's postgres as out database, and that requires the following changes to the `createPostgresDataProvider` options.
 
 ```ts{4-7}
-// src/api/[...remult]/route.ts
+// src/api.ts
 
 const dataProvider = createPostgresDataProvider({
   connectionString: process.env["POSTGRES_URL"] || process.env["DATABASE_URL"],

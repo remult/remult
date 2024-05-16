@@ -97,5 +97,6 @@
     "const",
     "wrapIdentifier",
     "allowapicrud"
-  ]
+  ],
+  "typescript.preferences.importModuleSpecifierEnding": "js"
 }

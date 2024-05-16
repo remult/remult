@@ -143,8 +143,12 @@ describe('test with remult within get user & init request', () => {
   it('test with remult within get user & init request', async () => {
     const t = entity('t', { id: Fields.string() })
     var mem = new InMemoryDataProvider()
+    remultStatic.asyncContext = new RemultAsyncLocalStorage(
+      new AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore(),
+    )
     const api = remultExpress({
       dataProvider: mem,
+      entities: [],
       initApi: async (req) => {
         await repo(t).insert({ id: '1' })
       },
@@ -160,5 +164,84 @@ describe('test with remult within get user & init request', () => {
   afterEach(() => {
     RemultAsyncLocalStorage.disable()
     remultStatic.asyncContext = new RemultAsyncLocalStorage(undefined)
+  })
+})
+
+describe('test default data provider based in init api server', () => {
+  it('test default data provider based in init api server', async () => {
+    const t = entity('t', { id: Fields.string() })
+    var mem = new InMemoryDataProvider()
+    remultStatic.asyncContext = new RemultAsyncLocalStorage(
+      new AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore(),
+    )
+    const api = remultExpress({
+      dataProvider: mem,
+      entities: [],
+      initApi: async (req) => {
+        await repo(t).insert({ id: '1' })
+      },
+      getUser: async (req) => {
+        return withRemult(() => repo(t).findFirst())
+      },
+    })
+    const result = await withRemult(() => repo(t).findFirst())
+    expect(result.id).toBe('1')
+  })
+  afterEach(() => {
+    RemultAsyncLocalStorage.disable()
+    remultStatic.asyncContext = new RemultAsyncLocalStorage(undefined)
+  })
+})
+describe('errors with withRemult', () => {
+  it('api with remult provides sensible error', async () => {
+    const api = remultExpress({
+      initApi: async (req) => {},
+      entities: [],
+    })
+    let error = false
+    try {
+      await api.withRemultAsync(undefined, async () => {
+        throw Error('the error')
+      })
+    } catch (err) {
+      error = true
+      expect(err).toMatchInlineSnapshot(`[Error: the error]`)
+    }
+    expect(error).toBe(true)
+  })
+  it('api with remult provides sensible error', async () => {
+    const api = remultExpress({
+      initApi: async (req) => {},
+      entities: [],
+    })
+    let error = false
+    try {
+      await api.withRemultAsync({} as any, async () => {
+        throw Error('the error')
+      })
+    } catch (err) {
+      error = true
+      expect(err).toMatchInlineSnapshot(`[Error: the error]`)
+    }
+    expect(error).toBe(true)
+  })
+  it('api with remult provides sensible error in get user', async () => {
+    const api = remultExpress({
+      getUser: async (req) => {
+        throw Error('get user error')
+      },
+      initApi: async (req) => {},
+      entities: [],
+    })
+    let error = false
+    try {
+      await api.withRemultAsync({} as any, async () => {
+        throw Error('the error')
+      })
+    } catch (err) {
+      error = true
+      expect(err).toMatchInlineSnapshot(`[Error: get user error]`)
+    }
+    expect(error).toBe(true)
   })
 })

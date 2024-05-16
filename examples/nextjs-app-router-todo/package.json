@@ -16,7 +16,7 @@
     "next-auth": "^4.24.7",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "remult": "^0.26.11",
+    "remult": "^0.26.12-next.3",
     "typescript": "5.0.4"
   }
 }

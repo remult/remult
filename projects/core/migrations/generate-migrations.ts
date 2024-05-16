@@ -13,7 +13,7 @@ import {
   type MigrationCode,
 } from './migration-types.js'
 import { isOfType } from '../src/isOfType.js'
-import { initDataProvider } from '../server/initDataProvider.js'
+import { initDataProviderOrJson } from '../server/initDataProviderOrJson.js'
 
 /**
  * Generates migration scripts based on changes in entities.
@@ -46,7 +46,7 @@ export async function generateMigrations(options: {
     options.snapshotFile || path.join(migrationDir, 'migrations-snapshot.json')
   const migrationsTSFilename =
     options.migrationsTSFile || path.join(migrationDir, 'migrations.ts')
-  const dataProvider = await initDataProvider(options.dataProvider)
+  const dataProvider = await initDataProviderOrJson(options.dataProvider)
 
   for (const p of [snapshotFileName, migrationsTSFilename]) {
     if (!fs.existsSync(path.dirname(p))) {

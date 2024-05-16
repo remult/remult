@@ -6,7 +6,7 @@ import {
   remult,
   Remult,
 } from '../index.js'
-import { initDataProvider } from '../server/initDataProvider.js'
+import { initDataProviderOrJson } from '../server/initDataProviderOrJson.js'
 import { doTransaction } from '../src/context.js'
 import { cast, isOfType } from '../src/isOfType.js'
 import type { SqlCommandFactory } from '../src/sql-command.js'
@@ -42,7 +42,7 @@ export async function migrate(options: {
   let migrationTableName =
     options.migrationsTable || '__remult_migrations_version'
 
-  const dataProvider = await initDataProvider(options.dataProvider)
+  const dataProvider = await initDataProviderOrJson(options.dataProvider)
 
   const prev = remult.dataProvider
   remult.dataProvider = dataProvider

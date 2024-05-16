@@ -30,7 +30,7 @@ Don't worry if you don't have Postgres installed locally. In the next step of th
 3. Add the highlighted code to the `api` server module.
 
    ```ts{5,7,11-13}
-   // src/app/api/[...remult]/route.ts
+   // src/api.ts
 
    //...
 
@@ -53,7 +53,7 @@ Don't worry if you don't have Postgres installed locally. In the next step of th
    If no `DATABASE_URL` has found, it'll just fallback to our local JSON files.
 
 ::: tip Database configurations
-You can set more options using the `configuration` property.
+You can set more options using the `configuration` property, for example `ssl` and others.
 
 ```ts
 createPostgresDataProvider({

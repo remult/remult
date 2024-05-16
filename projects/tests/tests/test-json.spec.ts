@@ -8,6 +8,8 @@ import { DataApi } from '../../core/src//data-api'
 
 import { describe, expect, it } from 'vitest'
 import { tasks } from './tasks'
+import { entity } from './dynamic-classes'
+import { Fields } from '../../core'
 
 describe('test tasks', () => {
   it('test tasks', async () => {
@@ -62,4 +64,48 @@ it('test data api response fails on wrong answer', () => {
   expect(() => r.forbidden()).toThrowError()
   expect(() => r.notFound()).toThrowError()
   expect(() => r.success({})).toThrowError()
+})
+
+describe('Test json formatting', () => {
+  const t = entity('t', {
+    id: Fields.string(),
+  })
+  it('not formatted', async () => {
+    const r = new Remult(
+      new JsonDataProvider(
+        {
+          getItem(entityDbName) {
+            return ''
+          },
+          setItem(entityDbName, json) {
+            expect(json).toMatchInlineSnapshot('"[{\\"id\\":\\"1\\"}]"')
+          },
+        },
+        false,
+      ),
+    )
+    await r.repo(t).insert({ id: '1' })
+  })
+  it('formatted', async () => {
+    const r = new Remult(
+      new JsonDataProvider(
+        {
+          getItem(entityDbName) {
+            return ''
+          },
+          setItem(entityDbName, json) {
+            expect(json).toMatchInlineSnapshot(`
+              "[
+                {
+                  \\"id\\": \\"1\\"
+                }
+              ]"
+            `)
+          },
+        },
+        true,
+      ),
+    )
+    await r.repo(t).insert({ id: '1' })
+  })
 })

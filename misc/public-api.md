@@ -1581,7 +1581,8 @@ export declare class InMemoryLiveQueryStorage implements LiveQueryStorage {
 export declare function isBackend(): boolean
 export declare class JsonDataProvider implements DataProvider {
   private storage
-  constructor(storage: JsonEntityStorage)
+  private formatted
+  constructor(storage: JsonEntityStorage, formatted?: boolean)
   getEntityDataProvider(entity: EntityMetadata): EntityDataProvider
   transaction(
     action: (dataProvider: DataProvider) => Promise<void>,
@@ -2711,7 +2712,10 @@ export declare class WebSqlDataProvider
 export declare function withRemult<T>(
   callback: (remult: any) => Promise<T>,
   options?: {
-    dataProvider?: DataProvider
+    dataProvider?:
+      | DataProvider
+      | Promise<DataProvider>
+      | (() => Promise<DataProvider | undefined>)
   },
 ): Promise<T>
 ````

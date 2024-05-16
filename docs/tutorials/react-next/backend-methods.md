@@ -66,10 +66,10 @@ The `@BackendMethod` decorator tells Remult to expose the method as an API endpo
 2. Register `TasksController` by adding it to the `controllers` array of the `options` object passed to `createRemultServer()`, in the server's `api` module:
 
 ```ts{4,8}
-// src/app/api/[...remult]/route.ts
+// src/api.ts
 
 //...
-import { TasksController } from "../../../shared/TaskController"
+import { TasksController } from "./shared/TaskController"
 
 export const api = remultNextApp({
   //...

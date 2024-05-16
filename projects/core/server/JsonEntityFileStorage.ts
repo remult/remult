@@ -25,6 +25,6 @@ export class JsonEntityFileStorage implements JsonEntityStorage {
 
 export class JsonFileDataProvider extends JsonDataProvider {
   constructor(folderPath: string) {
-    super(new JsonEntityFileStorage(folderPath))
+    super(new JsonEntityFileStorage(folderPath), true)
   }
 }

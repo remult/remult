@@ -39,13 +39,13 @@ export class Task {
 }
 ```
 
-3. In the `[...remult]/route.ts` api route, register the `Task` entity with Remult by adding `entities: [Task]` to an `options` object you pass to the `remultNextApp()` function:
+3. In the `src/api.ts` api route, register the `Task` entity with Remult by adding `entities: [Task]` to an `options` object you pass to the `remultNextApp()` function:
 
 ```ts{4,7}
-// src/app/api/[...remult]/route.ts
+// src/api.ts
 
 import { remultNextApp } from "remult/remult-next"
-import { Task } from "../../../shared/Task"
+import { Task } from "./shared/Task"
 
 const api = remultNextApp({
   entities: [Task]
@@ -101,13 +101,13 @@ While remult supports [many relational and non-relational databases](https://rem
 
 ### Enabling the Admin UI
 
-Add the Admin UI to your Next.js application by setting the `admin` option to `true` in the `remultNextApp()` configuration in your `src/app/api/[...remult]/route.ts` file:
+Add the Admin UI to your Next.js application by setting the `admin` option to `true` in the `remultNextApp()` configuration in your `src/api.ts` file:
 
 ```ts
-// src/app/api/[...remult]/route.ts
+// src/api.ts
 
 import { remultNextApp } from 'remult/remult-next'
-import { Task } from '../../../shared/Task'
+import { Task } from './shared/Task'
 
 const api = remultNextApp({
   entities: [Task],

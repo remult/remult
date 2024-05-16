@@ -78,7 +78,7 @@ Let's set-up `NextAuth.js` to authenticate users to our app.
 3. Create an `auth` folder within the 'api' folder, and inside it, create a `[...nextauth]` subdirectory. Inside the `app/api/auth/[...nextauth]` directory, craft an `auth.ts` file with the following code.
 
    ```ts
-   // src/app/api/auth/[...nextauth]/auth.ts
+   // src/auth.ts
 
    import NextAuth, { getServerSession } from 'next-auth/next'
    import Credentials from 'next-auth/providers/credentials'
@@ -110,7 +110,6 @@ Let's set-up `NextAuth.js` to authenticate users to our app.
        }),
      },
    })
-   export { auth as GET, auth as POST }
 
    export async function getUserOnServer() {
      const session = await getServerSession()
@@ -122,12 +121,12 @@ Let's set-up `NextAuth.js` to authenticate users to our app.
 
    We've configured the `session` `callback` to include the user info as part of the session info, so that remult on the frontend will have the authorization info.
 
-4. Create a `route.ts` file in the `src/app/api/auth/[...nextauth]` folder for `nextauth` routes
+4. Create an `auth` folder within the 'api' folder, and inside it, create a `[...nextauth]` subdirectory. Inside the `app/api/auth/[...nextauth]` directory, craft a `route.ts` file with the following code.
 
    ```ts
    // src/app/api/auth/[...nextauth]/route.ts
 
-   import { auth } from './auth'
+   import type { auth } from '../../../../auth'
 
    export { auth as GET, auth as POST }
    ```
@@ -182,12 +181,12 @@ Let's set-up `NextAuth.js` to authenticate users to our app.
 
 ### Connect Remult-Next On the Backend
 
-Once an authentication flow is established, integrating it with Remult in the backend is as simple as providing Remult with a `getUser` function that uses the `getUserOnServer` function we've created in `auth/[...nextauth]/auth.ts`
+Once an authentication flow is established, integrating it with Remult in the backend is as simple as providing Remult with a `getUser` function that uses the `getUserOnServer` function we've created in `src/auth.ts`
 
 ```ts{3,7}
-// src/app/api/[...remult]/route.ts
+// src/api.ts
 
-import { getUserOnServer } from "../auth/[...nextauth]/auth"
+import { getUserOnServer } from "./auth"
 
 const api = remultNextApp({
   //...
@@ -238,7 +237,7 @@ export class Task {
 2. Let's give the user _"Jane"_ the `admin` role by modifying the `roles` array of her `validUsers` entry.
 
 ```ts{4}
-// src/app/api/auth/[...nextauth]/auth.ts
+// src/auth.ts
 
 const validUsers = [
   { id: "1", name: "Jane", roles: ["admin"] },

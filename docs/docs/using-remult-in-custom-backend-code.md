@@ -132,12 +132,12 @@ export default app
 import { NextResponse } from 'next/server'
 import { repo } from 'remult'
 import { Task } from '../../../shared/task'
-import { withRemult } from '../[...remult]/route'
+import { api } from '../../../api'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(req: Request) {
-  return withRemult(async () => {
+  return api.withRemult(async () => {
     return NextResponse.json({
       result: repo(Task).count(),
       user: remult.user,

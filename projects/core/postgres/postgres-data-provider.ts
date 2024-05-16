@@ -201,8 +201,6 @@ export async function createPostgresDataProvider(options?: {
       orderByNullsFirst: options.orderByNullsFirst,
     }),
   )
-  let remult = new Remult()
-  remult.dataProvider = db
   return db
 }
 

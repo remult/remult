@@ -13,9 +13,12 @@ export interface JsonEntityStorage {
 }
 
 export class JsonDataProvider implements DataProvider {
-  constructor(private storage: JsonEntityStorage) {}
+  constructor(
+    private storage: JsonEntityStorage,
+    private formatted = false,
+  ) {}
   getEntityDataProvider(entity: EntityMetadata): EntityDataProvider {
-    return new JsonEntityDataProvider(entity, this.storage)
+    return new JsonEntityDataProvider(entity, this.storage, this.formatted)
   }
   async transaction(
     action: (dataProvider: DataProvider) => Promise<void>,
@@ -28,6 +31,7 @@ class JsonEntityDataProvider implements EntityDataProvider {
   constructor(
     private entity: EntityMetadata,
     private helper: JsonEntityStorage,
+    private formatted: boolean,
   ) {}
   async loadEntityData(
     what: (dp: EntityDataProvider, save: () => Promise<void>) => any,
@@ -40,7 +44,10 @@ class JsonEntityDataProvider implements EntityDataProvider {
     return what(
       dp,
       async () =>
-        await this.helper.setItem(dbName, JSON.stringify(data, undefined, 2)),
+        await this.helper.setItem(
+          dbName,
+          JSON.stringify(data, undefined, this.formatted ? 2 : undefined),
+        ),
     )
   }
   p: Promise<any> = Promise.resolve()
