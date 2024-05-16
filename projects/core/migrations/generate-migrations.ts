@@ -13,7 +13,6 @@ import {
   type MigrationCode,
 } from './migration-types.js'
 import { isOfType } from '../src/isOfType.js'
-import { initDataProvider } from '../server/initDataProvider.js'
 import { initDataProviderOrJson } from '../server/initDataProviderOrJson'
 
 /**

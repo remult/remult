@@ -6,7 +6,6 @@ import {
   remult,
   Remult,
 } from '../index.js'
-import { initDataProvider } from '../server/initDataProvider.js'
 import { initDataProviderOrJson } from '../server/initDataProviderOrJson'
 import { doTransaction } from '../src/context.js'
 import { cast, isOfType } from '../src/isOfType.js'

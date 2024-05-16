@@ -39,8 +39,6 @@ import type {
 } from '../src/server-action.js'
 import { Action, classBackendMethodsArray } from '../src/server-action.js'
 import { serverActionField } from '../src/server-action-info.js'
-import { initDataProvider } from './initDataProvider.js'
-import { remult } from '../src/remult-proxy.js'
 import { remultStatic } from '../src/remult-static.js'
 import remultAdminHtml from './remult-admin.js'
 import { isOfType } from '../src/isOfType.js'
