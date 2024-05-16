@@ -35,10 +35,10 @@ if (
   typeof globalThis[remultStaticKey] === 'undefined'
 ) {
   globalThis[remultStaticKey] = x
+  x.remultFactory = () => defaultFactory()
 } else {
   x = globalThis[remultStaticKey]
 }
-
 export const remultStatic = x
 
 export function defaultFactory() {
@@ -50,4 +50,3 @@ export function defaultFactory() {
 export function resetFactory() {
   remultStatic.remultFactory = () => defaultFactory()
 }
-resetFactory()
