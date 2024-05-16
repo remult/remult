@@ -17,7 +17,7 @@
     "express": "^4.19.2",
     "helmet": "^7.1.0",
     "pg": "^8.11.3",
-    "remult": "^0.26.11",
+    "remult": "^0.26.12",
     "vue": "^3.3.4"
   },
   "devDependencies": {
