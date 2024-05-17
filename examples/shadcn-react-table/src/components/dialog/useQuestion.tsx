@@ -11,10 +11,10 @@ import { Button } from '../ui/button.tsx'
 
 export default function useQuestion() {
   const dialog = useDialog()
-  return ({ title, description }: { title: string; description: string }) =>
+  return ({ title, description }: { title: string; description?: string }) =>
     dialog(
       (resolve) => (
-        <DialogContent>
+        <div>
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
             <DialogDescription>{description}</DialogDescription>
@@ -29,7 +29,7 @@ export default function useQuestion() {
               </Button>
             </DialogClose>
           </DialogFooter>
-        </DialogContent>
+        </div>
       ),
       false,
     )
