@@ -148,6 +148,7 @@ export function DataTableFilterItem<TData>({
               setSelectedOptions((prev) =>
                 prev.filter((item) => item.key !== selectedOption.key),
               )
+              column?.setFilterValue(undefined)
             }}
           >
             <TrashIcon className="size-4" aria-hidden="true" />
