@@ -2522,7 +2522,7 @@ export declare class Validators {
 export type ValidatorWithArgs<valueType, argsType> = (
   args: argsType,
   message?: ValidationMessage<valueType, argsType>,
-) => FieldValidator<any, valueType>
+) => FieldValidator<unknown, valueType>
 export interface ValueConverter<valueType> {
   /**
    * Converts a value from a JSON DTO to the valueType. This method is typically used when receiving data

@@ -220,7 +220,7 @@ export type ValidationMessage<valueType, argsType> =
 export type ValidatorWithArgs<valueType, argsType> = (
   args: argsType,
   message?: ValidationMessage<valueType, argsType>,
-) => FieldValidator<any, valueType>
+) => FieldValidator<unknown, valueType>
 
 export function createValidatorWithArgs<valueType, argsType>(
   validate: (
