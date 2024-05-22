@@ -36,6 +36,12 @@ export class Task {
     validate: Validators.unique('Has to be Unique'),
   })
   nom3?: string
+
+  @Fields.string<Task>({
+    allowNull: true,
+    validate: Validators.minLength(3),
+  })
+  nom4?: string
 }
 
 function dateOnly<entityType = any>(o?: FieldOptions<entityType, Date>) {
