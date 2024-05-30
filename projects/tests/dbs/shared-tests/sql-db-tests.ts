@@ -7,7 +7,7 @@ import {
   SqlDatabase,
   dbNamesOf,
   remult,
-  type Remult,
+  Remult,
 } from '../../../core'
 import { entityWithValidations } from './entityWithValidations.js'
 import { cast, isOfType } from '../../../core/src/isOfType.js'
@@ -26,6 +26,7 @@ import {
   type Migrations,
 } from '../../../core/migrations/migration-types.js'
 import { KnexDataProvider } from '../../../core/remult-knex/index.js'
+import { MockRestDataProvider } from '../../tests/testHelper.js'
 
 export function SqlDbTests({
   createEntity,
@@ -375,5 +376,79 @@ export function SqlDbTests({
         ).rejects.toThrow()
       },
     )
+    describe('test arguments', () => {
+      type args = {
+        testNumber: number
+      }
+      @Entity('test')
+      class test {
+        @Fields.string()
+        id = ''
+        @Fields.integer<test>({
+          sqlExpression: (me, args: args, c) => {
+            if (!c || !args) return `(1)`
+
+            return `mod (${me.fields.id.dbName} , ${c.param(args.testNumber)})`
+          },
+        })
+        exp = 0
+      }
+      it('test argument', async () => {
+        const repo = await createEntity(test)
+        await repo.insert([{ id: '1' }, { id: '2' }, { id: '3' }, { id: '4' }])
+        expect(
+          await repo.find({ args: { testNumber: 3 }, orderBy: { exp: 'asc' } }),
+        ).toMatchInlineSnapshot(`
+          [
+            test {
+              "exp": 0,
+              "id": "3",
+            },
+            test {
+              "exp": 1,
+              "id": "1",
+            },
+            test {
+              "exp": 1,
+              "id": "4",
+            },
+            test {
+              "exp": 2,
+              "id": "2",
+            },
+          ]
+        `)
+      })
+      it('arguments on rest', async () => {
+        const db = new MockRestDataProvider(getRemult())
+        await (
+          await createEntity(test)
+        ).insert([{ id: '1' }, { id: '2' }, { id: '3' }, { id: '4' }])
+        expect(
+          await new Remult(db)
+            .repo(test)
+            .find({ args: { testNumber: 3 }, orderBy: { exp: 'asc' } }),
+        ).toMatchInlineSnapshot(`
+          [
+            test {
+              "exp": 0,
+              "id": "3",
+            },
+            test {
+              "exp": 1,
+              "id": "1",
+            },
+            test {
+              "exp": 1,
+              "id": "4",
+            },
+            test {
+              "exp": 2,
+              "id": "2",
+            },
+          ]
+        `)
+      })
+    })
   })
 }

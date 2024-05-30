@@ -663,7 +663,10 @@ export interface FindOptionsBase<entityType> extends LoadOptions<entityType> {
    * await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
    */
   orderBy?: EntityOrderBy<entityType>
+
+  args?: SqlExpressionArgs
 }
+export type SqlExpressionArgs = {}
 export interface FindFirstOptions<entityType>
   extends FindOptionsBase<entityType>,
     FindFirstOptionsBase<entityType> {}
@@ -831,8 +834,14 @@ export const flags = {
 
 //y1 TODO - discuss next auth withRemult paradox - the gift that keeps on giving - it's doing something crazy there!!
 //p1 - review starter and examples and separate remult * auth from the routes
-//p1 - https://github.com/remult/remult/discussions/438
+/*p1 - https://github.com/remult/remult/discussions/438
+  - should we use the arg for update and insert? for the returning query?
+  - Does dbNamesOf still makes sense? I think that abstraction, regarding sql expression has lost it's merit
+  - remember caching of sql expression  calculations that took a recursive amount of time for JYC
+  - maybe introduce a ready dbNamesOf of argument that will be aware of prefixes
+  - I've changed the order by to support order by 1
 
+*/
 //y1 - live query with count #436
 
 //y1 TODO - In the esm version of our tutorial - the imports are automatically .ts and not .js in react and not in vue

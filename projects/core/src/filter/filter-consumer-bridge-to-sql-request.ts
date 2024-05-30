@@ -355,15 +355,17 @@ export async function fieldDbName(
 ) {
   try {
     if (f.options.sqlExpression) {
-      let result: string
+      let result: string = f.options[sqlExpressionCacheKey]
+      if (result) return result
       if (typeof f.options.sqlExpression === 'function') {
         const prev = f.options.sqlExpression
         try {
           f.options.sqlExpression =
             "recursive sqlExpression call for field '" + f.key + "'. "
           result = await prev(meta)
-          f.options.sqlExpression = () => result
+          f.options[sqlExpressionCacheKey] = result
         } finally {
+          f.options.sqlExpression = prev
         }
       } else result = f.options.sqlExpression
       if (!result) return f.dbName
@@ -381,3 +383,4 @@ export async function fieldDbName(
   } finally {
   }
 }
+const sqlExpressionCacheKey = Symbol.for('sqlExpressionCacheKey')

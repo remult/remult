@@ -309,11 +309,11 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
   async find(options?: EntityDataProviderFindOptions): Promise<any[]> {
     let e = await this.init()
 
-    let { colKeys, select } = this.buildSelect(e)
+    let r = this.sql.createCommand()
+    let { colKeys, select } = await this.buildSelect(e, r, options.args)
     select = 'select ' + select
 
     select += '\n from ' + e.$entityName
-    let r = this.sql.createCommand()
     if (options) {
       if (options.where) {
         let where = new FilterConsumerBridgeToSqlRequest(r, e)
@@ -332,13 +332,14 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
         for (const s of options.orderBy.Segments) {
           segs.push(s)
         }
+        const fields = this.entity.fields.toArray()
         for (const c of segs) {
           if (first) {
             select += ' Order By '
             first = false
           } else select += ', '
 
-          select += e.$dbNameOf(c.field)
+          select += fields.indexOf(c.field) + 1
           if (c.isDescending) select += ' desc'
           if (this.sql._getSourceSql().orderByNullsFirst) {
             if (c.isDescending) select += ' nulls last'
@@ -382,14 +383,18 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     return result
   }
 
-  private buildSelect(e: EntityDbNamesBase) {
+  private async buildSelect(e: EntityDbNamesBase, r: SqlCommand, args?: any) {
     let select = ''
     let colKeys: FieldMetadata[] = []
     for (const x of this.entity.fields) {
       if (x.isServerExpression) {
       } else {
         if (colKeys.length > 0) select += ', '
-        select += e.$dbNameOf(x)
+        if (typeof x.options.sqlExpression === 'function') {
+          let sql = await x.options.sqlExpression(this.entity, args, r)
+          if (sql.includes(' ')) select += '(' + sql + ')'
+          else select += sql
+        } else select += e.$dbNameOf(x)
         colKeys.push(x)
       }
     }
@@ -420,7 +425,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     let f = new FilterConsumerBridgeToSqlRequest(r, e)
     Filter.fromEntityFilter(this.entity, idFilter).__applyToConsumer(f)
     statement += await f.resolveWhere()
-    let { colKeys, select } = this.buildSelect(e)
+    let { colKeys, select } = await this.buildSelect(e, r)
     if (!this.sql._getSourceSql().doesNotSupportReturningSyntax)
       statement += ' returning ' + select
 
@@ -481,7 +486,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
 
     let statement = `insert into ${e.$entityName} (${cols}) values (${vals})`
 
-    let { colKeys, select } = this.buildSelect(e)
+    let { colKeys, select } = await this.buildSelect(e, r)
     if (!this.sql._getSourceSql().doesNotSupportReturningSyntax)
       statement += ' returning ' + select
     return await r.execute(statement).then((sql) => {

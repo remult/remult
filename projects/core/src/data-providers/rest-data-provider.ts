@@ -81,7 +81,8 @@ export function findOptionsFromJson(
     'where',
     'orderBy',
     'include',
-  ] as (keyof FindOptions<any>)[]) {
+    'args',
+  ] satisfies (keyof FindOptions<any>)[]) {
     if (json[key] !== undefined) {
       if (key === 'where') {
         r[key] = Filter.entityFilterFromJson(meta, json.where)
@@ -163,8 +164,9 @@ export class RestEntityDataProvider
     if (options) {
       if (options.where) {
         filterObject = options.where.toJson() //        options.where.__applyToConsumer(new FilterConsumnerBridgeToUrlBuilder(url));
-        if (addFilterToUrlAndReturnTrueIfSuccessful(filterObject, url))
-          filterObject = undefined
+        if (options.args === undefined)
+          if (addFilterToUrlAndReturnTrueIfSuccessful(filterObject, url))
+            filterObject = undefined
       }
       if (options.orderBy && options.orderBy.Segments) {
         let sort = ''
@@ -194,6 +196,7 @@ export class RestEntityDataProvider
       if (action) u.add('__action', action)
       if (filterObject) {
         body = { set: body, where: filterObject }
+        if (options.args) body.args = options.args
         return this.http().post(u.url, body)
       } else return this.http()[method](u.url, body)
     }

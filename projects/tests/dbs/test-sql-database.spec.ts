@@ -1,4 +1,4 @@
-import { expect, it, describe } from 'vitest'
+import { expect, it, describe, beforeEach } from 'vitest'
 import {
   Entity,
   Fields,
@@ -7,6 +7,8 @@ import {
   SqlDatabase,
   type SqlImplementation,
   dbNamesOf,
+  SqlCommandWithParameters,
+  EntityMetadata,
 } from '../../core'
 
 describe('test sql implementation', () => {
@@ -51,6 +53,9 @@ describe('test sql implementation', () => {
     end: async () => {},
   } satisfies SqlImplementation)
   const repo = new Remult(db).repo(task)
+  beforeEach(() => {
+    commands = []
+  })
   it('test basic select', async () => {
     await repo.find({
       where: {
@@ -60,7 +65,7 @@ describe('test sql implementation', () => {
     expect(commands).toMatchInlineSnapshot(`
       [
         "select [id], [title], [completed], a+b
-       from [tasks] where [completed] = true Order By [id]",
+       from [tasks] where [completed] = true Order By 1",
       ]
     `)
   })
@@ -92,4 +97,46 @@ describe('test sql implementation', () => {
       ),
     ).toMatchInlineSnapshot('"alias.[completed] = true"')
   })
+  it.only('test argument', async () => {
+    type args = {
+      testNumber: number
+    }
+    @Entity('myEntity')
+    class myEntity {
+      static args = prepareArg<myEntity, args>()
+      @Fields.string()
+      id = ''
+      @Fields.integer({
+        sqlExpression: myEntity.args.sqlExpression((col, args, c) => {
+          if (!c || !args) return `111`
+          return `3 + ${c.param(args.testNumber)}`
+        }),
+      })
+      exp = 0
+    }
+    const repo = new Remult(db).repo(myEntity)
+    await repo.find({
+      args: myEntity.args({ testNumber: 5 }),
+      orderBy: { exp: 'asc' },
+    })
+    expect(commands).toMatchInlineSnapshot(`
+      [
+        "select [id], (3 + 5)
+       from [myEntity] Order By 2",
+      ]
+    `)
+  })
 })
+
+function prepareArg<entityType, argsType>() {
+  const result = (arg: argsType) => arg
+  return Object.assign(result, {
+    sqlExpression: (
+      exp: (
+        entityMetadata: EntityMetadata<entityType>,
+        args: argsType,
+        c: SqlCommandWithParameters,
+      ) => string | Promise<string>,
+    ) => exp,
+  })
+}

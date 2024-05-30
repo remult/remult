@@ -580,6 +580,7 @@ export class RepositoryImplementation<entityType>
     let opt: EntityDataProviderFindOptions = {}
 
     opt = {}
+    if (options.args) opt.args = options.args
     if (!options.orderBy || Object.keys(options.orderBy).length === 0) {
       options.orderBy = this._info.entityInfo.defaultOrderBy
     }

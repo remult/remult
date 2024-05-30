@@ -4,8 +4,10 @@ import type {
   EntityMetadata,
   FieldRef,
   LifecycleEvent,
+  SqlExpressionArgs,
   ValidateFieldEvent,
 } from './remult3/remult3.js'
+import type { SqlCommandWithParameters } from './sql-command.js'
 
 export interface FieldOptions<entityType = any, valueType = any> {
   /** A human readable name for the field. Can be used to achieve a consistent caption for a field throughout the app
@@ -100,7 +102,11 @@ export interface FieldOptions<entityType = any, valueType = any> {
    */
   sqlExpression?:
     | string
-    | ((entity: EntityMetadata<entityType>) => string | Promise<string>)
+    | ((
+        entity: EntityMetadata<entityType>,
+        args: SqlExpressionArgs,
+        command: SqlCommandWithParameters,
+      ) => string | Promise<string>)
   /** For fields that shouldn't be part of an update or insert statement */
   dbReadOnly?: boolean
   /** The value converter to be used when loading and saving this field */

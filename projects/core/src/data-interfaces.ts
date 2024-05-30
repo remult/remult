@@ -28,6 +28,7 @@ export interface ProxyEntityDataProvider {
 export interface EntityDataProviderFindOptions {
   where?: Filter
   limit?: number
+  args?: any
   page?: number
   orderBy?: Sort
 }
