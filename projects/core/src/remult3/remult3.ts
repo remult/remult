@@ -831,8 +831,9 @@ export const flags = {
 
 //y1 TODO - discuss next auth withRemult paradox - the gift that keeps on giving - it's doing something crazy there!!
 //p1 - review starter and examples and separate remult * auth from the routes
-//p1 - https://github.com/remult/remult/discussions/438
-
+/*p1 - https://github.com/remult/remult/discussions/438
+     - https://github.com/remult/remult/blob/query-argumets/projects/tests/dbs/test-sql-database.spec.ts#L100-L128
+*/
 //y1 - live query with count #436
 
 //y1 TODO - In the esm version of our tutorial - the imports are automatically .ts and not .js in react and not in vue
