@@ -834,6 +834,7 @@ export const flags = {
 /*p1 - https://github.com/remult/remult/discussions/438
      - https://github.com/remult/remult/blob/query-argumets/projects/tests/dbs/test-sql-database.spec.ts#L100-L128
 */
+//p1 - min, max, avg, sum
 //y1 - live query with count #436
 
 //y1 TODO - In the esm version of our tutorial - the imports are automatically .ts and not .js in react and not in vue
