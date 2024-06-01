@@ -126,7 +126,7 @@ Let's set-up `NextAuth.js` to authenticate users to our app.
    ```ts
    // src/app/api/auth/[...nextauth]/route.ts
 
-   import type { auth } from '../../../../auth'
+   import { auth } from '../../../../auth'
 
    export { auth as GET, auth as POST }
    ```
