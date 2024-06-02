@@ -5,7 +5,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { Dialog } from '../ui/dialog.tsx'
+import { Dialog, DialogContent } from '../ui/dialog.tsx'
 
 export type DialogContentRender<T> = (
   resolve: (result?: T) => void,
@@ -13,8 +13,8 @@ export type DialogContentRender<T> = (
 
 type ShowDialogFunction = <T>(
   render: DialogContentRender<T>,
-  defaultResult: T,
-) => Promise<T>
+  defaultResult?: T,
+) => Promise<T | undefined>
 
 const DialogContext = createContext<ShowDialogFunction>(undefined!)
 export function useDialog() {
@@ -34,8 +34,8 @@ export default function DialogProvider({ children }: PropsWithChildren) {
     setDialogs((current) => current.filter((x) => x.id !== id))
   }
 
-  function dialog<T>(render: DialogContentRender<T>, defaultResult: T) {
-    return new Promise<T>((res) => {
+  function dialog<T>(render: DialogContentRender<T>, defaultResult?: T) {
+    return new Promise<T | undefined>((res) => {
       const id = lastId++
       setDialogs((current) => [
         ...current,
@@ -55,14 +55,14 @@ export default function DialogProvider({ children }: PropsWithChildren) {
       ])
     })
   }
-
   return (
     <DialogContext.Provider value={dialog}>
       {children}
       {dialogs.map((item) => {
+        const Item = item.render
         return (
           <MyDialog key={item.id} onClose={item.onClose!}>
-            {item.render()}
+            <Item />
           </MyDialog>
         )
       })}
@@ -88,7 +88,7 @@ export function MyDialog({
         setOpen(open)
       }}
     >
-      {children}
+      <DialogContent>{children}</DialogContent>
     </Dialog>
   )
 }
