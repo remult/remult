@@ -1,15 +1,16 @@
-import FormGroup, { FieldConfig } from './form-group/form-group'
+import FormGroup, { FieldConfig } from '../form-group/form-group'
 import { useState } from 'react'
-import { useDialog } from './dialog/dialog-context'
-import { Button } from './ui/button'
+import { useDialog } from '../dialog/dialog-context'
+import { Button } from '../ui/button'
 import {
   DialogClose,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from './ui/dialog'
-import { EntityError } from '../lib/env-web/data-api-for'
-import { useError } from './dialog/useError'
+} from '../ui/dialog'
+
+import { useError } from '../dialog/useError'
+import type { ErrorInfo } from 'remult'
 
 type FieldsConfigToValuesType<
   ConfigType extends Record<string, Partial<FieldConfig>>,
@@ -36,7 +37,7 @@ export function useFormDialog() {
     type T = FieldsConfigToValuesType<ConfigType>
     dialog((resolve) => {
       const [state, setState] = useState<T>(args.defaultValues ?? ({} as T))
-      const [error, setError] = useState<EntityError<T>>()
+      const [error, setError] = useState<ErrorInfo<T>>()
       const errorDialog = useError()
       async function ok() {
         try {
@@ -44,8 +45,8 @@ export function useFormDialog() {
           await args.onOk(state)
           resolve()
         } catch (err) {
-          setError(err as EntityError<T>)
-          errorDialog({ message: (err as EntityError<T>).message })
+          setError(err as ErrorInfo<T>)
+          errorDialog({ message: (err as ErrorInfo<T>).message! })
         }
       }
 
