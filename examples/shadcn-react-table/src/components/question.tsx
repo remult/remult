@@ -13,11 +13,11 @@ export default function Question({
   open,
   onOpenChange,
   title,
-  description,
+  question,
   onYes,
 }: {
-  title: string
-  description: string
+  title?: string
+  question: string
   open: boolean
   onOpenChange: (open: boolean) => void
   onYes: () => void
@@ -26,8 +26,8 @@ export default function Question({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
+          <DialogTitle>{title ?? 'Question'}</DialogTitle>
+          <DialogDescription>{question}</DialogDescription>
         </DialogHeader>
         <DialogFooter className="gap-2 sm:space-x-0">
           <DialogClose asChild>
