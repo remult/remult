@@ -56,6 +56,7 @@ export function TasksTableFloatingBar({
           loading: 'Updating...',
           success: 'Tasks updated',
           error: (err) => getErrorMessage(err),
+          duration: 750,
         },
       )
     })
