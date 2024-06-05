@@ -7,7 +7,7 @@ import { IdSelectValueType, IdValueSelect } from './id-value-select.tsx'
 import type { ErrorInfo } from 'remult'
 
 export type FieldConfig = (
-  | { type: 'text' | 'number' | 'checkbox' | 'date' }
+  | { type: 'text' | 'number' | 'checkbox' | 'date' | 'password' }
   | IdSelectValueType
 ) & {
   caption: string
