@@ -101,3 +101,21 @@ export default function useQuestion() {
     )
 }
 ```
+
+## Form Dialog
+
+```tsx
+const form = useFormDialog()
+
+async function login() {
+  await form({
+    fields: {
+      username: {},
+      password: { type: 'password' },
+    },
+    onOk: async ({ username, password }) => {
+      // perform login
+    },
+  })
+}
+```
