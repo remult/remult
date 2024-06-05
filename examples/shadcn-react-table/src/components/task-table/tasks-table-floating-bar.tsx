@@ -27,6 +27,7 @@ import { getValueList, repo } from 'remult'
 import { toast } from 'sonner'
 import { getErrorMessage } from '../../lib/utils.ts'
 import { DeleteTasksDialog } from './delete-task-dialog.tsx'
+import { useDialog } from '../dialog/dialog-context.tsx'
 
 interface TasksTableFloatingBarProps {
   table: Table<Task>
@@ -60,6 +61,23 @@ export function TasksTableFloatingBar({
         },
       )
     })
+  }
+  const dialog = useDialog()
+
+  async function doSomething() {
+    if (
+      await dialog(
+        (resolve) => (
+          <div>
+            <h2>Are you sure?</h2>
+            <button onClick={() => resolve(true)}>Yes</button>
+          </div>
+        ),
+        false,
+      )
+    ) {
+      // Do Something
+    }
   }
 
   return (
