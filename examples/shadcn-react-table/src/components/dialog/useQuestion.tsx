@@ -10,12 +10,12 @@ import { useDialog } from './dialog-context.tsx'
 
 export default function useQuestion() {
   const dialog = useDialog()
-  return ({ title, question }: { title?: string; question?: string }) =>
+  return (question: string) =>
     dialog(
       (resolve) => (
         <div>
           <DialogHeader>
-            <DialogTitle>{title ?? 'Question'}</DialogTitle>
+            <DialogTitle>Question</DialogTitle>
             <DialogDescription>{question}</DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:space-x-0">
