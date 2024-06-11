@@ -97,7 +97,7 @@
     "sql.js": "^1.9.0",
     "sqlite3": "^5.1.7",
     "swagger-ui-express": "^4.1.6",
-    "tedious": "^14.1.0",
+    "tedious": "^18.2.0",
     "ts-node": "^8.10.2",
     "ts-node-dev": "^1.1.8",
     "tslib": "^2.2.0",
