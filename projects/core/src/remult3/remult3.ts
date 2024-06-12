@@ -830,6 +830,7 @@ export const flags = {
 }
 
 //y1 TODO - discuss next auth withRemult paradox - the gift that keeps on giving - it's doing something crazy there!!
+//p1 - fix chaining of saving and saved in multiple entity options args
 //p1 - review starter and examples and separate remult * auth from the routes
 /*p1 - https://github.com/remult/remult/discussions/438
      - https://github.com/remult/remult/blob/query-argumets/projects/tests/dbs/test-sql-database.spec.ts#L100-L128
