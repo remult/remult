@@ -5,6 +5,7 @@
     "outDir": "dist",
     "rootDir": "src",
     "baseUrl": ".",
+    "skipLibCheck": true,
     "paths": {
       "remult": ["../../../dist/remult"],
       "remult/*": ["../../../dist/remult/*"]
