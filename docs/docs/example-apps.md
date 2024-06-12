@@ -39,7 +39,7 @@ An environment to reproduce issues using stackblitz, with optional sqlite databa
 ### React
 
 - Using Express - [Source Code](https://github.com/remult/remult/tree/main/examples/react-todo)
-- Using ban & Hono - [Source Code](https://github.com/remult/remult/tree/main/examples/bun-react-hono-monorepo-todo)
+- Using bun & Hono - [Source Code](https://github.com/remult/remult/tree/main/examples/bun-react-hono-monorepo-todo)
 
 ### Next.js
 
