@@ -51,11 +51,11 @@ export function useFormDialog() {
       }
 
       return (
-        <div className="gap-4">
+        <div className="gap-4 overflow-y-auto max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>{args.title}</DialogTitle>
           </DialogHeader>
-          <div className="overflow-y-auto max-h-60 p-4">
+          <div className=" p-4">
             <FormGroup
               fields={args.fields}
               state={state as any}

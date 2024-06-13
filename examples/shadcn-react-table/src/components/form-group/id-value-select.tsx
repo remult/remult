@@ -53,13 +53,15 @@ export function IdValueSelect({
             variant="outline"
             size="sm"
             role="combobox"
-            className="capitalize"
+            className="capitalize w-full text-left"
           >
-            <CaretSortIcon
-              className="mr-2 size-4 shrink-0"
-              aria-hidden="true"
-            />
-            {idDescription}
+            <div className="capitalize w-full text-left flex items-center">
+              <CaretSortIcon
+                className="mr-2 size-4 shrink-0"
+                aria-hidden="true"
+              />
+              {idDescription}
+            </div>
           </Button>
         }
       </PopoverTrigger>
