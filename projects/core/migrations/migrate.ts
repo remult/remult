@@ -5,6 +5,7 @@ import {
   Fields,
   remult,
   Remult,
+  describeClass,
 } from '../index.js'
 import { initDataProviderOrJson } from '../server/initDataProviderOrJson.js'
 import { doTransaction } from '../src/context.js'
@@ -47,11 +48,12 @@ export async function migrate(options: {
   const prev = remult.dataProvider
   remult.dataProvider = dataProvider
   try {
-    @Entity(migrationTableName)
     class VersionInfo extends IdEntity {
-      @Fields.number()
       version = -1
     }
+    describeClass(VersionInfo, Entity(migrationTableName), {
+      version: Fields.integer(),
+    })
 
     const steps = Object.entries(options.migrations).sort(
       ([a], [b]) => parseInt(a) - parseInt(b),
