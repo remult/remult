@@ -8,6 +8,22 @@ import { Repository } from '../../core/src/remult3/remult3'
 import { Fields } from '../../core/src/remult3/Fields'
 import { Entity } from '../../core/src/remult3/entity'
 
+const colors = [
+  'rgb(101, 116, 205)',
+  'rgb(149, 97, 226)',
+  'rgb(246, 109, 155)',
+  'rgb(184, 194, 204)',
+  'rgb(227, 52, 47)',
+  'rgb(246, 153, 63)',
+  'rgb(255, 237, 74)',
+  'rgb(56, 193, 114)',
+  'rgb(132, 204, 22)',
+  'rgb(77, 192, 181)',
+  'rgb(52, 144, 220)',
+  'rgba(0, 0, 255, 0.45)',
+]
+
+export type TableInfo = EntityUIInfo & { repo: Repository<any> }
 export class God {
   async getItemsForSelect(
     relation: FieldRelationToOneInfo,
@@ -41,9 +57,10 @@ export class God {
     if (!item) return 'not found - ' + value
     return item[relations.captionField]
   }
-  tables: (EntityUIInfo & { repo: Repository<any> })[]
+  tables: TableInfo[]
   constructor(myEntities: EntityUIInfo[]) {
-    this.tables = myEntities.map((info) => {
+    this.tables = myEntities.map((info, i) => {
+      info.color = colors[i % colors.length]
       class C {}
       for (const f of info.fields) {
         switch (f.type) {

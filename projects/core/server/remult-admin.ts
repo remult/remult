@@ -13,6 +13,8 @@ export interface EntityUIInfo {
   fields: FieldUIInfo[]
   ids: Record<string, true>
   relations: EntityRelationToManyInfo[]
+  // FIXME JYC TODO Causing type issue...
+  color?: string
 }
 export interface EntityRelationToManyInfo extends RelationFields {
   entityKey: string

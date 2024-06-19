@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { Handle, Position, useNodes, type NodeProps } from '@xyflow/svelte'
+  import { Handle, Position, type NodeProps } from '@xyflow/svelte'
+  import type { TableInfo } from '../../God'
 
   type $$Props = NodeProps
 
@@ -7,12 +8,16 @@
   $$restProps
 
   export let data: $$Props['data']
+
+  const getFields = () => {
+    return data.fields as TableInfo[]
+  }
 </script>
 
-<div class="entity-node">
+<div class="entity-node" style="--color: {data.color}">
   <div class="entity-name">{data.caption}</div>
   <div class="entity-fields">
-    {#each data.fields as f}
+    {#each getFields() as f}
       <div class="entity-field">
         <Handle
           type="source"
@@ -68,5 +73,48 @@
     position: relative;
     padding: 8px;
     border-bottom: 1px solid #cbd2d9;
+  }
+
+  .entity-node {
+    --entity-color: rgb(145, 196, 242);
+
+    border-radius: 4px;
+    background: white;
+    box-shadow:
+      0 4px 6px -1px rgb(0 0 0 / 0.1),
+      0 2px 4px -2px rgb(0 0 0 / 0.1);
+    border-top: 8px solid var(--color);
+    min-width: 200px;
+  }
+  .entity-node:hover {
+    box-shadow:
+      0 10px 15px -3px rgb(0 0 0 / 0.1),
+      0 4px 6px -4px rgb(0 0 0 / 0.1);
+  }
+
+  .entity-name {
+    position: relative;
+    padding: 8px;
+    background-color: #f8fafc;
+    border: 1px solid rgb(203 213 225);
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+    font-weight: 400;
+    text-align: center;
+  }
+  .entity-fields {
+    border-top: 0;
+    border-radius: 0 0 4px 4px;
+  }
+
+  .entity-field {
+    position: relative;
+    padding: 8px;
+    font-size: 0.9rem;
+    color: rgb(96 111 123);
+    padding-inline-start: 16px;
+  }
+  .entity-field:hover {
+    background: rgb(245 247 250);
   }
 </style>

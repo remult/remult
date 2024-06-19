@@ -11,6 +11,7 @@
   ],
   "scripts": {
     "dev": "vite",
+    "check": "svelte-check --tsconfig ./tsconfig.json",
     "build": "tsc && vite build && tsx src/misc/build.ts",
     "release": "npm run build && npm run patch-versions && tsx src/misc/copy.ts && cd dist && npm publish --public && cd ..",
     "patch-versions": " FOR /F %i in ('npm version patch -m \"release %s\"') DO git push origin %i",

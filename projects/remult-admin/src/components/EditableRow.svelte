@@ -16,9 +16,10 @@
   export let columns: FieldUIInfo[]
   export let relations: EntityRelationToManyInfo[]
   export let rowId: any
+  const rmvWarning = rowId
 
   let error = undefined
-  let relation: false | EntityRelationToManyInfo = false
+  let relation: EntityRelationToManyInfo | null = null
 
   let rowFrozzen = { ...row }
   $: value = row
@@ -58,7 +59,7 @@
     <td>
       <button
         title="Relations"
-        on:click={() => (relation = relation ? false : relations[0])}
+        on:click={() => (relation = relation ? null : relations[0])}
       >
         {#if relation}
           &or;

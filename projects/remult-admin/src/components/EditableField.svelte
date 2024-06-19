@@ -8,6 +8,7 @@
 
   export let value: any
   export let info: FieldUIInfo
+  const rmvWarning = info
 </script>
 
 <input bind:value on:change />

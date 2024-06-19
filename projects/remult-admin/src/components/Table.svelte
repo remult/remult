@@ -5,10 +5,9 @@
   } from '../../../core/src/remult3/remult3'
   import type {
     EntityRelationToManyInfo,
-    EntityUIInfo,
     FieldUIInfo,
   } from '../../../core/server/remult-admin'
-  import { onDestroy, onMount } from 'svelte'
+  import { onDestroy } from 'svelte'
   import EditableRow from './EditableRow.svelte'
 
   export let columns: FieldUIInfo[]
