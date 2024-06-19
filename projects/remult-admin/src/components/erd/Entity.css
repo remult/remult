@@ -3,21 +3,25 @@
 
   border-radius: 4px;
   background: white;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / .1), 0 2px 4px -2px rgb(0 0 0 / .1);
-  border-top:8px solid var(--color);
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 0.1),
+    0 2px 4px -2px rgb(0 0 0 / 0.1);
+  border-top: 8px solid var(--color);
   min-width: 200px;
 }
-.entity-node:hover{
-  box-shadow:0 10px 15px -3px rgb(0 0 0 / .1), 0 4px 6px -4px rgb(0 0 0 / .1)
+.entity-node:hover {
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1);
 }
-.react-flow__handle{
+.svelte-flow__handle {
   visibility: hidden;
 }
 .entity-name {
   position: relative;
   padding: 8px;
   background-color: #f8fafc;
-  border:1px solid rgb(203 213 225 );
+  border: 1px solid rgb(203 213 225);
   font-size: 1.25rem;
   line-height: 1.75rem;
   font-weight: 400;
@@ -32,9 +36,9 @@
   position: relative;
   padding: 8px;
   font-size: 0.9rem;
-  color:rgb(96 111 123 );
+  color: rgb(96 111 123);
   padding-inline-start: 16px;
 }
-.entity-field:hover{
-background: rgb(245 247 250 );
+.entity-field:hover {
+  background: rgb(245 247 250);
 }

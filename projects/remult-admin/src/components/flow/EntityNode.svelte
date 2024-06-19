@@ -46,33 +46,10 @@
 </div>
 
 <style>
-  .entity-node {
-    --entity-color: rgb(145, 196, 242);
-    border: 1px solid var(--entity-color);
-
-    border-radius: 4px;
-    background: white;
-  }
-  .entity-name {
-    position: relative;
-    padding: 8px;
-    background-color: var(--entity-color);
-    border: 0;
-    border-radius: 4px 4px 0 0;
-
-    font-weight: bold;
-    text-align: center;
-  }
   .entity-fields {
     border: 1px solid #cbd2d9;
     border-top: 0;
     border-radius: 0 0 4px 4px;
-  }
-
-  .entity-field {
-    position: relative;
-    padding: 8px;
-    border-bottom: 1px solid #cbd2d9;
   }
 
   .entity-node {
@@ -102,10 +79,6 @@
     font-weight: 400;
     text-align: center;
   }
-  .entity-fields {
-    border-top: 0;
-    border-radius: 0 0 4px 4px;
-  }
 
   .entity-field {
     position: relative;
@@ -116,5 +89,9 @@
   }
   .entity-field:hover {
     background: rgb(245 247 250);
+  }
+
+  :global(.svelte-flow__handle.connectionindicator) {
+    visibility: hidden;
   }
 </style>

@@ -31,7 +31,10 @@ export default app
 //[ ] - add json editor
 
 // JYC added
+// [ ] add erd change to have the link on the good side!
 // [ ] filter enter should apply the filter
 // [ ] disable input (only p ?) when readonly?
 // [ ] show/hide columns (global & per entity) in local storage + a reset button
+
+// next
 // [ ] AI feature! I select a few entities / fields... And it's generates a prompt to ask about fragemnt SQL & co. (with link to doc? or copy of doc?)

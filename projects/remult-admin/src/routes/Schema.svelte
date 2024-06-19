@@ -65,6 +65,9 @@
                 source: sourceNode.id,
                 target: targetNode.id,
                 ...returnHandles(sourceNode, targetNode, element, key),
+                // markerEnd: {
+                //   type: 'arrow',
+                // },
               })
             }
           }
