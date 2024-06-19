@@ -1,5 +1,4 @@
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
 import { viteSingleFile } from 'vite-plugin-singlefile'
 import { svelte } from '@sveltejs/vite-plugin-svelte'
 
@@ -7,7 +6,6 @@ import { svelte } from '@sveltejs/vite-plugin-svelte'
 export default defineConfig({
   plugins: [
     svelte(),
-    react(),
     viteSingleFile(),
     {
       name: 'local-express',
