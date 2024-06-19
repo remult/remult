@@ -59,6 +59,8 @@ export class God {
   }
   tables: TableInfo[]
   constructor(myEntities: EntityUIInfo[]) {
+    // TODO
+    // @ts-ignore
     this.tables = myEntities.map((info, i) => {
       info.color = colors[i % colors.length]
       class C {}

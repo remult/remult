@@ -2,6 +2,7 @@
   import type {
     Repository,
     FindOptions,
+    EntityFilter,
   } from '../../../core/src/remult3/remult3'
   import type {
     EntityRelationToManyInfo,
@@ -9,6 +10,8 @@
   } from '../../../core/server/remult-admin'
   import { onDestroy } from 'svelte'
   import EditableRow from './EditableRow.svelte'
+  import Filter from './Filter.svelte'
+  import { writable, type Writable } from 'svelte/store'
 
   export let columns: FieldUIInfo[]
   export let relations: EntityRelationToManyInfo[]
@@ -17,11 +20,13 @@
 
   let options: FindOptions<any> = { limit: 25, page: 1 }
 
+  let filter: Writable<EntityFilter<any>> = writable({})
+
   let items = []
   let totalRows = -1
   let unSub: (() => void) | null = null
 
-  const reSub = () => {
+  const reSub = (currentFilter: EntityFilter<any>) => {
     if (unSub) {
       unSub()
     }
@@ -29,16 +34,14 @@
     unSub = repo
       .liveQuery({
         ...options,
-        // where: {
-        //   $and: [userFilter, { ...parentRelation }],
-        // },
+        where: {
+          $and: [currentFilter, { ...parentRelation }],
+        },
       })
       .subscribe(async (info) => {
         items = info.applyChanges(items)
         totalRows = await repo.count({
-          $and: [
-            //userFilter, { ...parentRelation }
-          ],
+          $and: [currentFilter, { ...parentRelation }],
         })
         //.then(setTotalRows)
       })
@@ -49,7 +52,7 @@
   })
 
   // trick to make sure reSub is called when repo changes
-  $: repo && options && reSub()
+  $: repo && options && reSub($filter)
 
   $: from = ((options.page || 1) - 1) * options.limit + 1
   $: to = ((options.page || 1) - 1) * options.limit + (items?.length || 0)
@@ -81,6 +84,7 @@
                   }}>+</button
                 >
               </span>
+              <Filter fields={columns} bind:filter={$filter} />
               <span>
                 <button
                   disabled={(options.page || 1) === 1}
