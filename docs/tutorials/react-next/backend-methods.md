@@ -39,13 +39,13 @@ With the current state of the `setAllCompleted` function, each modified task bei
 
 A simple way to prevent this is to expose an API endpoint for `setAllCompleted` requests, and run the same logic on the server instead of the client.
 
-1. Create a new `TasksController` class, in the `shared` folder, and refactor the `for` loop from the `setAllCompleted` function of the 'Todo` function component into a new, `static`, `setAllCompleted` method in the `TasksController` class, which will run on the server.
+1. Create a new `TasksController` class, in the `shared` folder, and refactor the `for` loop from the `setAllCompleted` function of the `Todo` function component into a new, `static`, `setAllCompleted` method in the `TasksController` class, which will run on the server.
 
 ```ts
 // src/shared/TasksController.ts
 
-import { BackendMethod, remult } from "remult"
-import { Task } from "./Task"
+import { BackendMethod, remult } from 'remult'
+import { Task } from './Task'
 
 export class TasksController {
   @BackendMethod({ allowed: true })
@@ -66,10 +66,10 @@ The `@BackendMethod` decorator tells Remult to expose the method as an API endpo
 2. Register `TasksController` by adding it to the `controllers` array of the `options` object passed to `createRemultServer()`, in the server's `api` module:
 
 ```ts{4,8}
-// src/app/api/[...remult]/route.ts
+// src/api.ts
 
 //...
-import { TasksController } from "../../../shared/TaskController"
+import { TasksController } from "./shared/TaskController"
 
 export const api = remultNextApp({
   //...
@@ -77,7 +77,7 @@ export const api = remultNextApp({
 })
 ```
 
-3. Replace the `for` iteration in the `setAllCompleted` function of the 'Todo` component with a call to the `setAllCompleted` method in the `TasksController`.
+3. Replace the `for` iteration in the `setAllCompleted` function of the `Todo` component with a call to the `setAllCompleted` method in the `TasksController`.
 
 ```tsx{4}
 // src/components/todo.tsx

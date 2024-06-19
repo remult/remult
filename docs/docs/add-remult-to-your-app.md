@@ -90,7 +90,7 @@ export default remultNext({
 ### Next.js App Router
 
 ```ts
-// src/app/api/[...remult]/route.ts
+// src/api.ts
 
 import { remultNextApp } from 'remult/remult-next'
 
@@ -100,7 +100,11 @@ export const api = remultNextApp({
   ],
 })
 
-export const { GET, POST, PUT, DELETE } = api
+// src/app/api/[...remult]/route.ts
+
+import { api } from '../../../api'
+
+export const { POST, PUT, DELETE, GET } = api
 ```
 
 ### Sveltekit

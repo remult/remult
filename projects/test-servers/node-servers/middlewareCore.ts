@@ -7,7 +7,7 @@ const app = express()
 app.use(express.json())
 
 const api = createRemultServerCore<express.Request>(
-  { entities: [Task] },
+  { entities: [Task], admin: true },
   {
     buildGenericRequestInfo: (req) => req,
     getRequestBody: (req) => req.body,

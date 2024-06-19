@@ -18,20 +18,96 @@ export declare type AllowedForInstance<T> =
   | string[]
   | ((entity?: T, c?: Remult) => boolean)
 export interface ApiClient {
-  /** The http client to use when making api calls.
+  /**
+   * The HTTP client to use when making API calls. It can be set to a function with the `fetch` signature
+   * or an object that has `post`, `put`, `delete`, and `get` methods. This can also be used to inject
+   * logic before each HTTP call, such as adding authorization headers.
+   *
    * @example
+   * // Using Axios
    * remult.apiClient.httpClient = axios;
+   *
    * @example
-   * remult.apiClient.httpClient = httpClient;//angular http client
+   * // Using Angular HttpClient
+   * remult.apiClient.httpClient = httpClient;
+   * @see
+   * If you want to add headers using angular httpClient, see: https://medium.com/angular-shots/shot-3-how-to-add-http-headers-to-every-request-in-angular-fab3d10edc26
+   *
    * @example
-   * remult.apiClient.httpClient = fetch; //this is the default
+   * // Using fetch (default)
+   * remult.apiClient.httpClient = fetch;
+   *
+   * @example
+   * // Adding bearer token authorization
+   * remult.apiClient.httpClient = (
+   *   input: RequestInfo | URL,
+   *   init?: RequestInit
+   * ) => {
+   *   return fetch(input, {
+   *     ...init,
+   *     headers: authToken
+   *       ? {
+   *           ...init?.headers,
+   *           authorization: 'Bearer ' + authToken,
+   *         }
+   *       : init?.headers,
+   *
+   *     cache: 'no-store',
+   *   })
+   * }
    */
   httpClient?: ExternalHttpProvider | typeof fetch
-  /** The base url to for making api calls */
+  /**
+   * The base URL for making API calls. By default, it is set to '/api'. It can be modified to be relative
+   * or to use a different domain for the server.
+   *
+   * @example
+   * // Relative URL
+   * remult.apiClient.url = './api';
+   *
+   * @example
+   * // Different domain
+   * remult.apiClient.url = 'https://example.com/api';
+   */
   url?: string
+  /**
+   * The subscription client used for real-time data updates. By default, it is set to use Server-Sent Events (SSE).
+   * It can be set to any subscription provider as illustrated in the Remult tutorial for deploying to a serverless environment.
+   *
+   * @see https://remult.dev/tutorials/react-next/deployment.html#deploying-to-a-serverless-environment
+   */
   subscriptionClient?: SubscriptionClient
+  /**
+   * A function that wraps message handling for subscriptions. This is useful for executing some code before
+   * or after any message arrives from the subscription.
+   * For example, in Angular, to refresh a specific part of the UI,
+   * you can call the `NgZone` run method at this time.
+   *
+   * @example
+   * // Angular example
+   * import { Component, NgZone } from '@angular/core';
+   * import { remult } from "remult";
+   *
+   * export class AppComponent {
+   *   constructor(zone: NgZone) {
+   *     remult.apiClient.wrapMessageHandling = handler => zone.run(() => handler());
+   *   }
+   * }
+   */
   wrapMessageHandling?: (x: VoidFunction) => void
 }
+export declare class ArrayEntityDataProvider implements EntityDataProvider {
+  private entity
+  private rows
+  static rawFilter(filter: CustomArrayFilter): EntityFilter<any>
+  constructor(entity: EntityMetadata, rows: () => any[])
+  count(where?: Filter): Promise<number>
+  find(options?: EntityDataProviderFindOptions): Promise<any[]>
+  update(id: any, data: any): Promise<any>
+  delete(id: any): Promise<void>
+  insert(data: any): Promise<any>
+}
+//[ ] CustomArrayFilter from TBD is not exported
 export declare function BackendMethod<type = any>(
   options: BackendMethodOptions<type>,
 ): (
@@ -199,35 +275,43 @@ export declare function createValueValidatorWithArgs<valueType, argsType>(
 ): ValidatorWithArgs<valueType, argsType> & {
   defaultMessage: ValueValidationMessage<argsType>
 }
-export interface customFilterInfo<entityType> {
-  rawFilterInfo: {
-    key: string
-    rawFilterTranslator: (
-      args: any,
-      r: Remult,
-    ) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>
-  }
-}
-export declare class CustomSqlFilterBuilder {
+export declare class CustomSqlFilterBuilder
+  implements SqlCommandWithParameters, HasWrapIdentifier
+{
   private r
-  constructor(r: SqlCommandWithParameters)
+  wrapIdentifier: (name: string) => string
+  constructor(
+    r: SqlCommandWithParameters,
+    wrapIdentifier: (name: string) => string,
+  )
   sql: string
-  addParameterAndReturnSqlToken<valueType>(
+  /** @deprecated  use `param` instead*/
+  addParameterAndReturnSqlToken(val: any): string
+  /**
+   * Adds a parameter value.
+   * @param {valueType} val - The value to add as a parameter.
+   * @param {FieldMetadata<valueType>} [field] - The field metadata.
+   * @returns {string} - The SQL token.
+   */
+  param: <valueType>(
     val: valueType,
-    field?: FieldMetadata<valueType>,
-  ): string
-  filterToRaw<entityType>(
+    field?: FieldMetadata<valueType, any>,
+  ) => string
+  /**
+   * Converts an entity filter into a raw SQL condition - and appends to it any `backendPrefilter` and `backendPreprocessFilter`
+   * @param {RepositoryOverloads<entityType>} repo - The repository.
+   * @param {EntityFilter<entityType>} condition - The entity filter.
+   * @returns {Promise<string>} - The raw SQL.
+   */
+  filterToRaw: <entityType>(
     repo: RepositoryOverloads<entityType>,
     condition: EntityFilter<entityType>,
-  ): Promise<string>
+  ) => Promise<string>
 }
 //[ ] RepositoryOverloads from TBD is not exported
 export type CustomSqlFilterBuilderFunction = (
   builder: CustomSqlFilterBuilder,
-) => void | Promise<any>
-export interface CustomSqlFilterObject {
-  buildSql: CustomSqlFilterBuilderFunction
-}
+) => void | string | Promise<string | void>
 export interface DataProvider {
   getEntityDataProvider(entity: EntityMetadata): EntityDataProvider
   transaction(
@@ -238,17 +322,33 @@ export interface DataProvider {
 }
 export declare function dbNamesOf<entityType>(
   repo: EntityMetadataOverloads<entityType>,
-  wrapIdentifier?: (name: string) => string,
+  wrapIdentifierOrOptions?: ((name: string) => string) | dbNamesOfOptions,
 ): Promise<EntityDbNames<entityType>>
 //[ ] EntityMetadataOverloads from TBD is not exported
+export interface dbNamesOfOptions {
+  wrapIdentifier?: (name: string) => string
+  tableName?: boolean | string
+}
+export declare function describeBackendMethods<T>(
+  classType: T,
+  backendMethods: {
+    [K in keyof T]?: BackendMethodOptions<unknown>
+  },
+): void
 export declare function describeClass<classType>(
   classType: classType,
-  classDecorator: ((x: any, context?: any) => any) | undefined,
-  members?: Decorators<classType> | undefined,
-  staticMembers?: StaticDecorators<classType>,
+  classDescriber: ((x: any, context?: any) => any) | undefined,
+  members?: FieldsDescriptor<classType> | undefined,
+  staticMembers?: StaticMemberDescriptors<classType>,
 ): void
-//[ ] Decorators from TBD is not exported
-//[ ] StaticDecorators from TBD is not exported
+//[ ] FieldsDescriptor from TBD is not exported
+//[ ] StaticMemberDescriptors from TBD is not exported
+export declare function describeEntity<entityType extends ClassType<any>>(
+  classType: entityType,
+  key: string,
+  fields: FieldsDescriptor<entityType>,
+  options?: EntityOptions<InstanceType<entityType>>,
+): void
 export declare function Entity<entityType>(
   key: string,
   ...options: (
@@ -303,7 +403,10 @@ export declare type EntityFilter<entityType> = {
     | (Partial<entityType>[Properties] extends number | Date | undefined
         ? ComparisonValueFilter<Partial<entityType>[Properties]>
         : Partial<entityType>[Properties] extends string | undefined
-        ? ContainsStringValueFilter & ComparisonValueFilter<string>
+        ?
+            | Partial<entityType>[Properties]
+            | (ContainsStringValueFilter &
+                ComparisonValueFilter<Partial<entityType>[Properties]>)
         : Partial<entityType>[Properties] extends boolean | undefined
         ? ValueFilter<boolean>
         : Partial<entityType>[Properties] extends
@@ -318,6 +421,7 @@ export declare type EntityFilter<entityType> = {
   $or?: EntityFilter<entityType>[]
   $and?: EntityFilter<entityType>[]
 }
+//[ ] IndexedAccessType from TBD is not exported
 export declare type EntityIdFields<entityType> = {
   [Properties in keyof Partial<MembersOnly<entityType>>]?: true
 }
@@ -329,17 +433,22 @@ export interface EntityMetadata<entityType = any> {
   /** A human readable caption for the entity. Can be used to achieve a consistent caption for a field throughout the app
    * @example
    * <h1>Create a new item in {taskRepo.metadata.caption}</h1>
+   * @see {@link EntityOptions.caption}
    */
   readonly caption: string
   /** The name of the table in the database that holds the data for this entity.
    * If no name is set in the entity options, the `key` will be used instead.
+   * @see {@link EntityOptions.dbName}
    */
   readonly dbName: string
-  /** The options send to the `Entity`'s decorator */
+  /** The options send to the `Entity`'s decorator
+   * @see {@link EntityOptions}
+   */
   readonly options: EntityOptions
   /** The class type of the entity */
   readonly entityType: ClassType<entityType>
   /** true if the current user is allowed to update an entity instance
+   * @see {@link EntityOptions.allowApiUpdate
    * @example
    * const taskRepo = remult.repo(Task);
    * if (taskRepo.metadata.apiUpdateAllowed(task)){
@@ -348,6 +457,7 @@ export interface EntityMetadata<entityType = any> {
    */
   apiUpdateAllowed(item?: entityType): boolean
   /** true if the current user is allowed to read from entity
+   * @see {@link EntityOptions.allowApiRead}
    * @example
    * const taskRepo = remult.repo(Task);
    * if (taskRepo.metadata.apiReadAllowed){
@@ -356,6 +466,7 @@ export interface EntityMetadata<entityType = any> {
    */
   readonly apiReadAllowed: boolean
   /** true if the current user is allowed to delete an entity instance
+   * * @see {@link EntityOptions.allowApiDelete}
    * @example
    * const taskRepo = remult.repo(Task);
    * if (taskRepo.metadata.apiDeleteAllowed(task)){
@@ -364,6 +475,7 @@ export interface EntityMetadata<entityType = any> {
    */
   apiDeleteAllowed(item?: entityType): boolean
   /** true if the current user is allowed to create an entity instance
+   * @see {@link EntityOptions.allowApiInsert}
    * @example
    * const taskRepo = remult.repo(Task);
    * if (taskRepo.metadata.apiInsertAllowed(task)){
@@ -374,7 +486,10 @@ export interface EntityMetadata<entityType = any> {
   /**
    * @deprecated Returns the dbName - based on it's `dbName` option and it's `sqlExpression` option */
   getDbName(): Promise<string>
-  /** Metadata for the Entity's id */
+  /** Metadata for the Entity's id
+   * @see {@link EntityOptions.id} for configuration
+   *
+   */
   readonly idMetadata: IdMetadata<entityType>
 }
 export interface EntityOptions<entityType = any> {
@@ -390,30 +505,81 @@ export interface EntityOptions<entityType = any> {
   allowApiRead?: Allowed
   /**
    * Determines if this entity can be updated through the api.
-   * @see [allowed](http://remult.dev/docs/allowed.html)*/
+   * @see [allowed](http://remult.dev/docs/allowed.html)
+   * @see [Access Control](https://remult.dev/docs/access-control)
+   * */
   allowApiUpdate?: AllowedForInstance<entityType>
   /** Determines if entries for this entity can be deleted through the api.
-   * @see [allowed](http://remult.dev/docs/allowed.html)*/
+   * @see [allowed](http://remult.dev/docs/allowed.html)
+   * @see [Access Control](https://remult.dev/docs/access-control)
+   * */
   allowApiDelete?: AllowedForInstance<entityType>
   /** Determines if new entries for this entity can be posted through the api.
-   * @see [allowed](http://remult.dev/docs/allowed.html)*/
+   * @see [allowed](http://remult.dev/docs/allowed.html)
+   * @see [Access Control](https://remult.dev/docs/access-control)
+   * */
   allowApiInsert?: AllowedForInstance<entityType>
   /** sets  the `allowApiUpdate`, `allowApiDelete` and `allowApiInsert` properties in a single set */
   allowApiCrud?: Allowed
-  /** A filter that determines which rows can be queries using the api.
-   * @description
-   * Use apiPrefilter in cases where you to restrict data based on user profile
-   * @example
-   * apiPrefilter: { archive:false }
+  /**
+   * An optional filter that determines which rows can be queried using the API.
+   * This filter is applied to all CRUD operations to ensure that only authorized data is accessible.
+   *
+   * Use `apiPrefilter` to restrict data based on user profile or other conditions.
    *
    * @example
-   * apiPrefilter: ()=> remult.isAllowed("admin")?{}:{ archive:false }
-   * @see [EntityFilter](http://remult.dev/docs/entityFilter.html)
+   * // Only include non-archived items in API responses
+   * apiPrefilter: { archive: false }
    *
+   * @example
+   * // Allow admins to access all rows, but restrict non-admins to non-archived items
+   * apiPrefilter: () => remult.isAllowed("admin") ? {} : { archive: false }
+   *
+   * @see [EntityFilter](https://remult.dev/docs/access-control.html#filtering-accessible-rows)
    */
   apiPrefilter?:
     | EntityFilter<entityType>
     | (() => EntityFilter<entityType> | Promise<EntityFilter<entityType>>)
+  /**
+   * An optional function that allows for preprocessing or modifying the EntityFilter for a specific entity type
+   * before it is used in API CRUD operations. This function can be used to enforce additional access control
+   * rules or adjust the filter based on the current context or specific request.
+   *
+   * @template entityType The type of the entity being filtered.
+   * @param filter The initial EntityFilter for the entity type.
+   * @param event Additional information and utilities for preprocessing the filter.
+   * @returns The modified EntityFilter or a Promise that resolves to the modified EntityFilter.
+   *
+   * @example
+   * ```typescript
+   * @Entity<Task>("tasks", {
+   *   apiPreprocessFilter: async (filter, { getPreciseValues }) => {
+   *     // Ensure that users can only query tasks for specific customers
+   *     const preciseValues = await getPreciseValues();
+   *     if (!preciseValues.customerId) {
+   *       throw new ForbiddenError("You must specify a valid customerId filter");
+   *     }
+   *     return filter;
+   *   }
+   * })
+   * ```
+   */
+  apiPreprocessFilter?: (
+    filter: EntityFilter<entityType>,
+    event: PreprocessFilterEvent<entityType>,
+  ) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>
+  /**
+   * Similar to apiPreprocessFilter, but for backend operations.
+   *
+   * @template entityType The type of the entity being filtered.
+   * @param filter The initial EntityFilter for the entity type.
+   * @param event Additional information and utilities for preprocessing the filter.
+   * @returns The modified EntityFilter or a Promise that resolves to the modified EntityFilter.
+   */
+  backendPreprocessFilter?: (
+    filter: EntityFilter<entityType>,
+    event: PreprocessFilterEvent<entityType>,
+  ) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>
   /** A filter that will be used for all queries from this entity both from the API and from within the backend.
    * @example
    * backendPrefilter: { archive:false }
@@ -505,7 +671,19 @@ export interface EntityOptions<entityType = any> {
    * dbName:'public."myProducts"'
    */
   dbName?: string
-  /** For entities that are based on SQL expressions instead of a physical table or view*/
+  /** For entities that are based on SQL expressions instead of a physical table or view
+   * @example
+   * .@Entity('people',{
+   * sqlExpression:`select id,name from employees
+   *      union all select id,name from contractors`,
+   * })
+   * export class Person{
+   * .@Fields.string()
+   * id=''
+   * .@Fields.string()
+   * name=''
+   * }
+   */
   sqlExpression?:
     | string
     | ((entity: EntityMetadata<entityType>) => string | Promise<string>)
@@ -612,6 +790,7 @@ export interface FieldMetadata<valueType = any, entityType = any> {
   /** A human readable caption for the field. Can be used to achieve a consistent caption for a field throughout the app
    * @example
    * <input placeholder={taskRepo.metadata.fields.title.caption}/>
+   * @see {@link FieldOptions#caption} for configuration details
    */
   readonly caption: string
   /** The name of the column in the database that holds the data for this field. If no name is set, the key will be used instead.
@@ -619,6 +798,7 @@ export interface FieldMetadata<valueType = any, entityType = any> {
    *
    * @Fields.string({ dbName: 'userName'})
    * userName=''
+   * @see {@link FieldOptions#dbName} for configuration details
    */
   dbName: string
   /** The field's value type (number,string etc...) */
@@ -627,7 +807,10 @@ export interface FieldMetadata<valueType = any, entityType = any> {
   readonly options: FieldOptions
   /** The `inputType` relevant for this field, determined by the options sent to it's decorator and the valueConverter in these options */
   readonly inputType: string
-  /** if null is allowed for this field */
+  /** if null is allowed for this field
+   * @see {@link FieldOptions#allowNull} for configuration details
+   *
+   */
   readonly allowNull: boolean
   /** The class that contains this field
    * @example
@@ -640,16 +823,45 @@ export interface FieldMetadata<valueType = any, entityType = any> {
   getDbName(): Promise<string>
   /** Indicates if this field is based on a server express */
   readonly isServerExpression: boolean
-  /** indicates that this field should only be included in select statement, and excluded from update or insert. useful for db generated ids etc... */
+  /** indicates that this field should only be included in select statement, and excluded from update or insert. useful for db generated ids etc...
+   * @see {@link FieldOptions#dbReadOnly} for configuration details
+   */
   readonly dbReadOnly: boolean
   /** the Value converter for this field */
   readonly valueConverter: Required<ValueConverter<valueType>>
   /** Get the display value for a specific item
+   * @see {@link FieldOptions#displayValue} for configuration details
    * @example
    * repo.fields.createDate.displayValue(task) //will display the date as defined in the `displayValue` option defined for it.
    */
   displayValue(item: Partial<entityType>): string
+  /**
+   * Determines if the current user is allowed to update a specific entity instance.
+   
+   * @example
+   * const taskRepo = remult.repo(Task);
+   * // Check if the current user is allowed to update a specific task
+   * if (taskRepo.metadata.apiUpdateAllowed(task)){
+   *   // Allow user to edit the entity
+   * }
+   * @see {@link FieldOptions#allowApiUpdate} for configuration details
+   * @param {Partial<entityType>} item - Partial entity instance to check permissions against.
+   * @returns {boolean} True if the update is allowed.
+   */
   apiUpdateAllowed(item?: Partial<entityType>): boolean
+  /**
+   * Determines if a specific entity field should be included in the API based on the current user's permissions.
+   * This method checks visibility permissions for a field within a partial entity instance.
+   * @example
+   * const employeeRepo = remult.repo(Employee);
+   * // Determine if the 'salary' field of an employee should be visible in the API for the current user
+   * if (employeeRepo.fields.salary.includedInApi({ id: 123, name: 'John Doe' })) {
+   *   // The salary field is included in the API
+   * }
+   * @see {@link FieldOptions#includeInApi} for configuration details
+   * @param {Partial<entityType>} item - The partial entity instance used to evaluate field visibility.
+   * @returns {boolean} True if the field is included in the API.
+   */
   includedInApi(item?: Partial<entityType>): boolean
   /** Adapts the value for usage with html input
    * @example
@@ -657,6 +869,7 @@ export interface FieldMetadata<valueType = any, entityType = any> {
    * birthDate = new Date(1976,5,16)
    * //...
    * input.value = repo.fields.birthDate.toInput(person) // will return '1976-06-16'
+   * @see {@link ValueConverter#toInput} for configuration details
    */
   toInput(value: valueType, inputType?: string): string
   /** Adapts the value for usage with html input
@@ -665,6 +878,7 @@ export interface FieldMetadata<valueType = any, entityType = any> {
    * birthDate = new Date(1976,5,16)
    * //...
    * person.birthDate = repo.fields.birthDate.fromInput(personFormState) // will return Date
+   * @see {@link ValueConverter#fromInput} for configuration details
    */
   fromInput(inputValue: string, inputType?: string): valueType
 }
@@ -678,11 +892,32 @@ export interface FieldOptions<entityType = any, valueType = any> {
   allowNull?: boolean
   /** If a value is required */
   required?: boolean
-  /** If this field data is included in the api.
-   * @see [allowed](http://remult.dev/docs/allowed.html)*/
+  /**
+   * Specifies whether this field should be included in the API. This can be configured
+   * based on access control levels.
+   * @example
+   * // Do not include in the API
+   * @Fields.string({ includeInApi: false })
+   * password = '';
+   * // Include in the API for 'admin' only
+   * @Fields.number({ includeInApi: 'admin' })
+   * salary = 0;
+   * @see [allowed](https://remult.dev/docs/allowed.html)
+   * @see [Access Control](https://remult.dev/docs/access-control)
+   * @type {AllowedForInstance<entityType>}
+   */
   includeInApi?: AllowedForInstance<entityType>
-  /** If this field data can be updated in the api.
-   * @see [allowed](http://remult.dev/docs/allowed.html)*/
+  /**
+   * Determines whether this field can be updated via the API. This setting can also
+   * be controlled based on user roles or other access control checks.
+   * @example
+   * // Prevent API from updating this field
+   * @Fields.string({ allowApiUpdate: false })
+   * createdBy = remult.user?.id;
+   * @see [allowed](https://remult.dev/docs/allowed.html)
+   * @see [Access Control](https://remult.dev/docs/access-control)
+   * @type {AllowedForInstance<entityType>}
+   */
   allowApiUpdate?: AllowedForInstance<entityType>
   /** An arrow function that'll be used to perform validations on it
    * @example
@@ -852,18 +1087,75 @@ export declare class Fields {
       | ((options: FieldOptions<entityType, string>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, string | undefined>
+  /**
+   * A CUID (Collision Resistant Unique Identifier) field.
+   * This id value is determined on the backend on insert, and can't be updated through the API.
+   * The CUID is generated using the `@paralleldrive/cuid2` npm package.
+   */
   static cuid<entityType = any>(
     ...options: (
       | FieldOptions<entityType, string>
       | ((options: FieldOptions<entityType, string>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, string | undefined>
-  static string<entityType = any>(
+  /**
+   * Defines a field that can hold a value from a specified set of string literals.
+   * @param {() => readonly valueType[]} optionalValues - A function that returns an array of allowed string literals.
+   * @returns {ClassFieldDecorator<entityType, valueType | undefined>} - A class field decorator.
+   *
+   * @example
+   
+   * class MyEntity {
+   *   .@Fields.literal(() => ['open', 'closed', 'frozen', 'in progress'] as const)
+   *   status: 'open' | 'closed' | 'frozen' | 'in progress' = 'open';
+   * }
+   
+   *
+   * // This defines a field `status` in `MyEntity` that can only hold the values 'open', 'closed', 'frozen', or 'in progress'.
+   *
+   * @example
+   * // For better reusability and maintainability:
+   
+   * const statuses = ['open', 'closed', 'frozen', 'in progress'] as const;
+   * type StatusType = typeof statuses[number];
+   *
+   * class MyEntity {
+   *   .@Fields.literal(() => statuses)
+   *   status: StatusType = 'open';
+   * }
+   
+   *
+   * // This approach allows easy management and updates of the allowed values for the `status` field.
+   */
+  static literal<entityType = any, valueType extends string = any>(
+    optionalValues: () => readonly valueType[],
     ...options: (
-      | StringFieldOptions<entityType>
-      | ((options: StringFieldOptions<entityType>, remult: Remult) => void)
+      | StringFieldOptions<entityType, valueType>
+      | ((
+          options: StringFieldOptions<entityType, valueType>,
+          remult: Remult,
+        ) => void)
     )[]
-  ): ClassFieldDecorator<entityType, string | undefined>
+  ): ClassFieldDecorator<entityType, valueType | undefined>
+  static enum<entityType = any, theEnum = any>(
+    enumType: () => theEnum,
+    ...options: (
+      | FieldOptions<entityType, theEnum[keyof theEnum]>
+      | ((
+          options: FieldOptions<entityType, theEnum[keyof theEnum]>,
+          remult: Remult,
+        ) => void)
+    )[]
+  ): ClassFieldDecorator<entityType, theEnum[keyof theEnum] | undefined>
+  static string<entityType = any, valueType = string>(
+    ...options: (
+      | StringFieldOptions<entityType, valueType>
+      | ((
+          options: StringFieldOptions<entityType, valueType>,
+          remult: Remult,
+        ) => void)
+    )[]
+  ): ClassFieldDecorator<entityType, valueType | undefined>
   static boolean<entityType = any>(
     ...options: (
       | FieldOptions<entityType, boolean>
@@ -923,46 +1215,211 @@ export declare type FieldValidator<entityType = any, valueType = any> = (
   | Promise<boolean | string | void | undefined>
 export declare class Filter {
   private apply
-  constructor(apply: (add: FilterConsumer) => void)
-  __applyToConsumer(add: FilterConsumer): void
-  static resolve<entityType>(
-    filter:
-      | EntityFilter<entityType>
-      | (() => EntityFilter<entityType> | Promise<EntityFilter<entityType>>),
-  ): Promise<EntityFilter<entityType>>
+  /**
+     * Retrieves precise values for each property in a filter for an entity.
+     * @template entityType The type of the entity being filtered.
+     * @param metadata The metadata of the entity being filtered.
+     * @param filter The filter to analyze.
+     * @returns A promise that resolves to a FilterPreciseValues object containing the precise values for each property.
+     * @example
+     * const preciseValues = await Filter.getPreciseValues(meta, {
+     *   status: { $ne: 'active' },
+     *   $or: [
+     *     { customerId: ["1", "2"] },
+     *     { customerId: "3" }
+     *   ]
+     * });
+     * console.log(preciseValues);
+     * // Output:
+     * // {
+     * //   "customerId": ["1", "2", "3"], // Precise values inferred from the filter
+     * //   "status": undefined,           // Cannot infer precise values for 'status'
+     * // }
+    
+     */
+  static getPreciseValues<entityType>(
+    metadata: EntityMetadata<entityType>,
+    filter: EntityFilter<entityType>,
+  ): Promise<FilterPreciseValues<entityType>>
+  /**
+     * Retrieves precise values for each property in a filter for an entity.
+     * @template entityType The type of the entity being filtered.
+     * @param metadata The metadata of the entity being filtered.
+     * @param filter The filter to analyze.
+     * @returns A promise that resolves to a FilterPreciseValues object containing the precise values for each property.
+     * @example
+     * const preciseValues = await where.getPreciseValues();
+     * console.log(preciseValues);
+     * // Output:
+     * // {
+     * //   "customerId": ["1", "2", "3"], // Precise values inferred from the filter
+     * //   "status": undefined,           // Cannot infer precise values for 'status'
+     * // }
+    
+     */
+  getPreciseValues<entityType>(): Promise<FilterPreciseValues<entityType>>
+  /**
+     * Creates a custom filter. Custom filters are evaluated on the backend, ensuring security and efficiency.
+     * When the filter is used in the frontend, only its name is sent to the backend via the API,
+     * where the filter gets translated and applied in a safe manner.
+     *
+     * @template entityType The entity type for the filter.
+     * @param {function(): EntityFilter<entityType>} translator A function that returns an `EntityFilter`.
+     * @param {string} [key] An optional unique identifier for the custom filter.
+     * @returns {function(): EntityFilter<entityType>} A function that returns an `EntityFilter` of type `entityType`.
+     *
+     * @example
+     *  class Order {
+     *  //...
+     *  static activeOrdersFor = Filter.createCustom<Order, { year: number }>(
+     *    async ({ year }) => {
+     *      return {
+     *        status: ['created', 'confirmed', 'pending', 'blocked', 'delayed'],
+     *        createdAt: {
+     *          $gte: new Date(year, 0, 1),
+     *          $lt: new Date(year + 1, 0, 1),
+     *        },
+     *      }
+     *    },
+     *  )
+     *}
+     * // Usage
+     * await repo(Order).find({
+     *  where: Order.activeOrders({ year }),
+     *})
+  
+  
+     * @see
+     * [Sql filter and Custom filter](/docs/custom-filter.html)
+     * [Filtering and Relations](/docs/filtering-and-relations.html)
+     */
   static createCustom<entityType>(
-    rawFilterTranslator: (
+    translator: (
       unused: never,
       r: Remult,
     ) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>,
     key?: string,
   ): (() => EntityFilter<entityType>) & customFilterInfo<entityType>
+  /**
+     * Creates a custom filter. Custom filters are evaluated on the backend, ensuring security and efficiency.
+     * When the filter is used in the frontend, only its name is sent to the backend via the API,
+     * where the filter gets translated and applied in a safe manner.
+     *
+     * @template entityType The entity type for the filter.
+     * @param {function(): EntityFilter<entityType>} translator A function that returns an `EntityFilter`.
+     * @param {string} [key] An optional unique identifier for the custom filter.
+     * @returns {function(): EntityFilter<entityType>} A function that returns an `EntityFilter` of type `entityType`.
+     *
+     * @example
+     *  class Order {
+     *  //...
+     *  static activeOrdersFor = Filter.createCustom<Order, { year: number }>(
+     *    async ({ year }) => {
+     *      return {
+     *        status: ['created', 'confirmed', 'pending', 'blocked', 'delayed'],
+     *        createdAt: {
+     *          $gte: new Date(year, 0, 1),
+     *          $lt: new Date(year + 1, 0, 1),
+     *        },
+     *      }
+     *    },
+     *  )
+     *}
+     * // Usage
+     * await repo(Order).find({
+     *  where: Order.activeOrders({ year }),
+     *})
+  
+     
+     * @see
+     * [Sql filter and Custom filter](/docs/custom-filter.html)
+     * [Filtering and Relations](/docs/filtering-and-relations.html)
+     */
   static createCustom<entityType, argsType>(
-    rawFilterTranslator: (
+    translator: (
       args: argsType,
       r: Remult,
     ) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>,
     key?: string,
   ): ((y: argsType) => EntityFilter<entityType>) & customFilterInfo<entityType>
-  static fromEntityFilter<T>(
-    entity: EntityMetadata<T>,
-    whereItem: EntityFilter<T>,
-  ): Filter
-  toJson(): any
+  /**
+   * Translates an `EntityFilter` to a plain JSON object that can be stored or transported.
+   *
+   * @template T The entity type for the filter.
+   * @param {EntityMetadata<T>} entityDefs The metadata of the entity associated with the filter.
+   * @param {EntityFilter<T>} where The `EntityFilter` to be translated.
+   * @returns {any} A plain JSON object representing the `EntityFilter`.
+   *
+   * @example
+   * // Assuming `Task` is an entity class
+   * const jsonFilter = Filter.entityFilterToJson(Task, { completed: true });
+   * // `jsonFilter` can now be stored or transported as JSON
+   */
   static entityFilterToJson<T>(
     entityDefs: EntityMetadata<T>,
     where: EntityFilter<T>,
   ): any
+  /**
+   * Translates a plain JSON object back into an `EntityFilter`.
+   *
+   * @template T The entity type for the filter.
+   * @param {EntityMetadata<T>} entityDefs The metadata of the entity associated with the filter.
+   * @param {any} packed The plain JSON object representing the `EntityFilter`.
+   * @returns {EntityFilter<T>} The reconstructed `EntityFilter`.
+   *
+   * @example
+   * // Assuming `Task` is an entity class and `jsonFilter` is a JSON object representing an EntityFilter
+   * const taskFilter = Filter.entityFilterFromJson(Task, jsonFilter);
+   * // Using the reconstructed `EntityFilter` in a query
+   * const tasks = await remult.repo(Task).find({ where: taskFilter });
+   * for (const task of tasks) {
+   *   // Do something for each task based on the filter
+   * }
+   */
   static entityFilterFromJson<T>(
     entityDefs: EntityMetadata<T>,
     packed: any,
   ): EntityFilter<T>
-  static translateCustomWhere<T>(
-    r: Filter,
+  /**
+   * Converts an `EntityFilter` to a `Filter` that can be used by the `DataProvider`. This method is
+   * mainly used internally.
+   *
+   * @template T The entity type for the filter.
+   * @param {EntityMetadata<T>} entity The metadata of the entity associated with the filter.
+   * @param {EntityFilter<T>} whereItem The `EntityFilter` to be converted.
+   * @returns {Filter} A `Filter` instance that can be used by the `DataProvider`.
+   *
+   * @example
+   * // Assuming `Task` is an entity class and `taskFilter` is an EntityFilter
+   * const filter = Filter.fromEntityFilter(Task, taskFilter);
+   * // `filter` can now be used with the DataProvider
+   */
+  static fromEntityFilter<T>(
     entity: EntityMetadata<T>,
-    remult: Remult,
-  ): Promise<Filter>
+    whereItem: EntityFilter<T>,
+  ): Filter
+  constructor(apply: (add: FilterConsumer) => void)
+  __applyToConsumer(add: FilterConsumer): void
+  /**
+   * Resolves an entity filter.
+   *
+   * This method takes a filter which can be either an instance of `EntityFilter`
+   * or a function that returns an instance of `EntityFilter` or a promise that
+   * resolves to an instance of `EntityFilter`. It then resolves the filter if it
+   * is a function and returns the resulting `EntityFilter`.
+   *
+   * @template entityType The type of the entity that the filter applies to.
+   * @param {EntityFilter<entityType> | (() => EntityFilter<entityType> | Promise<EntityFilter<entityType>>)} filter The filter to resolve.
+   * @returns {Promise<EntityFilter<entityType>>} The resolved entity filter.
+   */
+  static resolve<entityType>(
+    filter:
+      | EntityFilter<entityType>
+      | (() => EntityFilter<entityType> | Promise<EntityFilter<entityType>>),
+  ): Promise<EntityFilter<entityType>>
+  toJson(): any
 }
+//[ ] customFilterInfo from TBD is not exported
 export interface FilterConsumer {
   or(orElements: Filter[]): any
   isEqualTo(col: FieldMetadata, val: any): void
@@ -978,6 +1435,11 @@ export interface FilterConsumer {
   isIn(col: FieldMetadata, val: any[]): void
   custom(key: string, customItem: any): void
   databaseCustom(databaseCustom: any): void
+}
+export type FilterPreciseValues<entityType> = {
+  [Properties in keyof MembersOnly<entityType>]?: Partial<
+    entityType[Properties]
+  >[]
 }
 export interface FindFirstOptions<entityType>
   extends FindOptionsBase<entityType>,
@@ -1022,6 +1484,10 @@ export interface FindOptionsBase<entityType> extends LoadOptions<entityType> {
    * await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
    */
   orderBy?: EntityOrderBy<entityType>
+}
+export declare class ForbiddenError extends Error {
+  constructor(message?: string)
+  isForbiddenError: true
 }
 export declare function getEntityRef<entityType>(
   entity: entityType,
@@ -1076,6 +1542,7 @@ export interface IdMetadata<entityType = any> {
    */
   getId(item: Partial<MembersOnly<entityType>>): any
   field: FieldMetadata<any>
+  fields: FieldMetadata<unknown>[]
   getIdFilter(...ids: any[]): EntityFilter<entityType>
   isIdField(col: FieldMetadata): boolean
   createIdInFilter(
@@ -1114,7 +1581,8 @@ export declare class InMemoryLiveQueryStorage implements LiveQueryStorage {
 export declare function isBackend(): boolean
 export declare class JsonDataProvider implements DataProvider {
   private storage
-  constructor(storage: JsonEntityStorage)
+  private formatted
+  constructor(storage: JsonEntityStorage, formatted?: boolean)
   getEntityDataProvider(entity: EntityMetadata): EntityDataProvider
   transaction(
     action: (dataProvider: DataProvider) => Promise<void>,
@@ -1166,7 +1634,32 @@ export interface LifecycleEvent<entityType> {
 }
 //[ ] idType from TBD is not exported
 export interface LiveQuery<entityType> {
+  /**
+   * Subscribes to changes in the live query results.
+   *
+   * @param {(info: LiveQueryChangeInfo<entityType>) => void} next A function that will be called with information about changes in the query results.
+   * @returns {Unsubscribe} A function that can be used to unsubscribe from the live query.
+   *
+   * @example
+   * // Subscribing to changes in a live query
+   * const unsubscribe = taskRepo
+   *   .liveQuery({
+   *     limit: 20,
+   *     orderBy: { createdAt: 'asc' }
+   *     //where: { completed: true },
+   *   })
+   *   .subscribe(info => setTasks(info.applyChanges));
+   *
+   * // Later, to unsubscribe
+   * unsubscribe();
+   */
   subscribe(next: (info: LiveQueryChangeInfo<entityType>) => void): Unsubscribe
+  /**
+   * Subscribes to changes in the live query results using a `SubscriptionListener` object.
+   *
+   * @param {Partial<SubscriptionListener<LiveQueryChangeInfo<entityType>>>} listener An object that implements the `SubscriptionListener` interface.
+   * @returns {Unsubscribe} A function that can be used to unsubscribe from the live query.
+   */
   subscribe(
     listener: Partial<SubscriptionListener<LiveQueryChangeInfo<entityType>>>,
   ): Unsubscribe
@@ -1194,8 +1687,37 @@ export declare type LiveQueryChange =
       }
     }
 export interface LiveQueryChangeInfo<entityType> {
+  /**
+   * The updated array of result items.
+   *
+   * @type {entityType[]}
+   */
   items: entityType[]
+  /**
+   * The changes received in the specific message. The change types can be "all" (replace all), "add", "replace", or "remove".
+   *
+   * @type {LiveQueryChange[]}
+   */
   changes: LiveQueryChange[]
+  /**
+   * Applies the changes received in the message to an existing array. This method is particularly useful with React
+   * to update the component's state based on the live query changes.
+   *
+   * @param {entityType[] | undefined} prevState The previous state of the array of result items.
+   * @returns {entityType[]} The updated array of result items after applying the changes.
+   *
+   * @example
+   * // Using applyChanges in a React component with useEffect hook
+   * useEffect(() => {
+   *   return taskRepo
+   *     .liveQuery({
+   *       limit: 20,
+   *       orderBy: { createdAt: 'asc' }
+   *       //where: { completed: true },
+   *     })
+   *     .subscribe(info => setTasks(info.applyChanges));
+   * }, []);
+   */
   applyChanges(prevState: entityType[] | undefined): entityType[]
 }
 export interface LiveQueryStorage {
@@ -1243,6 +1765,22 @@ export interface Paginator<entityType> {
   nextPage(): Promise<Paginator<entityType>>
   /** the count of the total items in the `query`'s result */
   count(): Promise<number>
+}
+export interface PreprocessFilterEvent<entityType> {
+  /**
+   * Metadata of the entity being filtered.
+   */
+  metadata: EntityMetadata<entityType>
+  /**
+     * Retrieves precise values for each property in a filter for an entity.
+     * @param filter Optional filter to analyze. If not provided, the current filter being preprocessed is used.
+     * @returns A promise that resolves to a FilterPreciseValues object containing the precise values for each property.
+     
+    * @see {@Link FilterPreciseValues }
+     */
+  getFilterPreciseValues(
+    filter?: EntityFilter<entityType>,
+  ): Promise<FilterPreciseValues<entityType>>
 }
 export declare class ProgressListener {
   private res
@@ -1442,7 +1980,7 @@ export declare class Remult {
    * @param entity - the entity to use
    * @param dataProvider - an optional alternative data provider to use. Useful for writing to offline storage or an alternative data provider
    */
-  repo<T>(entity: ClassType<T>, dataProvider?: DataProvider): Repository<T>
+  repo: <T>(entity: ClassType<T>, dataProvider?: DataProvider) => Repository<T>
   /** Returns the current user's info */
   user?: UserInfo
   /** Checks if a user was authenticated */
@@ -1580,34 +2118,27 @@ export interface Repository<entityType> {
    * taskRepo.update(task.id,{...task,completed:true})
    */
   update(
-    id: entityType extends {
-      id?: number
-    }
-      ? number
-      : entityType extends {
-          id?: string
-        }
-      ? string
-      : string | number,
+    id: idType<entityType>,
     item: Partial<MembersOnly<entityType>>,
   ): Promise<entityType>
   update(
     id: Partial<MembersOnly<entityType>>,
     item: Partial<MembersOnly<entityType>>,
   ): Promise<entityType>
+  /**
+   * Updates all items that match the `where` condition.
+   */
+  updateMany(options: {
+    where: EntityFilter<entityType>
+    set: Partial<MembersOnly<entityType>>
+  }): Promise<number>
   /** Deletes an Item*/
-  delete(
-    id: entityType extends {
-      id?: number
-    }
-      ? number
-      : entityType extends {
-          id?: string
-        }
-      ? string
-      : string | number,
-  ): Promise<void>
+  delete(id: idType<entityType>): Promise<void>
   delete(item: Partial<MembersOnly<entityType>>): Promise<void>
+  /**
+   * Deletes all items that match the `where` condition.
+   */
+  deleteMany(options: { where: EntityFilter<entityType> }): Promise<number>
   /** Creates an instance of an item. It'll not be saved to the data source unless `save` or `insert` will be called for that item */
   create(item?: Partial<MembersOnly<entityType>>): entityType
   toJson(item: Promise<entityType[]>): Promise<any[]>
@@ -1630,7 +2161,7 @@ export interface Repository<entityType> {
    */
   metadata: EntityMetadata<entityType>
   addEventListener(listener: entityEventListener<entityType>): Unsubscribe
-  relations: (item: entityType) => RepositoryRelations<entityType>
+  relations(item: entityType): RepositoryRelations<entityType>
 }
 //[ ] entityEventListener from TBD is not exported
 export type RepositoryRelations<entityType> = {
@@ -1673,23 +2204,77 @@ export interface RestDataProviderHttpProvider {
   get(url: string): Promise<any>
 }
 export declare class Sort {
+  /**
+   * Translates the current `Sort` instance into an `EntityOrderBy` object.
+   *
+   * @returns {EntityOrderBy<any>} An `EntityOrderBy` object representing the sort criteria.
+   */
   toEntityOrderBy(): EntityOrderBy<any>
+  /**
+   * Constructs a `Sort` instance with the provided sort segments.
+   *
+   * @param {...SortSegment[]} segments The sort segments to be included in the sort criteria.
+   */
   constructor(...segments: SortSegment[])
+  /**
+   * The segments of the sort criteria.
+   *
+   * @type {SortSegment[]}
+   */
   Segments: SortSegment[]
+  /**
+   * Reverses the sort order of the current sort criteria.
+   *
+   * @returns {Sort} A new `Sort` instance with the reversed sort order.
+   */
   reverse(): Sort
+  /**
+   * Compares two objects based on the current sort criteria.
+   *
+   * @param {any} a The first object to compare.
+   * @param {any} b The second object to compare.
+   * @param {function(FieldMetadata): string} [getFieldKey] An optional function to get the field key for comparison.
+   * @returns {number} A negative value if `a` should come before `b`, a positive value if `a` should come after `b`, or zero if they are equal.
+   */
   compare(
     a: any,
     b: any,
     getFieldKey?: (field: FieldMetadata) => string,
   ): number
+  /**
+   * Translates an `EntityOrderBy` to a `Sort` instance.
+   *
+   * @template T The entity type for the order by.
+   * @param {EntityMetadata<T>} entityDefs The metadata of the entity associated with the order by.
+   * @param {EntityOrderBy<T>} [orderBy] The `EntityOrderBy` to be translated.
+   * @returns {Sort} A `Sort` instance representing the translated order by.
+   */
   static translateOrderByToSort<T>(
     entityDefs: EntityMetadata<T>,
     orderBy?: EntityOrderBy<T>,
   ): Sort
+  /**
+   * Creates a unique `Sort` instance based on the provided `Sort` and the entity metadata.
+   * This ensures that the sort criteria result in a unique ordering of entities.
+   *
+   * @template T The entity type for the sort.
+   * @param {EntityMetadata<T>} entityMetadata The metadata of the entity associated with the sort.
+   * @param {Sort} [orderBy] The `Sort` instance to be made unique.
+   * @returns {Sort} A `Sort` instance representing the unique sort criteria.
+   */
   static createUniqueSort<T>(
     entityMetadata: EntityMetadata<T>,
     orderBy?: Sort,
   ): Sort
+  /**
+   * Creates a unique `EntityOrderBy` based on the provided `EntityOrderBy` and the entity metadata.
+   * This ensures that the order by criteria result in a unique ordering of entities.
+   *
+   * @template T The entity type for the order by.
+   * @param {EntityMetadata<T>} entityMetadata The metadata of the entity associated with the order by.
+   * @param {EntityOrderBy<T>} [orderBy] The `EntityOrderBy` to be made unique.
+   * @returns {EntityOrderBy<T>} An `EntityOrderBy` representing the unique order by criteria.
+   */
   static createUniqueEntityOrderBy<T>(
     entityMetadata: EntityMetadata<T>,
     orderBy?: EntityOrderBy<T>,
@@ -1708,11 +2293,19 @@ export interface SqlCommand extends SqlCommandWithParameters {
   execute(sql: string): Promise<SqlResult>
 }
 export interface SqlCommandWithParameters {
+  /** @deprecated use `param` instead*/
   addParameterAndReturnSqlToken(val: any): string
+  param(val: any): string
 }
-export declare class SqlDatabase implements DataProvider {
+export declare class SqlDatabase
+  implements
+    DataProvider,
+    HasWrapIdentifier,
+    CanBuildMigrations,
+    SqlCommandFactory
+{
   private sql
-  static getDb(remult?: Remult): SqlDatabase
+  static getDb(dataProvider?: DataProvider): SqlDatabase
   createCommand(): SqlCommand
   execute(sql: string): Promise<SqlResult>
   wrapIdentifier: (name: string) => string
@@ -1721,12 +2314,23 @@ export declare class SqlDatabase implements DataProvider {
   transaction(
     action: (dataProvider: DataProvider) => Promise<void>,
   ): Promise<void>
+  /**
+     * Creates a raw filter for entity filtering.
+     * @param {CustomSqlFilterBuilderFunction} build - The custom SQL filter builder function.
+     * @returns {EntityFilter<any>} - The entity filter with a custom SQL filter.
+     * @example
+     * SqlDatabase.rawFilter(({param}) =>
+          `"customerId" in (select id from customers where city = ${param(customerCity)})`
+        )
+     * @see [Leveraging Database Capabilities with Raw SQL in Custom Filters](https://remult.dev/docs/custom-filter.html#leveraging-database-capabilities-with-raw-sql-in-custom-filters)
+     */
   static rawFilter(build: CustomSqlFilterBuilderFunction): EntityFilter<any>
   static filterToRaw<entityType>(
     repo: RepositoryOverloads<entityType>,
     condition: EntityFilter<entityType>,
     sqlCommand?: SqlCommandWithParameters,
     dbNames?: EntityDbNamesBase,
+    wrapIdentifier?: (name: string) => string,
   ): Promise<string>
   /**
    * `false` _(default)_ - No logging
@@ -1746,16 +2350,23 @@ export declare class SqlDatabase implements DataProvider {
    */
   static durationThreshold: number
   constructor(sql: SqlImplementation)
+  provideMigrationBuilder: (builder: MigrationCode) => MigrationBuilder
   private createdEntities
+  end: () => Promise<void>
 }
-export interface SqlImplementation {
+//[ ] MigrationCode from TBD is not exported
+//[ ] MigrationBuilder from TBD is not exported
+export interface SqlImplementation extends HasWrapIdentifier {
   getLimitSqlSyntax(limit: number, offset: number): any
   createCommand(): SqlCommand
   transaction(action: (sql: SqlImplementation) => Promise<void>): Promise<void>
   entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void>
   ensureSchema?(entities: EntityMetadata[]): Promise<void>
   supportsJsonColumnType?: boolean
-  wrapIdentifier?(name: string): string
+  /** true by default */
+  doesNotSupportReturningSyntax?: boolean
+  orderByNullsFirst?: boolean
+  end(): Promise<void>
   afterMutation?: VoidFunction
 }
 export interface SqlResult {
@@ -1767,21 +2378,46 @@ export interface StoredQuery {
   id: string
   data: any
 }
-export interface StringFieldOptions<entityType = any>
-  extends FieldOptions<entityType, string> {
+export interface StringFieldOptions<entityType = any, valueType = string>
+  extends FieldOptions<entityType, valueType> {
   maxLength?: number
+  minLength?: number
 }
 export interface Subscribable {
   subscribe(listener: RefSubscriber): Unsubscribe
 }
 export declare class SubscriptionChannel<messageType> {
   channelKey: string
+  /**
+   * Constructs a new `SubscriptionChannel` instance.
+   *
+   * @param {string} channelKey The key that identifies the channel.
+   */
   constructor(channelKey: string)
+  /**
+   * Publishes a message to the channel. This method should only be used on the backend.
+   *
+   * @param {messageType} message The message to be published.
+   * @param {Remult} [remult] An optional instance of Remult to use for publishing the message.
+   */
   publish(message: messageType, remult?: Remult): void
+  /**
+   * Subscribes to messages from the channel. This method should only be used on the frontend.
+   *
+   * @param {(message: messageType) => void} next A function that will be called with each message received.
+   * @param {Remult} [remult] An optional instance of Remult to use for the subscription.
+   * @returns {Promise<Unsubscribe>} A promise that resolves to a function that can be used to unsubscribe from the channel.
+   */
   subscribe(
     next: (message: messageType) => void,
     remult?: Remult,
   ): Promise<Unsubscribe>
+  /**
+   * Subscribes to messages from the channel using a `SubscriptionListener` object.
+   *
+   * @param {Partial<SubscriptionListener<messageType>>} listener An object that implements the `SubscriptionListener` interface.
+   * @returns {Promise<Unsubscribe>} A promise that resolves to a function that can be used to unsubscribe from the channel.
+   */
   subscribe(
     listener: Partial<SubscriptionListener<messageType>>,
   ): Promise<Unsubscribe>
@@ -1839,25 +2475,25 @@ export type ValidationMessage<valueType, argsType> =
       event: ValidateFieldEvent<any, valueType>,
       args: argsType,
     ) => string)
-export type Validator<valueType> = FieldValidator<any, valueType> &
+export type Validator<valueType> = FieldValidator<unknown, valueType> &
   ((
     message?: ValidationMessage<valueType, undefined>,
-  ) => FieldValidator<any, valueType>) & {
+  ) => FieldValidator<unknown, valueType>) & {
     defaultMessage: ValidationMessage<valueType, undefined>
     /**
      * @deprecated  use (message:string) instead - for example: Validators.required("Is needed")
      */
     withMessage(
       message: ValidationMessage<valueType, undefined>,
-    ): FieldValidator<any, valueType>
+    ): FieldValidator<unknown, valueType>
   }
 export declare class Validators {
-  static required: Validator<any>
-  static unique: Validator<any>
+  static required: Validator<unknown>
+  static unique: Validator<unknown>
   /**
-   * @deprecated is `unique` instead - it also runs only on the backend
+   * @deprecated use `unique` instead - it also runs only on the backend
    */
-  static uniqueOnBackend: Validator<any>
+  static uniqueOnBackend: Validator<unknown>
   static regex: ValidatorWithArgs<string, RegExp> & {
     defaultMessage: ValueValidationMessage<RegExp>
   }
@@ -1866,14 +2502,14 @@ export declare class Validators {
   static in: <T>(
     value: readonly T[],
     withMessage?: ValueValidationMessage<T[]>,
-  ) => FieldValidator<any, T> & {
+  ) => FieldValidator<unknown, T> & {
     withMessage: ValueValidationMessage<T[]>
   }
   static notNull: Validator<unknown>
-  static enum: ValidatorWithArgs<any, any> & {
-    defaultMessage: ValueValidationMessage<any>
+  static enum: ValidatorWithArgs<unknown, unknown> & {
+    defaultMessage: ValueValidationMessage<unknown>
   }
-  static relationExists: Validator<any>
+  static relationExists: Validator<unknown>
   static maxLength: ValidatorWithArgs<string, number> & {
     defaultMessage: ValueValidationMessage<number>
   }
@@ -1886,16 +2522,101 @@ export declare class Validators {
 export type ValidatorWithArgs<valueType, argsType> = (
   args: argsType,
   message?: ValidationMessage<valueType, argsType>,
-) => FieldValidator<any, valueType>
+) => FieldValidator<unknown, valueType>
 export interface ValueConverter<valueType> {
+  /**
+   * Converts a value from a JSON DTO to the valueType. This method is typically used when receiving data
+   * from a REST API call or deserializing a JSON payload.
+   *
+   * @param val The value to convert.
+   * @returns The converted value.
+   *
+   * @example
+   * fromJson: val => new Date(val)
+   */
   fromJson?(val: any): valueType
+  /**
+   * Converts a value of valueType to a JSON DTO. This method is typically used when sending data
+   * to a REST API or serializing an object to a JSON payload.
+   *
+   * @param val The value to convert.
+   * @returns The converted value.
+   *
+   * @example
+   * toJson: val => val?.toISOString()
+   */
   toJson?(val: valueType): any
+  /**
+   * Converts a value from the database format to the valueType.
+   *
+   * @param val The value to convert.
+   * @returns The converted value.
+   *
+   * @example
+   * fromDb: val => new Date(val)
+   */
   fromDb?(val: any): valueType
+  /**
+   * Converts a value of valueType to the database format.
+   *
+   * @param val The value to convert.
+   * @returns The converted value.
+   *
+   * @example
+   * toDb: val => val?.toISOString()
+   */
   toDb?(val: valueType): any
+  /**
+   * Converts a value of valueType to a string suitable for an HTML input element.
+   *
+   * @param val The value to convert.
+   * @param inputType The type of the input element (optional).
+   * @returns The converted value as a string.
+   *
+   * @example
+   * toInput: (val, inputType) => val?.toISOString().substring(0, 10)
+   */
   toInput?(val: valueType, inputType?: string): string
+  /**
+   * Converts a string from an HTML input element to the valueType.
+   *
+   * @param val The value to convert.
+   * @param inputType The type of the input element (optional).
+   * @returns The converted value.
+   *
+   * @example
+   * fromInput: (val, inputType) => new Date(val)
+   */
   fromInput?(val: string, inputType?: string): valueType
+  /**
+   * Returns a displayable string representation of a value of valueType.
+   *
+   * @param val The value to convert.
+   * @returns The displayable string.
+   *
+   * @example
+   * displayValue: val => val?.toLocaleDateString()
+   */
   displayValue?(val: valueType): string
+  /**
+   * Specifies the storage type used in the database for this field. This can be used to explicitly define the data type and precision of the field in the database.
+   *
+   * @example
+   * // Define a field with a specific decimal precision in the database
+   * @Fields.number({
+   *   valueConverter: {
+   *     fieldTypeInDb: 'decimal(18,8)'
+   *   }
+   * })
+   * price=0;
+   */
   readonly fieldTypeInDb?: string
+  /**
+   * Specifies the type of HTML input element suitable for values of valueType.
+   *
+   * @example
+   * inputType = 'date';
+   */
   readonly inputType?: string
 }
 export declare class ValueConverters {
@@ -1975,7 +2696,7 @@ export declare class WebSqlDataProvider
     [tableName: string]: any
   }
   constructor(databaseName: string, databaseSize?: number)
-  static getDb(remult?: Remult): any
+  end(): Promise<void>
   getLimitSqlSyntax(limit: number, offset: number): string
   entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void>
   ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
@@ -1991,7 +2712,10 @@ export declare class WebSqlDataProvider
 export declare function withRemult<T>(
   callback: (remult: any) => Promise<T>,
   options?: {
-    dataProvider?: DataProvider
+    dataProvider?:
+      | DataProvider
+      | Promise<DataProvider>
+      | (() => Promise<DataProvider | undefined>)
   },
 ): Promise<T>
 ````
@@ -2005,7 +2729,7 @@ export declare function remultExpress(
     bodySizeLimit?: string
   },
 ): RemultExpressServer
-//[ ] RemultServerOptions from ./server/expressBridge.js is not exported
+//[ ] RemultServerOptions from ./server/remult-api-server.js is not exported
 export type RemultExpressServer = express.RequestHandler &
   RemultServerCore<express.Request> & {
     withRemult: (
@@ -2014,8 +2738,8 @@ export type RemultExpressServer = express.RequestHandler &
       next: VoidFunction,
     ) => void
   } & Pick<RemultServer<express.Request>, "withRemultAsync">
-//[ ] RemultServerCore from ./server/expressBridge.js is not exported
-//[ ] RemultServer from ./server/expressBridge.js is not exported
+//[ ] RemultServerCore from ./server/remult-api-server.js is not exported
+//[ ] RemultServer from ./server/remult-api-server.js is not exported
 ```
 
 ## ./remult-next.js
@@ -2049,6 +2773,10 @@ export type RemultNextServer = RemultServerCore<NextApiRequest> &
     >(
       getServerPropsFunction: GetServerSideProps<P, Q, D>,
     ): GetServerSideProps<P, Q, D>
+    withRemult<T>(
+      req: NextApiRequest | undefined,
+      what: () => Promise<T>,
+    ): Promise<T>
     /** Creates a `next.js` handler with remult defined in the correct context
      * @see
      * https://remult.dev/tutorials/react-next/appendix-1-get-server-side-props.html#using-remult-in-a-next-js-api-handler
@@ -2064,7 +2792,7 @@ export declare function createRemultServer<RequestType>(
   options: RemultServerOptions<RequestType>,
   serverCoreOptions?: ServerCoreOptions<RequestType>,
 ): RemultServer<RequestType>
-//[ ] ServerCoreOptions from ./expressBridge.js is not exported
+//[ ] ServerCoreOptions from ./remult-api-server.js is not exported
 export declare class DataProviderLiveQueryStorage
   implements LiveQueryStorage, Storage
 {
@@ -2154,7 +2882,7 @@ export interface RemultServer<RequestType>
 }
 //[ ] ServerHandleResponse from TBD is not exported
 export interface RemultServerCore<RequestType> {
-  getRemult(req: RequestType): Promise<Remult>
+  getRemult(req?: RequestType): Promise<Remult>
   openApiDoc(options: { title: string; version?: string }): any
 }
 export interface RemultServerOptions<RequestType> {
@@ -2204,14 +2932,52 @@ export interface RemultServerOptions<RequestType> {
     serialize(remult: Remult): Promise<any>
     deserialize(json: any, options: InitRequestOptions): Promise<void>
   }
-  /** When set to true, will display an admin ui in the `/api/admin` url */
-  admin?: boolean
+  /** When set to true, will display an admin ui in the `/api/admin` url.
+   * Can also be set to an arrow function for fine grained control
+   * @example
+   * admin: true
+   * @example
+   * admin: ()=> remult.isAllowed('admin')
+   * @see [allowed](http://remult.dev/docs/allowed.html)
+   */
+  admin?: Allowed
   /** Storage to use for backend methods that use queue */
   queueStorage?: QueueStorage
+  /**
+   * This method is called whenever there is an error in the API lifecycle.
+   *
+   * @param info - Information about the error.
+   * @param info.req - The request object.
+   * @param info.entity - (Optional) The entity metadata associated with the error, if applicable.
+   * @param info.exception - (Optional) The exception object or error that occurred.
+   * @param info.httpStatusCode - The HTTP status code.
+   * @param info.responseBody - The body of the response.
+   * @param info.sendError - A method to send a custom error response. Call this method with the desired HTTP status code and response body.
+   *
+   * @returns A promise that resolves when the error handling is complete.
+   * @example
+   * export const api = remultExpress({
+   *   error: async (e) => {
+   *     if (e.httpStatusCode == 500) {
+   *       e.sendError(500, { message: "An error occurred" })
+   *     }
+   *   }
+   * })
+   */
+  error?: (info: {
+    req: RequestType
+    entity?: EntityMetadata
+    exception?: any
+    httpStatusCode: number
+    responseBody: any
+    sendError: (httpStatusCode: number, body: any) => void
+  }) => Promise<void>
 }
 //[ ] ClassType from TBD is not exported
 //[ ] UserInfo from TBD is not exported
 //[ ] SubscriptionServer from TBD is not exported
+//[ ] Allowed from TBD is not exported
+//[ ] EntityMetadata from TBD is not exported
 export type SpecificRoute = {
   get(handler: GenericRequestHandler): SpecificRoute
   put(handler: GenericRequestHandler): SpecificRoute
@@ -2364,10 +3130,46 @@ export interface RemultServerOptions<RequestType> {
     serialize(remult: Remult): Promise<any>
     deserialize(json: any, options: InitRequestOptions): Promise<void>
   }
-  /** When set to true, will display an admin ui in the `/api/admin` url */
-  admin?: boolean
+  /** When set to true, will display an admin ui in the `/api/admin` url.
+   * Can also be set to an arrow function for fine grained control
+   * @example
+   * admin: true
+   * @example
+   * admin: ()=> remult.isAllowed('admin')
+   * @see [allowed](http://remult.dev/docs/allowed.html)
+   */
+  admin?: Allowed
   /** Storage to use for backend methods that use queue */
   queueStorage?: QueueStorage
+  /**
+   * This method is called whenever there is an error in the API lifecycle.
+   *
+   * @param info - Information about the error.
+   * @param info.req - The request object.
+   * @param info.entity - (Optional) The entity metadata associated with the error, if applicable.
+   * @param info.exception - (Optional) The exception object or error that occurred.
+   * @param info.httpStatusCode - The HTTP status code.
+   * @param info.responseBody - The body of the response.
+   * @param info.sendError - A method to send a custom error response. Call this method with the desired HTTP status code and response body.
+   *
+   * @returns A promise that resolves when the error handling is complete.
+   * @example
+   * export const api = remultExpress({
+   *   error: async (e) => {
+   *     if (e.httpStatusCode == 500) {
+   *       e.sendError(500, { message: "An error occurred" })
+   *     }
+   *   }
+   * })
+   */
+  error?: (info: {
+    req: RequestType
+    entity?: EntityMetadata
+    exception?: any
+    httpStatusCode: number
+    responseBody: any
+    sendError: (httpStatusCode: number, body: any) => void
+  }) => Promise<void>
 }
 //[ ] ClassType from TBD is not exported
 //[ ] UserInfo from TBD is not exported
@@ -2375,6 +3177,8 @@ export interface RemultServerOptions<RequestType> {
 //[ ] Remult from TBD is not exported
 //[ ] SubscriptionServer from TBD is not exported
 //[ ] LiveQueryStorage from TBD is not exported
+//[ ] Allowed from TBD is not exported
+//[ ] EntityMetadata from TBD is not exported
 export type SpecificRoute = {
   get(handler: GenericRequestHandler): SpecificRoute
   put(handler: GenericRequestHandler): SpecificRoute
@@ -2396,13 +3200,13 @@ export declare class SseSubscriptionServer implements SubscriptionServer {
 export declare function remultFastify(
   options: RemultServerOptions<FastifyRequest>,
 ): RemultFastifyServer
-//[ ] RemultServerOptions from ./server/expressBridge.js is not exported
+//[ ] RemultServerOptions from ./server/remult-api-server.js is not exported
 export type RemultFastifyServer = FastifyPluginCallback &
   RemultServerCore<FastifyRequest> & {
     withRemult: RemultServer<FastifyRequest>["withRemultAsync"]
   }
-//[ ] RemultServerCore from ./server/expressBridge.js is not exported
-//[ ] RemultServer from ./server/expressBridge.js is not exported
+//[ ] RemultServerCore from ./server/remult-api-server.js is not exported
+//[ ] RemultServer from ./server/remult-api-server.js is not exported
 ```
 
 ## ./remult-hapi.js
@@ -2418,6 +3222,23 @@ export type RemultHapiServer = Plugin<any, any> &
   }
 //[ ] RemultServerCore from ./server/index.js is not exported
 //[ ] RemultServer from ./server/index.js is not exported
+```
+
+## ./remult-hono.js
+
+```ts
+export declare function remultHono(
+  options: RemultServerOptions<Context<Env, "", BlankInput>>,
+): RemultHonoServer
+//[ ] RemultServerOptions from ./server/index.js is not exported
+export type RemultHonoServer = Hono &
+  RemultServerCore<Context<Env, "", BlankInput>> & {
+    withRemult: <T>(
+      c: Context<Env, "", BlankInput>,
+      what: () => Promise<T>,
+    ) => Promise<T>
+  }
+//[ ] RemultServerCore from ./server/index.js is not exported
 ```
 
 ## ./remult-fresh.js
@@ -2440,7 +3261,7 @@ export declare function remultFresh(
   options: RemultServerOptions<FreshRequest>,
   response: FreshResponse,
 ): RemultFresh
-//[ ] RemultServerOptions from ./server/expressBridge.js is not exported
+//[ ] RemultServerOptions from ./server/remult-api-server.js is not exported
 export interface RemultFresh extends RemultServerCore<FreshRequest> {
   handle(req: FreshRequest, ctx: FreshContext): Promise<any>
 }
@@ -2456,6 +3277,10 @@ export declare function remultSveltekit(
 export type RemultSveltekitServer = RemultServerCore<RequestEvent> &
   Handle & {
     withRemult: RemultServer<RequestEvent>["withRemultAsync"]
+    GET: RequestHandler
+    PUT: RequestHandler
+    POST: RequestHandler
+    DELETE: RequestHandler
   }
 //[ ] RemultServerCore from ./server/index.js is not exported
 //[ ] RemultServer from ./server/index.js is not exported
@@ -2476,6 +3301,7 @@ export declare function createPostgresDataProvider(options?: {
   wrapIdentifier?: (name: string) => string
   caseInsensitiveIdentifiers?: boolean
   schema?: string
+  orderByNullsFirst?: boolean
 }): Promise<SqlDatabase>
 //[ ] PoolConfig from TBD is not exported
 export interface PostgresClient extends PostgresCommandSource {
@@ -2490,11 +3316,13 @@ export interface PostgresCommandSource {
   query(queryText: string, values?: any[]): Promise<QueryResult>
 }
 //[ ] QueryResult from TBD is not exported
-export declare class PostgresDataProvider implements SqlImplementation {
+export declare class PostgresDataProvider
+  implements SqlImplementation, CanBuildMigrations
+{
   private pool
   private options?
   supportsJsonColumnType: boolean
-  static getDb(remult?: Remult): ClientBase
+  static getDb(dataProvider?: DataProvider): ClientBase
   entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void>
   getLimitSqlSyntax(limit: number, offset: number): string
   createCommand(): SqlCommand
@@ -2504,21 +3332,28 @@ export declare class PostgresDataProvider implements SqlImplementation {
       wrapIdentifier?: (name: string) => string
       caseInsensitiveIdentifiers?: boolean
       schema?: string
+      orderByNullsFirst?: boolean
     },
   )
+  end(): Promise<void>
+  provideMigrationBuilder(builder: MigrationCode): MigrationBuilder
   wrapIdentifier: (name: any) => any
   ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
+  orderByNullsFirst?: boolean
   transaction(
     action: (dataProvider: SqlImplementation) => Promise<void>,
   ): Promise<void>
 }
-//[ ] Remult from TBD is not exported
+//[ ] DataProvider from TBD is not exported
 //[ ] ClientBase from TBD is not exported
 //[ ] EntityMetadata from TBD is not exported
 //[ ] SqlCommand from TBD is not exported
+//[ ] MigrationCode from TBD is not exported
+//[ ] MigrationBuilder from TBD is not exported
 //[ ] SqlImplementation from TBD is not exported
 export interface PostgresPool extends PostgresCommandSource {
   connect(): Promise<PostgresClient>
+  end(): Promise<void>
 }
 export declare class PostgresSchemaBuilder {
   private pool
@@ -2537,9 +3372,10 @@ export declare class PostgresSchemaBuilder {
   specifiedSchema: string
   constructor(pool: SqlDatabase, schema?: string)
 }
+//[ ] Remult from TBD is not exported
 export declare function preparePostgresQueueStorage(
   sql: SqlDatabase,
-): Promise<import("../server/expressBridge.js").EntityQueueStorage>
+): Promise<import("../server/remult-api-server.js").EntityQueueStorage>
 ```
 
 ## ./postgres/schema-builder.js
@@ -2595,10 +3431,21 @@ export type CustomKnexFilterBuilderFunction = () => Promise<
   (builder: Knex.QueryBuilder) => void
 >
 //[ ] Knex.QueryBuilder from TBD is not exported
-export declare class KnexDataProvider implements DataProvider {
+export declare class KnexDataProvider
+  implements
+    DataProvider,
+    HasWrapIdentifier,
+    SqlCommandFactory,
+    CanBuildMigrations
+{
   knex: Knex
   constructor(knex: Knex)
-  static getDb(remult?: Remult): Knex<any, any[]>
+  end(): Promise<void>
+  provideMigrationBuilder(builder: MigrationCode): MigrationBuilder
+  createCommand(): SqlCommand
+  execute(sql: string): Promise<SqlResult>
+  static getDb(dataProvider?: DataProvider): Knex<any, any[]>
+  wrapIdentifier: (name: string) => string
   getEntityDataProvider(entity: EntityMetadata<any>): EntityDataProvider
   transaction(
     action: (dataProvider: DataProvider) => Promise<void>,
@@ -2607,14 +3454,18 @@ export declare class KnexDataProvider implements DataProvider {
   static filterToRaw<entityType>(
     entity: RepositoryOverloads<entityType>,
     condition: EntityFilter<entityType>,
+    wrapIdentifier?: (name: string) => string,
   ): Promise<(knex: any) => void>
   isProxy?: boolean
   ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
 }
-//[ ] Remult from ../src/context.js is not exported
+//[ ] MigrationCode from ../migrations/migration-types.js is not exported
+//[ ] MigrationBuilder from ../migrations/migration-types.js is not exported
+//[ ] SqlCommand from ../src/sql-command.js is not exported
+//[ ] SqlResult from ../src/sql-command.js is not exported
+//[ ] DataProvider from ../src/data-interfaces.js is not exported
 //[ ] EntityMetadata from ../src/remult3/remult3.js is not exported
 //[ ] EntityDataProvider from ../src/data-interfaces.js is not exported
-//[ ] DataProvider from ../src/data-interfaces.js is not exported
 //[ ] EntityFilter from ../src/remult3/remult3.js is not exported
 //[ ] RepositoryOverloads from ../src/remult3/RepositoryImplementation.js is not exported
 export declare class KnexSchemaBuilder {
@@ -2622,14 +3473,26 @@ export declare class KnexSchemaBuilder {
   verifyStructureOfAllEntities(remult?: Remult): Promise<void>
   ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
   createIfNotExist(entity: EntityMetadata): Promise<void>
-  addColumnIfNotExist<T extends EntityMetadata>(
-    entity: T,
-    c: (e: T) => FieldMetadata,
+  createTableKnexCommand(
+    entity: EntityMetadata<any>,
+    e: EntityDbNamesBase,
+  ): Knex.SchemaBuilder
+  addColumnIfNotExist(
+    entity: EntityMetadata,
+    c: (e: EntityMetadata) => FieldMetadata,
   ): Promise<void>
+  createColumnKnexCommand(
+    e: EntityDbNamesBase,
+    col: FieldMetadata<any, any>,
+    colName: string,
+  ): Knex.SchemaBuilder
   verifyAllColumns<T extends EntityMetadata>(entity: T): Promise<void>
   additionalWhere: string
   constructor(knex: Knex)
 }
+//[ ] Remult from ../src/context.js is not exported
+//[ ] EntityDbNamesBase from ../src/filter/filter-consumer-bridge-to-sql-request.js is not exported
+//[ ] Knex.SchemaBuilder from TBD is not exported
 ```
 
 ## ./remult-mongo.js
@@ -2648,7 +3511,7 @@ export declare class MongoDataProvider implements DataProvider {
   )
   session?: ClientSession
   disableTransactions: boolean
-  static getDb(remult?: Remult): {
+  static getDb(dataProvider?: DataProvider): {
     db: Db
     session: ClientSession
   }
@@ -2668,10 +3531,9 @@ export declare class MongoDataProvider implements DataProvider {
       }
   >
 }
-//[ ] Remult from ./index.js is not exported
+//[ ] DataProvider from ./index.js is not exported
 //[ ] EntityMetadata from ./index.js is not exported
 //[ ] EntityDataProvider from ./index.js is not exported
-//[ ] DataProvider from ./index.js is not exported
 //[ ] RepositoryOverloads from ./src/remult3/RepositoryImplementation.js is not exported
 //[ ] EntityFilter from ./index.js is not exported
 ```
@@ -2679,24 +3541,129 @@ export declare class MongoDataProvider implements DataProvider {
 ## ./remult-sql-js.js
 
 ```ts
-export declare class SqlJsDataProvider implements SqlImplementation {
-  private db
+export declare class SqlJsDataProvider extends SqliteCoreDataProvider {
   constructor(db: Promise<Database>)
+}
+```
+
+## ./remult-sqlite-core.js
+
+```ts
+export declare class SqliteCoreDataProvider
+  implements SqlImplementation, CanBuildMigrations
+{
+  createCommand: () => SqlCommand
+  end: () => Promise<void>
+  doesNotSupportReturningSyntax: boolean
+  constructor(
+    createCommand: () => SqlCommand,
+    end: () => Promise<void>,
+    doesNotSupportReturningSyntax?: boolean,
+  )
+  orderByNullsFirst?: boolean
   getLimitSqlSyntax(limit: number, offset: number): string
   afterMutation?: VoidFunction
-  createCommand(): SqlCommand
+  provideMigrationBuilder(builder: MigrationCode): MigrationBuilder
   transaction(action: (sql: SqlImplementation) => Promise<void>): Promise<void>
   entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void>
   ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
   dropTable(entity: EntityMetadata): Promise<void>
   private addColumnSqlSyntax
-  createTable(entity: EntityMetadata<any>): Promise<void>
+  createTableIfNotExist(entity: EntityMetadata<any>): Promise<void>
   supportsJsonColumnType?: boolean
-  wrapIdentifier?(name: string): string
+  private getCreateTableSql
+  wrapIdentifier(name: string): string
 }
 //[ ] SqlCommand from ./src/sql-command.js is not exported
+//[ ] MigrationCode from ./migrations/migration-types.js is not exported
+//[ ] MigrationBuilder from ./migrations/migration-types.js is not exported
 //[ ] SqlImplementation from ./src/sql-command.js is not exported
 //[ ] EntityMetadata from ./src/remult3/remult3.js is not exported
+```
+
+## ./remult-better-sqlite3.js
+
+```ts
+export declare class BetterSqlite3DataProvider extends SqliteCoreDataProvider {
+  constructor(db: Database)
+}
+export declare class BetterSqlite3SqlResult implements SqlResult {
+  private result
+  constructor(result: any[])
+  rows: any[]
+  getColumnKeyInResultForIndexInSelect(index: number): string
+}
+```
+
+## ./remult-sqlite3.js
+
+```ts
+export declare class Sqlite3DataProvider extends SqliteCoreDataProvider {
+  constructor(db: Database)
+}
+```
+
+## ./remult-turso.js
+
+```ts
+export declare class TursoDataProvider extends SqliteCoreDataProvider {
+  private client
+  constructor(client: Pick<Client, "execute">)
+  transaction(action: (sql: SqlImplementation) => Promise<void>): Promise<void>
+}
+//[ ] SqlImplementation from ./index.js is not exported
+```
+
+## ./remult-bun-sqlite.js
+
+```ts
+export declare class BunSqliteDataProvider extends SqliteCoreDataProvider {
+  constructor(db: Database)
+}
+type Database = {
+  close(): void
+  query(sql: string): {
+    all(args?: any): any[]
+  }
+}
+```
+
+## ./migrations/index.js
+
+```ts
+export declare function generateMigrations(options: {
+  entities: any[]
+  dataProvider:
+    | DataProvider
+    | Promise<DataProvider>
+    | (() => Promise<DataProvider | undefined>)
+  migrationsFolder?: string
+  snapshotFile?: string
+  migrationsTSFile?: string
+  endConnection?: boolean
+}): Promise<boolean>
+//[ ] DataProvider from TBD is not exported
+export declare function migrate(options: {
+  migrations: Migrations
+  dataProvider:
+    | DataProvider
+    | Promise<DataProvider>
+    | (() => Promise<DataProvider | undefined>)
+  migrationsTable?: string
+  endConnection?: boolean
+  beforeMigration?: (info: { index: number }) => void | Promise<void>
+  afterMigration?: (info: {
+    index: number
+    duration: number
+  }) => void | Promise<void>
+}): Promise<void>
+export type Migrations = Record<
+  number,
+  (utils: MigrationUtils) => Promise<unknown>
+>
+export type MigrationUtils = {
+  sql(sql: string): Promise<unknown>
+}
 ```
 
 ## ./ably.js
@@ -2776,6 +3743,9 @@ export declare function decorateColumnSettings<valueType>(
   remult: Remult,
 ): FieldOptions<any, valueType>
 //[ ] FieldOptions from TBD is not exported
+export const flags: {
+  error500RetryCount: number
+}
 export declare function getControllerRef<fieldsContainerType>(
   container: fieldsContainerType,
   remultArg?: Remult,
@@ -2822,4 +3792,22 @@ export type RemultNuxtServer = RemultServerCore<H3Event> &
   }
 //[ ] RemultServerCore from ./server/index.js is not exported
 //[ ] RemultServer from ./server/index.js is not exported
+```
+
+## ./remult-solid-start.js
+
+```ts
+export declare function remultSolidStart(
+  options: RemultServerOptions<RequestEvent>,
+): RemultSolidStartServer
+//[ ] RemultServerOptions from ./server/index.js is not exported
+export type RemultSolidStartServer = RemultServerCore<RequestEvent> & {
+  withRemult<T>(what: () => Promise<T>): Promise<T>
+  GET: RequestHandler
+  PUT: RequestHandler
+  POST: RequestHandler
+  DELETE: RequestHandler
+}
+//[ ] RemultServerCore from ./server/index.js is not exported
+type RequestHandler = (event: RequestEvent) => Promise<Response>
 ```

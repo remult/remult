@@ -4,50 +4,205 @@ import type {
   EntityFilter,
   EntityMetadata,
   FieldsMetadata,
+  MembersOnly,
   RelationOptions,
 } from '../remult3/remult3.js'
 
 import { getEntityRef, getEntitySettings } from '../remult3/getEntityRef.js'
 import { getRelationFieldInfo } from '../remult3/relationInfoMember.js'
+import type { ErrorInfo } from '../data-interfaces.js'
 
+/**
+ * The `Filter` class is a helper class that focuses on filter-related concerns. It provides methods
+ * for creating and applying filters in queries.
+ */
 export class Filter {
-  constructor(private apply: (add: FilterConsumer) => void) {}
-  __applyToConsumer(add: FilterConsumer) {
-    this.apply(add)
+  //@internal
+  static throwErrorIfFilterIsEmpty(
+    where: EntityFilter<any>,
+    methodName: string,
+  ) {
+    if (Filter.isFilterEmpty(where)) {
+      throw {
+        message: `${methodName}: requires a filter to protect against accidental delete/update of all rows`,
+        httpStatusCode: 400,
+      } satisfies ErrorInfo
+    }
   }
-  static async resolve<entityType>(
-    filter:
-      | EntityFilter<entityType>
-      | (() => EntityFilter<entityType> | Promise<EntityFilter<entityType>>),
-  ): Promise<EntityFilter<entityType>> {
-    if (typeof filter === 'function') return await filter()
-    return filter
+  //@internal
+  static isFilterEmpty(where: EntityFilter<unknown>) {
+    if (where.$and) {
+      for (const a of where.$and) {
+        if (!Filter.isFilterEmpty(a)) {
+          return false
+        }
+      }
+    }
+    if (where.$or) {
+      for (const a of where.$or) {
+        if (Filter.isFilterEmpty(a)) {
+          return true
+        }
+      }
+      return false
+    }
+    if (
+      Object.keys(where).filter((x) => !['$or', '$and'].includes(x)).length == 0
+    ) {
+      return true
+    }
+
+    return false
   }
+
+  /**
+   * Retrieves precise values for each property in a filter for an entity.
+   * @template entityType The type of the entity being filtered.
+   * @param metadata The metadata of the entity being filtered.
+   * @param filter The filter to analyze.
+   * @returns A promise that resolves to a FilterPreciseValues object containing the precise values for each property.
+   * @example
+   * const preciseValues = await Filter.getPreciseValues(meta, {
+   *   status: { $ne: 'active' },
+   *   $or: [
+   *     { customerId: ["1", "2"] },
+   *     { customerId: "3" }
+   *   ]
+   * });
+   * console.log(preciseValues);
+   * // Output:
+   * // {
+   * //   "customerId": ["1", "2", "3"], // Precise values inferred from the filter
+   * //   "status": undefined,           // Cannot infer precise values for 'status'
+   * // }
+  
+   */
+  static async getPreciseValues<entityType>(
+    metadata: EntityMetadata<entityType>,
+    filter: EntityFilter<entityType>,
+  ): Promise<FilterPreciseValues<entityType>> {
+    const result = new preciseValuesCollector()
+    await Filter.fromEntityFilter(metadata, filter).__applyToConsumer(result)
+    return result.preciseValues
+  }
+  /**
+   * Retrieves precise values for each property in a filter for an entity.
+   * @template entityType The type of the entity being filtered.
+   * @param metadata The metadata of the entity being filtered.
+   * @param filter The filter to analyze.
+   * @returns A promise that resolves to a FilterPreciseValues object containing the precise values for each property.
+   * @example
+   * const preciseValues = await where.getPreciseValues();
+   * console.log(preciseValues);
+   * // Output:
+   * // {
+   * //   "customerId": ["1", "2", "3"], // Precise values inferred from the filter
+   * //   "status": undefined,           // Cannot infer precise values for 'status'
+   * // }
+  
+   */
+  async getPreciseValues<entityType>(): Promise<
+    FilterPreciseValues<entityType>
+  > {
+    const result = new preciseValuesCollector()
+    await this.__applyToConsumer(result)
+    return result.preciseValues
+  }
+  /**
+   * Creates a custom filter. Custom filters are evaluated on the backend, ensuring security and efficiency.
+   * When the filter is used in the frontend, only its name is sent to the backend via the API,
+   * where the filter gets translated and applied in a safe manner.
+   *
+   * @template entityType The entity type for the filter.
+   * @param {function(): EntityFilter<entityType>} translator A function that returns an `EntityFilter`.
+   * @param {string} [key] An optional unique identifier for the custom filter.
+   * @returns {function(): EntityFilter<entityType>} A function that returns an `EntityFilter` of type `entityType`.
+   *
+   * @example
+   *  class Order {
+   *  //...
+   *  static activeOrdersFor = Filter.createCustom<Order, { year: number }>(
+   *    async ({ year }) => {
+   *      return {
+   *        status: ['created', 'confirmed', 'pending', 'blocked', 'delayed'],
+   *        createdAt: {
+   *          $gte: new Date(year, 0, 1),
+   *          $lt: new Date(year + 1, 0, 1),
+   *        },
+   *      }
+   *    },
+   *  )
+   *}
+   * // Usage
+   * await repo(Order).find({
+   *  where: Order.activeOrders({ year }),
+   *})
+
+
+   * @see
+   * [Sql filter and Custom filter](/docs/custom-filter.html)
+   * [Filtering and Relations](/docs/filtering-and-relations.html)
+   */
 
   //@ts-ignore
   static createCustom<entityType>(
-    rawFilterTranslator: (
+    translator: (
       unused: never,
       r: Remult,
     ) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>,
     key?: string,
   ): (() => EntityFilter<entityType>) & customFilterInfo<entityType>
+  /**
+   * Creates a custom filter. Custom filters are evaluated on the backend, ensuring security and efficiency.
+   * When the filter is used in the frontend, only its name is sent to the backend via the API,
+   * where the filter gets translated and applied in a safe manner.
+   *
+   * @template entityType The entity type for the filter.
+   * @param {function(): EntityFilter<entityType>} translator A function that returns an `EntityFilter`.
+   * @param {string} [key] An optional unique identifier for the custom filter.
+   * @returns {function(): EntityFilter<entityType>} A function that returns an `EntityFilter` of type `entityType`.
+   *
+   * @example
+   *  class Order {
+   *  //...
+   *  static activeOrdersFor = Filter.createCustom<Order, { year: number }>(
+   *    async ({ year }) => {
+   *      return {
+   *        status: ['created', 'confirmed', 'pending', 'blocked', 'delayed'],
+   *        createdAt: {
+   *          $gte: new Date(year, 0, 1),
+   *          $lt: new Date(year + 1, 0, 1),
+   *        },
+   *      }
+   *    },
+   *  )
+   *}
+   * // Usage
+   * await repo(Order).find({
+   *  where: Order.activeOrders({ year }),
+   *})
+
+   
+   * @see
+   * [Sql filter and Custom filter](/docs/custom-filter.html)
+   * [Filtering and Relations](/docs/filtering-and-relations.html)
+   */
   static createCustom<entityType, argsType>(
-    rawFilterTranslator: (
+    translator: (
       args: argsType,
       r: Remult,
     ) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>,
     key?: string,
   ): ((y: argsType) => EntityFilter<entityType>) & customFilterInfo<entityType>
   static createCustom<entityType, argsType>(
-    rawFilterTranslator: (
+    translator: (
       args: argsType,
       r: Remult,
     ) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>,
     key = '',
   ): ((y: argsType) => EntityFilter<entityType>) &
     customFilterInfo<entityType> {
-    let rawFilterInfo = { key: key, rawFilterTranslator }
+    let rawFilterInfo = { key: key, rawFilterTranslator: translator }
     return Object.assign(
       (x: any) => {
         let z = {}
@@ -62,6 +217,66 @@ export class Filter {
     ) as ((y: argsType) => EntityFilter<entityType>) &
       customFilterInfo<entityType>
   }
+
+  /**
+   * Translates an `EntityFilter` to a plain JSON object that can be stored or transported.
+   *
+   * @template T The entity type for the filter.
+   * @param {EntityMetadata<T>} entityDefs The metadata of the entity associated with the filter.
+   * @param {EntityFilter<T>} where The `EntityFilter` to be translated.
+   * @returns {any} A plain JSON object representing the `EntityFilter`.
+   *
+   * @example
+   * // Assuming `Task` is an entity class
+   * const jsonFilter = Filter.entityFilterToJson(Task, { completed: true });
+   * // `jsonFilter` can now be stored or transported as JSON
+   */
+  static entityFilterToJson<T>(
+    entityDefs: EntityMetadata<T>,
+    where: EntityFilter<T>,
+  ): any {
+    return Filter.fromEntityFilter(entityDefs, where).toJson()
+  }
+
+  /**
+   * Translates a plain JSON object back into an `EntityFilter`.
+   *
+   * @template T The entity type for the filter.
+   * @param {EntityMetadata<T>} entityDefs The metadata of the entity associated with the filter.
+   * @param {any} packed The plain JSON object representing the `EntityFilter`.
+   * @returns {EntityFilter<T>} The reconstructed `EntityFilter`.
+   *
+   * @example
+   * // Assuming `Task` is an entity class and `jsonFilter` is a JSON object representing an EntityFilter
+   * const taskFilter = Filter.entityFilterFromJson(Task, jsonFilter);
+   * // Using the reconstructed `EntityFilter` in a query
+   * const tasks = await remult.repo(Task).find({ where: taskFilter });
+   * for (const task of tasks) {
+   *   // Do something for each task based on the filter
+   * }
+   */
+  static entityFilterFromJson<T>(
+    entityDefs: EntityMetadata<T>,
+    packed: any,
+  ): EntityFilter<T> {
+    return buildFilterFromRequestParameters(entityDefs, {
+      get: (key: string) => packed[key],
+    })
+  }
+  /**
+   * Converts an `EntityFilter` to a `Filter` that can be used by the `DataProvider`. This method is
+   * mainly used internally.
+   *
+   * @template T The entity type for the filter.
+   * @param {EntityMetadata<T>} entity The metadata of the entity associated with the filter.
+   * @param {EntityFilter<T>} whereItem The `EntityFilter` to be converted.
+   * @returns {Filter} A `Filter` instance that can be used by the `DataProvider`.
+   *
+   * @example
+   * // Assuming `Task` is an entity class and `taskFilter` is an EntityFilter
+   * const filter = Filter.fromEntityFilter(Task, taskFilter);
+   * // `filter` can now be used with the DataProvider
+   */
   static fromEntityFilter<T>(
     entity: EntityMetadata<T>,
     whereItem: EntityFilter<T>,
@@ -167,27 +382,37 @@ export class Filter {
     }
     return new AndFilter(...result)
   }
+  constructor(private apply: (add: FilterConsumer) => void) {}
+  __applyToConsumer(add: FilterConsumer) {
+    this.apply(add)
+  }
+  /**
+   * Resolves an entity filter.
+   *
+   * This method takes a filter which can be either an instance of `EntityFilter`
+   * or a function that returns an instance of `EntityFilter` or a promise that
+   * resolves to an instance of `EntityFilter`. It then resolves the filter if it
+   * is a function and returns the resulting `EntityFilter`.
+   *
+   * @template entityType The type of the entity that the filter applies to.
+   * @param {EntityFilter<entityType> | (() => EntityFilter<entityType> | Promise<EntityFilter<entityType>>)} filter The filter to resolve.
+   * @returns {Promise<EntityFilter<entityType>>} The resolved entity filter.
+   */
+  static async resolve<entityType>(
+    filter:
+      | EntityFilter<entityType>
+      | (() => EntityFilter<entityType> | Promise<EntityFilter<entityType>>),
+  ): Promise<EntityFilter<entityType>> {
+    if (typeof filter === 'function') return await filter()
+    return filter
+  }
 
   toJson() {
     let r = new FilterSerializer()
     this.__applyToConsumer(r)
     return r.result
   }
-  static entityFilterToJson<T>(
-    entityDefs: EntityMetadata<T>,
-    where: EntityFilter<T>,
-  ) {
-    return Filter.fromEntityFilter(entityDefs, where).toJson()
-  }
-  static entityFilterFromJson<T>(
-    entityDefs: EntityMetadata<T>,
-    packed: any,
-  ): EntityFilter<T> {
-    return buildFilterFromRequestParameters(entityDefs, {
-      get: (key: string) => packed[key],
-    })
-  }
-
+  //@internal
   static async translateCustomWhere<T>(
     r: Filter,
     entity: EntityMetadata<T>,
@@ -227,7 +452,7 @@ class filterHelper {
   processVal(val: any) {
     let ei = getEntitySettings(this.metadata.valueType, false)
     if (ei) {
-      if (!val) {
+      if (val === undefined || val === null) {
         if (val === null && !this.metadata.allowNull) {
           const rel = getRelationFieldInfo(this.metadata)
           if (rel?.type === 'reference')
@@ -519,7 +744,20 @@ export function buildFilterFromRequestParameters(
     get: (key: string) => any
   },
 ): EntityFilter<any> {
-  let where: EntityFilter<any>[] = []
+  let where: EntityFilter<any> = {}
+
+  function addAnd(what: EntityFilter<any>) {
+    if (!where.$and) {
+      where.$and = []
+    }
+    where.$and.push(what)
+  }
+  function addToFilterObject(key: string, val: any) {
+    if (where[key] === undefined) where[key] = val
+    else {
+      addAnd({ [key]: val })
+    }
+  }
 
   ;[...entity.fields].forEach((col) => {
     function addFilter(
@@ -544,7 +782,7 @@ export function buildFilterFromRequestParameters(
           }
           let f = theFilter(theVal)
           if (f !== undefined) {
-            where.push({ [col.key]: f })
+            addToFilterObject(col.key, f)
           }
         }
         if (!jsonArray && val instanceof Array) {
@@ -576,10 +814,10 @@ export function buildFilterFromRequestParameters(
         case 'y':
         case 'true':
         case 'yes':
-          where.push({ [col.key]: null })
+          addToFilterObject(col.key, null)
           break
         default:
-          where.push({ [col.key]: { $ne: null } })
+          addToFilterObject(col.key, { $ne: null })
           break
       }
     }
@@ -597,11 +835,17 @@ export function buildFilterFromRequestParameters(
         }),
       ),
     }))
-    if (or.length == 1) where.push(or[0])
-    else
-      where.push({
+    if (or.length == 1) {
+      if (!where.$or) {
+        where.$or = or[0].$or
+      } else {
+        where.$or.push(or[0].$or)
+      }
+    } else {
+      addAnd({
         $and: or,
       })
+    }
   }
 
   for (const key in entity.entityType) {
@@ -615,7 +859,7 @@ export function buildFilterFromRequestParameters(
       if (custom !== undefined) {
         const addItem = (item: any) => {
           if (item[customArrayToken] != undefined) item = item[customArrayToken]
-          where.push({ [customUrlToken + key]: item })
+          addToFilterObject(customUrlToken + key, item)
         }
         if (Array.isArray(custom)) {
           custom.forEach((item) => addItem(item))
@@ -623,8 +867,7 @@ export function buildFilterFromRequestParameters(
       }
     }
   }
-  if (where.length == 1) return where[0]
-  return { $and: where }
+  return where
 
   function separateArrayFromInnerArray(val: any) {
     if (!Array.isArray(val)) return [val]
@@ -765,5 +1008,148 @@ export function __updateEntityBasedOnWhere<T>(
   }
 }
 
-// toRaw of default remult threw and exception
-// toRaw didn't respect
+/**
+ * A mapping of property names to arrays of precise values for those properties.
+ * @example
+ * const preciseValues = await getPreciseValues(meta, {
+ *   status: { $ne: 'active' },
+ *   $or: [
+ *     { customerId: ["1", "2"] },
+ *     { customerId: "3" }
+ *   ]
+ * });
+ * console.log(preciseValues);
+ * // Output:
+ * // {
+ * //   "customerId": ["1", "2", "3"], // Precise values inferred from the filter
+ * //   "status": undefined,           // Cannot infer precise values for 'status'
+ * // }
+ */
+export type FilterPreciseValues<entityType> = {
+  [Properties in keyof MembersOnly<entityType>]?: Partial<
+    entityType[Properties]
+  >[]
+}
+class preciseValuesCollector<entityType> implements FilterConsumer {
+  private rawValues: Record<
+    string,
+    {
+      field: FieldMetadata
+      values: any[]
+      bad: boolean
+    }
+  > = {}
+  preciseValues: {
+    [Properties in keyof entityType]?: entityType[Properties][]
+  } = new Proxy<any>(this.rawValues, {
+    get: (target, prop) => {
+      if (prop in target) {
+        let result = target[prop as string]
+        if (result.bad) return undefined
+        if (result.values.length > 0) {
+          const relInfo = getRelationFieldInfo(result.field)
+          if (relInfo) {
+            if (relInfo.type === 'reference') {
+              return result.values.map((x) => {
+                return relInfo.toRepo.metadata.idMetadata.getIdFilter(x)
+              })
+            } else
+              throw new Error(
+                'Only relations toOne without field are supported.',
+              )
+          }
+          return result.values
+        }
+      }
+      return undefined
+    },
+  })
+
+  ok(col: FieldMetadata, ...val: any[]) {
+    let x = this.rawValues[col.key]
+    if (!x) {
+      this.rawValues[col.key] = {
+        field: col,
+        bad: false,
+        values: [...val],
+      }
+    } else {
+      x.values.push(...val.filter((y) => !x.values.includes(y)))
+    }
+  }
+  notOk(col: FieldMetadata) {
+    let x = this.rawValues[col.key]
+    if (!x) {
+      this.rawValues[col.key] = {
+        field: col,
+        bad: true,
+        values: [],
+      }
+    } else {
+      x.bad = true
+    }
+  }
+  or(orElements: Filter[]) {
+    const result = orElements.map((or) => {
+      let x = new preciseValuesCollector<entityType>()
+      or.__applyToConsumer(x)
+      return x
+    })
+    for (const or of result) {
+      for (const key in or.rawValues) {
+        if (Object.prototype.hasOwnProperty.call(or.rawValues, key)) {
+          const element = or.rawValues[key]
+          if (element) {
+            if (element.bad) this.notOk(element.field)
+            else {
+              this.ok(element.field, ...element.values)
+            }
+          }
+        }
+      }
+    }
+    for (const key in this.rawValues) {
+      if (Object.prototype.hasOwnProperty.call(this.rawValues, key)) {
+        for (const r of result) {
+          const element = r.rawValues[key]
+          if (!element) this.notOk(this.rawValues[key].field)
+        }
+      }
+    }
+  }
+  isEqualTo(col: FieldMetadata<any, any>, val: any): void {
+    this.ok(col, val)
+  }
+  isDifferentFrom(col: FieldMetadata<any, any>, val: any): void {
+    this.notOk(col)
+  }
+  isNull(col: FieldMetadata<any, any>): void {
+    this.ok(col, null)
+  }
+  isNotNull(col: FieldMetadata<any, any>): void {
+    this.notOk(col)
+  }
+  isGreaterOrEqualTo(col: FieldMetadata<any, any>, val: any): void {
+    this.notOk(col)
+  }
+  isGreaterThan(col: FieldMetadata<any, any>, val: any): void {
+    this.notOk(col)
+  }
+  isLessOrEqualTo(col: FieldMetadata<any, any>, val: any): void {
+    this.notOk(col)
+  }
+  isLessThan(col: FieldMetadata<any, any>, val: any): void {
+    this.notOk(col)
+  }
+  containsCaseInsensitive(col: FieldMetadata<any, any>, val: any): void {
+    this.notOk(col)
+  }
+  notContainsCaseInsensitive(col: FieldMetadata<any, any>, val: any): void {
+    this.notOk(col)
+  }
+  isIn(col: FieldMetadata<any, any>, val: any[]): void {
+    this.ok(col, ...val)
+  }
+  custom(key: string, customItem: any): void {}
+  databaseCustom(databaseCustom: any): void {}
+}

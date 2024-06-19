@@ -8,7 +8,7 @@ Since our database may eventually contain a lot of tasks, it make sense to use a
 
 Let's limit the number of fetched tasks to `20`.
 
-In the `useEffect` hook defined in the 'Todo` component, pass an `options` argument to the `find` method call and set its `limit` property to 20.
+In the `useEffect` hook defined in the `Todo` component, pass an `options` argument to the `find` method call and set its `limit` property to 20.
 
 ```ts{9-13}
 // src/components/todo.tsx

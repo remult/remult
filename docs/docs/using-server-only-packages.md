@@ -8,7 +8,7 @@ This article will walk through such a scenario and how it can be solved.
 
 For this example, our customer would like us to document each call to the `updatePriceOnBackend` method in a log file.
 
-Our first instinct would be to add in the `products.component.ts` file an import to `fs` (Node JS file system component) and write the following code:
+Our first instinct would be to add in the `products.controller.ts` file an import to `fs` (Node JS file system component) and write the following code:
 
 ```ts{1,10}
 import * as fs from 'fs';
@@ -28,7 +28,7 @@ static async updatePriceOnBackend(priceToUpdate:number,remult?:Remult){
 As soon as we do that, we'll get the following errors on the `ng-serve` terminal
 
 ```sh
-ERROR in ./src/app/products/products.component.ts
+ERROR in ./src/app/products/products.controller.ts
 Module not found: Error: Can't resolve 'fs' in 'C:\try\test19\my-project\src\app\products'
 i ｢wdm｣: Failed to compile.
 ```
@@ -41,16 +41,41 @@ There are two ways to handle this:
 
 ## Solution 1 - exclude from bundler
 
-### Option with `vite`
+::: tabs
 
-If you are using `vite` you can add a plugin to remove all `@BackendMethod` from your frontend code.
-Simply add [vite-plugin-stripper](https://www.kitql.dev/docs/tools/07_vite-plugin-stripper) to your project and configure it like this:
+== vite
+
+### Option 1 - exclude in `vite.config`
+
+Instruct vite to exclude the `server-only` packages from the bundle
+
+<!-- prettier-ignore-start -->
+```ts
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+// https://vitejs.dev/config/
+export default defineConfig({
+  plugins: [react()],
+  build: {    // [!code ++]
+    rollupOptions: {      // [!code ++]
+      external: ['fs', 'nodemailer', 'node-fetch'], // [!code ++]
+    }, // [!code ++]
+  }, // [!code ++]
+  optimizeDeps: {    // [!code ++]
+    exclude: ['fs', 'nodemailer', 'node-fetch'], // [!code ++]
+  }, // [!code ++]
+})
+```
+<!-- prettier-ignore-end -->
+
+### Option 2 - `vite-plugin-stripper`
+
+[vite-plugin-stripper](https://www.kitql.dev/docs/tools/07_vite-plugin-stripper) is a `vite` plugin that can be used to remove contents of methods with the `@BackendMethod` decorator.
 
 ```bash
 npm i --save-dev vite-plugin-stripper
 ```
-
-::: code-group
 
 ```ts [vite.config.ts]
 import { defineConfig } from 'vite'
@@ -64,61 +89,19 @@ export default defineConfig({
 })
 ```
 
-:::
+== Webpack and Angular version <=16
+Instruct `webpack` not to include the `fs` package in the `frontend` bundle by adding the following JSON to the main section of the project's `package.json` file.
+_package.json_
 
-That's it!
-
-### Option without `vite-plugin-stripper`
-
-#### Step 1 - replace the File level import with an import in the specific backend method:
-
-```ts{1,5}
-// import * as fs from 'fs'; <-- REMOVE THIS LINE
-.....
-@BackendMethod({allowed:true})
-static async updatePriceOnBackend(priceToUpdate:number,remult?:Remult){
-  const fs = await import('fs');
-  let products = await remult.repo(Products).find();
-  for (const p of products) {
-      p.price.value += priceToUpdate;
-      await p.save();
-  }
-  fs.appendFileSync('./logs/log.txt', new Date() + " " + remult.user.name + " update price\n");
+```json
+"browser": {
+   "jsonwebtoken": false
 }
 ```
 
-#### Step 2 - Exclude the package from the bundler:
+- note that you'll need to restart the react/angular dev server.
 
-- If you're using `vite` instruct `vite` not to include the `fs` package in the `frontend` bundle by adding the following JSON to the `vite-config.ts` file:
-
-  ```ts{7-11}
-  import { defineConfig } from "vite"
-  import react from "@vitejs/plugin-react"
-
-  // https://vitejs.dev/config/
-  export default defineConfig({
-    plugins: [react()],
-    build: {
-      rollupOptions: {
-        external: ["fs", "nodemailer", "node-fetch"],
-      },
-    },
-  })
-  ```
-
-- If you're using `webpack` (create-react-app or Angular) Instruct `webpack` not to include the `fs` package in the `frontend` bundle by adding the following JSON to the main section of the project's `package.json` file.
-  _package.json_
-  ```json
-  "browser": {
-     "jsonwebtoken": false
-  }
-  ```
-
-* note that you'll need to restart the react/angular dev server.
-
-### Angular 17
-
-If you're using Angular 17,
+== Angular 17
 
 1. You'll need to either remove `types` entry in the `tsconfig.app.json` or add the types you need to that types array.
 2. In `angular.json` you'll need to add an entry called `externalDependencies` to the `architect/build/options` key for your project
@@ -151,8 +134,10 @@ If you're using Angular 17,
                  "zone.js"
                ],
                //...
-             }}}}}}
+
    ```
+
+   :::
 
 ## Solution 2 - abstract the call
 
@@ -160,8 +145,12 @@ Abstract the call and separate it to backend only files and `inject` it only whe
 
 **Step 1**, abstract the call - We'll remove the import to `fs,` and instead of calling specific `fs` methods, we'll define and call a method `writeToLog` that describes what we are trying to do:
 
-```ts{1,11,13}
-//import * as fs from 'fs';
+<!-- prettier-ignore-start -->
+```ts
+import * as fs from 'fs'; // [!code --]
+
+// We'll define an abstract `writeTiLog` function and use it in our code
+static writeToLog:(textToWrite:string)=>void; // [!code ++]
 .....
 @BackendMethod({allowed:true})
 static async updatePriceOnBackend(priceToUpdate:number,remult?:Remult){
@@ -170,11 +159,13 @@ static async updatePriceOnBackend(priceToUpdate:number,remult?:Remult){
       p.price.value += priceToUpdate;
       await p.save();
   }
-  //fs.appendFileSync('./logs/log.txt', new Date() + " " + remult.user.name + " update price\n");
-  ProductsComponent.writeToLog(new Date() + " " + remult.user.name + " update price\n");
+  fs.appendFileSync('./logs/log.txt', new Date() + " " + remult.user.name + " update price\n");  // [!code --]
+  ProductsController.writeToLog(new Date() + " " + remult.user.name + " update price\n"); // [!code ++]
 }
-static writeToLog:(textToWrite:string)=>void;
+
 ```
+
+<!-- prettier-ignore-end -->
 
 The method `writeToLog` that we've defined serves as a place holder which we'll assign to in the remult of the server.
 It receives one parameter of type `string` and returns `void`.
@@ -184,8 +175,8 @@ In the `/src/app/server` folder, we'll add a file called `log-writer.ts` with th
 
 ```ts{3}
 import * as fs from 'fs';
-import { ProductsComponent } from '../products/products.component';
-ProductsComponent.writeToLog = what => fs.appendFileSync('./logs/log.txt', what);
+import { ProductsController } from '../products/products.controller';
+ProductsController.writeToLog = what => fs.appendFileSync('./logs/log.txt', what);
 ```
 
 Here we set the implementation of the `writeToLog` method with the actual call to the `fs` module.
@@ -209,3 +200,7 @@ That's it - it'll work now.
 ::: tip
 If you're still getting an error - check that you have a `logs` folder on your project :)
 :::
+
+## Additional Resources
+
+Check out this [YouTube video](https://www.youtube.com/watch?v=9lWQwAUcKEM&t=1035s) where I implemented a similar solution when running into the same problem using `bcrypt`

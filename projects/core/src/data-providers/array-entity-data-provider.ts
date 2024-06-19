@@ -16,7 +16,6 @@ import {
 } from '../filter/filter-interfaces.js'
 import type { EntityFilter, EntityMetadata } from '../remult3/remult3.js'
 
-//@internal
 export class ArrayEntityDataProvider implements EntityDataProvider {
   static rawFilter(filter: CustomArrayFilter): EntityFilter<any> {
     return {
@@ -25,22 +24,18 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
       },
     }
   }
-  //@internal
-  private rows: any[]
+
   constructor(
     private entity: EntityMetadata,
-    rows?: any[],
-  ) {
-    if (rows === undefined) this.rows = []
-    else this.rows = rows
-  }
+    private rows: () => any[],
+  ) {}
   //@internal
   private __names: EntityDbNamesBase
   //@internal
   async init() {
     if (this.__names) return this.__names
-    this.__names = await dbNamesOf(this.entity)
-    for (const r of this.rows) {
+    this.__names = await dbNamesOf(this.entity, (x) => x)
+    for (const r of this.rows()) {
       this.verifyThatRowHasAllNotNullColumns(r, this.__names)
     }
     return this.__names
@@ -62,7 +57,7 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
     }
   }
   async count(where?: Filter): Promise<number> {
-    let rows = this.rows
+    let rows = this.rows()
     const names = await this.init()
     let j = 0
     for (let i = 0; i < rows.length; i++) {
@@ -77,7 +72,7 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
     return j
   }
   async find(options?: EntityDataProviderFindOptions): Promise<any[]> {
-    let rows = this.rows
+    let rows = this.rows()
     const dbNames = await this.init()
     if (options) {
       if (options.where) {
@@ -132,8 +127,8 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
     const names = await this.init()
     let idMatches = this.idMatches(id, names)
     let keys = Object.keys(data)
-    for (let i = 0; i < this.rows.length; i++) {
-      let r = this.rows[i]
+    for (let i = 0; i < this.rows().length; i++) {
+      let r = this.rows()[i]
       if (idMatches(r)) {
         let newR = { ...r }
         for (const f of this.entity.fields) {
@@ -144,22 +139,26 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
           }
         }
         this.verifyThatRowHasAllNotNullColumns(newR, names)
-        this.rows[i] = newR
-        return Promise.resolve(this.translateFromJson(this.rows[i], names))
+        this.rows()[i] = newR
+        return Promise.resolve(this.translateFromJson(this.rows()[i], names))
       }
     }
-    throw new Error("couldn't find id to update: " + id)
+    throw new Error(
+      `ArrayEntityDataProvider: Couldn't find row with id "${id}" in entity "${this.entity.key}" to update`,
+    )
   }
   async delete(id: any): Promise<void> {
     const names = await this.init()
     let idMatches = this.idMatches(id, names)
-    for (let i = 0; i < this.rows.length; i++) {
-      if (idMatches(this.rows[i])) {
-        this.rows.splice(i, 1)
+    for (let i = 0; i < this.rows().length; i++) {
+      if (idMatches(this.rows()[i])) {
+        this.rows().splice(i, 1)
         return Promise.resolve()
       }
     }
-    throw new Error("couldn't find id to delete: " + id)
+    throw new Error(
+      `ArrayEntityDataProvider: Couldn't find row with id "${id}" in entity "${this.entity.key}" to delete`,
+    )
   }
   async insert(data: any): Promise<any> {
     const names = await this.init()
@@ -168,17 +167,17 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
     if (!(idf instanceof CompoundIdField)) {
       if (idf.valueConverter.fieldTypeInDb === 'autoincrement') {
         j[idf.key] = 1
-        for (const row of this.rows) {
+        for (const row of this.rows()) {
           if (row[idf.key] >= j[idf.key]) j[idf.key] = row[idf.key] + 1
         }
       }
       if (j[idf.key])
-        this.rows.forEach((i) => {
+        this.rows().forEach((i) => {
           if (j[idf.key] == i[idf.key]) throw Error('id already exists')
         })
     }
     this.verifyThatRowHasAllNotNullColumns(j, names)
-    this.rows.push(j)
+    this.rows().push(j)
     return Promise.resolve(this.translateFromJson(j, names))
   }
 }

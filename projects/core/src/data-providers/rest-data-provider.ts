@@ -2,6 +2,7 @@ import type {
   DataProvider,
   EntityDataProvider,
   EntityDataProviderFindOptions,
+  ProxyEntityDataProvider,
   RestDataProviderHttpProvider,
 } from '../data-interfaces.js'
 
@@ -109,12 +110,15 @@ export function findOptionsFromJson(
   return r
 }
 
-export class RestEntityDataProvider implements EntityDataProvider {
+export class RestEntityDataProvider
+  implements EntityDataProvider, ProxyEntityDataProvider
+{
   constructor(
     private url: () => string,
     private http: () => RestDataProviderHttpProvider,
     private entity: EntityMetadata,
   ) {}
+
   translateFromJson(row: any) {
     let result = {}
     for (const col of this.entity.fields) {
@@ -134,12 +138,26 @@ export class RestEntityDataProvider implements EntityDataProvider {
     const { run } = this.buildFindRequest({ where })
     return run('count').then((r) => +r.count)
   }
+  public async deleteMany(where: Filter): Promise<number> {
+    const { run } = this.buildFindRequest({ where }, 'delete')
+    return run('deleteMany').then((r) => +r.deleted)
+  }
+  public async updateMany(where: Filter, data: any): Promise<number> {
+    const { run } = this.buildFindRequest({ where }, 'put')
+    return run('updateMany', this.toJsonOfIncludedKeys(data)).then(
+      (r) => +r.updated,
+    )
+  }
   public find(options?: EntityDataProviderFindOptions): Promise<Array<any>> {
     let { run } = this.buildFindRequest(options)
     return run().then((x) => x.map((y) => this.translateFromJson(y)))
   }
   //@internal
-  buildFindRequest(options?: EntityDataProviderFindOptions) {
+  buildFindRequest(
+    options: EntityDataProviderFindOptions,
+    method?: 'delete' | 'put' | 'get',
+  ) {
+    if (!method) method = 'get'
     let url = new UrlBuilder(this.url())
     let filterObject: any
     if (options) {
@@ -168,15 +186,16 @@ export class RestEntityDataProvider implements EntityDataProvider {
       if (options.page) url.add('_page', options.page)
     }
 
-    const run = (action?: string) => {
+    const run = (action?: string, body?: any) => {
       let u = new UrlBuilder(url.url)
       if (!action && filterObject) {
         action = 'get'
       }
       if (action) u.add('__action', action)
       if (filterObject) {
-        return this.http().post(u.url, filterObject)
-      } else return this.http().get(u.url)
+        body = { set: body, where: filterObject }
+        return this.http().post(u.url, body)
+      } else return this.http()[method](u.url, body)
     }
 
     return {
@@ -199,26 +218,48 @@ export class RestEntityDataProvider implements EntityDataProvider {
   }
 
   public update(id: any, data: any): Promise<any> {
+    return this.http()
+      .put(
+        this.url() +
+          (id != '' ? '/' + encodeURIComponent(id) : '?__action=emptyId'),
+        this.toJsonOfIncludedKeys(data),
+      )
+      .then((y) => this.translateFromJson(y))
+  }
+
+  private toJsonOfIncludedKeys(data: any) {
     let result = {}
     let keys = Object.keys(data)
     for (const col of this.entity.fields) {
       if (keys.includes(col.key))
         result[col.key] = col.valueConverter.toJson(data[col.key])
     }
-
-    return this.http()
-      .put(this.url() + '/' + encodeURIComponent(id), result)
-      .then((y) => this.translateFromJson(y))
+    return result
   }
 
-  public delete(id: any): Promise<void> {
-    return this.http().delete(this.url() + '/' + encodeURIComponent(id))
+  async delete(id: any): Promise<void> {
+    if (id == '')
+      await this.deleteMany(
+        Filter.fromEntityFilter(
+          this.entity,
+          this.entity.idMetadata.getIdFilter(id),
+        ),
+      )
+    else return this.http().delete(this.url() + '/' + encodeURIComponent(id))
   }
 
   public insert(data: any): Promise<any> {
     return this.http()
       .post(this.url(), this.translateToJson(data))
       .then((y) => this.translateFromJson(y))
+  }
+  insertMany(data: any[]): Promise<any[]> {
+    return this.http()
+      .post(
+        this.url(),
+        data.map((data) => this.translateToJson(data)),
+      )
+      .then((y) => y.map((y) => this.translateFromJson(y)))
   }
 }
 

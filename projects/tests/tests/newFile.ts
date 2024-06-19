@@ -5,7 +5,7 @@ import { Remult, isBackend } from '../../core/src/context'
 import { BackendMethod } from '../../core/src/server-action'
 import { TestDataApiResponse } from './TestDataApiResponse'
 import { describe, expect, it } from 'vitest'
-import { describeClass } from '../../core/src//remult3/DecoratorReplacer'
+import { describeClass } from '../../core/src/remult3/classDescribers'
 import {
   testServerMethodOnEntity,
   testBoolCreate123,

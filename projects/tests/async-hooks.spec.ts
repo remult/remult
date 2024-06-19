@@ -1,22 +1,30 @@
 import { AsyncLocalStorage } from 'async_hooks'
-import { expect, it } from 'vitest'
+import { expect, it, describe, beforeAll, beforeEach, afterEach } from 'vitest'
 import { Remult, RemultAsyncLocalStorage } from '../core/src/context.js'
 
 import { remult } from '../core/src/remult-proxy.js'
 import { remultStatic } from '../core/src/remult-static.js'
+import {
+  AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore,
+  SequentialRemultAsyncLocalStorageCore,
+  StubRemultAsyncLocalStorageCore,
+} from '../core/server/initAsyncHooks.js'
+import { remultExpress } from '../core/remult-express'
+import { entity } from './tests/dynamic-classes'
+import { Fields, InMemoryDataProvider, repo, withRemult } from '../core'
 
 it('test async hooks and static remult', async () => {
   let gotException = true
   try {
-    remultStatic.asyncContext.getRemult()
+    remultStatic.asyncContext.getStore()
     gotException = false
   } catch {}
   expect(gotException).toBe(true)
   remultStatic.asyncContext = new RemultAsyncLocalStorage(
-    new AsyncLocalStorage(),
+    new AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore(),
   )
   try {
-    expect(remultStatic.asyncContext.getRemult()).toBe(undefined)
+    expect(remultStatic.asyncContext.getStore()).toBe(undefined)
     RemultAsyncLocalStorage.enable()
     try {
       remult.isAllowed(false)
@@ -24,7 +32,7 @@ it('test async hooks and static remult', async () => {
     } catch {}
     expect(gotException).toBe(true)
     const promises = []
-    remultStatic.asyncContext.run(new Remult(), () => {
+    remultStatic.asyncContext.run(new Remult(), async () => {
       remult.user = { id: 'noam' }
       promises.push(
         new Promise((res) => {
@@ -34,7 +42,7 @@ it('test async hooks and static remult', async () => {
           }, 10)
         }),
       )
-      remultStatic.asyncContext.run(new Remult(), () => {
+      remultStatic.asyncContext.run(new Remult(), async () => {
         remult.user = { id: 'yoni' }
         promises.push(
           new Promise((res) => {
@@ -59,4 +67,181 @@ it('test async hooks and static remult', async () => {
     RemultAsyncLocalStorage.disable()
     remultStatic.asyncContext = new RemultAsyncLocalStorage(undefined)
   }
+})
+describe('test sequential async hooks', () => {
+  beforeEach(() => {
+    remultStatic.asyncContext = new RemultAsyncLocalStorage(
+      new SequentialRemultAsyncLocalStorageCore(),
+    )
+    RemultAsyncLocalStorage.enable()
+  })
+  afterEach(() => {
+    RemultAsyncLocalStorage.disable()
+    remultStatic.asyncContext = new RemultAsyncLocalStorage(undefined)
+  })
+  it('test basic usage', async () => {
+    let result: [string, string][] = []
+    let p: Promise<any>[] = []
+    for (let i = 0; i < 3; i++) {
+      p.push(
+        remultStatic.asyncContext.run(new Remult(), async () => {
+          remult.user = { id: i.toString() }
+
+          await new Promise((res) => setTimeout(res, 10))
+          result.push([i.toString(), remult.user.id])
+          if (i == 1) throw 'error'
+        }),
+      )
+    }
+    for (const pr of p) {
+      try {
+        await pr
+      } catch (err) {
+        expect(err).toMatchInlineSnapshot('"error"')
+      }
+    }
+    expect(result).toMatchInlineSnapshot(`
+      [
+        [
+          "0",
+          "0",
+        ],
+        [
+          "1",
+          "1",
+        ],
+        [
+          "2",
+          "2",
+        ],
+      ]
+    `)
+  })
+})
+describe('test stub async hooks', () => {
+  beforeEach(() => {
+    remultStatic.asyncContext = new RemultAsyncLocalStorage(
+      new StubRemultAsyncLocalStorageCore(),
+    )
+    RemultAsyncLocalStorage.enable()
+  })
+  afterEach(() => {
+    RemultAsyncLocalStorage.disable()
+    remultStatic.asyncContext = new RemultAsyncLocalStorage(undefined)
+  })
+  it('test nested local storage', async () => {
+    let result = 0
+    await remultStatic.asyncContext.run(new Remult(), async () => {
+      await remultStatic.asyncContext.run(new Remult(), async () => {
+        result = 1
+      })
+    })
+    expect(result).toBe(1)
+  })
+})
+describe('test with remult within get user & init request', () => {
+  it('test with remult within get user & init request', async () => {
+    const t = entity('t', { id: Fields.string() })
+    var mem = new InMemoryDataProvider()
+    remultStatic.asyncContext = new RemultAsyncLocalStorage(
+      new AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore(),
+    )
+    const api = remultExpress({
+      dataProvider: mem,
+      entities: [],
+      initApi: async (req) => {
+        await repo(t).insert({ id: '1' })
+      },
+      getUser: async (req) => {
+        return api.withRemultAsync({} as any, () => repo(t).findFirst())
+      },
+    })
+    const result = await api.withRemultAsync({} as any, () =>
+      repo(t).findFirst(),
+    )
+    expect(result.id).toBe('1')
+  })
+  afterEach(() => {
+    RemultAsyncLocalStorage.disable()
+    remultStatic.asyncContext = new RemultAsyncLocalStorage(undefined)
+  })
+})
+
+describe('test default data provider based in init api server', () => {
+  it('test default data provider based in init api server', async () => {
+    const t = entity('t', { id: Fields.string() })
+    var mem = new InMemoryDataProvider()
+    remultStatic.asyncContext = new RemultAsyncLocalStorage(
+      new AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore(),
+    )
+    const api = remultExpress({
+      dataProvider: mem,
+      entities: [],
+      initApi: async (req) => {
+        await repo(t).insert({ id: '1' })
+      },
+      getUser: async (req) => {
+        return withRemult(() => repo(t).findFirst())
+      },
+    })
+    const result = await withRemult(() => repo(t).findFirst())
+    expect(result.id).toBe('1')
+  })
+  afterEach(() => {
+    RemultAsyncLocalStorage.disable()
+    remultStatic.asyncContext = new RemultAsyncLocalStorage(undefined)
+  })
+})
+describe('errors with withRemult', () => {
+  it('api with remult provides sensible error', async () => {
+    const api = remultExpress({
+      initApi: async (req) => {},
+      entities: [],
+    })
+    let error = false
+    try {
+      await api.withRemultAsync(undefined, async () => {
+        throw Error('the error')
+      })
+    } catch (err) {
+      error = true
+      expect(err).toMatchInlineSnapshot(`[Error: the error]`)
+    }
+    expect(error).toBe(true)
+  })
+  it('api with remult provides sensible error', async () => {
+    const api = remultExpress({
+      initApi: async (req) => {},
+      entities: [],
+    })
+    let error = false
+    try {
+      await api.withRemultAsync({} as any, async () => {
+        throw Error('the error')
+      })
+    } catch (err) {
+      error = true
+      expect(err).toMatchInlineSnapshot(`[Error: the error]`)
+    }
+    expect(error).toBe(true)
+  })
+  it('api with remult provides sensible error in get user', async () => {
+    const api = remultExpress({
+      getUser: async (req) => {
+        throw Error('get user error')
+      },
+      initApi: async (req) => {},
+      entities: [],
+    })
+    let error = false
+    try {
+      await api.withRemultAsync({} as any, async () => {
+        throw Error('the error')
+      })
+    } catch (err) {
+      error = true
+      expect(err).toMatchInlineSnapshot(`[Error: get user error]`)
+    }
+    expect(error).toBe(true)
+  })
 })

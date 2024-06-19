@@ -26,19 +26,19 @@ Arguments:
 Data Provider to use for the api.
    
    
-   *see*
+   #### see:
    [Connecting to a Database](https://remult.dev/docs/databases.html).
 ## ensureSchema
 Will create tables and columns in supporting databases. default: true
    
    
-   *description*
+   #### description:
    when set to true, it'll create entities that do not exist, and add columns that are missing.
 ## rootPath
 The path to use for the api, default:/api
    
    
-   *description*
+   #### description:
    If you want to use a different api path adjust this field
 ## defaultGetLimit
 The default limit to use for find requests that did not specify a limit
@@ -50,5 +50,51 @@ A subscription server to use for live query and message channels
 A storage to use to store live queries, relevant mostly for serverless scenarios or larger scales
 ## contextSerializer
 Used to store the context relevant info for re running a live query
+## admin
+When set to true, will display an admin ui in the `/api/admin` url.
+Can also be set to an arrow function for fine grained control
+   
+   
+   #### example:
+   ```ts
+   admin: true
+   ```
+   
+   
+   #### example:
+   ```ts
+   admin: ()=> remult.isAllowed('admin')
+   ```
+   
+   
+   #### see:
+   [allowed](http://remult.dev/docs/allowed.html)
 ## queueStorage
 Storage to use for backend methods that use queue
+## error
+This method is called whenever there is an error in the API lifecycle.
+   
+   
+   #### returns:
+   A promise that resolves when the error handling is complete.
+   
+   
+   #### example:
+   ```ts
+   export const api = remultExpress({
+     error: async (e) => {
+       if (e.httpStatusCode == 500) {
+         e.sendError(500, { message: "An error occurred" })
+       }
+     }
+   })
+   ```
+
+Arguments:
+* **info** - Information about the error.
+   * **req** - The request object.
+   * **entity** - (Optional) The entity metadata associated with the error, if applicable.
+   * **exception** - (Optional) The exception object or error that occurred.
+   * **httpStatusCode** - The HTTP status code.
+   * **responseBody** - The body of the response.
+   * **__type** - A method to send a custom error response. Call this method with the desired HTTP status code and response body.

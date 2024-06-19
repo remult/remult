@@ -5,6 +5,8 @@ Let's deploy the todo app to [railway.app](https://railway.app/).
 ## Prepare for Production
 
 In this tutorial, we'll deploy both the Vue app and the API server as [one server-side app](https://create-react-app.dev/docs/deployment/#other-solutions), and redirect all non-API requests to return the Vue app.
+
+We will deploy an ESM node server project
 In addition, to follow a few basic production best practices, we'll use [compression](https://www.npmjs.com/package/compression) middleware to improve performance and [helmet](https://www.npmjs.com/package/helmet) middleware for security
 
 1. Install `compression` and `helmet`.
@@ -16,16 +18,15 @@ npm i @types/compression --save-dev
 
 2. Add the highlighted code lines to `src/server/index.ts`, and modify the `app.listen` function's `port` argument to prefer a port number provided by the production host's `PORT` environment variable.
 
-```ts{7-9,17-18,21-26}
+```ts{7-8,16-17,20-26}
 // src/server/index.ts
 
 import express from "express"
-import { api } from "./api"
+import { api } from "./api.js"
 import session from "cookie-session"
-import { auth } from "./auth"
+import { auth } from "./auth.js"
 import helmet from "helmet"
 import compression from "compression"
-import path from "path"
 
 const app = express()
 app.use(
@@ -37,28 +38,35 @@ app.use(helmet())
 app.use(compression())
 app.use(auth)
 app.use(api)
-app.use(express.static(path.join(__dirname, "../")))
+const frontendFiles = process.cwd() + "/dist";
+app.use(express.static(frontendFiles));
 app.get("/*", (_, res) => {
-  res.sendFile(path.join(__dirname, "../", "index.html"))
-})
-
-app.listen(process.env["PORT"] || 3002, () => console.log("Server started"))
+  res.sendFile(frontendFiles + "/index.html");
+});
+app.listen(process.env["PORT"] || 3002, () => console.log("Server started"));
 ```
 
 3. Modify the highlighted code in the api server module to prefer a `connectionString` provided by the production host's `DATABASE_URL` environment variable.
 
-   ```ts{7}
+   ```ts{4,7-9}
    // src/server/api.ts
 
    //...
+   const DATABASE_URL = process.env["DATABASE_URL"];
+
    export const api = remultExpress({
-     //...
-     dataProvider: createPostgresConnection({
-       connectionString: process.env["DATABASE_URL"] || "your connection string"
-     })
-     //...
-   })
+    dataProvider: DATABASE_URL
+      ? createPostgresDataProvider({ connectionString: DATABASE_URL })
+      : undefined,
+      //...
+    })
    ```
+
+::: warning Note
+In order to connect to a local PostgresDB, add `DATABASE_URL` to an .env file, or simply replace `process.env["DATABASE_URL"]` with your `connectionString`.
+
+If no `DATABASE_URL` has found, it'll fallback to our local JSON files.
+:::
 
 4. Modify the project's `build` npm script to additionally transpile the API server's TypeScript code to JavaScript (using `tsc`).
 
@@ -77,6 +85,23 @@ app.listen(process.env["PORT"] || 3002, () => console.log("Server started"))
 ```
 
 The todo app is now ready for deployment to production.
+
+## Test Locally
+
+To test the application locally run
+
+```sh
+npm run build
+npm run start
+```
+
+::: warning Build Errors
+If you get an error `error TS5096: Option 'allowImportingTsExtensions' can only be used when either 'noEmit' or 'emitDeclarationOnly' is set.` do not set the `emitDeclarationOnly` flag!
+
+You are getting the error because somewhere in your code you've imported from `.ts` instead of `.js` - fix it and build again
+:::
+
+Now navigate to http://localhost:3002 and test the application locally
 
 ## Deploy to Railway
 

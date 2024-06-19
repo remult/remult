@@ -24,9 +24,17 @@ export function EditableField({
     return (
       <RelationField value={value} onChange={onChange} info={info} god={god} />
     )
-  if (info.type == 'json')
+  if (info.type == 'json') {
     return <EditableJson {...{ value, onChange, info, god }} />
-  return <input value={value} onChange={(e) => onChange(e.target.value)} />
+  } else {
+
+    return (
+      <>
+        <input value={value} onChange={(e) => onChange(e.target.value)} />
+        <span className="field-spacer">{value}</span>
+      </>
+    )
+  }
 }
 
 export function EditableJson({

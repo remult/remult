@@ -1,7 +1,7 @@
 import type * as Knex from 'knex'
 import { beforeAll, beforeEach, expect, it } from 'vitest'
 import { allDbTests } from '.'
-import { Entity, Fields, Remult, dbNamesOf } from '../../../core'
+import { Entity, Fields, Remult, SqlDatabase, dbNamesOf } from '../../../core'
 import type { ClassType } from '../../../core/classType'
 import { KnexDataProvider, KnexSchemaBuilder } from '../../../core/remult-knex'
 import { entityWithValidations } from './entityWithValidations'
@@ -14,15 +14,15 @@ export function knexTests(
 ) {
   var db: KnexDataProvider
   let remult: Remult
-  beforeAll(async () => {})
+  beforeAll(async () => { })
   beforeEach(() => {
     db = new KnexDataProvider(knex)
     remult = new Remult(db)
   })
   async function createEntity(entity: ClassType<any>) {
     let repo = remult.repo(entity)
-    const dbNames = await dbNamesOf(repo.metadata)
-    await knex.schema.dropTableIfExists(await dbNames.$entityName)
+
+    await knex.schema.dropTableIfExists(repo.metadata.dbName!)
     await db.ensureSchema([repo.metadata])
     return repo
   }
@@ -36,6 +36,8 @@ export function knexTests(
     createEntity,
   })
   SqlDbTests({
+    doesNotSupportDdlTransactions:
+      knex.client.config.client.startsWith('mysql'),
     getDb() {
       return db
     },
@@ -65,7 +67,7 @@ export function knexTests(
 
   it('knex with filter', async () => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity)
-    const knex = KnexDataProvider.getDb(remult)
+    const knex = KnexDataProvider.getDb(remult.dataProvider)
     const e = await dbNamesOf(repo)
     expect(
       getKnexCount(
@@ -77,7 +79,7 @@ export function knexTests(
   })
   it('work with native knex3', async () => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity)
-    const knex = KnexDataProvider.getDb(remult)
+    const knex = KnexDataProvider.getDb(remult.dataProvider)
     const t = await dbNamesOf(repo)
     const r = await knex((await t).$entityName).select(t.myId, t.name)
     expect(r.length).toBe(4)
@@ -85,14 +87,14 @@ export function knexTests(
 
   it('work with native knex', async () => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity)
-    const knex = KnexDataProvider.getDb(remult)
+    const knex = KnexDataProvider.getDb(remult.dataProvider)
     const r = await knex(repo.metadata.dbName!).count()
     expect(getKnexCount(r)).toBe(4)
   })
   it('work with native knex2', async () => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity)
     await remult.dataProvider.transaction(async (db) => {
-      const sql = KnexDataProvider.getDb(new Remult(db))
+      const sql = KnexDataProvider.getDb(db)
       const r = await sql(repo.metadata.dbName!).count()
       expect(getKnexCount(r)).toBe(4)
     })
@@ -136,7 +138,7 @@ export function knexTests(
     expect((await s.find()).map((x) => x.myId)).toEqual([1, 2, 3, 4])
   })
   it('test sql expression', async () => {
-    let knex = KnexDataProvider.getDb(remult)
+    let knex = KnexDataProvider.getDb(remult.dataProvider)
 
     @Entity('testSqlExpression')
     class testSqlExpression {

@@ -1,5 +1,5 @@
 import { it, expect, describe } from 'vitest'
-import { createEntity } from './dynamic-classes'
+import { entity } from './dynamic-classes'
 import { Fields, InMemoryDataProvider, Remult } from '../../core'
 import { MockRestDataProvider } from './testHelper'
 
@@ -7,7 +7,7 @@ describe('test saving happens only no db', () => {
   it('saving runs when close to db', async () => {
     const remult = new Remult(new InMemoryDataProvider())
     let events = []
-    const Task = createEntity(
+    const Task = entity(
       't',
       {
         id: Fields.integer(),
@@ -43,7 +43,7 @@ describe('test saving happens only no db', () => {
     const db = new MockRestDataProvider(serverRemult)
     const remult = new Remult(db)
     let events = []
-    const Task = createEntity(
+    const Task = entity(
       't',
       {
         id: Fields.integer(),

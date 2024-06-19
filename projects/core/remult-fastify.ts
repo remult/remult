@@ -13,7 +13,7 @@ import type {
   RemultServerOptions,
   SpecificRoute,
   RemultServer,
-} from './server/expressBridge.js'
+} from './server/remult-api-server.js'
 import { createRemultServer } from './server/index.js'
 
 export function remultFastify(

@@ -218,6 +218,7 @@ export interface IdMetadata<entityType = any> {
    */
   getId(item: Partial<MembersOnly<entityType>>): any
   field: FieldMetadata<any>
+  fields: FieldMetadata<unknown>[]
   getIdFilter(...ids: any[]): EntityFilter<entityType>
   isIdField(col: FieldMetadata): boolean
   createIdInFilter(
@@ -234,17 +235,22 @@ export interface EntityMetadata<entityType = any> {
   /** A human readable caption for the entity. Can be used to achieve a consistent caption for a field throughout the app
    * @example
    * <h1>Create a new item in {taskRepo.metadata.caption}</h1>
+   * @see {@link EntityOptions.caption}
    */
   readonly caption: string
   /** The name of the table in the database that holds the data for this entity.
    * If no name is set in the entity options, the `key` will be used instead.
+   * @see {@link EntityOptions.dbName}
    */
   readonly dbName: string
-  /** The options send to the `Entity`'s decorator */
+  /** The options send to the `Entity`'s decorator
+   * @see {@link EntityOptions}
+   */
   readonly options: EntityOptions
   /** The class type of the entity */
   readonly entityType: ClassType<entityType>
   /** true if the current user is allowed to update an entity instance
+   * @see {@link EntityOptions.allowApiUpdate
    * @example
    * const taskRepo = remult.repo(Task);
    * if (taskRepo.metadata.apiUpdateAllowed(task)){
@@ -253,6 +259,7 @@ export interface EntityMetadata<entityType = any> {
    */
   apiUpdateAllowed(item?: entityType): boolean
   /** true if the current user is allowed to read from entity
+   * @see {@link EntityOptions.allowApiRead}
    * @example
    * const taskRepo = remult.repo(Task);
    * if (taskRepo.metadata.apiReadAllowed){
@@ -261,6 +268,7 @@ export interface EntityMetadata<entityType = any> {
    */
   readonly apiReadAllowed: boolean
   /** true if the current user is allowed to delete an entity instance
+   * * @see {@link EntityOptions.allowApiDelete}
    * @example
    * const taskRepo = remult.repo(Task);
    * if (taskRepo.metadata.apiDeleteAllowed(task)){
@@ -269,6 +277,7 @@ export interface EntityMetadata<entityType = any> {
    */
   apiDeleteAllowed(item?: entityType): boolean
   /** true if the current user is allowed to create an entity instance
+   * @see {@link EntityOptions.allowApiInsert}
    * @example
    * const taskRepo = remult.repo(Task);
    * if (taskRepo.metadata.apiInsertAllowed(task)){
@@ -280,7 +289,10 @@ export interface EntityMetadata<entityType = any> {
   /**
    * @deprecated Returns the dbName - based on it's `dbName` option and it's `sqlExpression` option */
   getDbName(): Promise<string>
-  /** Metadata for the Entity's id */
+  /** Metadata for the Entity's id
+   * @see {@link EntityOptions.id} for configuration
+   *
+   */
   readonly idMetadata: IdMetadata<entityType>
 }
 
@@ -293,10 +305,14 @@ export declare type MembersOnly<T> = {
 //   T,
 //   { [K in keyof T]: T[K] extends Function ? never : K }[keyof T]
 // >
-export declare type idType<entityType> = entityType extends { id?: number }
-  ? number
-  : entityType extends { id?: string }
-  ? string
+export declare type idType<entityType> = entityType extends {
+  id?: infer U
+}
+  ? U extends string
+    ? string
+    : U extends number
+    ? number
+    : string | number
   : string | number
 /**used to perform CRUD operations on an `entityType` */
 export interface Repository<entityType> {
@@ -381,27 +397,28 @@ export interface Repository<entityType> {
    * taskRepo.update(task.id,{...task,completed:true})
    */
   update(
-    id: entityType extends { id?: number }
-      ? number
-      : entityType extends { id?: string }
-      ? string
-      : string | number,
+    id: idType<entityType>,
     item: Partial<MembersOnly<entityType>>,
   ): Promise<entityType>
   update(
     id: Partial<MembersOnly<entityType>>,
     item: Partial<MembersOnly<entityType>>,
   ): Promise<entityType>
+  /**
+   * Updates all items that match the `where` condition.
+   */
+  updateMany(options: {
+    where: EntityFilter<entityType>
+    set: Partial<MembersOnly<entityType>>
+  }): Promise<number>
 
   /** Deletes an Item*/
-  delete(
-    id: entityType extends { id?: number }
-      ? number
-      : entityType extends { id?: string }
-      ? string
-      : string | number,
-  ): Promise<void>
+  delete(id: idType<entityType>): Promise<void>
   delete(item: Partial<MembersOnly<entityType>>): Promise<void>
+  /**
+   * Deletes all items that match the `where` condition.
+   */
+  deleteMany(options: { where: EntityFilter<entityType> }): Promise<number>
 
   /** Creates an instance of an item. It'll not be saved to the data source unless `save` or `insert` will be called for that item */
   create(item?: Partial<MembersOnly<entityType>>): entityType
@@ -427,17 +444,84 @@ export interface Repository<entityType> {
    */
   metadata: EntityMetadata<entityType>
   addEventListener(listener: entityEventListener<entityType>): Unsubscribe
-  relations: (item: entityType) => RepositoryRelations<entityType>
+  relations(item: entityType): RepositoryRelations<entityType>
 }
+/**
+ * The `LiveQuery` interface represents a live query that allows subscribing to changes in the query results.
+ *
+ * @template entityType The entity type for the live query.
+ */
 export interface LiveQuery<entityType> {
+  /**
+   * Subscribes to changes in the live query results.
+   *
+   * @param {(info: LiveQueryChangeInfo<entityType>) => void} next A function that will be called with information about changes in the query results.
+   * @returns {Unsubscribe} A function that can be used to unsubscribe from the live query.
+   *
+   * @example
+   * // Subscribing to changes in a live query
+   * const unsubscribe = taskRepo
+   *   .liveQuery({
+   *     limit: 20,
+   *     orderBy: { createdAt: 'asc' }
+   *     //where: { completed: true },
+   *   })
+   *   .subscribe(info => setTasks(info.applyChanges));
+   *
+   * // Later, to unsubscribe
+   * unsubscribe();
+   */
   subscribe(next: (info: LiveQueryChangeInfo<entityType>) => void): Unsubscribe
+
+  /**
+   * Subscribes to changes in the live query results using a `SubscriptionListener` object.
+   *
+   * @param {Partial<SubscriptionListener<LiveQueryChangeInfo<entityType>>>} listener An object that implements the `SubscriptionListener` interface.
+   * @returns {Unsubscribe} A function that can be used to unsubscribe from the live query.
+   */
   subscribe(
     listener: Partial<SubscriptionListener<LiveQueryChangeInfo<entityType>>>,
   ): Unsubscribe
 }
+/**
+ * The `LiveQueryChangeInfo` interface represents information about changes in the results of a live query.
+ *
+ * @template entityType The entity type for the live query.
+ */
 export interface LiveQueryChangeInfo<entityType> {
+  /**
+   * The updated array of result items.
+   *
+   * @type {entityType[]}
+   */
   items: entityType[]
+
+  /**
+   * The changes received in the specific message. The change types can be "all" (replace all), "add", "replace", or "remove".
+   *
+   * @type {LiveQueryChange[]}
+   */
   changes: LiveQueryChange[]
+
+  /**
+   * Applies the changes received in the message to an existing array. This method is particularly useful with React
+   * to update the component's state based on the live query changes.
+   *
+   * @param {entityType[] | undefined} prevState The previous state of the array of result items.
+   * @returns {entityType[]} The updated array of result items after applying the changes.
+   *
+   * @example
+   * // Using applyChanges in a React component with useEffect hook
+   * useEffect(() => {
+   *   return taskRepo
+   *     .liveQuery({
+   *       limit: 20,
+   *       orderBy: { createdAt: 'asc' }
+   *       //where: { completed: true },
+   *     })
+   *     .subscribe(info => setTasks(info.applyChanges));
+   * }, []);
+   */
   applyChanges(prevState: entityType[] | undefined): entityType[]
 }
 export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
@@ -476,7 +560,10 @@ export declare type EntityFilter<entityType> = {
     | (Partial<entityType>[Properties] extends number | Date | undefined
         ? ComparisonValueFilter<Partial<entityType>[Properties]>
         : Partial<entityType>[Properties] extends string | undefined
-        ? ContainsStringValueFilter & ComparisonValueFilter<string>
+        ?
+            | Partial<entityType>[Properties]
+            | (ContainsStringValueFilter &
+                ComparisonValueFilter<Partial<entityType>[Properties]>)
         : Partial<entityType>[Properties] extends boolean | undefined
         ? ValueFilter<boolean>
         : Partial<entityType>[Properties] extends
@@ -738,117 +825,146 @@ export type ClassFieldDecorator<entityType, valueType> = (
   c?: any,
 ) => void
 
-//y1 - admin url!
-//y1 - number default storage in knex is decimal and it by default has 8,2 - meaning only 999,999 - I think it should be way bigger than that. in firefly we do at least 18 - https://discord.com/channels/975754286384418847/1195162533447876658
-//y1 - talk about the parameter issue with backend methods
+export const flags = {
+  error500RetryCount: 4,
+}
+
+//y1 TODO - discuss next auth withRemult paradox - the gift that keeps on giving - it's doing something crazy there!!
+//p1 - fix chaining of saving and saved in multiple entity options args
+//p1 - review starter and examples and separate remult * auth from the routes
+/*p1 - https://github.com/remult/remult/discussions/438
+     - https://github.com/remult/remult/blob/query-argumets/projects/tests/dbs/test-sql-database.spec.ts#L100-L128
+*/
+//p1 - min, max, avg, sum
+//y1 - live query with count #436
+
+//y1 TODO - In the esm version of our tutorial - the imports are automatically .ts and not .js in react and not in vue
+//y1 TODO - consider id to also support keyof (id:['company','index']) - had problem with | (keyof Partial<entityType>)[] & `entity`
+//y1 TODO -  readonly key: keyof MembersOnly<entityType> & string
+
+//y1 - talk about insert / update / delete with relations
+/*
+repo(Order).insert({},{
+  relations:{
+    orderItems:[{},{},{}]
+  }
+})
+*/
+//y1 - repo batch - for multiple operations:
+/*
+const result = await repo.batch(x=>({
+  data:x.find(),
+  count:x.count()
+}))
+*/
+
+//p1 - consider upsert (where,set)
+//y1 - wait a second to close stream -see pr
+//p1 - Consider enforcing serial operations on JSON database to prevent data loss
+//y2 - soft-delete-discussion https://discord.com/channels/975754286384418847/1230386433093533698/1230386433093533698
+
+//p1 - prepare the createEntity discussion
+
+//p1 - return error on connection error
+
+//p1 - article on displayValue including it's definition for entities that is used in relations
+//p1 - article auth.js with express - played with it, requires type="module" and a few more configurations - https://github.com/noam-honig/express-auth
+//p2 -fix remult admin not to load the html into memory until used
+
+//y2 - currently for string fields we default for 255 in knex (which is their default) why not just use text (varchar max) - and only use exact length when one is provided?
+
+//p2 - create foreign key constraints in user code - https://codesandbox.io/p/devbox/fk-validator-tdshcs
+
+//p2 - admin url1 - pocketbase use /_ for the admin //{allowed?:Allowed,url?:string} also checkout the admin* as it should probably be something else and didn't work in hono
+
+//y2 - fix validators cache
+//y2 - should we validate relations
+
+//y1 - dependency of live query tables  live query refresh of view on table update
+//p1 - see why mongo tests do not run anymore
+
+//y2 - consider replacing all errors with error classes that extend the base Error class
+//y2 - should enforce integer - currently we probably round / truncate it
+//y1 - talk about filter on objects that are not loaded -  {
+//category: repo(CompoundId).create({ company: 7, index: 3, name: '' }),
+//    }
+/*y1 - talk about modules in init express with entities/controllers,initRequest,initApi
+ - support get with backend method, with url search params as the first parameter, & url as second parameter
+   - support returning redirect, and plain html (For sign in scenarios)
+
+ */
+
+//p1 - in this video I'll use remult to turn a frontend app to a fullstack app
+
+/*y2 - Talk JYC - JYC - add some integrity checks on delete
+  - soft delete
+  - delete restrict (implicit, or user selected - and if so, how) (delete & update of id)
+
+*/
+
+//y1 - consider sql expression gets a dbnames of it's own (that already has the "tableName" defined correctly) maybe also the filter translator
+
 //y1 - tried to upgrade vitest, nuxt tests are failing with loading uuid - sounds familiar?
-//y1 - I think that the tests you've setup cover next app router - I added to the setup, but not sure where else
 
-//p1 - Small thing, I get SvelteKitError: Not found: /vite.svg
-//p1 - live query with include
-//p1 - relation from order details to order gave a compound id info - and it is not true - same for the relation to product
-//p1 - include admin in remult
-//p1 - new row when there are relations, looks funny (see product)
-//p1 - the + row in the bottom should extend to the full width
-//p1 - adjust angular starter kit for latest angular (as is in tutorial)
+//y1 - talk about the parameter issue with backend methods
 
-/*y2 - 
+//y1 - main vs master
+//y2 - livequery for findfirst (@JY)
+
+/*y2 -
+//y2 - allow api update only for new rows
   @Fields.string<Category>({
     allowApiUpdate: (c) => getEntityRef(c).isNew(),
   })
   Description = ""*/
+//y2 - get backend methods to work when specifying types for date, and entities as poco's
+//y2 - constraints (@JY)
 
+/*p2 remult admin
+ - when making a change and canceling - the changed value still appears
+ - Small thing, I get SvelteKitError: Not found: /vite.svg
+ - understand the to many relation for the admin, based on the to one
+ - relation from order details to order gave a compound id info - and it is not true - same for the relation to product
+ - new row when there are relations, looks funny (see product)
+ - the + row in the bottom should extend to the full width
+ - need a way to extract the fields from the relation - for generating relation based sql
+ - allow conditional admin - like allowed
+ - remult-admin doesn't handle primary key that has compound column
+ - remult-admin didn't show a update for a table with a uniqua that is numeric
+*/
+//remult
+
+//p1 - when a tasks table exists in a different schema - we get many errors
+//p1 - live query with include
+
+//p1 - adjust angular tutorial starter kit for latest angular (as is in tutorial)
+
+//y2 - Fix problem with promise all in sql expression recurssion - when using PromiseAll in row relation loading, some sql expressions appear is recursion call even if they are not
+//p2 - when subscribe is forbidden - the query still runs after the renew process
+//p2 - 'update tasks set  where id = $1
+
+//p2 - type metadata.key - to keyof entity - based on cwis input
+//y2 - remove __dirname from tutorials
+//p2 - when value changes for field with error, clear error - so the user will feel comfortable
+//p2 - allowApiUpdate should be false for include in api false
+
+//docs
+
+//------
+//y2 - wrap identifier for custom filter & sql expression
+//y2 - Should we create a separate implementation of command - one that the user uses, and another that the database implements (with only the bear necesities) - for example, to provide a second paramter called field for toDb conversions
+//y2 - should we simply inherit from SqlDataProvider - and send the required parameter in the call to the base class - I think that new SqlDatabase(new PostgresDataProvider()) is a bilt combersome
 //y2 - from the crm-demo(https://crm-demo.up.railway.app/deals), after editing a deal: - _updateEntityBasedOnApi
 
 //y2 - Backend methods are transactions, it's not intuitive and maybe should be optional / opt in
 //y2 - how to run a transaction as a user
-//p2 - enum column
-//p2 - I think there should be a way to throw a forbidden exception
 
-//y2 - get backend methods to work when specifying types for date, and entities as poco's
-//y2 - required
-//y2 - reconsider validators
-//y2 - message for invalid value
 //y2 - message for relation that is missing
-//p2 - more column types
-//p2 -   processError in remult express
-//p2 -   allow find options preprocessor for api calls, to use for authorization
-//p2 - write doc about controlling updates of rows...
-//p1 - need a way to extract the fields from the relation - for generating relation based sql
-//p1 - when doing this, work on graphql relation with fields not just field
-//p2 - add docs for apply changes
-//p2 - when subscribe is forbidden - the query still runs after the renew process
-//p2 - 'update tasks set  where id = $1
 //y2 - consider multi tenancies
-//y2 - allow api read to also support instance and filter. - problem with promise
-//p2 - doc this:
-/**
- * //p2 - doc this
-remult.apiClient.httpClient = (
-  input: RequestInfo | URL,
-  init?: RequestInit
-  ) => {
-    return fetch(input, {
-      ...init,
-      headers: {
-        authorization: 'Bearer ' + sessionStorage.sessionId,
-      },
-      cache: 'no-store',
-    })
-}
 
-&&
-remult.apiClient.url='localhost:3007/api
-
-
-*/
-//p1 - remult-admin doesn't handle primary key that has compound column
-//p1 - remult-admin didn't show a update for a table with a uniqua that is numeric
-//p1 -check if checouknt doesn't respect allow read (I think)
-//p1 - allow api update only for new rows
-//p1 - getFields didn't work for kobi in the home component
-//p1 - add to docs  https://codesandbox.io/p/devbox/demo-sql-expression-wqvj4g
-//p2 - document validators
 //p2 - and validators to reference
 //y2 - discuss a default date formatter
 //y2 - add some api testing framework for user unit tests (will help with codesandbox based discussions)
-//y2 - live query refresh of view on table update
-
-//y2 - livequery for findfirst (@JY)
-//y2 - #239 - (@JY) add a way to get from fieldMetadata back to entity repo (like we have in fieldRef)
-//p2 - constraints (@JY)
-
-//p2 - type metadata.key - to keyof entity - based on cwis input
-
-//y2 - remove __dirname from tutorials
-//p2 - when value changes for field with error, clear error - so the user will feel comfortable
-//p2 - conside law-q db based on schema issue - I think that while running the dataProvider function, we should have a valid remult - maybe even have a valid remult, that will be valid until api is run
-
-//y2 - we should really reconsider allow null by default to be true - I think that what we're doing is confusing for most . In my case I added a volunteer relation, and didn't set any value to it - and I get an error that null value is not allowed for it
-
-//p1 - add a follow up doc to the tutorial on how to user a real user table for the users
-/**
-* our default is allow null false.
-* for sql databases we add a db default of 0/''/false
-* when we set a relation to null - we update the related field to null
-* we do not enforce allow null false (mongo, json it'll get stored)
-
- */
-
-//p2 - allowApiUpdate should be false for include in api false
 
 //[ ] V2 - what to do about for relations count?
 //[ ] V2 - condition? not to fetch if null etc....
-//[ ] V3 - all these fields will also appear in the where etc... in the typescript api - but we will not enforce them
-
-//y2 - consider if field types should include validation in them by default (string,number that it's not NaN etc...) and if so, what message?
-//y2 - should enforce integer - currently we probably round / truncate it
-//p1 - adjust react tutorial to esm
-//p1 - write docs on with remult - and usage in init api
-/*y1 - discuss sql stuff:
-     https://discord.com/channels/975754286384418847/975754286384418852/1198997156678357043
-     https://codesandbox.io/p/devbox/demo-sql-expression-forked-f94p6m?file=%2Fsrc%2Findex.ts%3A21%2C3-21%2C12&workspaceId=c0f7eccf-c151-423b-ac8e-0f0f3e1ad350
-     https://codesandbox.io/p/devbox/demo-sql-expression-forked-c2jhyc?file=%2Fsrc%2Findex.ts%3A37%2C50&workspaceId=7e9d0505-ea79-46f1-8973-50cadde4fa96
-
-
-*/

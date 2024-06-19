@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "../../../",
+    "paths": {
+      "remult": ["dist/remult"],
+      "remult/*": ["dist/remult/*"]
+    }
+  }
+}

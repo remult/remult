@@ -7,9 +7,11 @@ import { Entity, EntityBase, Field, FieldType, Fields } from '../../core/'
   },
 })
 @Entity<h>('h', {
-  saving: (self) => {
-    if (self.refH) self.refHId = self.refH.id
-    else self.refHId = ''
+  saving: async (self) => {
+    if (self.refH) {
+      await self.$.refH.load()
+      self.refHId = self.refH.id
+    } else self.refHId = ''
   },
   allowApiCrud: true,
 })

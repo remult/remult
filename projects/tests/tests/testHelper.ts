@@ -18,6 +18,11 @@ import type { EntityMetadata } from '../../core'
 import { serverActionField } from '../../core/src/server-action-info'
 import { TestDataApiResponse } from './TestDataApiResponse'
 import { actionInfo } from '../../core/internals'
+import type {
+  CanBuildMigrations,
+  MigrationBuilder,
+} from '../../core/migrations/migration-types.js'
+import { cast } from '../../core/src/isOfType.js'
 
 //actionInfo.runningOnServer = false;
 
@@ -179,14 +184,20 @@ export function createMockHttpDataProvider(
   return new HttpProviderBridgeToRestDataProviderHttpProvider({
     delete: async (url) => {
       let urlSplit = url.split('/')
+
       let r = new TestDataApiResponse()
       let result
       r.deleted = () => {}
+      r.success = (data) => {
+        result = data
+      }
       try {
-        await dataApi.delete(
-          r,
-          decodeURIComponent(urlSplit[urlSplit.length - 1]),
-        )
+        if (urlSplit.length == 1) await dataApi.deleteMany(r, urlToReq(url))
+        else
+          await dataApi.delete(
+            r,
+            decodeURIComponent(urlSplit[urlSplit.length - 1]),
+          )
       } finally {
       }
       return result
@@ -214,6 +225,9 @@ export function createMockHttpDataProvider(
       r.success = (data) => {
         result = data
       }
+      r.forbidden = (message) => {
+        throw Error(message || 'forbidden')
+      }
       try {
         await dataApi.httpPost(r, urlToReq(url), data, async () => ({}))
       } finally {
@@ -228,14 +242,40 @@ export function createMockHttpDataProvider(
         result = data
       }
       try {
-        await dataApi.put(
-          r,
-          decodeURIComponent(urlSplit[urlSplit.length - 1]),
-          data,
-        )
+        if (urlSplit.length == 1)
+          await dataApi.updateManyThroughPutRequest(r, urlToReq(url), data)
+        else
+          await dataApi.put(
+            r,
+            decodeURIComponent(urlSplit[urlSplit.length - 1]),
+            data,
+          )
       } finally {
       }
       return result
     },
   })
+}
+
+export async function testMigrationScript(
+  db: DataProvider,
+  what: (n: MigrationBuilder) => Promise<void>,
+) {
+  let result: string
+  const m = cast<CanBuildMigrations>(
+    db,
+    'provideMigrationBuilder',
+  ).provideMigrationBuilder({
+    addComment: () => {
+      throw 'not implemented'
+    },
+    addSql: (sql) => {
+      result = sql
+    },
+    addTypescriptCode: () => {
+      throw 'not implemented'
+    },
+  })
+  await what(m)
+  return result
 }

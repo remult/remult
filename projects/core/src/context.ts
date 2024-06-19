@@ -32,13 +32,14 @@ import type {
   SubscriptionServer,
 } from './live-query/SubscriptionServer.js'
 import { verifyFieldRelationInfo } from './remult3/relationInfoMember.js'
-import { remultStatic } from './remult-static.js'
+import { remultStatic, resetFactory } from './remult-static.js'
+import { initDataProvider } from '../server/initDataProvider.js'
 
 export class RemultAsyncLocalStorage {
   static enable() {
-    ;(remult as RemultProxy).remultFactory = () => {
-      const r = remultStatic.asyncContext.getRemult()
-      if (r) return r
+    remultStatic.remultFactory = () => {
+      const r = remultStatic.asyncContext.getStore()
+      if (r) return r.remult
       else
         throw new Error(
           'remult object was requested outside of a valid context, try running it within initApi or a remult request cycle',
@@ -46,17 +47,31 @@ export class RemultAsyncLocalStorage {
     }
   }
   static disable() {
-    ;(remult as RemultProxy).resetFactory()
+    resetFactory()
   }
   constructor(
-    private readonly remultObjectStorage: myAsyncLocalStorage<Remult>,
+    private readonly remultObjectStorage: RemultAsyncLocalStorageCore<{
+      remult: Remult
+      inInitRequest?: boolean
+    }>,
   ) {}
-  run(remult: Remult, callback: (remult: Remult) => void) {
-    if (this.remultObjectStorage)
-      this.remultObjectStorage.run(remult, () => callback(remult))
-    else callback(remult)
+  async run<T>(
+    remult: Remult,
+    callback: (remult: Remult) => Promise<T>,
+  ): Promise<T> {
+    if (this.remultObjectStorage) {
+      return this.remultObjectStorage.run({ remult }, () => callback(remult))
+    } else return callback(remult)
   }
-  getRemult() {
+  isInInitRequest() {
+    return this.remultObjectStorage?.getStore()?.inInitRequest
+  }
+  setInInitRequest(val: boolean) {
+    const store = this.remultObjectStorage?.getStore()
+    if (!store) return
+    store.inInitRequest = val
+  }
+  getStore() {
     if (!this.remultObjectStorage) {
       throw new Error(
         "can't use static remult in this environment, `async_hooks` were not initialized",
@@ -67,9 +82,10 @@ export class RemultAsyncLocalStorage {
 }
 if (!remultStatic.asyncContext)
   remultStatic.asyncContext = new RemultAsyncLocalStorage(undefined!)
-type myAsyncLocalStorage<T> = {
-  run<R>(store: T, callback: (...args: any[]) => R, ...args: any[]): R
+export type RemultAsyncLocalStorageCore<T> = {
+  run<R>(store: T, callback: () => Promise<R>): Promise<R>
   getStore(): T | undefined
+  wasImplemented: 'yes'
 }
 
 export function isBackend() {
@@ -84,10 +100,10 @@ export class Remult {
    * @param entity - the entity to use
    * @param dataProvider - an optional alternative data provider to use. Useful for writing to offline storage or an alternative data provider
    */
-  public repo<T>(
+  public repo = <T>(
     entity: ClassType<T>,
     dataProvider?: DataProvider,
-  ): Repository<T> {
+  ): Repository<T> => {
     if (dataProvider === undefined) dataProvider = this.dataProvider
     let dpCache = this.repCache.get(dataProvider)
     if (!dpCache)
@@ -259,19 +275,89 @@ export type GetArguments<T> = T extends (...args: infer FirstArgument) => any
   ? FirstArgument
   : never
 export interface RemultContext {}
+/**
+ * Interface for configuring the API client used by Remult to perform HTTP calls to the backend.
+ */
 export interface ApiClient {
-  /** The http client to use when making api calls.
+  /**
+   * The HTTP client to use when making API calls. It can be set to a function with the `fetch` signature
+   * or an object that has `post`, `put`, `delete`, and `get` methods. This can also be used to inject
+   * logic before each HTTP call, such as adding authorization headers.
+   *
    * @example
+   * // Using Axios
    * remult.apiClient.httpClient = axios;
+   *
    * @example
-   * remult.apiClient.httpClient = httpClient;//angular http client
+   * // Using Angular HttpClient
+   * remult.apiClient.httpClient = httpClient;
+   * @see
+   * If you want to add headers using angular httpClient, see: https://medium.com/angular-shots/shot-3-how-to-add-http-headers-to-every-request-in-angular-fab3d10edc26
+   *
    * @example
-   * remult.apiClient.httpClient = fetch; //this is the default
+   * // Using fetch (default)
+   * remult.apiClient.httpClient = fetch;
+   *
+   * @example
+   * // Adding bearer token authorization
+   * remult.apiClient.httpClient = (
+   *   input: RequestInfo | URL,
+   *   init?: RequestInit
+   * ) => {
+   *   return fetch(input, {
+   *     ...init,
+   *     headers: authToken
+   *       ? {
+   *           ...init?.headers,
+   *           authorization: 'Bearer ' + authToken,
+   *         }
+   *       : init?.headers,
+   *
+   *     cache: 'no-store',
+   *   })
+   * }
    */
   httpClient?: ExternalHttpProvider | typeof fetch
-  /** The base url to for making api calls */
+
+  /**
+   * The base URL for making API calls. By default, it is set to '/api'. It can be modified to be relative
+   * or to use a different domain for the server.
+   *
+   * @example
+   * // Relative URL
+   * remult.apiClient.url = './api';
+   *
+   * @example
+   * // Different domain
+   * remult.apiClient.url = 'https://example.com/api';
+   */
   url?: string
+
+  /**
+   * The subscription client used for real-time data updates. By default, it is set to use Server-Sent Events (SSE).
+   * It can be set to any subscription provider as illustrated in the Remult tutorial for deploying to a serverless environment.
+   *
+   * @see https://remult.dev/tutorials/react-next/deployment.html#deploying-to-a-serverless-environment
+   */
   subscriptionClient?: SubscriptionClient
+
+  /**
+   * A function that wraps message handling for subscriptions. This is useful for executing some code before
+   * or after any message arrives from the subscription.
+   * For example, in Angular, to refresh a specific part of the UI,
+   * you can call the `NgZone` run method at this time.
+   *
+   * @example
+   * // Angular example
+   * import { Component, NgZone } from '@angular/core';
+   * import { remult } from "remult";
+   *
+   * export class AppComponent {
+   *   constructor(zone: NgZone) {
+   *     remult.apiClient.wrapMessageHandling = handler => zone.run(() => handler());
+   *   }
+   * }
+   */
   wrapMessageHandling?: (x: VoidFunction) => void
 }
 
@@ -356,16 +442,25 @@ export interface itemChange {
   deleted: boolean
 }
 
-export async function doTransaction(remult: Remult, what: () => Promise<void>) {
+export async function doTransaction(
+  remult: Remult,
+  what: (dp: DataProvider) => Promise<void>,
+) {
   const trans = new transactionLiveQueryPublisher(remult.liveQueryPublisher)
   let ok = true
-  const result = await remult.dataProvider.transaction(async (ds) => {
-    remult.dataProvider = ds
-    remult.liveQueryPublisher = trans
-    await what()
-    ok = true
-  })
-  if (ok) await trans.flush()
+  const prev = remult.dataProvider
+  try {
+    await remult.dataProvider.transaction(async (ds) => {
+      remult.dataProvider = ds
+      remult.liveQueryPublisher = trans
+      await what(ds)
+      ok = true
+    })
+
+    if (ok) await trans.flush()
+  } finally {
+    remult.dataProvider = prev
+  }
 }
 class transactionLiveQueryPublisher implements LiveQueryChangesListener {
   constructor(private orig: LiveQueryChangesListener) {}
@@ -391,23 +486,22 @@ class transactionLiveQueryPublisher implements LiveQueryChangesListener {
     }
   }
 }
-export function withRemult<T>(
+export async function withRemult<T>(
   callback: (remult) => Promise<T>,
   options?: {
-    dataProvider?: DataProvider
+    dataProvider?:
+      | DataProvider
+      | Promise<DataProvider>
+      | (() => Promise<DataProvider | undefined>)
   },
 ) {
   const remult = new Remult()
-  if (options?.dataProvider) remult.dataProvider = options.dataProvider
-  let r: Promise<T>
-  remultStatic.asyncContext.run(remult, () => {
-    r = new Promise<T>(async (res, rej) => {
-      try {
-        res(await callback(remult))
-      } catch (err) {
-        rej(err)
-      }
-    })
-  })
-  return r!
+
+  remult.dataProvider = await initDataProvider(
+    options?.dataProvider,
+    true,
+    async () => remult.dataProvider,
+  )
+
+  return remultStatic.asyncContext.run(remult, (r) => callback(r))
 }

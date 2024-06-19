@@ -112,14 +112,14 @@ export abstract class Action<inParam, outParam> implements ActionInterface {
         if (err.isForbiddenError)
           // got a problem in next with instance of ForbiddenError  - so replaced it with this bool
           res.forbidden()
-        else res.error(err)
+        else res.error(err, undefined)
       }
     })
   }
 }
 export class ForbiddenError extends Error {
-  constructor() {
-    super('Forbidden')
+  constructor(message = 'Forbidden') {
+    super(message)
   }
   isForbiddenError: true = true
 }
@@ -378,7 +378,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                 if (err.isForbiddenError)
                   // got a problem in next with instance of ForbiddenError  - so replaced it with this bool
                   res.forbidden()
-                else res.error(err)
+                else res.error(err, undefined)
               }
             },
           )

@@ -2,9 +2,168 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.25.5] TBD
+## [0.26.12] 2024-05-16
 
-- Fixed an issue with GraphQL and relations
+- Fixed an issue with stack overflow when calling `withRemult` from within `getUser` - relevant to next auth - `session` hook
+- The "static" `withRemult` will now use the dataProvider provided in the remultServer options by default
+- The "static" `withRemult` now supports promise of data provider etc...
+- Changed json storage to save json in a non formatted way (condensed), and added a `formatted` option to control it. By default JsonFile storage is `formatted`
+- Improved error handling in request lifecycle
+
+## [0.26.11] 2024-05-13
+
+- Fixed error in sqlite with reserved column names such as order etc...
+- #427 - Changed the retry on error 500, to 4 times instead of 50 or infinite that was before.
+- **Potential breaking change** #426 - Fixed to not trigger all relations to one load before saving and around read write json
+- Fixed error when id was not found in ArrayEntityDataProvider to include the entity name
+- Fixed filterToRaw to use the current database `wrapIdentifier` when none is provided.
+- Fixed endless retry on error 500 - now it'll retry 4 times 500ms apart.
+- Fixed error when sql expression sometimes translated wrongfully to a recursion error
+- Added support for [Turso](https://turso.tech/) db
+
+## [0.26.10] 2024-05-02
+
+- Fix order by error with multiple id columns
+
+## [0.26.8] 2024-05-01
+
+- Added support for `sqlite3` that runs on stackblitz
+- Fixed issues with knex when id columns are being updated
+- Fixed issues with mongo when id columns are being updated
+
+## [0.26.7] 2024-05-01
+
+- Fixed issue with id being empty in some cases in the saved hook
+- Added `describeEntity` and `describeBackendMethods` for better decorator-less support
+
+## [0.26.6] 2024-04-29
+
+- Minor fix to async_hooks fallback for running on stackblitz
+
+## [0.26.5] 2024-04-28
+
+- **Breaking change** - changed the api of `updateMany` to receive a `set` option, instead of second parameter for the set
+- Fixed primary key was not created for entities that had more than one id column using knex or postgres
+- Fixed issue where `dbNamesOf` in entity `sqlExpression` did not work
+
+## [0.26.4] 2024-04-24
+
+- `getValueList` now supports `@Fields.literal` & `@Fields.enum` (on top of `ValueListType`)
+
+## [0.26.3] 2024-04-22
+
+- Fixed issue with delete on Hono with session middleware
+- Fixed an issue with admin not working with Hono@4.2
+
+## [0.26.2] 2024-04-21
+
+- Added support for SolidStart https://remult.dev/tutorials/solid-start/
+
+## [0.26.1] 2024-04-18
+
+- Fixed issue where 404 return an error - forbidden instead of not found
+- Fixed an issue where `preventDefault` in `deleting` did not work
+
+## [0.26.0] 2024-04-08
+
+## Features
+
+- Added support for migrations. See [Migrations](https://remult.dev/docs/migrations.html).
+- Added an `error` hook to `RemultServerOptions` that is called whenever there is an error in the API lifecycle. See [RemultServerOptions](https://remult.dev/docs/ref_remultserveroptions.html#error).
+- Added `ForbiddenError` to the API, you can throw it anywhere in the request lifecycle to display a forbidden 401 error.
+- Added [`@Fields.literal`](https://remult.dev/docs/field-types.html#literal-fields-union-of-string-values) and [`@Fields.enum`](https://remult.dev/docs/field-types.html#enum-field).
+- Added support for `better-sqlite3` without knex, see [Connection a Database](https://remult.dev/docs/quickstart.html#connecting-a-database).
+- Added support for `bun:sqlite` [#387](https://github.com/remult/remult/issues/387#issuecomment-2030070423).
+- Added a generic implementation for `sqlite` that can be easily extended to any provider.
+- Added `apiPreprocessFilter` and `backendPreprocessFilter`, see [access control](https://remult.dev/docs/access-control.html#preprocessing-filters-for-api-requests).
+- Added a way to analyze filter and query it - `Filter.getPreciseValues`, which returns a `FilterPreciseValues` object containing the precise values for each property. see [access control](https://remult.dev/docs/access-control.html#preprocessing-filters-for-api-requests).
+- Added an exception when calling `updateMany` or `deleteMany` without a filter - to protect against accidental deleting/updating all data.
+- Added updateMany and deleteMany to OpenAPI (swagger) & graphql
+
+## Improvements
+
+- Added validation for `@Fields.number` & `Fields.integer` that the value is a valid number.
+- Added "basic" supports for environments where async hooks doesn't work well - mostly for web based dev machines.
+- Improved the API of `rawFilter` so it can now return the SQL where to be added to the command. see [Leveraging Custom Filters for Enhanced Data Filtering](https://remult.dev/docs/custom-filter.html#leveraging-database-capabilities-with-raw-sql-in-custom-filters)
+- `KnexDataProvider` now supports all `execute` and `createCommand` and can be used with any `SqlDatabase` functionality.
+- Changed postgres schema builder to use `timestamptz` instead of `timestamp`.
+- Changed the default storage of `@Fields.object` to `text` (varchar max) instead of string 255 in `knex` and `sqlite`.
+
+## Documentation Updates
+
+- Added or rewrote the following articles:
+  - [Migrations](https://remult.dev/docs/migrations.html)
+  - [Access Control](https://remult.dev/docs/access-control.html)
+  - [Custom/SQL Filter](https://remult.dev/docs/custom-filter.html)
+  - [Direct Database Access](https://remult.dev/docs/running-sql-on-the-server.html)
+  - [Extensibility](https://remult.dev/docs/custom-options.html)
+  - Lots of `jsdocs` improvements
+
+## Bug Fixes
+
+- Fixed an issue with entity ids that included date.
+- Fixed an issue with `repo(Entity,dataProvider)` - where saving wasn't fired because of wrong `isProxy` inference.
+- Fixed an issue with chaining of validators that in some cases caused a validator to be overwritten.
+- Fixed `ValueConverters` `Number` `fromInput` handle 0 as a valid value.
+
+## Breaking Changes
+
+- Changed the signature of `updateMany` and `deleteMany` to require a `where` parameter: `repo(Task).delete({ where: { completed: true } })`.
+- Changed the signature of `getDb` to receive `DataProvider` as a parameter instead of `Remult`.
+- Changed the POST REST API queries to include the filter under the `where` key in the body - previously, it included the filter as the body itself.
+
+## New Contributors
+
+- @eylonshm made their first contribution in https://github.com/remult/remult/pull/376
+- @daan-vdv made their first contribution in https://github.com/remult/remult/pull/397
+
+## [0.25.8] 2024-04-05
+
+- Fixed issue with typing when `skipLibCheck: false`
+
+## [0.25.7] 2024-03-21
+
+- Fixed typing issue with validators and typescript 5.4
+- Added `deleteMany` and `updateMany`
+- When `insert` is called in the front-end with an array of items, a single POST call is made to the server
+- Renamed `addParameterAndReturnSqlToken` to `param`. `addParameterAndReturnSqlToken` will be deprecated in future versions
+- Default number storage in knex, previously was decimal(8,2) now, decimal(18,2)
+- Fixed issue where exception throws in `initRequest` or `getUser` caused server to crash, instead of return a bad request error
+- Changed required to allow 0 as a value - so only null, undefined and empty strings are considered invalid for a required field
+- Fixed an issue where `backendPrefilter` was not applied to id based `update`, `save` or `delete` in the backend
+
+## [0.25.6] 2024-03-17
+
+- Added support for `orderByNullsFirst` in `PostgresDataProvider` to change the default postgres behavior where nulls are last
+- Added support for `tableName` option argument for `dbNamesOf` that'll add the table name to each field
+  Before:
+  ```ts
+  const orders = await dbNamesOf(Order)
+  return `(select count(*) from ${orders} where ${orders}.${orders.id}=1)
+  ```
+  Now:
+  ```ts
+  const orders = await dbNamesOf(Order, { tableNames:true })
+  return `(select count(*) from ${orders} where ${orders.id}=1)
+  ```
+- improved dbNamesOf of to use by default the wrapIdentifier of the current data provider if no wrap identifier was provided
+- Added support for using dbNamesOf in an sql expression for that same entity
+- Improved performance of dbNamesOf
+- Added support for [Hono](https://hono.dev/) web framework
+- Improved support for Mono repo scenario [#355](https://github.com/remult/remult/issues/355)
+- Added `withRemult` to next js page router
+- Fixed custom message to some validators (in etc...)
+- Improved support for union string fields
+
+## [0.25.5] 2024-02-11
+
+- Added `admin` option to servers, enabling the `/api/admin` route with a built in entity explorer
+- Fixed multiple issues with GraphQL and relations
+- Improved support for esm/cjs in same process scenario
+- Enabled json storage type for mysql & mysql2 knex adapters
+- Fixed issue in case of missing `reflect-metadata`
+- Added a recommended way to use remult in `sveltekit` using `api/[...remult]/+server.ts` route instead of a hook
+- Added ArrayEntityDataProvider to the external api
 
 ## [0.25.4] 2024-01-15
 

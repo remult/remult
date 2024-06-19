@@ -19,6 +19,7 @@ const tutorials = [
     path: 'react-next',
     additionalItems: [], // [{ text: "Appendix: Server-side Rendering", link: '/tutorials/react-next/appendix-1-get-server-side-props' }]
   },
+  { title: 'SolidStart', path: 'solid-start' },
 ]
 
 // https://vitepress.dev/reference/site-config
@@ -28,6 +29,7 @@ export default defineConfig({
     'Build Full-stack, End-to-end Type-safe CRUD Apps without the Boilerplate',
   lastUpdated: true,
   ignoreDeadLinks: 'localhostLinks',
+  cleanUrls: true,
 
   head: [
     ['link', { href: '/favicon.png', rel: 'icon', type: 'image/png' }],
@@ -52,7 +54,7 @@ export default defineConfig({
   themeConfig: {
     logo: '/logo.png',
     editLink: {
-      pattern: 'https://github.com/remult/remult/edit/master/docs/:path',
+      pattern: 'https://github.com/remult/remult/edit/main/docs/:path',
     },
     nav: [
       {
@@ -139,22 +141,38 @@ export default defineConfig({
               {
                 text: 'Relations 🚀',
                 link: '/docs/entity-relations',
-                // collapsed: true,
-                // items: [
-                //   // {
-                //   //   text: 'Lazy loading',
-                //   //   link: '/docs/lazy-loading-of-related-entities',
-                //   // },
-                //   {
-                //     text: 'More on One to Many',
-                //     link: '/docs/techniques-regarding-one-to-many-relations',
-                //   },
-                // ],
+                collapsed: true,
+                items: [
+                  {
+                    text: 'Filtering and Relations',
+                    link: '/docs/filtering-and-relations',
+                  },
+                ],
               },
               { text: 'Lifecycle Hooks', link: '/docs/lifecycle-hooks' },
+              { text: 'Migrations', link: '/docs/migrations' },
               {
                 text: 'Generate from Existing DB',
                 link: '/docs/entities-codegen-from-db-schema',
+              },
+              {
+                text: 'Offline Support',
+                link: '/docs/offline-support',
+              },
+              {
+                text: 'Active Record & EntityBase',
+                link: '/docs/active-record',
+                collapsed: true,
+                items: [
+                  {
+                    text: 'Entity Backend Methods',
+                    link: '/docs/entity-backend-methods',
+                  },
+                  {
+                    text: 'Mutable Controllers',
+                    link: '/docs/mutable-controllers',
+                  },
+                ],
               },
             ],
           },
@@ -164,13 +182,19 @@ export default defineConfig({
               {
                 text: 'Backend Methods',
                 link: '/docs/backendMethods',
-                collapsed: true,
-                items: [
-                  {
-                    text: 'Server-only Dependencies',
-                    link: '/docs/using-server-only-packages',
-                  },
-                ],
+              },
+              {
+                text: 'Server-only Dependencies',
+                link: '/docs/using-server-only-packages',
+              },
+            ],
+          },
+          {
+            text: 'Guides',
+            items: [
+              {
+                text: 'Access Control',
+                link: '/docs/access-control',
               },
             ],
           },
@@ -184,7 +208,7 @@ export default defineConfig({
                 link: '/docs/running-sql-on-the-server',
               },
               {
-                text: 'Remult within Express Routes',
+                text: 'Using Remult in Non-Remult Routes',
                 link: '/docs/using-remult-in-custom-backend-code',
               },
               {
@@ -208,9 +232,12 @@ export default defineConfig({
             items: [
               { text: 'Entity', link: '/docs/ref_entity' },
               { text: 'Field', link: '/docs/ref_field' },
+              { text: 'ValueConverter', link: '/docs/ref_valueconverter' },
+              { text: 'Validation', link: '/docs/validation' },
               { text: 'Relations', link: '/docs/ref_relations' },
               { text: 'RelationOptions', link: '/docs/ref_relationoptions' },
               { text: 'Remult', link: '/docs/ref_remult' },
+              { text: 'ApiClient', link: '/docs/ref_apiclient' },
               { text: 'Repository', link: '/docs/ref_repository' },
               {
                 text: 'RemultServerOptions',
@@ -223,7 +250,54 @@ export default defineConfig({
               { text: 'BackendMethod', link: '/docs/ref_backendmethod' },
               { text: 'QueryResult', link: '/docs/ref_queryresult' },
               { text: 'Paginator', link: '/docs/ref_paginator' },
+              { text: 'LiveQuery', link: '/docs/ref_livequery' },
+              {
+                text: 'LiveQueryChangeInfo',
+                link: '/docs/ref_livequerychangeinfo',
+              },
+              { text: 'Filter', link: '/docs/ref_filter' },
+              { text: 'Sort', link: '/docs/ref_sort' },
+              {
+                text: 'SubscriptionChannel',
+                link: '/docs/ref_subscriptionchannel',
+              },
+              {
+                text: 'generateMigrations',
+                link: '/docs/ref_generatemigrations',
+              },
+              { text: 'migrate', link: '/docs/ref_migrate' },
+
               { text: 'REST API Spec', link: '/docs/rest-api' },
+              {
+                text: 'Active Record & Mutable',
+                collapsed: true,
+                items: [
+                  {
+                    text: 'EntityBase',
+                    link: '/docs/ref_entitybase',
+                  },
+                  {
+                    link: '/docs/ref_identity',
+                    text: 'IdEntity',
+                  },
+                  {
+                    link: '/docs/ref_entityref',
+                    text: 'EntityRef',
+                  },
+                  {
+                    link: '/docs/ref_fieldref',
+                    text: 'FieldRef',
+                  },
+                  {
+                    link: '/docs/ref_getentityref',
+                    text: 'getEntityRef',
+                  },
+                  {
+                    link: '/docs/ref_getfields',
+                    text: 'getFields',
+                  },
+                ],
+              },
             ],
           },
         ],
@@ -248,6 +322,7 @@ export default defineConfig({
     },
   },
   markdown: {
+    theme: 'dark-plus',
     config(md) {
       md.use(tabsMarkdownPlugin)
     },

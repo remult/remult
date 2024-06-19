@@ -24,6 +24,7 @@
     "lib": ["es2018", "dom", "esnext.asynciterable"],
     "paths": {
       "remult": ["projects/core"],
+      "rmb": ["projects/migration-builder"],
       "remult/*": ["projects/core/*"],
       "@remult/*": ["projects/*"]
     }

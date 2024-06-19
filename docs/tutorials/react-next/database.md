@@ -3,7 +3,7 @@
 Up until now the todo app has been using a plain JSON file to store the list of tasks. **In production, we'd like to use a `Postgres` database table instead.**
 
 ::: tip Learn more
-See the [Connecting to a Database](../../docs/databases.md) article for the (long) list of relational and non-relational databases Remult supports.
+See the [Quickstart](https://remult.dev/docs/quickstart.html#connecting-a-database) article for the (long) list of relational and non-relational databases Remult supports.
 :::
 
 ::: warning Don't have Postgres installed? Don't have to.
@@ -27,39 +27,39 @@ Don't worry if you don't have Postgres installed locally. In the next step of th
    DATABASE_URL=your connection string
    ```
 
-4) Add the highlighted code to the `api` server module.
+3. Add the highlighted code to the `api` server module.
 
-   ```ts{5,9}
-   // src/app/api/[...remult]/route.ts
+   ```ts{5,7,11-13}
+   // src/api.ts
 
    //...
 
    import { createPostgresDataProvider } from "remult/postgres"
 
+   const DATABASE_URL = process.env["DATABASE_URL"]
+
    const api = remultNextApp({
      //...
-     dataProvider: createPostgresDataProvider()
+    dataProvider: DATABASE_URL
+      ? createPostgresDataProvider({ connectionString: DATABASE_URL })
+      : undefined,
    })
    ```
 
-   Once the application restarts, it'll use postgres as the data source for your application. It'll automatically create the `tasks` table for you - as you'll see in the `terminal` window.
+   Once the application restarts, it'll try to use postgres as the data source for your application.
 
-::: tip specifying the connection string
-You can specify a connection string, by setting the `connectionString` property, for example::
+   If `DATABASE_URL` env variable has found, it'll automatically create the `tasks` table for you - as you'll see in the `terminal` window.
 
-```ts
-createPostgresDataProvider({
-  connectionString: "your connection string"
-})
-```
+   If no `DATABASE_URL` has found, it'll just fallback to our local JSON files.
 
-and You can set more options using the `configuration` property.
+::: tip Database configurations
+You can set more options using the `configuration` property, for example `ssl` and others.
 
 ```ts
 createPostgresDataProvider({
   configuration: {
-    ssl: true
-  }
+    ssl: true,
+  },
 })
 ```
 

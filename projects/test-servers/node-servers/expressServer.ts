@@ -9,12 +9,18 @@ import { Task } from '../shared/Task'
 const app = express()
 const api = remultExpress({
   entities: [Task],
-  admin: true,
+  admin: () => 1 + 1 == 2,
 })
 app.use(api)
 app.get('/api/test', api.withRemult, async (req, res) => {
   res.json({ result: await remult.repo(Task).count() })
 })
+import swaggerUi from 'swagger-ui-express'
+
+const openApiDocument = api.openApiDoc({ title: 'remult-react-todo' })
+app.get('/api/openApi.json', (req, res) => res.json(openApiDocument))
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openApiDocument))
+
 const { typeDefs, resolvers } = remultGraphql({
   entities: [Task],
 })

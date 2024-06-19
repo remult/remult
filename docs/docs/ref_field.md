@@ -5,7 +5,7 @@ for more info see: [Field Types](https://remult.dev/docs/field-types.html)
 FieldOptions can be set in two ways:
    
    
-   *example*
+   #### example:
    ```ts
    // as an object
    @Fields.string({ includeInApi:false })
@@ -13,7 +13,7 @@ FieldOptions can be set in two ways:
    ```
    
    
-   *example*
+   #### example:
    ```ts
    // as an arrow function that receives `remult` as a parameter
    @Fields.string((options,remult) => options.includeInApi = true)
@@ -25,37 +25,73 @@ The value type for this field
 A human readable name for the field. Can be used to achieve a consistent caption for a field throughout the app
    
    
-   *example*
+   #### example:
    ```ts
    <input placeholder={taskRepo.metadata.fields.title.caption}/>
    ```
 ## allowNull
 If it can store null in the database
+## required
+If a value is required
 ## includeInApi
-If this field data is included in the api.
+Specifies whether this field should be included in the API. This can be configured
+based on access control levels.
    
    
-   *see*
-   [allowed](http://remult.dev/docs/allowed.html)
+   #### example:
+   ```ts
+   // Do not include in the API
+   @Fields.string({ includeInApi: false })
+   password = '';
+   // Include in the API for 'admin' only
+   @Fields.number({ includeInApi: 'admin' })
+   salary = 0;
+   ```
+   
+   
+   #### see:
+    - [allowed](https://remult.dev/docs/allowed.html)
+    - [Access Control](https://remult.dev/docs/access-control)
+   
 ## allowApiUpdate
-If this field data can be updated in the api.
+Determines whether this field can be updated via the API. This setting can also
+be controlled based on user roles or other access control checks.
    
    
-   *see*
-   [allowed](http://remult.dev/docs/allowed.html)
+   #### example:
+   ```ts
+   // Prevent API from updating this field
+   @Fields.string({ allowApiUpdate: false })
+   createdBy = remult.user?.id;
+   ```
+   
+   
+   #### see:
+    - [allowed](https://remult.dev/docs/allowed.html)
+    - [Access Control](https://remult.dev/docs/access-control)
+   
 ## validate
 An arrow function that'll be used to perform validations on it
    
    
-   *example*
+   #### example:
    ```ts
    @Fields.string({
      validate: Validators.required
    })
+   *
    ```
    
    
-   *example*
+   #### example:
+   ```ts
+   @Fields.string<Task>({
+      validate: task=>task.title.length>3 ||  "Too Short"
+   })
+   ```
+   
+   
+   #### example:
    ```ts
    @Fields.string<Task>({
       validate: task=>{
@@ -66,12 +102,12 @@ An arrow function that'll be used to perform validations on it
    ```
    
    
-   *example*
+   #### example:
    ```ts
    @Fields.string({
-      validate: (_, fieldRef)=>{
-        if (fieldRef.value.length<3)
-            fieldRef.error = "Too Short";
+      validate: (_, fieldValidationEvent)=>{
+        if (fieldValidationEvent.value.length < 3)
+            fieldValidationEvent.error = "Too Short";
      }
    })
    ```
@@ -80,8 +116,8 @@ Will be fired before this field is saved to the server/database
 
 Arguments:
 * **entity**
-* **e**
 * **fieldRef**
+* **e**
 ## serverExpression
 An expression that will determine this fields value on the backend and be provided to the front end
 
@@ -89,19 +125,18 @@ Arguments:
 * **entity**
 ## dbName
 The name of the column in the database that holds the data for this field. If no name is set, the key will be used instead.
-Be aware that if you are using postgres and want to keep your casing, you have to escape your string with double quotes.
    
    
-   *example*
+   #### example:
    ```ts
-   @Fields.string({ dbName: '"userName"'})
+   @Fields.string({ dbName: 'userName'})
    userName=''
    ```
 ## sqlExpression
 Used or fields that are based on an sql expressions, instead of a physical table column
    
    
-   *example*
+   #### example:
    ```ts
    @Fields.integer({
      sqlExpression:e=> 'length(title)'

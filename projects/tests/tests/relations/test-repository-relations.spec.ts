@@ -10,7 +10,7 @@ import {
 } from '../../../core'
 import type { ClassType } from '../../../core/classType'
 import { TestDataProvider } from '../../dbs/TestDataProviderWithStats'
-import { createEntity } from '.././dynamic-classes'
+import { entity } from '.././dynamic-classes'
 
 @Entity('categories')
 class Category {

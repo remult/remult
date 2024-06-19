@@ -75,42 +75,41 @@ Let's set-up `NextAuth.js` to authenticate users to our app.
    you can use an [online UUID generator](https://www.uuidgenerator.net/) to generate a completely random string
    :::
 
-3. Create an `auth` folder within the 'api' folder, and inside it, create a `[...nextauth]` subdirectory. Inside the `app/api/auth/[...nextauth]` directory, craft a `route.ts` file with the following code.
+3. Inside the `src` folder, create an `auth.ts` file with the following code.
 
    ```ts
-   // src/app/api/auth/[...nextauth]/route.ts
+   // src/auth.ts
 
-   import NextAuth, { getServerSession } from "next-auth/next"
-   import Credentials from "next-auth/providers/credentials"
-   import { UserInfo } from "remult"
+   import NextAuth, { getServerSession } from 'next-auth/next'
+   import Credentials from 'next-auth/providers/credentials'
+   import { UserInfo } from 'remult'
 
    const validUsers: UserInfo[] = [
-     { id: "1", name: "Jane" },
-     { id: "2", name: "Steve" }
+     { id: '1', name: 'Jane' },
+     { id: '2', name: 'Steve' },
    ]
    function findUser(name?: string | null) {
      return validUsers.find((user) => user.name === name)
    }
 
-   const auth = NextAuth({
+   export const auth = NextAuth({
      providers: [
        Credentials({
          credentials: {
            name: {
-             placeholder: "Try Steve or Jane"
-           }
+             placeholder: 'Try Steve or Jane',
+           },
          },
-         authorize: (credentials) => findUser(credentials?.name) || null
-       })
+         authorize: (credentials) => findUser(credentials?.name) || null,
+       }),
      ],
      callbacks: {
        session: ({ session }) => ({
          ...session,
-         user: findUser(session.user?.name)
-       })
-     }
+         user: findUser(session.user?.name),
+       }),
+     },
    })
-   export { auth as GET, auth as POST }
 
    export async function getUserOnServer() {
      const session = await getServerSession()
@@ -118,9 +117,19 @@ Let's set-up `NextAuth.js` to authenticate users to our app.
    }
    ```
 
-This (very) simplistic NextAuth.js [Credentials](https://next-auth.js.org/providers/credentials) authorizes users by looking up the user's name in a predefined list of valid users.
+   This (very) simplistic NextAuth.js [Credentials](https://next-auth.js.org/providers/credentials) authorizes users by looking up the user's name in a predefined list of valid users.
 
-We've configured the `session` `callback` to include the user info as part of the session info, so that remult on the frontend will have the authorization info.
+   We've configured the `session` `callback` to include the user info as part of the session info, so that remult on the frontend will have the authorization info.
+
+4. Create an `auth` folder within the 'api' folder, and inside it, create a `[...nextauth]` subdirectory. Inside the `src/app/api/auth/[...nextauth]` directory, craft a `route.ts` file with the following code.
+
+   ```ts
+   // src/app/api/auth/[...nextauth]/route.ts
+
+   import { auth } from '../../../../auth'
+
+   export { auth as GET, auth as POST }
+   ```
 
 ### Frontend setup
 
@@ -129,22 +138,22 @@ We've configured the `session` `callback` to include the user info as part of th
    ```tsx
    // src/components/auth.tsx
 
-   import { signIn, signOut, useSession } from "next-auth/react"
-   import { useEffect } from "react"
-   import { UserInfo, remult } from "remult"
-   import Todo from "./todo"
+   import { signIn, signOut, useSession } from 'next-auth/react'
+   import { useEffect } from 'react'
+   import { UserInfo, remult } from 'remult'
+   import Todo from './todo'
 
    export default function Auth() {
      const session = useSession()
      remult.user = session.data?.user as UserInfo
 
      useEffect(() => {
-       if (session.status === "unauthenticated") signIn()
+       if (session.status === 'unauthenticated') signIn()
      }, [session])
-     if (session.status !== "authenticated") return <></>
+     if (session.status !== 'authenticated') return <></>
      return (
        <div>
-         Hello {remult.user?.name}{" "}
+         Hello {remult.user?.name}{' '}
          <button onClick={() => signOut()}>Sign Out</button>
          <Todo />
        </div>
@@ -172,12 +181,12 @@ We've configured the `session` `callback` to include the user info as part of th
 
 ### Connect Remult-Next On the Backend
 
-Once an authentication flow is established, integrating it with Remult in the backend is as simple as providing Remult with a `getUser` function that uses the `getUserOnServer` function we've created in `auth/[...nextauth]/route.ts`
+Once an authentication flow is established, integrating it with Remult in the backend is as simple as providing Remult with a `getUser` function that uses the `getUserOnServer` function we've created in `src/auth.ts`
 
 ```ts{3,7}
-// src/app/api/[...remult]/route.ts
+// src/api.ts
 
-import { getUserOnServer } from "../auth/[...nextauth]/route"
+import { getUserOnServer } from "./auth"
 
 const api = remultNextApp({
   //...
@@ -228,7 +237,7 @@ export class Task {
 2. Let's give the user _"Jane"_ the `admin` role by modifying the `roles` array of her `validUsers` entry.
 
 ```ts{4}
-// src/app/api/auth/[...nextauth]/route.ts
+// src/auth.ts
 
 const validUsers = [
   { id: "1", name: "Jane", roles: ["admin"] },

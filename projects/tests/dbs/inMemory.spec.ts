@@ -6,6 +6,7 @@ import {
   InMemoryDataProvider,
   Remult,
   describeClass,
+  describeEntity,
 } from '../../core'
 import { allDbTests } from './shared-tests'
 
@@ -39,7 +40,7 @@ describe('In Memory Tests', () => {
       b = ''
       c = ''
     }
-    describeClass(c, Entity('c'), {
+    describeEntity(c, 'c', {
       id: Fields.number(),
       a: Fields.string(),
       b: Fields.string({ serverExpression: () => 'x' }),

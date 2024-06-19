@@ -14,15 +14,15 @@ import type {
   FieldMetadata,
   Remult,
 } from './index.js'
-import { CompoundIdField, Filter } from './index.js'
+import { Filter } from './index.js'
 import type { EntityDbNamesBase } from './src/filter/filter-consumer-bridge-to-sql-request.js'
 import { dbNamesOf } from './src/filter/filter-consumer-bridge-to-sql-request.js'
 import type { FilterConsumer } from './src/filter/filter-interfaces.js'
 import { remult as remultContext } from './src/remult-proxy.js'
 import type { RepositoryOverloads } from './src/remult3/RepositoryImplementation.js'
 import { getRepository } from './src/remult3/RepositoryImplementation.js'
-import { resultCompoundIdFilter } from './src/resultCompoundIdFilter.js'
 import { getRepositoryInternals } from './src/remult3/repository-internals.js'
+import { getRowAfterUpdate } from './src/data-providers/sql-database.js'
 
 export class MongoDataProvider implements DataProvider {
   constructor(
@@ -35,8 +35,8 @@ export class MongoDataProvider implements DataProvider {
   }
   session?: ClientSession
   disableTransactions = false
-  static getDb(remult?: Remult) {
-    const r = (remult || remultContext).dataProvider as MongoDataProvider
+  static getDb(dataProvider?: DataProvider) {
+    const r = (dataProvider || remultContext.dataProvider) as MongoDataProvider
     if (!r.db) throw 'the data provider is not a MongoDataProvider'
     return { db: r.db, session: r.session }
   }
@@ -75,7 +75,7 @@ export class MongoDataProvider implements DataProvider {
     var b = new FilterConsumerBridgeToMongo(await dbNamesOf(repo.metadata))
     b._addWhere = false
     await (
-      await getRepositoryInternals(repo).translateWhereToFilter(condition)
+      await getRepositoryInternals(repo)._translateWhereToFilter(condition)
     ).__applyToConsumer(b)
     let r = await b.resolveWhere()
     return r
@@ -151,14 +151,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
       this.entity,
       this.entity.idMetadata.getIdFilter(id),
     ).__applyToConsumer(f)
-    let resultFilter = this.entity.idMetadata.getIdFilter(id)
-    if (data.id != undefined)
-      resultFilter = this.entity.idMetadata.getIdFilter(data.id)
-    for (const x of this.entity.fields) {
-      if (x instanceof CompoundIdField) {
-        resultFilter = resultCompoundIdFilter(x, id, data)
-      }
-    }
+
     let newR = {}
     let keys = Object.keys(data)
     for (const f of this.entity.fields) {
@@ -175,9 +168,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
       },
       { session: this.session },
     )
-    return this.find({
-      where: Filter.fromEntityFilter(this.entity, resultFilter),
-    }).then((y) => y[0])
+    return getRowAfterUpdate(this.entity, this, data, id, 'update')
   }
   async delete(id: any): Promise<void> {
     const { e, collection } = await this.collection()

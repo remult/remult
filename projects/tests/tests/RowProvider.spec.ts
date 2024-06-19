@@ -36,41 +36,19 @@ import {
 } from '../../core/src/filter/filter-interfaces'
 import { createData } from './createData'
 import { decorateColumnSettings } from '../../core/src/remult3/RepositoryImplementation'
-
-@ValueListFieldType({
-  getValues: () => [
-    Language.Hebrew,
-    Language.Russian,
-    new Language(20, 'אמהרית'),
-  ],
-})
-export class Language {
-  static Hebrew = new Language(0, 'עברית')
-  static Russian = new Language(10, 'רוסית')
-  constructor(
-    public id: number,
-    public caption: string,
-  ) {}
-}
-
-export async function insertFourRows() {
-  return createData(async (i) => {
-    await i(1, 'noam', 'x')
-    await i(4, 'yael', 'x')
-    await i(2, 'yoni', 'y')
-    await i(3, 'maayan', 'y')
-  })
-}
+import { insertFourRows, Language } from './entities-for-tests.js'
 
 describe('grid filter stuff', () => {
   it('filter with contains', async () => {
     let x = new FilterConsumerBridgeToSqlRequest(
       {
         addParameterAndReturnSqlToken: () => '',
+        param: () => '',
       },
       {
         $entityName: '',
         $dbNameOf: () => 'col',
+        wrapIdentifier: (x) => x,
       },
     )
 
@@ -83,10 +61,12 @@ describe('grid filter stuff', () => {
     let x = new FilterConsumerBridgeToSqlRequest(
       {
         addParameterAndReturnSqlToken: () => '',
+        param: () => '',
       },
       {
         $entityName: '',
         $dbNameOf: () => 'col',
+        wrapIdentifier: (x) => x,
       },
     )
 
@@ -127,6 +107,27 @@ describe('Closed List  column', () => {
 
     expect(e.l).toBe(Language.Russian)
     expect(e._.toApiJson().l).toBe(10)
+    e.l = {
+      id: 99,
+      caption: 'bla',
+    }
+    await expect(() => e.save()).rejects.toThrowErrorMatchingInlineSnapshot(`
+      {
+        "message": "L: Value must be one of: 0, 10, 20",
+        "modelState": {
+          "l": "Value must be one of: 0, 10, 20",
+        },
+      }
+    `)
+  })
+  it('test with validation', async () => {
+    let c = new Remult().repo(entityWithValueList, new InMemoryDataProvider())
+    let e = c.create()
+
+    e.l = {
+      ...Language.Russian,
+    }
+    expect((await e.save()).l).toBe(Language.Russian)
   })
   it('test with entity and data defined on type', async () => {
     let c = new Remult().repo(entityWithValueList, new InMemoryDataProvider())
@@ -537,6 +538,7 @@ describe('test datetime column', () => {
     let x = class {
       name = 'noam'
       myDate = new Date(1976, 5, 16)
+      num = 7
     }
 
     describeClass(x, Entity('myEntity'), {
@@ -544,17 +546,22 @@ describe('test datetime column', () => {
       myDate: Fields.dateOnly<InstanceType<typeof x>>({
         displayValue: (z) => z.name + z.myDate.getFullYear(),
       }),
+      num: Fields.number(),
     })
     var repo = new Remult().repo(x)
     let y: InstanceType<typeof x> = {
       name: 'noam',
       myDate: new Date(1976, 5, 16),
+      num: 0,
     }
     expect(repo.fields.myDate.displayValue(y)).toBe('noam1976')
     expect(repo.fields.myDate.toInput(new Date(1976, 5, 16))).toBe('1976-06-16')
     expect(repo.fields.myDate.fromInput('1976-06-16')).toEqual(
       new Date(1976, 5, 16),
     )
+    // @ts-expect-error first arg should be a string,
+    // but in case we pass the value of html <input />, it can be a number already
+    expect(repo.fields.num.fromInput(0, 'number')).toEqual(0)
   })
 
   it('date Storage works 1', () => {
@@ -671,8 +678,8 @@ describe('test ', () => {
 })
 
 export class myDp extends ArrayEntityDataProvider {
-  constructor(entity: EntityMetadata) {
-    super(entity, [])
+  constructor(entity: EntityMetadata, rows = []) {
+    super(entity, () => rows)
   }
   public update(id: any, data: any): Promise<any> {
     throw new Error('what')

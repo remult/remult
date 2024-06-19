@@ -2,7 +2,7 @@
 import { createSchema, createYoga } from 'graphql-yoga'
 import { remultGraphql } from 'remult/graphql'
 import { Task } from '../../../shared/task'
-import { api } from '../[...remult]/route'
+import { api } from '../[...remult]/api'
 
 const { typeDefs, resolvers } = remultGraphql({
   entities: [Task],

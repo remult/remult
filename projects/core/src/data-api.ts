@@ -14,6 +14,7 @@ import type { QueryData } from './live-query/SubscriptionServer.js'
 import { getRelationFieldInfo } from './remult3/relationInfoMember.js'
 import type {
   EntityFilter,
+  EntityMetadata,
   FindOptions,
   Repository,
 } from './remult3/remult3.js'
@@ -54,7 +55,16 @@ export class DataApi<T = any> {
     serializeContext: () => Promise<any>,
   ) {
     const action = req?.get('__action')
-    if (action?.startsWith(liveQueryAction))
+    function validateWhereInBody() {
+      if (!body?.where) {
+        throw {
+          message: `POST with action ${action} must have a where clause in the body`,
+          httpStatusCode: 400,
+        } satisfies ErrorInfo
+      }
+    }
+    if (action?.startsWith(liveQueryAction)) {
+      validateWhereInBody()
       return this.liveQuery(
         res,
         req,
@@ -62,11 +72,20 @@ export class DataApi<T = any> {
         serializeContext,
         action.substring(liveQueryAction.length),
       )
+    }
     switch (action) {
       case 'get':
+        validateWhereInBody()
         return this.getArray(res, req, body)
       case 'count':
+        validateWhereInBody()
         return this.count(res, req, body)
+      case 'deleteMany':
+        validateWhereInBody()
+        return this.deleteMany(res, req, body)
+      case 'updateMany':
+        validateWhereInBody()
+        return this.updateManyImplementation(res, req, body)
       case 'endLiveQuery':
         await this.remult.liveQueryStorage!.remove(body.id)
         res.success('ok')
@@ -85,11 +104,7 @@ export class DataApi<T = any> {
       response.success(this.repository.getEntityRef(row).toApiJson()),
     )
   }
-  async count(
-    response: DataApiResponse,
-    request: DataApiRequest,
-    filterBody?: any,
-  ) {
+  async count(response: DataApiResponse, request: DataApiRequest, body?: any) {
     if (!this.repository.metadata.apiReadAllowed) {
       response.forbidden()
       return
@@ -97,24 +112,47 @@ export class DataApi<T = any> {
     try {
       response.success({
         count: +(await this.repository.count(
-          await this.buildWhere(request, filterBody),
+          await this.buildWhere(request, body),
         )),
       })
     } catch (err) {
-      response.error(err)
+      response.error(err, this.repository.metadata)
+    }
+  }
+  async deleteMany(
+    response: DataApiResponse,
+    request: DataApiRequest,
+    body?: any,
+  ) {
+    try {
+      let deleted = 0
+      let where = await this.buildWhere(request, body)
+      Filter.throwErrorIfFilterIsEmpty(where, 'deleteMany')
+      return await doTransaction(this.remult, async () => {
+        for await (const x of this.repository.query({
+          where,
+          include: this.includeNone(),
+        })) {
+          await this.actualDelete(x)
+          deleted++
+        }
+        response.success({ deleted })
+      })
+    } catch (err) {
+      response.error(err, this.repository.metadata)
     }
   }
 
   async getArrayImpl(
     response: DataApiResponse,
     request: DataApiRequest,
-    filterBody: any,
+    body: any,
   ) {
     let findOptions: FindOptions<T> = {
       load: () => [],
       include: this.includeNone(),
     }
-    findOptions.where = await this.buildWhere(request, filterBody)
+    findOptions.where = await this.buildWhere(request, body)
 
     if (request) {
       let sort = <string>request.get('_sort')
@@ -183,25 +221,25 @@ export class DataApi<T = any> {
   async getArray(
     response: DataApiResponse,
     request: DataApiRequest,
-    filterBody?: any,
+    body?: any,
   ) {
     if (!this.repository.metadata.apiReadAllowed) {
       response.forbidden()
       return
     }
     try {
-      const { r } = await this.getArrayImpl(response, request, filterBody)
+      const { r } = await this.getArrayImpl(response, request, body)
 
       response.success(r)
     } catch (err) {
       if (err.isForbiddenError) response.forbidden()
-      else response.error(err)
+      else response.error(err, this.repository.metadata)
     }
   }
   async liveQuery(
     response: DataApiResponse,
     request: DataApiRequest,
-    filterBody: any,
+    body: any,
     serializeContext: () => Promise<any>,
     queryChannel: string,
   ) {
@@ -210,7 +248,7 @@ export class DataApi<T = any> {
       return
     }
     try {
-      const r = await this.getArrayImpl(response, request, filterBody)
+      const r = await this.getArrayImpl(response, request, body)
       const data: QueryData = {
         requestJson: await serializeContext(),
         findOptionsJson: findOptionsToJson(
@@ -227,12 +265,12 @@ export class DataApi<T = any> {
       response.success(r.r)
     } catch (err) {
       if (err.isForbiddenError) response.forbidden()
-      else response.error(err)
+      else response.error(err, this.repository.metadata)
     }
   }
   private async buildWhere(
     request: DataApiRequest,
-    filterBody: any,
+    body: any,
   ): Promise<EntityFilter<any>> {
     var where: EntityFilter<any>[] = []
     if (this.repository.metadata.options.apiPrefilter) {
@@ -241,25 +279,35 @@ export class DataApi<T = any> {
       else where.push(this.repository.metadata.options.apiPrefilter)
     }
     if (request) {
-      where.push(
-        buildFilterFromRequestParameters(this.repository.metadata, {
-          get: (key) => {
-            let result = request.get(key)
-            if (
-              key.startsWith(customUrlToken) &&
-              result &&
-              typeof result === 'string'
+      let f = buildFilterFromRequestParameters(this.repository.metadata, {
+        get: (key) => {
+          let result = body?.where?.[key]
+          if (result !== undefined) return result
+
+          result = request.get(key)
+          if (
+            key.startsWith(customUrlToken) &&
+            result &&
+            typeof result === 'string'
+          )
+            return JSON.parse(result)
+          return result
+        },
+      })
+      if (this.repository.metadata.options.apiPreprocessFilter) {
+        f = await this.repository.metadata.options.apiPreprocessFilter(f, {
+          metadata: this.repository.metadata,
+          getFilterPreciseValues: async (filter?: EntityFilter<any>) => {
+            return Filter.getPreciseValues(
+              this.repository.metadata,
+              filter || f,
             )
-              return JSON.parse(result)
-            return result
           },
-        }),
-      )
+        })
+      }
+      where.push(f)
     }
-    if (filterBody)
-      where.push(
-        Filter.entityFilterFromJson(this.repository.metadata, filterBody),
-      )
+
     return { $and: where }
   }
 
@@ -285,33 +333,85 @@ export class DataApi<T = any> {
         })
         .then(async (r) => {
           if (r.length == 0) response.notFound()
-          else if (r.length > 1) response.error({ message: 'id is not unique' })
+          else if (r.length > 1)
+            response.error(
+              {
+                message:
+                  `id "${id}" is not unique for entity ` +
+                  this.repository.metadata.key,
+              },
+              this.repository.metadata,
+              500,
+            )
           else await what(r[0])
         })
     } catch (err) {
-      response.error(err)
+      response.error(err, this.repository.metadata)
     }
+  }
+  async updateManyThroughPutRequest(
+    response: DataApiResponse,
+    request: DataApiRequest,
+    body: any,
+  ) {
+    const action = request?.get('__action')
+    if (action == 'emptyId') {
+      return this.put(response, '', body)
+    }
+
+    return this.updateManyImplementation(response, request, {
+      where: undefined,
+      set: body,
+    })
+  }
+  async updateManyImplementation(
+    response: DataApiResponse,
+    request: DataApiRequest,
+    body: { where: any; set: any },
+  ) {
+    try {
+      let where = await this.buildWhere(request, body)
+      Filter.throwErrorIfFilterIsEmpty(where, 'deleteMany')
+      return await doTransaction(this.remult, async () => {
+        let updated = 0
+        for await (const x of this.repository.query({
+          where,
+          include: this.includeNone(),
+        })) {
+          await this.actualUpdate(x, body.set)
+          updated++
+        }
+        response.success({ updated })
+      })
+    } catch (err) {
+      response.error(err, this.repository.metadata)
+    }
+  }
+  async actualUpdate(row: any, body: any) {
+    let ref = this.repository.getEntityRef(row) as rowHelperImplementation<T>
+    await ref._updateEntityBasedOnApi(body)
+    if (!ref.apiUpdateAllowed) {
+      throw new ForbiddenError()
+    }
+    await ref.save()
+    return ref
   }
   async put(response: DataApiResponse, id: any, body: any) {
     await this.doOnId(response, id, async (row) => {
-      let ref = this.repository.getEntityRef(row) as rowHelperImplementation<T>
-      await ref._updateEntityBasedOnApi(body)
-      if (!ref.apiUpdateAllowed) {
-        response.forbidden()
-        return
-      }
-      await ref.save()
+      const ref = await this.actualUpdate(row, body)
       response.success(ref.toApiJson())
     })
+  }
+  async actualDelete(row: any) {
+    if (!this.repository.getEntityRef(row).apiDeleteAllowed) {
+      throw new ForbiddenError()
+    }
+    await this.repository.getEntityRef(row).delete()
   }
 
   async delete(response: DataApiResponse, id: any) {
     await this.doOnId(response, id, async (row) => {
-      if (!this.repository.getEntityRef(row).apiDeleteAllowed) {
-        response.forbidden()
-        return
-      }
-      await this.repository.getEntityRef(row).delete()
+      await this.actualDelete(row)
       response.deleted()
     })
   }
@@ -339,8 +439,8 @@ export class DataApi<T = any> {
         response.created(result)
       } else response.created(await insert(body))
     } catch (err) {
-      if (err.isForbiddenError) response.forbidden()
-      else response.error(err)
+      if (err.isForbiddenError) response.forbidden(err.message)
+      else response.error(err, this.repository.metadata)
     }
   }
 }
@@ -350,8 +450,12 @@ export interface DataApiResponse {
   deleted(): void
   created(data: any): void
   notFound(): void
-  error(data: ErrorInfo): void
-  forbidden(): void
+  error(
+    data: ErrorInfo,
+    entity: EntityMetadata | undefined,
+    statusCode?: number | undefined,
+  ): void
+  forbidden(message?: string): void
   progress(progress: number): void
 }
 

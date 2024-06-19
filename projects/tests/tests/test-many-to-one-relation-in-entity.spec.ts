@@ -1,23 +1,30 @@
 import { InMemoryDataProvider } from '../../core/src//data-providers/in-memory-database'
 import type { rowHelperImplementation } from '../../core/src/remult3/RepositoryImplementation'
 import type { EntityFilter } from '../../core'
-import { Entity, EntityBase, Field, Fields, getEntityRef } from '../../core'
+import {
+  Entity,
+  EntityBase,
+  Field,
+  Fields,
+  getEntityRef,
+  Relations,
+} from '../../core'
 import { Remult } from '../../core/src/context'
 
 import {
   entityFilterToJson,
   Filter,
 } from '../../core/src/filter/filter-interfaces'
-import { Language } from './RowProvider.spec'
 
 import { DataApi } from '../../core/src/data-api'
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { Done } from './Done'
-import { Categories, Products } from './entities-for-tests'
+import { Categories, Language, Products } from './entities-for-tests'
 import { h } from './h'
 import { TestDataApiResponse } from './TestDataApiResponse'
 import { actionInfo } from '../../core/internals'
+import { entity } from './dynamic-classes.js'
 
 @Entity('products')
 class ProductsEager extends EntityBase {
@@ -970,5 +977,98 @@ describe('Test many to one without active record', () => {
     const c = await remult.repo(Contact).insert({ name: 'c1' })
     const t = await remult.repo(Tags).insert({ contact: c })
     expect(getEntityRef(t).fields.contact.getId()).toBe(c.id)
+  })
+})
+describe('test api loading stuff', () => {
+  const category = entity('category', {
+    id: Fields.integer(),
+  })
+  const task = entity(
+    'tasks',
+    {
+      id: Fields.integer(),
+      categoryId: Fields.integer(),
+      category: Relations.toOne(() => category, 'categoryId'),
+    },
+    {
+      allowApiCrud: true,
+    },
+  )
+
+  it('test api doesnt load too much', async () => {
+    let mem = new InMemoryDataProvider()
+    let c = new Remult()
+    c.dataProvider = mem
+
+    await c.repo(category).insert([{ id: 1 }, { id: 2 }])
+    await c.repo(task).insert({ id: 11, categoryId: 1 })
+    c = new Remult() //clear the cache;
+    c.dataProvider = mem
+    let fetches = []
+    c.dataProvider = {
+      transaction: undefined,
+      getEntityDataProvider: (e) => {
+        let r = mem.getEntityDataProvider(e)
+        return {
+          find: (x) => {
+            fetches.push(x.where.toJson().id)
+            return r.find(x)
+          },
+          count: (...args) => r.count(...args),
+          delete: (...args) => r.delete(...args),
+          insert: (...args) => r.insert(...args),
+          update: (...args) => r.update(...args),
+        }
+      },
+    }
+    let api = new DataApi(c.repo(task), c)
+    let t = new TestDataApiResponse()
+    let done = new Done()
+    t.success = (d) => {
+      expect(d.id).toBe(11)
+      expect(d.categoryId).toBe(2)
+      expect(fetches).toEqual([11])
+      done.ok()
+    }
+    await api.put(t, 11, { categoryId: 2 })
+    done.test()
+  })
+  it('test api doesnt load too much on insert', async () => {
+    let mem = new InMemoryDataProvider()
+    let c = new Remult()
+    c.dataProvider = mem
+
+    await c.repo(category).insert([{ id: 1 }, { id: 2 }])
+
+    c = new Remult() //clear the cache;
+    c.dataProvider = mem
+    let fetches = []
+    c.dataProvider = {
+      transaction: undefined,
+      getEntityDataProvider: (e) => {
+        let r = mem.getEntityDataProvider(e)
+        return {
+          find: (x) => {
+            fetches.push(x.where.toJson().id)
+            return r.find(x)
+          },
+          count: (...args) => r.count(...args),
+          delete: (...args) => r.delete(...args),
+          insert: (...args) => r.insert(...args),
+          update: (...args) => r.update(...args),
+        }
+      },
+    }
+    let api = new DataApi(c.repo(task), c)
+    let t = new TestDataApiResponse()
+    let done = new Done()
+    t.created = (d) => {
+      expect(d.id).toBe(11)
+      expect(d.categoryId).toBe(1)
+      expect(fetches).toEqual([])
+      done.ok()
+    }
+    await api.post(t, { id: 11, categoryId: 1 })
+    done.test()
   })
 })

@@ -8,8 +8,10 @@ import type {
   EntityOrderBy,
   EntityRef,
   FieldsMetadata,
+  FindOptions,
   LifecycleEvent,
 } from './remult3/remult3.js'
+import type { FilterPreciseValues } from './filter/filter-interfaces.js'
 
 export interface EntityOptions<entityType = any> {
   /**A human readable name for the entity */
@@ -26,31 +28,84 @@ export interface EntityOptions<entityType = any> {
 
   /**
    * Determines if this entity can be updated through the api.
-   * @see [allowed](http://remult.dev/docs/allowed.html)*/
+   * @see [allowed](http://remult.dev/docs/allowed.html)
+   * @see [Access Control](https://remult.dev/docs/access-control)
+   * */
   allowApiUpdate?: AllowedForInstance<entityType>
   /** Determines if entries for this entity can be deleted through the api.
-   * @see [allowed](http://remult.dev/docs/allowed.html)*/
+   * @see [allowed](http://remult.dev/docs/allowed.html)
+   * @see [Access Control](https://remult.dev/docs/access-control)
+   * */
   allowApiDelete?: AllowedForInstance<entityType>
   /** Determines if new entries for this entity can be posted through the api.
-   * @see [allowed](http://remult.dev/docs/allowed.html)*/
+   * @see [allowed](http://remult.dev/docs/allowed.html)
+   * @see [Access Control](https://remult.dev/docs/access-control)
+   * */
   allowApiInsert?: AllowedForInstance<entityType>
   /** sets  the `allowApiUpdate`, `allowApiDelete` and `allowApiInsert` properties in a single set */
   allowApiCrud?: Allowed
 
-  /** A filter that determines which rows can be queries using the api.
-   * @description
-   * Use apiPrefilter in cases where you to restrict data based on user profile
-   * @example
-   * apiPrefilter: { archive:false }
+  /**
+   * An optional filter that determines which rows can be queried using the API.
+   * This filter is applied to all CRUD operations to ensure that only authorized data is accessible.
+   *
+   * Use `apiPrefilter` to restrict data based on user profile or other conditions.
    *
    * @example
-   * apiPrefilter: ()=> remult.isAllowed("admin")?{}:{ archive:false }
-   * @see [EntityFilter](http://remult.dev/docs/entityFilter.html)
+   * // Only include non-archived items in API responses
+   * apiPrefilter: { archive: false }
    *
+   * @example
+   * // Allow admins to access all rows, but restrict non-admins to non-archived items
+   * apiPrefilter: () => remult.isAllowed("admin") ? {} : { archive: false }
+   *
+   * @see [EntityFilter](https://remult.dev/docs/access-control.html#filtering-accessible-rows)
    */
   apiPrefilter?:
     | EntityFilter<entityType>
     | (() => EntityFilter<entityType> | Promise<EntityFilter<entityType>>)
+
+  /**
+   * An optional function that allows for preprocessing or modifying the EntityFilter for a specific entity type
+   * before it is used in API CRUD operations. This function can be used to enforce additional access control
+   * rules or adjust the filter based on the current context or specific request.
+   *
+   * @template entityType The type of the entity being filtered.
+   * @param filter The initial EntityFilter for the entity type.
+   * @param event Additional information and utilities for preprocessing the filter.
+   * @returns The modified EntityFilter or a Promise that resolves to the modified EntityFilter.
+   *
+   * @example
+   * ```typescript
+   * @Entity<Task>("tasks", {
+   *   apiPreprocessFilter: async (filter, { getPreciseValues }) => {
+   *     // Ensure that users can only query tasks for specific customers
+   *     const preciseValues = await getPreciseValues();
+   *     if (!preciseValues.customerId) {
+   *       throw new ForbiddenError("You must specify a valid customerId filter");
+   *     }
+   *     return filter;
+   *   }
+   * })
+   * ```
+   */
+  apiPreprocessFilter?: (
+    filter: EntityFilter<entityType>,
+    event: PreprocessFilterEvent<entityType>,
+  ) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>
+
+  /**
+   * Similar to apiPreprocessFilter, but for backend operations.
+   *
+   * @template entityType The type of the entity being filtered.
+   * @param filter The initial EntityFilter for the entity type.
+   * @param event Additional information and utilities for preprocessing the filter.
+   * @returns The modified EntityFilter or a Promise that resolves to the modified EntityFilter.
+   */
+  backendPreprocessFilter?: (
+    filter: EntityFilter<entityType>,
+    event: PreprocessFilterEvent<entityType>,
+  ) => EntityFilter<entityType> | Promise<EntityFilter<entityType>>
 
   /** A filter that will be used for all queries from this entity both from the API and from within the backend.
    * @example
@@ -143,7 +198,19 @@ export interface EntityOptions<entityType = any> {
    * dbName:'public."myProducts"'
    */
   dbName?: string
-  /** For entities that are based on SQL expressions instead of a physical table or view*/
+  /** For entities that are based on SQL expressions instead of a physical table or view
+   * @example
+   * .@Entity('people',{
+   * sqlExpression:`select id,name from employees
+   *      union all select id,name from contractors`,
+   * })
+   * export class Person{
+   * .@Fields.string()
+   * id=''
+   * .@Fields.string()
+   * name=''
+   * }
+   */
   sqlExpression?:
     | string
     | ((entity: EntityMetadata<entityType>) => string | Promise<string>)
@@ -158,6 +225,29 @@ export interface EntityOptions<entityType = any> {
   id?:
     | EntityIdFields<entityType>
     | ((entity: FieldsMetadata<entityType>) => FieldMetadata | FieldMetadata[])
+
   entityRefInit?: (ref: EntityRef<entityType>, row: entityType) => void
   apiRequireId?: Allowed
+}
+
+/**
+ * Provides additional information and utilities for preprocessing filters in API and backend operations.
+ * @template entityType The type of the entity being filtered.
+ */
+export interface PreprocessFilterEvent<entityType> {
+  /**
+   * Metadata of the entity being filtered.
+   */
+  metadata: EntityMetadata<entityType>
+
+  /**
+   * Retrieves precise values for each property in a filter for an entity.
+   * @param filter Optional filter to analyze. If not provided, the current filter being preprocessed is used.
+   * @returns A promise that resolves to a FilterPreciseValues object containing the precise values for each property.
+   
+  * @see {@Link FilterPreciseValues }
+   */
+  getFilterPreciseValues(
+    filter?: EntityFilter<entityType>,
+  ): Promise<FilterPreciseValues<entityType>>
 }

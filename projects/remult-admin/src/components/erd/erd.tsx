@@ -75,10 +75,10 @@ export function Erd({ god }: { god: God }) {
   )
 
   useEffect(() => {
-    const nodes = god.tables.map((data, i) => ({
+    const nodes = god.tables.map((data, index) => ({
       id: data.key,
-      position: { x: i * 150, y: 0 },
-      data,
+      position: { x: index * 150, y: 0 },
+      data: { ...data, index },
       type: 'entity',
     }))
     const saved = localStorage.getItem('erd')
@@ -134,7 +134,7 @@ export function Erd({ god }: { god: God }) {
     setEdges(edges)
   }, [god])
   return (
-    <div style={{ width: '100vw', height: '100vh' }}>
+    <div style={{ width: '100%', height: '100%' }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}

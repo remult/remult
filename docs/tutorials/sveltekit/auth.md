@@ -79,7 +79,7 @@ Create a file called `.env.local` at the root of the project, and set the secret
 ```
 // .env.local
 
-NEXTAUTH_SECRET=something-secret
+AUTH_SECRET=something-secret
 ```
 
 :::tip
@@ -91,62 +91,59 @@ You can use an [online UUID generator](https://www.uuidgenerator.net/) to genera
 ::: code-group
 
 ```ts [src/hooks.server.ts]
+import type { Handle } from '@sveltejs/kit'
 import { sequence } from '@sveltejs/kit/hooks'
-
-import { handleAuth } from './hooks/handleAuth' // [!code ++]
-import { handleRemult } from './hooks/handleRemult'
-
-export const handle = sequence(
-  handleAuth, // [!code ++]
-  handleRemult,
-)
-```
-
-```ts [src/hooks/handleAuth.ts]
-import { remultSveltekit } from 'remult/remult-sveltekit'
-import { Task } from './shared/Task'
-import { TaskController } from './shared/TaskController'
-
 import { SvelteKitAuth } from '@auth/sveltekit'
-import CredentialsProvider from '@auth/core/providers/credentials'
-import { NEXTAUTH_SECRET } from '$env/static/private'
+import Credentials from '@auth/sveltekit/providers/credentials'
+import { _api } from './routes/api/[...remult]/+server'
+import type { UserInfo } from 'remult'
 
-const usersDB = [
-  { id: '1', name: 'jane', roles: ['admin'] },
-  { id: '2', name: 'steve', roles: [] },
+/**
+ * Users that are allowed to log in.
+ */
+const validUsers: UserInfo[] = [
+  { id: '1', name: 'Jane', roles: ['admin'] },
+  { id: '2', name: 'Steve' },
 ]
 
-function findUser(name?: string | null) {
-  return usersDB.find((user) => user.name.toLowerCase() === name?.toLowerCase())
-}
-
-const handleRemult = remultSveltekit({
-  entities: [Task],
-  controllers: [TaskController],
-  getUser: async (event) =>
-    ((await event.locals?.getSession())?.user as UserInfo) || undefined,
-})
-
-export const handleAuth = SvelteKitAuth({
+/**
+ * Handle authentication with authjs as an example
+ * Based on article at https://authjs.dev/reference/sveltekit
+ */
+export const { handle: handleAuth } = SvelteKitAuth({
+  trustHost: true,
   providers: [
-    CredentialsProvider({
-      name: 'Credentials',
+    Credentials({
       credentials: {
-        name: { label: 'Name', type: 'text', placeholder: 'Try steve or jane' },
+        name: {
+          placeholder: 'Try Steve or Jane',
+        },
       },
-      authorize: (credentials) => findUser(credentials?.name as string) || null,
+      authorize: (info) =>
+        validUsers.find((user) => user.name === info?.name) || null,
     }),
   ],
-
-  secret: NEXTAUTH_SECRET,
-
   callbacks: {
-    session: ({ session }) => ({
+    session: ({ session, token }) => ({
       ...session,
-      user: findUser(session.user?.name),
+      user: validUsers.find((user) => user.id === token?.sub),
     }),
   },
 })
+
+/**
+ * Handle remult server side
+ */
+const handleRemult: Handle = async ({ event, resolve }) => {
+  return await _api.withRemult(event, async () => await resolve(event))
+}
+
+export const handle = sequence(
+  // 1. Handle authentication
+  handleAuth,
+  // 2. Handle remult server side
+  handleRemult,
+)
 ```
 
 :::
@@ -304,7 +301,7 @@ We'll use the entity's metadata to only show the form if the user is allowed to 
 
 <main>
 	{#if taskRepo.metadata.apiInsertAllowed()}
-		<form method="POST" on:submit|preventDefault={addTask}>
+		<form on:submit|preventDefault={addTask}>
 			<input bind:value={newTaskTitle} placeholder="What needs to be done?" />
 			<button>Add</button>
 		</form>

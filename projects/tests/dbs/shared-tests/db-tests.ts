@@ -23,7 +23,10 @@ import {
   Filter,
   entityFilterToJson,
 } from '../../../core/src/filter/filter-interfaces'
-import { describeClass } from '../../../core/src/remult3/DecoratorReplacer'
+import {
+  describeClass,
+  describeEntity,
+} from '../../../core/src/remult3/classDescribers'
 import { Validators } from '../../../core/src/validators'
 import { Done } from '../../tests/Done'
 import { TestDataApiResponse } from '../../tests/TestDataApiResponse'
@@ -45,9 +48,10 @@ import type { CategoriesForTesting } from '../../tests/remult-3-entities'
 import { ValueConverters } from '../../../core/src/valueConverters'
 import { it, vi } from 'vitest'
 import { expect } from 'vitest'
+import { entity } from '../../tests/dynamic-classes.js'
 
 export interface DbTestOptions {
-  doesNotWorkForMongoNeedToInvestigate?: boolean
+  skipAutoIncrement?: boolean
   excludeTransactions?: boolean
   excludeLiveQuery?: boolean
   excludeJsonStorage?: boolean
@@ -607,7 +611,9 @@ export function commonDbTests(
         },
       },
       {
-        'status.in': '[1, 2]',
+        where: {
+          'status.in': '[1, 2]',
+        },
       },
     )
     d.test()
@@ -1109,50 +1115,67 @@ export function commonDbTests(
     expect(item.items).toEqual(['a', 'b'])
     expect(await r.count({ items: { $contains: 'b' } })).toBe(1)
   })
-  it.skipIf(options?.doesNotWorkForMongoNeedToInvestigate)(
-    'test relation to number id',
-    async () => {
-      const category = class {
-        id = 0
-        name = ''
-      }
-      describeClass(
-        category,
-        Entity('rel_ID_categories', { allowApiCrud: true }),
-        {
-          id: Fields.autoIncrement(),
-          name: Fields.string(),
+  it('test relation to number id', async () => {
+    const category = class {
+      id = 0
+      name = ''
+    }
+    let i = 0
+    describeEntity(
+      category,
+      'rel_ID_categories',
+      {
+        id: Fields.integer(),
+        name: Fields.string(),
+      },
+      {
+        allowApiCrud: true,
+        saving: (c, e) => {
+          if (e.isNew) {
+            c.id = i++
+          }
         },
-      )
-      const task = class {
-        id = 0
-        title = ''
-        category?: InstanceType<typeof category>
-      }
-      describeClass(task, Entity('rel_ID_task', { allowApiCrud: true }), {
-        id: Fields.autoIncrement(),
+      },
+    )
+    const task = class {
+      id = 0
+      title = ''
+      category?: InstanceType<typeof category>
+    }
+
+    describeEntity(
+      task,
+      'rel_ID_task',
+      {
+        id: Fields.integer(),
         title: Fields.string(),
         category: Field(() => category),
-      })
-      const catRepo = await createEntity(category)
-      const taskRepo = await createEntity(task)
-      const cat = await catRepo.insert([{ name: 'cat0' }, { name: 'cat1' }])
-      await taskRepo.insert([
-        { title: 't1', category: cat[0] },
-        { title: 't2', category: cat[0] },
-        { title: 't3', category: cat[1] },
-      ])
-      expect(taskRepo.fields.category!.valueConverter.fieldTypeInDb).toBe(
-        ValueConverters.Integer.fieldTypeInDb,
-      )
-      expect(await taskRepo.count({ category: cat[0] })).toBe(2)
-      expect(await taskRepo.count({ category: cat[1] })).toBe(1)
-      expect(await taskRepo.count({ category: { $id: cat[0].id } })).toBe(2)
-      // },
+      },
+      {
+        allowApiCrud: true,
+        saving: (task, e) => {
+          if (e.isNew) task.id = i++
+        },
+      },
+    )
+    const catRepo = await createEntity(category)
+    const taskRepo = await createEntity(task)
+    const cat = await catRepo.insert([{ name: 'cat0' }, { name: 'cat1' }])
+    await taskRepo.insert([
+      { title: 't1', category: cat[0] },
+      { title: 't2', category: cat[0] },
+      { title: 't3', category: cat[1] },
+    ])
+    expect(taskRepo.fields.category!.valueConverter.fieldTypeInDb).toBe(
+      ValueConverters.Integer.fieldTypeInDb,
+    )
+    expect(await taskRepo.count({ category: cat[0] })).toBe(2)
+    expect(await taskRepo.count({ category: cat[1] })).toBe(1)
+    expect(await taskRepo.count({ category: { $id: cat[0].id } })).toBe(2)
+    // },
 
-      // { exclude: [TestDbs.mongo, TestDbs.mongoNoTrans] },
-    },
-  )
+    // { exclude: [TestDbs.mongo, TestDbs.mongoNoTrans] },
+  })
   it('test relation to string id', async () => {
     const category = class {
       id = ''
@@ -1160,7 +1183,7 @@ export function commonDbTests(
     }
     describeClass(
       category,
-      Entity('rel_ID_string_categories', { allowApiCrud: true }),
+      Entity('rel_ID_string_categories1', { allowApiCrud: true }),
       {
         id: Fields.cuid(),
         name: Fields.string(),
@@ -1171,24 +1194,81 @@ export function commonDbTests(
       title = ''
       category?: InstanceType<typeof category>
     }
-    describeClass(task, Entity('rel_ID_string_task', { allowApiCrud: true }), {
-      id: Fields.autoIncrement(),
-      title: Fields.string(),
-      category: Field(() => category),
-    })
+    let i = 0
+    describeClass(
+      task,
+      Entity<InstanceType<typeof task>>('rel_ID_string_task1', {
+        allowApiCrud: true,
+        saving: (task, e) => {
+          if (e.isNew) {
+            task.id = i++
+          }
+        },
+      }),
+      {
+        id: Fields.integer(),
+        title: Fields.string(),
+        category: Field(() => category),
+      },
+    )
     const catRepo = await createEntity(category)
     const taskRepo = await createEntity(task)
     const cat = await catRepo.insert([{ name: 'cat0' }, { name: 'cat1' }])
-    await taskRepo.insert([
+    const r = await taskRepo.insert([
       { title: 't1', category: cat[0] },
       { title: 't2', category: cat[0] },
       { title: 't3', category: cat[1] },
     ])
     expect(
+      r.map(({ title, category }) => ({
+        title,
+        cat: category?.name,
+      })),
+    ).toMatchInlineSnapshot(`
+      [
+        {
+          "cat": "cat0",
+          "title": "t1",
+        },
+        {
+          "cat": "cat0",
+          "title": "t2",
+        },
+        {
+          "cat": "cat1",
+          "title": "t3",
+        },
+      ]
+    `)
+    expect(
       taskRepo.fields.category!.valueConverter.fieldTypeInDb,
     ).toBeUndefined()
+    expect(
+      (await taskRepo.find()).map(({ title, category }) => ({
+        title,
+        cat: category?.name,
+      })),
+    ).toMatchInlineSnapshot(`
+      [
+        {
+          "cat": "cat0",
+          "title": "t1",
+        },
+        {
+          "cat": "cat0",
+          "title": "t2",
+        },
+        {
+          "cat": "cat1",
+          "title": "t3",
+        },
+      ]
+    `)
     expect(await taskRepo.count({ category: cat[0] })).toBe(2)
     expect(await taskRepo.count({ category: cat[1] })).toBe(1)
+    expect(
+      (await taskRepo.find({ where: { category: { $id: cat[0].id } } })).length,
+    ).toBe(2)
     expect(await taskRepo.count({ category: { $id: cat[0].id } })).toBe(2)
   })
 
@@ -1279,6 +1359,80 @@ export function commonDbTests(
     expect(item.priority).toBe(Priority.Critical)
     expect(await r.count({ priority: Priority.Critical })).toBe(1)
     expect(await r.count({ priority: Priority.Low })).toBe(0)
+  })
+  it.skipIf(options?.skipAutoIncrement)('test auto increment', async () => {
+    const e = await createEntity(
+      entity(
+        'e',
+        {
+          id: Fields.autoIncrement(),
+          name: Fields.string(),
+        },
+        {
+          allowApiCrud: true,
+        },
+      ),
+    )
+    expect(await e.insert({ name: 'noam' })).toMatchInlineSnapshot(`
+      e {
+        "id": 1,
+        "name": "noam",
+      }
+    `)
+    expect(await e.insert({ name: 'noam' })).toMatchInlineSnapshot(`
+    e {
+      "id": 2,
+      "name": "noam",
+    }
+  `)
+  })
+  it('strange names work', async () => {
+    const e = createEntity(
+      entity('x', {
+        id: Fields.number(),
+        order: Fields.number(),
+        user: Fields.string(),
+      }),
+    )
+    await e
+  })
+  it('test compound id', async () => {
+    const e = await createEntity(
+      entity(
+        'e',
+        {
+          a: Fields.integer(),
+          b: Fields.integer(),
+          name: Fields.string(),
+        },
+        {
+          id: { a: true, b: true },
+          allowApiCrud: true,
+        },
+      ),
+    )
+    expect(await e.insert({ a: 1, b: 2, name: 'noam' })).toMatchInlineSnapshot(`
+      e {
+        "a": 1,
+        "b": 2,
+        "name": "noam",
+      }
+    `)
+    expect(await e.update('1,2', { name: 'maayan' })).toMatchInlineSnapshot(`
+      e {
+        "a": 1,
+        "b": 2,
+        "name": "maayan",
+      }
+    `)
+    expect(await e.update('1,2', { name: 'itamar', b: 3 }))
+      .toMatchInlineSnapshot(`
+    e {
+      "a": 1,
+      "b": 3,
+      "name": "itamar",
+    }
+  `)
   })
 }
 @Entity('a', { allowApiCrud: true })

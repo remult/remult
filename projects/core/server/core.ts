@@ -9,7 +9,7 @@ export {
   RemultServerOptions,
   SpecificRoute,
   RemultServer,
-} from './expressBridge.js'
+} from './remult-api-server.js'
 export {
   JsonEntityFileStorage,
   JsonFileDataProvider,

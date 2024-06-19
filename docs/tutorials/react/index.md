@@ -88,26 +88,12 @@ The starter API server TypeScript project contains a single module that initiali
 ```ts [index.ts]
 // src/server/index.ts
 
-import express from "express"
+import express from 'express'
 
 const app = express()
 
-app.listen(3002, () => console.log("Server started"))
+app.listen(3002, () => console.log('Server started'))
 ```
-
-::: warning Important
-Our server Node.js project is using the CommonJS module system.
-
-Therefore, it is important to **remove the `"type": "module"` entry from the `package.json` file** created by Vite.
-
-```json
-// package.json
-
-"type": "module", // <- remove this
-```
-
-Don't worry, this does not cause any side-effects.
-:::
 
 ### Bootstrap Remult in the back-end
 
@@ -118,7 +104,7 @@ Remult is loaded in the back-end as an `Express middleware`.
 ```ts
 // src/server/api.ts
 
-import { remultExpress } from "remult/remult-express"
+import { remultExpress } from 'remult/remult-express'
 
 export const api = remultExpress()
 ```
@@ -129,13 +115,17 @@ export const api = remultExpress()
 // src/server/index.ts
 
 import express from "express"
-import { api } from "./api"
+import { api } from "./api.js"
 
 const app = express()
 app.use(api)
 
 app.listen(3002, () => console.log("Server started"))
 ```
+
+::: warning ESM
+In this tutorial we will be using `esm` for the node.js server - that means that where ever we import a file we have to include the `.js` suffix for it as we did above in the `import { api } from "./api.js` statement
+:::
 
 ### Final tweaks
 

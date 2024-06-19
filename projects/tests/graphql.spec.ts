@@ -11,7 +11,7 @@ import {
   describeClass,
 } from '../core'
 import { remultGraphql, translateWhereToRestBody } from '../core/graphql'
-import { createEntity } from './tests/dynamic-classes'
+import { entity } from './tests/dynamic-classes'
 
 @Entity('categoriesmore', {
   allowApiCrud: true,
@@ -140,6 +140,10 @@ describe('graphql', () => {
       .repo(Category)
       .insert([{ name: 'c1' }, { name: 'c2' }])
 
+    const catMore = await remult
+      .repo(CategoryMore)
+      .insert([{ moreInfo: 'more info for c1', category_id: cat[0].id }])
+
     await remult.repo(Task).insert({
       title: 'task a',
       category: cat[0],
@@ -157,17 +161,34 @@ describe('graphql', () => {
     query{
       tasks{
         items{
+          id
           title,
           nodeId,
           category{
+            id
             nodeId
+            categorymore{
+              id
+              nodeId
+              moreInfo
+            }
           }
           category2{
             nodeId
+            categorymore{
+              id
+              nodeId
+              moreInfo
+            }
           }
           category3_id
           category3{
             nodeId
+            categorymore{
+              id
+              nodeId
+              moreInfo
+            }
           }
         }
       }
@@ -180,29 +201,47 @@ describe('graphql', () => {
             "items": [
               {
                 "category": {
+                  "categorymore": {
+                    "id": "${catMore[0].id}",
+                    "moreInfo": "more info for c1",
+                    "nodeId": "CategoryMore:${catMore[0].id}",
+                  },
+                  "id": "0",
                   "nodeId": "Category:0",
                 },
                 "category2": {
+                  "categorymore": null,
                   "nodeId": "Category:1",
                 },
                 "category3": {
+                  "categorymore": null,
                   "nodeId": "Category:1",
                 },
                 "category3_id": "1",
+                "id": 1,
                 "nodeId": "Task:1",
                 "title": "task a",
               },
               {
                 "category": {
+                  "categorymore": null,
+                  "id": "1",
                   "nodeId": "Category:1",
                 },
                 "category2": {
+                  "categorymore": null,
                   "nodeId": "Category:1",
                 },
                 "category3": {
+                  "categorymore": {
+                    "id": "${catMore[0].id}",
+                    "moreInfo": "more info for c1",
+                    "nodeId": "CategoryMore:${catMore[0].id}",
+                  },
                   "nodeId": "Category:0",
                 },
                 "category3_id": "0",
+                "id": 2,
                 "nodeId": "Task:2",
                 "title": "task b",
               },
@@ -244,7 +283,9 @@ describe('graphql', () => {
       }),
     ).toMatchInlineSnapshot(`
       {
-        "title": "aaa",
+        "where": {
+          "title": "aaa",
+        },
       }
     `)
   })
@@ -259,10 +300,12 @@ describe('graphql', () => {
     })
     expect(result).toMatchInlineSnapshot(`
       {
-        "title.in": [
-          "aaa",
-          "ccc",
-        ],
+        "where": {
+          "title.in": [
+            "aaa",
+            "ccc",
+          ],
+        },
       }
     `)
   })
@@ -755,7 +798,7 @@ describe('graphql', () => {
       {
         "data": {
           "deleteTask": {
-            "id": "2",
+            "id": 2,
           },
         },
       }
@@ -773,6 +816,47 @@ describe('graphql', () => {
           "title": "task a",
           "userOnServer": undefined,
         },
+        Task {
+          "category": null,
+          "category2": null,
+          "category3": undefined,
+          "category3_id": "",
+          "completed": false,
+          "id": 3,
+          "thePriority": 1,
+          "title": "task c",
+          "userOnServer": undefined,
+        },
+      ]
+    `)
+  })
+  it('test mutation delete many', async () => {
+    await await remult
+      .repo(Task)
+      .insert([{ title: 'task a' }, { title: 'task b' }, { title: 'task c' }])
+
+    expect(
+      await gql(`
+      mutation delete{
+        deleteManyTasks(where:{
+          title:{
+            lte:"task b"
+          }
+        }) {
+          deleted
+        }
+      }`),
+    ).toMatchInlineSnapshot(`
+      {
+        "data": {
+          "deleteManyTasks": {
+            "deleted": 2,
+          },
+        },
+      }
+    `)
+    expect(await remult.repo(Task).find()).toMatchInlineSnapshot(`
+      [
         Task {
           "category": null,
           "category2": null,
@@ -862,6 +946,32 @@ describe('graphql', () => {
     `)
   })
 
+  it('test mutation update Many', async () => {
+    await remult
+      .repo(Task)
+      .insert([{ title: 'task a' }, { title: 'task b' }, { title: 'task c' }])
+
+    const result = await gql(`
+    mutation {
+      updateManyTasks(where:{
+        title:{
+          lte:"task b"
+        }
+      }, patch: {title: "bbb"}) {
+        updated
+      }
+    }`)
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "data": {
+          "updateManyTasks": {
+            "updated": 2,
+          },
+        },
+      }
+    `)
+    expect(await remult.repo(Task).count({ title: 'bbb' })).toBe(2)
+  })
   it('test mutation update', async () => {
     await remult.repo(Task).insert({ title: 'aaa' })
 
@@ -1044,7 +1154,9 @@ describe('graphql', () => {
         entities: [Task, Category],
         removeComments: true,
       }),
-    ).toThrowErrorMatchingInlineSnapshot('"Entity \\"CategoryMore\\" that is used by the relation \\"categorymore\\" in \\"Category\\" was not found in the \'entities\' array."')
+    ).toThrowErrorMatchingInlineSnapshot(
+      '"Entity \\"CategoryMore\\" that is used by the relation \\"categorymore\\" in \\"Category\\" was not found in the \'entities\' array."',
+    )
   })
 
   it('test basics', async () => {
@@ -1068,13 +1180,19 @@ describe('graphql', () => {
       type Mutation {
           createTask(input: CreateTaskInput!, clientMutationId: String): CreateTaskPayload
           updateTask(id: ID!, patch: UpdateTaskInput!, clientMutationId: String): UpdateTaskPayload
+          updateManyTasks(where: tasksWhere!, patch: UpdateTaskInput!, clientMutationId: String): UpdateManyTasksPayload
           deleteTask(id: ID!, clientMutationId: String): DeleteTaskPayload
+          deleteManyTasks(where: tasksWhere!, clientMutationId: String): DeleteManyTasksPayload
           createCategory(input: CreateCategoryInput!, clientMutationId: String): CreateCategoryPayload
           updateCategory(id: ID!, patch: UpdateCategoryInput!, clientMutationId: String): UpdateCategoryPayload
+          updateManyCategories(where: categoriesWhere!, patch: UpdateCategoryInput!, clientMutationId: String): UpdateManyCategoriesPayload
           deleteCategory(id: ID!, clientMutationId: String): DeleteCategoryPayload
+          deleteManyCategories(where: categoriesWhere!, clientMutationId: String): DeleteManyCategoriesPayload
           createCategoryMore(input: CreateCategoryMoreInput!, clientMutationId: String): CreateCategoryMorePayload
           updateCategoryMore(id: ID!, patch: UpdateCategoryMoreInput!, clientMutationId: String): UpdateCategoryMorePayload
+          updateManyCategoriesmore(where: categoriesmoreWhere!, patch: UpdateCategoryMoreInput!, clientMutationId: String): UpdateManyCategoriesmorePayload
           deleteCategoryMore(id: ID!, clientMutationId: String): DeleteCategoryMorePayload
+          deleteManyCategoriesmore(where: categoriesmoreWhere!, clientMutationId: String): DeleteManyCategoriesmorePayload
       }
 
       type Task implements Node {
@@ -1146,8 +1264,20 @@ describe('graphql', () => {
           clientMutationId: String
       }
 
+      type UpdateManyTasksPayload {
+          updated: Int!
+          error: ErrorDetail
+          clientMutationId: String
+      }
+
       type DeleteTaskPayload {
-          id: ID
+          id: Int
+          error: ErrorDetail
+          clientMutationId: String
+      }
+
+      type DeleteManyTasksPayload {
+          deleted: Int!
           error: ErrorDetail
           clientMutationId: String
       }
@@ -1198,8 +1328,20 @@ describe('graphql', () => {
           clientMutationId: String
       }
 
+      type UpdateManyCategoriesPayload {
+          updated: Int!
+          error: ErrorDetail
+          clientMutationId: String
+      }
+
       type DeleteCategoryPayload {
-          id: ID
+          id: String
+          error: ErrorDetail
+          clientMutationId: String
+      }
+
+      type DeleteManyCategoriesPayload {
+          deleted: Int!
           error: ErrorDetail
           clientMutationId: String
       }
@@ -1252,8 +1394,20 @@ describe('graphql', () => {
           clientMutationId: String
       }
 
+      type UpdateManyCategoriesmorePayload {
+          updated: Int!
+          error: ErrorDetail
+          clientMutationId: String
+      }
+
       type DeleteCategoryMorePayload {
-          id: ID
+          id: String
+          error: ErrorDetail
+          clientMutationId: String
+      }
+
+      type DeleteManyCategoriesmorePayload {
+          deleted: Int!
           error: ErrorDetail
           clientMutationId: String
       }
@@ -1423,6 +1577,7 @@ describe('graphql', () => {
       type Mutation {
           createC(input: CreateCInput!, clientMutationId: String): CreateCPayload
           updateC(id: ID!, patch: UpdateCInput!, clientMutationId: String): UpdateCPayload
+          updateManyCs(where: csWhere!, patch: UpdateCInput!, clientMutationId: String): UpdateManyCsPayload
       }
 
       type C implements Node {
@@ -1460,6 +1615,12 @@ describe('graphql', () => {
 
       type UpdateCPayload {
           c: C
+          error: ErrorDetail
+          clientMutationId: String
+      }
+
+      type UpdateManyCsPayload {
+          updated: Int!
           error: ErrorDetail
           clientMutationId: String
       }
@@ -1603,7 +1764,7 @@ describe('graphql', () => {
     `)
   })
   it('test naming issue', async () => {
-    const C = createEntity('ContactTag', {
+    const C = entity('ContactTag', {
       id: Fields.number(),
     })
 
@@ -1806,7 +1967,9 @@ describe('graphql', () => {
 
       type Mutation {
           updateC(id: ID!, patch: UpdateCInput!, clientMutationId: String): UpdateCPayload
+          updateManyCs(where: csWhere!, patch: UpdateCInput!, clientMutationId: String): UpdateManyCsPayload
           deleteC(id: ID!, clientMutationId: String): DeleteCPayload
+          deleteManyCs(where: csWhere!, clientMutationId: String): DeleteManyCsPayload
       }
 
       type C implements Node {
@@ -1838,8 +2001,20 @@ describe('graphql', () => {
           clientMutationId: String
       }
 
+      type UpdateManyCsPayload {
+          updated: Int!
+          error: ErrorDetail
+          clientMutationId: String
+      }
+
       type DeleteCPayload {
-          id: ID
+          id: Int
+          error: ErrorDetail
+          clientMutationId: String
+      }
+
+      type DeleteManyCsPayload {
+          deleted: Int!
           error: ErrorDetail
           clientMutationId: String
       }

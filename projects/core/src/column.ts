@@ -30,12 +30,15 @@ export class LookupColumn<T> {
   }
   waitLoadOf(id: any) {
     if (id === undefined || id === null) return null
-    return getRepositoryInternals(this.repository).getCachedByIdAsync(id, false)
+    return getRepositoryInternals(this.repository)._getCachedByIdAsync(
+      id,
+      false,
+    )
   }
   get(id: any): any {
     if (id === undefined || id === null) return null
 
-    const result = getRepositoryInternals(this.repository).getCachedById(
+    const result = getRepositoryInternals(this.repository)._getCachedById(
       id,
       this.isReferenceRelation,
     )
@@ -63,7 +66,7 @@ export class LookupColumn<T> {
       else {
         let eo = getEntityRef(item as any, false)
         if (eo && !this.isReferenceRelation) {
-          getRepositoryInternals(this.repository).addToCache(item)
+          getRepositoryInternals(this.repository)._addToCache(item)
           this.id = eo.getId() as any
         } else {
           this.storedItem = { item }

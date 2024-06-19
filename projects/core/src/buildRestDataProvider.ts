@@ -1,5 +1,6 @@
 import type { RestDataProviderHttpProvider } from './data-interfaces.js'
 import { RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider.js'
+import { flags } from './remult3/remult3.js'
 
 export function buildRestDataProvider(
   provider: ExternalHttpProvider | typeof fetch,
@@ -56,12 +57,12 @@ export async function retry<T>(what: () => Promise<T>): Promise<T> {
           err.message?.includes('http proxy error') ||
           err.message?.startsWith('Gateway Timeout') ||
           err.status == 500) &&
-        i++ < 50
+        i++ < flags.error500RetryCount
       ) {
         await new Promise((res, req) => {
           setTimeout(() => {
             res({})
-          }, 250)
+          }, 500)
         })
         continue
       }

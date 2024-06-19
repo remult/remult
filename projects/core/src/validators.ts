@@ -3,14 +3,13 @@ import { isBackend } from './context.js'
 import type { ValidateFieldEvent } from './remult3/remult3.js'
 
 export class Validators {
-  static required = createValidator<any>(
-    async (_, e) =>
-      e.value != null && e.value != undefined && e.value !== '' && e.value != 0,
+  static required = createValidator<unknown>(
+    async (_, e) => e.value != null && e.value != undefined && e.value !== '',
 
     'Should not be empty',
   )
 
-  static unique = createValidator<any>(async (_, e) => {
+  static unique = createValidator<unknown>(async (_, e) => {
     if (!e.entityRef)
       throw 'unique validation may only work on columns that are attached to an entity'
 
@@ -23,9 +22,9 @@ export class Validators {
     } else return true
   }, 'already exists')
   /**
-   * @deprecated is `unique` instead - it also runs only on the backend
+   * @deprecated use `unique` instead - it also runs only on the backend
    */
-  static uniqueOnBackend = createValidator<any>(async (_, e) => {
+  static uniqueOnBackend = createValidator<unknown>(async (_, e) => {
     if (e.isBackend() && (e.isNew || e.valueChanged())) {
       return (
         (await e.entityRef.repository.count({
@@ -49,25 +48,31 @@ export class Validators {
   static in: <T>(
     value: readonly T[],
     withMessage?: ValueValidationMessage<T[]>,
-  ) => FieldValidator<any, T> & {
+  ) => FieldValidator<unknown, T> & {
     withMessage: ValueValidationMessage<T[]>
   } = createValueValidatorWithArgs(
     <T>(val: T, values: T[]) => values.includes(val),
-    <T>(values: T[]) => `Value must be one of ${values.join(', ')}`,
+    <T>(values: T[]) =>
+      `Value must be one of: ${values
+        .map((y) =>
+          typeof y === 'object'
+            ? y['id'] !== undefined
+              ? y['id']
+              : y.toString()
+            : y,
+        )
+        .join(', ')}`,
   ) as any
 
   static notNull = createValueValidator(
     (val) => val != null,
     'Should not be null',
   )
-  static enum = createValueValidatorWithArgs<any, any>(
+  static enum = createValueValidatorWithArgs<unknown, unknown>(
     (value, enumObj) => Object.values(enumObj).includes(value),
-    (enumObj) =>
-      `Value must be one of ${Object.values(enumObj)
-        .filter((x) => typeof enumObj[x as any] !== 'number')
-        .join(', ')}`,
+    (enumObj) => `Value must be one of ${getEnumValues(enumObj).join(', ')}`,
   )
-  static relationExists = createValidator<any>(async (_, e) => {
+  static relationExists = createValidator<unknown>(async (_, e) => {
     if (e.valueIsNull()) return true
     if (!e.isBackend()) return true
     return Boolean(await e.load())
@@ -85,17 +90,17 @@ export class Validators {
   static defaultMessage = 'Invalid value'
 }
 
-export type Validator<valueType> = FieldValidator<any, valueType> &
+export type Validator<valueType> = FieldValidator<unknown, valueType> &
   ((
     message?: ValidationMessage<valueType, undefined>,
-  ) => FieldValidator<any, valueType>) & {
+  ) => FieldValidator<unknown, valueType>) & {
     defaultMessage: ValidationMessage<valueType, undefined>
     /**
      * @deprecated  use (message:string) instead - for example: Validators.required("Is needed")
      */
     withMessage(
       message: ValidationMessage<valueType, undefined>,
-    ): FieldValidator<any, valueType>
+    ): FieldValidator<unknown, valueType>
   }
 
 export function createValidator<valueType>(
@@ -180,7 +185,7 @@ export function createValueValidatorWithArgs<valueType, argsType>(
 ): ValidatorWithArgs<valueType, argsType> & {
   defaultMessage: ValueValidationMessage<argsType>
 } {
-  const result = createValidatorWithArgs<valueType, argsType>(
+  const result = createValidatorWithArgsInternal<valueType, argsType>(
     (_, e, args) => {
       if (e.value === undefined || e.value === null) return true
       return validate(e.value, args)
@@ -188,6 +193,7 @@ export function createValueValidatorWithArgs<valueType, argsType>(
     (_, e, args) =>
       (typeof defaultMessage === 'function' && defaultMessage(args)) ||
       (defaultMessage as string),
+    true,
   )
   return Object.assign((entity, e) => result(entity, e), {
     get defaultMessage() {
@@ -214,7 +220,7 @@ export type ValidationMessage<valueType, argsType> =
 export type ValidatorWithArgs<valueType, argsType> = (
   args: argsType,
   message?: ValidationMessage<valueType, argsType>,
-) => FieldValidator<any, valueType>
+) => FieldValidator<unknown, valueType>
 
 export function createValidatorWithArgs<valueType, argsType>(
   validate: (
@@ -226,18 +232,36 @@ export function createValidatorWithArgs<valueType, argsType>(
 ): ValidatorWithArgs<valueType, argsType> & {
   defaultMessage: ValidationMessage<valueType, argsType>
 } {
+  return createValidatorWithArgsInternal(validate, defaultMessage)
+}
+function createValidatorWithArgsInternal<valueType, argsType>(
+  validate: (
+    entity: any,
+    e: ValidateFieldEvent<any, valueType>,
+    args: argsType,
+  ) => Promise<boolean | string> | boolean | string,
+  defaultMessage: ValidationMessage<valueType, argsType>,
+  isValueValidator = false,
+): ValidatorWithArgs<valueType, argsType> & {
+  defaultMessage: ValidationMessage<valueType, argsType>
+} {
   const result =
-    (args: argsType, message?: string) =>
+    (args: argsType, message?: ValidationMessage<valueType, argsType>) =>
     async (entity: any, e: ValidateFieldEvent<any, valueType>) => {
       const valid = await validate(entity, e, args)
       if (typeof valid === 'string') e.error = valid
       else if (!valid)
-        e.error =
-          message || defaultMessage
-            ? typeof defaultMessage === 'function'
-              ? defaultMessage(entity, e, args)
-              : defaultMessage
-            : Validators.defaultMessage
+        e.error = message
+          ? typeof message === 'function'
+            ? isValueValidator
+              ? (message as any as (args: argsType) => string)(args)
+              : message(entity, e, args)
+            : message
+          : defaultMessage
+          ? typeof defaultMessage === 'function'
+            ? defaultMessage(entity, e, args)
+            : defaultMessage
+          : Validators.defaultMessage
     }
 
   return Object.assign(result, {
@@ -248,4 +272,10 @@ export function createValidatorWithArgs<valueType, argsType>(
       defaultMessage = val
     },
   })
+}
+
+export function getEnumValues<theEnum = any>(enumObj: theEnum) {
+  return Object.values(enumObj).filter(
+    (x) => typeof enumObj[x as any] !== 'number',
+  )
 }

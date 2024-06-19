@@ -1,11 +1,12 @@
-import { CompoundIdField } from '../CompoundIdField.js'
 import type {
   DataProvider,
   EntityDataProvider,
   EntityDataProviderFindOptions,
 } from '../data-interfaces.js'
 import type {
+  HasWrapIdentifier,
   SqlCommand,
+  SqlCommandFactory,
   SqlCommandWithParameters,
   SqlImplementation,
   SqlResult,
@@ -32,18 +33,33 @@ import type {
   EntityBase,
   RepositoryOverloads,
 } from '../remult3/RepositoryImplementation.js'
-import { getRepository } from '../remult3/RepositoryImplementation.js'
+import {
+  getRepository,
+  isAutoIncrement,
+} from '../remult3/RepositoryImplementation.js'
 import type { SortSegment } from '../sort.js'
 import { Sort } from '../sort.js'
 import { ValueConverters } from '../valueConverters.js'
 import { getRepositoryInternals } from '../remult3/repository-internals.js'
+import type {
+  CanBuildMigrations,
+  MigrationBuilder,
+  MigrationCode,
+} from '../../migrations/migration-types.js'
+import { isOfType } from '../isOfType.js'
 
 // @dynamic
-export class SqlDatabase implements DataProvider {
-  static getDb(remult?: Remult) {
-    const r = (remult || defaultRemult).dataProvider as SqlDatabase
-    if (!r.createCommand) throw 'the data provider is not an SqlDatabase'
-    return r
+export class SqlDatabase
+  implements
+    DataProvider,
+    HasWrapIdentifier,
+    CanBuildMigrations,
+    SqlCommandFactory
+{
+  static getDb(dataProvider?: DataProvider) {
+    const r = (dataProvider || defaultRemult.dataProvider) as SqlDatabase
+    if (isOfType<SqlCommandFactory>(r, 'createCommand')) return r
+    else throw 'the data provider is not an SqlCommandFactory'
   }
   createCommand(): SqlCommand {
     return new LogSQLCommand(this.sql.createCommand(), SqlDatabase.LogToConsole)
@@ -97,8 +113,10 @@ export class SqlDatabase implements DataProvider {
             createCommand: () => {
               let c = x.createCommand()
               return {
-                addParameterAndReturnSqlToken: (x) =>
-                  c.addParameterAndReturnSqlToken(x),
+                addParameterAndReturnSqlToken: (val: any) => {
+                  return c.param(val)
+                },
+                param: (x) => c.param(x),
                 execute: async (sql) => {
                   if (completed)
                     throw "can't run a command after the transaction was completed"
@@ -112,6 +130,7 @@ export class SqlDatabase implements DataProvider {
             transaction: (z) => x.transaction(z),
             supportsJsonColumnType: this.sql.supportsJsonColumnType,
             wrapIdentifier: this.wrapIdentifier,
+            end: this.end,
           }),
         )
       } finally {
@@ -119,6 +138,16 @@ export class SqlDatabase implements DataProvider {
       }
     })
   }
+  /**
+   * Creates a raw filter for entity filtering.
+   * @param {CustomSqlFilterBuilderFunction} build - The custom SQL filter builder function.
+   * @returns {EntityFilter<any>} - The entity filter with a custom SQL filter.
+   * @example
+   * SqlDatabase.rawFilter(({param}) =>
+        `"customerId" in (select id from customers where city = ${param(customerCity)})`
+      )
+   * @see [Leveraging Database Capabilities with Raw SQL in Custom Filters](https://remult.dev/docs/custom-filter.html#leveraging-database-capabilities-with-raw-sql-in-custom-filters)
+   */
   static rawFilter(build: CustomSqlFilterBuilderFunction): EntityFilter<any> {
     return {
       [customDatabaseFilterToken]: {
@@ -131,6 +160,7 @@ export class SqlDatabase implements DataProvider {
     condition: EntityFilter<entityType>,
     sqlCommand?: SqlCommandWithParameters,
     dbNames?: EntityDbNamesBase,
+    wrapIdentifier?: (name: string) => string,
   ) {
     if (!sqlCommand) {
       sqlCommand = new myDummySQLCommand()
@@ -139,11 +169,11 @@ export class SqlDatabase implements DataProvider {
 
     var b = new FilterConsumerBridgeToSqlRequest(
       sqlCommand,
-      dbNames || (await dbNamesOf(r.metadata)),
+      dbNames || (await dbNamesOf(r.metadata, wrapIdentifier)),
     )
     b._addWhere = false
     await (
-      await getRepositoryInternals(r).translateWhereToFilter(condition)
+      await getRepositoryInternals(r)._translateWhereToFilter(condition)
     ).__applyToConsumer(b)
     return await b.resolveWhere()
   }
@@ -167,8 +197,15 @@ export class SqlDatabase implements DataProvider {
   public static durationThreshold = 0
   constructor(private sql: SqlImplementation) {
     if (sql.wrapIdentifier) this.wrapIdentifier = (x) => sql.wrapIdentifier(x)
+    if (isOfType<CanBuildMigrations>(sql, 'provideMigrationBuilder')) {
+      this.provideMigrationBuilder = (x) => sql.provideMigrationBuilder(x)
+    }
+    if (isOfType(sql, 'end')) this.end = () => sql.end()
   }
+  provideMigrationBuilder: (builder: MigrationCode) => MigrationBuilder
   private createdEntities: string[] = []
+
+  end: () => Promise<void>
 }
 
 const icons = new Map<string, string>([
@@ -193,8 +230,11 @@ class LogSQLCommand implements SqlCommand {
   ) {}
 
   args: any = {}
-  addParameterAndReturnSqlToken(val: any): string {
-    let r = this.origin.addParameterAndReturnSqlToken(val)
+  addParameterAndReturnSqlToken(val: any) {
+    return this.param(val)
+  }
+  param(val: any, name?: string): string {
+    let r = this.origin.param(val)
     this.args[r] = val
     return r
   }
@@ -290,14 +330,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
         let first = true
         let segs: SortSegment[] = []
         for (const s of options.orderBy.Segments) {
-          if (s.field instanceof CompoundIdField) {
-            segs.push(
-              ...s.field.fields.map((c) => ({
-                field: c,
-                isDescending: s.isDescending,
-              })),
-            )
-          } else segs.push(s)
+          segs.push(s)
         }
         for (const c of segs) {
           if (first) {
@@ -307,6 +340,10 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
 
           select += e.$dbNameOf(c.field)
           if (c.isDescending) select += ' desc'
+          if (this.sql._getSourceSql().orderByNullsFirst) {
+            if (c.isDescending) select += ' nulls last'
+            else select += ' nulls first'
+          }
         }
       }
 
@@ -362,18 +399,11 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
   async update(id: any, data: any): Promise<any> {
     let e = await this.init()
     let r = this.sql.createCommand()
-    let f = new FilterConsumerBridgeToSqlRequest(r, e)
-    Filter.fromEntityFilter(
-      this.entity,
-      this.entity.idMetadata.getIdFilter(id),
-    ).__applyToConsumer(f)
 
     let statement = 'update ' + e.$entityName + ' set '
     let added = false
 
     for (const x of this.entity.fields) {
-      if (x instanceof CompoundIdField) {
-      }
       if (isDbReadonly(x, e)) {
       } else if (data[x.key] !== undefined) {
         let v = x.valueConverter.toDb(data[x.key])
@@ -381,21 +411,35 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
           if (!added) added = true
           else statement += ', '
 
-          statement +=
-            e.$dbNameOf(x) + ' = ' + r.addParameterAndReturnSqlToken(v)
+          statement += e.$dbNameOf(x) + ' = ' + r.param(v)
         }
       }
     }
+    const idFilter = this.entity.idMetadata.getIdFilter(id)
 
+    let f = new FilterConsumerBridgeToSqlRequest(r, e)
+    Filter.fromEntityFilter(this.entity, idFilter).__applyToConsumer(f)
     statement += await f.resolveWhere()
     let { colKeys, select } = this.buildSelect(e)
-    statement += ' returning ' + select
+    if (!this.sql._getSourceSql().doesNotSupportReturningSyntax)
+      statement += ' returning ' + select
 
     return r.execute(statement).then((sqlResult) => {
       this.sql._getSourceSql().afterMutation?.()
+      if (this.sql._getSourceSql().doesNotSupportReturningSyntax) {
+        return getRowAfterUpdate(this.entity, this, data, id, 'update')
+      }
+      if (sqlResult.rows.length != 1)
+        throw new Error(
+          'Failed to update row with id ' +
+            id +
+            ', rows updated: ' +
+            sqlResult.rows.length,
+        )
       return this.buildResultRow(colKeys, sqlResult.rows[0], sqlResult)
     })
   }
+
   async delete(id: any): Promise<void> {
     let e = await this.init()
     let r = this.sql.createCommand()
@@ -430,7 +474,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
           }
 
           cols += e.$dbNameOf(x)
-          vals += r.addParameterAndReturnSqlToken(v)
+          vals += r.param(v)
         }
       }
     }
@@ -438,9 +482,27 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     let statement = `insert into ${e.$entityName} (${cols}) values (${vals})`
 
     let { colKeys, select } = this.buildSelect(e)
-    statement += ' returning ' + select
+    if (!this.sql._getSourceSql().doesNotSupportReturningSyntax)
+      statement += ' returning ' + select
     return await r.execute(statement).then((sql) => {
       this.sql._getSourceSql().afterMutation?.()
+      if (this.sql._getSourceSql().doesNotSupportReturningSyntax) {
+        if (isAutoIncrement(this.entity.idMetadata.field)) {
+          const id = sql.rows[0] as Number
+          if (typeof id !== 'number')
+            throw new Error(
+              'Auto increment, for a database that is does not support returning syntax, should return an array with the single last added id. Instead it returned: ' +
+                JSON.stringify(id),
+            )
+          return this.find({
+            where: new Filter((x) =>
+              x.isEqualTo(this.entity.idMetadata.field, id),
+            ),
+          }).then((r) => r[0])
+        } else {
+          return getRowAfterUpdate(this.entity, this, data, undefined, 'insert')
+        }
+      }
       return this.buildResultRow(colKeys, sql.rows[0], sql)
     })
   }
@@ -450,7 +512,10 @@ class myDummySQLCommand implements SqlCommand {
   execute(sql: string): Promise<SqlResult> {
     throw new Error('Method not implemented.')
   }
-  addParameterAndReturnSqlToken(val: any): string {
+  addParameterAndReturnSqlToken(val: any) {
+    return this.param(val)
+  }
+  param(val: any): string {
     if (val === null) return 'null'
     if (val instanceof Date) val = val.toISOString()
     if (typeof val == 'string') {
@@ -489,11 +554,7 @@ async function bulkInsert<entityType extends EntityBase>(
         (row) =>
           '(' +
           row.$.toArray()
-            .map((f) =>
-              c.addParameterAndReturnSqlToken(
-                f.metadata.valueConverter.toDb!(f.value),
-              ),
-            )
+            .map((f) => c.param(f.metadata.valueConverter.toDb!(f.value)))
             .join(', ') +
           ')',
       )
@@ -501,4 +562,29 @@ async function bulkInsert<entityType extends EntityBase>(
 
     await c.execute(sql)
   }
+}
+
+export function getRowAfterUpdate<entityType>(
+  meta: EntityMetadata<entityType>,
+  dataProvider: EntityDataProvider,
+  data: any,
+  id: any,
+  operation: string,
+): any {
+  const idFilter = id !== undefined ? meta.idMetadata.getIdFilter(id) : {}
+  return dataProvider
+    .find({
+      where: new Filter((x) => {
+        for (const field of meta.idMetadata.fields) {
+          x.isEqualTo(field, data[field.key] ?? idFilter[field.key])
+        }
+      }),
+    })
+    .then((r) => {
+      if (r.length != 1)
+        throw new Error(
+          `Failed to ${operation} row - result contained ${r.length} rows`,
+        )
+      return r[0]
+    })
 }

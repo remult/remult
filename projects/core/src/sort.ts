@@ -1,4 +1,3 @@
-import { CompoundIdField } from './CompoundIdField.js'
 import type { FieldMetadata } from './column-interfaces.js'
 import { getRelationFieldInfo } from './remult3/relationInfoMember.js'
 import type {
@@ -6,7 +5,17 @@ import type {
   EntityOrderBy,
   RelationOptions,
 } from './remult3/remult3.js'
+
+/**
+ * The `Sort` class is used to describe sorting criteria for queries. It is mainly used internally,
+ * but it provides a few useful functions for working with sorting.
+ */
 export class Sort {
+  /**
+   * Translates the current `Sort` instance into an `EntityOrderBy` object.
+   *
+   * @returns {EntityOrderBy<any>} An `EntityOrderBy` object representing the sort criteria.
+   */
   toEntityOrderBy(): EntityOrderBy<any> {
     let result: any = {}
     for (const seg of this.Segments) {
@@ -16,10 +25,25 @@ export class Sort {
     }
     return result
   }
+  /**
+   * Constructs a `Sort` instance with the provided sort segments.
+   *
+   * @param {...SortSegment[]} segments The sort segments to be included in the sort criteria.
+   */
   constructor(...segments: SortSegment[]) {
     this.Segments = segments
   }
+  /**
+   * The segments of the sort criteria.
+   *
+   * @type {SortSegment[]}
+   */
   Segments: SortSegment[]
+  /**
+   * Reverses the sort order of the current sort criteria.
+   *
+   * @returns {Sort} A new `Sort` instance with the reversed sort order.
+   */
   reverse() {
     let r = new Sort()
     for (const s of this.Segments) {
@@ -27,6 +51,14 @@ export class Sort {
     }
     return r
   }
+  /**
+   * Compares two objects based on the current sort criteria.
+   *
+   * @param {any} a The first object to compare.
+   * @param {any} b The second object to compare.
+   * @param {function(FieldMetadata): string} [getFieldKey] An optional function to get the field key for comparison.
+   * @returns {number} A negative value if `a` should come before `b`, a positive value if `a` should come after `b`, or zero if they are equal.
+   */
   compare(a: any, b: any, getFieldKey?: (field: FieldMetadata) => string) {
     if (!getFieldKey) getFieldKey = (x) => x.key
     let r = 0
@@ -44,6 +76,14 @@ export class Sort {
     }
     return r
   }
+  /**
+   * Translates an `EntityOrderBy` to a `Sort` instance.
+   *
+   * @template T The entity type for the order by.
+   * @param {EntityMetadata<T>} entityDefs The metadata of the entity associated with the order by.
+   * @param {EntityOrderBy<T>} [orderBy] The `EntityOrderBy` to be translated.
+   * @returns {Sort} A `Sort` instance representing the translated order by.
+   */
   static translateOrderByToSort<T>(
     entityDefs: EntityMetadata<T>,
     orderBy?: EntityOrderBy<T>,
@@ -89,6 +129,15 @@ export class Sort {
       }
     return sort
   }
+  /**
+   * Creates a unique `Sort` instance based on the provided `Sort` and the entity metadata.
+   * This ensures that the sort criteria result in a unique ordering of entities.
+   *
+   * @template T The entity type for the sort.
+   * @param {EntityMetadata<T>} entityMetadata The metadata of the entity associated with the sort.
+   * @param {Sort} [orderBy] The `Sort` instance to be made unique.
+   * @returns {Sort} A `Sort` instance representing the unique sort criteria.
+   */
   static createUniqueSort<T>(
     entityMetadata: EntityMetadata<T>,
     orderBy?: Sort,
@@ -101,43 +150,37 @@ export class Sort {
         entityMetadata,
         entityMetadata.options.defaultOrderBy,
       )
-    if (!orderBy) orderBy = new Sort({ field: entityMetadata.idMetadata.field })
-
-    if (entityMetadata.idMetadata.field instanceof CompoundIdField) {
-      for (const field of entityMetadata.idMetadata.field.fields) {
-        if (!orderBy.Segments.find((x) => x.field == field)) {
-          orderBy.Segments.push({ field: field })
-        }
+    if (!orderBy) orderBy = new Sort()
+    for (const field of entityMetadata.idMetadata.fields) {
+      if (!orderBy.Segments.find((x) => x.field == field)) {
+        orderBy.Segments.push({ field: field })
       }
-    } else if (
-      !orderBy.Segments.find((x) => x.field == entityMetadata.idMetadata.field)
-    ) {
-      orderBy.Segments.push({ field: entityMetadata.idMetadata.field })
     }
     return orderBy
   }
+
+  /**
+   * Creates a unique `EntityOrderBy` based on the provided `EntityOrderBy` and the entity metadata.
+   * This ensures that the order by criteria result in a unique ordering of entities.
+   *
+   * @template T The entity type for the order by.
+   * @param {EntityMetadata<T>} entityMetadata The metadata of the entity associated with the order by.
+   * @param {EntityOrderBy<T>} [orderBy] The `EntityOrderBy` to be made unique.
+   * @returns {EntityOrderBy<T>} An `EntityOrderBy` representing the unique order by criteria.
+   */
   static createUniqueEntityOrderBy<T>(
     entityMetadata: EntityMetadata<T>,
     orderBy?: EntityOrderBy<T>,
   ): EntityOrderBy<T> {
     if (!orderBy || Object.keys(orderBy).length === 0)
       orderBy = entityMetadata.options.defaultOrderBy
-    if (!orderBy)
-      orderBy = {
-        [entityMetadata.idMetadata.field.key]: 'asc',
-      } as EntityOrderBy<T>
+    if (!orderBy) orderBy = {} as EntityOrderBy<T>
     else orderBy = { ...orderBy }
-
-    if (entityMetadata.idMetadata.field instanceof CompoundIdField) {
-      for (const field of entityMetadata.idMetadata.field.fields) {
-        if (!orderBy[field.key]) {
-          orderBy[field.key] = 'asc'
-        }
+    for (const field of entityMetadata.idMetadata.fields) {
+      if (!orderBy[field.key]) {
+        orderBy[field.key] = 'asc'
       }
-    } else if (!orderBy[entityMetadata.idMetadata.field.key]) {
-      orderBy[entityMetadata.idMetadata.field.key] = 'asc'
     }
-
     return orderBy
   }
 }

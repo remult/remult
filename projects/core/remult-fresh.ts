@@ -2,8 +2,8 @@ import {} from './server/core.js'
 import type {
   RemultServerCore,
   RemultServerOptions,
-} from './server/expressBridge.js'
-import { createRemultServerCore } from './server/expressBridge.js'
+} from './server/remult-api-server.js'
+import { createRemultServerCore } from './server/remult-api-server.js'
 
 export function remultFresh(
   options: RemultServerOptions<FreshRequest>,

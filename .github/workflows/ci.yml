@@ -1,0 +1,34 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    paths:
+      - '**'
+
+jobs:
+  build:
+    name: Test latest typescript build with public api
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🌐 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🧑‍💻 Setup env
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 📦 install things
+        run: npm i
+
+      - name: 🛠️ Build
+        run: npm run build
+
+      - name: 👌 Tests
+        run: npm run test-latest-typescript-build

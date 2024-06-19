@@ -78,17 +78,25 @@ Remult is bootstrapped in a `Next.js` using a [catch all dynamic API route](http
 
 1. Open your IDE.
 
-2. Create an `api` directory within the app folder, and inside it, create a `[...remult]` subdirectory. Inside the `app/api/[...remult]` directory, craft a `route.ts` file with the following code. This file functions as a catch all route for the Next.js API route, effectively managing all incoming API requests.
+2. In the `src` directory, create a file called `api.ts` with the following code:
 
-```ts
-// src/app/api/[...remult]/route.ts
+   ```ts
+   // src/api.ts
 
-import { remultNextApp } from 'remult/remult-next'
+   import { remultNextApp } from 'remult/remult-next'
 
-const api = remultNextApp({})
+   export const api = remultNextApp({})
+   ```
 
-export const { POST, PUT, DELETE, GET } = api
-```
+3. Create an `api` directory within the app folder, and inside it, create a `[...remult]` subdirectory. Inside the `app/api/[...remult]` directory, craft a `route.ts` file with the following code. This file functions as a catch all route for the Next.js API route, effectively managing all incoming API requests.
+
+   ```ts
+   // src/app/api/[...remult]/route.ts
+
+   import { api } from '../../../api'
+
+   export const { POST, PUT, DELETE, GET } = api
+   ```
 
 ### Enable TypeScript decorators
 

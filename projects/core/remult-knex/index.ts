@@ -1,10 +1,15 @@
 import type { Knex } from 'knex'
 import type { Remult } from '../src/context.js'
 
-import type { EntityDbNamesBase } from '../src/filter/filter-consumer-bridge-to-sql-request.js'
+import {
+  CustomSqlFilterBuilder,
+  type CustomSqlFilterObject,
+  type EntityDbNamesBase,
+} from '../src/filter/filter-consumer-bridge-to-sql-request.js'
 import {
   dbNamesOf,
   isDbReadonly,
+  shouldCreateEntity,
   shouldNotCreateField,
 } from '../src/filter/filter-consumer-bridge-to-sql-request.js'
 import type { FilterConsumer } from '../src/filter/filter-interfaces.js'
@@ -12,8 +17,6 @@ import {
   customDatabaseFilterToken,
   Filter,
 } from '../src/filter/filter-interfaces.js'
-
-import { CompoundIdField } from '../src/CompoundIdField.js'
 import type { FieldMetadata } from '../src/column-interfaces.js'
 import type {
   DataProvider,
@@ -29,18 +32,67 @@ import {
 } from '../src/remult3/RepositoryImplementation.js'
 import { Sort } from '../src/sort.js'
 import { ValueConverters } from '../src/valueConverters.js'
-import { resultCompoundIdFilter as resultCompoundIdFilter } from '../src/resultCompoundIdFilter.js'
 import type { StringFieldOptions } from '../src/remult3/Fields.js'
 import { getRepositoryInternals } from '../src/remult3/repository-internals.js'
 import { remultStatic } from '../src/remult-static.js'
+import type {
+  HasWrapIdentifier,
+  SqlCommand,
+  SqlCommandFactory,
+  SqlResult,
+} from '../src/sql-command.js'
+import type {
+  CanBuildMigrations,
+  MigrationBuilder,
+  MigrationCode,
+} from '../migrations/migration-types.js'
+import { getRowAfterUpdate } from '../src/data-providers/sql-database.js'
 
-export class KnexDataProvider implements DataProvider {
+export class KnexDataProvider
+  implements
+    DataProvider,
+    HasWrapIdentifier,
+    SqlCommandFactory,
+    CanBuildMigrations
+{
   constructor(public knex: Knex) {}
-  static getDb(remult?: Remult) {
-    const r = (remult || remultContext).dataProvider as KnexDataProvider
+  end() {
+    return this.knex.destroy()
+  }
+  provideMigrationBuilder(builder: MigrationCode): MigrationBuilder {
+    var sb = new KnexSchemaBuilder(this.knex)
+    return {
+      async createTable(entity: EntityMetadata<any>): Promise<void> {
+        let e: EntityDbNamesBase = await dbNamesOf(entity, (x) => x)
+        sb.createTableKnexCommand(entity, e)
+          .toSQL()
+          .forEach((sql) => builder.addSql(sql.sql))
+      },
+      async addColumn(
+        entity: EntityMetadata<any>,
+        field: FieldMetadata<any, any>,
+      ): Promise<void> {
+        let e: EntityDbNamesBase = await dbNamesOf(entity, (x) => x)
+
+        await sb
+          .createColumnKnexCommand(e, field, e.$dbNameOf(field))
+          .toSQL()
+          .forEach((sql) => builder.addSql(sql.sql))
+      },
+    }
+  }
+  createCommand(): SqlCommand {
+    return new KnexBridgeToSQLCommand(this.knex)
+  }
+  execute(sql: string): Promise<SqlResult> {
+    return this.createCommand().execute(sql)
+  }
+  static getDb(dataProvider?: DataProvider) {
+    const r = (dataProvider || remultContext.dataProvider) as KnexDataProvider
     if (!r.knex) throw 'the data provider is not an KnexDataProvider'
     return r.knex
   }
+  wrapIdentifier: (name: string) => string = (x) => this.knex.ref(x) + ''
 
   getEntityDataProvider(entity: EntityMetadata<any>): EntityDataProvider {
     if (!supportsJsonLoadingAndSaving(this.knex))
@@ -66,7 +118,7 @@ export class KnexDataProvider implements DataProvider {
       }
     }
 
-    return new KnexEntityDataProvider(entity, this.knex)
+    return new KnexEntityDataProvider(entity, this.knex, this.wrapIdentifier)
   }
   async transaction(
     action: (dataProvider: DataProvider) => Promise<void>,
@@ -91,14 +143,16 @@ export class KnexDataProvider implements DataProvider {
   static async filterToRaw<entityType>(
     entity: RepositoryOverloads<entityType>,
     condition: EntityFilter<entityType>,
+    wrapIdentifier?: (name: string) => string,
   ) {
     const repo = getRepository(entity)
     var b = new FilterConsumerBridgeToKnexRequest(
-      await dbNamesOf(repo.metadata),
+      await dbNamesOf(repo.metadata, (x) => x),
+      wrapIdentifier,
     )
     b._addWhere = false
     await (
-      await getRepositoryInternals(repo).translateWhereToFilter(condition)
+      await getRepositoryInternals(repo)._translateWhereToFilter(condition)
     ).__applyToConsumer(b)
     let r = await b.resolveWhere()
     return (knex) => r.forEach((y) => y(knex))
@@ -118,10 +172,14 @@ class KnexEntityDataProvider implements EntityDataProvider {
   constructor(
     private entity: EntityMetadata<any>,
     private knex: Knex,
+    private rawSqlWrapIdentifier: (name: string) => string,
   ) {}
   async count(where: Filter): Promise<number> {
     const e = await this.init()
-    const br = new FilterConsumerBridgeToKnexRequest(e)
+    const br = new FilterConsumerBridgeToKnexRequest(
+      e,
+      this.rawSqlWrapIdentifier,
+    )
     where.__applyToConsumer(br)
     let r = await br.resolveWhere()
     const result = await this.knex(e.$entityName)
@@ -149,7 +207,10 @@ class KnexEntityDataProvider implements EntityDataProvider {
     }
     let query = this.knex(e.$entityName).select(cols)
     if (options?.where) {
-      const br = new FilterConsumerBridgeToKnexRequest(e)
+      const br = new FilterConsumerBridgeToKnexRequest(
+        e,
+        this.rawSqlWrapIdentifier,
+      )
       options.where.__applyToConsumer(br)
       let r = await br.resolveWhere()
       query.where((b) => r.forEach((y) => y(b)))
@@ -188,7 +249,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
     })
   }
   async init() {
-    const r = (await dbNamesOf(this.entity)) as EntityDbNamesBase
+    const r = (await dbNamesOf(this.entity, (x) => x)) as EntityDbNamesBase
     return {
       $dbNameOf: (f) => {
         let fm = f as FieldMetadata
@@ -197,19 +258,16 @@ class KnexEntityDataProvider implements EntityDataProvider {
         return r.$dbNameOf(f)
       },
       $entityName: r.$entityName,
+      wrapIdentifier: r.wrapIdentifier,
     } satisfies EntityDbNamesBase
   }
   async update(id: any, data: any): Promise<any> {
     const e = await this.init()
-    let f = new FilterConsumerBridgeToKnexRequest(e)
+    let f = new FilterConsumerBridgeToKnexRequest(e, this.rawSqlWrapIdentifier)
     Filter.fromEntityFilter(
       this.entity,
       this.entity.idMetadata.getIdFilter(id),
     ).__applyToConsumer(f)
-
-    let resultFilter = this.entity.idMetadata.getIdFilter(id)
-    if (data.id != undefined)
-      resultFilter = this.entity.idMetadata.getIdFilter(data.id)
 
     let updateObject = {}
     for (const x of this.entity.fields) {
@@ -227,13 +285,11 @@ class KnexEntityDataProvider implements EntityDataProvider {
     await this.knex(e.$entityName)
       .update(updateObject)
       .where((b) => where.forEach((w) => w(b)))
-    return this.find({
-      where: Filter.fromEntityFilter(this.entity, resultFilter),
-    }).then((y) => y[0])
+    return getRowAfterUpdate(this.entity, this, data, id, 'update')
   }
   async delete(id: any): Promise<void> {
     const e = await this.init()
-    let f = new FilterConsumerBridgeToKnexRequest(e)
+    let f = new FilterConsumerBridgeToKnexRequest(e, this.rawSqlWrapIdentifier)
     Filter.fromEntityFilter(
       this.entity,
       this.entity.idMetadata.getIdFilter(id),
@@ -245,20 +301,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
   }
   async insert(data: any): Promise<any> {
     const e = await this.init()
-    let resultFilter: Filter
-    if (this.entity.idMetadata.field instanceof CompoundIdField)
-      resultFilter = resultCompoundIdFilter(
-        this.entity.idMetadata.field,
-        undefined,
-        data,
-      )
-    else
-      resultFilter = Filter.fromEntityFilter(
-        this.entity,
-        this.entity.idMetadata.getIdFilter(
-          data[this.entity.idMetadata.field.key],
-        ),
-      )
+
     let insertObject = {}
     for (const x of this.entity.fields) {
       if (isDbReadonly(x, e)) {
@@ -285,13 +328,13 @@ class KnexEntityDataProvider implements EntityDataProvider {
         newId = result[0].id
       }
 
-      resultFilter = new Filter((x) =>
-        x.isEqualTo(this.entity.idMetadata.field, newId),
-      )
+      return this.find({
+        where: new Filter((x) =>
+          x.isEqualTo(this.entity.idMetadata.field, newId),
+        ),
+      }).then((y) => y[0])
     } else await insert
-    return this.find({ where: resultFilter }).then((y) => {
-      return y[0]
-    })
+    return getRowAfterUpdate(this.entity, this, data, undefined, 'insert')
   }
 }
 class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
@@ -309,7 +352,10 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
     return this.result
   }
 
-  constructor(private nameProvider: EntityDbNamesBase) {}
+  constructor(
+    private innerNameProvider: EntityDbNamesBase,
+    private rawSqlWrapIdentifier: (name: string) => string,
+  ) {}
 
   custom(key: string, customItem: any): void {
     throw new Error('Custom filter should be translated before it gets here')
@@ -320,7 +366,10 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
       (async () => {
         const result = [] as ((builder: Knex.QueryBuilder) => void)[]
         for (const element of orElements) {
-          let f = new FilterConsumerBridgeToKnexRequest(this.nameProvider)
+          let f = new FilterConsumerBridgeToKnexRequest(
+            this.innerNameProvider,
+            this.rawSqlWrapIdentifier,
+          )
           f._addWhere = false
           element.__applyToConsumer(f)
           let where = await f.resolveWhere()
@@ -339,15 +388,17 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
     )
   }
   isNull(col: FieldMetadata): void {
-    this.result.push((b) => b.whereNull(this.nameProvider.$dbNameOf(col)))
+    this.result.push((b) => b.whereNull(this.innerNameProvider.$dbNameOf(col)))
   }
   isNotNull(col: FieldMetadata): void {
-    this.result.push((b) => b.whereNotNull(this.nameProvider.$dbNameOf(col)))
+    this.result.push((b) =>
+      b.whereNotNull(this.innerNameProvider.$dbNameOf(col)),
+    )
   }
   isIn(col: FieldMetadata, val: any[]): void {
     this.result.push((knex) =>
       knex.whereIn(
-        this.nameProvider.$dbNameOf(col),
+        this.innerNameProvider.$dbNameOf(col),
         val.map((x) => translateValueAndHandleArrayAndHandleArray(col, x)),
       ),
     )
@@ -374,7 +425,7 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
     this.result.push((b) =>
       b.whereRaw(
         'lower (' +
-          b.client.ref(this.nameProvider.$dbNameOf(col)) +
+          b.client.ref(this.innerNameProvider.$dbNameOf(col)) +
           ") like lower ('%" +
           val.replace(/'/g, "''") +
           "%')",
@@ -386,7 +437,7 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
     this.result.push((b) =>
       b.whereRaw(
         'not lower (' +
-          b.client.ref(this.nameProvider.$dbNameOf(col)) +
+          b.client.ref(this.innerNameProvider.$dbNameOf(col)) +
           ") like lower ('%" +
           val.replace(/'/g, "''") +
           "%')",
@@ -398,20 +449,32 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
   private add(col: FieldMetadata, val: any, operator: string) {
     this.result.push((b) =>
       b.where(
-        this.nameProvider.$dbNameOf(col),
+        this.innerNameProvider.$dbNameOf(col),
         operator,
         translateValueAndHandleArrayAndHandleArray(col, val),
       ),
     )
   }
 
-  databaseCustom(databaseCustom: {
-    buildKnex: CustomKnexFilterBuilderFunction
-  }): void {
+  databaseCustom(
+    databaseCustom: {
+      buildKnex: CustomKnexFilterBuilderFunction
+    } & CustomSqlFilterObject,
+  ): void {
     this.promises.push(
       (async () => {
         if (databaseCustom?.buildKnex) {
           this.result.push(await databaseCustom.buildKnex())
+        }
+        if (databaseCustom?.buildSql) {
+          let r = new KnexCommandHelper()
+          const item = new CustomSqlFilterBuilder(r, this.rawSqlWrapIdentifier)
+          let sql = await databaseCustom.buildSql(item)
+          if (typeof sql !== 'string') sql = item.sql
+
+          if (sql) {
+            this.result.push((b) => b.whereRaw(sql as string, r.values))
+          }
         }
       })(),
     )
@@ -432,13 +495,11 @@ export class KnexSchemaBuilder {
 
   async ensureSchema(entities: EntityMetadata<any>[]) {
     for (const entity of entities) {
-      let e: EntityDbNamesBase = await dbNamesOf(entity)
+      let e: EntityDbNamesBase = await dbNamesOf(entity, (x) => x)
       try {
-        if (!entity.options.sqlExpression) {
-          if (e.$entityName.toLowerCase().indexOf('from ') < 0) {
-            await this.createIfNotExist(entity)
-            await this.verifyAllColumns(entity)
-          }
+        if (shouldCreateEntity(entity, e)) {
+          await this.createIfNotExist(entity)
+          await this.verifyAllColumns(entity)
         }
       } catch (err) {
         console.error('failed ensure schema of ' + e.$entityName + ' ', err)
@@ -447,56 +508,65 @@ export class KnexSchemaBuilder {
     }
   }
   async createIfNotExist(entity: EntityMetadata): Promise<void> {
-    const e: EntityDbNamesBase = await dbNamesOf(entity)
+    const e: EntityDbNamesBase = await dbNamesOf(entity, (x) => x)
     if (!(await this.knex.schema.hasTable(e.$entityName))) {
-      let cols = new Map<FieldMetadata, { name: string; readonly: boolean }>()
-      for (const f of entity.fields) {
-        cols.set(f, {
-          name: e.$dbNameOf(f),
-          readonly: shouldNotCreateField(f, e),
-        })
-      }
-      await logSql(
-        this.knex.schema.createTable(e.$entityName, (b) => {
-          for (const x of entity.fields) {
-            if (!cols.get(x)!.readonly || isAutoIncrement(x)) {
-              if (isAutoIncrement(x)) b.increments(cols.get(x)!.name)
-              else {
-                buildColumn(
-                  x,
-                  cols.get(x)!.name,
-                  b,
-                  supportsJsonDataStorage(this.knex),
-                )
-                if (x == entity.idMetadata.field) b.primary([cols.get(x)!.name])
-              }
-            }
-          }
-        }),
-      )
+      await logSql(this.createTableKnexCommand(entity, e))
     }
   }
 
-  async addColumnIfNotExist<T extends EntityMetadata>(
-    entity: T,
-    c: (e: T) => FieldMetadata,
+  createTableKnexCommand(entity: EntityMetadata<any>, e: EntityDbNamesBase) {
+    let cols = new Map<FieldMetadata, { name: string; readonly: boolean }>()
+    for (const f of entity.fields) {
+      cols.set(f, {
+        name: e.$dbNameOf(f),
+        readonly: shouldNotCreateField(f, e),
+      })
+    }
+
+    return this.knex.schema.createTable(e.$entityName, (b) => {
+      for (const x of entity.fields) {
+        if (!cols.get(x)!.readonly || isAutoIncrement(x)) {
+          if (isAutoIncrement(x)) b.increments(cols.get(x)!.name)
+          else {
+            buildColumn(
+              x,
+              cols.get(x)!.name,
+              b,
+              supportsJsonDataStorage(this.knex),
+            )
+          }
+        }
+      }
+      b.primary(entity.idMetadata.fields.map((f) => e.$dbNameOf(f)))
+    })
+  }
+
+  async addColumnIfNotExist(
+    entity: EntityMetadata,
+    c: (e: EntityMetadata) => FieldMetadata,
   ) {
-    let e: EntityDbNamesBase = await dbNamesOf(entity)
+    let e: EntityDbNamesBase = await dbNamesOf(entity, (x) => x)
     if (shouldNotCreateField(c(entity), e)) return
 
     let col = c(entity)
     let colName = e.$dbNameOf(col)
 
     if (!(await this.knex.schema.hasColumn(e.$entityName, colName))) {
-      await logSql(
-        this.knex.schema.alterTable(e.$entityName, (b) => {
-          buildColumn(col, colName, b, supportsJsonDataStorage(this.knex))
-        }),
-      )
+      await logSql(this.createColumnKnexCommand(e, col, colName))
     }
   }
+  createColumnKnexCommand(
+    e: EntityDbNamesBase,
+    col: FieldMetadata<any, any>,
+    colName: string,
+  ): Knex.SchemaBuilder {
+    return this.knex.schema.alterTable(e.$entityName, (b) => {
+      buildColumn(col, colName, b, supportsJsonDataStorage(this.knex))
+    })
+  }
+
   async verifyAllColumns<T extends EntityMetadata>(entity: T) {
-    let e = await dbNamesOf(entity)
+    let e = await dbNamesOf(entity, (x) => x)
     try {
       for (const col of entity.fields.toArray()) {
         if (!shouldNotCreateField(col, e)) {
@@ -534,7 +604,7 @@ export function buildColumn(
 ) {
   if (x.valueType == Number) {
     if (!x.valueConverter.fieldTypeInDb) {
-      let c = b.decimal(dbName)
+      let c = b.decimal(dbName, 18, 2)
       if (!x.allowNull) {
         c.defaultTo(0).notNullable()
       }
@@ -561,10 +631,16 @@ export function buildColumn(
       }
     } else if (x.valueConverter.fieldTypeInDb == 'json')
       if (supportsJson) b.json(dbName)
-      else b.text(dbName)
+      else {
+        let c = b.text(dbName)
+        if (!x.allowNull) c.defaultTo('').notNullable()
+      }
     else b.specificType(dbName, x.valueConverter.fieldTypeInDb)
-  } else {
+  } else if (x.valueType === String) {
     let c = b.string(dbName, (<StringFieldOptions>x.options).maxLength)
+    if (!x.allowNull) c.defaultTo('').notNullable()
+  } else {
+    let c = b.text(dbName)
     if (!x.allowNull) c.defaultTo('').notNullable()
   }
 }
@@ -589,4 +665,70 @@ function translateValueAndHandleArrayAndHandleArray(
   let result = field.valueConverter.toDb(val)
   if (Array.isArray(result)) return JSON.stringify(result)
   return result
+}
+class KnexCommandHelper {
+  values = {}
+  i = 0
+  addParameterAndReturnSqlToken(val: any) {
+    return this.param(val)
+  }
+  param(val: any): string {
+    if (Array.isArray(val)) val = JSON.stringify(val)
+    const key = ':' + this.i++
+    this.values[key.substring(1)] = val
+    return key
+  }
+}
+
+class KnexBridgeToSQLCommand extends KnexCommandHelper implements SqlCommand {
+  constructor(private source: Knex) {
+    super()
+  }
+  values = {}
+  i = 0
+  addParameterAndReturnSqlToken(val: any) {
+    return this.param(val)
+  }
+  param(val: any): string {
+    if (Array.isArray(val)) val = JSON.stringify(val)
+    const key = ':' + this.i++
+    this.values[key.substring(1)] = val
+    return key
+  }
+
+  async execute(sql: string): Promise<SqlResult> {
+    return await this.source.raw(sql, this.values).then((r) => {
+      switch (this.source.client.config.client) {
+        case 'mysql':
+        case 'mysql2':
+          return new KnexPostgresBridgeToSQLQueryResult({
+            fields: r[1],
+            rows: r[0],
+          })
+        case 'pg':
+          return new KnexPostgresBridgeToSQLQueryResult(r)
+        default:
+        case 'better-sqlite3':
+        case 'mssql':
+          return new KnexPostgresBridgeToSQLQueryResult({
+            rows: r,
+          })
+      }
+    })
+  }
+}
+class KnexPostgresBridgeToSQLQueryResult implements SqlResult {
+  getColumnKeyInResultForIndexInSelect(index: number): string {
+    if (this.r.fields) return this.r.fields[index].name
+    if (this.rows.length == 0) throw Error('No rows')
+    let i = 0
+    for (let m in this.rows[0]) {
+      if (i++ == index) return m
+    }
+    throw Error('index not found')
+  }
+  constructor(public r: any) {
+    this.rows = r.rows
+  }
+  rows: any[]
 }

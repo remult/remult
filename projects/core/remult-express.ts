@@ -5,7 +5,7 @@ import type {
   RemultServerCore,
   RemultServerImplementation,
   RemultServerOptions,
-} from './server/expressBridge.js'
+} from './server/remult-api-server.js'
 import { createRemultServer } from './server/index.js'
 
 export function remultExpress(

@@ -39,6 +39,7 @@ testem.log
 Thumbs.db
 
 .env
+!/examples/bun-react-hono-monorepo-todo/packages/backend
 distServer/*
 !/distServer/package.json
 dist-server/*
