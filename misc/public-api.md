@@ -2522,7 +2522,7 @@ export declare class Validators {
 export type ValidatorWithArgs<valueType, argsType> = (
   args: argsType,
   message?: ValidationMessage<valueType, argsType>,
-) => FieldValidator<any, valueType>
+) => FieldValidator<unknown, valueType>
 export interface ValueConverter<valueType> {
   /**
    * Converts a value from a JSON DTO to the valueType. This method is typically used when receiving data
@@ -3441,6 +3441,7 @@ export declare class KnexDataProvider
   knex: Knex
   constructor(knex: Knex)
   end(): Promise<void>
+  provideMigrationBuilder(builder: MigrationCode): MigrationBuilder
   createCommand(): SqlCommand
   execute(sql: string): Promise<SqlResult>
   static getDb(dataProvider?: DataProvider): Knex<any, any[]>
@@ -3458,6 +3459,8 @@ export declare class KnexDataProvider
   isProxy?: boolean
   ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
 }
+//[ ] MigrationCode from ../migrations/migration-types.js is not exported
+//[ ] MigrationBuilder from ../migrations/migration-types.js is not exported
 //[ ] SqlCommand from ../src/sql-command.js is not exported
 //[ ] SqlResult from ../src/sql-command.js is not exported
 //[ ] DataProvider from ../src/data-interfaces.js is not exported

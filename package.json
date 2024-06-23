@@ -1,7 +1,7 @@
 {
   "name": "remult-mono-repo",
   "description": "See projects/core for the remult core package.json. This package.json is used for remult/core development, test projects and experimental work. See ",
-  "version": "0.26.12",
+  "version": "0.26.14",
   "scripts": {
     "format": "prettier \"./projects/core/**\" --write",
     "test": "vitest --ui --coverage",
@@ -86,7 +86,7 @@
     "koa-bodyparser": "^4.3.0",
     "mongodb": "^4.17.1",
     "mysql": "^2.18.1",
-    "mysql2": "^3.9.7",
+    "mysql2": "^3.9.8",
     "next": "^14.1.1",
     "npm-run-all": "^4.1.5",
     "nuxt": "^3.8.2",
@@ -97,7 +97,7 @@
     "sql.js": "^1.9.0",
     "sqlite3": "^5.1.7",
     "swagger-ui-express": "^4.1.6",
-    "tedious": "^14.1.0",
+    "tedious": "^18.2.0",
     "ts-node": "^8.10.2",
     "ts-node-dev": "^1.1.8",
     "tslib": "^2.2.0",

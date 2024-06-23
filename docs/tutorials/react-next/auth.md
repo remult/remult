@@ -75,7 +75,7 @@ Let's set-up `NextAuth.js` to authenticate users to our app.
    you can use an [online UUID generator](https://www.uuidgenerator.net/) to generate a completely random string
    :::
 
-3. Create an `auth` folder within the 'api' folder, and inside it, create a `[...nextauth]` subdirectory. Inside the `app/api/auth/[...nextauth]` directory, craft an `auth.ts` file with the following code.
+3. Inside the `src` folder, create an `auth.ts` file with the following code.
 
    ```ts
    // src/auth.ts
@@ -121,12 +121,12 @@ Let's set-up `NextAuth.js` to authenticate users to our app.
 
    We've configured the `session` `callback` to include the user info as part of the session info, so that remult on the frontend will have the authorization info.
 
-4. Create an `auth` folder within the 'api' folder, and inside it, create a `[...nextauth]` subdirectory. Inside the `app/api/auth/[...nextauth]` directory, craft a `route.ts` file with the following code.
+4. Create an `auth` folder within the 'api' folder, and inside it, create a `[...nextauth]` subdirectory. Inside the `src/app/api/auth/[...nextauth]` directory, craft a `route.ts` file with the following code.
 
    ```ts
    // src/app/api/auth/[...nextauth]/route.ts
 
-   import type { auth } from '../../../../auth'
+   import { auth } from '../../../../auth'
 
    export { auth as GET, auth as POST }
    ```

@@ -59,7 +59,6 @@ export class KnexDataProvider
   end() {
     return this.knex.destroy()
   }
-  /* @internal */
   provideMigrationBuilder(builder: MigrationCode): MigrationBuilder {
     var sb = new KnexSchemaBuilder(this.knex)
     return {

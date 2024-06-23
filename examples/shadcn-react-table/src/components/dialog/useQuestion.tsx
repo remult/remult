@@ -1,23 +1,22 @@
 import {
   DialogClose,
-  DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { useDialog } from './dialog-context.tsx'
 import { Button } from '../ui/button.tsx'
+import { useDialog } from './dialog-context.tsx'
 
 export default function useQuestion() {
   const dialog = useDialog()
-  return ({ title, description }: { title: string; description?: string }) =>
+  return (question: string) =>
     dialog(
       (resolve) => (
         <div>
           <DialogHeader>
-            <DialogTitle>{title}</DialogTitle>
-            <DialogDescription>{description}</DialogDescription>
+            <DialogTitle>Question</DialogTitle>
+            <DialogDescription>{question}</DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:space-x-0">
             <DialogClose asChild>
