@@ -41,7 +41,7 @@ export function TasksTableFloatingBar({
   const [showDeleteTaskDialog, setShowDeleteTaskDialog] = React.useState(false)
 
   const [isPending, startTransition] = React.useTransition()
-  function updateTasks(set: Partial<Task>) {
+  async function updateTasks(set: Partial<Task>) {
     startTransition(() => {
       toast.promise(
         repo(Task)
