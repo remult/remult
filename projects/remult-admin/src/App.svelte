@@ -16,11 +16,13 @@
   }
 </script>
 
-<div class="full">
-  <div style="min-width:100px">
+<div class="app-holder">
+
+  <div class="main-navigation">
+    <div class="main-navigation__title">Remult Admin</div>
     {#each $godStore?.tables ?? [] as t}
-      <div>
         <a
+          class="tab"
           href="#/entity/{t.key}"
           use:active={{
             path: `/entity/${t.key}`,
@@ -29,29 +31,21 @@
         >
           {t.caption}
         </a>
-      </div>
     {/each}
     <a
       href="#/"
+      class="tab"
       use:active={{
         path: `/`,
         className: 'active',
-      }}>🚀 Diagram</a
+      }}>Diagram</a
     >
   </div>
-  <div style="flex-grow: 1;">
+
+  <div class="main-content">
     <Router {routes} />
   </div>
 </div>
 
 <style>
-  .full {
-    display: flex;
-    gap: 10px;
-  }
-  /* Style for "active" links; need to mark this :global because the router adds the class directly */
-  :global(a.active) {
-    color: blue;
-    font-weight: bold;
-  }
 </style>

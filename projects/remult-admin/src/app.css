@@ -2,6 +2,11 @@
   box-sizing: border-box;
 }
 
+body, html {
+  margin: 0;
+  padding: 0;
+}
+
 body {
   --border-color: #0000001a;
   --background-color: white;
@@ -23,6 +28,10 @@ body {
   display: flex;
   flex-direction: column;
   height: 100%;
+}
+
+table {
+  min-width: 100%;
 }
 
 thead {
@@ -171,6 +180,7 @@ td input {
   padding: 0 0.5rem;
   display: flex;
   height: 100%;
+  min-width: 100%;
 }
 
 td .field-spacer {

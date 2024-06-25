@@ -68,63 +68,45 @@
   }
 </script>
 
-<div>
+<div class="page-bar">
+    <button
+      class="icon-button"
+      on:click={() => {
+        const nav = document.querySelector('body')
+        nav?.classList.toggle('hide-navigation')
+      }}
+    >
+    <svg class="hamburger-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect y="4.68134" width="24" height="2.03049" fill="black"/><rect y="10.9847" width="24" height="2.03049" fill="black"/><rect y="17.2882" width="24" height="2.03049" fill="black"/></svg>
+    </button>
+
+    <div class="page-bar__title">{repo.metadata.caption}</div>
+
+    <div class="page-bar__new-entry">
+      <button on:click={() => { newRow = repo.create({ ...parentRelation })}}>+</button>
+    </div>
+
+    <Filter fields={columns} bind:filter={$filter} />
+
+    <span>{from + ' - ' + to} of {totalRows}</span>
+
+    <button class="icon-button" disabled={(options.page || 1) === 1}
+      on:click={() => {
+        options = { ...options, page: (options.page || 2) - 1 }
+    }}>
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width={1.5} stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
+    </button>
+
+    <button class="icon-button" disabled={to >= totalRows}
+      on:click={() => {
+        options = { ...options, page: (options.page || 1) + 1 }
+    }}>
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width={1.5} stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg>
+    </button>
+</div>
+
+<div class="table-container">
   <table>
     <thead>
-      {#if !newRow}
-        <tr>
-          <td colSpan={columns.length + 1 + (relations.length > 0 ? 1 : 0)}>
-            <div style="display: flex; justify-content: space-between;">
-              <span>
-                <b>{repo.metadata.caption}</b>
-
-                <button
-                  on:click={() => {
-                    newRow = repo.create({ ...parentRelation })
-                  }}>+</button
-                >
-              </span>
-              <Filter fields={columns} bind:filter={$filter} />
-              <span>
-                <button
-                  disabled={(options.page || 1) === 1}
-                  on:click={() => {
-                    options = { ...options, page: (options.page || 2) - 1 }
-                  }}
-                >
-                  &lt;
-                </button>
-
-                {from + ' - ' + to} of {totalRows}
-
-                <button
-                  disabled={to >= totalRows}
-                  on:click={() => {
-                    options = { ...options, page: (options.page || 1) + 1 }
-                  }}
-                >
-                  &gt;
-                </button>
-              </span>
-            </div>
-          </td>
-        </tr>
-      {:else}
-        <EditableRow
-          rowId={undefined}
-          row={newRow}
-          {columns}
-          {relations}
-          deleteAction={async () => {
-            newRow = undefined
-          }}
-          save={async (item) => {
-            await repo.insert(item)
-            newRow = undefined
-          }}
-        />
-      {/if}
-
       <tr>
         {#if relations.length > 0}
           <td />
@@ -155,6 +137,22 @@
           {relations}
         />
       {/each}
+      
+      {#if newRow}
+        <EditableRow
+          rowId={undefined}
+          row={newRow}
+          {columns}
+          {relations}
+          deleteAction={async () => {
+            newRow = undefined
+          }}
+          save={async (item) => {
+            await repo.insert(item)
+            newRow = undefined
+          }}
+        />
+      {/if}
     </tbody>
   </table>
 </div>
