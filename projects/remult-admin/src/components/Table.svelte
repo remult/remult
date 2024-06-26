@@ -185,7 +185,7 @@
           }}
         />
       {/if}
-      {#each items as row}
+      {#each items as row, i (repo.metadata.idMetadata.getId(row))}
         <EditableRow
           rowId={repo.metadata.idMetadata.getId(row)}
           {row}

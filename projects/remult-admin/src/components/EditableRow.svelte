@@ -22,7 +22,6 @@
   let error = undefined
   let relation: EntityRelationToManyInfo | null = null
 
-  // TODO fix bug that frozzen is not updated on entity change.
   let rowFrozzen = { ...row }
 
   $: value = row
