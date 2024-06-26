@@ -1,15 +1,20 @@
 <script lang="ts">
-  import Router from 'svelte-spa-router'
+  import Router, { loc } from 'svelte-spa-router'
   import Schema from './routes/Schema.svelte'
   import NotFound from './routes/NotFound.svelte'
   import Entity from './routes/Entity.svelte'
   import { godStore } from './stores/GodStore'
   import active from 'svelte-spa-router/active'
+  import { LSContext } from './lib/LSContext.js'
+  import DefaultRoute from './routes/DefaultRoute.svelte'
 
-  // export let params: { wild?: string } = {}
+  // Save the current location except on '/'
+  $: $loc.location !== '/' &&
+    ($LSContext = { currentLocationHash: $loc.location })
 
   const routes = {
-    '/': Schema,
+    '/': DefaultRoute,
+    '/diagram': Schema,
     '/entity/*': Entity,
     // This is optional, but if present it must be the last
     '*': NotFound,
@@ -32,10 +37,10 @@
       </a>
     {/each}
     <a
-      href="#/"
+      href="#/diagram"
       class="tab"
       use:active={{
-        path: `/`,
+        path: `/diagram`,
         className: 'active',
       }}>Diagram</a
     >
