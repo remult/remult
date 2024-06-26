@@ -51,6 +51,8 @@ export {
   EntityRefForEntityBase,
   IdMetadata,
   FindFirstOptionsBase,
+  CustomEntityFilter,
+  CustomIdFilter,
 } from './src/remult3/remult3.js'
 export {
   EntityBase,
