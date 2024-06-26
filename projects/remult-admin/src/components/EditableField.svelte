@@ -13,6 +13,8 @@
   let dialogJSON: HTMLDialogElement | null = null
 </script>
 
+<!-- TODO Ermin? When readonly? -->
+<!-- {info.dbReadOnly} -->
 {#if info.relationToOne}
   <RelationField bind:value {info} on:change />
 {:else if info.type == 'json'}
@@ -56,9 +58,15 @@
   </dialog>
   <!-- {:else if info.type == 'boolean'}
    TODO Ermin css? (in entity Contacts, field Has Newsletter)
-  <input bind:checked={value} on:change type="checkbox" />
+  <input bind:checked={value} on:change type="checkbox" />-->
+{:else if info.values && info.values.length > 0}
+  <select bind:value>
+    {#each info.values as option}
+      <option value={String(option.id)}>{option.caption}</option>
+    {/each}
+  </select>
 {:else if info.type == 'number'}
-  <input bind:value on:change type="number" /> -->
+  <input bind:value on:change type="number" />
 {:else}
   <input bind:value on:change />
 {/if}

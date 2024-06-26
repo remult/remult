@@ -16,7 +16,7 @@ export default app
 //[ ] - tables for one to many relations - actions, don't stick to the right
 
 //[ ] - support compound id (order details)
-//[ ] - relation from product to supplier one to many, did not present in the erd
+//[?] - relation from product to supplier one to many, did not present in the erd
 //[ ] - focus indication for buttons
 //[ ] - support where on relations (select from table of tables etc....)
 //[x] - store erd positions
@@ -28,7 +28,7 @@ export default app
 //[ ] - serialize find options to uri
 //[ ] - support checkbox :)
 //[ ] - respect allow update for column
-//[ ] - respect api update / delete /insert ruiles
+//[ ] - respect api update / delete / insert / forbidden rules
 //[x] - add json editor
 
 // JYC added

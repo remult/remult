@@ -6,6 +6,7 @@ import { ContactNote } from './shared/Contacts/ContactNote.entity.js'
 import { ContactTag } from './shared/Contacts/ContactTag.entity.js'
 import { Tag } from './shared/Contacts/Tag.entity.js'
 import { Deal, DealContact } from './shared/Deals/Deal.entity.js'
+import { Task } from './shared/Task.js'
 
 export const entities = [
   Company,
@@ -16,6 +17,7 @@ export const entities = [
   DealContact,
   AccountManager,
   Deal,
+  Task,
 ]
 
 export const api = remultExpress({

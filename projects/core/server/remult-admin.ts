@@ -23,6 +23,8 @@ export interface EntityRelationToManyInfo extends RelationFields {
 
 export interface FieldUIInfo {
   key: string
+  dbReadOnly: boolean
+  values: { id: string | number; caption: string }[]
   valFieldKey: string
   caption: string
   type: 'json' | 'string' | 'number' | 'boolean'
@@ -114,6 +116,10 @@ export function buildEntityInfo(options: AdminOptions) {
       }
       fields.push({
         key: x.key,
+        dbReadOnly: x.dbReadOnly,
+        // TODO Noam, When to get values in an official way? :p (From JYC)
+        // @ts-ignore
+        values: x.valueConverter.values as any[],
         valFieldKey,
         caption: x.caption,
         relationToOne: relation,
