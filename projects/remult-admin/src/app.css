@@ -334,8 +334,16 @@ dialog button.button-icon svg {
 
 .page-bar__title {
   font-weight: 600;
-  margin-right: auto;
   padding: 0 0.5rem;
+}
+
+.page-bar__new-entry {
+  margin-right: auto;
+
+  button {
+    height: calc(var(--cell-height) - 1px);
+    line-height: calc(var(--cell-height) - 1px);
+  }
 }
 
 .page-bar span {
@@ -450,6 +458,21 @@ body:not(.hide-navigation) .hamburger-icon rect:nth-child(2) {
 
 body:not(.hide-navigation) .hamburger-icon rect:last-child {
   transform: rotate(-35deg) translate(-17px, -8px);
+}
+
+.row-actions {
+  display: flex;
+}
+
+.naked-button {
+  height: calc(var(--cell-height) - 1px);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+}
+
+.naked-button:hover {
+  background-color: transparent;
 }
 
 .filter strong {

@@ -94,8 +94,15 @@
 
   <div class="page-bar__title">{repo.metadata.caption}</div>
 
-  <div class="page-bar__new-entry">
-    <button
+    <div class="page-bar__new-entry">
+      <button class="icon-button" on:click={() => { newRow = repo.create({ ...parentRelation })}}>+</button>
+    </div>
+
+    <Filter fields={columns} bind:filter={$filter} />
+
+    <span>{from + ' - ' + to} of {totalRows}</span>
+
+    <button class="icon-button" disabled={(options.page || 1) === 1}
       on:click={() => {
         newRow = repo.create({ ...parentRelation })
       }}>+</button

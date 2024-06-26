@@ -105,6 +105,7 @@
     </td>
   {/each}
   <td align="right" width="90px">
+    <div class="row-actions">
     {#if change}
       <button class="icon-button" title="Save" on:click={doSave}>
         <svg
@@ -173,6 +174,7 @@
         </svg>
       </button>
     {/if}
+    </div>
   </td>
 </tr>
 {#if relation}
