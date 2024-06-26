@@ -130,7 +130,13 @@
 {#if relation}
   <tr class="extended">
     <td></td>
-    <td colSpan={columns.length + 1}>
+    <td colSpan={columns.length + 2}>
+      <div class="extended__holder">
+
+      <div class="extended__links">
+        Links here
+      </div>
+
       {#if relationTable && typeof relation === 'object'}
         <Table
           columns={relationTable.fields}
@@ -139,6 +145,7 @@
           parentRelation={relationWhere}
         />
       {/if}
+      </div>
     </td>
   </tr>
 {/if}
