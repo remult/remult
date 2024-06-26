@@ -57,54 +57,67 @@
 
     nodes.set(localNodes)
 
-    const localEdges: Edge[] = []
+    updateNodesEdges()
+  }
 
+  function updateNodesEdges() {
     for (const entity of $godStore.tables) {
-      function createEdge(
-        toEntity: string,
-        relationFields: Record<string, string>,
-      ) {
-        const target = $godStore.tables.find((x) => x.key === toEntity)
-
-        if (target) {
-          const sourceNode = localNodes.find((x) => x.id === entity.key)!
-          const targetNode = localNodes.find((x) => x.id === target.key)!
-          let i = 0
-          for (const key in relationFields) {
-            if (Object.prototype.hasOwnProperty.call(relationFields, key)) {
-              const element = relationFields[key]
-              localEdges.push({
-                id: `${entity.key}-${element}-to-one-${sourceNode.id}-${targetNode.id}`,
-                source: sourceNode.id,
-                target: targetNode.id,
-                ...returnHandles(sourceNode, targetNode, element, key),
-                markerEnd: {
-                  type: MarkerType.ArrowClosed,
-                  strokeWidth: 4,
-                },
-              })
-            }
-            i++
-          }
-        }
-      }
       for (const field of entity.fields) {
         if (field.relationToOne) {
-          createEdge(field.relationToOne?.entityKey, field.relationToOne.fields)
+          createEdge(
+            entity,
+            field.relationToOne?.entityKey,
+            field.relationToOne.fields,
+          )
         }
       }
+
       for (const relation of entity.relations) {
         const target = $godStore.tables.find(
           (x) => x.key === relation.entityKey,
         )
 
         if (target) {
-          createEdge(relation.entityKey, relation.fields)
+          createEdge(entity, relation.entityKey, relation.fields)
         }
       }
     }
-    // console.table(localEdges)
-    edges.set(localEdges)
+  }
+
+  function createEdge(
+    entity: (typeof $godStore.tables)[0],
+    toEntity: string,
+    relationFields: Record<string, string>,
+  ) {
+    const target = $godStore.tables.find((x) => x.key === toEntity)
+
+    if (target) {
+      const sourceNode = $nodes.find((x) => x.id === entity.key)!
+      const targetNode = $nodes.find((x) => x.id === target.key)!
+      let i = 0
+      const localEdges: Edge[] = []
+      for (const key in relationFields) {
+        if (Object.prototype.hasOwnProperty.call(relationFields, key)) {
+          const element = relationFields[key]
+          localEdges.push({
+            id: `${entity.key}-${element}-to-one-${sourceNode.id}-${targetNode.id}`,
+            source: sourceNode.id,
+            target: targetNode.id,
+            ...returnHandles(sourceNode, targetNode, element, key),
+            // animated: true,
+            markerEnd: {
+              type: MarkerType.ArrowClosed,
+              strokeWidth: 4,
+            },
+          })
+        }
+        i++
+      }
+      $edges = [
+        ...$edges.filter((c) => !localEdges.map((d) => d.id).includes(c.id)),
+        ...localEdges,
+      ]
+    }
   }
 
   function returnHandles(
@@ -132,11 +145,14 @@
     return id
   }
 
-  // CustomEvent<{ event: MouseEvent; targetNode: Node | null; nodes: Node[] }>
-  const nodedrag = (e) => {
-    // $LSContext.schema = nodes.map((c) => {
-    //   return { key: c.id, x: c.position.x, y: c.position.y }
-    // })
+  const nodedrag = (
+    e: CustomEvent<{
+      event: MouseEvent
+      targetNode: Node | null
+      nodes: Node[]
+    }>,
+  ) => {
+    updateNodesEdges()
   }
 
   const nodedragstop = (

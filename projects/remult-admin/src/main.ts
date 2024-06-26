@@ -33,7 +33,7 @@ export default app
 
 // JYC added
 // [x] Schema
-// [ ] add erd change to have the link on the good side!
+// [x] add erd change to have the link on the good side!
 // [ ] filter enter should apply the filter
 // [ ] disable input (only p ?) when readonly?
 // [ ] show/hide columns (global & per entity) in local storage + a reset button
