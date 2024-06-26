@@ -30,8 +30,7 @@
 </script>
 
 <div>
-  {displayValue}
-  <button class="icon-button" on:click={() => (dialogOpen = true)}>🔎</button>
+  <button class="naked-button" on:click={() => (dialogOpen = true)}><span>🔎</span> {displayValue}</button>
   {#if dialogOpen}
     <SelectDialog
       relation={info.relationToOne}

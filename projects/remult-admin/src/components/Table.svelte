@@ -82,7 +82,7 @@
     <div class="page-bar__title">{repo.metadata.caption}</div>
 
     <div class="page-bar__new-entry">
-      <button on:click={() => { newRow = repo.create({ ...parentRelation })}}>+</button>
+      <button class="icon-button" on:click={() => { newRow = repo.create({ ...parentRelation })}}>+</button>
     </div>
 
     <Filter fields={columns} bind:filter={$filter} />
