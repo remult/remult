@@ -4,12 +4,14 @@ const browser = typeof window !== 'undefined'
 
 type TLSContext = {
   currentLocationHash: string
+  schema: Record<string, { x: number; y: number }>
 }
 
-const LSContextKey = 'LSRemultAdmin_2024_06_26'
+const LSContextKey = 'LSRemultAdmin_2024_06_26_02'
 
 const LSContextDefaults: TLSContext = {
   currentLocationHash: '/',
+  schema: {},
 }
 
 const LSCurrentContext = browser

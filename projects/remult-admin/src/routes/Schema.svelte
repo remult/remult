@@ -8,12 +8,14 @@
     type Node,
     type NodeTypes,
     type Edge,
+    MarkerType,
   } from '@xyflow/svelte'
 
   import '@xyflow/svelte/dist/style.css'
 
   import { godStore } from '../stores/GodStore'
   import EntityNode from '../components/flow/EntityNode.svelte'
+  import { LSContext } from '../lib/LSContext.js'
 
   const nodes = writable<Node[]>([])
   const edges = writable<Edge[]>([])
@@ -25,25 +27,34 @@
   $: $godStore && init()
 
   const init = () => {
-    const localNodes = $godStore.tables.map((data, i) => ({
-      id: data.repo.metadata.key,
-      position: { x: i * 300, y: 0 },
-      data,
-      type: 'entity',
-    }))
+    const localNodes = $godStore.tables.map((data, i) => {
+      const found = $LSContext.schema?.[data.key]
 
-    const saved = localStorage.getItem('erd')
-    if (saved) {
-      const savedNodes = JSON.parse(saved) as {
-        id: string
-        position: { x: number; y: number }
-      }[]
-      for (const savedNode of savedNodes) {
-        const node = localNodes.find((x) => x.id === savedNode.id)
-        if (node) node.position = savedNode.position
+      let position = { x: i * 300, y: 0 }
+
+      if (found) {
+        position = {
+          x: $LSContext.schema[data.key].x,
+          y: $LSContext.schema[data.key].y,
+        }
+      } else {
+        $LSContext.schema = {
+          ...$LSContext.schema,
+          [data.key]: {
+            x: position.x,
+            y: position.y,
+          },
+        }
       }
-    }
-    // @ts-ignore
+
+      return {
+        id: data.repo.metadata.key,
+        position,
+        data,
+        type: 'entity',
+      }
+    }) as unknown as Node[]
+
     nodes.set(localNodes)
 
     const localEdges: Edge[] = []
@@ -62,16 +73,16 @@
           for (const key in relationFields) {
             if (Object.prototype.hasOwnProperty.call(relationFields, key)) {
               const element = relationFields[key]
-              // TODO Bring back links...
-              // localEdges.push({
-              //   id: `${entity.key}-${element}-to-one-${i}`,
-              //   source: sourceNode.id,
-              //   target: targetNode.id,
-              //   ...returnHandles(sourceNode, targetNode, element, key),
-              //   // markerEnd: {
-              //   //   type: 'arrow',
-              //   // },
-              // })
+              localEdges.push({
+                id: `${entity.key}-${element}-to-one-${sourceNode.id}-${targetNode.id}`,
+                source: sourceNode.id,
+                target: targetNode.id,
+                ...returnHandles(sourceNode, targetNode, element, key),
+                markerEnd: {
+                  type: MarkerType.ArrowClosed,
+                  strokeWidth: 4,
+                },
+              })
             }
             i++
           }
@@ -92,7 +103,7 @@
         }
       }
     }
-    console.table(localEdges)
+    // console.table(localEdges)
     edges.set(localEdges)
   }
 
@@ -120,10 +131,41 @@
       return sp.slice(0, sp.length - 2).join('-')
     return id
   }
+
+  // CustomEvent<{ event: MouseEvent; targetNode: Node | null; nodes: Node[] }>
+  const nodedrag = (e) => {
+    // $LSContext.schema = nodes.map((c) => {
+    //   return { key: c.id, x: c.position.x, y: c.position.y }
+    // })
+  }
+
+  const nodedragstop = (
+    e: CustomEvent<{
+      event: MouseEvent
+      targetNode: Node | null
+      nodes: Node[]
+    }>,
+  ) => {
+    $LSContext.schema = {
+      ...$LSContext.schema,
+      [e.detail.targetNode.id]: {
+        x: e.detail.targetNode.position.x,
+        y: e.detail.targetNode.position.y,
+      },
+    }
+  }
 </script>
 
 <div style="height:100vh;">
-  <SvelteFlow {nodes} {edges} {nodeTypes} fitView snapGrid={[16, 16]}>
+  <SvelteFlow
+    {nodes}
+    {edges}
+    {nodeTypes}
+    fitView
+    snapGrid={[16, 16]}
+    on:nodedrag={nodedrag}
+    on:nodedragstop={nodedragstop}
+  >
     <Background patternColor="#aaa" gap={16} />
     <Controls />
     <MiniMap zoomable pannable height={120} />

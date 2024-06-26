@@ -9,8 +9,7 @@
   import DefaultRoute from './routes/DefaultRoute.svelte'
 
   // Save the current location except on '/'
-  $: $loc.location !== '/' &&
-    ($LSContext = { currentLocationHash: $loc.location })
+  $: $loc.location !== '/' && ($LSContext.currentLocationHash = $loc.location)
 
   const routes = {
     '/': DefaultRoute,
