@@ -29,7 +29,7 @@ export default app
 //[ ] - support checkbox :)
 //[ ] - respect allow update for column
 //[ ] - respect api update / delete /insert ruiles
-//[ ] - add json editor
+//[x] - add json editor
 
 // JYC added
 // [ ] Schema

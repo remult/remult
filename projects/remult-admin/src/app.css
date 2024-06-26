@@ -2,7 +2,8 @@
   box-sizing: border-box;
 }
 
-body, html {
+body,
+html {
   margin: 0;
   padding: 0;
 }
@@ -340,7 +341,6 @@ dialog button.button-icon svg {
   margin-right: auto;
 }
 
-
 button.new-entry {
   height: calc(var(--cell-height) - 1px);
   width: 100%;
@@ -351,7 +351,6 @@ button.new-entry {
   justify-content: center;
   align-items: center;
 }
-
 
 .page-bar__results {
   white-space: nowrap;
@@ -419,6 +418,7 @@ button.new-entry {
   transition: 0.2s ease-in-out all;
   overflow-y: auto;
   padding-top: var(--cell-height);
+  padding-bottom: var(--cell-height);
 }
 
 .main-navigation__title {
@@ -427,6 +427,22 @@ button.new-entry {
   background: var(--background-color-gray);
   height: var(--cell-height);
   border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: flex-start;
+  padding: 0.5rem;
+  align-items: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  width: calc(var(--navigation-width) - 1px);
+  text-align: center;
+}
+
+.main-navigation__diagram {
+  bottom: 0;
+  position: fixed;
+  background: var(--background-color-gray);
+  height: var(--cell-height);
+  border-top: 1px solid #e5e7eb;
   display: flex;
   justify-content: flex-start;
   padding: 0.5rem;
@@ -479,7 +495,7 @@ body:not(.hide-navigation) .hamburger-icon rect:last-child {
   height: calc(var(--cell-height) - 1px);
   padding: 0;
   border: 0;
-  border-radius: 0;  
+  border-radius: 0;
 }
 
 .naked-button:hover {

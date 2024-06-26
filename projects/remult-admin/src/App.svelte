@@ -38,7 +38,7 @@
     {/each}
     <a
       href="#/diagram"
-      class="tab"
+      class="tab main-navigation__diagram"
       use:active={{
         path: `/diagram`,
         className: 'active',
