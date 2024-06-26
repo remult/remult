@@ -8,20 +8,19 @@ import { Repository } from '../../core/src/remult3/remult3'
 import { Fields } from '../../core/src/remult3/Fields'
 import { Entity } from '../../core/src/remult3/entity'
 
-const colors = [
-  'rgb(101, 116, 205)',
-  'rgb(149, 97, 226)',
-  'rgb(246, 109, 155)',
-  'rgb(184, 194, 204)',
-  'rgb(227, 52, 47)',
-  'rgb(246, 153, 63)',
-  'rgb(255, 237, 74)',
-  'rgb(56, 193, 114)',
-  'rgb(132, 204, 22)',
-  'rgb(77, 192, 181)',
-  'rgb(52, 144, 220)',
-  'rgba(0, 0, 255, 0.45)',
-]
+const generateHslColors = (numColors: number): string[] => {
+  const colors = []
+  // const saturation = 70 // Adjust as needed
+  // const lightness = 50 // Adjust as needed
+
+  for (let i = 0; i < numColors; i++) {
+    const hue = (i * 360) / numColors
+    // colors.push(`hsl(${hue}, ${saturation}%, ${lightness}%)`)
+    colors.push(hue)
+  }
+
+  return colors
+}
 
 export type TableInfo = EntityUIInfo & { repo: Repository<any> }
 export class God {
@@ -59,9 +58,10 @@ export class God {
   }
   tables: TableInfo[]
   constructor(myEntities: EntityUIInfo[]) {
-    // TODO
+    const colors = generateHslColors(myEntities.length)
     // @ts-ignore
     this.tables = myEntities
+      .sort((a, b) => a.caption.localeCompare(b.caption))
       .map((info, i) => {
         info.color = colors[i % colors.length]
         class C {}
@@ -91,6 +91,5 @@ export class God {
           repo: remult.repo(C),
         }
       })
-      .sort((a, b) => a.caption.localeCompare(b.caption))
   }
 }

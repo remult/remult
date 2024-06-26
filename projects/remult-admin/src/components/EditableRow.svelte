@@ -176,7 +176,10 @@
         <div class="extended__links">
           {#each relations as r}
             <button
-              class={'tab ' + (r === relation ? 'active' : '')}
+              class={'tab ' + (r === relation ? 'active' : '') + ' entityColor'}
+              style="--color: {$godStore.tables.find(
+                (x) => x.key === r.entityKey,
+              ).color}"
               on:click={(e) => {
                 relation = r
                 e.preventDefault()
@@ -189,13 +192,20 @@
 
         {#if relationTable && typeof relation === 'object'}
           <Table
-            columns={relationTable.fields}
+            fields={relationTable.fields}
             relations={relationTable.relations}
             repo={relationTable.repo}
             parentRelation={relationWhere}
+            color={relationTable.color}
           />
         {/if}
       </div>
     </td>
   </tr>
 {/if}
+
+<style>
+  .entityColor {
+    border-left: 4px solid hsla(var(--color), 70%, 50%, 1);
+  }
+</style>

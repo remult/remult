@@ -13,10 +13,11 @@
   import Filter from './Filter.svelte'
   import { writable, type Writable } from 'svelte/store'
 
-  export let columns: FieldUIInfo[]
+  export let fields: FieldUIInfo[]
   export let relations: EntityRelationToManyInfo[]
   export let repo: Repository<any>
   export let parentRelation: Record<string, any> = {}
+  export let color: string
 
   let options: FindOptions<any> = { limit: 25, page: 1 }
 
@@ -91,9 +92,11 @@
     >
   </button>
 
-  <div class="page-bar__title">{repo.metadata.caption}</div>
+  <div class="page-bar__title title" style="--color: {color}">
+    {repo.metadata.caption}
+  </div>
 
-  <Filter fields={columns} bind:filter={$filter} />
+  <Filter {fields} bind:filter={$filter} />
 
   <span class="page-bar__results">{from + ' - ' + to} of {totalRows}</span>
 
@@ -156,7 +159,7 @@
             >
           </td>
         {/if}
-        {#each columns as column}
+        {#each fields as column}
           <th on:click={() => toggleOrderBy(column.key)}>
             {column.caption}
             {options.orderBy?.[column.key] === 'asc'
@@ -174,7 +177,7 @@
         <EditableRow
           rowId={undefined}
           row={newRow}
-          {columns}
+          columns={fields}
           {relations}
           deleteAction={async () => {
             newRow = undefined
@@ -193,10 +196,16 @@
             await repo.update(row, item)
           }}
           deleteAction={() => repo.delete(row)}
-          {columns}
+          columns={fields}
           {relations}
         />
       {/each}
     </tbody>
   </table>
 </div>
+
+<style>
+  .title {
+    border-left: 4px solid hsla(var(--color), 70%, 50%, 1);
+  }
+</style>

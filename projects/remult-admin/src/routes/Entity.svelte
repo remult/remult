@@ -9,5 +9,10 @@
 </script>
 
 {#if table}
-  <Table columns={table.fields} repo={table.repo} relations={table.relations} />
+  <Table
+    fields={table.fields}
+    repo={table.repo}
+    relations={table.relations}
+    color={table.color}
+  />
 {/if}

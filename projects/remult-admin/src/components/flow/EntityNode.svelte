@@ -60,7 +60,7 @@
     box-shadow:
       0 4px 6px -1px rgb(0 0 0 / 0.1),
       0 2px 4px -2px rgb(0 0 0 / 0.1);
-    border-top: 8px solid var(--color);
+    border-top: 8px solid hsla(var(--color), 70%, 50%, 1);
     min-width: 200px;
   }
   .entity-node:hover {

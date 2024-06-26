@@ -336,6 +336,9 @@ dialog button.button-icon svg {
 }
 
 .page-bar__title {
+  height: 100%;
+  display: flex;
+  align-items: center;
   font-weight: 600;
   padding: 0 0.5rem;
   margin-right: auto;
