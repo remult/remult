@@ -1598,5 +1598,21 @@
     "stateAbbr": "IN",
     "accountManager": "a6e9da4b-2ce9-46ac-bb0f-680c1ddc8a5b",
     "createdAt": "2021-03-15T20:26:19.644Z"
+  },
+  {
+    "id": "aea8a603-86a8-4082-8763-6da2a7e2de3a",
+    "name": "sds",
+    "logo": "sdsds",
+    "sector": "",
+    "size": 1,
+    "linkedIn": "",
+    "website": "",
+    "phoneNumber": "",
+    "address": "",
+    "zipcode": "",
+    "city": "",
+    "stateAbbr": "",
+    "accountManager": "",
+    "createdAt": "2024-06-26T10:17:10.368Z"
   }
 ]

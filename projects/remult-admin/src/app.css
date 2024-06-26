@@ -121,14 +121,14 @@ tr.extended th {
   justify-content: flex-start;
   align-items: center;
   background: var(--background-color-gray);
-  flex: 0 0 calc(100% - 200px);
+  flex: 0 0 calc(100% - 250px);
   width: 100%;
 }
 
 .extended__holder .page-bar {
   height: var(--cell-height);
-  flex: 0 0 200px;
-  width: 200px;
+  flex: 0 0 250px;
+  width: 250px;
 }
 
 .extended__holder .page-bar__title {
@@ -136,6 +136,8 @@ tr.extended th {
 }
 
 .extended__links .tab {
+  border-radius: 0;
+  border: none;
   width: auto;
 }
 
@@ -335,15 +337,24 @@ dialog button.button-icon svg {
 .page-bar__title {
   font-weight: 600;
   padding: 0 0.5rem;
+  margin-right: auto;
 }
 
-.page-bar__new-entry {
-  margin-right: auto;
 
-  button {
-    height: calc(var(--cell-height) - 1px);
-    line-height: calc(var(--cell-height) - 1px);
-  }
+button.new-entry {
+  height: calc(var(--cell-height) - 1px);
+  width: 100%;
+  text-align: center;
+  font-weight: 400;
+  line-height: calc(var(--cell-height) - 1px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+.page-bar__results {
+  white-space: nowrap;
 }
 
 .page-bar span {
@@ -468,7 +479,7 @@ body:not(.hide-navigation) .hamburger-icon rect:last-child {
   height: calc(var(--cell-height) - 1px);
   padding: 0;
   border: 0;
-  border-radius: 0;
+  border-radius: 0;  
 }
 
 .naked-button:hover {

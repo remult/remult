@@ -94,18 +94,9 @@
 
   <div class="page-bar__title">{repo.metadata.caption}</div>
 
-  <div class="page-bar__new-entry">
-    <button
-      class="icon-button"
-      on:click={() => {
-        newRow = repo.create({ ...parentRelation })
-      }}>+</button
-    >
-  </div>
-
   <Filter fields={columns} bind:filter={$filter} />
 
-  <span>{from + ' - ' + to} of {totalRows}</span>
+  <span class="page-bar__results">{from + ' - ' + to} of {totalRows}</span>
 
   <button
     class="icon-button"
@@ -157,7 +148,14 @@
     <thead>
       <tr>
         {#if relations.length > 0}
-          <td />
+          <td>
+              <button
+                class="icon-button new-entry"
+                on:click={() => {
+                  newRow = repo.create({ ...parentRelation })
+                }}>+</button
+              >
+          </td>
         {/if}
         {#each columns as column}
           <th on:click={() => toggleOrderBy(column.key)}>
@@ -173,20 +171,7 @@
       </tr>
     </thead>
     <tbody>
-      {#each items as row}
-        <EditableRow
-          rowId={repo.metadata.idMetadata.getId(row)}
-          {row}
-          save={async (item) => {
-            await repo.update(row, item)
-          }}
-          deleteAction={() => repo.delete(row)}
-          {columns}
-          {relations}
-        />
-      {/each}
-
-      {#if newRow}
+            {#if newRow}
         <EditableRow
           rowId={undefined}
           row={newRow}
@@ -201,6 +186,20 @@
           }}
         />
       {/if}
+      {#each items as row}
+        <EditableRow
+          rowId={repo.metadata.idMetadata.getId(row)}
+          {row}
+          save={async (item) => {
+            await repo.update(row, item)
+          }}
+          deleteAction={() => repo.delete(row)}
+          {columns}
+          {relations}
+        />
+      {/each}
+
+
     </tbody>
   </table>
 </div>
