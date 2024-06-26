@@ -41,6 +41,8 @@ export class Deal {
   index = 0
   @Relations.toMany(() => DealContact)
   contacts?: DealContact[]
+  @Fields.json()
+  items = [{ id: 1, quantity: 5 }]
 
   @BackendMethod({ allowed: Allow.authenticated })
   static async DealDroppedOnKanban(

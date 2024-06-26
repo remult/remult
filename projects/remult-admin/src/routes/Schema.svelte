@@ -43,6 +43,7 @@
         if (node) node.position = savedNode.position
       }
     }
+    // @ts-ignore
     nodes.set(localNodes)
 
     const localEdges: Edge[] = []
@@ -57,19 +58,22 @@
         if (target) {
           const sourceNode = localNodes.find((x) => x.id === entity.key)!
           const targetNode = localNodes.find((x) => x.id === target.key)!
+          let i = 0
           for (const key in relationFields) {
             if (Object.prototype.hasOwnProperty.call(relationFields, key)) {
               const element = relationFields[key]
-              localEdges.push({
-                id: `${entity.key}-${element}-to-one`,
-                source: sourceNode.id,
-                target: targetNode.id,
-                ...returnHandles(sourceNode, targetNode, element, key),
-                // markerEnd: {
-                //   type: 'arrow',
-                // },
-              })
+              // TODO Bring back links...
+              // localEdges.push({
+              //   id: `${entity.key}-${element}-to-one-${i}`,
+              //   source: sourceNode.id,
+              //   target: targetNode.id,
+              //   ...returnHandles(sourceNode, targetNode, element, key),
+              //   // markerEnd: {
+              //   //   type: 'arrow',
+              //   // },
+              // })
             }
+            i++
           }
         }
       }

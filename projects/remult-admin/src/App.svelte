@@ -17,20 +17,19 @@
 </script>
 
 <div class="app-holder">
-
   <div class="main-navigation">
     <div class="main-navigation__title">Remult Admin</div>
     {#each $godStore?.tables ?? [] as t}
-        <a
-          class="tab"
-          href="#/entity/{t.key}"
-          use:active={{
-            path: `/entity/${t.key}`,
-            className: 'active',
-          }}
-        >
-          {t.caption}
-        </a>
+      <a
+        class="tab"
+        href="#/entity/{t.key}"
+        use:active={{
+          path: `/entity/${t.key}`,
+          className: 'active',
+        }}
+      >
+        {t.caption}
+      </a>
     {/each}
     <a
       href="#/"

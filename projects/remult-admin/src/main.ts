@@ -32,6 +32,7 @@ export default app
 //[ ] - add json editor
 
 // JYC added
+// [ ] Schema
 // [ ] add erd change to have the link on the good side!
 // [ ] filter enter should apply the filter
 // [ ] disable input (only p ?) when readonly?

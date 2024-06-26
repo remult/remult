@@ -61,34 +61,36 @@ export class God {
   constructor(myEntities: EntityUIInfo[]) {
     // TODO
     // @ts-ignore
-    this.tables = myEntities.map((info, i) => {
-      info.color = colors[i % colors.length]
-      class C {}
-      for (const f of info.fields) {
-        switch (f.type) {
-          case 'json':
-            Fields.json()(C.prototype, f.key as keyof typeof C.prototype)
-            break
-          case 'number':
-            Fields.number()(C.prototype, f.key)
-            break
-          case 'boolean':
-            Fields.boolean()(C.prototype, f.key)
-            break
-          default:
-            Fields.string()(C.prototype, f.key)
-            break
+    this.tables = myEntities
+      .map((info, i) => {
+        info.color = colors[i % colors.length]
+        class C {}
+        for (const f of info.fields) {
+          switch (f.type) {
+            case 'json':
+              Fields.json()(C.prototype, f.key as keyof typeof C.prototype)
+              break
+            case 'number':
+              Fields.number()(C.prototype, f.key)
+              break
+            case 'boolean':
+              Fields.boolean()(C.prototype, f.key)
+              break
+            default:
+              Fields.string()(C.prototype, f.key)
+              break
+          }
         }
-      }
-      Entity(info.key, {
-        allowApiCrud: true,
-        caption: info.caption,
-        id: info.ids,
-      })(C)
-      return {
-        ...info,
-        repo: remult.repo(C),
-      }
-    })
+        Entity(info.key, {
+          allowApiCrud: true,
+          caption: info.caption,
+          id: info.ids,
+        })(C)
+        return {
+          ...info,
+          repo: remult.repo(C),
+        }
+      })
+      .sort((a, b) => a.caption.localeCompare(b.caption))
   }
 }
