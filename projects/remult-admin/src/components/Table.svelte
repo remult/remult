@@ -43,7 +43,6 @@
         totalRows = await repo.count({
           $and: [currentFilter, { ...parentRelation }],
         })
-        //.then(setTotalRows)
       })
   }
 

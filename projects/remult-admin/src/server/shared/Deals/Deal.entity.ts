@@ -136,7 +136,9 @@ export class Deal {
 }
 
 @Entity<DealContact>('dealContacts', {
-  allowApiCrud: Allow.authenticated,
+  //allowApiCrud: Allow.authenticated,
+  allowApiCrud: true,
+
   id: { deal: true, contactId: true },
 })
 export class DealContact {
