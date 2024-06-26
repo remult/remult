@@ -148,12 +148,12 @@
       <tr>
         {#if relations.length > 0}
           <td>
-              <button
-                class="icon-button new-entry"
-                on:click={() => {
-                  newRow = repo.create({ ...parentRelation })
-                }}>+</button
-              >
+            <button
+              class="icon-button new-entry"
+              on:click={() => {
+                newRow = repo.create({ ...parentRelation })
+              }}>+</button
+            >
           </td>
         {/if}
         {#each columns as column}
@@ -170,7 +170,7 @@
       </tr>
     </thead>
     <tbody>
-            {#if newRow}
+      {#if newRow}
         <EditableRow
           rowId={undefined}
           row={newRow}
@@ -197,8 +197,6 @@
           {relations}
         />
       {/each}
-
-
     </tbody>
   </table>
 </div>
