@@ -74,11 +74,11 @@ Let's set-up `Auth.js` to authenticate users to our app.
 
 2. `Auth.js` requires a "secret" - a random string used to hash tokens, sign cookies and generate cryptographic keys.
 
-Create a file called `.env.local` at the root of the project, and set the secret `NEXTAUTH_SECRET` to a random string.
+Create a file called `.env.local` at the root of the project, and set the secret `AUTH_SECRET` to a random string.
 
-```
-// .env.local
+::: code-group
 
+```bash [.env.local]
 AUTH_SECRET=something-secret
 ```
 
@@ -86,7 +86,12 @@ AUTH_SECRET=something-secret
 You can use an [online UUID generator](https://www.uuidgenerator.net/) to generate a completely random string
 :::
 
-3. In `+hooks.server.ts`, let's add the `handlerAuth` with a list of allowed users. Using Sveltekit's `sequence`, we ensure that the auth middleware comes **BEFORE** Remult's middleware. Create `src/hooks/handleAuth.ts` at the same time as follows:
+3. In `+hooks.server.ts`, let's create two handles
+
+- `handleAuth` to handle authentication from `Auth.js` with a list of allowed users.
+- `handleRemult` to provide the remult context.
+
+Using Sveltekit's `sequence`, we ensure the chain of handles. The results would look like this:
 
 ::: code-group
 
@@ -152,18 +157,39 @@ This (very) simplistic approach use Auth.js [Credentials Provider](https://next-
 
 We've configured the `session` `callback` to include the user info as part of the session data, so that Remult on the frontend will have the authorization info.
 
-Notice the `getUser` attribute that we have added in Remult's middleware. We use it to supply Remult with the details of the logged-in user's from the session.
+4. Finally, add `getUser` to `remultSveltekit` to tell remult who is connected. Inside this function, you have access to `event`, where the session was set by Auth.js before.
+
+::: code-group
+
+```ts [src/routes/api/[...remult]/+server.ts]
+import { remultSveltekit } from 'remult/remult-sveltekit'
+import { Task } from './shared/Task'
+import { TasksController } from './shared/TasksController'
+import type { UserInfo } from 'remult' // [!code ++]
+
+export const handleRemult = remultSveltekit({
+  entities: [Task],
+  controllers: [TasksController],
+  getUser: async (event) => {
+    const auth = await event?.locals?.auth() // [!code ++]
+    return auth?.user as UserInfo // [!code ++]
+  },
+})
+```
+
+:::
 
 ::: tip
-In a real life application, you will need to `authorize` your users going to the database. As Auth is done before remult, the remult object is not available yet. Of course, there is a way, use `withRemult` as follows:
 
-```ts
+In a real life application, you will need to `authorize` your users going to the database. As Auth is done before remult, the remult object is not available yet. Of course, there is a way, use `withRemult` as follows
+
+```ts [src/hooks.server.ts (in handleAuth)]
 // old code
-// authorize: (credentials) => findUser(credentials?.name as string) || null,
+// authorize: (info) => validUsers.find((user) => user.name === info?.name) || null,
 
 // new code
 authorize: async (info, request) => {
-  const res = await handleRemult.withRemult({ request } as any, async () => {
+  const res = await _api.withRemult({ request } as any, async () => {
     // remult object is now available
     let user = await remult.repo(User).findFirst({
       //... getting your  user based on `info`
@@ -184,7 +210,6 @@ authorize: async (info, request) => {
 
   return res
 }
-// ...
 ```
 
 :::

@@ -32,11 +32,10 @@ DATABASE_URL=postgresql://username:password@host:port/dbname[?paramspec]
 
 ::: code-group
 
-```ts [src/hooks/handleRemult.ts]
+```ts [src/routes/api/[...remult]/+server.ts]
 import { remultSveltekit } from 'remult/remult-sveltekit'
-import { Task } from '../shared/task'
-import { TasksController } from '../shared/tasksController'
-import type { UserInfo } from 'remult'
+import { Task } from './shared/Task'
+import { TasksController } from './shared/TasksController'
 import { createPostgresDataProvider } from 'remult/postgres' // [!code ++]
 import { DATABASE_URL } from '$env/static/private' // [!code ++]
 
@@ -46,15 +45,21 @@ export const handleRemult = remultSveltekit({
   dataProvider: DATABASE_URL // [!code ++]
     ? createPostgresDataProvider({ connectionString: DATABASE_URL }) // [!code ++]
     : undefined, // [!code ++]
-  getUser: async (event) =>
-    (await event?.locals?.getSession())?.user as UserInfo,
+  getUser: async (event) => {
+    const auth = await event?.locals?.auth()
+    return auth?.user as UserInfo
+  },
 })
 ```
 
+:::
+
 Once the application restarts, it'll try to use postgres as the data source for your application.
 
-If `DATABASE_URL` has found, it'll automatically create the tasks table for you - as you'll see in the terminal window.
+If `DATABASE_URL` is found, it'll automatically create the `tasks` table for you.
 
-If no `DATABASE_URL` has found, it'll just fallback to our local JSON files.
+If `DATABASE_URL` is not has found, it'll just fallback to our local JSON files.
 
+::: tip
+You can also disable this automatic migration behavior. It's not part of this tutorial so if you want to learn more, follow this [link](/docs/migrations).
 :::
