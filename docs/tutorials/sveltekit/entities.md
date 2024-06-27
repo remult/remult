@@ -63,7 +63,7 @@ For a complete list of supported field types, see the [Field Types](../../docs/f
 import { remultSveltekit } from 'remult/remult-sveltekit'
 import { Task } from '../../../shared/Task' // [!code ++]
 
-export const handleRemult = remultSveltekit({
+export const _api = remultSveltekit({
   entities: [Task], // [!code ++]
 })
 ```

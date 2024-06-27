@@ -22,8 +22,8 @@
   },
   "type": "module",
   "dependencies": {
-    "@auth/core": "^0.26.2",
-    "@auth/sveltekit": "^0.12.2",
-    "remult": "^0.26.12"
+    "@auth/core": "^0.34.1",
+    "@auth/sveltekit": "^1.4.1",
+    "remult": "^0.26.14"
   }
 }
