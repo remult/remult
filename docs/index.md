@@ -3,6 +3,26 @@
 layout: home
 titleTemplate: Fullstack Type-safe CRUD & Realtime
 
+head:
+  - - meta
+    - property: og:type
+      content: website
+  - - meta
+    - property: og:title
+      content: Remult
+  - - meta
+    - property: og:image
+      content: https://remult.dev/logo_sm.png
+  - - meta
+    - property: og:url
+      content: https://remult.dev/
+  - - meta
+    - property: og:description
+      content: Fullstack Type-safe CRUD & Realtime library
+  - - meta
+    - name: twitter:card
+      content: summary_large_image
+
 hero:
   name: 'remult'
   text: 'Fullstack Type-safe CRUD & Realtime'
