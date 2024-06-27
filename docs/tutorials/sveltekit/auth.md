@@ -167,7 +167,7 @@ import { Task } from './shared/Task'
 import { TasksController } from './shared/TasksController'
 import type { UserInfo } from 'remult' // [!code ++]
 
-export const handleRemult = remultSveltekit({
+export const _api = remultSveltekit({
   entities: [Task],
   controllers: [TasksController],
   getUser: async (event) => {

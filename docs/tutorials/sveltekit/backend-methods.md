@@ -80,7 +80,7 @@ import { remultSveltekit } from 'remult/remult-sveltekit'
 import { Task } from './shared/Task'
 import { TasksController } from './shared/TasksController' // [!code ++]
 
-export const handleRemult = remultSveltekit({
+export const _api = remultSveltekit({
   entities: [Task],
   controllers: [TasksController], // [!code ++]
 })
