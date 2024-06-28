@@ -59,7 +59,7 @@ export class PostgresDataProvider
     if (options?.wrapIdentifier) this.wrapIdentifier = options.wrapIdentifier
     if (!options?.wrapIdentifier && options?.caseInsensitiveIdentifiers)
       this.wrapIdentifier = (name) => name
-    if (options.orderByNullsFirst)
+    if (options?.orderByNullsFirst)
       this.orderByNullsFirst = options.orderByNullsFirst
 
     if (options?.schema) {
