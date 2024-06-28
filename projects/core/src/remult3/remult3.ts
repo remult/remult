@@ -932,6 +932,9 @@ const result = await repo.batch(x=>({
  - allow conditional admin - like allowed
  - remult-admin doesn't handle primary key that has compound column
  - remult-admin didn't show a update for a table with a uniqua that is numeric
+ - for literal fields, allow selection from list
+ - for many to one fields - allow search field selection by developer
+ - for toOne relations, show the "one" row and allow its edit.
 */
 //remult
 
