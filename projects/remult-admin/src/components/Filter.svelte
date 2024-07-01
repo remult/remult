@@ -6,6 +6,7 @@
     ContainsStringValueFilter,
     EntityFilter,
   } from '../../../core/src/remult3/remult3'
+  import { HTMLSelectAttributes } from 'svelte/elements.js'
 
   const defaultFilter = {
     key: '',
@@ -80,6 +81,10 @@
   }
 
   $: fields && translateFilterToFilterValues()
+
+  const setValue = (e: any, field: any, kind: 'key' | 'operator' | 'value') => {
+    return (field[kind] = e.target.value)
+  }
 </script>
 
 <button on:click={() => dialog?.showModal()}>Filter</button>
@@ -87,24 +92,24 @@
   <strong>Filter</strong>
   <div>
     {#each filterValues as field, i}
-      <div class="filter__group" key={field.key}>
-        <select on:change={(e) => (field.key = e.target.value)}>
+      <div class="filter__group">
+        <select on:change={(e) => setValue(e, field, 'key')}>
           {#each fields.filter((x) => x.key == field.key || !filterValues.find((y) => y.key == x.key)) as x}
-            <option key={x.key} value={x.key} selected={x.key === field.key}>
+            <option value={x.key} selected={x.key === field.key}>
               {x.caption}
             </option>
           {/each}
         </select>
-        <select on:change={(e) => (field.operator = e.target.value)}>
+        <select on:change={(e) => setValue(e, field, 'operator')}>
           {#each operators as [key, caption]}
-            <option {key} value={caption} selected={key === field.operator}>
+            <option value={caption} selected={key === field.operator}>
               {caption}
             </option>
           {/each}
         </select>
         <input
           value={field.value}
-          on:input={(e) => (field.value = e.target.value)}
+          on:input={(e) => setValue(e, field, 'value')}
         />
         <button
           class="button-icon"
@@ -147,9 +152,6 @@
 </dialog>
 
 <style>
-  .filter {
-    /* Add your styles here */
-  }
   .filter__group {
     display: flex;
     align-items: center;

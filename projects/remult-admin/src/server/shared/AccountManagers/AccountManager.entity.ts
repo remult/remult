@@ -36,8 +36,8 @@ export class AccountManager {
   }
 }
 
-declare module 'remult' {
-  export interface UserInfo {
-    avatar: string
-  }
-}
+// declare module 'remult' {
+//   export interface UserInfo {
+//     avatar: string
+//   }
+// }

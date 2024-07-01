@@ -1,16 +1,20 @@
 <script lang="ts">
-  import type {
-    EntityRelationToManyInfo,
-    EntityUIInfo,
-    FieldUIInfo,
-  } from '../../../core/server/remult-admin'
+  import type { FieldUIInfo } from '../../../core/server/remult-admin'
   import RelationField from './RelationField.svelte'
-  import { JSONEditor } from 'svelte-jsoneditor'
+  import { Content, JSONEditor } from 'svelte-jsoneditor'
 
   export let value: any
   export let info: FieldUIInfo
 
   let dialogJSON: HTMLDialogElement | null = null
+
+  const onChange = (content: Content) => {
+    // @ts-ignore
+    if (JSON.stringify(content.json) != JSON.stringify(value)) {
+      // @ts-ignore
+      value = content.json
+    }
+  }
 </script>
 
 <!-- TODO Ermin? When readonly? -->
@@ -44,14 +48,7 @@
   <dialog bind:this={dialogJSON} on:close={() => {}} class="dialog-big">
     <button on:click={() => dialogJSON.close()}>Close</button>
     <div class="dialog-content">
-      <JSONEditor
-        content={{ json: value ?? {} }}
-        onChange={(x) => {
-          if (JSON.stringify(x.json) != JSON.stringify(value)) {
-            value = x.json
-          }
-        }}
-      />
+      <JSONEditor content={{ json: value ?? {} }} {onChange} />
       <!-- {show && (
     )} -->
     </div>

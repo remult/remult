@@ -1,12 +1,8 @@
+import { JSONEditor, JSONEditorPropsOptional } from 'svelte-jsoneditor'
 import { FieldUIInfo } from '../../../core/server/remult-admin'
 import { God } from '../God'
 import { RelationField } from './RelationField'
-import {
-  Content,
-  JSONContent,
-  JSONEditor,
-  JSONEditorPropsOptional,
-} from 'vanilla-jsoneditor'
+
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 export function EditableField({
@@ -27,7 +23,6 @@ export function EditableField({
   if (info.type == 'json') {
     return <EditableJson {...{ value, onChange, info, god }} />
   } else {
-
     return (
       <>
         <input value={value} onChange={(e) => onChange(e.target.value)} />
