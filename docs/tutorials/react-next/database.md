@@ -64,3 +64,33 @@ createPostgresDataProvider({
 ```
 
 :::
+
+## Logging queries
+
+By default, database queries are not logged. To enable that, you can use the following:
+
+```ts{6,9}
+// src/api.ts
+
+//...
+
+import { createPostgresDataProvider } from "remult/postgres"
+import { SqlDatabase } from 'remult'
+
+const DATABASE_URL = process.env["DATABASE_URL"]
+SqlDatabase.LogToConsole = true
+
+const api = remultNextApp({
+  //...
+ dataProvider: DATABASE_URL
+   ? createPostgresDataProvider({ connectionString: DATABASE_URL })
+   : undefined,
+})
+```
+
+Valid values for `SqlDatabase.LogToConsole` are:
+
+- `false` _(default)_ - No logging
+- `true` - to log all queries to the console
+- `'oneLiner'` - to log all queries to the console as one line
+- a `function` - to log all queries to the console as a custom format

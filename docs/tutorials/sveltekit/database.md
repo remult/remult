@@ -63,3 +63,41 @@ If `DATABASE_URL` is not has found, it'll just fallback to our local JSON files.
 ::: tip
 You can also disable this automatic migration behavior. It's not part of this tutorial so if you want to learn more, follow this [link](/docs/migrations).
 :::
+
+## Logging queries
+
+By default, database queries are not logged. To enable that, you can use the following:
+
+::: code-group
+
+```ts [src/routes/api/[...remult]/+server.ts]
+import { remultSveltekit } from 'remult/remult-sveltekit'
+import { Task } from './shared/Task'
+import { TasksController } from './shared/TasksController'
+import { createPostgresDataProvider } from 'remult/postgres'
+import { DATABASE_URL } from '$env/static/private'
+import { SqlDatabase } from 'remult' // [!code ++]
+
+SqlDatabase.LogToConsole = true // [!code ++]
+
+export const _api = remultSveltekit({
+  entities: [Task],
+  controllers: [TasksController],
+  dataProvider: DATABASE_URL
+    ? createPostgresDataProvider({ connectionString: DATABASE_URL })
+    : undefined,
+  getUser: async (event) => {
+    const auth = await event?.locals?.auth()
+    return auth?.user as UserInfo
+  },
+})
+```
+
+:::
+
+Valid values for `SqlDatabase.LogToConsole` are:
+
+- `false` _(default)_ - No logging
+- `true` - to log all queries to the console
+- `'oneLiner'` - to log all queries to the console as one line
+- a `function` - to log all queries to the console as a custom format

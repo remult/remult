@@ -34,3 +34,32 @@ Don't worry if you don't have Postgres installed locally. In the next step of th
      })
    })
    ```
+
+## Logging queries
+
+By default, database queries are not logged. To enable that, you can use the following:
+
+```ts{6,8}
+// src/server/api.ts
+
+//...
+
+import { createPostgresDataProvider } from "remult/postgres"
+import { SqlDatabase } from 'remult'
+
+SqlDatabase.LogToConsole = true
+
+export const api = remultExpress({
+  //...
+  dataProvider: createPostgresDataProvider({
+    connectionString: "your connection string"
+  })
+})
+```
+
+Valid values for `SqlDatabase.LogToConsole` are:
+
+- `false` _(default)_ - No logging
+- `true` - to log all queries to the console
+- `'oneLiner'` - to log all queries to the console as one line
+- a `function` - to log all queries to the console as a custom format
