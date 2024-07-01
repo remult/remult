@@ -1,13 +1,14 @@
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
   import type { FieldUIInfo } from '../../../../core/server/remult-admin'
   import SelectDialog from './SelectDialog.svelte'
   import { godStore } from '../../stores/GodStore.js'
+  import LoadingSkeleton from './LoadingSkeleton.svelte'
 
   export let value: any
   export let info: FieldUIInfo
 
-  let displayValue = ''
+  let displayValue = undefined
   let dialogOpen = false
 
   const dispatch = createEventDispatcher()
@@ -16,23 +17,35 @@
     dispatch('change', { _data })
   }
 
-  onMount(async () => {
-    const val = await $godStore.displayValueFor(info, value)
-    displayValue = val
-  })
-
   $: {
     ;(async () => {
       const val = await $godStore.displayValueFor(info, value)
       displayValue = val
     })()
   }
+
+  const getWidth = () => {
+    const r = Math.random()
+
+    if (r > 0.6) {
+      return 120
+    }
+    if (r > 0.3) {
+      return 100
+    }
+    return 70
+  }
 </script>
 
 <div>
-  <button class="naked-button" on:click={() => (dialogOpen = true)}
-    ><span>🔎</span> {displayValue}</button
-  >
+  <button class="naked-button" on:click={() => (dialogOpen = true)}>
+    <span>🔎</span>
+    {#if displayValue === undefined}
+      <LoadingSkeleton width={getWidth()} />
+    {:else}
+      {displayValue}
+    {/if}
+  </button>
   {#if dialogOpen}
     <SelectDialog
       relation={info.relationToOne}
