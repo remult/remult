@@ -1,6 +1,5 @@
 <script lang="ts">
-  import Table from '../components/Table.svelte'
-  import { LSContext } from '../lib/LSContext.js'
+  import Table from '../lib/ui/Table.svelte'
   import { godStore } from '../stores/GodStore'
 
   export let params: { wild?: string } = {}

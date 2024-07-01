@@ -14,8 +14,8 @@
   import '@xyflow/svelte/dist/style.css'
 
   import { godStore } from '../stores/GodStore'
-  import EntityNode from '../components/flow/EntityNode.svelte'
-  import { LSContext } from '../lib/LSContext.js'
+  import EntityNode from '../lib/ui/flow/EntityNode.svelte'
+  import { LSContext } from '../lib/stores/LSContext.js'
 
   const nodes = writable<Node[]>([])
   const edges = writable<Edge[]>([])

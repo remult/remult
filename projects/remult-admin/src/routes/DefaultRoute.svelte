@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { LSContext } from '../lib/LSContext.js'
+  import { LSContext } from '../lib/stores/LSContext.js'
   import { godStore } from '../stores/GodStore.js'
   import { push } from 'svelte-spa-router'
 

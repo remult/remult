@@ -1,13 +1,10 @@
 <script lang="ts">
-  import { onMount } from 'svelte'
   import type {
     EntityRelationToManyInfo,
-    EntityUIInfo,
     FieldUIInfo,
-  } from '../../../core/server/remult-admin'
+  } from '../../../../core/server/remult-admin'
 
-  import { God } from '../God'
-  import { godStore } from '../stores/GodStore'
+  import { godStore } from '../../stores/GodStore'
   import EditableField from './EditableField.svelte'
   import Table from './Table.svelte'
 

@@ -5,7 +5,7 @@
   import Entity from './routes/Entity.svelte'
   import { godStore } from './stores/GodStore'
   import active from 'svelte-spa-router/active'
-  import { LSContext } from './lib/LSContext.js'
+  import { LSContext } from './lib/stores/LSContext.js'
   import DefaultRoute from './routes/DefaultRoute.svelte'
 
   // Save the current location except on '/'

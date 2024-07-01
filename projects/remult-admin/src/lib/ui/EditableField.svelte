@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { FieldUIInfo } from '../../../core/server/remult-admin'
+  import type { FieldUIInfo } from '../../../../core/server/remult-admin'
   import RelationField from './RelationField.svelte'
   import { type Content, JSONEditor } from 'svelte-jsoneditor'
 

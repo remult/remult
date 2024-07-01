@@ -1,9 +1,9 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
   import { writable } from 'svelte/store'
-  import type { FieldRelationToOneInfo } from '../../../core/server/remult-admin'
+  import type { FieldRelationToOneInfo } from '../../../../core/server/remult-admin'
 
-  import { godStore } from '../stores/GodStore.js'
+  import { godStore } from '../../stores/GodStore.js'
 
   export let relation: FieldRelationToOneInfo
 

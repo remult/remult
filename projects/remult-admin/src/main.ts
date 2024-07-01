@@ -17,6 +17,7 @@ export default app
 // [ ] - tables for one to many relations - actions, don't stick to the right
 // [x] - relation from product to supplier one to many, did not present in the erd
 // [ ] - add loading indication
+// [ ] - loading toOne relation (🔎)
 // [x] - support where on relations (select from table of tables etc....)
 // [x] - store erd positions
 // [x] - add json editor

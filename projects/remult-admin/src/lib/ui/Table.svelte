@@ -3,11 +3,11 @@
     Repository,
     FindOptions,
     EntityFilter,
-  } from '../../../core/src/remult3/remult3'
+  } from '../../../../core/src/remult3/remult3'
   import type {
     EntityRelationToManyInfo,
     FieldUIInfo,
-  } from '../../../core/server/remult-admin'
+  } from '../../../../core/server/remult-admin'
   import { onDestroy } from 'svelte'
   import EditableRow from './EditableRow.svelte'
   import Filter from './Filter.svelte'

@@ -1,8 +1,8 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
-  import type { FieldUIInfo } from '../../../core/server/remult-admin'
+  import type { FieldUIInfo } from '../../../../core/server/remult-admin'
   import SelectDialog from './SelectDialog.svelte'
-  import { godStore } from '../stores/GodStore.js'
+  import { godStore } from '../../stores/GodStore.js'
 
   export let value: any
   export let info: FieldUIInfo
@@ -30,7 +30,9 @@
 </script>
 
 <div>
-  <button class="naked-button" on:click={() => (dialogOpen = true)}><span>🔎</span> {displayValue}</button>
+  <button class="naked-button" on:click={() => (dialogOpen = true)}
+    ><span>🔎</span> {displayValue}</button
+  >
   {#if dialogOpen}
     <SelectDialog
       relation={info.relationToOne}
