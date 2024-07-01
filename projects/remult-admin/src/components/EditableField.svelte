@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { FieldUIInfo } from '../../../core/server/remult-admin'
   import RelationField from './RelationField.svelte'
-  import { Content, JSONEditor } from 'svelte-jsoneditor'
+  import { type Content, JSONEditor } from 'svelte-jsoneditor'
 
   export let value: any
   export let info: FieldUIInfo

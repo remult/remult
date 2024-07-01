@@ -1,12 +1,11 @@
 <script lang="ts">
-  import { onMount, tick } from 'svelte'
+  import { tick } from 'svelte'
   import type { FieldUIInfo } from '../../../core/server/remult-admin'
   import type {
     ComparisonValueFilter,
     ContainsStringValueFilter,
     EntityFilter,
   } from '../../../core/src/remult3/remult3'
-  import { HTMLSelectAttributes } from 'svelte/elements.js'
 
   const defaultFilter = {
     key: '',
