@@ -16,7 +16,7 @@ import { Company } from '../Companies/Company.entity'
 import { Acquisition } from './Acquisition'
 import { ContactNote } from './ContactNote.entity'
 import { ContactTag } from './ContactTag.entity'
-import { Gender } from './Gender'
+import { genderOptions } from './Gender'
 import { Status } from './Status'
 import { Tag } from './Tag.entity'
 
@@ -39,8 +39,8 @@ export class Contact {
     validate: Validators.required,
   })
   lastName = ''
-  @Field(() => Gender)
-  gender = Gender.male
+  @Fields.literal(() => genderOptions)
+  gender = genderOptions
   @Fields.string()
   title = ''
   @Relations.toOne(() => Company, { defaultIncluded: true })

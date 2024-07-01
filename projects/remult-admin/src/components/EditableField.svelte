@@ -62,7 +62,11 @@
 {:else if info.values && info.values.length > 0}
   <select bind:value>
     {#each info.values as option}
-      <option value={String(option.id)}>{option.caption}</option>
+      {#if typeof option == 'object'}
+        <option value={String(option.id)}>{option.caption}</option>
+      {:else}
+        <option value={String(option)}>{option}</option>
+      {/if}
     {/each}
   </select>
 {:else if info.type == 'number'}

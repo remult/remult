@@ -6,6 +6,7 @@ import { Filter } from '../src/filter/filter-interfaces.js'
 import type { ClassType } from '../classType.js'
 import type { Remult } from '../src/context.js'
 import { getHtml } from './get-remult-admin-html.js'
+import { getValueList } from '../src/remult3/RepositoryImplementation.js'
 
 export interface EntityUIInfo {
   key: string
@@ -117,9 +118,7 @@ export function buildEntityInfo(options: AdminOptions) {
       fields.push({
         key: x.key,
         dbReadOnly: x.dbReadOnly,
-        // TODO Noam, When to get values in an official way? :p (From JYC)
-        // @ts-ignore
-        values: x.valueConverter.values as any[],
+        values: getValueList(x),
         valFieldKey,
         caption: x.caption,
         relationToOne: relation,
