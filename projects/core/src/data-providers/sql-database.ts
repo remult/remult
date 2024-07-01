@@ -48,7 +48,9 @@ import type {
 } from '../../migrations/migration-types.js'
 import { isOfType } from '../isOfType.js'
 
-// @dynamic
+/**
+ * An interface to deal with a configured SQL database.
+ */
 export class SqlDatabase
   implements
     DataProvider,
