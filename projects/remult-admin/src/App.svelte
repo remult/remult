@@ -43,10 +43,24 @@
 
     <dialog bind:this={settingsDialog}>
       <header>Remult Settings</header>
+
+      <label style="display: flex; align-items: center; gap: 4px">
+        <span>With confirm delete</span>
+        <select bind:value={$LSContext.settings.confirmDelete}>
+          <option value={false}>No</option>
+          <option value={true}>Yes</option>
+        </select>
+      </label>
+
+      <br />
+      <br />
+      <br />
+      <br />
+
       <button
         on:click={() => {
           LSContext.reset()
-        }}>Reset to default</button
+        }}>Reset all settings to default</button
       >
     </dialog>
 

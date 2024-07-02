@@ -5,6 +5,7 @@
   } from '../../../../core/server/remult-admin'
 
   import { godStore } from '../../stores/GodStore'
+  import { LSContext } from '../stores/LSContext.js'
   import EditableField from './EditableField.svelte'
   import Table from './Table.svelte'
 
@@ -140,7 +141,16 @@
           title="Delete"
           on:click={async () => {
             try {
-              await deleteAction()
+              if ($LSContext.settings.confirmDelete) {
+                const res = confirm(
+                  'Are you sure you want to delete this line ?',
+                )
+                if (res) {
+                  await deleteAction()
+                }
+              } else {
+                await deleteAction()
+              }
             } catch (err) {
               alert(err.message)
             }
