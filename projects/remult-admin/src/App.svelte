@@ -18,11 +18,23 @@
     // This is optional, but if present it must be the last
     '*': NotFound,
   }
+
+  let settingsDialog;
 </script>
 
 <div class="app-holder">
   <div class="main-navigation">
-    <div class="main-navigation__title">Remult Admin</div>
+    <div class="main-navigation__title">
+      Remult Admin
+      <button on:click={ () => settingsDialog.showModal() } class="icon-button"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-three-dots-vertical" viewBox="0 0 16 16"><path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/></svg>
+      </button>
+    </div>
+
+    <dialog bind:this={settingsDialog}>
+      <header>Remult Settings</header>
+      <button on:click={() => { console.log("byeee") }}>Clear Storage</button>
+    </dialog>
+
     {#each $godStore?.tables ?? [] as t}
       <a
         class="tab"

@@ -289,6 +289,10 @@ button {
   height: 2.5rem;
 }
 
+button:focus {
+  box-shadow: 0 0 0 2px rgb(0, 123, 255) inset;
+}
+
 .icon-button {
   width: var(--cell-height);
   height: var(--cell-height);
@@ -333,6 +337,8 @@ dialog {
   border: 1px solid var(--border-color);
   padding: 0.5rem;
   border-radius: 5px;
+  min-width: 250px;
+  min-height: 250px;
 }
 
 dialog form {
@@ -355,7 +361,7 @@ dialog select {
   padding-right: 1.5rem;
 }
 
-dialog button.button-icon {
+dialog button.icon-button {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -363,9 +369,16 @@ dialog button.button-icon {
   height: var(--cell-height);
 }
 
-dialog button.button-icon svg {
+dialog button.icon-button svg {
   width: 14px;
   height: var(--cell-height);
+}
+
+dialog header {
+  width: 100%;
+  height: var(--cell-height);
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 1rem;
 }
 
 .page-bar {
@@ -472,13 +485,21 @@ button.new-entry {
   height: var(--cell-height);
   border-bottom: 1px solid #e5e7eb;
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-between;
   padding: 0.5rem;
+  padding-left: calc(0.5rem + 3px);
+  padding-right: 0;
   align-items: center;
   font-size: 0.8rem;
   font-weight: 600;
   width: calc(var(--navigation-width) - 1px);
   text-align: center;
+}
+
+.main-navigation__title .icon-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .main-navigation__diagram {
@@ -560,7 +581,7 @@ body:not(.hide-navigation) .hamburger-icon rect:last-child {
   width: 100%;
 }
 
-.filter__group .button-icon {
+.filter__group .icon-button {
   margin-left: auto;
   border: none;
 }

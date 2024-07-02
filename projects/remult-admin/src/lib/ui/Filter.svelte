@@ -111,7 +111,7 @@
           on:input={(e) => setValue(e, field, 'value')}
         />
         <button
-          class="button-icon"
+          class="icon-button"
           on:click={() =>
             (filterValues = filterValues.filter((x) => x != field))}
         >
@@ -163,7 +163,7 @@
     justify-content: flex-end;
     margin-top: 10px;
   }
-  .button-icon {
+  .icon-button {
     background: none;
     border: none;
     cursor: pointer;

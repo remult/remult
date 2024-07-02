@@ -22,9 +22,9 @@ export default app
 // [x] - store erd positions
 // [x] - add json editor
 // [x] - Schema
-// [ ] - nice select
+// [x] - nice select
 // [x] - add erd change to have the link on the good side!
-// [ ] - filter popup: enter should apply the filter
+// [x] - filter popup: enter should apply the filter (tabs are working correctly now)
 // [x] - disable input when readonly
 // [ ] - reset local storage? $LSContext (TODO Ermin to find a place in the UI?) Maybe botton left could be Diagram | Options (Options is a dialog?)
 
