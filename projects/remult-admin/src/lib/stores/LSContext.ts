@@ -7,16 +7,18 @@ type TLSContext = {
   schema: Record<string, { x: number; y: number }>
   settings: {
     confirmDelete: boolean
+    diagramLayoutAlgorithm: 'grid-bfs' | 'grid-dfs' | 'line'
   }
 }
 
-const LSContextKey = 'LSRemultAdmin_2024_07_02'
+const LSContextKey = 'LSRemultAdmin_2024_07_03'
 
 const LSContextDefaults: TLSContext = {
   currentLocationHash: '/',
   schema: {},
   settings: {
     confirmDelete: true,
+    diagramLayoutAlgorithm: 'grid-dfs',
   },
 }
 

@@ -52,8 +52,21 @@
         </select>
       </label>
 
-      <br />
-      <br />
+      <label style="display: flex; align-items: center; gap: 4px">
+        <span>Diagram layout algorithm</span>
+        <select
+          bind:value={$LSContext.settings.diagramLayoutAlgorithm}
+          on:change={() => {
+            $LSContext.schema = {}
+            window.location.reload()
+          }}
+        >
+          <option value={'grid-dfs'}>grid-dfs</option>
+          <option value={'grid-bfs'}>grid-bfs</option>
+          <option value={'line'}>line</option>
+        </select>
+      </label>
+
       <br />
       <br />
 

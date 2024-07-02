@@ -16,6 +16,7 @@
   import { godStore } from '../stores/GodStore'
   import EntityNode from '../lib/ui/flow/EntityNode.svelte'
   import { LSContext } from '../lib/stores/LSContext.js'
+  import { type TableInfo } from '../God.js'
 
   const nodes = writable<Node[]>([])
   const edges = writable<Edge[]>([])
@@ -27,37 +28,170 @@
   $: $godStore && init()
 
   const init = () => {
-    const localNodes = $godStore.tables.map((data, i) => {
-      const found = $LSContext.schema?.[data.key]
+    const layoutType: 'grid-dfs' | 'grid-bfs' | 'line' =
+      $LSContext.settings.diagramLayoutAlgorithm
 
-      let position = { x: i * 300, y: 0 }
+    const groups = groupTablesByRelations(layoutType, $godStore.tables)
+    const magicNumber = Math.ceil(
+      Math.sqrt($godStore.tables.length + $godStore.tables.length),
+    )
 
-      if (found) {
-        position = {
-          x: $LSContext.schema[data.key].x,
-          y: $LSContext.schema[data.key].y,
+    const localNodes = []
+    const columnHeights = Array(magicNumber).fill(0) // Initialize heights for each of the 5 columns
+    let index = 0
+
+    groups.forEach((group) => {
+      group.forEach((data) => {
+        const found = $LSContext.schema?.[data.key]
+        let position
+
+        if (found) {
+          position = {
+            x: $LSContext.schema[data.key].x,
+            y: $LSContext.schema[data.key].y,
+          }
+        } else {
+          position = getPosition(
+            index,
+            data.fields.length,
+            layoutType,
+            columnHeights,
+          )
+          $LSContext.schema = {
+            ...$LSContext.schema,
+            [data.key]: {
+              x: position.x,
+              y: position.y,
+            },
+          }
+          index++
         }
-      } else {
-        $LSContext.schema = {
-          ...$LSContext.schema,
-          [data.key]: {
-            x: position.x,
-            y: position.y,
-          },
-        }
-      }
 
-      return {
-        id: data.repo.metadata.key,
-        position,
-        data,
-        type: 'entity',
-      }
-    }) as unknown as Node[]
+        localNodes.push({
+          id: data.repo.metadata.key,
+          position,
+          data,
+          type: 'entity',
+        })
+      })
+    })
 
     nodes.set(localNodes)
 
     updateNodesEdges()
+  }
+
+  function groupTablesByRelations(
+    style: 'grid-bfs' | 'grid-dfs' | 'line',
+    tables: TableInfo[],
+  ) {
+    const groups = []
+    const visited = new Set()
+
+    tables.forEach((table) => {
+      if (!visited.has(table.key)) {
+        const group = []
+        if (style === 'grid-dfs') {
+          dfs(table, group, visited)
+        } else {
+          bfs(table, group, visited)
+        }
+        groups.push(group)
+      }
+    })
+
+    return groups
+  }
+
+  function bfs(startTable, group, visited) {
+    const queue = [startTable]
+
+    while (queue.length > 0) {
+      const table = queue.shift()
+      if (!visited.has(table.key)) {
+        visited.add(table.key)
+        group.push(table)
+
+        table.fields.forEach((field) => {
+          if (field.relationToOne) {
+            const relatedTable = $godStore.tables.find(
+              (x) => x.key === field.relationToOne.entityKey,
+            )
+            if (relatedTable && !visited.has(relatedTable.key)) {
+              queue.push(relatedTable)
+            }
+          }
+        })
+
+        table.relations.forEach((relation) => {
+          const relatedTable = $godStore.tables.find(
+            (x) => x.key === relation.entityKey,
+          )
+          if (relatedTable && !visited.has(relatedTable.key)) {
+            queue.push(relatedTable)
+          }
+        })
+      }
+    }
+  }
+
+  function dfs(table, group, visited) {
+    visited.add(table.key)
+    group.push(table)
+
+    table.fields.forEach((field) => {
+      if (field.relationToOne) {
+        const relatedTable = $godStore.tables.find(
+          (x) => x.key === field.relationToOne.entityKey,
+        )
+        if (relatedTable && !visited.has(relatedTable.key)) {
+          dfs(relatedTable, group, visited)
+        }
+      }
+    })
+
+    table.relations.forEach((relation) => {
+      const relatedTable = $godStore.tables.find(
+        (x) => x.key === relation.entityKey,
+      )
+      if (relatedTable && !visited.has(relatedTable.key)) {
+        dfs(relatedTable, group, visited)
+      }
+    })
+  }
+
+  function getPosition(
+    index: number,
+    numRows: number,
+    layoutType: 'grid-bfs' | 'grid-dfs' | 'line',
+    columnHeights: number[],
+  ) {
+    switch (layoutType) {
+      case 'grid-dfs':
+        return getGridPosition(numRows, columnHeights)
+      case 'grid-bfs':
+        return getGridPosition(numRows, columnHeights)
+      default:
+        return { x: index * 300, y: 0 }
+    }
+  }
+
+  function getGridPosition(numRows: number, columnHeights: number[]) {
+    const rowHeight = 40 // Height per row, adjust as needed
+    const columnWidth = 400
+    const extraSpace = 200 // Additional space between tables
+
+    // Find the column with the minimum height
+    const minHeightColumn = columnHeights.indexOf(Math.min(...columnHeights))
+
+    // Calculate the position based on the column with the minimum height
+    const x = minHeightColumn * columnWidth
+    const y = columnHeights[minHeightColumn]
+
+    // Update the height of the column with the added table height
+    columnHeights[minHeightColumn] += numRows * rowHeight + extraSpace
+
+    return { x, y }
   }
 
   function updateNodesEdges() {
