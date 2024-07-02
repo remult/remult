@@ -92,7 +92,7 @@
       )} -->
     </td>
   {/each}
-  <td align="right" width="90px">
+  <td class="action-tab" width="90px">
     <div class="row-actions">
       {#if change}
         <button class="icon-button" title="Save" on:click={doSave}>

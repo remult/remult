@@ -168,7 +168,7 @@
               : ''}
           </th>
         {/each}
-        <th align="right">Actions</th>
+        <th class="action-tab">Actions</th>
       </tr>
     </thead>
     <tbody>
