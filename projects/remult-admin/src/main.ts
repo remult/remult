@@ -29,6 +29,7 @@ export default app
 // [ ] - reset local storage? $LSContext (TODO Ermin to find a place in the UI?) Maybe botton left could be Diagram | Options (Options is a dialog?)
 
 // next
+// [ ] - Make actions smoother (no jumping)
 // [?] - Small thing, I get SvelteKitError: Not found: /vite.svg
 // [ ] - support checkbox :)
 // [ ] - support more complex relations
@@ -43,9 +44,11 @@ export default app
 // [ ] - new row when there are relations, looks funny (see product)
 // [ ] - need a way to extract the fields from the relation - for generating relation based sql
 // [ ] - allow conditional admin - like allowed
-// [ ] - the + row in the bottom should extend to the full width
+// [x] - the + row in the bottom should extend to the full width (solved another way)
 // [ ] - remult-admin doesn't handle primary key that has compound column
 // [ ] - remult-admin didn't show a update for a table with a uniqua that is numeric
+// [ ] - add a standardized component for displaying success/error/info messages (toast?)
+// [ ] - standardize dialog (component with header/actions)
 
 // NEXT ?
 // [ ] - show/hide columns (global & per entity) in local storage + a reset button
