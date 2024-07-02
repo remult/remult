@@ -828,7 +828,8 @@ export type ClassFieldDecorator<entityType, valueType> = (
 export const flags = {
   error500RetryCount: 4,
 }
-
+//y1 - Talk about the case where we had one to many, without a field - just a filter - for example, event,event participants, users - and a field that shows all users that are not participants
+//p1 - Fix hagai and starter project to latest ts
 //y1 TODO - discuss next auth withRemult paradox - the gift that keeps on giving - it's doing something crazy there!!
 //p1 - fix chaining of saving and saved in multiple entity options args
 //p1 - review starter and examples and separate remult * auth from the routes
@@ -919,8 +920,6 @@ const result = await repo.batch(x=>({
   Description = ""*/
 //y2 - get backend methods to work when specifying types for date, and entities as poco's
 //y2 - constraints (@JY)
-
-//remult
 
 //p1 - when a tasks table exists in a different schema - we get many errors
 //p1 - live query with include

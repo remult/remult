@@ -19,7 +19,6 @@ npm i @sveltejs/adapter-node --save-dev
 ```js [svelte.config.js]
 import adapter from '@sveltejs/adapter-auto' // [!code --]
 import adapter from '@sveltejs/adapter-node' // [!code ++]
-import { vitePreprocess } from '@sveltejs/kit/vite'
 ```
 
 :::
@@ -53,7 +52,7 @@ Click enter multiple times to answer all its questions with the default answer
 10. Copy the `generated url`, you'll need it for [NEXTAUTH_URL](https://next-auth.js.org/configuration/options#nextauth_url) on step 14
 11. Switch to the `variables` tab
 12. Click on `+ New Variable`, and in the `VARIABLE_NAME` click `Add Reference` and select `DATABASE_URL`
-13. Add another variable called `SESSION_SECRET` and set it to a random string, you can use an [online UUID generator](https://www.uuidgenerator.net/)
+13. Add another variable called `AUTH_SECRET` and set it to a random string, you can use an [online UUID generator](https://www.uuidgenerator.net/)
 14. Add another variable called `NEXTAUTH_URL` and set it to the `generated url` which was created on step 10.
 15. Wait for railway to finish deploying your changes and Click on the newly generated url to open the app in the browser and you'll see the app live in production. (it may take a few minutes to go live)
 
