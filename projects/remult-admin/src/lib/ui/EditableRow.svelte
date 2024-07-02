@@ -44,8 +44,8 @@
 </script>
 
 <tr class:change>
-  {#if relations.length > 0}
-    <td>
+  <td>
+    {#if relations.length > 0}
       <button
         class="icon-button"
         title="Relations"
@@ -66,8 +66,8 @@
           ></path></svg
         >
       </button>
-    </td>
-  {/if}
+    {/if}
+  </td>
   {#each columns as x}
     <td class:changeHi={value[x.key] !== rowFrozzen[x.key]}>
       <EditableField

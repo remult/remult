@@ -177,18 +177,16 @@
   <table>
     <thead>
       <tr>
-        {#if relations.length > 0}
-          <td>
-            <button
-              class="icon-button new-entry"
-              on:click={() => {
-                newRow = repo.create({ ...parentRelation })
-              }}
-            >
-              +
-            </button>
-          </td>
-        {/if}
+        <td>
+          <button
+            class="icon-button new-entry"
+            on:click={() => {
+              newRow = repo.create({ ...parentRelation })
+            }}
+          >
+            +
+          </button>
+        </td>
         {#each fields as column}
           <th on:click={() => toggleOrderBy(column.key)}>
             {column.caption}
