@@ -27,12 +27,7 @@
     relation &&
     typeof relation === 'object' &&
     $godStore.tables.find((x) => x.key === relation.entityKey)
-  $: change = Boolean(
-    columns.find(
-      (x) =>
-        value[x.key] && rowFrozzen[x.key] && value[x.key] !== rowFrozzen[x.key],
-    ),
-  )
+  $: change = Boolean(columns.find((x) => value[x.key] !== rowFrozzen[x.key]))
 
   const relationWhere = {}
 
@@ -74,11 +69,7 @@
     </td>
   {/if}
   {#each columns as x}
-    <td
-      class:changeHi={value[x.key] &&
-        rowFrozzen[x.key] &&
-        value[x.key] !== rowFrozzen[x.key]}
-    >
+    <td class:changeHi={value[x.key] !== rowFrozzen[x.key]}>
       <EditableField
         info={x}
         bind:value={value[x.valFieldKey]}

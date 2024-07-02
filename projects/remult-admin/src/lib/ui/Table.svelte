@@ -25,6 +25,10 @@
   let filter: Writable<EntityFilter<any>> = writable({})
 
   let items: any[] | null = null
+
+  // resting items when fields change
+  $: items = fields && (items = null)
+
   let totalRows = -1
   let unSub: (() => void) | null = null
 
@@ -77,6 +81,18 @@
     else if (dir === 'asc') dir = 'desc'
     else dir = undefined
     options = { ...options, orderBy: { [key]: dir } }
+  }
+
+  const getWidth = () => {
+    const r = Math.random()
+
+    if (r > 0.6) {
+      return 120
+    }
+    if (r > 0.3) {
+      return 100
+    }
+    return 70
   }
 </script>
 
@@ -224,7 +240,7 @@
                 class="loading-skeleton"
                 on:click={() => toggleOrderBy(column.key)}
               >
-                <LoadingSkeleton />
+                <LoadingSkeleton width={getWidth()} />
               </td>
             {/each}
           </tr>
