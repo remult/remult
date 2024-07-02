@@ -14,6 +14,7 @@
   import { writable, type Writable } from 'svelte/store'
   import Loading from './Loading.svelte'
   import { SLoading } from '../stores/SLoading.js'
+  import LoadingSkeleton from './LoadingSkeleton.svelte'
 
   export let fields: FieldUIInfo[]
   export let relations: EntityRelationToManyInfo[]
@@ -208,6 +209,17 @@
             {relations}
           />
         {/each}
+      {:else}
+        {#each Array.from({ length: 25 }).map((_, i) => i) as i}
+          <tr>
+            <td></td>
+            {#each fields as column}
+              <td class="loading-skeleton" on:click={() => toggleOrderBy(column.key)}>
+                <LoadingSkeleton />
+              </td>
+            {/each}
+            </tr>
+          {/each}
       {/if}
     </tbody>
   </table>
@@ -215,6 +227,10 @@
 
 <style>
   .title {
-    border-left: 4px solid hsla(var(--color), 70%, 50%, 1);
+    border-left: 2px solid hsla(var(--color), 70%, 50%, 1);
+  }
+
+  .loading-skeleton {
+    padding: 0 .5rem;
   }
 </style>
