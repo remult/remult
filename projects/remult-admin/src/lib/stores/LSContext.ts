@@ -21,7 +21,21 @@ const LSCurrentContext = browser
 /**
  * Local storage context store
  */
-export const LSContext = writable<TLSContext>(LSCurrentContext)
+const store = () => {
+  const { set, subscribe, update } = writable<TLSContext>(LSCurrentContext)
+
+  return {
+    set,
+    subscribe,
+    update,
+    reset: () => {
+      set(LSContextDefaults)
+      window.location.reload()
+    },
+  }
+}
+
+export const LSContext = store()
 
 LSContext.subscribe((value) => {
   if (browser) {

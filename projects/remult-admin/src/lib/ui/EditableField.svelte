@@ -49,13 +49,13 @@
     <button on:click={() => dialogJSON.close()}>Close</button>
     <div class="dialog-content">
       <JSONEditor content={{ json: value ?? {} }} {onChange} />
-      <!-- {show && (
-    )} -->
     </div>
   </dialog>
-  <!-- {:else if info.type == 'boolean'}
-   TODO Ermin css? (in entity Contacts, field Has Newsletter)
-  <input bind:checked={value} on:change type="checkbox" />-->
+{:else if info.type == 'boolean'}
+  <select bind:value>
+    <option value={false}>False</option>
+    <option value={true}>True</option>
+  </select>
 {:else if info.values && info.values.length > 0}
   <select bind:value>
     {#each info.values as option}

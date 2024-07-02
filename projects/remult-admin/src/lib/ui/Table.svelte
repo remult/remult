@@ -41,7 +41,20 @@
         where,
       })
       .subscribe(async (info) => {
-        items = info.applyChanges(items)
+        let special = false
+        if (items !== null) {
+          info.changes.forEach((c) => {
+            if (c.type === 'add') {
+              special = true
+              items = [c.data.item, ...items]
+            }
+          })
+        }
+
+        if (!special) {
+          items = info.applyChanges(items)
+        }
+
         totalRows = await repo.count(where)
       })
   }
@@ -154,8 +167,10 @@
               class="icon-button new-entry"
               on:click={() => {
                 newRow = repo.create({ ...parentRelation })
-              }}>+</button
+              }}
             >
+              +
+            </button>
           </td>
         {/if}
         {#each fields as column}

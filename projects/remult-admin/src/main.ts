@@ -26,12 +26,12 @@ export default app
 // [x] - add erd change to have the link on the good side!
 // [x] - filter popup: enter should apply the filter (tabs are working correctly now)
 // [x] - disable input when readonly
-// [ ] - reset local storage? $LSContext (TODO Ermin to find a place in the UI?) Maybe botton left could be Diagram | Options (Options is a dialog?)
+// [x] - reset local storage?
 
 // next
 // [ ] - Make actions smoother (no jumping)
 // [?] - Small thing, I get SvelteKitError: Not found: /vite.svg
-// [ ] - support checkbox :)
+// [?] - support checkbox ? (today i set a select with 2 options... maybe good enough?)
 // [ ] - support more complex relations
 // [ ] - support compound id (order details)
 // [ ] - support compound id for admin and erd
@@ -49,6 +49,7 @@ export default app
 // [ ] - remult-admin didn't show a update for a table with a uniqua that is numeric
 // [ ] - add a standardized component for displaying success/error/info messages (toast?)
 // [ ] - standardize dialog (component with header/actions)
+// [ ] - support create with default values
 
 // NEXT ?
 // [ ] - show/hide columns (global & per entity) in local storage + a reset button
