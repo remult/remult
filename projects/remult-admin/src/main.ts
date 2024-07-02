@@ -11,8 +11,8 @@ export default app
 // [x] - doesn't update well
 // [x] - live refresh doesn't work
 // [x] - update id doesn't work
-// [ ] - add focus indication for icon button (for moving to it with tab)
-// [ ] - focus indication for buttons
+// [x] - add focus indication for icon button (for moving to it with tab)
+// [x] - focus indication for buttons
 // [ ] - Actions on the right should be always visible
 // [ ] - tables for one to many relations - actions, don't stick to the right
 // [x] - relation from product to supplier one to many, did not present in the erd

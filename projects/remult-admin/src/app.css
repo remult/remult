@@ -265,6 +265,11 @@ button {
   border-radius: 0;
 }
 
+.icon-button:focus,
+.naked-button:focus {
+  box-shadow: 0 0 0 2px rgb(0, 123, 255) inset;
+}
+
 .icon-button svg {
   transition: transform 0.2s; /* Animation lasts 0.6s */
   transform-origin: center; /* Ensures the element rotates around its center */

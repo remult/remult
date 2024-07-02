@@ -79,4 +79,8 @@
     flex-direction: column;
     justify-content: stretch;
   }
+
+  button:focus {
+    box-shadow: 0 0 0 2px rgb(0, 123, 255) inset;
+  }
 </style>
