@@ -54,15 +54,29 @@
   <form on:submit={handleSubmit}>
     <input bind:value={$search} placeholder="search" />
   </form>
+  <div class="dialog-list">
   {#each $items as item}
-    <div>
       <button on:click={() => handleSelect(item.id)}>
         {item.caption}
       </button>
-    </div>
-  {/each}
+      {/each}
+  </div>
 </dialog>
 
 <style>
   /* Add any necessary styles here */
+  dialog {
+    max-height: 500px;
+    min-width: 250px;
+  }
+
+  input {
+    width: 100%;
+  }
+
+  .dialog-list {
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+  }
 </style>

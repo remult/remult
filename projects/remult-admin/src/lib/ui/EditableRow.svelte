@@ -203,6 +203,6 @@
 
 <style>
   .entityColor {
-    border-left: 4px solid hsla(var(--color), 70%, 50%, 1);
+    border-bottom: 2px solid hsla(var(--color), 70%, 50%, 1);
   }
 </style>

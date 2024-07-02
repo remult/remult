@@ -54,7 +54,7 @@
 <style>
   a {
     /* margin-left: 1px; */
-    border-left: 4px solid hsla(var(--color), 70%, 50%, 1);
+    border-left: 3px solid hsla(var(--color), 70%, 50%, 1);
     /* background-color: hsla(var(--color), 70%, 50%, 0.05); */
   }
 </style>
