@@ -35,18 +35,18 @@ export default app
 // [ ] - support more complex relations
 // [ ] - support compound id (order details)
 // [ ] - support compound id for admin and erd
+// [ ] - remult-admin doesn't handle primary key that has compound column
 // [ ] - support id column
 // [ ] - when making a change and canceling - the changed value still appears
 // [ ] - serialize find options to uri
 // [ ] - respect api update / delete / insert / forbidden rules
+// [ ] - allow conditional admin - like allowed
 // [ ] - understand the to many relation for the admin, based on the to one
 // [ ] - relation from order details to order gave a compound id info - and it is not true - same for the relation to product
 // [ ] - new row when there are relations, looks funny (see product)
 // [ ] - need a way to extract the fields from the relation - for generating relation based sql
-// [ ] - allow conditional admin - like allowed
 // [x] - the + row in the bottom should extend to the full width (solved another way)
-// [ ] - remult-admin doesn't handle primary key that has compound column
-// [ ] - remult-admin didn't show a update for a table with a uniqua that is numeric
+// [?] - remult-admin didn't show a update for a table with a uniqua that is numeric
 // [ ] - add a standardized component for displaying success/error/info messages (toast?)
 // [ ] - standardize dialog (component with header/actions)
 // [ ] - support create with default values

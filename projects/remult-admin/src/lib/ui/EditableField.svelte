@@ -17,17 +17,15 @@
   }
 </script>
 
-<!-- TODO Ermin? When readonly? -->
-<!-- {info.dbReadOnly} -->
 {#if info.relationToOne}
   <RelationField bind:value {info} on:change />
+{:else if info.dbReadOnly}
+  <input bind:value disabled style="opacity: 0.5;" />
 {:else if info.type == 'json'}
   <button
     class="icon-button"
     on:click={() => {
-      // showJSON = true
       dialogJSON.showModal()
-      // ref.current?.showModal()
     }}
   >
     <svg

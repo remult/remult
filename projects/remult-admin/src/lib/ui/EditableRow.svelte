@@ -27,7 +27,12 @@
     relation &&
     typeof relation === 'object' &&
     $godStore.tables.find((x) => x.key === relation.entityKey)
-  $: change = Boolean(columns.find((x) => value[x.key] !== rowFrozzen[x.key]))
+  $: change = Boolean(
+    columns.find(
+      (x) =>
+        value[x.key] && rowFrozzen[x.key] && value[x.key] !== rowFrozzen[x.key],
+    ),
+  )
 
   const relationWhere = {}
 
@@ -43,7 +48,7 @@
   }
 </script>
 
-<tr>
+<tr class:change>
   {#if relations.length > 0}
     <td>
       <button
@@ -69,7 +74,11 @@
     </td>
   {/if}
   {#each columns as x}
-    <td>
+    <td
+      class:changeHi={value[x.key] &&
+        rowFrozzen[x.key] &&
+        value[x.key] !== rowFrozzen[x.key]}
+    >
       <EditableField
         info={x}
         bind:value={value[x.valFieldKey]}
@@ -93,51 +102,53 @@
       )} -->
     </td>
   {/each}
-  <td class="action-tab" width="90px">
+  <td class="action-tab" class:change>
     <div class="row-actions">
       {#if change}
-        <button class="icon-button" title="Save" on:click={doSave}>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width={1.5}
-            stroke="currentColor"
-            class="w-6 h-6"
-            ><path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M10.125 2.25h-4.5c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125v-9M10.125 2.25h.375a9 9 0 0 1 9 9v.375M10.125 2.25A3.375 3.375 0 0 1 13.5 5.625v1.5c0 .621.504 1.125 1.125 1.125h1.5a3.375 3.375 0 0 1 3.375 3.375M9 15l2.25 2.25L15 12"
-            /></svg
+        <div class="margin-auto">
+          <button class="icon-button" title="Save" on:click={doSave}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width={1.5}
+              stroke="currentColor"
+              class="w-6 h-6"
+              ><path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M10.125 2.25h-4.5c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125v-9M10.125 2.25h.375a9 9 0 0 1 9 9v.375M10.125 2.25A3.375 3.375 0 0 1 13.5 5.625v1.5c0 .621.504 1.125 1.125 1.125h1.5a3.375 3.375 0 0 1 3.375 3.375M9 15l2.25 2.25L15 12"
+              /></svg
+            >
+          </button>
+          <button
+            class="icon-button"
+            title="Cancel"
+            on:click={() => {
+              value = rowFrozzen
+              error = undefined
+            }}
           >
-        </button>
-        <button
-          class="icon-button"
-          title="Cancel"
-          on:click={() => {
-            value = rowFrozzen
-            error = undefined
-          }}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width={1.5}
-            stroke="currentColor"
-            class="w-6 h-6"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"
-            /></svg
-          >
-        </button>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width={1.5}
+              stroke="currentColor"
+              class="w-6 h-6"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"
+              /></svg
+            >
+          </button>
+        </div>
       {/if}
-      {#if deleteAction}
+      {#if deleteAction && !change}
         <button
-          class="icon-button"
+          class="icon-button margin-auto"
           title="Delete"
           on:click={async () => {
             try {
@@ -214,5 +225,17 @@
 <style>
   .entityColor {
     border-bottom: 2px solid hsla(var(--color), 70%, 50%, 1);
+  }
+
+  .margin-auto {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .change {
+    background-color: hsl(137, 90%, 93%) !important;
+  }
+  .changeHi {
+    background-color: hsl(137, 90%, 86%) !important;
   }
 </style>
