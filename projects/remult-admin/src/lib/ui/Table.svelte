@@ -12,8 +12,6 @@
   import EditableRow from './EditableRow.svelte'
   import Filter from './Filter.svelte'
   import { writable, type Writable } from 'svelte/store'
-  import Loading from './Loading.svelte'
-  import { SLoading } from '../stores/SLoading.js'
 
   export let fields: FieldUIInfo[]
   export let relations: EntityRelationToManyInfo[]
@@ -36,15 +34,12 @@
 
     const where = { $and: [currentFilter, { ...parentRelation }] }
 
-    $SLoading = [...new Set([repo.metadata.key, ...$SLoading])]
-
     unSub = repo
       .liveQuery({
         ...options,
         where,
       })
       .subscribe(async (info) => {
-        $SLoading = $SLoading.filter((x) => x !== repo.metadata.key)
         items = info.applyChanges(items)
         totalRows = await repo.count(where)
       })
@@ -79,24 +74,20 @@
       nav?.classList.toggle('hide-navigation')
     }}
   >
-    {#if $SLoading.length === 0}
-      <svg
-        class="hamburger-icon"
+    <svg
+      class="hamburger-icon"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      ><rect y="4.68134" width="24" height="2.03049" fill="black" /><rect
+        y="10.9847"
         width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        ><rect y="4.68134" width="24" height="2.03049" fill="black" /><rect
-          y="10.9847"
-          width="24"
-          height="2.03049"
-          fill="black"
-        /><rect y="17.2882" width="24" height="2.03049" fill="black" /></svg
-      >
-    {:else}
-      <Loading />
-    {/if}
+        height="2.03049"
+        fill="black"
+      /><rect y="17.2882" width="24" height="2.03049" fill="black" /></svg
+    >
   </button>
 
   <div class="page-bar__title title" style="--color: {color}">

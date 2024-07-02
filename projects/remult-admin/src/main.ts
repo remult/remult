@@ -22,6 +22,7 @@ export default app
 // [x] - store erd positions
 // [x] - add json editor
 // [x] - Schema
+// [ ] - nice select
 // [x] - add erd change to have the link on the good side!
 // [ ] - filter popup: enter should apply the filter
 // [x] - disable input when readonly
