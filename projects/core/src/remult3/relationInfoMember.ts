@@ -65,6 +65,7 @@ export function verifyFieldRelationInfo(
           type: r.type,
           toEntity,
           options,
+          // @ts-ignore
           toRepo,
           getFields: () => {
             let relationField = options.field

@@ -1,9 +1,6 @@
 import express from 'express'
 import { api, entities } from './api'
-import remultAdminHtml, {
-  buildEntityInfo,
-} from '../../../core/server/remult-admin'
-import { Customer, Order } from './shared/entities'
+import { buildEntityInfo } from '../../../core/server/remult-admin'
 import { remult } from '../../../core/src/remult-proxy'
 
 export const app = express()
