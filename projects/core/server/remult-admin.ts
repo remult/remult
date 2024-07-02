@@ -21,13 +21,14 @@ export interface EntityRelationToManyInfo extends RelationFields {
   where?: any
 }
 
+export type FieldUIInfoType = 'json' | 'string' | 'number' | 'boolean'
 export interface FieldUIInfo {
   key: string
   dbReadOnly: boolean
   values: { id: string | number; caption: string }[]
   valFieldKey: string
   caption: string
-  type: 'json' | 'string' | 'number' | 'boolean'
+  type: FieldUIInfoType
   relationToOne?: FieldRelationToOneInfo
 }
 export interface FieldRelationToOneInfo extends RelationFields {

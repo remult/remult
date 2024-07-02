@@ -19,13 +19,14 @@
   const operators: [typeof defaultFilter.operator, string][] = [
     ['', 'equal'],
     ['$contains', 'contains'],
-    ['$ne', 'nor equal'],
+    ['$ne', 'not equal'],
   ]
 
   export let fields: FieldUIInfo[] = []
   export let filter: EntityFilter<any> | undefined
 
-  let filterValues: (typeof defaultFilter)[] = []
+  let filterValues: (typeof defaultFilter)[]
+  $: filterValues = []
   let dialog: HTMLDialogElement | null = null
 
   function addFilter() {
@@ -82,7 +83,9 @@
   $: fields && translateFilterToFilterValues()
 
   const setValue = (e: any, field: any, kind: 'key' | 'operator' | 'value') => {
-    return (field[kind] = e.target.value)
+    field[kind] = e.target.value
+    // To trigger a refresh...
+    filterValues = filterValues
   }
 </script>
 
@@ -101,7 +104,7 @@
         </select>
         <select on:change={(e) => setValue(e, field, 'operator')}>
           {#each operators as [key, caption]}
-            <option value={caption} selected={key === field.operator}>
+            <option value={key} selected={key === field.operator}>
               {caption}
             </option>
           {/each}
