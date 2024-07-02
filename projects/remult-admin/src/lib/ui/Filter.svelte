@@ -1,6 +1,9 @@
 <script lang="ts">
   import { tick } from 'svelte'
-  import type { FieldUIInfo } from '../../../../core/server/remult-admin'
+  import type {
+    FieldUIInfo,
+    FieldUIInfoType,
+  } from '../../../../core/server/remult-admin'
   import type {
     ComparisonValueFilter,
     ContainsStringValueFilter,
@@ -16,11 +19,33 @@
     value: '',
   }
 
-  const operators: [typeof defaultFilter.operator, string][] = [
-    ['', 'equal'],
-    ['$contains', 'contains'],
-    ['$ne', 'not equal'],
-  ]
+  const operators: Record<
+    FieldUIInfoType,
+    [typeof defaultFilter.operator, string][]
+  > = {
+    string: [
+      ['$contains', 'contains'],
+      ['', 'equal'],
+      ['$ne', 'not equal'],
+    ],
+    number: [
+      ['', 'equal'],
+      ['$ne', 'not equal'],
+      ['$gt', '>'],
+      ['$gte', '>='],
+      ['$lt', '<'],
+      ['$lte', '<='],
+    ],
+    boolean: [
+      ['', 'equal'],
+      ['$ne', 'not equal'],
+    ],
+    json: [
+      ['$contains', 'contains'],
+      ['', 'equal'],
+      ['$ne', 'not equal'],
+    ],
+  }
 
   export let fields: FieldUIInfo[] = []
   export let filter: EntityFilter<any> | undefined
@@ -87,11 +112,19 @@
     // To trigger a refresh...
     filterValues = filterValues
   }
+
+  $: getOperators = (_filterValues: any, currentField: any) => {
+    const fieldWeAreTalkingAbout = fields.filter(
+      (x) => x.key == currentField.key,
+    )[0]
+    return operators[fieldWeAreTalkingAbout.type]
+  }
 </script>
 
 <button on:click={() => dialog?.showModal()}>Filter</button>
 <dialog bind:this={dialog} class="filter">
   <strong>Filter</strong>
+  <!-- {JSON.stringify(filterValues, null, 2)} -->
   <div>
     {#each filterValues as field, i}
       <div class="filter__group">
@@ -103,7 +136,7 @@
           {/each}
         </select>
         <select on:change={(e) => setValue(e, field, 'operator')}>
-          {#each operators as [key, caption]}
+          {#each getOperators(filterValues, field) as [key, caption]}
             <option value={key} selected={key === field.operator}>
               {caption}
             </option>

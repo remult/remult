@@ -22,6 +22,7 @@ export interface EntityRelationToManyInfo extends RelationFields {
 }
 
 export type FieldUIInfoType = 'json' | 'string' | 'number' | 'boolean'
+
 export interface FieldUIInfo {
   key: string
   dbReadOnly: boolean
