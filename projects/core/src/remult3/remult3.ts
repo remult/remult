@@ -828,6 +828,8 @@ export type ClassFieldDecorator<entityType, valueType> = (
 export const flags = {
   error500RetryCount: 4,
 }
+
+//p1 - add LifecycleEvent to documentation
 //y1 - Talk about the case where we had one to many, without a field - just a filter - for example, event,event participants, users - and a field that shows all users that are not participants
 //p1 - Fix hagai and starter project to latest ts
 //y1 TODO - discuss next auth withRemult paradox - the gift that keeps on giving - it's doing something crazy there!!
