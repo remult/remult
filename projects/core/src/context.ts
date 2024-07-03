@@ -126,7 +126,6 @@ export class Remult {
 
       verifyFieldRelationInfo(r, this, dataProvider)
     }
-    // @ts-ignore
     return r
   }
   /** Returns the current user's info */
