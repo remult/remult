@@ -1,4 +1,12 @@
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
+
+body,
+html {
+  margin: 0;
+  padding: 0;
+}
 
 body {
   --border-color: #0000001a;
@@ -13,9 +21,8 @@ body {
 
   font-size: 14px;
 
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-    Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-    'Segoe UI Symbol';
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
+    Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
 }
 
 .root {
@@ -24,6 +31,9 @@ body {
   height: 100%;
 }
 
+table {
+  min-width: 100%;
+}
 
 thead {
   height: var(--cell-height);
@@ -49,7 +59,7 @@ thead::before {
 th {
   text-align: center;
   white-space: nowrap;
-  padding: 0 .5rem;
+  padding: 0 0.5rem;
 }
 
 tr {
@@ -58,7 +68,7 @@ tr {
 }
 
 td > div:not(.extended__holder) {
-  padding: 0 .5rem;
+  padding: 0 0.5rem;
 }
 
 tbody tr:nth-child(2n + 1):not(.extended),
@@ -66,7 +76,6 @@ tbody tr:nth-child(2n + 1):not(.extended) td:first-child,
 tbody tr:nth-child(2n + 1):not(.extended) .action-tab {
   background: var(--background-color-gray);
 }
-
 
 tr.extended {
   background: var(--background-color-gray);
@@ -85,20 +94,32 @@ tr.extended td {
   max-width: 100vw;
 }
 
-
 tr.extended th {
   background: white !important; /* sorry, quickfix */
-  padding: 0 .5rem;
+  padding: 0 0.5rem;
   white-space: nowrap;
 }
 
 .extended__holder {
   background: var(--background-color);
   border: 1px solid var(--border-color);
-  margin: .5rem;
+  margin: 0 0 0 var(--cell-height);
   display: flex;
-  width: calc(100vw - var(--navigation-width) - 1rem);
+  width: calc(100vw - var(--navigation-width) - var(--cell-height));
   flex-wrap: wrap;
+}
+
+.extended__holder .extended__holder {
+  width: calc(
+    100vw - var(--navigation-width) - var(--cell-height) - var(--cell-height)
+  );
+}
+
+.extended__holder .extended__holder .extended__holder {
+  width: calc(
+    100vw - var(--navigation-width) - var(--cell-height) - var(--cell-height) -
+      var(--cell-height)
+  );
 }
 
 .hide-navigation .extended__holder {
@@ -114,14 +135,14 @@ tr.extended th {
   justify-content: flex-start;
   align-items: center;
   background: var(--background-color-gray);
-  flex: 0 0 calc(100% - 200px);
+  flex: 0 0 calc(100% - 250px);
   width: 100%;
 }
 
 .extended__holder .page-bar {
   height: var(--cell-height);
-  flex: 0 0 200px;
-  width: 200px;
+  flex: 0 0 250px;
+  width: 250px;
 }
 
 .extended__holder .page-bar__title {
@@ -129,6 +150,8 @@ tr.extended th {
 }
 
 .extended__links .tab {
+  border-radius: 0;
+  border: none;
   width: auto;
 }
 
@@ -170,9 +193,34 @@ td:has(.icon-button) button:has(svg) {
 
 td input {
   height: calc(var(--cell-height) - 1px);
-  padding: 0 .5rem;
+  padding: 0 0.5rem;
   display: flex;
   height: 100%;
+  min-width: 100%;
+}
+
+td select {
+  height: calc(var(--cell-height) - 1px);
+  padding-left: 0.5rem;
+  padding-right: 1.5rem;
+  display: flex;
+  height: 100%;
+  min-width: 100%;
+}
+
+select {
+  display: flex;
+  align-items: center;
+  position: relative;
+  background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2012%2012%22%3E%3Ctitle%3Edown-arrow%3C%2Ftitle%3E%3Cg%20fill%3D%22%23000000%22%3E%3Cpath%20d%3D%22M10.293%2C3.293%2C6%2C7.586%2C1.707%2C3.293A1%2C1%2C0%2C0%2C0%2C.293%2C4.707l5%2C5a1%2C1%2C0%2C0%2C0%2C1.414%2C0l5-5a1%2C1%2C0%2C1%2C0-1.414-1.414Z%22%20fill%3D%22%23000000%22%3E%3C%2Fpath%3E%3C%2Fg%3E%3C%2Fsvg%3E');
+  background-size: 0.6em;
+  background-position: calc(100% - 0.5rem) center;
+  background-repeat: no-repeat;
+  padding-right: 1.5rem;
+}
+
+select:focus {
+  box-shadow: 0 0 0 2px rgb(0, 123, 255) inset;
 }
 
 td .field-spacer {
@@ -214,7 +262,7 @@ td input:focus {
 }
 
 .action-tab {
-  padding: 0 .5rem;
+  padding: 0 0.5rem;
   position: sticky;
   right: 0;
   background-color: var(--background-color);
@@ -246,13 +294,21 @@ button {
   height: 2.5rem;
 }
 
+button:focus {
+  box-shadow: 0 0 0 2px rgb(0, 123, 255) inset;
+}
+
 .icon-button {
   width: var(--cell-height);
   height: var(--cell-height);
   padding: 0.3rem;
   border: 0;
   border-radius: 0;
+}
 
+.icon-button:focus,
+.naked-button:focus {
+  box-shadow: 0 0 0 2px rgb(0, 123, 255) inset;
 }
 
 .icon-button svg {
@@ -284,8 +340,10 @@ button:active,
 
 dialog {
   border: 1px solid var(--border-color);
-  padding: .5rem;
+  padding: 0.5rem;
   border-radius: 5px;
+  min-width: 250px;
+  min-height: 250px;
 }
 
 dialog form {
@@ -298,13 +356,17 @@ dialog select,
 dialog button {
   border: 1px solid var(--border-color);
   border-radius: 0;
-  padding: 0.2rem .5rem;
-  margin-bottom: .5rem;
+  padding: 0.2rem 0.5rem;
+  margin-bottom: 0.5rem;
   min-width: auto !important;
   height: var(--cell-height);
 }
 
-dialog button.button-icon {
+dialog select {
+  padding-right: 1.5rem;
+}
+
+dialog button.icon-button {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -312,9 +374,16 @@ dialog button.button-icon {
   height: var(--cell-height);
 }
 
-dialog button.button-icon svg {
+dialog button.icon-button svg {
   width: 14px;
   height: var(--cell-height);
+}
+
+dialog header {
+  width: 100%;
+  height: var(--cell-height);
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 1rem;
 }
 
 .page-bar {
@@ -326,14 +395,32 @@ dialog button.button-icon svg {
 }
 
 .page-bar__title {
+  height: 100%;
+  display: flex;
+  align-items: center;
   font-weight: 600;
+  padding: 0 0.5rem;
   margin-right: auto;
-  padding: 0 .5rem;
+}
+
+button.new-entry {
+  height: calc(var(--cell-height) - 1px);
+  width: 100%;
+  text-align: center;
+  font-weight: 400;
+  line-height: calc(var(--cell-height) - 1px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.page-bar__results {
+  white-space: nowrap;
 }
 
 .page-bar span {
   display: block;
-  padding: 0 .5rem;
+  padding: 0 0.5rem;
 }
 
 .page-bar button {
@@ -385,14 +472,15 @@ dialog button.button-icon svg {
   left: 0;
   display: flex;
   flex-direction: column;
-  flex: 0 0  var(--navigation-width);
-  width:  var(--navigation-width);
+  flex: 0 0 var(--navigation-width);
+  width: var(--navigation-width);
   align-items: flex-start;
   background: #f5f5f7;
   border-right: 1px solid #e5e7eb;
   transition: 0.2s ease-in-out all;
   overflow-y: auto;
   padding-top: var(--cell-height);
+  padding-bottom: var(--cell-height);
 }
 
 .main-navigation__title {
@@ -402,10 +490,34 @@ dialog button.button-icon svg {
   height: var(--cell-height);
   border-bottom: 1px solid #e5e7eb;
   display: flex;
-  justify-content: flex-start;
-  padding: .5rem;
+  justify-content: space-between;
+  padding: 0.5rem;
+  padding-left: calc(0.5rem + 3px);
+  padding-right: 0;
   align-items: center;
-  font-size: .8rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  width: calc(var(--navigation-width) - 1px);
+  text-align: center;
+}
+
+.main-navigation__title .icon-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.main-navigation__diagram {
+  bottom: 0;
+  position: fixed;
+  background: var(--background-color-gray);
+  height: var(--cell-height);
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: flex-start;
+  padding: 0.5rem;
+  align-items: center;
+  font-size: 0.8rem;
   font-weight: 600;
   width: calc(var(--navigation-width) - 1px);
   text-align: center;
@@ -431,7 +543,6 @@ body.hide-navigation .main-content {
 
 .hamburger-icon rect {
   transition: 0.2s ease-in-out all;
-
 }
 
 body:not(.hide-navigation) .hamburger-icon rect:first-child {
@@ -446,10 +557,25 @@ body:not(.hide-navigation) .hamburger-icon rect:last-child {
   transform: rotate(-35deg) translate(-17px, -8px);
 }
 
+.row-actions {
+  display: flex;
+  padding: 0 0 !important;
+}
+
+.naked-button {
+  height: calc(var(--cell-height) - 1px);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+}
+
+.naked-button:hover {
+  background-color: transparent;
+}
 
 .filter strong {
   display: block;
-  margin-top: .5rem;
+  margin-top: 0.5rem;
   margin-bottom: 1rem;
   font-weight: 600;
   text-align: center;
@@ -461,7 +587,7 @@ body:not(.hide-navigation) .hamburger-icon rect:last-child {
   width: 100%;
 }
 
-.filter__group .button-icon {
+.filter__group .icon-button {
   margin-left: auto;
   border: none;
 }
@@ -471,13 +597,13 @@ body:not(.hide-navigation) .hamburger-icon rect:last-child {
   flex-direction: row;
   justify-content: flex-end;
   align-items: center;
-  padding: .5rem;
+  padding: 0.5rem;
   width: 100%;
 }
 
 .filter__actions button {
   border: none;
-  padding: .5rem;
+  padding: 0.5rem;
   margin: 0;
 }
 

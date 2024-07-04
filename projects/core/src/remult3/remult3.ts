@@ -881,7 +881,7 @@ const result = await repo.batch(x=>({
 
 //p1 - article on displayValue including it's definition for entities that is used in relations
 //p1 - article auth.js with express - played with it, requires type="module" and a few more configurations - https://github.com/noam-honig/express-auth
-//p2 -fix remult admin not to load the html into memory until used
+//p2 - fix remult admin not to load the html into memory until used
 
 //y2 - currently for string fields we default for 255 in knex (which is their default) why not just use text (varchar max) - and only use exact length when one is provided?
 
@@ -931,23 +931,6 @@ const result = await repo.batch(x=>({
   Description = ""*/
 //y2 - get backend methods to work when specifying types for date, and entities as poco's
 //y2 - constraints (@JY)
-
-/*p2 remult admin
- - when making a change and canceling - the changed value still appears
- - Small thing, I get SvelteKitError: Not found: /vite.svg
- - understand the to many relation for the admin, based on the to one
- - relation from order details to order gave a compound id info - and it is not true - same for the relation to product
- - new row when there are relations, looks funny (see product)
- - the + row in the bottom should extend to the full width
- - need a way to extract the fields from the relation - for generating relation based sql
- - allow conditional admin - like allowed
- - remult-admin doesn't handle primary key that has compound column
- - remult-admin didn't show a update for a table with a uniqua that is numeric
- - for literal fields, allow selection from list
- - for many to one fields - allow search field selection by developer
- - for toOne relations, show the "one" row and allow its edit.
-*/
-//remult
 
 //p1 - when a tasks table exists in a different schema - we get many errors
 //p1 - live query with include

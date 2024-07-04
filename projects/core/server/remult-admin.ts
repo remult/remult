@@ -6,6 +6,7 @@ import { Filter } from '../src/filter/filter-interfaces.js'
 import type { ClassType } from '../classType.js'
 import type { Remult } from '../src/context.js'
 import { getHtml } from './get-remult-admin-html.js'
+import { getValueList } from '../src/remult3/RepositoryImplementation.js'
 
 export interface EntityUIInfo {
   key: string
@@ -13,17 +14,22 @@ export interface EntityUIInfo {
   fields: FieldUIInfo[]
   ids: Record<string, true>
   relations: EntityRelationToManyInfo[]
+  color?: string
 }
 export interface EntityRelationToManyInfo extends RelationFields {
   entityKey: string
   where?: any
 }
 
+export type FieldUIInfoType = 'json' | 'string' | 'number' | 'date' | 'boolean'
+
 export interface FieldUIInfo {
   key: string
+  readOnly: boolean
+  values: { id: string | number; caption: string }[]
   valFieldKey: string
   caption: string
-  type: 'json' | 'string' | 'number' | 'boolean'
+  type: FieldUIInfoType
   relationToOne?: FieldRelationToOneInfo
 }
 export interface FieldRelationToOneInfo extends RelationFields {
@@ -112,6 +118,8 @@ export function buildEntityInfo(options: AdminOptions) {
       }
       fields.push({
         key: x.key,
+        readOnly: x.dbReadOnly || !x.apiUpdateAllowed(),
+        values: getValueList(x),
         valFieldKey,
         caption: x.caption,
         relationToOne: relation,
@@ -122,6 +130,8 @@ export function buildEntityInfo(options: AdminOptions) {
             ? 'number'
             : x.valueType === Boolean
             ? 'boolean'
+            : x.valueType === Date
+            ? 'date'
             : 'string',
       })
     }
