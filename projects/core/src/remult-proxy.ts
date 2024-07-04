@@ -67,7 +67,7 @@ export class RemultProxy implements Remult {
     remultStatic.remultFactory().dataProvider = provider
   }
   /*@internal*/
-  get repCache(): Map<DataProvider, Map<ClassType<any>, Repository<any>>> {
+  get repCache(): Map<DataProvider, Map<ClassType<any>, Repository<unknown>>> {
     return remultStatic.remultFactory().repCache
   }
 

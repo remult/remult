@@ -3764,7 +3764,7 @@ export interface RelationFieldInfo {
   type: "reference" | "toOne" | "toMany"
   options: RelationOptions<any, any, any>
   toEntity: any
-  toRepo: Repository<any>
+  toRepo: Repository<unknown>
   getFields(): RelationFields
 }
 //[ ] RelationOptions from TBD is not exported

@@ -209,18 +209,18 @@ export class Fields {
     )
   }
 
-  static id<entityType = any>(
-    options?: FieldOptions<entityType, string> & { idFactory?: () => string },
-  ): ClassFieldDecorator<entityType, string | undefined> {
-    let buildId = options?.idFactory ?? createId
-    return Field(() => String, {
-      allowApiUpdate: false,
-      defaultValue: () => buildId(),
-      saving: (_, r) => {
-        if (!r.value) r.value = buildId()
-      },
-    })
-  }
+  // static id<entityType = any>(
+  //   options?: FieldOptions<entityType, string> & { idFactory?: () => string },
+  // ): ClassFieldDecorator<entityType, string | undefined> {
+  //   let buildId = options?.idFactory ?? createId
+  //   return Field(() => String, {
+  //     allowApiUpdate: false,
+  //     defaultValue: () => buildId(),
+  //     saving: (_, r) => {
+  //       if (!r.value) r.value = buildId()
+  //     },
+  //   })
+  // }
 
   /**
  * Defines a field that can hold a value from a specified set of string literals.
