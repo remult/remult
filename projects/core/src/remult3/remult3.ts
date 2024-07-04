@@ -575,7 +575,7 @@ export declare type EntityFilter<entityType> = {
 } & {
   $or?: EntityFilter<entityType>[]
   $and?: EntityFilter<entityType>[]
-}
+} & CustomEntityFilter<entityType>
 
 export type ValueFilter<valueType> =
   | valueType
@@ -600,12 +600,15 @@ export interface ContainsStringValueFilter {
   $contains?: string
   $notContains?: string
 }
-export type IdFilter<valueType> =
+export type IdFilter<valueType> = (
   | ValueFilter<valueType>
   | {
       $id: ValueFilter<valueType extends { id?: number } ? number : string>
     }
-
+) &
+  CustomIdFilter<valueType>
+export type CustomEntityFilter<entityType> = {}
+export type CustomIdFilter<valueType> = {}
 export interface LoadOptions<entityType> {
   /**
    * @deprecated The 'load' option is deprecated and will be removed in future versions.
