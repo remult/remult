@@ -8,6 +8,21 @@ import { Repository } from '../../core/src/remult3/remult3'
 import { Fields } from '../../core/src/remult3/Fields'
 import { Entity } from '../../core/src/remult3/entity'
 
+const generateHslColors = (numColors: number): string[] => {
+  const colors = []
+  // const saturation = 70 // Adjust as needed
+  // const lightness = 50 // Adjust as needed
+
+  for (let i = 0; i < numColors; i++) {
+    const hue = (i * 360) / numColors
+    // colors.push(`hsl(${hue}, ${saturation}%, ${lightness}%)`)
+    colors.push(hue)
+  }
+
+  return colors
+}
+
+export type TableInfo = EntityUIInfo & { repo: Repository<any> }
 export class God {
   async getItemsForSelect(
     relation: FieldRelationToOneInfo,
@@ -41,35 +56,40 @@ export class God {
     if (!item) return 'not found - ' + value
     return item[relations.captionField]
   }
-  tables: (EntityUIInfo & { repo: Repository<any> })[]
+  tables: TableInfo[]
   constructor(myEntities: EntityUIInfo[]) {
-    this.tables = myEntities.map((info) => {
-      class C {}
-      for (const f of info.fields) {
-        switch (f.type) {
-          case 'json':
-            Fields.json()(C.prototype, f.key as keyof typeof C.prototype)
-            break
-          case 'number':
-            Fields.number()(C.prototype, f.key)
-            break
-          case 'boolean':
-            Fields.boolean()(C.prototype, f.key)
-            break
-          default:
-            Fields.string()(C.prototype, f.key)
-            break
+    const colors = generateHslColors(myEntities.length)
+    // @ts-ignore
+    this.tables = myEntities
+      .sort((a, b) => a.caption.localeCompare(b.caption))
+      .map((info, i) => {
+        info.color = colors[i % colors.length]
+        class C {}
+        for (const f of info.fields) {
+          switch (f.type) {
+            case 'json':
+              Fields.json()(C.prototype, f.key as keyof typeof C.prototype)
+              break
+            case 'number':
+              Fields.number()(C.prototype, f.key)
+              break
+            case 'boolean':
+              Fields.boolean()(C.prototype, f.key)
+              break
+            default:
+              Fields.string()(C.prototype, f.key)
+              break
+          }
         }
-      }
-      Entity(info.key, {
-        allowApiCrud: true,
-        caption: info.caption,
-        id: info.ids,
-      })(C)
-      return {
-        ...info,
-        repo: remult.repo(C),
-      }
-    })
+        Entity(info.key, {
+          allowApiCrud: true,
+          caption: info.caption,
+          id: info.ids,
+        })(C)
+        return {
+          ...info,
+          repo: remult.repo(C),
+        }
+      })
   }
 }

@@ -1,0 +1,32 @@
+[
+  {
+    "id": "99e08f29-6cce-4599-b0aa-7e120e2ad6b5",
+    "tag": "football-fan",
+    "color": "#eddcd2"
+  },
+  {
+    "id": "7945ddb8-5edd-4584-a9f1-fb40015150ca",
+    "tag": "holiday-card",
+    "color": "#fff1e6"
+  },
+  {
+    "id": "c9e7fc13-9cda-4576-b447-5fb6f1443af6",
+    "tag": "influencer",
+    "color": "#fde2e4"
+  },
+  {
+    "id": "bfdfc69d-fd35-4039-889d-a6d8730c66d5",
+    "tag": "manager",
+    "color": "#fad2e1"
+  },
+  {
+    "id": "38758dd1-9a59-43dd-a1ad-c6c842e14ae1",
+    "tag": "musician",
+    "color": "#c5dedd"
+  },
+  {
+    "id": "920a11c4-ef28-4306-ac3f-658b7e76a850",
+    "tag": "vip",
+    "color": "#dbe7e4"
+  }
+]
