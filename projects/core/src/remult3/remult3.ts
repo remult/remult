@@ -828,7 +828,13 @@ export type ClassFieldDecorator<entityType, valueType> = (
 export const flags = {
   error500RetryCount: 4,
 }
-
+//p1 - add luid - it's cool for order by.
+//p1 - replace uuid with crypto.randomUUID and allow custom fallback
+//p1 - add nanoid
+//p1 - add id and use luid by default, but allow changes with Fields.id.defaultIdProvider
+//p1 - explain the benefits of changing the default provider for testing in docs.
+//p1 - fix app custom filters example for multiple filters.
+//p1 - add not!!!!
 //p1 - add LifecycleEvent to documentation
 //y1 - Talk about the case where we had one to many, without a field - just a filter - for example, event,event participants, users - and a field that shows all users that are not participants
 //p1 - Fix hagai and starter project to latest ts
