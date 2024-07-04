@@ -19,7 +19,7 @@
 
 {#if info.relationToOne}
   <RelationField bind:value {info} on:change />
-{:else if info.dbReadOnly}
+{:else if info.readOnly}
   <input bind:value disabled style="opacity: 0.5;" />
 {:else if info.type == 'json'}
   <button

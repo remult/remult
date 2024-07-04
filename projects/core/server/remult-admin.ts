@@ -25,7 +25,7 @@ export type FieldUIInfoType = 'json' | 'string' | 'number' | 'date' | 'boolean'
 
 export interface FieldUIInfo {
   key: string
-  dbReadOnly: boolean
+  readOnly: boolean
   values: { id: string | number; caption: string }[]
   valFieldKey: string
   caption: string
@@ -118,7 +118,7 @@ export function buildEntityInfo(options: AdminOptions) {
       }
       fields.push({
         key: x.key,
-        dbReadOnly: x.dbReadOnly,
+        readOnly: x.dbReadOnly || !x.apiUpdateAllowed(),
         values: getValueList(x),
         valFieldKey,
         caption: x.caption,
