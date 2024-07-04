@@ -2,6 +2,38 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.26.16] 2024-07-04
+
+- remult-admin refactored to svelte
+- HUGE thanks to [jycouet](https://github.com/jycouet) & [celikovic](https://github.com/celikovic) for their amazing work on `remult-admin`
+
+## [0.26.15] 2024-06-28
+
+- docs - svelte tuto improvement by @jycouet in #458
+- Fix #460
+
+## [0.26.14] 2024-06-18
+
+- Fixed typescript error with KnexDataProvider
+- fixed issue where migrate didn't work in commonjs
+- Bump mysql2 from 3.9.7 to 3.9.8 by @dependabot in #445
+- fix auth.ts import for Next.js tutorial by @LegitPanda in #446
+- Update example-apps.md by @ikx94 in #447
+- Bump @azure/msal-node and tedious by @dependabot in #450
+- Bump braces from 3.0.2 to 3.0.3 by @dependabot in #449
+- Bump braces from 3.0.2 to 3.0.3 in /examples/angular-todo-fastify by @dependabot in #451
+- docs: improve swagger-ui integration guide page with nextjs specific info by @kckusal in #448
+
+### New Contributors
+
+- @LegitPanda made their first contribution in #446
+- @ikx94 made their first contribution in #447
+- @kckusal made their first contribution in #448
+
+## [0.26.13] 2024-05-22
+
+- fix validators with args type-check error in ts 5.4
+
 ## [0.26.12] 2024-05-16
 
 - Fixed an issue with stack overflow when calling `withRemult` from within `getUser` - relevant to next auth - `session` hook
