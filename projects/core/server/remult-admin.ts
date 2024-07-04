@@ -21,7 +21,7 @@ export interface EntityRelationToManyInfo extends RelationFields {
   where?: any
 }
 
-export type FieldUIInfoType = 'json' | 'string' | 'number' | 'boolean'
+export type FieldUIInfoType = 'json' | 'string' | 'number' | 'date' | 'boolean'
 
 export interface FieldUIInfo {
   key: string
@@ -130,6 +130,8 @@ export function buildEntityInfo(options: AdminOptions) {
             ? 'number'
             : x.valueType === Boolean
             ? 'boolean'
+            : x.valueType === Date
+            ? 'date'
             : 'string',
       })
     }

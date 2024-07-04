@@ -50,7 +50,10 @@ export default app
 // [ ] - add a standardized component for displaying success/error/info messages (toast?)
 // [ ] - standardize dialog (component with header/actions)
 // [ ] - support create with default values
+// [ ] - Manage Date only (with a different type than Date? (Task entity has the 2 cases))
+// [ ] - Search on entities
+// [ ] - Diagram => Show / Hide... (group)
+// [ ] - show/hide columns (global & per entity) in local storage + a reset button
 
 // NEXT ?
-// [ ] - show/hide columns (global & per entity) in local storage + a reset button
 // [ ] - AI feature! I select a few entities / fields... And it's generates a prompt to ask about fragemnt SQL & co. (with link to doc? or copy of doc?)

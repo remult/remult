@@ -17,6 +17,8 @@ export class Task {
   title = ''
   @Fields.boolean()
   done = false
+  @Fields.dateOnly()
+  remindeMeOn = new Date()
   @Relations.toMany(() => ContactTag)
   tags?: ContactTag[]
 }
