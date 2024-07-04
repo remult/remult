@@ -126,7 +126,7 @@ export class Remult {
 
       verifyFieldRelationInfo(r, this, dataProvider)
     }
-    return r
+    return r as Repository<T>
   }
   /** Returns the current user's info */
   user?: UserInfo
@@ -184,7 +184,7 @@ export class Remult {
   /** The current data provider */
   dataProvider: DataProvider = new RestDataProvider(() => this.apiClient)
   /* @internal */
-  repCache = new Map<DataProvider, Map<ClassType<any>, Repository<any>>>()
+  repCache = new Map<DataProvider, Map<ClassType<any>, Repository<unknown>>>()
   /** Creates a new instance of the `remult` object.
    *
    * Can receive either an HttpProvider or a DataProvider as a parameter - which will be used to fetch data from.

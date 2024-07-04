@@ -42,7 +42,7 @@ export interface RelationFieldInfo {
   type: 'reference' | 'toOne' | 'toMany'
   options: RelationOptions<any, any, any>
   toEntity: any
-  toRepo: Repository<any>
+  toRepo: Repository<unknown>
   getFields(): RelationFields
 }
 export interface RelationFields {
@@ -50,7 +50,7 @@ export interface RelationFields {
   compoundIdField: string | undefined
 }
 export function verifyFieldRelationInfo(
-  repo: Repository<any>,
+  repo: Repository<unknown>,
   remult: Remult,
   dp: DataProvider,
 ) {
