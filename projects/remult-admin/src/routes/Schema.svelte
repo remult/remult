@@ -313,6 +313,7 @@
     {nodeTypes}
     fitView
     snapGrid={[16, 16]}
+    minZoom={0.01}
     on:nodedrag={nodedrag}
     on:nodedragstop={nodedragstop}
   >
