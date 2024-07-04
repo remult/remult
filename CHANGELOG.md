@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [0.26.16] 2024-07-04
 
-- remult-admin refactored to svelte
+- Many improvements to `remult-admin`
 - HUGE thanks to [jycouet](https://github.com/jycouet) & [celikovic](https://github.com/celikovic) for their amazing work on `remult-admin`
 
 ## [0.26.15] 2024-06-28
