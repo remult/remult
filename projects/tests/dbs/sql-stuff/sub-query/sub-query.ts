@@ -137,4 +137,4 @@ type OnlyArrays<T> = {
   [K in keyof T]: T[K] extends any[] ? T[K] : never
 }
 
-type ArrayItemType<T> = T extends (infer U)[] ? U : T
+export type ArrayItemType<T> = T extends (infer U)[] ? U : T
