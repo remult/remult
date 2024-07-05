@@ -2,6 +2,7 @@ import {
   ClassType,
   EntityDbNames,
   EntityFilter,
+  SqlCommandWithParameters,
   SqlDatabase,
   dbNamesOf,
   repo,
@@ -68,10 +69,10 @@ export class subQuery<myEntity> {
 
   async get<relationKey extends keyof OnlyArrays<myEntity> & string>(
     relation: relationKey,
-    field: keyof EntityFilter<ArrayItemType<myEntity[relationKey]>>,
+    field: keyof ArrayItemType<myEntity[relationKey]> & string,
   ) {
     return this.getSubQuery(relation, (namesOfOtherTable) => {
-      return namesOfOtherTable.$dbNameOf(field as string)
+      return namesOfOtherTable.$dbNameOf(field)
     })
   }
 
@@ -82,6 +83,7 @@ export class subQuery<myEntity> {
     ) => string,
     options?: {
       where?: EntityFilter<ArrayItemType<myEntity[relationKey]>>
+      c?: SqlCommandWithParameters
     },
   ) {
     const rel = getRelationFieldInfo(
