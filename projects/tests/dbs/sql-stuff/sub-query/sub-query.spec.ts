@@ -8,10 +8,10 @@ import {
 } from '../../../../core/index.js'
 import { Sqlite3DataProvider } from '../../../../core/remult-sqlite3.js'
 import { Database } from 'sqlite3'
-import { subQuery } from './sub-query.js'
+import { sqlRelations, sqlRelationsFilter } from './sql-relations.js'
 
 @Entity('customers')
-export class Customer {
+export class CustomerBase {
   @Fields.autoIncrement()
   id = 0
   @Fields.string()
@@ -26,32 +26,28 @@ export class Customer {
 export class Order {
   @Fields.autoIncrement()
   id = 0
-  @Relations.toOne(() => Customer)
-  customer!: Customer
+  @Relations.toOne(() => CustomerBase)
+  customer!: CustomerBase
   @Fields.number()
   amount = 0
 }
 
 describe('test sub query 1', () => {
-  it('test count column', async () => {
+  it('test count column second variation', async () => {
     @Entity('customers')
-    class Test extends Customer {
+    class Customer extends CustomerBase {
       @Fields.number({
-        sqlExpression: () => new subQuery(Test).count('orders'),
+        sqlExpression: () => sqlRelations(Customer).orders.$count(),
       })
       orderCount = 0
       @Fields.number({
         sqlExpression: () =>
-          new subQuery(Test).count('orders', {
-            where: {
-              amount: { $gte: 10 },
-            },
-          }),
+          sqlRelations(Customer).orders.$count({ amount: { $gte: 10 } }),
       })
       bigOrders = 0
     }
     expect(
-      (await remult.repo(Test).find()).map((x) => ({
+      (await remult.repo(Customer).find()).map((x) => ({
         name: x.name,
         orderCount: x.orderCount,
         bigOrder: x.bigOrders,
@@ -80,14 +76,44 @@ describe('test sub query 1', () => {
     @Entity('orders')
     class Test extends Order {
       @Fields.string({
-        sqlExpression: () => new subQuery(Test).get('customer', 'name'),
+        sqlExpression: () => sqlRelations(Test).customer.name,
       })
       customerName = ''
       @Fields.string({
-        sqlExpression: () => new subQuery(Test).get('customer', 'city'),
+        sqlExpression: () => sqlRelations(Test).customer.city,
       })
       customerCity = ''
     }
+    expect(
+      (await remult.repo(Test).find({ where: { id: 1 } })).map((x) => ({
+        id: x.id,
+        customer: x.customerName,
+        city: x.customerCity,
+      })),
+    ).toMatchInlineSnapshot(`
+      [
+        {
+          "city": "London",
+          "customer": "Fay, Ebert and Sporer",
+          "id": 1,
+        },
+      ]
+    `)
+  })
+  it('test filter', async () => {
+    expect(
+      (
+        await remult.repo(CustomerBase).find({
+          where: sqlRelationsFilter(CustomerBase).orders.some({
+            amount: { $gte: 50 },
+          }),
+        })
+      ).map((x) => x.id),
+    ).toMatchInlineSnapshot(`
+      [
+        3,
+      ]
+    `)
   })
 
   let db: SqlDatabase
@@ -95,7 +121,7 @@ describe('test sub query 1', () => {
   beforeAll(async () => {
     db = new SqlDatabase(new Sqlite3DataProvider(new Database(':memory:')))
     remult = new Remult(db)
-    const customerRepo = remult.repo(Customer)
+    const customerRepo = remult.repo(CustomerBase)
     await db.ensureSchema([customerRepo.metadata, remult.repo(Order).metadata])
     if ((await customerRepo.count()) === 0) {
       const customers = await customerRepo.insert([
