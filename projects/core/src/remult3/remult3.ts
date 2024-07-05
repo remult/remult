@@ -829,6 +829,7 @@ export const flags = {
   error500RetryCount: 4,
 }
 
+//y1 - 'test expression columns without aliases'
 //p1 - see if I can fix the no alias problem in selects
 //p1 - add luid - it's cool for order by.
 //p1 - replace uuid with crypto.randomUUID and allow custom fallback

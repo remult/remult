@@ -141,6 +141,36 @@ export function SqlDbTests({
       ]
     `)
   })
+  it.skip('test expression columns without aliases', async () => {
+    // pg names unnamed columns $column$ - other databases do different stuff.
+    // postgres has an option called `rowMode` that can return the result as an array - but knex doesn't support it.
+    // some databases work well with this test..
+    @Entity('testSExp1')
+    class Test {
+      @Fields.integer()
+      id = 0
+      @Fields.integer({
+        sqlExpression: () => '1+1',
+      })
+      a = 0
+      @Fields.integer({
+        sqlExpression: () => '2+2',
+      })
+      b = 0
+      @Fields.integer()
+      c = 3
+    }
+    const r = await createEntity(Test)
+    await r.insert({ id: 1 })
+    expect(await r.findFirst()).toMatchInlineSnapshot(`
+      Test {
+        "a": 2,
+        "b": 4,
+        "c": 3,
+        "id": 1,
+      }
+    `)
+  })
   it('test raw filter across databases', async () => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity)
     expect(
