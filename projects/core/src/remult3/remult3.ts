@@ -828,6 +828,8 @@ export type ClassFieldDecorator<entityType, valueType> = (
 export const flags = {
   error500RetryCount: 4,
 }
+
+//p1 - see if I can fix the no alias problem in selects
 //p1 - add luid - it's cool for order by.
 //p1 - replace uuid with crypto.randomUUID and allow custom fallback
 //p1 - add nanoid
@@ -838,7 +840,10 @@ export const flags = {
 //p1 - add LifecycleEvent to documentation
 //y1 - Talk about the case where we had one to many, without a field - just a filter - for example, event,event participants, users - and a field that shows all users that are not participants
 //p1 - Fix hagai and starter project to latest ts
+//y1 - talk about the $ sign in my filter rules - no other orm uses that (part of sql work, with $ etc)
+
 //y1 TODO - discuss next auth withRemult paradox - the gift that keeps on giving - it's doing something crazy there!!
+
 //p1 - fix chaining of saving and saved in multiple entity options args
 //p1 - review starter and examples and separate remult * auth from the routes
 /*p1 - https://github.com/remult/remult/discussions/438

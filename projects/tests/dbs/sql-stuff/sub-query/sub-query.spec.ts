@@ -8,8 +8,7 @@ import {
 } from '../../../../core/index.js'
 import { Sqlite3DataProvider } from '../../../../core/remult-sqlite3.js'
 import { Database } from 'sqlite3'
-import { subQuery } from './sub-query.js'
-import { sqlRelations } from './sql-relations.js'
+import { sqlRelations, sqlRelationsFilter } from './sql-relations.js'
 
 @Entity('customers')
 export class CustomerBase {
@@ -34,59 +33,16 @@ export class Order {
 }
 
 describe('test sub query 1', () => {
-  it('test count column', async () => {
-    @Entity('customers')
-    class Test extends CustomerBase {
-      @Fields.number({
-        sqlExpression: () => new subQuery(Test).count('orders'),
-      })
-      orderCount = 0
-      @Fields.number({
-        sqlExpression: () =>
-          new subQuery(Test).count('orders', {
-            where: {
-              amount: { $gte: 10 },
-            },
-          }),
-      })
-      bigOrders = 0
-    }
-    expect(
-      (await remult.repo(Test).find()).map((x) => ({
-        name: x.name,
-        orderCount: x.orderCount,
-        bigOrder: x.bigOrders,
-      })),
-    ).toMatchInlineSnapshot(`
-      [
-        {
-          "bigOrder": 2,
-          "name": "Fay, Ebert and Sporer",
-          "orderCount": 2,
-        },
-        {
-          "bigOrder": 1,
-          "name": "Abshire Inc",
-          "orderCount": 3,
-        },
-        {
-          "bigOrder": 1,
-          "name": "Larkin - Fadel",
-          "orderCount": 2,
-        },
-      ]
-    `)
-  })
   it('test count column second variation', async () => {
     @Entity('customers')
     class Customer extends CustomerBase {
       @Fields.number({
-        sqlExpression: () => sqlRelations(Customer).orders.count(),
+        sqlExpression: () => sqlRelations(Customer).orders.$count(),
       })
       orderCount = 0
       @Fields.number({
         sqlExpression: () =>
-          sqlRelations(Customer).orders.count({ amount: { $gte: 10 } }),
+          sqlRelations(Customer).orders.$count({ amount: { $gte: 10 } }),
       })
       bigOrders = 0
     }
@@ -120,11 +76,11 @@ describe('test sub query 1', () => {
     @Entity('orders')
     class Test extends Order {
       @Fields.string({
-        sqlExpression: () => new subQuery(Test).get('customer', 'name'),
+        sqlExpression: () => sqlRelations(Test).customer.name,
       })
       customerName = ''
       @Fields.string({
-        sqlExpression: () => sqlRelations(Test).customer.get('city'),
+        sqlExpression: () => sqlRelations(Test).customer.city,
       })
       customerCity = ''
     }
@@ -148,7 +104,7 @@ describe('test sub query 1', () => {
     expect(
       (
         await remult.repo(CustomerBase).find({
-          where: sqlRelations(CustomerBase).orders.filterExists({
+          where: sqlRelationsFilter(CustomerBase).orders.some({
             amount: { $gte: 50 },
           }),
         })
