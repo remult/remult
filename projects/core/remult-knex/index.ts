@@ -201,7 +201,10 @@ class KnexEntityDataProvider implements EntityDataProvider {
     for (const x of this.entity.fields) {
       if (x.isServerExpression) {
       } else {
-        cols.push(e.$dbNameOf(x))
+        let name = e.$dbNameOf(x)
+        if (x.options.sqlExpression)
+          name = this.knex.raw('?? as ' + x.key, [name]) as any
+        cols.push(name)
         colKeys.push(x)
       }
     }

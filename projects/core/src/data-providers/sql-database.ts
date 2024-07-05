@@ -390,6 +390,7 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
       } else {
         if (colKeys.length > 0) select += ', '
         select += e.$dbNameOf(x)
+        if (x.options.sqlExpression) select += ' as ' + x.key
         colKeys.push(x)
       }
     }
