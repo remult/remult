@@ -116,5 +116,8 @@
     "argon2": false,
     "password-hash": false,
     "fs": false
+  },
+  "dependencies": {
+    "duckdb": "^1.0.0"
   }
 }

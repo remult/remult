@@ -1,4 +1,4 @@
-import { SqlCommand, SqlImplementation, SqlResult } from './index.js'
+import type { SqlCommand, SqlImplementation, SqlResult } from './index.js'
 import { SqliteCoreDataProvider } from './remult-sqlite-core.js'
 import type { Client, ResultSet } from '@libsql/client'
 import { cast } from './src/isOfType.js'

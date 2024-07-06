@@ -45,6 +45,7 @@
     "./remult-better-sqlite3": "./remult-better-sqlite3.js",
     "./remult-sqlite3": "./remult-sqlite3.js",
     "./remult-turso": "./remult-turso.js",
+    "./remult-duckdb": "./remult-duckdb.js",
     "./remult-bun-sqlite": "./remult-bun-sqlite.js",
     "./migrations": "./migrations/index.js",
     "./ably": "./ably.js",

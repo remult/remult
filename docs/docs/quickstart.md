@@ -516,6 +516,33 @@ app.use(
 )
 ```
 
+== DuckDB
+Install DuckDB:
+
+```sh
+npm i duckdb
+```
+
+Set the `dataProvider` property:
+
+```ts
+import express from 'express'
+import { remultExpress } from 'remult/remult-express'
+import { SqlDatabase } from 'remult' // [!code highlight]
+import { Database } from 'duckdb' // [!code highlight]
+import { DuckDBDataProvider } from 'remult/remult-duckdb' // [!code highlight]
+
+const app = express()
+
+app.use(
+  remultExpress({
+    dataProvider: new SqlDatabase( // [!code highlight]
+      new DuckDBDataProvider(new Database(':memory:')), // [!code highlight]
+    ), // [!code highlight]
+  }),
+)
+```
+
 == Oracle
 
 Install knex and oracledb:
