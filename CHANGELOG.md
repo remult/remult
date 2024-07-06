@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.26.17] 2024-07-05
+
+- Added support for DuckDB
+
 ## [0.26.16] 2024-07-04
 
 - Many improvements to `remult-admin`

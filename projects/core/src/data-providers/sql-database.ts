@@ -131,6 +131,11 @@ export class SqlDatabase
             supportsJsonColumnType: this.sql.supportsJsonColumnType,
             wrapIdentifier: this.wrapIdentifier,
             end: this.end,
+            doesNotSupportReturningSyntax:
+              this.sql.doesNotSupportReturningSyntax,
+            doesNotSupportReturningSyntaxOnlyForUpdate:
+              this.sql.doesNotSupportReturningSyntaxOnlyForUpdate,
+            orderByNullsFirst: this.sql.orderByNullsFirst,
           }),
         )
       } finally {
@@ -421,12 +426,19 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     Filter.fromEntityFilter(this.entity, idFilter).__applyToConsumer(f)
     statement += await f.resolveWhere()
     let { colKeys, select } = this.buildSelect(e)
-    if (!this.sql._getSourceSql().doesNotSupportReturningSyntax)
-      statement += ' returning ' + select
+    let returning = true
+    if (this.sql._getSourceSql().doesNotSupportReturningSyntax)
+      returning = false
+    if (
+      returning &&
+      this.sql._getSourceSql().doesNotSupportReturningSyntaxOnlyForUpdate
+    )
+      returning = false
+    if (returning) statement += ' returning ' + select
 
     return r.execute(statement).then((sqlResult) => {
       this.sql._getSourceSql().afterMutation?.()
-      if (this.sql._getSourceSql().doesNotSupportReturningSyntax) {
+      if (!returning) {
         return getRowAfterUpdate(this.entity, this, data, id, 'update')
       }
       if (sqlResult.rows.length != 1)

@@ -9,6 +9,7 @@ export interface SqlImplementation extends HasWrapIdentifier {
   supportsJsonColumnType?: boolean
   /** true by default */
   doesNotSupportReturningSyntax?: boolean
+  doesNotSupportReturningSyntaxOnlyForUpdate?: boolean
   orderByNullsFirst?: boolean
   end(): Promise<void>
 

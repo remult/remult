@@ -2365,6 +2365,7 @@ export interface SqlImplementation extends HasWrapIdentifier {
   supportsJsonColumnType?: boolean
   /** true by default */
   doesNotSupportReturningSyntax?: boolean
+  doesNotSupportReturningSyntaxOnlyForUpdate?: boolean
   orderByNullsFirst?: boolean
   end(): Promise<void>
   afterMutation?: VoidFunction
@@ -3555,10 +3556,12 @@ export declare class SqliteCoreDataProvider
   createCommand: () => SqlCommand
   end: () => Promise<void>
   doesNotSupportReturningSyntax: boolean
+  doesNotSupportReturningSyntaxOnlyForUpdate: boolean
   constructor(
     createCommand: () => SqlCommand,
     end: () => Promise<void>,
     doesNotSupportReturningSyntax?: boolean,
+    doesNotSupportReturningSyntaxOnlyForUpdate?: boolean,
   )
   orderByNullsFirst?: boolean
   getLimitSqlSyntax(limit: number, offset: number): string
@@ -3568,10 +3571,14 @@ export declare class SqliteCoreDataProvider
   entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void>
   ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
   dropTable(entity: EntityMetadata): Promise<void>
-  private addColumnSqlSyntax
+  addColumnSqlSyntax(
+    x: FieldMetadata,
+    dbName: string,
+    isAlterTable: boolean,
+  ): string
   createTableIfNotExist(entity: EntityMetadata<any>): Promise<void>
   supportsJsonColumnType?: boolean
-  private getCreateTableSql
+  getCreateTableSql(entity: EntityMetadata<any>): Promise<string>
   wrapIdentifier(name: string): string
 }
 //[ ] SqlCommand from ./src/sql-command.js is not exported
@@ -3579,6 +3586,7 @@ export declare class SqliteCoreDataProvider
 //[ ] MigrationBuilder from ./migrations/migration-types.js is not exported
 //[ ] SqlImplementation from ./src/sql-command.js is not exported
 //[ ] EntityMetadata from ./src/remult3/remult3.js is not exported
+//[ ] FieldMetadata from ./src/column-interfaces.js is not exported
 ```
 
 ## ./remult-better-sqlite3.js
@@ -3612,6 +3620,23 @@ export declare class TursoDataProvider extends SqliteCoreDataProvider {
   transaction(action: (sql: SqlImplementation) => Promise<void>): Promise<void>
 }
 //[ ] SqlImplementation from ./index.js is not exported
+```
+
+## ./remult-duckdb.js
+
+```ts
+export declare class DuckDBDataProvider extends SqliteCoreDataProvider {
+  constructor(db: Database)
+  wrapIdentifier(name: string): string
+  getCreateTableSql(entity: EntityMetadata<any>): Promise<string>
+  addColumnSqlSyntax(
+    x: FieldMetadata,
+    dbName: string,
+    isAlterColumn: boolean,
+  ): string
+}
+//[ ] EntityMetadata from ./index.js is not exported
+//[ ] FieldMetadata from ./index.js is not exported
 ```
 
 ## ./remult-bun-sqlite.js

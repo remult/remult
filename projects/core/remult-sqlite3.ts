@@ -1,4 +1,4 @@
-import { SqlCommand, SqlResult } from './index.js'
+import type { SqlCommand, SqlResult } from './index.js'
 import { SqliteCoreDataProvider } from './remult-sqlite-core.js'
 import type { Database } from 'sqlite3'
 

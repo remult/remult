@@ -26,6 +26,7 @@ export class SqliteCoreDataProvider
     public createCommand: () => SqlCommand,
     public end: () => Promise<void>,
     public doesNotSupportReturningSyntax = false,
+    public doesNotSupportReturningSyntaxOnlyForUpdate = false,
   ) {}
 
   orderByNullsFirst?: boolean
@@ -46,7 +47,11 @@ export class SqliteCoreDataProvider
         let e = await dbNamesOf(entity, this.wrapIdentifier)
         let sql = `alter table ${
           e.$entityName
-        } add column ${self.addColumnSqlSyntax(field, e.$dbNameOf(field))}`
+        } add column ${self.addColumnSqlSyntax(
+          field,
+          e.$dbNameOf(field),
+          true,
+        )}`
         builder.addSql(sql)
       },
     }
@@ -77,7 +82,7 @@ export class SqliteCoreDataProvider
     if (SqlDatabase.LogToConsole) console.info(sql)
     await this.createCommand().execute(sql)
   }
-  private addColumnSqlSyntax(x: FieldMetadata, dbName: string) {
+  addColumnSqlSyntax(x: FieldMetadata, dbName: string, isAlterTable: boolean) {
     let result = dbName
     const nullNumber = x.allowNull ? '' : ' default 0 not null'
     if (x.valueType == Date) result += ' integer'
@@ -95,7 +100,7 @@ export class SqliteCoreDataProvider
   }
 
   supportsJsonColumnType?: boolean
-  private async getCreateTableSql(entity: EntityMetadata<any>) {
+  async getCreateTableSql(entity: EntityMetadata<any>) {
     let result = ''
     let e = await dbNamesOf(entity, this.wrapIdentifier)
     for (const x of entity.fields) {
@@ -107,7 +112,7 @@ export class SqliteCoreDataProvider
             throw 'in sqlite, autoincrement is only allowed for primary key'
           result += e.$dbNameOf(x) + ' integer primary key autoincrement'
         } else {
-          result += this.addColumnSqlSyntax(x, e.$dbNameOf(x))
+          result += this.addColumnSqlSyntax(x, e.$dbNameOf(x), false)
           if (x.key == entity.idMetadata.field.key) {
             result += ' primary key'
           }
