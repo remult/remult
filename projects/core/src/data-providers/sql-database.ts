@@ -48,7 +48,13 @@ import type {
 } from '../../migrations/migration-types.js'
 import { isOfType } from '../isOfType.js'
 
-// @dynamic
+/**
+ * A DataProvider for Sql Databases
+ * @example
+ * const db = new SqlDatabase(new PostgresDataProvider(pgPool))
+* @see [Connecting a Database](https://remult.dev/docs/quickstart#connecting-a-database)
+
+ */
 export class SqlDatabase
   implements
     DataProvider,
@@ -56,17 +62,39 @@ export class SqlDatabase
     CanBuildMigrations,
     SqlCommandFactory
 {
+  /**
+   * Gets the SQL database from the data provider.
+   * @param dataProvider - The data provider.
+   * @returns The SQL database.
+   * @see [Direct Database Access](https://remult.dev/docs/running-sql-on-the-server)
+   */
   static getDb(dataProvider?: DataProvider) {
     const r = (dataProvider || defaultRemult.dataProvider) as SqlDatabase
     if (isOfType<SqlCommandFactory>(r, 'createCommand')) return r
     else throw 'the data provider is not an SqlCommandFactory'
   }
+  /**
+   * Creates a new SQL command.
+   * @returns The SQL command.
+   * @see [Direct Database Access](https://remult.dev/docs/running-sql-on-the-server)
+   */
   createCommand(): SqlCommand {
     return new LogSQLCommand(this.sql.createCommand(), SqlDatabase.LogToConsole)
   }
+  /**
+   * Executes a SQL command.
+   * @param sql - The SQL command.
+   * @returns The SQL result.
+   * @see [Direct Database Access](https://remult.dev/docs/running-sql-on-the-server)
+   */
   async execute(sql: string) {
     return await this.createCommand().execute(sql)
   }
+
+  /**
+   * Wraps an identifier with the database's identifier syntax.
+   */
+
   wrapIdentifier: (name: string) => string = (x) => x
   /* @internal*/
   _getSourceSql() {
@@ -76,6 +104,11 @@ export class SqlDatabase
     if (this.sql.ensureSchema) await this.sql.ensureSchema(entities)
   }
 
+  /**
+   * Gets the entity data provider.
+   * @param entity  - The entity metadata.
+   * @returns The entity data provider.
+   */
   getEntityDataProvider(entity: EntityMetadata): EntityDataProvider {
     if (!this.sql.supportsJsonColumnType) {
       for (const f of entity.fields.toArray()) {
@@ -102,6 +135,11 @@ export class SqlDatabase
       this.sql,
     )
   }
+  /**
+   * Runs a transaction. Used internally by remult when transactions are required
+   * @param action - The action to run in the transaction.
+   * @returns The promise of the transaction.
+   */
   transaction(
     action: (dataProvider: DataProvider) => Promise<void>,
   ): Promise<void> {
@@ -160,6 +198,12 @@ export class SqlDatabase
       },
     }
   }
+  /**
+   *  Converts a filter to a raw SQL string.
+   *  @see [Leveraging Database Capabilities with Raw SQL in Custom Filters](https://remult.dev/docs/running-sql-on-the-server#leveraging-entityfilter-for-sql-databases)
+   
+   */
+
   static async filterToRaw<entityType>(
     repo: RepositoryOverloads<entityType>,
     condition: EntityFilter<entityType>,
@@ -190,6 +234,8 @@ export class SqlDatabase
    * `oneLiner` - to log all queries to the console as one line
    *
    * a `function` - to log all queries to the console as a custom format
+   * @example
+   * SqlDatabase.LogToConsole = (duration, query, args) => { console.log("be crazy ;)") }
    */
   public static LogToConsole:
     | boolean
@@ -200,6 +246,12 @@ export class SqlDatabase
    * Threshold in milliseconds for logging queries to the console.
    */
   public static durationThreshold = 0
+  /**
+   * Creates a new SQL database.
+   * @param sql - The SQL implementation.
+   * @example
+   * const db = new SqlDatabase(new PostgresDataProvider(pgPool))
+   */
   constructor(private sql: SqlImplementation) {
     if (sql.wrapIdentifier) this.wrapIdentifier = (x) => sql.wrapIdentifier(x)
     if (isOfType<CanBuildMigrations>(sql, 'provideMigrationBuilder')) {

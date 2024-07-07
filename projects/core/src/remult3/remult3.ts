@@ -352,6 +352,19 @@ export interface Repository<entityType> {
    * for await (const task of taskRepo.query()) {
    *   // do something.
    * }
+   * @example
+   * const query = taskRepo.query({
+   *   where: { completed: false },
+   *   pageSize: 100,
+   * })
+   * const count = await query.count()
+   * console.log('Paged: ' + count / 100)
+   * let paginator = await query.paginator()
+   * console.log(paginator.items.length)
+   * if (paginator.hasNextPage) {
+   *   paginator = await paginator.nextPage()
+   *   console.log(paginator.items.length)
+   * }
    * */
   query(options?: QueryOptions<entityType>): QueryResult<entityType>
   /** Returns a count of the items matching the criteria.
@@ -702,7 +715,22 @@ export interface QueryResult<entityType> {
   /** Performs an operation on all the items matching the query criteria */
   forEach(what: (item: entityType) => Promise<any>): Promise<number>
 }
-/** An interface used to paginating using the `query` method in the `Repository` object */
+/** An interface used to paginating using the `query` method in the `Repository` object
+ *  @example
+ * @example
+ * const query = taskRepo.query({
+ *   where: { completed: false },
+ *   pageSize: 100,
+ * })
+ * const count = await query.count()
+ * console.log('Paged: ' + count / 100)
+ * let paginator = await query.paginator()
+ * console.log(paginator.items.length)
+ * if (paginator.hasNextPage) {
+ *   paginator = await paginator.nextPage()
+ *   console.log(paginator.items.length)
+ * }
+ */
 export interface Paginator<entityType> {
   /** the items in the current page */
   items: entityType[]

@@ -257,6 +257,7 @@ export default defineConfig({
               },
               { text: 'Filter', link: '/docs/ref_filter' },
               { text: 'Sort', link: '/docs/ref_sort' },
+              { text: 'SqlDatabase', link: '/docs/ref_sqldatabase' },
               {
                 text: 'SubscriptionChannel',
                 link: '/docs/ref_subscriptionchannel',
