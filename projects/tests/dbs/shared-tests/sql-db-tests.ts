@@ -141,10 +141,11 @@ export function SqlDbTests({
       ]
     `)
   })
-  it.skip('test expression columns without aliases', async () => {
+  it('test expression columns without aliases', async () => {
     // pg names unnamed columns $column$ - other databases do different stuff.
     // postgres has an option called `rowMode` that can return the result as an array - but knex doesn't support it.
     // some databases work well with this test..
+    // with alias - this causes problems in where / order by
     @Entity('testSExp1')
     class Test {
       @Fields.integer()
@@ -161,8 +162,32 @@ export function SqlDbTests({
       c = 3
     }
     const r = await createEntity(Test)
-    await r.insert({ id: 1 })
+    expect(await r.insert({ id: 1 })).toMatchInlineSnapshot(`
+      Test {
+        "a": 2,
+        "b": 4,
+        "c": 3,
+        "id": 1,
+      }
+    `)
     expect(await r.findFirst()).toMatchInlineSnapshot(`
+      Test {
+        "a": 2,
+        "b": 4,
+        "c": 3,
+        "id": 1,
+      }
+    `)
+    expect(
+      await r.findOne({
+        where: {
+          b: 4,
+        },
+        orderBy: {
+          a: 'desc',
+        },
+      }),
+    ).toMatchInlineSnapshot(`
       Test {
         "a": 2,
         "b": 4,
