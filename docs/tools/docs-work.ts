@@ -5,6 +5,8 @@ const exclude = [
   'isFilterEmpty',
   'translateCustomWhere',
   '__applyToConsumer',
+  '_getSourceSql',
+  'provideMigrationBuilder',
 ]
 
 var api: {
@@ -227,6 +229,7 @@ try {
     'IdEntity',
     'getEntityRef',
     'getFields',
+    'SqlDatabase',
 
     //    'PreprocessFilterEvent',
   ]) {
