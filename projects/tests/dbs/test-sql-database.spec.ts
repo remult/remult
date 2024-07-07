@@ -59,7 +59,7 @@ describe('test sql implementation', () => {
     })
     expect(commands).toMatchInlineSnapshot(`
       [
-        "select [id], [title], [completed], a+b
+        "select [id], [title], [completed], a+b as exp
        from [tasks] where [completed] = true Order By [id]",
       ]
     `)
