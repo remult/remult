@@ -2,7 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.26.17] 2024-07-05
+## [0.26.18] 2024-07-07
+
+- Fixed an issue with sqlExpression without aliases - now remult automatically adds an alias in select, but not in order by or where.
+
+## [0.26.17] 2024-07-06
 
 - Added support for DuckDB
 
