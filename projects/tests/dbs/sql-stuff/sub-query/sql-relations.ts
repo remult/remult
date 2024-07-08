@@ -6,8 +6,8 @@ import {
   SqlDatabase,
   dbNamesOf,
   repo,
-} from '../../../../core/index.js' //replace with remult
-import { getRelationFieldInfo } from '../../../../core/internals.js' //replace with remult/internals
+} from 'remult' //replace with remult
+import { getRelationFieldInfo } from 'remult/internals' //replace with remult/internals
 
 export function sqlRelations<entityType>(
   forEntity: ClassType<entityType>,
@@ -17,11 +17,13 @@ export function sqlRelations<entityType>(
     {
       get: (target, relationField: keyof entityType & string) =>
         new Proxy(new SqlRelationTools(forEntity, relationField), {
-          get: (target, prop: string) => {
+          get: (target, prop) => {
             if (prop == '$count') return target.$count
             if (prop == '$subQuery') return target.$subQuery
 
-            return target.$fields[prop]
+            return target.$fields[
+              prop as keyof ArrayItemType<entityType[keyof entityType & string]>
+            ]
           },
         }),
     },
@@ -42,7 +44,7 @@ export type SqlRelation<toEntity> = {
     },
   ): Promise<string>
 } & {
-  [P in keyof toEntity]: Promise<string>
+  [P in keyof toEntity]-?: Promise<string>
 }
 
 class SqlRelationTools<
@@ -104,7 +106,7 @@ class SqlRelationTools<
     }
     let otherTableFilter = await SqlDatabase.filterToRaw(
       repo(rel.toEntity),
-      options?.where,
+      options?.where!,
       undefined,
       namesOfOtherTable,
     )

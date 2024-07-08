@@ -27,7 +27,7 @@ export class Order {
   @Fields.autoIncrement()
   id = 0
   @Relations.toOne(() => Customer)
-  customer!: Customer
+  customer?: Customer
   @Fields.number()
   amount = 0
 }
