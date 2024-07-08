@@ -6,8 +6,10 @@ import {
   SqlDatabase,
   dbNamesOf,
   repo,
-} from 'remult' //replace with remult
-import { getRelationFieldInfo } from 'remult/internals' //replace with remult/internals
+  //} from 'remult'
+} from '../../../../core/index.js' // comment in the from `remult`
+//import { getRelationFieldInfo } from 'remult/internals'
+import { getRelationFieldInfo } from '../../../../core/internals.js' // comment in the from `remult`
 
 export function sqlRelations<entityType>(
   forEntity: ClassType<entityType>,
