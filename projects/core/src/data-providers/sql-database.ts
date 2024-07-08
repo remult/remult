@@ -20,7 +20,7 @@ import type {
 } from '../filter/filter-consumer-bridge-to-sql-request.js'
 import {
   FilterConsumerBridgeToSqlRequest,
-  dbNamesOf,
+  dbNamesOfWithForceSqlExpression,
   isDbReadonly,
 } from '../filter/filter-consumer-bridge-to-sql-request.js'
 import {
@@ -123,7 +123,7 @@ export class SqlDatabase
       }
     }
 
-    return new ActualSQLServerDataProvider(
+    return new ActualSQLEntityDataProvider(
       entity,
       this,
       async (dbName) => {
@@ -218,7 +218,8 @@ export class SqlDatabase
 
     var b = new FilterConsumerBridgeToSqlRequest(
       sqlCommand,
-      dbNames || (await dbNamesOf(r.metadata, wrapIdentifier)),
+      dbNames ||
+        (await dbNamesOfWithForceSqlExpression(r.metadata, wrapIdentifier)),
     )
     b._addWhere = false
     await (
@@ -332,7 +333,7 @@ class LogSQLCommand implements SqlCommand {
   }
 }
 
-class ActualSQLServerDataProvider implements EntityDataProvider {
+class ActualSQLEntityDataProvider implements EntityDataProvider {
   public static LogToConsole = false
   constructor(
     private entity: EntityMetadata,
@@ -341,9 +342,10 @@ class ActualSQLServerDataProvider implements EntityDataProvider {
     private strategy: SqlImplementation,
   ) {}
   async init() {
-    let dbNameProvider: EntityDbNamesBase = await dbNamesOf(this.entity, (x) =>
-      this.sql.wrapIdentifier(x),
-    )
+    let dbNameProvider: EntityDbNamesBase =
+      await dbNamesOfWithForceSqlExpression(this.entity, (x) =>
+        this.sql.wrapIdentifier(x),
+      )
     await this.iAmUsed(dbNameProvider)
     return dbNameProvider
   }
