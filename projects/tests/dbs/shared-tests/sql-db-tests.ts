@@ -25,7 +25,6 @@ import {
   DefaultMigrationBuilder,
   type Migrations,
 } from '../../../core/migrations/migration-types.js'
-import { KnexDataProvider } from '../../../core/remult-knex/index.js'
 
 export function SqlDbTests({
   createEntity,
@@ -54,6 +53,36 @@ export function SqlDbTests({
         "c": 6,
         "id": 1,
       }
+    `)
+  })
+  it('test sql expression in parallel', async () => {
+    @Entity('x_aTb_c_d')
+    class c {
+      @Fields.number()
+      id = 0
+      @Fields.number()
+      aTb = 0
+      @Fields.number({
+        sqlExpression: async (x) => {
+          let db = await dbNamesOf(c)
+          return `1+2`
+        },
+      })
+      c = 0
+    }
+    const e = await createEntity(c)
+    await e.insert({ id: 2, aTb: 1 })
+    expect(
+      (await Promise.all([e.find(), e.find(), e.find(), e.find()])).map(
+        (x) => x[0].id,
+      ),
+    ).toMatchInlineSnapshot(`
+      [
+        2,
+        2,
+        2,
+        2,
+      ]
     `)
   })
 

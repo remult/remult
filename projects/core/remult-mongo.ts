@@ -16,7 +16,10 @@ import type {
 } from './index.js'
 import { Filter } from './index.js'
 import type { EntityDbNamesBase } from './src/filter/filter-consumer-bridge-to-sql-request.js'
-import { dbNamesOf } from './src/filter/filter-consumer-bridge-to-sql-request.js'
+import {
+  dbNamesOf,
+  dbNamesOfWithForceSqlExpression,
+} from './src/filter/filter-consumer-bridge-to-sql-request.js'
 import type { FilterConsumer } from './src/filter/filter-interfaces.js'
 import { remult as remultContext } from './src/remult-proxy.js'
 import type { RepositoryOverloads } from './src/remult3/RepositoryImplementation.js'
@@ -72,7 +75,9 @@ export class MongoDataProvider implements DataProvider {
     condition: EntityFilter<entityType>,
   ) {
     const repo = getRepository(entity)
-    var b = new FilterConsumerBridgeToMongo(await dbNamesOf(repo.metadata))
+    var b = new FilterConsumerBridgeToMongo(
+      await dbNamesOfWithForceSqlExpression(repo.metadata),
+    )
     b._addWhere = false
     await (
       await getRepositoryInternals(repo)._translateWhereToFilter(condition)

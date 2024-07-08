@@ -3,6 +3,7 @@ import type { Remult } from '../src/context.js'
 
 import {
   CustomSqlFilterBuilder,
+  dbNamesOfWithForceSqlExpression,
   type CustomSqlFilterObject,
   type EntityDbNamesBase,
 } from '../src/filter/filter-consumer-bridge-to-sql-request.js'
@@ -147,7 +148,7 @@ export class KnexDataProvider
   ) {
     const repo = getRepository(entity)
     var b = new FilterConsumerBridgeToKnexRequest(
-      await dbNamesOf(repo.metadata, (x) => x),
+      await dbNamesOfWithForceSqlExpression(repo.metadata, (x) => x),
       wrapIdentifier,
     )
     b._addWhere = false
@@ -252,7 +253,10 @@ class KnexEntityDataProvider implements EntityDataProvider {
     })
   }
   async init() {
-    const r = (await dbNamesOf(this.entity, (x) => x)) as EntityDbNamesBase
+    const r = (await dbNamesOfWithForceSqlExpression(
+      this.entity,
+      (x) => x,
+    )) as EntityDbNamesBase
     return {
       $dbNameOf: (f) => {
         let fm = f as FieldMetadata

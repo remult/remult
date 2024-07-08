@@ -865,6 +865,7 @@ export const flags = {
 //p1 - add nanoid
 //p1 - add id and use luid by default, but allow changes with Fields.id.defaultIdProvider
 //p1 - explain the benefits of changing the default provider for testing in docs.
+//p1 - fix sqlite to  support alter table when adding a column with ensure schema = on
 //p1 - fix app custom filters example for multiple filters.
 //p1 - add not!!!!
 //p1 - add LifecycleEvent to documentation

@@ -292,6 +292,19 @@ export interface dbNamesOfOptions {
 export async function dbNamesOf<entityType>(
   repo: EntityMetadataOverloads<entityType>,
   wrapIdentifierOrOptions?: ((name: string) => string) | dbNamesOfOptions,
+) {
+  return internalDbNamesOf(repo, wrapIdentifierOrOptions)
+}
+export async function dbNamesOfWithForceSqlExpression<entityType>(
+  repo: EntityMetadataOverloads<entityType>,
+  wrapIdentifierOrOptions?: ((name: string) => string) | dbNamesOfOptions,
+) {
+  return internalDbNamesOf(repo, wrapIdentifierOrOptions, true)
+}
+async function internalDbNamesOf<entityType>(
+  repo: EntityMetadataOverloads<entityType>,
+  wrapIdentifierOrOptions?: ((name: string) => string) | dbNamesOfOptions,
+  forceSqlExpression = false,
 ): Promise<EntityDbNames<entityType>> {
   let options =
     typeof wrapIdentifierOrOptions === 'function'
@@ -316,7 +329,12 @@ export async function dbNamesOf<entityType>(
     wrapIdentifier: options.wrapIdentifier,
   }
   for (const field of meta.fields) {
-    let r = await fieldDbName(field, meta, options.wrapIdentifier)
+    let r = await fieldDbName(
+      field,
+      meta,
+      options.wrapIdentifier,
+      forceSqlExpression,
+    )
     if (!field.options.sqlExpression)
       if (typeof options.tableName === 'string')
         r = options.wrapIdentifier(options.tableName) + '.' + r
@@ -348,22 +366,28 @@ export async function entityDbName(
   }
   return wrapIdentifier(metadata.dbName)
 }
+
+const sqlExpressionInProgressKey = Symbol.for(`sqlExpressionInProgressKey`)
 export async function fieldDbName(
   f: FieldMetadata,
   meta: EntityMetadata,
   wrapIdentifier: (name: string) => string = (x) => x,
+  forceSqlExpression: boolean,
 ) {
   try {
     if (f.options.sqlExpression) {
       let result: string
       if (typeof f.options.sqlExpression === 'function') {
-        const prev = f.options.sqlExpression
+        if (f[sqlExpressionInProgressKey] && !forceSqlExpression) {
+          return "recursive sqlExpression call for field '" + f.key + "'. "
+        }
         try {
-          f.options.sqlExpression =
-            "recursive sqlExpression call for field '" + f.key + "'. "
-          result = await prev(meta)
+          f[sqlExpressionInProgressKey] = true
+
+          result = await f.options.sqlExpression(meta)
           f.options.sqlExpression = () => result
         } finally {
+          delete f[sqlExpressionInProgressKey]
         }
       } else result = f.options.sqlExpression
       if (!result) return f.dbName
@@ -375,7 +399,8 @@ export async function fieldDbName(
       ((f.options as RelationOptions<any, any, any>).field as string)
     if (field) {
       let fInfo = meta.fields.find(field)
-      if (fInfo) return fieldDbName(fInfo, meta, wrapIdentifier)
+      if (fInfo)
+        return fieldDbName(fInfo, meta, wrapIdentifier, forceSqlExpression)
     }
     return wrapIdentifier(f.dbName)
   } finally {
