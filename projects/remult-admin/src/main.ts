@@ -28,6 +28,8 @@ export default app
 // [x] - disable input when readonly
 // [x] - reset local storage?
 
+// [ ] - It seems like there is a small bug in the admin UI. if a field has includeInApi that is a changing expression for some rows, the entire column disappear. https://discord.com/channels/975754286384418847/1258664319852482701/1259596160478347465
+
 // next
 // [ ] - Make actions smoother (no jumping)
 // [?] - Small thing, I get SvelteKitError: Not found: /vite.svg
