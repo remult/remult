@@ -2077,6 +2077,19 @@ export interface Repository<entityType> {
    * for await (const task of taskRepo.query()) {
    *   // do something.
    * }
+   * @example
+   * const query = taskRepo.query({
+   *   where: { completed: false },
+   *   pageSize: 100,
+   * })
+   * const count = await query.count()
+   * console.log('Paged: ' + count / 100)
+   * let paginator = await query.paginator()
+   * console.log(paginator.items.length)
+   * if (paginator.hasNextPage) {
+   *   paginator = await paginator.nextPage()
+   *   console.log(paginator.items.length)
+   * }
    * */
   query(options?: QueryOptions<entityType>): QueryResult<entityType>
   /** Returns a count of the items matching the criteria.
@@ -2305,12 +2318,42 @@ export declare class SqlDatabase
     SqlCommandFactory
 {
   private sql
+  /**
+   * Gets the SQL database from the data provider.
+   * @param dataProvider - The data provider.
+   * @returns The SQL database.
+   * @see [Direct Database Access](https://remult.dev/docs/running-sql-on-the-server)
+   */
   static getDb(dataProvider?: DataProvider): SqlDatabase
+  /**
+   * Creates a new SQL command.
+   * @returns The SQL command.
+   * @see [Direct Database Access](https://remult.dev/docs/running-sql-on-the-server)
+   */
   createCommand(): SqlCommand
+  /**
+   * Executes a SQL command.
+   * @param sql - The SQL command.
+   * @returns The SQL result.
+   * @see [Direct Database Access](https://remult.dev/docs/running-sql-on-the-server)
+   */
   execute(sql: string): Promise<SqlResult>
+  /**
+   * Wraps an identifier with the database's identifier syntax.
+   */
   wrapIdentifier: (name: string) => string
   ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
+  /**
+   * Gets the entity data provider.
+   * @param entity  - The entity metadata.
+   * @returns The entity data provider.
+   */
   getEntityDataProvider(entity: EntityMetadata): EntityDataProvider
+  /**
+   * Runs a transaction. Used internally by remult when transactions are required
+   * @param action - The action to run in the transaction.
+   * @returns The promise of the transaction.
+   */
   transaction(
     action: (dataProvider: DataProvider) => Promise<void>,
   ): Promise<void>
@@ -2325,6 +2368,11 @@ export declare class SqlDatabase
      * @see [Leveraging Database Capabilities with Raw SQL in Custom Filters](https://remult.dev/docs/custom-filter.html#leveraging-database-capabilities-with-raw-sql-in-custom-filters)
      */
   static rawFilter(build: CustomSqlFilterBuilderFunction): EntityFilter<any>
+  /**
+     *  Converts a filter to a raw SQL string.
+     *  @see [Leveraging Database Capabilities with Raw SQL in Custom Filters](https://remult.dev/docs/running-sql-on-the-server#leveraging-entityfilter-for-sql-databases)
+     
+     */
   static filterToRaw<entityType>(
     repo: RepositoryOverloads<entityType>,
     condition: EntityFilter<entityType>,
@@ -2340,6 +2388,8 @@ export declare class SqlDatabase
    * `oneLiner` - to log all queries to the console as one line
    *
    * a `function` - to log all queries to the console as a custom format
+   * @example
+   * SqlDatabase.LogToConsole = (duration, query, args) => { console.log("be crazy ;)") }
    */
   static LogToConsole:
     | boolean
@@ -2349,6 +2399,12 @@ export declare class SqlDatabase
    * Threshold in milliseconds for logging queries to the console.
    */
   static durationThreshold: number
+  /**
+   * Creates a new SQL database.
+   * @param sql - The SQL implementation.
+   * @example
+   * const db = new SqlDatabase(new PostgresDataProvider(pgPool))
+   */
   constructor(sql: SqlImplementation)
   provideMigrationBuilder: (builder: MigrationCode) => MigrationBuilder
   private createdEntities

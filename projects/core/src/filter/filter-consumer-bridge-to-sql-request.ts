@@ -372,7 +372,7 @@ export async function fieldDbName(
   f: FieldMetadata,
   meta: EntityMetadata,
   wrapIdentifier: (name: string) => string = (x) => x,
-  forceSqlExpression: boolean,
+  forceSqlExpression = false,
 ) {
   try {
     if (f.options.sqlExpression) {
