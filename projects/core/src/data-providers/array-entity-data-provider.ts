@@ -219,6 +219,11 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
     }
     this.ok = false
   }
+  not(element: Filter) {
+    let filter = new FilterConsumerBridgeToObject(this.row, this.dbNames)
+    element.__applyToConsumer(filter)
+    if (filter.ok) this.ok = false
+  }
   isNull(col: FieldMetadata): void {
     if (this.row[this.dbNames.$dbNameOf(col)] != null) this.ok = false
   }

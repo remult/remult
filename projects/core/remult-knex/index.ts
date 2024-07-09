@@ -394,6 +394,26 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
       })(),
     )
   }
+  not(element: Filter) {
+    this.promises.push(
+      (async () => {
+        let f = new FilterConsumerBridgeToKnexRequest(
+          this.innerNameProvider,
+          this.rawSqlWrapIdentifier,
+        )
+        f._addWhere = false
+        element.__applyToConsumer(f)
+        let where = await f.resolveWhere()
+        if (where.length > 0) {
+          this.result.push((b) => {
+            b.whereNot((b) => {
+              where.forEach((x) => x(b))
+            })
+          })
+        } else return //empty or means all rows
+      })(),
+    )
+  }
   isNull(col: FieldMetadata): void {
     this.result.push((b) => b.whereNull(this.innerNameProvider.$dbNameOf(col)))
   }

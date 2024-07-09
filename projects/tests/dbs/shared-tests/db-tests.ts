@@ -81,6 +81,29 @@ export function commonDbTests(
     let s = await entityWithValidations.create4RowsInDp(createEntity)
     expect((await s.find({ where: { myId: [1, 3] } })).length).toBe(2)
   })
+  it('filter not works on all db', async () => {
+    let s = await entityWithValidations.create4RowsInDp(createEntity)
+    expect(
+      (await s.find({ where: { $not: { myId: [1, 2, 3] } } })).length,
+    ).toBe(1)
+  })
+  it('filter not works on all db2', async () => {
+    let s = await entityWithValidations.create4RowsInDp(createEntity)
+    expect(
+      (
+        await s.find({
+          where: {
+            $and: [
+              { $not: { myId: 1 } },
+              { $not: { myId: 3 } },
+              { $not: { myId: 2 } },
+            ],
+          },
+        })
+      ).length,
+    ).toBe(1)
+  })
+
   it('test in statement and ', async () => {
     const repo = await entityWithValidations.create4RowsInDp(createEntity)
     expect(await repo.count({ myId: [1, 3], $and: [{ myId: [3] }] })).toBe(1)
@@ -744,6 +767,24 @@ export function commonDbTests(
     expect(
       await s.count({
         $and: [testFilter.differentFrom('b'), testFilter.differentFrom('c')],
+      }),
+    ).toBe(1)
+  })
+  it('filter custom and not', async () => {
+    const s = await createEntity(testFilter)
+    await s.insert({ id: 1, a: 'a', b: 'b', c: 'c' })
+    expect(
+      await s.count({
+        $and: [{ $not: testFilter.differentFrom('b') }],
+      }),
+    ).toBe(0)
+  })
+  it('filter custom and not 2', async () => {
+    const s = await createEntity(testFilter)
+    await s.insert({ id: 1, a: 'a', b: 'b', c: 'c' })
+    expect(
+      await s.count({
+        $and: [{ $not: testFilter.differentFrom('a') }],
       }),
     ).toBe(1)
   })

@@ -367,6 +367,7 @@ export function addFilterToUrlAndReturnTrueIfSuccessful(
         if (element.length > 0 && typeof element[0] === 'object') return false
         if (element.length > 10) return false
       }
+      if (key === 'NOT') return false
     }
   }
   for (const key in filter) {
