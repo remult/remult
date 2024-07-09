@@ -67,6 +67,42 @@ test('test multiple items', async () => {
     }),
   ).toBe(1)
 })
+test('test multiple items with not', async () => {
+  const repo = await create3Tasks()
+  expect(
+    await repo.count({
+      $not: {
+        $or: [
+          {
+            title: 'a',
+          },
+          {
+            title: 'c',
+          },
+        ],
+      },
+    }),
+  ).toBe(1)
+})
+test('test multiple items with not 2', async () => {
+  const repo = await create3Tasks()
+  expect(
+    await repo.count({
+      $and: [
+        {
+          $not: {
+            title: 'a',
+          },
+        },
+        {
+          $not: {
+            title: 'c',
+          },
+        },
+      ],
+    }),
+  ).toBe(1)
+})
 test('validation', async () => {
   const r = await create3Tasks()
   let err = undefined

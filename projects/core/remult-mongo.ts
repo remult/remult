@@ -246,6 +246,21 @@ class FilterConsumerBridgeToMongo implements FilterConsumer {
       })(),
     )
   }
+  not(element: Filter) {
+    this.promises.push(
+      (async () => {
+        let f = new FilterConsumerBridgeToMongo(this.nameProvider)
+        f._addWhere = false
+        element.__applyToConsumer(f)
+        let where = await f.resolveWhere()
+        if (where) {
+          this.result.push(() => ({
+            $not: where,
+          }))
+        }
+      })(),
+    )
+  }
   isNull(col: FieldMetadata): void {
     this.add(col, NULL, '$eq')
   }

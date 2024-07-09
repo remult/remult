@@ -69,6 +69,19 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
       })(),
     )
   }
+  not(element: Filter) {
+    this.promises.push(
+      (async () => {
+        let f = new FilterConsumerBridgeToSqlRequest(this.r, this.nameProvider)
+        f._addWhere = false
+        element.__applyToConsumer(f)
+        let where = await f.resolveWhere()
+        if (!where) return //since if any member of or is empty, then the entire or is irrelevant
+
+        this.addToWhere('not (' + where + ')')
+      })(),
+    )
+  }
   isNull(col: FieldMetadata): void {
     this.promises.push(
       (async () =>

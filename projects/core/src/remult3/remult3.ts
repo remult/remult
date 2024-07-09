@@ -588,6 +588,7 @@ export declare type EntityFilter<entityType> = {
 } & {
   $or?: EntityFilter<entityType>[]
   $and?: EntityFilter<entityType>[]
+  $not?: EntityFilter<entityType>
 }
 
 export type ValueFilter<valueType> =

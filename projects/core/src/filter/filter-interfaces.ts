@@ -292,6 +292,10 @@ export class Filter {
                 ...fieldToFilter.map((x) => Filter.fromEntityFilter(entity, x)),
               ),
             )
+          } else if (key == '$not') {
+            result.push(
+              new NotFilter(Filter.fromEntityFilter(entity, fieldToFilter)),
+            )
           } else if (key == '$and') {
             result.push(
               new AndFilter(
@@ -603,7 +607,8 @@ class manyToOneFilterHelper implements filterHelper {
   }
 }
 export interface FilterConsumer {
-  or(orElements: Filter[])
+  or(orElements: Filter[]): void
+  not(filter: Filter): void
   isEqualTo(col: FieldMetadata, val: any): void
   isDifferentFrom(col: FieldMetadata, val: any): void
   isNull(col: FieldMetadata): void
@@ -646,6 +651,16 @@ export class OrFilter extends Filter {
     this.filters = filters
   }
 }
+export class NotFilter extends Filter {
+  readonly filter: Filter
+
+  constructor(filter: Filter) {
+    super((add) => {
+      add.not(filter)
+    })
+    this.filter = filter
+  }
+}
 
 export const customUrlToken = '$custom$'
 export const customDatabaseFilterToken = '$db$'
@@ -685,6 +700,11 @@ export class FilterSerializer implements FilterConsumer {
         return f.result
       }),
     )
+  }
+  not(filter: Filter) {
+    let f = new FilterSerializer()
+    filter.__applyToConsumer(f)
+    this.add('NOT', f.result)
   }
   isNull(col: FieldMetadata): void {
     this.add(col.key + '.null', true)
@@ -825,6 +845,7 @@ export function buildFilterFromRequestParameters(
     addFilter('.contains', (val) => ({ $contains: val }), false, true)
     addFilter('.notContains', (val) => ({ $notContains: val }), false, true)
   })
+
   let val = filterInfo.get('OR')
   if (val) {
     const array = separateArrayFromInnerArray(val)
@@ -844,6 +865,36 @@ export function buildFilterFromRequestParameters(
     } else {
       addAnd({
         $and: or,
+      })
+    }
+  }
+  val = filterInfo.get('NOT')
+  if (val) {
+    let array = separateArrayFromInnerArray(val)
+    const not = []
+    for (const e1 of array) {
+      let z = e1
+      if (Array.isArray(e1)) {
+        for (const e2 of e1) {
+          not.push({
+            $not: buildFilterFromRequestParameters(entity, {
+              get: (key: string) => e2[key],
+            }),
+          })
+        }
+      } else
+        not.push({
+          $not: buildFilterFromRequestParameters(entity, {
+            get: (key: string) => e1[key],
+          }),
+        })
+    }
+
+    if (not.length == 1 && !where.$not) {
+      where = not[0]
+    } else {
+      addAnd({
+        $and: not,
       })
     }
   }
@@ -911,6 +962,18 @@ class customTranslator implements FilterConsumer {
       }),
     )
     this.commands.push((x) => x.or(newOrElements))
+  }
+  not(filter: Filter) {
+    let newNotElement: Filter
+    this.promises.push(
+      (async () => {
+        let c = new customTranslator(this.translateCustom)
+        filter.__applyToConsumer(c)
+        await c.resolve()
+        newNotElement = new Filter((x) => c.applyTo(x))
+      })(),
+    )
+    this.commands.push((x) => x.not(newNotElement))
   }
   isEqualTo(col: FieldMetadata<any>, val: any): void {
     this.commands.push((x) => x.isEqualTo(col, val))
@@ -1002,7 +1065,7 @@ export function __updateEntityBasedOnWhere<T>(
       isLessThan: emptyFunction,
       isNotNull: emptyFunction,
       isNull: emptyFunction,
-
+      not: emptyFunction,
       or: emptyFunction,
     })
   }
@@ -1089,6 +1152,7 @@ class preciseValuesCollector<entityType> implements FilterConsumer {
       x.bad = true
     }
   }
+  not(filter: Filter) {}
   or(orElements: Filter[]) {
     const result = orElements.map((or) => {
       let x = new preciseValuesCollector<entityType>()
