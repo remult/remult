@@ -25,7 +25,7 @@ export function __updateEntityBasedOnWhere<T>(
       isLessThan: emptyFunction,
       isNotNull: emptyFunction,
       isNull: emptyFunction,
-
+      not: emptyFunction,
       or: emptyFunction,
     })
   }

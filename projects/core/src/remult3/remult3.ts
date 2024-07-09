@@ -586,8 +586,43 @@ export declare type EntityFilter<entityType> = {
         : ValueFilter<Partial<entityType>[Properties]>)
     | ContainsStringValueFilter
 } & {
+  /**
+   * Represents an 'OR' filter condition where any of the specified filters can be true.
+   *
+   * @example
+   * // Matches entities where the status is 1 or the archive is false
+   * const filter = {
+   *   $or: [
+   *     { status: 1 },
+   *     { archive: false }
+   *   ]
+   * };
+   */
   $or?: EntityFilter<entityType>[]
+
+  /**
+   * Represents an 'AND' filter condition where all of the specified filters must be true.
+   *
+   * @example
+   * // Matches entities where the status is 1 and the archive is false
+   * const filter = {
+   *   $and: [
+   *     { status: 1 },
+   *     { archive: false }
+   *   ]
+   * };
+   */
   $and?: EntityFilter<entityType>[]
+
+  /**
+   * Represents a 'NOT' filter condition where the specified filter must be false.
+   *
+   * @example
+   * // Matches entities where the status is not 1
+   * const filter = {
+   *   $not: { status: 1 }
+   * };
+   */
   $not?: EntityFilter<entityType>
 }
 
@@ -595,24 +630,195 @@ export type ValueFilter<valueType> =
   | valueType
   | valueType[]
   | {
+      /**
+       * Represents a 'NOT EQUAL' filter condition where the value must not match the specified value or values.
+       *
+       * @example
+       * // Matches entities where the status is not 1
+       * const filter = {
+       *   status: { $ne: 1 }
+       * };
+       *
+       * @example
+       * // Matches entities where the status is not 1, 2, or 3
+       * const filter = {
+       *   status: { $ne: [1, 2, 3] }
+       * };
+       */
       $ne?: valueType | valueType[]
+
+      /**
+       * Represents a 'NOT EQUAL' filter condition using the '!=' operator where the value must not match the specified value or values.
+       *
+       * @example
+       * // Matches entities where the status is not 1
+       * const filter = {
+       *   status: { '!=': 1 }
+       * };
+       *
+       * @example
+       * // Matches entities where the status is not 1, 2, or 3
+       * const filter = {
+       *   status: { '!=': [1, 2, 3] }
+       * };
+       */
       '!='?: valueType | valueType[]
+
+      /**
+       * Represents an 'IN' filter condition where the value must match one of the specified values.
+       *
+       * @example
+       * // Matches entities where the status is 1, 3, or 5
+       * const filter = {
+       *   status: { $in: [1, 3, 5] }
+       * };
+       */
       $in?: valueType[]
+
+      /**
+       * Represents a 'NOT IN' filter condition where the value must not match any of the specified values.
+       *
+       * @example
+       * // Matches entities where the status is not 1, 2, or 3
+       * const filter = {
+       *   status: { $nin: [1, 2, 3] }
+       * };
+       */
       $nin?: valueType[]
     }
 export type ComparisonValueFilter<valueType> = ValueFilter<valueType> & {
+  /**
+   * Represents a 'GREATER THAN' filter condition where the value must be greater than the specified value.
+   *
+   * @example
+   * // Matches entities where the status is greater than 1
+   * const filter = {
+   *   status: { $gt: 1 }
+   * };
+   */
   $gt?: valueType
+
+  /**
+   * Represents a 'GREATER THAN' filter condition using the '>' operator where the value must be greater than the specified value.
+   *
+   * @example
+   * // Matches entities where the status is greater than 1
+   * const filter = {
+   *   status: { '>': 1 }
+   * };
+   */
   '>'?: valueType
+
+  /**
+   * Represents a 'GREATER THAN OR EQUAL TO' filter condition where the value must be greater than or equal to the specified value.
+   *
+   * @example
+   * // Matches entities where the status is greater than or equal to 1
+   * const filter = {
+   *   status: { $gte: 1 }
+   * };
+   */
   $gte?: valueType
+
+  /**
+   * Represents a 'GREATER THAN OR EQUAL TO' filter condition using the '>=' operator where the value must be greater than or equal to the specified value.
+   *
+   * @example
+   * // Matches entities where the status is greater than or equal to 1
+   * const filter = {
+   *   status: { '>=': 1 }
+   * };
+   */
   '>='?: valueType
+
+  /**
+   * Represents a 'LESS THAN' filter condition where the value must be less than the specified value.
+   *
+   * @example
+   * // Matches entities where the status is less than 1
+   * const filter = {
+   *   status: { $lt: 1 }
+   * };
+   */
   $lt?: valueType
+
+  /**
+   * Represents a 'LESS THAN' filter condition using the '<' operator where the value must be less than the specified value.
+   *
+   * @example
+   * // Matches entities where the status is less than 1
+   * const filter = {
+   *   status: { '<': 1 }
+   * };
+   */
   '<'?: valueType
+
+  /**
+   * Represents a 'LESS THAN OR EQUAL TO' filter condition where the value must be less than or equal to the specified value.
+   *
+   * @example
+   * // Matches entities where the status is less than or equal to 1
+   * const filter = {
+   *   status: { $lte: 1 }
+   * };
+   */
   $lte?: valueType
+
+  /**
+   * Represents a 'LESS THAN OR EQUAL TO' filter condition using the '<=' operator where the value must be less than or equal to the specified value.
+   *
+   * @example
+   * // Matches entities where the status is less than or equal to 1
+   * const filter = {
+   *   status: { '<=': 1 }
+   * };
+   */
   '<='?: valueType
 }
 export interface ContainsStringValueFilter {
+  /**
+   * Represents a 'CONTAINS' filter condition where the value must contain the specified substring.
+   *
+   * @example
+   * // Matches entities where the name contains 'joe'
+   * const filter = {
+   *   name: { $contains: 'joe' }
+   * };
+   */
   $contains?: string
+
+  /**
+   * Represents a 'NOT CONTAINS' filter condition where the value must not contain the specified substring.
+   *
+   * @example
+   * // Matches entities where the name does not contain 'joe'
+   * const filter = {
+   *   name: { $notContains: 'joe' }
+   * };
+   */
   $notContains?: string
+
+  /**
+   * Represents a 'STARTS WITH' filter condition where the value must start with the specified substring.
+   *
+   * @example
+   * // Matches entities where the name starts with 'joe'
+   * const filter = {
+   *   name: { $startsWith: 'joe' }
+   * };
+   */
+  $startsWith?: string
+
+  /**
+   * Represents an 'ENDS WITH' filter condition where the value must end with the specified substring.
+   *
+   * @example
+   * // Matches entities where the name ends with 'joe'
+   * const filter = {
+   *   name: { $endsWith: 'joe' }
+   * };
+   */
+  $endsWith?: string
 }
 export type IdFilter<valueType> =
   | ValueFilter<valueType>
