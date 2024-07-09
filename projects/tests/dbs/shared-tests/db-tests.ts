@@ -1035,6 +1035,38 @@ export function commonDbTests(
     let item = await r.find({ where: { firstName: { $notContains: 'oA' } } })
     expect(item.length).toBe(1)
   })
+  it('test starts-with with names with casing', async () => {
+    const e = class {
+      a = 0
+      firstName = ''
+    }
+    describeClass(e, Entity('testNameContains', { allowApiCrud: true }), {
+      a: Fields.number(),
+      firstName: Fields.string(),
+    })
+    const r = await createEntity(e)
+    await r.insert({ a: 1, firstName: 'noam' })
+    await r.insert({ a: 2, firstName: 'abc' })
+    await r.insert({ a: 3, firstName: 'xyz' })
+    let item = await r.find({ where: { firstName: { $startsWith: 'ab' } } })
+    expect(item.length).toBe(1)
+  })
+  it('test starts-with with names with casing', async () => {
+    const e = class {
+      a = 0
+      firstName = ''
+    }
+    describeClass(e, Entity('testNameContains', { allowApiCrud: true }), {
+      a: Fields.number(),
+      firstName: Fields.string(),
+    })
+    const r = await createEntity(e)
+    await r.insert({ a: 1, firstName: 'noam' })
+    await r.insert({ a: 2, firstName: 'abc' })
+    await r.insert({ a: 3, firstName: 'xyz' })
+    let item = await r.find({ where: { firstName: { $endsWith: 'bc' } } })
+    expect(item.length).toBe(1)
+  })
   it.skipIf(options?.excludeLiveQuery)('test live query storage', async () => {
     await createEntity(LiveQueryStorageEntity)
     const s = new DataProviderLiveQueryStorage(getDb())

@@ -175,6 +175,8 @@ export class DataApi<T = any> {
         w.__applyToConsumer({
           containsCaseInsensitive: () => {},
           notContainsCaseInsensitive: () => {},
+          startsWithCaseInsensitive: () => {},
+          endsWithCaseInsensitive: () => {},
           isDifferentFrom: () => {},
           isEqualTo: (col, val) => {
             if (this.repository.metadata.idMetadata.isIdField(col)) hasId = true

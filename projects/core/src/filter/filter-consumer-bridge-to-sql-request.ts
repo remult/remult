@@ -154,6 +154,32 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
       })(),
     )
   }
+  public startsWithCaseInsensitive(col: FieldMetadata, val: any): void {
+    this.promises.push(
+      (async () => {
+        this.addToWhere(
+          'lower (' +
+            this.nameProvider.$dbNameOf(col) +
+            ") like lower ('" +
+            val.replace(/'/g, "''") +
+            "%')",
+        )
+      })(),
+    )
+  }
+  public endsWithCaseInsensitive(col: FieldMetadata, val: any): void {
+    this.promises.push(
+      (async () => {
+        this.addToWhere(
+          'lower (' +
+            this.nameProvider.$dbNameOf(col) +
+            ") like lower ('%" +
+            val.replace(/'/g, "''") +
+            "')",
+        )
+      })(),
+    )
+  }
 
   private add(col: FieldMetadata, val: any, operator: string) {
     this.promises.push(
