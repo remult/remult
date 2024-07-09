@@ -290,8 +290,46 @@ export declare class CompoundIdField implements FieldMetadata<string> {
   isEqualTo(value: FieldMetadata<string> | string): EntityFilter<any>
 }
 export interface ContainsStringValueFilter {
+  /**
+   * Represents a 'CONTAINS' filter condition where the value must contain the specified substring.
+   *
+   * @example
+   * // Matches entities where the name contains 'joe'
+   * const filter = {
+   *   name: { $contains: 'joe' }
+   * };
+   */
   $contains?: string
+  /**
+   * Represents a 'NOT CONTAINS' filter condition where the value must not contain the specified substring.
+   *
+   * @example
+   * // Matches entities where the name does not contain 'joe'
+   * const filter = {
+   *   name: { $notContains: 'joe' }
+   * };
+   */
   $notContains?: string
+  /**
+   * Represents a 'STARTS WITH' filter condition where the value must start with the specified substring.
+   *
+   * @example
+   * // Matches entities where the name starts with 'joe'
+   * const filter = {
+   *   name: { $startsWith: 'joe' }
+   * };
+   */
+  $startsWith?: string
+  /**
+   * Represents an 'ENDS WITH' filter condition where the value must end with the specified substring.
+   *
+   * @example
+   * // Matches entities where the name ends with 'joe'
+   * const filter = {
+   *   name: { $endsWith: 'joe' }
+   * };
+   */
+  $endsWith?: string
 }
 export declare function Controller(
   key: string,
@@ -1539,6 +1577,8 @@ export interface FilterConsumer {
   isLessThan(col: FieldMetadata, val: any): void
   containsCaseInsensitive(col: FieldMetadata, val: any): void
   notContainsCaseInsensitive(col: FieldMetadata, val: any): void
+  startsWithCaseInsensitive(col: FieldMetadata, val: any): void
+  endsWithCaseInsensitive(col: FieldMetadata, val: any): void
   isIn(col: FieldMetadata, val: any[]): void
   custom(key: string, customItem: any): void
   databaseCustom(databaseCustom: any): void

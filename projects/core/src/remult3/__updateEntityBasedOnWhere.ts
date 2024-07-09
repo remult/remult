@@ -14,6 +14,8 @@ export function __updateEntityBasedOnWhere<T>(
       databaseCustom: emptyFunction,
       containsCaseInsensitive: emptyFunction,
       notContainsCaseInsensitive: emptyFunction,
+      startsWithCaseInsensitive: emptyFunction,
+      endsWithCaseInsensitive: emptyFunction,
       isDifferentFrom: emptyFunction,
       isEqualTo: (col, val) => {
         r[col.key] = val

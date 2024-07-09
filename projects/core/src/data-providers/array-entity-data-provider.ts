@@ -293,6 +293,30 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
     if (val) val = val.toString().toLowerCase()
     if (s.toLowerCase().indexOf(val) >= 0) this.ok = false
   }
+  public startsWithCaseInsensitive(col: FieldMetadata, val: any): void {
+    let v = this.row[this.dbNames.$dbNameOf(col)]
+    if (!v) {
+      this.ok = false
+      return
+    }
+
+    let s = '' + v
+    if (val) val = col.valueConverter.toJson(val)
+    if (val) val = val.toString().toLowerCase()
+    if (!s.toLowerCase().startsWith(val)) this.ok = false
+  }
+  public endsWithCaseInsensitive(col: FieldMetadata, val: any): void {
+    let v = this.row[this.dbNames.$dbNameOf(col)]
+    if (!v) {
+      this.ok = false
+      return
+    }
+
+    let s = '' + v
+    if (val) val = col.valueConverter.toJson(val)
+    if (val) val = val.toString().toLowerCase()
+    if (!s.toLowerCase().endsWith(val)) this.ok = false
+  }
 }
 
 export type CustomArrayFilter = (item: any) => boolean

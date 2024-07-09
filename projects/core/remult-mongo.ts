@@ -305,6 +305,12 @@ class FilterConsumerBridgeToMongo implements FilterConsumer {
       },
     }))
   }
+  public startsWithCaseInsensitive(col: FieldMetadata, val: any): void {
+    this.add(col, `^${val}`, '$regex', { $options: 'i' })
+  }
+  public endsWithCaseInsensitive(col: FieldMetadata, val: any): void {
+    this.add(col, `${val}$`, '$regex', { $options: 'i' })
+  }
 
   private add(
     col: FieldMetadata,
