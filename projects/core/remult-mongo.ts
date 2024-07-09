@@ -255,7 +255,7 @@ class FilterConsumerBridgeToMongo implements FilterConsumer {
         let where = await f.resolveWhere()
         if (where) {
           this.result.push(() => ({
-            $not: where,
+            $nor: [where],
           }))
         }
       })(),
