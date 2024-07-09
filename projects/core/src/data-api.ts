@@ -190,7 +190,7 @@ export class DataApi<T = any> {
           isLessThan: () => {},
           isNotNull: () => {},
           isNull: () => {},
-
+          not: () => {},
           or: () => {},
         })
       }

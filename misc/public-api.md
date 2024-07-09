@@ -184,13 +184,85 @@ export type ClassType<T> = {
   new (...args: any[]): T
 }
 export type ComparisonValueFilter<valueType> = ValueFilter<valueType> & {
+  /**
+   * Represents a 'GREATER THAN' filter condition where the value must be greater than the specified value.
+   *
+   * @example
+   * // Matches entities where the status is greater than 1
+   * const filter = {
+   *   status: { $gt: 1 }
+   * };
+   */
   $gt?: valueType
+  /**
+   * Represents a 'GREATER THAN' filter condition using the '>' operator where the value must be greater than the specified value.
+   *
+   * @example
+   * // Matches entities where the status is greater than 1
+   * const filter = {
+   *   status: { '>': 1 }
+   * };
+   */
   ">"?: valueType
+  /**
+   * Represents a 'GREATER THAN OR EQUAL TO' filter condition where the value must be greater than or equal to the specified value.
+   *
+   * @example
+   * // Matches entities where the status is greater than or equal to 1
+   * const filter = {
+   *   status: { $gte: 1 }
+   * };
+   */
   $gte?: valueType
+  /**
+   * Represents a 'GREATER THAN OR EQUAL TO' filter condition using the '>=' operator where the value must be greater than or equal to the specified value.
+   *
+   * @example
+   * // Matches entities where the status is greater than or equal to 1
+   * const filter = {
+   *   status: { '>=': 1 }
+   * };
+   */
   ">="?: valueType
+  /**
+   * Represents a 'LESS THAN' filter condition where the value must be less than the specified value.
+   *
+   * @example
+   * // Matches entities where the status is less than 1
+   * const filter = {
+   *   status: { $lt: 1 }
+   * };
+   */
   $lt?: valueType
+  /**
+   * Represents a 'LESS THAN' filter condition using the '<' operator where the value must be less than the specified value.
+   *
+   * @example
+   * // Matches entities where the status is less than 1
+   * const filter = {
+   *   status: { '<': 1 }
+   * };
+   */
   "<"?: valueType
+  /**
+   * Represents a 'LESS THAN OR EQUAL TO' filter condition where the value must be less than or equal to the specified value.
+   *
+   * @example
+   * // Matches entities where the status is less than or equal to 1
+   * const filter = {
+   *   status: { $lte: 1 }
+   * };
+   */
   $lte?: valueType
+  /**
+   * Represents a 'LESS THAN OR EQUAL TO' filter condition using the '<=' operator where the value must be less than or equal to the specified value.
+   *
+   * @example
+   * // Matches entities where the status is less than or equal to 1
+   * const filter = {
+   *   status: { '<=': 1 }
+   * };
+   */
   "<="?: valueType
 }
 export declare class CompoundIdField implements FieldMetadata<string> {
@@ -418,8 +490,42 @@ export declare type EntityFilter<entityType> = {
         : ValueFilter<Partial<entityType>[Properties]>)
     | ContainsStringValueFilter
 } & {
+  /**
+   * Represents an 'OR' filter condition where any of the specified filters can be true.
+   *
+   * @example
+   * // Matches entities where the status is 1 or the archive is false
+   * const filter = {
+   *   $or: [
+   *     { status: 1 },
+   *     { archive: false }
+   *   ]
+   * };
+   */
   $or?: EntityFilter<entityType>[]
+  /**
+   * Represents an 'AND' filter condition where all of the specified filters must be true.
+   *
+   * @example
+   * // Matches entities where the status is 1 and the archive is false
+   * const filter = {
+   *   $and: [
+   *     { status: 1 },
+   *     { archive: false }
+   *   ]
+   * };
+   */
   $and?: EntityFilter<entityType>[]
+  /**
+   * Represents a 'NOT' filter condition where the specified filter must be false.
+   *
+   * @example
+   * // Matches entities where the status is not 1
+   * const filter = {
+   *   $not: { status: 1 }
+   * };
+   */
+  $not?: EntityFilter<entityType>
 }
 //[ ] IndexedAccessType from TBD is not exported
 export declare type EntityIdFields<entityType> = {
@@ -1421,7 +1527,8 @@ export declare class Filter {
 }
 //[ ] customFilterInfo from TBD is not exported
 export interface FilterConsumer {
-  or(orElements: Filter[]): any
+  or(orElements: Filter[]): void
+  not(filter: Filter): void
   isEqualTo(col: FieldMetadata, val: any): void
   isDifferentFrom(col: FieldMetadata, val: any): void
   isNull(col: FieldMetadata): void
@@ -2692,9 +2799,57 @@ export type ValueFilter<valueType> =
   | valueType
   | valueType[]
   | {
+      /**
+       * Represents a 'NOT EQUAL' filter condition where the value must not match the specified value or values.
+       *
+       * @example
+       * // Matches entities where the status is not 1
+       * const filter = {
+       *   status: { $ne: 1 }
+       * };
+       *
+       * @example
+       * // Matches entities where the status is not 1, 2, or 3
+       * const filter = {
+       *   status: { $ne: [1, 2, 3] }
+       * };
+       */
       $ne?: valueType | valueType[]
+      /**
+       * Represents a 'NOT EQUAL' filter condition using the '!=' operator where the value must not match the specified value or values.
+       *
+       * @example
+       * // Matches entities where the status is not 1
+       * const filter = {
+       *   status: { '!=': 1 }
+       * };
+       *
+       * @example
+       * // Matches entities where the status is not 1, 2, or 3
+       * const filter = {
+       *   status: { '!=': [1, 2, 3] }
+       * };
+       */
       "!="?: valueType | valueType[]
+      /**
+       * Represents an 'IN' filter condition where the value must match one of the specified values.
+       *
+       * @example
+       * // Matches entities where the status is 1, 3, or 5
+       * const filter = {
+       *   status: { $in: [1, 3, 5] }
+       * };
+       */
       $in?: valueType[]
+      /**
+       * Represents a 'NOT IN' filter condition where the value must not match any of the specified values.
+       *
+       * @example
+       * // Matches entities where the status is not 1, 2, or 3
+       * const filter = {
+       *   status: { $nin: [1, 2, 3] }
+       * };
+       */
       $nin?: valueType[]
     }
 export interface ValueListFieldOptions<entityType, valueType>
