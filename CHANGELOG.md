@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.26.21] 2024-07-11
+
+- Fixed a bug with startsWith and endsWith worked like contains
+
 ## [0.26.20] 2024-07-10
 
 - Added support for $not, $startsWith & $endsWith
