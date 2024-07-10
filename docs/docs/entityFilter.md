@@ -70,6 +70,36 @@ where: {
 }
 ```
 
+### Not Contains
+
+```ts
+where: {
+  name: {
+    $notContains: 'joe'
+  }
+}
+```
+
+### Starts With
+
+```ts
+where: {
+  name: {
+    $startsWith: 'joe'
+  }
+}
+```
+
+### Ends With
+
+```ts
+where: {
+  name: {
+    $endsWith: 'joe'
+  }
+}
+```
+
 ### Id Equal
 
 ```ts

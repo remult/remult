@@ -37,6 +37,8 @@ https://mySite.com/api/products?price.gte=5&price.lte=10
 | .in          | is in json array      | price.in=%5B10%2C20%5D _(url encoded - `[10,20]`)_ |
 | .contains    | Contains a string     | name.contains=ee                                   |
 | .notContains | Not contains a string | name.notContains=ee                                |
+| .startsWith  | Starts with a string  | name.startsWith=ee                                 |
+| .endsWith    | Ends with a string    | name.endsWith=ee                                   |
 | .gt          | Greater than          | price.gt=10                                        |
 | .gte         | Greater than or equal | price.gte=10                                       |
 | .lt          | Lesser than           | price.lt=10                                        |
