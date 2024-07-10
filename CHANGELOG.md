@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.26.20] 2024-07-10
+
+- Added support for $not, $startsWith & $endsWith
+
 ## [0.26.19] 2024-07-08
 
 - Fixed issue with recursive sqlExpression call for field
