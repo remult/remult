@@ -366,11 +366,11 @@ export class Filter {
                       break
                     case '$startsWith':
                       found = true
-                      result.push(fh.contains(element))
+                      result.push(fh.startsWith(element))
                       break
                     case '$endsWith':
                       found = true
-                      result.push(fh.contains(element))
+                      result.push(fh.endsWith(element))
                       break
                     case '$notContains':
                       found = true
@@ -490,6 +490,14 @@ class filterHelper {
       add.notContainsCaseInsensitive(this.metadata, val),
     )
   }
+  startsWith(val: string): Filter {
+    return new Filter((add) =>
+      add.startsWithCaseInsensitive(this.metadata, val),
+    )
+  }
+  endsWith(val: string): Filter {
+    return new Filter((add) => add.endsWithCaseInsensitive(this.metadata, val))
+  }
   isLessThan(val: any): Filter {
     val = this.processVal(val)
     return new Filter((add) => add.isLessThan(this.metadata, val))
@@ -552,6 +560,12 @@ class manyToOneFilterHelper implements filterHelper {
     throw new Error('Invalid for Many To One Relation Field')
   }
   notContains(val: string): Filter {
+    throw new Error('Invalid for Many To One Relation Field')
+  }
+  endsWith(val: string): Filter {
+    throw new Error('Invalid for Many To One Relation Field')
+  }
+  startsWith(val: string): Filter {
     throw new Error('Invalid for Many To One Relation Field')
   }
   isLessThan(val: any): Filter {
