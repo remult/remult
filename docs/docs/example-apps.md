@@ -66,3 +66,8 @@ An environment to reproduce issues using stackblitz, with optional sqlite databa
 ### SolidStart
 
 - [Source code](https://github.com/remult/remult/tree/main/examples/solid-start-todo)
+
+## Other example
+
+- [Using BackendMethod queued option](https://stackblitz.com/edit/github-vwfkxu?file=src%2FApp.tsx)
+- [Using SubscriptionChannel to update the frontend](https://stackblitz.com/edit/github-3nmwrp?file=src%2FApp.tsx)
