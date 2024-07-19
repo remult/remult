@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.26.22] 2024-07-19
+
+- fixed issue with prevent default and insert
+
 ## [0.26.21] 2024-07-11
 
 - Fixed a bug with startsWith and endsWith worked like contains
