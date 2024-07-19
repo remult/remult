@@ -939,6 +939,18 @@ describe('data api', () => {
     var x = await remult.repo(type).find({ where: { id: 1 } })
     expect(x[0].categoryName).toBe('kuku')
   })
+  it('prevent default works for insert', async () => {
+    @Entity('testPDefault', {
+      saving: (_e, { preventDefault }) => {
+        preventDefault()
+      },
+    })
+    class type extends newCategories {}
+    const c = new Remult(new InMemoryDataProvider()).repo(type)
+    expect(await c.count()).toBe(0)
+    await c.insert({})
+    expect(await c.count()).toBe(0)
+  })
   it('get based on id with excluded columns', async () => {
     let type = class extends newCategories {
       categoryName: string

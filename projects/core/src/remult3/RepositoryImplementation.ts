@@ -1614,7 +1614,11 @@ export class rowHelperImplementation<T>
       try {
         this._subscribers?.reportChanged()
         if (this.isNew()) {
-          updatedRow = await this.edp.insert(d)
+          if (doNotSave) {
+            updatedRow = (updatedRow = await this.edp.find({
+              where: await this.getIdFilter(),
+            }))[0]
+          } else updatedRow = await this.edp.insert(d)
         } else {
           let changesOnly = {}
           let wasChanged = false
@@ -1639,7 +1643,7 @@ export class rowHelperImplementation<T>
             updatedRow = await this.edp.update(this.id, changesOnly)
           }
         }
-        await this.loadDataFrom(updatedRow)
+        if (updatedRow) await this.loadDataFrom(updatedRow)
         e.id = this.getId()
         if (!this.repository._dataProvider.isProxy) {
           if (this.info.entityInfo.saved)
