@@ -1223,7 +1223,7 @@ class inProcessQueueHandler {
   async submitJob(url: string, req: Remult, body: any): Promise<string> {
     let id = await this.storage.createJob(
       url,
-      req.user ? req.user.id : 'undefined',
+      req.user ? req.user.id : undefined,
     )
     let job = await this.storage.getJobInfo(id)
 
@@ -1298,7 +1298,7 @@ class InMemoryQueueStorage implements QueueStorage {
 }
 
 export interface QueueStorage {
-  createJob(url: string, userId: string): Promise<string>
+  createJob(url: string, userId?: string): Promise<string>
   getJobInfo(queuedJobId: string): Promise<queuedJobInfo>
 }
 let test = 0
