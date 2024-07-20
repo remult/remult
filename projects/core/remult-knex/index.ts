@@ -141,15 +141,16 @@ export class KnexDataProvider
       },
     }
   }
-  static async filterToRaw<entityType>(
+  static async filterToRaw<entityType extends object>(
     entity: RepositoryOverloads<entityType>,
     condition: EntityFilter<entityType>,
     wrapIdentifier?: (name: string) => string,
   ) {
+    if (!wrapIdentifier) wrapIdentifier = (x) => x
     const repo = getRepository(entity)
     var b = new FilterConsumerBridgeToKnexRequest(
-      await dbNamesOfWithForceSqlExpression(repo.metadata, (x) => x),
-      wrapIdentifier,
+      await dbNamesOfWithForceSqlExpression(repo.metadata, wrapIdentifier),
+      wrapIdentifier ?? wrapIdentifier,
     )
     b._addWhere = false
     await (
@@ -539,7 +540,7 @@ export class KnexSchemaBuilder {
     if (!remult) remult = remultContext
 
     const entities = remultStatic.allEntities.map(
-      (x) => remult.repo(x).metadata,
+      (x) => remult!.repo(x).metadata,
     )
     await this.ensureSchema(entities)
   }
@@ -570,7 +571,7 @@ export class KnexSchemaBuilder {
     for (const f of entity.fields) {
       cols.set(f, {
         name: e.$dbNameOf(f),
-        readonly: shouldNotCreateField(f, e),
+        readonly:  shouldNotCreateField(f, e),
       })
     }
 

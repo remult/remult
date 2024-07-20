@@ -903,7 +903,7 @@ export function buildFilterFromRequestParameters(
   val = filterInfo.get('NOT')
   if (val) {
     let array = separateArrayFromInnerArray(val)
-    const not = []
+    const not: EntityFilter<any>[] = []
     for (const e1 of array) {
       let z = e1
       if (Array.isArray(e1)) {

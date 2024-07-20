@@ -86,9 +86,8 @@ export class Sort {
    */
   static translateOrderByToSort<T>(
     entityDefs: EntityMetadata<T>,
-    orderBy?: EntityOrderBy<T>,
+    orderBy: EntityOrderBy<T>,
   ): Sort {
-    if (!orderBy) return undefined
     let sort = new Sort()
     if (orderBy)
       for (const key in orderBy) {

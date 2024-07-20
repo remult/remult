@@ -127,7 +127,7 @@ export interface RemultServerOptions<RequestType> {
    * })
    */
   error?: (info: {
-    req: RequestType
+    req?: RequestType
     entity?: EntityMetadata
     exception?: any
     httpStatusCode: number
@@ -142,55 +142,56 @@ export interface InitRequestOptions {
 }
 
 export function createRemultServerCore<RequestType>(
-  options: RemultServerOptions<RequestType>,
+  options: RemultServerOptions<RequestType> | undefined,
 
   serverCoreOptions: ServerCoreOptions<RequestType>,
 ): RemultServer<RequestType> {
-  if (!options) {
-    options = {}
+  const safeOptions = options ?? {}
+
+  if (!safeOptions.subscriptionServer) {
+    safeOptions.subscriptionServer = new SseSubscriptionServer()
   }
-  if (!options.subscriptionServer) {
-    options.subscriptionServer = new SseSubscriptionServer()
-  }
-  if (options.logApiEndPoints === undefined) options.logApiEndPoints = true
+  if (safeOptions.logApiEndPoints === undefined)
+    safeOptions.logApiEndPoints = true
   remultStatic.actionInfo.runningOnServer = true
-  if (options.defaultGetLimit) {
-    DataApi.defaultGetLimit = options.defaultGetLimit
+  if (safeOptions.defaultGetLimit) {
+    DataApi.defaultGetLimit = safeOptions.defaultGetLimit
   }
 
-  if (!options.queueStorage) {
-    options.queueStorage = new InMemoryQueueStorage()
+  if (!safeOptions.queueStorage) {
+    safeOptions.queueStorage = new InMemoryQueueStorage()
   }
 
-  let dataProvider = initDataProviderOrJson(options.dataProvider)
+  let dataProvider = initDataProviderOrJson(safeOptions.dataProvider)
   remultStatic.defaultDataProvider = () => dataProvider
-  if (options.ensureSchema === undefined) options.ensureSchema = true
+  if (safeOptions.ensureSchema === undefined) safeOptions.ensureSchema = true
 
   RemultAsyncLocalStorage.enable()
 
   {
     let allControllers: ClassType<any>[] = []
-    if (!options.entities) options.entities = [...remultStatic.allEntities]
+    if (!safeOptions.entities)
+      safeOptions.entities = [...remultStatic.allEntities]
 
-    if (options.entities) allControllers.push(...options.entities)
-    if (options.controllers) allControllers.push(...options.controllers)
-    options.controllers = allControllers
+    if (safeOptions.entities) allControllers.push(...safeOptions.entities)
+    if (safeOptions.controllers) allControllers.push(...safeOptions.controllers)
+    safeOptions.controllers = allControllers
   }
 
-  if (options.rootPath === undefined) options.rootPath = '/api'
+  if (safeOptions.rootPath === undefined) safeOptions.rootPath = '/api'
 
   remultStatic.actionInfo.runningOnServer = true
   let bridge = new RemultServerImplementation<RequestType>(
-    new inProcessQueueHandler(options.queueStorage),
-    options,
+    new inProcessQueueHandler(safeOptions.queueStorage),
+    safeOptions,
     dataProvider,
     serverCoreOptions,
   )
   return bridge
 }
-//TODO V2 - the type is wrong - it should be RequestType as on the server - also reconsider GenericResponse here, because it's also the server Response
-export type GenericRequestHandler = (
-  req: GenericRequestInfo,
+
+export type GenericRequestHandler<RequestType> = (
+  req: RequestType,
   res: GenericResponse,
   next: VoidFunction,
 ) => void
@@ -203,7 +204,7 @@ export interface ServerHandleResponse {
 export interface RemultServer<RequestType>
   extends RemultServerCore<RequestType> {
   withRemult(req: RequestType, res: GenericResponse, next: VoidFunction)
-  registerRouter(r: GenericRouter): void
+  registerRouter(r: GenericRouter<RequestType>): void
   handle(
     req: RequestType,
     gRes?: GenericResponse,
@@ -219,14 +220,16 @@ export interface RemultServerCore<RequestType> {
   openApiDoc(options: { title: string; version?: string }): any
 }
 
-export type GenericRouter = {
-  route(path: string): SpecificRoute
+export type GenericRouter<RequestType> = {
+  route(path: string): SpecificRoute<RequestType>
 }
-export type SpecificRoute = {
-  get(handler: GenericRequestHandler): SpecificRoute
-  put(handler: GenericRequestHandler): SpecificRoute
-  post(handler: GenericRequestHandler): SpecificRoute
-  delete(handler: GenericRequestHandler): SpecificRoute
+export type SpecificRoute<RequestType> = {
+  get(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
+  put(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
+  post(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
+  delete(
+    handler: GenericRequestHandler<RequestType>,
+  ): SpecificRoute<RequestType>
 }
 export interface GenericRequestInfo {
   url?: string //optional for next
@@ -377,7 +380,7 @@ export class RemultServerImplementation<RequestType>
     return this.getRouteImpl().handle(req, gRes)
   }
   registeredRouter = false
-  registerRouter(r: GenericRouter) {
+  registerRouter(r: GenericRouter<RequestType>) {
     if (this.registeredRouter) throw 'Router already registered'
     this.registeredRouter = true
     {
@@ -422,7 +425,7 @@ export class RemultServerImplementation<RequestType>
               origResponse.send(
                 remultAdminHtml({
                   remult: remult,
-                  entities: this.options.entities,
+                  entities: this.options.entities!,
                   baseUrl: this.options.rootPath + '/admin',
                 }),
               )
@@ -496,7 +499,7 @@ export class RemultServerImplementation<RequestType>
             origReq: RequestType,
           ) => {
             res.success(
-              await remult.liveQueryStorage.keepAliveAndReturnUnknownQueryIds(
+              await remult.liveQueryStorage!.keepAliveAndReturnUnknownQueryIds(
                 await this.coreOptions.getRequestBody(origReq),
               ),
             )
@@ -505,7 +508,7 @@ export class RemultServerImplementation<RequestType>
       )
     }
 
-    this.options.entities.forEach((e) => {
+    this.options.entities!.forEach((e) => {
       let key = getEntityKey(e)
       if (key != undefined)
         this.add(
@@ -529,7 +532,11 @@ export class RemultServerImplementation<RequestType>
     return result
   }
 
-  add(key: string, dataApiFactory: (req: Remult) => DataApi, r: GenericRouter) {
+  add(
+    key: string,
+    dataApiFactory: (req: Remult) => DataApi,
+    r: GenericRouter<RequestType>,
+  ) {
     let myRoute = this.options.rootPath + '/' + key
     if (this.options.logApiEndPoints) console.info('[remult] ' + myRoute)
 
@@ -609,7 +616,7 @@ export class RemultServerImplementation<RequestType>
         return await what(x)
       },
       {
-        dataProvider,
+        dataProvider: dataProvider!,
       },
     )
   }
@@ -625,9 +632,7 @@ export class RemultServerImplementation<RequestType>
     ) => Promise<void>,
   ) {
     return async (req: RequestType, origRes: GenericResponse) => {
-      const genReq = req
-        ? this.coreOptions.buildGenericRequestInfo(req)
-        : undefined
+      const genReq = req ? this.coreOptions.buildGenericRequestInfo(req) : {}
       if (req) {
         if (!genReq.query) {
           genReq.query = req['_tempQuery']
@@ -638,6 +643,7 @@ export class RemultServerImplementation<RequestType>
       let myRes = new ResponseBridgeToDataApiResponse(
         origRes,
         req,
+        genReq,
         this.options.error,
       )
       try {
@@ -667,7 +673,7 @@ export class RemultServerImplementation<RequestType>
                   await this.options.initRequest(req, {
                     remult,
                     get liveQueryStorage() {
-                      return remult.liveQueryStorage
+                      return remult.liveQueryStorage!
                     },
                     set liveQueryStorage(value: LiveQueryStorage) {
                       remult.liveQueryStorage = value
@@ -691,12 +697,12 @@ export class RemultServerImplementation<RequestType>
     if (!req) return await this.runWithRemult(async (c) => (remult = c))
     await this.process(async (c) => {
       remult = c
-    })(req, undefined)
-    return remult
+    })(req, undefined!)
+    return remult!
   }
   hasQueue = false
 
-  addAction(action: ActionInterface, r: GenericRouter) {
+  addAction(action: ActionInterface, r: GenericRouter<RequestType>) {
     action.__register(
       (
         url: string,
@@ -788,7 +794,7 @@ export class RemultServerImplementation<RequestType>
     }
     for (const meta of this.getEntities()) {
       let key = meta.key
-      let parameters = []
+      let parameters: any[] = []
       if (key) {
         let mutationKey = key
         let properties: any = {}
@@ -1133,7 +1139,7 @@ class RequestBridgeToDataApiRequest implements DataApiRequest {
 
   constructor(private r: GenericRequestInfo | undefined) {}
 }
-class ResponseBridgeToDataApiResponse implements DataApiResponse {
+class ResponseBridgeToDataApiResponse<RequestType> implements DataApiResponse {
   forbidden(): void {
     this.error({ message: 'Forbidden' }, undefined, 403)
   }
@@ -1142,10 +1148,9 @@ class ResponseBridgeToDataApiResponse implements DataApiResponse {
   }
   constructor(
     private r: GenericResponse,
-    private req: GenericRequestInfo | undefined,
-    private handleError:
-      | RemultServerOptions<GenericRequestInfo>['error']
-      | undefined,
+    private req: RequestType | undefined,
+    private genReq: GenericRequestInfo,
+    private handleError: RemultServerOptions<RequestType>['error'] | undefined,
   ) {}
   progress(progress: number): void {}
 
@@ -1166,7 +1171,7 @@ class ResponseBridgeToDataApiResponse implements DataApiResponse {
 
   public async error(
     exception: ErrorInfo,
-    entity: EntityMetadata,
+    entity?: EntityMetadata,
     httpStatusCode?: number,
   ) {
     let data = serializeError(exception)
@@ -1194,8 +1199,8 @@ class ResponseBridgeToDataApiResponse implements DataApiResponse {
         message: body.message,
         httpStatusCode,
         stack: data.stack?.split('\n'),
-        url: this.req?.url,
-        method: this.req?.method,
+        url: this.genReq?.url,
+        method: this.genReq?.method,
       })
       this.setStatus(httpStatusCode).json(body)
     }
@@ -1218,11 +1223,11 @@ class inProcessQueueHandler {
   async submitJob(url: string, req: Remult, body: any): Promise<string> {
     let id = await this.storage.createJob(
       url,
-      req.user ? req.user.id : undefined,
+      req.user ? req.user.id : 'undefined',
     )
     let job = await this.storage.getJobInfo(id)
 
-    this.actions.get(url)(body, req, {
+    this.actions.get(url)!(body, req, {
       error: (error) => job.setErrorResult(serializeError(error)),
       success: (result) => job.setResult(result),
       progress: (progress) => job.setProgress(progress),
@@ -1262,7 +1267,7 @@ export interface queuedJobInfo {
 }
 class InMemoryQueueStorage implements QueueStorage {
   async getJobInfo(queuedJobId: string): Promise<queuedJobInfo> {
-    return this.jobs.get(queuedJobId)
+    return this.jobs.get(queuedJobId)!
   }
 
   async createJob(url: string, userId: string) {
@@ -1273,17 +1278,17 @@ class InMemoryQueueStorage implements QueueStorage {
       },
       userId: userId,
       setErrorResult: (error: any) => {
-        let job = this.jobs.get(id)
+        let job = this.jobs.get(id)!
         job.info.done = true
         job.info.error = error
       },
       setResult: (result: any) => {
-        let job = this.jobs.get(id)
+        let job = this.jobs.get(id)!
         job.info.done = true
         job.info.result = result
       },
       setProgress: (progress: number) => {
-        let job = this.jobs.get(id)
+        let job = this.jobs.get(id)!
         job.info.progress = progress
       },
     })
@@ -1305,8 +1310,8 @@ export class EntityQueueStorage implements QueueStorage {
   }
 
   async getJobInfo(queuedJobId: string): Promise<queuedJobInfo> {
-    let q = await this.repo.findId(queuedJobId)
-    let lastProgress: Date = undefined
+    let q = (await this.repo.findId(queuedJobId))!
+    let lastProgress: Date | undefined = undefined
     return {
       userId: q.userId,
       info: {
@@ -1355,33 +1360,35 @@ export class EntityQueueStorage implements QueueStorage {
 }
 export class RouteImplementation<RequestType> {
   constructor(private coreOptions: ServerCoreOptions<RequestType>) {}
-  map = new Map<string, Map<string, GenericRequestHandler>>()
-  starRoutes: { route: string; handler: Map<string, GenericRequestHandler> }[] =
-    []
-  route(path: string): SpecificRoute {
+  map = new Map<string, Map<string, GenericRequestHandler<RequestType>>>()
+  starRoutes: {
+    route: string
+    handler: Map<string, GenericRequestHandler<RequestType>>
+  }[] = []
+  route(path: string): SpecificRoute<RequestType> {
     //consider using:
     //* https://raw.githubusercontent.com/cmorten/opine/main/src/utils/pathToRegex.ts
     //* https://github.com/pillarjs/path-to-regexp
     let r = path.toLowerCase()
-    let m = new Map<string, GenericRequestHandler>()
+    let m = new Map<string, GenericRequestHandler<RequestType>>()
 
     this.map.set(r, m)
     if (path.endsWith('*'))
       this.starRoutes.push({ route: r.substring(0, r.length - 1), handler: m })
     const route = {
-      get: (h: GenericRequestHandler) => {
+      get: (h: GenericRequestHandler<RequestType>) => {
         m.set('get', h)
         return route
       },
-      put: (h: GenericRequestHandler) => {
+      put: (h: GenericRequestHandler<RequestType>) => {
         m.set('put', h)
         return route
       },
-      post: (h: GenericRequestHandler) => {
+      post: (h: GenericRequestHandler<RequestType>) => {
         m.set('post', h)
         return route
       },
-      delete: (h: GenericRequestHandler) => {
+      delete: (h: GenericRequestHandler<RequestType>) => {
         m.set('delete', h)
         return route
       },
@@ -1408,8 +1415,9 @@ export class RouteImplementation<RequestType> {
           res({ statusCode })
         }
         flush() {
-          if ((gRes as any as ResponseRequiredForSSE).flush)
-            (gRes as any as ResponseRequiredForSSE).flush()
+          if (isOfType(gRes, 'flush')) {
+            gRes.flush()
+          }
         }
         statusCode = 200
         json(data: any) {
@@ -1442,7 +1450,7 @@ export class RouteImplementation<RequestType> {
   middleware(origReq: RequestType, res: GenericResponse, next: VoidFunction) {
     const req = this.coreOptions.buildGenericRequestInfo(origReq)
 
-    let theUrl: string = req.url
+    let theUrl: string = req.url?.toString() || ''
     if (theUrl.startsWith('/'))
       //next sends a partial url '/api/tasks' and not the full url
       theUrl = 'http://stam' + theUrl
@@ -1504,7 +1512,7 @@ export class RouteImplementation<RequestType> {
   }
 }
 
-@Entity(undefined, {
+@Entity(undefined!, {
   dbName: 'jobsInQueue',
 })
 export class JobsInQueueEntity extends IdEntity {

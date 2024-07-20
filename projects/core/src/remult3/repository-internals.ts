@@ -22,11 +22,11 @@ export interface RepositoryInternal<entityType> {
     options: FindOptions<entityType>,
   ): Promise<EntityDataProviderFindOptions>
   _translateWhereToFilter(where: EntityFilter<entityType>): Promise<Filter>
-  _getCachedById(id: any, doNotLoadIfNotFound: boolean): entityType
+  _getCachedById(id: any, doNotLoadIfNotFound: boolean): entityType | undefined
   _getCachedByIdAsync(
     id: any,
     doNotLoadIfNotFound: boolean,
-  ): Promise<entityType>
+  ): Promise<entityType | undefined>
   _addToCache(item: entityType)
   _getFocusedRelationRepo(
     field: FieldMetadata,

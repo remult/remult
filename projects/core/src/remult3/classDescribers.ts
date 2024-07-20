@@ -1,7 +1,6 @@
-import { ClassType } from '../../classType.js'
-import { EntityOptions } from '../entity.js'
-import { BackendMethod, BackendMethodOptions } from '../server-action.js'
-import { Fields } from './Fields.js'
+import type { ClassType } from '../../classType.js'
+import type { EntityOptions } from '../entity.js'
+import { BackendMethod, type BackendMethodOptions } from '../server-action.js'
 import { Entity } from './entity.js'
 
 type Descriptor<T = any> = (a: T, b: string, c?: any) => void
@@ -32,7 +31,7 @@ export function describeClass<classType>(
   }
 
   for (const staticFieldKey in staticMembers) {
-    const staticElement = staticMembers[staticFieldKey]
+    const staticElement = staticMembers[staticFieldKey]!
     const prop = Object.getOwnPropertyDescriptor(classType, staticFieldKey)
     staticElement(classType, staticFieldKey, prop)
     if (prop) Object.defineProperty(classType, staticFieldKey, prop)
@@ -46,7 +45,7 @@ export function describeBackendMethods<T>(
   let result: Record<string, Descriptor> = {}
   for (const key in backendMethods) {
     if (Object.prototype.hasOwnProperty.call(backendMethods, key)) {
-      const options = backendMethods[key]
+      const options = backendMethods[key]!
       result[key] = BackendMethod(options)
     }
   }

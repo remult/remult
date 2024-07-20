@@ -19,7 +19,7 @@ import { createRemultServer } from './server/index.js'
 export function remultFastify(
   options: RemultServerOptions<FastifyRequest>,
 ): RemultFastifyServer {
-  function fastifyHandler(handler: GenericRequestHandler) {
+  function fastifyHandler(handler: GenericRequestHandler<FastifyRequest>) {
     const response: RouteHandlerMethod = (req, res) => {
       const myRes: GenericResponse & ResponseRequiredForSSE = {
         status(statusCode) {
@@ -79,7 +79,7 @@ export function remultFastify(
             instance.put(path, fastifyHandler(handler))
             return r
           },
-        } as SpecificRoute
+        } as SpecificRoute<FastifyRequest>
         return r
       },
     }

@@ -20,7 +20,7 @@ export interface EntityRefBase<entityType> extends Subscribable {
   isNew(): boolean //
   wasChanged(): boolean
   wasDeleted(): boolean
-  error: string
+  error: string | undefined
   getId(): idType<entityType>
   getOriginalId(): idType<entityType>
   repository: Repository<entityType>
@@ -46,7 +46,7 @@ export interface EntityRefForEntityBase<entityType>
 }
 
 export interface ValidateFieldEvent<entityType = any, valueType = any> {
-  error: string
+  error?: string
   value: valueType
   originalValue: valueType
   valueChanged(): boolean
@@ -112,7 +112,7 @@ export interface LifecycleEvent<entityType> {
 }
 export interface ControllerRefBase<entityType> extends Subscribable {
   hasErrors(): boolean
-  error: string
+  error: string | undefined
   validate(): Promise<ErrorInfo<entityType> | undefined>
   readonly isLoading: boolean
 }
@@ -196,7 +196,7 @@ export interface IdFieldRef<entityType, valueType>
 
 export interface FieldRef<entityType = any, valueType = any>
   extends Subscribable {
-  error: string
+  error: string | undefined
   displayValue: string
   value: valueType
   originalValue: valueType
@@ -205,6 +205,9 @@ export interface FieldRef<entityType = any, valueType = any>
   entityRef: EntityRef<entityType>
   container: entityType
   metadata: FieldMetadata<valueType>
+  /**
+   * Loads the related value - returns null if the related value is not found
+   */
   load(): Promise<valueType>
   valueIsNull(): boolean
   originalValueIsNull(): boolean
@@ -329,19 +332,21 @@ export interface Repository<entityType> {
   findFirst(
     where?: EntityFilter<entityType>,
     options?: FindFirstOptions<entityType>,
-  ): Promise<entityType>
+  ): Promise<entityType | undefined>
   /** returns the first item that matchers the `where` condition
    * @example
    * await taskRepo.findOne({ where:{ completed:false }})
    * @example
    * await taskRepo.findFirst({ where:{ completed:false }, createIfNotFound: true })
    *      */
-  findOne(options?: FindFirstOptions<entityType>): Promise<entityType>
-  /** returns the items that matches the idm the result is cached unless specified differently in the `options` parameter */
+  findOne(
+    options?: FindFirstOptions<entityType>,
+  ): Promise<entityType | undefined>
+  /** returns the items that matches the id. If id is undefined | null, returns null */
   findId(
     id: idType<entityType>,
     options?: FindFirstOptionsBase<entityType>,
-  ): Promise<entityType>
+  ): Promise<entityType | undefined | null>
   /**  An alternative form of fetching data from the API server, which is intended for operating on large numbers of entity objects.
    *
    * It also has it's own paging mechanism that can be used n paging scenarios.
@@ -1122,6 +1127,7 @@ const result = await repo.batch(x=>({
 //p1 - article on displayValue including it's definition for entities that is used in relations
 //p1 - article auth.js with express - played with it, requires type="module" and a few more configurations - https://github.com/noam-honig/express-auth
 //p2 - fix remult admin not to load the html into memory until used
+//p2 - add update to entityRef and EntityBase
 
 //y2 - currently for string fields we default for 255 in knex (which is their default) why not just use text (varchar max) - and only use exact length when one is provided?
 

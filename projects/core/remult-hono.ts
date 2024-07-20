@@ -39,7 +39,7 @@ export function remultHono(
     },
   })
 
-  let honoRouter: GenericRouter = {
+  let honoRouter: GenericRouter<Context<Env, '', BlankInput>> = {
     route(path) {
       let r = {
         get(handler) {
@@ -58,10 +58,12 @@ export function remultHono(
           app.delete(path, honoHandler(handler))
           return r
         },
-      } as SpecificRoute
+      } as SpecificRoute<Context<Env, '', BlankInput>>
       return r
 
-      function honoHandler(handler: GenericRequestHandler) {
+      function honoHandler(
+        handler: GenericRequestHandler<Context<Env, '', BlankInput>>,
+      ) {
         return (c: Context<Env, '', BlankInput>) => {
           return new Promise<void | Response>((res, rej) => {
             try {

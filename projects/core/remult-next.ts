@@ -170,9 +170,9 @@ export function remultNextApp(
 }
 // [ ] V1.5 Add handle, similar to handle in next page router.
 export type RemultNextAppServer = RemultServerCore<Request> & {
-  GET: (req: Request) => Promise<Response>
-  PUT: (req: Request) => Promise<Response>
-  POST: (req: Request) => Promise<Response>
-  DELETE: (req: Request) => Promise<Response>
+  GET: (req: Request) => Promise<Response | undefined>
+  PUT: (req: Request) => Promise<Response | undefined>
+  POST: (req: Request) => Promise<Response | undefined>
+  DELETE: (req: Request) => Promise<Response | undefined>
   withRemult<T>(what: () => Promise<T>): Promise<T>
 }

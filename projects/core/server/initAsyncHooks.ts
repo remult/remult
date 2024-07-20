@@ -44,9 +44,9 @@ export class AsyncLocalStorageBridgeToRemultAsyncLocalStorageCoreImpl<T>
         }
       })
     })
-    return r
+    return r!
   }
-  getStore(): T {
+  getStore(): T | undefined {
     return this.asyncLocalStorage.getStore()
   }
 }
@@ -65,7 +65,7 @@ export class SequentialRemultAsyncLocalStorageCore<T>
     let log = (msg: string) => {}
     if (false) {
       let stack = new Error().stack
-      let y = stack.split('\n')
+      let y = stack!.split('\n')
       while (
         y.length > 0 &&
         (y[0].trim().startsWith('Error') ||
@@ -91,7 +91,7 @@ export class SequentialRemultAsyncLocalStorageCore<T>
     this.lastPromise = nextPromise.catch(() => {
       log('Error on ')
       return undefined
-    })
+    }) as unknown as Promise<T>
 
     try {
       return await nextPromise
@@ -104,7 +104,7 @@ export class SequentialRemultAsyncLocalStorageCore<T>
     return this.currentValue
   }
 
-  lastPromise: Promise<T> = Promise.resolve(undefined)
+  lastPromise: Promise<T | undefined> = Promise.resolve(undefined)
   currentValue: T
 }
 export class StubRemultAsyncLocalStorageCore<T>
@@ -120,7 +120,7 @@ export class StubRemultAsyncLocalStorageCore<T>
     return this.currentValue
   }
 
-  lastPromise: Promise<T> = Promise.resolve(undefined)
+  lastPromise: Promise<T | undefined> = Promise.resolve(undefined)
   currentValue: T
 }
 

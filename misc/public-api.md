@@ -347,7 +347,7 @@ export interface ControllerRef<entityType>
 }
 export interface ControllerRefBase<entityType> extends Subscribable {
   hasErrors(): boolean
-  error: string
+  error: string | undefined
   validate(): Promise<ErrorInfo<entityType> | undefined>
   readonly isLoading: boolean
 }
@@ -383,7 +383,7 @@ export declare function createValueValidatorWithArgs<valueType, argsType>(
   ) => boolean | string | Promise<boolean | string>,
   defaultMessage?: ValueValidationMessage<argsType>,
 ): ValidatorWithArgs<valueType, argsType> & {
-  defaultMessage: ValueValidationMessage<argsType>
+  defaultMessage?: ValueValidationMessage<argsType>
 }
 export declare class CustomSqlFilterBuilder
   implements SqlCommandWithParameters, HasWrapIdentifier
@@ -410,7 +410,7 @@ export declare class CustomSqlFilterBuilder
    * @param {EntityFilter<entityType>} condition - The entity filter.
    * @returns {Promise<string>} - The raw SQL.
    */
-  filterToRaw: <entityType>(
+  filterToRaw: <entityType extends object>(
     repo: RepositoryOverloads<entityType>,
     condition: EntityFilter<entityType>,
   ) => Promise<string>
@@ -427,7 +427,7 @@ export interface DataProvider {
   ensureSchema?(entities: EntityMetadata[]): Promise<void>
   isProxy?: boolean
 }
-export declare function dbNamesOf<entityType>(
+export declare function dbNamesOf<entityType extends object>(
   repo: EntityMetadataOverloads<entityType>,
   wrapIdentifierOrOptions?: ((name: string) => string) | dbNamesOfOptions,
 ): Promise<EntityDbNames<entityType>>
@@ -472,6 +472,7 @@ export declare function Entity<entityType>(
         >,
         remult: Remult,
       ) => void)
+    | undefined
   )[]
 ): (
   target: any,
@@ -899,7 +900,7 @@ export interface ExternalHttpProvider {
         toPromise(): Promise<any>
       }
 }
-export declare function Field<entityType = any, valueType = any>(
+export declare function Field<entityType extends object = any, valueType = any>(
   valueType:
     | (() => valueType extends number
         ? Number
@@ -1012,7 +1013,7 @@ export interface FieldMetadata<valueType = any, entityType = any> {
    * input.value = repo.fields.birthDate.toInput(person) // will return '1976-06-16'
    * @see {@link ValueConverter#toInput} for configuration details
    */
-  toInput(value: valueType, inputType?: string): string
+  toInput(value: valueType | null | undefined, inputType?: string): string
   /** Adapts the value for usage with html input
    * @example
    * @Fields.dateOnly()
@@ -1023,7 +1024,10 @@ export interface FieldMetadata<valueType = any, entityType = any> {
    */
   fromInput(inputValue: string, inputType?: string): valueType
 }
-export interface FieldOptions<entityType = any, valueType = any> {
+export interface FieldOptions<
+  entityType extends object = any,
+  valueType = any,
+> {
   /** A human readable name for the field. Can be used to achieve a consistent caption for a field throughout the app
    * @example
    * <input placeholder={taskRepo.metadata.fields.title.caption}/>
@@ -1150,7 +1154,7 @@ export interface FieldOptions<entityType = any, valueType = any> {
 }
 export interface FieldRef<entityType = any, valueType = any>
   extends Subscribable {
-  error: string
+  error: string | undefined
   displayValue: string
   value: valueType
   originalValue: valueType
@@ -1159,6 +1163,9 @@ export interface FieldRef<entityType = any, valueType = any>
   entityRef: EntityRef<entityType>
   container: entityType
   metadata: FieldMetadata<valueType>
+  /**
+   * Loads the related value - returns null if the related value is not found
+   */
   load(): Promise<valueType>
   valueIsNull(): boolean
   originalValueIsNull(): boolean
@@ -1168,61 +1175,61 @@ export declare class Fields {
   /**
    * Stored as a JSON.stringify - to store as json use Fields.json
    */
-  static object<entityType = any, valueType = any>(
+  static object<entityType extends object = any, valueType = any>(
     ...options: (
       | FieldOptions<entityType, valueType>
       | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, valueType | undefined>
-  static json<entityType = any, valueType = any>(
+  static json<entityType extends object = any, valueType = any>(
     ...options: (
       | FieldOptions<entityType, valueType>
       | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, valueType | undefined>
-  static dateOnly<entityType = any>(
+  static dateOnly<entityType extends object = any>(
     ...options: (
       | FieldOptions<entityType, Date>
       | ((options: FieldOptions<entityType, Date>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, Date | undefined>
-  static date<entityType = any>(
+  static date<entityType extends object = any>(
     ...options: (
       | FieldOptions<entityType, Date>
       | ((options: FieldOptions<entityType, Date>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, Date | undefined>
-  static integer<entityType = any>(
+  static integer<entityType extends object = any>(
     ...options: (
       | FieldOptions<entityType, number>
       | ((options: FieldOptions<entityType, number>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, number | undefined>
-  static autoIncrement<entityType = any>(
+  static autoIncrement<entityType extends object = any>(
     ...options: (
       | FieldOptions<entityType, number>
       | ((options: FieldOptions<entityType, number>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, number | undefined>
-  static number<entityType = any>(
+  static number<entityType extends object = any>(
     ...options: (
       | FieldOptions<entityType, number>
       | ((options: FieldOptions<entityType, number>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, number | undefined>
-  static createdAt<entityType = any>(
+  static createdAt<entityType extends object = any>(
     ...options: (
       | FieldOptions<entityType, Date>
       | ((options: FieldOptions<entityType, Date>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, Date | undefined>
-  static updatedAt<entityType = any>(
+  static updatedAt<entityType extends object = any>(
     ...options: (
       | FieldOptions<entityType, Date>
       | ((options: FieldOptions<entityType, Date>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, Date | undefined>
-  static uuid<entityType = any>(
+  static uuid<entityType extends object = any>(
     ...options: (
       | FieldOptions<entityType, string>
       | ((options: FieldOptions<entityType, string>, remult: Remult) => void)
@@ -1233,7 +1240,7 @@ export declare class Fields {
    * This id value is determined on the backend on insert, and can't be updated through the API.
    * The CUID is generated using the `@paralleldrive/cuid2` npm package.
    */
-  static cuid<entityType = any>(
+  static cuid<entityType extends object = any>(
     ...options: (
       | FieldOptions<entityType, string>
       | ((options: FieldOptions<entityType, string>, remult: Remult) => void)
@@ -1268,7 +1275,10 @@ export declare class Fields {
    *
    * // This approach allows easy management and updates of the allowed values for the `status` field.
    */
-  static literal<entityType = any, valueType extends string = any>(
+  static literal<
+    entityType extends object = any,
+    valueType extends string = any,
+  >(
     optionalValues: () => readonly valueType[],
     ...options: (
       | StringFieldOptions<entityType, valueType>
@@ -1278,7 +1288,7 @@ export declare class Fields {
         ) => void)
     )[]
   ): ClassFieldDecorator<entityType, valueType | undefined>
-  static enum<entityType = any, theEnum = any>(
+  static enum<entityType extends object = any, theEnum extends object = any>(
     enumType: () => theEnum,
     ...options: (
       | FieldOptions<entityType, theEnum[keyof theEnum]>
@@ -1288,7 +1298,7 @@ export declare class Fields {
         ) => void)
     )[]
   ): ClassFieldDecorator<entityType, theEnum[keyof theEnum] | undefined>
-  static string<entityType = any, valueType = string>(
+  static string<entityType extends object = any, valueType = string>(
     ...options: (
       | StringFieldOptions<entityType, valueType>
       | ((
@@ -1297,7 +1307,7 @@ export declare class Fields {
         ) => void)
     )[]
   ): ClassFieldDecorator<entityType, valueType | undefined>
-  static boolean<entityType = any>(
+  static boolean<entityType extends object = any>(
     ...options: (
       | FieldOptions<entityType, boolean>
       | ((options: FieldOptions<entityType, boolean>, remult: Remult) => void)
@@ -1637,7 +1647,7 @@ export declare function getEntityRef<entityType>(
   entity: entityType,
   throwException?: boolean,
 ): EntityRef<entityType>
-export declare function getFields<fieldsContainerType>(
+export declare function getFields<fieldsContainerType extends object>(
   container: fieldsContainerType,
   remult?: Remult,
 ): FieldsRef<fieldsContainerType>
@@ -1734,6 +1744,7 @@ export declare class JsonDataProvider implements DataProvider {
 }
 export declare class JsonEntityOpfsStorage implements JsonEntityStorage {
   getItem(entityDbName: string): Promise<string>
+  private init
   setItem(entityDbName: string, json: string): Promise<void>
 }
 export interface JsonEntityStorage {
@@ -2041,7 +2052,7 @@ export declare class Relations {
    * customer?: Customer;
    * ```
    */
-  static toOne<entityType, toEntityType>(
+  static toOne<entityType extends object, toEntityType>(
     toEntityType: () => ClassType<toEntityType>,
     options?:
       | (FieldOptions<entityType, toEntityType> &
@@ -2124,7 +2135,10 @@ export declare class Remult {
    * @param entity - the entity to use
    * @param dataProvider - an optional alternative data provider to use. Useful for writing to offline storage or an alternative data provider
    */
-  repo: <T>(entity: ClassType<T>, dataProvider?: DataProvider) => Repository<T>
+  repo: <T extends object>(
+    entity: ClassType<T>,
+    dataProvider?: DataProvider,
+  ) => Repository<T>
   /** Returns the current user's info */
   user?: UserInfo
   /** Checks if a user was authenticated */
@@ -2180,7 +2194,7 @@ export declare class Remult {
   apiClient: ApiClient
 }
 export interface RemultContext {}
-export declare function repo<entityType>(
+export declare function repo<entityType extends object>(
   entity: ClassType<entityType>,
   dataProvider?: DataProvider,
 ): import("./src/remult3/remult3.js").Repository<entityType>
@@ -2198,19 +2212,21 @@ export interface Repository<entityType> {
   findFirst(
     where?: EntityFilter<entityType>,
     options?: FindFirstOptions<entityType>,
-  ): Promise<entityType>
+  ): Promise<entityType | undefined>
   /** returns the first item that matchers the `where` condition
    * @example
    * await taskRepo.findOne({ where:{ completed:false }})
    * @example
    * await taskRepo.findFirst({ where:{ completed:false }, createIfNotFound: true })
    *      */
-  findOne(options?: FindFirstOptions<entityType>): Promise<entityType>
-  /** returns the items that matches the idm the result is cached unless specified differently in the `options` parameter */
+  findOne(
+    options?: FindFirstOptions<entityType>,
+  ): Promise<entityType | undefined>
+  /** returns the items that matches the id. If id is undefined | null, returns null */
   findId(
     id: idType<entityType>,
     options?: FindFirstOptionsBase<entityType>,
-  ): Promise<entityType>
+  ): Promise<entityType | undefined | null>
   /**  An alternative form of fetching data from the API server, which is intended for operating on large numbers of entity objects.
    *
    * It also has it's own paging mechanism that can be used n paging scenarios.
@@ -2408,7 +2424,7 @@ export declare class Sort {
    */
   static translateOrderByToSort<T>(
     entityDefs: EntityMetadata<T>,
-    orderBy?: EntityOrderBy<T>,
+    orderBy: EntityOrderBy<T>,
   ): Sort
   /**
    * Creates a unique `Sort` instance based on the provided `Sort` and the entity metadata.
@@ -2517,7 +2533,7 @@ export declare class SqlDatabase
      *  @see [Leveraging Database Capabilities with Raw SQL in Custom Filters](https://remult.dev/docs/running-sql-on-the-server#leveraging-entityfilter-for-sql-databases)
      
      */
-  static filterToRaw<entityType>(
+  static filterToRaw<entityType extends object>(
     repo: RepositoryOverloads<entityType>,
     condition: EntityFilter<entityType>,
     sqlCommand?: SqlCommandWithParameters,
@@ -2579,8 +2595,10 @@ export interface StoredQuery {
   id: string
   data: any
 }
-export interface StringFieldOptions<entityType = any, valueType = string>
-  extends FieldOptions<entityType, valueType> {
+export interface StringFieldOptions<
+  entityType extends object = any,
+  valueType = string,
+> extends FieldOptions<entityType, valueType> {
   maxLength?: number
   minLength?: number
 }
@@ -2657,7 +2675,7 @@ export interface UserInfo {
   roles?: string[]
 }
 export interface ValidateFieldEvent<entityType = any, valueType = any> {
-  error: string
+  error?: string
   value: valueType
   originalValue: valueType
   valueChanged(): boolean
@@ -2696,7 +2714,7 @@ export declare class Validators {
    */
   static uniqueOnBackend: Validator<unknown>
   static regex: ValidatorWithArgs<string, RegExp> & {
-    defaultMessage: ValueValidationMessage<RegExp>
+    defaultMessage?: ValueValidationMessage<RegExp> | undefined
   }
   static email: Validator<string>
   static url: Validator<string>
@@ -2707,15 +2725,15 @@ export declare class Validators {
     withMessage: ValueValidationMessage<T[]>
   }
   static notNull: Validator<unknown>
-  static enum: ValidatorWithArgs<unknown, unknown> & {
-    defaultMessage: ValueValidationMessage<unknown>
+  static enum: ValidatorWithArgs<unknown, object> & {
+    defaultMessage?: ValueValidationMessage<object> | undefined
   }
   static relationExists: Validator<unknown>
   static maxLength: ValidatorWithArgs<string, number> & {
-    defaultMessage: ValueValidationMessage<number>
+    defaultMessage?: ValueValidationMessage<number> | undefined
   }
   static minLength: ValidatorWithArgs<string, number> & {
-    defaultMessage: ValueValidationMessage<number>
+    defaultMessage?: ValueValidationMessage<number> | undefined
   }
   static defaultMessage: string
 }
@@ -2735,7 +2753,7 @@ export interface ValueConverter<valueType> {
    * @example
    * fromJson: val => new Date(val)
    */
-  fromJson?(val: any): valueType
+  fromJson?(val: any): valueType | null | undefined
   /**
    * Converts a value of valueType to a JSON DTO. This method is typically used when sending data
    * to a REST API or serializing an object to a JSON payload.
@@ -2746,7 +2764,7 @@ export interface ValueConverter<valueType> {
    * @example
    * toJson: val => val?.toISOString()
    */
-  toJson?(val: valueType): any
+  toJson?(val: valueType | null | undefined): any
   /**
    * Converts a value from the database format to the valueType.
    *
@@ -2756,7 +2774,7 @@ export interface ValueConverter<valueType> {
    * @example
    * fromDb: val => new Date(val)
    */
-  fromDb?(val: any): valueType
+  fromDb?(val: any): valueType | null | undefined
   /**
    * Converts a value of valueType to the database format.
    *
@@ -2766,7 +2784,7 @@ export interface ValueConverter<valueType> {
    * @example
    * toDb: val => val?.toISOString()
    */
-  toDb?(val: valueType): any
+  toDb?(val: valueType | null | undefined): any
   /**
    * Converts a value of valueType to a string suitable for an HTML input element.
    *
@@ -2777,7 +2795,7 @@ export interface ValueConverter<valueType> {
    * @example
    * toInput: (val, inputType) => val?.toISOString().substring(0, 10)
    */
-  toInput?(val: valueType, inputType?: string): string
+  toInput?(val: valueType | null | undefined, inputType?: string): string
   /**
    * Converts a string from an HTML input element to the valueType.
    *
@@ -2788,7 +2806,7 @@ export interface ValueConverter<valueType> {
    * @example
    * fromInput: (val, inputType) => new Date(val)
    */
-  fromInput?(val: string, inputType?: string): valueType
+  fromInput?(val: string, inputType?: string): valueType | null | undefined
   /**
    * Returns a displayable string representation of a value of valueType.
    *
@@ -2798,7 +2816,7 @@ export interface ValueConverter<valueType> {
    * @example
    * displayValue: val => val?.toLocaleDateString()
    */
-  displayValue?(val: valueType): string
+  displayValue?(val: valueType | null | undefined): string
   /**
    * Specifies the storage type used in the database for this field. This can be used to explicitly define the data type and precision of the field in the database.
    *
@@ -2889,7 +2907,7 @@ export type ValueFilter<valueType> =
        */
       $nin?: valueType[]
     }
-export interface ValueListFieldOptions<entityType, valueType>
+export interface ValueListFieldOptions<entityType extends object, valueType>
   extends FieldOptions<entityType, valueType> {
   getValues?: () => valueType[]
 }
@@ -2911,13 +2929,13 @@ export declare class ValueListInfo<T extends ValueListItem>
   isNumeric: boolean
   private constructor()
   getValues(): T[]
-  byId(key: any): T
-  fromJson(val: any): T
+  byId(key: any): T | undefined
+  fromJson(val: any): T | undefined
   toJson(val: T): any
-  fromDb(val: any): T
+  fromDb(val: any): T | undefined
   toDb(val: T): any
   toInput(val: T, inputType: string): string
-  fromInput(val: string, inputType: string): T
+  fromInput(val: string, inputType: string): T | undefined | null
   displayValue?(val: T): string
   fieldTypeInDb?: string
   inputType?: string
@@ -3002,10 +3020,10 @@ export declare function remultNextApp(
   options?: RemultServerOptions<Request>,
 ): RemultNextAppServer
 export type RemultNextAppServer = RemultServerCore<Request> & {
-  GET: (req: Request) => Promise<Response>
-  PUT: (req: Request) => Promise<Response>
-  POST: (req: Request) => Promise<Response>
-  DELETE: (req: Request) => Promise<Response>
+  GET: (req: Request) => Promise<Response | undefined>
+  PUT: (req: Request) => Promise<Response | undefined>
+  POST: (req: Request) => Promise<Response | undefined>
+  DELETE: (req: Request) => Promise<Response | undefined>
   withRemult<T>(what: () => Promise<T>): Promise<T>
 }
 //[ ] RemultServerCore from ./server/index.js is not exported
@@ -3038,7 +3056,7 @@ export type RemultNextServer = RemultServerCore<NextApiRequest> &
 
 ```ts
 export declare function createRemultServer<RequestType>(
-  options: RemultServerOptions<RequestType>,
+  options: RemultServerOptions<RequestType> | undefined,
   serverCoreOptions?: ServerCoreOptions<RequestType>,
 ): RemultServer<RequestType>
 //[ ] ServerCoreOptions from ./remult-api-server.js is not exported
@@ -3069,8 +3087,8 @@ export declare class DataProviderLiveQueryStorage
 //[ ] LiveQueryStorageEntity from TBD is not exported
 //[ ] DataProvider from TBD is not exported
 //[ ] StoredQuery from TBD is not exported
-export type GenericRequestHandler = (
-  req: GenericRequestInfo,
+export type GenericRequestHandler<RequestType> = (
+  req: RequestType,
   res: GenericResponse,
   next: VoidFunction,
 ) => void
@@ -3086,8 +3104,8 @@ export interface GenericResponse {
   status(statusCode: number): GenericResponse
   end(): any
 }
-export type GenericRouter = {
-  route(path: string): SpecificRoute
+export type GenericRouter<RequestType> = {
+  route(path: string): SpecificRoute<RequestType>
 }
 export interface InitRequestOptions {
   liveQueryStorage: LiveQueryStorage
@@ -3097,7 +3115,7 @@ export interface InitRequestOptions {
 //[ ] Remult from TBD is not exported
 export declare class JsonEntityFileStorage implements JsonEntityStorage {
   private folderPath
-  getItem(entityDbName: string): string
+  getItem(entityDbName: string): string | null
   setItem(entityDbName: string, json: string): void
   constructor(folderPath: string)
 }
@@ -3119,7 +3137,7 @@ export interface QueueStorage {
 export interface RemultServer<RequestType>
   extends RemultServerCore<RequestType> {
   withRemult(req: RequestType, res: GenericResponse, next: VoidFunction): any
-  registerRouter(r: GenericRouter): void
+  registerRouter(r: GenericRouter<RequestType>): void
   handle(
     req: RequestType,
     gRes?: GenericResponse,
@@ -3214,7 +3232,7 @@ export interface RemultServerOptions<RequestType> {
    * })
    */
   error?: (info: {
-    req: RequestType
+    req?: RequestType
     entity?: EntityMetadata
     exception?: any
     httpStatusCode: number
@@ -3227,16 +3245,20 @@ export interface RemultServerOptions<RequestType> {
 //[ ] SubscriptionServer from TBD is not exported
 //[ ] Allowed from TBD is not exported
 //[ ] EntityMetadata from TBD is not exported
-export type SpecificRoute = {
-  get(handler: GenericRequestHandler): SpecificRoute
-  put(handler: GenericRequestHandler): SpecificRoute
-  post(handler: GenericRequestHandler): SpecificRoute
-  delete(handler: GenericRequestHandler): SpecificRoute
+export type SpecificRoute<RequestType> = {
+  get(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
+  put(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
+  post(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
+  delete(
+    handler: GenericRequestHandler<RequestType>,
+  ): SpecificRoute<RequestType>
 }
 export declare class SseSubscriptionServer implements SubscriptionServer {
   private canUserConnectToChannel?
   constructor(
-    canUserConnectToChannel?: (channel: string, remult: Remult) => boolean,
+    canUserConnectToChannel?:
+      | ((channel: string, remult: Remult) => boolean)
+      | undefined,
   )
   publishMessage<T>(channel: string, message: any): Promise<void>
 }
@@ -3246,7 +3268,7 @@ export declare class SseSubscriptionServer implements SubscriptionServer {
 
 ```ts
 export declare function createRemultServerCore<RequestType>(
-  options: RemultServerOptions<RequestType>,
+  options: RemultServerOptions<RequestType> | undefined,
   serverCoreOptions: ServerCoreOptions<RequestType>,
 ): RemultServer<RequestType>
 //[ ] ServerCoreOptions from TBD is not exported
@@ -3277,8 +3299,8 @@ export declare class DataProviderLiveQueryStorage
 //[ ] LiveQueryStorageEntity from TBD is not exported
 //[ ] DataProvider from TBD is not exported
 //[ ] StoredQuery from TBD is not exported
-export type GenericRequestHandler = (
-  req: GenericRequestInfo,
+export type GenericRequestHandler<RequestType> = (
+  req: RequestType,
   res: GenericResponse,
   next: VoidFunction,
 ) => void
@@ -3294,12 +3316,12 @@ export interface GenericResponse {
   status(statusCode: number): GenericResponse
   end(): any
 }
-export type GenericRouter = {
-  route(path: string): SpecificRoute
+export type GenericRouter<RequestType> = {
+  route(path: string): SpecificRoute<RequestType>
 }
 export declare class JsonEntityFileStorage implements JsonEntityStorage {
   private folderPath
-  getItem(entityDbName: string): string
+  getItem(entityDbName: string): string | null
   setItem(entityDbName: string, json: string): void
   constructor(folderPath: string)
 }
@@ -3321,7 +3343,7 @@ export interface QueueStorage {
 export interface RemultServer<RequestType>
   extends RemultServerCore<RequestType> {
   withRemult(req: RequestType, res: GenericResponse, next: VoidFunction): any
-  registerRouter(r: GenericRouter): void
+  registerRouter(r: GenericRouter<RequestType>): void
   handle(
     req: RequestType,
     gRes?: GenericResponse,
@@ -3412,7 +3434,7 @@ export interface RemultServerOptions<RequestType> {
    * })
    */
   error?: (info: {
-    req: RequestType
+    req?: RequestType
     entity?: EntityMetadata
     exception?: any
     httpStatusCode: number
@@ -3428,16 +3450,20 @@ export interface RemultServerOptions<RequestType> {
 //[ ] LiveQueryStorage from TBD is not exported
 //[ ] Allowed from TBD is not exported
 //[ ] EntityMetadata from TBD is not exported
-export type SpecificRoute = {
-  get(handler: GenericRequestHandler): SpecificRoute
-  put(handler: GenericRequestHandler): SpecificRoute
-  post(handler: GenericRequestHandler): SpecificRoute
-  delete(handler: GenericRequestHandler): SpecificRoute
+export type SpecificRoute<RequestType> = {
+  get(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
+  put(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
+  post(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
+  delete(
+    handler: GenericRequestHandler<RequestType>,
+  ): SpecificRoute<RequestType>
 }
 export declare class SseSubscriptionServer implements SubscriptionServer {
   private canUserConnectToChannel?
   constructor(
-    canUserConnectToChannel?: (channel: string, remult: Remult) => boolean,
+    canUserConnectToChannel?:
+      | ((channel: string, remult: Remult) => boolean)
+      | undefined,
   )
   publishMessage<T>(channel: string, message: any): Promise<void>
 }
@@ -3577,12 +3603,14 @@ export declare class PostgresDataProvider
   createCommand(): SqlCommand
   constructor(
     pool: PostgresPool,
-    options?: {
-      wrapIdentifier?: (name: string) => string
-      caseInsensitiveIdentifiers?: boolean
-      schema?: string
-      orderByNullsFirst?: boolean
-    },
+    options?:
+      | {
+          wrapIdentifier?: (name: string) => string
+          caseInsensitiveIdentifiers?: boolean
+          schema?: string
+          orderByNullsFirst?: boolean
+        }
+      | undefined,
   )
   end(): Promise<void>
   provideMigrationBuilder(builder: MigrationCode): MigrationBuilder
@@ -3700,7 +3728,7 @@ export declare class KnexDataProvider
     action: (dataProvider: DataProvider) => Promise<void>,
   ): Promise<void>
   static rawFilter(build: CustomKnexFilterBuilderFunction): EntityFilter<any>
-  static filterToRaw<entityType>(
+  static filterToRaw<entityType extends object>(
     entity: RepositoryOverloads<entityType>,
     condition: EntityFilter<entityType>,
     wrapIdentifier?: (name: string) => string,
@@ -3762,13 +3790,13 @@ export declare class MongoDataProvider implements DataProvider {
   disableTransactions: boolean
   static getDb(dataProvider?: DataProvider): {
     db: Db
-    session: ClientSession
+    session: ClientSession | undefined
   }
   getEntityDataProvider(entity: EntityMetadata<any>): EntityDataProvider
   transaction(
     action: (dataProvider: DataProvider) => Promise<void>,
   ): Promise<void>
-  static filterToRaw<entityType>(
+  static filterToRaw<entityType extends object>(
     entity: RepositoryOverloads<entityType>,
     condition: EntityFilter<entityType>,
   ): Promise<
@@ -4000,7 +4028,7 @@ export const actionInfo: {
 export type ClassType<T> = {
   new (...args: any[]): T
 }
-export declare class controllerRefImpl<T = any>
+export declare class controllerRefImpl<T extends object = any>
   extends rowHelperBase<T>
   implements ControllerRef<T>
 {
@@ -4019,15 +4047,14 @@ export declare function decorateColumnSettings<valueType>(
 export const flags: {
   error500RetryCount: number
 }
-export declare function getControllerRef<fieldsContainerType>(
+export declare function getControllerRef<fieldsContainerType extends object>(
   container: fieldsContainerType,
   remultArg?: Remult,
 ): ControllerRef<fieldsContainerType>
 //[ ] ControllerRef from TBD is not exported
 export declare function getEntitySettings<T>(
   entity: ClassType<T>,
-  throwError?: boolean,
-): EntityOptionsFactory | undefined
+): EntityOptionsFactory
 //[ ] EntityOptionsFactory from TBD is not exported
 export declare function getRelationFieldInfo(
   field: FieldMetadata,

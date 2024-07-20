@@ -3,8 +3,12 @@ import type {
   RemultServerOptions,
   ServerCoreOptions,
 } from './remult-api-server.js'
-import { createRemultServerCore } from './remult-api-server.js'
+import {
+  createRemultServerCore,
+  type GenericRequestInfo,
+} from './remult-api-server.js'
 import { initAsyncHooks } from './initAsyncHooks.js'
+import { cast } from '../src/isOfType.js'
 export { SseSubscriptionServer } from '../SseSubscriptionServer.js'
 export { DataProviderLiveQueryStorage } from '../live-query/data-provider-live-query-storage.js'
 export {
@@ -25,14 +29,14 @@ export {
   queuedJobInfo,
 } from './remult-api-server.js'
 export function createRemultServer<RequestType>(
-  options: RemultServerOptions<RequestType>,
+  options: RemultServerOptions<RequestType> | undefined,
   serverCoreOptions?: ServerCoreOptions<RequestType>,
 ): RemultServer<RequestType> {
   initAsyncHooks()
-  return createRemultServerCore(
+  return createRemultServerCore<RequestType>(
     options,
     serverCoreOptions || {
-      buildGenericRequestInfo: (req) => req,
+      buildGenericRequestInfo: (req) => cast<GenericRequestInfo>(req, 'method'),
       getRequestBody: async (req) => (req as any).body,
     },
   )

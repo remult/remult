@@ -56,9 +56,9 @@ export class Validators {
       `Value must be one of: ${values
         .map((y) =>
           typeof y === 'object'
-            ? y['id'] !== undefined
-              ? y['id']
-              : y.toString()
+            ? y?.['id'] !== undefined
+              ? y?.['id']
+              : y?.toString()
             : y,
         )
         .join(', ')}`,
@@ -68,7 +68,7 @@ export class Validators {
     (val) => val != null,
     'Should not be null',
   )
-  static enum = createValueValidatorWithArgs<unknown, unknown>(
+  static enum = createValueValidatorWithArgs<unknown, object>(
     (value, enumObj) => Object.values(enumObj).includes(value),
     (enumObj) => `Value must be one of ${getEnumValues(enumObj).join(', ')}`,
   )
@@ -183,7 +183,7 @@ export function createValueValidatorWithArgs<valueType, argsType>(
   ) => boolean | string | Promise<boolean | string>,
   defaultMessage?: ValueValidationMessage<argsType>,
 ): ValidatorWithArgs<valueType, argsType> & {
-  defaultMessage: ValueValidationMessage<argsType>
+  defaultMessage?: ValueValidationMessage<argsType>
 } {
   const result = createValidatorWithArgsInternal<valueType, argsType>(
     (_, e, args) => {
@@ -274,7 +274,7 @@ function createValidatorWithArgsInternal<valueType, argsType>(
   })
 }
 
-export function getEnumValues<theEnum = any>(enumObj: theEnum) {
+export function getEnumValues<theEnum extends object>(enumObj: theEnum) {
   return Object.values(enumObj).filter(
     (x) => typeof enumObj[x as any] !== 'number',
   )

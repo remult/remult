@@ -154,7 +154,7 @@ export class RestEntityDataProvider
   }
   //@internal
   buildFindRequest(
-    options: EntityDataProviderFindOptions,
+    options: EntityDataProviderFindOptions | undefined,
     method?: 'delete' | 'put' | 'get',
   ) {
     if (!method) method = 'get'
@@ -195,7 +195,7 @@ export class RestEntityDataProvider
       if (filterObject) {
         body = { set: body, where: filterObject }
         return this.http().post(u.url, body)
-      } else return this.http()[method](u.url, body)
+      } else return this.http()[method!](u.url, body)
     }
 
     return {

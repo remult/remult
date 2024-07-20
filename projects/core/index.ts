@@ -196,7 +196,7 @@ export {
  * await repo(Customer).insert()
  * ```
  */
-export function repo<entityType>(
+export function repo<entityType extends object>(
   entity: ClassType<entityType>,
   dataProvider?: DataProvider,
 ) {

@@ -69,7 +69,7 @@ export function verifyFieldRelationInfo(
           getFields: () => {
             let relationField = options.field
             let relFields: RelationFields = {
-              fields: options.fields,
+              fields: options.fields as Record<string, string>,
               compoundIdField: undefined,
             }
 
@@ -107,7 +107,7 @@ export function verifyFieldRelationInfo(
                               )
                             ) {
                               const keyInMyTable = relOp.fields[key]
-                              fields[keyInMyTable] = key
+                              fields[keyInMyTable!] = key
                             }
                           }
                           relFields.fields = fields

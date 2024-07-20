@@ -1,16 +1,15 @@
 import type { ClassType } from '../classType.js'
 import type { ClassHelper, Remult, RemultAsyncLocalStorage } from './context.js'
-import { DataProvider } from './data-interfaces'
+import type { DataProvider } from './data-interfaces.js'
 import type { columnInfo } from './remult3/columnInfo.js'
-import type { EntityMetadata } from './remult3/remult3.js'
 
 const remultStaticKey = Symbol.for('remult-static1')
 
 let x = {
-  defaultRemultFactory: undefined as () => Remult,
-  remultFactory: undefined as () => Remult,
-  defaultRemult: undefined as Remult,
-  asyncContext: undefined as RemultAsyncLocalStorage,
+  defaultRemultFactory: undefined as unknown as () => Remult,
+  remultFactory: undefined as unknown as () => Remult,
+  defaultRemult: undefined as unknown as Remult,
+  asyncContext: undefined as unknown as RemultAsyncLocalStorage,
   columnsOfType: new Map<any, columnInfo[]>(),
   allEntities: [] as ClassType<any>[],
   classHelpers: new Map<any, ClassHelper>(),
@@ -25,8 +24,9 @@ let x = {
       close: () => {},
     }),
   },
-  captionTransformer: undefined as any,
-  defaultDataProvider: () => undefined as Promise<DataProvider | undefined>,
+  captionTransformer: undefined as unknown as any,
+  defaultDataProvider: () =>
+    undefined as unknown as Promise<DataProvider | undefined>,
 }
 
 if (

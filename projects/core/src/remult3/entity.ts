@@ -51,6 +51,7 @@ export function Entity<entityType>(
         >,
         remult: Remult,
       ) => void)
+    | undefined
   )[]
 ) {
   return (
@@ -62,7 +63,7 @@ export function Entity<entityType>(
     for (const rawFilterMember in target) {
       if (Object.prototype.hasOwnProperty.call(target, rawFilterMember)) {
         const element = target[rawFilterMember] as customFilterInfo<any>
-        if (element?.rawFilterInfo?.rawFilterTranslator) {
+        if (element?.rawFilterInfo) {
           if (!element.rawFilterInfo.key)
             element.rawFilterInfo.key = rawFilterMember
         }

@@ -733,12 +733,12 @@ export function remultGraphql(options: {
           r[nodeIdKey] = () =>
             getMetaType(meta) + ':' + meta.idMetadata.getId(r)
         })
-        let ref = entities.find((i: any) => i.entityType === f.valueType)
+        let ref = entities.find((i: any) => i.entityType === f.valueType)!
         let notARealField = false
         if (ri) {
           {
             const refType = ri.toEntity
-            ref = entities.find((i: any) => i.entityType === refType)
+            ref = entities.find((i: any) => i.entityType === refType)!
           }
           if (!ref) {
             throw new Error(
@@ -1416,7 +1416,7 @@ export function translateWhereToRestBody<T>(
   }
   if (where.OR) {
     result.OR = where.OR.map(
-      (where: any) => translateWhereToRestBody(fields, { where }).where,
+      (where: any) => translateWhereToRestBody(fields, { where })?.where,
     )
   }
   return { where: result }

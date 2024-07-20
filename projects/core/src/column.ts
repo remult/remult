@@ -56,7 +56,7 @@ export class LookupColumn<T> {
       this.isReferenceRelation &&
       (this.id == 0 || this.id == '')
     ) {
-      this.storedItem = { item: null }
+      this.storedItem = { item: null! }
       return
     }
     this.storedItem = undefined

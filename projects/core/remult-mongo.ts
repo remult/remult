@@ -70,7 +70,7 @@ export class MongoDataProvider implements DataProvider {
       }
     }
   }
-  static async filterToRaw<entityType>(
+  static async filterToRaw<entityType extends object>(
     entity: RepositoryOverloads<entityType>,
     condition: EntityFilter<entityType>,
   ) {

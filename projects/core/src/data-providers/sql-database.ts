@@ -204,7 +204,7 @@ export class SqlDatabase
    
    */
 
-  static async filterToRaw<entityType>(
+  static async filterToRaw<entityType extends object>(
     repo: RepositoryOverloads<entityType>,
     condition: EntityFilter<entityType>,
     sqlCommand?: SqlCommandWithParameters,
@@ -254,7 +254,7 @@ export class SqlDatabase
    * const db = new SqlDatabase(new PostgresDataProvider(pgPool))
    */
   constructor(private sql: SqlImplementation) {
-    if (sql.wrapIdentifier) this.wrapIdentifier = (x) => sql.wrapIdentifier(x)
+    if (sql.wrapIdentifier) this.wrapIdentifier = (x) => sql.wrapIdentifier!(x)
     if (isOfType<CanBuildMigrations>(sql, 'provideMigrationBuilder')) {
       this.provideMigrationBuilder = (x) => sql.provideMigrationBuilder(x)
     }

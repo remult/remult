@@ -50,14 +50,14 @@ export abstract class Action<inParam, outParam> implements ActionInterface {
     http?: RestDataProviderHttpProvider,
   ): Promise<outParam> {
     if (baseUrl === undefined) baseUrl = remult.apiClient.url
-    if (!http) http = buildRestDataProvider(remult.apiClient.httpClient)
+    if (!http) http = buildRestDataProvider(remult.apiClient.httpClient!)
 
     let r = await http.post(baseUrl + '/' + this.actionUrl, pIn)
     let p: jobWasQueuedResult = r
     if (p && p.queuedJobId) {
       let progress = remultStatic.actionInfo.startBusyWithProgress()
       try {
-        let runningJob: queuedJobInfoResponse
+        let runningJob!: queuedJobInfoResponse
         await remultStatic.actionInfo.runActionWithoutBlockingUI(async () => {
           while (!runningJob || !runningJob.done) {
             if (runningJob)
@@ -66,7 +66,7 @@ export abstract class Action<inParam, outParam> implements ActionInterface {
                   res(undefined)
                 }, 200),
               )
-            runningJob = await http.post(
+            runningJob = await http!.post(
               baseUrl + '/' + Action.apiUrlForJobStatus,
               { queuedJobId: r.queuedJobId },
             )
@@ -131,7 +131,7 @@ export class myServerAction extends Action<inArgs, result> {
     private options: BackendMethodOptions<any>,
     public originalMethod: (args: any[]) => any,
   ) {
-    super(name, options.queue, options.allowed)
+    super(name, options.queue ?? false, options.allowed)
   }
 
   protected async execute(
@@ -266,7 +266,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
       } else return result
     }
 
-    let x = remultStatic.classHelpers.get(target.constructor)
+    let x = remultStatic.classHelpers.get(target.constructor)!
     if (!x) {
       x = new ClassHelper()
       remultStatic.classHelpers.set(target.constructor, x)
@@ -282,7 +282,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
       ) {
         let c = new Remult()
         for (const constructor of x.classes.keys()) {
-          let controllerOptions = x.classes.get(constructor)
+          let controllerOptions = x.classes.get(constructor)!
 
           if (!controllerOptions.key) {
             controllerOptions.key = c.repo(constructor).metadata.key
@@ -293,7 +293,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
               '/' +
               (options?.apiPrefix ? options.apiPrefix + '/' : '') +
               key,
-            options ? options.queue : false,
+            options ? options.queue ?? false : false,
             options.allowed,
             async (d: serverMethodInArgs, req, res) => {
               d.args = d.args.map((x) => (isCustomUndefined(x) ? undefined : x))
@@ -314,18 +314,19 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                   if (remultStatic.allEntities.includes(constructor)) {
                     let repo = remult.repo(constructor)
                     let y: any
+                    const rowInfo = d.rowInfo!
 
-                    if (d.rowInfo.isNewRow) {
+                    if (rowInfo.isNewRow) {
                       y = repo.create()
                       let rowHelper = repo.getEntityRef(
                         y,
                       ) as rowHelperImplementation<any>
-                      await rowHelper._updateEntityBasedOnApi(d.rowInfo.data)
+                      await rowHelper._updateEntityBasedOnApi(rowInfo.data)
                     } else {
                       let rows = await repo.find({
                         where: {
-                          ...repo.metadata.idMetadata.getIdFilter(d.rowInfo.id),
-                          $and: [repo.metadata.options.apiPrefilter],
+                          ...repo.metadata.idMetadata.getIdFilter(rowInfo.id),
+                          $and: [repo.metadata.options.apiPrefilter??{}],
                         },
                       })
                       if (rows.length != 1)
@@ -333,7 +334,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                       y = rows[0]
                       await (
                         repo.getEntityRef(y) as rowHelperImplementation<any>
-                      )._updateEntityBasedOnApi(d.rowInfo.data)
+                      )._updateEntityBasedOnApi(rowInfo.data)
                     }
                     if (!remult.isAllowedForInstance(y, allowed))
                       throw new ForbiddenError()
@@ -373,7 +374,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                     }
                   }
                 })
-                res.success(r)
+                res.success(r!)
               } catch (err) {
                 if (err.isForbiddenError)
                   // got a problem in next with instance of ForbiddenError  - so replaced it with this bool
@@ -395,7 +396,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
         if (remultStatic.allEntities.includes(target.constructor)) {
           let defs = getEntityRef(self) as rowHelperImplementation<any>
           await defs.__validateEntity()
-          let classOptions = x.classes.get(self.constructor)
+          let classOptions = x.classes.get(self.constructor)!
           if (!classOptions.key) {
             classOptions.key = defs.repository.metadata.key + '_methods'
           }
@@ -414,7 +415,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                 '/' +
                 (options?.apiPrefix ? options.apiPrefix + '/' : '') +
                 key,
-              options ? options.queue : false,
+              options?.queue ?? false,
               options.allowed,
             ).run(
               {
@@ -429,7 +430,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
               baseUrl,
               http,
             )
-            await defs._updateEntityBasedOnApi(r.rowInfo.data, true)
+            await defs._updateEntityBasedOnApi(r.rowInfo!.data, true)
             return r.result
           } catch (err) {
             throw defs.catchSaveErrors(err)
@@ -448,11 +449,11 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                 res: DataApiResponse,
               ) => Promise<serverMethodOutArgs>
             })(
-              x.classes.get(self.constructor).key +
+              x.classes.get(self.constructor)!.key +
                 '/' +
                 (options?.apiPrefix ? options.apiPrefix + '/' : '') +
                 key,
-              options ? options.queue : false,
+              options?.queue ?? false,
               options.allowed,
             ).run(
               {
@@ -534,7 +535,8 @@ export function prepareArgsToSend(types: any[], args: any[]) {
           let rh = getEntityRef(args[index])
           args[index] = rh.getId()
         }
-        if (x.valueConverter) args[index] = x.valueConverter.toJson(args[index])
+        if (x.valueConverter)
+          args[index] = x.valueConverter.toJson!(args[index])
       }
     }
   }
@@ -566,7 +568,7 @@ export async function prepareReceivedArgs(
       } else {
         let x: FieldOptions = { valueType: types[i] }
         x = decorateColumnSettings(x, remult)
-        if (x.valueConverter) args[i] = x.valueConverter.fromJson(args[i])
+        if (x.valueConverter) args[i] = x.valueConverter.fromJson!(args[i])
         let eo = getEntitySettings(types[i], false)
         if (eo != null) {
           if (!(args[i] === null || args[i] === undefined))

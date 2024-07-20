@@ -2,7 +2,6 @@ import type { ClassType } from '../../classType.js'
 import type { EntityOptionsFactory } from './RepositoryImplementation.js'
 import type { EntityRef } from './remult3.js'
 
-
 /**
  * Retrieves the EntityRef object associated with the specified entity instance.
  * The EntityRef provides methods for performing operations on the entity instance.
@@ -31,6 +30,11 @@ export const entityMember = Symbol.for('entityMember')
 export const entityInfo = Symbol.for('entityInfo')
 export const entityInfo_key = Symbol.for('entityInfo_key')
 
+export function getEntitySettings<T>(
+  entity: ClassType<T>,
+  throwError: boolean,
+): EntityOptionsFactory | undefined
+export function getEntitySettings<T>(entity: ClassType<T>): EntityOptionsFactory
 export function getEntitySettings<T>(
   entity: ClassType<T>,
   throwError = true,

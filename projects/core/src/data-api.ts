@@ -22,7 +22,7 @@ import type { rowHelperImplementation } from './remult3/RepositoryImplementation
 
 import { ForbiddenError } from './server-action.js'
 
-export class DataApi<T = any> {
+export class DataApi<T extends object = any> {
   constructor(
     private repository: Repository<T>,
     private remult: Remult,
@@ -369,11 +369,11 @@ export class DataApi<T = any> {
   async updateManyImplementation(
     response: DataApiResponse,
     request: DataApiRequest,
-    body: { where: any; set: any },
+    body: { where?: any; set?: any },
   ) {
     try {
       let where = await this.buildWhere(request, body)
-      Filter.throwErrorIfFilterIsEmpty(where, 'deleteMany')
+      Filter.throwErrorIfFilterIsEmpty(where, 'updateMany')
       return await doTransaction(this.remult, async () => {
         let updated = 0
         for await (const x of this.repository.query({

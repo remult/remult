@@ -31,7 +31,7 @@ export class Fields {
   /**
    * Stored as a JSON.stringify - to store as json use Fields.json
    */
-  static object<entityType = any, valueType = any>(
+  static object<entityType extends object = any, valueType = any>(
     ...options: (
       | FieldOptions<entityType, valueType>
       | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void)
@@ -39,7 +39,7 @@ export class Fields {
   ): ClassFieldDecorator<entityType, valueType | undefined> {
     return Field(undefined, ...options)
   }
-  static json<entityType = any, valueType = any>(
+  static json<entityType extends object = any, valueType = any>(
     ...options: (
       | FieldOptions<entityType, valueType>
       | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void)
@@ -60,7 +60,7 @@ export class Fields {
       ...options,
     )
   }
-  static dateOnly<entityType = any>(
+  static dateOnly<entityType extends object = any>(
     ...options: (
       | FieldOptions<entityType, Date>
       | ((options: FieldOptions<entityType, Date>, remult: Remult) => void)
@@ -74,7 +74,7 @@ export class Fields {
       ...options,
     )
   }
-  static date<entityType = any>(
+  static date<entityType extends object = any>(
     ...options: (
       | FieldOptions<entityType, Date>
       | ((options: FieldOptions<entityType, Date>, remult: Remult) => void)
@@ -82,7 +82,7 @@ export class Fields {
   ): ClassFieldDecorator<entityType, Date | undefined> {
     return Field(() => Date, ...options)
   }
-  static integer<entityType = any>(
+  static integer<entityType extends object = any>(
     ...options: (
       | FieldOptions<entityType, number>
       | ((options: FieldOptions<entityType, number>, remult: Remult) => void)
@@ -97,7 +97,7 @@ export class Fields {
       ...options,
     )
   }
-  static autoIncrement<entityType = any>(
+  static autoIncrement<entityType extends object = any>(
     ...options: (
       | FieldOptions<entityType, number>
       | ((options: FieldOptions<entityType, number>, remult: Remult) => void)
@@ -117,7 +117,7 @@ export class Fields {
     )
   }
 
-  static number<entityType = any>(
+  static number<entityType extends object = any>(
     ...options: (
       | FieldOptions<entityType, number>
       | ((options: FieldOptions<entityType, number>, remult: Remult) => void)
@@ -131,7 +131,7 @@ export class Fields {
       ...options,
     )
   }
-  static createdAt<entityType = any>(
+  static createdAt<entityType extends object = any>(
     ...options: (
       | FieldOptions<entityType, Date>
       | ((options: FieldOptions<entityType, Date>, remult: Remult) => void)
@@ -148,7 +148,7 @@ export class Fields {
       ...options,
     )
   }
-  static updatedAt<entityType = any>(
+  static updatedAt<entityType extends object = any>(
     ...options: (
       | FieldOptions<entityType, Date>
       | ((options: FieldOptions<entityType, Date>, remult: Remult) => void)
@@ -166,7 +166,7 @@ export class Fields {
     )
   }
 
-  static uuid<entityType = any>(
+  static uuid<entityType extends object = any>(
     ...options: (
       | FieldOptions<entityType, string>
       | ((options: FieldOptions<entityType, string>, remult: Remult) => void)
@@ -190,7 +190,7 @@ export class Fields {
    * The CUID is generated using the `@paralleldrive/cuid2` npm package.
    */
 
-  static cuid<entityType = any>(
+  static cuid<entityType extends object = any>(
     ...options: (
       | FieldOptions<entityType, string>
       | ((options: FieldOptions<entityType, string>, remult: Remult) => void)
@@ -209,7 +209,7 @@ export class Fields {
     )
   }
 
-  // static id<entityType = any>(
+  // static id<entityType extends object = any>(
   //   options?: FieldOptions<entityType, string> & { idFactory?: () => string },
   // ): ClassFieldDecorator<entityType, string | undefined> {
   //   let buildId = options?.idFactory ?? createId
@@ -251,7 +251,10 @@ export class Fields {
  * 
  * // This approach allows easy management and updates of the allowed values for the `status` field.
  */
-  static literal<entityType = any, valueType extends string = any>(
+  static literal<
+    entityType extends object = any,
+    valueType extends string = any,
+  >(
     optionalValues: () => readonly valueType[],
     ...options: (
       | StringFieldOptions<entityType, valueType>
@@ -272,7 +275,7 @@ export class Fields {
     )
   }
 
-  static enum<entityType = any, theEnum = any>(
+  static enum<entityType extends object = any, theEnum extends object = any>(
     enumType: () => theEnum,
     ...options: (
       | FieldOptions<entityType, theEnum[keyof theEnum]>
@@ -284,9 +287,8 @@ export class Fields {
   ): ClassFieldDecorator<entityType, theEnum[keyof theEnum] | undefined> {
     let valueConverter: ValueConverter<any>
     return Field(
-      () =>
-        //@ts-ignore
-        enumType()!,
+      //@ts-ignore
+      () => enumType()!,
       {
         validate: (entity, event) => Validators.enum(enumType())(entity, event),
         [fieldOptionalValuesFunctionKey]: () => getEnumValues(enumType()!),
@@ -311,7 +313,7 @@ export class Fields {
       },
     )
   }
-  static string<entityType = any, valueType = string>(
+  static string<entityType extends object = any, valueType = string>(
     ...options: (
       | StringFieldOptions<entityType, valueType>
       | ((
@@ -322,7 +324,7 @@ export class Fields {
   ): ClassFieldDecorator<entityType, valueType | undefined> {
     return Field<entityType, valueType>(() => String as any, ...options)
   }
-  static boolean<entityType = any>(
+  static boolean<entityType extends object = any>(
     ...options: (
       | FieldOptions<entityType, boolean>
       | ((options: FieldOptions<entityType, boolean>, remult: Remult) => void)
@@ -375,7 +377,7 @@ export class Relations {
    * customer?: Customer;
    * ```
    */
-  static toOne<entityType, toEntityType>(
+  static toOne<entityType extends object, toEntityType>(
     toEntityType: () => ClassType<toEntityType>,
     options?:
       | (FieldOptions<entityType, toEntityType> &
@@ -519,7 +521,7 @@ export class Relations {
  * @Fields.string((options,remult) => options.includeInApi = true)
  * title='';
  */
-export function Field<entityType = any, valueType = any>(
+export function Field<entityType extends object = any, valueType = any>(
   valueType:
     | (() => valueType extends number
         ? Number
@@ -606,8 +608,10 @@ export function Field<entityType = any, valueType = any>(
   }
 }
 
-export interface StringFieldOptions<entityType = any, valueType = string>
-  extends FieldOptions<entityType, valueType> {
+export interface StringFieldOptions<
+  entityType extends object = any,
+  valueType = string,
+> extends FieldOptions<entityType, valueType> {
   maxLength?: number
   minLength?: number
 }

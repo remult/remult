@@ -3,7 +3,7 @@ import { RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-da
 import { flags } from './remult3/remult3.js'
 
 export function buildRestDataProvider(
-  provider: ExternalHttpProvider | typeof fetch,
+  provider: ExternalHttpProvider | typeof fetch | undefined,
 ): RestDataProviderHttpProvider {
   if (!provider) return new RestDataProviderHttpProviderUsingFetch()
   let httpDataProvider: RestDataProviderHttpProvider | undefined

@@ -100,7 +100,7 @@ export class Remult {
    * @param entity - the entity to use
    * @param dataProvider - an optional alternative data provider to use. Useful for writing to offline storage or an alternative data provider
    */
-  public repo = <T>(
+  public repo = <T extends object>(
     entity: ClassType<T>,
     dataProvider?: DataProvider,
   ): Repository<T> => {
@@ -482,7 +482,7 @@ class transactionLiveQueryPublisher implements LiveQueryChangesListener {
   }
   async flush() {
     for (const key of this.transactionItems.keys()) {
-      await this.orig.itemChanged(key, this.transactionItems.get(key))
+      await this.orig.itemChanged(key, this.transactionItems.get(key)!)
     }
   }
 }

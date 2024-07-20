@@ -169,7 +169,10 @@ export class PostgresSchemaBuilder {
     entity: EntityMetadata<unknown>,
     field: FieldMetadata<any, unknown>,
   ) {
-    let e: EntityDbNamesBase = await dbNamesOf(entity, this.pool.wrapIdentifier)
+    let e: EntityDbNamesBase = await dbNamesOf(
+      entity as EntityMetadata<object>,
+      this.pool.wrapIdentifier,
+    )
     return (
       `ALTER table ${this.schemaAndName(e)} ` +
       `ADD column ${postgresColumnSyntax(field, e.$dbNameOf(field))}`
