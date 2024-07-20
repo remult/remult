@@ -1744,7 +1744,6 @@ export declare class JsonDataProvider implements DataProvider {
 }
 export declare class JsonEntityOpfsStorage implements JsonEntityStorage {
   getItem(entityDbName: string): Promise<string>
-  private init
   setItem(entityDbName: string, json: string): Promise<void>
 }
 export interface JsonEntityStorage {
@@ -3131,7 +3130,7 @@ export interface queuedJobInfo {
 }
 //[ ] queuedJobInfoResponse from TBD is not exported
 export interface QueueStorage {
-  createJob(url: string, userId: string): Promise<string>
+  createJob(url: string, userId?: string): Promise<string>
   getJobInfo(queuedJobId: string): Promise<queuedJobInfo>
 }
 export interface RemultServer<RequestType>
@@ -3337,7 +3336,7 @@ export interface queuedJobInfo {
 }
 //[ ] queuedJobInfoResponse from TBD is not exported
 export interface QueueStorage {
-  createJob(url: string, userId: string): Promise<string>
+  createJob(url: string, userId?: string): Promise<string>
   getJobInfo(queuedJobId: string): Promise<queuedJobInfo>
 }
 export interface RemultServer<RequestType>
