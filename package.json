@@ -71,6 +71,7 @@
     "copyfiles": "^2.4.1",
     "dependency-cruiser": "^13.1.5",
     "dotenv": "^8.1.0",
+    "duckdb": "^1.0.0",
     "eslint": "^8.56.0",
     "eslint-plugin-file-extension-in-import-ts": "^1.0.2",
     "eventsource": "^2.0.2",
@@ -104,9 +105,9 @@
     "tslint": "~6.1.0",
     "tsx": "^4.7.1",
     "type-fest": "^4.3.3",
-    "typedoc": "^0.25.0",
+    "typedoc": "^0.26.4",
     "typedoc-plugin-markdown": "3.10.4",
-    "typescript": "^5.2.2",
+    "typescript": "^5.5.3",
     "uuid": "^8.3.2",
     "vitest": "^0.34.3",
     "webdriverio": "^8.15.10"
@@ -116,8 +117,5 @@
     "argon2": false,
     "password-hash": false,
     "fs": false
-  },
-  "dependencies": {
-    "duckdb": "^1.0.0"
   }
 }

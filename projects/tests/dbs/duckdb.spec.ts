@@ -6,7 +6,7 @@ import type { DbTestProps } from './shared-tests/db-tests-props.js'
 import { Database } from 'duckdb'
 import { allDbTests } from './shared-tests/index.js'
 
-describe('duckdb', () => {
+describe.skipIf(process.env['SKIP_DUCKDB_TESTS'])('duckdb', () => {
   let db: SqlDatabase
   let remult: Remult
   beforeEach(async () => {

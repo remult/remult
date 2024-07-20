@@ -403,10 +403,7 @@ export declare class CustomSqlFilterBuilder
    * @param {FieldMetadata<valueType>} [field] - The field metadata.
    * @returns {string} - The SQL token.
    */
-  param: <valueType>(
-    val: valueType,
-    field?: FieldMetadata<valueType, any>,
-  ) => string
+  param: <valueType>(val: valueType, field?: FieldMetadata<valueType>) => string
   /**
    * Converts an entity filter into a raw SQL condition - and appends to it any `backendPrefilter` and `backendPreprocessFilter`
    * @param {RepositoryOverloads<entityType>} repo - The repository.
@@ -4034,7 +4031,7 @@ export declare function getEntitySettings<T>(
 //[ ] EntityOptionsFactory from TBD is not exported
 export declare function getRelationFieldInfo(
   field: FieldMetadata,
-): RelationFieldInfo
+): RelationFieldInfo | undefined
 export declare function getRelationInfo(options: FieldOptions): RelationInfo
 export interface RelationFieldInfo {
   type: "reference" | "toOne" | "toMany"
