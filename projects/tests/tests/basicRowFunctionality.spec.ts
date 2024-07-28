@@ -69,14 +69,14 @@ import { remultStatic, resetFactory } from '../../core/src/remult-static'
   },
 })
 class Phone {
-  constructor(private thePhone) {}
+  constructor(private thePhone: string) {}
 }
 @Entity('')
 class tableWithPhone extends EntityBase {
   @Fields.integer()
-  id: number
+  id!: number
   @Field(() => Phone)
-  phone: Phone
+  phone!: Phone
 }
 
 @Entity('taskTypeRecursive')
@@ -123,9 +123,9 @@ describe('Test basic row functionality', () => {
     expect(b.info).toBe(3)
   })
   it('Original values update correctly', async () => {
-    let c = await (
+    let c = (await (
       await createData(async (insert) => await insert(1, 'noam'))
-    )[0].findFirst()
+    )[0].findFirst())!
     expect(c.categoryName).toBe('noam')
     expect(c._.fields.categoryName.originalValue).toBe('noam')
     c.categoryName = 'yael'
@@ -137,21 +137,21 @@ describe('Test basic row functionality', () => {
   })
   it('Find or Create', async () => {
     let [repo] = await await createData()
-    let row = await repo.findFirst({ id: 1 }, { createIfNotFound: true })
+    let row = (await repo.findFirst({ id: 1 }, { createIfNotFound: true }))!
     expect(row._.isNew()).toBe(true)
     expect(row.id).toBe(1)
     await row._.save()
-    let row2 = await repo.findFirst({ id: 1 }, { createIfNotFound: true })
+    let row2 = (await repo.findFirst({ id: 1 }, { createIfNotFound: true }))!
     expect(row2._.isNew()).toBe(false)
     expect(row2.id).toBe(1)
   })
   it('Find or Create id', async () => {
     let [repo] = await await createData()
-    let row = await repo.findId(1, { createIfNotFound: true })
+    let row = (await repo.findId(1, { createIfNotFound: true }))!
     expect(row._.isNew()).toBe(true)
     expect(row.id).toBe(1)
     await row._.save()
-    let row2 = await repo.findId(1, { createIfNotFound: true })
+    let row2 = (await repo.findId(1, { createIfNotFound: true }))!
     expect(row2._.isNew()).toBe(false)
     expect(row2.id).toBe(1)
   })
@@ -184,47 +184,7 @@ describe('Test basic row functionality', () => {
     expect(y.id).toBe(1)
     expect(y.categoryName).toBe('noam')
   })
-  // it("json name is import ant", async () => {
-  //   let ctx = new Remult().for(newCategories);
-  //   let x = ctx.create();
-  //   x.id = 1;
-  //   x.categoryName.defs.key = 'xx';
-  //   x.categoryName = 'noam';
-  //   let y = x._.toApiPojo();;
-  //   expect(y.id).toBe(1);
-  //   expect(y.xx).toBe('noam');
-  // });
-  // it("json name is import ant 1", async () => {
-  //   let ctx = new Remult().for_old(myTestEntity);
-  //   let x = ctx.create();
-  //   x.id.value = 1;
-  //   expect(x.name1.defs.key).toBe('name');
-  //   x.name1.value = 'noam';
-  //   let y = ctx.toApiPojo(x);
-  //   expect(y.id).toBe(1);
-  //   expect(y.name).toBe('noam', JSON.stringify(y));
-  //   y.name = 'yael';
-  //   new Remult().for_old(myTestEntity)._updateEntityBasedOnApi(x, y);
-
-  //   expect(x.name1.value).toBe('yael');
-
-  // });
-  // it("json name is import ant", () => {
-  //   let x = new myTestEntity();
-  //   x.id.value = 1;
-  //   x.name1.value = 'a';
-  //   var y = new myTestEntity();
-  //   expect(x.columns.find(y.name1).value).toBe('a');
-
-  // });
 })
-@Entity('myTestEntity')
-class myTestEntity extends EntityBase {
-  @Fields.integer()
-  id: number
-  @Fields.string({ key: 'name' })
-  name1: string
-}
 
 describe('data api', () => {
   beforeEach(() => {
@@ -311,14 +271,14 @@ describe('data api', () => {
     await c._.save()
     c.name = '1'
 
-    expect((await c._.validate()).modelState!.name).toBe('invalid on column')
+    expect((await c._.validate())!.modelState!.name).toBe('invalid on column')
     c.name = '123'
     expect(await c._.validate()).toBeUndefined()
   })
   it('validation works on non active record', async () => {
     let remult = new Remult(new InMemoryDataProvider())
     var repo = remult.repo(entityWithValidationsOnColumn)
-    expect((await repo.validate({ name: '1' })).modelState!.name).toBe(
+    expect((await repo.validate({ name: '1' }))!.modelState!.name).toBe(
       'invalid on column',
     )
     expect(await repo.validate({ name: '123' })).toBeUndefined()
@@ -328,14 +288,14 @@ describe('data api', () => {
     try {
       remultStatic.remultFactory = () => new Remult(new InMemoryDataProvider())
       var repo = remult.repo(entityWithValidationsOnColumn)
-      expect((await repo.validate({ name: '1' })).modelState!.name).toBe(
+      expect((await repo.validate({ name: '1' }))!.modelState!.name).toBe(
         'invalid on column',
       )
       expect(
-        (await repo.validate({ name: '1' }, 'name')).modelState!.name,
+        (await repo.validate({ name: '1' }, 'name'))!.modelState!.name,
       ).toBe('invalid on column')
       expect(
-        (await repo.validate({ name: '1' }, 'myId', 'name')).modelState!.name,
+        (await repo.validate({ name: '1' }, 'myId', 'name'))!.modelState!.name,
       ).toBe('invalid on column')
       expect(await repo.validate({ name: '123' })).toBeUndefined()
       expect(await repo.validate({ name: '1' }, 'myId')).toBeUndefined()
@@ -414,7 +374,7 @@ describe('data api', () => {
         }
         return r
       },
-      transaction: undefined,
+      transaction: undefined!,
     }
 
     var api = new DataApi(ctx.repo(newCategories), ctx)
@@ -492,7 +452,7 @@ describe('data api', () => {
       expect(data[0].id).toBe(1)
       d.ok()
     }
-    await api.getArray(t, undefined)
+    await api.getArray(t, undefined!)
     d.test()
   })
   it('getArray works with filter', async () => {
@@ -650,7 +610,7 @@ describe('data api', () => {
     var deleting = new Done()
     let happend = false
     let type = class extends newCategories {}
-    Entity<typeof type.prototype>(undefined, {
+    Entity<typeof type.prototype>(undefined!, {
       allowApiDelete: true,
       deleted: () => (happend = true),
       deleting: (t) => {
@@ -680,7 +640,7 @@ describe('data api', () => {
     var deleting = new Done()
     let happend = false
     let type = class extends newCategories {}
-    Entity<typeof type.prototype>(undefined, {
+    Entity<typeof type.prototype>(undefined!, {
       allowApiDelete: true,
 
       deleted: () => (happend = true),
@@ -711,7 +671,7 @@ describe('data api', () => {
     var deleting = new Done()
     let happend = false
     let type = class extends newCategories {}
-    Entity<typeof type.prototype>(undefined, {
+    Entity<typeof type.prototype>(undefined!, {
       allowApiDelete: true,
       deleted: () => (happend = true),
       deleting: () => {
@@ -723,7 +683,7 @@ describe('data api', () => {
     let h2 = false
     let h3 = false
     try {
-      await (await c.findId(1))._.delete()
+      await (await c.findId(1))!._.delete()
       h2 = true
     } catch {
       h3 = true
@@ -735,7 +695,7 @@ describe('data api', () => {
     var deleting = new Done()
     let happend = false
     let type = class extends newCategories {}
-    Entity<typeof type.prototype>(undefined, {
+    Entity<typeof type.prototype>(undefined!, {
       allowApiDelete: true,
       deleted: (t) => {
         happend = true

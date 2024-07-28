@@ -81,7 +81,7 @@ export class PostgresDataProvider
       },
     }
   }
-  wrapIdentifier = (name) =>
+  wrapIdentifier = (name: string) =>
     name
       .split('.')
       .map((name) =>

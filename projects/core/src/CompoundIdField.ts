@@ -34,7 +34,7 @@ export class CompoundIdField implements FieldMetadata<string> {
       return instance[field.key]
     }
     if (typeof instance === 'function') {
-      get = instance;
+      get = instance
     }
     let r = ''
     this.fields.forEach((c) => {
@@ -43,25 +43,25 @@ export class CompoundIdField implements FieldMetadata<string> {
     })
     return r
   }
-  options: FieldOptions<any, any>
+  options: FieldOptions<any, any> = {}
   get valueConverter(): Required<ValueConverter<string>> {
     throw new Error('cant get value converter of compound id')
   }
 
-  target: ClassType<any>
-  readonly: true
+  target!: ClassType<any>
+  readonly = true
 
-  allowNull: boolean
-  dbReadOnly: boolean
-  isServerExpression: boolean
-  key: string
-  caption: string
-  inputType: string
-  dbName: string
+  allowNull = false
+  dbReadOnly = false
+  isServerExpression = false
+  key = ''
+  caption = ''
+  inputType = ''
+  dbName = ''
 
   valueType: any
   isEqualTo(value: FieldMetadata<string> | string): EntityFilter<any> {
-    let result = {}
+    let result: any = {}
     let val = value.toString()
     let id = val.split(',')
     this.fields.forEach((c, i) => {

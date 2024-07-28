@@ -278,7 +278,7 @@ export declare class CompoundIdField implements FieldMetadata<string> {
   options: FieldOptions<any, any>
   get valueConverter(): Required<ValueConverter<string>>
   target: ClassType<any>
-  readonly: true
+  readonly: boolean
   allowNull: boolean
   dbReadOnly: boolean
   isServerExpression: boolean
@@ -456,7 +456,7 @@ export declare function describeEntity<entityType extends ClassType<any>>(
   fields: FieldsDescriptor<entityType>,
   options?: EntityOptions<InstanceType<entityType>>,
 ): void
-export declare function Entity<entityType>(
+export declare function Entity<entityType extends object>(
   key: string,
   ...options: (
     | EntityOptions<
@@ -919,7 +919,6 @@ export declare function Field<entityType extends object = any, valueType = any>(
   context:
     | ClassFieldDecoratorContextStub<entityType, valueType | undefined>
     | string,
-  c?: any,
 ) => void
 export interface FieldMetadata<valueType = any, entityType = any> {
   /** The field's member name in an object.
@@ -1354,7 +1353,7 @@ export declare function FieldType<valueType = any>(
     | FieldOptions<any, valueType>
     | ((options: FieldOptions<any, valueType>, remult: Remult) => void)
   )[]
-): (target: any, context?: any) => any
+): (target: any) => any
 export declare type FieldValidator<entityType = any, valueType = any> = (
   entity: entityType,
   event: ValidateFieldEvent<entityType, valueType>,
@@ -1667,7 +1666,7 @@ export interface IdFieldRef<entityType, valueType>
         }
       ? string
       : string | number,
-  ): any
+  ): void
   getId(): valueType extends {
     id?: number
   }
@@ -2572,7 +2571,7 @@ export declare class SqlDatabase
 //[ ] MigrationCode from TBD is not exported
 //[ ] MigrationBuilder from TBD is not exported
 export interface SqlImplementation extends HasWrapIdentifier {
-  getLimitSqlSyntax(limit: number, offset: number): any
+  getLimitSqlSyntax(limit: number, offset: number): string
   createCommand(): SqlCommand
   transaction(action: (sql: SqlImplementation) => Promise<void>): Promise<void>
   entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void>
@@ -2917,7 +2916,7 @@ export declare function ValueListFieldType<
     | ValueListFieldOptions<any, valueType>
     | ((options: FieldOptions<any, valueType>, remult: Remult) => void)
   )[]
-): (type: ClassType<valueType>, context?: any) => void
+): (type: ClassType<valueType>) => void
 export declare class ValueListInfo<T extends ValueListItem>
   implements ValueConverter<T>
 {
@@ -2976,7 +2975,7 @@ export declare class WebSqlDataProvider
   toString(): string
 }
 export declare function withRemult<T>(
-  callback: (remult: any) => Promise<T>,
+  callback: (remult: Remult) => Promise<T>,
   options?: {
     dataProvider?:
       | DataProvider
@@ -3098,10 +3097,10 @@ export interface GenericRequestInfo {
   params?: any
 }
 export interface GenericResponse {
-  json(data: any): any
-  send(html: string): any
+  json(data: any): void
+  send(html: string): void
   status(statusCode: number): GenericResponse
-  end(): any
+  end(): void
 }
 export type GenericRouter<RequestType> = {
   route(path: string): SpecificRoute<RequestType>
@@ -3135,7 +3134,7 @@ export interface QueueStorage {
 }
 export interface RemultServer<RequestType>
   extends RemultServerCore<RequestType> {
-  withRemult(req: RequestType, res: GenericResponse, next: VoidFunction): any
+  withRemult(req: RequestType, res: GenericResponse, next: VoidFunction): void
   registerRouter(r: GenericRouter<RequestType>): void
   handle(
     req: RequestType,
@@ -3237,7 +3236,7 @@ export interface RemultServerOptions<RequestType> {
     httpStatusCode: number
     responseBody: any
     sendError: (httpStatusCode: number, body: any) => void
-  }) => Promise<void>
+  }) => Promise<void> | undefined
 }
 //[ ] ClassType from TBD is not exported
 //[ ] UserInfo from TBD is not exported
@@ -3310,10 +3309,10 @@ export interface GenericRequestInfo {
   params?: any
 }
 export interface GenericResponse {
-  json(data: any): any
-  send(html: string): any
+  json(data: any): void
+  send(html: string): void
   status(statusCode: number): GenericResponse
-  end(): any
+  end(): void
 }
 export type GenericRouter<RequestType> = {
   route(path: string): SpecificRoute<RequestType>
@@ -3341,7 +3340,7 @@ export interface QueueStorage {
 }
 export interface RemultServer<RequestType>
   extends RemultServerCore<RequestType> {
-  withRemult(req: RequestType, res: GenericResponse, next: VoidFunction): any
+  withRemult(req: RequestType, res: GenericResponse, next: VoidFunction): void
   registerRouter(r: GenericRouter<RequestType>): void
   handle(
     req: RequestType,
@@ -3439,7 +3438,7 @@ export interface RemultServerOptions<RequestType> {
     httpStatusCode: number
     responseBody: any
     sendError: (httpStatusCode: number, body: any) => void
-  }) => Promise<void>
+  }) => Promise<void> | undefined
 }
 //[ ] ClassType from TBD is not exported
 //[ ] UserInfo from TBD is not exported
@@ -3613,7 +3612,7 @@ export declare class PostgresDataProvider
   )
   end(): Promise<void>
   provideMigrationBuilder(builder: MigrationCode): MigrationBuilder
-  wrapIdentifier: (name: any) => any
+  wrapIdentifier: (name: string) => string
   ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
   orderByNullsFirst?: boolean
   transaction(
@@ -3731,7 +3730,7 @@ export declare class KnexDataProvider
     entity: RepositoryOverloads<entityType>,
     condition: EntityFilter<entityType>,
     wrapIdentifier?: (name: string) => string,
-  ): Promise<(knex: any) => void>
+  ): Promise<(knex: Knex.QueryBuilder) => void>
   isProxy?: boolean
   ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
 }

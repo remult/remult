@@ -56,8 +56,8 @@ export class Validators {
       `Value must be one of: ${values
         .map((y) =>
           typeof y === 'object'
-            ? y?.['id'] !== undefined
-              ? y?.['id']
+            ? (y as any)?.['id'] !== undefined
+              ? (y as any)?.['id']
               : y?.toString()
             : y,
         )
@@ -136,7 +136,7 @@ export function createValidator<valueType>(
       entityOrMessage === 'function' ||
       (entityOrMessage === undefined && e === undefined)
     ) {
-      return async (entity, e, message) =>
+      return async (entity: any, e: any, message: any) =>
         await validation(entity, e, entityOrMessage || message)
     }
     return validation(entityOrMessage, e!, message)
@@ -195,7 +195,7 @@ export function createValueValidatorWithArgs<valueType, argsType>(
       (defaultMessage as string),
     true,
   )
-  return Object.assign((entity, e) => result(entity, e), {
+  return Object.assign((entity: any, e: any) => result(entity, e), {
     get defaultMessage() {
       return defaultMessage
     },
@@ -271,11 +271,13 @@ function createValidatorWithArgsInternal<valueType, argsType>(
     set defaultMessage(val) {
       defaultMessage = val
     },
-  })
+  }) as ValidatorWithArgs<valueType, argsType> & {
+    defaultMessage: ValidationMessage<valueType, argsType>
+  }
 }
 
 export function getEnumValues<theEnum extends object>(enumObj: theEnum) {
   return Object.values(enumObj).filter(
-    (x) => typeof enumObj[x as any] !== 'number',
+    (x) => typeof (enumObj as any)[x as any] !== 'number',
   )
 }

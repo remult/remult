@@ -32,12 +32,12 @@ let x = {
 if (
   (typeof process !== 'undefined' &&
     process.env['IGNORE_GLOBAL_REMULT_IN_TESTS']) ||
-  typeof globalThis[remultStaticKey] === 'undefined'
+  typeof (globalThis as any)[remultStaticKey] === 'undefined'
 ) {
-  globalThis[remultStaticKey] = x
+  ;(globalThis as any)[remultStaticKey] = x
   x.remultFactory = () => defaultFactory()
 } else {
-  x = globalThis[remultStaticKey]
+  x = (globalThis as any)[remultStaticKey]
 }
 export const remultStatic = x
 

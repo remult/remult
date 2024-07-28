@@ -18,7 +18,7 @@ import { SqlDatabase } from './sql-database.js'
 export class WebSqlDataProvider
   implements SqlImplementation, __RowsOfDataForTesting
 {
-  rows: {
+  rows!: {
     [tableName: string]: any
   }
   /** @internal */

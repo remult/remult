@@ -23,7 +23,7 @@ const relationInfoMember = Symbol.for('relationInfo')
  * @deprecated
  */
 export function getRelationInfo(options: FieldOptions) {
-  return options?.[relationInfoMember] as RelationInfo
+  return (options as any)?.[relationInfoMember] as RelationInfo
 }
 
 /**
@@ -35,7 +35,7 @@ export interface RelationInfo {
 }
 const fieldRelationInfo = Symbol.for('fieldRelationInfo')
 export function getRelationFieldInfo(field: FieldMetadata) {
-  return field[fieldRelationInfo] as RelationFieldInfo | undefined
+  return (field as any)[fieldRelationInfo] as RelationFieldInfo | undefined
 }
 
 export interface RelationFieldInfo {
@@ -57,11 +57,11 @@ export function verifyFieldRelationInfo(
   for (const field of repo.fields.toArray()) {
     const r = getRelationInfo(field.options)
     if (r) {
-      if (!field[fieldRelationInfo]) {
+      if (!(field as any)[fieldRelationInfo]) {
         const toEntity = r.toType()
         const toRepo = remult.repo(toEntity, dp)
         const options = field.options as RelationOptions<any, any, any>
-        field[fieldRelationInfo] = {
+        ;(field as any)[fieldRelationInfo] = {
           type: r.type,
           toEntity,
           options,
@@ -107,7 +107,7 @@ export function verifyFieldRelationInfo(
                               )
                             ) {
                               const keyInMyTable = relOp.fields[key]
-                              fields[keyInMyTable!] = key
+                              ;(fields as any)[keyInMyTable!] = key
                             }
                           }
                           relFields.fields = fields

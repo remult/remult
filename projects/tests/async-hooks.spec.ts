@@ -11,7 +11,13 @@ import {
 } from '../core/server/initAsyncHooks.js'
 import { remultExpress } from '../core/remult-express'
 import { entity } from './tests/dynamic-classes'
-import { Fields, InMemoryDataProvider, repo, withRemult } from '../core'
+import {
+  Fields,
+  InMemoryDataProvider,
+  repo,
+  withRemult,
+  type UserInfo,
+} from '../core'
 
 it('test async hooks and static remult', async () => {
   let gotException = true
@@ -31,13 +37,13 @@ it('test async hooks and static remult', async () => {
       gotException = false
     } catch {}
     expect(gotException).toBe(true)
-    const promises = []
+    const promises: Promise<any>[] = []
     remultStatic.asyncContext.run(new Remult(), async () => {
       remult.user = { id: 'noam' }
       promises.push(
         new Promise((res) => {
           setTimeout(() => {
-            expect(remult.user.id).toBe('noam')
+            expect(remult.user?.id).toBe('noam')
             res({})
           }, 10)
         }),
@@ -47,7 +53,7 @@ it('test async hooks and static remult', async () => {
         promises.push(
           new Promise((res) => {
             setTimeout(() => {
-              expect(remult.user.id).toBe('yoni')
+              expect(remult.user?.id).toBe('yoni')
               res({})
             }, 10)
           }),
@@ -56,7 +62,7 @@ it('test async hooks and static remult', async () => {
       promises.push(
         new Promise((res) => {
           setTimeout(() => {
-            expect(remult.user.id).toBe('noam')
+            expect(remult.user?.id).toBe('noam')
             res({})
           }, 10)
         }),
@@ -88,7 +94,7 @@ describe('test sequential async hooks', () => {
           remult.user = { id: i.toString() }
 
           await new Promise((res) => setTimeout(res, 10))
-          result.push([i.toString(), remult.user.id])
+          result.push([i.toString(), remult.user?.id])
           if (i == 1) throw 'error'
         }),
       )
@@ -153,13 +159,15 @@ describe('test with remult within get user & init request', () => {
         await repo(t).insert({ id: '1' })
       },
       getUser: async (req) => {
-        return api.withRemultAsync({} as any, () => repo(t).findFirst())
+        return (await api.withRemultAsync({} as any, () =>
+          repo(t).findFirst(),
+        )) as UserInfo
       },
     })
     const result = await api.withRemultAsync({} as any, () =>
       repo(t).findFirst(),
     )
-    expect(result.id).toBe('1')
+    expect(result?.id).toBe('1')
   })
   afterEach(() => {
     RemultAsyncLocalStorage.disable()
@@ -181,11 +189,11 @@ describe('test default data provider based in init api server', () => {
         await repo(t).insert({ id: '1' })
       },
       getUser: async (req) => {
-        return withRemult(() => repo(t).findFirst())
+        return (await withRemult(() => repo(t).findFirst())) as UserInfo
       },
     })
     const result = await withRemult(() => repo(t).findFirst())
-    expect(result.id).toBe('1')
+    expect(result?.id).toBe('1')
   })
   afterEach(() => {
     RemultAsyncLocalStorage.disable()

@@ -260,10 +260,10 @@ export class SqlDatabase
     }
     if (isOfType(sql, 'end')) this.end = () => sql.end()
   }
-  provideMigrationBuilder: (builder: MigrationCode) => MigrationBuilder
+  provideMigrationBuilder!: (builder: MigrationCode) => MigrationBuilder
   private createdEntities: string[] = []
 
-  end: () => Promise<void>
+  end!: () => Promise<void>
 }
 
 const icons = new Map<string, string>([
@@ -323,7 +323,7 @@ class LogSQLCommand implements SqlCommand {
         }
       }
       return r
-    } catch (err) {
+    } catch (err: any) {
       console.error((err.message || 'Sql Error') + ':\n', sql, {
         arguments: this.args,
         error: err,
@@ -638,7 +638,7 @@ export function getRowAfterUpdate<entityType>(
   id: any,
   operation: string,
 ): any {
-  const idFilter = id !== undefined ? meta.idMetadata.getIdFilter(id) : {}
+  const idFilter: any = id !== undefined ? meta.idMetadata.getIdFilter(id) : {}
   return dataProvider
     .find({
       where: new Filter((x) => {

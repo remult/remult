@@ -70,7 +70,9 @@ export class LookupColumn<T> {
           this.id = eo.getId() as any
         } else {
           this.storedItem = { item }
-          this.id = item[this.repository.metadata.idMetadata.field.key]
+          this.id = item[
+            this.repository.metadata.idMetadata.field.key as keyof T
+          ] as idType<T>
         }
       }
     } else if (item === null) {
@@ -80,11 +82,11 @@ export class LookupColumn<T> {
     }
   }
 
-  id: idType<T>
+  id?: idType<T>
   constructor(
     private repository: Repository<T>,
-    private isReferenceRelation,
-    private allowNull,
+    private isReferenceRelation: boolean,
+    private allowNull: boolean,
   ) {}
 
   get item(): T {

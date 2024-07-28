@@ -35,7 +35,7 @@ import { remultStatic } from '../remult-static.js'
  * // as an arrow function that receives `remult` as a parameter
  * @Entity("tasks", (options,remult) => options.allowApiCrud = true)
  */
-export function Entity<entityType>(
+export function Entity<entityType extends object>(
   key: string,
   ...options: (
     | EntityOptions<
@@ -55,7 +55,7 @@ export function Entity<entityType>(
   )[]
 ) {
   return (
-    target,
+    target: any,
     info?: ClassDecoratorContextStub<
       entityType extends new (...args: any) => any ? entityType : never
     >,

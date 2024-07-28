@@ -27,7 +27,7 @@ export interface RepositoryInternal<entityType> {
     id: any,
     doNotLoadIfNotFound: boolean,
   ): Promise<entityType | undefined>
-  _addToCache(item: entityType)
+  _addToCache(item: entityType): void
   _getFocusedRelationRepo(
     field: FieldMetadata,
     item: any,

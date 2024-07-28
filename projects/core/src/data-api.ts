@@ -115,7 +115,7 @@ export class DataApi<T extends object = any> {
           await this.buildWhere(request, body),
         )),
       })
-    } catch (err) {
+    } catch (err: any) {
       response.error(err, this.repository.metadata)
     }
   }
@@ -138,7 +138,7 @@ export class DataApi<T extends object = any> {
         }
         response.success({ deleted })
       })
-    } catch (err) {
+    } catch (err: any) {
       response.error(err, this.repository.metadata)
     }
   }
@@ -210,7 +210,7 @@ export class DataApi<T extends object = any> {
   }
 
   private includeNone() {
-    let include = {}
+    let include: any = {}
 
     for (const field of this.repository.metadata.fields) {
       if (getRelationFieldInfo(field)) {
@@ -233,7 +233,7 @@ export class DataApi<T extends object = any> {
       const { r } = await this.getArrayImpl(response, request, body)
 
       response.success(r)
-    } catch (err) {
+    } catch (err: any) {
       if (err.isForbiddenError) response.forbidden()
       else response.error(err, this.repository.metadata)
     }
@@ -265,7 +265,7 @@ export class DataApi<T extends object = any> {
         data,
       })
       response.success(r.r)
-    } catch (err) {
+    } catch (err: any) {
       if (err.isForbiddenError) response.forbidden()
       else response.error(err, this.repository.metadata)
     }
@@ -347,7 +347,7 @@ export class DataApi<T extends object = any> {
             )
           else await what(r[0])
         })
-    } catch (err) {
+    } catch (err: any) {
       response.error(err, this.repository.metadata)
     }
   }
@@ -385,7 +385,7 @@ export class DataApi<T extends object = any> {
         }
         response.success({ updated })
       })
-    } catch (err) {
+    } catch (err: any) {
       response.error(err, this.repository.metadata)
     }
   }
@@ -440,7 +440,7 @@ export class DataApi<T extends object = any> {
         })
         response.created(result)
       } else response.created(await insert(body))
-    } catch (err) {
+    } catch (err: any) {
       if (err.isForbiddenError) response.forbidden(err.message)
       else response.error(err, this.repository.metadata)
     }

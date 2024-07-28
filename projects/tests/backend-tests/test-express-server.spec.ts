@@ -123,7 +123,7 @@ it('test with express remult async ', async () => {
   })
   expect(
     await api.withRemultAsync({ path: '123' } as any, async () => {
-      return remult.user.id
+      return remult.user!.id
     }),
   ).toBe('1')
   expect(initRequest).toEqual([{ path: '123' }])

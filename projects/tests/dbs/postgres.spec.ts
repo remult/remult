@@ -22,6 +22,7 @@ import { entityWithValidations } from './shared-tests/entityWithValidations'
 import { knexTests } from './shared-tests/test-knex'
 import { SqlDbTests } from './shared-tests/sql-db-tests'
 import { testMigrationScript } from '../tests/testHelper.js'
+import { isOfType } from '../../core/src/isOfType.js'
 
 PostgresSchemaBuilder.logToConsole = false
 const postgresConnection = process.env.DATABASE_URL
@@ -78,9 +79,8 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
         },
       ),
     )
-    expect(
-      await testMigrationScript(db, (m) => m.createTable(e.metadata)),
-    ).toMatchInlineSnapshot(`
+    expect(await testMigrationScript(db, (m) => m.createTable(e.metadata)))
+      .toMatchInlineSnapshot(`
       "CREATE SCHEMA IF NOT EXISTS public;
       CREATE table \\"t\\" (
         \\"id\\" numeric default 0 not null,
@@ -93,11 +93,13 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
   it('test transactions and ddl', async () => {
     const db = SqlDatabase.getDb(remult.dataProvider)
     await expect(() =>
-      db.transaction(async (db: SqlDatabase) => {
-        await db.execute('drop table if exists test_transactions')
-        await db.execute('create table test_transactions(id int)')
-        await db.execute('insert into test_transactions values (1)')
-        throw new Error('error')
+      db.transaction(async (db) => {
+        if (isOfType<SqlDatabase>(db, 'execute')) {
+          await db.execute('drop table if exists test_transactions')
+          await db.execute('create table test_transactions(id int)')
+          await db.execute('insert into test_transactions values (1)')
+          throw new Error('error')
+        }
       }),
     ).rejects.toThrowErrorMatchingInlineSnapshot('"error"')
   })
@@ -119,7 +121,7 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
     })
     await db.ensureSchema([remult.repo(ent).metadata])
     await remult.repo(ent).insert({ id: 1, oneMoreColumn: 8 })
-    expect((await remult.repo(ent).findFirst()).createdAt.getFullYear()).toBe(
+    expect((await remult.repo(ent).findFirst())!.createdAt.getFullYear()).toBe(
       new Date().getFullYear(),
     )
   })
@@ -161,7 +163,7 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
     })
     await db.ensureSchema([remult.repo(ent).metadata])
     await remult.repo(ent).insert({ id: 1, oneMoreColumn: 8 })
-    expect((await remult.repo(ent).findFirst()).createdAt.getFullYear()).toBe(
+    expect((await remult.repo(ent).findFirst())!.createdAt.getFullYear()).toBe(
       new Date().getFullYear(),
     )
   })
@@ -239,7 +241,7 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
     await c.insert([{ categoryName: 'a', id: 1 }])
     try {
       await remult.repo(testErrorInFromDb).find()
-    } catch (err) {
+    } catch (err: any) {
       expect(err.message).toContain('categoryName')
     }
   })

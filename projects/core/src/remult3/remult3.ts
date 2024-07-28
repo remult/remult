@@ -13,7 +13,7 @@ import type { EntityBase } from './RepositoryImplementation.js'
 
 export interface EntityRefBase<entityType> extends Subscribable {
   hasErrors(): boolean
-  undoChanges()
+  undoChanges(): void
   save(): Promise<entityType>
   reload(): Promise<entityType>
   delete(): Promise<void>
@@ -186,7 +186,7 @@ export interface IdFieldRef<entityType, valueType>
       : valueType extends { id?: string }
       ? string
       : string | number,
-  )
+  ): void
   getId(): valueType extends { id?: number }
     ? number
     : valueType extends { id?: string }

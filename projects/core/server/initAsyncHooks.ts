@@ -32,7 +32,7 @@ export class AsyncLocalStorageBridgeToRemultAsyncLocalStorageCoreImpl<T>
 {
   private asyncLocalStorage = new AsyncLocalStorage<T>()
 
-  wasImplemented: 'yes'
+  wasImplemented = 'yes' as const
   run<R>(store: T, callback: () => Promise<R>): Promise<R> {
     let r: Promise<R>
     this.asyncLocalStorage.run(store, () => {
@@ -60,7 +60,7 @@ const ignoreInStack = [
 export class SequentialRemultAsyncLocalStorageCore<T>
   implements RemultAsyncLocalStorageCore<T>
 {
-  wasImplemented: 'yes'
+  wasImplemented = 'yes' as const
   async run<R>(store: T, callback: () => Promise<R>): Promise<R> {
     let log = (msg: string) => {}
     if (false) {
@@ -100,28 +100,28 @@ export class SequentialRemultAsyncLocalStorageCore<T>
     }
   }
 
-  getStore(): T {
+  getStore(): T | undefined {
     return this.currentValue
   }
 
   lastPromise: Promise<T | undefined> = Promise.resolve(undefined)
-  currentValue: T
+  currentValue?: T
 }
 export class StubRemultAsyncLocalStorageCore<T>
   implements RemultAsyncLocalStorageCore<T>
 {
-  wasImplemented: 'yes'
+  wasImplemented = 'yes' as const
   async run<R>(store: T, callback: () => Promise<R>): Promise<R> {
     this.currentValue = store
     return await callback()
   }
 
-  getStore(): T {
+  getStore(): T | undefined {
     return this.currentValue
   }
 
   lastPromise: Promise<T | undefined> = Promise.resolve(undefined)
-  currentValue: T
+  currentValue?: T
 }
 
 export class AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore<

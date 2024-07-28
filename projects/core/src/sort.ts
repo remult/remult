@@ -176,8 +176,8 @@ export class Sort {
     if (!orderBy) orderBy = {} as EntityOrderBy<T>
     else orderBy = { ...orderBy }
     for (const field of entityMetadata.idMetadata.fields) {
-      if (!orderBy[field.key]) {
-        orderBy[field.key] = 'asc'
+      if (!orderBy[field.key as keyof EntityOrderBy<T>]) {
+        orderBy[field.key as keyof EntityOrderBy<T>] = 'asc'
       }
     }
     return orderBy

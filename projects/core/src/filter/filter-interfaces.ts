@@ -284,12 +284,14 @@ export class Filter {
     let result: Filter[] = []
     for (const key in whereItem) {
       if (Object.prototype.hasOwnProperty.call(whereItem, key)) {
-        let fieldToFilter: any = whereItem[key]
+        let fieldToFilter: any = whereItem[key as keyof EntityFilter<T>]
         {
           if (key == '$or') {
             result.push(
               new OrFilter(
-                ...fieldToFilter.map((x) => Filter.fromEntityFilter(entity, x)),
+                ...fieldToFilter.map((x: EntityFilter<T>) =>
+                  Filter.fromEntityFilter(entity, x),
+                ),
               ),
             )
           } else if (key == '$not') {
@@ -299,7 +301,9 @@ export class Filter {
           } else if (key == '$and') {
             result.push(
               new AndFilter(
-                ...fieldToFilter.map((x) => Filter.fromEntityFilter(entity, x)),
+                ...fieldToFilter.map((x: EntityFilter<T>) =>
+                  Filter.fromEntityFilter(entity, x),
+                ),
               ),
             )
           } else if (key.startsWith(customUrlToken)) {
@@ -311,14 +315,16 @@ export class Filter {
           } else if (key == customDatabaseFilterToken) {
             result.push(new Filter((x) => x.databaseCustom(fieldToFilter)))
           } else {
-            const field = entity.fields[key]
+            const field = entity.fields[key as keyof FieldsMetadata<T>]
             const rel = getRelationFieldInfo(field)
             const op = field.options as RelationOptions<any, any, any>
             let fh =
               rel?.type === 'toOne'
                 ? op.fields
                   ? new manyToOneFilterHelper(field, entity.fields, op)
-                  : new toOneFilterHelper(entity.fields[op.field!])
+                  : new toOneFilterHelper(
+                      entity.fields[op.field! as keyof FieldsMetadata<T>],
+                    )
                 : new filterHelper(field)
             let found = false
             if (fieldToFilter !== undefined && fieldToFilter != null) {
@@ -433,7 +439,7 @@ export class Filter {
     let f = new customTranslator(async (filterKey, custom) => {
       let r: Filter[] = []
       for (const key in entity.entityType) {
-        const element = entity.entityType[key] as customFilterInfo<any>
+        const element = (entity.entityType as any)[key] as customFilterInfo<any>
         if (
           element &&
           element.rawFilterInfo &&
@@ -695,7 +701,7 @@ export class FilterSerializer implements FilterConsumer {
   databaseCustom(databaseCustom: any): void {
     throw new Error('database custom is not allowed with api calls.')
   }
-  custom(key, customItem: any): void {
+  custom(key: string, customItem: any): void {
     if (Array.isArray(customItem))
       customItem = { [customArrayToken]: customItem }
     this.add(customUrlToken + key, customItem)
@@ -882,7 +888,7 @@ export function buildFilterFromRequestParameters(
   if (val) {
     const array = separateArrayFromInnerArray(val)
     const or = array.map((v) => ({
-      $or: v.map((x) =>
+      $or: v.map((x: any) =>
         buildFilterFromRequestParameters(entity, {
           get: (key: string) => x[key],
         }),
@@ -932,7 +938,7 @@ export function buildFilterFromRequestParameters(
   }
 
   for (const key in entity.entityType) {
-    const element = entity.entityType[key] as customFilterInfo<any>
+    const element = (entity.entityType as any)[key] as customFilterInfo<any>
     if (
       element &&
       element.rawFilterInfo &&
@@ -1097,7 +1103,7 @@ export function __updateEntityBasedOnWhere<T>(
 
       isDifferentFrom: emptyFunction,
       isEqualTo: (col, val) => {
-        r[col.key] = val
+        r[col.key as keyof T] = val
       },
       isGreaterOrEqualTo: emptyFunction,
       isGreaterThan: emptyFunction,
@@ -1154,7 +1160,7 @@ class preciseValuesCollector<entityType> implements FilterConsumer {
           const relInfo = getRelationFieldInfo(result.field)
           if (relInfo) {
             if (relInfo.type === 'reference') {
-              return result.values.map((x) => {
+              return result.values.map((x: any) => {
                 return relInfo.toRepo.metadata.idMetadata.getIdFilter(x)
               })
             } else

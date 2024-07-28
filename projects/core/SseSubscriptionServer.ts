@@ -56,7 +56,7 @@ export class SseSubscriptionServer implements SubscriptionServer {
     }
   }
   //@internal
-  debugMessageFileSaver = (id, channel, message) => {}
+  debugMessageFileSaver = (id: string, channel: string, message: any) => {}
 
   //@internal
   openHttpServerStream(
@@ -100,7 +100,7 @@ export interface ResponseRequiredForSSE {
 }
 export class clientConnection {
   channels: Record<string, boolean> = {}
-  timeOutRef: NodeJS.Timeout
+  timeOutRef?: NodeJS.Timeout
   close() {
     if (this.timeOutRef) clearTimeout(this.timeOutRef)
     this.closed = true

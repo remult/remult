@@ -35,10 +35,15 @@ export function remultExpress(
   server.registerRouter(app)
 
   return Object.assign(app, {
-    getRemult: (req) => server.getRemult(req),
+    getRemult: (req: express.Request) => server.getRemult(req),
     openApiDoc: (options: { title: string }) => server.openApiDoc(options),
-    withRemult: (req, res, next) => server.withRemult(req, res, next),
-    withRemultAsync: <T>(req, what) => server.withRemultAsync<T>(req, what),
+    withRemult: (
+      req: express.Request,
+      res: express.Response,
+      next: VoidFunction,
+    ) => server.withRemult(req, res, next),
+    withRemultAsync: <T>(req: express.Request, what: () => Promise<T>) =>
+      server.withRemultAsync<T>(req, what),
   })
 }
 

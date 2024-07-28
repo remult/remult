@@ -94,7 +94,7 @@ export class Fields {
         valueConverter: ValueConverters.Integer,
         validate: validateNumber,
       },
-      ...options,
+      ...(options as any),
     )
   }
   static autoIncrement<entityType extends object = any>(
@@ -104,7 +104,7 @@ export class Fields {
     )[]
   ): ClassFieldDecorator<entityType, number | undefined> {
     return Field(
-      () => Number,
+      () => Number as any,
       {
         allowApiUpdate: false,
         dbReadOnly: true,
@@ -128,7 +128,7 @@ export class Fields {
       {
         validate: validateNumber,
       },
-      ...options,
+      ...(options as any),
     )
   }
   static createdAt<entityType extends object = any>(
@@ -173,7 +173,7 @@ export class Fields {
     )[]
   ): ClassFieldDecorator<entityType, string | undefined> {
     return Field(
-      () => String,
+      () => String as any,
       {
         allowApiUpdate: false,
         defaultValue: () => uuid(),
@@ -197,7 +197,7 @@ export class Fields {
     )[]
   ): ClassFieldDecorator<entityType, string | undefined> {
     return Field(
-      () => String,
+      () => String as any,
       {
         allowApiUpdate: false,
         defaultValue: () => createId(),
@@ -295,7 +295,7 @@ export class Fields {
       },
       ...options,
       (options) => {
-        options[fieldOptionalValuesFunctionKey] = () =>
+        ;(options as any)[fieldOptionalValuesFunctionKey] = () =>
           getEnumValues(enumType()!)
         if (valueConverter === undefined) {
           let enumObj = enumType()
@@ -330,7 +330,7 @@ export class Fields {
       | ((options: FieldOptions<entityType, boolean>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, boolean | undefined> {
-    return Field(() => Boolean, ...options)
+    return Field(() => Boolean as any, ...options)
   }
 }
 export class Relations {
@@ -539,28 +539,27 @@ export function Field<entityType extends object = any, valueType = any>(
   // import ANT!!!! if you call this in another decorator, make sure to set It's return type correctly with the | undefined
 
   return (
-    target,
+    target: any,
     context:
       | ClassFieldDecoratorContextStub<entityType, valueType | undefined>
       | string,
-    c?,
   ) => {
     const key = typeof context === 'string' ? context : context.name.toString()
     let factory = (remult: Remult) => {
       let r = buildOptions(options, remult)
       if (r.required) {
-        r.validate = addValidator(r.validate, Validators.required, true)
+        r.validate = addValidator(r.validate as any, Validators.required, true)
       }
 
       if ((r as StringFieldOptions).maxLength) {
         r.validate = addValidator(
-          r.validate,
+          r.validate as any,
           Validators.maxLength((r as StringFieldOptions).maxLength!),
         )
       }
       if ((r as StringFieldOptions).minLength) {
         r.validate = addValidator(
-          r.validate,
+          r.validate as any,
           Validators.minLength((r as StringFieldOptions).minLength!),
         )
       }
@@ -595,7 +594,7 @@ export function Field<entityType extends object = any, valueType = any>(
     if (!set)
       names.push({
         key,
-        settings: factory,
+        settings: factory as any,
       })
     else {
       let prev = set.settings

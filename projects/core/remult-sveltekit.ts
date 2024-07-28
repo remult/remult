@@ -17,7 +17,7 @@ export function remultSveltekit(
       method: event.request.method,
       on: (e: 'close', do1: VoidFunction) => {
         if (e === 'close') {
-          event.locals['_tempOnClose'] = do1
+          ;(event.locals as any)['_tempOnClose'] = do1
         }
       },
     }),
@@ -25,7 +25,7 @@ export function remultSveltekit(
   })
   const serverHandler: RequestHandler = async (event) => {
     let sseResponse: Response | undefined = undefined
-    event.locals['_tempOnClose'] = () => {}
+    ;(event.locals as any)['_tempOnClose'] = () => {}
 
     const response: GenericResponse & ResponseRequiredForSSE = {
       end: () => {},
@@ -52,7 +52,7 @@ export function remultSveltekit(
               },
               cancel: () => {
                 response.write = () => {}
-                event.locals['_tempOnClose']()
+                ;(event.locals as any)['_tempOnClose']()
               },
             })
             sseResponse = new Response(stream, { headers })
@@ -78,7 +78,7 @@ export function remultSveltekit(
       })
       return res
     }
-    return  new Response('Not Found', {
+    return new Response('Not Found', {
       status: 404,
     })
   }
@@ -94,7 +94,7 @@ export function remultSveltekit(
     })
   }
   return Object.assign(handler, {
-    getRemult: (req) => result.getRemult(req),
+    getRemult: (req: RequestEvent) => result.getRemult(req),
     openApiDoc: (options: { title: string }) => result.openApiDoc(options),
     withRemult<T>(request: RequestEvent, what: () => Promise<T>): Promise<T> {
       return result.withRemultAsync(request, what)

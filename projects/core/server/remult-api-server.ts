@@ -133,7 +133,7 @@ export interface RemultServerOptions<RequestType> {
     httpStatusCode: number
     responseBody: any
     sendError: (httpStatusCode: number, body: any) => void
-  }) => Promise<void>
+  }) => Promise<void> | undefined
 }
 
 export interface InitRequestOptions {
@@ -203,7 +203,7 @@ export interface ServerHandleResponse {
 }
 export interface RemultServer<RequestType>
   extends RemultServerCore<RequestType> {
-  withRemult(req: RequestType, res: GenericResponse, next: VoidFunction)
+  withRemult(req: RequestType, res: GenericResponse, next: VoidFunction): void
   registerRouter(r: GenericRouter<RequestType>): void
   handle(
     req: RequestType,
@@ -239,10 +239,10 @@ export interface GenericRequestInfo {
 }
 
 export interface GenericResponse {
-  json(data: any)
-  send(html: string)
+  json(data: any): void
+  send(html: string): void
   status(statusCode: number): GenericResponse //exists for express and next and not in opine(In opine it's setStatus)
-  end()
+  end(): void
 }
 
 /* @internal*/
@@ -353,7 +353,7 @@ export class RemultServerImplementation<RequestType>
     }
     throw new Error("Couldn't find entity " + entityKey)
   }
-  subscriptionServer: SubscriptionServer
+  subscriptionServer?: SubscriptionServer
   withRemult = async (
     req: RequestType,
     res: GenericResponse,
@@ -364,7 +364,7 @@ export class RemultServerImplementation<RequestType>
     })(req, res)
   }
 
-  routeImpl: RouteImplementation<RequestType>
+  routeImpl?: RouteImplementation<RequestType>
   getRouteImpl() {
     if (!this.routeImpl) {
       this.routeImpl = new RouteImplementation(this.coreOptions)
@@ -385,7 +385,7 @@ export class RemultServerImplementation<RequestType>
     this.registeredRouter = true
     {
       for (const c of this.options.controllers!) {
-        let z = c[classBackendMethodsArray]
+        let z = (c as any)[classBackendMethodsArray]
         if (z)
           for (const a of z) {
             let x = <myServerAction>a[serverActionField]
@@ -440,31 +440,22 @@ export class RemultServerImplementation<RequestType>
         const streamPath = this.options.rootPath + '/' + streamUrl
 
         r.route(streamPath).get(
-          this.process(async (remult, req, res, origReq, origRes: Response) => {
+          this.process(async (remult, req, res, origReq, origRes) => {
             ;(
               remult.subscriptionServer as SseSubscriptionServer
-            ).openHttpServerStream(origReq, origRes)
+            ).openHttpServerStream(origReq, origRes as any)
           }),
         )
         r.route(streamPath + '/subscribe').post(
-          this.process(
-            async (
-              remult,
-              req,
+          this.process(async (remult, _2, res, _, _1, origReq: RequestType) => {
+            const body = (
+              remult.subscriptionServer as SseSubscriptionServer
+            ).subscribeToChannel(
+              await this.coreOptions.getRequestBody(origReq),
               res,
-              reqInfo,
-              origRes: Response,
-              origReq: RequestType,
-            ) => {
-              const body = (
-                remult.subscriptionServer as SseSubscriptionServer
-              ).subscribeToChannel(
-                await this.coreOptions.getRequestBody(origReq),
-                res,
-                remult,
-              )
-            },
-          ),
+              remult,
+            )
+          }),
         )
         r.route(streamPath + '/unsubscribe').post(
           this.process(
@@ -473,7 +464,7 @@ export class RemultServerImplementation<RequestType>
               req,
               res,
               reqInfo,
-              origRes: Response,
+              origRes,
               origReq: RequestType,
             ) => {
               ;(
@@ -490,14 +481,7 @@ export class RemultServerImplementation<RequestType>
       }
       r.route(this.options.rootPath + '/' + liveQueryKeepAliveRoute).post(
         this.process(
-          async (
-            remult,
-            req,
-            res,
-            reqInfo,
-            origRes: Response,
-            origReq: RequestType,
-          ) => {
+          async (remult, req, res, reqInfo, origRes, origReq: RequestType) => {
             res.success(
               await remult.liveQueryStorage!.keepAliveAndReturnUnknownQueryIds(
                 await this.coreOptions.getRequestBody(origReq),
@@ -606,8 +590,8 @@ export class RemultServerImplementation<RequestType>
       async (remult) => {
         var x = remult
         x.liveQueryPublisher = new LiveQueryPublisher(
-          () => remult.subscriptionServer,
-          () => remult.liveQueryStorage,
+          () => remult.subscriptionServer!,
+          () => remult.liveQueryStorage!,
           this.runWithSerializedJsonContextData,
         )
         if (!options?.skipDataProvider) x.dataProvider = dataProvider
@@ -635,9 +619,9 @@ export class RemultServerImplementation<RequestType>
       const genReq = req ? this.coreOptions.buildGenericRequestInfo(req) : {}
       if (req) {
         if (!genReq.query) {
-          genReq.query = req['_tempQuery']
+          genReq.query = (req as any)['_tempQuery']
         }
-        if (!genReq.params) genReq.params = req['_tempParams']
+        if (!genReq.params) genReq.params = (req as any)['_tempParams']
       }
       let myReq = new RequestBridgeToDataApiRequest(genReq)
       let myRes = new ResponseBridgeToDataApiResponse(
@@ -664,8 +648,8 @@ export class RemultServerImplementation<RequestType>
                 let user
                 if (this.options.getUser) user = await this.options.getUser(req)
                 else {
-                  user = req['user']
-                  if (!user) user = req['auth']
+                  user = (req as any)['user']
+                  if (!user) user = (req as any)['auth']
                 }
                 if (user) remult.user = user
 
@@ -1190,7 +1174,7 @@ class ResponseBridgeToDataApiResponse<RequestType> implements DataApiResponse {
       }
     }
     let responseSent = false
-    const sendError = (httpStatusCode, body) => {
+    const sendError = (httpStatusCode: number, body: any) => {
       if (responseSent) {
         throw Error('Error response already sent')
       }
@@ -1470,7 +1454,7 @@ export class RouteImplementation<RequestType> {
         }
         query[key] = [current, val]
       })
-      origReq['_tempQuery'] = query
+      ;(origReq as any)['_tempQuery'] = query
       req.query = query
     }
     let lowerPath = path.toLowerCase()
@@ -1499,8 +1483,8 @@ export class RouteImplementation<RequestType> {
         let h = m.get(req.method.toLowerCase())
         if (h) {
           if (!req.params) {
-            req.params = {}
-            origReq['_tempParams'] = req.params
+            req.params = {} as any
+            ;(origReq as any)['_tempParams'] = req.params
           }
           req.params.id = path.substring(idPosition + 1).replace(/%2C/g, ',')
           h(origReq, res, next)
@@ -1517,21 +1501,21 @@ export class RouteImplementation<RequestType> {
 })
 export class JobsInQueueEntity extends IdEntity {
   @Fields.string()
-  userId: string
+  userId = ''
   @Fields.string()
-  url: string
+  url = ''
   @Fields.date()
-  submitTime: Date
+  submitTime?: Date
   @Fields.date()
-  doneTime: Date
+  doneTime?: Date
   @Fields.string()
-  result: string
+  result = ''
   @Fields.boolean()
-  done: boolean
+  done = false
   @Fields.boolean()
-  error: boolean
+  error = false
   @Fields.number()
-  progress: number
+  progress = 0
 }
 
 remultStatic.allEntities.splice(

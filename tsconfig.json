@@ -15,6 +15,7 @@
     "importHelpers": true,
     "target": "es2015",
     "skipLibCheck": true,
+    "strict": true,
     "strictNullChecks": true, //p1.5 - return this - it's a lot of work - but will make our results better
     // "importsNotUsedAsValues": "error",
     // "types": [

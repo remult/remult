@@ -83,7 +83,7 @@ export abstract class Action<inParam, outParam> implements ActionInterface {
       }
     } else return r
   }
-  doWork: (
+  doWork!: (
     args: any[],
     self: any,
     baseUrl?: string,
@@ -108,7 +108,7 @@ export abstract class Action<inParam, outParam> implements ActionInterface {
       try {
         var r = await this.execute(d, req, res)
         res.success(r)
-      } catch (err) {
+      } catch (err: any) {
         if (err.isForbiddenError)
           // got a problem in next with instance of ForbiddenError  - so replaced it with this bool
           res.forbidden()
@@ -189,7 +189,7 @@ interface serverMethodOutArgs {
 
 const classOptions = new Map<any, ControllerOptions>()
 export function Controller(key: string) {
-  return function (target, context?: any) {
+  return function (target: any, context?: any) {
     let r = target
     classOptions.set(r, { key })
     setControllerSettings(target, { key })
@@ -256,7 +256,12 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
       result = async function (...args: any[]) {
         if (!isBackend()) {
           return await serverAction.doWork(args, undefined)
-        } else return await originalMethod.apply(this, args)
+        } else
+          return await originalMethod.apply(
+            //@ts-expect-error I specifically referred to the this of the original function - so it'll be sent inside
+            this as any,
+            args,
+          )
       }
       registerAction(target, result)
       result[serverActionField] = serverAction
@@ -326,7 +331,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                       let rows = await repo.find({
                         where: {
                           ...repo.metadata.idMetadata.getIdFilter(rowInfo.id),
-                          $and: [repo.metadata.options.apiPrefilter??{}],
+                          $and: [repo.metadata.options.apiPrefilter ?? {}],
                         },
                       })
                       if (rows.length != 1)
@@ -375,7 +380,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                   }
                 })
                 res.success(r!)
-              } catch (err) {
+              } catch (err: any) {
                 if (err.isForbiddenError)
                   // got a problem in next with instance of ForbiddenError  - so replaced it with this bool
                   res.forbidden()
@@ -405,7 +410,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
               serverMethodInArgs,
               serverMethodOutArgs
             > {
-              protected execute: (
+              protected execute!: (
                 info: serverMethodInArgs,
                 req: Remult,
                 res: DataApiResponse,
@@ -443,7 +448,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
               serverMethodInArgs,
               serverMethodOutArgs
             > {
-              protected execute: (
+              protected execute!: (
                 info: serverMethodInArgs,
                 req: Remult,
                 res: DataApiResponse,
@@ -474,9 +479,10 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
 
     result = async function (...args: any[]) {
       if (!isBackend()) {
-        let self = this
+        //@ts-ignore I specifically referred to the this of the original function - so it'll be sent inside
+        let self: any = this
         return serverAction.doWork(args, self)
-      } else return await originalMethod.apply(this, args)
+      } else return await originalMethod.apply(self, args)
     }
     registerAction(target.constructor, result)
     result[serverActionField] = serverAction
@@ -595,5 +601,5 @@ export interface ActionInterface {
       allowed: AllowedForInstance<any>,
       what: (data: any, req: Remult, res: DataApiResponse) => void,
     ) => void,
-  )
+  ): void
 }

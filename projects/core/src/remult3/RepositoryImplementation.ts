@@ -40,6 +40,7 @@ import type {
   LiveQueryChangeInfo,
   LoadOptions,
   MembersOnly,
+  ObjectMembersOnly,
   QueryOptions,
   QueryResult,
   RelationOptions,
@@ -143,7 +144,7 @@ export class RepositoryImplementation<entityType extends object>
 
     for (const s of Sort.translateOrderByToSort(this.metadata, orderBy)
       .Segments) {
-      let existingVal = lastRow[s.field.key]
+      let existingVal = lastRow[s.field.key as keyof entityType]
       // if (typeof existingVal !== "string" && typeof existingVal !== "number") {
       // }
       // else {
@@ -210,7 +211,7 @@ export class RepositoryImplementation<entityType extends object>
     return { toRepo, returnNull, returnUndefined }
   }
 
-  private __edp: EntityDataProvider
+  private __edp?: EntityDataProvider
   private get _edp() {
     return this.__edp
       ? this.__edp
@@ -264,12 +265,12 @@ export class RepositoryImplementation<entityType extends object>
     return this._info
   }
 
-  listeners: entityEventListener<entityType>[]
+  listeners?: entityEventListener<entityType>[]
   addEventListener(listener: entityEventListener<entityType>) {
     if (!this.listeners) this.listeners = []
     this.listeners.push(listener)
     return () => {
-      this.listeners.splice(this.listeners.indexOf(listener), 1)
+      this.listeners!.splice(this.listeners!.indexOf(listener), 1)
     }
   }
 
@@ -278,7 +279,9 @@ export class RepositoryImplementation<entityType extends object>
   }
 
   getEntityRef(entity: entityType): EntityRef<entityType> {
-    let x = entity[entityMember]
+    let x = entity[
+      entityMember as keyof entityType
+    ] as rowHelperImplementation<entityType>
     if (!x) {
       this._fixTypes(entity)
       x = new rowHelperImplementation(
@@ -298,8 +301,10 @@ export class RepositoryImplementation<entityType extends object>
     return x
   }
   async delete(id: idType<entityType>): Promise<void>
-  async delete(item: Partial<entityType>): Promise<void>
-  async delete(item: Partial<entityType> | idType<entityType>): Promise<void> {
+  async delete(item: Partial<MembersOnly<entityType>>): Promise<void>
+  async delete(
+    item: Partial<MembersOnly<entityType>> | idType<entityType>,
+  ): Promise<void> {
     const ref = getEntityRef(item, false)
     if (ref) return ref.delete()
 
@@ -477,7 +482,8 @@ export class RepositoryImplementation<entityType extends object>
       const instance = new this._entity(this._remult)
 
       for (const field of this._fieldsOf(entity)) {
-        instance[field.key] = entity[field.key]
+        const key = field.key as keyof Partial<MembersOnly<entityType>>
+        instance[key] = entity[key] as any
       }
       this._fixTypes(instance)
       let row = new rowHelperImplementation(
@@ -536,9 +542,10 @@ export class RepositoryImplementation<entityType extends object>
             error: () => {},
           }
         }
+
         listener.error ??= () => {}
         listener.complete ??= () => {}
-        return this._remult.liveQuerySubscriber.subscribe(
+        return this._remult.liveQuerySubscriber.subscribe<entityType>( //TODO - figure out why the type was required
           this,
           options!,
           listener,
@@ -548,7 +555,7 @@ export class RepositoryImplementation<entityType extends object>
   }
 
   async _rawFind(
-    options: FindOptions<entityType>,
+    options: FindOptions<entityType> | undefined,
     skipOrderByAndLimit = false,
     loader: RelationLoader,
   ) {
@@ -569,8 +576,13 @@ export class RepositoryImplementation<entityType extends object>
     return result
   }
 
+  async find(options?: FindOptions<entityType>): Promise<entityType[]>
   async find(
-    options: FindOptions<entityType>,
+    options?: FindOptions<entityType>,
+    skipOrderByAndLimit?: boolean,
+  ): Promise<entityType[]>
+  async find(
+    options?: FindOptions<entityType>,
     skipOrderByAndLimit = false,
   ): Promise<entityType[]> {
     const loader = new RelationLoader()
@@ -597,7 +609,7 @@ export class RepositoryImplementation<entityType extends object>
     const loader = new RelationLoader()
     const result = await this._loadManyToOneForManyRows(
       jsonItems.map((row) => {
-        let result = {}
+        let result: any = {}
         for (const col of this.metadata.fields.toArray()) {
           result[col.key] = col.valueConverter.fromJson(row[col.key])
         }
@@ -669,8 +681,11 @@ export class RepositoryImplementation<entityType extends object>
       let rel = getRelationFieldInfo(col)
       let incl = (col.options as RelationOptions<any, any, any>)
         .defaultIncluded as any as FindFirstOptionsBase<any>
-      if (loadOptions?.include?.[col.key] !== undefined) {
-        incl = loadOptions.include[col.key] as FindOptionsBase<any>
+
+      const include =
+        loadOptions?.include?.[col.key as keyof ObjectMembersOnly<entityType>]
+      if (include !== undefined) {
+        incl = include as FindOptionsBase<any>
       }
 
       if (rel && incl) {
@@ -683,7 +698,8 @@ export class RepositoryImplementation<entityType extends object>
             row,
             otherRepo,
           )
-          if (returnNull) row[col.key] = null
+          const colKey = col.key as keyof entityType
+          if (returnNull) row[colKey] = null!
           else {
             const entityType = rel.toEntity
             const toRepo = otherRepo as RepositoryImplementation<any>
@@ -698,7 +714,7 @@ export class RepositoryImplementation<entityType extends object>
               )
               .then((result) => {
                 if (result.length == 0 && rel!.type == 'toOne') return
-                row[col.key] =
+                row[colKey] =
                   rel!.type !== 'toMany'
                     ? result.length == 0
                       ? null
@@ -756,7 +772,7 @@ export class RepositoryImplementation<entityType extends object>
                 any
               >
             ).getId()
-          : row[key]
+          : row[key as keyof entityType]
       if (rel.type === 'toOne' || rel.type === 'reference') {
         if (val === null) returnNull = true
         else if (val === undefined) returnUndefined = true
@@ -819,7 +835,7 @@ export class RepositoryImplementation<entityType extends object>
       | entityType[]
       | Promise<entityType>
       | Promise<entityType[]>,
-  ) {
+  ): any {
     if (item === undefined || item === null) return item
     if (Array.isArray(item)) return item.map((x) => this.toJson(x))
     if (typeof (item as Promise<any>).then === 'function')
@@ -830,22 +846,25 @@ export class RepositoryImplementation<entityType extends object>
       ) as rowHelperImplementation<entityType>
     ).toApiJson(true)
   }
-
-  fromJson(json: any, newRow?: boolean) {
+  fromJson(x: any[], isNew?: boolean): entityType[]
+  fromJson(x: any, isNew?: boolean): entityType
+  fromJson(json: any, newRow?: boolean): entityType | entityType[] {
     if (json === null || json === undefined) return json
     if (Array.isArray(json))
       return json.map((item) => this.fromJson(item, newRow))
     let result = new this._entity(this._remult)
     for (const col of this._fieldsOf(json)) {
+      const colKey = col.key as keyof entityType
       let ei = getEntitySettings(col.valueType, false)
       if (ei) {
         let val = json[col.key]
         if (typeof val === 'string' || typeof val === 'number')
-          result[col.key] = val
-        else result[col.key] = this._remult.repo(col.valueType).fromJson(val)
+          result[colKey] = val as any
+        else
+          result[colKey] = this._remult.repo(col.valueType).fromJson(val) as any
       } else {
-        if (json[col.key] !== undefined) {
-          result[col.key] = col.valueConverter.fromJson(json[col.key])
+        if (json[colKey] !== undefined) {
+          result[colKey] = col.valueConverter.fromJson(json[col.key])
         }
       }
     }
@@ -970,7 +989,8 @@ export class RepositoryImplementation<entityType extends object>
     let r = new this._entity(this._remult)
     if (item) {
       for (const field of this._fieldsOf(item)) {
-        r[field.key] = item[field.key]
+        const key = field.key as keyof Partial<MembersOnly<entityType>>
+        r[key] = item[key] as any
       }
       this._fixTypes(r)
     }
@@ -1046,7 +1066,7 @@ export class RepositoryImplementation<entityType extends object>
           safeWhere,
           {
             metadata: this.metadata,
-            getFilterPreciseValues: (filter) =>
+            getFilterPreciseValues: (filter: EntityFilter<entityType>) =>
               Filter.getPreciseValues(this.metadata, filter || safeWhere),
           },
         )
@@ -1092,18 +1112,21 @@ export function createOldEntity<T extends object>(
     if (baseSettingsFactory) {
       let baseSettings = baseSettingsFactory(remult)
       info = { ...baseSettings, ...info }
-      let functions: (keyof EntityOptions)[] = [
+      let functions: (keyof EntityOptions<T>)[] = [
         'saving',
         'saved',
         'deleting',
         'deleted',
         'validation',
       ]
-      for (const key of functions as string[]) {
+      for (const key of functions) {
         if (baseSettings[key] && baseSettings[key] !== info[key]) {
           let x = info[key]
+          //@ts-ignore
           info[key] = async (a, b) => {
+            //@ts-ignore
             await x(a, b)
+            //@ts-ignore
             await baseSettings[key](a, b)
           }
         }
@@ -1147,13 +1170,13 @@ abstract class rowHelperBase<T extends object> {
       let ei = getEntitySettings(col.valueType, false)
 
       if (ei && remult) {
-        let lookup = new LookupColumn(
+        let lookup = new LookupColumn<T>(
           remult.repo(col.valueType) as RepositoryImplementation<T>,
           Boolean(getRelationFieldInfo(col)),
           col.allowNull,
         )
         this.lookups.set(col.key, lookup)
-        let val = instance[col.key]
+        let val = instance[col.key as keyof T]
         let refImpl: FieldRefImplementation<any, any>
         Object.defineProperty(instance, col.key, {
           get: () => {
@@ -1168,7 +1191,7 @@ abstract class rowHelperBase<T extends object> {
                   refImpl._subscribers = new SubscribableImp()
                 }
               }
-              refImpl._subscribers.reportObserved()
+              refImpl._subscribers!.reportObserved()
             }
             return lookup.item
           },
@@ -1184,16 +1207,16 @@ abstract class rowHelperBase<T extends object> {
                 refImpl._subscribers = new SubscribableImp()
               }
             }
-            refImpl._subscribers.reportChanged()
+            refImpl._subscribers!.reportChanged()
           },
           enumerable: true,
         })
-        lookup.set(val)
+        lookup.set(val as any)
       } else {
         const rel = getRelationFieldInfo(col)
         if (rel?.type === 'toOne') {
           let hasVal = instance.hasOwnProperty(col.key)
-          let val = instance[col.key]
+          let val = instance[col.key as keyof T]
           if (isNewRow && !val) hasVal = false
           Object.defineProperty(instance, col.key, {
             get: () => {
@@ -1206,35 +1229,37 @@ abstract class rowHelperBase<T extends object> {
               const op = col.options as RelationOptions<any, any, any>
 
               if (op.field) {
-                this.instance[op.field] =
+                this.instance[op.field as keyof T] =
                   rel.toRepo.metadata.idMetadata.getId(newVal)
               }
               if (op.fields) {
                 for (const key in op.fields) {
                   if (Object.prototype.hasOwnProperty.call(op.fields, key)) {
                     const element = op.fields[key]!
-                    this.instance[element] = newVal == null ? null : newVal[key]
+                    this.instance[element as keyof T] =
+                      newVal == null ? null : newVal[key]
                   }
                 }
               }
             },
             enumerable: true,
           })
-          if (hasVal) instance[col.key] = val
+          if (hasVal) instance[col.key as keyof T] = val
         }
       }
     }
   }
 
-  _subscribers: SubscribableImp
+  _subscribers?: SubscribableImp
   subscribe(listener: RefSubscriber): Unsubscribe {
     this.initSubscribers()
-    return this._subscribers.subscribe(listener)
+    return this._subscribers!.subscribe(listener)
   }
   _isLoading = false
   initSubscribers() {
     if (!this._subscribers) {
       this._subscribers = new SubscribableImp()
+      const safeSubscribers = this._subscribers!
       for (const col of this.fieldsMetadata) {
         let ei = getEntitySettings(col.valueType, false)
         let refImpl = this.fields.find(col.key) as FieldRefImplementation<
@@ -1244,18 +1269,18 @@ abstract class rowHelperBase<T extends object> {
         refImpl._subscribers = new SubscribableImp()
         if (ei && this.remult) {
         } else {
-          let val = this.instance[col.key]
+          let val = this.instance[col.key as keyof T]
 
           Object.defineProperty(this.instance, col.key, {
             get: () => {
-              this._subscribers.reportObserved()
-              refImpl._subscribers.reportObserved()
+              safeSubscribers.reportObserved()
+              refImpl._subscribers!.reportObserved()
               return val
             },
             set: (value) => {
               val = value
-              this._subscribers.reportChanged()
-              refImpl._subscribers.reportChanged()
+              safeSubscribers.reportChanged()
+              refImpl._subscribers!.reportChanged()
             },
             enumerable: true,
           })
@@ -1290,7 +1315,9 @@ abstract class rowHelperBase<T extends object> {
       for (const col of this.fieldsMetadata) {
         if (this.errors?.[col.key]) {
           error.message =
-            this.fields[col.key].metadata.caption + ': ' + this.errors[col.key]
+            this.fields[col.key as keyof T].metadata.caption +
+            ': ' +
+            this.errors[col.key]
           this.error = error.message
           break
         }
@@ -1330,7 +1357,7 @@ abstract class rowHelperBase<T extends object> {
       this._subscribers.reportChanged()
       for (const field of this.fields) {
         let ref = field as FieldRefImplementation<T, any>
-        ref._subscribers.reportChanged()
+        ref._subscribers!.reportChanged()
       }
     }
   }
@@ -1345,7 +1372,7 @@ abstract class rowHelperBase<T extends object> {
       let val: any = undefined
       const rel = getRelationFieldInfo(col)
       if (lu) val = lu.id
-      else val = this.instance[col.key]
+      else val = this.instance[col.key as keyof T]
       if (
         rel &&
         isNew &&
@@ -1406,10 +1433,10 @@ abstract class rowHelperBase<T extends object> {
           if (getRelationFieldInfo(col) && !includeRelatedEntities) {
             disable = true
           } else {
-            val = this.instance[col.key]
+            val = this.instance[col.key as keyof T]
             if (!this.remult) {
               if (val) {
-                let eo = getEntitySettings(val.constructor, false)
+                let eo = getEntitySettings(val.constructor as any, false)
                 if (eo) {
                   val = getEntityRef(val).getId()
                 }
@@ -1436,7 +1463,7 @@ abstract class rowHelperBase<T extends object> {
             let lu = this.lookups.get(col.key)
             if (lu) lu.id = body[col.key]
             else
-              this.instance[col.key] = col.valueConverter.fromJson(
+              this.instance[col.key as keyof T] = col.valueConverter.fromJson(
                 body[col.key],
               )
           }
@@ -1465,11 +1492,12 @@ export class rowHelperImplementation<T extends object>
     this.metadata = info
     if (_isNew) {
       for (const col of info.fieldsMetadata) {
-        if (col.options.defaultValue && instance[col.key] === undefined) {
+        const colKey = col.key as keyof T
+        if (col.options.defaultValue && instance[colKey] === undefined) {
           if (typeof col.options.defaultValue === 'function') {
-            instance[col.key] = col.options.defaultValue(instance)
-          } else if (!instance[col.key])
-            instance[col.key] = col.options.defaultValue
+            instance[colKey] = col.options.defaultValue(instance)
+          } else if (!instance[colKey])
+            instance[colKey] = col.options.defaultValue
         }
       }
     }
@@ -1509,11 +1537,11 @@ export class rowHelperImplementation<T extends object>
     const getVal = (y: FieldMetadata) => {
       let z = this.lookups.get(y.key)
       if (z) return z.id
-      return this.instance[y.key]
+      return this.instance[y.key as keyof T]
     }
     if (this.metadata.idMetadata.field instanceof CompoundIdField)
       return this.metadata.idMetadata.field.getId(getVal)
-    return getVal(this.metadata.idMetadata.field)
+    return getVal(this.metadata.idMetadata.field) as any
   }
   saveMoreOriginalData() {
     this.originalId = this.getId()
@@ -1542,19 +1570,22 @@ export class rowHelperImplementation<T extends object>
     return this.instance
   }
 
-  private _columns: FieldsRef<T>
+  private _columns?: FieldsRef<T>
 
   get fields(): FieldsRef<T> {
     if (!this._columns) {
       let _items: FieldRefImplementation<any, unknown>[] = []
       let r = {
+        //@ts-ignore
         find: (c: FieldMetadata<T> | string) =>
+          //@ts-ignore
           r[typeof c === 'string' ? c : c.key],
         [Symbol.iterator]: () => _items[Symbol.iterator](),
         toArray: () => _items,
       }
       for (const c of this.info.fieldsMetadata) {
         _items.push(
+          //@ts-ignore
           (r[c.key] = new FieldRefImplementation(
             c.options,
             c,
@@ -1629,7 +1660,7 @@ export class rowHelperImplementation<T extends object>
             }))[0]
           } else updatedRow = await this.edp.insert(d)
         } else {
-          let changesOnly = {}
+          let changesOnly: any = {}
           let wasChanged = false
           for (const key in d) {
             if (Object.prototype.hasOwnProperty.call(d, key)) {
@@ -1764,13 +1795,13 @@ export class rowHelperImplementation<T extends object>
           if (loadItems.includes(col)) await lu.waitLoad()
         }
       } else if (!getRelationFieldInfo(col))
-        this.instance[col.key] = data[col.key]
+        this.instance[col.key as keyof T] = data[col.key]
     }
     await this.calcServerExpression()
     this.id = this.getId()
   }
-  id
-  originalId
+  id?: any
+  originalId?: any
   public getOriginalId() {
     return this.originalId
   }
@@ -1780,9 +1811,8 @@ export class rowHelperImplementation<T extends object>
       //y2 should be changed to be based on data provider - consider naming
       for (const col of this.info.fieldsMetadata) {
         if (col.options.serverExpression) {
-          this.instance[col.key] = await col.options.serverExpression(
-            this.instance,
-          )
+          this.instance[col.key as keyof T] =
+            await col.options.serverExpression(this.instance)
         }
       }
   }
@@ -1825,7 +1855,10 @@ export class rowHelperImplementation<T extends object>
   }
 }
 const controllerColumns = Symbol.for('controllerColumns')
-function prepareColumnInfo(r: columnInfo[], remult: Remult): FieldOptions[] {
+function prepareColumnInfo(
+  r: columnInfo[],
+  remult: Remult,
+): FieldOptions<any, unknown>[] {
   return r.map((x) => decorateColumnSettings(x.settings(remult), remult))
 }
 
@@ -1840,9 +1873,11 @@ export function getControllerRef<fieldsContainerType extends object>(
   remultArg?: Remult,
 ): ControllerRef<fieldsContainerType> {
   const remultVar = remultArg || defaultRemult
+  //@ts-ignore
   let result = container[
     controllerColumns
   ] as controllerRefImpl<fieldsContainerType>
+  //@ts-ignore
   if (!result) result = container[entityMember]
   if (!result) {
     let columnSettings: columnInfo[] = remultStatic.columnsOfType.get(
@@ -1865,7 +1900,7 @@ export function getControllerRef<fieldsContainerType extends object>(
       }
       base = Object.getPrototypeOf(base)
     }
-
+    //@ts-ignore
     container[controllerColumns] = result = new controllerRefImpl(
       prepareColumnInfo(columnSettings, remultVar).map(
         (x) =>
@@ -1890,7 +1925,7 @@ export class controllerRefImpl<T extends object = any>
     super(columnsInfo, instance, remult, false)
 
     let _items: FieldRefImplementation<any, any>[] = []
-    let r = {
+    let r: any = {
       find: (c: FieldMetadata<T> | string) =>
         r[typeof c === 'string' ? c : c.key],
       [Symbol.iterator]: () => _items[Symbol.iterator](),
@@ -1933,12 +1968,12 @@ export class FieldRefImplementation<entityType extends object, valueType>
     this.target = this.settings.target
     this.entityRef = this.helper! //todo - I'm not sure this is correct in the case of ControllerInstance
   }
-  _subscribers: SubscribableImp
+  _subscribers?: SubscribableImp
   subscribe(listener: RefSubscriber): Unsubscribe {
     if (!this._subscribers) {
       this.rowBase.initSubscribers()
     }
-    return this._subscribers.subscribe(listener)
+    return this._subscribers!.subscribe(listener)
   }
   valueIsNull(): boolean {
     this.reportObserved()
@@ -1958,13 +1993,15 @@ export class FieldRefImplementation<entityType extends object, valueType>
     let rel = getRelationFieldInfo(this.metadata)
     if (rel && this.helper) {
       if (rel.type === 'toMany') {
-        return (this.container[this.metadata.key] = await this.helper.repository
-          .relations(this.container)
-          [this.metadata.key].find())
+        return (this.container[this.metadata.key] = await (
+          this.helper.repository.relations(this.container)[
+            this.metadata.key as keyof entityType
+          ] as Repository<valueType>
+        ).find()) as any
       } else {
         let val = await this.helper.repository
           .relations(this.container)
-          [this.metadata.key].findOne()
+          [this.metadata.key as keyof entityType].findOne()
         if (val) this.container[this.metadata.key] = val
         else return null! //TODO: check if this (!) is correct
       }
@@ -2105,9 +2142,9 @@ export class FieldRefImplementation<entityType extends object, valueType>
         } else if (typeof this.settings.validate === 'function')
           processValidation(await this.settings.validate(this.container, event))
       }
-    } catch (error) {
+    } catch (error: any) {
       if (typeof error === 'string') this.error = error
-      else this.error = error.message
+      else this.error = error?.message
     }
   }
   async validate() {
@@ -2194,10 +2231,10 @@ export class columnDefsImpl implements FieldMetadata {
     this.options = this.settings
     this.target = this.settings.target!
     this.valueConverter = new Proxy(this.settings.valueConverter ?? {}, {
-      get: (target, prop) => {
+      get: (target: any, prop) => {
         let result = target[prop]
         if (typeof result === 'function') {
-          return (...args) => {
+          return (...args: any[]) => {
             try {
               return target[prop](...args)
             } catch (err: any) {
@@ -2262,7 +2299,7 @@ export class columnDefsImpl implements FieldMetadata {
   }
   options: FieldOptions<any, any>
   target: ClassType<any>
-  readonly: boolean
+  readonly = false
 
   valueConverter: Required<ValueConverter<any>>
   allowNull: boolean
@@ -2275,7 +2312,7 @@ export class columnDefsImpl implements FieldMetadata {
   get dbReadOnly() {
     return Boolean(this.settings.dbReadOnly)
   }
-  isServerExpression: boolean
+  isServerExpression = false
   valueType: any
 }
 class EntityFullInfo<T extends object> implements EntityMetadata<T> {
@@ -2284,7 +2321,7 @@ class EntityFullInfo<T extends object> implements EntityMetadata<T> {
 
   constructor(
     columnsInfo: FieldOptions[],
-    public entityInfo: EntityOptions,
+    public entityInfo: EntityOptions<T>,
     private remult: Remult,
     public readonly entityType: ClassType<T>,
     public readonly key: string,
@@ -2309,7 +2346,7 @@ class EntityFullInfo<T extends object> implements EntityMetadata<T> {
     if (!this.key) this.key = entityType.name
     if (!entityInfo.dbName) entityInfo.dbName = this.key
     this.dbName = entityInfo.dbName
-    let r = {
+    let r: any = {
       find: (c: FieldMetadata<any> | string) =>
         r[typeof c === 'string' ? c : c.key],
       [Symbol.iterator]: () => this.fieldsMetadata[Symbol.iterator](),
@@ -2337,7 +2374,8 @@ class EntityFullInfo<T extends object> implements EntityMetadata<T> {
       } else this.idMetadata.field = r
     }
     if (!this.idMetadata.field) {
-      if (this.fields['id']) this.idMetadata.field = this.fields['id']
+      const idField = this.fields['id' as keyof FieldsMetadata<T>]
+      if (idField) this.idMetadata.field = idField
       else this.idMetadata.field = [...this.fields][0]
     }
   }
@@ -2375,7 +2413,7 @@ class EntityFullInfo<T extends object> implements EntityMetadata<T> {
   }
 
   idMetadata: IdMetadata<T> = {
-    getId: (item) => {
+    getId: (item: any) => {
       if (item === undefined || item === null) return item
       const ref = getEntityRef(item, false)
       if (ref) return ref.getId()
@@ -2437,7 +2475,7 @@ export function FieldType<valueType = any>(
     | ((options: FieldOptions<any, valueType>, remult: Remult) => void)
   )[]
 ) {
-  return (target, context?) => {
+  return (target: any) => {
     if (!options) {
       options = []
     }
@@ -2458,7 +2496,7 @@ export function ValueListFieldType<valueType extends ValueListItem = any>(
     | ((options: FieldOptions<any, valueType>, remult: Remult) => void)
   )[]
 ) {
-  return (type: ClassType<valueType>, context?) => {
+  return (type: ClassType<valueType>) => {
     FieldType<valueType>(
       (o) => {
         ;(o.valueConverter = ValueListInfo.get(type)),
@@ -2472,7 +2510,7 @@ export function ValueListFieldType<valueType extends ValueListItem = any>(
         }
       },
       ...options,
-    )(type, context)
+    )(type)
   }
 }
 export interface ValueListFieldOptions<entityType extends object, valueType>
@@ -2581,10 +2619,13 @@ export function getValueList<T extends object>(
 
   type = meta?.valueType || type
   if (type) {
-    var options = type[storableMember] as ValueListFieldOptions<any, any>[]
+    var options = (type as any)[storableMember] as ValueListFieldOptions<
+      any,
+      any
+    >[]
     if (options) return ValueListInfo.get(type as ClassType<T>).getValues()
   }
-  let optionalValues = meta?.options[fieldOptionalValuesFunctionKey]
+  let optionalValues = (meta?.options as any)[fieldOptionalValuesFunctionKey]
   if (optionalValues) return optionalValues()
   return undefined
 }
@@ -2604,7 +2645,7 @@ export function buildOptions<entityType extends object = any, valueType = any>(
       if (typeof o === 'function') o(r, remult)
       else {
         const { validate, ...otherOptions } = o
-        r.validate = addValidator(r.validate, validate)
+        r.validate = addValidator(r.validate as any, validate as any)
         Object.assign(r, otherOptions)
       }
     }
@@ -2652,7 +2693,7 @@ export function decorateColumnSettings<valueType>(
         fromDb: (x) => x,
       }
       settings.valueConverter = new Proxy(settings.valueConverter, {
-        get(target, property) {
+        get(target: any, property) {
           if (target[property] === undefined) {
             if (isIdNumeric === undefined) {
               if (property === 'inputType') return ''
@@ -2892,7 +2933,7 @@ class SubscribableImp implements Subscribable {
   reportObserved() {
     if (this._subscribers) this._subscribers.forEach((x) => x.reportObserved())
   }
-  private _subscribers: RefSubscriberBase[]
+  private _subscribers?: RefSubscriberBase[]
   subscribe(
     listener:
       | (() => void)
@@ -2917,7 +2958,7 @@ class SubscribableImp implements Subscribable {
     }
     this._subscribers.push(list)
     return () =>
-      (this._subscribers = this._subscribers.filter((x) => x != list))
+      (this._subscribers = this._subscribers!.filter((x) => x != list))
   }
 }
 export function getEntityMetadata<entityType extends object>(
@@ -2929,7 +2970,7 @@ export function getEntityMetadata<entityType extends object>(
   if (settings) {
     return defaultRemult.repo(entity as ClassType<entityType>).metadata
   }
-  return entity as EntityMetadata
+  return entity as EntityMetadata<entityType>
 }
 export function getRepository<entityType extends object>(
   entity: RepositoryOverloads<entityType>,

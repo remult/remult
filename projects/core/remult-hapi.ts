@@ -133,9 +133,10 @@ export function remultHapi(
   }
 
   return Object.assign(routesPlugin, {
-    getRemult: (x) => api.getRemult(x),
-    openApiDoc: (x) => api.openApiDoc(x),
-    withRemult: <T>(req, what) => api.withRemultAsync<T>(req, what),
+    getRemult: (x: Request) => api.getRemult(x),
+    openApiDoc: (x: any) => api.openApiDoc(x),
+    withRemult: <T>(req: Request, what: () => Promise<T>) =>
+      api.withRemultAsync<T>(req, what),
   })
 }
 

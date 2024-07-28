@@ -205,7 +205,7 @@ export function commonDbTests(
       description: 'desc',
     })
     await c._.save()
-    let l = await getRemult().repo(newCategories).findId(5)
+    let l = (await getRemult().repo(newCategories).findId(5))!
     c.categoryName = 'newname'
     l.description = 'new desc'
     await c.save()
@@ -239,14 +239,14 @@ export function commonDbTests(
     let repo = await createEntity(testDateWithNull)
     let r = repo.create({ id: 0 })
     await r.save()
-    r = await repo.findFirst()
+    r = (await repo.findFirst())!
     expect(r.d).toBeNull()
     expect(await repo.count({ d: null })).toBe(1)
     r.d = new Date(1976, 5, 16)
     await r.save()
     expect(r.d.getFullYear()).toBe(1976)
-    r = await repo.findFirst()
-    expect(r.d.getFullYear()).toBe(1976)
+    r = (await repo.findFirst())!
+    expect(r.d!.getFullYear()).toBe(1976)
     r.d = null
     await r.save()
     expect(r.d).toBeNull()
@@ -255,14 +255,14 @@ export function commonDbTests(
     let repo = await createEntity(testDateWithNull)
     let r = repo.create({ id: 0 })
     await r.save()
-    r = await repo.findFirst()
+    r = (await repo.findFirst())!
     expect(r.fullDate).toBeNull()
     expect(await repo.count({ fullDate: null })).toBe(1)
     r.fullDate = new Date(1976, 5, 16)
     await r.save()
     expect(r.fullDate.getFullYear()).toBe(1976)
-    r = await repo.findFirst()
-    expect(r.fullDate.getFullYear()).toBe(1976)
+    r = (await repo.findFirst())!
+    expect(r.fullDate!.getFullYear()).toBe(1976)
     r.fullDate = null
     await r.save()
     expect(r.fullDate).toBeNull()
@@ -273,7 +273,7 @@ export function commonDbTests(
       .create({ id: 1, d: new Date(1976, 6, 16) })
       .save()
 
-    expect(r.$.d.originalValue.getFullYear()).toBe(1976)
+    expect(r.$.d.originalValue!.getFullYear()).toBe(1976)
   })
 
   @Entity('testDateWithNull', { allowApiCrud: true })
@@ -281,16 +281,16 @@ export function commonDbTests(
     @Fields.integer()
     id: number = 0
     @Fields.dateOnly({ allowNull: true })
-    d: Date
+    d!: Date | null
     @Fields.date({ allowNull: true })
-    fullDate: Date = null
+    fullDate: Date | null = null
   }
 
   it('test string with null works', async () => {
     let repo = await createEntity(testStringWithNull)
     let r = repo.create({ id: 0 })
     await r.save()
-    r = await repo.findFirst()
+    r = (await repo.findFirst())!
     expect(r.d).toBeNull()
   })
 
@@ -349,7 +349,7 @@ export function commonDbTests(
     let c1 = await (await createEntity(c)).create({ id: 1, name: 'c1' }).save()
 
     await (await createEntity(p)).create({ id: 1, name: 'p1', c: c1 }).save()
-    expect((await getRemult().repo(p).findFirst({ c: c1 })).id).toBe(1)
+    expect((await getRemult().repo(p).findFirst({ c: c1 }))!.id).toBe(1)
   })
 
   it("test filter doesn't collapse", async () => {
@@ -389,10 +389,10 @@ export function commonDbTests(
     }
     expect(await c.count(entityForrawFilter1.oneAndThree())).toBe(2)
     expect(
-      (await c.findFirst(entityForrawFilter1.testNumericValue(2))).id,
+      (await c.findFirst(entityForrawFilter1.testNumericValue(2)))!.id,
     ).toBe(2)
     expect(
-      (await c.findFirst(entityForrawFilter1.testObjectValue({ val: 2 }))).id,
+      (await c.findFirst(entityForrawFilter1.testObjectValue({ val: 2 })))!.id,
     ).toBe(2)
   })
   it('put with validations on column fails', async () => {
@@ -432,13 +432,13 @@ export function commonDbTests(
   ): Promise<Repository<T>> {
     //@ts-ignore
     if (!entity) entity = Categories
-    let rep = (await createEntity(entity)) as Repository<T>
+    let rep = (await createEntity(entity!)) as Repository<T>
     if (doInsert)
       await doInsert(async (id, name, description, status) => {
         let c = rep.create()
         c.id = id
         c.categoryName = name
-        c.description = description
+        c.description = description!
         if (status) c.status = status
         await rep.save(c)
       })

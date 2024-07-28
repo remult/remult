@@ -61,7 +61,7 @@ export function remultFastify(
   ) => {
     //@ts-ignore
     let fastifyRouter: GenericRouter = {
-      route(path) {
+      route(path: string) {
         let r = {
           delete(handler) {
             instance.delete(path, fastifyHandler(handler))
@@ -87,9 +87,10 @@ export function remultFastify(
   }
 
   return Object.assign(pluginFunction, {
-    getRemult: (x) => api.getRemult(x),
-    openApiDoc: (x) => api.openApiDoc(x),
-    withRemult: <T>(req, what) => api.withRemultAsync<T>(req, what),
+    getRemult: (x: FastifyRequest) => api.getRemult(x),
+    openApiDoc: (x: any) => api.openApiDoc(x),
+    withRemult: <T>(req: FastifyRequest, what: () => Promise<T>) =>
+      api.withRemultAsync<T>(req, what),
   })
 }
 

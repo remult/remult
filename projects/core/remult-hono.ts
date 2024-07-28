@@ -29,7 +29,7 @@ export function remultHono(
         }),
         url: c.req.url,
         on: (e: 'close', do1: VoidFunction) => {
-          c['_tempOnClose'](() => do1())
+          ;(c as any)['_tempOnClose'](() => do1())
           //   c.req.on('close', do1)
         },
       }
@@ -92,7 +92,8 @@ export function remultHono(
                     streamSSE(c, (s) => {
                       sse = s
                       return new Promise((res) => {
-                        c['_tempOnClose'] = (x) => sse.onAbort(() => x)
+                        ;(c as any)['_tempOnClose'] = (x: VoidFunction) =>
+                          sse.onAbort(() => x())
                       })
                     }),
                   )
