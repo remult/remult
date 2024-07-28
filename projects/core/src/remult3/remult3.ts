@@ -1064,37 +1064,40 @@ export const flags = {
   error500RetryCount: 4,
 }
 
+/*y1 - https://github.com/remult/remult/discussions/438
+     - https://github.com/remult/remult/blob/query-argumets/projects/tests/dbs/test-sql-database.spec.ts#L100-L128
+*/
+//y1 - consider sql expression gets a dbnames of it's own (that already has the "tableName" defined correctly) maybe also the filter translator
+//y2 - soft-delete-discussion https://discord.com/channels/975754286384418847/1230386433093533698/1230386433093533698
+
 //p1 - fix query docs to also explain how it can be used for infinite scroll and pagination.
 //y1 - 'test expression columns without aliases'
-//p1 - see if I can fix the no alias problem in selects
-//p1 - add luid - it's cool for order by.
-//p1 - replace uuid with crypto.randomUUID and allow custom fallback
-//p1 - add nanoid
-//p1 - add id and use luid by default, but allow changes with Fields.id.defaultIdProvider
+
+//y1 - live query update waits for last
+//p1 - add luid - it's cool for order by. - NO
+//p1 - replace uuid with crypto.randomUUID and allow custom fallback NO
+//p1 - add nanoid - NO
+//p1 - add id and use luid by default, but allow changes with Fields.id.defaultIdProvider NO but defaultProvider yes
 //p1 - explain the benefits of changing the default provider for testing in docs.
 //p1 - fix sqlite to  support alter table when adding a column with ensure schema = on
 //p1 - fix app custom filters example for multiple filters.
 //p1 - add not!!!!
 //p1 - add LifecycleEvent to documentation
-//y1 - Talk about the case where we had one to many, without a field - just a filter - for example, event,event participants, users - and a field that shows all users that are not participants
 //p1 - Fix hagai and starter project to latest ts
-//y1 - talk about the $ sign in my filter rules - no other orm uses that (part of sql work, with $ etc)
-
-//y1 TODO - discuss next auth withRemult paradox - the gift that keeps on giving - it's doing something crazy there!!
 
 //p1 - fix chaining of saving and saved in multiple entity options args
 //p1 - review starter and examples and separate remult * auth from the routes
-/*p1 - https://github.com/remult/remult/discussions/438
-     - https://github.com/remult/remult/blob/query-argumets/projects/tests/dbs/test-sql-database.spec.ts#L100-L128
-*/
+
 //p1 - min, max, avg, sum
+//p1 - consider upsert (where,set)
 //y1 - live query with count #436
 
 //y1 TODO - In the esm version of our tutorial - the imports are automatically .ts and not .js in react and not in vue
 //y1 TODO - consider id to also support keyof (id:['company','index']) - had problem with | (keyof Partial<entityType>)[] & `entity`
-//y1 TODO -  readonly key: keyof MembersOnly<entityType> & string
+//y1 TODO - readonly key: keyof MembersOnly<entityType> & string
+//y1 TODO - fix remult admin not to load the html into memory until used
 
-//y1 - talk about insert / update / delete with relations
+//y2 - talk about insert / update / delete with relations
 /*
 repo(Order).insert({},{
   relations:{
@@ -1102,7 +1105,7 @@ repo(Order).insert({},{
   }
 })
 */
-//y1 - repo batch - for multiple operations:
+//y2 - repo batch - for multiple operations:
 /*
 const result = await repo.batch(x=>({
   data:x.find(),
@@ -1110,10 +1113,9 @@ const result = await repo.batch(x=>({
 }))
 */
 
-//p1 - consider upsert (where,set)
 //y1 - wait a second to close stream -see pr
+
 //p1 - Consider enforcing serial operations on JSON database to prevent data loss
-//y2 - soft-delete-discussion https://discord.com/channels/975754286384418847/1230386433093533698/1230386433093533698
 
 //p1 - prepare the createEntity discussion
 
@@ -1121,7 +1123,6 @@ const result = await repo.batch(x=>({
 
 //p1 - article on displayValue including it's definition for entities that is used in relations
 //p1 - article auth.js with express - played with it, requires type="module" and a few more configurations - https://github.com/noam-honig/express-auth
-//p2 - fix remult admin not to load the html into memory until used
 
 //y2 - currently for string fields we default for 255 in knex (which is their default) why not just use text (varchar max) - and only use exact length when one is provided?
 
@@ -1154,13 +1155,10 @@ const result = await repo.batch(x=>({
 
 */
 
-//y1 - consider sql expression gets a dbnames of it's own (that already has the "tableName" defined correctly) maybe also the filter translator
-
 //y1 - tried to upgrade vitest, nuxt tests are failing with loading uuid - sounds familiar?
 
 //y1 - talk about the parameter issue with backend methods
 
-//y1 - main vs master
 //y2 - livequery for findfirst (@JY)
 
 /*y2 -
