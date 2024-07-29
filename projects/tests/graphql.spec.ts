@@ -26,7 +26,7 @@ class CategoryMore {
   @Fields.string({ allowNull: true })
   category_id = ''
   @Relations.toOne(() => Category, { field: 'category_id', allowNull: true })
-  category: Category
+  category!: Category
 }
 
 @FieldType({ displayValue: (_, v) => v?.name })
@@ -90,7 +90,7 @@ class Task {
   @Fields.string({ allowNull: true })
   category3_id = ''
   @Relations.toOne(() => Category, { field: 'category3_id', allowNull: true })
-  category3: Category
+  category3!: Category
   @Fields.string({
     serverExpression: () => {
       return ''

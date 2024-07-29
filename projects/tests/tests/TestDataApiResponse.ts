@@ -1,7 +1,7 @@
 import type { DataApiResponse } from '../../core/src/data-api'
 
 export class TestDataApiResponse implements DataApiResponse {
-  progress(progress: number): void { }
+  progress(progress: number): void {}
   success(data: any): void {
     throw new Error('didnt expect success: ' + JSON.stringify(data))
   }
@@ -17,7 +17,7 @@ export class TestDataApiResponse implements DataApiResponse {
   notFound(): void {
     throw new Error('not found')
   }
-  error(data) {
+  error(data: any) {
     throw data
   }
 }

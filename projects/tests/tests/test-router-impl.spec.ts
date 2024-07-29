@@ -10,7 +10,7 @@ describe('test router impl', async () => {
         return req
       },
       getRequestBody: (req) => {
-        return undefined
+        return undefined!
       },
     })
     let result: any = {}
@@ -57,7 +57,7 @@ describe('test router impl', async () => {
         return req
       },
       getRequestBody: (req) => {
-        return undefined
+        return undefined!
       },
     })
     let result: any = {}
@@ -105,7 +105,7 @@ describe('test router impl', async () => {
         return req
       },
       getRequestBody: (req) => {
-        return undefined
+        return undefined!
       },
     })
     let result: any = {}

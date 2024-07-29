@@ -12,9 +12,9 @@ import type { ClassType } from '../../../core/classType'
 })
 export class entityWithValidations extends EntityBase {
   @Fields.integer()
-  myId: number
+  myId!: number
   @Fields.string()
-  name: string
+  name!: string
   static savingRowCount = 0
   constructor(private remult: Remult) {
     super()

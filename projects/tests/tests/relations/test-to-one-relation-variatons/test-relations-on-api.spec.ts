@@ -104,7 +104,7 @@ describe('Test relations on api', () => {
       `)
       d.ok()
     }
-    await api.getArray(t, undefined)
+    await api.getArray(t, undefined!)
     d.test()
   })
   it('should return a value', async () => {
@@ -145,7 +145,7 @@ describe('Test relations on api', () => {
   `)
   })
   it('should return a value too b', async () => {
-    await remult.repo(Product).insert({ name: 'a', id: 2, category: null })
+    await remult.repo(Product).insert({ name: 'a', id: 2, category: null! })
     expect(
       await remult.repo(Product).find({
         where: {
@@ -163,7 +163,7 @@ describe('Test relations on api', () => {
     `)
   })
   it('should return a value too c', async () => {
-    await remult.repo(Product).insert({ name: 'a', id: 2, category: null })
+    await remult.repo(Product).insert({ name: 'a', id: 2, category: null! })
     expect(
       await remult.repo(Product).find({
         where: {

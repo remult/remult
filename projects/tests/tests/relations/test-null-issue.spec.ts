@@ -44,8 +44,8 @@ describe('test null issue', () => {
       .repo(Order)
       .insert([{ customerId: customers[0].id, amount: 15 }])
     expect(
-      (await remult.repo(Order).find({ include: { customer: true } }))[0]
-        .customer.name,
+      (await remult.repo(Order).find({ include: { customer: true } }))[0]!
+        .customer!.name,
     ).toBe('Noam')
   })
   it('test the null issue b', async () => {

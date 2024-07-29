@@ -71,7 +71,7 @@ class Category {
       },
     },
   })
-  tasksSecondary2: Task[]
+  tasksSecondary2!: Task[]
   @Relations.toMany<Category, Task>(() => Task, {
     findOptions: (category) => ({
       limit: 2,
@@ -87,7 +87,7 @@ class Category {
       },
     }),
   })
-  allTasks: Task[]
+  allTasks!: Task[]
   @Relations.toOne<Category, Task>(() => Task, {
     findOptions: (category) => ({
       orderBy: {
@@ -105,7 +105,7 @@ class Category {
       },
     }),
   })
-  lastTask: Task
+  lastTask!: Task
   @Fields.date()
   createdAt = new Date('1976-06-16T00:00:00.000Z')
 
@@ -116,7 +116,7 @@ class Category {
   secondaryCompanyId = 0
 
   @Relations.toOne<Category, Company>(() => Company, 'secondaryCompanyId')
-  secondaryCompany: Company
+  secondaryCompany!: Company
 }
 
 @Entity('tasks')
@@ -146,7 +146,7 @@ class Task {
 
 describe('test relations', () => {
   let remult: Remult
-  function r<entityType>(entity: ClassType<entityType>) {
+  function r<entityType extends object>(entity: ClassType<entityType>) {
     return remult.repo(entity)
   }
   beforeEach(async () => {
@@ -175,17 +175,17 @@ describe('test relations', () => {
     remult.clearAllCache()
   })
   it('test input type', async () => {
-    expect(r(Task).fields.category.inputType).toMatchInlineSnapshot('""')
+    expect(r(Task).fields.category!.inputType).toMatchInlineSnapshot('""')
   })
   it('test fields info', async () => {
-    const rl = getRelationFieldInfo(r(Task).fields.category)
-    expect(await rl.toRepo.count()).toMatchInlineSnapshot('3')
+    const rl = getRelationFieldInfo(r(Task).fields.category!)
+    expect(await rl!.toRepo.count()).toMatchInlineSnapshot('3')
   })
 
   it('no extra data is loaded', async () => {
     let stats = (remult.dataProvider = TestDataProvider(remult.dataProvider))
     const t = await r(Task).findFirst({ id: 4 })
-    expect(t.category).toBeUndefined()
+    expect(t!.category).toBeUndefined()
     await new Promise((res) => setTimeout(res, 10))
     expect(stats.finds).toMatchInlineSnapshot(`
       [
@@ -208,7 +208,7 @@ describe('test relations', () => {
         },
       },
     )
-    expect(t.category).toMatchInlineSnapshot(`
+    expect(t!.category).toMatchInlineSnapshot(`
       Category {
         "company": undefined,
         "createdAt": 1976-06-16T00:00:00.000Z,
@@ -221,7 +221,7 @@ describe('test relations', () => {
     `)
   })
   it('loads reference to field', async () => {
-    const t = await r(Task).findFirst(
+    const t = (await r(Task).findFirst(
       { id: 1 },
       {
         include: {
@@ -234,7 +234,7 @@ describe('test relations', () => {
           secondaryCategory2: { include: { company: true } },
         },
       },
-    )
+    ))!
     expect(t.secondaryCategory).toMatchInlineSnapshot(`
       Category {
         "company": Company {
@@ -249,24 +249,24 @@ describe('test relations', () => {
         "secondaryCompanyId": 20,
       }
     `)
-    expect(t.secondaryCategory.company.companyName).toBe('comp20')
-    expect(t.secondaryCategory1.company.companyName).toBe('comp20')
-    expect(t.secondaryCategory2.company.companyName).toBe('comp20')
+    expect(t.secondaryCategory!.company.companyName).toBe('comp20')
+    expect(t.secondaryCategory1!.company.companyName).toBe('comp20')
+    expect(t.secondaryCategory2!.company.companyName).toBe('comp20')
     t.title = 't2'
     const t2 = await r(Task).save(t)
     expect(t.title).toBe('t2')
-    expect(t.secondaryCategory.company.companyName).toBe('comp20')
-    expect(t2.secondaryCategory.company.companyName).toBe('comp20')
+    expect(t.secondaryCategory!.company.companyName).toBe('comp20')
+    expect(t2.secondaryCategory!.company.companyName).toBe('comp20')
     expect(
-      (await r(Task).update(t, { title: 't3' })).secondaryCategory.company
+      (await r(Task).update(t, { title: 't3' })).secondaryCategory!.company
         .companyName,
     ).toBe('comp20')
     expect(
-      (await r(Task).save({ ...t, title: 't3' })).secondaryCategory.company
+      (await r(Task).save({ ...t, title: 't3' })).secondaryCategory!.company
         .companyName,
     ).toBe('comp20')
     expect(
-      (await r(Task).update({ ...t }, { title: 't3' })).secondaryCategory
+      (await r(Task).update({ ...t }, { title: 't3' })).secondaryCategory!
         .company.companyName,
     ).toBe('comp20')
   })
@@ -283,10 +283,10 @@ describe('test relations', () => {
         },
       },
     )
-    expect(t.secondaryCategory.company.companyName).toBe('comp20')
+    expect(t!.secondaryCategory!.company.companyName).toBe('comp20')
 
     expect(
-      (await r(Task).update({ ...t }, { title: 't3' })).secondaryCategory
+      (await r(Task).update({ ...t }, { title: 't3' }))!.secondaryCategory!
         .company.companyName,
     ).toBe('comp20')
   })
@@ -305,7 +305,7 @@ describe('test relations', () => {
         })
         .getPage(1)
     )[0]
-    expect(t.secondaryCategory.company.companyName).toBe('comp20')
+    expect(t!.secondaryCategory!.company.companyName).toBe('comp20')
   })
   it('test query for await', async () => {
     const q = r(Task).query({
@@ -319,7 +319,7 @@ describe('test relations', () => {
       },
     })
     for await (const t of q) {
-      expect(t.secondaryCategory.company.companyName).toBe('comp20')
+      expect(t!.secondaryCategory!.company.companyName).toBe('comp20')
       return
     }
   })
@@ -333,7 +333,7 @@ describe('test relations', () => {
       t.map(({ id, name, tasks }) => ({
         id,
         name,
-        tasks: tasks.map((t) => t.id),
+        tasks: tasks!.map((t) => t.id),
       })),
     ).toMatchInlineSnapshot(`
       [
@@ -394,7 +394,7 @@ describe('test relations', () => {
         },
       ]
     `)
-    expect(t[0].tasks[0].secondaryCategory.id).toBe(3)
+    expect(t[0].tasks![0]!.secondaryCategory!.id).toBe(3)
   })
 
   it('test match and limit', async () => {
@@ -461,7 +461,7 @@ describe('test relations', () => {
     expect(
       cats.map((c) => ({
         id: c.id,
-        tasksSecondary: c.tasksSecondary.map((t) => t.id),
+        tasksSecondary: c.tasksSecondary!.map((t) => t.id),
       })),
     ).toMatchInlineSnapshot(`
       [
@@ -630,24 +630,24 @@ describe('test relations', () => {
       company: comp,
       companyRef: comp,
     })
-    let c = await r(Category).findFirst()
+    let c = (await r(Category).findFirst())!
     expect(c.company.id).toBe(1)
     expect(c.companyRef).toBeUndefined()
     const prevComp = c.company
-    c = await r(Category).findFirst(
+    c = (await r(Category).findFirst(
       {},
       {
         include: {
           companyRef: true,
         },
       },
-    )
+    ))!
     expect(c.company == prevComp).toBe(true)
   })
   it('fails with error field', async () => {
     const MyTask = class {
       id = 0
-      category: Category
+      category!: Category
     }
     describeClass(MyTask, Entity('myTask'), {
       id: Fields.integer(),
@@ -663,7 +663,7 @@ describe('test relations', () => {
   it('fails when cant anticipate many', async () => {
     const MyTask = class {
       id = 0
-      categories: Category[]
+      categories!: Category[]
     }
     describeClass(MyTask, Entity('asdf'), {
       id: Fields.integer(),
@@ -725,7 +725,7 @@ it('test null and related field ', async () => {
   const o = await remult
     .repo(Order)
     .findFirst({}, { include: { customer: true } })
-  expect(o.customer.name).toBe('noam')
+  expect(o!.customer.name).toBe('noam')
 })
 it('test dbname', async () => {
   expect((await dbNamesOf(remult.repo(Task))).secondaryCategory).toBe(

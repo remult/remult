@@ -17,19 +17,19 @@ class Category {
   @Fields.string()
   name = ''
   @Relations.toOne(() => Category, { defaultIncluded: true })
-  pCategory: Category
+  pCategory!: Category
   @Fields.integer()
   secondCategoryId = 0
   @Relations.toOne<Category, Category>(() => Category, {
     field: 'secondCategoryId',
     defaultIncluded: true,
   })
-  secondCategory: Category
+  secondCategory!: Category
 }
 
 describe('test repository relations', () => {
   let remult: Remult
-  function r<entityType>(entity: ClassType<entityType>) {
+  function r<entityType extends object>(entity: ClassType<entityType>) {
     return remult.repo(entity)
   }
   it('test that it works', async () => {
@@ -40,7 +40,7 @@ describe('test repository relations', () => {
     })
     await r(Category).update(c, { pCategory: c, secondCategoryId: c.id })
     remult.clearAllCache()
-    c = await r(Category).findFirst()
+    c = (await r(Category).findFirst())!
     expect(c.pCategory.pCategory.id).toBe(1)
     expect(c.secondCategory.secondCategory.id).toBe(1)
   })

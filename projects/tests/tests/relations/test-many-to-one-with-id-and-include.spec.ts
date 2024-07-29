@@ -26,7 +26,7 @@ class Category {
   @Fields.string()
   name = ''
   @Relations.toOne(() => Company)
-  company: Company
+  company!: Company
 }
 
 @Entity('tasks')
@@ -42,7 +42,7 @@ class Task {
 }
 describe('test repository relations', () => {
   let remult: Remult
-  function r<entityType>(entity: ClassType<entityType>) {
+  function r<entityType extends object>(entity: ClassType<entityType>) {
     return remult.repo(entity)
   }
   beforeEach(async () => {
@@ -121,7 +121,7 @@ describe('test repository relations', () => {
         include: {},
       },
     )
-    expect(t.category).toBeUndefined()
-    expect(getEntityRef(t).fields.category.getId()).toBe(1)
+    expect(t!.category).toBeUndefined()
+    expect(getEntityRef(t!).fields.category.getId()).toBe(1)
   })
 })

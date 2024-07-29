@@ -31,19 +31,21 @@ describe('test load for find id', () => {
     {
       remult.clearAllCache()
       const t = await remult.repo(Task).findId(1)
-      expect(t.category).toBe(undefined)
+      expect(t!.category).toBe(undefined)
     }
     {
       remult.clearAllCache()
-      const t = await remult.repo(Task).findId(1, { load: (e) => [e.category] })
-      expect(t.category.name).toBe('cat1')
+      const t = await remult
+        .repo(Task)
+        .findId(1, { load: (e) => [e.category!] })
+      expect(t!.category!.name).toBe('cat1')
     }
     {
       remult.clearAllCache()
       let t = await remult.repo(Task).findId(1)
-      expect(t.category).toBe(undefined)
-      t = await remult.repo(Task).findId(1, { load: (e) => [e.category] })
-      expect(t.category.name).toBe('cat1')
+      expect(t!.category).toBe(undefined)
+      t = await remult.repo(Task).findId(1, { load: (e) => [e.category!] })
+      expect(t!.category!.name).toBe('cat1')
     }
   })
 })

@@ -11,7 +11,7 @@ import {
 //import { getRelationFieldInfo } from 'remult/internals'
 import { getRelationFieldInfo } from '../../../../core/internals.js' // comment in the from `remult`
 
-export function sqlRelations<entityType>(
+export function sqlRelations<entityType extends object>(
   forEntity: ClassType<entityType>,
 ): SqlRelations<entityType> {
   return new Proxy(
@@ -33,7 +33,9 @@ export function sqlRelations<entityType>(
 }
 
 export type SqlRelations<entityType> = {
-  [p in keyof entityType]-?: SqlRelation<ArrayItemType<entityType[p]>>
+  [p in keyof entityType]-?: SqlRelation<
+    ArrayItemType<NonNullable<entityType[p]>>
+  >
 }
 
 export type SqlRelation<toEntity> = {
@@ -50,7 +52,7 @@ export type SqlRelation<toEntity> = {
 }
 
 class SqlRelationTools<
-  myEntity,
+  myEntity extends object,
   relationKey extends keyof myEntity,
   toEntity = ArrayItemType<myEntity[relationKey]>,
 > {
@@ -123,7 +125,7 @@ class SqlRelationTools<
 }
 export type ArrayItemType<T> = T extends (infer U)[] ? U : T
 
-export function sqlRelationsFilter<entityType>(
+export function sqlRelationsFilter<entityType extends object>(
   forEntity: ClassType<entityType>,
 ) {
   return new Proxy(
@@ -136,13 +138,13 @@ export function sqlRelationsFilter<entityType>(
     [p in keyof entityType]-?: SqlRelationFilter<
       entityType,
       p,
-      ArrayItemType<entityType[p]>
+      ArrayItemType<NonNullable<entityType[p]>>
     >
   }
 }
 
 export class SqlRelationFilter<
-  myEntity,
+  myEntity extends object,
   relationKey extends keyof myEntity,
   toEntity = ArrayItemType<myEntity[relationKey]>,
 > {

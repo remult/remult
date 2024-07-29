@@ -1068,9 +1068,17 @@ export type ClassFieldDecorator<entityType, valueType> = (
 export const flags = {
   error500RetryCount: 4,
 }
+/*y1 - typing discussion:
+ * all fields required in fields
+ * key as key of entity
+ * continue with extends object?
+ * should and / or accept also undefined members? the code supports it, not sure if the api should
+ * Sql server expression supports undefined as a response
+ */
 
 //p1 - fix query docs to also explain how it can be used for infinite scroll and pagination.
 //y1 - 'test expression columns without aliases'
+//y1 - ts issue with fields - when a field is optional, it's $ is also optional and thats a problem
 //p1 - see if I can fix the no alias problem in selects
 //p1 - add luid - it's cool for order by.
 //p1 - replace uuid with crypto.randomUUID and allow custom fallback

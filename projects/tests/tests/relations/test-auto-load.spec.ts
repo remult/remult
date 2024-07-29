@@ -28,7 +28,7 @@ class Category {
   @Relations.toOne(() => Company, {
     defaultIncluded: true,
   })
-  company: Company
+  company!: Company
 
   @Fields.integer()
   secondCompanyId = 0
@@ -36,12 +36,12 @@ class Category {
     field: 'secondCompanyId',
     defaultIncluded: true,
   })
-  secondCompany: Company
+  secondCompany!: Company
   @Relations.toMany(() => Task, {
     field: 'category',
     defaultIncluded: true,
   })
-  tasks: Task[]
+  tasks!: Task[]
 }
 
 @Entity('tasks')
@@ -57,7 +57,7 @@ class Task {
 }
 describe('test repository relations', () => {
   let remult: Remult
-  function r<entityType>(entity: ClassType<entityType>) {
+  function r<entityType extends object>(entity: ClassType<entityType>) {
     return remult.repo(entity)
   }
   beforeEach(async () => {
@@ -72,27 +72,27 @@ describe('test repository relations', () => {
     remult.clearAllCache()
   })
   it('loads', async () => {
-    const c = await r(Category).findFirst()
+    const c = (await r(Category).findFirst())!
     expect(c.company.id).toBe(11)
     expect(c.secondCompany.name).toBe('comp2')
     expect(c.tasks.length).toBe(1)
   })
   it('loads partial', async () => {
-    const c = await r(Category).findFirst(
+    const c = (await r(Category).findFirst(
       {},
       {
         include: {
           secondCompany: false,
         },
       },
-    )
+    ))!
     expect(c.company.id).toBe(11)
     expect(c.secondCompany).toBeUndefined()
     expect(c.tasks.length).toBe(1)
   })
 
   it("doesn't loads", async () => {
-    const c = await r(Category).findFirst(
+    const c = (await r(Category).findFirst(
       {},
       {
         include: {
@@ -101,16 +101,16 @@ describe('test repository relations', () => {
           tasks: false,
         },
       },
-    )
+    ))!
     expect(c.company).toBeUndefined()
     expect(c.secondCompany).toBeUndefined()
     expect(c.tasks).toBeUndefined()
   })
   it('find one works', async () => {
-    const c = await r(Category).findFirst(
+    const c = (await r(Category).findFirst(
       {},
       { include: { company: false, secondCompany: false, tasks: false } },
-    )
+    ))!
     expect(getEntityRef(c).fields.company.getId()).toBe(11)
     const comp1 = await r(Category).relations(c).company.findOne()
     const comp2 = await r(Category).relations(c).secondCompany.findOne()
@@ -120,7 +120,7 @@ describe('test repository relations', () => {
     expect(await r(Category).relations(c).tasks.count()).toBe(1)
   })
   it('waitLoad works', async () => {
-    const c = await r(Category).findFirst(
+    const c = (await r(Category).findFirst(
       {},
       {
         include: {
@@ -129,7 +129,7 @@ describe('test repository relations', () => {
           tasks: false,
         },
       },
-    )
+    ))!
     const ref = getEntityRef(c)
     expect(getEntityRef(c).fields.company.getId()).toBe(11)
     const comp1 = await ref.fields.company.load()

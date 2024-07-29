@@ -270,7 +270,7 @@ describe('validation tests', () => {
           let z = x.value
         },
       })
-      id: e
+      id!: e
     }
 
     expect(async () => await remult.repo(x).insert({ id: 'd' as any })).rejects
@@ -313,7 +313,7 @@ describe('validation tests', () => {
       @Fields.object({
         validate: Validators.enum(e),
       })
-      id: e
+      id!: e
     }
     expect(async () => await remult.repo(x).insert({ id: 'd' as any })).rejects
       .toThrowErrorMatchingInlineSnapshot(`
@@ -336,7 +336,7 @@ describe('validation tests', () => {
       @Fields.object({
         validate: Validators.enum(e),
       })
-      id: e
+      id!: e
     }
     expect(async () => await remult.repo(x).insert({ id: 'd' as any })).rejects
       .toThrowErrorMatchingInlineSnapshot(`
@@ -487,7 +487,7 @@ describe('validation tests', () => {
       @Fields.object({
         validate: Validators.enum(e),
       })
-      id: e
+      id!: e
     }
 
     await expect(async () => await remult.repo(x).insert({ id: 'd' as any }))
@@ -516,7 +516,7 @@ describe('validation tests', () => {
     @Entity('x', {})
     class x {
       @Fields.enum(() => e)
-      id: e
+      id!: e
     }
     expect(async () => await remult.repo(x).insert({ id: 'd' as any })).rejects
       .toThrowErrorMatchingInlineSnapshot(`
@@ -564,7 +564,7 @@ describe('validation tests', () => {
       @Fields.object({
         validate: Validators.enum(e),
       })
-      id: e
+      id!: e
     }
     const repo = remult.repo(x)
     expect(async () => await repo.insert({ id: 'd' as any })).rejects
@@ -640,9 +640,9 @@ describe('validation tests', () => {
       expect(
         async () =>
           await remult.repo(x).insert({
-            id: null,
-            id2: null,
-            id3: null,
+            id: null!,
+            id2: null!,
+            id3: null!,
           }),
       ).rejects.toThrowErrorMatchingInlineSnapshot(`
     {
@@ -722,9 +722,9 @@ describe('validation tests', () => {
       expect(
         async () =>
           await remult.repo(x).insert({
-            id: null,
-            id2: null,
-            id3: null,
+            id: null!,
+            id2: null!,
+            id3: null!,
           }),
       ).rejects.toThrowErrorMatchingInlineSnapshot(`
     {

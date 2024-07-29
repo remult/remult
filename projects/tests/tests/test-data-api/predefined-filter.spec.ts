@@ -35,7 +35,7 @@ describe('data api', () => {
 
       d.ok()
     }
-    await api.getArray(t, undefined)
+    await api.getArray(t, undefined!)
     d.test()
   })
   it('get works with predefined filter', async () => {
@@ -300,8 +300,8 @@ describe('data api', () => {
       await i(2, 'yael', 'b')
       await i(3, 'yoni', 'a')
     })
-    expect((await c.findFirst({ id: 1 })).categoryName).toBe('noam')
-    expect((await c.findId(1)).categoryName).toBe('noam')
+    expect((await c.findFirst({ id: 1 }))!.categoryName).toBe('noam')
+    expect((await c.findId(1))!.categoryName).toBe('noam')
   })
 })
 
@@ -309,9 +309,9 @@ describe('test backend filter and update', () => {
   @Entity('t', { allowApiCrud: true, backendPrefilter: () => backendFilter })
   class t {
     @Fields.integer()
-    id: number
+    id!: number
     @Fields.string()
-    name: string
+    name!: string
   }
   var remult = new Remult()
   let backendFilter: EntityFilter<t> = {}
@@ -363,8 +363,10 @@ describe('test backend filter and update', () => {
   it('save fails 2', async () => {
     const item = await r.findId(2)
     await r.delete(2)
-    item.name = 'z'
-    await expect(() => r.save(item)).rejects.toThrowErrorMatchingInlineSnapshot(
+    item!.name = 'z'
+    await expect(() =>
+      r.save(item!),
+    ).rejects.toThrowErrorMatchingInlineSnapshot(
       '"ArrayEntityDataProvider: Couldn\'t find row with id \\"2\\" in entity \\"t\\" to update"',
     )
   })
@@ -438,7 +440,7 @@ describe('', () => {
       expect(await c.count()).to.eq(1, 'count')
       expect(await c.findFirst({ id: 1 })).to.eq(undefined, 'find first')
       expect(
-        (await c.findFirst({ id: 1 }, { createIfNotFound: true }))._.isNew(),
+        (await c.findFirst({ id: 1 }, { createIfNotFound: true }))!._.isNew(),
       ).to.eq(true, 'lookup ')
     })
   })
@@ -461,7 +463,7 @@ describe('', () => {
       expect(await c.count()).to.eq(1, 'count')
       expect(await c.findFirst({ id: 1 })).to.eq(undefined, 'find first')
       expect(
-        (await c.findFirst({ id: 1 }, { createIfNotFound: true }))._.isNew(),
+        (await c.findFirst({ id: 1 }, { createIfNotFound: true }))!._.isNew(),
       ).to.eq(true, 'lookup ')
     })
   })
@@ -484,28 +486,28 @@ it('backend filter only works on backend', async () => {
   expect(await c.count()).to.eq(1, 'count')
   expect(await c.findFirst({ id: 1 })).to.eq(undefined, 'find first')
   expect(
-    (await c.findFirst({ id: 1 }, { createIfNotFound: true }))._.isNew(),
+    (await c.findFirst({ id: 1 }, { createIfNotFound: true }))!._.isNew(),
   ).to.eq(true, 'lookup ')
 })
 
-@EntityDecorator<CategoriesForThisTest>(undefined, {
+@EntityDecorator<CategoriesForThisTest>(undefined!, {
   allowApiUpdate: true,
   allowApiDelete: true,
   apiPrefilter: { description: 'b' },
 })
 class CategoriesForThisTest extends newCategories {}
-@EntityDecorator<CategoriesForThisTest>(undefined, {
+@EntityDecorator<CategoriesForThisTest>(undefined!, {
   allowApiUpdate: true,
   allowApiDelete: true,
   apiPrefilter: () => ({ description: 'b' }),
 })
 class CategoriesForThisTest2 extends newCategories {}
-@EntityDecorator<CategoriesForThisTestThatInherits>(undefined, {
+@EntityDecorator<CategoriesForThisTestThatInherits>(undefined!, {
   backendPrefilter: () => ({ categoryName: { $contains: 'a' } }),
 })
 class CategoriesForThisTestThatInherits extends CategoriesForThisTest2 {}
 
-@EntityDecorator<CategoriesForThisTest3>(undefined, {
+@EntityDecorator<CategoriesForThisTest3>(undefined!, {
   allowApiUpdate: true,
   allowApiDelete: true,
   apiPrefilter: CategoriesForThisTest3.myFilter(),
@@ -516,9 +518,9 @@ class CategoriesForThisTest3 extends newCategories {
     'key',
   )
 }
-@EntityDecorator<CategoriesForThisTest3Inherit>(undefined, {})
+@EntityDecorator<CategoriesForThisTest3Inherit>(undefined!, {})
 class CategoriesForThisTest3Inherit extends CategoriesForThisTest3 {}
-@EntityDecorator<CategoriesForThisTest4>(undefined, {
+@EntityDecorator<CategoriesForThisTest4>(undefined!, {
   allowApiUpdate: true,
   allowApiDelete: true,
   apiPrefilter: () => CategoriesForThisTest4.myFilter(),

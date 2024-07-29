@@ -10,9 +10,9 @@ import { Categories as newCategories } from './remult-3-entities'
 @Entity('entityWithAutoId')
 class entityWithAutoId extends EntityBase {
   @Fields.autoIncrement()
-  id: number
+  id!: number
   @Fields.string()
-  name: string
+  name!: string
 }
 
 describe('test json database', () => {

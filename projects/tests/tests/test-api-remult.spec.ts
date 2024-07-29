@@ -25,7 +25,7 @@ class FamilyDeliveries extends EntityBase {
   @Fields.integer()
   id = 0
   @Field(() => HelpersBase)
-  courier: HelpersBase
+  courier!: HelpersBase
 }
 
 @Entity('helper', {
@@ -38,7 +38,7 @@ class Helpers extends HelpersBase {
 
 it('type inheritance works', async () => {
   const remult = new Remult(new InMemoryDataProvider())
-  function repo<T>(x: ClassType<T>) {
+  function repo<T extends object>(x: ClassType<T>) {
     return remult.repo(x)
   }
   const [h1, h2] = await repo(Helpers).insert([{ id: 1 }, { id: 2 }])

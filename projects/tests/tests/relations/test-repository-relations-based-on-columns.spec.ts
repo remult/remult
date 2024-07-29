@@ -19,7 +19,7 @@ class Category {
   @Fields.string()
   name = ''
   @Relations.toMany(() => Task, 'categoryId')
-  tasks: Task[]
+  tasks!: Task[]
   @Relations.toMany<Category, Task>(() => Task, {
     fields: {
       categoryId: 'id',
@@ -30,7 +30,7 @@ class Category {
       },
     },
   })
-  completedTask: Task[]
+  completedTask!: Task[]
 }
 
 @Entity('tasks')
@@ -51,7 +51,7 @@ class Task {
 
 describe('test repository relations', () => {
   let remult: Remult
-  function r<entityType>(entity: ClassType<entityType>) {
+  function r<entityType extends object>(entity: ClassType<entityType>) {
     return remult.repo(entity)
   }
   beforeEach(async () => {
