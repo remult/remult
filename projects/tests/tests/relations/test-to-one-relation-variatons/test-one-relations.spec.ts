@@ -44,7 +44,7 @@ describe('test one', () => {
   }
   beforeEach(async () => {
     remult = new Remult(new InMemoryDataProvider())
-    await repo(Category).insert(
+    ;[cat1, cat2, cat3] = await repo(Category).insert(
       [1, 2, 3].map((y) => ({ id: y, name: 'cat' + y })),
     )
     await repo(Task).insert({ id: 1, title: 'task1', categoryId: 1 })

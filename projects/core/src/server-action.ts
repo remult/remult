@@ -478,9 +478,9 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
     }
 
     result = async function (...args: any[]) {
+      //@ts-ignore I specifically referred to the this of the original function - so it'll be sent inside
+      let self: any = this
       if (!isBackend()) {
-        //@ts-ignore I specifically referred to the this of the original function - so it'll be sent inside
-        let self: any = this
         return serverAction.doWork(args, self)
       } else return await originalMethod.apply(self, args)
     }
