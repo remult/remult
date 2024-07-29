@@ -1071,7 +1071,7 @@ export const flags = {
 /*y1 - typing discussion:
  * all fields required in fields
  * key as key of entity
- * continue with extends object?
+ * continue with?
  * should and / or accept also undefined members? the code supports it, not sure if the api should
  * Sql server expression supports undefined as a response
  */

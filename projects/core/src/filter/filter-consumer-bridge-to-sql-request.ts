@@ -271,7 +271,7 @@ export class CustomSqlFilterBuilder
    * @param {EntityFilter<entityType>} condition - The entity filter.
    * @returns {Promise<string>} - The raw SQL.
    */
-  filterToRaw = async <entityType extends object>(
+  filterToRaw = async <entityType>(
     repo: RepositoryOverloads<entityType>,
     condition: EntityFilter<entityType>,
   ) => {
@@ -328,21 +328,19 @@ export interface dbNamesOfOptions {
   wrapIdentifier?: (name: string) => string
   tableName?: boolean | string
 }
-export async function dbNamesOf<entityType extends object>(
+export async function dbNamesOf<entityType>(
   repo: EntityMetadataOverloads<entityType>,
   wrapIdentifierOrOptions?: ((name: string) => string) | dbNamesOfOptions,
 ) {
   return internalDbNamesOf(repo, wrapIdentifierOrOptions)
 }
-export async function dbNamesOfWithForceSqlExpression<
-  entityType extends object,
->(
+export async function dbNamesOfWithForceSqlExpression<entityType>(
   repo: EntityMetadataOverloads<entityType>,
   wrapIdentifierOrOptions?: ((name: string) => string) | dbNamesOfOptions,
 ) {
   return internalDbNamesOf(repo, wrapIdentifierOrOptions, true)
 }
-async function internalDbNamesOf<entityType extends object>(
+async function internalDbNamesOf<entityType>(
   repo: EntityMetadataOverloads<entityType>,
   wrapIdentifierOrOptions?: ((name: string) => string) | dbNamesOfOptions,
   forceSqlExpression = false,

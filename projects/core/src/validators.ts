@@ -68,9 +68,10 @@ export class Validators {
     (val) => val != null,
     'Should not be null',
   )
-  static enum = createValueValidatorWithArgs<unknown, object>(
-    (value, enumObj) => Object.values(enumObj).includes(value),
-    (enumObj) => `Value must be one of ${getEnumValues(enumObj).join(', ')}`,
+  static enum = createValueValidatorWithArgs(
+    (value, enumObj) => Object.values(enumObj as object).includes(value),
+    (enumObj) =>
+      `Value must be one of ${getEnumValues(enumObj as object).join(', ')}`,
   )
   static relationExists = createValidator<unknown>(async (_, e) => {
     if (e.valueIsNull()) return true
@@ -183,7 +184,7 @@ export function createValueValidatorWithArgs<valueType, argsType>(
   ) => boolean | string | Promise<boolean | string>,
   defaultMessage?: ValueValidationMessage<argsType>,
 ): ValidatorWithArgs<valueType, argsType> & {
-  defaultMessage?: ValueValidationMessage<argsType>
+  defaultMessage: ValueValidationMessage<argsType>
 } {
   const result = createValidatorWithArgsInternal<valueType, argsType>(
     (_, e, args) => {
@@ -197,7 +198,7 @@ export function createValueValidatorWithArgs<valueType, argsType>(
   )
   return Object.assign((entity: any, e: any) => result(entity, e), {
     get defaultMessage() {
-      return defaultMessage
+      return defaultMessage!
     },
     set defaultMessage(val) {
       defaultMessage = val

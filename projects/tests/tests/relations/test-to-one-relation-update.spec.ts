@@ -32,7 +32,7 @@ describe('relations to one behavior', () => {
     cat2?: Category
   }
   let remult = new Remult()
-  function r<T extends object>(e: new () => T) {
+  function r<T>(e: new () => T) {
     return remult.repo(e)
   }
   beforeAll(async () => {

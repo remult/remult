@@ -61,7 +61,7 @@ export function describeEntity<entityType extends ClassType<any>>(
 ) {
   describeClass(
     classType,
-    Entity<InstanceType<entityType>>(key, options),
+    Entity<InstanceType<entityType>>(key, options!),
     fields,
   )
 }

@@ -21,7 +21,7 @@ class myTest {
 
 describe('test sorts', () => {
   let remult = new Remult(new InMemoryDataProvider())
-  function repo<T extends object>(entity: ClassType<T>) {
+  function repo<T>(entity: ClassType<T>) {
     return remult.repo(entity)
   }
   it('test sort', async () => {

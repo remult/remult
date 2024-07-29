@@ -31,7 +31,7 @@ describe('websql', () => {
       }
     }
   })
-  async function createEntity<T extends object>(entity: ClassType<T>) {
+  async function createEntity<T>(entity: ClassType<T>) {
     return remult.repo(entity)
   }
 

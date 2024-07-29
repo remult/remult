@@ -32,11 +32,6 @@ export const entityInfo_key = Symbol.for('entityInfo_key')
 
 export function getEntitySettings<T>(
   entity: ClassType<T>,
-  throwError: boolean,
-): EntityOptionsFactory | undefined
-export function getEntitySettings<T>(entity: ClassType<T>): EntityOptionsFactory
-export function getEntitySettings<T>(
-  entity: ClassType<T>,
   throwError = true,
 ): EntityOptionsFactory | undefined {
   if (entity === undefined)

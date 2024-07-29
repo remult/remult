@@ -204,7 +204,7 @@ export class SqlDatabase
    
    */
 
-  static async filterToRaw<entityType extends object>(
+  static async filterToRaw<entityType>(
     repo: RepositoryOverloads<entityType>,
     condition: EntityFilter<entityType>,
     sqlCommand?: SqlCommandWithParameters,

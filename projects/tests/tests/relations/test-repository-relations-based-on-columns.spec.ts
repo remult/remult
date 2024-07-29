@@ -51,7 +51,7 @@ class Task {
 
 describe('test repository relations', () => {
   let remult: Remult
-  function r<entityType extends object>(entity: ClassType<entityType>) {
+  function r<entityType>(entity: ClassType<entityType>) {
     return remult.repo(entity)
   }
   beforeEach(async () => {

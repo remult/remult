@@ -141,7 +141,7 @@ export class KnexDataProvider
       },
     }
   }
-  static async filterToRaw<entityType extends object>(
+  static async filterToRaw<entityType>(
     entity: RepositoryOverloads<entityType>,
     condition: EntityFilter<entityType>,
     wrapIdentifier?: (name: string) => string,

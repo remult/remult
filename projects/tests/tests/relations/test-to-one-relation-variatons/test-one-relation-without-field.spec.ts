@@ -63,7 +63,7 @@ describe('test one', () => {
   let cat1: Category
   let cat2: Category
   let cat3: Category
-  function repo<T extends object>(x: ClassType<T>) {
+  function repo<T>(x: ClassType<T>) {
     return remult.repo(x)
   }
   beforeEach(async () => {

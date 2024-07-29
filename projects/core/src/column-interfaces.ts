@@ -7,10 +7,7 @@ import type {
   ValidateFieldEvent,
 } from './remult3/remult3.js'
 
-export interface FieldOptions<
-  entityType extends object = any,
-  valueType = any,
-> {
+export interface FieldOptions<entityType = any, valueType = any> {
   /** A human readable name for the field. Can be used to achieve a consistent caption for a field throughout the app
    * @example
    * <input placeholder={taskRepo.metadata.fields.title.caption}/>

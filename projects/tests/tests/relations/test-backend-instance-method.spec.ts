@@ -21,7 +21,7 @@ describe('relations to one behavior', () => {
 
   let serverRemult = new Remult()
   let remult = new Remult()
-  function r<T extends object>(e: new () => T) {
+  function r<T>(e: new () => T) {
     return remult.repo(e)
   }
   let doOnServer = async (t: Task) => {}

@@ -11,7 +11,7 @@ import {
 //import { getRelationFieldInfo } from 'remult/internals'
 import { getRelationFieldInfo } from '../../../../core/internals.js' // comment in the from `remult`
 
-export function sqlRelations<entityType extends object>(
+export function sqlRelations<entityType>(
   forEntity: ClassType<entityType>,
 ): SqlRelations<entityType> {
   return new Proxy(
@@ -52,7 +52,7 @@ export type SqlRelation<toEntity> = {
 }
 
 class SqlRelationTools<
-  myEntity extends object,
+  myEntity,
   relationKey extends keyof myEntity,
   toEntity = ArrayItemType<myEntity[relationKey]>,
 > {
@@ -125,7 +125,7 @@ class SqlRelationTools<
 }
 export type ArrayItemType<T> = T extends (infer U)[] ? U : T
 
-export function sqlRelationsFilter<entityType extends object>(
+export function sqlRelationsFilter<entityType>(
   forEntity: ClassType<entityType>,
 ) {
   return new Proxy(
@@ -144,7 +144,7 @@ export function sqlRelationsFilter<entityType extends object>(
 }
 
 export class SqlRelationFilter<
-  myEntity extends object,
+  myEntity,
   relationKey extends keyof myEntity,
   toEntity = ArrayItemType<myEntity[relationKey]>,
 > {

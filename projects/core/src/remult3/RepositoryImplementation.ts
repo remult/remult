@@ -124,7 +124,7 @@ let classValidatorValidate:
 //     .catch(() => {
 //     });
 
-export class RepositoryImplementation<entityType extends object>
+export class RepositoryImplementation<entityType>
   implements Repository<entityType>, RepositoryInternal<entityType>
 {
   _notFoundError(id: any) {
@@ -448,7 +448,7 @@ export class RepositoryImplementation<entityType extends object>
         id,
         this.metadata.idMetadata.getId(id),
       ) as unknown as typeof ref
-      Object.assign(ref.instance, entity)
+      Object.assign(ref.instance as any, entity)
     } else
       ref = this._getRefForExistingRow(
         entity,
@@ -1091,14 +1091,11 @@ export class RepositoryImplementation<entityType extends object>
 
 export type EntityOptionsFactory = (remult: Remult) => EntityOptions
 
-export function createOldEntity<T extends object>(
-  entity: ClassType<T>,
-  remult: Remult,
-) {
+export function createOldEntity<T>(entity: ClassType<T>, remult: Remult) {
   let r: columnInfo[] = remultStatic.columnsOfType.get(entity)!
   if (!r) remultStatic.columnsOfType.set(entity, (r = []))
 
-  let info = getEntitySettings(entity)(remult)
+  let info = getEntitySettings(entity)!(remult)
   let key = getEntityKey(entity)
 
   let base = Object.getPrototypeOf(entity)
@@ -1144,7 +1141,7 @@ export function createOldEntity<T extends object>(
   )
 }
 
-abstract class rowHelperBase<T extends object> {
+abstract class rowHelperBase<T> {
   _error?: string
   get error() {
     this._subscribers?.reportObserved()
@@ -1215,7 +1212,7 @@ abstract class rowHelperBase<T extends object> {
       } else {
         const rel = getRelationFieldInfo(col)
         if (rel?.type === 'toOne') {
-          let hasVal = instance.hasOwnProperty(col.key)
+          let hasVal = (instance as any).hasOwnProperty(col.key)
           let val = instance[col.key as keyof T]
           if (isNewRow && !val) hasVal = false
           Object.defineProperty(instance, col.key, {
@@ -1419,7 +1416,7 @@ abstract class rowHelperBase<T extends object> {
   toApiJson(includeRelatedEntities = false, notJustApi = false) {
     let result: any = {}
     for (const col of this.fieldsMetadata) {
-      if (notJustApi || !this.remult || col.includedInApi(this.instance)) {
+      if (notJustApi || !this.remult || col.includedInApi(this.instance!)) {
         let val
         let lu = this.lookups.get(col.key)
         let disable = false
@@ -1454,11 +1451,11 @@ abstract class rowHelperBase<T extends object> {
     let keys = Object.keys(body)
     for (const col of this.fieldsMetadata) {
       if (keys.includes(col.key))
-        if (col.includedInApi(this.instance)) {
+        if (col.includedInApi(this.instance!)) {
           if (
             !this.remult ||
             ignoreApiAllowed ||
-            col.apiUpdateAllowed(this.instance)
+            col.apiUpdateAllowed(this.instance!)
           ) {
             let lu = this.lookups.get(col.key)
             if (lu) lu.id = body[col.key]
@@ -1476,7 +1473,7 @@ abstract class rowHelperBase<T extends object> {
   }
 }
 
-export class rowHelperImplementation<T extends object>
+export class rowHelperImplementation<T>
   extends rowHelperBase<T>
   implements EntityRef<T>
 {
@@ -1862,13 +1859,13 @@ function prepareColumnInfo(
   return r.map((x) => decorateColumnSettings(x.settings(remult), remult))
 }
 
-export function getFields<fieldsContainerType extends object>(
+export function getFields<fieldsContainerType>(
   container: fieldsContainerType,
   remult?: Remult,
 ) {
   return getControllerRef(container, remult).fields
 }
-export function getControllerRef<fieldsContainerType extends object>(
+export function getControllerRef<fieldsContainerType>(
   container: fieldsContainerType,
   remultArg?: Remult,
 ): ControllerRef<fieldsContainerType> {
@@ -1881,14 +1878,14 @@ export function getControllerRef<fieldsContainerType extends object>(
   if (!result) result = container[entityMember]
   if (!result) {
     let columnSettings: columnInfo[] = remultStatic.columnsOfType.get(
-      container.constructor,
+      (container as any).constructor,
     )!
     if (!columnSettings)
       remultStatic.columnsOfType.set(
-        container.constructor,
+        (container as any).constructor,
         (columnSettings = []),
       )
-    let base = Object.getPrototypeOf(container.constructor)
+    let base = Object.getPrototypeOf((container as any).constructor)
     while (base != null) {
       let baseCols = remultStatic.columnsOfType.get(base)
       if (baseCols) {
@@ -1917,7 +1914,7 @@ export function getControllerRef<fieldsContainerType extends object>(
   return result
 }
 
-export class controllerRefImpl<T extends object = any>
+export class controllerRefImpl<T = any>
   extends rowHelperBase<T>
   implements ControllerRef<T>
 {
@@ -1955,7 +1952,7 @@ export class controllerRefImpl<T extends object = any>
   }
   fields: FieldsRef<T>
 }
-export class FieldRefImplementation<entityType extends object, valueType>
+export class FieldRefImplementation<entityType, valueType>
   implements FieldRef<entityType, valueType>
 {
   constructor(
@@ -2315,7 +2312,7 @@ export class columnDefsImpl implements FieldMetadata {
   isServerExpression = false
   valueType: any
 }
-class EntityFullInfo<T extends object> implements EntityMetadata<T> {
+class EntityFullInfo<T> implements EntityMetadata<T> {
   options: EntityOptions<T>
   fieldsMetadata: FieldMetadata[] = []
 
@@ -2513,7 +2510,7 @@ export function ValueListFieldType<valueType extends ValueListItem = any>(
     )(type)
   }
 }
-export interface ValueListFieldOptions<entityType extends object, valueType>
+export interface ValueListFieldOptions<entityType, valueType>
   extends FieldOptions<entityType, valueType> {
   getValues?: () => valueType[]
 }
@@ -2611,7 +2608,7 @@ const typeCache = new Map<any, ValueListInfo<any>>()
 export function getValueList<T>(field: FieldRef<T>): T[]
 export function getValueList<T>(field: FieldMetadata<T>): T[]
 export function getValueList<T>(type: ClassType<T>): T[]
-export function getValueList<T extends object>(
+export function getValueList<T>(
   type: ClassType<T> | FieldMetadata<T> | FieldRef<T>,
 ): T[] | undefined {
   let meta = (type as FieldRef<T>)?.metadata
@@ -2623,7 +2620,7 @@ export function getValueList<T extends object>(
       any,
       any
     >[]
-    if (options) return ValueListInfo.get(type as ClassType<T>).getValues()
+    if (options) return ValueListInfo.get(type as any).getValues() as any
   }
   let optionalValues = (meta?.options as any)[fieldOptionalValuesFunctionKey]
   if (optionalValues) return optionalValues()
@@ -2632,7 +2629,7 @@ export function getValueList<T extends object>(
 
 export const storableMember = Symbol.for('storableMember')
 export const fieldOptionalValuesFunctionKey = Symbol.for('fieldOptionalValues')
-export function buildOptions<entityType extends object = any, valueType = any>(
+export function buildOptions<entityType = any, valueType = any>(
   options: (
     | FieldOptions<entityType, valueType>
     | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void)
@@ -2793,9 +2790,7 @@ export class ControllerBase {
   }
 }
 
-class QueryResultImpl<entityType extends object>
-  implements QueryResult<entityType>
-{
+class QueryResultImpl<entityType> implements QueryResult<entityType> {
   constructor(
     private options: QueryOptions<entityType>,
     private repo: RepositoryImplementation<entityType>,
@@ -2961,7 +2956,7 @@ class SubscribableImp implements Subscribable {
       (this._subscribers = this._subscribers!.filter((x) => x != list))
   }
 }
-export function getEntityMetadata<entityType extends object>(
+export function getEntityMetadata<entityType>(
   entity: EntityMetadataOverloads<entityType>,
 ): EntityMetadata<entityType> {
   if ((entity as Repository<entityType>).metadata)
@@ -2972,7 +2967,7 @@ export function getEntityMetadata<entityType extends object>(
   }
   return entity as EntityMetadata<entityType>
 }
-export function getRepository<entityType extends object>(
+export function getRepository<entityType>(
   entity: RepositoryOverloads<entityType>,
 ): Repository<entityType> {
   const settings = getEntitySettings(entity as ClassType<entityType>, false)

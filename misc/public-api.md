@@ -383,7 +383,7 @@ export declare function createValueValidatorWithArgs<valueType, argsType>(
   ) => boolean | string | Promise<boolean | string>,
   defaultMessage?: ValueValidationMessage<argsType>,
 ): ValidatorWithArgs<valueType, argsType> & {
-  defaultMessage?: ValueValidationMessage<argsType>
+  defaultMessage: ValueValidationMessage<argsType>
 }
 export declare class CustomSqlFilterBuilder
   implements SqlCommandWithParameters, HasWrapIdentifier
@@ -410,7 +410,7 @@ export declare class CustomSqlFilterBuilder
    * @param {EntityFilter<entityType>} condition - The entity filter.
    * @returns {Promise<string>} - The raw SQL.
    */
-  filterToRaw: <entityType extends object>(
+  filterToRaw: <entityType>(
     repo: RepositoryOverloads<entityType>,
     condition: EntityFilter<entityType>,
   ) => Promise<string>
@@ -427,7 +427,7 @@ export interface DataProvider {
   ensureSchema?(entities: EntityMetadata[]): Promise<void>
   isProxy?: boolean
 }
-export declare function dbNamesOf<entityType extends object>(
+export declare function dbNamesOf<entityType>(
   repo: EntityMetadataOverloads<entityType>,
   wrapIdentifierOrOptions?: ((name: string) => string) | dbNamesOfOptions,
 ): Promise<EntityDbNames<entityType>>
@@ -456,7 +456,7 @@ export declare function describeEntity<entityType extends ClassType<any>>(
   fields: FieldsDescriptor<entityType>,
   options?: EntityOptions<InstanceType<entityType>>,
 ): void
-export declare function Entity<entityType extends object>(
+export declare function Entity<entityType>(
   key: string,
   ...options: (
     | EntityOptions<
@@ -472,7 +472,6 @@ export declare function Entity<entityType extends object>(
         >,
         remult: Remult,
       ) => void)
-    | undefined
   )[]
 ): (
   target: any,
@@ -900,7 +899,7 @@ export interface ExternalHttpProvider {
         toPromise(): Promise<any>
       }
 }
-export declare function Field<entityType extends object = any, valueType = any>(
+export declare function Field<entityType = any, valueType = any>(
   valueType:
     | (() => valueType extends number
         ? Number
@@ -1023,10 +1022,7 @@ export interface FieldMetadata<valueType = any, entityType = any> {
    */
   fromInput(inputValue: string, inputType?: string): valueType
 }
-export interface FieldOptions<
-  entityType extends object = any,
-  valueType = any,
-> {
+export interface FieldOptions<entityType = any, valueType = any> {
   /** A human readable name for the field. Can be used to achieve a consistent caption for a field throughout the app
    * @example
    * <input placeholder={taskRepo.metadata.fields.title.caption}/>
@@ -1174,61 +1170,61 @@ export declare class Fields {
   /**
    * Stored as a JSON.stringify - to store as json use Fields.json
    */
-  static object<entityType extends object = any, valueType = any>(
+  static object<entityType = any, valueType = any>(
     ...options: (
       | FieldOptions<entityType, valueType>
       | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, valueType | undefined>
-  static json<entityType extends object = any, valueType = any>(
+  static json<entityType = any, valueType = any>(
     ...options: (
       | FieldOptions<entityType, valueType>
       | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, valueType | undefined>
-  static dateOnly<entityType extends object = any>(
+  static dateOnly<entityType = any>(
     ...options: (
       | FieldOptions<entityType, Date>
       | ((options: FieldOptions<entityType, Date>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, Date | undefined>
-  static date<entityType extends object = any>(
+  static date<entityType = any>(
     ...options: (
       | FieldOptions<entityType, Date>
       | ((options: FieldOptions<entityType, Date>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, Date | undefined>
-  static integer<entityType extends object = any>(
+  static integer<entityType = any>(
     ...options: (
       | FieldOptions<entityType, number>
       | ((options: FieldOptions<entityType, number>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, number | undefined>
-  static autoIncrement<entityType extends object = any>(
+  static autoIncrement<entityType = any>(
     ...options: (
       | FieldOptions<entityType, number>
       | ((options: FieldOptions<entityType, number>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, number | undefined>
-  static number<entityType extends object = any>(
+  static number<entityType = any>(
     ...options: (
       | FieldOptions<entityType, number>
       | ((options: FieldOptions<entityType, number>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, number | undefined>
-  static createdAt<entityType extends object = any>(
+  static createdAt<entityType = any>(
     ...options: (
       | FieldOptions<entityType, Date>
       | ((options: FieldOptions<entityType, Date>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, Date | undefined>
-  static updatedAt<entityType extends object = any>(
+  static updatedAt<entityType = any>(
     ...options: (
       | FieldOptions<entityType, Date>
       | ((options: FieldOptions<entityType, Date>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, Date | undefined>
-  static uuid<entityType extends object = any>(
+  static uuid<entityType = any>(
     ...options: (
       | FieldOptions<entityType, string>
       | ((options: FieldOptions<entityType, string>, remult: Remult) => void)
@@ -1239,7 +1235,7 @@ export declare class Fields {
    * This id value is determined on the backend on insert, and can't be updated through the API.
    * The CUID is generated using the `@paralleldrive/cuid2` npm package.
    */
-  static cuid<entityType extends object = any>(
+  static cuid<entityType = any>(
     ...options: (
       | FieldOptions<entityType, string>
       | ((options: FieldOptions<entityType, string>, remult: Remult) => void)
@@ -1274,10 +1270,7 @@ export declare class Fields {
    *
    * // This approach allows easy management and updates of the allowed values for the `status` field.
    */
-  static literal<
-    entityType extends object = any,
-    valueType extends string = any,
-  >(
+  static literal<entityType = any, valueType extends string = any>(
     optionalValues: () => readonly valueType[],
     ...options: (
       | StringFieldOptions<entityType, valueType>
@@ -1287,7 +1280,7 @@ export declare class Fields {
         ) => void)
     )[]
   ): ClassFieldDecorator<entityType, valueType | undefined>
-  static enum<entityType extends object = any, theEnum extends object = any>(
+  static enum<entityType = any, theEnum = object>(
     enumType: () => theEnum,
     ...options: (
       | FieldOptions<entityType, theEnum[keyof theEnum]>
@@ -1297,7 +1290,7 @@ export declare class Fields {
         ) => void)
     )[]
   ): ClassFieldDecorator<entityType, theEnum[keyof theEnum] | undefined>
-  static string<entityType extends object = any, valueType = string>(
+  static string<entityType = any, valueType = string>(
     ...options: (
       | StringFieldOptions<entityType, valueType>
       | ((
@@ -1306,7 +1299,7 @@ export declare class Fields {
         ) => void)
     )[]
   ): ClassFieldDecorator<entityType, valueType | undefined>
-  static boolean<entityType extends object = any>(
+  static boolean<entityType = any>(
     ...options: (
       | FieldOptions<entityType, boolean>
       | ((options: FieldOptions<entityType, boolean>, remult: Remult) => void)
@@ -1646,7 +1639,7 @@ export declare function getEntityRef<entityType>(
   entity: entityType,
   throwException?: boolean,
 ): EntityRef<entityType>
-export declare function getFields<fieldsContainerType extends object>(
+export declare function getFields<fieldsContainerType>(
   container: fieldsContainerType,
   remult?: Remult,
 ): FieldsRef<fieldsContainerType>
@@ -2050,7 +2043,7 @@ export declare class Relations {
    * customer?: Customer;
    * ```
    */
-  static toOne<entityType extends object, toEntityType>(
+  static toOne<entityType, toEntityType>(
     toEntityType: () => ClassType<toEntityType>,
     options?:
       | (FieldOptions<entityType, toEntityType> &
@@ -2133,10 +2126,7 @@ export declare class Remult {
    * @param entity - the entity to use
    * @param dataProvider - an optional alternative data provider to use. Useful for writing to offline storage or an alternative data provider
    */
-  repo: <T extends object>(
-    entity: ClassType<T>,
-    dataProvider?: DataProvider,
-  ) => Repository<T>
+  repo: <T>(entity: ClassType<T>, dataProvider?: DataProvider) => Repository<T>
   /** Returns the current user's info */
   user?: UserInfo
   /** Checks if a user was authenticated */
@@ -2192,7 +2182,7 @@ export declare class Remult {
   apiClient: ApiClient
 }
 export interface RemultContext {}
-export declare function repo<entityType extends object>(
+export declare function repo<entityType>(
   entity: ClassType<entityType>,
   dataProvider?: DataProvider,
 ): import("./src/remult3/remult3.js").Repository<entityType>
@@ -2531,7 +2521,7 @@ export declare class SqlDatabase
      *  @see [Leveraging Database Capabilities with Raw SQL in Custom Filters](https://remult.dev/docs/running-sql-on-the-server#leveraging-entityfilter-for-sql-databases)
      
      */
-  static filterToRaw<entityType extends object>(
+  static filterToRaw<entityType>(
     repo: RepositoryOverloads<entityType>,
     condition: EntityFilter<entityType>,
     sqlCommand?: SqlCommandWithParameters,
@@ -2593,10 +2583,8 @@ export interface StoredQuery {
   id: string
   data: any
 }
-export interface StringFieldOptions<
-  entityType extends object = any,
-  valueType = string,
-> extends FieldOptions<entityType, valueType> {
+export interface StringFieldOptions<entityType = any, valueType = string>
+  extends FieldOptions<entityType, valueType> {
   maxLength?: number
   minLength?: number
 }
@@ -2712,7 +2700,7 @@ export declare class Validators {
    */
   static uniqueOnBackend: Validator<unknown>
   static regex: ValidatorWithArgs<string, RegExp> & {
-    defaultMessage?: ValueValidationMessage<RegExp> | undefined
+    defaultMessage: ValueValidationMessage<RegExp>
   }
   static email: Validator<string>
   static url: Validator<string>
@@ -2723,15 +2711,15 @@ export declare class Validators {
     withMessage: ValueValidationMessage<T[]>
   }
   static notNull: Validator<unknown>
-  static enum: ValidatorWithArgs<unknown, object> & {
-    defaultMessage?: ValueValidationMessage<object> | undefined
+  static enum: ValidatorWithArgs<unknown, unknown> & {
+    defaultMessage: ValueValidationMessage<unknown>
   }
   static relationExists: Validator<unknown>
   static maxLength: ValidatorWithArgs<string, number> & {
-    defaultMessage?: ValueValidationMessage<number> | undefined
+    defaultMessage: ValueValidationMessage<number>
   }
   static minLength: ValidatorWithArgs<string, number> & {
-    defaultMessage?: ValueValidationMessage<number> | undefined
+    defaultMessage: ValueValidationMessage<number>
   }
   static defaultMessage: string
 }
@@ -2905,7 +2893,7 @@ export type ValueFilter<valueType> =
        */
       $nin?: valueType[]
     }
-export interface ValueListFieldOptions<entityType extends object, valueType>
+export interface ValueListFieldOptions<entityType, valueType>
   extends FieldOptions<entityType, valueType> {
   getValues?: () => valueType[]
 }
@@ -3726,7 +3714,7 @@ export declare class KnexDataProvider
     action: (dataProvider: DataProvider) => Promise<void>,
   ): Promise<void>
   static rawFilter(build: CustomKnexFilterBuilderFunction): EntityFilter<any>
-  static filterToRaw<entityType extends object>(
+  static filterToRaw<entityType>(
     entity: RepositoryOverloads<entityType>,
     condition: EntityFilter<entityType>,
     wrapIdentifier?: (name: string) => string,
@@ -3794,7 +3782,7 @@ export declare class MongoDataProvider implements DataProvider {
   transaction(
     action: (dataProvider: DataProvider) => Promise<void>,
   ): Promise<void>
-  static filterToRaw<entityType extends object>(
+  static filterToRaw<entityType>(
     entity: RepositoryOverloads<entityType>,
     condition: EntityFilter<entityType>,
   ): Promise<
@@ -4026,7 +4014,7 @@ export const actionInfo: {
 export type ClassType<T> = {
   new (...args: any[]): T
 }
-export declare class controllerRefImpl<T extends object = any>
+export declare class controllerRefImpl<T = any>
   extends rowHelperBase<T>
   implements ControllerRef<T>
 {
@@ -4045,17 +4033,18 @@ export declare function decorateColumnSettings<valueType>(
 export const flags: {
   error500RetryCount: number
 }
-export declare function getControllerRef<fieldsContainerType extends object>(
+export declare function getControllerRef<fieldsContainerType>(
   container: fieldsContainerType,
   remultArg?: Remult,
 ): ControllerRef<fieldsContainerType>
 //[ ] ControllerRef from TBD is not exported
 export declare function getEntitySettings<T>(
   entity: ClassType<T>,
-): EntityOptionsFactory
+  throwError?: boolean,
+): EntityOptionsFactory | undefined
 //[ ] EntityOptionsFactory from TBD is not exported
 export declare function getRelationFieldInfo(
-  field: FieldMetadata,
+  field: FieldMetadata<unknown, unknown>,
 ): RelationFieldInfo | undefined
 export declare function getRelationInfo(options: FieldOptions): RelationInfo
 export interface RelationFieldInfo {

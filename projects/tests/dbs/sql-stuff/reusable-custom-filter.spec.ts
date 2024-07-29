@@ -110,7 +110,7 @@ export interface MyAppCustomOperators {
   arrayEndsWith?: string
 }
 
-export function myAppCustomFilters<entityType extends object>(
+export function myAppCustomFilters<entityType>(
   entity: () => ClassType<entityType>,
 ) {
   return Filter.createCustom<

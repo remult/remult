@@ -102,7 +102,7 @@ export class Remult {
    * @param entity - the entity to use
    * @param dataProvider - an optional alternative data provider to use. Useful for writing to offline storage or an alternative data provider
    */
-  public repo = <T extends object>(
+  public repo = <T>(
     entity: ClassType<T>,
     dataProvider?: DataProvider,
   ): Repository<T> => {
