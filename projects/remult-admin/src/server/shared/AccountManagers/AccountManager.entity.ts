@@ -23,6 +23,10 @@ export class AccountManager {
   firstName = ''
   @Fields.string()
   lastName = ''
+  @Fields.string({
+    serverExpression: (e) => e.firstName + ' ' + e.lastName,
+  })
+  fullName = ''
   @Fields.string()
   email = ''
   @Fields.string()
