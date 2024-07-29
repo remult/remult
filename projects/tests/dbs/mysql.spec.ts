@@ -30,7 +30,7 @@ describe.skipIf(!process.env['TEST_MYSQL'])('mysql', () => {
           .toMatchInlineSnapshot(`
           RowDataPacket {
             "id": 1,
-            "js": "{\\"a\\": 1, \\"b\\": 2}",
+            "js": "{"a": 1, "b": 2}",
           }
         `)
       })
