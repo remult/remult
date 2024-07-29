@@ -256,4 +256,9 @@
   .loading-skeleton {
     padding: 0 0.5rem;
   }
+
+  button:disabled {
+    opacity: 0.2;
+    cursor: not-allowed;
+  }
 </style>
