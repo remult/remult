@@ -29,7 +29,15 @@
     $godStore.tables.find((x) => x.key === relation.entityKey)
   $: change = Boolean(columns.find((x) => value[x.key] !== rowFrozzen[x.key]))
 
-  const relationWhere = {}
+  $: relationWhere =
+    row && relation && typeof relation === 'object'
+      ? Object.fromEntries(
+          Object.entries(relation.fields).map(([key, value]) => [
+            key,
+            row[value],
+          ]),
+        )
+      : {}
 
   async function doSave() {
     try {
