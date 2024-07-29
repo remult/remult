@@ -197,7 +197,7 @@ describe('Rest', () => {
     await expect(() =>
       repoServer(task).find({}),
     ).rejects.toThrowErrorMatchingInlineSnapshot(
-      '"You must specify a done filter"',
+      `[Error: You must specify a done filter]`,
     )
   })
 })

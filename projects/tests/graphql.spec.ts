@@ -1155,7 +1155,7 @@ describe('graphql', () => {
         removeComments: true,
       }),
     ).toThrowErrorMatchingInlineSnapshot(
-      '"Entity \\"CategoryMore\\" that is used by the relation \\"categorymore\\" in \\"Category\\" was not found in the \'entities\' array."',
+      `[Error: Entity "CategoryMore" that is used by the relation "categorymore" in "Category" was not found in the 'entities' array.]`,
     )
   })
 

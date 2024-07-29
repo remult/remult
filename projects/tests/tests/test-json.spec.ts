@@ -78,7 +78,7 @@ describe('Test json formatting', () => {
             return ''
           },
           setItem(entityDbName, json) {
-            expect(json).toMatchInlineSnapshot('"[{\\"id\\":\\"1\\"}]"')
+            expect(json).toMatchInlineSnapshot(`"[{"id":"1"}]"`)
           },
         },
         false,
@@ -97,7 +97,7 @@ describe('Test json formatting', () => {
             expect(json).toMatchInlineSnapshot(`
               "[
                 {
-                  \\"id\\": \\"1\\"
+                  "id": "1"
                 }
               ]"
             `)

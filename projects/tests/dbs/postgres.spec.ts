@@ -81,14 +81,14 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
     )
     expect(await testMigrationScript(db, (m) => m.createTable(e.metadata)))
       .toMatchInlineSnapshot(`
-      "CREATE SCHEMA IF NOT EXISTS public;
-      CREATE table \\"t\\" (
-        \\"id\\" numeric default 0 not null,
-        \\"id2\\" numeric default 0 not null,
-        \\"name\\" varchar default '' not null,
-         primary key (\\"id\\",\\"id2\\")
-      )"
-    `)
+        "CREATE SCHEMA IF NOT EXISTS public;
+        CREATE table "t" (
+          "id" numeric default 0 not null,
+          "id2" numeric default 0 not null,
+          "name" varchar default '' not null,
+           primary key ("id","id2")
+        )"
+      `)
   })
   it('test transactions and ddl', async () => {
     const db = SqlDatabase.getDb(remult.dataProvider)
@@ -101,7 +101,7 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
           throw new Error('error')
         }
       }),
-    ).rejects.toThrowErrorMatchingInlineSnapshot('"error"')
+    ).rejects.toThrowErrorMatchingInlineSnapshot(`[Error: error]`)
   })
 
   it('ensure schema with dbNames that have quotes', async () => {

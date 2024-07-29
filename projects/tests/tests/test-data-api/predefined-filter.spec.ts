@@ -367,7 +367,7 @@ describe('test backend filter and update', () => {
     await expect(() =>
       r.save(item!),
     ).rejects.toThrowErrorMatchingInlineSnapshot(
-      '"ArrayEntityDataProvider: Couldn\'t find row with id \\"2\\" in entity \\"t\\" to update"',
+      `[Error: ArrayEntityDataProvider: Couldn't find row with id "2" in entity "t" to update]`,
     )
   })
   it('save fails', async () => {

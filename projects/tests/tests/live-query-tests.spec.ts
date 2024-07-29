@@ -21,7 +21,7 @@ import { HttpProviderBridgeToRestDataProviderHttpProvider } from '../../core/src
 import { DataApi } from '../../core/src/data-api'
 import { actionInfo } from '../../core/internals'
 
-const joc = expect.objectContaining
+const joc = (x: any) => expect.objectContaining(x)
 
 @Entity('event-test', { allowApiCrud: true })
 export class eventTestEntity {
