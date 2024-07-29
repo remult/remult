@@ -3,7 +3,8 @@
   import RelationField from './RelationField.svelte'
   import { type Content, JSONEditor } from 'svelte-jsoneditor'
 
-  export let value: any
+  export let value: any | undefined
+
   export let info: FieldUIInfo
 
   let dialogJSON: HTMLDialogElement | null = null
@@ -19,6 +20,12 @@
 
 {#if info.relationToOne}
   <RelationField bind:value {info} on:change />
+{:else if value === undefined}
+  <input
+    value=""
+    disabled
+    style="opacity: 0.5; background-color: lightgray; cursor: not-allowed;"
+  />
 {:else if info.readOnly}
   <input bind:value disabled style="opacity: 0.5;" />
 {:else if info.type == 'json'}

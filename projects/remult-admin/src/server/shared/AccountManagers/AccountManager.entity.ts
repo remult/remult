@@ -22,7 +22,9 @@ export class AccountManager {
   @Fields.string<AccountManager>({
     validate: Validators.required,
     includeInApi(e, c) {
-      return e?.firstName.startsWith('M') ? false : true
+      return e?.firstName.startsWith('A') || e?.firstName.startsWith('M')
+        ? false
+        : true
     },
   })
   firstName = ''
@@ -32,6 +34,8 @@ export class AccountManager {
     serverExpression: (e) => e.firstName + ' ' + e.lastName,
   })
   fullName = ''
+  @Fields.string({ includeInApi: false })
+  secret = '1234'
   @Fields.string()
   email = ''
   @Fields.string()
