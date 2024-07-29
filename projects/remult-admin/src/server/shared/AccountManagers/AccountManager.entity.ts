@@ -19,11 +19,16 @@ import {
 export class AccountManager {
   @Fields.uuid()
   id?: string
-  @Fields.string({ validate: Validators.required })
+  @Fields.string<AccountManager>({
+    validate: Validators.required,
+    includeInApi(e, c) {
+      return e?.firstName.startsWith('M') ? false : true
+    },
+  })
   firstName = ''
   @Fields.string()
   lastName = ''
-  @Fields.string({
+  @Fields.string<AccountManager>({
     serverExpression: (e) => e.firstName + ' ' + e.lastName,
   })
   fullName = ''
