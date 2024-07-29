@@ -75,7 +75,8 @@
   $: from = ((options.page || 1) - 1) * options.limit + 1
   $: to = ((options.page || 1) - 1) * options.limit + (items?.length || 0)
 
-  let newRow = undefined
+  // Reset newRow when items change
+  $: newRow = items && undefined
 
   const toggleOrderBy = (key: string) => {
     let dir = options.orderBy?.[key]
@@ -205,6 +206,7 @@
     <tbody>
       {#if newRow}
         <EditableRow
+          isNewRow
           rowId={undefined}
           row={newRow}
           columns={fields}

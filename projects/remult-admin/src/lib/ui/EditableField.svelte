@@ -4,8 +4,8 @@
   import { type Content, JSONEditor } from 'svelte-jsoneditor'
 
   export let value: any | undefined
-
   export let info: FieldUIInfo
+  export let isNewRow = false
 
   let dialogJSON: HTMLDialogElement | null = null
 
@@ -20,14 +20,14 @@
 
 {#if info.relationToOne}
   <RelationField bind:value {info} on:change />
-{:else if value === undefined}
+{:else if (!isNewRow && value === undefined) || (isNewRow && info.readOnly)}
   <input
     value=""
     disabled
-    style="opacity: 0.5; background-color: lightgray; cursor: not-allowed;"
+    style="opacity: 0.5; background-color: Gainsboro; cursor: not-allowed;"
   />
 {:else if info.readOnly}
-  <input bind:value disabled style="opacity: 0.5;" />
+  <input bind:value disabled style="opacity: 0.5; cursor: not-allowed;" />
 {:else if info.type == 'json'}
   <button
     class="icon-button"

@@ -16,6 +16,7 @@
   export let relations: EntityRelationToManyInfo[]
   export let rowId: any
   const rmvWarning = rowId
+  export let isNewRow = false
 
   let error = undefined
   let relation: EntityRelationToManyInfo | null = null
@@ -53,7 +54,7 @@
 
 <tr class:change>
   <td>
-    {#if relations.length > 0}
+    {#if relations.length > 0 && !isNewRow}
       <button
         class="icon-button"
         title="Relations"
@@ -79,6 +80,7 @@
   {#each columns as x}
     <td class:changeHi={value[x.key] !== rowFrozzen[x.key]}>
       <EditableField
+        {isNewRow}
         info={x}
         bind:value={value[x.valFieldKey]}
         on:change={(fieldValue) => {
