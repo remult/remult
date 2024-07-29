@@ -20,7 +20,9 @@
   export let parentRelation: Record<string, any> = {}
   export let color: string
 
-  let options: FindOptions<any> = { limit: 25, page: 1 }
+  let options: FindOptions<any>
+  // Reset to page 1 on key change
+  $: options = repo.metadata.key && { limit: 25, page: 1 }
 
   let filter: Writable<EntityFilter<any>> = writable({})
 
