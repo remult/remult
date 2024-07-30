@@ -926,7 +926,7 @@ export interface FieldMetadata<valueType = unknown, entityType = unknown> {
    * console.log(taskRepo.metadata.fields.title.key);
    * // result: title
    */
-  readonly key: entityType extends object ? keyof valueType & string : string
+  readonly key: entityType extends object ? keyof entityType & string : string
   /** A human readable caption for the field. Can be used to achieve a consistent caption for a field throughout the app
    * @example
    * <input placeholder={taskRepo.metadata.fields.title.caption}/>
@@ -1319,7 +1319,7 @@ export type FieldsMetadata<entityType> = {
   toArray(): FieldMetadata<any, entityType>[]
 }
 export type FieldsRef<entityType> = FieldsRefBase<entityType> & {
-  [Properties in keyof MembersOnly<entityType>]: NonNullable<
+  [Properties in keyof MembersOnly<entityType>]-?: NonNullable<
     entityType[Properties]
   > extends {
     id?: number | string
@@ -1333,7 +1333,7 @@ export type FieldsRefBase<entityType> = {
   toArray(): FieldRef<entityType, any>[]
 }
 export type FieldsRefForEntityBase<entityType> = FieldsRefBase<entityType> & {
-  [Properties in keyof Omit<entityType, keyof EntityBase>]: NonNullable<
+  [Properties in keyof Omit<entityType, keyof EntityBase>]-?: NonNullable<
     entityType[Properties]
   > extends {
     id?: number | string
@@ -4026,9 +4026,9 @@ export declare class controllerRefImpl<T = any>
 //[ ] Remult from TBD is not exported
 //[ ] FieldsRef from TBD is not exported
 export declare function decorateColumnSettings<valueType>(
-  settings: FieldOptions<unknown, unknown>,
+  settings: FieldOptions<unknown, valueType>,
   remult: Remult,
-): FieldOptions<unknown, unknown>
+): FieldOptions<unknown, valueType>
 //[ ] FieldOptions from TBD is not exported
 export const flags: {
   error500RetryCount: number

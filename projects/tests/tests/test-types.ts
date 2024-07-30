@@ -8,6 +8,10 @@ import {
   type FieldMetadata,
   type FieldsMetadata,
 } from '../../core'
+import {
+  getEntityKey,
+  getEntityRef,
+} from '../../core/src/remult3/getEntityRef.js'
 
 export declare type MyEntityOrderBy<entityType> = {
   [Properties in keyof Partial<
@@ -47,7 +51,7 @@ type OmitFunctions<entityType> = {
 }
 
 type MembersOnly<T> = OmitFunctions<Omit<T, keyof Pick<EntityBase, '$' | '_'>>>
-const x: MembersOnly<Person>
+const x: MembersOnly<Person> = undefined!
 
 class HelperBase extends EntityBase {
   id = 0

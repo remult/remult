@@ -156,7 +156,7 @@ export type FieldsMetadata<entityType> = {
 }
 
 export type FieldsRef<entityType> = FieldsRefBase<entityType> & {
-  [Properties in keyof MembersOnly<entityType>]: NonNullable<
+  [Properties in keyof MembersOnly<entityType>]-?: NonNullable<
     entityType[Properties]
   > extends {
     id?: number | string
@@ -166,7 +166,7 @@ export type FieldsRef<entityType> = FieldsRefBase<entityType> & {
 }
 
 export type FieldsRefForEntityBase<entityType> = FieldsRefBase<entityType> & {
-  [Properties in keyof Omit<entityType, keyof EntityBase>]: NonNullable<
+  [Properties in keyof Omit<entityType, keyof EntityBase>]-?: NonNullable<
     entityType[Properties]
   > extends {
     id?: number | string
