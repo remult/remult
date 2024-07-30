@@ -20,7 +20,9 @@
   export let parentRelation: Record<string, any> = {}
   export let color: string
 
-  let options: FindOptions<any> = { limit: 25, page: 1 }
+  let options: FindOptions<any>
+  // Reset to page 1 on key change
+  $: options = repo.metadata.key && { limit: 25, page: 1 }
 
   let filter: Writable<EntityFilter<any>> = writable({})
 
@@ -73,7 +75,8 @@
   $: from = ((options.page || 1) - 1) * options.limit + 1
   $: to = ((options.page || 1) - 1) * options.limit + (items?.length || 0)
 
-  let newRow = undefined
+  // Reset newRow when items change
+  $: newRow = items && undefined
 
   const toggleOrderBy = (key: string) => {
     let dir = options.orderBy?.[key]
@@ -203,6 +206,7 @@
     <tbody>
       {#if newRow}
         <EditableRow
+          isNewRow
           rowId={undefined}
           row={newRow}
           columns={fields}
@@ -255,5 +259,10 @@
 
   .loading-skeleton {
     padding: 0 0.5rem;
+  }
+
+  button:disabled {
+    opacity: 0.2;
+    cursor: not-allowed;
   }
 </style>

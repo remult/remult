@@ -118,7 +118,7 @@ export function buildEntityInfo(options: AdminOptions) {
       }
       fields.push({
         key: x.key,
-        readOnly: x.dbReadOnly || !x.apiUpdateAllowed(),
+        readOnly: x.dbReadOnly || !x.apiUpdateAllowed() || x.isServerExpression,
         values: getValueList(x),
         valFieldKey,
         caption: x.caption,
