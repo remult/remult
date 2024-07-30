@@ -1192,8 +1192,8 @@ const result = await repo.batch(x=>({
 //y2 - should we simply inherit from SqlDataProvider - and send the required parameter in the call to the base class - I think that new SqlDatabase(new PostgresDataProvider()) is a bilt combersome
 //y2 - from the crm-demo(https://crm-demo.up.railway.app/deals), after editing a deal: - _updateEntityBasedOnApi
 
-//y2 - Backend methods are transactions, it's not intuitive and maybe should be optional / opt in
-//y2 - how to run a transaction as a user
+//y1 - Backend methods are transactions, it's not intuitive and maybe should be optional / opt in (https://github.com/remult/remult/issues/466)
+//y1 - how to run a transaction as a user
 
 //y2 - message for relation that is missing
 //y2 - consider multi tenancies
