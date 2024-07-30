@@ -8,6 +8,7 @@ import {
   Validators,
   repo,
 } from 'remult'
+import { entity } from '../tests/dynamic-classes.js'
 
 class E extends EntityBase {
   a = ''
