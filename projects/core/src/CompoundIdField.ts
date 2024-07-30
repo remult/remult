@@ -43,7 +43,7 @@ export class CompoundIdField implements FieldMetadata<string> {
     })
     return r
   }
-  options: FieldOptions<any, any> = {}
+  options: FieldOptions<unknown, unknown> = {}
   get valueConverter(): Required<ValueConverter<string>> {
     throw new Error('cant get value converter of compound id')
   }

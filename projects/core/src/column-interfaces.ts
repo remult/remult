@@ -137,14 +137,14 @@ export interface FieldOptions<entityType = any, valueType = any> {
   key?: string
 }
 /**Metadata for a `Field`, this metadata can be used in the user interface to provide a richer UI experience */
-export interface FieldMetadata<valueType = any, entityType = any> {
+export interface FieldMetadata<valueType = unknown, entityType = unknown> {
   /** The field's member name in an object.
    * @example
    * const taskRepo = remult.repo(Task);
    * console.log(taskRepo.metadata.fields.title.key);
    * // result: title
    */
-  readonly key: string
+  readonly key: entityType extends object ? keyof entityType & string : string
   /** A human readable caption for the field. Can be used to achieve a consistent caption for a field throughout the app
    * @example
    * <input placeholder={taskRepo.metadata.fields.title.caption}/>
@@ -162,7 +162,7 @@ export interface FieldMetadata<valueType = any, entityType = any> {
   /** The field's value type (number,string etc...) */
   readonly valueType: any
   /** The options sent to this field's decorator */
-  readonly options: FieldOptions
+  readonly options: FieldOptions<unknown, unknown>
   /** The `inputType` relevant for this field, determined by the options sent to it's decorator and the valueConverter in these options */
   readonly inputType: string
   /** if null is allowed for this field

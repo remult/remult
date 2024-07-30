@@ -114,7 +114,7 @@ export class Sort {
                 if (op.fields) {
                   for (const key in op.fields) {
                     if (Object.prototype.hasOwnProperty.call(op.fields, key)) {
-                      const keyInMyEntity = op.fields[key]!
+                      const keyInMyEntity = (op.fields as any)[key]!
                       addSegment(
                         entityDefs.fields.find(keyInMyEntity.toString()),
                       )

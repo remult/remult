@@ -100,7 +100,7 @@ export class SqlDatabase
   _getSourceSql() {
     return this.sql
   }
-  async ensureSchema(entities: EntityMetadata<any>[]): Promise<void> {
+  async ensureSchema(entities: EntityMetadata[]): Promise<void> {
     if (this.sql.ensureSchema) await this.sql.ensureSchema(entities)
   }
 

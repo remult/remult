@@ -566,7 +566,7 @@ export class KnexSchemaBuilder {
     }
   }
 
-  createTableKnexCommand(entity: EntityMetadata<any>, e: EntityDbNamesBase) {
+  createTableKnexCommand(entity: EntityMetadata, e: EntityDbNamesBase) {
     let cols = new Map<FieldMetadata, { name: string; readonly: boolean }>()
     for (const f of entity.fields) {
       cols.set(f, {

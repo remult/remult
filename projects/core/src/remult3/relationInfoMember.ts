@@ -40,7 +40,7 @@ export function getRelationFieldInfo(field: FieldMetadata<unknown, unknown>) {
 
 export interface RelationFieldInfo {
   type: 'reference' | 'toOne' | 'toMany'
-  options: RelationOptions<any, any, any>
+  options: RelationOptions<unknown, unknown, unknown>
   toEntity: any
   toRepo: Repository<unknown>
   getFields(): RelationFields
@@ -60,14 +60,18 @@ export function verifyFieldRelationInfo(
       if (!(field as any)[fieldRelationInfo]) {
         const toEntity = r.toType()
         const toRepo = remult.repo(toEntity, dp)
-        const options = field.options as RelationOptions<any, any, any>
+        const options = field.options as RelationOptions<
+          unknown,
+          unknown,
+          unknown
+        >
         ;(field as any)[fieldRelationInfo] = {
           type: r.type,
           toEntity,
           options,
           toRepo,
           getFields: () => {
-            let relationField = options.field
+            let relationField: string = options.field as any
             let relFields: RelationFields = {
               fields: options.fields as Record<string, string>,
               compoundIdField: undefined,

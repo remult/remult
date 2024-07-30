@@ -534,7 +534,7 @@ export function prepareArgsToSend(types: any[], args: any[]) {
         }
       }
       if (args[index] != undefined) {
-        let x: FieldOptions = { valueType: paramType }
+        let x: FieldOptions<unknown, unknown> = { valueType: paramType }
         x = decorateColumnSettings(x, new Remult())
         let eo = getEntitySettings(paramType, false)
         if (eo != null) {
@@ -572,7 +572,7 @@ export async function prepareReceivedArgs(
       } else if (types[i] == ProgressListener) {
         args[i] = new ProgressListener(res)
       } else {
-        let x: FieldOptions = { valueType: types[i] }
+        let x: FieldOptions<unknown, unknown> = { valueType: types[i] }
         x = decorateColumnSettings(x, remult)
         if (x.valueConverter) args[i] = x.valueConverter.fromJson!(args[i])
         let eo = getEntitySettings(types[i], false)

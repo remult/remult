@@ -275,7 +275,7 @@ export declare class CompoundIdField implements FieldMetadata<string> {
   fromInput(inputValue: string, inputType?: string): string
   getDbName(): Promise<string>
   getId(instance: any): string
-  options: FieldOptions<any, any>
+  options: FieldOptions<unknown, unknown>
   get valueConverter(): Required<ValueConverter<string>>
   target: ClassType<any>
   readonly: boolean
@@ -424,7 +424,7 @@ export interface DataProvider {
   transaction(
     action: (dataProvider: DataProvider) => Promise<void>,
   ): Promise<void>
-  ensureSchema?(entities: EntityMetadata[]): Promise<void>
+  ensureSchema?(entities: EntityMetadata<unknown>[]): Promise<void>
   isProxy?: boolean
 }
 export declare function dbNamesOf<entityType>(
@@ -566,7 +566,7 @@ export declare type EntityFilter<entityType> = {
 export declare type EntityIdFields<entityType> = {
   [Properties in keyof Partial<MembersOnly<entityType>>]?: true
 }
-export interface EntityMetadata<entityType = any> {
+export interface EntityMetadata<entityType = unknown> {
   /** The Entity's key also used as it's url  */
   readonly key: string
   /** Metadata for the Entity's fields */
@@ -585,7 +585,7 @@ export interface EntityMetadata<entityType = any> {
   /** The options send to the `Entity`'s decorator
    * @see {@link EntityOptions}
    */
-  readonly options: EntityOptions
+  readonly options: EntityOptions<unknown>
   /** The class type of the entity */
   readonly entityType: ClassType<entityType>
   /** true if the current user is allowed to update an entity instance
@@ -633,7 +633,7 @@ export interface EntityMetadata<entityType = any> {
    */
   readonly idMetadata: IdMetadata<entityType>
 }
-export interface EntityOptions<entityType = any> {
+export interface EntityOptions<entityType = unknown> {
   /**A human readable name for the entity */
   caption?: string
   /**
@@ -919,14 +919,14 @@ export declare function Field<entityType = any, valueType = any>(
     | ClassFieldDecoratorContextStub<entityType, valueType | undefined>
     | string,
 ) => void
-export interface FieldMetadata<valueType = any, entityType = any> {
+export interface FieldMetadata<valueType = unknown, entityType = unknown> {
   /** The field's member name in an object.
    * @example
    * const taskRepo = remult.repo(Task);
    * console.log(taskRepo.metadata.fields.title.key);
    * // result: title
    */
-  readonly key: string
+  readonly key: entityType extends object ? keyof valueType & string : string
   /** A human readable caption for the field. Can be used to achieve a consistent caption for a field throughout the app
    * @example
    * <input placeholder={taskRepo.metadata.fields.title.caption}/>
@@ -944,7 +944,7 @@ export interface FieldMetadata<valueType = any, entityType = any> {
   /** The field's value type (number,string etc...) */
   readonly valueType: any
   /** The options sent to this field's decorator */
-  readonly options: FieldOptions
+  readonly options: FieldOptions<unknown, unknown>
   /** The `inputType` relevant for this field, determined by the options sent to it's decorator and the valueConverter in these options */
   readonly inputType: string
   /** if null is allowed for this field
@@ -1307,14 +1307,14 @@ export declare class Fields {
   ): ClassFieldDecorator<entityType, boolean | undefined>
 }
 export type FieldsMetadata<entityType> = {
-  [Properties in keyof MembersOnly<entityType>]: FieldMetadata<
+  [Properties in keyof MembersOnly<entityType>]-?: FieldMetadata<
     entityType[Properties],
     entityType
   >
 } & {
   find(
     fieldMetadataOrKey: FieldMetadata | string,
-  ): FieldMetadata<any, entityType>
+  ): FieldMetadata<unknown, entityType>
   [Symbol.iterator]: () => IterableIterator<FieldMetadata<any, entityType>>
   toArray(): FieldMetadata<any, entityType>[]
 }
@@ -2490,7 +2490,7 @@ export declare class SqlDatabase
    * Wraps an identifier with the database's identifier syntax.
    */
   wrapIdentifier: (name: string) => string
-  ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
+  ensureSchema(entities: EntityMetadata[]): Promise<void>
   /**
    * Gets the entity data provider.
    * @param entity  - The entity metadata.
@@ -2952,9 +2952,9 @@ export declare class WebSqlDataProvider
   end(): Promise<void>
   getLimitSqlSyntax(limit: number, offset: number): string
   entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void>
-  ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
+  ensureSchema(entities: EntityMetadata[]): Promise<void>
   dropTable(entity: EntityMetadata): Promise<void>
-  createTable(entity: EntityMetadata<any>): Promise<void>
+  createTable(entity: EntityMetadata): Promise<void>
   createCommand(): SqlCommand
   transaction(
     action: (dataProvider: SqlImplementation) => Promise<void>,
@@ -3625,7 +3625,7 @@ export declare class PostgresSchemaBuilder {
   private schemaAndName
   private schemaOnly
   verifyStructureOfAllEntities(remult?: Remult): Promise<void>
-  ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
+  ensureSchema(entities: EntityMetadata[]): Promise<void>
   createIfNotExist(entity: EntityMetadata): Promise<void>
   addColumnIfNotExist<T extends EntityMetadata>(
     entity: T,
@@ -3656,7 +3656,7 @@ export declare class PostgresSchemaBuilder {
   private schemaAndName
   private schemaOnly
   verifyStructureOfAllEntities(remult?: Remult): Promise<void>
-  ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
+  ensureSchema(entities: EntityMetadata[]): Promise<void>
   createIfNotExist(entity: EntityMetadata): Promise<void>
   addColumnIfNotExist<T extends EntityMetadata>(
     entity: T,
@@ -3737,7 +3737,7 @@ export declare class KnexSchemaBuilder {
   ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
   createIfNotExist(entity: EntityMetadata): Promise<void>
   createTableKnexCommand(
-    entity: EntityMetadata<any>,
+    entity: EntityMetadata,
     e: EntityDbNamesBase,
   ): Knex.SchemaBuilder
   addColumnIfNotExist(
@@ -4026,9 +4026,9 @@ export declare class controllerRefImpl<T = any>
 //[ ] Remult from TBD is not exported
 //[ ] FieldsRef from TBD is not exported
 export declare function decorateColumnSettings<valueType>(
-  settings: FieldOptions<any, valueType>,
+  settings: FieldOptions<unknown, unknown>,
   remult: Remult,
-): FieldOptions<any, valueType>
+): FieldOptions<unknown, unknown>
 //[ ] FieldOptions from TBD is not exported
 export const flags: {
   error500RetryCount: number
@@ -4049,7 +4049,7 @@ export declare function getRelationFieldInfo(
 export declare function getRelationInfo(options: FieldOptions): RelationInfo
 export interface RelationFieldInfo {
   type: "reference" | "toOne" | "toMany"
-  options: RelationOptions<any, any, any>
+  options: RelationOptions<unknown, unknown, unknown>
   toEntity: any
   toRepo: Repository<unknown>
   getFields(): RelationFields

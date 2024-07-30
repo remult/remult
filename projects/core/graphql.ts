@@ -1123,7 +1123,7 @@ export function remultGraphql(options: {
     dApi: DataApi<any>,
     currentType: GraphQLType,
     arg1: any,
-    meta: EntityMetadata<any>,
+    meta: EntityMetadata,
     totalCountKey: string,
   ) {
     setResult({

@@ -1462,7 +1462,7 @@ abstract class rowHelperBase<T> {
             else
               this.instance[col.key as keyof T] = col.valueConverter.fromJson(
                 body[col.key],
-              )
+              ) as any
           }
         }
     }
@@ -1492,14 +1492,14 @@ export class rowHelperImplementation<T>
         const colKey = col.key as keyof T
         if (col.options.defaultValue && instance[colKey] === undefined) {
           if (typeof col.options.defaultValue === 'function') {
-            instance[colKey] = col.options.defaultValue(instance)
+            instance[colKey] = col.options.defaultValue(instance) as any
           } else if (!instance[colKey])
             instance[colKey] = col.options.defaultValue
         }
       }
     }
-    if (this.info.options.entityRefInit)
-      this.info.options.entityRefInit(this, instance)
+    if (this.info.entityInfo.entityRefInit)
+      this.info.entityInfo.entityRefInit(this, instance)
     if (Remult.entityRefInit) Remult.entityRefInit(this, instance)
   }
 
@@ -1619,7 +1619,7 @@ export class rowHelperImplementation<T>
       if (!this.repository._dataProvider.isProxy) {
         for (const col of this.fields) {
           if (col.metadata.options.saving)
-            await col.metadata.options.saving(this.instance, col, e)
+            await col.metadata.options.saving(this.instance, col, e as any)
         }
         if (this.info.entityInfo.saving) {
           await this.info.entityInfo.saving(this.instance, e)
@@ -1809,7 +1809,7 @@ export class rowHelperImplementation<T>
       for (const col of this.info.fieldsMetadata) {
         if (col.options.serverExpression) {
           this.instance[col.key as keyof T] =
-            await col.options.serverExpression(this.instance)
+            (await col.options.serverExpression(this.instance)) as any
         }
       }
   }
@@ -1855,7 +1855,7 @@ const controllerColumns = Symbol.for('controllerColumns')
 function prepareColumnInfo(
   r: columnInfo[],
   remult: Remult,
-): FieldOptions<any, unknown>[] {
+): FieldOptions<unknown, unknown>[] {
   return r.map((x) => decorateColumnSettings(x.settings(remult), remult))
 }
 
@@ -1902,11 +1902,11 @@ export function getControllerRef<fieldsContainerType>(
       prepareColumnInfo(columnSettings, remultVar).map(
         (x) =>
           new columnDefsImpl(
-            x,
+            x as FieldOptions<unknown, unknown>,
             undefined!, //TODO - not sure
             remultVar,
           ),
-      ),
+      ) as any,
       container,
       remultVar,
     )
@@ -1957,7 +1957,7 @@ export class FieldRefImplementation<entityType, valueType>
 {
   constructor(
     private settings: FieldOptions,
-    public metadata: FieldMetadata,
+    public metadata: FieldMetadata<valueType, entityType>,
     public container: any,
     private helper: EntityRef<entityType> | undefined,
     private rowBase: rowHelperBase<entityType>,
@@ -1992,13 +1992,13 @@ export class FieldRefImplementation<entityType, valueType>
       if (rel.type === 'toMany') {
         return (this.container[this.metadata.key] = await (
           this.helper.repository.relations(this.container)[
-            this.metadata.key as keyof entityType
+            this.metadata.key
           ] as Repository<valueType>
         ).find()) as any
       } else {
         let val = await this.helper.repository
           .relations(this.container)
-          [this.metadata.key as keyof entityType].findOne()
+          [this.metadata.key].findOne()
         if (val) this.container[this.metadata.key] = val
         else return null! //TODO: check if this (!) is correct
       }
@@ -2221,7 +2221,7 @@ export function buildCaption(
 
 export class columnDefsImpl implements FieldMetadata {
   constructor(
-    private settings: FieldOptions,
+    private settings: FieldOptions<unknown, unknown>,
     private entityDefs: EntityFullInfo<any>,
     private remult: Remult,
   ) {
@@ -2294,7 +2294,7 @@ export class columnDefsImpl implements FieldMetadata {
   async getDbName() {
     return fieldDbName(this, this.entityDefs)
   }
-  options: FieldOptions<any, any>
+  options: FieldOptions<unknown, unknown>
   target: ClassType<any>
   readonly = false
 
@@ -2313,28 +2313,28 @@ export class columnDefsImpl implements FieldMetadata {
   valueType: any
 }
 class EntityFullInfo<T> implements EntityMetadata<T> {
-  options: EntityOptions<T>
+  options: EntityOptions<unknown>
   fieldsMetadata: FieldMetadata[] = []
 
   constructor(
-    columnsInfo: FieldOptions[],
+    columnsInfo: FieldOptions<unknown, unknown>[],
     public entityInfo: EntityOptions<T>,
     private remult: Remult,
     public readonly entityType: ClassType<T>,
     public readonly key: string,
   ) {
-    this.options = entityInfo
+    this.options = entityInfo as any
     if (this.options.allowApiCrud !== undefined) {
       let crud: AllowedForInstance<T>
       if (typeof this.options.allowApiCrud === 'function')
         crud = (_, remult) => (this.options.allowApiCrud as Function)(remult)
       else crud = this.options.allowApiCrud as AllowedForInstance<T>
       if (this.options.allowApiDelete === undefined)
-        this.options.allowApiDelete = crud
+        this.entityInfo.allowApiDelete = crud
       if (this.options.allowApiInsert === undefined)
-        this.options.allowApiInsert = crud
+        this.entityInfo.allowApiInsert = crud
       if (this.options.allowApiUpdate === undefined)
-        this.options.allowApiUpdate = crud
+        this.entityInfo.allowApiUpdate = crud
       if (this.options.allowApiRead === undefined)
         this.options.allowApiRead = this.options.allowApiCrud
     }
@@ -2651,7 +2651,7 @@ export function buildOptions<entityType = any, valueType = any>(
 }
 
 export function decorateColumnSettings<valueType>(
-  settings: FieldOptions<any, valueType>,
+  settings: FieldOptions<unknown, valueType>,
   remult: Remult,
 ) {
   if (settings.valueType) {

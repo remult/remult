@@ -45,7 +45,7 @@ export class WebSqlDataProvider
   async entityIsUsedForTheFirstTime(entity: EntityMetadata) {
     await this.createTable(entity)
   }
-  async ensureSchema(entities: EntityMetadata<any>[]): Promise<void> {
+  async ensureSchema(entities: EntityMetadata[]): Promise<void> {
     for (const entity of entities) {
       await this.createTable(entity)
     }
@@ -57,7 +57,7 @@ export class WebSqlDataProvider
     if (SqlDatabase.LogToConsole) console.info(sql)
     await this.createCommand().execute(sql)
   }
-  async createTable(entity: EntityMetadata<any>) {
+  async createTable(entity: EntityMetadata) {
     let result = ''
     let e = await dbNamesOf(entity)
     for (const x of entity.fields) {

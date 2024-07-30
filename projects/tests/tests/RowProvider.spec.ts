@@ -709,7 +709,7 @@ class mockColumnDefs implements FieldMetadata {
   async getDbName(): Promise<string> {
     return this.dbName
   }
-  options!: FieldOptions<any, any>
+  options!: FieldOptions<unknown, unknown>
   valueConverter: Required<ValueConverter<any>> = ValueConverters.Default
   target!: ClassType<any>
   readonly = false

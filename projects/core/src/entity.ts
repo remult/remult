@@ -13,7 +13,7 @@ import type {
 } from './remult3/remult3.js'
 import type { FilterPreciseValues } from './filter/filter-interfaces.js'
 
-export interface EntityOptions<entityType = any> {
+export interface EntityOptions<entityType = unknown> {
   /**A human readable name for the entity */
   caption?: string
 

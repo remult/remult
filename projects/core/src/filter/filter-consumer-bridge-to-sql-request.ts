@@ -397,7 +397,7 @@ export async function entityDbName(
       try {
         metadata.options.sqlExpression =
           "recursive sqlExpression call for entity '" + metadata.key + "'. "
-        return await prev(metadata)
+        return await prev(metadata as any)
       } finally {
         metadata.options.sqlExpression = prev
       }

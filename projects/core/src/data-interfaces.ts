@@ -7,7 +7,7 @@ export interface DataProvider {
   transaction(
     action: (dataProvider: DataProvider) => Promise<void>,
   ): Promise<void>
-  ensureSchema?(entities: EntityMetadata[]): Promise<void>
+  ensureSchema?(entities: EntityMetadata<unknown>[]): Promise<void>
   isProxy?: boolean
 }
 export interface Storage {

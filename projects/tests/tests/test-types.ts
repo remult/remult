@@ -5,6 +5,8 @@ import {
   EntityBase,
   EntityFilter,
   repo,
+  type FieldMetadata,
+  type FieldsMetadata,
 } from '../../core'
 
 export declare type MyEntityOrderBy<entityType> = {
@@ -34,10 +36,10 @@ let p = new Person()
 
 type KeysNotOfAType<TSchema, Type> = {
   [key in keyof TSchema]: TSchema extends EntityBase
-  ? key
-  : NonNullable<TSchema[key]> extends Type
-  ? never
-  : key
+    ? key
+    : NonNullable<TSchema[key]> extends Type
+    ? never
+    : key
 }[keyof TSchema]
 
 type OmitFunctions<entityType> = {
@@ -62,3 +64,9 @@ let f2: EntityFilter<Helper> = {
   ...f,
 }
 
+var name: FieldMetadata<string, HelperBase> = {} as any
+var x1: FieldMetadata<unknown, HelperBase> = name
+
+var x2: HelperBase = {} as any
+let y1 = 'ab'
+x2[x1.key]?.toString()

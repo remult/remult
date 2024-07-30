@@ -37,7 +37,7 @@ export class RestDataProvider implements DataProvider {
   isProxy = true
 }
 //@internal
-export function findOptionsToJson<entityType = any>(
+export function findOptionsToJson<entityType = unknown>(
   options: FindOptions<entityType>,
   meta: EntityMetadata<entityType>,
 ) {
@@ -49,9 +49,9 @@ export function findOptionsToJson<entityType = any>(
         if (typeof element === 'object') {
           const rel = getRelationFieldInfo(meta.fields.find(key))
           if (rel) {
-            element = findOptionsToJson(
-              element,
-              rel.toRepo.metadata as EntityMetadata<any>,
+            element = findOptionsToJson<unknown>(
+              element as any,
+              rel.toRepo.metadata,
             )
           }
         }

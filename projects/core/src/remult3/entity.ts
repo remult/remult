@@ -95,7 +95,7 @@ export function Entity<entityType>(
           }
         }
       }
-      return r
+      return r as EntityOptions<unknown>
     }
 
     remultStatic.allEntities.push(target)

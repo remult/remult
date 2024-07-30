@@ -143,14 +143,14 @@ export type FieldsRefBase<entityType> = {
   toArray(): FieldRef<entityType, any>[]
 }
 export type FieldsMetadata<entityType> = {
-  [Properties in keyof MembersOnly<entityType>]: FieldMetadata<
+  [Properties in keyof MembersOnly<entityType>]-?: FieldMetadata<
     entityType[Properties],
     entityType
   >
 } & {
   find(
     fieldMetadataOrKey: FieldMetadata | string,
-  ): FieldMetadata<any, entityType>
+  ): FieldMetadata<unknown, entityType>
   [Symbol.iterator]: () => IterableIterator<FieldMetadata<any, entityType>>
   toArray(): FieldMetadata<any, entityType>[]
 }
@@ -230,7 +230,7 @@ export interface IdMetadata<entityType = any> {
 }
 
 /** Metadata for an `Entity`, this metadata can be used in the user interface to provide a richer UI experience  */
-export interface EntityMetadata<entityType = any> {
+export interface EntityMetadata<entityType = unknown> {
   /** The Entity's key also used as it's url  */
   readonly key: string
   /** Metadata for the Entity's fields */
@@ -249,7 +249,7 @@ export interface EntityMetadata<entityType = any> {
   /** The options send to the `Entity`'s decorator
    * @see {@link EntityOptions}
    */
-  readonly options: EntityOptions
+  readonly options: EntityOptions<unknown>
   /** The class type of the entity */
   readonly entityType: ClassType<entityType>
   /** true if the current user is allowed to update an entity instance
