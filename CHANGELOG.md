@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.26.23] 2024-07-30
+
+- Fixes and improvements to the admin panel
+
 ## [0.26.22] 2024-07-19
 
 - fixed issue with prevent default and insert
