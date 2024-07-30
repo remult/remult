@@ -34,7 +34,7 @@ export interface RelationInfo {
   type: RelationFieldInfo['type']
 }
 const fieldRelationInfo = Symbol.for('fieldRelationInfo')
-export function getRelationFieldInfo(field: FieldMetadata<unknown, unknown>) {
+export function getRelationFieldInfo(field: FieldMetadata) {
   return (field as any)[fieldRelationInfo] as RelationFieldInfo | undefined
 }
 

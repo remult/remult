@@ -2472,7 +2472,7 @@ export function FieldType<valueType = unknown>(
     | ((options: FieldOptions<any, valueType>, remult: Remult) => void)
   )[]
 ) {
-  return (target: any) => {
+  return (target: any, context?: any) => {
     if (!options) {
       options = []
     }
@@ -2495,7 +2495,7 @@ export function ValueListFieldType<
     | ((options: FieldOptions<any, valueType>, remult: Remult) => void)
   )[]
 ) {
-  return (type: ClassType<valueType>) => {
+  return (type: ClassType<valueType>, context?: any) => {
     FieldType<valueType>(
       (o) => {
         ;(o.valueConverter = ValueListInfo.get(type)),
@@ -2580,14 +2580,14 @@ export class ValueListInfo<T extends ValueListItem>
     if (this.isNumeric) key = +key
     return this.byIdMap.get(key)
   }
-  fromJson(val: any): T | undefined {
-    return this.byId(val)
+  fromJson(val: any): T {
+    return this.byId(val)!
   }
   toJson(val: T) {
     if (!val) return undefined
     return val.id
   }
-  fromDb(val: any): T | undefined {
+  fromDb(val: any): T {
     return this.fromJson(val)
   }
   toDb(val: T) {
@@ -2596,7 +2596,7 @@ export class ValueListInfo<T extends ValueListItem>
   toInput(val: T, inputType: string): string {
     return this.toJson(val)
   }
-  fromInput(val: string, inputType: string): T | undefined | null {
+  fromInput(val: string, inputType: string): T {
     return this.fromJson(val)
   }
   displayValue?(val: T): string {

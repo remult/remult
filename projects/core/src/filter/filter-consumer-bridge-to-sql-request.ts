@@ -305,7 +305,7 @@ export function shouldNotCreateField<entityType>(
   )
 }
 export function shouldCreateEntity(
-  entity: EntityMetadata<unknown>,
+  entity: EntityMetadata,
   e: EntityDbNamesBase,
 ) {
   return (

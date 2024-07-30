@@ -542,6 +542,7 @@ export function Field<entityType = unknown, valueType = unknown>(
     context:
       | ClassFieldDecoratorContextStub<entityType, valueType | undefined>
       | string,
+    c?: any,
   ) => {
     const key = typeof context === 'string' ? context : context.name.toString()
     let factory = (remult: Remult) => {

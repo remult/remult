@@ -142,7 +142,7 @@ export interface InitRequestOptions {
 }
 
 export function createRemultServerCore<RequestType>(
-  options: RemultServerOptions<RequestType> | undefined,
+  options: RemultServerOptions<RequestType>,
 
   serverCoreOptions: ServerCoreOptions<RequestType>,
 ): RemultServer<RequestType> {

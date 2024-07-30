@@ -14,10 +14,10 @@ export class ValueConverters {
       }
     },
     fromJson: (val: string) => {
-      if (val === null) return null
-      if (val == undefined) return undefined
-      if (val == '') return undefined
-      if (val.startsWith('0000-00-00')) return undefined
+      if (val === null) return null!
+      if (val == undefined) return undefined!
+      if (val == '') return undefined!
+      if (val.startsWith('0000-00-00')) return undefined!
       return new Date(Date.parse(val))
     },
     toDb: (x) => x,
@@ -50,14 +50,14 @@ export class ValueConverters {
       else return d.toISOString().substring(0, 10)
     },
     fromJson: (value: string) => {
-      if (!value || value == '' || value == '0000-00-00') return null
+      if (!value || value == '' || value == '0000-00-00') return null!
       let d = new Date(Date.parse(value))
       d.setMinutes(d.getMinutes() + d.getTimezoneOffset())
       return d
     },
     inputType: InputTypes.date,
     toDb: (val: Date) => {
-      if (!val) return null
+      if (!val) return null!
       return ValueConverters.DateOnly.fromJson!(
         ValueConverters.DateOnly.toJson!(val),
       )
@@ -79,8 +79,8 @@ export class ValueConverters {
       return val.replace(/-/g, '')
     },
     fromDb: (val: string) => {
-      if (val === null) return null
-      if (!val) return undefined
+      if (val === null) return null!
+      if (!val) return undefined!
       return new Date(
         val.substring(0, 4) +
           '-' +
@@ -112,16 +112,16 @@ export class ValueConverters {
 
   static readonly Number: ValueConverter<number> = {
     fromDb: (value) => {
-      if (value === null) return null
+      if (value === null) return null!
       if (value !== undefined) return +value
-      return undefined
+      return undefined!
     },
     toDb: (value) => value,
     fromJson: (value) => ValueConverters.Number.fromDb!(value),
     toJson: (value) => ValueConverters.Number.toDb!(value),
     fromInput: (x, type) => {
       let r = +x
-      if (x === null || x === undefined) return undefined
+      if (x === null || x === undefined) return undefined!
       return r
     },
     toInput: (x, type) => {

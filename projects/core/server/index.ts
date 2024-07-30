@@ -29,7 +29,7 @@ export {
   queuedJobInfo,
 } from './remult-api-server.js'
 export function createRemultServer<RequestType>(
-  options: RemultServerOptions<RequestType> | undefined,
+  options: RemultServerOptions<RequestType>,
   serverCoreOptions?: ServerCoreOptions<RequestType>,
 ): RemultServer<RequestType> {
   initAsyncHooks()

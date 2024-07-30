@@ -165,10 +165,7 @@ export class PostgresSchemaBuilder {
   }
 
   /* @internal*/
-  async getAddColumnScript(
-    entity: EntityMetadata<unknown>,
-    field: FieldMetadata<any, unknown>,
-  ) {
+  async getAddColumnScript(entity: EntityMetadata, field: FieldMetadata) {
     let e: EntityDbNamesBase = await dbNamesOf(
       entity as EntityMetadata<object>,
       this.pool.wrapIdentifier,

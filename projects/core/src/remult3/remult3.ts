@@ -249,7 +249,7 @@ export interface EntityMetadata<entityType = unknown> {
   /** The options send to the `Entity`'s decorator
    * @see {@link EntityOptions}
    */
-  readonly options: EntityOptions<unknown>
+  readonly options: EntityOptions
   /** The class type of the entity */
   readonly entityType: ClassType<entityType>
   /** true if the current user is allowed to update an entity instance
@@ -1068,14 +1068,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 export const flags = {
   error500RetryCount: 4,
 }
-/*y1 - typing discussion:
- * Fields with undefined & null etc... (fields string)
- * all fields required in fields
- * key as key of entity
- * continue with?
- * should and / or accept also undefined members? the code supports it, not sure if the api should
- * Sql server expression supports undefined as a response
- */
+
 /*p1
  * field, fieldType ,ValueListFieldType, - return optional parameter for decorators
  * options to remultExpress tc... should be mandatory

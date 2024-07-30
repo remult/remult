@@ -9,7 +9,7 @@ import type {
 import { createRemultServer } from './server/index.js'
 
 export function remultSveltekit(
-  options?: RemultServerOptions<RequestEvent>,
+  options: RemultServerOptions<RequestEvent>,
 ): RemultSveltekitServer {
   let result = createRemultServer<RequestEvent>(options, {
     buildGenericRequestInfo: (event) => ({

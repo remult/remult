@@ -162,7 +162,7 @@ export interface FieldMetadata<valueType = unknown, entityType = unknown> {
   /** The field's value type (number,string etc...) */
   readonly valueType: any
   /** The options sent to this field's decorator */
-  readonly options: FieldOptions<unknown, unknown>
+  readonly options: FieldOptions
   /** The `inputType` relevant for this field, determined by the options sent to it's decorator and the valueConverter in these options */
   readonly inputType: string
   /** if null is allowed for this field
@@ -230,7 +230,7 @@ export interface FieldMetadata<valueType = unknown, entityType = unknown> {
    * input.value = repo.fields.birthDate.toInput(person) // will return '1976-06-16'
    * @see {@link ValueConverter#toInput} for configuration details
    */
-  toInput(value: valueType | null | undefined, inputType?: string): string
+  toInput(value: valueType, inputType?: string): string
   /** Adapts the value for usage with html input
    * @example
    * @Fields.dateOnly()
@@ -258,7 +258,7 @@ export interface ValueConverter<valueType> {
    * @example
    * fromJson: val => new Date(val)
    */
-  fromJson?(val: any): valueType | null | undefined
+  fromJson?(val: any): valueType
 
   /**
    * Converts a value of valueType to a JSON DTO. This method is typically used when sending data
@@ -270,7 +270,7 @@ export interface ValueConverter<valueType> {
    * @example
    * toJson: val => val?.toISOString()
    */
-  toJson?(val: valueType | null | undefined): any
+  toJson?(val: valueType): any
 
   /**
    * Converts a value from the database format to the valueType.
@@ -281,7 +281,7 @@ export interface ValueConverter<valueType> {
    * @example
    * fromDb: val => new Date(val)
    */
-  fromDb?(val: any): valueType | null | undefined
+  fromDb?(val: any): valueType
 
   /**
    * Converts a value of valueType to the database format.
@@ -292,7 +292,7 @@ export interface ValueConverter<valueType> {
    * @example
    * toDb: val => val?.toISOString()
    */
-  toDb?(val: valueType | null | undefined): any
+  toDb?(val: valueType): any
 
   /**
    * Converts a value of valueType to a string suitable for an HTML input element.
@@ -304,7 +304,7 @@ export interface ValueConverter<valueType> {
    * @example
    * toInput: (val, inputType) => val?.toISOString().substring(0, 10)
    */
-  toInput?(val: valueType | null | undefined, inputType?: string): string
+  toInput?(val: valueType, inputType?: string): string
 
   /**
    * Converts a string from an HTML input element to the valueType.
@@ -316,7 +316,7 @@ export interface ValueConverter<valueType> {
    * @example
    * fromInput: (val, inputType) => new Date(val)
    */
-  fromInput?(val: string, inputType?: string): valueType | null | undefined
+  fromInput?(val: string, inputType?: string): valueType
 
   /**
    * Returns a displayable string representation of a value of valueType.
@@ -327,7 +327,7 @@ export interface ValueConverter<valueType> {
    * @example
    * displayValue: val => val?.toLocaleDateString()
    */
-  displayValue?(val: valueType | null | undefined): string
+  displayValue?(val: valueType): string
 
   /**
    * Specifies the storage type used in the database for this field. This can be used to explicitly define the data type and precision of the field in the database.

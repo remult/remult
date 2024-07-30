@@ -424,7 +424,7 @@ export interface DataProvider {
   transaction(
     action: (dataProvider: DataProvider) => Promise<void>,
   ): Promise<void>
-  ensureSchema?(entities: EntityMetadata<unknown>[]): Promise<void>
+  ensureSchema?(entities: EntityMetadata[]): Promise<void>
   isProxy?: boolean
 }
 export declare function dbNamesOf<entityType>(
@@ -585,7 +585,7 @@ export interface EntityMetadata<entityType = unknown> {
   /** The options send to the `Entity`'s decorator
    * @see {@link EntityOptions}
    */
-  readonly options: EntityOptions<unknown>
+  readonly options: EntityOptions
   /** The class type of the entity */
   readonly entityType: ClassType<entityType>
   /** true if the current user is allowed to update an entity instance
@@ -918,6 +918,7 @@ export declare function Field<entityType = unknown, valueType = unknown>(
   context:
     | ClassFieldDecoratorContextStub<entityType, valueType | undefined>
     | string,
+  c?: any,
 ) => void
 export interface FieldMetadata<valueType = unknown, entityType = unknown> {
   /** The field's member name in an object.
@@ -944,7 +945,7 @@ export interface FieldMetadata<valueType = unknown, entityType = unknown> {
   /** The field's value type (number,string etc...) */
   readonly valueType: any
   /** The options sent to this field's decorator */
-  readonly options: FieldOptions<unknown, unknown>
+  readonly options: FieldOptions
   /** The `inputType` relevant for this field, determined by the options sent to it's decorator and the valueConverter in these options */
   readonly inputType: string
   /** if null is allowed for this field
@@ -1011,7 +1012,7 @@ export interface FieldMetadata<valueType = unknown, entityType = unknown> {
    * input.value = repo.fields.birthDate.toInput(person) // will return '1976-06-16'
    * @see {@link ValueConverter#toInput} for configuration details
    */
-  toInput(value: valueType | null | undefined, inputType?: string): string
+  toInput(value: valueType, inputType?: string): string
   /** Adapts the value for usage with html input
    * @example
    * @Fields.dateOnly()
@@ -1346,7 +1347,7 @@ export declare function FieldType<valueType = unknown>(
     | FieldOptions<any, valueType>
     | ((options: FieldOptions<any, valueType>, remult: Remult) => void)
   )[]
-): (target: any) => any
+): (target: any, context?: any) => any
 export declare type FieldValidator<
   entityType = unknown,
   valueType = unknown,
@@ -2742,7 +2743,7 @@ export interface ValueConverter<valueType> {
    * @example
    * fromJson: val => new Date(val)
    */
-  fromJson?(val: any): valueType | null | undefined
+  fromJson?(val: any): valueType
   /**
    * Converts a value of valueType to a JSON DTO. This method is typically used when sending data
    * to a REST API or serializing an object to a JSON payload.
@@ -2753,7 +2754,7 @@ export interface ValueConverter<valueType> {
    * @example
    * toJson: val => val?.toISOString()
    */
-  toJson?(val: valueType | null | undefined): any
+  toJson?(val: valueType): any
   /**
    * Converts a value from the database format to the valueType.
    *
@@ -2763,7 +2764,7 @@ export interface ValueConverter<valueType> {
    * @example
    * fromDb: val => new Date(val)
    */
-  fromDb?(val: any): valueType | null | undefined
+  fromDb?(val: any): valueType
   /**
    * Converts a value of valueType to the database format.
    *
@@ -2773,7 +2774,7 @@ export interface ValueConverter<valueType> {
    * @example
    * toDb: val => val?.toISOString()
    */
-  toDb?(val: valueType | null | undefined): any
+  toDb?(val: valueType): any
   /**
    * Converts a value of valueType to a string suitable for an HTML input element.
    *
@@ -2784,7 +2785,7 @@ export interface ValueConverter<valueType> {
    * @example
    * toInput: (val, inputType) => val?.toISOString().substring(0, 10)
    */
-  toInput?(val: valueType | null | undefined, inputType?: string): string
+  toInput?(val: valueType, inputType?: string): string
   /**
    * Converts a string from an HTML input element to the valueType.
    *
@@ -2795,7 +2796,7 @@ export interface ValueConverter<valueType> {
    * @example
    * fromInput: (val, inputType) => new Date(val)
    */
-  fromInput?(val: string, inputType?: string): valueType | null | undefined
+  fromInput?(val: string, inputType?: string): valueType
   /**
    * Returns a displayable string representation of a value of valueType.
    *
@@ -2805,7 +2806,7 @@ export interface ValueConverter<valueType> {
    * @example
    * displayValue: val => val?.toLocaleDateString()
    */
-  displayValue?(val: valueType | null | undefined): string
+  displayValue?(val: valueType): string
   /**
    * Specifies the storage type used in the database for this field. This can be used to explicitly define the data type and precision of the field in the database.
    *
@@ -2907,7 +2908,7 @@ export declare function ValueListFieldType<
     | ValueListFieldOptions<any, valueType>
     | ((options: FieldOptions<any, valueType>, remult: Remult) => void)
   )[]
-): (type: ClassType<valueType>) => void
+): (type: ClassType<valueType>, context?: any) => void
 export declare class ValueListInfo<T extends ValueListItem>
   implements ValueConverter<T>
 {
@@ -2919,12 +2920,12 @@ export declare class ValueListInfo<T extends ValueListItem>
   private constructor()
   getValues(): T[]
   byId(key: any): T | undefined
-  fromJson(val: any): T | undefined
+  fromJson(val: any): T
   toJson(val: T): any
-  fromDb(val: any): T | undefined
+  fromDb(val: any): T
   toDb(val: T): any
   toInput(val: T, inputType: string): string
-  fromInput(val: string, inputType: string): T | undefined | null
+  fromInput(val: string, inputType: string): T
   displayValue?(val: T): string
   fieldTypeInDb?: string
   inputType?: string
@@ -3002,7 +3003,7 @@ export type RemultExpressServer = express.RequestHandler &
 
 ```ts
 export declare function remultNext(
-  options?: RemultServerOptions<NextApiRequest>,
+  options: RemultServerOptions<NextApiRequest>,
 ): RemultNextServer
 //[ ] RemultServerOptions from ./server/index.js is not exported
 export declare function remultNextApp(
@@ -3045,7 +3046,7 @@ export type RemultNextServer = RemultServerCore<NextApiRequest> &
 
 ```ts
 export declare function createRemultServer<RequestType>(
-  options: RemultServerOptions<RequestType> | undefined,
+  options: RemultServerOptions<RequestType>,
   serverCoreOptions?: ServerCoreOptions<RequestType>,
 ): RemultServer<RequestType>
 //[ ] ServerCoreOptions from ./remult-api-server.js is not exported
@@ -3257,7 +3258,7 @@ export declare class SseSubscriptionServer implements SubscriptionServer {
 
 ```ts
 export declare function createRemultServerCore<RequestType>(
-  options: RemultServerOptions<RequestType> | undefined,
+  options: RemultServerOptions<RequestType>,
   serverCoreOptions: ServerCoreOptions<RequestType>,
 ): RemultServer<RequestType>
 //[ ] ServerCoreOptions from TBD is not exported
@@ -3535,7 +3536,7 @@ export interface RemultFresh extends RemultServerCore<FreshRequest> {
 
 ```ts
 export declare function remultSveltekit(
-  options?: RemultServerOptions<RequestEvent>,
+  options: RemultServerOptions<RequestEvent>,
 ): RemultSveltekitServer
 //[ ] RemultServerOptions from ./server/index.js is not exported
 export type RemultSveltekitServer = RemultServerCore<RequestEvent> &
@@ -4047,7 +4048,7 @@ export declare function getEntitySettings<T>(
 ): EntityOptionsFactory | undefined
 //[ ] EntityOptionsFactory from TBD is not exported
 export declare function getRelationFieldInfo(
-  field: FieldMetadata<unknown, unknown>,
+  field: FieldMetadata,
 ): RelationFieldInfo | undefined
 export declare function getRelationInfo(options: FieldOptions): RelationInfo
 export interface RelationFieldInfo {

@@ -15,7 +15,7 @@ import type {
 import { createRemultServer } from './server/index.js'
 
 export function remultNext(
-  options?: RemultServerOptions<NextApiRequest>,
+  options: RemultServerOptions<NextApiRequest>,
 ): RemultNextServer {
   let result = createRemultServer(options, {
     buildGenericRequestInfo: (req) => req,

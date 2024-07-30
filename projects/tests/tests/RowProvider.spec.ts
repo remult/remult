@@ -499,7 +499,7 @@ describe('test datetime column', () => {
   })
   it('stores well undefined', () => {
     let col = decorateColumnSettings<Date>({ valueType: Date }, new Remult())
-    expect(col.valueConverter!.toJson!(undefined)).toBe('')
+    expect(col.valueConverter!.toJson!(undefined!)).toBe('')
   })
   it('displays empty date well', () => {
     expect(
@@ -509,8 +509,8 @@ describe('test datetime column', () => {
     ).toBe('')
   })
   it('displays null date well 1', () => {
-    expect(ValueConverters.DateOnly.toJson!(null)).toBe(null)
-    expect(ValueConverters.DateOnly.toJson!(null)).toBe(null)
+    expect(ValueConverters.DateOnly.toJson!(null!)).toBe(null)
+    expect(ValueConverters.DateOnly.toJson!(null!)).toBe(null)
     expect(ValueConverters.DateOnly.displayValue!(null)).toBe('')
   })
   it('displays empty date well empty', () => {
