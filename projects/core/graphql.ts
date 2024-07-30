@@ -328,7 +328,10 @@ export function remultGraphql(options: {
                     for (const key in err.modelState) {
                       modelState.push({
                         field: key,
-                        message: err.modelState[key],
+                        message:
+                          err.modelState[
+                            key as keyof (typeof err)['modelState']
+                          ],
                       })
                     }
                   setResult({

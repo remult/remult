@@ -22,7 +22,7 @@ import type { rowHelperImplementation } from './remult3/RepositoryImplementation
 
 import { ForbiddenError } from './server-action.js'
 
-export class DataApi<T = any> {
+export class DataApi<T = unknown> {
   constructor(
     private repository: Repository<T>,
     private remult: Remult,

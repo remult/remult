@@ -7,6 +7,7 @@ import {
   repo,
   type FieldMetadata,
   type FieldsMetadata,
+  Validators,
 } from '../../core'
 import {
   getEntityKey,
@@ -20,7 +21,9 @@ export declare type MyEntityOrderBy<entityType> = {
 }
 
 class Person extends IdEntity {
-  @Fields.string()
+  @Fields.object({
+    validate: Validators.minLength(2),
+  })
   name = ''
   @Relations.toOne(() => Person)
   parent?: Person

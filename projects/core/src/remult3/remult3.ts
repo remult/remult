@@ -45,7 +45,7 @@ export interface EntityRefForEntityBase<entityType>
   relations: RepositoryRelationsForEntityBase<entityType>
 }
 
-export interface ValidateFieldEvent<entityType = any, valueType = any> {
+export interface ValidateFieldEvent<entityType = unknown, valueType = unknown> {
   error?: string
   value: valueType
   originalValue: valueType
@@ -194,7 +194,7 @@ export interface IdFieldRef<entityType, valueType>
     : string | number
 }
 
-export interface FieldRef<entityType = any, valueType = any>
+export interface FieldRef<entityType = unknown, valueType = unknown>
   extends Subscribable {
   error: string | undefined
   displayValue: string
@@ -214,7 +214,7 @@ export interface FieldRef<entityType = any, valueType = any>
   validate(): Promise<boolean>
 }
 
-export interface IdMetadata<entityType = any> {
+export interface IdMetadata<entityType = unknown> {
   /** Extracts the id value of an entity item. Useful in cases where the id column is not called id
    * @example
    * repo.metadata.idMetadata.getId(task)

@@ -168,7 +168,7 @@ export interface SubscriptionClient {
 
 export const liveQueryKeepAliveRoute = '_liveQueryKeepAlive'
 
-interface SubscribeToQueryArgs<entityType = any> {
+interface SubscribeToQueryArgs<entityType = unknown> {
   entityKey: string
   options: FindOptions<entityType>
 }

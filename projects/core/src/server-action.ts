@@ -213,7 +213,9 @@ export interface ClassMethodDecoratorContextStub<
 }
 
 /** Indicates that the decorated methods runs on the backend. See: [Backend Methods](https://remult.dev/docs/backendMethods.html) */
-export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
+export function BackendMethod<type = unknown>(
+  options: BackendMethodOptions<type>,
+) {
   return (
     target: any,
     context: ClassMethodDecoratorContextStub<type> | string,
@@ -360,7 +362,7 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
                     }
                   } else {
                     let y = new constructor(remult, remult.dataProvider)
-                    let controllerRef = getControllerRef(
+                    let controllerRef = getControllerRef<unknown>(
                       y,
                       remult,
                     ) as controllerRefImpl
@@ -441,7 +443,10 @@ export function BackendMethod<type = any>(options: BackendMethodOptions<type>) {
             throw defs.catchSaveErrors(err)
           }
         } else {
-          let defs = getControllerRef(self, undefined) as controllerRefImpl
+          let defs = getControllerRef<unknown>(
+            self,
+            undefined,
+          ) as controllerRefImpl
           try {
             await defs.__validateEntity()
             let r = await new (class extends Action<

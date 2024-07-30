@@ -7,7 +7,7 @@ import type {
   ValidateFieldEvent,
 } from './remult3/remult3.js'
 
-export interface FieldOptions<entityType = any, valueType = any> {
+export interface FieldOptions<entityType = unknown, valueType = unknown> {
   /** A human readable name for the field. Can be used to achieve a consistent caption for a field throughout the app
    * @example
    * <input placeholder={taskRepo.metadata.fields.title.caption}/>
@@ -351,7 +351,10 @@ export interface ValueConverter<valueType> {
    */
   readonly inputType?: string
 }
-export declare type FieldValidator<entityType = any, valueType = any> = (
+export declare type FieldValidator<
+  entityType = unknown,
+  valueType = unknown,
+> = (
   entity: entityType,
   event: ValidateFieldEvent<entityType, valueType>,
 ) =>

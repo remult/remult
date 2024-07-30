@@ -45,7 +45,7 @@ export class Task {
   nom4?: string
 }
 
-function dateOnly<entityType = any>(o?: FieldOptions<entityType, Date>) {
+function dateOnly<entityType = unknown>(o?: FieldOptions<entityType, Date>) {
   const validate: FieldValidator<entityType, Date>[] = []
   validate.push(Validators.required)
 }

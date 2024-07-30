@@ -1571,7 +1571,7 @@ export class rowHelperImplementation<T>
 
   get fields(): FieldsRef<T> {
     if (!this._columns) {
-      let _items: FieldRefImplementation<any, unknown>[] = []
+      let _items: FieldRefImplementation<T, unknown>[] = []
       let r = {
         //@ts-ignore
         find: (c: FieldMetadata<T> | string) =>
@@ -1583,7 +1583,7 @@ export class rowHelperImplementation<T>
       for (const c of this.info.fieldsMetadata) {
         _items.push(
           //@ts-ignore
-          (r[c.key] = new FieldRefImplementation(
+          (r[c.key] = new FieldRefImplementation<T, unknown>(
             c.options,
             c,
             this.instance,
@@ -1830,7 +1830,7 @@ export class rowHelperImplementation<T>
   async __performColumnAndEntityValidations() {
     for (const c of this.fieldsMetadata) {
       if (c.options.validate) {
-        let col = new FieldRefImplementation(
+        let col = new FieldRefImplementation<T, unknown>(
           c.options,
           c,
           this.instance,
@@ -1914,7 +1914,7 @@ export function getControllerRef<fieldsContainerType>(
   return result
 }
 
-export class controllerRefImpl<T = any>
+export class controllerRefImpl<T = unknown>
   extends rowHelperBase<T>
   implements ControllerRef<T>
 {
@@ -2466,7 +2466,7 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
   caption: string
 }
 
-export function FieldType<valueType = any>(
+export function FieldType<valueType = unknown>(
   ...options: (
     | FieldOptions<any, valueType>
     | ((options: FieldOptions<any, valueType>, remult: Remult) => void)
@@ -2487,7 +2487,9 @@ export function isAutoIncrement(f: FieldMetadata) {
   return f.options?.valueConverter?.fieldTypeInDb === 'autoincrement'
 }
 
-export function ValueListFieldType<valueType extends ValueListItem = any>(
+export function ValueListFieldType<
+  valueType extends ValueListItem = ValueListItem,
+>(
   ...options: (
     | ValueListFieldOptions<any, valueType>
     | ((options: FieldOptions<any, valueType>, remult: Remult) => void)
@@ -2629,7 +2631,7 @@ export function getValueList<T>(
 
 export const storableMember = Symbol.for('storableMember')
 export const fieldOptionalValuesFunctionKey = Symbol.for('fieldOptionalValues')
-export function buildOptions<entityType = any, valueType = any>(
+export function buildOptions<entityType = unknown, valueType = unknown>(
   options: (
     | FieldOptions<entityType, valueType>
     | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void)

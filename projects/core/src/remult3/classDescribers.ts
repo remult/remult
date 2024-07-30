@@ -3,7 +3,7 @@ import type { EntityOptions } from '../entity.js'
 import { BackendMethod, type BackendMethodOptions } from '../server-action.js'
 import { Entity } from './entity.js'
 
-type Descriptor<T = any> = (a: T, b: string, c?: any) => void
+type Descriptor<T = unknown> = (a: T, b: string, c?: any) => void
 type FieldsDescriptor<T> = T extends new (...args: any[]) => infer R
   ? { [K in keyof R]?: Descriptor }
   : never

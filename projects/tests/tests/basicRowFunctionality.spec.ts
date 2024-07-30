@@ -2385,9 +2385,9 @@ describe('test fetch', () => {
     }
     describeClass(e, Entity('asdf'), {
       id: Fields.integer(),
-      person: Fields.json({
+      person: Fields.json<unknown, { name: string }>({
         valueConverter: {
-          toJson: (x) => x.name,
+          toJson: (x) => x!.name,
           fromJson: (x) => ({ name: x }),
         },
       }),

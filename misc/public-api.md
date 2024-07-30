@@ -108,7 +108,7 @@ export declare class ArrayEntityDataProvider implements EntityDataProvider {
   insert(data: any): Promise<any>
 }
 //[ ] CustomArrayFilter from TBD is not exported
-export declare function BackendMethod<type = any>(
+export declare function BackendMethod<type = unknown>(
   options: BackendMethodOptions<type>,
 ): (
   target: any,
@@ -854,7 +854,7 @@ export interface EntityRefForEntityBase<entityType>
   fields: FieldsRefForEntityBase<entityType>
   relations: RepositoryRelationsForEntityBase<entityType>
 }
-export interface ErrorInfo<entityType = any> {
+export interface ErrorInfo<entityType = unknown> {
   message?: string
   modelState?: {
     [Properties in keyof Partial<MembersOnly<entityType>>]?: string
@@ -899,7 +899,7 @@ export interface ExternalHttpProvider {
         toPromise(): Promise<any>
       }
 }
-export declare function Field<entityType = any, valueType = any>(
+export declare function Field<entityType = unknown, valueType = unknown>(
   valueType:
     | (() => valueType extends number
         ? Number
@@ -1022,7 +1022,7 @@ export interface FieldMetadata<valueType = unknown, entityType = unknown> {
    */
   fromInput(inputValue: string, inputType?: string): valueType
 }
-export interface FieldOptions<entityType = any, valueType = any> {
+export interface FieldOptions<entityType = unknown, valueType = unknown> {
   /** A human readable name for the field. Can be used to achieve a consistent caption for a field throughout the app
    * @example
    * <input placeholder={taskRepo.metadata.fields.title.caption}/>
@@ -1147,7 +1147,7 @@ export interface FieldOptions<entityType = any, valueType = any> {
   /** The key to be used for this field */
   key?: string
 }
-export interface FieldRef<entityType = any, valueType = any>
+export interface FieldRef<entityType = unknown, valueType = unknown>
   extends Subscribable {
   error: string | undefined
   displayValue: string
@@ -1170,61 +1170,61 @@ export declare class Fields {
   /**
    * Stored as a JSON.stringify - to store as json use Fields.json
    */
-  static object<entityType = any, valueType = any>(
+  static object<entityType = unknown, valueType = unknown>(
     ...options: (
       | FieldOptions<entityType, valueType>
       | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, valueType | undefined>
-  static json<entityType = any, valueType = any>(
+  static json<entityType = unknown, valueType = unknown>(
     ...options: (
       | FieldOptions<entityType, valueType>
       | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, valueType | undefined>
-  static dateOnly<entityType = any>(
+  static dateOnly<entityType = unknown>(
     ...options: (
       | FieldOptions<entityType, Date>
       | ((options: FieldOptions<entityType, Date>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, Date | undefined>
-  static date<entityType = any>(
+  static date<entityType = unknown>(
     ...options: (
       | FieldOptions<entityType, Date>
       | ((options: FieldOptions<entityType, Date>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, Date | undefined>
-  static integer<entityType = any>(
+  static integer<entityType = unknown>(
     ...options: (
       | FieldOptions<entityType, number>
       | ((options: FieldOptions<entityType, number>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, number | undefined>
-  static autoIncrement<entityType = any>(
+  static autoIncrement<entityType = unknown>(
     ...options: (
       | FieldOptions<entityType, number>
       | ((options: FieldOptions<entityType, number>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, number | undefined>
-  static number<entityType = any>(
+  static number<entityType = unknown>(
     ...options: (
       | FieldOptions<entityType, number>
       | ((options: FieldOptions<entityType, number>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, number | undefined>
-  static createdAt<entityType = any>(
+  static createdAt<entityType = unknown>(
     ...options: (
       | FieldOptions<entityType, Date>
       | ((options: FieldOptions<entityType, Date>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, Date | undefined>
-  static updatedAt<entityType = any>(
+  static updatedAt<entityType = unknown>(
     ...options: (
       | FieldOptions<entityType, Date>
       | ((options: FieldOptions<entityType, Date>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, Date | undefined>
-  static uuid<entityType = any>(
+  static uuid<entityType = unknown>(
     ...options: (
       | FieldOptions<entityType, string>
       | ((options: FieldOptions<entityType, string>, remult: Remult) => void)
@@ -1235,7 +1235,7 @@ export declare class Fields {
    * This id value is determined on the backend on insert, and can't be updated through the API.
    * The CUID is generated using the `@paralleldrive/cuid2` npm package.
    */
-  static cuid<entityType = any>(
+  static cuid<entityType = unknown>(
     ...options: (
       | FieldOptions<entityType, string>
       | ((options: FieldOptions<entityType, string>, remult: Remult) => void)
@@ -1270,7 +1270,7 @@ export declare class Fields {
    *
    * // This approach allows easy management and updates of the allowed values for the `status` field.
    */
-  static literal<entityType = any, valueType extends string = any>(
+  static literal<entityType = unknown, valueType extends string = string>(
     optionalValues: () => readonly valueType[],
     ...options: (
       | StringFieldOptions<entityType, valueType>
@@ -1280,7 +1280,7 @@ export declare class Fields {
         ) => void)
     )[]
   ): ClassFieldDecorator<entityType, valueType | undefined>
-  static enum<entityType = any, theEnum = object>(
+  static enum<entityType = unknown, theEnum = object>(
     enumType: () => theEnum,
     ...options: (
       | FieldOptions<entityType, theEnum[keyof theEnum]>
@@ -1290,7 +1290,7 @@ export declare class Fields {
         ) => void)
     )[]
   ): ClassFieldDecorator<entityType, theEnum[keyof theEnum] | undefined>
-  static string<entityType = any, valueType = string>(
+  static string<entityType = unknown, valueType = string>(
     ...options: (
       | StringFieldOptions<entityType, valueType>
       | ((
@@ -1299,7 +1299,7 @@ export declare class Fields {
         ) => void)
     )[]
   ): ClassFieldDecorator<entityType, valueType | undefined>
-  static boolean<entityType = any>(
+  static boolean<entityType = unknown>(
     ...options: (
       | FieldOptions<entityType, boolean>
       | ((options: FieldOptions<entityType, boolean>, remult: Remult) => void)
@@ -1341,13 +1341,16 @@ export type FieldsRefForEntityBase<entityType> = FieldsRefBase<entityType> & {
     ? IdFieldRef<entityType, entityType[Properties]>
     : FieldRef<entityType, entityType[Properties]>
 }
-export declare function FieldType<valueType = any>(
+export declare function FieldType<valueType = unknown>(
   ...options: (
     | FieldOptions<any, valueType>
     | ((options: FieldOptions<any, valueType>, remult: Remult) => void)
   )[]
 ): (target: any) => any
-export declare type FieldValidator<entityType = any, valueType = any> = (
+export declare type FieldValidator<
+  entityType = unknown,
+  valueType = unknown,
+> = (
   entity: entityType,
   event: ValidateFieldEvent<entityType, valueType>,
 ) =>
@@ -1681,7 +1684,7 @@ export type IdFilter<valueType> =
           : string
       >
     }
-export interface IdMetadata<entityType = any> {
+export interface IdMetadata<entityType = unknown> {
   /** Extracts the id value of an entity item. Useful in cases where the id column is not called id
    * @example
    * repo.metadata.idMetadata.getId(task)
@@ -2583,7 +2586,7 @@ export interface StoredQuery {
   id: string
   data: any
 }
-export interface StringFieldOptions<entityType = any, valueType = string>
+export interface StringFieldOptions<entityType = unknown, valueType = string>
   extends FieldOptions<entityType, valueType> {
   maxLength?: number
   minLength?: number
@@ -2660,7 +2663,7 @@ export interface UserInfo {
   name?: string
   roles?: string[]
 }
-export interface ValidateFieldEvent<entityType = any, valueType = any> {
+export interface ValidateFieldEvent<entityType = unknown, valueType = unknown> {
   error?: string
   value: valueType
   originalValue: valueType
@@ -2898,7 +2901,7 @@ export interface ValueListFieldOptions<entityType, valueType>
   getValues?: () => valueType[]
 }
 export declare function ValueListFieldType<
-  valueType extends ValueListItem = any,
+  valueType extends ValueListItem = ValueListItem,
 >(
   ...options: (
     | ValueListFieldOptions<any, valueType>
@@ -4014,7 +4017,7 @@ export const actionInfo: {
 export type ClassType<T> = {
   new (...args: any[]): T
 }
-export declare class controllerRefImpl<T = any>
+export declare class controllerRefImpl<T = unknown>
   extends rowHelperBase<T>
   implements ControllerRef<T>
 {
