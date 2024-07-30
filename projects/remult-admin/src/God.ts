@@ -53,7 +53,12 @@ export class God {
 
     const repo = this.tables.find((t) => t.key == relations.entityKey)!.repo
     const item = await repo.findId(value)
+
     if (!item) return 'not found - ' + value
+
+    if (!item[relations.captionField])
+      return `Can't display ${relations.captionField} - ${value}`
+
     return item[relations.captionField]
   }
   tables: TableInfo[]

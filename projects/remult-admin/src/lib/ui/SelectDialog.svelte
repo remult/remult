@@ -24,6 +24,14 @@
 
   onMount(() => {
     dialog.showModal()
+
+    dialog.onabort = () => {
+      dispatchClose()
+    }
+
+    dialog.oncancel = () => {
+      dispatchClose()
+    }
   })
 
   const refresh = (s: any) => {
@@ -55,11 +63,11 @@
     <input bind:value={$search} placeholder="search" />
   </form>
   <div class="dialog-list">
-  {#each $items as item}
+    {#each $items as item}
       <button on:click={() => handleSelect(item.id)}>
         {item.caption}
       </button>
-      {/each}
+    {/each}
   </div>
 </dialog>
 

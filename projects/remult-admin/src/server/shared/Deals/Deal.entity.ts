@@ -138,7 +138,7 @@ export class Deal {
 @Entity<DealContact>('dealContacts', {
   //allowApiCrud: Allow.authenticated,
   allowApiCrud: true,
-
+  caption: 'Deal Contacts very very very long',
   id: { deal: true, contactId: true },
 })
 export class DealContact {

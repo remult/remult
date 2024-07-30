@@ -20,6 +20,18 @@
   }
 
   let settingsDialog
+
+  function start_and_end(str: string) {
+    const maxLen = 17
+    if (str.length > maxLen + 3) {
+      return (
+        str.slice(0, maxLen - 4).trim() +
+        '...' +
+        str.slice(-(maxLen - 4)).trim()
+      )
+    }
+    return str
+  }
 </script>
 
 <div class="app-holder">
@@ -87,7 +99,7 @@
           className: 'active',
         }}
       >
-        {t.caption}
+        {start_and_end(t.caption)}
       </a>
     {/each}
     <a
@@ -110,5 +122,7 @@
     /* margin-left: 1px; */
     border-left: 3px solid hsla(var(--color), 70%, 50%, 1);
     /* background-color: hsla(var(--color), 70%, 50%, 0.05); */
+    /* nowrap */
+    white-space: nowrap;
   }
 </style>
