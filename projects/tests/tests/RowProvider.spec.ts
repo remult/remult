@@ -511,7 +511,7 @@ describe('test datetime column', () => {
   it('displays null date well 1', () => {
     expect(ValueConverters.DateOnly.toJson!(null!)).toBe(null)
     expect(ValueConverters.DateOnly.toJson!(null!)).toBe(null)
-    expect(ValueConverters.DateOnly.displayValue!(null)).toBe('')
+    expect(ValueConverters.DateOnly.displayValue!(null!)).toBe('')
   })
   it('displays empty date well empty', () => {
     expect(
