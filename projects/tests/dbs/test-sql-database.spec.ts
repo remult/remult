@@ -40,14 +40,14 @@ describe('test sql implementation', () => {
         execute: async (sql) => {
           commands.push(sql)
           return {
-            getColumnKeyInResultForIndexInSelect: undefined,
+            getColumnKeyInResultForIndexInSelect: undefined!,
             rows: [],
           }
         },
       }) satisfies SqlCommand,
     async entityIsUsedForTheFirstTime(entity) {},
     getLimitSqlSyntax: () => '',
-    transaction: undefined,
+    transaction: undefined!,
     end: async () => {},
   } satisfies SqlImplementation)
   const repo = new Remult(db).repo(task)
@@ -85,8 +85,8 @@ describe('test sql implementation', () => {
         },
         undefined,
         new Proxy(await dbNamesOf(repo, db.wrapIdentifier), {
-          get(target, p, receiver) {
-            return (col) => 'alias.' + target[p](col)
+          get(target: any, p, receiver) {
+            return (col: string) => 'alias.' + target[p](col)
           },
         }),
       ),

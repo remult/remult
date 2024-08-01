@@ -86,8 +86,8 @@ describe('test one', () => {
         },
       )
       .then((t) => {
-        expect(t.categoryId).toBe(2)
-        expect(t.category?.name).toBe('cat2')
+        expect(t!.categoryId).toBe(2)
+        expect(t!.category?.name).toBe('cat2')
       })
     expect(
       (
@@ -101,8 +101,8 @@ describe('test one', () => {
   })
   it('test update', async () => {
     let t = await repo(Task).findFirst()
-    t.category = cat2
-    expect((await getEntityRef(t).save()).categoryId).toBe(2)
+    t!.category = cat2
+    expect((await getEntityRef(t).save())!.categoryId).toBe(2)
     await repo(Task)
       .findFirst(
         { id: 1 },
@@ -113,8 +113,8 @@ describe('test one', () => {
         },
       )
       .then((t) => {
-        expect(t.categoryId).toBe(2)
-        expect(t.category?.name).toBe('cat2')
+        expect(t!.categoryId).toBe(2)
+        expect(t!.category?.name).toBe('cat2')
       })
   })
   it('test repo update', async () => {
@@ -130,8 +130,8 @@ describe('test one', () => {
         },
       )
       .then((t) => {
-        expect(t.categoryId).toBe(2)
-        expect(t.category?.name).toBe('cat2')
+        expect(t!.categoryId).toBe(2)
+        expect(t!.category?.name).toBe('cat2')
       })
   })
   it('test repo save', async () => {
@@ -147,8 +147,8 @@ describe('test one', () => {
         },
       )
       .then((t) => {
-        expect(t.categoryId).toBe(2)
-        expect(t.category?.name).toBe('cat2')
+        expect(t!.categoryId).toBe(2)
+        expect(t!.category?.name).toBe('cat2')
       })
   })
   it('test repo update b', async () => {
@@ -164,8 +164,8 @@ describe('test one', () => {
         },
       )
       .then((t) => {
-        expect(t.categoryId).toBe(1)
-        expect(t.category?.name).toBe('cat1')
+        expect(t!.categoryId).toBe(1)
+        expect(t!.category?.name).toBe('cat1')
       })
   })
   it('test repo save b', async () => {
@@ -181,13 +181,13 @@ describe('test one', () => {
         },
       )
       .then((t) => {
-        expect(t.categoryId).toBe(1)
-        expect(t.category?.name).toBe('cat1')
+        expect(t!.categoryId).toBe(1)
+        expect(t!.category?.name).toBe('cat1')
       })
   })
   it('test repo update c', async () => {
     let t = await repo(Task).findFirst()
-    t.category = cat2
+    t!.category = cat2
     expect(
       (await repo(Task).update(1, { categoryId: 3, category: cat2 }))
         .categoryId,
@@ -202,13 +202,13 @@ describe('test one', () => {
         },
       )
       .then((t) => {
-        expect(t.categoryId).toBe(2)
-        expect(t.category?.name).toBe('cat2')
+        expect(t!.categoryId).toBe(2)
+        expect(t!.category?.name).toBe('cat2')
       })
   })
   it('test repo save c', async () => {
     let t = await repo(Task).findFirst()
-    t.category = cat2
+    t!.category = cat2
     expect(
       (await repo(Task).save({ ...t, categoryId: 3, category: cat2 }))
         .categoryId,
@@ -223,8 +223,8 @@ describe('test one', () => {
         },
       )
       .then((t) => {
-        expect(t.categoryId).toBe(2)
-        expect(t.category?.name).toBe('cat2')
+        expect(t!.categoryId).toBe(2)
+        expect(t!.category?.name).toBe('cat2')
       })
   })
   it('test filter equal to json', async () => {

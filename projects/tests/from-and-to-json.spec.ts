@@ -98,8 +98,8 @@ describe('Test sync from and to json', () => {
     let t = repo.fromJson(theJson)
     expect(t.date.getFullYear()).toBe(2020)
     expect(t.dateOnly.getFullYear()).toBe(2020)
-    delete t.date
-    delete t.dateOnly
+    delete (t as any).date
+    delete (t as any).dateOnly
     expect(t).toMatchInlineSnapshot(
       `
       Task {
@@ -123,8 +123,8 @@ describe('Test sync from and to json', () => {
     await repo.insert(task1)
     remult.clearAllCache()
     const tasks = await repo.find({ load: (x) => [x.title] })
-    delete tasks[0].date
-    delete tasks[0].dateOnly
+    delete (tasks[0] as any).date
+    delete (tasks[0] as any).dateOnly
     expect(tasks).toMatchInlineSnapshot(`
         [
           Task {
@@ -144,9 +144,9 @@ describe('Test sync from and to json', () => {
     await remult.repo(Category).insert(category)
     await repo.insert(task1)
     remult.clearAllCache()
-    const tasks = await repo.find({ load: (x) => [x.category] })
-    delete tasks[0].date
-    delete tasks[0].dateOnly
+    const tasks = await repo.find({ load: (x) => [x.category!] })
+    delete (tasks[0] as any).date
+    delete (tasks[0] as any).dateOnly
     expect(tasks).toMatchInlineSnapshot(`
       [
         Task {
@@ -168,13 +168,13 @@ describe('Test sync from and to json', () => {
   it('test category', () => {
     const t = { ...task1 }
     const ref = repo.getEntityRef(t)
-    expect(ref.fields.category.value?.name).toBe('testCat')
+    expect(ref.fields.category!.value?.name).toBe('testCat')
   })
   it('test with null category', () => {
-    const t = { ...task1, category: null }
+    const t = { ...task1, category: null! }
     const r = repo.fromJson(repo.toJson(t))
-    delete r.date
-    delete r.dateOnly
+    delete (r as any).date
+    delete (r as any).dateOnly
     expect(r).toMatchInlineSnapshot(`
       Task {
         "category": null,

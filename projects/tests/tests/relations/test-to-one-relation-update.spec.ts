@@ -42,20 +42,20 @@ describe('relations to one behavior', () => {
   })
   it("update of relation shouldn't behave as change toOne", async () => {
     const task = await r(Task).findFirst({}, { include: { category: true } })
-    expect(task._.wasChanged()).toBe(false)
+    expect(task!._.wasChanged()).toBe(false)
   })
   it("update of relation shouldn't behave as change toRef", async () => {
     const task = await r(Task).findFirst({}, { include: { cat2: true } })
-    expect(task._.wasChanged()).toBe(false)
+    expect(task!._.wasChanged()).toBe(false)
   })
   it("update of relation shouldn't behave as change toMany", async () => {
     const c = await r(Category).findFirst({}, { include: { tasks: true } })
-    expect(c._.wasChanged()).toBe(false)
+    expect(c!._.wasChanged()).toBe(false)
   })
   it('test missing value', async () => {
     await r(Task).update(1, { categoryId: 2 })
     const task = await r(Task).findFirst({}, { include: { category: true } })
-    expect(task.categoryId).toBe(2)
+    expect(task!.categoryId).toBe(2)
   })
   it('verify that save does not load relations for no reason', async () => {
     const task = await r(Task).findFirst({})
@@ -68,8 +68,8 @@ describe('relations to one behavior', () => {
         "title": "task 1",
       }
     `)
-    task.title += '2'
-    await task.save()
+    task!.title += '2'
+    await task!.save()
     expect(task).toMatchInlineSnapshot(`
       Task {
         "cat2": undefined,

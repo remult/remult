@@ -20,9 +20,15 @@ class Sqlite3Command implements SqlCommand {
   async execute(sql: string): Promise<SqlResult> {
     return new Promise<SqlResult>((resolve, error) => {
       if (sql.startsWith('insert into')) {
-        this.db.run(sql, this.values, function (err, rows) {
+        this.db.run(sql, this.values, function (err: any, rows: any[]) {
           if (err) error(err)
-          else resolve(new Sqlite3SqlResult([this.lastID]))
+          else
+            resolve(
+              new Sqlite3SqlResult([
+                //@ts-expect-error last id comes from sql lite as a lastId member of the function this
+                this.lastID,
+              ]),
+            )
         })
       } else
         this.db.all(sql, this.values, (err, rows) => {

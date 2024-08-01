@@ -94,7 +94,7 @@ export class DuckDBDataProvider extends SqliteCoreDataProvider {
 }
 
 class DuckDBCommand implements SqlCommand {
-  values = []
+  values: any[] = []
 
   constructor(private db: Database) {}
   async execute(sql: string): Promise<SqlResult> {

@@ -40,7 +40,7 @@ describe('test object column', () => {
     expect(x.$.col.valueChanged()).toBe(false)
     expect(x._.wasChanged()).toBe(false)
     expect(x.col.lastName).toBe('honig')
-    x = await remult.repo(ObjectColumnTest).findFirst()
+    x = (await remult.repo(ObjectColumnTest).findFirst())!
     expect(x.col.lastName).toBe('honig')
   })
 
@@ -53,16 +53,16 @@ describe('test object column', () => {
       lastName: 'honig',
     }
     await x.save()
-    x = await remult.repo(ObjectColumnTest).findFirst()
+    x = (await remult.repo(ObjectColumnTest).findFirst())!
     expect(x.col.firstName).toBe('noam')
 
-    x = await remult
+    x = (await remult
       .repo(ObjectColumnTest)
-      .findFirst({ col: { $contains: 'yael' } })
+      .findFirst({ col: { $contains: 'yael' } }))!
     expect(x).toBeUndefined()
-    x = await remult
+    x = (await remult
       .repo(ObjectColumnTest)
-      .findFirst({ col: { $contains: 'noam' } })
+      .findFirst({ col: { $contains: 'noam' } }))!
     expect(x.id).toBe(1)
 
     expect(x.phone1).toBeNull()
@@ -93,9 +93,9 @@ describe('test object column', () => {
     expect(sqlr.phone2).toBe('456')
     expect(sqlr.phone3).toBe('789')
     await assign(x, {
-      phone1: null,
-      phone2: null,
-      phone3: null,
+      phone1: null!,
+      phone2: null!,
+      phone3: null!,
     }).save()
 
     sqlr = (
@@ -158,7 +158,7 @@ describe('test object column', () => {
     }
     await x.save()
 
-    x = await c.repo(ObjectColumnTest).findFirst()
+    x = (await c.repo(ObjectColumnTest).findFirst())!
 
     expect(x.col.firstName).toBe('noam')
     expect(mem.rows[x._.repository.metadata.key][0].col).toEqual({
@@ -206,16 +206,16 @@ class Phone4 {
 @Entity('objectColumnTest')
 class ObjectColumnTest extends EntityBase {
   @Fields.integer()
-  id: number
+  id!: number
   @Fields.object()
-  col: person
+  col!: person
   @Field(() => Phone, {
     valueConverter: {
       fromJson: (x) => (x ? new Phone(x) : null),
       toJson: (x) => (x ? x.phone : ''),
     },
   })
-  phone1: Phone
+  phone1!: Phone
   @Field(() => Phone, {
     valueConverter: {
       fromJson: (x) => (x ? new Phone(x) : null),
@@ -223,20 +223,20 @@ class ObjectColumnTest extends EntityBase {
     },
     allowNull: true,
   })
-  phone2: Phone
+  phone2!: Phone
   @Field(() => Phone, {
     valueConverter: {
       fromJson: (x) => (x ? new Phone(x) : null),
       toJson: (x) => (x ? x.phone : ''),
     },
   })
-  phone3: Phone
+  phone3!: Phone
   @Field(() => Phone4)
-  phone4: Phone4
+  phone4!: Phone4
   @Fields.object()
-  tags: string[]
+  tags!: string[]
   @Fields.object({ allowNull: true })
-  tags2: string[]
+  tags2!: string[]
 }
 
 interface person {

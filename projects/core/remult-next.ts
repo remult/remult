@@ -15,23 +15,25 @@ import type {
 import { createRemultServer } from './server/index.js'
 
 export function remultNext(
-  options?: RemultServerOptions<NextApiRequest>,
+  options: RemultServerOptions<NextApiRequest>,
 ): RemultNextServer {
   let result = createRemultServer(options, {
     buildGenericRequestInfo: (req) => req,
     getRequestBody: async (req) => req.body,
   })
   return Object.assign(
-    (req, res) => result.handle(req, res).then(() => {}),
+    (req: NextApiRequest, res: GenericResponse) =>
+      result.handle(req, res).then(() => {}),
     result,
     {
-      getRemult: (req) => result.getRemult(req),
-      openApiDoc: (arg) => result.openApiDoc(arg),
-      withRemult: (req, what) => result.withRemultAsync(req, what),
+      getRemult: (req: NextApiRequest) => result.getRemult(req),
+      openApiDoc: (arg: any) => result.openApiDoc(arg),
+      withRemult: <T>(req: NextApiRequest, what: () => Promise<T>) =>
+        result.withRemultAsync(req, what),
     },
     {
-      getServerSideProps: (getServerPropsFunction) => {
-        return (context) => {
+      getServerSideProps: (getServerPropsFunction: any) => {
+        return (context: any) => {
           return new Promise<GetServerSidePropsResult<any>>((res, err) => {
             result.withRemult(context, undefined!, async () => {
               try {
@@ -45,7 +47,7 @@ export function remultNext(
         }
       },
       handle: (handler: NextApiHandler) => {
-        return async (req, res) => {
+        return async (req: any, res: any) => {
           await new Promise<void>(async (resolve) => {
             result.withRemult(req, res, async () => {
               await handler(req, res)
@@ -165,14 +167,15 @@ export function remultNextApp(
     POST: handler,
     PUT: handler,
     DELETE: handler,
-    withRemult: <T>(what) => result.withRemultAsync<T>({} as any, what),
+    withRemult: <T>(what: () => Promise<T>) =>
+      result.withRemultAsync<T>({} as any, what),
   }
 }
 // [ ] V1.5 Add handle, similar to handle in next page router.
 export type RemultNextAppServer = RemultServerCore<Request> & {
-  GET: (req: Request) => Promise<Response>
-  PUT: (req: Request) => Promise<Response>
-  POST: (req: Request) => Promise<Response>
-  DELETE: (req: Request) => Promise<Response>
+  GET: (req: Request) => Promise<Response | undefined>
+  PUT: (req: Request) => Promise<Response | undefined>
+  POST: (req: Request) => Promise<Response | undefined>
+  DELETE: (req: Request) => Promise<Response | undefined>
   withRemult<T>(what: () => Promise<T>): Promise<T>
 }

@@ -17,9 +17,9 @@ import { Entity, EntityBase, Field, FieldType, Fields } from '../../core/'
 })
 export class h extends EntityBase {
   @Fields.string()
-  id: string
+  id!: string
   @Field(() => h)
-  refH: h
+  refH!: h | null
   @Fields.string()
-  refHId: string
+  refHId!: string
 }

@@ -33,7 +33,9 @@ export function sqlRelations<entityType>(
 }
 
 export type SqlRelations<entityType> = {
-  [p in keyof entityType]-?: SqlRelation<ArrayItemType<entityType[p]>>
+  [p in keyof entityType]-?: SqlRelation<
+    ArrayItemType<NonNullable<entityType[p]>>
+  >
 }
 
 export type SqlRelation<toEntity> = {
@@ -136,7 +138,7 @@ export function sqlRelationsFilter<entityType>(
     [p in keyof entityType]-?: SqlRelationFilter<
       entityType,
       p,
-      ArrayItemType<entityType[p]>
+      ArrayItemType<NonNullable<entityType[p]>>
     >
   }
 }

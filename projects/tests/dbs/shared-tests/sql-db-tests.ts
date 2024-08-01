@@ -235,18 +235,14 @@ export function SqlDbTests({
             $or: [
               SqlDatabase.rawFilter(async (build) => {
                 build.sql =
-                  cast<HasWrapIdentifier>(
-                    getDb(),
-                    'wrapIdentifier',
-                  ).wrapIdentifier('myId') +
+                  cast<HasWrapIdentifier>(getDb(), 'wrapIdentifier')
+                    .wrapIdentifier!('myId') +
                   ` in (${build.param(2)},${build.param(3)})`
               }),
               SqlDatabase.rawFilter(async (build) => {
                 build.sql =
-                  cast<HasWrapIdentifier>(
-                    getDb(),
-                    'wrapIdentifier',
-                  ).wrapIdentifier('myId') +
+                  cast<HasWrapIdentifier>(getDb(), 'wrapIdentifier')
+                    .wrapIdentifier!('myId') +
                   ` in (${build.param(9)},${build.param(10)})`
               }),
             ],
@@ -334,7 +330,7 @@ export function SqlDbTests({
         remult.repo(Task).metadata.dbName,
       ]) {
         try {
-          await db.execute('drop table  ' + db.wrapIdentifier(iterator))
+          await db.execute('drop table  ' + db.wrapIdentifier!(iterator))
         } catch {}
       }
     })
@@ -343,7 +339,7 @@ export function SqlDbTests({
       let migrations: Migrations = {}
       let snapshot = emptySnapshot()
       let code = {
-        addSql: (s) =>
+        addSql: (s: string) =>
           (migrations[Object.keys(migrations).length] = async ({ sql }) =>
             await sql(s)),
         addComment: () => {
@@ -421,7 +417,7 @@ export function SqlDbTests({
       'test migrations transactions and ddl',
       async () => {
         const db = cast<SqlCommandFactory>(getDb(), 'createCommand')
-        const tableName = db.wrapIdentifier('xyz1')
+        const tableName = db.wrapIdentifier!('xyz1')
         try {
           await cast(getDb(), 'execute').execute(`drop table ${tableName}`)
         } catch {}

@@ -58,7 +58,7 @@ export function remultNuxt(
   }
 
   return Object.assign(handler, {
-    getRemult: (req) => result.getRemult(req),
+    getRemult: (req: H3Event) => result.getRemult(req),
     openApiDoc: (options: { title: string }) => result.openApiDoc(options),
     withRemult<T>(request: H3Event, what: () => Promise<T>): Promise<T> {
       return result.withRemultAsync(request, what)

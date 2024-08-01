@@ -103,7 +103,7 @@ describe('Closed List  column', () => {
     expect(e.l).toBe(Language.Hebrew)
     e.l = Language.Russian
     await e._.save()
-    e = await c.findFirst()
+    e = (await c.findFirst())!
 
     expect(e.l).toBe(Language.Russian)
     expect(e._.toApiJson().l).toBe(10)
@@ -142,7 +142,7 @@ describe('Closed List  column', () => {
 
     e.v = valueList.listName
     await e._.save()
-    e = await c.findFirst()
+    e = (await c.findFirst())!
     expect(e.v).toBe(valueList.listName)
     expect(e._.toApiJson().v).toBe('listName')
   })
@@ -271,7 +271,7 @@ describe('test row provider', () => {
     var remult = new Remult()
     remult.dataProvider = new InMemoryDataProvider()
     let type = class extends newCategories {
-      a: string
+      a!: string
     }
     EntityDecorator('')(type)
     Fields.string<typeof type.prototype>({
@@ -294,7 +294,7 @@ describe('test row provider', () => {
     var remult = new Remult()
     remult.dataProvider = new InMemoryDataProvider()
     let type = class extends newCategories {
-      a: string
+      a!: string
     }
     EntityDecorator('')(type)
     Fields.string<typeof type.prototype>({
@@ -318,7 +318,7 @@ describe('test row provider', () => {
     var remult = new Remult()
     remult.dataProvider = new InMemoryDataProvider()
     let type = class extends newCategories {
-      a: string
+      a!: string
     }
     EntityDecorator('')(type)
     Fields.string({
@@ -331,7 +331,7 @@ describe('test row provider', () => {
     try {
       await cat._.save()
       saved = true
-    } catch (err) {
+    } catch (err: any) {
       expect(cat._.fields.a.error).toEqual('m')
       expect(err.message).toBe('A: m')
     }
@@ -342,7 +342,7 @@ describe('test row provider', () => {
     var remult = new Remult()
     remult.dataProvider = new InMemoryDataProvider()
     let type = class extends newCategories {
-      a: string
+      a!: string
     }
     EntityDecorator('asdfa')(type)
     Fields.string<typeof type.prototype>({
@@ -387,7 +387,7 @@ describe('test row provider', () => {
     let cont = new Remult()
     cont.dataProvider = {
       getEntityDataProvider: (x) => new myDp(x),
-      transaction: undefined,
+      transaction: undefined!,
     }
     let c = cont.repo(newCategories).create()
     c.id = 1
@@ -403,16 +403,19 @@ describe('test row provider', () => {
   })
   it('filter should return none', async () => {
     let [c] = await insertFourRows()
-    let r = await c.findFirst({ categoryName: [] }, { createIfNotFound: true })
+    let r = (await c.findFirst(
+      { categoryName: [] },
+      { createIfNotFound: true },
+    ))!
     expect(r.categoryName).toBe(undefined)
     expect(r.isNew()).toBe(true)
   })
   it('filter ignore works return none', async () => {
     let [c] = await insertFourRows()
-    let r = await c.findFirst(
+    let r = (await c.findFirst(
       { categoryName: undefined },
       { createIfNotFound: true },
-    )
+    ))!
     expect(r.categoryName).toBe('noam')
     expect(r.isNew()).toBe(false)
   })
@@ -445,7 +448,7 @@ describe('order by api', () => {
   it('works with sort', () => {
     let c = new Remult().repo(Categories)
     let opt: FindOptions<Categories> = { orderBy: { id: 'asc' } }
-    let s = Sort.translateOrderByToSort(c.metadata, opt.orderBy)
+    let s = Sort.translateOrderByToSort(c.metadata, opt.orderBy!)
     expect(s.Segments.length).toBe(1)
     expect(s.Segments[0].field.key).toBe(c.metadata.fields.id.key)
   })
@@ -458,7 +461,7 @@ describe('order by api', () => {
         categoryName: 'asc',
       },
     }
-    let s = Sort.translateOrderByToSort(c.metadata, opt.orderBy)
+    let s = Sort.translateOrderByToSort(c.metadata, opt.orderBy!)
     expect(s.Segments.length).toBe(2)
     expect(s.Segments[0].field).toBe(c.metadata.fields.id)
     expect(s.Segments[1].field).toBe(c.metadata.fields.categoryName)
@@ -487,40 +490,40 @@ describe('order by api', () => {
 describe('test datetime column', () => {
   it('stores well', () => {
     let col = decorateColumnSettings<Date>({ valueType: Date }, new Remult())
-    let val = col.valueConverter.fromJson(
-      col.valueConverter.toJson(new Date(1976, 11, 16, 8, 55, 31, 65)),
+    let val = col.valueConverter!.fromJson!(
+      col.valueConverter!.toJson!(new Date(1976, 11, 16, 8, 55, 31, 65)),
     )
-    expect(val.toISOString()).toBe(
+    expect(val!.toISOString()).toBe(
       new Date(1976, 11, 16, 8, 55, 31, 65).toISOString(),
     )
   })
   it('stores well undefined', () => {
     let col = decorateColumnSettings<Date>({ valueType: Date }, new Remult())
-    expect(col.valueConverter.toJson(undefined)).toBe('')
+    expect(col.valueConverter!.toJson!(undefined!)).toBe('')
   })
   it('displays empty date well', () => {
     expect(
-      ValueConverters.DateOnly.displayValue(
-        ValueConverters.DateOnly.fromJson(''),
+      ValueConverters.DateOnly.displayValue!(
+        ValueConverters.DateOnly.fromJson!(''),
       ),
     ).toBe('')
   })
   it('displays null date well 1', () => {
-    expect(ValueConverters.DateOnly.toJson(null)).toBe(null)
-    expect(ValueConverters.DateOnly.toJson(null)).toBe(null)
-    expect(ValueConverters.DateOnly.displayValue(null)).toBe('')
+    expect(ValueConverters.DateOnly.toJson!(null!)).toBe(null)
+    expect(ValueConverters.DateOnly.toJson!(null!)).toBe(null)
+    expect(ValueConverters.DateOnly.displayValue!(null!)).toBe('')
   })
   it('displays empty date well empty', () => {
     expect(
-      ValueConverters.DateOnly.displayValue(
-        ValueConverters.DateOnly.fromJson('0000-00-00'),
+      ValueConverters.DateOnly.displayValue!(
+        ValueConverters.DateOnly.fromJson!('0000-00-00'),
       ),
     ).toBe('')
   })
   it('Date only stuff', () => {
     function test(d: Date, expected: string) {
-      expect(ValueConverters.DateOnly.toJson(d)).toBe(expected)
-      const ed = ValueConverters.DateOnly.fromJson(expected)
+      expect(ValueConverters.DateOnly.toJson!(d)).toBe(expected)
+      const ed = ValueConverters.DateOnly.fromJson!(expected)!
       expect(ed.getFullYear()).to.eq(d.getFullYear(), 'year')
       expect(ed.getMonth()).to.eq(d.getMonth(), 'month')
       expect(ed.getDate()).to.eq(d.getDate(), 'day')
@@ -573,14 +576,14 @@ describe('test datetime column', () => {
       new Remult(),
     )
     expect(
-      col.valueConverter
-        .toDb(col.valueConverter.fromJson('1976-06-16'))
-        .toLocaleDateString(),
+      col.valueConverter!.toDb!(
+        col.valueConverter!.fromJson!('1976-06-16'),
+      ).toLocaleDateString(),
     ).toBe(new Date(1976, 5, 16, 0, 0, 0).toLocaleDateString())
     expect(
-      col.valueConverter
-        .toDb(col.valueConverter.fromJson('1976-06-16'))
-        .getDate(),
+      col.valueConverter!.toDb!(
+        col.valueConverter!.fromJson!('1976-06-16'),
+      ).getDate(),
     ).toBe(16)
   })
 })
@@ -588,10 +591,10 @@ describe('test datetime column', () => {
 describe('Test char date storage', () => {
   let x = ValueConverters.DateOnlyString
   it('from db', () => {
-    expect(x.toJson(x.fromDb('19760616'))).toBe('1976-06-16')
+    expect(x.toJson!(x.fromDb!('19760616'))).toBe('1976-06-16')
   })
   it('to db', () => {
-    expect(x.toDb(x.fromJson('1976-06-16'))).toBe('19760616')
+    expect(x.toDb!(x.fromJson!('1976-06-16'))).toBe('19760616')
   })
 })
 
@@ -656,7 +659,7 @@ class TestCategories1 extends newCategories {
   @Fields.string({
     validate: Validators.required,
   })
-  a: string
+  a!: string
 }
 describe('test ', () => {
   it('Test Validation,', async () => {
@@ -675,6 +678,21 @@ describe('test ', () => {
     }
     expect(saved).toBe(false)
   })
+})
+it('test that entity inheritance works well and build', () => {
+  class HelperBase extends EntityBase {
+    id = ''
+  }
+
+  class Helper extends HelperBase {
+    name = ''
+  }
+
+  let z = new Helper()
+  z.id = '123'
+  z.name = '123'
+  let x1: HelperBase = z
+  expect(x1.id).toBe('123')
 })
 
 export class myDp extends ArrayEntityDataProvider {
@@ -706,17 +724,17 @@ class mockColumnDefs implements FieldMetadata {
   async getDbName(): Promise<string> {
     return this.dbName
   }
-  options: FieldOptions<any, any>
+  options!: FieldOptions<unknown, unknown>
   valueConverter: Required<ValueConverter<any>> = ValueConverters.Default
-  target: ClassType<any>
-  readonly: boolean
-  readonly dbReadOnly: boolean
-  readonly isServerExpression: boolean
-  readonly key: string
-  readonly caption: string
-  readonly inputType: string
+  target!: ClassType<any>
+  readonly = false
+  readonly dbReadOnly = false
+  readonly isServerExpression = false
+  readonly key = ''
+  readonly caption = ''
+  readonly inputType = ''
 
   readonly valueType: any
-  readonly allowNull: boolean
-  readonly dbType: string
+  readonly allowNull = false
+  readonly dbType = ''
 }

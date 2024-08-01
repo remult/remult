@@ -21,7 +21,7 @@ export class LiveQuerySubscriber<entityType> {
     )
   }
   queryChannel: string
-  subscribeCode: () => void
+  subscribeCode?: () => void
   unsubscribe: VoidFunction = () => {}
   async setAllItems(result: any[]) {
     const items = await getRepositoryInternals(this.repo)._fromJsonArray(
@@ -168,7 +168,7 @@ export interface SubscriptionClient {
 
 export const liveQueryKeepAliveRoute = '_liveQueryKeepAlive'
 
-interface SubscribeToQueryArgs<entityType = any> {
+interface SubscribeToQueryArgs<entityType = unknown> {
   entityKey: string
   options: FindOptions<entityType>
 }

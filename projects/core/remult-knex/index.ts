@@ -146,17 +146,18 @@ export class KnexDataProvider
     condition: EntityFilter<entityType>,
     wrapIdentifier?: (name: string) => string,
   ) {
+    if (!wrapIdentifier) wrapIdentifier = (x) => x
     const repo = getRepository(entity)
     var b = new FilterConsumerBridgeToKnexRequest(
-      await dbNamesOfWithForceSqlExpression(repo.metadata, (x) => x),
-      wrapIdentifier,
+      await dbNamesOfWithForceSqlExpression(repo.metadata, wrapIdentifier),
+      wrapIdentifier ?? wrapIdentifier,
     )
     b._addWhere = false
     await (
       await getRepositoryInternals(repo)._translateWhereToFilter(condition)
     ).__applyToConsumer(b)
     let r = await b.resolveWhere()
-    return (knex) => r.forEach((y) => y(knex))
+    return (knex: Knex.QueryBuilder) => r.forEach((y) => y(knex))
   }
   isProxy?: boolean
 
@@ -276,7 +277,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
       this.entity.idMetadata.getIdFilter(id),
     ).__applyToConsumer(f)
 
-    let updateObject = {}
+    let updateObject: any = {}
     for (const x of this.entity.fields) {
       if (isDbReadonly(x, e)) {
       } else if (data[x.key] !== undefined) {
@@ -309,7 +310,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
   async insert(data: any): Promise<any> {
     const e = await this.init()
 
-    let insertObject = {}
+    let insertObject: any = {}
     for (const x of this.entity.fields) {
       if (isDbReadonly(x, e)) {
       } else {
@@ -539,7 +540,7 @@ export class KnexSchemaBuilder {
     if (!remult) remult = remultContext
 
     const entities = remultStatic.allEntities.map(
-      (x) => remult.repo(x).metadata,
+      (x) => remult!.repo(x).metadata,
     )
     await this.ensureSchema(entities)
   }
@@ -565,7 +566,7 @@ export class KnexSchemaBuilder {
     }
   }
 
-  createTableKnexCommand(entity: EntityMetadata<any>, e: EntityDbNamesBase) {
+  createTableKnexCommand(entity: EntityMetadata, e: EntityDbNamesBase) {
     let cols = new Map<FieldMetadata, { name: string; readonly: boolean }>()
     for (const f of entity.fields) {
       cols.set(f, {
@@ -718,7 +719,7 @@ function translateValueAndHandleArrayAndHandleArray(
   return result
 }
 class KnexCommandHelper {
-  values = {}
+  values: any = {}
   i = 0
   addParameterAndReturnSqlToken(val: any) {
     return this.param(val)
@@ -735,7 +736,7 @@ class KnexBridgeToSQLCommand extends KnexCommandHelper implements SqlCommand {
   constructor(private source: Knex) {
     super()
   }
-  values = {}
+  values: any = {}
   i = 0
   addParameterAndReturnSqlToken(val: any) {
     return this.param(val)

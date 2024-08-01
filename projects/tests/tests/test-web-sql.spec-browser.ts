@@ -81,9 +81,9 @@ it('test date filter and values', async () => {
   await sql.execute('drop table if exists t1')
   c.dataProvider = sql
   let type = class extends EntityBase {
-    id: number
-    name: string
-    c3: Date
+    id!: number
+    name!: string
+    c3!: Date
   }
   Entity('t1')(type)
   Fields.autoIncrement()(type.prototype, 'id')
@@ -97,13 +97,13 @@ it('test date filter and values', async () => {
   p.c3 = d
   await p._.save()
   await f.create({ name: '2', c3: new Date(2021) }).save()
-  p = await f.findFirst({ c3: d })
-  p = await f.findFirst({ c3: d })
+  p = (await f.findFirst({ c3: d }))!
+  p = (await f.findFirst({ c3: d }))!
   f.findFirst({ c3: d })
   expect(p.name).toBe('1')
-  p = await f.findFirst({ c3: { $ne: d } })
+  p = (await f.findFirst({ c3: { $ne: d } }))!
   expect(p.name).toBe('2')
-  p = await f.findFirst({ c3: { '!=': d } })
+  p = (await f.findFirst({ c3: { '!=': d } }))!
   expect(p.name).toBe('2')
 })
 describe('test web sql identity', () => {
@@ -114,8 +114,8 @@ describe('test web sql identity', () => {
     c.dataProvider = sql
 
     let type = class extends EntityBase {
-      id: number
-      name: string
+      id!: number
+      name!: string
     }
     Entity('t1')(type)
     Fields.autoIncrement()(type.prototype, 'id')
@@ -145,7 +145,7 @@ it('compound sql', async () => {
   od.a = 99
   od.b = 1
   await od._.save()
-  od = await cod.findFirst({ a: 99 })
+  od = (await cod.findFirst({ a: 99 }))!
   od.c = 5
   await od._.save()
   await od._.delete()

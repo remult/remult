@@ -29,16 +29,16 @@ import { entity } from './dynamic-classes.js'
 @Entity('products')
 class ProductsEager extends EntityBase {
   @Fields.integer()
-  id: number
+  id!: number
   @Fields.string()
-  name: string
+  name!: string
   @Field(() => Categories)
-  category: Categories
+  category!: Categories
 }
 @Entity('profile')
 class profile extends EntityBase {
   @Fields.string()
-  id: string
+  id!: string
   async rel() {
     return this.remult.repo(following).findFirst(
       { id: '1', profile: this },
@@ -53,7 +53,7 @@ class profile extends EntityBase {
       return false
     },
   })
-  following: boolean
+  following!: boolean
   constructor(private remult: Remult) {
     super()
   }
@@ -61,9 +61,9 @@ class profile extends EntityBase {
 @Entity('following')
 class following extends EntityBase {
   @Fields.string()
-  id: string
+  id!: string
   @Field(() => profile)
-  profile: profile
+  profile!: profile
 }
 
 describe('many to one relation', () => {
@@ -79,7 +79,7 @@ describe('many to one relation', () => {
     remult.dataProvider = mem
     await remult.repo(profile).create({ id: '1' }).save()
     let p = await remult.repo(profile).findId('1')
-    expect(p.following).toBe(false)
+    expect(p!.following).toBe(false)
   })
   it('test that it is loaded to begin with', async () => {
     let mem = new InMemoryDataProvider()
@@ -91,7 +91,7 @@ describe('many to one relation', () => {
       .save()
     await remult.repo(Products).create({ id: 1, name: 'p1', category }).save()
     remult.clearAllCache()
-    let p = await remult.repo(ProductsEager).findId(1)
+    let p = (await remult.repo(ProductsEager).findId(1))!
     expect(p.category.id).toBe(1)
     expect(p.$.category.getId()).toBe(1)
   })
@@ -126,7 +126,7 @@ describe('many to one relation', () => {
       .save()
     await remult.repo(Products).create({ id: 1, name: 'p1', category }).save()
     remult.clearAllCache()
-    let p = await remult.repo(ProductsEager).findId(1, { load: () => [] })
+    let p = (await remult.repo(ProductsEager).findId(1, { load: () => [] }))!
     expect(p.category).toBe(undefined)
     await p.$.category.load()
     expect(p.category.id).toBe(1)
@@ -141,12 +141,12 @@ describe('many to one relation', () => {
       .save()
     await remult.repo(Products).create({ id: 1, name: 'p1', category }).save()
     remult.clearAllCache()
-    let p = await remult.repo(ProductsEager).findFirst(
+    let p = (await remult.repo(ProductsEager).findFirst(
       { id: 1 },
       {
         load: () => [],
       },
-    )
+    ))!
     expect(p.category).toBe(undefined)
     await p.$.category.load()
     expect(p.category.id).toBe(1)
@@ -172,7 +172,7 @@ describe('many to one relation', () => {
     expect(p.category.name).to.eq('cat 1', 'after save')
     expect(mem.rows[remult.repo(Products).metadata.key][0].category).toBe(1)
     expect(p._.toApiJson().category).to.eq(1, 'to api pojo')
-    p = await remult.repo(Products).findFirst()
+    p = (await remult.repo(Products).findFirst())!
     expect(p.id).toBe(10)
     expect(p.category.id).toBe(1)
     await p.$.category.load()
@@ -196,7 +196,7 @@ describe('many to one relation', () => {
     expect(p.$.category.valueChanged()).toBe(false)
     expect(p.$.category.value.id).toBe(2)
     expect(p.$.category.originalValue.id).toBe(2)
-    p.category = null
+    p.category = null!
     await p.save()
     expect(p.$.category.inputValue).toBeNull()
     p.category = cat
@@ -224,7 +224,7 @@ describe('many to one relation', () => {
     await p.save()
     remult = new Remult()
     remult.dataProvider = mem
-    p = await remult.repo(Products).findFirst()
+    p = (await remult.repo(Products).findFirst())!
     p.category = c2
     await p.$.category.load()
     expect(p.category.name).toBe('cat 2')
@@ -247,10 +247,10 @@ describe('many to one relation', () => {
     expect(p.category == null).toBe(true)
     await p.save()
 
-    p = await remult.repo(Products).findFirst()
+    p = (await remult.repo(Products).findFirst())!
     expect(p.category).toBe(null)
 
-    expect(await remult.repo(Products).count({ category: null })).toBe(1)
+    expect(await remult.repo(Products).count({ category: null! })).toBe(1)
   })
   it('test stages', async () => {
     let mem = new InMemoryDataProvider()
@@ -269,7 +269,7 @@ describe('many to one relation', () => {
     await p.save()
     remult = new Remult()
     remult.dataProvider = mem
-    p = await remult.repo(Products).findFirst()
+    p = (await remult.repo(Products).findFirst())!
     expect(p.category).toBeUndefined()
     expect(p.category === undefined).toBe(true)
     expect(p.category === null).toBe(false)
@@ -400,7 +400,7 @@ describe('many to one relation', () => {
     }
 
     await test({ category: c }, 2)
-    await test({ category: null }, 3)
+    await test({ category: null! }, 3)
     await test({ category: c2 }, 1)
   })
   it('test that not too many reads are made', async () => {
@@ -425,7 +425,7 @@ describe('many to one relation', () => {
     let fetches = 0
     remult = new Remult()
     remult.dataProvider = {
-      transaction: undefined,
+      transaction: undefined!,
       getEntityDataProvider: (e) => {
         let r = mem.getEntityDataProvider(e)
         return {
@@ -440,7 +440,7 @@ describe('many to one relation', () => {
         }
       },
     }
-    p = await remult.repo(Products).findFirst()
+    p = (await remult.repo(Products).findFirst())!
     expect(fetches).toBe(1)
     p._.toApiJson()
     expect(fetches).toBe(1)
@@ -494,7 +494,7 @@ describe('many to one relation', () => {
     let fetches = 0
     remult = new Remult()
     remult.dataProvider = {
-      transaction: undefined,
+      transaction: undefined!,
       getEntityDataProvider: (e) => {
         let r = mem.getEntityDataProvider(e)
         return {
@@ -538,7 +538,7 @@ describe('many to one relation', () => {
 
     let d = new Done()
     remult.dataProvider = {
-      transaction: undefined,
+      transaction: undefined!,
       getEntityDataProvider: (e) => {
         let r = mem.getEntityDataProvider(e)
         return {
@@ -555,7 +555,7 @@ describe('many to one relation', () => {
       },
     }
 
-    p = await remult.repo(Products).findFirst()
+    p = (await remult.repo(Products).findFirst())!
     p.name = 'prod 11'
     await p.save()
     d.test()
@@ -584,7 +584,7 @@ describe('many to one relation', () => {
     await remult.repo(Categories).create({ id: 3, name: 'cat3' }).save()
     remult = new Remult()
     remult.dataProvider = {
-      transaction: undefined,
+      transaction: undefined!,
       getEntityDataProvider: (e) => {
         let r = mem.getEntityDataProvider(e)
         return {
@@ -600,7 +600,7 @@ describe('many to one relation', () => {
       },
     }
 
-    p = await remult.repo(Products).findFirst()
+    p = (await remult.repo(Products).findFirst())!
     expect(fetches).toBe(1)
     expect(p.$.category.valueIsNull()).toBe(false)
     expect(fetches).toBe(1)
@@ -692,9 +692,9 @@ describe('many to one relation', () => {
         name: 'cat 2',
       })
       .save()
-    let p = await remult
+    let p = (await remult
       .repo(Products)
-      .findFirst({ id: 10, category: cat }, { createIfNotFound: true })
+      .findFirst({ id: 10, category: cat }, { createIfNotFound: true }))!
     expect(p.isNew()).toBe(true)
     expect(p.id).toBe(10)
     expect((await p.$.category.load()).id).toBe(cat.id)
@@ -779,13 +779,13 @@ describe('many to one relation', () => {
   })
   it('test cache', async () => {
     const remult = new Remult(new InMemoryDataProvider())
-    const cat = await remult
+    const cat = (await remult
       .repo(Categories)
-      .insert({ id: 1, name: 'c1', archive: true })
-    cat['x'] = true
+      .insert({ id: 1, name: 'c1', archive: true }))!
+    ;(cat as any)['x'] = true
     const p = await remult.repo(Products2).insert({ id: 1, name: 'p1', cat })
     await p.$.cat.load()
-    expect(p.cat['x']).toBe(true)
+    expect((p.cat as any)['x']).toBe(true)
     expect((p.cat as Categories).archive).toBe(true)
   })
   it('test cache2', async () => {
@@ -793,7 +793,7 @@ describe('many to one relation', () => {
     const cat = await remult
       .repo(Categories)
       .insert({ id: 1, name: 'c1', archive: true })
-    cat['x'] = true
+    ;(cat as any)['x'] = true
     const p = await remult
       .repo(Products2)
       .insert({ id: 1, name: 'p1', cat: { id: 1, name: 'b' } })
@@ -809,7 +809,7 @@ class Products2 extends EntityBase {
   @Fields.string()
   name: string = ''
   @Field(() => Categories)
-  cat: { id: number; name: string }
+  cat!: { id: number; name: string }
 }
 
 export type test<Type> = {
@@ -848,7 +848,7 @@ describe('Test entity relation and count finds', () => {
       },
     }
     let h1 = await c.repo(h).findId('1')
-    await h1.$.refH.load()
+    await h1!.$.refH.load()
     expect(countFind).toBe(1)
   })
   it('test api', async () => {
@@ -883,7 +883,7 @@ describe('Test entity relation and count finds', () => {
     c = new Remult() //clear the cache;
     let fetches = 0
     c.dataProvider = {
-      transaction: undefined,
+      transaction: undefined!,
       getEntityDataProvider: (e) => {
         let r = mem.getEntityDataProvider(e)
         return {
@@ -917,7 +917,7 @@ describe('Test entity relation and count finds', () => {
 @Entity('testUpdateDate')
 export class testUpdateDate extends EntityBase {
   @Fields.integer()
-  id: number
+  id!: number
   @Fields.date()
   date: Date = new Date(176, 6, 16)
 }
@@ -925,7 +925,7 @@ it("test that it doesn't save if it doesn't need to", async () => {
   let mem = new InMemoryDataProvider()
   let updates = 0
   let repo = new Remult({
-    transaction: undefined,
+    transaction: undefined!,
     getEntityDataProvider: (e) => {
       let r = mem.getEntityDataProvider(e)
       return {
@@ -1004,14 +1004,14 @@ describe('test api loading stuff', () => {
     await c.repo(task).insert({ id: 11, categoryId: 1 })
     c = new Remult() //clear the cache;
     c.dataProvider = mem
-    let fetches = []
+    let fetches: string[] = []
     c.dataProvider = {
-      transaction: undefined,
+      transaction: undefined!,
       getEntityDataProvider: (e) => {
         let r = mem.getEntityDataProvider(e)
         return {
           find: (x) => {
-            fetches.push(x.where.toJson().id)
+            fetches.push(x!.where!.toJson().id)
             return r.find(x)
           },
           count: (...args) => r.count(...args),
@@ -1042,14 +1042,14 @@ describe('test api loading stuff', () => {
 
     c = new Remult() //clear the cache;
     c.dataProvider = mem
-    let fetches = []
+    let fetches: string[] = []
     c.dataProvider = {
-      transaction: undefined,
+      transaction: undefined!,
       getEntityDataProvider: (e) => {
         let r = mem.getEntityDataProvider(e)
         return {
           find: (x) => {
-            fetches.push(x.where.toJson().id)
+            fetches.push(x!.where!.toJson().id)
             return r.find(x)
           },
           count: (...args) => r.count(...args),

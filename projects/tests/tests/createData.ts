@@ -28,7 +28,7 @@ export async function createData(
       let c = rep.create()
       c.id = id
       c.categoryName = name
-      c.description = description
+      c.description = description!
       if (status) c.status = status
       await rep.save(c)
     })

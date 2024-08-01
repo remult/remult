@@ -25,7 +25,7 @@ describe('better-sqlite3', () => {
       return remult
     },
     createEntity: async (entity) => {
-      const repo = remult.repo(entity);
+      const repo = remult.repo(entity)
       await db.ensureSchema([repo.metadata])
       return repo
     },
@@ -44,13 +44,8 @@ describe('better-sqlite3', () => {
       ]
     `)
     const c = db.createCommand()
-    expect(
-      (
-        await c.execute(
-          `select * from x where id=${c.param(1)}`,
-        )
-      ).rows,
-    ).toMatchInlineSnapshot(`
+    expect((await c.execute(`select * from x where id=${c.param(1)}`)).rows)
+      .toMatchInlineSnapshot(`
       [
         {
           "id": 1,
@@ -59,4 +54,3 @@ describe('better-sqlite3', () => {
     `)
   })
 })
-

@@ -41,8 +41,8 @@ describe('remult-3-basics', () => {
       where: { id: 2 },
     })
     expect(products[0].name).toBe('yael')
-    p = await c.repo(Products).findFirst({ id: 3 })
-    p = await c.repo(Products).findFirst({}, { where: { id: 3 } })
+    p = (await c.repo(Products).findFirst({ id: 3 }))!
+    p = (await c.repo(Products).findFirst({}, { where: { id: 3 } }))!
     expect(p.name).toBe('yoni')
   })
   it('test save scenarios', async () => {
@@ -191,12 +191,12 @@ describe('remult-3-basics', () => {
     const r = remult.repo(product)
     let p = await r.insert({ id: 1, category: c1 })
     expect(p.category.id).toBe(1)
-    p = await r.findId(1, { useCache: false })
+    p = (await r.findId(1, { useCache: false }))!
     expect(p.category.id).toBe(1)
     p = await r.update(1, { ...p, category: c2 })
     expect(p.id).toBe(1)
     expect(p.category.id).toBe(2)
-    p = await r.findId(1, { useCache: false })
+    p = (await r.findId(1, { useCache: false }))!
     expect(p.category.id).toBe(2)
     p = await r.update(1, {
       ...p,
@@ -205,7 +205,7 @@ describe('remult-3-basics', () => {
     })
     expect(p.id).toBe(1)
     expect(p.category.id).toBe(1)
-    p = await r.findId(1, { useCache: false })
+    p = (await r.findId(1, { useCache: false }))!
     expect(p.category.id).toBe(1)
     expect(p.category.categoryName).toBe('cat1')
   })
@@ -234,12 +234,12 @@ describe('remult-3-basics', () => {
     const r = remult.repo(product)
     let p = await r.insert({ id: 1, category: c1 })
     expect(p.category.id).toBe(1)
-    p = await r.findId(1, { useCache: false })
+    p = (await r.findId(1, { useCache: false }))!
     expect(p.category.id).toBe(1)
     p = await r.update(1, { ...p, category: c2 })
     expect(p.id).toBe(1)
     expect(p.category.id).toBe(2)
-    p = await r.findId(1, { useCache: false })
+    p = (await r.findId(1, { useCache: false }))!
     expect(p.category.id).toBe(2)
     p = await r.update(1, {
       ...p,
@@ -248,7 +248,7 @@ describe('remult-3-basics', () => {
     })
     expect(p.id).toBe(1)
     expect(p.category.id).toBe(1)
-    p = await r.findId(1, { useCache: false })
+    p = (await r.findId(1, { useCache: false }))!
     expect(p.category.id).toBe(1)
     expect(p.category.categoryName).toBe('cat1')
   })

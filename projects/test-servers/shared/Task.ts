@@ -51,7 +51,7 @@ export class Task {
   static async testQueuedJob(progress?: ProgressListener) {
     for (let i = 0; i < 3; i++) {
       await new Promise((res) => setTimeout(res, 100))
-      progress.progress(i / 3)
+      progress!.progress(i / 3)
     }
   }
 }

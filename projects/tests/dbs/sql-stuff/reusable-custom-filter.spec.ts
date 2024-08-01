@@ -122,7 +122,7 @@ export function myAppCustomFilters<entityType>(
       const result = []
       for (const fieldKey in fieldsInFilter) {
         if (Object.prototype.hasOwnProperty.call(fieldsInFilter, fieldKey)) {
-          const operatorsForField = fieldsInFilter[fieldKey]
+          const operatorsForField: any = fieldsInFilter[fieldKey]
           const field = dbn.$dbNameOf(fieldKey)
           for (const operator in operatorsForField) {
             if (

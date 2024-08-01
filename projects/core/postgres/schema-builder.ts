@@ -128,7 +128,7 @@ export class PostgresSchemaBuilder {
     await this.ensureSchema(entities)
   }
 
-  async ensureSchema(entities: EntityMetadata<any>[]) {
+  async ensureSchema(entities: EntityMetadata[]) {
     for (const entity of entities) {
       let e: EntityDbNamesBase = await dbNamesOf(
         entity,
@@ -165,18 +165,18 @@ export class PostgresSchemaBuilder {
   }
 
   /* @internal*/
-  async getAddColumnScript(
-    entity: EntityMetadata<unknown>,
-    field: FieldMetadata<any, unknown>,
-  ) {
-    let e: EntityDbNamesBase = await dbNamesOf(entity, this.pool.wrapIdentifier)
+  async getAddColumnScript(entity: EntityMetadata, field: FieldMetadata) {
+    let e: EntityDbNamesBase = await dbNamesOf(
+      entity as EntityMetadata<object>,
+      this.pool.wrapIdentifier,
+    )
     return (
       `ALTER table ${this.schemaAndName(e)} ` +
       `ADD column ${postgresColumnSyntax(field, e.$dbNameOf(field))}`
     )
   }
   /* @internal*/
-  async createTableScript(entity: EntityMetadata<any>) {
+  async createTableScript(entity: EntityMetadata) {
     let result = ''
     let e: EntityDbNamesBase = await dbNamesOf(entity, this.pool.wrapIdentifier)
     for (const x of entity.fields) {

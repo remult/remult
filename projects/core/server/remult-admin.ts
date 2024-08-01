@@ -47,10 +47,7 @@ export interface DisplayOptions {
 }
 
 export default function remultAdminHtml(options: AdminOptions) {
-  let optionsFromServer = { ...options }
-  //@ts-ignore
-  delete optionsFromServer.entities
-  delete optionsFromServer.remult
+  let { remult, entities, ...optionsFromServer } = { ...options }
   return getHtml().replace(
     '<!--PLACE_HERE-->',
     `<script >const entities = ${JSON.stringify(buildEntityInfo(options))}

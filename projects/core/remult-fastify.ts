@@ -19,7 +19,7 @@ import { createRemultServer } from './server/index.js'
 export function remultFastify(
   options: RemultServerOptions<FastifyRequest>,
 ): RemultFastifyServer {
-  function fastifyHandler(handler: GenericRequestHandler) {
+  function fastifyHandler(handler: GenericRequestHandler<FastifyRequest>) {
     const response: RouteHandlerMethod = (req, res) => {
       const myRes: GenericResponse & ResponseRequiredForSSE = {
         status(statusCode) {
@@ -61,7 +61,7 @@ export function remultFastify(
   ) => {
     //@ts-ignore
     let fastifyRouter: GenericRouter = {
-      route(path) {
+      route(path: string) {
         let r = {
           delete(handler) {
             instance.delete(path, fastifyHandler(handler))
@@ -79,7 +79,7 @@ export function remultFastify(
             instance.put(path, fastifyHandler(handler))
             return r
           },
-        } as SpecificRoute
+        } as SpecificRoute<FastifyRequest>
         return r
       },
     }
@@ -87,9 +87,10 @@ export function remultFastify(
   }
 
   return Object.assign(pluginFunction, {
-    getRemult: (x) => api.getRemult(x),
-    openApiDoc: (x) => api.openApiDoc(x),
-    withRemult: <T>(req, what) => api.withRemultAsync<T>(req, what),
+    getRemult: (x: FastifyRequest) => api.getRemult(x),
+    openApiDoc: (x: any) => api.openApiDoc(x),
+    withRemult: <T>(req: FastifyRequest, what: () => Promise<T>) =>
+      api.withRemultAsync<T>(req, what),
   })
 }
 

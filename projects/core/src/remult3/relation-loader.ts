@@ -6,7 +6,7 @@ import type { FindOptions, IdFieldRef } from './remult3.js'
 
 export class RelationLoader {
   entityLoaders = new Map<any, EntityLoader>()
-  promises = []
+  promises: Promise<any>[] = []
   load(
     rel: RelationLoaderHelper<any>,
     findOptions: FindOptions<any>,
@@ -118,7 +118,7 @@ class PendingInStatements {
     op.where = { [this.key]: values.map((v) => v.value) }
     op.limit = 1000
     op.page = 1
-    let vals = []
+    let vals: any[] = []
     try {
       while (true) {
         const val = await this.rel.find(op)
@@ -160,8 +160,8 @@ class PendingInStatements {
         val,
         (valHandler = {
           value: val,
-          resolve,
-          reject,
+          resolve: resolve!,
+          reject: reject!,
           result,
         }),
       )

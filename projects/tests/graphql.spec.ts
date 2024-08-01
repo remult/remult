@@ -26,10 +26,10 @@ class CategoryMore {
   @Fields.string({ allowNull: true })
   category_id = ''
   @Relations.toOne(() => Category, { field: 'category_id', allowNull: true })
-  category: Category
+  category!: Category
 }
 
-@FieldType({ displayValue: (_, v) => v?.name })
+@FieldType<Category>({ displayValue: (_, v) => v?.name })
 @Entity('categories', { allowApiCrud: true })
 class Category {
   @Fields.string({
@@ -64,7 +64,7 @@ class Task {
   @Fields.autoIncrement()
   id = 0
 
-  @Fields.string({
+  @Fields.string<Task>({
     caption: 'The Title',
     validate: (task) => {
       if (task.title?.length < 3) throw Error('Too short')
@@ -90,7 +90,7 @@ class Task {
   @Fields.string({ allowNull: true })
   category3_id = ''
   @Relations.toOne(() => Category, { field: 'category3_id', allowNull: true })
-  category3: Category
+  category3!: Category
   @Fields.string({
     serverExpression: () => {
       return ''
@@ -1155,7 +1155,7 @@ describe('graphql', () => {
         removeComments: true,
       }),
     ).toThrowErrorMatchingInlineSnapshot(
-      '"Entity \\"CategoryMore\\" that is used by the relation \\"categorymore\\" in \\"Category\\" was not found in the \'entities\' array."',
+      `[Error: Entity "CategoryMore" that is used by the relation "categorymore" in "Category" was not found in the 'entities' array.]`,
     )
   })
 

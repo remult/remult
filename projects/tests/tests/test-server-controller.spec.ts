@@ -34,7 +34,7 @@ export class myType {
 @Entity('testEntity')
 class testEntity extends IdEntity {
   @Fields.string()
-  name: string
+  name!: string
   @BackendMethod({ allowed: false })
   async forbidden() {}
 }
@@ -44,11 +44,11 @@ class testBasics {
   constructor(private remult: Remult) {}
 
   @Fields.date()
-  theDate: Date
+  theDate!: Date
   @Field(() => myType)
-  myType: myType
+  myType!: myType
   @Field(() => testEntity)
-  myEntity: testEntity
+  myEntity!: testEntity
   @BackendMethod({ allowed: true })
   async testDate() {
     return this.theDate.getFullYear()
@@ -75,7 +75,7 @@ class testBasics {
       }
     },
   })
-  a: string
+  a!: string
   @BackendMethod({ allowed: true })
   async doIt() {
     let result = 'hello ' + this.a
@@ -108,19 +108,19 @@ class testBasics {
   }
   @BackendMethod({ allowed: true, paramTypes: [Remult] })
   static async getValFromServer(remult?: Remult) {
-    return (await remult.repo(testEntity).findFirst()).name
+    return (await remult!.repo(testEntity).findFirst())!.name
   }
   static async staticBackendMethodWithoutDecorator() {
     return isBackend()
   }
   static async staticBackendMethodWithoutDecoratorWithRemult(remult?: Remult) {
-    return (await remult.repo(testEntity).findFirst()).name
+    return (await remult!.repo(testEntity).findFirst())!.name
   }
   async backendMethodWithoutDecorator() {
     return isBackend()
   }
   async backendMethodWithoutDecoratorWithRemult(remult?: Remult) {
-    return (await remult.repo(testEntity).findFirst()).name + this.a
+    return (await remult!.repo(testEntity).findFirst())!.name + this.a
   }
   @BackendMethod({ allowed: true })
   static async sendEntityAsParamter(entity: testEntity) {
@@ -130,12 +130,12 @@ class testBasics {
   @BackendMethod({ allowed: true })
   static async syntaxError() {
     let z = undefined
-    return z.toString()
+    return z!.toString()
   }
   @BackendMethod({ allowed: true })
   async syntaxError() {
     let z = undefined
-    return z.toString()
+    return z!.toString()
   }
 }
 describeBackendMethods(testBasics, {
@@ -225,14 +225,14 @@ describe('test Server Controller basics', () => {
   it('test error', async () => {
     try {
       await testBasics.syntaxError()
-    } catch (err) {
+    } catch (err: any) {
       expect(err.message).toContain('Cannot read prop')
     }
   })
   it('test error server method', async () => {
     try {
       await new testBasics(c).syntaxError()
-    } catch (err) {
+    } catch (err: any) {
       expect(err.message).toContain('Cannot read prop')
     }
   })
@@ -241,7 +241,7 @@ describe('test Server Controller basics', () => {
     expect(await testBasics.sendEntityAsParamter(e)).toBe('test')
   })
   it('send entity to server ', async () => {
-    expect(await testBasics.sendEntityAsParamter(null)).toBe('null')
+    expect(await testBasics.sendEntityAsParamter(null!)).toBe('null')
   })
 
   it('send entity to server prepare args to send ', async () => {
@@ -263,12 +263,12 @@ describe('test Server Controller basics', () => {
   })
   it('new backend method syntax 1', async () => {
     expect(
-      await new testBasics(undefined).backendMethodWithoutDecorator(),
+      await new testBasics(undefined!).backendMethodWithoutDecorator(),
     ).toBe(true)
   })
   it('new backend method syntax 2', async () => {
     await c.repo(testEntity).create({ name: 'test' }).save()
-    const z = new testBasics(undefined)
+    const z = new testBasics(undefined!)
     z.a = 'x'
     expect(await z.backendMethodWithoutDecoratorWithRemult()).toBe('testx')
   })
@@ -276,14 +276,14 @@ describe('test Server Controller basics', () => {
     const c = new Remult({
       url: 'xx',
       httpClient: {
-        delete: () => undefined,
-        get: () => undefined,
+        delete: () => undefined!,
+        get: () => undefined!,
         post: async (url, data) => {
           expect(url).toBe('xx/sf')
           expect(data.args[0]).toEqual('noam')
           return { data: { result: 'hello noam' } }
         },
-        put: () => undefined,
+        put: () => undefined!,
       },
     })
     const r = await c.call(testBasics.sf, undefined, 'noam')
@@ -296,18 +296,18 @@ describe('test Server Controller basics', () => {
         const c = new Remult({
           url: 'xx',
           httpClient: {
-            delete: () => undefined,
-            get: () => undefined,
+            delete: () => undefined!,
+            get: () => undefined!,
             post: async (url, data) => {
               expect(url).toBe('xx/sf')
               expect(data.args[0]).toEqual('noam')
               return { data: { result: 'hello noam' } }
             },
-            put: () => undefined,
+            put: () => undefined!,
           },
         })
 
-        globalThis.remultFactory = () => c
+        ;(globalThis as any).remultFactory = () => c
       }
       const r = await remult.call(testBasics.sf, undefined, 'noam')
       expect(r.result).toBe('hello noam')
@@ -319,13 +319,13 @@ describe('test Server Controller basics', () => {
     const c = new Remult({
       url: 'xx',
       httpClient: {
-        delete: () => undefined,
-        get: () => undefined,
+        delete: () => undefined!,
+        get: () => undefined!,
         post: async (url, data) => {
           expect(url).toBe('xx/1/doIt')
           return { result: { result: 'hello noam' }, fields: {} }
         },
-        put: () => undefined,
+        put: () => undefined!,
       },
     })
     const b = new testBasics(remult)
@@ -338,17 +338,17 @@ describe('test Server Controller basics', () => {
       const c = new Remult({
         url: 'xx',
         httpClient: {
-          delete: () => undefined,
-          get: () => undefined,
+          delete: () => undefined!,
+          get: () => undefined!,
           post: async (url, data) => {
             expect(url).toBe('xx/1/doIt')
             return { result: { result: 'hello noam' }, fields: {} }
           },
-          put: () => undefined,
+          put: () => undefined!,
         },
       })
 
-      globalThis.remultFactory = () => c
+      ;(globalThis as any).remultFactory = () => c
       const b = new testBasics(remult)
       const r = await c.call(b.doIt, b)
 
@@ -420,7 +420,7 @@ describe('test Server Controller basics', () => {
     try {
       let r = await x.doIt()
       happened = true
-    } catch (err) {
+    } catch (err: any) {
       expect(err.modelState.a).toBe('error on client')
       expect(getFields(x).a.error).toBe('error on client')
     }
@@ -433,7 +433,7 @@ describe('test Server Controller basics', () => {
     try {
       let r = await x.doIt()
       happened = true
-    } catch (err) {
+    } catch (err: any) {
       expect(err.modelState.a).toBe('error on server')
       expect(getFields(x).a.error).toBe('error on server')
     }
@@ -528,12 +528,12 @@ describe('controller with extends ', () => {
 @Controller('parent')
 class parent {
   @Fields.string()
-  parentField: string
+  parentField!: string
 }
 @Controller('child')
 class child extends parent {
   @Fields.string()
-  childField: string
+  childField!: string
 
   @BackendMethod({ allowed: true })
   run() {
@@ -546,12 +546,12 @@ describe("test proxy implementation doesn't meet something", () => {
     const c = new RemultProxy().repo(testEntity)
     let missing: string[] = []
     for (const key of Object.getOwnPropertyNames(r)) {
-      if (!c[key]) missing.push(key)
+      if (!c[key as keyof typeof r]) missing.push(key)
     }
     for (const key of Object.getOwnPropertyNames(
       RepositoryImplementation.prototype,
     )) {
-      if (!c[key]) missing.push(key)
+      if (!c[key as keyof typeof c]) missing.push(key)
     }
 
     expect(missing.filter((x) => !x.startsWith('_'))).toMatchInlineSnapshot(`

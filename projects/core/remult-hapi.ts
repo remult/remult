@@ -37,7 +37,7 @@ export function remultHapi(
   const routesPlugin: Plugin<undefined> = {
     name: 'remultPlugin',
     register: async (server: Server) => {
-      function hapiHandler(handler: GenericRequestHandler) {
+      function hapiHandler(handler: GenericRequestHandler<Request>) {
         return (request: Request<ReqRefDefaults>, h: ResponseToolkit) => {
           return new Promise((res, rej) => {
             let status = 200
@@ -88,7 +88,7 @@ export function remultHapi(
         }
       }
 
-      let hapiRouter: GenericRouter = {
+      let hapiRouter: GenericRouter<Request> = {
         route(path) {
           path = path.replace(/:id\b/g, '{id}')
           let r = {
@@ -124,7 +124,7 @@ export function remultHapi(
               })
               return r
             },
-          } as SpecificRoute
+          } as SpecificRoute<Request>
           return r
         },
       }
@@ -133,9 +133,10 @@ export function remultHapi(
   }
 
   return Object.assign(routesPlugin, {
-    getRemult: (x) => api.getRemult(x),
-    openApiDoc: (x) => api.openApiDoc(x),
-    withRemult: <T>(req, what) => api.withRemultAsync<T>(req, what),
+    getRemult: (x: Request) => api.getRemult(x),
+    openApiDoc: (x: any) => api.openApiDoc(x),
+    withRemult: <T>(req: Request, what: () => Promise<T>) =>
+      api.withRemultAsync<T>(req, what),
   })
 }
 

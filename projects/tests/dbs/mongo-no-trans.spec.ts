@@ -18,7 +18,7 @@ describe.skipIf(!mongoConnectionStringWithoutTransaction)(
     let remult: Remult
     beforeAll(async () => {
       client = await new MongoClient(
-        mongoConnectionStringWithoutTransaction,
+        mongoConnectionStringWithoutTransaction!,
       ).connect()
       mongoDb = await client.db('test')
       db = new MongoDataProvider(mongoDb, client, {
@@ -93,8 +93,8 @@ describe.skipIf(!mongoConnectionStringWithoutTransaction)(
     })
     it('test Dates', async () => {
       const c = class {
-        id: number
-        date: Date
+        id?: number
+        date?: Date
       }
       describeClass(c, Entity('test_dates_on_mongo'), {
         id: Fields.integer(),
@@ -108,7 +108,7 @@ describe.skipIf(!mongoConnectionStringWithoutTransaction)(
           await mongoDb
             .collection((await dbNamesOf(r.metadata)).$entityName)
             .findOne()
-        ).date instanceof Date,
+        )?.date instanceof Date,
       ).toBe(true)
       x.date = new Date(1978, 2, 15)
       await r.save(x)
@@ -118,7 +118,7 @@ describe.skipIf(!mongoConnectionStringWithoutTransaction)(
           await mongoDb
             .collection((await dbNamesOf(r.metadata)).$entityName)
             .findOne()
-        ).date instanceof Date,
+        )?.date instanceof Date,
       ).toBe(true)
 
       //let z = await r.save({ ...x, date: new Date(1978, 2, 15) })

@@ -39,7 +39,7 @@ describe('test sql database expressions', () => {
     expect(x.code).toBe(3)
     expect(x.testExpression).to.eq(15, 'after save')
     expect(x._.fields.testExpression.originalValue).to.eq(15, 'after save')
-    x = await remult.repo(testSqlExpression).findFirst()
+    x = (await remult.repo(testSqlExpression).findFirst())!
 
     expect(x.testExpression).toBe(15)
   })
@@ -67,24 +67,24 @@ describe('test sql database expressions', () => {
 @Entity('expressionEntity')
 class expressionEntity extends EntityBase {
   @Fields.integer()
-  id: number
+  id!: number
   static yes: boolean
   @Fields.string({
-    sqlExpression: async () => (expressionEntity.yes ? "'1+1'" : undefined),
+    sqlExpression: async () => (expressionEntity.yes ? "'1+1'" : undefined!),
   })
-  col: string
+  col!: string
 }
 
 @Entity('testSqlExpression')
 class testSqlExpression extends EntityBase {
   @Fields.number()
-  code: number
+  code!: number
   @Fields.number<testSqlExpression>({
     sqlExpression: async (x) => {
       return (await x.fields.code.dbName) + ' * 5'
     },
   })
-  testExpression: number
+  testExpression!: number
 }
 
 @Entity('testServerExpression1', {
@@ -97,7 +97,7 @@ class testSqlExpression extends EntityBase {
 })
 class testServerExpression1 extends EntityBase {
   @Fields.number()
-  code: number
+  code!: number
 }
 export class myDummySQLCommand implements SqlCommand {
   execute(sql: string): Promise<SqlResult> {
@@ -179,13 +179,13 @@ class stringId2 {
 @Entity('testCreate')
 class testCreate extends IdEntity {
   @Fields.dateOnly()
-  theDate: Date
+  theDate!: Date
   @Field(() => intId)
-  i: intId
+  i!: intId
   @Field(() => stringId)
-  s: stringId
+  s!: stringId
   @Field(() => stringId2)
-  s2: stringId2
+  s2!: stringId2
 }
 
 @ValueListFieldType({
@@ -230,6 +230,6 @@ describe('Test Value List Items', () => {
     expect(getValueList(missingCaption2)[0].caption).toBe('Abc')
   })
   it('find by id', () => {
-    expect(ValueListInfo.get(missingCaption).byId('abc').caption).toBe('Abc')
+    expect(ValueListInfo.get(missingCaption).byId('abc')!.caption).toBe('Abc')
   })
 })

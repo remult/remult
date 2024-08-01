@@ -86,9 +86,8 @@ export class Sort {
    */
   static translateOrderByToSort<T>(
     entityDefs: EntityMetadata<T>,
-    orderBy?: EntityOrderBy<T>,
+    orderBy: EntityOrderBy<T>,
   ): Sort {
-    if (!orderBy) return undefined
     let sort = new Sort()
     if (orderBy)
       for (const key in orderBy) {
@@ -115,7 +114,7 @@ export class Sort {
                 if (op.fields) {
                   for (const key in op.fields) {
                     if (Object.prototype.hasOwnProperty.call(op.fields, key)) {
-                      const keyInMyEntity = op.fields[key]!
+                      const keyInMyEntity = (op.fields as any)[key]!
                       addSegment(
                         entityDefs.fields.find(keyInMyEntity.toString()),
                       )
@@ -177,8 +176,8 @@ export class Sort {
     if (!orderBy) orderBy = {} as EntityOrderBy<T>
     else orderBy = { ...orderBy }
     for (const field of entityMetadata.idMetadata.fields) {
-      if (!orderBy[field.key]) {
-        orderBy[field.key] = 'asc'
+      if (!orderBy[field.key as keyof EntityOrderBy<T>]) {
+        orderBy[field.key as keyof EntityOrderBy<T>] = 'asc'
       }
     }
     return orderBy

@@ -23,6 +23,7 @@ import {
 import { relationInfoMemberInOptions } from './relationInfoMember.js'
 import { remultStatic } from '../remult-static.js'
 import { addValidator } from './addValidator.js'
+import { isOfType } from '../isOfType.js'
 
 const validateNumber = createValueValidator((x: number) => {
   return !isNaN(x) && isFinite(x)
@@ -31,7 +32,7 @@ export class Fields {
   /**
    * Stored as a JSON.stringify - to store as json use Fields.json
    */
-  static object<entityType = any, valueType = any>(
+  static object<entityType = unknown, valueType = unknown>(
     ...options: (
       | FieldOptions<entityType, valueType>
       | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void)
@@ -39,7 +40,7 @@ export class Fields {
   ): ClassFieldDecorator<entityType, valueType | undefined> {
     return Field(undefined, ...options)
   }
-  static json<entityType = any, valueType = any>(
+  static json<entityType = unknown, valueType = unknown>(
     ...options: (
       | FieldOptions<entityType, valueType>
       | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void)
@@ -60,7 +61,7 @@ export class Fields {
       ...options,
     )
   }
-  static dateOnly<entityType = any>(
+  static dateOnly<entityType = unknown>(
     ...options: (
       | FieldOptions<entityType, Date>
       | ((options: FieldOptions<entityType, Date>, remult: Remult) => void)
@@ -74,7 +75,7 @@ export class Fields {
       ...options,
     )
   }
-  static date<entityType = any>(
+  static date<entityType = unknown>(
     ...options: (
       | FieldOptions<entityType, Date>
       | ((options: FieldOptions<entityType, Date>, remult: Remult) => void)
@@ -82,7 +83,7 @@ export class Fields {
   ): ClassFieldDecorator<entityType, Date | undefined> {
     return Field(() => Date, ...options)
   }
-  static integer<entityType = any>(
+  static integer<entityType = unknown>(
     ...options: (
       | FieldOptions<entityType, number>
       | ((options: FieldOptions<entityType, number>, remult: Remult) => void)
@@ -94,17 +95,17 @@ export class Fields {
         valueConverter: ValueConverters.Integer,
         validate: validateNumber,
       },
-      ...options,
+      ...(options as any),
     )
   }
-  static autoIncrement<entityType = any>(
+  static autoIncrement<entityType = unknown>(
     ...options: (
       | FieldOptions<entityType, number>
       | ((options: FieldOptions<entityType, number>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, number | undefined> {
     return Field(
-      () => Number,
+      () => Number as any,
       {
         allowApiUpdate: false,
         dbReadOnly: true,
@@ -117,7 +118,7 @@ export class Fields {
     )
   }
 
-  static number<entityType = any>(
+  static number<entityType = unknown>(
     ...options: (
       | FieldOptions<entityType, number>
       | ((options: FieldOptions<entityType, number>, remult: Remult) => void)
@@ -128,10 +129,10 @@ export class Fields {
       {
         validate: validateNumber,
       },
-      ...options,
+      ...(options as any),
     )
   }
-  static createdAt<entityType = any>(
+  static createdAt<entityType = unknown>(
     ...options: (
       | FieldOptions<entityType, Date>
       | ((options: FieldOptions<entityType, Date>, remult: Remult) => void)
@@ -148,7 +149,7 @@ export class Fields {
       ...options,
     )
   }
-  static updatedAt<entityType = any>(
+  static updatedAt<entityType = unknown>(
     ...options: (
       | FieldOptions<entityType, Date>
       | ((options: FieldOptions<entityType, Date>, remult: Remult) => void)
@@ -166,14 +167,14 @@ export class Fields {
     )
   }
 
-  static uuid<entityType = any>(
+  static uuid<entityType = unknown>(
     ...options: (
       | FieldOptions<entityType, string>
       | ((options: FieldOptions<entityType, string>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, string | undefined> {
     return Field(
-      () => String,
+      () => String as any,
       {
         allowApiUpdate: false,
         defaultValue: () => uuid(),
@@ -190,14 +191,14 @@ export class Fields {
    * The CUID is generated using the `@paralleldrive/cuid2` npm package.
    */
 
-  static cuid<entityType = any>(
+  static cuid<entityType = unknown>(
     ...options: (
       | FieldOptions<entityType, string>
       | ((options: FieldOptions<entityType, string>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, string | undefined> {
     return Field(
-      () => String,
+      () => String as any,
       {
         allowApiUpdate: false,
         defaultValue: () => createId(),
@@ -209,7 +210,7 @@ export class Fields {
     )
   }
 
-  // static id<entityType = any>(
+  // static id<entityType = unknown>(
   //   options?: FieldOptions<entityType, string> & { idFactory?: () => string },
   // ): ClassFieldDecorator<entityType, string | undefined> {
   //   let buildId = options?.idFactory ?? createId
@@ -251,7 +252,7 @@ export class Fields {
  * 
  * // This approach allows easy management and updates of the allowed values for the `status` field.
  */
-  static literal<entityType = any, valueType extends string = any>(
+  static literal<entityType = unknown, valueType extends string = string>(
     optionalValues: () => readonly valueType[],
     ...options: (
       | StringFieldOptions<entityType, valueType>
@@ -272,7 +273,7 @@ export class Fields {
     )
   }
 
-  static enum<entityType = any, theEnum = any>(
+  static enum<entityType = unknown, theEnum = object>(
     enumType: () => theEnum,
     ...options: (
       | FieldOptions<entityType, theEnum[keyof theEnum]>
@@ -284,20 +285,20 @@ export class Fields {
   ): ClassFieldDecorator<entityType, theEnum[keyof theEnum] | undefined> {
     let valueConverter: ValueConverter<any>
     return Field(
-      () =>
-        //@ts-ignore
-        enumType()!,
+      //@ts-ignore
+      () => enumType()!,
       {
-        validate: (entity, event) => Validators.enum(enumType())(entity, event),
+        validate: (entity, event) =>
+          Validators.enum(enumType() as any)(entity, event),
         [fieldOptionalValuesFunctionKey]: () => getEnumValues(enumType()!),
       },
       ...options,
       (options) => {
-        options[fieldOptionalValuesFunctionKey] = () =>
+        ;(options as any)[fieldOptionalValuesFunctionKey] = () =>
           getEnumValues(enumType()!)
         if (valueConverter === undefined) {
           let enumObj = enumType()
-          let enumValues = getEnumValues(enumObj)
+          let enumValues = getEnumValues(enumObj!)
           valueConverter = enumValues.find((x) => typeof x === 'string')
             ? ValueConverters.String
             : ValueConverters.Integer
@@ -311,7 +312,7 @@ export class Fields {
       },
     )
   }
-  static string<entityType = any, valueType = string>(
+  static string<entityType = unknown, valueType = string>(
     ...options: (
       | StringFieldOptions<entityType, valueType>
       | ((
@@ -322,13 +323,13 @@ export class Fields {
   ): ClassFieldDecorator<entityType, valueType | undefined> {
     return Field<entityType, valueType>(() => String as any, ...options)
   }
-  static boolean<entityType = any>(
+  static boolean<entityType = unknown>(
     ...options: (
       | FieldOptions<entityType, boolean>
       | ((options: FieldOptions<entityType, boolean>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, boolean | undefined> {
-    return Field(() => Boolean, ...options)
+    return Field(() => Boolean as any, ...options)
   }
 }
 export class Relations {
@@ -519,7 +520,7 @@ export class Relations {
  * @Fields.string((options,remult) => options.includeInApi = true)
  * title='';
  */
-export function Field<entityType = any, valueType = any>(
+export function Field<entityType = unknown, valueType = unknown>(
   valueType:
     | (() => valueType extends number
         ? Number
@@ -537,30 +538,39 @@ export function Field<entityType = any, valueType = any>(
   // import ANT!!!! if you call this in another decorator, make sure to set It's return type correctly with the | undefined
 
   return (
-    target,
+    target: any,
     context:
       | ClassFieldDecoratorContextStub<entityType, valueType | undefined>
       | string,
-    c?,
+    c?: any,
   ) => {
     const key = typeof context === 'string' ? context : context.name.toString()
     let factory = (remult: Remult) => {
       let r = buildOptions(options, remult)
       if (r.required) {
-        r.validate = addValidator(r.validate, Validators.required, true)
-      }
-
-      if ((r as StringFieldOptions).maxLength) {
-        r.validate = addValidator(
+        r.validate = addValidator<entityType, valueType>(
           r.validate,
-          Validators.maxLength((r as StringFieldOptions).maxLength!),
+          Validators.required,
+          true,
         )
       }
-      if ((r as StringFieldOptions).minLength) {
-        r.validate = addValidator(
-          r.validate,
-          Validators.minLength((r as StringFieldOptions).minLength!),
-        )
+      if (isOfType<StringFieldOptions<entityType>>(r, 'maxLength')) {
+        let z = r as StringFieldOptions<entityType>
+        if (z.maxLength) {
+          z.validate = addValidator<entityType, string>(
+            z.validate,
+            Validators.maxLength(z.maxLength!),
+          )
+        }
+      }
+      if (isOfType<StringFieldOptions<entityType>>(r, 'minLength')) {
+        let z = r as StringFieldOptions<entityType>
+        if (z.minLength) {
+          z.validate = addValidator<entityType, string>(
+            z.validate,
+            Validators.minLength(z.minLength!),
+          )
+        }
       }
       if (!r.valueType && valueType) {
         r.valueType = valueType()
@@ -593,7 +603,7 @@ export function Field<entityType = any, valueType = any>(
     if (!set)
       names.push({
         key,
-        settings: factory,
+        settings: factory as any,
       })
     else {
       let prev = set.settings
@@ -606,7 +616,7 @@ export function Field<entityType = any, valueType = any>(
   }
 }
 
-export interface StringFieldOptions<entityType = any, valueType = string>
+export interface StringFieldOptions<entityType = unknown, valueType = string>
   extends FieldOptions<entityType, valueType> {
   maxLength?: number
   minLength?: number

@@ -5,15 +5,15 @@ import { Status } from './testModel/models'
 @Entity('Products')
 export class Products {
   @Fields.integer()
-  id: number
+  id!: number
   @Fields.string()
-  name: string
+  name!: string
   @Fields.number()
-  price: number
+  price!: number
   @Fields.boolean()
-  archived: boolean
+  archived!: boolean
   @Fields.date()
-  availableFrom: Date
+  availableFrom!: Date
 }
 
 export interface CategoriesForTesting extends EntityBase {
@@ -33,21 +33,21 @@ export class Categories extends EntityBase {
   })
   id: number = 0
   @Fields.string({ allowNull: true })
-  categoryName: string
+  categoryName!: string
   @Fields.string()
-  description: string
+  description!: string
   @Fields.number<Categories>({
     serverExpression: (c) =>
-      c.categoryName ? c.categoryName.length : undefined,
+      c.categoryName ? c.categoryName.length : undefined!,
   })
-  categoryNameLength: number
+  categoryNameLength!: number
   @Fields.number<Categories>({
     serverExpression: (c) =>
-      Promise.resolve(c.categoryName ? c.categoryName.length : undefined),
+      Promise.resolve(c.categoryName ? c.categoryName.length : undefined!),
   })
-  categoryNameLengthAsync: number
+  categoryNameLengthAsync!: number
   @Field(() => Status)
-  status: Status
+  status!: Status
 }
 
 //p2 - remult subscription server is undefined on init ap- causing a crash on insert - trempim

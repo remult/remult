@@ -34,14 +34,14 @@ class Task {
 })
 class TasksToCategories {
   @Field(() => Task, { lazy: true })
-  task: Task
+  task!: Task
   @Field(() => Category, { lazy: true })
-  category: Category
+  category!: Category
 }
 @Entity('extraTask')
 class ExtraTaskInfo {
   @Field(() => Task, { lazy: true })
-  id: Task
+  id!: Task
   @Fields.string()
   whatever = ''
 }

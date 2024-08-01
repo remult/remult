@@ -22,7 +22,7 @@ export function TestDataProvider<T extends DataProvider = InMemoryDataProvider>(
           new Proxy(dataProvider.getEntityDataProvider(e), {
             get(target, p: keyof EntityDataProvider) {
               if (p === 'find')
-                return (x) => {
+                return (x: any) => {
                   finds.push({
                     entity: e.key,
                     where: x?.where?.toJson(),
@@ -30,7 +30,7 @@ export function TestDataProvider<T extends DataProvider = InMemoryDataProvider>(
                   return target[p](x)
                 }
               else if (p === 'update') {
-                return (id, data) => {
+                return (id: any, data: any) => {
                   updates.push({ entity: e.key, id, data })
                   return target[p](id, data)
                 }

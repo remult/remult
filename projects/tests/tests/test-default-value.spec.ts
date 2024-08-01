@@ -30,9 +30,9 @@ describe('test default value', () => {
 @Entity('testDefaultValue')
 class testDefaultValue extends EntityBase {
   static testVal = 0
-  code: number
+  code!: number
   @Fields.integer({
     defaultValue: () => testDefaultValue.testVal++,
   })
-  test: number
+  test!: number
 }

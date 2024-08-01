@@ -205,7 +205,7 @@ export function commonDbTests(
       description: 'desc',
     })
     await c._.save()
-    let l = await getRemult().repo(newCategories).findId(5)
+    let l = (await getRemult().repo(newCategories).findId(5))!
     c.categoryName = 'newname'
     l.description = 'new desc'
     await c.save()
@@ -239,14 +239,14 @@ export function commonDbTests(
     let repo = await createEntity(testDateWithNull)
     let r = repo.create({ id: 0 })
     await r.save()
-    r = await repo.findFirst()
+    r = (await repo.findFirst())!
     expect(r.d).toBeNull()
     expect(await repo.count({ d: null })).toBe(1)
     r.d = new Date(1976, 5, 16)
     await r.save()
     expect(r.d.getFullYear()).toBe(1976)
-    r = await repo.findFirst()
-    expect(r.d.getFullYear()).toBe(1976)
+    r = (await repo.findFirst())!
+    expect(r.d!.getFullYear()).toBe(1976)
     r.d = null
     await r.save()
     expect(r.d).toBeNull()
@@ -255,14 +255,14 @@ export function commonDbTests(
     let repo = await createEntity(testDateWithNull)
     let r = repo.create({ id: 0 })
     await r.save()
-    r = await repo.findFirst()
+    r = (await repo.findFirst())!
     expect(r.fullDate).toBeNull()
     expect(await repo.count({ fullDate: null })).toBe(1)
     r.fullDate = new Date(1976, 5, 16)
     await r.save()
     expect(r.fullDate.getFullYear()).toBe(1976)
-    r = await repo.findFirst()
-    expect(r.fullDate.getFullYear()).toBe(1976)
+    r = (await repo.findFirst())!
+    expect(r.fullDate!.getFullYear()).toBe(1976)
     r.fullDate = null
     await r.save()
     expect(r.fullDate).toBeNull()
@@ -273,7 +273,7 @@ export function commonDbTests(
       .create({ id: 1, d: new Date(1976, 6, 16) })
       .save()
 
-    expect(r.$.d.originalValue.getFullYear()).toBe(1976)
+    expect(r.$.d.originalValue!.getFullYear()).toBe(1976)
   })
 
   @Entity('testDateWithNull', { allowApiCrud: true })
@@ -281,16 +281,16 @@ export function commonDbTests(
     @Fields.integer()
     id: number = 0
     @Fields.dateOnly({ allowNull: true })
-    d: Date
+    d!: Date | null
     @Fields.date({ allowNull: true })
-    fullDate: Date = null
+    fullDate: Date | null = null
   }
 
   it('test string with null works', async () => {
     let repo = await createEntity(testStringWithNull)
     let r = repo.create({ id: 0 })
     await r.save()
-    r = await repo.findFirst()
+    r = (await repo.findFirst())!
     expect(r.d).toBeNull()
   })
 
@@ -349,7 +349,7 @@ export function commonDbTests(
     let c1 = await (await createEntity(c)).create({ id: 1, name: 'c1' }).save()
 
     await (await createEntity(p)).create({ id: 1, name: 'p1', c: c1 }).save()
-    expect((await getRemult().repo(p).findFirst({ c: c1 })).id).toBe(1)
+    expect((await getRemult().repo(p).findFirst({ c: c1 }))!.id).toBe(1)
   })
 
   it("test filter doesn't collapse", async () => {
@@ -389,10 +389,10 @@ export function commonDbTests(
     }
     expect(await c.count(entityForrawFilter1.oneAndThree())).toBe(2)
     expect(
-      (await c.findFirst(entityForrawFilter1.testNumericValue(2))).id,
+      (await c.findFirst(entityForrawFilter1.testNumericValue(2)))!.id,
     ).toBe(2)
     expect(
-      (await c.findFirst(entityForrawFilter1.testObjectValue({ val: 2 }))).id,
+      (await c.findFirst(entityForrawFilter1.testObjectValue({ val: 2 })))!.id,
     ).toBe(2)
   })
   it('put with validations on column fails', async () => {
@@ -432,13 +432,13 @@ export function commonDbTests(
   ): Promise<Repository<T>> {
     //@ts-ignore
     if (!entity) entity = Categories
-    let rep = (await createEntity(entity)) as Repository<T>
+    let rep = (await createEntity(entity!)) as Repository<T>
     if (doInsert)
       await doInsert(async (id, name, description, status) => {
         let c = rep.create()
         c.id = id
         c.categoryName = name
-        c.description = description
+        c.description = description!
         if (status) c.status = status
         await rep.save(c)
       })
@@ -519,7 +519,7 @@ export function commonDbTests(
   })
   it('Test unique Validation,', async () => {
     let type = class extends newCategories {
-      a: string
+      a!: string
     }
     Entity('categories')(type)
     Fields.string<typeof type.prototype>({
@@ -550,7 +550,7 @@ export function commonDbTests(
 
   it('Test unique Validation 2', async () => {
     let type = class extends newCategories {
-      a: string
+      a!: string
     }
     Entity('sdfgds')(type)
     Fields.string<typeof type.prototype>({
@@ -577,9 +577,9 @@ export function commonDbTests(
   @Entity('testNumbers', { allowApiCrud: true })
   class testNumbers extends EntityBase {
     @Fields.integer()
-    id: number
+    id!: number
     @Fields.number()
-    a: number
+    a!: number
   }
 
   it('test that integer and int work', async () => {
@@ -669,7 +669,7 @@ export function commonDbTests(
   it('put with validation works', async () => {
     let count = 0
     let type = class extends newCategories {}
-    Entity<typeof type.prototype>(undefined, {
+    Entity<typeof type.prototype>(undefined!, {
       allowApiCrud: true,
       saving: () => {
         count++
@@ -697,7 +697,7 @@ export function commonDbTests(
   })
   it('saves correctly to db', async () => {
     let type = class extends EntityBase {
-      id: number
+      id!: number
       ok: Boolean = false
     }
     Entity('asdf', { allowApiCrud: true })(type)
@@ -716,9 +716,9 @@ export function commonDbTests(
   @Entity('autoi', { allowApiCrud: true })
   class autoIncrement extends EntityBase {
     @Fields.autoIncrement()
-    id: number
+    id!: number
     @Fields.integer()
-    stam: number
+    stam!: number
   }
 
   it("auto increment can't be affected by insert or update", async () => {
@@ -817,7 +817,7 @@ export function commonDbTests(
     const s = await createEntity(stam)
     await s.insert({ title: '1234567890'.repeat(100) })
     const r = await s.findFirst()
-    expect(r.title).toBe('1234567890'.repeat(100))
+    expect(r!.title).toBe('1234567890'.repeat(100))
   })
 
   @Entity('testfilter', { allowApiCrud: true })
@@ -863,17 +863,17 @@ export function commonDbTests(
     @Fields.integer()
     id: number = 0
     @Fields.string({ allowNull: true })
-    d: string
+    d!: string
   }
 
   @Entity('p', { allowApiCrud: true })
   class p extends EntityBase {
     @Fields.integer()
-    id: number
+    id!: number
     @Fields.string()
-    name: string
+    name!: string
     @Field(() => c)
-    c: c
+    c!: c
     constructor(private remult: Remult) {
       super()
     }
@@ -886,7 +886,7 @@ export function commonDbTests(
       priority: PriorityWithString.Critical,
     })
     const item = await r.findFirst()
-    expect(item.priority).toBe(PriorityWithString.Critical)
+    expect(item!.priority).toBe(PriorityWithString.Critical)
     expect(await r.count({ priority: PriorityWithString.Critical })).toBe(1)
     expect(await r.count({ priority: PriorityWithString.Low })).toBe(0)
   })
@@ -992,7 +992,7 @@ export function commonDbTests(
     const r = await createEntity(e)
     await r.insert({ a: 1, d: new Date(1976, 5, 16) })
     let item = await r.findFirst()
-    expect(item.d.getFullYear()).toBe(1976)
+    expect(item!.d.getFullYear()).toBe(1976)
   })
   it.skipIf(options?.excludeLiveQuery)('test live query storage', async () => {
     await createEntity(LiveQueryStorageEntity)
@@ -1018,7 +1018,7 @@ export function commonDbTests(
     const r = await createEntity(e)
     await r.insert({ a: 1, firstName: 'noam' })
     let item = await r.findFirst({ firstName: { $contains: 'oA' } })
-    expect(item.firstName).toBe('noam')
+    expect(item!.firstName).toBe('noam')
   })
   it('test not-contains with names with casing', async () => {
     const e = class {
@@ -1116,7 +1116,7 @@ export function commonDbTests(
   it('test json structure using object', async () => {
     const e = class {
       a = 0
-      person: {
+      person!: {
         firstName: string
         lastName: string
       }
@@ -1128,7 +1128,7 @@ export function commonDbTests(
     const r = await createEntity(e)
     await r.insert({ a: 1, person: { firstName: 'noam', lastName: 'honig' } })
     let item = await r.findFirst()
-    expect(item.person).toEqual({ firstName: 'noam', lastName: 'honig' })
+    expect(item!.person).toEqual({ firstName: 'noam', lastName: 'honig' })
   })
   @Entity('testObject', { allowApiCrud: true })
   class testObject {
@@ -1144,7 +1144,7 @@ export function commonDbTests(
       person: { firstName: 'noam', lastName: 'honig' },
     })
     let item = await r.findFirst()
-    expect(item.person).toEqual({ firstName: 'noam', lastName: 'honig' })
+    expect(item!.person).toEqual({ firstName: 'noam', lastName: 'honig' })
   })
   @Entity('testObjectJson', { allowApiCrud: true })
   class testObjectJson {
@@ -1160,7 +1160,7 @@ export function commonDbTests(
       person: { firstName: 'noam', lastName: 'honig' },
     })
     let item = await r.findFirst()
-    expect(item.person).toEqual({ firstName: 'noam', lastName: 'honig' })
+    expect(item!.person).toEqual({ firstName: 'noam', lastName: 'honig' })
     await r.update(1, { person: { firstName: 'maayan', lastName: 'honig' } })
     expect(await r.findFirst()).toMatchInlineSnapshot(`
       testObjectJson {
@@ -1175,7 +1175,7 @@ export function commonDbTests(
   it('test json structure', async () => {
     const e = class {
       a = 0
-      person: {
+      person!: {
         firstName: string
         lastName: string
       }
@@ -1187,7 +1187,7 @@ export function commonDbTests(
     const r = await createEntity(e)
     await r.insert({ a: 1, person: { firstName: 'noam', lastName: 'honig' } })
     let item = await r.findFirst()
-    expect(item.person).toEqual({ firstName: 'noam', lastName: 'honig' })
+    expect(item!.person).toEqual({ firstName: 'noam', lastName: 'honig' })
   })
   it('test json structure 2', async () => {
     const e = class {
@@ -1201,7 +1201,7 @@ export function commonDbTests(
     const r = await createEntity(e)
     await r.insert({ a: 1, items: ['a', 'b'] })
     let item = await r.findFirst()
-    expect(item.items).toEqual(['a', 'b'])
+    expect(item!.items).toEqual(['a', 'b'])
     //expect(await r.count({ items: { $contains: "b" } })).toBe(1)
   })
 
@@ -1217,7 +1217,7 @@ export function commonDbTests(
     const r = await createEntity(e)
     await r.insert({ a: 1, items: ['a', 'b'] })
     let item = await r.findFirst()
-    expect(item.items).toEqual(['a', 'b'])
+    expect(item!.items).toEqual(['a', 'b'])
     expect(await r.count({ items: { $contains: 'b' } })).toBe(1)
   })
   it('test relation to number id', async () => {
@@ -1397,18 +1397,18 @@ export function commonDbTests(
     await taskRepo.insert({ id: 1, cat, title: 'noam' })
 
     {
-      const aTask = await taskRepo.findFirst({}, { useCache: false })
+      const aTask = (await taskRepo.findFirst({}, { useCache: false }))!
       expect(aTask.title).toBe('noam')
-      expect(aTask.cat.categoryName).toBe('cat')
+      expect(aTask.cat!.categoryName).toBe('cat')
       expect(aTask.completed).toBe(false)
     }
 
     await taskRepo.update(1, { completed: true })
     {
-      const aTask = await taskRepo.findFirst({}, { useCache: false })
+      const aTask = (await taskRepo.findFirst({}, { useCache: false }))!
       expect(aTask.id).toBe(1)
       expect(aTask.title).toBe('noam')
-      expect(aTask.cat.categoryName).toBe('cat')
+      expect(aTask.cat!.categoryName).toBe('cat')
       expect(aTask.completed).toBe(true)
     }
   })
@@ -1433,7 +1433,7 @@ export function commonDbTests(
     await taskRepo.update(1, { completed: true })
     {
       const aTask = await taskRepo.findId(1, { useCache: false })
-      expect(aTask.completed).toBe(true)
+      expect(aTask!.completed).toBe(true)
     }
   })
   it('test date', async () => {
@@ -1461,7 +1461,7 @@ export function commonDbTests(
       priority: Priority.Critical,
     })
     const item = await r.findFirst()
-    expect(item.priority).toBe(Priority.Critical)
+    expect(item!.priority).toBe(Priority.Critical)
     expect(await r.count({ priority: Priority.Critical })).toBe(1)
     expect(await r.count({ priority: Priority.Low })).toBe(0)
   })

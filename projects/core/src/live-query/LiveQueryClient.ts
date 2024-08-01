@@ -19,7 +19,7 @@ import {
 } from './SubscriptionChannel.js'
 /* @internal*/
 export class LiveQueryClient {
-  wrapMessageHandling(handleMessage) {
+  wrapMessageHandling(handleMessage: VoidFunction) {
     var x = this.apiProvider().wrapMessageHandling
     if (x) x(handleMessage)
     else handleMessage()
@@ -216,7 +216,7 @@ export class LiveQueryClient {
           )
           for (const id of invalidIds) {
             for (const q of this.queries.values()) {
-              if (q.queryChannel === id) q.subscribeCode()
+              if (q.queryChannel === id) q.subscribeCode!()
             }
           }
         }
@@ -226,7 +226,7 @@ export class LiveQueryClient {
         (this.client = this.apiProvider().subscriptionClient!.openConnection(
           () => {
             for (const q of this.queries.values()) {
-              q.subscribeCode()
+              q.subscribeCode!()
             }
           },
         )),
@@ -238,7 +238,6 @@ export class LiveQueryClient {
 }
 
 class MessageChannel<T> {
-  id: string
   unsubscribe: VoidFunction = () => {}
   async handle(message: T) {
     for (const l of this.listeners) {

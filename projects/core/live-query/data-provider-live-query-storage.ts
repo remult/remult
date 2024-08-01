@@ -32,7 +32,7 @@ export class DataProviderLiveQueryStorage implements LiveQueryStorage, Storage {
   async add({ id, entityKey, data }: StoredQuery) {
     await this.repo.then(async (repo) => {
       const q = await repo.findId(id, { createIfNotFound: true })
-      await q.assign({ entityKey, data }).save()
+      await q!.assign({ entityKey, data }).save()
     })
   }
   async remove(queryId: string) {

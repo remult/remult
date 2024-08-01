@@ -12,7 +12,11 @@ import express from 'express'
 
 export function testAsExpressMW(
   port: number,
-  handler: (req, res, next) => void,
+  handler: (
+    req: express.Request,
+    res: express.Response,
+    next: VoidFunction,
+  ) => void,
   additionalTests?: (
     withRemultForTest: (what: () => Promise<void>) => () => Promise<void>,
   ) => void,
@@ -54,7 +58,8 @@ export function allServerTests(
         remult.dataProvider = new RestDataProvider(() => remult.apiClient)
         remult.apiClient.httpClient = axios
         remult.apiClient.url = `http://127.0.0.1:${port}/api`
-        SseSubscriptionClient.createEventSource = (url) => new EventSource(url)
+        SseSubscriptionClient.createEventSource = (url) =>
+          new EventSource(url) as any
         actionInfo.runningOnServer = false
         return await what()
       })
@@ -227,7 +232,7 @@ export function allServerTests(
           "title": "empty",
         }
       `)
-      let item = await remult.repo(Task).findId('')
+      let item = (await remult.repo(Task).findId(''))!
       expect(item.title).toBe('empty')
       item.title += 1
       item = await remult.repo(Task).save(item)
@@ -328,7 +333,7 @@ export function allServerTests(
     'test http 404',
     withRemultForTest(async () => {
       const repo = create3Tasks()
-      const task = await (await repo).findFirst()
+      const task = (await (await repo).findFirst())!
       let result = await axios.get<{ id: string }>(
         remult.apiClient.url + '/tasks' + '/' + task.id,
       )
@@ -368,7 +373,7 @@ export function allServerTests(
     withRemultForTest(async () => {
       const repo = await create3Tasks()
       let tasks: Task[] = []
-      let unsubscribe: VoidFunction
+      let unsubscribe: VoidFunction = () => {}
       try {
         await new Promise((res, reject) => {
           unsubscribe = repo.liveQuery({}).subscribe({

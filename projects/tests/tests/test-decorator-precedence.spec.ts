@@ -6,13 +6,13 @@ import { Remult } from '../../core/src/context'
 class myEntity extends EntityBase {
   @Fields.string()
   @Fields.string({ caption: '123' })
-  a: string
+  a!: string
 
   @Fields.string({ caption: '123' })
   @Fields.string()
-  b: string
+  b!: string
   @Fields.string((o, c) => (o.caption = '456'))
-  c: string
+  c!: string
 }
 
 describe('test decorator precedence', () => {
@@ -34,10 +34,10 @@ describe('test decorator precedence', () => {
 @Entity('profile')
 class profile extends EntityBase {
   @Fields.string()
-  username: string
+  username!: string
 }
 @Entity('user')
 class user extends profile {
   @Fields.string()
-  email: string
+  email!: string
 }

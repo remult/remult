@@ -6,7 +6,7 @@ import { MockRestDataProvider } from './testHelper'
 describe('test saving happens only no db', () => {
   it('saving runs when close to db', async () => {
     const remult = new Remult(new InMemoryDataProvider())
-    let events = []
+    let events: string[] = []
     const Task = entity(
       't',
       {
@@ -42,7 +42,7 @@ describe('test saving happens only no db', () => {
     serverRemult.dataProvider = new InMemoryDataProvider()
     const db = new MockRestDataProvider(serverRemult)
     const remult = new Remult(db)
-    let events = []
+    let events: string[] = []
     const Task = entity(
       't',
       {

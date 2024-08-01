@@ -26,7 +26,7 @@ class Category {
   @Fields.string()
   name = ''
   @Relations.toOne(() => Company)
-  company: Company
+  company!: Company
 }
 
 @Entity('tasks')
@@ -121,7 +121,7 @@ describe('test repository relations', () => {
         include: {},
       },
     )
-    expect(t.category).toBeUndefined()
-    expect(getEntityRef(t).fields.category.getId()).toBe(1)
+    expect(t!.category).toBeUndefined()
+    expect(getEntityRef(t!).fields.category.getId()).toBe(1)
   })
 })

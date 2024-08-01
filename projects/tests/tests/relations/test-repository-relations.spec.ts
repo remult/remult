@@ -28,7 +28,7 @@ class Category {
       },
     },
   })
-  completedTask: Task[]
+  completedTask!: Task[]
 }
 
 @Entity('tasks')

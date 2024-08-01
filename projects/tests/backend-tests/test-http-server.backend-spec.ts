@@ -143,7 +143,7 @@ test('test injected remult', async () => {
 })
 test('test http 404', async () => {
   const repo = create3Tasks()
-  const task = await (await repo).findFirst()
+  const task = (await (await repo).findFirst())!
   let result = await axios.get<{ id: string }>(path + '/' + task.id)
   expect(result.data.id).toBe(task.id)
 
@@ -199,7 +199,7 @@ it.skip('test fresh', async () => {
     const r: FreshResponseTest = await api.handle(
       {
         url: '/api/Categories',
-        json() {
+        async json() {
           return undefined
         },
         method: 'get',

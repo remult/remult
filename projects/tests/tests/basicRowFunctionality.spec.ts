@@ -69,14 +69,14 @@ import { remultStatic, resetFactory } from '../../core/src/remult-static'
   },
 })
 class Phone {
-  constructor(private thePhone) {}
+  constructor(private thePhone: string) {}
 }
 @Entity('')
 class tableWithPhone extends EntityBase {
   @Fields.integer()
-  id: number
+  id!: number
   @Field(() => Phone)
-  phone: Phone
+  phone!: Phone
 }
 
 @Entity('taskTypeRecursive')
@@ -123,9 +123,9 @@ describe('Test basic row functionality', () => {
     expect(b.info).toBe(3)
   })
   it('Original values update correctly', async () => {
-    let c = await (
+    let c = (await (
       await createData(async (insert) => await insert(1, 'noam'))
-    )[0].findFirst()
+    )[0].findFirst())!
     expect(c.categoryName).toBe('noam')
     expect(c._.fields.categoryName.originalValue).toBe('noam')
     c.categoryName = 'yael'
@@ -137,21 +137,21 @@ describe('Test basic row functionality', () => {
   })
   it('Find or Create', async () => {
     let [repo] = await await createData()
-    let row = await repo.findFirst({ id: 1 }, { createIfNotFound: true })
+    let row = (await repo.findFirst({ id: 1 }, { createIfNotFound: true }))!
     expect(row._.isNew()).toBe(true)
     expect(row.id).toBe(1)
     await row._.save()
-    let row2 = await repo.findFirst({ id: 1 }, { createIfNotFound: true })
+    let row2 = (await repo.findFirst({ id: 1 }, { createIfNotFound: true }))!
     expect(row2._.isNew()).toBe(false)
     expect(row2.id).toBe(1)
   })
   it('Find or Create id', async () => {
     let [repo] = await await createData()
-    let row = await repo.findId(1, { createIfNotFound: true })
+    let row = (await repo.findId(1, { createIfNotFound: true }))!
     expect(row._.isNew()).toBe(true)
     expect(row.id).toBe(1)
     await row._.save()
-    let row2 = await repo.findId(1, { createIfNotFound: true })
+    let row2 = (await repo.findId(1, { createIfNotFound: true }))!
     expect(row2._.isNew()).toBe(false)
     expect(row2.id).toBe(1)
   })
@@ -184,47 +184,7 @@ describe('Test basic row functionality', () => {
     expect(y.id).toBe(1)
     expect(y.categoryName).toBe('noam')
   })
-  // it("json name is import ant", async () => {
-  //   let ctx = new Remult().for(newCategories);
-  //   let x = ctx.create();
-  //   x.id = 1;
-  //   x.categoryName.defs.key = 'xx';
-  //   x.categoryName = 'noam';
-  //   let y = x._.toApiPojo();;
-  //   expect(y.id).toBe(1);
-  //   expect(y.xx).toBe('noam');
-  // });
-  // it("json name is import ant 1", async () => {
-  //   let ctx = new Remult().for_old(myTestEntity);
-  //   let x = ctx.create();
-  //   x.id.value = 1;
-  //   expect(x.name1.defs.key).toBe('name');
-  //   x.name1.value = 'noam';
-  //   let y = ctx.toApiPojo(x);
-  //   expect(y.id).toBe(1);
-  //   expect(y.name).toBe('noam', JSON.stringify(y));
-  //   y.name = 'yael';
-  //   new Remult().for_old(myTestEntity)._updateEntityBasedOnApi(x, y);
-
-  //   expect(x.name1.value).toBe('yael');
-
-  // });
-  // it("json name is import ant", () => {
-  //   let x = new myTestEntity();
-  //   x.id.value = 1;
-  //   x.name1.value = 'a';
-  //   var y = new myTestEntity();
-  //   expect(x.columns.find(y.name1).value).toBe('a');
-
-  // });
 })
-@Entity('myTestEntity')
-class myTestEntity extends EntityBase {
-  @Fields.integer()
-  id: number
-  @Fields.string({ key: 'name' })
-  name1: string
-}
 
 describe('data api', () => {
   beforeEach(() => {
@@ -311,14 +271,14 @@ describe('data api', () => {
     await c._.save()
     c.name = '1'
 
-    expect((await c._.validate()).modelState!.name).toBe('invalid on column')
+    expect((await c._.validate())!.modelState!.name).toBe('invalid on column')
     c.name = '123'
     expect(await c._.validate()).toBeUndefined()
   })
   it('validation works on non active record', async () => {
     let remult = new Remult(new InMemoryDataProvider())
     var repo = remult.repo(entityWithValidationsOnColumn)
-    expect((await repo.validate({ name: '1' })).modelState!.name).toBe(
+    expect((await repo.validate({ name: '1' }))!.modelState!.name).toBe(
       'invalid on column',
     )
     expect(await repo.validate({ name: '123' })).toBeUndefined()
@@ -328,14 +288,14 @@ describe('data api', () => {
     try {
       remultStatic.remultFactory = () => new Remult(new InMemoryDataProvider())
       var repo = remult.repo(entityWithValidationsOnColumn)
-      expect((await repo.validate({ name: '1' })).modelState!.name).toBe(
+      expect((await repo.validate({ name: '1' }))!.modelState!.name).toBe(
         'invalid on column',
       )
       expect(
-        (await repo.validate({ name: '1' }, 'name')).modelState!.name,
+        (await repo.validate({ name: '1' }, 'name'))!.modelState!.name,
       ).toBe('invalid on column')
       expect(
-        (await repo.validate({ name: '1' }, 'myId', 'name')).modelState!.name,
+        (await repo.validate({ name: '1' }, 'myId', 'name'))!.modelState!.name,
       ).toBe('invalid on column')
       expect(await repo.validate({ name: '123' })).toBeUndefined()
       expect(await repo.validate({ name: '1' }, 'myId')).toBeUndefined()
@@ -414,7 +374,7 @@ describe('data api', () => {
         }
         return r
       },
-      transaction: undefined,
+      transaction: undefined!,
     }
 
     var api = new DataApi(ctx.repo(newCategories), ctx)
@@ -492,7 +452,7 @@ describe('data api', () => {
       expect(data[0].id).toBe(1)
       d.ok()
     }
-    await api.getArray(t, undefined)
+    await api.getArray(t, undefined!)
     d.test()
   })
   it('getArray works with filter', async () => {
@@ -650,7 +610,7 @@ describe('data api', () => {
     var deleting = new Done()
     let happend = false
     let type = class extends newCategories {}
-    Entity<typeof type.prototype>(undefined, {
+    Entity<typeof type.prototype>(undefined!, {
       allowApiDelete: true,
       deleted: () => (happend = true),
       deleting: (t) => {
@@ -680,7 +640,7 @@ describe('data api', () => {
     var deleting = new Done()
     let happend = false
     let type = class extends newCategories {}
-    Entity<typeof type.prototype>(undefined, {
+    Entity<typeof type.prototype>(undefined!, {
       allowApiDelete: true,
 
       deleted: () => (happend = true),
@@ -711,7 +671,7 @@ describe('data api', () => {
     var deleting = new Done()
     let happend = false
     let type = class extends newCategories {}
-    Entity<typeof type.prototype>(undefined, {
+    Entity<typeof type.prototype>(undefined!, {
       allowApiDelete: true,
       deleted: () => (happend = true),
       deleting: () => {
@@ -723,7 +683,7 @@ describe('data api', () => {
     let h2 = false
     let h3 = false
     try {
-      await (await c.findId(1))._.delete()
+      await (await c.findId(1))!._.delete()
       h2 = true
     } catch {
       h3 = true
@@ -735,7 +695,7 @@ describe('data api', () => {
     var deleting = new Done()
     let happend = false
     let type = class extends newCategories {}
-    Entity<typeof type.prototype>(undefined, {
+    Entity<typeof type.prototype>(undefined!, {
       allowApiDelete: true,
       deleted: (t) => {
         happend = true
@@ -783,8 +743,8 @@ describe('data api', () => {
     expect(repo.metadata.apiInsertAllowed({ id: 1 })).toBe(false)
     expect(repo.fields.id.apiUpdateAllowed()).toBe(false)
     expect(repo.fields.id.apiUpdateAllowed({ id: 1 })).toBe(false)
-    expect(repo.fields.name.apiUpdateAllowed()).toBe(true)
-    expect(repo.fields.name.apiUpdateAllowed({ id: 1 })).toBe(true)
+    expect(repo.fields.name!.apiUpdateAllowed()).toBe(true)
+    expect(repo.fields.name!.apiUpdateAllowed({ id: 1 })).toBe(true)
     expect(repo.metadata.apiReadAllowed).toBe(true)
     let x = { id: 1 }
     expect(getEntityRef(x, false)).toBe(undefined)
@@ -799,7 +759,7 @@ describe('data api', () => {
   it('put with validation fails', async () => {
     let count = 0
     let type = class extends newCategories {}
-    Entity<typeof type.prototype>(undefined, {
+    Entity<typeof type.prototype>(undefined!, {
       allowApiUpdate: true,
       saving: (t) => {
         count++
@@ -831,7 +791,7 @@ describe('data api', () => {
     let startTest = false
     let savedWorked = new Done()
     let type = class extends newCategories {}
-    Entity<typeof type.prototype>(undefined, {
+    Entity<typeof type.prototype>(undefined!, {
       allowApiUpdate: true,
       saving: () => count++,
       saved: (t) => {
@@ -866,7 +826,7 @@ describe('data api', () => {
   })
   it('afterSave works on insert', async () => {
     let type = class extends newCategories {}
-    Entity<typeof type.prototype>(undefined, {
+    Entity<typeof type.prototype>(undefined!, {
       allowApiUpdate: true,
       allowApiInsert: true,
 
@@ -953,7 +913,7 @@ describe('data api', () => {
   })
   it('get based on id with excluded columns', async () => {
     let type = class extends newCategories {
-      categoryName: string
+      categoryName!: string
     }
     Fields.string({ includeInApi: false })(type.prototype, 'categoryName')
     Entity('')(type)
@@ -978,8 +938,8 @@ describe('data api', () => {
     let [c, remult] = await createData(
       async (insert) => await insert(1, 'noam'),
     )
-    let a = await c.findId(1)
-    let b = await c.findId(1, { useCache: false })
+    let a = (await c.findId(1))!
+    let b = (await c.findId(1, { useCache: false }))!
     a.categoryName = 'yael'
     await a._.save()
     expect(b.categoryName).toBe('noam')
@@ -992,8 +952,8 @@ describe('data api', () => {
     let [c, remult] = await createData(
       async (insert) => await insert(1, 'noam'),
     )
-    expect(await c.findId(null)).toBeNull()
-    expect(await c.findId(undefined)).toBeNull()
+    expect(await c.findId(null!)).toBeNull()
+    expect(await c.findId(undefined!)).toBeNull()
   })
 
   it('put updates', async () => {
@@ -1018,7 +978,7 @@ describe('data api', () => {
   })
   it('put updates and readonly columns', async () => {
     let type = class extends newCategories {
-      categoryName: string
+      categoryName!: string
     }
     Fields.string({ allowApiUpdate: false })(type.prototype, 'categoryName')
     Entity('', { allowApiUpdate: true })(type)
@@ -1054,7 +1014,7 @@ describe('data api', () => {
   })
   it('put updates', async () => {
     let type = class extends newCategories {
-      categoryName: string
+      categoryName!: string
     }
     Fields.string({ includeInApi: false })(type.prototype, 'categoryName')
     Entity('', { allowApiUpdate: true })(type)
@@ -1334,7 +1294,7 @@ describe('data api', () => {
     let type = class extends newCategories {}
     Entity<typeof type.prototype>('', {
       allowApiDelete: (t, c) => {
-        return t.id == 1
+        return t!.id == 1
       },
     })(type)
     let [c, remult] = await createData(async (i) => {
@@ -1369,7 +1329,7 @@ describe('data api', () => {
     let type = class extends newCategories {}
     Entity<typeof type.prototype>('', {
       allowApiUpdate: (t, c) => {
-        return t.id == 1
+        return t!.id == 1
       },
     })(type)
     let [c, remult] = await createData(async (i) => {
@@ -1419,7 +1379,7 @@ describe('data api', () => {
     let type = class extends newCategories {}
     Entity<typeof type.prototype>('', {
       allowApiInsert: (t, c) => {
-        return t.categoryName == 'ok'
+        return t!.categoryName == 'ok'
       },
     })(type)
     let [c, remult] = await createData(async (i) => {
@@ -1692,18 +1652,18 @@ describe('test date storage', () => {
   it('works', () => {
     let val = '1976-06-16'
     /** */
-    var d: Date = ValueConverters.DateOnly.fromJson(val)
+    var d: Date = ValueConverters.DateOnly.fromJson!(val)!
     expect(d.getFullYear()).toBe(1976)
     expect(d.getMonth()).toBe(5)
     expect(d.getDate()).toBe(16)
   })
   it('works', () => {
     let val = new Date(1976, 5, 16)
-    expect(ValueConverters.DateOnly.toJson(val)).toBe('1976-06-16')
+    expect(ValueConverters.DateOnly.toJson!(val)).toBe('1976-06-16')
     //    expect(ValueConverters.DateOnly.displayValue(val)).toBe("6/16/1976");
   })
 })
-@Entity(undefined)
+@Entity(undefined!)
 class myEntity {}
 describe('', () => {
   it('dbname of entity string works when key is not defined', async () => {
@@ -1719,8 +1679,8 @@ describe('test bool value', () => {
       { valueType: Boolean },
       new Remult(),
     )
-    expect(col.valueConverter.fromJson(true)).toBe(true)
-    expect(col.valueConverter.fromJson(false)).toBe(false)
+    expect(col.valueConverter!.fromJson!(true)).toBe(true)
+    expect(col.valueConverter!.fromJson!(false)).toBe(false)
   })
 })
 
@@ -1729,18 +1689,18 @@ describe('cache', () => {
     let [r] = await createData(async (i) => i(1, 'noam'))
     await r.findFirst({ id: 1 }, { useCache: true })
     await r.find().then((x) => assign(x[0], { categoryName: 'a' }).save())
-    expect((await r.findFirst({ id: 1 })).categoryName).toBe('a')
-    expect((await r.findFirst({ id: 1 })).categoryName).toBe('a')
+    expect((await r.findFirst({ id: 1 }))!.categoryName).toBe('a')
+    expect((await r.findFirst({ id: 1 }))!.categoryName).toBe('a')
     expect(
-      (await r.findFirst({ id: 1 }, { useCache: true })).categoryName,
+      (await r.findFirst({ id: 1 }, { useCache: true }))!.categoryName,
     ).toBe('noam')
   })
   it('find id', async () => {
     let [r] = await createData(async (i) => i(1, 'noam'))
     await r.findId(1, { useCache: true })
     await r.find().then((x) => assign(x[0], { categoryName: 'a' }).save())
-    expect((await r.findId(1, { useCache: true })).categoryName).toBe('noam')
-    expect((await r.findId(1)).categoryName).toBe('a')
+    expect((await r.findId(1, { useCache: true }))!.categoryName).toBe('noam')
+    expect((await r.findId(1))!.categoryName).toBe('a')
   })
 })
 
@@ -1753,23 +1713,23 @@ describe('test rest data provider translates data correctly', () => {
     let restDb = new MockRestDataProvider(serverRemult)
     let remult = new Remult()
     remult.dataProvider = restDb
-    let c = await remult.repo(Categories).findId(1, { useCache: false })
+    let c = (await remult.repo(Categories).findId(1, { useCache: false }))!
     expect(c.categoryName).toBe('test')
     c.categoryName = 'test1'
     await c.save()
     expect(c.categoryName).toBe('test1')
-    c = await remult.repo(Categories).findId(1, { useCache: false })
+    c = (await remult.repo(Categories).findId(1, { useCache: false }))!
     expect(c.categoryName).toBe('test1')
-    c.categoryName = undefined
+    c.categoryName = undefined!
     await c.save()
     expect(c.categoryName).toBeNull()
-    c = await remult.repo(Categories).findId(1, { useCache: false })
+    c = (await remult.repo(Categories).findId(1, { useCache: false }))!
     expect(c.categoryName).toBeNull()
   })
   it('get works', async () => {
     let type = class extends EntityBase {
-      a: number
-      b: Date
+      a!: number
+      b!: Date
     }
     Entity('x')(type)
     Fields.integer()(type.prototype, 'a')
@@ -1778,7 +1738,7 @@ describe('test rest data provider translates data correctly', () => {
     let c = new Remult().repo(type)
     let z = new RestDataProvider(() => ({
       httpClient: {
-        delete: () => undefined,
+        delete: () => undefined!,
         get: async () => {
           return [
             {
@@ -1787,8 +1747,8 @@ describe('test rest data provider translates data correctly', () => {
             },
           ]
         },
-        post: () => undefined,
-        put: () => undefined,
+        post: () => undefined!,
+        put: () => undefined!,
       },
     }))
     let x = z.getEntityDataProvider(c.metadata)
@@ -1802,8 +1762,8 @@ describe('test rest data provider translates data correctly', () => {
   })
   it('test api client', async () => {
     let type = class extends EntityBase {
-      a: number
-      b: Date
+      a!: number
+      b!: Date
     }
     Entity('x')(type)
     Fields.integer()(type.prototype, 'a')
@@ -1831,8 +1791,8 @@ describe('test rest data provider translates data correctly', () => {
   })
   it('put works', async () => {
     let type = class extends EntityBase {
-      a: number
-      b: Date
+      a!: number
+      b!: Date
     }
     Entity('x')(type)
     Fields.integer()(type.prototype, 'a')
@@ -1846,8 +1806,8 @@ describe('test rest data provider translates data correctly', () => {
   })
   it('put works', async () => {
     let type = class extends EntityBase {
-      a: number
-      b: Date
+      a!: number
+      b!: Date
     }
     Entity('x')(type)
     Fields.integer()(type.prototype, 'a')
@@ -1857,15 +1817,15 @@ describe('test rest data provider translates data correctly', () => {
     let done = new Done()
     let z = new RestDataProvider(() => ({
       httpClient: {
-        delete: () => undefined,
-        get: () => undefined,
+        delete: () => undefined!,
+        get: () => undefined!,
         post: async (x, data) => {
           done.ok()
           expect(data.a).toBe(1)
           expect(data.b).toBe('2021-05-16T08:32:19.905Z')
           return data
         },
-        put: () => undefined,
+        put: () => undefined!,
       },
     }))
     let x = z.getEntityDataProvider(c.metadata)
@@ -1896,7 +1856,7 @@ describe('check allowedDataType', () => {
   })
   function myIt(allowed: Allowed, expected: boolean, description?: string) {
     if (!description && allowed != undefined) description = allowed.toString()
-    it(description, () => {
+    it(description ?? 'a test', () => {
       expect(c.isAllowed(allowed)).toBe(expected)
     })
   }
@@ -1913,10 +1873,10 @@ describe('check allowedDataType', () => {
   myIt([roleC], false)
   myIt([roleC, roleA], true)
   myIt([roleC, 'strD'], false)
-  myIt((c) => c.isAllowed(roleA), true)
+  myIt((c) => c!.isAllowed(roleA), true)
   myIt(true, true)
   myIt(false, false)
-  myIt(undefined, undefined)
+  myIt(undefined!, undefined!)
   it('no context', () => {
     let c = new Remult()
     c.dataProvider = new InMemoryDataProvider()
@@ -1996,11 +1956,11 @@ describe('test toPromise', () => {
 })
 class CompoundIdSimple {
   @Fields.integer()
-  a: number
+  a!: number
   @Fields.integer()
-  b: number
+  b!: number
   @Fields.integer()
-  c: number
+  c!: number
 }
 describe('CompoundIdPojoEntity', () => {
   it('test basic operations', async () => {
@@ -2143,7 +2103,7 @@ describe('CompoundIdPojoEntity', () => {
     await r.update(id, { d: 'd1' })
     expect(
       (await r.find()).map((x) => {
-        delete x.b
+        delete (x as any).b
         return x
       }),
     ).toMatchInlineSnapshot(`
@@ -2196,7 +2156,7 @@ describe('CompoundIdPojoEntity', () => {
       { a: 3, b: 30, c: 300 },
     ])
     await repo.save({ a: 2, b: 20, c: 201 })
-    expect((await repo.findFirst({ a: 2, b: 20 })).c).toBe(201)
+    expect((await repo.findFirst({ a: 2, b: 20 }))!.c).toBe(201)
   })
   it('test update', async () => {
     var repo = new Remult(new InMemoryDataProvider()).repo(CompoundIdSimple)
@@ -2204,7 +2164,7 @@ describe('CompoundIdPojoEntity', () => {
     await repo.update(repo.metadata.idMetadata.getId({ a: 2, b: 20 }), {
       c: 201,
     })
-    expect((await repo.findFirst({ a: 2, b: 20 })).c).toBe(201)
+    expect((await repo.findFirst({ a: 2, b: 20 }))!.c).toBe(201)
   })
   it('test update', async () => {
     var repo = new Remult(new InMemoryDataProvider()).repo(CompoundIdSimple)
@@ -2212,20 +2172,20 @@ describe('CompoundIdPojoEntity', () => {
     await repo.update(repo.metadata.idMetadata.getId({ a: 2, b: 20 }), {
       c: 201,
     })
-    expect((await repo.findFirst({ a: 2, b: 20 })).c).toBe(201)
+    expect((await repo.findFirst({ a: 2, b: 20 }))!.c).toBe(201)
   })
   it('test update', async () => {
     var repo = new Remult(new InMemoryDataProvider()).repo(CompoundIdSimple)
     await repo.insert([{ a: 2, b: 20, c: 200 }])
     await repo.update({ a: 2, b: 20 }, { c: 201 })
-    expect((await repo.findFirst({ a: 2, b: 20 })).c).toBe(201)
+    expect((await repo.findFirst({ a: 2, b: 20 }))!.c).toBe(201)
   })
   it('test update_rest', async () => {
     const r = new Remult(new InMemoryDataProvider())
     var repo = new Remult(new MockRestDataProvider(r)).repo(CompoundIdSimple)
     await repo.insert([{ a: 2, b: 20, c: 200 }])
     await repo.update({ a: 2, b: 20 }, { c: 201 })
-    expect((await repo.findFirst({ a: 2, b: 20 })).c).toBe(201)
+    expect((await repo.findFirst({ a: 2, b: 20 }))!.c).toBe(201)
   })
   it('test another compound update', async () => {
     @Entity('asdfsa', { allowApiCrud: true, id: { a: true, b: true } })
@@ -2241,13 +2201,13 @@ describe('CompoundIdPojoEntity', () => {
     var repo = new Remult(new MockRestDataProvider(r)).repo(myEntity)
     await repo.insert([{ a: 2, b: 20, c: 200 }])
     await repo.update({ a: 2, b: 20 }, { c: 0 })
-    expect((await repo.findFirst({ a: 2, b: 20 })).c).toBe(0)
+    expect((await repo.findFirst({ a: 2, b: 20 }))!.c).toBe(0)
   })
   it('test update 2', async () => {
     var repo = new Remult(new InMemoryDataProvider()).repo(CompoundIdSimple)
     const c = await repo.insert({ a: 2, b: 20, c: 200 })
     await repo.update(c, { c: 201 })
-    expect((await repo.findFirst({ a: 2, b: 20 })).c).toBe(201)
+    expect((await repo.findFirst({ a: 2, b: 20 }))!.c).toBe(201)
   })
   it('test update change of id fields', async () => {
     var repo = new Remult(new InMemoryDataProvider()).repo(CompoundIdSimple)
@@ -2255,7 +2215,7 @@ describe('CompoundIdPojoEntity', () => {
     await repo.update(repo.metadata.idMetadata.getId({ a: 2, b: 20 }), {
       b: 21,
     })
-    expect((await repo.findFirst({ a: 2 })).b).toBe(21)
+    expect((await repo.findFirst({ a: 2 }))!.b).toBe(21)
   })
 })
 
@@ -2266,9 +2226,9 @@ describe('CompoundIdPojoEntity', () => {
 })
 export class entityWithValidationsOnEntityEvent extends EntityBase {
   @Fields.integer()
-  myId: number
+  myId!: number
   @Fields.string()
-  name: string
+  name!: string
 }
 @Entity<EntityWithLateBoundDbName>('stam', {
   sqlExpression: async (t) => {
@@ -2278,7 +2238,7 @@ export class entityWithValidationsOnEntityEvent extends EntityBase {
 })
 export class EntityWithLateBoundDbName extends EntityBase {
   @Fields.integer({ dbName: 'CategoryID' })
-  id: number
+  id!: number
 }
 
 describe('test fetch', () => {
@@ -2402,14 +2362,14 @@ describe('test fetch', () => {
   it('delete', async () => {
     let z = await new RestDataProviderHttpProviderUsingFetch(
       async (url, info) => {
-        expect(info.headers).toEqual({}) // fastify fails with content type and no body
+        expect(info!.headers).toEqual({}) // fastify fails with content type and no body
         return new mockResponse({ status: 204, json: async () => 7 })
       },
     ).delete('abc')
     expect(z).toBeUndefined()
   })
   it("rest doesn't support transactions", async () => {
-    const r = new RestDataProvider(() => undefined)
+    const r = new RestDataProvider(() => undefined!)!
     let ok = false
     try {
       await r.transaction(async () => {})
@@ -2420,14 +2380,14 @@ describe('test fetch', () => {
   it('json field works', async () => {
     const r = new Remult(new InMemoryDataProvider())
     var e = class {
-      id: 1
-      person: { name: 'noam' }
+      id!: 1
+      person!: { name: 'noam' }
     }
     describeClass(e, Entity('asdf'), {
       id: Fields.integer(),
-      person: Fields.json({
+      person: Fields.json<unknown, { name: string }>({
         valueConverter: {
-          toJson: (x) => x.name,
+          toJson: (x) => x!.name,
           fromJson: (x) => ({ name: x }),
         },
       }),
@@ -2478,19 +2438,19 @@ class mockResponse implements Response {
   constructor(val: Partial<Response>) {
     Object.assign(this, val)
   }
-  headers: Headers
-  ok: boolean
-  redirected: boolean
-  status: number
-  statusText: string
-  type: ResponseType
-  url: string
+  headers!: Headers
+  ok!: boolean
+  redirected!: boolean
+  status!: number
+  statusText!: string
+  type!: ResponseType
+  url!: string
   clone(): Response {
     throw new Error('Method not implemented.')
   }
-  body: ReadableStream<Uint8Array>
-  bodyUsed: boolean
-  readonly trailer: Promise<Headers>
+  body!: ReadableStream<Uint8Array>
+  bodyUsed!: boolean
+  readonly trailer!: Promise<Headers>
   arrayBuffer(): Promise<ArrayBuffer> {
     throw new Error('Method not implemented.')
   }

@@ -7,8 +7,8 @@ export function customIdTests({ createEntity }: DbTestProps) {
   describe('custom id column', () => {
     it('basic test', async () => {
       let type = class extends EntityBase {
-        a: number
-        b: number
+        a!: number
+        b!: number
       }
       describeClass(type, Entity('custom', { allowApiCrud: true }), {
         a: Fields.number(),
@@ -27,8 +27,8 @@ export function customIdTests({ createEntity }: DbTestProps) {
     })
     it('basic test id column not first column', async () => {
       let type = class extends EntityBase {
-        a: number
-        id: number
+        a!: number
+        id!: number
       }
       Entity('custom2', { allowApiCrud: true })(type)
       Fields.number()(type.prototype, 'a')
@@ -45,7 +45,7 @@ export function customIdTests({ createEntity }: DbTestProps) {
       expect(r._.repository.metadata.idMetadata.field.key).toBe(
         r._.fields.id.metadata.key,
       )
-      expect((await c.findId(6)).a).toBe(2)
+      expect((await c.findId(6))!.a).toBe(2)
     })
   })
 }

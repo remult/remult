@@ -97,7 +97,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
     private session?: ClientSession,
   ) {}
   translateFromDb(row: any, nameProvider: EntityDbNamesBase) {
-    let result = {}
+    let result: any = {}
     for (const col of this.entity.fields) {
       let val = row[nameProvider.$dbNameOf(col)]
       if (isNull(val)) val = null
@@ -106,7 +106,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
     return result
   }
   translateToDb(row: any, nameProvider: EntityDbNamesBase) {
-    let result = {}
+    let result: any = {}
     for (const col of this.entity.fields) {
       let val = toDb(col, row[col.key])
       if (val === null) val = NULL
@@ -157,7 +157,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
       this.entity.idMetadata.getIdFilter(id),
     ).__applyToConsumer(f)
 
-    let newR = {}
+    let newR: any = {}
     let keys = Object.keys(data)
     for (const f of this.entity.fields) {
       if (!f.dbReadOnly && !f.isServerExpression) {

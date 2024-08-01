@@ -137,12 +137,12 @@ describe('test server expression value', () => {
 
   it('test recursive db names', async () => {
     const myClass = class {
-      a: string
-      b: string
-      c: string
-      d: string
-      e: string
-      f: string
+      a!: string
+      b!: string
+      c!: string
+      d!: string
+      e!: string
+      f!: string
     }
     describeClass(
       myClass,
@@ -151,7 +151,7 @@ describe('test server expression value', () => {
         a: Fields.string(),
         b: Fields.string({ dbName: 'bb' }),
         c: Fields.string({ sqlExpression: () => 'cc' }),
-        d: Fields.string({
+        d: Fields.string<InstanceType<typeof myClass>>({
           sqlExpression: async (e) => e.fields.c.dbName + 'dd',
         }),
         e: Fields.string<InstanceType<typeof myClass>>({
@@ -191,21 +191,21 @@ class testServerExpression extends EntityBase {
   static testVal = 1
   static testVal2 = 10
   @Fields.integer()
-  code: number
+  code!: number
   @Fields.integer({ serverExpression: () => testServerExpression.testVal++ })
-  test: number
+  test!: number
   @Fields.integer({
     serverExpression: () => Promise.resolve(testServerExpression.testVal2++),
   })
-  testPromise: number
+  testPromise!: number
 }
 describe('test dbnames with table name', () => {
   @Entity('testTableName')
   class testTableName extends EntityBase {
     @Fields.number()
-    code: number
+    code!: number
     @Fields.number({ sqlExpression: () => '5' })
-    sqlExpression: number
+    sqlExpression!: number
   }
   it('test without table name', async () => {
     const r = await dbNamesOf(remult.repo(testTableName))

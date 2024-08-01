@@ -18,9 +18,9 @@ describe('test exception', () => {
       getEntityDataProvider: (e) => {
         let r = mem.getEntityDataProvider(e)
         return {
-          count: undefined,
-          delete: undefined,
-          find: undefined,
+          count: undefined!,
+          delete: undefined!,
+          find: undefined!,
           insert: async (x) => {
             return toPromise(
               new Promise((res, err) => {
@@ -35,22 +35,22 @@ describe('test exception', () => {
               }),
             )
           },
-          update: undefined,
+          update: undefined!,
         }
       },
-      transaction: undefined,
+      transaction: undefined!,
     }
 
     var ok = new Done()
     let type = class extends EntityBase {
-      id: string
+      id!: string
     }
     Entity('test')(type)
     Fields.string()(type.prototype, 'id')
     var x = c.repo(type).create()
     try {
       await x._.save()
-    } catch (err) {
+    } catch (err: any) {
       expect(x._.fields.id.error).toBe('error for id')
       expect(err.message).toBe('error')
       expect(err.modelState.id).toBe('error for id')
@@ -59,7 +59,7 @@ describe('test exception', () => {
     ok.test()
   })
 })
-function log(what) {
+function log(what: any) {
   return what
 }
 describe('angular http client exception ', () => {

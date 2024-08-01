@@ -50,10 +50,12 @@ export class RemultAsyncLocalStorage {
     resetFactory()
   }
   constructor(
-    private readonly remultObjectStorage: RemultAsyncLocalStorageCore<{
-      remult: Remult
-      inInitRequest?: boolean
-    }>,
+    private readonly remultObjectStorage:
+      | RemultAsyncLocalStorageCore<{
+          remult: Remult
+          inInitRequest?: boolean
+        }>
+      | undefined,
   ) {}
   async run<T>(
     remult: Remult,
@@ -236,7 +238,7 @@ export class Remult {
     classInstance?: any,
     ...args: GetArguments<T>
   ): ReturnType<T> {
-    const z = backendMethod[serverActionField] as Action<any, any>
+    const z = (backendMethod as any)[serverActionField] as Action<any, any>
     if (!z.doWork)
       throw Error('The method received is not a valid backend method')
     //@ts-ignore
@@ -482,12 +484,12 @@ class transactionLiveQueryPublisher implements LiveQueryChangesListener {
   }
   async flush() {
     for (const key of this.transactionItems.keys()) {
-      await this.orig.itemChanged(key, this.transactionItems.get(key))
+      await this.orig.itemChanged(key, this.transactionItems.get(key)!)
     }
   }
 }
 export async function withRemult<T>(
-  callback: (remult) => Promise<T>,
+  callback: (remult: Remult) => Promise<T>,
   options?: {
     dataProvider?:
       | DataProvider

@@ -39,8 +39,8 @@ export const ActionTestConfig = {
   db: new InMemoryDataProvider(),
 }
 remult.apiClient.httpClient = {
-  delete: () => undefined,
-  get: () => undefined,
+  delete: () => undefined!,
+  get: () => undefined!,
   post: async (urlreq, data) => {
     return await new Promise((res, r) => {
       let found = false
@@ -82,7 +82,7 @@ remult.apiClient.httpClient = {
       }
     })
   },
-  put: () => undefined,
+  put: () => undefined!,
 }
 
 export async function testSql(
@@ -147,7 +147,7 @@ function urlToReq(url: string) {
       else args.set(key, [args.get(key), value])
     }
   let req = {
-    get: (key) => {
+    get: (key: string) => {
       let r = args.get(key)
       if (r !== undefined) {
         r
@@ -277,5 +277,5 @@ export async function testMigrationScript(
     },
   })
   await what(m)
-  return result
+  return result!
 }

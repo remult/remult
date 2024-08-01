@@ -15,9 +15,9 @@ import { MockRestDataProvider } from './testHelper.js'
 })
 class e {
   @Fields.integer()
-  id: number
+  id!: number
   @Fields.string({ required: true })
-  name: string
+  name!: string
 }
 
 describe('test rest many operations', () => {

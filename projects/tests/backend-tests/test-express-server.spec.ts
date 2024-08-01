@@ -123,7 +123,7 @@ it('test with express remult async ', async () => {
   })
   expect(
     await api.withRemultAsync({ path: '123' } as any, async () => {
-      return remult.user.id
+      return remult.user!.id
     }),
   ).toBe('1')
   expect(initRequest).toEqual([{ path: '123' }])
@@ -140,7 +140,7 @@ it('test remult run', async () => {
   try {
     initAsyncHooks()
     expect(() => remult.user).toThrowErrorMatchingInlineSnapshot(
-      '"remult object was requested outside of a valid context, try running it within initApi or a remult request cycle"',
+      `[Error: remult object was requested outside of a valid context, try running it within initApi or a remult request cycle]`,
     )
     let result = ''
     const test1 = await withRemult(async () => {

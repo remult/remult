@@ -17,7 +17,7 @@ describe.skipIf(!TURSO_DATABASE_URL)('turso', () => {
   let remult: Remult
   beforeAll(() => {
     client = createClient({
-      url: TURSO_DATABASE_URL,
+      url: TURSO_DATABASE_URL!,
       authToken: TURSO_AUTH_TOKEN,
     })
   })

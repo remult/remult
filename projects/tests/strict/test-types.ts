@@ -8,6 +8,7 @@ import {
   Validators,
   repo,
 } from 'remult'
+import { entity } from '../tests/dynamic-classes.js'
 
 class E extends EntityBase {
   a = ''
@@ -44,7 +45,7 @@ export class Task {
   nom4?: string
 }
 
-function dateOnly<entityType = any>(o?: FieldOptions<entityType, Date>) {
+function dateOnly<entityType = unknown>(o?: FieldOptions<entityType, Date>) {
   const validate: FieldValidator<entityType, Date>[] = []
   validate.push(Validators.required)
 }
@@ -53,3 +54,20 @@ function string<entityType = unknown, valueType = string>() {
   const validate: FieldValidator<entityType, valueType>[] = []
   validate.push(Validators.required)
 }
+
+
+
+  class HelperBase extends EntityBase {
+    @Fields.string()
+    id = ''
+  }
+  class Helper extends HelperBase {
+    @Fields.string()
+    name = ''
+  }
+  var h: HelperBase = new Helper()
+let a!:keyof HelperBase 
+let b!:keyof Helper 
+a=b;
+
+

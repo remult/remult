@@ -7,9 +7,9 @@ import { BackendMethod } from '../../core/src/server-action'
 })
 export class dWithPrefilter extends EntityBase {
   @Fields.integer()
-  id: number
+  id!: number
   @Fields.integer()
-  b: number
+  b!: number
 
   static count = 0
   @BackendMethod({ allowed: true })

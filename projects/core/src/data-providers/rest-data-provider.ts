@@ -37,7 +37,7 @@ export class RestDataProvider implements DataProvider {
   isProxy = true
 }
 //@internal
-export function findOptionsToJson<entityType = any>(
+export function findOptionsToJson<entityType = unknown>(
   options: FindOptions<entityType>,
   meta: EntityMetadata<entityType>,
 ) {
@@ -49,7 +49,10 @@ export function findOptionsToJson<entityType = any>(
         if (typeof element === 'object') {
           const rel = getRelationFieldInfo(meta.fields.find(key))
           if (rel) {
-            element = findOptionsToJson(element, rel.toRepo.metadata)
+            element = findOptionsToJson<unknown>(
+              element as any,
+              rel.toRepo.metadata,
+            )
           }
         }
         newInclude[key] = element
@@ -105,7 +108,7 @@ export function findOptionsFromJson(
     }
   }
   if (json.load) {
-    r.load = (z) => json.load.map((y) => z.find(y))
+    r.load = (z: any) => json.load.map((y: any) => z.find(y))
   }
   return r
 }
@@ -120,14 +123,14 @@ export class RestEntityDataProvider
   ) {}
 
   translateFromJson(row: any) {
-    let result = {}
+    let result: any = {}
     for (const col of this.entity.fields) {
       result[col.key] = col.valueConverter.fromJson(row[col.key])
     }
     return result
   }
   translateToJson(row: any) {
-    let result = {}
+    let result: any = {}
     for (const col of this.entity.fields) {
       result[col.key] = col.valueConverter.toJson(row[col.key])
     }
@@ -150,11 +153,11 @@ export class RestEntityDataProvider
   }
   public find(options?: EntityDataProviderFindOptions): Promise<Array<any>> {
     let { run } = this.buildFindRequest(options)
-    return run().then((x) => x.map((y) => this.translateFromJson(y)))
+    return run().then((x) => x.map((y: any) => this.translateFromJson(y)))
   }
   //@internal
   buildFindRequest(
-    options: EntityDataProviderFindOptions,
+    options: EntityDataProviderFindOptions | undefined,
     method?: 'delete' | 'put' | 'get',
   ) {
     if (!method) method = 'get'
@@ -195,13 +198,13 @@ export class RestEntityDataProvider
       if (filterObject) {
         body = { set: body, where: filterObject }
         return this.http().post(u.url, body)
-      } else return this.http()[method](u.url, body)
+      } else return this.http()[method!](u.url, body)
     }
 
     return {
       createKey: () => JSON.stringify({ url, filterObject }),
       run,
-      subscribe: async (queryId) => {
+      subscribe: async (queryId: string) => {
         const result: any[] = await run(liveQueryAction + queryId)
         return {
           result,
@@ -228,7 +231,7 @@ export class RestEntityDataProvider
   }
 
   private toJsonOfIncludedKeys(data: any) {
-    let result = {}
+    let result: any = {}
     let keys = Object.keys(data)
     for (const col of this.entity.fields) {
       if (keys.includes(col.key))
@@ -259,7 +262,7 @@ export class RestEntityDataProvider
         this.url(),
         data.map((data) => this.translateToJson(data)),
       )
-      .then((y) => y.map((y) => this.translateFromJson(y)))
+      .then((y) => y.map((y: any) => this.translateFromJson(y)))
   }
 }
 
@@ -304,7 +307,7 @@ export class RestDataProviderHttpProviderUsingFetch
       body?: string
     },
   ): Promise<any> {
-    const headers = {}
+    const headers: any = {}
     if (options?.body) headers['Content-type'] = 'application/json'
     if (
       typeof window !== 'undefined' &&

@@ -16,7 +16,7 @@ import {
 // if we don't have this, tests will be skipped
 const connectionString = process.env['DATABASE_URL']
 
-let db: SqlDatabase = undefined
+let db: SqlDatabase = undefined!
 PostgresSchemaBuilder.logToConsole = false
 SqlDatabase.LogToConsole = false
 

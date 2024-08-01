@@ -53,13 +53,13 @@ describe('data api', () => {
   })
   it('allow column update based on new row only', async () => {
     let type = class extends EntityBase {
-      id: number
-      val: string
+      id!: number
+      val!: string
     }
     Entity('allowcolumnupdatetest', { allowApiCrud: true })(type)
     Fields.integer()(type.prototype, 'id')
     Fields.string<EntityBase>({
-      allowApiUpdate: (x, c) => x._.isNew(),
+      allowApiUpdate: (x, c) => x!._.isNew(),
     })(type.prototype, 'val')
     let remult = new Remult()
     remult.dataProvider = new InMemoryDataProvider()
@@ -83,13 +83,13 @@ describe('data api', () => {
   })
   it('allow column update based on specific value', async () => {
     let type = class extends EntityBase {
-      id: number
-      val: string
+      id!: number
+      val!: string
     }
     Entity('allowcolumnupdatetest', { allowApiCrud: true })(type)
     Fields.integer()(type.prototype, 'id')
     Fields.string<typeof type.prototype>({
-      allowApiUpdate: (x, c) => x.val != 'yael',
+      allowApiUpdate: (x, c) => x!.val != 'yael',
     })(type.prototype, 'val')
     let remult = new Remult()
     remult.dataProvider = new InMemoryDataProvider()
@@ -124,7 +124,7 @@ describe('data api', () => {
   })
 })
 
-@Entity<CategoriesForThisTest>(undefined, {
+@Entity<CategoriesForThisTest>(undefined!, {
   allowApiUpdate: true,
   allowApiInsert: true,
 
@@ -145,15 +145,15 @@ describe('Test validation with exception', () => {
       await repo.save(e)
     } catch (err: any) {
       const info: ErrorInfo<ExceptionValidation> = err
-      expect(info.modelState.name).toBe('say what?')
+      expect(info.modelState!.name).toBe('say what?')
       expect(getEntityRef(e).fields.name.error).toBe('say what?')
-      expect(info.modelState.name2).toBe('say what?2')
+      expect(info.modelState!.name2).toBe('say what?2')
       expect(getEntityRef(e).fields.name2.error).toBe('say what?2')
     }
   })
 })
 
-@Entity(undefined, {})
+@Entity(undefined!, {})
 export class ExceptionValidation {
   @Fields.number()
   id = 0

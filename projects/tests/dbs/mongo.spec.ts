@@ -24,7 +24,7 @@ describe.skipIf(!mongoConnectionString)('mongo with Transaction', () => {
   }
 
   beforeAll(async () => {
-    client = await new MongoClient(mongoConnectionString).connect()
+    client = await new MongoClient(mongoConnectionString!).connect()
     mongoDb = await client.db('test')
     db = new MongoDataProvider(mongoDb, client)
   })

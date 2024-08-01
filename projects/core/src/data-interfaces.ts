@@ -49,7 +49,7 @@ export function extractSort(sort: any): Sort {
   return sort
 }
 
-export interface ErrorInfo<entityType = any> {
+export interface ErrorInfo<entityType = unknown> {
   message?: string
   modelState?: {
     [Properties in keyof Partial<MembersOnly<entityType>>]?: string

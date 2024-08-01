@@ -3,5 +3,5 @@ import { EntityBase } from './RepositoryImplementation.js'
 
 export class IdEntity extends EntityBase {
   @Fields.uuid()
-  id: string
+  id!: string
 }
