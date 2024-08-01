@@ -22,8 +22,8 @@ describe('test subscribe', () => {
       state.title = i.title
       state.wasChanged = i._.wasChanged()
       state.isNew = i._.isNew()
-      state.error = i._.error
-      state.titleError = i.$.title.error
+      state.error = i._.error!
+      state.titleError = i.$.title.error!
     })
     i.title = 'a'
     expect(state.title).toBe('a')
@@ -100,7 +100,7 @@ describe('test subscribe', () => {
     let refRowB = await remult.repo(myEntity).create({ title: 'b' }).save()
     let reflect = { title: '' }
     let r = repo.create()
-    let sub = r._.subscribe(() => (reflect.title = r.entity?.title))
+    let sub = r._.subscribe(() => (reflect.title = r.entity?.title!))
     r.entity = refRowA
     expect(reflect.title).toBe('a')
     sub()
@@ -118,7 +118,7 @@ describe('test subscribe', () => {
     let reflect = { title: '' }
     let r = repo.create()
 
-    let sub = r.$.entity.subscribe(() => (reflect.title = r.entity?.title))
+    let sub = r.$.entity!.subscribe(() => (reflect.title = r.entity?.title!))
     r.entity = refRowA
     expect(reflect.title).toBe('a')
     sub()

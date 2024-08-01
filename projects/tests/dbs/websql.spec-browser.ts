@@ -149,7 +149,7 @@ describe('websql', () => {
       transaction: (what) => what(sql),
       end: async () => {},
     })
-    let repo: Repository<Categories>
+    let repo!: Repository<Categories>
     await db.transaction(async (dp) => {
       repo = new Remult(dp).repo(Categories)
     })

@@ -64,7 +64,9 @@ describe('Rest', () => {
   it('test api allowed with condition', async () => {
     const task = entity('tasks', {
       id: Fields.integer(),
-      title: Fields.string({ includeInApi: (t: { id: number }) => t.id == 1 }),
+      title: Fields.string({
+        includeInApi: (t?: { id: number }) => t!.id == 1,
+      }),
       done: Fields.boolean(),
     })
     await repoServer(task).insert([
@@ -195,7 +197,7 @@ describe('Rest', () => {
     await expect(() =>
       repoServer(task).find({}),
     ).rejects.toThrowErrorMatchingInlineSnapshot(
-      '"You must specify a done filter"',
+      `[Error: You must specify a done filter]`,
     )
   })
 })

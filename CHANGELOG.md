@@ -2,6 +2,41 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.27.0] TBD
+
+### API BREAKING CHANGE - Improved Typescript typing
+
+Typescript version 5.4 included many changes that cause unknown & any to behave differently breaking existing code for some project.
+
+In this version we reviewed the external api and made sure that it matches TS 5.4 while still supporting older version of TS (4.6)
+
+Theses change are likely to cause build errors in existing projects, but in most cases these errors represent potential bugs that should be addressed.
+Here's the list of significant changes:
+
+- `findFirst`, `findOne` and `findId` can return `undefined` when the row is not found, if you're sure that the row exists, add a `!` after it, for example:
+  ```ts
+  let p = await repo(Person).findId(7) // p will be Person | undefined in the new version
+  let q = (await repo(Person).findId(7))! // p will be Person
+  ```
+- Decorators that use entity, now require to define the entity in the generic definition.
+  Previously you could have the following code:
+  ```ts
+  @Fields.string({
+    validate: task => task.title.length > 2
+  })
+  title=''
+  ```
+  Now, that code will return an error that `title` is not a member of `unknown`. To fix that add the `Entity` generic definition:
+  ```ts
+  @Fields.string<Task>({
+    validate: task => task.title.length > 2
+    title = ''
+  })
+  ```
+- `FieldMetadata.key` was changed from `string` to `keyof entityType` making it easier to traverse the object.
+- `error` in `EntityRef`, `FieldRef` and `ControllerRef` can be `undefined` when there is no error
+- Change `= any` to `= unknown` in most generic definitions
+
 ## [0.26.23] 2024-07-30
 
 - Fixes and improvements to the admin panel

@@ -23,7 +23,7 @@ class testServerMethodOnEntity extends EntityBase {
       }
     },
   })
-  a: string
+  a!: string
   @BackendMethod({ allowed: true })
   async doIt1() {
     let result = 'hello ' + this.a
@@ -46,7 +46,7 @@ class testServerMethodOnEntity extends EntityBase {
     expect(await this.remult.repo(testServerMethodOnEntity).count()).toBe(0)
     await this._.save()
     expect(await this.remult.repo(testServerMethodOnEntity).count()).toBe(1)
-    return (await this.remult.repo(testServerMethodOnEntity).findFirst()).a
+    return (await this.remult.repo(testServerMethodOnEntity).findFirst())!.a
   }
 }
 describeClass(testServerMethodOnEntity, undefined, {
@@ -71,7 +71,7 @@ describeClass(testServerMethodOnEntity, undefined, {
 )
 class testBoolCreate123 extends EntityBase {
   @Fields.number()
-  id: number
+  id!: number
   @Fields.boolean({})
   ok123: Boolean = false
   @BackendMethod({ allowed: true })
@@ -82,26 +82,26 @@ class testBoolCreate123 extends EntityBase {
 @Entity('a')
 class a extends EntityBase {
   @Fields.integer()
-  id: number
+  id!: number
 }
 @Entity('b')
 class b extends EntityBase {
   @Fields.integer()
-  id: number
+  id!: number
   @Field(() => a)
-  a: a
+  a!: a
 }
 @Entity('c')
 class c extends EntityBase {
   @Fields.integer()
-  id: number
+  id!: number
   @Field(() => b)
-  b: b
+  b!: b
   @BackendMethod({ allowed: true })
   async doIt() {
     expect(this.b.id).toBe(11)
     expect(this.b.a.id).toBe(1)
-    this.b = await this.remult.repo(b).findId(12)
+    this.b = (await this.remult.repo(b).findId(12))!
     expect(this.b.id).toBe(12)
     expect(this.b.a.id).toBe(2)
     await this.save()
@@ -165,7 +165,7 @@ describe('complex entity relations on server entity and backend method', () => {
     let c1 = await remult.repo(c).create({ id: 21, b: b1 }).save()
     remult = new Remult() //clear the cache;
     remult.dataProvider = ActionTestConfig.db
-    c1 = await remult.repo(c).findId(21)
+    c1 = (await remult.repo(c).findId(21))!
     c1.b = b2
     let r = await c1.doIt2()
     expect(r).toBe(2)

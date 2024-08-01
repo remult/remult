@@ -18,7 +18,7 @@ export function __updateEntityBasedOnWhere<T>(
       endsWithCaseInsensitive: emptyFunction,
       isDifferentFrom: emptyFunction,
       isEqualTo: (col, val) => {
-        r[col.key] = val
+        r[col.key as keyof T] = val
       },
       isGreaterOrEqualTo: emptyFunction,
       isGreaterThan: emptyFunction,

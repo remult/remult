@@ -7,7 +7,7 @@ import type {
   ValidateFieldEvent,
 } from './remult3/remult3.js'
 
-export interface FieldOptions<entityType = any, valueType = any> {
+export interface FieldOptions<entityType = unknown, valueType = unknown> {
   /** A human readable name for the field. Can be used to achieve a consistent caption for a field throughout the app
    * @example
    * <input placeholder={taskRepo.metadata.fields.title.caption}/>
@@ -132,19 +132,19 @@ export interface FieldOptions<entityType = any, valueType = any> {
   /** The value type for this field */
   valueType?: any
   /** The entity type to which this field belongs */
-  target?: ClassType<entityType> //confusing it'll sometime reference an entity/controller and sometype the datatype iteslf
+  target?: ClassType<entityType> //confusing it'll sometime reference an entity/controller and sometime the datatype itself
   /** The key to be used for this field */
   key?: string
 }
 /**Metadata for a `Field`, this metadata can be used in the user interface to provide a richer UI experience */
-export interface FieldMetadata<valueType = any, entityType = any> {
+export interface FieldMetadata<valueType = unknown, entityType = unknown> {
   /** The field's member name in an object.
    * @example
    * const taskRepo = remult.repo(Task);
    * console.log(taskRepo.metadata.fields.title.key);
    * // result: title
    */
-  readonly key: string
+  readonly key: entityType extends object ? keyof entityType & string : string
   /** A human readable caption for the field. Can be used to achieve a consistent caption for a field throughout the app
    * @example
    * <input placeholder={taskRepo.metadata.fields.title.caption}/>
@@ -351,7 +351,10 @@ export interface ValueConverter<valueType> {
    */
   readonly inputType?: string
 }
-export declare type FieldValidator<entityType = any, valueType = any> = (
+export declare type FieldValidator<
+  entityType = unknown,
+  valueType = unknown,
+> = (
   entity: entityType,
   event: ValidateFieldEvent<entityType, valueType>,
 ) =>

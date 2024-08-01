@@ -154,44 +154,44 @@ describe('test where stuff', () => {
     let fo: FindOptions<CategoriesForTesting> = {
       where: { id: { '>=': 2 } },
     }
-    expect(await repo.count({ id: { $lte: 3 }, $and: [fo.where] })).toBe(2)
-    expect(await repo.count({ id: { $lte: 3 }, $and: [fo.where] })).toBe(2)
-    expect(await repo.count({ $and: [fo.where], id: { $lte: 3 } })).toBe(2)
-    expect(await repo.count({ id: { $lte: 3 }, $and: [fo.where] })).toBe(2)
+    expect(await repo.count({ id: { $lte: 3 }, $and: [fo.where!] })).toBe(2)
+    expect(await repo.count({ id: { $lte: 3 }, $and: [fo.where!] })).toBe(2)
+    expect(await repo.count({ $and: [fo.where!], id: { $lte: 3 } })).toBe(2)
+    expect(await repo.count({ id: { $lte: 3 }, $and: [fo.where!] })).toBe(2)
   })
   it('test basics_2', async () => {
     let fo: FindOptions<CategoriesForTesting> = {
       where: { id: { $gte: 2 } },
     }
     expect(
-      await repo.count({ id: { $lte: 3 }, $and: [fo.where, undefined] }),
+      await repo.count({ id: { $lte: 3 }, $and: [fo.where!, undefined!] }),
     ).toBe(2)
   })
   it('test basics_2_2', async () => {
     let fo: FindOptions<CategoriesForTesting> = {
       where: { id: { '>=': 2 } },
     }
-    expect(await repo.count({ id: { $lte: 3 }, $and: [fo.where] })).toBe(2)
+    expect(await repo.count({ id: { $lte: 3 }, $and: [fo.where!] })).toBe(2)
   })
   it('test basics_2_3', async () => {
     let fo: FindOptions<CategoriesForTesting> = {
       where: { id: { '>=': 2 } },
     }
-    expect(await repo.count({ id: { $lte: 3 }, $and: [fo.where] })).toBe(2)
+    expect(await repo.count({ id: { $lte: 3 }, $and: [fo.where!] })).toBe(2)
   })
   it('test basics_2_1', async () => {
     let fo: FindOptions<CategoriesForTesting> = {
       where: { id: { $gte: 2 } },
     }
     expect(
-      await repo.count({ id: { $lte: 3 }, $and: [fo.where, undefined] }),
+      await repo.count({ id: { $lte: 3 }, $and: [fo.where!, undefined!] }),
     ).toBe(2)
   })
   it('test basics_3', async () => {
     let fo: FindOptions<CategoriesForTesting> = {
       where: { id: { '>=': 2 } },
     }
-    expect(await repo.count({ id: { $lte: 3 }, $and: [fo.where] })).toBe(2)
+    expect(await repo.count({ id: { $lte: 3 }, $and: [fo.where!] })).toBe(2)
   })
 })
 
@@ -234,10 +234,10 @@ describe('custom filter', () => {
       }
       expect(await c.count(entityForrawFilter.oneAndThree())).toBe(2)
       expect(
-        (await c.findFirst(entityForrawFilter.testNumericValue(2))).id,
+        (await c.findFirst(entityForrawFilter.testNumericValue(2)))!.id,
       ).toBe(2)
       expect(
-        (await c.findFirst(entityForrawFilter.testObjectValue({ val: 2 }))).id,
+        (await c.findFirst(entityForrawFilter.testObjectValue({ val: 2 })))!.id,
       ).toBe(2)
     }))
 
@@ -271,7 +271,7 @@ describe('custom filter', () => {
     let ok = new Done()
     let z = new RestDataProvider(() => ({
       httpClient: {
-        delete: () => undefined,
+        delete: () => undefined!,
         get: async (url) => {
           ok.ok()
           expect(url).toBe(
@@ -279,8 +279,8 @@ describe('custom filter', () => {
           )
           return { count: 0 }
         },
-        post: () => undefined,
-        put: () => undefined,
+        post: () => undefined!,
+        put: () => undefined!,
       },
       url: '',
     }))
@@ -296,14 +296,14 @@ describe('custom filter', () => {
     let c = new Remult(
       new RestDataProvider(() => ({
         httpClient: {
-          delete: () => undefined,
+          delete: () => undefined!,
           get: async (url) => {
             ok.ok()
             expect(url).toBe('/Categories?_sort=categoryName%2Cid')
             return []
           },
-          post: () => undefined,
-          put: () => undefined,
+          post: () => undefined!,
+          put: () => undefined!,
         },
         url: '',
       })),
@@ -321,7 +321,7 @@ describe('custom filter', () => {
     let c = new Remult(
       new RestDataProvider(() => ({
         httpClient: {
-          delete: () => undefined,
+          delete: () => undefined!,
           get: async (url) => {
             ok.ok()
             expect(url).toBe(
@@ -329,8 +329,8 @@ describe('custom filter', () => {
             )
             return []
           },
-          post: () => undefined,
-          put: () => undefined,
+          post: () => undefined!,
+          put: () => undefined!,
         },
         url: '',
       })),
@@ -366,14 +366,14 @@ describe('custom filter', () => {
     let ok = new Done()
     let z = new RestDataProvider(() => ({
       httpClient: {
-        delete: () => undefined,
+        delete: () => undefined!,
         get: async (url) => {
           ok.ok()
           expect(url).toBe('/test?id=8')
           return []
         },
-        post: () => undefined,
-        put: () => undefined,
+        post: () => undefined!,
+        put: () => undefined!,
       },
       url: '',
     }))
@@ -529,7 +529,7 @@ class taskWithNull extends EntityBase {
   @Fields.string()
   title: string = ''
   @Fields.boolean({ allowNull: true })
-  completed: boolean
+  completed!: boolean
 }
 describe('missing fields are added in array column', async () => {
   it('not allow null', async () => {
@@ -556,12 +556,12 @@ describe('missing fields are added in array column', async () => {
       ),
     ).toEqual(['t1', 't3', 't2'])
     expect(await rep.count({ completed: false })).toBe(2)
-    let t = await rep.findFirst({ title: 't1' })
+    let t = (await rep.findFirst({ title: 't1' }))!
     expect(t.completed).toBe(false)
-    t.completed = undefined
+    t.completed = undefined!
     await t.save()
     expect(t.completed).toBe(false)
-    t.completed = null
+    t.completed = null!
     await t.save()
     expect(t.completed).toBe(false)
     t = rep.create({ title: '4' })
@@ -592,12 +592,12 @@ describe('missing fields are added in array column', async () => {
       ),
     ).toEqual(['t1', 't3', 't2'])
     expect(await rep.count({ completed: false })).toBe(0)
-    let t = await rep.findFirst({ title: 't1' })
+    let t = (await rep.findFirst({ title: 't1' }))!
     expect(t.completed).toBe(null)
-    t.completed = undefined
+    t.completed = undefined!
     await t.save()
     expect(t.completed).toBe(null)
-    t.completed = null
+    t.completed = null!
     await t.save()
     expect(t.completed).toBe(null)
     t = rep.create({ title: '4' })
@@ -609,14 +609,14 @@ describe('missing fields are added in array column', async () => {
       title: 'abc',
       $and: [],
     }
-    x.$and.push({})
+    x.$and!.push({})
     let y: EntityFilter<taskWithNull> = { $and: [x, x] }
   })
   it('test api with and', () => {
     let x: EntityFilter<taskWithNull> = {
       $and: [],
     }
-    x.$and.push({})
+    x.$and!.push({})
     let z: EntityFilter<taskWithNull> = x
   })
   it('test toToRawFilter', async () => {
@@ -698,13 +698,13 @@ describe('Filter.getPreciseFilterValuesForKey', () => {
     const preciseValues = await Filter.getPreciseValues(meta, {
       parentOrder: { $id: '123' },
     })
-    expect(preciseValues.parentOrder[0].id).toEqual('123')
+    expect(preciseValues.parentOrder![0]!.id).toEqual('123')
   })
   it('should work with relation 2', async () => {
     const preciseValues = await Filter.getPreciseValues(meta, {
       category: { $id: '123' },
     })
-    expect(preciseValues.category[0].id).toEqual('123')
+    expect(preciseValues.category![0]!.id).toEqual('123')
   })
   it('should work with relation with non common id', async () => {
     @Entity('xx')
@@ -726,7 +726,7 @@ describe('Filter.getPreciseFilterValuesForKey', () => {
     const preciseValues = await Filter.getPreciseValues(meta, {
       category: repo(IdThatIsNotId).create({ index: 3, name: '' }),
     })
-    expect(preciseValues.category[0].index).toEqual(3)
+    expect(preciseValues.category![0]!.index).toEqual(3)
   })
   it('should work with compound', async () => {
     @Entity<CompoundId>('xx', {
@@ -752,8 +752,8 @@ describe('Filter.getPreciseFilterValuesForKey', () => {
     const preciseValues = await Filter.getPreciseValues(meta, {
       category: repo(CompoundId).create({ company: 7, index: 3, name: '' }),
     })
-    expect(preciseValues.category[0].index).toEqual(3)
-    expect(preciseValues.category[0].company).toEqual(7)
+    expect(preciseValues.category![0]!.index).toEqual(3)
+    expect(preciseValues.category![0]!.company).toEqual(7)
   })
 
   it('should return an array of values for a filter with multiple fields, including the target keys', async () => {

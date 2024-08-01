@@ -96,7 +96,7 @@ describe('relations to one behavior', () => {
         }
       `)
     }
-    await task.something()
+    await task!.something()
     expect(await serverRemult.repo(Task).findFirst({})).toMatchInlineSnapshot(`
       Task {
         "cat2": null,
@@ -136,7 +136,7 @@ describe('relations to one behavior', () => {
         }
       `)
     }
-    await task.something()
+    await task!.something()
     expect(await serverRemult.repo(Task).findFirst({})).toMatchInlineSnapshot(`
       Task {
         "cat2": null,

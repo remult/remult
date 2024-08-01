@@ -23,7 +23,7 @@ const relationInfoMember = Symbol.for('relationInfo')
  * @deprecated
  */
 export function getRelationInfo(options: FieldOptions) {
-  return options?.[relationInfoMember] as RelationInfo
+  return (options as any)?.[relationInfoMember] as RelationInfo
 }
 
 /**
@@ -35,12 +35,12 @@ export interface RelationInfo {
 }
 const fieldRelationInfo = Symbol.for('fieldRelationInfo')
 export function getRelationFieldInfo(field: FieldMetadata) {
-  return field[fieldRelationInfo] as RelationFieldInfo | undefined
+  return (field as any)[fieldRelationInfo] as RelationFieldInfo | undefined
 }
 
 export interface RelationFieldInfo {
   type: 'reference' | 'toOne' | 'toMany'
-  options: RelationOptions<any, any, any>
+  options: RelationOptions<unknown, unknown, unknown>
   toEntity: any
   toRepo: Repository<unknown>
   getFields(): RelationFields
@@ -57,19 +57,23 @@ export function verifyFieldRelationInfo(
   for (const field of repo.fields.toArray()) {
     const r = getRelationInfo(field.options)
     if (r) {
-      if (!field[fieldRelationInfo]) {
+      if (!(field as any)[fieldRelationInfo]) {
         const toEntity = r.toType()
         const toRepo = remult.repo(toEntity, dp)
-        const options = field.options as RelationOptions<any, any, any>
-        field[fieldRelationInfo] = {
+        const options = field.options as RelationOptions<
+          unknown,
+          unknown,
+          unknown
+        >
+        ;(field as any)[fieldRelationInfo] = {
           type: r.type,
           toEntity,
           options,
           toRepo,
           getFields: () => {
-            let relationField = options.field
+            let relationField: string = options.field as any
             let relFields: RelationFields = {
-              fields: options.fields,
+              fields: options.fields as Record<string, string>,
               compoundIdField: undefined,
             }
 
@@ -107,7 +111,7 @@ export function verifyFieldRelationInfo(
                               )
                             ) {
                               const keyInMyTable = relOp.fields[key]
-                              fields[keyInMyTable] = key
+                              ;(fields as any)[keyInMyTable!] = key
                             }
                           }
                           relFields.fields = fields

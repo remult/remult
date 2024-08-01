@@ -7,7 +7,7 @@ import { it } from 'vitest'
   valueConverter: {
     toJson: (x) => (x ? x.value : ''),
     fromJson: (x) => new GroupsValue(x),
-    displayValue: (x) => x.value,
+    displayValue: (x) => x!.value,
   },
 })
 export class GroupsValue {
@@ -51,14 +51,14 @@ class testGroups extends EntityBase {
   @Fields.integer()
   id: number = 0
   @Field(() => GroupsValue)
-  g: GroupsValue
+  g!: GroupsValue
 }
 
 export function testSpecialValues({ createEntity }: DbTestProps) {
   it('test save and load', async () => {
     let re = await createEntity(testGroups)
     await re.create({ id: 1 }).save()
-    let x = await re.findFirst()
+    let x = (await re.findFirst())!
     expect(x.g.evilGet()).toBe('')
     x.g = x.g.addGroup('xx')
     expect(x.$.g.valueChanged()).toBe(true)
@@ -67,8 +67,8 @@ export function testSpecialValues({ createEntity }: DbTestProps) {
   })
   it('test2 save and load', async () => {
     let re = await createEntity(testGroups)
-    await re.create({ id: 1, g: new GroupsValue(undefined) }).save()
+    await re.create({ id: 1, g: new GroupsValue(undefined!) }).save()
     let x = await re.findFirst()
-    expect(x.g.evilGet()).toBe('')
+    expect(x!.g.evilGet()).toBe('')
   })
 }

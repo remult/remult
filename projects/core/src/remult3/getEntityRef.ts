@@ -2,7 +2,6 @@ import type { ClassType } from '../../classType.js'
 import type { EntityOptionsFactory } from './RepositoryImplementation.js'
 import type { EntityRef } from './remult3.js'
 
-
 /**
  * Retrieves the EntityRef object associated with the specified entity instance.
  * The EntityRef provides methods for performing operations on the entity instance.
@@ -16,7 +15,7 @@ export function getEntityRef<entityType>(
   entity: entityType,
   throwException = true,
 ): EntityRef<entityType> {
-  let x = entity[entityMember]
+  let x = (entity as any)[entityMember]
   if (!x && throwException)
     throw new Error(
       'item ' +
@@ -39,7 +38,7 @@ export function getEntitySettings<T>(
     if (throwError) {
       throw new Error('Undefined is not an entity :)')
     } else return undefined
-  let info: EntityOptionsFactory = entity[entityInfo]
+  let info: EntityOptionsFactory = (entity as any)[entityInfo]
   if (!info && throwError)
     throw new Error(
       entity.prototype.constructor.name +
@@ -49,5 +48,5 @@ export function getEntitySettings<T>(
   return info
 }
 export function getEntityKey(entity: ClassType<any>): string {
-  return entity[entityInfo_key]
+  return (entity as any)[entityInfo_key]
 }

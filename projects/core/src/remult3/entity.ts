@@ -54,7 +54,7 @@ export function Entity<entityType>(
   )[]
 ) {
   return (
-    target,
+    target: any,
     info?: ClassDecoratorContextStub<
       entityType extends new (...args: any) => any ? entityType : never
     >,
@@ -62,7 +62,7 @@ export function Entity<entityType>(
     for (const rawFilterMember in target) {
       if (Object.prototype.hasOwnProperty.call(target, rawFilterMember)) {
         const element = target[rawFilterMember] as customFilterInfo<any>
-        if (element?.rawFilterInfo?.rawFilterTranslator) {
+        if (element?.rawFilterInfo) {
           if (!element.rawFilterInfo.key)
             element.rawFilterInfo.key = rawFilterMember
         }
@@ -95,7 +95,7 @@ export function Entity<entityType>(
           }
         }
       }
-      return r
+      return r as EntityOptions<unknown>
     }
 
     remultStatic.allEntities.push(target)

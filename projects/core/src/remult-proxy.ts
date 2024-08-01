@@ -107,10 +107,7 @@ export class RemultProxy implements Remult {
       },
       //@ts-ignore
       [getInternalKey]() {
-        return self
-          .remultFactory()
-          .repo(...args)
-          [getInternalKey]()
+        return (self.remultFactory().repo(...args) as any)[getInternalKey]()
       },
       relations: (args2) =>
         self
@@ -138,7 +135,7 @@ export class RemultProxy implements Remult {
           .remultFactory()
           .repo(...args)
           .create(...args2),
-      delete: (args2) =>
+      delete: (args2: any) =>
         self
           .remultFactory()
           .repo(...args)
@@ -183,13 +180,13 @@ export class RemultProxy implements Remult {
         self
           .remultFactory()
           .repo(...args)
-          .fromJson(item, isNew),
+          .fromJson(item, isNew) as any[],
       getEntityRef: (...args2) =>
         self
           .remultFactory()
           .repo(...args)
           .getEntityRef(...args2),
-      insert: (args2) =>
+      insert: (args2: any) =>
         self
           .remultFactory()
           .repo(...args)
@@ -207,12 +204,12 @@ export class RemultProxy implements Remult {
           .remultFactory()
           .repo(...args)
           .query(...args2),
-      save: (args2) =>
+      save: (args2: any) =>
         self
           .remultFactory()
           .repo(...args)
           .save(args2),
-      update: (a, b) =>
+      update: (a: any, b: any) =>
         self
           .remultFactory()
           .repo(...args)

@@ -108,7 +108,7 @@ export declare class ArrayEntityDataProvider implements EntityDataProvider {
   insert(data: any): Promise<any>
 }
 //[ ] CustomArrayFilter from TBD is not exported
-export declare function BackendMethod<type = any>(
+export declare function BackendMethod<type = unknown>(
   options: BackendMethodOptions<type>,
 ): (
   target: any,
@@ -275,10 +275,10 @@ export declare class CompoundIdField implements FieldMetadata<string> {
   fromInput(inputValue: string, inputType?: string): string
   getDbName(): Promise<string>
   getId(instance: any): string
-  options: FieldOptions<any, any>
+  options: FieldOptions
   get valueConverter(): Required<ValueConverter<string>>
   target: ClassType<any>
-  readonly: true
+  readonly: boolean
   allowNull: boolean
   dbReadOnly: boolean
   isServerExpression: boolean
@@ -347,7 +347,7 @@ export interface ControllerRef<entityType>
 }
 export interface ControllerRefBase<entityType> extends Subscribable {
   hasErrors(): boolean
-  error: string
+  error: string | undefined
   validate(): Promise<ErrorInfo<entityType> | undefined>
   readonly isLoading: boolean
 }
@@ -403,10 +403,7 @@ export declare class CustomSqlFilterBuilder
    * @param {FieldMetadata<valueType>} [field] - The field metadata.
    * @returns {string} - The SQL token.
    */
-  param: <valueType>(
-    val: valueType,
-    field?: FieldMetadata<valueType, any>,
-  ) => string
+  param: <valueType>(val: valueType, field?: FieldMetadata<valueType>) => string
   /**
    * Converts an entity filter into a raw SQL condition - and appends to it any `backendPrefilter` and `backendPreprocessFilter`
    * @param {RepositoryOverloads<entityType>} repo - The repository.
@@ -569,7 +566,7 @@ export declare type EntityFilter<entityType> = {
 export declare type EntityIdFields<entityType> = {
   [Properties in keyof Partial<MembersOnly<entityType>>]?: true
 }
-export interface EntityMetadata<entityType = any> {
+export interface EntityMetadata<entityType = unknown> {
   /** The Entity's key also used as it's url  */
   readonly key: string
   /** Metadata for the Entity's fields */
@@ -636,7 +633,7 @@ export interface EntityMetadata<entityType = any> {
    */
   readonly idMetadata: IdMetadata<entityType>
 }
-export interface EntityOptions<entityType = any> {
+export interface EntityOptions<entityType = unknown> {
   /**A human readable name for the entity */
   caption?: string
   /**
@@ -857,7 +854,7 @@ export interface EntityRefForEntityBase<entityType>
   fields: FieldsRefForEntityBase<entityType>
   relations: RepositoryRelationsForEntityBase<entityType>
 }
-export interface ErrorInfo<entityType = any> {
+export interface ErrorInfo<entityType = unknown> {
   message?: string
   modelState?: {
     [Properties in keyof Partial<MembersOnly<entityType>>]?: string
@@ -902,7 +899,7 @@ export interface ExternalHttpProvider {
         toPromise(): Promise<any>
       }
 }
-export declare function Field<entityType = any, valueType = any>(
+export declare function Field<entityType = unknown, valueType = unknown>(
   valueType:
     | (() => valueType extends number
         ? Number
@@ -923,14 +920,14 @@ export declare function Field<entityType = any, valueType = any>(
     | string,
   c?: any,
 ) => void
-export interface FieldMetadata<valueType = any, entityType = any> {
+export interface FieldMetadata<valueType = unknown, entityType = unknown> {
   /** The field's member name in an object.
    * @example
    * const taskRepo = remult.repo(Task);
    * console.log(taskRepo.metadata.fields.title.key);
    * // result: title
    */
-  readonly key: string
+  readonly key: entityType extends object ? keyof entityType & string : string
   /** A human readable caption for the field. Can be used to achieve a consistent caption for a field throughout the app
    * @example
    * <input placeholder={taskRepo.metadata.fields.title.caption}/>
@@ -1026,7 +1023,7 @@ export interface FieldMetadata<valueType = any, entityType = any> {
    */
   fromInput(inputValue: string, inputType?: string): valueType
 }
-export interface FieldOptions<entityType = any, valueType = any> {
+export interface FieldOptions<entityType = unknown, valueType = unknown> {
   /** A human readable name for the field. Can be used to achieve a consistent caption for a field throughout the app
    * @example
    * <input placeholder={taskRepo.metadata.fields.title.caption}/>
@@ -1151,9 +1148,9 @@ export interface FieldOptions<entityType = any, valueType = any> {
   /** The key to be used for this field */
   key?: string
 }
-export interface FieldRef<entityType = any, valueType = any>
+export interface FieldRef<entityType = unknown, valueType = unknown>
   extends Subscribable {
-  error: string
+  error: string | undefined
   displayValue: string
   value: valueType
   originalValue: valueType
@@ -1162,6 +1159,9 @@ export interface FieldRef<entityType = any, valueType = any>
   entityRef: EntityRef<entityType>
   container: entityType
   metadata: FieldMetadata<valueType>
+  /**
+   * Loads the related value - returns null if the related value is not found
+   */
   load(): Promise<valueType>
   valueIsNull(): boolean
   originalValueIsNull(): boolean
@@ -1171,61 +1171,61 @@ export declare class Fields {
   /**
    * Stored as a JSON.stringify - to store as json use Fields.json
    */
-  static object<entityType = any, valueType = any>(
+  static object<entityType = unknown, valueType = unknown>(
     ...options: (
       | FieldOptions<entityType, valueType>
       | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, valueType | undefined>
-  static json<entityType = any, valueType = any>(
+  static json<entityType = unknown, valueType = unknown>(
     ...options: (
       | FieldOptions<entityType, valueType>
       | ((options: FieldOptions<entityType, valueType>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, valueType | undefined>
-  static dateOnly<entityType = any>(
+  static dateOnly<entityType = unknown>(
     ...options: (
       | FieldOptions<entityType, Date>
       | ((options: FieldOptions<entityType, Date>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, Date | undefined>
-  static date<entityType = any>(
+  static date<entityType = unknown>(
     ...options: (
       | FieldOptions<entityType, Date>
       | ((options: FieldOptions<entityType, Date>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, Date | undefined>
-  static integer<entityType = any>(
+  static integer<entityType = unknown>(
     ...options: (
       | FieldOptions<entityType, number>
       | ((options: FieldOptions<entityType, number>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, number | undefined>
-  static autoIncrement<entityType = any>(
+  static autoIncrement<entityType = unknown>(
     ...options: (
       | FieldOptions<entityType, number>
       | ((options: FieldOptions<entityType, number>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, number | undefined>
-  static number<entityType = any>(
+  static number<entityType = unknown>(
     ...options: (
       | FieldOptions<entityType, number>
       | ((options: FieldOptions<entityType, number>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, number | undefined>
-  static createdAt<entityType = any>(
+  static createdAt<entityType = unknown>(
     ...options: (
       | FieldOptions<entityType, Date>
       | ((options: FieldOptions<entityType, Date>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, Date | undefined>
-  static updatedAt<entityType = any>(
+  static updatedAt<entityType = unknown>(
     ...options: (
       | FieldOptions<entityType, Date>
       | ((options: FieldOptions<entityType, Date>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, Date | undefined>
-  static uuid<entityType = any>(
+  static uuid<entityType = unknown>(
     ...options: (
       | FieldOptions<entityType, string>
       | ((options: FieldOptions<entityType, string>, remult: Remult) => void)
@@ -1236,7 +1236,7 @@ export declare class Fields {
    * This id value is determined on the backend on insert, and can't be updated through the API.
    * The CUID is generated using the `@paralleldrive/cuid2` npm package.
    */
-  static cuid<entityType = any>(
+  static cuid<entityType = unknown>(
     ...options: (
       | FieldOptions<entityType, string>
       | ((options: FieldOptions<entityType, string>, remult: Remult) => void)
@@ -1271,7 +1271,7 @@ export declare class Fields {
    *
    * // This approach allows easy management and updates of the allowed values for the `status` field.
    */
-  static literal<entityType = any, valueType extends string = any>(
+  static literal<entityType = unknown, valueType extends string = string>(
     optionalValues: () => readonly valueType[],
     ...options: (
       | StringFieldOptions<entityType, valueType>
@@ -1281,7 +1281,7 @@ export declare class Fields {
         ) => void)
     )[]
   ): ClassFieldDecorator<entityType, valueType | undefined>
-  static enum<entityType = any, theEnum = any>(
+  static enum<entityType = unknown, theEnum = object>(
     enumType: () => theEnum,
     ...options: (
       | FieldOptions<entityType, theEnum[keyof theEnum]>
@@ -1291,7 +1291,7 @@ export declare class Fields {
         ) => void)
     )[]
   ): ClassFieldDecorator<entityType, theEnum[keyof theEnum] | undefined>
-  static string<entityType = any, valueType = string>(
+  static string<entityType = unknown, valueType = string>(
     ...options: (
       | StringFieldOptions<entityType, valueType>
       | ((
@@ -1300,7 +1300,7 @@ export declare class Fields {
         ) => void)
     )[]
   ): ClassFieldDecorator<entityType, valueType | undefined>
-  static boolean<entityType = any>(
+  static boolean<entityType = unknown>(
     ...options: (
       | FieldOptions<entityType, boolean>
       | ((options: FieldOptions<entityType, boolean>, remult: Remult) => void)
@@ -1308,19 +1308,19 @@ export declare class Fields {
   ): ClassFieldDecorator<entityType, boolean | undefined>
 }
 export type FieldsMetadata<entityType> = {
-  [Properties in keyof MembersOnly<entityType>]: FieldMetadata<
+  [Properties in keyof MembersOnly<entityType>]-?: FieldMetadata<
     entityType[Properties],
     entityType
   >
 } & {
   find(
     fieldMetadataOrKey: FieldMetadata | string,
-  ): FieldMetadata<any, entityType>
+  ): FieldMetadata<unknown, entityType>
   [Symbol.iterator]: () => IterableIterator<FieldMetadata<any, entityType>>
   toArray(): FieldMetadata<any, entityType>[]
 }
 export type FieldsRef<entityType> = FieldsRefBase<entityType> & {
-  [Properties in keyof MembersOnly<entityType>]: NonNullable<
+  [Properties in keyof MembersOnly<entityType>]-?: NonNullable<
     entityType[Properties]
   > extends {
     id?: number | string
@@ -1334,7 +1334,7 @@ export type FieldsRefBase<entityType> = {
   toArray(): FieldRef<entityType, any>[]
 }
 export type FieldsRefForEntityBase<entityType> = FieldsRefBase<entityType> & {
-  [Properties in keyof Omit<entityType, keyof EntityBase>]: NonNullable<
+  [Properties in keyof Omit<entityType, keyof EntityBase>]-?: NonNullable<
     entityType[Properties]
   > extends {
     id?: number | string
@@ -1342,13 +1342,16 @@ export type FieldsRefForEntityBase<entityType> = FieldsRefBase<entityType> & {
     ? IdFieldRef<entityType, entityType[Properties]>
     : FieldRef<entityType, entityType[Properties]>
 }
-export declare function FieldType<valueType = any>(
+export declare function FieldType<valueType = unknown>(
   ...options: (
     | FieldOptions<any, valueType>
     | ((options: FieldOptions<any, valueType>, remult: Remult) => void)
   )[]
 ): (target: any, context?: any) => any
-export declare type FieldValidator<entityType = any, valueType = any> = (
+export declare type FieldValidator<
+  entityType = unknown,
+  valueType = unknown,
+> = (
   entity: entityType,
   event: ValidateFieldEvent<entityType, valueType>,
 ) =>
@@ -1562,6 +1565,11 @@ export declare class Filter {
       | (() => EntityFilter<entityType> | Promise<EntityFilter<entityType>>),
   ): Promise<EntityFilter<entityType>>
   toJson(): any
+  static translateCustomWhere<T>(
+    r: Filter,
+    entity: EntityMetadata<T>,
+    remult: Remult,
+  ): Promise<Filter>
 }
 //[ ] customFilterInfo from TBD is not exported
 export interface FilterConsumer {
@@ -1660,7 +1668,7 @@ export interface IdFieldRef<entityType, valueType>
         }
       ? string
       : string | number,
-  ): any
+  ): void
   getId(): valueType extends {
     id?: number
   }
@@ -1682,7 +1690,7 @@ export type IdFilter<valueType> =
           : string
       >
     }
-export interface IdMetadata<entityType = any> {
+export interface IdMetadata<entityType = unknown> {
   /** Extracts the id value of an entity item. Useful in cases where the id column is not called id
    * @example
    * repo.metadata.idMetadata.getId(task)
@@ -2201,19 +2209,21 @@ export interface Repository<entityType> {
   findFirst(
     where?: EntityFilter<entityType>,
     options?: FindFirstOptions<entityType>,
-  ): Promise<entityType>
+  ): Promise<entityType | undefined>
   /** returns the first item that matchers the `where` condition
    * @example
    * await taskRepo.findOne({ where:{ completed:false }})
    * @example
    * await taskRepo.findFirst({ where:{ completed:false }, createIfNotFound: true })
    *      */
-  findOne(options?: FindFirstOptions<entityType>): Promise<entityType>
-  /** returns the items that matches the idm the result is cached unless specified differently in the `options` parameter */
+  findOne(
+    options?: FindFirstOptions<entityType>,
+  ): Promise<entityType | undefined>
+  /** returns the items that matches the id. If id is undefined | null, returns null */
   findId(
     id: idType<entityType>,
     options?: FindFirstOptionsBase<entityType>,
-  ): Promise<entityType>
+  ): Promise<entityType | undefined | null>
   /**  An alternative form of fetching data from the API server, which is intended for operating on large numbers of entity objects.
    *
    * It also has it's own paging mechanism that can be used n paging scenarios.
@@ -2411,7 +2421,7 @@ export declare class Sort {
    */
   static translateOrderByToSort<T>(
     entityDefs: EntityMetadata<T>,
-    orderBy?: EntityOrderBy<T>,
+    orderBy: EntityOrderBy<T>,
   ): Sort
   /**
    * Creates a unique `Sort` instance based on the provided `Sort` and the entity metadata.
@@ -2489,7 +2499,7 @@ export declare class SqlDatabase
    * Wraps an identifier with the database's identifier syntax.
    */
   wrapIdentifier: (name: string) => string
-  ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
+  ensureSchema(entities: EntityMetadata[]): Promise<void>
   /**
    * Gets the entity data provider.
    * @param entity  - The entity metadata.
@@ -2560,7 +2570,7 @@ export declare class SqlDatabase
 //[ ] MigrationCode from TBD is not exported
 //[ ] MigrationBuilder from TBD is not exported
 export interface SqlImplementation extends HasWrapIdentifier {
-  getLimitSqlSyntax(limit: number, offset: number): any
+  getLimitSqlSyntax(limit: number, offset: number): string
   createCommand(): SqlCommand
   transaction(action: (sql: SqlImplementation) => Promise<void>): Promise<void>
   entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void>
@@ -2582,7 +2592,7 @@ export interface StoredQuery {
   id: string
   data: any
 }
-export interface StringFieldOptions<entityType = any, valueType = string>
+export interface StringFieldOptions<entityType = unknown, valueType = string>
   extends FieldOptions<entityType, valueType> {
   maxLength?: number
   minLength?: number
@@ -2659,8 +2669,8 @@ export interface UserInfo {
   name?: string
   roles?: string[]
 }
-export interface ValidateFieldEvent<entityType = any, valueType = any> {
-  error: string
+export interface ValidateFieldEvent<entityType = unknown, valueType = unknown> {
+  error?: string
   value: valueType
   originalValue: valueType
   valueChanged(): boolean
@@ -2897,7 +2907,7 @@ export interface ValueListFieldOptions<entityType, valueType>
   getValues?: () => valueType[]
 }
 export declare function ValueListFieldType<
-  valueType extends ValueListItem = any,
+  valueType extends ValueListItem = ValueListItem,
 >(
   ...options: (
     | ValueListFieldOptions<any, valueType>
@@ -2914,7 +2924,7 @@ export declare class ValueListInfo<T extends ValueListItem>
   isNumeric: boolean
   private constructor()
   getValues(): T[]
-  byId(key: any): T
+  byId(key: any): T | undefined
   fromJson(val: any): T
   toJson(val: T): any
   fromDb(val: any): T
@@ -2951,9 +2961,9 @@ export declare class WebSqlDataProvider
   end(): Promise<void>
   getLimitSqlSyntax(limit: number, offset: number): string
   entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void>
-  ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
+  ensureSchema(entities: EntityMetadata[]): Promise<void>
   dropTable(entity: EntityMetadata): Promise<void>
-  createTable(entity: EntityMetadata<any>): Promise<void>
+  createTable(entity: EntityMetadata): Promise<void>
   createCommand(): SqlCommand
   transaction(
     action: (dataProvider: SqlImplementation) => Promise<void>,
@@ -2962,7 +2972,7 @@ export declare class WebSqlDataProvider
   toString(): string
 }
 export declare function withRemult<T>(
-  callback: (remult: any) => Promise<T>,
+  callback: (remult: Remult) => Promise<T>,
   options?: {
     dataProvider?:
       | DataProvider
@@ -2998,17 +3008,17 @@ export type RemultExpressServer = express.RequestHandler &
 
 ```ts
 export declare function remultNext(
-  options?: RemultServerOptions<NextApiRequest>,
+  options: RemultServerOptions<NextApiRequest>,
 ): RemultNextServer
 //[ ] RemultServerOptions from ./server/index.js is not exported
 export declare function remultNextApp(
   options?: RemultServerOptions<Request>,
 ): RemultNextAppServer
 export type RemultNextAppServer = RemultServerCore<Request> & {
-  GET: (req: Request) => Promise<Response>
-  PUT: (req: Request) => Promise<Response>
-  POST: (req: Request) => Promise<Response>
-  DELETE: (req: Request) => Promise<Response>
+  GET: (req: Request) => Promise<Response | undefined>
+  PUT: (req: Request) => Promise<Response | undefined>
+  POST: (req: Request) => Promise<Response | undefined>
+  DELETE: (req: Request) => Promise<Response | undefined>
   withRemult<T>(what: () => Promise<T>): Promise<T>
 }
 //[ ] RemultServerCore from ./server/index.js is not exported
@@ -3072,8 +3082,8 @@ export declare class DataProviderLiveQueryStorage
 //[ ] LiveQueryStorageEntity from TBD is not exported
 //[ ] DataProvider from TBD is not exported
 //[ ] StoredQuery from TBD is not exported
-export type GenericRequestHandler = (
-  req: GenericRequestInfo,
+export type GenericRequestHandler<RequestType> = (
+  req: RequestType,
   res: GenericResponse,
   next: VoidFunction,
 ) => void
@@ -3084,13 +3094,13 @@ export interface GenericRequestInfo {
   params?: any
 }
 export interface GenericResponse {
-  json(data: any): any
-  send(html: string): any
+  json(data: any): void
+  send(html: string): void
   status(statusCode: number): GenericResponse
-  end(): any
+  end(): void
 }
-export type GenericRouter = {
-  route(path: string): SpecificRoute
+export type GenericRouter<RequestType> = {
+  route(path: string): SpecificRoute<RequestType>
 }
 export interface InitRequestOptions {
   liveQueryStorage: LiveQueryStorage
@@ -3100,7 +3110,7 @@ export interface InitRequestOptions {
 //[ ] Remult from TBD is not exported
 export declare class JsonEntityFileStorage implements JsonEntityStorage {
   private folderPath
-  getItem(entityDbName: string): string
+  getItem(entityDbName: string): string | null
   setItem(entityDbName: string, json: string): void
   constructor(folderPath: string)
 }
@@ -3116,13 +3126,13 @@ export interface queuedJobInfo {
 }
 //[ ] queuedJobInfoResponse from TBD is not exported
 export interface QueueStorage {
-  createJob(url: string, userId: string): Promise<string>
+  createJob(url: string, userId?: string): Promise<string>
   getJobInfo(queuedJobId: string): Promise<queuedJobInfo>
 }
 export interface RemultServer<RequestType>
   extends RemultServerCore<RequestType> {
-  withRemult(req: RequestType, res: GenericResponse, next: VoidFunction): any
-  registerRouter(r: GenericRouter): void
+  withRemult(req: RequestType, res: GenericResponse, next: VoidFunction): void
+  registerRouter(r: GenericRouter<RequestType>): void
   handle(
     req: RequestType,
     gRes?: GenericResponse,
@@ -3217,29 +3227,33 @@ export interface RemultServerOptions<RequestType> {
    * })
    */
   error?: (info: {
-    req: RequestType
+    req?: RequestType
     entity?: EntityMetadata
     exception?: any
     httpStatusCode: number
     responseBody: any
     sendError: (httpStatusCode: number, body: any) => void
-  }) => Promise<void>
+  }) => Promise<void> | undefined
 }
 //[ ] ClassType from TBD is not exported
 //[ ] UserInfo from TBD is not exported
 //[ ] SubscriptionServer from TBD is not exported
 //[ ] Allowed from TBD is not exported
 //[ ] EntityMetadata from TBD is not exported
-export type SpecificRoute = {
-  get(handler: GenericRequestHandler): SpecificRoute
-  put(handler: GenericRequestHandler): SpecificRoute
-  post(handler: GenericRequestHandler): SpecificRoute
-  delete(handler: GenericRequestHandler): SpecificRoute
+export type SpecificRoute<RequestType> = {
+  get(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
+  put(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
+  post(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
+  delete(
+    handler: GenericRequestHandler<RequestType>,
+  ): SpecificRoute<RequestType>
 }
 export declare class SseSubscriptionServer implements SubscriptionServer {
   private canUserConnectToChannel?
   constructor(
-    canUserConnectToChannel?: (channel: string, remult: Remult) => boolean,
+    canUserConnectToChannel?:
+      | ((channel: string, remult: Remult) => boolean)
+      | undefined,
   )
   publishMessage<T>(channel: string, message: any): Promise<void>
 }
@@ -3280,8 +3294,8 @@ export declare class DataProviderLiveQueryStorage
 //[ ] LiveQueryStorageEntity from TBD is not exported
 //[ ] DataProvider from TBD is not exported
 //[ ] StoredQuery from TBD is not exported
-export type GenericRequestHandler = (
-  req: GenericRequestInfo,
+export type GenericRequestHandler<RequestType> = (
+  req: RequestType,
   res: GenericResponse,
   next: VoidFunction,
 ) => void
@@ -3292,17 +3306,17 @@ export interface GenericRequestInfo {
   params?: any
 }
 export interface GenericResponse {
-  json(data: any): any
-  send(html: string): any
+  json(data: any): void
+  send(html: string): void
   status(statusCode: number): GenericResponse
-  end(): any
+  end(): void
 }
-export type GenericRouter = {
-  route(path: string): SpecificRoute
+export type GenericRouter<RequestType> = {
+  route(path: string): SpecificRoute<RequestType>
 }
 export declare class JsonEntityFileStorage implements JsonEntityStorage {
   private folderPath
-  getItem(entityDbName: string): string
+  getItem(entityDbName: string): string | null
   setItem(entityDbName: string, json: string): void
   constructor(folderPath: string)
 }
@@ -3318,13 +3332,13 @@ export interface queuedJobInfo {
 }
 //[ ] queuedJobInfoResponse from TBD is not exported
 export interface QueueStorage {
-  createJob(url: string, userId: string): Promise<string>
+  createJob(url: string, userId?: string): Promise<string>
   getJobInfo(queuedJobId: string): Promise<queuedJobInfo>
 }
 export interface RemultServer<RequestType>
   extends RemultServerCore<RequestType> {
-  withRemult(req: RequestType, res: GenericResponse, next: VoidFunction): any
-  registerRouter(r: GenericRouter): void
+  withRemult(req: RequestType, res: GenericResponse, next: VoidFunction): void
+  registerRouter(r: GenericRouter<RequestType>): void
   handle(
     req: RequestType,
     gRes?: GenericResponse,
@@ -3415,13 +3429,13 @@ export interface RemultServerOptions<RequestType> {
    * })
    */
   error?: (info: {
-    req: RequestType
+    req?: RequestType
     entity?: EntityMetadata
     exception?: any
     httpStatusCode: number
     responseBody: any
     sendError: (httpStatusCode: number, body: any) => void
-  }) => Promise<void>
+  }) => Promise<void> | undefined
 }
 //[ ] ClassType from TBD is not exported
 //[ ] UserInfo from TBD is not exported
@@ -3431,16 +3445,20 @@ export interface RemultServerOptions<RequestType> {
 //[ ] LiveQueryStorage from TBD is not exported
 //[ ] Allowed from TBD is not exported
 //[ ] EntityMetadata from TBD is not exported
-export type SpecificRoute = {
-  get(handler: GenericRequestHandler): SpecificRoute
-  put(handler: GenericRequestHandler): SpecificRoute
-  post(handler: GenericRequestHandler): SpecificRoute
-  delete(handler: GenericRequestHandler): SpecificRoute
+export type SpecificRoute<RequestType> = {
+  get(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
+  put(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
+  post(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
+  delete(
+    handler: GenericRequestHandler<RequestType>,
+  ): SpecificRoute<RequestType>
 }
 export declare class SseSubscriptionServer implements SubscriptionServer {
   private canUserConnectToChannel?
   constructor(
-    canUserConnectToChannel?: (channel: string, remult: Remult) => boolean,
+    canUserConnectToChannel?:
+      | ((channel: string, remult: Remult) => boolean)
+      | undefined,
   )
   publishMessage<T>(channel: string, message: any): Promise<void>
 }
@@ -3523,7 +3541,7 @@ export interface RemultFresh extends RemultServerCore<FreshRequest> {
 
 ```ts
 export declare function remultSveltekit(
-  options?: RemultServerOptions<RequestEvent>,
+  options: RemultServerOptions<RequestEvent>,
 ): RemultSveltekitServer
 //[ ] RemultServerOptions from ./server/index.js is not exported
 export type RemultSveltekitServer = RemultServerCore<RequestEvent> &
@@ -3580,16 +3598,18 @@ export declare class PostgresDataProvider
   createCommand(): SqlCommand
   constructor(
     pool: PostgresPool,
-    options?: {
-      wrapIdentifier?: (name: string) => string
-      caseInsensitiveIdentifiers?: boolean
-      schema?: string
-      orderByNullsFirst?: boolean
-    },
+    options?:
+      | {
+          wrapIdentifier?: (name: string) => string
+          caseInsensitiveIdentifiers?: boolean
+          schema?: string
+          orderByNullsFirst?: boolean
+        }
+      | undefined,
   )
   end(): Promise<void>
   provideMigrationBuilder(builder: MigrationCode): MigrationBuilder
-  wrapIdentifier: (name: any) => any
+  wrapIdentifier: (name: string) => string
   ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
   orderByNullsFirst?: boolean
   transaction(
@@ -3614,7 +3634,7 @@ export declare class PostgresSchemaBuilder {
   private schemaAndName
   private schemaOnly
   verifyStructureOfAllEntities(remult?: Remult): Promise<void>
-  ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
+  ensureSchema(entities: EntityMetadata[]): Promise<void>
   createIfNotExist(entity: EntityMetadata): Promise<void>
   addColumnIfNotExist<T extends EntityMetadata>(
     entity: T,
@@ -3645,7 +3665,7 @@ export declare class PostgresSchemaBuilder {
   private schemaAndName
   private schemaOnly
   verifyStructureOfAllEntities(remult?: Remult): Promise<void>
-  ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
+  ensureSchema(entities: EntityMetadata[]): Promise<void>
   createIfNotExist(entity: EntityMetadata): Promise<void>
   addColumnIfNotExist<T extends EntityMetadata>(
     entity: T,
@@ -3707,7 +3727,7 @@ export declare class KnexDataProvider
     entity: RepositoryOverloads<entityType>,
     condition: EntityFilter<entityType>,
     wrapIdentifier?: (name: string) => string,
-  ): Promise<(knex: any) => void>
+  ): Promise<(knex: Knex.QueryBuilder) => void>
   isProxy?: boolean
   ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
 }
@@ -3726,7 +3746,7 @@ export declare class KnexSchemaBuilder {
   ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
   createIfNotExist(entity: EntityMetadata): Promise<void>
   createTableKnexCommand(
-    entity: EntityMetadata<any>,
+    entity: EntityMetadata,
     e: EntityDbNamesBase,
   ): Knex.SchemaBuilder
   addColumnIfNotExist(
@@ -3765,7 +3785,7 @@ export declare class MongoDataProvider implements DataProvider {
   disableTransactions: boolean
   static getDb(dataProvider?: DataProvider): {
     db: Db
-    session: ClientSession
+    session: ClientSession | undefined
   }
   getEntityDataProvider(entity: EntityMetadata<any>): EntityDataProvider
   transaction(
@@ -4003,7 +4023,7 @@ export const actionInfo: {
 export type ClassType<T> = {
   new (...args: any[]): T
 }
-export declare class controllerRefImpl<T = any>
+export declare class controllerRefImpl<T = unknown>
   extends rowHelperBase<T>
   implements ControllerRef<T>
 {
@@ -4015,9 +4035,9 @@ export declare class controllerRefImpl<T = any>
 //[ ] Remult from TBD is not exported
 //[ ] FieldsRef from TBD is not exported
 export declare function decorateColumnSettings<valueType>(
-  settings: FieldOptions<any, valueType>,
+  settings: FieldOptions<unknown, valueType>,
   remult: Remult,
-): FieldOptions<any, valueType>
+): FieldOptions<unknown, valueType>
 //[ ] FieldOptions from TBD is not exported
 export const flags: {
   error500RetryCount: number
@@ -4034,11 +4054,11 @@ export declare function getEntitySettings<T>(
 //[ ] EntityOptionsFactory from TBD is not exported
 export declare function getRelationFieldInfo(
   field: FieldMetadata,
-): RelationFieldInfo
+): RelationFieldInfo | undefined
 export declare function getRelationInfo(options: FieldOptions): RelationInfo
 export interface RelationFieldInfo {
   type: "reference" | "toOne" | "toMany"
-  options: RelationOptions<any, any, any>
+  options: RelationOptions<unknown, unknown, unknown>
   toEntity: any
   toRepo: Repository<unknown>
   getFields(): RelationFields

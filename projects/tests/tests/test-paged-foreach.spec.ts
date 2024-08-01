@@ -68,14 +68,12 @@ describe('test paged foreach ', () => {
     expect(i).toBe(5)
 
     expect(
-      (
-        await c.findFirst(
-          {},
-          {
-            orderBy: { categoryName: 'asc' },
-          },
-        )
-      ).id,
+      (await c.findFirst(
+        {},
+        {
+          orderBy: { categoryName: 'asc' },
+        },
+      ))!.id,
     ).toBe(5)
   })
 
@@ -295,7 +293,7 @@ describe('test paged foreach ', () => {
     ) {
       const z = { ...orderBy }
       const s = Sort.createUniqueEntityOrderBy(e.metadata, orderBy)
-      const expected = {}
+      const expected: any = {}
       for (const c of sort) {
         expected[c.key] = 'asc'
       }
@@ -318,7 +316,7 @@ describe('test paged foreach ', () => {
 
     function test(orderBy: EntityOrderBy<theTable>, ...sort: FieldMetadata[]) {
       const s = Sort.createUniqueEntityOrderBy(eDefs, orderBy)
-      const expected = {}
+      const expected: any = {}
       for (const c of sort) {
         expected[c.key] = 'asc'
       }
@@ -445,9 +443,9 @@ describe('test paged foreach ', () => {
 })
 class theTable extends EntityBase {
   @Fields.string()
-  a: string
+  a!: string
   @Fields.string()
-  b: string
+  b!: string
   @Fields.string()
-  c: string
+  c!: string
 }

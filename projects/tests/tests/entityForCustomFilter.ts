@@ -8,7 +8,7 @@ import { Entity, EntityBase, Fields } from '../../core/'
 @Entity('entityForrawFilter', { allowApiCrud: true })
 export class entityForrawFilter extends EntityBase {
   @Fields.integer()
-  id: number
+  id!: number
   static filter = Filter.createCustom<
     entityForrawFilter,
     {

@@ -25,7 +25,7 @@ class FamilyDeliveries extends EntityBase {
   @Fields.integer()
   id = 0
   @Field(() => HelpersBase)
-  courier: HelpersBase
+  courier!: HelpersBase
 }
 
 @Entity('helper', {

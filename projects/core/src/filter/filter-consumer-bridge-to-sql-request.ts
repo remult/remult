@@ -299,13 +299,13 @@ export function shouldNotCreateField<entityType>(
   field: FieldMetadata,
   dbNames: EntityDbNames<entityType>,
 ) {
-  return (
+  return Boolean(
     field.isServerExpression ||
-    (field.options.sqlExpression && field.dbName != dbNames.$dbNameOf(field))
+      (field.options.sqlExpression && field.dbName != dbNames.$dbNameOf(field)),
   )
 }
 export function shouldCreateEntity(
-  entity: EntityMetadata<any>,
+  entity: EntityMetadata,
   e: EntityDbNamesBase,
 ) {
   return (
@@ -363,7 +363,7 @@ async function internalDbNamesOf<entityType>(
       var key: string
       if (typeof field === 'string') key = field
       else key = field.key
-      return result[key]
+      return result[key as keyof EntityDbNamesBase] as string
     },
     wrapIdentifier: options.wrapIdentifier,
   }
@@ -380,7 +380,7 @@ async function internalDbNamesOf<entityType>(
       else if (options.tableName === true) {
         r = result.$entityName + '.' + r
       }
-    result[field.key] = r
+    ;(result as any)[field.key] = r
   }
   return result as EntityDbNames<entityType>
 }
@@ -397,7 +397,7 @@ export async function entityDbName(
       try {
         metadata.options.sqlExpression =
           "recursive sqlExpression call for entity '" + metadata.key + "'. "
-        return await prev(metadata)
+        return await prev(metadata as any)
       } finally {
         metadata.options.sqlExpression = prev
       }
@@ -417,16 +417,16 @@ export async function fieldDbName(
     if (f.options.sqlExpression) {
       let result: string
       if (typeof f.options.sqlExpression === 'function') {
-        if (f[sqlExpressionInProgressKey] && !forceSqlExpression) {
+        if ((f as any)[sqlExpressionInProgressKey] && !forceSqlExpression) {
           return "recursive sqlExpression call for field '" + f.key + "'. "
         }
         try {
-          f[sqlExpressionInProgressKey] = true
+          ;(f as any)[sqlExpressionInProgressKey] = true
 
           result = await f.options.sqlExpression(meta)
           f.options.sqlExpression = () => result
         } finally {
-          delete f[sqlExpressionInProgressKey]
+          delete (f as any)[sqlExpressionInProgressKey]
         }
       } else result = f.options.sqlExpression
       if (!result) return f.dbName

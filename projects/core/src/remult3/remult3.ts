@@ -13,18 +13,18 @@ import type { EntityBase } from './RepositoryImplementation.js'
 
 export interface EntityRefBase<entityType> extends Subscribable {
   hasErrors(): boolean
-  undoChanges()
+  undoChanges(): void
   save(): Promise<entityType>
   reload(): Promise<entityType>
   delete(): Promise<void>
   isNew(): boolean //
   wasChanged(): boolean
   wasDeleted(): boolean
-  error: string
+  error: string | undefined
   getId(): idType<entityType>
   getOriginalId(): idType<entityType>
-  repository: Repository<entityType>
-  metadata: EntityMetadata<entityType>
+  repository: Repository<unknown> //unknown for hagai ts 4.6
+  metadata: EntityMetadata<unknown> //unknown for hagai ts 4.6
   toApiJson(): any
   validate(): Promise<ErrorInfo<entityType> | undefined>
   readonly apiUpdateAllowed: boolean
@@ -45,8 +45,8 @@ export interface EntityRefForEntityBase<entityType>
   relations: RepositoryRelationsForEntityBase<entityType>
 }
 
-export interface ValidateFieldEvent<entityType = any, valueType = any> {
-  error: string
+export interface ValidateFieldEvent<entityType = unknown, valueType = unknown> {
+  error?: string
   value: valueType
   originalValue: valueType
   valueChanged(): boolean
@@ -112,7 +112,7 @@ export interface LifecycleEvent<entityType> {
 }
 export interface ControllerRefBase<entityType> extends Subscribable {
   hasErrors(): boolean
-  error: string
+  error: string | undefined
   validate(): Promise<ErrorInfo<entityType> | undefined>
   readonly isLoading: boolean
 }
@@ -143,20 +143,20 @@ export type FieldsRefBase<entityType> = {
   toArray(): FieldRef<entityType, any>[]
 }
 export type FieldsMetadata<entityType> = {
-  [Properties in keyof MembersOnly<entityType>]: FieldMetadata<
+  [Properties in keyof MembersOnly<entityType>]-?: FieldMetadata<
     entityType[Properties],
     entityType
   >
 } & {
   find(
     fieldMetadataOrKey: FieldMetadata | string,
-  ): FieldMetadata<any, entityType>
+  ): FieldMetadata<unknown, entityType>
   [Symbol.iterator]: () => IterableIterator<FieldMetadata<any, entityType>>
   toArray(): FieldMetadata<any, entityType>[]
 }
 
 export type FieldsRef<entityType> = FieldsRefBase<entityType> & {
-  [Properties in keyof MembersOnly<entityType>]: NonNullable<
+  [Properties in keyof MembersOnly<entityType>]-?: NonNullable<
     entityType[Properties]
   > extends {
     id?: number | string
@@ -166,7 +166,7 @@ export type FieldsRef<entityType> = FieldsRefBase<entityType> & {
 }
 
 export type FieldsRefForEntityBase<entityType> = FieldsRefBase<entityType> & {
-  [Properties in keyof Omit<entityType, keyof EntityBase>]: NonNullable<
+  [Properties in keyof Omit<entityType, keyof EntityBase>]-?: NonNullable<
     entityType[Properties]
   > extends {
     id?: number | string
@@ -186,7 +186,7 @@ export interface IdFieldRef<entityType, valueType>
       : valueType extends { id?: string }
       ? string
       : string | number,
-  )
+  ): void
   getId(): valueType extends { id?: number }
     ? number
     : valueType extends { id?: string }
@@ -194,9 +194,9 @@ export interface IdFieldRef<entityType, valueType>
     : string | number
 }
 
-export interface FieldRef<entityType = any, valueType = any>
+export interface FieldRef<entityType = unknown, valueType = unknown>
   extends Subscribable {
-  error: string
+  error: string | undefined
   displayValue: string
   value: valueType
   originalValue: valueType
@@ -205,13 +205,16 @@ export interface FieldRef<entityType = any, valueType = any>
   entityRef: EntityRef<entityType>
   container: entityType
   metadata: FieldMetadata<valueType>
+  /**
+   * Loads the related value - returns null if the related value is not found
+   */
   load(): Promise<valueType>
   valueIsNull(): boolean
   originalValueIsNull(): boolean
   validate(): Promise<boolean>
 }
 
-export interface IdMetadata<entityType = any> {
+export interface IdMetadata<entityType = unknown> {
   /** Extracts the id value of an entity item. Useful in cases where the id column is not called id
    * @example
    * repo.metadata.idMetadata.getId(task)
@@ -227,7 +230,7 @@ export interface IdMetadata<entityType = any> {
 }
 
 /** Metadata for an `Entity`, this metadata can be used in the user interface to provide a richer UI experience  */
-export interface EntityMetadata<entityType = any> {
+export interface EntityMetadata<entityType = unknown> {
   /** The Entity's key also used as it's url  */
   readonly key: string
   /** Metadata for the Entity's fields */
@@ -329,19 +332,21 @@ export interface Repository<entityType> {
   findFirst(
     where?: EntityFilter<entityType>,
     options?: FindFirstOptions<entityType>,
-  ): Promise<entityType>
+  ): Promise<entityType | undefined>
   /** returns the first item that matchers the `where` condition
    * @example
    * await taskRepo.findOne({ where:{ completed:false }})
    * @example
    * await taskRepo.findFirst({ where:{ completed:false }, createIfNotFound: true })
    *      */
-  findOne(options?: FindFirstOptions<entityType>): Promise<entityType>
-  /** returns the items that matches the idm the result is cached unless specified differently in the `options` parameter */
+  findOne(
+    options?: FindFirstOptions<entityType>,
+  ): Promise<entityType | undefined>
+  /** returns the items that matches the id. If id is undefined | null, returns null */
   findId(
     id: idType<entityType>,
     options?: FindFirstOptionsBase<entityType>,
-  ): Promise<entityType>
+  ): Promise<entityType | undefined | null>
   /**  An alternative form of fetching data from the API server, which is intended for operating on large numbers of entity objects.
    *
    * It also has it's own paging mechanism that can be used n paging scenarios.
@@ -1078,6 +1083,22 @@ export const flags = {
 //p1 - replace uuid with crypto.randomUUID and allow custom fallback NO
 //p1 - add nanoid - NO
 //p1 - add id and use luid by default, but allow changes with Fields.id.defaultIdProvider NO but defaultProvider yes
+/*p1
+ * field, fieldType ,ValueListFieldType, - return optional parameter for decorators
+ * options to remultExpress tc... should be mandatory
+ * return value converter to previous typing
+ * add breaking change notification about findOne and findFirst and findId
+ */
+
+//p1 - fix query docs to also explain how it can be used for infinite scroll and pagination.
+//y1 - 'test expression columns without aliases'
+//y1 - ts issue with fields - when a field is optional, it's $ is also optional and thats a problem
+//p1 - vite 5.3 supports ts5 decorators - check and adapt.
+//p1 - see if I can fix the no alias problem in selects
+//p1 - add luid - it's cool for order by.
+//p1 - replace uuid with crypto.randomUUID and allow custom fallback
+//p1 - add nanoid
+//p1 - add id and use luid by default, but allow changes with Fields.id.defaultIdProvider
 //p1 - explain the benefits of changing the default provider for testing in docs.
 //p1 - fix sqlite to  support alter table when adding a column with ensure schema = on
 //p1 - fix app custom filters example for multiple filters.

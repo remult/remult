@@ -1,7 +1,7 @@
 import type { EntityMetadata } from './remult3/remult3.js'
 
 export interface SqlImplementation extends HasWrapIdentifier {
-  getLimitSqlSyntax(limit: number, offset: number)
+  getLimitSqlSyntax(limit: number, offset: number): string
   createCommand(): SqlCommand
   transaction(action: (sql: SqlImplementation) => Promise<void>): Promise<void>
   entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void>

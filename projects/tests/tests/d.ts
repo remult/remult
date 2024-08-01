@@ -5,9 +5,9 @@ import { Entity, EntityBase, Fields } from '../../core/'
 })
 export class d extends EntityBase {
   @Fields.integer()
-  id: number
+  id!: number
   @Fields.integer()
-  b: number
+  b!: number
 
   static count = 0
 }

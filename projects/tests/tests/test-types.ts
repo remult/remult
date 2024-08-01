@@ -5,7 +5,14 @@ import {
   EntityBase,
   EntityFilter,
   repo,
+  type FieldMetadata,
+  type FieldsMetadata,
+  Validators,
 } from '../../core'
+import {
+  getEntityKey,
+  getEntityRef,
+} from '../../core/src/remult3/getEntityRef.js'
 
 export declare type MyEntityOrderBy<entityType> = {
   [Properties in keyof Partial<
@@ -14,7 +21,9 @@ export declare type MyEntityOrderBy<entityType> = {
 }
 
 class Person extends IdEntity {
-  @Fields.string()
+  @Fields.object({
+    validate: Validators.minLength(2),
+  })
   name = ''
   @Relations.toOne(() => Person)
   parent?: Person
@@ -34,10 +43,10 @@ let p = new Person()
 
 type KeysNotOfAType<TSchema, Type> = {
   [key in keyof TSchema]: TSchema extends EntityBase
-  ? key
-  : NonNullable<TSchema[key]> extends Type
-  ? never
-  : key
+    ? key
+    : NonNullable<TSchema[key]> extends Type
+    ? never
+    : key
 }[keyof TSchema]
 
 type OmitFunctions<entityType> = {
@@ -45,7 +54,7 @@ type OmitFunctions<entityType> = {
 }
 
 type MembersOnly<T> = OmitFunctions<Omit<T, keyof Pick<EntityBase, '$' | '_'>>>
-const x: MembersOnly<Person>
+const x: MembersOnly<Person> = undefined!
 
 class HelperBase extends EntityBase {
   id = 0
@@ -62,3 +71,9 @@ let f2: EntityFilter<Helper> = {
   ...f,
 }
 
+var name: FieldMetadata<string, HelperBase> = {} as any
+var x1: FieldMetadata<unknown, HelperBase> = name
+
+var x2: HelperBase = {} as any
+let y1 = 'ab'
+x2[x1.key]?.toString()

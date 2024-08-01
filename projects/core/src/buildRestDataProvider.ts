@@ -3,7 +3,7 @@ import { RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-da
 import { flags } from './remult3/remult3.js'
 
 export function buildRestDataProvider(
-  provider: ExternalHttpProvider | typeof fetch,
+  provider: ExternalHttpProvider | typeof fetch | undefined,
 ): RestDataProviderHttpProvider {
   if (!provider) return new RestDataProviderHttpProviderUsingFetch()
   let httpDataProvider: RestDataProviderHttpProvider | undefined
@@ -50,7 +50,7 @@ export async function retry<T>(what: () => Promise<T>): Promise<T> {
   while (true) {
     try {
       return await what()
-    } catch (err) {
+    } catch (err: any) {
       if (
         (err.message?.startsWith('Error occurred while trying to proxy') ||
           err.message?.startsWith('Error occured while trying to proxy') ||
@@ -72,8 +72,8 @@ export async function retry<T>(what: () => Promise<T>): Promise<T> {
 }
 export function toPromise<T>(p: Promise<T> | { toPromise(): Promise<T> }) {
   let r: Promise<T>
-  if (p['toPromise'] !== undefined) {
-    r = p['toPromise']()
+  if ((p as any)['toPromise'] !== undefined) {
+    r = (p as any)['toPromise']()
   }
   //@ts-ignore
   else r = p

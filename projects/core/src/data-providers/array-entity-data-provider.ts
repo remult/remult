@@ -30,7 +30,7 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
     private rows: () => any[],
   ) {}
   //@internal
-  private __names: EntityDbNamesBase
+  private __names?: EntityDbNamesBase
   //@internal
   async init() {
     if (this.__names) return this.__names
@@ -97,7 +97,7 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
   }
   //@internal
   translateFromJson(row: any, dbNames: EntityDbNamesBase) {
-    let result = {}
+    let result: any = {}
     for (const col of this.entity.fields) {
       result[col.key] = col.valueConverter.fromJson(row[dbNames.$dbNameOf(col)])
     }
@@ -105,7 +105,7 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
   }
   //@internal
   translateToJson(row: any, dbNames: EntityDbNamesBase) {
-    let result = {}
+    let result: any = {}
     for (const col of this.entity.fields) {
       if (!isDbReadonly(col, dbNames))
         result[dbNames.$dbNameOf(col)] = col.valueConverter.toJson(row[col.key])

@@ -100,7 +100,7 @@ export class SqlDatabase
   _getSourceSql() {
     return this.sql
   }
-  async ensureSchema(entities: EntityMetadata<any>[]): Promise<void> {
+  async ensureSchema(entities: EntityMetadata[]): Promise<void> {
     if (this.sql.ensureSchema) await this.sql.ensureSchema(entities)
   }
 
@@ -254,16 +254,16 @@ export class SqlDatabase
    * const db = new SqlDatabase(new PostgresDataProvider(pgPool))
    */
   constructor(private sql: SqlImplementation) {
-    if (sql.wrapIdentifier) this.wrapIdentifier = (x) => sql.wrapIdentifier(x)
+    if (sql.wrapIdentifier) this.wrapIdentifier = (x) => sql.wrapIdentifier!(x)
     if (isOfType<CanBuildMigrations>(sql, 'provideMigrationBuilder')) {
       this.provideMigrationBuilder = (x) => sql.provideMigrationBuilder(x)
     }
     if (isOfType(sql, 'end')) this.end = () => sql.end()
   }
-  provideMigrationBuilder: (builder: MigrationCode) => MigrationBuilder
+  provideMigrationBuilder!: (builder: MigrationCode) => MigrationBuilder
   private createdEntities: string[] = []
 
-  end: () => Promise<void>
+  end!: () => Promise<void>
 }
 
 const icons = new Map<string, string>([
@@ -323,7 +323,7 @@ class LogSQLCommand implements SqlCommand {
         }
       }
       return r
-    } catch (err) {
+    } catch (err: any) {
       console.error((err.message || 'Sql Error') + ':\n', sql, {
         arguments: this.args,
         error: err,
@@ -638,7 +638,7 @@ export function getRowAfterUpdate<entityType>(
   id: any,
   operation: string,
 ): any {
-  const idFilter = id !== undefined ? meta.idMetadata.getIdFilter(id) : {}
+  const idFilter: any = id !== undefined ? meta.idMetadata.getIdFilter(id) : {}
   return dataProvider
     .find({
       where: new Filter((x) => {
