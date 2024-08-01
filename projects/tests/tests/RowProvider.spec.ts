@@ -679,6 +679,21 @@ describe('test ', () => {
     expect(saved).toBe(false)
   })
 })
+it('test that entity inheritance works well and build', () => {
+  class HelperBase extends EntityBase {
+    id = ''
+  }
+
+  class Helper extends HelperBase {
+    name = ''
+  }
+
+  let z = new Helper()
+  z.id = '123'
+  z.name = '123'
+  let x1: HelperBase = z
+  expect(x1.id).toBe('123')
+})
 
 export class myDp extends ArrayEntityDataProvider {
   constructor(entity: EntityMetadata, rows = []) {

@@ -430,12 +430,13 @@ export class Filter {
     this.__applyToConsumer(r)
     return r.result
   }
-  //@internal
+
   static async translateCustomWhere<T>(
     r: Filter,
     entity: EntityMetadata<T>,
     remult: Remult,
   ) {
+    // Used in hagai
     let f = new customTranslator(async (filterKey, custom) => {
       let r: Filter[] = []
       for (const key in entity.entityType) {

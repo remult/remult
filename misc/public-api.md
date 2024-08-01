@@ -275,7 +275,7 @@ export declare class CompoundIdField implements FieldMetadata<string> {
   fromInput(inputValue: string, inputType?: string): string
   getDbName(): Promise<string>
   getId(instance: any): string
-  options: FieldOptions<unknown, unknown>
+  options: FieldOptions
   get valueConverter(): Required<ValueConverter<string>>
   target: ClassType<any>
   readonly: boolean
@@ -1565,6 +1565,11 @@ export declare class Filter {
       | (() => EntityFilter<entityType> | Promise<EntityFilter<entityType>>),
   ): Promise<EntityFilter<entityType>>
   toJson(): any
+  static translateCustomWhere<T>(
+    r: Filter,
+    entity: EntityMetadata<T>,
+    remult: Remult,
+  ): Promise<Filter>
 }
 //[ ] customFilterInfo from TBD is not exported
 export interface FilterConsumer {

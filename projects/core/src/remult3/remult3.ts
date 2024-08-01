@@ -23,8 +23,8 @@ export interface EntityRefBase<entityType> extends Subscribable {
   error: string | undefined
   getId(): idType<entityType>
   getOriginalId(): idType<entityType>
-  repository: Repository<entityType>
-  metadata: EntityMetadata<entityType>
+  repository: Repository<unknown> //unknown for hagai ts 4.6
+  metadata: EntityMetadata<unknown> //unknown for hagai ts 4.6
   toApiJson(): any
   validate(): Promise<ErrorInfo<entityType> | undefined>
   readonly apiUpdateAllowed: boolean

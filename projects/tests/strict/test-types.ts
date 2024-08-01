@@ -54,3 +54,20 @@ function string<entityType = unknown, valueType = string>() {
   const validate: FieldValidator<entityType, valueType>[] = []
   validate.push(Validators.required)
 }
+
+
+
+  class HelperBase extends EntityBase {
+    @Fields.string()
+    id = ''
+  }
+  class Helper extends HelperBase {
+    @Fields.string()
+    name = ''
+  }
+  var h: HelperBase = new Helper()
+let a!:keyof HelperBase 
+let b!:keyof Helper 
+a=b;
+
+

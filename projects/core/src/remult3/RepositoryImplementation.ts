@@ -1480,12 +1480,13 @@ export class rowHelperImplementation<T>
   constructor(
     private info: EntityFullInfo<T>,
     instance: T,
-    public repository: RepositoryImplementation<T>,
+    private repo: RepositoryImplementation<T>,
     private edp: EntityDataProvider,
     remult: Remult,
     private _isNew: boolean,
   ) {
     super(info.fieldsMetadata, instance, remult, _isNew)
+    this.repository = repo as Repository<unknown>
     this.metadata = info
     if (_isNew) {
       for (const col of info.fieldsMetadata) {
@@ -1502,14 +1503,14 @@ export class rowHelperImplementation<T>
       this.info.entityInfo.entityRefInit(this, instance)
     if (Remult.entityRefInit) Remult.entityRefInit(this, instance)
   }
-
+  repository: Repository<unknown>
   clone() {
     const data = this.toApiJson(true, true)
-    return this.repository.fromJson(data, this.isNew())
+    return this.repo.fromJson(data, this.isNew())
   }
 
   get relations(): RepositoryRelations<T> {
-    return this.repository.relations(this.instance)
+    return this.repo.relations(this.instance)
   }
   get apiUpdateAllowed() {
     return this.remult.isAllowedForInstance(
@@ -1559,7 +1560,7 @@ export class rowHelperImplementation<T>
     await this.edp
       .find({ where: await this.getIdFilter() })
       .then(async (newData) => {
-        if (newData.length === 0) throw this.repository._notFoundError(this.id)
+        if (newData.length === 0) throw this.repo._notFoundError(this.id)
         await this.loadDataFrom(newData[0])
         this.saveOriginalData()
       })
@@ -1616,7 +1617,7 @@ export class rowHelperImplementation<T>
       let doNotSave = false
 
       let e = this.buildLifeCycleEvent(() => (doNotSave = true))
-      if (!this.repository._dataProvider.isProxy) {
+      if (!this.repo._dataProvider.isProxy) {
         for (const col of this.fields) {
           if (col.metadata.options.saving)
             await col.metadata.options.saving(this.instance, col, e as any)
@@ -1682,16 +1683,16 @@ export class rowHelperImplementation<T>
         }
         if (updatedRow) await this.loadDataFrom(updatedRow)
         e.id = this.getId()
-        if (!this.repository._dataProvider.isProxy) {
+        if (!this.repo._dataProvider.isProxy) {
           if (this.info.entityInfo.saved)
             await this.info.entityInfo.saved(this.instance, e)
-          if (this.repository.listeners)
-            for (const listener of this.repository.listeners) {
+          if (this.repo.listeners)
+            for (const listener of this.repo.listeners) {
               await listener.saved?.(this.instance, isNew)
             }
         }
-        await this.repository._remult.liveQueryPublisher.itemChanged(
-          this.repository.metadata.key,
+        await this.repo._remult.liveQueryPublisher.itemChanged(
+          this.repo.metadata.key,
           [{ id: this.getId(), oldId: this.getOriginalId(), deleted: false }],
         )
         this.saveOriginalData()
@@ -1736,16 +1737,16 @@ export class rowHelperImplementation<T>
       fields: self.fields,
       id: self.getId(),
       originalId: self.getOriginalId(),
-      metadata: self.repository.metadata,
-      repository: self.repository,
+      metadata: self.repo.metadata,
+      repository: self.repo,
       preventDefault: () => preventDefault(),
-      relations: self.repository.relations(self.instance),
+      relations: self.repo.relations(self.instance),
     } satisfies LifecycleEvent<T>
   }
 
   private async getIdFilter(): Promise<Filter> {
-    return await this.repository._translateWhereToFilter(
-      this.repository.metadata.idMetadata.getIdFilter(this.id),
+    return await this.repo._translateWhereToFilter(
+      this.repo.metadata.idMetadata.getIdFilter(this.id),
     )
   }
 
@@ -1753,24 +1754,24 @@ export class rowHelperImplementation<T>
     this.__clearErrorsAndReportChanged()
     let doDelete = true
     let e = this.buildLifeCycleEvent(() => (doDelete = false))
-    if (!this.repository._dataProvider.isProxy) {
+    if (!this.repo._dataProvider.isProxy) {
       if (this.info.entityInfo.deleting)
         await this.info.entityInfo.deleting(this.instance, e)
     }
     this.__assertValidity()
     try {
       if (doDelete) await this.edp.delete(this.id)
-      if (!this.repository._dataProvider.isProxy) {
+      if (!this.repo._dataProvider.isProxy) {
         if (this.info.entityInfo.deleted)
           await this.info.entityInfo.deleted(this.instance, e)
       }
 
-      if (this.repository.listeners)
-        for (const listener of this.repository.listeners) {
+      if (this.repo.listeners)
+        for (const listener of this.repo.listeners) {
           await listener.deleted?.(this.instance)
         }
-      await this.repository._remult.liveQueryPublisher.itemChanged(
-        this.repository.metadata.key,
+      await this.repo._remult.liveQueryPublisher.itemChanged(
+        this.repo.metadata.key,
         [{ id: this.getId(), oldId: this.getOriginalId(), deleted: true }],
       )
 
@@ -1845,8 +1846,8 @@ export class rowHelperImplementation<T>
       let e = this.buildLifeCycleEvent(() => {})
       await this.info.entityInfo.validation(this.instance, e)
     }
-    if (this.repository.listeners)
-      for (const listener of this.repository.listeners) {
+    if (this.repo.listeners)
+      for (const listener of this.repo.listeners) {
         await listener.validating?.(this.instance)
       }
   }
@@ -1985,18 +1986,22 @@ export class FieldRefImplementation<entityType, valueType>
     let lu = this.rowBase.lookups.get(this.metadata.key)
     return this.rawOriginalValue() === null
   }
+  get key() {
+    return this.metadata.key as keyof entityType
+  }
+  get repo() {
+    return this.helper?.repository as Repository<entityType>
+  }
   async load(): Promise<valueType> {
     let lu = this.rowBase.lookups.get(this.metadata.key)
     let rel = getRelationFieldInfo(this.metadata)
     if (rel && this.helper) {
       if (rel.type === 'toMany') {
         return (this.container[this.metadata.key] = await (
-          this.helper.repository.relations(this.container)[
-            this.metadata.key
-          ] as Repository<valueType>
+          this.repo.relations(this.container)[this.key] as Repository<valueType>
         ).find()) as any
       } else {
-        let val = await this.helper.repository
+        let val = await this.repo
           .relations(this.container)
           [this.metadata.key].findOne()
         if (val) this.container[this.metadata.key] = val
