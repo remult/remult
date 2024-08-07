@@ -293,7 +293,7 @@ export interface RemultContext {
    *   }
    * }
    *  */
-  request?: any
+  request?: unknown
 }
 /**
  * Interface for configuring the API client used by Remult to perform HTTP calls to the backend.
