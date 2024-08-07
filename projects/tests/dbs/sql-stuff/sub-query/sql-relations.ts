@@ -116,11 +116,11 @@ class SqlRelationTools<
     )
     if (otherTableFilter) filters.push(otherTableFilter)
 
-    return `(select ${what(namesOfOtherTable)} 
-      from ${namesOfOtherTable} 
-      where 
-      ${filters.join(' and ')}
-      )`
+    return `
+( SELECT ${what(namesOfOtherTable)} 
+  FROM ${namesOfOtherTable} 
+  WHERE ${filters.join(' and ')}
+)`
   }
 }
 export type ArrayItemType<T> = T extends (infer U)[] ? U : T
