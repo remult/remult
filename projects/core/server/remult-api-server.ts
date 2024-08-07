@@ -643,6 +643,7 @@ export class RemultServerImplementation<RequestType>
         else
           await this.runWithRemult(async (remult) => {
             if (req) {
+              remult.context.request = req
               remultStatic.asyncContext.setInInitRequest(true)
               try {
                 let user

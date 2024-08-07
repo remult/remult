@@ -1071,9 +1071,10 @@ export const flags = {
 
 /*y1 - https://github.com/remult/remult/discussions/438
      - https://github.com/remult/remult/blob/query-argumets/projects/tests/dbs/test-sql-database.spec.ts#L100-L128
+     //p2 - allow preprocess to replace filter values - for example replace $contains on a specific field, with specific other sql - useful for full text search and other scenarios
+     //y1 - consider sql expression gets a dbnames of it's own (that already has the "tableName" defined correctly) maybe also the filter translator
+     //y2 - soft-delete-discussion https://discord.com/channels/975754286384418847/1230386433093533698/1230386433093533698
 */
-//y1 - consider sql expression gets a dbnames of it's own (that already has the "tableName" defined correctly) maybe also the filter translator
-//y2 - soft-delete-discussion https://discord.com/channels/975754286384418847/1230386433093533698/1230386433093533698
 
 //p1 - fix query docs to also explain how it can be used for infinite scroll and pagination.
 //y1 - 'test expression columns without aliases'

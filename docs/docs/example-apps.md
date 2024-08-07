@@ -71,3 +71,4 @@ An environment to reproduce issues using stackblitz, with optional sqlite databa
 
 - [Using BackendMethod queued option](https://stackblitz.com/edit/github-vwfkxu?file=src%2FApp.tsx)
 - [Using SubscriptionChannel to update the frontend](https://stackblitz.com/edit/github-3nmwrp?file=src%2FApp.tsx)
+- [Next.js Auth with remult user table](https://github.com/noam-honig/nextjs-auth-remult-user-table)
