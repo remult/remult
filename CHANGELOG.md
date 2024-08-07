@@ -2,9 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.27.1] TBD
+## [0.27.2] TBD
 
-- Added `request` to `remult.context` that'll be available through the request lifecycle
+- Added `request` to `remult.context` that'll be available through the request lifecycle - to access it please extend the RemultContext type as follows
+  ```ts
+  import type express from 'express'
+  declare module 'remult' {
+    export interface RemultContext {
+      request?: express.Request
+    }
+  }
+  ```
 
 ## [0.27.0] 2024-08-01
 
