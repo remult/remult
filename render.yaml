@@ -1,11 +1,9 @@
 services:
   - type: web
-    name: online-remult-react-tutorial
+    name: learn-remult
     runtime: static
-    buildCommand: npm install; npm run build
-    staticPublishPath: ./dist
-    #  envVars:
-    #   - fromGroup: online-remult-tutorial
+    buildCommand: npm run build-docs-interactive
+    staticPublishPath: ./docs/interactive/dist
     headers:
       - path: /*
         name: Cross-Origin-Embedder-Policy
