@@ -35,7 +35,7 @@ export function Auth() {
           <form onSubmit={signIn}>
             <label>Name</label>
             <input
-              placeholder="Try Steve or Jane"
+              placeholder="Try Alex or Jane"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />

@@ -8,7 +8,7 @@ declare module 'remult' {
   }
 }
 
-const validUsers = [{ name: 'Jane' }, { name: 'Steve' }]
+const validUsers = [{ name: 'Jane' }, { name: 'Alex' }]
 
 export class AuthController {
   @BackendMethod({ allowed: true })
@@ -22,7 +22,7 @@ export class AuthController {
       remult.context.request!.session!['user'] = remult.user
       return remult.user
     } else {
-      throw Error("Invalid user, try 'Steve' or 'Jane'")
+      throw Error("Invalid user, try 'Alex' or 'Jane'")
     }
   }
 

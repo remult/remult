@@ -47,7 +47,7 @@ export default function Auth() {
             <input
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Username, try Steve or Jane"
+              placeholder="Username, try Alex or Jane"
             />
             <button>Sign in</button>
           </form>
