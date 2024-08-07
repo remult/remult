@@ -37,7 +37,7 @@ export class AuthController {
 Next, we'll add a static list of users and a sign-in method. (In a real application, you would use a database, but for this tutorial, a static list will suffice.)
 
 ```ts add={1,4-17}
-const validUsers = [{ name: 'Jane' }, { name: 'Steve' }]
+const validUsers = [{ name: 'Jane' }, { name: 'Alex' }]
 
 export class AuthController {
   @BackendMethod({ allowed: true })
@@ -51,7 +51,7 @@ export class AuthController {
       remult.context.request!.session!['user'] = remult.user
       return remult.user
     } else {
-      throw Error("Invalid user, try 'Steve' or 'Jane'")
+      throw Error("Invalid user, try 'Alex' or 'Jane'")
     }
   }
 }
@@ -156,4 +156,4 @@ useEffect(() => {
 
 ### Try It Out
 
-Try signing in as `Steve` or `Jane` and verify that you can perform CRUD operations on tasks. Sign out and ensure that you can no longer access the tasks.
+Try signing in as `Alex` or `Jane` and verify that you can perform CRUD operations on tasks. Sign out and ensure that you can no longer access the tasks.
