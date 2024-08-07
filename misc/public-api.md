@@ -2201,7 +2201,7 @@ export interface RemultContext {
    *   }
    * }
    *  */
-  request?: any
+  request?: unknown
 }
 export declare function repo<entityType>(
   entity: ClassType<entityType>,
