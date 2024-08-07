@@ -4,6 +4,18 @@ import config from '../../../.vitepress/config.ts'
 import type { DefaultTheme } from 'vitepress'
 ---
 
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-DS42EX6GLQ"
+></script>
+<script is:inline>
+window.dataLayer = window.dataLayer || []
+function gtag() {
+    dataLayer.push(arguments)
+}
+gtag('js', new Date())
+
+gtag('config', 'G-DS42EX6GLQ')
+</script>
 <nav
   class="bg-tk-elements-topBar-backgroundColor transition-theme border-b border-tk-elements-app-borderColor flex max-w-full items-center p-3 px-4 min-h-[56px]"
 >
