@@ -10,6 +10,28 @@ import { Sqlite3DataProvider } from '../../../../core/remult-sqlite3.js'
 import { Database } from 'sqlite3'
 import { sqlRelations, sqlRelationsFilter } from './sql-relations.js'
 
+@Entity('Customer_groups')
+export class CustomerGroup {
+  @Fields.autoIncrement()
+  id = 0
+  @Fields.string()
+  group = ''
+  @Fields.string()
+  color = ''
+}
+
+@Entity('Customer_zones')
+export class CustomerZone {
+  @Fields.autoIncrement()
+  id = 0
+  @Fields.string()
+  zone = ''
+  @Fields.string()
+  short = ''
+  @Relations.toOne(() => CustomerGroup)
+  group?: CustomerGroup
+}
+
 @Entity('customers')
 export class Customer {
   @Fields.autoIncrement()
@@ -20,6 +42,9 @@ export class Customer {
   city = ''
   @Relations.toMany(() => Order, 'customer')
   orders?: Order[]
+
+  @Relations.toOne(() => CustomerZone)
+  zone?: CustomerZone
 }
 
 @Entity('orders')
@@ -74,6 +99,7 @@ describe('test sub query 1', () => {
       ]
     `)
   })
+
   it('test get value column', async () => {
     @Entity('orders')
     class OrderExtended extends Order {
@@ -104,6 +130,7 @@ describe('test sub query 1', () => {
       ]
     `)
   })
+
   it('test filter', async () => {
     expect(
       (
@@ -120,18 +147,70 @@ describe('test sub query 1', () => {
     `)
   })
 
+  it('relation n+2', async () => {
+    @Entity('customers')
+    class CustomerExtended extends Customer {
+      @Fields.string({
+        sqlExpression: () => sqlRelations(CustomerExtended).zone.short,
+      })
+      zoneShort = ''
+      @Fields.string({
+        sqlExpression: () => {
+          return "'How to get the group color here?'"
+          // sqlRelations(CustomerExtended).zone.group.color,
+          // sqlRelations(CustomerZone).group.color
+        },
+      })
+      groupColor = ''
+    }
+    expect(
+      (await remult.repo(CustomerExtended).find({ where: { id: 1 } })).map(
+        (x) => ({
+          id: x.id,
+          zoneShort: x.zoneShort,
+          groupColor: x.groupColor,
+        }),
+      ),
+    ).toMatchInlineSnapshot(`
+      [
+        {
+          "id": 1,
+          "zoneShort": "N",
+          groupColor: "green",
+        },
+      ]
+    `)
+  })
+
   let db: SqlDatabase
   let remult: Remult
   beforeAll(async () => {
     db = new SqlDatabase(new Sqlite3DataProvider(new Database(':memory:')))
     remult = new Remult(db)
-    const customerRepo = remult.repo(Customer)
-    await db.ensureSchema([customerRepo.metadata, remult.repo(Order).metadata])
-    if ((await customerRepo.count()) === 0) {
-      const customers = await customerRepo.insert([
-        { name: 'Fay, Ebert and Sporer', city: 'London' },
-        { name: 'Abshire Inc', city: 'New York' },
-        { name: 'Larkin - Fadel', city: 'London' },
+    await db.ensureSchema([
+      remult.repo(CustomerGroup).metadata,
+      remult.repo(CustomerZone).metadata,
+      remult.repo(Customer).metadata,
+      remult.repo(Order).metadata,
+    ])
+    if ((await remult.repo(Customer).count()) === 0) {
+      const groups = await remult.repo(CustomerGroup).insert([
+        { group: 'End User', color: 'green' },
+        { group: 'System Integrator', color: 'orange' },
+      ])
+
+      const zones = await remult.repo(CustomerZone).insert([
+        { zone: 'North', short: 'N', group: groups[0] },
+        { zone: 'South', short: 'S', group: groups[0] },
+
+        { zone: 'Est', short: 'E', group: groups[1] },
+        { zone: 'West', short: 'W', group: groups[1] },
+      ])
+
+      const customers = await remult.repo(Customer).insert([
+        { name: 'Fay, Ebert and Sporer', city: 'London', zone: zones[0] },
+        { name: 'Abshire Inc', city: 'New York', zone: zones[1] },
+        { name: 'Larkin - Fadel', city: 'London', zone: zones[2] },
       ])
       await remult.repo(Order).insert([
         { customer: customers[0], amount: 10 },
