@@ -2190,19 +2190,7 @@ export declare class Remult {
   /** The api client that will be used by `remult` to perform calls to the `api` */
   apiClient: ApiClient
 }
-export interface RemultContext {
-  /** When running on the backend as part of a request, will have the request object.
-   * You can type it to your specific type
-   * @example
-   * import type express from 'express'
-   * declare module 'remult' {
-   *   export interface RemultContext {
-   *     request?: express.Request
-   *   }
-   * }
-   *  */
-  request?: unknown
-}
+export interface RemultContext {}
 export declare function repo<entityType>(
   entity: ClassType<entityType>,
   dataProvider?: DataProvider,
