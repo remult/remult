@@ -2,6 +2,7 @@ export default function express(path: string) {
   return {
     name: 'vite3-plugin-express',
     configureServer: async (server: any) => {
+      process.on('unhandledRejection', (reason, promise) => {})
       server.middlewares.use(async (req: any, res: any, next: any) => {
         process.env['VITE'] = 'true'
         try {
