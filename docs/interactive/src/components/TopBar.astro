@@ -1,0 +1,59 @@
+---
+import config from '../../../.vitepress/config.ts'
+import type { DefaultTheme } from 'vitepress'
+---
+
+<nav
+  class="bg-tk-elements-topBar-backgroundColor transition-theme border-b border-tk-elements-app-borderColor flex max-w-full items-center p-3 px-4 min-h-[56px]"
+>
+  <div class="flex flex-1 font-semibold">
+    <slot name="logo" />
+    <a href="https://remult.dev/" class="ms-2">{config.title}</a>
+  </div>
+  {
+    config.themeConfig?.nav
+      ?.filter((n) => (n as DefaultTheme.NavItemWithLink).link)
+      .map((n) => (
+        <div class="font-semibold">
+          <a
+            href={`https://remult.dev${(n as DefaultTheme.NavItemWithLink).link}`}
+            class="ms-2"
+          >
+            {n.text}
+          </a>
+        </div>
+      ))
+  }
+  <div>
+    <slot name="theme-switch" />
+  </div>
+  {
+    config.themeConfig?.socialLinks?.map((socialLink) => (
+      <div>
+        <a
+          href={socialLink.link}
+          aria-label={socialLink.ariaLabel}
+          target="_blank"
+          rel="noopener"
+          class="flex items-center text-2xl text-tk-elements-topBar-iconButton-iconColor hover:text-tk-elements-topBar-iconButton-iconColorHover transition-theme bg-tk-elements-topBar-iconButton-backgroundColor hover:bg-tk-elements-topBar-iconButton-backgroundColorHover p-1 rounded-md"
+        >
+          {socialLink.icon === 'x' && (
+            <div class="i-ri:twitter-x-fill w-1em h-1em" />
+          )}
+          {socialLink.icon === 'github' && (
+            <div class="i-ri:github-fill w-1em h-1em" />
+          )}
+          {socialLink.icon === 'discord' && (
+            <div class="i-ri:discord-fill w-1em h-1em" />
+          )}
+          {socialLink.icon === 'youtube' && (
+            <div class="i-ri:youtube-fill w-1em h-1em" />
+          )}
+        </a>
+      </div>
+    ))
+  }
+  <div>
+    <slot name="login-button" />
+  </div>
+</nav>
