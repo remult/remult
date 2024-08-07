@@ -276,7 +276,25 @@ remultStatic.defaultRemultFactory = () => new Remult()
 export type GetArguments<T> = T extends (...args: infer FirstArgument) => any
   ? FirstArgument
   : never
-export interface RemultContext {}
+/**
+ * This type represents the context object available through `remult.context`
+ * It can be used to store custom information that will be available throughout the request lifecycle.
+ * @example
+ * remult.context.myCustomData = 'hello'
+ */
+export interface RemultContext {
+  /** When running on the backend as part of a request, will have the request object.
+   * You can type it to your specific type
+   * @example
+   * import type express from 'express'
+   * declare module 'remult' {
+   *   export interface RemultContext {
+   *     request?: express.Request
+   *   }
+   * }
+   *  */
+  request?: any
+}
 /**
  * Interface for configuring the API client used by Remult to perform HTTP calls to the backend.
  */

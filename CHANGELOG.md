@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.27.1]
+
+- Added `request` to `remult.context` that'll be available through the request lifecycle
+
 ## [0.27.0] TBD
 
 ### API BREAKING CHANGE - Improved Typescript typing
