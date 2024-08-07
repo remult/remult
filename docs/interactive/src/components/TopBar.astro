@@ -11,50 +11,63 @@ import type { DefaultTheme } from 'vitepress'
     <slot name="logo" />
     <a href="https://remult.dev/" class="ms-2">{config.title}</a>
   </div>
-  {
-    config.themeConfig?.nav
-      ?.filter((n:any) => (n as DefaultTheme.NavItemWithLink).link)
-      .map((n:any) => (
-        <div class="font-semibold">
-          <a
-            href={`https://remult.dev${(n as DefaultTheme.NavItemWithLink).link}`}
-            class="ms-2"
+  <div class="flex items-center">
+    <div class="flex items-center pr-2 mr-2 border-r-2">
+      {
+        config.themeConfig?.nav
+          ?.filter((n: any) => (n as DefaultTheme.NavItemWithLink).link)
+          .map((n: any) => (
+            <div class="font-semibold mx-2">
+              <a
+                href={`https://remult.dev${(n as DefaultTheme.NavItemWithLink).link}`}
+                class="ms-2"
+              >
+                {n.text}
+              </a>
+            </div>
+          ))
+      }
+    </div>
+    <div class="flex items-center pr-2 mr-2 border-r-2">
+      {
+        config.themeConfig?.socialLinks?.map((socialLink: any) => (
+          <div
+            class={`mx-1 ${socialLink.icon === 'x' || socialLink.icon === 'youtube' ? 'hidden sm:block' : ''}`}
           >
-            {n.text}
-          </a>
-        </div>
-      ))
-  }
-  <div>
-    <slot name="theme-switch" />
-  </div>
-  {
-    config.themeConfig?.socialLinks?.map((socialLink:any) => (
-      <div>
-        <a
-          href={socialLink.link}
-          aria-label={socialLink.ariaLabel}
-          target="_blank"
-          rel="noopener"
-          class="flex items-center text-2xl text-tk-elements-topBar-iconButton-iconColor hover:text-tk-elements-topBar-iconButton-iconColorHover transition-theme bg-tk-elements-topBar-iconButton-backgroundColor hover:bg-tk-elements-topBar-iconButton-backgroundColorHover p-1 rounded-md"
-        >
-          {socialLink.icon === 'x' && (
-            <div class="i-ri:twitter-x-fill w-1em h-1em" />
-          )}
-          {socialLink.icon === 'github' && (
-            <div class="i-ri:github-fill w-1em h-1em" />
-          )}
-          {socialLink.icon === 'discord' && (
-            <div class="i-ri:discord-fill w-1em h-1em" />
-          )}
-          {socialLink.icon === 'youtube' && (
-            <div class="i-ri:youtube-fill w-1em h-1em" />
-          )}
-        </a>
+            <a
+              href={socialLink.link}
+              aria-label={socialLink.ariaLabel}
+              target="_blank"
+              rel="noopener"
+              class="flex items-center text-2xl text-tk-elements-topBar-iconButton-iconColor hover:text-tk-elements-topBar-iconButton-iconColorHover transition-theme bg-tk-elements-topBar-iconButton-backgroundColor hover:bg-tk-elements-topBar-iconButton-backgroundColorHover p-1 rounded-md"
+            >
+              {socialLink.icon === 'x' && (
+                <div class="i-ri:twitter-x-fill w-1em h-1em" />
+              )}
+              {socialLink.icon === 'github' && (
+                <div class="i-ri:github-fill w-1em h-1em" />
+              )}
+              {socialLink.icon === 'discord' && (
+                <div class="i-ri:discord-fill w-1em h-1em" />
+              )}
+              {socialLink.icon === 'youtube' && (
+                <div class="i-ri:youtube-fill w-1em h-1em" />
+              )}
+            </a>
+          </div>
+        ))
+      }
+    </div>
+    <div class="flex items-center">
+      <div class="mr-2">
+        <slot name="open-in-stackblitz-link" />
       </div>
-    ))
-  }
-  <div>
-    <slot name="login-button" />
+      <div>
+        <slot name="theme-switch" />
+      </div>
+      <div>
+        <slot name="login-button" />
+      </div>
+    </div>
   </div>
 </nav>

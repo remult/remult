@@ -70,10 +70,10 @@ export default defineConfig({
           link: `/tutorials/${t.path}/`,
         })),
       },
-      {
-        text: 'Blog',
-        link: '/blog/introducing-remult-part-1',
-      },
+      // {
+      //   text: 'Blog',
+      //   link: '/blog/introducing-remult-part-1',
+      // },
     ],
     search: { provider: 'local', options: {} },
     socialLinks: [
