@@ -20,6 +20,6 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "shared", "frontend", "backend"],
+  "include": ["src", "shared", "frontend", "backend", "run-express.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

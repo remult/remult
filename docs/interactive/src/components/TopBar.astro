@@ -1,5 +1,6 @@
 ---
 import config from '../../../.vitepress/config.ts'
+//@ts-ignore
 import type { DefaultTheme } from 'vitepress'
 ---
 
@@ -12,8 +13,8 @@ import type { DefaultTheme } from 'vitepress'
   </div>
   {
     config.themeConfig?.nav
-      ?.filter((n) => (n as DefaultTheme.NavItemWithLink).link)
-      .map((n) => (
+      ?.filter((n:any) => (n as DefaultTheme.NavItemWithLink).link)
+      .map((n:any) => (
         <div class="font-semibold">
           <a
             href={`https://remult.dev${(n as DefaultTheme.NavItemWithLink).link}`}
@@ -28,7 +29,7 @@ import type { DefaultTheme } from 'vitepress'
     <slot name="theme-switch" />
   </div>
   {
-    config.themeConfig?.socialLinks?.map((socialLink) => (
+    config.themeConfig?.socialLinks?.map((socialLink:any) => (
       <div>
         <a
           href={socialLink.link}
