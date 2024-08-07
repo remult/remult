@@ -1,6 +1,6 @@
 ---
 type: lesson
-title: User Authentication
+title: Authentication
 template: auth
 focus: /shared/AuthController.ts
 ---
