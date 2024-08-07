@@ -33,7 +33,7 @@ And that's it, now you use `sqlite` as the database.
 > You can see the actual sql's executed by remult, by adding the following line
 >
 > ```ts
-> < SqlDatabase.LogToConsole = 'oneLiner'
+> SqlDatabase.LogToConsole = 'oneLiner'
 > ```
 >
 > And click on `Toggle Terminal` button to see the sql's that execute with the operations you perform

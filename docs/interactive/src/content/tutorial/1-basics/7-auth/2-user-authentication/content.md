@@ -5,7 +5,7 @@ template: auth
 focus: /shared/AuthController.ts
 ---
 
-## User Authentication
+## Authentication
 
 In this lesson, we'll implement a basic sign-in mechanism using cookie session.
 
