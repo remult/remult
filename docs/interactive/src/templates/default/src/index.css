@@ -84,3 +84,33 @@ header {
   min-width: 300px;
   margin: auto;
 }
+
+.sign-in {
+  max-width: 384px;
+  padding: 16px;
+}
+.sign-in > h2 {
+  font-style: italic;
+  font-weight: 100;
+  margin-top: 8px;
+}
+.sign-in > form {
+  gap: 16px;
+  padding: 0px;
+  flex-direction: column;
+  border: 0px;
+}
+.sign-in > form > label {
+  width: 100%;
+}
+.sign-in > form > input {
+  border: 1px solid rgb(209, 213, 219);
+  background: rgb(249, 250, 251);
+  border-radius: 8px;
+  width: 100%;
+}
+.sign-in > form > button {
+  width: 100%;
+  background-color: rgb(37, 99, 235);
+  color: white;
+}
