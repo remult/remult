@@ -27,8 +27,8 @@ export default app
 // [x] - filter popup: enter should apply the filter (tabs are working correctly now)
 // [x] - disable input when readonly
 // [x] - reset local storage?
-
 // [x] - It seems like there is a small bug in the admin UI. if a field has includeInApi that is a changing expression for some rows, the entire column disappear. https://discord.com/channels/975754286384418847/1258664319852482701/1259596160478347465
+// [x] - better management of new item + (highlight in green, -, cancel, ...)
 
 // next
 // [x] - Make actions smoother (no jumping)

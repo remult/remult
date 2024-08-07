@@ -22,7 +22,7 @@
   let settingsDialog
 
   function start_and_end(str: string) {
-    const maxLen = 17
+    const maxLen = 16
     if (str.length > maxLen + 3) {
       return (
         str.slice(0, maxLen - 4).trim() +

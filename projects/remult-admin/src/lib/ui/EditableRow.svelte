@@ -10,8 +10,9 @@
   import Table from './Table.svelte'
 
   export let row: any
-  export let save: (data: any) => Promise<void>
+  export let saveAction: (data: any) => Promise<void>
   export let deleteAction: () => Promise<void> = () => Promise.resolve()
+  export let cancelAction: () => Promise<void> = () => Promise.resolve()
   export let columns: FieldUIInfo[]
   export let relations: EntityRelationToManyInfo[]
   export let rowId: any
@@ -43,16 +44,20 @@
   async function doSave() {
     try {
       error = undefined
-      await save(value)
+      await saveAction(value)
       rowFrozzen = { ...value }
     } catch (err: any) {
       alert(err.message)
       error = err
     }
   }
+
+  function changeOrNew() {
+    return change || isNewRow
+  }
 </script>
 
-<tr class:change>
+<tr class={changeOrNew() ? 'change' : ''}>
   <td>
     {#if relations.length > 0 && !isNewRow}
       <button
@@ -103,9 +108,9 @@
       )} -->
     </td>
   {/each}
-  <td class="action-tab" class:change>
+  <td class="action-tab {changeOrNew() ? 'change' : ''}">
     <div class="row-actions">
-      {#if change}
+      {#if changeOrNew()}
         <div class="margin-auto">
           <button class="icon-button" title="Save" on:click={doSave}>
             <svg
@@ -128,6 +133,7 @@
             on:click={() => {
               value = rowFrozzen
               error = undefined
+              cancelAction()
             }}
           >
             <svg
@@ -147,7 +153,7 @@
           </button>
         </div>
       {/if}
-      {#if deleteAction && !change}
+      {#if deleteAction && !changeOrNew()}
         <button
           class="icon-button margin-auto"
           title="Delete"
