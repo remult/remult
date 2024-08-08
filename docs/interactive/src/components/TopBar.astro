@@ -10,7 +10,7 @@ import type { DefaultTheme } from 'vitepress'
 <script is:inline>
 window.dataLayer = window.dataLayer || []
 function gtag() {
-    dataLayer.push(arguments)
+  dataLayer.push(arguments)
 }
 gtag('js', new Date())
 
@@ -19,11 +19,11 @@ gtag('config', 'G-DS42EX6GLQ')
 <nav
   class="bg-tk-elements-topBar-backgroundColor transition-theme border-b border-tk-elements-app-borderColor flex max-w-full items-center p-3 px-4 min-h-[56px]"
 >
-  <div class="flex flex-1 font-semibold">
+  <div class="flex flex-1 font-semibold text-tk-elements-content-textColor">
     <slot name="logo" />
     <a href="https://remult.dev/" class="ms-2">{config.title}</a>
   </div>
-  <div class="flex items-center">
+  <div class="flex items-center text-tk-elements-content-textColor">
     <div class="flex items-center pr-2 mr-2 border-r-2">
       {
         config.themeConfig?.nav
