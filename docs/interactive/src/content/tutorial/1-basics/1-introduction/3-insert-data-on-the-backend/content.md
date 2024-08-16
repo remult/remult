@@ -9,7 +9,7 @@ template: before-frontend
 
 Next, we'll add some tasks on the backend so we can use them later.
 
-```ts add={4,9-21}
+```ts title="backend/index.ts" add={4,9-21}
 import express from 'express'
 import { remultExpress } from 'remult/remult-express'
 import { Task } from '../shared/Task.js'

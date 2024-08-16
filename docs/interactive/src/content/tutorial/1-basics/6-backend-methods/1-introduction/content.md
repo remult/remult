@@ -16,7 +16,7 @@ Let's add two buttons to the todo app: "Set All Completed" and "Set All Uncomple
 
 Add a `setAllCompleted` async function to the `Todo` function component, which accepts a `completed` boolean argument and sets the value of the `completed` field of all the tasks accordingly.
 
-```ts add={1-6}
+```tsx title="frontend/Todo.tsx" add={1-6}
 async function setAllCompleted(completed: boolean) {
   for (const task of await taskRepo.find()) {
     await taskRepo.update(task, {completed });
@@ -33,7 +33,7 @@ useEffect(...)
 
 Add the two buttons to the return section of the `Todo` component, just before the closing `</main>` tag. Both of the buttons' `onClick` events will call the `setAllCompleted` method with the appropriate value of the `completed` argument.
 
-```tsx add={1-4}
+```tsx title="frontend/Todo.tsx" add={1-4}
 <div>
   <button onClick={() => setAllCompleted(true)}>Set All Completed</button>
   <button onClick={() => setAllCompleted(false)}>Set All Uncompleted</button>

@@ -8,7 +8,7 @@ focus: /frontend/Todo.tsx
 
 Remult's RESTful API also supports server-side sorting. Let's sort the list of tasks by their title.
 
-```ts add={4-6}
+```tsx title="frontend/Todo.tsx" add={4-6}
 useEffect(() => {
   taskRepo
     .find({

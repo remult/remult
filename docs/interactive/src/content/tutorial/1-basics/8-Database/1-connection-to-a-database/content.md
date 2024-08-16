@@ -15,7 +15,7 @@ Up until now the todo app has been using a plain JSON file to store the list of 
 
 In the `backend/index.ts` file, set the `dataProvider` to ues `sqlite`
 
-```ts add={4-6}
+```ts title="backend/index.ts" add={4-6}
 export const api = remultExpress({
   entities: [Task],
   controllers: [TasksController],

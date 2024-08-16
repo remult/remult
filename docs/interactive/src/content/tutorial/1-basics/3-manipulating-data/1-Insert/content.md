@@ -8,7 +8,7 @@ focus: /frontend/Todo.tsx
 
 First, let's add the React code for adding a new task.
 
-```ts add={3-6}
+```tsx title="frontend/Todo.tsx" add={3-6}
 export function Todo() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskTitle, setNewTaskTitle] = useState('');
@@ -27,7 +27,7 @@ export function Todo() {
 
 Next, let's add the JSX for the form to input new tasks.
 
-```ts add={5-12}
+```tsx title="frontend/Todo.tsx" add={5-12}
 return (
   <div>
     <h1>Todos</h1>
@@ -46,11 +46,11 @@ return (
             <input type="checkbox" checked={task.completed} />
             {task.title}
           </div>
-        );
+        )
       })}
     </main>
   </div>
-);
+)
 ```
 
 ### Code Explanation
@@ -61,7 +61,7 @@ return (
 
 Now let's call Remult to insert the new task.
 
-```ts add={3-9}
+```tsx title="frontend/Todo.tsx" add={3-9}
 async function addTask(e: FormEvent) {
   e.preventDefault()
   try {

@@ -18,7 +18,7 @@ Let's start with a simple `required` validation.
 
 Adjust the `title` field to be `required`:
 
-```ts add={5-7}
+```ts title="shared/Task.ts" add={5-7}
 export class Task {
   @Fields.uuid()
   id = ''
@@ -46,7 +46,7 @@ Try adding a task with no title to see the validation in action.
 
 > **Note:** In this tutorial, the errors appear in the browser's alert dialog as specified in the code in our `Todo.tsx` component:
 >
-> ```ts add={8}
+> ```tsx title="frontend/Todo.tsx" add={8}
 > async function addTask(e: FormEvent) {
 >   e.preventDefault()
 >   try {

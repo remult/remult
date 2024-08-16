@@ -19,7 +19,7 @@ In this tutorial, we'll use `Express`'s [cookie-session](https://expressjs.com/e
 
 This rule is implemented within the `Task` `@Entity` decorator by modifying the value of the `allowApiCrud` property. This property can be set to a function that accepts a `Remult` argument and returns a `boolean` value. Let's use the `Allow.authenticated` function from Remult.
 
-```ts add={2}
+```ts title="shared/Task.ts" add={2}
 @Entity("tasks", {
   allowApiCrud: remult.authenticated
 })
@@ -39,7 +39,7 @@ Although client CRUD requests to `tasks` API endpoints now require a signed-in u
 
 To fix this, let's implement the same rule using the `@BackendMethod` decorator of the `setAllCompleted` method of `TasksController`.
 
-```ts add={2}
+```ts title="shared/TasksController.ts" add={2}
 export class TasksController {
   @BackendMethod({ allowed: remult.authenticated })
   static async setAllCompleted(completed: boolean) {

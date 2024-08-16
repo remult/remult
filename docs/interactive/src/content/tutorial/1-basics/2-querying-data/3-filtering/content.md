@@ -8,7 +8,7 @@ focus: /frontend/Todo.tsx
 
 Remult's RESTful API also supports server-side filtering. Let's filter the list of tasks to show only the completed ones.
 
-```ts add={4-6}
+```tsx title="frontend/Todo.tsx" add={4-6}
 useEffect(() => {
   taskRepo
     .find({

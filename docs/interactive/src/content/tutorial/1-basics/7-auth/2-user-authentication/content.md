@@ -11,7 +11,7 @@ In this lesson, we'll implement a basic sign-in mechanism using cookie session.
 
 Let's add a `shared/AuthController.ts` file and include the following code:
 
-```ts add={2-3,5-9}
+```ts title="shared/AuthController.ts" add={2-3,5-9}
 import { BackendMethod, remult } from 'remult'
 import type express from 'express'
 import type from 'cookie-session'
@@ -36,7 +36,7 @@ export class AuthController {
 
 Next, we'll add a static list of users and a sign-in method. (In a real application, you would use a database, but for this tutorial, a static list will suffice.)
 
-```ts add={1,4-17}
+```ts title="shared/AuthController.ts" add={1,4-17}
 const validUsers = [{ name: 'Jane' }, { name: 'Alex' }]
 
 export class AuthController {
@@ -66,7 +66,7 @@ export class AuthController {
 
 Next, we'll add sign-out and current user methods:
 
-```ts add={7-16}
+```ts title="shared/AuthController.ts" add={7-16}
 export class AuthController {
   @BackendMethod({ allowed: true })
   static async signIn(name: string) {
@@ -93,7 +93,7 @@ export class AuthController {
 
 Next, we'll adjust the `backend/index.ts` file:
 
-```ts add={2-3,9-14,18-19}
+```ts title="backend/index.ts" add={2-3,9-14,18-19}
 import express from 'express'
 import session from 'cookie-session'
 import { AuthController } from '../shared/AuthController'
@@ -129,7 +129,7 @@ export const api = remultExpress({
 
 In `frontend/Auth.tsx`, we'll call the `AuthController` to sign in, sign out, etc.
 
-```ts add={3-7,11,15}
+```tsx title="frontend/Auth.tsx" add={3-7,11,15}
 async function signIn(f: FormEvent<HTMLFormElement>) {
   f.preventDefault()
   try {

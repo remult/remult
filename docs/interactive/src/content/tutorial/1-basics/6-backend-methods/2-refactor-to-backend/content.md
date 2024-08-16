@@ -12,7 +12,7 @@ To improve performance, let's refactor the frontend code and move it to the back
 
 We'll add a `shared/TasksController.ts` file with the following code:
 
-```ts add={5-11}
+```ts title="shared/TasksController.ts" add={5-11}
 import { BackendMethod, remult } from 'remult'
 import { Task } from './Task.js'
 
@@ -40,7 +40,7 @@ export class TasksController {
 
 Head over to the `backend/index.ts` file and register the controller:
 
-```ts add={3}
+```ts title="backend/index.ts" add={3}
 export const api = remultExpress({
   entities: [Task],
   controllers: [TasksController],
@@ -58,7 +58,7 @@ export const api = remultExpress({
 
 Adjust the `frontend/Todo.tsx` component to call the backend method:
 
-```tsx add={4}
+```tsx title="frontend/Todo.tsx" add={4}
 async function setAllCompleted(completed: boolean) {
   await TasksController.setAllCompleted(completed)
 }

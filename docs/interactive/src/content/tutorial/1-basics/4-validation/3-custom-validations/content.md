@@ -8,7 +8,7 @@ focus: /shared/Task.ts
 
 You can also define custom validation logic for your fields. Let's add a custom validation to the `title` field to ensure it is longer than 2 characters.
 
-```ts add={5-7}
+```ts title="shared/Task.ts" add={5-7}
 export class Task {
   @Fields.uuid()
   id = ''

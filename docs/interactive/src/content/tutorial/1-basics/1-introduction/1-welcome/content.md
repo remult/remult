@@ -27,7 +27,7 @@ In Remult, the core element is an `entity`. An entity represents a business obje
 
 Here's the code for the entity we'll use:
 
-```ts add={3-5,7,10,13,16,19}
+```ts title="shared/Task.ts" add={3-5,7,10,13,16,19}
 import { Entity, Fields } from 'remult'
 
 @Entity('tasks', {
