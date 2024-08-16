@@ -2,7 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.27.2] TBD
+## [0.27.3] 2024-08-14
+
+- Changed RelationOptions to be an extendable interface and not a type
+
+## [0.27.2] 2024-08-07
 
 - Added `request` to `remult.context` that'll be available through the request lifecycle - to access it please extend the RemultContext type as follows
   ```ts
