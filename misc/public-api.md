@@ -1975,12 +1975,12 @@ export interface RefSubscriberBase {
   reportChanged: () => void
   reportObserved: () => void
 }
-export type RelationOptions<
+export interface RelationOptions<
   fromEntity,
   toEntity,
   matchIdEntity,
   optionsType extends FindOptionsBase<toEntity> = FindOptionsBase<toEntity>,
-> = {
+> extends Pick<FieldOptions, "caption"> {
   /**
    * An object specifying custom field names for the relation.
    * Each key represents a field in the related entity, and its value is the corresponding field in the source entity.
@@ -2007,7 +2007,7 @@ export type RelationOptions<
    * If false or not specified, related entities will need to be explicitly included using the `include` option.
    */
   defaultIncluded?: boolean
-} & Pick<FieldOptions, "caption">
+}
 export declare class Relations {
   /**
    * Define a to-one relation between entities, indicating a one-to-one relationship.
