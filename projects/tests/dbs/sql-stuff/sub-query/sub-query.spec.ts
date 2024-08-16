@@ -28,7 +28,7 @@ export class CustomerZone {
   zone = ''
   @Fields.string()
   short = ''
-  @Relations.toOne(() => CustomerGroup)
+  @Relations.toOne(() => CustomerGroup, { dbName: 'group_id' })
   group?: CustomerGroup
 }
 
@@ -155,14 +155,13 @@ describe('test sub query 1', () => {
       })
       zoneShort = ''
       @Fields.string({
-        sqlExpression: () => {
-          return "'How to get the group color here?'"
-          // sqlRelations(CustomerExtended).zone.group.color,
-          // sqlRelations(CustomerZone).group.color
-        },
+        sqlExpression: () =>
+          // Option 1: sqlRelations(CustomerExtended).zone.$subQuery(()=>sqlRelations(CustomerZone).group.color),
+          sqlRelations(CustomerExtended).zone.$relations.group.color, // I didn't do zone.group.color because there is no way of knowing if you want the zone group or one of its members and sql expression requires string
       })
       groupColor = ''
     }
+    SqlDatabase.LogToConsole = true
     expect(
       (await remult.repo(CustomerExtended).find({ where: { id: 1 } })).map(
         (x) => ({
@@ -174,9 +173,9 @@ describe('test sub query 1', () => {
     ).toMatchInlineSnapshot(`
       [
         {
+          "groupColor": "green",
           "id": 1,
           "zoneShort": "N",
-          groupColor: "green",
         },
       ]
     `)
