@@ -1,27 +1,11 @@
 ---
 type: lesson
-title: Welcome to Remult Tutorial
+title: Entity
 focus: /shared/Task.ts
 template: before-entity
 ---
 
-# Welcome to the Remult Tutorial
-
-Hey there, and welcome to the Remult Tutorial 👋!
-
-Remult is a full-stack JavaScript library that greatly simplifies the development of data entry applications. It includes:
-
-- Backend ORM
-- Zero-boilerplate CRUD Rest & Realtime API
-- Frontend type-safe API client
-- TypeScript entities as a single source of truth (SSO) for:
-  - Authorization
-  - Validation
-  - Entity-related business logic
-
-By following the principles of SSO, Remult makes CRUD application development much simpler.
-
-## The Entity
+# The Entity
 
 In Remult, the core element is an `entity`. An entity represents a business object, such as an order or customer. In our tutorial, we'll use a `Task` entity for our todo application.
 
