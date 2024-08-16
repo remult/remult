@@ -41,6 +41,8 @@ Remult uses **TypeScript entities** as a single source of truth for: ✅ CRUD + 
 
 **Remult is frontend and backend framework agnostic** and comes with adapters for Express, Fastify, Next.js, Nuxt, SvelteKit, SolidStart, Nest, Koa, Hapi and Hono.
 
+> **Want to experience Remult firsthand? [Try our interactive online tutorial](https://learn.remult.dev/).**
+
 Remult promotes a **consistent query syntax for both frontend and Backend code**:
 
 ```ts
