@@ -22,6 +22,7 @@ export function sqlRelations<entityType>(
           get: (target, prop) => {
             if (prop == '$count') return target.$count
             if (prop == '$subQuery') return target.$subQuery
+            if (prop == '$relations') return target.$relations
 
             return target.$fields[
               prop as keyof ArrayItemType<entityType[keyof entityType & string]>
@@ -41,12 +42,17 @@ export type SqlRelations<entityType> = {
 export type SqlRelation<toEntity> = {
   $count(where?: EntityFilter<toEntity>): Promise<string>
   $subQuery(
-    what: (fieldNamesOfToEntity: EntityDbNames<toEntity>) => string,
+    what: (
+      fieldNamesOfToEntity: EntityDbNames<toEntity>,
+    ) => string | Promise<string>,
     options?: {
       where?: EntityFilter<toEntity>
       c?: SqlCommandWithParameters
     },
   ): Promise<string>
+  $relations: {
+    [P in keyof toEntity]-?: SqlRelations<toEntity[P]>
+  }
 } & {
   [P in keyof toEntity]-?: Promise<string>
 }
@@ -72,6 +78,22 @@ class SqlRelationTools<
     },
   }) as {
     [P in keyof toEntity]: Promise<string>
+  }
+  $relations = new Proxy(this, {
+    get: (target, field: keyof toEntity & string) => {
+      const rel1 = getRelationFieldInfo(
+        repo(this.myEntity).fields.find(this.relationField as string),
+      )
+      return new Proxy(this, {
+        get: (target, field1: string) => {
+          return this.$subQuery(
+            () => (sqlRelations(rel1!.toEntity!) as any)[field][field1],
+          )
+        },
+      })
+    },
+  }) as {
+    [P in keyof toEntity]: SqlRelations<toEntity[P]>
   }
 
   $subQuery = async <relationKey extends keyof myEntity & string>(
@@ -117,7 +139,7 @@ class SqlRelationTools<
     if (otherTableFilter) filters.push(otherTableFilter)
 
     return `
-( SELECT ${what(namesOfOtherTable)} 
+( SELECT ${await what(namesOfOtherTable)} 
   FROM ${namesOfOtherTable} 
   WHERE ${filters.join(' and ')}
 )`
