@@ -20,6 +20,10 @@ As Remult is "aware" of the runtime context (frontend or backend), data validati
 
 Explore the flexibility of Remult through different learning paths tailored to match your style and project needs.
 
+### Start with the Interactive Online Tutorial
+
+If you're new to Remult or prefer a guided, hands-on approach, we recommend starting with our [interactive online tutorial](https://learn.remult.dev). This tutorial will walk you through building a full-stack application step by step, providing immediate feedback and insights as you learn.
+
 ### Follow a Step-by-step Tutorial
 
 - [Tutorial with React](../tutorials/react/)
