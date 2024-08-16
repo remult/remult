@@ -8,7 +8,7 @@ focus: /frontend/Todo.tsx
 
 Let's add the functionality to update a task's completion status. We'll start by defining a function to handle the update.
 
-```ts add={1-4}
+```tsx title="frontend/Todo.tsx" add={1-4}
 async function setCompleted(task: Task, completed: boolean) {
   const updatedTask = await taskRepo.update(task, { completed })
   setTasks(tasks.map((t) => (t.id === updatedTask.id ? updatedTask : t)))
@@ -26,7 +26,7 @@ useEffect(() => {
 
 Next, let's modify the JSX to call the `setCompleted` function when the checkbox is toggled.
 
-```tsx add={7}
+```tsx title="frontend/Todo.tsx" add={7}
 {
   tasks.map((task) => {
     return (

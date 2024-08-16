@@ -8,7 +8,7 @@ focus: /frontend/Todo.tsx
 
 The RESTful API created by Remult supports server-side paging, sorting, and filtering. Let's use these features to limit, sort, and filter the list of tasks.
 
-```ts add={4,5}
+```ts title="frontend/Todo.tsx" add={4,5}
 useEffect(() => {
   taskRepo
     .find({

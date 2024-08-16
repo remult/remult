@@ -12,7 +12,7 @@ Remult comes with a set of built-in validations that you can easily choose from.
 
 For example, let's use the `minLength` validation:
 
-```ts add={5-7}
+```ts title="shared/Task.ts" add={5-7}
 export class Task {
   @Fields.uuid()
   id = ''
@@ -35,7 +35,7 @@ export class Task {
 
 You can also chain multiple validators:
 
-```ts add={5-7}
+```ts title="shared/Task.ts" add={5-7}
 export class Task {
   @Fields.uuid()
   id = ''
@@ -58,7 +58,7 @@ export class Task {
 
 You can also customize the validation message:
 
-```ts add={5-10}
+```ts title="shared/Task.ts" add={5-10}
 export class Task {
   @Fields.uuid()
   id = ''

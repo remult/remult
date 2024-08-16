@@ -8,7 +8,7 @@ focus: /frontend/Todo.tsx
 
 Let's add the functionality to delete a task. We'll start by defining a function to handle the deletion.
 
-```ts add={1-8}
+```tsx title="frontend/Todo.tsx" add={1-8}
 async function deleteTask(task: Task) {
   try {
     await taskRepo.delete(task)
@@ -33,7 +33,7 @@ useEffect(() => {
 
 Next, let's modify the JSX to call the `deleteTask` function when the delete button is clicked.
 
-```tsx add={10-12}
+```tsx title="frontend/Todo.tsx" add={10-12}
 {
   tasks.map((task) => {
     return (
