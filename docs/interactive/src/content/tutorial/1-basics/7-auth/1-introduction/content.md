@@ -1,6 +1,6 @@
 ---
 type: lesson
-title: Authorization
+title: Authentication and Authorization
 template: after-backend-methods
 focus: /shared/Task.ts
 ---
