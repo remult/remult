@@ -114,3 +114,54 @@ header {
   background-color: rgb(37, 99, 235);
   color: white;
 }
+
+/* Dark Mode Styles */
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #121212;
+    color: #e0e0e0;
+  }
+
+  h1 {
+    color: #f87171;
+  }
+
+  main {
+    background-color: #1f1f1f;
+    border: 1px solid #444;
+    box-shadow:
+      0 2px 4px #0006,
+      0 25px 50px #0000003a;
+  }
+
+  main > div,
+  main > form {
+    border-bottom: 1px solid #555;
+  }
+
+  input {
+    background-color: #1f1f1f;
+    color: #e0e0e0;
+  }
+
+  input[type='checkbox'] {
+    /* background-color: #444;*/
+    border: 1px solid #666;
+  }
+
+  button {
+    background-color: #333;
+    border: 2px solid #555;
+    color: #e0e0e0;
+  }
+
+  .sign-in > form > input {
+    border: 1px solid #555;
+    background: #333;
+  }
+
+  .sign-in > form > button {
+    background-color: #2563eb;
+    color: white;
+  }
+}
