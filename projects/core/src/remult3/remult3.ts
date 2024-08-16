@@ -963,12 +963,12 @@ export interface Paginator<entityType> {
  * @template optionsType The type of find options to apply to the relation (default is FindOptionsBase<toEntity>).
  */
 
-export type RelationOptions<
+export interface RelationOptions<
   fromEntity,
   toEntity,
   matchIdEntity,
   optionsType extends FindOptionsBase<toEntity> = FindOptionsBase<toEntity>,
-> = {
+> extends Pick<FieldOptions, 'caption'> {
   /**
    * An object specifying custom field names for the relation.
    * Each key represents a field in the related entity, and its value is the corresponding field in the source entity.
@@ -996,7 +996,7 @@ export type RelationOptions<
    * If false or not specified, related entities will need to be explicitly included using the `include` option.
    */
   defaultIncluded?: boolean
-} & Pick<FieldOptions, 'caption'>
+}
 
 export type ObjectMembersOnly<T> = MembersOnly<{
   [K in keyof Pick<
