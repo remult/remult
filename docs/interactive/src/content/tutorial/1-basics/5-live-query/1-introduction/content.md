@@ -1,6 +1,6 @@
 ---
 type: lesson
-title: Introduction
+title: Live Query
 focus: /frontend/Todo.tsx
 ---
 
