@@ -2,7 +2,7 @@
 type: lesson
 title: Welcome to the Remult Tutorial
 template: after-backend-methods
-focus: frontend/Todo.tsx
+focus: /frontend/Todo.tsx
 ---
 
 # Welcome to the Remult Tutorial
