@@ -44,6 +44,8 @@ export class Task {
 
 Try adding a task with no title to see the validation in action.
 
+Also - checkout the browser's network tab, and see that there is no network call to the backend - the validation is performed in the frontend.
+
 > **Note:** In this tutorial, the errors appear in the browser's alert dialog as specified in the code in our `Todo.tsx` component:
 >
 > ```tsx title="frontend/Todo.tsx" add={8}
@@ -75,3 +77,19 @@ Here's an example of the error response:
 ```
 
 This ensures that the validation error is clear and can be displayed appropriately in the UI.
+
+### Validation on the Api
+
+The same validation code that runs in the frontend, is also used to validate the api - if anyone tries to send an invalid request to the api they'll fail.
+
+:::tip
+You can try and bypass the frontend validation, by making a post call directly from the browser's console.
+
+Right click on the `preview` window, and select `inspect`, you'll be able to run the api call directly from the developer tools console (at least on chrome)
+
+```js
+await fetch('/api/tasks', { method: 'POST', body: '' }).then((r) => r.json())
+```
+
+See the result error object that's returned
+:::

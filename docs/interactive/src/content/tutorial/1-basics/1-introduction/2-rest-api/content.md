@@ -33,3 +33,14 @@ app.use(api)
 ### See that it works
 
 Click on the `Test the Api` button in the preview window, you should see an empty JSON array in the result.
+
+> You can also open the `network` tab in the developer tools and see the requests that are being sent to the nodejs server
+
+:::tip
+If you right click on the `preview` window, and select `inspect`, you'll be able to run the api call directly from the developer tools console (at least on chrome)
+
+```js
+await fetch('/api/tasks').then((result) => result.json())
+```
+
+:::
