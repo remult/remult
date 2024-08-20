@@ -1075,7 +1075,7 @@ export const flags = {
      //y1 - consider sql expression gets a dbnames of it's own (that already has the "tableName" defined correctly) maybe also the filter translator
      //y2 - soft-delete-discussion https://discord.com/channels/975754286384418847/1230386433093533698/1230386433093533698
 */
-
+//y1 - add parameter all to deleteMany, and updateMany
 //p1 - fix query docs to also explain how it can be used for infinite scroll and pagination.
 //y1 - 'test expression columns without aliases'
 
