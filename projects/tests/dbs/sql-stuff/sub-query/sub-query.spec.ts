@@ -147,7 +147,7 @@ describe('test sub query 1', () => {
     `)
   })
 
-  it('relation n+2', async () => {
+  it('relation entity+2', async () => {
     @Entity('customers')
     class CustomerExtended extends Customer {
       @Fields.string({
@@ -176,6 +176,46 @@ describe('test sub query 1', () => {
           "groupColor": "green",
           "id": 1,
           "zoneShort": "N",
+        },
+      ]
+    `)
+  })
+
+  it('relation to many select first', async () => {
+    @Entity('customers')
+    class CustomerExtended extends Customer {
+      @Fields.number({
+        sqlExpression: () => `-1`,
+
+        //   sqlExpression: () => `(
+        // 	SELECT amount
+        // 	FROM orders
+        // 	WHERE customers.id = orders.customer    -- Need maybe to add additional filters ?
+        // 	ORDER BY id DESC                        -- Need to be able to tweak this (taking the default order by if not set)
+        // 	LIMIT 1                                 -- Has to be limit 1
+        // )`,
+      })
+      lastAmount = ''
+    }
+    SqlDatabase.LogToConsole = true
+    expect(
+      (await remult.repo(CustomerExtended).find()).map((x) => ({
+        id: x.id,
+        lastAmount: x.lastAmount,
+      })),
+    ).toMatchInlineSnapshot(`
+      [
+        {
+          "id": 1,
+          "lastAmount": 15,
+        },
+        {
+          "id": 2,
+          "lastAmount": 7,
+        },
+        {
+          "id": 3,
+          "lastAmount": 3,
         },
       ]
     `)
