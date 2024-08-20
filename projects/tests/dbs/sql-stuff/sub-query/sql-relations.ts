@@ -6,6 +6,8 @@ import {
   SqlDatabase,
   dbNamesOf,
   repo,
+  type EntityOrderBy,
+  type ObjectMembersOnly,
   //} from 'remult'
 } from '../../../../core/index.js' // comment in the from `remult`
 //import { getRelationFieldInfo } from 'remult/internals'
@@ -22,7 +24,8 @@ export function sqlRelations<entityType>(
           get: (target, prop) => {
             if (prop == '$count') return target.$count
             if (prop == '$subQuery') return target.$subQuery
-            if (prop == '$relations') return target.$relations
+            if (prop == '$relations') return target.___relations()
+            if (prop == '$first') return target.$first
 
             return target.$fields[
               prop as keyof ArrayItemType<entityType[keyof entityType & string]>
@@ -34,25 +37,39 @@ export function sqlRelations<entityType>(
 }
 
 export type SqlRelations<entityType> = {
-  [p in keyof entityType]-?: SqlRelation<
+  [p in keyof ObjectMembersOnly<entityType>]-?: SqlRelation<
     ArrayItemType<NonNullable<entityType[p]>>
   >
 }
-
+export type SubQueryWhat<toEntity> = (
+  fieldNamesOfToEntity: EntityDbNames<toEntity>,
+) => string | Promise<string>
+export type SubQueryOptions<toEntity> = {
+  where?: EntityFilter<toEntity>
+  orderBy?: EntityOrderBy<toEntity>
+  first?: boolean
+  c?: SqlCommandWithParameters
+}
+export type SqlFirst<toEntity> = {
+  $subQuery(what: SubQueryWhat<toEntity>): Promise<string>
+  $relations: {
+    [P in keyof ObjectMembersOnly<toEntity>]-?: SqlRelation<toEntity[P]>
+  }
+} & {
+  [P in keyof toEntity]-?: Promise<string>
+}
 export type SqlRelation<toEntity> = {
   $count(where?: EntityFilter<toEntity>): Promise<string>
   $subQuery(
-    what: (
-      fieldNamesOfToEntity: EntityDbNames<toEntity>,
-    ) => string | Promise<string>,
-    options?: {
-      where?: EntityFilter<toEntity>
-      c?: SqlCommandWithParameters
-    },
+    what: SubQueryWhat<toEntity>,
+    options?: SubQueryOptions<toEntity>,
   ): Promise<string>
   $relations: {
-    [P in keyof toEntity]-?: SqlRelations<toEntity[P]>
+    [P in keyof ObjectMembersOnly<toEntity>]-?: SqlRelation<toEntity[P]>
   }
+  $first(
+    options?: Pick<SubQueryOptions<toEntity>, 'where' | 'orderBy'>,
+  ): SqlFirst<toEntity>
 } & {
   [P in keyof toEntity]-?: Promise<string>
 }
@@ -70,6 +87,23 @@ class SqlRelationTools<
     return this.$subQuery(() => 'count(*)', { where })
   }
 
+  $first = (options?: Pick<SubQueryOptions<toEntity>, 'where' | 'orderBy'>) => {
+    return new Proxy(this, {
+      get: (target, prop) => {
+        if (prop == '$subQuery')
+          return (what: SubQueryWhat<toEntity>) =>
+            target.$subQuery(what, { ...options, first: true })
+        if (prop == '$relations')
+          return this.___relations({ ...options, first: true })
+        return target.$subQuery(
+          (fieldNamesOfToEntity) =>
+            fieldNamesOfToEntity.$dbNameOf(prop as keyof toEntity & string),
+          { ...options, first: true },
+        )
+      },
+    })
+  }
+
   $fields = new Proxy(this, {
     get: (target, field: keyof toEntity & string) => {
       return target.$subQuery((fieldNamesOfToEntity) =>
@@ -79,29 +113,13 @@ class SqlRelationTools<
   }) as {
     [P in keyof toEntity]: Promise<string>
   }
-  $relations = new Proxy(this, {
-    get: (target, field: keyof toEntity & string) => {
-      const rel1 = getRelationFieldInfo(
-        repo(this.myEntity).fields.find(this.relationField as string),
-      )
-      return new Proxy(this, {
-        get: (target, field1: string) => {
-          return this.$subQuery(
-            () => (sqlRelations(rel1!.toEntity!) as any)[field][field1],
-          )
-        },
-      })
-    },
-  }) as {
-    [P in keyof toEntity]: SqlRelations<toEntity[P]>
-  }
 
   $subQuery = async <relationKey extends keyof myEntity & string>(
-    what: (
-      fieldNamesOfToEntity: EntityDbNames<ArrayItemType<myEntity[relationKey]>>,
-    ) => string,
+    what: SubQueryWhat<toEntity>,
     options?: {
       where?: EntityFilter<toEntity>
+      orderBy?: EntityOrderBy<toEntity>
+      first?: boolean
       c?: SqlCommandWithParameters
     },
   ) => {
@@ -137,12 +155,50 @@ class SqlRelationTools<
       namesOfOtherTable,
     )
     if (otherTableFilter) filters.push(otherTableFilter)
-
-    return `
+    let result = `
 ( SELECT ${await what(namesOfOtherTable)} 
   FROM ${namesOfOtherTable} 
-  WHERE ${filters.join(' and ')}
+  WHERE ${filters.join(' and ')}`
+
+    if (options?.orderBy) {
+      result += `
+  ORDER BY ${Object.keys(options.orderBy)
+    .map(
+      (key) =>
+        `${namesOfOtherTable.$dbNameOf(key)} ${
+          options.orderBy![key as unknown as keyof toEntity] as string
+        }`,
+    )
+    .join(', ')}`
+    }
+    if (options?.first) {
+      result += `
+  LIMIT 1`
+    }
+    return (
+      result +
+      `
 )`
+    )
+  }
+
+  ___relations(options?: SubQueryOptions<toEntity>): any {
+    return new Proxy(this, {
+      get: (target, field: keyof toEntity & string) => {
+        const rel1 = getRelationFieldInfo(
+          repo(this.myEntity).fields.find(this.relationField as string),
+        )
+        return new Proxy(this, {
+          get: (target, field1: string) => {
+            return this.$subQuery(
+              () =>
+                indent((sqlRelations(rel1!.toEntity!) as any)[field][field1]),
+              options,
+            )
+          },
+        })
+      },
+    })
   }
 }
 export type ArrayItemType<T> = T extends (infer U)[] ? U : T
@@ -187,4 +243,13 @@ export class SqlRelationFilter<
       )
     })
   }
+}
+
+function indent(s: Promise<string>) {
+  return s.then((s) =>
+    s
+      .split('\n')
+      .map((x) => '  ' + x)
+      .join('\n'),
+  )
 }

@@ -180,12 +180,69 @@ describe('test sub query 1', () => {
       ]
     `)
   })
+  it('test sql relation sql', async () => {
+    expect(
+      await sqlRelations(Customer).orders.$first({
+        orderBy: { id: 'desc' },
+      }).amount,
+    ).toMatchInlineSnapshot(`
+      "
+      ( SELECT orders.amount 
+        FROM orders 
+        WHERE orders.customer = customers.id
+        ORDER BY orders.id desc
+        LIMIT 1
+      )"
+    `)
+  })
+  it('test sql relation sql2', async () => {
+    expect(
+      await sqlRelations(Customer)
+        .orders.$first({
+          orderBy: { id: 'desc' },
+        })
+        .$subQuery((x) => x.amount),
+    ).toMatchInlineSnapshot(`
+      "
+      ( SELECT orders.amount 
+        FROM orders 
+        WHERE orders.customer = customers.id
+        ORDER BY orders.id desc
+        LIMIT 1
+      )"
+    `)
+  })
+  it('test sql relation sql3', async () => {
+    expect(
+      await sqlRelations(Customer).orders.$first({
+        orderBy: { id: 'desc' },
+      }).$relations.customer.city,
+    ).toMatchInlineSnapshot(`
+      "
+      ( SELECT   
+        ( SELECT customers.city 
+          FROM customers 
+          WHERE customers.id = orders.customer
+        ) 
+        FROM orders 
+        WHERE orders.customer = customers.id
+        ORDER BY orders.id desc
+        LIMIT 1
+      )"
+    `)
+  })
 
   it('relation to many select first', async () => {
     @Entity('customers')
     class CustomerExtended extends Customer {
       @Fields.number({
-        sqlExpression: () => `-1`,
+        sqlExpression: () =>
+          sqlRelations(CustomerExtended).orders.$first({
+            orderBy: { id: 'desc' },
+          }).amount,
+        //})
+        //`-1`
+        //  ,
 
         //   sqlExpression: () => `(
         // 	SELECT amount
@@ -196,26 +253,41 @@ describe('test sub query 1', () => {
         // )`,
       })
       lastAmount = ''
+      @Fields.number({
+        sqlExpression: () =>
+          sqlRelations(CustomerExtended).orders.$subQuery(
+            (names) => names.amount,
+            {
+              orderBy: { id: 'desc' },
+              first: true,
+            },
+          ),
+      })
+      lastAmount1 = ''
     }
-    SqlDatabase.LogToConsole = true
+
     expect(
       (await remult.repo(CustomerExtended).find()).map((x) => ({
         id: x.id,
         lastAmount: x.lastAmount,
+        lastAmount1: x.lastAmount1,
       })),
     ).toMatchInlineSnapshot(`
       [
         {
           "id": 1,
           "lastAmount": 15,
+          "lastAmount1": 15,
         },
         {
           "id": 2,
           "lastAmount": 7,
+          "lastAmount1": 7,
         },
         {
           "id": 3,
           "lastAmount": 3,
+          "lastAmount1": 3,
         },
       ]
     `)
