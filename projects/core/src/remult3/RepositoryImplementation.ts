@@ -2318,7 +2318,7 @@ export class columnDefsImpl implements FieldMetadata {
   valueType: any
 }
 class EntityFullInfo<T> implements EntityMetadata<T> {
-  options: EntityOptions<unknown>
+  options: EntityOptions<T>
   fieldsMetadata: FieldMetadata[] = []
 
   constructor(

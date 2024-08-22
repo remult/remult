@@ -249,7 +249,7 @@ export interface EntityMetadata<entityType = unknown> {
   /** The options send to the `Entity`'s decorator
    * @see {@link EntityOptions}
    */
-  readonly options: EntityOptions
+  readonly options: EntityOptions<entityType>
   /** The class type of the entity */
   readonly entityType: ClassType<entityType>
   /** true if the current user is allowed to update an entity instance
