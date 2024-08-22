@@ -386,6 +386,31 @@ export function SqlDbTests({
       })
       expect(await remult.repo(TaskEnhanced).find()).toMatchInlineSnapshot('[]')
     })
+    it('test #474', async () => {
+      @Entity('hash474')
+      class myTb {
+        @Fields.autoIncrement()
+        theId = 0
+        @Fields.string()
+        name = ''
+      }
+      const repo = await createEntity(myTb)
+      let result = await repo.insert({ name: 'noam' })
+      expect(result).toMatchInlineSnapshot(`
+        myTb {
+          "name": "noam",
+          "theId": 1,
+        }
+      `)
+      result.name = 'maayan'
+      result = await repo.save(result)
+      expect(result).toMatchInlineSnapshot(`
+        myTb {
+          "name": "maayan",
+          "theId": 1,
+        }
+      `)
+    })
     it('test migrations transactions', async () => {
       const repo = await entityWithValidations.create4RowsInDp(createEntity)
       expect(await repo.count()).toBe(4)

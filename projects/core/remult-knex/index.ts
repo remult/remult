@@ -333,7 +333,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
         newId = result[0]
       } else {
         let result = await insert.returning(this.entity.idMetadata.field.key)
-        newId = result[0].id
+        newId = result[0][this.entity.idMetadata.field.key]
       }
 
       return this.find({
