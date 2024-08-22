@@ -57,8 +57,8 @@ export class Order {
   amount = 0
 }
 
-describe('test sub query 1', () => {
-  it('test count column second variation', async () => {
+describe('sql-relations', () => {
+  it('should count column second variation', async () => {
     @Entity('customers')
     class CustomerExtended extends Customer {
       @Fields.number({
@@ -100,7 +100,7 @@ describe('test sub query 1', () => {
     `)
   })
 
-  it('test get value column', async () => {
+  it('should get value column', async () => {
     @Entity('orders')
     class OrderExtended extends Order {
       @Fields.string({
@@ -131,7 +131,7 @@ describe('test sub query 1', () => {
     `)
   })
 
-  it('test filter', async () => {
+  it('should filter', async () => {
     expect(
       (
         await remult.repo(Customer).find({
@@ -147,7 +147,7 @@ describe('test sub query 1', () => {
     `)
   })
 
-  it('relation entity+2', async () => {
+  it('should get relation even at entity + 2', async () => {
     @Entity('customers')
     class CustomerExtended extends Customer {
       @Fields.string({
@@ -180,7 +180,43 @@ describe('test sub query 1', () => {
       ]
     `)
   })
-  it('test sql relation sql', async () => {
+
+  it('should get expression from another field with expression', async () => {
+    @Entity('customers')
+    class CustomerExtended extends Customer {
+      @Fields.string({
+        sqlExpression: () => sqlRelations(CustomerExtended).zone.group,
+      })
+      groupCalculatedId = ''
+      @Relations.toOne(() => CustomerGroup, { field: 'groupCalculatedId' })
+      groupCalculated?: CustomerGroup
+      @Fields.string({
+        sqlExpression: () =>
+          sqlRelations(CustomerExtended).groupCalculated.color,
+      })
+      groupCalculatedColor = ''
+    }
+    SqlDatabase.LogToConsole = true
+    expect(
+      (await remult.repo(CustomerExtended).find({ where: { id: 1 } })).map(
+        (x) => ({
+          id: x.id,
+          groupCalculatedId: x.groupCalculatedId,
+          groupCalculatedColor: x.groupCalculatedColor,
+        }),
+      ),
+    ).toMatchInlineSnapshot(`
+      [
+        {
+          "groupCalculatedColor": "green",
+          "groupCalculatedId": "1",
+          "id": 1,
+        },
+      ]
+    `)
+  })
+
+  it('should get first element (direct)', async () => {
     expect(
       await sqlRelations(Customer).orders.$first({
         orderBy: { id: 'desc' },
@@ -195,7 +231,8 @@ describe('test sub query 1', () => {
       )"
     `)
   })
-  it('test sql relation sql2', async () => {
+
+  it('should get first element (with subQuery)', async () => {
     expect(
       await sqlRelations(Customer)
         .orders.$first({
@@ -212,7 +249,8 @@ describe('test sub query 1', () => {
       )"
     `)
   })
-  it('test sql relation sql3', async () => {
+
+  it('should get first element (with distance)', async () => {
     expect(
       await sqlRelations(Customer).orders.$first({
         orderBy: { id: 'desc' },
@@ -232,7 +270,7 @@ describe('test sub query 1', () => {
     `)
   })
 
-  it('relation to many select first', async () => {
+  it('should get first element (with raw subQuery)', async () => {
     @Entity('customers')
     class CustomerExtended extends Customer {
       @Fields.number({
@@ -240,17 +278,6 @@ describe('test sub query 1', () => {
           sqlRelations(CustomerExtended).orders.$first({
             orderBy: { id: 'desc' },
           }).amount,
-        //})
-        //`-1`
-        //  ,
-
-        //   sqlExpression: () => `(
-        // 	SELECT amount
-        // 	FROM orders
-        // 	WHERE customers.id = orders.customer    -- Need maybe to add additional filters ?
-        // 	ORDER BY id DESC                        -- Need to be able to tweak this (taking the default order by if not set)
-        // 	LIMIT 1                                 -- Has to be limit 1
-        // )`,
       })
       lastAmount = ''
       @Fields.number({
