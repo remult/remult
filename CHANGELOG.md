@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.27.4] 2024-08-22
+
+- [#474](https://github.com/remult/remult/issues/474) When using knex, an id column with auto-increment that is not named id in the db gave an error
+
 ## [0.27.3] 2024-08-14
 
 - Changed RelationOptions to be an extendable interface and not a type
