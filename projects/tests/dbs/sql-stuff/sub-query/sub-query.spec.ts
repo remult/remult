@@ -182,35 +182,77 @@ describe('sql-relations', () => {
   })
 
   it('should get expression from another field with expression', async () => {
-    @Entity('customers')
-    class CustomerExtended extends Customer {
+    // order -> customer -> zone -> group
+    // @Entity('customers')
+    // class CustomerExtended extends Customer {
+    //   @Fields.string({
+    //     sqlExpression: () => sqlRelations(CustomerExtended).zone.group,
+    //   })
+    //   zoneGroupId = ''
+    //   @Relations.toOne(() => CustomerGroup, { field: 'zoneGroupId' })
+    //   zoneGroup?: CustomerGroup
+    // }
+    @Entity('orders')
+    class OrdersExtended extends Order {
       @Fields.string({
-        sqlExpression: () => sqlRelations(CustomerExtended).zone.group,
+        sqlExpression: () => sqlRelations(OrdersExtended).customer.zone,
       })
-      groupCalculatedId = ''
-      @Relations.toOne(() => CustomerGroup, { field: 'groupCalculatedId' })
-      groupCalculated?: CustomerGroup
+      customerZoneId = ''
+      @Relations.toOne(() => CustomerZone, { field: 'customerZoneId' })
+      customerZone?: CustomerZone
+
       @Fields.string({
         sqlExpression: () =>
-          sqlRelations(CustomerExtended).groupCalculated.color,
+          // This this one in my app having the error with recurssive sqlExpression
+          sqlRelations(OrdersExtended).customerZone.group,
       })
-      groupCalculatedColor = ''
+      customerZoneGroupId = ''
+      @Relations.toOne(() => CustomerGroup, { field: 'customerZoneGroupId' })
+      customerZoneGroup?: CustomerGroup
     }
     SqlDatabase.LogToConsole = true
     expect(
-      (await remult.repo(CustomerExtended).find({ where: { id: 1 } })).map(
-        (x) => ({
-          id: x.id,
-          groupCalculatedId: x.groupCalculatedId,
-          groupCalculatedColor: x.groupCalculatedColor,
-        }),
-      ),
+      (await remult.repo(OrdersExtended).find()).map((x) => ({
+        id: x.id,
+        customerZoneId: x.customerZoneId,
+        customerZoneGroupId: x.customerZoneGroupId,
+      })),
     ).toMatchInlineSnapshot(`
       [
         {
-          "groupCalculatedColor": "green",
-          "groupCalculatedId": "1",
+          "customerZoneGroupId": "1",
+          "customerZoneId": "1",
           "id": 1,
+        },
+        {
+          "customerZoneGroupId": "1",
+          "customerZoneId": "1",
+          "id": 2,
+        },
+        {
+          "customerZoneGroupId": "1",
+          "customerZoneId": "2",
+          "id": 3,
+        },
+        {
+          "customerZoneGroupId": "1",
+          "customerZoneId": "2",
+          "id": 4,
+        },
+        {
+          "customerZoneGroupId": "1",
+          "customerZoneId": "2",
+          "id": 5,
+        },
+        {
+          "customerZoneGroupId": "2",
+          "customerZoneId": "3",
+          "id": 6,
+        },
+        {
+          "customerZoneGroupId": "2",
+          "customerZoneId": "3",
+          "id": 7,
         },
       ]
     `)
