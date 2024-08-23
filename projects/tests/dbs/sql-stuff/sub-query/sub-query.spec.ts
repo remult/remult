@@ -1,5 +1,6 @@
 import { beforeAll, it, describe, expect } from 'vitest'
 import {
+  dbNamesOf,
   Entity,
   Fields,
   Relations,
@@ -291,6 +292,30 @@ describe('test sub query 1', () => {
         },
       ]
     `)
+  })
+  it('test recursive sql', async () => {
+    @Entity('me')
+    class me {
+      @Fields.integer()
+      id = 0
+
+      @Fields.integer({
+        sqlExpression: async () => {
+          const db = await dbNamesOf(me)
+          return `1 + ${db.id}`
+        },
+      })
+      a = 0
+      @Fields.integer({
+        sqlExpression: async () => {
+          const db = await dbNamesOf(me)
+          return `3+${db.a}`
+        },
+      })
+      b = 0
+    }
+    const y = await dbNamesOf(me)
+    expect(y.b).toMatchInlineSnapshot(`"3+1 + id"`)
   })
 
   let db: SqlDatabase
