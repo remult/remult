@@ -79,7 +79,7 @@ export class Contact {
   })
   createdAt = new Date()
 
-  @Fields.integer({
+  @Fields.integer<Contact>({
     serverExpression: async (contact) =>
       remult.repo(Contact).relations(contact).notes.count(),
   })
