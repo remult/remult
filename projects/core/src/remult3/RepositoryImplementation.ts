@@ -1246,7 +1246,7 @@ export class rowHelperImplementation<T>
             await listener.saved(this.instance, isNew)
           }
 
-        await this.repository.remult.liveQueryPublisher.itemChanged(
+        this.repository.remult.liveQueryPublisher.itemChanged(
           this.repository.metadata.key,
           [{ id: this.getId(), oldId: this.getOriginalId(), deleted: false }],
         )
@@ -1287,7 +1287,7 @@ export class rowHelperImplementation<T>
         )) {
           await listener.deleted(this.instance)
         }
-      await this.repository.remult.liveQueryPublisher.itemChanged(
+      this.repository.remult.liveQueryPublisher.itemChanged(
         this.repository.metadata.key,
         [{ id: this.getId(), oldId: this.getOriginalId(), deleted: true }],
       )
