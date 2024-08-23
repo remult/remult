@@ -51,6 +51,13 @@
             ...init?.headers,
             authorization: 'Bearer ' + $SSContext.settings.bearerAuth,
           }
+        : $LSContext.settings.keyForBearerAuth
+        ? {
+            ...init?.headers,
+            authorization:
+              'Bearer ' +
+              localStorage.getItem($LSContext.settings.keyForBearerAuth),
+          }
         : init?.headers,
     })
   }
@@ -99,6 +106,15 @@
           <option value={'grid-bfs'}>grid-bfs</option>
           <option value={'line'}>line</option>
         </select>
+      </label>
+
+      <label style="display: flex; align-items: center; gap: 4px">
+        <span>Local Storage Key for Auth</span>
+        <input
+          type="text"
+          bind:value={$LSContext.settings.keyForBearerAuth}
+          placeholder="Local Storage Key"
+        />
       </label>
 
       <br />
