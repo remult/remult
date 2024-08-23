@@ -418,13 +418,13 @@ export async function fieldDbName(
       let result: string
       if (typeof f.options.sqlExpression === 'function') {
         if ((f as any)[sqlExpressionInProgressKey] && !forceSqlExpression) {
-          return "recursive sqlExpression call for field '" + f.key + "'. "
+          return "recursive sqlExpression call for field '" + f.key + "'. \0"
         }
         try {
           ;(f as any)[sqlExpressionInProgressKey] = true
 
           result = await f.options.sqlExpression(meta)
-          f.options.sqlExpression = () => result
+          if (!result.includes('\0')) f.options.sqlExpression = () => result
         } finally {
           delete (f as any)[sqlExpressionInProgressKey]
         }
