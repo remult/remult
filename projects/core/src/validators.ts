@@ -277,8 +277,8 @@ function createValidatorWithArgsInternal<valueType, argsType>(
   }
 }
 
-export function getEnumValues<theEnum extends object>(enumObj: theEnum) {
-  return Object.values(enumObj).filter(
+export function getEnumValues<theEnum>(enumObj: theEnum) {
+  return Object.values(enumObj as object).filter(
     (x) => typeof (enumObj as any)[x as any] !== 'number',
   )
 }
