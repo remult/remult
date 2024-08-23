@@ -411,6 +411,56 @@ export function SqlDbTests({
         }
       `)
     })
+    it('test #474_1', async () => {
+      @Entity('hash474_1')
+      class myTb {
+        @Fields.autoIncrement({ dbName: 'someId' })
+        theId = 0
+        @Fields.string()
+        name = ''
+      }
+      const repo = await createEntity(myTb)
+      let result = await repo.insert({ name: 'noam' })
+      expect(result).toMatchInlineSnapshot(`
+        myTb {
+          "name": "noam",
+          "theId": 1,
+        }
+      `)
+      result.name = 'maayan'
+      result = await repo.save(result)
+      expect(result).toMatchInlineSnapshot(`
+        myTb {
+          "name": "maayan",
+          "theId": 1,
+        }
+      `)
+    })
+    it('test #474_2', async () => {
+      @Entity('hash474_2')
+      class myTb {
+        @Fields.autoIncrement({ dbName: 'someId' })
+        id = 0
+        @Fields.string()
+        name = ''
+      }
+      const repo = await createEntity(myTb)
+      let result = await repo.insert({ name: 'noam' })
+      expect(result).toMatchInlineSnapshot(`
+        myTb {
+          "id": 1,
+          "name": "noam",
+        }
+      `)
+      result.name = 'maayan'
+      result = await repo.save(result)
+      expect(result).toMatchInlineSnapshot(`
+        myTb {
+          "id": 1,
+          "name": "maayan",
+        }
+      `)
+    })
     it('test migrations transactions', async () => {
       const repo = await entityWithValidations.create4RowsInDp(createEntity)
       expect(await repo.count()).toBe(4)
