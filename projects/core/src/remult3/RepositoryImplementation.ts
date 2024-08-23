@@ -1205,15 +1205,21 @@ export class rowHelperImplementation<T>
     return this._columns
   }
   private _saving = false
-  async save(onlyTheseFieldsSentOnlyInTheCaseOfProxySaveWithPartialObject?: string[]): Promise<T> {
+  async save(
+    onlyTheseFieldsSentOnlyInTheCaseOfProxySaveWithPartialObject?: string[],
+  ): Promise<T> {
     try {
       if (this._saving)
         throw new Error('cannot save while entity is already saving')
       this._saving = true
       if (this.wasDeleted()) throw new Error('cannot save a deleted row')
       this.isLoading = true
-      if (onlyTheseFieldsSentOnlyInTheCaseOfProxySaveWithPartialObject===undefined) // no need
-      await this.__validateEntity()
+      if (
+        onlyTheseFieldsSentOnlyInTheCaseOfProxySaveWithPartialObject ===
+        undefined
+      )
+        // no need
+        await this.__validateEntity()
       let doNotSave = false
       for (const col of this.fields) {
         if (col.metadata.options.saving)
@@ -1233,8 +1239,11 @@ export class rowHelperImplementation<T>
       for (const field of this.metadata.fields) {
         if (
           field.dbReadOnly ||
-          (onlyTheseFieldsSentOnlyInTheCaseOfProxySaveWithPartialObject !== undefined &&
-            !onlyTheseFieldsSentOnlyInTheCaseOfProxySaveWithPartialObject.includes(field.key))
+          (onlyTheseFieldsSentOnlyInTheCaseOfProxySaveWithPartialObject !==
+            undefined &&
+            !onlyTheseFieldsSentOnlyInTheCaseOfProxySaveWithPartialObject.includes(
+              field.key,
+            ))
         ) {
           d[field.key] = undefined
           ignoreKeys.push(field.key)
@@ -1283,7 +1292,7 @@ export class rowHelperImplementation<T>
             await listener.saved(this.instance, isNew)
           }
 
-        await this.repository.remult.liveQueryPublisher.itemChanged(
+        this.repository.remult.liveQueryPublisher.itemChanged(
           this.repository.metadata.key,
           [{ id: this.getId(), oldId: this.getOriginalId(), deleted: false }],
         )
@@ -1324,7 +1333,7 @@ export class rowHelperImplementation<T>
         )) {
           await listener.deleted(this.instance)
         }
-      await this.repository.remult.liveQueryPublisher.itemChanged(
+      this.repository.remult.liveQueryPublisher.itemChanged(
         this.repository.metadata.key,
         [{ id: this.getId(), oldId: this.getOriginalId(), deleted: true }],
       )
