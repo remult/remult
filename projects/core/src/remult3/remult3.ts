@@ -1077,6 +1077,7 @@ export const flags = {
 */
 //y1 - add parameter all to deleteMany, and updateMany
 //p1 - fix query docs to also explain how it can be used for infinite scroll and pagination.
+//p1 - when like doesn't have a string - don't send it to the db
 //y1 - 'test expression columns without aliases'
 
 //y1 - live query update waits for last
