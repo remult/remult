@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.27.4] 2024-08-22
+## [0.27.5] 2024-08-23
 
 - [#474](https://github.com/remult/remult/issues/474) When using knex, an id column with auto-increment that is not named id in the db gave an error
 
