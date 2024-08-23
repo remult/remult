@@ -24,69 +24,71 @@ export class LiveQueryPublisher implements LiveQueryChangesListener {
   runPromise(p: Promise<any>) {}
   debugFileSaver = (x: any) => {}
   async itemChanged(entityKey: string, changes: itemChange[]) {
-    await this.liveQueryStorage().forEach(
-      entityKey,
-      async ({ query: q, setData }) => {
-        let query = { ...q.data } as QueryData
-        await this.performWithContext(
-          query.requestJson,
-          entityKey,
-          async (repo) => {
-            const messages: LiveQueryChange[] = []
-            const currentItems = await repo.find(
-              findOptionsFromJson(query.findOptionsJson, repo.metadata),
-            )
-            const currentIds = currentItems.map((x) =>
-              repo.getEntityRef(x).getId(),
-            )
-            for (const id of query.lastIds.filter(
-              (y) => !currentIds.includes(y),
-            )) {
-              let c = changes.find((c) => c.oldId == id)
-              if (
-                c === undefined ||
-                id != c.oldId ||
-                !currentIds.includes(c.id)
+    await this.runPromise(
+      this.liveQueryStorage().forEach(
+        entityKey,
+        async ({ query: q, setData }) => {
+          let query = { ...q.data } as QueryData
+          await this.performWithContext(
+            query.requestJson,
+            entityKey,
+            async (repo) => {
+              const messages: LiveQueryChange[] = []
+              const currentItems = await repo.find(
+                findOptionsFromJson(query.findOptionsJson, repo.metadata),
               )
-                messages.push({
-                  type: 'remove',
-                  data: {
-                    id: id,
-                  },
-                })
-            }
-            for (const item of currentItems) {
-              const itemRef = repo.getEntityRef(item)
-              let c = changes.find((c) => c.id == itemRef.getId())
-              if (c !== undefined && query.lastIds.includes(c.oldId)) {
-                messages.push({
-                  type: 'replace',
-                  data: {
-                    oldId: c.oldId,
-                    item: itemRef.toApiJson(),
-                  },
-                })
-              } else if (!query.lastIds.includes(itemRef.getId())) {
-                messages.push({
-                  type: 'add',
-                  data: { item: itemRef.toApiJson() },
-                })
+              const currentIds = currentItems.map((x) =>
+                repo.getEntityRef(x).getId(),
+              )
+              for (const id of query.lastIds.filter(
+                (y) => !currentIds.includes(y),
+              )) {
+                let c = changes.find((c) => c.oldId == id)
+                if (
+                  c === undefined ||
+                  id != c.oldId ||
+                  !currentIds.includes(c.id)
+                )
+                  messages.push({
+                    type: 'remove',
+                    data: {
+                      id: id,
+                    },
+                  })
               }
-            }
-            this.debugFileSaver({
-              query: q.id,
-              currentIds,
-              changes,
-              lastIds: query.lastIds,
-              messages,
-            })
-            query.lastIds = currentIds
-            await setData(query)
-            if (messages.length > 0)
-              this.subscriptionServer().publishMessage(q.id, messages)
-          },
-        )
-      },
+              for (const item of currentItems) {
+                const itemRef = repo.getEntityRef(item)
+                let c = changes.find((c) => c.id == itemRef.getId())
+                if (c !== undefined && query.lastIds.includes(c.oldId)) {
+                  messages.push({
+                    type: 'replace',
+                    data: {
+                      oldId: c.oldId,
+                      item: itemRef.toApiJson(),
+                    },
+                  })
+                } else if (!query.lastIds.includes(itemRef.getId())) {
+                  messages.push({
+                    type: 'add',
+                    data: { item: itemRef.toApiJson() },
+                  })
+                }
+              }
+              this.debugFileSaver({
+                query: q.id,
+                currentIds,
+                changes,
+                lastIds: query.lastIds,
+                messages,
+              })
+              query.lastIds = currentIds
+              await setData(query)
+              if (messages.length > 0)
+                this.subscriptionServer().publishMessage(q.id, messages)
+            },
+          )
+        },
+      ),
     )
   }
 }
