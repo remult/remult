@@ -1,17 +1,17 @@
 import {
-  ClassType,
-  EntityDbNames,
-  EntityFilter,
-  SqlCommandWithParameters,
-  SqlDatabase,
   dbNamesOf,
   repo,
+  SqlDatabase,
+  type ClassType,
+  type EntityDbNames,
+  type EntityFilter,
   type EntityOrderBy,
   type ObjectMembersOnly,
-  //} from 'remult'
+  type SqlCommandWithParameters,
+  // } from 'remult'
 } from '../../../../core/index.js' // comment in the from `remult`
-//import { getRelationFieldInfo } from 'remult/internals'
 import { getRelationFieldInfo } from '../../../../core/internals.js' // comment in the from `remult`
+// import { getRelationFieldInfo } from 'remult/internals'
 
 export function sqlRelations<entityType>(
   forEntity: ClassType<entityType>,
@@ -130,7 +130,7 @@ class SqlRelationTools<
       throw new Error(`${this.relationField as string} is not a relation`)
     const relFields = rel.getFields()
 
-    let filters: string[] = []
+    const filters: string[] = []
 
     const namesOfOtherTable: EntityDbNames<
       ArrayItemType<myEntity[relationKey]>
@@ -148,8 +148,9 @@ class SqlRelationTools<
         )
       }
     }
-    let otherTableFilter = await SqlDatabase.filterToRaw(
+    const otherTableFilter = await SqlDatabase.filterToRaw(
       repo(rel.toEntity),
+      // eslint-disable-next-line
       options?.where!,
       undefined,
       namesOfOtherTable,
