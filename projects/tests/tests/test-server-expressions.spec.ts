@@ -175,7 +175,7 @@ describe('test server expression value', () => {
     expect(r.d).toBe('cdd')
     expect(r.e).toBe('ccee')
     expect(r.f).toMatchInlineSnapshot(
-      '"recursive sqlExpression call for field \'f\'. ff"',
+      `"recursive sqlExpression call for field 'f'. \0ff"`,
     )
     const z = await dbNamesOf(remult.repo(myClass).metadata)
     expect(z.a).toBe('a')
