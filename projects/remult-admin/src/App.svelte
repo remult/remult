@@ -21,15 +21,20 @@
 
   let settingsDialog
 
-  function start_and_end(str: string) {
-    const maxLen = 17
-    if (str.length > maxLen + 3) {
-      return (
-        str.slice(0, maxLen - 4).trim() +
-        '...' +
-        str.slice(-(maxLen - 4)).trim()
-      )
+  export function midTrim(
+    str: string,
+    o?: { len?: number; midStr?: string },
+  ): string {
+    const len = o?.len || 30
+    if (str.length > len) {
+      const midStr = o?.midStr || '...'
+      const reducedLen = len - midStr.length
+      const trimLength = Math.floor(reducedLen / 2)
+      return `${str.slice(0, trimLength).trim()}${midStr}${str
+        .slice(-trimLength)
+        .trim()}`
     }
+
     return str
   }
 </script>
@@ -99,7 +104,7 @@
           className: 'active',
         }}
       >
-        {start_and_end(t.caption)}
+        {midTrim(t.caption)}
       </a>
     {/each}
     <a

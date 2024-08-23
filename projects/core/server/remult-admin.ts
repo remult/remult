@@ -51,8 +51,8 @@ export default function remultAdminHtml(options: AdminOptions) {
   return getHtml().replace(
     '<!--PLACE_HERE-->',
     `<script >const entities = ${JSON.stringify(buildEntityInfo(options))}
-    const optionsFromServer = ${JSON.stringify(optionsFromServer)}
-    </script>`,
+  const optionsFromServer = ${JSON.stringify(optionsFromServer)}
+</script>`,
   )
 }
 
