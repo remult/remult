@@ -32,8 +32,8 @@ hero:
     alt: Remult
   actions:
     - theme: brand
-      text: Quickstart
-      link: /docs/quickstart
+      text: 🚀 Online tutorial
+      link: https://learn.remult.dev/
     - theme: alt
       text: View on GitHub
       link: https://github.com/remult/remult
@@ -61,5 +61,5 @@ features:
 
   - icon: ⚡
     title: Easy Setup
-    details: Bootstrap in minutes with an Express.js middleware in the backend and an http client wrapper in the frontend.
+    details: Begin with just a middleware in your existing stack, and gradually enhance your app with Remult’s features. Add what you need, when you need it.
 ---
