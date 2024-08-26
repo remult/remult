@@ -1069,6 +1069,7 @@ export const flags = {
   error500RetryCount: 4,
 }
 //p1 - add some kind of options handler that will help with translation etc... like in hagai - something that runs at the stage where options are being built
+//p1 - transaction that doesn't rollback on exception, for example - failed login need to be recorded (wimi)
 //y1 - Hacker News for the tutorial?
 /*y1 - https://github.com/remult/remult/discussions/438
      - https://github.com/remult/remult/blob/query-argumets/projects/tests/dbs/test-sql-database.spec.ts#L100-L128
