@@ -8,7 +8,7 @@ Arguments:
 ## valueChanged
 * **valueChanged**
 ## load
-* **load**
+Loads the related value - returns null if the related value is not found
 ## valueIsNull
 * **valueIsNull**
 ## originalValueIsNull

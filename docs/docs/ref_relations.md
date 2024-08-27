@@ -5,20 +5,20 @@
 ## toMany
 Define a toMany relation between entities, indicating a one-to-many relationship.
 This method allows you to establish a relationship where one entity can have multiple related entities.
-   
-   
-   #### returns:
-   A decorator function to apply the toMany relation to an entity field.
-   
-   Example usage:
-   ```
-   @Relations.toMany(() => Order)
-   orders?: Order[];
-   
-   // or with a custom field name:
-   @Relations.toMany(() => Order, "customerId")
-   orders?: Order[];
-   ```
+
+
+#### returns:
+A decorator function to apply the toMany relation to an entity field.
+
+Example usage:
+```
+@Relations.toMany(() => Order)
+orders?: Order[];
+
+// or with a custom field name:
+@Relations.toMany(() => Order, "customerId")
+orders?: Order[];
+```
 
 Arguments:
 * **toEntityType**
@@ -28,48 +28,55 @@ Arguments:
 Define a to-one relation between entities, indicating a one-to-one relationship.
 If no field or fields are provided, it will automatically create a field in the database
 to represent the relation.
-   
-   
-   #### returns:
-   A decorator function to apply the to-one relation to an entity field.
-   
-   Example usage:
-   ```
-   @Relations.toOne(() => Customer)
-   customer?: Customer;
-   ```
-   ```
-   Fields.string()
-   customerId?: string;
-   
-   @Relations.toOne(() => Customer, "customerId")
-   customer?: Customer;
-   ```
-   ```
-   Fields.string()
-   customerId?: string;
-   
-   @Relations.toOne(() => Customer, {
-     field: "customerId",
-     defaultIncluded: true
-   })
-   customer?: Customer;
-   ```
-   ```
-   Fields.string()
-   customerId?: string;
-   
-   @Relations.toOne(() => Customer, {
-     fields: {
-       customerId: "id",
-     },
-   })
-   customer?: Customer;
-   ```
+
+
+#### returns:
+A decorator function to apply the to-one relation to an entity field.
+
+Example usage:
+```
+@Relations.toOne(() => Customer)
+customer?: Customer;
+```
+```
+Fields.string()
+customerId?: string;
+
+@Relations.toOne(() => Customer, "customerId")
+customer?: Customer;
+```
+```
+Fields.string()
+customerId?: string;
+
+@Relations.toOne(() => Customer, {
+  field: "customerId",
+  defaultIncluded: true
+})
+customer?: Customer;
+```
+```
+Fields.string()
+customerId?: string;
+
+@Relations.toOne(() => Customer, {
+  fields: {
+    customerId: "id",
+  },
+})
+customer?: Customer;
+```
 
 Arguments:
 * **toEntityType**
 * **options** - (Optional): An object containing options for configuring the to-one relation.
+   * **caption** - A human readable name for the field. Can be used to achieve a consistent caption for a field throughout the app
+   
+   
+   #### example:
+   ```ts
+   <input placeholder={taskRepo.metadata.fields.title.caption}/>
+   ```
    * **fields** - An object specifying custom field names for the relation.
    Each key represents a field in the related entity, and its value is the corresponding field in the source entity.
    For example, `{ customerId: 'id' }` maps the 'customerId' field in the related entity to the 'id' field in the source entity.

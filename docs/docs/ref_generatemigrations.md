@@ -1,9 +1,9 @@
 # generateMigrations
 Generates migration scripts based on changes in entities.
-   
-   
-   #### see:
-   [Migrations](https://remult.dev/docs/migrations.html)
+
+
+#### see:
+[Migrations](https://remult.dev/docs/migrations.html)
 
 Arguments:
 * **options** - Configuration options for generating migrations.
