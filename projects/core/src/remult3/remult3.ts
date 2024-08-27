@@ -1068,58 +1068,42 @@ export type ClassFieldDecorator<entityType, valueType> = (
 export const flags = {
   error500RetryCount: 4,
 }
-//p1 - add some kind of options handler that will help with translation etc... like in hagai - something that runs at the stage where options are being built
 //p1 - transaction that doesn't rollback on exception, for example - failed login need to be recorded (wimi)
-//y1 - Hacker News for the tutorial?
+//p2 - add some kind of options handler that will help with translation etc... like in hagai - something that runs at the stage where options are being built
+
 /*y1 - https://github.com/remult/remult/discussions/438
      - https://github.com/remult/remult/blob/query-argumets/projects/tests/dbs/test-sql-database.spec.ts#L100-L128
-     //p2 - allow preprocess to replace filter values - for example replace $contains on a specific field, with specific other sql - useful for full text search and other scenarios
      //y1 - consider sql expression gets a dbnames of it's own (that already has the "tableName" defined correctly) maybe also the filter translator
+     //p2 - allow preprocess to replace filter values - for example replace $contains on a specific field, with specific other sql - useful for full text search and other scenarios
      //y2 - soft-delete-discussion https://discord.com/channels/975754286384418847/1230386433093533698/1230386433093533698
 */
-//y1 - add parameter all to deleteMany, and updateMany
-//p1 - fix query docs to also explain how it can be used for infinite scroll and pagination.
-//p1 - when like doesn't have a string - don't send it to the db
-//y1 - 'test expression columns without aliases'
+//p1 - add parameter all to deleteMany, and updateMany
+//p2 - fix query docs to also explain how it can be used for infinite scroll and pagination.
+//p2 - when like doesn't have a string - don't send it to the db
 
-//y1 - live query update waits for last
-//p1 - add luid - it's cool for order by. - NO
-//p1 - replace uuid with crypto.randomUUID and allow custom fallback NO
-//p1 - add nanoid - NO
-//p1 - add id and use luid by default, but allow changes with Fields.id.defaultIdProvider NO but defaultProvider yes
-/*p1
- * field, fieldType ,ValueListFieldType, - return optional parameter for decorators
- * options to remultExpress tc... should be mandatory
- * return value converter to previous typing
- * add breaking change notification about findOne and findFirst and findId
- */
-
-//p1 - fix query docs to also explain how it can be used for infinite scroll and pagination.
-//y1 - 'test expression columns without aliases'
-//y1 - ts issue with fields - when a field is optional, it's $ is also optional and thats a problem
+/*p1 - add id and use uuid by default, but allow changes with Fields.id.defaultIdProvider NO but defaultProvider yes???
+  //p1 - replace uuid with crypto.randomUUID and allow custom fallback NO
+  //p1 - Add example for luid
+  //p1 - add example for nanoid
+  //p1 - explain the benefits of changing the default provider for testing in docs.
+  
+*/
 //p1 - vite 5.3 supports ts5 decorators - check and adapt.
-//p1 - see if I can fix the no alias problem in selects
-//p1 - add luid - it's cool for order by.
-//p1 - replace uuid with crypto.randomUUID and allow custom fallback
-//p1 - add nanoid
-//p1 - add id and use luid by default, but allow changes with Fields.id.defaultIdProvider
-//p1 - explain the benefits of changing the default provider for testing in docs.
-//p1 - fix sqlite to  support alter table when adding a column with ensure schema = on
-//p1 - fix app custom filters example for multiple filters.
-//p1 - add not!!!!
-//p1 - add LifecycleEvent to documentation
-//p1 - Fix hagai and starter project to latest ts
+//p1 - tutorial about controller - and mutable controller
+//p1 - docs abount subscription channel
 
+//p1 - consider upsert (where,set)
+//p1 - Consider enforcing serial operations on JSON database to prevent data loss
+//p1 - fix sqlite to  support alter table when adding a column with ensure schema = on
+//p1 - add LifecycleEvent to documentation
 //p1 - fix chaining of saving and saved in multiple entity options args
 //p1 - review starter and examples and separate remult * auth from the routes
-
 //p1 - min, max, avg, sum
-//p1 - consider upsert (where,set)
 //y1 - live query with count #436
 
 //y1 TODO - In the esm version of our tutorial - the imports are automatically .ts and not .js in react and not in vue
 //y1 TODO - consider id to also support keyof (id:['company','index']) - had problem with | (keyof Partial<entityType>)[] & `entity`
-//y1 TODO - readonly key: keyof MembersOnly<entityType> & string
+
 //y1 TODO - fix remult admin not to load the html into memory until used
 
 //y2 - talk about insert / update / delete with relations
@@ -1140,22 +1124,13 @@ const result = await repo.batch(x=>({
 
 //y1 - wait a second to close stream -see pr
 
-//p1 - Consider enforcing serial operations on JSON database to prevent data loss
-
 //p1 - prepare the createEntity discussion
-
-//p1 - return error on connection error
 
 //p1 - article on displayValue including it's definition for entities that is used in relations
 //p1 - article auth.js with express - played with it, requires type="module" and a few more configurations - https://github.com/noam-honig/express-auth
 
-//y2 - currently for string fields we default for 255 in knex (which is their default) why not just use text (varchar max) - and only use exact length when one is provided?
-
 //p2 - create foreign key constraints in user code - https://codesandbox.io/p/devbox/fk-validator-tdshcs
 
-//p2 - admin url1 - pocketbase use /_ for the admin //{allowed?:Allowed,url?:string} also checkout the admin* as it should probably be something else and didn't work in hono
-
-//y2 - fix validators cache
 //y2 - should we validate relations
 
 //y1 - dependency of live query tables  live query refresh of view on table update
@@ -1180,8 +1155,6 @@ const result = await repo.batch(x=>({
 
 */
 
-//y1 - tried to upgrade vitest, nuxt tests are failing with loading uuid - sounds familiar?
-
 //y1 - talk about the parameter issue with backend methods
 
 //y2 - livequery for findfirst (@JY)
@@ -1204,7 +1177,6 @@ const result = await repo.batch(x=>({
 //p2 - when subscribe is forbidden - the query still runs after the renew process
 //p2 - 'update tasks set  where id = $1
 
-//p2 - type metadata.key - to keyof entity - based on cwis input
 //y2 - remove __dirname from tutorials
 //p2 - when value changes for field with error, clear error - so the user will feel comfortable
 //p2 - allowApiUpdate should be false for include in api false
