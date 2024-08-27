@@ -1,5 +1,13 @@
 # RelationOptions
 Options for configuring a relation between entities.
+## caption
+A human readable name for the field. Can be used to achieve a consistent caption for a field throughout the app
+
+
+#### example:
+```ts
+<input placeholder={taskRepo.metadata.fields.title.caption}/>
+```
 ## fields
 An object specifying custom field names for the relation.
 Each key represents a field in the related entity, and its value is the corresponding field in the source entity.

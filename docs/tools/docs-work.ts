@@ -67,11 +67,11 @@ class DocFile {
     if (m.comment.blockTags)
       for (const t of m.comment?.blockTags) {
         if (t.tag.startsWith('@')) t.tag = t.tag.substring(1)
-        this.writeLine('\n\n#### ' + t.tag + ':', indent + 1)
+        this.writeLine('\n\n#### ' + t.tag + ':', indent)
 
         let text = t.content.map((x) => x.text).join('')
 
-        this.writeLine(text, indent + 1)
+        this.writeLine(text, indent)
       }
   }
   writeLine(what: string, indent: number) {
@@ -87,7 +87,7 @@ class DocFile {
         type.children = type.type.types
           .map((t) => t.declaration?.children)
           .filter((x) => x != undefined)
-          .reduce((a, b) => a.concat(b), [])
+          .reduce((a, b) => a!.concat(b!), [])!
       }
     }
     if (type.children) {
@@ -100,7 +100,7 @@ class DocFile {
             const sig = child.type?.declaration?.signatures?.[0]
             if (sig) {
               child.comment = sig.comment
-              child.signatures = child.type?.declaration?.signatures
+              child.signatures = child.type?.declaration?.signatures!
             }
           }
         }
@@ -157,7 +157,7 @@ class DocFile {
                     }
                 }
               } else if (p.type.type == 'reflection') {
-                this.writeMembers(p.type.declaration, indent + 1)
+                this.writeMembers(p.type.declaration!, indent + 1)
               } else if (p.type.name)
                 if (p.type.name.includes('Options')) {
                   let o = findType(p.type.name)

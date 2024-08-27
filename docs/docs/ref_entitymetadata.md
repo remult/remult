@@ -8,87 +8,87 @@ The Entity's key also used as it's url
 Metadata for the Entity's fields
 ## caption
 A human readable caption for the entity. Can be used to achieve a consistent caption for a field throughout the app
-   
-   
-   #### example:
-   ```ts
-   <h1>Create a new item in {taskRepo.metadata.caption}</h1>
-   ```
-   
-   
-   #### see:
-   EntityOptions.caption
+
+
+#### example:
+```ts
+<h1>Create a new item in {taskRepo.metadata.caption}</h1>
+```
+
+
+#### see:
+EntityOptions.caption
 ## dbName
 The name of the table in the database that holds the data for this entity.
 If no name is set in the entity options, the `key` will be used instead.
-   
-   
-   #### see:
-   EntityOptions.dbName
+
+
+#### see:
+EntityOptions.dbName
 ## options
 The options send to the `Entity`'s decorator
-   
-   
-   #### see:
-   EntityOptions
+
+
+#### see:
+EntityOptions
 ## apiUpdateAllowed
 true if the current user is allowed to update an entity instance
-   
-   
-   #### see:
-   * @example
+
+
+#### see:
+* @example
 
 Arguments:
 * **item**
 ## apiReadAllowed
 true if the current user is allowed to read from entity
-   
-   
-   #### see:
-   EntityOptions.allowApiRead
-   
-   
-   #### example:
-   ```ts
-   const taskRepo = remult.repo(Task);
-   if (taskRepo.metadata.apiReadAllowed){
-     await taskRepo.find()
-   }
-   ```
+
+
+#### see:
+EntityOptions.allowApiRead
+
+
+#### example:
+```ts
+const taskRepo = remult.repo(Task);
+if (taskRepo.metadata.apiReadAllowed){
+  await taskRepo.find()
+}
+```
 ## apiDeleteAllowed
 true if the current user is allowed to delete an entity instance
 *
-   
-   
-   #### see:
-   EntityOptions.allowApiDelete
-   
-   
-   #### example:
-   ```ts
-   const taskRepo = remult.repo(Task);
-   if (taskRepo.metadata.apiDeleteAllowed(task)){
-     // display delete button
-   }
-   ```
+
+
+#### see:
+EntityOptions.allowApiDelete
+
+
+#### example:
+```ts
+const taskRepo = remult.repo(Task);
+if (taskRepo.metadata.apiDeleteAllowed(task)){
+  // display delete button
+}
+```
 
 Arguments:
 * **item**
 ## apiInsertAllowed
 true if the current user is allowed to create an entity instance
-   
-   
-   #### see:
-   EntityOptions.allowApiInsert
-   
-   
-   #### example:
-   ```ts
-   const taskRepo = remult.repo(Task);
-   if (taskRepo.metadata.apiInsertAllowed(task)){
-     // display insert button
-   }
-   ```
+
+
+#### see:
+EntityOptions.allowApiInsert
+
+
+#### example:
+```ts
+const taskRepo = remult.repo(Task);
+if (taskRepo.metadata.apiInsertAllowed(task)){
+  // display insert button
+}
+```
 
 Arguments:
 * **item**
@@ -96,7 +96,7 @@ Arguments:
 * **getDbName**
 ## idMetadata
 Metadata for the Entity's id
-   
-   
-   #### see:
-   EntityOptions.id for configuration
+
+
+#### see:
+EntityOptions.id for configuration
