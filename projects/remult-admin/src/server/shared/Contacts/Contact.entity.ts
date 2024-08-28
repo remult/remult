@@ -31,6 +31,10 @@ import { Tag } from './Tag.entity'
 export class Contact {
   @Fields.uuid()
   id?: string
+  @Fields.string<AccountManager>({
+    serverExpression: (e) => e.firstName + ' ' + e.lastName,
+  })
+  fullName = ''
   @Fields.string({
     validate: Validators.required,
   })
