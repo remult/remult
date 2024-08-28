@@ -125,14 +125,16 @@
     const fieldWeAreTalkingAbout = fields.filter(
       (x) => x.key == currentField.key,
     )[0]
-    return operators[fieldWeAreTalkingAbout.type]
+    if (fieldWeAreTalkingAbout?.type) {
+      return operators[fieldWeAreTalkingAbout.type]
+    }
+    return operators.string
   }
 </script>
 
 <button on:click={() => dialog?.showModal()}>Filter</button>
 <dialog bind:this={dialog} class="filter">
   <strong>Filter</strong>
-  <!-- {JSON.stringify(filterValues, null, 2)} -->
   <div>
     {#each filterValues as field, i}
       <div class="filter__group">
