@@ -28,7 +28,9 @@ export class God {
     relation: FieldRelationToOneInfo,
     search: string | undefined,
   ) {
-    const repo = this.tables.find((t) => t.key == relation.entityKey)!.repo
+    const t = this.tables.find((t) => t.key == relation.entityKey)
+    if (!t) return []
+    const repo = t.repo
     return (
       await repo.find({
         limit: 25,
@@ -51,8 +53,10 @@ export class God {
   async displayValueFor(field: FieldUIInfo, value: any) {
     const relations = field.relationToOne!
 
-    const repo = this.tables.find((t) => t.key == relations.entityKey)!.repo
-    const item = await repo.findId(value)
+    const t = this.tables.find((t) => t.key == relations.entityKey)
+    if (!t) return 'Forbidden - ' + value
+
+    const item = await t.repo.findId(value)
 
     if (!item) return 'not found - ' + value
 

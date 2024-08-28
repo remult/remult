@@ -95,21 +95,25 @@ export function buildEntityInfo(options: AdminOptions) {
               }
             }
           }
-          relation = {
-            ...relInfo,
-            where,
-            entityKey: relRepo.metadata.key,
-            idField,
-            captionField: relRepo.metadata.fields
-              .toArray()
-              .find((x) => x.key != idField && x.valueType == String)?.key!,
+          if (relRepo.metadata.apiReadAllowed) {
+            relation = {
+              ...relInfo,
+              where,
+              entityKey: relRepo.metadata.key,
+              idField,
+              captionField: relRepo.metadata.fields
+                .toArray()
+                .find((x) => x.key != idField && x.valueType == String)?.key!,
+            }
           }
         } else if (info.type === 'toMany') {
-          relations.push({
-            ...relInfo,
-            where,
-            entityKey: relRepo.metadata.key,
-          })
+          if (relRepo.metadata.apiReadAllowed) {
+            relations.push({
+              ...relInfo,
+              where,
+              entityKey: relRepo.metadata.key,
+            })
+          }
           continue
         }
       }
@@ -132,13 +136,16 @@ export function buildEntityInfo(options: AdminOptions) {
             : 'string',
       })
     }
-    entities.push({
-      key: metadata.key,
-      caption: metadata.caption,
-      ids,
-      fields,
-      relations,
-    })
+
+    if (metadata.apiReadAllowed) {
+      entities.push({
+        key: metadata.key,
+        caption: metadata.caption,
+        ids,
+        fields,
+        relations,
+      })
+    }
   }
   return entities
 }

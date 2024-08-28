@@ -199,13 +199,13 @@
               class={'tab ' + (r === relation ? 'active' : '') + ' entityColor'}
               style="--color: {$godStore.tables.find(
                 (x) => x.key === r.entityKey,
-              ).color}"
+              )?.color}"
               on:click={(e) => {
                 relation = r
                 e.preventDefault()
               }}
             >
-              {$godStore.tables.find((x) => x.key === r.entityKey).caption}
+              {$godStore.tables.find((x) => x.key === r.entityKey)?.caption}
             </button>
           {/each}
         </div>
