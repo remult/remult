@@ -2,10 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.27.6] TBD
+## [0.27.6] 2024-08-28
 
 - Improvement to remult admin + support for bearer token in admin
 - Fix to recursive sql expression
+- Added support for backend method without a transaction using `transactional:false`
 - Fixed live query, to update the subscribers asynchronously
 
 ## [0.27.5] 2024-08-23
