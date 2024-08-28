@@ -141,7 +141,7 @@ export class myServerAction extends Action<inArgs, result> {
   ): Promise<result> {
     let result = { data: {} }
     let ds = remult.dataProvider
-    await doTransaction(remult, async () => {
+    await decideTransaction(remult, this.options, async () => {
       if (!remult.isAllowedForInstance(undefined, this.options.allowed))
         throw new ForbiddenError()
 
@@ -169,6 +169,13 @@ export interface BackendMethodOptions<type> {
    * {allowed:true, apiPrefix:'someFolder/'}
    */
   apiPrefix?: string
+  /**
+   * Controls whether this `BackendMethod` runs within a database transaction. If set to `true`, the method will either complete entirely or fail without making any partial changes. If set to `false`, the method will not be transactional and may result in partial changes if it fails.
+   * @default true
+   * @example
+   * {allowed: true, transactional: false}
+   */
+  transactional?: boolean
   /** EXPERIMENTAL: Determines if this method should be queued for later execution */
   queue?: boolean
   /** EXPERIMENTAL: Determines if the user should be blocked while this `BackendMethod` is running*/
@@ -212,7 +219,24 @@ export interface ClassMethodDecoratorContextStub<
   }
 }
 
-/** Indicates that the decorated methods runs on the backend. See: [Backend Methods](https://remult.dev/docs/backendMethods.html) */
+/**
+ * Decorator indicating that the decorated method runs on the backend.
+ * It allows the method to be invoked from the frontend while ensuring that the execution happens on the server side.
+ * By default, the method runs within a database transaction, meaning it will either complete entirely or fail without making any partial changes.
+ * This behavior can be controlled using the `transactional` option in the `BackendMethodOptions`.
+ *
+ * For more details, see: [Backend Methods](https://remult.dev/docs/backendMethods.html).
+ *
+ * @param options - Configuration options for the backend method, including permissions, routing, and transactional behavior.
+ *
+ * @example
+ * ```typescript
+ * @BackendMethod({ allowed: true })
+ * async someBackendMethod() {
+ *   // method logic here
+ * }
+ * ```
+ */
 export function BackendMethod<type = unknown>(
   options: BackendMethodOptions<type>,
 ) {
@@ -310,7 +334,7 @@ export function BackendMethod<type = unknown>(
                 let remult = req
 
                 let r: serverMethodOutArgs
-                await doTransaction(remult, async () => {
+                await decideTransaction(remult, options, async () => {
                   d.args = await prepareReceivedArgs(
                     getTypes(),
                     d.args,
@@ -607,4 +631,14 @@ export interface ActionInterface {
       what: (data: any, req: Remult, res: DataApiResponse) => void,
     ) => void,
   ): void
+}
+//
+async function decideTransaction<Y>(
+  remult: Remult,
+  options: BackendMethodOptions<Y>,
+  what: (dp: DataProvider) => Promise<void>,
+) {
+  if (options.transactional === undefined || options.transactional === true)
+    return await doTransaction(remult, what)
+  else await what(remult.dataProvider)
 }
