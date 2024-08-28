@@ -105,6 +105,14 @@
       </label>
 
       <label style="display: flex; align-items: center; gap: 4px">
+        <span>Display fields with</span>
+        <select bind:value={$LSContext.settings.dispayCaption}>
+          <option value={true}>Caption</option>
+          <option value={false}>key</option>
+        </select>
+      </label>
+
+      <label style="display: flex; align-items: center; gap: 4px">
         <span>Diagram layout algorithm</span>
         <select
           bind:value={$LSContext.settings.diagramLayoutAlgorithm}
@@ -153,7 +161,14 @@
       </label>
     </dialog>
 
-    {#each $godStore?.tables ?? [] as t}
+    <input
+      class="tab"
+      style="content: 'inner'; margin-left: 4px;"
+      type="text"
+      placeholder="Search"
+      bind:value={$LSContext.settings.search}
+    />
+    {#each $godStore?.getTables($LSContext) ?? [] as t}
       <a
         class="tab"
         style="--color: {t.color}"
@@ -163,7 +178,7 @@
           className: 'active',
         }}
       >
-        {midTrim(t.caption)}
+        {midTrim($LSContext.settings.dispayCaption ? t.caption : t.key)}
       </a>
     {/each}
     <a

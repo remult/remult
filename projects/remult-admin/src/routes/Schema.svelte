@@ -15,8 +15,8 @@
 
   import { godStore } from '../stores/GodStore'
   import EntityNode from '../lib/ui/flow/EntityNode.svelte'
-  import { LSContext } from '../lib/stores/LSContext.js'
-  import { type TableInfo } from '../God.js'
+  import { LSContext, type TLSContext } from '../lib/stores/LSContext.js'
+  import { type God, type TableInfo } from '../God.js'
 
   const nodes = writable<Node[]>([])
   const edges = writable<Edge[]>([])
@@ -25,16 +25,15 @@
     entity: EntityNode,
   }
 
-  $: $godStore && init()
+  $: $godStore && $LSContext && init($godStore, $LSContext)
 
-  const init = () => {
+  const init = (god: God, ctx: TLSContext) => {
     const layoutType: 'grid-dfs' | 'grid-bfs' | 'line' =
       $LSContext.settings.diagramLayoutAlgorithm
 
-    const groups = groupTablesByRelations(layoutType, $godStore.tables)
-    const magicNumber = Math.ceil(
-      Math.sqrt($godStore.tables.length + $godStore.tables.length),
-    )
+    const tables = god.getTables(ctx)
+    const groups = groupTablesByRelations(layoutType, tables)
+    const magicNumber = Math.ceil(Math.sqrt(tables.length + tables.length))
 
     const localNodes = []
     const columnHeights = Array(magicNumber).fill(0) // Initialize heights for each of the 5 columns
@@ -114,9 +113,9 @@
 
         table.fields.forEach((field) => {
           if (field.relationToOne) {
-            const relatedTable = $godStore.tables.find(
-              (x) => x.key === field.relationToOne.entityKey,
-            )
+            const relatedTable = $godStore
+              .getTables($LSContext)
+              .find((x) => x.key === field.relationToOne.entityKey)
             if (relatedTable && !visited.has(relatedTable.key)) {
               queue.push(relatedTable)
             }
@@ -124,9 +123,9 @@
         })
 
         table.relations.forEach((relation) => {
-          const relatedTable = $godStore.tables.find(
-            (x) => x.key === relation.entityKey,
-          )
+          const relatedTable = $godStore
+            .getTables($LSContext)
+            .find((x) => x.key === relation.entityKey)
           if (relatedTable && !visited.has(relatedTable.key)) {
             queue.push(relatedTable)
           }
@@ -141,9 +140,9 @@
 
     table.fields.forEach((field) => {
       if (field.relationToOne) {
-        const relatedTable = $godStore.tables.find(
-          (x) => x.key === field.relationToOne.entityKey,
-        )
+        const relatedTable = $godStore
+          .getTables($LSContext)
+          .find((x) => x.key === field.relationToOne.entityKey)
         if (relatedTable && !visited.has(relatedTable.key)) {
           dfs(relatedTable, group, visited)
         }
@@ -151,9 +150,9 @@
     })
 
     table.relations.forEach((relation) => {
-      const relatedTable = $godStore.tables.find(
-        (x) => x.key === relation.entityKey,
-      )
+      const relatedTable = $godStore
+        .getTables($LSContext)
+        .find((x) => x.key === relation.entityKey)
       if (relatedTable && !visited.has(relatedTable.key)) {
         dfs(relatedTable, group, visited)
       }
@@ -195,7 +194,7 @@
   }
 
   function updateNodesEdges() {
-    for (const entity of $godStore.tables) {
+    for (const entity of $godStore.getTables($LSContext)) {
       for (const field of entity.fields) {
         if (field.relationToOne) {
           createEdge(
@@ -207,9 +206,9 @@
       }
 
       for (const relation of entity.relations) {
-        const target = $godStore.tables.find(
-          (x) => x.key === relation.entityKey,
-        )
+        const target = $godStore
+          .getTables($LSContext)
+          .find((x) => x.key === relation.entityKey)
 
         if (target) {
           createEdge(entity, relation.entityKey, relation.fields)
@@ -223,7 +222,9 @@
     toEntity: string,
     relationFields: Record<string, string>,
   ) {
-    const target = $godStore.tables.find((x) => x.key === toEntity)
+    const target = $godStore
+      .getTables($LSContext)
+      .find((x) => x.key === toEntity)
 
     if (target) {
       const sourceNode = $nodes.find((x) => x.id === entity.key)!

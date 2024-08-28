@@ -14,6 +14,7 @@
   import { writable, type Writable } from 'svelte/store'
   import LoadingSkeleton from './LoadingSkeleton.svelte'
   import { SSContext } from '../stores/SSContext.js'
+  import { LSContext } from '../stores/LSContext.js'
 
   export let fields: FieldUIInfo[]
   export let relations: EntityRelationToManyInfo[]
@@ -198,8 +199,11 @@
           </button>
         </td>
         {#each fields as column}
-          <th on:click={() => toggleOrderBy(column.key)}>
-            {column.caption}
+          <th
+            on:click={() => toggleOrderBy(column.key)}
+            style="cursor: pointer;"
+          >
+            {$LSContext.settings.dispayCaption ? column.caption : column.key}
             {options.orderBy?.[column.key] === 'asc'
               ? '▲'
               : options.orderBy?.[column.key] === 'desc'

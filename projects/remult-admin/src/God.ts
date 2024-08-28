@@ -7,6 +7,7 @@ import {
 import { Repository } from '../../core/src/remult3/remult3'
 import { Fields } from '../../core/src/remult3/Fields'
 import { Entity } from '../../core/src/remult3/entity'
+import { TLSContext } from './lib/stores/LSContext.js'
 
 const generateHslColors = (numColors: number): string[] => {
   const colors = []
@@ -100,5 +101,13 @@ export class God {
           repo: remult.repo(C),
         }
       })
+  }
+
+  getTables(ctx: TLSContext) {
+    return (this.tables ?? []).filter((c) =>
+      (ctx.settings.dispayCaption ? c.caption : c.key)
+        .toLowerCase()
+        .includes(ctx.settings.search.toLowerCase()),
+    )
   }
 }
