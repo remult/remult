@@ -117,6 +117,12 @@
 
   const setValue = (e: any, field: any, kind: 'key' | 'operator' | 'value') => {
     field[kind] = e.target.value
+
+    if (kind === 'key') {
+      const defaultOp = getOperators(undefined, e.target.value)
+      field['operator'] = defaultOp[0][0]
+    }
+
     // To trigger a refresh...
     filterValues = filterValues
   }
