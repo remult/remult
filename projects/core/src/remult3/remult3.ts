@@ -1068,7 +1068,20 @@ export type ClassFieldDecorator<entityType, valueType> = (
 export const flags = {
   error500RetryCount: 4,
 }
-//p1 - transaction that doesn't rollback on exception, for example - failed login need to be recorded (wimi)
+//p1 - add transactional option to backend method
+//p1 - add parameter all to deleteMany, and updateMany
+//p1  filter.apply ApiPreFilter
+//p1 - min, max, avg, sum, countDistinct - noam come up with an api
+
+/*p1 - add id and use uuid by default, but allow changes with Fields.id.defaultIdProvider NO but defaultProvider yes???
+  //p1 - replace uuid with crypto.randomUUID and allow custom fallback NO
+  //p1 - Add example for luid
+  //p1 - add example for nanoid
+  //p1 - explain the benefits of changing the default provider for testing in docs.
+*/
+//p1 - consider upsert (where,set)
+//p1 TODO - consider id to also support keyof (id:['company','index']) - had problem with | (keyof Partial<entityType>)[] & `entity`
+
 //p2 - add some kind of options handler that will help with translation etc... like in hagai - something that runs at the stage where options are being built
 
 /*y1 - https://github.com/remult/remult/discussions/438
@@ -1077,32 +1090,21 @@ export const flags = {
      //p2 - allow preprocess to replace filter values - for example replace $contains on a specific field, with specific other sql - useful for full text search and other scenarios
      //y2 - soft-delete-discussion https://discord.com/channels/975754286384418847/1230386433093533698/1230386433093533698
 */
-//p1 - add parameter all to deleteMany, and updateMany
 //p2 - fix query docs to also explain how it can be used for infinite scroll and pagination.
 //p2 - when like doesn't have a string - don't send it to the db
 
-/*p1 - add id and use uuid by default, but allow changes with Fields.id.defaultIdProvider NO but defaultProvider yes???
-  //p1 - replace uuid with crypto.randomUUID and allow custom fallback NO
-  //p1 - Add example for luid
-  //p1 - add example for nanoid
-  //p1 - explain the benefits of changing the default provider for testing in docs.
-  
-*/
 //p1 - vite 5.3 supports ts5 decorators - check and adapt.
 //p1 - tutorial about controller - and mutable controller
 //p1 - docs abount subscription channel
 
-//p1 - consider upsert (where,set)
 //p1 - Consider enforcing serial operations on JSON database to prevent data loss
 //p1 - fix sqlite to  support alter table when adding a column with ensure schema = on
 //p1 - add LifecycleEvent to documentation
 //p1 - fix chaining of saving and saved in multiple entity options args
 //p1 - review starter and examples and separate remult * auth from the routes
-//p1 - min, max, avg, sum
 //y1 - live query with count #436
 
 //y1 TODO - In the esm version of our tutorial - the imports are automatically .ts and not .js in react and not in vue
-//y1 TODO - consider id to also support keyof (id:['company','index']) - had problem with | (keyof Partial<entityType>)[] & `entity`
 
 //y1 TODO - fix remult admin not to load the html into memory until used
 
