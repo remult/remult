@@ -28,7 +28,8 @@
     relation &&
     typeof relation === 'object' &&
     $godStore.tables.find((x) => x.key === relation.entityKey)
-  $: change = Boolean(columns.find((x) => value[x.key] !== rowFrozzen[x.key]))
+  $: change =
+    Boolean(columns.find((x) => value[x.key] !== rowFrozzen[x.key])) || isNewRow
 
   $: relationWhere =
     row && relation && typeof relation === 'object'
