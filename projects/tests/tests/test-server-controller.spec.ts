@@ -110,6 +110,20 @@ class testBasics {
   static async getValFromServer(remult?: Remult) {
     return (await remult!.repo(testEntity).findFirst())!.name
   }
+  @BackendMethod({ allowed: true, paramTypes: [Remult] })
+  static async updateWithErrorAndTransaction(remult?: Remult) {
+    await (await remult!.repo(testEntity).findFirst())
+      ?.assign({ name: 'new name' })
+      .save()
+    throw new Error('error')
+  }
+  @BackendMethod({ allowed: true, paramTypes: [Remult], transactional: false })
+  static async updateWithErrorAndTransactionalFalse(remult?: Remult) {
+    await (await remult!.repo(testEntity).findFirst())
+      ?.assign({ name: 'new name' })
+      .save()
+    throw new Error('error')
+  }
   static async staticBackendMethodWithoutDecorator() {
     return isBackend()
   }
@@ -251,6 +265,20 @@ describe('test Server Controller basics', () => {
   it('data is saved on server', async () => {
     await c.repo(testEntity).create({ name: 'test' }).save()
     expect(await testBasics.getValFromServer()).toBe('test')
+  })
+  it('transactions are rolled back', async () => {
+    await c.repo(testEntity).create({ name: 'test' }).save()
+    try {
+      await testBasics.updateWithErrorAndTransaction()
+    } catch {}
+    expect((await c.repo(testEntity).findFirst())?.name).toEqual('test')
+  })
+  it('transactional are rolled back', async () => {
+    await c.repo(testEntity).create({ name: 'test' }).save()
+    try {
+      await testBasics.updateWithErrorAndTransactionalFalse()
+    } catch {}
+    expect((await c.repo(testEntity).findFirst())?.name).toEqual('new name')
   })
   it('new backend method syntax static method with remult', async () => {
     await c.repo(testEntity).create({ name: 'test' }).save()
