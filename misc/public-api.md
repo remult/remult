@@ -124,6 +124,13 @@ export interface BackendMethodOptions<type> {
    * {allowed:true, apiPrefix:'someFolder/'}
    */
   apiPrefix?: string
+  /**
+   * Controls whether this `BackendMethod` runs within a database transaction. If set to `true`, the method will either complete entirely or fail without making any partial changes. If set to `false`, the method will not be transactional and may result in partial changes if it fails.
+   * @default true
+   * @example
+   * {allowed: true, transactional: false}
+   */
+  transactional?: boolean
   /** EXPERIMENTAL: Determines if this method should be queued for later execution */
   queue?: boolean
   /** EXPERIMENTAL: Determines if the user should be blocked while this `BackendMethod` is running*/
