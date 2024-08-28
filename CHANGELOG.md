@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.27.6] TBD
+
+- Improvement to remult admin + support for bearer token in admin
+- Fix to recursive sql expression
+- Fixed live query, to update the subscribers asynchronously
+
 ## [0.27.5] 2024-08-23
 
 - [#474](https://github.com/remult/remult/issues/474) When using knex, an id column with auto-increment that is not named id in the db gave an error

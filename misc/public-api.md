@@ -1281,7 +1281,7 @@ export declare class Fields {
         ) => void)
     )[]
   ): ClassFieldDecorator<entityType, valueType | undefined>
-  static enum<entityType = unknown, theEnum = object>(
+  static enum<entityType = unknown, theEnum = unknown>(
     enumType: () => theEnum,
     ...options: (
       | FieldOptions<entityType, theEnum[keyof theEnum]>

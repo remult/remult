@@ -7,6 +7,8 @@
   import active from 'svelte-spa-router/active'
   import { LSContext } from './lib/stores/LSContext.js'
   import DefaultRoute from './routes/DefaultRoute.svelte'
+  import { SSContext } from './lib/stores/SSContext.js'
+  import { remult } from '../../core/src/remult-proxy'
 
   // Save the current location except on '/'
   $: $loc.location !== '/' && ($LSContext.currentLocationHash = $loc.location)
@@ -37,6 +39,28 @@
 
     return str
   }
+
+  remult.apiClient.httpClient = (
+    input: RequestInfo | URL,
+    init?: RequestInit,
+  ) => {
+    return fetch(input, {
+      ...init,
+      headers: $SSContext.settings.bearerAuth
+        ? {
+            ...init?.headers,
+            authorization: 'Bearer ' + $SSContext.settings.bearerAuth,
+          }
+        : $LSContext.settings.keyForBearerAuth
+        ? {
+            ...init?.headers,
+            authorization:
+              'Bearer ' +
+              localStorage.getItem($LSContext.settings.keyForBearerAuth),
+          }
+        : init?.headers,
+    })
+  }
 </script>
 
 <div class="app-holder">
@@ -59,7 +83,7 @@
     </div>
 
     <dialog bind:this={settingsDialog}>
-      <header>Remult Settings</header>
+      <header>Remult Settings <i>(Local Storage)</i></header>
 
       <label style="display: flex; align-items: center; gap: 4px">
         <span>With confirm delete</span>
@@ -84,7 +108,15 @@
         </select>
       </label>
 
-      <br />
+      <label style="display: flex; align-items: center; gap: 4px">
+        <span>Local Storage Key for Auth</span>
+        <input
+          type="text"
+          bind:value={$LSContext.settings.keyForBearerAuth}
+          placeholder="Local Storage Key"
+        />
+      </label>
+
       <br />
 
       <button
@@ -92,6 +124,22 @@
           LSContext.reset()
         }}>Reset all settings to default</button
       >
+
+      <br />
+      <br />
+      <hr style="border-top: 1px solid black;" />
+      <br />
+
+      <header>Remult Settings <i>(Session Storage)</i></header>
+
+      <label style="display: flex; align-items: center; gap: 4px">
+        <span>Auth</span>
+        <input
+          type="text"
+          bind:value={$SSContext.settings.bearerAuth}
+          placeholder="bearer"
+        />
+      </label>
     </dialog>
 
     {#each $godStore?.tables ?? [] as t}
@@ -129,5 +177,10 @@
     /* background-color: hsla(var(--color), 70%, 50%, 0.05); */
     /* nowrap */
     white-space: nowrap;
+  }
+
+  input::placeholder {
+    color: gray;
+    font-style: italic;
   }
 </style>

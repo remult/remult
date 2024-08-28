@@ -1,5 +1,6 @@
 import { beforeAll, it, describe, expect } from 'vitest'
 import {
+  dbNamesOf,
   Entity,
   Fields,
   Relations,
@@ -9,6 +10,28 @@ import {
 import { Sqlite3DataProvider } from '../../../../core/remult-sqlite3.js'
 import { Database } from 'sqlite3'
 import { sqlRelations, sqlRelationsFilter } from './sql-relations.js'
+
+@Entity('Customer_groups')
+export class CustomerGroup {
+  @Fields.autoIncrement()
+  id = 0
+  @Fields.string()
+  group = ''
+  @Fields.string()
+  color = ''
+}
+
+@Entity('Customer_zones')
+export class CustomerZone {
+  @Fields.autoIncrement()
+  id = 0
+  @Fields.string()
+  zone = ''
+  @Fields.string()
+  short = ''
+  @Relations.toOne(() => CustomerGroup, { dbName: 'group_id' })
+  group?: CustomerGroup
+}
 
 @Entity('customers')
 export class Customer {
@@ -20,6 +43,9 @@ export class Customer {
   city = ''
   @Relations.toMany(() => Order, 'customer')
   orders?: Order[]
+
+  @Relations.toOne(() => CustomerZone)
+  zone?: CustomerZone
 }
 
 @Entity('orders')
@@ -32,8 +58,8 @@ export class Order {
   amount = 0
 }
 
-describe('test sub query 1', () => {
-  it('test count column second variation', async () => {
+describe('sql-relations', () => {
+  it('should count column second variation', async () => {
     @Entity('customers')
     class CustomerExtended extends Customer {
       @Fields.number({
@@ -74,7 +100,8 @@ describe('test sub query 1', () => {
       ]
     `)
   })
-  it('test get value column', async () => {
+
+  it('should get value column', async () => {
     @Entity('orders')
     class OrderExtended extends Order {
       @Fields.string({
@@ -104,7 +131,8 @@ describe('test sub query 1', () => {
       ]
     `)
   })
-  it('test filter', async () => {
+
+  it('should filter', async () => {
     expect(
       (
         await remult.repo(Customer).find({
@@ -120,18 +148,274 @@ describe('test sub query 1', () => {
     `)
   })
 
+  it('should get relation even at entity + 2', async () => {
+    @Entity('customers')
+    class CustomerExtended extends Customer {
+      @Fields.string({
+        sqlExpression: () => sqlRelations(CustomerExtended).zone.short,
+      })
+      zoneShort = ''
+      @Fields.string({
+        sqlExpression: () =>
+          // Option 1: sqlRelations(CustomerExtended).zone.$subQuery(()=>sqlRelations(CustomerZone).group.color),
+          sqlRelations(CustomerExtended).zone.$relations.group.color, // I didn't do zone.group.color because there is no way of knowing if you want the zone group or one of its members and sql expression requires string
+      })
+      groupColor = ''
+    }
+    SqlDatabase.LogToConsole = true
+    expect(
+      (await remult.repo(CustomerExtended).find({ where: { id: 1 } })).map(
+        (x) => ({
+          id: x.id,
+          zoneShort: x.zoneShort,
+          groupColor: x.groupColor,
+        }),
+      ),
+    ).toMatchInlineSnapshot(`
+      [
+        {
+          "groupColor": "green",
+          "id": 1,
+          "zoneShort": "N",
+        },
+      ]
+    `)
+  })
+
+  it('should get expression from another field with expression', async () => {
+    // order -> customer -> zone -> group
+    // @Entity('customers')
+    // class CustomerExtended extends Customer {
+    //   @Fields.string({
+    //     sqlExpression: () => sqlRelations(CustomerExtended).zone.group,
+    //   })
+    //   zoneGroupId = ''
+    //   @Relations.toOne(() => CustomerGroup, { field: 'zoneGroupId' })
+    //   zoneGroup?: CustomerGroup
+    // }
+    @Entity('orders')
+    class OrdersExtended extends Order {
+      @Fields.string({
+        sqlExpression: () => sqlRelations(OrdersExtended).customer.zone,
+      })
+      customerZoneId = ''
+      @Relations.toOne(() => CustomerZone, { field: 'customerZoneId' })
+      customerZone?: CustomerZone
+
+      @Fields.string({
+        sqlExpression: () =>
+          // This this one in my app having the error with recurssive sqlExpression
+          sqlRelations(OrdersExtended).customerZone.group,
+      })
+      customerZoneGroupId = ''
+      @Relations.toOne(() => CustomerGroup, { field: 'customerZoneGroupId' })
+      customerZoneGroup?: CustomerGroup
+    }
+    SqlDatabase.LogToConsole = true
+    expect(
+      (await remult.repo(OrdersExtended).find()).map((x) => ({
+        id: x.id,
+        customerZoneId: x.customerZoneId,
+        customerZoneGroupId: x.customerZoneGroupId,
+      })),
+    ).toMatchInlineSnapshot(`
+      [
+        {
+          "customerZoneGroupId": "1",
+          "customerZoneId": "1",
+          "id": 1,
+        },
+        {
+          "customerZoneGroupId": "1",
+          "customerZoneId": "1",
+          "id": 2,
+        },
+        {
+          "customerZoneGroupId": "1",
+          "customerZoneId": "2",
+          "id": 3,
+        },
+        {
+          "customerZoneGroupId": "1",
+          "customerZoneId": "2",
+          "id": 4,
+        },
+        {
+          "customerZoneGroupId": "1",
+          "customerZoneId": "2",
+          "id": 5,
+        },
+        {
+          "customerZoneGroupId": "2",
+          "customerZoneId": "3",
+          "id": 6,
+        },
+        {
+          "customerZoneGroupId": "2",
+          "customerZoneId": "3",
+          "id": 7,
+        },
+      ]
+    `)
+  })
+
+  it('should get first element (direct)', async () => {
+    expect(
+      await sqlRelations(Customer).orders.$first({
+        orderBy: { id: 'desc' },
+      }).amount,
+    ).toMatchInlineSnapshot(`
+      "
+      ( SELECT orders.amount 
+        FROM orders 
+        WHERE orders.customer = customers.id
+        ORDER BY orders.id desc
+        LIMIT 1
+      )"
+    `)
+  })
+
+  it('should get first element (with subQuery)', async () => {
+    expect(
+      await sqlRelations(Customer)
+        .orders.$first({
+          orderBy: { id: 'desc' },
+        })
+        .$subQuery((x) => x.amount),
+    ).toMatchInlineSnapshot(`
+      "
+      ( SELECT orders.amount 
+        FROM orders 
+        WHERE orders.customer = customers.id
+        ORDER BY orders.id desc
+        LIMIT 1
+      )"
+    `)
+  })
+
+  it('should get first element (with distance)', async () => {
+    expect(
+      await sqlRelations(Customer).orders.$first({
+        orderBy: { id: 'desc' },
+      }).$relations.customer.city,
+    ).toMatchInlineSnapshot(`
+      "
+      ( SELECT   
+        ( SELECT customers.city 
+          FROM customers 
+          WHERE customers.id = orders.customer
+        ) 
+        FROM orders 
+        WHERE orders.customer = customers.id
+        ORDER BY orders.id desc
+        LIMIT 1
+      )"
+    `)
+  })
+
+  it('should get first element (with raw subQuery)', async () => {
+    @Entity('customers')
+    class CustomerExtended extends Customer {
+      @Fields.number({
+        sqlExpression: () =>
+          sqlRelations(CustomerExtended).orders.$first({
+            orderBy: { id: 'desc' },
+          }).amount,
+      })
+      lastAmount = ''
+      @Fields.number({
+        sqlExpression: () =>
+          sqlRelations(CustomerExtended).orders.$subQuery(
+            (names) => names.amount,
+            {
+              orderBy: { id: 'desc' },
+              first: true,
+            },
+          ),
+      })
+      lastAmount1 = ''
+    }
+
+    expect(
+      (await remult.repo(CustomerExtended).find()).map((x) => ({
+        id: x.id,
+        lastAmount: x.lastAmount,
+        lastAmount1: x.lastAmount1,
+      })),
+    ).toMatchInlineSnapshot(`
+      [
+        {
+          "id": 1,
+          "lastAmount": 15,
+          "lastAmount1": 15,
+        },
+        {
+          "id": 2,
+          "lastAmount": 7,
+          "lastAmount1": 7,
+        },
+        {
+          "id": 3,
+          "lastAmount": 3,
+          "lastAmount1": 3,
+        },
+      ]
+    `)
+  })
+  it('test recursive sql', async () => {
+    @Entity('me')
+    class me {
+      @Fields.integer()
+      id = 0
+
+      @Fields.integer({
+        sqlExpression: async () => {
+          const db = await dbNamesOf(me)
+          return `1 + ${db.id}`
+        },
+      })
+      a = 0
+      @Fields.integer({
+        sqlExpression: async () => {
+          const db = await dbNamesOf(me)
+          return `3+${db.a}`
+        },
+      })
+      b = 0
+    }
+    const y = await dbNamesOf(me)
+    expect(y.b).toMatchInlineSnapshot(`"3+1 + id"`)
+  })
+
   let db: SqlDatabase
   let remult: Remult
   beforeAll(async () => {
     db = new SqlDatabase(new Sqlite3DataProvider(new Database(':memory:')))
     remult = new Remult(db)
-    const customerRepo = remult.repo(Customer)
-    await db.ensureSchema([customerRepo.metadata, remult.repo(Order).metadata])
-    if ((await customerRepo.count()) === 0) {
-      const customers = await customerRepo.insert([
-        { name: 'Fay, Ebert and Sporer', city: 'London' },
-        { name: 'Abshire Inc', city: 'New York' },
-        { name: 'Larkin - Fadel', city: 'London' },
+    await db.ensureSchema([
+      remult.repo(CustomerGroup).metadata,
+      remult.repo(CustomerZone).metadata,
+      remult.repo(Customer).metadata,
+      remult.repo(Order).metadata,
+    ])
+    if ((await remult.repo(Customer).count()) === 0) {
+      const groups = await remult.repo(CustomerGroup).insert([
+        { group: 'End User', color: 'green' },
+        { group: 'System Integrator', color: 'orange' },
+      ])
+
+      const zones = await remult.repo(CustomerZone).insert([
+        { zone: 'North', short: 'N', group: groups[0] },
+        { zone: 'South', short: 'S', group: groups[0] },
+
+        { zone: 'Est', short: 'E', group: groups[1] },
+        { zone: 'West', short: 'W', group: groups[1] },
+      ])
+
+      const customers = await remult.repo(Customer).insert([
+        { name: 'Fay, Ebert and Sporer', city: 'London', zone: zones[0] },
+        { name: 'Abshire Inc', city: 'New York', zone: zones[1] },
+        { name: 'Larkin - Fadel', city: 'London', zone: zones[2] },
       ])
       await remult.repo(Order).insert([
         { customer: customers[0], amount: 10 },

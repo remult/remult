@@ -284,7 +284,7 @@ export function BackendMethod<type = unknown>(
           return await serverAction.doWork(args, undefined)
         } else
           return await originalMethod.apply(
-            //@ts-expect-error I specifically referred to the this of the original function - so it'll be sent inside
+            //@ts-ignore
             this as any,
             args,
           )
