@@ -40,11 +40,11 @@
     return str
   }
 
-  remult.apiClient.httpClient = (
+  remult.apiClient.httpClient = async (
     input: RequestInfo | URL,
     init?: RequestInit,
   ) => {
-    return fetch(input, {
+    const f = await fetch(input, {
       ...init,
       headers: $SSContext.settings.bearerAuth
         ? {
@@ -60,6 +60,17 @@
           }
         : init?.headers,
     })
+
+    if (f.status === 403) {
+      const parsedUrl = new URL(f.url)
+      const segments = parsedUrl.pathname.split('/')
+      const lastSegment = segments.pop() || ''
+      $SSContext.forbiddenEntities = [
+        ...new Set([...$SSContext.forbiddenEntities, lastSegment]),
+      ]
+    }
+
+    return f
   }
 </script>
 

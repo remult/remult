@@ -13,6 +13,7 @@
   import Filter from './Filter.svelte'
   import { writable, type Writable } from 'svelte/store'
   import LoadingSkeleton from './LoadingSkeleton.svelte'
+  import { SSContext } from '../stores/SSContext.js'
 
   export let fields: FieldUIInfo[]
   export let relations: EntityRelationToManyInfo[]
@@ -28,6 +29,8 @@
 
   let items: any[] | null = null
 
+  $: $SSContext.forbiddenEntities.includes(repo.metadata.key) && (items = [])
+
   // resting items when fields change
   $: items = fields && (items = null)
 
@@ -35,6 +38,8 @@
   let unSub: (() => void) | null = null
 
   const reSub = (currentFilter: EntityFilter<any>) => {
+    $SSContext.forbiddenEntities = []
+
     if (unSub) {
       unSub()
     }
@@ -125,8 +130,10 @@
 
   <div class="page-bar__title title" style="--color: {color}">
     {repo.metadata.caption}
+    {#if $SSContext.forbiddenEntities.includes(repo.metadata.key)}
+      <span style="color: coral; font-size: smaller;">Forbidden</span>
+    {/if}
   </div>
-
   <Filter {fields} bind:filter={$filter} />
 
   <span class="page-bar__results">{from + ' - ' + to} of {totalRows}</span>
