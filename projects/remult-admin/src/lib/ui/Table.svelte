@@ -132,7 +132,9 @@
   </button>
 
   <div class="page-bar__title title" style="--color: {color}">
-    {repo.metadata.caption}
+    {$LSContext.settings.dispayCaption
+      ? repo.metadata.caption
+      : repo.metadata.key}
     {#if $SSContext.forbiddenEntities.includes(repo.metadata.key)}
       <span style="color: coral; font-size: smaller;">Forbidden</span>
     {/if}

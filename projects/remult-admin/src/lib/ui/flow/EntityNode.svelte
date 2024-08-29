@@ -1,6 +1,9 @@
 <script lang="ts">
   import { Handle, Position, type NodeProps } from '@xyflow/svelte'
-  import type { TableInfo } from '../../../God'
+  import { LSContext } from '../../stores/LSContext.js'
+  import ColumnType from '../../icons/ColumnType.svelte'
+  import type { FieldUIInfo } from '../../../../../core/server/remult-admin.js'
+  import Key from '../../icons/Key.svelte'
 
   type $$Props = NodeProps
 
@@ -10,7 +13,7 @@
   export let data: $$Props['data']
 
   const getFields = () => {
-    return data.fields as TableInfo[]
+    return data.fields as FieldUIInfo[]
   }
 </script>
 
@@ -29,7 +32,22 @@
           position={Position.Left}
           id={`${f.key}-target-left`}
         />
-        {f.caption}
+        <span
+          style="display: flex; justify-content: space-between; {Object.keys(
+            data.ids,
+          ).includes(f.key)
+            ? 'font-weight: bold;'
+            : ''}"
+        >
+          {$LSContext.settings.dispayCaption ? f.caption : f.key}
+          <span>
+            {#if Object.keys(data.ids).includes(f.key)}
+              <Key></Key>
+            {/if}
+            <ColumnType type={f.type} isSelect={f.values && f.values.length > 0}
+            ></ColumnType>
+          </span>
+        </span>
         <Handle
           type="source"
           position={Position.Right}
