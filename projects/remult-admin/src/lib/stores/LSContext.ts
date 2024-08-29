@@ -11,10 +11,11 @@ export type TLSContext = {
     confirmDelete: boolean
     diagramLayoutAlgorithm: 'grid-bfs' | 'grid-dfs' | 'line'
     keyForBearerAuth: string
+    apiUrl: string
   }
 }
 
-const LSContextKey = 'LSRemultAdmin_2024_08_28'
+const LSContextKey = 'LSRemultAdmin_2024_08_29'
 
 const LSContextDefaults: TLSContext = {
   currentLocationHash: '/',
@@ -25,6 +26,7 @@ const LSContextDefaults: TLSContext = {
     confirmDelete: true,
     diagramLayoutAlgorithm: 'grid-dfs',
     keyForBearerAuth: '',
+    apiUrl: '/api',
   },
 }
 

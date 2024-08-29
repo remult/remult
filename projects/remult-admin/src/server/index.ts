@@ -4,7 +4,8 @@ import { buildEntityInfo } from '../../../core/server/remult-admin'
 import { remult } from '../../../core/src/remult-proxy'
 
 export const app = express()
-app.use(api)
+// app.use('/yop_yop', api)
+app.use('/', api)
 app.get('/api/dev-admin', api.withRemult, (req, res) => {
   res.json(buildEntityInfo({ entities, remult }))
 })

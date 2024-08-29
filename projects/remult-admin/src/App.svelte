@@ -40,10 +40,13 @@
     return str
   }
 
+  remult.apiClient.url = $LSContext.settings.apiUrl
   remult.apiClient.httpClient = async (
     input: RequestInfo | URL,
     init?: RequestInit,
   ) => {
+    // console.log(`input`, input)
+
     const f = await fetch(input, {
       ...init,
       headers: $SSContext.settings.bearerAuth
@@ -96,7 +99,7 @@
     <dialog bind:this={settingsDialog}>
       <header>Remult Settings <i>(Local Storage)</i></header>
 
-      <label style="display: flex; align-items: center; gap: 4px">
+      <label>
         <span>With confirm delete</span>
         <select bind:value={$LSContext.settings.confirmDelete}>
           <option value={false}>No</option>
@@ -104,7 +107,7 @@
         </select>
       </label>
 
-      <label style="display: flex; align-items: center; gap: 4px">
+      <label>
         <span>Display fields with</span>
         <select bind:value={$LSContext.settings.dispayCaption}>
           <option value={true}>Caption</option>
@@ -112,7 +115,7 @@
         </select>
       </label>
 
-      <label style="display: flex; align-items: center; gap: 4px">
+      <label>
         <span>Diagram layout algorithm</span>
         <select
           bind:value={$LSContext.settings.diagramLayoutAlgorithm}
@@ -127,7 +130,7 @@
         </select>
       </label>
 
-      <label style="display: flex; align-items: center; gap: 4px">
+      <label>
         <span>Local Storage Key for Auth</span>
         <input
           type="text"
@@ -136,13 +139,27 @@
         />
       </label>
 
+      <label>
+        <span>api URL</span>
+        <input
+          type="text"
+          bind:value={$LSContext.settings.apiUrl}
+          placeholder="api URL, the default it '/api'"
+        />
+      </label>
+
       <br />
 
-      <button
-        on:click={() => {
-          LSContext.reset()
-        }}>Reset all settings to default</button
-      >
+      <label>
+        <span></span>
+        <button
+          on:click={() => {
+            LSContext.reset()
+          }}
+        >
+          Reset all settings to default
+        </button>
+      </label>
 
       <br />
       <br />
@@ -151,7 +168,7 @@
 
       <header>Remult Settings <i>(Session Storage)</i></header>
 
-      <label style="display: flex; align-items: center; gap: 4px">
+      <label>
         <span>Auth</span>
         <input
           type="text"
@@ -208,5 +225,17 @@
   input::placeholder {
     color: gray;
     font-style: italic;
+  }
+
+  label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 10px;
+  }
+
+  select {
+    width: 180px;
   }
 </style>
