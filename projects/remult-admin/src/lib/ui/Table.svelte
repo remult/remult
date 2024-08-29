@@ -193,14 +193,25 @@
     <thead>
       <tr>
         <td>
-          <button
-            class="icon-button new-entry"
-            on:click={() => {
-              newRow = repo.create({ ...parentRelation })
-            }}
-          >
-            +
-          </button>
+          {#if newRow === undefined}
+            <button
+              class="icon-button new-entry"
+              on:click={() => {
+                newRow = repo.create({ ...parentRelation })
+              }}
+            >
+              +
+            </button>
+          {:else}
+            <button
+              class="icon-button new-entry"
+              on:click={() => {
+                newRow = undefined
+              }}
+            >
+              -
+            </button>
+          {/if}
         </td>
         {#each fields as column}
           <th
@@ -239,11 +250,14 @@
           row={newRow}
           columns={fields}
           {relations}
+          saveAction={async (item) => {
+            await repo.insert(item)
+            newRow = undefined
+          }}
           deleteAction={async () => {
             newRow = undefined
           }}
-          save={async (item) => {
-            await repo.insert(item)
+          cancelAction={async () => {
             newRow = undefined
           }}
           cancel={async () => {
@@ -256,7 +270,7 @@
           <EditableRow
             rowId={repo.metadata.idMetadata.getId(row)}
             {row}
-            save={async (item) => {
+            saveAction={async (item) => {
               await repo.update(row, item)
             }}
             deleteAction={() => repo.delete(row)}
