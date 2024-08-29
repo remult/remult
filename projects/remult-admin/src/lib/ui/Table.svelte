@@ -15,6 +15,8 @@
   import LoadingSkeleton from './LoadingSkeleton.svelte'
   import { SSContext } from '../stores/SSContext.js'
   import { LSContext } from '../stores/LSContext.js'
+  import Key from '../icons/Key.svelte'
+  import ColumnType from '../icons/ColumnType.svelte'
 
   export let fields: FieldUIInfo[]
   export let relations: EntityRelationToManyInfo[]
@@ -203,12 +205,25 @@
             on:click={() => toggleOrderBy(column.key)}
             style="cursor: pointer;"
           >
-            {$LSContext.settings.dispayCaption ? column.caption : column.key}
-            {options.orderBy?.[column.key] === 'asc'
-              ? '▲'
-              : options.orderBy?.[column.key] === 'desc'
-              ? '▼'
-              : ''}
+            <span
+              style="display: flex; gap:0.3rem; align-items: center; justify-content: space-between;"
+            >
+              {#if Object.keys(repo.metadata.options.id).includes(column.key)}
+                <Key></Key>
+              {:else}
+                <span></span>
+              {/if}
+              {$LSContext.settings.dispayCaption ? column.caption : column.key}
+              {options.orderBy?.[column.key] === 'asc'
+                ? '▲'
+                : options.orderBy?.[column.key] === 'desc'
+                ? '▼'
+                : ''}
+              <ColumnType
+                type={column.type}
+                isSelect={column.values && column.values.length > 0}
+              ></ColumnType>
+            </span>
           </th>
         {/each}
         <th class="action-tab">Actions</th>
@@ -227,6 +242,9 @@
           }}
           save={async (item) => {
             await repo.insert(item)
+            newRow = undefined
+          }}
+          cancel={async () => {
             newRow = undefined
           }}
         />
