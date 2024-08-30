@@ -3,7 +3,7 @@ import type { RequestEvent } from '@sveltejs/kit'
 import { Task } from '../../../shared/Task'
 import { TasksController } from '../../../shared/TasksController'
 import { remult } from 'remult'
-import { remultSveltekit } from '../../../../../../core/remult-sveltekit.js'
+import { remultSveltekit } from 'remult/remult-sveltekit'
 
 export const _api = remultSveltekit({
   entities: [Task],
