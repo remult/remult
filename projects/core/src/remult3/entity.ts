@@ -91,7 +91,7 @@ export function Entity<entityType>(
             r = {
               ...opt,
               ...r,
-            }
+            } as any
           }
         }
       }

@@ -22,6 +22,7 @@ import type { FieldMetadata } from '../src/column-interfaces.js'
 import type {
   DataProvider,
   EntityDataProvider,
+  EntityDataProviderAggregateOptions,
   EntityDataProviderFindOptions,
 } from '../src/data-interfaces.js'
 import { remult as remultContext } from '../src/remult-proxy.js'
@@ -176,6 +177,9 @@ class KnexEntityDataProvider implements EntityDataProvider {
     private knex: Knex,
     private rawSqlWrapIdentifier: (name: string) => string,
   ) {}
+  aggregate(options?: EntityDataProviderAggregateOptions): Promise<any[]> {
+    throw new Error('Method not implemented.')
+  }
   async count(where: Filter): Promise<number> {
     const e = await this.init()
     const br = new FilterConsumerBridgeToKnexRequest(
