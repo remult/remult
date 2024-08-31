@@ -8,16 +8,13 @@ import type {
   ValueListItem,
 } from '../column-interfaces.js'
 import type { AllowedForInstance } from '../context.js'
-import {
-  Remult,
-  RemultAsyncLocalStorage,
-  isBackend,
-  queryConfig,
-} from '../context.js'
+import { Remult, isBackend, queryConfig } from '../context.js'
 import type { EntityOptions } from '../entity.js'
 import { Filter } from '../filter/filter-interfaces.js'
 import { Sort } from '../sort.js'
 import type {
+  AggregateOptions,
+  AggregateResult,
   ControllerRef,
   ControllerRefForControllerBase,
   EntityFilter,
@@ -57,6 +54,7 @@ import type { entityEventListener } from '../__EntityValueProvider.js'
 import type {
   DataProvider,
   EntityDataProvider,
+  EntityDataProviderAggregateOptions,
   EntityDataProviderFindOptions,
   ErrorInfo,
   ProxyEntityDataProvider,
@@ -224,6 +222,91 @@ export class RepositoryImplementation<entityType>
     private _info: EntityFullInfo<entityType>,
     private _defaultFindOptions?: FindOptions<entityType>,
   ) {}
+  async aggregate<
+    groupByFields extends
+      | (keyof MembersOnly<entityType>)[]
+      | undefined = undefined,
+    sumFields extends
+      | {
+          [K in keyof entityType]: entityType[K] extends number ? K : never
+        }[keyof entityType][]
+      | undefined = undefined,
+    averageFields extends
+      | {
+          [K in keyof entityType]: entityType[K] extends number ? K : never
+        }[keyof entityType][]
+      | undefined = undefined,
+  >(
+    options?: AggregateOptions<
+      entityType,
+      groupByFields extends undefined ? never : groupByFields,
+      sumFields extends undefined ? never : sumFields,
+      averageFields extends undefined ? never : averageFields
+    >,
+  ): Promise<
+    groupByFields extends undefined
+      ? AggregateResult<
+          entityType,
+          never,
+          sumFields extends undefined ? never : sumFields,
+          averageFields extends undefined ? never : averageFields
+        >
+      : AggregateResult<
+          entityType,
+          groupByFields extends undefined ? never : groupByFields,
+          sumFields extends undefined ? never : sumFields,
+          averageFields extends undefined ? never : averageFields
+        >[]
+  > {
+    let findOptions = await this._buildEntityDataProviderFindOptions({
+      ...options,
+    })
+    var dpOptions: EntityDataProviderAggregateOptions = {
+      where: findOptions.where,
+      limit: findOptions.limit,
+      page: findOptions.page,
+      groupBy: options?.groupBy?.map((f) =>
+        this.metadata.fields.find(f as string),
+      ),
+      sum: options?.sum?.map((f) => this.metadata.fields.find(f as string)),
+      average: options?.average?.map((f) =>
+        this.metadata.fields.find(f as string),
+      ),
+    }
+    if (options?.orderBy) {
+      dpOptions.orderBy = []
+      for (const key in options.orderBy) {
+        if (Object.prototype.hasOwnProperty.call(options?.orderBy, key)) {
+          const element = (options.orderBy as any)[key]
+          if (element)
+            if (typeof element === 'string') {
+              dpOptions.orderBy.push({
+                field:
+                  key === '$count'
+                    ? undefined
+                    : this.metadata.fields.find(key as string),
+                isDescending: element === 'desc',
+                operation: key === '$count' ? 'count' : undefined,
+              })
+            } else {
+              for (const operation in element) {
+                if (Object.prototype.hasOwnProperty.call(element, operation)) {
+                  const direction = element[operation]
+                  dpOptions.orderBy.push({
+                    field: this.metadata.fields.find(key as string),
+                    isDescending: direction === 'desc',
+                    operation: operation as any,
+                  })
+                }
+              }
+            }
+        }
+      }
+    }
+    const result = await this._edp.aggregate(dpOptions)
+    if (!options?.groupBy) return result[0]
+    return result as any
+  }
   _idCache = new Map<any, any>()
   _getCachedById(
     id: any,
@@ -1134,7 +1217,7 @@ export function createOldEntity<T>(entity: ClassType<T>, remult: Remult) {
 
   return new EntityFullInfo<T>(
     prepareColumnInfo(r, remult),
-    info,
+    info as EntityOptions<T>,
     remult,
     entity,
     key,

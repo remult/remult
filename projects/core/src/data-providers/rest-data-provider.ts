@@ -1,6 +1,7 @@
 import type {
   DataProvider,
   EntityDataProvider,
+  EntityDataProviderAggregateOptions,
   EntityDataProviderFindOptions,
   ProxyEntityDataProvider,
   RestDataProviderHttpProvider,
@@ -13,6 +14,7 @@ import { customUrlToken, Filter } from '../filter/filter-interfaces.js'
 import type { EntityMetadata, FindOptions } from '../remult3/remult3.js'
 import { getRelationFieldInfo } from '../remult3/relationInfoMember.js'
 import { remultStatic } from '../remult-static.js'
+import { group } from 'console'
 
 export class RestDataProvider implements DataProvider {
   constructor(private apiProvider: () => ApiClient) {}
@@ -121,6 +123,32 @@ export class RestEntityDataProvider
     private http: () => RestDataProviderHttpProvider,
     private entity: EntityMetadata,
   ) {}
+  async aggregate(
+    options?: EntityDataProviderAggregateOptions,
+  ): Promise<any[]> {
+    const { run } = this.buildFindRequest({
+      where: options?.where,
+      limit: options?.limit,
+      page: options?.page,
+    })
+    const body = {
+      groupBy: options?.groupBy?.map((x) => x.key),
+      sum: options?.sum?.map((x) => x.key),
+      average: options?.average?.map((x) => x.key),
+      orderBy: options?.orderBy?.map((x) => ({ ...x, field: x.field?.key })),
+    }
+    const result: any[] = await run(
+      'aggregate',
+      Object.keys(body).length > 0 ? body : undefined,
+    )
+    if (options?.groupBy)
+      result.forEach((row) => {
+        for (const g of options!.groupBy!) {
+          row[g.key] = g.valueConverter.fromJson(row[g.key])
+        }
+      })
+    return result
+  }
 
   translateFromJson(row: any) {
     let result: any = {}
@@ -197,8 +225,9 @@ export class RestEntityDataProvider
       if (action) u.add('__action', action)
       if (filterObject) {
         body = { set: body, where: filterObject }
-        return this.http().post(u.url, body)
-      } else return this.http()[method!](u.url, body)
+      }
+      if (body) return this.http().post(u.url, body)
+      else return this.http()[method!](u.url, body)
     }
 
     return {
