@@ -317,6 +317,105 @@ export declare type idType<entityType> = entityType extends {
     ? number
     : string | number
   : string | number
+
+type NumericKeys<T> = {
+  [K in keyof T]: T[K] extends number ? K : never
+}[keyof T]
+
+/**
+ * Options for performing aggregation on an entity in the repository.
+ *
+ * @template entityType The entity type.
+ * @template groupByFields The fields to group by, provided as an array of keys from the entity type.
+ * @template sumFields The fields to sum, provided as an array of numeric keys from the entity type.
+ * @template averageFields The fields to average, provided as an array of numeric keys from the entity type.
+ *
+ * @example
+ * // Grouping by country and city, summing the salary field, and ordering by country and sum of salary:
+ * const results = await repo.aggregate({
+ *   groupBy: ['country', 'city'],
+ *   sum: ['salary'],
+ *   where: {
+ *     salary: { $ne: 1000 },
+ *   },
+ *   orderBy: {
+ *     country: 'asc',
+ *     salary: {
+ *       sum: 'desc',
+ *     },
+ *   },
+ * });
+ *
+ * // Accessing the results:
+ * console.log(results[0].country); // 'uk'
+ * console.log(results[0].city); // 'London'
+ * console.log(results[0].$count); // count for London, UK
+ * console.log(results[0].salary.sum); // Sum of salaries for London, UK
+ *
+ * @example
+ * // Aggregating without grouping (summing the salary field across all entities):
+ * const totalSalary = await repo.aggregate({
+ *   sum: ['salary'],
+ * });
+ * console.log(totalSalary.salary.sum); // Outputs the total sum of salaries
+ */
+export type AggregateOptions<
+  entityType,
+  groupByFields extends (keyof entityType)[],
+  sumFields extends NumericKeys<entityType>[],
+  averageFields extends NumericKeys<entityType>[],
+> = {
+  /**
+   * Fields to group by. The result will include one entry per unique combination of these fields.
+   */
+  groupBy?: groupByFields
+
+  /**
+   * Fields to sum. The result will include the sum of these fields for each group.
+   */
+  sum?: sumFields
+
+  /**
+   * Fields to average. The result will include the average of these fields for each group.
+   */
+  average?: averageFields
+
+  /**
+   * Filters to apply to the query before aggregation.
+   * @see EntityFilter
+   */
+  where?: EntityFilter<entityType>
+
+  /**
+   * Fields and aggregates to order the results by.
+   * The result can be ordered by groupBy fields, sum fields, and average fields.
+   */
+  orderBy?: {
+    [K in groupByFields[number]]?: 'asc' | 'desc'
+  } & {
+    [K in averageFields[number]]?: { average?: 'asc' | 'desc' }
+  } & {
+    [K in sumFields[number]]?: { sum?: 'asc' | 'desc' }
+  }
+} & Pick<FindOptions<entityType>, 'limit' | 'page'>
+export const AggregateCountMember = '$count' as const
+export type AggregateResult<
+  entityType,
+  groupByFields extends (keyof entityType)[],
+  sumFields extends (keyof entityType)[],
+  averageFields extends NumericKeys<entityType>[],
+> = {
+  [K in
+    | groupByFields[number]
+    | sumFields[number]]: K extends groupByFields[number]
+    ? entityType[K]
+    : K extends sumFields[number]
+    ? { sum: number }
+    : never
+} & { [K in averageFields[number]]: { average: number } } & {
+  [AggregateCountMember]: number
+}
+
 /**used to perform CRUD operations on an `entityType` */
 export interface Repository<entityType> {
   /** returns a result array based on the provided options */
@@ -347,6 +446,76 @@ export interface Repository<entityType> {
     id: idType<entityType>,
     options?: FindFirstOptionsBase<entityType>,
   ): Promise<entityType | undefined | null>
+
+  /**
+   * Performs an aggregation on the repository's entity type based on the specified options.
+   *
+   * @template entityType The type of the entity being aggregated.
+   * @template groupByFields The fields to group by, provided as an array of keys from the entity type.
+   * @template sumFields The fields to sum, provided as an array of numeric keys from the entity type.
+   * @template averageFields The fields to average, provided as an array of numeric keys from the entity type.
+   *
+   * @param {AggregateOptions<entityType, groupByFields, sumFields, averageFields>} options - The options for the aggregation.
+   * @returns {Promise<AggregateResult<entityType, groupByFields, sumFields, averageFields>[] | AggregateResult<entityType, never, sumFields, averageFields>>} The result of the aggregation.
+   *
+   * @example
+   * // Grouping by country and city, summing the salary field, and ordering by country and sum of salary:
+   * const results = await repo.aggregate({
+   *   groupBy: ['country', 'city'],
+   *   sum: ['salary'],
+   *   where: {
+   *     salary: { $ne: 1000 },
+   *   },
+   *   orderBy: {
+   *     country: 'asc',
+   *     salary: {
+   *       sum: 'desc',
+   *     },
+   *   },
+   * });
+   *
+   * // Accessing the results:
+   * console.log(results[0].country); // 'uk'
+   * console.log(results[0].city); // 'London'
+   * console.log(results[0].$count); // count for London, UK
+   * console.log(results[0].salary.sum); // Sum of salaries for London, UK
+   *
+   * @example
+   * // Aggregating without grouping (summing the salary field across all entities):
+   * const totalSalary = await repo.aggregate({
+   *   sum: ['salary'],
+   * });
+   * console.log(totalSalary.salary.sum); // Outputs the total sum of salaries
+   */
+  aggregate<
+    groupByFields extends
+      | (keyof MembersOnly<entityType>)[]
+      | undefined = undefined,
+    sumFields extends NumericKeys<entityType>[] | undefined = undefined,
+    averageFields extends NumericKeys<entityType>[] | undefined = undefined,
+  >(
+    options: AggregateOptions<
+      entityType,
+      groupByFields extends undefined ? never : groupByFields,
+      sumFields extends undefined ? never : sumFields,
+      averageFields extends undefined ? never : averageFields
+    >,
+  ): Promise<
+    groupByFields extends undefined
+      ? AggregateResult<
+          entityType,
+          never,
+          sumFields extends undefined ? never : sumFields,
+          averageFields extends undefined ? never : averageFields
+        >
+      : AggregateResult<
+          entityType,
+          groupByFields extends undefined ? never : groupByFields,
+          sumFields extends undefined ? never : sumFields,
+          averageFields extends undefined ? never : averageFields
+        >[]
+  >
+
   /**  An alternative form of fetching data from the API server, which is intended for operating on large numbers of entity objects.
    *
    * It also has it's own paging mechanism that can be used n paging scenarios.
@@ -1068,10 +1237,15 @@ export type ClassFieldDecorator<entityType, valueType> = (
 export const flags = {
   error500RetryCount: 4,
 }
-//p1 - add transactional option to backend method
+
 //p1 - add parameter all to deleteMany, and updateMany
 //p1  filter.apply ApiPreFilter
-//p1 - min, max, avg, sum, countDistinct - noam come up with an api
+//p1 - add not as an overload to not equal
+/*p1 - min, max, avg, sum, countDistinct - noam come up with an api
+  p1 - handle relations
+  p1 - mongodb
+  p1 - knex
+*/
 
 /*p1 - add id and use uuid by default, but allow changes with Fields.id.defaultIdProvider NO but defaultProvider yes???
   //p1 - replace uuid with crypto.randomUUID and allow custom fallback NO

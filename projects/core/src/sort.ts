@@ -61,20 +61,18 @@ export class Sort {
    */
   compare(a: any, b: any, getFieldKey?: (field: FieldMetadata) => string) {
     if (!getFieldKey) getFieldKey = (x) => x.key
-    let r = 0
     for (let i = 0; i < this.Segments.length; i++) {
       let seg = this.Segments[i]
 
-      let left = fixValueForSort(a[getFieldKey(seg.field)])
-      let right = fixValueForSort(b[getFieldKey(seg.field)])
-      if (left > right) r = 1
-      else if (left < right) r = -1
+      let left = a[getFieldKey(seg.field)]
+      let right = b[getFieldKey(seg.field)]
+      let descending = seg.isDescending
+      let r = compareForSort(left, right, descending)
       if (r != 0) {
-        if (seg.isDescending) r *= -1
         return r
       }
     }
-    return r
+    return 0
   }
   /**
    * Translates an `EntityOrderBy` to a `Sort` instance.
@@ -187,7 +185,21 @@ export interface SortSegment {
   field: FieldMetadata
   isDescending?: boolean
 }
-function fixValueForSort(a: any) {
+export function compareForSort(
+  left: any,
+  right: any,
+  descending: boolean | undefined,
+) {
+  left = fixValueForSort(left)
+  right = fixValueForSort(right)
+  let r = 0
+  if (left > right) r = 1
+  else if (left < right) r = -1
+  if (descending) r *= -1
+  return r
+}
+
+export function fixValueForSort(a: any) {
   if (a == undefined || a == null) return a
   if (a.id !== undefined) return a.id
   return a

@@ -1,6 +1,5 @@
-import { expect, it, beforeAll, beforeEach, describe } from 'vitest'
-import { createPostgresConnection } from '../../core/postgres'
-import type { DataProvider, SqlDatabase } from '../../core'
+import { expect, it, beforeEach, describe } from 'vitest'
+import type { DataProvider } from '../../core'
 import {
   Fields,
   Filter,

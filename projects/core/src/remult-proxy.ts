@@ -155,6 +155,13 @@ export class RemultProxy implements Remult {
           .remultFactory()
           .repo(...args)
           .find(...args2),
+      aggregate: (...args2) =>
+        self
+          .remultFactory()
+          .repo(...args)
+          //@ts-ignore
+          .aggregate(...args2) as any,
+
       findFirst: (...args2) =>
         self
           .remultFactory()
