@@ -8,8 +8,7 @@ import { entityWithValidations } from './shared-tests/entityWithValidations'
 import { allDbTests } from './shared-tests'
 
 const mongoConnectionString = process.env['MONGO_TEST_URL'] //"mongodb://localhost:27017/local"
-console.log('*******************')
-console.log(mongoConnectionString)
+
 describe.skipIf(!mongoConnectionString)('mongo with Transaction', () => {
   let db: MongoDataProvider
   let client: MongoClient
