@@ -26,6 +26,7 @@ import type { RepositoryOverloads } from './src/remult3/RepositoryImplementation
 import { getRepository } from './src/remult3/RepositoryImplementation.js'
 import { getRepositoryInternals } from './src/remult3/repository-internals.js'
 import { getRowAfterUpdate } from './src/data-providers/sql-database.js'
+import type { EntityDataProviderAggregateOptions } from './src/data-interfaces.js'
 
 export class MongoDataProvider implements DataProvider {
   constructor(
@@ -96,6 +97,9 @@ class MongoEntityDataProvider implements EntityDataProvider {
     private entity: EntityMetadata<any>,
     private session?: ClientSession,
   ) {}
+  aggregate(options?: EntityDataProviderAggregateOptions): Promise<any[]> {
+    throw new Error('Method not implemented.')
+  }
   translateFromDb(row: any, nameProvider: EntityDbNamesBase) {
     let result: any = {}
     for (const col of this.entity.fields) {
