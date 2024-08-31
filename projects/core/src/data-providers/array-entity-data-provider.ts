@@ -2,6 +2,7 @@ import { CompoundIdField } from '../CompoundIdField.js'
 import type { FieldMetadata } from '../column-interfaces.js'
 import type {
   EntityDataProvider,
+  EntityDataProviderAggregateOptions,
   EntityDataProviderFindOptions,
 } from '../data-interfaces.js'
 import {
@@ -14,7 +15,12 @@ import {
   Filter,
   customDatabaseFilterToken,
 } from '../filter/filter-interfaces.js'
-import type { EntityFilter, EntityMetadata } from '../remult3/remult3.js'
+import {
+  AggregateCountMember,
+  type EntityFilter,
+  type EntityMetadata,
+} from '../remult3/remult3.js'
+import { compareForSort, Sort } from '../sort.js'
 
 export class ArrayEntityDataProvider implements EntityDataProvider {
   static rawFilter(filter: CustomArrayFilter): EntityFilter<any> {
@@ -29,6 +35,125 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
     private entity: EntityMetadata,
     private rows: () => any[],
   ) {}
+  async aggregate(
+    options?: EntityDataProviderAggregateOptions,
+  ): Promise<any[]> {
+    const sort = new Sort()
+    if (options?.groupBy)
+      for (const field of options?.groupBy) {
+        sort.Segments.push({ field: field })
+      }
+    const rows = await this.find({ orderBy: sort, where: options?.where })
+    let result: any[] = []
+    let group: any = {}
+    let first = true
+    let count = 0
+    let aggregates: {
+      process(row: any): void
+      finishGroup(result: any): void
+    }[] = []
+
+    if (options?.sum) {
+      class Sum {
+        constructor(private key: string) {}
+        sum = 0
+        process(row: any) {
+          const val = row[this.key]
+          if (val !== undefined && val !== null) this.sum += row[this.key]
+        }
+        finishGroup(result: any) {
+          result[this.key] = { ...result[this.key], sum: this.sum }
+          this.sum = 0
+        }
+      }
+      for (const element of options.sum) {
+        aggregates.push(new Sum(element.key))
+      }
+    }
+    if (options?.average) {
+      class Average {
+        constructor(private key: string) {}
+        sum = 0
+        count = 0
+        process(row: any) {
+          const val = row[this.key]
+          if (val !== undefined && val !== null) {
+            this.sum += row[this.key]
+            this.count++
+          }
+        }
+        finishGroup(result: any) {
+          result[this.key] = {
+            ...result[this.key],
+            average: this.sum / this.count,
+          }
+          this.sum = 0
+          this.count = 0
+        }
+      }
+      for (const element of options.average) {
+        aggregates.push(new Average(element.key))
+      }
+    }
+
+    function finishGroup() {
+      const r: any = { ...group, $count: count }
+      for (const a of aggregates) {
+        a.finishGroup(r)
+      }
+      r[AggregateCountMember] = count
+      result.push(r)
+      first = true
+      count = 0
+    }
+    for (const row of rows) {
+      if (options?.groupBy) {
+        if (!first) {
+          for (const field of options?.groupBy) {
+            if (group[field.key] != row[field.key]) {
+              finishGroup()
+              break
+            }
+          }
+        }
+        if (first) {
+          for (const field of options?.groupBy) {
+            group[field.key] = row[field.key]
+          }
+        }
+      }
+      for (const a of aggregates) {
+        a.process(row)
+      }
+      count++
+      first = false
+    }
+    finishGroup()
+    if (options?.orderBy) {
+      result.sort((a, b) => {
+        for (const x of options.orderBy!) {
+          const getValue = (row: any) => {
+            if (!x.field && x.operation == 'count') {
+              return row[AggregateCountMember]
+            } else {
+              switch (x.operation) {
+                case 'sum':
+                  return row[x.field!.key].sum
+                case 'average':
+                  return row[x.field!.key].average
+              }
+            }
+            return row[x.field!.key]
+          }
+          let compare = compareForSort(getValue(a), getValue(b), x.isDescending)
+          if (compare != 0) return compare
+        }
+        return 0
+      })
+    }
+    return pageArray(result, { page: options?.page, limit: options?.limit })
+  }
+
   //@internal
   private __names?: EntityDbNamesBase
   //@internal

@@ -12,11 +12,13 @@ import {
 } from './filter/filter-interfaces.js'
 import type { QueryData } from './live-query/SubscriptionServer.js'
 import { getRelationFieldInfo } from './remult3/relationInfoMember.js'
-import type {
-  EntityFilter,
-  EntityMetadata,
-  FindOptions,
-  Repository,
+import {
+  AggregateCountMember,
+  type AggregateOptions,
+  type EntityFilter,
+  type EntityMetadata,
+  type FindOptions,
+  type Repository,
 } from './remult3/remult3.js'
 import type { rowHelperImplementation } from './remult3/RepositoryImplementation.js'
 
@@ -45,6 +47,8 @@ export class DataApi<T = unknown> {
       case 'get':
       case 'count':
         return this.count(res, req, undefined)
+      case 'aggregate':
+        return this.aggregate(res, req, undefined)
     }
     return this.getArray(res, req, undefined)
   }
@@ -73,6 +77,7 @@ export class DataApi<T = unknown> {
         action.substring(liveQueryAction.length),
       )
     }
+
     switch (action) {
       case 'get':
         validateWhereInBody()
@@ -80,6 +85,8 @@ export class DataApi<T = unknown> {
       case 'count':
         validateWhereInBody()
         return this.count(res, req, body)
+      case 'aggregate':
+        return this.aggregate(res, req, body)
       case 'deleteMany':
         validateWhereInBody()
         return this.deleteMany(res, req, body)
@@ -142,12 +149,75 @@ export class DataApi<T = unknown> {
       response.error(err, this.repository.metadata)
     }
   }
+  async aggregate(
+    response: DataApiResponse,
+    request: DataApiRequest,
+    body: any,
+  ) {
+    let findOptions = await this.findOptionsFromRequest(request, body)
+    let orderBy: any = {}
+    if (body?.orderBy) {
+      for (const element of body?.orderBy) {
+        const direction = element.isDescending ? 'desc' : 'asc'
+        switch (element.operation) {
+          case 'sum':
+            orderBy[element.field] = {
+              ...orderBy[element.field],
+              sum: direction,
+            }
+            break
+          case 'average':
+            orderBy[element.field] = {
+              ...orderBy[element.field],
+              average: direction,
+            }
+            break
+          case 'count':
+            orderBy[AggregateCountMember] = direction
+          default:
+            orderBy[element.field] = direction
+            break
+        }
+      }
+    }
+    let result = await this.repository.aggregate({
+      where: findOptions.where,
+      limit: findOptions.limit,
+      page: findOptions.page,
+      groupBy: (body?.groupBy as any[])?.filter((x: string) =>
+        this.repository.fields.find(x).includedInApi(),
+      ),
+      sum: (body?.sum as any[])?.filter((x: string) =>
+        this.repository.fields.find(x).includedInApi(),
+      ),
+      average: (body?.average as any[])?.filter((x: string) =>
+        this.repository.fields.find(x).includedInApi(),
+      ),
+      orderBy: orderBy,
+    })
+
+    if (!Array.isArray(result)) {
+      result = [result]
+    }
+    response.success(result)
+  }
 
   async getArrayImpl(
     response: DataApiResponse,
     request: DataApiRequest,
     body: any,
   ) {
+    let findOptions = await this.findOptionsFromRequest(request, body)
+
+    const r = await this.repository.find(findOptions).then(async (r) => {
+      return await Promise.all(
+        r.map(async (y) => this.repository.getEntityRef(y).toApiJson()),
+      )
+    })
+    return { r, findOptions }
+  }
+
+  private async findOptionsFromRequest(request: DataApiRequest, body: any) {
     let findOptions: FindOptions<T> = {
       load: () => [],
       include: this.includeNone(),
@@ -197,16 +267,10 @@ export class DataApi<T = unknown> {
         })
       }
       if (!hasId) {
-        response.forbidden()
         throw new ForbiddenError()
       }
     }
-    const r = await this.repository.find(findOptions).then(async (r) => {
-      return await Promise.all(
-        r.map(async (y) => this.repository.getEntityRef(y).toApiJson()),
-      )
-    })
-    return { r, findOptions }
+    return findOptions
   }
 
   private includeNone() {
