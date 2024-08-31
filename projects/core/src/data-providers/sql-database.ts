@@ -406,14 +406,14 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
           theResult[x.key] = { ...theResult[x.key], sum: sqlResult }
         })
       }
-    if (options?.average)
-      for (const x of options?.average) {
+    if (options?.avg)
+      for (const x of options?.avg) {
         if (x.isServerExpression) {
         } else {
-          select += ', avg(' + e.$dbNameOf(x) + ') as ' + x.key + '_average'
+          select += ', avg(' + e.$dbNameOf(x) + ') as ' + x.key + '_avg'
         }
         processResultRow.push((sqlResult, theResult) => {
-          theResult[x.key] = { ...theResult[x.key], average: sqlResult }
+          theResult[x.key] = { ...theResult[x.key], avg: sqlResult }
         })
       }
 
@@ -440,7 +440,7 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
             case 'sum':
               field = 'sum(' + field + ')'
               break
-            case 'average':
+            case 'avg':
               field = 'avg(' + field + ')'
               break
           }

@@ -175,7 +175,7 @@ export function aggregateTest(
       const r = await repo()
       const results = await r.aggregate({
         groupBy: ['country'],
-        average: ['numberOfKids'],
+        avg: ['numberOfKids'],
         orderBy: {
           country: 'asc',
         },
@@ -184,13 +184,13 @@ export function aggregateTest(
       expect(results.length).toBe(5)
 
       const uk = results.find((x) => x.country === 'uk')
-      expect(uk?.numberOfKids.average).toBeCloseTo(2.75)
+      expect(uk?.numberOfKids.avg).toBeCloseTo(2.75)
 
       const france = results.find((x) => x.country === 'france')
-      expect(france?.numberOfKids.average).toBe(5)
+      expect(france?.numberOfKids.avg).toBe(5)
 
       const germany = results.find((x) => x.country === 'germany')
-      expect(germany?.numberOfKids.average).toBeCloseTo(6.5)
+      expect(germany?.numberOfKids.avg).toBeCloseTo(6.5)
     })
 
     it('should group by city and country and order by country then city', async () => {
@@ -232,11 +232,12 @@ export function aggregateTest(
       const france = results.find((x) => x.country === 'france')
       expect(france?.$count).toBe(2)
     })
+
     it('should return a single result when no groupBy is provided', async () => {
       const r = await repo()
       const result = await r.aggregate({
         sum: ['salary', 'numberOfKids'],
-        average: ['salary', 'numberOfKids'],
+        avg: ['salary', 'numberOfKids'],
         where: {
           salary: { $gt: 1000 },
         },
@@ -245,8 +246,51 @@ export function aggregateTest(
       expect(result).toBeDefined()
       expect(result.salary.sum).toBe(79000) // Sum of all salaries greater than 1000
       expect(result.numberOfKids.sum).toBe(65) // Sum of all numberOfKids for salaries greater than 1000
-      expect(result.salary.average).toBeCloseTo(5266.666666) // Average salary for all salaries greater than 1000
-      expect(result.numberOfKids.average).toBeCloseTo(4.3333333) // Average numberOfKids for all salaries greater than 1000
+      expect(result.salary.avg).toBeCloseTo(5266.666666) // Average salary for all salaries greater than 1000
+      expect(result.numberOfKids.avg).toBeCloseTo(4.3333333) // Average numberOfKids for all salaries greater than 1000
+    })
+    it('field cant be used both for group by and sum', async () => {
+      const r = await repo()
+      await expect(async () => {
+        await r.aggregate({
+          groupBy: ['salary'],
+          sum: ['salary'],
+        })
+      }).rejects.toThrowErrorMatchingInlineSnapshot(
+        `[Error: field "salary" cannot be used both in an aggregate and in group by]`,
+      )
+    })
+    it('cant use invalid field', async () => {
+      const r = await repo()
+      await expect(async () => {
+        await r.aggregate({
+          //@ts-expect-error I want to test an invalid field
+          groupBy: ['salary1'],
+        })
+      }).rejects.toThrowErrorMatchingInlineSnapshot(
+        `[Error: key "salary1" not found in entity]`,
+      )
+    })
+    it('should group by country and city, and order by $count in descending order', async () => {
+      const r = await repo()
+      const results = await r.aggregate({
+        groupBy: ['country', 'city'],
+        sum: ['salary'],
+        orderBy: {
+          $count: 'desc',
+        },
+      })
+
+      expect(results).toBeDefined()
+      expect(results.length).toBeGreaterThan(0)
+
+      // Check if the results are sorted by $count in descending order
+      for (let i = 1; i < results.length; i++) {
+        expect(results[i - 1].$count).toBeGreaterThanOrEqual(results[i].$count)
+      }
+
+      // Optional: Additional checks to verify specific values
+      console.log(results)
     })
   })
 }

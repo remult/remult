@@ -18,11 +18,11 @@ export interface EntityDataProviderAggregateOptions
   extends Pick<EntityDataProviderFindOptions, 'where' | 'limit' | 'page'> {
   groupBy?: FieldMetadata[]
   sum?: FieldMetadata[]
-  average?: FieldMetadata[]
+  avg?: FieldMetadata[]
   orderBy?: {
     field?: FieldMetadata
     isDescending?: boolean
-    operation?: 'sum' | 'average' | 'count'
+    operation?: 'sum' | 'avg' | 'count'
   }[]
 }
 
