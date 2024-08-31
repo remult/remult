@@ -378,7 +378,7 @@ export type AggregateOptions<
   /**
    * Fields to average. The result will include the average of these fields for each group.
    */
-  average?: averageFields
+  avg?: averageFields
 
   /**
    * Filters to apply to the query before aggregation.
@@ -393,9 +393,11 @@ export type AggregateOptions<
   orderBy?: {
     [K in groupByFields[number]]?: 'asc' | 'desc'
   } & {
-    [K in averageFields[number]]?: { average?: 'asc' | 'desc' }
+    [K in averageFields[number]]?: { avg?: 'asc' | 'desc' }
   } & {
     [K in sumFields[number]]?: { sum?: 'asc' | 'desc' }
+  } & {
+    $count?: 'asc' | 'desc'
   }
 } & Pick<FindOptions<entityType>, 'limit' | 'page'>
 export const AggregateCountMember = '$count' as const
@@ -412,7 +414,7 @@ export type AggregateResult<
     : K extends sumFields[number]
     ? { sum: number }
     : never
-} & { [K in averageFields[number]]: { average: number } } & {
+} & { [K in averageFields[number]]: { avg: number } } & {
   [AggregateCountMember]: number
 }
 
@@ -1242,6 +1244,7 @@ export const flags = {
 //p1  filter.apply ApiPreFilter
 //p1 - add not as an overload to not equal
 /*p1 - min, max, avg, sum, countDistinct - noam come up with an api
+  p1 - order by $count  
   p1 - handle relations
   p1 - mongodb
   p1 - knex

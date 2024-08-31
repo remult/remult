@@ -25,7 +25,7 @@ repo.aggregate({ groupBy: ['a'] }).then((r) => {
 repo.aggregate({
   sum: ['b', 'numberOfKids', 'b'],
   groupBy: ['city'],
-  average: ['numberOfKids'],
+  avg: ['numberOfKids'],
   orderBy: {
     numberOfKids: {
       sum: 'asc',
@@ -64,24 +64,29 @@ repo
   repo
     .aggregate({
       sum: ['salary', 'numberOfKids'],
-      average: ['salary'],
+      avg: ['salary'],
       orderBy: {
         salary: {
           sum: 'asc',
-          average: 'asc',
+          avg: 'asc',
         },
         numberOfKids: {
           sum: 'asc',
           //@ts-expect-error - was not selected
-          average: 'asc',
+          avg: 'asc',
         },
       },
     })
     .then((r) => {
       r.salary.sum
-      r.salary.average
+      r.salary.avg
       r.numberOfKids.sum
       //@ts-expect-error - was not selected
       r.numberOfKids.average
     })
 }
+
+repo.aggregate({
+  groupBy: ['salary'],
+  sum: ['salary'],
+})

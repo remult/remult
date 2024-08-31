@@ -70,8 +70,8 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
         aggregates.push(new Sum(element.key))
       }
     }
-    if (options?.average) {
-      class Average {
+    if (options?.avg) {
+      class Avg {
         constructor(private key: string) {}
         sum = 0
         count = 0
@@ -85,14 +85,14 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
         finishGroup(result: any) {
           result[this.key] = {
             ...result[this.key],
-            average: this.sum / this.count,
+            avg: this.sum / this.count,
           }
           this.sum = 0
           this.count = 0
         }
       }
-      for (const element of options.average) {
-        aggregates.push(new Average(element.key))
+      for (const element of options.avg) {
+        aggregates.push(new Avg(element.key))
       }
     }
 
@@ -139,8 +139,8 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
               switch (x.operation) {
                 case 'sum':
                   return row[x.field!.key].sum
-                case 'average':
-                  return row[x.field!.key].average
+                case 'avg':
+                  return row[x.field!.key].avg
               }
             }
             return row[x.field!.key]

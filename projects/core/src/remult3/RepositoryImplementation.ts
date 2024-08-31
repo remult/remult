@@ -261,17 +261,30 @@ export class RepositoryImplementation<entityType>
     let findOptions = await this._buildEntityDataProviderFindOptions({
       ...options,
     })
+
+    const getField = (key: keyof entityType) => {
+      const r = this.metadata.fields.find(key as string)
+      if (r === undefined)
+        throw Error(`key "${key as string}" not found in entity`)
+      return r
+    }
+    const getFieldNotInGroupBy = (key: keyof entityType) => {
+      if (options?.groupBy?.includes(key as any))
+        throw Error(
+          `field "${
+            key as string
+          }" cannot be used both in an aggregate and in group by`,
+        )
+      return getField(key)
+    }
+
     var dpOptions: EntityDataProviderAggregateOptions = {
       where: findOptions.where,
       limit: findOptions.limit,
       page: findOptions.page,
-      groupBy: options?.groupBy?.map((f) =>
-        this.metadata.fields.find(f as string),
-      ),
-      sum: options?.sum?.map((f) => this.metadata.fields.find(f as string)),
-      average: options?.average?.map((f) =>
-        this.metadata.fields.find(f as string),
-      ),
+      groupBy: options?.groupBy?.map(getField),
+      sum: options?.sum?.map(getFieldNotInGroupBy),
+      avg: options?.avg?.map(getFieldNotInGroupBy),
     }
     if (options?.orderBy) {
       dpOptions.orderBy = []
@@ -281,10 +294,7 @@ export class RepositoryImplementation<entityType>
           if (element)
             if (typeof element === 'string') {
               dpOptions.orderBy.push({
-                field:
-                  key === '$count'
-                    ? undefined
-                    : this.metadata.fields.find(key as string),
+                field: key === '$count' ? undefined : getField(key as any),
                 isDescending: element === 'desc',
                 operation: key === '$count' ? 'count' : undefined,
               })

@@ -134,7 +134,7 @@ export class RestEntityDataProvider
     const body = {
       groupBy: options?.groupBy?.map((x) => x.key),
       sum: options?.sum?.map((x) => x.key),
-      average: options?.average?.map((x) => x.key),
+      avg: options?.avg?.map((x) => x.key),
       orderBy: options?.orderBy?.map((x) => ({ ...x, field: x.field?.key })),
     }
     const result: any[] = await run(

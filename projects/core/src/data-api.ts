@@ -166,14 +166,15 @@ export class DataApi<T = unknown> {
               sum: direction,
             }
             break
-          case 'average':
+          case 'avg':
             orderBy[element.field] = {
               ...orderBy[element.field],
-              average: direction,
+              avg: direction,
             }
             break
           case 'count':
             orderBy[AggregateCountMember] = direction
+            break
           default:
             orderBy[element.field] = direction
             break
@@ -190,7 +191,7 @@ export class DataApi<T = unknown> {
       sum: (body?.sum as any[])?.filter((x: string) =>
         this.repository.fields.find(x).includedInApi(),
       ),
-      average: (body?.average as any[])?.filter((x: string) =>
+      avg: (body?.avg as any[])?.filter((x: string) =>
         this.repository.fields.find(x).includedInApi(),
       ),
       orderBy: orderBy,
