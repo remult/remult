@@ -1244,10 +1244,7 @@ export const flags = {
 //p1  filter.apply ApiPreFilter
 //p1 - add not as an overload to not equal
 /*p1 - min, max, avg, sum, countDistinct - noam come up with an api
-  p1 - order by $count  
   p1 - handle relations
-  p1 - mongodb
-  p1 - knex
 */
 
 /*p1 - add id and use uuid by default, but allow changes with Fields.id.defaultIdProvider NO but defaultProvider yes???
