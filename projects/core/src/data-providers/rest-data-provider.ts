@@ -14,7 +14,6 @@ import { customUrlToken, Filter } from '../filter/filter-interfaces.js'
 import type { EntityMetadata, FindOptions } from '../remult3/remult3.js'
 import { getRelationFieldInfo } from '../remult3/relationInfoMember.js'
 import { remultStatic } from '../remult-static.js'
-import { group } from 'console'
 
 export class RestDataProvider implements DataProvider {
   constructor(private apiProvider: () => ApiClient) {}
@@ -224,9 +223,11 @@ export class RestEntityDataProvider
       }
       if (action) u.add('__action', action)
       if (filterObject) {
-        body = { set: body, where: filterObject }
+        if (method === 'put') {
+          return this.http().post(u.url, { set: body, where: filterObject })
+        } else body = { ...body, where: filterObject }
       }
-      if (body) return this.http().post(u.url, body)
+      if (body && method != 'put') return this.http().post(u.url, body)
       else return this.http()[method!](u.url, body)
     }
 
