@@ -32,6 +32,7 @@ import {
 import { remult as defaultRemult } from '../remult-proxy.js'
 import {
   AggregateCountMember,
+  AggregateOperators,
   type EntityFilter,
   type EntityMetadata,
 } from '../remult3/remult3.js'
@@ -703,29 +704,24 @@ export async function aggregateImpl(
         theResult[x.key] = x.valueConverter.fromDb(sqlResult)
       })
     }
-  if (options?.sum)
-    for (const x of options?.sum) {
-      if (x.isServerExpression) {
-      } else {
-        select += ', sum(' + e.$dbNameOf(x) + ') as ' + x.key + '_sum'
-      }
-      processResultRow.push((sqlResult, theResult) => {
-        theResult[x.key] = { ...theResult[x.key], sum: sqlResult }
-      })
-    }
-  if (options?.avg)
-    for (const x of options?.avg) {
-      if (x.isServerExpression) {
-      } else {
-        select += ', avg(' + e.$dbNameOf(x) + ') as ' + x.key + '_avg'
-      }
-      processResultRow.push((sqlResult, theResult) => {
-        theResult[x.key] = { ...theResult[x.key], avg: sqlResult }
-      })
-    }
 
+  for (const operator of AggregateOperators) {
+    const fields = options?.[operator] as FieldMetadata[] | undefined
+    if (fields)
+      for (const x of fields) {
+        if (x.isServerExpression) {
+        } else {
+          const dbName = await e.$dbNameOf(x)
+          select += `, ${aggregateSqlSyntax(operator, dbName)} as ${
+            x.key
+          }_${operator}`
+        }
+        processResultRow.push((sqlResult, theResult) => {
+          theResult[x.key] = { ...theResult[x.key], [operator]: sqlResult }
+        })
+      }
+  }
   select += '\n from ' + e.$entityName
-
   if (options?.where) {
     let where = new FilterConsumerBridgeToSqlRequest(r, e)
     options?.where.__applyToConsumer(where)
@@ -737,21 +733,17 @@ export async function aggregateImpl(
     for (const x of options?.orderBy) {
       if (orderBy == '') orderBy = ' order by '
       else orderBy += ', '
-
-      if (!x.field && x.operation == 'count') {
-        orderBy += x.operation + '(*)'
-      } else {
-        let field = await e.$dbNameOf(x.field!)
-        switch (x.operation) {
-          case 'sum':
-            field = 'sum(' + field + ')'
-            break
-          case 'avg':
-            field = 'avg(' + field + ')'
-            break
-        }
-        orderBy += field
+      let field = x.field && (await e.$dbNameOf(x.field))
+      switch (x.operation) {
+        case 'count':
+          field = x.operation + '(*)'
+          break
+        case undefined:
+          break
+        default:
+          field = aggregateSqlSyntax(x.operation, field!)
       }
+      orderBy += field
       if (x.isDescending) orderBy += ' desc'
       if (orderByNullFirst) {
         if (x.isDescending) select += ' nulls last'
@@ -775,4 +767,13 @@ export async function aggregateImpl(
     )
     return theResult
   })
+
+  function aggregateSqlSyntax(
+    operator: (typeof AggregateOperators)[number],
+    dbName: string,
+  ) {
+    return operator === 'distinctCount'
+      ? `count (distinct ${dbName})`
+      : `${operator}( ${dbName} )`
+  }
 }

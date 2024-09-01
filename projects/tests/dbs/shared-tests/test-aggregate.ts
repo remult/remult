@@ -288,9 +288,203 @@ export function aggregateTest(
       for (let i = 1; i < results.length; i++) {
         expect(results[i - 1].$count).toBeGreaterThanOrEqual(results[i].$count)
       }
+    })
+    it('should calculate min and max salary grouped by city', async () => {
+      const r = await repo()
 
-      // Optional: Additional checks to verify specific values
-      console.log(results)
+      const results = await r.aggregate({
+        groupBy: ['city'],
+        min: ['salary'],
+        max: ['salary'],
+        orderBy: {
+          city: 'asc',
+        },
+      })
+      expect(results).toMatchInlineSnapshot(`
+        [
+          {
+            "$count": 1,
+            "city": "Barcelona",
+            "salary": {
+              "max": 6000,
+              "min": 6000,
+            },
+          },
+          {
+            "$count": 2,
+            "city": "Berlin",
+            "salary": {
+              "max": 6000,
+              "min": 2000,
+            },
+          },
+          {
+            "$count": 1,
+            "city": "Hamburg",
+            "salary": {
+              "max": 1000,
+              "min": 1000,
+            },
+          },
+          {
+            "$count": 2,
+            "city": "London",
+            "salary": {
+              "max": 7000,
+              "min": 5000,
+            },
+          },
+          {
+            "$count": 1,
+            "city": "Madrid",
+            "salary": {
+              "max": 2000,
+              "min": 2000,
+            },
+          },
+          {
+            "$count": 2,
+            "city": "Manchester",
+            "salary": {
+              "max": 9000,
+              "min": 3000,
+            },
+          },
+          {
+            "$count": 1,
+            "city": "Milan",
+            "salary": {
+              "max": 4000,
+              "min": 4000,
+            },
+          },
+          {
+            "$count": 1,
+            "city": "Munich",
+            "salary": {
+              "max": 5000,
+              "min": 5000,
+            },
+          },
+          {
+            "$count": 1,
+            "city": "Naples",
+            "salary": {
+              "max": 8000,
+              "min": 8000,
+            },
+          },
+          {
+            "$count": 2,
+            "city": "Paris",
+            "salary": {
+              "max": 8000,
+              "min": 4000,
+            },
+          },
+          {
+            "$count": 2,
+            "city": "Rome",
+            "salary": {
+              "max": 7000,
+              "min": 3000,
+            },
+          },
+        ]
+      `)
+    })
+
+    it('should calculate distinct count of cities grouped by country', async () => {
+      const r = await repo()
+
+      const results = await r.aggregate({
+        groupBy: ['country'],
+        distinctCount: ['city'],
+        orderBy: {
+          country: 'asc',
+        },
+      })
+
+      expect(results).toMatchInlineSnapshot(`
+        [
+          {
+            "$count": 2,
+            "city": {
+              "distinctCount": 1,
+            },
+            "country": "france",
+          },
+          {
+            "$count": 4,
+            "city": {
+              "distinctCount": 3,
+            },
+            "country": "germany",
+          },
+          {
+            "$count": 4,
+            "city": {
+              "distinctCount": 3,
+            },
+            "country": "italy",
+          },
+          {
+            "$count": 2,
+            "city": {
+              "distinctCount": 2,
+            },
+            "country": "spain",
+          },
+          {
+            "$count": 4,
+            "city": {
+              "distinctCount": 2,
+            },
+            "country": "uk",
+          },
+        ]
+      `)
+    })
+
+    it('should order results by distinct count of cities', async () => {
+      const r = await repo()
+
+      const results = await r.aggregate({
+        groupBy: ['country'],
+        distinctCount: ['city'],
+        where: { country: ['germany', 'uk', 'france'] },
+        orderBy: {
+          city: {
+            distinctCount: 'desc',
+          },
+        },
+      })
+
+      expect(results).toMatchInlineSnapshot(`
+        [
+          {
+            "$count": 4,
+            "city": {
+              "distinctCount": 3,
+            },
+            "country": "germany",
+          },
+          {
+            "$count": 4,
+            "city": {
+              "distinctCount": 2,
+            },
+            "country": "uk",
+          },
+          {
+            "$count": 2,
+            "city": {
+              "distinctCount": 1,
+            },
+            "country": "france",
+          },
+        ]
+      `)
     })
   })
 }

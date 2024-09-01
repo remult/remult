@@ -17,6 +17,7 @@ import {
 } from '../filter/filter-interfaces.js'
 import {
   AggregateCountMember,
+  AggregateOperators,
   type EntityFilter,
   type EntityMetadata,
 } from '../remult3/remult3.js'
@@ -53,46 +54,93 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
       finishGroup(result: any): void
     }[] = []
 
-    if (options?.sum) {
-      class Sum {
-        constructor(private key: string) {}
-        sum = 0
-        process(row: any) {
-          const val = row[this.key]
-          if (val !== undefined && val !== null) this.sum += row[this.key]
+    const operatorImpl: Record<
+      (typeof AggregateOperators)[number],
+      (key: string) => (typeof aggregates)[number]
+    > = {
+      sum: (key) => {
+        let sum = 0
+        return {
+          process(row: any) {
+            const val = row[key]
+            if (val !== undefined && val !== null) sum += row[key]
+          },
+          finishGroup(result: any) {
+            result[key] = { ...result[key], sum }
+            sum = 0
+          },
         }
-        finishGroup(result: any) {
-          result[this.key] = { ...result[this.key], sum: this.sum }
-          this.sum = 0
+      },
+      avg: (key) => {
+        let sum = 0
+        let count = 0
+        return {
+          process(row: any) {
+            const val = row[key]
+            if (val !== undefined && val !== null) {
+              sum += row[key]
+              count++
+            }
+          },
+          finishGroup(result: any) {
+            result[key] = {
+              ...result[key],
+              avg: sum / count,
+            }
+            sum = 0
+            count = 0
+          },
         }
-      }
-      for (const element of options.sum) {
-        aggregates.push(new Sum(element.key))
-      }
+      },
+      min: (key) => {
+        let min: any = undefined
+        return {
+          process(row: any) {
+            const val = row[key]
+            if (val !== undefined && val !== null) {
+              if (min === undefined || val < min) min = val
+            }
+          },
+          finishGroup(result: any) {
+            result[key] = { ...result[key], min }
+            min = undefined
+          },
+        }
+      },
+      max: (key) => {
+        let max: any = undefined
+        return {
+          process(row: any) {
+            const val = row[key]
+            if (val !== undefined && val !== null) {
+              if (max === undefined || val > max) max = val
+            }
+          },
+          finishGroup(result: any) {
+            result[key] = { ...result[key], max }
+            max = undefined
+          },
+        }
+      },
+      distinctCount: (key) => {
+        let distinct = new Set<any>()
+        return {
+          process(row: any) {
+            const val = row[key]
+            if (val !== undefined && val !== null) distinct.add(val)
+          },
+          finishGroup(result: any) {
+            result[key] = { ...result[key], distinctCount: distinct.size }
+            distinct.clear()
+          },
+        }
+      },
     }
-    if (options?.avg) {
-      class Avg {
-        constructor(private key: string) {}
-        sum = 0
-        count = 0
-        process(row: any) {
-          const val = row[this.key]
-          if (val !== undefined && val !== null) {
-            this.sum += row[this.key]
-            this.count++
-          }
+    for (let operator of AggregateOperators) {
+      if (options?.[operator]) {
+        for (const element of options[operator]!) {
+          aggregates.push(operatorImpl[operator](element.key))
         }
-        finishGroup(result: any) {
-          result[this.key] = {
-            ...result[this.key],
-            avg: this.sum / this.count,
-          }
-          this.sum = 0
-          this.count = 0
-        }
-      }
-      for (const element of options.avg) {
-        aggregates.push(new Avg(element.key))
       }
     }
 
@@ -137,14 +185,16 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
               return row[AggregateCountMember]
             } else {
               switch (x.operation) {
-                case 'sum':
-                  return row[x.field!.key].sum
-                case 'avg':
-                  return row[x.field!.key].avg
+                case 'count':
+                  return row[AggregateCountMember]
+                case undefined:
+                  return row[x.field!.key]
+                default:
+                  return row[x.field!.key][x.operation]
               }
             }
-            return row[x.field!.key]
           }
+
           let compare = compareForSort(getValue(a), getValue(b), x.isDescending)
           if (compare != 0) return compare
         }
@@ -153,7 +203,6 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
     }
     return pageArray(result, { page: options?.page, limit: options?.limit })
   }
-
   //@internal
   private __names?: EntityDbNamesBase
   //@internal

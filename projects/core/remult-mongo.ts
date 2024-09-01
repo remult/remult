@@ -27,7 +27,10 @@ import { getRepository } from './src/remult3/RepositoryImplementation.js'
 import { getRepositoryInternals } from './src/remult3/repository-internals.js'
 import { getRowAfterUpdate } from './src/data-providers/sql-database.js'
 import type { EntityDataProviderAggregateOptions } from './src/data-interfaces.js'
-import { AggregateCountMember } from './src/remult3/remult3.js'
+import {
+  AggregateCountMember,
+  AggregateOperators,
+} from './src/remult3/remult3.js'
 
 export class MongoDataProvider implements DataProvider {
   constructor(
@@ -144,6 +147,8 @@ class MongoEntityDataProvider implements EntityDataProvider {
       resultRow[AggregateCountMember] = mongoRow.__count
     })
     pipeLine.push({ $group })
+    const $addFields: any = {}
+    pipeLine.push({ $addFields })
 
     if (options?.groupBy) {
       $group._id = {}
@@ -160,46 +165,38 @@ class MongoEntityDataProvider implements EntityDataProvider {
     } else {
       $group._id = null
     }
-    if (options?.sum) {
-      for (const element of options.sum) {
-        const name = e.$dbNameOf(element) + '_sum'
-        $group[name] = { $sum: `$${e.$dbNameOf(element)}` }
-        processResultRow.push((mongoRow, resultRow) => {
-          resultRow[element.key] = {
-            ...resultRow[element.key],
-            sum: element.valueConverter.fromDb(mongoRow[name]),
-          }
-        })
+    for (const operator of AggregateOperators) {
+      if (options?.[operator]) {
+        for (const element of options[operator]) {
+          const name = e.$dbNameOf(element) + '_' + operator
+          if (operator === 'distinctCount') {
+            $group[name + '_temp'] = { $addToSet: `$${e.$dbNameOf(element)}` }
+            $addFields[name] = { $size: `$${name + '_temp'}` }
+          } else $group[name] = { ['$' + operator]: `$${e.$dbNameOf(element)}` }
+          processResultRow.push((mongoRow, resultRow) => {
+            resultRow[element.key] = {
+              ...resultRow[element.key],
+              [operator]: mongoRow[name],
+            }
+          })
+        }
       }
     }
-    if (options?.avg) {
-      for (const element of options.avg) {
-        const name = e.$dbNameOf(element) + '_avg'
-        $group[name] = { $avg: `$${e.$dbNameOf(element)}` }
-        processResultRow.push((mongoRow, resultRow) => {
-          resultRow[element.key] = {
-            ...resultRow[element.key],
-            avg: element.valueConverter.fromDb(mongoRow[name]),
-          }
-        })
-      }
-    }
+
     if (options?.orderBy) {
       let sort: any = {}
       for (const x of options.orderBy) {
         const direction = x.isDescending ? -1 : 1
         switch (x.operation) {
-          case 'sum':
-            sort[e.$dbNameOf(x.field!) + '_sum'] = direction
-            break
-          case 'avg':
-            sort[e.$dbNameOf(x.field!) + '_avg'] = direction
-            break
           case 'count':
             sort['__count'] = direction
             break
-          default:
+          case undefined:
             sort['_id.' + e.$dbNameOf(x.field!)] = direction
+            break
+          default:
+            sort[e.$dbNameOf(x.field!) + '_' + x.operation] = direction
+            break
         }
       }
       pipeLine.push({ $sort: sort })

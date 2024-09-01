@@ -1,6 +1,10 @@
 import type { FieldMetadata } from '../index.js'
 import type { Filter } from './filter/filter-interfaces.js'
-import type { EntityMetadata, MembersOnly } from './remult3/remult3.js'
+import type {
+  AggregateOperators,
+  EntityMetadata,
+  MembersOnly,
+} from './remult3/remult3.js'
 import { Sort } from './sort.js'
 
 export interface DataProvider {
@@ -19,10 +23,13 @@ export interface EntityDataProviderAggregateOptions
   groupBy?: FieldMetadata[]
   sum?: FieldMetadata[]
   avg?: FieldMetadata[]
+  min?: FieldMetadata[]
+  max?: FieldMetadata[]
+  distinctCount?: FieldMetadata[]
   orderBy?: {
     field?: FieldMetadata
     isDescending?: boolean
-    operation?: 'sum' | 'avg' | 'count'
+    operation?: (typeof AggregateOperators)[number] | 'count'
   }[]
 }
 

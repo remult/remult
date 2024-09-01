@@ -21,6 +21,7 @@ export {
   QueryResult,
   QueryOptions,
   Repository,
+  AggregateOptions,
   FindFirstOptions,
   ComparisonValueFilter,
   ValueFilter,

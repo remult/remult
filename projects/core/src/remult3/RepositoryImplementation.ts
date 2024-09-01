@@ -37,6 +37,7 @@ import type {
   LiveQueryChangeInfo,
   LoadOptions,
   MembersOnly,
+  NumericKeys,
   ObjectMembersOnly,
   QueryOptions,
   QueryResult,
@@ -226,22 +227,22 @@ export class RepositoryImplementation<entityType>
     groupByFields extends
       | (keyof MembersOnly<entityType>)[]
       | undefined = undefined,
-    sumFields extends
-      | {
-          [K in keyof entityType]: entityType[K] extends number ? K : never
-        }[keyof entityType][]
-      | undefined = undefined,
-    averageFields extends
-      | {
-          [K in keyof entityType]: entityType[K] extends number ? K : never
-        }[keyof entityType][]
+    sumFields extends NumericKeys<entityType>[] | undefined = undefined,
+    averageFields extends NumericKeys<entityType>[] | undefined = undefined,
+    minFields extends (keyof MembersOnly<entityType>)[] | undefined = undefined,
+    maxFields extends (keyof MembersOnly<entityType>)[] | undefined = undefined,
+    distinctCountFields extends
+      | (keyof MembersOnly<entityType>)[]
       | undefined = undefined,
   >(
-    options?: AggregateOptions<
+    options: AggregateOptions<
       entityType,
       groupByFields extends undefined ? never : groupByFields,
       sumFields extends undefined ? never : sumFields,
-      averageFields extends undefined ? never : averageFields
+      averageFields extends undefined ? never : averageFields,
+      minFields extends undefined ? never : minFields,
+      maxFields extends undefined ? never : maxFields,
+      distinctCountFields extends undefined ? never : distinctCountFields
     >,
   ): Promise<
     groupByFields extends undefined
@@ -249,13 +250,19 @@ export class RepositoryImplementation<entityType>
           entityType,
           never,
           sumFields extends undefined ? never : sumFields,
-          averageFields extends undefined ? never : averageFields
+          averageFields extends undefined ? never : averageFields,
+          minFields extends undefined ? never : minFields,
+          maxFields extends undefined ? never : maxFields,
+          distinctCountFields extends undefined ? never : distinctCountFields
         >
       : AggregateResult<
           entityType,
           groupByFields extends undefined ? never : groupByFields,
           sumFields extends undefined ? never : sumFields,
-          averageFields extends undefined ? never : averageFields
+          averageFields extends undefined ? never : averageFields,
+          minFields extends undefined ? never : minFields,
+          maxFields extends undefined ? never : maxFields,
+          distinctCountFields extends undefined ? never : distinctCountFields
         >[]
   > {
     let findOptions = await this._buildEntityDataProviderFindOptions({
@@ -285,6 +292,9 @@ export class RepositoryImplementation<entityType>
       groupBy: options?.groupBy?.map(getField),
       sum: options?.sum?.map(getFieldNotInGroupBy),
       avg: options?.avg?.map(getFieldNotInGroupBy),
+      min: options?.min?.map(getFieldNotInGroupBy),
+      max: options?.max?.map(getFieldNotInGroupBy),
+      distinctCount: options?.distinctCount?.map(getFieldNotInGroupBy),
     }
     if (options?.orderBy) {
       dpOptions.orderBy = []
