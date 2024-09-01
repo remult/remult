@@ -48,7 +48,10 @@ import type {
   MigrationBuilder,
   MigrationCode,
 } from '../migrations/migration-types.js'
-import { getRowAfterUpdate } from '../src/data-providers/sql-database.js'
+import {
+  aggregateImpl,
+  getRowAfterUpdate,
+} from '../src/data-providers/sql-database.js'
 
 export class KnexDataProvider
   implements
@@ -120,7 +123,12 @@ export class KnexDataProvider
       }
     }
 
-    return new KnexEntityDataProvider(entity, this.knex, this.wrapIdentifier)
+    return new KnexEntityDataProvider(
+      entity,
+      this.knex,
+      this.wrapIdentifier,
+      this,
+    )
   }
   async transaction(
     action: (dataProvider: DataProvider) => Promise<void>,
@@ -176,9 +184,18 @@ class KnexEntityDataProvider implements EntityDataProvider {
     private entity: EntityMetadata<any>,
     private knex: Knex,
     private rawSqlWrapIdentifier: (name: string) => string,
+    private dp: KnexDataProvider,
   ) {}
-  aggregate(options?: EntityDataProviderAggregateOptions): Promise<any[]> {
-    throw new Error('Method not implemented.')
+  async aggregate(
+    options?: EntityDataProviderAggregateOptions,
+  ): Promise<any[]> {
+    return aggregateImpl(
+      options,
+      await this.init(),
+      this.dp.createCommand(),
+      false,
+      (limit, offset) => ' limit ' + limit + ' offset ' + offset,
+    )
   }
   async count(where: Filter): Promise<number> {
     const e = await this.init()

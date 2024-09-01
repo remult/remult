@@ -17,6 +17,7 @@ import type { FieldMetadata } from '../column-interfaces.js'
 import type { Remult } from '../context.js'
 import type {
   CustomSqlFilterBuilderFunction,
+  dbNamesOfOptions,
   EntityDbNamesBase,
 } from '../filter/filter-consumer-bridge-to-sql-request.js'
 import {
@@ -374,107 +375,15 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
   async aggregate(
     options?: EntityDataProviderAggregateOptions,
   ): Promise<any[]> {
-    let e = await this.init()
-    let select = 'select count(*) as count'
-    let groupBy = ''
-    const processResultRow: ((sqlResult: any, theResult: any) => void)[] = []
-    processResultRow.push((sqlVal, theResult) => {
-      theResult[AggregateCountMember] = Number(sqlVal)
-    })
-
-    if (options?.groupBy)
-      for (const x of options?.groupBy) {
-        if (x.isServerExpression) {
-        } else {
-          select += ', ' + e.$dbNameOf(x)
-          if (x.options.sqlExpression) select += ' as ' + x.key
-          if (groupBy == '') groupBy = ' group by '
-          else groupBy += ', '
-          groupBy += e.$dbNameOf(x)
-        }
-        processResultRow.push((sqlResult, theResult) => {
-          theResult[x.key] = x.valueConverter.fromDb(sqlResult)
-        })
-      }
-    if (options?.sum)
-      for (const x of options?.sum) {
-        if (x.isServerExpression) {
-        } else {
-          select += ', sum(' + e.$dbNameOf(x) + ') as ' + x.key + '_sum'
-        }
-        processResultRow.push((sqlResult, theResult) => {
-          theResult[x.key] = { ...theResult[x.key], sum: sqlResult }
-        })
-      }
-    if (options?.avg)
-      for (const x of options?.avg) {
-        if (x.isServerExpression) {
-        } else {
-          select += ', avg(' + e.$dbNameOf(x) + ') as ' + x.key + '_avg'
-        }
-        processResultRow.push((sqlResult, theResult) => {
-          theResult[x.key] = { ...theResult[x.key], avg: sqlResult }
-        })
-      }
-
-    select += '\n from ' + e.$entityName
-    let r = this.sql.createCommand()
-
-    if (options?.where) {
-      let where = new FilterConsumerBridgeToSqlRequest(r, e)
-      options?.where.__applyToConsumer(where)
-      select += await where.resolveWhere()
-    }
-    if (groupBy) select += groupBy
-    let orderBy = ''
-    if (options?.orderBy) {
-      for (const x of options?.orderBy) {
-        if (orderBy == '') orderBy = ' order by '
-        else orderBy += ', '
-
-        if (!x.field && x.operation == 'count') {
-          orderBy += x.operation + '(*)'
-        } else {
-          let field = await e.$dbNameOf(x.field!)
-          switch (x.operation) {
-            case 'sum':
-              field = 'sum(' + field + ')'
-              break
-            case 'avg':
-              field = 'avg(' + field + ')'
-              break
-          }
-          orderBy += field
-        }
-        if (x.isDescending) orderBy += ' desc'
-        if (this.sql._getSourceSql().orderByNullsFirst) {
-          if (x.isDescending) select += ' nulls last'
-          else select += ' nulls first'
-        }
-      }
-      if (orderBy) select += orderBy
-    }
-    if (options?.limit) {
-      let page = 1
-      if (options.page) page = options.page
-      if (page < 1) page = 1
-      select +=
-        ' ' +
-        this.strategy.getLimitSqlSyntax(
-          options.limit,
-          (page - 1) * options.limit,
-        )
-    }
-
-    const result = await r.execute(select)
-    return result.rows.map((sql) => {
-      let theResult: any = {}
-      processResultRow.forEach((x, i) =>
-        x(sql[result.getColumnKeyInResultForIndexInSelect(i)], theResult),
-      )
-      return theResult
-    })
+    return await aggregateImpl(
+      options,
+      await this.init(),
+      this.sql.createCommand(),
+      this.sql._getSourceSql().orderByNullsFirst,
+      this.sql._getSourceSql().getLimitSqlSyntax,
+    )
   }
+
   async find(options?: EntityDataProviderFindOptions): Promise<any[]> {
     let e = await this.init()
 
@@ -764,4 +673,106 @@ export function getRowAfterUpdate<entityType>(
         )
       return r[0]
     })
+}
+
+export async function aggregateImpl(
+  options: EntityDataProviderAggregateOptions | undefined,
+  e: EntityDbNamesBase,
+  r: SqlCommand,
+  orderByNullFirst: boolean | undefined,
+  limitSyntax: (limit: number, offset: number) => string,
+) {
+  let select = 'select count(*) as count'
+  let groupBy = ''
+  const processResultRow: ((sqlResult: any, theResult: any) => void)[] = []
+  processResultRow.push((sqlVal, theResult) => {
+    theResult[AggregateCountMember] = Number(sqlVal)
+  })
+
+  if (options?.groupBy)
+    for (const x of options?.groupBy) {
+      if (x.isServerExpression) {
+      } else {
+        select += ', ' + e.$dbNameOf(x)
+        if (x.options.sqlExpression) select += ' as ' + x.key
+        if (groupBy == '') groupBy = ' group by '
+        else groupBy += ', '
+        groupBy += e.$dbNameOf(x)
+      }
+      processResultRow.push((sqlResult, theResult) => {
+        theResult[x.key] = x.valueConverter.fromDb(sqlResult)
+      })
+    }
+  if (options?.sum)
+    for (const x of options?.sum) {
+      if (x.isServerExpression) {
+      } else {
+        select += ', sum(' + e.$dbNameOf(x) + ') as ' + x.key + '_sum'
+      }
+      processResultRow.push((sqlResult, theResult) => {
+        theResult[x.key] = { ...theResult[x.key], sum: sqlResult }
+      })
+    }
+  if (options?.avg)
+    for (const x of options?.avg) {
+      if (x.isServerExpression) {
+      } else {
+        select += ', avg(' + e.$dbNameOf(x) + ') as ' + x.key + '_avg'
+      }
+      processResultRow.push((sqlResult, theResult) => {
+        theResult[x.key] = { ...theResult[x.key], avg: sqlResult }
+      })
+    }
+
+  select += '\n from ' + e.$entityName
+
+  if (options?.where) {
+    let where = new FilterConsumerBridgeToSqlRequest(r, e)
+    options?.where.__applyToConsumer(where)
+    select += await where.resolveWhere()
+  }
+  if (groupBy) select += groupBy
+  let orderBy = ''
+  if (options?.orderBy) {
+    for (const x of options?.orderBy) {
+      if (orderBy == '') orderBy = ' order by '
+      else orderBy += ', '
+
+      if (!x.field && x.operation == 'count') {
+        orderBy += x.operation + '(*)'
+      } else {
+        let field = await e.$dbNameOf(x.field!)
+        switch (x.operation) {
+          case 'sum':
+            field = 'sum(' + field + ')'
+            break
+          case 'avg':
+            field = 'avg(' + field + ')'
+            break
+        }
+        orderBy += field
+      }
+      if (x.isDescending) orderBy += ' desc'
+      if (orderByNullFirst) {
+        if (x.isDescending) select += ' nulls last'
+        else select += ' nulls first'
+      }
+    }
+    if (orderBy) select += orderBy
+  }
+  if (options?.limit) {
+    let page = 1
+    if (options.page) page = options.page
+    if (page < 1) page = 1
+    select += ' ' + limitSyntax(options.limit, (page - 1) * options.limit)
+  }
+
+  const result = await r.execute(select)
+  return result.rows.map((sql) => {
+    let theResult: any = {}
+    processResultRow.forEach((x, i) =>
+      x(sql[result.getColumnKeyInResultForIndexInSelect(i)], theResult),
+    )
+    return theResult
+  })
 }
