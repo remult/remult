@@ -426,16 +426,11 @@ export interface Repository<entityType> {
    *})
    */
   insertWithRelations(
-    item: DeepPartial<MembersOnly<entityType>>,
-  ): Promise<entityType>
-  insertWithRelations(
     item: DeepPartial<MembersOnly<entityType>>[],
   ): Promise<entityType[]>
   insertWithRelations(
-    item:
-      | DeepPartial<MembersOnly<entityType>>
-      | DeepPartial<MembersOnly<entityType>>[],
-  ): Promise<entityType | entityType[]>
+    item: DeepPartial<MembersOnly<entityType>>,
+  ): Promise<entityType>
 
   /** Updates an item, based on its `id`
    * @example
