@@ -304,6 +304,11 @@ export declare type MembersOnly<T> = {
     ? never
     : K]: T[K]
 }
+
+export declare type DeepPartial<T> = T extends Record<PropertyKey, any>
+  ? { [K in keyof T]?: DeepPartial<T[K]> }
+  : T
+
 //Pick<
 //   T,
 //   { [K in keyof T]: T[K] extends Function ? never : K }[keyof T]
@@ -409,6 +414,28 @@ export interface Repository<entityType> {
    */
   insert(item: Partial<MembersOnly<entityType>>[]): Promise<entityType[]>
   insert(item: Partial<MembersOnly<entityType>>): Promise<entityType>
+
+  /**Insert an item to the data source including all one-to-one relations attached
+   * @example
+   * await userRepo.insert({
+   *    name: "fellow",
+   *    task: {
+   *      title: "task a",
+   *      completed: false
+   *    }
+   *})
+   */
+  insertWithRelations(
+    item: DeepPartial<MembersOnly<entityType>>,
+  ): Promise<entityType>
+  insertWithRelations(
+    item: DeepPartial<MembersOnly<entityType>>[],
+  ): Promise<entityType[]>
+  insertWithRelations(
+    item:
+      | DeepPartial<MembersOnly<entityType>>
+      | DeepPartial<MembersOnly<entityType>>[],
+  ): Promise<entityType | entityType[]>
 
   /** Updates an item, based on its `id`
    * @example
