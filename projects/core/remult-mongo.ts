@@ -27,6 +27,7 @@ import { getRepository } from './src/remult3/RepositoryImplementation.js'
 import { getRepositoryInternals } from './src/remult3/repository-internals.js'
 import { getRowAfterUpdate } from './src/data-providers/sql-database.js'
 import type { EntityDataProviderAggregateOptions } from './src/data-interfaces.js'
+import { AggregateCountMember } from './src/remult3/remult3.js'
 
 export class MongoDataProvider implements DataProvider {
   constructor(
@@ -97,9 +98,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
     private entity: EntityMetadata<any>,
     private session?: ClientSession,
   ) {}
-  aggregate(options?: EntityDataProviderAggregateOptions): Promise<any[]> {
-    throw new Error('Method not implemented.')
-  }
+
   translateFromDb(row: any, nameProvider: EntityDbNamesBase) {
     let result: any = {}
     for (const col of this.entity.fields) {
@@ -125,6 +124,106 @@ class MongoEntityDataProvider implements EntityDataProvider {
     let w = await x.resolveWhere()
 
     return await collection.countDocuments(w, { session: this.session })
+  }
+  async aggregate(
+    options?: EntityDataProviderAggregateOptions,
+  ): Promise<any[]> {
+    let { collection, e } = await this.collection()
+    let x = new FilterConsumerBridgeToMongo(e)
+    const pipeLine: any[] = []
+    if (options?.where) {
+      options.where.__applyToConsumer(x)
+      let where = await x.resolveWhere()
+      pipeLine.push({ $match: where })
+    }
+    const processResultRow: ((mongoRow: any, resultRow: any) => void)[] = []
+    const $group: any = {
+      __count: { $sum: 1 },
+    }
+    processResultRow.push((mongoRow, resultRow) => {
+      resultRow[AggregateCountMember] = mongoRow.__count
+    })
+    pipeLine.push({ $group })
+
+    if (options?.groupBy) {
+      $group._id = {}
+      for (const element of options.groupBy) {
+        const name = e.$dbNameOf(element)
+        $group._id[name] = `$${name}`
+
+        processResultRow.push((mongoRow, resultRow) => {
+          resultRow[element.key] = element.valueConverter.fromDb(
+            mongoRow._id[name],
+          )
+        })
+      }
+    } else {
+      $group._id = null
+    }
+    if (options?.sum) {
+      for (const element of options.sum) {
+        const name = e.$dbNameOf(element) + '_sum'
+        $group[name] = { $sum: `$${e.$dbNameOf(element)}` }
+        processResultRow.push((mongoRow, resultRow) => {
+          resultRow[element.key] = {
+            ...resultRow[element.key],
+            sum: element.valueConverter.fromDb(mongoRow[name]),
+          }
+        })
+      }
+    }
+    if (options?.avg) {
+      for (const element of options.avg) {
+        const name = e.$dbNameOf(element) + '_avg'
+        $group[name] = { $avg: `$${e.$dbNameOf(element)}` }
+        processResultRow.push((mongoRow, resultRow) => {
+          resultRow[element.key] = {
+            ...resultRow[element.key],
+            avg: element.valueConverter.fromDb(mongoRow[name]),
+          }
+        })
+      }
+    }
+    if (options?.orderBy) {
+      let sort: any = {}
+      for (const x of options.orderBy) {
+        const direction = x.isDescending ? -1 : 1
+        switch (x.operation) {
+          case 'sum':
+            sort[e.$dbNameOf(x.field!) + '_sum'] = direction
+            break
+          case 'avg':
+            sort[e.$dbNameOf(x.field!) + '_avg'] = direction
+            break
+          case 'count':
+            sort['__count'] = direction
+            break
+          default:
+            sort['_id.' + e.$dbNameOf(x.field!)] = direction
+        }
+      }
+      pipeLine.push({ $sort: sort })
+    }
+
+    if (options?.limit) {
+      pipeLine.push({ $limit: options.limit })
+
+      if (options.page) {
+        pipeLine.push({ $skip: (options.page - 1) * options.limit })
+      }
+    }
+
+    const r = await collection
+      .aggregate(pipeLine, { session: this.session })
+      .toArray()
+    const r2 = r.map((x) => {
+      let resultRow: any = {}
+      for (const f of processResultRow) {
+        f(x, resultRow)
+      }
+      return resultRow
+    })
+    return r2
   }
   async find(options: EntityDataProviderFindOptions): Promise<any[]> {
     let { collection, e } = await this.collection()
