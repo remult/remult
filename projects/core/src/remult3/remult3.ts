@@ -458,7 +458,7 @@ export type AggregateResult<
 } & { [K in maxFields[number]]: { max: number } } & {
   [K in distinctCountFields[number]]: { distinctCount: number }
 } & {
-  [AggregateCountMember]: number
+  $count: number
 }
 
 /**used to perform CRUD operations on an `entityType` */
