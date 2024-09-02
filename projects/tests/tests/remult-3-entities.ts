@@ -1,5 +1,5 @@
 import type { Repository } from '../../core/src/remult3/remult3'
-import { Entity, EntityBase, Field, Fields, Relations } from '../../core'
+import { Entity, EntityBase, Field, Fields } from '../../core'
 import { Status } from './testModel/models'
 
 @Entity('Products')
@@ -14,8 +14,6 @@ export class Products {
   archived!: boolean
   @Fields.date()
   availableFrom!: Date
-  @Relations.toOne(() => Categories)
-  category?: Categories
 }
 
 export interface CategoriesForTesting extends EntityBase {

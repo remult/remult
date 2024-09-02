@@ -20,7 +20,6 @@ import { Sort } from '../sort.js'
 import type {
   ControllerRef,
   ControllerRefForControllerBase,
-  DeepPartial,
   EntityFilter,
   EntityMetadata,
   EntityOrderBy,
@@ -321,71 +320,6 @@ export class RepositoryImplementation<entityType>
     if (!this._dataProvider.isProxy) await ref2.reload()
     return ref2.delete()
   }
-
-  insertWithRelations(
-    item: DeepPartial<MembersOnly<entityType>>,
-  ): Promise<entityType>
-  insertWithRelations(
-    item: DeepPartial<MembersOnly<entityType>>[],
-  ): Promise<entityType[]>
-  async insertWithRelations(
-    item:
-      | DeepPartial<MembersOnly<entityType>>
-      | DeepPartial<MembersOnly<entityType>>[],
-  ): Promise<entityType | entityType[]> {
-    if (Array.isArray(item)) {
-      return await Promise.all(
-        item.map(async (v) => await this.insertWithRelations(v)),
-      )
-    }
-
-    const relationalFields: {
-      key: keyof typeof item
-      type: ClassType<(typeof item)[any]>
-      isRelation: boolean
-    }[] = this.fields
-      .toArray()
-      .map((v) => ({
-        key: v.key as any as keyof typeof item,
-        type: v.options.valueType as ClassType<(typeof item)[any]>,
-        isRelation:
-          Boolean(getEntityKey(v.options.valueType)) &&
-          Boolean(v.options.valueType),
-      }))
-      .filter((v) => v.isRelation)
-
-    const refs: {
-      name: keyof typeof item
-      ref: EntityRef<(typeof item)[keyof typeof item]>
-    }[] = []
-
-    for (const field of relationalFields) {
-      const { key: key, type: type } = field
-      if (key in item && item[key]) {
-        const data = item[key]
-        delete item[key]
-        const repo = this._remult.repo(type)
-        refs.push({ name: key, ref: repo.getEntityRef(repo.create(data)) })
-      }
-    }
-
-    const results = (await Promise.all(refs.map((v) => v.ref.save()))).map(
-      (v, i) => ({ result: v, name: refs[i].name }),
-    )
-
-    results.forEach((r) => (item[r.name] = r.result))
-
-    let ref = getEntityRef(item, false) as unknown as EntityRef<entityType>
-    if (ref) {
-      if (!ref.isNew()) throw 'Item is not new'
-      return await ref.save()
-    } else {
-      return await this.getEntityRef(
-        this.create(item as Partial<MembersOnly<entityType>>),
-      ).save()
-    }
-  }
-
   insert(item: Partial<MembersOnly<entityType>>[]): Promise<entityType[]>
   insert(item: Partial<MembersOnly<entityType>>): Promise<entityType>
   async insert(
@@ -1234,7 +1168,7 @@ abstract class rowHelperBase<T> {
 
       if (ei && remult) {
         let lookup = new LookupColumn<T>(
-          remult.repo<T>(col.valueType) as RepositoryImplementation<T>,
+          remult.repo(col.valueType) as RepositoryImplementation<T>,
           Boolean(getRelationFieldInfo(col)),
           col.allowNull,
         )

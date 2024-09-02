@@ -15,7 +15,7 @@ import type {
   LiveQueryStorage,
   SubscriptionServer,
 } from './live-query/SubscriptionServer.js'
-import { remultStatic } from './remult-static.js'
+import { defaultFactory, remultStatic } from './remult-static.js'
 import type { Repository } from './remult3/remult3.js'
 import { getInternalKey } from './remult3/repository-internals.js'
 
@@ -186,11 +186,6 @@ export class RemultProxy implements Remult {
           .remultFactory()
           .repo(...args)
           .getEntityRef(...args2),
-      insertWithRelations: (args2: any) =>
-        self
-          .remultFactory()
-          .repo(...args)
-          .insertWithRelations(args2),
       insert: (args2: any) =>
         self
           .remultFactory()
