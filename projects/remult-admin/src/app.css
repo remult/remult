@@ -480,7 +480,8 @@ button.new-entry {
   transition: 0.2s ease-in-out all;
   overflow-y: auto;
   padding-top: var(--cell-height);
-  padding-bottom: var(--cell-height);
+  overflow-x: hidden;
+  /* padding-bottom: var(--cell-height); */
 }
 
 .main-navigation__title {
@@ -508,19 +509,20 @@ button.new-entry {
 }
 
 .main-navigation__diagram {
-  bottom: 0;
-  position: fixed;
-  background: var(--background-color-gray);
-  height: var(--cell-height);
   border-top: 1px solid #e5e7eb;
-  display: flex;
-  justify-content: flex-start;
-  padding: 0.5rem;
-  align-items: center;
+  margin-top: auto;
   font-size: 0.8rem;
   font-weight: 600;
+  padding-left: 0.7rem;
+  /* bottom: 0;
+  justify-content: flex-start;
+  height: var(--cell-height);
+  background: var(--background-color-gray);
+  position: fixed; 
+  display: flex;
+  align-items: center;
   width: calc(var(--navigation-width) - 1px);
-  text-align: center;
+  text-align: center; */
 }
 
 .main-content {

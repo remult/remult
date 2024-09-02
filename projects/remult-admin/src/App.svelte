@@ -40,11 +40,14 @@
     return str
   }
 
-  remult.apiClient.httpClient = (
+  remult.apiClient.url = $LSContext.settings.apiUrl
+  remult.apiClient.httpClient = async (
     input: RequestInfo | URL,
     init?: RequestInit,
   ) => {
-    return fetch(input, {
+    // console.log(`input`, input)
+
+    const f = await fetch(input, {
       ...init,
       headers: $SSContext.settings.bearerAuth
         ? {
@@ -60,6 +63,17 @@
           }
         : init?.headers,
     })
+
+    if (f.status === 403) {
+      const parsedUrl = new URL(f.url)
+      const segments = parsedUrl.pathname.split('/')
+      const lastSegment = segments.pop() || ''
+      $SSContext.forbiddenEntities = [
+        ...new Set([...$SSContext.forbiddenEntities, lastSegment]),
+      ]
+    }
+
+    return f
   }
 </script>
 
@@ -85,7 +99,7 @@
     <dialog bind:this={settingsDialog}>
       <header>Remult Settings <i>(Local Storage)</i></header>
 
-      <label style="display: flex; align-items: center; gap: 4px">
+      <label>
         <span>With confirm delete</span>
         <select bind:value={$LSContext.settings.confirmDelete}>
           <option value={false}>No</option>
@@ -93,7 +107,15 @@
         </select>
       </label>
 
-      <label style="display: flex; align-items: center; gap: 4px">
+      <label>
+        <span>Display fields with</span>
+        <select bind:value={$LSContext.settings.dispayCaption}>
+          <option value={true}>Caption</option>
+          <option value={false}>key</option>
+        </select>
+      </label>
+
+      <label>
         <span>Diagram layout algorithm</span>
         <select
           bind:value={$LSContext.settings.diagramLayoutAlgorithm}
@@ -108,7 +130,7 @@
         </select>
       </label>
 
-      <label style="display: flex; align-items: center; gap: 4px">
+      <label>
         <span>Local Storage Key for Auth</span>
         <input
           type="text"
@@ -117,13 +139,27 @@
         />
       </label>
 
+      <label>
+        <span>api URL</span>
+        <input
+          type="text"
+          bind:value={$LSContext.settings.apiUrl}
+          placeholder="api URL, the default it '/api'"
+        />
+      </label>
+
       <br />
 
-      <button
-        on:click={() => {
-          LSContext.reset()
-        }}>Reset all settings to default</button
-      >
+      <label>
+        <span></span>
+        <button
+          on:click={() => {
+            LSContext.reset()
+          }}
+        >
+          Reset all settings to default
+        </button>
+      </label>
 
       <br />
       <br />
@@ -132,7 +168,7 @@
 
       <header>Remult Settings <i>(Session Storage)</i></header>
 
-      <label style="display: flex; align-items: center; gap: 4px">
+      <label>
         <span>Auth</span>
         <input
           type="text"
@@ -142,7 +178,14 @@
       </label>
     </dialog>
 
-    {#each $godStore?.tables ?? [] as t}
+    <input
+      class="tab"
+      style="content: 'inner'; margin-left: 4px;"
+      type="text"
+      placeholder="Search"
+      bind:value={$LSContext.settings.search}
+    />
+    {#each $godStore?.getTables($LSContext) ?? [] as t}
       <a
         class="tab"
         style="--color: {t.color}"
@@ -152,7 +195,7 @@
           className: 'active',
         }}
       >
-        {midTrim(t.caption)}
+        {midTrim($LSContext.settings.dispayCaption ? t.caption : t.key)}
       </a>
     {/each}
     <a
@@ -182,5 +225,17 @@
   input::placeholder {
     color: gray;
     font-style: italic;
+  }
+
+  label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 10px;
+  }
+
+  select {
+    width: 180px;
   }
 </style>
