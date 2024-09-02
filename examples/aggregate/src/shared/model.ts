@@ -78,6 +78,7 @@ export async function seed() {
       salary: 3000,
       numberOfKids: 5,
       department: departments[0],
+      status: Status.terminated,
     },
     {
       id: '4',
@@ -94,6 +95,7 @@ export async function seed() {
       salary: 4000,
       numberOfKids: 4,
       department: departments[1],
+      status: Status.terminated,
     },
     {
       id: '6',
@@ -101,7 +103,7 @@ export async function seed() {
       country: 'france',
       salary: 8000,
       numberOfKids: 6,
-      department: departments[1],
+      department: departments[0],
     },
     {
       id: '7',
@@ -109,7 +111,7 @@ export async function seed() {
       country: 'germany',
       salary: 2000,
       numberOfKids: 7,
-      department: departments[1],
+      department: departments[0],
     },
     {
       id: '8',
@@ -118,6 +120,7 @@ export async function seed() {
       salary: 6000,
       numberOfKids: 9,
       department: departments[1],
+      status: Status.terminated,
     },
     {
       id: '9',
@@ -133,7 +136,8 @@ export async function seed() {
       country: 'germany',
       salary: 5000,
       numberOfKids: 2,
-      department: departments[1],
+      department: departments[0],
+      status: Status.terminated,
     },
     {
       id: '11',
