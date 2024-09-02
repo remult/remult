@@ -1335,11 +1335,6 @@ export const flags = {
 //p1 - add parameter all to deleteMany, and updateMany
 //p1  filter.apply ApiPreFilter
 //p1 - add not as an overload to not equal
-/*p1 - min, max, avg, sum, countDistinct - noam come up with an api
-  p1 - handle relations
-*/
-
-//y1 - find and count / aggregate with a single call
 
 /*p1 - add id and use uuid by default, but allow changes with Fields.id.defaultIdProvider NO but defaultProvider yes???
   //p1 - replace uuid with crypto.randomUUID and allow custom fallback NO
@@ -1385,6 +1380,7 @@ repo(Order).insert({},{
 })
 */
 //y2 - repo batch - for multiple operations:
+//y2 - request by jy find and count / aggregate with a single call
 /*
 const result = await repo.batch(x=>({
   data:x.find(),
