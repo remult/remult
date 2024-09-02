@@ -714,7 +714,11 @@ export async function groupByImpl(
             x.key
           }_${operator}`
         }
+
+        const turnToNumber =
+          x.valueType === Number || operator == 'distinctCount'
         processResultRow.push((sqlResult, theResult) => {
+          if (turnToNumber) sqlResult = Number(sqlResult)
           theResult[x.key] = { ...theResult[x.key], [operator]: sqlResult }
         })
       }

@@ -189,7 +189,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
   async groupBy(options?: EntityDataProviderGroupByOptions): Promise<any[]> {
     return groupByImpl(
       options,
-      await this.init(),
+      await dbNamesOf(this.entity, this.dp.wrapIdentifier),
       this.dp.createCommand(),
       false,
       (limit, offset) => ' limit ' + limit + ' offset ' + offset,

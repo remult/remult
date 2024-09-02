@@ -539,7 +539,14 @@ export function aggregateTest(
     })
     it('test value list type', async () => {
       const r = await repo()
-      expect(await r.groupBy({ group: ['status'] })).toMatchInlineSnapshot(`
+      expect(
+        await r.groupBy({
+          group: ['status'],
+          orderBy: {
+            status: 'asc',
+          },
+        }),
+      ).toMatchInlineSnapshot(`
         [
           {
             "$count": 16,
@@ -553,7 +560,14 @@ export function aggregateTest(
     })
     it('test relation to one', async () => {
       const r = await repo()
-      expect(await r.groupBy({ group: ['category'] })).toMatchInlineSnapshot(`
+      expect(
+        await r.groupBy({
+          group: ['category'],
+          orderBy: {
+            category: 'asc',
+          },
+        }),
+      ).toMatchInlineSnapshot(`
           [
             {
               "$count": 2,
@@ -577,6 +591,9 @@ export function aggregateTest(
       expect(
         await r.groupBy({
           group: ['category'],
+          orderBy: {
+            category: 'asc',
+          },
           //@ts-expect-error this is an internal flag
           [GroupByForApiKey]: true,
         }),
