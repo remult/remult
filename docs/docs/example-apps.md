@@ -57,6 +57,16 @@ An environment to reproduce issues using stackblitz, with optional sqlite databa
 	stackblitz="https://stackblitz.com/github/noam-honig/ready-to-play"
 />
 
+## Group by Example
+
+And example of the usage of groupBy
+<Example
+	imgSrc="/example-apps/groupby.png"
+ 	:react=true :vite=true :express=true
+	github="https://github.com/remult/remult/examples/groupBy"
+	stackblitz="https://stackblitz.com/github/remult/remult/tree/main/examples/groupBy?file=src%2Ffrontend%2Fpage.tsx"
+/>
+
 ## Todo for most frameworks
 
 <Example :oneline=true :react=true :nextjs=true :angular=true :vue=true :svelte=true :solid=true :bun=true />

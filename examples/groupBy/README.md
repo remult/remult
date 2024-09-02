@@ -14,7 +14,7 @@ repo(Employee).groupBy({
 })
 ```
 
-[Open in stackblitz](https://stackblitz.com/github/remult/remult/tree/main/examples/groupBy)
+[Open in stackblitz](https://stackblitz.com/github/remult/remult/tree/main/examples/groupBy?file=src%2Ffrontend%2Fpage.tsx)
 
 ## Checkout source
 

@@ -349,7 +349,7 @@ export class RepositoryImplementation<entityType>
       }
     }
     const result = await this._edp.groupBy(dpOptions)
-    //@ts-expect-error an internal option
+    //@ts-ignore
     if (!options?.[GroupByForApiKey] && options.group) {
       const loaderOptions: LoadOptions<entityType> = {
         include: {},
