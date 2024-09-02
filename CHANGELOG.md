@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.27.9] 2024-09-02
+
+- Fix for minor issue in knex
+
 ## [0.27.8] 2024-09-02
 
 - More great improvements to remult admin by [jycouet](https://github.com/jycouet)
