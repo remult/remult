@@ -322,6 +322,72 @@ Arguments:
    
    * **useCache** - determines if to cache the result, and return the results from cache.
    * **createIfNotFound** - If set to true and an item is not found, it's created and returned
+## groupBy
+Performs an aggregation on the repository's entity type based on the specified options.
+
+
+#### returns:
+The result of the aggregation.
+
+
+#### example:
+```ts
+// Grouping by country and city, summing the salary field, and ordering by country and sum of salary:
+const results = await repo.groupBy({
+  group: ['country', 'city'],
+  sum: ['salary'],
+  where: {
+    salary: { $ne: 1000 },
+  },
+  orderBy: {
+    country: 'asc',
+    salary: {
+      sum: 'desc',
+    },
+  },
+});
+
+// Accessing the results:
+console.log(results[0].country); // 'uk'
+console.log(results[0].city); // 'London'
+console.log(results[0].$count); // count for London, UK
+console.log(results[0].salary.sum); // Sum of salaries for London, UK
+```
+
+Arguments:
+* **options** - The options for the aggregation.
+   * **group** - Fields to group by. The result will include one entry per unique combination of these fields.
+   * **sum** - Fields to sum. The result will include the sum of these fields for each group.
+   * **avg** - Fields to average. The result will include the average of these fields for each group.
+   * **min** - Fields to find the minimum value. The result will include the minimum value of these fields for each group.
+   * **max** - Fields to find the maximum value. The result will include the maximum value of these fields for each group.
+   * **distinctCount** - Fields to count distinct values. The result will include the distinct count of these fields for each group.
+   * **where** - Filters to apply to the query before aggregation.
+   
+   
+   #### see:
+   EntityFilter
+   * **orderBy** - Fields and aggregates to order the results by.
+   The result can be ordered by groupBy fields, sum fields, average fields, min fields, max fields, and distinctCount fields.
+## aggregate
+Performs an aggregation on the repository's entity type based on the specified options.
+
+
+#### returns:
+The result of the aggregation.
+
+
+#### example:
+```ts
+// Aggregating  (summing the salary field across all items):
+const totalSalary = await repo.aggregate({
+  sum: ['salary'],
+});
+console.log(totalSalary.salary.sum); // Outputs the total sum of salaries
+```
+
+Arguments:
+* **options** - The options for the aggregation.
 ## query
 An alternative form of fetching data from the API server, which is intended for operating on large numbers of entity objects.
 
