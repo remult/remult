@@ -358,7 +358,7 @@ export class RepositoryImplementation<entityType>
         loaderOptions!.include![key] = true
       }
       const loader = new RelationLoader()
-      await this.populateRelationsForFields(
+      await this._populateRelationsForFields(
         dpOptions.group!,
         loaderOptions,
         result,
@@ -822,10 +822,10 @@ export class RepositoryImplementation<entityType>
       async (r) => await this._mapRawDataToResult(r, loadFields),
     )
     const fields = this.metadata.fields.toArray()
-    this.populateRelationsForFields(fields, loadOptions, result, loader)
+    this._populateRelationsForFields(fields, loadOptions, result, loader)
     return result
   }
-  private populateRelationsForFields(
+  private _populateRelationsForFields(
     fields: FieldMetadata<unknown, unknown>[],
     loadOptions: LoadOptions<entityType>,
     result: entityType[],
