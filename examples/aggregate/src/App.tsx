@@ -1,4 +1,4 @@
-import { Todo } from '../frontend/page'
+import { Todo } from './frontend/page'
 
 export default function App() {
   return <Todo />

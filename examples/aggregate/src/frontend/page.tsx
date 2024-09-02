@@ -10,7 +10,7 @@ export function Todo() {
       <h1>Aggregate</h1>
       <main>
         <div>count:{result?.$count}</div>
-        {error && <div>{error.message}</div>}
+        {error && <div>Error: {error.message}</div>}
       </main>
     </div>
   )
