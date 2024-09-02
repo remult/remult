@@ -21,7 +21,7 @@ describe('test exception', () => {
           count: undefined!,
           delete: undefined!,
           find: undefined!,
-          aggregate: undefined!,
+          groupBy: undefined!,
           insert: async (x) => {
             return toPromise(
               new Promise((res, err) => {
