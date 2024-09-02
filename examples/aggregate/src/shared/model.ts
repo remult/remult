@@ -14,6 +14,8 @@ export class Employee {
   @Fields.integer()
   id = ''
   @Fields.string()
+  name = ''
+  @Fields.string()
   city = ''
   @Fields.string()
   country = ''
@@ -57,6 +59,7 @@ export async function seed() {
   await repo(Employee).insert([
     {
       id: '1',
+      name: 'John Doe',
       city: 'London',
       country: 'uk',
       salary: 5000,
@@ -65,6 +68,7 @@ export async function seed() {
     },
     {
       id: '2',
+      name: 'Jane Smith',
       city: 'London',
       country: 'uk',
       salary: 7000,
@@ -73,6 +77,7 @@ export async function seed() {
     },
     {
       id: '3',
+      name: 'Alice Johnson',
       city: 'Manchester',
       country: 'uk',
       salary: 3000,
@@ -82,6 +87,7 @@ export async function seed() {
     },
     {
       id: '4',
+      name: 'Bob Brown',
       city: 'Manchester',
       country: 'uk',
       salary: 9000,
@@ -90,6 +96,7 @@ export async function seed() {
     },
     {
       id: '5',
+      name: 'Charlie Davis',
       city: 'Paris',
       country: 'france',
       salary: 4000,
@@ -99,6 +106,7 @@ export async function seed() {
     },
     {
       id: '6',
+      name: 'Diana Evans',
       city: 'Paris',
       country: 'france',
       salary: 8000,
@@ -107,6 +115,7 @@ export async function seed() {
     },
     {
       id: '7',
+      name: 'Edward Harris',
       city: 'Berlin',
       country: 'germany',
       salary: 2000,
@@ -115,6 +124,7 @@ export async function seed() {
     },
     {
       id: '8',
+      name: 'Fiona Clark',
       city: 'Berlin',
       country: 'germany',
       salary: 6000,
@@ -124,6 +134,7 @@ export async function seed() {
     },
     {
       id: '9',
+      name: 'George Lewis',
       city: 'Hamburg',
       country: 'germany',
       salary: 1000,
@@ -132,6 +143,7 @@ export async function seed() {
     },
     {
       id: '10',
+      name: 'Hannah Walker',
       city: 'Munich',
       country: 'germany',
       salary: 5000,
@@ -141,6 +153,7 @@ export async function seed() {
     },
     {
       id: '11',
+      name: 'Ian Young',
       city: 'Rome',
       country: 'italy',
       salary: 3000,
@@ -149,6 +162,7 @@ export async function seed() {
     },
     {
       id: '12',
+      name: 'Jackie King',
       city: 'Rome',
       country: 'italy',
       salary: 7000,
@@ -157,6 +171,7 @@ export async function seed() {
     },
     {
       id: '13',
+      name: 'Kevin Wright',
       city: 'Milan',
       country: 'italy',
       salary: 4000,
@@ -165,6 +180,7 @@ export async function seed() {
     },
     {
       id: '14',
+      name: 'Laura Scott',
       city: 'Naples',
       country: 'italy',
       salary: 8000,
@@ -173,6 +189,7 @@ export async function seed() {
     },
     {
       id: '15',
+      name: 'Michael Green',
       city: 'Madrid',
       country: 'spain',
       salary: 2000,
@@ -181,6 +198,7 @@ export async function seed() {
     },
     {
       id: '16',
+      name: 'Nina Adams',
       city: 'Barcelona',
       country: 'spain',
       salary: 6000,
