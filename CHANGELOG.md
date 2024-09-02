@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.27.8] 2024-09-02
+
+- More great improvements to remult admin by [jycouet](https://github.com/jycouet)
+- Added `groupBy` & `aggregate` to `Repository`
+  ```ts
+  repo(Employee).groupBy({
+    group: ['country', 'city'],
+    sum: ['salary'],
+    where: {
+      salary: {
+        $gt: 2000,
+      },
+    },
+  })
+  ```
+  [Checkout this example video](https://youtu.be/D5lDaulNDC4)
+
 ## [0.27.6] 2024-08-28
 
 - Improvement to remult admin + support for bearer token in admin
