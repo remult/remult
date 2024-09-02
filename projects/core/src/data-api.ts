@@ -13,9 +13,9 @@ import {
 import type { QueryData } from './live-query/SubscriptionServer.js'
 import { getRelationFieldInfo } from './remult3/relationInfoMember.js'
 import {
-  AggregateCountMember,
-  AggregateForApiKey,
-  type AggregateOptions,
+  GroupByCountMember,
+  GroupByForApiKey,
+  type GroupByOptions,
   type EntityFilter,
   type EntityMetadata,
   type FindOptions,
@@ -48,8 +48,8 @@ export class DataApi<T = unknown> {
       case 'get':
       case 'count':
         return this.count(res, req, undefined)
-      case 'aggregate':
-        return this.aggregate(res, req, undefined)
+      case 'groupBy':
+        return this.groupBy(res, req, undefined)
     }
     return this.getArray(res, req, undefined)
   }
@@ -86,8 +86,8 @@ export class DataApi<T = unknown> {
       case 'count':
         validateWhereInBody()
         return this.count(res, req, body)
-      case 'aggregate':
-        return this.aggregate(res, req, body)
+      case 'groupBy':
+        return this.groupBy(res, req, body)
       case 'deleteMany':
         validateWhereInBody()
         return this.deleteMany(res, req, body)
@@ -150,11 +150,7 @@ export class DataApi<T = unknown> {
       response.error(err, this.repository.metadata)
     }
   }
-  async aggregate(
-    response: DataApiResponse,
-    request: DataApiRequest,
-    body: any,
-  ) {
+  async groupBy(response: DataApiResponse, request: DataApiRequest, body: any) {
     let findOptions = await this.findOptionsFromRequest(request, body)
     let orderBy: any = {}
     if (body?.orderBy) {
@@ -166,7 +162,7 @@ export class DataApi<T = unknown> {
             break
 
           case 'count':
-            orderBy[AggregateCountMember] = direction
+            orderBy[GroupByCountMember] = direction
             break
           default:
             orderBy[element.field] = {
@@ -177,16 +173,16 @@ export class DataApi<T = unknown> {
         }
       }
     }
-    const groupBy = (body?.groupBy as any[])?.filter((x: string) =>
+    const group = (body?.groupBy as any[])?.filter((x: string) =>
       this.repository.fields.find(x).includedInApi(),
     )
-    let result = await this.repository.aggregate({
+    let result = await this.repository.groupBy({
       where: findOptions.where,
       limit: findOptions.limit,
       page: findOptions.page,
       //@ts-expect-error internal key
-      [AggregateForApiKey]: true,
-      groupBy,
+      [GroupByForApiKey]: true,
+      group,
       sum: (body?.sum as any[])?.filter((x: string) =>
         this.repository.fields.find(x).includedInApi(),
       ),
@@ -204,16 +200,12 @@ export class DataApi<T = unknown> {
       ),
       orderBy: orderBy,
     })
-
-    if (!Array.isArray(result)) {
-      result = [result]
-    } else {
+    if (group)
       result.forEach((x) => {
-        for (const f of groupBy) {
+        for (const f of group) {
           x[f] = this.repository.fields.find(f).valueConverter.toJson(x[f])
         }
       })
-    }
 
     response.success(result)
   }

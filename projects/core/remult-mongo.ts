@@ -26,11 +26,8 @@ import type { RepositoryOverloads } from './src/remult3/RepositoryImplementation
 import { getRepository } from './src/remult3/RepositoryImplementation.js'
 import { getRepositoryInternals } from './src/remult3/repository-internals.js'
 import { getRowAfterUpdate } from './src/data-providers/sql-database.js'
-import type { EntityDataProviderAggregateOptions } from './src/data-interfaces.js'
-import {
-  AggregateCountMember,
-  AggregateOperators,
-} from './src/remult3/remult3.js'
+import type { EntityDataProviderGroupByOptions } from './src/data-interfaces.js'
+import { GroupByCountMember, GroupByOperators } from './src/remult3/remult3.js'
 
 export class MongoDataProvider implements DataProvider {
   constructor(
@@ -128,9 +125,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
 
     return await collection.countDocuments(w, { session: this.session })
   }
-  async aggregate(
-    options?: EntityDataProviderAggregateOptions,
-  ): Promise<any[]> {
+  async groupBy(options?: EntityDataProviderGroupByOptions): Promise<any[]> {
     let { collection, e } = await this.collection()
     let x = new FilterConsumerBridgeToMongo(e)
     const pipeLine: any[] = []
@@ -144,15 +139,15 @@ class MongoEntityDataProvider implements EntityDataProvider {
       __count: { $sum: 1 },
     }
     processResultRow.push((mongoRow, resultRow) => {
-      resultRow[AggregateCountMember] = mongoRow.__count
+      resultRow[GroupByCountMember] = mongoRow.__count
     })
     pipeLine.push({ $group })
     const $addFields: any = {}
     pipeLine.push({ $addFields })
 
-    if (options?.groupBy) {
+    if (options?.group) {
       $group._id = {}
-      for (const element of options.groupBy) {
+      for (const element of options.group) {
         const name = e.$dbNameOf(element)
         $group._id[name] = `$${name}`
 
@@ -165,7 +160,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
     } else {
       $group._id = null
     }
-    for (const operator of AggregateOperators) {
+    for (const operator of GroupByOperators) {
       if (options?.[operator]) {
         for (const element of options[operator]) {
           const name = e.$dbNameOf(element) + '_' + operator

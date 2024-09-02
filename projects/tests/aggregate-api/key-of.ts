@@ -16,13 +16,13 @@ class MyClass {
 }
 const repo: Repository<MyClass> = undefined!
 
-repo.aggregate({ groupBy: ['a'] }).then((r) => {
+repo.groupBy({ groupBy: ['a'] }).then((r) => {
   r[0].a
   //@ts-expect-error - b was not selected
   r[0].b
 })
 
-repo.aggregate({
+repo.groupBy({
   sum: ['b', 'numberOfKids', 'b'],
   groupBy: ['city'],
   avg: ['numberOfKids'],
@@ -34,7 +34,7 @@ repo.aggregate({
 })
 
 repo
-  .aggregate({
+  .groupBy({
     sum: ['salary'],
     //average: ['numberOfKids'],
 
@@ -44,7 +44,7 @@ repo
   })
   .then((x) => x.salary)
 repo
-  .aggregate({
+  .groupBy({
     sum: ['salary'],
 
     groupBy: ['city'],
@@ -62,7 +62,7 @@ repo
   )
 {
   repo
-    .aggregate({
+    .groupBy({
       sum: ['salary', 'numberOfKids'],
       avg: ['salary'],
       orderBy: {
@@ -86,7 +86,7 @@ repo
     })
 }
 
-repo.aggregate({
+repo.groupBy({
   groupBy: ['salary'],
   sum: ['salary'],
 })

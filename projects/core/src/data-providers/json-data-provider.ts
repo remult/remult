@@ -1,7 +1,7 @@
 import type {
   DataProvider,
   EntityDataProvider,
-  EntityDataProviderAggregateOptions,
+  EntityDataProviderGroupByOptions,
   EntityDataProviderFindOptions,
 } from '../data-interfaces.js'
 import type { Filter } from '../filter/filter-interfaces.js'
@@ -34,9 +34,9 @@ class JsonEntityDataProvider implements EntityDataProvider {
     private helper: JsonEntityStorage,
     private formatted: boolean,
   ) {}
-  aggregate(options?: EntityDataProviderAggregateOptions): Promise<any[]> {
+  groupBy(options?: EntityDataProviderGroupByOptions): Promise<any[]> {
     return (this.p = this.p.then(() =>
-      this.loadEntityData((dp, save) => dp.aggregate(options)),
+      this.loadEntityData((dp, save) => dp.groupBy(options)),
     ))
   }
   async loadEntityData(

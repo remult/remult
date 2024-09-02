@@ -123,7 +123,7 @@ export function allServerTests(
     'aggregate',
     withRemultForTest(async () => {
       await create3Tasks()
-      expect(await repo(Task).aggregate({ groupBy: ['completed'] }))
+      expect(await repo(Task).groupBy({ groupBy: ['completed'] }))
         .toMatchInlineSnapshot(`
           [
             {
@@ -143,7 +143,7 @@ export function allServerTests(
     withRemultForTest(async () => {
       await create3Tasks()
       expect(
-        await repo(Task).aggregate({
+        await repo(Task).groupBy({
           groupBy: ['completed'],
           where: {
             $or: [{ completed: true }, { completed: false }],
@@ -168,7 +168,7 @@ export function allServerTests(
     withRemultForTest(async () => {
       await create3Tasks()
       expect(
-        await repo(Task).aggregate({
+        await repo(Task).groupBy({
           groupBy: ['completed'],
           where: { completed: true },
         }),

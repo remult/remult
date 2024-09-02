@@ -2,7 +2,7 @@ import { CompoundIdField } from '../CompoundIdField.js'
 import type { FieldMetadata } from '../column-interfaces.js'
 import type {
   EntityDataProvider,
-  EntityDataProviderAggregateOptions,
+  EntityDataProviderGroupByOptions,
   EntityDataProviderFindOptions,
 } from '../data-interfaces.js'
 import {
@@ -16,8 +16,8 @@ import {
   customDatabaseFilterToken,
 } from '../filter/filter-interfaces.js'
 import {
-  AggregateCountMember,
-  AggregateOperators,
+  GroupByCountMember,
+  GroupByOperators,
   type EntityFilter,
   type EntityMetadata,
 } from '../remult3/remult3.js'
@@ -36,12 +36,10 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
     private entity: EntityMetadata,
     private rows: () => any[],
   ) {}
-  async aggregate(
-    options?: EntityDataProviderAggregateOptions,
-  ): Promise<any[]> {
+  async groupBy(options?: EntityDataProviderGroupByOptions): Promise<any[]> {
     const sort = new Sort()
-    if (options?.groupBy)
-      for (const field of options?.groupBy) {
+    if (options?.group)
+      for (const field of options?.group) {
         sort.Segments.push({ field: field })
       }
     const rows = await this.find({ orderBy: sort, where: options?.where })
@@ -55,7 +53,7 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
     }[] = []
 
     const operatorImpl: Record<
-      (typeof AggregateOperators)[number],
+      (typeof GroupByOperators)[number],
       (key: string) => (typeof aggregates)[number]
     > = {
       sum: (key) => {
@@ -136,7 +134,7 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
         }
       },
     }
-    for (let operator of AggregateOperators) {
+    for (let operator of GroupByOperators) {
       if (options?.[operator]) {
         for (const element of options[operator]!) {
           aggregates.push(operatorImpl[operator](element.key))
@@ -149,15 +147,15 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
       for (const a of aggregates) {
         a.finishGroup(r)
       }
-      r[AggregateCountMember] = count
+      r[GroupByCountMember] = count
       result.push(r)
       first = true
       count = 0
     }
     for (const row of rows) {
-      if (options?.groupBy) {
+      if (options?.group) {
         if (!first) {
-          for (const field of options?.groupBy) {
+          for (const field of options?.group) {
             if (group[field.key] != row[field.key]) {
               finishGroup()
               break
@@ -165,7 +163,7 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
           }
         }
         if (first) {
-          for (const field of options?.groupBy) {
+          for (const field of options?.group) {
             group[field.key] = row[field.key]
           }
         }
@@ -182,11 +180,11 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
         for (const x of options.orderBy!) {
           const getValue = (row: any) => {
             if (!x.field && x.operation == 'count') {
-              return row[AggregateCountMember]
+              return row[GroupByCountMember]
             } else {
               switch (x.operation) {
                 case 'count':
-                  return row[AggregateCountMember]
+                  return row[GroupByCountMember]
                 case undefined:
                   return row[x.field!.key]
                 default:

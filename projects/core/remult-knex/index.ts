@@ -22,7 +22,7 @@ import type { FieldMetadata } from '../src/column-interfaces.js'
 import type {
   DataProvider,
   EntityDataProvider,
-  EntityDataProviderAggregateOptions,
+  EntityDataProviderGroupByOptions,
   EntityDataProviderFindOptions,
 } from '../src/data-interfaces.js'
 import { remult as remultContext } from '../src/remult-proxy.js'
@@ -49,7 +49,7 @@ import type {
   MigrationCode,
 } from '../migrations/migration-types.js'
 import {
-  aggregateImpl,
+  groupByImpl,
   getRowAfterUpdate,
 } from '../src/data-providers/sql-database.js'
 
@@ -186,10 +186,8 @@ class KnexEntityDataProvider implements EntityDataProvider {
     private rawSqlWrapIdentifier: (name: string) => string,
     private dp: KnexDataProvider,
   ) {}
-  async aggregate(
-    options?: EntityDataProviderAggregateOptions,
-  ): Promise<any[]> {
-    return aggregateImpl(
+  async groupBy(options?: EntityDataProviderGroupByOptions): Promise<any[]> {
+    return groupByImpl(
       options,
       await this.init(),
       this.dp.createCommand(),

@@ -1,7 +1,7 @@
 import type {
   DataProvider,
   EntityDataProvider,
-  EntityDataProviderAggregateOptions,
+  EntityDataProviderGroupByOptions,
   EntityDataProviderFindOptions,
   ProxyEntityDataProvider,
   RestDataProviderHttpProvider,
@@ -122,16 +122,14 @@ export class RestEntityDataProvider
     private http: () => RestDataProviderHttpProvider,
     private entity: EntityMetadata,
   ) {}
-  async aggregate(
-    options?: EntityDataProviderAggregateOptions,
-  ): Promise<any[]> {
+  async groupBy(options?: EntityDataProviderGroupByOptions): Promise<any[]> {
     const { run } = this.buildFindRequest({
       where: options?.where,
       limit: options?.limit,
       page: options?.page,
     })
     const body = {
-      groupBy: options?.groupBy?.map((x) => x.key),
+      groupBy: options?.group?.map((x) => x.key),
       sum: options?.sum?.map((x) => x.key),
       avg: options?.avg?.map((x) => x.key),
       min: options?.min?.map((x) => x.key),
@@ -140,12 +138,12 @@ export class RestEntityDataProvider
       orderBy: options?.orderBy?.map((x) => ({ ...x, field: x.field?.key })),
     }
     const result: any[] = await run(
-      'aggregate',
+      'groupBy',
       Object.keys(body).length > 0 ? body : undefined,
     )
-    if (options?.groupBy)
+    if (options?.group)
       result.forEach((row) => {
-        for (const g of options!.groupBy!) {
+        for (const g of options!.group!) {
           row[g.key] = g.valueConverter.fromJson(row[g.key])
         }
       })

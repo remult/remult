@@ -13,9 +13,9 @@ import type { EntityOptions } from '../entity.js'
 import { Filter } from '../filter/filter-interfaces.js'
 import { Sort } from '../sort.js'
 import {
-  AggregateForApiKey,
-  type AggregateOptions,
-  type AggregateResult,
+  GroupByForApiKey,
+  type GroupByOptions,
+  type GroupByResult,
   type ControllerRef,
   type ControllerRefForControllerBase,
   type EntityFilter,
@@ -56,7 +56,7 @@ import type { entityEventListener } from '../__EntityValueProvider.js'
 import type {
   DataProvider,
   EntityDataProvider,
-  EntityDataProviderAggregateOptions,
+  EntityDataProviderGroupByOptions,
   EntityDataProviderFindOptions,
   ErrorInfo,
   ProxyEntityDataProvider,
@@ -225,6 +225,40 @@ export class RepositoryImplementation<entityType>
     private _defaultFindOptions?: FindOptions<entityType>,
   ) {}
   async aggregate<
+    sumFields extends NumericKeys<entityType>[] | undefined = undefined,
+    averageFields extends NumericKeys<entityType>[] | undefined = undefined,
+    minFields extends (keyof MembersOnly<entityType>)[] | undefined = undefined,
+    maxFields extends (keyof MembersOnly<entityType>)[] | undefined = undefined,
+    distinctCountFields extends
+      | (keyof MembersOnly<entityType>)[]
+      | undefined = undefined,
+  >(
+    options: Omit<
+      GroupByOptions<
+        entityType,
+        never,
+        sumFields extends undefined ? never : sumFields,
+        averageFields extends undefined ? never : averageFields,
+        minFields extends undefined ? never : minFields,
+        maxFields extends undefined ? never : maxFields,
+        distinctCountFields extends undefined ? never : distinctCountFields
+      >,
+      'limit' | 'page' | 'orderBy'
+    >,
+  ): Promise<
+    GroupByResult<
+      entityType,
+      never,
+      sumFields extends undefined ? never : sumFields,
+      averageFields extends undefined ? never : averageFields,
+      minFields extends undefined ? never : minFields,
+      maxFields extends undefined ? never : maxFields,
+      distinctCountFields extends undefined ? never : distinctCountFields
+    >
+  > {
+    return (await this.groupBy(options))[0]
+  }
+  async groupBy<
     groupByFields extends
       | (keyof MembersOnly<entityType>)[]
       | undefined = undefined,
@@ -236,7 +270,7 @@ export class RepositoryImplementation<entityType>
       | (keyof MembersOnly<entityType>)[]
       | undefined = undefined,
   >(
-    options: AggregateOptions<
+    options: GroupByOptions<
       entityType,
       groupByFields extends undefined ? never : groupByFields,
       sumFields extends undefined ? never : sumFields,
@@ -246,25 +280,15 @@ export class RepositoryImplementation<entityType>
       distinctCountFields extends undefined ? never : distinctCountFields
     >,
   ): Promise<
-    groupByFields extends undefined
-      ? AggregateResult<
-          entityType,
-          never,
-          sumFields extends undefined ? never : sumFields,
-          averageFields extends undefined ? never : averageFields,
-          minFields extends undefined ? never : minFields,
-          maxFields extends undefined ? never : maxFields,
-          distinctCountFields extends undefined ? never : distinctCountFields
-        >
-      : AggregateResult<
-          entityType,
-          groupByFields extends undefined ? never : groupByFields,
-          sumFields extends undefined ? never : sumFields,
-          averageFields extends undefined ? never : averageFields,
-          minFields extends undefined ? never : minFields,
-          maxFields extends undefined ? never : maxFields,
-          distinctCountFields extends undefined ? never : distinctCountFields
-        >[]
+    GroupByResult<
+      entityType,
+      groupByFields extends undefined ? never : groupByFields,
+      sumFields extends undefined ? never : sumFields,
+      averageFields extends undefined ? never : averageFields,
+      minFields extends undefined ? never : minFields,
+      maxFields extends undefined ? never : maxFields,
+      distinctCountFields extends undefined ? never : distinctCountFields
+    >[]
   > {
     let findOptions = await this._buildEntityDataProviderFindOptions({
       ...options,
@@ -277,7 +301,7 @@ export class RepositoryImplementation<entityType>
       return r
     }
     const getFieldNotInGroupBy = (key: keyof entityType) => {
-      if (options?.groupBy?.includes(key as any))
+      if (options?.group?.includes(key as any))
         throw Error(
           `field "${
             key as string
@@ -286,11 +310,11 @@ export class RepositoryImplementation<entityType>
       return getField(key)
     }
 
-    var dpOptions: EntityDataProviderAggregateOptions = {
+    var dpOptions: EntityDataProviderGroupByOptions = {
       where: findOptions.where,
       limit: findOptions.limit,
       page: findOptions.page,
-      groupBy: options?.groupBy?.map(getField),
+      group: options?.group?.map(getField),
       sum: options?.sum?.map(getFieldNotInGroupBy),
       avg: options?.avg?.map(getFieldNotInGroupBy),
       min: options?.min?.map(getFieldNotInGroupBy),
@@ -324,19 +348,18 @@ export class RepositoryImplementation<entityType>
         }
       }
     }
-    const result = await this._edp.aggregate(dpOptions)
-    if (!options?.groupBy) return result[0]
+    const result = await this._edp.groupBy(dpOptions)
     //@ts-expect-error an internal option
-    if (!options?.[AggregateForApiKey]) {
+    if (!options?.[GroupByForApiKey] && options.group) {
       const loaderOptions: LoadOptions<entityType> = {
         include: {},
       }
-      for (const key of options.groupBy) {
+      for (const key of options.group) {
         loaderOptions!.include![key] = true
       }
       const loader = new RelationLoader()
       await this.populateRelationsForFields(
-        dpOptions.groupBy!,
+        dpOptions.group!,
         loaderOptions,
         result,
         loader,

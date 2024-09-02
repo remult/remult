@@ -1,7 +1,7 @@
 import type {
   DataProvider,
   EntityDataProvider,
-  EntityDataProviderAggregateOptions,
+  EntityDataProviderGroupByOptions,
   EntityDataProviderFindOptions,
 } from '../data-interfaces.js'
 import type {
@@ -31,8 +31,8 @@ import {
 } from '../filter/filter-interfaces.js'
 import { remult as defaultRemult } from '../remult-proxy.js'
 import {
-  AggregateCountMember,
-  AggregateOperators,
+  GroupByCountMember,
+  GroupByOperators,
   type EntityFilter,
   type EntityMetadata,
 } from '../remult3/remult3.js'
@@ -373,10 +373,8 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
       return Number(r.rows[0].count)
     })
   }
-  async aggregate(
-    options?: EntityDataProviderAggregateOptions,
-  ): Promise<any[]> {
-    return await aggregateImpl(
+  async groupBy(options?: EntityDataProviderGroupByOptions): Promise<any[]> {
+    return await groupByImpl(
       options,
       await this.init(),
       this.sql.createCommand(),
@@ -676,8 +674,8 @@ export function getRowAfterUpdate<entityType>(
     })
 }
 
-export async function aggregateImpl(
-  options: EntityDataProviderAggregateOptions | undefined,
+export async function groupByImpl(
+  options: EntityDataProviderGroupByOptions | undefined,
   e: EntityDbNamesBase,
   r: SqlCommand,
   orderByNullFirst: boolean | undefined,
@@ -687,11 +685,11 @@ export async function aggregateImpl(
   let groupBy = ''
   const processResultRow: ((sqlResult: any, theResult: any) => void)[] = []
   processResultRow.push((sqlVal, theResult) => {
-    theResult[AggregateCountMember] = Number(sqlVal)
+    theResult[GroupByCountMember] = Number(sqlVal)
   })
 
-  if (options?.groupBy)
-    for (const x of options?.groupBy) {
+  if (options?.group)
+    for (const x of options?.group) {
       if (x.isServerExpression) {
       } else {
         select += ', ' + e.$dbNameOf(x)
@@ -705,7 +703,7 @@ export async function aggregateImpl(
       })
     }
 
-  for (const operator of AggregateOperators) {
+  for (const operator of GroupByOperators) {
     const fields = options?.[operator] as FieldMetadata[] | undefined
     if (fields)
       for (const x of fields) {
@@ -769,7 +767,7 @@ export async function aggregateImpl(
   })
 
   function aggregateSqlSyntax(
-    operator: (typeof AggregateOperators)[number],
+    operator: (typeof GroupByOperators)[number],
     dbName: string,
   ) {
     return operator === 'distinctCount'

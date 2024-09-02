@@ -9,7 +9,7 @@ import {
 } from '../../../core/index.js'
 import type { DbTestProps } from './db-tests-props.js'
 import type { DbTestOptions } from './db-tests.js'
-import { AggregateForApiKey } from '../../../core/src/remult3/remult3.js'
+import { GroupByForApiKey } from '../../../core/src/remult3/remult3.js'
 
 @ValueListFieldType()
 class Status {
@@ -202,8 +202,8 @@ export function aggregateTest(
 
     it('should sum salaries by country', async () => {
       const r = await repo()
-      const results = await r.aggregate({
-        groupBy: ['country'],
+      const results = await r.groupBy({
+        group: ['country'],
         sum: ['salary'],
         orderBy: {
           country: 'asc',
@@ -224,8 +224,8 @@ export function aggregateTest(
 
     it('should calculate average number of kids by country', async () => {
       const r = await repo()
-      const results = await r.aggregate({
-        groupBy: ['country'],
+      const results = await r.groupBy({
+        group: ['country'],
         avg: ['numberOfKids'],
         orderBy: {
           country: 'asc',
@@ -246,8 +246,8 @@ export function aggregateTest(
 
     it('should group by city and country and order by country then city', async () => {
       const r = await repo()
-      const results = await r.aggregate({
-        groupBy: ['country', 'city'],
+      const results = await r.groupBy({
+        group: ['country', 'city'],
         sum: ['salary'],
         orderBy: {
           country: 'asc',
@@ -267,8 +267,8 @@ export function aggregateTest(
 
     it('should return correct count for each group', async () => {
       const r = await repo()
-      const results = await r.aggregate({
-        groupBy: ['country'],
+      const results = await r.groupBy({
+        group: ['country'],
         sum: ['salary'],
         orderBy: {
           country: 'asc',
@@ -303,8 +303,8 @@ export function aggregateTest(
     it('field cant be used both for group by and sum', async () => {
       const r = await repo()
       await expect(async () => {
-        await r.aggregate({
-          groupBy: ['salary'],
+        await r.groupBy({
+          group: ['salary'],
           sum: ['salary'],
         })
       }).rejects.toThrowErrorMatchingInlineSnapshot(
@@ -314,9 +314,9 @@ export function aggregateTest(
     it('cant use invalid field', async () => {
       const r = await repo()
       await expect(async () => {
-        await r.aggregate({
+        await r.groupBy({
           //@ts-expect-error I want to test an invalid field
-          groupBy: ['salary1'],
+          group: ['salary1'],
         })
       }).rejects.toThrowErrorMatchingInlineSnapshot(
         `[Error: key "salary1" not found in entity]`,
@@ -324,8 +324,8 @@ export function aggregateTest(
     })
     it('should group by country and city, and order by $count in descending order', async () => {
       const r = await repo()
-      const results = await r.aggregate({
-        groupBy: ['country', 'city'],
+      const results = await r.groupBy({
+        group: ['country', 'city'],
         sum: ['salary'],
         orderBy: {
           $count: 'desc',
@@ -343,8 +343,8 @@ export function aggregateTest(
     it('should calculate min and max salary grouped by city', async () => {
       const r = await repo()
 
-      const results = await r.aggregate({
-        groupBy: ['city'],
+      const results = await r.groupBy({
+        group: ['city'],
         min: ['salary'],
         max: ['salary'],
         orderBy: {
@@ -448,8 +448,8 @@ export function aggregateTest(
     it('should calculate distinct count of cities grouped by country', async () => {
       const r = await repo()
 
-      const results = await r.aggregate({
-        groupBy: ['country'],
+      const results = await r.groupBy({
+        group: ['country'],
         distinctCount: ['city'],
         orderBy: {
           country: 'asc',
@@ -500,8 +500,8 @@ export function aggregateTest(
     it('should order results by distinct count of cities', async () => {
       const r = await repo()
 
-      const results = await r.aggregate({
-        groupBy: ['country'],
+      const results = await r.groupBy({
+        group: ['country'],
         distinctCount: ['city'],
         where: { country: ['germany', 'uk', 'france'] },
         orderBy: {
@@ -539,7 +539,7 @@ export function aggregateTest(
     })
     it('test value list type', async () => {
       const r = await repo()
-      expect(await r.aggregate({ groupBy: ['status'] })).toMatchInlineSnapshot(`
+      expect(await r.groupBy({ group: ['status'] })).toMatchInlineSnapshot(`
         [
           {
             "$count": 16,
@@ -553,8 +553,7 @@ export function aggregateTest(
     })
     it('test relation to one', async () => {
       const r = await repo()
-      expect(await r.aggregate({ groupBy: ['category'] }))
-        .toMatchInlineSnapshot(`
+      expect(await r.groupBy({ group: ['category'] })).toMatchInlineSnapshot(`
           [
             {
               "$count": 2,
@@ -576,10 +575,10 @@ export function aggregateTest(
     it('test relation to one for api', async () => {
       const r = await repo()
       expect(
-        await r.aggregate({
-          groupBy: ['category'],
+        await r.groupBy({
+          group: ['category'],
           //@ts-expect-error this is an internal flag
-          [AggregateForApiKey]: true,
+          [GroupByForApiKey]: true,
         }),
       ).toMatchInlineSnapshot(`
           [
