@@ -12,41 +12,42 @@ import { Remult, isBackend, queryConfig } from '../context.js'
 import type { EntityOptions } from '../entity.js'
 import { Filter } from '../filter/filter-interfaces.js'
 import { Sort } from '../sort.js'
-import type {
-  AggregateOptions,
-  AggregateResult,
-  ControllerRef,
-  ControllerRefForControllerBase,
-  EntityFilter,
-  EntityMetadata,
-  EntityOrderBy,
-  EntityRef,
-  EntityRefForEntityBase,
-  FieldRef,
-  FieldsMetadata,
-  FieldsRef,
-  FieldsRefForEntityBase,
-  FindFirstOptions,
-  FindFirstOptionsBase,
-  FindOptions,
-  FindOptionsBase,
-  IdFieldRef,
-  IdMetadata,
-  LifecycleEvent,
-  LiveQuery,
-  LiveQueryChangeInfo,
-  LoadOptions,
-  MembersOnly,
-  NumericKeys,
-  ObjectMembersOnly,
-  QueryOptions,
-  QueryResult,
-  RelationOptions,
-  Repository,
-  RepositoryRelations,
-  Subscribable,
-  ValidateFieldEvent,
-  idType,
+import {
+  AggregateForApiKey,
+  type AggregateOptions,
+  type AggregateResult,
+  type ControllerRef,
+  type ControllerRefForControllerBase,
+  type EntityFilter,
+  type EntityMetadata,
+  type EntityOrderBy,
+  type EntityRef,
+  type EntityRefForEntityBase,
+  type FieldRef,
+  type FieldsMetadata,
+  type FieldsRef,
+  type FieldsRefForEntityBase,
+  type FindFirstOptions,
+  type FindFirstOptionsBase,
+  type FindOptions,
+  type FindOptionsBase,
+  type IdFieldRef,
+  type IdMetadata,
+  type LifecycleEvent,
+  type LiveQuery,
+  type LiveQueryChangeInfo,
+  type LoadOptions,
+  type MembersOnly,
+  type NumericKeys,
+  type ObjectMembersOnly,
+  type QueryOptions,
+  type QueryResult,
+  type RelationOptions,
+  type Repository,
+  type RepositoryRelations,
+  type Subscribable,
+  type ValidateFieldEvent,
+  type idType,
 } from './remult3.js'
 
 import type { Paginator, RefSubscriber, RefSubscriberBase } from './remult3.js'
@@ -325,6 +326,23 @@ export class RepositoryImplementation<entityType>
     }
     const result = await this._edp.aggregate(dpOptions)
     if (!options?.groupBy) return result[0]
+    //@ts-expect-error an internal option
+    if (!options?.[AggregateForApiKey]) {
+      const loaderOptions: LoadOptions<entityType> = {
+        include: {},
+      }
+      for (const key of options.groupBy) {
+        loaderOptions!.include![key] = true
+      }
+      const loader = new RelationLoader()
+      await this.populateRelationsForFields(
+        dpOptions.groupBy!,
+        loaderOptions,
+        result,
+        loader,
+      )
+      await loader.resolveAll()
+    }
     return result as any
   }
   _idCache = new Map<any, any>()
@@ -780,7 +798,17 @@ export class RepositoryImplementation<entityType>
       rawRows,
       async (r) => await this._mapRawDataToResult(r, loadFields),
     )
-    for (const col of this.metadata.fields) {
+    const fields = this.metadata.fields.toArray()
+    this.populateRelationsForFields(fields, loadOptions, result, loader)
+    return result
+  }
+  private populateRelationsForFields(
+    fields: FieldMetadata<unknown, unknown>[],
+    loadOptions: LoadOptions<entityType>,
+    result: entityType[],
+    loader: RelationLoader,
+  ) {
+    for (const col of fields) {
       let rel = getRelationFieldInfo(col)
       let incl = (col.options as RelationOptions<any, any, any>)
         .defaultIncluded as any as FindFirstOptionsBase<any>
@@ -828,8 +856,8 @@ export class RepositoryImplementation<entityType>
         }
       }
     }
-    return result
   }
+
   /*@internal */
 
   _findOptionsBasedOnRelation(
@@ -867,14 +895,11 @@ export class RepositoryImplementation<entityType>
     const relFields = rel.getFields()
 
     const getFieldValue = (key: string) => {
+      const ref = getEntityRef(row, false)
+
       let val =
-        rel.type === 'reference'
-          ? (
-              getEntityRef(row).fields.find(field.key) as IdFieldRef<
-                entityType,
-                any
-              >
-            ).getId()
+        rel.type === 'reference' && ref
+          ? (ref.fields.find(field.key) as IdFieldRef<entityType, any>).getId()
           : row[key as keyof entityType]
       if (rel.type === 'toOne' || rel.type === 'reference') {
         if (val === null) returnNull = true

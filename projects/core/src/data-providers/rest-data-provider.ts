@@ -134,6 +134,9 @@ export class RestEntityDataProvider
       groupBy: options?.groupBy?.map((x) => x.key),
       sum: options?.sum?.map((x) => x.key),
       avg: options?.avg?.map((x) => x.key),
+      min: options?.min?.map((x) => x.key),
+      max: options?.max?.map((x) => x.key),
+      distinctCount: options?.distinctCount?.map((x) => x.key),
       orderBy: options?.orderBy?.map((x) => ({ ...x, field: x.field?.key })),
     }
     const result: any[] = await run(

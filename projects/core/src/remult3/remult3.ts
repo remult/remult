@@ -429,6 +429,7 @@ export type AggregateOptions<
 } & Pick<FindOptions<entityType>, 'limit' | 'page'>
 
 export const AggregateCountMember = '$count' as const
+export const AggregateForApiKey = Symbol.for('AggregateForApiKey')
 export const AggregateOperators = [
   'sum',
   'avg',

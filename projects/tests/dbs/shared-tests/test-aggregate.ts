@@ -1,8 +1,25 @@
 import { beforeAll, describe, expect, it } from 'vitest'
 import { Entity } from '../../../../dist/remult/index.js'
-import { Fields, type Repository } from '../../../core/index.js'
+import {
+  Field,
+  Fields,
+  Relations,
+  ValueListFieldType,
+  type Repository,
+} from '../../../core/index.js'
 import type { DbTestProps } from './db-tests-props.js'
 import type { DbTestOptions } from './db-tests.js'
+import { AggregateForApiKey } from '../../../core/src/remult3/remult3.js'
+
+@ValueListFieldType()
+class Status {
+  static open = new Status('open', 'Open')
+  static closed = new Status('closed', 'Closed')
+  constructor(
+    public id: string,
+    public caption: string,
+  ) {}
+}
 
 @Entity('TestAggregateEntity', {
   allowApiCrud: true,
@@ -18,6 +35,19 @@ class TestEntityWithData {
   salary = 0
   @Fields.number()
   numberOfKids = 0
+  @Field(() => Status)
+  status = Status.open
+  @Relations.toOne(() => Category)
+  category?: Category
+}
+@Entity('Category', {
+  allowApiCrud: true,
+})
+export class Category {
+  @Fields.number()
+  id = 0
+  @Fields.string()
+  name = ''
 }
 
 export function aggregateTest(
@@ -25,6 +55,11 @@ export function aggregateTest(
   options?: DbTestOptions,
 ) {
   async function repo() {
+    const cat = await createEntity(Category)
+    const c = await cat.insert([
+      { id: 1, name: 'a' },
+      { id: 2, name: 'b' },
+    ])
     const r = await createEntity(TestEntityWithData)
     await r.insert([
       {
@@ -33,6 +68,7 @@ export function aggregateTest(
         country: 'uk',
         salary: 5000,
         numberOfKids: 3,
+        category: c[0],
       },
       {
         id: '2',
@@ -40,6 +76,7 @@ export function aggregateTest(
         country: 'uk',
         salary: 7000,
         numberOfKids: 2,
+        category: c[1],
       },
       {
         id: '3',
@@ -47,6 +84,7 @@ export function aggregateTest(
         country: 'uk',
         salary: 3000,
         numberOfKids: 5,
+        category: c[0],
       },
       {
         id: '4',
@@ -54,6 +92,7 @@ export function aggregateTest(
         country: 'uk',
         salary: 9000,
         numberOfKids: 1,
+        category: c[1],
       },
       {
         id: '5',
@@ -61,6 +100,7 @@ export function aggregateTest(
         country: 'france',
         salary: 4000,
         numberOfKids: 4,
+        category: c[1],
       },
       {
         id: '6',
@@ -68,6 +108,7 @@ export function aggregateTest(
         country: 'france',
         salary: 8000,
         numberOfKids: 6,
+        category: c[1],
       },
       {
         id: '7',
@@ -75,6 +116,7 @@ export function aggregateTest(
         country: 'germany',
         salary: 2000,
         numberOfKids: 7,
+        category: c[1],
       },
       {
         id: '8',
@@ -82,6 +124,7 @@ export function aggregateTest(
         country: 'germany',
         salary: 6000,
         numberOfKids: 9,
+        category: c[1],
       },
       {
         id: '9',
@@ -89,6 +132,7 @@ export function aggregateTest(
         country: 'germany',
         salary: 1000,
         numberOfKids: 8,
+        category: c[1],
       },
       {
         id: '10',
@@ -96,6 +140,7 @@ export function aggregateTest(
         country: 'germany',
         salary: 5000,
         numberOfKids: 2,
+        category: c[1],
       },
       {
         id: '11',
@@ -103,6 +148,7 @@ export function aggregateTest(
         country: 'italy',
         salary: 3000,
         numberOfKids: 4,
+        category: c[1],
       },
       {
         id: '12',
@@ -110,6 +156,7 @@ export function aggregateTest(
         country: 'italy',
         salary: 7000,
         numberOfKids: 1,
+        category: c[1],
       },
       {
         id: '13',
@@ -117,6 +164,7 @@ export function aggregateTest(
         country: 'italy',
         salary: 4000,
         numberOfKids: 3,
+        category: c[1],
       },
       {
         id: '14',
@@ -124,6 +172,7 @@ export function aggregateTest(
         country: 'italy',
         salary: 8000,
         numberOfKids: 5,
+        category: c[1],
       },
       {
         id: '15',
@@ -131,6 +180,7 @@ export function aggregateTest(
         country: 'spain',
         salary: 2000,
         numberOfKids: 6,
+        category: c[1],
       },
       {
         id: '16',
@@ -138,6 +188,7 @@ export function aggregateTest(
         country: 'spain',
         salary: 6000,
         numberOfKids: 7,
+        category: c[1],
       },
     ])
     return r
@@ -485,6 +536,63 @@ export function aggregateTest(
           },
         ]
       `)
+    })
+    it('test value list type', async () => {
+      const r = await repo()
+      expect(await r.aggregate({ groupBy: ['status'] })).toMatchInlineSnapshot(`
+        [
+          {
+            "$count": 16,
+            "status": Status {
+              "caption": "Open",
+              "id": "open",
+            },
+          },
+        ]
+      `)
+    })
+    it('test relation to one', async () => {
+      const r = await repo()
+      expect(await r.aggregate({ groupBy: ['category'] }))
+        .toMatchInlineSnapshot(`
+          [
+            {
+              "$count": 2,
+              "category": Category {
+                "id": 1,
+                "name": "a",
+              },
+            },
+            {
+              "$count": 14,
+              "category": Category {
+                "id": 2,
+                "name": "b",
+              },
+            },
+          ]
+        `)
+    })
+    it('test relation to one for api', async () => {
+      const r = await repo()
+      expect(
+        await r.aggregate({
+          groupBy: ['category'],
+          //@ts-expect-error this is an internal flag
+          [AggregateForApiKey]: true,
+        }),
+      ).toMatchInlineSnapshot(`
+          [
+            {
+              "$count": 2,
+              "category": 1,
+            },
+            {
+              "$count": 14,
+              "category": 2,
+            },
+          ]
+        `)
     })
   })
 }
