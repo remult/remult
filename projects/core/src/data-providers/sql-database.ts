@@ -1,6 +1,7 @@
 import type {
   DataProvider,
   EntityDataProvider,
+  EntityDataProviderGroupByOptions,
   EntityDataProviderFindOptions,
 } from '../data-interfaces.js'
 import type {
@@ -16,6 +17,7 @@ import type { FieldMetadata } from '../column-interfaces.js'
 import type { Remult } from '../context.js'
 import type {
   CustomSqlFilterBuilderFunction,
+  dbNamesOfOptions,
   EntityDbNamesBase,
 } from '../filter/filter-consumer-bridge-to-sql-request.js'
 import {
@@ -28,7 +30,12 @@ import {
   customDatabaseFilterToken,
 } from '../filter/filter-interfaces.js'
 import { remult as defaultRemult } from '../remult-proxy.js'
-import type { EntityFilter, EntityMetadata } from '../remult3/remult3.js'
+import {
+  GroupByCountMember,
+  GroupByOperators,
+  type EntityFilter,
+  type EntityMetadata,
+} from '../remult3/remult3.js'
 import type {
   EntityBase,
   RepositoryOverloads,
@@ -341,6 +348,7 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
     private iAmUsed: (e: EntityDbNamesBase) => Promise<void>,
     private strategy: SqlImplementation,
   ) {}
+
   async init() {
     let dbNameProvider: EntityDbNamesBase =
       await dbNamesOfWithForceSqlExpression(this.entity, (x) =>
@@ -365,6 +373,16 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
       return Number(r.rows[0].count)
     })
   }
+  async groupBy(options?: EntityDataProviderGroupByOptions): Promise<any[]> {
+    return await groupByImpl(
+      options,
+      await this.init(),
+      this.sql.createCommand(),
+      this.sql._getSourceSql().orderByNullsFirst,
+      this.sql._getSourceSql().getLimitSqlSyntax,
+    )
+  }
+
   async find(options?: EntityDataProviderFindOptions): Promise<any[]> {
     let e = await this.init()
 
@@ -654,4 +672,106 @@ export function getRowAfterUpdate<entityType>(
         )
       return r[0]
     })
+}
+
+export async function groupByImpl(
+  options: EntityDataProviderGroupByOptions | undefined,
+  e: EntityDbNamesBase,
+  r: SqlCommand,
+  orderByNullFirst: boolean | undefined,
+  limitSyntax: (limit: number, offset: number) => string,
+) {
+  let select = 'select count(*) as count'
+  let groupBy = ''
+  const processResultRow: ((sqlResult: any, theResult: any) => void)[] = []
+  processResultRow.push((sqlVal, theResult) => {
+    theResult[GroupByCountMember] = Number(sqlVal)
+  })
+
+  if (options?.group)
+    for (const x of options?.group) {
+      if (x.isServerExpression) {
+      } else {
+        select += ', ' + e.$dbNameOf(x)
+        if (x.options.sqlExpression) select += ' as ' + x.key
+        if (groupBy == '') groupBy = ' group by '
+        else groupBy += ', '
+        groupBy += e.$dbNameOf(x)
+      }
+      processResultRow.push((sqlResult, theResult) => {
+        theResult[x.key] = x.valueConverter.fromDb(sqlResult)
+      })
+    }
+
+  for (const operator of GroupByOperators) {
+    const fields = options?.[operator] as FieldMetadata[] | undefined
+    if (fields)
+      for (const x of fields) {
+        if (x.isServerExpression) {
+        } else {
+          const dbName = await e.$dbNameOf(x)
+          select += `, ${aggregateSqlSyntax(operator, dbName)} as ${
+            x.key
+          }_${operator}`
+        }
+        processResultRow.push((sqlResult, theResult) => {
+          theResult[x.key] = { ...theResult[x.key], [operator]: sqlResult }
+        })
+      }
+  }
+  select += '\n from ' + e.$entityName
+  if (options?.where) {
+    let where = new FilterConsumerBridgeToSqlRequest(r, e)
+    options?.where.__applyToConsumer(where)
+    select += await where.resolveWhere()
+  }
+  if (groupBy) select += groupBy
+  let orderBy = ''
+  if (options?.orderBy) {
+    for (const x of options?.orderBy) {
+      if (orderBy == '') orderBy = ' order by '
+      else orderBy += ', '
+      let field = x.field && (await e.$dbNameOf(x.field))
+      switch (x.operation) {
+        case 'count':
+          field = x.operation + '(*)'
+          break
+        case undefined:
+          break
+        default:
+          field = aggregateSqlSyntax(x.operation, field!)
+      }
+      orderBy += field
+      if (x.isDescending) orderBy += ' desc'
+      if (orderByNullFirst) {
+        if (x.isDescending) select += ' nulls last'
+        else select += ' nulls first'
+      }
+    }
+    if (orderBy) select += orderBy
+  }
+  if (options?.limit) {
+    let page = 1
+    if (options.page) page = options.page
+    if (page < 1) page = 1
+    select += ' ' + limitSyntax(options.limit, (page - 1) * options.limit)
+  }
+
+  const result = await r.execute(select)
+  return result.rows.map((sql) => {
+    let theResult: any = {}
+    processResultRow.forEach((x, i) =>
+      x(sql[result.getColumnKeyInResultForIndexInSelect(i)], theResult),
+    )
+    return theResult
+  })
+
+  function aggregateSqlSyntax(
+    operator: (typeof GroupByOperators)[number],
+    dbName: string,
+  ) {
+    return operator === 'distinctCount'
+      ? `count (distinct ${dbName})`
+      : `${operator}( ${dbName} )`
+  }
 }

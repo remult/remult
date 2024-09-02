@@ -437,6 +437,7 @@ describe('many to one relation', () => {
           delete: r.delete,
           insert: r.insert,
           update: r.update,
+          aggregate: (...args) => r.aggregate(...args),
         }
       },
     }
@@ -506,6 +507,7 @@ describe('many to one relation', () => {
           delete: r.delete,
           insert: r.insert,
           update: r.update,
+          aggregate: (...args) => r.aggregate(...args),
         }
       },
     }
@@ -546,6 +548,7 @@ describe('many to one relation', () => {
           count: r.count,
           delete: r.delete,
           insert: r.insert,
+          aggregate: (...args) => r.aggregate(...args),
           update: (id, data) => {
             d.ok()
             expect(data).toEqual({ name: 'prod 11' })
@@ -596,6 +599,7 @@ describe('many to one relation', () => {
           delete: r.delete,
           insert: r.insert,
           update: r.update,
+          aggregate: (...args) => r.aggregate(...args),
         }
       },
     }
@@ -840,6 +844,7 @@ describe('Test entity relation and count finds', () => {
           delete: r.delete,
           insert: r.insert,
           update: r.update,
+          aggregate: (...args) => r.aggregate(...args),
           find: (o) => {
             countFind++
             return r.find(o)
@@ -895,6 +900,7 @@ describe('Test entity relation and count finds', () => {
           delete: r.delete,
           insert: r.insert,
           update: r.update,
+          aggregate: (...args) => r.aggregate(...args),
         }
       },
     } //clear the cache;
@@ -939,6 +945,7 @@ it("test that it doesn't save if it doesn't need to", async () => {
           updates++
           return r.update(id, x)
         },
+        aggregate: (...args) => r.aggregate(...args),
       }
     },
   }).repo(testUpdateDate)
@@ -1018,6 +1025,7 @@ describe('test api loading stuff', () => {
           delete: (...args) => r.delete(...args),
           insert: (...args) => r.insert(...args),
           update: (...args) => r.update(...args),
+          aggregate: (...args) => r.aggregate(...args),
         }
       },
     }
@@ -1056,6 +1064,7 @@ describe('test api loading stuff', () => {
           delete: (...args) => r.delete(...args),
           insert: (...args) => r.insert(...args),
           update: (...args) => r.update(...args),
+          aggregate: (...args) => r.aggregate(...args),
         }
       },
     }

@@ -1,0 +1,167 @@
+@charset "utf-8";
+
+body {
+  font-family: Arial;
+  background-color: whitesmoke;
+  justify-content: center;
+  margin: 0;
+}
+
+h1 {
+  color: #ef4444;
+  font-style: italic;
+  font-size: 3.75rem;
+  font-weight: inherit;
+  text-align: center;
+  margin: 1rem;
+}
+
+main {
+  max-width: 500px;
+  min-width: 300px;
+  margin: auto;
+  background-color: white;
+  box-sizing: border-box;
+  border: 1px solid lightgray;
+  border-radius: 0.5rem;
+  box-shadow:
+    0 2px 4px #0003,
+    0 25px 50px #0000001a;
+}
+
+main > div,
+main > form {
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid lightgray;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  justify-content: space-between;
+}
+
+main > div:has(input[type='checkbox']) {
+  justify-content: inherit;
+}
+
+input {
+  font-family: inherit;
+  font-size: 100%;
+  width: 100%;
+  border: 0;
+}
+
+input:checked + input {
+  text-decoration: line-through;
+}
+
+input:placeholder-shown {
+  font-style: italic;
+}
+
+input[type='checkbox'] {
+  width: 36px;
+  height: 36px;
+  height: 1.5rem;
+}
+
+button {
+  cursor: pointer;
+  padding: 0.5rem 0.5rem;
+  background-color: white;
+  font-family: inherit;
+  font-size: 85%;
+  line-height: inherit;
+  border: 2px solid #0000001a;
+  border-radius: 0.5rem;
+  white-space: nowrap;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 500px;
+  min-width: 300px;
+  margin: auto;
+}
+
+.sign-in {
+  max-width: 384px;
+  padding: 16px;
+}
+.sign-in > h2 {
+  font-style: italic;
+  font-weight: 100;
+  margin-top: 8px;
+}
+.sign-in > form {
+  gap: 16px;
+  padding: 0px;
+  flex-direction: column;
+  border: 0px;
+}
+.sign-in > form > label {
+  width: 100%;
+}
+.sign-in > form > input {
+  border: 1px solid rgb(209, 213, 219);
+  background: rgb(249, 250, 251);
+  border-radius: 8px;
+  width: 100%;
+}
+.sign-in > form > button {
+  width: 100%;
+  background-color: rgb(37, 99, 235);
+  color: white;
+}
+
+/* Dark Mode Styles */
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #121212;
+    color: #e0e0e0;
+  }
+
+  h1 {
+    color: #f87171;
+  }
+
+  main {
+    background-color: #1f1f1f;
+    border: 1px solid #444;
+    box-shadow:
+      0 2px 4px #0006,
+      0 25px 50px #0000003a;
+  }
+
+  main > div,
+  main > form {
+    border-bottom: 1px solid #555;
+  }
+
+  input {
+    background-color: #1f1f1f;
+    color: #e0e0e0;
+  }
+
+  input[type='checkbox'] {
+    /* background-color: #444;*/
+    border: 1px solid #666;
+  }
+
+  button {
+    background-color: #333;
+    border: 2px solid #555;
+    color: #e0e0e0;
+  }
+
+  .sign-in > form > input {
+    border: 1px solid #555;
+    background: #333;
+  }
+
+  .sign-in > form > button {
+    background-color: #2563eb;
+    color: white;
+  }
+}

@@ -1,5 +1,10 @@
+import type { FieldMetadata } from '../index.js'
 import type { Filter } from './filter/filter-interfaces.js'
-import type { EntityMetadata, MembersOnly } from './remult3/remult3.js'
+import type {
+  GroupByOperators,
+  EntityMetadata,
+  MembersOnly,
+} from './remult3/remult3.js'
 import { Sort } from './sort.js'
 
 export interface DataProvider {
@@ -13,9 +18,25 @@ export interface DataProvider {
 export interface Storage {
   ensureSchema(): Promise<void>
 }
+export interface EntityDataProviderGroupByOptions
+  extends Pick<EntityDataProviderFindOptions, 'where' | 'limit' | 'page'> {
+  group?: FieldMetadata[]
+  sum?: FieldMetadata[]
+  avg?: FieldMetadata[]
+  min?: FieldMetadata[]
+  max?: FieldMetadata[]
+  distinctCount?: FieldMetadata[]
+  orderBy?: {
+    field?: FieldMetadata
+    isDescending?: boolean
+    operation?: (typeof GroupByOperators)[number] | 'count'
+  }[]
+}
+
 export interface EntityDataProvider {
   count(where: Filter): Promise<number>
   find(options?: EntityDataProviderFindOptions): Promise<Array<any>>
+  groupBy(options?: EntityDataProviderGroupByOptions): Promise<any[]>
   update(id: any, data: any): Promise<any>
   delete(id: any): Promise<void>
   insert(data: any): Promise<any>

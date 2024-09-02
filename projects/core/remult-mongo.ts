@@ -26,6 +26,8 @@ import type { RepositoryOverloads } from './src/remult3/RepositoryImplementation
 import { getRepository } from './src/remult3/RepositoryImplementation.js'
 import { getRepositoryInternals } from './src/remult3/repository-internals.js'
 import { getRowAfterUpdate } from './src/data-providers/sql-database.js'
+import type { EntityDataProviderGroupByOptions } from './src/data-interfaces.js'
+import { GroupByCountMember, GroupByOperators } from './src/remult3/remult3.js'
 
 export class MongoDataProvider implements DataProvider {
   constructor(
@@ -96,6 +98,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
     private entity: EntityMetadata<any>,
     private session?: ClientSession,
   ) {}
+
   translateFromDb(row: any, nameProvider: EntityDbNamesBase) {
     let result: any = {}
     for (const col of this.entity.fields) {
@@ -121,6 +124,98 @@ class MongoEntityDataProvider implements EntityDataProvider {
     let w = await x.resolveWhere()
 
     return await collection.countDocuments(w, { session: this.session })
+  }
+  async groupBy(options?: EntityDataProviderGroupByOptions): Promise<any[]> {
+    let { collection, e } = await this.collection()
+    let x = new FilterConsumerBridgeToMongo(e)
+    const pipeLine: any[] = []
+    if (options?.where) {
+      options.where.__applyToConsumer(x)
+      let where = await x.resolveWhere()
+      pipeLine.push({ $match: where })
+    }
+    const processResultRow: ((mongoRow: any, resultRow: any) => void)[] = []
+    const $group: any = {
+      __count: { $sum: 1 },
+    }
+    processResultRow.push((mongoRow, resultRow) => {
+      resultRow[GroupByCountMember] = mongoRow.__count
+    })
+    pipeLine.push({ $group })
+    const $addFields: any = {}
+    pipeLine.push({ $addFields })
+
+    if (options?.group) {
+      $group._id = {}
+      for (const element of options.group) {
+        const name = e.$dbNameOf(element)
+        $group._id[name] = `$${name}`
+
+        processResultRow.push((mongoRow, resultRow) => {
+          resultRow[element.key] = element.valueConverter.fromDb(
+            mongoRow._id[name],
+          )
+        })
+      }
+    } else {
+      $group._id = null
+    }
+    for (const operator of GroupByOperators) {
+      if (options?.[operator]) {
+        for (const element of options[operator]) {
+          const name = e.$dbNameOf(element) + '_' + operator
+          if (operator === 'distinctCount') {
+            $group[name + '_temp'] = { $addToSet: `$${e.$dbNameOf(element)}` }
+            $addFields[name] = { $size: `$${name + '_temp'}` }
+          } else $group[name] = { ['$' + operator]: `$${e.$dbNameOf(element)}` }
+          processResultRow.push((mongoRow, resultRow) => {
+            resultRow[element.key] = {
+              ...resultRow[element.key],
+              [operator]: mongoRow[name],
+            }
+          })
+        }
+      }
+    }
+
+    if (options?.orderBy) {
+      let sort: any = {}
+      for (const x of options.orderBy) {
+        const direction = x.isDescending ? -1 : 1
+        switch (x.operation) {
+          case 'count':
+            sort['__count'] = direction
+            break
+          case undefined:
+            sort['_id.' + e.$dbNameOf(x.field!)] = direction
+            break
+          default:
+            sort[e.$dbNameOf(x.field!) + '_' + x.operation] = direction
+            break
+        }
+      }
+      pipeLine.push({ $sort: sort })
+    }
+
+    if (options?.limit) {
+      pipeLine.push({ $limit: options.limit })
+
+      if (options.page) {
+        pipeLine.push({ $skip: (options.page - 1) * options.limit })
+      }
+    }
+
+    const r = await collection
+      .aggregate(pipeLine, { session: this.session })
+      .toArray()
+    const r2 = r.map((x) => {
+      let resultRow: any = {}
+      for (const f of processResultRow) {
+        f(x, resultRow)
+      }
+      return resultRow
+    })
+    return r2
   }
   async find(options: EntityDataProviderFindOptions): Promise<any[]> {
     let { collection, e } = await this.collection()

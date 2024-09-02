@@ -8,47 +8,46 @@ import type {
   ValueListItem,
 } from '../column-interfaces.js'
 import type { AllowedForInstance } from '../context.js'
-import {
-  Remult,
-  RemultAsyncLocalStorage,
-  isBackend,
-  queryConfig,
-} from '../context.js'
+import { Remult, isBackend, queryConfig } from '../context.js'
 import type { EntityOptions } from '../entity.js'
 import { Filter } from '../filter/filter-interfaces.js'
 import { Sort } from '../sort.js'
-import type {
-  ControllerRef,
-  ControllerRefForControllerBase,
-  EntityFilter,
-  EntityMetadata,
-  EntityOrderBy,
-  EntityRef,
-  EntityRefForEntityBase,
-  FieldRef,
-  FieldsMetadata,
-  FieldsRef,
-  FieldsRefForEntityBase,
-  FindFirstOptions,
-  FindFirstOptionsBase,
-  FindOptions,
-  FindOptionsBase,
-  IdFieldRef,
-  IdMetadata,
-  LifecycleEvent,
-  LiveQuery,
-  LiveQueryChangeInfo,
-  LoadOptions,
-  MembersOnly,
-  ObjectMembersOnly,
-  QueryOptions,
-  QueryResult,
-  RelationOptions,
-  Repository,
-  RepositoryRelations,
-  Subscribable,
-  ValidateFieldEvent,
-  idType,
+import {
+  GroupByForApiKey,
+  type GroupByOptions,
+  type GroupByResult,
+  type ControllerRef,
+  type ControllerRefForControllerBase,
+  type EntityFilter,
+  type EntityMetadata,
+  type EntityOrderBy,
+  type EntityRef,
+  type EntityRefForEntityBase,
+  type FieldRef,
+  type FieldsMetadata,
+  type FieldsRef,
+  type FieldsRefForEntityBase,
+  type FindFirstOptions,
+  type FindFirstOptionsBase,
+  type FindOptions,
+  type FindOptionsBase,
+  type IdFieldRef,
+  type IdMetadata,
+  type LifecycleEvent,
+  type LiveQuery,
+  type LiveQueryChangeInfo,
+  type LoadOptions,
+  type MembersOnly,
+  type NumericKeys,
+  type ObjectMembersOnly,
+  type QueryOptions,
+  type QueryResult,
+  type RelationOptions,
+  type Repository,
+  type RepositoryRelations,
+  type Subscribable,
+  type ValidateFieldEvent,
+  type idType,
 } from './remult3.js'
 
 import type { Paginator, RefSubscriber, RefSubscriberBase } from './remult3.js'
@@ -57,6 +56,7 @@ import type { entityEventListener } from '../__EntityValueProvider.js'
 import type {
   DataProvider,
   EntityDataProvider,
+  EntityDataProviderGroupByOptions,
   EntityDataProviderFindOptions,
   ErrorInfo,
   ProxyEntityDataProvider,
@@ -224,6 +224,150 @@ export class RepositoryImplementation<entityType>
     private _info: EntityFullInfo<entityType>,
     private _defaultFindOptions?: FindOptions<entityType>,
   ) {}
+  async aggregate<
+    sumFields extends NumericKeys<entityType>[] | undefined = undefined,
+    averageFields extends NumericKeys<entityType>[] | undefined = undefined,
+    minFields extends (keyof MembersOnly<entityType>)[] | undefined = undefined,
+    maxFields extends (keyof MembersOnly<entityType>)[] | undefined = undefined,
+    distinctCountFields extends
+      | (keyof MembersOnly<entityType>)[]
+      | undefined = undefined,
+  >(
+    options: Omit<
+      GroupByOptions<
+        entityType,
+        never,
+        sumFields extends undefined ? never : sumFields,
+        averageFields extends undefined ? never : averageFields,
+        minFields extends undefined ? never : minFields,
+        maxFields extends undefined ? never : maxFields,
+        distinctCountFields extends undefined ? never : distinctCountFields
+      >,
+      'limit' | 'page' | 'orderBy'
+    >,
+  ): Promise<
+    GroupByResult<
+      entityType,
+      never,
+      sumFields extends undefined ? never : sumFields,
+      averageFields extends undefined ? never : averageFields,
+      minFields extends undefined ? never : minFields,
+      maxFields extends undefined ? never : maxFields,
+      distinctCountFields extends undefined ? never : distinctCountFields
+    >
+  > {
+    return (await this.groupBy(options))[0]
+  }
+  async groupBy<
+    groupByFields extends
+      | (keyof MembersOnly<entityType>)[]
+      | undefined = undefined,
+    sumFields extends NumericKeys<entityType>[] | undefined = undefined,
+    averageFields extends NumericKeys<entityType>[] | undefined = undefined,
+    minFields extends (keyof MembersOnly<entityType>)[] | undefined = undefined,
+    maxFields extends (keyof MembersOnly<entityType>)[] | undefined = undefined,
+    distinctCountFields extends
+      | (keyof MembersOnly<entityType>)[]
+      | undefined = undefined,
+  >(
+    options: GroupByOptions<
+      entityType,
+      groupByFields extends undefined ? never : groupByFields,
+      sumFields extends undefined ? never : sumFields,
+      averageFields extends undefined ? never : averageFields,
+      minFields extends undefined ? never : minFields,
+      maxFields extends undefined ? never : maxFields,
+      distinctCountFields extends undefined ? never : distinctCountFields
+    >,
+  ): Promise<
+    GroupByResult<
+      entityType,
+      groupByFields extends undefined ? never : groupByFields,
+      sumFields extends undefined ? never : sumFields,
+      averageFields extends undefined ? never : averageFields,
+      minFields extends undefined ? never : minFields,
+      maxFields extends undefined ? never : maxFields,
+      distinctCountFields extends undefined ? never : distinctCountFields
+    >[]
+  > {
+    let findOptions = await this._buildEntityDataProviderFindOptions({
+      ...options,
+    })
+
+    const getField = (key: keyof entityType) => {
+      const r = this.metadata.fields.find(key as string)
+      if (r === undefined)
+        throw Error(`key "${key as string}" not found in entity`)
+      return r
+    }
+    const getFieldNotInGroupBy = (key: keyof entityType) => {
+      if (options?.group?.includes(key as any))
+        throw Error(
+          `field "${
+            key as string
+          }" cannot be used both in an aggregate and in group by`,
+        )
+      return getField(key)
+    }
+
+    var dpOptions: EntityDataProviderGroupByOptions = {
+      where: findOptions.where,
+      limit: findOptions.limit,
+      page: findOptions.page,
+      group: options?.group?.map(getField),
+      sum: options?.sum?.map(getFieldNotInGroupBy),
+      avg: options?.avg?.map(getFieldNotInGroupBy),
+      min: options?.min?.map(getFieldNotInGroupBy),
+      max: options?.max?.map(getFieldNotInGroupBy),
+      distinctCount: options?.distinctCount?.map(getFieldNotInGroupBy),
+    }
+    if (options?.orderBy) {
+      dpOptions.orderBy = []
+      for (const key in options.orderBy) {
+        if (Object.prototype.hasOwnProperty.call(options?.orderBy, key)) {
+          const element = (options.orderBy as any)[key]
+          if (element)
+            if (typeof element === 'string') {
+              dpOptions.orderBy.push({
+                field: key === '$count' ? undefined : getField(key as any),
+                isDescending: element === 'desc',
+                operation: key === '$count' ? 'count' : undefined,
+              })
+            } else {
+              for (const operation in element) {
+                if (Object.prototype.hasOwnProperty.call(element, operation)) {
+                  const direction = element[operation]
+                  dpOptions.orderBy.push({
+                    field: this.metadata.fields.find(key as string),
+                    isDescending: direction === 'desc',
+                    operation: operation as any,
+                  })
+                }
+              }
+            }
+        }
+      }
+    }
+    const result = await this._edp.groupBy(dpOptions)
+    //@ts-expect-error an internal option
+    if (!options?.[GroupByForApiKey] && options.group) {
+      const loaderOptions: LoadOptions<entityType> = {
+        include: {},
+      }
+      for (const key of options.group) {
+        loaderOptions!.include![key] = true
+      }
+      const loader = new RelationLoader()
+      await this.populateRelationsForFields(
+        dpOptions.group!,
+        loaderOptions,
+        result,
+        loader,
+      )
+      await loader.resolveAll()
+    }
+    return result as any
+  }
   _idCache = new Map<any, any>()
   _getCachedById(
     id: any,
@@ -677,7 +821,17 @@ export class RepositoryImplementation<entityType>
       rawRows,
       async (r) => await this._mapRawDataToResult(r, loadFields),
     )
-    for (const col of this.metadata.fields) {
+    const fields = this.metadata.fields.toArray()
+    this.populateRelationsForFields(fields, loadOptions, result, loader)
+    return result
+  }
+  private populateRelationsForFields(
+    fields: FieldMetadata<unknown, unknown>[],
+    loadOptions: LoadOptions<entityType>,
+    result: entityType[],
+    loader: RelationLoader,
+  ) {
+    for (const col of fields) {
       let rel = getRelationFieldInfo(col)
       let incl = (col.options as RelationOptions<any, any, any>)
         .defaultIncluded as any as FindFirstOptionsBase<any>
@@ -725,8 +879,8 @@ export class RepositoryImplementation<entityType>
         }
       }
     }
-    return result
   }
+
   /*@internal */
 
   _findOptionsBasedOnRelation(
@@ -764,14 +918,11 @@ export class RepositoryImplementation<entityType>
     const relFields = rel.getFields()
 
     const getFieldValue = (key: string) => {
+      const ref = getEntityRef(row, false)
+
       let val =
-        rel.type === 'reference'
-          ? (
-              getEntityRef(row).fields.find(field.key) as IdFieldRef<
-                entityType,
-                any
-              >
-            ).getId()
+        rel.type === 'reference' && ref
+          ? (ref.fields.find(field.key) as IdFieldRef<entityType, any>).getId()
           : row[key as keyof entityType]
       if (rel.type === 'toOne' || rel.type === 'reference') {
         if (val === null) returnNull = true
@@ -1134,7 +1285,7 @@ export function createOldEntity<T>(entity: ClassType<T>, remult: Remult) {
 
   return new EntityFullInfo<T>(
     prepareColumnInfo(r, remult),
-    info,
+    info as EntityOptions<T>,
     remult,
     entity,
     key,

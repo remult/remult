@@ -21,6 +21,7 @@ export {
   QueryResult,
   QueryOptions,
   Repository,
+  GroupByOptions,
   FindFirstOptions,
   ComparisonValueFilter,
   ValueFilter,
@@ -82,6 +83,7 @@ export { EntityOptions, PreprocessFilterEvent } from './src/entity.js'
 export {
   DataProvider,
   EntityDataProvider,
+  EntityDataProviderGroupByOptions,
   EntityDataProviderFindOptions,
   ErrorInfo,
   RestDataProviderHttpProvider,

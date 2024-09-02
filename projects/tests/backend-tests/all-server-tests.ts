@@ -120,6 +120,69 @@ export function allServerTests(
     }),
   )
   it(
+    'aggregate',
+    withRemultForTest(async () => {
+      await create3Tasks()
+      expect(await repo(Task).groupBy({ groupBy: ['completed'] }))
+        .toMatchInlineSnapshot(`
+          [
+            {
+              "$count": 2,
+              "completed": false,
+            },
+            {
+              "$count": 1,
+              "completed": true,
+            },
+          ]
+        `)
+    }),
+  )
+  it(
+    'aggregate 3',
+    withRemultForTest(async () => {
+      await create3Tasks()
+      expect(
+        await repo(Task).groupBy({
+          groupBy: ['completed'],
+          where: {
+            $or: [{ completed: true }, { completed: false }],
+          },
+        }),
+      ).toMatchInlineSnapshot(`
+          [
+            {
+              "$count": 2,
+              "completed": false,
+            },
+            {
+              "$count": 1,
+              "completed": true,
+            },
+          ]
+        `)
+    }),
+  )
+  it(
+    'aggregate 2',
+    withRemultForTest(async () => {
+      await create3Tasks()
+      expect(
+        await repo(Task).groupBy({
+          groupBy: ['completed'],
+          where: { completed: true },
+        }),
+      ).toMatchInlineSnapshot(`
+          [
+            {
+              "$count": 1,
+              "completed": true,
+            },
+          ]
+        `)
+    }),
+  )
+  it(
     'update many',
     withRemultForTest(async () => {
       await create3Tasks()

@@ -1,6 +1,7 @@
 import type {
   DataProvider,
   EntityDataProvider,
+  EntityDataProviderGroupByOptions,
   EntityDataProviderFindOptions,
   ProxyEntityDataProvider,
   RestDataProviderHttpProvider,
@@ -121,6 +122,33 @@ export class RestEntityDataProvider
     private http: () => RestDataProviderHttpProvider,
     private entity: EntityMetadata,
   ) {}
+  async groupBy(options?: EntityDataProviderGroupByOptions): Promise<any[]> {
+    const { run } = this.buildFindRequest({
+      where: options?.where,
+      limit: options?.limit,
+      page: options?.page,
+    })
+    const body = {
+      groupBy: options?.group?.map((x) => x.key),
+      sum: options?.sum?.map((x) => x.key),
+      avg: options?.avg?.map((x) => x.key),
+      min: options?.min?.map((x) => x.key),
+      max: options?.max?.map((x) => x.key),
+      distinctCount: options?.distinctCount?.map((x) => x.key),
+      orderBy: options?.orderBy?.map((x) => ({ ...x, field: x.field?.key })),
+    }
+    const result: any[] = await run(
+      'groupBy',
+      Object.keys(body).length > 0 ? body : undefined,
+    )
+    if (options?.group)
+      result.forEach((row) => {
+        for (const g of options!.group!) {
+          row[g.key] = g.valueConverter.fromJson(row[g.key])
+        }
+      })
+    return result
+  }
 
   translateFromJson(row: any) {
     let result: any = {}
@@ -196,9 +224,12 @@ export class RestEntityDataProvider
       }
       if (action) u.add('__action', action)
       if (filterObject) {
-        body = { set: body, where: filterObject }
-        return this.http().post(u.url, body)
-      } else return this.http()[method!](u.url, body)
+        if (method === 'put') {
+          return this.http().post(u.url, { set: body, where: filterObject })
+        } else body = { ...body, where: filterObject }
+      }
+      if (body && method != 'put') return this.http().post(u.url, body)
+      else return this.http()[method!](u.url, body)
     }
 
     return {

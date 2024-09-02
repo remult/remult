@@ -2,6 +2,7 @@ import { CompoundIdField } from '../CompoundIdField.js'
 import type { FieldMetadata } from '../column-interfaces.js'
 import type {
   EntityDataProvider,
+  EntityDataProviderGroupByOptions,
   EntityDataProviderFindOptions,
 } from '../data-interfaces.js'
 import {
@@ -14,7 +15,13 @@ import {
   Filter,
   customDatabaseFilterToken,
 } from '../filter/filter-interfaces.js'
-import type { EntityFilter, EntityMetadata } from '../remult3/remult3.js'
+import {
+  GroupByCountMember,
+  GroupByOperators,
+  type EntityFilter,
+  type EntityMetadata,
+} from '../remult3/remult3.js'
+import { compareForSort, Sort } from '../sort.js'
 
 export class ArrayEntityDataProvider implements EntityDataProvider {
   static rawFilter(filter: CustomArrayFilter): EntityFilter<any> {
@@ -29,6 +36,171 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
     private entity: EntityMetadata,
     private rows: () => any[],
   ) {}
+  async groupBy(options?: EntityDataProviderGroupByOptions): Promise<any[]> {
+    const sort = new Sort()
+    if (options?.group)
+      for (const field of options?.group) {
+        sort.Segments.push({ field: field })
+      }
+    const rows = await this.find({ orderBy: sort, where: options?.where })
+    let result: any[] = []
+    let group: any = {}
+    let first = true
+    let count = 0
+    let aggregates: {
+      process(row: any): void
+      finishGroup(result: any): void
+    }[] = []
+
+    const operatorImpl: Record<
+      (typeof GroupByOperators)[number],
+      (key: string) => (typeof aggregates)[number]
+    > = {
+      sum: (key) => {
+        let sum = 0
+        return {
+          process(row: any) {
+            const val = row[key]
+            if (val !== undefined && val !== null) sum += row[key]
+          },
+          finishGroup(result: any) {
+            result[key] = { ...result[key], sum }
+            sum = 0
+          },
+        }
+      },
+      avg: (key) => {
+        let sum = 0
+        let count = 0
+        return {
+          process(row: any) {
+            const val = row[key]
+            if (val !== undefined && val !== null) {
+              sum += row[key]
+              count++
+            }
+          },
+          finishGroup(result: any) {
+            result[key] = {
+              ...result[key],
+              avg: sum / count,
+            }
+            sum = 0
+            count = 0
+          },
+        }
+      },
+      min: (key) => {
+        let min: any = undefined
+        return {
+          process(row: any) {
+            const val = row[key]
+            if (val !== undefined && val !== null) {
+              if (min === undefined || val < min) min = val
+            }
+          },
+          finishGroup(result: any) {
+            result[key] = { ...result[key], min }
+            min = undefined
+          },
+        }
+      },
+      max: (key) => {
+        let max: any = undefined
+        return {
+          process(row: any) {
+            const val = row[key]
+            if (val !== undefined && val !== null) {
+              if (max === undefined || val > max) max = val
+            }
+          },
+          finishGroup(result: any) {
+            result[key] = { ...result[key], max }
+            max = undefined
+          },
+        }
+      },
+      distinctCount: (key) => {
+        let distinct = new Set<any>()
+        return {
+          process(row: any) {
+            const val = row[key]
+            if (val !== undefined && val !== null) distinct.add(val)
+          },
+          finishGroup(result: any) {
+            result[key] = { ...result[key], distinctCount: distinct.size }
+            distinct.clear()
+          },
+        }
+      },
+    }
+    for (let operator of GroupByOperators) {
+      if (options?.[operator]) {
+        for (const element of options[operator]!) {
+          aggregates.push(operatorImpl[operator](element.key))
+        }
+      }
+    }
+
+    function finishGroup() {
+      const r: any = { ...group, $count: count }
+      for (const a of aggregates) {
+        a.finishGroup(r)
+      }
+      r[GroupByCountMember] = count
+      result.push(r)
+      first = true
+      count = 0
+    }
+    for (const row of rows) {
+      if (options?.group) {
+        if (!first) {
+          for (const field of options?.group) {
+            if (group[field.key] != row[field.key]) {
+              finishGroup()
+              break
+            }
+          }
+        }
+        if (first) {
+          for (const field of options?.group) {
+            group[field.key] = row[field.key]
+          }
+        }
+      }
+      for (const a of aggregates) {
+        a.process(row)
+      }
+      count++
+      first = false
+    }
+    finishGroup()
+    if (options?.orderBy) {
+      result.sort((a, b) => {
+        for (const x of options.orderBy!) {
+          const getValue = (row: any) => {
+            if (!x.field && x.operation == 'count') {
+              return row[GroupByCountMember]
+            } else {
+              switch (x.operation) {
+                case 'count':
+                  return row[GroupByCountMember]
+                case undefined:
+                  return row[x.field!.key]
+                default:
+                  return row[x.field!.key][x.operation]
+              }
+            }
+          }
+
+          let compare = compareForSort(getValue(a), getValue(b), x.isDescending)
+          if (compare != 0) return compare
+        }
+        return 0
+      })
+    }
+    return pageArray(result, { page: options?.page, limit: options?.limit })
+  }
   //@internal
   private __names?: EntityDbNamesBase
   //@internal

@@ -22,6 +22,7 @@ import type { FieldMetadata } from '../src/column-interfaces.js'
 import type {
   DataProvider,
   EntityDataProvider,
+  EntityDataProviderGroupByOptions,
   EntityDataProviderFindOptions,
 } from '../src/data-interfaces.js'
 import { remult as remultContext } from '../src/remult-proxy.js'
@@ -47,7 +48,10 @@ import type {
   MigrationBuilder,
   MigrationCode,
 } from '../migrations/migration-types.js'
-import { getRowAfterUpdate } from '../src/data-providers/sql-database.js'
+import {
+  groupByImpl,
+  getRowAfterUpdate,
+} from '../src/data-providers/sql-database.js'
 
 export class KnexDataProvider
   implements
@@ -119,7 +123,12 @@ export class KnexDataProvider
       }
     }
 
-    return new KnexEntityDataProvider(entity, this.knex, this.wrapIdentifier)
+    return new KnexEntityDataProvider(
+      entity,
+      this.knex,
+      this.wrapIdentifier,
+      this,
+    )
   }
   async transaction(
     action: (dataProvider: DataProvider) => Promise<void>,
@@ -175,7 +184,17 @@ class KnexEntityDataProvider implements EntityDataProvider {
     private entity: EntityMetadata<any>,
     private knex: Knex,
     private rawSqlWrapIdentifier: (name: string) => string,
+    private dp: KnexDataProvider,
   ) {}
+  async groupBy(options?: EntityDataProviderGroupByOptions): Promise<any[]> {
+    return groupByImpl(
+      options,
+      await this.init(),
+      this.dp.createCommand(),
+      false,
+      (limit, offset) => ' limit ' + limit + ' offset ' + offset,
+    )
+  }
   async count(where: Filter): Promise<number> {
     const e = await this.init()
     const br = new FilterConsumerBridgeToKnexRequest(

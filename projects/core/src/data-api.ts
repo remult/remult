@@ -12,11 +12,14 @@ import {
 } from './filter/filter-interfaces.js'
 import type { QueryData } from './live-query/SubscriptionServer.js'
 import { getRelationFieldInfo } from './remult3/relationInfoMember.js'
-import type {
-  EntityFilter,
-  EntityMetadata,
-  FindOptions,
-  Repository,
+import {
+  GroupByCountMember,
+  GroupByForApiKey,
+  type GroupByOptions,
+  type EntityFilter,
+  type EntityMetadata,
+  type FindOptions,
+  type Repository,
 } from './remult3/remult3.js'
 import type { rowHelperImplementation } from './remult3/RepositoryImplementation.js'
 
@@ -45,6 +48,8 @@ export class DataApi<T = unknown> {
       case 'get':
       case 'count':
         return this.count(res, req, undefined)
+      case 'groupBy':
+        return this.groupBy(res, req, undefined)
     }
     return this.getArray(res, req, undefined)
   }
@@ -73,6 +78,7 @@ export class DataApi<T = unknown> {
         action.substring(liveQueryAction.length),
       )
     }
+
     switch (action) {
       case 'get':
         validateWhereInBody()
@@ -80,6 +86,8 @@ export class DataApi<T = unknown> {
       case 'count':
         validateWhereInBody()
         return this.count(res, req, body)
+      case 'groupBy':
+        return this.groupBy(res, req, body)
       case 'deleteMany':
         validateWhereInBody()
         return this.deleteMany(res, req, body)
@@ -142,12 +150,82 @@ export class DataApi<T = unknown> {
       response.error(err, this.repository.metadata)
     }
   }
+  async groupBy(response: DataApiResponse, request: DataApiRequest, body: any) {
+    let findOptions = await this.findOptionsFromRequest(request, body)
+    let orderBy: any = {}
+    if (body?.orderBy) {
+      for (const element of body?.orderBy) {
+        const direction = element.isDescending ? 'desc' : 'asc'
+        switch (element.operation) {
+          case undefined:
+            orderBy[element.field] = direction
+            break
+
+          case 'count':
+            orderBy[GroupByCountMember] = direction
+            break
+          default:
+            orderBy[element.field] = {
+              ...orderBy[element.field],
+              [element.operation]: direction,
+            }
+            break
+        }
+      }
+    }
+    const group = (body?.groupBy as any[])?.filter((x: string) =>
+      this.repository.fields.find(x).includedInApi(),
+    )
+    let result = await this.repository.groupBy({
+      where: findOptions.where,
+      limit: findOptions.limit,
+      page: findOptions.page,
+      //@ts-expect-error internal key
+      [GroupByForApiKey]: true,
+      group,
+      sum: (body?.sum as any[])?.filter((x: string) =>
+        this.repository.fields.find(x).includedInApi(),
+      ),
+      avg: (body?.avg as any[])?.filter((x: string) =>
+        this.repository.fields.find(x).includedInApi(),
+      ),
+      min: (body?.min as any[])?.filter((x: string) =>
+        this.repository.fields.find(x).includedInApi(),
+      ),
+      max: (body?.max as any[])?.filter((x: string) =>
+        this.repository.fields.find(x).includedInApi(),
+      ),
+      distinctCount: (body?.distinctCount as any[])?.filter((x: string) =>
+        this.repository.fields.find(x).includedInApi(),
+      ),
+      orderBy: orderBy,
+    })
+    if (group)
+      result.forEach((x) => {
+        for (const f of group) {
+          x[f] = this.repository.fields.find(f).valueConverter.toJson(x[f])
+        }
+      })
+
+    response.success(result)
+  }
 
   async getArrayImpl(
     response: DataApiResponse,
     request: DataApiRequest,
     body: any,
   ) {
+    let findOptions = await this.findOptionsFromRequest(request, body)
+
+    const r = await this.repository.find(findOptions).then(async (r) => {
+      return await Promise.all(
+        r.map(async (y) => this.repository.getEntityRef(y).toApiJson()),
+      )
+    })
+    return { r, findOptions }
+  }
+
+  private async findOptionsFromRequest(request: DataApiRequest, body: any) {
     let findOptions: FindOptions<T> = {
       load: () => [],
       include: this.includeNone(),
@@ -197,16 +275,10 @@ export class DataApi<T = unknown> {
         })
       }
       if (!hasId) {
-        response.forbidden()
         throw new ForbiddenError()
       }
     }
-    const r = await this.repository.find(findOptions).then(async (r) => {
-      return await Promise.all(
-        r.map(async (y) => this.repository.getEntityRef(y).toApiJson()),
-      )
-    })
-    return { r, findOptions }
+    return findOptions
   }
 
   private includeNone() {
