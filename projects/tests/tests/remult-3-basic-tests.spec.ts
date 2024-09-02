@@ -8,6 +8,7 @@ import {
 import { Remult } from '../../core/src/context'
 import { Categories, Products } from './remult-3-entities'
 import { MockRestDataProvider } from './testHelper'
+import { Status } from './testModel/models.js'
 
 describe('remult-3-basics', () => {
   it('test the very basics', async () => {
@@ -173,6 +174,105 @@ describe('remult-3-basics', () => {
     }))
     await repo.save(items)
     expect(items[0].categoryName).toBe('1')
+  })
+  it('insertWithRelations works with single item', async () => {
+    const remult = new Remult(new InMemoryDataProvider())
+    let productRepo = remult.repo(Products)
+    let catRepo = remult.repo(Categories)
+    await productRepo.insertWithRelations({
+      category: {
+        categoryName: 'my cat',
+        status: Status.hold,
+        description: 'did it work?',
+      },
+      archived: false,
+      name: 'my product',
+      price: 1000,
+      availableFrom: new Date(),
+    })
+    const categories = await catRepo.find()
+    expect(categories.length).toBe(1)
+    expect(categories[0].categoryName).toBe('my cat')
+
+    const products = await productRepo.find({
+      include: {
+        category: true,
+      },
+    })
+    expect(products.length).toBe(1)
+    expect(products[0].category?.id).toBe(categories[0].id)
+    expect(products[0].name).toBe('my product')
+  })
+  it('insertWithRelations works even if no relation is given', async () => {
+    const remult = new Remult(new InMemoryDataProvider())
+    let productRepo = remult.repo(Products)
+    let catRepo = remult.repo(Categories)
+    await productRepo.insertWithRelations({
+      archived: false,
+      name: 'my product',
+      price: 1000,
+      availableFrom: new Date(),
+    })
+    const categories = await catRepo.find()
+    expect(categories.length).toBe(0)
+
+    const products = await productRepo.find({
+      include: {
+        category: true,
+      },
+    })
+    expect(products.length).toBe(1)
+    expect(products[0].category?.id).toBeUndefined()
+    expect(products[0].name).toBe('my product')
+  })
+  it('insertWithRelations works with array', async () => {
+    const remult = new Remult(new InMemoryDataProvider())
+    let productRepo = remult.repo(Products)
+    let catRepo = remult.repo(Categories)
+    await productRepo.insertWithRelations([
+      {
+        archived: false,
+        name: 'my product1',
+        price: 1000,
+        availableFrom: new Date(),
+        category: {
+          categoryName: 'my cat1',
+          status: Status.hold,
+          description: 'did it work?',
+        },
+      },
+      {
+        archived: false,
+        name: 'my product2',
+        price: 1000,
+        availableFrom: new Date(),
+        category: {
+          categoryName: 'my cat2',
+          status: Status.hold,
+          description: 'did it work?',
+        },
+      },
+    ])
+    const categories = await catRepo.find()
+    expect(categories.length).toBe(2)
+    expect(categories.some((v) => v.categoryName === 'my cat2')).toBeTruthy()
+    expect(categories.some((v) => v.categoryName === 'my cat1')).toBeTruthy()
+
+    const products = await productRepo.find({
+      include: {
+        category: true,
+      },
+    })
+
+    expect(products.length).toBe(2)
+    expect(
+      categories.some((v) => v.id === products[0].category!.id),
+    ).toBeTruthy()
+    expect(
+      categories.some((v) => v.id === products[1].category!.id),
+    ).toBeTruthy()
+
+    expect(products[0].name === products[1].name).toBeFalsy()
   })
   it('test update of object', async () => {
     const product = class {
