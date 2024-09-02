@@ -5,6 +5,7 @@ import { entities, seed } from '../shared/model'
 export const app = express()
 export const api = remultExpress({
   entities,
+  admin: true,
   initApi: async () => {
     await seed()
   },

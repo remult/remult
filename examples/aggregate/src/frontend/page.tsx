@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import usePromise from 'react-use-promise'
 import { repo } from 'remult'
 import { Employee } from '../shared/model'
