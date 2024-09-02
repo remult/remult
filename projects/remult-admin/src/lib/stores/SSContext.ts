@@ -6,6 +6,7 @@ type TSSContext = {
   settings: {
     bearerAuth: string
   }
+  forbiddenEntities: string[]
 }
 
 const SSContextKey = 'SSRemultAdmin_2024_08_23'
@@ -14,6 +15,7 @@ const SSContextDefaults: TSSContext = {
   settings: {
     bearerAuth: '',
   },
+  forbiddenEntities: [],
 }
 
 const SSCurrentContext = browser

@@ -13,6 +13,10 @@
   import Filter from './Filter.svelte'
   import { writable, type Writable } from 'svelte/store'
   import LoadingSkeleton from './LoadingSkeleton.svelte'
+  import { SSContext } from '../stores/SSContext.js'
+  import { LSContext } from '../stores/LSContext.js'
+  import Key from '../icons/Key.svelte'
+  import ColumnType from '../icons/ColumnType.svelte'
 
   export let fields: FieldUIInfo[]
   export let relations: EntityRelationToManyInfo[]
@@ -28,6 +32,8 @@
 
   let items: any[] | null = null
 
+  $: $SSContext.forbiddenEntities.includes(repo.metadata.key) && (items = [])
+
   // resting items when fields change
   $: items = fields && (items = null)
 
@@ -35,6 +41,8 @@
   let unSub: (() => void) | null = null
 
   const reSub = (currentFilter: EntityFilter<any>) => {
+    $SSContext.forbiddenEntities = []
+
     if (unSub) {
       unSub()
     }
@@ -124,9 +132,13 @@
   </button>
 
   <div class="page-bar__title title" style="--color: {color}">
-    {repo.metadata.caption}
+    {$LSContext.settings.dispayCaption
+      ? repo.metadata.caption
+      : repo.metadata.key}
+    {#if $SSContext.forbiddenEntities.includes(repo.metadata.key)}
+      <span style="color: coral; font-size: smaller;">Forbidden</span>
+    {/if}
   </div>
-
   <Filter {fields} bind:filter={$filter} />
 
   <span class="page-bar__results">{from + ' - ' + to} of {totalRows}</span>
@@ -181,23 +193,50 @@
     <thead>
       <tr>
         <td>
-          <button
-            class="icon-button new-entry"
-            on:click={() => {
-              newRow = repo.create({ ...parentRelation })
-            }}
-          >
-            +
-          </button>
+          {#if newRow === undefined}
+            <button
+              class="icon-button new-entry"
+              on:click={() => {
+                newRow = repo.create({ ...parentRelation })
+              }}
+            >
+              +
+            </button>
+          {:else}
+            <button
+              class="icon-button new-entry"
+              on:click={() => {
+                newRow = undefined
+              }}
+            >
+              -
+            </button>
+          {/if}
         </td>
         {#each fields as column}
-          <th on:click={() => toggleOrderBy(column.key)}>
-            {column.caption}
-            {options.orderBy?.[column.key] === 'asc'
-              ? '▲'
-              : options.orderBy?.[column.key] === 'desc'
-              ? '▼'
-              : ''}
+          <th
+            on:click={() => toggleOrderBy(column.key)}
+            style="cursor: pointer;"
+          >
+            <span
+              style="display: flex; gap:0.3rem; align-items: center; justify-content: space-between;"
+            >
+              {#if Object.keys(repo.metadata.options.id).includes(column.key)}
+                <Key></Key>
+              {:else}
+                <span></span>
+              {/if}
+              {$LSContext.settings.dispayCaption ? column.caption : column.key}
+              {options.orderBy?.[column.key] === 'asc'
+                ? '▲'
+                : options.orderBy?.[column.key] === 'desc'
+                ? '▼'
+                : ''}
+              <ColumnType
+                type={column.type}
+                isSelect={column.values && column.values.length > 0}
+              ></ColumnType>
+            </span>
           </th>
         {/each}
         <th class="action-tab">Actions</th>
@@ -211,11 +250,17 @@
           row={newRow}
           columns={fields}
           {relations}
+          saveAction={async (item) => {
+            await repo.insert(item)
+            newRow = undefined
+          }}
           deleteAction={async () => {
             newRow = undefined
           }}
-          save={async (item) => {
-            await repo.insert(item)
+          cancelAction={async () => {
+            newRow = undefined
+          }}
+          cancel={async () => {
             newRow = undefined
           }}
         />
@@ -225,7 +270,7 @@
           <EditableRow
             rowId={repo.metadata.idMetadata.getId(row)}
             {row}
-            save={async (item) => {
+            saveAction={async (item) => {
               await repo.update(row, item)
             }}
             deleteAction={() => repo.delete(row)}

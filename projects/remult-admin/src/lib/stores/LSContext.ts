@@ -2,25 +2,31 @@ import { writable } from 'svelte/store'
 
 const browser = typeof window !== 'undefined'
 
-type TLSContext = {
+export type TLSContext = {
   currentLocationHash: string
   schema: Record<string, { x: number; y: number }>
   settings: {
+    search: string
+    dispayCaption: boolean
     confirmDelete: boolean
     diagramLayoutAlgorithm: 'grid-bfs' | 'grid-dfs' | 'line'
     keyForBearerAuth: string
+    apiUrl: string
   }
 }
 
-const LSContextKey = 'LSRemultAdmin_2024_08_23'
+const LSContextKey = 'LSRemultAdmin_2024_08_29'
 
 const LSContextDefaults: TLSContext = {
   currentLocationHash: '/',
   schema: {},
   settings: {
+    search: '',
+    dispayCaption: true,
     confirmDelete: true,
     diagramLayoutAlgorithm: 'grid-dfs',
     keyForBearerAuth: '',
+    apiUrl: '/api',
   },
 }
 

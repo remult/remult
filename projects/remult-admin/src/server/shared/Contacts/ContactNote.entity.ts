@@ -23,7 +23,8 @@ import { Status } from './Status'
     if (isBackend()) {
       contactNote.accountManager = await remult
         .repo(AccountManager)
-        .findId(remult.user!.id)
+        .findId('27d24908-f417-4b0c-b98a-8946d661f0ce')
+      // .findId(remult.user!.id) // We don't have a connected used today in admin.
     }
   },
   saved: async (_, { relations }) =>
@@ -42,6 +43,11 @@ export class ContactNote {
   text = ''
   @Field(() => AccountManager, { allowApiUpdate: false })
   accountManager!: AccountManager
+  @Relations.toOne<ContactNote, AccountManager>(() => AccountManager, {
+    allowApiUpdate: false,
+    field: 'accountManager',
+  })
+  accountManagerInfo?: AccountManager
   @Fields.date()
   createdAt = new Date()
   @Field(() => Status)

@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store'
 import { God } from '../God'
-import { DisplayOptions, EntityUIInfo } from '../../../core/server/remult-admin'
+import { EntityUIInfo } from '../../../core/server/remult-admin'
 
 declare const entities: EntityUIInfo[]
 
