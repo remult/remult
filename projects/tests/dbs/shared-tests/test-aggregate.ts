@@ -32,9 +32,9 @@ class TestEntityWithData {
   @Fields.string()
   country = ''
   @Fields.number()
-  salary = 0
+  salary: number | null = 0
   @Fields.number()
-  numberOfKids = 0
+  numberOfKids: number | undefined = 0
   @Field(() => Status)
   status = Status.open
   @Relations.toOne(() => Category)
@@ -290,7 +290,7 @@ export function aggregateTest(
         sum: ['salary', 'numberOfKids'],
         avg: ['salary', 'numberOfKids'],
         where: {
-          salary: { $gt: 1000 },
+          salary: { $gt: 1000! },
         },
       })
 

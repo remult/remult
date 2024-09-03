@@ -319,7 +319,7 @@ export declare type idType<entityType> = entityType extends {
   : string | number
 
 export type NumericKeys<T> = {
-  [K in keyof T]: T[K] extends number ? K : never
+  [K in keyof T]: T[K] extends number | undefined | null ? K : never
 }[keyof T]
 
 /**
@@ -838,14 +838,14 @@ export declare type EntityOrderBy<entityType> = {
  */
 export declare type EntityFilter<entityType> = {
   [Properties in keyof Partial<MembersOnly<entityType>>]?:
-    | (Partial<entityType>[Properties] extends number | Date | undefined
+    | (Partial<entityType>[Properties] extends number | Date | undefined | null
         ? ComparisonValueFilter<Partial<entityType>[Properties]>
         : Partial<entityType>[Properties] extends string | undefined
         ?
             | Partial<entityType>[Properties]
             | (ContainsStringValueFilter &
                 ComparisonValueFilter<Partial<entityType>[Properties]>)
-        : Partial<entityType>[Properties] extends boolean | undefined
+        : Partial<entityType>[Properties] extends boolean | undefined | null
         ? ValueFilter<boolean>
         : Partial<entityType>[Properties] extends
             | { id?: string | number }

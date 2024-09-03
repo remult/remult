@@ -531,14 +531,14 @@ export declare type EntityDbNames<entityType> = {
 //[ ] EntityDbNamesBase from TBD is not exported
 export declare type EntityFilter<entityType> = {
   [Properties in keyof Partial<MembersOnly<entityType>>]?:
-    | (Partial<entityType>[Properties] extends number | Date | undefined
+    | (Partial<entityType>[Properties] extends number | Date | undefined | null
         ? ComparisonValueFilter<Partial<entityType>[Properties]>
         : Partial<entityType>[Properties] extends string | undefined
         ?
             | Partial<entityType>[Properties]
             | (ContainsStringValueFilter &
                 ComparisonValueFilter<Partial<entityType>[Properties]>)
-        : Partial<entityType>[Properties] extends boolean | undefined
+        : Partial<entityType>[Properties] extends boolean | undefined | null
         ? ValueFilter<boolean>
         : Partial<entityType>[Properties] extends
             | {

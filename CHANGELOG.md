@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.27.10] 2024-09-03
+
+- Fix for minor typing issue regarding field | null | undefined
+
 ## [0.27.9] 2024-09-02
 
 - Fix for minor issue in knex
