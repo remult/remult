@@ -139,10 +139,10 @@ Our full stack starter project is almost ready. Let's complete these final confi
 
 #### Enable TypeScript decorators in the React app
 
-Add the following entry to the `compilerOptions` section of the `tsconfig.json` file to enable the use of decorators in the React app.
+Add the following entry to the `compilerOptions` section of the `tsconfig.app.json` file to enable the use of decorators in the React app.
 
 ```json{7}
-// tsconfig.json
+// tsconfig.app.json
 
 {
 ...
@@ -156,7 +156,25 @@ Add the following entry to the `compilerOptions` section of the `tsconfig.json` 
 
 ```
 
-#### Proxy API requests from Vite dev server to the API server
+#### Create the server tsconfig file
+
+In the root folder, create a TypeScript configuration file `tsconfig.server.json` for the server project.
+
+```json
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "outDir": "dist",
+    "rootDir": "src",
+    "module": "nodenext"
+  },
+  "include": ["src/server/**/*", "src/shared/**/*"]
+}
+```
+
+#### Proxy API requests from Vue DevServer (vite) to the API server
 
 The react app created in this tutorial is intended to be served from the same domain as its API.
 However, for development, the API server will be listening on `http://localhost:3002`, while the react app is served from the default `http://localhost:5173`.
@@ -189,7 +207,7 @@ npm run dev
 ```json
 // package.json
 
-"dev-node": "tsx watch src/server"
+"dev-node": "tsx watch --tsconfig tsconfig.server.json src/server"
 ```
 
 3. Open another terminal and start the `node` server

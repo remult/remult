@@ -69,25 +69,7 @@ In order to connect to a local PostgresDB, add `DATABASE_URL` to an .env file, o
 If no `DATABASE_URL` has found, it'll fallback to our local JSON files.
 :::
 
-4. In the root folder, create a TypeScript configuration file `tsconfig.server.json` for the build of the server project using TypeScript.
-
-```json
-// tsconfig.server.json
-
-{
-  "compilerOptions": {
-    "experimentalDecorators": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "outDir": "dist",
-    "rootDir": "src",
-    "module": "nodenext"
-  },
-  "include": ["src/server/**/*", "src/shared/**/*"]
-}
-```
-
-5. Modify the project's `build` npm script to additionally transpile the API server's TypeScript code to JavaScript (using `tsc`).
+4. Modify the project's `build` npm script to additionally transpile the API server's TypeScript code to JavaScript (using `tsc`).
 
 ```json
 // package.json
@@ -95,7 +77,7 @@ If no `DATABASE_URL` has found, it'll fallback to our local JSON files.
 "build": "tsc && vite build && tsc -p tsconfig.server.json",
 ```
 
-6. Modify the project's `start` npm script to start the production Node.js server.
+5. Modify the project's `start` npm script to start the production Node.js server.
 
 ```json
 // package.json
