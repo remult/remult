@@ -35,10 +35,10 @@ export function testUpdateWithNull({ createEntity }: DbTestProps) {
       numberWithNull: null,
     })
     expect(i.numberWithNull).toBe(null)
-    expect(await r.count({ numberWithNull: null })).toBe(1)
+    expect(await r.count({ numberWithNull: null! })).toBe(1)
     i.numberWithNull = 0
     await i.save()
     expect(i.numberWithNull).toBe(0)
-    expect(await r.count({ numberWithNull: null })).toBe(0)
+    expect(await r.count({ numberWithNull: null! })).toBe(0)
   })
 }

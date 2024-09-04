@@ -241,7 +241,7 @@ export function commonDbTests(
     await r.save()
     r = (await repo.findFirst())!
     expect(r.d).toBeNull()
-    expect(await repo.count({ d: null })).toBe(1)
+    expect(await repo.count({ d: null! })).toBe(1)
     r.d = new Date(1976, 5, 16)
     await r.save()
     expect(r.d.getFullYear()).toBe(1976)
@@ -257,7 +257,7 @@ export function commonDbTests(
     await r.save()
     r = (await repo.findFirst())!
     expect(r.fullDate).toBeNull()
-    expect(await repo.count({ fullDate: null })).toBe(1)
+    expect(await repo.count({ fullDate: null! })).toBe(1)
     r.fullDate = new Date(1976, 5, 16)
     await r.save()
     expect(r.fullDate.getFullYear()).toBe(1976)

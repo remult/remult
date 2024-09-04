@@ -893,6 +893,19 @@ export declare type EntityFilter<entityType> = {
    */
   $not?: EntityFilter<entityType>
 }
+interface testWhere {
+  n: number
+  nu: number | undefined
+  nn: number | null
+  nnu: number | null | undefined
+}
+const wn: EntityFilter<testWhere>[] = [{ n: 1 }, { n: { $gt: 1 } }]
+const wnu: EntityFilter<testWhere>[] = [{ nu: 1 }, { nu: { $gt: 1 } }]
+const wnn: EntityFilter<testWhere>[] = [
+  { nn: 1 },
+  { nn: { $gt: 1 } },
+  { nn: null! },
+]
 
 export type ValueFilter<valueType> =
   | valueType
