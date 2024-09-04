@@ -310,6 +310,20 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
             }
           }
         }
+        if (
+          this.entity.idMetadata.fields.find(
+            (x) => newR[names.$dbNameOf(x)] != r[names.$dbNameOf(x)],
+          ) &&
+          this.rows().find((x) => {
+            for (const f of this.entity.idMetadata.fields) {
+              if (x[names.$dbNameOf(f)] != newR[names.$dbNameOf(f)])
+                return false
+            }
+            return true
+          })
+        ) {
+          throw Error('id already exists')
+        }
         this.verifyThatRowHasAllNotNullColumns(newR, names)
         this.rows()[i] = newR
         return Promise.resolve(this.translateFromJson(this.rows()[i], names))
@@ -336,18 +350,27 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
     const names = await this.init()
     let j = this.translateToJson(data, names)
     let idf = this.entity.idMetadata.field
-    if (!(idf instanceof CompoundIdField)) {
-      if (idf.valueConverter.fieldTypeInDb === 'autoincrement') {
-        j[idf.key] = 1
-        for (const row of this.rows()) {
-          if (row[idf.key] >= j[idf.key]) j[idf.key] = row[idf.key] + 1
-        }
+    if (
+      !(idf instanceof CompoundIdField) &&
+      idf.valueConverter.fieldTypeInDb === 'autoincrement'
+    ) {
+      j[idf.key] = 1
+      for (const row of this.rows()) {
+        if (row[idf.key] >= j[idf.key]) j[idf.key] = row[idf.key] + 1
       }
-      if (j[idf.key])
-        this.rows().forEach((i) => {
-          if (j[idf.key] == i[idf.key]) throw Error('id already exists')
+    } else {
+      if (
+        this.rows().find((x) => {
+          for (const f of this.entity.idMetadata.fields) {
+            if (x[names.$dbNameOf(f)] != j[names.$dbNameOf(f)]) return false
+          }
+          return true
         })
+      ) {
+        throw Error('id already exists')
+      }
     }
+
     this.verifyThatRowHasAllNotNullColumns(j, names)
     this.rows().push(j)
     return Promise.resolve(this.translateFromJson(j, names))
