@@ -45,7 +45,14 @@ export class MongoDataProvider implements DataProvider {
     if (!r.db) throw 'the data provider is not a MongoDataProvider'
     return { db: r.db, session: r.session }
   }
-  getEntityDataProvider(entity: EntityMetadata<any>): EntityDataProvider {
+  async ensureSchema(entities: EntityMetadata[]): Promise<void> {
+    for (const entity of entities) {
+      const m = new MongoEntityDataProvider(this.db, entity, this.session)
+      return
+      await m.ensureSchema()
+    }
+  }
+  getEntityDataProvider(entity: EntityMetadata): EntityDataProvider {
     return new MongoEntityDataProvider(this.db, entity, this.session)
   }
   async transaction(
@@ -93,9 +100,33 @@ function isNull(x: any) {
   return x?.$null === NULL.$null
 }
 class MongoEntityDataProvider implements EntityDataProvider {
+  async ensureSchema() {
+    const { collection, e } = await this.collection()
+    if (
+      !(await this.db.collections()).find(
+        (x) => x.collectionName == e.$entityName,
+      )
+    ) {
+      await this.db.createCollection(e.$entityName)
+      if (
+        this.entity.idMetadata.field &&
+        e.$dbNameOf(this.entity.idMetadata.field) != '_id'
+      ) {
+        const index: any = {}
+        for (const f of this.entity.idMetadata.fields) {
+          index[e.$dbNameOf(f)] = 1
+        }
+        try {
+          await collection.createIndex(index, { unique: true })
+        } catch (err) {
+          throw err
+        }
+      }
+    }
+  }
   constructor(
     private db: Db,
-    private entity: EntityMetadata<any>,
+    private entity: EntityMetadata,
     private session?: ClientSession,
   ) {}
 

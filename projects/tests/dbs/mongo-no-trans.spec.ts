@@ -28,7 +28,10 @@ describe.skipIf(!mongoConnectionStringWithoutTransaction)(
     async function createEntity(entity: ClassType<any>) {
       let repo = remult.repo(entity)
       const dbNames = await dbNamesOf(repo.metadata)
-      await mongoDb.collection(dbNames.$entityName).deleteMany({})
+      try {
+        await mongoDb.collection(dbNames.$entityName).drop({})
+      } catch {}
+      await db.ensureSchema([repo.metadata])
 
       return repo
     }

@@ -962,9 +962,6 @@ export function commonDbTests(
           remult.dataProvider = trx
           await remult.repo(ent).insert({ id: 1, name: 'a' })
           await remult.repo(ent).insert({ id: 1, name: 'b' })
-          throw new Error(
-            "in case the db doesn't enforce unique id like mongo doesnt",
-          )
         })
       } catch (error) {
       } finally {
@@ -1435,6 +1432,48 @@ export function commonDbTests(
       const aTask = await taskRepo.findId(1, { useCache: false })
       expect(aTask!.completed).toBe(true)
     }
+  })
+  it('enforces unique ids', async () => {
+    @Entity('enforce_id1', { allowApiCrud: true })
+    class enforceId {
+      @Fields.integer()
+      id = 0
+    }
+    const r = await createEntity(enforceId)
+    await r.insert({ id: 1 })
+    await expect(() => r.insert({ id: 1 })).rejects.toThrowError()
+  })
+
+  it('enforces unique ids compound', async () => {
+    @Entity('enforce_id2', { allowApiCrud: true, id: { a: true, b: true } })
+    class enforceId {
+      @Fields.integer()
+      a = 0
+      @Fields.integer()
+      b = 0
+    }
+
+    const r = await createEntity(enforceId)
+    await r.insert({ a: 1, b: 1 })
+    await expect(() => r.insert({ a: 1, b: 1 })).rejects.toThrowError()
+  })
+  it('enforces unique ids compound update', async () => {
+    @Entity('enforce_id3', {
+      allowApiCrud: true,
+      id: { a: true, b: true },
+    })
+    class enforceId {
+      @Fields.integer()
+      a = 0
+      @Fields.integer()
+      b = 0
+    }
+    const r = await createEntity(enforceId)
+    await r.insert({ a: 1, b: 1 })
+    await r.insert({ a: 1, b: 2 })
+    await expect(() =>
+      r.update({ a: 1, b: 2 }, { b: 1 }),
+    ).rejects.toThrowError()
   })
   it('test date', async () => {
     const person = class {
