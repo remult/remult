@@ -65,7 +65,7 @@
     "@typescript-eslint/parser": "^6.4.1",
     "@vitest/browser": "^2.0.4",
     "@vitest/coverage-v8": "^2.0.4",
-    "@vitest/ui": "^2.0.4",
+    "@vitest/ui": "^2.0.5",
     "ably": "^1.2.33",
     "axios": "^0.28.0",
     "better-sqlite3": "^9.1.1",
@@ -112,7 +112,7 @@
     "typedoc-plugin-markdown": "3.10.4",
     "typescript": "^5.5.3",
     "uuid": "^8.3.2",
-    "vitest": "^2.0.4",
+    "vitest": "^2.0.5",
     "webdriverio": "^8.15.10"
   },
   "browser": {

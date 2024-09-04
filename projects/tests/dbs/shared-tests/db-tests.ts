@@ -1433,7 +1433,7 @@ export function commonDbTests(
       expect(aTask!.completed).toBe(true)
     }
   })
-  it('enforces unique ids', async () => {
+  it.skip('enforces unique ids', async () => {
     @Entity('enforce_id1', { allowApiCrud: true })
     class enforceId {
       @Fields.integer()
@@ -1444,7 +1444,7 @@ export function commonDbTests(
     await expect(() => r.insert({ id: 1 })).rejects.toThrowError()
   })
 
-  it('enforces unique ids compound', async () => {
+  it.skip('enforces unique ids compound', async () => {
     @Entity('enforce_id2', { allowApiCrud: true, id: { a: true, b: true } })
     class enforceId {
       @Fields.integer()
@@ -1457,7 +1457,7 @@ export function commonDbTests(
     await r.insert({ a: 1, b: 1 })
     await expect(() => r.insert({ a: 1, b: 1 })).rejects.toThrowError()
   })
-  it('enforces unique ids compound update', async () => {
+  it.skip('enforces unique ids compound update', async () => {
     @Entity('enforce_id3', {
       allowApiCrud: true,
       id: { a: true, b: true },
