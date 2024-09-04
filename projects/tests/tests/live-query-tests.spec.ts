@@ -871,8 +871,8 @@ describe('test live query full cycle', () => {
   })
   it('test 2 subscriptions work', async () => {
     var { repo, pm } = setup2()
-    await repo.insert({ title: 'a' })
-    await repo.insert({ title: 'b' })
+    await repo.insert({ id: 1, title: 'a' })
+    await repo.insert({ id: 2, title: 'b' })
     let arr1: eventTestEntity[] = []
     let arr2: eventTestEntity[] = []
     const u1 = repo.liveQuery().subscribe((y) => (arr1 = y.applyChanges(arr1)))
