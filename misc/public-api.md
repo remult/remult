@@ -3997,7 +3997,8 @@ export declare class MongoDataProvider implements DataProvider {
     db: Db
     session: ClientSession | undefined
   }
-  getEntityDataProvider(entity: EntityMetadata<any>): EntityDataProvider
+  ensureSchema(entities: EntityMetadata[]): Promise<void>
+  getEntityDataProvider(entity: EntityMetadata): EntityDataProvider
   transaction(
     action: (dataProvider: DataProvider) => Promise<void>,
   ): Promise<void>
