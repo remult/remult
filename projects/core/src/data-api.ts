@@ -415,7 +415,7 @@ export class DataApi<T = unknown> {
                   this.repository.metadata.key,
               },
               this.repository.metadata,
-              500,
+              400,
             )
           else await what(r[0])
         })

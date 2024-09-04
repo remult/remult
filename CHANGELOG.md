@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.27.11] 2024-09-04
+
+- **Potential breaking change** change the http status code of exceptions thrown in backend method from 500 to 400
+
 ## [0.27.10] 2024-09-03
 
 - Fix for minor typing issue regarding field | null | undefined

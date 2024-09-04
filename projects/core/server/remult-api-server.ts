@@ -120,7 +120,7 @@ export interface RemultServerOptions<RequestType> {
    * @example
    * export const api = remultExpress({
    *   error: async (e) => {
-   *     if (e.httpStatusCode == 500) {
+   *     if (e.httpStatusCode == 400) {
    *       e.sendError(500, { message: "An error occurred" })
    *     }
    *   }
@@ -1171,7 +1171,7 @@ class ResponseBridgeToDataApiResponse<RequestType> implements DataApiResponse {
       } else if (data.modelState) {
         httpStatusCode = 400
       } else {
-        httpStatusCode = 500
+        httpStatusCode = 400
       }
     }
     let responseSent = false
