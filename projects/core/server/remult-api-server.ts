@@ -272,9 +272,10 @@ export class RemultServerImplementation<RequestType>
               started = true
               console.time('Schema ensured')
             }
-            entitiesMetaData.push(
-              ...options.entities!.map((e) => remult.repo(e).metadata),
-            )
+            if (options.entities)
+              entitiesMetaData.push(
+                ...options.entities!.map((e) => remult.repo(e).metadata),
+              )
             if (dp.ensureSchema) {
               startConsoleLog()
               await dp.ensureSchema(entitiesMetaData)
@@ -490,7 +491,7 @@ export class RemultServerImplementation<RequestType>
       )
     }
 
-    this.options.entities!.forEach((e) => {
+    this.options.entities?.forEach((e) => {
       let key = getEntityKey(e)
       if (key != undefined)
         this.add(
