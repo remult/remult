@@ -1363,7 +1363,6 @@ export const flags = {
 
 //p1 - add parameter all to deleteMany, and updateMany
 //p1  filter.apply ApiPreFilter
-//p1 - add not as an overload to not equal
 
 /*p1 - add id and use uuid by default, but allow changes with Fields.id.defaultIdProvider NO but defaultProvider yes???
   //p1 - replace uuid with crypto.randomUUID and allow custom fallback NO
@@ -1390,7 +1389,6 @@ export const flags = {
 //p1 - docs abount subscription channel
 
 //p1 - Consider enforcing serial operations on JSON database to prevent data loss
-//p1 - fix sqlite to  support alter table when adding a column with ensure schema = on
 //p1 - add LifecycleEvent to documentation
 //p1 - fix chaining of saving and saved in multiple entity options args
 //p1 - review starter and examples and separate remult * auth from the routes
