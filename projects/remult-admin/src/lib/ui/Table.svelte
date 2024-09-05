@@ -260,9 +260,6 @@
           cancelAction={async () => {
             newRow = undefined
           }}
-          cancel={async () => {
-            newRow = undefined
-          }}
         />
       {/if}
       {#if items}
