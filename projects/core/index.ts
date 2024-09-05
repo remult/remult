@@ -104,7 +104,6 @@ export {
 } from './src/column-interfaces.js' // revisit input type
 export { RestDataProvider } from './src/data-providers/rest-data-provider.js' //V
 export { InMemoryDataProvider } from './src/data-providers/in-memory-database.js' //V
-export { WebSqlDataProvider } from './src/data-providers/web-sql-data-provider.js' //V
 export { SqlDatabase } from './src/data-providers/sql-database.js' //V
 
 export {

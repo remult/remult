@@ -11,8 +11,7 @@ import type {
 } from '../../core/src/data-interfaces'
 import { InMemoryDataProvider } from '../../core/src/data-providers/in-memory-database'
 import { RestEntityDataProvider } from '../../core/src/data-providers/rest-data-provider'
-import { SqlDatabase } from '../../core/src/data-providers/sql-database'
-import { WebSqlDataProvider } from '../../core/src/data-providers/web-sql-data-provider'
+
 import { remult } from '../../core/src/remult-proxy'
 import type { EntityMetadata } from '../../core'
 import { serverActionField } from '../../core/src/server-action-info'
@@ -85,33 +84,6 @@ remult.apiClient.httpClient = {
   put: () => undefined!,
 }
 
-export async function testSql(
-  runAsync: (db: { db: DataProvider; remult: Remult }) => Promise<void>,
-) {
-  let webSql = new WebSqlDataProvider('test')
-  const sql = new SqlDatabase(webSql)
-  for (const r of await (
-    await sql.execute("select name from sqlite_master where type='table'")
-  ).rows) {
-    switch (r.name) {
-      case '__WebKitDatabaseInfoTable__':
-        break
-      default:
-        await sql.execute('drop table if exists ' + r.name)
-    }
-  }
-  let remult = new Remult()
-  remult.dataProvider = sql
-  await runAsync({ db: sql, remult })
-}
-export async function testInMemoryDb(
-  runAsync: (db: { db: DataProvider; remult: Remult }) => Promise<void>,
-) {
-  let db = new InMemoryDataProvider()
-  remult.dataProvider = db
-  await runAsync({ db, remult })
-}
-
 export async function testRestDb(
   runAsync: (db: { db: DataProvider; remult: Remult }) => Promise<void>,
 ) {
@@ -122,13 +94,6 @@ export async function testRestDb(
   let db = new MockRestDataProvider(r)
   remult.dataProvider = db
   await runAsync({ db, remult })
-}
-export async function testAllDataProviders(
-  runAsync: (db: { db: DataProvider; remult: Remult }) => Promise<void>,
-) {
-  await testSql(runAsync)
-  await testInMemoryDb(runAsync)
-  await testRestDb(runAsync)
 }
 
 function urlToReq(url: string) {

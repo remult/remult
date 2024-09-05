@@ -2420,7 +2420,7 @@ export interface Repository<entityType> {
         maxFields extends undefined ? never : maxFields,
         distinctCountFields extends undefined ? never : distinctCountFields
       >,
-      "orderBy" | "limit" | "page"
+      "orderBy" | "limit" | "page" | "group"
     >,
   ): Promise<
     GroupByResult<
@@ -3074,6 +3074,22 @@ export type ValueFilter<valueType> =
        *   status: { $ne: [1, 2, 3] }
        * };
        */
+      $not?: valueType | valueType[]
+      /**
+       * Represents a 'NOT EQUAL' filter condition where the value must not match the specified value or values.
+       *
+       * @example
+       * // Matches entities where the status is not 1
+       * const filter = {
+       *   status: { $not: 1 }
+       * };
+       *
+       * @example
+       * // Matches entities where the status is not 1, 2, or 3
+       * const filter = {
+       *   status: { $not: [1, 2, 3] }
+       * };
+       */
       $ne?: valueType | valueType[]
       /**
        * Represents a 'NOT EQUAL' filter condition using the '!=' operator where the value must not match the specified value or values.
@@ -3160,27 +3176,6 @@ export declare function valueValidator<valueType>(
   entity: any,
   e: ValidateFieldEvent<any, valueType>,
 ) => string | boolean | Promise<string | boolean>
-export declare class WebSqlDataProvider
-  implements SqlImplementation, __RowsOfDataForTesting
-{
-  private databaseName
-  rows: {
-    [tableName: string]: any
-  }
-  constructor(databaseName: string, databaseSize?: number)
-  end(): Promise<void>
-  getLimitSqlSyntax(limit: number, offset: number): string
-  entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void>
-  ensureSchema(entities: EntityMetadata[]): Promise<void>
-  dropTable(entity: EntityMetadata): Promise<void>
-  createTable(entity: EntityMetadata): Promise<void>
-  createCommand(): SqlCommand
-  transaction(
-    action: (dataProvider: SqlImplementation) => Promise<void>,
-  ): Promise<void>
-  private addColumnSqlSyntax
-  toString(): string
-}
 export declare function withRemult<T>(
   callback: (remult: Remult) => Promise<T>,
   options?: {
@@ -3843,18 +3838,12 @@ export declare class PostgresSchemaBuilder {
   private whereTableAndSchema
   private schemaAndName
   private schemaOnly
-  verifyStructureOfAllEntities(remult?: Remult): Promise<void>
   ensureSchema(entities: EntityMetadata[]): Promise<void>
   createIfNotExist(entity: EntityMetadata): Promise<void>
-  addColumnIfNotExist<T extends EntityMetadata>(
-    entity: T,
-    c: (e: T) => FieldMetadata,
-  ): Promise<void>
   verifyAllColumns<T extends EntityMetadata>(entity: T): Promise<void>
   specifiedSchema: string
   constructor(pool: SqlDatabase, schema?: string)
 }
-//[ ] Remult from TBD is not exported
 export declare function preparePostgresQueueStorage(
   sql: SqlDatabase,
 ): Promise<import("../server/remult-api-server.js").EntityQueueStorage>
@@ -3874,24 +3863,14 @@ export declare class PostgresSchemaBuilder {
   private whereTableAndSchema
   private schemaAndName
   private schemaOnly
-  verifyStructureOfAllEntities(remult?: Remult): Promise<void>
   ensureSchema(entities: EntityMetadata[]): Promise<void>
   createIfNotExist(entity: EntityMetadata): Promise<void>
-  addColumnIfNotExist<T extends EntityMetadata>(
-    entity: T,
-    c: (e: T) => FieldMetadata,
-  ): Promise<void>
   verifyAllColumns<T extends EntityMetadata>(entity: T): Promise<void>
   specifiedSchema: string
   constructor(pool: SqlDatabase, schema?: string)
 }
-//[ ] Remult from ../src/context.js is not exported
 //[ ] EntityMetadata from ../src/remult3/remult3.js is not exported
 //[ ] SqlDatabase from ../src/data-providers/sql-database.js is not exported
-export declare function verifyStructureOfAllEntities(
-  db: SqlDatabase,
-  remult: Remult,
-): Promise<void>
 ```
 
 ## ./remult-knex/index.js
@@ -3952,7 +3931,6 @@ export declare class KnexDataProvider
 //[ ] RepositoryOverloads from ../src/remult3/RepositoryImplementation.js is not exported
 export declare class KnexSchemaBuilder {
   private knex
-  verifyStructureOfAllEntities(remult?: Remult): Promise<void>
   ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
   createIfNotExist(entity: EntityMetadata): Promise<void>
   createTableKnexCommand(
@@ -3972,7 +3950,6 @@ export declare class KnexSchemaBuilder {
   additionalWhere: string
   constructor(knex: Knex)
 }
-//[ ] Remult from ../src/context.js is not exported
 //[ ] EntityDbNamesBase from ../src/filter/filter-consumer-bridge-to-sql-request.js is not exported
 //[ ] Knex.SchemaBuilder from TBD is not exported
 ```
@@ -4052,6 +4029,7 @@ export declare class SqliteCoreDataProvider
   transaction(action: (sql: SqlImplementation) => Promise<void>): Promise<void>
   entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void>
   ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
+  verifyAllColumns<T extends EntityMetadata>(entity: T): Promise<void>
   dropTable(entity: EntityMetadata): Promise<void>
   addColumnSqlSyntax(
     x: FieldMetadata,
@@ -4060,7 +4038,7 @@ export declare class SqliteCoreDataProvider
   ): string
   createTableIfNotExist(entity: EntityMetadata<any>): Promise<void>
   supportsJsonColumnType?: boolean
-  getCreateTableSql(entity: EntityMetadata<any>): Promise<string>
+  getCreateTableSql(entity: EntityMetadata<any>): Promise<string[]>
   wrapIdentifier(name: string): string
 }
 //[ ] SqlCommand from ./src/sql-command.js is not exported
@@ -4110,7 +4088,7 @@ export declare class TursoDataProvider extends SqliteCoreDataProvider {
 export declare class DuckDBDataProvider extends SqliteCoreDataProvider {
   constructor(db: Database)
   wrapIdentifier(name: string): string
-  getCreateTableSql(entity: EntityMetadata<any>): Promise<string>
+  getCreateTableSql(entity: EntityMetadata<any>): Promise<string[]>
   addColumnSqlSyntax(
     x: FieldMetadata,
     dbName: string,
