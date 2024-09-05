@@ -596,7 +596,7 @@ export interface Repository<entityType> {
         maxFields extends undefined ? never : maxFields,
         distinctCountFields extends undefined ? never : distinctCountFields
       >,
-      'orderBy' | 'limit' | 'page'
+      'orderBy' | 'limit' | 'page' | 'group'
     >,
   ): Promise<
     GroupByResult<
