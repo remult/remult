@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.27.12] TBD
+## [0.27.12] 2024-09-05
 
 - added `$not` to value comparison: `{where:{id:{ $not:1 }}}}` for improved readability
 - removed `group` option from `aggregate`
@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - Removed the deprecated behavior where if no entities array was sent to remult server, all entities were served
 - Removed the deprecated web sql data provider, since no browsers support it - us the OpfsEntityDataProvider instead
 - Changed id signature in EntityOptions to also allow `id:'code'` & `id:['company','code']` for compound id columns
+- Fix to remult admin
 
 ## [0.27.11] 2024-09-04
 

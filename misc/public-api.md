@@ -854,13 +854,14 @@ export interface EntityOptions<entityType = unknown> {
   /** An arrow function that identifies the `id` column to use for this entity
    * @example
    * //Single column id
-   * @Entity<Products>("products", { id: {productCode: true} })
+   * @Entity<Products>("products", { id: 'productCode' })
    * @example
    * //Multiple columns id
-   * @Entity<OrderDetails>("orderDetails", { id:{ orderId:true, productCode:true} })
+   * @Entity<OrderDetails>("orderDetails", { id:['orderId:', 'productCode'] })
    */
   id?:
-    | keyof entityType[]
+    | keyof MembersOnly<entityType>
+    | (keyof MembersOnly<entityType>)[]
     | EntityIdFields<entityType>
     | ((entity: FieldsMetadata<entityType>) => FieldMetadata | FieldMetadata[])
   entityRefInit?: (ref: EntityRef<entityType>, row: entityType) => void
@@ -2387,7 +2388,6 @@ export interface Repository<entityType> {
   /**
      * Performs an aggregation on the repository's entity type based on the specified options.
      * @template entityType The type of the entity being aggregated.
-     * @template groupByFields The fields to group by, provided as an array of keys from the entity type.
      * @template sumFields The fields to sum, provided as an array of numeric keys from the entity type.
      * @template averageFields The fields to average, provided as an array of numeric keys from the entity type.
      *
