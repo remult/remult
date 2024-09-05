@@ -1,15 +1,11 @@
 import type { FieldMetadata } from '../src/column-interfaces.js'
-import type { Remult } from '../src/context.js'
 import type { SqlDatabase } from '../src/data-providers/sql-database.js'
 import type { EntityDbNamesBase } from '../src/filter/filter-consumer-bridge-to-sql-request.js'
 import {
   dbNamesOf,
-  isDbReadonly,
   shouldCreateEntity,
   shouldNotCreateField,
 } from '../src/filter/filter-consumer-bridge-to-sql-request.js'
-import { remult as defaultRemult } from '../src/remult-proxy.js'
-import { remultStatic } from '../src/remult-static.js'
 import type { EntityMetadata } from '../src/remult3/remult3.js'
 import { isAutoIncrement } from '../src/remult3/RepositoryImplementation.js'
 import type { SqlCommand } from '../src/sql-command.js'
@@ -39,15 +35,6 @@ export function postgresColumnSyntax(x: FieldMetadata, dbName: string) {
     }
   } else result += ' varchar' + (x.allowNull ? '' : " default '' not null")
   return result
-}
-
-export async function verifyStructureOfAllEntities(
-  db: SqlDatabase,
-  remult: Remult,
-) {
-  return await new PostgresSchemaBuilder(db).verifyStructureOfAllEntities(
-    remult,
-  )
 }
 
 export class PostgresSchemaBuilder {
@@ -107,25 +94,6 @@ export class PostgresSchemaBuilder {
     }
     // Should default to `public`
     return 'public'
-  }
-
-  async verifyStructureOfAllEntities(remult?: Remult) {
-    if (!remult) {
-      remult = defaultRemult
-    }
-    const completed = new Set<string>()
-    const entities: EntityMetadata[] = []
-    for (const entityClass of [...remultStatic.allEntities].reverse()) {
-      let entity = remult.repo(entityClass).metadata
-      let e: EntityDbNamesBase = await dbNamesOf(
-        entity,
-        this.pool.wrapIdentifier,
-      )
-      if (completed.has(e.$entityName)) continue
-      completed.add(e.$entityName)
-      entities.push(entity)
-    }
-    await this.ensureSchema(entities)
   }
 
   async ensureSchema(entities: EntityMetadata[]) {

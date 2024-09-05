@@ -555,14 +555,6 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
 export class KnexSchemaBuilder {
   //@internal
   static logToConsole = true
-  async verifyStructureOfAllEntities(remult?: Remult) {
-    if (!remult) remult = remultContext
-
-    const entities = remultStatic.allEntities.map(
-      (x) => remult!.repo(x).metadata,
-    )
-    await this.ensureSchema(entities)
-  }
 
   async ensureSchema(entities: EntityMetadata<any>[]) {
     for (const entity of entities) {

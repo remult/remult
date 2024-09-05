@@ -48,7 +48,7 @@ export class DuckDBDataProvider extends SqliteCoreDataProvider {
 
     sql +=
       'create table if not exists ' + e.$entityName + ' (' + result + '\r\n)'
-    return sql
+    return [sql]
   }
 
   addColumnSqlSyntax(x: FieldMetadata, dbName: string, isAlterColumn: boolean) {

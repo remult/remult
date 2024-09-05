@@ -95,7 +95,3 @@ export class LiveQueryStorageEntity extends EntityBase {
   @Fields.string()
   lastUsedIso = new Date().toISOString()
 }
-remultStatic.allEntities.splice(
-  remultStatic.allEntities.indexOf(LiveQueryStorageEntity),
-  1,
-)

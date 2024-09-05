@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 - removed `group` option from `aggregate`
 - Added unique id validations to all databases
 - Verified that all databases add missing columns on `ensureSchema`
+- Removed the deprecated behavior where if no entities array was sent to remult server, all entities were served
 
 ## [0.27.11] 2024-09-04
 

@@ -170,8 +170,6 @@ export function createRemultServerCore<RequestType>(
 
   {
     let allControllers: ClassType<any>[] = []
-    if (!safeOptions.entities)
-      safeOptions.entities = [...remultStatic.allEntities]
 
     if (safeOptions.entities) allControllers.push(...safeOptions.entities)
     if (safeOptions.controllers) allControllers.push(...safeOptions.controllers)
