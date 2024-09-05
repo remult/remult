@@ -199,35 +199,6 @@ CREATE table ${this.schemaAndName(e)} (${result}\r\n)`
     return sql
   }
 
-  async addColumnIfNotExist<T extends EntityMetadata>(
-    entity: T,
-    c: (e: T) => FieldMetadata,
-  ) {
-    let e: EntityDbNamesBase = await dbNamesOf(entity, this.pool.wrapIdentifier)
-    if (shouldNotCreateField(c(entity), e)) return
-    try {
-      let cmd = this.pool.createCommand()
-
-      const colName = e.$dbNameOf(c(entity))
-      if (
-        (
-          await cmd.execute(
-            `SELECT 1 FROM information_schema.columns WHERE ` +
-              `${this.whereTableAndSchema(cmd, e)} ` +
-              `AND column_name=${cmd.param(colName.toLocaleLowerCase())}`,
-          )
-        ).rows.length == 0
-      ) {
-        let sql = await this.getAddColumnScript(entity, c(entity))
-
-        if (PostgresSchemaBuilder.logToConsole) console.info(sql)
-        await this.pool.execute(sql)
-      }
-    } catch (err) {
-      console.error(err)
-    }
-  }
-
   async verifyAllColumns<T extends EntityMetadata>(entity: T) {
     try {
       let cmd = this.pool.createCommand()

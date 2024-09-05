@@ -48,7 +48,6 @@ export class MongoDataProvider implements DataProvider {
   async ensureSchema(entities: EntityMetadata[]): Promise<void> {
     for (const entity of entities) {
       const m = new MongoEntityDataProvider(this.db, entity, this.session)
-      return
       await m.ensureSchema()
     }
   }
@@ -134,6 +133,9 @@ class MongoEntityDataProvider implements EntityDataProvider {
     let result: any = {}
     for (const col of this.entity.fields) {
       let val = row[nameProvider.$dbNameOf(col)]
+      if (val === undefined && !col.allowNull) {
+        if (col.valueType === String) val = ''
+      }
       if (isNull(val)) val = null
       result[col.key] = fromDb(col, val)
     }

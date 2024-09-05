@@ -30,7 +30,9 @@ describe.skipIf(!mongoConnectionStringWithoutTransaction)(
       const dbNames = await dbNamesOf(repo.metadata)
       try {
         await mongoDb.collection(dbNames.$entityName).drop({})
-      } catch {}
+      } catch (error) {
+        console.log('drop error', error)
+      }
       await db.ensureSchema([repo.metadata])
 
       return repo

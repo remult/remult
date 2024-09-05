@@ -2,11 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.28.12] TBD
+## [0.27.12] TBD
 
 - added `$not` to value comparison: `{where:{id:{ $not:1 }}}}` for improved readability
 - removed `group` option from `aggregate`
-- Added unique id validation for JSON
+- Added unique id validations to all databases
+- Verified that all databases add missing columns on `ensureSchema`
 
 ## [0.27.11] 2024-09-04
 

@@ -19,7 +19,7 @@ export class InMemoryDataProvider
   }
   rows: any = {}
   public getEntityDataProvider(entity: EntityMetadata): EntityDataProvider {
-    let name = entity.key
+    let name = entity.dbName
     if (!this.rows[name]) this.rows[name] = []
     return new ArrayEntityDataProvider(entity, () => this.rows[name])
   }

@@ -10,6 +10,7 @@ import {
   dbNamesOf,
   isDbReadonly,
   shouldNotCreateField,
+  type EntityDbNamesBase,
 } from './src/filter/filter-consumer-bridge-to-sql-request.js'
 import { isAutoIncrement } from './src/remult3/RepositoryImplementation.js'
 import type { FieldMetadata } from './src/column-interfaces.js'
@@ -41,7 +42,7 @@ export class SqliteCoreDataProvider
     let self = this
     return {
       createTable: async (entity: EntityMetadata<any>) => {
-        builder.addSql(await self.getCreateTableSql(entity))
+        await (await self.getCreateTableSql(entity)).map(builder.addSql)
       },
       addColumn: async (entity: EntityMetadata<any>, field: FieldMetadata) => {
         let e = await dbNamesOf(entity, this.wrapIdentifier)
@@ -73,6 +74,36 @@ export class SqliteCoreDataProvider
   async ensureSchema(entities: EntityMetadata<any>[]): Promise<void> {
     for (const entity of entities) {
       await this.createTableIfNotExist(entity)
+      await this.verifyAllColumns(entity)
+    }
+  }
+  async verifyAllColumns<T extends EntityMetadata>(entity: T) {
+    try {
+      let cmd = this.createCommand()
+      let e: EntityDbNamesBase = await dbNamesOf(entity, this.wrapIdentifier)
+
+      let cols = (
+        await cmd.execute(`PRAGMA table_info(${e.$entityName})`)
+      ).rows.map((x) => x.name.toLocaleLowerCase())
+      for (const col of entity.fields) {
+        if (!shouldNotCreateField(col, e)) {
+          let colName = e.$dbNameOf(col).toLocaleLowerCase()
+          if (colName.startsWith('`') && colName.endsWith('`'))
+            colName = colName.substring(1, colName.length - 1)
+          if (!cols.includes(colName)) {
+            let sql =
+              `ALTER table ${e.$entityName} ` +
+              `add column ${this.addColumnSqlSyntax(
+                col,
+                e.$dbNameOf(col),
+                true,
+              )}`
+            await this.createCommand().execute(sql)
+          }
+        }
+      }
+    } catch (err) {
+      console.error(err)
     }
   }
 
@@ -95,8 +126,9 @@ export class SqliteCoreDataProvider
   }
   async createTableIfNotExist(entity: EntityMetadata<any>) {
     let sql = await this.getCreateTableSql(entity)
-    if (SqlDatabase.LogToConsole) console.log(sql)
-    await this.createCommand().execute(sql)
+    for (const element of sql) {
+      await this.createCommand().execute(element)
+    }
   }
 
   supportsJsonColumnType?: boolean
@@ -119,8 +151,19 @@ export class SqliteCoreDataProvider
         }
       }
     }
-    let sql =
-      'create table if not exists ' + e.$entityName + ' (' + result + '\r\n)'
+
+    let sql = [
+      'create table if not exists ' + e.$entityName + ' (' + result + '\r\n)',
+    ]
+    if (entity.idMetadata.fields.length > 1) {
+      sql.push(
+        `create unique index ${this.wrapIdentifier(
+          entity.dbName + '_primary_key',
+        )} on ${e.$entityName}  (${entity.idMetadata.fields
+          .map((x) => e.$dbNameOf(x))
+          .join(',')})`,
+      )
+    }
 
     return sql
   }

@@ -1003,6 +1003,43 @@ export function commonDbTests(
     expect(await x.keepAliveAndReturnUnknownQueryIds([id])).toEqual([])
   })
 
+  it('test ensure schema adds missing columns', async () => {
+    @Entity('testEnsureSchema', { allowApiCrud: true })
+    class a {
+      @Fields.integer()
+      id = 0
+      @Fields.string()
+      name = ''
+    }
+    const r = await createEntity(a)
+    await r.insert({ id: 1, name: 'noam' })
+    @Entity('testEnsureSchema2', {
+      allowApiCrud: true,
+      dbName: 'testEnsureSchema',
+    })
+    class b extends a {
+      @Fields.string()
+      lastName = ''
+    }
+    const r2 = getRemult().repo(b)
+    await getDb().ensureSchema?.([r2.metadata])
+    await r2.insert({ id: 2, name: 'noam', lastName: 'honig' })
+    expect(await r2.find()).toMatchInlineSnapshot(`
+      [
+        b {
+          "id": 1,
+          "lastName": "",
+          "name": "noam",
+        },
+        b {
+          "id": 2,
+          "lastName": "honig",
+          "name": "noam",
+        },
+      ]
+    `)
+  })
+
   it('test contains with names with casing', async () => {
     const e = class {
       a = 0
@@ -1433,7 +1470,7 @@ export function commonDbTests(
       expect(aTask!.completed).toBe(true)
     }
   })
-  it.skip('enforces unique ids', async () => {
+  it('enforces unique ids', async () => {
     @Entity('enforce_id1', { allowApiCrud: true })
     class enforceId {
       @Fields.integer()
@@ -1444,7 +1481,7 @@ export function commonDbTests(
     await expect(() => r.insert({ id: 1 })).rejects.toThrowError()
   })
 
-  it.skip('enforces unique ids compound', async () => {
+  it('enforces unique ids compound', async () => {
     @Entity('enforce_id2', { allowApiCrud: true, id: { a: true, b: true } })
     class enforceId {
       @Fields.integer()
@@ -1457,7 +1494,7 @@ export function commonDbTests(
     await r.insert({ a: 1, b: 1 })
     await expect(() => r.insert({ a: 1, b: 1 })).rejects.toThrowError()
   })
-  it.skip('enforces unique ids compound update', async () => {
+  it('enforces unique ids compound update', async () => {
     @Entity('enforce_id3', {
       allowApiCrud: true,
       id: { a: true, b: true },
