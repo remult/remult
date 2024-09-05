@@ -773,6 +773,14 @@ describe('many to one relation', () => {
       await remult.repo(Products).count({ category: { $id: { $ne: [2, 3] } } }),
     ).toBe(1)
     expect(
+      await remult.repo(Products).count({ category: { $id: { $not: 1 } } }),
+    ).toBe(2)
+    expect(
+      await remult
+        .repo(Products)
+        .count({ category: { $id: { $not: [2, 3] } } }),
+    ).toBe(1)
+    expect(
       await remult.repo(Products).count({ category: { $id: { $in: [2, 3] } } }),
     ).toBe(2)
     expect(

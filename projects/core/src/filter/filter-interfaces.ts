@@ -355,6 +355,7 @@ export class Filter {
                       found = true
                       break
                     case '$ne':
+                    case '$not':
                     case '!=':
                     case '$nin':
                       found = true

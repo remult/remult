@@ -926,6 +926,22 @@ export type ValueFilter<valueType> =
        *   status: { $ne: [1, 2, 3] }
        * };
        */
+      $not?: valueType | valueType[]
+      /**
+       * Represents a 'NOT EQUAL' filter condition where the value must not match the specified value or values.
+       *
+       * @example
+       * // Matches entities where the status is not 1
+       * const filter = {
+       *   status: { $not: 1 }
+       * };
+       *
+       * @example
+       * // Matches entities where the status is not 1, 2, or 3
+       * const filter = {
+       *   status: { $not: [1, 2, 3] }
+       * };
+       */
       $ne?: valueType | valueType[]
 
       /**
