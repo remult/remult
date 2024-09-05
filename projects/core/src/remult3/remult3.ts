@@ -562,7 +562,6 @@ export interface Repository<entityType> {
   /**
    * Performs an aggregation on the repository's entity type based on the specified options.
    * @template entityType The type of the entity being aggregated.
-   * @template groupByFields The fields to group by, provided as an array of keys from the entity type.
    * @template sumFields The fields to sum, provided as an array of numeric keys from the entity type.
    * @template averageFields The fields to average, provided as an array of numeric keys from the entity type.
    *
@@ -1371,7 +1370,6 @@ export const flags = {
   //p1 - explain the benefits of changing the default provider for testing in docs.
 */
 //p1 - consider upsert (where,set)
-//p1 TODO - consider id to also support keyof (id:['company','index']) - had problem with | (keyof Partial<entityType>)[] & `entity`
 
 //p2 - add some kind of options handler that will help with translation etc... like in hagai - something that runs at the stage where options are being built
 

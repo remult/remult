@@ -2517,7 +2517,11 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
 
     if (entityInfo.id) {
       let r =
-        typeof entityInfo.id === 'function'
+        typeof entityInfo.id === 'string'
+          ? this.fields.find(entityInfo.id)
+          : Array.isArray(entityInfo.id)
+          ? entityInfo.id.map((x: string) => this.fields.find(x))
+          : typeof entityInfo.id === 'function'
           ? entityInfo.id(this.fields)
           : Object.keys(entityInfo.id).map((x) => this.fields.find(x))
       if (Array.isArray(r)) {

@@ -860,6 +860,7 @@ export interface EntityOptions<entityType = unknown> {
    * @Entity<OrderDetails>("orderDetails", { id:{ orderId:true, productCode:true} })
    */
   id?:
+    | keyof entityType[]
     | EntityIdFields<entityType>
     | ((entity: FieldsMetadata<entityType>) => FieldMetadata | FieldMetadata[])
   entityRefInit?: (ref: EntityRef<entityType>, row: entityType) => void

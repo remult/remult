@@ -10,6 +10,7 @@ import type {
   FieldsMetadata,
   FindOptions,
   LifecycleEvent,
+  MembersOnly,
 } from './remult3/remult3.js'
 import type { FilterPreciseValues } from './filter/filter-interfaces.js'
 
@@ -217,12 +218,14 @@ export interface EntityOptions<entityType = unknown> {
   /** An arrow function that identifies the `id` column to use for this entity
    * @example
    * //Single column id
-   * @Entity<Products>("products", { id: {productCode: true} })
+   * @Entity<Products>("products", { id: 'productCode' })
    * @example
    * //Multiple columns id
-   * @Entity<OrderDetails>("orderDetails", { id:{ orderId:true, productCode:true} })
+   * @Entity<OrderDetails>("orderDetails", { id:['orderId:', 'productCode'] })
    */
   id?:
+    | keyof MembersOnly<entityType>
+    | (keyof MembersOnly<entityType>)[]
     | EntityIdFields<entityType>
     | ((entity: FieldsMetadata<entityType>) => FieldMetadata | FieldMetadata[])
 
