@@ -133,8 +133,10 @@ class MongoEntityDataProvider implements EntityDataProvider {
     let result: any = {}
     for (const col of this.entity.fields) {
       let val = row[nameProvider.$dbNameOf(col)]
-      if (val === undefined && !col.allowNull) {
-        if (col.valueType === String) val = ''
+      if (val === undefined) {
+        if (!col.allowNull) {
+          if (col.valueType === String) val = ''
+        } else val = null
       }
       if (isNull(val)) val = null
       result[col.key] = fromDb(col, val)

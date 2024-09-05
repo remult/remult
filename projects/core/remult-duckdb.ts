@@ -54,8 +54,8 @@ export class DuckDBDataProvider extends SqliteCoreDataProvider {
   addColumnSqlSyntax(x: FieldMetadata, dbName: string, isAlterColumn: boolean) {
     let result = dbName
     var allowNull = x.allowNull
-    if (allowNull && isAlterColumn) {
-      allowNull = false
+    if (!allowNull && isAlterColumn) {
+      allowNull = true
       console.log(
         'DuckDB does not support altering columns to allow null on existing tables',
       )
@@ -67,28 +67,20 @@ export class DuckDBDataProvider extends SqliteCoreDataProvider {
         result +=
           ' ' +
           x.valueConverter.fieldTypeInDb +
-          (x.allowNull || isAlterColumn ? '' : ' default 0 not null')
+          (allowNull ? '' : ' default 0 not null')
     } else if (x.valueType == Date) {
       if (!x.valueConverter.fieldTypeInDb)
         if (x.valueConverter == ValueConverters.DateOnly) result += ' date'
         else result += ' timestamp'
       else result += ' ' + x.valueConverter.fieldTypeInDb
     } else if (x.valueType == Boolean)
-      result +=
-        ' boolean' +
-        (x.allowNull || isAlterColumn ? '' : ' default false not null')
+      result += ' boolean' + (allowNull ? '' : ' default false not null')
     else if (x.valueConverter.fieldTypeInDb) {
       result += ' ' + x.valueConverter.fieldTypeInDb
-      if (
-        !(x.allowNull || isAlterColumn) &&
-        x.valueConverter.fieldTypeInDb == 'integer'
-      ) {
+      if (!allowNull && x.valueConverter.fieldTypeInDb == 'integer') {
         result += ' default 0 not null'
       }
-    } else
-      result +=
-        ' varchar' +
-        (x.allowNull || isAlterColumn ? '' : " default '' not null")
+    } else result += ' varchar' + (allowNull ? '' : " default '' not null")
     return result
   }
 }

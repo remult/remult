@@ -84,12 +84,10 @@ export class SqliteCoreDataProvider
 
       let cols = (
         await cmd.execute(`PRAGMA table_info(${e.$entityName})`)
-      ).rows.map((x) => x.name.toLocaleLowerCase())
+      ).rows.map((x) => this.wrapIdentifier(x.name.toLocaleLowerCase()))
       for (const col of entity.fields) {
         if (!shouldNotCreateField(col, e)) {
           let colName = e.$dbNameOf(col).toLocaleLowerCase()
-          if (colName.startsWith('`') && colName.endsWith('`'))
-            colName = colName.substring(1, colName.length - 1)
           if (!cols.includes(colName)) {
             let sql =
               `ALTER table ${e.$entityName} ` +

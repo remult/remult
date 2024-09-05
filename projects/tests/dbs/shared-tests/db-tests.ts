@@ -1018,7 +1018,7 @@ export function commonDbTests(
       dbName: 'testEnsureSchema',
     })
     class b extends a {
-      @Fields.string()
+      @Fields.string({ allowNull: true })
       lastName = ''
     }
     const r2 = getRemult().repo(b)
@@ -1028,7 +1028,7 @@ export function commonDbTests(
       [
         b {
           "id": 1,
-          "lastName": "",
+          "lastName": null,
           "name": "noam",
         },
         b {
@@ -1658,4 +1658,3 @@ export enum PriorityWithString {
   High = 'High',
   Critical = 'Critical',
 }
-//[ ] - test typing issue with hagai on Family Deliveries
