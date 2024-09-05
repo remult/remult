@@ -362,6 +362,7 @@ describe('sql-relations', () => {
       ]
     `)
   })
+
   it('test recursive sql', async () => {
     @Entity('me')
     class me {
@@ -385,6 +386,105 @@ describe('sql-relations', () => {
     }
     const y = await dbNamesOf(me)
     expect(y.b).toMatchInlineSnapshot(`"3+1 + id"`)
+  })
+
+  it('zones should have the number of customers (+1) & number of orders (+2)', async () => {
+    @Entity('Customer_zones')
+    class CustomerZoneExtended extends CustomerZone {
+      @Relations.toMany(() => Customer, { field: 'zone' })
+      customers?: Customer
+
+      @Fields.number({
+        sqlExpression: () =>
+          sqlRelations(CustomerZoneExtended).customers.$count(),
+      })
+      customerCount = 0
+
+      @Fields.number({
+        sqlExpression: () =>
+          // TODO : What do you think Noam? Could be easier ? or ?
+          sqlRelations(CustomerZoneExtended).customers.$subQuery(
+            async () => `SUM(${await sqlRelations(Customer).orders.$count()})`,
+          ),
+      })
+      orderCount?: number | null = null
+    }
+    expect(
+      (await remult.repo(CustomerZoneExtended).find()).map((x) => ({
+        zone: x.zone,
+        customerCount: x.customerCount,
+        orderCount: x.orderCount,
+      })),
+    ).toMatchInlineSnapshot(`
+      [
+        {
+          "customerCount": 1,
+          "orderCount": 2,
+          "zone": "North",
+        },
+        {
+          "customerCount": 1,
+          "orderCount": 3,
+          "zone": "South",
+        },
+        {
+          "customerCount": 1,
+          "orderCount": 2,
+          "zone": "Est",
+        },
+        {
+          "customerCount": 0,
+          "orderCount": null,
+          "zone": "West",
+        },
+      ]
+    `)
+  })
+
+  it('should have the number of customers', async () => {
+    @Entity('Customer_zones')
+    class CustomerZoneExtended extends CustomerZone {
+      @Relations.toMany(() => Customer, { field: 'zone' })
+      customers?: Customer
+
+      // @Relations.toMany(() => Order, {
+      //   SQLException: () => sqlRelations(CustomerZoneExtended).customers.orders,
+      // })
+      // orders?: Order[]
+    }
+
+    expect(
+      (
+        await remult
+          .repo(CustomerZoneExtended)
+          .find({ include: { customers: { include: { orders: true } } } })
+      ).map((x) => {
+        return {
+          zone: x.zone,
+          // REMULT: Why is it not working?
+          orders: x.customers?.orders ?? [],
+        }
+      }),
+    ).toMatchInlineSnapshot(`
+      [
+        {
+          "orders": [],
+          "zone": "North",
+        },
+        {
+          "orders": [],
+          "zone": "South",
+        },
+        {
+          "orders": [],
+          "zone": "Est",
+        },
+        {
+          "orders": [],
+          "zone": "West",
+        },
+      ]
+    `)
   })
 
   let db: SqlDatabase
