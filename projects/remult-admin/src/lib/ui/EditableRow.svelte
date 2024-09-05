@@ -56,12 +56,12 @@
     }
   }
 
-  function changeOrNew() {
-    return change || isNewRow
+  function changeOrNew(_change: boolean, _isNewRow: boolean) {
+    return _change || _isNewRow
   }
 </script>
 
-<tr class={changeOrNew() ? 'change' : ''}>
+<tr class={changeOrNew(change, isNewRow) ? 'change' : ''}>
   <td>
     {#if relations.length > 0 && !isNewRow}
       <button
@@ -112,9 +112,9 @@
       )} -->
     </td>
   {/each}
-  <td class="action-tab {changeOrNew() ? 'change' : ''}">
+  <td class="action-tab {changeOrNew(change, isNewRow) ? 'change' : ''}">
     <div class="row-actions">
-      {#if changeOrNew()}
+      {#if changeOrNew(change, isNewRow)}
         <div class="margin-auto">
           <button class="icon-button" title="Save" on:click={doSave}>
             <Save></Save>
@@ -132,7 +132,7 @@
           </button>
         </div>
       {/if}
-      {#if deleteAction && !changeOrNew()}
+      {#if deleteAction && !changeOrNew(change, isNewRow)}
         <button
           class="icon-button margin-auto"
           title="Delete"

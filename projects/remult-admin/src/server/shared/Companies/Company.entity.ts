@@ -1,13 +1,4 @@
-import {
-  Allow,
-  BackendMethod,
-  Entity,
-  Field,
-  Fields,
-  Relations,
-  Validators,
-  remult,
-} from '../../../../../core/index.js'
+import { Entity, Field, Fields, Relations } from '../../../../../core/index.js'
 import { AccountManager } from '../AccountManagers/AccountManager.entity'
 import { CompanySize } from './CompanySize'
 import { Contact } from '../Contacts/Contact.entity'
@@ -17,6 +8,7 @@ import { Deal } from '../Deals/Deal.entity'
   // allowApiCrud: Allow.authenticated,
   allowApiCrud: true,
   allowApiDelete: false,
+  defaultOrderBy: { name: 'asc' },
 })
 export class Company {
   @Fields.uuid()

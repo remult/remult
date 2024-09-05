@@ -131,7 +131,14 @@
     const fieldWeAreTalkingAbout = fields.filter(
       (x) => x.key == currentField.key,
     )[0]
+
     if (fieldWeAreTalkingAbout?.type) {
+      if (
+        fieldWeAreTalkingAbout.values &&
+        fieldWeAreTalkingAbout.values.length > 0
+      ) {
+        return operators[typeof fieldWeAreTalkingAbout.values[0].id]
+      }
       return operators[fieldWeAreTalkingAbout.type]
     }
     return operators.string
