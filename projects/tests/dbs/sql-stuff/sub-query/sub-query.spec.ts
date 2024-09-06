@@ -403,6 +403,7 @@ describe('sql-relations', () => {
       @Fields.number({
         sqlExpression: () =>
           // TODO : What do you think Noam? Could be easier ? or ?
+          // sqlRelations(CustomerZoneExtended).customers.$sum().$relations.orders.$count(),
           sqlRelations(CustomerZoneExtended).customers.$subQuery(
             async () => `SUM(${await sqlRelations(Customer).orders.$count()})`,
           ),
@@ -445,12 +446,12 @@ describe('sql-relations', () => {
     @Entity('Customer_zones')
     class CustomerZoneExtended extends CustomerZone {
       @Relations.toMany(() => Customer, { field: 'zone' })
-      customers?: Customer
+      customers?: Customer[]
 
       // @Relations.toMany(() => Order, {
       //   SQLException: () => sqlRelations(CustomerZoneExtended).customers.orders,
       // })
-      // orders?: Order[]
+      // ordersForPremiumUser?: Order[]
     }
 
     expect(
@@ -461,22 +462,59 @@ describe('sql-relations', () => {
       ).map((x) => {
         return {
           zone: x.zone,
-          // REMULT: Why is it not working?
-          orders: x.customers?.orders ?? [],
+          orders: x.customers?.flatMap((c) => c.orders) ?? [],
         }
       }),
     ).toMatchInlineSnapshot(`
       [
         {
-          "orders": [],
+          "orders": [
+            Order {
+              "amount": 10,
+              "customer": undefined,
+              "id": 1,
+            },
+            Order {
+              "amount": 15,
+              "customer": undefined,
+              "id": 2,
+            },
+          ],
           "zone": "North",
         },
         {
-          "orders": [],
+          "orders": [
+            Order {
+              "amount": 40,
+              "customer": undefined,
+              "id": 3,
+            },
+            Order {
+              "amount": 5,
+              "customer": undefined,
+              "id": 4,
+            },
+            Order {
+              "amount": 7,
+              "customer": undefined,
+              "id": 5,
+            },
+          ],
           "zone": "South",
         },
         {
-          "orders": [],
+          "orders": [
+            Order {
+              "amount": 90,
+              "customer": undefined,
+              "id": 6,
+            },
+            Order {
+              "amount": 3,
+              "customer": undefined,
+              "id": 7,
+            },
+          ],
           "zone": "Est",
         },
         {
