@@ -430,7 +430,6 @@ export function allServerTests(
       expect(result.status).toBe(204)
     }),
   )
-
   it.skipIf(options?.skipLiveQuery)(
     'test live query',
     withRemultForTest(async () => {
@@ -451,6 +450,75 @@ export function allServerTests(
         await repo.insert({ title: 'd' })
         await new Promise((res) => setTimeout(() => res({}), 100))
         expect(tasks.length).toBe(4)
+      } finally {
+        await unsubscribe()
+        await new Promise((res) => setTimeout(() => res({}), 100))
+      }
+    }),
+  )
+  it.skipIf(options?.skipLiveQuery)(
+    'test live query with in statement',
+    withRemultForTest(async () => {
+      const repo = await create3Tasks()
+      let tasks: Task[] = []
+      let unsubscribe: VoidFunction = () => {}
+      try {
+        await new Promise((res, reject) => {
+          unsubscribe = repo
+            .liveQuery({
+              where: {
+                title: ['b', 'c', 'd'],
+              },
+            })
+            .subscribe({
+              next: ({ applyChanges }) => {
+                tasks = applyChanges(tasks)
+                res({})
+              },
+              error: (err) => reject(err),
+            })
+        })
+        expect(tasks.length).toBe(2)
+        await repo.insert({ title: 'd' })
+        await new Promise((res) => setTimeout(() => res({}), 100))
+        expect(tasks.length).toBe(3)
+      } finally {
+        await unsubscribe()
+        await new Promise((res) => setTimeout(() => res({}), 100))
+      }
+    }),
+  )
+  it.skipIf(options?.skipLiveQuery)(
+    'test live query with in statement',
+    withRemultForTest(async () => {
+      const repo = await create3Tasks()
+      let tasks: Task[] = []
+      let unsubscribe: VoidFunction = () => {}
+      try {
+        await new Promise((res, reject) => {
+          unsubscribe = repo
+            .liveQuery({
+              where: {
+                title: [
+                  'b',
+                  'c',
+                  'd',
+                  ...Array.from({ length: 10000 }, (_, i) => i.toString()),
+                ],
+              },
+            })
+            .subscribe({
+              next: ({ applyChanges }) => {
+                tasks = applyChanges(tasks)
+                res({})
+              },
+              error: (err) => reject(err),
+            })
+        })
+        expect(tasks.length).toBe(2)
+        await repo.insert({ title: 'd' })
+        await new Promise((res) => setTimeout(() => res({}), 100))
+        expect(tasks.length).toBe(3)
       } finally {
         await unsubscribe()
         await new Promise((res) => setTimeout(() => res({}), 100))
