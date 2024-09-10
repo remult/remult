@@ -57,7 +57,7 @@ export class DataApi<T = any> {
       return this.liveQuery(
         res,
         req,
-        undefined,
+        body,
         serializeContext,
         action.substring(liveQueryAction.length),
       )
@@ -227,7 +227,11 @@ export class DataApi<T = any> {
         buildFilterFromRequestParameters(this.repository.metadata, {
           get: (key) => {
             let result = request.get(key)
-            if (key.startsWith(customUrlToken) && result&&typeof result==="string")
+            if (
+              key.startsWith(customUrlToken) &&
+              result &&
+              typeof result === 'string'
+            )
               return JSON.parse(result)
             return result
           },
