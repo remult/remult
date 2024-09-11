@@ -30,6 +30,7 @@ export interface FieldUIInfo {
   valFieldKey: string
   caption: string
   type: FieldUIInfoType
+  inputType: string
   relationToOne?: FieldRelationToOneInfo
 }
 export interface FieldRelationToOneInfo extends RelationFields {
@@ -124,6 +125,7 @@ export function buildEntityInfo(options: AdminOptions) {
         valFieldKey,
         caption: x.caption,
         relationToOne: relation,
+        inputType: x.inputType,
         type:
           x.valueConverter.fieldTypeInDb == 'json'
             ? 'json'

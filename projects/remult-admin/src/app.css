@@ -526,6 +526,7 @@ button.new-entry {
 }
 
 .main-content {
+  max-height: 100vh;
   transition: 0.2s ease-in-out all;
   transform: translateX(var(--navigation-width));
   display: flex;
