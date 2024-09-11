@@ -55,6 +55,7 @@ describe('remult-admin', () => {
           "fields": [
             {
               "caption": "Id",
+              "inputType": "number",
               "key": "id",
               "readOnly": true,
               "relationToOne": undefined,
@@ -64,6 +65,7 @@ describe('remult-admin', () => {
             },
             {
               "caption": "Name",
+              "inputType": undefined,
               "key": "name",
               "readOnly": false,
               "relationToOne": undefined,
@@ -73,6 +75,7 @@ describe('remult-admin', () => {
             },
             {
               "caption": "Bday",
+              "inputType": undefined,
               "key": "bday",
               "readOnly": false,
               "relationToOne": undefined,
@@ -82,6 +85,7 @@ describe('remult-admin', () => {
             },
             {
               "caption": "Age",
+              "inputType": "number",
               "key": "age",
               "readOnly": false,
               "relationToOne": undefined,
@@ -91,6 +95,7 @@ describe('remult-admin', () => {
             },
             {
               "caption": "Metadata",
+              "inputType": undefined,
               "key": "metadata",
               "readOnly": false,
               "relationToOne": undefined,
@@ -100,6 +105,7 @@ describe('remult-admin', () => {
             },
             {
               "caption": "Account",
+              "inputType": "",
               "key": "account",
               "readOnly": false,
               "relationToOne": {
@@ -118,6 +124,7 @@ describe('remult-admin', () => {
             },
             {
               "caption": "Account2",
+              "inputType": "text",
               "key": "account2",
               "readOnly": true,
               "relationToOne": {
@@ -136,6 +143,7 @@ describe('remult-admin', () => {
             },
             {
               "caption": "Account Bankrupted",
+              "inputType": "text",
               "key": "accountBankrupted",
               "readOnly": true,
               "relationToOne": {
@@ -164,6 +172,7 @@ describe('remult-admin', () => {
           "fields": [
             {
               "caption": "Id",
+              "inputType": undefined,
               "key": "id",
               "readOnly": true,
               "relationToOne": undefined,
@@ -173,6 +182,7 @@ describe('remult-admin', () => {
             },
             {
               "caption": "Name",
+              "inputType": undefined,
               "key": "name",
               "readOnly": false,
               "relationToOne": undefined,
@@ -182,6 +192,7 @@ describe('remult-admin', () => {
             },
             {
               "caption": "Is Bankrupt",
+              "inputType": "checkbox",
               "key": "isBankrupt",
               "readOnly": false,
               "relationToOne": undefined,

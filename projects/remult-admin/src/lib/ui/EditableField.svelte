@@ -73,8 +73,10 @@
   </select>
 {:else if info.type == 'number'}
   <input bind:value on:change type="number" />
+{:else if info.inputType == 'color'}
+  <input bind:value on:change type="color" />
 {:else}
-  <input bind:value on:change />
+  <input bind:value on:change type="text" />
 {/if}
 
 <style>
