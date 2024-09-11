@@ -21,6 +21,8 @@ export class Company {
   sector = ''
   @Field(() => CompanySize)
   size = CompanySize.s1
+  @Fields.string({ inputType: 'color' })
+  color = '#0099FF'
   @Fields.string()
   linkedIn = ''
   @Fields.string()
