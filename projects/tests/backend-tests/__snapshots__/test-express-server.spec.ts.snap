@@ -556,6 +556,60 @@ exports[`test express server > test open api 1`] = `
         ],
       },
     },
+    "/api/testProperError": {
+      "post": {
+        "produces": [
+          "application/json",
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "args": {
+                    "items": {
+                      "type": "string",
+                    },
+                    "type": "array",
+                  },
+                },
+                "type": "object",
+              },
+            },
+          },
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Created",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvalidResponse",
+                },
+              },
+            },
+            "description": "Error: Bad Request",
+          },
+        },
+        "tags": [
+          "Static Backend Methods",
+        ],
+      },
+    },
     "/api/testQueuedJob": {
       "post": {
         "produces": [
@@ -611,6 +665,60 @@ exports[`test express server > test open api 1`] = `
       },
     },
     "/api/testStaticRemult": {
+      "post": {
+        "produces": [
+          "application/json",
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "args": {
+                    "items": {
+                      "type": "string",
+                    },
+                    "type": "array",
+                  },
+                },
+                "type": "object",
+              },
+            },
+          },
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Created",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvalidResponse",
+                },
+              },
+            },
+            "description": "Error: Bad Request",
+          },
+        },
+        "tags": [
+          "Static Backend Methods",
+        ],
+      },
+    },
+    "/api/testStringError": {
       "post": {
         "produces": [
           "application/json",

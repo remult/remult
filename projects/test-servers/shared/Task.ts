@@ -54,6 +54,15 @@ export class Task {
       progress!.progress(i / 3)
     }
   }
+  @BackendMethod({ allowed: true })
+  static testStringError() {
+    throw 'test error'
+  }
+  @BackendMethod({ allowed: true })
+  static testProperError() {
+    //@ts-ignore
+    throw new Error('Test Error')
+  }
 }
 @Entity('test_compound_id', {
   allowApiCrud: true,

@@ -20,4 +20,13 @@ export class Task {
   static async testInjectedRemult(remult?: Remult) {
     return await remult!.repo(Task).count()
   }
+  @BackendMethod({ allowed: true })
+  static testStringError() {
+    throw 'test error'
+  }
+  @BackendMethod({ allowed: true })
+  static testProperError() {
+    //@ts-ignore
+    throw new Error('Test Error')
+  }
 }

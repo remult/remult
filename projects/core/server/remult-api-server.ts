@@ -1159,6 +1159,7 @@ class ResponseBridgeToDataApiResponse<RequestType> implements DataApiResponse {
     httpStatusCode?: number,
   ) {
     let data = serializeError(exception)
+
     if (!httpStatusCode) {
       if (data.httpStatusCode) {
         httpStatusCode = data.httpStatusCode

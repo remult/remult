@@ -183,6 +183,32 @@ export function allServerTests(
     }),
   )
   it(
+    'Test error in backend method',
+    withRemultForTest(async () => {
+      await expect(() => Task.testStringError()).rejects
+        .toThrowErrorMatchingInlineSnapshot(`
+        {
+          "httpStatusCode": 400,
+          "message": "test error",
+        }
+      `)
+    }),
+  )
+  it(
+    'Test error in backend method 2',
+    withRemultForTest(async () => {
+      let ok = true
+      try {
+        await Task.testProperError()
+        ok = false
+      } catch (err: any) {
+        expect(err.message).toBe('Test Error')
+        expect(err.httpStatusCode).toBe(400)
+        expect(err.stack.length > 10).toBe(true)
+      }
+    }),
+  )
+  it(
     'update many',
     withRemultForTest(async () => {
       await create3Tasks()
