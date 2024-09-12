@@ -3,7 +3,7 @@ import * as Knex from 'knex'
 import { knexTests } from './shared-tests/test-knex'
 import { cast } from '../../core/src/isOfType.js'
 import { entity } from '../tests/dynamic-classes.js'
-import { Fields } from '../../core/index.js'
+import { Entity, EntityBase, Fields } from '../../core/index.js'
 import { testMigrationScript } from '../tests/testHelper.js'
 
 describe('Sql Lite', () => {
@@ -56,6 +56,44 @@ describe('Sql Lite', () => {
         ).toMatchInlineSnapshot(
           "\"create table `t` (`id` float not null default '0', `id2` float not null default '0', `name` varchar(255) not null default '', primary key (`id`, `id2`))\"",
         )
+      })
+      it('test update based on json', async () => {
+        @Entity('orderHeader')
+        class ft_order_header extends EntityBase {
+          @Fields.number()
+          oh_ID = 0
+          @Fields.number()
+          oh_EnteredByAgent = 0
+          @Fields.number()
+          oh_ccid = 0
+          @Fields.number()
+          oh_RequestID = 0
+          @Fields.number()
+          oh_CityCode = 2210303
+        }
+        const repo = await createEntity(ft_order_header)
+        repo.insert([
+          { oh_ID: 1, oh_EnteredByAgent: 2, oh_ccid: 3 },
+          { oh_ID: 2, oh_EnteredByAgent: 3, oh_ccid: 4 },
+        ])
+        const x = repo.fromJson(
+          {
+            oh_ID: 0,
+            oh_EnteredByAgent: 0,
+            oh_ccid: 0,
+            oh_RequestID: 0,
+            oh_CityCode: 221035,
+          },
+          false,
+        )
+        await expect(() =>
+          x
+            .assign({
+              oh_ccid: 909090,
+            })
+            .save(),
+        ).rejects.toThrowError()
+        expect(await repo.count({ oh_ccid: 909090 })).toBe(0)
       })
     },
   )

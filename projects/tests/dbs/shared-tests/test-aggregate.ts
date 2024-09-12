@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest'
-import { Entity } from '../../../../dist/remult/index.js'
+import { Entity } from '../../../core/index.js'
 import {
   Field,
   Fields,
@@ -40,6 +40,7 @@ class TestEntityWithData {
   @Relations.toOne(() => Category)
   category?: Category
 }
+
 @Entity('Category', {
   allowApiCrud: true,
 })

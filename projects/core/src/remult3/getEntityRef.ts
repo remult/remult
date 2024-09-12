@@ -44,7 +44,6 @@ export function getEntitySettings<T>(
       entity.prototype.constructor.name +
         " is not a known entity, did you forget to set @Entity() or did you forget to add the '@' before the call to Entity?",
     )
-
   return info
 }
 export function getEntityKey(entity: ClassType<any>): string {

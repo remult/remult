@@ -611,44 +611,6 @@ class myDummySQLCommand implements SqlCommand {
   }
 }
 
-async function bulkInsert<entityType extends EntityBase>(
-  array: entityType[],
-  db: SqlDatabase,
-) {
-  if (array.length == 0) return
-
-  const chunkSize = 250
-  for (let i = 0; i < array.length; i += chunkSize) {
-    const items = array.slice(i, i + chunkSize)
-    // do whatever
-
-    const c = db.createCommand()
-    let sql =
-      'insert into ' +
-      (await items[0]._.metadata.dbName) +
-      ' (' +
-      (
-        await Promise.all(
-          items[0]._.metadata.fields.toArray().map((f) => f.dbName),
-        )
-      ).join(',') +
-      ') values '
-
-    sql += items
-      .map(
-        (row) =>
-          '(' +
-          row.$.toArray()
-            .map((f) => c.param(f.metadata.valueConverter.toDb!(f.value)))
-            .join(', ') +
-          ')',
-      )
-      .join(',')
-
-    await c.execute(sql)
-  }
-}
-
 export function getRowAfterUpdate<entityType>(
   meta: EntityMetadata<entityType>,
   dataProvider: EntityDataProvider,

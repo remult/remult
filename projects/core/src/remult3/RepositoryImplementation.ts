@@ -1036,7 +1036,9 @@ export class RepositoryImplementation<entityType>
         //I've used define property to hide this member from console.lo g
         get: () => row,
       })
+      row.id = row.getId()
       row.saveOriginalData()
+      row.originalId = row.id
       return result as entityType
     }
   }
@@ -1829,6 +1831,8 @@ export class rowHelperImplementation<T>
               await this.edp.find({ where: await this.getIdFilter() })
             )[0]
           } else {
+            if (this.id === undefined)
+              throw new Error('Invalid operation, id is undefined')
             updatedRow = await this.edp.update(this.id, changesOnly)
           }
         }
@@ -1911,7 +1915,11 @@ export class rowHelperImplementation<T>
     }
     this.__assertValidity()
     try {
-      if (doDelete) await this.edp.delete(this.id)
+      if (doDelete) {
+        if (this.id === undefined)
+          throw new Error('Invalid operation, id is undefined')
+        await this.edp.delete(this.id)
+      }
       if (!this.repo._dataProvider.isProxy) {
         if (this.info.entityInfo.deleted)
           await this.info.entityInfo.deleted(this.instance, e)
