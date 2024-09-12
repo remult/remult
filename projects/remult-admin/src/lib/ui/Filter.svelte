@@ -191,16 +191,20 @@
 <style>
   .filter__group {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: 1fr 1fr 1fr auto;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.2rem;
   }
 
-  select {
-    border: 0.5px solid gainsboro;
-  }
-  input {
-    border: 0.5px solid gainsboro;
+  input,
+  select,
+  button {
+    border: 1px solid var(--border-color);
+    border-radius: 0;
+    padding: 0.2rem 0.5rem;
+    margin-bottom: 0.5rem;
+    min-width: 0 !important;
+    height: var(--cell-height);
   }
 
   .icon-button {
