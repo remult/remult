@@ -17,6 +17,7 @@
   import { LSContext } from '../stores/LSContext.js'
   import Key from '../icons/Key.svelte'
   import ColumnType from '../icons/ColumnType.svelte'
+  import { dialog } from './dialog/dialog.js'
 
   export let fields: FieldUIInfo[]
   export let relations: EntityRelationToManyInfo[]
@@ -105,6 +106,20 @@
     }
     return 70
   }
+
+  const filterDialog = async (
+    _fields: FieldUIInfo[],
+    _filter: EntityFilter<any>,
+  ) => {
+    const res = await dialog.show<EntityFilter<any>>({
+      config: { title: 'Filter' },
+      component: Filter,
+      props: { fields: _fields, filter: _filter },
+    })
+    if (res.success) {
+      $filter = res.data
+    }
+  }
 </script>
 
 <div class="page-bar">
@@ -139,7 +154,7 @@
       <span style="color: coral; font-size: smaller;">Forbidden</span>
     {/if}
   </div>
-  <Filter {fields} bind:filter={$filter} />
+  <button on:click={() => filterDialog(fields, $filter)}> Filter</button>
 
   <span class="page-bar__results">{from + ' - ' + to} of {totalRows}</span>
 

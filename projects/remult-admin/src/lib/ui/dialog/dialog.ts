@@ -17,7 +17,7 @@ export type DialogMetaData = {
 
 type ResultClose<resultType = any> = {
   success: boolean
-  item?: resultType
+  data?: resultType
   // createRequest?: entityType
 }
 

@@ -3,6 +3,7 @@
   import { flyAndScale } from '../melt/utils.js'
   import { dialog, type DialogConfig } from './dialog.js'
   import { onDestroy, onMount, tick } from 'svelte'
+  import DialogActions from './DialogActions.svelte'
 
   export let config: DialogConfig
 
@@ -50,10 +51,8 @@
 
       <slot></slot>
 
-      <div class="actions">
-        {#if $$slots.actions}
-          <slot name="actions" />
-        {:else}
+      {#if config.buttonSuccess}
+        <DialogActions>
           <button
             {...$close}
             on:click={() => {
@@ -63,8 +62,8 @@
           >
             {config.buttonSuccess}
           </button>
-        {/if}
-      </div>
+        </DialogActions>
+      {/if}
 
       <button {...$close} use:close aria-label="close" class="close">
         <!-- <X class="size-4" /> -->
@@ -191,7 +190,7 @@
 
     max-height: 85vh;
     width: 90vw;
-    max-width: 450px;
+    max-width: 550px;
 
     transform: translate(-50%, -50%);
 
@@ -260,51 +259,7 @@
     color: rgb(var(--color-zinc-600) / 1);
   }
 
-  fieldset {
-    display: flex;
-    align-items: center;
-    gap: 1.25rem;
-
-    margin-bottom: 1rem;
-  }
-
-  fieldset label {
-    width: 90px;
-    text-align: right;
-
-    color: rgb(var(--color-indigo-800) / 1);
-  }
-
-  fieldset input {
-    display: inline-flex;
-    flex: 1 1 0%;
-    align-items: center;
-    justify-content: center;
-
-    height: 2rem;
-    width: 100%;
-
-    padding: 0 0.75rem;
-
-    border-radius: 0.125rem;
-
-    border-width: 1px;
-    border-style: solid;
-
-    line-height: 1;
-
-    color: rgb(var(--color-indigo-800) / 1);
-  }
-
-  .actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-
-    margin-top: 1.5rem;
-  }
-
-  .actions button {
+  :global(button) {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -319,17 +274,12 @@
     line-height: 1;
   }
 
-  /* .actions button.secondary {
-    background-color: rgb(var(--color-zinc-100) / 1);
-    color: rgb(var(--color-zinc-600) / 1);
-  } */
-
-  .actions button.warning {
+  :global(button.warning) {
     background-color: rgb(var(--color-magnum-100) / 1);
     color: rgb(var(--color-magnum-900) / 1);
   }
 
-  .actions button.primary {
+  :global(button.primary) {
     background-color: rgb(var(--color-indigo-100) / 1);
     color: rgb(var(--color-indigo-900) / 1);
   }

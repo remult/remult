@@ -9,6 +9,9 @@
     ContainsStringValueFilter,
     EntityFilter,
   } from '../../../../core/src/remult3/remult3'
+  import { dialog } from './dialog/dialog.js'
+  import DialogActions from './dialog/DialogActions.svelte'
+  import Delete from '../icons/Delete.svelte'
 
   const defaultFilter = {
     key: '',
@@ -60,7 +63,6 @@
 
   let filterValues: (typeof defaultFilter)[]
   $: filterValues = []
-  let dialog: HTMLDialogElement | null = null
 
   function addFilter() {
     filterValues = [
@@ -86,7 +88,7 @@
     }
     filter = newFilter
     tick()
-    dialog?.close()
+    dialog.close({ success: true, data: filter })
   }
 
   function translateFilterToFilterValues() {
@@ -145,83 +147,62 @@
   }
 </script>
 
-<button on:click={() => dialog?.showModal()}>Filter</button>
-<dialog bind:this={dialog} class="filter">
-  <strong>Filter</strong>
-  <div>
-    {#each filterValues as field, i}
-      <div class="filter__group">
-        <select on:change={(e) => setValue(e, field, 'key')}>
-          {#each fields.filter((x) => x.key == field.key || !filterValues.find((y) => y.key == x.key)) as x}
-            <option value={x.key} selected={x.key === field.key}>
-              {x.caption}
-            </option>
-          {/each}
-        </select>
-        <select on:change={(e) => setValue(e, field, 'operator')}>
-          {#each getOperators(filterValues, field) as [key, caption]}
-            <option value={key} selected={key === field.operator}>
-              {caption}
-            </option>
-          {/each}
-        </select>
-        <input
-          value={field.value}
-          on:input={(e) => setValue(e, field, 'value')}
-        />
-        <button
-          class="icon-button"
-          on:click={() =>
-            (filterValues = filterValues.filter((x) => x != field))}
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 20 20"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <rect
-              x="2.23254"
-              y="0.796844"
-              width="24"
-              height="2.03049"
-              transform="rotate(45 2.23254 0.796844)"
-              fill="black"
-            />
-            <rect
-              x="0.796875"
-              y="17.7673"
-              width="24"
-              height="2.03049"
-              transform="rotate(-45 0.796875 17.7673)"
-              fill="black"
-            />
-          </svg>
-        </button>
-      </div>
-    {/each}
-    <button class="filter__add" on:click={addFilter}>Add</button>
-    <div class="filter__actions">
-      <button on:click={() => dialog?.close()}>Cancel</button>
-      <button on:click={applyFilterValues}>Apply</button>
+<div>
+  {#each filterValues as field, i}
+    <div class="filter__group">
+      <select on:change={(e) => setValue(e, field, 'key')}>
+        {#each fields.filter((x) => x.key == field.key || !filterValues.find((y) => y.key == x.key)) as x}
+          <option value={x.key} selected={x.key === field.key}>
+            {x.caption}
+          </option>
+        {/each}
+      </select>
+
+      <select on:change={(e) => setValue(e, field, 'operator')}>
+        {#each getOperators(filterValues, field) as [key, caption]}
+          <option value={key} selected={key === field.operator}>
+            {caption}
+          </option>
+        {/each}
+      </select>
+
+      <input
+        value={field.value}
+        on:input={(e) => setValue(e, field, 'value')}
+      />
+
+      <button
+        class="icon-button"
+        on:click={() => (filterValues = filterValues.filter((x) => x != field))}
+      >
+        <Delete></Delete>
+      </button>
     </div>
-  </div>
-</dialog>
+  {/each}
+
+  <br />
+  <button class="primary" on:click={addFilter}> + </button>
+
+  <DialogActions>
+    <button class="primary" on:click={applyFilterValues}>Apply</button>
+  </DialogActions>
+</div>
 
 <style>
   .filter__group {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
     align-items: center;
+    gap: 0.5rem;
   }
-  .filter__add {
-    margin-top: 10px;
+
+  select {
+    border: 0.5px solid gainsboro;
   }
-  .filter__actions {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 10px;
+  input {
+    border: 0.5px solid gainsboro;
   }
+
   .icon-button {
     background: none;
     border: none;
