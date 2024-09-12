@@ -9,6 +9,7 @@
   import DefaultRoute from './routes/DefaultRoute.svelte'
   import { SSContext } from './lib/stores/SSContext.js'
   import { remult } from '../../core/src/remult-proxy'
+  import DialogManagement from './lib/ui/dialog/DialogManagement.svelte'
 
   // Save the current location except on '/'
   $: $loc.location !== '/' && ($LSContext.currentLocationHash = $loc.location)
@@ -198,6 +199,32 @@
         {midTrim($LSContext.settings.dispayCaption ? t.caption : t.key)}
       </a>
     {/each}
+    <!-- DIALOG DEMO -->
+    <!-- <button
+      on:click={async () => {
+        const res = await dialog.confirm('Are you sure ?')
+        if (res.success) {
+          await dialog.confirmDelete('Item to delete')
+        }
+        console.log(`res`, res)
+      }}>confirm</button
+    >
+    <button
+      on:click={async () => {
+        const res = await dialog.confirmDelete('Item to delete')
+        if (res.success) {
+          await dialog.confirm('Are you sure ?')
+        }
+        console.log(`res`, res)
+      }}>confirm delete</button
+    >
+    <button
+      on:click={async () => {
+        const res = await dialog.show({ config: {} })
+        console.log(`res`, res)
+      }}>Show</button
+    > -->
+
     <a
       href="#/diagram"
       class="tab main-navigation__diagram"
@@ -212,6 +239,8 @@
     <Router {routes} />
   </div>
 </div>
+
+<DialogManagement></DialogManagement>
 
 <style>
   a {

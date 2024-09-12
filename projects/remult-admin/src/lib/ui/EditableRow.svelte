@@ -9,6 +9,7 @@
   import Delete from '../icons/Delete.svelte'
   import Save from '../icons/Save.svelte'
   import { LSContext } from '../stores/LSContext.js'
+  import { dialog } from './dialog/dialog.js'
   import EditableField from './EditableField.svelte'
   import Table from './Table.svelte'
 
@@ -139,10 +140,8 @@
           on:click={async () => {
             try {
               if ($LSContext.settings.confirmDelete) {
-                const res = confirm(
-                  'Are you sure you want to delete this line ?',
-                )
-                if (res) {
+                const res = await dialog.confirmDelete('The full line ?')
+                if (res.success) {
                   await deleteAction()
                 }
               } else {

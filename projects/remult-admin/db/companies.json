@@ -1715,22 +1715,5 @@
     "accountManager": "",
     "createdAt": "2024-06-26T10:17:10.368Z",
     "color": "#0099FF"
-  },
-  {
-    "id": "b65d99fd-5b8c-48e0-8ebb-75097f00ab50",
-    "name": "",
-    "logo": "",
-    "sector": "",
-    "size": 1,
-    "color": "#0099FF",
-    "linkedIn": "",
-    "website": "",
-    "phoneNumber": "",
-    "address": "",
-    "zipcode": "",
-    "city": "",
-    "stateAbbr": "",
-    "accountManager": "",
-    "createdAt": "2024-09-11T10:34:48.880Z"
   }
 ]
