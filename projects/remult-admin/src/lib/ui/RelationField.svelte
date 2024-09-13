@@ -4,12 +4,13 @@
   import SelectDialog from './SelectDialog.svelte'
   import { godStore } from '../../stores/GodStore.js'
   import LoadingSkeleton from './LoadingSkeleton.svelte'
+  import { dialog } from './dialog/dialog.js'
 
   export let value: any
   export let info: FieldUIInfo
 
   let displayValue = undefined
-  let dialogOpen = false
+  // let dialogOpen = false
 
   const dispatch = createEventDispatcher()
 
@@ -35,10 +36,25 @@
     }
     return 70
   }
+
+  const onSelect = (_value: any) => {
+    value = _value
+    dispatchChange(value)
+    dialog.close({ success: true, data: { value } })
+  }
 </script>
 
 <div>
-  <button class="naked-button" on:click={() => (dialogOpen = true)}>
+  <button
+    class="naked-button"
+    on:click={() => {
+      dialog.show({
+        config: { title: `${info.caption} selection` },
+        component: SelectDialog,
+        props: { relation: info.relationToOne, onSelect },
+      })
+    }}
+  >
     <span>🔎</span>
     {#if displayValue === undefined}
       <LoadingSkeleton width={getWidth()} />
@@ -46,7 +62,7 @@
       {displayValue}
     {/if}
   </button>
-  {#if dialogOpen}
+  <!-- {#if dialogOpen}
     <SelectDialog
       relation={info.relationToOne}
       on:close={() => (dialogOpen = false)}
@@ -55,5 +71,5 @@
         dispatchChange(value)
       }}
     />
-  {/if}
+  {/if} -->
 </div>

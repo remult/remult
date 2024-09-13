@@ -6,13 +6,14 @@ export type DialogConfig = {
   description?: string
   buttonSuccess?: string
   isWarning?: boolean
+  width?: string
 }
 export type DialogMetaData = {
+  config: DialogConfig
   component?: new (...args: any[]) => SvelteComponent
   props?: any
   children?: any
   focusKey?: string
-  config: DialogConfig
 }
 
 type ResultClose<resultType = any> = {

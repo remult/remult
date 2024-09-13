@@ -32,6 +32,7 @@
   <div {...$portalled} use:portalled>
     <div {...$overlay} use:overlay class="overlay" />
     <div
+      style="--dialog-width: {config.width ?? '550px'}"
       class="content"
       transition:flyAndScale={{
         duration: 150,
@@ -76,6 +77,7 @@
 <style>
   /* Check where to put this */
   :global(:root) {
+    --dialog-width: 550px;
     /* --color-inherit: inherit; */
     /* --color-current: currentColor; */
     /* --color-transparent: transparent; */
@@ -190,7 +192,8 @@
 
     max-height: 85vh;
     width: 90vw;
-    max-width: 550px;
+    /* max-width: 550px; */
+    max-width: var(--dialog-width);
 
     transform: translate(-50%, -50%);
 
