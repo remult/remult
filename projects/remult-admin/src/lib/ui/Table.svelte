@@ -26,17 +26,18 @@
   export let color: string
 
   let options: FindOptions<any>
+
   // Reset to page 1 on key change
   $: options = repo.metadata.key && { limit: 25, page: 1 }
 
   let filter: Writable<EntityFilter<any>> = writable({})
-
   let items: any[] | null = null
 
   $: $SSContext.forbiddenEntities.includes(repo.metadata.key) && (items = [])
 
-  // resting items when fields change
+  // resting when fields change
   $: items = fields && (items = null)
+  $: $filter = fields && ($filter = {})
 
   let totalRows = -1
   let unSub: (() => void) | null = null

@@ -12,6 +12,7 @@
   import { dialog } from './dialog/dialog.js'
   import DialogActions from './dialog/DialogActions.svelte'
   import Delete from '../icons/Delete.svelte'
+  import RelationField from './RelationField.svelte'
 
   const defaultFilter = {
     key: '',
@@ -23,7 +24,7 @@
   }
 
   const operators: Record<
-    FieldUIInfoType,
+    FieldUIInfoType | 'list',
     [typeof defaultFilter.operator, string][]
   > = {
     string: [
@@ -56,10 +57,14 @@
       ['', 'equal'],
       ['$ne', 'not equal'],
     ],
+    list: [
+      ['', 'equal'],
+      ['$ne', 'not equal'],
+    ],
   }
 
   export let fields: FieldUIInfo[] = []
-  export let filter: EntityFilter<any> | undefined
+  export let filter: EntityFilter<any> = {}
 
   let filterValues: (typeof defaultFilter)[]
   $: filterValues = []
@@ -117,29 +122,52 @@
 
   $: fields && translateFilterToFilterValues()
 
-  const setValue = (e: any, field: any, kind: 'key' | 'operator' | 'value') => {
+  const setValue = (
+    e: any,
+    field: typeof defaultFilter,
+    kind: 'key' | 'operator' | 'value',
+  ) => {
     field[kind] = e.target.value
 
     if (kind === 'key') {
-      const defaultOp = getOperators(undefined, e.target.value)
+      const key = e.target.value
+      const defaultOp = getOperators(undefined, key)
       field['operator'] = defaultOp[0][0]
+
+      const info = fields.find((x) => x.key == key)
+
+      if (info.values && info.values.length > 0) {
+        // @ts-ignore
+        field['value'] =
+          typeof info.values[0] === 'object'
+            ? info.values[0].id
+            : info.values[0]
+      }
     }
 
     // To trigger a refresh...
     filterValues = filterValues
   }
 
-  $: getOperators = (_filterValues: any, currentField: any) => {
-    const fieldWeAreTalkingAbout = fields.filter(
-      (x) => x.key == currentField.key,
-    )[0]
+  $: getOperators = (_filterValues: any, currentFieldKey: string) => {
+    const fieldWeAreTalkingAbout = fields.find((x) => x.key == currentFieldKey)
+
+    if (
+      fieldWeAreTalkingAbout?.values &&
+      fieldWeAreTalkingAbout.values.length > 0
+    ) {
+      return operators.list
+    }
+    if (fieldWeAreTalkingAbout?.relationToOne) {
+      return operators.list
+    }
 
     if (fieldWeAreTalkingAbout?.type) {
       if (
         fieldWeAreTalkingAbout.values &&
         fieldWeAreTalkingAbout.values.length > 0
       ) {
-        return operators[typeof fieldWeAreTalkingAbout.values[0].id]
+        return operators[typeof fieldWeAreTalkingAbout.values[0]]
       }
       return operators[fieldWeAreTalkingAbout.type]
     }
@@ -149,6 +177,7 @@
 
 <div>
   {#each filterValues as field, i}
+    {@const info = fields.find((x) => x.key == field.key)}
     <div class="filter__group">
       <select on:change={(e) => setValue(e, field, 'key')}>
         {#each fields.filter((x) => x.key == field.key || !filterValues.find((y) => y.key == x.key)) as x}
@@ -159,21 +188,68 @@
       </select>
 
       <select on:change={(e) => setValue(e, field, 'operator')}>
-        {#each getOperators(filterValues, field) as [key, caption]}
+        {#each getOperators(filterValues, field.key) ?? [] as [key, caption]}
           <option value={key} selected={key === field.operator}>
             {caption}
           </option>
         {/each}
       </select>
 
-      <input
+      <!-- <input
         value={field.value}
         on:input={(e) => setValue(e, field, 'value')}
-      />
+      /> -->
+      {#if info.relationToOne}
+        <RelationField
+          {info}
+          value={field.value}
+          on:change={(e) => {
+            setValue({ target: { value: e.detail._data } }, field, 'value')
+          }}
+        />
+      {:else if info.type == 'boolean'}
+        <select
+          value={field.value}
+          on:change={(e) => setValue(e, field, 'value')}
+        >
+          <option value={false}>False</option>
+          <option value={true}>True</option>
+        </select>
+      {:else if info.values && info.values.length > 0}
+        <select
+          value={field.value}
+          on:change={(e) => setValue(e, field, 'value')}
+        >
+          {#each info.values as option}
+            {#if typeof option == 'object'}
+              <option value={String(option.id)}>{option.caption}</option>
+            {:else}
+              <option value={String(option)}>{option}</option>
+            {/if}
+          {/each}
+        </select>
+      {:else if info.type == 'number'}
+        <input
+          value={field.value}
+          on:change={(e) => setValue(e, field, 'value')}
+          type="number"
+        />
+      {:else}
+        <input
+          value={field.value}
+          on:change={(e) => setValue(e, field, 'value')}
+          type="text"
+        />
+      {/if}
 
       <button
         class="icon-button"
-        on:click={() => (filterValues = filterValues.filter((x) => x != field))}
+        on:click={() => {
+          filterValues = filterValues.filter((x) => x != field)
+          if (filterValues.length == 0) {
+            addFilter()
+          }
+        }}
       >
         <Delete></Delete>
       </button>
