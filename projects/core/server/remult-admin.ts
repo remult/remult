@@ -7,6 +7,7 @@ import type { ClassType } from '../classType.js'
 import type { Remult } from '../src/context.js'
 import { getHtml } from './get-remult-admin-html.js'
 import { getValueList } from '../src/remult3/RepositoryImplementation.js'
+import { EntityFilter } from 'src/remult3/remult3.js'
 
 export interface EntityUIInfo {
   key: string
@@ -14,6 +15,7 @@ export interface EntityUIInfo {
   fields: FieldUIInfo[]
   ids: Record<string, true>
   relations: EntityRelationToManyInfo[]
+  defaultOrderBy?: EntityFilter<any>
   color?: string
 }
 export interface EntityRelationToManyInfo extends RelationFields {
@@ -146,6 +148,7 @@ export function buildEntityInfo(options: AdminOptions) {
         ids,
         fields,
         relations,
+        defaultOrderBy: metadata.options.defaultOrderBy ?? { id: 'asc' },
       })
     }
   }

@@ -338,54 +338,6 @@ button:active,
   width: 100%;
 }
 
-dialog {
-  border: 1px solid var(--border-color);
-  padding: 0.5rem;
-  border-radius: 5px;
-  min-width: 250px;
-  min-height: 250px;
-}
-
-dialog form {
-  width: auto;
-  display: flex;
-}
-
-dialog input,
-dialog select,
-dialog button {
-  border: 1px solid var(--border-color);
-  border-radius: 0;
-  padding: 0.2rem 0.5rem;
-  margin-bottom: 0.5rem;
-  min-width: auto !important;
-  height: var(--cell-height);
-}
-
-dialog select {
-  padding-right: 1.5rem;
-}
-
-dialog button.icon-button {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: var(--cell-height);
-  height: var(--cell-height);
-}
-
-dialog button.icon-button svg {
-  width: 14px;
-  height: var(--cell-height);
-}
-
-dialog header {
-  width: 100%;
-  height: var(--cell-height);
-  border-bottom: 1px solid var(--border-color);
-  margin-bottom: 1rem;
-}
-
 .page-bar {
   background: var(--background-color-gray);
   height: calc(var(--cell-height) - 1px);

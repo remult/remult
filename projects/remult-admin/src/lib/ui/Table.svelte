@@ -18,17 +18,25 @@
   import Key from '../icons/Key.svelte'
   import ColumnType from '../icons/ColumnType.svelte'
   import { dialog } from './dialog/dialog.js'
+  import ChevronLeft from '../icons/ChevronLeft.svelte'
+  import ChevronRight from '../icons/ChevronRight.svelte'
+  import Back from '../icons/Back.svelte'
 
   export let fields: FieldUIInfo[]
   export let relations: EntityRelationToManyInfo[]
   export let repo: Repository<any>
   export let parentRelation: Record<string, any> = {}
   export let color: string
+  export let defaultOrderBy: EntityFilter<any>
 
   let options: FindOptions<any>
 
   // Reset to page 1 on key change
-  $: options = repo.metadata.key && { limit: 25, page: 1 }
+  $: options = repo.metadata.key && {
+    limit: 25,
+    page: 1,
+    orderBy: defaultOrderBy,
+  }
 
   let filter: Writable<EntityFilter<any>> = writable({})
   let items: any[] | null = null
@@ -131,20 +139,7 @@
       nav?.classList.toggle('hide-navigation')
     }}
   >
-    <svg
-      class="hamburger-icon"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      ><rect y="4.68134" width="24" height="2.03049" fill="black" /><rect
-        y="10.9847"
-        width="24"
-        height="2.03049"
-        fill="black"
-      /><rect y="17.2882" width="24" height="2.03049" fill="black" /></svg
-    >
+    <Back></Back>
   </button>
 
   <div class="page-bar__title title" style="--color: {color}">
@@ -166,19 +161,7 @@
       options = { ...options, page: (options.page || 2) - 1 }
     }}
   >
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke-width={1.5}
-      stroke="currentColor"
-      class="w-6 h-6"
-      ><path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        d="M15.75 19.5 8.25 12l7.5-7.5"
-      /></svg
-    >
+    <ChevronLeft></ChevronLeft>
   </button>
 
   <button
@@ -188,19 +171,7 @@
       options = { ...options, page: (options.page || 1) + 1 }
     }}
   >
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke-width={1.5}
-      stroke="currentColor"
-      class="w-6 h-6"
-      ><path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        d="m8.25 4.5 7.5 7.5-7.5 7.5"
-      /></svg
-    >
+    <ChevronRight></ChevronRight>
   </button>
 </div>
 
