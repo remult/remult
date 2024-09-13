@@ -35,7 +35,13 @@
     typeof relation === 'object' &&
     $godStore.tables.find((x) => x.key === relation.entityKey)
   $: change =
-    Boolean(columns.find((x) => value[x.key] !== rowFrozzen[x.key])) || isNewRow
+    Boolean(
+      columns.find(
+        // TODO check also for json diff? (today, when filtering or ordering, it will be considered a change "sometimes"... false positive!)
+        // x.type !== 'json' &&
+        (x) => x.type !== 'json' && value[x.key] !== rowFrozzen[x.key],
+      ),
+    ) || isNewRow
 
   $: relationWhere =
     row && relation && typeof relation === 'object'
@@ -77,7 +83,9 @@
     {/if}
   </td>
   {#each columns as x}
-    <td class:changeHi={value[x.key] !== rowFrozzen[x.key]}>
+    <td
+      class:changeHi={x.type !== 'json' && value[x.key] !== rowFrozzen[x.key]}
+    >
       <EditableField
         {isNewRow}
         info={x}

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { tick } from 'svelte'
+  import { onMount, tick } from 'svelte'
   import type {
     FieldUIInfo,
     FieldUIInfoType,
@@ -93,11 +93,13 @@
     }
     filter = newFilter
     tick()
+    translateFilterToFilterValues()
     dialog.close({ success: true, data: filter })
   }
 
   function translateFilterToFilterValues() {
     let values: (typeof defaultFilter)[] = []
+
     for (const key in filter) {
       if (Object.prototype.hasOwnProperty.call(filter, key)) {
         const element = filter[key]
@@ -114,13 +116,9 @@
         }
       }
     }
-    filterValues = values
-    if (values.length == 0) {
-      addFilter()
-    }
-  }
 
-  $: fields && translateFilterToFilterValues()
+    filterValues = values
+  }
 
   const setValue = (
     e: any,
@@ -173,6 +171,12 @@
     }
     return operators.string
   }
+
+  onMount(() => {
+    translateFilterToFilterValues()
+  })
+
+  $: filterValues.length === 0 && addFilter()
 </script>
 
 <div>
@@ -245,10 +249,7 @@
       <button
         class="icon-button"
         on:click={() => {
-          filterValues = filterValues.filter((x) => x != field)
-          if (filterValues.length == 0) {
-            addFilter()
-          }
+          filterValues = filterValues.filter((x) => x.key !== field.key)
         }}
       >
         <Delete></Delete>
