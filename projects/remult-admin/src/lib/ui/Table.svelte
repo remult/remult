@@ -23,6 +23,8 @@
   import ChevronRight from '../icons/ChevronRight.svelte'
   import Back from '../icons/Back.svelte'
   import { godStore } from '../../stores/GodStore.js'
+  import Asc from '../icons/Asc.svelte'
+  import Desc from '../icons/Desc.svelte'
 
   export let fields: FieldUIInfo[]
   export let relations: EntityRelationToManyInfo[]
@@ -234,12 +236,23 @@
               {:else}
                 <span></span>
               {/if}
-              {$LSContext.settings.dispayCaption ? column.caption : column.key}
-              {options.orderBy?.[column.key] === 'asc'
+              <span style="display: flex; align-items: center;">
+                {$LSContext.settings.dispayCaption
+                  ? column.caption
+                  : column.key}
+                {#if options.orderBy?.[column.key] === 'asc'}
+                  <Asc></Asc>
+                {:else if options.orderBy?.[column.key] === 'desc'}
+                  <Desc></Desc>
+                {:else}
+                  <span style="width: 20px;"></span>
+                {/if}
+              </span>
+              <!-- {options.orderBy?.[column.key] === 'asc'
                 ? '▲'
                 : options.orderBy?.[column.key] === 'desc'
                 ? '▼'
-                : ''}
+                : ''} -->
               <ColumnType
                 type={column.type}
                 isSelect={column.values && column.values.length > 0}

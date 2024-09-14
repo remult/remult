@@ -133,7 +133,7 @@
     "stateAbbr": "AZ",
     "accountManager": "27d24908-f417-4b0c-b98a-8946d661f0ce",
     "createdAt": "2021-09-14T00:16:56.125Z",
-    "color": "#0099FF"
+    "color": "#FFFFFF"
   },
   {
     "id": "96d5ddd5-0054-42e8-8d57-a9a35b756333",
@@ -388,7 +388,7 @@
     "stateAbbr": "ME",
     "accountManager": "db2751a2-5a29-4820-84b6-8d4a378bf463",
     "createdAt": "2021-01-01T06:13:22.544Z",
-    "color": "#0099FF"
+    "color": "#ff0000"
   },
   {
     "id": "1c5bb9c0-c20e-40a9-bb98-65cd96a99898",
@@ -983,7 +983,7 @@
     "stateAbbr": "MN",
     "accountManager": "d60f6fd8-75c3-43ab-af42-83371413a827",
     "createdAt": "2021-03-12T18:22:01.739Z",
-    "color": "#0099FF"
+    "color": "#ffffff"
   },
   {
     "id": "a59a2e67-94ae-4e46-9a69-fb611e5cec15",
@@ -1493,7 +1493,7 @@
     "stateAbbr": "MN",
     "accountManager": "a6e9da4b-2ce9-46ac-bb0f-680c1ddc8a5b",
     "createdAt": "2022-01-02T06:37:35.191Z",
-    "color": "#0099FF"
+    "color": "#ffffff"
   },
   {
     "id": "20507cb1-56c8-4a12-99a0-8a867a289884",
@@ -1578,7 +1578,7 @@
     "stateAbbr": "OH",
     "accountManager": "3fae6a74-6bc0-427f-a905-efc44f746b4f",
     "createdAt": "2021-07-02T14:52:47.830Z",
-    "color": "#0099FF"
+    "color": "#ff0000"
   },
   {
     "id": "9bd153d5-3d35-4272-9bf4-163798052f1a",
@@ -1646,7 +1646,7 @@
     "stateAbbr": "GA",
     "accountManager": "a6e9da4b-2ce9-46ac-bb0f-680c1ddc8a5b",
     "createdAt": "2020-10-07T04:10:02.545Z",
-    "color": "#0099FF"
+    "color": "#318ce7"
   },
   {
     "id": "3edb92ed-eaa8-4142-b21d-306e0a3f6150",
@@ -1697,7 +1697,7 @@
     "stateAbbr": "IN",
     "accountManager": "a6e9da4b-2ce9-46ac-bb0f-680c1ddc8a5b",
     "createdAt": "2021-03-15T20:26:19.644Z",
-    "color": "#0099FF"
+    "color": "#ff0000"
   },
   {
     "id": "aea8a603-86a8-4082-8763-6da2a7e2de3a",
