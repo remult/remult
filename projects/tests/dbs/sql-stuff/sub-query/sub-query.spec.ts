@@ -147,6 +147,23 @@ describe('sql-relations', () => {
       ]
     `)
   })
+  it('should filter', async () => {
+    expect(
+      (
+        await remult.repo(Order).find({
+          where: sqlRelationsFilter(Order).customer.some({
+            city: 'New York',
+          }),
+        })
+      ).map((x) => x.id),
+    ).toMatchInlineSnapshot(`
+      [
+        3,
+        4,
+        5,
+      ]
+    `)
+  })
 
   it('should get relation even at entity + 2', async () => {
     @Entity('customers')
@@ -162,7 +179,7 @@ describe('sql-relations', () => {
       })
       groupColor = ''
     }
-    SqlDatabase.LogToConsole = true
+    //SqlDatabase.LogToConsole = true
     expect(
       (await remult.repo(CustomerExtended).find({ where: { id: 1 } })).map(
         (x) => ({
