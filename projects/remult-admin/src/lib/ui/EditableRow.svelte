@@ -2,6 +2,7 @@
   import type {
     EntityRelationToManyInfo,
     FieldUIInfo,
+    RelationsToOneValues,
   } from '../../../../core/server/remult-admin'
 
   import { godStore } from '../../stores/GodStore'
@@ -15,6 +16,7 @@
   import Table from './Table.svelte'
 
   export let row: any
+  export let relationsToOneValues: RelationsToOneValues = {}
   export let saveAction: (data: any) => Promise<void>
   export let deleteAction: () => Promise<void> = () => Promise.resolve()
   export let cancelAction: () => Promise<void> = () => Promise.resolve()
@@ -89,6 +91,7 @@
       <EditableField
         {isNewRow}
         info={x}
+        {relationsToOneValues}
         bind:value={value[x.valFieldKey]}
         on:change={(fieldValue) => {
           // setValue({ ...value, [x.valFieldKey]: fieldValue })

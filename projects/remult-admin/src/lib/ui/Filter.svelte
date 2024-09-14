@@ -118,6 +118,10 @@
     }
 
     filterValues = values
+
+    if (values.length === 0) {
+      addFilter()
+    }
   }
 
   const setValue = (
@@ -175,8 +179,6 @@
   onMount(() => {
     translateFilterToFilterValues()
   })
-
-  $: filterValues.length === 0 && addFilter()
 </script>
 
 <div>

@@ -66,6 +66,42 @@ export class God {
 
     return item[relations.captionField]
   }
+  async displayValueForEach(field: FieldUIInfo, values: any[]) {
+    const relations = field.relationToOne!
+
+    const t = this.tables.find((t) => t.key == relations.entityKey)
+    if (!t)
+      return {
+        [field.valFieldKey]: new Map(
+          values.map((x) => [
+            x[field.valFieldKey],
+            `Forbidden (${x[field.valFieldKey]})`,
+          ]),
+        ),
+      }
+
+    const items = await t.repo.find({
+      where: {
+        [relations.idField]: { $in: values.map((x) => x[field.valFieldKey]) },
+      },
+    })
+
+    if (!items || items.length == 0) {
+      return {
+        [field.valFieldKey]: new Map(
+          values.map((x) => [
+            x[field.valFieldKey],
+            `not found (${x[field.valFieldKey]})`,
+          ]),
+        ),
+      }
+    }
+    return {
+      [field.valFieldKey]: new Map(
+        items.map((item) => [item.id, item[relations.captionField]]),
+      ),
+    }
+  }
   tables: TableInfo[]
   constructor(myEntities: EntityUIInfo[]) {
     const colors = generateHslColors(myEntities.length)

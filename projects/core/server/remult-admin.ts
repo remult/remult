@@ -154,3 +154,5 @@ export function buildEntityInfo(options: AdminOptions) {
   }
   return entities
 }
+
+export type RelationsToOneValues = Record<string, Map<any, any>>

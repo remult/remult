@@ -7,6 +7,7 @@
   import type {
     EntityRelationToManyInfo,
     FieldUIInfo,
+    RelationsToOneValues,
   } from '../../../../core/server/remult-admin'
   import { onDestroy } from 'svelte'
   import EditableRow from './EditableRow.svelte'
@@ -21,6 +22,7 @@
   import ChevronLeft from '../icons/ChevronLeft.svelte'
   import ChevronRight from '../icons/ChevronRight.svelte'
   import Back from '../icons/Back.svelte'
+  import { godStore } from '../../stores/GodStore.js'
 
   export let fields: FieldUIInfo[]
   export let relations: EntityRelationToManyInfo[]
@@ -40,11 +42,13 @@
 
   let filter: Writable<EntityFilter<any>> = writable({})
   let items: any[] | null = null
+  let relationsToOneValues: RelationsToOneValues = {}
 
   $: $SSContext.forbiddenEntities.includes(repo.metadata.key) && (items = [])
 
   // resting when fields change
   $: items = fields && (items = null)
+  $: relationsToOneValues = fields && (relationsToOneValues = {})
   $: $filter = fields && ($filter = {})
 
   let totalRows = -1
@@ -65,19 +69,36 @@
         where,
       })
       .subscribe(async (info) => {
+        let tmpItems = items
         let special = false
         if (items !== null) {
           info.changes.forEach((c) => {
             if (c.type === 'add') {
               special = true
-              items = [c.data.item, ...items]
+              tmpItems = [c.data.item, ...items]
             }
           })
         }
 
         if (!special) {
-          items = info.applyChanges(items)
+          tmpItems = info.applyChanges(items)
         }
+
+        if (tmpItems && tmpItems.length > 0) {
+          const promises = fields
+            .filter((f) => f.relationToOne)
+            .map((f) => $godStore.displayValueForEach(f, tmpItems))
+
+          const results = await Promise.all(promises)
+          results.forEach((r) => {
+            relationsToOneValues = {
+              ...relationsToOneValues,
+              ...r,
+            }
+          })
+        }
+
+        items = tmpItems
 
         totalRows = await repo.count(where)
       })
@@ -235,6 +256,7 @@
           isNewRow
           rowId={undefined}
           row={newRow}
+          {relationsToOneValues}
           columns={fields}
           {relations}
           saveAction={async (item) => {
@@ -254,6 +276,7 @@
           <EditableRow
             rowId={repo.metadata.idMetadata.getId(row)}
             {row}
+            {relationsToOneValues}
             saveAction={async (item) => {
               await repo.update(row, item)
             }}

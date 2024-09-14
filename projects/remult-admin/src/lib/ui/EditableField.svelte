@@ -1,11 +1,15 @@
 <script lang="ts">
-  import type { FieldUIInfo } from '../../../../core/server/remult-admin'
+  import type {
+    FieldUIInfo,
+    RelationsToOneValues,
+  } from '../../../../core/server/remult-admin'
   import Json from '../icons/Json.svelte'
   import { dialog } from './dialog/dialog.js'
   import RelationField from './RelationField.svelte'
   import { type Content, JSONEditor } from 'svelte-jsoneditor'
 
   export let value: any | undefined
+  export let relationsToOneValues: RelationsToOneValues = {}
   export let info: FieldUIInfo
   export let isNewRow = false
 
@@ -19,7 +23,7 @@
 </script>
 
 {#if info.relationToOne}
-  <RelationField bind:value {info} on:change />
+  <RelationField bind:value {info} on:change {relationsToOneValues} />
 {:else if (!isNewRow && value === undefined) || (isNewRow && info.readOnly)}
   <input
     value=""

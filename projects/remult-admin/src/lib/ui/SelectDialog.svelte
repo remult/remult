@@ -33,7 +33,7 @@
 </script>
 
 <form on:submit={handleSubmit}>
-  <input bind:value={$search} placeholder="search" />
+  <input bind:value={$search} placeholder="Search" />
 </form>
 <div class="dialog-list">
   {#each $items as item}
@@ -57,6 +57,7 @@
     display: flex;
     flex-direction: column;
     justify-content: stretch;
+    gap: 0.2rem;
   }
 
   button:focus {
