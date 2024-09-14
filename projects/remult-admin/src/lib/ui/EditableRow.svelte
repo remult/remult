@@ -184,6 +184,7 @@
             repo={relationTable.repo}
             parentRelation={relationWhere}
             color={relationTable.color}
+            defaultOrderBy={relationTable.defaultOrderBy}
           />
         {/if}
       </div>

@@ -7,7 +7,7 @@ import type { ClassType } from '../classType.js'
 import type { Remult } from '../src/context.js'
 import { getHtml } from './get-remult-admin-html.js'
 import { getValueList } from '../src/remult3/RepositoryImplementation.js'
-import { EntityFilter } from 'src/remult3/remult3.js'
+import { EntityFilter } from '../src/remult3/remult3.js'
 
 export interface EntityUIInfo {
   key: string
