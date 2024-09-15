@@ -29,37 +29,37 @@
   > = {
     string: [
       ['$contains', 'contains'],
-      ['', 'equal'],
-      ['$ne', 'not equal'],
+      ['', 'is'],
+      ['$ne', 'is not'],
     ],
     number: [
-      ['', 'equal'],
-      ['$ne', 'not equal'],
+      ['', 'is'],
+      ['$ne', 'is not'],
       ['$lt', '<'],
       ['$lte', '<='],
       ['$gte', '>='],
       ['$gt', '>'],
     ],
     date: [
-      ['', 'equal'],
-      ['$ne', 'not equal'],
+      ['', 'is'],
+      ['$ne', 'is not'],
       ['$lt', '<'],
       ['$lte', '<='],
       ['$gte', '>='],
       ['$gt', '>'],
     ],
     boolean: [
-      ['', 'equal'],
-      ['$ne', 'not equal'],
+      ['', 'is'],
+      ['$ne', 'is not'],
     ],
     json: [
       ['$contains', 'contains'],
-      ['', 'equal'],
-      ['$ne', 'not equal'],
+      ['', 'is'],
+      ['$ne', 'is not'],
     ],
     list: [
-      ['', 'equal'],
-      ['$ne', 'not equal'],
+      ['', 'is'],
+      ['$ne', 'is not'],
     ],
   }
 
