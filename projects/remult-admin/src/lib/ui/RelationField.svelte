@@ -34,7 +34,6 @@
 
   const getWidth = () => {
     const r = Math.random()
-
     if (r > 0.6) {
       return 120
     }
@@ -51,22 +50,42 @@
   }
 </script>
 
-<div>
+{#if (displayValue ?? '').startsWith("Can't display")}
+  <input
+    value=""
+    disabled
+    style="opacity: 0.5; background-color: Gainsboro; cursor: not-allowed;"
+  />
+{:else}
   <button
     class="naked-button"
     on:click={() => {
       dialog.show({
-        config: { title: `${info.caption} selection` },
+        config: { title: `${info.caption} selection`, width: '400px' },
         component: SelectDialog,
         props: { relation: info.relationToOne, onSelect },
       })
     }}
   >
-    <span>🔎</span>
-    {#if displayValue === undefined}
-      <LoadingSkeleton width={getWidth()} />
-    {:else}
-      {displayValue}
-    {/if}
+    <div class="btn-txt">
+      <span>🔎</span>
+      {#if displayValue === undefined}
+        <LoadingSkeleton width={getWidth()} />
+      {:else}
+        {displayValue}
+      {/if}
+    </div>
   </button>
-</div>
+{/if}
+
+<style>
+  button {
+    padding: 0.3rem;
+    width: 100%;
+  }
+
+  .btn-txt {
+    width: 100%;
+    text-align: left;
+  }
+</style>

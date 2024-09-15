@@ -30,26 +30,31 @@ export class God {
     search: string | undefined,
   ) {
     const t = this.tables.find((t) => t.key == relation.entityKey)
-    if (!t) return []
+    if (!t) return { items: [], $count: 0 }
     const repo = t.repo
-    return (
-      await repo.find({
-        limit: 25,
+
+    const where = search
+      ? { [relation.captionField]: { $contains: search } }
+      : undefined
+
+    const [items, agg] = await Promise.all([
+      repo.find({
+        limit: 11,
         orderBy: {
           [relation.captionField]: 'asc',
         },
-        where: {
-          [relation.captionField]: search
-            ? {
-                $contains: search,
-              }
-            : undefined,
-        },
-      })
-    ).map((x) => ({
-      id: x[relation.idField],
-      caption: x[relation.captionField],
-    }))
+        where,
+      }),
+      repo.count(where),
+    ])
+
+    return {
+      items: items.map((x) => ({
+        id: x[relation.idField],
+        caption: x[relation.captionField],
+      })),
+      $count: agg,
+    }
   }
   async displayValueFor(field: FieldUIInfo, value: any) {
     const relations = field.relationToOne!

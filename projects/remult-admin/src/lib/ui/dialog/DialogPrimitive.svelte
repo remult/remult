@@ -50,7 +50,9 @@
         {/if}
       </p>
 
-      <slot></slot>
+      <div class="slot-content">
+        <slot></slot>
+      </div>
 
       {#if config.buttonSuccess}
         <DialogActions>
@@ -286,4 +288,40 @@
     background-color: rgb(var(--color-indigo-100) / 1);
     color: rgb(var(--color-indigo-900) / 1);
   }
+
+  .slot-content {
+    flex: 1;
+    overflow-y: auto;
+    max-height: calc(85vh - 12rem); /* Adjust this value as needed */
+    margin-bottom: 1rem;
+    padding-right: 16px; /* Add padding to prevent content from being hidden behind scrollbar */
+  }
+
+  /* Styling for WebKit browsers (Chrome, Safari, newer versions of Edge) */
+  .slot-content::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .slot-content::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .slot-content::-webkit-scrollbar-thumb {
+    background-color: rgb(var(--color-zinc-300) / 0.5);
+    border-radius: 4px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  .slot-content::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(var(--color-zinc-400) / 0.7);
+  }
+
+  /* Styling for Firefox */
+  .slot-content {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--color-zinc-300) / 0.5) transparent;
+  }
+
+  /* ... rest of the existing styles ... */
 </style>
