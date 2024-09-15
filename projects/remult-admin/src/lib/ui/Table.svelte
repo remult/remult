@@ -144,7 +144,7 @@
     _filter: EntityFilter<any>,
   ) => {
     const res = await dialog.show<EntityFilter<any>>({
-      config: { title: 'Filter' },
+      config: { title: 'Filter', width: '600px' },
       component: Filter,
       props: { fields: _fields, filter: _filter },
     })

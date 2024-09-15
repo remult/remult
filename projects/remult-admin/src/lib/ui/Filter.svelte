@@ -144,6 +144,8 @@
           typeof info.values[0] === 'object'
             ? info.values[0].id
             : info.values[0]
+      } else {
+        field['value'] = ''
       }
     }
 

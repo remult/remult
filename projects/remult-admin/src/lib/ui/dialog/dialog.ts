@@ -6,6 +6,7 @@ export type DialogConfig = {
   description?: string
   buttonSuccess?: string
   isWarning?: boolean
+  /** default "550px" */
   width?: string
 }
 export type DialogMetaData = {

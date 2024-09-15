@@ -13,7 +13,7 @@
   const search = writable<string | undefined>('')
 
   const refresh = (s: any) => {
-    $godStore.getItemsForSelect(relation, $search).then((x) => items.set(x))
+    $godStore.getItemsForSelect(relation, s).then((x) => items.set(x))
   }
 
   $: relation && refresh($search)
@@ -38,7 +38,9 @@
 <div class="dialog-list">
   {#each $items as item}
     <button on:click={() => handleSelect(item.id)}>
-      {item.caption}
+      <span style="width: 100%; text-align: left;">
+        {item.caption}
+      </span>
     </button>
   {/each}
 </div>
@@ -46,11 +48,22 @@
 <!-- </dialog> -->
 
 <style>
+  :global(body) {
+    --primary-color: #007bff;
+    --hover-color: #0056b3;
+  }
+
   input {
     width: 100%;
     padding: 0.5rem;
     margin-bottom: 0.5rem;
     border: 0.1rem solid rgb(var(--color-black) / 0.5);
+  }
+
+  input:focus {
+    border-color: var(--primary-color);
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
   }
 
   .dialog-list {

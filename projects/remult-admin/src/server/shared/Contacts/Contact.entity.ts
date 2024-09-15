@@ -31,18 +31,18 @@ import { Tag } from './Tag.entity'
 export class Contact {
   @Fields.uuid()
   id?: string
-  @Fields.string<AccountManager>({
-    serverExpression: (e) => e.firstName + ' ' + e.lastName,
-  })
-  fullName = ''
-  @Fields.string({
-    validate: Validators.required,
-  })
-  firstName = ''
   @Fields.string({
     validate: Validators.required,
   })
   lastName = ''
+  @Fields.string({
+    validate: Validators.required,
+  })
+  firstName = ''
+  @Fields.string<AccountManager>({
+    serverExpression: (e) => e.firstName + ' ' + e.lastName,
+  })
+  fullName = ''
   @Fields.literal(() => genderOptions)
   gender = genderOptions
   @Fields.string()
