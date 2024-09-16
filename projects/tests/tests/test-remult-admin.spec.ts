@@ -52,6 +52,9 @@ describe('remult-admin', () => {
       [
         {
           "caption": "Users",
+          "defaultOrderBy": {
+            "id": "asc",
+          },
           "fields": [
             {
               "caption": "Id",
@@ -169,6 +172,9 @@ describe('remult-admin', () => {
         },
         {
           "caption": "Accounts",
+          "defaultOrderBy": {
+            "id": "asc",
+          },
           "fields": [
             {
               "caption": "Id",

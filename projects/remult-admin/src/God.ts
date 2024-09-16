@@ -30,26 +30,31 @@ export class God {
     search: string | undefined,
   ) {
     const t = this.tables.find((t) => t.key == relation.entityKey)
-    if (!t) return []
+    if (!t) return { items: [], $count: 0 }
     const repo = t.repo
-    return (
-      await repo.find({
-        limit: 25,
+
+    const where = search
+      ? { [relation.captionField]: { $contains: search } }
+      : undefined
+
+    const [items, agg] = await Promise.all([
+      repo.find({
+        limit: 11,
         orderBy: {
           [relation.captionField]: 'asc',
         },
-        where: {
-          [relation.captionField]: search
-            ? {
-                $contains: search,
-              }
-            : undefined,
-        },
-      })
-    ).map((x) => ({
-      id: x[relation.idField],
-      caption: x[relation.captionField],
-    }))
+        where,
+      }),
+      repo.count(where),
+    ])
+
+    return {
+      items: items.map((x) => ({
+        id: x[relation.idField],
+        caption: x[relation.captionField],
+      })),
+      $count: agg,
+    }
   }
   async displayValueFor(field: FieldUIInfo, value: any) {
     const relations = field.relationToOne!
@@ -65,6 +70,42 @@ export class God {
       return `Can't display ${relations.captionField} - ${value}`
 
     return item[relations.captionField]
+  }
+  async displayValueForEach(field: FieldUIInfo, values: any[]) {
+    const relations = field.relationToOne!
+
+    const t = this.tables.find((t) => t.key == relations.entityKey)
+    if (!t)
+      return {
+        [field.valFieldKey]: new Map(
+          values.map((x) => [
+            x[field.valFieldKey],
+            `Forbidden (${x[field.valFieldKey]})`,
+          ]),
+        ),
+      }
+
+    const items = await t.repo.find({
+      where: {
+        [relations.idField]: { $in: values.map((x) => x[field.valFieldKey]) },
+      },
+    })
+
+    if (!items || items.length == 0) {
+      return {
+        [field.valFieldKey]: new Map(
+          values.map((x) => [
+            x[field.valFieldKey],
+            `not found (${x[field.valFieldKey]})`,
+          ]),
+        ),
+      }
+    }
+    return {
+      [field.valFieldKey]: new Map(
+        items.map((item) => [item.id, item[relations.captionField]]),
+      ),
+    }
   }
   tables: TableInfo[]
   constructor(myEntities: EntityUIInfo[]) {

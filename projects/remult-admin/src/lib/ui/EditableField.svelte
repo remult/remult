@@ -1,13 +1,17 @@
 <script lang="ts">
-  import type { FieldUIInfo } from '../../../../core/server/remult-admin'
+  import type {
+    FieldUIInfo,
+    RelationsToOneValues,
+  } from '../../../../core/server/remult-admin'
+  import Json from '../icons/Json.svelte'
+  import { dialog } from './dialog/dialog.js'
   import RelationField from './RelationField.svelte'
   import { type Content, JSONEditor } from 'svelte-jsoneditor'
 
   export let value: any | undefined
+  export let relationsToOneValues: RelationsToOneValues = {}
   export let info: FieldUIInfo
   export let isNewRow = false
-
-  let dialogJSON: HTMLDialogElement | null = null
 
   const onChange = (content: Content) => {
     // @ts-ignore
@@ -19,7 +23,7 @@
 </script>
 
 {#if info.relationToOne}
-  <RelationField bind:value {info} on:change />
+  <RelationField bind:value {info} on:change {relationsToOneValues} />
 {:else if (!isNewRow && value === undefined) || (isNewRow && info.readOnly)}
   <input
     value=""
@@ -30,32 +34,18 @@
   <input bind:value disabled style="opacity: 0.5; cursor: not-allowed;" />
 {:else if info.type == 'json'}
   <button
+    style="margin-left: auto; margin-right: auto; width: 100%"
     class="icon-button"
     on:click={() => {
-      dialogJSON.showModal()
+      dialog.show({
+        config: { title: 'Edit JSON', width: '90vw' },
+        component: JSONEditor,
+        props: { content: { json: value ?? {} }, onChange },
+      })
     }}
   >
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke-width={1.5}
-      stroke="currentColor"
-      class="w-6 h-6"
-    >
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5"
-      />
-    </svg>
+    <Json></Json>
   </button>
-  <dialog bind:this={dialogJSON} on:close={() => {}} class="dialog-big">
-    <button on:click={() => dialogJSON.close()}>Close</button>
-    <div class="dialog-content">
-      <JSONEditor content={{ json: value ?? {} }} {onChange} />
-    </div>
-  </dialog>
 {:else if info.type == 'boolean'}
   <select bind:value>
     <option value={false}>False</option>
@@ -78,16 +68,3 @@
 {:else}
   <input bind:value on:change type="text" />
 {/if}
-
-<style>
-  .dialog-big {
-    width: 90vw;
-    height: 90vh;
-  }
-
-  .dialog-content {
-    display: flex;
-    flex-direction: 'column';
-    height: '100%';
-  }
-</style>

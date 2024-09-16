@@ -16,7 +16,7 @@ export class Tag {
   id?: string
   @Fields.string()
   tag = ''
-  @Fields.string()
+  @Fields.string({ inputType: 'color' })
   color = ''
 }
 
