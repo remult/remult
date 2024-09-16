@@ -9,6 +9,10 @@
   import DefaultRoute from './routes/DefaultRoute.svelte'
   import { SSContext } from './lib/stores/SSContext.js'
   import { remult } from '../../core/src/remult-proxy'
+  import DialogManagement from './lib/ui/dialog/DialogManagement.svelte'
+  import Remult from './lib/icons/remult.svelte'
+  import { dialog } from './lib/ui/dialog/dialog.js'
+  import DialogSettings from './lib/ui/DialogSettings.svelte'
 
   // Save the current location except on '/'
   $: $loc.location !== '/' && ($LSContext.currentLocationHash = $loc.location)
@@ -20,8 +24,6 @@
     // This is optional, but if present it must be the last
     '*': NotFound,
   }
-
-  let settingsDialog
 
   export function midTrim(
     str: string,
@@ -81,8 +83,16 @@
   <div class="main-navigation">
     <div class="main-navigation__title">
       Remult Admin
-      <button on:click={() => settingsDialog.showModal()} class="icon-button"
-        ><svg
+      <button
+        on:click={() =>
+          dialog.show({
+            config: { title: 'Remult Settings' },
+            component: DialogSettings,
+          })}
+        class="icon-button"
+      >
+        <Remult></Remult>
+        <!-- <svg
           xmlns="http://www.w3.org/2000/svg"
           width="16"
           height="16"
@@ -92,91 +102,9 @@
           ><path
             d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"
           /></svg
-        >
+        > -->
       </button>
     </div>
-
-    <dialog bind:this={settingsDialog}>
-      <header>Remult Settings <i>(Local Storage)</i></header>
-
-      <label>
-        <span>With confirm delete</span>
-        <select bind:value={$LSContext.settings.confirmDelete}>
-          <option value={false}>No</option>
-          <option value={true}>Yes</option>
-        </select>
-      </label>
-
-      <label>
-        <span>Display fields with</span>
-        <select bind:value={$LSContext.settings.dispayCaption}>
-          <option value={true}>Caption</option>
-          <option value={false}>key</option>
-        </select>
-      </label>
-
-      <label>
-        <span>Diagram layout algorithm</span>
-        <select
-          bind:value={$LSContext.settings.diagramLayoutAlgorithm}
-          on:change={() => {
-            $LSContext.schema = {}
-            window.location.reload()
-          }}
-        >
-          <option value={'grid-dfs'}>grid-dfs</option>
-          <option value={'grid-bfs'}>grid-bfs</option>
-          <option value={'line'}>line</option>
-        </select>
-      </label>
-
-      <label>
-        <span>Local Storage Key for Auth</span>
-        <input
-          type="text"
-          bind:value={$LSContext.settings.keyForBearerAuth}
-          placeholder="Local Storage Key"
-        />
-      </label>
-
-      <label>
-        <span>api URL</span>
-        <input
-          type="text"
-          bind:value={$LSContext.settings.apiUrl}
-          placeholder="api URL, the default it '/api'"
-        />
-      </label>
-
-      <br />
-
-      <label>
-        <span></span>
-        <button
-          on:click={() => {
-            LSContext.reset()
-          }}
-        >
-          Reset all settings to default
-        </button>
-      </label>
-
-      <br />
-      <br />
-      <hr style="border-top: 1px solid black;" />
-      <br />
-
-      <header>Remult Settings <i>(Session Storage)</i></header>
-
-      <label>
-        <span>Auth</span>
-        <input
-          type="text"
-          bind:value={$SSContext.settings.bearerAuth}
-          placeholder="bearer"
-        />
-      </label>
-    </dialog>
 
     <input
       class="tab"
@@ -198,6 +126,32 @@
         {midTrim($LSContext.settings.dispayCaption ? t.caption : t.key)}
       </a>
     {/each}
+    <!-- DIALOG DEMO -->
+    <!-- <button
+      on:click={async () => {
+        const res = await dialog.confirm('Are you sure ?')
+        if (res.success) {
+          await dialog.confirmDelete('Item to delete')
+        }
+        console.log(`res`, res)
+      }}>confirm</button
+    >
+    <button
+      on:click={async () => {
+        const res = await dialog.confirmDelete('Item to delete')
+        if (res.success) {
+          await dialog.confirm('Are you sure ?')
+        }
+        console.log(`res`, res)
+      }}>confirm delete</button
+    >
+    <button
+      on:click={async () => {
+        const res = await dialog.show({ config: {} })
+        console.log(`res`, res)
+      }}>Show</button
+    > -->
+
     <a
       href="#/diagram"
       class="tab main-navigation__diagram"
@@ -213,6 +167,8 @@
   </div>
 </div>
 
+<DialogManagement></DialogManagement>
+
 <style>
   a {
     /* margin-left: 1px; */
@@ -220,22 +176,5 @@
     /* background-color: hsla(var(--color), 70%, 50%, 0.05); */
     /* nowrap */
     white-space: nowrap;
-  }
-
-  input::placeholder {
-    color: gray;
-    font-style: italic;
-  }
-
-  label {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1rem;
-    margin-top: 10px;
-  }
-
-  select {
-    width: 180px;
   }
 </style>

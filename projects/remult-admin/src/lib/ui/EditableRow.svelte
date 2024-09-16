@@ -2,17 +2,21 @@
   import type {
     EntityRelationToManyInfo,
     FieldUIInfo,
+    RelationsToOneValues,
   } from '../../../../core/server/remult-admin'
 
   import { godStore } from '../../stores/GodStore'
   import Cancel from '../icons/Cancel.svelte'
+  import ChevronRight from '../icons/ChevronRight.svelte'
   import Delete from '../icons/Delete.svelte'
   import Save from '../icons/Save.svelte'
   import { LSContext } from '../stores/LSContext.js'
+  import { dialog } from './dialog/dialog.js'
   import EditableField from './EditableField.svelte'
   import Table from './Table.svelte'
 
   export let row: any
+  export let relationsToOneValues: RelationsToOneValues = {}
   export let saveAction: (data: any) => Promise<void>
   export let deleteAction: () => Promise<void> = () => Promise.resolve()
   export let cancelAction: () => Promise<void> = () => Promise.resolve()
@@ -33,7 +37,13 @@
     typeof relation === 'object' &&
     $godStore.tables.find((x) => x.key === relation.entityKey)
   $: change =
-    Boolean(columns.find((x) => value[x.key] !== rowFrozzen[x.key])) || isNewRow
+    Boolean(
+      columns.find(
+        // TODO check also for json diff? (today, when filtering or ordering, it will be considered a change "sometimes"... false positive!)
+        // x.type !== 'json' &&
+        (x) => x.type !== 'json' && value[x.key] !== rowFrozzen[x.key],
+      ),
+    ) || isNewRow
 
   $: relationWhere =
     row && relation && typeof relation === 'object'
@@ -70,27 +80,18 @@
         on:click={() => (relation = relation ? null : relations[0])}
         class:open={relation}
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke-width="1.5"
-          stroke="currentColor"
-          class="w-6 h-6"
-          ><path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="m8.25 4.5 7.5 7.5-7.5 7.5"
-          ></path></svg
-        >
+        <ChevronRight></ChevronRight>
       </button>
     {/if}
   </td>
   {#each columns as x}
-    <td class:changeHi={value[x.key] !== rowFrozzen[x.key]}>
+    <td
+      class:changeHi={x.type !== 'json' && value[x.key] !== rowFrozzen[x.key]}
+    >
       <EditableField
         {isNewRow}
         info={x}
+        {relationsToOneValues}
         bind:value={value[x.valFieldKey]}
         on:change={(fieldValue) => {
           // setValue({ ...value, [x.valFieldKey]: fieldValue })
@@ -139,10 +140,8 @@
           on:click={async () => {
             try {
               if ($LSContext.settings.confirmDelete) {
-                const res = confirm(
-                  'Are you sure you want to delete this line ?',
-                )
-                if (res) {
+                const res = await dialog.confirmDelete('The full line ?')
+                if (res.success) {
                   await deleteAction()
                 }
               } else {
@@ -188,6 +187,7 @@
             repo={relationTable.repo}
             parentRelation={relationWhere}
             color={relationTable.color}
+            defaultOrderBy={relationTable.defaultOrderBy}
           />
         {/if}
       </div>

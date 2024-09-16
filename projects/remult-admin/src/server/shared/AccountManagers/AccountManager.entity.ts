@@ -20,10 +20,6 @@ export class AccountManager {
   @Fields.uuid()
   id?: string
   @Fields.string<AccountManager>({
-    serverExpression: (e) => e.firstName + ' ' + e.lastName,
-  })
-  fullName = ''
-  @Fields.string<AccountManager>({
     validate: Validators.required,
     includeInApi(e, c) {
       return e?.firstName.startsWith('A') || e?.firstName.startsWith('M')
@@ -34,6 +30,10 @@ export class AccountManager {
   firstName = ''
   @Fields.string()
   lastName = ''
+  @Fields.string<AccountManager>({
+    serverExpression: (e) => e.firstName + ' ' + e.lastName,
+  })
+  fullName = ''
   @Fields.string({ includeInApi: false })
   secret = '1234'
   @Fields.string()

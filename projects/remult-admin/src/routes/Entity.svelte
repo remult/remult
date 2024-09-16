@@ -13,5 +13,6 @@
     repo={table.repo}
     relations={table.relations}
     color={table.color}
+    defaultOrderBy={table.defaultOrderBy}
   />
 {/if}
