@@ -1,0 +1,66 @@
+{
+  "name": "create-remult",
+  "version": "0.0.1",
+  "description": "Creates a remult project, ready to go",
+  "keywords": [
+    "cli",
+    "remult",
+    "svelte",
+    "react",
+    "express"
+  ],
+  "license": "MIT",
+  "author": "Noam Honig",
+  "type": "module",
+  "contributors": [
+    {
+      "name": "Noam Honig",
+      "email": "noam.honig@gmail.com"
+    },
+    {
+      "name": "Jean-Yves Couët",
+      "email": "jycouet@gmail.com"
+    },
+    {
+      "name": "Yoni Rapoport",
+      "email": "yoni.rapoport@gmail.com"
+    }
+  ],
+  "bin": {
+    "create-remult": "index.js"
+  },
+  "files": [
+    "!templates/*/.svelte-kit",
+    "!templates/*/node_modules",
+    "templates",
+    "dist"
+  ],
+  "scripts": {
+    "dev": "unbuild --stub",
+    "build": "unbuild",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "engines": {
+    "node": "^18.0.0 || >=20.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/remult/remult",
+    "directory": "project/create-remult",
+    "homepage": "https://github.com/remult/remult"
+  },
+  "bugs": {
+    "url": "https://github.com/remult/remult/issues"
+  },
+  "devDependencies": {
+    "@types/cross-spawn": "^6.0.6",
+    "@types/minimist": "^1.2.5",
+    "@types/prompts": "^2.4.9",
+    "cross-spawn": "^7.0.3",
+    "minimist": "^1.2.8",
+    "picocolors": "^1.1.0",
+    "prompts": "^2.4.2",
+    "unbuild": "^2.0.0"
+  }
+}
