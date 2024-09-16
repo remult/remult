@@ -303,6 +303,17 @@ describe.skipIf(!postgresConnection)('Postgres null first', () => {
     expect(
       (await r.find({ orderBy: { value: 'asc' } })).map((x) => x.value),
     ).toEqual([null, 2, 3])
+    expect(
+      (
+        await r.groupBy({
+          group: ['value'],
+          orderBy: {
+            $count: 'asc',
+            value: 'asc',
+          },
+        })
+      ).map((x) => x.value),
+    ).toEqual([null, 2, 3])
   })
 })
 

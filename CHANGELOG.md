@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [0.27.13] TBD
 
+- fixed issue with null first and group by
 - fixed an error where from json returned a row that didn't have an id and could cause problems
 
 ## [0.27.12] 2024-09-05

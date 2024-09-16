@@ -710,8 +710,8 @@ export async function groupByImpl(
       orderBy += field
       if (x.isDescending) orderBy += ' desc'
       if (orderByNullFirst) {
-        if (x.isDescending) select += ' nulls last'
-        else select += ' nulls first'
+        if (x.isDescending) orderBy += ' nulls last'
+        else orderBy += ' nulls first'
       }
     }
     if (orderBy) select += orderBy
