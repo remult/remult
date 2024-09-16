@@ -263,8 +263,10 @@ async function init() {
   }
   switch (pkgManager) {
     default:
-      console.log(`  ${pkgManager} install`)
-      console.log(`  ${pkgManager} run dev`)
+      console.log(`  ${pkgManager} install
+   Open two terminals:
+   Run "npm run dev" in one for the frontend.
+   Run "npm run dev-node" in the other for the backend.`)
       break
   }
   console.log()
