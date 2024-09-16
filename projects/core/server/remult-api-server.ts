@@ -664,11 +664,11 @@ export class RemultServerImplementation<RequestType>
                     },
                   })
                 }
+                await what(remult, myReq, myRes, genReq, origRes, req)
               } finally {
                 remultStatic.asyncContext.setInInitRequest(false)
               }
             }
-            await what(remult, myReq, myRes, genReq, origRes, req)
           })
       } catch (err: any) {
         if (origRes) myRes.error(err, undefined)
