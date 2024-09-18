@@ -79,7 +79,7 @@ export function verifyFieldRelationInfo(
 
             function buildError(what: string) {
               return Error(
-                `Error for relation: "${field.key}" to "${toRepo.metadata.key}": ` +
+                `Error for relation: "${repo.metadata.key}.${field.key}", ` +
                   what,
               )
             }
@@ -121,7 +121,7 @@ export function verifyFieldRelationInfo(
               }
               if (!hasFields())
                 throw buildError(
-                  `No matching field found on target. Please specify field/fields`,
+                  `No matching field found on target "${toRepo.metadata.key}". Please specify field/fields`,
                 )
             }
 
