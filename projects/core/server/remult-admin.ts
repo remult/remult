@@ -122,7 +122,7 @@ export function buildEntityInfo(options: AdminOptions) {
       }
       fields.push({
         key: x.key,
-        readOnly: x.dbReadOnly || !x.apiUpdateAllowed() || x.isServerExpression,
+        readOnly: !x.apiUpdateAllowed(),
         values: getValueList(x),
         valFieldKey,
         caption: x.caption,
