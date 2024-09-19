@@ -17,6 +17,13 @@ test('react', async () => {
     checkStart: true,
   })
 })
+test.only('angular', async () => {
+  await testItBuildsAndRuns({
+    template: 'angular',
+    port: 3002,
+    checkStart: true,
+  })
+})
 
 test('sveltekit', async () => {
   await testItBuildsAndRuns({
@@ -25,6 +32,7 @@ test('sveltekit', async () => {
     checkStart: false,
   })
 })
+
 async function testItBuildsAndRuns({
   template,
   port,

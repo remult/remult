@@ -65,6 +65,11 @@ const FRAMEWORKS: Framework[] = [
     color: cyan,
   },
   {
+    name: 'angular',
+    display: 'Angular',
+    color: cyan,
+  },
+  {
     name: 'sveltekit',
     display: 'SvelteKit',
     color: cyan,
@@ -84,7 +89,6 @@ const defaultTargetDir = 'remult-project'
 async function init() {
   const argTargetDir = formatTargetDir(argv._[0])
   const argTemplate = argv.template || argv.t
-  console.log(argv)
 
   const help = argv.help
   if (help) {

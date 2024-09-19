@@ -147,6 +147,7 @@ export function createRemultServerCore<RequestType>(
   serverCoreOptions: ServerCoreOptions<RequestType>,
 ): RemultServer<RequestType> {
   const safeOptions = options ?? {}
+  if (!safeOptions.entities) safeOptions.entities = []
 
   if (!safeOptions.subscriptionServer) {
     safeOptions.subscriptionServer = new SseSubscriptionServer()
