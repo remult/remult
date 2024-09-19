@@ -70,6 +70,11 @@ const FRAMEWORKS: Framework[] = [
     color: cyan,
   },
   {
+    name: 'vue',
+    display: 'Vue',
+    color: cyan,
+  },
+  {
     name: 'sveltekit',
     display: 'SvelteKit',
     color: cyan,
