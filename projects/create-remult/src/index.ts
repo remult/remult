@@ -267,13 +267,16 @@ async function init() {
   }
   switch (pkgManager) {
     default:
-      console.log(`  ${pkgManager} install
-   Open two terminals:
-   Run "npm run dev" in one for the frontend.
-   Run "npm run dev-node" in the other for the backend.`)
+      console.log(`  ${pkgManager} install`)
+      if (template === 'sveltekit') {
+        console.log(`  npm run dev`)
+      } else {
+        console.log(`  Open two terminals:
+  Run "npm run dev" in one for the frontend.
+  Run "npm run dev-node" in the other for the backend.`)
+      }
       break
   }
-  console.log()
 
   function copy(src: string, dest: string) {
     const stat = fs.statSync(src)
