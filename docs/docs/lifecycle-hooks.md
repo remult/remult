@@ -54,7 +54,7 @@ In Remult, you can take advantage of Entity Lifecycle Hooks to add custom logic 
 
 ## Field Saving Hook
 
-Additionally, you can define a field-specific `saving` hook that allows you to perform custom logic on a specific field before saving. This hook is triggered as part of the `saving` event and has the following signature:
+Additionally, you can define a field-specific `saving` hook that allows you to perform custom logic on a specific field before the entity `saving` hook. It has the following signature:
 
 ```ts
 @Fields.Date<Task>({

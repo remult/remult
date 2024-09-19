@@ -1,11 +1,8 @@
 # Generate Entities from Existing Database
 
-## remult-cli
+## Remult kit
 
 Want to use Remult for full-stack CRUD with your existing database?
+Check out this video to see how to connect http://remult.dev to your existing database and start building type-safe #fullstack apps with any #typescript frontend, backend, and any DB!
 
-Check out [remult-cli](https://www.npmjs.com/package/remult-cli) ([GitHub](https://github.com/Yedidyar/remult-cli)) - a community package by [@Yedidyar](https://github.com/Yedidyar) and [@jycouet](https://github.com/jycouet):
-
-```sh
-npx remult-cli
-```
+Watch now 👉 https://youtu.be/5QCzJEO-qQ0.

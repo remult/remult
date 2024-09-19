@@ -4,7 +4,7 @@
     FieldUIInfo,
     RelationsToOneValues,
   } from '../../../../core/server/remult-admin'
-  import SelectDialog from './SelectDialog.svelte'
+  import SelectDialog from './DialogSelect.svelte'
   import LoadingSkeleton from './LoadingSkeleton.svelte'
   import { dialog } from './dialog/dialog.js'
   import { godStore } from '../../stores/GodStore.js'
