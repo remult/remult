@@ -1,9 +1,3 @@
-import { remultSveltekit } from "remult/remult-sveltekit";
-import { entities } from "../../../shared/entities";
+import { api } from '../../../api'
 
-export const _api = remultSveltekit({
-  admin: true,
-  entities: entities,
-});
-
-export const { GET, POST, PUT, DELETE } = _api;
+export const { GET, POST, PUT, DELETE } = api

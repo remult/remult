@@ -18,7 +18,7 @@ test('react', async () => {
     checkStart: true,
   })
 })
-test.only('vue', async () => {
+test('vue', async () => {
   await testItBuildsAndRuns({
     template: 'vue',
     port: 3002,
@@ -29,6 +29,13 @@ test('angular', async () => {
   await testItBuildsAndRuns({
     template: 'angular',
     port: 3002,
+    checkStart: true,
+  })
+})
+test.only('netxjs', async () => {
+  await testItBuildsAndRuns({
+    template: 'nextjs',
+    port: 3000,
     checkStart: true,
   })
 })
