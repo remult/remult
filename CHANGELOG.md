@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.27.14] 2024-09-20
+
+- A few tweaks by @jycouet in https://github.com/remult/remult/pull/515
+- migrate to remult kit by @Yedidyar in https://github.com/remult/remult/pull/519
+
 ## [0.27.13] 2024-09-16
 
 - fixed issue with null first and group by
