@@ -2,7 +2,7 @@ export const DATABASES = {
   json: { display: 'JSON' },
   postgres: {
     display: 'Postgres',
-    packages: {
+    dependencies: {
       pg: '^8.3.0',
     },
     imports: [
@@ -17,7 +17,7 @@ export const DATABASES = {
   },
   mysql: {
     display: 'MySQL',
-    packages: {
+    dependencies: {
       knex: '^2.4.0',
       mysql2: '^3.9.8',
     },
@@ -40,7 +40,7 @@ export const DATABASES = {
   },
   mongodb: {
     display: 'MongoDB',
-    packages: {
+    dependencies: {
       mongodb: '^4.17.1',
     },
     imports: [
@@ -61,8 +61,8 @@ export const DATABASES = {
   },
   bettersqlite3: {
     display: 'Better SQLite3',
-    packages: {
-      'better-sqlite3': '^7.6.9',
+    dependencies: {
+      'better-sqlite3': '^9.1.1',
     },
     imports: [
       {
@@ -85,7 +85,7 @@ export const DATABASES = {
   },
   sqlite3: {
     display: 'SQLite3',
-    packages: {
+    dependencies: {
       sqlite3: '^5.1.7',
     },
     imports: [
@@ -109,7 +109,7 @@ export const DATABASES = {
   },
   mssql: {
     display: 'MSSQL',
-    packages: {
+    dependencies: {
       tedious: '^18.2.0',
       knex: '^2.4.0',
     },
@@ -142,7 +142,8 @@ export const databaseTypes = Object.keys(
 type Import = { from: string; imports: string[]; defaultImport?: boolean }
 export type DatabaseType = {
   display: string
-  packages?: Record<string, string>
+  dependencies?: Record<string, string>
+  devDependencies?: Record<string, string>
   imports?: Import[]
   code?: string
 }

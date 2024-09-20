@@ -255,9 +255,12 @@ async function init() {
   const db: DatabaseType =
     database || DATABASES[argDatabase as keyof typeof DATABASES]
   const fw: Framework = framework || FRAMEWORKS.find((x) => x.name == template)!
-  if (db.packages) {
-    pkg.dependencies = { ...pkg.dependencies, ...db.packages }
+  if (db.dependencies) {
+    pkg.dependencies = { ...pkg.dependencies, ...db.dependencies }
   }
+  if (db.devDependencies)
+    pkg.devDependencies = { ...pkg.devDependencies, ...db.devDependencies }
+
   write('package.json', JSON.stringify(pkg, null, 2) + '\n')
   const server = fw.remultServer || {
     import: 'remult-express',
