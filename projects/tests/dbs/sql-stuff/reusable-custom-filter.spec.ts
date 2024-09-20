@@ -81,6 +81,39 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
   []
 `)
   })
+  it('test filter in extends', async () => {
+    class Base {
+      @Fields.integer()
+      id = 0
+      @Fields.json()
+      tags: string[] = []
+
+      // register the filters for this specific entity
+      static filters = myAppCustomFilters(() => WPerson)
+    }
+    @Entity('Person')
+    class WPerson extends Base {}
+
+    expect(
+      await remult.repo(WPerson).find({
+        where: WPerson.filters({
+          tags: {
+            arrayEndsWith: 'e',
+          },
+        }),
+      }),
+    ).toMatchInlineSnapshot(`
+      [
+        WPerson {
+          "id": 3,
+          "tags": [
+            "a",
+            "e",
+          ],
+        },
+      ]
+    `)
+  })
 
   beforeEach(async () => {
     var meta = remult.repo(Person).metadata
