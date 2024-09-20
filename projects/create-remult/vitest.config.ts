@@ -5,7 +5,7 @@ config()
 
 export default defineConfig({
   test: {
-    include: ['./tests/**/*.spec.ts'],
+    include: ['./src/tests/**/*.spec.ts'],
     reporters: ['default', 'junit'],
     outputFile: './test-results.xml',
     globals: false,

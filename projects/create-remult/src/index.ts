@@ -6,6 +6,8 @@ import minimist from 'minimist'
 import prompts from 'prompts'
 import colors from 'picocolors'
 import { emptyDir } from './empty-dir'
+import { FRAMEWORKS, type Framework } from './FRAMEWORKS'
+import { DATABASES, databaseTypes, type DatabaseType } from './DATABASES'
 
 const {
   blue,
@@ -30,45 +32,6 @@ const argv = minimist<{
 })
 const cwd = process.cwd()
 
-const FRAMEWORKS: Framework[] = [
-  {
-    name: 'react',
-    display: 'React',
-    color: cyan,
-  },
-  {
-    name: 'angular',
-    display: 'Angular',
-    color: cyan,
-  },
-  {
-    name: 'vue',
-    display: 'Vue',
-    color: cyan,
-  },
-  {
-    name: 'nextjs',
-    display: 'Next.js',
-    color: cyan,
-    envFile: '.env.local',
-    remultServer: {
-      remultServerFunction: 'remultNextApp',
-      import: 'remult-next',
-      path: 'src/api.ts',
-    },
-  },
-  {
-    name: 'sveltekit',
-    display: 'SvelteKit',
-    color: cyan,
-    remultServer: {
-      remultServerFunction: 'remultSveltekit',
-      import: 'remult-sveltekit',
-      path: 'src/api.ts',
-    },
-  },
-]
-
 // prettier-ignore
 const helpMessage = `\
 Usage: create-remult [OPTION]... [DIRECTORY]
@@ -78,177 +41,13 @@ With no arguments, start the CLI in interactive mode.
 
 Options:
   -t, --template NAME        use a specific template
+  -d, --database NAME        use a specific database
 
 Available templates:
-${FRAMEWORKS.map((f) => `  ${f.name}`).join('\n')}`
+${FRAMEWORKS.map((f) => `  ${f.name}`).join('\n')}
 
-type ColorFunc = (str: string | number) => string
-type Framework = {
-  name: string
-  display: string
-  color: ColorFunc
-  remultServer?: {
-    remultServerFunction: string
-    import: string
-    path?: string
-  }
-  variants?: FrameworkVariant[]
-  envFile?: string
-}
-type FrameworkVariant = {
-  name: string
-  display: string
-  color: ColorFunc
-}
-
-type Import = { from: string; imports: string[]; defaultImport?: boolean }
-type DatabaseType = {
-  display: string
-  packages?: Record<string, string>
-  imports?: Import[]
-  code?: string
-}
-
-const DATABASES = {
-  json: { display: 'JSON' },
-  postgres: {
-    display: 'Postgres',
-    packages: {
-      pg: '^8.3.0',
-    },
-    imports: [
-      {
-        from: 'remult/postgres',
-        imports: ['createPostgresDataProvider'],
-      },
-    ],
-    code: `createPostgresDataProvider({
-  connectionString: process.env["DATABASE_URL"]    
-})`,
-  },
-  mysql: {
-    display: 'MySQL',
-    packages: {
-      knex: '^2.4.0',
-      mysql2: '^3.9.8',
-    },
-    imports: [
-      {
-        from: 'remult/remult-knex',
-        imports: ['createKnexDataProvider'],
-      },
-    ],
-    code: `createKnexDataProvider({
-  client: "mysql2",
-  connection: {
-    host: process.env['MYSQL_HOST'],
-    database: process.env['MYSQL_DATABASE'],
-    user: process.env['MYSQL_USER'],
-    password: process.env['MYSQL_PASSWORD'],
-    port: process.env['MYSQL_PORT'],
-  },
-})`,
-  },
-  mongodb: {
-    display: 'MongoDB',
-    packages: {
-      mongodb: '^4.17.1',
-    },
-    imports: [
-      {
-        from: 'mongodb',
-        imports: ['MongoClient'],
-      },
-      {
-        from: 'remult/remult-mongo',
-        imports: ['MongoDataProvider'],
-      },
-    ],
-    code: `async () => {
-    const client = new MongoClient(process.env['MONGO_URL'])
-    await client.connect()
-    return new MongoDataProvider(client.db(process.env['MONGO_DB']), client)
-  }
-})`,
-  },
-  bettersqlite3: {
-    display: 'Better SQLite3',
-    packages: {
-      'better-sqlite3': '^7.6.9',
-    },
-    imports: [
-      {
-        from: 'remult',
-        imports: ['SqlDatabase'],
-      },
-      {
-        from: 'better-sqlite3',
-        imports: ['Database'],
-        defaultImport: true,
-      },
-      {
-        from: 'remult/remult-better-sqlite3',
-        imports: ['BetterSqlite3DataProvider'],
-      },
-    ],
-    code: `new SqlDatabase( 
-  new BetterSqlite3DataProvider(new Database('./mydb.sqlite')), 
-), `,
-  },
-  sqlite3: {
-    display: 'SQLite3',
-    packages: {
-      sqlite3: '^5.1.7',
-    },
-    imports: [
-      {
-        from: 'remult',
-        imports: ['SqlDatabase'],
-      },
-      {
-        from: 'sqlite3',
-        imports: ['sqlite3'],
-        defaultImport: true,
-      },
-      {
-        from: 'remult/remult-sqlite3',
-        imports: ['Sqlite3DataProvider '],
-      },
-    ],
-    code: `new SqlDatabase( 
-  new Sqlite3DataProvider (new sqlite3.Database('./mydb.sqlite')), 
-), `,
-  },
-  mssql: {
-    display: 'MSSQL',
-    packages: {
-      tedious: '^18.2.0',
-      knex: '^2.4.0',
-    },
-    imports: [
-      {
-        from: 'remult/remult-knex',
-        imports: ['createKnexDataProvider'],
-      },
-    ],
-    code: `createKnexDataProvider({
-  client: "mssql",
-  connection: {
-    server: process.env["MSSQL_SERVER"],
-    database: process.env["MSSQL_DATABASE"],
-    user: process.env["MSSQL_USER"],
-    password: process.env["MSSQL_PASSWORD"],
-    options: {
-      enableArithAbort: true,
-      encrypt: false,
-      instanceName: process.env["MSSQL_INSTANCE"],
-    },
-  }
-})`,
-  },
-} satisfies Record<string, DatabaseType>
-
-const databaseTypes = Object.keys(DATABASES) as (keyof typeof DATABASES)[]
+Available databases:
+${databaseTypes.map(x=>'  '+x).join('\n')}`
 
 const TEMPLATES = FRAMEWORKS.map(
   (f) => (f.variants && f.variants.map((v) => v.name)) || [f.name],
@@ -263,6 +62,7 @@ const defaultTargetDir = 'remult-project'
 async function init() {
   const argTargetDir = formatTargetDir(argv._[0])
   const argTemplate = argv.template || argv.t
+  const argDatabase = argv.database || argv.d
 
   const help = argv.help
   if (help) {
@@ -377,7 +177,10 @@ async function init() {
             }),
         },
         {
-          type: 'select',
+          type:
+            argDatabase && databaseTypes.includes(argDatabase)
+              ? null
+              : 'select',
           name: 'database',
           message: reset('Database type:'),
           initial: 0,
@@ -449,8 +252,9 @@ async function init() {
   )
 
   pkg.name = packageName || getProjectName()
-  const db: DatabaseType = database
-  const fw: Framework = framework
+  const db: DatabaseType =
+    database || DATABASES[argDatabase as keyof typeof DATABASES]
+  const fw: Framework = framework || FRAMEWORKS.find((x) => x.name == template)!
   if (db.packages) {
     pkg.dependencies = { ...pkg.dependencies, ...db.packages }
   }
@@ -469,15 +273,16 @@ async function init() {
   let api = `export const api = ${server.remultServerFunction}();`
   if (db.code) {
     api = `export const api = ${server.remultServerFunction}({
-  dataProvider:${db.code.split('\n').join('\n  ')}
+  dataProvider: ${db.code.split('\n').join('\n  ')}
 })`
   }
   fs.writeFileSync(
     path.join(root, server.path || 'src/server/api.ts'),
     imports
-      .map(
-        ({ from, imports }) =>
-          `import { ${imports.join(', ')} } from "${from}";`,
+      .map(({ from, imports, defaultImport }) =>
+        defaultImport
+          ? `import ${imports[0]} from "${from}"`
+          : `import { ${imports.join(', ')} } from "${from}"`,
       )
       .join('\n') +
       '\n\n' +
@@ -494,11 +299,12 @@ async function init() {
     )
   }
 
+  console.log(`  ${pkgManager} install`)
+
   const envVariableRegex = /process\.env\[['"](.+?)['"]\]/g
 
   let match
   const envVariables = []
-
   while ((match = envVariableRegex.exec(db.code ?? '')) !== null) {
     envVariables.push(match[1])
   }
@@ -518,7 +324,6 @@ async function init() {
     )
   }
 
-  console.log(`  ${pkgManager} install`)
   if (template === 'sveltekit' || template == 'nextjs') {
     console.log(`  npm run dev`)
   } else {
