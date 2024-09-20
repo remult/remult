@@ -18,7 +18,7 @@ export const DATABASES = {
   mysql: {
     display: 'MySQL',
     dependencies: {
-      knex: '^2.4.0',
+      knex: '^3.1.0',
       mysql2: '^3.9.8',
     },
     imports: [
@@ -64,6 +64,9 @@ export const DATABASES = {
     dependencies: {
       'better-sqlite3': '^9.1.1',
     },
+    devDependencies: {
+      '@types/better-sqlite3': '^7.6.11',
+    },
     imports: [
       {
         from: 'remult',
@@ -88,6 +91,9 @@ export const DATABASES = {
     dependencies: {
       sqlite3: '^5.1.7',
     },
+    devDependencies: {
+      '@types/sqlite3': '^3.1.11',
+    },
     imports: [
       {
         from: 'remult',
@@ -111,7 +117,7 @@ export const DATABASES = {
     display: 'MSSQL',
     dependencies: {
       tedious: '^18.2.0',
-      knex: '^2.4.0',
+      knex: '^3.1.0',
     },
     imports: [
       {
