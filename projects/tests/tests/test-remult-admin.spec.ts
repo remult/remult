@@ -31,6 +31,8 @@ describe('remult-admin', () => {
       bday!: Date
       @Fields.number({ sqlExpression: () => '7' })
       age!: number
+      @Fields.number({ allowApiUpdate: false, sqlExpression: () => '11' })
+      age2!: number
       @Fields.json()
       metadata!: []
       @Relations.toOne(() => Account)
@@ -97,6 +99,16 @@ describe('remult-admin', () => {
               "values": undefined,
             },
             {
+              "caption": "Age2",
+              "inputType": "number",
+              "key": "age2",
+              "readOnly": true,
+              "relationToOne": undefined,
+              "type": "number",
+              "valFieldKey": "age2",
+              "values": undefined,
+            },
+            {
               "caption": "Metadata",
               "inputType": undefined,
               "key": "metadata",
@@ -129,7 +141,7 @@ describe('remult-admin', () => {
               "caption": "Account2",
               "inputType": "text",
               "key": "account2",
-              "readOnly": true,
+              "readOnly": false,
               "relationToOne": {
                 "captionField": "name",
                 "compoundIdField": undefined,
@@ -148,7 +160,7 @@ describe('remult-admin', () => {
               "caption": "Account Bankrupted",
               "inputType": "text",
               "key": "accountBankrupted",
-              "readOnly": true,
+              "readOnly": false,
               "relationToOne": {
                 "captionField": "name",
                 "compoundIdField": undefined,

@@ -84,6 +84,7 @@ export class Contact {
   createdAt = new Date()
 
   @Fields.integer<Contact>({
+    allowApiUpdate: false,
     serverExpression: async (contact) =>
       remult.repo(Contact).relations(contact).notes.count(),
   })
