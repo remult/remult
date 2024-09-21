@@ -114,7 +114,7 @@ export const FRAMEWORKS: Framework[] = [
       fs.writeFileSync(
         path.join(root, "vite.config.ts"),
         createViteConfig({
-          framework: "react",
+          framework: "vue",
           withAuth,
           withPlugin: false,
         }),

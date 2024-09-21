@@ -389,7 +389,7 @@ async function init() {
   fs.writeFileSync(
     path.join(root, envFile),
     envVariables.map((x) => x + "=").join("\n") +
-      (auth ? `AUTH_SECRET="${crypto.randomUUID()}"` : ""),
+      (auth ? `\nAUTH_SECRET="${crypto.randomUUID()}"` : ""),
   );
 
   if (fw.serverInfo || safeServer === Servers[vite_express_key]) {
