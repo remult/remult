@@ -90,6 +90,31 @@ import { remultNuxt } from 'remult/remult-nuxt'
 export const api = remultNuxt({})
 
 export default defineEventHandler(api)
+
+// enable experimental decorators
+// Add to nuxt.config.ts
+  nitro: {
+    esbuild: {
+      options: {
+        tsconfigRaw: {
+          compilerOptions: {
+            experimentalDecorators: true,
+          },
+        },
+      },
+    },
+  },
+  vite: {
+    esbuild: {
+      tsconfigRaw: {
+        compilerOptions: {
+          experimentalDecorators: true,
+        },
+      },
+    },
+  },
+
+
 ```
 
 <!-- prettier-ignore-start -->

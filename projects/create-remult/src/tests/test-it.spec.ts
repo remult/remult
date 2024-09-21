@@ -2,7 +2,7 @@ import { expect, test, describe } from "vitest";
 import spawn, { sync } from "cross-spawn";
 import { emptyDir } from "../empty-dir";
 import { setTimeout } from "timers/promises";
-import { FRAMEWORKS, Servers } from "../FRAMEWORKS";
+import { FRAMEWORKS, Servers, type ServerInfo } from "../FRAMEWORKS";
 import { DATABASES } from "../DATABASES";
 import { buildApiFile } from "../buildApiFile";
 
@@ -69,7 +69,7 @@ async function run(what: string, args: string[], where?: string) {
     });
   });
 }
-if (false)
+describe("test it builds ", async () => {
   for (const fw of FRAMEWORKS) {
     for (const key in DATABASES) {
       if (Object.prototype.hasOwnProperty.call(DATABASES, key)) {
@@ -85,6 +85,26 @@ if (false)
                 });
               },
             );
+            if ((Servers[server as keyof typeof Servers] as ServerInfo).auth) {
+              test.sequential(
+                "test " +
+                  fw.name +
+                  " db " +
+                  key +
+                  " server " +
+                  server +
+                  " with auth",
+                async () => {
+                  await testItBuildsAndRuns({
+                    template: fw.name,
+                    database: key,
+                    server,
+                    auth: true,
+                    checkStart: false,
+                  });
+                },
+              );
+            }
           }
         } else
           test.sequential("test " + fw.name + " db " + key, async () => {
@@ -93,99 +113,79 @@ if (false)
               database: key,
             });
           });
-      }
-    }
-  }
-
-// test.only('react', async () => {
-//   await testItBuildsAndRuns({
-//     template: 'react',
-
-//     port: 3002,
-//     checkStart: true,
-//   })
-// })
-// test('vue', async () => {
-//   await testItBuildsAndRuns({
-//     template: 'vue',
-//     port: 3002,
-//     checkStart: true,
-//   })
-// })
-// test('angular', async () => {
-//   await testItBuildsAndRuns({
-//     template: 'angular',
-//     port: 3002,
-//     checkStart: true,
-//   })
-// })
-// test.only('netxjs', async () => {
-//   await testItBuildsAndRuns({
-//     template: 'nextjs',
-//     port: 3000,
-//     checkStart: true,
-//   })
-// })
-
-// test('sveltekit', async () => {
-//   await testItBuildsAndRuns({
-//     template: 'sveltekit',
-//     port: 3000,
-//     checkStart: false,
-//   })
-// })
-
-async function testItBuildsAndRuns({
-  template,
-  database,
-  port,
-  checkStart,
-  server,
-}: {
-  template: string;
-  database?: string;
-  server?: string;
-  port?: number;
-  checkStart?: boolean;
-}) {
-  if (!database) database = "json";
-  let name = template + "-" + database;
-  if (server) name += "-" + server;
-  const dir = "tmp/" + name;
-  emptyDir(dir);
-
-  expect(
-    await run(
-      "npx",
-      [
-        "create-remult",
-        name,
-        "--template=" + template,
-        "--database=" + database,
-        server ? "--server=" + server : "",
-      ],
-      "tmp",
-    ),
-    "create remult",
-  ).toBe(0);
-  expect(await run("npm", ["install"], dir), "npm install").toBe(0);
-  expect(await run("npm", ["run", "build"], dir), "npm build").toBe(0);
-  if (checkStart && false) {
-    var process = spawn("npm", ["start"], { cwd: dir });
-    try {
-      let result: Response = undefined!;
-      for (let index = 0; index < 5; index++) {
-        try {
-          result = await fetch("http://127.0.0.1:" + port);
-          if (result.status == 200) return;
-        } catch (error) {
-          await setTimeout(1000);
-          console.log("waiting for server to start");
+        if (fw.serverInfo?.auth) {
+          test.sequential(
+            "test " + fw.name + " db " + key + " with auth",
+            async () => {
+              await testItBuildsAndRuns({
+                template: fw.name,
+                database: key,
+                auth: true,
+                checkStart: false,
+              });
+            },
+          );
         }
       }
-      expect(result?.status).toBe(200);
-    } finally {
-      process.kill();
     }
   }
-}
+
+  async function testItBuildsAndRuns({
+    template,
+    database,
+    port,
+    checkStart,
+    server,
+    auth,
+  }: {
+    template: string;
+    database?: string;
+    auth?: boolean;
+    server?: string;
+    port?: number;
+    checkStart?: boolean;
+  }) {
+    if (!database) database = "json";
+    let name = template + "-" + database;
+    if (server) name += "-" + server;
+    if (auth) name += "-auth";
+    const dir = "tmp/" + name;
+
+    emptyDir(dir);
+    expect(
+      await run(
+        "npx",
+        [
+          "create-remult",
+          name,
+          "--template=" + template,
+          "--database=" + database,
+          server ? "--server=" + server : "",
+          auth ? "--auth=next.js" : "",
+        ],
+        "tmp",
+      ),
+      "create remult",
+    ).toBe(0);
+    expect(await run("npm", ["install"], dir), "npm install").toBe(0);
+    expect(await run("npm", ["run", "build"], dir), "npm build").toBe(0);
+    if (checkStart && false) {
+      var process = spawn("npm", ["start"], { cwd: dir });
+      try {
+        let result: Response = undefined!;
+        for (let index = 0; index < 5; index++) {
+          try {
+            result = await fetch("http://127.0.0.1:" + port);
+            if (result.status == 200) return;
+          } catch (error) {
+            await setTimeout(1000);
+            console.log("waiting for server to start");
+          }
+        }
+        expect(result?.status).toBe(200);
+      } finally {
+        process.kill();
+      }
+    }
+  }
+});
