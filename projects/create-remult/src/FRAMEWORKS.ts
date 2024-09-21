@@ -116,6 +116,22 @@ export const FRAMEWORKS: Framework[] = [
       },
     },
   },
+  {
+    name: "nuxt",
+    display: "Nuxt",
+    color: cyan,
+    serverInfo: {
+      remultServerFunction: "remultNuxt",
+      import: "remult-nuxt",
+      path: "server/api/[...remult].ts",
+      writeFiles: ({ root }) => {
+        fs.appendFileSync(
+          path.join(root, "server/api/[...remult].ts"),
+          "\nexport default defineEventHandler(api);",
+        );
+      },
+    },
+  },
 ];
 
 export const Servers = {

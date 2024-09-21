@@ -383,7 +383,7 @@ async function init() {
       (auth ? `AUTH_SECRET="${crypto.randomUUID()}"` : ""),
   );
 
-  if (template === "sveltekit" || template == "nextjs") {
+  if (fw.serverInfo) {
     console.log(`  npm run dev`);
   } else {
     console.log(`  Open two terminals:
