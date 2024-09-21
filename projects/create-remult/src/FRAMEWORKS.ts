@@ -15,7 +15,6 @@ export type Framework = {
 
 export type ServerInfo = {
   doesNotLikeJsFileSuffix?: boolean;
-  name: string;
   display?: string;
   remultServerFunction: string;
   import: string;
@@ -25,6 +24,7 @@ export type ServerInfo = {
   writeFiles?: (args: WriteFilesArgs) => void;
   auth?: {
     dependencies?: Record<string, string>;
+    template?: string;
   };
 };
 type WriteFilesArgs = {
@@ -90,11 +90,11 @@ export const FRAMEWORKS: Framework[] = [
     envFile: ".env.local",
     serverInfo: {
       doesNotLikeJsFileSuffix: true,
-      name: "nextjs",
       remultServerFunction: "remultNextApp",
       import: "remult-next",
       path: "src/api.ts",
       auth: {
+        template: "nextjs",
         dependencies: { "next-auth": "^5.0.0-beta.21" },
       },
     },
@@ -104,17 +104,22 @@ export const FRAMEWORKS: Framework[] = [
     display: "SvelteKit",
     color: cyan,
     serverInfo: {
-      name: "sveltekit",
       remultServerFunction: "remultSveltekit",
       import: "remult-sveltekit",
       path: "src/api.ts",
+      doesNotLikeJsFileSuffix: true,
+      auth: {
+        template: "sveltekit",
+        dependencies: {
+          "@auth/sveltekit": "^1.5.0",
+        },
+      },
     },
   },
 ];
 
 export const Servers = {
   express: {
-    name: "express",
     display: "Express",
     import: "remult-express",
     remultServerFunction: "remultExpress",
@@ -125,6 +130,8 @@ export const Servers = {
       "@types/express": "^4.17.21",
     },
     auth: {
+      template: "express",
+
       dependencies: {
         "@auth/express": "^0.6.1",
       },
@@ -164,7 +171,6 @@ app.listen(process.env["PORT"] || 3002, () => console.log("Server started"));
     },
   },
   fastify: {
-    name: "fastify",
     display: "Fastify",
     import: "remult-fastify",
     remultServerFunction: "remultFastify",

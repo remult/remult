@@ -1366,7 +1366,9 @@ export const flags = {
 
 /*p1 - create-remult discussion
   - should we add to remult some init code that populates remult based on a built in server route for current user.
-  
+  - should we add admin? ensureSchema:false etc...
+  - should we read existing database?
+
 
 */
 //p1 - add aggregate to query

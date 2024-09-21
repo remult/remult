@@ -344,7 +344,7 @@ async function init() {
   safeServer.writeFiles?.(writeFilesArgs);
   fw?.writeFiles?.(writeFilesArgs);
   if (auth) {
-    copyDir(path.join(templatesDir, "auth", safeServer.name), root);
+    copyDir(path.join(templatesDir, "auth", safeServer.auth?.template!), root);
   }
 
   const cdProjectName = path.relative(cwd, root);
