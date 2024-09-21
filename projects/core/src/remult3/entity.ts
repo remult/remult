@@ -59,16 +59,19 @@ export function Entity<entityType>(
       entityType extends new (...args: any) => any ? entityType : never
     >,
   ) => {
-    for (const rawFilterMember in target) {
-      if (Object.prototype.hasOwnProperty.call(target, rawFilterMember)) {
-        const element = target[rawFilterMember] as customFilterInfo<any>
-        if (element?.rawFilterInfo) {
-          if (!element.rawFilterInfo.key)
-            element.rawFilterInfo.key = rawFilterMember
+    let theClass = target
+    while (theClass != null) {
+      for (const rawFilterMember in theClass) {
+        if (Object.prototype.hasOwnProperty.call(theClass, rawFilterMember)) {
+          const element = target[rawFilterMember] as customFilterInfo<any>
+          if (element?.rawFilterInfo) {
+            if (!element.rawFilterInfo.key)
+              element.rawFilterInfo.key = rawFilterMember
+          }
         }
       }
+      theClass = Object.getPrototypeOf(theClass)
     }
-
     let factory: EntityOptionsFactory = (remult) => {
       let r = {} as EntityOptions<
         entityType extends new (...args: any) => any

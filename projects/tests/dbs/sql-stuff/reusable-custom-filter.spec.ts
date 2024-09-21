@@ -91,7 +91,7 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
       // register the filters for this specific entity
       static filters = myAppCustomFilters(() => WPerson)
     }
-    @Entity('Person')
+    @Entity('people')
     class WPerson extends Base {}
 
     expect(
