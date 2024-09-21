@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.27.15] 2024-09-21
+
+- Added support for `customFilter` defined in base classes
+
 ## [0.27.14] 2024-09-20
 
 - A few tweaks by @jycouet in https://github.com/remult/remult/pull/515
