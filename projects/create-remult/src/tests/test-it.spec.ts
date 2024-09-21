@@ -6,7 +6,7 @@ import { FRAMEWORKS, Servers } from "../FRAMEWORKS";
 import { DATABASES } from "../DATABASES";
 import { buildApiFile } from "../buildApiFile";
 
-describe("api file variations", async () => {
+describe.sequential("api file variations", async () => {
   test("basic", () => {
     expect(buildApiFile(DATABASES.json, Servers.express, false))
       .toMatchInlineSnapshot(`
@@ -32,9 +32,8 @@ describe("api file variations", async () => {
     expect(buildApiFile(DATABASES.postgres, Servers.express, true))
       .toMatchInlineSnapshot(`
         "import { remultExpress } from "remult/remult-express";
-        import { remultExpress } from "remult/remult-express";
         import { createPostgresDataProvider } from "remult/postgres";
-        import { getUserFromRequest } from "/auth.js";
+        import { getUserFromRequest } from "./auth.js";
 
         export const api = remultExpress({
           dataProvider: createPostgresDataProvider({
@@ -48,7 +47,7 @@ describe("api file variations", async () => {
     expect(buildApiFile(DATABASES.json, Servers.express, true))
       .toMatchInlineSnapshot(`
         "import { remultExpress } from "remult/remult-express";
-        import { getUserFromRequest } from "/auth.js";
+        import { getUserFromRequest } from "./auth.js";
 
         export const api = remultExpress({
           getUser: getUserFromRequest,

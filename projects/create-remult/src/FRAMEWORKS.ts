@@ -14,6 +14,8 @@ export type Framework = {
 };
 
 export type ServerInfo = {
+  doesNotLikeJsFileSuffix?: boolean;
+  name: string;
   display?: string;
   remultServerFunction: string;
   import: string;
@@ -87,9 +89,14 @@ export const FRAMEWORKS: Framework[] = [
     color: cyan,
     envFile: ".env.local",
     serverInfo: {
+      doesNotLikeJsFileSuffix: true,
+      name: "nextjs",
       remultServerFunction: "remultNextApp",
       import: "remult-next",
       path: "src/api.ts",
+      auth: {
+        dependencies: { "next-auth": "^5.0.0-beta.21" },
+      },
     },
   },
   {
@@ -97,6 +104,7 @@ export const FRAMEWORKS: Framework[] = [
     display: "SvelteKit",
     color: cyan,
     serverInfo: {
+      name: "sveltekit",
       remultServerFunction: "remultSveltekit",
       import: "remult-sveltekit",
       path: "src/api.ts",
@@ -106,6 +114,7 @@ export const FRAMEWORKS: Framework[] = [
 
 export const Servers = {
   express: {
+    name: "express",
     display: "Express",
     import: "remult-express",
     remultServerFunction: "remultExpress",
@@ -121,21 +130,14 @@ export const Servers = {
       },
     },
     writeFiles: ({ distLocation, withAuth, root, templatesDir }) => {
-      if (withAuth) {
-        fs.writeFileSync(
-          path.join(root, "src/server/auth.ts"),
-          fs.readFileSync(path.join(templatesDir, "auth/express.ts"), "utf-8"),
-        );
-      }
       fs.writeFileSync(
         path.join(root, "src/server/index.ts"),
         `import express from "express";
 ${
   withAuth
-    ? ``
-    : `import { ExpressAuth } from "@auth/express";
-import { auth } from "./auth";
+    ? `import { auth } from "./auth.js";
 `
+    : ``
 }import { api } from "./api.js";
 
 const app = express();
@@ -162,6 +164,7 @@ app.listen(process.env["PORT"] || 3002, () => console.log("Server started"));
     },
   },
   fastify: {
+    name: "fastify",
     display: "Fastify",
     import: "remult-fastify",
     remultServerFunction: "remultFastify",

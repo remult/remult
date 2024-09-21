@@ -6,7 +6,10 @@ export function buildApiFile(
   server: ServerInfo,
   auth: boolean,
 ) {
-  let imports: DatabaseType["imports"] = db.imports || [];
+  let imports: DatabaseType["imports"] = [];
+  if (db.imports) {
+    imports = imports.concat(db.imports);
+  }
 
   imports.unshift({
     from: "remult/" + server.import,
@@ -14,7 +17,7 @@ export function buildApiFile(
   });
   if (auth) {
     imports.push({
-      from: "/auth.js",
+      from: "./auth" + (server.doesNotLikeJsFileSuffix ? "" : ".js"),
       imports: ["getUserFromRequest"],
     });
   }

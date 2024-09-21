@@ -185,6 +185,7 @@ async function init() {
           name: "server",
           initial: 0,
           message: reset("Select a web server:"),
+
           choices: (framework: Framework) =>
             Object.keys(Servers).map((server) => ({
               title: Servers[server as keyof typeof Servers].display || server,
@@ -192,8 +193,12 @@ async function init() {
             })),
         },
         {
-          type: (server: ServerInfo) =>
-            server && server.auth && (!argAuth || argAuth !== "auth.js")
+          type: (
+            _,
+            { framework, server }: { framework: Framework; server: ServerInfo },
+          ) =>
+            (server?.auth || framework?.serverInfo?.auth) &&
+            (!argAuth || argAuth !== "auth.js")
               ? "select"
               : null,
           name: "auth",
@@ -338,6 +343,9 @@ async function init() {
   };
   safeServer.writeFiles?.(writeFilesArgs);
   fw?.writeFiles?.(writeFilesArgs);
+  if (auth) {
+    copyDir(path.join(templatesDir, "auth", safeServer.name), root);
+  }
 
   const cdProjectName = path.relative(cwd, root);
   console.log(`\nDone. Now run:\n`);
@@ -452,3 +460,7 @@ init().catch((e) => {
   console.error(e);
   process.exit(1);
 });
+
+//[ ] figure out with .gitignore is not copied
+//[ ] update vite3-plugin-express
+//[ ] add it as an option to the servers
