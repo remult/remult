@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.27.26] 2024-09-21
+## [0.27.16] 2024-09-21
 
 - Added support for `customFilter` defined in base classes
 

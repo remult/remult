@@ -1364,6 +1364,11 @@ export const flags = {
   error500RetryCount: 4,
 }
 
+/*p1 - create-remult discussion
+  - should we add to remult some init code that populates remult based on a built in server route for current user.
+  
+
+*/
 //p1 - add aggregate to query
 //p1 - add parameter all to deleteMany, and updateMany
 //p1  filter.apply ApiPreFilter

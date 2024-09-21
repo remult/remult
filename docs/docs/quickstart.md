@@ -86,11 +86,8 @@ export const { GET, POST, PUT, DELETE } = _api
 // server/api/[...remult].ts
 
 import { remultNuxt } from 'remult/remult-nuxt'
-import { Task } from '~/shared/Task.js'
 
-export const api = remultNuxt({
-  entities: [Task],
-})
+export const api = remultNuxt({})
 
 export default defineEventHandler(api)
 ```
