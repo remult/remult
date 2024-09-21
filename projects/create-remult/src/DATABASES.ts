@@ -1,14 +1,14 @@
 export const DATABASES = {
-  json: { display: 'JSON' },
+  json: { display: "JSON" },
   postgres: {
-    display: 'Postgres',
+    display: "Postgres",
     dependencies: {
-      pg: '^8.3.0',
+      pg: "^8.3.0",
     },
     imports: [
       {
-        from: 'remult/postgres',
-        imports: ['createPostgresDataProvider'],
+        from: "remult/postgres",
+        imports: ["createPostgresDataProvider"],
       },
     ],
     code: `createPostgresDataProvider({
@@ -16,15 +16,15 @@ export const DATABASES = {
 })`,
   },
   mysql: {
-    display: 'MySQL',
+    display: "MySQL",
     dependencies: {
-      knex: '^3.1.0',
-      mysql2: '^3.9.8',
+      knex: "^3.1.0",
+      mysql2: "^3.9.8",
     },
     imports: [
       {
-        from: 'remult/remult-knex',
-        imports: ['createKnexDataProvider'],
+        from: "remult/remult-knex",
+        imports: ["createKnexDataProvider"],
       },
     ],
     code: `createKnexDataProvider({
@@ -39,90 +39,90 @@ export const DATABASES = {
 })`,
   },
   mongodb: {
-    display: 'MongoDB',
+    display: "MongoDB",
     dependencies: {
-      mongodb: '^4.17.1',
+      mongodb: "^4.17.1",
     },
     imports: [
       {
-        from: 'mongodb',
-        imports: ['MongoClient'],
+        from: "mongodb",
+        imports: ["MongoClient"],
       },
       {
-        from: 'remult/remult-mongo',
-        imports: ['MongoDataProvider'],
+        from: "remult/remult-mongo",
+        imports: ["MongoDataProvider"],
       },
     ],
     code: `async () => {
   const client = new MongoClient(process.env['MONGO_URL']!)
   await client.connect()
   return new MongoDataProvider(client.db(process.env['MONGO_DB']), client)
-},`,
+}`,
   },
   bettersqlite3: {
-    display: 'Better SQLite3',
+    display: "Better SQLite3",
     dependencies: {
-      'better-sqlite3': '^9.1.1',
+      "better-sqlite3": "^9.1.1",
     },
     devDependencies: {
-      '@types/better-sqlite3': '^7.6.11',
+      "@types/better-sqlite3": "^7.6.11",
     },
     imports: [
       {
-        from: 'remult',
-        imports: ['SqlDatabase'],
+        from: "remult",
+        imports: ["SqlDatabase"],
       },
       {
-        from: 'better-sqlite3',
-        imports: ['Database'],
+        from: "better-sqlite3",
+        imports: ["Database"],
         defaultImport: true,
       },
       {
-        from: 'remult/remult-better-sqlite3',
-        imports: ['BetterSqlite3DataProvider'],
+        from: "remult/remult-better-sqlite3",
+        imports: ["BetterSqlite3DataProvider"],
       },
     ],
     code: `new SqlDatabase( 
   new BetterSqlite3DataProvider(new Database('./mydb.sqlite')), 
-), `,
+)`,
   },
   sqlite3: {
-    display: 'SQLite3',
+    display: "SQLite3",
     dependencies: {
-      sqlite3: '^5.1.7',
+      sqlite3: "^5.1.7",
     },
     devDependencies: {
-      '@types/sqlite3': '^3.1.11',
+      "@types/sqlite3": "^3.1.11",
     },
     imports: [
       {
-        from: 'remult',
-        imports: ['SqlDatabase'],
+        from: "remult",
+        imports: ["SqlDatabase"],
       },
       {
-        from: 'sqlite3',
-        imports: ['sqlite3'],
+        from: "sqlite3",
+        imports: ["sqlite3"],
         defaultImport: true,
       },
       {
-        from: 'remult/remult-sqlite3',
-        imports: ['Sqlite3DataProvider '],
+        from: "remult/remult-sqlite3",
+        imports: ["Sqlite3DataProvider "],
       },
     ],
     code: `new SqlDatabase( 
   new Sqlite3DataProvider (new sqlite3.Database('./mydb.sqlite')), 
-), `,
+)`,
   },
   mssql: {
-    display: 'MSSQL',
+    display: "MSSQL",
     dependencies: {
-      tedious: '^18.2.0',
-      knex: '^3.1.0',
+      tedious: "^18.2.0",
+      knex: "^3.1.0",
     },
     imports: [
       {
-        from: 'remult/remult-knex',
-        imports: ['createKnexDataProvider'],
+        from: "remult/remult-knex",
+        imports: ["createKnexDataProvider"],
       },
     ],
     code: `createKnexDataProvider({
@@ -140,16 +140,16 @@ export const DATABASES = {
   }
 })`,
   },
-} satisfies Record<string, DatabaseType>
+} satisfies Record<string, DatabaseType>;
 
 export const databaseTypes = Object.keys(
   DATABASES,
-) as (keyof typeof DATABASES)[]
-type Import = { from: string; imports: string[]; defaultImport?: boolean }
+) as (keyof typeof DATABASES)[];
+type Import = { from: string; imports: string[]; defaultImport?: boolean };
 export type DatabaseType = {
-  display: string
-  dependencies?: Record<string, string>
-  devDependencies?: Record<string, string>
-  imports?: Import[]
-  code?: string
-}
+  display: string;
+  dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
+  imports?: Import[];
+  code?: string;
+};

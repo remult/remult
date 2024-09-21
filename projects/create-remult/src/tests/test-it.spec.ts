@@ -2,11 +2,17 @@ import { expect, test, describe } from "vitest";
 import spawn, { sync } from "cross-spawn";
 import { emptyDir } from "../empty-dir";
 import { setTimeout } from "timers/promises";
-import { FRAMEWORKS, Servers, type ServerInfo } from "../FRAMEWORKS";
+import {
+  createViteConfig,
+  FRAMEWORKS,
+  Servers,
+  vite_express_key,
+  type ServerInfo,
+} from "../FRAMEWORKS";
 import { DATABASES } from "../DATABASES";
 import { buildApiFile } from "../buildApiFile";
 
-describe.sequential("api file variations", async () => {
+describe("api file variations", async () => {
   test("basic", () => {
     expect(buildApiFile(DATABASES.json, Servers.express, false))
       .toMatchInlineSnapshot(`
@@ -56,6 +62,72 @@ describe.sequential("api file variations", async () => {
   });
 });
 
+describe("test vite config", async () => {
+  test("test vue with plugin", () => {
+    expect(
+      createViteConfig({
+        framework: "vue",
+        withAuth: true,
+        withPlugin: true,
+      }),
+    ).toMatchInlineSnapshot(`
+      "import { defineConfig } from "vite";
+      import vue from "@vitejs/plugin-vue";
+      import express from 'vite3-plugin-express';
+
+      // https://vitejs.dev/config/
+      export default defineConfig({
+        plugins: [vue(), express("src/server")],
+      });"
+    `);
+  });
+  test("test vie without plugin", () => {
+    expect(
+      createViteConfig({
+        framework: "vue",
+        withAuth: true,
+        withPlugin: false,
+      }),
+    ).toMatchInlineSnapshot(`
+      "import { defineConfig } from "vite";
+      import vue from "@vitejs/plugin-vue";
+
+      // https://vitejs.dev/config/
+      export default defineConfig({
+        plugins: [vue()],
+        server: {
+          proxy: {
+            "/api": "http://localhost:3002",
+            "/auth": "http://localhost:3002",
+          },
+        },
+      });"
+    `);
+  });
+  test("test vue without plugin and auth", () => {
+    expect(
+      createViteConfig({
+        framework: "vue",
+        withAuth: false,
+        withPlugin: false,
+      }),
+    ).toMatchInlineSnapshot(`
+      "import { defineConfig } from "vite";
+      import vue from "@vitejs/plugin-vue";
+
+      // https://vitejs.dev/config/
+      export default defineConfig({
+        plugins: [vue()],
+        server: {
+          proxy: {
+            "/api": "http://localhost:3002",
+          },
+        },
+      });"
+    `);
+  });
+});
+
 async function run(what: string, args: string[], where?: string) {
   return new Promise<number>((res, rej) => {
     const child = spawn(what, args, {
@@ -75,35 +147,42 @@ describe("test it builds ", async () => {
       if (Object.prototype.hasOwnProperty.call(DATABASES, key)) {
         if (!fw.serverInfo) {
           for (const server in Servers) {
-            test.sequential(
-              "test " + fw.name + " db " + key + " server " + server,
-              async () => {
-                await testItBuildsAndRuns({
-                  template: fw.name,
-                  database: key,
-                  server,
-                });
-              },
-            );
-            if ((Servers[server as keyof typeof Servers] as ServerInfo).auth) {
+            if (
+              server !== vite_express_key ||
+              fw.canWorkWithVitePluginExpress
+            ) {
               test.sequential(
-                "test " +
-                  fw.name +
-                  " db " +
-                  key +
-                  " server " +
-                  server +
-                  " with auth",
+                "test " + fw.name + " db " + key + " server " + server,
                 async () => {
                   await testItBuildsAndRuns({
                     template: fw.name,
                     database: key,
                     server,
-                    auth: true,
-                    checkStart: false,
                   });
                 },
               );
+              if (
+                (Servers[server as keyof typeof Servers] as ServerInfo).auth
+              ) {
+                test.sequential(
+                  "test " +
+                    fw.name +
+                    " db " +
+                    key +
+                    " server " +
+                    server +
+                    " with auth",
+                  async () => {
+                    await testItBuildsAndRuns({
+                      template: fw.name,
+                      database: key,
+                      server,
+                      auth: true,
+                      checkStart: false,
+                    });
+                  },
+                );
+              }
             }
           }
         } else

@@ -11,6 +11,7 @@ export type Framework = {
   distLocation?: (name: string) => string;
   envFile?: string;
   writeFiles?: (args: WriteFilesArgs) => void;
+  canWorkWithVitePluginExpress?: boolean;
 };
 
 export type ServerInfo = {
@@ -21,7 +22,7 @@ export type ServerInfo = {
   path?: string;
   dependencies?: Record<string, string>;
   devDependencies?: Record<string, string>;
-  writeFiles?: (args: WriteFilesArgs) => void;
+  writeFiles?: (args: WriteFilesArgs & { framework: Framework }) => void;
   auth?: {
     dependencies?: Record<string, string>;
     template?: string;
@@ -34,27 +35,54 @@ type WriteFilesArgs = {
   templatesDir: string;
 };
 
-function writeViteProxy({ withAuth, root }: WriteFilesArgs) {
-  if (withAuth) {
-    const orig = fs.readFileSync(path.join(root, "vite.config.ts"), "utf-8");
-    const updated = orig.replace(
-      /(proxy:\s*{[\s\S]*?)(\s*})/,
-      `$1
-      '/auth': 'http://localhost:3002',$2`,
-    );
-    if (orig === updated) {
-      throw new Error("Failed to update vite.config.ts");
-    }
-    fs.writeFileSync(path.join(root, "vite.config.ts"), updated);
+export function createViteConfig({
+  framework,
+  withAuth,
+  withPlugin,
+}: {
+  framework: string;
+  withAuth: boolean;
+  withPlugin: boolean;
+}) {
+  return `import { defineConfig } from "vite";
+import ${framework} from "@vitejs/plugin-${framework}";
+${withPlugin ? `import express from 'vite3-plugin-express';\n` : ""}
+// https://vitejs.dev/config/
+export default defineConfig({
+  plugins: [${framework}()${withPlugin ? ', express("src/server")' : ""}],${
+    !withPlugin
+      ? `
+  server: {
+    proxy: {
+      "/api": "http://localhost:3002",${
+        withAuth
+          ? `
+      "/auth": "http://localhost:3002",`
+          : ""
+      }
+    },
+  },`
+      : ""
   }
+});`;
 }
 
 export const FRAMEWORKS: Framework[] = [
   {
     name: "react",
     display: "React",
+    canWorkWithVitePluginExpress: true,
     color: cyan,
-    writeFiles: writeViteProxy,
+    writeFiles: ({ withAuth, root }) => {
+      fs.writeFileSync(
+        path.join(root, "vite.config.ts"),
+        createViteConfig({
+          framework: "react",
+          withAuth,
+          withPlugin: false,
+        }),
+      );
+    },
   },
   {
     name: "angular",
@@ -80,8 +108,18 @@ export const FRAMEWORKS: Framework[] = [
   {
     name: "vue",
     display: "Vue",
+    canWorkWithVitePluginExpress: true,
     color: cyan,
-    writeFiles: writeViteProxy,
+    writeFiles: ({ withAuth, root }) => {
+      fs.writeFileSync(
+        path.join(root, "vite.config.ts"),
+        createViteConfig({
+          framework: "react",
+          withAuth,
+          withPlugin: false,
+        }),
+      );
+    },
   },
   {
     name: "nextjs",
@@ -127,13 +165,14 @@ export const FRAMEWORKS: Framework[] = [
       writeFiles: ({ root }) => {
         fs.appendFileSync(
           path.join(root, "server/api/[...remult].ts"),
-          "\nexport default defineEventHandler(api);",
+          "\n\nexport default defineEventHandler(api);",
         );
       },
     },
   },
 ];
 
+export const vite_express_key = "express_vite";
 export const Servers = {
   express: {
     display: "Express",
@@ -152,38 +191,8 @@ export const Servers = {
         "@auth/express": "^0.6.1",
       },
     },
-    writeFiles: ({ distLocation, withAuth, root, templatesDir }) => {
-      fs.writeFileSync(
-        path.join(root, "src/server/index.ts"),
-        `import express from "express";
-${
-  withAuth
-    ? `import { auth } from "./auth.js";
-`
-    : ``
-}import { api } from "./api.js";
-
-const app = express();
-
-${
-  withAuth
-    ? `app.set("trust proxy", true);
-app.use("/auth/*", auth);
-`
-    : ``
-}app.use(api);
-
-// This code is responsible for serving the frontend files.
-const frontendFiles = process.cwd() + "/${distLocation}";
-app.use(express.static(frontendFiles));
-app.get("/*", (_, res) => {
-  res.sendFile(frontendFiles + "/index.html");
-});
-// end of frontend serving code
-
-app.listen(process.env["PORT"] || 3002, () => console.log("Server started"));
-`,
-      );
+    writeFiles: (args) => {
+      writeExpressIndex(args);
     },
   },
   fastify: {
@@ -227,4 +236,77 @@ app.listen({ port: Number(process.env["PORT"] || 3002) }, () =>
       );
     },
   },
+  [vite_express_key]: {
+    display: "Express vite plugin (experimental)",
+    import: "remult-express",
+    remultServerFunction: "remultExpress",
+    dependencies: {
+      express: "^4.21.0",
+    },
+    devDependencies: {
+      "@types/express": "^4.17.21",
+      "vite3-plugin-express": "^0.1.6",
+    },
+    auth: {
+      template: "express",
+      dependencies: {
+        "@auth/express": "^0.6.1",
+      },
+    },
+    writeFiles: (args) => {
+      writeExpressIndex({ ...args, vitePlugin: true });
+      fs.writeFileSync(
+        path.join(args.root, "vite.config.ts"),
+        createViteConfig({
+          framework: args.framework.name,
+          withAuth: args.withAuth,
+          withPlugin: true,
+        }),
+      );
+    },
+  },
 } satisfies Record<string, ServerInfo>;
+function writeExpressIndex({
+  distLocation,
+  withAuth,
+  root,
+  vitePlugin,
+}: WriteFilesArgs & { vitePlugin?: boolean }) {
+  let serveExpress = `// This code is responsible for serving the frontend files.
+const frontendFiles = process.cwd() + "/${distLocation}";
+app.use(express.static(frontendFiles));
+app.get("/*", (_, res) => {
+  res.sendFile(frontendFiles + "/index.html");
+});
+// end of frontend serving code
+
+app.listen(process.env["PORT"] || 3002, () => console.log("Server started"));`;
+  if (vitePlugin) {
+    serveExpress = `if (!process.env['VITE']) {
+  ${serveExpress.split("\n").join("\n  ")}
+}`;
+  }
+
+  fs.writeFileSync(
+    path.join(root, "src/server/index.ts"),
+    `import express from "express";
+${
+  withAuth
+    ? `import { auth } from "./auth.js";
+`
+    : ``
+}import { api } from "./api.js";
+
+${vitePlugin ? "export " : ""}const app = express();
+
+${
+  withAuth
+    ? `app.set("trust proxy", true);
+app.use("/auth/*", auth);
+`
+    : ``
+}app.use(api);
+
+` + serveExpress,
+  );
+}

@@ -9,6 +9,7 @@ import { emptyDir } from "./empty-dir";
 import {
   FRAMEWORKS,
   Servers,
+  vite_express_key,
   type Framework,
   type ServerInfo,
 } from "./FRAMEWORKS";
@@ -187,10 +188,17 @@ async function init() {
           message: reset("Select a web server:"),
 
           choices: (framework: Framework) =>
-            Object.keys(Servers).map((server) => ({
-              title: Servers[server as keyof typeof Servers].display || server,
-              value: Servers[server as keyof typeof Servers],
-            })),
+            Object.keys(Servers)
+              .filter(
+                (x) =>
+                  x !== vite_express_key ||
+                  framework.canWorkWithVitePluginExpress,
+              )
+              .map((server) => ({
+                title:
+                  Servers[server as keyof typeof Servers].display || server,
+                value: Servers[server as keyof typeof Servers],
+              })),
         },
         {
           type: (
@@ -340,9 +348,10 @@ async function init() {
     withAuth: auth,
     distLocation: fw.distLocation?.(getProjectName()) || "dist",
     templatesDir,
+    framework: fw,
   };
-  safeServer.writeFiles?.(writeFilesArgs);
   fw?.writeFiles?.(writeFilesArgs);
+  safeServer.writeFiles?.(writeFilesArgs);
   if (auth) {
     copyDir(path.join(templatesDir, "auth", safeServer.auth?.template!), root);
   }
@@ -383,7 +392,7 @@ async function init() {
       (auth ? `AUTH_SECRET="${crypto.randomUUID()}"` : ""),
   );
 
-  if (fw.serverInfo) {
+  if (fw.serverInfo || safeServer === Servers[vite_express_key]) {
     console.log(`  npm run dev`);
   } else {
     console.log(`  Open two terminals:
