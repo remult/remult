@@ -12,14 +12,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "express": "^4.21.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "remult": "^0.27.13"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
-    "@types/express": "^4.17.21",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",

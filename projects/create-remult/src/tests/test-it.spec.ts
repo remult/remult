@@ -2,31 +2,50 @@ import { expect, test, describe } from 'vitest'
 import spawn, { sync } from 'cross-spawn'
 import { emptyDir } from '../empty-dir'
 import { setTimeout } from 'timers/promises'
-import { FRAMEWORKS } from '../FRAMEWORKS'
+import { FRAMEWORKS, Servers } from '../FRAMEWORKS'
 import { DATABASES } from '../DATABASES'
 
-function run(what: string, args: string[], where?: string) {
-  const { status } = sync(what, args, {
-    stdio: 'inherit',
-    cwd: where,
+async function run(what: string, args: string[], where?: string) {
+  return new Promise<number>((res, rej) => {
+    const child = spawn(what, args, {
+      stdio: 'inherit',
+      cwd: where,
+    })
+
+    child.on('exit', (code) => {
+      if (code != 0) rej({ what, args })
+      res(code!)
+    })
   })
-  return status
 }
 for (const fw of FRAMEWORKS) {
   for (const key in DATABASES) {
     if (Object.prototype.hasOwnProperty.call(DATABASES, key)) {
-      test.concurrent('test ' + fw.name + ' with ' + key, async () => {
-        await testItBuildsAndRuns({
-          template: fw.name,
-          database: key,
+      if (!fw.serverInfo) {
+        for (const server in Servers) {
+          test.sequential(
+            'test ' + fw.name + ' db ' + key + ' server ' + server,
+            async () => {
+              await testItBuildsAndRuns({
+                template: fw.name,
+                database: key,
+                server,
+              })
+            },
+          )
+        }
+      } else
+        test.sequential('test ' + fw.name + ' db ' + key, async () => {
+          await testItBuildsAndRuns({
+            template: fw.name,
+            database: key,
+          })
         })
-      })
     }
   }
-  break
 }
 
-// test('react', async () => {
+// test.only('react', async () => {
 //   await testItBuildsAndRuns({
 //     template: 'react',
 
@@ -69,31 +88,36 @@ async function testItBuildsAndRuns({
   database,
   port,
   checkStart,
+  server,
 }: {
   template: string
   database?: string
+  server?: string
   port?: number
   checkStart?: boolean
 }) {
-  const name = template + '-' + database
   if (!database) database = 'json'
+  let name = template + '-' + database
+  if (server) name += '-' + server
   const dir = 'tmp/' + name
   emptyDir(dir)
 
   expect(
-    run(
+    await run(
       'npx',
       [
         'create-remult',
         name,
         '--template=' + template,
         '--database=' + database,
+        server ? '--server=' + server : '',
       ],
       'tmp',
     ),
+    'create remult',
   ).toBe(0)
-  expect(run('npm', ['install'], dir)).toBe(0)
-  expect(run('npm', ['run', 'build'], dir)).toBe(0)
+  expect(await run('npm', ['install'], dir), 'npm install').toBe(0)
+  expect(await run('npm', ['run', 'build'], dir), 'npm build').toBe(0)
   if (checkStart && false) {
     var process = spawn('npm', ['start'], { cwd: dir })
     try {

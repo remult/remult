@@ -1,6 +1,6 @@
 {
   "name": "create-remult",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Creates a remult project, ready to go",
   "keywords": [
     "cli",
@@ -39,7 +39,8 @@
     "dev": "unbuild --stub",
     "build": "unbuild",
     "typecheck": "tsc --noEmit",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "test": "vitest --run"
   },
   "engines": {
     "node": "^18.0.0 || >=20.0.0"

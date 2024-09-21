@@ -6,7 +6,12 @@ import minimist from 'minimist'
 import prompts from 'prompts'
 import colors from 'picocolors'
 import { emptyDir } from './empty-dir'
-import { FRAMEWORKS, type Framework } from './FRAMEWORKS'
+import {
+  FRAMEWORKS,
+  Servers,
+  type Framework,
+  type ServerInfo,
+} from './FRAMEWORKS'
 import { DATABASES, databaseTypes, type DatabaseType } from './DATABASES'
 
 const {
@@ -42,16 +47,17 @@ With no arguments, start the CLI in interactive mode.
 Options:
   -t, --template NAME        use a specific template
   -d, --database NAME        use a specific database
+  -s, --server NAME          use a specific server
 
 Available templates:
 ${FRAMEWORKS.map((f) => `  ${f.name}`).join('\n')}
 
 Available databases:
-${databaseTypes.map(x=>'  '+x).join('\n')}`
+${databaseTypes.map(x=>'  '+x).join('\n')}
 
-const TEMPLATES = FRAMEWORKS.map(
-  (f) => (f.variants && f.variants.map((v) => v.name)) || [f.name],
-).reduce((a, b) => a.concat(b), [])
+Available servers:
+${Object.keys(Servers).map(x=>'  '+x).join('\n')}
+`
 
 const renameFiles: Record<string, string | undefined> = {
   _gitignore: '.gitignore',
@@ -63,6 +69,7 @@ async function init() {
   const argTargetDir = formatTargetDir(argv._[0])
   const argTemplate = argv.template || argv.t
   const argDatabase = argv.database || argv.d
+  const argServer = argv.server || argv.s
 
   const help = argv.help
   if (help) {
@@ -79,7 +86,7 @@ async function init() {
     | 'overwrite'
     | 'packageName'
     | 'framework'
-    | 'variant'
+    | 'server'
     | 'database'
   >
 
@@ -144,10 +151,13 @@ async function init() {
         },
         {
           type:
-            argTemplate && TEMPLATES.includes(argTemplate) ? null : 'select',
+            argTemplate && FRAMEWORKS.find((x) => x.name === argTemplate)
+              ? null
+              : 'select',
           name: 'framework',
           message:
-            typeof argTemplate === 'string' && !TEMPLATES.includes(argTemplate)
+            typeof argTemplate === 'string' &&
+            !FRAMEWORKS.find((x) => x.name === argTemplate)
               ? reset(
                   `"${argTemplate}" isn't a valid template. Please choose from below: `,
                 )
@@ -164,17 +174,19 @@ async function init() {
 
         {
           type: (framework: Framework) =>
-            framework && framework.variants ? 'select' : null,
-          name: 'variant',
-          message: reset('Select a variant:'),
+            framework &&
+            !framework.serverInfo &&
+            (!argServer || !Servers[argServer as keyof typeof Servers])
+              ? 'select'
+              : null,
+          name: 'server',
+          initial: 0,
+          message: reset('Select a web server:'),
           choices: (framework: Framework) =>
-            framework.variants?.map((variant) => {
-              const variantColor = variant.color
-              return {
-                title: variantColor(variant.display || variant.name),
-                value: variant.name,
-              }
-            }),
+            Object.keys(Servers).map((server) => ({
+              title: Servers[server as keyof typeof Servers].display || server,
+              value: Servers[server as keyof typeof Servers],
+            })),
         },
         {
           type:
@@ -207,7 +219,7 @@ async function init() {
   }
 
   // user choice associated with prompts
-  const { framework, overwrite, packageName, variant, database } = result
+  const { framework, overwrite, packageName, database, server } = result
 
   const root = path.join(cwd, targetDir)
 
@@ -218,7 +230,7 @@ async function init() {
   }
 
   // determine template
-  let template: string = variant || framework?.name || argTemplate
+  let template: string = framework?.name || argTemplate
 
   const pkgInfo = pkgFromUserAgent(process.env.npm_config_user_agent)
   const pkgManager = pkgInfo ? pkgInfo.name : 'npm'
@@ -255,32 +267,40 @@ async function init() {
   const db: DatabaseType =
     database || DATABASES[argDatabase as keyof typeof DATABASES]
   const fw: Framework = framework || FRAMEWORKS.find((x) => x.name == template)!
-  if (db.dependencies) {
-    pkg.dependencies = { ...pkg.dependencies, ...db.dependencies }
+  const safeServer: ServerInfo =
+    fw.serverInfo ||
+    server ||
+    Servers[argServer as keyof typeof Servers] ||
+    Servers.express
+
+  pkg.dependencies = {
+    ...pkg.dependencies,
+    ...db.dependencies,
+    ...safeServer.dependencies,
   }
-  if (db.devDependencies)
-    pkg.devDependencies = { ...pkg.devDependencies, ...db.devDependencies }
+  pkg.devDependencies = {
+    ...pkg.devDependencies,
+    ...db.devDependencies,
+    ...safeServer.devDependencies,
+  }
 
   write('package.json', JSON.stringify(pkg, null, 2) + '\n')
-  const server = fw.remultServer || {
-    import: 'remult-express',
-    remultServerFunction: 'remultExpress',
-  }
 
   let imports: DatabaseType['imports'] = db.imports || []
 
   imports.unshift({
-    from: 'remult/' + server.import,
-    imports: [server.remultServerFunction],
+    from: 'remult/' + safeServer.import,
+    imports: [safeServer.remultServerFunction],
   })
-  let api = `export const api = ${server.remultServerFunction}();`
+  let api = `export const api = ${safeServer.remultServerFunction}({});`
   if (db.code) {
-    api = `export const api = ${server.remultServerFunction}({
+    api = `export const api = ${safeServer.remultServerFunction}({
   dataProvider: ${db.code.split('\n').join('\n  ')}
 })`
   }
+
   fs.writeFileSync(
-    path.join(root, server.path || 'src/server/api.ts'),
+    path.join(root, safeServer.path || 'src/server/api.ts'),
     imports
       .map(({ from, imports, defaultImport }) =>
         defaultImport
@@ -291,6 +311,12 @@ async function init() {
       '\n\n' +
       api,
   )
+  if (safeServer.indexTs) {
+    fs.writeFileSync(
+      path.join(root, safeServer.path || 'src/server/index.ts'),
+      safeServer.indexTs(fw.distLocation?.(getProjectName()) || 'dist'),
+    )
+  }
 
   const cdProjectName = path.relative(cwd, root)
   console.log(`\nDone. Now run:\n`)
@@ -402,4 +428,5 @@ function editFile(file: string, callback: (content: string) => string) {
 
 init().catch((e) => {
   console.error(e)
+  process.exit(1)
 })
