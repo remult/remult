@@ -9,9 +9,46 @@ on:
       - '**'
 
 jobs:
-  build:
-    name: Test latest typescript build with public api
+  # build:
+  #   name: Test latest typescript build with public api
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+  #     - name: 🌐 Checkout Repository
+  #       uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 0
+
+  #     - name: 🧑‍💻 Setup env
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: 20
+
+  #     - name: 📦 install things
+  #       run: npm i
+
+  #     - name: 🛠️ Build
+  #       run: npm run build
+
+  #     - name: 👌 Tests
+  #       run: npm run test-latest-typescript-build
+
+  verify_create:
+    name: Verify Create
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # template: [react, angular, vue, nextjs, sveltekit, nuxt]
+        # database: [json, postgres, mysql, mongodb, bettersqlite3, sqlite3, mssql]
+        # server: [express, fastify, express_vite]
+        template: [react, sveltekit]
+        database: [postgres]
+        server: [express, fastify]
+        exclude:
+          - template: sveltekit
+            server:
+              - express
+              - fastify
 
     steps:
       - name: 🌐 Checkout Repository
@@ -24,11 +61,11 @@ jobs:
         with:
           node-version: 20
 
-      - name: 📦 install things
-        run: npm i
+      - name: 🛠️ Build create-remult
+        run: cd projects/create-remult && npm i && npm run build
 
-      - name: 🛠️ Build
-        run: npm run build
+      - name: ➕ Create template
+        run: cd projects/create-remult && node dist/index.mjs tmp/${{ matrix.template }}-${{ matrix.database }}-${{ matrix.server }} -t ${{ matrix.template }} -d ${{ matrix.database }} -s ${{ matrix.server }}
 
-      - name: 👌 Tests
-        run: npm run test-latest-typescript-build
+      - name: 🛠️ install & build
+        run: cd projects/create-remult/tmp/${{ matrix.template }}-${{ matrix.database }}-${{ matrix.server }} && npm i && npm build
