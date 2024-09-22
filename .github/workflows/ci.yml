@@ -38,8 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # template: [react, angular, vue, nextjs, sveltekit, nuxt]
-        template: [react, angular, vue, sveltekit, nuxt]
+        template: [react, angular, vue, nextjs, sveltekit, nuxt]
         database:
           [json, postgres, mysql, mongodb, bettersqlite3, sqlite3, mssql]
         server: [express, fastify, express_vite, none]
