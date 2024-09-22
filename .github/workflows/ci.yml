@@ -41,14 +41,14 @@ jobs:
         template: [react, angular, vue, nextjs, sveltekit, nuxt]
         database:
           [json, postgres, mysql, mongodb, bettersqlite3, sqlite3, mssql]
-        server: [express, fastify, express_vite, NONE]
+        server: [express, fastify, express_vite, none]
         exclude:
           - template: react
-            server: NONE
+            server: none
           - template: angular
-            server: NONE
+            server: none
           - template: vue
-            server: NONE
+            server: none
           - template: nextjs
             server: express
           - template: nextjs
