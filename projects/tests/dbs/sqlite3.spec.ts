@@ -138,4 +138,92 @@ describe('sqlite3', () => {
     `)
     expect(await repo.count({ id: new Uint8Array([1, 2, 3, 4, 5]) })).toBe(1)
   })
+  it('test blob', async () => {
+    function BufferField<entityType>(options?: FieldOptions<entityType>) {
+      return Field(() => Buffer, {
+        valueConverter: {
+          fieldTypeInDb: 'blob',
+          fromDb: (v: Buffer) => v,
+          toDb: (v: Buffer) => v,
+        },
+        ...options,
+      })
+    }
+    @Entity('passkey_credential')
+    class WebAuthnUserCredential {
+      @BufferField()
+      id!: Uint8Array
+      @Fields.integer({ dbName: 'user_id' })
+      userId!: number
+      @Fields.string()
+      name!: string
+      @Fields.integer({ dbName: 'algorithm' })
+      algorithmId!: number
+      @BufferField({ dbName: 'public_key' })
+      publicKey!: Uint8Array
+    }
+
+    const repo = await props.createEntity(WebAuthnUserCredential)
+    //
+    await db.execute(`INSERT INTO passkey_credential (id, user_id, name, algorithm, public_key) 
+  VALUES 
+      (X'0102030405', 1, 'testUser1', -7, X'0A141E2832'),
+      (X'0607080910', 2, 'testUser2', -8, X'1B2C3D4E5F');`)
+
+    expect(await repo.find()).toMatchInlineSnapshot(`
+      [
+        WebAuthnUserCredential {
+          "algorithmId": -7,
+          "id": {
+            "data": [
+              1,
+              2,
+              3,
+              4,
+              5,
+            ],
+            "type": "Buffer",
+          },
+          "name": "testUser1",
+          "publicKey": {
+            "data": [
+              10,
+              20,
+              30,
+              40,
+              50,
+            ],
+            "type": "Buffer",
+          },
+          "userId": 1,
+        },
+        WebAuthnUserCredential {
+          "algorithmId": -8,
+          "id": {
+            "data": [
+              6,
+              7,
+              8,
+              9,
+              16,
+            ],
+            "type": "Buffer",
+          },
+          "name": "testUser2",
+          "publicKey": {
+            "data": [
+              27,
+              44,
+              61,
+              78,
+              95,
+            ],
+            "type": "Buffer",
+          },
+          "userId": 2,
+        },
+      ]
+    `)
+    expect(await repo.count({ id: Buffer.from([1, 2, 3, 4, 5]) })).toBe(1)
+  })
 })

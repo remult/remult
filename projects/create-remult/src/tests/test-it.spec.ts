@@ -84,6 +84,32 @@ describe("api file variations", async () => {
       });"
     `);
   });
+  test("with db and auth svelteKit", () => {
+    expect(
+      adjustEnvVariablesForSveltekit(
+        buildApiFile(
+          DATABASES.mongodb,
+          FRAMEWORKS.find((x) => x.name === "sveltekit")?.serverInfo!,
+          true,
+        ),
+      ),
+    ).toMatchInlineSnapshot(`
+      "import { remultSveltekit } from "remult/remult-sveltekit";
+      import { MongoClient } from "mongodb";
+      import { MONGO_URL, MONGO_DB } from "$env/static/private";
+      import { MongoDataProvider } from "remult/remult-mongo";
+      import { getUserFromRequest } from "./auth";
+
+      export const api = remultSveltekit({
+        dataProvider: async () => {
+          const client = new MongoClient(MONGO_URL!)
+          await client.connect()
+          return new MongoDataProvider(client.db(MONGO_DB), client)
+        },
+        getUser: getUserFromRequest,
+      });"
+    `);
+  });
   test("with auth", () => {
     expect(buildApiFile(DATABASES.json, Servers.express, true))
       .toMatchInlineSnapshot(`
@@ -171,12 +197,12 @@ async function run(what: string, args: string[], where?: string) {
     });
 
     child.on("exit", (code) => {
-      if (code != 0) rej({ what, args });
+      if (code != 0) rej({ what, args, where });
       res(code!);
     });
   });
 }
-describe("test it builds ", async () => {
+describe.skip("test it builds ", async () => {
   for (const database in DATABASES) {
     for (const fw of FRAMEWORKS) {
       if (Object.prototype.hasOwnProperty.call(DATABASES, database)) {

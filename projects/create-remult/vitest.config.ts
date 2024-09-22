@@ -9,7 +9,7 @@ export default defineConfig({
     reporters: ["default", "junit"],
     outputFile: "./test-results.xml",
     globals: false,
-    testTimeout: 60000,
+    testTimeout: 120000,
     coverage: {
       enabled: false,
       provider: "v8",

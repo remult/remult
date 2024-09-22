@@ -1,6 +1,6 @@
 {
   "name": "create-remult",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Creates a remult project, ready to go",
   "keywords": [
     "cli",

@@ -30,11 +30,11 @@ export const DATABASES = {
     code: `createKnexDataProvider({
   client: "mysql2",
   connection: {
-    host: process.env['MYSQL_HOST'],
-    database: process.env['MYSQL_DATABASE'],
-    user: process.env['MYSQL_USER'],
-    password: process.env['MYSQL_PASSWORD'],
-    port: process.env['MYSQL_PORT'] ? Number(process.env['MYSQL_PORT']) : undefined,
+    host: process.env["MYSQL_HOST"],
+    database: process.env["MYSQL_DATABASE"],
+    user: process.env["MYSQL_USER"],
+    password: process.env["MYSQL_PASSWORD"],
+    port: process.env["MYSQL_PORT"] ? Number(process.env["MYSQL_PORT"]) : undefined,
   },
 })`,
   },
@@ -54,9 +54,9 @@ export const DATABASES = {
       },
     ],
     code: `async () => {
-  const client = new MongoClient(process.env['MONGO_URL']!)
+  const client = new MongoClient(process.env["MONGO_URL"]!)
   await client.connect()
-  return new MongoDataProvider(client.db(process.env['MONGO_DB']), client)
+  return new MongoDataProvider(client.db(process.env["MONGO_DB"]), client)
 }`,
   },
   bettersqlite3: {
