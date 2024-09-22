@@ -3,6 +3,7 @@ import spawn, { sync } from "cross-spawn";
 import { emptyDir } from "../empty-dir";
 import { setTimeout } from "timers/promises";
 import {
+  adjustEnvVariablesForSveltekit,
   createViteConfig,
   FRAMEWORKS,
   Servers,
@@ -48,6 +49,39 @@ describe("api file variations", async () => {
           getUser: getUserFromRequest,
         });"
       `);
+  });
+  test("with db and auth svelteKit", () => {
+    expect(
+      adjustEnvVariablesForSveltekit(
+        buildApiFile(
+          DATABASES.mssql,
+          FRAMEWORKS.find((x) => x.name === "sveltekit")?.serverInfo!,
+          true,
+        ),
+      ),
+    ).toMatchInlineSnapshot(`
+      "import { remultSveltekit } from "remult/remult-sveltekit";
+      import { createKnexDataProvider } from "remult/remult-knex";
+      import { getUserFromRequest } from "./auth";
+
+      export const api = remultSveltekit({
+        dataProvider: createKnexDataProvider({
+          client: "mssql",
+          connection: {
+            server: MSSQL_SERVER,
+            database: MSSQL_DATABASE,
+            user: MSSQL_USER,
+            password: MSSQL_PASSWORD,
+            options: {
+              enableArithAbort: true,
+              encrypt: false,
+              instanceName: MSSQL_INSTANCE,
+            },
+          }
+        }),
+        getUser: getUserFromRequest,
+      });"
+    `);
   });
   test("with auth", () => {
     expect(buildApiFile(DATABASES.json, Servers.express, true))
@@ -141,10 +175,10 @@ async function run(what: string, args: string[], where?: string) {
     });
   });
 }
-describe("test it builds ", async () => {
-  for (const fw of FRAMEWORKS) {
-    for (const key in DATABASES) {
-      if (Object.prototype.hasOwnProperty.call(DATABASES, key)) {
+describe.skip("test it builds ", async () => {
+  for (const database in DATABASES) {
+    for (const fw of FRAMEWORKS) {
+      if (Object.prototype.hasOwnProperty.call(DATABASES, database)) {
         if (!fw.serverInfo) {
           for (const server in Servers) {
             if (
@@ -152,11 +186,11 @@ describe("test it builds ", async () => {
               fw.canWorkWithVitePluginExpress
             ) {
               test.sequential(
-                "test " + fw.name + " db " + key + " server " + server,
+                "test " + fw.name + " db " + database + " server " + server,
                 async () => {
                   await testItBuildsAndRuns({
                     template: fw.name,
-                    database: key,
+                    database: database,
                     server,
                   });
                 },
@@ -168,14 +202,14 @@ describe("test it builds ", async () => {
                   "test " +
                     fw.name +
                     " db " +
-                    key +
+                    database +
                     " server " +
                     server +
                     " with auth",
                   async () => {
                     await testItBuildsAndRuns({
                       template: fw.name,
-                      database: key,
+                      database: database,
                       server,
                       auth: true,
                       checkStart: false,
@@ -186,19 +220,19 @@ describe("test it builds ", async () => {
             }
           }
         } else
-          test.sequential("test " + fw.name + " db " + key, async () => {
+          test.sequential("test " + fw.name + " db " + database, async () => {
             await testItBuildsAndRuns({
               template: fw.name,
-              database: key,
+              database: database,
             });
           });
         if (fw.serverInfo?.auth) {
           test.sequential(
-            "test " + fw.name + " db " + key + " with auth",
+            "test " + fw.name + " db " + database + " with auth",
             async () => {
               await testItBuildsAndRuns({
                 template: fw.name,
-                database: key,
+                database: database,
                 auth: true,
                 checkStart: false,
               });

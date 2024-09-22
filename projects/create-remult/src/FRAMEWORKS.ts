@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import colors from "picocolors";
+import { extractEnvironmentVariables } from "./extractEnvironmentVariables";
 const { cyan } = colors;
 type ColorFunc = (str: string | number) => string;
 export type Framework = {
@@ -151,6 +152,14 @@ export const FRAMEWORKS: Framework[] = [
         dependencies: {
           "@auth/sveltekit": "^1.5.0",
         },
+      },
+      writeFiles: ({ root }) => {
+        const apiPath = path.join(root, "src/api.ts");
+
+        fs.writeFileSync(
+          apiPath,
+          adjustEnvVariablesForSveltekit(fs.readFileSync(apiPath, "utf-8")),
+        );
       },
     },
   },
@@ -309,4 +318,17 @@ app.use("/auth/*", auth);
 
 ` + serveExpress,
   );
+}
+
+export function adjustEnvVariablesForSveltekit(content: string) {
+  const envVars = extractEnvironmentVariables(content);
+  if (envVars.length == 0) return content;
+  let lines = content.split("\n");
+  lines.splice(
+    2,
+    0,
+    `import { ${envVars.join(", ")} } from "$env/static/private";`,
+  );
+
+  return lines.join("\n").replace(/process\.env\["(.*?)"\]/g, "$1");
 }

@@ -15,6 +15,7 @@ import {
 } from "./FRAMEWORKS";
 import { DATABASES, databaseTypes, type DatabaseType } from "./DATABASES";
 import { buildApiFile } from "./buildApiFile";
+import { extractEnvironmentVariables } from "./extractEnvironmentVariables";
 
 const {
   blue,
@@ -96,6 +97,7 @@ async function init() {
 
   prompts.override({
     overwrite: argv.overwrite,
+    framework: FRAMEWORKS.find((x) => x.name == argTemplate),
   });
 
   try {
@@ -177,7 +179,7 @@ async function init() {
         },
 
         {
-          type: (framework: Framework) =>
+          type: (_, { framework }: { framework: Framework }) =>
             framework &&
             !framework.serverInfo &&
             (!argServer || !Servers[argServer as keyof typeof Servers])
@@ -368,13 +370,7 @@ async function init() {
 
   console.log(`  ${pkgManager} install`);
 
-  const envVariableRegex = /process\.env\[['"](.+?)['"]\]/g;
-
-  let match;
-  const envVariables = [];
-  while ((match = envVariableRegex.exec(db.code ?? "")) !== null) {
-    envVariables.push(match[1]);
-  }
+  const envVariables = extractEnvironmentVariables(db.code ?? "");
 
   // Output the array of environment variables
   const envFile = fw.envFile || ".env";
@@ -470,6 +466,4 @@ init().catch((e) => {
   process.exit(1);
 });
 
-//[ ] figure out with .gitignore is not copied
-//[ ] update vite3-plugin-express
-//[ ] add it as an option to the servers
+//[ ] - add to angular the zone stuff with the live query
