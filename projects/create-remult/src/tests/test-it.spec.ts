@@ -62,6 +62,7 @@ describe("api file variations", async () => {
     ).toMatchInlineSnapshot(`
       "import { remultSveltekit } from "remult/remult-sveltekit";
       import { createKnexDataProvider } from "remult/remult-knex";
+      import { MSSQL_SERVER, MSSQL_DATABASE, MSSQL_USER, MSSQL_PASSWORD, MSSQL_INSTANCE } from "$env/static/private";
       import { getUserFromRequest } from "./auth";
 
       export const api = remultSveltekit({
@@ -165,7 +166,7 @@ describe("test vite config", async () => {
 async function run(what: string, args: string[], where?: string) {
   return new Promise<number>((res, rej) => {
     const child = spawn(what, args, {
-      stdio: "inherit",
+      //  stdio: "inherit",
       cwd: where,
     });
 
@@ -175,7 +176,7 @@ async function run(what: string, args: string[], where?: string) {
     });
   });
 }
-describe.skip("test it builds ", async () => {
+describe("test it builds ", async () => {
   for (const database in DATABASES) {
     for (const fw of FRAMEWORKS) {
       if (Object.prototype.hasOwnProperty.call(DATABASES, database)) {
