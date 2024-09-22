@@ -43,6 +43,12 @@ jobs:
           [json, postgres, mysql, mongodb, bettersqlite3, sqlite3, mssql]
         server: [express, fastify, express_vite, NONE]
         exclude:
+          - template: react
+            server: NONE
+          - template: angular
+            server: NONE
+          - template: vue
+            server: NONE
           - template: nextjs
             server: express
           - template: nextjs
