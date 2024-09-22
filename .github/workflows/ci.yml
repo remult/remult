@@ -46,9 +46,9 @@ jobs:
         server: [express, fastify]
         exclude:
           - template: sveltekit
-            server:
-              - express
-              - fastify
+            server: express
+          - template: sveltekit
+            server: fastify
 
     steps:
       - name: 🌐 Checkout Repository
@@ -65,7 +65,7 @@ jobs:
         run: cd projects/create-remult && npm i && npm run build
 
       - name: ➕ Create template
-        run: cd projects/create-remult && node dist/index.mjs tmp/${{ matrix.template }}-${{ matrix.database }}-${{ matrix.server }} -t ${{ matrix.template }} -d ${{ matrix.database }} -s ${{ matrix.server }}
+        run: cd projects/create-remult && node dist/index.mjs tmp-${{ matrix.template }}-${{ matrix.database }}-${{ matrix.server }} -t ${{ matrix.template }} -d ${{ matrix.database }} -s ${{ matrix.server }}
 
       - name: 🛠️ install & build
-        run: cd projects/create-remult/tmp/${{ matrix.template }}-${{ matrix.database }}-${{ matrix.server }} && npm i && npm build
+        run: cd projects/create-remult/tmp-${{ matrix.template }}-${{ matrix.database }}-${{ matrix.server }} && npm i && npm run build
