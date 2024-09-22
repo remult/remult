@@ -37,6 +37,7 @@ jobs:
     name: Verify Create
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         template: [react, angular, vue, nextjs, sveltekit, nuxt]
         database:
