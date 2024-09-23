@@ -51,24 +51,30 @@ jobs:
             server: noserver
           - template: vue
             server: noserver
+
           - template: nextjs
             server: express
           - template: nextjs
             server: fastify
           - template: nextjs
             server: express_vite
+
           - template: sveltekit
             server: express
           - template: sveltekit
             server: fastify
           - template: sveltekit
             server: express_vite
+
           - template: nuxt
             server: express
           - template: nuxt
             server: fastify
           - template: nuxt
             server: express_vite
+
+          - template: fastify
+            auth: auth.js
 
     steps:
       - name: 🌐 Checkout Repository
