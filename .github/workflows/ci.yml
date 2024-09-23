@@ -42,14 +42,15 @@ jobs:
         template: [react, angular, vue, nextjs, sveltekit, nuxt]
         database:
           [json, postgres, mysql, mongodb, bettersqlite3, sqlite3, mssql]
-        server: [express, fastify, express_vite, none]
+        server: [express, fastify, express_vite, noserver]
+        auth: [auth.js, noauth]
         exclude:
           - template: react
-            server: none
+            server: noserver
           - template: angular
-            server: none
+            server: noserver
           - template: vue
-            server: none
+            server: noserver
           - template: nextjs
             server: express
           - template: nextjs
@@ -84,7 +85,7 @@ jobs:
         run: cd projects/create-remult && npm i && npm run build
 
       - name: ➕ Create template
-        run: cd projects/create-remult && node dist/index.mjs tmp-${{ matrix.template }}-${{ matrix.database }}-${{ matrix.server }} -t ${{ matrix.template }} -d ${{ matrix.database }} -s ${{ matrix.server }}
+        run: cd projects/create-remult && node dist/index.mjs tmp-${{ matrix.template }}-${{ matrix.database }}-${{ matrix.server }}-${{ matrix.auth }} -t ${{ matrix.template }} -d ${{ matrix.database }} -s ${{ matrix.server }} -a ${{ matrix.auth }}
 
       - name: 🛠️ install & build
-        run: cd projects/create-remult/tmp-${{ matrix.template }}-${{ matrix.database }}-${{ matrix.server }} && npm i && npm run build
+        run: cd projects/create-remult/tmp-${{ matrix.template }}-${{ matrix.database }}-${{ matrix.server }}-${{ matrix.auth }} && npm i && npm run build
