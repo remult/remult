@@ -656,6 +656,7 @@ export class RemultServerImplementation<RequestType>
                 else {
                   user = (req as any)['user']
                   if (!user) user = (req as any)['auth']
+                  if (!user?.id) user = undefined
                 }
                 if (user) remult.user = user
 
@@ -1413,7 +1414,10 @@ export class RouteImplementation<RequestType> {
         statusCode = 200
         json(data: any) {
           if (gRes !== undefined) gRes.json(data)
-          res({ statusCode: this.statusCode, data })
+          res({
+            statusCode: this.statusCode,
+            data,
+          })
         }
         send(html: string) {
           if (gRes !== undefined) gRes.send(html)

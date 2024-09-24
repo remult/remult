@@ -65,7 +65,7 @@ export function remultSveltekit(
     if (sseResponse !== undefined) {
       return sseResponse
     }
-    if (responseFromRemultHandler) {
+    if (responseFromRemultHandler !== undefined) {
       if (responseFromRemultHandler.html)
         return new Response(responseFromRemultHandler.html, {
           status: responseFromRemultHandler.statusCode,

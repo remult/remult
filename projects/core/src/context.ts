@@ -145,7 +145,7 @@ export class Remult {
   async initUser(): Promise<UserInfo | undefined> {
     const dp = buildRestDataProvider(this.apiClient.httpClient)
     const data = await dp.get(buildFullUrl(this.apiClient.url, 'me'))
-    this.user = data ?? undefined
+    this.user = data?.id != undefined ? data : undefined
     return this.user
   }
 

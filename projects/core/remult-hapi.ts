@@ -56,7 +56,7 @@ export function remultHapi(
                 res(h.response(html).code(status))
               },
               json(data) {
-                res(h.response(data).code(status))
+                res(h.response(data === null ? 'null' : data).code(status))
               },
               write(data) {
                 stream.write(data)

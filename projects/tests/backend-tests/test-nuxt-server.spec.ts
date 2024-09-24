@@ -4,5 +4,5 @@ import { testAsExpressMW } from './all-server-tests.js'
 import { handler } from '../../test-servers/nuxt-server/.output/server/index.mjs'
 
 describe('test nuxt server', async () => {
-  testAsExpressMW(3013, handler)
+  testAsExpressMW(3013, (req, res, next) => handler(req, res, next))
 })
