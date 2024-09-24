@@ -1,5 +1,6 @@
 import { expect, test, describe } from "vitest";
 import spawn, { sync } from "cross-spawn";
+import fs from "fs";
 import { emptyDir } from "../empty-dir";
 import { setTimeout } from "timers/promises";
 import {
@@ -12,6 +13,7 @@ import {
 } from "../FRAMEWORKS";
 import { DATABASES } from "../DATABASES";
 import { buildApiFile } from "../buildApiFile";
+import path from "path";
 
 describe("api file variations", async () => {
   test("basic", () => {
@@ -202,7 +204,16 @@ async function run(what: string, args: string[], where?: string) {
     });
   });
 }
-describe.skip("test it builds ", async () => {
+
+describe("test it builds ", async () => {
+  test.only("test auth next with mssql", async () => {
+    const dir = await testItBuildsAndRuns({
+      template: "nextjs",
+      database: "mssql",
+      auth: true,
+      checkStart: false,
+    });
+  });
   for (const database in DATABASES) {
     for (const fw of FRAMEWORKS) {
       if (Object.prototype.hasOwnProperty.call(DATABASES, database)) {
@@ -234,13 +245,19 @@ describe.skip("test it builds ", async () => {
                     server +
                     " with auth",
                   async () => {
-                    await testItBuildsAndRuns({
+                    const dir = await testItBuildsAndRuns({
                       template: fw.name,
                       database: database,
                       server,
                       auth: true,
                       checkStart: false,
                     });
+                    if ((server as keyof typeof Servers) === "express")
+                      expect(
+                        fs.existsSync(
+                          path.join(dir!, "src", "server", "auth.ts"),
+                        ),
+                      ).toBe(true);
                   },
                 );
               }
@@ -301,7 +318,7 @@ describe.skip("test it builds ", async () => {
           "--template=" + template,
           "--database=" + database,
           server ? "--server=" + server : "",
-          auth ? "--auth=next.js" : "",
+          auth ? "--auth=auth.js" : "",
         ],
         "tmp",
       ),
@@ -327,5 +344,6 @@ describe.skip("test it builds ", async () => {
         process.kill();
       }
     }
+    return dir;
   }
 });

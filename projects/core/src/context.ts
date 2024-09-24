@@ -42,7 +42,7 @@ export class RemultAsyncLocalStorage {
       if (r) return r.remult
       else
         throw new Error(
-          'remult object was requested outside of a valid context, try running it within initApi or a remult request cycle',
+          'remult object was requested outside of a valid request cycle.valid context, try running `withRemult` or run  within initApi or a remult request cycle',
         )
     }
   }

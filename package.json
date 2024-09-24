@@ -47,7 +47,7 @@
     "@paralleldrive/cuid2": "^2.2.1",
     "@solidjs/start": "^1.0.0-rc.0",
     "@sveltejs/kit": "^1.30.4",
-    "@types/better-sqlite3": "^7.6.9",
+    "@types/better-sqlite3": "^7.6.11",
     "@types/compression": "0.0.36",
     "@types/eventsource": "^1.1.15",
     "@types/express": "^4.17.1",

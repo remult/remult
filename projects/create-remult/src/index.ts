@@ -51,6 +51,7 @@ Options:
   -t, --template NAME        use a specific template
   -d, --database NAME        use a specific database
   -s, --server NAME          use a specific server
+  -a, --auth auth.js         use auth.js for authentication
 
 Available templates:
 ${FRAMEWORKS.map((f) => `  ${f.name}`).join('\n')}
@@ -98,6 +99,8 @@ async function init() {
   prompts.override({
     overwrite: argv.overwrite,
     framework: FRAMEWORKS.find((x) => x.name == argTemplate),
+    server: Servers[argServer as keyof typeof Servers],
+    auth: argAuth !== undefined && argAuth === "auth.js",
   });
 
   try {
@@ -303,6 +306,7 @@ async function init() {
   );
 
   pkg.name = packageName || getProjectName();
+  if (auth === undefined) auth = argAuth === "auth.js";
   const db: DatabaseType =
     database || DATABASES[argDatabase as keyof typeof DATABASES];
   const fw: Framework =
@@ -385,7 +389,7 @@ async function init() {
   fs.writeFileSync(
     path.join(root, envFile),
     envVariables.map((x) => x + "=").join("\n") +
-      (auth ? `\nAUTH_SECRET="${crypto.randomUUID()}"` : ""),
+      (auth ? `\nAUTH_SECRET="${generateSecret()}"` : ""),
   );
 
   if (fw.serverInfo || safeServer === Servers[vite_express_key]) {
@@ -419,6 +423,14 @@ async function init() {
       const destFile = path.resolve(destDir, file);
       copy(srcFile, destFile);
     }
+  }
+}
+
+function generateSecret() {
+  try {
+    return crypto.randomUUID();
+  } catch {
+    return "something-secret-for-auth-cookie-signature";
   }
 }
 

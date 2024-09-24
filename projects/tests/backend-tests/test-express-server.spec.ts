@@ -44,7 +44,7 @@ describe('test express server', async () => {
   app.get('/api/test', api.withRemult, async (req, res) => {
     res.json({ result: await remult.repo(Task).count() })
   })
-  testAsExpressMW(3004, app, (withRemult) => {
+  testAsExpressMW(3009, app, (withRemult) => {
     it(
       'test error handler',
       withRemult(async () => {
@@ -140,7 +140,7 @@ it('test remult run', async () => {
   try {
     initAsyncHooks()
     expect(() => remult.user).toThrowErrorMatchingInlineSnapshot(
-      `[Error: remult object was requested outside of a valid context, try running it within initApi or a remult request cycle]`,
+      `[Error: remult object was requested outside of a valid request cycle.valid context, try running \`withRemult\` or run  within initApi or a remult request cycle]`,
     )
     let result = ''
     const test1 = await withRemult(async () => {

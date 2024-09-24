@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.27.17] 2024-09-24
+
+- Fixed issue with dual call to initRequest in some cases
+
 ## [0.27.16] 2024-09-21
 
 - Added support for `customFilter` defined in base classes

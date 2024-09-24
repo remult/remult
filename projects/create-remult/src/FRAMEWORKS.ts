@@ -137,6 +137,25 @@ export const FRAMEWORKS: Framework[] = [
         dependencies: { "next-auth": "^5.0.0-beta.21" },
       },
     },
+    writeFiles: ({ root }) => {
+      const packageJson = JSON.parse(
+        fs.readFileSync(path.join(root, "package.json"), "utf-8"),
+      );
+      if (packageJson.dependencies["knex"]) {
+        fs.writeFileSync(
+          path.join(root, "next.config.mjs"),
+          `/** @type {import('next').NextConfig} */
+const nextConfig = {
+  experimental: {
+    serverComponentsExternalPackages: ["knex"],
+  },
+};
+
+export default nextConfig;
+`,
+        );
+      }
+    },
   },
   {
     name: "sveltekit",
