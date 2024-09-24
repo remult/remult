@@ -88,15 +88,30 @@ export function allServerTests(
     }),
   )
   it(
-    'delete many',
+    'test me',
     withRemultForTest(async () => {
-      await create3Tasks()
-      expect(
-        await repo(Task).deleteMany({ where: { title: ['a', 'c'] } }),
-      ).toBe(2)
-      expect(await repo(Task).count()).toBe(1)
+      let result = await axios.get<{ result: number }>(
+        remult.apiClient.url + '/me',
+      )
+      expect(result.data).toBe(null)
     }),
-  )
+  ),
+    it(
+      'test initUser',
+      withRemultForTest(async () => {
+        expect(await remult.initUser()).toBe(undefined)
+      }),
+    ),
+    it(
+      'delete many',
+      withRemultForTest(async () => {
+        await create3Tasks()
+        expect(
+          await repo(Task).deleteMany({ where: { title: ['a', 'c'] } }),
+        ).toBe(2)
+        expect(await repo(Task).count()).toBe(1)
+      }),
+    )
   it(
     'delete many 2',
     withRemultForTest(async () => {

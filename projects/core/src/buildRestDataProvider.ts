@@ -70,6 +70,7 @@ export async function retry<T>(what: () => Promise<T>): Promise<T> {
     }
   }
 }
+
 export function toPromise<T>(p: Promise<T> | { toPromise(): Promise<T> }) {
   let r: Promise<T>
   if ((p as any)['toPromise'] !== undefined) {
@@ -84,7 +85,7 @@ export function toPromise<T>(p: Promise<T> | { toPromise(): Promise<T> }) {
         (x.status == 200 || x.status == 201) &&
         x.headers &&
         x.request &&
-        x.data
+        x.data !== undefined
       )
         //for axios
         return x.data

@@ -1,6 +1,9 @@
 import type { ClassType } from '../classType.js'
 import type { DataProvider } from './data-interfaces.js'
-import { RestDataProvider } from './data-providers/rest-data-provider.js'
+import {
+  buildFullUrl,
+  RestDataProvider,
+} from './data-providers/rest-data-provider.js'
 import { LiveQueryClient } from './live-query/LiveQueryClient.js'
 import { SseSubscriptionClient } from './live-query/SseSubscriptionClient.js'
 import { type RemultProxy, remult } from './remult-proxy.js'
@@ -132,6 +135,19 @@ export class Remult {
   }
   /** Returns the current user's info */
   user?: UserInfo
+
+  /**
+   * Fetches user information from the backend and updates the `remult.user` object.
+   * Typically used during application initialization and user authentication.
+   *
+   * @returns {Promise<UserInfo | undefined>} A promise that resolves to the user's information or `undefined` if unavailable.
+   */
+  async initUser(): Promise<UserInfo | undefined> {
+    const dp = buildRestDataProvider(this.apiClient.httpClient)
+    const data = await dp.get(buildFullUrl(this.apiClient.url, 'me'))
+    this.user = data ?? undefined
+    return this.user
+  }
 
   /** Checks if a user was authenticated */
   authenticated() {

@@ -2232,6 +2232,13 @@ export declare class Remult {
   repo: <T>(entity: ClassType<T>, dataProvider?: DataProvider) => Repository<T>
   /** Returns the current user's info */
   user?: UserInfo
+  /**
+   * Fetches user information from the backend and updates the `remult.user` object.
+   * Typically used during application initialization and user authentication.
+   *
+   * @returns {Promise<UserInfo | undefined>} A promise that resolves to the user's information or `undefined` if unavailable.
+   */
+  initUser(): Promise<UserInfo | undefined>
   /** Checks if a user was authenticated */
   authenticated(): boolean
   /** checks if the user has any of the roles specified in the parameters

@@ -436,6 +436,11 @@ export class RemultServerImplementation<RequestType>
         r.route(this.options.rootPath + '/admin/').get(admin)
         r.route(this.options.rootPath + '/admin').get(admin)
       }
+      r.route(this.options.rootPath + '/me').get(
+        this.process(async (remult, req, res) =>
+          res.success(remult.user ?? null),
+        ),
+      )
       if (this.options.subscriptionServer instanceof SseSubscriptionServer) {
         const streamPath = this.options.rootPath + '/' + streamUrl
 

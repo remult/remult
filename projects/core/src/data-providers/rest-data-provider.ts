@@ -20,9 +20,7 @@ export class RestDataProvider implements DataProvider {
   public getEntityDataProvider(entity: EntityMetadata): RestEntityDataProvider {
     return new RestEntityDataProvider(
       () => {
-        let url = this.apiProvider()?.url
-        if (url === undefined || url === null) url = '/api'
-        return url + '/' + entity.key
+        return buildFullUrl(this.apiProvider()?.url, entity.key)
       },
       () => {
         return buildRestDataProvider(this.apiProvider().httpClient)
@@ -37,6 +35,15 @@ export class RestDataProvider implements DataProvider {
   }
   isProxy = true
 }
+export function buildFullUrl(
+  httpClientUrl: string | undefined,
+  entityKey: string,
+) {
+  if (httpClientUrl === undefined || httpClientUrl === null)
+    httpClientUrl = '/api'
+  return httpClientUrl + '/' + entityKey
+}
+
 //@internal
 export function findOptionsToJson<entityType = unknown>(
   options: FindOptions<entityType>,

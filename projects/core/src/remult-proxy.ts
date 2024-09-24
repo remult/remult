@@ -49,6 +49,9 @@ export class RemultProxy implements Remult {
   set liveQueryPublisher(val: LiveQueryChangesListener) {
     remultStatic.remultFactory().liveQueryPublisher = val
   }
+  initUser() {
+    return remultStatic.remultFactory().initUser()
+  }
   call<T extends (...args: any[]) => Promise<any>>(
     backendMethod: T,
     self?: any,
