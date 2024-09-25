@@ -1366,24 +1366,11 @@ export const flags = {
 
 /*p1 - create-remult discussion
 
-  p1 - should we add to remult some init code that populates remult based on a built in server route for current user.
-     - yes, `remult.initUser` - the url will be /api/me
-     - ask to add a todo example
+  p1 - ask to add a todo example
      - admin question
      - ask to add a user table + password hash
      
-     - changeOrigin false to vite config
-     - test angular with auth
-     - check nextauth if the env variable should be called NEXTAUTH_SECRET or just AUTH_SECRET
-     /** @type {import('next').NextConfig} 
-const nextConfig = {
-  experimental: {
-    serverComponentsExternalPackages: ["knex"],
-  },
-};
-
-export default nextConfig;
-
+     
   p1 - Landing page:
      - p2 include the selections (react,vite, postgres,auth)
      - include server is alive test (remind to run dev-node)
@@ -1395,13 +1382,6 @@ export default nextConfig;
      - the selections
      - how to run dev
      - which environment variables to set
-  
-
-  - should we add admin? ensureSchema:false etc...
-  - should we read existing database?
-  - knex issue with next
-
-
 */
 //p1 - add aggregate to query
 //p1 - add parameter all to deleteMany, and updateMany

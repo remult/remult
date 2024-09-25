@@ -72,6 +72,8 @@ jobs:
             server: fastify
           - template: nuxt
             server: express_vite
+          - template: nuxt
+            auth: auth.js
 
           - server: fastify
             auth: auth.js

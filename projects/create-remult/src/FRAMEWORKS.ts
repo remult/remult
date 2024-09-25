@@ -23,6 +23,7 @@ export type ServerInfo = {
   path?: string;
   dependencies?: Record<string, string>;
   devDependencies?: Record<string, string>;
+  requiresTwoTerminal?: boolean;
   writeFiles?: (args: WriteFilesArgs & { framework: Framework }) => void;
   auth?: {
     dependencies?: Record<string, string>;
@@ -58,7 +59,10 @@ export default defineConfig({
       "/api": "http://localhost:3002",${
         withAuth
           ? `
-      "/auth": "http://localhost:3002",`
+      "/auth": {
+        target: "http://localhost:3002",
+        changeOrigin: false,
+      },`
           : ""
       }
     },
@@ -206,6 +210,7 @@ export const Servers = {
     display: "Express",
     import: "remult-express",
     remultServerFunction: "remultExpress",
+    requiresTwoTerminal: true,
     dependencies: {
       express: "^4.21.0",
     },
@@ -227,6 +232,7 @@ export const Servers = {
     display: "Fastify",
     import: "remult-fastify",
     remultServerFunction: "remultFastify",
+    requiresTwoTerminal: true,
     dependencies: {
       "@fastify/static": "^8.0.0",
       fastify: "^5.0.0",

@@ -307,6 +307,7 @@ async function init() {
 
   pkg.name = packageName || getProjectName();
   if (auth === undefined) auth = argAuth === "auth.js";
+
   const db: DatabaseType =
     database || DATABASES[argDatabase as keyof typeof DATABASES];
   const fw: Framework =
@@ -319,6 +320,7 @@ async function init() {
   if (auth === undefined && argAuth === "auth.js") {
     auth = true;
   }
+  if (auth && !safeServer.auth) auth = false;
 
   function sortObject(obj: Record<string, any>) {
     return Object.keys(obj)
@@ -386,18 +388,20 @@ async function init() {
       console.log(`    ${env}`);
     });
   }
+  if (auth) {
+    envVariables.push(`AUTH_SECRET="${generateSecret()}"`);
+  }
   fs.writeFileSync(
     path.join(root, envFile),
-    envVariables.map((x) => x + "=").join("\n") +
-      (auth ? `\nAUTH_SECRET="${generateSecret()}"` : ""),
+    envVariables.map((x) => x + "=").join("\n"),
   );
 
-  if (fw.serverInfo || safeServer === Servers[vite_express_key]) {
-    console.log(`  npm run dev`);
-  } else {
+  if (safeServer.requiresTwoTerminal) {
     console.log(`  Open two terminals:
     Run "npm run dev" in one for the frontend.
     Run "npm run dev-node" in the other for the backend.`);
+  } else {
+    console.log(`  npm run dev`);
   }
 
   function copy(src: string, dest: string) {

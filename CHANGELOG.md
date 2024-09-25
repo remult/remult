@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.27.17] 2024-09-24
+## [0.27.18] 2024-09-24
 
 - Added `remult.initUser` that initializes the frontend remult with the user based on the backend
 - Fixed issue with dual call to initRequest in some cases
