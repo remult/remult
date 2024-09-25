@@ -32,3 +32,68 @@ jobs:
 
       - name: 👌 Tests
         run: npm run test-latest-typescript-build
+
+  verify_create:
+    name: Verify Create
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        template: [react, angular, vue, nextjs, sveltekit, nuxt]
+        database:
+          [json, postgres, mysql, mongodb, bettersqlite3, sqlite3, mssql]
+        server: [express, fastify, express_vite, noserver]
+        auth: [auth.js, noauth]
+        exclude:
+          - template: react
+            server: noserver
+          - template: angular
+            server: noserver
+          - template: vue
+            server: noserver
+
+          - template: nextjs
+            server: express
+          - template: nextjs
+            server: fastify
+          - template: nextjs
+            server: express_vite
+
+          - template: sveltekit
+            server: express
+          - template: sveltekit
+            server: fastify
+          - template: sveltekit
+            server: express_vite
+
+          - template: nuxt
+            server: express
+          - template: nuxt
+            server: fastify
+          - template: nuxt
+            server: express_vite
+
+          - server: fastify
+            auth: auth.js
+          - server: nuxt
+            auth: auth.js
+
+    steps:
+      - name: 🌐 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🧑‍💻 Setup env
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 🛠️ Build create-remult
+        run: cd projects/create-remult && npm i && npm run build
+
+      - name: ➕ Create template
+        run: cd projects/create-remult && node dist/index.mjs tmp-${{ matrix.template }}-${{ matrix.database }}-${{ matrix.server }}-${{ matrix.auth }} -t ${{ matrix.template }} -d ${{ matrix.database }} -s ${{ matrix.server }} -a ${{ matrix.auth }}
+
+      - name: 🛠️ install & build
+        run: cd projects/create-remult/tmp-${{ matrix.template }}-${{ matrix.database }}-${{ matrix.server }}-${{ matrix.auth }} && npm i && npm run build
