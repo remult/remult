@@ -64,24 +64,19 @@ export class AuthController {
 - The method checks if the provided `name` exists in the `validUsers` list. If it does, it sets `remult.user` to an object that conforms to the `UserInfo` type from Remult and stores this user in the request session.
 - If the user is not found, it throws an error.
 
-Next, we'll add sign-out and current user methods:
+Next, we'll add the sign-out method:
 
-```ts title="shared/AuthController.ts" add={7-16}
+```ts title="shared/AuthController.ts" add={7-11}
 export class AuthController {
   @BackendMethod({ allowed: true })
   static async signIn(name: string) {
     //...
   }
 
-  @BackendMethod({ allowed: remult.authenticated })
+  @BackendMethod({ allowed: true })
   static async signOut() {
     remult.context.request!.session!['user'] = undefined
     return undefined
-  }
-
-  @BackendMethod({ allowed: true })
-  static async currentUser() {
-    return remult.user
   }
 }
 ```
@@ -89,7 +84,6 @@ export class AuthController {
 ### Code Explanation
 
 - The `signOut` method clears the user session, making the user unauthenticated.
-- The `currentUser` method returns the current authenticated user.
 
 Next, we'll adjust the `backend/index.ts` file:
 
@@ -105,7 +99,8 @@ export const app = express()
 app.enable('trust proxy') // required for stackblitz and other reverse proxy scenarios
 app.use(
   session({
-    secret: process.env['SESSION_SECRET'] || 'my secret',
+    signed: false, // only for dev on stackblitz, use secret in production
+    // secret: process.env['SESSION_SECRET'] || 'my secret',
   }),
 )
 
@@ -119,9 +114,10 @@ export const api = remultExpress({
 
 ### Code Explanation
 
+- The `signOut` method clears the user session, making the user unauthenticated.
 - We import `session` from `cookie-session` and `AuthController`.
 - We enable `trust proxy` for reverse proxy scenarios like StackBlitz.
-- We configure the `cookie-session` middleware with a secret.
+- **We've set `signed: false` in the session configuration** due to an issue in StackBlitz that causes problems with signed cookies. This is for development purposes only and **in production**, you should **remove `signed: false`** and **encrypt the cookie using a secret** by setting the `secret` option (e.g., `secret: process.env['SESSION_SECRET'] || 'my secret'`).
 - We register `AuthController` in the `controllers` array.
 - We add `getUser: (request) => request.session?.['user']` to extract the user from the session.
 
@@ -133,7 +129,7 @@ In `frontend/Auth.tsx`, we'll call the `AuthController` to sign in, sign out, et
 async function signIn(f: FormEvent<HTMLFormElement>) {
   f.preventDefault()
   try {
-    setCurrentUser(await AuthController.signIn(name))
+    setCurrentUser((remult.user = await AuthController.signIn(name)))
   } catch (error) {
     alert((error as ErrorInfo).message)
   }
@@ -144,7 +140,7 @@ async function signOut() {
 }
 
 useEffect(() => {
-  AuthController.currentUser().then(setCurrentUser)
+  remult.initUser().then(setCurrentUser)
 }, [])
 ```
 
@@ -152,7 +148,7 @@ useEffect(() => {
 
 - The `signIn` function calls `AuthController.signIn` and sets the current user if successful.
 - The `signOut` function calls `AuthController.signOut` to clear the current user.
-- The `useEffect` hook fetches the current user when the component mounts.
+- The `useEffect` hook uses the `initUser` method to fetch the current user when the component mounts.
 
 ### Try It Out
 

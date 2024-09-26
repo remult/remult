@@ -110,6 +110,7 @@ export class SequentialRemultAsyncLocalStorageCore<T>
 export class StubRemultAsyncLocalStorageCore<T>
   implements RemultAsyncLocalStorageCore<T>
 {
+  isStub = true
   wasImplemented = 'yes' as const
   async run<R>(store: T, callback: () => Promise<R>): Promise<R> {
     this.currentValue = store

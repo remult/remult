@@ -14,7 +14,7 @@ import axios from 'axios'
 import { SseSubscriptionClient } from '../../core/src/live-query/SseSubscriptionClient.js'
 import { actionInfo } from '../../core/internals.js'
 
-describe.skip('test express server', async () => {
+describe('test express server', async () => {
   it('Test double init request', async () => {
     let destroy: () => Promise<void> = async () => {}
     try {
@@ -57,7 +57,7 @@ describe.skip('test express server', async () => {
       await destroy()
     }
   })
-  it.only('Test double init request 2', async () => {
+  it('Test double init request 2', async () => {
     let destroy: () => Promise<void> = async () => {}
     try {
       const port = 3005
