@@ -24,7 +24,7 @@ export function Auth() {
     // <-- add call to signOut here
   }
   useEffect(() => {
-    // <-- add call to currentUser here
+    // <-- add call to initUser here
   }, [])
 
   if (!currentUser)

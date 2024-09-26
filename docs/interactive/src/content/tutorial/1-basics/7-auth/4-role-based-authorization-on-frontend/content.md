@@ -1,7 +1,7 @@
 ---
 type: lesson
 title: Role-based Authorization on the Frontend
-template: auth
+template: auth-3
 focus: /frontend/Todo.tsx
 ---
 

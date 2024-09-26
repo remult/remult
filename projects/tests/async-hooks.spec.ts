@@ -123,13 +123,18 @@ describe('test sequential async hooks', () => {
       ]
     `)
   })
+
+  afterEach(() => {
+    RemultAsyncLocalStorage.disable()
+    remultStatic.asyncContext = new RemultAsyncLocalStorage(undefined)
+  })
 })
 describe('test stub async hooks', () => {
   beforeEach(() => {
+    RemultAsyncLocalStorage.enable()
     remultStatic.asyncContext = new RemultAsyncLocalStorage(
       new StubRemultAsyncLocalStorageCore(),
     )
-    RemultAsyncLocalStorage.enable()
   })
   afterEach(() => {
     RemultAsyncLocalStorage.disable()
@@ -143,6 +148,32 @@ describe('test stub async hooks', () => {
       })
     })
     expect(result).toBe(1)
+  })
+  it('test two with remult runs init request twice', async () => {
+    var x = remultStatic.asyncContext
+    const t = entity('t', { id: Fields.string() })
+    var mem = new InMemoryDataProvider()
+    let count = 0
+    const api = remultExpress({
+      dataProvider: mem,
+      entities: [],
+      initApi: async (req) => {
+        await repo(t).insert({ id: '1' })
+      },
+      getUser: async (req) => {
+        count++
+        return undefined
+      },
+    })
+    remultStatic.asyncContext = new RemultAsyncLocalStorage(
+      new StubRemultAsyncLocalStorageCore(),
+    )
+    const result = await api.withRemultAsync({} as any, () =>
+      repo(t).findFirst(),
+    )
+    expect(result?.id).toBe('1')
+    await api.withRemultAsync({} as any, () => repo(t).findFirst())
+    expect(count).toBe(2)
   })
 })
 describe('test with remult within get user & init request', () => {

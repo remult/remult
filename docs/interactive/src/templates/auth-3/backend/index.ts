@@ -4,7 +4,7 @@ import { Task } from '../shared/Task.js'
 import { TasksController } from '../shared/TasksController.js'
 import { remult, repo } from 'remult'
 import session from 'cookie-session'
-import { AuthController } from '../shared/AuthController'
+import { AuthController } from '../shared/AuthController.js'
 
 export const app = express()
 
