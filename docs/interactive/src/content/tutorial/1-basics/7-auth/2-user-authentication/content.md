@@ -64,9 +64,9 @@ export class AuthController {
 - The method checks if the provided `name` exists in the `validUsers` list. If it does, it sets `remult.user` to an object that conforms to the `UserInfo` type from Remult and stores this user in the request session.
 - If the user is not found, it throws an error.
 
-Next, we'll add sign-out and current user methods:
+Next, we'll add the sign-out method:
 
-```ts title="shared/AuthController.ts" add={7-16}
+```ts title="shared/AuthController.ts" add={7-11}
 export class AuthController {
   @BackendMethod({ allowed: true })
   static async signIn(name: string) {
@@ -78,18 +78,12 @@ export class AuthController {
     remult.context.request!.session!['user'] = undefined
     return undefined
   }
-
-  @BackendMethod({ allowed: true })
-  static async currentUser() {
-    return remult.user
-  }
 }
 ```
 
 ### Code Explanation
 
 - The `signOut` method clears the user session, making the user unauthenticated.
-- The `currentUser` method returns the current authenticated user.
 
 Next, we'll adjust the `backend/index.ts` file:
 
@@ -133,7 +127,7 @@ In `frontend/Auth.tsx`, we'll call the `AuthController` to sign in, sign out, et
 async function signIn(f: FormEvent<HTMLFormElement>) {
   f.preventDefault()
   try {
-    setCurrentUser(await AuthController.signIn(name))
+    setCurrentUser((remult.user = await AuthController.signIn(name)))
   } catch (error) {
     alert((error as ErrorInfo).message)
   }
@@ -144,7 +138,7 @@ async function signOut() {
 }
 
 useEffect(() => {
-  AuthController.currentUser().then(setCurrentUser)
+  remult.initUser().then(setCurrentUser)
 }, [])
 ```
 
@@ -152,7 +146,7 @@ useEffect(() => {
 
 - The `signIn` function calls `AuthController.signIn` and sets the current user if successful.
 - The `signOut` function calls `AuthController.signOut` to clear the current user.
-- The `useEffect` hook fetches the current user when the component mounts.
+- The `useEffect` hook uses the `initUser` method to fetch the current user when the component mounts.
 
 ### Try It Out
 

@@ -17,7 +17,7 @@
     "express": "^4.19.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "remult": "^0.27.2",
+    "remult": "^0.27.18",
     "sqlite3": "^5.1.7",
     "vite3-plugin-express": "^0.1.5"
   },

@@ -38,9 +38,4 @@ export class AuthController {
     remult.context.request!.session!['user'] = undefined
     return undefined
   }
-
-  @BackendMethod({ allowed: true })
-  static async currentUser() {
-    return remult.user
-  }
 }
