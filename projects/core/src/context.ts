@@ -74,7 +74,7 @@ export class RemultAsyncLocalStorage {
   setInInitRequest(val: boolean) {
     const store = this.remultObjectStorage?.getStore()
     if (!store) return
-    if (val || this.remultObjectStorage.isStub) store.inInitRequest = val
+    if (val || this.remultObjectStorage?.isStub) store.inInitRequest = val
   }
   getStore() {
     if (!this.remultObjectStorage) {
