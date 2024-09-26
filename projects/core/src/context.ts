@@ -37,6 +37,7 @@ import type {
 import { verifyFieldRelationInfo } from './remult3/relationInfoMember.js'
 import { remultStatic, resetFactory } from './remult-static.js'
 import { initDataProvider } from '../server/initDataProvider.js'
+import { StubRemultAsyncLocalStorageCore } from '../server/initAsyncHooks.js'
 
 export class RemultAsyncLocalStorage {
   static enable() {
@@ -74,7 +75,11 @@ export class RemultAsyncLocalStorage {
   setInInitRequest(val: boolean) {
     const store = this.remultObjectStorage?.getStore()
     if (!store) return
-    store.inInitRequest = val
+    if (
+      val ||
+      this.remultObjectStorage instanceof StubRemultAsyncLocalStorageCore
+    )
+      store.inInitRequest = val
   }
   getStore() {
     if (!this.remultObjectStorage) {
