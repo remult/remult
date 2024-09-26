@@ -1,8 +1,8 @@
 ---
 type: lesson
 title: Role-based Authorization
-template: auth
-focus: /shared/Todo.ts
+template: auth-3
+focus: /shared/Task.ts
 ---
 
 ## Role-based Authorization

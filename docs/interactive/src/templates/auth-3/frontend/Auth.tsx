@@ -5,17 +5,12 @@ import { AuthController } from '../shared/AuthController'
 
 export function Auth() {
   const [name, setName] = useState('')
-  const [currentUser, _setCurrentUser] = useState<UserInfo>()
-
-  function setCurrentUser(user: UserInfo | undefined) {
-    _setCurrentUser(user)
-    remult.user = user
-  }
+  const [currentUser, setCurrentUser] = useState<UserInfo>()
 
   async function signIn(f: FormEvent<HTMLFormElement>) {
     f.preventDefault()
     try {
-      setCurrentUser(await AuthController.signIn(name))
+      setCurrentUser((remult.user = await AuthController.signIn(name)))
     } catch (error) {
       alert((error as ErrorInfo).message)
     }

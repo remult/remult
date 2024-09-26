@@ -73,7 +73,7 @@ export class AuthController {
     //...
   }
 
-  @BackendMethod({ allowed: remult.authenticated })
+  @BackendMethod({ allowed: true })
   static async signOut() {
     remult.context.request!.session!['user'] = undefined
     return undefined
@@ -99,7 +99,8 @@ export const app = express()
 app.enable('trust proxy') // required for stackblitz and other reverse proxy scenarios
 app.use(
   session({
-    secret: process.env['SESSION_SECRET'] || 'my secret',
+    signed: false, // only for dev on stackblitz, use secret in production
+    // secret: process.env['SESSION_SECRET'] || 'my secret',
   }),
 )
 
@@ -113,9 +114,10 @@ export const api = remultExpress({
 
 ### Code Explanation
 
+- The `signOut` method clears the user session, making the user unauthenticated.
 - We import `session` from `cookie-session` and `AuthController`.
 - We enable `trust proxy` for reverse proxy scenarios like StackBlitz.
-- We configure the `cookie-session` middleware with a secret.
+- **We've set `signed: false` in the session configuration** due to an issue in StackBlitz that causes problems with signed cookies. This is for development purposes only and **in production**, you should **remove `signed: false`** and **encrypt the cookie using a secret** by setting the `secret` option (e.g., `secret: process.env['SESSION_SECRET'] || 'my secret'`).
 - We register `AuthController` in the `controllers` array.
 - We add `getUser: (request) => request.session?.['user']` to extract the user from the session.
 

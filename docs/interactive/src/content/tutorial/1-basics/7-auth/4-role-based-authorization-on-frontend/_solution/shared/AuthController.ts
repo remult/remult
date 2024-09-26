@@ -33,7 +33,7 @@ export class AuthController {
     }
   }
 
-  @BackendMethod({ allowed: remult.authenticated })
+  @BackendMethod({ allowed: true })
   static async signOut() {
     remult.context.request!.session!['user'] = undefined
     return undefined
