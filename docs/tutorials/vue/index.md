@@ -45,7 +45,7 @@ npm run dev
 npm run dev-node
 ```
 
-The default "Vue" app main screen should be available at the default Vite dev server address http://127.0.0.1:5173.
+The default "Vue" app main screen should be available at the default Vite dev server address [http://127.0.0.1:5173](http://127.0.0.1:5173).
 
 At this point, our starter project is up and running. We are now ready to move to the [next step of the tutorial](./entities.md) and start creating the task list app.
 
@@ -141,23 +141,24 @@ In this tutorial we will be using `esm` for the node.js server - that means that
 
 Our full stack starter project is almost ready. Let's complete these final configurations.
 
-#### Enable TypeScript decorators in the Vue app
+#### Enable TypeScript decorators in Vite
 
 Add the following entry to the `compilerOptions` section of the `tsconfig.app.json` file to enable the use of decorators in the Vue app.
 
-```json{7}
-// tsconfig.app.json
+```ts{6-12}
+// vite.config.ts
 
-{
-...
-  "compilerOptions": {
-    ...
-    "experimentalDecorators": true // add this
-   ...
-  }
-...
-}
-
+// ...
+export default defineConfig({
+  plugins: [vue()],
+  esbuild: {
+    tsconfigRaw: {
+      compilerOptions: {
+        experimentalDecorators: true,
+      },
+    },
+  },
+});
 ```
 
 #### Create the server tsconfig file
@@ -187,19 +188,21 @@ We'll use the [proxy](https://vitejs.dev/config/#server-proxy) feature of Vite t
 
 Configure the proxy by adding the following entry to the `vite.config.ts` file:
 
-```ts{11}
+```ts{6}
 // vite.config.ts
 
 //...
 export default defineConfig({
   plugins: [vue()],
-  resolve: {
-    alias: {
-      "@": fileURLToPath(new URL("./src", import.meta.url))
-    }
+  server: { proxy: { "/api": "http://localhost:3002" } },
+  esbuild: {
+    tsconfigRaw: {
+      compilerOptions: {
+        experimentalDecorators: true,
+      },
+    },
   },
-  server: { proxy: { "/api": "http://localhost:3002" } }
-})
+});
 ```
 
 ### Run the app
@@ -226,7 +229,7 @@ npm run dev-node
 
 The server is now running and listening on port 3002. `tsx` is watching for file changes and will restart the server when code changes are saved.
 
-The default "Vue" app main screen should be available at the default Vite dev server address http://localhost:5173.
+The default "Vue" app main screen should be available at the default Vite dev server address [http://127.0.0.1:5173](http://127.0.0.1:5173).
 
 ### Remove Vue default styles
 

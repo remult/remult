@@ -100,7 +100,7 @@ async function init() {
     overwrite: argv.overwrite,
     framework: FRAMEWORKS.find((x) => x.name == argTemplate),
     server: Servers[argServer as keyof typeof Servers],
-    auth: argAuth !== undefined && argAuth === "auth.js",
+    auth: argAuth === undefined ? undefined : argAuth === "auth.js",
   });
 
   try {
@@ -209,11 +209,12 @@ async function init() {
           type: (
             _,
             { framework, server }: { framework: Framework; server: ServerInfo },
-          ) =>
-            (server?.auth || framework?.serverInfo?.auth) &&
-            (!argAuth || argAuth !== "auth.js")
-              ? "select"
-              : null,
+          ) => {
+            const result =
+              Boolean(server?.auth || framework?.serverInfo?.auth) &&
+              (!argAuth || argAuth !== "auth.js");
+            return result ? "select" : null;
+          },
           name: "auth",
           initial: 0,
           message: reset("Select auth:"),

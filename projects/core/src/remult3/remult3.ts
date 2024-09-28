@@ -1363,6 +1363,18 @@ export type ClassFieldDecorator<entityType, valueType> = (
 export const flags = {
   error500RetryCount: 4,
 }
+/*p1 !!!!!! - fix tutorial with vite for esbuild flag:
+```
+  esbuild: {
+    tsconfigRaw: {
+      compilerOptions: {
+        experimentalDecorators: true,
+      },
+    },
+  },
+  p1 - set auth secret not to end with '='
+
+```
 
 /*p1 - create-remult discussion
 
@@ -1386,6 +1398,7 @@ export const flags = {
 //p1 - add aggregate to query
 //p1 - add parameter all to deleteMany, and updateMany
 //p1  filter.apply ApiPreFilter
+//p2 - signIn: (arg) =>withRemult(async () => { - consider if there's a generic way of doing signIn:withRemult(arg=>{})
 
 /*p1 - add id and use uuid by default, but allow changes with Fields.id.defaultIdProvider NO but defaultProvider yes???
   //p1 - replace uuid with crypto.randomUUID and allow custom fallback NO

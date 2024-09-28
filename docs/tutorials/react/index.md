@@ -137,23 +137,24 @@ In this tutorial we will be using `esm` for the node.js server - that means that
 
 Our full stack starter project is almost ready. Let's complete these final configurations.
 
-#### Enable TypeScript decorators in the React app
+#### Enable TypeScript decorators in Vite
 
 Add the following entry to the `compilerOptions` section of the `tsconfig.app.json` file to enable the use of decorators in the React app.
 
-```json{7}
-// tsconfig.app.json
+```ts{6-12}
+// vite.config.ts
 
-{
-...
-  "compilerOptions": {
-    ...
-    "experimentalDecorators": true // add this
-   ...
-  }
-...
-}
-
+// ...
+export default defineConfig({
+  plugins: [react()],
+  esbuild: {
+    tsconfigRaw: {
+      compilerOptions: {
+        experimentalDecorators: true,
+      },
+    },
+  },
+});
 ```
 
 #### Create the server tsconfig file
@@ -183,15 +184,21 @@ We'll use the [proxy](https://vitejs.dev/config/#server-proxy) feature of Vite t
 
 Configure the proxy by adding the following entry to the `vite.config.ts` file:
 
-```ts{7}
+```ts{6}
 // vite.config.ts
 
 //...
-
 export default defineConfig({
   plugins: [react()],
-  server: { proxy: { "/api": "http://localhost:3002" } }
-})
+  server: { proxy: { "/api": "http://localhost:3002" } },
+  esbuild: {
+    tsconfigRaw: {
+      compilerOptions: {
+        experimentalDecorators: true,
+      },
+    },
+  },
+});
 ```
 
 ### Run the app
