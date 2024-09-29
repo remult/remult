@@ -83,66 +83,101 @@ npm i --save-dev @types/cookie-session
 
    The `cookie-session` middleware stores session data, digitally signed using the value of the `secret` property, in an `httpOnly` cookie, sent by the browser to all subsequent API requests.
 
-3. Create a file `src/server/auth.ts` for the `auth` express router and place the following code in it:
+3. add a `shared/AuthController.ts` file and include the following code:
 
-   ```ts
-   // src/server/auth.ts
+   ```ts add={4-6,8-12}
+   // src/shared/AuthController.ts
 
-   import express, { Router } from 'express'
-   import type { UserInfo } from 'remult'
+   import { BackendMethod, remult } from 'remult'
+   import type express from 'express'
+   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   import type from 'cookie-session' // required to access the session member of the request object
 
-   const validUsers: UserInfo[] = [
-     { id: '1', name: 'Jane' },
-     { id: '2', name: 'Steve' },
-   ]
-
-   export const auth = Router()
-
-   auth.use(express.json())
-
-   auth.post('/api/signIn', (req, res) => {
-     const user = validUsers.find((user) => user.name === req.body.username)
-     if (user) {
-       req.session!['user'] = user
-       res.json(user)
-     } else {
-       res.status(404).json("Invalid user, try 'Steve' or 'Jane'")
+   declare module 'remult' {
+     export interface RemultContext {
+       request?: express.Request
      }
-   })
+   }
 
-   auth.post('/api/signOut', (req, res) => {
-     req.session!['user'] = null
-     res.json('signed out')
-   })
-
-   auth.get('/api/currentUser', (req, res) => res.json(req.session!['user']))
+   export class AuthController {
+     //
+   }
    ```
 
-   - The (very) simplistic `signIn` endpoint accepts a request body with a `username` property, looks it up in a predefined dictionary of valid users and, if found, sets the user's information to the `user` property of the request's `session`.
+   ### Code Explanation
 
-   - The `signOut` endpoint clears the `user` value from the current session.
+   - We import the necessary modules from `remult` and types for `express` and `cookie-session`.
+   - We extend the `RemultContext` interface to include an optional `request` property of type `express.Request`.
+   - Remult will automatically set the `request` with the current request. Since Remult works with any server framework, we need to type it to the correct server, which in this case is Express. This typing gives us access to the request object and its session, managed by `cookie-session`.
+   - This `request` can be accessed using `remult.context.request`.
 
-   - The `currentUser` endpoint extracts the value of the current user from the session and returns it in the API response.
+   Next, we'll add a static list of users and a sign-in method. (In a real application, you would use a database, but for this tutorial, a static list will suffice.)
 
-4. Register the `auth` router in the main server module.
+   ```ts title="shared/AuthController.ts" add={1,4-17}
+   const validUsers = [{ name: 'Jane' }, { name: 'Alex' }]
 
-   ```ts{5,13}
-   // src/server/index.ts
-
-   //...
-
-   import { auth } from "./auth.js"
-
-   const app = express()
-   app.use(
-     session({
-       secret: process.env["SESSION_SECRET"] || "my secret"
-     })
-   )
-   app.use(auth)
-
-   //...
+   export class AuthController {
+     @BackendMethod({ allowed: true })
+     static async signIn(name: string) {
+       const user = validUsers.find((user) => user.name === name)
+       if (user) {
+         remult.user = {
+           id: user.name,
+           name: user.name,
+         }
+         remult.context.request!.session!['user'] = remult.user
+         return remult.user
+       } else {
+         throw Error("Invalid user, try 'Alex' or 'Jane'")
+       }
+     }
+   }
    ```
+
+   ### Code Explanation
+
+   - We define a static list of valid users.
+   - The `signIn` method is decorated with `@BackendMethod({ allowed: true })`, making it accessible from the frontend.
+   - The method checks if the provided `name` exists in the `validUsers` list. If it does, it sets `remult.user` to an object that conforms to the `UserInfo` type from Remult and stores this user in the request session.
+   - If the user is not found, it throws an error.
+
+   Next, we'll add the sign-out method:
+
+   ```ts title="shared/AuthController.ts" add={7-11}
+   export class AuthController {
+     @BackendMethod({ allowed: true })
+     static async signIn(name: string) {
+       //...
+     }
+
+     @BackendMethod({ allowed: true })
+     static async signOut() {
+       remult.context.request!.session!['user'] = undefined
+       return undefined
+     }
+   }
+   ```
+
+   - The `signOut` method clears the user session, making the user unauthenticated.
+
+4. Update `remultExpress` configuration.
+
+   ```ts{3,5,6}
+   // src/server/api.ts
+
+   import { AuthController } from '../shared/AuthController.ts'
+
+   export const api = remultExpress({
+     //...
+     controllers: [TaskController, AuthController]
+     getUser: (req) => req.session!['user'],
+   })
+   ```
+
+   ### Code Explanation
+
+   - Register the `AuthController` so that the frontend can call its `signIn` and `signOut` methods
+   - `getUser` function: The getUser function is responsible for extracting the user information from the session. If a user is found in the session, Remult will treat the request as authenticated, and this user will be used for authorization purposes.
 
 ### Frontend setup
 
@@ -151,45 +186,35 @@ npm i --save-dev @types/cookie-session
    ```ts
    // src/Auth.tsx
 
-   import { FormEvent, useEffect, useState } from "react"
-   import { remult } from "remult"
-   import App from "./App"
+   import { FormEvent, useEffect, useState } from "react";
+   import { remult } from "remult";
+   import App from "./App";
+   import { AuthController } from "./shared/AuthController";
 
    export default function Auth() {
-     const [username, setUsername] = useState("")
-     const [signedIn, setSignedIn] = useState(false)
+     const [username, setUsername] = useState("");
+     const [signedIn, setSignedIn] = useState(false);
 
-     const signIn = async (e: FormEvent) => {
-       e.preventDefault()
-       const result = await fetch("/api/signIn", {
-         method: "POST",
-         headers: {
-           "Content-Type": "application/json"
-         },
-         body: JSON.stringify({ username })
-       })
-       if (result.ok) {
-         remult.user = await result.json()
-         setSignedIn(true)
-         setUsername("")
-       } else {
-         alert(await result.json())
+     async function signIn(e: FormEvent) {
+       e.preventDefault();
+       try {
+         remult.user = await AuthController.signIn(username);
+         setSignedIn(true);
+       } catch (error: unknown) {
+         alert((error as { message: string }).message);
        }
      }
 
-     const signOut = async () => {
-       await fetch("/api/signOut", {
-         method: "POST"
-       })
-       remult.user = undefined
-       setSignedIn(false)
+     async function signOut() {
+       await AuthController.signOut();
+       remult.user = undefined;
+       setSignedIn(false);
      }
      useEffect(() => {
-       fetch("/api/currentUser").then(async r => {
-         remult.user = await r.json()
-         if (remult.user) setSignedIn(true)
-       })
-     }, [])
+       remult.initUser().then(() => {
+         setSignedIn(remult.authenticated());
+       });
+     }, []);
 
      if (!signedIn)
        return (
@@ -199,14 +224,14 @@ npm i --save-dev @types/cookie-session
              <form onSubmit={signIn}>
                <input
                  value={username}
-                 onChange={e => setUsername(e.target.value)}
+                 onChange={(e) => setUsername(e.target.value)}
                  placeholder="Username, try Steve or Jane"
                />
                <button>Sign in</button>
              </form>
            </main>
          </>
-       )
+       );
      return (
        <>
          <header>
@@ -214,8 +239,9 @@ npm i --save-dev @types/cookie-session
          </header>
          <App />
        </>
-     )
+     );
    }
+
    ```
 
 2. In the `main.tsx` file, Replace the `App` component with the `Auth` component.
@@ -234,21 +260,6 @@ npm i --save-dev @types/cookie-session
      </React.StrictMode>
    )
    ```
-
-### Connect Remult middleware
-
-Once an authentication flow is established, integrating it with Remult in the backend is as simple as providing Remult with a `getUser` function that extracts a `UserInfo` object from a `Request`.
-
-```ts{7}
-// src/server/api.ts
-
-//...
-
-export const api = remultExpress({
-  //...
-  getUser: req => req.session!["user"]
-})
-```
 
 The todo app now supports signing in and out, with **all access restricted to signed in users only**.
 
@@ -291,13 +302,27 @@ export class Task {
 
 2. Let's give the user _"Jane"_ the `admin` role by modifying the `roles` array of her `validUsers` entry.
 
-```ts{4}
-// src/server/auth.ts
+```ts{3,13}
+// src/shared/AuthController.ts
 
-const validUsers = [
-  { id: "1", name: "Jane", roles: ["admin"] },
-  { id: "2", name: "Steve" }
-]
+const validUsers = [{ name: "Jane", admin: true }, { name: "Steve" }];
+
+export class AuthController {
+  @BackendMethod({ allowed: true })
+  static async signIn(name: string) {
+    const user = validUsers.find((user) => user.name === name);
+    if (user) {
+      remult.user = {
+        id: user.name,
+        name: user.name,
+        roles: user.admin ? ["admin"] : [],
+      };
+      remult.context.request!.session!["user"] = remult.user;
+      return remult.user;
+    } else {
+      throw Error("Invalid user, try 'Steve' or 'Jane'");
+    }
+  }
 ```
 
 **Sign in to the app as _"Steve"_ to test that the actions restricted to `admin` users are not allowed. :lock:**
