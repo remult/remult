@@ -113,7 +113,7 @@ npm i --save-dev @types/cookie-session
 
    Next, we'll add a static list of users and a sign-in method. (In a real application, you would use a database, but for this tutorial, a static list will suffice.)
 
-   ```ts title="shared/AuthController.ts" add={1,4-17}
+   ```ts add={1,4-17}
    const validUsers = [{ name: 'Jane' }, { name: 'Alex' }]
 
    export class AuthController {
@@ -143,7 +143,7 @@ npm i --save-dev @types/cookie-session
 
    Next, we'll add the sign-out method:
 
-   ```ts title="shared/AuthController.ts" add={7-11}
+   ```ts add={7-11}
    export class AuthController {
      @BackendMethod({ allowed: true })
      static async signIn(name: string) {
@@ -165,7 +165,7 @@ npm i --save-dev @types/cookie-session
    ```ts{3,5,6}
    // src/server/api.ts
 
-   import { AuthController } from '../shared/AuthController.ts'
+   import { AuthController } from '../shared/AuthController.js'
 
    export const api = remultExpress({
      //...
