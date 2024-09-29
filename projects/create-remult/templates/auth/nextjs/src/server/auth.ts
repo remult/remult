@@ -85,7 +85,7 @@ const authConfig: NextAuthConfig = {
 };
 // Auth.js middleware for Next.js
 export const { handlers, signIn, signOut, auth } = NextAuth(authConfig);
-export { ProviderType }; // Export ProviderType for use in `User.providerType`
+export type { ProviderType }; // Export ProviderType for use in `User.providerType`
 export async function getUserFromRequest(): Promise<UserInfo | undefined> {
   const session = await auth(); // Get the session from the request
   if (!session?.user?.id) return undefined; // If no session or user ID, return undefined
