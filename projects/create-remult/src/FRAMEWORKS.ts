@@ -6,6 +6,7 @@ import { react } from "./frameworks/react";
 import type { DatabaseType } from "./DATABASES";
 import { nextJs } from "./frameworks/nextjs";
 import { svelteKit } from "./frameworks/sveltekit";
+import { emptyDir } from "./empty-dir";
 const { cyan } = colors;
 type ColorFunc = (str: string | number) => string;
 export type Framework = {
@@ -99,11 +100,18 @@ export const FRAMEWORKS: Framework[] = [
       remultServerFunction: "remultNuxt",
       import: "remult-nuxt",
       path: "server/api/[...remult].ts",
-      writeFiles: ({ root }) => {
-        fs.appendFileSync(
-          path.join(root, "server/api/[...remult].ts"),
-          "\n\nexport default defineEventHandler(api);",
+      writeFiles: ({ root, copyDir }) => {
+        const apiPath = path.join(root, "server/api/[...remult].ts");
+        fs.writeFileSync(
+          apiPath,
+          fs
+            .readFileSync(apiPath)
+            .toString()
+            .replace(/"\.\.\/demo/g, '"../../demo') +
+            "\n\nexport default defineEventHandler(api);",
         );
+        copyDir(path.join(path.join(root, "src")), root);
+        fs.rmSync(path.join(root, "src"), { recursive: true, force: true });
       },
     },
   },

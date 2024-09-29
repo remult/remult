@@ -40,7 +40,8 @@
     "build": "unbuild",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build",
-    "test": "vitest --run"
+    "test": "vitest --run",
+    "try": "npx create-remult remult-project -t nuxt -d json --crud --overwrite yes --admin"
   },
   "engines": {
     "node": "^18.0.0 || >=20.0.0"

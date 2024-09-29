@@ -247,7 +247,7 @@ describe("test vite config", async () => {
   });
 });
 
-describe("test-write-react stuff", async () => {
+describe.sequential("test-write-react stuff", async () => {
   const sourceDir = path.join("tmp", "src");
   const nextAppDir = path.join(sourceDir, "app");
   const basicArgs: WriteFilesArgs = {
@@ -263,10 +263,9 @@ describe("test-write-react stuff", async () => {
     withAuth: true,
     distLocation: "dist",
   };
-  beforeEach(() => {
-    if (!fs.existsSync(sourceDir)) fs.mkdirSync(sourceDir);
-  });
-  test("react is ok", async () => {
+
+  test.sequential("react is ok", async () => {
+    if (!fs.existsSync(sourceDir)) fs.mkdirSync(sourceDir, { recursive: true });
     writeAppTsxAndReadme(basicArgs);
     expect(fs.readFileSync(path.join(sourceDir, "App.tsx")).toString())
       .toMatchInlineSnapshot(`
@@ -291,7 +290,8 @@ describe("test-write-react stuff", async () => {
       `);
   });
   test.sequential("next is ok", async () => {
-    if (!fs.existsSync(nextAppDir)) fs.mkdirSync(nextAppDir);
+    if (!fs.existsSync(nextAppDir))
+      fs.mkdirSync(nextAppDir, { recursive: true });
     writeAppTsxAndReadme({
       ...basicArgs,
       framework: nextJs,
@@ -325,6 +325,31 @@ import { Roles } from "./Roles.js";`),
     ).toMatchInlineSnapshot(`
       "import type { ProviderType } from "../../server/auth";
       import { Roles } from "./Roles";"
+    `);
+  });
+  test.sequential("nuxt", async () => {
+    const nuxtAppDir = path.join("tmp", "server", "api");
+    if (!fs.existsSync(nuxtAppDir))
+      fs.mkdirSync(nuxtAppDir, { recursive: true });
+    const apiPath = path.join(nuxtAppDir, "[...remult].ts");
+    var nuxt = FRAMEWORKS.find((x) => x.name === "nuxt")!.serverInfo!;
+    fs.writeFileSync(
+      apiPath,
+      buildApiFile(DATABASES.json, nuxt, false, true, true),
+    );
+    nuxt.writeFiles!({
+      ...basicArgs,
+    });
+    expect(fs.readFileSync(apiPath).toString()).toMatchInlineSnapshot(`
+      "import { remultNuxt } from "remult/remult-nuxt";
+      import { Task } from "../../demo/todo/Task.js";
+        
+      export const api = remultNuxt({
+        admin: true,
+        entities: [Task],
+      });
+
+      export default defineEventHandler(api);"
     `);
   });
 });

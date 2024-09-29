@@ -346,20 +346,21 @@ async function init() {
     write(file);
   }
 
-  function sortObject(obj: Record<string, any>) {
-    return Object.keys(obj)
-      .sort()
-      .reduce(
-        (result, key) => {
-          result[key] = obj[key];
-          return result;
-        },
-        {} as Record<string, any>,
-      );
-  }
   editJsonFile("package.json", (pkg) => {
+    function sortObject(obj: Record<string, any>) {
+      return Object.keys(obj)
+        .sort()
+        .reduce(
+          (result, key) => {
+            result[key] = obj[key];
+            return result;
+          },
+          {} as Record<string, any>,
+        );
+    }
     pkg.name = packageName || getProjectName();
     pkg.dependencies = sortObject({
+      remult: "^0.27.19",
       ...pkg.dependencies,
       ...db.dependencies,
       ...safeServer.dependencies,
@@ -393,8 +394,6 @@ async function init() {
     db,
     projectName: getProjectName(),
   };
-  fw?.writeFiles?.(writeFilesArgs);
-  safeServer.writeFiles?.(writeFilesArgs);
   if (auth) {
     copyDir(path.join(templatesDir, "auth", safeServer.auth?.template!), root);
     copyDir(path.join(templatesDir, "auth", "shared"), root);
@@ -403,6 +402,8 @@ async function init() {
     //copyDir(path.join(templatesDir, "crud", safeServer.auth?.template!), root);
     copyDir(path.join(templatesDir, "crud", "shared"), root);
   }
+  fw?.writeFiles?.(writeFilesArgs);
+  safeServer.writeFiles?.(writeFilesArgs);
 
   const cdProjectName = path.relative(cwd, root);
   console.log(`\nDone. Now run:\n`);

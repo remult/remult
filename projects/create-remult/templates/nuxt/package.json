@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "nuxt": "^3.13.0",
-    "remult": "^0.27.16",
+    "remult": "^0.27.19",
     "vue": "latest",
     "vue-router": "latest"
   }
