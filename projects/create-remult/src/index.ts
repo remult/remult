@@ -434,7 +434,7 @@ async function init() {
   }
   fs.writeFileSync(
     path.join(root, envFile),
-    envVariables.map((x) => x + "=").join("\n"),
+    envVariables.map((x) => x + (x.includes("=") ? "" : "=")).join("\n"),
   );
 
   if (safeServer.requiresTwoTerminal) {
