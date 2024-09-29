@@ -6,8 +6,8 @@ import Credentials from "@auth/express/providers/credentials";
 import { verify, hash } from "@node-rs/argon2";
 import GitHub from "@auth/express/providers/github";
 import type { ProviderType } from "@auth/express/providers";
-import { User } from "../demo/auth/User";
-import { Roles } from "../demo/auth/Roles";
+import { User } from "../demo/auth/User.js";
+import { Roles } from "../demo/auth/Roles.js";
 
 // Assign the password hashing function to User's static method
 User.hashPassword = hash;
