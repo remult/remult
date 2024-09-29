@@ -1,7 +1,7 @@
 import { Entity, Fields, remult, repo, Validators } from "remult";
 import type { hash } from "@node-rs/argon2";
-import type { ProviderType } from "@auth/express/providers";
-import { Roles } from "./Roles";
+import type { ProviderType } from "../../server/auth.js";
+import { Roles } from "./Roles.js";
 
 @Entity("users", {
   allowApiCrud: remult.authenticated, // Only authenticated users can perform CRUD operations

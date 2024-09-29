@@ -16,6 +16,7 @@ import {
 import { DATABASES, databaseTypes, type DatabaseType } from "./DATABASES";
 import { buildApiFile } from "./buildApiFile";
 import { extractEnvironmentVariables } from "./extractEnvironmentVariables";
+import { removeJs } from "./frameworks/nextjs";
 
 const {
   blue,
@@ -324,11 +325,6 @@ async function init() {
     }
   };
 
-  const files = fs.readdirSync(templateDir);
-  for (const file of files.filter((f) => !f.includes("node_modules"))) {
-    write(file);
-  }
-
   if (auth === undefined) auth = argAuth === "auth.js";
 
   const db: DatabaseType =
@@ -340,10 +336,15 @@ async function init() {
     server ||
     Servers[argServer as keyof typeof Servers] ||
     Servers.express;
+
   if (auth === undefined && argAuth === "auth.js") {
     auth = true;
   }
   if (auth && !safeServer.auth) auth = false;
+  const files = fs.readdirSync(templateDir);
+  for (const file of files.filter((f) => !f.includes("node_modules"))) {
+    write(file);
+  }
 
   function sortObject(obj: Record<string, any>) {
     return Object.keys(obj)
@@ -372,9 +373,11 @@ async function init() {
       ...safeServer.devDependencies,
     });
   });
-
+  const apiFileName = path.join(root, safeServer.path || "src/server/api.ts");
+  const apiFileDir = path.dirname(apiFileName);
+  if (!fs.existsSync(apiFileDir)) fs.mkdirSync(apiFileDir);
   fs.writeFileSync(
-    path.join(root, safeServer.path || "src/server/api.ts"),
+    apiFileName,
     buildApiFile(db, safeServer, auth, admin, crud),
   );
   const writeFilesArgs = {
@@ -448,13 +451,12 @@ async function init() {
     } else if ([".woff"].includes(path.extname(src).toLowerCase())) {
       fs.copyFileSync(src, dest);
     } else {
-      fs.writeFileSync(
-        dest,
-        fs
-          .readFileSync(src)
-          .toString()
-          .replaceAll("project-name-to-be-replaced", getProjectName()),
-      );
+      let content = fs
+        .readFileSync(src)
+        .toString()
+        .replaceAll("project-name-to-be-replaced", getProjectName());
+      if (safeServer?.doesNotLikeJsFileSuffix) content = removeJs(content);
+      fs.writeFileSync(dest, content);
     }
   }
   function copyDir(srcDir: string, destDir: string) {

@@ -11,7 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "remult": "^0.27.13",
+    "remult": "^0.27.19",
     "vue": "^3.4.37"
   },
   "devDependencies": {

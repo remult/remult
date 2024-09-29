@@ -1,13 +1,12 @@
 import { repo, withRemult, type UserInfo } from "remult";
-import { Request } from "express";
 import type { AuthConfig } from "@auth/core";
-import { ExpressAuth, getSession } from "@auth/express";
-import type { ProviderType } from "@auth/express/providers";
-import Credentials from "@auth/express/providers/credentials";
-import GitHub from "@auth/express/providers/github";
+import NextAuth from "next-auth";
+import type { ProviderType } from "next-auth/providers";
+import Credentials from "next-auth/providers/credentials";
+import GitHub from "next-auth/providers/github";
 import { verify, hash } from "@node-rs/argon2";
-import { User } from "../demo/auth/User.js";
-import { Roles } from "../demo/auth/Roles.js";
+import { User } from "../demo/auth/User";
+import { Roles } from "../demo/auth/Roles";
 
 // Assign the password hashing function to User's static method
 User.hashPassword = hash;
@@ -85,16 +84,11 @@ const authConfig: AuthConfig = {
     },
   },
 };
-
-// Auth.js middleware for Express
-export const auth = ExpressAuth(authConfig);
+// Auth.js middleware for Next.js
+export const { handlers, signIn, signOut, auth } = NextAuth(authConfig);
 export { ProviderType }; // Export ProviderType for use in `User.providerType`
-
-// Helper function to get user information from a request
-export async function getUserFromRequest(
-  req: Request,
-): Promise<UserInfo | undefined> {
-  const session = await getSession(req, authConfig); // Get the session from the request
+export async function getUserFromRequest(): Promise<UserInfo | undefined> {
+  const session = await auth(); // Get the session from the request
   if (!session?.user?.id) return undefined; // If no session or user ID, return undefined
   const user = await repo(User).findId(session.user.id); // Find the user in the database by their session ID
   if (!user) return undefined; // If no user is found, return undefined

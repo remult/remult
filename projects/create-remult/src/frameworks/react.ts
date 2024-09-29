@@ -1,74 +1,95 @@
-import type { Framework } from "../FRAMEWORKS";
+import type { Framework, ServerInfo } from "../FRAMEWORKS";
 import fs from "fs";
 import path from "path";
 import { createViteConfig } from "../createViteConfig";
 import { writeImports, type Import } from "../writeImports";
+import type { DatabaseType } from "../DATABASES";
+import { nextJs } from "./nextjs";
 
 export const react: Framework = {
   name: "react",
   display: "React",
   canWorkWithVitePluginExpress: true,
-  writeFiles: ({
-    withAuth,
-    root,
-    server,
-    templatesDir,
-    copyDir,
-    crud,
-    framework,
-    db,
-    admin,
-    projectName,
-  }) => {
+  writeFiles: (args) => {
     fs.writeFileSync(
-      path.join(root, "vite.config.ts"),
+      path.join(args.root, "vite.config.ts"),
       createViteConfig({
         framework: "react",
-        withAuth,
+        withAuth: args.withAuth,
         withPlugin: false,
       }),
     );
-    let components: string[] = [framework.display, "Vite"];
+    writeAppTsxAndReadme(args);
+  },
+};
+export function writeAppTsxAndReadme({
+  withAuth,
+  root,
+  server,
+  templatesDir,
+  copyDir,
+  crud,
+  framework,
+  db,
+  admin,
+  projectName,
+}: {
+  framework: Framework;
+  server: ServerInfo;
+  db: DatabaseType;
+  copyDir: (from: string, to: string) => void;
+  templatesDir: string;
+  root: string;
+  withAuth: boolean;
+  admin: boolean;
+  crud: boolean;
+  projectName: string;
+}) {
+  let components: string[] = [framework.display];
+  if (framework != nextJs) {
+    components.push("Vite");
     if (server.display) components.push(server.display);
-    components.push(db.display);
+  }
+  components.push(db.display);
 
-    const imports: Import[] = [];
-    const li: (() => string)[] = [() => components.join(", ")];
+  const imports: Import[] = [];
+  const li: (() => string)[] = [() => components.join(", ")];
 
-    if (server.requiresTwoTerminal) {
-      copyDir(
-        path.join(templatesDir, "check-server", "react"),
-        path.join(root),
-      );
-      imports.push({
-        from: "./demo/CheckServer",
-        imports: "CheckServer",
-      });
-      li.push(() => "<CheckServer/>");
+  if (server.requiresTwoTerminal) {
+    copyDir(path.join(templatesDir, "check-server", "react"), path.join(root));
+    imports.push({
+      from: "./demo/CheckServer",
+      imports: "CheckServer",
+    });
+    li.push(() => "<CheckServer/>");
+  }
+  if (withAuth) {
+    copyDir(path.join(templatesDir, "auth", "react"), path.join(root));
+    components.push("auth.js");
+    imports.push({
+      from: "./demo/auth/CheckAuth",
+      imports: "CheckAuth",
+    });
+    li.push(() => "<CheckAuth/>");
+  }
+  if (admin) li.push(() => `Admin: <a href="/api/admin">Admin</a>`);
+  if (crud) {
+    copyDir(path.join(templatesDir, "crud", "react"), path.join(root));
+    imports.push({
+      from: "./demo/todo/TodoComponent",
+      imports: "Todo",
+    });
+    li.push(() => "<Todo/>");
+  }
+  components.push("remult");
+  if (framework === nextJs) {
+    for (const i of imports) {
+      if (i.from.startsWith("./demo")) i.from = "." + i.from;
     }
-    if (withAuth) {
-      copyDir(path.join(templatesDir, "auth", "react"), path.join(root));
-      components.push("auth.js");
-      imports.push({
-        from: "./demo/auth/CheckAuth",
-        imports: "CheckAuth",
-      });
-      li.push(() => "<CheckAuth/>");
-    }
-    if (admin) li.push(() => `Admin: <a href="/api/admin">Admin</a>`);
-    if (crud) {
-      copyDir(path.join(templatesDir, "crud", "react"), path.join(root));
-      imports.push({
-        from: "./demo/todo/TodoComponent",
-        imports: "Todo",
-      });
-      li.push(() => "<Todo/>");
-    }
-    components.push("remult");
-    fs.writeFileSync(
-      path.join(root, "src", "App.tsx"),
-      `${writeImports(imports)}
-function App() {
+  }
+
+  const homePage = `${writeImports(imports, server)}
+export default function ${framework === nextJs ? "Home" : "App"}() {
   return (
     <>
       Welcome to ${projectName}
@@ -78,12 +99,8 @@ function App() {
     </>
   );
 }
-export default App;
-`,
-    );
-    fs.writeFileSync(
-      path.join(root, "README.md"),
-      `# ${projectName}
+`;
+  const readme = `# ${projectName}
 
 ## Getting Started
 
@@ -149,7 +166,12 @@ ${
   npm run start
   ${"```"}
 
-`,
+`;
+  if (framework === nextJs)
+    fs.writeFileSync(
+      path.join(root, "src", "app", "page.tsx"),
+      '"use client"\n' + homePage,
     );
-  },
-};
+  else fs.writeFileSync(path.join(root, "src", "App.tsx"), homePage);
+  fs.writeFileSync(path.join(root, "README.md"), readme);
+}

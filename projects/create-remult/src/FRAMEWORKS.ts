@@ -5,6 +5,7 @@ import { extractEnvironmentVariables } from "./extractEnvironmentVariables";
 import { createViteConfig } from "./createViteConfig";
 import { react } from "./frameworks/react";
 import type { DatabaseType } from "./DATABASES";
+import { nextJs } from "./frameworks/nextjs";
 const { cyan } = colors;
 type ColorFunc = (str: string | number) => string;
 export type Framework = {
@@ -86,41 +87,7 @@ export const FRAMEWORKS: Framework[] = [
       );
     },
   },
-  {
-    name: "nextjs",
-    display: "Next.js",
-    color: cyan,
-    envFile: ".env.local",
-    serverInfo: {
-      doesNotLikeJsFileSuffix: true,
-      remultServerFunction: "remultNextApp",
-      import: "remult-next",
-      path: "src/api.ts",
-      auth: {
-        template: "nextjs",
-        dependencies: { "next-auth": "^5.0.0-beta.21" },
-      },
-    },
-    writeFiles: ({ root }) => {
-      const packageJson = JSON.parse(
-        fs.readFileSync(path.join(root, "package.json"), "utf-8"),
-      );
-      if (packageJson.dependencies["knex"]) {
-        fs.writeFileSync(
-          path.join(root, "next.config.mjs"),
-          `/** @type {import('next').NextConfig} */
-const nextConfig = {
-  experimental: {
-    serverComponentsExternalPackages: ["knex"],
-  },
-};
-
-export default nextConfig;
-`,
-        );
-      }
-    },
-  },
+  nextJs,
   {
     name: "sveltekit",
     display: "SvelteKit",

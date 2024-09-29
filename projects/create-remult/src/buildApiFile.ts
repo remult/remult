@@ -29,7 +29,7 @@ export function buildApiFile(
   let serverArguments: string[] = [];
   if (auth) {
     imports.push({
-      from: "./auth" + (server.doesNotLikeJsFileSuffix ? "" : ".js"),
+      from: "./auth.js",
       imports: ["getUserFromRequest"],
     });
     imports.push({
@@ -63,6 +63,6 @@ export function buildApiFile(
       : ""
   }});`;
 
-  const apiContent = writeImports(imports) + api;
+  const apiContent = writeImports(imports, server) + api;
   return apiContent;
 }
