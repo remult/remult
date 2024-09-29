@@ -1493,7 +1493,7 @@ const result = await repo.batch(x=>({
     allowApiUpdate: (c) => getEntityRef(c).isNew(),
   })
   Description = ""*/
-//y2 - get backend methods to work when specifying types for date, and entities as poco's
+//p1 - get backend methods to work when specifying types for date, and entities as poco's - https://discord.com/channels/975754286384418847/976006081748807690/1289806378864476271
 //y2 - constraints (@JY)
 
 //p1 - when a tasks table exists in a different schema - we get many errors
@@ -1517,7 +1517,6 @@ const result = await repo.batch(x=>({
 //y2 - should we simply inherit from SqlDataProvider - and send the required parameter in the call to the base class - I think that new SqlDatabase(new PostgresDataProvider()) is a bilt combersome
 //y2 - from the crm-demo(https://crm-demo.up.railway.app/deals), after editing a deal: - _updateEntityBasedOnApi
 
-//y1 - Backend methods are transactions, it's not intuitive and maybe should be optional / opt in (https://github.com/remult/remult/issues/466)
 //y1 - how to run a transaction as a user
 
 //y2 - message for relation that is missing
