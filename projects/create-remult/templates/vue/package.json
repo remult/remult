@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev-node": "tsx watch --tsconfig tsconfig.server.json src/server",
+    "dev-node": "tsx watch --env-file=.env --tsconfig tsconfig.server.json src/server",
     "build": "vue-tsc -b && vite build && tsc -p tsconfig.server.json",
     "start": "node dist/server/",
     "preview": "vite preview"

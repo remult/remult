@@ -33,7 +33,7 @@ export const svelteKit: Framework = {
   ${writeImports(info.imports, args.server).split("\n").join("\n  ")}
 </script>
 
-<h1>Welcome to remult-project!</h1>
+<h1>Welcome to ${args.projectName}!</h1>
 
 <ul>
   ${info.li.map((l) => `<li>${l()}</li>`).join("\n  ")}

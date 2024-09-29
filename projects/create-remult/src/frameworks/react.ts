@@ -87,7 +87,7 @@ export function gatherInfo(
       from: "./demo/CheckServer" + (framework.componentFileSuffix ?? ""),
       imports: "CheckServer",
     });
-    li.push(() => "<CheckServer/>");
+    li.push(() => "<CheckServer />");
   }
   if (withAuth) {
     copyDir(path.join(templatesDir, "auth", frontendTemplate), path.join(root));
@@ -97,7 +97,7 @@ export function gatherInfo(
       from: "./demo/auth/CheckAuth" + (framework.componentFileSuffix ?? ""),
       imports: "CheckAuth",
     });
-    li.push(() => "<CheckAuth/>");
+    li.push(() => "<CheckAuth />");
   }
   if (admin) li.push(() => `Admin: <a href="/api/admin">Admin</a>`);
   if (crud) {
@@ -106,7 +106,7 @@ export function gatherInfo(
       from: "./demo/todo/Todo" + (framework.componentFileSuffix ?? ""),
       imports: "Todo",
     });
-    li.push(() => "<Todo/>");
+    li.push(() => "<Todo />");
   }
   components.push("remult");
   if (server.doesNotLikeJsFileSuffix) {

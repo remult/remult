@@ -7,6 +7,7 @@ import type { DatabaseType } from "./DATABASES";
 import { nextJs } from "./frameworks/nextjs";
 import { svelteKit } from "./frameworks/sveltekit";
 import { emptyDir } from "./empty-dir";
+import { vue } from "./frameworks/vue";
 const { cyan } = colors;
 type ColorFunc = (str: string | number) => string;
 export type Framework = {
@@ -73,22 +74,7 @@ export const FRAMEWORKS: Framework[] = [
       }
     },
   },
-  {
-    name: "vue",
-    display: "Vue",
-    canWorkWithVitePluginExpress: true,
-    color: cyan,
-    writeFiles: ({ withAuth, root }) => {
-      fs.writeFileSync(
-        path.join(root, "vite.config.ts"),
-        createViteConfig({
-          framework: "vue",
-          withAuth,
-          withPlugin: false,
-        }),
-      );
-    },
-  },
+  vue,
   nextJs,
   svelteKit,
   {
