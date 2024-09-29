@@ -1,7 +1,7 @@
 import { Component, type OnInit } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 
-import { Task } from "../../../../../../../remult-project/src/demo/todo/Task";
+import { Task } from "../../../demo/todo/Task.js";
 import { repo } from "remult";
 
 @Component({
