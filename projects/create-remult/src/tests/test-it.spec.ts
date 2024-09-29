@@ -78,6 +78,7 @@ describe("api file variations", async () => {
       "import { remultSveltekit } from "remult/remult-sveltekit";
       import { createKnexDataProvider } from "remult/remult-knex";
       import { MSSQL_SERVER, MSSQL_DATABASE, MSSQL_USER, MSSQL_PASSWORD, MSSQL_INSTANCE } from "$env/static/private";
+      import { building } from "$app/environment";
       import { getUserFromRequest } from "./auth";
       import { User } from "../demo/auth/User";
         
@@ -86,7 +87,7 @@ describe("api file variations", async () => {
         initApi: async () => {
           await User.createDemoUsers();
         },
-        dataProvider: createKnexDataProvider({
+        dataProvider: building ? undefined : createKnexDataProvider({
           client: "mssql",
           connection: {
             server: MSSQL_SERVER,
@@ -119,6 +120,7 @@ describe("api file variations", async () => {
       "import { remultSveltekit } from "remult/remult-sveltekit";
       import { MongoClient } from "mongodb";
       import { MONGO_URL, MONGO_DB } from "$env/static/private";
+      import { building } from "$app/environment";
       import { MongoDataProvider } from "remult/remult-mongo";
       import { getUserFromRequest } from "./auth";
       import { User } from "../demo/auth/User";
@@ -128,7 +130,7 @@ describe("api file variations", async () => {
         initApi: async () => {
           await User.createDemoUsers();
         },
-        dataProvider: async () => {
+        dataProvider: building ? undefined : async () => {
           const client = new MongoClient(MONGO_URL!)
           await client.connect()
           return new MongoDataProvider(client.db(MONGO_DB), client)

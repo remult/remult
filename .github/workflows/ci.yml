@@ -61,8 +61,7 @@ jobs:
 
           - template: sveltekit
             server: express
-          - template: sveltekit
-            database: mongodb
+
           - template: sveltekit
             server: fastify
           - template: sveltekit

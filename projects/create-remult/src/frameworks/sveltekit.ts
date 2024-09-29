@@ -58,7 +58,11 @@ export function adjustEnvVariablesForSveltekit(content: string) {
     2,
     0,
     `import { ${envVars.join(", ")} } from "$env/static/private";`,
+    `import { building } from "$app/environment";`,
   );
 
-  return lines.join("\n").replace(/process\.env\["(.*?)"\]/g, "$1");
+  return lines
+    .join("\n")
+    .replace(/process\.env\["(.*?)"\]/g, "$1")
+    .replace(/dataProvider: /g, "dataProvider: building ? undefined : ");
 }
