@@ -4,11 +4,11 @@ import fs from "fs";
 import { emptyDir } from "../empty-dir";
 import { setTimeout } from "timers/promises";
 import {
-  adjustEnvVariablesForSveltekit,
   FRAMEWORKS,
   Servers,
   vite_express_key,
   type ServerInfo,
+  type WriteFilesArgs,
 } from "../FRAMEWORKS";
 import { createViteConfig } from "../createViteConfig";
 import { DATABASES } from "../DATABASES";
@@ -17,48 +17,51 @@ import path from "path";
 import { react, writeAppTsxAndReadme } from "../frameworks/react";
 import { beforeEach } from "node:test";
 import { nextJs, removeJs } from "../frameworks/nextjs";
+import { adjustEnvVariablesForSveltekit } from "../frameworks/sveltekit";
 
 describe("api file variations", async () => {
   test("basic", () => {
-    expect(buildApiFile(DATABASES.json, Servers.express, false))
+    expect(buildApiFile(DATABASES.json, Servers.express, false, false, false))
       .toMatchInlineSnapshot(`
         "import { remultExpress } from "remult/remult-express";
-
+          
         export const api = remultExpress({});"
       `);
   });
   test("with db", () => {
-    expect(buildApiFile(DATABASES.postgres, Servers.express, false))
-      .toMatchInlineSnapshot(`
-        "import { remultExpress } from "remult/remult-express";
-        import { createPostgresDataProvider } from "remult/postgres";
-
-        export const api = remultExpress({
-          dataProvider: createPostgresDataProvider({
-            connectionString: process.env["DATABASE_URL"]    
-          }),
-        });"
-      `);
+    expect(
+      buildApiFile(DATABASES.postgres, Servers.express, false, false, false),
+    ).toMatchInlineSnapshot(`
+      "import { remultExpress } from "remult/remult-express";
+      import { createPostgresDataProvider } from "remult/postgres";
+        
+      export const api = remultExpress({
+        dataProvider: createPostgresDataProvider({
+          connectionString: process.env["DATABASE_URL"]    
+        }),
+      });"
+    `);
   });
   test("with db and auth", () => {
-    expect(buildApiFile(DATABASES.postgres, Servers.express, true))
-      .toMatchInlineSnapshot(`
-        "import { remultExpress } from "remult/remult-express";
-        import { createPostgresDataProvider } from "remult/postgres";
-        import { getUserFromRequest } from "./auth.js";
-        import { User } from "../demo/auth/User.js";
-
-        export const api = remultExpress({
-          getUser: getUserFromRequest,
-          initApi: async () => {
-            await User.createDemoUsers();
-          },
-          dataProvider: createPostgresDataProvider({
-            connectionString: process.env["DATABASE_URL"]    
-          }),
-          entities: [User],
-        });"
-      `);
+    expect(
+      buildApiFile(DATABASES.postgres, Servers.express, true, false, false),
+    ).toMatchInlineSnapshot(`
+      "import { remultExpress } from "remult/remult-express";
+      import { createPostgresDataProvider } from "remult/postgres";
+      import { getUserFromRequest } from "./auth.js";
+      import { User } from "../demo/auth/User.js";
+        
+      export const api = remultExpress({
+        getUser: getUserFromRequest,
+        initApi: async () => {
+          await User.createDemoUsers();
+        },
+        dataProvider: createPostgresDataProvider({
+          connectionString: process.env["DATABASE_URL"]    
+        }),
+        entities: [User],
+      });"
+    `);
   });
   test("with db and auth svelteKit", () => {
     expect(
@@ -67,6 +70,8 @@ describe("api file variations", async () => {
           DATABASES.mssql,
           FRAMEWORKS.find((x) => x.name === "sveltekit")?.serverInfo!,
           true,
+          false,
+          false,
         ),
       ),
     ).toMatchInlineSnapshot(`
@@ -74,8 +79,8 @@ describe("api file variations", async () => {
       import { createKnexDataProvider } from "remult/remult-knex";
       import { MSSQL_SERVER, MSSQL_DATABASE, MSSQL_USER, MSSQL_PASSWORD, MSSQL_INSTANCE } from "$env/static/private";
       import { getUserFromRequest } from "./auth";
-      import { User } from "../demo/auth/User.js";
-
+      import { User } from "../demo/auth/User";
+        
       export const api = remultSveltekit({
         getUser: getUserFromRequest,
         initApi: async () => {
@@ -106,6 +111,8 @@ describe("api file variations", async () => {
           DATABASES.mongodb,
           FRAMEWORKS.find((x) => x.name === "sveltekit")?.serverInfo!,
           true,
+          false,
+          false,
         ),
       ),
     ).toMatchInlineSnapshot(`
@@ -114,8 +121,8 @@ describe("api file variations", async () => {
       import { MONGO_URL, MONGO_DB } from "$env/static/private";
       import { MongoDataProvider } from "remult/remult-mongo";
       import { getUserFromRequest } from "./auth";
-      import { User } from "../demo/auth/User.js";
-
+      import { User } from "../demo/auth/User";
+        
       export const api = remultSveltekit({
         getUser: getUserFromRequest,
         initApi: async () => {
@@ -131,12 +138,12 @@ describe("api file variations", async () => {
     `);
   });
   test("with auth", () => {
-    expect(buildApiFile(DATABASES.json, Servers.express, true))
+    expect(buildApiFile(DATABASES.json, Servers.express, true, false, false))
       .toMatchInlineSnapshot(`
         "import { remultExpress } from "remult/remult-express";
         import { getUserFromRequest } from "./auth.js";
         import { User } from "../demo/auth/User.js";
-
+          
         export const api = remultExpress({
           getUser: getUserFromRequest,
           initApi: async () => {
@@ -241,9 +248,9 @@ describe("test vite config", async () => {
 describe("test-write-react stuff", async () => {
   const sourceDir = path.join("tmp", "src");
   const nextAppDir = path.join(sourceDir, "app");
-  const basicArgs = {
+  const basicArgs: WriteFilesArgs = {
     admin: false,
-    copyDir: (a, b) => {},
+    copyDir: (_: string, _1: string) => {},
     crud: true,
     db: DATABASES.json,
     framework: react,
@@ -252,6 +259,7 @@ describe("test-write-react stuff", async () => {
     server: Servers.express,
     templatesDir: "templates",
     withAuth: true,
+    distLocation: "dist",
   };
   beforeEach(() => {
     if (!fs.existsSync(sourceDir)) fs.mkdirSync(sourceDir);
@@ -262,8 +270,7 @@ describe("test-write-react stuff", async () => {
       .toMatchInlineSnapshot(`
         "import CheckServer from "./demo/CheckServer";
         import CheckAuth from "./demo/auth/CheckAuth";
-        import Todo from "./demo/todo/TodoComponent";
-
+        import Todo from "./demo/todo/Todo";
 
         export default function App() {
           return (
@@ -281,7 +288,7 @@ describe("test-write-react stuff", async () => {
         "
       `);
   });
-  test("next is ok", async () => {
+  test.sequential("next is ok", async () => {
     if (!fs.existsSync(nextAppDir)) fs.mkdirSync(nextAppDir);
     writeAppTsxAndReadme({
       ...basicArgs,
@@ -292,8 +299,7 @@ describe("test-write-react stuff", async () => {
       .toMatchInlineSnapshot(`
         ""use client"
         import CheckAuth from "../demo/auth/CheckAuth";
-        import Todo from "../demo/todo/TodoComponent";
-
+        import Todo from "../demo/todo/Todo";
 
         export default function Home() {
           return (
@@ -310,7 +316,7 @@ describe("test-write-react stuff", async () => {
         "
       `);
   });
-  test("remove .js", () => {
+  test.sequential("remove .js", () => {
     expect(
       removeJs(`import type { ProviderType } from "../../server/auth.js";
 import { Roles } from "./Roles.js";`),

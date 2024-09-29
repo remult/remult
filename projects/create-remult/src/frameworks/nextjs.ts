@@ -44,6 +44,16 @@ export default nextConfig;
       );
     }
     writeAppTsxAndReadme(args);
+    if (args.withAuth) {
+      const checkAuthPath = path.join(root, "src/demo/auth/CheckAuth.tsx");
+      fs.writeFileSync(
+        checkAuthPath,
+        fs
+          .readFileSync(checkAuthPath)
+          .toString()
+          .replace(/href="\/auth\/sign/g, 'href="/api/auth/sign'),
+      );
+    }
   },
 };
 

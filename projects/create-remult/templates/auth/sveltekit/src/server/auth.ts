@@ -1,18 +1,18 @@
-import { ExpressAuth, getSession, type ExpressAuthConfig } from "@auth/express";
-import type { ProviderType } from "@auth/express/providers";
-import Credentials from "@auth/express/providers/credentials";
-import GitHub from "@auth/express/providers/github";
-import { Request } from "express";
+import { SvelteKitAuth, type SvelteKitAuthConfig } from "@auth/sveltekit";
+import type { ProviderType } from "@auth/sveltekit/providers";
+import Credentials from "@auth/sveltekit/providers/credentials";
+import GitHub from "@auth/sveltekit/providers/github";
+import type { RequestEvent } from "@sveltejs/kit";
 import { repo, withRemult, type UserInfo } from "remult";
 import { verify, hash } from "@node-rs/argon2";
-import { User } from "../demo/auth/User.js";
-import { Roles } from "../demo/auth/Roles.js";
+import { User } from "../demo/auth/User";
+import { Roles } from "../demo/auth/Roles";
 
 // Assign the password hashing function to User's static method
 User.hashPassword = hash;
 
 // Configuration for Auth.js
-const authConfig: ExpressAuthConfig = {
+const authConfig: SvelteKitAuthConfig = {
   providers: [
     Credentials({
       credentials: {
@@ -84,16 +84,13 @@ const authConfig: ExpressAuthConfig = {
     },
   },
 };
-
-// Auth.js middleware for Express
-export const auth = ExpressAuth(authConfig);
+// Auth.js middleware for SvelteKit
+export const { handle } = SvelteKitAuth(authConfig);
 export { ProviderType }; // Export ProviderType for use in `User.providerType`
-
-// Helper function to get user information from a request
 export async function getUserFromRequest(
-  req: Request,
+  req: RequestEvent,
 ): Promise<UserInfo | undefined> {
-  const session = await getSession(req, authConfig); // Get the session from the request
+  const session = await req.locals.auth(); // Get the session from the request
   if (!session?.user?.id) return undefined; // If no session or user ID, return undefined
   const user = await repo(User).findId(session.user.id); // Find the user in the database by their session ID
   if (!user) return undefined; // If no user is found, return undefined

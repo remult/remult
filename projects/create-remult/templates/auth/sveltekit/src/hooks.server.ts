@@ -1,1 +1,1 @@
-export { handle } from "./auth";
+export { handle } from "./server/auth";

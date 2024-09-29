@@ -1,9 +1,8 @@
-import { repo, withRemult, type UserInfo } from "remult";
-import type { AuthConfig } from "@auth/core";
-import NextAuth from "next-auth";
+import NextAuth, { NextAuthConfig } from "next-auth";
 import type { ProviderType } from "next-auth/providers";
 import Credentials from "next-auth/providers/credentials";
 import GitHub from "next-auth/providers/github";
+import { repo, withRemult, type UserInfo } from "remult";
 import { verify, hash } from "@node-rs/argon2";
 import { User } from "../demo/auth/User";
 import { Roles } from "../demo/auth/Roles";
@@ -12,7 +11,7 @@ import { Roles } from "../demo/auth/Roles";
 User.hashPassword = hash;
 
 // Configuration for Auth.js
-const authConfig: AuthConfig = {
+const authConfig: NextAuthConfig = {
   providers: [
     Credentials({
       credentials: {

@@ -1,11 +1,11 @@
 import fs from "fs";
 import path from "path";
 import colors from "picocolors";
-import { extractEnvironmentVariables } from "./extractEnvironmentVariables";
 import { createViteConfig } from "./createViteConfig";
 import { react } from "./frameworks/react";
 import type { DatabaseType } from "./DATABASES";
 import { nextJs } from "./frameworks/nextjs";
+import { svelteKit } from "./frameworks/sveltekit";
 const { cyan } = colors;
 type ColorFunc = (str: string | number) => string;
 export type Framework = {
@@ -17,6 +17,7 @@ export type Framework = {
   envFile?: string;
   writeFiles?: (args: WriteFilesArgs) => void;
   canWorkWithVitePluginExpress?: boolean;
+  componentFileSuffix?: string;
 };
 
 export type ServerInfo = {
@@ -88,31 +89,7 @@ export const FRAMEWORKS: Framework[] = [
     },
   },
   nextJs,
-  {
-    name: "sveltekit",
-    display: "SvelteKit",
-    color: cyan,
-    serverInfo: {
-      remultServerFunction: "remultSveltekit",
-      import: "remult-sveltekit",
-      path: "src/api.ts",
-      doesNotLikeJsFileSuffix: true,
-      auth: {
-        template: "sveltekit",
-        dependencies: {
-          "@auth/sveltekit": "^1.5.0",
-        },
-      },
-      writeFiles: ({ root }) => {
-        const apiPath = path.join(root, "src/api.ts");
-
-        fs.writeFileSync(
-          apiPath,
-          adjustEnvVariablesForSveltekit(fs.readFileSync(apiPath, "utf-8")),
-        );
-      },
-    },
-  },
+  svelteKit,
   {
     name: "nuxt",
     display: "Nuxt",
@@ -271,17 +248,4 @@ app.use("/auth/*", auth);
 
 ` + serveExpress,
   );
-}
-
-export function adjustEnvVariablesForSveltekit(content: string) {
-  const envVars = extractEnvironmentVariables(content);
-  if (envVars.length == 0) return content;
-  let lines = content.split("\n");
-  lines.splice(
-    2,
-    0,
-    `import { ${envVars.join(", ")} } from "$env/static/private";`,
-  );
-
-  return lines.join("\n").replace(/process\.env\["(.*?)"\]/g, "$1");
 }

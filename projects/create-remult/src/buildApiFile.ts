@@ -53,7 +53,9 @@ export function buildApiFile(
     serverArguments.push(`entities: [${entities.join(", ")}]`);
   }
 
-  let api = `export const api = ${server.remultServerFunction}({${
+  let api = `
+  
+export const api = ${server.remultServerFunction}({${
     serverArguments.length > 0
       ? "\n  " +
         serverArguments
