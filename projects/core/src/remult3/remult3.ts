@@ -1363,36 +1363,10 @@ export type ClassFieldDecorator<entityType, valueType> = (
 export const flags = {
   error500RetryCount: 4,
 }
-/*p1 !!!!!! - fix tutorial with vite for esbuild flag:
-```
-  esbuild: {
-    tsconfigRaw: {
-      compilerOptions: {
-        experimentalDecorators: true,
-      },
-    },
-  },
-  p1 - set auth secret not to end with '='
-
-```
 
 /*p1 - create-remult discussion
 
-  p1 - ask to add a todo example
-     - admin question
-     - ask to add a user table + password hash
-     
-     
-  p1 - Landing page:
-     - p2 include the selections (react,vite, postgres,auth)
-     - include server is alive test (remind to run dev-node)
-     - include the authenticated user with links to sign in & sign out
-     - include link to admin
-     - include todo
-
   p1 - README:
-     - the selections
-     - how to run dev
      - which environment variables to set
 */
 //p1 - add aggregate to query

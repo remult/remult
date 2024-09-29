@@ -529,7 +529,5 @@ init().catch((e) => {
   process.exit(1);
 });
 
-//[ ] - add to angular the zone stuff with the live query
-//[ ] - fix auth-secret not to write stam.
 //[ ] - add sample.env
 //[ ] - add env variables to readme
