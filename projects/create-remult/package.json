@@ -41,7 +41,7 @@
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build",
     "test": "vitest --run",
-    "try": "npx create-remult remult-project -t vue -s express -d json --crud --overwrite yes --admin -a auth.js"
+    "try": "npx create-remult remult-project -t angular -s express -d json --crud --overwrite yes --admin -a auth.js"
   },
   "engines": {
     "node": "^18.0.0 || >=20.0.0"

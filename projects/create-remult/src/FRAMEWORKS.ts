@@ -8,6 +8,7 @@ import { nextJs } from "./frameworks/nextjs";
 import { svelteKit } from "./frameworks/sveltekit";
 import { emptyDir } from "./empty-dir";
 import { vue } from "./frameworks/vue";
+import { angular } from "./frameworks/angular";
 const { cyan } = colors;
 type ColorFunc = (str: string | number) => string;
 export type Framework = {
@@ -53,27 +54,7 @@ export type WriteFilesArgs = {
 
 export const FRAMEWORKS: Framework[] = [
   react,
-  {
-    name: "angular",
-    display: "Angular",
-    color: cyan,
-    distLocation: (name: string) => `dist/${name}/browser`,
-    writeFiles: ({ withAuth, root }) => {
-      if (withAuth) {
-        const proxy = JSON.parse(
-          fs.readFileSync(path.join(root, "proxy.conf.json"), "utf-8"),
-        );
-        proxy["/auth"] = {
-          target: "http://localhost:3002",
-          secure: false,
-        };
-        fs.writeFileSync(
-          path.join(root, "proxy.conf.json"),
-          JSON.stringify(proxy, null, 2),
-        );
-      }
-    },
-  },
+  angular,
   vue,
   nextJs,
   svelteKit,

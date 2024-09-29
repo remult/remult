@@ -1,0 +1,27 @@
+<strong> Todos </strong>
+<main>
+  <form (submit)="addTask()">
+    <input
+      placeholder="What needs to be done?"
+      [(ngModel)]="newTaskTitle"
+      name="newTaskTitle"
+    />
+    <button>Add</button>
+  </form>
+  @for ( task of tasks; track task.id) {
+  <div>
+    <input
+      type="checkbox"
+      [(ngModel)]="task.completed"
+      (change)="saveTask(task)"
+    />
+    {{ task.title }}
+    <button (click)="deleteTask(task)">Delete</button>
+  </div>
+  }
+</main>
+<footer>
+  <button (click)="setPage(-1)" [disabled]="page <= 1">prev</button>
+  <span>Page {{ page }}</span>
+  <button (click)="setPage(+1)">next</button>
+</footer>
