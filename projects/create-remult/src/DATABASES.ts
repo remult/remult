@@ -1,3 +1,5 @@
+import type { Import } from "./writeImports";
+
 export const DATABASES = {
   json: { display: "JSON" },
   postgres: {
@@ -74,8 +76,7 @@ export const DATABASES = {
       },
       {
         from: "better-sqlite3",
-        imports: ["Database"],
-        defaultImport: true,
+        imports: "Database",
       },
       {
         from: "remult/remult-better-sqlite3",
@@ -101,8 +102,7 @@ export const DATABASES = {
       },
       {
         from: "sqlite3",
-        imports: ["sqlite3"],
-        defaultImport: true,
+        imports: "sqlite3",
       },
       {
         from: "remult/remult-sqlite3",
@@ -145,7 +145,7 @@ export const DATABASES = {
 export const databaseTypes = Object.keys(
   DATABASES,
 ) as (keyof typeof DATABASES)[];
-type Import = { from: string; imports: string[]; defaultImport?: boolean };
+
 export type DatabaseType = {
   display: string;
   dependencies?: Record<string, string>;

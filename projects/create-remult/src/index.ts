@@ -52,6 +52,8 @@ Options:
   -d, --database NAME        use a specific database
   -s, --server NAME          use a specific server
   -a, --auth auth.js         use auth.js for authentication
+  --admin                    add admin page
+  --crud                     add crud demo
 
 Available templates:
 ${FRAMEWORKS.map((f) => `  ${f.name}`).join('\n')}
@@ -75,6 +77,8 @@ async function init() {
   const argDatabase = argv.database || argv.d;
   const argServer = argv.server || argv.s;
   const argAuth = argv.auth || argv.a;
+  const crudArg = argv.crud;
+  const adminArg = argv.admin;
 
   const help = argv.help;
   if (help) {
@@ -94,6 +98,8 @@ async function init() {
     | "server"
     | "database"
     | "auth"
+    | "admin"
+    | "crud"
   >;
 
   prompts.override({
@@ -101,6 +107,8 @@ async function init() {
     framework: FRAMEWORKS.find((x) => x.name == argTemplate),
     server: Servers[argServer as keyof typeof Servers],
     auth: argAuth === undefined ? undefined : argAuth === "auth.js",
+    crud: crudArg === undefined ? undefined : crudArg === true,
+    admin: adminArg === undefined ? undefined : adminArg === true,
   });
 
   try {
@@ -175,7 +183,7 @@ async function init() {
           choices: FRAMEWORKS.map((framework) => {
             const frameworkColor = framework.color;
             return {
-              title: frameworkColor(framework.display || framework.name),
+              title: reset(framework.display || framework.name),
               value: framework,
             };
           }),
@@ -246,6 +254,18 @@ async function init() {
             };
           }),
         },
+        {
+          type: "confirm",
+          name: "crud",
+          message: reset("Add CRUD demo?"),
+          initial: true,
+        },
+        {
+          type: "confirm",
+          name: "admin",
+          message: reset("Add admin page?"),
+          initial: true,
+        },
       ],
 
       {
@@ -260,7 +280,16 @@ async function init() {
   }
 
   // user choice associated with prompts
-  let { framework, overwrite, packageName, database, server, auth } = result;
+  let {
+    framework,
+    overwrite,
+    packageName,
+    database,
+    server,
+    auth,
+    crud,
+    admin,
+  } = result;
 
   const root = path.join(cwd, targetDir);
 
@@ -296,17 +325,10 @@ async function init() {
   };
 
   const files = fs.readdirSync(templateDir);
-  for (const file of files.filter(
-    (f) => f !== "package.json" && !f.includes("node_modules"),
-  )) {
+  for (const file of files.filter((f) => !f.includes("node_modules"))) {
     write(file);
   }
 
-  const pkg = JSON.parse(
-    fs.readFileSync(path.join(templateDir, `package.json`), "utf-8"),
-  );
-
-  pkg.name = packageName || getProjectName();
   if (auth === undefined) auth = argAuth === "auth.js";
 
   const db: DatabaseType =
@@ -334,23 +356,26 @@ async function init() {
         {} as Record<string, any>,
       );
   }
-  pkg.dependencies = sortObject({
-    ...pkg.dependencies,
-    ...db.dependencies,
-    ...safeServer.dependencies,
-    ...(auth ? safeServer.auth?.dependencies : {}),
+  editJsonFile("package.json", (pkg) => {
+    pkg.name = packageName || getProjectName();
+    pkg.dependencies = sortObject({
+      ...pkg.dependencies,
+      ...db.dependencies,
+      ...safeServer.dependencies,
+      ...(auth
+        ? { ...safeServer.auth?.dependencies, "@node-rs/argon2": "^1.8.3" }
+        : {}),
+    });
+    pkg.devDependencies = sortObject({
+      ...pkg.devDependencies,
+      ...db.devDependencies,
+      ...safeServer.devDependencies,
+    });
   });
-  pkg.devDependencies = sortObject({
-    ...pkg.devDependencies,
-    ...db.devDependencies,
-    ...safeServer.devDependencies,
-  });
-
-  write("package.json", JSON.stringify(pkg, null, 2) + "\n");
 
   fs.writeFileSync(
     path.join(root, safeServer.path || "src/server/api.ts"),
-    buildApiFile(db, safeServer, auth),
+    buildApiFile(db, safeServer, auth, admin, crud),
   );
   const writeFilesArgs = {
     root,
@@ -358,11 +383,22 @@ async function init() {
     distLocation: fw.distLocation?.(getProjectName()) || "dist",
     templatesDir,
     framework: fw,
+    admin: admin,
+    crud: crud,
+    server: safeServer,
+    copyDir,
+    db,
+    projectName: getProjectName(),
   };
   fw?.writeFiles?.(writeFilesArgs);
   safeServer.writeFiles?.(writeFilesArgs);
   if (auth) {
     copyDir(path.join(templatesDir, "auth", safeServer.auth?.template!), root);
+    copyDir(path.join(templatesDir, "auth", "shared"), root);
+  }
+  if (crud) {
+    //copyDir(path.join(templatesDir, "crud", safeServer.auth?.template!), root);
+    copyDir(path.join(templatesDir, "crud", "shared"), root);
   }
 
   const cdProjectName = path.relative(cwd, root);
@@ -429,6 +465,18 @@ async function init() {
       copy(srcFile, destFile);
     }
   }
+  function editFile(file: string, callback: (content: string) => string) {
+    const fn = path.join(root, file);
+    const content = fs.readFileSync(fn, "utf-8");
+    fs.writeFileSync(fn, callback(content), "utf-8");
+  }
+  function editJsonFile(file: string, callback: (content: any) => any) {
+    editFile(file, (content) => {
+      var j = JSON.parse(content);
+      callback(j);
+      return JSON.stringify(j, undefined, 2) + "\n";
+    });
+  }
 }
 
 function generateSecret() {
@@ -473,14 +521,12 @@ function pkgFromUserAgent(userAgent: string | undefined) {
   };
 }
 
-function editFile(file: string, callback: (content: string) => string) {
-  const content = fs.readFileSync(file, "utf-8");
-  fs.writeFileSync(file, callback(content), "utf-8");
-}
-
 init().catch((e) => {
   console.error(e);
   process.exit(1);
 });
 
 //[ ] - add to angular the zone stuff with the live query
+//[ ] - fix auth-secret not to write stam.
+//[ ] - add sample.env
+//[ ] - add env variables to readme

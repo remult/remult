@@ -1,32 +1,56 @@
 import type { DatabaseType } from "./DATABASES";
 import type { ServerInfo } from "./FRAMEWORKS";
+import { writeImports } from "./writeImports";
 
 export function buildApiFile(
   db: DatabaseType,
   server: ServerInfo,
   auth: boolean,
+  admin: boolean,
+  crud: boolean,
 ) {
   let imports: DatabaseType["imports"] = [];
   if (db.imports) {
     imports = imports.concat(db.imports);
   }
 
+  let entities: string[] = [];
   imports.unshift({
     from: "remult/" + server.import,
     imports: [server.remultServerFunction],
   });
+  if (crud) {
+    entities.push("Task");
+    imports.push({
+      from: "../demo/todo/Task.js",
+      imports: ["Task"],
+    });
+  }
+  let serverArguments: string[] = [];
   if (auth) {
     imports.push({
       from: "./auth" + (server.doesNotLikeJsFileSuffix ? "" : ".js"),
       imports: ["getUserFromRequest"],
     });
+    imports.push({
+      from: "../demo/auth/User.js",
+      imports: ["User"],
+    });
+    entities.push("User");
+    serverArguments.push(`getUser: getUserFromRequest`);
+    serverArguments.push(`initApi: async () => {
+  await User.createDemoUsers();
+}`);
   }
-  let serverArguments: string[] = [];
+
   if (db.code) {
     serverArguments.push(`dataProvider: ${db.code}`);
   }
-  if (auth) {
-    serverArguments.push(`getUser: getUserFromRequest`);
+  if (admin) {
+    serverArguments.push(`admin: true`);
+  }
+  if (entities.length > 0) {
+    serverArguments.push(`entities: [${entities.join(", ")}]`);
   }
 
   let api = `export const api = ${server.remultServerFunction}({${
@@ -39,15 +63,6 @@ export function buildApiFile(
       : ""
   }});`;
 
-  const apiContent =
-    imports
-      .map(({ from, imports, defaultImport }) =>
-        defaultImport
-          ? `import ${imports[0]} from "${from}";`
-          : `import { ${imports.join(", ")} } from "${from}";`,
-      )
-      .join("\n") +
-    "\n\n" +
-    api;
+  const apiContent = writeImports(imports) + api;
   return apiContent;
 }

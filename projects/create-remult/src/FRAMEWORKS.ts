@@ -2,12 +2,15 @@ import fs from "fs";
 import path from "path";
 import colors from "picocolors";
 import { extractEnvironmentVariables } from "./extractEnvironmentVariables";
+import { createViteConfig } from "./createViteConfig";
+import { react } from "./frameworks/react";
+import type { DatabaseType } from "./DATABASES";
 const { cyan } = colors;
 type ColorFunc = (str: string | number) => string;
 export type Framework = {
   name: string;
   display: string;
-  color: ColorFunc;
+  color?: ColorFunc;
   serverInfo?: ServerInfo;
   distLocation?: (name: string) => string;
   envFile?: string;
@@ -24,71 +27,28 @@ export type ServerInfo = {
   dependencies?: Record<string, string>;
   devDependencies?: Record<string, string>;
   requiresTwoTerminal?: boolean;
-  writeFiles?: (args: WriteFilesArgs & { framework: Framework }) => void;
+  writeFiles?: (args: WriteFilesArgs) => void;
   auth?: {
     dependencies?: Record<string, string>;
     template?: string;
   };
 };
-type WriteFilesArgs = {
+export type WriteFilesArgs = {
   root: string;
   distLocation: string;
   withAuth: boolean;
   templatesDir: string;
+  framework: Framework;
+  server: ServerInfo;
+  crud: boolean;
+  admin: boolean;
+  db: DatabaseType;
+  copyDir: (from: string, to: string) => void;
+  projectName: string;
 };
 
-export function createViteConfig({
-  framework,
-  withAuth,
-  withPlugin,
-}: {
-  framework: string;
-  withAuth: boolean;
-  withPlugin: boolean;
-}) {
-  return `import { defineConfig } from "vite";
-import ${framework} from "@vitejs/plugin-${framework}";
-${withPlugin ? `import express from 'vite3-plugin-express';\n` : ""}
-// https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [${framework}()${withPlugin ? ', express("src/server")' : ""}],${
-    !withPlugin
-      ? `
-  server: {
-    proxy: {
-      "/api": "http://localhost:3002",${
-        withAuth
-          ? `
-      "/auth": {
-        target: "http://localhost:3002",
-        changeOrigin: false,
-      },`
-          : ""
-      }
-    },
-  },`
-      : ""
-  }
-});`;
-}
-
 export const FRAMEWORKS: Framework[] = [
-  {
-    name: "react",
-    display: "React",
-    canWorkWithVitePluginExpress: true,
-    color: cyan,
-    writeFiles: ({ withAuth, root }) => {
-      fs.writeFileSync(
-        path.join(root, "vite.config.ts"),
-        createViteConfig({
-          framework: "react",
-          withAuth,
-          withPlugin: false,
-        }),
-      );
-    },
-  },
+  react,
   {
     name: "angular",
     display: "Angular",
@@ -191,6 +151,7 @@ export default nextConfig;
     display: "Nuxt",
     color: cyan,
     serverInfo: {
+      display: "Nuxt",
       remultServerFunction: "remultNuxt",
       import: "remult-nuxt",
       path: "server/api/[...remult].ts",

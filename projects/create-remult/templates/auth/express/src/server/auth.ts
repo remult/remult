@@ -1,35 +1,106 @@
-import type { UserInfo } from "remult";
+import { repo, withRemult, type UserInfo } from "remult";
 import { Request } from "express";
 import type { AuthConfig } from "@auth/core";
 import { ExpressAuth, getSession } from "@auth/express";
 import Credentials from "@auth/express/providers/credentials";
+import { verify, hash } from "@node-rs/argon2";
 import GitHub from "@auth/express/providers/github";
+import type { ProviderType } from "@auth/express/providers";
+import { User } from "../demo/auth/User";
+import { Roles } from "../demo/auth/Roles";
 
+// Assign the password hashing function to User's static method
+User.hashPassword = hash;
+
+// Configuration for Auth.js
 const authConfig: AuthConfig = {
   providers: [
     Credentials({
       credentials: {
-        name: {},
+        name: {
+          type: "text", // The input field for username
+          placeholder: "Try Jane (Jane123) or Steve(Steve123)", // Instructional placeholder for demo purposes
+        },
+        password: {
+          type: "password", // The input field for password
+        },
       },
-      authorize: async (credentials) => ({
-        id: credentials.name as string,
-        name: credentials.name as string,
-      }),
+      authorize: (credentials) =>
+        // This function runs when a user tries to sign in
+        withRemult(async () => {
+          // The withRemult function provides the current Remult context (e.g., repository, authenticated user, etc.)
+          // to any Remult-related operations inside this block. This ensures that `remult` functions such as
+          // repository queries or checking user permissions can be executed correctly within the request's context.
+          const user = await repo(User).findFirst({
+            // Find a user by their name and provider type (credentials-based auth)
+            name: credentials.name as string,
+            providerType: "credentials",
+          });
+
+          // If a matching user is found and the password is valid
+          if (
+            user &&
+            (await verify(user.password, credentials.password as string))
+          ) {
+            return {
+              id: user.id, // Return the user's ID as part of the session
+            };
+          }
+          return null; // If credentials are invalid, return null
+        }),
     }),
     GitHub,
   ],
   callbacks: {
-    session: ({ session, token }) => ({
-      ...session,
-      user: {
-        id: token.sub,
-        name: token.name,
-      },
-    }),
+    signIn: (arg) =>
+      withRemult(async () => {
+        // This callback runs after sign-in
+        if (arg.account?.type === "credentials") return true; // If credentials-based login, allow sign-in
+        let user = await repo(User).findFirst({
+          // Find the user by OAuth provider and account ID
+          provider: arg.account?.provider,
+          providerType: arg.account?.type,
+          providerAccountId: arg.account?.providerAccountId,
+        });
+        if (!user) {
+          // If no user exists with this OAuth account, create one
+          user = await repo(User).insert({
+            name: arg.profile?.name || "", // Use the OAuth profile name
+            providerType: arg.account?.type, // Store the type of OAuth provider (e.g., GitHub)
+            provider: arg.account?.provider || "",
+            providerAccountId: arg.account?.providerAccountId || "",
+          });
+        }
+        arg.user!.id = user.id; // Set the user's ID in the session
+        return true;
+      }),
+    session: ({ session, token }) => {
+      // Add the user's ID to the session object
+      return {
+        ...session,
+        user: {
+          id: token.sub, // Use the token's subject (user ID)
+        },
+      };
+    },
   },
 };
 
+// Auth.js middleware for Express
 export const auth = ExpressAuth(authConfig);
-export async function getUserFromRequest(req: Request) {
-  return (await getSession(req, authConfig))?.user as UserInfo;
+export { ProviderType }; // Export ProviderType for use in `User.providerType`
+
+// Helper function to get user information from a request
+export async function getUserFromRequest(
+  req: Request,
+): Promise<UserInfo | undefined> {
+  const session = await getSession(req, authConfig); // Get the session from the request
+  if (!session?.user?.id) return undefined; // If no session or user ID, return undefined
+  const user = await repo(User).findId(session.user.id); // Find the user in the database by their session ID
+  if (!user) return undefined; // If no user is found, return undefined
+  return {
+    id: user.id,
+    name: user.name,
+    roles: user.admin ? [Roles.admin] : [], // Return roles based on admin status
+  };
 }

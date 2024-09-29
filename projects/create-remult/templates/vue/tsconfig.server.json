@@ -7,5 +7,5 @@
     "rootDir": "src",
     "module": "nodenext"
   },
-  "include": ["src/server/**/*", "src/shared/**/*"]
+  "include": ["src/**/*.ts"]
 }

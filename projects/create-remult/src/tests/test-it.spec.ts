@@ -5,12 +5,12 @@ import { emptyDir } from "../empty-dir";
 import { setTimeout } from "timers/promises";
 import {
   adjustEnvVariablesForSveltekit,
-  createViteConfig,
   FRAMEWORKS,
   Servers,
   vite_express_key,
   type ServerInfo,
 } from "../FRAMEWORKS";
+import { createViteConfig } from "../createViteConfig";
 import { DATABASES } from "../DATABASES";
 import { buildApiFile } from "../buildApiFile";
 import path from "path";
