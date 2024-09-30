@@ -210,7 +210,8 @@ async function init() {
               )
               .map((server) => ({
                 title:
-                  Servers[server as keyof typeof Servers].display || server,
+                  Servers[server as keyof typeof Servers].componentInfo
+                    ?.display || server,
                 value: Servers[server as keyof typeof Servers],
               })),
         },
