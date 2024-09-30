@@ -1,7 +1,8 @@
 import type { Framework } from "../FRAMEWORKS";
 import fs from "fs";
 import path from "path";
-import { createReadmeFile, gatherInfo } from "./react";
+import { prepareInfoReadmeAndHomepage } from "../utils/prepareInfoReadmeAndHomepage";
+import { createReadmeFile } from "../utils/createReadmeFile";
 
 export const angular: Framework = {
   name: "angular",
@@ -22,7 +23,10 @@ export const angular: Framework = {
       );
     }
 
-    var info = gatherInfo({ ...args, frontendTemplate: "angular" });
+    var info = prepareInfoReadmeAndHomepage({
+      ...args,
+      frontendTemplate: "angular",
+    });
     fs.writeFileSync(
       path.join(args.root, "src", "app", "app.component.ts"),
       `import { Component, NgZone } from '@angular/core';

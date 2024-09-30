@@ -1,13 +1,15 @@
 import type { Framework } from "../FRAMEWORKS";
 import fs from "fs";
 import path from "path";
-import { extractEnvironmentVariables } from "../extractEnvironmentVariables";
-import { createReadmeFile, gatherInfo } from "./react";
-import { writeImports } from "../writeImports";
+import { extractEnvironmentVariables } from "../utils/extractEnvironmentVariables";
+import { writeImports } from "../utils/writeImports";
+import { prepareInfoReadmeAndHomepage } from "../utils/prepareInfoReadmeAndHomepage";
+import { createReadmeFile } from "../utils/createReadmeFile";
 
 export const svelteKit: Framework = {
   name: "sveltekit",
   display: "SvelteKit",
+  url: "https://kit.svelte.dev/",
   componentFileSuffix: ".svelte",
   serverInfo: {
     remultServerFunction: "remultSveltekit",
@@ -26,7 +28,10 @@ export const svelteKit: Framework = {
         apiPath,
         adjustEnvVariablesForSveltekit(fs.readFileSync(apiPath, "utf-8")),
       );
-      var info = gatherInfo({ ...args, frontendTemplate: "sveltekit" });
+      var info = prepareInfoReadmeAndHomepage({
+        ...args,
+        frontendTemplate: "sveltekit",
+      });
       fs.writeFileSync(
         path.join(args.root, "src", "routes", "+page.svelte"),
         `<script>
@@ -45,6 +50,7 @@ export const svelteKit: Framework = {
         info.components,
         args.server,
         args.root,
+        args.envVariables,
       );
     },
   },

@@ -1,7 +1,7 @@
 import { expect, test, describe } from "vitest";
 import spawn, { sync } from "cross-spawn";
 import fs from "fs";
-import { emptyDir } from "../empty-dir";
+import { emptyDir } from "../utils/empty-dir";
 import { setTimeout } from "timers/promises";
 import {
   FRAMEWORKS,
@@ -10,14 +10,15 @@ import {
   type ServerInfo,
   type WriteFilesArgs,
 } from "../FRAMEWORKS";
-import { createViteConfig } from "../createViteConfig";
+import { createViteConfig } from "../utils/createViteConfig";
 import { DATABASES } from "../DATABASES";
-import { buildApiFile } from "../buildApiFile";
+
 import path from "path";
 import { react, writeAppTsxAndReadme } from "../frameworks/react";
-import { beforeEach } from "node:test";
+
 import { nextJs, removeJs } from "../frameworks/nextjs";
 import { adjustEnvVariablesForSveltekit } from "../frameworks/sveltekit";
+import { buildApiFile } from "../utils/buildApiFile";
 
 describe("api file variations", async () => {
   test("basic", () => {
@@ -262,6 +263,7 @@ describe.sequential("test-write-react stuff", async () => {
     templatesDir: "templates",
     withAuth: true,
     distLocation: "dist",
+    envVariables: [],
   };
 
   test.sequential("react is ok", async () => {
@@ -278,10 +280,10 @@ describe.sequential("test-write-react stuff", async () => {
             <>
               Welcome to haha
               <ul>
-                <li>React, Vite, Express, JSON, auth.js, remult</li>
-                <li><CheckServer/></li>
-                <li><CheckAuth/></li>
-                <li><Todo/></li>
+                <li><a href="https://reactjs.org/">React</a>, <a href="https://vitejs.dev/">Vite</a>, <a href="https://expressjs.com/">Express</a>, <a href="">JSON Files</a>, <a href="https://authjs.dev">auth.js</a>, <a href="https://remult.dev">remult</a></li>
+                <li><CheckServer /></li>
+                <li><CheckAuth /></li>
+                <li><Todo /></li>
               </ul>
             </>
           );
@@ -308,9 +310,9 @@ describe.sequential("test-write-react stuff", async () => {
             <>
               Welcome to haha
               <ul>
-                <li>Next.js, JSON, auth.js, remult</li>
-                <li><CheckAuth/></li>
-                <li><Todo/></li>
+                <li><a href="https://nextjs.org/">Next.js</a>, <a href="">JSON Files</a>, <a href="https://authjs.dev">auth.js</a>, <a href="https://remult.dev">remult</a></li>
+                <li><CheckAuth /></li>
+                <li><Todo /></li>
               </ul>
             </>
           );

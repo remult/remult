@@ -1,13 +1,15 @@
 import type { Framework } from "../FRAMEWORKS";
 import fs from "fs";
 import path from "path";
-import { createViteConfig } from "../createViteConfig";
-import { createReadmeFile, gatherInfo } from "./react";
-import { writeImports } from "../writeImports";
+import { createViteConfig } from "../utils/createViteConfig";
+import { writeImports } from "../utils/writeImports";
+import { prepareInfoReadmeAndHomepage } from "../utils/prepareInfoReadmeAndHomepage";
+import { createReadmeFile } from "../utils/createReadmeFile";
 
 export const vue: Framework = {
   name: "vue",
   display: "Vue",
+  url: "https://v3.vuejs.org/",
   canWorkWithVitePluginExpress: true,
   componentFileSuffix: ".vue",
   writeFiles: (args) => {
@@ -20,7 +22,10 @@ export const vue: Framework = {
         withPlugin: false,
       }),
     );
-    var info = gatherInfo({ ...args, frontendTemplate: "vue" });
+    var info = prepareInfoReadmeAndHomepage({
+      ...args,
+      frontendTemplate: "vue",
+    });
     fs.writeFileSync(
       path.join(args.root, "src", "App.vue"),
       `<script setup lang="ts">
@@ -36,6 +41,12 @@ ${writeImports(info.imports, args.server)}
 </template>
 `,
     );
-    createReadmeFile(args.projectName, info.components, args.server, args.root);
+    createReadmeFile(
+      args.projectName,
+      info.components,
+      args.server,
+      args.root,
+      args.envVariables,
+    );
   },
 };

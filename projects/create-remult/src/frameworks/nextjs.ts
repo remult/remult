@@ -6,6 +6,7 @@ import { writeAppTsxAndReadme } from "./react";
 export const nextJs: Framework = {
   name: "nextjs",
   display: "Next.js",
+  url: "https://nextjs.org/",
 
   envFile: ".env.local",
   serverInfo: {

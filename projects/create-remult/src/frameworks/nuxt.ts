@@ -1,8 +1,9 @@
 import type { Framework } from "../FRAMEWORKS";
 import fs from "fs";
 import path from "path";
-import { createReadmeFile, gatherInfo } from "./react";
-import { writeImports } from "../writeImports";
+import { writeImports } from "../utils/writeImports";
+import { prepareInfoReadmeAndHomepage } from "../utils/prepareInfoReadmeAndHomepage";
+import { createReadmeFile } from "../utils/createReadmeFile";
 
 export const nuxt: Framework = {
   name: "nuxt",
@@ -23,7 +24,10 @@ export const nuxt: Framework = {
           .replace(/"\.\.\/demo/g, '"../../demo') +
           "\n\nexport default defineEventHandler(api);",
       );
-      var info = gatherInfo({ ...args, frontendTemplate: "vue" });
+      var info = prepareInfoReadmeAndHomepage({
+        ...args,
+        frontendTemplate: "vue",
+      });
       fs.writeFileSync(
         path.join(args.root, "src", "App.vue"),
         `<script setup lang="ts">
@@ -44,6 +48,7 @@ ${writeImports(info.imports, args.server)}
         info.components,
         args.server,
         args.root,
+        args.envVariables,
       );
 
       args.copyDir(path.join(path.join(args.root, "src")), args.root);

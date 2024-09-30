@@ -1,9 +1,14 @@
-import type { Import } from "./writeImports";
+import type { ComponentInfo } from "./utils/prepareInfoReadmeAndHomepage";
+import type { Import } from "./utils/writeImports";
 
 export const DATABASES = {
-  json: { display: "JSON" },
+  json: {
+    display: "JSON Files",
+    url: "https://remult.dev/docs/quickstart#connecting-a-database",
+  },
   postgres: {
     display: "Postgres",
+    url: "https://www.postgresql.org/",
     dependencies: {
       pg: "^8.3.0",
     },
@@ -18,6 +23,7 @@ export const DATABASES = {
 })`,
   },
   mysql: {
+    url: "https://www.mysql.com/",
     display: "MySQL",
     dependencies: {
       knex: "^3.1.0",
@@ -41,6 +47,7 @@ export const DATABASES = {
 })`,
   },
   mongodb: {
+    url: "https://www.mongodb.com/",
     display: "MongoDB",
     dependencies: {
       mongodb: "^4.17.1",
@@ -63,6 +70,7 @@ export const DATABASES = {
   },
   bettersqlite3: {
     display: "Better SQLite3",
+    url: "https://www.npmjs.com/package/better-sqlite3",
     dependencies: {
       "better-sqlite3": "^9.1.1",
     },
@@ -89,6 +97,7 @@ export const DATABASES = {
   },
   sqlite3: {
     display: "SQLite3",
+    url: "https://www.npmjs.com/package/sqlite3",
     dependencies: {
       sqlite3: "^5.1.7",
     },
@@ -115,6 +124,7 @@ export const DATABASES = {
   },
   mssql: {
     display: "MSSQL",
+    url: "https://www.microsoft.com/en-us/sql-server",
     dependencies: {
       tedious: "^18.2.0",
       knex: "^3.1.0",
@@ -147,9 +157,8 @@ export const databaseTypes = Object.keys(
 ) as (keyof typeof DATABASES)[];
 
 export type DatabaseType = {
-  display: string;
   dependencies?: Record<string, string>;
   devDependencies?: Record<string, string>;
   imports?: Import[];
   code?: string;
-};
+} & ComponentInfo;

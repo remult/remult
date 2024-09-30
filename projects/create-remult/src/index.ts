@@ -1,11 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import spawn from "cross-spawn";
+
 import minimist from "minimist";
 import prompts from "prompts";
 import colors from "picocolors";
-import { emptyDir } from "./empty-dir";
+import { emptyDir } from "./utils/empty-dir";
 import {
   FRAMEWORKS,
   Servers,
@@ -14,8 +14,8 @@ import {
   type ServerInfo,
 } from "./FRAMEWORKS";
 import { DATABASES, databaseTypes, type DatabaseType } from "./DATABASES";
-import { buildApiFile } from "./buildApiFile";
-import { extractEnvironmentVariables } from "./extractEnvironmentVariables";
+import { buildApiFile } from "./utils/buildApiFile";
+import { extractEnvironmentVariables } from "./utils/extractEnvironmentVariables";
 import { removeJs } from "./frameworks/nextjs";
 
 const {
@@ -244,7 +244,7 @@ async function init() {
               ? null
               : "select",
           name: "database",
-          message: reset("Database type:"),
+          message: reset("Select Database:"),
           initial: 0,
           validate: (dir) =>
             databaseTypes.includes(dir) || "Invalid database type",
@@ -258,13 +258,13 @@ async function init() {
         {
           type: "confirm",
           name: "crud",
-          message: reset("Add CRUD demo?"),
+          message: reset("Add CRUD demo (task)?"),
           initial: true,
         },
         {
           type: "confirm",
           name: "admin",
-          message: reset("Add admin page?"),
+          message: reset("Enable `/api/admin` URL?"),
           initial: true,
         },
       ],
@@ -381,6 +381,30 @@ async function init() {
     apiFileName,
     buildApiFile(db, safeServer, auth, admin, crud),
   );
+  let envVariables = extractEnvironmentVariables(db.code ?? "");
+
+  // Output the array of environment variables
+  const envFile = fw.envFile || ".env";
+  if (envVariables.length > 0) {
+    console.log(
+      `  Set the following environment variables in the '${envFile}' file:`,
+    );
+    envVariables.forEach((env) => {
+      console.log(`    ${env}`);
+    });
+  }
+  if (auth) {
+    envVariables.push(`AUTH_SECRET="${generateSecret()}"`);
+  }
+  fs.writeFileSync(
+    path.join(root, envFile),
+    envVariables.map((x) => x + (x.includes("=") ? "" : "=")).join("\n"),
+  );
+  envVariables = envVariables.map((x) => x.split("=")[0]);
+  fs.writeFileSync(
+    path.join(root, "sample" + envFile),
+    envVariables.map((x) => x + "=").join("\n"),
+  );
   const writeFilesArgs = {
     root,
     withAuth: auth,
@@ -393,6 +417,7 @@ async function init() {
     copyDir,
     db,
     projectName: getProjectName(),
+    envVariables,
   };
   if (auth) {
     copyDir(path.join(templatesDir, "auth", safeServer.auth?.template!), root);
@@ -416,26 +441,6 @@ async function init() {
   }
 
   console.log(`  ${pkgManager} install`);
-
-  const envVariables = extractEnvironmentVariables(db.code ?? "");
-
-  // Output the array of environment variables
-  const envFile = fw.envFile || ".env";
-  if (envVariables.length > 0) {
-    console.log(
-      `  Set the following environment variables in the '${envFile}' file:`,
-    );
-    envVariables.forEach((env) => {
-      console.log(`    ${env}`);
-    });
-  }
-  if (auth) {
-    envVariables.push(`AUTH_SECRET="${generateSecret()}"`);
-  }
-  fs.writeFileSync(
-    path.join(root, envFile),
-    envVariables.map((x) => x + (x.includes("=") ? "" : "=")).join("\n"),
-  );
 
   if (safeServer.requiresTwoTerminal) {
     console.log(`  Open two terminals:
@@ -528,6 +533,3 @@ init().catch((e) => {
   console.error(e);
   process.exit(1);
 });
-
-//[ ] - add sample.env
-//[ ] - add env variables to readme

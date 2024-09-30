@@ -1,20 +1,20 @@
 import fs from "fs";
 import path from "path";
-import colors from "picocolors";
-import { createViteConfig } from "./createViteConfig";
+import { createViteConfig } from "./utils/createViteConfig";
 import { react } from "./frameworks/react";
 import type { DatabaseType } from "./DATABASES";
 import { nextJs } from "./frameworks/nextjs";
 import { svelteKit } from "./frameworks/sveltekit";
-import { emptyDir } from "./empty-dir";
 import { vue } from "./frameworks/vue";
 import { angular } from "./frameworks/angular";
-import { nuxt } from "./frameworks/nux";
-const { cyan } = colors;
+import { nuxt } from "./frameworks/nuxt";
+import type { ComponentInfo } from "./utils/prepareInfoReadmeAndHomepage";
+
 type ColorFunc = (str: string | number) => string;
 export type Framework = {
   name: string;
   display: string;
+  url: string;
   color?: ColorFunc;
   serverInfo?: ServerInfo;
   distLocation?: (name: string) => string;
@@ -26,7 +26,8 @@ export type Framework = {
 
 export type ServerInfo = {
   doesNotLikeJsFileSuffix?: boolean;
-  display?: string;
+  componentInfo?: ComponentInfo;
+
   remultServerFunction: string;
   import: string;
   path?: string;
@@ -51,6 +52,7 @@ export type WriteFilesArgs = {
   db: DatabaseType;
   copyDir: (from: string, to: string) => void;
   projectName: string;
+  envVariables: string[];
 };
 
 export const FRAMEWORKS: Framework[] = [
@@ -65,7 +67,7 @@ export const FRAMEWORKS: Framework[] = [
 export const vite_express_key = "express_vite";
 export const Servers = {
   express: {
-    display: "Express",
+    componentInfo: { display: "Express", url: "https://expressjs.com/" },
     import: "remult-express",
     remultServerFunction: "remultExpress",
     requiresTwoTerminal: true,
@@ -87,7 +89,7 @@ export const Servers = {
     },
   },
   fastify: {
-    display: "Fastify",
+    componentInfo: { display: "Fastify", url: "https://www.fastify.io/" },
     import: "remult-fastify",
     remultServerFunction: "remultFastify",
     requiresTwoTerminal: true,
@@ -129,7 +131,10 @@ app.listen({ port: Number(process.env["PORT"] || 3002) }, () =>
     },
   },
   [vite_express_key]: {
-    display: "Express vite plugin (experimental)",
+    componentInfo: {
+      display: "Express vite plugin (experimental)",
+      url: "https://expressjs.com/",
+    },
     import: "remult-express",
     remultServerFunction: "remultExpress",
     dependencies: {

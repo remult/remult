@@ -1364,11 +1364,6 @@ export const flags = {
   error500RetryCount: 4,
 }
 
-/*p1 - create-remult discussion
-
-  p1 - README:
-     - which environment variables to set
-*/
 //p1 - add aggregate to query
 //p1 - add parameter all to deleteMany, and updateMany
 //p1  filter.apply ApiPreFilter
