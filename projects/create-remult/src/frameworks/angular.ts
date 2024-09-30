@@ -98,6 +98,12 @@ ${info.li
 </ul>
 `,
     );
-    createReadmeFile(args.projectName, info.components, args.server, args.root);
+    createReadmeFile(
+      args.projectName,
+      info.components,
+      args.server,
+      args.root,
+      args.envVariables,
+    );
   },
 };
