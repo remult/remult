@@ -87,7 +87,7 @@ const authConfig: ExpressAuthConfig = {
 
 // Auth.js middleware for Express
 export const auth = ExpressAuth(authConfig);
-export { ProviderType }; // Export ProviderType for use in `User.providerType`
+export type { ProviderType }; // Export ProviderType for use in `User.providerType`
 
 // Helper function to get user information from a request
 export async function getUserFromRequest(

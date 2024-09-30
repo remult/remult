@@ -86,7 +86,7 @@ const authConfig: SvelteKitAuthConfig = {
 };
 // Auth.js middleware for SvelteKit
 export const { handle } = SvelteKitAuth(authConfig);
-export { ProviderType }; // Export ProviderType for use in `User.providerType`
+export type { ProviderType }; // Export ProviderType for use in `User.providerType`
 export async function getUserFromRequest(
   req: RequestEvent,
 ): Promise<UserInfo | undefined> {
