@@ -64,7 +64,12 @@ export class God {
 
     const item = await t.repo.findId(value)
 
-    if (!item) return 'not found - ' + value
+    if (!item) {
+      if (value !== undefined) {
+        return 'not found - ' + value
+      }
+      return `-`
+    }
 
     if (!item[relations.captionField])
       return `Can't display ${relations.captionField} - ${value}`
