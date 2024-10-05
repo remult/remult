@@ -53,7 +53,12 @@
         {item.caption ?? "Can't display"}
       </span>
     </button>
-  {/each}
+    {/each}
+    <button on:click={() => handleSelect(null)} style="color: rgb(var(--color-black) / 0.5); margin-top: 1rem;">
+      <span style="width: 100%; text-align: left;">
+        - Unset -
+      </span>
+    </button>
 </div>
 
 <!-- </dialog> -->
