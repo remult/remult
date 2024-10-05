@@ -139,7 +139,7 @@ Our full stack starter project is almost ready. Let's complete these final confi
 
 #### Enable TypeScript decorators in Vite
 
-Add the following entry to the `compilerOptions` section of the `tsconfig.app.json` file to enable the use of decorators in the React app.
+Add the following entry to the `defineConfig` section of the `vite.config.ts` file to enable the use of decorators in the React app.
 
 ```ts{6-12}
 // vite.config.ts
