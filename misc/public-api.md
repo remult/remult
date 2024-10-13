@@ -2545,6 +2545,40 @@ export interface Repository<entityType> {
    * }
    * */
   query(options?: QueryOptions<entityType>): QueryResult<entityType>
+  /**
+   * Fetches data from the repository, allowing for both standard querying and aggregation in a single request.
+   *
+   * This method supports pagination and aggregation, returning a `QueryResultWithAggregates` object that includes both
+   * the queried items for the current page and the results of the aggregation.
+   *
+   * @template entityType The type of the entity being queried.
+   * @template sumFields The fields to sum, provided as an array of numeric keys from the entity type.
+   * @template averageFields The fields to average, provided as an array of numeric keys from the entity type.
+   * @template minFields The fields to find the minimum value, provided as an array of keys from the entity type.
+   * @template maxFields The fields to find the maximum value, provided as an array of keys from the entity type.
+   * @template distinctCountFields The fields to count distinct values, provided as an array of keys from the entity type.
+   *
+   * @param {QueryOptionsWithAggregates<entityType, sumFields, averageFields, minFields, maxFields, distinctCountFields>} options - The options for the query and aggregation.
+   * @returns {QueryResultWithAggregates<entityType, sumFields, averageFields, minFields, maxFields, distinctCountFields>} The result of the query, including paginated items and aggregation results.
+   *
+   * @example
+   * // Performing a query with aggregation:
+   * const result = await repo.query({
+   *   where: { completed: false },
+   *   pageSize: 50,
+   *   aggregates: {
+   *     sum: ['salary'],
+   *     average: ['age'],
+   *   }
+   * });
+   *
+   * // Accessing the items from the first page
+   * console.table(result.items);
+   *
+   * // Accessing the aggregation results
+   * console.log(result.aggregates.salary.sum); // Total salary sum
+   * console.log(result.aggregates.age.average); // Average age
+   */
   query<
     sumFields extends NumericKeys<entityType>[] | undefined = undefined,
     averageFields extends NumericKeys<entityType>[] | undefined = undefined,
