@@ -25,6 +25,23 @@ export const remultLocalStorage = new Remult(new JsonDataProvider(localStorage))
 
 This approach is straightforward and suitable for small datasets that need to persist across sessions or page reloads.
 
+## JSON Storage in IndexedDB
+
+For more complex offline storage needs, such as larger datasets and structured queries, `IndexedDB` provides a robust solution. Using Remult’s `JsonEntityIndexedDbStorage`, you can store entities in `IndexedDB`, which is supported across all major browsers. This allows for efficient offline data management while offering support for larger volumes of data compared to `localStorage` or `sessionStorage`.
+
+```typescript
+import { JsonDataProvider } from 'remult'
+import { JsonEntityIndexedDbStorage } from 'remult'
+
+// Initialize the JsonEntityIndexedDbStorage
+const db = new JsonDataProvider(new JsonEntityIndexedDbStorage())
+
+// Use the local IndexedDB to store and fetch tasks
+console.table(await repo(Task, db).find())
+```
+
+In this example, `JsonEntityIndexedDbStorage` is used to persist the data to `IndexedDB`. This method is ideal for applications with large data sets or those requiring more complex interactions with the stored data in offline mode.
+
 ## JSON Storage in OPFS (Origin Private File System)
 
 Origin Private File System (OPFS) is a modern browser feature supported by Chrome and Safari, allowing for more structured and efficient data storage in the frontend.

@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.27.20] TBD
+
+- Added Origin IndexedDb Storage to store entities in the front end
+  ```ts
+  const db = new JsonDataProvider(new JsonEntityIndexedDbStorage())
+  console.table(await repo(Task, db).find())
+  ```
+
 ## [0.27.19] 2024-09-26
 
 - Fixed issue with stackblitz async_hook replacer

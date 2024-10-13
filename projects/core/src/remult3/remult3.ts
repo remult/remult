@@ -1365,6 +1365,7 @@ export const flags = {
 }
 
 //p1 - add aggregate to query
+//p1 - consider upsert (where,set)
 //p1 - add parameter all to deleteMany, and updateMany
 //p1  filter.apply ApiPreFilter
 //p2 - signIn: (arg) =>withRemult(async () => { - consider if there's a generic way of doing signIn:withRemult(arg=>{})
@@ -1375,9 +1376,9 @@ export const flags = {
   //p1 - add example for nanoid
   //p1 - explain the benefits of changing the default provider for testing in docs.
 */
-//p1 - consider upsert (where,set)
 
 //p2 - add some kind of options handler that will help with translation etc... like in hagai - something that runs at the stage where options are being built
+//p2 - enforce api rules in some backend scenarios - https://discord.com/channels/975754286384418847/1292424895338119239
 
 /*y1 - https://github.com/remult/remult/discussions/438
      - https://github.com/remult/remult/blob/query-argumets/projects/tests/dbs/test-sql-database.spec.ts#L100-L128

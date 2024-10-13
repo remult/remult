@@ -6,7 +6,7 @@ import { JsonDataProvider } from '../../core/src//data-providers/json-data-provi
 
 import { DataApi } from '../../core/src//data-api'
 
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, test } from 'vitest'
 import { tasks } from './tasks'
 import { entity } from './dynamic-classes'
 import { Fields } from '../../core'
@@ -53,6 +53,37 @@ describe('test tasks', () => {
     })
     d.test()
   })
+})
+test('test raw json', async () => {
+  let storage: any = null
+  let db = new JsonDataProvider({
+    getItem: () => storage,
+    setItem: (x, y) => {
+      storage = y
+    },
+    supportsRawJson: true,
+  })
+  var r = new Remult(db)
+  var c = r.repo(tasks)
+  await c.insert({ id: 1, completed: true })
+  expect(storage).toMatchInlineSnapshot(`
+    [
+      {
+        "completed": true,
+        "id": 1,
+        "name": "",
+      },
+    ]
+  `)
+  expect(await c.find()).toMatchInlineSnapshot(`
+    [
+      tasks {
+        "completed": true,
+        "id": 1,
+        "name": "",
+      },
+    ]
+  `)
 })
 
 it('test data api response fails on wrong answer', () => {

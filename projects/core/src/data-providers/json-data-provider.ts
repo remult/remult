@@ -9,8 +9,10 @@ import type { EntityMetadata } from '../remult3/remult3.js'
 import { ArrayEntityDataProvider } from './array-entity-data-provider.js'
 
 export interface JsonEntityStorage {
-  getItem(entityDbName: string): string | null | Promise<string | null>
-  setItem(entityDbName: string, json: string): void | Promise<void>
+  getItem(entityDbName: string): any | null | Promise<any | null>
+  setItem(entityDbName: string, json: any): void | Promise<void>
+  // When set to false, stringify version of the json will be sent to setItem
+  supportsRawJson?: boolean
 }
 
 export class JsonDataProvider implements DataProvider {
@@ -45,14 +47,16 @@ class JsonEntityDataProvider implements EntityDataProvider {
     let data = []
     let dbName = await this.entity.dbName
     let s = await this.helper.getItem(dbName)
-    if (s) data = JSON.parse(s)
+    if (s) data = this.helper.supportsRawJson ? s : JSON.parse(s)
     let dp = new ArrayEntityDataProvider(this.entity, () => data)
     return what(
       dp,
       async () =>
         await this.helper.setItem(
           dbName,
-          JSON.stringify(data, undefined, this.formatted ? 2 : undefined),
+          this.helper.supportsRawJson
+            ? data
+            : JSON.stringify(data, undefined, this.formatted ? 2 : undefined),
         ),
     )
   }
