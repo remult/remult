@@ -119,7 +119,7 @@ export {
   JsonEntityStorage,
 } from './src/data-providers/json-data-provider.js' //V
 export { JsonEntityOpfsStorage } from './src/data-providers/json-entity-opfs-storage.js'
-export { JsonEntityIndexedDbStorage as JsonEntityIndexedDBStorage } from './src/data-providers/json-entity-indexed-db-data-provider.js'
+export { JsonEntityIndexedDbStorage } from './src/data-providers/json-entity-indexed-db-data-provider.js'
 
 //export * from './src/data-api'; //reconsider if to make internal
 export {

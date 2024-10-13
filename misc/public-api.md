@@ -1837,13 +1837,22 @@ export declare class JsonDataProvider implements DataProvider {
     action: (dataProvider: DataProvider) => Promise<void>,
   ): Promise<void>
 }
+export declare class JsonEntityIndexedDbStorage implements JsonEntityStorage {
+  private dbName
+  private storeName
+  constructor(dbName?: string, storeName?: string)
+  supportsRawJson: boolean
+  getItem(entityDbName: string): Promise<string>
+  setItem(entityDbName: string, json: string): Promise<void>
+}
 export declare class JsonEntityOpfsStorage implements JsonEntityStorage {
   getItem(entityDbName: string): Promise<string>
   setItem(entityDbName: string, json: string): Promise<void>
 }
 export interface JsonEntityStorage {
-  getItem(entityDbName: string): string | null | Promise<string | null>
-  setItem(entityDbName: string, json: string): void | Promise<void>
+  getItem(entityDbName: string): any | null | Promise<any | null>
+  setItem(entityDbName: string, json: any): void | Promise<void>
+  supportsRawJson?: boolean
 }
 export interface LifecycleEvent<entityType> {
   /**
