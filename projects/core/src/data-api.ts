@@ -49,7 +49,7 @@ export class DataApi<T = unknown> {
       case 'count':
         return this.count(res, req, undefined)
       case 'groupBy':
-        return this.groupBy(res, req, undefined)
+        return res.success(this.groupBy(req, undefined))
     }
     return this.getArray(res, req, undefined)
   }
@@ -87,7 +87,7 @@ export class DataApi<T = unknown> {
         validateWhereInBody()
         return this.count(res, req, body)
       case 'groupBy':
-        return this.groupBy(res, req, body)
+        return res.success(this.groupBy(req, body))
       case 'deleteMany':
         validateWhereInBody()
         return this.deleteMany(res, req, body)
@@ -98,8 +98,31 @@ export class DataApi<T = unknown> {
         await this.remult.liveQueryStorage!.remove(body.id)
         res.success('ok')
         return
+      case 'query':
+        return res.success(this.query(res, req, body))
       default:
         return this.post(res, body)
+    }
+  }
+
+  async query(response: DataApiResponse, request: DataApiRequest, body: any) {
+    if (!this.repository.metadata.apiReadAllowed) {
+      response.forbidden()
+      return
+    }
+    try {
+      let { aggregate, ...rest } = body
+      let [{ r }, [aggregates]] = await Promise.all([
+        this.getArrayImpl(request, rest),
+        this.groupBy(request, aggregate),
+      ])
+      return {
+        items: r,
+        aggregates,
+      }
+    } catch (err: any) {
+      if (err.isForbiddenError) response.forbidden()
+      else response.error(err, this.repository.metadata)
     }
   }
   static defaultGetLimit = 0
@@ -151,7 +174,7 @@ export class DataApi<T = unknown> {
       response.error(err, this.repository.metadata)
     }
   }
-  async groupBy(response: DataApiResponse, request: DataApiRequest, body: any) {
+  async groupBy(request: DataApiRequest, body: any) {
     let findOptions = await this.findOptionsFromRequest(request, body)
     let orderBy: any = {}
     if (body?.orderBy) {
@@ -208,14 +231,10 @@ export class DataApi<T = unknown> {
         }
       })
 
-    response.success(result)
+    return result
   }
 
-  async getArrayImpl(
-    response: DataApiResponse,
-    request: DataApiRequest,
-    body: any,
-  ) {
+  async getArrayImpl(request: DataApiRequest, body: any) {
     let findOptions = await this.findOptionsFromRequest(request, body)
 
     const r = await this.repository.find(findOptions).then(async (r) => {
@@ -303,7 +322,7 @@ export class DataApi<T = unknown> {
       return
     }
     try {
-      const { r } = await this.getArrayImpl(response, request, body)
+      const { r } = await this.getArrayImpl(request, body)
 
       response.success(r)
     } catch (err: any) {
@@ -323,7 +342,7 @@ export class DataApi<T = unknown> {
       return
     }
     try {
-      const r = await this.getArrayImpl(response, request, body)
+      const r = await this.getArrayImpl(request, body)
       const data: QueryData = {
         requestJson: await serializeContext(),
         findOptionsJson: findOptionsToJson(

@@ -583,7 +583,8 @@ export function aggregateTest(
         ]
       `)
     })
-    it('test relation to one', async () => {
+
+    test('test relation to one', async () => {
       const r = await repo()
       expect(
         await r.groupBy({

@@ -215,11 +215,11 @@ export class RemultProxy implements Remult {
       get metadata() {
         return remultStatic.remultFactory().repo(...args).metadata
       },
-      query: (...args2) =>
+      query: (options: any) =>
         self
           .remultFactory()
           .repo(...args)
-          .query(...args2),
+          .query(options) as any,
       save: (args2: any) =>
         self
           .remultFactory()

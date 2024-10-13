@@ -49,7 +49,9 @@ import {
 } from './remult3.js'
 
 import type {
+  QueryOptions,
   QueryOptionsWithAggregates,
+  QueryResult,
   QueryResultWithAggregates,
   RefSubscriber,
   RefSubscriberBase,
@@ -216,7 +218,7 @@ export class RepositoryImplementation<entityType>
   }
 
   private __edp?: EntityDataProvider
-  private get _edp() {
+  get _edp() {
     return this.__edp
       ? this.__edp
       : (this.__edp = this._dataProvider.getEntityDataProvider(this.metadata))
@@ -294,6 +296,31 @@ export class RepositoryImplementation<entityType>
       distinctCountFields extends undefined ? never : distinctCountFields
     >[]
   > {
+    var dpOptions = await this.__buildGroupByOptions(options)
+    const result = await this._edp.groupBy(dpOptions)
+
+    //@ts-ignore
+    if (!options?.[GroupByForApiKey] && options.group) {
+      const loaderOptions: LoadOptions<entityType> = {
+        include: {},
+      }
+      for (const key of options.group) {
+        loaderOptions!.include![key] = true
+      }
+      const loader = new RelationLoader()
+      await this._populateRelationsForFields(
+        dpOptions.group!,
+        loaderOptions,
+        result,
+        loader,
+      )
+      await loader.resolveAll()
+    }
+    return result as any
+  }
+  async __buildGroupByOptions(
+    options: GroupByOptions<entityType, any, any, any, any, any, any>,
+  ) {
     let findOptions = await this._buildEntityDataProviderFindOptions({
       ...options,
     })
@@ -352,25 +379,7 @@ export class RepositoryImplementation<entityType>
         }
       }
     }
-    const result = await this._edp.groupBy(dpOptions)
-    //@ts-ignore
-    if (!options?.[GroupByForApiKey] && options.group) {
-      const loaderOptions: LoadOptions<entityType> = {
-        include: {},
-      }
-      for (const key of options.group) {
-        loaderOptions!.include![key] = true
-      }
-      const loader = new RelationLoader()
-      await this._populateRelationsForFields(
-        dpOptions.group!,
-        loaderOptions,
-        result,
-        loader,
-      )
-      await loader.resolveAll()
-    }
-    return result as any
+    return dpOptions
   }
   _idCache = new Map<any, any>()
   _getCachedById(
@@ -421,7 +430,7 @@ export class RepositoryImplementation<entityType>
       this.listeners!.splice(this.listeners!.indexOf(listener), 1)
     }
   }
-
+  query(options?: QueryOptions<entityType>): QueryResult<entityType>
   query<
     sumFields extends NumericKeys<entityType>[] | undefined = undefined,
     averageFields extends NumericKeys<entityType>[] | undefined = undefined,
@@ -446,7 +455,9 @@ export class RepositoryImplementation<entityType>
     minFields extends undefined ? never : minFields,
     maxFields extends undefined ? never : maxFields,
     distinctCountFields extends undefined ? never : distinctCountFields
-  > {
+  >
+
+  query(options?: QueryOptions<entityType>): QueryResult<entityType> {
     return new QueryResultImpl(options!, this) as any
   }
 
@@ -730,6 +741,7 @@ export class RepositoryImplementation<entityType>
     options: FindOptions<entityType> | undefined,
     skipOrderByAndLimit = false,
     loader: RelationLoader,
+    actualFind: (ops: EntityDataProviderFindOptions) => Promise<any[]>,
   ) {
     if (!options) options = {}
 
@@ -743,7 +755,7 @@ export class RepositoryImplementation<entityType>
     }
 
     Remult.onFind(this._info, options)
-    const rawRows = await this._edp.find(opt)
+    const rawRows = await actualFind(opt)
     let result = await this._loadManyToOneForManyRows(rawRows, options, loader)
     return result
   }
@@ -758,7 +770,12 @@ export class RepositoryImplementation<entityType>
     skipOrderByAndLimit = false,
   ): Promise<entityType[]> {
     const loader = new RelationLoader()
-    const result = await this._rawFind(options, skipOrderByAndLimit, loader)
+    const result = await this._rawFind(
+      options,
+      skipOrderByAndLimit,
+      loader,
+      (x) => this._edp.find(x),
+    )
     await loader.resolveAll()
     return result
   }
@@ -889,7 +906,10 @@ export class RepositoryImplementation<entityType>
               .load(
                 {
                   entityType,
-                  find: (options) => toRepo._rawFind(options, false, loader),
+                  find: (options) =>
+                    toRepo._rawFind(options, false, loader, (o) =>
+                      toRepo._edp.find(o),
+                    ),
                   metadata: toRepo.metadata,
                 },
                 findOptions,

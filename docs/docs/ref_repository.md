@@ -578,7 +578,9 @@ Arguments:
    #### see:
    [EntityFilter](http://remult.dev/docs/entityFilter.html)
 ## create
-Creates an instance of an item. It'll not be saved to the data source unless `save` or `insert` will be called for that item
+Creates an instance of an item. It'll not be saved to the data source unless `save` or `insert` will be called.
+
+It's useful to start or reset a form taking your entity default values into account.
 
 Arguments:
 * **item**

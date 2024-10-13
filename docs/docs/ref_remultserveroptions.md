@@ -67,7 +67,7 @@ This method is called whenever there is an error in the API lifecycle.
 ```ts
 export const api = remultExpress({
   error: async (e) => {
-    if (e.httpStatusCode == 500) {
+    if (e.httpStatusCode == 400) {
       e.sendError(500, { message: "An error occurred" })
     }
   }

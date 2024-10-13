@@ -129,21 +129,23 @@ export class RestEntityDataProvider
     private http: () => RestDataProviderHttpProvider,
     private entity: EntityMetadata,
   ) {}
+  query(
+    options: EntityDataProviderFindOptions,
+    aggregateOptions: EntityDataProviderGroupByOptions,
+  ): Promise<{ items: any[]; aggregates: any }> {
+    const r = this.buildFindRequest(options)
+    return r.run('query', {
+      aggregate: this.buildAggregateOptions(aggregateOptions),
+    })
+  }
+
   async groupBy(options?: EntityDataProviderGroupByOptions): Promise<any[]> {
     const { run } = this.buildFindRequest({
       where: options?.where,
       limit: options?.limit,
       page: options?.page,
     })
-    const body = {
-      groupBy: options?.group?.map((x) => x.key),
-      sum: options?.sum?.map((x) => x.key),
-      avg: options?.avg?.map((x) => x.key),
-      min: options?.min?.map((x) => x.key),
-      max: options?.max?.map((x) => x.key),
-      distinctCount: options?.distinctCount?.map((x) => x.key),
-      orderBy: options?.orderBy?.map((x) => ({ ...x, field: x.field?.key })),
-    }
+    const body = this.buildAggregateOptions(options)
     const result: any[] = await run(
       'groupBy',
       Object.keys(body).length > 0 ? body : undefined,
@@ -155,6 +157,20 @@ export class RestEntityDataProvider
         }
       })
     return result
+  }
+
+  private buildAggregateOptions(
+    options: EntityDataProviderGroupByOptions | undefined,
+  ) {
+    return {
+      groupBy: options?.group?.map((x) => x.key),
+      sum: options?.sum?.map((x) => x.key),
+      avg: options?.avg?.map((x) => x.key),
+      min: options?.min?.map((x) => x.key),
+      max: options?.max?.map((x) => x.key),
+      distinctCount: options?.distinctCount?.map((x) => x.key),
+      orderBy: options?.orderBy?.map((x) => ({ ...x, field: x.field?.key })),
+    }
   }
 
   translateFromJson(row: any) {

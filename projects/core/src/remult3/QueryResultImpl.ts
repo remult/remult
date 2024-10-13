@@ -1,6 +1,8 @@
 import { queryConfig } from '../context.js'
+import type { ProxyEntityDataProvider } from '../data-interfaces.js'
 import { isOfType } from '../isOfType.js'
 import { Sort } from '../sort.js'
+import { RelationLoader } from './relation-loader.js'
 import type {
   QueryResult,
   QueryOptions,
@@ -21,7 +23,7 @@ export class QueryResultImpl<entityType> implements QueryResult<entityType> {
     }
   }
   private _count: number | undefined = undefined
-  private _aggregate: any
+  private _aggregates: any
   async getPage(page?: number) {
     if ((page ?? 0) < 1) page = 1
 
@@ -48,6 +50,7 @@ export class QueryResultImpl<entityType> implements QueryResult<entityType> {
     }
     return i
   }
+
   async paginator(
     pNextPageFilter?: EntityFilter<entityType>,
   ): Promise<Paginator<entityType>> {
@@ -56,8 +59,7 @@ export class QueryResultImpl<entityType> implements QueryResult<entityType> {
       this.options.orderBy,
     )
 
-    let items: entityType[]
-    items = await this.repo.find({
+    let options = {
       where: {
         $and: [this.options.where, pNextPageFilter],
       } as EntityFilter<entityType>,
@@ -65,18 +67,44 @@ export class QueryResultImpl<entityType> implements QueryResult<entityType> {
       limit: this.options.pageSize,
       load: this.options.load,
       include: this.options.include,
-    })
+    }
+    let getItems = () => this.repo.find(options)
+
     if (
+      this._aggregates === undefined &&
       isOfType<QueryOptionsWithAggregates<entityType, any, any, any, any, any>>(
         this.options,
         'aggregate',
       )
     ) {
-      this._aggregate = await this.repo.aggregate({
-        ...this.options.aggregate,
-        where: this.options.where,
-      })
+      let agg = this.options.aggregate
+      if (!this.repo._dataProvider.isProxy) {
+        let itemsPromise = getItems()
+        getItems = async () => {
+          this._aggregates = await this.repo.aggregate({
+            ...agg,
+            where: this.options.where,
+          })
+          return itemsPromise
+        }
+      } else {
+        const loader = new RelationLoader()
+        getItems = () =>
+          this.repo
+            ._rawFind(options, false, loader, async (opt) => {
+              const r = await (
+                this.repo._edp as unknown as ProxyEntityDataProvider
+              ).query(opt, await this.repo.__buildGroupByOptions(agg))
+              this._aggregates = r.aggregates
+              return r.items
+            })
+            .then(async (y) => {
+              await loader.resolveAll()
+              return y
+            })
+      }
     }
+    let items = await getItems()
 
     let nextPage: () => Promise<Paginator<entityType>> = () => {
       throw new Error('no more pages')
@@ -95,7 +123,7 @@ export class QueryResultImpl<entityType> implements QueryResult<entityType> {
       items,
       nextPage,
       //@ts-ignore
-      aggregates: this._aggregate,
+      aggregates: this._aggregates,
     }
   }
 

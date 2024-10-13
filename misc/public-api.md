@@ -2024,6 +2024,35 @@ export interface Paginator<entityType> {
   /** the count of the total items in the `query`'s result */
   count(): Promise<number>
 }
+export interface PaginatorWithAggregates<
+  entityType,
+  sumFields extends NumericKeys<entityType>[],
+  averageFields extends NumericKeys<entityType>[],
+  minFields extends (keyof MembersOnly<entityType>)[],
+  maxFields extends (keyof MembersOnly<entityType>)[],
+  distinctCountFields extends (keyof MembersOnly<entityType>)[],
+> extends Paginator<entityType> {
+  nextPage(): Promise<
+    PaginatorWithAggregates<
+      entityType,
+      sumFields,
+      averageFields,
+      minFields,
+      maxFields,
+      distinctCountFields
+    >
+  >
+  aggregates: GroupByResult<
+    entityType,
+    never,
+    sumFields,
+    averageFields,
+    minFields,
+    maxFields,
+    distinctCountFields
+  >
+}
+//[ ] GroupByResult from TBD is not exported
 export interface PreprocessFilterEvent<entityType> {
   /**
    * Metadata of the entity being filtered.
@@ -2054,6 +2083,27 @@ export interface QueryOptions<entityType> extends FindOptionsBase<entityType> {
     progress: (progress: number) => void
   }
 }
+export interface QueryOptionsWithAggregates<
+  entityType,
+  sumFields extends NumericKeys<entityType>[],
+  averageFields extends NumericKeys<entityType>[],
+  minFields extends (keyof MembersOnly<entityType>)[],
+  maxFields extends (keyof MembersOnly<entityType>)[],
+  distinctCountFields extends (keyof MembersOnly<entityType>)[],
+> extends QueryOptions<entityType> {
+  aggregate: Omit<
+    GroupByOptions<
+      entityType,
+      never,
+      sumFields,
+      averageFields,
+      minFields,
+      maxFields,
+      distinctCountFields
+    >,
+    "group" | "orderBy" | "where" | "limit" | "page"
+  >
+}
 export interface QueryResult<entityType> {
   /** returns an iterator that iterates the rows in the result using a paging mechanism
    * @example
@@ -2072,6 +2122,26 @@ export interface QueryResult<entityType> {
   getPage(pageNumber?: number): Promise<entityType[]>
   /** Performs an operation on all the items matching the query criteria */
   forEach(what: (item: entityType) => Promise<any>): Promise<number>
+}
+export interface QueryResultWithAggregates<
+  entityType,
+  sumFields extends NumericKeys<entityType>[],
+  averageFields extends NumericKeys<entityType>[],
+  minFields extends (keyof MembersOnly<entityType>)[],
+  maxFields extends (keyof MembersOnly<entityType>)[],
+  distinctCountFields extends (keyof MembersOnly<entityType>)[],
+> extends QueryResult<entityType> {
+  /** Returns a `Paginator` object that is used for efficient paging */
+  paginator(): Promise<
+    PaginatorWithAggregates<
+      entityType,
+      sumFields,
+      averageFields,
+      minFields,
+      maxFields,
+      distinctCountFields
+    >
+  >
 }
 export declare type RefSubscriber = (() => void) | RefSubscriberBase
 export interface RefSubscriberBase {
@@ -2475,6 +2545,31 @@ export interface Repository<entityType> {
    * }
    * */
   query(options?: QueryOptions<entityType>): QueryResult<entityType>
+  query<
+    sumFields extends NumericKeys<entityType>[] | undefined = undefined,
+    averageFields extends NumericKeys<entityType>[] | undefined = undefined,
+    minFields extends (keyof MembersOnly<entityType>)[] | undefined = undefined,
+    maxFields extends (keyof MembersOnly<entityType>)[] | undefined = undefined,
+    distinctCountFields extends
+      | (keyof MembersOnly<entityType>)[]
+      | undefined = undefined,
+  >(
+    options?: QueryOptionsWithAggregates<
+      entityType,
+      sumFields extends undefined ? never : sumFields,
+      averageFields extends undefined ? never : averageFields,
+      minFields extends undefined ? never : minFields,
+      maxFields extends undefined ? never : maxFields,
+      distinctCountFields extends undefined ? never : distinctCountFields
+    >,
+  ): QueryResultWithAggregates<
+    entityType,
+    sumFields extends undefined ? never : sumFields,
+    averageFields extends undefined ? never : averageFields,
+    minFields extends undefined ? never : minFields,
+    maxFields extends undefined ? never : maxFields,
+    distinctCountFields extends undefined ? never : distinctCountFields
+  >
   /** Returns a count of the items matching the criteria.
    * @see [EntityFilter](http://remult.dev/docs/entityFilter.html)
    * @example
@@ -2537,7 +2632,7 @@ export interface Repository<entityType> {
   deleteMany(options: { where: EntityFilter<entityType> }): Promise<number>
   /** Creates an instance of an item. It'll not be saved to the data source unless `save` or `insert` will be called.
    *
-   * It's usefull to start or reset a form taking your entity default values into account.
+   * It's useful to start or reset a form taking your entity default values into account.
    *
    */
   create(item?: Partial<MembersOnly<entityType>>): entityType
@@ -2563,7 +2658,6 @@ export interface Repository<entityType> {
   addEventListener(listener: entityEventListener<entityType>): Unsubscribe
   relations(item: entityType): RepositoryRelations<entityType>
 }
-//[ ] GroupByResult from TBD is not exported
 //[ ] entityEventListener from TBD is not exported
 export type RepositoryRelations<entityType> = {
   [K in keyof ObjectMembersOnly<entityType>]-?: NonNullable<
