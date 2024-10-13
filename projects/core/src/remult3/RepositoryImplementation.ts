@@ -8,7 +8,7 @@ import type {
   ValueListItem,
 } from '../column-interfaces.js'
 import type { AllowedForInstance } from '../context.js'
-import { Remult, isBackend, queryConfig } from '../context.js'
+import { Remult, isBackend } from '../context.js'
 import type { EntityOptions } from '../entity.js'
 import { Filter } from '../filter/filter-interfaces.js'
 import { Sort } from '../sort.js'
@@ -40,8 +40,6 @@ import {
   type MembersOnly,
   type NumericKeys,
   type ObjectMembersOnly,
-  type QueryOptions,
-  type QueryResult,
   type RelationOptions,
   type Repository,
   type RepositoryRelations,
@@ -50,7 +48,12 @@ import {
   type idType,
 } from './remult3.js'
 
-import type { Paginator, RefSubscriber, RefSubscriberBase } from './remult3.js'
+import type {
+  QueryOptionsWithAggregates,
+  QueryResultWithAggregates,
+  RefSubscriber,
+  RefSubscriberBase,
+} from './remult3.js'
 import { assign } from '../../assign.js'
 import type { entityEventListener } from '../__EntityValueProvider.js'
 import type {
@@ -95,7 +98,8 @@ import {
 import { remultStatic } from '../remult-static.js'
 import { Validators } from '../validators.js'
 import { addValidator } from './addValidator.js'
-import { isOfType } from '../isOfType.js'
+import { cast, isOfType } from '../isOfType.js'
+import { QueryResultImpl } from './QueryResultImpl.js'
 //import  { remult } from "../remult-proxy";
 
 let classValidatorValidate:
@@ -418,8 +422,32 @@ export class RepositoryImplementation<entityType>
     }
   }
 
-  query(options?: QueryOptions<entityType>): QueryResult<entityType> {
-    return new QueryResultImpl(options!, this)
+  query<
+    sumFields extends NumericKeys<entityType>[] | undefined = undefined,
+    averageFields extends NumericKeys<entityType>[] | undefined = undefined,
+    minFields extends (keyof MembersOnly<entityType>)[] | undefined = undefined,
+    maxFields extends (keyof MembersOnly<entityType>)[] | undefined = undefined,
+    distinctCountFields extends
+      | (keyof MembersOnly<entityType>)[]
+      | undefined = undefined,
+  >(
+    options?: QueryOptionsWithAggregates<
+      entityType,
+      sumFields extends undefined ? never : sumFields,
+      averageFields extends undefined ? never : averageFields,
+      minFields extends undefined ? never : minFields,
+      maxFields extends undefined ? never : maxFields,
+      distinctCountFields extends undefined ? never : distinctCountFields
+    >,
+  ): QueryResultWithAggregates<
+    entityType,
+    sumFields extends undefined ? never : sumFields,
+    averageFields extends undefined ? never : averageFields,
+    minFields extends undefined ? never : minFields,
+    maxFields extends undefined ? never : maxFields,
+    distinctCountFields extends undefined ? never : distinctCountFields
+  > {
+    return new QueryResultImpl(options!, this) as any
   }
 
   getEntityRef(entity: entityType): EntityRef<entityType> {
@@ -554,7 +582,7 @@ export class RepositoryImplementation<entityType>
       )
     } else {
       let updated = 0
-      for await (const item of this.query({ where })) {
+      for await (const item of this.query({ where, aggregate: undefined! })) {
         assign(item, set)
         await getEntityRef(item).save()
         updated++
@@ -1058,7 +1086,7 @@ export class RepositoryImplementation<entityType>
       )
     } else {
       let deleted = 0
-      for await (const item of this.query({ where })) {
+      for await (const item of this.query({ where, aggregate: undefined! })) {
         await getEntityRef(item).delete()
         deleted++
       }
@@ -2956,133 +2984,6 @@ export class ControllerBase {
       this,
       this.remult,
     ) as unknown as ControllerRefForControllerBase<this>
-  }
-}
-
-class QueryResultImpl<entityType> implements QueryResult<entityType> {
-  constructor(
-    private options: QueryOptions<entityType>,
-    private repo: RepositoryImplementation<entityType>,
-  ) {
-    if (!this.options) this.options = {}
-    if (!this.options.pageSize) {
-      this.options.pageSize = queryConfig.defaultPageSize
-    }
-  }
-  private _count: number | undefined = undefined
-  async getPage(page?: number) {
-    if ((page ?? 0) < 1) page = 1
-
-    return this.repo.find({
-      where: this.options.where,
-      orderBy: this.options.orderBy,
-      limit: this.options.pageSize,
-      page: page,
-      load: this.options.load,
-      include: this.options.include,
-    })
-  }
-
-  async count() {
-    if (this._count === undefined)
-      this._count = await this.repo.count(this.options.where)
-    return this._count
-  }
-  async forEach(what: (item: entityType) => Promise<any>) {
-    let i = 0
-    for await (const x of this) {
-      await what(x)
-      i++
-    }
-    return i
-  }
-  async paginator(
-    pNextPageFilter?: EntityFilter<entityType>,
-  ): Promise<Paginator<entityType>> {
-    this.options.orderBy = Sort.createUniqueEntityOrderBy(
-      this.repo.metadata,
-      this.options.orderBy,
-    )
-    let items = await this.repo.find({
-      where: {
-        $and: [this.options.where, pNextPageFilter],
-      } as EntityFilter<entityType>,
-      orderBy: this.options.orderBy,
-      limit: this.options.pageSize,
-      load: this.options.load,
-      include: this.options.include,
-    })
-
-    let nextPage: () => Promise<Paginator<entityType>> = () => {
-      throw new Error('no more pages')
-    }
-    let hasNextPage = items.length == this.options.pageSize
-    if (hasNextPage) {
-      let nextPageFilter = await this.repo._createAfterFilter(
-        this.options.orderBy,
-        items[items.length - 1],
-      )
-      nextPage = () => this.paginator(nextPageFilter)
-    }
-    return {
-      count: () => this.count(),
-      hasNextPage,
-      items,
-      nextPage,
-    }
-  }
-
-  [Symbol.asyncIterator]() {
-    if (!this.options.where) {
-      this.options.where = {}
-    }
-    let ob = this.options.orderBy
-    this.options.orderBy = Sort.createUniqueEntityOrderBy(
-      this.repo.metadata,
-      ob,
-    )
-
-    let itemIndex = -1
-    let currentPage: Paginator<entityType> | undefined = undefined
-
-    let itStrategy: () => Promise<IteratorResult<entityType>>
-
-    let j = 0
-
-    itStrategy = async () => {
-      if (this.options.progress) {
-        this.options.progress.progress(j++ / (await this.count()))
-      }
-      if (currentPage === undefined || itemIndex == currentPage.items.length) {
-        if (currentPage && !currentPage.hasNextPage)
-          return { value: undefined, done: true }
-        let prev = currentPage
-        if (currentPage) currentPage = await currentPage.nextPage!()
-        else currentPage = await this.paginator()
-
-        itemIndex = 0
-        if (currentPage.items.length == 0) {
-          return { value: undefined, done: true }
-        } else {
-          if (prev?.items.length ?? 0 > 0) {
-            if (
-              this.repo.getEntityRef(prev!.items[0]).getId() ==
-              this.repo.getEntityRef(currentPage.items[0]).getId()
-            )
-              throw new Error('pagination failure, returned same first row')
-          }
-        }
-      }
-      if (itemIndex < currentPage.items.length)
-        return { value: currentPage.items[itemIndex++], done: false }
-      return { done: true, value: undefined }
-    }
-    return {
-      next: async () => {
-        let r = itStrategy()
-        return r
-      },
-    }
   }
 }
 

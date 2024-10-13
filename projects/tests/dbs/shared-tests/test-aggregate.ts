@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from 'vitest'
+import { beforeAll, describe, expect, it, test } from 'vitest'
 import { Entity } from '../../../core/index.js'
 import {
   Field,
@@ -300,6 +300,30 @@ export function aggregateTest(
       expect(result.numberOfKids.sum).toBe(65) // Sum of all numberOfKids for salaries greater than 1000
       expect(result.salary.avg).toBeCloseTo(5266.666666) // Average salary for all salaries greater than 1000
       expect(result.numberOfKids.avg).toBeCloseTo(4.3333333) // Average numberOfKids for all salaries greater than 1000
+    })
+    test('Query with Aggregate', async () => {
+      const r = await repo()
+      const result = await r
+        .query({
+          where: {
+            salary: { $gt: 1000! },
+          },
+          aggregate: {
+            sum: ['salary', 'numberOfKids'],
+            avg: ['salary', 'numberOfKids'],
+          },
+          include: {
+            category: true,
+          },
+        })
+        .paginator()
+      expect(result.items.length).toBe(15)
+      expect(result.aggregates.$count).toBe(15)
+      expect(result.aggregates.salary.sum).toBe(79000) // Sum of all salaries greater than 1000
+      expect(result.aggregates.numberOfKids.sum).toBe(65) // Sum of all numberOfKids for salaries greater than 1000
+      expect(result.aggregates.salary.avg).toBeCloseTo(5266.666666) // Average salary for all salaries greater than 1000
+      expect(result.aggregates.numberOfKids.avg).toBeCloseTo(4.3333333) // Average numberOfKids for all salaries greater than 1000
+      expect(result.items[0].category?.name).toBe('a')
     })
     it('field cant be used both for group by and sum', async () => {
       const r = await repo()

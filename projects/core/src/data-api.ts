@@ -140,6 +140,7 @@ export class DataApi<T = unknown> {
         for await (const x of this.repository.query({
           where,
           include: this.includeNone(),
+          aggregate: undefined!,
         })) {
           await this.actualDelete(x)
           deleted++
@@ -451,6 +452,7 @@ export class DataApi<T = unknown> {
         for await (const x of this.repository.query({
           where,
           include: this.includeNone(),
+          aggregate: undefined!,
         })) {
           await this.actualUpdate(x, body.set)
           updated++

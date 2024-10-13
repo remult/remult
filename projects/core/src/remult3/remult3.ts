@@ -633,7 +633,31 @@ export interface Repository<entityType> {
    *   console.log(paginator.items.length)
    * }
    * */
-  query(options?: QueryOptions<entityType>): QueryResult<entityType>
+  query<
+    sumFields extends NumericKeys<entityType>[] | undefined = undefined,
+    averageFields extends NumericKeys<entityType>[] | undefined = undefined,
+    minFields extends (keyof MembersOnly<entityType>)[] | undefined = undefined,
+    maxFields extends (keyof MembersOnly<entityType>)[] | undefined = undefined,
+    distinctCountFields extends
+      | (keyof MembersOnly<entityType>)[]
+      | undefined = undefined,
+  >(
+    options?: QueryOptionsWithAggregates<
+      entityType,
+      sumFields extends undefined ? never : sumFields,
+      averageFields extends undefined ? never : averageFields,
+      minFields extends undefined ? never : minFields,
+      maxFields extends undefined ? never : maxFields,
+      distinctCountFields extends undefined ? never : distinctCountFields
+    >,
+  ): QueryResultWithAggregates<
+    entityType,
+    sumFields extends undefined ? never : sumFields,
+    averageFields extends undefined ? never : averageFields,
+    minFields extends undefined ? never : minFields,
+    maxFields extends undefined ? never : maxFields,
+    distinctCountFields extends undefined ? never : distinctCountFields
+  >
   /** Returns a count of the items matching the criteria.
    * @see [EntityFilter](http://remult.dev/docs/entityFilter.html)
    * @example
@@ -1201,6 +1225,27 @@ export interface QueryOptions<entityType> extends FindOptionsBase<entityType> {
   /** A callback method to indicate the progress of the iteration */
   progress?: { progress: (progress: number) => void }
 }
+export interface QueryOptionsWithAggregates<
+  entityType,
+  sumFields extends NumericKeys<entityType>[],
+  averageFields extends NumericKeys<entityType>[],
+  minFields extends (keyof MembersOnly<entityType>)[],
+  maxFields extends (keyof MembersOnly<entityType>)[],
+  distinctCountFields extends (keyof MembersOnly<entityType>)[],
+> extends QueryOptions<entityType> {
+  aggregate: Omit<
+    GroupByOptions<
+      entityType,
+      never,
+      sumFields,
+      averageFields,
+      minFields,
+      maxFields,
+      distinctCountFields
+    >,
+    'group' | 'orderBy' | 'where' | 'limit' | 'page'
+  >
+}
 /** The result of a call to the `query` method in the `Repository` object.
  */
 export interface QueryResult<entityType> {
@@ -1221,6 +1266,26 @@ export interface QueryResult<entityType> {
   getPage(pageNumber?: number): Promise<entityType[]>
   /** Performs an operation on all the items matching the query criteria */
   forEach(what: (item: entityType) => Promise<any>): Promise<number>
+}
+export interface QueryResultWithAggregates<
+  entityType,
+  sumFields extends NumericKeys<entityType>[],
+  averageFields extends NumericKeys<entityType>[],
+  minFields extends (keyof MembersOnly<entityType>)[],
+  maxFields extends (keyof MembersOnly<entityType>)[],
+  distinctCountFields extends (keyof MembersOnly<entityType>)[],
+> extends QueryResult<entityType> {
+  /** Returns a `Paginator` object that is used for efficient paging */
+  paginator(): Promise<
+    PaginatorWithAggregates<
+      entityType,
+      sumFields,
+      averageFields,
+      minFields,
+      maxFields,
+      distinctCountFields
+    >
+  >
 }
 /** An interface used to paginating using the `query` method in the `Repository` object
  *  @example
@@ -1247,6 +1312,34 @@ export interface Paginator<entityType> {
   nextPage(): Promise<Paginator<entityType>>
   /** the count of the total items in the `query`'s result */
   count(): Promise<number>
+}
+export interface PaginatorWithAggregates<
+  entityType,
+  sumFields extends NumericKeys<entityType>[],
+  averageFields extends NumericKeys<entityType>[],
+  minFields extends (keyof MembersOnly<entityType>)[],
+  maxFields extends (keyof MembersOnly<entityType>)[],
+  distinctCountFields extends (keyof MembersOnly<entityType>)[],
+> extends Paginator<entityType> {
+  nextPage(): Promise<
+    PaginatorWithAggregates<
+      entityType,
+      sumFields,
+      averageFields,
+      minFields,
+      maxFields,
+      distinctCountFields
+    >
+  >
+  aggregates: GroupByResult<
+    entityType,
+    never,
+    sumFields,
+    averageFields,
+    minFields,
+    maxFields,
+    distinctCountFields
+  >
 }
 
 /**
