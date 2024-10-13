@@ -9,6 +9,22 @@ All notable changes to this project will be documented in this file.
   const db = new JsonDataProvider(new JsonEntityIndexedDbStorage())
   console.table(await repo(Task, db).find())
   ```
+- Now you can get data and aggregate info with a single request using the `query` method:
+
+  ```ts
+  const result = await repo.query({
+    where: { completed: false },
+    pageSize: 50,
+    aggregates: {
+      sum: ['salary'],
+      average: ['age'],
+    },
+  })
+  // Accessing the items from the first page
+  console.table(result.items)
+  // Accessing the aggregation results
+  console.log(result.aggregates.salary.sum) // Total salary sum
+  ```
 
 ## [0.27.19] 2024-09-26
 
