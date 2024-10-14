@@ -337,8 +337,11 @@ export function aggregateTest(
           },
         })
         .paginator()
+
       expect(result.items.length).toBe(15)
-      expect(result.aggregates.$count).toBe(15) // I wish aggregate would be undefined in this case, but since I couldn't I prefer for it to have something
+
+      //@ts-expect-error $count shouldn't be available if no aggregates were set
+      result.aggregates.$count
 
       expect(result.items[0].category?.name).toBe('a')
     })
@@ -654,4 +657,105 @@ export function aggregateTest(
         `)
     })
   })
+}
+
+async function testTypesWithQuery() {
+  class Person {
+    id = ''
+    name = ''
+  }
+  let r: Repository<Person> = undefined!
+
+  // When aggregate is not provided
+  let r1 = await r.query({}).paginator()
+  // @ts-expect-error - aggregate should not exist
+  r1.aggregates
+  // @ts-expect-error - $count should not exist
+  r1.aggregates.$count
+
+  // When aggregate is provided with empty group
+  let r2 = await r
+    .query({
+      aggregate: {
+        distinctCount: [],
+      },
+    })
+    .paginator()
+  r2.aggregates.$count
+  // @ts-expect-error - id wasn't selected
+  r2.aggregate.id
+
+  // When aggregate is provided with id in group
+  let r3 = await r
+    .query({
+      aggregate: {
+        distinctCount: ['id'],
+      },
+    })
+    .paginator()
+  r3.aggregates.$count
+  r3.aggregates.id.distinctCount
+  // @ts-expect-error - max should not exist
+  r3.aggregates.id.max
+  // @ts-expect-error - name wasn't selected
+  r3.aggregate.name.distinctCount
+
+  // When aggregate is provided with both id and name in group
+  let r4 = await r
+    .query({
+      aggregate: {
+        distinctCount: ['id', 'name'],
+      },
+    })
+    .paginator()
+  r4.aggregates.$count
+  r4.aggregates.id.distinctCount
+  r4.aggregates.name.distinctCount
+  //@ts-expect-error - max should not exist
+  r4.aggregates.name.max
+}
+
+async function testTypesWithAggregate() {
+  class Person {
+    id = ''
+    name = ''
+  }
+  let r: Repository<Person> = undefined!
+
+  // When aggregate is not provided
+  let r1 = await r.aggregate({})
+
+  r1.$count
+
+  // When aggregate is provided with empty group
+  let r2 = await r.aggregate({
+    distinctCount: [],
+  })
+
+  r2.$count
+  // @ts-expect-error - id wasn't selected
+  r2.id
+
+  // When aggregate is provided with id in group
+  let r3 = await r.aggregate({
+    distinctCount: ['id'],
+  })
+
+  r3.$count
+  r3.id.distinctCount
+  // @ts-expect-error - max should not exist
+  r3.id.max
+  // @ts-expect-error - name wasn't selected
+  r3.name.distinctCount
+
+  // When aggregate is provided with both id and name in group
+  let r4 = await r.aggregate({
+    distinctCount: ['id', 'name'],
+  })
+
+  r4.$count
+  r4.id.distinctCount
+  r4.name.distinctCount
+  //@ts-expect-error - max should not exist
+  r4.name.max
 }

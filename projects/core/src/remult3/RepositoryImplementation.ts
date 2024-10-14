@@ -431,30 +431,21 @@ export class RepositoryImplementation<entityType>
   }
 
   query<
-    sumFields extends NumericKeys<entityType>[] | undefined = undefined,
-    averageFields extends NumericKeys<entityType>[] | undefined = undefined,
-    minFields extends (keyof MembersOnly<entityType>)[] | undefined = undefined,
-    maxFields extends (keyof MembersOnly<entityType>)[] | undefined = undefined,
-    distinctCountFields extends
-      | (keyof MembersOnly<entityType>)[]
-      | undefined = undefined,
-  >(
-    options?: QueryOptions<
-      entityType,
-      sumFields extends undefined ? never : sumFields,
-      averageFields extends undefined ? never : averageFields,
-      minFields extends undefined ? never : minFields,
-      maxFields extends undefined ? never : maxFields,
-      distinctCountFields extends undefined ? never : distinctCountFields
-    >,
-  ): QueryResult<
-    entityType,
-    sumFields extends undefined ? never : sumFields,
-    averageFields extends undefined ? never : averageFields,
-    minFields extends undefined ? never : minFields,
-    maxFields extends undefined ? never : maxFields,
-    distinctCountFields extends undefined ? never : distinctCountFields
-  > {
+    Options extends QueryOptions<entityType> & {
+      aggregate?: Omit<
+        GroupByOptions<
+          entityType,
+          never,
+          NumericKeys<entityType>[],
+          NumericKeys<entityType>[],
+          (keyof MembersOnly<entityType>)[],
+          (keyof MembersOnly<entityType>)[],
+          (keyof MembersOnly<entityType>)[]
+        >,
+        'group' | 'orderBy' | 'where' | 'limit' | 'page'
+      >
+    },
+  >(options?: Options): any {
     return new QueryResultImpl(options!, this) as any
   }
 

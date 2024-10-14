@@ -8,12 +8,13 @@ import type {
   QueryOptions,
   EntityFilter,
   Paginator,
+  GroupByOptions,
 } from './remult3.js'
 import type { RepositoryImplementation } from './RepositoryImplementation.js'
 
 export class QueryResultImpl<entityType> implements QueryResult<entityType> {
   constructor(
-    private options: QueryOptions<entityType, any, any, any, any, any>,
+    private options: QueryOptions<entityType>,
     private repo: RepositoryImplementation<entityType>,
   ) {
     if (!this.options) this.options = {}
@@ -70,11 +71,10 @@ export class QueryResultImpl<entityType> implements QueryResult<entityType> {
     let getItems = () => this.repo.find(options)
 
     if (
-      this._aggregates === undefined /* &&
-      (isOfType<QueryOptions<entityType, any, any, any, any, any>>(
-        this.options,
-        'aggregate',
-      ))*/
+      this._aggregates === undefined &&
+      isOfType<{
+        aggregate: GroupByOptions<entityType, any, any, any, any, any, any>
+      }>(this.options, 'aggregate')
     ) {
       let agg = this.options.aggregate
       if (!this.repo._dataProvider.isProxy) {
