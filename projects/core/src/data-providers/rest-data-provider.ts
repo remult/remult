@@ -134,9 +134,14 @@ export class RestEntityDataProvider
     aggregateOptions: EntityDataProviderGroupByOptions,
   ): Promise<{ items: any[]; aggregates: any }> {
     const r = this.buildFindRequest(options)
-    return r.run('query', {
-      aggregate: this.buildAggregateOptions(aggregateOptions),
-    })
+    return r
+      .run('query', {
+        aggregate: this.buildAggregateOptions(aggregateOptions),
+      })
+      .then(({ items, aggregates }) => ({
+        items: items.map((x: any) => this.translateFromJson(x)),
+        aggregates,
+      }))
   }
 
   async groupBy(options?: EntityDataProviderGroupByOptions): Promise<any[]> {

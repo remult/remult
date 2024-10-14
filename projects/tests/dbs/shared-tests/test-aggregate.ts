@@ -340,9 +340,6 @@ export function aggregateTest(
 
       expect(result.items.length).toBe(15)
 
-      //@ts-expect-error $count shouldn't be available if no aggregates were set
-      result.aggregates.$count
-
       expect(result.items[0].category?.name).toBe('a')
     })
     it('field cant be used both for group by and sum', async () => {

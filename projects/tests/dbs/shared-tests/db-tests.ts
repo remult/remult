@@ -1724,6 +1724,24 @@ export function commonDbTests(
         (await r.findId(1, { include: { category: true } }))!.category!.name,
       ).toBe('a')
     })
+    test('query with relations', async () => {
+      const { r } = await setupRelationsTest()
+      expect(
+        (
+          await r
+            .query({
+              aggregate: {},
+              orderBy: {
+                id: 'asc',
+              },
+              include: {
+                category: true,
+              },
+            })
+            .paginator()
+        ).items[0].category!.name,
+      ).toBe('c')
+    })
   })
   describe('test value list field type with updates', () => {
     @ValueListFieldType()
@@ -1772,6 +1790,21 @@ export function commonDbTests(
       const { r } = await setupValueListFieldTest()
       await r.upsert([{ where: { id: 1 }, set: { status: Status.a } }])
       expect((await r.findId(1))!.status).toBe(Status.a)
+    })
+    test('query with value list', async () => {
+      const { r } = await setupValueListFieldTest()
+      expect(
+        (
+          await r
+            .query({
+              aggregate: {},
+              orderBy: {
+                id: 'asc',
+              },
+            })
+            .paginator()
+        ).items[0].status,
+      ).toBe(Status.c)
     })
   })
 }
