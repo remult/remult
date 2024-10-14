@@ -512,7 +512,6 @@ export function commonDbTests(
 
   it('test delete', async () => {
     let c = await createData(async (insert) => await insert(5, 'noam'))
-
     let rows = await c.find()
     expect(rows.length).toBe(1)
     expect(rows[0].id).toBe(5)

@@ -2,13 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+Here’s a description for the changelog entry:
+
+---
+
 ## [0.27.20] TBD
 
-- Added Origin IndexedDb Storage to store entities in the front end
+- **Added `upsert` method:**  
+  The `upsert` method allows inserting or updating an entity in a single operation. If an entity matching the `where` condition is found, it is updated; otherwise, a new entity is created. This can be used for a single entity or for batch operations with an array of options.
+
+  Example:
+
   ```ts
-  const db = new JsonDataProvider(new JsonEntityIndexedDbStorage())
-  console.table(await repo(Task, db).find())
+  // Single entity upsert
+  await taskRepo.upsert({
+    where: { title: 'task a' },
+    set: { completed: true },
+  })
+
+  // Batch upsert
+  await taskRepo.upsert([
+    { where: { title: 'task a' }, set: { completed: true } },
+    { where: { title: 'task b' }, set: { completed: true } },
+  ])
   ```
+
 - Now you can get data and aggregate info with a single request using the `query` method:
 
   ```ts
@@ -28,7 +46,14 @@ All notable changes to this project will be documented in this file.
   console.log(result.aggregates.salary.sum) // Total salary sum
   ```
 
-- Fixed issue with `updateMany` where the `set` had ValueListType or relation
+- **Added Origin IndexedDb Storage** to store entities in the frontend:
+
+  ```ts
+  const db = new JsonDataProvider(new JsonEntityIndexedDbStorage())
+  console.table(await repo(Task, db).find())
+  ```
+
+- Fixed issue with `updateMany` where the `set` had `ValueListType` or relation.
 
 ## [0.27.19] 2024-09-26
 

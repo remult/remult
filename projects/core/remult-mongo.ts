@@ -312,7 +312,9 @@ class MongoEntityDataProvider implements EntityDataProvider {
       this.entity,
       this.entity.idMetadata.getIdFilter(id),
     ).__applyToConsumer(f)
-    collection.deleteOne(await f.resolveWhere(), { session: this.session })
+    await collection.deleteOne(await f.resolveWhere(), {
+      session: this.session,
+    })
   }
   async insert(data: any): Promise<any> {
     let { collection, e } = await this.collection()

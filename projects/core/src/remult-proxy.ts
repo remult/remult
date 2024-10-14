@@ -225,6 +225,11 @@ export class RemultProxy implements Remult {
           .remultFactory()
           .repo(...args)
           .save(args2),
+      upsert: (args2: any) =>
+        self
+          .remultFactory()
+          .repo(...args)
+          .upsert(args2),
       update: (a: any, b: any) =>
         self
           .remultFactory()

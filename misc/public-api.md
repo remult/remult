@@ -2650,6 +2650,36 @@ export interface Repository<entityType> {
     where: EntityFilter<entityType>
     set: Partial<MembersOnly<entityType>>
   }): Promise<number>
+  /**
+   * Inserts a new entity or updates an existing entity based on the specified criteria.
+   * If an entity matching the `where` condition is found, it will be updated with the provided `set` values.
+   * If no matching entity is found, a new entity will be created with the given data.
+   *
+   * The `upsert` method ensures that a row exists based on the `where` condition: if no entity is found, a new one is created.
+   * It can handle both single and multiple upserts.
+   *
+   * @template entityType The type of the entity being inserted or updated.
+   *
+   * @param {UpsertOptions<entityType> | UpsertOptions<entityType>[]} options - The options that define the `where` condition and the `set` values. Can be a single object or an array of objects.
+   * @returns {Promise<entityType | entityType[]>} A promise that resolves with the inserted or updated entity, or an array of entities if multiple options were provided.
+   *
+   * @example
+   * // Upserting a single entity: updates 'task a' if it exists, otherwise creates it.
+   * taskRepo.upsert({ where: { title: 'task a' }, set: { completed: true } });
+   *
+   * @example
+   * // Upserting a single entity without additional `set` values: ensures that a row with the title 'task a' exists.
+   * taskRepo.upsert({ where: { title: 'task a' } });
+   *
+   * @example
+   * // Upserting multiple entities: ensures both 'task a' and 'task b' exist, updating their `completed` status if found.
+   * taskRepo.upsert([
+   *   { where: { title: 'task a' }, set: { completed: true } },
+   *   { where: { title: 'task b' }, set: { completed: true } }
+   * ]);
+   */
+  upsert(options: UpsertOptions<entityType>[]): Promise<entityType[]>
+  upsert(options: UpsertOptions<entityType>): Promise<entityType>
   /** Deletes an Item*/
   delete(id: idType<entityType>): Promise<void>
   delete(item: Partial<MembersOnly<entityType>>): Promise<void>
@@ -2685,6 +2715,7 @@ export interface Repository<entityType> {
   addEventListener(listener: entityEventListener<entityType>): Unsubscribe
   relations(item: entityType): RepositoryRelations<entityType>
 }
+//[ ] UpsertOptions from TBD is not exported
 //[ ] entityEventListener from TBD is not exported
 export type RepositoryRelations<entityType> = {
   [K in keyof ObjectMembersOnly<entityType>]-?: NonNullable<
