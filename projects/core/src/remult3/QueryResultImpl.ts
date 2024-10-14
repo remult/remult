@@ -84,6 +84,7 @@ export class QueryResultImpl<entityType> implements QueryResult<entityType> {
             ...agg,
             where: this.options.where,
           })
+          this._count = this._aggregates.$count
           return itemsPromise
         }
       } else {
