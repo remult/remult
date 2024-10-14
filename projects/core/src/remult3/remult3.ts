@@ -1527,17 +1527,15 @@ export const flags = {
   error500RetryCount: 4,
 }
 
-//p1 - add aggregate to query
-//p1 - consider upsert (where,set)
-//p1 - add parameter all to deleteMany, and updateMany
-//p1  filter.apply ApiPreFilter
+//p2 - add parameter all to deleteMany, and updateMany
+//p2  filter.apply ApiPreFilter
 //p2 - signIn: (arg) =>withRemult(async () => { - consider if there's a generic way of doing signIn:withRemult(arg=>{})
 
-/*p1 - add id and use uuid by default, but allow changes with Fields.id.defaultIdProvider NO but defaultProvider yes???
-  //p1 - replace uuid with crypto.randomUUID and allow custom fallback NO
-  //p1 - Add example for luid
-  //p1 - add example for nanoid
-  //p1 - explain the benefits of changing the default provider for testing in docs.
+/*p2 - add id and use uuid by default, but allow changes with Fields.id.defaultIdProvider NO but defaultProvider yes???
+  //p2 - replace uuid with crypto.randomUUID and allow custom fallback NO
+  //p2 - Add example for luid
+  //p2 - add example for nanoid
+  //p2 - explain the benefits of changing the default provider for testing in docs.
 */
 
 //p2 - add some kind of options handler that will help with translation etc... like in hagai - something that runs at the stage where options are being built
@@ -1552,14 +1550,12 @@ export const flags = {
 //p2 - fix query docs to also explain how it can be used for infinite scroll and pagination.
 //p2 - when like doesn't have a string - don't send it to the db
 
-//p1 - vite 5.3 supports ts5 decorators - check and adapt.
-//p1 - tutorial about controller - and mutable controller
-//p1 - docs abount subscription channel
+//p2 - vite 5.3 supports ts5 decorators - check and adapt.
+//p2 - tutorial about controller - and mutable controller
+//p2 - docs abount subscription channel
 
-//p1 - Consider enforcing serial operations on JSON database to prevent data loss
-//p1 - add LifecycleEvent to documentation
-//p1 - fix chaining of saving and saved in multiple entity options args
-//p1 - review starter and examples and separate remult * auth from the routes
+//p2 - add LifecycleEvent to documentation
+//p2 - fix chaining of saving and saved in multiple entity options args
 //y1 - live query with count #436
 
 //y1 TODO - In the esm version of our tutorial - the imports are automatically .ts and not .js in react and not in vue
@@ -1587,15 +1583,13 @@ const result = await repo.batch(x=>({
 
 //p1 - prepare the createEntity discussion
 
-//p1 - article on displayValue including it's definition for entities that is used in relations
-//p1 - article auth.js with express - played with it, requires type="module" and a few more configurations - https://github.com/noam-honig/express-auth
+//p2 - article on displayValue including it's definition for entities that is used in relations
 
-//p2 - create foreign key constraints in user code - https://codesandbox.io/p/devbox/fk-validator-tdshcs
+//p2 - create foreign key constraints in user code - https://codesandbox.io/p/devbox/fk-validator-tdshcs, https://gist.github.com/jycouet/8b264e18c4d8605736f4353062a7d81e
 
 //y2 - should we validate relations
 
 //y1 - dependency of live query tables  live query refresh of view on table update
-//p1 - see why mongo tests do not run anymore
 
 //y2 - consider replacing all errors with error classes that extend the base Error class
 //y2 - should enforce integer - currently we probably round / truncate it
@@ -1632,13 +1626,10 @@ const result = await repo.batch(x=>({
 //p1 - when a tasks table exists in a different schema - we get many errors
 //p1 - live query with include
 
-//p1 - adjust angular tutorial starter kit for latest angular (as is in tutorial)
-
 //y2 - Fix problem with promise all in sql expression recurssion - when using PromiseAll in row relation loading, some sql expressions appear is recursion call even if they are not
 //p2 - when subscribe is forbidden - the query still runs after the renew process
 //p2 - 'update tasks set  where id = $1
 
-//y2 - remove __dirname from tutorials
 //p2 - when value changes for field with error, clear error - so the user will feel comfortable
 //p2 - allowApiUpdate should be false for include in api false
 
