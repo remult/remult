@@ -1663,14 +1663,14 @@ export function commonDbTests(
   })
   describe('test relations with updates', () => {
     async function setupRelationsTest() {
-      @Entity('categories', { allowApiCrud: true })
+      @Entity('categories_r_u', { allowApiCrud: true })
       class Category {
         @Fields.number()
         id = 0
         @Fields.string()
         name = ''
       }
-      @Entity('tasks', { allowApiCrud: true })
+      @Entity('tasks_r_u', { allowApiCrud: true })
       class Task {
         @Fields.number()
         id = 0
