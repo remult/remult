@@ -12,14 +12,16 @@ All notable changes to this project will be documented in this file.
 - Now you can get data and aggregate info with a single request using the `query` method:
 
   ```ts
-  const result = await repo.query({
-    where: { completed: false },
-    pageSize: 50,
-    aggregates: {
-      sum: ['salary'],
-      average: ['age'],
-    },
-  })
+  const result = await repo
+    .query({
+      where: { completed: false },
+      pageSize: 50,
+      aggregates: {
+        sum: ['salary'],
+        average: ['age'],
+      },
+    })
+    .paginator()
   // Accessing the items from the first page
   console.table(result.items)
   // Accessing the aggregation results

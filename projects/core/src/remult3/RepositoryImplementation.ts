@@ -50,9 +50,7 @@ import {
 
 import type {
   QueryOptions,
-  QueryOptionsWithAggregates,
   QueryResult,
-  QueryResultWithAggregates,
   RefSubscriber,
   RefSubscriberBase,
 } from './remult3.js'
@@ -430,7 +428,7 @@ export class RepositoryImplementation<entityType>
       this.listeners!.splice(this.listeners!.indexOf(listener), 1)
     }
   }
-  query(options?: QueryOptions<entityType>): QueryResult<entityType>
+
   query<
     sumFields extends NumericKeys<entityType>[] | undefined = undefined,
     averageFields extends NumericKeys<entityType>[] | undefined = undefined,
@@ -440,7 +438,7 @@ export class RepositoryImplementation<entityType>
       | (keyof MembersOnly<entityType>)[]
       | undefined = undefined,
   >(
-    options?: QueryOptionsWithAggregates<
+    options?: QueryOptions<
       entityType,
       sumFields extends undefined ? never : sumFields,
       averageFields extends undefined ? never : averageFields,
@@ -448,16 +446,14 @@ export class RepositoryImplementation<entityType>
       maxFields extends undefined ? never : maxFields,
       distinctCountFields extends undefined ? never : distinctCountFields
     >,
-  ): QueryResultWithAggregates<
+  ): QueryResult<
     entityType,
     sumFields extends undefined ? never : sumFields,
     averageFields extends undefined ? never : averageFields,
     minFields extends undefined ? never : minFields,
     maxFields extends undefined ? never : maxFields,
     distinctCountFields extends undefined ? never : distinctCountFields
-  >
-
-  query(options?: QueryOptions<entityType>): QueryResult<entityType> {
+  > {
     return new QueryResultImpl(options!, this) as any
   }
 

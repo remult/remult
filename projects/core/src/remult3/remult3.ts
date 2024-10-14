@@ -440,7 +440,7 @@ export const GroupByOperators = [
 export type GroupByResult<
   entityType,
   groupByFields extends (keyof entityType)[],
-  sumFields extends (keyof entityType)[],
+  sumFields extends NumericKeys<entityType>[],
   averageFields extends NumericKeys<entityType>[],
   minFields extends NumericKeys<entityType>[],
   maxFields extends NumericKeys<entityType>[],
@@ -609,36 +609,16 @@ export interface Repository<entityType> {
     >
   >
 
-  /**  An alternative form of fetching data from the API server, which is intended for operating on large numbers of entity objects.
-   *
-   * It also has it's own paging mechanism that can be used n paging scenarios.
-   *
-   * The `query` method doesn't return an array (as the `find` method) and instead returns an `iterable` `QueryResult` object
-   * which supports iterations using the JavaScript `for await` statement.
-   * @example
-   * for await (const task of taskRepo.query()) {
-   *   // do something.
-   * }
-   * @example
-   * const query = taskRepo.query({
-   *   where: { completed: false },
-   *   pageSize: 100,
-   * })
-   * const count = await query.count()
-   * console.log('Paged: ' + count / 100)
-   * let paginator = await query.paginator()
-   * console.log(paginator.items.length)
-   * if (paginator.hasNextPage) {
-   *   paginator = await paginator.nextPage()
-   *   console.log(paginator.items.length)
-   * }
-   * */
-  query(options?: QueryOptions<entityType>): QueryResult<entityType>
   /**
-   * Fetches data from the repository, allowing for both standard querying and aggregation in a single request.
+   * Fetches data from the repository in a way that is optimized for handling large sets of entity objects.
    *
-   * This method supports pagination and aggregation, returning a `QueryResultWithAggregates` object that includes both
-   * the queried items for the current page and the results of the aggregation.
+   * Unlike the `find` method, which returns an array, the `query` method returns an iterable `QueryResult` object.
+   * This allows for more efficient data handling, particularly in scenarios that involve paging through large amounts of data.
+   *
+   * The method supports pagination and aggregation in a single request. When aggregation options are provided,
+   * the result will include both the items from the current page and the results of the requested aggregation.
+   *
+   * The `query` method is designed for asynchronous iteration using the `for await` statement.
    *
    * @template entityType The type of the entity being queried.
    * @template sumFields The fields to sum, provided as an array of numeric keys from the entity type.
@@ -651,7 +631,29 @@ export interface Repository<entityType> {
    * @returns {QueryResultWithAggregates<entityType, sumFields, averageFields, minFields, maxFields, distinctCountFields>} The result of the query, including paginated items and aggregation results.
    *
    * @example
-   * // Performing a query with aggregation:
+   * // Basic usage with asynchronous iteration:
+   * for await (const task of taskRepo.query()) {
+   *   // Perform some operation on each task
+   * }
+   *
+   * @example
+   * // Querying with pagination:
+   * const query = taskRepo.query({
+   *   where: { completed: false },
+   *   pageSize: 100,
+   * });
+   *
+   * let paginator = await query.paginator();
+   * console.log('Number of items on the current page:', paginator.items.length);
+   * console.log('Total pages:', Math.ceil(paginator.aggregate.$count / 100));
+   *
+   * if (paginator.hasNextPage) {
+   *   paginator = await paginator.nextPage();
+   *   console.log('Items on the next page:', paginator.items.length);
+   * }
+   *
+   * @example
+   * // Querying with aggregation:
    * const result = await repo.query({
    *   where: { completed: false },
    *   pageSize: 50,
@@ -659,15 +661,16 @@ export interface Repository<entityType> {
    *     sum: ['salary'],
    *     average: ['age'],
    *   }
-   * });
+   * }).paginator();
    *
-   * // Accessing the items from the first page
+   * // Accessing paginated items
    * console.table(result.items);
    *
-   * // Accessing the aggregation results
-   * console.log(result.aggregates.salary.sum); // Total salary sum
-   * console.log(result.aggregates.age.average); // Average age
+   * // Accessing aggregation results
+   * console.log('Total salary:', result.aggregates.salary.sum); // Sum of all salaries
+   * console.log('Average age:', result.aggregates.age.average);  // Average age
    */
+
   query<
     sumFields extends NumericKeys<entityType>[] | undefined = undefined,
     averageFields extends NumericKeys<entityType>[] | undefined = undefined,
@@ -677,7 +680,7 @@ export interface Repository<entityType> {
       | (keyof MembersOnly<entityType>)[]
       | undefined = undefined,
   >(
-    options?: QueryOptionsWithAggregates<
+    options?: QueryOptions<
       entityType,
       sumFields extends undefined ? never : sumFields,
       averageFields extends undefined ? never : averageFields,
@@ -685,7 +688,7 @@ export interface Repository<entityType> {
       maxFields extends undefined ? never : maxFields,
       distinctCountFields extends undefined ? never : distinctCountFields
     >,
-  ): QueryResultWithAggregates<
+  ): QueryResult<
     entityType,
     sumFields extends undefined ? never : sumFields,
     averageFields extends undefined ? never : averageFields,
@@ -1254,21 +1257,20 @@ export interface FindFirstOptionsBase<entityType>
   /** If set to true and an item is not found, it's created and returned*/
   createIfNotFound?: boolean
 }
-export interface QueryOptions<entityType> extends FindOptionsBase<entityType> {
+
+export interface QueryOptions<
+  entityType,
+  sumFields extends NumericKeys<entityType>[] = never,
+  averageFields extends NumericKeys<entityType>[] = never,
+  minFields extends (keyof MembersOnly<entityType>)[] = never,
+  maxFields extends (keyof MembersOnly<entityType>)[] = never,
+  distinctCountFields extends (keyof MembersOnly<entityType>)[] = never,
+> extends FindOptionsBase<entityType> {
   /** The number of items to return in each step */
   pageSize?: number
   /** A callback method to indicate the progress of the iteration */
   progress?: { progress: (progress: number) => void }
-}
-export interface QueryOptionsWithAggregates<
-  entityType,
-  sumFields extends NumericKeys<entityType>[],
-  averageFields extends NumericKeys<entityType>[],
-  minFields extends (keyof MembersOnly<entityType>)[],
-  maxFields extends (keyof MembersOnly<entityType>)[],
-  distinctCountFields extends (keyof MembersOnly<entityType>)[],
-> extends QueryOptions<entityType> {
-  aggregate: Omit<
+  aggregate?: Omit<
     GroupByOptions<
       entityType,
       never,
@@ -1283,7 +1285,14 @@ export interface QueryOptionsWithAggregates<
 }
 /** The result of a call to the `query` method in the `Repository` object.
  */
-export interface QueryResult<entityType> {
+export interface QueryResult<
+  entityType,
+  sumFields extends NumericKeys<entityType>[] = never,
+  averageFields extends NumericKeys<entityType>[] = never,
+  minFields extends (keyof MembersOnly<entityType>)[] = never,
+  maxFields extends (keyof MembersOnly<entityType>)[] = never,
+  distinctCountFields extends (keyof MembersOnly<entityType>)[] = never,
+> {
   /** returns an iterator that iterates the rows in the result using a paging mechanism
    * @example
    * for await (const task of taskRepo.query()) {
@@ -1295,24 +1304,15 @@ export interface QueryResult<entityType> {
   }
   /** returns the number of rows that match the query criteria */
   count(): Promise<number>
-  /** Returns a `Paginator` object that is used for efficient paging */
-  paginator(): Promise<Paginator<entityType>>
+
   /** gets the items in a specific page */
   getPage(pageNumber?: number): Promise<entityType[]>
   /** Performs an operation on all the items matching the query criteria */
   forEach(what: (item: entityType) => Promise<any>): Promise<number>
-}
-export interface QueryResultWithAggregates<
-  entityType,
-  sumFields extends NumericKeys<entityType>[],
-  averageFields extends NumericKeys<entityType>[],
-  minFields extends (keyof MembersOnly<entityType>)[],
-  maxFields extends (keyof MembersOnly<entityType>)[],
-  distinctCountFields extends (keyof MembersOnly<entityType>)[],
-> extends QueryResult<entityType> {
+
   /** Returns a `Paginator` object that is used for efficient paging */
   paginator(): Promise<
-    PaginatorWithAggregates<
+    Paginator<
       entityType,
       sumFields,
       averageFields,
@@ -1338,26 +1338,25 @@ export interface QueryResultWithAggregates<
  *   console.log(paginator.items.length)
  * }
  */
-export interface Paginator<entityType> {
+export interface Paginator<
+  entityType,
+  sumFields extends NumericKeys<entityType>[] = never,
+  averageFields extends NumericKeys<entityType>[] = never,
+  minFields extends (keyof MembersOnly<entityType>)[] = never,
+  maxFields extends (keyof MembersOnly<entityType>)[] = never,
+  distinctCountFields extends (keyof MembersOnly<entityType>)[] = never,
+> {
   /** the items in the current page */
   items: entityType[]
   /** True if next page exists */
   hasNextPage: boolean
-  /** Gets the next page in the `query`'s result set */
-  nextPage(): Promise<Paginator<entityType>>
+
   /** the count of the total items in the `query`'s result */
   count(): Promise<number>
-}
-export interface PaginatorWithAggregates<
-  entityType,
-  sumFields extends NumericKeys<entityType>[],
-  averageFields extends NumericKeys<entityType>[],
-  minFields extends (keyof MembersOnly<entityType>)[],
-  maxFields extends (keyof MembersOnly<entityType>)[],
-  distinctCountFields extends (keyof MembersOnly<entityType>)[],
-> extends Paginator<entityType> {
+
+  /** Gets the next page in the `query`'s result set */
   nextPage(): Promise<
-    PaginatorWithAggregates<
+    Paginator<
       entityType,
       sumFields,
       averageFields,

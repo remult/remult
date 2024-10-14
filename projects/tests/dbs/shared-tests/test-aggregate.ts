@@ -325,6 +325,23 @@ export function aggregateTest(
       expect(result.aggregates.numberOfKids.avg).toBeCloseTo(4.3333333) // Average numberOfKids for all salaries greater than 1000
       expect(result.items[0].category?.name).toBe('a')
     })
+    test('Query without Aggregate', async () => {
+      const r = await repo()
+      const result = await r
+        .query({
+          where: {
+            salary: { $gt: 1000! },
+          },
+          include: {
+            category: true,
+          },
+        })
+        .paginator()
+      expect(result.items.length).toBe(15)
+      expect(result.aggregates.$count).toBe(15) // I wish aggregate would be undefined in this case, but since I couldn't I prefer for it to have something
+
+      expect(result.items[0].category?.name).toBe('a')
+    })
     it('field cant be used both for group by and sum', async () => {
       const r = await repo()
       await expect(async () => {
