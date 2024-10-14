@@ -2014,14 +2014,7 @@ export type ObjectMembersOnly<T> = MembersOnly<{
     }[keyof T]
   >]: T[K]
 }>
-export interface Paginator<
-  entityType,
-  sumFields extends NumericKeys<entityType>[] = never,
-  averageFields extends NumericKeys<entityType>[] = never,
-  minFields extends (keyof MembersOnly<entityType>)[] = never,
-  maxFields extends (keyof MembersOnly<entityType>)[] = never,
-  distinctCountFields extends (keyof MembersOnly<entityType>)[] = never,
-> {
+export type Paginator<entityType, AggregateResult = never> = {
   /** the items in the current page */
   items: entityType[]
   /** True if next page exists */
@@ -2029,27 +2022,9 @@ export interface Paginator<
   /** the count of the total items in the `query`'s result */
   count(): Promise<number>
   /** Gets the next page in the `query`'s result set */
-  nextPage(): Promise<
-    Paginator<
-      entityType,
-      sumFields,
-      averageFields,
-      minFields,
-      maxFields,
-      distinctCountFields
-    >
-  >
-  aggregates: GroupByResult<
-    entityType,
-    never,
-    sumFields,
-    averageFields,
-    minFields,
-    maxFields,
-    distinctCountFields
-  >
+  nextPage(): Promise<Paginator<entityType, AggregateResult>>
+  aggregates: AggregateResult
 }
-//[ ] GroupByResult from TBD is not exported
 export interface PreprocessFilterEvent<entityType> {
   /**
    * Metadata of the entity being filtered.
@@ -2072,41 +2047,15 @@ export declare class ProgressListener {
   progress(progress: number): void
 }
 //[ ] DataApiResponse from TBD is not exported
-export interface QueryOptions<
-  entityType,
-  sumFields extends NumericKeys<entityType>[] = never,
-  averageFields extends NumericKeys<entityType>[] = never,
-  minFields extends (keyof MembersOnly<entityType>)[] = never,
-  maxFields extends (keyof MembersOnly<entityType>)[] = never,
-  distinctCountFields extends (keyof MembersOnly<entityType>)[] = never,
-> extends FindOptionsBase<entityType> {
+export interface QueryOptions<entityType> extends FindOptionsBase<entityType> {
   /** The number of items to return in each step */
   pageSize?: number
   /** A callback method to indicate the progress of the iteration */
   progress?: {
     progress: (progress: number) => void
   }
-  aggregate?: Omit<
-    GroupByOptions<
-      entityType,
-      never,
-      sumFields,
-      averageFields,
-      minFields,
-      maxFields,
-      distinctCountFields
-    >,
-    "group" | "orderBy" | "where" | "limit" | "page"
-  >
 }
-export interface QueryResult<
-  entityType,
-  sumFields extends NumericKeys<entityType>[] = never,
-  averageFields extends NumericKeys<entityType>[] = never,
-  minFields extends (keyof MembersOnly<entityType>)[] = never,
-  maxFields extends (keyof MembersOnly<entityType>)[] = never,
-  distinctCountFields extends (keyof MembersOnly<entityType>)[] = never,
-> {
+export interface QueryResult<entityType, AggregateResult = never> {
   /** returns an iterator that iterates the rows in the result using a paging mechanism
    * @example
    * for await (const task of taskRepo.query()) {
@@ -2123,16 +2072,7 @@ export interface QueryResult<
   /** Performs an operation on all the items matching the query criteria */
   forEach(what: (item: entityType) => Promise<any>): Promise<number>
   /** Returns a `Paginator` object that is used for efficient paging */
-  paginator(): Promise<
-    Paginator<
-      entityType,
-      sumFields,
-      averageFields,
-      minFields,
-      maxFields,
-      distinctCountFields
-    >
-  >
+  paginator(): Promise<Paginator<entityType, AggregateResult>>
 }
 export declare type RefSubscriber = (() => void) | RefSubscriberBase
 export interface RefSubscriberBase {
@@ -2529,8 +2469,8 @@ export interface Repository<entityType> {
    * @template maxFields The fields to find the maximum value, provided as an array of keys from the entity type.
    * @template distinctCountFields The fields to count distinct values, provided as an array of keys from the entity type.
    *
-   * @param {QueryOptionsWithAggregates<entityType, sumFields, averageFields, minFields, maxFields, distinctCountFields>} options - The options for the query and aggregation.
-   * @returns {QueryResultWithAggregates<entityType, sumFields, averageFields, minFields, maxFields, distinctCountFields>} The result of the query, including paginated items and aggregation results.
+   * @param {QueryOptions<entityType, sumFields, averageFields, minFields, maxFields, distinctCountFields>} options - The options for the query and aggregation.
+   * @returns {QueryResult<entityType, sumFields, averageFields, minFields, maxFields, distinctCountFields>} The result of the query, including paginated items and aggregation results.
    *
    * @example
    * // Basic usage with asynchronous iteration:
@@ -2573,30 +2513,46 @@ export interface Repository<entityType> {
    * console.log('Average age:', result.aggregates.age.average);  // Average age
    */
   query<
-    sumFields extends NumericKeys<entityType>[] | undefined = undefined,
-    averageFields extends NumericKeys<entityType>[] | undefined = undefined,
-    minFields extends (keyof MembersOnly<entityType>)[] | undefined = undefined,
-    maxFields extends (keyof MembersOnly<entityType>)[] | undefined = undefined,
-    distinctCountFields extends
-      | (keyof MembersOnly<entityType>)[]
-      | undefined = undefined,
+    Options extends QueryOptions<entityType> & {
+      aggregate?: Omit<
+        GroupByOptions<
+          entityType,
+          never,
+          NumericKeys<entityType>[],
+          NumericKeys<entityType>[],
+          (keyof MembersOnly<entityType>)[],
+          (keyof MembersOnly<entityType>)[],
+          (keyof MembersOnly<entityType>)[]
+        >,
+        "group" | "orderBy" | "where" | "limit" | "page"
+      >
+    },
   >(
-    options?: QueryOptions<
+    options?: Options,
+  ): Options extends {
+    aggregate: GroupByOptions<
       entityType,
-      sumFields extends undefined ? never : sumFields,
-      averageFields extends undefined ? never : averageFields,
-      minFields extends undefined ? never : minFields,
-      maxFields extends undefined ? never : maxFields,
-      distinctCountFields extends undefined ? never : distinctCountFields
-    >,
-  ): QueryResult<
-    entityType,
-    sumFields extends undefined ? never : sumFields,
-    averageFields extends undefined ? never : averageFields,
-    minFields extends undefined ? never : minFields,
-    maxFields extends undefined ? never : maxFields,
-    distinctCountFields extends undefined ? never : distinctCountFields
-  >
+      never,
+      infer sumFields,
+      infer averageFields,
+      infer minFields,
+      infer maxFields,
+      infer distinctCountFields
+    >
+  }
+    ? QueryResult<
+        entityType,
+        GroupByResult<
+          entityType,
+          never,
+          sumFields,
+          averageFields,
+          minFields,
+          maxFields,
+          distinctCountFields
+        >
+      >
+    : QueryResult<entityType>
   /** Returns a count of the items matching the criteria.
    * @see [EntityFilter](http://remult.dev/docs/entityFilter.html)
    * @example
@@ -2715,6 +2671,12 @@ export interface Repository<entityType> {
   addEventListener(listener: entityEventListener<entityType>): Unsubscribe
   relations(item: entityType): RepositoryRelations<entityType>
 }
+//[ ] GroupByResult from TBD is not exported
+//[ ] sumFields from TBD is not exported
+//[ ] averageFields from TBD is not exported
+//[ ] minFields from TBD is not exported
+//[ ] maxFields from TBD is not exported
+//[ ] distinctCountFields from TBD is not exported
 //[ ] UpsertOptions from TBD is not exported
 //[ ] entityEventListener from TBD is not exported
 export type RepositoryRelations<entityType> = {
