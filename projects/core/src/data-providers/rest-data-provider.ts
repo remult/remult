@@ -202,6 +202,16 @@ export class RestEntityDataProvider
       (r) => +r.updated,
     )
   }
+  public async upsertMany(options: { where: any; set: any }[]): Promise<any[]> {
+    const { run } = this.buildFindRequest(undefined)
+    return run(
+      'upsertMany',
+      options.map((x) => ({
+        where: this.toJsonOfIncludedKeys(x.where),
+        set: x.set !== undefined ? this.toJsonOfIncludedKeys(x.set) : undefined,
+      })),
+    ).then((r) => r.map((x: any) => this.translateFromJson(x)))
+  }
   public find(options?: EntityDataProviderFindOptions): Promise<Array<any>> {
     let { run } = this.buildFindRequest(options)
     return run().then((x) => x.map((y: any) => this.translateFromJson(y)))

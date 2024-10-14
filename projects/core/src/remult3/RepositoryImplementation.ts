@@ -576,9 +576,9 @@ export class RepositoryImplementation<entityType>
     }
   }
   private __createDto(basedOn: Partial<MembersOnly<entityType>>) {
-    const ref = this.getEntityRef(
-      basedOn as any,
-    ) as rowHelperImplementation<entityType>
+    const ref = this.getEntityRef({
+      ...basedOn,
+    } as any) as rowHelperImplementation<entityType>
     const r = ref.copyDataToObject(false)
     const keys = Object.keys(basedOn)
     for (const element of this.fields) {
@@ -668,7 +668,25 @@ export class RepositoryImplementation<entityType>
 
   upsert(options: UpsertOptions<entityType>[]): Promise<entityType[]>
   upsert(options: UpsertOptions<entityType>): Promise<entityType>
-  async upsert(options: any): Promise<any> {
+  async upsert(
+    options: UpsertOptions<entityType> | UpsertOptions<entityType>[],
+  ): Promise<any> {
+    if (this._dataProvider.isProxy) {
+      let rawRows = await (
+        this._edp as any as ProxyEntityDataProvider
+      ).upsertMany(
+        (Array.isArray(options) ? options : [options]).map((x) => ({
+          where: this.__createDto(x.where),
+          set: x.set ? this.__createDto(x.set) : undefined,
+        })),
+      )
+      const loader = new RelationLoader()
+      const result = await this._loadManyToOneForManyRows(rawRows, {}, loader)
+      await loader.resolveAll()
+      if (Array.isArray(options)) return result
+      else return result[0]
+    }
+
     if (Array.isArray(options)) {
       return promiseAll(options, (x) => this.upsert(x))
     }

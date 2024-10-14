@@ -52,6 +52,12 @@ export interface ProxyEntityDataProvider {
     items: any[]
     aggregates: any
   }>
+  upsertMany(
+    options: {
+      where: any
+      set: any
+    }[],
+  ): Promise<any[]>
 }
 export interface EntityDataProviderFindOptions {
   where?: Filter

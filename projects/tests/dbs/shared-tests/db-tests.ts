@@ -649,7 +649,12 @@ export function commonDbTests(
       d.ok()
     }
     entityWithValidations.savingRowCount = 0
-    await api.post(t, { name: 'noam honig', myId: 1 })
+    await api.httpPost(
+      t,
+      { get: () => undefined },
+      { name: 'noam honig', myId: 1 },
+      () => undefined!,
+    )
     expect(entityWithValidations.savingRowCount).toBe(1)
     d.test()
   })
