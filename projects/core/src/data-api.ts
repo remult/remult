@@ -482,6 +482,7 @@ export class DataApi<T = unknown> {
       response.error(err, this.repository.metadata)
     }
   }
+
   async actualUpdate(row: any, body: any) {
     let ref = this.repository.getEntityRef(row) as rowHelperImplementation<T>
     await ref._updateEntityBasedOnApi(body)

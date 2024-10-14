@@ -28,6 +28,8 @@ All notable changes to this project will be documented in this file.
   console.log(result.aggregates.salary.sum) // Total salary sum
   ```
 
+- Fixed issue with `updateMany` where the `set` had ValueListType or relation
+
 ## [0.27.19] 2024-09-26
 
 - Fixed issue with stackblitz async_hook replacer

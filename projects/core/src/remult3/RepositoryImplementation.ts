@@ -575,6 +575,19 @@ export class RepositoryImplementation<entityType>
       }
     }
   }
+  private __createDto(basedOn: Partial<MembersOnly<entityType>>) {
+    const ref = this.getEntityRef(
+      basedOn as any,
+    ) as rowHelperImplementation<entityType>
+    const r = ref.copyDataToObject(false)
+    const keys = Object.keys(basedOn)
+    for (const element of this.fields) {
+      if (element.dbReadOnly || !keys.includes(element.key))
+        delete r[element.key]
+    }
+    return r
+  }
+
   async updateMany({
     where,
     set,
@@ -586,7 +599,7 @@ export class RepositoryImplementation<entityType>
     if (this._dataProvider.isProxy) {
       return (this._edp as any as ProxyEntityDataProvider).updateMany(
         await this._translateWhereToFilter(where),
-        set,
+        this.__createDto({ ...set }),
       )
     } else {
       let updated = 0
@@ -1941,11 +1954,9 @@ export class rowHelperImplementation<T>
     this.__assertValidity()
 
     let d = this.copyDataToObject(this.isNew())
-    let ignoreKeys: string[] = []
     for (const field of this.metadata.fields) {
       if (field.dbReadOnly) {
         d[field.key] = undefined
-        ignoreKeys.push(field.key)
         let f = this.fields.find(field)
         f.value = f.originalValue
       }
