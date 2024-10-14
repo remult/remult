@@ -53,6 +53,7 @@ import type {
   QueryResult,
   RefSubscriber,
   RefSubscriberBase,
+  UpsertOptions,
 } from './remult3.js'
 import { assign } from '../../assign.js'
 import type { entityEventListener } from '../__EntityValueProvider.js'
@@ -649,6 +650,29 @@ export class RepositoryImplementation<entityType>
       }
       await this._fixTypes(r)
       return await ref.save()
+    }
+  }
+
+  upsert(options: UpsertOptions<entityType>[]): Promise<entityType[]>
+  upsert(options: UpsertOptions<entityType>): Promise<entityType>
+  async upsert(options: any): Promise<any> {
+    if (Array.isArray(options)) {
+      return promiseAll(options, (x) => this.upsert(x))
+    }
+    let op = options as UpsertOptions<entityType>
+    var row = await this.findFirst(op.where as any, { createIfNotFound: true })
+    var ref = getEntityRef(row, false)
+    if (ref.isNew()) {
+      if (op.set) {
+        assign(row, op.set)
+      }
+      return await ref.save()
+    } else {
+      if (op.set) {
+        assign(row, op.set)
+        return await ref.save()
+      }
+      return row
     }
   }
 

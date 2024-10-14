@@ -11,6 +11,11 @@ import type {
 import type { SortSegment } from '../sort.js'
 import type { EntityBase } from './RepositoryImplementation.js'
 
+export interface UpsertOptions<entityType> {
+  where: Partial<MembersOnly<entityType>>
+  set?: Partial<MembersOnly<entityType>>
+}
+
 export interface EntityRefBase<entityType> extends Subscribable {
   hasErrors(): boolean
   undoChanges(): void
@@ -753,6 +758,9 @@ export interface Repository<entityType> {
     where: EntityFilter<entityType>
     set: Partial<MembersOnly<entityType>>
   }): Promise<number>
+
+  upsert(options: UpsertOptions<entityType>[]): Promise<entityType[]>
+  upsert(options: UpsertOptions<entityType>): Promise<entityType>
 
   /** Deletes an Item*/
   delete(id: idType<entityType>): Promise<void>

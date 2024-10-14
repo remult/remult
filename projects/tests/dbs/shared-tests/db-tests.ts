@@ -46,7 +46,7 @@ import type { DbTestProps } from './db-tests-props'
 import { entityWithValidations } from './entityWithValidations'
 import type { CategoriesForTesting } from '../../tests/remult-3-entities'
 import { ValueConverters } from '../../../core/src/valueConverters'
-import { it, vi } from 'vitest'
+import { it, vi, test } from 'vitest'
 import { expect } from 'vitest'
 import { entity } from '../../tests/dynamic-classes.js'
 
@@ -76,6 +76,46 @@ export function commonDbTests(
       })
       .save()
     expect(r.title).toEqual('42')
+  })
+  test('test upsert', async () => {
+    const s = await createEntity(stam)
+    expect(await s.count()).toBe(0)
+    expect(
+      await s.upsert({
+        where: {
+          id: 1,
+        },
+      }),
+    ).toMatchInlineSnapshot(`
+      stam {
+        "id": 1,
+        "title": "",
+      }
+    `)
+    await s.upsert({
+      where: {
+        id: 1,
+      },
+    })
+    expect(await s.count()).toBe(1)
+    expect(
+      (await s.upsert({ where: { id: 1 }, set: { title: 'noam' } })).title,
+    ).toBe('noam')
+    expect(await s.count()).toBe(1)
+    expect(
+      (await s.upsert({ where: { id: 2 }, set: { title: 'noam' } })).title,
+    ).toBe('noam')
+    expect(await s.count()).toBe(2)
+
+    expect(
+      (
+        await s.upsert([
+          { where: { id: 3 }, set: { title: 'remult' } },
+          { where: { id: 2 }, set: { title: 'remult' } },
+        ])
+      ).map((x) => x.title),
+    ).toEqual(['remult', 'remult'])
+    expect(await s.count()).toBe(3)
   })
   it('filter works on all db', async () => {
     let s = await entityWithValidations.create4RowsInDp(createEntity)
