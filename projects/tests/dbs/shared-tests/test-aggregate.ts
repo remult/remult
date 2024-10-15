@@ -9,7 +9,10 @@ import {
 } from '../../../core/index.js'
 import type { DbTestProps } from './db-tests-props.js'
 import type { DbTestOptions } from './db-tests.js'
-import { GroupByForApiKey } from '../../../core/src/remult3/remult3.js'
+import {
+  GroupByForApiKey,
+  Paginator,
+} from '../../../core/src/remult3/remult3.js'
 
 @ValueListFieldType()
 class Status {
@@ -680,7 +683,7 @@ async function testTypesWithQuery() {
     .paginator()
   r2.aggregates.$count
   // @ts-expect-error - id wasn't selected
-  r2.aggregate.id
+  r2.aggregates.id
 
   // When aggregate is provided with id in group
   let r3 = await r

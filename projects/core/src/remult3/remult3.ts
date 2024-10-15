@@ -694,14 +694,17 @@ export interface Repository<entityType> {
   >(
     options?: Options,
   ): Options extends {
-    aggregate: GroupByOptions<
-      entityType,
-      never,
-      infer sumFields,
-      infer averageFields,
-      infer minFields,
-      infer maxFields,
-      infer distinctCountFields
+    aggregate: Omit<
+      GroupByOptions<
+        entityType,
+        never,
+        NumericKeys<entityType>[],
+        NumericKeys<entityType>[],
+        (keyof MembersOnly<entityType>)[],
+        (keyof MembersOnly<entityType>)[],
+        (keyof MembersOnly<entityType>)[]
+      >,
+      'group' | 'orderBy' | 'where' | 'limit' | 'page'
     >
   }
     ? QueryResult<
@@ -709,11 +712,11 @@ export interface Repository<entityType> {
         GroupByResult<
           entityType,
           never,
-          sumFields,
-          averageFields,
-          minFields,
-          maxFields,
-          distinctCountFields
+          NonNullable<Options['aggregate']['sum']>,
+          NonNullable<Options['aggregate']['avg']>,
+          NonNullable<Options['aggregate']['min']>,
+          NonNullable<Options['aggregate']['max']>,
+          NonNullable<Options['aggregate']['distinctCount']>
         >
       >
     : QueryResult<entityType>
@@ -1317,9 +1320,13 @@ export interface QueryOptions<entityType> extends FindOptionsBase<entityType> {
   /** A callback method to indicate the progress of the iteration */
   progress?: { progress: (progress: number) => void }
 }
+export type EmptyAggregateResult = 'EmptyAggregateResult'
 /** The result of a call to the `query` method in the `Repository` object.
  */
-export interface QueryResult<entityType, AggregateResult = never> {
+export interface QueryResult<
+  entityType,
+  AggregateResult = EmptyAggregateResult,
+> {
   /** returns an iterator that iterates the rows in the result using a paging mechanism
    * @example
    * for await (const task of taskRepo.query()) {
@@ -1356,7 +1363,7 @@ export interface QueryResult<entityType, AggregateResult = never> {
  *   console.log(paginator.items.length)
  * }
  */
-export type Paginator<entityType, AggregateResult = never> = {
+export type Paginator<entityType, AggregateResult = EmptyAggregateResult> = {
   /** the items in the current page */
   items: entityType[]
   /** True if next page exists */
@@ -1367,9 +1374,9 @@ export type Paginator<entityType, AggregateResult = never> = {
 
   /** Gets the next page in the `query`'s result set */
   nextPage(): Promise<Paginator<entityType, AggregateResult>>
-
-  aggregates: AggregateResult
-}
+} & (AggregateResult extends EmptyAggregateResult
+  ? {}
+  : { aggregates: AggregateResult })
 
 /**
  * Options for configuring a relation between entities.

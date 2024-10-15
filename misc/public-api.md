@@ -2014,7 +2014,7 @@ export type ObjectMembersOnly<T> = MembersOnly<{
     }[keyof T]
   >]: T[K]
 }>
-export type Paginator<entityType, AggregateResult = never> = {
+export type Paginator<entityType, AggregateResult = EmptyAggregateResult> = {
   /** the items in the current page */
   items: entityType[]
   /** True if next page exists */
@@ -2023,8 +2023,12 @@ export type Paginator<entityType, AggregateResult = never> = {
   count(): Promise<number>
   /** Gets the next page in the `query`'s result set */
   nextPage(): Promise<Paginator<entityType, AggregateResult>>
-  aggregates: AggregateResult
-}
+} & (AggregateResult extends EmptyAggregateResult
+  ? {}
+  : {
+      aggregates: AggregateResult
+    })
+//[ ] EmptyAggregateResult from TBD is not exported
 export interface PreprocessFilterEvent<entityType> {
   /**
    * Metadata of the entity being filtered.
@@ -2055,7 +2059,10 @@ export interface QueryOptions<entityType> extends FindOptionsBase<entityType> {
     progress: (progress: number) => void
   }
 }
-export interface QueryResult<entityType, AggregateResult = never> {
+export interface QueryResult<
+  entityType,
+  AggregateResult = EmptyAggregateResult,
+> {
   /** returns an iterator that iterates the rows in the result using a paging mechanism
    * @example
    * for await (const task of taskRepo.query()) {
@@ -2530,14 +2537,17 @@ export interface Repository<entityType> {
   >(
     options?: Options,
   ): Options extends {
-    aggregate: GroupByOptions<
-      entityType,
-      never,
-      infer sumFields,
-      infer averageFields,
-      infer minFields,
-      infer maxFields,
-      infer distinctCountFields
+    aggregate: Omit<
+      GroupByOptions<
+        entityType,
+        never,
+        NumericKeys<entityType>[],
+        NumericKeys<entityType>[],
+        (keyof MembersOnly<entityType>)[],
+        (keyof MembersOnly<entityType>)[],
+        (keyof MembersOnly<entityType>)[]
+      >,
+      "group" | "orderBy" | "where" | "limit" | "page"
     >
   }
     ? QueryResult<
@@ -2545,11 +2555,11 @@ export interface Repository<entityType> {
         GroupByResult<
           entityType,
           never,
-          sumFields,
-          averageFields,
-          minFields,
-          maxFields,
-          distinctCountFields
+          NonNullable<Options["aggregate"]["sum"]>,
+          NonNullable<Options["aggregate"]["avg"]>,
+          NonNullable<Options["aggregate"]["min"]>,
+          NonNullable<Options["aggregate"]["max"]>,
+          NonNullable<Options["aggregate"]["distinctCount"]>
         >
       >
     : QueryResult<entityType>
@@ -2672,11 +2682,6 @@ export interface Repository<entityType> {
   relations(item: entityType): RepositoryRelations<entityType>
 }
 //[ ] GroupByResult from TBD is not exported
-//[ ] sumFields from TBD is not exported
-//[ ] averageFields from TBD is not exported
-//[ ] minFields from TBD is not exported
-//[ ] maxFields from TBD is not exported
-//[ ] distinctCountFields from TBD is not exported
 //[ ] UpsertOptions from TBD is not exported
 //[ ] entityEventListener from TBD is not exported
 export type RepositoryRelations<entityType> = {
