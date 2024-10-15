@@ -1,7 +1,8 @@
 import { Entity, Fields, remult, repo, Validators } from "remult";
-import type { hash } from "@node-rs/argon2";
-import type { ProviderType } from "../../server/auth.js";
+
+import type { ProviderType } from "@auth/express/providers";
 import { Roles } from "./Roles.js";
+import bcrypt from "bcryptjs";
 
 @Entity("users", {
   allowApiCrud: remult.authenticated, // Only authenticated users can perform CRUD operations
@@ -31,7 +32,7 @@ export class User {
     saving: async (user, fieldRef, e) => {
       if (e.isNew || fieldRef.valueChanged()) {
         // If the user is new or the password has changed
-        user.password = await User.hashPassword(user.updatePassword); // Hash the new password using the injected hashing function
+        user.password = bcrypt.hashSync(user.updatePassword); // Hash the new password using the injected hashing function
       }
     },
   })
@@ -53,8 +54,6 @@ export class User {
 
   @Fields.string({ includeInApi: Roles.admin }) // Admins can see the user's provider account ID (e.g., GitHub user ID)
   providerAccountId = "";
-
-  static hashPassword: typeof hash; // A static function for password hashing, injected in `auth.ts`
 
   // Creates demo users for testing purposes
   static async createDemoUsers() {

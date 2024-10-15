@@ -36,12 +36,49 @@ export function writeAppTsxAndReadme(args: WriteFilesArgs) {
 
 export default function ${framework === nextJs ? "Home" : "App"}() {
   return (
-    <>
-      Welcome to ${projectName}
-      <ul>
-        ${li.map((l) => `<li>${l()}</li>`).join("\n        ")}
-      </ul>
-    </>
+    <div className="tiles">
+      <Tile
+        title="${projectName}"
+        subtitle=""
+        icon="remult"
+        className="intro"
+        status="Success"
+        width="half"
+      >
+        <div className="tile__title">What's next?</div>
+        <div className="button-row">
+          <a
+            className="button"
+            href="https://learn.remult.dev/"
+            target="_blank"
+          >
+            Interactive Tutorial
+          </a>
+          <a className="button" href="https://remult.dev/docs" target="_blank">
+            Documentation
+          </a>
+          <a
+            className="button"
+            href="https://github.com/remult/remult"
+            target="_blank"
+          >
+            Github
+          </a>
+        </div>
+        <div className="tile__subtitle"> Technology Stack Info:</div>
+        <div className="intro__stack">
+          ${components
+            .map(
+              (c) => `<div className="intro__stack-item">
+            <span>${c.type}</span>
+            ${c.display}
+          </div>`,
+            )
+            .join("\n          ")}
+        </div>
+      </Tile>
+      ${li.map((l) => `${l()}`).join("\n      ")}
+    </div>
   );
 }
 `;

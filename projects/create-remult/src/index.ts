@@ -361,18 +361,17 @@ async function init() {
     }
     pkg.name = packageName || getProjectName();
     pkg.dependencies = sortObject({
-      remult: "^0.27.19",
       ...pkg.dependencies,
+      remult: "^0.27.20-next.3",
       ...db.dependencies,
       ...safeServer.dependencies,
-      ...(auth
-        ? { ...safeServer.auth?.dependencies, "@node-rs/argon2": "^1.8.3" }
-        : {}),
+      ...(auth ? { ...safeServer.auth?.dependencies, bcryptjs: "^2.4.3" } : {}),
     });
     pkg.devDependencies = sortObject({
       ...pkg.devDependencies,
       ...db.devDependencies,
       ...safeServer.devDependencies,
+      ...(auth ? { "@types/bcryptjs": "^2.4.6" } : {}),
     });
   });
   const apiFileName = path.join(root, safeServer.path || "src/server/api.ts");
