@@ -24,8 +24,6 @@ export const nextJs: Framework = {
       fs.readFileSync(path.join(root, "package.json"), "utf-8"),
     );
     let externalPackages: string[] = [];
-    if (packageJson.dependencies["@node-rs/argon2"])
-      externalPackages.push("@node-rs/argon2");
     if (packageJson.dependencies["knex"]) externalPackages.push("knex");
 
     if (externalPackages.length > 0) {
@@ -46,7 +44,7 @@ export default nextConfig;
     }
     writeAppTsxAndReadme(args);
     if (args.withAuth) {
-      const checkAuthPath = path.join(root, "src/demo/auth/CheckAuth.tsx");
+      const checkAuthPath = path.join(root, "src/demo/auth/Auth.tsx");
       fs.writeFileSync(
         checkAuthPath,
         fs

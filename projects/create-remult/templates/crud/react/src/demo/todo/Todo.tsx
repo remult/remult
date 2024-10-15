@@ -1,8 +1,4 @@
 import { useEffect, useState, type FormEvent } from "react";
-
-import trash from "../../assets/trash.svg";
-import plus from "../../assets/plus.svg";
-
 import Tile from "../Tile";
 import { repo } from "remult";
 import { Task } from "./Task";
@@ -64,7 +60,7 @@ export default function Todo() {
             onChange={(e) => setNewTaskTitle(e.target.value)}
           />
           <button>
-            <img src={plus} alt="Add" />
+            <img src="plus.svg" alt="Add" />
           </button>
         </form>
         {tasks.length > 0 ? (
@@ -89,7 +85,7 @@ export default function Todo() {
                   deleteTask(task);
                 }}
               >
-                <img src={trash} alt="Delete" />
+                <img src="trash.svg" alt="Delete" />
               </button>
             </div>
           ))

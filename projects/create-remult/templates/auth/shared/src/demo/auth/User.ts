@@ -1,6 +1,6 @@
 import { Entity, Fields, remult, repo, Validators } from "remult";
 
-import type { ProviderType } from "@auth/express/providers";
+import type { ProviderType } from "../../server/auth.js";
 import { Roles } from "./Roles.js";
 import bcrypt from "bcryptjs";
 
