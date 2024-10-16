@@ -32,10 +32,13 @@ hero:
     alt: Remult
   actions:
     - theme: brand
-      text: 🚀 Online tutorial
+      text: 🚀 Online Tutorial
       link: https://learn.remult.dev/
     - theme: alt
-      text: View on GitHub
+      text: Documentation
+      link: /docs/
+    - theme: alt
+      text: GitHub
       link: https://github.com/remult/remult
 
 features:
