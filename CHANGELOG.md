@@ -2,11 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-Here’s a description for the changelog entry:
-
----
-
-## [0.27.20] TBD
+## [0.27.21] TBD
 
 - **Added `upsert` method:**  
   The `upsert` method allows inserting or updating an entity in a single operation. If an entity matching the `where` condition is found, it is updated; otherwise, a new entity is created. This can be used for a single entity or for batch operations with an array of options.
@@ -46,6 +42,10 @@ Here’s a description for the changelog entry:
   console.log(result.aggregates.salary.sum) // Total salary sum
   ```
 
+- Fixed issue with `updateMany` where the `set` had `ValueListType` or relation.
+
+## [0.27.20] 2024-10-16
+
 - **Added Origin IndexedDb Storage** to store entities in the frontend:
 
   ```ts
@@ -53,7 +53,7 @@ Here’s a description for the changelog entry:
   console.table(await repo(Task, db).find())
   ```
 
-- Fixed issue with `updateMany` where the `set` had `ValueListType` or relation.
+- Fixed issue with required validation and relations
 
 ## [0.27.19] 2024-09-26
 
