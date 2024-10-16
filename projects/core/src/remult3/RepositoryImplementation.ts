@@ -666,10 +666,20 @@ export class RepositoryImplementation<entityType>
       let rawRows = await (
         this._edp as any as ProxyEntityDataProvider
       ).upsertMany(
-        (Array.isArray(options) ? options : [options]).map((x) => ({
-          where: this.__createDto(x.where),
-          set: x.set ? this.__createDto(x.set) : undefined,
-        })),
+        (Array.isArray(options) ? options : [options]).map((x) => {
+          if (this._defaultFindOptions?.where) {
+            __updateEntityBasedOnWhere<entityType>(
+              this.metadata,
+              this._defaultFindOptions.where,
+              x.where as entityType,
+            )
+            this._fixTypes(x)
+          }
+          return {
+            where: this.__createDto(x.where),
+            set: x.set ? this.__createDto(x.set) : undefined,
+          }
+        }),
       )
       const loader = new RelationLoader()
       const result = await this._loadManyToOneForManyRows(rawRows, {}, loader)

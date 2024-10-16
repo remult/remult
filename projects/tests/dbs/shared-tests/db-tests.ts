@@ -1669,6 +1669,8 @@ export function commonDbTests(
         id = 0
         @Fields.string()
         name = ''
+        @Relations.toMany(() => Task)
+        tasks?: Task[]
       }
       @Entity('tasks_r_u', { allowApiCrud: true })
       class Task {
@@ -1677,16 +1679,16 @@ export function commonDbTests(
         @Relations.toOne(() => Category)
         category?: Category
       }
-      let cat = await (
-        await createEntity(Category)
-      ).insert([
+      let cr = await await createEntity(Category)
+
+      let cat = await cr.insert([
         { id: 1, name: 'a' },
         { id: 2, name: 'b' },
         { id: 3, name: 'c' },
       ])
       let r = await createEntity(Task)
       await r.insert([{ id: 1, category: cat[2] }])
-      return { r, cat }
+      return { r, cat, cr }
     }
 
     test('insert worked', async () => {
@@ -1741,6 +1743,28 @@ export function commonDbTests(
             .paginator()
         ).items[0].category!.name,
       ).toBe('c')
+    })
+    test('relation insert many', async () => {
+      const { r, cat, cr } = await setupRelationsTest()
+      await cr.relations(cat[1]).tasks.insert({ id: 2 })
+      expect(
+        (await r.findId(2, { include: { category: true } }))?.category!.id,
+      ).toBe(2)
+    })
+    test('relation insert many', async () => {
+      const { r, cat, cr } = await setupRelationsTest()
+      await cr.relations(cat[1]).tasks.insert([{ id: 2 }, { id: 3 }])
+      expect(
+        (await r.findId(3, { include: { category: true } }))?.category!.id,
+      ).toBe(2)
+    })
+    test('upsert through relation', async () => {
+      const { r, cat, cr } = await setupRelationsTest()
+      await cr.relations(cat[1]).tasks.upsert({ where: { id: 2 } })
+
+      expect(
+        (await r.findId(2, { include: { category: true } }))?.category!.id,
+      ).toBe(2)
     })
   })
   describe('test value list field type with updates', () => {
