@@ -31,7 +31,7 @@ export function prepareInfoReadmeAndHomepage(
 
   const imports: Import[] = [
     {
-      from: "./demo/Tile",
+      from: "./demo/Tile" + (framework.componentFileSuffix ?? ""),
       imports: "Tile",
     },
   ];
