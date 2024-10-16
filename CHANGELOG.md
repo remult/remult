@@ -2,13 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.27.20] TBD
+## [0.27.20] 2024-10-16
 
 - Added Origin IndexedDb Storage to store entities in the front end
   ```ts
   const db = new JsonDataProvider(new JsonEntityIndexedDbStorage())
   console.table(await repo(Task, db).find())
   ```
+- Fixed issue with required validation and relations
 
 ## [0.27.19] 2024-09-26
 

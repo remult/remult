@@ -1,10 +1,14 @@
+import { getRelationFieldInfo } from '../internals.js'
 import type { FieldValidator } from './column-interfaces.js'
 import { isBackend } from './context.js'
 import type { ValidateFieldEvent } from './remult3/remult3.js'
 
 export class Validators {
   static required = createValidator<unknown>(
-    async (_, e) => e.value != null && e.value != undefined && e.value !== '',
+    async (_, e) =>
+      !e.valueIsNull() &&
+      e.value !== '' &&
+      (e.value !== undefined || getRelationFieldInfo(e.metadata) !== undefined),
 
     'Should not be empty',
   )
