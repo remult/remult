@@ -1,9 +1,12 @@
-import type { Framework } from "../FRAMEWORKS";
+import type { Framework, WriteFilesArgs } from "../FRAMEWORKS";
 import fs from "fs";
 import path from "path";
 import { createViteConfig } from "../utils/createViteConfig";
-import { writeImports } from "../utils/writeImports";
-import { prepareInfoReadmeAndHomepage } from "../utils/prepareInfoReadmeAndHomepage";
+import { writeImports, type Import } from "../utils/writeImports";
+import {
+  prepareInfoReadmeAndHomepage,
+  type ComponentInfo,
+} from "../utils/prepareInfoReadmeAndHomepage";
 import { createReadmeFile } from "../utils/createReadmeFile";
 
 export const vue: Framework = {
@@ -26,9 +29,29 @@ export const vue: Framework = {
       ...args,
       frontendTemplate: "vue",
     });
-    fs.writeFileSync(
-      path.join(args.root, "src", "App.vue"),
-      `<script setup lang="ts">
+    const fileName = path.join(args.root, "src", "App.vue");
+    writeAppVue(fileName, info, args);
+    createReadmeFile(
+      args.projectName,
+      info.components,
+      args.server,
+      args.root,
+      args.envVariables,
+    );
+  },
+};
+export function writeAppVue(
+  fileName: string,
+  info: {
+    components: ComponentInfo[];
+    imports: Import[];
+    li: (() => string)[];
+  },
+  args: WriteFilesArgs,
+) {
+  fs.writeFileSync(
+    fileName,
+    `<script setup lang="ts">
 ${writeImports(info.imports, args.server)}
 </script>
 
@@ -70,19 +93,8 @@ ${writeImports(info.imports, args.server)}
           .join("\n        ")}
       </div>
     </Tile>
-    <ServerStatus />
-    <Auth />
-    <Admin />
-    <Todo />
+    ${info.li.map((l) => `${l()}`).join("\n    ")}
   </div>
 </template>`,
-    );
-    createReadmeFile(
-      args.projectName,
-      info.components,
-      args.server,
-      args.root,
-      args.envVariables,
-    );
-  },
-};
+  );
+}

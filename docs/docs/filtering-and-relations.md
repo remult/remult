@@ -55,7 +55,7 @@ console.table(
 )
 ```
 
-## Option 2 - Prepare entity
+## Option 2 - Use Custom Filter
 
 We can refactor this to a custom filter that will be easier to use and will run on the backend
 
@@ -85,7 +85,7 @@ console.table(
 )
 ```
 
-## Option 3 - Prepare entity (SQL)
+## Option 3 - Custom Filter (SQL)
 
 We can improve on the custom filter by using the database's in statement capabilities:
 

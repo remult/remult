@@ -4,13 +4,14 @@ import path from "path";
 import { writeImports } from "../utils/writeImports";
 import { prepareInfoReadmeAndHomepage } from "../utils/prepareInfoReadmeAndHomepage";
 import { createReadmeFile } from "../utils/createReadmeFile";
+import { writeAppVue } from "./vue";
 
 export const nuxt: Framework = {
   name: "nuxt",
   display: "Nuxt",
+  url: "https://nuxt.com/",
 
   serverInfo: {
-    display: "Nuxt",
     remultServerFunction: "remultNuxt",
     import: "remult-nuxt",
     path: "server/api/[...remult].ts",
@@ -28,21 +29,8 @@ export const nuxt: Framework = {
         ...args,
         frontendTemplate: "vue",
       });
-      fs.writeFileSync(
-        path.join(args.root, "src", "App.vue"),
-        `<script setup lang="ts">
-${writeImports(info.imports, args.server)}
-</script>
+      writeAppVue(path.join(args.root, "src", "App.vue"), info, args);
 
-<template>
-  <h1>Welcome to ${args.projectName}!</h1>
-  
-  <ul>
-    ${info.li.map((l) => `<li>${l()}</li>`).join("\n    ")}
-  </ul>
-</template>
-`,
-      );
       createReadmeFile(
         args.projectName,
         info.components,
