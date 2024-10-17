@@ -1,0 +1,13 @@
+<app-tile title="Server Status" [status]="status" [subtitle]="subtitle">
+  @if (status === 'Error') {
+  <p>{{ error }}</p>
+  } @else if (status === 'Loading') {
+  <p>Looking for the server...</p>
+  } @else {
+  <p>
+    Everything sparkling! API is ready to be consumed. Find more information in
+    the
+    <a target="_blank" href="https://remult.dev/docs/rest-api">docs</a>.
+  </p>
+  }
+</app-tile>

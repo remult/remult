@@ -7,6 +7,7 @@ import { createReadmeFile } from "../utils/createReadmeFile";
 export const angular: Framework = {
   name: "angular",
   display: "Angular",
+  url: "https://angular.dev/",
   distLocation: (name: string) => `dist/${name}/browser`,
   writeFiles: (args) => {
     if (args.withAuth) {
@@ -32,6 +33,7 @@ export const angular: Framework = {
       `import { Component, NgZone } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { remult } from 'remult';
+import { TileComponent } from './demo/tile/tile.component';
 ${
   args.crud
     ? `import { TodoComponent } from './demo/todo/todo.component';
@@ -39,12 +41,17 @@ ${
     : ""
 }${
         args.server.requiresTwoTerminal
-          ? `import { CheckServerComponent } from './demo/check-server/check-server.component';
+          ? `import { ServerStatusComponent } from './demo/server-status/server-status.component';
 `
           : ""
       }${
         args.withAuth
-          ? `import { CheckAuthComponent } from './demo/check-auth/check-auth.component';
+          ? `import { AuthComponent } from './demo/auth/auth.component';
+`
+          : ""
+      }${
+        args.admin
+          ? `import { AdminComponent } from './demo/admin/admin.component';
 `
           : ""
       }
@@ -53,6 +60,7 @@ ${
   standalone: true,
   imports: [
     RouterOutlet,
+    TileComponent,
 ${
   args.crud
     ? `    TodoComponent,
@@ -60,12 +68,17 @@ ${
     : ""
 }${
         args.server.requiresTwoTerminal
-          ? `    CheckServerComponent,
+          ? `    ServerStatusComponent,
 `
           : ""
       }${
         args.withAuth
-          ? `    CheckAuthComponent,
+          ? `    AuthComponent,
+`
+          : ``
+      }${
+        args.admin
+          ? `    AdminComponent,
 `
           : ``
       }
@@ -83,20 +96,52 @@ export class AppComponent {
     );
     fs.writeFileSync(
       path.join(args.root, "src", "app", "app.component.html"),
-      `<h1>Welcome to ${args.projectName}!</h1>
+      `<div class="tiles">
+  <app-tile
+    title="${args.projectName}"
+    subtitle=""
+    icon="remult"
+    className="intro"
+    status="Success"
+    width="half"
+  >
+    <div class="tile__title">What's next?</div>
+    <div class="button-row">
+      <a class="button" href="https://learn.remult.dev/" target="_blank">
+        Interactive Tutorial
+      </a>
+      <a class="button" href="https://remult.dev/docs" target="_blank">
+        Documentation
+      </a>
+      <a class="button" href="https://github.com/remult/remult" target="_blank">
+        Github
+      </a>
+    </div>
+    <div class="tile__subtitle">Technology Stack Info:</div>
+    <div class="intro__stack">
+      ${info.components
+        .map(
+          (c) => `<div class="intro__stack-item">
+        <span>${c.type}</span>
+        ${c.display}
+      </div>`,
+        )
+        .map((c) => c)
+        .join("\n      ")}
+    </div>
+  </app-tile>
 
-<ul>
-${info.li
-  .map(
-    (l) =>
-      `<li>${l()
-        .replace("<CheckAuth", "<app-check-auth")
-        .replace("<CheckServer", "<app-check-server")
-        .replace("<Todo", "<app-todo")}</li>`,
-  )
-  .join("\n  ")}
-</ul>
-`,
+  ${info.li
+    .map(
+      (l) =>
+        `${l()
+          .replace("<Auth", "<app-auth")
+          .replace("<Admin", "<app-admin")
+          .replace("<ServerStatus", "<app-server-status")
+          .replace("<Todo", "<app-todo")}`,
+    )
+    .join("\n  ")}
+</div>`,
     );
     createReadmeFile(
       args.projectName,

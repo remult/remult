@@ -25,8 +25,8 @@ export function prepareInfoReadmeAndHomepage(
       url: "https://vitejs.dev/",
       type: "Bundler",
     });
-    if (server.componentInfo) components.push(server.componentInfo);
   }
+  if (server.componentInfo) components.push(server.componentInfo);
   components.push({ ...db, type: "Database" });
 
   const imports: Import[] = [

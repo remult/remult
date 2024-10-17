@@ -3,30 +3,37 @@ import { FormsModule } from "@angular/forms";
 
 import { Task } from "../../../demo/todo/Task.js";
 import { repo } from "remult";
+import { TileComponent } from "../tile/tile.component";
+import { CommonModule } from "@angular/common";
 
 @Component({
   selector: "app-todo",
   standalone: true,
-  imports: [FormsModule],
-
+  imports: [FormsModule, TileComponent, CommonModule],
+  styles: [":host { display: contents; }"],
   templateUrl: "./todo.component.html",
 })
 export class TodoComponent implements OnInit {
   tasks: Task[] = [];
-  page = 1;
+  hideCompleted = false;
   ngOnInit() {
+    this.loadTasks();
+  }
+  toggleHideCompleted() {
+    this.hideCompleted = !this.hideCompleted;
     this.loadTasks();
   }
   async loadTasks() {
     this.tasks = await repo(Task).find({
-      page: this.page,
-      limit: 5,
+      where: {
+        completed: this.hideCompleted ? false : undefined,
+      },
+      orderBy: {
+        createdAt: "asc",
+      },
     });
   }
-  setPage(delta: number) {
-    this.page += delta;
-    this.loadTasks();
-  }
+
   newTaskTitle = "";
   async addTask() {
     try {

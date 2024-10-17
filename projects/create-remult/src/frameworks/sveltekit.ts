@@ -40,7 +40,7 @@ export const svelteKit: Framework = {
 </script>
 <div class="tiles">
   <Tile
-    title="remult-project"
+    title="${args.projectName}"
     subtitle=""
     icon="remult"
     className="intro"
