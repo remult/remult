@@ -17,6 +17,7 @@ import { DATABASES, databaseTypes, type DatabaseType } from "./DATABASES";
 import { buildApiFile } from "./utils/buildApiFile";
 import { extractEnvironmentVariables } from "./utils/extractEnvironmentVariables";
 import { removeJs } from "./frameworks/nextjs";
+import { svelteKit } from "./frameworks/sveltekit";
 
 const {
   blue,
@@ -373,6 +374,13 @@ async function init() {
       ...safeServer.devDependencies,
       ...(auth ? { "@types/bcryptjs": "^2.4.6" } : {}),
     });
+    if (fw === svelteKit) {
+      pkg.devDependencies = sortObject({
+        ...pkg.devDependencies,
+        ...pkg.dependencies,
+      });
+      delete pkg.dependencies;
+    }
   });
   const apiFileName = path.join(root, safeServer.path || "src/server/api.ts");
   const apiFileDir = path.dirname(apiFileName);
