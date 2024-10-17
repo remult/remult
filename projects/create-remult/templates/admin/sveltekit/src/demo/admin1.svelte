@@ -3,6 +3,7 @@
   import Tile, { type TileStatus } from "./Tile.svelte";
 
   let status: TileStatus = "Loading";
+
   let canOpenAdmin = false;
 
   onMount(() => {
