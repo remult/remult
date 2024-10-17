@@ -9,6 +9,7 @@ export type { ClassType } from './classType.js'
 export {
   ValidateFieldEvent,
   MembersOnly,
+  NumericKeys,
   FieldsMetadata,
   FieldRef,
   IdFieldRef,
@@ -22,6 +23,7 @@ export {
   QueryOptions,
   Repository,
   GroupByOptions,
+  GroupByResult,
   FindFirstOptions,
   ComparisonValueFilter,
   ValueFilter,

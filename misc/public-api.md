@@ -1746,7 +1746,43 @@ export type GroupByOptions<
     $count?: "asc" | "desc"
   }
 } & Pick<FindOptions<entityType>, "limit" | "page">
-//[ ] NumericKeys from TBD is not exported
+export type GroupByResult<
+  entityType,
+  groupByFields extends (keyof entityType)[],
+  sumFields extends NumericKeys<entityType>[],
+  averageFields extends NumericKeys<entityType>[],
+  minFields extends NumericKeys<entityType>[],
+  maxFields extends NumericKeys<entityType>[],
+  distinctCountFields extends (keyof entityType)[],
+> = {
+  [K in
+    | groupByFields[number]
+    | sumFields[number]]: K extends groupByFields[number]
+    ? entityType[K]
+    : K extends sumFields[number]
+    ? {
+        sum: number
+      }
+    : never
+} & {
+  [K in averageFields[number]]: {
+    avg: number
+  }
+} & {
+  [K in minFields[number]]: {
+    min: number
+  }
+} & {
+  [K in maxFields[number]]: {
+    max: number
+  }
+} & {
+  [K in distinctCountFields[number]]: {
+    distinctCount: number
+  }
+} & {
+  $count: number
+}
 export declare class IdEntity extends EntityBase {
   id: string
 }
@@ -2002,6 +2038,9 @@ export type MembersToInclude<T> = {
         ? FindOptions<NonNullable<T[K]>[number]>
         : FindFirstOptions<NonNullable<T[K]>>)
 }
+export type NumericKeys<T> = {
+  [K in keyof T]: T[K] extends number | undefined | null ? K : never
+}[keyof T]
 export type ObjectMembersOnly<T> = MembersOnly<{
   [K in keyof Pick<
     T,
@@ -2681,7 +2720,6 @@ export interface Repository<entityType> {
   addEventListener(listener: entityEventListener<entityType>): Unsubscribe
   relations(item: entityType): RepositoryRelations<entityType>
 }
-//[ ] GroupByResult from TBD is not exported
 //[ ] UpsertOptions from TBD is not exported
 //[ ] entityEventListener from TBD is not exported
 export type RepositoryRelations<entityType> = {
