@@ -10,81 +10,102 @@ export function createReadmeFile(
   root: string,
   envVariables: string[],
 ) {
-  const readme = `# ${projectName}
+  components.unshift({
+    display: "Remult",
+    url: "https://remult.dev/",
+    description: "Fullstack Type-safe CRUD & Realtime",
+    emoji: "🚀",
+  });
+  const readme = `# ⚡️ ${projectName} ⚡️
 
-## Getting Started
+Everything you need to build a great \`remult\` project, powered by [\`create-remult\`](https://github.com/remult/remult/tree/main/projects/create-remult).
 
-### Includes
+### What's Included?
 
-${components.map(({ display, url }) => `- [${display}](${url})`).join("\n")}
+${components
+  .map(
+    ({ display, url, description, emoji }) =>
+      `- ${emoji ? `${emoji} ` : ""}[${display}](${url})${
+        description ? `: ${description} ` : ""
+      }`,
+  )
+  .join("\n")}
 
+### 🛠 Prerequisites
 
-### Prerequisites
+Before diving in, make sure you have the following tools installed:
 
-Make sure you have the following installed on your machine:
+- **Node.js (v20+ 🚨)**
+- **npm (bundled with Node.js)**
 
-- [Node.js](https://nodejs.org/) (v20 or later)
-- [npm](https://www.npmjs.com/) (comes with Node.js)
+### 🎯 Installation
 
-### Installation
+Clone the repo:
 
-1. Install dependencies:
+${"```"}bash
+git clone [YOUR REPO URL ONCE PUSHED]
+${"```"}
 
-   ${"```"}bash
-   npm install
-   ${"```"}
+and install dependencies:
 
-### Running the Development Environment
+${"```"}bash
+npm install
+${"```"}
+
+${
+  envVariables.length > 0
+    ? `### 🛠 Configuration & Environment Variables
+
+You'll need to set up some **environment variables** in your \`.env\` file. 
+You can use [.env.example](./.env.example) as an example.
+`
+    : ""
+}
+
+### 🧑‍💻 Running the Dev Environment
 
 ${
   server.requiresTwoTerminal
-    ? `To develop locally, you'll need to run both the frontend and backend environments. This requires two terminal windows.
+    ? `To develop locally, you'll need to run both the frontend and backend environments. This requires **two terminal windows**.
 
 1. In **Terminal 1**, run the frontend development server:
 
-   ${"```"}bash
-   npm run dev
-   ${"```"}
+${"```"}bash
+npm run dev
+${"```"}
 
    This will start the frontend development environment and automatically open your app in the browser.
 
 2. In **Terminal 2**, run the backend development server:
 
-   ${"```"}bash
-   npm run dev-node
-   ${"```"}
+${"```"}bash
+npm run dev-node
+${"```"}
 
    This will start the backend in watch mode, automatically restarting on code changes.
 `
-    : `1. run the development server:
+    : `Simply run the development server:
 
-   ${"```"}bash
-   npm run dev
-   ${"```"}`
+${"```"}bash
+npm run dev
+${"```"}`
 }
 
-${
-  envVariables.length > 0
-    ? `## Environment Variables
+### 🚢 Production-Ready
 
-${envVariables.map((v) => `- ` + v).join("\n")}
+When you're ready to go live, here's how to prepare:
 
-`
-    : ""
-}### Additional Scripts
+#### Build for production:
 
-- **Build for production**:
+${"```"}bash
+npm run build
+${"```"}
 
-  ${"```"}bash
-  npm run build
-  ${"```"}
+#### Run the production server:
 
-- **Start the production server**:
-
-  ${"```"}bash
-  npm run start
-  ${"```"}
-
+${"```"}bash
+npm run start
+${"```"}
 `;
   fs.writeFileSync(path.join(root, "README.md"), readme);
 }

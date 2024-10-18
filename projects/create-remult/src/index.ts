@@ -400,8 +400,19 @@ async function init() {
   );
   envVariables = envVariables.map((x) => x.split("=")[0]);
   fs.writeFileSync(
-    path.join(root, "sample" + envFile),
-    envVariables.map((x) => x + "=").join("\n"),
+    path.join(root, envFile + ".example"),
+    envVariables
+      .map((x) => {
+        let comment = "";
+        if (x === "AUTH_SECRET") {
+          comment =
+            "# Secret key for authentication. (You can use Online UUID generator: https://www.uuidgenerator.net)";
+        } else if (x === "DATABASE_URL") {
+          comment = "# URL of the database / connection string";
+        }
+        return `${comment ? `${comment}\n` : ``}${x}=`;
+      })
+      .join("\n"),
   );
   const writeFilesArgs = {
     root,
