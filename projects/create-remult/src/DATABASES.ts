@@ -5,6 +5,7 @@ export const DATABASES = {
   json: {
     display: "JSON Files",
     url: "https://remult.dev/docs/quickstart#connecting-a-database",
+    extraText: " (Used for dev, you can add a database later)",
   },
   postgres: {
     display: "Postgres",
@@ -161,4 +162,5 @@ export type DatabaseType = {
   devDependencies?: Record<string, string>;
   imports?: Import[];
   code?: string;
+  extraText?: string;
 } & ComponentInfo;

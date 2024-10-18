@@ -252,7 +252,9 @@ async function init() {
             databaseTypes.includes(dir) || "Invalid database type",
           choices: databaseTypes.map((db) => {
             return {
-              title: DATABASES[db].display,
+              title:
+                DATABASES[db].display +
+                ((DATABASES[db] as any).extraText ?? ""),
               value: DATABASES[db],
             };
           }),

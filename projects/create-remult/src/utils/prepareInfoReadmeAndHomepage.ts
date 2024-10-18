@@ -89,4 +89,4 @@ export function prepareInfoReadmeAndHomepage(
   return { components, imports, li };
 }
 
-export type ComponentInfo = { display: string; url: string; type: string };
+export type ComponentInfo = { display: string; url: string; type?: string };
