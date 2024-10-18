@@ -61,7 +61,6 @@
       await saveAction(value)
       rowFrozzen = { ...value }
     } catch (err: any) {
-      alert(err.message)
       error = err
     }
   }
@@ -87,30 +86,29 @@
   {#each columns as x}
     <td
       class:changeHi={x.type !== 'json' && value[x.key] !== rowFrozzen[x.key]}
+      style="position: relative"
     >
       <EditableField
         {isNewRow}
         info={x}
         {relationsToOneValues}
         bind:value={value[x.valFieldKey]}
-        on:change={(fieldValue) => {
-          // setValue({ ...value, [x.valFieldKey]: fieldValue })
-          // if (error?.modelState?.[x.valFieldKey])
-          //   setError({
-          //     ...error,
-          //     modelState: {
-          //       ...error.modelState,
-          //       [x.valFieldKey]: undefined,
-          //     },
-          //   })
+        on:change={() => {
+          if (error?.modelState?.[x.valFieldKey])
+            error = {
+              ...error,
+              modelState: {
+                ...error.modelState,
+                [x.valFieldKey]: undefined,
+              },
+            }
         }}
       />
-
-      <!-- {error?.modelState?.[x.key] && (
-        <div style={{ fontSize: 'small', color: 'red' }}>
-          {error?.modelState?.[x.valFieldKey]}
-        </div>
-      )} -->
+      {#if error?.modelState?.[x.valFieldKey]}
+        <span class="error-label">
+          {error.modelState[x.valFieldKey]}
+        </span>
+      {/if}
     </td>
   {/each}
   <td class="action-tab {changeOrNew(change, isNewRow) ? 'change' : ''}">
@@ -210,5 +208,19 @@
   }
   .changeHi {
     background-color: hsl(137, 90%, 86%) !important;
+  }
+
+  .error-label {
+    position: absolute;
+    bottom: -8px;
+    width: 100%;
+    font-size: 0.8em;
+    color: #d32f2f;
+    margin-top: -2px;
+    text-align: center;
+    /* padding: 0px 4px; */
+    background-color: #ffebee;
+    border-radius: 2px;
+    transition: opacity 0.3s ease-in-out;
   }
 </style>
