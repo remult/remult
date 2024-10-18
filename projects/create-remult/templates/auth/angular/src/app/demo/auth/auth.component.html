@@ -1,0 +1,26 @@
+<app-tile
+  title="Auth"
+  [status]="status"
+  [subtitle]="tileSubtitle"
+  class="auth"
+  width="half"
+>
+  @if (status === 'Loading') {
+  <!-- Optionally, add a loading indicator here -->
+  } @else if (status === 'Error') {
+  <p>{{ error }}</p>
+  } @else if (isAuthenticated) {
+  <p>
+    You are authenticated as <strong>{{ userName }}</strong>
+  </p>
+  <div class="button-row">
+    <a class="button" href="/auth/signout">Sign Out</a>
+  </div>
+  } @else {
+  <p>You are currently not authenticated</p>
+  <div class="button-row">
+    <a class="button" href="/auth/signin">Sign In</a>
+    <a class="button" target="_blank" href="https://authjs.dev">Auth.js Docs</a>
+  </div>
+  }
+</app-tile>

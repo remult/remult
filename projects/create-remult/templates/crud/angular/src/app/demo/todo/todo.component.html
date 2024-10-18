@@ -1,27 +1,50 @@
-<strong> Todos </strong>
-<main>
-  <form (submit)="addTask()">
-    <input
-      placeholder="What needs to be done?"
-      [(ngModel)]="newTaskTitle"
-      name="newTaskTitle"
-    />
-    <button>Add</button>
-  </form>
-  @for ( task of tasks; track task.id) {
-  <div>
-    <input
-      type="checkbox"
-      [(ngModel)]="task.completed"
-      (change)="saveTask(task)"
-    />
-    {{ task.title }}
-    <button (click)="deleteTask(task)">Delete</button>
-  </div>
-  }
-</main>
-<footer>
-  <button (click)="setPage(-1)" [disabled]="page <= 1">prev</button>
-  <span>Page {{ page }}</span>
-  <button (click)="setPage(+1)">next</button>
-</footer>
+<app-tile
+  title="Todos"
+  subtitle="Fully functional todo app"
+  icon=""
+  width="full"
+  class="todo"
+>
+  <main>
+    <form (ngSubmit)="addTask()">
+      <input
+        type="text"
+        [(ngModel)]="newTaskTitle"
+        name="newTaskTitle"
+        placeholder="What needs to be done?"
+      />
+      <button type="submit">
+        <img src="/plus.svg" alt="Add" />
+      </button>
+    </form>
+
+    @if (tasks.length > 0) { @for ( task of tasks; track task.id) {
+    <div
+      class="todo__task"
+      [ngClass]="{ completed: task.completed }"
+      (click)="task.completed = !task.completed; saveTask(task)"
+    >
+      <input
+        type="checkbox"
+        [checked]="task.completed"
+        (click)="$event.stopPropagation()"
+        (change)="saveTask(task)"
+      />
+      <span>{{ task.title }}</span>
+      <button (click)="deleteTask(task); $event.stopPropagation()">
+        <img src="trash.svg" alt="Delete" />
+      </button>
+    </div>
+    } } @else {
+    <p class="todo__empty">
+      There is nothing to do right now, try adding some todos.
+    </p>
+    }
+
+    <div class="button-row">
+      <button (click)="toggleHideCompleted()">
+        {{ hideCompleted ? "Show" : "Hide" }} completed
+      </button>
+    </div>
+  </main>
+</app-tile>

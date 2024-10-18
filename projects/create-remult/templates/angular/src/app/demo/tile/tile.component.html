@@ -1,0 +1,13 @@
+<div class="tile" [ngClass]="[status?.toLowerCase() || '', width, className]">
+  <div class="tile__header">
+    <h3 class="tile__title">{{ title }}</h3>
+    <div class="tile__subtitle">{{ subtitle }}</div>
+    <ng-container *ngIf="icon; else statusIndicator">
+      <img [src]="icon + '.svg'" [alt]="icon + ' icon'" class="tile__icon" />
+    </ng-container>
+    <ng-template #statusIndicator>
+      <div *ngIf="status" class="tile__status-indicator"></div>
+    </ng-template>
+  </div>
+  <ng-content></ng-content>
+</div>

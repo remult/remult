@@ -67,7 +67,11 @@ export const FRAMEWORKS: Framework[] = [
 export const vite_express_key = "express_vite";
 export const Servers = {
   express: {
-    componentInfo: { display: "Express", url: "https://expressjs.com/" },
+    componentInfo: {
+      display: "Express",
+      url: "https://expressjs.com/",
+      type: "Server",
+    },
     import: "remult-express",
     remultServerFunction: "remultExpress",
     requiresTwoTerminal: true,
@@ -89,7 +93,11 @@ export const Servers = {
     },
   },
   fastify: {
-    componentInfo: { display: "Fastify", url: "https://www.fastify.io/" },
+    componentInfo: {
+      display: "Fastify",
+      url: "https://www.fastify.io/",
+      type: "Server",
+    },
     import: "remult-fastify",
     remultServerFunction: "remultFastify",
     requiresTwoTerminal: true,
@@ -134,6 +142,7 @@ app.listen({ port: Number(process.env["PORT"] || 3002) }, () =>
     componentInfo: {
       display: "Express vite plugin (experimental)",
       url: "https://expressjs.com/",
+      type: "Server",
     },
     import: "remult-express",
     remultServerFunction: "remultExpress",
