@@ -83,7 +83,7 @@
     "fastify-plugin": "^4.0.0",
     "graphql": "^15.8.0",
     "graphql-yoga": "^3.9.1",
-    "hono": "^4.5.8",
+    "hono": "^4.6.5",
     "knex": "^2.4.0",
     "koa": "^2.13.4",
     "koa-bodyparser": "^4.3.0",
