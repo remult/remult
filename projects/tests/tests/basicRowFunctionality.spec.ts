@@ -3,7 +3,7 @@ import { ArrayEntityDataProvider } from '../../core/src//data-providers/array-en
 import { InMemoryDataProvider } from '../../core/src//data-providers/in-memory-database'
 import { createData } from './createData'
 import { Done } from './Done'
-import { TestDataApiResponse } from './TestDataApiResponse'
+import { DummyRequest, TestDataApiResponse } from './TestDataApiResponse'
 import { MockRestDataProvider } from './testHelper'
 
 import { Status } from './testModel/models'
@@ -396,7 +396,7 @@ describe('data api', () => {
       expect(data.categoryName).toBe('noam')
       d.ok()
     }
-    await api.post(t, { id: 1, categoryName: 'noam' })
+    await api.post({ id: 1, categoryName: 'noam' }).then(t.created)
     d.test()
     expect(await c.count()).toBe(1)
   })
@@ -414,10 +414,12 @@ describe('data api', () => {
       expect(data[1].categoryName).toBe('yael')
       d.ok()
     }
-    await api.post(t, [
-      { id: 1, categoryName: 'noam' },
-      { id: 2, categoryName: 'yael' },
-    ])
+    await api
+      .post([
+        { id: 1, categoryName: 'noam' },
+        { id: 2, categoryName: 'yael' },
+      ])
+      .then(t.created)
     d.test()
     expect(await c.count()).toBe(2)
   })
@@ -434,7 +436,12 @@ describe('data api', () => {
       if (!err.message) throw 'no message'
       d.ok()
     }
-    await api.post(t, { id: 1, categoryName: 'noam' })
+    await api.httpPost(
+      t,
+      { get: () => undefined! },
+      { id: 1, categoryName: 'noam' },
+      () => undefined!,
+    )
     d.test()
   })
 
@@ -848,10 +855,15 @@ describe('data api', () => {
       d.ok()
     }
 
-    await api.post(t, {
-      id: 1,
-      categoryName: 'noam 1',
-    })
+    await api.httpPost(
+      t,
+      DummyRequest,
+      {
+        id: 1,
+        categoryName: 'noam 1',
+      },
+      undefined!,
+    )
 
     d.test()
     savedWorked.test()
@@ -1055,7 +1067,12 @@ describe('data api', () => {
       expect(data.message).toContain('Cannot read prop')
       d.ok()
     }
-    await api.post(t, { id: 1, categoryName: 'noam' })
+    await api.httpPost(
+      t,
+      DummyRequest,
+      { id: 1, categoryName: 'noam' },
+      undefined!,
+    )
     d.test()
     expect((await c.find()).length).toBe(0)
   })
@@ -1394,16 +1411,26 @@ describe('data api', () => {
     t.forbidden = () => {
       d.ok()
     }
-    await api.post(t, {
-      categoryName: 'wrong',
-    })
+    await api.httpPost(
+      t,
+      DummyRequest,
+      {
+        categoryName: 'wrong',
+      },
+      undefined!,
+    )
     d.test()
     t = new TestDataApiResponse()
     d = new Done()
     t.created = () => d.ok()
-    await api.post(t, {
-      categoryName: 'ok',
-    })
+    await api.httpPost(
+      t,
+      DummyRequest,
+      {
+        categoryName: 'ok',
+      },
+      undefined!,
+    )
     d.test()
   })
 

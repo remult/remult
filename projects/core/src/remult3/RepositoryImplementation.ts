@@ -8,7 +8,7 @@ import type {
   ValueListItem,
 } from '../column-interfaces.js'
 import type { AllowedForInstance } from '../context.js'
-import { Remult, isBackend, queryConfig } from '../context.js'
+import { Remult, isBackend } from '../context.js'
 import type { EntityOptions } from '../entity.js'
 import { Filter } from '../filter/filter-interfaces.js'
 import { Sort } from '../sort.js'
@@ -40,8 +40,6 @@ import {
   type MembersOnly,
   type NumericKeys,
   type ObjectMembersOnly,
-  type QueryOptions,
-  type QueryResult,
   type RelationOptions,
   type Repository,
   type RepositoryRelations,
@@ -50,7 +48,13 @@ import {
   type idType,
 } from './remult3.js'
 
-import type { Paginator, RefSubscriber, RefSubscriberBase } from './remult3.js'
+import type {
+  QueryOptions,
+  QueryResult,
+  RefSubscriber,
+  RefSubscriberBase,
+  UpsertOptions,
+} from './remult3.js'
 import { assign } from '../../assign.js'
 import type { entityEventListener } from '../__EntityValueProvider.js'
 import type {
@@ -95,7 +99,8 @@ import {
 import { remultStatic } from '../remult-static.js'
 import { Validators } from '../validators.js'
 import { addValidator } from './addValidator.js'
-import { isOfType } from '../isOfType.js'
+import { cast, isOfType } from '../isOfType.js'
+import { QueryResultImpl } from './QueryResultImpl.js'
 //import  { remult } from "../remult-proxy";
 
 let classValidatorValidate:
@@ -212,7 +217,7 @@ export class RepositoryImplementation<entityType>
   }
 
   private __edp?: EntityDataProvider
-  private get _edp() {
+  get _edp() {
     return this.__edp
       ? this.__edp
       : (this.__edp = this._dataProvider.getEntityDataProvider(this.metadata))
@@ -290,6 +295,31 @@ export class RepositoryImplementation<entityType>
       distinctCountFields extends undefined ? never : distinctCountFields
     >[]
   > {
+    var dpOptions = await this.__buildGroupByOptions(options)
+    const result = await this._edp.groupBy(dpOptions)
+
+    //@ts-ignore
+    if (!options?.[GroupByForApiKey] && options.group) {
+      const loaderOptions: LoadOptions<entityType> = {
+        include: {},
+      }
+      for (const key of options.group) {
+        loaderOptions!.include![key] = true
+      }
+      const loader = new RelationLoader()
+      await this._populateRelationsForFields(
+        dpOptions.group!,
+        loaderOptions,
+        result,
+        loader,
+      )
+      await loader.resolveAll()
+    }
+    return result as any
+  }
+  async __buildGroupByOptions(
+    options: GroupByOptions<entityType, any, any, any, any, any, any>,
+  ) {
     let findOptions = await this._buildEntityDataProviderFindOptions({
       ...options,
     })
@@ -348,25 +378,7 @@ export class RepositoryImplementation<entityType>
         }
       }
     }
-    const result = await this._edp.groupBy(dpOptions)
-    //@ts-ignore
-    if (!options?.[GroupByForApiKey] && options.group) {
-      const loaderOptions: LoadOptions<entityType> = {
-        include: {},
-      }
-      for (const key of options.group) {
-        loaderOptions!.include![key] = true
-      }
-      const loader = new RelationLoader()
-      await this._populateRelationsForFields(
-        dpOptions.group!,
-        loaderOptions,
-        result,
-        loader,
-      )
-      await loader.resolveAll()
-    }
-    return result as any
+    return dpOptions
   }
   _idCache = new Map<any, any>()
   _getCachedById(
@@ -418,8 +430,23 @@ export class RepositoryImplementation<entityType>
     }
   }
 
-  query(options?: QueryOptions<entityType>): QueryResult<entityType> {
-    return new QueryResultImpl(options!, this)
+  query<
+    Options extends QueryOptions<entityType> & {
+      aggregate?: Omit<
+        GroupByOptions<
+          entityType,
+          never,
+          NumericKeys<entityType>[],
+          NumericKeys<entityType>[],
+          (keyof MembersOnly<entityType>)[],
+          (keyof MembersOnly<entityType>)[],
+          (keyof MembersOnly<entityType>)[]
+        >,
+        'group' | 'orderBy' | 'where' | 'limit' | 'page'
+      >
+    },
+  >(options?: Options): any {
+    return new QueryResultImpl(options!, this) as any
   }
 
   getEntityRef(entity: entityType): EntityRef<entityType> {
@@ -464,6 +491,35 @@ export class RepositoryImplementation<entityType>
     if (!this._dataProvider.isProxy) await ref2.reload()
     return ref2.delete()
   }
+  __cleanupPartialObject(item: Partial<MembersOnly<entityType>>) {
+    const keys = Object.keys(item)
+    for (let index = 0; index < keys.length; index++) {
+      const key = keys[index] as keyof MembersOnly<entityType>
+      const field = this.fields[key]
+      if (field) {
+        const rel = getRelationFieldInfo(field)
+        if (rel && rel.type === 'toOne' && rel.options.field) {
+          let fieldIndex = keys.indexOf(rel.options.field)
+          if (fieldIndex > index) {
+            let relId = rel.toRepo.getEntityRef(item[key]).getId()
+            if (relId !== item[rel.options.field]) {
+              delete item[key as keyof Partial<MembersOnly<entityType>>]
+            }
+          }
+        }
+      }
+    }
+
+    for (const key in item) {
+      if (Object.prototype.hasOwnProperty.call(item, key)) {
+        const element = item[key]
+        const rel = getRelationFieldInfo(this.fields[key])
+      }
+    }
+    for (const field of this.fields) {
+    }
+  }
+
   insert(item: Partial<MembersOnly<entityType>>[]): Promise<entityType[]>
   insert(item: Partial<MembersOnly<entityType>>): Promise<entityType>
   async insert(
@@ -476,6 +532,7 @@ export class RepositoryImplementation<entityType>
         let refs: rowHelperImplementation<entityType>[] = []
         let raw: any[] = []
         for (const item of entity) {
+          this.__cleanupPartialObject(item)
           let ref = getEntityRef(
             entity,
             false,
@@ -511,6 +568,7 @@ export class RepositoryImplementation<entityType>
         if (!ref.isNew()) throw 'Item is not new'
         return await ref.save()
       } else {
+        this.__cleanupPartialObject(entity)
         return await this.getEntityRef(this.create(entity)).save()
       }
     }
@@ -539,6 +597,20 @@ export class RepositoryImplementation<entityType>
       }
     }
   }
+  private __createDto(basedOn: Partial<MembersOnly<entityType>>) {
+    this.__cleanupPartialObject(basedOn)
+    const ref = this.getEntityRef({
+      ...basedOn,
+    } as any) as rowHelperImplementation<entityType>
+    const r = ref.copyDataToObject(false)
+    const keys = Object.keys(basedOn)
+    for (const element of this.fields) {
+      if (element.dbReadOnly || !keys.includes(element.key))
+        delete r[element.key]
+    }
+    return r
+  }
+
   async updateMany({
     where,
     set,
@@ -546,15 +618,16 @@ export class RepositoryImplementation<entityType>
     where: EntityFilter<entityType>
     set: Partial<MembersOnly<entityType>>
   }): Promise<number> {
+    this.__cleanupPartialObject(set)
     Filter.throwErrorIfFilterIsEmpty(where, 'updateMany')
     if (this._dataProvider.isProxy) {
       return (this._edp as any as ProxyEntityDataProvider).updateMany(
         await this._translateWhereToFilter(where),
-        set,
+        this.__createDto({ ...set }),
       )
     } else {
       let updated = 0
-      for await (const item of this.query({ where })) {
+      for await (const item of this.query({ where, aggregate: undefined! })) {
         assign(item, set)
         await getEntityRef(item).save()
         updated++
@@ -585,7 +658,7 @@ export class RepositoryImplementation<entityType>
         return ref.save()
       }
     }
-
+    this.__cleanupPartialObject(entity)
     let ref: rowHelperImplementation<entityType>
     if (typeof id === 'object') {
       ref = this._getRefForExistingRow(
@@ -614,6 +687,57 @@ export class RepositoryImplementation<entityType>
       }
       await this._fixTypes(r)
       return await ref.save()
+    }
+  }
+
+  upsert(options: UpsertOptions<entityType>[]): Promise<entityType[]>
+  upsert(options: UpsertOptions<entityType>): Promise<entityType>
+  async upsert(
+    options: UpsertOptions<entityType> | UpsertOptions<entityType>[],
+  ): Promise<any> {
+    if (this._dataProvider.isProxy) {
+      let rawRows = await (
+        this._edp as any as ProxyEntityDataProvider
+      ).upsertMany(
+        (Array.isArray(options) ? options : [options]).map((x) => {
+          if (this._defaultFindOptions?.where) {
+            __updateEntityBasedOnWhere<entityType>(
+              this.metadata,
+              this._defaultFindOptions.where,
+              x.where as entityType,
+            )
+            this._fixTypes(x)
+          }
+          return {
+            where: this.__createDto(x.where),
+            set: x.set ? this.__createDto(x.set) : undefined,
+          }
+        }),
+      )
+      const loader = new RelationLoader()
+      const result = await this._loadManyToOneForManyRows(rawRows, {}, loader)
+      await loader.resolveAll()
+      if (Array.isArray(options)) return result
+      else return result[0]
+    }
+
+    if (Array.isArray(options)) {
+      return promiseAll(options, (x) => this.upsert(x))
+    }
+    let op = options as UpsertOptions<entityType>
+    var row = await this.findFirst(op.where as any, { createIfNotFound: true })
+    var ref = getEntityRef(row, false)
+    if (ref.isNew()) {
+      if (op.set) {
+        assign(row, op.set)
+      }
+      return await ref.save()
+    } else {
+      if (op.set) {
+        assign(row, op.set)
+        return await ref.save()
+      }
+      return row
     }
   }
 
@@ -702,6 +826,7 @@ export class RepositoryImplementation<entityType>
     options: FindOptions<entityType> | undefined,
     skipOrderByAndLimit = false,
     loader: RelationLoader,
+    actualFind: (ops: EntityDataProviderFindOptions) => Promise<any[]>,
   ) {
     if (!options) options = {}
 
@@ -715,7 +840,7 @@ export class RepositoryImplementation<entityType>
     }
 
     Remult.onFind(this._info, options)
-    const rawRows = await this._edp.find(opt)
+    const rawRows = await actualFind(opt)
     let result = await this._loadManyToOneForManyRows(rawRows, options, loader)
     return result
   }
@@ -730,7 +855,12 @@ export class RepositoryImplementation<entityType>
     skipOrderByAndLimit = false,
   ): Promise<entityType[]> {
     const loader = new RelationLoader()
-    const result = await this._rawFind(options, skipOrderByAndLimit, loader)
+    const result = await this._rawFind(
+      options,
+      skipOrderByAndLimit,
+      loader,
+      (x) => this._edp.find(x),
+    )
     await loader.resolveAll()
     return result
   }
@@ -861,7 +991,10 @@ export class RepositoryImplementation<entityType>
               .load(
                 {
                   entityType,
-                  find: (options) => toRepo._rawFind(options, false, loader),
+                  find: (options) =>
+                    toRepo._rawFind(options, false, loader, (o) =>
+                      toRepo._edp.find(o),
+                    ),
                   metadata: toRepo.metadata,
                 },
                 findOptions,
@@ -1058,7 +1191,7 @@ export class RepositoryImplementation<entityType>
       )
     } else {
       let deleted = 0
-      for await (const item of this.query({ where })) {
+      for await (const item of this.query({ where, aggregate: undefined! })) {
         await getEntityRef(item).delete()
         deleted++
       }
@@ -1873,11 +2006,9 @@ export class rowHelperImplementation<T>
     this.__assertValidity()
 
     let d = this.copyDataToObject(this.isNew())
-    let ignoreKeys: string[] = []
     for (const field of this.metadata.fields) {
       if (field.dbReadOnly) {
         d[field.key] = undefined
-        ignoreKeys.push(field.key)
         let f = this.fields.find(field)
         f.value = f.originalValue
       }
@@ -2956,133 +3087,6 @@ export class ControllerBase {
       this,
       this.remult,
     ) as unknown as ControllerRefForControllerBase<this>
-  }
-}
-
-class QueryResultImpl<entityType> implements QueryResult<entityType> {
-  constructor(
-    private options: QueryOptions<entityType>,
-    private repo: RepositoryImplementation<entityType>,
-  ) {
-    if (!this.options) this.options = {}
-    if (!this.options.pageSize) {
-      this.options.pageSize = queryConfig.defaultPageSize
-    }
-  }
-  private _count: number | undefined = undefined
-  async getPage(page?: number) {
-    if ((page ?? 0) < 1) page = 1
-
-    return this.repo.find({
-      where: this.options.where,
-      orderBy: this.options.orderBy,
-      limit: this.options.pageSize,
-      page: page,
-      load: this.options.load,
-      include: this.options.include,
-    })
-  }
-
-  async count() {
-    if (this._count === undefined)
-      this._count = await this.repo.count(this.options.where)
-    return this._count
-  }
-  async forEach(what: (item: entityType) => Promise<any>) {
-    let i = 0
-    for await (const x of this) {
-      await what(x)
-      i++
-    }
-    return i
-  }
-  async paginator(
-    pNextPageFilter?: EntityFilter<entityType>,
-  ): Promise<Paginator<entityType>> {
-    this.options.orderBy = Sort.createUniqueEntityOrderBy(
-      this.repo.metadata,
-      this.options.orderBy,
-    )
-    let items = await this.repo.find({
-      where: {
-        $and: [this.options.where, pNextPageFilter],
-      } as EntityFilter<entityType>,
-      orderBy: this.options.orderBy,
-      limit: this.options.pageSize,
-      load: this.options.load,
-      include: this.options.include,
-    })
-
-    let nextPage: () => Promise<Paginator<entityType>> = () => {
-      throw new Error('no more pages')
-    }
-    let hasNextPage = items.length == this.options.pageSize
-    if (hasNextPage) {
-      let nextPageFilter = await this.repo._createAfterFilter(
-        this.options.orderBy,
-        items[items.length - 1],
-      )
-      nextPage = () => this.paginator(nextPageFilter)
-    }
-    return {
-      count: () => this.count(),
-      hasNextPage,
-      items,
-      nextPage,
-    }
-  }
-
-  [Symbol.asyncIterator]() {
-    if (!this.options.where) {
-      this.options.where = {}
-    }
-    let ob = this.options.orderBy
-    this.options.orderBy = Sort.createUniqueEntityOrderBy(
-      this.repo.metadata,
-      ob,
-    )
-
-    let itemIndex = -1
-    let currentPage: Paginator<entityType> | undefined = undefined
-
-    let itStrategy: () => Promise<IteratorResult<entityType>>
-
-    let j = 0
-
-    itStrategy = async () => {
-      if (this.options.progress) {
-        this.options.progress.progress(j++ / (await this.count()))
-      }
-      if (currentPage === undefined || itemIndex == currentPage.items.length) {
-        if (currentPage && !currentPage.hasNextPage)
-          return { value: undefined, done: true }
-        let prev = currentPage
-        if (currentPage) currentPage = await currentPage.nextPage!()
-        else currentPage = await this.paginator()
-
-        itemIndex = 0
-        if (currentPage.items.length == 0) {
-          return { value: undefined, done: true }
-        } else {
-          if (prev?.items.length ?? 0 > 0) {
-            if (
-              this.repo.getEntityRef(prev!.items[0]).getId() ==
-              this.repo.getEntityRef(currentPage.items[0]).getId()
-            )
-              throw new Error('pagination failure, returned same first row')
-          }
-        }
-      }
-      if (itemIndex < currentPage.items.length)
-        return { value: currentPage.items[itemIndex++], done: false }
-      return { done: true, value: undefined }
-    }
-    return {
-      next: async () => {
-        let r = itStrategy()
-        return r
-      },
-    }
   }
 }
 

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, beforeAll } from 'vitest'
 import {
   Entity,
   Field,
@@ -731,4 +731,110 @@ it('test dbname', async () => {
   expect((await dbNamesOf(remult.repo(Task))).secondaryCategory).toBe(
     'secondaryCategoryId',
   )
+})
+
+describe('test setting of id and relation field', async () => {
+  @Entity('cat123')
+  class Category {
+    @Fields.integer()
+    id = 0
+    @Fields.string()
+    name = ''
+  }
+  @Entity('task123')
+  class Task {
+    @Fields.integer()
+    id = 0
+    @Relations.toOne<Task, Category>(() => Category, 'categoryId')
+    category!: Category
+    @Fields.integer()
+    categoryId = 0
+  }
+  let r: typeof remult.repo
+  let cat: Category
+  let cat2: Category
+  beforeEach(async () => {
+    r = new Remult(new InMemoryDataProvider()).repo
+    cat = await r(Category).insert({ id: 1, name: 'c1' })
+    cat2 = await r(Category).insert({ id: 2, name: 'c2' })
+  })
+  it('test insert based on id', async () => {
+    await r(Task).insert({ id: 1, categoryId: cat.id })
+    const t = (await r(Task).findFirst(
+      { id: 1 },
+      { include: { category: true } },
+    ))!
+    expect(t.categoryId).toBe(1)
+    expect(t.category.id).toBe(1)
+  })
+  it('test insert 2', async () => {
+    await r(Task).insert({ id: 1, category: cat2, categoryId: cat.id })
+    const t = (await r(Task).findFirst(
+      { id: 1 },
+      { include: { category: true } },
+    ))!
+    expect(t.categoryId).toBe(1)
+    expect(t.category.id).toBe(1)
+  })
+  it('test insert 3', async () => {
+    await r(Task).insert({ id: 1, categoryId: cat.id, category: cat2 })
+    const t = (await r(Task).findFirst(
+      { id: 1 },
+      { include: { category: true } },
+    ))!
+    expect(t.categoryId).toBe(2)
+    expect(t.category.id).toBe(2)
+  })
+  it('test insert 3', async () => {
+    await r(Task).insert({ id: 1, category: cat2, categoryId: cat.id })
+    const t = (await r(Task).findFirst(
+      { id: 1 },
+      { include: { category: true } },
+    ))!
+    expect(t.categoryId).toBe(1)
+    expect(t.category.id).toBe(1)
+  })
+  it('test save', async () => {
+    await r(Task).insert({ id: 1, categoryId: cat.id })
+    await r(Task).save({
+      id: 1,
+      category: { id: undefined! } as any,
+      categoryId: cat2.id,
+    })
+    const t = (await r(Task).findFirst(
+      { id: 1 },
+      { include: { category: true } },
+    ))!
+    expect(t.categoryId).toBe(2)
+    expect(t.category.id).toBe(2)
+  })
+  it('test update', async () => {
+    await r(Task).insert({ id: 1, categoryId: cat.id })
+    await r(Task).update(1, {
+      category: { id: undefined! } as any,
+      categoryId: cat2.id,
+    })
+    const t = (await r(Task).findFirst(
+      { id: 1 },
+      { include: { category: true } },
+    ))!
+    expect(t.categoryId).toBe(2)
+    expect(t.category.id).toBe(2)
+  })
+  it('test update many', async () => {
+    await r(Task).insert({ id: 1, categoryId: cat.id })
+    await r(Task).updateMany({
+      where: { id: 1 },
+      set: {
+        category: { id: undefined! } as any,
+        categoryId: cat2.id,
+      },
+    })
+    const t = (await r(Task).findFirst(
+      { id: 1 },
+      { include: { category: true } },
+    ))!
+    expect(t.categoryId).toBe(2)
+    expect(t.category.id).toBe(2)
+  })
 })

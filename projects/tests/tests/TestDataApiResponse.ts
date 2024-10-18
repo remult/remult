@@ -21,3 +21,7 @@ export class TestDataApiResponse implements DataApiResponse {
     throw data
   }
 }
+
+export const DummyRequest = {
+  get: () => undefined,
+}

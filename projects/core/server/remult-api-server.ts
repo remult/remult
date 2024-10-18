@@ -531,7 +531,7 @@ export class RemultServerImplementation<RequestType>
 
     r.route(myRoute)
       .get(
-        this.process((c, req, res, orig) =>
+        this.process(async (c, req, res, orig) =>
           dataApiFactory(c).httpGet(res, req, () => this.serializeContext(c)),
         ),
       )

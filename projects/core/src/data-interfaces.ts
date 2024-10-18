@@ -45,6 +45,19 @@ export interface ProxyEntityDataProvider {
   insertMany(data: any[]): Promise<any[]>
   deleteMany(where: Filter): Promise<number>
   updateMany(where: Filter, data: any): Promise<number>
+  query(
+    options: EntityDataProviderFindOptions,
+    aggregateOptions: EntityDataProviderGroupByOptions,
+  ): Promise<{
+    items: any[]
+    aggregates: any
+  }>
+  upsertMany(
+    options: {
+      where: any
+      set: any
+    }[],
+  ): Promise<any[]>
 }
 export interface EntityDataProviderFindOptions {
   where?: Filter
