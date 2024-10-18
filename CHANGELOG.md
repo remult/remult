@@ -24,7 +24,6 @@ All notable changes to this project will be documented in this file.
   ```
 
 - Now you can get data and aggregate info with a single request using the `query` method:
-- Fixed issue when updating relation id and relation in the same update, the last one will win
 
   ```ts
   const result = await repo
@@ -44,6 +43,8 @@ All notable changes to this project will be documented in this file.
   ```
 
 - Fixed issue with `updateMany` where the `set` had `ValueListType` or relation.
+- Fixed issue when updating relation id and relation in the same update, the last one will win
+- Fixed makeTitle to handle all caps text
 
 ## [0.27.20] 2024-10-16
 

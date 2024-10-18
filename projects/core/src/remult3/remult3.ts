@@ -625,16 +625,6 @@ export interface Repository<entityType> {
    *
    * The `query` method is designed for asynchronous iteration using the `for await` statement.
    *
-   * @template entityType The type of the entity being queried.
-   * @template sumFields The fields to sum, provided as an array of numeric keys from the entity type.
-   * @template averageFields The fields to average, provided as an array of numeric keys from the entity type.
-   * @template minFields The fields to find the minimum value, provided as an array of keys from the entity type.
-   * @template maxFields The fields to find the maximum value, provided as an array of keys from the entity type.
-   * @template distinctCountFields The fields to count distinct values, provided as an array of keys from the entity type.
-   *
-   * @param {QueryOptions<entityType, sumFields, averageFields, minFields, maxFields, distinctCountFields>} options - The options for the query and aggregation.
-   * @returns {QueryResult<entityType, sumFields, averageFields, minFields, maxFields, distinctCountFields>} The result of the query, including paginated items and aggregation results.
-   *
    * @example
    * // Basic usage with asynchronous iteration:
    * for await (const task of taskRepo.query()) {
@@ -659,21 +649,22 @@ export interface Repository<entityType> {
    *
    * @example
    * // Querying with aggregation:
-   * const result = await repo.query({
+   * const query = await repo.query({
    *   where: { completed: false },
    *   pageSize: 50,
    *   aggregates: {
    *     sum: ['salary'],
    *     average: ['age'],
    *   }
-   * }).paginator();
+   * });
    *
+   * let paginator = await query.paginator();
    * // Accessing paginated items
-   * console.table(result.items);
+   * console.table(paginator.items);
    *
    * // Accessing aggregation results
-   * console.log('Total salary:', result.aggregates.salary.sum); // Sum of all salaries
-   * console.log('Average age:', result.aggregates.age.average);  // Average age
+   * console.log('Total salary:', paginator.aggregates.salary.sum); // Sum of all salaries
+   * console.log('Average age:', paginator.aggregates.age.average);  // Average age
    */
 
   query<
