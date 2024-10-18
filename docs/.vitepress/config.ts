@@ -125,6 +125,10 @@ export default defineConfig({
             items: [
               { text: 'Introduction', link: '/docs/' },
               {
+                text: 'Creating a project',
+                link: '/docs/creating-a-project',
+              },
+              {
                 text: 'Quickstart',
                 link: '/docs/quickstart',
               },
@@ -195,6 +199,10 @@ export default defineConfig({
               {
                 text: 'Access Control',
                 link: '/docs/access-control',
+              },
+              {
+                text: 'Admin UI',
+                link: '/docs/admin-ui',
               },
             ],
           },
