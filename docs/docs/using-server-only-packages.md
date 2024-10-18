@@ -45,7 +45,7 @@ There are two ways to handle this:
 
 == vite
 
-### Option 1 - exclude in `vite.config`
+### Exclude in `vite.config`
 
 Instruct vite to exclude the `server-only` packages from the bundle
 
@@ -68,26 +68,6 @@ export default defineConfig({
 })
 ```
 <!-- prettier-ignore-end -->
-
-### Option 2 - `vite-plugin-stripper`
-
-[vite-plugin-stripper](https://www.kitql.dev/docs/tools/07_vite-plugin-stripper) is a `vite` plugin that can be used to remove contents of methods with the `@BackendMethod` decorator.
-
-```bash
-npm i --save-dev vite-plugin-stripper
-```
-
-```ts [vite.config.ts]
-import { defineConfig } from 'vite'
-import { stripper } from 'vite-plugin-stripper' // [!code ++]
-
-export default defineConfig({
-  plugins: [
-    react(),
-    stripper({ decorators: ['BackendMethod'] }), // [!code ++]
-  ],
-})
-```
 
 == Webpack and Angular version <=16
 Instruct `webpack` not to include the `fs` package in the `frontend` bundle by adding the following JSON to the main section of the project's `package.json` file.
@@ -203,4 +183,6 @@ If you're still getting an error - check that you have a `logs` folder on your p
 
 ## Additional Resources
 
-Check out this [YouTube video](https://www.youtube.com/watch?v=9lWQwAUcKEM&t=1035s) where I implemented a similar solution when running into the same problem using `bcrypt`
+Check out this video where I implemented a similar solution when running into the same problem using `bcrypt`:
+
+<iframe width="100%" height="400" src="https://www.youtube.com/embed/9lWQwAUcKEM?start=1035" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
