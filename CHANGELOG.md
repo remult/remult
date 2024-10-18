@@ -24,6 +24,7 @@ All notable changes to this project will be documented in this file.
   ```
 
 - Now you can get data and aggregate info with a single request using the `query` method:
+- Fixed issue when updating relation id and relation in the same update, the last one will win
 
   ```ts
   const result = await repo

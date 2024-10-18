@@ -491,6 +491,35 @@ export class RepositoryImplementation<entityType>
     if (!this._dataProvider.isProxy) await ref2.reload()
     return ref2.delete()
   }
+  __cleanupPartialObject(item: Partial<MembersOnly<entityType>>) {
+    const keys = Object.keys(item)
+    for (let index = 0; index < keys.length; index++) {
+      const key = keys[index] as keyof MembersOnly<entityType>
+      const field = this.fields[key]
+      if (field) {
+        const rel = getRelationFieldInfo(field)
+        if (rel && rel.type === 'toOne' && rel.options.field) {
+          let fieldIndex = keys.indexOf(rel.options.field)
+          if (fieldIndex > index) {
+            let relId = rel.toRepo.getEntityRef(item[key]).getId()
+            if (relId !== item[rel.options.field]) {
+              delete item[key as keyof Partial<MembersOnly<entityType>>]
+            }
+          }
+        }
+      }
+    }
+
+    for (const key in item) {
+      if (Object.prototype.hasOwnProperty.call(item, key)) {
+        const element = item[key]
+        const rel = getRelationFieldInfo(this.fields[key])
+      }
+    }
+    for (const field of this.fields) {
+    }
+  }
+
   insert(item: Partial<MembersOnly<entityType>>[]): Promise<entityType[]>
   insert(item: Partial<MembersOnly<entityType>>): Promise<entityType>
   async insert(
@@ -503,6 +532,7 @@ export class RepositoryImplementation<entityType>
         let refs: rowHelperImplementation<entityType>[] = []
         let raw: any[] = []
         for (const item of entity) {
+          this.__cleanupPartialObject(item)
           let ref = getEntityRef(
             entity,
             false,
@@ -538,6 +568,7 @@ export class RepositoryImplementation<entityType>
         if (!ref.isNew()) throw 'Item is not new'
         return await ref.save()
       } else {
+        this.__cleanupPartialObject(entity)
         return await this.getEntityRef(this.create(entity)).save()
       }
     }
@@ -567,6 +598,7 @@ export class RepositoryImplementation<entityType>
     }
   }
   private __createDto(basedOn: Partial<MembersOnly<entityType>>) {
+    this.__cleanupPartialObject(basedOn)
     const ref = this.getEntityRef({
       ...basedOn,
     } as any) as rowHelperImplementation<entityType>
@@ -586,6 +618,7 @@ export class RepositoryImplementation<entityType>
     where: EntityFilter<entityType>
     set: Partial<MembersOnly<entityType>>
   }): Promise<number> {
+    this.__cleanupPartialObject(set)
     Filter.throwErrorIfFilterIsEmpty(where, 'updateMany')
     if (this._dataProvider.isProxy) {
       return (this._edp as any as ProxyEntityDataProvider).updateMany(
@@ -625,7 +658,7 @@ export class RepositoryImplementation<entityType>
         return ref.save()
       }
     }
-
+    this.__cleanupPartialObject(entity)
     let ref: rowHelperImplementation<entityType>
     if (typeof id === 'object') {
       ref = this._getRefForExistingRow(
