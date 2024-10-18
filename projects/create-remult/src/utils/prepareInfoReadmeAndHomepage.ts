@@ -18,12 +18,21 @@ export function prepareInfoReadmeAndHomepage(
     frontendTemplate,
   } = args;
 
-  let components: ComponentInfo[] = [{ ...framework, type: "Framework" }];
+  let components: ComponentInfo[] = [
+    {
+      ...framework,
+      type: "Framework",
+      description: "Your favorite framework/library",
+      emoji: "🌟",
+    },
+  ];
   if (framework.canWorkWithVitePluginExpress) {
     components.push({
       display: "Vite",
       url: "https://vitejs.dev/",
       type: "Bundler",
+      description: "Powering modern web applications",
+      emoji: "🔥",
     });
   }
   if (server.componentInfo) components.push(server.componentInfo);
@@ -55,6 +64,8 @@ export function prepareInfoReadmeAndHomepage(
       display: "auth.js",
       url: "https://authjs.dev",
       type: "Auth",
+      description: "Authentication made easy and secure",
+      emoji: "🔒",
     });
     imports.push({
       from: "./demo/auth/Auth" + (framework.componentFileSuffix ?? ""),
@@ -89,4 +100,10 @@ export function prepareInfoReadmeAndHomepage(
   return { components, imports, li };
 }
 
-export type ComponentInfo = { display: string; url: string; type?: string };
+export type ComponentInfo = {
+  display: string;
+  url: string;
+  type?: string;
+  description: string;
+  emoji: string;
+};
