@@ -34,7 +34,7 @@ export const svelteKit: Framework = {
       });
       fs.writeFileSync(
         path.join(args.root, "src", "routes", "+page.svelte"),
-        `<script>
+        `<script lang="ts">
   ${writeImports(info.imports, args.server).split("\n").join("\n  ")}
   import "../styles.css";
 </script>
