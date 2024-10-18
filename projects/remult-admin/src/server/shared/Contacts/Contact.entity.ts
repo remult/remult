@@ -31,8 +31,10 @@ import { Tag } from './Tag.entity'
 export class Contact {
   @Fields.uuid()
   id?: string
-  @Fields.string({
-    validate: Validators.required,
+  @Fields.string<Contact>({
+    validate: (task) => {
+      if (task.lastName.length < 3) throw 'Must be at least 3 characters long'
+    },
   })
   lastName = ''
   @Fields.string({
