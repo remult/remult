@@ -1,4 +1,4 @@
-import type { ServerInfo } from "./FRAMEWORKS";
+import type { ServerInfo } from "../FRAMEWORKS";
 
 export function writeImports(imports: Import[], server: ServerInfo) {
   return imports

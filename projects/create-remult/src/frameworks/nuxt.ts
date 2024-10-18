@@ -1,7 +1,6 @@
 import type { Framework } from "../FRAMEWORKS";
 import fs from "fs";
 import path from "path";
-import { writeImports } from "../utils/writeImports";
 import { prepareInfoReadmeAndHomepage } from "../utils/prepareInfoReadmeAndHomepage";
 import { createReadmeFile } from "../utils/createReadmeFile";
 import { writeAppVue } from "./vue";

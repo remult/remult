@@ -19,18 +19,7 @@ import { extractEnvironmentVariables } from "./utils/extractEnvironmentVariables
 import { removeJs } from "./frameworks/nextjs";
 import { svelteKit } from "./frameworks/sveltekit";
 
-const {
-  blue,
-  blueBright,
-  cyan,
-  green,
-  greenBright,
-  magenta,
-  red,
-  redBright,
-  reset,
-  yellow,
-} = colors;
+const { red, reset } = colors;
 
 const argv = minimist<{
   template?: string;
@@ -183,7 +172,6 @@ async function init() {
               : reset("Select a framework:"),
           initial: 0,
           choices: FRAMEWORKS.map((framework) => {
-            const frameworkColor = framework.color;
             return {
               title: reset(framework.display || framework.name),
               value: framework,
