@@ -70,17 +70,17 @@ ${
 
 1. In **Terminal 1**, run the frontend development server:
 
-${"```"}bash
-npm run dev
-${"```"}
+   ${"```"}bash
+   npm run dev
+   ${"```"}
 
    This will start the frontend development environment and automatically open your app in the browser.
 
 2. In **Terminal 2**, run the backend development server:
 
-${"```"}bash
-npm run dev-node
-${"```"}
+   ${"```"}bash
+   npm run dev-node
+   ${"```"}
 
    This will start the backend in watch mode, automatically restarting on code changes.
 `
