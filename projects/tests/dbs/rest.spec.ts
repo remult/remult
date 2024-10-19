@@ -139,6 +139,7 @@ describe('Rest', () => {
     await expect(repo(task).insert({ id: 1, title: 'world' })).rejects
       .toThrowErrorMatchingInlineSnapshot(`
       {
+        "httpStatusCode": 403,
         "message": "field title is not allowed to update",
       }
     `)
@@ -169,6 +170,7 @@ describe('Rest', () => {
     await expect(() => repo(task).find({})).rejects
       .toThrowErrorMatchingInlineSnapshot(`
       {
+        "httpStatusCode": 403,
         "message": "You must specify a done filter",
       }
     `)

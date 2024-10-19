@@ -1224,12 +1224,14 @@ describe('data api', () => {
     ).repo(type)
     await expect(() => r.delete(2)).rejects.toThrowErrorMatchingInlineSnapshot(`
       {
+        "httpStatusCode": 403,
         "message": "Forbidden",
       }
     `)
     await expect(() => r.deleteMany({ where: { id: { '!=': -1 } } })).rejects
       .toThrowErrorMatchingInlineSnapshot(`
       {
+        "httpStatusCode": 403,
         "message": "Forbidden",
       }
     `)
@@ -1325,18 +1327,21 @@ describe('data api', () => {
     ).repo(type)
     await expect(() => r.delete(2)).rejects.toThrowErrorMatchingInlineSnapshot(`
       {
+        "httpStatusCode": 403,
         "message": "Forbidden",
       }
     `)
     await expect(() => r.deleteMany({ where: { id: 2 } })).rejects
       .toThrowErrorMatchingInlineSnapshot(`
       {
+        "httpStatusCode": 403,
         "message": "Forbidden",
       }
     `)
     await expect(() => r.deleteMany({ where: { id: { '!=': -1 } } })).rejects
       .toThrowErrorMatchingInlineSnapshot(`
       {
+        "httpStatusCode": 403,
         "message": "Forbidden",
       }
     `)
@@ -1365,6 +1370,7 @@ describe('data api', () => {
     await expect(() => r.update(2, { categoryName: 'noam 1' })).rejects
       .toThrowErrorMatchingInlineSnapshot(`
       {
+        "httpStatusCode": 403,
         "message": "Forbidden",
       }
     `)
@@ -1374,10 +1380,11 @@ describe('data api', () => {
         set: { categoryName: 'noam 1' },
       }),
     ).rejects.toThrowErrorMatchingInlineSnapshot(`
-    {
-      "message": "Forbidden",
-    }
-  `)
+      {
+        "httpStatusCode": 403,
+        "message": "Forbidden",
+      }
+    `)
     expect(
       (await r.find()).map(({ id, categoryName }) => ({ id, categoryName })),
     ).toMatchInlineSnapshot(`
