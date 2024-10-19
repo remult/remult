@@ -3,7 +3,6 @@ import { CompoundIdField } from '../CompoundIdField.js'
 import type { FieldMetadata, FieldOptions } from '../column-interfaces.js'
 import type { Remult } from '../context.js'
 import type { DataProvider } from '../data-interfaces.js'
-import type { RepositoryImplementation } from './RepositoryImplementation.js'
 import type { EntityMetadata, RelationOptions, Repository } from './remult3.js'
 
 export function relationInfoMemberInOptions(
