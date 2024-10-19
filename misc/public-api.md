@@ -2738,7 +2738,11 @@ export type RepositoryRelationsForEntityBase<entityType> = {
 }
 export declare class RestDataProvider implements DataProvider {
   private apiProvider
-  constructor(apiProvider: () => ApiClient)
+  private entityRequested?
+  constructor(
+    apiProvider: () => ApiClient,
+    entityRequested?: ((entity: EntityMetadata) => void) | undefined,
+  )
   getEntityDataProvider(entity: EntityMetadata): RestEntityDataProvider
   transaction(
     action: (dataProvider: DataProvider) => Promise<void>,
@@ -3631,6 +3635,15 @@ export declare class SseSubscriptionServer implements SubscriptionServer {
   )
   publishMessage<T>(channel: string, message: any): Promise<void>
 }
+export declare function TestApiDataProvider(
+  options?: Pick<
+    RemultServerOptions<unknown>,
+    "ensureSchema" | "dataProvider"
+  > & {
+    sqlite3?: boolean
+  },
+): RestDataProvider
+//[ ] RestDataProvider from TBD is not exported
 ```
 
 ## ./server/core.js

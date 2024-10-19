@@ -217,7 +217,6 @@ export interface RemultServer<RequestType>
 export interface RemultServerCore<RequestType> {
   getRemult(req?: RequestType): Promise<Remult>
   openApiDoc(options: { title: string; version?: string }): any
-  ignoreAsyncStorage?: boolean
 }
 
 export type GenericRouter<RequestType> = {
