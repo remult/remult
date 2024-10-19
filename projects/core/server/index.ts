@@ -15,6 +15,7 @@ export {
   JsonEntityFileStorage,
   JsonFileDataProvider,
 } from './JsonEntityFileStorage.js'
+export { TestApiDataProvider } from './test-api-data-provider.js'
 export {
   GenericRequestHandler,
   GenericRequestInfo,
