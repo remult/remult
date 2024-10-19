@@ -3636,12 +3636,7 @@ export declare class SseSubscriptionServer implements SubscriptionServer {
   publishMessage<T>(channel: string, message: any): Promise<void>
 }
 export declare function TestApiDataProvider(
-  options?: Pick<
-    RemultServerOptions<unknown>,
-    "ensureSchema" | "dataProvider"
-  > & {
-    sqlite3?: boolean
-  },
+  options?: Pick<RemultServerOptions<unknown>, "ensureSchema" | "dataProvider">,
 ): RestDataProvider
 //[ ] RestDataProvider from TBD is not exported
 ```
@@ -4248,6 +4243,10 @@ export declare class BetterSqlite3SqlResult implements SqlResult {
 ## ./remult-sqlite3.js
 
 ```ts
+export declare function createSqlite3DataProvider(
+  fileName?: string,
+): Promise<SqlDatabase>
+//[ ] SqlDatabase from ./index.js is not exported
 export declare class Sqlite3DataProvider extends SqliteCoreDataProvider {
   constructor(db: Database)
 }

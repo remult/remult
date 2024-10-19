@@ -42,6 +42,8 @@ All notable changes to this project will be documented in this file.
   console.log(result.aggregates.salary.sum) // Total salary sum
   ```
 
+- Added `TestApiDataProvider` to use in unit tests that test api rules. see [example](https://stackblitz.com/edit/api-test-example?file=test.spec.ts,model.ts)
+-
 - Fixed issue with `updateMany` where the `set` had `ValueListType` or relation.
 - Fixed issue when updating relation id and relation in the same update, the last one will win
 - Fixed makeTitle to handle all caps text

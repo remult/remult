@@ -9,6 +9,7 @@ import {
   SqlDatabase,
 } from '../core/index.js'
 import { TestApiDataProvider } from '../core/server/test-api-data-provider.js'
+import { createSqlite3DataProvider } from '../core/remult-sqlite3.js'
 
 declare module 'remult' {
   export interface RemultContext {
@@ -65,7 +66,7 @@ describe('test api data provider', () => {
       name: 'Noam',
     }
     remult.dataProvider = TestApiDataProvider({
-      sqlite3: true,
+      dataProvider: createSqlite3DataProvider(),
     })
     await repo(Person).insert([
       { id: 1, name: 'Noam' },

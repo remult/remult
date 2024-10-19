@@ -17,36 +17,12 @@ import { RemultAsyncLocalStorage } from '../src/context.js'
 import { initDataProvider } from './initDataProvider.js'
 
 export function TestApiDataProvider(
-  options?: Pick<
-    RemultServerOptions<unknown>,
-    'ensureSchema' | 'dataProvider'
-  > & {
-    sqlite3?: boolean
-  },
+  options?: Pick<RemultServerOptions<unknown>, 'ensureSchema' | 'dataProvider'>,
 ) {
   if (!options) options = {}
 
   var dp = initDataProvider(options.dataProvider, false, async () => {
-    if (!options?.sqlite3) return new InMemoryDataProvider()
-    else {
-      try {
-        const sqlite3 = await import('sqlite3')
-        const { Sqlite3DataProvider } = await import('../remult-sqlite3.js')
-
-        return new SqlDatabase(
-          new Sqlite3DataProvider(new sqlite3.default.Database(':memory:')),
-        )
-      } catch (error) {
-        console.error(
-          `Failed to initialize sqlite3, make sure you run:
-npm i -D sqlite3
-`,
-          error,
-        )
-
-        throw error
-      }
-    }
+    return new InMemoryDataProvider()
   })
 
   const server = createRemultServerCore<GenericRequestInfo & { body?: any }>(
