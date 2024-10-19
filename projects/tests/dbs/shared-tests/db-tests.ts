@@ -64,8 +64,9 @@ export function commonDbTests(
   options?: DbTestOptions,
 ) {
   it('what', async () => {
-    await (await createEntity(stam)).create({ id: 1, title: 'noam' }).save()
-    expect(await getRemult().repo(stam).count()).toBe(1)
+    const r = await createEntity(stam)
+    await r.create({ id: 1, title: 'noam' }).save()
+    expect(await r.count()).toBe(1)
   })
   it('data types', async () => {
     let r = await (

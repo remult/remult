@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import type {
     FieldUIInfo,
     RelationsToOneValues,
@@ -13,12 +14,15 @@
   export let info: FieldUIInfo
   export let isNewRow = false
 
+  const dispatch = createEventDispatcher()
+
   const onChange = (content: Content) => {
     // @ts-ignore
     if (JSON.stringify(content.json) != JSON.stringify(value)) {
       // @ts-ignore
       value = content.json
     }
+    dispatch('change', { value })
   }
 </script>
 

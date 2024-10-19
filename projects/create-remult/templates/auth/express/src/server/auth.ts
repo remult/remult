@@ -4,12 +4,9 @@ import Credentials from "@auth/express/providers/credentials";
 import GitHub from "@auth/express/providers/github";
 import { Request } from "express";
 import { repo, withRemult, type UserInfo } from "remult";
-import { verify, hash } from "@node-rs/argon2";
+import bcrypt from "bcryptjs";
 import { User } from "../demo/auth/User.js";
 import { Roles } from "../demo/auth/Roles.js";
-
-// Assign the password hashing function to User's static method
-User.hashPassword = hash;
 
 // Configuration for Auth.js
 const authConfig: ExpressAuthConfig = {
@@ -18,10 +15,11 @@ const authConfig: ExpressAuthConfig = {
       credentials: {
         name: {
           type: "text", // The input field for username
-          placeholder: "Try Jane (Jane123) or Steve(Steve123)", // Instructional placeholder for demo purposes
+          placeholder: "Try Jane or Steve", // Instructional placeholder for demo purposes
         },
         password: {
           type: "password", // The input field for password
+          placeholder: "Jane123 or Steve123", // Instructional placeholder for demo purposes
         },
       },
       authorize: (credentials) =>
@@ -39,7 +37,7 @@ const authConfig: ExpressAuthConfig = {
           // If a matching user is found and the password is valid
           if (
             user &&
-            (await verify(user.password, credentials.password as string))
+            bcrypt.compareSync(credentials.password as string, user.password)
           ) {
             return {
               id: user.id, // Return the user's ID as part of the session
@@ -55,21 +53,17 @@ const authConfig: ExpressAuthConfig = {
       withRemult(async () => {
         // This callback runs after sign-in
         if (arg.account?.type === "credentials") return true; // If credentials-based login, allow sign-in
-        let user = await repo(User).findFirst({
-          // Find the user by OAuth provider and account ID
-          provider: arg.account?.provider,
-          providerType: arg.account?.type,
-          providerAccountId: arg.account?.providerAccountId,
+        let user = await repo(User).upsert({
+          where: {
+            // Find the user by OAuth provider and account ID
+            provider: arg.account?.provider,
+            providerType: arg.account?.type,
+            providerAccountId: arg.account?.providerAccountId,
+          },
+          set: {
+            name: arg.profile?.name || "", // Update the user's name with the OAuth profile name
+          },
         });
-        if (!user) {
-          // If no user exists with this OAuth account, create one
-          user = await repo(User).insert({
-            name: arg.profile?.name || "", // Use the OAuth profile name
-            providerType: arg.account?.type, // Store the type of OAuth provider (e.g., GitHub)
-            provider: arg.account?.provider || "",
-            providerAccountId: arg.account?.providerAccountId || "",
-          });
-        }
         arg.user!.id = user.id; // Set the user's ID in the session
         return true;
       }),

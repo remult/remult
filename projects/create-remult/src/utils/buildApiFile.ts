@@ -1,5 +1,5 @@
-import type { DatabaseType } from "./DATABASES";
-import type { ServerInfo } from "./FRAMEWORKS";
+import type { DatabaseType } from "../DATABASES";
+import type { ServerInfo } from "../FRAMEWORKS";
 import { writeImports } from "./writeImports";
 
 export function buildApiFile(

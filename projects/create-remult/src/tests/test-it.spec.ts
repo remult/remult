@@ -1,5 +1,5 @@
 import { expect, test, describe } from "vitest";
-import spawn, { sync } from "cross-spawn";
+import spawn from "cross-spawn";
 import fs from "fs";
 import { emptyDir } from "../utils/empty-dir";
 import { setTimeout } from "timers/promises";
@@ -372,7 +372,7 @@ async function run(what: string, args: string[], where?: string) {
 if (false)
   describe.skip("test it builds ", async () => {
     test.only("test auth next with mssql", async () => {
-      const dir = await testItBuildsAndRuns({
+      await testItBuildsAndRuns({
         template: "nextjs",
         database: "mssql",
         auth: true,

@@ -1,0 +1,8 @@
+<app-tile title="Admin" [status]="status" [subtitle]="subtitle" width="half">
+  <p>{{ message }}</p>
+  <div class="button-row">
+    @if(canOpenAdmin){
+    <a class="button" href="/api/admin"> Open Admin </a>
+    }
+  </div>
+</app-tile>

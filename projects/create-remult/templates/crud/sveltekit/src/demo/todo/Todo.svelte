@@ -2,18 +2,26 @@
   import { remult } from "remult";
   import { Task } from "./Task";
   import { browser } from "$app/environment";
+  import Tile from "../Tile.svelte";
 
   let tasks: Task[] = [];
-  let page = 1;
+  let hideCompleted = false;
+  function toggleHideCompleted() {
+    hideCompleted = !hideCompleted;
+  }
 
-  const refresh = async (_page: number) => {
+  const refresh = async (_hideCompleted: boolean) => {
     tasks = await remult.repo(Task).find({
-      page: _page,
-      limit: 5,
+      where: {
+        completed: hideCompleted ? false : undefined,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
   };
 
-  $: browser && refresh(page);
+  $: browser && refresh(hideCompleted);
 
   let newTaskTitle = "";
   const addTask = async () => {
@@ -31,30 +39,42 @@
   };
 </script>
 
-<div>
-  <strong>Todos</strong>
+<Tile
+  title="Todos"
+  subtitle="Fully functional todo app"
+  icon=""
+  width="full"
+  className="todo"
+  status="Info"
+>
   <main>
     <form on:submit|preventDefault={addTask}>
-      <input bind:value={newTaskTitle} placeholder="What needs to be done?" />
-      <button>Add</button>
+      <input
+        bind:value={newTaskTitle}
+        placeholder="What needs to be done?"
+        type="text"
+      />
+      <button type="submit">
+        <img src="plus.svg" alt="Add" />
+      </button>
     </form>
     {#each tasks as task}
-      <div>
+      <div class="todo__task {task.completed ? 'completed' : ''}">
         <input
           type="checkbox"
           bind:checked={task.completed}
           on:change={(e) => setCompleted(task, e)}
         />
         <span>{task.title}</span>
-        <button on:click={() => deleteTask(task)}>Delete</button>
+        <button on:click={() => deleteTask(task)}>
+          <img src="trash.svg" alt="Delete" /></button
+        >
       </div>
     {/each}
   </main>
-  <footer>
-    <button on:click={() => (page -= 1)} disabled={page === 1}>
-      Previous
+  <div class="button-row">
+    <button on:click={toggleHideCompleted}>
+      {hideCompleted ? "Show" : "Hide"} completed
     </button>
-    <span>Page {page}</span>
-    <button on:click={() => (page += 1)}>Next</button>
-  </footer>
-</div>
+  </div>
+</Tile>

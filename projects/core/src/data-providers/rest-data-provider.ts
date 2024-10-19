@@ -16,8 +16,12 @@ import { getRelationFieldInfo } from '../remult3/relationInfoMember.js'
 import { remultStatic } from '../remult-static.js'
 
 export class RestDataProvider implements DataProvider {
-  constructor(private apiProvider: () => ApiClient) {}
+  constructor(
+    private apiProvider: () => ApiClient,
+    private entityRequested?: (entity: EntityMetadata) => void,
+  ) {}
   public getEntityDataProvider(entity: EntityMetadata): RestEntityDataProvider {
+    this.entityRequested?.(entity)
     return new RestEntityDataProvider(
       () => {
         return buildFullUrl(this.apiProvider()?.url, entity.key)

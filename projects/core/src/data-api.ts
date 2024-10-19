@@ -358,7 +358,7 @@ export class DataApi<T = unknown> {
 
       response.success(r)
     } catch (err: any) {
-      if (err.isForbiddenError) response.forbidden()
+      if (err.isForbiddenError) response.forbidden(err.message)
       else response.error(err, this.repository.metadata)
     }
   }

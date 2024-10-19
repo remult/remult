@@ -4,8 +4,6 @@ import { InMemoryDataProvider } from '../../core/src//data-providers/in-memory-d
 import { createData } from './createData'
 import { Done } from './Done'
 import { DummyRequest, TestDataApiResponse } from './TestDataApiResponse'
-import { MockRestDataProvider } from './testHelper'
-
 import { Status } from './testModel/models'
 
 import { UrlBuilder } from '../../core/src/../urlBuilder'
@@ -59,6 +57,7 @@ import {
 import { getEntityKey } from '../../core/src/remult3/getEntityRef'
 import { actionInfo } from '../../core/internals'
 import { remultStatic, resetFactory } from '../../core/src/remult-static'
+import { TestApiDataProvider } from '../../core/server/test-api-data-provider.js'
 
 //SqlDatabase.LogToConsole = true;
 
@@ -1212,7 +1211,7 @@ describe('data api', () => {
 
   it('delete id  not Allowed', async () => {
     let type = class extends newCategories {}
-    Entity('', {
+    Entity('x', {
       allowApiDelete: false,
     })(type)
     let [c, remult] = await createData(async (i) => {
@@ -1220,7 +1219,9 @@ describe('data api', () => {
       await i(2, 'yael', 'b')
       await i(3, 'yoni', 'a')
     }, type)
-    const r = new Remult(new MockRestDataProvider(remult)).repo(type)
+    const r = new Remult(
+      TestApiDataProvider({ dataProvider: remult.dataProvider }),
+    ).repo(type)
     await expect(() => r.delete(2)).rejects.toThrowErrorMatchingInlineSnapshot(`
       {
         "message": "Forbidden",
@@ -1319,7 +1320,9 @@ describe('data api', () => {
       await i(2, 'yael', 'b')
       await i(3, 'yoni', 'a')
     }, type)
-    const r = new Remult(new MockRestDataProvider(remult)).repo(type)
+    const r = new Remult(
+      TestApiDataProvider({ dataProvider: remult.dataProvider }),
+    ).repo(type)
     await expect(() => r.delete(2)).rejects.toThrowErrorMatchingInlineSnapshot(`
       {
         "message": "Forbidden",
@@ -1354,7 +1357,9 @@ describe('data api', () => {
       await i(2, 'yael', 'b')
       await i(3, 'yoni', 'a')
     }, type)
-    const r = new Remult(new MockRestDataProvider(remult)).repo(type)
+    const r = new Remult(
+      TestApiDataProvider({ dataProvider: remult.dataProvider }),
+    ).repo(type)
     expect(r.metadata.apiUpdateAllowed({ id: 2 } as any)).toBe(false)
     expect(r.metadata.apiUpdateAllowed({ id: 1 } as any)).toBe(true)
     await expect(() => r.update(2, { categoryName: 'noam 1' })).rejects
@@ -1737,7 +1742,9 @@ describe('test rest data provider translates data correctly', () => {
       async (insert) => await insert(1, 'test'),
     )
 
-    let restDb = new MockRestDataProvider(serverRemult)
+    let restDb = TestApiDataProvider({
+      dataProvider: serverRemult.dataProvider,
+    })
     let remult = new Remult()
     remult.dataProvider = restDb
     let c = (await remult.repo(Categories).findId(1, { useCache: false }))!
@@ -2113,7 +2120,7 @@ describe('CompoundIdPojoEntity', () => {
       d = ''
     }
     const mem = new InMemoryDataProvider()
-    const r = new Remult(new MockRestDataProvider(new Remult(mem))).repo(myT)
+    const r = new Remult(TestApiDataProvider({ dataProvider: mem })).repo(myT)
     await r.insert({ a: 'a', b: '', c: 'c', d: 'd' })
     await r.update({ a: 'a', b: '', c: 'c' }, { d: 'd1' })
     expect(await r.find()).toMatchInlineSnapshot(`
@@ -2155,7 +2162,7 @@ describe('CompoundIdPojoEntity', () => {
       d = ''
     }
     const mem = new InMemoryDataProvider()
-    const r = new Remult(new MockRestDataProvider(new Remult(mem))).repo(myT)
+    const r = new Remult(TestApiDataProvider({ dataProvider: mem })).repo(myT)
     let id = {
       a: 'a',
       b: new Date('2021-05-16'),
@@ -2246,8 +2253,7 @@ describe('CompoundIdPojoEntity', () => {
     expect((await repo.findFirst({ a: 2, b: 20 }))!.c).toBe(201)
   })
   it('test update_rest', async () => {
-    const r = new Remult(new InMemoryDataProvider())
-    var repo = new Remult(new MockRestDataProvider(r)).repo(CompoundIdSimple)
+    var repo = new Remult(TestApiDataProvider()).repo(CompoundIdSimple)
     await repo.insert([{ a: 2, b: 20, c: 200 }])
     await repo.update({ a: 2, b: 20 }, { c: 201 })
     expect((await repo.findFirst({ a: 2, b: 20 }))!.c).toBe(201)
@@ -2262,8 +2268,7 @@ describe('CompoundIdPojoEntity', () => {
       @Fields.integer()
       c = 0
     }
-    const r = new Remult(new InMemoryDataProvider())
-    var repo = new Remult(new MockRestDataProvider(r)).repo(myEntity)
+    var repo = new Remult(TestApiDataProvider()).repo(myEntity)
     await repo.insert([{ a: 2, b: 20, c: 200 }])
     await repo.update({ a: 2, b: 20 }, { c: 0 })
     expect((await repo.findFirst({ a: 2, b: 20 }))!.c).toBe(0)

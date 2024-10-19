@@ -17,19 +17,9 @@ import { DATABASES, databaseTypes, type DatabaseType } from "./DATABASES";
 import { buildApiFile } from "./utils/buildApiFile";
 import { extractEnvironmentVariables } from "./utils/extractEnvironmentVariables";
 import { removeJs } from "./frameworks/nextjs";
+import { svelteKit } from "./frameworks/sveltekit";
 
-const {
-  blue,
-  blueBright,
-  cyan,
-  green,
-  greenBright,
-  magenta,
-  red,
-  redBright,
-  reset,
-  yellow,
-} = colors;
+const { red, reset } = colors;
 
 const argv = minimist<{
   template?: string;
@@ -182,7 +172,6 @@ async function init() {
               : reset("Select a framework:"),
           initial: 0,
           choices: FRAMEWORKS.map((framework) => {
-            const frameworkColor = framework.color;
             return {
               title: reset(framework.display || framework.name),
               value: framework,
@@ -251,7 +240,9 @@ async function init() {
             databaseTypes.includes(dir) || "Invalid database type",
           choices: databaseTypes.map((db) => {
             return {
-              title: DATABASES[db].display,
+              title:
+                DATABASES[db].display +
+                ((DATABASES[db] as any).extraText ?? ""),
               value: DATABASES[db],
             };
           }),
@@ -361,19 +352,25 @@ async function init() {
     }
     pkg.name = packageName || getProjectName();
     pkg.dependencies = sortObject({
-      remult: "^0.27.19",
       ...pkg.dependencies,
+      remult: "^0.27.21-next.5",
       ...db.dependencies,
       ...safeServer.dependencies,
-      ...(auth
-        ? { ...safeServer.auth?.dependencies, "@node-rs/argon2": "^1.8.3" }
-        : {}),
+      ...(auth ? { ...safeServer.auth?.dependencies, bcryptjs: "^2.4.3" } : {}),
     });
     pkg.devDependencies = sortObject({
       ...pkg.devDependencies,
       ...db.devDependencies,
       ...safeServer.devDependencies,
+      ...(auth ? { "@types/bcryptjs": "^2.4.6" } : {}),
     });
+    if (fw === svelteKit) {
+      pkg.devDependencies = sortObject({
+        ...pkg.devDependencies,
+        ...pkg.dependencies,
+      });
+      delete pkg.dependencies;
+    }
   });
   const apiFileName = path.join(root, safeServer.path || "src/server/api.ts");
   const apiFileDir = path.dirname(apiFileName);
@@ -403,8 +400,19 @@ async function init() {
   );
   envVariables = envVariables.map((x) => x.split("=")[0]);
   fs.writeFileSync(
-    path.join(root, "sample" + envFile),
-    envVariables.map((x) => x + "=").join("\n"),
+    path.join(root, envFile + ".example"),
+    envVariables
+      .map((x) => {
+        let comment = "";
+        if (x === "AUTH_SECRET") {
+          comment =
+            "# Secret key for authentication. (You can use Online UUID generator: https://www.uuidgenerator.net)";
+        } else if (x === "DATABASE_URL") {
+          comment = "# URL of the database / connection string";
+        }
+        return `${comment ? `${comment}\n` : ``}${x}=`;
+      })
+      .join("\n"),
   );
   const writeFilesArgs = {
     root,

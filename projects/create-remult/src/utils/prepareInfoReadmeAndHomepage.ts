@@ -18,20 +18,33 @@ export function prepareInfoReadmeAndHomepage(
     frontendTemplate,
   } = args;
 
-  let components: ComponentInfo[] = [framework];
-  if (framework.canWorkWithVitePluginExpress) {
-    components.push({ display: "Vite", url: "https://vitejs.dev/" });
-    if (server.componentInfo) components.push(server.componentInfo);
-  }
-  components.push(db);
-
-  const imports: Import[] = [];
-  const li: (() => string)[] = [
-    () =>
-      components
-        .map(({ display, url }) => `<a href="${url}">${display}</a>`)
-        .join(", "),
+  let components: ComponentInfo[] = [
+    {
+      ...framework,
+      type: "Framework",
+      description: "Your favorite framework/library",
+      emoji: "🌟",
+    },
   ];
+  if (framework.canWorkWithVitePluginExpress) {
+    components.push({
+      display: "Vite",
+      url: "https://vitejs.dev/",
+      type: "Bundler",
+      description: "Powering modern web applications",
+      emoji: "🔥",
+    });
+  }
+  if (server.componentInfo) components.push(server.componentInfo);
+  components.push({ ...db, type: "Database" });
+
+  const imports: Import[] = [
+    {
+      from: "./demo/Tile" + (framework.componentFileSuffix ?? ""),
+      imports: "Tile",
+    },
+  ];
+  const li: (() => string)[] = [];
 
   if (server.requiresTwoTerminal) {
     copyDir(
@@ -39,22 +52,38 @@ export function prepareInfoReadmeAndHomepage(
       path.join(root),
     );
     imports.push({
-      from: "./demo/CheckServer" + (framework.componentFileSuffix ?? ""),
-      imports: "CheckServer",
+      from: "./demo/ServerStatus" + (framework.componentFileSuffix ?? ""),
+      imports: "ServerStatus",
     });
-    li.push(() => "<CheckServer />");
+    li.push(() => "<ServerStatus />");
   }
   if (withAuth) {
     copyDir(path.join(templatesDir, "auth", frontendTemplate), path.join(root));
 
-    components.push({ display: "auth.js", url: "https://authjs.dev" });
-    imports.push({
-      from: "./demo/auth/CheckAuth" + (framework.componentFileSuffix ?? ""),
-      imports: "CheckAuth",
+    components.push({
+      display: "auth.js",
+      url: "https://authjs.dev",
+      type: "Auth",
+      description: "Authentication made easy and secure",
+      emoji: "🔒",
     });
-    li.push(() => "<CheckAuth />");
+    imports.push({
+      from: "./demo/auth/Auth" + (framework.componentFileSuffix ?? ""),
+      imports: "Auth",
+    });
+    li.push(() => "<Auth />");
   }
-  if (admin) li.push(() => `Admin: <a href="/api/admin">Admin</a>`);
+  if (admin) {
+    copyDir(
+      path.join(templatesDir, "admin", frontendTemplate),
+      path.join(root),
+    );
+    imports.push({
+      from: "./demo/Admin" + (framework.componentFileSuffix ?? ""),
+      imports: "Admin",
+    });
+    li.push(() => `<Admin />`);
+  }
   if (crud) {
     copyDir(path.join(templatesDir, "crud", frontendTemplate), path.join(root));
     imports.push({
@@ -63,7 +92,6 @@ export function prepareInfoReadmeAndHomepage(
     });
     li.push(() => "<Todo />");
   }
-  components.push({ display: "remult", url: "https://remult.dev" });
   if (server.doesNotLikeJsFileSuffix) {
     for (const i of imports) {
       if (i.from.startsWith("./demo")) i.from = "." + i.from;
@@ -72,4 +100,10 @@ export function prepareInfoReadmeAndHomepage(
   return { components, imports, li };
 }
 
-export type ComponentInfo = { display: string; url: string };
+export type ComponentInfo = {
+  display: string;
+  url: string;
+  type?: string;
+  description: string;
+  emoji: string;
+};

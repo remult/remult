@@ -1,9 +1,12 @@
-import type { Framework } from "../FRAMEWORKS";
+import type { Framework, WriteFilesArgs } from "../FRAMEWORKS";
 import fs from "fs";
 import path from "path";
 import { createViteConfig } from "../utils/createViteConfig";
-import { writeImports } from "../utils/writeImports";
-import { prepareInfoReadmeAndHomepage } from "../utils/prepareInfoReadmeAndHomepage";
+import { writeImports, type Import } from "../utils/writeImports";
+import {
+  prepareInfoReadmeAndHomepage,
+  type ComponentInfo,
+} from "../utils/prepareInfoReadmeAndHomepage";
 import { createReadmeFile } from "../utils/createReadmeFile";
 
 export const vue: Framework = {
@@ -26,21 +29,8 @@ export const vue: Framework = {
       ...args,
       frontendTemplate: "vue",
     });
-    fs.writeFileSync(
-      path.join(args.root, "src", "App.vue"),
-      `<script setup lang="ts">
-${writeImports(info.imports, args.server)}
-</script>
-
-<template>
-  <h1>Welcome to ${args.projectName}!</h1>
-  
-  <ul>
-    ${info.li.map((l) => `<li>${l()}</li>`).join("\n    ")}
-  </ul>
-</template>
-`,
-    );
+    const fileName = path.join(args.root, "src", "App.vue");
+    writeAppVue(fileName, info, args);
     createReadmeFile(
       args.projectName,
       info.components,
@@ -50,3 +40,61 @@ ${writeImports(info.imports, args.server)}
     );
   },
 };
+export function writeAppVue(
+  fileName: string,
+  info: {
+    components: ComponentInfo[];
+    imports: Import[];
+    li: (() => string)[];
+  },
+  args: WriteFilesArgs,
+) {
+  fs.writeFileSync(
+    fileName,
+    `<script setup lang="ts">
+${writeImports(info.imports, args.server)}
+</script>
+
+<template>
+  <div class="tiles">
+    <Tile
+      title="${args.projectName}"
+      subtitle=""
+      icon="remult"
+      class="intro"
+      status="Success"
+      width="half"
+    >
+      <div class="tile__title">What's next?</div>
+      <div class="button-row">
+        <a class="button" href="https://learn.remult.dev/" target="_blank">
+          Interactive Tutorial
+        </a>
+        <a class="button" href="https://remult.dev/docs" target="_blank">
+          Documentation
+        </a>
+        <a
+          class="button"
+          href="https://github.com/remult/remult"
+          target="_blank"
+        >
+          Github
+        </a>
+      </div>
+      <div class="tile__subtitle">Technology Stack Info:</div>
+      <div class="intro__stack">
+        ${info.components
+          .map(
+            (c) => `<div class="intro__stack-item">
+          <span>${c.type}</span>
+          ${c.display}
+        </div>`,
+          )
+          .join("\n        ")}
+      </div>
+    </Tile>
+    ${info.li.map((l) => `${l()}`).join("\n    ")}
+  </div>
+</template>`,
+  );
+}
