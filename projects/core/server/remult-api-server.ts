@@ -1140,7 +1140,7 @@ class RequestBridgeToDataApiRequest implements DataApiRequest {
   constructor(private r: GenericRequestInfo | undefined) {}
 }
 class ResponseBridgeToDataApiResponse<RequestType> implements DataApiResponse {
-  forbidden(message?: 'Forbidden'): void {
+  forbidden(message = 'Forbidden'): void {
     this.error({ message }, undefined, 403)
   }
   setStatus(status: number) {

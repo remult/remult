@@ -34,7 +34,7 @@ export function TestApiDataProvider(
         const { Sqlite3DataProvider } = await import('../remult-sqlite3.js')
 
         return new SqlDatabase(
-          new Sqlite3DataProvider(new sqlite3.Database(':memory:')),
+          new Sqlite3DataProvider(new sqlite3.default.Database(':memory:')),
         )
       } catch (error) {
         console.error(
@@ -66,7 +66,7 @@ npm i -D sqlite3
       }
       var result = await server.handle(req)
       if ((result?.statusCode ?? 200) >= 400) {
-        throw { ...result?.data, statusCode: result?.statusCode ?? 500 }
+        throw { ...result?.data, status: result?.statusCode ?? 500 }
       }
       return result?.data
     })

@@ -44,7 +44,7 @@ describe('test api data provider', () => {
     expect(userOnServer).toBe('Noam')
     expect(testOnServer).toBe(undefined)
   })
-  test.only('test sqlite', async () => {
+  test('test sqlite', async () => {
     @Entity('test', {
       allowApiCrud: true,
       apiPrefilter: () => {
@@ -72,5 +72,24 @@ describe('test api data provider', () => {
       { id: 2, name: 'Yoni' },
     ])
     expect(await repo(Person).count()).toBe(1)
+  })
+  test('test error', async () => {
+    @Entity('test', {
+      allowApiCrud: 'admin',
+    })
+    class Person {
+      @Fields.integer()
+      id = 0
+      @Fields.string()
+      name = ''
+    }
+    remult.dataProvider = TestApiDataProvider()
+    await expect(() => repo(Person).count()).rejects
+      .toThrowErrorMatchingInlineSnapshot(`
+      {
+        "httpStatusCode": 403,
+        "message": "Forbidden",
+      }
+    `)
   })
 })

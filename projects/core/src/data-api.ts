@@ -35,23 +35,28 @@ export class DataApi<T = unknown> {
     req: DataApiRequest,
     serializeContext: () => Promise<any>,
   ) {
-    const action = req?.get('__action')
-    if (action?.startsWith(liveQueryAction))
-      return this.liveQuery(
-        res,
-        req,
-        undefined,
-        serializeContext,
-        action.substring(liveQueryAction.length),
-      )
-    switch (action) {
-      case 'get':
-      case 'count':
-        return this.count(res, req, undefined)
-      case 'groupBy':
-        return res.success(this.groupBy(req, undefined))
+    try {
+      const action = req?.get('__action')
+      if (action?.startsWith(liveQueryAction))
+        return this.liveQuery(
+          res,
+          req,
+          undefined,
+          serializeContext,
+          action.substring(liveQueryAction.length),
+        )
+      switch (action) {
+        case 'get':
+        case 'count':
+          return this.count(res, req, undefined)
+        case 'groupBy':
+          return res.success(this.groupBy(req, undefined))
+      }
+      return this.getArray(res, req, undefined)
+    } catch (err: any) {
+      if (err.isForbiddenError) res.forbidden(err)
+      else res.error(err, this.repository.metadata)
     }
-    return this.getArray(res, req, undefined)
   }
   async httpPost(
     res: DataApiResponse,
