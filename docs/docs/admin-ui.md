@@ -13,17 +13,27 @@ export const api = remultSveltekit({
 })
 ```
 
-### Accessing and Using the Admin UI
+## Accessing and Using the Admin UI
 
 Navigate to `/api/admin` to access the Admin UI. Here, you can perform CRUD operations on your entities, view their relationships via the Diagram entry, and ensure secure management with the same validations and authorizations as your application.
 
 ![Remult Admin](/remult-admin.png)
 
-### Features
+## Features
 
-- **CRUD Operations**: Directly create, update, and delete tasks through the Admin UI.
-- **Entity Diagram**: Visualize relationships between entities for better data structure understanding.
-- **Security**: Operations are secure, adhering to application-defined rules.
+- **Entity List**: On the left side of the screen you have the entity list, you can use the search field to search for entities.
+
+- **Entity Details**: Clicking on an entity in the menu will open the entity details screen (in the middle), here you can view filter & paginate your data _(top right)_. You can also see all relations of entity by clicking on the arrow on the left of each row. The last column is dedicated for actions where you can edit or delete an entity. On top left you can also add a new entity by clicking on the `+`.
+
+- **Entity Diagram**: Clicking on the Diagram entry will open the entity diagram screen, here you can see the entity relationships.
+
+![Remult Admin Diagram](/remult-admin-diagram.png)
+
+- **Settings**: On top left, you have a menu _(remult logo)_ where you can find various settings for your admin ui.
+  - You want to confirm a delete all the time?
+  - You want to display Captions or Keys?
+  - Multiple options for automatic diagram layout (you want also do your own layout)
+  - You don't use cookies? No problem, you can set your bearer token (it will only be in session)
 
 ## Demo in video
 
