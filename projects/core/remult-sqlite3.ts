@@ -3,8 +3,10 @@ import { SqliteCoreDataProvider } from './remult-sqlite-core.js'
 import type { Database } from 'sqlite3'
 
 export async function createSqlite3DataProvider(fileName = ':memory:') {
-  const { Database } = await import('sqlite3')
-  return new SqlDatabase(new Sqlite3DataProvider(new Database(fileName)))
+  const sqlite3 = await import('sqlite3')
+  return new SqlDatabase(
+    new Sqlite3DataProvider(new sqlite3.default.Database(fileName)),
+  )
 }
 export class Sqlite3DataProvider extends SqliteCoreDataProvider {
   constructor(db: Database) {
