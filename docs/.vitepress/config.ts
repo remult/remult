@@ -58,7 +58,7 @@ export default defineConfig({
     },
     nav: [
       {
-        text: 'Guide',
+        text: 'Documentation',
         link: '/docs/',
       },
       {
