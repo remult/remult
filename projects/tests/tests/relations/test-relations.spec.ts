@@ -596,6 +596,18 @@ describe('test relations', () => {
     `)
     expect(result[0].category!.company.id).toBe(10)
   })
+  it('to many', async () => {
+    remult.dataProvider = new InMemoryDataProvider()
+    await remult.repo(Category).insert({ id: 1, name: 'c1' })
+    expect(await remult.repo(Category).findOne({})).toMatchInlineSnapshot(`
+      Category {
+        "createdAt": 1976-06-16T00:00:00.000Z,
+        "id": 1,
+        "name": "c1",
+        "secondaryCompanyId": 0,
+      }
+    `)
+  })
   it('loads ok also with old field reference', async () => {
     const td = TestDataProvider()
     remult.dataProvider = td
