@@ -109,6 +109,9 @@ export const Servers = {
       "@fastify/static": "^8.0.0",
       fastify: "^5.0.0",
     },
+    devDependencies: {
+      "@types/node": "^22.7.7",
+    },
     writeFiles: ({ distLocation, withAuth, root }) => {
       if (withAuth)
         throw new Error(
