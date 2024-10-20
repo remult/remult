@@ -115,7 +115,6 @@ describe('test api data provider', () => {
       Person {
         "id": 1,
         "length": 4,
-        "name": undefined,
       }
     `)
   })

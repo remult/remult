@@ -70,7 +70,6 @@ describe('relations to one behavior', () => {
       Task {
         "cat2": null,
         "category": undefined,
-        "categoryId": undefined,
         "id": 1,
         "title": "task 1",
       }
@@ -110,7 +109,6 @@ describe('relations to one behavior', () => {
       Task {
         "cat2": null,
         "category": undefined,
-        "categoryId": undefined,
         "id": 1,
         "title": "task 12",
       }
@@ -150,7 +148,6 @@ describe('relations to one behavior', () => {
       Task {
         "cat2": null,
         "category": undefined,
-        "categoryId": undefined,
         "id": 1,
         "title": "task 122",
       }
@@ -163,7 +160,6 @@ describe('relations to one behavior', () => {
       Task {
         "cat2": null,
         "category": undefined,
-        "categoryId": undefined,
         "id": 1,
         "title": "task 1",
       }

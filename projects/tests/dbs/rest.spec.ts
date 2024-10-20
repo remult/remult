@@ -58,7 +58,6 @@ describe('Rest', () => {
       tasks {
         "done": false,
         "id": 1,
-        "title": undefined,
       }
     `)
   })
@@ -84,7 +83,6 @@ describe('Rest', () => {
         tasks {
           "done": false,
           "id": 2,
-          "title": undefined,
         },
       ]
     `)
@@ -106,7 +104,6 @@ describe('Rest', () => {
         tasks {
           "done": false,
           "id": 1,
-          "title": undefined,
         },
       ]
     `)
