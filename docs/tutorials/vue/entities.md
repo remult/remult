@@ -89,6 +89,7 @@ curl http://localhost:3002/api/tasks -d "{\"title\": \"Clean car\"}" -H "Content
 ```sh
 curl http://localhost:3002/api/tasks -d "[{\"title\": \"Read a book\"},{\"title\": \"Take a nap\", \"completed\":true },{\"title\": \"Pay bills\"},{\"title\": \"Do laundry\"}]" -H "Content-Type: application/json"
 ```
+
 - Note that the `POST` endpoint can accept a single `Task` or an array of `Task`s.
 
 5. Refresh the browser again, to see that the tasks were stored in the db.
@@ -101,11 +102,11 @@ While remult supports [many relational and non-relational databases](https://rem
 
 ### Enabling the Admin UI
 
-Add the Admin UI to your React application by setting the `admin` option to `true` in the `remultExpress()` configuration in your `src/server/api.ts` file:
+Add the Admin UI to your React application by setting the `admin` option to `true` in the `remultExpress()`
 
-```ts
-// src/server/api.ts
+::: code-group
 
+```ts [src/server/api.ts]
 import { remultExpress } from 'remult/remult-express'
 import { Task } from '../shared/Task.js'
 
@@ -114,6 +115,8 @@ export const api = remultExpress({
   admin: true, // Enable the Admin UI
 })
 ```
+
+:::
 
 ### Accessing and Using the Admin UI
 

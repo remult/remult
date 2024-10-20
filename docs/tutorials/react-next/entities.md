@@ -101,11 +101,11 @@ While remult supports [many relational and non-relational databases](https://rem
 
 ### Enabling the Admin UI
 
-Add the Admin UI to your Next.js application by setting the `admin` option to `true` in the `remultNextApp()` configuration in your `src/api.ts` file:
+Add the Admin UI to your Next.js application by setting the `admin` option to `true` in the `remultNextApp()`
 
-```ts
-// src/api.ts
+::: code-group
 
+```ts [src/api.ts]
 import { remultNextApp } from 'remult/remult-next'
 import { Task } from './shared/Task'
 
@@ -116,6 +116,8 @@ const api = remultNextApp({
 
 export const { POST, PUT, DELETE, GET } = api
 ```
+
+:::
 
 ### Accessing and Using the Admin UI
 
