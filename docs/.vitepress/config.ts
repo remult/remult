@@ -181,6 +181,132 @@ export default defineConfig({
             ],
           },
           {
+            text: 'Installation',
+            link: '/docs/installation',
+            items: [
+              {
+                text: 'Frontend',
+                collapsed: true,
+                items: [
+                  {
+                    text: 'React',
+                    link: '/docs/installation/framework/react',
+                  },
+                  {
+                    text: 'Angular',
+                    link: '/docs/installation/framework/angular',
+                  },
+                  {
+                    text: 'Vue',
+                    link: '/docs/installation/framework/Vue',
+                  },
+                  {
+                    text: 'Next.js',
+                    link: '/docs/installation/framework/nextjs',
+                  },
+                  {
+                    text: 'Sveltekit',
+                    link: '/docs/installation/framework/sveltekit',
+                  },
+                  {
+                    text: 'Nuxt',
+                    link: '/docs/installation/framework/nuxt',
+                  },
+                  {
+                    text: 'SolidStart',
+                    link: '/docs/installation/framework/solid',
+                  },
+                ],
+              },
+              {
+                text: 'Server',
+                link: '/docs/installation/server/',
+                collapsed: true,
+                items: [
+                  {
+                    text: 'Express',
+                    link: '/docs/installation/servers/express',
+                  },
+                  {
+                    text: 'Fastify',
+                    link: '/docs/installation/servers/fastify',
+                  },
+                  {
+                    text: 'Hono',
+                    link: '/docs/installation/servers/hono',
+                  },
+                  {
+                    text: 'Hapi',
+                    link: '/docs/installation/servers/hapi',
+                  },
+                  {
+                    text: 'Koa',
+                    link: '/docs/installation/servers/koa',
+                  },
+                  {
+                    text: 'nest',
+                    link: '/docs/installation/servers/nest',
+                  },
+                ],
+              },
+              {
+                text: 'Database',
+                link: '/docs/installation/database',
+                collapsed: true,
+                items: [
+                  {
+                    text: 'PostgreSQL',
+                    link: '/docs/installation/database/postgresql',
+                  },
+                  {
+                    text: 'MySQL',
+                    link: '/docs/installation/database/mysql',
+                  },
+                  {
+                    text: 'MongoDB',
+                    link: '/docs/installation/database/mongodb',
+                  },
+                  {
+                    text: 'SQLite3',
+                    link: '/docs/installation/database/sqlite3',
+                  },
+                  {
+                    text: 'Better SQLite3',
+                    link: '/docs/installation/database/better-sqlite3',
+                  },
+                  {
+                    text: 'MSSQL',
+                    link: '/docs/installation/database/mssql',
+                  },
+                  {
+                    text: 'Bun SQLite',
+                    link: '/docs/installation/database/bun-sqlite',
+                  },
+                  {
+                    text: 'sqljs',
+                    link: '/docs/installation/database/sqljs',
+                  },
+                  {
+                    text: 'Turso',
+                    link: '/docs/installation/database/turso',
+                  },
+                  {
+                    text: 'DuckDb',
+                    link: '/docs/installation/database/duckdb',
+                  },
+                  {
+                    text: 'Oracle',
+                    link: '/docs/installation/database/oracle',
+                  },
+                  {
+                    text: 'Json files',
+                    link: '/docs/installation/database/json',
+                  },
+                ],
+              },
+            ],
+          },
+          {
             text: 'Server-side Code',
             items: [
               {
