@@ -181,11 +181,12 @@ export default defineConfig({
             ],
           },
           {
-            text: 'Installation',
+            text: 'Stacks',
             link: '/docs/installation',
             items: [
               {
                 text: 'Frontend',
+                link: '/docs/installation/framework/',
                 collapsed: true,
                 items: [
                   {
@@ -198,7 +199,7 @@ export default defineConfig({
                   },
                   {
                     text: 'Vue',
-                    link: '/docs/installation/framework/Vue',
+                    link: '/docs/installation/framework/vue',
                   },
                   {
                     text: 'Next.js',
@@ -255,6 +256,10 @@ export default defineConfig({
                 collapsed: true,
                 items: [
                   {
+                    text: 'Json files',
+                    link: '/docs/installation/database/json',
+                  },
+                  {
                     text: 'PostgreSQL',
                     link: '/docs/installation/database/postgresql',
                   },
@@ -297,10 +302,6 @@ export default defineConfig({
                   {
                     text: 'Oracle',
                     link: '/docs/installation/database/oracle',
-                  },
-                  {
-                    text: 'Json files',
-                    link: '/docs/installation/database/json',
                   },
                 ],
               },

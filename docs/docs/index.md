@@ -2,10 +2,6 @@
   import Example from '../components/Example.vue'
 </script>
 
----
-
-## outline: []
-
 # Introduction
 
 **Remult** is a fullstack CRUD framework that uses your TypeScript model types to provide:
@@ -24,15 +20,15 @@ As Remult is "aware" of the runtime context (frontend or backend), data validati
 
 Explore the flexibility of Remult through different learning paths tailored to match your style and project needs.
 
-### Start with the Interactive Online Tutorial
+### `Option A`: Start with the Interactive Online Tutorial
 
 If you're new to Remult or prefer a guided, hands-on approach, we recommend starting with our [interactive online tutorial](https://learn.remult.dev). This tutorial will walk you through building a full-stack application step by step, providing immediate feedback and insights as you learn.
 
-### Create a new Project
+### `Option B`: Create a new Project
 
 [`npm init remult@latest`](./creating-a-project.md)
 
-### Follow a Step-by-step Tutorial
+### `Option C`: Follow a Step-by-step Tutorial
 
 <br />
 <br />
@@ -46,12 +42,14 @@ If you're new to Remult or prefer a guided, hands-on approach, we recommend star
 	<Example :solid=true sizeIco=150 />
 </div>
 
-### Quickstart
+### `Option D`: Quickstart
 
 Use this [Quickstart](./quickstart.md) guide to quickly setup and try out Remult or add Remult to an existing app.
 
-### Browse [Example Apps](./example-apps.md)
+### `Option E`: Browse Example Apps
 
-### Video Tutorials
+[Example Apps](./example-apps.md)
 
-Check out these official Remult [video tutorials](https://youtube.com/playlist?list=PLlcnBwFkuOn166nXXxxfL9Hee-1GWlDSm&si=TDlwIFDLi4VMi-as).
+### `Option F`: Video Tutorials
+
+Check out these official [Remult video tutorials](https://youtube.com/playlist?list=PLlcnBwFkuOn166nXXxxfL9Hee-1GWlDSm&si=TDlwIFDLi4VMi-as).
