@@ -35,12 +35,26 @@ Answer a few questions about your preferred tech stack and project requirements.
 
 `Web Server` _(if needed)_ <Example :oneline=true :express=true :fastify=true />
 
-`Database` <Example :oneline=true postgres:=true sqlite:=true  />
+`Database` <Example :oneline=true :json=true :postgres=true :mysql=true :sqlite=true :mongodb=true :mssql=true />
 
-`CRUD`: do you want CRUD operations for all entities?
+`Authentication`: Do you want to add `auth.js` to your project directly ?
 
-`Authentication`: do you want to use the included authentication?
+`Add CRUD demo`: A comprehensive example of how to use an entity. It will show you how to create, read, update and delete data.
 
-2. **Instant Configuration**: Based on your answers, Remult will configure the project with the best-suited options.
-3. **Feature-Rich Demo**: Upon launching your new project, you'll be greeted with a comprehensive dashboard that showcases all of Remult's powerful features.
-4. **Easy Customization**: If you want to start with a clean slate, simply remove the demo folder to eject the demo components.
+`Admin UI`: Will then be available at `/api/admin`
+
+### 2. **Instant Configuration**
+
+Based on your answers, Remult will configure the project with the best-suited options. With all combinations of frameworks, servers, databases and authentication, we manage more than `180 different project flavors`! We are missing yours? Let us know !
+
+### 3. **Feature-Rich Demo**
+
+Once you run your project, you'll be greeted with a comprehensive dashboard that showcases all of Remult's powerful features. It will look like this:
+
+![Remult Dashboard](/create-remult.png)
+
+Each tile is a fully functional example of a feature that you selected.
+
+### 4. **Easy Eject**
+
+Simply remove the demo folder to eject the demo components.
