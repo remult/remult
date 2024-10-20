@@ -44,10 +44,9 @@ describe('test server expression value', () => {
     expect(testServerExpression.testVal2).toBe(12)
   })
   it('test doesnt calc on client', async () => {
-    actionInfo.runningOnServer = false
     let c = new Remult()
     c.dataProvider = new InMemoryDataProvider()
-
+    c.dataProvider.isProxy = true
     testServerExpression.testVal = 1
     testServerExpression.testVal2 = 11
     let r = c.repo(testServerExpression).create()
@@ -59,9 +58,9 @@ describe('test server expression value', () => {
     expect(testServerExpression.testVal2).toBe(11)
   })
   it('test basics find doesnt calc on client', async () => {
-    actionInfo.runningOnServer = false
     let c = new Remult()
     c.dataProvider = new InMemoryDataProvider()
+    c.dataProvider.isProxy = true
 
     let r = c.repo(testServerExpression).create()
     r.code = 5

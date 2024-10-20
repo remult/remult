@@ -3,6 +3,7 @@ import { describe, expect, test } from 'vitest'
 import {
   Entity,
   Fields,
+  InMemoryDataProvider,
   Remult,
   remult,
   repo,
@@ -90,6 +91,31 @@ describe('test api data provider', () => {
       {
         "httpStatusCode": 403,
         "message": "Forbidden",
+      }
+    `)
+  })
+  test('test server expression', async () => {
+    @Entity('test', {
+      allowApiCrud: true,
+    })
+    class Person {
+      @Fields.integer()
+      id = 0
+      @Fields.string({ includeInApi: false })
+      name = ''
+      @Fields.integer<Person>({
+        serverExpression: (p) => (p.name ?? '').length,
+      })
+      length = 0
+    }
+    let mem = new InMemoryDataProvider()
+    remult.dataProvider = TestApiDataProvider({ dataProvider: mem })
+    await repo(Person, mem).insert({ id: 1, name: 'Noam' })
+    expect(await repo(Person).findFirst()).toMatchInlineSnapshot(`
+      Person {
+        "id": 1,
+        "length": 4,
+        "name": undefined,
       }
     `)
   })

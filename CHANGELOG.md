@@ -43,7 +43,7 @@ All notable changes to this project will be documented in this file.
   ```
 
 - Added `TestApiDataProvider` to use in unit tests that test api rules. see [example](https://stackblitz.com/edit/api-test-example?file=test.spec.ts,model.ts)
--
+- Fixed `serverExpression` to run whenever we're not using a `proxy` data provider (for example RestDataProvider)
 - Fixed issue with `updateMany` where the `set` had `ValueListType` or relation.
 - Fixed issue when updating relation id and relation in the same update, the last one will win
 - Fixed makeTitle to handle all caps text

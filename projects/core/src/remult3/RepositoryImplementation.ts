@@ -2094,12 +2094,14 @@ export class rowHelperImplementation<T>
   }
 
   private async calcServerExpression() {
-    if (isBackend())
+    if (!this.repo._dataProvider.isProxy)
       //y2 should be changed to be based on data provider - consider naming
       for (const col of this.info.fieldsMetadata) {
         if (col.options.serverExpression) {
-          this.instance[col.key as keyof T] =
-            (await col.options.serverExpression(this.instance)) as any
+          const result = (await col.options.serverExpression(
+            this.instance,
+          )) as any
+          if (result !== undefined) this.instance[col.key as keyof T] = result
         }
       }
   }
