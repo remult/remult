@@ -6,10 +6,6 @@
 
 _The easiest way to start building a Remult app_
 
-![npm init remult](../public/npm_init_remult.gif)
-
-## How ?
-
 ```bash
 npm init remult@latest
 ```
@@ -18,6 +14,10 @@ Yes, that's it!
 ::: tip
 Let us know how you liked the process! [@remultjs](https://twitter.com/RemultJs)
 :::
+
+## Demo
+
+![npm init remult](../public/npm_init_remult.gif)
 
 ## What you get ?
 
@@ -31,13 +31,13 @@ Answer a few questions about your preferred tech stack and project requirements.
 
 `Project name`: The name of your project _(it will create a folder with this name)_
 
-`Framework` <Example :oneline=true :react=true :angular=true :vue=true :nextjs=true :svelte=true :nuxt=true />
+`Choose your Framework` <Example :oneline=true :react=true :angular=true :vue=true :nextjs=true :svelte=true :nuxt=true />
 
-`Web Server` _(if needed)_ <Example :oneline=true :express=true :fastify=true />
+`Choose your Web Server` _(if needed)_ <Example :oneline=true :express=true :fastify=true />
 
-`Database` <Example :oneline=true :json=true :postgres=true :mysql=true :sqlite=true :mongodb=true :mssql=true />
+`Choose your Database` <Example :oneline=true :json=true :postgres=true :mysql=true :sqlite=true :mongodb=true :mssql=true />
 
-`Authentication`: Do you want to add `auth.js` to your project directly ?
+`Authentication`: Do you want to add `auth.js` to your project directly ? including a complete implementation for `credentials` and `github` providers
 
 `Add CRUD demo`: A comprehensive example of how to use an entity. It will show you how to create, read, update and delete data.
 

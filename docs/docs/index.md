@@ -24,6 +24,10 @@ Explore the flexibility of Remult through different learning paths tailored to m
 
 If you're new to Remult or prefer a guided, hands-on approach, we recommend starting with our [interactive online tutorial](https://learn.remult.dev). This tutorial will walk you through building a full-stack application step by step, providing immediate feedback and insights as you learn.
 
+### Create a new Project
+
+[`npm init remult@latest`](./creating-a-project.md)
+
 ### Follow a Step-by-step Tutorial
 
 - [Tutorial with React](../tutorials/react/)
