@@ -807,8 +807,6 @@ describe('graphql', () => {
       [
         Task {
           "category": null,
-          "category2": null,
-          "category3": undefined,
           "category3_id": "",
           "completed": false,
           "id": 1,
@@ -818,8 +816,6 @@ describe('graphql', () => {
         },
         Task {
           "category": null,
-          "category2": null,
-          "category3": undefined,
           "category3_id": "",
           "completed": false,
           "id": 3,
@@ -859,8 +855,6 @@ describe('graphql', () => {
       [
         Task {
           "category": null,
-          "category2": null,
-          "category3": undefined,
           "category3_id": "",
           "completed": false,
           "id": 3,
@@ -898,8 +892,6 @@ describe('graphql', () => {
       [
         Task {
           "category": null,
-          "category2": null,
-          "category3": undefined,
           "category3_id": "",
           "completed": false,
           "id": 1,
@@ -933,8 +925,6 @@ describe('graphql', () => {
       [
         Task {
           "category": null,
-          "category2": null,
-          "category3": undefined,
           "category3_id": "",
           "completed": false,
           "id": 1,

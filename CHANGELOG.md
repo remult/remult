@@ -43,6 +43,8 @@ All notable changes to this project will be documented in this file.
   ```
 
 - Added `TestApiDataProvider` to use in unit tests that test api rules. see [example](https://stackblitz.com/edit/api-test-example?file=test.spec.ts,model.ts)
+- Fixed that values that are not included will not exist in the resulting object (previously they existed with value undefined)
+- Fixed that relations that were not included, will not be enumerable in the resulting object (previously they were only set to undefined)
 - Fixed `serverExpression` to run whenever we're not using a `proxy` data provider (for example RestDataProvider)
 - Fixed issue with `updateMany` where the `set` had `ValueListType` or relation.
 - Fixed issue when updating relation id and relation in the same update, the last one will win

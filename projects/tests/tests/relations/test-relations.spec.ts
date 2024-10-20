@@ -210,13 +210,62 @@ describe('test relations', () => {
     )
     expect(t!.category).toMatchInlineSnapshot(`
       Category {
-        "company": undefined,
         "createdAt": 1976-06-16T00:00:00.000Z,
         "id": 1,
-        "lastTask": undefined,
         "name": "c1",
-        "secondaryCompany": undefined,
         "secondaryCompanyId": 20,
+      }
+    `)
+  })
+  it('test include ', async () => {
+    expect(
+      await r(Task).findFirst(
+        { id: 1 },
+        {
+          include: {
+            category: true,
+            secondaryCategory: true,
+          },
+        },
+      ),
+    ).toMatchInlineSnapshot(`
+      Task {
+        "category": Category {
+          "createdAt": 1976-06-16T00:00:00.000Z,
+          "id": 1,
+          "name": "c1",
+          "secondaryCompanyId": 20,
+        },
+        "completed": false,
+        "id": 1,
+        "secondaryCategory": Category {
+          "createdAt": 1976-06-16T00:00:00.000Z,
+          "id": 3,
+          "name": "c3",
+          "secondaryCompanyId": 20,
+        },
+        "secondaryCategoryId": 3,
+        "title": "t1",
+      }
+    `)
+  })
+  it('test not include', async () => {
+    expect(
+      await r(Task).findFirst(
+        { id: 1 },
+        {
+          include: {
+            category: false,
+            secondaryCategory: false,
+          },
+        },
+      ),
+    ).toMatchInlineSnapshot(`
+      Task {
+        "completed": false,
+        "id": 1,
+        "secondaryCategoryId": 3,
+        "title": "t1",
       }
     `)
   })
@@ -243,9 +292,7 @@ describe('test relations', () => {
         },
         "createdAt": 1976-06-16T00:00:00.000Z,
         "id": 3,
-        "lastTask": undefined,
         "name": "c3",
-        "secondaryCompany": undefined,
         "secondaryCompanyId": 20,
       }
     `)

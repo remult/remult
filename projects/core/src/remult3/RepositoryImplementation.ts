@@ -946,10 +946,20 @@ export class RepositoryImplementation<entityType>
         repo._addToCache(r)
       }
     }
-
+    const excludeRelationMembers = new Set<string>(
+      this.fields
+        .toArray()
+        .map((f) => {
+          const i = this.__getRelationAndInclude(f, loadOptions)
+          if (i.rel && !i.incl) return f.key
+          return undefined
+        })
+        .filter((x) => x !== undefined),
+    )
     let result = await promiseAll(
       rawRows,
-      async (r) => await this._mapRawDataToResult(r, loadFields),
+      async (r) =>
+        await this._mapRawDataToResult(r, loadFields, excludeRelationMembers),
     )
     const fields = this.metadata.fields.toArray()
     this._populateRelationsForFields(fields, loadOptions, result, loader)
@@ -962,56 +972,66 @@ export class RepositoryImplementation<entityType>
     loader: RelationLoader,
   ) {
     for (const col of fields) {
-      let rel = getRelationFieldInfo(col)
-      let incl = (col.options as RelationOptions<any, any, any>)
-        .defaultIncluded as any as FindFirstOptionsBase<any>
+      let { rel, incl } = this.__getRelationAndInclude(col, loadOptions)
 
-      const include =
-        loadOptions?.include?.[col.key as keyof ObjectMembersOnly<entityType>]
-      if (include !== undefined) {
-        incl = include as FindOptionsBase<any>
-      }
-
-      if (rel && incl) {
-        const otherRepo = rel.toRepo
-        for (const row of result) {
-          let { findOptions, returnNull } = this._findOptionsBasedOnRelation(
-            rel,
-            col,
-            incl,
-            row,
-            otherRepo,
-          )
-          const colKey = col.key as keyof entityType
-          if (returnNull) row[colKey] = null!
-          else {
-            const entityType = rel.toEntity
-            const toRepo = otherRepo as RepositoryImplementation<any>
-            loader
-              .load(
-                {
-                  entityType,
-                  find: (options) =>
-                    toRepo._rawFind(options, false, loader, (o) =>
-                      toRepo._edp.find(o),
-                    ),
-                  metadata: toRepo.metadata,
-                },
-                findOptions,
-              )
-              .then((result) => {
-                if (result.length == 0 && rel!.type == 'toOne') return
-                row[colKey] =
-                  rel!.type !== 'toMany'
-                    ? result.length == 0
-                      ? null
-                      : result[0]
-                    : result
-              })
+      if (rel)
+        if (incl) {
+          const otherRepo = rel.toRepo
+          for (const row of result) {
+            let { findOptions, returnNull } = this._findOptionsBasedOnRelation(
+              rel,
+              col,
+              incl,
+              row,
+              otherRepo,
+            )
+            const colKey = col.key as keyof entityType
+            if (returnNull) row[colKey] = null!
+            else {
+              const entityType = rel.toEntity
+              const toRepo = otherRepo as RepositoryImplementation<any>
+              loader
+                .load(
+                  {
+                    entityType,
+                    find: (options) =>
+                      toRepo._rawFind(options, false, loader, (o) =>
+                        toRepo._edp.find(o),
+                      ),
+                    metadata: toRepo.metadata,
+                  },
+                  findOptions,
+                )
+                .then((result) => {
+                  if (result.length == 0 && rel!.type == 'toOne') return
+                  row[colKey] =
+                    rel!.type !== 'toMany'
+                      ? result.length == 0
+                        ? null
+                        : result[0]
+                      : result
+                })
+            }
           }
+        } else {
         }
-      }
     }
+  }
+
+  private __getRelationAndInclude(
+    col: FieldMetadata<unknown, unknown>,
+    loadOptions: LoadOptions<entityType>,
+  ) {
+    let rel = getRelationFieldInfo(col)
+    let incl = (col.options as RelationOptions<any, any, any>)
+      .defaultIncluded as any as FindFirstOptionsBase<any>
+
+    const include =
+      loadOptions?.include?.[col.key as keyof ObjectMembersOnly<entityType>]
+    if (include !== undefined) {
+      incl = include as FindOptionsBase<any>
+    }
+    return { rel, incl }
   }
 
   /*@internal */
@@ -1093,7 +1113,11 @@ export class RepositoryImplementation<entityType>
     return { findOptions, returnNull, returnUndefined }
   }
 
-  private async _mapRawDataToResult(r: any, loadFields?: FieldMetadata[]) {
+  private async _mapRawDataToResult(
+    r: any,
+    loadFields?: FieldMetadata[],
+    excludeRelationMembers?: Set<string>,
+  ) {
     let x = new this._entity(this._remult)
     let helper = new rowHelperImplementation(
       this._info,
@@ -1102,6 +1126,7 @@ export class RepositoryImplementation<entityType>
       this._edp,
       this._remult,
       false,
+      excludeRelationMembers,
     )
     Object.defineProperty(x, entityMember, {
       //I've used define property to hide this member from console.lo g
@@ -1442,6 +1467,7 @@ abstract class rowHelperBase<T> {
     public instance: T,
     public remult: Remult,
     public isNewRow: boolean,
+    excludeRelationMembers?: Set<string>,
   ) {
     {
       let fac = remult as RemultProxy
@@ -1492,7 +1518,7 @@ abstract class rowHelperBase<T> {
             }
             refImpl._subscribers!.reportChanged()
           },
-          enumerable: true,
+          enumerable: !excludeRelationMembers?.has(col.key),
         })
         lookup.set(val as any)
       } else {
@@ -1525,7 +1551,7 @@ abstract class rowHelperBase<T> {
                 }
               }
             },
-            enumerable: true,
+            enumerable: !excludeRelationMembers?.has(col.key),
           })
           if (hasVal) instance[col.key as keyof T] = val
         }
@@ -1770,8 +1796,9 @@ export class rowHelperImplementation<T>
     private edp: EntityDataProvider,
     remult: Remult,
     private _isNew: boolean,
+    excludeRelationMembers?: Set<string>,
   ) {
-    super(info.fieldsMetadata, instance, remult, _isNew)
+    super(info.fieldsMetadata, instance, remult, _isNew, excludeRelationMembers)
     this.repository = repo as Repository<unknown>
     this.metadata = info
     if (_isNew) {
