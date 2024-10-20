@@ -1,6 +1,10 @@
+<script setup>
+  import Example from '../components/Example.vue'
+</script>
+
 ---
-outline: []
----
+
+## outline: []
 
 # Introduction
 
@@ -30,12 +34,17 @@ If you're new to Remult or prefer a guided, hands-on approach, we recommend star
 
 ### Follow a Step-by-step Tutorial
 
-- [Tutorial with React](../tutorials/react/)
-- [Tutorial with Angular](../tutorials/angular/)
-- [Tutorial with Vue](../tutorials/vue/)
-- [Tutorial with Next.js](../tutorials/react-next/)
-- [Tutorial with Sveltekit](../tutorials/sveltekit/)
-- [Tutorial with SolidStart](../tutorials/solid-start/)
+<br />
+<br />
+
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 5rem">
+	<Example :react=true sizeIco=150 />
+	<Example :angular=true sizeIco=150 />
+	<Example :vue=true sizeIco=150 />
+	<Example :svelte=true sizeIco=150 />
+	<Example :nextjs=true sizeIco=150 />
+	<Example :solid=true sizeIco=150 />
+</div>
 
 ### Quickstart
 
