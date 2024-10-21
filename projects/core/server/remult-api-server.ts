@@ -167,7 +167,7 @@ export function createRemultServerCore<RequestType>(
   remultStatic.defaultDataProvider = () => dataProvider
   if (safeOptions.ensureSchema === undefined) safeOptions.ensureSchema = true
 
-  RemultAsyncLocalStorage.enable()
+  if (!serverCoreOptions.ignoreAsyncStorage) RemultAsyncLocalStorage.enable()
 
   {
     let allControllers: ClassType<any>[] = []
@@ -498,16 +498,25 @@ export class RemultServerImplementation<RequestType>
     }
 
     this.options.entities?.forEach((e) => {
-      let key = getEntityKey(e)
-      if (key != undefined)
-        this.add(
-          key,
-          (c) => {
-            return new DataApi(c.repo(e), c)
-          },
-          r,
-        )
+      this.addEntity(e, getEntityKey(e), r)
     })
+  }
+  __addEntityForTesting(e: EntityMetadata) {
+    this.addEntity(e.entityType, e.key, this.getRouteImpl())
+  }
+  private addEntity(
+    e: ClassType<unknown>,
+    key: string,
+    r: GenericRouter<RequestType>,
+  ) {
+    if (key != undefined)
+      this.add(
+        key,
+        (c) => {
+          return new DataApi(c.repo(e), c)
+        },
+        r,
+      )
   }
 
   async serializeContext(remult: Remult) {
@@ -531,7 +540,7 @@ export class RemultServerImplementation<RequestType>
 
     r.route(myRoute)
       .get(
-        this.process((c, req, res, orig) =>
+        this.process(async (c, req, res, orig) =>
           dataApiFactory(c).httpGet(res, req, () => this.serializeContext(c)),
         ),
       )
@@ -1131,8 +1140,8 @@ class RequestBridgeToDataApiRequest implements DataApiRequest {
   constructor(private r: GenericRequestInfo | undefined) {}
 }
 class ResponseBridgeToDataApiResponse<RequestType> implements DataApiResponse {
-  forbidden(): void {
-    this.error({ message: 'Forbidden' }, undefined, 403)
+  forbidden(message = 'Forbidden'): void {
+    this.error({ message }, undefined, 403)
   }
   setStatus(status: number) {
     return this.r.status(status)
@@ -1497,7 +1506,7 @@ export class RouteImplementation<RequestType> {
             req.params = {} as any
             ;(origReq as any)['_tempParams'] = req.params
           }
-          req.params.id = path.substring(idPosition + 1).replace(/%2C/g, ',')
+          req.params.id = decodeURIComponent(path.substring(idPosition + 1))
           h(origReq, res, next)
           return
         }
@@ -1537,4 +1546,5 @@ remultStatic.allEntities.splice(
 export interface ServerCoreOptions<RequestType> {
   buildGenericRequestInfo(req: RequestType): GenericRequestInfo
   getRequestBody(req: RequestType): Promise<any>
+  ignoreAsyncStorage?: boolean
 }

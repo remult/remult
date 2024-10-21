@@ -253,14 +253,14 @@ An arrow function that identifies the `id` column to use for this entity
 #### example:
 ```ts
 //Single column id
-@Entity<Products>("products", { id: {productCode: true} })
+@Entity<Products>("products", { id: 'productCode' })
 ```
 
 
 #### example:
 ```ts
 //Multiple columns id
-@Entity<OrderDetails>("orderDetails", { id:{ orderId:true, productCode:true} })
+@Entity<OrderDetails>("orderDetails", { id:['orderId:', 'productCode'] })
 ```
 ## entityRefInit
 

@@ -807,25 +807,21 @@ describe('graphql', () => {
       [
         Task {
           "category": null,
-          "category2": null,
-          "category3": undefined,
           "category3_id": "",
           "completed": false,
           "id": 1,
           "thePriority": 1,
           "title": "task a",
-          "userOnServer": undefined,
+          "userOnServer": "",
         },
         Task {
           "category": null,
-          "category2": null,
-          "category3": undefined,
           "category3_id": "",
           "completed": false,
           "id": 3,
           "thePriority": 1,
           "title": "task c",
-          "userOnServer": undefined,
+          "userOnServer": "",
         },
       ]
     `)
@@ -859,14 +855,12 @@ describe('graphql', () => {
       [
         Task {
           "category": null,
-          "category2": null,
-          "category3": undefined,
           "category3_id": "",
           "completed": false,
           "id": 3,
           "thePriority": 1,
           "title": "task c",
-          "userOnServer": undefined,
+          "userOnServer": "",
         },
       ]
     `)
@@ -898,14 +892,12 @@ describe('graphql', () => {
       [
         Task {
           "category": null,
-          "category2": null,
-          "category3": undefined,
           "category3_id": "",
           "completed": false,
           "id": 1,
           "thePriority": 1,
           "title": "testing",
-          "userOnServer": undefined,
+          "userOnServer": "",
         },
       ]
     `)
@@ -933,14 +925,12 @@ describe('graphql', () => {
       [
         Task {
           "category": null,
-          "category2": null,
-          "category3": undefined,
           "category3_id": "",
           "completed": false,
           "id": 1,
           "thePriority": 1,
           "title": "testing",
-          "userOnServer": undefined,
+          "userOnServer": "",
         },
       ]
     `)

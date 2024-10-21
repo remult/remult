@@ -8,7 +8,8 @@ import {
   type EntityFilter,
   Filter,
 } from '../../core/index.js'
-import { MockRestDataProvider } from './testHelper.js'
+
+import { TestApiDataProvider } from '../../core/server/test-api-data-provider.js'
 
 @Entity('e', {
   allowApiCrud: true,
@@ -23,8 +24,7 @@ class e {
 describe('test rest many operations', () => {
   let r: Repository<e>
   beforeEach(async () => {
-    let backendRemult = new Remult(new InMemoryDataProvider())
-    r = new Remult(new MockRestDataProvider(backendRemult)).repo(e)
+    r = new Remult(TestApiDataProvider()).repo(e)
   })
   it('Insert many works', async () => {
     expect(

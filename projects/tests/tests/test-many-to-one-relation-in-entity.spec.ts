@@ -22,7 +22,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { Done } from './Done'
 import { Categories, Language, Products } from './entities-for-tests'
 import { h } from './h'
-import { TestDataApiResponse } from './TestDataApiResponse'
+import { DummyRequest, TestDataApiResponse } from './TestDataApiResponse'
 import { actionInfo } from '../../core/internals'
 import { entity } from './dynamic-classes.js'
 
@@ -1085,7 +1085,7 @@ describe('test api loading stuff', () => {
       expect(fetches).toEqual([])
       done.ok()
     }
-    await api.post(t, { id: 11, categoryId: 1 })
+    await api.httpPost(t, DummyRequest, { id: 11, categoryId: 1 }, undefined!)
     done.test()
   })
 })

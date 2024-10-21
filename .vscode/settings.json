@@ -98,5 +98,6 @@
     "wrapIdentifier",
     "allowapicrud"
   ],
-  "typescript.preferences.importModuleSpecifierEnding": "js"
+  "typescript.preferences.importModuleSpecifierEnding": "js",
+  "javascript.preferences.autoImportFileExcludePatterns": ["node:test"]
 }
