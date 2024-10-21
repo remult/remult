@@ -1014,6 +1014,9 @@ export class RepositoryImplementation<entityType>
             }
           }
         } else {
+          for (const row of result) {
+            Reflect.deleteProperty(row as any, col.key)
+          }
         }
     }
   }

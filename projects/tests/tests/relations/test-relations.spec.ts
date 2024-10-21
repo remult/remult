@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, beforeAll } from 'vitest'
+import { describe, it, expect, beforeEach, beforeAll, test } from 'vitest'
 import {
   Entity,
   Field,
@@ -895,5 +895,40 @@ describe('test setting of id and relation field', async () => {
     ))!
     expect(t.categoryId).toBe(2)
     expect(t.category.id).toBe(2)
+  })
+})
+describe('test result for unpopulated toMany relation', () => {
+  test('simpler test', async () => {
+    @Entity('tasks')
+    class Task {
+      @Fields.integer()
+      id = 0
+      @Fields.string()
+      name = ''
+      @Fields.integer()
+      categoryId = 0
+    }
+    @Entity('categories')
+    class CategoryToManyTest {
+      @Fields.integer()
+      id = 0
+      @Fields.string()
+      title = ''
+      @Relations.toMany<Category, Task>(() => Task, 'categoryId')
+      tasks: Task[] = []
+      @Relations.toMany<Category, Task>(() => Task, 'categoryId')
+      tasks2?: Task[]
+    }
+
+    const r = new Remult(new InMemoryDataProvider())
+    await r.repo(CategoryToManyTest).insert({ id: 1, title: 'c1' })
+    expect(await r.repo(CategoryToManyTest).find()).toMatchInlineSnapshot(`
+    [
+      CategoryToManyTest {
+        "id": 1,
+        "title": "c1",
+      },
+    ]
+  `)
   })
 })
