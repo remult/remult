@@ -8,5 +8,5 @@
       "@*": ["src/*"]
     }
   },
-  "exclude": ["dist", "src/content"]
+  "exclude": ["dist", "src/content", "src/templates"]
 }
