@@ -185,4 +185,4 @@ If you're still getting an error - check that you have a `logs` folder on your p
 
 Check out this video where I implemented a similar solution when running into the same problem using `bcrypt`:
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/9lWQwAUcKEM?start=1035" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></src=>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/9lWQwAUcKEM?start=1035" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>

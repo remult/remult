@@ -1,0 +1,29 @@
+{
+  "title": "Remult",
+  "themeConfig": {
+    "nav": [
+      {
+        "text": "Documentation",
+        "link": "/docs/"
+      }
+    ],
+    "socialLinks": [
+      {
+        "icon": "x",
+        "link": "https://twitter.com/RemultJs"
+      },
+      {
+        "icon": "youtube",
+        "link": "https://www.youtube.com/@remult6539"
+      },
+      {
+        "icon": "discord",
+        "link": "https://discord.gg/GXHk7ZfuG5"
+      },
+      {
+        "icon": "github",
+        "link": "https://github.com/remult/remult"
+      }
+    ]
+  }
+}

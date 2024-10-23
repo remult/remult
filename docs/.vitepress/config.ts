@@ -1,5 +1,7 @@
 import { defineConfig } from 'vitepress'
+import { DefaultTheme } from 'vitepress/theme'
 import { tabsMarkdownPlugin } from 'vitepress-plugin-tabs'
+import toolbarConfig from './toolbar-config.json'
 
 const tutorials = [
   { path: 'react' },
@@ -24,7 +26,7 @@ const tutorials = [
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  title: 'Remult',
+  title: toolbarConfig.title,
   description:
     'Build Full-stack, End-to-end Type-safe CRUD Apps without the Boilerplate',
   lastUpdated: true,
@@ -76,12 +78,9 @@ export default defineConfig({
       // },
     ],
     search: { provider: 'local', options: {} },
-    socialLinks: [
-      { icon: 'x', link: 'https://twitter.com/RemultJs' },
-      { icon: 'youtube', link: 'https://www.youtube.com/@remult6539' },
-      { icon: 'discord', link: 'https://discord.gg/GXHk7ZfuG5' },
-      { icon: 'github', link: 'https://github.com/remult/remult' },
-    ],
+    socialLinks: toolbarConfig.themeConfig.socialLinks.map(
+      ({ link, icon }) => ({ link, icon: icon as DefaultTheme.SocialLinkIcon }),
+    ),
     sidebar: tutorials.reduce(
       (a, t) => {
         a[`/tutorials/${t.path}/`] = [
