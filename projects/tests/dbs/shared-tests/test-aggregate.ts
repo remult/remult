@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from 'vitest'
+import { beforeAll, describe, expect, it, test } from 'vitest'
 import { Entity } from '../../../core/index.js'
 import {
   Field,
@@ -9,7 +9,10 @@ import {
 } from '../../../core/index.js'
 import type { DbTestProps } from './db-tests-props.js'
 import type { DbTestOptions } from './db-tests.js'
-import { GroupByForApiKey } from '../../../core/src/remult3/remult3.js'
+import {
+  GroupByForApiKey,
+  Paginator,
+} from '../../../core/src/remult3/remult3.js'
 
 @ValueListFieldType()
 class Status {
@@ -301,6 +304,47 @@ export function aggregateTest(
       expect(result.salary.avg).toBeCloseTo(5266.666666) // Average salary for all salaries greater than 1000
       expect(result.numberOfKids.avg).toBeCloseTo(4.3333333) // Average numberOfKids for all salaries greater than 1000
     })
+    test('Query with Aggregate', async () => {
+      const r = await repo()
+      const result = await r
+        .query({
+          where: {
+            salary: { $gt: 1000! },
+          },
+          aggregate: {
+            sum: ['salary', 'numberOfKids'],
+            avg: ['salary', 'numberOfKids'],
+          },
+          include: {
+            category: true,
+          },
+        })
+        .paginator()
+      expect(result.items.length).toBe(15)
+      expect(result.aggregates.$count).toBe(15)
+      expect(result.aggregates.salary.sum).toBe(79000) // Sum of all salaries greater than 1000
+      expect(result.aggregates.numberOfKids.sum).toBe(65) // Sum of all numberOfKids for salaries greater than 1000
+      expect(result.aggregates.salary.avg).toBeCloseTo(5266.666666) // Average salary for all salaries greater than 1000
+      expect(result.aggregates.numberOfKids.avg).toBeCloseTo(4.3333333) // Average numberOfKids for all salaries greater than 1000
+      expect(result.items[0].category?.name).toBe('a')
+    })
+    test('Query without Aggregate', async () => {
+      const r = await repo()
+      const result = await r
+        .query({
+          where: {
+            salary: { $gt: 1000! },
+          },
+          include: {
+            category: true,
+          },
+        })
+        .paginator()
+
+      expect(result.items.length).toBe(15)
+
+      expect(result.items[0].category?.name).toBe('a')
+    })
     it('field cant be used both for group by and sum', async () => {
       const r = await repo()
       await expect(async () => {
@@ -559,7 +603,8 @@ export function aggregateTest(
         ]
       `)
     })
-    it('test relation to one', async () => {
+
+    test('test relation to one', async () => {
       const r = await repo()
       expect(
         await r.groupBy({
@@ -612,4 +657,105 @@ export function aggregateTest(
         `)
     })
   })
+}
+
+async function testTypesWithQuery() {
+  class Person {
+    id = ''
+    name = ''
+  }
+  let r: Repository<Person> = undefined!
+
+  // When aggregate is not provided
+  let r1 = await r.query({}).paginator()
+  // @ts-expect-error - aggregate should not exist
+  r1.aggregates
+  // @ts-expect-error - $count should not exist
+  r1.aggregates.$count
+
+  // When aggregate is provided with empty group
+  let r2 = await r
+    .query({
+      aggregate: {
+        distinctCount: [],
+      },
+    })
+    .paginator()
+  r2.aggregates.$count
+  // @ts-expect-error - id wasn't selected
+  r2.aggregates.id
+
+  // When aggregate is provided with id in group
+  let r3 = await r
+    .query({
+      aggregate: {
+        distinctCount: ['id'],
+      },
+    })
+    .paginator()
+  r3.aggregates.$count
+  r3.aggregates.id.distinctCount
+  // @ts-expect-error - max should not exist
+  r3.aggregates.id.max
+  // @ts-expect-error - name wasn't selected
+  r3.aggregate.name.distinctCount
+
+  // When aggregate is provided with both id and name in group
+  let r4 = await r
+    .query({
+      aggregate: {
+        distinctCount: ['id', 'name'],
+      },
+    })
+    .paginator()
+  r4.aggregates.$count
+  r4.aggregates.id.distinctCount
+  r4.aggregates.name.distinctCount
+  //@ts-expect-error - max should not exist
+  r4.aggregates.name.max
+}
+
+async function testTypesWithAggregate() {
+  class Person {
+    id = ''
+    name = ''
+  }
+  let r: Repository<Person> = undefined!
+
+  // When aggregate is not provided
+  let r1 = await r.aggregate({})
+
+  r1.$count
+
+  // When aggregate is provided with empty group
+  let r2 = await r.aggregate({
+    distinctCount: [],
+  })
+
+  r2.$count
+  // @ts-expect-error - id wasn't selected
+  r2.id
+
+  // When aggregate is provided with id in group
+  let r3 = await r.aggregate({
+    distinctCount: ['id'],
+  })
+
+  r3.$count
+  r3.id.distinctCount
+  // @ts-expect-error - max should not exist
+  r3.id.max
+  // @ts-expect-error - name wasn't selected
+  r3.name.distinctCount
+
+  // When aggregate is provided with both id and name in group
+  let r4 = await r.aggregate({
+    distinctCount: ['id', 'name'],
+  })
+
+  r4.$count
+  r4.id.distinctCount
+  r4.name.distinctCount
+  //@ts-expect-error - max should not exist
+  r4.name.max
 }

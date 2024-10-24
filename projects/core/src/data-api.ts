@@ -35,23 +35,28 @@ export class DataApi<T = unknown> {
     req: DataApiRequest,
     serializeContext: () => Promise<any>,
   ) {
-    const action = req?.get('__action')
-    if (action?.startsWith(liveQueryAction))
-      return this.liveQuery(
-        res,
-        req,
-        undefined,
-        serializeContext,
-        action.substring(liveQueryAction.length),
-      )
-    switch (action) {
-      case 'get':
-      case 'count':
-        return this.count(res, req, undefined)
-      case 'groupBy':
-        return this.groupBy(res, req, undefined)
+    try {
+      const action = req?.get('__action')
+      if (action?.startsWith(liveQueryAction))
+        return this.liveQuery(
+          res,
+          req,
+          undefined,
+          serializeContext,
+          action.substring(liveQueryAction.length),
+        )
+      switch (action) {
+        case 'get':
+        case 'count':
+          return this.count(res, req, undefined)
+        case 'groupBy':
+          return res.success(this.groupBy(req, undefined))
+      }
+      return this.getArray(res, req, undefined)
+    } catch (err: any) {
+      if (err.isForbiddenError) res.forbidden(err)
+      else res.error(err, this.repository.metadata)
     }
-    return this.getArray(res, req, undefined)
   }
   async httpPost(
     res: DataApiResponse,
@@ -68,38 +73,93 @@ export class DataApi<T = unknown> {
         } satisfies ErrorInfo
       }
     }
-    if (action?.startsWith(liveQueryAction)) {
-      validateWhereInBody()
-      return this.liveQuery(
-        res,
-        req,
-        body,
-        serializeContext,
-        action.substring(liveQueryAction.length),
-      )
-    }
+    try {
+      if (action?.startsWith(liveQueryAction)) {
+        validateWhereInBody()
+        return this.liveQuery(
+          res,
+          req,
+          body,
+          serializeContext,
+          action.substring(liveQueryAction.length),
+        )
+      }
 
-    switch (action) {
-      case 'get':
-        validateWhereInBody()
-        return this.getArray(res, req, body)
-      case 'count':
-        validateWhereInBody()
-        return this.count(res, req, body)
-      case 'groupBy':
-        return this.groupBy(res, req, body)
-      case 'deleteMany':
-        validateWhereInBody()
-        return this.deleteMany(res, req, body)
-      case 'updateMany':
-        validateWhereInBody()
-        return this.updateManyImplementation(res, req, body)
-      case 'endLiveQuery':
-        await this.remult.liveQueryStorage!.remove(body.id)
-        res.success('ok')
-        return
-      default:
-        return this.post(res, body)
+      switch (action) {
+        case 'get':
+          validateWhereInBody()
+          return this.getArray(res, req, body)
+        case 'count':
+          validateWhereInBody()
+          return this.count(res, req, body)
+        case 'groupBy':
+          return res.success(await this.groupBy(req, body))
+        case 'deleteMany':
+          validateWhereInBody()
+          return this.deleteMany(res, req, body)
+        case 'updateMany':
+          validateWhereInBody()
+          return this.updateManyImplementation(res, req, body)
+        case 'upsertMany':
+          return this.upsertMany(res, req, body)
+        case 'endLiveQuery':
+          await this.remult.liveQueryStorage!.remove(body.id)
+          res.success('ok')
+          return
+        case 'query':
+          return res.success(await this.query(res, req, body))
+        default:
+          return res.created(await this.post(body))
+      }
+    } catch (err: any) {
+      if (err.isForbiddenError) res.forbidden(err.message)
+      else res.error(err, this.repository.metadata)
+    }
+  }
+  async upsertMany(
+    response: DataApiResponse,
+    request: DataApiRequest,
+    body: any,
+  ) {
+    return await doTransaction(this.remult, async () => {
+      let result: any[] = []
+      for (const item of body) {
+        let where = await this.buildWhere(request, { where: item.where })
+        Filter.throwErrorIfFilterIsEmpty(where, 'upsert')
+        let r = await this.repository.find({
+          where,
+          include: this.includeNone(),
+        })
+        if (r.length == 0) {
+          result.push(await this.post({ ...item.where, ...item.set }))
+        } else {
+          if (item.set !== undefined) {
+            result.push((await this.actualUpdate(r[0], item.set)).toApiJson())
+          } else result.push(this.repository.getEntityRef(r[0]).toApiJson())
+        }
+      }
+      response.success(result)
+    })
+  }
+
+  async query(response: DataApiResponse, request: DataApiRequest, body: any) {
+    if (!this.repository.metadata.apiReadAllowed) {
+      response.forbidden()
+      return
+    }
+    try {
+      let { aggregate, ...rest } = body
+      let [{ r }, [aggregates]] = await Promise.all([
+        this.getArrayImpl(request, rest),
+        this.groupBy(request, aggregate),
+      ])
+      return {
+        items: r,
+        aggregates,
+      }
+    } catch (err: any) {
+      if (err.isForbiddenError) response.forbidden()
+      else response.error(err, this.repository.metadata)
     }
   }
   static defaultGetLimit = 0
@@ -140,6 +200,7 @@ export class DataApi<T = unknown> {
         for await (const x of this.repository.query({
           where,
           include: this.includeNone(),
+          aggregate: undefined!,
         })) {
           await this.actualDelete(x)
           deleted++
@@ -150,7 +211,7 @@ export class DataApi<T = unknown> {
       response.error(err, this.repository.metadata)
     }
   }
-  async groupBy(response: DataApiResponse, request: DataApiRequest, body: any) {
+  async groupBy(request: DataApiRequest, body: any) {
     let findOptions = await this.findOptionsFromRequest(request, body)
     let orderBy: any = {}
     if (body?.orderBy) {
@@ -207,14 +268,10 @@ export class DataApi<T = unknown> {
         }
       })
 
-    response.success(result)
+    return result
   }
 
-  async getArrayImpl(
-    response: DataApiResponse,
-    request: DataApiRequest,
-    body: any,
-  ) {
+  async getArrayImpl(request: DataApiRequest, body: any) {
     let findOptions = await this.findOptionsFromRequest(request, body)
 
     const r = await this.repository.find(findOptions).then(async (r) => {
@@ -302,11 +359,11 @@ export class DataApi<T = unknown> {
       return
     }
     try {
-      const { r } = await this.getArrayImpl(response, request, body)
+      const { r } = await this.getArrayImpl(request, body)
 
       response.success(r)
     } catch (err: any) {
-      if (err.isForbiddenError) response.forbidden()
+      if (err.isForbiddenError) response.forbidden(err.message)
       else response.error(err, this.repository.metadata)
     }
   }
@@ -322,7 +379,7 @@ export class DataApi<T = unknown> {
       return
     }
     try {
-      const r = await this.getArrayImpl(response, request, body)
+      const r = await this.getArrayImpl(request, body)
       const data: QueryData = {
         requestJson: await serializeContext(),
         findOptionsJson: findOptionsToJson(
@@ -451,6 +508,7 @@ export class DataApi<T = unknown> {
         for await (const x of this.repository.query({
           where,
           include: this.includeNone(),
+          aggregate: undefined!,
         })) {
           await this.actualUpdate(x, body.set)
           updated++
@@ -461,6 +519,7 @@ export class DataApi<T = unknown> {
       response.error(err, this.repository.metadata)
     }
   }
+
   async actualUpdate(row: any, body: any) {
     let ref = this.repository.getEntityRef(row) as rowHelperImplementation<T>
     await ref._updateEntityBasedOnApi(body)
@@ -490,32 +549,27 @@ export class DataApi<T = unknown> {
     })
   }
 
-  async post(response: DataApiResponse, body: any) {
-    try {
-      const insert = async (what: any) => {
-        let newr = this.repository.create()
-        await (
-          this.repository.getEntityRef(newr) as rowHelperImplementation<T>
-        )._updateEntityBasedOnApi(what)
-        if (!this.repository.getEntityRef(newr).apiInsertAllowed) {
-          throw new ForbiddenError()
-        }
-        await this.repository.getEntityRef(newr).save()
-        return this.repository.getEntityRef(newr).toApiJson()
+  async post(body: any) {
+    const insert = async (what: any) => {
+      let newr = this.repository.create()
+      await (
+        this.repository.getEntityRef(newr) as rowHelperImplementation<T>
+      )._updateEntityBasedOnApi(what)
+      if (!this.repository.getEntityRef(newr).apiInsertAllowed) {
+        throw new ForbiddenError()
       }
-      if (Array.isArray(body)) {
-        const result: any[] = []
-        await doTransaction(this.remult, async () => {
-          for (const item of body) {
-            result.push(await insert(item))
-          }
-        })
-        response.created(result)
-      } else response.created(await insert(body))
-    } catch (err: any) {
-      if (err.isForbiddenError) response.forbidden(err.message)
-      else response.error(err, this.repository.metadata)
+      await this.repository.getEntityRef(newr).save()
+      return this.repository.getEntityRef(newr).toApiJson()
     }
+    if (Array.isArray(body)) {
+      const result: any[] = []
+      await doTransaction(this.remult, async () => {
+        for (const item of body) {
+          result.push(await insert(item))
+        }
+      })
+      return result
+    } else return await insert(body)
   }
 }
 

@@ -9,7 +9,10 @@ import {
 } from '../../../../core/index.js'
 import { Sqlite3DataProvider } from '../../../../core/remult-sqlite3.js'
 import { Database } from 'sqlite3'
-import { sqlRelations, sqlRelationsFilter } from './sql-relations.js'
+import {
+  sqlRelations,
+  sqlRelationsFilter,
+} from '../../../../core/src/data-providers/sql-relations.js'
 
 @Entity('Customer_groups')
 export class CustomerGroup {
@@ -488,12 +491,10 @@ describe('sql-relations', () => {
           "orders": [
             Order {
               "amount": 10,
-              "customer": undefined,
               "id": 1,
             },
             Order {
               "amount": 15,
-              "customer": undefined,
               "id": 2,
             },
           ],
@@ -503,17 +504,14 @@ describe('sql-relations', () => {
           "orders": [
             Order {
               "amount": 40,
-              "customer": undefined,
               "id": 3,
             },
             Order {
               "amount": 5,
-              "customer": undefined,
               "id": 4,
             },
             Order {
               "amount": 7,
-              "customer": undefined,
               "id": 5,
             },
           ],
@@ -523,12 +521,10 @@ describe('sql-relations', () => {
           "orders": [
             Order {
               "amount": 90,
-              "customer": undefined,
               "id": 6,
             },
             Order {
               "amount": 3,
-              "customer": undefined,
               "id": 7,
             },
           ],

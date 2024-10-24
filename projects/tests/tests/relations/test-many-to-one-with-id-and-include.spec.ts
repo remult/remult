@@ -58,7 +58,6 @@ describe('test repository relations', () => {
   it("test doesn't fetch category", async () => {
     expect(await r(Task).findFirst()).toMatchInlineSnapshot(`
       Task {
-        "category": undefined,
         "completed": false,
         "id": 101,
         "title": "task1",
@@ -78,7 +77,6 @@ describe('test repository relations', () => {
     ).toMatchInlineSnapshot(`
       Task {
         "category": Category {
-          "company": undefined,
           "id": 1,
           "name": "cat1",
         },

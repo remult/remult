@@ -2,6 +2,7 @@ import { it, expect, describe } from 'vitest'
 import { entity } from './dynamic-classes'
 import { Fields, InMemoryDataProvider, Remult } from '../../core'
 import { MockRestDataProvider } from './testHelper'
+import { TestApiDataProvider } from '../../core/server/test-api-data-provider.js'
 
 describe('test saving happens only no db', () => {
   it('saving runs when close to db', async () => {
@@ -40,7 +41,7 @@ describe('test saving happens only no db', () => {
   it('saving doesnt run with proxy', async () => {
     let serverRemult = new Remult()
     serverRemult.dataProvider = new InMemoryDataProvider()
-    const db = new MockRestDataProvider(serverRemult)
+    const db = TestApiDataProvider({ dataProvider: serverRemult.dataProvider })
     const remult = new Remult(db)
     let events: string[] = []
     const Task = entity(

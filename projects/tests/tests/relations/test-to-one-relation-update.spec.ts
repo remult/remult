@@ -61,8 +61,6 @@ describe('relations to one behavior', () => {
     const task = await r(Task).findFirst({})
     expect(task).toMatchInlineSnapshot(`
       Task {
-        "cat2": undefined,
-        "category": undefined,
         "categoryId": 2,
         "id": 1,
         "title": "task 1",
@@ -72,8 +70,6 @@ describe('relations to one behavior', () => {
     await task!.save()
     expect(task).toMatchInlineSnapshot(`
       Task {
-        "cat2": undefined,
-        "category": undefined,
         "categoryId": 2,
         "id": 1,
         "title": "task 12",

@@ -7,7 +7,7 @@ import {
   ValueListInfo,
 } from '../../../core/src/remult3/RepositoryImplementation'
 import { Done } from '../Done'
-import { TestDataApiResponse } from '../TestDataApiResponse'
+import { DummyRequest, TestDataApiResponse } from '../TestDataApiResponse'
 import { createData } from '../createData'
 import { Categories } from '../remult-3-entities'
 
@@ -47,7 +47,12 @@ describe('data api', () => {
       expect(data.modelState.categoryName).toBe('invalid')
       d.ok()
     }
-    await api.post(t, { id: 1, categoryName: 'noam 1' })
+    await api.httpPost(
+      t,
+      DummyRequest,
+      { id: 1, categoryName: 'noam 1' },
+      undefined!,
+    )
     d.test()
     expect((await c.find()).length).toBe(0)
   })
@@ -70,10 +75,15 @@ describe('data api', () => {
     t.success = () => {}
     t.created = () => {}
     let d = new Done()
-    await api.post(t, {
-      id: 1,
-      val: 'noam',
-    })
+    await api.httpPost(
+      t,
+      DummyRequest,
+      {
+        id: 1,
+        val: 'noam',
+      },
+      undefined!,
+    )
     await api.put(t, 1, {
       val: 'yael',
     })
@@ -102,10 +112,15 @@ describe('data api', () => {
     t.success = () => {}
     t.created = () => {}
     let d = new Done()
-    await api.post(t, {
-      id: 1,
-      val: 'noam',
-    })
+    await api.httpPost(
+      t,
+      DummyRequest,
+      {
+        id: 1,
+        val: 'noam',
+      },
+      undefined!,
+    )
     await api.put(t, 1, {
       val: 'yael',
     })

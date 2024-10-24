@@ -499,7 +499,7 @@ export function remultGraphql(options: {
 
         root[createResolverKey] = handleMutationWithErrors(
           async (dApi, response, setResult, arg1: any, req: any) => {
-            await dApi.post(
+            await dApi.httpPost(
               {
                 ...response,
                 created: (y) => {
@@ -510,7 +510,9 @@ export function remultGraphql(options: {
                   })
                 },
               },
+              { get: () => undefined! },
               arg1.input,
+              undefined!,
             )
           },
         )

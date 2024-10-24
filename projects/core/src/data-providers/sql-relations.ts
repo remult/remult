@@ -1,17 +1,17 @@
+import type { ClassType } from '../../classType.js'
 import {
   dbNamesOf,
-  repo,
-  SqlDatabase,
-  type ClassType,
   type EntityDbNames,
-  type EntityFilter,
-  type EntityOrderBy,
-  type ObjectMembersOnly,
-  type SqlCommandWithParameters,
-  // } from 'remult'
-} from '../../../../core/index.js' // comment in the from `remult`
-import { getRelationFieldInfo } from '../../../../core/internals.js' // comment in the from `remult`
-// import { getRelationFieldInfo } from 'remult/internals'
+} from '../filter/filter-consumer-bridge-to-sql-request.js'
+import { getRelationFieldInfo } from '../remult3/relationInfoMember.js'
+import type {
+  EntityFilter,
+  EntityOrderBy,
+  ObjectMembersOnly,
+} from '../remult3/remult3.js'
+import type { SqlCommandWithParameters } from '../sql-command.js'
+import { SqlDatabase } from './sql-database.js'
+import { remult } from '../remult-proxy.js'
 
 export function sqlRelations<entityType>(
   forEntity: ClassType<entityType>,
@@ -124,7 +124,7 @@ class SqlRelationTools<
     },
   ) => {
     const rel = getRelationFieldInfo(
-      repo(this.myEntity).fields.find(this.relationField as string),
+      remult.repo(this.myEntity).fields.find(this.relationField as string),
     )
     if (!rel)
       throw new Error(`${this.relationField as string} is not a relation`)
@@ -149,7 +149,7 @@ class SqlRelationTools<
       }
     }
     const otherTableFilter = await SqlDatabase.filterToRaw(
-      repo(rel.toEntity),
+      remult.repo(rel.toEntity),
       // eslint-disable-next-line
       options?.where!,
       undefined,
@@ -187,7 +187,7 @@ class SqlRelationTools<
     return new Proxy(this, {
       get: (target, field: keyof toEntity & string) => {
         const rel1 = getRelationFieldInfo(
-          repo(this.myEntity).fields.find(this.relationField as string),
+          remult.repo(this.myEntity).fields.find(this.relationField as string),
         )
         return new Proxy(this, {
           get: (target, field1: string) => {

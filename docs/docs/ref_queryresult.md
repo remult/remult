@@ -12,8 +12,6 @@ for await (const task of taskRepo.query()) {
 ```
 ## count
 returns the number of rows that match the query criteria
-## paginator
-Returns a `Paginator` object that is used for efficient paging
 ## getPage
 gets the items in a specific page
 
@@ -24,3 +22,5 @@ Performs an operation on all the items matching the query criteria
 
 Arguments:
 * **what**
+## paginator
+Returns a `Paginator` object that is used for efficient paging

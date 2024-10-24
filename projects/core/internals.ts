@@ -1,5 +1,8 @@
 import { remultStatic } from './src/remult-static.js'
-
+export {
+  sqlRelations,
+  sqlRelationsFilter,
+} from './src/data-providers/sql-relations.js'
 export {
   getRelationInfo,
   getRelationFieldInfo,

@@ -18,6 +18,13 @@ Arguments:
 * **dataProvider** - an optional alternative data provider to use. Useful for writing to offline storage or an alternative data provider
 ## user
 Returns the current user's info
+## initUser
+Fetches user information from the backend and updates the `remult.user` object.
+Typically used during application initialization and user authentication.
+
+
+#### returns:
+A promise that resolves to the user's information or `undefined` if unavailable.
 ## authenticated
 Checks if a user was authenticated
 ## isAllowed

@@ -16,8 +16,12 @@ import { getRelationFieldInfo } from '../remult3/relationInfoMember.js'
 import { remultStatic } from '../remult-static.js'
 
 export class RestDataProvider implements DataProvider {
-  constructor(private apiProvider: () => ApiClient) {}
+  constructor(
+    private apiProvider: () => ApiClient,
+    private entityRequested?: (entity: EntityMetadata) => void,
+  ) {}
   public getEntityDataProvider(entity: EntityMetadata): RestEntityDataProvider {
+    this.entityRequested?.(entity)
     return new RestEntityDataProvider(
       () => {
         return buildFullUrl(this.apiProvider()?.url, entity.key)
@@ -129,21 +133,28 @@ export class RestEntityDataProvider
     private http: () => RestDataProviderHttpProvider,
     private entity: EntityMetadata,
   ) {}
+  query(
+    options: EntityDataProviderFindOptions,
+    aggregateOptions: EntityDataProviderGroupByOptions,
+  ): Promise<{ items: any[]; aggregates: any }> {
+    const r = this.buildFindRequest(options)
+    return r
+      .run('query', {
+        aggregate: this.buildAggregateOptions(aggregateOptions),
+      })
+      .then(({ items, aggregates }) => ({
+        items: items.map((x: any) => this.translateFromJson(x)),
+        aggregates,
+      }))
+  }
+
   async groupBy(options?: EntityDataProviderGroupByOptions): Promise<any[]> {
     const { run } = this.buildFindRequest({
       where: options?.where,
       limit: options?.limit,
       page: options?.page,
     })
-    const body = {
-      groupBy: options?.group?.map((x) => x.key),
-      sum: options?.sum?.map((x) => x.key),
-      avg: options?.avg?.map((x) => x.key),
-      min: options?.min?.map((x) => x.key),
-      max: options?.max?.map((x) => x.key),
-      distinctCount: options?.distinctCount?.map((x) => x.key),
-      orderBy: options?.orderBy?.map((x) => ({ ...x, field: x.field?.key })),
-    }
+    const body = this.buildAggregateOptions(options)
     const result: any[] = await run(
       'groupBy',
       Object.keys(body).length > 0 ? body : undefined,
@@ -155,6 +166,20 @@ export class RestEntityDataProvider
         }
       })
     return result
+  }
+
+  private buildAggregateOptions(
+    options: EntityDataProviderGroupByOptions | undefined,
+  ) {
+    return {
+      groupBy: options?.group?.map((x) => x.key),
+      sum: options?.sum?.map((x) => x.key),
+      avg: options?.avg?.map((x) => x.key),
+      min: options?.min?.map((x) => x.key),
+      max: options?.max?.map((x) => x.key),
+      distinctCount: options?.distinctCount?.map((x) => x.key),
+      orderBy: options?.orderBy?.map((x) => ({ ...x, field: x.field?.key })),
+    }
   }
 
   translateFromJson(row: any) {
@@ -185,6 +210,16 @@ export class RestEntityDataProvider
     return run('updateMany', this.toJsonOfIncludedKeys(data)).then(
       (r) => +r.updated,
     )
+  }
+  public async upsertMany(options: { where: any; set: any }[]): Promise<any[]> {
+    const { run } = this.buildFindRequest(undefined)
+    return run(
+      'upsertMany',
+      options.map((x) => ({
+        where: this.toJsonOfIncludedKeys(x.where),
+        set: x.set !== undefined ? this.toJsonOfIncludedKeys(x.set) : undefined,
+      })),
+    ).then((r) => r.map((x: any) => this.translateFromJson(x)))
   }
   public find(options?: EntityDataProviderFindOptions): Promise<Array<any>> {
     let { run } = this.buildFindRequest(options)
