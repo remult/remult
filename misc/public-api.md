@@ -4373,77 +4373,10 @@ export declare function remultGraphql(options: {
 
 ## ./internals.js
 
-```ts
-export declare function __updateEntityBasedOnWhere<T>(
-  entityDefs: EntityMetadata<T>,
-  where: EntityFilter<T>,
-  r: T,
-): void
-//[ ] EntityMetadata from TBD is not exported
-//[ ] EntityFilter from TBD is not exported
-export const actionInfo: {
-  allActions: any[]
-  runningOnServer: boolean
-  runActionWithoutBlockingUI: <T>(what: () => Promise<T>) => Promise<T>
-  startBusyWithProgress: () => {
-    progress: (percent: number) => void
-    close: () => void
-  }
-}
-export type ClassType<T> = {
-  new (...args: any[]): T
-}
-export declare class controllerRefImpl<T = unknown>
-  extends rowHelperBase<T>
-  implements ControllerRef<T>
-{
-  constructor(columnsInfo: FieldMetadata[], instance: any, remult: Remult)
-  __performColumnAndEntityValidations(): Promise<void>
-  fields: FieldsRef<T>
-}
-//[ ] FieldMetadata from TBD is not exported
-//[ ] Remult from TBD is not exported
-//[ ] FieldsRef from TBD is not exported
-export declare function decorateColumnSettings<valueType>(
-  settings: FieldOptions<unknown, valueType>,
-  remult: Remult,
-): FieldOptions<unknown, valueType>
-//[ ] FieldOptions from TBD is not exported
-export const flags: {
-  error500RetryCount: number
-}
-export declare function getControllerRef<fieldsContainerType>(
-  container: fieldsContainerType,
-  remultArg?: Remult,
-): ControllerRef<fieldsContainerType>
-//[ ] ControllerRef from TBD is not exported
-export declare function getEntitySettings<T>(
-  entity: ClassType<T>,
-  throwError?: boolean,
-): EntityOptionsFactory | undefined
-//[ ] EntityOptionsFactory from TBD is not exported
-export declare function getRelationFieldInfo(
-  field: FieldMetadata,
-): RelationFieldInfo | undefined
-export declare function getRelationInfo(options: FieldOptions): RelationInfo
-export interface RelationFieldInfo {
-  type: "reference" | "toOne" | "toMany"
-  options: RelationOptions<unknown, unknown, unknown>
-  toEntity: any
-  toRepo: Repository<unknown>
-  getFields(): RelationFields
-}
-//[ ] RelationOptions from TBD is not exported
-//[ ] Repository from TBD is not exported
-export interface RelationFields {
-  fields: Record<string, string>
-  compoundIdField: string | undefined
-}
-export interface RelationInfo {
-  toType: () => any
-  type: RelationFieldInfo["type"]
-}
-```
+//[ ] !!! Error: Cannot find module 'dist\core\src\data-providers\sql-relations.js'
+Require stack:
+
+- C:\repos\radweb\misc\extract-public-api.ts
 
 ## ./remult-nuxt.js
 

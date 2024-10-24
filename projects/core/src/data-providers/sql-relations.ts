@@ -9,8 +9,8 @@ import {
   type ObjectMembersOnly,
   type SqlCommandWithParameters,
   // } from 'remult'
-} from '../../../../core/index.js' // comment in the from `remult`
-import { getRelationFieldInfo } from '../../../../core/internals.js' // comment in the from `remult`
+} from '../../index.js' // comment in the from `remult`
+import { getRelationFieldInfo } from '../../internals.js' // comment in the from `remult`
 // import { getRelationFieldInfo } from 'remult/internals'
 
 export function sqlRelations<entityType>(

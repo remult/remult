@@ -9,7 +9,10 @@ import {
 } from '../../../../core/index.js'
 import { Sqlite3DataProvider } from '../../../../core/remult-sqlite3.js'
 import { Database } from 'sqlite3'
-import { sqlRelations, sqlRelationsFilter } from './sql-relations.js'
+import {
+  sqlRelations,
+  sqlRelationsFilter,
+} from '../../../../core/src/data-providers/sql-relations.js'
 
 @Entity('Customer_groups')
 export class CustomerGroup {
