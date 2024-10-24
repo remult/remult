@@ -10,7 +10,8 @@ import {
   type SqlCommandWithParameters,
   // } from 'remult'
 } from '../../index.js' // comment in the from `remult`
-import { getRelationFieldInfo } from '../../internals.js' // comment in the from `remult`
+import { getRelationFieldInfo } from '../remult3/relationInfoMember.js'
+
 // import { getRelationFieldInfo } from 'remult/internals'
 
 export function sqlRelations<entityType>(
