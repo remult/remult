@@ -4443,20 +4443,21 @@ export interface RelationInfo {
   toType: () => any
   type: RelationFieldInfo["type"]
 }
-export declare class SqlRelationFilter<
-  myEntity,
-  relationKey extends keyof myEntity,
-  toEntity = ArrayItemType<myEntity[relationKey]>,
-> {
-  private _tools
-  constructor(myEntity: ClassType<myEntity>, relationField: relationKey)
-  some(where?: EntityFilter<toEntity>): EntityFilter<toEntity>
-}
-//[ ] ArrayItemType from TBD is not exported
 export declare function sqlRelations<entityType>(
   forEntity: ClassType<entityType>,
 ): SqlRelations<entityType>
 //[ ] SqlRelations from TBD is not exported
+export declare function sqlRelationsFilter<entityType>(
+  forEntity: ClassType<entityType>,
+): {
+  [p in keyof entityType]-?: SqlRelationFilter<
+    entityType,
+    p,
+    ArrayItemType<NonNullable<entityType[p]>>
+  >
+}
+//[ ] SqlRelationFilter from TBD is not exported
+//[ ] ArrayItemType from TBD is not exported
 ```
 
 ## ./remult-nuxt.js
