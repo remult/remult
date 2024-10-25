@@ -71,4 +71,4 @@ Here’s a polished version of the paragraph:
 
 ### Relations in Remult Admin
 
-Relations are seamlessly integrated into the [Remult Admin UI](https://remult.dev/docs/admin-ui). To explore how relations are displayed, simply click the "Remult Admin UI" link at the bottom left of the interface.
+Relations are seamlessly integrated into the [Remult Admin UI](https://remult.dev/docs/admin-ui). To explore how relations are displayed, simply click the "Remult Admin UI" link at the bottom.
