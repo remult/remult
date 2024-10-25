@@ -98,11 +98,3 @@ repo(Order).find({
 ### Recap
 
 With composable custom filters, you can build modular, reusable filters that combine seamlessly with other conditions, making your code more flexible and maintainable. Whether you're filtering by status, date, or custom logic like order amount, custom filters allow you to easily manage complex queries with less effort.
-
-## Recap
-
-By encapsulating filtering logic in a custom filter, we achieve several benefits: reusable and maintainable code, improved readability, and dynamic flexibility. Custom Filters are a powerful tool to simplify repetitive filtering tasks and help you write cleaner, more efficient code.
-
----
-
-Let me know if you'd like to add anything else to this lesson!
