@@ -1,0 +1,100 @@
+---
+
+---
+
+<button
+  id="search-button"
+  aria-label="Search"
+  class="flex items-center text-2xl text-tk-elements-topBar-iconButton-iconColor hover:text-tk-elements-topBar-iconButton-iconColorHover transition-theme bg-tk-elements-topBar-iconButton-backgroundColor hover:bg-tk-elements-topBar-iconButton-backgroundColorHover p-1 rounded-md"
+  ><div class="i-ri:search-fill w-1em h-1em"></div>
+</button>
+
+<dialog id="search-dialog">
+  <div id="search-container"></div>
+</dialog>
+<link href="/pagefind/pagefind-ui.css" rel="stylesheet" />
+<script>
+  //@ts-ignore
+  import { PagefindUI } from '@pagefind/default-ui'
+
+  function initializeSearch() {
+    const button = document.getElementById('search-button')
+    const dialog = document.getElementById('search-dialog')
+    const searchContainer = document.getElementById('search-container')
+    let pagefindUI: any = null
+
+    if (button && dialog && searchContainer) {
+      button.addEventListener('click', () => {
+        //@ts-ignore
+        dialog.showModal()
+
+        if (!pagefindUI) {
+          searchContainer.innerHTML = ''
+          pagefindUI = new PagefindUI({
+            element: '#search-container',
+            showImages: false,
+            translations: {
+              placeholder: 'Search documentation...',
+            },
+          })
+        }
+      })
+
+      dialog.addEventListener('click', (event) => {
+        if (event.target === dialog) {
+          //@ts-ignore
+          dialog.close()
+          if (pagefindUI) {
+            pagefindUI = null
+            searchContainer.innerHTML = ''
+          }
+        }
+      })
+    }
+  }
+
+  // Run the initialization function when the script loads
+  initializeSearch()
+
+  // Re-run the initialization on Astro page changes
+  document.addEventListener('astro:page-load', initializeSearch)
+</script>
+
+<style>
+  #search-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+  }
+
+  #search-dialog {
+    position: fixed;
+
+    padding: 2rem;
+    border-radius: 0.5rem;
+    border: none;
+    box-shadow: 0 0 1rem rgba(0, 0, 0, 0.5);
+  }
+
+  #search-dialog::backdrop {
+    background-color: rgba(0, 0, 0, 0.9);
+  }
+
+  /* Add styles for Pagefind UI */
+  :global(.pagefind-ui) {
+    --pagefind-ui-scale: 0.8;
+    --pagefind-ui-primary: #034ad8;
+    --pagefind-ui-text: #000000;
+    --pagefind-ui-background: #ffffff;
+    --pagefind-ui-border: #eeeeee;
+    --pagefind-ui-tag: #eeeeee;
+    --pagefind-ui-border-width: 2px;
+    --pagefind-ui-border-radius: 8px;
+    --pagefind-ui-image-border-radius: 8px;
+    --pagefind-ui-image-box-ratio: 3 / 2;
+    --pagefind-ui-font: 'Inter', system, -apple-system, '.SFNSText-Regular',
+      'San Francisco', 'Roboto', 'Segoe UI', 'Helvetica Neue', 'Lucida Grande',
+      sans-serif;
+  }
+</style>

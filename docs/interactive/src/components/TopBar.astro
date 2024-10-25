@@ -1,5 +1,6 @@
 ---
 import config from '../../../.vitepress/toolbar-config.json'
+import Search from './Search.astro'
 ---
 
 <!-- Google tag (gtag.js) -->
@@ -21,8 +22,9 @@ import config from '../../../.vitepress/toolbar-config.json'
     <slot name="logo" />
     <a href="https://remult.dev/" class="ms-2">{config.title}</a>
   </div>
+  <Search />
   <div class="flex items-center text-tk-elements-content-textColor">
-    <div class="flex items-center pr-2 mr-2 border-r-2">
+    <div class="flex items-center pr-2 mr-2 border-r-2 border-l-2">
       {
         config.themeConfig?.nav
           ?.filter((n) => n.link)
@@ -39,7 +41,11 @@ import config from '../../../.vitepress/toolbar-config.json'
       {
         config.themeConfig?.socialLinks?.map((socialLink: any) => (
           <div
-            class={`mx-1 ${socialLink.icon === 'x' || socialLink.icon === 'youtube' ? 'hidden sm:block' : ''}`}
+            class={`mx-1 ${
+              socialLink.icon === 'x' || socialLink.icon === 'youtube'
+                ? 'hidden sm:block'
+                : ''
+            }`}
           >
             <a
               href={socialLink.link}
