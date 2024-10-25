@@ -28,6 +28,10 @@ import Hono from './icons/hono.vue'
 import Hapi from './icons/hapi.vue'
 import Koa from './icons/koa.vue'
 import Nest from './icons/nest.vue'
+import Duckdb from './icons/duckdb.vue'
+import Oracle from './icons/oracle.vue'
+import Sqljs from './icons/sqljs.vue'
+import Turso from './icons/turso.vue'
 
 const props = defineProps<{
   tech:
@@ -59,6 +63,10 @@ const props = defineProps<{
     | 'hapi'
     | 'koa'
     | 'nest'
+    | 'duckdb'
+    | 'oracle'
+    | 'sqljs'
+    | 'turso'
   link?: string | boolean
   sizeIco?: number
   isShiny?: boolean
@@ -122,6 +130,14 @@ const getIcon = (tech: string) => {
       return Koa
     case 'nest':
       return Nest
+    case 'duckdb':
+      return Duckdb
+    case 'oracle':
+      return Oracle
+    case 'sqljs':
+      return Sqljs
+    case 'turso':
+      return Turso
     // Add cases for other technologies here
     default:
       return null
