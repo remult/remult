@@ -24,8 +24,6 @@ const props = withDefaults(
     mssql?: boolean | string
     mui?: boolean | string
 
-    oneline?: boolean
-
     live?: string
     github?: string
     stackblitz?: string
@@ -51,7 +49,7 @@ const props = withDefaults(
       height="250e"
     />
 
-    <div :class="oneline ? 'container' : 'techno'">
+    <div class="techno">
       <div v-if="shadcn">
         <Icon tech="shadcn" :link="shadcn" />
       </div>

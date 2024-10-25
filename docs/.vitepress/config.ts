@@ -185,7 +185,7 @@ export default defineConfig({
             link: '/docs/installation',
             items: [
               {
-                text: 'Frontend',
+                text: 'Framework',
                 link: '/docs/installation/framework/',
                 collapsed: true,
                 items: [

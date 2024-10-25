@@ -24,6 +24,7 @@ import Live from './icons/live.vue'
 import Stackblitz from './icons/stackblitz.vue'
 import Codesandbox from './icons/codesandbox.vue'
 import Github from './icons/github.vue'
+import Hono from './icons/hono.vue'
 
 const props = defineProps<{
   tech:
@@ -51,9 +52,11 @@ const props = defineProps<{
     | 'stackblitz'
     | 'codesandbox'
     | 'github'
-  link?: string
+    | 'hono'
+  link?: string | boolean
   sizeIco?: number
   isShiny?: boolean
+  newTab?: boolean // New prop to control target behavior
 }>()
 const getIcon = (tech: string) => {
   switch (tech) {
@@ -105,6 +108,8 @@ const getIcon = (tech: string) => {
       return Codesandbox
     case 'github':
       return Github
+    case 'hono':
+      return Hono
     // Add cases for other technologies here
     default:
       return null
@@ -114,11 +119,16 @@ const getIcon = (tech: string) => {
 const Icon = computed(() => getIcon(props.tech))
 
 const isLink = computed(() => typeof props.link === 'string')
+
+const linkTarget = computed(() => (props.newTab ? '_blank' : undefined))
+const linkRel = computed(() =>
+  props.newTab ? 'noopener noreferrer' : undefined,
+)
 </script>
 
 <template>
   <div class="tech">
-    <a v-if="isLink" :href="link" target="_blank" rel="noopener noreferrer">
+    <a v-if="isLink" :href="link" :target="linkTarget" :rel="linkRel">
       <component
         :is="Icon"
         :class="{ 'shiny-button': isShiny }"

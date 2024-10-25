@@ -1,5 +1,5 @@
 <script setup>
-  import Example from '../components/Example.vue'
+  import Icon from '../components/Icon.vue'
 </script>
 
 # Introduction
@@ -34,12 +34,12 @@ If you're new to Remult or prefer a guided, hands-on approach, we recommend star
 <br />
 
 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 5rem">
-	<Example :react=true sizeIco=150 />
-	<Example :angular=true sizeIco=150 />
-	<Example :vue=true sizeIco=150 />
-	<Example :svelte=true sizeIco=150 />
-	<Example :nextjs=true sizeIco=150 />
-	<Example :solid=true sizeIco=150 />
+	<Icon tech="react" sizeIco=150 link="/tutorials/react" />
+	<Icon tech="angular" sizeIco=150 link="/tutorials/angular" />
+	<Icon tech="vue" sizeIco=150 link="/tutorials/vue" />
+	<Icon tech="svelte" sizeIco=150 link="/tutorials/sveltekit" />
+	<Icon tech="nextjs" sizeIco=150 link="/tutorials/react-next" />
+	<Icon tech="solid" sizeIco=150 link="/tutorials/solid-start" />
 </div>
 
 ### `Option D`: Quickstart
