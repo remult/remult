@@ -1,5 +1,6 @@
 <script setup>
   import Example from '../components/Example.vue'
+  import Icon from '../components/Icon.vue'
 </script>
 
 # Example Apps
@@ -68,8 +69,6 @@ And example of the usage of groupBy
 />
 
 ## Todo for most frameworks
-
-<Example :oneline=true :react=true :nextjs=true :angular=true :vue=true :svelte=true :solid=true :bun=true />
 
 - [React & Express](https://github.com/remult/remult/tree/main/examples/react-todo)
 - [React & bun & Hono](https://github.com/remult/remult/tree/main/examples/bun-react-hono-monorepo-todo)
