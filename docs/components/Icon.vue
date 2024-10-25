@@ -25,6 +25,9 @@ import Stackblitz from './icons/stackblitz.vue'
 import Codesandbox from './icons/codesandbox.vue'
 import Github from './icons/github.vue'
 import Hono from './icons/hono.vue'
+import Hapi from './icons/hapi.vue'
+import Koa from './icons/koa.vue'
+import Nest from './icons/nest.vue'
 
 const props = defineProps<{
   tech:
@@ -53,6 +56,9 @@ const props = defineProps<{
     | 'codesandbox'
     | 'github'
     | 'hono'
+    | 'hapi'
+    | 'koa'
+    | 'nest'
   link?: string | boolean
   sizeIco?: number
   isShiny?: boolean
@@ -110,6 +116,12 @@ const getIcon = (tech: string) => {
       return Github
     case 'hono':
       return Hono
+    case 'hapi':
+      return Hapi
+    case 'koa':
+      return Koa
+    case 'nest':
+      return Nest
     // Add cases for other technologies here
     default:
       return null
