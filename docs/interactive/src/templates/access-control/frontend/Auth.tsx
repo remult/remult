@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { remult, type ErrorInfo } from 'remult'
-import { Todo } from './Todo'
+import { Page } from './Page'
 import { AuthController } from '../shared/AuthController'
 
 export function Auth() {
@@ -52,7 +52,7 @@ export function Auth() {
           )}
         </div>
       </main>
-      <Todo />
+      <Page />
       <center>
         <a href="/api/admin#/entity/tasks">Remult Admin UI</a>
       </center>

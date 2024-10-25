@@ -4,7 +4,7 @@ import { type ErrorInfo, repo } from 'remult'
 
 const taskRepo = repo(Task)
 
-export function Todo() {
+export function Page() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [newTaskTitle, setNewTaskTitle] = useState('')
   const [error, setError] = useState<ErrorInfo<Task>>()
