@@ -74,4 +74,4 @@ Your SvelteKit app will be available at [http://localhost:5173](http://localhost
 
 ### Setup Completed
 
-Your SvelteKit project with Remult is now up and running. You can now proceed to the [next step of the tutorial](./entities.md) to start building your task list app.
+Your SvelteKit project with Remult is now up and running.

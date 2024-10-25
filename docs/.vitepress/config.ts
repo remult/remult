@@ -26,6 +26,7 @@ const tutorials = [
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
+  srcExclude: ['interactive'],
   title: toolbarConfig.title,
   description:
     'Build Full-stack, End-to-end Type-safe CRUD Apps without the Boilerplate',
