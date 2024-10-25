@@ -50,4 +50,4 @@ Running the `dev` script will start the Angular dev server with the proxy config
 
 ## Configure a Server
 
-Now that the Angular app is set up, you'll need to configure your backend server to handle the API requests.
+Now that the app is set up, [Select an API Server](../server/)

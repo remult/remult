@@ -2,7 +2,7 @@
   import Icon from '../../../components/Icon.vue'
 </script>
 
-# Select one of these Server
+# Select a server
 
 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 5rem; margin-top: 2rem">
 	<Icon tech="express" sizeIco=150 link="/docs/installation/server/express" />

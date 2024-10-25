@@ -66,4 +66,4 @@ This setup proxies all requests starting with `/api` from `http://localhost:5173
 
 ## Configure a Server
 
-Now that the React app is set up, you'll need to configure your backend server to handle the API requests.
+Now that the app is set up, [Select an API Server](../server/)

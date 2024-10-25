@@ -10,7 +10,7 @@ import Angular from './icons/angular.vue'
 import Svelte from './icons/svelte.vue'
 import Nextjs from './icons/nextjs.vue'
 import Nuxt from './icons/nuxt.vue'
-import Bun from './icons/bun.vue'
+import Bun from './icons/bun-sqlite.vue'
 import Solid from './icons/solid.vue'
 import Json from './icons/json.vue'
 import Postgres from './icons/postgres.vue'
@@ -45,7 +45,7 @@ const props = defineProps<{
     | 'svelte'
     | 'nextjs'
     | 'nuxt'
-    | 'bun'
+    | 'bun-sqlite'
     | 'solid'
     | 'json'
     | 'postgres'
@@ -94,11 +94,11 @@ const getIcon = (tech: string) => {
       return Nextjs
     case 'nuxt':
       return Nuxt
-    case 'bun':
+    case 'bun-sqlite':
       return Bun
     case 'solid':
       return Solid
-    case 'json':
+    case 'json files':
       return Json
     case 'postgres':
       return Postgres

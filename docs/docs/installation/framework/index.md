@@ -2,7 +2,7 @@
   import Icon from '../../../components/Icon.vue'
 </script>
 
-# Select one of these framework
+# Select a framework
 
 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 5rem; margin-top: 2rem">
 	<Icon tech="react" sizeIco=150 link="/docs/installation/framework/react" />
