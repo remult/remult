@@ -102,7 +102,7 @@ With field metadata, you can abstract your UI components for consistent display 
 
 ```
 
-Click **"Solve"** to see this abstraction in action. This dynamic UI approach ensures your fields are displayed with the same metadata-defined captions and formatting throughout the app.
+Click **"Solve"** at the top right of the code editor to see this abstraction in action. This dynamic UI approach ensures your fields are displayed with the same metadata-defined captions and formatting throughout the app.
 
 ---
 
