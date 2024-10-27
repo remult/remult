@@ -1,7 +1,7 @@
 ---
 type: lesson
 title: Testing Api Rules
-focus: /tests/validations.test.ts
+focus: /tests/authorization.test.ts
 ---
 
 # Testing API Rules
@@ -12,7 +12,50 @@ In Remult, automated tests run as if they are executing directly on the backend.
 
 The example below demonstrates how to test API rules, including user authentication and authorization, using `TestApiDataProvider`:
 
-```file:/tests/authorization.test.ts title="tests/authorization.test.ts" collapse={1-6,19-100} add={9-17}
+```file:/tests/authorization.test.ts title="tests/authorization.test.ts" collapse={1-6,19-100} add={9-12}
+import { describe, test, expect, beforeEach } from 'vitest'
+import { remult, repo, InMemoryDataProvider } from 'remult'
+import { TestApiDataProvider } from 'remult/server'
+import { createSqlite3DataProvider } from 'remult/remult-sqlite3'
+import { Task } from '../shared/Task'
+
+describe('Test authorization', () => {
+  beforeEach(async () => {
+    remult.dataProvider = TestApiDataProvider({
+      dataProvider: createSqlite3DataProvider(),
+    })
+    await repo(Task).insert({ title: 'my task' })
+  })
+
+  test('non-authenticated users cannot delete', async () => {
+    try {
+      remult.user = undefined // Simulate unauthenticated user
+      const task = await repo(Task).findFirst()
+      await repo(Task).delete(task)
+      throw new Error('Should not reach here')
+    } catch (error: any) {
+      expect(error.message).toBe('Forbidden')
+    }
+  })
+
+  test('Non-admin users cannot delete', async () => {
+    try {
+      remult.user = { id: '1' } // Simulate authenticated non-admin user
+      const task = await repo(Task).findFirst()
+      await repo(Task).delete(task)
+      throw new Error('Should not reach here')
+    } catch (error: any) {
+      expect(error.message).toBe('Forbidden')
+    }
+  })
+
+  test('Admin users can delete', async () => {
+    remult.user = { id: '1', roles: ['admin'] } // Simulate authenticated admin user
+    const task = await repo(Task).findFirst()
+    await repo(Task).delete(task)
+    expect(await repo(Task).count()).toBe(0)
+  })
+})
 
 ```
 
@@ -20,9 +63,8 @@ The example below demonstrates how to test API rules, including user authenticat
 
 1. **Test Setup with `beforeEach`**:
 
-   - A test database is created using `createSqlite3DataProvider`, and `ensureSchema` verifies that the necessary tables exist.
-   - Initial data, such as a task titled "my task," is inserted into the database as if on the backend.
-   - The `TestApiDataProvider` is then set as the active data provider, wrapping the SQLite database and ensuring each operation simulates an API call.
+   - we set up the test environment to use `TestApiDataProvider`, simulating an API call for each database operation.
+   - We also create an initial task in the database to test authorization logic on existing data.
 
 2. **Testing API Rules**:
    - Each test simulates different user scenarios to verify the `delete` permission on tasks:

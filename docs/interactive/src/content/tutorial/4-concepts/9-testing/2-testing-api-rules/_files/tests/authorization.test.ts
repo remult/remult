@@ -6,15 +6,10 @@ import { Task } from '../shared/Task'
 
 describe('Test authorization', () => {
   beforeEach(async () => {
-    const dataProvider = await createSqlite3DataProvider()
-    await dataProvider.ensureSchema?.([repo(Task).metadata])
-    remult.dataProvider = dataProvider
-    // Insert rows directly into the database as if on the backend
-    await repo(Task).insert({ title: 'my task' })
-    // Configure the test API data provider
     remult.dataProvider = TestApiDataProvider({
-      dataProvider,
+      dataProvider: createSqlite3DataProvider(),
     })
+    await repo(Task).insert({ title: 'my task' })
   })
 
   test('non-authenticated users cannot delete', async () => {
