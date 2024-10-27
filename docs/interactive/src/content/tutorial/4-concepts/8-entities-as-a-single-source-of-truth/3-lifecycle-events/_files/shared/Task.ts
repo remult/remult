@@ -3,7 +3,7 @@ import { Entity, Fields } from 'remult'
 @Entity<Task>('tasks', {
   allowApiCrud: true,
   saving: async (task, e) => {
-    if (e.isNew) console.log('New task:', task.title)
+    if (e.isNew) console.log('- New task:', task.title)
     else {
       console.log('- Task updated:', task.title)
       for (const field of e.fields) {
@@ -15,7 +15,7 @@ import { Entity, Fields } from 'remult'
     }
   },
   deleting: async (task) => {
-    console.log('Task deleted:', task.title)
+    console.log('- Task deleted:', task.title)
   },
 })
 export class Task {
