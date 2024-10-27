@@ -106,8 +106,23 @@ Click **"Solve"** at the top right of the code editor to see this abstraction in
 
 ---
 
-## Further Reading
+you can use the `getValueList` function to get the values of a literal field
 
-Take advantage of custom field options to enhance metadata usage in your application. For more on adding custom metadata to fields, explore this article: [Enhancing Field and Entity Definitions with Custom Options](https://remult.dev/docs/custom-options#enhancing-field-and-entity-definitions-with-custom-options).
+```tsx
+return (
+  <div>
+    <div>
+      {fields.map((field) => (
+        <div key={field.key}>
+          {field.caption}: <strong>{field.displayValue(task)}</strong>{' '}
+          {getValueList(field as any)
+            ? `(options: ${getValueList(field as any)})`
+            : ''}
+        </div>
+      ))}
+    </div>
+  </div>
+)
+```
 
----
+You can use these capabilities, together with the structured error model to create dynamic forms, dynamic grid and other dynamic uis that leverage

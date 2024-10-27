@@ -12,7 +12,7 @@ export function TodoItem({ task }: { task: Task }) {
     <div>
       <div>
         {fields.map((field) => (
-          <div key={fields.key}>
+          <div key={field.key}>
             {field.caption}: <strong>{field.displayValue(task)}</strong>
           </div>
         ))}
