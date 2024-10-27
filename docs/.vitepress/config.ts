@@ -226,27 +226,27 @@ export default defineConfig({
                 items: [
                   {
                     text: 'Express',
-                    link: '/docs/installation/servers/express',
+                    link: '/docs/installation/server/express',
                   },
                   {
                     text: 'Fastify',
-                    link: '/docs/installation/servers/fastify',
+                    link: '/docs/installation/server/fastify',
                   },
                   {
                     text: 'Hono',
-                    link: '/docs/installation/servers/hono',
+                    link: '/docs/installation/server/hono',
                   },
                   {
                     text: 'Hapi',
-                    link: '/docs/installation/servers/hapi',
+                    link: '/docs/installation/server/hapi',
                   },
                   {
                     text: 'Koa',
-                    link: '/docs/installation/servers/koa',
+                    link: '/docs/installation/server/koa',
                   },
                   {
                     text: 'nest',
-                    link: '/docs/installation/servers/nest',
+                    link: '/docs/installation/server/nest',
                   },
                 ],
               },
