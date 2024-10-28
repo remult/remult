@@ -13,25 +13,19 @@ describe('Test authorization', () => {
   })
 
   test('non-authenticated users cannot delete', async () => {
-    try {
-      remult.user = undefined // Simulate unauthenticated user
-      const task = await repo(Task).findFirst()
-      await repo(Task).delete(task)
-      throw new Error('Should not reach here')
-    } catch (error: any) {
-      expect(error.message).toBe('Forbidden')
-    }
+    remult.user = undefined // Simulate unauthenticated user
+    const task = await repo(Task).findFirst()
+    await expect(() => repo(Task).delete(task)).rejects.toThrowError(
+      'Forbidden',
+    )
   })
 
   test('Non-admin users cannot delete', async () => {
-    try {
-      remult.user = { id: '1' } // Simulate authenticated non-admin user
-      const task = await repo(Task).findFirst()
-      await repo(Task).delete(task)
-      throw new Error('Should not reach here')
-    } catch (error: any) {
-      expect(error.message).toBe('Forbidden')
-    }
+    remult.user = { id: '1' } // Simulate authenticated non-admin user
+    const task = await repo(Task).findFirst()
+    await expect(() => repo(Task).delete(task)).rejects.toThrowError(
+      'Forbidden',
+    )
   })
 
   test('Admin users can delete', async () => {

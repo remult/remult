@@ -12,11 +12,8 @@ describe('Test validations', () => {
     expect(await repo(Task).count()).toBe(1)
   })
   test('Task without title', async () => {
-    try {
-      await repo(Task).insert({})
-      throw new Error('Should not reach here')
-    } catch (error: any) {
-      expect(error.message).toBe('Title: Should not be empty')
-    }
+    await expect(() => repo(Task).insert({})).rejects.toThrowError(
+      'Title: Should not be empty',
+    )
   })
 })
