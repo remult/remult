@@ -1,20 +1,19 @@
 ---
-import config from '../../../.vitepress/config.ts'
-//@ts-ignore
-import type { DefaultTheme } from 'vitepress'
+import config from '../../../.vitepress/toolbar-config.json'
+import Search from './Search.astro'
 ---
 
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-DS42EX6GLQ"
 ></script>
 <script is:inline>
-window.dataLayer = window.dataLayer || []
-function gtag() {
-  dataLayer.push(arguments)
-}
-gtag('js', new Date())
+  window.dataLayer = window.dataLayer || []
+  function gtag() {
+    dataLayer.push(arguments)
+  }
+  gtag('js', new Date())
 
-gtag('config', 'G-DS42EX6GLQ')
+  gtag('config', 'G-DS42EX6GLQ')
 </script>
 <nav
   class="bg-tk-elements-topBar-backgroundColor transition-theme border-b border-tk-elements-app-borderColor flex max-w-full items-center p-3 px-4 min-h-[56px]"
@@ -23,17 +22,15 @@ gtag('config', 'G-DS42EX6GLQ')
     <slot name="logo" />
     <a href="https://remult.dev/" class="ms-2">{config.title}</a>
   </div>
+  <Search />
   <div class="flex items-center text-tk-elements-content-textColor">
-    <div class="flex items-center pr-2 mr-2 border-r-2">
+    <div class="flex items-center pr-2 mr-2 border-r-2 border-l-2">
       {
         config.themeConfig?.nav
-          ?.filter((n: any) => (n as DefaultTheme.NavItemWithLink).link)
+          ?.filter((n) => n.link)
           .map((n: any) => (
             <div class="font-semibold mx-2">
-              <a
-                href={`https://remult.dev${(n as DefaultTheme.NavItemWithLink).link}`}
-                class="ms-2"
-              >
+              <a href={`https://remult.dev${n.link}`} class="ms-2">
                 {n.text}
               </a>
             </div>
@@ -44,7 +41,11 @@ gtag('config', 'G-DS42EX6GLQ')
       {
         config.themeConfig?.socialLinks?.map((socialLink: any) => (
           <div
-            class={`mx-1 ${socialLink.icon === 'x' || socialLink.icon === 'youtube' ? 'hidden sm:block' : ''}`}
+            class={`mx-1 ${
+              socialLink.icon === 'x' || socialLink.icon === 'youtube'
+                ? 'hidden sm:block'
+                : ''
+            }`}
           >
             <a
               href={socialLink.link}

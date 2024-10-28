@@ -1,5 +1,13 @@
 # Filtering and Relations
 
+::: tip **Interactive Learning Available! 🚀**
+
+Looking to get hands-on with this topic? Try out our new [**interactive tutorial**](https://learn.remult.dev/in-depth/4-filtering/1-custom-filters) on Filtering relations, where you can explore and practice directly in the browser. This guided experience offers step-by-step lessons to help you master filtering in Remult with practical examples and exercises.
+
+[Click here to dive into the interactive tutorial on Filtering and Relations!](https://learn.remult.dev/in-depth/4-filtering/1-custom-filters)
+
+:::
+
 In this article, we'll discuss several relevant techniques for one-to-many relations.
 Consider the following scenario where we have a customer entity and an Orders entity.
 

@@ -2,10 +2,14 @@
 outline: [2, 3]
 ---
 
-# Relations Between Entities 🚀
+# Relations Between Entities
 
-::: tip New Feature
-Relations are a new feature introduced in version 0.23.
+::: tip **Interactive Learning Available! 🚀**
+
+Looking to get hands-on with this topic? Try out our new [**interactive tutorial**](https://learn.remult.dev/in-depth/1-relations/1-many-to-one) on Relations, where you can explore and practice directly in the browser. This guided experience offers step-by-step lessons to help you master relations in Remult with practical examples and exercises.
+
+[Click here to dive into the interactive tutorial on Relations!](https://learn.remult.dev/in-depth/1-relations/1-many-to-one)
+
 :::
 
 ### Understanding Entity Relations in Remult

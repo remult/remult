@@ -102,11 +102,11 @@ While remult supports [many relational and non-relational databases](https://rem
 
 ### Enabling the Admin UI
 
-Add the Admin UI to your React application by setting the `admin` option to `true` in the `remultExpress()` configuration in your `src/server/api.ts` file:
+Add the Admin UI to your React application by setting the `admin` option to `true` in the `remultExpress()`
 
-```ts
-// src/server/api.ts
+::: code-group
 
+```ts [src/server/api.ts]
 import { remultExpress } from 'remult/remult-express'
 import { Task } from '../shared/Task.js'
 
@@ -115,6 +115,8 @@ export const api = remultExpress({
   admin: true, // Enable the Admin UI
 })
 ```
+
+:::
 
 ### Accessing and Using the Admin UI
 

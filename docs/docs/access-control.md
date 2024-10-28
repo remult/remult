@@ -1,5 +1,13 @@
 # Access Control
 
+::: tip **Interactive Learning Available! 🚀**
+
+Looking to get hands-on with this topic? Try out our new [**interactive tutorial**](https://learn.remult.dev/in-depth/7-access-control/1-field-level-control) on Access Control, where you can explore and practice directly in the browser. This guided experience offers step-by-step lessons to help you master Access Control in Remult with practical examples and exercises.
+
+[Click here to dive into the interactive tutorial on Access Control!](https://learn.remult.dev/in-depth/7-access-control/1-field-level-control)
+
+:::
+
 Access control is essential for ensuring that users can only access resources they are authorized to in web applications. This article explores the various layers of access control, focusing on a framework that provides a granular approach to securing your application.
 
 ## Entity-Level Authorization

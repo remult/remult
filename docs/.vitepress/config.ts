@@ -1,5 +1,7 @@
 import { defineConfig } from 'vitepress'
+import { DefaultTheme } from 'vitepress/theme'
 import { tabsMarkdownPlugin } from 'vitepress-plugin-tabs'
+import toolbarConfig from './toolbar-config.json'
 
 const tutorials = [
   { path: 'react' },
@@ -24,7 +26,8 @@ const tutorials = [
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  title: 'Remult',
+  srcExclude: ['interactive'],
+  title: toolbarConfig.title,
   description:
     'Build Full-stack, End-to-end Type-safe CRUD Apps without the Boilerplate',
   lastUpdated: true,
@@ -58,7 +61,7 @@ export default defineConfig({
     },
     nav: [
       {
-        text: 'Guide',
+        text: 'Documentation',
         link: '/docs/',
       },
       {
@@ -76,12 +79,9 @@ export default defineConfig({
       // },
     ],
     search: { provider: 'local', options: {} },
-    socialLinks: [
-      { icon: 'x', link: 'https://twitter.com/RemultJs' },
-      { icon: 'youtube', link: 'https://www.youtube.com/@remult6539' },
-      { icon: 'discord', link: 'https://discord.gg/GXHk7ZfuG5' },
-      { icon: 'github', link: 'https://github.com/remult/remult' },
-    ],
+    socialLinks: toolbarConfig.themeConfig.socialLinks.map(
+      ({ link, icon }) => ({ link, icon: icon as DefaultTheme.SocialLinkIcon }),
+    ),
     sidebar: tutorials.reduce(
       (a, t) => {
         a[`/tutorials/${t.path}/`] = [
@@ -124,6 +124,10 @@ export default defineConfig({
             text: 'Getting Started',
             items: [
               { text: 'Introduction', link: '/docs/' },
+              {
+                text: 'Creating a project',
+                link: '/docs/creating-a-project',
+              },
               {
                 text: 'Quickstart',
                 link: '/docs/quickstart',
@@ -177,6 +181,133 @@ export default defineConfig({
             ],
           },
           {
+            text: 'Stacks',
+            link: '/docs/installation',
+            items: [
+              {
+                text: 'Framework',
+                link: '/docs/installation/framework/',
+                collapsed: true,
+                items: [
+                  {
+                    text: 'React',
+                    link: '/docs/installation/framework/react',
+                  },
+                  {
+                    text: 'Angular',
+                    link: '/docs/installation/framework/angular',
+                  },
+                  {
+                    text: 'Vue',
+                    link: '/docs/installation/framework/vue',
+                  },
+                  {
+                    text: 'Next.js',
+                    link: '/docs/installation/framework/nextjs',
+                  },
+                  {
+                    text: 'Sveltekit',
+                    link: '/docs/installation/framework/sveltekit',
+                  },
+                  {
+                    text: 'Nuxt',
+                    link: '/docs/installation/framework/nuxt',
+                  },
+                  {
+                    text: 'SolidStart',
+                    link: '/docs/installation/framework/solid',
+                  },
+                ],
+              },
+              {
+                text: 'Server',
+                link: '/docs/installation/server/',
+                collapsed: true,
+                items: [
+                  {
+                    text: 'Express',
+                    link: '/docs/installation/server/express',
+                  },
+                  {
+                    text: 'Fastify',
+                    link: '/docs/installation/server/fastify',
+                  },
+                  {
+                    text: 'Hono',
+                    link: '/docs/installation/server/hono',
+                  },
+                  {
+                    text: 'Hapi',
+                    link: '/docs/installation/server/hapi',
+                  },
+                  {
+                    text: 'Koa',
+                    link: '/docs/installation/server/koa',
+                  },
+                  {
+                    text: 'nest',
+                    link: '/docs/installation/server/nest',
+                  },
+                ],
+              },
+              {
+                text: 'Database',
+                link: '/docs/installation/database',
+                collapsed: true,
+                items: [
+                  {
+                    text: 'Json files',
+                    link: '/docs/installation/database/json',
+                  },
+                  {
+                    text: 'PostgreSQL',
+                    link: '/docs/installation/database/postgresql',
+                  },
+                  {
+                    text: 'MySQL',
+                    link: '/docs/installation/database/mysql',
+                  },
+                  {
+                    text: 'MongoDB',
+                    link: '/docs/installation/database/mongodb',
+                  },
+                  {
+                    text: 'SQLite3',
+                    link: '/docs/installation/database/sqlite3',
+                  },
+                  {
+                    text: 'Better SQLite3',
+                    link: '/docs/installation/database/better-sqlite3',
+                  },
+                  {
+                    text: 'MSSQL',
+                    link: '/docs/installation/database/mssql',
+                  },
+                  {
+                    text: 'Bun SQLite',
+                    link: '/docs/installation/database/bun-sqlite',
+                  },
+                  {
+                    text: 'sqljs',
+                    link: '/docs/installation/database/sqljs',
+                  },
+                  {
+                    text: 'Turso',
+                    link: '/docs/installation/database/turso',
+                  },
+                  {
+                    text: 'DuckDb',
+                    link: '/docs/installation/database/duckdb',
+                  },
+                  {
+                    text: 'Oracle',
+                    link: '/docs/installation/database/oracle',
+                  },
+                ],
+              },
+            ],
+          },
+          {
             text: 'Server-side Code',
             items: [
               {
@@ -195,6 +326,10 @@ export default defineConfig({
               {
                 text: 'Access Control',
                 link: '/docs/access-control',
+              },
+              {
+                text: 'Admin UI',
+                link: '/docs/admin-ui',
               },
             ],
           },
