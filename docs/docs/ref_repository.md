@@ -400,10 +400,6 @@ the result will include both the items from the current page and the results of 
 The `query` method is designed for asynchronous iteration using the `for await` statement.
 
 
-#### returns:
-The result of the query, including paginated items and aggregation results.
-
-
 #### example:
 ```ts
 // Basic usage with asynchronous iteration:
@@ -435,77 +431,26 @@ if (paginator.hasNextPage) {
 #### example:
 ```ts
 // Querying with aggregation:
-const result = await repo.query({
+const query = await repo.query({
   where: { completed: false },
   pageSize: 50,
   aggregates: {
     sum: ['salary'],
     average: ['age'],
   }
-}).paginator();
+});
 
+let paginator = await query.paginator();
 // Accessing paginated items
-console.table(result.items);
+console.table(paginator.items);
 
 // Accessing aggregation results
-console.log('Total salary:', result.aggregates.salary.sum); // Sum of all salaries
-console.log('Average age:', result.aggregates.age.average);  // Average age
+console.log('Total salary:', paginator.aggregates.salary.sum); // Sum of all salaries
+console.log('Average age:', paginator.aggregates.age.average);  // Average age
 ```
 
 Arguments:
-* **options** - The options for the query and aggregation.
-   * **load**
-   * **include** - An option used in the `find` and `findFirst` methods to specify which related entities should be included
-   when querying the source entity. It allows you to eagerly load related data to avoid N+1 query problems.
-   
-   
-   #### param:
-   An object specifying the related entities to include, their options, and filtering criteria.
-   
-   Example usage:
-   ```
-   const orders = await customerRepo.find({
-     include: {
-       // Include the 'tags' relation for each customer.
-       tags: true,
-     },
-   });
-   ```
-   In this example, the `tags` relation for each customer will be loaded and included in the query result.
-   
-   
-   #### see:
-    - Relations.toMany
-    - Relations.toOne
-    - RelationOptions
-   
-   * **where** - filters the data
-   
-   
-   #### example:
-   ```ts
-   await taskRepo.find({where: { completed:false }})
-   ```
-   
-   
-   #### see:
-   For more usage examples see [EntityFilter](https://remult.dev/docs/entityFilter.html)
-   * **orderBy** - Determines the order of items returned .
-   
-   
-   #### example:
-   ```ts
-   await this.remult.repo(Products).find({ orderBy: { name: "asc" }})
-   ```
-   
-   
-   #### example:
-   ```ts
-   await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
-   ```
-   * **pageSize** - The number of items to return in each step
-   * **progress** - A callback method to indicate the progress of the iteration
-   * **aggregate**
+* **options**
 ## count
 Returns a count of the items matching the criteria.
 

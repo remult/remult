@@ -21,6 +21,7 @@ export {
   FindOptionsBase,
   QueryResult,
   QueryOptions,
+  UpsertOptions,
   Repository,
   GroupByOptions,
   GroupByResult,

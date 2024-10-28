@@ -31,5 +31,3 @@ True if next page exists
 the count of the total items in the `query`'s result
 ## nextPage
 Gets the next page in the `query`'s result set
-## aggregates
-* **aggregates**

@@ -2711,7 +2711,6 @@ export interface Repository<entityType> {
   addEventListener(listener: entityEventListener<entityType>): Unsubscribe
   relations(item: entityType): RepositoryRelations<entityType>
 }
-//[ ] UpsertOptions from TBD is not exported
 //[ ] entityEventListener from TBD is not exported
 export type RepositoryRelations<entityType> = {
   [K in keyof ObjectMembersOnly<entityType>]-?: NonNullable<
@@ -3041,6 +3040,10 @@ export interface SubscriptionServer {
   publishMessage<T>(channel: string, message: T): Promise<void>
 }
 export type Unsubscribe = VoidFunction
+export interface UpsertOptions<entityType> {
+  where: Partial<MembersOnly<entityType>>
+  set?: Partial<MembersOnly<entityType>>
+}
 export declare class UrlBuilder {
   url: string
   constructor(url: string)
