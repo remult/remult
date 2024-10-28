@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.27.21] TBD
+## [0.27.21] 2024-10-28
 
 - **Added `upsert` method:**  
   The `upsert` method allows inserting or updating an entity in a single operation. If an entity matching the `where` condition is found, it is updated; otherwise, a new entity is created. This can be used for a single entity or for batch operations with an array of options.
