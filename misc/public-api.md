@@ -4409,6 +4409,9 @@ export declare function decorateColumnSettings<valueType>(
   remult: Remult,
 ): FieldOptions<unknown, valueType>
 //[ ] FieldOptions from TBD is not exported
+export const fieldOptionsEnricher: {
+  enrichFieldOptions: (options: FieldOptions) => void
+}
 export const flags: {
   error500RetryCount: number
 }
@@ -4443,10 +4446,26 @@ export interface RelationInfo {
   toType: () => any
   type: RelationFieldInfo["type"]
 }
+export declare class SqlRelationFilter<
+  myEntity,
+  relationKey extends keyof myEntity,
+  toEntity = ArrayItemType<myEntity[relationKey]>,
+> {
+  private _tools
+  constructor(myEntity: ClassType<myEntity>, relationField: relationKey)
+  some(where?: EntityFilter<toEntity>): EntityFilter<toEntity>
+}
+//[ ] ArrayItemType from TBD is not exported
 export declare function sqlRelations<entityType>(
   forEntity: ClassType<entityType>,
 ): SqlRelations<entityType>
-//[ ] SqlRelations from TBD is not exported
+export type SqlRelations<entityType> = {
+  [p in keyof ObjectMembersOnly<entityType>]-?: SqlRelation<
+    ArrayItemType<NonNullable<entityType[p]>>
+  >
+}
+//[ ] ObjectMembersOnly from TBD is not exported
+//[ ] SqlRelation from TBD is not exported
 export declare function sqlRelationsFilter<entityType>(
   forEntity: ClassType<entityType>,
 ): {
@@ -4456,8 +4475,6 @@ export declare function sqlRelationsFilter<entityType>(
     ArrayItemType<NonNullable<entityType[p]>>
   >
 }
-//[ ] SqlRelationFilter from TBD is not exported
-//[ ] ArrayItemType from TBD is not exported
 ```
 
 ## ./remult-nuxt.js

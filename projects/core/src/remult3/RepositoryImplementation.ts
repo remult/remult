@@ -2485,6 +2485,11 @@ let tempCaptionTransformer: (typeof remultStatic)['captionTransformer'] = {
     entityMetaData: EntityMetadata<any>,
   ) => caption,
 }
+export const fieldOptionsEnricher: {
+  enrichFieldOptions: (options: FieldOptions) => void
+} = remultStatic.fieldOptionsEnricher || {
+  enrichFieldOptions: (options: FieldOptions) => options,
+}
 
 export const CaptionTransformer: {
   /**
@@ -2981,6 +2986,7 @@ export function buildOptions<entityType = unknown, valueType = unknown>(
       }
     }
   }
+  fieldOptionsEnricher.enrichFieldOptions?.(r as any)
   return r
 }
 
