@@ -103,11 +103,11 @@ const props = withDefaults(
       </div>
 
       <div v-if="bun">
-        <Icon tech="bun" :link="bun" />
+        <Icon tech="bun-sqlite" :link="bun" />
       </div>
 
       <div v-if="json">
-        <Icon tech="json" :link="json" />
+        <Icon tech="json files" :link="json" />
       </div>
 
       <div v-if="postgres">

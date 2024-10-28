@@ -29,7 +29,7 @@ export class eventTestEntity {
   id = 0
   @Fields.string()
   title!: string
-  @Fields.string((o, remult) => (o.serverExpression = () => remult.user!.name!))
+  @Fields.string((o, remult) => (o.serverExpression = () => remult.user?.name!))
   selectUser = ''
   @Fields.date()
   birthDate = new Date(1976, 5, 16)

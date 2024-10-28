@@ -1746,7 +1746,43 @@ export type GroupByOptions<
     $count?: "asc" | "desc"
   }
 } & Pick<FindOptions<entityType>, "limit" | "page">
-//[ ] NumericKeys from TBD is not exported
+export type GroupByResult<
+  entityType,
+  groupByFields extends (keyof entityType)[],
+  sumFields extends NumericKeys<entityType>[],
+  averageFields extends NumericKeys<entityType>[],
+  minFields extends NumericKeys<entityType>[],
+  maxFields extends NumericKeys<entityType>[],
+  distinctCountFields extends (keyof entityType)[],
+> = {
+  [K in
+    | groupByFields[number]
+    | sumFields[number]]: K extends groupByFields[number]
+    ? entityType[K]
+    : K extends sumFields[number]
+    ? {
+        sum: number
+      }
+    : never
+} & {
+  [K in averageFields[number]]: {
+    avg: number
+  }
+} & {
+  [K in minFields[number]]: {
+    min: number
+  }
+} & {
+  [K in maxFields[number]]: {
+    max: number
+  }
+} & {
+  [K in distinctCountFields[number]]: {
+    distinctCount: number
+  }
+} & {
+  $count: number
+}
 export declare class IdEntity extends EntityBase {
   id: string
 }
@@ -2002,6 +2038,9 @@ export type MembersToInclude<T> = {
         ? FindOptions<NonNullable<T[K]>[number]>
         : FindFirstOptions<NonNullable<T[K]>>)
 }
+export type NumericKeys<T> = {
+  [K in keyof T]: T[K] extends number | undefined | null ? K : never
+}[keyof T]
 export type ObjectMembersOnly<T> = MembersOnly<{
   [K in keyof Pick<
     T,
@@ -2014,16 +2053,21 @@ export type ObjectMembersOnly<T> = MembersOnly<{
     }[keyof T]
   >]: T[K]
 }>
-export interface Paginator<entityType> {
+export type Paginator<entityType, AggregateResult = EmptyAggregateResult> = {
   /** the items in the current page */
   items: entityType[]
   /** True if next page exists */
   hasNextPage: boolean
-  /** Gets the next page in the `query`'s result set */
-  nextPage(): Promise<Paginator<entityType>>
   /** the count of the total items in the `query`'s result */
   count(): Promise<number>
-}
+  /** Gets the next page in the `query`'s result set */
+  nextPage(): Promise<Paginator<entityType, AggregateResult>>
+} & (AggregateResult extends EmptyAggregateResult
+  ? {}
+  : {
+      aggregates: AggregateResult
+    })
+//[ ] EmptyAggregateResult from TBD is not exported
 export interface PreprocessFilterEvent<entityType> {
   /**
    * Metadata of the entity being filtered.
@@ -2054,7 +2098,10 @@ export interface QueryOptions<entityType> extends FindOptionsBase<entityType> {
     progress: (progress: number) => void
   }
 }
-export interface QueryResult<entityType> {
+export interface QueryResult<
+  entityType,
+  AggregateResult = EmptyAggregateResult,
+> {
   /** returns an iterator that iterates the rows in the result using a paging mechanism
    * @example
    * for await (const task of taskRepo.query()) {
@@ -2066,12 +2113,12 @@ export interface QueryResult<entityType> {
   }
   /** returns the number of rows that match the query criteria */
   count(): Promise<number>
-  /** Returns a `Paginator` object that is used for efficient paging */
-  paginator(): Promise<Paginator<entityType>>
   /** gets the items in a specific page */
   getPage(pageNumber?: number): Promise<entityType[]>
   /** Performs an operation on all the items matching the query criteria */
   forEach(what: (item: entityType) => Promise<any>): Promise<number>
+  /** Returns a `Paginator` object that is used for efficient paging */
+  paginator(): Promise<Paginator<entityType, AggregateResult>>
 }
 export declare type RefSubscriber = (() => void) | RefSubscriberBase
 export interface RefSubscriberBase {
@@ -2450,31 +2497,102 @@ export interface Repository<entityType> {
       distinctCountFields extends undefined ? never : distinctCountFields
     >
   >
-  /**  An alternative form of fetching data from the API server, which is intended for operating on large numbers of entity objects.
+  /**
+   * Fetches data from the repository in a way that is optimized for handling large sets of entity objects.
    *
-   * It also has it's own paging mechanism that can be used n paging scenarios.
+   * Unlike the `find` method, which returns an array, the `query` method returns an iterable `QueryResult` object.
+   * This allows for more efficient data handling, particularly in scenarios that involve paging through large amounts of data.
    *
-   * The `query` method doesn't return an array (as the `find` method) and instead returns an `iterable` `QueryResult` object
-   * which supports iterations using the JavaScript `for await` statement.
+   * The method supports pagination and aggregation in a single request. When aggregation options are provided,
+   * the result will include both the items from the current page and the results of the requested aggregation.
+   *
+   * The `query` method is designed for asynchronous iteration using the `for await` statement.
+   *
    * @example
+   * // Basic usage with asynchronous iteration:
    * for await (const task of taskRepo.query()) {
-   *   // do something.
+   *   // Perform some operation on each task
    * }
+   *
    * @example
+   * // Querying with pagination:
    * const query = taskRepo.query({
    *   where: { completed: false },
    *   pageSize: 100,
-   * })
-   * const count = await query.count()
-   * console.log('Paged: ' + count / 100)
-   * let paginator = await query.paginator()
-   * console.log(paginator.items.length)
+   * });
+   *
+   * let paginator = await query.paginator();
+   * console.log('Number of items on the current page:', paginator.items.length);
+   * console.log('Total pages:', Math.ceil(paginator.aggregate.$count / 100));
+   *
    * if (paginator.hasNextPage) {
-   *   paginator = await paginator.nextPage()
-   *   console.log(paginator.items.length)
+   *   paginator = await paginator.nextPage();
+   *   console.log('Items on the next page:', paginator.items.length);
    * }
-   * */
-  query(options?: QueryOptions<entityType>): QueryResult<entityType>
+   *
+   * @example
+   * // Querying with aggregation:
+   * const query = await repo.query({
+   *   where: { completed: false },
+   *   pageSize: 50,
+   *   aggregates: {
+   *     sum: ['salary'],
+   *     average: ['age'],
+   *   }
+   * });
+   *
+   * let paginator = await query.paginator();
+   * // Accessing paginated items
+   * console.table(paginator.items);
+   *
+   * // Accessing aggregation results
+   * console.log('Total salary:', paginator.aggregates.salary.sum); // Sum of all salaries
+   * console.log('Average age:', paginator.aggregates.age.average);  // Average age
+   */
+  query<
+    Options extends QueryOptions<entityType> & {
+      aggregate?: Omit<
+        GroupByOptions<
+          entityType,
+          never,
+          NumericKeys<entityType>[],
+          NumericKeys<entityType>[],
+          (keyof MembersOnly<entityType>)[],
+          (keyof MembersOnly<entityType>)[],
+          (keyof MembersOnly<entityType>)[]
+        >,
+        "group" | "orderBy" | "where" | "limit" | "page"
+      >
+    },
+  >(
+    options?: Options,
+  ): Options extends {
+    aggregate: Omit<
+      GroupByOptions<
+        entityType,
+        never,
+        NumericKeys<entityType>[],
+        NumericKeys<entityType>[],
+        (keyof MembersOnly<entityType>)[],
+        (keyof MembersOnly<entityType>)[],
+        (keyof MembersOnly<entityType>)[]
+      >,
+      "group" | "orderBy" | "where" | "limit" | "page"
+    >
+  }
+    ? QueryResult<
+        entityType,
+        GroupByResult<
+          entityType,
+          never,
+          NonNullable<Options["aggregate"]["sum"]>,
+          NonNullable<Options["aggregate"]["avg"]>,
+          NonNullable<Options["aggregate"]["min"]>,
+          NonNullable<Options["aggregate"]["max"]>,
+          NonNullable<Options["aggregate"]["distinctCount"]>
+        >
+      >
+    : QueryResult<entityType>
   /** Returns a count of the items matching the criteria.
    * @see [EntityFilter](http://remult.dev/docs/entityFilter.html)
    * @example
@@ -2528,6 +2646,36 @@ export interface Repository<entityType> {
     where: EntityFilter<entityType>
     set: Partial<MembersOnly<entityType>>
   }): Promise<number>
+  /**
+   * Inserts a new entity or updates an existing entity based on the specified criteria.
+   * If an entity matching the `where` condition is found, it will be updated with the provided `set` values.
+   * If no matching entity is found, a new entity will be created with the given data.
+   *
+   * The `upsert` method ensures that a row exists based on the `where` condition: if no entity is found, a new one is created.
+   * It can handle both single and multiple upserts.
+   *
+   * @template entityType The type of the entity being inserted or updated.
+   *
+   * @param {UpsertOptions<entityType> | UpsertOptions<entityType>[]} options - The options that define the `where` condition and the `set` values. Can be a single object or an array of objects.
+   * @returns {Promise<entityType | entityType[]>} A promise that resolves with the inserted or updated entity, or an array of entities if multiple options were provided.
+   *
+   * @example
+   * // Upserting a single entity: updates 'task a' if it exists, otherwise creates it.
+   * taskRepo.upsert({ where: { title: 'task a' }, set: { completed: true } });
+   *
+   * @example
+   * // Upserting a single entity without additional `set` values: ensures that a row with the title 'task a' exists.
+   * taskRepo.upsert({ where: { title: 'task a' } });
+   *
+   * @example
+   * // Upserting multiple entities: ensures both 'task a' and 'task b' exist, updating their `completed` status if found.
+   * taskRepo.upsert([
+   *   { where: { title: 'task a' }, set: { completed: true } },
+   *   { where: { title: 'task b' }, set: { completed: true } }
+   * ]);
+   */
+  upsert(options: UpsertOptions<entityType>[]): Promise<entityType[]>
+  upsert(options: UpsertOptions<entityType>): Promise<entityType>
   /** Deletes an Item*/
   delete(id: idType<entityType>): Promise<void>
   delete(item: Partial<MembersOnly<entityType>>): Promise<void>
@@ -2537,7 +2685,7 @@ export interface Repository<entityType> {
   deleteMany(options: { where: EntityFilter<entityType> }): Promise<number>
   /** Creates an instance of an item. It'll not be saved to the data source unless `save` or `insert` will be called.
    *
-   * It's usefull to start or reset a form taking your entity default values into account.
+   * It's useful to start or reset a form taking your entity default values into account.
    *
    */
   create(item?: Partial<MembersOnly<entityType>>): entityType
@@ -2563,7 +2711,7 @@ export interface Repository<entityType> {
   addEventListener(listener: entityEventListener<entityType>): Unsubscribe
   relations(item: entityType): RepositoryRelations<entityType>
 }
-//[ ] GroupByResult from TBD is not exported
+//[ ] UpsertOptions from TBD is not exported
 //[ ] entityEventListener from TBD is not exported
 export type RepositoryRelations<entityType> = {
   [K in keyof ObjectMembersOnly<entityType>]-?: NonNullable<
@@ -2590,7 +2738,11 @@ export type RepositoryRelationsForEntityBase<entityType> = {
 }
 export declare class RestDataProvider implements DataProvider {
   private apiProvider
-  constructor(apiProvider: () => ApiClient)
+  private entityRequested?
+  constructor(
+    apiProvider: () => ApiClient,
+    entityRequested?: ((entity: EntityMetadata) => void) | undefined,
+  )
   getEntityDataProvider(entity: EntityMetadata): RestEntityDataProvider
   transaction(
     action: (dataProvider: DataProvider) => Promise<void>,
@@ -3483,6 +3635,10 @@ export declare class SseSubscriptionServer implements SubscriptionServer {
   )
   publishMessage<T>(channel: string, message: any): Promise<void>
 }
+export declare function TestApiDataProvider(
+  options?: Pick<RemultServerOptions<unknown>, "ensureSchema" | "dataProvider">,
+): RestDataProvider
+//[ ] RestDataProvider from TBD is not exported
 ```
 
 ## ./server/core.js
@@ -4087,6 +4243,10 @@ export declare class BetterSqlite3SqlResult implements SqlResult {
 ## ./remult-sqlite3.js
 
 ```ts
+export declare function createSqlite3DataProvider(
+  fileName?: string,
+): Promise<SqlDatabase>
+//[ ] SqlDatabase from ./index.js is not exported
 export declare class Sqlite3DataProvider extends SqliteCoreDataProvider {
   constructor(db: Database)
 }
@@ -4249,6 +4409,9 @@ export declare function decorateColumnSettings<valueType>(
   remult: Remult,
 ): FieldOptions<unknown, valueType>
 //[ ] FieldOptions from TBD is not exported
+export const fieldOptionsEnricher: {
+  enrichFieldOptions: (options: FieldOptions) => void
+}
 export const flags: {
   error500RetryCount: number
 }
@@ -4282,6 +4445,35 @@ export interface RelationFields {
 export interface RelationInfo {
   toType: () => any
   type: RelationFieldInfo["type"]
+}
+export declare class SqlRelationFilter<
+  myEntity,
+  relationKey extends keyof myEntity,
+  toEntity = ArrayItemType<myEntity[relationKey]>,
+> {
+  private _tools
+  constructor(myEntity: ClassType<myEntity>, relationField: relationKey)
+  some(where?: EntityFilter<toEntity>): EntityFilter<toEntity>
+}
+//[ ] ArrayItemType from TBD is not exported
+export declare function sqlRelations<entityType>(
+  forEntity: ClassType<entityType>,
+): SqlRelations<entityType>
+export type SqlRelations<entityType> = {
+  [p in keyof ObjectMembersOnly<entityType>]-?: SqlRelation<
+    ArrayItemType<NonNullable<entityType[p]>>
+  >
+}
+//[ ] ObjectMembersOnly from TBD is not exported
+//[ ] SqlRelation from TBD is not exported
+export declare function sqlRelationsFilter<entityType>(
+  forEntity: ClassType<entityType>,
+): {
+  [p in keyof entityType]-?: SqlRelationFilter<
+    entityType,
+    p,
+    ArrayItemType<NonNullable<entityType[p]>>
+  >
 }
 ```
 

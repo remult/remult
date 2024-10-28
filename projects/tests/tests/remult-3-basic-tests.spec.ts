@@ -7,7 +7,7 @@ import {
 } from '../../core/src/remult3/classDescribers'
 import { Remult } from '../../core/src/context'
 import { Categories, Products } from './remult-3-entities'
-import { MockRestDataProvider } from './testHelper'
+import { TestApiDataProvider } from '../../core/server/test-api-data-provider.js'
 
 describe('remult-3-basics', () => {
   it('test the very basics', async () => {
@@ -225,7 +225,7 @@ describe('remult-3-basics', () => {
     )
 
     var sr = new Remult(new InMemoryDataProvider())
-    var dp = new MockRestDataProvider(sr)
+    var dp = TestApiDataProvider({ dataProvider: sr.dataProvider })
     var remult = new Remult(dp)
     const [c1, c2] = await remult.repo(Categories).insert([
       { id: 1, categoryName: 'cat1' },

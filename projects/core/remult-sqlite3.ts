@@ -1,7 +1,13 @@
-import type { SqlCommand, SqlResult } from './index.js'
+import { SqlDatabase, type SqlCommand, type SqlResult } from './index.js'
 import { SqliteCoreDataProvider } from './remult-sqlite-core.js'
 import type { Database } from 'sqlite3'
 
+export async function createSqlite3DataProvider(fileName = ':memory:') {
+  const sqlite3 = await import('sqlite3')
+  return new SqlDatabase(
+    new Sqlite3DataProvider(new sqlite3.default.Database(fileName)),
+  )
+}
 export class Sqlite3DataProvider extends SqliteCoreDataProvider {
   constructor(db: Database) {
     super(

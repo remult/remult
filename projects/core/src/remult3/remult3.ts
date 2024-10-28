@@ -11,6 +11,11 @@ import type {
 import type { SortSegment } from '../sort.js'
 import type { EntityBase } from './RepositoryImplementation.js'
 
+export interface UpsertOptions<entityType> {
+  where: Partial<MembersOnly<entityType>>
+  set?: Partial<MembersOnly<entityType>>
+}
+
 export interface EntityRefBase<entityType> extends Subscribable {
   hasErrors(): boolean
   undoChanges(): void
@@ -440,7 +445,7 @@ export const GroupByOperators = [
 export type GroupByResult<
   entityType,
   groupByFields extends (keyof entityType)[],
-  sumFields extends (keyof entityType)[],
+  sumFields extends NumericKeys<entityType>[],
   averageFields extends NumericKeys<entityType>[],
   minFields extends NumericKeys<entityType>[],
   maxFields extends NumericKeys<entityType>[],
@@ -609,31 +614,104 @@ export interface Repository<entityType> {
     >
   >
 
-  /**  An alternative form of fetching data from the API server, which is intended for operating on large numbers of entity objects.
+  /**
+   * Fetches data from the repository in a way that is optimized for handling large sets of entity objects.
    *
-   * It also has it's own paging mechanism that can be used n paging scenarios.
+   * Unlike the `find` method, which returns an array, the `query` method returns an iterable `QueryResult` object.
+   * This allows for more efficient data handling, particularly in scenarios that involve paging through large amounts of data.
    *
-   * The `query` method doesn't return an array (as the `find` method) and instead returns an `iterable` `QueryResult` object
-   * which supports iterations using the JavaScript `for await` statement.
+   * The method supports pagination and aggregation in a single request. When aggregation options are provided,
+   * the result will include both the items from the current page and the results of the requested aggregation.
+   *
+   * The `query` method is designed for asynchronous iteration using the `for await` statement.
+   *
    * @example
+   * // Basic usage with asynchronous iteration:
    * for await (const task of taskRepo.query()) {
-   *   // do something.
+   *   // Perform some operation on each task
    * }
+   *
    * @example
+   * // Querying with pagination:
    * const query = taskRepo.query({
    *   where: { completed: false },
    *   pageSize: 100,
-   * })
-   * const count = await query.count()
-   * console.log('Paged: ' + count / 100)
-   * let paginator = await query.paginator()
-   * console.log(paginator.items.length)
+   * });
+   *
+   * let paginator = await query.paginator();
+   * console.log('Number of items on the current page:', paginator.items.length);
+   * console.log('Total pages:', Math.ceil(paginator.aggregate.$count / 100));
+   *
    * if (paginator.hasNextPage) {
-   *   paginator = await paginator.nextPage()
-   *   console.log(paginator.items.length)
+   *   paginator = await paginator.nextPage();
+   *   console.log('Items on the next page:', paginator.items.length);
    * }
-   * */
-  query(options?: QueryOptions<entityType>): QueryResult<entityType>
+   *
+   * @example
+   * // Querying with aggregation:
+   * const query = await repo.query({
+   *   where: { completed: false },
+   *   pageSize: 50,
+   *   aggregates: {
+   *     sum: ['salary'],
+   *     average: ['age'],
+   *   }
+   * });
+   *
+   * let paginator = await query.paginator();
+   * // Accessing paginated items
+   * console.table(paginator.items);
+   *
+   * // Accessing aggregation results
+   * console.log('Total salary:', paginator.aggregates.salary.sum); // Sum of all salaries
+   * console.log('Average age:', paginator.aggregates.age.average);  // Average age
+   */
+
+  query<
+    Options extends QueryOptions<entityType> & {
+      aggregate?: Omit<
+        GroupByOptions<
+          entityType,
+          never,
+          NumericKeys<entityType>[],
+          NumericKeys<entityType>[],
+          (keyof MembersOnly<entityType>)[],
+          (keyof MembersOnly<entityType>)[],
+          (keyof MembersOnly<entityType>)[]
+        >,
+        'group' | 'orderBy' | 'where' | 'limit' | 'page'
+      >
+    },
+  >(
+    options?: Options,
+  ): Options extends {
+    aggregate: Omit<
+      GroupByOptions<
+        entityType,
+        never,
+        NumericKeys<entityType>[],
+        NumericKeys<entityType>[],
+        (keyof MembersOnly<entityType>)[],
+        (keyof MembersOnly<entityType>)[],
+        (keyof MembersOnly<entityType>)[]
+      >,
+      'group' | 'orderBy' | 'where' | 'limit' | 'page'
+    >
+  }
+    ? QueryResult<
+        entityType,
+        GroupByResult<
+          entityType,
+          never,
+          NonNullable<Options['aggregate']['sum']>,
+          NonNullable<Options['aggregate']['avg']>,
+          NonNullable<Options['aggregate']['min']>,
+          NonNullable<Options['aggregate']['max']>,
+          NonNullable<Options['aggregate']['distinctCount']>
+        >
+      >
+    : QueryResult<entityType>
+
   /** Returns a count of the items matching the criteria.
    * @see [EntityFilter](http://remult.dev/docs/entityFilter.html)
    * @example
@@ -692,6 +770,37 @@ export interface Repository<entityType> {
     set: Partial<MembersOnly<entityType>>
   }): Promise<number>
 
+  /**
+   * Inserts a new entity or updates an existing entity based on the specified criteria.
+   * If an entity matching the `where` condition is found, it will be updated with the provided `set` values.
+   * If no matching entity is found, a new entity will be created with the given data.
+   *
+   * The `upsert` method ensures that a row exists based on the `where` condition: if no entity is found, a new one is created.
+   * It can handle both single and multiple upserts.
+   *
+   * @template entityType The type of the entity being inserted or updated.
+   *
+   * @param {UpsertOptions<entityType> | UpsertOptions<entityType>[]} options - The options that define the `where` condition and the `set` values. Can be a single object or an array of objects.
+   * @returns {Promise<entityType | entityType[]>} A promise that resolves with the inserted or updated entity, or an array of entities if multiple options were provided.
+   *
+   * @example
+   * // Upserting a single entity: updates 'task a' if it exists, otherwise creates it.
+   * taskRepo.upsert({ where: { title: 'task a' }, set: { completed: true } });
+   *
+   * @example
+   * // Upserting a single entity without additional `set` values: ensures that a row with the title 'task a' exists.
+   * taskRepo.upsert({ where: { title: 'task a' } });
+   *
+   * @example
+   * // Upserting multiple entities: ensures both 'task a' and 'task b' exist, updating their `completed` status if found.
+   * taskRepo.upsert([
+   *   { where: { title: 'task a' }, set: { completed: true } },
+   *   { where: { title: 'task b' }, set: { completed: true } }
+   * ]);
+   */
+  upsert(options: UpsertOptions<entityType>[]): Promise<entityType[]>
+  upsert(options: UpsertOptions<entityType>): Promise<entityType>
+
   /** Deletes an Item*/
   delete(id: idType<entityType>): Promise<void>
   delete(item: Partial<MembersOnly<entityType>>): Promise<void>
@@ -702,7 +811,7 @@ export interface Repository<entityType> {
 
   /** Creates an instance of an item. It'll not be saved to the data source unless `save` or `insert` will be called.
    *
-   * It's usefull to start or reset a form taking your entity default values into account.
+   * It's useful to start or reset a form taking your entity default values into account.
    *
    */
   create(item?: Partial<MembersOnly<entityType>>): entityType
@@ -1195,15 +1304,20 @@ export interface FindFirstOptionsBase<entityType>
   /** If set to true and an item is not found, it's created and returned*/
   createIfNotFound?: boolean
 }
+
 export interface QueryOptions<entityType> extends FindOptionsBase<entityType> {
   /** The number of items to return in each step */
   pageSize?: number
   /** A callback method to indicate the progress of the iteration */
   progress?: { progress: (progress: number) => void }
 }
+export type EmptyAggregateResult = 'EmptyAggregateResult'
 /** The result of a call to the `query` method in the `Repository` object.
  */
-export interface QueryResult<entityType> {
+export interface QueryResult<
+  entityType,
+  AggregateResult = EmptyAggregateResult,
+> {
   /** returns an iterator that iterates the rows in the result using a paging mechanism
    * @example
    * for await (const task of taskRepo.query()) {
@@ -1215,12 +1329,14 @@ export interface QueryResult<entityType> {
   }
   /** returns the number of rows that match the query criteria */
   count(): Promise<number>
-  /** Returns a `Paginator` object that is used for efficient paging */
-  paginator(): Promise<Paginator<entityType>>
+
   /** gets the items in a specific page */
   getPage(pageNumber?: number): Promise<entityType[]>
   /** Performs an operation on all the items matching the query criteria */
   forEach(what: (item: entityType) => Promise<any>): Promise<number>
+
+  /** Returns a `Paginator` object that is used for efficient paging */
+  paginator(): Promise<Paginator<entityType, AggregateResult>>
 }
 /** An interface used to paginating using the `query` method in the `Repository` object
  *  @example
@@ -1238,16 +1354,20 @@ export interface QueryResult<entityType> {
  *   console.log(paginator.items.length)
  * }
  */
-export interface Paginator<entityType> {
+export type Paginator<entityType, AggregateResult = EmptyAggregateResult> = {
   /** the items in the current page */
   items: entityType[]
   /** True if next page exists */
   hasNextPage: boolean
-  /** Gets the next page in the `query`'s result set */
-  nextPage(): Promise<Paginator<entityType>>
+
   /** the count of the total items in the `query`'s result */
   count(): Promise<number>
-}
+
+  /** Gets the next page in the `query`'s result set */
+  nextPage(): Promise<Paginator<entityType, AggregateResult>>
+} & (AggregateResult extends EmptyAggregateResult
+  ? {}
+  : { aggregates: AggregateResult })
 
 /**
  * Options for configuring a relation between entities.
@@ -1364,17 +1484,15 @@ export const flags = {
   error500RetryCount: 4,
 }
 
-//p1 - add aggregate to query
-//p1 - consider upsert (where,set)
-//p1 - add parameter all to deleteMany, and updateMany
-//p1  filter.apply ApiPreFilter
+//p2 - add parameter all to deleteMany, and updateMany
+//p2  filter.apply ApiPreFilter
 //p2 - signIn: (arg) =>withRemult(async () => { - consider if there's a generic way of doing signIn:withRemult(arg=>{})
 
-/*p1 - add id and use uuid by default, but allow changes with Fields.id.defaultIdProvider NO but defaultProvider yes???
-  //p1 - replace uuid with crypto.randomUUID and allow custom fallback NO
-  //p1 - Add example for luid
-  //p1 - add example for nanoid
-  //p1 - explain the benefits of changing the default provider for testing in docs.
+/*p2 - add id and use uuid by default, but allow changes with Fields.id.defaultIdProvider NO but defaultProvider yes???
+  //p2 - replace uuid with crypto.randomUUID and allow custom fallback NO
+  //p2 - Add example for luid
+  //p2 - add example for nanoid
+  //p2 - explain the benefits of changing the default provider for testing in docs.
 */
 
 //p2 - add some kind of options handler that will help with translation etc... like in hagai - something that runs at the stage where options are being built
@@ -1389,14 +1507,12 @@ export const flags = {
 //p2 - fix query docs to also explain how it can be used for infinite scroll and pagination.
 //p2 - when like doesn't have a string - don't send it to the db
 
-//p1 - vite 5.3 supports ts5 decorators - check and adapt.
-//p1 - tutorial about controller - and mutable controller
-//p1 - docs abount subscription channel
+//p2 - vite 5.3 supports ts5 decorators - check and adapt.
+//p2 - tutorial about controller - and mutable controller
+//p2 - docs abount subscription channel
 
-//p1 - Consider enforcing serial operations on JSON database to prevent data loss
-//p1 - add LifecycleEvent to documentation
-//p1 - fix chaining of saving and saved in multiple entity options args
-//p1 - review starter and examples and separate remult * auth from the routes
+//p2 - add LifecycleEvent to documentation
+//p2 - fix chaining of saving and saved in multiple entity options args
 //y1 - live query with count #436
 
 //y1 TODO - In the esm version of our tutorial - the imports are automatically .ts and not .js in react and not in vue
@@ -1424,15 +1540,13 @@ const result = await repo.batch(x=>({
 
 //p1 - prepare the createEntity discussion
 
-//p1 - article on displayValue including it's definition for entities that is used in relations
-//p1 - article auth.js with express - played with it, requires type="module" and a few more configurations - https://github.com/noam-honig/express-auth
+//p2 - article on displayValue including it's definition for entities that is used in relations
 
-//p2 - create foreign key constraints in user code - https://codesandbox.io/p/devbox/fk-validator-tdshcs
+//p2 - create foreign key constraints in user code - https://codesandbox.io/p/devbox/fk-validator-tdshcs, https://gist.github.com/jycouet/8b264e18c4d8605736f4353062a7d81e
 
 //y2 - should we validate relations
 
 //y1 - dependency of live query tables  live query refresh of view on table update
-//p1 - see why mongo tests do not run anymore
 
 //y2 - consider replacing all errors with error classes that extend the base Error class
 //y2 - should enforce integer - currently we probably round / truncate it
@@ -1469,13 +1583,10 @@ const result = await repo.batch(x=>({
 //p1 - when a tasks table exists in a different schema - we get many errors
 //p1 - live query with include
 
-//p1 - adjust angular tutorial starter kit for latest angular (as is in tutorial)
-
 //y2 - Fix problem with promise all in sql expression recurssion - when using PromiseAll in row relation loading, some sql expressions appear is recursion call even if they are not
 //p2 - when subscribe is forbidden - the query still runs after the renew process
 //p2 - 'update tasks set  where id = $1
 
-//y2 - remove __dirname from tutorials
 //p2 - when value changes for field with error, clear error - so the user will feel comfortable
 //p2 - allowApiUpdate should be false for include in api false
 

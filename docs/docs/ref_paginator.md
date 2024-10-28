@@ -27,7 +27,9 @@ if (paginator.hasNextPage) {
 the items in the current page
 ## hasNextPage
 True if next page exists
-## nextPage
-Gets the next page in the `query`'s result set
 ## count
 the count of the total items in the `query`'s result
+## nextPage
+Gets the next page in the `query`'s result set
+## aggregates
+* **aggregates**

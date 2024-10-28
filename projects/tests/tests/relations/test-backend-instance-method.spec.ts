@@ -58,8 +58,6 @@ describe('relations to one behavior', () => {
     Task.defaultCategoryId = 20
     expect(await serverRemult.repo(Task).findFirst({})).toMatchInlineSnapshot(`
       Task {
-        "cat2": null,
-        "category": undefined,
         "categoryId": 10,
         "id": 1,
         "title": "task 1",
@@ -68,9 +66,6 @@ describe('relations to one behavior', () => {
     let task = await r(Task).findFirst({})
     expect(task).toMatchInlineSnapshot(`
       Task {
-        "cat2": null,
-        "category": undefined,
-        "categoryId": undefined,
         "id": 1,
         "title": "task 1",
       }
@@ -78,8 +73,6 @@ describe('relations to one behavior', () => {
     doOnServer = async (task) => {
       expect(task).toMatchInlineSnapshot(`
         Task {
-          "cat2": null,
-          "category": undefined,
           "categoryId": 10,
           "id": 1,
           "title": "task 12",
@@ -88,8 +81,6 @@ describe('relations to one behavior', () => {
       await task.save()
       expect(task).toMatchInlineSnapshot(`
         Task {
-          "cat2": null,
-          "category": undefined,
           "categoryId": 10,
           "id": 1,
           "title": "task 12",
@@ -99,8 +90,6 @@ describe('relations to one behavior', () => {
     await task!.something()
     expect(await serverRemult.repo(Task).findFirst({})).toMatchInlineSnapshot(`
       Task {
-        "cat2": null,
-        "category": undefined,
         "categoryId": 10,
         "id": 1,
         "title": "task 12",
@@ -108,9 +97,6 @@ describe('relations to one behavior', () => {
     `)
     expect(task).toMatchInlineSnapshot(`
       Task {
-        "cat2": null,
-        "category": undefined,
-        "categoryId": undefined,
         "id": 1,
         "title": "task 12",
       }
@@ -118,8 +104,6 @@ describe('relations to one behavior', () => {
     doOnServer = async (task) => {
       expect(task).toMatchInlineSnapshot(`
         Task {
-          "cat2": null,
-          "category": undefined,
           "categoryId": 10,
           "id": 1,
           "title": "task 122",
@@ -128,8 +112,6 @@ describe('relations to one behavior', () => {
       await task.save()
       expect(task).toMatchInlineSnapshot(`
         Task {
-          "cat2": null,
-          "category": undefined,
           "categoryId": 10,
           "id": 1,
           "title": "task 122",
@@ -139,8 +121,6 @@ describe('relations to one behavior', () => {
     await task!.something()
     expect(await serverRemult.repo(Task).findFirst({})).toMatchInlineSnapshot(`
       Task {
-        "cat2": null,
-        "category": undefined,
         "categoryId": 10,
         "id": 1,
         "title": "task 122",
@@ -148,9 +128,6 @@ describe('relations to one behavior', () => {
     `)
     expect(task).toMatchInlineSnapshot(`
       Task {
-        "cat2": null,
-        "category": undefined,
-        "categoryId": undefined,
         "id": 1,
         "title": "task 122",
       }
@@ -163,7 +140,6 @@ describe('relations to one behavior', () => {
       Task {
         "cat2": null,
         "category": undefined,
-        "categoryId": undefined,
         "id": 1,
         "title": "task 1",
       }

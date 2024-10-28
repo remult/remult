@@ -10,8 +10,8 @@ import {
 } from '../../core'
 import type { ClassType } from '../../core/classType'
 import { allDbTests } from './shared-tests'
-import { MockRestDataProvider } from '../tests/testHelper'
 import { entity } from '../tests/dynamic-classes'
+import { TestApiDataProvider } from '../../core/server/test-api-data-provider.js'
 
 describe('Rest', () => {
   var db: DataProvider
@@ -26,7 +26,9 @@ describe('Rest', () => {
   beforeEach(() => {
     serverRemult = new Remult()
     serverRemult.dataProvider = new InMemoryDataProvider()
-    db = new MockRestDataProvider(serverRemult)
+    db = TestApiDataProvider({
+      dataProvider: serverRemult.dataProvider,
+    })
     remult = new Remult()
     remult.dataProvider = db
   })
@@ -56,7 +58,6 @@ describe('Rest', () => {
       tasks {
         "done": false,
         "id": 1,
-        "title": undefined,
       }
     `)
   })
@@ -82,7 +83,6 @@ describe('Rest', () => {
         tasks {
           "done": false,
           "id": 2,
-          "title": undefined,
         },
       ]
     `)
@@ -104,7 +104,6 @@ describe('Rest', () => {
         tasks {
           "done": false,
           "id": 1,
-          "title": undefined,
         },
       ]
     `)
@@ -137,6 +136,7 @@ describe('Rest', () => {
     await expect(repo(task).insert({ id: 1, title: 'world' })).rejects
       .toThrowErrorMatchingInlineSnapshot(`
       {
+        "httpStatusCode": 403,
         "message": "field title is not allowed to update",
       }
     `)
@@ -167,7 +167,8 @@ describe('Rest', () => {
     await expect(() => repo(task).find({})).rejects
       .toThrowErrorMatchingInlineSnapshot(`
       {
-        "message": "didnt expect forbidden:",
+        "httpStatusCode": 403,
+        "message": "You must specify a done filter",
       }
     `)
   })
