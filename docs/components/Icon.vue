@@ -47,7 +47,7 @@ const props = defineProps<{
     | 'nuxt'
     | 'bun-sqlite'
     | 'solid'
-    | 'json'
+    | 'json files'
     | 'postgres'
     | 'mysql'
     | 'mongodb'
