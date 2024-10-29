@@ -108,7 +108,8 @@ Click **"Solve"** at the top right of the code editor to see this abstraction in
 
 you can use the `getValueList` function to get the values of a literal field
 
-```tsx
+```tsx add=", getValueList" add={8-10}
+import { repo, getValueList } from 'remult'
 return (
   <div>
     <div>
