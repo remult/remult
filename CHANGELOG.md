@@ -12,14 +12,12 @@ All notable changes to this project will be documented in this file.
   export const handle = api
 
   // src/routes/+layout.ts
-  import { remult, RestDataProvider } from 'remult'
+  import { remult } from 'remult'
   import type { LayoutLoad } from './$types'
 
   export const load = (async (event) => {
     // Instruct remult to use the special svelte fetch to fetch data on server side page load
-    remult.dataProvider = new RestDataProvider(() => ({
-      httpClient: event.fetch,
-    }))
+    remult.useFetch(event.fetch)
   }) satisfies LayoutLoad
   ```
 
