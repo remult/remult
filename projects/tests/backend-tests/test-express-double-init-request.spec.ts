@@ -14,8 +14,8 @@ import axios from 'axios'
 import { SseSubscriptionClient } from '../../core/src/live-query/SseSubscriptionClient.js'
 import { actionInfo } from '../../core/internals.js'
 
-describe('test express server', async () => {
-  it('Test double init request', async () => {
+describe.sequential('test express server', async () => {
+  it('Test api within middleware does not fire init request twice', async () => {
     let destroy: () => Promise<void> = async () => {}
     try {
       const port = 3006
@@ -57,7 +57,50 @@ describe('test express server', async () => {
       await destroy()
     }
   })
-  it('Test double init request 2', async () => {
+  it('test middleware within middleware does fire init request twice', async () => {
+    let destroy: () => Promise<void> = async () => {}
+    try {
+      const port = 3007
+      let initRequestCount = 0
+      let api = remultExpress({
+        entities: [Task],
+        dataProvider: new InMemoryDataProvider(),
+        initRequest: async () => {
+          initRequestCount++
+        },
+      })
+
+      const app = express()
+      app.use(api.withRemult)
+      app.use(api.withRemult)
+      app.use(api)
+      await new Promise<void>((res) => {
+        let connection = app.listen(port, () => res())
+        destroy = async () => {
+          return new Promise((res) => connection.close(() => res()))
+        }
+      })
+
+      await withRemult(async () => {
+        remult.dataProvider = new RestDataProvider(() => remult.apiClient)
+        remult.apiClient.httpClient = axios
+        remult.apiClient.url = `http://127.0.0.1:${port}/api`
+        SseSubscriptionClient.createEventSource = (url) =>
+          new EventSource(url) as any
+        actionInfo.runningOnServer = false
+        // the test
+
+        const res = await remult.repo(Task).count()
+        expect(initRequestCount).toBe(2)
+
+        // end the test
+      })
+    } finally {
+      RemultAsyncLocalStorage.disable()
+      await destroy()
+    }
+  })
+  it('Test double init request backend method', async () => {
     let destroy: () => Promise<void> = async () => {}
     try {
       const port = 3005

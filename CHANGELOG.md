@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.27.22] TBD
+
+- Improved support for sveltekit ssr. To configure:
+
+  ```ts
+  // src/hooks.server.ts
+  import { api } from './server/api'
+  export const handle = api
+
+  // src/routes/+layout.ts
+  import { remult, RestDataProvider } from 'remult'
+  import type { LayoutLoad } from './$types'
+
+  export const load = (async (event) => {
+    // Instruct remult to use the special svelte fetch to fetch data on server side page load
+    remult.dataProvider = new RestDataProvider(() => ({
+      httpClient: event.fetch,
+    }))
+  }) satisfies LayoutLoad
+  ```
+
 ## [0.27.21] 2024-10-28
 
 - **Added `upsert` method:**  

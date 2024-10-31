@@ -361,7 +361,7 @@ export class RemultServerImplementation<RequestType>
   ) => {
     await this.process(async () => {
       await next()
-    })(req, res)
+    }, true)(req, res)
   }
 
   routeImpl?: RouteImplementation<RequestType>
@@ -628,6 +628,7 @@ export class RemultServerImplementation<RequestType>
       origRes: GenericResponse,
       origReq: RequestType,
     ) => Promise<void>,
+    doNotReuseInitRequest?: boolean,
   ) {
     return async (req: RequestType, origRes: GenericResponse) => {
       const genReq = req ? this.coreOptions.buildGenericRequestInfo(req) : {}
@@ -645,7 +646,10 @@ export class RemultServerImplementation<RequestType>
         this.options.error,
       )
       try {
-        if (remultStatic.asyncContext.isInInitRequest())
+        if (
+          remultStatic.asyncContext.isInInitRequest() &&
+          !doNotReuseInitRequest
+        )
           return await what(
             remultStatic.asyncContext.getStore()!.remult,
             myReq,
