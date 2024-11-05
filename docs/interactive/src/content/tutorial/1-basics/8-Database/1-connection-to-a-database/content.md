@@ -13,7 +13,7 @@ Up until now the todo app has been using a plain JSON file to store the list of 
 >
 > See the [Quickstart](https://remult.dev/docs/quickstart.html#connecting-a-database) article for the (long) list of relational and non-relational databases Remult supports.
 
-In the `backend/index.ts` file, set the `dataProvider` to ues `sqlite`
+In the `backend/index.ts` file, set the `dataProvider` to use `sqlite`
 
 ```ts title="backend/index.ts" add={4-6}
 export const api = remultExpress({
