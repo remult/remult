@@ -2,24 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.27.22] TBD
+## [0.27.22] 2024-11-08
 
 - Improved support for sveltekit ssr. To configure:
 
-  ```ts
-  // src/hooks.server.ts
-  import { api } from './server/api'
-  export const handle = api
+  - To enable remult across all sveltekit route
+    ```ts
+    // src/hooks.server.ts
+    import { api } from './server/api'
+    export const handle = api
+    ```
+  - To Use remult in ssr `PageLoad` - this will leverage the `event`'s fetch to load data on the server without reloading it on the frontend, and abiding to all api rules even when it runs on the server
 
-  // src/routes/+layout.ts
-  import { remult } from 'remult'
-  import type { LayoutLoad } from './$types'
+    ```ts
+    // src/routes/+page.ts
+    import { remult } from 'remult'
+    import type { PageLoad } from './$types'
 
-  export const load = (async (event) => {
-    // Instruct remult to use the special svelte fetch to fetch data on server side page load
-    remult.useFetch(event.fetch)
-  }) satisfies LayoutLoad
-  ```
+    export const load = (async (event) => {
+      // Instruct remult to use the special svelte fetch to fetch data on server side page load
+      remult.useFetch(event.fetch)
+      return repo(Task).find()
+    }) satisfies PageLoad
+    ```
 
 ## [0.27.21] 2024-10-28
 

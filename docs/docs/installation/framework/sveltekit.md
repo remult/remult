@@ -75,3 +75,29 @@ Your SvelteKit app will be available at [http://localhost:5173](http://localhost
 ### Setup Completed
 
 Your SvelteKit project with Remult is now up and running.
+
+### Remult in other SvelteKit routes
+
+To enable remult across all sveltekit route
+
+```ts
+// src/hooks.server.ts
+import { api } from './server/api'
+export const handle = api
+```
+
+### SSR and PageLoad
+
+To Use remult in ssr `PageLoad` - this will leverage the `event`'s fetch to load data on the server without reloading it on the frontend, and abiding to all api rules even when it runs on the server
+
+```ts
+// src/routes/+page.ts
+import { remult } from 'remult'
+import type { PageLoad } from './$types'
+
+export const load = (async (event) => {
+  // Instruct remult to use the special svelte fetch to fetch data on server side page load
+  remult.useFetch(event.fetch)
+  return repo(Task).find()
+}) satisfies PageLoad
+```
