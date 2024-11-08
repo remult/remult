@@ -1483,6 +1483,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 export const flags = {
   error500RetryCount: 4,
 }
+//p1 - allow experimental route registration on remult server, with at least get route, and support redirect, read header and set header - (and the existing get html etc...)
 
 //p2 - add parameter all to deleteMany, and updateMany
 //p2  filter.apply ApiPreFilter
