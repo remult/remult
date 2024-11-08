@@ -51,62 +51,6 @@ export class AsyncLocalStorageBridgeToRemultAsyncLocalStorageCoreImpl<T>
   }
 }
 
-const ignoreInStack = [
-  'AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore.run',
-  'RemultAsyncLocalStorage.run',
-  'Module.withRemult',
-  'RemultServerImplementation.runWithRemult',
-]
-export class SequentialRemultAsyncLocalStorageCore<T>
-  implements RemultAsyncLocalStorageCore<T>
-{
-  wasImplemented = 'yes' as const
-  async run<R>(store: T, callback: () => Promise<R>): Promise<R> {
-    let log = (msg: string) => {}
-    if (false) {
-      let stack = new Error().stack
-      let y = stack!.split('\n')
-      while (
-        y.length > 0 &&
-        (y[0].trim().startsWith('Error') ||
-          ignoreInStack.includes(y[0].trim().split(' ')[1]))
-      ) {
-        y.splice(0, 1)
-      }
-      stack = y.join('\n')
-      log = (msg: string) => {
-        console.log(msg, stack)
-      }
-    }
-    log('waiting on ')
-    const nextPromise = this.lastPromise.then(async () => {
-      log('executing  ')
-      const previousValue = this.currentValue
-      this.currentValue = store
-
-      const result = await callback()
-      this.currentValue = previousValue
-      return result
-    })
-    this.lastPromise = nextPromise.catch(() => {
-      log('Error on ')
-      return undefined
-    }) as unknown as Promise<T>
-
-    try {
-      return await nextPromise
-    } finally {
-      log('completed  ')
-    }
-  }
-
-  getStore(): T | undefined {
-    return this.currentValue
-  }
-
-  lastPromise: Promise<T | undefined> = Promise.resolve(undefined)
-  currentValue?: T
-}
 export class StubRemultAsyncLocalStorageCore<T>
   implements RemultAsyncLocalStorageCore<T>
 {

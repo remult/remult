@@ -2312,6 +2312,7 @@ export declare class Remult {
     instance: any,
     allowed?: AllowedForInstance<any>,
   ): boolean
+  useFetch(fetch: ApiClient["httpClient"]): void
   /** The current data provider */
   dataProvider: DataProvider
   /** Creates a new instance of the `remult` object.

@@ -90,6 +90,9 @@ export class RemultProxy implements Remult {
   clearAllCache() {
     return remultStatic.remultFactory().clearAllCache()
   }
+  useFetch(args: typeof fetch) {
+    return remultStatic.remultFactory().useFetch(args)
+  }
 
   private repoCache = new Map<
     ClassType<any>,
@@ -112,6 +115,7 @@ export class RemultProxy implements Remult {
       [getInternalKey]() {
         return (self.remultFactory().repo(...args) as any)[getInternalKey]()
       },
+
       relations: (args2) =>
         self
           .remultFactory()
@@ -123,6 +127,7 @@ export class RemultProxy implements Remult {
           .repo(...args)
           //@ts-ignore
           .validate(a, ...b),
+
       addEventListener: (...args2) =>
         self
           .remultFactory()
