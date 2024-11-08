@@ -52,7 +52,12 @@ export type WriteFilesArgs = {
   db: DatabaseType;
   copyDir: (from: string, to: string) => void;
   projectName: string;
-  envVariables: string[];
+  envVariables: envVariable[];
+};
+export type envVariable = {
+  key: string;
+  comment?: string;
+  value?: string;
 };
 
 export const FRAMEWORKS: Framework[] = [

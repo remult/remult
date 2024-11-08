@@ -10,6 +10,7 @@ import {
   FRAMEWORKS,
   Servers,
   vite_express_key,
+  type envVariable,
   type Framework,
   type ServerInfo,
 } from "./FRAMEWORKS";
@@ -353,7 +354,7 @@ async function init() {
     pkg.name = packageName || getProjectName();
     pkg.dependencies = sortObject({
       ...pkg.dependencies,
-      remult: "^0.27.21",
+      remult: "^0.27.22",
       ...db.dependencies,
       ...safeServer.dependencies,
       ...(auth ? { ...safeServer.auth?.dependencies, bcryptjs: "^2.4.3" } : {}),
@@ -379,41 +380,50 @@ async function init() {
     apiFileName,
     buildApiFile(db, safeServer, auth, admin, crud),
   );
-  let envVariables = extractEnvironmentVariables(db.code ?? "");
+  let envVariables: envVariable[] = extractEnvironmentVariables(
+    db.code ?? "",
+  ).map((key) => ({ key }));
+  if (envVariables.length > 0)
+    envVariables[0].comment = "Database connection information";
 
   // Output the array of environment variables
   const envFile = fw.envFile || ".env";
+
+  if (auth) {
+    envVariables.push({
+      key: `AUTH_SECRET`,
+      value: generateSecret(),
+      comment:
+        "Secret key for authentication. (You can use Online UUID generator: https://www.uuidgenerator.net)",
+    });
+    envVariables.push({
+      key: "AUTH_GITHUB_ID",
+      comment:
+        "Github OAuth App ID & Secret see https://authjs.dev/getting-started/providers/github",
+    });
+    envVariables.push({ key: "AUTH_GITHUB_SECRET" });
+  }
   if (envVariables.length > 0) {
     console.log(
       `  Set the following environment variables in the '${envFile}' file:`,
     );
     envVariables.forEach((env) => {
-      console.log(`    ${env}`);
+      console.log(`    ${env.key} ${env.comment ? `# ${env.comment}` : ""}`);
     });
   }
-  if (auth) {
-    envVariables.push(`AUTH_SECRET="${generateSecret()}"`);
+  function buildEnv(withValue?: boolean) {
+    return envVariables
+      .map(
+        (x) =>
+          `${x.comment ? `# ${x.comment}\n` : ""}${x.key}=${
+            withValue && x.value ? `${x.value || ""}` : ""
+          }`,
+      )
+      .join("\n");
   }
-  fs.writeFileSync(
-    path.join(root, envFile),
-    envVariables.map((x) => x + (x.includes("=") ? "" : "=")).join("\n"),
-  );
-  envVariables = envVariables.map((x) => x.split("=")[0]);
-  fs.writeFileSync(
-    path.join(root, envFile + ".example"),
-    envVariables
-      .map((x) => {
-        let comment = "";
-        if (x === "AUTH_SECRET") {
-          comment =
-            "# Secret key for authentication. (You can use Online UUID generator: https://www.uuidgenerator.net)";
-        } else if (x === "DATABASE_URL") {
-          comment = "# URL of the database / connection string";
-        }
-        return `${comment ? `${comment}\n` : ``}${x}=`;
-      })
-      .join("\n"),
-  );
+  fs.writeFileSync(path.join(root, envFile), buildEnv(true));
+
+  fs.writeFileSync(path.join(root, envFile + ".example"), buildEnv(false));
   const writeFilesArgs = {
     root,
     withAuth: auth,

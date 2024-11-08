@@ -1,6 +1,6 @@
 {
   "name": "create-remult",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Creates a remult project, ready to go",
   "keywords": [
     "cli",
@@ -41,7 +41,7 @@
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build",
     "test": "vitest --run",
-    "try": "npx create-remult remult-project -t angular -s express -d json --crud --overwrite yes --admin -a auth.js"
+    "try": "npx create-remult remult-project -t react -s express -d postgres --crud --overwrite yes --admin -a auth.js"
   },
   "engines": {
     "node": "^18.0.0 || >=20.0.0"
