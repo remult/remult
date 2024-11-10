@@ -20,6 +20,7 @@ import { entity } from './dynamic-classes'
 import { validateHeaderName } from 'http'
 import { cast } from '../../core/src/isOfType.js'
 import { ValueConverters } from '../../core/index.js'
+
 describe('validation tests', () => {
   const remult = new Remult(new InMemoryDataProvider())
   beforeEach(() => {
@@ -866,6 +867,65 @@ describe('validation tests', () => {
       `)
     })
   })
+  describe('biggerThan', () => {
+    it('should throw if value is smaller than input', async () => {
+      let error;
+      const numberEntity = entity('x', {
+        id: Fields.number({validate: Validators.biggerThan(5)})
+      });
+      try {
+        await remult.repo(numberEntity).insert({id: 4});
+      } catch(e) {
+        error = e;
+      }
+      expect(error).toEqual({
+        "message": "Id: Value must be bingger than 5",
+        "modelState": {
+          "id": "Value must be bingger than 5",
+        },
+      })
+    });
+
+    it('should return the entity if value is bigger than input', async () => {
+      const numberEntity = entity('x', {
+        id: Fields.number({validate: Validators.biggerThan(5)})
+      });
+      const result = await remult.repo(numberEntity).insert({id: 6});
+      expect(result.id).toBe(6);
+    });
+  });
+
+  describe('smallerThan', () => {
+    it('should throw if value is bigger than input', async () => {
+      let error;
+
+      const numberEntity = entity('x', {
+        id: Fields.number({validate: Validators.smallerThan(5)})
+      });
+
+      try {
+        await remult.repo(numberEntity).insert({id: 6});
+      } catch(e) {
+        error = e;
+      }
+
+      expect(error).toEqual({
+        "message": "Id: Value must be smaller than 5",
+        "modelState": {
+          "id": "Value must be smaller than 5",
+        },
+      })
+    });
+
+    it('should return the entity if value is smaller than input', async () => {
+      const numberEntity = entity('x', {
+        id: Fields.number({validate: Validators.smallerThan(5)})
+      });
+      const result = await remult.repo(numberEntity).insert({id: 4});
+      expect(result.id).toBe(4);
+    });
+  });
+
   it('test max length', async () => {
     await expect(
       async () =>
