@@ -1,18 +1,31 @@
-<script lang="ts" context="module">
+<script lang="ts" module>
   export type TileStatus = "Success" | "Error" | "Warning" | "Info" | "Loading";
   export type WidthOption = "full" | "half" | "third" | "fourth";
 </script>
 
 <script lang="ts">
-  export let title: string;
-  export let subtitle: string | undefined;
-  export let icon = "";
-  export let className = "";
+  interface Props {
+    title: string;
+    subtitle: string | undefined;
+    icon?: string;
+    className?: string;
+    // Define the allowed values for status and width if using TypeScript
+    status?: TileStatus;
+    width?: WidthOption;
+    children?: import('svelte').Snippet;
+  }
 
-  // Define the allowed values for status and width if using TypeScript
+  let {
+    title,
+    subtitle,
+    icon = "",
+    className = "",
+    status = "Loading",
+    width = "full",
+    children
+  }: Props = $props();
 
-  export let status: TileStatus = "Loading";
-  export let width: WidthOption = "full";
+  const children_render = $derived(children);
 </script>
 
 <div class={`tile ${status?.toLowerCase()} ${width} ${className}`}>
@@ -25,5 +38,5 @@
       <div class="tile__status-indicator"></div>
     {/if}
   </div>
-  <slot></slot>
+  {@render children_render?.()}
 </div>
