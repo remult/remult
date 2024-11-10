@@ -9,19 +9,21 @@ Now that we can see the list of tasks, it's time to add a few more. We create a 
 ```svelte [src/routes/+page.svelte]
 
 <script lang="ts">
-  import { remult } from "remult";
-  import { onMount } from "svelte";
+  import { repo } from "remult";
   import { Task } from "../shared/Task";
 
-  let tasks: Task[] = [];
+  let tasks = $state<Task[]>([]);
 
-  onMount(async () => {
-    tasks = await remult.repo(Task).find();
+  $effect(() => {
+    repo(Task)
+      .find()
+      .then((t) => (tasks = t));
   });
 
-  let newTaskTitle = ""; // [!code ++]
-  const addTask = async () => {// [!code ++]
-    const newTask = await remult.repo(Task).insert({ title: newTaskTitle });// [!code ++]
+  let newTaskTitle = $state(""); // [!code ++]
+  const addTask = async (event: Event) => {// [!code ++]
+    event.preventDefault();// [!code ++]
+    const newTask = await repo(Task).insert({ title: newTaskTitle });// [!code ++]
     tasks = [...tasks, newTask];// [!code ++]
     newTaskTitle = "";// [!code ++]
   };// [!code ++]
@@ -30,7 +32,7 @@ Now that we can see the list of tasks, it's time to add a few more. We create a 
 <div>
   <h1>todos</h1>
   <main>
-    <form on:submit|preventDefault={addTask}>// [!code ++]
+    <form onsubmit={addTask}>// [!code ++]
       <input bind:value={newTaskTitle} placeholder="What needs to be done?" />// [!code ++]
       <button>Add</button>// [!code ++]
     </form>// [!code ++]
@@ -57,7 +59,7 @@ Try adding a few tasks to see how it works.
 
 ```ts
 const setCompleted = async (task: Task, completed: boolean) => {
-  await remult.repo(Task).save({ ...task, completed })
+  await repo(Task).save({ ...task, completed })
 }
 ```
 
@@ -68,9 +70,9 @@ const setCompleted = async (task: Task, completed: boolean) => {
 	<input
 		type="checkbox"
 		bind:checked={task.completed}
-		on:click={(e) => setCompleted(task, e.target.checked)}
+		onclick={(e: any) => setCompleted(task, e.target.checked)}
 	/>
-	{task.title}
+	<span>{task.title}</span>
 </div>
 ```
 
@@ -81,8 +83,9 @@ To make the tasks in the list updatable, we'll use an `input` element and bind i
 1. Add a `saveTask` function in the script section as follows:
 
 ```ts
-const saveTask = async (task: Task) => {
-  await remult.repo(Task).save({ ...task })
+const saveTask = async (e: Event, task: Task) => {
+  e.preventDefault()
+  await repo(Task).save({ ...task })
 }
 ```
 
@@ -97,7 +100,7 @@ const saveTask = async (task: Task) => {
 			on:click={(e) => setCompleted(task, e.target.checked)}
 		/>
 		<input name="title" bind:value={task.title} />
-		<button on:click={() => saveTask(task)}>Save</button>
+		<button onclick={(e) => saveTask(e, task)}>Save</button>
 	</div>
 {/each}
 ```
@@ -117,8 +120,9 @@ Let's add a _Delete_ button next to the **Save** button of each task in the list
 1. Add the `deleteTask` function
 
 ```ts
-const deleteTask = async (task: Task) => {
-  await remult.repo(Task).delete(task)
+const deleteTask = async (e: Event, task: Task) => {
+  e.preventDefault()
+  await repo(Task).delete(task)
   tasks = tasks.filter((c) => c.id !== task.id)
 }
 ```
@@ -131,11 +135,11 @@ const deleteTask = async (task: Task) => {
 		<input
 			type="checkbox"
 			bind:checked={task.completed}
-			on:click={(e) => setCompleted(task, e.target.checked)}
+			onclick={(e: any) => setCompleted(task, e.target.checked)}
 		/>
 		<input name="title" bind:value={task.title} />
-		<button on:click={() => saveTask(task)}>Save</button>
-		<button on:click={() => deleteTask(task)}>Delete</button> // [!code ++]
+		<button onclick={(e) => saveTask(e, task)}>Save</button>
+		<button onclick={(e) => deleteTask(e, task)}>Delete</button> // [!code ++]
 	</div>
 {/each}
 ```
