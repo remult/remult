@@ -47,9 +47,11 @@ input {
   font-size: 100%;
   width: 100%;
   border: 0;
+  padding: 0.5rem;
 }
 
-input:checked + input {
+input:checked + input,
+input:checked + span {
   text-decoration: line-through;
 }
 

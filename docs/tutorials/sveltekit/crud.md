@@ -69,8 +69,8 @@ const setCompleted = async (task: Task, completed: boolean) => {
 <div>
 	<input
 		type="checkbox"
-		bind:checked={task.completed}
-		onclick={(e: any) => setCompleted(task, e.target.checked)}
+		checked={task.completed}
+		oninput={(e) => setCompleted(task, e.currentTarget.checked)}
 	/>
 	<span>{task.title}</span>
 </div>
@@ -96,8 +96,8 @@ const saveTask = async (e: Event, task: Task) => {
 	<div>
 		<input
 			type="checkbox"
-			bind:checked={task.completed}
-			on:click={(e) => setCompleted(task, e.target.checked)}
+			checked={task.completed}
+			oninput={(e) => setCompleted(task, e.currentTarget.checked)}
 		/>
 		<input name="title" bind:value={task.title} />
 		<button onclick={(e) => saveTask(e, task)}>Save</button>
@@ -134,8 +134,8 @@ const deleteTask = async (e: Event, task: Task) => {
 	<div>
 		<input
 			type="checkbox"
-			bind:checked={task.completed}
-			onclick={(e: any) => setCompleted(task, e.target.checked)}
+			checked={task.completed}
+			oninput={(e) => setCompleted(task, e.currentTarget.checked)}
 		/>
 		<input name="title" bind:value={task.title} />
 		<button onclick={(e) => saveTask(e, task)}>Save</button>
