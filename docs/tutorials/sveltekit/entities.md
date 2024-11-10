@@ -104,7 +104,7 @@ Add the Admin UI to your Angular application by setting the `admin` option to `t
 
 ::: code-group
 
-```ts [src/server/+server.ts]
+```ts [src/server/api.ts]
 import { remultSveltekit } from 'remult/remult-sveltekit'
 import { Task } from '../shared/Task'
 
