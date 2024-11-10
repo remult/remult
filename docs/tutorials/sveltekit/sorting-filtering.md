@@ -13,10 +13,12 @@ To do so, simply pass a `limit` option to the `find` method call:
 ::: code-group
 
 ```svelte [src/routes/+page.svelte]
-onMount(async () => {
-  tasks = await remult.repo(Task).find(
-    { limit: 20 } // [!code ++]
-  );
+$effect(() => {
+  repo(Task)
+    .find(
+      { limit: 20 } // [!code ++]
+    )
+    .then((t) => (tasks = t));
 });
 ```
 
@@ -38,13 +40,13 @@ Use "asc" and "desc" to determine the sort order.
 ::: code-group
 
 ```svelte [src/routes/+page.svelte]
-onMount(async () => {
-  tasks = await remult.repo(Task).find(
-    {
-      limit: 20,
+$effect(() => {
+  repo(Task)
+    .find(
+      { limit: 20 },
       orderBy: { createdAt: "asc" } // [!code ++]
-    }
-  );
+    )
+    .then((t) => (tasks = t));
 });
 ```
 
@@ -59,14 +61,14 @@ Adjust your function to fetch only `completed` tasks.
 ::: code-group
 
 ```svelte [src/routes/+page.svelte]
-onMount(async () => {
-  tasks = await remult.repo(Task).find(
-    {
-      limit: 20,
-      orderBy: { createdAt: "asc" }
+$effect(() => {
+  repo(Task)
+    .find(
+      { limit: 20 },
+      orderBy: { createdAt: "asc" },
       where: { completed: true } // [!code ++]
-    }
-  );
+    )
+    .then((t) => (tasks = t));
 });
 ```
 
@@ -79,14 +81,14 @@ Because the `completed` field is of type `boolean`, the argument is **compile-ti
 Play with different filtering values, and eventually comment it out, since we do need all the tasks
 
 ```svelte [src/routes/+page.svelte] {6}
-onMount(async () => {
-  tasks = await remult.repo(Task).find(
-    {
-      limit: 20,
-      orderBy: { createdAt: "asc" }
+$effect(() => {
+  repo(Task)
+    .find(
+      { limit: 20 },
+      orderBy: { createdAt: "asc" },
       // where: { completed: true }
-    }
-  );
+    )
+    .then((t) => (tasks = t));
 });
 ```
 
