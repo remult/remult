@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 import minimist from "minimist";
 import prompts from "prompts";
-import colors from "picocolors";
+import { gray, red, reset } from "@kitql/helpers";
 import { emptyDir } from "./utils/empty-dir";
 import {
   FRAMEWORKS,
@@ -19,8 +19,6 @@ import { buildApiFile } from "./utils/buildApiFile";
 import { extractEnvironmentVariables } from "./utils/extractEnvironmentVariables";
 import { removeJs } from "./frameworks/nextjs";
 import { svelteKit } from "./frameworks/sveltekit";
-
-const { red, reset } = colors;
 
 const argv = minimist<{
   template?: string;
@@ -450,7 +448,7 @@ async function init() {
   safeServer.writeFiles?.(writeFilesArgs);
 
   const cdProjectName = path.relative(cwd, root);
-  console.log(`\nDone. Now run:\n`);
+  console.log(`\n🎉 Done. ${gray("Now run:")}\n`);
   if (root !== cwd) {
     console.log(
       `  cd ${
@@ -462,12 +460,13 @@ async function init() {
   console.log(`  ${pkgManager} install`);
 
   if (safeServer.requiresTwoTerminal) {
-    console.log(`  Open two terminals:
-    Run "npm run dev" in one for the frontend.
-    Run "npm run dev-node" in the other for the backend.`);
+    console.log(`  ${gray("Then, open two terminals and run:")}
+    npm run dev ${gray("      # in one for the frontend.")}
+    npm run dev-node ${gray(" # in the other for the backend.")}`);
   } else {
     console.log(`  npm run dev`);
   }
+  console.log("");
 
   function copy(src: string, dest: string) {
     const stat = fs.statSync(src);
