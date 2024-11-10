@@ -1,8 +1,8 @@
 import type { Handle } from '@sveltejs/kit'
 import { sequence } from '@sveltejs/kit/hooks'
 import { SvelteKitAuth } from '@auth/sveltekit'
-import Credentials from '@auth/core/providers/credentials'
-import { _api } from './routes/api/[...remult]/+server'
+import Credentials from '@auth/sveltekit/providers/credentials'
+import { api as handleRemult } from './server/api'
 import type { UserInfo } from 'remult'
 
 /**
@@ -37,13 +37,6 @@ export const { handle: handleAuth } = SvelteKitAuth({
     }),
   },
 })
-
-/**
- * Handle remult server side
- */
-const handleRemult: Handle = async ({ event, resolve }) => {
-  return await _api.withRemult(event, async () => await resolve(event))
-}
 
 export const handle = sequence(
   // 1. Handle authentication
