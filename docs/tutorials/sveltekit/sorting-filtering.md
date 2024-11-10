@@ -42,10 +42,10 @@ Use "asc" and "desc" to determine the sort order.
 ```svelte [src/routes/+page.svelte]
 $effect(() => {
   repo(Task)
-    .find(
-      { limit: 20 },
+    .find({
+      limit: 20,
       orderBy: { createdAt: "asc" } // [!code ++]
-    )
+    })
     .then((t) => (tasks = t));
 });
 ```
@@ -63,11 +63,11 @@ Adjust your function to fetch only `completed` tasks.
 ```svelte [src/routes/+page.svelte]
 $effect(() => {
   repo(Task)
-    .find(
-      { limit: 20 },
+    .find({
+      limit: 20,
       orderBy: { createdAt: "asc" },
       where: { completed: true } // [!code ++]
-    )
+    })
     .then((t) => (tasks = t));
 });
 ```
@@ -83,11 +83,11 @@ Play with different filtering values, and eventually comment it out, since we do
 ```svelte [src/routes/+page.svelte] {6}
 $effect(() => {
   repo(Task)
-    .find(
-      { limit: 20 },
-      orderBy: { createdAt: "asc" },
-      // where: { completed: true }
-    )
+    .find({
+        limit: 20,
+        orderBy: { createdAt: "asc" }
+        // where: { completed: true }
+    })
     .then((t) => (tasks = t));
 });
 ```
