@@ -89,6 +89,7 @@ export {
   EntityDataProviderGroupByOptions,
   EntityDataProviderFindOptions,
   ErrorInfo,
+  EntityError,
   RestDataProviderHttpProvider,
 } from './src/data-interfaces.js' //V
 export {

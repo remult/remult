@@ -1207,10 +1207,11 @@ class ResponseBridgeToDataApiResponse<RequestType> implements DataApiResponse {
         url: this.genReq?.url,
         method: this.genReq?.method,
       })
-      this.setStatus(httpStatusCode).json(body)
+      const json = { ...body, message: body.message }
+      this.setStatus(httpStatusCode).json(json)
     }
     await this.handleError?.({
-      httpStatusCode,
+      httpStatusCode: httpStatusCode!,
       req: this.req,
       entity,
       exception,
@@ -1218,7 +1219,7 @@ class ResponseBridgeToDataApiResponse<RequestType> implements DataApiResponse {
       sendError,
     })
     if (!responseSent) {
-      sendError(httpStatusCode, data)
+      sendError(httpStatusCode!, data)
     }
   }
 }

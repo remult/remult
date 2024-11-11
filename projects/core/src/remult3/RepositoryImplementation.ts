@@ -57,13 +57,14 @@ import type {
 } from './remult3.js'
 import { assign } from '../../assign.js'
 import type { entityEventListener } from '../__EntityValueProvider.js'
-import type {
-  DataProvider,
-  EntityDataProvider,
-  EntityDataProviderGroupByOptions,
-  EntityDataProviderFindOptions,
-  ErrorInfo,
-  ProxyEntityDataProvider,
+import {
+  type DataProvider,
+  type EntityDataProvider,
+  type EntityDataProviderGroupByOptions,
+  type EntityDataProviderFindOptions,
+  type ErrorInfo,
+  type ProxyEntityDataProvider,
+  EntityError,
 } from '../data-interfaces.js'
 import { ValueConverters } from '../valueConverters.js'
 
@@ -1635,7 +1636,7 @@ abstract class rowHelperBase<T> {
         }
       }
     }
-    return error
+    return new EntityError(error)
   }
 
   abstract get fields(): FieldsRef<T>
@@ -2573,12 +2574,12 @@ export class columnDefsImpl implements FieldMetadata {
               )} failed for value ${args?.[0]}. Error: ${
                 typeof err === 'string' ? err : err.message
               }`
-              throw {
+              throw new EntityError({
                 message: this.caption + ': ' + error,
                 modelState: {
                   [this.key]: error,
                 },
-              } as ErrorInfo
+              })
             }
           }
         }

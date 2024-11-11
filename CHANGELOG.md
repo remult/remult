@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.27.23] TBD
+
+- Added `EntityError` - now when insert/update etc... fail they throw this specific error.
+
 ## [0.27.22] 2024-11-08
 
 - Improved support for sveltekit ssr. To configure:

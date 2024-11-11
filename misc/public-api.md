@@ -529,6 +529,18 @@ export declare type EntityDbNames<entityType> = {
   [Properties in keyof Required<MembersOnly<entityType>>]: string
 } & EntityDbNamesBase
 //[ ] EntityDbNamesBase from TBD is not exported
+export declare class EntityError<entityType = unknown>
+  extends Error
+  implements ErrorInfo<entityType>
+{
+  constructor(errorInfo: ErrorInfo<entityType>)
+  modelState?: {
+    [Properties in keyof Partial<MembersOnly<entityType>>]?: string
+  }
+  stack?: string
+  exception?: any
+  httpStatusCode?: number
+}
 export declare type EntityFilter<entityType> = {
   [Properties in keyof Partial<MembersOnly<entityType>>]?:
     | (Partial<entityType>[Properties] extends number | Date | undefined | null
