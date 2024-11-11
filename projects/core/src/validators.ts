@@ -1,6 +1,6 @@
-import { getRelationFieldInfo } from '../internals.js';
-import type { FieldValidator } from './column-interfaces.js';
-import type { ValidateFieldEvent } from './remult3/remult3.js';
+import { getRelationFieldInfo } from '../internals.js'
+import type { FieldValidator } from './column-interfaces.js'
+import type { ValidateFieldEvent } from './remult3/remult3.js'
 
 /**
  * Class containing various field validators.

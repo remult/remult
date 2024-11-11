@@ -369,6 +369,8 @@ export default defineConfig({
               { text: 'Field', link: '/docs/ref_field' },
               { text: 'ValueConverter', link: '/docs/ref_valueconverter' },
               { text: 'Validation', link: '/docs/validation' },
+              { text: 'Validators', link: '/docs/ref_validators' },
+
               { text: 'Relations', link: '/docs/ref_relations' },
               { text: 'RelationOptions', link: '/docs/ref_relationoptions' },
               { text: 'Remult', link: '/docs/ref_remult' },

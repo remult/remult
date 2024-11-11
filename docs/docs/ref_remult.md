@@ -52,6 +52,11 @@ checks if the user matches the allowedForInstance callback
 Arguments:
 * **instance**
 * **allowed**
+## useFetch
+* **useFetch**
+
+Arguments:
+* **fetch**
 ## dataProvider
 The current data provider
 ## constructor
