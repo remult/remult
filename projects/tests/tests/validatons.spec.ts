@@ -20,6 +20,7 @@ import { entity } from './dynamic-classes'
 import { validateHeaderName } from 'http'
 import { cast } from '../../core/src/isOfType.js'
 import { ValueConverters } from '../../core/index.js'
+
 describe('validation tests', () => {
   const remult = new Remult(new InMemoryDataProvider())
   beforeEach(() => {
@@ -866,6 +867,80 @@ describe('validation tests', () => {
       `)
     })
   })
+
+  async function insertId(remultEntity: any, id: number | string) {
+    return await remult.repo(remultEntity).insert({id});
+  }
+
+  describe('min', () => {
+    it('should throw if value is smaller than input', async () => {
+      const numberEntity = entity('x', {
+        id: Fields.number({validate: Validators.min(5)})
+      });
+      
+      await expect(() => insertId(numberEntity, 4)).rejects.toThrowErrorMatchingInlineSnapshot(`
+        {
+          "message": "Id: Value must be bigger than or equal to 5",
+          "modelState": {
+            "id": "Value must be bigger than or equal to 5",
+          },
+        }
+      `)
+    });
+
+    it('should return the entity when value equals to input', async () => {
+      const numberEntity = entity('x', {
+        id: Fields.number({validate: Validators.min(5)})
+      });
+      
+      const result = await insertId(numberEntity, 6) as any;
+      expect(result.id).toBe(6);
+    });
+
+    it('should return the entity if value is bigger than input', async () => {
+      const numberEntity = entity('x', {
+        id: Fields.number({validate: Validators.min(5)})
+      });
+      const result = await insertId(numberEntity, 6) as any;
+      expect(result.id).toBe(6);
+    });
+  });
+
+  describe('max', () => {
+    it('should throw if value is bigger than input', async () => {
+
+      const numberEntity = entity('x', {
+        id: Fields.number({validate: Validators.max(5)})
+      });
+
+      await expect(() => insertId(numberEntity, 6)).rejects.toThrowErrorMatchingInlineSnapshot(`
+        {
+          "message": "Id: Value must be smaller than or equal to 5",
+          "modelState": {
+            "id": "Value must be smaller than or equal to 5",
+          },
+        }
+      `);
+    });
+
+    it('should return the entity if value is smaller than input', async () => {
+      const numberEntity = entity('x', {
+        id: Fields.number({validate: Validators.max(5)})
+      });
+      const result = await insertId(numberEntity, 4) as any;
+      expect(result.id).toBe(4);
+    });
+
+    it('should return the entity when value equals to input', async () => {
+      const numberEntity = entity('x', {
+        id: Fields.number({validate: Validators.max(5)})
+      });
+      
+      const result = await insertId(numberEntity, 5) as any;
+      expect(result.id).toBe(5);
+    });
+  });
+
   it('test max length', async () => {
     await expect(
       async () =>

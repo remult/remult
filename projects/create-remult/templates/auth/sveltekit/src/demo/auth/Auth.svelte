@@ -1,14 +1,12 @@
 <script lang="ts">
-  import { onMount } from "svelte";
   import { remult } from "remult";
   import Tile from "../Tile.svelte";
   import type { TileStatus } from "../Tile.svelte";
 
-  let status: TileStatus = "Loading";
-  let errorType: "missingSecret" | "other" | null = null;
-  let tileSubtitle = "";
+  let status = $state<TileStatus>("Loading");
+  let errorType = $state<"missingSecret" | "other" | null>(null);
 
-  onMount(() => {
+  $effect(() => {
     remult
       .initUser()
       .then(() => {
@@ -24,13 +22,13 @@
       });
   });
 
-  $: {
-    if (status === "Loading") {
-      tileSubtitle = "Checking your authentication status";
-    } else if (status === "Error") {
-      tileSubtitle = "There seems to be an issue";
-    }
-  }
+  let tileSubtitle = $derived(
+    status === "Loading"
+      ? "Checking your authentication status"
+      : status === "Error"
+      ? "There seems to be an issue"
+      : undefined
+  );
 </script>
 
 <Tile
