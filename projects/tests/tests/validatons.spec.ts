@@ -892,7 +892,7 @@ describe('validation tests', () => {
       const numberEntity = entity('x', {
         id: Fields.number({validate: Validators.biggerThan(5)})
       });
-      const result = await insertId(numberEntity, 6);
+      const result = await insertId(numberEntity, 6) as any;
       expect(result.id).toBe(6);
     });
   });
@@ -919,7 +919,7 @@ describe('validation tests', () => {
       const numberEntity = entity('x', {
         id: Fields.number({validate: Validators.smallerThan(5)})
       });
-      const result = await insertId(numberEntity, 4);
+      const result = await insertId(numberEntity, 4) as any;
       expect(result.id).toBe(4);
     });
   });
