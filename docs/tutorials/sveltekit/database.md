@@ -32,7 +32,7 @@ DATABASE_URL=postgresql://username:password@host:port/dbname[?paramspec]
 
 ::: code-group
 
-```ts [src/routes/api/[...remult]/+server.ts]
+```ts [src/server/api.ts]
 import { remultSveltekit } from 'remult/remult-sveltekit'
 import { Task } from './shared/Task'
 import { TasksController } from './shared/TasksController'
