@@ -144,11 +144,7 @@ export class Validators {
   )
 
    /**
-   * Validator to check if a value is within a specified range.
-   * @param {number} val - The value to validate.
-   * @param {[number, number]} range - An array containing the minimum and maximum values.
-   * @returns {boolean} True if the value is within the range, otherwise false.
-   * @throws {string} If the value is outside the range, returns a message indicating the valid range.
+   * Validator to check if a value is within a specified range.  
    */
     static range = createValueValidatorWithArgs<number, [number, number]>(
       (val: number, [minValue, maxValue]) => val >= minValue && val <= maxValue,
