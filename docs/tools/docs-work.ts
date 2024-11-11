@@ -206,6 +206,7 @@ try {
   }
 
   for (const typeName of [
+    'Validators',
     'ValueConverter',
     'Relations',
     'RelationOptions',
