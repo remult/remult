@@ -33,14 +33,15 @@ This tutorial requires setting up a Sveltekit project, and a few lines of code t
 Create the new Sveltekit project.
 
 ```sh
-npm create svelte@latest remult-sveltekit-todo
+npx sv@latest create remult-sveltekit-todo
 ```
 
 The command prompts you for information about features to include in the initial app project. Here are the answers used in this tutorial:
 
-1. **Which Svelte app template?**: ... `Skeleton` Project
+1. **Which Svelte app template?**: ... `minimal` Project
 2. **Add type checking with TypeScript?** ... Yes, using `TypeScript` syntax
-3. **Select additional options**: ... You may want to include _Prettier_ and _ESLint_ but the options in this step are purely optional.
+3. **Select additional options**: ... We didn't select anything for this tutorial. Feel free to adapt it to your needs.
+4. **Which package manager?**: ... We took `npm`, if you perfer others, feel free.
 
 Once completed, change to the app directory:
 
@@ -58,23 +59,29 @@ npm i remult --save-dev
 
 1. Open your IDE.
 
-2. Create a remult api route like this:
+2. Create your remult `api`
 
 ::: code-group
 
-```ts [src/routes/api/[...remult]/+server.ts]
+```ts [src/server/api.ts]
 import { remultSveltekit } from 'remult/remult-sveltekit'
 
-export const _api = remultSveltekit({})
-
-export const { GET, POST, PUT, DELETE } = _api
+export const api = remultSveltekit({})
 ```
 
 :::
 
-_Side node 1: we export `_api` as we will need it later._
+3. Create a remult `api route`
 
-_Side node 2: We need an underscore as it's a special SvelteKit file. You can also create `remultSveltekit()` in another file and name it as you want._
+::: code-group
+
+```ts [src/routes/api/[...remult]/+server.ts]
+import { api } from '../../../server/api'
+
+export const { GET, POST, PUT, DELETE } = api
+```
+
+:::
 
 ### Final tweaks
 

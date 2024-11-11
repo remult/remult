@@ -1,9 +1,8 @@
 {
-  "name": "sveltekit-todo",
+  "name": "remult-sveltekit-todo",
   "version": "0.0.1",
-  "private": true,
+  "type": "module",
   "scripts": {
-    "start": "node build",
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
@@ -11,19 +10,15 @@
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
   },
   "devDependencies": {
+    "@auth/core": "^0.37.3",
+    "@auth/sveltekit": "^1.7.3",
     "@sveltejs/adapter-auto": "^3.0.0",
     "@sveltejs/kit": "^2.0.0",
-    "@sveltejs/vite-plugin-svelte": "^3.0.0",
-    "svelte": "^4.2.19",
-    "svelte-check": "^3.5.0",
-    "tslib": "^2.6.2",
-    "typescript": "^5.2.2",
-    "vite": "^5.4.7"
-  },
-  "type": "module",
-  "dependencies": {
-    "@auth/core": "^0.34.1",
-    "@auth/sveltekit": "^1.4.1",
-    "remult": "^0.26.14"
+    "@sveltejs/vite-plugin-svelte": "^4.0.0",
+    "remult": "^0.27.22",
+    "svelte": "^5.0.0",
+    "svelte-check": "^4.0.0",
+    "typescript": "^5.0.0",
+    "vite": "^5.0.3"
   }
 }

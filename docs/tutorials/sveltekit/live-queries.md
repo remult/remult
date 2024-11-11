@@ -7,90 +7,93 @@ Let's add realtime multiplayer capabilities to this app.
 ## Realtime updated todo list
 
 Let's update our component like follows _(make sure you add and remove some lines as indicated)_
-
 ::: code-group
 
 ```svelte [/src/routes/+page.svelte]
 <script lang="ts">
-  import { remult } from "remult";
-  import { onDestroy, onMount } from "svelte";
-  import { Task } from "../shared/Task";
+	import { repo } from "remult";
+	import { Task } from "../shared/Task";
+	import { onDestroy } from "svelte";
 
-  let tasks: Task[] = [];
-  let unSub: (() => void) | null = null;// [!code ++]
+	let tasks = $state<Task[]>([]);
+	let unSub: (() => void) | null = null;// [!code ++]
 
-  onMount(async () => {
-    unSub = remult// [!code ++]
-      .repo(Task)// [!code ++]
-      .liveQuery()// [!code ++]
-      .subscribe((info) => {// [!code ++]
-        tasks = info.applyChanges(tasks);// [!code ++]
-      });// [!code ++]
-    // tasks = await remult.repo(Task).find();// [!code --]
-  });
+	$effect(() => {
+		// repo(Task) // [!code --]
+		//   .find() // [!code --]
+		//   .then((t) => (tasks = t)); // [!code --]
+		unSub = repo(Task) // [!code ++]
+			.liveQuery() // [!code ++]
+			.subscribe((info) => { // [!code ++]
+				tasks = info.applyChanges(tasks); // [!code ++]
+			}); // [!code ++]
+	});
 
-  onDestroy(() => {// [!code ++]
-    unSub && unSub();// [!code ++]
-  }); // [!code ++]
+	onDestroy(() => {// [!code ++]
+		unSub && unSub();// [!code ++]
+	});// [!code ++]
 
-  let newTaskTitle = "";
-  const addTask = async () => {
-    try {
-      const newTask = await remult.repo(Task).insert({ title: newTaskTitle });
-      // tasks = [...tasks, newTask]; // [!code --]
-      newTaskTitle = "";
-    } catch (error) {
-      alert((error as { message: string }).message);
-    }
-  };
+	let newTaskTitle = $state("");
+	const addTask = async (event: Event) => {
+		event.preventDefault();
+		try {
+			const newTask = await repo(Task).insert({ title: newTaskTitle });
+			// tasks = [...tasks, newTask];// [!code --]
+			newTaskTitle = "";
+		} catch (error) {
+			alert((error as { message: string }).message);
+		}
+	};
 
-  const setCompleted = async (task: Task, completed: boolean) => {
-    try {
-      await remult.repo(Task).save({ ...task, completed });
-    } catch (error) {
-      alert((error as { message: string }).message);
-    }
-  };
+	const setCompleted = async (task: Task, completed: boolean) => {
+		try {
+			await repo(Task).save({ ...task, completed });
+		} catch (error) {
+			alert((error as { message: string }).message);
+		}
+	};
 
-  const saveTask = async (task: Task) => {
-    try {
-      await remult.repo(Task).save({ ...task });
-    } catch (error) {
-      alert((error as { message: string }).message);
-    }
-  };
+	const saveTask = async (e: Event, task: Task) => {
+		e.preventDefault();
+		try {
+			await repo(Task).save({ ...task });
+		} catch (error) {
+			alert((error as { message: string }).message);
+		}
+	};
 
-  const deleteTask = async (task: Task) => {
-    try {
-      await remult.repo(Task).delete(task);
-      // tasks = tasks.filter((c) => c.id !== task.id); // [!code --]
-    } catch (error) {
-      alert((error as { message: string }).message);
-    }
-  };
+	const deleteTask = async (e: Event, task: Task) => {
+		try {
+			await repo(Task).delete(task);
+			// tasks = tasks.filter((c) => c.id !== task.id);// [!code --]
+		} catch (error) {
+			alert((error as { message: string }).message);
+		}
+	};
 </script>
 
 <div>
-  <h1>todos</h1>
-  <main>
-    <form method="POST" on:submit|preventDefault={addTask}>
-      <input bind:value={newTaskTitle} placeholder="What needs to be done?" />
-      <button>Add</button>
-    </form>
+	<h1>todos</h1>
+	<main>
+		<form onsubmit={addTask}>
+			<input bind:value={newTaskTitle} placeholder="What needs to be done?" />
+			<button>Add</button>
+		</form>
 
-    {#each tasks as task}
-      <div>
-        <input
-          type="checkbox"
-          bind:checked={task.completed}
-          on:click={(e) => setCompleted(task, e.target?.checked)}
-        />
-        <input name="title" bind:value={task.title} />
-        <button on:click={() => saveTask(task)}>Save</button>
-        <button on:click={() => deleteTask(task)}>Delete</button>
-      </div>
-    {/each}
-  </main>
+		{#each tasks as task}
+			<div>
+				<input
+					type="checkbox"
+					checked={task.completed}
+					oninput={(e) => setCompleted(task, e.currentTarget.checked)}
+				/>
+				<!-- <span>{task.title}</span> -->
+				<input name="title" bind:value={task.title} />
+				<button onclick={(e) => saveTask(e, task)}>Save</button>
+				<button onclick={(e) => deleteTask(e, task)}>Delete</button>
+			</div>
+		{/each}
+	</main>
 </div>
 ```
 
@@ -104,36 +107,7 @@ Let's review the change:
   - `changes` - a detailed list of changes that were received
 - The `subscribe` method returns an `unsubscribe` function, we return it to the `onDestroy` hook so that it'll be called when the component unmounts.
 
-2. As all relevant CRUD operations (made by all users) will **immediately update the component's state**, we should remove the manual adding of new Tasks to the component's state:
-
-::: code-group
-
-```svelte [addTask]
-const addTask = async () => {
-    try {
-      const newTask = await remult.repo(Task).insert({ title: newTaskTitle });
-      // tasks = [...tasks, newTask]; // [!code --]
-      newTaskTitle = "";
-    } catch (error) {
-      alert((error as { message: string }).message);
-    }
-  };
-
-3. Optionally remove other redundant state changing code:
-```
-
-```ts [deleteTask]
-async function deleteTask(task: Task) {
-  try {
-    await taskRepo.delete(task)
-    //tasks.value = tasks.value.filter((t) => task !== t);  // [!code --]
-  } catch (error) {
-    alert((error as { message: string }).message)
-  }
-}
-```
-
-:::
+- As all relevant CRUD operations (made by all users) will **immediately update the component's state**, we removed the manual adding/removing of new Tasks to the component's state.
 
 Open the todo app in two (or more) browser windows/tabs, make some changes in one window and notice how the others are updated in realtime.
 
