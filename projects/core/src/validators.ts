@@ -144,9 +144,9 @@ export class Validators {
   )
 
     /**
-   * Validator to check if a string's length is greater than or equal to a minimum length.
+   * Validator to check if the value is within a range
    */
-    static range = createValueValidatorWithArgs<number, number[]>(
+    static range = createValueValidatorWithArgs<number, [number, number]>(
       (val: number, [minValue, maxValue]) => val >= minValue && val <= maxValue,
       ([minValue, maxValue]) => `Value must be between ${minValue} and ${maxValue}`,
     )
