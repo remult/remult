@@ -83,6 +83,15 @@ export class Validators {
     return Boolean(await e.load())
   }, 'Relation value does not exist')
 
+  static min = createValueValidatorWithArgs<number, number>(
+    (val, minValue) => val >= minValue,
+    (minValue) => `Value must be bigger than or equal to ${minValue}`,
+  )
+
+  static max = createValueValidatorWithArgs<number, number>(
+    (val, maxValue) => val <= maxValue,
+    (maxValue) => `Value must be smaller than or equal to ${maxValue}`,
+  )
   static maxLength = createValueValidatorWithArgs<string, number>(
     (val, maxLength) => val.length <= maxLength,
     (maxLength) => `Value must be at most ${maxLength} characters`,
