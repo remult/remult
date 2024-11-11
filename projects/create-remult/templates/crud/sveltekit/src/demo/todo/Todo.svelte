@@ -1,40 +1,43 @@
 <script lang="ts">
-  import { remult } from "remult";
+  import { repo } from "remult";
   import { Task } from "./Task";
-  import { browser } from "$app/environment";
   import Tile from "../Tile.svelte";
 
-  let tasks: Task[] = [];
-  let hideCompleted = false;
+  let tasks: Task[] = $state([]);
+  let hideCompleted = $state(false);
   function toggleHideCompleted() {
     hideCompleted = !hideCompleted;
   }
 
-  const refresh = async (_hideCompleted: boolean) => {
-    tasks = await remult.repo(Task).find({
-      where: {
-        completed: hideCompleted ? false : undefined,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-  };
+  $effect(() => {
+    repo(Task)
+      .find({
+        where: {
+          completed: hideCompleted ? false : undefined,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      })
+      .then((_tasks) => {
+        tasks = _tasks;
+      });
+  });
 
-  $: browser && refresh(hideCompleted);
-
-  let newTaskTitle = "";
-  const addTask = async () => {
-    const newTask = await remult.repo(Task).insert({ title: newTaskTitle });
+  let newTaskTitle = $state("");
+  const addTask = async (event: Event) => {
+    event.preventDefault();
+    const newTask = await repo(Task).insert({ title: newTaskTitle });
     tasks = [...tasks, newTask];
     newTaskTitle = "";
   };
-  const setCompleted = async (task: Task, event: Event) => {
-    const input = event.target as HTMLInputElement;
-    await remult.repo(Task).save({ ...task, completed: input.checked });
+
+  const setCompleted = async (task: Task, completed: boolean) => {
+    return await repo(Task).update(task.id, { completed });
   };
+
   const deleteTask = async (task: Task) => {
-    await remult.repo(Task).delete(task);
+    await repo(Task).delete(task);
     tasks = tasks.filter((c) => c.id !== task.id);
   };
 </script>
@@ -48,7 +51,7 @@
   status="Info"
 >
   <main>
-    <form on:submit|preventDefault={addTask}>
+    <form onsubmit={addTask}>
       <input
         bind:value={newTaskTitle}
         placeholder="What needs to be done?"
@@ -58,22 +61,27 @@
         <img src="plus.svg" alt="Add" />
       </button>
     </form>
-    {#each tasks as task}
+    {#each tasks as task, i}
       <div class="todo__task {task.completed ? 'completed' : ''}">
         <input
+          id={task.id}
           type="checkbox"
           bind:checked={task.completed}
-          on:change={(e) => setCompleted(task, e)}
+          oninput={async (e) => {
+            tasks[i] = await setCompleted(task, e.currentTarget.checked);
+          }}
         />
-        <span>{task.title}</span>
-        <button on:click={() => deleteTask(task)}>
-          <img src="trash.svg" alt="Delete" /></button
-        >
+        <span>
+          <label for={task.id}>{task.title}</label>
+        </span>
+        <button onclick={() => deleteTask(task)}>
+          <img src="trash.svg" alt="Delete" />
+        </button>
       </div>
     {/each}
   </main>
   <div class="button-row">
-    <button on:click={toggleHideCompleted}>
+    <button onclick={toggleHideCompleted}>
       {hideCompleted ? "Show" : "Hide"} completed
     </button>
   </div>
