@@ -872,10 +872,10 @@ describe('validation tests', () => {
     return await remult.repo(remultEntity).insert({id});
   }
 
-  describe('biggerThan', () => {
+  describe('min', () => {
     it('should throw if value is smaller than input', async () => {
       const numberEntity = entity('x', {
-        id: Fields.number({validate: Validators.biggerThan(5)})
+        id: Fields.number({validate: Validators.min(5)})
       });
       
       await expect(() => insertId(numberEntity, 4)).rejects.toThrowErrorMatchingInlineSnapshot(`
@@ -888,36 +888,30 @@ describe('validation tests', () => {
       `)
     });
 
-    it('should throw if value equals to input', async () => {
+    it('should return the entity when value equals to input', async () => {
       const numberEntity = entity('x', {
-        id: Fields.number({validate: Validators.biggerThan(5)})
+        id: Fields.number({validate: Validators.min(5)})
       });
       
-      await expect(() => insertId(numberEntity, 5)).rejects.toThrowErrorMatchingInlineSnapshot(`
-        {
-          "message": "Id: Value must be bigger than 5",
-          "modelState": {
-            "id": "Value must be bigger than 5",
-          },
-        }
-      `)
+      const result = await insertId(numberEntity, 6) as any;
+      expect(result.id).toBe(6);
     });
 
     it('should return the entity if value is bigger than input', async () => {
       const numberEntity = entity('x', {
-        id: Fields.number({validate: Validators.biggerThan(5)})
+        id: Fields.number({validate: Validators.min(5)})
       });
       const result = await insertId(numberEntity, 6) as any;
       expect(result.id).toBe(6);
     });
   });
 
-  describe('smallerThan', () => {
+  describe('max', () => {
     it('should throw if value is bigger than input', async () => {
       let error;
 
       const numberEntity = entity('x', {
-        id: Fields.number({validate: Validators.smallerThan(5)})
+        id: Fields.number({validate: Validators.max(5)})
       });
 
       await expect(() => insertId(numberEntity, 6)).rejects.toThrowErrorMatchingInlineSnapshot(`
@@ -932,24 +926,19 @@ describe('validation tests', () => {
 
     it('should return the entity if value is smaller than input', async () => {
       const numberEntity = entity('x', {
-        id: Fields.number({validate: Validators.smallerThan(5)})
+        id: Fields.number({validate: Validators.max(5)})
       });
       const result = await insertId(numberEntity, 4) as any;
       expect(result.id).toBe(4);
     });
-    it('should throw if value equals to input', async () => {
+
+    it('should return the entity when value equals to input', async () => {
       const numberEntity = entity('x', {
-        id: Fields.number({validate: Validators.biggerThan(5)})
+        id: Fields.number({validate: Validators.max(5)})
       });
       
-      await expect(() => insertId(numberEntity, 5)).rejects.toThrowErrorMatchingInlineSnapshot(`
-        {
-          "message": "Id: Value must be bigger than 5",
-          "modelState": {
-            "id": "Value must be bigger than 5",
-          },
-        }
-      `)
+      const result = await insertId(numberEntity, 5) as any;
+      expect(result.id).toBe(5);
     });
   });
 
