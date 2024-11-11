@@ -880,9 +880,9 @@ describe('validation tests', () => {
       
       await expect(() => insertId(numberEntity, 4)).rejects.toThrowErrorMatchingInlineSnapshot(`
         {
-          "message": "Id: Value must be bigger than 5",
+          "message": "Id: Value must be bigger than or equal to 5",
           "modelState": {
-            "id": "Value must be bigger than 5",
+            "id": "Value must be bigger than or equal to 5",
           },
         }
       `)
@@ -908,7 +908,6 @@ describe('validation tests', () => {
 
   describe('max', () => {
     it('should throw if value is bigger than input', async () => {
-      let error;
 
       const numberEntity = entity('x', {
         id: Fields.number({validate: Validators.max(5)})
@@ -916,9 +915,9 @@ describe('validation tests', () => {
 
       await expect(() => insertId(numberEntity, 6)).rejects.toThrowErrorMatchingInlineSnapshot(`
         {
-          "message": "Id: Value must be smaller than 5",
+          "message": "Id: Value must be smaller than or equal to 5",
           "modelState": {
-            "id": "Value must be smaller than 5",
+            "id": "Value must be smaller than or equal to 5",
           },
         }
       `);

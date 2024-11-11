@@ -85,12 +85,12 @@ export class Validators {
 
   static min = createValueValidatorWithArgs<number, number>(
     (val, minValue) => val >= minValue,
-    (minValue) => `Value must be bigger than ${minValue}`,
+    (minValue) => `Value must be bigger than or equal to ${minValue}`,
   )
 
   static max = createValueValidatorWithArgs<number, number>(
     (val, maxValue) => val <= maxValue,
-    (maxValue) => `Value must be smaller than ${maxValue}`,
+    (maxValue) => `Value must be smaller than or equal to ${maxValue}`,
   )
   static maxLength = createValueValidatorWithArgs<string, number>(
     (val, maxLength) => val.length <= maxLength,
