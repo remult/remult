@@ -867,30 +867,32 @@ describe('validation tests', () => {
       `)
     })
   })
+
+  async function insertId(remultEntity: any, id: number | string) {
+    return await remult.repo(remultEntity).insert({id});
+  }
+
   describe('biggerThan', () => {
     it('should throw if value is smaller than input', async () => {
-      let error;
       const numberEntity = entity('x', {
         id: Fields.number({validate: Validators.biggerThan(5)})
       });
-      try {
-        await remult.repo(numberEntity).insert({id: 4});
-      } catch(e) {
-        error = e;
-      }
-      expect(error).toEqual({
-        "message": "Id: Value must be bingger than 5",
-        "modelState": {
-          "id": "Value must be bingger than 5",
-        },
-      })
+      
+      await expect(() => insertId(numberEntity, 4)).rejects.toThrowErrorMatchingInlineSnapshot(`
+        {
+          "message": "Id: Value must be bingger than 5",
+          "modelState": {
+            "id": "Value must be bingger than 5",
+          },
+        }
+      `)
     });
 
     it('should return the entity if value is bigger than input', async () => {
       const numberEntity = entity('x', {
         id: Fields.number({validate: Validators.biggerThan(5)})
       });
-      const result = await remult.repo(numberEntity).insert({id: 6});
+      const result = await insertId(numberEntity, 6);
       expect(result.id).toBe(6);
     });
   });
@@ -903,25 +905,21 @@ describe('validation tests', () => {
         id: Fields.number({validate: Validators.smallerThan(5)})
       });
 
-      try {
-        await remult.repo(numberEntity).insert({id: 6});
-      } catch(e) {
-        error = e;
-      }
-
-      expect(error).toEqual({
-        "message": "Id: Value must be smaller than 5",
-        "modelState": {
-          "id": "Value must be smaller than 5",
-        },
-      })
+      await expect(() => insertId(numberEntity, 6)).rejects.toThrowErrorMatchingInlineSnapshot(`
+        {
+          "message": "Id: Value must be smaller than 5",
+          "modelState": {
+            "id": "Value must be smaller than 5",
+          },
+        }
+      `);
     });
 
     it('should return the entity if value is smaller than input', async () => {
       const numberEntity = entity('x', {
         id: Fields.number({validate: Validators.smallerThan(5)})
       });
-      const result = await remult.repo(numberEntity).insert({id: 4});
+      const result = await insertId(numberEntity, 4);
       expect(result.id).toBe(4);
     });
   });
