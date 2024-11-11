@@ -85,7 +85,7 @@ export class Validators {
 
   static biggerThan = createValueValidatorWithArgs<number, number>(
     (val, minValue) => val > minValue,
-    (minValue) => `Value must be bingger than ${minValue}`,
+    (minValue) => `Value must be bigger than ${minValue}`,
   )
 
   static smallerThan = createValueValidatorWithArgs<number, number>(

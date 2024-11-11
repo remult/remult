@@ -880,9 +880,24 @@ describe('validation tests', () => {
       
       await expect(() => insertId(numberEntity, 4)).rejects.toThrowErrorMatchingInlineSnapshot(`
         {
-          "message": "Id: Value must be bingger than 5",
+          "message": "Id: Value must be bigger than 5",
           "modelState": {
-            "id": "Value must be bingger than 5",
+            "id": "Value must be bigger than 5",
+          },
+        }
+      `)
+    });
+
+    it('should throw if value equals to input', async () => {
+      const numberEntity = entity('x', {
+        id: Fields.number({validate: Validators.biggerThan(5)})
+      });
+      
+      await expect(() => insertId(numberEntity, 5)).rejects.toThrowErrorMatchingInlineSnapshot(`
+        {
+          "message": "Id: Value must be bigger than 5",
+          "modelState": {
+            "id": "Value must be bigger than 5",
           },
         }
       `)
@@ -921,6 +936,20 @@ describe('validation tests', () => {
       });
       const result = await insertId(numberEntity, 4) as any;
       expect(result.id).toBe(4);
+    });
+    it('should throw if value equals to input', async () => {
+      const numberEntity = entity('x', {
+        id: Fields.number({validate: Validators.biggerThan(5)})
+      });
+      
+      await expect(() => insertId(numberEntity, 5)).rejects.toThrowErrorMatchingInlineSnapshot(`
+        {
+          "message": "Id: Value must be bigger than 5",
+          "modelState": {
+            "id": "Value must be bigger than 5",
+          },
+        }
+      `)
     });
   });
 
