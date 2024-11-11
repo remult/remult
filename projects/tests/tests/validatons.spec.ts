@@ -941,6 +941,42 @@ describe('validation tests', () => {
     });
   });
 
+  describe('range', () => {
+    it('should throw if value is not in range', async () => {
+
+      const numberEntity = entity('x', {
+        id: Fields.number({validate: Validators.range([5, 15])})
+      });
+
+      await expect(() => insertId(numberEntity, 4)).rejects.toThrowErrorMatchingInlineSnapshot(`
+        {
+          "message": "Id: Value must be between 5 and 15",
+          "modelState": {
+            "id": "Value must be between 5 and 15",
+          },
+        }
+      `);
+
+      await expect(() => insertId(numberEntity, 20)).rejects.toThrowErrorMatchingInlineSnapshot(`
+        {
+          "message": "Id: Value must be between 5 and 15",
+          "modelState": {
+            "id": "Value must be between 5 and 15",
+          },
+        }
+      `);
+    });
+
+    it('should return the entity if value is in range', async () => {
+      const numberEntity = entity('x', {
+        id: Fields.number({validate: Validators.range([5, 15])})
+      });
+      const result = await insertId(numberEntity, 7) as any;
+      expect(result.id).toBe(7);
+    });
+
+  });
+
   it('test max length', async () => {
     await expect(
       async () =>
