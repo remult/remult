@@ -3111,6 +3111,12 @@ export declare class Validators {
     defaultMessage: ValueValidationMessage<unknown>
   }
   static relationExists: Validator<unknown>
+  static min: ValidatorWithArgs<number, number> & {
+    defaultMessage: ValueValidationMessage<number>
+  }
+  static max: ValidatorWithArgs<number, number> & {
+    defaultMessage: ValueValidationMessage<number>
+  }
   static maxLength: ValidatorWithArgs<string, number> & {
     defaultMessage: ValueValidationMessage<number>
   }
