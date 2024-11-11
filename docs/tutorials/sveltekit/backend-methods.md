@@ -12,11 +12,13 @@ Let's add two buttons to the todo app: "Set all as completed" and "Set all as un
 
 ```svelte [src/routes/+page.svelte]
 <script lang="ts">
-  async function setAllCompleted(completed: boolean) {
-    for (const task of await taskRepo.find()) {
-      await taskRepo.save({ ...task, completed })
-    }
-  }
+  // ...
+	async function setAllCompleted(completed: boolean) {
+		for (const task of await repo(Task).find()) {
+			await repo(Task).save({ ...task, completed });
+		}
+	}
+  // ...
 </script>
 ```
 
@@ -29,11 +31,13 @@ The `for` loop iterates the array of `Task` objects returned from the backend, a
 ::: code-group
 
 ```svelte [src/routes/+page.svelte]
-
-<div>
-  <button on:click={() => setAllCompleted(true)}>Mark All Completed</button>
-  <button on:click={() => setAllCompleted(false)}>Mark All Incomplete</button>
-</div>
+<main>
+  <!-- ... -->
+  <div>
+    <button onclick={() => setAllCompleted(true)}>Mark All Completed</button>
+    <button onclick={() => setAllCompleted(false)}>Mark All Incomplete</button>
+  </div>
+</main>
 ```
 
 :::
@@ -75,13 +79,14 @@ The `@BackendMethod` decorator tells Remult to expose the method as an API endpo
 
 ::: code-group
 
-```ts [src/routes/api/[...remult]/+server.ts]
+```ts [src/server/api.ts]
 import { remultSveltekit } from 'remult/remult-sveltekit'
-import { Task } from './shared/Task'
-import { TasksController } from './shared/TasksController' // [!code ++]
+import { Task } from '../shared/Task'
+import { TasksController } from '../shared/TasksController' // [!code ++]
 
-export const _api = remultSveltekit({
-  entities: [Task],
+export const api = remultSveltekit({
+  admin: true,
+  entities: [Task], // [!code ++]
   controllers: [TasksController], // [!code ++]
 })
 ```
@@ -94,9 +99,9 @@ export const _api = remultSveltekit({
 
 ```ts [src/routes/+page.svelte]
 const setAllCompleted = async (completed: boolean) => {
-  /* for (const task of await taskRepo.find()) {
-    await taskRepo.save({ ...task, completed });
-  } */
+  // for (const task of await repo(Task).find()) { // [!code --]
+  //   await repo(Task).save({ ...task, completed });// [!code --]
+  // }// [!code --]
   await TasksController.setAllCompleted(completed) // [!code ++]
 }
 ```
@@ -109,10 +114,6 @@ Remember to add an import of `TasksController` in `+page.svelte`.
 
 ::: tip Note
 With Remult backend methods, argument types are compile-time checked. :thumbsup:
-:::
-
-::: tip
-You might need `vite-plugin-stripper` as a devDependency to build your application for production.
 :::
 
 After the browser is refreshed, the _"Set all..."_ buttons function exactly the same but now makes only a single request to the back, and is faster.

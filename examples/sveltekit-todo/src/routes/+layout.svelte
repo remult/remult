@@ -1,15 +1,21 @@
 <script lang="ts">
-  import { remult } from 'remult'
-  import type { LayoutData } from './$types'
+  import { remult } from "remult";
+  import "../app.css"
 
-  export let data: LayoutData
+  interface Props {
+    data: import('./$types').LayoutData;
+    children?: import('svelte').Snippet;
+  }
 
-  // set this globaly
-  $: remult.user = data.user
+  let { data, children }: Props = $props();
+
+  $effect(() => {
+    remult.user = data.user;
+  });
 </script>
 
 <svelte:head>
-  <title>Remult - SvelteKit</title>
+  <title>Remult+Sveltekit Todo App</title>
 </svelte:head>
 
-<slot />
+{@render children?.()}

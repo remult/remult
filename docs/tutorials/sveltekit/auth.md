@@ -69,7 +69,7 @@ Let's set-up `Auth.js` to authenticate users to our app.
 1. Install `auth-core` and `auth-sveltekit`:
 
    ```sh
-   npm i @auth/core @auth/sveltekit
+   npm i @auth/core @auth/sveltekit -D
    ```
 
 2. `Auth.js` requires a "secret" - a random string used to hash tokens, sign cookies and generate cryptographic keys.
@@ -100,7 +100,7 @@ import type { Handle } from '@sveltejs/kit'
 import { sequence } from '@sveltejs/kit/hooks'
 import { SvelteKitAuth } from '@auth/sveltekit'
 import Credentials from '@auth/sveltekit/providers/credentials'
-import { _api } from './routes/api/[...remult]/+server'
+import { api as handleRemult } from './server/api'
 import type { UserInfo } from 'remult'
 
 /**
@@ -136,13 +136,6 @@ export const { handle: handleAuth } = SvelteKitAuth({
   },
 })
 
-/**
- * Handle remult server side
- */
-const handleRemult: Handle = async ({ event, resolve }) => {
-  return await _api.withRemult(event, async () => await resolve(event))
-}
-
 export const handle = sequence(
   // 1. Handle authentication
   handleAuth,
@@ -161,13 +154,14 @@ We've configured the `session` `callback` to include the user info as part of th
 
 ::: code-group
 
-```ts [src/routes/api/[...remult]/+server.ts]
+```ts [src/server/api.ts]
 import { remultSveltekit } from 'remult/remult-sveltekit'
-import { Task } from './shared/Task'
-import { TasksController } from './shared/TasksController'
+import { Task } from '../shared/Task'
+import { TasksController } from '../shared/TasksController'
 import type { UserInfo } from 'remult' // [!code ++]
 
-export const _api = remultSveltekit({
+export const api = remultSveltekit({
+  admin: true,
   entities: [Task],
   controllers: [TasksController],
   getUser: async (event) => {
@@ -179,41 +173,6 @@ export const _api = remultSveltekit({
 
 :::
 
-::: tip
-
-In a real life application, you will need to `authorize` your users going to the database. As Auth is done before remult, the remult object is not available yet. Of course, there is a way, use `withRemult` as follows
-
-```ts [src/hooks.server.ts (in handleAuth)]
-// old code
-// authorize: (info) => validUsers.find((user) => user.name === info?.name) || null,
-
-// new code
-authorize: async (info, request) => {
-  const res = await _api.withRemult({ request } as any, async () => {
-    // remult object is now available
-    let user = await remult.repo(User).findFirst({
-      //... getting your  user based on `info`
-    })
-
-    if (user) {
-      // Don't return everything, just what is needed in the frontend
-      return {
-        id: user.id,
-        name: user.name,
-        roles: user.roles,
-      }
-    }
-
-    // No user found
-    return null
-  })
-
-  return res
-}
-```
-
-:::
-
 ### Frontend setup
 
 1. Create a new `+layout.server.ts` to update `remult.user`
@@ -221,19 +180,19 @@ authorize: async (info, request) => {
 ::: code-group
 
 ```ts [src/routes/+layout.server.ts]
+import { remult } from 'remult'
 import type { LayoutServerLoad } from './$types'
-import { redirect } from "@sveltejs/kit"
-import { remult } from "remult"
+import { redirect } from '@sveltejs/kit'
 
 // will protect every route in the app
-export const load = async () => {
+export const load = (async () => {
   if (!remult.authenticated()) {
-    throw redirect(303, "/auth/signin")
+    throw redirect(303, '/auth/signin')
   }
   return {
     user: remult.user,
   }
-} satisfies LayoutServerLoad
+}) satisfies LayoutServerLoad
 ```
 
 :::
@@ -244,19 +203,26 @@ export const load = async () => {
 
 ```svelte [src/routes/+layout.ts]
 <script lang="ts">
-  import { remult } from 'remult' // [!code ++]
-  import type { LayoutData } from './$types' // [!code ++]
+  import { remult } from "remult";// [!code ++]
+  import "../app.css"
 
-  export let data: LayoutData // [!code ++]
+  interface Props {
+    data: import('./$types').LayoutData;
+    children?: import('svelte').Snippet;
+  }
 
-  $: remult.user = data.user // [!code ++]
+  let { data, children }: Props = $props();
+
+  $effect(() => {// [!code ++]
+    remult.user = data.user;// [!code ++]
+  });// [!code ++]
 </script>
 
 <svelte:head>
-  <title>Remult - SvelteKit</title>
+  <title>Remult+Sveltekit Todo App</title>
 </svelte:head>
 
-<slot />
+{@render children?.()}
 ```
 
 :::
@@ -289,7 +255,7 @@ export class Task {
   @Fields.cuid()
   id!: string
 
-  @Fields.string({
+  @Fields.string<Task>({
     validate: (task) => {
       if (task.title.length < 3)
         throw 'The title must be at least 3 characters long'
@@ -325,12 +291,12 @@ We'll use the entity's metadata to only show the form if the user is allowed to 
 ```svelte [src/routes/+page.svelte]
 
 <main>
-	{#if taskRepo.metadata.apiInsertAllowed()}
-		<form on:submit|preventDefault={addTask}>
-			<input bind:value={newTaskTitle} placeholder="What needs to be done?" />
-			<button>Add</button>
-		</form>
-	{/if}
+  {#if repo(Task).metadata.apiInsertAllowed()}// [!code ++]
+    <form onsubmit={addTask}>
+      <input bind:value={newTaskTitle} placeholder="What needs to be done?" />
+      <button>Add</button>
+    </form>
+  {/if}// [!code ++]
 </main>
 ```
 
@@ -342,17 +308,17 @@ And let's do the same for the `delete` button:
 
 ```svelte [src/routes/+page.svelte]
 <div>
-	<input
-		type="checkbox"
-		bind:checked={task.completed}
-		on:click={(e) => setCompleted(task, e.target.checked)}
-	/>
-	<input name="title" bind:value={task.title} />
-	<button on:click={() => saveTask(task)}>Save</button>
-
-	{#if taskRepo.metadata.apiDeleteAllowed()}
-		<button on:click={() => deleteTask(task)}>Delete</button>
-	{/if}
+  <input
+    type="checkbox"
+    checked={task.completed}
+    oninput={(e) => setCompleted(task, e.currentTarget.checked)}
+  />
+  <!-- <span>{task.title}</span> -->
+  <input name="title" bind:value={task.title} />
+  <button onclick={(e) => saveTask(e, task)}>Save</button>
+  {#if repo(Task).metadata.apiDeleteAllowed(task)} // [!code ++]
+    <button onclick={(e) => deleteTask(e, task)}>Delete</button>
+  {/if}// [!code ++]
 </div>
 ```
 

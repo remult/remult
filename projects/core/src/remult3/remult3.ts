@@ -1483,6 +1483,8 @@ export type ClassFieldDecorator<entityType, valueType> = (
 export const flags = {
   error500RetryCount: 4,
 }
+//p1 - make error info an actual error, important for exception handling, and also for auth.js errors that were mistic
+//p1 - add validators min,max,between(range)
 //p1 - allow experimental route registration on remult server, with at least get route, and support redirect, read header and set header - (and the existing get html etc...)
 
 //p2 - add parameter all to deleteMany, and updateMany
