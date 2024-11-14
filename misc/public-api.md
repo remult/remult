@@ -184,7 +184,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 ) => void
 export interface ClassFieldDecoratorContextStub<entityType, valueType> {
   readonly access: {
-    set(object: entityType, value: valueType): void
+    set(object: entityType, value: valueType | null): void
   }
   readonly name: string
 }
@@ -3174,6 +3174,12 @@ export declare class Validators {
    */
   static minLength: ValidatorWithArgs<string, number> & {
     defaultMessage: ValueValidationMessage<number>
+  }
+  /**
+   * Validator to check if a value is within a specified range.
+   */
+  static range: ValidatorWithArgs<number, [number, number]> & {
+    defaultMessage: ValueValidationMessage<[number, number]>
   }
   static defaultMessage: string
 }

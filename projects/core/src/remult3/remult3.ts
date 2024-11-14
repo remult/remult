@@ -1460,7 +1460,7 @@ export declare type EntityIdFields<entityType> = {
 
 export interface ClassFieldDecoratorContextStub<entityType, valueType> {
   readonly access: {
-    set(object: entityType, value: valueType): void
+    set(object: entityType, value: valueType | null): void
   }
   readonly name: string
 }
