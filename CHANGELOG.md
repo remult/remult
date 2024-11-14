@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 ## [0.27.23] TBD
 
 - Added `EntityError` - now when insert/update etc... fail they throw this specific error.
+- Fixed an issue with decorators and optional null field
+- fixed issue with aggregate in query
 
 ## [0.27.22] 2024-11-08
 
