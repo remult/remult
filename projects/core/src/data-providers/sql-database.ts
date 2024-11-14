@@ -309,7 +309,7 @@ class LogSQLCommand implements SqlCommand {
       let r = await this.origin.execute(sql)
       if (this.logToConsole !== false) {
         var d = new Date().valueOf() - start.valueOf()
-        if (d > SqlDatabase.durationThreshold) {
+        if (d >= SqlDatabase.durationThreshold) {
           const duration = d / 1000
           if (this.logToConsole === 'oneLiner') {
             const rawSql = sql
