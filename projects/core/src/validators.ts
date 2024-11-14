@@ -143,6 +143,13 @@ export class Validators {
     (maxLength) => `Value must be at least ${maxLength} characters`,
   )
 
+   /**
+   * Validator to check if a value is within a specified range.  
+   */
+    static range = createValueValidatorWithArgs<number, [number, number]>(
+      (val: number, [minValue, maxValue]) => val >= minValue && val <= maxValue,
+      ([minValue, maxValue]) => `Value must be between ${minValue} and ${maxValue}`,
+    )
   static defaultMessage = 'Invalid value'
 }
 
