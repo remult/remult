@@ -7,7 +7,7 @@ import { MongoDataProvider } from '../../core/remult-mongo'
 import { entityWithValidations } from './shared-tests/entityWithValidations'
 import { allDbTests } from './shared-tests'
 
-const mongoConnectionString = process.env['MONGO_TEST_URL'] //"mongodb://localhost:27017/local"
+const mongoConnectionString = process.env['MONGO_TEST_URL_DISABLE'] //"mongodb://localhost:27017/local"
 
 describe.skipIf(!mongoConnectionString)('mongo with Transaction', () => {
   let db: MongoDataProvider
