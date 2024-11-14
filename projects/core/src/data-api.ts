@@ -151,7 +151,7 @@ export class DataApi<T = unknown> {
       let { aggregate, ...rest } = body
       let [{ r }, [aggregates]] = await Promise.all([
         this.getArrayImpl(request, rest),
-        this.groupBy(request, aggregate),
+        this.groupBy(request, { ...aggregate, where: body.where }),
       ])
       return {
         items: r,
