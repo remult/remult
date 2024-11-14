@@ -1,6 +1,6 @@
 import type { Remult } from './context.js'
 import { doTransaction } from './context.js'
-import type { ErrorInfo } from './data-interfaces.js'
+import { EntityError, type ErrorInfo } from './data-interfaces.js'
 import {
   findOptionsToJson,
   liveQueryAction,
@@ -604,12 +604,16 @@ export function determineSort(sortUrlParm: string, dirUrlParam: string) {
 }
 
 export function serializeError(data: ErrorInfo) {
-  if (data instanceof TypeError) {
+  if (data instanceof EntityError) {
+    data = { message: data.message, modelState: data.modelState }
+  } else if (data instanceof Error) {
     data = { message: data.message, stack: data.stack }
   }
+
   let x = JSON.parse(JSON.stringify(data))
   if (!x.message && !x.modelState)
     data = { message: data.message, stack: data.stack }
   if (typeof x === 'string') data = { message: x }
+
   return data
 }

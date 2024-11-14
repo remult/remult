@@ -111,14 +111,12 @@ describe('Closed List  column', () => {
       id: 99,
       caption: 'bla',
     }
-    await expect(() => e.save()).rejects.toThrowErrorMatchingInlineSnapshot(`
-      {
-        "message": "L: Value must be one of: 0, 10, 20",
-        "modelState": {
-          "l": "Value must be one of: 0, 10, 20",
-        },
-      }
-    `)
+    await expect(() => e.save()).rejects.toMatchObject({
+      message: 'L: Value must be one of: 0, 10, 20',
+      modelState: {
+        l: 'Value must be one of: 0, 10, 20',
+      },
+    })
   })
   it('test with validation', async () => {
     let c = new Remult().repo(entityWithValueList, new InMemoryDataProvider())
