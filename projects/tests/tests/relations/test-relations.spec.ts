@@ -10,6 +10,7 @@ import {
   Remult,
   dbNamesOf,
   describeClass,
+  getEntityRef,
   remult,
 } from '../../../core'
 import type { ClassType } from '../../../core/classType'
@@ -930,5 +931,37 @@ describe('test result for unpopulated toMany relation', () => {
       },
     ]
   `)
+  })
+})
+
+describe('listener with relation', () => {
+  @Entity('tasks')
+  class Task {
+    @Fields.integer()
+    id = 0
+    @Fields.string()
+    name = ''
+    @Fields.integer()
+    categoryId = 0
+    @Relations.toOne(() => Category, 'categoryId')
+    category?: Category
+  }
+  @Entity('categories')
+  class Category {
+    @Fields.integer()
+    id = 0
+    @Fields.string()
+    title = ''
+  }
+  const r = new Remult(new InMemoryDataProvider())
+  beforeEach(async () => {})
+  test('test listener with relation', async () => {
+    const c = await r.repo(Category).insert({ id: 1, title: 'c1' })
+    await r.repo(Task).insert({ id: 1, categoryId: c.id })
+    const t = await r.repo(Task).find()
+    getEntityRef(t[0]).subscribe({
+      reportChanged: () => {},
+      reportObserved: () => {},
+    })
   })
 })

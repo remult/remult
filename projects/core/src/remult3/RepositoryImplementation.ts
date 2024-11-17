@@ -1580,7 +1580,7 @@ abstract class rowHelperBase<T> {
           any
         >
         refImpl._subscribers = new SubscribableImp()
-        if (ei && this.remult) {
+        if ((ei && this.remult) || getRelationFieldInfo(col)) {
         } else {
           let val = this.instance[col.key as keyof T]
 
