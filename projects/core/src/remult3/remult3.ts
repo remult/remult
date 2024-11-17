@@ -1483,8 +1483,34 @@ export type ClassFieldDecorator<entityType, valueType> = (
 export const flags = {
   error500RetryCount: 4,
 }
-//p1 - make error info an actual error, important for exception handling, and also for auth.js errors that were mistic
-//p1 - add validators min,max,between(range)
+
+/*p1 - issues in https://stackblitz.com/edit/demo-allow-delete-based-on-other-entity:
+  - don't like the ensure schema
+  - seems like this didn't work well in their version of sqlite:
+    ```
+    @Entity<TaskUser>('TaskUsers', {
+      id: ['taskId', 'userId'],
+    })
+    ```
+  - This could be better
+    ```
+    sqlExpression: async () => {
+        if (!remult.authenticated()) return 'false';
+        return (
+          '1=' +
+          (await sqlRelations(Task).taskUsers.$count({
+            userId: [remult.user?.id],
+            canDelete: true,
+          }))
+        );
+      },
+    ```
+  
+  - 
+*/
+//p1 - deleteAll({title:undefined}) should throw an error - not return 0 (with direct call to db)
+//p1 - remult-create, move db question ahead of auth - everyone needs a database, not everyone need auth
+
 //p1 - allow experimental route registration on remult server, with at least get route, and support redirect, read header and set header - (and the existing get html etc...)
 
 //p2 - add parameter all to deleteMany, and updateMany
