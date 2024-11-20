@@ -24,6 +24,53 @@
     }
     dispatch('change', { value })
   }
+
+  const handleKeydown = (e: KeyboardEvent) => {
+    const input = e.target as HTMLElement
+    const td = input.closest('td')
+    if (!td) return
+
+    const tr = td.closest('tr') as HTMLTableRowElement
+    if (!tr) return
+
+    const cellIndex = Array.from(tr.cells).indexOf(td)
+
+    if (e.key === 'ArrowDown') {
+      const nextRow = tr.nextElementSibling as HTMLTableRowElement
+      if (nextRow) {
+        const nextCell = nextRow.cells[cellIndex]
+        if (nextCell) {
+          const nextInput = nextCell.querySelector(
+            'input, select',
+          ) as HTMLElement
+          if (nextInput) {
+            e.preventDefault()
+            nextInput.focus()
+            if (nextInput instanceof HTMLSelectElement) {
+              nextInput.click()
+            }
+          }
+        }
+      }
+    } else if (e.key === 'ArrowUp') {
+      const prevRow = tr.previousElementSibling as HTMLTableRowElement
+      if (prevRow) {
+        const prevCell = prevRow.cells[cellIndex]
+        if (prevCell) {
+          const prevInput = prevCell.querySelector(
+            'input, select',
+          ) as HTMLElement
+          if (prevInput) {
+            e.preventDefault()
+            prevInput.focus()
+            if (prevInput instanceof HTMLSelectElement) {
+              prevInput.click()
+            }
+          }
+        }
+      }
+    }
+  }
 </script>
 
 {#if info.relationToOne}
@@ -33,9 +80,15 @@
     value=""
     disabled
     style="opacity: 0.5; background-color: Gainsboro; cursor: not-allowed;"
+    on:keydown={handleKeydown}
   />
 {:else if info.readOnly}
-  <input bind:value disabled style="opacity: 0.5; cursor: not-allowed;" />
+  <input
+    bind:value
+    disabled
+    style="opacity: 0.5; cursor: not-allowed;"
+    on:keydown={handleKeydown}
+  />
 {:else if info.type == 'json'}
   <button
     style="margin-left: auto; margin-right: auto; width: 100%"
@@ -47,16 +100,17 @@
         props: { content: { json: value ?? {} }, onChange },
       })
     }}
+    on:keydown={handleKeydown}
   >
     <Json></Json>
   </button>
 {:else if info.type == 'boolean'}
-  <select bind:value>
+  <select bind:value on:keydown={handleKeydown}>
     <option value={false}>False</option>
     <option value={true}>True</option>
   </select>
 {:else if info.values && info.values.length > 0}
-  <select bind:value>
+  <select bind:value on:keydown={handleKeydown}>
     {#each info.values as option}
       {#if typeof option == 'object'}
         <option value={String(option.id)}>{option.caption}</option>
@@ -66,16 +120,9 @@
     {/each}
   </select>
 {:else if info.type == 'number'}
-  <input bind:value on:change type="number" />
+  <input bind:value on:change type="number" on:keydown={handleKeydown} />
 {:else if info.inputType == 'color'}
-  <input bind:value on:change type="color" />
+  <input bind:value on:change type="color" on:keydown={handleKeydown} />
 {:else}
-  <input bind:value on:change type="text" />
+  <input bind:value on:change type="text" on:keydown={handleKeydown} />
 {/if}
-
-<style>
-  input[type='number'] {
-    text-align: right;
-    width: 50px;
-  }
-</style>
