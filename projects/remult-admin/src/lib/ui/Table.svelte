@@ -176,7 +176,10 @@
   </div>
   <button on:click={() => filterDialog(fields, $filter)}> Filter</button>
 
-  <span class="page-bar__results">{from + ' - ' + to} of {totalRows}</span>
+  <span class="page-bar__results"
+    >{from + ' - ' + to} of
+    <b style="font-weight: 600;">{totalRows}</b></span
+  >
 
   <button
     class="icon-button"
