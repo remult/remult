@@ -32,6 +32,7 @@
   export let parentRelation: Record<string, any> = {}
   export let color: string
   export let defaultOrderBy: EntityFilter<any>
+  export let defaultNumberOfRows = 25
 
   let options: FindOptions<any>
 
@@ -289,7 +290,7 @@
           />
         {/each}
       {:else}
-        {#each Array.from({ length: 25 }).map((_, i) => i) as i}
+        {#each Array.from( { length: defaultNumberOfRows }, ).map((_, i) => i) as i}
           <tr>
             <td></td>
             {#each fields as column}

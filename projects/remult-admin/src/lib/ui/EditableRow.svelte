@@ -186,6 +186,7 @@
             parentRelation={relationWhere}
             color={relationTable.color}
             defaultOrderBy={relationTable.defaultOrderBy}
+            defaultNumberOfRows={3}
           />
         {/if}
       </div>
