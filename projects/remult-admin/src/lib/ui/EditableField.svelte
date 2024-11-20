@@ -72,3 +72,10 @@
 {:else}
   <input bind:value on:change type="text" />
 {/if}
+
+<style>
+  input[type='number'] {
+    text-align: right;
+    width: 50px;
+  }
+</style>

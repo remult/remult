@@ -224,19 +224,14 @@
           {/if}
         </td>
         {#each fields as column}
-          <th
-            on:click={() => toggleOrderBy(column.key)}
-            style="cursor: pointer;"
-          >
-            <span
-              style="display: flex; gap:0.3rem; align-items: center; justify-content: space-between;"
-            >
+          <th on:click={() => toggleOrderBy(column.key)}>
+            <span class="th-span">
               {#if Object.keys(repo.metadata.options.id).includes(column.key)}
                 <Key></Key>
               {:else}
                 <span></span>
               {/if}
-              <span style="display: flex; align-items: center;">
+              <span class="flexItemCenter">
                 {$LSContext.settings.dispayCaption
                   ? column.caption
                   : column.key}
@@ -245,14 +240,9 @@
                 {:else if options.orderBy?.[column.key] === 'desc'}
                   <Desc></Desc>
                 {:else}
-                  <span style="width: 20px;"></span>
+                  <span class="w-20"></span>
                 {/if}
               </span>
-              <!-- {options.orderBy?.[column.key] === 'asc'
-                ? '▲'
-                : options.orderBy?.[column.key] === 'desc'
-                ? '▼'
-                : ''} -->
               <ColumnType
                 type={column.type}
                 isSelect={column.values && column.values.length > 0}
@@ -318,6 +308,25 @@
 </div>
 
 <style>
+  .w-20 {
+    width: 20px;
+  }
+
+  .flexItemCenter {
+    display: flex;
+    align-items: center;
+  }
+  th {
+    cursor: pointer;
+  }
+
+  .th-span {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+
   .title {
     border-left: 2px solid hsla(var(--color), 70%, 50%, 1);
   }
