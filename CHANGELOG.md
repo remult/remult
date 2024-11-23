@@ -2,11 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.27.23] TBD
+## [0.27.23] 2024-11-23
 
+- Quality of life improvements to admin by [@jycouet](https://github.com/jycouet) & [@ermincelikovic](https://github.com/ermincelikovic)
+  - In the office hour with @ermincelikovic (and cursor) we :
+  - reduce the column size of numbers & align right
+  - manage keyboard navigation in the grid
+  - manage shortcuts
+  - CTRL+Enter => Save the row
+  - CTRL+Esc => Cancel the tow
+  - CTRL+SHIFT+Enter => Save all rows
+  - CTRL+SHIFT+Esc => Cancel all rows
 - Added `EntityError` - now when insert/update etc... fail they throw this specific error.
 - Fixed an issue with decorators and optional null field
 - fixed issue with aggregate in query
+- Fixed issue with subscribe to entity changes and relations
 
 ## [0.27.22] 2024-11-08
 
