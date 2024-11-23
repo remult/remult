@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file.
 - Fixed an issue with decorators and optional null field
 - fixed issue with aggregate in query
 - Fixed issue with subscribe to entity changes and relations
+- Remult create adjusted for Svelte 5 by [@jycouet](https://github.com/jycouet)
 
 ## [0.27.22] 2024-11-08
 
