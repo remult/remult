@@ -32,6 +32,7 @@
   export let parentRelation: Record<string, any> = {}
   export let color: string
   export let defaultOrderBy: EntityFilter<any>
+  export let defaultNumberOfRows = 25
 
   let options: FindOptions<any>
 
@@ -175,7 +176,10 @@
   </div>
   <button on:click={() => filterDialog(fields, $filter)}> Filter</button>
 
-  <span class="page-bar__results">{from + ' - ' + to} of {totalRows}</span>
+  <span class="page-bar__results"
+    >{from + ' - ' + to} of
+    <b style="font-weight: 600;">{totalRows}</b></span
+  >
 
   <button
     class="icon-button"
@@ -224,19 +228,14 @@
           {/if}
         </td>
         {#each fields as column}
-          <th
-            on:click={() => toggleOrderBy(column.key)}
-            style="cursor: pointer;"
-          >
-            <span
-              style="display: flex; gap:0.3rem; align-items: center; justify-content: space-between;"
-            >
+          <th on:click={() => toggleOrderBy(column.key)}>
+            <span class="th-span">
               {#if Object.keys(repo.metadata.options.id).includes(column.key)}
                 <Key></Key>
               {:else}
                 <span></span>
               {/if}
-              <span style="display: flex; align-items: center;">
+              <span class="flexItemCenter">
                 {$LSContext.settings.dispayCaption
                   ? column.caption
                   : column.key}
@@ -245,14 +244,9 @@
                 {:else if options.orderBy?.[column.key] === 'desc'}
                   <Desc></Desc>
                 {:else}
-                  <span style="width: 20px;"></span>
+                  <span class="w-20"></span>
                 {/if}
               </span>
-              <!-- {options.orderBy?.[column.key] === 'asc'
-                ? '▲'
-                : options.orderBy?.[column.key] === 'desc'
-                ? '▼'
-                : ''} -->
               <ColumnType
                 type={column.type}
                 isSelect={column.values && column.values.length > 0}
@@ -299,7 +293,7 @@
           />
         {/each}
       {:else}
-        {#each Array.from({ length: 25 }).map((_, i) => i) as i}
+        {#each Array.from( { length: defaultNumberOfRows }, ).map((_, i) => i) as i}
           <tr>
             <td></td>
             {#each fields as column}
@@ -318,6 +312,25 @@
 </div>
 
 <style>
+  .w-20 {
+    width: 20px;
+  }
+
+  .flexItemCenter {
+    display: flex;
+    align-items: center;
+  }
+  th {
+    cursor: pointer;
+  }
+
+  .th-span {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+
   .title {
     border-left: 2px solid hsla(var(--color), 70%, 50%, 1);
   }

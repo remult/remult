@@ -69,8 +69,28 @@
       {/if}
 
       <button {...$close} use:close aria-label="close" class="close">
-        <!-- <X class="size-4" /> -->
-        X
+        <svg
+          width="117"
+          height="118"
+          viewBox="0 0 117 118"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          ><rect
+            x="0.163696"
+            y="11.2703"
+            width="15"
+            height="150"
+            transform="rotate(-45 0.163696 11.2703)"
+            fill="#3230A3"
+          /><rect
+            x="106.23"
+            y="0.663696"
+            width="15"
+            height="150"
+            transform="rotate(45 106.23 0.663696)"
+            fill="#3230A3"
+          /></svg
+        >
       </button>
     </div>
   </div>
@@ -228,10 +248,16 @@
 
     height: 1.5rem;
     width: 1.5rem;
+    padding: 0;
 
     border-radius: 9999px;
 
     color: rgb(var(--color-indigo-800) / 1);
+  }
+
+  .close svg {
+    width: 0.7rem;
+    height: 0.7rem;
   }
 
   .close:hover {
