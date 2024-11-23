@@ -867,11 +867,13 @@ export class RepositoryImplementation<entityType>
   }
 
   async _buildEntityDataProviderFindOptions(options: FindOptions<entityType>) {
+    options = { ...options }
     let opt: EntityDataProviderFindOptions = {}
 
     opt = {}
     if (!options.orderBy || Object.keys(options.orderBy).length === 0) {
-      options.orderBy = this._info.entityInfo.defaultOrderBy
+      if (!this._dataProvider.isProxy)
+        options.orderBy = this._info.entityInfo.defaultOrderBy
     }
     opt.where = await this._translateWhereToFilter(options.where)
     if (options.orderBy !== undefined)
