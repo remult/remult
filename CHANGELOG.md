@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [0.27.23] 2024-11-23
 
+- Added `min`, `max` and `range` validators by [@YonatanKra](https://github.com/YonatanKra)
 - Quality of life improvements to admin by [@jycouet](https://github.com/jycouet) & [@ermincelikovic](https://github.com/ermincelikovic)
   - In the office hour with @ermincelikovic (and cursor) we :
   - reduce the column size of numbers & align right
@@ -14,6 +15,7 @@ All notable changes to this project will be documented in this file.
   - CTRL+SHIFT+Enter => Save all rows
   - CTRL+SHIFT+Esc => Cancel all rows
 - Added `EntityError` - now when insert/update etc... fail they throw this specific error.
+- Log queries if they are greater than equals the threshold by @arikfr in https://github.com/remult/remult/pull/571
 - Fixed an issue with decorators and optional null field
 - fixed issue with aggregate in query
 - Fixed issue with subscribe to entity changes and relations
