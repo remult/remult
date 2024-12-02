@@ -1761,7 +1761,7 @@ describe('test rest data provider translates data correctly', () => {
     expect(c.categoryName).toBe('test1')
     c = (await remult.repo(Categories).findId(1, { useCache: false }))!
     expect(c.categoryName).toBe('test1')
-    c.categoryName = undefined!
+    c.categoryName = null!
     await c.save()
     expect(c.categoryName).toBeNull()
     c = (await remult.repo(Categories).findId(1, { useCache: false }))!
