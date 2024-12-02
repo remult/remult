@@ -1982,7 +1982,8 @@ export class rowHelperImplementation<T>
               const element = d[key]
               if (
                 this.fields.find(key).valueChanged() &&
-                !ignoreKeys.includes(key)
+                !ignoreKeys.includes(key) &&
+                element !== undefined
               ) {
                 changesOnly[key] = element
                 wasChanged = true
