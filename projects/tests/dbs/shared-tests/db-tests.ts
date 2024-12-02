@@ -1816,7 +1816,7 @@ export function commonDbTests(
       await r.upsert([{ where: { id: 1 }, set: { status: Status.a } }])
       expect((await r.findId(1))!.status).toBe(Status.a)
     })
-    it('should not update if there is nothing to update', async () => {
+    it('upsert should not update if there is nothing to update', async () => {
       SqlDatabase.LogToConsole = true
       const { r } = await setupValueListFieldTest()
       await r.upsert([{ where: { id: 1 }, set: { status: Status.a } }])
@@ -1824,6 +1824,25 @@ export function commonDbTests(
       await r.upsert([
         { where: { id: 1 }, set: { status: Status.a, id: undefined } },
       ])
+      expect((await r.findId(1))!.status).toBe(Status.a)
+    })
+    it('update should not update if there is nothing to update', async () => {
+      SqlDatabase.LogToConsole = true
+      const { r } = await setupValueListFieldTest()
+      await r.upsert([{ where: { id: 1 }, set: { status: Status.a } }])
+      expect((await r.findId(1))!.status).toBe(Status.a)
+      await r.update({ id: 1 }, { status: Status.a, id: undefined })
+      expect((await r.findId(1))!.status).toBe(Status.a)
+    })
+    it('update many should not update if there is nothing to update', async () => {
+      SqlDatabase.LogToConsole = true
+      const { r } = await setupValueListFieldTest()
+      await r.upsert([{ where: { id: 1 }, set: { status: Status.a } }])
+      expect((await r.findId(1))!.status).toBe(Status.a)
+      await r.updateMany({
+        where: { id: 1 },
+        set: { status: Status.a, id: undefined },
+      })
       expect((await r.findId(1))!.status).toBe(Status.a)
     })
     test('query with value list', async () => {
