@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [0.27.24] TBD
 
+- Fixed issue where setting a value to undefined, caused an invalid update statement - `update "tasks" set  where "id" = $1` and an error: `error: syntax error at or near "where"`
 - Fixed issue where find options object was changed when sent to find method
 
 ## [0.27.23] 2024-11-23
