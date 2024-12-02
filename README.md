@@ -376,3 +376,8 @@ Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
 ## License
 
 Remult is [MIT Licensed](LICENSE).
+
+
+## Ask AI
+
+[Remult](https://codeparrot.ai/oracle?owner=remult&repo=remult) AI will help you understand this repository better. You can ask for code examples, installation guide, debugging help and much more.
