@@ -40,7 +40,7 @@ import type {
 import { Action, classBackendMethodsArray } from '../src/server-action.js'
 import { serverActionField } from '../src/server-action-info.js'
 import { remultStatic } from '../src/remult-static.js'
-import remultAdminHtml from './remult-admin.js'
+import remultAdminHtml, { buildEntityInfo } from './remult-admin.js'
 import { isOfType } from '../src/isOfType.js'
 import { initDataProviderOrJson } from './initDataProviderOrJson.js'
 
@@ -437,9 +437,24 @@ export class RemultServerImplementation<RequestType>
         r.route(this.options.rootPath + '/admin').get(admin)
       }
       r.route(this.options.rootPath + '/me').get(
-        this.process(async (remult, req, res) =>
-          res.success(remult.user ?? null),
-        ),
+        this.process(async (remult, req, res) => {
+          // TODO Noam: I'm sure there's a better way to do this!
+          let originalUrl = ''
+          try {
+            // @ts-ignore
+            originalUrl = remult.context.request.originalUrl
+          } catch (error) {}
+          if (originalUrl.endsWith('me?entities-metadata')) {
+            return res.success(
+              buildEntityInfo({
+                remult,
+                entities: this.options.entities ?? [],
+              }),
+            )
+          }
+
+          return res.success(remult.user ?? null)
+        }),
       )
       if (this.options.subscriptionServer instanceof SseSubscriptionServer) {
         const streamPath = this.options.rootPath + '/' + streamUrl
