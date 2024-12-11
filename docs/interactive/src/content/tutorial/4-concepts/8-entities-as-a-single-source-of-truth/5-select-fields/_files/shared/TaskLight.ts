@@ -1,4 +1,6 @@
-import { Entity, Fields } from 'remult'
+import { Entity, Fields, SqlDatabase } from 'remult'
+
+// SqlDatabase.LogToConsole = 'oneLiner'
 
 @Entity<TaskLight>('TaskLight', {
   sqlExpression: 'tasks',
