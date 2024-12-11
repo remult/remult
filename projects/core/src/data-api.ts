@@ -212,6 +212,9 @@ export class DataApi<T = unknown> {
     }
   }
   async groupBy(request: DataApiRequest, body: any) {
+    if (!this.repository.metadata.apiReadAllowed) {
+      throw new ForbiddenError()
+    }
     let findOptions = await this.findOptionsFromRequest(request, body)
     let orderBy: any = {}
     if (body?.orderBy) {
