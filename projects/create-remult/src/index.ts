@@ -352,7 +352,7 @@ async function init() {
     pkg.name = packageName || getProjectName();
     pkg.dependencies = sortObject({
       ...pkg.dependencies,
-      remult: "^0.27.23",
+      remult: "^0.27.24",
       ...db.dependencies,
       ...safeServer.dependencies,
       ...(auth ? { ...safeServer.auth?.dependencies, bcryptjs: "^2.4.3" } : {}),
