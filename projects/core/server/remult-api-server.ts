@@ -419,42 +419,39 @@ export class RemultServerImplementation<RequestType>
           r,
         )
       if (this.options.admin !== undefined && this.options.admin !== false) {
-        const admin = this.process(
-          async (remult, req, res, orig, origResponse) => {
-            if (remult.isAllowed(this.options.admin))
-              origResponse.send(
-                remultAdminHtml({
-                  remult: remult,
-                  entities: this.options.entities!,
-                  baseUrl: this.options.rootPath + '/admin',
-                }),
-              )
-            else res.notFound()
-          },
+        const admin = (is_entities_metadata: boolean) =>
+          this.process(async (remult, req, res, orig, origResponse) => {
+            if (remult.isAllowed(this.options.admin)) {
+              if (is_entities_metadata) {
+                res.success(
+                  buildEntityInfo({
+                    remult,
+                    entities: this.options.entities ?? [],
+                  }),
+                )
+              } else {
+                origResponse.send(
+                  remultAdminHtml({
+                    remult: remult,
+                    entities: this.options.entities!,
+                    baseUrl: this.options.rootPath + '/admin',
+                  }),
+                )
+              }
+            } else res.notFound()
+          })
+
+        r.route(this.options.rootPath + '/admin/entities-metadata').get(
+          admin(true),
         )
-        r.route(this.options.rootPath + '/admin/:id').get(admin)
-        r.route(this.options.rootPath + '/admin/').get(admin)
-        r.route(this.options.rootPath + '/admin').get(admin)
+        r.route(this.options.rootPath + '/admin/:id').get(admin(false))
+        r.route(this.options.rootPath + '/admin/').get(admin(false))
+        r.route(this.options.rootPath + '/admin').get(admin(false))
       }
       r.route(this.options.rootPath + '/me').get(
-        this.process(async (remult, req, res) => {
-          // TODO Noam: I'm sure there's a better way to do this!
-          let originalUrl = ''
-          try {
-            // @ts-ignore
-            originalUrl = remult.context.request.originalUrl
-          } catch (error) {}
-          if (originalUrl.endsWith('me?entities-metadata')) {
-            return res.success(
-              buildEntityInfo({
-                remult,
-                entities: this.options.entities ?? [],
-              }),
-            )
-          }
-
-          return res.success(remult.user ?? null)
-        }),
+        this.process(async (remult, req, res) =>
+          res.success(remult.user ?? null),
+        ),
       )
       if (this.options.subscriptionServer instanceof SseSubscriptionServer) {
         const streamPath = this.options.rootPath + '/' + streamUrl
