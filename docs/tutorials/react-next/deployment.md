@@ -57,13 +57,13 @@ Any `serverless` platform can't be used to maintain an active subscription chann
 
 If you're not using `liveQuery` you can skip to the next step.
 
-In this demo, we'll use [ably.com](https://ably.com/) (or others)
+In this demo, we'll use [ably.com](https://ably.com/)
 Follow these steps only if you want to use `liveQuery` in the app
 
 1. ```sh
    npm i ably
    ```
-2. Goto [ably.com](https://ably.com/) (or others) create a user and click on the "Create new app" button
+2. Goto [ably.com](https://ably.com/) create a user and click on the "Create new app" button
 3. Select a name and click `create app`
 4. Click on the `API Keys` button on top.
 5. Copy the first api key (with the many capabilities), create an entry in the `.env.local` file, name it `ABLY_API_KEY` and paste the api key there.
