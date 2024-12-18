@@ -1,9 +1,11 @@
 import { Entity, Fields, SqlDatabase } from 'remult'
 
-// SqlDatabase.LogToConsole = 'oneLiner'
+SqlDatabase.LogToConsole = 'oneLiner'
 
 @Entity<TaskLight>('TaskLight', {
-  sqlExpression: 'tasks',
+  dbName: 'tasks',
+  allowApiRead: true,
+  allowApiCrud: false,
 })
 export class TaskLight {
   @Fields.uuid()
