@@ -5,6 +5,7 @@ import { Task } from './Task'
   allowApiCrud: true,
   apiPrefilter: async () => {
     // Fetch allowed tasks based on the custom filter
+    // Will be improved in this lesson!
     const tasks = await repo(Task).find({ where: Task.allowedTasks() })
     return { taskId: { $in: tasks.map((t) => t.id) } }
   },
