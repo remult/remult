@@ -53,7 +53,7 @@ export default function remultAdminHtml(options: AdminOptions) {
   let { remult, entities, ...optionsFromServer } = { ...options }
   return getHtml().replace(
     '<!--PLACE_HERE-->',
-    `<script >const entities = ${JSON.stringify(buildEntityInfo(options))}
+    `<script>
   const optionsFromServer = ${JSON.stringify(optionsFromServer)}
 </script>`,
   )

@@ -251,7 +251,7 @@ describe('remult-admin', () => {
     })
 
     expect(res).includes('html')
-    expect(res).includes('<script >const entities =')
+    expect(res).includes('const optionsFromServer = ')
     expect(res).not.includes('<!--PLACE_HERE-->')
   })
 })

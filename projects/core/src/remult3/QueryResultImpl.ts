@@ -83,7 +83,7 @@ export class QueryResultImpl<entityType> implements QueryResult<entityType> {
           this._aggregates = await this.repo.aggregate({
             ...agg,
             where: this.options.where,
-          })
+          } as any)
           this._count = this._aggregates.$count
           return itemsPromise
         }
