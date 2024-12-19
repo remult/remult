@@ -87,7 +87,7 @@ export class AuthController {
 
 Next, we'll adjust the `backend/index.ts` file:
 
-```ts title="backend/index.ts" add={2-3,9-14,18-19}
+```ts title="backend/index.ts" add={2-3,9-14,19-20}
 import express from 'express'
 import session from 'cookie-session'
 import { AuthController } from '../shared/AuthController'
