@@ -15,7 +15,16 @@ const tutorials = [
     ],
   },
   { path: 'vue' },
-  { title: 'SvelteKit', path: 'sveltekit' },
+  {
+    title: 'SvelteKit',
+    path: 'sveltekit',
+    additionalItems: [
+      {
+        text: 'Go further / Extra',
+        link: '/docs/installation/framework/sveltekit#extra',
+      },
+    ],
+  },
   {
     title: 'Next.js',
     path: 'react-next',

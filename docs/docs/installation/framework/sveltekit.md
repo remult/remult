@@ -1,4 +1,6 @@
-### Create a SvelteKit Project
+# SvelteKit
+
+## Create a SvelteKit Project
 
 To create a new SvelteKit project, run the following command:
 
@@ -19,7 +21,7 @@ Once the setup is complete, navigate into the project directory:
 cd remult-sveltekit-todo
 ```
 
-### Install Required Packages and Remult
+## Install Required Packages and Remult
 
 Install Remult and any necessary dependencies by running:
 
@@ -27,7 +29,7 @@ Install Remult and any necessary dependencies by running:
 npm install remult --save-dev
 ```
 
-### Bootstrap Remult
+## Bootstrap Remult
 
 To set up Remult in your SvelteKit project:
 
@@ -55,7 +57,7 @@ export const { GET, POST, PUT, DELETE } = api
 
 :::
 
-### Final Tweaks
+## Final Tweaks
 
 Remult uses TypeScript decorators to enhance classes into entities. To enable decorators in your SvelteKit project, modify the `tsconfig.json` file by adding the following to the `compilerOptions` section:
 
@@ -67,7 +69,7 @@ Remult uses TypeScript decorators to enhance classes into entities. To enable de
 }
 ```
 
-### Run the App
+## Run the App
 
 To start the development server, run the following command:
 
@@ -77,11 +79,11 @@ npm run dev
 
 Your SvelteKit app will be available at [http://localhost:5173](http://localhost:5173).
 
-### Setup Completed
-
 Your SvelteKit project with Remult is now up and running.
 
-### Remult in other SvelteKit routes
+# Extra
+
+## Extra - Remult in other SvelteKit routes
 
 To enable remult across all sveltekit route
 
@@ -99,7 +101,7 @@ export const handle = sequence(
 
 :::
 
-### SSR and PageLoad
+## Extra - SSR and PageLoad
 
 To Use remult in ssr `PageLoad` - this will leverage the `event`'s fetch to load data on the server without reloading it on the frontend, and abiding to all api rules even when it runs on the server
 
@@ -121,3 +123,57 @@ export const load = (async (event) => {
 
 ::: tip
 You can add this in `+layout.ts` as well and all routes **under** will have the correct fetch out of the box.
+:::
+
+## Extra - Svelte 5 & Reactivity
+
+Remult is fully compatible with Svelte 5, Rune, and Reactivity.
+
+To take full advantage of it, add this snippet:
+
+::: code-group
+
+```html [src/routes/+layout.svelte]
+<script lang="ts">
+  import { Remult } from 'remult'
+  import { createSubscriber } from 'svelte/reactivity'
+
+  // To be done once in the application.
+  function initRemultSvelteReactivity() {
+    Remult.entityRefInit = (x) => {
+      let update = () => {}
+      let s = createSubscriber((u) => {
+        update = u
+      })
+      x.subscribe({
+        reportObserved: () => s(),
+        reportChanged: () => update(),
+      })
+    }
+  }
+  initRemultSvelteReactivity()
+</script>
+```
+
+:::
+
+Then you can use `$state`, `$derived` like any other places
+
+::: code-group
+
+```html [src/routes/+page.svelte]
+<script lang="ts">
+  // Prepare a new task
+  let editingTask = $state(repo(Task).create())
+
+  // Check if the form has empty fields
+  let formHasEmpty = $derived(!editingTask || editingTask.title.length === 0)
+
+  // Clone the task to edit
+  const editTask = async (task: Task) => {
+    editingTask = repo(Task).getEntityRef(task).clone()
+  }
+</script>
+```
+
+:::
