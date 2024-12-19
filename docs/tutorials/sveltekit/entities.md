@@ -168,7 +168,7 @@ Let's do it simply in the root of the app by adding this code in `+page.svelte`:
 Here's a quick overview of the different parts of the code snippet:
 
 - ` remult.repo(Task)` is a Remult [Repository](../../docs/ref_repository.md) object used to fetch and create Task entity objects.
-- `onMount` is used to call the Remult [repository](../../docs/ref_repository.md)'s [find](../../docs/ref_repository.md#find) method to fetch tasks from the server, once when the component is loaded.
+- `$effect` is used to call the Remult [repository](../../docs/ref_repository.md)'s [find](../../docs/ref_repository.md#find) method to fetch tasks from the server, once when the component is loaded.
 
 After the browser refreshes, the list of tasks appears.
 
