@@ -5,6 +5,7 @@
 
   let tasks: Task[] = $state([]);
   let hideCompleted = $state(false);
+
   function toggleHideCompleted() {
     hideCompleted = !hideCompleted;
   }
@@ -12,12 +13,8 @@
   $effect(() => {
     repo(Task)
       .find({
-        where: {
-          completed: hideCompleted ? false : undefined,
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
+        where: { completed: hideCompleted ? false : undefined },
+        orderBy: { createdAt: "desc" },
       })
       .then((_tasks) => {
         tasks = _tasks;
