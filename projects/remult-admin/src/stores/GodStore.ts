@@ -13,7 +13,7 @@ function createStore() {
 
     const apiUrl = LSCtx.settings.apiUrl
 
-    fetch(`${apiUrl}/admin/entities-metadata`, {
+    fetch(`${apiUrl}/admin/__entities-metadata`, {
       headers: getHeader(SSCtx, LSCtx),
     })
       .then((res) => res.json())

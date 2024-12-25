@@ -296,10 +296,10 @@ export function allServerTests(
     }),
   )
   it(
-    'admin/entities-metadata',
+    'admin/__entities-metadata',
     withRemultForTest(async () => {
       expect(
-        (await axios.get(remult.apiClient.url + '/admin/entities-metadata'))
+        (await axios.get(remult.apiClient.url + '/admin/__entities-metadata'))
           .status,
       ).toBe(200)
     }),

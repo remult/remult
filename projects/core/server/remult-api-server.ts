@@ -441,7 +441,7 @@ export class RemultServerImplementation<RequestType>
             } else res.notFound()
           })
 
-        r.route(this.options.rootPath + '/admin/entities-metadata').get(
+        r.route(this.options.rootPath + '/admin/__entities-metadata').get(
           admin(true),
         )
         r.route(this.options.rootPath + '/admin/:id').get(admin(false))
