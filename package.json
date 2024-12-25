@@ -21,7 +21,7 @@
     "build-docs": "cd docs && npm run build",
     "release-docs": "cd docs && npm run publish",
     "build-ref-ts": "tsx ./docs/tools/docs-work.ts",
-    "build-ref": "cd docs/tools && build-ref.bat",
+    "build-ref": "cd docs/tools && sh build-ref.sh",
     "update-starter": "misc\\update-versions-to-starter-projects.sh",
     "detect-circular": "rem - .dependency-cruiser.js moved to misc folder. depcruise projects/core --include-only \"^projects/core\" --output-type dot | dot -T svg > dependency-graph.svg",
     "dc": "rem - .dependency-cruiser.js moved to misc folder. depcruise projects/core --include-only \"^projects/core\" --output-to ./tmp/dependency-violations.html --output-type err-html | dot -T svg > dependency-graph.svg ",
