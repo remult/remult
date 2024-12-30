@@ -52,14 +52,12 @@ describe('test rest many operations', () => {
         { id: 1, name: 'a' },
         { id: 2, name: '' },
       ]),
-    ).rejects.toThrowErrorMatchingInlineSnapshot(`
-      {
-        "message": "Name: Should not be empty",
-        "modelState": {
-          "name": "Should not be empty",
-        },
-      }
-    `)
+    ).rejects.toMatchObject({
+      message: 'Name: Should not be empty',
+      modelState: {
+        name: 'Should not be empty',
+      },
+    })
     expect(await r.count()).toBe(0)
   })
   it('test delete many without a filter shoud throw', async () => {

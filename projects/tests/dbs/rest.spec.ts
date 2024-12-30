@@ -1,6 +1,7 @@
 import { expect, it, beforeEach, describe } from 'vitest'
 import type { DataProvider } from '../../core'
 import {
+  Entity,
   Fields,
   Filter,
   ForbiddenError,
@@ -199,5 +200,25 @@ describe('Rest', () => {
     ).rejects.toThrowErrorMatchingInlineSnapshot(
       `[Error: You must specify a done filter]`,
     )
+  })
+  it('aggregate sould match count when using or', async () => {
+    @Entity('tasks_123', {
+      allowApiCrud: true,
+    })
+    class Task {
+      @Fields.integer()
+      id = 0
+    }
+    const repo = await remult.repo(Task)
+    await repo.insert([1, 2, 3, 4].map((id) => ({ id })))
+    let r = await repo
+      .query({
+        aggregate: {},
+        where: {
+          $or: [{ id: 1 }, { id: 2 }],
+        },
+      })
+      .paginator()
+    expect(r.aggregates.$count).toBe(r.items.length)
   })
 })

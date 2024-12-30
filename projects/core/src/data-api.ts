@@ -1,6 +1,6 @@
 import type { Remult } from './context.js'
 import { doTransaction } from './context.js'
-import type { ErrorInfo } from './data-interfaces.js'
+import { EntityError, type ErrorInfo } from './data-interfaces.js'
 import {
   findOptionsToJson,
   liveQueryAction,
@@ -151,7 +151,7 @@ export class DataApi<T = unknown> {
       let { aggregate, ...rest } = body
       let [{ r }, [aggregates]] = await Promise.all([
         this.getArrayImpl(request, rest),
-        this.groupBy(request, aggregate),
+        this.groupBy(request, { ...aggregate, where: body.where }),
       ])
       return {
         items: r,
@@ -212,6 +212,9 @@ export class DataApi<T = unknown> {
     }
   }
   async groupBy(request: DataApiRequest, body: any) {
+    if (!this.repository.metadata.apiReadAllowed) {
+      throw new ForbiddenError()
+    }
     let findOptions = await this.findOptionsFromRequest(request, body)
     let orderBy: any = {}
     if (body?.orderBy) {
@@ -604,12 +607,16 @@ export function determineSort(sortUrlParm: string, dirUrlParam: string) {
 }
 
 export function serializeError(data: ErrorInfo) {
-  if (data instanceof TypeError) {
+  if (data instanceof EntityError) {
+    data = { message: data.message, modelState: data.modelState }
+  } else if (data instanceof Error) {
     data = { message: data.message, stack: data.stack }
   }
+
   let x = JSON.parse(JSON.stringify(data))
   if (!x.message && !x.modelState)
     data = { message: data.message, stack: data.stack }
   if (typeof x === 'string') data = { message: x }
+
   return data
 }

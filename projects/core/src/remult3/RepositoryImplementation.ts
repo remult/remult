@@ -57,13 +57,14 @@ import type {
 } from './remult3.js'
 import { assign } from '../../assign.js'
 import type { entityEventListener } from '../__EntityValueProvider.js'
-import type {
-  DataProvider,
-  EntityDataProvider,
-  EntityDataProviderGroupByOptions,
-  EntityDataProviderFindOptions,
-  ErrorInfo,
-  ProxyEntityDataProvider,
+import {
+  type DataProvider,
+  type EntityDataProvider,
+  type EntityDataProviderGroupByOptions,
+  type EntityDataProviderFindOptions,
+  type ErrorInfo,
+  type ProxyEntityDataProvider,
+  EntityError,
 } from '../data-interfaces.js'
 import { ValueConverters } from '../valueConverters.js'
 
@@ -866,11 +867,13 @@ export class RepositoryImplementation<entityType>
   }
 
   async _buildEntityDataProviderFindOptions(options: FindOptions<entityType>) {
+    options = { ...options }
     let opt: EntityDataProviderFindOptions = {}
 
     opt = {}
     if (!options.orderBy || Object.keys(options.orderBy).length === 0) {
-      options.orderBy = this._info.entityInfo.defaultOrderBy
+      if (!this._dataProvider.isProxy)
+        options.orderBy = this._info.entityInfo.defaultOrderBy
     }
     opt.where = await this._translateWhereToFilter(options.where)
     if (options.orderBy !== undefined)
@@ -1579,7 +1582,7 @@ abstract class rowHelperBase<T> {
           any
         >
         refImpl._subscribers = new SubscribableImp()
-        if (ei && this.remult) {
+        if ((ei && this.remult) || getRelationFieldInfo(col)) {
         } else {
           let val = this.instance[col.key as keyof T]
 
@@ -1635,7 +1638,7 @@ abstract class rowHelperBase<T> {
         }
       }
     }
-    return error
+    return new EntityError(error)
   }
 
   abstract get fields(): FieldsRef<T>
@@ -1981,7 +1984,8 @@ export class rowHelperImplementation<T>
               const element = d[key]
               if (
                 this.fields.find(key).valueChanged() &&
-                !ignoreKeys.includes(key)
+                !ignoreKeys.includes(key) &&
+                element !== undefined
               ) {
                 changesOnly[key] = element
                 wasChanged = true
@@ -2573,12 +2577,12 @@ export class columnDefsImpl implements FieldMetadata {
               )} failed for value ${args?.[0]}. Error: ${
                 typeof err === 'string' ? err : err.message
               }`
-              throw {
+              throw new EntityError({
                 message: this.caption + ': ' + error,
                 modelState: {
                   [this.key]: error,
                 },
-              } as ErrorInfo
+              })
             }
           }
         }

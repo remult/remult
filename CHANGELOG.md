@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.27.24] 2024-12-11
+
+- Fixed issue where setting a value to undefined, caused an invalid update statement - `update "tasks" set  where "id" = $1` and an error: `error: syntax error at or near "where"`
+- Fixed issue where find options object was changed when sent to find method
+- Fixed an issue where group by was accessible even if allowApiRead was not - this did not affect apiPrefilter
+
+## [0.27.23] 2024-11-23
+
+- Added `min`, `max` and `range` validators by [@YonatanKra](https://github.com/YonatanKra)
+- Quality of life improvements to admin by [@jycouet](https://github.com/jycouet) & [@ermincelikovic](https://github.com/ermincelikovic)
+  - In the office hour with @ermincelikovic (and cursor) we :
+  - reduce the column size of numbers & align right
+  - manage keyboard navigation in the grid
+  - manage shortcuts
+  - CTRL+Enter => Save the row
+  - CTRL+Esc => Cancel the tow
+  - CTRL+SHIFT+Enter => Save all rows
+  - CTRL+SHIFT+Esc => Cancel all rows
+- Added `EntityError` - now when insert/update etc... fail they throw this specific error.
+- Log queries if they are greater than equals the threshold by @arikfr in https://github.com/remult/remult/pull/571
+- Fixed an issue with decorators and optional null field
+- fixed issue with aggregate in query
+- Fixed issue with subscribe to entity changes and relations
+- Remult create adjusted for Svelte 5 by [@jycouet](https://github.com/jycouet)
+
 ## [0.27.22] 2024-11-08
 
 - Improved support for sveltekit ssr. To configure:

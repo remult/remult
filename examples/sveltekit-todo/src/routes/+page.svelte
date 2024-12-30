@@ -1,25 +1,20 @@
 <script lang="ts">
-  import { repo } from 'remult'
+  import { EntityError, remult, repo } from 'remult'
   import { Task } from '../shared/Task'
-  import { onDestroy } from 'svelte'
   import { TasksController } from '../shared/TasksController'
+  import { signOut } from '@auth/sveltekit/client'
 
   let tasks = $state<Task[]>([])
-  let unSub: (() => void) | null = null
 
   $effect(() => {
     // repo(Task)
     //   .find()
     //   .then((t) => (tasks = t));
-    unSub = repo(Task)
+    return repo(Task)
       .liveQuery()
       .subscribe((info) => {
         tasks = info.applyChanges(tasks)
       })
-  })
-
-  onDestroy(() => {
-    unSub && unSub()
   })
 
   let newTaskTitle = $state('')
@@ -30,24 +25,30 @@
       // tasks = [...tasks, newTask];
       newTaskTitle = ''
     } catch (error) {
-      alert((error as { message: string }).message)
+      if (error instanceof EntityError) {
+        alert(error.message)
+      }
     }
   }
 
   const setCompleted = async (task: Task, completed: boolean) => {
     try {
-      await repo(Task).save({ ...task, completed })
+      await repo(Task).update(task.id, { completed })
     } catch (error) {
-      alert((error as { message: string }).message)
+      if (error instanceof EntityError) {
+        alert(error.message)
+      }
     }
   }
 
   const saveTask = async (e: Event, task: Task) => {
     e.preventDefault()
     try {
-      await repo(Task).save({ ...task })
+      await repo(Task).save(task)
     } catch (error) {
-      alert((error as { message: string }).message)
+      if (error instanceof EntityError) {
+        alert(error.message)
+      }
     }
   }
 
@@ -56,7 +57,9 @@
       await repo(Task).delete(task)
       // tasks = tasks.filter((c) => c.id !== task.id);
     } catch (error) {
-      alert((error as { message: string }).message)
+      if (error instanceof EntityError) {
+        alert(error.message)
+      }
     }
   }
 
@@ -71,6 +74,10 @@
 <div>
   <h1>todos</h1>
   <main>
+    <div>
+      Hello {remult.user?.name}
+      <button onclick={async () => signOut()}>Logout</button>
+    </div>
     {#if repo(Task).metadata.apiInsertAllowed()}
       <form onsubmit={addTask}>
         <input bind:value={newTaskTitle} placeholder="What needs to be done?" />

@@ -92,3 +92,18 @@ export interface ErrorInfo<entityType = unknown> {
   exception?: any
   httpStatusCode?: number
 }
+export class EntityError<entityType = unknown>
+  extends Error
+  implements ErrorInfo<entityType>
+{
+  constructor(errorInfo: ErrorInfo<entityType>) {
+    super(errorInfo.message)
+    Object.assign(this, errorInfo)
+  }
+  modelState?: {
+    [Properties in keyof Partial<MembersOnly<entityType>>]?: string
+  }
+  stack?: string
+  exception?: any
+  httpStatusCode?: number
+}

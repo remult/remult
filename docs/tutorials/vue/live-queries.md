@@ -71,5 +71,5 @@ Open the todo app in two (or more) browser windows/tabs, make some changes in on
 ::: tip Under the hood
 The default implementation of live-queries uses HTTP Server-Sent Events (SSE) to push realtime updates to clients, and stores live-query information in-memory.
 
-For scalable production / serverless environments, live-query updates can be pushed using integration with third-party realtime providers, such as [Ably](https://ably.com/), and live-query information can be stored to any database supported by Remult.
+For serverless environments _(or multi servers)_, live-query updates can be pushed using integration with third-party realtime providers, such as [Ably](https://ably.com/) (or others), and live-query information can be stored to any database supported by Remult.
 :::

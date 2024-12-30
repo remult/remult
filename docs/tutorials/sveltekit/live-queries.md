@@ -13,25 +13,19 @@ Let's update our component like follows _(make sure you add and remove some line
 <script lang="ts">
 	import { repo } from "remult";
 	import { Task } from "../shared/Task";
-	import { onDestroy } from "svelte";
 
 	let tasks = $state<Task[]>([]);
-	let unSub: (() => void) | null = null;// [!code ++]
 
 	$effect(() => {
 		// repo(Task) // [!code --]
 		//   .find() // [!code --]
 		//   .then((t) => (tasks = t)); // [!code --]
-		unSub = repo(Task) // [!code ++]
+		return repo(Task) // [!code ++]
 			.liveQuery() // [!code ++]
 			.subscribe((info) => { // [!code ++]
 				tasks = info.applyChanges(tasks); // [!code ++]
 			}); // [!code ++]
 	});
-
-	onDestroy(() => {// [!code ++]
-		unSub && unSub();// [!code ++]
-	});// [!code ++]
 
 	let newTaskTitle = $state("");
 	const addTask = async (event: Event) => {
@@ -105,7 +99,7 @@ Let's review the change:
   - `items` - an up to date list of items representing the current result - it's useful for readonly use cases.
   - `applyChanges` - a method that receives an array and applies the changes to it - we send that method to the `setTasks` state function, to apply the changes to the existing `tasks` state.
   - `changes` - a detailed list of changes that were received
-- The `subscribe` method returns an `unsubscribe` function, we return it to the `onDestroy` hook so that it'll be called when the component unmounts.
+- The `subscribe` method returns an `unsubscribe` function, by just returning in the `$effect` function we automatically unsubscribe when the component unmounts. _(You can also do it manually in a `onDestroy` hook)_
 
 - As all relevant CRUD operations (made by all users) will **immediately update the component's state**, we removed the manual adding/removing of new Tasks to the component's state.
 
@@ -114,5 +108,5 @@ Open the todo app in two (or more) browser windows/tabs, make some changes in on
 ::: tip Under the hood
 The default implementation of live-queries uses HTTP Server-Sent Events (SSE) to push realtime updates to clients, and stores live-query information in-memory.
 
-For scalable production / serverless environments, live-query updates can be pushed using integration with third-party realtime providers, such as [Ably](https://ably.com/), and live-query information can be stored to any database supported by Remult.
+For serverless environments _(or multi servers)_, live-query updates can be pushed using integration with third-party realtime providers, such as [Ably](https://ably.com/) (or others), and live-query information can be stored to any database supported by Remult.
 :::

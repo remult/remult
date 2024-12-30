@@ -558,7 +558,7 @@ describe('missing fields are added in array column', async () => {
     expect(await rep.count({ completed: false })).toBe(2)
     let t = (await rep.findFirst({ title: 't1' }))!
     expect(t.completed).toBe(false)
-    t.completed = undefined!
+    t.completed = null!
     await t.save()
     expect(t.completed).toBe(false)
     t.completed = null!
@@ -594,7 +594,7 @@ describe('missing fields are added in array column', async () => {
     expect(await rep.count({ completed: false })).toBe(0)
     let t = (await rep.findFirst({ title: 't1' }))!
     expect(t.completed).toBe(null)
-    t.completed = undefined!
+    t.completed = null!
     await t.save()
     expect(t.completed).toBe(null)
     t.completed = null!

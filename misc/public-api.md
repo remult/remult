@@ -184,7 +184,7 @@ export type ClassFieldDecorator<entityType, valueType> = (
 ) => void
 export interface ClassFieldDecoratorContextStub<entityType, valueType> {
   readonly access: {
-    set(object: entityType, value: valueType): void
+    set(object: entityType, value: valueType | null): void
   }
   readonly name: string
 }
@@ -529,6 +529,18 @@ export declare type EntityDbNames<entityType> = {
   [Properties in keyof Required<MembersOnly<entityType>>]: string
 } & EntityDbNamesBase
 //[ ] EntityDbNamesBase from TBD is not exported
+export declare class EntityError<entityType = unknown>
+  extends Error
+  implements ErrorInfo<entityType>
+{
+  constructor(errorInfo: ErrorInfo<entityType>)
+  modelState?: {
+    [Properties in keyof Partial<MembersOnly<entityType>>]?: string
+  }
+  stack?: string
+  exception?: any
+  httpStatusCode?: number
+}
 export declare type EntityFilter<entityType> = {
   [Properties in keyof Partial<MembersOnly<entityType>>]?:
     | (Partial<entityType>[Properties] extends number | Date | undefined | null
@@ -837,15 +849,15 @@ export interface EntityOptions<entityType = unknown> {
   dbName?: string
   /** For entities that are based on SQL expressions instead of a physical table or view
    * @example
-   * .@Entity('people',{
-   * sqlExpression:`select id,name from employees
-   *      union all select id,name from contractors`,
+   * @Entity('people', {
+   *   sqlExpression:`select id,name from employees
+   *                  union all select id,name from contractors`,
    * })
-   * export class Person{
-   * .@Fields.string()
-   * id=''
-   * .@Fields.string()
-   * name=''
+   * export class Person {
+   *   @Fields.string()
+   *   id=''
+   *   @Fields.string()
+   *   name=''
    * }
    */
   sqlExpression?:
@@ -2214,7 +2226,9 @@ export declare class Relations {
       | keyof entityType,
   ): (
     target: any,
-    context: string | ClassFieldDecoratorContextStub<any, toEntityType>,
+    context:
+      | ClassFieldDecoratorContextStub<entityType, toEntityType | undefined>
+      | string,
     c?: any,
   ) => void
   /**
@@ -3082,46 +3096,92 @@ export type Validator<valueType> = FieldValidator<unknown, valueType> &
   ) => FieldValidator<unknown, valueType>) & {
     defaultMessage: ValidationMessage<valueType, undefined>
     /**
-     * @deprecated  use (message:string) instead - for example: Validators.required("Is needed")
+     * @deprecated use (message:string) instead - for example: Validators.required("Is needed")
      */
     withMessage(
       message: ValidationMessage<valueType, undefined>,
     ): FieldValidator<unknown, valueType>
   }
 export declare class Validators {
+  /**
+   * Validator to check if a value is required (not null or empty).
+   */
   static required: Validator<unknown>
+  /**
+   * Validator to ensure a value is unique in the database.
+   */
   static unique: Validator<unknown>
   /**
    * @deprecated use `unique` instead - it also runs only on the backend
+   * Validator to ensure a value is unique on the backend.
    */
   static uniqueOnBackend: Validator<unknown>
+  /**
+   * Validator to check if a value matches a given regular expression.
+   */
   static regex: ValidatorWithArgs<string, RegExp> & {
     defaultMessage: ValueValidationMessage<RegExp>
   }
+  /**
+   * Validator to check if a value is a valid email address.
+   */
   static email: Validator<string>
+  /**
+   * Validator to check if a value is a valid URL.
+   */
   static url: Validator<string>
+  /**
+   * Validator to check if a value is one of the specified values.
+   */
   static in: <T>(
     value: readonly T[],
     withMessage?: ValueValidationMessage<T[]>,
   ) => FieldValidator<unknown, T> & {
     withMessage: ValueValidationMessage<T[]>
   }
+  /**
+   * Validator to check if a value is not null.
+   */
   static notNull: Validator<unknown>
+  /**
+   * Validator to check if a value exists in a given enum.
+   */
   static enum: ValidatorWithArgs<unknown, unknown> & {
     defaultMessage: ValueValidationMessage<unknown>
   }
+  /**
+   * Validator to check if a related value exists in the database.
+   */
   static relationExists: Validator<unknown>
+  /**
+   * Validator to check if a value is greater than or equal to a minimum value.
+   */
   static min: ValidatorWithArgs<number, number> & {
     defaultMessage: ValueValidationMessage<number>
   }
+  /**
+   * Validator to check if a value is less than or equal to a maximum value.
+   */
   static max: ValidatorWithArgs<number, number> & {
     defaultMessage: ValueValidationMessage<number>
   }
+  /**
+   * Validator to check if a string's length is less than or equal to a maximum length.
+   */
   static maxLength: ValidatorWithArgs<string, number> & {
     defaultMessage: ValueValidationMessage<number>
   }
+  /**
+   * Validator to check if a string's length is greater than or equal to a minimum length.
+   */
   static minLength: ValidatorWithArgs<string, number> & {
     defaultMessage: ValueValidationMessage<number>
+  }
+  /**
+   * Validator to check if a value is within a specified range.
+   */
+  static range: ValidatorWithArgs<number, [number, number]> & {
+    defaultMessage: ValueValidationMessage<[number, number]>
   }
   static defaultMessage: string
 }

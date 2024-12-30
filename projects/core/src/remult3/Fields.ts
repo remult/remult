@@ -388,7 +388,9 @@ export class Relations {
       | keyof entityType,
   ): (
     target: any,
-    context: string | ClassFieldDecoratorContextStub<any, toEntityType>,
+    context:
+      | ClassFieldDecoratorContextStub<entityType, toEntityType | undefined>
+      | string,
     c?: any,
   ) => void {
     let op: RelationOptions<entityType, toEntityType, entityType> =
