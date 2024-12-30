@@ -3,6 +3,7 @@ import { God } from '../God'
 import { LSContext } from '../lib/stores/LSContext.js'
 import { getHeader } from '../lib/helper.js'
 import { SSContext } from '../lib/stores/SSContext.js'
+import { remult } from '../../../core/src/remult-proxy'
 
 function createStore() {
   const { subscribe, set } = writable<God>()
@@ -12,14 +13,15 @@ function createStore() {
     const SSCtx = get(SSContext)
 
     const apiUrl = LSCtx.settings.apiUrl
-
-    fetch(`${apiUrl}/admin/__entities-metadata`, {
-      headers: getHeader(SSCtx, LSCtx),
-    })
-      .then((res) => res.json())
-      .then((json) => {
-        set(new God(json))
+    remult.initUser().then(() => {
+      fetch(`${apiUrl}/admin/__entities-metadata`, {
+        headers: getHeader(SSCtx, LSCtx),
       })
+        .then((res) => res.json())
+        .then((json) => {
+          set(new God(json))
+        })
+    })
   }
 
   reloadEntities()
