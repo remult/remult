@@ -20,6 +20,8 @@ Validator to check if a value is greater than or equal to a minimum value.
 Validator to check if a string's length is greater than or equal to a minimum length.
 ## notNull
 Validator to check if a value is not null.
+## range
+Validator to check if a value is within a specified range.
 ## regex
 Validator to check if a value matches a given regular expression.
 ## relationExists
