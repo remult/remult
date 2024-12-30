@@ -13,6 +13,7 @@ function createStore() {
     const SSCtx = get(SSContext)
 
     const apiUrl = LSCtx.settings.apiUrl
+    remult.apiClient.url = apiUrl
     remult.initUser().then(() => {
       fetch(`${apiUrl}/admin/__entities-metadata`, {
         headers: getHeader(SSCtx, LSCtx),
