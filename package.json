@@ -1,7 +1,7 @@
 {
   "name": "remult-mono-repo",
   "description": "See projects/core for the remult core package.json. This package.json is used for remult/core development, test projects and experimental work. See ",
-  "version": "2.7.25-next.0",
+  "version": "2.7.25-next.1",
   "scripts": {
     "format": "prettier \"./projects/core/**\" --write",
     "test": "vitest --ui --coverage",
