@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [2.7.25] TBD
+## [2.7.25] 2025-1-1
 
 - Fixed admin to work with authorization token as well
 - Moved version decimal point to better reflect remult's stability and use in production app.
