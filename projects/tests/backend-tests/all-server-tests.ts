@@ -294,22 +294,31 @@ export function allServerTests(
         (await axios.get(remult.apiClient.url + '/admin/tasks')).status,
       ).toBe(200)
     }),
-  ),
-    it(
-      'delete with url params',
-      withRemultForTest(async () => {
-        await create3Tasks()
-        expect(
-          (await axios.delete(remult.apiClient.url + '/tasks' + '?title.ne=b'))
-            .data,
-        ).toMatchInlineSnapshot(`
+  )
+  it(
+    'admin/__entities-metadata',
+    withRemultForTest(async () => {
+      expect(
+        (await axios.get(remult.apiClient.url + '/admin/__entities-metadata'))
+          .status,
+      ).toBe(200)
+    }),
+  )
+  it(
+    'delete with url params',
+    withRemultForTest(async () => {
+      await create3Tasks()
+      expect(
+        (await axios.delete(remult.apiClient.url + '/tasks' + '?title.ne=b'))
+          .data,
+      ).toMatchInlineSnapshot(`
         {
           "deleted": 2,
         }
       `)
-        expect(await repo(Task).count()).toBe(1)
-      }),
-    )
+      expect(await repo(Task).count()).toBe(1)
+    }),
+  )
   it(
     'update many 2',
     withRemultForTest(async () => {

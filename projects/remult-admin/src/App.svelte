@@ -13,6 +13,7 @@
   import Remult from './lib/icons/remult.svelte'
   import { dialog } from './lib/ui/dialog/dialog.js'
   import DialogSettings from './lib/ui/DialogSettings.svelte'
+  import { getHeader } from './lib/helper.js'
 
   // Save the current location except on '/'
   $: $loc.location !== '/' && ($LSContext.currentLocationHash = $loc.location)
@@ -51,19 +52,7 @@
 
     const f = await fetch(input, {
       ...init,
-      headers: $SSContext.settings.bearerAuth
-        ? {
-            ...init?.headers,
-            authorization: 'Bearer ' + $SSContext.settings.bearerAuth,
-          }
-        : $LSContext.settings.keyForBearerAuth
-        ? {
-            ...init?.headers,
-            authorization:
-              'Bearer ' +
-              localStorage.getItem($LSContext.settings.keyForBearerAuth),
-          }
-        : init?.headers,
+      headers: getHeader($SSContext, $LSContext, init),
     })
 
     if (f.status === 403) {

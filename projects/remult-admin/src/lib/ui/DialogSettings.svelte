@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { godStore } from '../../stores/GodStore.js'
   import { LSContext } from '../stores/LSContext'
   import { SSContext } from '../stores/SSContext'
 </script>
@@ -77,11 +78,18 @@
 
   <label>
     <span>Auth</span>
-    <input
-      type="text"
-      bind:value={$SSContext.settings.bearerAuth}
-      placeholder="bearer"
-    />
+    <div>
+      <input
+        type="text"
+        bind:value={$SSContext.settings.bearerAuth}
+        placeholder="bearer"
+      />
+      <button
+        on:click={() => {
+          godStore.reloadEntities()
+        }}>Reload entities</button
+      >
+    </div>
   </label>
 </div>
 

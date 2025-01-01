@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.25] TBD
+
+- Fixed admin to work with authorization token as well
+- Moved version decimal point to better reflect remult's stability and use in production app.
+
 ## [0.27.24] 2024-12-11
 
 - Fixed issue where setting a value to undefined, caused an invalid update statement - `update "tasks" set  where "id" = $1` and an error: `error: syntax error at or near "where"`
