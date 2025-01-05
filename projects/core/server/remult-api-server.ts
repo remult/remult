@@ -419,10 +419,10 @@ export class RemultServerImplementation<RequestType>
           r,
         )
       if (this.options.admin !== undefined && this.options.admin !== false) {
-        const admin = (is_entities_metadata: boolean) =>
+        const admin = () =>
           this.process(async (remult, req, res, orig, origResponse) => {
             if (remult.isAllowed(this.options.admin)) {
-              if (is_entities_metadata) {
+              if (orig.params.id === '__entities-metadata') {
                 res.success(
                   buildEntityInfo({
                     remult,
@@ -441,12 +441,9 @@ export class RemultServerImplementation<RequestType>
             } else res.notFound()
           })
 
-        r.route(this.options.rootPath + '/admin/__entities-metadata').get(
-          admin(true),
-        )
-        r.route(this.options.rootPath + '/admin/:id').get(admin(false))
-        r.route(this.options.rootPath + '/admin/').get(admin(false))
-        r.route(this.options.rootPath + '/admin').get(admin(false))
+        r.route(this.options.rootPath + '/admin/:id').get(admin())
+        r.route(this.options.rootPath + '/admin/').get(admin())
+        r.route(this.options.rootPath + '/admin').get(admin())
       }
       r.route(this.options.rootPath + '/me').get(
         this.process(async (remult, req, res) =>
