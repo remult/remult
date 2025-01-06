@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.26] 2025-1-6
+
+- Fixed issue with turning on admin breaks routing in some cases
+
 ## [2.7.25] 2025-1-1
 
 - Fixed admin to work with authorization token as well
