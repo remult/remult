@@ -422,7 +422,7 @@ export class RemultServerImplementation<RequestType>
         const admin = () =>
           this.process(async (remult, req, res, orig, origResponse) => {
             if (remult.isAllowed(this.options.admin)) {
-              if (orig.params.id === '__entities-metadata') {
+              if (orig?.params?.id === '__entities-metadata') {
                 res.success(
                   buildEntityInfo({
                     remult,
