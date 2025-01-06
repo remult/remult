@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [2.7.26] 2025-1-6
+## [2.7.27] 2025-1-6
 
 - Fixed issue with turning on admin breaks routing in some cases
 
