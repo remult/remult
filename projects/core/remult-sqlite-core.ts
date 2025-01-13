@@ -155,7 +155,7 @@ export class SqliteCoreDataProvider
     ]
     if (entity.idMetadata.fields.length > 1) {
       sql.push(
-        `create unique index ${this.wrapIdentifier(
+        `create unique index if not exists ${this.wrapIdentifier(
           entity.dbName + '_primary_key',
         )} on ${e.$entityName}  (${entity.idMetadata.fields
           .map((x) => e.$dbNameOf(x))
