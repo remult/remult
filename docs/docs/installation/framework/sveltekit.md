@@ -177,19 +177,23 @@ With this new feature, you can get rid of `repo(Entity).toJson()` and `repo(Enti
 ::: code-group
 
 ```ts [src/hooks.ts]
-import { repo } from 'remult'
+import { repo, type ClassType } from 'remult'
 import { Task } from './demo/todo/Task'
 import type { Transport } from '@sveltejs/kit'
 import { api } from './server/api'
 
-// Get all entities (maybe from ./server/api.ts)
+// You can have:
+// A/ a local entity array to work only these ones (like here)
+//  or
+// B/ import a global entity array that will be
+//    shared between backend and frontend (not in ./server/api.ts)
 const entities = [Task]
 
 export const transport: Transport = {
   remultTransport: {
-    encode: (value) => {
+    encode: (value: any) => {
       for (let index = 0; index < entities.length; index++) {
-        const element = entities[index]
+        const element = entities[index] as ClassType<any>
         if (value instanceof element) {
           return {
             ...repo(element).toJson(value),
@@ -198,9 +202,9 @@ export const transport: Transport = {
         }
       }
     },
-    decode: (value) => {
+    decode: (value: any) => {
       for (let index = 0; index < entities.length; index++) {
-        const element = entities[index]
+        const element = entities[index] as ClassType<any>
         if (value.entity_key === repo(element).metadata.key) {
           return repo(element).fromJson(value)
         }
@@ -216,6 +220,7 @@ import type { PageServerLoad } from './$types'
 import { Task } from '../demo/todo/Task'
 
 export const load = (async () => {
+  // const tasks = repo(Task).toJson(await repo(Task).find()) // [!code --]
   const tasks = await repo(Task).find()
   return {
     tasks,
@@ -230,6 +235,7 @@ export const load = (async () => {
 
   let { data }: { data: PageData } = $props();
 
+  // let tasks = repo(Task).fromJson(data.tasks) // [!code --]
   let tasks = data.tasks
 </script>
 ```
