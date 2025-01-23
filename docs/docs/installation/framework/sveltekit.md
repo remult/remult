@@ -101,9 +101,10 @@ export const handle = sequence(
 
 :::
 
-## Extra - SSR and PageLoad
+## Extra - Universal load & SSR
 
-To Use remult in ssr `PageLoad` - this will leverage the `event`'s fetch to load data on the server without reloading it on the frontend, and abiding to all api rules even when it runs on the server
+To Use remult in ssr `PageLoad` - this will leverage the `event`'s fetch to load data on the server
+without reloading it on the frontend, and abiding to all api rules even when it runs on the server
 
 ::: code-group
 
@@ -123,6 +124,122 @@ export const load = (async (event) => {
 
 ::: tip
 You can add this in `+layout.ts` as well and all routes **under** will have the correct fetch out of the box.
+:::
+
+## Extra - Server load
+
+If you return a remult entity from the `load` function of a `+page.server.ts`,
+SvelteKit will complain and show this error:
+
+```bash
+Error: Data returned from `load` while rendering / is not serializable:
+Cannot stringify arbitrary non-POJOs (data.tasks[0])
+```
+
+To fix this, you can use `repo(Entity).toJson()` in the server load function and `repo(Entity).fromJson()` in the .svelte file
+to serialize and deserialize well the entity.
+
+::: code-group
+
+```ts [src/routes/+page.server.ts]
+import { repo } from 'remult'
+import type { PageServerLoad } from './$types'
+import { Task } from '../demo/todo/Task'
+
+export const load = (async () => {
+  const tasks = repo(Task).toJson(await repo(Task).find())
+  return {
+    tasks,
+  }
+}) satisfies PageServerLoad
+```
+
+```svelte [src/routes/+page.svelte]
+<script lang="ts">
+  import type { PageData } from "./$types";
+  import { Task } from "../demo/todo/Task";
+  import { repo } from "remult";
+
+  let { data }: { data: PageData } = $props();
+
+  let tasks = repo(Task).fromJson(data.tasks);
+</script>
+```
+
+:::
+
+---
+
+#### Since `@sveltejs/kit@2.11.0`, there is a new feature: [Universal-hooks-transport](https://svelte.dev/docs/kit/hooks#Universal-hooks-transport)
+
+With this new feature, you can get rid of `repo(Entity).toJson()` and `repo(Entity).fromJson()` thanks to this file: `hooks.ts`.
+
+::: code-group
+
+```ts [src/hooks.ts]
+import { repo, type ClassType } from 'remult'
+import { Task } from './demo/todo/Task'
+import type { Transport } from '@sveltejs/kit'
+import { api } from './server/api'
+
+// You can have:
+// A/ a local entity array to work only these ones (like here)
+//  or
+// B/ import a global entity array that will be
+//    shared between backend and frontend (not in ./server/api.ts)
+const entities = [Task]
+
+export const transport: Transport = {
+  remultTransport: {
+    encode: (value: any) => {
+      for (let index = 0; index < entities.length; index++) {
+        const element = entities[index] as ClassType<any>
+        if (value instanceof element) {
+          return {
+            ...repo(element).toJson(value),
+            entity_key: repo(element).metadata.key,
+          }
+        }
+      }
+    },
+    decode: (value: any) => {
+      for (let index = 0; index < entities.length; index++) {
+        const element = entities[index] as ClassType<any>
+        if (value.entity_key === repo(element).metadata.key) {
+          return repo(element).fromJson(value)
+        }
+      }
+    },
+  },
+}
+```
+
+```ts [src/routes/+page.server.ts]
+import { repo } from 'remult'
+import type { PageServerLoad } from './$types'
+import { Task } from '../demo/todo/Task'
+
+export const load = (async () => {
+  // const tasks = repo(Task).toJson(await repo(Task).find()) // [!code --]
+  const tasks = await repo(Task).find()
+  return {
+    tasks,
+  }
+}) satisfies PageServerLoad
+```
+
+```svelte [src/routes/+page.svelte]
+<script lang="ts">
+  import type { PageData } from "./$types";
+  import { repo } from "remult";
+
+  let { data }: { data: PageData } = $props();
+
+  // let tasks = repo(Task).fromJson(data.tasks) // [!code --]
+  let tasks = data.tasks
+</script>
+```
+
 :::
 
 ## Extra - Svelte 5 & Reactivity
