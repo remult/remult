@@ -1,57 +1,11 @@
 <script setup lang="ts">
 import Code from './Code.vue'
 import { ref, onMounted } from 'vue'
-
-interface CodeStep {
-  id: string
-  name: string
-  files: {
-    name: string
-    content: string
-    type?: 'backend' | 'frontend' // default is backend
-    framework?: 'svelte' | 'vue' | 'react' | 'angular' // default is nothing
-  }[]
-}
+import { type CodeStep, stepsData } from './stepsData'
 
 const steps = ref<CodeStep[]>([])
 const currentStep = ref<CodeStep | null>(null)
 const currentFile = ref<string | null>(null)
-
-const stepsData: CodeStep[] = [
-  {
-    id: '0-step1',
-    name: 'Define a model',
-    files: [
-      {
-        name: 'entity.ts',
-        content: `import { Entity, Fields } from 'remult'
-
-@Entity('tasks', {
-  allowApiCrud: true,
-})
-export class Task {
-  @Fields.cuid()
-  id!: string
-
-  @Fields.string()
-  title: string = ''
-}`,
-      },
-      {
-        name: '+page.svelte',
-        type: 'frontend',
-        framework: 'svelte',
-        content: `$effect(() => {
-  repo(Task)
-    .find(
-      { limit: 20 } 
-    )
-    .then((t) => (tasks = t));
-});`,
-      },
-    ],
-  },
-]
 
 onMounted(() => {
   steps.value = stepsData
@@ -73,10 +27,6 @@ const getCurrentCode = () => {
   const file = currentStep.value.files.find((f) => f.name === currentFile.value)
   const tt = file?.content || ''
   return tt
-}
-
-const getFileType = (fileName: string, fileType?: 'backend' | 'frontend') => {
-  return fileType || 'backend'
 }
 </script>
 
@@ -108,17 +58,6 @@ const getFileType = (fileName: string, fileType?: 'backend' | 'frontend') => {
           >
             <span style="padding: 10px">
               {{ file.name }}
-              <!-- <span
-                class="text-xs px-1.5 py-0.5 rounded"
-                :class="{
-                  'bg-blue-600':
-                    getFileType(file.name, file.type) === 'backend',
-                  'bg-green-600':
-                    getFileType(file.name, file.type) === 'frontend',
-                }"
-              >
-                {{ getFileType(file.name, file.type) }}
-              </span> -->
             </span>
           </button>
         </div>
