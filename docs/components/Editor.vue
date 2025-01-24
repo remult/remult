@@ -75,8 +75,9 @@ const getCurrentCode = () => {
         </div>
 
         <div class="editor-footer">
-          <a href="/docs">More about validation</a>
-          <a href="/docs">More about auth</a>
+          <a v-for="cta in currentStep?.cta" :key="cta.label" :href="cta.href">
+            {{ cta.label }}
+          </a>
         </div>
       </div>
     </div>

@@ -4,8 +4,12 @@ export interface CodeStep {
   files: {
     name: string
     content: string
-    type?: 'backend' | 'frontend' // default is backend
+    keyContext: string // So that we can just from a framework to another framework keeping the context
     framework?: 'svelte' | 'vue' | 'react' | 'angular' // default is nothing
+  }[]
+  cta?: {
+    label: string
+    href: string
   }[]
 }
 
@@ -13,9 +17,20 @@ export const stepsData: CodeStep[] = [
   {
     id: '0-step1',
     name: 'Define a model',
+    cta: [
+      {
+        label: 'More about validation',
+        href: '/docs',
+      },
+      {
+        label: 'More about auth',
+        href: '/docs',
+      },
+    ],
     files: [
       {
         name: 'entity.ts',
+        keyContext: 'backend',
         content: `import { Entity, Fields } from 'remult'
 
 @Entity('tasks', {
@@ -31,7 +46,7 @@ export class Task {
       },
       {
         name: '+page.svelte',
-        type: 'frontend',
+        keyContext: 'frontend',
         framework: 'svelte',
         content: `$effect(() => {
   repo(Task)
