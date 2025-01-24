@@ -29,6 +29,16 @@ onMounted(async () => {
         <button>define a model</button>
         <button>add validation</button>
         <button>pre-save hook</button>
+
+        <div class="editor-framework">
+            <span>Frontend Library</span>
+            <select>
+                <option value="svelte">Svelte</option>
+                <option value="vue">Vue</option>
+                <option value="react">React</option>
+                <option value="angular">Angular</option>
+            </select>
+        </div>
       </div>
 
       <div class="editor-content">
@@ -72,6 +82,69 @@ onMounted(async () => {
   font-size: 0.9rem;
   line-height: 1.5;
 }
+
+  /* Editor Styles */
+  .shiki.tokyo-night {
+    background-color: #050638 !important;
+    font-size: .8rem;
+    line-height: 1.2rem;
+  }
+
+  .editor {
+    color: #484BD2;
+  }
+
+  .editor-body {
+    display: flex;
+  }
+
+  .editor-tabs {
+    display: flex;
+    gap: .2rem;
+    background: #050638;
+    border-bottom: #080A59;
+    padding: .5rem;
+  }
+
+  .editor-tabs button {
+    background: #050638;
+    border: #080A59;
+    padding: .5rem;
+  }
+
+  .editor-sidebar {
+    width: 200px;
+    background: #050638;
+    border-right: #080A59;
+    padding: .5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: .2rem;
+  }
+
+  .editor-code {
+    padding: 0;
+  }
+
+  .editor-framework {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: .2rem;
+  }
+
+  .editor-framework select {
+    background: #050638;
+    border: #080A59;
+    padding: .5rem;
+  }
+
+  .editor-framework span {
+    font-size: .8rem;
+    color: #484BD2;
+  }
 
 .loading-indicator {
   color: #666;

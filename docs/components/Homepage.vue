@@ -74,49 +74,4 @@ import Editor from './Editor.vue'
   body:has(.homepage) .VPNavBar {
     background: transparent;
   }
-
-  /* Editor Styles */
-  .shiki.tokyo-night {
-    background-color: #050638 !important;
-    font-size: .8rem;
-    line-height: 1.2rem;
-  }
-
-  .editor {
-    color: #484BD2;
-  }
-
-  .editor-body {
-    display: flex;
-  }
-
-  .editor-tabs {
-    display: flex;
-    gap: .2rem;
-    background: #050638;
-    border-bottom: #080A59;
-    padding: .5rem;
-  }
-
-  .editor-tabs button {
-    background: #050638;
-    border: #080A59;
-    padding: .5rem;
-  }
-
-  .editor-sidebar {
-    width: 200px;
-    background: #050638;
-    border-right: #080A59;
-    padding: .5rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: flex-start;
-    gap: .2rem;
-  }
-
-  .editor-code {
-    padding: 0;
-  }
 </style>
