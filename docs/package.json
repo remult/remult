@@ -14,7 +14,9 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "vitepress": "^1.2.3",
+    "@shikijs/vitepress-twoslash": "^2.1.0",
+    "shiki": "^2.1.0",
+    "vitepress": "^1.6.3",
     "vitepress-plugin-tabs": "^0.5.0"
   }
 }

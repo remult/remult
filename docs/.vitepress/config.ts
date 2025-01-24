@@ -3,6 +3,7 @@ import { DefaultTheme } from 'vitepress/theme'
 import { tabsMarkdownPlugin } from 'vitepress-plugin-tabs'
 import toolbarConfig from './toolbar-config.json'
 import { fileURLToPath, URL } from 'node:url'
+import { transformerTwoslash } from '@shikijs/vitepress-twoslash'
 
 const tutorials = [
   { path: 'react' },
@@ -482,10 +483,12 @@ export default defineConfig({
       message: 'MIT Licensed | Made by the Remult team with ❤️',
     },
   },
+
   markdown: {
-    theme: 'dark-plus',
+    theme: 'catppuccin-macchiato',
     config(md) {
       md.use(tabsMarkdownPlugin)
     },
+    codeTransformers: [transformerTwoslash({})],
   },
 })
