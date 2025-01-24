@@ -2,6 +2,7 @@ import { defineConfig } from 'vitepress'
 import { DefaultTheme } from 'vitepress/theme'
 import { tabsMarkdownPlugin } from 'vitepress-plugin-tabs'
 import toolbarConfig from './toolbar-config.json'
+import { fileURLToPath, URL } from 'node:url'
 
 const tutorials = [
   { path: 'react' },
@@ -42,6 +43,19 @@ export default defineConfig({
   lastUpdated: true,
   ignoreDeadLinks: 'localhostLinks',
   cleanUrls: true,
+
+  vite: {
+    resolve: {
+      alias: [
+        {
+          find: /^.*\/VPHome\.vue$/,
+          replacement: fileURLToPath(
+            new URL('../components/Homepage.vue', import.meta.url),
+          ),
+        },
+      ],
+    },
+  },
 
   head: [
     ['link', { href: '/favicon.png', rel: 'icon', type: 'image/png' }],
