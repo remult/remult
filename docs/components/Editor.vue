@@ -31,44 +31,42 @@ const getCurrentCode = () => {
 </script>
 
 <template>
-  <div class="editor rounded-lg overflow-hidden">
-    <div class="editor-header bg-[#0d0d2d] text-white p-4">Customer Portal</div>
-    <div class="editor-body flex">
-      <div class="editor-sidebar bg-[#0a0a24] text-white p-4 w-48">
-        <span class="block mb-4">Steps</span>
+  <div class="editor">
+    <div class="editor-header">Customer Portal</div>
+    <div class="editor-body">
+      <div class="editor-sidebar">
+        <span class="steps-label">Steps</span>
         <button
           v-for="step in steps"
           :key="step.id"
           @click="selectStep(step)"
-          class="block w-full text-left mb-2 px-3 py-2 rounded hover:bg-[#1a1a3a] transition-colors"
-          :class="{ 'bg-[#1a1a3a]': currentStep?.id === step.id }"
+          class="step-button"
+          :class="{ active: currentStep?.id === step.id }"
         >
           {{ step.name }}
         </button>
 
         <div class="editor-framework">
-            <span>Frontend Library</span>
-            <select>
-                <option value="svelte">Svelte</option>
-                <option value="vue">Vue</option>
-                <option value="react">React</option>
-                <option value="angular">Angular</option>
-            </select>
+          <span>Frontend Library</span>
+          <select>
+            <option value="svelte">Svelte</option>
+            <option value="vue">Vue</option>
+            <option value="react">React</option>
+            <option value="angular">Angular</option>
+          </select>
         </div>
       </div>
 
-      <div class="editor-content flex-1 bg-[#050638]">
-        <div class="editor-tabs flex bg-[#0d0d2d]">
+      <div class="editor-content">
+        <div class="editor-tabs">
           <button
             v-for="file in currentStep?.files"
             :key="file.name"
             @click="selectFile(file.name)"
-            class=""
-            :class="{ 'bg-[#1a1a3a]': currentFile === file.name }"
+            class="tab-button"
+            :class="{ active: currentFile === file.name }"
           >
-            <span style="padding: 10px">
-              {{ file.name }}
-            </span>
+            <span>{{ file.name }}</span>
           </button>
         </div>
 
@@ -76,11 +74,9 @@ const getCurrentCode = () => {
           <Code :code="getCurrentCode()" />
         </div>
 
-        <div
-          class="editor-footer flex justify-between p-4 bg-[#0d0d2d] text-white"
-        >
-          <a href="/docs" class="hover:text-blue-400">More about validation</a>
-          <a href="/docs" class="hover:text-blue-400">More about auth</a>
+        <div class="editor-footer">
+          <a href="/docs">More about validation</a>
+          <a href="/docs">More about auth</a>
         </div>
       </div>
     </div>
@@ -91,72 +87,121 @@ const getCurrentCode = () => {
 .editor {
   background: #050638;
   border-radius: 3px;
+  overflow: hidden;
 }
 
 .editor-header {
   display: flex;
   justify-content: center;
+  background: #0d0d2d;
+  color: white;
+  padding: 1rem;
 }
 
-  /* Editor Styles */
-  .shiki.tokyo-night {
-    background-color: #050638 !important;
-    font-size: .8rem;
-    line-height: 1.2rem;
-  }
+/* Editor Styles */
+.shiki.tokyo-night {
+  background-color: #050638 !important;
+  font-size: 0.8rem;
+  line-height: 1.2rem;
+}
 
-  .editor {
-    color: #484BD2;
-  }
+.editor {
+  color: #484bd2;
+}
 
-  .editor-body {
-    display: flex;
-  }
+.editor-body {
+  display: flex;
+}
 
-  .editor-tabs {
-    display: flex;
-    gap: .2rem;
-    background: #050638;
-    border-bottom: #080A59;
-    padding: .5rem;
-  }
+.editor-content {
+  flex: 1;
+  background: #050638;
+}
 
-  .editor-tabs button {
-    background: #050638;
-    border: #080A59;
-    padding: .5rem;
-  }
+.editor-tabs {
+  display: flex;
+  gap: 0.2rem;
+  background: #050638;
+  border-bottom: #080a59;
+  padding: 0.5rem;
+}
 
-  .editor-sidebar {
-    width: 200px;
-    background: #050638;
-    border-right: #080A59;
-    padding: .5rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: flex-start;
-    gap: .2rem;
-  }
+.tab-button {
+  background: #050638;
+  border: #080a59;
+  padding: 0.5rem;
+}
 
-  .editor-framework {
-    margin-top: auto;
-    display: flex;
-    flex-direction: column;
-  }
+.tab-button.active {
+  background: #1a1a3a;
+}
 
-  .editor-framework span {
-    font-size: .8rem;
-    color: #484BD2;
-  }
+.editor-sidebar {
+  width: 200px;
+  background: #050638;
+  border-right: #080a59;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 0.2rem;
+  color: white;
+}
 
-  .editor-framework select {
-    background: #050638;
-    border: #080A59;
-    padding: .5rem;
-  }
-  
-  .editor-code {
-    padding: 0;
-  }
+.steps-label {
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.step-button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  margin-bottom: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.25rem;
+  transition: background-color 0.2s;
+}
+
+.step-button:hover {
+  background: #1a1a3a;
+}
+
+.step-button.active {
+  background: #1a1a3a;
+}
+
+.editor-framework {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-framework span {
+  font-size: 0.8rem;
+  color: #484bd2;
+}
+
+.editor-framework select {
+  background: #050638;
+  border: #080a59;
+  padding: 0.5rem;
+}
+
+.editor-code {
+  padding: 0;
+}
+
+.editor-footer {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem;
+  background: #0d0d2d;
+  color: white;
+}
+
+.editor-footer a:hover {
+  color: #60a5fa;
+}
 </style>
