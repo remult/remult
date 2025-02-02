@@ -146,7 +146,7 @@
   )
 
   // Reset newRow when items change
-  let newRow = $state(false)
+  let newRow = $state<Record<any, any> | undefined>(undefined)
   run(() => {
     newRow = items && undefined
   })

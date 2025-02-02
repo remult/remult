@@ -1,4 +1,4 @@
-import { tick, type SvelteComponent } from 'svelte'
+import { type Component } from 'svelte'
 import { writable } from 'svelte/store'
 
 export type DialogConfig = {
@@ -11,7 +11,7 @@ export type DialogConfig = {
 }
 export type DialogMetaData = {
   config: DialogConfig
-  component?: new (...args: any[]) => SvelteComponent
+  component?: Component
   props?: any
   children?: any
   focusKey?: string

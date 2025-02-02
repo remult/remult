@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { createBubbler } from 'svelte/legacy';
+  import { createBubbler } from 'svelte/legacy'
 
-  const bubble = createBubbler();
+  const bubble = createBubbler()
   import { createEventDispatcher } from 'svelte'
   import type {
     FieldUIInfo,
@@ -13,18 +13,18 @@
   import { type Content, JSONEditor } from 'svelte-jsoneditor'
 
   interface Props {
-    value: any | undefined;
-    relationsToOneValues?: RelationsToOneValues;
-    info: FieldUIInfo;
-    isNewRow?: boolean;
+    value: any | undefined
+    relationsToOneValues?: RelationsToOneValues
+    info: FieldUIInfo
+    isNewRow?: boolean
   }
 
   let {
     value = $bindable(),
     relationsToOneValues = {},
     info,
-    isNewRow = false
-  }: Props = $props();
+    isNewRow = false,
+  }: Props = $props()
 
   const dispatch = createEventDispatcher()
 
@@ -108,7 +108,7 @@
     onclick={() => {
       dialog.show({
         config: { title: 'Edit JSON', width: '90vw' },
-        component: JSONEditor,
+        component: JSONEditor as any,
         props: { content: { json: value ?? {} }, onChange },
       })
     }}
@@ -132,9 +132,24 @@
     {/each}
   </select>
 {:else if info.type == 'number'}
-  <input bind:value onchange={bubble('change')} type="number" onkeydown={handleKeydown} />
+  <input
+    bind:value
+    onchange={bubble('change')}
+    type="number"
+    onkeydown={handleKeydown}
+  />
 {:else if info.inputType == 'color'}
-  <input bind:value onchange={bubble('change')} type="color" onkeydown={handleKeydown} />
+  <input
+    bind:value
+    onchange={bubble('change')}
+    type="color"
+    onkeydown={handleKeydown}
+  />
 {:else}
-  <input bind:value onchange={bubble('change')} type="text" onkeydown={handleKeydown} />
+  <input
+    bind:value
+    onchange={bubble('change')}
+    type="text"
+    onkeydown={handleKeydown}
+  />
 {/if}
