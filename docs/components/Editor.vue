@@ -270,11 +270,12 @@ const getStepTimeDisplay = (step: CodeStep, index: number) => {
 }
 
 .step-time {
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   color: #484bd2;
   opacity: 0.8;
   min-width: 70px;
   text-align: right;
+  align-items: end;
 }
 
 .editor-framework {
