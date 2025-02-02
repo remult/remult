@@ -45,6 +45,12 @@ export class Task {
 }`,
       },
       {
+        name: 'page.tsx',
+        keyContext: 'frontend',
+        framework: 'react',
+        content: `PLOP... react content...`,
+      },
+      {
         name: '+page.svelte',
         keyContext: 'frontend',
         framework: 'svelte',
@@ -55,6 +61,18 @@ export class Task {
     )
     .then((t) => (tasks = t));
 });`,
+      },
+      {
+        name: 'page.vue???',
+        keyContext: 'frontend',
+        framework: 'vue',
+        content: `PLOP... vue content...`,
+      },
+      {
+        name: 'page.angular???',
+        keyContext: 'frontend',
+        framework: 'angular',
+        content: `PLOP... angular content...`,
       },
     ],
   },

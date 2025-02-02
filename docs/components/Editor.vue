@@ -6,6 +6,7 @@ import { type CodeStep, stepsData } from './stepsData'
 const steps = ref<CodeStep[]>([])
 const currentStep = ref<CodeStep | null>(null)
 const currentFile = ref<string | null>(null)
+const currentFramework = ref<'svelte' | 'vue' | 'react' | 'angular'>('react')
 
 onMounted(() => {
   steps.value = stepsData
@@ -25,8 +26,8 @@ const selectFile = (fileName: string) => {
 const getCurrentCode = () => {
   if (!currentStep.value || !currentFile.value) return ''
   const file = currentStep.value.files.find((f) => f.name === currentFile.value)
-  const tt = file?.content || ''
-  return tt
+  const content = file?.content || ''
+  return content
 }
 </script>
 
@@ -48,10 +49,10 @@ const getCurrentCode = () => {
 
         <div class="editor-framework">
           <span>Frontend Library</span>
-          <select>
+          <select v-model="currentFramework">
+            <option value="react">React</option>
             <option value="svelte">Svelte</option>
             <option value="vue">Vue</option>
-            <option value="react">React</option>
             <option value="angular">Angular</option>
           </select>
         </div>
@@ -60,7 +61,10 @@ const getCurrentCode = () => {
       <div class="editor-content">
         <div class="editor-tabs">
           <button
-            v-for="file in currentStep?.files"
+            v-for="file in currentStep?.files.filter(
+              (f) =>
+                f.framework === undefined || f.framework === currentFramework,
+            )"
             :key="file.name"
             @click="selectFile(file.name)"
             class="tab-button"
