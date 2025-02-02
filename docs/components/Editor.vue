@@ -2,11 +2,13 @@
 import Code from './Code.vue'
 import { ref, onMounted } from 'vue'
 import { type CodeStep, stepsData } from './stepsData'
+import { useUserPreference } from './composables/useUserPreference'
 
 const steps = ref<CodeStep[]>([])
 const currentStep = ref<CodeStep | null>(null)
 const currentFile = ref<string | null>(null)
-const currentFramework = ref<'svelte' | 'vue' | 'react' | 'angular'>('react')
+
+const { framework } = useUserPreference()
 
 onMounted(() => {
   steps.value = stepsData
@@ -49,7 +51,7 @@ const getCurrentCode = () => {
 
         <div class="editor-framework">
           <span>Frontend Library</span>
-          <select v-model="currentFramework">
+          <select v-model="framework">
             <option value="react">React</option>
             <option value="svelte">Svelte</option>
             <option value="vue">Vue</option>
@@ -62,8 +64,7 @@ const getCurrentCode = () => {
         <div class="editor-tabs">
           <button
             v-for="file in currentStep?.files.filter(
-              (f) =>
-                f.framework === undefined || f.framework === currentFramework,
+              (f) => f.framework === undefined || f.framework === framework,
             )"
             :key="file.name"
             @click="selectFile(file.name)"

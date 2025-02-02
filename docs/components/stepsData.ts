@@ -1,3 +1,5 @@
+import type { Framework } from './composables/useUserPreference.js'
+
 export interface CodeStep {
   id: string
   name: string
@@ -5,7 +7,7 @@ export interface CodeStep {
     name: string
     content: string
     keyContext: string // So that we can just from a framework to another framework keeping the context
-    framework?: 'svelte' | 'vue' | 'react' | 'angular' // default is nothing
+    framework?: Framework // default is undefined
   }[]
   cta?: {
     label: string
