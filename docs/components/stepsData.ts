@@ -19,7 +19,7 @@ export interface CodeStep {
 
 export const stepsData: CodeStep[] = [
   {
-    id: '0-step1',
+    id: 'step-01',
     name: 'Define a model',
     cta: [
       {
@@ -52,7 +52,31 @@ export class Task {
         name: 'page.tsx',
         keyContext: 'frontend',
         framework: 'react',
-        content: `PLOP... react content...`,
+        languageCodeHighlight: 'tsx',
+        content: `import { useEffect, useState } from 'react'
+import { remult } from 'remult'
+import { Task } from './shared/Task'
+
+const taskRepo = remult.repo(Task)
+
+export default function App() {
+  const [tasks, setTasks] = useState<Task[]>([])
+
+  useEffect(() => {
+    taskRepo.find().then(setTasks)
+  }, [])
+  return (
+    <div>
+      {tasks.map((task) => {
+        return (
+          <div key={task.id}>
+            {task.title}
+          </div>
+        )
+      })}
+    </div>
+  )
+}`,
       },
       {
         name: '+page.svelte',
@@ -77,17 +101,76 @@ export class Task {
 {/each}`,
       },
       {
-        name: 'page.vue???',
+        name: 'page.vue',
         keyContext: 'frontend',
         framework: 'vue',
-        content: `PLOP... vue content...`,
+        languageCodeHighlight: 'vue',
+        content: `<script setup lang="ts">
+  import { onMounted, ref } from "vue";
+  import { remult } from "remult";
+  import { Task } from "./shared/Task";
+
+  const taskRepo = remult.repo(Task);
+  const tasks = ref<Task[]>([]);
+  onMounted(() => taskRepo.find().then((items) => (tasks.value = items)));
+</script>
+<template>
+  <main>
+    <div v-for="task in tasks">
+      {{ task.title }}
+    </div>
+  </main>
+</template>`,
       },
       {
-        name: 'page.angular???',
+        name: 'todo.component.ts',
         keyContext: 'frontend',
         framework: 'angular',
-        content: `PLOP... angular content...`,
+        languageCodeHighlight: 'angular-ts',
+        content: `import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { remult } from 'remult';
+import { Task } from '../../shared/Task';
+
+@Component({
+  selector: 'app-todo',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './todo.component.html',
+  styleUrl: './todo.component.css',
+})
+export class TodoComponent {
+  taskRepo = remult.repo(Task);
+  tasks: Task[] = [];
+  ngOnInit() {
+    this.taskRepo.find().then((items) => (this.tasks = items));
+  }
+}`,
+      },
+      {
+        name: 'todo.component.html',
+        keyContext: 'frontend2',
+        framework: 'angular',
+        languageCodeHighlight: 'html',
+        content: `<div *ngFor="let task of tasks">
+  {{task.title}}
+</div>`,
       },
     ],
+  },
+
+  {
+    id: 'step-02',
+    name: 'Step 2...',
+    cta: [],
+    files: [],
+  },
+
+  {
+    id: 'step-03',
+    name: 'Step 3...',
+    cta: [],
+    files: [],
   },
 ]

@@ -67,6 +67,12 @@ const getCurrentCode = () => {
   const file = currentStep.value.files.find((f) => f.name === currentFile.value)
   return file?.content || ''
 }
+
+const getCurrentLanguage = () => {
+  if (!currentStep.value || !currentFile.value) return 'typescript'
+  const file = currentStep.value.files.find((f) => f.name === currentFile.value)
+  return file?.languageCodeHighlight || 'typescript'
+}
 </script>
 
 <template>
@@ -112,7 +118,7 @@ const getCurrentCode = () => {
         </div>
 
         <div class="editor-code">
-          <Code :code="getCurrentCode()" language="svelte" />
+          <Code :code="getCurrentCode()" :language="getCurrentLanguage()" />
         </div>
 
         <div class="editor-footer">
