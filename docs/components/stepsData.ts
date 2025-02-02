@@ -4,6 +4,7 @@ import type { Framework } from './composables/useUserPreference.js'
 export interface CodeStep {
   id: string
   name: string
+  stepTime: number
   files: {
     name: string
     content: string
@@ -21,6 +22,7 @@ export const stepsData: CodeStep[] = [
   {
     id: 'step-01',
     name: 'Define a model',
+    stepTime: 4 * 60,
     cta: [
       {
         label: 'More about validation',
@@ -163,6 +165,7 @@ export class TodoComponent {
   {
     id: 'step-02',
     name: 'Step 2...',
+    stepTime: 2 * 60,
     cta: [],
     files: [],
   },
@@ -170,6 +173,15 @@ export class TodoComponent {
   {
     id: 'step-03',
     name: 'Step 3...',
+    stepTime: 30,
+    cta: [],
+    files: [],
+  },
+
+  {
+    id: 'step-04',
+    name: 'Step 4...',
+    stepTime: 1 * 60,
     cta: [],
     files: [],
   },

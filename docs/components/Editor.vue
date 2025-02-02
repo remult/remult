@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Code from './Code.vue'
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { type CodeStep, stepsData } from './stepsData'
 import { useUserPreference } from './composables/useUserPreference'
 
@@ -73,6 +73,52 @@ const getCurrentLanguage = () => {
   const file = currentStep.value.files.find((f) => f.name === currentFile.value)
   return file?.languageCodeHighlight || 'typescript'
 }
+
+// Add this helper function in the <script setup> section
+const formatTime = (totalSeconds: number) => {
+  const minutes = Math.floor(totalSeconds / 60)
+  const seconds = totalSeconds % 60
+
+  if (minutes === 0) {
+    return `${seconds}''`
+  }
+  if (seconds === 0) {
+    return `${minutes}'`
+  }
+  return `${minutes}'${seconds}''`
+}
+
+// Add these new functions and refs
+const getRelativeTime = (
+  step: CodeStep,
+  currentStepIndex: number,
+  stepIndex: number,
+) => {
+  if (stepIndex === currentStepIndex) return 'now'
+
+  const diffIndex = stepIndex - currentStepIndex
+  if (diffIndex < 0) {
+    // For previous steps, sum up all steps between target and current (inclusive)
+    const secondsAgo = steps.value
+      .slice(stepIndex, currentStepIndex)
+      .reduce((total, s) => total + (s.stepTime || 0), 0)
+    return formatTime(secondsAgo) + ' ago'
+  } else {
+    // For next steps, sum up times from current step up to (but not including) target step
+    const secondsUntil = steps.value
+      .slice(currentStepIndex, stepIndex)
+      .reduce((total, s) => total + (s.stepTime || 0), 0)
+    return 'in ' + formatTime(secondsUntil)
+  }
+}
+
+const currentStepIndex = computed(() => {
+  return steps.value.findIndex((step) => step.id === currentStep.value?.id)
+})
+
+const getStepTimeDisplay = (step: CodeStep, index: number) => {
+  return getRelativeTime(step, currentStepIndex.value, index)
+}
 </script>
 
 <template>
@@ -82,13 +128,14 @@ const getCurrentLanguage = () => {
       <div class="editor-sidebar">
         <span class="steps-label">Steps</span>
         <button
-          v-for="step in steps"
+          v-for="(step, index) in steps"
           :key="step.id"
           @click="selectStep(step)"
           class="step-button"
           :class="{ active: currentStep?.id === step.id }"
         >
-          {{ step.name }}
+          <span>{{ step.name }}</span>
+          <span class="step-time">{{ getStepTimeDisplay(step, index) }}</span>
         </button>
 
         <div class="editor-framework">
@@ -203,7 +250,9 @@ const getCurrentLanguage = () => {
 }
 
 .step-button {
-  display: block;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   width: 100%;
   text-align: left;
   margin-bottom: 0.5rem;
@@ -218,6 +267,14 @@ const getCurrentLanguage = () => {
 
 .step-button.active {
   background: #1a1a3a;
+}
+
+.step-time {
+  font-size: 0.8rem;
+  color: #484bd2;
+  opacity: 0.8;
+  min-width: 70px;
+  text-align: right;
 }
 
 .editor-framework {
