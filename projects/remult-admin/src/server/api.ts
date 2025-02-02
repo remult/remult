@@ -7,6 +7,7 @@ import { ContactTag } from './shared/Contacts/ContactTag.entity.js'
 import { Tag } from './shared/Contacts/Tag.entity.js'
 import { Deal, DealContact } from './shared/Deals/Deal.entity.js'
 import { NoNo } from './shared/NoNo.js'
+import { Story } from './shared/Story.js'
 import { Task } from './shared/Task.js'
 
 export const entities = [
@@ -20,6 +21,7 @@ export const entities = [
   Deal,
   Task,
   NoNo,
+  Story,
 ]
 
 export const api = remultExpress({

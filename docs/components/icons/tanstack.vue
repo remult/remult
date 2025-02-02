@@ -11,7 +11,7 @@ const props = withDefaults(
 
 <template>
   <img
-    src="https://tanstack.com/_build/assets/logo-color-100w-lPbOTx1K.png"
+    src="/tanstack_logo.png"
     alt="tanstack logo"
     :width="sizeIco"
     :height="sizeIco"

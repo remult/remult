@@ -74,71 +74,78 @@ export function buildEntityInfo(options: AdminOptions) {
 
     for (const x of metadata.fields.toArray()) {
       if (!x.includedInApi(undefined)) continue
-      let relation: FieldRelationToOneInfo | undefined
-      let valFieldKey = x.key
-      const info = getRelationFieldInfo(x)
-      if (info) {
-        const relInfo = info.getFields()
-        const relRepo = options.remult.repo(info.toEntity)
-        const where =
-          typeof info.options.findOptions === 'object' &&
-          info.options.findOptions.where
-            ? Filter.entityFilterToJson(
-                relRepo.metadata,
-                info.options.findOptions.where,
-              )
-            : undefined
-        const idField = relRepo.metadata.idMetadata.field.key
-        if (info.type === 'reference' || info.type === 'toOne') {
-          if (info.type == 'toOne') {
-            for (const key in relInfo.fields) {
-              if (Object.prototype.hasOwnProperty.call(relInfo.fields, key)) {
-                const element = relInfo.fields[key]
-                valFieldKey = element
+      try {
+        let relation: FieldRelationToOneInfo | undefined
+        let valFieldKey = x.key
+        const info = getRelationFieldInfo(x)
+        if (info) {
+          const relInfo = info.getFields()
+          const relRepo = options.remult.repo(info.toEntity)
+          const where =
+            typeof info.options.findOptions === 'object' &&
+            info.options.findOptions.where
+              ? Filter.entityFilterToJson(
+                  relRepo.metadata,
+                  info.options.findOptions.where,
+                )
+              : undefined
+          const idField = relRepo.metadata.idMetadata.field.key
+          if (info.type === 'reference' || info.type === 'toOne') {
+            if (info.type == 'toOne') {
+              for (const key in relInfo.fields) {
+                if (Object.prototype.hasOwnProperty.call(relInfo.fields, key)) {
+                  const element = relInfo.fields[key]
+                  valFieldKey = element
+                }
               }
             }
-          }
-          if (relRepo.metadata.apiReadAllowed) {
-            relation = {
-              ...relInfo,
-              where,
-              entityKey: relRepo.metadata.key,
-              idField,
-              captionField: relRepo.metadata.fields
-                .toArray()
-                .find((x) => x.key != idField && x.valueType == String)?.key!,
+            if (relRepo.metadata.apiReadAllowed) {
+              relation = {
+                ...relInfo,
+                where,
+                entityKey: relRepo.metadata.key,
+                idField,
+                captionField: relRepo.metadata.fields
+                  .toArray()
+                  .find((x) => x.key != idField && x.valueType == String)?.key!,
+              }
             }
+          } else if (info.type === 'toMany') {
+            if (relRepo.metadata.apiReadAllowed) {
+              relations.push({
+                ...relInfo,
+                where,
+                entityKey: relRepo.metadata.key,
+              })
+            }
+            continue
           }
-        } else if (info.type === 'toMany') {
-          if (relRepo.metadata.apiReadAllowed) {
-            relations.push({
-              ...relInfo,
-              where,
-              entityKey: relRepo.metadata.key,
-            })
-          }
-          continue
         }
+        fields.push({
+          key: x.key,
+          readOnly: !x.apiUpdateAllowed(),
+          values: getValueList(x),
+          valFieldKey,
+          caption: x.caption,
+          relationToOne: relation,
+          inputType: x.inputType,
+          type:
+            x.valueConverter.fieldTypeInDb == 'json'
+              ? 'json'
+              : x.valueType === Number
+              ? 'number'
+              : x.valueType === Boolean
+              ? 'boolean'
+              : x.valueType === Date
+              ? 'date'
+              : 'string',
+        })
+      } catch (error) {
+        console.error(
+          `[remult-admin] Error with ${metadata.key}.${x.key} field.`,
+        )
+        console.error(`[remult-admin]`, error)
       }
-      fields.push({
-        key: x.key,
-        readOnly: !x.apiUpdateAllowed(),
-        values: getValueList(x),
-        valFieldKey,
-        caption: x.caption,
-        relationToOne: relation,
-        inputType: x.inputType,
-        type:
-          x.valueConverter.fieldTypeInDb == 'json'
-            ? 'json'
-            : x.valueType === Number
-            ? 'number'
-            : x.valueType === Boolean
-            ? 'boolean'
-            : x.valueType === Date
-            ? 'date'
-            : 'string',
-      })
     }
 
     if (metadata.apiReadAllowed) {
