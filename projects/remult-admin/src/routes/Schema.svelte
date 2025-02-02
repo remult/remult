@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy'
-
   import { writable } from 'svelte/store'
   import {
     SvelteFlow,
@@ -305,7 +303,8 @@
       },
     }
   }
-  run(() => {
+
+  $effect(() => {
     $godStore && $LSContext && init($godStore, $LSContext)
   })
 </script>

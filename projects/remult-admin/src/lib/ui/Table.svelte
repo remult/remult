@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy'
-
   import type {
     Repository,
     FindOptions,
@@ -11,7 +9,6 @@
     FieldUIInfo,
     RelationsToOneValues,
   } from '../../../../core/server/remult-admin'
-  import { onDestroy } from 'svelte'
   import EditableRow from './EditableRow.svelte'
   import Filter from './Filter.svelte'
   import { writable, type Writable } from 'svelte/store'
@@ -48,10 +45,10 @@
     defaultNumberOfRows = 25,
   }: Props = $props()
 
-  let options: FindOptions<any> = $state()
+  let options: FindOptions<any> = $state({})
 
   // Reset to page 1 on key change
-  run(() => {
+  $effect(() => {
     options = repo.metadata.key && {
       limit: 25,
       page: 1,
@@ -63,34 +60,29 @@
   let items: any[] | null = $state(null)
   let relationsToOneValues: RelationsToOneValues = $state({})
 
-  run(() => {
+  $effect(() => {
     $SSContext.forbiddenEntities.includes(repo.metadata.key) && (items = [])
   })
 
   // resting when fields change
-  run(() => {
+  $effect(() => {
     items = fields && (items = null)
   })
-  run(() => {
+  $effect(() => {
     relationsToOneValues = fields && (relationsToOneValues = {})
   })
-  run(() => {
+  $effect(() => {
     $filter = fields && ($filter = {})
   })
 
   let totalRows = $state(-1)
-  let unSub: (() => void) | null = null
 
-  const reSub = (currentFilter: EntityFilter<any>) => {
+  $effect(() => {
     $SSContext.forbiddenEntities = []
 
-    if (unSub) {
-      unSub()
-    }
+    const where = { $and: [{ $filter, ...parentRelation }] }
 
-    const where = { $and: [currentFilter, { ...parentRelation }] }
-
-    unSub = repo
+    return repo
       .liveQuery({
         ...options,
         where,
@@ -129,15 +121,6 @@
 
         totalRows = await repo.count(where)
       })
-  }
-
-  onDestroy(() => {
-    unSub && unSub()
-  })
-
-  // trick to make sure reSub is called when repo changes
-  run(() => {
-    repo && options && reSub($filter)
   })
 
   let from = $derived(((options.page || 1) - 1) * options.limit + 1)
@@ -147,7 +130,7 @@
 
   // Reset newRow when items change
   let newRow = $state<Record<any, any> | undefined>(undefined)
-  run(() => {
+  $effect(() => {
     newRow = items && undefined
   })
 

@@ -1,7 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
-  import { createEventDispatcher, onMount } from 'svelte'
   import type {
     FieldUIInfo,
     RelationsToOneValues,
@@ -12,30 +9,29 @@
   import { godStore } from '../../stores/GodStore.js'
 
   interface Props {
-    value: any;
-    relationsToOneValues?: RelationsToOneValues;
-    info: FieldUIInfo;
+    value: any
+    relationsToOneValues?: RelationsToOneValues
+    info: FieldUIInfo
+    onchange: (value: any) => void
   }
 
-  let { value = $bindable(), relationsToOneValues = {}, info }: Props = $props();
+  let {
+    value = $bindable(),
+    relationsToOneValues = {},
+    info,
+    onchange,
+  }: Props = $props()
 
   let displayValue = $state(undefined)
 
-  const dispatch = createEventDispatcher()
-
-  function dispatchChange(_data) {
-    dispatch('change', { _data })
-  }
-
-
   const getDisplayValue = async (_value) => {
-    if(_value === null) {
+    if (_value === null) {
       displayValue = '- Unset -'
     } else {
       displayValue =
         relationsToOneValues[info.valFieldKey] &&
         relationsToOneValues[info.valFieldKey].get(value)
-    if (displayValue === undefined) {
+      if (displayValue === undefined) {
         displayValue = await $godStore.displayValueFor(info, value)
       }
     }
@@ -54,12 +50,13 @@
 
   const onSelect = (_value: any) => {
     value = _value
-    dispatchChange(value)
+    onchange(value)
     dialog.close({ success: true, data: { value } })
   }
-  run(() => {
+
+  $effect(() => {
     getDisplayValue(value)
-  });
+  })
 </script>
 
 {#if (displayValue ?? '').startsWith("Can't display")}

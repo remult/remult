@@ -64,14 +64,13 @@
   }
 
   interface Props {
-    fields?: FieldUIInfo[];
-    filter?: EntityFilter<any>;
+    fields?: FieldUIInfo[]
+    filter?: EntityFilter<any>
   }
 
-  let { fields = [], filter = $bindable({}) }: Props = $props();
+  let { fields = [], filter = $bindable({}) }: Props = $props()
 
   let filterValues: (typeof defaultFilter)[] = $state([])
-  
 
   function addFilter() {
     filterValues = [
@@ -215,7 +214,7 @@
         <RelationField
           {info}
           value={field.value}
-          on:change={(e) => {
+          onchange={(e) => {
             setValue({ target: { value: e.detail._data } }, field, 'value')
           }}
         />

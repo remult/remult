@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy'
-
   import type {
     EntityRelationToManyInfo,
     FieldUIInfo,
@@ -48,7 +46,7 @@
   let rowFrozzen = $state({ ...row })
 
   let value = $state<Record<any, any>>()
-  run(() => {
+  $effect(() => {
     value = row
   })
   let relationTable = $derived(
@@ -184,7 +182,7 @@
         info={x}
         {relationsToOneValues}
         bind:value={value[x.valFieldKey]}
-        on:change={() => {
+        onchange={() => {
           if (error?.modelState?.[x.valFieldKey])
             error = {
               ...error,

@@ -1,8 +1,4 @@
 <script lang="ts">
-  import { createBubbler } from 'svelte/legacy'
-
-  const bubble = createBubbler()
-  import { createEventDispatcher } from 'svelte'
   import type {
     FieldUIInfo,
     RelationsToOneValues,
@@ -17,6 +13,7 @@
     relationsToOneValues?: RelationsToOneValues
     info: FieldUIInfo
     isNewRow?: boolean
+    onchange: (value: any) => void
   }
 
   let {
@@ -24,17 +21,16 @@
     relationsToOneValues = {},
     info,
     isNewRow = false,
+    onchange,
   }: Props = $props()
 
-  const dispatch = createEventDispatcher()
-
-  const onChange = (content: Content) => {
+  const localOnChange = (content: Content) => {
     // @ts-ignore
     if (JSON.stringify(content.json) != JSON.stringify(value)) {
       // @ts-ignore
       value = content.json
     }
-    dispatch('change', { value })
+    onchange(value)
   }
 
   const handleKeydown = (e: KeyboardEvent) => {
@@ -86,7 +82,7 @@
 </script>
 
 {#if info.relationToOne}
-  <RelationField bind:value {info} on:change {relationsToOneValues} />
+  <RelationField bind:value {info} {onchange} {relationsToOneValues} />
 {:else if (!isNewRow && value === undefined) || (isNewRow && info.readOnly)}
   <input
     value=""
@@ -109,7 +105,7 @@
       dialog.show({
         config: { title: 'Edit JSON', width: '90vw' },
         component: JSONEditor as any,
-        props: { content: { json: value ?? {} }, onChange },
+        props: { content: { json: value ?? {} }, onChange: localOnChange },
       })
     }}
     onkeydown={handleKeydown}
@@ -132,24 +128,9 @@
     {/each}
   </select>
 {:else if info.type == 'number'}
-  <input
-    bind:value
-    onchange={bubble('change')}
-    type="number"
-    onkeydown={handleKeydown}
-  />
+  <input bind:value {onchange} type="number" onkeydown={handleKeydown} />
 {:else if info.inputType == 'color'}
-  <input
-    bind:value
-    onchange={bubble('change')}
-    type="color"
-    onkeydown={handleKeydown}
-  />
+  <input bind:value {onchange} type="color" onkeydown={handleKeydown} />
 {:else}
-  <input
-    bind:value
-    onchange={bubble('change')}
-    type="text"
-    onkeydown={handleKeydown}
-  />
+  <input bind:value {onchange} type="text" onkeydown={handleKeydown} />
 {/if}
