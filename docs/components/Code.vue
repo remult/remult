@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { codeToHtml } from 'shiki'
-import { onMounted, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
+
+export type Language = 'typescript' | 'svelte'
 
 interface Props {
   code: string
-  language?: string
+  language?: Language
   theme?: string
 }
 
@@ -17,6 +19,8 @@ const highlightedCode = ref('')
 
 // Function to update the highlighted code
 const updateHighlightedCode = async () => {
+  console.log(`props.language`, props.language)
+
   highlightedCode.value = await codeToHtml(props.code, {
     lang: props.language,
     theme: props.theme,

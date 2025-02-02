@@ -112,7 +112,7 @@ const getCurrentCode = () => {
         </div>
 
         <div class="editor-code">
-          <Code :code="getCurrentCode()" />
+          <Code :code="getCurrentCode()" language="svelte" />
         </div>
 
         <div class="editor-footer">

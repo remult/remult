@@ -1,3 +1,4 @@
+import { Language } from './Code.vue'
 import type { Framework } from './composables/useUserPreference.js'
 
 export interface CodeStep {
@@ -8,6 +9,7 @@ export interface CodeStep {
     content: string
     keyContext: string // So that we can just from a framework to another framework keeping the context
     framework?: Framework // default is undefined
+    languageCodeHighlight?: Language // default is typescript
   }[]
   cta?: {
     label: string
@@ -56,13 +58,23 @@ export class Task {
         name: '+page.svelte',
         keyContext: 'frontend',
         framework: 'svelte',
-        content: `$effect(() => {
-  repo(Task)
-    .find(
-      { limit: 20 } 
-    )
-    .then((t) => (tasks = t));
-});`,
+        languageCodeHighlight: 'svelte',
+        content: `<script lang="ts">
+  import { repo } from "remult";
+  import { Task } from "../shared/Task";
+
+  let tasks = $state<Task[]>([]);
+
+  $effect(() => {
+    repo(Task)
+      .find()
+      .then((t) => (tasks = t));
+  });
+</script>
+
+{#each tasks as task}
+  {task.title}
+{/each}`,
       },
       {
         name: 'page.vue???',
