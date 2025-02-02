@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy'
+
   import type {
     Repository,
     FindOptions,
@@ -26,35 +28,57 @@
   import Asc from '../icons/Asc.svelte'
   import Desc from '../icons/Desc.svelte'
 
-  export let fields: FieldUIInfo[]
-  export let relations: EntityRelationToManyInfo[]
-  export let repo: Repository<any>
-  export let parentRelation: Record<string, any> = {}
-  export let color: string
-  export let defaultOrderBy: EntityFilter<any>
-  export let defaultNumberOfRows = 25
-
-  let options: FindOptions<any>
-
-  // Reset to page 1 on key change
-  $: options = repo.metadata.key && {
-    limit: 25,
-    page: 1,
-    orderBy: defaultOrderBy,
+  interface Props {
+    fields: FieldUIInfo[]
+    relations: EntityRelationToManyInfo[]
+    repo: Repository<any>
+    parentRelation?: Record<string, any>
+    color: string
+    defaultOrderBy: EntityFilter<any>
+    defaultNumberOfRows?: number
   }
 
-  let filter: Writable<EntityFilter<any>> = writable({})
-  let items: any[] | null = null
-  let relationsToOneValues: RelationsToOneValues = {}
+  let {
+    fields,
+    relations,
+    repo,
+    parentRelation = {},
+    color,
+    defaultOrderBy,
+    defaultNumberOfRows = 25,
+  }: Props = $props()
 
-  $: $SSContext.forbiddenEntities.includes(repo.metadata.key) && (items = [])
+  let options: FindOptions<any> = $state()
+
+  // Reset to page 1 on key change
+  run(() => {
+    options = repo.metadata.key && {
+      limit: 25,
+      page: 1,
+      orderBy: defaultOrderBy,
+    }
+  })
+
+  let filter: Writable<EntityFilter<any>> = writable({})
+  let items: any[] | null = $state(null)
+  let relationsToOneValues: RelationsToOneValues = $state({})
+
+  run(() => {
+    $SSContext.forbiddenEntities.includes(repo.metadata.key) && (items = [])
+  })
 
   // resting when fields change
-  $: items = fields && (items = null)
-  $: relationsToOneValues = fields && (relationsToOneValues = {})
-  $: $filter = fields && ($filter = {})
+  run(() => {
+    items = fields && (items = null)
+  })
+  run(() => {
+    relationsToOneValues = fields && (relationsToOneValues = {})
+  })
+  run(() => {
+    $filter = fields && ($filter = {})
+  })
 
-  let totalRows = -1
+  let totalRows = $state(-1)
   let unSub: (() => void) | null = null
 
   const reSub = (currentFilter: EntityFilter<any>) => {
@@ -112,13 +136,20 @@
   })
 
   // trick to make sure reSub is called when repo changes
-  $: repo && options && reSub($filter)
+  run(() => {
+    repo && options && reSub($filter)
+  })
 
-  $: from = ((options.page || 1) - 1) * options.limit + 1
-  $: to = ((options.page || 1) - 1) * options.limit + (items?.length || 0)
+  let from = $derived(((options.page || 1) - 1) * options.limit + 1)
+  let to = $derived(
+    ((options.page || 1) - 1) * options.limit + (items?.length || 0),
+  )
 
   // Reset newRow when items change
-  $: newRow = items && undefined
+  let newRow = $state(false)
+  run(() => {
+    newRow = items && undefined
+  })
 
   const toggleOrderBy = (key: string) => {
     let dir = options.orderBy?.[key]
@@ -158,7 +189,7 @@
 <div class="page-bar">
   <button
     class="icon-button"
-    on:click={() => {
+    onclick={() => {
       const nav = document.querySelector('body')
       nav?.classList.toggle('hide-navigation')
     }}
@@ -174,7 +205,7 @@
       <span style="color: coral; font-size: smaller;">Forbidden</span>
     {/if}
   </div>
-  <button on:click={() => filterDialog(fields, $filter)}> Filter</button>
+  <button onclick={() => filterDialog(fields, $filter)}> Filter</button>
 
   <span class="page-bar__results"
     >{from + ' - ' + to} of
@@ -184,7 +215,7 @@
   <button
     class="icon-button"
     disabled={(options.page || 1) === 1}
-    on:click={() => {
+    onclick={() => {
       options = { ...options, page: (options.page || 2) - 1 }
     }}
   >
@@ -194,7 +225,7 @@
   <button
     class="icon-button"
     disabled={to >= totalRows}
-    on:click={() => {
+    onclick={() => {
       options = { ...options, page: (options.page || 1) + 1 }
     }}
   >
@@ -210,7 +241,7 @@
           {#if newRow === undefined}
             <button
               class="icon-button new-entry"
-              on:click={() => {
+              onclick={() => {
                 newRow = repo.create({ ...parentRelation })
               }}
             >
@@ -219,7 +250,7 @@
           {:else}
             <button
               class="icon-button new-entry"
-              on:click={() => {
+              onclick={() => {
                 newRow = undefined
               }}
             >
@@ -228,7 +259,7 @@
           {/if}
         </td>
         {#each fields as column}
-          <th on:click={() => toggleOrderBy(column.key)}>
+          <th onclick={() => toggleOrderBy(column.key)}>
             <span class="th-span">
               {#if Object.keys(repo.metadata.options.id).includes(column.key)}
                 <Key></Key>
@@ -299,7 +330,7 @@
             {#each fields as column}
               <td
                 class="loading-skeleton"
-                on:click={() => toggleOrderBy(column.key)}
+                onclick={() => toggleOrderBy(column.key)}
               >
                 <LoadingSkeleton width={getWidth()} />
               </td>

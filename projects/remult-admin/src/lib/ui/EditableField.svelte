@@ -1,4 +1,7 @@
 <script lang="ts">
+  import { createBubbler } from 'svelte/legacy';
+
+  const bubble = createBubbler();
   import { createEventDispatcher } from 'svelte'
   import type {
     FieldUIInfo,
@@ -9,10 +12,19 @@
   import RelationField from './RelationField.svelte'
   import { type Content, JSONEditor } from 'svelte-jsoneditor'
 
-  export let value: any | undefined
-  export let relationsToOneValues: RelationsToOneValues = {}
-  export let info: FieldUIInfo
-  export let isNewRow = false
+  interface Props {
+    value: any | undefined;
+    relationsToOneValues?: RelationsToOneValues;
+    info: FieldUIInfo;
+    isNewRow?: boolean;
+  }
+
+  let {
+    value = $bindable(),
+    relationsToOneValues = {},
+    info,
+    isNewRow = false
+  }: Props = $props();
 
   const dispatch = createEventDispatcher()
 
@@ -80,37 +92,37 @@
     value=""
     disabled
     style="opacity: 0.5; background-color: Gainsboro; cursor: not-allowed;"
-    on:keydown={handleKeydown}
+    onkeydown={handleKeydown}
   />
 {:else if info.readOnly}
   <input
     bind:value
     disabled
     style="opacity: 0.5; cursor: not-allowed;"
-    on:keydown={handleKeydown}
+    onkeydown={handleKeydown}
   />
 {:else if info.type == 'json'}
   <button
     style="margin-left: auto; margin-right: auto; width: 100%"
     class="icon-button"
-    on:click={() => {
+    onclick={() => {
       dialog.show({
         config: { title: 'Edit JSON', width: '90vw' },
         component: JSONEditor,
         props: { content: { json: value ?? {} }, onChange },
       })
     }}
-    on:keydown={handleKeydown}
+    onkeydown={handleKeydown}
   >
     <Json></Json>
   </button>
 {:else if info.type == 'boolean'}
-  <select bind:value on:keydown={handleKeydown}>
+  <select bind:value onkeydown={handleKeydown}>
     <option value={false}>False</option>
     <option value={true}>True</option>
   </select>
 {:else if info.values && info.values.length > 0}
-  <select bind:value on:keydown={handleKeydown}>
+  <select bind:value onkeydown={handleKeydown}>
     {#each info.values as option}
       {#if typeof option == 'object'}
         <option value={String(option.id)}>{option.caption}</option>
@@ -120,9 +132,9 @@
     {/each}
   </select>
 {:else if info.type == 'number'}
-  <input bind:value on:change type="number" on:keydown={handleKeydown} />
+  <input bind:value onchange={bubble('change')} type="number" onkeydown={handleKeydown} />
 {:else if info.inputType == 'color'}
-  <input bind:value on:change type="color" on:keydown={handleKeydown} />
+  <input bind:value onchange={bubble('change')} type="color" onkeydown={handleKeydown} />
 {:else}
-  <input bind:value on:change type="text" on:keydown={handleKeydown} />
+  <input bind:value onchange={bubble('change')} type="text" onkeydown={handleKeydown} />
 {/if}

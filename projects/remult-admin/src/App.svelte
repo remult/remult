@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import Router, { loc } from 'svelte-spa-router'
   import Schema from './routes/Schema.svelte'
   import NotFound from './routes/NotFound.svelte'
@@ -16,7 +18,9 @@
   import { getHeader } from './lib/helper.js'
 
   // Save the current location except on '/'
-  $: $loc.location !== '/' && ($LSContext.currentLocationHash = $loc.location)
+  run(() => {
+    $loc.location !== '/' && ($LSContext.currentLocationHash = $loc.location)
+  });
 
   const routes = {
     '/': DefaultRoute,
@@ -73,7 +77,7 @@
     <div class="main-navigation__title">
       Remult Admin
       <button
-        on:click={() =>
+        onclick={() =>
           dialog.show({
             config: { title: 'Remult Settings' },
             component: DialogSettings,

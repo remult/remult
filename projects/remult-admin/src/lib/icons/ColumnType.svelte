@@ -6,8 +6,12 @@
   import Number from './Number.svelte'
   import String from './String.svelte'
 
-  export let type: 'json' | 'number' | 'boolean' | 'date' | 'string' = 'string'
-  export let isSelect = false
+  interface Props {
+    type?: 'json' | 'number' | 'boolean' | 'date' | 'string';
+    isSelect?: boolean;
+  }
+
+  let { type = 'string', isSelect = false }: Props = $props();
 </script>
 
 {#if type === 'boolean'}

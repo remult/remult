@@ -1,6 +1,9 @@
 <script lang="ts">
-  export let params = ''
-  const rmvWarning = params
+  // interface Props {
+  //   params?: string
+  // }
+
+  // let { params = '' }: Props = $props()
 </script>
 
 <div style="height:100vh;">

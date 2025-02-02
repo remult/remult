@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import { createEventDispatcher, onMount } from 'svelte'
   import type {
     FieldUIInfo,
@@ -9,11 +11,15 @@
   import { dialog } from './dialog/dialog.js'
   import { godStore } from '../../stores/GodStore.js'
 
-  export let value: any
-  export let relationsToOneValues: RelationsToOneValues = {}
-  export let info: FieldUIInfo
+  interface Props {
+    value: any;
+    relationsToOneValues?: RelationsToOneValues;
+    info: FieldUIInfo;
+  }
 
-  let displayValue = undefined
+  let { value = $bindable(), relationsToOneValues = {}, info }: Props = $props();
+
+  let displayValue = $state(undefined)
 
   const dispatch = createEventDispatcher()
 
@@ -21,7 +27,6 @@
     dispatch('change', { _data })
   }
 
-  $:  getDisplayValue(value)
 
   const getDisplayValue = async (_value) => {
     if(_value === null) {
@@ -52,6 +57,9 @@
     dispatchChange(value)
     dialog.close({ success: true, data: { value } })
   }
+  run(() => {
+    getDisplayValue(value)
+  });
 </script>
 
 {#if (displayValue ?? '').startsWith("Can't display")}
@@ -63,7 +71,7 @@
 {:else}
   <button
     class="naked-button"
-    on:click={() => {
+    onclick={() => {
       dialog.show({
         config: { title: `${info.caption} selection`, width: '400px' },
         component: SelectDialog,

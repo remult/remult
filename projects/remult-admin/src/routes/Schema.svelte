@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy'
+
   import { writable } from 'svelte/store'
   import {
     SvelteFlow,
@@ -22,10 +24,8 @@
   const edges = writable<Edge[]>([])
 
   const nodeTypes: NodeTypes = {
-    entity: EntityNode,
+    entity: EntityNode as any,
   }
-
-  $: $godStore && $LSContext && init($godStore, $LSContext)
 
   const init = (god: God, ctx: TLSContext) => {
     const layoutType: 'grid-dfs' | 'grid-bfs' | 'line' =
@@ -305,6 +305,9 @@
       },
     }
   }
+  run(() => {
+    $godStore && $LSContext && init($godStore, $LSContext)
+  })
 </script>
 
 <div style="height:100vh;">

@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy'
+
   import type {
     EntityRelationToManyInfo,
     FieldUIInfo,
@@ -15,38 +17,56 @@
   import EditableField from './EditableField.svelte'
   import Table from './Table.svelte'
 
-  export let row: any
-  export let relationsToOneValues: RelationsToOneValues = {}
-  export let saveAction: (data: any) => Promise<void>
-  export let deleteAction: () => Promise<void> = () => Promise.resolve()
-  export let cancelAction: () => Promise<void> = () => Promise.resolve()
-  export let columns: FieldUIInfo[]
-  export let relations: EntityRelationToManyInfo[]
-  export let rowId: any
-  const rmvWarning = rowId
-  export let isNewRow = false
+  interface Props {
+    row: Record<any, any>
+    relationsToOneValues?: RelationsToOneValues
+    saveAction: (data: any) => Promise<void>
+    deleteAction?: () => Promise<void>
+    cancelAction?: () => Promise<void>
+    columns: FieldUIInfo[]
+    relations: EntityRelationToManyInfo[]
+    rowId: any
+    isNewRow?: boolean
+  }
 
-  let error = undefined
-  let relation: EntityRelationToManyInfo | null = null
+  let {
+    row,
+    relationsToOneValues = {},
+    saveAction,
+    deleteAction = () => Promise.resolve(),
+    cancelAction = () => Promise.resolve(),
+    columns,
+    relations,
+    rowId,
+    isNewRow = false,
+  }: Props = $props()
+
+  let error = $state(undefined)
+  let relation: EntityRelationToManyInfo | null = $state(null)
   let isFocused = false
 
-  let rowFrozzen = { ...row }
+  let rowFrozzen = $state({ ...row })
 
-  $: value = row
-  $: relationTable =
+  let value = $state<Record<any, any>>()
+  run(() => {
+    value = row
+  })
+  let relationTable = $derived(
     relation &&
-    typeof relation === 'object' &&
-    $godStore.tables.find((x) => x.key === relation.entityKey)
-  $: change =
+      typeof relation === 'object' &&
+      $godStore.tables.find((x) => x.key === relation.entityKey),
+  )
+  let change = $derived(
     Boolean(
       columns.find(
         // TODO check also for json diff? (today, when filtering or ordering, it will be considered a change "sometimes"... false positive!)
         // x.type !== 'json' &&
         (x) => x.type !== 'json' && value[x.key] !== rowFrozzen[x.key],
       ),
-    ) || isNewRow
+    ) || isNewRow,
+  )
 
-  $: relationWhere =
+  let relationWhere = $derived(
     row && relation && typeof relation === 'object'
       ? Object.fromEntries(
           Object.entries(relation.fields).map(([key, value]) => [
@@ -54,7 +74,8 @@
             row[value],
           ]),
         )
-      : {}
+      : {},
+  )
 
   async function doSave() {
     try {
@@ -134,19 +155,19 @@
   }
 </script>
 
-<svelte:window on:keydown={handleKeydown} />
+<svelte:window onkeydown={handleKeydown} />
 
 <tr
   class={changeOrNew(change, isNewRow) ? 'change' : ''}
-  on:focusin={handleFocusIn}
-  on:focusout={handleFocusOut}
+  onfocusin={handleFocusIn}
+  onfocusout={handleFocusOut}
 >
   <td>
     {#if relations.length > 0 && !isNewRow}
       <button
         class="icon-button relations-button"
         title="Relations"
-        on:click={() => (relation = relation ? null : relations[0])}
+        onclick={() => (relation = relation ? null : relations[0])}
         class:open={relation}
       >
         <ChevronRight></ChevronRight>
@@ -188,14 +209,14 @@
           <button
             class="icon-button save-button"
             title="Save (⌘/Ctrl+Enter, ⌘/Ctrl+Shift+Enter for all)"
-            on:click={doSave}
+            onclick={doSave}
           >
             <Save></Save>
           </button>
           <button
             class="icon-button cancel-button"
             title="Cancel (⌘/Ctrl+Esc, ⌘/Ctrl+Shift+Esc for all)"
-            on:click={doCancel}
+            onclick={doCancel}
           >
             <Cancel></Cancel>
           </button>
@@ -205,7 +226,7 @@
         <button
           class="icon-button delete-button margin-auto"
           title="Delete"
-          on:click={async () => {
+          onclick={async () => {
             try {
               if ($LSContext.settings.confirmDelete) {
                 const res = await dialog.confirmDelete('The full line ?')
@@ -238,7 +259,7 @@
               style="--color: {$godStore.tables.find(
                 (x) => x.key === r.entityKey,
               )?.color}"
-              on:click={(e) => {
+              onclick={(e) => {
                 relation = r
                 e.preventDefault()
               }}

@@ -2,9 +2,13 @@
   import Table from '../lib/ui/Table.svelte'
   import { godStore } from '../stores/GodStore'
 
-  export let params: { wild?: string } = {}
+  interface Props {
+    params?: { wild?: string };
+  }
 
-  $: table = $godStore && $godStore.tables.find((c) => c.key === params.wild)
+  let { params = {} }: Props = $props();
+
+  let table = $derived($godStore && $godStore.tables.find((c) => c.key === params.wild))
 </script>
 
 {#if table}
