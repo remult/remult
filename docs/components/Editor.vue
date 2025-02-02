@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Code from './Code.vue'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { type CodeStep, stepsData } from './stepsData'
 import { useUserPreference } from './composables/useUserPreference'
 
@@ -8,28 +8,64 @@ const steps = ref<CodeStep[]>([])
 const currentStep = ref<CodeStep | null>(null)
 const currentFile = ref<string | null>(null)
 
-const { framework } = useUserPreference()
+const { framework, keyContext } = useUserPreference()
+
+// Helper function to find appropriate file based on framework and keyContext
+const findAppropriateFile = (files: CodeStep['files']) => {
+  const availableFiles = files.filter(
+    (f) => f.framework === framework.value || !f.framework,
+  )
+  const matchingFile = availableFiles.find(
+    (f) => f.keyContext === keyContext.value,
+  )
+  return matchingFile || availableFiles[0]
+}
 
 onMounted(() => {
   steps.value = stepsData
   currentStep.value = stepsData[0]
-  currentFile.value = stepsData[0].files[0].name
+
+  const appropriateFile = findAppropriateFile(stepsData[0].files)
+  currentFile.value = appropriateFile?.name || null
+  if (appropriateFile) {
+    keyContext.value = appropriateFile.keyContext
+  }
+})
+
+// Watch for framework changes
+watch(framework, () => {
+  if (!currentStep.value) return
+
+  const appropriateFile = findAppropriateFile(currentStep.value.files)
+  if (appropriateFile) {
+    currentFile.value = appropriateFile.name
+    keyContext.value = appropriateFile.keyContext
+  }
 })
 
 const selectStep = (step: CodeStep) => {
   currentStep.value = step
-  currentFile.value = step.files[0].name
+  const appropriateFile = findAppropriateFile(step.files)
+  if (appropriateFile) {
+    currentFile.value = appropriateFile.name
+    keyContext.value = appropriateFile.keyContext
+  }
 }
 
 const selectFile = (fileName: string) => {
   currentFile.value = fileName
+  if (currentStep.value) {
+    const file = currentStep.value.files.find((f) => f.name === fileName)
+    if (file?.keyContext) {
+      keyContext.value = file.keyContext
+    }
+  }
 }
 
 const getCurrentCode = () => {
   if (!currentStep.value || !currentFile.value) return ''
   const file = currentStep.value.files.find((f) => f.name === currentFile.value)
-  const content = file?.content || ''
-  return content
+  return file?.content || ''
 }
 </script>
 
