@@ -43,6 +43,10 @@ export default defineConfig({
   ignoreDeadLinks: 'localhostLinks',
   cleanUrls: true,
 
+  vite: {
+    plugins: [],
+  },
+
   head: [
     ['link', { href: '/favicon.png', rel: 'icon', type: 'image/png' }],
     [
