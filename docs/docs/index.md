@@ -2,8 +2,6 @@
   import Icon from '../components/Icon.vue'
 </script>
 
-# Introduction
-
 **Remult** is a fullstack CRUD framework that uses your TypeScript model types to provide:
 
 - Secure REST API (highly configurable)
