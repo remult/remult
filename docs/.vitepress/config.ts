@@ -135,7 +135,7 @@ const sidebar = tutorials.reduce(
       },
       {
         text: 'Stacks',
-        link: '/docs/installation',
+        link: '/docs/installation/',
         items: [
           {
             text: 'Framework',
@@ -205,7 +205,7 @@ const sidebar = tutorials.reduce(
           },
           {
             text: 'Database',
-            link: '/docs/installation/database',
+            link: '/docs/installation/database/',
             collapsed: true,
             items: [
               {
@@ -431,7 +431,7 @@ export default defineConfig({
               if (item.link) {
                 const path = item.link.endsWith('/')
                   ? `${item.link}index.md`
-                  : `${item.link}.md`
+                  : `${item.link.split('#')[0]}.md`
                 result.push({
                   title,
                   path: path.startsWith('/') ? `.${path}` : path,

@@ -3252,7 +3252,51 @@ Mutable controllers and backend methods provide a powerful mechanism for managin
 
 # Stacks
 
-[Content not found]
+<script setup>
+  import Icon from '../../components/Icon.vue'
+</script>
+
+# Stacks
+
+## Frameworks
+
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 5rem; margin-top: 2rem">
+	<Icon tech="react" sizeIco=100 link="/docs/installation/framework/react" />
+	<Icon tech="angular" sizeIco=100 link="/docs/installation/framework/angular" />
+	<Icon tech="vue" sizeIco=100 link="/docs/installation/framework/vue" />
+	<Icon tech="nextjs" sizeIco=100 link="/docs/installation/framework/nextjs" />
+	<Icon tech="svelte" sizeIco=100 link="/docs/installation/framework/sveltekit" />
+	<Icon tech="nuxt" sizeIco=100 link="/docs/installation/framework/nuxt" />
+	<Icon tech="solid" sizeIco=100 link="/docs/installation/framework/solid" />
+</div>
+
+## Servers
+
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 5rem; margin-top: 2rem">
+	<Icon tech="express" sizeIco=100 link="/docs/installation/server/express" />
+	<Icon tech="fastify" sizeIco=100 link="/docs/installation/server/fastify" />
+	<Icon tech="hono" sizeIco=100 link="/docs/installation/server/hono" />
+	<Icon tech="hapi" sizeIco=100 link="/docs/installation/server/hapi" />
+	<Icon tech="koa" sizeIco=100 link="/docs/installation/server/koa" />
+	<Icon tech="nest" sizeIco=100 link="/docs/installation/server/nest" />
+</div>
+
+## Databases
+
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 5rem; margin-top: 2rem">
+	<Icon tech="postgres" sizeIco=100 link="/docs/installation/database/postgresql" />
+	<Icon tech="mysql" sizeIco=100 link="/docs/installation/database/mysql" />
+	<Icon tech="mongodb" sizeIco=100 link="/docs/installation/database/mongodb" />
+	<Icon tech="sqlite" sizeIco=100 link="/docs/installation/database/better-sqlite3" />
+	<Icon tech="sqljs" sizeIco=100 link="/docs/installation/database/sqljs" />
+	<Icon tech="mssql" sizeIco=100 link="/docs/installation/database/mssql" />
+	<Icon tech="bun-sqlite" sizeIco=100 link="/docs/installation/database/bun-sqlite" />
+	<Icon tech="turso" sizeIco=100 link="/docs/installation/database/turso" />
+	<Icon tech="duckdb" sizeIco=100 link="/docs/installation/database/duckdb" />
+	<Icon tech="oracle" sizeIco=100 link="/docs/installation/database/oracle" />
+	<Icon tech="json files" sizeIco=100 link="/docs/installation/database/json" />
+</div>
+
 
 
 # Stacks - Framework
@@ -4635,7 +4679,28 @@ Your Nest.js app with Remult is now up and running on port `3002`.
 
 # Stacks - Database
 
-[Content not found]
+<script setup>
+  import Icon from '../../../components/Icon.vue'
+</script>
+
+# Choose a Database
+
+By default, if no database provider is specified, Remult will use a simple JSON file-based database. This will store your data in JSON files located in the `db` folder at the root of your project.
+
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 5rem; margin-top: 2rem">
+	<Icon tech="postgres" sizeIco=150 link="/docs/installation/database/postgresql" />
+	<Icon tech="mysql" sizeIco=150 link="/docs/installation/database/mysql" />
+	<Icon tech="mongodb" sizeIco=150 link="/docs/installation/database/mongodb" />
+	<Icon tech="sqlite" sizeIco=150 link="/docs/installation/database/better-sqlite3" />
+	<Icon tech="sqljs" sizeIco=150 link="/docs/installation/database/sqljs" />
+	<Icon tech="mssql" sizeIco=150 link="/docs/installation/database/mssql" />
+	<Icon tech="bun-sqlite" sizeIco=150 link="/docs/installation/database/bun-sqlite" />
+	<Icon tech="turso" sizeIco=150 link="/docs/installation/database/turso" />
+	<Icon tech="duckdb" sizeIco=150 link="/docs/installation/database/duckdb" />
+	<Icon tech="oracle" sizeIco=150 link="/docs/installation/database/oracle" />
+	<Icon tech="json files" sizeIco=150 link="/docs/installation/database/json" />
+</div>
+
 
 
 # Database - Json files
@@ -16602,7 +16667,303 @@ Love Remult?&nbsp;<a href="https://github.com/remult/remult" target="_blank" rel
 
 # Tutorial - Go further / Extra
 
-[Content not found]
+# SvelteKit
+
+## Create a SvelteKit Project
+
+To create a new SvelteKit project, run the following command:
+
+```sh
+npx sv@latest create remult-sveltekit-todo
+```
+
+During the setup, answer the prompts as follows:
+
+1. **Which Svelte app template?**: ... `minimal` Project
+2. **Add type checking with TypeScript?** ... Yes, using `TypeScript` syntax
+3. **Select additional options**: ... We didn't select anything for this tutorial. Feel free to adapt it to your needs.
+4. **Which package manager?**: ... We took `npm`, if you perfer others, feel free.
+
+Once the setup is complete, navigate into the project directory:
+
+```sh
+cd remult-sveltekit-todo
+```
+
+## Install Required Packages and Remult
+
+Install Remult and any necessary dependencies by running:
+
+```sh
+npm install remult --save-dev
+```
+
+## Bootstrap Remult
+
+To set up Remult in your SvelteKit project:
+
+1. Create your remult `api`
+
+::: code-group
+
+```ts [src/server/api.ts]
+import { remultSveltekit } from 'remult/remult-sveltekit'
+
+export const api = remultSveltekit({})
+```
+
+:::
+
+2. Create a remult `api route`
+
+::: code-group
+
+```ts [src/routes/api/[...remult]/+server.ts]
+import { api } from '../../../server/api'
+
+export const { GET, POST, PUT, DELETE } = api
+```
+
+:::
+
+## Final Tweaks
+
+Remult uses TypeScript decorators to enhance classes into entities. To enable decorators in your SvelteKit project, modify the `tsconfig.json` file by adding the following to the `compilerOptions` section:
+
+```json [tsconfig.json]
+{
+  "compilerOptions": {
+    "experimentalDecorators": true // [!code ++]
+  }
+}
+```
+
+## Run the App
+
+To start the development server, run the following command:
+
+```sh
+npm run dev
+```
+
+Your SvelteKit app will be available at [http://localhost:5173](http://localhost:5173).
+
+Your SvelteKit project with Remult is now up and running.
+
+# Extra
+
+## Extra - Remult in other SvelteKit routes
+
+To enable remult across all sveltekit route
+
+::: code-group
+
+```ts [src/hooks.server.ts]
+import { sequence } from '@sveltejs/kit/hooks'
+import { api as handleRemult } from './server/api'
+
+export const handle = sequence(
+  // Manage your sequence of handlers here
+  handleRemult,
+)
+```
+
+:::
+
+## Extra - Universal load & SSR
+
+To Use remult in ssr `PageLoad` - this will leverage the `event`'s fetch to load data on the server
+without reloading it on the frontend, and abiding to all api rules even when it runs on the server
+
+::: code-group
+
+```ts [src/routes/+page.ts]
+import { remult } from 'remult'
+import type { PageLoad } from './$types'
+
+export const load = (async (event) => {
+  // Instruct remult to use the special svelte fetch
+  // Like this univeral load will work in SSR & CSR
+  remult.useFetch(event.fetch)
+  return repo(Task).find()
+}) satisfies PageLoad
+```
+
+:::
+
+::: tip
+You can add this in `+layout.ts` as well and all routes **under** will have the correct fetch out of the box.
+:::
+
+## Extra - Server load
+
+If you return a remult entity from the `load` function of a `+page.server.ts`,
+SvelteKit will complain and show this error:
+
+```bash
+Error: Data returned from `load` while rendering / is not serializable:
+Cannot stringify arbitrary non-POJOs (data.tasks[0])
+```
+
+To fix this, you can use `repo(Entity).toJson()` in the server load function and `repo(Entity).fromJson()` in the .svelte file
+to serialize and deserialize well the entity.
+
+::: code-group
+
+```ts [src/routes/+page.server.ts]
+import { repo } from 'remult'
+import type { PageServerLoad } from './$types'
+import { Task } from '../demo/todo/Task'
+
+export const load = (async () => {
+  const tasks = repo(Task).toJson(await repo(Task).find())
+  return {
+    tasks,
+  }
+}) satisfies PageServerLoad
+```
+
+```svelte [src/routes/+page.svelte]
+<script lang="ts">
+  import type { PageData } from "./$types";
+  import { Task } from "../demo/todo/Task";
+  import { repo } from "remult";
+
+  let { data }: { data: PageData } = $props();
+
+  let tasks = repo(Task).fromJson(data.tasks);
+</script>
+```
+
+:::
+
+---
+
+#### Since `@sveltejs/kit@2.11.0`, there is a new feature: [Universal-hooks-transport](https://svelte.dev/docs/kit/hooks#Universal-hooks-transport)
+
+With this new feature, you can get rid of `repo(Entity).toJson()` and `repo(Entity).fromJson()` thanks to this file: `hooks.ts`.
+
+::: code-group
+
+```ts [src/hooks.ts]
+import { repo, type ClassType } from 'remult'
+import { Task } from './demo/todo/Task'
+import type { Transport } from '@sveltejs/kit'
+import { api } from './server/api'
+
+// You can have:
+// A/ a local entity array to work only these ones (like here)
+//  or
+// B/ import a global entity array that will be
+//    shared between backend and frontend (not in ./server/api.ts)
+const entities = [Task]
+
+export const transport: Transport = {
+  remultTransport: {
+    encode: (value: any) => {
+      for (let index = 0; index < entities.length; index++) {
+        const element = entities[index] as ClassType<any>
+        if (value instanceof element) {
+          return {
+            ...repo(element).toJson(value),
+            entity_key: repo(element).metadata.key,
+          }
+        }
+      }
+    },
+    decode: (value: any) => {
+      for (let index = 0; index < entities.length; index++) {
+        const element = entities[index] as ClassType<any>
+        if (value.entity_key === repo(element).metadata.key) {
+          return repo(element).fromJson(value)
+        }
+      }
+    },
+  },
+}
+```
+
+```ts [src/routes/+page.server.ts]
+import { repo } from 'remult'
+import type { PageServerLoad } from './$types'
+import { Task } from '../demo/todo/Task'
+
+export const load = (async () => {
+  // const tasks = repo(Task).toJson(await repo(Task).find()) // [!code --]
+  const tasks = await repo(Task).find()
+  return {
+    tasks,
+  }
+}) satisfies PageServerLoad
+```
+
+```svelte [src/routes/+page.svelte]
+<script lang="ts">
+  import type { PageData } from "./$types";
+  import { repo } from "remult";
+
+  let { data }: { data: PageData } = $props();
+
+  // let tasks = repo(Task).fromJson(data.tasks) // [!code --]
+  let tasks = data.tasks
+</script>
+```
+
+:::
+
+## Extra - Svelte 5 & Reactivity
+
+Remult is fully compatible with Svelte 5, Rune, and Reactivity.
+
+To take full advantage of it, add this snippet:
+
+::: code-group
+
+```html [src/routes/+layout.svelte]
+<script lang="ts">
+  import { Remult } from 'remult'
+  import { createSubscriber } from 'svelte/reactivity'
+
+  // To be done once in the application.
+  function initRemultSvelteReactivity() {
+    Remult.entityRefInit = (x) => {
+      let update = () => {}
+      let s = createSubscriber((u) => {
+        update = u
+      })
+      x.subscribe({
+        reportObserved: () => s(),
+        reportChanged: () => update(),
+      })
+    }
+  }
+  initRemultSvelteReactivity()
+</script>
+```
+
+:::
+
+Then you can use `$state`, `$derived` like any other places
+
+::: code-group
+
+```html [src/routes/+page.svelte]
+<script lang="ts">
+  // Prepare a new task
+  let editingTask = $state(repo(Task).create())
+
+  // Check if the form has empty fields
+  let formHasEmpty = $derived(!editingTask || editingTask.title.length === 0)
+
+  // Clone the task to edit
+  const editTask = async (task: Task) => {
+    editingTask = repo(Task).getEntityRef(task).clone()
+  }
+</script>
+```
+
+:::
+
 
 
 # Tutorial - Setup

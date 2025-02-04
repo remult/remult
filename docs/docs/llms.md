@@ -5,4 +5,4 @@ We support the [llms.txt](https://llmstxt.org/) convention for making documentat
 Currently, we have the these different levels:
 
 - [/llms.txt](/llms.txt) — a listing of the available files
-- [/llms-full.txt](/llms-full.txt) — complete documentation for Svelte, SvelteKit and the CLI
+- [/llms-full.txt](/llms-full.txt) — complete documentation for remult with all tutorials
