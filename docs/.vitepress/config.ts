@@ -453,17 +453,23 @@ export default defineConfig({
             },
           )
 
+          const titleToSkip = ['Integrations - LLMs']
+
           // Read and combine all the content
           const combinedContent = allContent
             .map(({ title, path }) => {
               try {
                 const content = fs.readFileSync(path, 'utf-8')
-                return `# ${title}\n\n${content}\n\n`
+
+                if (titleToSkip.includes(title)) return ''
+
+                return `# ${title}\n${content}\n`
               } catch (e) {
                 console.warn(`Could not read file: ${path}`)
                 return `# ${title}\n\n[Content not found]\n\n`
               }
             })
+            .filter(Boolean)
             .join('\n')
 
           fs.writeFileSync('public/llms-full.txt', combinedContent)

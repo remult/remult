@@ -1,5 +1,4 @@
 # Getting Started - Introduction
-
 <script setup>
   import Icon from '../components/Icon.vue'
 </script>
@@ -55,9 +54,7 @@ Use this [Quickstart](./quickstart.md) guide to quickly setup and try out Remult
 Check out these official [Remult video tutorials](https://youtube.com/playlist?list=PLlcnBwFkuOn166nXXxxfL9Hee-1GWlDSm&si=TDlwIFDLi4VMi-as).
 
 
-
 # Getting Started - Creating a project
-
 <script setup>
   import Example from '../components/Example.vue'
 </script>
@@ -120,9 +117,7 @@ Each tile is a fully functional example of a feature that you selected.
 Simply remove the demo folder to eject the demo components.
 
 
-
 # Getting Started - Quickstart
-
 # Quickstart
 
 Jumpstart your development with this Quickstart guide. Learn to seamlessly integrate Remult in various stacks, from installation to defining entities for efficient data querying and manipulation.
@@ -946,9 +941,7 @@ export class AppModule {
 :::
 
 
-
 # Getting Started - Example Apps
-
 <script setup>
   import Example from '../components/Example.vue'
   import Icon from '../components/Icon.vue'
@@ -1041,9 +1034,7 @@ And example of the usage of groupBy
 - [Extending field options with open api specific properties](https://github.com/noam-honig/adding-open-api-options/)
 
 
-
 # Entities - Fields
-
 # Field Types
 
 ## Common field types
@@ -1471,9 +1462,7 @@ export class Contact {
 ```
 
 
-
 # Entities - Relations 🚀
-
 ---
 outline: [2, 3]
 ---
@@ -2327,9 +2316,7 @@ Utilizing an intermediate table for managing many-to-many relationships in Remul
 In this guide, we've explored the essential concepts of managing entity relations within the Remult library. From one-to-one to many-to-many relationships, we've covered the declaration, customization, and querying of these relations. By understanding the nuances of entity relations, users can harness the full potential of Remult to build robust TypeScript applications with ease.
 
 
-
 # Relations 🚀 - Filtering and Relations
-
 # Filtering and Relations
 
 ::: tip **Interactive Learning Available! 🚀**
@@ -2532,9 +2519,7 @@ As `OrderWithCity` extends `Order`, everything in `Order` is also available in `
 :::
 
 
-
 # Entities - Lifecycle Hooks
-
 # Entity Lifecycle Hooks
 
 In Remult, you can take advantage of Entity Lifecycle Hooks to add custom logic and actions at specific stages of an entity's lifecycle. There are five lifecycle events available: `validation`, `saving`, `saved`, `deleting`, and `deleted`. These hooks allow you to perform actions or validations when specific events occur in the entity's lifecycle.
@@ -2648,9 +2633,7 @@ In this example, we've defined a `saving` event for the `Task` entity. When a ta
 Entity Lifecycle Hooks provide a powerful way to customize the behavior of your entities and ensure that specific actions or validations are performed at the right time in the entity's lifecycle. You can use these hooks to streamline your application's data management and enforce business rules.
 
 
-
 # Entities - Migrations
-
 # Migrations
 
 Managing database schemas is crucial in web development. Traditional migration approaches introduce complexity and risks. Remult, designed for data-driven web apps with TypeScript, offers a simpler method.
@@ -2899,9 +2882,7 @@ We believe in designing migrations with a backward compatibility mindset. This a
 This philosophy minimizes disruptions and ensures a smoother transition during database schema updates.
 
 
-
 # Entities - Generate from Existing DB
-
 # Generate Entities from Existing Database
 
 ## Remult kit
@@ -2912,9 +2893,7 @@ Check out this video to see how to connect http://remult.dev to your existing da
 Watch now 👉 https://youtu.be/5QCzJEO-qQ0.
 
 
-
 # Entities - Offline Support
-
 # Offline Support
 
 In modern web applications, providing a seamless user experience often involves enabling offline functionality. This ensures that users can continue to interact with the application even without an active internet connection. Remult supports several offline databases that can be used to store data in the browser for offline scenarios, enhancing the application's resilience and usability.
@@ -3025,9 +3004,7 @@ This code sets up a SQLite database using `sql.js` in your Remult project, with 
 Remult's support for various offline databases empowers developers to create web applications that provide a seamless user experience, even in offline scenarios. Whether using simple JSON storage in `localStorage` or more advanced solutions like OPFS or `sql.js`, Remult offers the flexibility to choose the right data storage solution for your application's needs. By leveraging these offline capabilities, you can ensure that your application remains functional and responsive, regardless of the user's connectivity status.
 
 
-
 # Entities - Active Record & EntityBase
-
 # Mutability and the Active Record Pattern
 
 The Active Record pattern is a concept in software architecture, particularly useful when working with mutable objects whose state may change over time. This design pattern facilitates direct interaction with the database through the object representing a row of the data table. In this article, we'll delve into the fundamentals of the Active Record pattern, contrasting it with immutable patterns, and exploring its implementation and advantages in software development.
@@ -3141,9 +3118,7 @@ await ref.save()
 The Active Record pattern offers a straightforward and intuitive approach to interacting with database records through object-oriented models. It is particularly beneficial in environments where business logic needs to be tightly coupled with data manipulation, providing a clear and efficient way to handle data state changes. However, integrating the Active Record pattern with mutable objects in React can be challenging.
 
 
-
 # Active Record & EntityBase - Entity Backend Methods
-
 # Entity Instance Backend Methods
 
 When leveraging the Active Record pattern, backend methods for entity instances offer a powerful way to integrate client-side behavior with server-side logic. These methods, when invoked, transport the entire entity's state from the client to the server and vice versa, even if the data has not yet been saved. This feature is particularly useful for executing entity-specific operations that require a round-trip to the server to maintain consistency and integrity.
@@ -3199,9 +3174,7 @@ The principle here is that if a user has permission to execute the `BackendMetho
 :::
 
 
-
 # Active Record & EntityBase - Mutable Controllers
-
 # Introduction to Mutable Controllers and Backend Methods
 
 In web development architectures, mutable controllers offer a convenient way to manage state and facilitate interactions between the client (frontend) and the server (backend). These controllers are useful in scenarios where state needs to be maintained and manipulated across server calls, providing a streamlined approach to handling data.
@@ -3249,9 +3222,7 @@ This usage demonstrates how to interact with the mutable controller to handle us
 Mutable controllers and backend methods provide a powerful mechanism for managing state and handling user interactions in web applications. By encapsulating business logic and data processing within controllers, developers can ensure consistent behavior and efficient data flow between the frontend and backend. With the ability to preserve and transfer field values during server calls, mutable controllers facilitate a smooth and responsive user experience, enhancing the overall functionality and performance of web applications.
 
 
-
 # Stacks
-
 <script setup>
   import Icon from '../../components/Icon.vue'
 </script>
@@ -3298,9 +3269,7 @@ Mutable controllers and backend methods provide a powerful mechanism for managin
 </div>
 
 
-
 # Stacks - Framework
-
 <script setup>
   import Icon from '../../../components/Icon.vue'
 </script>
@@ -3318,9 +3287,7 @@ Mutable controllers and backend methods provide a powerful mechanism for managin
 </div>
 
 
-
 # Framework - React
-
 # React
 
 ## Create a React Project with Vite
@@ -3392,9 +3359,7 @@ This setup proxies all requests starting with `/api` from `http://localhost:5173
 Now that the app is set up, [Select an API Server](../server/)
 
 
-
 # Framework - Angular
-
 # Angular
 
 ## Create an Angular Project
@@ -3450,9 +3415,7 @@ Running the `dev` script will start the Angular dev server with the proxy config
 Now that the app is set up, [Select an API Server](../server/)
 
 
-
 # Framework - Vue
-
 # Vue
 
 ## Create a Vue Project with Vite
@@ -3524,9 +3487,7 @@ This setup proxies all requests starting with `/api` from `http://localhost:5173
 Now that the app is set up, [Select an API Server](../server/)
 
 
-
 # Framework - Next.js
-
 # Next.js
 
 ## Create a Next.js Project
@@ -3620,9 +3581,7 @@ npm run dev
 Your Next.js app is now running with Remult integrated and listening for API requests.
 
 
-
 # Framework - Sveltekit
-
 # SvelteKit
 
 ## Create a SvelteKit Project
@@ -3921,9 +3880,7 @@ Then you can use `$state`, `$derived` like any other places
 :::
 
 
-
 # Framework - Nuxt
-
 ### Create a Nuxt Project
 
 To create a new Nuxt project, run the following command:
@@ -4008,9 +3965,7 @@ The Nuxt app will now be running on the default address [http://localhost:3000](
 Your Nuxt app with Remult is now set up and ready to go. You can now move on to defining your entities and building your task list app.
 
 
-
 # Framework - SolidStart
-
 # SolidStart
 
 ### Step 1: Create a New SolidStart Project
@@ -4106,9 +4061,7 @@ Remult is integrated into `SolidStart` using a [catch-all dynamic API route](htt
 Your SolidStart project is now set up with Remult and ready to run. You can now proceed to the next steps of building your application.
 
 
-
 # Stacks - Server
-
 <script setup>
   import Icon from '../../../components/Icon.vue'
 </script>
@@ -4125,9 +4078,7 @@ Your SolidStart project is now set up with Remult and ready to run. You can now 
 </div>
 
 
-
 # Server - Express
-
 # Express
 
 ### Install Required Packages
@@ -4222,9 +4173,7 @@ npm run dev-node
 The server will now run on port 3002. `tsx` will watch for any file changes, automatically restarting the server whenever updates are made.
 
 
-
 # Server - Fastify
-
 # Fastify
 
 ### Install Required Packages
@@ -4320,9 +4269,7 @@ npm run dev-node
 The server will now run on port 3002. `tsx` will watch for any file changes, automatically restarting the Fastify server whenever updates are made.
 
 
-
 # Server - Hono
-
 # Hono
 
 ### Install Required Packages
@@ -4419,9 +4366,7 @@ npm run dev-node
 The server will now run on port 3002. `tsx` will watch for file changes, automatically restarting the Hono server whenever updates are made.
 
 
-
 # Server - Hapi
-
 # Hapi
 
 ### Install Required Packages
@@ -4517,9 +4462,7 @@ npm run dev-node
 The server will now run on port 3002. `tsx` will watch for file changes, automatically restarting the Hapi server whenever updates are made.
 
 
-
 # Server - Koa
-
 # Koa
 
 ### Install Required Packages
@@ -4628,9 +4571,7 @@ npm run dev-node
 The server will now run on port 3002. `tsx` will watch for any file changes, automatically restarting the server whenever updates are made.
 
 
-
 # Server - nest
-
 # Nest.js
 
 ### Bootstrap Remult in the Nest.js back-end
@@ -4676,9 +4617,7 @@ npm run start
 Your Nest.js app with Remult is now up and running on port `3002`.
 
 
-
 # Stacks - Database
-
 <script setup>
   import Icon from '../../../components/Icon.vue'
 </script>
@@ -4702,9 +4641,7 @@ By default, if no database provider is specified, Remult will use a simple JSON 
 </div>
 
 
-
 # Database - Json files
-
 ## JSON Files
 
 You can store data in JSON files using Remult. Here's how to configure your server:
@@ -4740,9 +4677,7 @@ app.use(
 This configuration allows you to store and manage your application data in JSON files, ideal for small projects or quick setups.
 
 
-
 # Database - PostgreSQL
-
 # PostgreSQL
 
 To set up PostgreSQL as the database provider for your Remult application, you'll need to configure the `dataProvider` property in the `api.ts` file.
@@ -4804,9 +4739,7 @@ app.use(
 In this example, the `pg.Pool` is used to create the PostgreSQL connection, and `SqlDatabase` is used to interface with the `PostgresDataProvider`.
 
 
-
 # Database - MySQL
-
 # MySQL
 
 ### Step 1: Install `knex` and `mysql2`
@@ -4873,9 +4806,7 @@ app.use(
 ```
 
 
-
 # Database - MongoDB
-
 ## MongoDB
 
 To use MongoDB as the database provider for your Remult application, follow the steps below.
@@ -4914,9 +4845,7 @@ app.use(
 This setup connects to a MongoDB instance running on `localhost` and uses the `test` database. The `MongoDataProvider` manages the connection, allowing Remult to interact with MongoDB seamlessly.
 
 
-
 # Database - SQLite3
-
 Here’s the polished version of the **sqlite3** setup:
 
 ### SQLite3 Setup
@@ -4956,9 +4885,7 @@ app.use(
 This configuration connects to an SQLite database stored in the `mydb.sqlite` file. The `Sqlite3DataProvider` is wrapped inside the `SqlDatabase` class, enabling Remult to work with SQLite databases smoothly across different environments, including StackBlitz.
 
 
-
 # Database - Better SQLite3
-
 Here’s the polished version of the **Better-sqlite3** setup:
 
 ### Better-sqlite3
@@ -4998,9 +4925,7 @@ app.use(
 This setup connects to an SQLite database stored in the `mydb.sqlite` file. The `BetterSqlite3DataProvider` is wrapped inside the `SqlDatabase` class to allow Remult to interact with SQLite efficiently.
 
 
-
 # Database - MSSQL
-
 # Microsoft SQL Server
 
 ### Step 1: Install Required Packages
@@ -5085,9 +5010,7 @@ app.use(
 This setup lets you easily connect Remult to Microsoft SQL Server using `knex` for query building and `tedious` as the driver.
 
 
-
 # Database - Bun SQLite
-
 ### Bun:SQLite
 
 ### Step 1: Configure the `dataProvider`
@@ -5121,9 +5044,7 @@ app.use(
 This setup allows you to use Bun's SQLite implementation as the database provider for your Remult application, leveraging Bun’s performance benefits with SQLite.
 
 
-
 # Database - sqljs
-
 ### sql.js
 
 ### Step 1: Install sql.js
@@ -5165,9 +5086,7 @@ app.use(
 This configuration allows you to use an in-memory SQLite database in your Remult application, powered by `sql.js`.
 
 
-
 # Database - Turso
-
 Here’s the polished version of the **Turso** setup:
 
 ### Turso Setup
@@ -5216,9 +5135,7 @@ app.use(
 This setup allows you to use Turso as the backend database for your application.
 
 
-
 # Database - DuckDb
-
 ## DuckDB
 
 To use DuckDB as the database provider in your Remult-based application, follow these steps:
@@ -5263,9 +5180,7 @@ app.listen(3000, () => console.log('Server is running on port 3000'))
 This setup allows you to use DuckDB as your database provider in a Remult project.
 
 
-
 # Database - Oracle
-
 ## Oracle Database
 
 To use an Oracle database as the data provider for your Remult-based application, follow these steps:
@@ -5346,9 +5261,7 @@ app.listen(3000, () => console.log('Server is running on port 3000'))
 This setup integrates Oracle into your Remult-based application.
 
 
-
 # Server-side Code - Backend Methods
-
 # Backend Methods
 
 Backend methods run on the backend and are used to improve performance, execute server-only code (e.g., sending emails), or perform operations not accessible through the API.
@@ -5410,9 +5323,7 @@ await TasksController.setAll(true)
 This example demonstrates how to define and use a static backend method, `setAll`, within the `TasksController` class. When called from the frontend, this method sets the completion status of all tasks to the specified value (`true` in this case). The method leverages Remult's `BackendMethod` decorator to handle the communication between the frontend and backend seamlessly.
 
 
-
 # Server-side Code - Server-only Dependencies
-
 # Backend only code
 
 One of the main advantages of remult is that you write code once, and it runs both on the server and in the browser.
@@ -5603,9 +5514,7 @@ Check out this video where I implemented a similar solution when running into th
 <iframe width="560" height="315" src="https://www.youtube.com/embed/9lWQwAUcKEM?start=1035" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 
-
 # Guides - Access Control
-
 # Access Control
 
 ::: tip **Interactive Learning Available! 🚀**
@@ -5869,9 +5778,7 @@ Check out this informative [YouTube video](https://www.youtube.com/watch?v=9lWQw
 This article provides a comprehensive overview of the layers of access control in web applications, offering a granular approach to securing your application at the entity, row, field, and method levels.
 
 
-
 # Guides - Admin UI
-
 # Admin UI
 
 Enjoy a fully featured Admin UI for your entities, you can do CRUD operations on your entities, view their relationships via the Diagram entry, and ensure secure management with the same validations and authorizations as your application.
@@ -5918,9 +5825,7 @@ Watch this quick demo to see the Remult Admin UI in action:
 This video showcases the key features and functionality of the Remult Admin UI, giving you a practical overview of how it can streamline your entity management process.
 
 
-
 # Escape Hatches - Custom/SQL Filters
-
 # Leveraging Custom Filters for Enhanced Data Filtering
 
 In modern web applications, efficiently filtering data is essential for providing a seamless user experience. Whether it's an e-commerce platform filtering products, a task management system sorting tasks, or any other application that requires data manipulation, the ability to apply complex filters is crucial. Custom filters offer a powerful solution, enabling developers to create reusable, declarative, and versatile filters that are executed on the backend and easily utilized from the frontend. This article delves into the concept of custom filters, illustrating their advantages and practical applications.
@@ -6269,9 +6174,7 @@ The versatility of custom filters extends to their compatibility with various da
 In conclusion, adopting custom filters in your web development projects can significantly streamline the process of data filtering, resulting in cleaner, more efficient, and more secure code. By embracing this approach, developers can focus on delivering a seamless user experience, confident in the knowledge that their data filtering logic is both robust and adaptable.
 
 
-
 # Escape Hatches - Direct Database Access
-
 # Accessing the Underlying Database in Remult
 
 While Remult provides a powerful abstraction for working with databases, there might be scenarios where you need to access the underlying database directly. This could be for performing complex queries, optimizations, or other database-specific operations that are not covered by Remult's API.
@@ -6457,9 +6360,7 @@ console.log(r.rows[0].c)
 Accessing the underlying database directly in Remult provides the flexibility to handle complex use cases that might not be covered by the ORM layer. However, it's important to use this capability judiciously and securely, especially when dealing with user input, to avoid potential security vulnerabilities like SQL injection. By leveraging utilities like `dbNamesOf` and `filterToRaw
 
 
-
 # Escape Hatches - Using Remult in Non-Remult Routes
-
 ---
 keywords:
   [
@@ -6730,9 +6631,7 @@ import { remultHapi } from 'remult/remult-hapi'
 :::
 
 
-
 # Escape Hatches - Avoiding Decorators
-
 # Working without decorators
 
 If you prefer to work without decorators, or use `remult` in a javascript project (without typescript) you can use the following:
@@ -6811,9 +6710,7 @@ describeBackendMethods(TasksController, {
 This is the same backend method that is detailed in the [Backend methods of the tutorial](https://remult.dev/tutorials/react/backend-methods.html#refactor-from-front-end-to-back-end)
 
 
-
 # Escape Hatches - Extensibility
-
 ---
 tags:
   - options
@@ -6977,9 +6874,7 @@ or in an entity's saving event:
 By leveraging module augmentation, you can tailor Remult to your specific needs, adding custom options and extending interfaces to suit your application's requirements.
 
 
-
 # Integrations - Open API
-
 # Adding Swagger and openApi
 
 In short, swagger provides a quick UI that describes the api which is exposed by the application.
@@ -7094,9 +6989,7 @@ Checkout the following example project that demos how to add `openApi` specific 
 [github](https://www.github.com/noam-honig/adding-open-api-options)
 
 
-
 # Integrations - GraphQL
-
 # Adding Graphql
 
 To add graphql to a `remult` application follow these steps:
@@ -7195,9 +7088,7 @@ export { yogaApp as GET, yogaApp as OPTIONS, yogaApp as POST }
 ```
 
 
-
 # API Reference - Entity
-
 # Entity
 Decorates classes that should be used as entities.
 Receives a key and an array of EntityOptions.
@@ -7471,9 +7362,7 @@ Arguments:
 * **apiRequireId**
 
 
-
 # API Reference - Field
-
 # Field
 Decorates fields that should be used as fields.
 for more info see: [Field Types](https://remult.dev/docs/field-types.html)
@@ -7631,9 +7520,7 @@ The entity type to which this field belongs
 The key to be used for this field
 
 
-
 # API Reference - ValueConverter
-
 # ValueConverter
 Interface for converting values between different formats, such as in-memory objects, database storage,
 JSON data transfer objects (DTOs), and HTML input elements.
@@ -7770,9 +7657,7 @@ inputType = 'date';
 ```
 
 
-
 # API Reference - Validation
-
 # Validation
 
 Validation is a key part of any application, and you will see that it's builtin Remult ! Let's dive into it...
@@ -7868,9 +7753,7 @@ Validators.unique.defaultMessage = 'Existe déjà!'
 ```
 
 
-
 # API Reference - Validators
-
 # Validators
 Class containing various field validators.
 ## constructor
@@ -7909,9 +7792,7 @@ Validator to ensure a value is unique in the database.
 Validator to check if a value is a valid URL.
 
 
-
 # API Reference - Relations
-
 # Relations
 * **Relations**
 ## constructor
@@ -8005,9 +7886,7 @@ Arguments:
    If false or not specified, related entities will need to be explicitly included using the `include` option.
 
 
-
 # API Reference - RelationOptions
-
 # RelationOptions
 Options for configuring a relation between entities.
 ## caption
@@ -8036,9 +7915,7 @@ When set to true, related entities will be automatically included when querying 
 If false or not specified, related entities will need to be explicitly included using the `include` option.
 
 
-
 # API Reference - Remult
-
 # Remult
 * **Remult**
 ## repo
@@ -8215,9 +8092,7 @@ The api client that will be used by `remult` to perform calls to the `api`
 * **liveQuerySubscriber**
 
 
-
 # API Reference - ApiClient
-
 # ApiClient
 Interface for configuring the API client used by Remult to perform HTTP calls to the backend.
 ## httpClient
@@ -8316,9 +8191,7 @@ export class AppComponent {
 ```
 
 
-
 # API Reference - Repository
-
 # Repository
 used to perform CRUD operations on an `entityType`
 ## find
@@ -8963,9 +8836,7 @@ Arguments:
 * **item**
 
 
-
 # API Reference - RemultServerOptions
-
 # RemultServerOptions
 * **RemultServerOptions**
 ## entities
@@ -9043,9 +8914,7 @@ export const api = remultExpress({
 ```
 
 
-
 # API Reference - EntityFilter
-
 ---
 tags:
   - Where
@@ -9194,9 +9063,7 @@ where: {
 ```
 
 
-
 # API Reference - EntityMetadata
-
 # EntityMetadata
 Metadata for an `Entity`, this metadata can be used in the user interface to provide a richer UI experience
 ## entityType
@@ -9301,9 +9168,7 @@ Metadata for the Entity's id
 EntityOptions.id for configuration
 
 
-
 # API Reference - FieldMetadata
-
 # FieldMetadata
 Metadata for a `Field`, this metadata can be used in the user interface to provide a richer UI experience
 ## valueType
@@ -9476,9 +9341,7 @@ Arguments:
 * **inputType**
 
 
-
 # API Reference - Allowed
-
 # Allowed
 
 Throughout the api you'll see methods that use the `Allowed` data type, for example `allowApiRead` etc...
@@ -9546,9 +9409,7 @@ For Example:
 ```
 
 
-
 # API Reference - BackendMethod
-
 # BackendMethod
 Decorator indicating that the decorated method runs on the backend.
 It allows the method to be invoked from the frontend while ensuring that the execution happens on the server side.
@@ -9597,9 +9458,7 @@ EXPERIMENTAL: Determines if the user should be blocked while this `BackendMethod
 * **paramTypes**
 
 
-
 # API Reference - QueryResult
-
 # QueryResult
 The result of a call to the `query` method in the `Repository` object.
 ## [asyncIterator]
@@ -9628,9 +9487,7 @@ Arguments:
 Returns a `Paginator` object that is used for efficient paging
 
 
-
 # API Reference - Paginator
-
 # Paginator
 An interface used to paginating using the `query` method in the `Repository` object
 
@@ -9666,9 +9523,7 @@ the count of the total items in the `query`'s result
 Gets the next page in the `query`'s result set
 
 
-
 # API Reference - LiveQuery
-
 # LiveQuery
 The `LiveQuery` interface represents a live query that allows subscribing to changes in the query results.
 ## subscribe
@@ -9698,9 +9553,7 @@ Arguments:
 * **next** - A function that will be called with information about changes in the query results.
 
 
-
 # API Reference - LiveQueryChangeInfo
-
 # LiveQueryChangeInfo
 The `LiveQueryChangeInfo` interface represents information about changes in the results of a live query.
 ## items
@@ -9734,9 +9587,7 @@ Arguments:
 * **prevState** - The previous state of the array of result items.
 
 
-
 # API Reference - Filter
-
 # Filter
 The `Filter` class is a helper class that focuses on filter-related concerns. It provides methods
 for creating and applying filters in queries.
@@ -9908,9 +9759,7 @@ Arguments:
 * **toJson**
 
 
-
 # API Reference - Sort
-
 # Sort
 The `Sort` class is used to describe sorting criteria for queries. It is mainly used internally,
 but it provides a few useful functions for working with sorting.
@@ -9978,9 +9827,7 @@ Arguments:
 * **orderBy** - The `EntityOrderBy` to be made unique.
 
 
-
 # API Reference - SqlDatabase
-
 # SqlDatabase
 A DataProvider for Sql Databases
 
@@ -10118,9 +9965,7 @@ Arguments:
 ## end
 
 
-
 # API Reference - SubscriptionChannel
-
 # SubscriptionChannel
 The `SubscriptionChannel` class is used to send messages from the backend to the frontend,
 using the same mechanism used by live queries.
@@ -10166,9 +10011,7 @@ Arguments:
 * **remult** - An optional instance of Remult to use for the subscription.
 
 
-
 # API Reference - generateMigrations
-
 # generateMigrations
 Generates migration scripts based on changes in entities.
 
@@ -10186,9 +10029,7 @@ Arguments:
    * **endConnection** - (Optional) Determines whether to close the database connection after generating migrations. Default is false.
 
 
-
 # API Reference - migrate
-
 # migrate
 Applies migration scripts to update the database schema.
 
@@ -10206,9 +10047,7 @@ Arguments:
    * **afterMigration** - (Optional) A callback function that is called after each migration is applied. Receives an object with the migration index and the duration of the migration.
 
 
-
 # API Reference - REST API Spec
-
 # Entity Rest Api Breakdown
 
 All entities automatically expose a rest API based on the parameters defined in its decorator.
@@ -10294,9 +10133,7 @@ https://mySite.com/api/products?price.gte=5&price.lte=10&_sort=price&_order=desc
 :::
 
 
-
 # Active Record & Mutable - EntityBase
-
 # EntityBase
 * **EntityBase**
 ## constructor
@@ -10318,9 +10155,7 @@ Arguments:
 * **save**
 
 
-
 # Active Record & Mutable - IdEntity
-
 # IdEntity
 * **IdEntity**
 ## constructor
@@ -10344,9 +10179,7 @@ Arguments:
 * **save**
 
 
-
 # Active Record & Mutable - EntityRef
-
 # EntityRef
 * **EntityRef**
 ## hasErrors
@@ -10400,9 +10233,7 @@ Arguments:
 * **relations**
 
 
-
 # Active Record & Mutable - FieldRef
-
 # FieldRef
 * **FieldRef**
 ## subscribe
@@ -10438,9 +10269,7 @@ Loads the related value - returns null if the related value is not found
 * **metadata**
 
 
-
 # Active Record & Mutable - getEntityRef
-
 # getEntityRef
 Retrieves the EntityRef object associated with the specified entity instance.
 The EntityRef provides methods for performing operations on the entity instance.
@@ -10462,9 +10291,7 @@ Arguments:
 * **throwException** - Indicates whether to throw an exception if the EntityRef object cannot be retrieved.
 
 
-
 # Active Record & Mutable - getFields
-
 # getFields
 * **getFields**
 
@@ -10473,9 +10300,7 @@ Arguments:
 * **remult**
 
 
-
 # Remult Blog - Introducing Remult
-
 ---
 title: "Introducing Remult: The Backend to Frontend Framework You Always Wanted"
 sidebar: false
@@ -10557,9 +10382,7 @@ Check out [Remult](https://remult.dev), and if you like it, give it a star.  Let
 In our next post, we’ll do a roundup of tools in the ecosystem looking to solve similar challenges though different approaches, and unpack where Remult fits in, and what it’s optimized for.
 
 
-
 # Tutorial - Setup
-
 # Build a Full-Stack React Application
 
 ### Create a simple todo app with Remult using a React frontend
@@ -10798,9 +10621,7 @@ The react default styles won't fit our todo app. If you'd like a nice-looking ap
 At this point, our starter project is up and running. We are now ready to move to the [next step of the tutorial](./entities.md) and start creating the task list app.
 
 
-
 # Tutorial - Entities
-
 # Entities
 
 Let's start coding the app by defining the `Task` entity class.
@@ -10981,9 +10802,7 @@ Here's a quick overview of the different parts of the code snippet:
 After the browser refreshes, the list of tasks appears.
 
 
-
 # Tutorial - Paging, Sorting and Filtering
-
 # Paging, Sorting and Filtering
 
 The RESTful API created by Remult supports **server-side paging, sorting, and filtering**. Let's use that to limit, sort and filter the list of tasks.
@@ -11079,9 +10898,7 @@ Explore the reference for a [comprehensive list of filtering options](../../docs
 :::
 
 
-
 # Tutorial - CRUD Operations
-
 # CRUD Operations
 
 ## Adding new tasks
@@ -11284,9 +11101,7 @@ Add the highlighted `deleteTask` function and _Delete_ `button` Within the `task
 ```
 
 
-
 # Tutorial - Validation
-
 # Validation
 
 Validating user entered data is usually required both on the client-side and on the server-side, often causing a violation of the [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) design principle. **With Remult, validation code can be placed within the entity class, and Remult will run the validation logic on both the frontend and the relevant API requests.**
@@ -11358,9 +11173,7 @@ This code no longer requires the `Validators` import from 'remult' and it should
 :::
 
 
-
 # Tutorial - Live Queries
-
 # Live Queries
 
 Our todo list app can have multiple users using it at the same time. However, changes made by one user are not seen by others unless they manually refresh the browser.
@@ -11464,9 +11277,7 @@ For serverless environments _(or multi servers)_, live-query updates can be push
 :::
 
 
-
 # Tutorial - Backend methods
-
 # Backend methods
 
 When performing operations on multiple entity objects, performance considerations may necessitate running them on the server. **With Remult, moving client-side logic to run on the server is a simple refactoring**.
@@ -11567,9 +11378,7 @@ With Remult backend methods, argument types are compile-time checked. :thumbsup:
 After the browser refreshed, the _"Set all..."_ buttons function exactly the same, but much faster.
 
 
-
 # Tutorial - Authentication and Authorization
-
 # Authentication and Authorization
 
 Our todo app is nearly functionally complete, but it still doesn't fulfill a very basic requirement - that users should log in before they can view, create or modify tasks.
@@ -11951,9 +11760,7 @@ This way we can keep the frontend consistent with the `api`'s Authorization rule
 - Note We send the `task` to the `apiDeleteAllowed` method, because the `apiDeleteAllowed` option, can be sophisticated and can also be based on the specific item's values.
 
 
-
 # Tutorial - Database
-
 # Database
 
 Up until now the todo app has been using a plain JSON file to store the list of tasks. **In production, we'd like to use a `Postgres` database table instead.**
@@ -11992,9 +11799,7 @@ Don't worry if you don't have Postgres installed locally. In the next step of th
    ```
 
 
-
 # Tutorial - Deployment
-
 # Deployment
 
 Let's deploy the todo app to [railway.app](https://railway.app/).
@@ -12139,9 +11944,7 @@ To see a larger more complex code base, visit our [CRM example project](https://
 Love Remult?&nbsp;<a href="https://github.com/remult/remult" target="_blank" rel="noopener"> Give our repo a star.⭐</a>
 
 
-
 # Tutorial - Setup
-
 # Build a Full-Stack Angular Application
 
 ### Create a simple todo app with Remult using an Angular frontend
@@ -12350,9 +12153,7 @@ The angular default styles won't fit our todo app. If you'd like a nice-looking 
 At this point, our starter project is up and running. We are now ready to move to the [next step of the tutorial](./entities.md) and start creating the task list app.
 
 
-
 # Tutorial - Entities
-
 # Entities
 
 Let's start coding the app by defining the `Task` entity class.
@@ -12581,9 +12382,7 @@ Let's start developing the web app by displaying the list of existing tasks in a
 After the browser refreshes, the list of tasks appears.
 
 
-
 # Tutorial - Paging, Sorting and Filtering
-
 # Paging, Sorting and Filtering
 
 The RESTful API created by Remult supports **server-side paging, sorting, and filtering**. Let's use that to limit, sort and filter the list of tasks.
@@ -12669,9 +12468,7 @@ Explore the reference for a [comprehensive list of filtering options](../../docs
 :::
 
 
-
 # Tutorial - CRUD Operations
-
 # CRUD Operations
 
 ## Adding new tasks
@@ -12792,9 +12589,7 @@ async deleteTask(task: Task) {
 ```
 
 
-
 # Tutorial - Validation
-
 # Validation
 
 Validating user entered data is usually required both on the client-side and on the server-side, often causing a violation of the [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) design principle. **With Remult, validation code can be placed within the entity class, and Remult will run the validation logic on both the frontend and the relevant API requests.**
@@ -12862,9 +12657,7 @@ title = ""
 ```
 
 
-
 # Tutorial - Live Queries
-
 # Live Queries
 
 Our todo list app can have multiple users using it at the same time. However, changes made by one user are not seen by others unless they manually refresh the browser.
@@ -12966,9 +12759,7 @@ For serverless environments _(or multi servers)_, live-query updates can be push
 :::
 
 
-
 # Tutorial - Backend methods
-
 # Backend methods
 
 When performing operations on multiple entity objects, performance considerations may necessitate running them on the server. **With Remult, moving client-side logic to run on the server is a simple refactoring**.
@@ -13069,9 +12860,7 @@ With Remult backend methods, argument types are compile-time checked. :thumbsup:
 After the browser refreshed, the _"Set all..."_ buttons function exactly the same, but much faster.
 
 
-
 # Tutorial - Authentication and Authorization
-
 # Authentication and Authorization
 
 Our todo app is nearly functionally complete, but it still doesn't fulfill a very basic requirement - that users should log in before they can view, create or modify tasks.
@@ -13471,9 +13260,7 @@ This way we can keep the frontend consistent with the `api`'s Authorization rule
 - Note We send the `task` to the `apiDeleteAllowed` method, because the `apiDeleteAllowed` option, can be sophisticated and can also be based on the specific item's values,
 
 
-
 # Tutorial - Database
-
 # Database
 
 Up until now the todo app has been using a plain JSON file to store the list of tasks. **In production, we'd like to use a `Postgres` database table instead.**
@@ -13512,9 +13299,7 @@ Don't worry if you don't have Postgres installed locally. In the next step of th
    ```
 
 
-
 # Tutorial - Deployment
-
 # Deployment
 
 Let's deploy the todo app to [railway.app](https://railway.app/).
@@ -13672,9 +13457,7 @@ That's it - our application is deployed to production, play with it and enjoy.
 Love Remult?&nbsp;<a href="https://github.com/remult/remult" target="_blank" rel="noopener"> Give our repo a star.⭐</a>
 
 
-
 # Tutorial - Appendix: Observable Live Query
-
 # Appendix - Observable Live Query
 
 To use `liveQuery` as an observable add the following utility function to your code
@@ -13733,9 +13516,7 @@ export function fromLiveQuery<T>(q: LiveQuery<T>) {
    ```
 
 
-
 # Tutorial - Setup
-
 # Build a Full-Stack Vue Application
 
 ### Create a simple todo app with Remult using a Vue frontend
@@ -13978,9 +13759,7 @@ The vue default styles won't fit our todo app. If you'd like a nice-looking app,
 At this point, our starter project is up and running. We are now ready to move to the [next step of the tutorial](./entities.md) and start creating the task list app.
 
 
-
 # Tutorial - Entities
-
 # Entities
 
 Let's start coding the app by defining the `Task` entity class.
@@ -14154,9 +13933,7 @@ Here's a quick overview of the different parts of the code snippet:
 After the browser refreshes, the list of tasks appears.
 
 
-
 # Tutorial - Paging, Sorting and Filtering
-
 # Paging, Sorting and Filtering
 
 The RESTful API created by Remult supports **server-side paging, sorting, and filtering**. Let's use that to limit, sort and filter the list of tasks.
@@ -14250,9 +14027,7 @@ Explore the reference for a [comprehensive list of filtering options](../../docs
 :::
 
 
-
 # Tutorial - CRUD Operations
-
 # CRUD Operations
 
 ## Adding new tasks
@@ -14367,9 +14142,7 @@ async function deleteTask(task: Task) {
 ```
 
 
-
 # Tutorial - Validation
-
 # Validation
 
 Validating user entered data is usually required both on the client-side and on the server-side, often causing a violation of the [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) design principle. **With Remult, validation code can be placed within the entity class, and Remult will run the validation logic on both the frontend and the relevant API requests.**
@@ -14437,9 +14210,7 @@ title = ""
 ```
 
 
-
 # Tutorial - Live Queries
-
 # Live Queries
 
 Our todo list app can have multiple users using it at the same time. However, changes made by one user are not seen by others unless they manually refresh the browser.
@@ -14517,9 +14288,7 @@ For serverless environments _(or multi servers)_, live-query updates can be push
 :::
 
 
-
 # Tutorial - Backend methods
-
 # Backend methods
 
 When performing operations on multiple entity objects, performance considerations may necessitate running them on the server. **With Remult, moving client-side logic to run on the server is a simple refactoring**.
@@ -14620,9 +14389,7 @@ With Remult backend methods, argument types are compile-time checked. :thumbsup:
 After the browser refreshed, the _"Set all..."_ buttons function exactly the same, but much faster.
 
 
-
 # Tutorial - Authentication and Authorization
-
 # Authentication and Authorization
 
 Our todo app is nearly functionally complete, but it still doesn't fulfill a very basic requirement - that users should log in before they can view, create or modify tasks.
@@ -14993,9 +14760,7 @@ This way we can keep the frontend consistent with the `api`'s Authorization rule
 - Note We send the `task` to the `apiDeleteAllowed` method, because the `apiDeleteAllowed` option, can be sophisticated and can also be based on the specific item's values.
 
 
-
 # Tutorial - Database
-
 # Database
 
 Up until now the todo app has been using a plain JSON file to store the list of tasks. **In production, we'd like to use a `Postgres` database table instead.**
@@ -15034,9 +14799,7 @@ Don't worry if you don't have Postgres installed locally. In the next step of th
    ```
 
 
-
 # Tutorial - Deployment
-
 # Deployment
 
 Let's deploy the todo app to [railway.app](https://railway.app/).
@@ -15180,9 +14943,7 @@ To see a larger more complex code base, visit our [CRM example project](https://
 Love Remult?&nbsp;<a href="https://github.com/remult/remult" target="_blank" rel="noopener"> Give our repo a star.⭐</a>
 
 
-
 # Tutorial - Setup
-
 # Build a Full-Stack SvelteKit Application
 
 ### Create a simple todo app with Remult using a SvelteKit
@@ -15301,9 +15062,7 @@ The default "Sveltekit" app main screen should be available at the default Vite 
 At this point, our starter project is up and running. We are now ready to move to the [next step of the tutorial](./entities.md) and start creating the task list app.
 
 
-
 # Tutorial - Entities
-
 # Entities
 
 Let's start coding the app by defining the `Task` entity class.
@@ -15406,7 +15165,7 @@ While remult supports [many relational and non-relational databases](https://rem
 
 ### Enabling the Admin UI
 
-Add the Admin UI to your Angular application by setting the `admin` option to `true` in the `remultSveltekit()`
+Add the Admin UI to your Sveltekit application by setting the `admin` option to `true` in the `remultSveltekit()`
 
 ::: code-group
 
@@ -15594,9 +15353,7 @@ The styles imported into `src/routes/+layout.svelte` will apply to all pages in 
 :::
 
 
-
 # Tutorial - Paging, Sorting and Filtering
-
 # Paging, Sorting and Filtering
 
 The RESTful API created by Remult supports **server-side paging, sorting, and filtering**. Let's use that to limit, sort and filter the list of tasks.
@@ -15696,9 +15453,7 @@ Explore the reference for a [comprehensive list of filtering options](../../docs
 :::
 
 
-
 # Tutorial - CRUD Operations
-
 # CRUD Operations
 
 ## Adding new tasks
@@ -15846,9 +15601,7 @@ const deleteTask = async (e: Event, task: Task) => {
 ```
 
 
-
 # Tutorial - Validation
-
 # Validation
 
 Validating user input is usually required both on the client-side and on the server-side, often causing a violation of the [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) design principle. **With Remult, validation code can be placed within the entity class, and Remult will run the validation logic on both the frontend and the relevant API requests.**
@@ -15948,9 +15701,7 @@ title = ""
 :::
 
 
-
 # Tutorial - Live Queries
-
 # Live Queries
 
 Our todo list app can have multiple users using it at the same time. However, changes made by one user are not seen by others unless they manually refresh their browser.
@@ -16065,9 +15816,7 @@ For serverless environments _(or multi servers)_, live-query updates can be push
 :::
 
 
-
 # Tutorial - Backend methods
-
 # Backend methods
 
 When performing operations on multiple entity objects, performance considerations may necessitate running them on the server. **With Remult, moving client-side logic to run on the server is a simple refactoring**.
@@ -16189,9 +15938,7 @@ With Remult backend methods, argument types are compile-time checked. :thumbsup:
 After the browser is refreshed, the _"Set all..."_ buttons function exactly the same but now makes only a single request to the back, and is faster.
 
 
-
 # Tutorial - Authentication and Authorization
-
 # Authentication and Authorization
 
 Our todo app is nearly functionally complete, but it still doesn't fulfill a very basic requirement - that users should log in before they can view, create or modify tasks.
@@ -16523,9 +16270,7 @@ This way we can keep the UI consistent with the `api`'s Authorization rules
 - Note We send the `task` to the `apiDeleteAllowed` method, because the `apiDeleteAllowed` option, can be sophisticated and can also be based on the specific item's values.
 
 
-
 # Tutorial - Database
-
 # Database
 
 Up until now the todo app has been using a plain JSON file to store the list of tasks. In production, you will often want to use a proper database. Remult supports a (long) list of relational and non-relational databases. In this tutorial, let's use `Postgres`.
@@ -16593,9 +16338,7 @@ You can also disable this automatic migration behavior. It's not part of this tu
 :::
 
 
-
 # Tutorial - Deployment
-
 # Deployment
 
 Let's deploy the todo app to [railway.app](https://railway.app/).
@@ -16664,9 +16407,7 @@ That's it - our application is deployed to production, on a node js server
 Love Remult?&nbsp;<a href="https://github.com/remult/remult" target="_blank" rel="noopener"> Give our repo a star.⭐</a>
 
 
-
 # Tutorial - Go further / Extra
-
 # SvelteKit
 
 ## Create a SvelteKit Project
@@ -16965,9 +16706,7 @@ Then you can use `$state`, `$derived` like any other places
 :::
 
 
-
 # Tutorial - Setup
-
 # Build a Full-Stack Next.js Application
 
 ### Create a simple todo app with Remult using Next.js
@@ -17106,9 +16845,7 @@ The Next.js default styles won't fit our todo app. If you'd like a nice-looking 
 At this point, our starter project is up and running. We are now ready to move to the [next step of the tutorial](./entities.md) and start creating the task list app.
 
 
-
 # Tutorial - Entities
-
 # Entities
 
 Let's start coding the app by defining the `Task` entity class.
@@ -17305,9 +17042,7 @@ export default function Home() {
 After the browser refreshes, the list of tasks appears.
 
 
-
 # Tutorial - Paging, Sorting and Filtering
-
 # Paging, Sorting and Filtering
 
 The RESTful API created by Remult supports **server-side paging, sorting, and filtering**. Let's use that to limit, sort and filter the list of tasks.
@@ -17409,9 +17144,7 @@ Explore the reference for a [comprehensive list of filtering options](../../docs
 :::
 
 
-
 # Tutorial - CRUD Operations
-
 # CRUD Operations
 
 ## Adding new tasks
@@ -17614,9 +17347,7 @@ Add the highlighted `deleteTask` function and _Delete_ `button` Within the `task
 ```
 
 
-
 # Tutorial - Validation
-
 # Validation
 
 Validating user entered data is usually required both on the client-side and on the server-side, often causing a violation of the [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) design principle. **With Remult, validation code can be placed within the entity class, and Remult will run the validation logic on both the frontend and the relevant API requests.**
@@ -17684,9 +17415,7 @@ title = ""
 ```
 
 
-
 # Tutorial - Live Queries
-
 # Live Queries :rocket:
 
 ::: tip New Feature
@@ -17795,9 +17524,7 @@ For serverless environments _(or multi servers)_, live-query updates can be push
 :::
 
 
-
 # Tutorial - Backend methods
-
 # Backend methods
 
 When performing operations on multiple entity objects, performance considerations may necessitate running them on the server. **With Remult, moving client-side logic to run on the server is a simple refactoring**.
@@ -17898,9 +17625,7 @@ With Remult backend methods, argument types are compile-time checked. :thumbsup:
 After the browser refreshed, the _"Set all..."_ buttons function exactly the same, but much faster.
 
 
-
 # Tutorial - Authentication and Authorization
-
 # Authentication and Authorization
 
 Our todo app is nearly functionally complete, but it still doesn't fulfill a very basic requirement - that users should log in before they can view, create or modify tasks.
@@ -18202,9 +17927,7 @@ This way we can keep the frontend consistent with the `api`'s Authorization rule
 - Note We send the `task` to the `apiDeleteAllowed` method, because the `apiDeleteAllowed` option, can be sophisticated and can also be based on the specific item's values.
 
 
-
 # Tutorial - Database
-
 # Database
 
 Up until now the todo app has been using a plain JSON file to store the list of tasks. **In production, we'd like to use a `Postgres` database table instead.**
@@ -18273,9 +17996,7 @@ createPostgresDataProvider({
 :::
 
 
-
 # Tutorial - Deployment
-
 # Deployment
 
 You can deploy the application to a standard node.js server, or a server-less server.
@@ -18468,9 +18189,7 @@ To see a larger more complex code base, visit our [CRM example project](https://
 Love Remult?&nbsp;<a href="https://github.com/remult/remult" target="_blank" rel="noopener"> Give our repo a star.⭐</a>
 
 
-
 # Tutorial - Setup
-
 # Build a Full-Stack SolidStart Application
 
 ### Create a simple todo app with Remult using SolidStart
@@ -18659,9 +18378,7 @@ The SolidStart default styles won't fit our todo app. If you'd like a nice-looki
 At this point, our starter project is up and running. We are now ready to move to the [next step of the tutorial](./entities.md) and start creating the task list app.
 
 
-
 # Tutorial - Entities
-
 # Entities
 
 Let's start coding the app by defining the `Task` entity class.
@@ -18856,9 +18573,7 @@ export default function Home() {
 After the browser refreshes, the list of tasks appears.
 
 
-
 # Tutorial - Paging, Sorting and Filtering
-
 # Paging, Sorting and Filtering
 
 The RESTful API created by Remult supports **server-side paging, sorting, and filtering**. Let's use that to limit, sort and filter the list of tasks.
@@ -18960,9 +18675,7 @@ Explore the reference for a [comprehensive list of filtering options](../../docs
 :::
 
 
-
 # Tutorial - CRUD Operations
-
 # CRUD Operations
 
 ## Adding new tasks
@@ -19156,9 +18869,7 @@ Add the highlighted `deleteTask` function and _Delete_ `button` Within the `For`
 ```
 
 
-
 # Tutorial - Validation
-
 # Validation
 
 Validating user entered data is usually required both on the client-side and on the server-side, often causing a violation of the [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) design principle. **With Remult, validation code can be placed within the entity class, and Remult will run the validation logic on both the frontend and the relevant API requests.**
@@ -19220,9 +18931,7 @@ title = ""
 ```
 
 
-
 # Tutorial - Live Queries
-
 # Live Queries :rocket:
 
 Our todo list app can have multiple users using it at the same time. However, changes made by one user are not seen by others unless they manually refresh the browser.
@@ -19322,9 +19031,7 @@ For serverless environments _(or multi servers)_, live-query updates can be push
 :::
 
 
-
 # Tutorial - Backend methods
-
 # Backend methods
 
 When performing operations on multiple entity objects, performance considerations may necessitate running them on the server. **With Remult, moving client-side logic to run on the server is a simple refactoring**.
@@ -19424,9 +19131,7 @@ With Remult backend methods, argument types are compile-time checked. :thumbsup:
 After the browser refreshed, the _"Set all..."_ buttons function exactly the same, but much faster.
 
 
-
 # Tutorial - Authentication and Authorization
-
 # Authentication and Authorization
 
 Our todo app is nearly functionally complete, but it still doesn't fulfill a very basic requirement - that users should log in before they can view, create or modify tasks.
@@ -19738,9 +19443,7 @@ This way we can keep the frontend consistent with the `api`'s Authorization rule
 - Note We send the `task` to the `apiDeleteAllowed` method, because the `apiDeleteAllowed` option, can be sophisticated and can also be based on the specific item's values.
 
 
-
 # Tutorial - Database
-
 # Database
 
 Up until now the todo app has been using a plain JSON file to store the list of tasks. **In production, we'd like to use a `Postgres` database table instead.**
@@ -19779,9 +19482,7 @@ Don't worry if you don't have Postgres installed locally. In the next step of th
    ```
 
 
-
 # Tutorial - Deployment
-
 # Deployment
 
 Let's deploy the todo app to [railway.app](https://railway.app/).
@@ -19866,5 +19567,4 @@ That's it - our application is deployed to production, play with it and enjoy.
 To see a larger more complex code base, visit our [CRM example project](https://www.github.com/remult/crm-demo)
 
 Love Remult?&nbsp;<a href="https://github.com/remult/remult" target="_blank" rel="noopener"> Give our repo a star.⭐</a>
-
 

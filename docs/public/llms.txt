@@ -1,10 +1,12 @@
 # Remult
 
-> remult is a library for building full-stack TypeScript apps. Boost your TypeScript stack with SSOT entities and say goodbye to boilerplate code.
+> remult is a library for building full-stack TypeScript apps. 
+Boost your TypeScript stack with SSOT entities and say goodbye to boilerplate code.
 
 ## Notes
  - SSOT stands for Single Source of Truth, this is the main concept of remult, you define once and use everywhere.
  - remult is not tightly coupled with any framework, it can be used with a lot of different stacks.
-
+ 
 ## Documentation Sets
- - [/llms-full.txt](/llms-full.txt) - complete documentation including tutorials
+- [/llms-small.txt](/llms-small.txt) - complete documentation for remult
+- [/llms-full.txt](/llms-full.txt) - complete documentation for remult with all tutorials _(including the interactive one)_
