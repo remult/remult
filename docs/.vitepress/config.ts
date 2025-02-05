@@ -312,6 +312,7 @@ const sidebar = tutorials.reduce(
         items: [
           { text: 'Open API', link: '/docs/adding-swagger' },
           { text: 'GraphQL', link: '/docs/adding-graphql' },
+          { text: 'LLMs', link: '/docs/llms' },
         ],
       },
       {
@@ -470,7 +471,18 @@ export default defineConfig({
           // Keep the existing llms.txt write
           fs.writeFileSync(
             'public/llms.txt',
-            `# Remult\n\n> remult is a library for building full-stack TypeScript apps. Boost your TypeScript stack with SSOT entities and say goodbye to boilerplate code.\n\n## Notes\n - SSOT stands for Single Source of Truth, this is the main concept of remult, you define once and use everywhere.\n - remult is not tightly coupled with any framework, it can be used with a lot of different stacks.\n\n## Documentation Sets\n - [/llms-full.txt](/llms-full.txt) - complete documentation including tutorials`,
+            `# Remult
+
+> remult is a library for building full-stack TypeScript apps. 
+Boost your TypeScript stack with SSOT entities and say goodbye to boilerplate code.
+
+## Notes
+ - SSOT stands for Single Source of Truth, this is the main concept of remult, you define once and use everywhere.
+ - remult is not tightly coupled with any framework, it can be used with a lot of different stacks.
+ 
+## Documentation Sets
+- [/llms-small.txt](/llms-small.txt) - complete documentation for remult
+- [/llms-full.txt](/llms-full.txt) - complete documentation for remult with all tutorials _(including the interactive one)_`,
           )
         },
       },
