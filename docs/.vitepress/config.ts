@@ -433,23 +433,34 @@ export default defineConfig({
             contentRaw: string
             title: string
           }
-          const getAllMdFiles = (dir: string): MdFile[] => {
+          const getAllMdFiles = (
+            dir: string,
+            parentTitles: string[] = [],
+          ): MdFile[] => {
             const files = fs.readdirSync(dir, { withFileTypes: true })
             const toRet: MdFile[] = []
 
             for (const file of files) {
               const fullPath = path.join(dir, file.name)
-              if (!file.isDirectory()) {
-                toRet.push(...getAllMdFiles(fullPath))
+              if (file.isDirectory()) {
+                // Add directory name to the title chain
+                const dirTitle =
+                  file.name.charAt(0).toUpperCase() + file.name.slice(1)
+                toRet.push(
+                  ...getAllMdFiles(fullPath, [...parentTitles, dirTitle]),
+                )
               } else if (file.name.endsWith('.md')) {
                 const content = fs.readFileSync(fullPath, 'utf-8')
                 const frontmatter = parseFrontmatter(content)
+                const fileTitle =
+                  frontmatter?.title || file.name.replace('.md', '')
+                const fullTitle = [...parentTitles, fileTitle].join(' - ')
+
                 toRet.push({
                   fullPath,
                   dir,
-                  // contentRaw: frontmatter?.contentRaw || '',
                   contentRaw: '',
-                  title: frontmatter?.title || '',
+                  title: fullTitle,
                 })
               }
             }
@@ -541,7 +552,10 @@ export default defineConfig({
           const interactiveFiles = getAllMdFiles(
             './interactive/src/content/tutorial/',
           )
-          console.log(`interactiveFiles`, interactiveFiles)
+          console.log(
+            `interactiveFiles`,
+            interactiveFiles.map((c) => c.title),
+          )
 
           const linkToSkip = ['/docs/llms']
           fs.writeFileSync(
