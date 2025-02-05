@@ -100,7 +100,7 @@ While remult supports [many relational and non-relational databases](https://rem
 
 ### Enabling the Admin UI
 
-Add the Admin UI to your Angular application by setting the `admin` option to `true` in the `remultSveltekit()`
+Add the Admin UI to your Sveltekit application by setting the `admin` option to `true` in the `remultSveltekit()`
 
 ::: code-group
 
