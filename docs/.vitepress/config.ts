@@ -443,23 +443,30 @@ export default defineConfig({
             for (const file of files) {
               const fullPath = path.join(dir, file.name)
               if (file.isDirectory()) {
-                // Add directory name to the title chain
-                const dirTitle =
-                  file.name.charAt(0).toUpperCase() + file.name.slice(1)
-                toRet.push(
-                  ...getAllMdFiles(fullPath, [...parentTitles, dirTitle]),
-                )
+                // Get the directory's index.md to find its title
+                const indexPath = path.join(fullPath, 'meta.md')
+                let dirTitle = ''
+                try {
+                  const indexContent = fs.readFileSync(indexPath, 'utf-8')
+                  const indexFrontmatter = parseFrontmatter(indexContent)
+                  dirTitle = indexFrontmatter?.title || ''
+                } catch (e) {}
+                const newTitles = dirTitle
+                  ? [...parentTitles, dirTitle]
+                  : parentTitles
+                toRet.push(...getAllMdFiles(fullPath, newTitles))
               } else if (file.name.endsWith('.md')) {
                 const content = fs.readFileSync(fullPath, 'utf-8')
                 const frontmatter = parseFrontmatter(content)
-                const fileTitle =
-                  frontmatter?.title || file.name.replace('.md', '')
-                const fullTitle = [...parentTitles, fileTitle].join(' - ')
+                const fileTitle = frontmatter?.title || ''
+                const fullTitle = fileTitle
+                  ? [...parentTitles, fileTitle].join(' - ')
+                  : parentTitles.join(' - ')
 
                 toRet.push({
                   fullPath,
                   dir,
-                  contentRaw: '',
+                  contentRaw: frontmatter?.contentRaw || '',
                   title: fullTitle,
                 })
               }
@@ -552,17 +559,19 @@ export default defineConfig({
           const interactiveFiles = getAllMdFiles(
             './interactive/src/content/tutorial/',
           )
-          console.log(
-            `interactiveFiles`,
-            interactiveFiles.map((c) => c.title),
-          )
 
           const linkToSkip = ['/docs/llms']
           fs.writeFileSync(
             'public/llms-full.txt',
             format(
               docsContent.filter(({ link }) => !linkToSkip.includes(link)),
-            ),
+            ) +
+              interactiveFiles
+                .filter((c) => c.contentRaw)
+                .map((c) => {
+                  return `# Interactive Tutorial - ${c.title}\n\n${c.contentRaw}\n\n`
+                })
+                .join('\n'),
           )
 
           fs.writeFileSync(
