@@ -3,6 +3,7 @@ import { DefaultTheme } from 'vitepress/theme'
 import { tabsMarkdownPlugin } from 'vitepress-plugin-tabs'
 import toolbarConfig from './toolbar-config.json'
 import fs from 'node:fs'
+import path from 'node:path'
 
 const tutorials = [
   { path: 'react' },
@@ -424,6 +425,60 @@ export default defineConfig({
       {
         name: 'llms',
         buildStart() {
+          // Now let's get also all the content from the interactive tutorials
+          // Get all md files under (docs/interactive/src/content/tutorial)
+          const getAllMdFiles = (dir: string): string[] => {
+            const files = fs.readdirSync(dir, { withFileTypes: true })
+            const paths: string[] = []
+
+            for (const file of files) {
+              const fullPath = path.join(dir, file.name)
+              if (file.isDirectory()) {
+                paths.push(...getAllMdFiles(fullPath))
+              } else if (file.name.endsWith('.md')) {
+                paths.push(fullPath)
+              }
+            }
+
+            return paths
+          }
+
+          const interactiveMdFiles = getAllMdFiles(
+            './interactive/src/content/tutorial/',
+          )
+
+          const parseFrontmatter = (content: string) => {
+            const frontmatterRegex = /^---\n([\s\S]*?)\n---/
+            const match = content.match(frontmatterRegex)
+            if (!match) return { contentRaw: content }
+
+            try {
+              const frontmatterBlock = match[1]
+              const frontmatterLines = frontmatterBlock.split('\n')
+              const frontmatter: Record<string, string> = {}
+
+              frontmatterLines.forEach((line) => {
+                const [key, ...valueParts] = line.split(':')
+                if (key && valueParts.length) {
+                  // Remove surrounding quotes and trim whitespace
+                  const value = valueParts.join(':').trim()
+                  frontmatter[key.trim()] = value.replace(
+                    /^["'](.*)["']$/,
+                    '$1',
+                  )
+                }
+              })
+
+              // Add contentRaw with the content without frontmatter
+              frontmatter.contentRaw = content.replace(match[0], '').trim()
+
+              return frontmatter
+            } catch (e) {
+              console.warn('Error parsing frontmatter:', e)
+              return null
+            }
+          }
+
           const flattenItems = (items: any[], prefix = '') => {
             return items.flatMap((item) => {
               const title = prefix ? `${prefix} - ${item.text}` : item.text
@@ -463,7 +518,9 @@ export default defineConfig({
               .map(({ title, path, link }) => {
                 try {
                   const content = fs.readFileSync(path, 'utf-8')
-                  return `# ${title}\n\n${content}\n\n`
+                  const frontmatter = parseFrontmatter(content)
+                  const finalTitle = frontmatter?.title || title
+                  return `# ${finalTitle}\n\n${frontmatter?.contentRaw}\n\n`
                 } catch (e) {
                   console.warn(`Could not read file: ${path}`)
                   return `# ${title}\n\n[Content not found]\n\n`
