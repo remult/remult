@@ -441,7 +441,11 @@ export default defineConfig({
               }
 
               if (item.items) {
-                result.push(...flattenItems(item.items, item.text))
+                const titleArr: string[] = []
+                if (item.title) titleArr.push(item.title)
+                if (item.text) titleArr.push(item.text)
+                const prefix = titleArr.join(' - ')
+                result.push(...flattenItems(item.items, prefix))
               }
 
               return result

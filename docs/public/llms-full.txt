@@ -10558,7 +10558,7 @@ In our next post, we’ll do a roundup of tools in the ecosystem looking to solv
 
 
 
-# Tutorial - Setup
+# react - Tutorial - Setup
 
 # Build a Full-Stack React Application
 
@@ -10799,7 +10799,7 @@ At this point, our starter project is up and running. We are now ready to move t
 
 
 
-# Tutorial - Entities
+# react - Tutorial - Entities
 
 # Entities
 
@@ -10982,7 +10982,7 @@ After the browser refreshes, the list of tasks appears.
 
 
 
-# Tutorial - Paging, Sorting and Filtering
+# react - Tutorial - Paging, Sorting and Filtering
 
 # Paging, Sorting and Filtering
 
@@ -11080,7 +11080,7 @@ Explore the reference for a [comprehensive list of filtering options](../../docs
 
 
 
-# Tutorial - CRUD Operations
+# react - Tutorial - CRUD Operations
 
 # CRUD Operations
 
@@ -11285,7 +11285,7 @@ Add the highlighted `deleteTask` function and _Delete_ `button` Within the `task
 
 
 
-# Tutorial - Validation
+# react - Tutorial - Validation
 
 # Validation
 
@@ -11359,7 +11359,7 @@ This code no longer requires the `Validators` import from 'remult' and it should
 
 
 
-# Tutorial - Live Queries
+# react - Tutorial - Live Queries
 
 # Live Queries
 
@@ -11465,7 +11465,7 @@ For serverless environments _(or multi servers)_, live-query updates can be push
 
 
 
-# Tutorial - Backend methods
+# react - Tutorial - Backend methods
 
 # Backend methods
 
@@ -11568,7 +11568,7 @@ After the browser refreshed, the _"Set all..."_ buttons function exactly the sam
 
 
 
-# Tutorial - Authentication and Authorization
+# react - Tutorial - Authentication and Authorization
 
 # Authentication and Authorization
 
@@ -11952,7 +11952,7 @@ This way we can keep the frontend consistent with the `api`'s Authorization rule
 
 
 
-# Tutorial - Database
+# react - Tutorial - Database
 
 # Database
 
@@ -11993,7 +11993,7 @@ Don't worry if you don't have Postgres installed locally. In the next step of th
 
 
 
-# Tutorial - Deployment
+# react - Tutorial - Deployment
 
 # Deployment
 
@@ -12140,7 +12140,7 @@ Love Remult?&nbsp;<a href="https://github.com/remult/remult" target="_blank" rel
 
 
 
-# Tutorial - Setup
+# angular - Tutorial - Setup
 
 # Build a Full-Stack Angular Application
 
@@ -12351,7 +12351,7 @@ At this point, our starter project is up and running. We are now ready to move t
 
 
 
-# Tutorial - Entities
+# angular - Tutorial - Entities
 
 # Entities
 
@@ -12582,7 +12582,7 @@ After the browser refreshes, the list of tasks appears.
 
 
 
-# Tutorial - Paging, Sorting and Filtering
+# angular - Tutorial - Paging, Sorting and Filtering
 
 # Paging, Sorting and Filtering
 
@@ -12670,7 +12670,7 @@ Explore the reference for a [comprehensive list of filtering options](../../docs
 
 
 
-# Tutorial - CRUD Operations
+# angular - Tutorial - CRUD Operations
 
 # CRUD Operations
 
@@ -12793,7 +12793,7 @@ async deleteTask(task: Task) {
 
 
 
-# Tutorial - Validation
+# angular - Tutorial - Validation
 
 # Validation
 
@@ -12863,7 +12863,7 @@ title = ""
 
 
 
-# Tutorial - Live Queries
+# angular - Tutorial - Live Queries
 
 # Live Queries
 
@@ -12967,7 +12967,7 @@ For serverless environments _(or multi servers)_, live-query updates can be push
 
 
 
-# Tutorial - Backend methods
+# angular - Tutorial - Backend methods
 
 # Backend methods
 
@@ -13070,7 +13070,7 @@ After the browser refreshed, the _"Set all..."_ buttons function exactly the sam
 
 
 
-# Tutorial - Authentication and Authorization
+# angular - Tutorial - Authentication and Authorization
 
 # Authentication and Authorization
 
@@ -13472,7 +13472,7 @@ This way we can keep the frontend consistent with the `api`'s Authorization rule
 
 
 
-# Tutorial - Database
+# angular - Tutorial - Database
 
 # Database
 
@@ -13513,7 +13513,7 @@ Don't worry if you don't have Postgres installed locally. In the next step of th
 
 
 
-# Tutorial - Deployment
+# angular - Tutorial - Deployment
 
 # Deployment
 
@@ -13673,7 +13673,7 @@ Love Remult?&nbsp;<a href="https://github.com/remult/remult" target="_blank" rel
 
 
 
-# Tutorial - Appendix: Observable Live Query
+# angular - Tutorial - Appendix: Observable Live Query
 
 # Appendix - Observable Live Query
 
@@ -13734,7 +13734,7 @@ export function fromLiveQuery<T>(q: LiveQuery<T>) {
 
 
 
-# Tutorial - Setup
+# vue - Tutorial - Setup
 
 # Build a Full-Stack Vue Application
 
@@ -13979,7 +13979,7 @@ At this point, our starter project is up and running. We are now ready to move t
 
 
 
-# Tutorial - Entities
+# vue - Tutorial - Entities
 
 # Entities
 
@@ -14155,7 +14155,7 @@ After the browser refreshes, the list of tasks appears.
 
 
 
-# Tutorial - Paging, Sorting and Filtering
+# vue - Tutorial - Paging, Sorting and Filtering
 
 # Paging, Sorting and Filtering
 
@@ -14251,7 +14251,7 @@ Explore the reference for a [comprehensive list of filtering options](../../docs
 
 
 
-# Tutorial - CRUD Operations
+# vue - Tutorial - CRUD Operations
 
 # CRUD Operations
 
@@ -14368,7 +14368,7 @@ async function deleteTask(task: Task) {
 
 
 
-# Tutorial - Validation
+# vue - Tutorial - Validation
 
 # Validation
 
@@ -14438,7 +14438,7 @@ title = ""
 
 
 
-# Tutorial - Live Queries
+# vue - Tutorial - Live Queries
 
 # Live Queries
 
@@ -14518,7 +14518,7 @@ For serverless environments _(or multi servers)_, live-query updates can be push
 
 
 
-# Tutorial - Backend methods
+# vue - Tutorial - Backend methods
 
 # Backend methods
 
@@ -14621,7 +14621,7 @@ After the browser refreshed, the _"Set all..."_ buttons function exactly the sam
 
 
 
-# Tutorial - Authentication and Authorization
+# vue - Tutorial - Authentication and Authorization
 
 # Authentication and Authorization
 
@@ -14994,7 +14994,7 @@ This way we can keep the frontend consistent with the `api`'s Authorization rule
 
 
 
-# Tutorial - Database
+# vue - Tutorial - Database
 
 # Database
 
@@ -15035,7 +15035,7 @@ Don't worry if you don't have Postgres installed locally. In the next step of th
 
 
 
-# Tutorial - Deployment
+# vue - Tutorial - Deployment
 
 # Deployment
 
@@ -15181,7 +15181,7 @@ Love Remult?&nbsp;<a href="https://github.com/remult/remult" target="_blank" rel
 
 
 
-# Tutorial - Setup
+# SvelteKit - Tutorial - Setup
 
 # Build a Full-Stack SvelteKit Application
 
@@ -15302,7 +15302,7 @@ At this point, our starter project is up and running. We are now ready to move t
 
 
 
-# Tutorial - Entities
+# SvelteKit - Tutorial - Entities
 
 # Entities
 
@@ -15595,7 +15595,7 @@ The styles imported into `src/routes/+layout.svelte` will apply to all pages in 
 
 
 
-# Tutorial - Paging, Sorting and Filtering
+# SvelteKit - Tutorial - Paging, Sorting and Filtering
 
 # Paging, Sorting and Filtering
 
@@ -15697,7 +15697,7 @@ Explore the reference for a [comprehensive list of filtering options](../../docs
 
 
 
-# Tutorial - CRUD Operations
+# SvelteKit - Tutorial - CRUD Operations
 
 # CRUD Operations
 
@@ -15847,7 +15847,7 @@ const deleteTask = async (e: Event, task: Task) => {
 
 
 
-# Tutorial - Validation
+# SvelteKit - Tutorial - Validation
 
 # Validation
 
@@ -15949,7 +15949,7 @@ title = ""
 
 
 
-# Tutorial - Live Queries
+# SvelteKit - Tutorial - Live Queries
 
 # Live Queries
 
@@ -16066,7 +16066,7 @@ For serverless environments _(or multi servers)_, live-query updates can be push
 
 
 
-# Tutorial - Backend methods
+# SvelteKit - Tutorial - Backend methods
 
 # Backend methods
 
@@ -16190,7 +16190,7 @@ After the browser is refreshed, the _"Set all..."_ buttons function exactly the 
 
 
 
-# Tutorial - Authentication and Authorization
+# SvelteKit - Tutorial - Authentication and Authorization
 
 # Authentication and Authorization
 
@@ -16524,7 +16524,7 @@ This way we can keep the UI consistent with the `api`'s Authorization rules
 
 
 
-# Tutorial - Database
+# SvelteKit - Tutorial - Database
 
 # Database
 
@@ -16594,7 +16594,7 @@ You can also disable this automatic migration behavior. It's not part of this tu
 
 
 
-# Tutorial - Deployment
+# SvelteKit - Tutorial - Deployment
 
 # Deployment
 
@@ -16665,7 +16665,7 @@ Love Remult?&nbsp;<a href="https://github.com/remult/remult" target="_blank" rel
 
 
 
-# Tutorial - Go further / Extra
+# SvelteKit - Tutorial - Go further / Extra
 
 # SvelteKit
 
@@ -16966,7 +16966,7 @@ Then you can use `$state`, `$derived` like any other places
 
 
 
-# Tutorial - Setup
+# Next.js - Tutorial - Setup
 
 # Build a Full-Stack Next.js Application
 
@@ -17107,7 +17107,7 @@ At this point, our starter project is up and running. We are now ready to move t
 
 
 
-# Tutorial - Entities
+# Next.js - Tutorial - Entities
 
 # Entities
 
@@ -17306,7 +17306,7 @@ After the browser refreshes, the list of tasks appears.
 
 
 
-# Tutorial - Paging, Sorting and Filtering
+# Next.js - Tutorial - Paging, Sorting and Filtering
 
 # Paging, Sorting and Filtering
 
@@ -17410,7 +17410,7 @@ Explore the reference for a [comprehensive list of filtering options](../../docs
 
 
 
-# Tutorial - CRUD Operations
+# Next.js - Tutorial - CRUD Operations
 
 # CRUD Operations
 
@@ -17615,7 +17615,7 @@ Add the highlighted `deleteTask` function and _Delete_ `button` Within the `task
 
 
 
-# Tutorial - Validation
+# Next.js - Tutorial - Validation
 
 # Validation
 
@@ -17685,7 +17685,7 @@ title = ""
 
 
 
-# Tutorial - Live Queries
+# Next.js - Tutorial - Live Queries
 
 # Live Queries :rocket:
 
@@ -17796,7 +17796,7 @@ For serverless environments _(or multi servers)_, live-query updates can be push
 
 
 
-# Tutorial - Backend methods
+# Next.js - Tutorial - Backend methods
 
 # Backend methods
 
@@ -17899,7 +17899,7 @@ After the browser refreshed, the _"Set all..."_ buttons function exactly the sam
 
 
 
-# Tutorial - Authentication and Authorization
+# Next.js - Tutorial - Authentication and Authorization
 
 # Authentication and Authorization
 
@@ -18203,7 +18203,7 @@ This way we can keep the frontend consistent with the `api`'s Authorization rule
 
 
 
-# Tutorial - Database
+# Next.js - Tutorial - Database
 
 # Database
 
@@ -18274,7 +18274,7 @@ createPostgresDataProvider({
 
 
 
-# Tutorial - Deployment
+# Next.js - Tutorial - Deployment
 
 # Deployment
 
@@ -18469,7 +18469,7 @@ Love Remult?&nbsp;<a href="https://github.com/remult/remult" target="_blank" rel
 
 
 
-# Tutorial - Setup
+# SolidStart - Tutorial - Setup
 
 # Build a Full-Stack SolidStart Application
 
@@ -18660,7 +18660,7 @@ At this point, our starter project is up and running. We are now ready to move t
 
 
 
-# Tutorial - Entities
+# SolidStart - Tutorial - Entities
 
 # Entities
 
@@ -18857,7 +18857,7 @@ After the browser refreshes, the list of tasks appears.
 
 
 
-# Tutorial - Paging, Sorting and Filtering
+# SolidStart - Tutorial - Paging, Sorting and Filtering
 
 # Paging, Sorting and Filtering
 
@@ -18961,7 +18961,7 @@ Explore the reference for a [comprehensive list of filtering options](../../docs
 
 
 
-# Tutorial - CRUD Operations
+# SolidStart - Tutorial - CRUD Operations
 
 # CRUD Operations
 
@@ -19157,7 +19157,7 @@ Add the highlighted `deleteTask` function and _Delete_ `button` Within the `For`
 
 
 
-# Tutorial - Validation
+# SolidStart - Tutorial - Validation
 
 # Validation
 
@@ -19221,7 +19221,7 @@ title = ""
 
 
 
-# Tutorial - Live Queries
+# SolidStart - Tutorial - Live Queries
 
 # Live Queries :rocket:
 
@@ -19323,7 +19323,7 @@ For serverless environments _(or multi servers)_, live-query updates can be push
 
 
 
-# Tutorial - Backend methods
+# SolidStart - Tutorial - Backend methods
 
 # Backend methods
 
@@ -19425,7 +19425,7 @@ After the browser refreshed, the _"Set all..."_ buttons function exactly the sam
 
 
 
-# Tutorial - Authentication and Authorization
+# SolidStart - Tutorial - Authentication and Authorization
 
 # Authentication and Authorization
 
@@ -19739,7 +19739,7 @@ This way we can keep the frontend consistent with the `api`'s Authorization rule
 
 
 
-# Tutorial - Database
+# SolidStart - Tutorial - Database
 
 # Database
 
@@ -19780,7 +19780,7 @@ Don't worry if you don't have Postgres installed locally. In the next step of th
 
 
 
-# Tutorial - Deployment
+# SolidStart - Tutorial - Deployment
 
 # Deployment
 

@@ -10558,7 +10558,7 @@ In our next post, we’ll do a roundup of tools in the ecosystem looking to solv
 
 
 
-# Tutorial - Go further / Extra
+# SvelteKit - Tutorial - Go further / Extra
 
 # SvelteKit
 
