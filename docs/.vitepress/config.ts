@@ -427,7 +427,7 @@ export default defineConfig({
           const flattenItems = (items: any[], prefix = '') => {
             return items.flatMap((item) => {
               const title = prefix ? `${prefix} - ${item.text}` : item.text
-              const result: { title: string; path: string }[] = []
+              const result: { title: string; path: string; link: string }[] = []
 
               if (item.link) {
                 const path = item.link.endsWith('/')
@@ -436,6 +436,7 @@ export default defineConfig({
                 result.push({
                   title,
                   path: path.startsWith('/') ? `.${path}` : path,
+                  link: item.link,
                 })
               }
 
@@ -453,26 +454,34 @@ export default defineConfig({
             },
           )
 
-          const titleToSkip = ['Integrations - LLMs']
+          const format = (e: { title: string; path: string; link: string }[]) =>
+            e
+              .map(({ title, path, link }) => {
+                try {
+                  const content = fs.readFileSync(path, 'utf-8')
+                  return `# ${title}\n\n${content}\n\n`
+                } catch (e) {
+                  console.warn(`Could not read file: ${path}`)
+                  return `# ${title}\n\n[Content not found]\n\n`
+                }
+              })
+              .join('\n')
 
-          // Read and combine all the content
-          const combinedContent = allContent
-            .map(({ title, path }) => {
-              try {
-                const content = fs.readFileSync(path, 'utf-8')
+          const linkToSkip = ['/docs/llms']
+          fs.writeFileSync(
+            'public/llms-full.txt',
+            format(allContent.filter(({ link }) => !linkToSkip.includes(link))),
+          )
 
-                if (titleToSkip.includes(title)) return ''
-
-                return `# ${title}\n${content}\n`
-              } catch (e) {
-                console.warn(`Could not read file: ${path}`)
-                return `# ${title}\n\n[Content not found]\n\n`
-              }
-            })
-            .filter(Boolean)
-            .join('\n')
-
-          fs.writeFileSync('public/llms-full.txt', combinedContent)
+          fs.writeFileSync(
+            'public/llms-small.txt',
+            format(
+              allContent.filter(
+                ({ link }) =>
+                  !linkToSkip.includes(link) && !link.startsWith('/tutorials'),
+              ),
+            ),
+          )
 
           // Keep the existing llms.txt write
           fs.writeFileSync(
