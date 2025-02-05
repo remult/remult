@@ -427,25 +427,35 @@ export default defineConfig({
         buildStart() {
           // Now let's get also all the content from the interactive tutorials
           // Get all md files under (docs/interactive/src/content/tutorial)
-          const getAllMdFiles = (dir: string): string[] => {
+          type MdFile = {
+            fullPath: string
+            dir: string
+            contentRaw: string
+            title: string
+          }
+          const getAllMdFiles = (dir: string): MdFile[] => {
             const files = fs.readdirSync(dir, { withFileTypes: true })
-            const paths: string[] = []
+            const toRet: MdFile[] = []
 
             for (const file of files) {
               const fullPath = path.join(dir, file.name)
-              if (file.isDirectory()) {
-                paths.push(...getAllMdFiles(fullPath))
+              if (!file.isDirectory()) {
+                toRet.push(...getAllMdFiles(fullPath))
               } else if (file.name.endsWith('.md')) {
-                paths.push(fullPath)
+                const content = fs.readFileSync(fullPath, 'utf-8')
+                const frontmatter = parseFrontmatter(content)
+                toRet.push({
+                  fullPath,
+                  dir,
+                  // contentRaw: frontmatter?.contentRaw || '',
+                  contentRaw: '',
+                  title: frontmatter?.title || '',
+                })
               }
             }
 
-            return paths
+            return toRet
           }
-
-          const interactiveMdFiles = getAllMdFiles(
-            './interactive/src/content/tutorial/',
-          )
 
           const parseFrontmatter = (content: string) => {
             const frontmatterRegex = /^---\n([\s\S]*?)\n---/
@@ -507,12 +517,6 @@ export default defineConfig({
             })
           }
 
-          const allContent = Object.entries(sidebar).flatMap(
-            ([section, items]) => {
-              return flattenItems(items)
-            },
-          )
-
           const format = (e: { title: string; path: string; link: string }[]) =>
             e
               .map(({ title, path, link }) => {
@@ -528,16 +532,29 @@ export default defineConfig({
               })
               .join('\n')
 
+          const docsContent = Object.entries(sidebar).flatMap(
+            ([section, items]) => {
+              return flattenItems(items)
+            },
+          )
+
+          const interactiveFiles = getAllMdFiles(
+            './interactive/src/content/tutorial/',
+          )
+          console.log(`interactiveFiles`, interactiveFiles)
+
           const linkToSkip = ['/docs/llms']
           fs.writeFileSync(
             'public/llms-full.txt',
-            format(allContent.filter(({ link }) => !linkToSkip.includes(link))),
+            format(
+              docsContent.filter(({ link }) => !linkToSkip.includes(link)),
+            ),
           )
 
           fs.writeFileSync(
             'public/llms-small.txt',
             format(
-              allContent.filter(
+              docsContent.filter(
                 ({ link }) =>
                   !linkToSkip.includes(link) && !link.startsWith('/tutorials'),
               ),
