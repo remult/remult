@@ -107,6 +107,7 @@ export function remultNextApp(
       const response: GenericResponse & ResponseRequiredForSSE = {
         redirect: () => {},
         setCookie: () => {},
+        deleteCookie: () => {},
         end: () => {},
         json: () => {},
         send: () => {},

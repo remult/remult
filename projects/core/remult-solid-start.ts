@@ -34,6 +34,7 @@ export function remultSolidStart(
       send: () => {},
       redirect: () => {},
       setCookie: () => {},
+      deleteCookie: () => {},
       status: () => {
         return response
       },

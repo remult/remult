@@ -38,6 +38,12 @@ export function remultSveltekit(
           path: options?.path ?? '/',
         })
       },
+      deleteCookie: (name, options) => {
+        event.cookies.delete(name, {
+          ...options,
+          path: options?.path ?? '/',
+        })
+      },
       status: () => {
         return response
       },

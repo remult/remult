@@ -23,6 +23,7 @@ export function remultFastify(
     const response: RouteHandlerMethod = (req, res) => {
       const myRes: GenericResponse & ResponseRequiredForSSE = {
         setCookie: () => {},
+        deleteCookie: () => {},
         redirect: () => {},
         status(statusCode) {
           res.status(statusCode)

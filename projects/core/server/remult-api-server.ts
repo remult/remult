@@ -283,9 +283,6 @@ export type SpecificRoute<RequestType> = {
   delete(
     handler: GenericRequestHandler<RequestType>,
   ): SpecificRoute<RequestType>
-  // setCookie(name: string, value: string): void
-  // deleteCookie(name: string): void
-  // redirect(url: string): void
 }
 export interface GenericRequestInfo {
   url?: string //optional for next
@@ -305,6 +302,10 @@ export interface GenericResponse {
   setCookie(
     name: string,
     value: string,
+    opts?: import('cookie').CookieSerializeOptions & { path?: string },
+  ): void
+  deleteCookie(
+    name: string,
     opts?: import('cookie').CookieSerializeOptions & { path?: string },
   ): void
   status(statusCode: number): GenericResponse //exists for express and next and not in opine(In opine it's setStatus)
@@ -1560,6 +1561,9 @@ export class RouteImplementation<RequestType> {
         }
         setCookie(name: string, value: string, options: any): void {
           if (gRes !== undefined) gRes.setCookie(name, value, options)
+        }
+        deleteCookie(name: string, options: any): void {
+          if (gRes !== undefined) gRes.deleteCookie(name, options)
         }
         status(statusCode: number): GenericResponse {
           if (gRes !== undefined) gRes.status(statusCode)

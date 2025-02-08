@@ -3556,6 +3556,12 @@ export interface GenericResponse {
       path?: string
     },
   ): void
+  deleteCookie(
+    name: string,
+    opts?: import("cookie").CookieSerializeOptions & {
+      path?: string
+    },
+  ): void
   status(statusCode: number): GenericResponse
   end(): void
 }
@@ -3821,6 +3827,12 @@ export interface GenericResponse {
   setCookie(
     name: string,
     value: string,
+    opts?: import("cookie").CookieSerializeOptions & {
+      path?: string
+    },
+  ): void
+  deleteCookie(
+    name: string,
     opts?: import("cookie").CookieSerializeOptions & {
       path?: string
     },

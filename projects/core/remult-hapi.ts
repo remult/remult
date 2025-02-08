@@ -46,6 +46,7 @@ export function remultHapi(
 
             let r: GenericResponse & ResponseRequiredForSSE = {
               setCookie: () => {},
+              deleteCookie: () => {},
               redirect: () => {},
               status(statusCode) {
                 status = statusCode

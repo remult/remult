@@ -43,7 +43,15 @@ export const api = remultSveltekit({
         })
         add('/setCookie').get((req, res) => {
           res.setCookie('res.setCookie', 'Plop')
-          res.send('<h1>setCookie</h1>')
+          res.send(
+            '<h1>setCookie</h1><a href="/api/deleteCookie">deleteCookie</a>',
+          )
+        })
+        add('/deleteCookie').get((req, res) => {
+          res.deleteCookie('res.setCookie')
+          res.send(
+            '<h1>deleteCookie</h1><a href="/api/setCookie">setCookie</a>',
+          )
         })
       },
     }),
