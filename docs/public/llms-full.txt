@@ -6605,10 +6605,10 @@ You can use the `withRemult` method in specific routes
 import { json, type RequestHandler } from '@sveltejs/kit'
 import { remult } from 'remult'
 import { Task } from '../../../shared/Task'
-import { _api } from '../[...remult]/+server'
+import { api } from '../../../server/api'
 
 export const GET: RequestHandler = async (event) => {
-  return _api.withRemult(event, async () =>
+  return api.withRemult(event, async () =>
     json({ result: await remult.repo(Task).count() }),
   )
 }
@@ -6620,14 +6620,7 @@ You can also define the withRemult as a hook, to make remult available throughou
 // src/hooks.server.ts
 import type { Handle } from '@sveltejs/kit'
 import { sequence } from '@sveltejs/kit/hooks'
-import { _api } from './routes/api/[...remult]/+server'
-
-/**
- * Handle remult server side
- */
-const handleRemult: Handle = async ({ event, resolve }) => {
-  return await _api.withRemult(event, async () => await resolve(event))
-}
+import { api as handleRemult } from './server/api'
 
 export const handle = sequence(
   // Handle remult server side
@@ -6646,7 +6639,7 @@ You can use the `withRemult` method in specific routes
 
 import { remult } from 'remult'
 import { Task } from '../../../shared/Task'
-import { _api } from '../[...remult]/+server'
+import { api } from '../../../server/api'
 
 export function GET() {
   return api.withRemult(event, async () =>
@@ -6670,14 +6663,7 @@ You can also define the withRemult as a hook, to make remult available throughou
 // src/hooks.server.ts
 import type { Handle } from '@sveltejs/kit'
 import { sequence } from '@sveltejs/kit/hooks'
-import { _api } from './routes/api/[...remult]/+server'
-
-/**
- * Handle remult server side
- */
-const handleRemult: Handle = async ({ event, resolve }) => {
-  return await _api.withRemult(event, async () => await resolve(event))
-}
+import { api as handleRemult } from './server/api'
 
 export const handle = sequence(
   // Handle remult server side
@@ -15326,7 +15312,7 @@ For a complete list of supported field types, see the [Field Types](../../docs/f
 import { remultSveltekit } from 'remult/remult-sveltekit'
 import { Task } from '../shared/Task' // [!code ++]
 
-export const _api = remultSveltekit({
+export const api = remultSveltekit({
   entities: [Task], // [!code ++]
 })
 ```
@@ -15371,7 +15357,7 @@ Add the Admin UI to your Sveltekit application by setting the `admin` option to 
 import { remultSveltekit } from 'remult/remult-sveltekit'
 import { Task } from '../shared/Task'
 
-export const _api = remultSveltekit({
+export const api = remultSveltekit({
   entities: [Task],
   admin: true, // Enable the Admin UI
 })
@@ -16524,7 +16510,7 @@ import { TasksController } from './shared/TasksController'
 import { createPostgresDataProvider } from 'remult/postgres' // [!code ++]
 import { DATABASE_URL } from '$env/static/private' // [!code ++]
 
-export const _api = remultSveltekit({
+export const api = remultSveltekit({
   entities: [Task],
   controllers: [TasksController],
   dataProvider: DATABASE_URL // [!code ++]
