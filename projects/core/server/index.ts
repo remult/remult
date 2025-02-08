@@ -2,6 +2,7 @@ import type {
   RemultServer,
   RemultServerOptions,
   ServerCoreOptions,
+  ServerHandleResponse,
 } from './remult-api-server.js'
 import {
   createRemultServerCore,
@@ -43,4 +44,36 @@ export function createRemultServer<RequestType>(
       getRequestBody: async (req) => (req as any).body,
     },
   )
+}
+
+export const remultHandlerToResponse = (
+  responseFromRemultHandler: ServerHandleResponse | undefined,
+  sseResponse: Response | undefined,
+  requestUrl: string,
+) => {
+  if (sseResponse !== undefined) {
+    return sseResponse
+  }
+  if (responseFromRemultHandler !== undefined) {
+    if (responseFromRemultHandler.redirectUrl)
+      return Response.redirect(
+        new URL(responseFromRemultHandler.redirectUrl, requestUrl),
+        responseFromRemultHandler.statusCode,
+      )
+
+    if (responseFromRemultHandler.html)
+      return new Response(responseFromRemultHandler.html, {
+        status: responseFromRemultHandler.statusCode,
+        headers: {
+          'Content-Type': 'text/html',
+        },
+      })
+
+    return new Response(JSON.stringify(responseFromRemultHandler.data), {
+      status: responseFromRemultHandler.statusCode,
+    })
+  }
+  return new Response('Not Found', {
+    status: 404,
+  })
 }

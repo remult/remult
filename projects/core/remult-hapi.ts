@@ -45,6 +45,7 @@ export function remultHapi(
             let stream: PassThrough
 
             let r: GenericResponse & ResponseRequiredForSSE = {
+              redirect: () => {},
               status(statusCode) {
                 status = statusCode
                 return r

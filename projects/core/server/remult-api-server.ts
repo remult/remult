@@ -251,6 +251,7 @@ export type GenericRequestHandler<RequestType> = (
 export interface ServerHandleResponse {
   data?: any
   html?: string
+  redirectUrl?: string
   statusCode: number
 }
 export interface RemultServer<RequestType>
@@ -296,6 +297,11 @@ export interface GenericRequestInfo {
 export interface GenericResponse {
   json(data: any): void
   send(html: string): void
+  redirect(
+    /** The [HTTP status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#redirection_messages). Must be in the range 300-308. */
+    status: 300 | 301 | 302 | 303 | 304 | 305 | 306 | 307 | 308 | ({} & number),
+    url: string,
+  ): void
   status(statusCode: number): GenericResponse //exists for express and next and not in opine(In opine it's setStatus)
   end(): void
 }
@@ -477,7 +483,6 @@ export class RemultServerImplementation<RequestType>
       }
 
       // Register extra routes
-
       const add = (relativePath: `/${string}`) => {
         const newRoute = this.options.rootPath + relativePath
         if (this.options.logApiEndPoints) {
@@ -1542,6 +1547,10 @@ export class RouteImplementation<RequestType> {
         send(html: string) {
           if (gRes !== undefined) gRes.send(html)
           res({ statusCode: this.statusCode, html })
+        }
+        redirect(status: number, redirectUrl: string): void {
+          if (gRes !== undefined) gRes.redirect(status, redirectUrl)
+          res({ statusCode: status, redirectUrl })
         }
         status(statusCode: number): GenericResponse {
           if (gRes !== undefined) gRes.status(statusCode)

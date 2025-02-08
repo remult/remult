@@ -5,7 +5,7 @@ import type {
   RemultServerCore,
   RemultServerOptions,
 } from './server/index.js'
-import { createRemultServer } from './server/index.js'
+import { createRemultServer, remultHandlerToResponse } from './server/index.js'
 import type { APIEvent } from '@solidjs/start/server' // don't remove - augments requestEvent
 
 export function remultSolidStart(
@@ -32,6 +32,7 @@ export function remultSolidStart(
       end: () => {},
       json: () => {},
       send: () => {},
+      redirect: () => {},
       status: () => {
         return response
       },
@@ -63,25 +64,11 @@ export function remultSolidStart(
     }
 
     const responseFromRemultHandler = await result.handle(event!, response)
-    if (sseResponse !== undefined) {
-      return sseResponse
-    }
-    if (responseFromRemultHandler) {
-      if (responseFromRemultHandler.html)
-        return new Response(responseFromRemultHandler.html, {
-          status: responseFromRemultHandler.statusCode,
-          headers: {
-            'Content-Type': 'text/html',
-          },
-        })
-      const res = new Response(JSON.stringify(responseFromRemultHandler.data), {
-        status: responseFromRemultHandler.statusCode,
-      })
-      return res
-    }
-    return new Response('Not Found', {
-      status: 404,
-    })
+    return remultHandlerToResponse(
+      responseFromRemultHandler,
+      sseResponse,
+      event!.request.url,
+    )
   }
 
   const handler = {} //async ({ event, resolve }) => {

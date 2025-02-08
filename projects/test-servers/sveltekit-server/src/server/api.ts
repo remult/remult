@@ -1,4 +1,4 @@
-import type { RequestEvent } from '@sveltejs/kit'
+import { type RequestEvent } from '@sveltejs/kit'
 import { Task } from '../shared/Task'
 import { TasksController } from '../shared/TasksController'
 import { remult } from 'remult'
@@ -22,13 +22,24 @@ export const api = remultSveltekit({
   },
 
   modules: [
-    //
     new Module({
       key: 'some-routes',
       extraRoutes: (add) => {
         add('/new-route').get((req, res) => {
           console.log('extraRoutes /api/new-route')
-          return res.json({ Soooooo: 'Cool! A new new-route!' })
+          res.json({ Soooooo: 'Cool! A new new-route!' })
+        })
+        add('/html').get((req, res) => {
+          res.send('<h1>Hello World</h1>')
+        })
+        add('/redirect').get((req, res) => {
+          res.redirect(307, '/api/html')
+        })
+        add('/redirect-ext').get((req, res) => {
+          res.redirect(
+            307,
+            'https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#redirection_messages',
+          )
         })
       },
     }),
