@@ -3565,6 +3565,29 @@ export declare class JsonEntityFileStorage implements JsonEntityStorage {
 export declare class JsonFileDataProvider extends JsonDataProvider {
   constructor(folderPath: string)
 }
+export declare class Module<RequestType> {
+  key: string
+  priority?: number
+  entities?: ClassType<unknown>[]
+  controllers?: ClassType<unknown>[]
+  initApi?: RemultServerOptions<RequestType>["initApi"]
+  initRequest?: RemultServerOptions<RequestType>["initRequest"]
+  extraRoutes?: (router: GenericRouter<RequestType>) => void
+  modules?: Module<RequestType>[]
+  constructor(options: ModuleInput<RequestType>)
+}
+//[ ] ClassType from TBD is not exported
+export type ModuleInput<RequestType> = {
+  key: string
+  /** @default 0 */
+  priority?: number
+  entities?: ClassType<unknown>[]
+  controllers?: ClassType<unknown>[]
+  initApi?: RemultServerOptions<RequestType>["initApi"]
+  initRequest?: RemultServerOptions<RequestType>["initRequest"]
+  modules?: Module<RequestType>[]
+  extraRoutes?: (router: GenericRouter<RequestType>) => void
+}
 export interface queuedJobInfo {
   info: queuedJobInfoResponse
   userId: string
@@ -3685,12 +3708,10 @@ export interface RemultServerOptions<RequestType> {
   modules?: Module<RequestType>[]
   extraRoutes?: (router: GenericRouter<RequestType>) => void
 }
-//[ ] ClassType from TBD is not exported
 //[ ] UserInfo from TBD is not exported
 //[ ] SubscriptionServer from TBD is not exported
 //[ ] Allowed from TBD is not exported
 //[ ] EntityMetadata from TBD is not exported
-//[ ] Module from TBD is not exported
 export type SpecificRoute<RequestType> = {
   get(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
   put(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>

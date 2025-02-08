@@ -2,6 +2,7 @@ import type { RequestEvent } from '@sveltejs/kit'
 import { Task } from '../shared/Task'
 import { TasksController } from '../shared/TasksController'
 import { remult } from 'remult'
+import { Module } from 'remult/server'
 import { remultSveltekit } from 'remult/remult-sveltekit'
 
 export const api = remultSveltekit({
@@ -20,6 +21,8 @@ export const api = remultSveltekit({
     console.log('Ready 💪')
   },
   extraRoutes(router) {
+    // How to make sure it has the right starting path? (this.options.rootPath) ?
+    // Or we should return an array to registered routes ? (so that we can log them also ? like: [remult] /api/tasks)
     router.route('/api/toto').get((req, res) => {
       console.log('extraRoutes api/toto')
       return res.json({ Soooooo: 'Cool!' })
@@ -29,6 +32,19 @@ export const api = remultSveltekit({
       return res.json({ Soooooo: 'Cool!2' })
     })
   },
+
+  modules: [
+    //
+    new Module({
+      key: 'some-routes',
+      extraRoutes: (router) => {
+        router.route('/api/some-routes').get((req, res) => {
+          console.log('extraRoutes /api/some-routes')
+          return res.json({ Soooooo: 'Cool! some-routes' })
+        })
+      },
+    }),
+  ],
 })
 
 declare module 'remult' {

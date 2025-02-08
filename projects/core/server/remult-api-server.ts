@@ -140,7 +140,7 @@ export interface RemultServerOptions<RequestType> {
   extraRoutes?: (router: GenericRouter<RequestType>) => void
 }
 
-type ModuleInput<RequestType> = {
+export type ModuleInput<RequestType> = {
   key: string
   /** @default 0 */
   priority?: number
