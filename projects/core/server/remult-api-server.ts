@@ -136,6 +136,8 @@ export interface RemultServerOptions<RequestType> {
   }) => Promise<void> | undefined
 
   modules?: Module<RequestType>[]
+
+  extraRoutes?: (router: GenericRouter<RequestType>) => void
 }
 
 type ModuleInput<RequestType> = {
@@ -156,6 +158,7 @@ export class Module<RequestType> {
   controllers?: ClassType<unknown>[]
   initApi?: RemultServerOptions<RequestType>['initApi']
   initRequest?: RemultServerOptions<RequestType>['initRequest']
+  extraRoutes?: (router: GenericRouter<RequestType>) => void
 
   modules?: Module<RequestType>[]
 
@@ -263,6 +266,9 @@ export type SpecificRoute<RequestType> = {
   delete(
     handler: GenericRequestHandler<RequestType>,
   ): SpecificRoute<RequestType>
+  // setCookie(name: string, value: string): void
+  // deleteCookie(name: string): void
+  // redirect(url: string): void
 }
 export interface GenericRequestInfo {
   url?: string //optional for next
@@ -306,6 +312,7 @@ export class RemultServerImplementation<RequestType>
       entities: options.entities ?? [],
       controllers: options.controllers ?? [],
       initApi: options.initApi,
+      initRequest: options.initRequest,
       modules: [],
     })
     this.modulesSorted = modulesFlatAndOrdered<RequestType>(modules)

@@ -3682,12 +3682,15 @@ export interface RemultServerOptions<RequestType> {
     responseBody: any
     sendError: (httpStatusCode: number, body: any) => void
   }) => Promise<void> | undefined
+  modules?: Module<RequestType>[]
+  extraRoutes?: (router: GenericRouter<RequestType>) => void
 }
 //[ ] ClassType from TBD is not exported
 //[ ] UserInfo from TBD is not exported
 //[ ] SubscriptionServer from TBD is not exported
 //[ ] Allowed from TBD is not exported
 //[ ] EntityMetadata from TBD is not exported
+//[ ] Module from TBD is not exported
 export type SpecificRoute<RequestType> = {
   get(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
   put(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
@@ -3888,6 +3891,8 @@ export interface RemultServerOptions<RequestType> {
     responseBody: any
     sendError: (httpStatusCode: number, body: any) => void
   }) => Promise<void> | undefined
+  modules?: Module<RequestType>[]
+  extraRoutes?: (router: GenericRouter<RequestType>) => void
 }
 //[ ] ClassType from TBD is not exported
 //[ ] UserInfo from TBD is not exported
@@ -3897,6 +3902,7 @@ export interface RemultServerOptions<RequestType> {
 //[ ] LiveQueryStorage from TBD is not exported
 //[ ] Allowed from TBD is not exported
 //[ ] EntityMetadata from TBD is not exported
+//[ ] Module from TBD is not exported
 export type SpecificRoute<RequestType> = {
   get(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
   put(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
