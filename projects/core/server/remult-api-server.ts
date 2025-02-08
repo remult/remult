@@ -149,6 +149,7 @@ type ModuleInput<RequestType> = {
   initApi?: RemultServerOptions<RequestType>['initApi']
   initRequest?: RemultServerOptions<RequestType>['initRequest']
   modules?: Module<RequestType>[]
+  extraRoutes?: (router: GenericRouter<RequestType>) => void
 }
 
 export class Module<RequestType> {
@@ -159,7 +160,6 @@ export class Module<RequestType> {
   initApi?: RemultServerOptions<RequestType>['initApi']
   initRequest?: RemultServerOptions<RequestType>['initRequest']
   extraRoutes?: (router: GenericRouter<RequestType>) => void
-
   modules?: Module<RequestType>[]
 
   constructor(options: ModuleInput<RequestType>) {
@@ -170,6 +170,7 @@ export class Module<RequestType> {
     this.initRequest = options.initRequest
     this.initApi = options.initApi
     this.modules = options.modules
+    this.extraRoutes = options.extraRoutes
   }
 }
 
@@ -313,6 +314,7 @@ export class RemultServerImplementation<RequestType>
       controllers: options.controllers ?? [],
       initApi: options.initApi,
       initRequest: options.initRequest,
+      extraRoutes: options.extraRoutes,
       modules: [],
     })
     this.modulesSorted = modulesFlatAndOrdered<RequestType>(modules)
@@ -458,6 +460,12 @@ export class RemultServerImplementation<RequestType>
             this.addAction(x, r)
           }
       }
+
+      // Register extra routes from options and modules
+      for (const module of this.modulesSorted) {
+        module.extraRoutes?.(r)
+      }
+
       if (this.hasQueue)
         this.addAction(
           {

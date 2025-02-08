@@ -19,6 +19,16 @@ export const api = remultSveltekit({
   initApi: (api) => {
     console.log('Ready 💪')
   },
+  extraRoutes(router) {
+    router.route('/api/toto').get((req, res) => {
+      console.log('extraRoutes api/toto')
+      return res.json({ Soooooo: 'Cool!' })
+    })
+    router.route('/api/toto2').get((req, res) => {
+      console.log('extraRoutes /api/toto2')
+      return res.json({ Soooooo: 'Cool!2' })
+    })
+  },
 })
 
 declare module 'remult' {
