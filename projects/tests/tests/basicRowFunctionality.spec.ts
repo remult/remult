@@ -3,9 +3,7 @@ import { ArrayEntityDataProvider } from '../../core/src//data-providers/array-en
 import { InMemoryDataProvider } from '../../core/src//data-providers/in-memory-database'
 import { createData } from './createData'
 import { Done } from './Done'
-import { TestDataApiResponse } from './TestDataApiResponse'
-import { MockRestDataProvider } from './testHelper'
-
+import { DummyRequest, TestDataApiResponse } from './TestDataApiResponse'
 import { Status } from './testModel/models'
 
 import { UrlBuilder } from '../../core/src/../urlBuilder'
@@ -59,6 +57,7 @@ import {
 import { getEntityKey } from '../../core/src/remult3/getEntityRef'
 import { actionInfo } from '../../core/internals'
 import { remultStatic, resetFactory } from '../../core/src/remult-static'
+import { TestApiDataProvider } from '../../core/server/test-api-data-provider.js'
 
 //SqlDatabase.LogToConsole = true;
 
@@ -396,7 +395,7 @@ describe('data api', () => {
       expect(data.categoryName).toBe('noam')
       d.ok()
     }
-    await api.post(t, { id: 1, categoryName: 'noam' })
+    await api.post({ id: 1, categoryName: 'noam' }).then(t.created)
     d.test()
     expect(await c.count()).toBe(1)
   })
@@ -414,10 +413,12 @@ describe('data api', () => {
       expect(data[1].categoryName).toBe('yael')
       d.ok()
     }
-    await api.post(t, [
-      { id: 1, categoryName: 'noam' },
-      { id: 2, categoryName: 'yael' },
-    ])
+    await api
+      .post([
+        { id: 1, categoryName: 'noam' },
+        { id: 2, categoryName: 'yael' },
+      ])
+      .then(t.created)
     d.test()
     expect(await c.count()).toBe(2)
   })
@@ -434,7 +435,12 @@ describe('data api', () => {
       if (!err.message) throw 'no message'
       d.ok()
     }
-    await api.post(t, { id: 1, categoryName: 'noam' })
+    await api.httpPost(
+      t,
+      { get: () => undefined! },
+      { id: 1, categoryName: 'noam' },
+      () => undefined!,
+    )
     d.test()
   })
 
@@ -848,10 +854,15 @@ describe('data api', () => {
       d.ok()
     }
 
-    await api.post(t, {
-      id: 1,
-      categoryName: 'noam 1',
-    })
+    await api.httpPost(
+      t,
+      DummyRequest,
+      {
+        id: 1,
+        categoryName: 'noam 1',
+      },
+      undefined!,
+    )
 
     d.test()
     savedWorked.test()
@@ -1055,7 +1066,12 @@ describe('data api', () => {
       expect(data.message).toContain('Cannot read prop')
       d.ok()
     }
-    await api.post(t, { id: 1, categoryName: 'noam' })
+    await api.httpPost(
+      t,
+      DummyRequest,
+      { id: 1, categoryName: 'noam' },
+      undefined!,
+    )
     d.test()
     expect((await c.find()).length).toBe(0)
   })
@@ -1195,7 +1211,7 @@ describe('data api', () => {
 
   it('delete id  not Allowed', async () => {
     let type = class extends newCategories {}
-    Entity('', {
+    Entity('x', {
       allowApiDelete: false,
     })(type)
     let [c, remult] = await createData(async (i) => {
@@ -1203,15 +1219,19 @@ describe('data api', () => {
       await i(2, 'yael', 'b')
       await i(3, 'yoni', 'a')
     }, type)
-    const r = new Remult(new MockRestDataProvider(remult)).repo(type)
+    const r = new Remult(
+      TestApiDataProvider({ dataProvider: remult.dataProvider }),
+    ).repo(type)
     await expect(() => r.delete(2)).rejects.toThrowErrorMatchingInlineSnapshot(`
       {
+        "httpStatusCode": 403,
         "message": "Forbidden",
       }
     `)
     await expect(() => r.deleteMany({ where: { id: { '!=': -1 } } })).rejects
       .toThrowErrorMatchingInlineSnapshot(`
       {
+        "httpStatusCode": 403,
         "message": "Forbidden",
       }
     `)
@@ -1302,21 +1322,26 @@ describe('data api', () => {
       await i(2, 'yael', 'b')
       await i(3, 'yoni', 'a')
     }, type)
-    const r = new Remult(new MockRestDataProvider(remult)).repo(type)
+    const r = new Remult(
+      TestApiDataProvider({ dataProvider: remult.dataProvider }),
+    ).repo(type)
     await expect(() => r.delete(2)).rejects.toThrowErrorMatchingInlineSnapshot(`
       {
+        "httpStatusCode": 403,
         "message": "Forbidden",
       }
     `)
     await expect(() => r.deleteMany({ where: { id: 2 } })).rejects
       .toThrowErrorMatchingInlineSnapshot(`
       {
+        "httpStatusCode": 403,
         "message": "Forbidden",
       }
     `)
     await expect(() => r.deleteMany({ where: { id: { '!=': -1 } } })).rejects
       .toThrowErrorMatchingInlineSnapshot(`
       {
+        "httpStatusCode": 403,
         "message": "Forbidden",
       }
     `)
@@ -1337,12 +1362,15 @@ describe('data api', () => {
       await i(2, 'yael', 'b')
       await i(3, 'yoni', 'a')
     }, type)
-    const r = new Remult(new MockRestDataProvider(remult)).repo(type)
+    const r = new Remult(
+      TestApiDataProvider({ dataProvider: remult.dataProvider }),
+    ).repo(type)
     expect(r.metadata.apiUpdateAllowed({ id: 2 } as any)).toBe(false)
     expect(r.metadata.apiUpdateAllowed({ id: 1 } as any)).toBe(true)
     await expect(() => r.update(2, { categoryName: 'noam 1' })).rejects
       .toThrowErrorMatchingInlineSnapshot(`
       {
+        "httpStatusCode": 403,
         "message": "Forbidden",
       }
     `)
@@ -1352,10 +1380,11 @@ describe('data api', () => {
         set: { categoryName: 'noam 1' },
       }),
     ).rejects.toThrowErrorMatchingInlineSnapshot(`
-    {
-      "message": "Forbidden",
-    }
-  `)
+      {
+        "httpStatusCode": 403,
+        "message": "Forbidden",
+      }
+    `)
     expect(
       (await r.find()).map(({ id, categoryName }) => ({ id, categoryName })),
     ).toMatchInlineSnapshot(`
@@ -1394,16 +1423,26 @@ describe('data api', () => {
     t.forbidden = () => {
       d.ok()
     }
-    await api.post(t, {
-      categoryName: 'wrong',
-    })
+    await api.httpPost(
+      t,
+      DummyRequest,
+      {
+        categoryName: 'wrong',
+      },
+      undefined!,
+    )
     d.test()
     t = new TestDataApiResponse()
     d = new Done()
     t.created = () => d.ok()
-    await api.post(t, {
-      categoryName: 'ok',
-    })
+    await api.httpPost(
+      t,
+      DummyRequest,
+      {
+        categoryName: 'ok',
+      },
+      undefined!,
+    )
     d.test()
   })
 
@@ -1710,7 +1749,9 @@ describe('test rest data provider translates data correctly', () => {
       async (insert) => await insert(1, 'test'),
     )
 
-    let restDb = new MockRestDataProvider(serverRemult)
+    let restDb = TestApiDataProvider({
+      dataProvider: serverRemult.dataProvider,
+    })
     let remult = new Remult()
     remult.dataProvider = restDb
     let c = (await remult.repo(Categories).findId(1, { useCache: false }))!
@@ -1720,7 +1761,7 @@ describe('test rest data provider translates data correctly', () => {
     expect(c.categoryName).toBe('test1')
     c = (await remult.repo(Categories).findId(1, { useCache: false }))!
     expect(c.categoryName).toBe('test1')
-    c.categoryName = undefined!
+    c.categoryName = null!
     await c.save()
     expect(c.categoryName).toBeNull()
     c = (await remult.repo(Categories).findId(1, { useCache: false }))!
@@ -2086,7 +2127,7 @@ describe('CompoundIdPojoEntity', () => {
       d = ''
     }
     const mem = new InMemoryDataProvider()
-    const r = new Remult(new MockRestDataProvider(new Remult(mem))).repo(myT)
+    const r = new Remult(TestApiDataProvider({ dataProvider: mem })).repo(myT)
     await r.insert({ a: 'a', b: '', c: 'c', d: 'd' })
     await r.update({ a: 'a', b: '', c: 'c' }, { d: 'd1' })
     expect(await r.find()).toMatchInlineSnapshot(`
@@ -2128,7 +2169,7 @@ describe('CompoundIdPojoEntity', () => {
       d = ''
     }
     const mem = new InMemoryDataProvider()
-    const r = new Remult(new MockRestDataProvider(new Remult(mem))).repo(myT)
+    const r = new Remult(TestApiDataProvider({ dataProvider: mem })).repo(myT)
     let id = {
       a: 'a',
       b: new Date('2021-05-16'),
@@ -2219,8 +2260,7 @@ describe('CompoundIdPojoEntity', () => {
     expect((await repo.findFirst({ a: 2, b: 20 }))!.c).toBe(201)
   })
   it('test update_rest', async () => {
-    const r = new Remult(new InMemoryDataProvider())
-    var repo = new Remult(new MockRestDataProvider(r)).repo(CompoundIdSimple)
+    var repo = new Remult(TestApiDataProvider()).repo(CompoundIdSimple)
     await repo.insert([{ a: 2, b: 20, c: 200 }])
     await repo.update({ a: 2, b: 20 }, { c: 201 })
     expect((await repo.findFirst({ a: 2, b: 20 }))!.c).toBe(201)
@@ -2235,8 +2275,7 @@ describe('CompoundIdPojoEntity', () => {
       @Fields.integer()
       c = 0
     }
-    const r = new Remult(new InMemoryDataProvider())
-    var repo = new Remult(new MockRestDataProvider(r)).repo(myEntity)
+    var repo = new Remult(TestApiDataProvider()).repo(myEntity)
     await repo.insert([{ a: 2, b: 20, c: 200 }])
     await repo.update({ a: 2, b: 20 }, { c: 0 })
     expect((await repo.findFirst({ a: 2, b: 20 }))!.c).toBe(0)

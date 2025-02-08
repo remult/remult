@@ -59,9 +59,9 @@ For a complete list of supported field types, see the [Field Types](../../docs/f
 
 ::: code-group
 
-```ts [src/routes/api/[...remult]/+server.ts]
+```ts [src/server/api.ts]
 import { remultSveltekit } from 'remult/remult-sveltekit'
-import { Task } from '../../../shared/Task' // [!code ++]
+import { Task } from '../shared/Task' // [!code ++]
 
 export const _api = remultSveltekit({
   entities: [Task], // [!code ++]
@@ -100,13 +100,13 @@ While remult supports [many relational and non-relational databases](https://rem
 
 ### Enabling the Admin UI
 
-Add the Admin UI to your Angular application by setting the `admin` option to `true` in the `remultSveltekit()`
+Add the Admin UI to your Sveltekit application by setting the `admin` option to `true` in the `remultSveltekit()`
 
 ::: code-group
 
-```ts [src/routes/api/[...remult]/+server.ts]
+```ts [src/server/api.ts]
 import { remultSveltekit } from 'remult/remult-sveltekit'
-import { Task } from '../../../shared/Task'
+import { Task } from '../shared/Task'
 
 export const _api = remultSveltekit({
   entities: [Task],
@@ -118,7 +118,7 @@ export const _api = remultSveltekit({
 
 ### Accessing and Using the Admin UI
 
-Navigate to `http://localhost:3002/api/admin` to access the Admin UI. Here, you can perform CRUD operations on your entities, view their relationships via the Diagram entry, and ensure secure management with the same validations and authorizations as your application.
+Navigate to `http://localhost:5173/api/admin` to access the Admin UI. Here, you can perform CRUD operations on your entities, view their relationships via the Diagram entry, and ensure secure management with the same validations and authorizations as your application.
 
 ![Remult Admin](/remult-admin.png)
 
@@ -138,14 +138,15 @@ Let's do it simply in the root of the app by adding this code in `+page.svelte`:
 
 ```svelte [src/routes/+page.svelte]
 <script lang="ts">
-  import { remult } from "remult";
-  import { onMount } from "svelte";
+  import { repo } from "remult";
   import { Task } from "../shared/Task";
 
-  let tasks: Task[] = [];
+  let tasks = $state<Task[]>([]);
 
-  onMount(async () => {
-    tasks = await remult.repo(Task).find();
+  $effect(() => {
+    repo(Task)
+      .find()
+      .then((t) => (tasks = t));
   });
 </script>
 
@@ -167,7 +168,7 @@ Let's do it simply in the root of the app by adding this code in `+page.svelte`:
 Here's a quick overview of the different parts of the code snippet:
 
 - ` remult.repo(Task)` is a Remult [Repository](../../docs/ref_repository.md) object used to fetch and create Task entity objects.
-- `onMount` is used to call the Remult [repository](../../docs/ref_repository.md)'s [find](../../docs/ref_repository.md#find) method to fetch tasks from the server, once when the component is loaded.
+- `$effect` is used to call the Remult [repository](../../docs/ref_repository.md)'s [find](../../docs/ref_repository.md#find) method to fetch tasks from the server, once when the component is loaded.
 
 After the browser refreshes, the list of tasks appears.
 
@@ -181,14 +182,21 @@ Simply create these 2 files:
 
 ```svelte [src/routes/+layout.svelte]
 <script lang="ts">
-    import "../app.css"
+  import "../app.css"
+
+  interface Props {
+    data: import('./$types').LayoutData;
+    children?: import('svelte').Snippet;
+  }
+
+  let { data, children }: Props = $props();
 </script>
 
 <svelte:head>
   <title>Remult+Sveltekit Todo App</title>
 </svelte:head>
 
-<slot />
+{@render children?.()}
 ```
 
 ```css [src/app.css]

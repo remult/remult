@@ -28,7 +28,7 @@ Setting `allowApiUpdate: false` ensures that once set, the `ownerId` cannot be m
 
 ### API Rules Apply Only to API Access
 
-The `allowApiUpdate`, `includeInApi`, and other access control options only apply to requests made through the API. They do not restrict access to data within backend methods or any code that directly interacts with the database on the backend.
+The `allowApiUpdate`, `includeInApi`, and other access control options only apply to requests made through the API. They do not restrict access to data within backend methods or any code that directly interacts with the database on the backend - **including SSR (Server Side Rendering) scenarios**.
 
 If you execute code directly on the backend, such as through a backend method or non-API route, you will still be able to view and modify all fields, regardless of the access restrictions defined for the API.
 

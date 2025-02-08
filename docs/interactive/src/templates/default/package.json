@@ -1,24 +1,21 @@
 {
-  "name": "remult-react-todo",
+  "name": "remult-interactive-docs",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev-node": "dotenv -- tsx watch src/server",
-    "build": "tsc && vite build && tsc -p tsconfig.server.json",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "start": "node dist/server/",
+    "test": "vitest",
     "preview": "vite preview"
   },
   "dependencies": {
     "@types/sqlite3": "^3.1.11",
     "cookie-session": "^2.1.0",
-    "express": "^4.19.2",
+    "express": "^4.21.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-use-promise": "0.5.0",
-    "remult": "^0.27.21-next.17",
+    "remult": "^2.7.27",
     "sqlite3": "^5.1.7"
   },
   "devDependencies": {
@@ -28,6 +25,7 @@
     "@types/react-dom": "^18.2.22",
     "@vitejs/plugin-react": "^4.2.1",
     "typescript": "^5.2.2",
+    "vitest": "^2.1.3",
     "vite": "^5.4.6"
   }
 }

@@ -15,7 +15,16 @@ const tutorials = [
     ],
   },
   { path: 'vue' },
-  { title: 'SvelteKit', path: 'sveltekit' },
+  {
+    title: 'SvelteKit',
+    path: 'sveltekit',
+    additionalItems: [
+      {
+        text: 'Go further / Extra',
+        link: '/docs/installation/framework/sveltekit#extra',
+      },
+    ],
+  },
   {
     title: 'Next.js',
     path: 'react-next',
@@ -226,27 +235,27 @@ export default defineConfig({
                 items: [
                   {
                     text: 'Express',
-                    link: '/docs/installation/servers/express',
+                    link: '/docs/installation/server/express',
                   },
                   {
                     text: 'Fastify',
-                    link: '/docs/installation/servers/fastify',
+                    link: '/docs/installation/server/fastify',
                   },
                   {
                     text: 'Hono',
-                    link: '/docs/installation/servers/hono',
+                    link: '/docs/installation/server/hono',
                   },
                   {
                     text: 'Hapi',
-                    link: '/docs/installation/servers/hapi',
+                    link: '/docs/installation/server/hapi',
                   },
                   {
                     text: 'Koa',
-                    link: '/docs/installation/servers/koa',
+                    link: '/docs/installation/server/koa',
                   },
                   {
                     text: 'nest',
-                    link: '/docs/installation/servers/nest',
+                    link: '/docs/installation/server/nest',
                   },
                 ],
               },
@@ -373,6 +382,8 @@ export default defineConfig({
               { text: 'Field', link: '/docs/ref_field' },
               { text: 'ValueConverter', link: '/docs/ref_valueconverter' },
               { text: 'Validation', link: '/docs/validation' },
+              { text: 'Validators', link: '/docs/ref_validators' },
+
               { text: 'Relations', link: '/docs/ref_relations' },
               { text: 'RelationOptions', link: '/docs/ref_relationoptions' },
               { text: 'Remult', link: '/docs/ref_remult' },

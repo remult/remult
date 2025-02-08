@@ -2,7 +2,7 @@ import { writable } from 'svelte/store'
 
 const browser = typeof window !== 'undefined'
 
-type TSSContext = {
+export type TSSContext = {
   settings: {
     bearerAuth: string
   }

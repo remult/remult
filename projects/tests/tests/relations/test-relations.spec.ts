@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, beforeAll, test } from 'vitest'
 import {
   Entity,
   Field,
@@ -10,6 +10,7 @@ import {
   Remult,
   dbNamesOf,
   describeClass,
+  getEntityRef,
   remult,
 } from '../../../core'
 import type { ClassType } from '../../../core/classType'
@@ -210,13 +211,62 @@ describe('test relations', () => {
     )
     expect(t!.category).toMatchInlineSnapshot(`
       Category {
-        "company": undefined,
         "createdAt": 1976-06-16T00:00:00.000Z,
         "id": 1,
-        "lastTask": undefined,
         "name": "c1",
-        "secondaryCompany": undefined,
         "secondaryCompanyId": 20,
+      }
+    `)
+  })
+  it('test include ', async () => {
+    expect(
+      await r(Task).findFirst(
+        { id: 1 },
+        {
+          include: {
+            category: true,
+            secondaryCategory: true,
+          },
+        },
+      ),
+    ).toMatchInlineSnapshot(`
+      Task {
+        "category": Category {
+          "createdAt": 1976-06-16T00:00:00.000Z,
+          "id": 1,
+          "name": "c1",
+          "secondaryCompanyId": 20,
+        },
+        "completed": false,
+        "id": 1,
+        "secondaryCategory": Category {
+          "createdAt": 1976-06-16T00:00:00.000Z,
+          "id": 3,
+          "name": "c3",
+          "secondaryCompanyId": 20,
+        },
+        "secondaryCategoryId": 3,
+        "title": "t1",
+      }
+    `)
+  })
+  it('test not include', async () => {
+    expect(
+      await r(Task).findFirst(
+        { id: 1 },
+        {
+          include: {
+            category: false,
+            secondaryCategory: false,
+          },
+        },
+      ),
+    ).toMatchInlineSnapshot(`
+      Task {
+        "completed": false,
+        "id": 1,
+        "secondaryCategoryId": 3,
+        "title": "t1",
       }
     `)
   })
@@ -243,9 +293,7 @@ describe('test relations', () => {
         },
         "createdAt": 1976-06-16T00:00:00.000Z,
         "id": 3,
-        "lastTask": undefined,
         "name": "c3",
-        "secondaryCompany": undefined,
         "secondaryCompanyId": 20,
       }
     `)
@@ -549,6 +597,18 @@ describe('test relations', () => {
     `)
     expect(result[0].category!.company.id).toBe(10)
   })
+  it('to many', async () => {
+    remult.dataProvider = new InMemoryDataProvider()
+    await remult.repo(Category).insert({ id: 1, name: 'c1' })
+    expect(await remult.repo(Category).findOne({})).toMatchInlineSnapshot(`
+      Category {
+        "createdAt": 1976-06-16T00:00:00.000Z,
+        "id": 1,
+        "name": "c1",
+        "secondaryCompanyId": 0,
+      }
+    `)
+  })
   it('loads ok also with old field reference', async () => {
     const td = TestDataProvider()
     remult.dataProvider = td
@@ -731,4 +791,177 @@ it('test dbname', async () => {
   expect((await dbNamesOf(remult.repo(Task))).secondaryCategory).toBe(
     'secondaryCategoryId',
   )
+})
+
+describe('test setting of id and relation field', async () => {
+  @Entity('cat123')
+  class Category {
+    @Fields.integer()
+    id = 0
+    @Fields.string()
+    name = ''
+  }
+  @Entity('task123')
+  class Task {
+    @Fields.integer()
+    id = 0
+    @Relations.toOne<Task, Category>(() => Category, 'categoryId')
+    category!: Category
+    @Fields.integer()
+    categoryId = 0
+  }
+  let r: typeof remult.repo
+  let cat: Category
+  let cat2: Category
+  beforeEach(async () => {
+    r = new Remult(new InMemoryDataProvider()).repo
+    cat = await r(Category).insert({ id: 1, name: 'c1' })
+    cat2 = await r(Category).insert({ id: 2, name: 'c2' })
+  })
+  it('test insert based on id', async () => {
+    await r(Task).insert({ id: 1, categoryId: cat.id })
+    const t = (await r(Task).findFirst(
+      { id: 1 },
+      { include: { category: true } },
+    ))!
+    expect(t.categoryId).toBe(1)
+    expect(t.category.id).toBe(1)
+  })
+  it('test insert 2', async () => {
+    await r(Task).insert({ id: 1, category: cat2, categoryId: cat.id })
+    const t = (await r(Task).findFirst(
+      { id: 1 },
+      { include: { category: true } },
+    ))!
+    expect(t.categoryId).toBe(1)
+    expect(t.category.id).toBe(1)
+  })
+  it('test insert 3', async () => {
+    await r(Task).insert({ id: 1, categoryId: cat.id, category: cat2 })
+    const t = (await r(Task).findFirst(
+      { id: 1 },
+      { include: { category: true } },
+    ))!
+    expect(t.categoryId).toBe(2)
+    expect(t.category.id).toBe(2)
+  })
+  it('test insert 3', async () => {
+    await r(Task).insert({ id: 1, category: cat2, categoryId: cat.id })
+    const t = (await r(Task).findFirst(
+      { id: 1 },
+      { include: { category: true } },
+    ))!
+    expect(t.categoryId).toBe(1)
+    expect(t.category.id).toBe(1)
+  })
+  it('test save', async () => {
+    await r(Task).insert({ id: 1, categoryId: cat.id })
+    await r(Task).save({
+      id: 1,
+      category: { id: undefined! } as any,
+      categoryId: cat2.id,
+    })
+    const t = (await r(Task).findFirst(
+      { id: 1 },
+      { include: { category: true } },
+    ))!
+    expect(t.categoryId).toBe(2)
+    expect(t.category.id).toBe(2)
+  })
+  it('test update', async () => {
+    await r(Task).insert({ id: 1, categoryId: cat.id })
+    await r(Task).update(1, {
+      category: { id: undefined! } as any,
+      categoryId: cat2.id,
+    })
+    const t = (await r(Task).findFirst(
+      { id: 1 },
+      { include: { category: true } },
+    ))!
+    expect(t.categoryId).toBe(2)
+    expect(t.category.id).toBe(2)
+  })
+  it('test update many', async () => {
+    await r(Task).insert({ id: 1, categoryId: cat.id })
+    await r(Task).updateMany({
+      where: { id: 1 },
+      set: {
+        category: { id: undefined! } as any,
+        categoryId: cat2.id,
+      },
+    })
+    const t = (await r(Task).findFirst(
+      { id: 1 },
+      { include: { category: true } },
+    ))!
+    expect(t.categoryId).toBe(2)
+    expect(t.category.id).toBe(2)
+  })
+})
+describe('test result for unpopulated toMany relation', () => {
+  test('simpler test', async () => {
+    @Entity('tasks')
+    class Task {
+      @Fields.integer()
+      id = 0
+      @Fields.string()
+      name = ''
+      @Fields.integer()
+      categoryId = 0
+    }
+    @Entity('categories')
+    class CategoryToManyTest {
+      @Fields.integer()
+      id = 0
+      @Fields.string()
+      title = ''
+      @Relations.toMany<Category, Task>(() => Task, 'categoryId')
+      tasks: Task[] = []
+      @Relations.toMany<Category, Task>(() => Task, 'categoryId')
+      tasks2?: Task[]
+    }
+
+    const r = new Remult(new InMemoryDataProvider())
+    await r.repo(CategoryToManyTest).insert({ id: 1, title: 'c1' })
+    expect(await r.repo(CategoryToManyTest).find()).toMatchInlineSnapshot(`
+    [
+      CategoryToManyTest {
+        "id": 1,
+        "title": "c1",
+      },
+    ]
+  `)
+  })
+})
+
+describe('listener with relation', () => {
+  @Entity('tasks')
+  class Task {
+    @Fields.integer()
+    id = 0
+    @Fields.string()
+    name = ''
+    @Fields.integer()
+    categoryId = 0
+    @Relations.toOne(() => Category, 'categoryId')
+    category?: Category
+  }
+  @Entity('categories')
+  class Category {
+    @Fields.integer()
+    id = 0
+    @Fields.string()
+    title = ''
+  }
+  const r = new Remult(new InMemoryDataProvider())
+  beforeEach(async () => {})
+  test('test listener with relation', async () => {
+    const c = await r.repo(Category).insert({ id: 1, title: 'c1' })
+    await r.repo(Task).insert({ id: 1, categoryId: c.id })
+    const t = await r.repo(Task).find()
+    getEntityRef(t[0]).subscribe({
+      reportChanged: () => {},
+      reportObserved: () => {},
+    })
+  })
 })

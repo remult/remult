@@ -1,4 +1,4 @@
-import type { ServerInfo } from "../FRAMEWORKS";
+import type { envVariable, ServerInfo } from "../FRAMEWORKS";
 import fs from "fs";
 import path from "path";
 import type { ComponentInfo } from "./prepareInfoReadmeAndHomepage";
@@ -8,7 +8,7 @@ export function createReadmeFile(
   components: ComponentInfo[],
   server: ServerInfo,
   root: string,
-  envVariables: string[],
+  envVariables: envVariable[],
 ) {
   components.unshift({
     display: "Remult",

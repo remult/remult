@@ -33,16 +33,17 @@ title: string = '';
 ::: code-group
 
 ```svelte [src/routes/+page.svelte]
-let newTaskTitle = ''
-const addTask = async () => {
-  try { // [!code ++]
-    const newTask = await remult.repo(Task).insert({ title: newTaskTitle })
-    tasks = [...tasks, newTask]
-    newTaskTitle = ''
-  } catch (error) { // [!code ++]
-    alert((error as { message: string }).message) // [!code ++]
-  } // [!code ++]
-}
+let newTaskTitle = $state("");
+const addTask = async (event: Event) => {
+  event.preventDefault();
+  try {// [!code ++]
+    const newTask = await repo(Task).insert({ title: newTaskTitle });
+    tasks = [...tasks, newTask];
+    newTaskTitle = "";
+  } catch (error) {// [!code ++]
+    alert((error as { message: string }).message);// [!code ++]
+  }// [!code ++]
+};
 ```
 
 :::

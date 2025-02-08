@@ -271,21 +271,70 @@ describe.sequential("test-write-react stuff", async () => {
     writeAppTsxAndReadme(basicArgs);
     expect(fs.readFileSync(path.join(sourceDir, "App.tsx")).toString())
       .toMatchInlineSnapshot(`
-        "import CheckServer from "./demo/CheckServer";
-        import CheckAuth from "./demo/auth/CheckAuth";
+        "import Tile from "./demo/Tile";
+        import ServerStatus from "./demo/ServerStatus";
+        import Auth from "./demo/auth/Auth";
         import Todo from "./demo/todo/Todo";
 
         export default function App() {
           return (
-            <>
-              Welcome to haha
-              <ul>
-                <li><a href="https://reactjs.org/">React</a>, <a href="https://vitejs.dev/">Vite</a>, <a href="https://expressjs.com/">Express</a>, <a href="">JSON Files</a>, <a href="https://authjs.dev">auth.js</a>, <a href="https://remult.dev">remult</a></li>
-                <li><CheckServer /></li>
-                <li><CheckAuth /></li>
-                <li><Todo /></li>
-              </ul>
-            </>
+            <div className="tiles">
+              <Tile
+                title="haha"
+                subtitle=""
+                icon="remult"
+                className="intro"
+                status="Success"
+                width="half"
+              >
+                <div className="tile__title">What's next?</div>
+                <div className="button-row">
+                  <a
+                    className="button"
+                    href="https://learn.remult.dev/"
+                    target="_blank"
+                  >
+                    Interactive Tutorial
+                  </a>
+                  <a className="button" href="https://remult.dev/docs" target="_blank">
+                    Documentation
+                  </a>
+                  <a
+                    className="button"
+                    href="https://github.com/remult/remult"
+                    target="_blank"
+                  >
+                    Github
+                  </a>
+                </div>
+                <div className="tile__subtitle"> Technology Stack Info:</div>
+                <div className="intro__stack">
+                  <div className="intro__stack-item">
+                    <span>Framework</span>
+                    React
+                  </div>
+                  <div className="intro__stack-item">
+                    <span>Bundler</span>
+                    Vite
+                  </div>
+                  <div className="intro__stack-item">
+                    <span>Server</span>
+                    Express
+                  </div>
+                  <div className="intro__stack-item">
+                    <span>Database</span>
+                    JSON Files
+                  </div>
+                  <div className="intro__stack-item">
+                    <span>Auth</span>
+                    auth.js
+                  </div>
+                </div>
+              </Tile>
+              <ServerStatus />
+              <Auth />
+              <Todo />
+            </div>
           );
         }
         "
@@ -302,19 +351,60 @@ describe.sequential("test-write-react stuff", async () => {
     expect(fs.readFileSync(path.join(nextAppDir, "page.tsx")).toString())
       .toMatchInlineSnapshot(`
         ""use client"
-        import CheckAuth from "../demo/auth/CheckAuth";
+        import Tile from "../demo/Tile";
+        import Auth from "../demo/auth/Auth";
         import Todo from "../demo/todo/Todo";
 
         export default function Home() {
           return (
-            <>
-              Welcome to haha
-              <ul>
-                <li><a href="https://nextjs.org/">Next.js</a>, <a href="">JSON Files</a>, <a href="https://authjs.dev">auth.js</a>, <a href="https://remult.dev">remult</a></li>
-                <li><CheckAuth /></li>
-                <li><Todo /></li>
-              </ul>
-            </>
+            <div className="tiles">
+              <Tile
+                title="haha"
+                subtitle=""
+                icon="remult"
+                className="intro"
+                status="Success"
+                width="half"
+              >
+                <div className="tile__title">What's next?</div>
+                <div className="button-row">
+                  <a
+                    className="button"
+                    href="https://learn.remult.dev/"
+                    target="_blank"
+                  >
+                    Interactive Tutorial
+                  </a>
+                  <a className="button" href="https://remult.dev/docs" target="_blank">
+                    Documentation
+                  </a>
+                  <a
+                    className="button"
+                    href="https://github.com/remult/remult"
+                    target="_blank"
+                  >
+                    Github
+                  </a>
+                </div>
+                <div className="tile__subtitle"> Technology Stack Info:</div>
+                <div className="intro__stack">
+                  <div className="intro__stack-item">
+                    <span>Framework</span>
+                    Next.js
+                  </div>
+                  <div className="intro__stack-item">
+                    <span>Database</span>
+                    JSON Files
+                  </div>
+                  <div className="intro__stack-item">
+                    <span>Auth</span>
+                    auth.js
+                  </div>
+                </div>
+              </Tile>
+              <Auth />
+              <Todo />
+            </div>
           );
         }
         "

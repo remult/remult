@@ -40,6 +40,13 @@ it('test that update only has updated fields', async () => {
   await getEntityRef(t).save()
   expect(await remult.repo(Task).findFirst()).toMatchInlineSnapshot(`
     Task {
+      "id": 2,
+      "title": "task21",
+    }
+  `)
+  expect(await remult.repo(Task).findOne({ include: { category: true } }))
+    .toMatchInlineSnapshot(`
+    Task {
       "category": null,
       "id": 2,
       "title": "task21",

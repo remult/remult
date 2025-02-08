@@ -1,7 +1,7 @@
 {
   "name": "remult-mono-repo",
   "description": "See projects/core for the remult core package.json. This package.json is used for remult/core development, test projects and experimental work. See ",
-  "version": "0.27.20",
+  "version": "2.7.28",
   "scripts": {
     "format": "prettier \"./projects/core/**\" --write",
     "test": "vitest --ui --coverage",
@@ -21,7 +21,7 @@
     "build-docs": "cd docs && npm run build",
     "release-docs": "cd docs && npm run publish",
     "build-ref-ts": "tsx ./docs/tools/docs-work.ts",
-    "build-ref": "cd docs/tools && build-ref.bat",
+    "build-ref": "cd docs/tools && sh build-ref.sh",
     "update-starter": "misc\\update-versions-to-starter-projects.sh",
     "detect-circular": "rem - .dependency-cruiser.js moved to misc folder. depcruise projects/core --include-only \"^projects/core\" --output-type dot | dot -T svg > dependency-graph.svg",
     "dc": "rem - .dependency-cruiser.js moved to misc folder. depcruise projects/core --include-only \"^projects/core\" --output-to ./tmp/dependency-violations.html --output-type err-html | dot -T svg > dependency-graph.svg ",
@@ -46,7 +46,7 @@
     "@microsoft/fetch-event-source": "^2.0.1",
     "@paralleldrive/cuid2": "^2.2.1",
     "@solidjs/start": "^1.0.0-rc.0",
-    "@sveltejs/kit": "^1.30.4",
+    "@sveltejs/kit": "^2.8.3",
     "@types/better-sqlite3": "^7.6.11",
     "@types/compression": "0.0.36",
     "@types/eventsource": "^1.1.15",

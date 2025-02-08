@@ -9,6 +9,7 @@ export type { ClassType } from './classType.js'
 export {
   ValidateFieldEvent,
   MembersOnly,
+  NumericKeys,
   FieldsMetadata,
   FieldRef,
   IdFieldRef,
@@ -20,8 +21,10 @@ export {
   FindOptionsBase,
   QueryResult,
   QueryOptions,
+  UpsertOptions,
   Repository,
   GroupByOptions,
+  GroupByResult,
   FindFirstOptions,
   ComparisonValueFilter,
   ValueFilter,
@@ -86,6 +89,7 @@ export {
   EntityDataProviderGroupByOptions,
   EntityDataProviderFindOptions,
   ErrorInfo,
+  EntityError,
   RestDataProviderHttpProvider,
 } from './src/data-interfaces.js' //V
 export {

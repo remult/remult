@@ -86,3 +86,5 @@ And example of the usage of groupBy
 - [Using BackendMethod queued option](https://stackblitz.com/edit/github-vwfkxu?file=src%2FApp.tsx)
 - [Using SubscriptionChannel to update the frontend](https://stackblitz.com/edit/github-3nmwrp?file=src%2FApp.tsx)
 - [Next.js Auth with remult user table](https://github.com/noam-honig/nextjs-auth-remult-user-table)
+- [Unit tests for api](https://stackblitz.com/edit/api-test-example?file=test.spec.ts,model.ts)
+- [Extending field options with open api specific properties](https://github.com/noam-honig/adding-open-api-options/)

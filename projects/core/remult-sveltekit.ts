@@ -83,15 +83,7 @@ export function remultSveltekit(
     })
   }
   const handler: Handle = async ({ event, resolve }) => {
-    if (event.url.pathname.startsWith(options!.rootPath!)) {
-      const result = await serverHandler(event)
-      if (result != null && result?.status != 404) return result
-    }
-    return new Promise<Response>((res) => {
-      result.withRemult(event, undefined!, async () => {
-        res(await resolve(event))
-      })
-    })
+    return result.withRemultAsync(event, async () => await resolve(event))
   }
   return Object.assign(handler, {
     getRemult: (req: RequestEvent) => result.getRemult(req),
@@ -99,6 +91,7 @@ export function remultSveltekit(
     withRemult<T>(request: RequestEvent, what: () => Promise<T>): Promise<T> {
       return result.withRemultAsync(request, what)
     },
+    hookHandler: handler,
     GET: serverHandler,
     PUT: serverHandler,
     POST: serverHandler,

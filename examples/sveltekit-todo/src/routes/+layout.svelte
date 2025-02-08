@@ -1,15 +1,34 @@
 <script lang="ts">
-  import { remult } from 'remult'
-  import type { LayoutData } from './$types'
+  import { Remult, remult } from 'remult'
+  import '../app.css'
+  import { createSubscriber } from 'svelte/reactivity'
 
-  export let data: LayoutData
+  interface Props {
+    data: import('./$types').LayoutData
+    children?: import('svelte').Snippet
+  }
 
-  // set this globaly
-  $: remult.user = data.user
+  let { data, children }: Props = $props()
+
+  remult.user = data.user
+
+  function initRemultSvelteReactivity() {
+    Remult.entityRefInit = (x) => {
+      let update = () => {}
+      let s = createSubscriber((u) => {
+        update = u
+      })
+      x.subscribe({
+        reportObserved: () => s(),
+        reportChanged: () => update(),
+      })
+    }
+  }
+  initRemultSvelteReactivity()
 </script>
 
 <svelte:head>
-  <title>Remult - SvelteKit</title>
+  <title>Remult+Sveltekit Todo App</title>
 </svelte:head>
 
-<slot />
+{@render children?.()}

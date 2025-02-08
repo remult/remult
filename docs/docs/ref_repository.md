@@ -389,91 +389,68 @@ console.log(totalSalary.salary.sum); // Outputs the total sum of salaries
 Arguments:
 * **options** - The options for the aggregation.
 ## query
-An alternative form of fetching data from the API server, which is intended for operating on large numbers of entity objects.
+Fetches data from the repository in a way that is optimized for handling large sets of entity objects.
 
-It also has it's own paging mechanism that can be used n paging scenarios.
+Unlike the `find` method, which returns an array, the `query` method returns an iterable `QueryResult` object.
+This allows for more efficient data handling, particularly in scenarios that involve paging through large amounts of data.
 
-The `query` method doesn't return an array (as the `find` method) and instead returns an `iterable` `QueryResult` object
-which supports iterations using the JavaScript `for await` statement.
+The method supports pagination and aggregation in a single request. When aggregation options are provided,
+the result will include both the items from the current page and the results of the requested aggregation.
+
+The `query` method is designed for asynchronous iteration using the `for await` statement.
 
 
 #### example:
 ```ts
+// Basic usage with asynchronous iteration:
 for await (const task of taskRepo.query()) {
-  // do something.
+  // Perform some operation on each task
 }
 ```
 
 
 #### example:
 ```ts
+// Querying with pagination:
 const query = taskRepo.query({
   where: { completed: false },
   pageSize: 100,
-})
-const count = await query.count()
-console.log('Paged: ' + count / 100)
-let paginator = await query.paginator()
-console.log(paginator.items.length)
+});
+
+let paginator = await query.paginator();
+console.log('Number of items on the current page:', paginator.items.length);
+console.log('Total pages:', Math.ceil(paginator.aggregate.$count / 100));
+
 if (paginator.hasNextPage) {
-  paginator = await paginator.nextPage()
-  console.log(paginator.items.length)
+  paginator = await paginator.nextPage();
+  console.log('Items on the next page:', paginator.items.length);
 }
+```
+
+
+#### example:
+```ts
+// Querying with aggregation:
+const query = await repo.query({
+  where: { completed: false },
+  pageSize: 50,
+  aggregates: {
+    sum: ['salary'],
+    average: ['age'],
+  }
+});
+
+let paginator = await query.paginator();
+// Accessing paginated items
+console.table(paginator.items);
+
+// Accessing aggregation results
+console.log('Total salary:', paginator.aggregates.salary.sum); // Sum of all salaries
+console.log('Average age:', paginator.aggregates.age.average);  // Average age
 ```
 
 Arguments:
 * **options**
-   * **load**
-   * **include** - An option used in the `find` and `findFirst` methods to specify which related entities should be included
-   when querying the source entity. It allows you to eagerly load related data to avoid N+1 query problems.
-   
-   
-   #### param:
-   An object specifying the related entities to include, their options, and filtering criteria.
-   
-   Example usage:
-   ```
-   const orders = await customerRepo.find({
-     include: {
-       // Include the 'tags' relation for each customer.
-       tags: true,
-     },
-   });
-   ```
-   In this example, the `tags` relation for each customer will be loaded and included in the query result.
-   
-   
-   #### see:
-    - Relations.toMany
-    - Relations.toOne
-    - RelationOptions
-   
-   * **where** - filters the data
-   
-   
-   #### example:
-   ```ts
-   await taskRepo.find({where: { completed:false }})
-   ```
-   
-   
-   #### see:
-   For more usage examples see [EntityFilter](https://remult.dev/docs/entityFilter.html)
-   * **orderBy** - Determines the order of items returned .
-   
-   
-   #### example:
-   ```ts
-   await this.remult.repo(Products).find({ orderBy: { name: "asc" }})
-   ```
-   
-   
-   #### example:
-   ```ts
-   await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
-   ```
-   * **pageSize** - The number of items to return in each step
-   * **progress** - A callback method to indicate the progress of the iteration
 ## count
 Returns a count of the items matching the criteria.
 
@@ -562,6 +539,44 @@ Arguments:
    #### see:
    [EntityFilter](http://remult.dev/docs/entityFilter.html)
    * **set**
+## upsert
+Inserts a new entity or updates an existing entity based on the specified criteria.
+If an entity matching the `where` condition is found, it will be updated with the provided `set` values.
+If no matching entity is found, a new entity will be created with the given data.
+
+The `upsert` method ensures that a row exists based on the `where` condition: if no entity is found, a new one is created.
+It can handle both single and multiple upserts.
+
+
+#### returns:
+A promise that resolves with the inserted or updated entity, or an array of entities if multiple options were provided.
+
+
+#### example:
+```ts
+// Upserting a single entity: updates 'task a' if it exists, otherwise creates it.
+taskRepo.upsert({ where: { title: 'task a' }, set: { completed: true } });
+```
+
+
+#### example:
+```ts
+// Upserting a single entity without additional `set` values: ensures that a row with the title 'task a' exists.
+taskRepo.upsert({ where: { title: 'task a' } });
+```
+
+
+#### example:
+```ts
+// Upserting multiple entities: ensures both 'task a' and 'task b' exist, updating their `completed` status if found.
+taskRepo.upsert([
+  { where: { title: 'task a' }, set: { completed: true } },
+  { where: { title: 'task b' }, set: { completed: true } }
+]);
+```
+
+Arguments:
+* **options** - The options that define the `where` condition and the `set` values. Can be a single object or an array of objects.
 ## delete
 Deletes an Item
 
@@ -578,7 +593,9 @@ Arguments:
    #### see:
    [EntityFilter](http://remult.dev/docs/entityFilter.html)
 ## create
-Creates an instance of an item. It'll not be saved to the data source unless `save` or `insert` will be called for that item
+Creates an instance of an item. It'll not be saved to the data source unless `save` or `insert` will be called.
+
+It's useful to start or reset a form taking your entity default values into account.
 
 Arguments:
 * **item**

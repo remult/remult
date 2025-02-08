@@ -1,9 +1,14 @@
 import { getRelationFieldInfo } from '../internals.js'
 import type { FieldValidator } from './column-interfaces.js'
-import { isBackend } from './context.js'
 import type { ValidateFieldEvent } from './remult3/remult3.js'
 
+/**
+ * Class containing various field validators.
+ */
 export class Validators {
+  /**
+   * Validator to check if a value is required (not null or empty).
+   */
   static required = createValidator<unknown>(
     async (_, e) =>
       !e.valueIsNull() &&
@@ -13,6 +18,9 @@ export class Validators {
     'Should not be empty',
   )
 
+  /**
+   * Validator to ensure a value is unique in the database.
+   */
   static unique = createValidator<unknown>(async (_, e) => {
     if (!e.entityRef)
       throw 'unique validation may only work on columns that are attached to an entity'
@@ -27,6 +35,7 @@ export class Validators {
   }, 'already exists')
   /**
    * @deprecated use `unique` instead - it also runs only on the backend
+   * Validator to ensure a value is unique on the backend.
    */
   static uniqueOnBackend = createValidator<unknown>(async (_, e) => {
     if (e.isBackend() && (e.isNew || e.valueChanged())) {
@@ -38,17 +47,29 @@ export class Validators {
     } else return true
   }, Validators.unique.defaultMessage)
 
+  /**
+   * Validator to check if a value matches a given regular expression.
+   */
   static regex = createValueValidatorWithArgs<string, RegExp>((val, regex) =>
     regex.test(val),
   )
+  /**
+   * Validator to check if a value is a valid email address.
+   */
   static email = createValueValidator<string>(
     (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val),
     'Invalid Email',
   )
+  /**
+   * Validator to check if a value is a valid URL.
+   */
   static url = createValueValidator<string>(
     (val) => !!new URL(val),
     'Invalid Url',
   )
+  /**
+   * Validator to check if a value is one of the specified values.
+   */
   static in: <T>(
     value: readonly T[],
     withMessage?: ValueValidationMessage<T[]>,
@@ -68,46 +89,89 @@ export class Validators {
         .join(', ')}`,
   ) as any
 
+  /**
+   * Validator to check if a value is not null.
+   */
   static notNull = createValueValidator(
     (val) => val != null,
     'Should not be null',
   )
+  /**
+   * Validator to check if a value exists in a given enum.
+   */
   static enum = createValueValidatorWithArgs(
     (value, enumObj) => Object.values(enumObj as object).includes(value),
     (enumObj) =>
       `Value must be one of ${getEnumValues(enumObj as object).join(', ')}`,
   )
+  /**
+   * Validator to check if a related value exists in the database.
+   */
   static relationExists = createValidator<unknown>(async (_, e) => {
     if (e.valueIsNull()) return true
     if (!e.isBackend()) return true
     return Boolean(await e.load())
   }, 'Relation value does not exist')
 
+  /**
+   * Validator to check if a value is greater than or equal to a minimum value.
+   */
+  static min = createValueValidatorWithArgs<number, number>(
+    (val, minValue) => val >= minValue,
+    (minValue) => `Value must be bigger than or equal to ${minValue}`,
+  )
+
+  /**
+   * Validator to check if a value is less than or equal to a maximum value.
+   */
+  static max = createValueValidatorWithArgs<number, number>(
+    (val, maxValue) => val <= maxValue,
+    (maxValue) => `Value must be smaller than or equal to ${maxValue}`,
+  )
+  /**
+   * Validator to check if a string's length is less than or equal to a maximum length.
+   */
   static maxLength = createValueValidatorWithArgs<string, number>(
     (val, maxLength) => val.length <= maxLength,
     (maxLength) => `Value must be at most ${maxLength} characters`,
   )
+  /**
+   * Validator to check if a string's length is greater than or equal to a minimum length.
+   */
   static minLength = createValueValidatorWithArgs<string, number>(
     (val, minLength) => val.length >= minLength,
     (maxLength) => `Value must be at least ${maxLength} characters`,
   )
 
+   /**
+   * Validator to check if a value is within a specified range.  
+   */
+    static range = createValueValidatorWithArgs<number, [number, number]>(
+      (val: number, [minValue, maxValue]) => val >= minValue && val <= maxValue,
+      ([minValue, maxValue]) => `Value must be between ${minValue} and ${maxValue}`,
+    )
   static defaultMessage = 'Invalid value'
 }
 
+/**
+ * Type representing a field validator with an optional message.
+ */
 export type Validator<valueType> = FieldValidator<unknown, valueType> &
   ((
     message?: ValidationMessage<valueType, undefined>,
   ) => FieldValidator<unknown, valueType>) & {
     defaultMessage: ValidationMessage<valueType, undefined>
     /**
-     * @deprecated  use (message:string) instead - for example: Validators.required("Is needed")
+     * @deprecated use (message:string) instead - for example: Validators.required("Is needed")
      */
     withMessage(
       message: ValidationMessage<valueType, undefined>,
     ): FieldValidator<unknown, valueType>
   }
 
+/**
+ * Function to create a validator with a custom validation function.
+ */
 export function createValidator<valueType>(
   validate: (
     entity: any,
@@ -164,6 +228,9 @@ export function createValidator<valueType>(
   })
 }
 
+/**
+ * Function to create a value validator.
+ */
 export function valueValidator<valueType>(
   validate: (value: valueType) => boolean | string | Promise<boolean | string>,
   defaultMessage?: string,
@@ -172,6 +239,9 @@ export function valueValidator<valueType>(
     validate(e.value) || defaultMessage || false
 }
 
+/**
+ * Function to create a value validator with arguments.
+ */
 export function createValueValidator<valueType>(
   validate: (value: valueType) => boolean | string | Promise<boolean | string>,
   defaultMessage?: ValidationMessage<valueType, undefined>,
@@ -181,6 +251,10 @@ export function createValueValidator<valueType>(
     return validate(e.value)
   }, defaultMessage)
 }
+
+/**
+ * Function to create a value validator with arguments and a custom message.
+ */
 export function createValueValidatorWithArgs<valueType, argsType>(
   validate: (
     value: valueType,
@@ -210,10 +284,16 @@ export function createValueValidatorWithArgs<valueType, argsType>(
   })
 }
 
+/**
+ * Type representing a validation message that can be a string or a function.
+ */
 export type ValueValidationMessage<argsType> =
   | string
   | ((args: argsType) => string)
 
+/**
+ * Type representing a validation message with additional parameters.
+ */
 export type ValidationMessage<valueType, argsType> =
   | string
   | ((
@@ -222,11 +302,17 @@ export type ValidationMessage<valueType, argsType> =
       args: argsType,
     ) => string)
 
+/**
+ * Type representing a validator with arguments.
+ */
 export type ValidatorWithArgs<valueType, argsType> = (
   args: argsType,
   message?: ValidationMessage<valueType, argsType>,
 ) => FieldValidator<unknown, valueType>
 
+/**
+ * Function to create a validator with arguments and a custom message.
+ */
 export function createValidatorWithArgs<valueType, argsType>(
   validate: (
     entity: any,
@@ -239,6 +325,7 @@ export function createValidatorWithArgs<valueType, argsType>(
 } {
   return createValidatorWithArgsInternal(validate, defaultMessage)
 }
+
 function createValidatorWithArgsInternal<valueType, argsType>(
   validate: (
     entity: any,
@@ -281,6 +368,9 @@ function createValidatorWithArgsInternal<valueType, argsType>(
   }
 }
 
+/**
+ * Function to get the values of an enum.
+ */
 export function getEnumValues<theEnum>(enumObj: theEnum) {
   return Object.values(enumObj as object).filter(
     (x) => typeof (enumObj as any)[x as any] !== 'number',

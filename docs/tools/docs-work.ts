@@ -159,7 +159,10 @@ class DocFile {
               } else if (p.type.type == 'reflection') {
                 this.writeMembers(p.type.declaration!, indent + 1)
               } else if (p.type.name)
-                if (p.type.name.includes('Options')) {
+                if (
+                  p.type.name.includes('Options') &&
+                  !p.type.refersToTypeParameter
+                ) {
                   let o = findType(p.type.name)
                   this.writeMembers(o, indent + 1)
                 }
@@ -203,6 +206,7 @@ try {
   }
 
   for (const typeName of [
+    'Validators',
     'ValueConverter',
     'Relations',
     'RelationOptions',
@@ -242,7 +246,7 @@ try {
     f.writeMembers(type)
     f.writeFile()
   }
-} catch (err) {
+} catch (err: any) {
   console.error(err)
   for (const line of err.stack.split('\n')) {
     console.error(line)
@@ -268,6 +272,7 @@ interface type {
     | 'intersection'
   types: type[]
   declaration?: member
+  refersToTypeParameter?: boolean
 }
 
 interface member {

@@ -200,6 +200,11 @@ export class Remult {
     } else return this.isAllowed(allowed as Allowed)
     return undefined!
   }
+  useFetch(fetch: ApiClient['httpClient']) {
+    this.dataProvider = new RestDataProvider(() => ({
+      httpClient: fetch,
+    }))
+  }
   /** The current data provider */
   dataProvider: DataProvider = new RestDataProvider(() => this.apiClient)
   /* @internal */

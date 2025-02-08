@@ -1,6 +1,6 @@
 {
   "name": "create-remult",
-  "version": "0.0.16",
+  "version": "0.1.9",
   "description": "Creates a remult project, ready to go",
   "keywords": [
     "cli",
@@ -41,7 +41,7 @@
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build",
     "test": "vitest --run",
-    "try": "npx create-remult remult-project -t angular -s express -d json --crud --overwrite yes --admin -a auth.js"
+    "try": "npx create-remult remult-project1 -t vue -s express -d postgres --crud --overwrite yes --admin -a auth.js"
   },
   "engines": {
     "node": "^18.0.0 || >=20.0.0"
@@ -56,12 +56,12 @@
     "url": "https://github.com/remult/remult/issues"
   },
   "devDependencies": {
+    "@kitql/helpers": "^0.8.10",
     "@types/cross-spawn": "^6.0.6",
     "@types/minimist": "^1.2.5",
     "@types/prompts": "^2.4.9",
     "cross-spawn": "^7.0.3",
     "minimist": "^1.2.8",
-    "picocolors": "^1.1.0",
     "prompts": "^2.4.2",
     "unbuild": "^2.0.0"
   }

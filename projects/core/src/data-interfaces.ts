@@ -45,6 +45,19 @@ export interface ProxyEntityDataProvider {
   insertMany(data: any[]): Promise<any[]>
   deleteMany(where: Filter): Promise<number>
   updateMany(where: Filter, data: any): Promise<number>
+  query(
+    options: EntityDataProviderFindOptions,
+    aggregateOptions: EntityDataProviderGroupByOptions,
+  ): Promise<{
+    items: any[]
+    aggregates: any
+  }>
+  upsertMany(
+    options: {
+      where: any
+      set: any
+    }[],
+  ): Promise<any[]>
 }
 export interface EntityDataProviderFindOptions {
   where?: Filter
@@ -72,6 +85,21 @@ export function extractSort(sort: any): Sort {
 
 export interface ErrorInfo<entityType = unknown> {
   message?: string
+  modelState?: {
+    [Properties in keyof Partial<MembersOnly<entityType>>]?: string
+  }
+  stack?: string
+  exception?: any
+  httpStatusCode?: number
+}
+export class EntityError<entityType = unknown>
+  extends Error
+  implements ErrorInfo<entityType>
+{
+  constructor(errorInfo: ErrorInfo<entityType>) {
+    super(errorInfo.message)
+    Object.assign(this, errorInfo)
+  }
   modelState?: {
     [Properties in keyof Partial<MembersOnly<entityType>>]?: string
   }

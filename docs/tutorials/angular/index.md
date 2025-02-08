@@ -84,7 +84,7 @@ The starter API server TypeScript project contains a single module that initiali
 
 1. Open your IDE.
 
-2. Add the following entry to the `compilerOptions` section of the `tsconfig.json` file to enable the use of Synthetic Default Imports and ES Module Interop in the app.
+2. Add the following entry to the `compilerOptions` section of the `tsconfig.json` file to enable the use of Synthetic Default Imports.
 
 ```json{7-8}
 // tsconfig.json
@@ -94,7 +94,6 @@ The starter API server TypeScript project contains a single module that initiali
   "compilerOptions": {
     ...
     "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
    ...
   }
 ...
@@ -170,13 +169,16 @@ Create a file `proxy.conf.json` in the root folder, with the following contents:
 
 ### Run the app
 
-1. Add script called `dev` that will run the angular `dev` server with the proxy configuration we've set and a script called `dev-node` to run the api.
+1. Add a script called `dev` that will run the angular `dev` server with the proxy configuration we've set and a script called `dev-node` to run the api.
 
 ```json
 // package.json
-
-"dev": "ng serve --proxy-config proxy.conf.json --open",
-"dev-node": "tsx watch src/server",
+"scripts": {
+  ...
+  "dev": "ng serve --proxy-config proxy.conf.json --open",
+  "dev-node": "tsx watch src/server",
+  ...
+}
 ```
 
 1. Open a terminal and start the angular dev server.

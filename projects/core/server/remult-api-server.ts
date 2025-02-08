@@ -40,7 +40,7 @@ import type {
 import { Action, classBackendMethodsArray } from '../src/server-action.js'
 import { serverActionField } from '../src/server-action-info.js'
 import { remultStatic } from '../src/remult-static.js'
-import remultAdminHtml from './remult-admin.js'
+import remultAdminHtml, { buildEntityInfo } from './remult-admin.js'
 import { isOfType } from '../src/isOfType.js'
 import { initDataProviderOrJson } from './initDataProviderOrJson.js'
 
@@ -181,7 +181,7 @@ export function createRemultServerCore<RequestType>(
   remultStatic.defaultDataProvider = () => dataProvider
   if (safeOptions.ensureSchema === undefined) safeOptions.ensureSchema = true
 
-  RemultAsyncLocalStorage.enable()
+  if (!serverCoreOptions.ignoreAsyncStorage) RemultAsyncLocalStorage.enable()
 
   {
     let allControllers: ClassType<any>[] = []
@@ -402,7 +402,7 @@ export class RemultServerImplementation<RequestType>
   ) => {
     await this.process(async () => {
       await next()
-    })(req, res)
+    }, true)(req, res)
   }
 
   routeImpl?: RouteImplementation<RequestType>
@@ -460,22 +460,31 @@ export class RemultServerImplementation<RequestType>
           r,
         )
       if (this.options.admin !== undefined && this.options.admin !== false) {
-        const admin = this.process(
-          async (remult, req, res, orig, origResponse) => {
-            if (remult.isAllowed(this.options.admin))
-              origResponse.send(
-                remultAdminHtml({
-                  remult: remult,
-                  entities: this.entities!,
-                  baseUrl: this.options.rootPath + '/admin',
-                }),
-              )
-            else res.notFound()
-          },
-        )
-        r.route(this.options.rootPath + '/admin/:id').get(admin)
-        r.route(this.options.rootPath + '/admin/').get(admin)
-        r.route(this.options.rootPath + '/admin').get(admin)
+        const admin = () =>
+          this.process(async (remult, req, res, orig, origResponse) => {
+            if (remult.isAllowed(this.options.admin)) {
+              if (orig?.params?.id === '__entities-metadata') {
+                res.success(
+                  buildEntityInfo({
+                    remult,
+                    entities: this.options.entities ?? [],
+                  }),
+                )
+              } else {
+                origResponse.send(
+                  remultAdminHtml({
+                    remult: remult,
+                    entities: this.options.entities!,
+                    baseUrl: this.options.rootPath + '/admin',
+                  }),
+                )
+              }
+            } else res.notFound()
+          })
+
+        r.route(this.options.rootPath + '/admin/:id').get(admin())
+        r.route(this.options.rootPath + '/admin/').get(admin())
+        r.route(this.options.rootPath + '/admin').get(admin())
       }
       r.route(this.options.rootPath + '/me').get(
         this.process(async (remult, req, res) =>
@@ -539,16 +548,25 @@ export class RemultServerImplementation<RequestType>
     }
 
     this.entities?.forEach((e) => {
-      let key = getEntityKey(e)
-      if (key != undefined)
-        this.add(
-          key,
-          (c) => {
-            return new DataApi(c.repo(e), c)
-          },
-          r,
-        )
+      this.addEntity(e, getEntityKey(e), r)
     })
+  }
+  __addEntityForTesting(e: EntityMetadata) {
+    this.addEntity(e.entityType, e.key, this.getRouteImpl())
+  }
+  private addEntity(
+    e: ClassType<unknown>,
+    key: string,
+    r: GenericRouter<RequestType>,
+  ) {
+    if (key != undefined)
+      this.add(
+        key,
+        (c) => {
+          return new DataApi(c.repo(e), c)
+        },
+        r,
+      )
   }
 
   async serializeContext(remult: Remult) {
@@ -572,7 +590,7 @@ export class RemultServerImplementation<RequestType>
 
     r.route(myRoute)
       .get(
-        this.process((c, req, res, orig) =>
+        this.process(async (c, req, res, orig) =>
           dataApiFactory(c).httpGet(res, req, () => this.serializeContext(c)),
         ),
       )
@@ -660,6 +678,7 @@ export class RemultServerImplementation<RequestType>
       origRes: GenericResponse,
       origReq: RequestType,
     ) => Promise<void>,
+    doNotReuseInitRequest?: boolean,
   ) {
     return async (req: RequestType, origRes: GenericResponse) => {
       const genReq = req ? this.coreOptions.buildGenericRequestInfo(req) : {}
@@ -677,7 +696,10 @@ export class RemultServerImplementation<RequestType>
         this.options.error,
       )
       try {
-        if (remultStatic.asyncContext.isInInitRequest())
+        if (
+          remultStatic.asyncContext.isInInitRequest() &&
+          !doNotReuseInitRequest
+        )
           return await what(
             remultStatic.asyncContext.getStore()!.remult,
             myReq,
@@ -1172,8 +1194,8 @@ class RequestBridgeToDataApiRequest implements DataApiRequest {
   constructor(private r: GenericRequestInfo | undefined) {}
 }
 class ResponseBridgeToDataApiResponse<RequestType> implements DataApiResponse {
-  forbidden(): void {
-    this.error({ message: 'Forbidden' }, undefined, 403)
+  forbidden(message = 'Forbidden'): void {
+    this.error({ message }, undefined, 403)
   }
   setStatus(status: number) {
     return this.r.status(status)
@@ -1235,10 +1257,11 @@ class ResponseBridgeToDataApiResponse<RequestType> implements DataApiResponse {
         url: this.genReq?.url,
         method: this.genReq?.method,
       })
-      this.setStatus(httpStatusCode).json(body)
+      const json = { ...body, message: body.message }
+      this.setStatus(httpStatusCode).json(json)
     }
     await this.handleError?.({
-      httpStatusCode,
+      httpStatusCode: httpStatusCode!,
       req: this.req,
       entity,
       exception,
@@ -1246,7 +1269,7 @@ class ResponseBridgeToDataApiResponse<RequestType> implements DataApiResponse {
       sendError,
     })
     if (!responseSent) {
-      sendError(httpStatusCode, data)
+      sendError(httpStatusCode!, data)
     }
   }
 }
@@ -1538,7 +1561,7 @@ export class RouteImplementation<RequestType> {
             req.params = {} as any
             ;(origReq as any)['_tempParams'] = req.params
           }
-          req.params.id = path.substring(idPosition + 1).replace(/%2C/g, ',')
+          req.params.id = decodeURIComponent(path.substring(idPosition + 1))
           h(origReq, res, next)
           return
         }
@@ -1578,6 +1601,7 @@ remultStatic.allEntities.splice(
 export interface ServerCoreOptions<RequestType> {
   buildGenericRequestInfo(req: RequestType): GenericRequestInfo
   getRequestBody(req: RequestType): Promise<any>
+  ignoreAsyncStorage?: boolean
 }
 
 /**

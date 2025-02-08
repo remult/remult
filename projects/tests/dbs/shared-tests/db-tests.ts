@@ -9,7 +9,9 @@ import {
   Field,
   Fields,
   IdEntity,
+  Relations,
   SqlDatabase,
+  ValueListFieldType,
 } from '../../../core'
 import { c } from '../../tests/c'
 
@@ -46,7 +48,7 @@ import type { DbTestProps } from './db-tests-props'
 import { entityWithValidations } from './entityWithValidations'
 import type { CategoriesForTesting } from '../../tests/remult-3-entities'
 import { ValueConverters } from '../../../core/src/valueConverters'
-import { it, vi } from 'vitest'
+import { it, vi, test, describe, beforeEach, beforeAll } from 'vitest'
 import { expect } from 'vitest'
 import { entity } from '../../tests/dynamic-classes.js'
 
@@ -62,8 +64,9 @@ export function commonDbTests(
   options?: DbTestOptions,
 ) {
   it('what', async () => {
-    await (await createEntity(stam)).create({ id: 1, title: 'noam' }).save()
-    expect(await getRemult().repo(stam).count()).toBe(1)
+    const r = await createEntity(stam)
+    await r.create({ id: 1, title: 'noam' }).save()
+    expect(await r.count()).toBe(1)
   })
   it('data types', async () => {
     let r = await (
@@ -76,6 +79,46 @@ export function commonDbTests(
       })
       .save()
     expect(r.title).toEqual('42')
+  })
+  test('test upsert', async () => {
+    const s = await createEntity(stam)
+    expect(await s.count()).toBe(0)
+    expect(
+      await s.upsert({
+        where: {
+          id: 1,
+        },
+      }),
+    ).toMatchInlineSnapshot(`
+      stam {
+        "id": 1,
+        "title": "",
+      }
+    `)
+    await s.upsert({
+      where: {
+        id: 1,
+      },
+    })
+    expect(await s.count()).toBe(1)
+    expect(
+      (await s.upsert({ where: { id: 1 }, set: { title: 'noam' } })).title,
+    ).toBe('noam')
+    expect(await s.count()).toBe(1)
+    expect(
+      (await s.upsert({ where: { id: 2 }, set: { title: 'noam' } })).title,
+    ).toBe('noam')
+    expect(await s.count()).toBe(2)
+
+    expect(
+      (
+        await s.upsert([
+          { where: { id: 3 }, set: { title: 'remult' } },
+          { where: { id: 2 }, set: { title: 'remult' } },
+        ])
+      ).map((x) => x.title),
+    ).toEqual(['remult', 'remult'])
+    expect(await s.count()).toBe(3)
   })
   it('filter works on all db', async () => {
     let s = await entityWithValidations.create4RowsInDp(createEntity)
@@ -470,7 +513,6 @@ export function commonDbTests(
 
   it('test delete', async () => {
     let c = await createData(async (insert) => await insert(5, 'noam'))
-
     let rows = await c.find()
     expect(rows.length).toBe(1)
     expect(rows[0].id).toBe(5)
@@ -607,7 +649,12 @@ export function commonDbTests(
       d.ok()
     }
     entityWithValidations.savingRowCount = 0
-    await api.post(t, { name: 'noam honig', myId: 1 })
+    await api.httpPost(
+      t,
+      { get: () => undefined },
+      { name: 'noam honig', myId: 1 },
+      () => undefined!,
+    )
     expect(entityWithValidations.savingRowCount).toBe(1)
     d.test()
   })
@@ -1614,6 +1661,209 @@ export function commonDbTests(
       "name": "itamar",
     }
   `)
+  })
+  describe('test relations with updates', () => {
+    async function setupRelationsTest() {
+      @Entity('categories_r_u', { allowApiCrud: true })
+      class Category {
+        @Fields.number()
+        id = 0
+        @Fields.string()
+        name = ''
+        @Relations.toMany(() => Task)
+        tasks?: Task[]
+      }
+      @Entity('tasks_r_u', { allowApiCrud: true })
+      class Task {
+        @Fields.number()
+        id = 0
+        @Relations.toOne(() => Category)
+        category?: Category
+      }
+      let cr = await await createEntity(Category)
+
+      let cat = await cr.insert([
+        { id: 1, name: 'a' },
+        { id: 2, name: 'b' },
+        { id: 3, name: 'c' },
+      ])
+      let r = await createEntity(Task)
+      await r.insert([{ id: 1, category: cat[2] }])
+      return { r, cat, cr }
+    }
+
+    test('insert worked', async () => {
+      const { r } = await setupRelationsTest()
+      expect(
+        (await r.findId(1, { include: { category: true } }))!.category!.name,
+      ).toBe('c')
+    })
+    test('update worked', async () => {
+      const { r, cat } = await setupRelationsTest()
+      await r.update(1, { category: cat[1] })
+      expect(
+        (await r.findId(1, { include: { category: true } }))!.category!.name,
+      ).toBe('b')
+    })
+
+    test('test update many', async () => {
+      const { r, cat } = await setupRelationsTest()
+      await r.updateMany({ where: { id: 1 }, set: { category: cat[0] } })
+      expect(
+        (await r.findId(1, { include: { category: true } }))!.category!.name,
+      ).toBe('a')
+    })
+    test('upsert', async () => {
+      const { r, cat } = await setupRelationsTest()
+      await r.upsert({ where: { id: 1 }, set: { category: cat[1] } })
+      expect(
+        (await r.findId(1, { include: { category: true } }))!.category!.name,
+      ).toBe('b')
+    })
+    test('upsert many', async () => {
+      const { r, cat } = await setupRelationsTest()
+      await r.upsert([{ where: { id: 1 }, set: { category: cat[0] } }])
+      expect(
+        (await r.findId(1, { include: { category: true } }))!.category!.name,
+      ).toBe('a')
+    })
+    test('query with relations', async () => {
+      const { r } = await setupRelationsTest()
+      expect(
+        (
+          await r
+            .query({
+              aggregate: {},
+              orderBy: {
+                id: 'asc',
+              },
+              include: {
+                category: true,
+              },
+            })
+            .paginator()
+        ).items[0].category!.name,
+      ).toBe('c')
+    })
+    test('relation insert many', async () => {
+      const { r, cat, cr } = await setupRelationsTest()
+      await cr.relations(cat[1]).tasks.insert({ id: 2 })
+      expect(
+        (await r.findId(2, { include: { category: true } }))?.category!.id,
+      ).toBe(2)
+    })
+    test('relation insert many', async () => {
+      const { r, cat, cr } = await setupRelationsTest()
+      await cr.relations(cat[1]).tasks.insert([{ id: 2 }, { id: 3 }])
+      expect(
+        (await r.findId(3, { include: { category: true } }))?.category!.id,
+      ).toBe(2)
+    })
+    test('upsert through relation', async () => {
+      const { r, cat, cr } = await setupRelationsTest()
+      await cr.relations(cat[1]).tasks.upsert({ where: { id: 2 } })
+
+      expect(
+        (await r.findId(2, { include: { category: true } }))?.category!.id,
+      ).toBe(2)
+    })
+  })
+  describe('test value list field type with updates', () => {
+    @ValueListFieldType()
+    class Status {
+      static a = new Status()
+      static b = new Status()
+      static c = new Status()
+      constructor() {}
+    }
+
+    async function setupValueListFieldTest() {
+      @Entity('tasks', { allowApiCrud: true })
+      class Task {
+        @Fields.number()
+        id = 0
+        @Field(() => Status)
+        status?: Status
+      }
+
+      let r = await createEntity(Task)
+      await r.insert([{ id: 1, status: Status.c }])
+      return { r }
+    }
+
+    test('insert worked', async () => {
+      const { r } = await setupValueListFieldTest()
+      expect((await r.findId(1))!.status).toBe(Status.c)
+    })
+    test('update worked', async () => {
+      const { r } = await setupValueListFieldTest()
+      await r.update(1, { status: Status.b })
+      expect((await r.findId(1))!.status).toBe(Status.b)
+    })
+
+    test('test update many', async () => {
+      const { r } = await setupValueListFieldTest()
+      await r.updateMany({ where: { id: 1 }, set: { status: Status.a } })
+      expect((await r.findId(1))!.status).toBe(Status.a)
+    })
+    test('upsert', async () => {
+      const { r } = await setupValueListFieldTest()
+      await r.upsert({ where: { id: 1 }, set: { status: Status.b } })
+      expect((await r.findId(1))!.status).toBe(Status.b)
+    })
+    test('upsert many', async () => {
+      const { r } = await setupValueListFieldTest()
+      await r.upsert([{ where: { id: 1 }, set: { status: Status.a } }])
+      expect((await r.findId(1))!.status).toBe(Status.a)
+    })
+    it('upsert should not update if there is nothing to update', async () => {
+      const { r } = await setupValueListFieldTest()
+      await r.upsert([{ where: { id: 1 }, set: { status: Status.a } }])
+      expect((await r.findId(1))!.status).toBe(Status.a)
+      await r.upsert([
+        { where: { id: 1 }, set: { status: Status.a, id: undefined } },
+      ])
+      expect((await r.findId(1))!.status).toBe(Status.a)
+    })
+    it('update should not update if there is nothing to update', async () => {
+      const { r } = await setupValueListFieldTest()
+      await r.upsert([{ where: { id: 1 }, set: { status: Status.a } }])
+      expect((await r.findId(1))!.status).toBe(Status.a)
+      await r.update({ id: 1 }, { status: Status.a, id: undefined })
+      expect((await r.findId(1))!.status).toBe(Status.a)
+    })
+    it('update should not update if there is nothing to update', async () => {
+      const { r } = await setupValueListFieldTest()
+      await r.upsert([{ where: { id: 1 }, set: { status: Status.a } }])
+      expect((await r.findId(1))!.status).toBe(Status.a)
+      await r.update({ id: 1 }, { status: Status.a })
+      expect((await r.findId(1))!.status).toBe(Status.a)
+    })
+    it('update many should not update if there is nothing to update', async () => {
+      const { r } = await setupValueListFieldTest()
+      await r.upsert([{ where: { id: 1 }, set: { status: Status.a } }])
+      expect((await r.findId(1))!.status).toBe(Status.a)
+      await r.updateMany({
+        where: { id: 1 },
+        set: { status: Status.a, id: undefined },
+      })
+      expect((await r.findId(1))!.status).toBe(Status.a)
+    })
+    test('query with value list', async () => {
+      const { r } = await setupValueListFieldTest()
+      expect(
+        (
+          await r
+            .query({
+              aggregate: {},
+              orderBy: {
+                id: 'asc',
+              },
+            })
+            .paginator()
+        ).items[0].status,
+      ).toBe(Status.c)
+    })
   })
 }
 @Entity('a', { allowApiCrud: true })

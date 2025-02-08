@@ -2,13 +2,127 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.28] 2025-1-13
+
+- fix: sqlite - index already exists by @olragon in https://github.com/remult/remult/pull/599
+  Big thanks to @olragon for his first contribution
+
+## [2.7.27] 2025-1-6
+
+- Fixed issue with turning on admin breaks routing in some cases
+
+## [2.7.25] 2025-1-1
+
+- Fixed admin to work with authorization token as well
+- Moved version decimal point to better reflect remult's stability and use in production app.
+
+## [0.27.24] 2024-12-11
+
+- Fixed issue where setting a value to undefined, caused an invalid update statement - `update "tasks" set  where "id" = $1` and an error: `error: syntax error at or near "where"`
+- Fixed issue where find options object was changed when sent to find method
+- Fixed an issue where group by was accessible even if allowApiRead was not - this did not affect apiPrefilter
+
+## [0.27.23] 2024-11-23
+
+- Added `min`, `max` and `range` validators by [@YonatanKra](https://github.com/YonatanKra)
+- Quality of life improvements to admin by [@jycouet](https://github.com/jycouet) & [@ermincelikovic](https://github.com/ermincelikovic)
+  - In the office hour with @ermincelikovic (and cursor) we :
+  - reduce the column size of numbers & align right
+  - manage keyboard navigation in the grid
+  - manage shortcuts
+  - CTRL+Enter => Save the row
+  - CTRL+Esc => Cancel the tow
+  - CTRL+SHIFT+Enter => Save all rows
+  - CTRL+SHIFT+Esc => Cancel all rows
+- Added `EntityError` - now when insert/update etc... fail they throw this specific error.
+- Log queries if they are greater than equals the threshold by @arikfr in https://github.com/remult/remult/pull/571
+- Fixed an issue with decorators and optional null field
+- fixed issue with aggregate in query
+- Fixed issue with subscribe to entity changes and relations
+- Remult create adjusted for Svelte 5 by [@jycouet](https://github.com/jycouet)
+
+## [0.27.22] 2024-11-08
+
+- Improved support for sveltekit ssr. To configure:
+
+  - To enable remult across all sveltekit route
+    ```ts
+    // src/hooks.server.ts
+    import { api } from './server/api'
+    export const handle = api
+    ```
+  - To Use remult in ssr `PageLoad` - this will leverage the `event`'s fetch to load data on the server without reloading it on the frontend, and abiding to all api rules even when it runs on the server
+
+    ```ts
+    // src/routes/+page.ts
+    import { remult } from 'remult'
+    import type { PageLoad } from './$types'
+
+    export const load = (async (event) => {
+      // Instruct remult to use the special svelte fetch to fetch data on server side page load
+      remult.useFetch(event.fetch)
+      return repo(Task).find()
+    }) satisfies PageLoad
+    ```
+
+## [0.27.21] 2024-10-28
+
+- **Added `upsert` method:**  
+  The `upsert` method allows inserting or updating an entity in a single operation. If an entity matching the `where` condition is found, it is updated; otherwise, a new entity is created. This can be used for a single entity or for batch operations with an array of options.
+
+  Example:
+
+  ```ts
+  // Single entity upsert
+  await taskRepo.upsert({
+    where: { title: 'task a' },
+    set: { completed: true },
+  })
+
+  // Batch upsert
+  await taskRepo.upsert([
+    { where: { title: 'task a' }, set: { completed: true } },
+    { where: { title: 'task b' }, set: { completed: true } },
+  ])
+  ```
+
+- Now you can get data and aggregate info with a single request using the `query` method:
+
+  ```ts
+  const result = await repo
+    .query({
+      where: { completed: false },
+      pageSize: 50,
+      aggregates: {
+        sum: ['salary'],
+        average: ['age'],
+      },
+    })
+    .paginator()
+  // Accessing the items from the first page
+  console.table(result.items)
+  // Accessing the aggregation results
+  console.log(result.aggregates.salary.sum) // Total salary sum
+  ```
+
+- Added `TestApiDataProvider` to use in unit tests that test api rules. see [tutorial](https://learn.remult.dev/in-depth/9-testing/2-testing-api-rules)
+- Fixed that values that are not included will not exist in the resulting object (previously they existed with value undefined)
+- Fixed that relations that were not included, will not be enumerable in the resulting object (previously they were only set to undefined)
+- Fixed `serverExpression` to run whenever we're not using a `proxy` data provider (for example RestDataProvider)
+- Fixed issue with `updateMany` where the `set` had `ValueListType` or relation.
+- Fixed issue when updating relation id and relation in the same update, the last one will win
+- Fixed makeTitle to handle all caps text
+- Added experimental api for sqlRelations & sqlRelationsFilter - see [Sql Relations](https://learn.remult.dev/in-depth/6-sql-expression/3-sql-relations)
+
 ## [0.27.20] 2024-10-16
 
-- Added Origin IndexedDb Storage to store entities in the front end
+- **Added Origin IndexedDb Storage** to store entities in the frontend:
+
   ```ts
   const db = new JsonDataProvider(new JsonEntityIndexedDbStorage())
   console.table(await repo(Task, db).find())
   ```
+
 - Fixed issue with required validation and relations
 
 ## [0.27.19] 2024-09-26

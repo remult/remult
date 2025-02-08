@@ -1,24 +1,36 @@
-import { writable } from 'svelte/store'
+import { get, writable } from 'svelte/store'
 import { God } from '../God'
-import { EntityUIInfo } from '../../../core/server/remult-admin'
-
-declare const entities: EntityUIInfo[]
+import { LSContext } from '../lib/stores/LSContext.js'
+import { getHeader } from '../lib/helper.js'
+import { SSContext } from '../lib/stores/SSContext.js'
+import { remult } from '../../../core/src/remult-proxy'
 
 function createStore() {
   const { subscribe, set } = writable<God>()
 
-  if (import.meta.env.DEV) {
-    fetch('/api/dev-admin')
-      .then((res) => res.json())
-      .then((json) => {
-        set(new God(json))
+  const reloadEntities = () => {
+    const LSCtx = get(LSContext)
+    const SSCtx = get(SSContext)
+
+    const apiUrl = LSCtx.settings.apiUrl
+    remult.apiClient.url = apiUrl
+    remult.initUser().then(() => {
+      fetch(`${apiUrl}/admin/__entities-metadata`, {
+        headers: getHeader(SSCtx, LSCtx),
       })
-  } else {
-    set(new God(entities))
+        .then((res) => res.json())
+        .then((json) => {
+          set(new God(json))
+        })
+    })
   }
+
+  reloadEntities()
 
   return {
     subscribe,
+
+    reloadEntities,
   }
 }
 

@@ -8,7 +8,8 @@ import {
   type EntityFilter,
   Filter,
 } from '../../core/index.js'
-import { MockRestDataProvider } from './testHelper.js'
+
+import { TestApiDataProvider } from '../../core/server/test-api-data-provider.js'
 
 @Entity('e', {
   allowApiCrud: true,
@@ -23,8 +24,7 @@ class e {
 describe('test rest many operations', () => {
   let r: Repository<e>
   beforeEach(async () => {
-    let backendRemult = new Remult(new InMemoryDataProvider())
-    r = new Remult(new MockRestDataProvider(backendRemult)).repo(e)
+    r = new Remult(TestApiDataProvider()).repo(e)
   })
   it('Insert many works', async () => {
     expect(
@@ -52,14 +52,12 @@ describe('test rest many operations', () => {
         { id: 1, name: 'a' },
         { id: 2, name: '' },
       ]),
-    ).rejects.toThrowErrorMatchingInlineSnapshot(`
-      {
-        "message": "Name: Should not be empty",
-        "modelState": {
-          "name": "Should not be empty",
-        },
-      }
-    `)
+    ).rejects.toMatchObject({
+      message: 'Name: Should not be empty',
+      modelState: {
+        name: 'Should not be empty',
+      },
+    })
     expect(await r.count()).toBe(0)
   })
   it('test delete many without a filter shoud throw', async () => {

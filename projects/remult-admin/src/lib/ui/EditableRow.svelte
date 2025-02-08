@@ -28,6 +28,7 @@
 
   let error = undefined
   let relation: EntityRelationToManyInfo | null = null
+  let isFocused = false
 
   let rowFrozzen = { ...row }
 
@@ -65,16 +66,85 @@
     }
   }
 
+  async function doCancel() {
+    value = rowFrozzen
+    error = undefined
+    await cancelAction()
+  }
+
   function changeOrNew(_change: boolean, _isNewRow: boolean) {
     return _change || _isNewRow
   }
+
+  function handleKeydown(e: KeyboardEvent) {
+    const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0
+    const modifier = isMac ? e.metaKey : e.ctrlKey
+
+    // Handle global actions (with shift) or focused row actions
+    if (changeOrNew(change, isNewRow)) {
+      if (e.key === 'Enter' && modifier) {
+        e.preventDefault()
+        if (e.shiftKey) {
+          // Save all changes
+          const allEditableRows = document.querySelectorAll('tr')
+          allEditableRows.forEach((row) => {
+            const saveBtn = row.querySelector(
+              '.save-button',
+            ) as HTMLButtonElement
+            if (saveBtn) {
+              saveBtn.click()
+            }
+          })
+        } else if (isFocused) {
+          // Save only focused row
+          doSave()
+        }
+      } else if (e.key === 'Escape' && modifier) {
+        e.preventDefault()
+        if (e.shiftKey) {
+          // Cancel all changes
+          const allEditableRows = document.querySelectorAll('tr')
+          allEditableRows.forEach((row) => {
+            const cancelBtn = row.querySelector(
+              '.cancel-button',
+            ) as HTMLButtonElement
+            if (cancelBtn) {
+              cancelBtn.click()
+            }
+          })
+        } else if (isFocused) {
+          // Cancel only focused row
+          doCancel()
+        }
+      }
+    }
+  }
+
+  function handleFocusIn() {
+    isFocused = true
+  }
+
+  function handleFocusOut(e: FocusEvent) {
+    // Check if the new focus target is still within this row
+    const row = (e.target as HTMLElement).closest('tr')
+    const newTarget = (e.relatedTarget as HTMLElement)?.closest('tr')
+    if (row !== newTarget) {
+      isFocused = false
+    }
+  }
 </script>
 
-<tr class={changeOrNew(change, isNewRow) ? 'change' : ''}>
+<svelte:window on:keydown={handleKeydown} />
+
+<tr
+  class={changeOrNew(change, isNewRow) ? 'change' : ''}
+  on:focusin={handleFocusIn}
+  on:focusout={handleFocusOut}
+>
   <td>
     {#if relations.length > 0 && !isNewRow}
       <button
-        class="icon-button"
+        class="icon-button relations-button"
         title="Relations"
         on:click={() => (relation = relation ? null : relations[0])}
         class:open={relation}
@@ -115,17 +185,17 @@
     <div class="row-actions">
       {#if changeOrNew(change, isNewRow)}
         <div class="margin-auto">
-          <button class="icon-button" title="Save" on:click={doSave}>
+          <button
+            class="icon-button save-button"
+            title="Save (⌘/Ctrl+Enter, ⌘/Ctrl+Shift+Enter for all)"
+            on:click={doSave}
+          >
             <Save></Save>
           </button>
           <button
-            class="icon-button"
-            title="Cancel"
-            on:click={async () => {
-              value = rowFrozzen
-              error = undefined
-              cancelAction()
-            }}
+            class="icon-button cancel-button"
+            title="Cancel (⌘/Ctrl+Esc, ⌘/Ctrl+Shift+Esc for all)"
+            on:click={doCancel}
           >
             <Cancel></Cancel>
           </button>
@@ -133,7 +203,7 @@
       {/if}
       {#if deleteAction && !changeOrNew(change, isNewRow)}
         <button
-          class="icon-button margin-auto"
+          class="icon-button delete-button margin-auto"
           title="Delete"
           on:click={async () => {
             try {
