@@ -138,16 +138,36 @@ export interface RemultServerOptions<RequestType> {
   modules?: Module<RequestType>[]
 }
 
-export type Module<RequestType> = {
+type ModuleInput<RequestType> = {
   key: string
   /** @default 0 */
   priority?: number
-  // caption?: string
   entities?: ClassType<unknown>[]
   controllers?: ClassType<unknown>[]
   initApi?: RemultServerOptions<RequestType>['initApi']
+  initRequest?: RemultServerOptions<RequestType>['initRequest']
+  modules?: Module<RequestType>[]
+}
+
+export class Module<RequestType> {
+  key: string
+  priority?: number
+  entities?: ClassType<unknown>[]
+  controllers?: ClassType<unknown>[]
+  initApi?: RemultServerOptions<RequestType>['initApi']
+  initRequest?: RemultServerOptions<RequestType>['initRequest']
 
   modules?: Module<RequestType>[]
+
+  constructor(options: ModuleInput<RequestType>) {
+    this.key = options.key
+    this.priority = options.priority
+    this.entities = options.entities
+    this.controllers = options.controllers
+    this.initRequest = options.initRequest
+    this.initApi = options.initApi
+    this.modules = options.modules
+  }
 }
 
 export interface InitRequestOptions {
@@ -264,6 +284,7 @@ export class RemultServerImplementation<RequestType>
   implements RemultServer<RequestType>
 {
   liveQueryStorage: LiveQueryStorage = new InMemoryLiveQueryStorage()
+  modulesSorted: Module<RequestType>[] = []
   entities: ClassType<any>[] = []
   controllers: ClassType<any>[] = []
   constructor(
@@ -287,9 +308,9 @@ export class RemultServerImplementation<RequestType>
       initApi: options.initApi,
       modules: [],
     })
-    const modulesSorted = modulesFlatAndOrdered<RequestType>(modules)
-    this.entities = modulesSorted.flatMap((m) => m.entities ?? [])
-    this.controllers = modulesSorted.flatMap((m) => m.controllers ?? [])
+    this.modulesSorted = modulesFlatAndOrdered<RequestType>(modules)
+    this.entities = this.modulesSorted.flatMap((m) => m.entities ?? [])
+    this.controllers = this.modulesSorted.flatMap((m) => m.controllers ?? [])
 
     this.dataProvider = dataProvider.then(async (dp) => {
       await this.runWithRemult(
@@ -321,17 +342,10 @@ export class RemultServerImplementation<RequestType>
             }
             if (started) console.timeEnd('Schema ensured')
           }
-          for (let i = 0; i < modulesSorted.length; i++) {
-            const f = modulesSorted[i].initApi
-            if (f) {
-              await f(remult)
-              // Let's speak about this later
-              // try {
-              //   await f(remult)
-              // } catch (error) {
-              //   const log = new Log(`remult | ${modulesSorted[i].name}`)
-              //   log.error(error)
-              // }
+          for (let i = 0; i < this.modulesSorted.length; i++) {
+            const _initApi = this.modulesSorted[i].initApi
+            if (_initApi) {
+              await _initApi(remult)
             }
           }
         },
@@ -723,17 +737,21 @@ export class RemultServerImplementation<RequestType>
                 }
                 if (user) remult.user = user
 
-                if (this.options.initRequest) {
-                  await this.options.initRequest(req, {
-                    remult,
-                    get liveQueryStorage() {
-                      return remult.liveQueryStorage!
-                    },
-                    set liveQueryStorage(value: LiveQueryStorage) {
-                      remult.liveQueryStorage = value
-                    },
-                  })
+                for (let i = 0; i < this.modulesSorted.length; i++) {
+                  const _initRequest = this.modulesSorted[i].initRequest
+                  if (_initRequest) {
+                    await _initRequest(req, {
+                      remult,
+                      get liveQueryStorage() {
+                        return remult.liveQueryStorage!
+                      },
+                      set liveQueryStorage(value: LiveQueryStorage) {
+                        remult.liveQueryStorage = value
+                      },
+                    })
+                  }
                 }
+
                 await what(remult, myReq, myRes, genReq, origRes, req)
               } finally {
                 remultStatic.asyncContext.setInInitRequest(false)

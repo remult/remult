@@ -7,12 +7,12 @@ import {
 describe('modules', () => {
   it('a few modules', () => {
     const modules: Module<any>[] = [
-      { key: 'init', modules: [{ key: 'a' }, { key: 'b' }] },
-      { key: 'main' },
+      new Module({ key: 'init', modules: [{ key: 'a' }, { key: 'b' }] }),
+      new Module({ key: 'main' }),
 
-      { key: 'main last', priority: 100 },
-      { key: 'prio', priority: -1000 },
-      { key: 'the end', modules: [{ key: 'd' }, { key: 'c' }] },
+      new Module({ key: 'main last', priority: 100 }),
+      new Module({ key: 'prio', priority: -1000 }),
+      new Module({ key: 'the end', modules: [{ key: 'd' }, { key: 'c' }] }),
     ]
 
     console.time('flatten')
@@ -21,11 +21,20 @@ describe('modules', () => {
     expect(res).toMatchInlineSnapshot(`
       [
         {
+          "controllers": undefined,
+          "entities": undefined,
+          "initApi": undefined,
+          "initRequest": undefined,
           "key": "prio",
           "priority": -1000,
         },
         {
+          "controllers": undefined,
+          "entities": undefined,
+          "initApi": undefined,
+          "initRequest": undefined,
           "key": "init",
+          "priority": undefined,
         },
         {
           "key": "init-a",
@@ -34,10 +43,20 @@ describe('modules', () => {
           "key": "init-b",
         },
         {
+          "controllers": undefined,
+          "entities": undefined,
+          "initApi": undefined,
+          "initRequest": undefined,
           "key": "main",
+          "priority": undefined,
         },
         {
+          "controllers": undefined,
+          "entities": undefined,
+          "initApi": undefined,
+          "initRequest": undefined,
           "key": "the end",
+          "priority": undefined,
         },
         {
           "key": "the end-d",
@@ -46,6 +65,10 @@ describe('modules', () => {
           "key": "the end-c",
         },
         {
+          "controllers": undefined,
+          "entities": undefined,
+          "initApi": undefined,
+          "initRequest": undefined,
           "key": "main last",
           "priority": 100,
         },
