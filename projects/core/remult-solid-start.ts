@@ -33,6 +33,7 @@ export function remultSolidStart(
       json: () => {},
       send: () => {},
       redirect: () => {},
+      setCookie: () => {},
       status: () => {
         return response
       },

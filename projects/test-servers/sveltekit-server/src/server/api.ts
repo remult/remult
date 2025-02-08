@@ -41,6 +41,10 @@ export const api = remultSveltekit({
             'https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#redirection_messages',
           )
         })
+        add('/setCookie').get((req, res) => {
+          res.setCookie('res.setCookie', 'Plop')
+          res.send('<h1>setCookie</h1>')
+        })
       },
     }),
   ],

@@ -302,6 +302,11 @@ export interface GenericResponse {
     status: 300 | 301 | 302 | 303 | 304 | 305 | 306 | 307 | 308 | ({} & number),
     url: string,
   ): void
+  setCookie(
+    name: string,
+    value: string,
+    opts?: import('cookie').CookieSerializeOptions & { path?: string },
+  ): void
   status(statusCode: number): GenericResponse //exists for express and next and not in opine(In opine it's setStatus)
   end(): void
 }
@@ -1550,7 +1555,11 @@ export class RouteImplementation<RequestType> {
         }
         redirect(status: number, redirectUrl: string): void {
           if (gRes !== undefined) gRes.redirect(status, redirectUrl)
+          this.statusCode = status
           res({ statusCode: status, redirectUrl })
+        }
+        setCookie(name: string, value: string, options: any): void {
+          if (gRes !== undefined) gRes.setCookie(name, value, options)
         }
         status(statusCode: number): GenericResponse {
           if (gRes !== undefined) gRes.status(statusCode)

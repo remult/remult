@@ -21,6 +21,7 @@ export function remultNext(
     buildGenericRequestInfo: (req) => req,
     getRequestBody: async (req) => req.body,
   })
+  // @ts-ignore TODO JYC
   return Object.assign(
     (req: NextApiRequest, res: GenericResponse) =>
       result.handle(req, res).then(() => {}),
@@ -105,6 +106,7 @@ export function remultNextApp(
 
       const response: GenericResponse & ResponseRequiredForSSE = {
         redirect: () => {},
+        setCookie: () => {},
         end: () => {},
         json: () => {},
         send: () => {},

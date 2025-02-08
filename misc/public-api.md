@@ -3549,6 +3549,13 @@ export interface GenericResponse {
     status: 300 | 301 | 302 | 303 | 304 | 305 | 306 | 307 | 308 | ({} & number),
     url: string,
   ): void
+  setCookie(
+    name: string,
+    value: string,
+    opts?: import("cookie").CookieSerializeOptions & {
+      path?: string
+    },
+  ): void
   status(statusCode: number): GenericResponse
   end(): void
 }
@@ -3606,6 +3613,12 @@ export interface QueueStorage {
   createJob(url: string, userId?: string): Promise<string>
   getJobInfo(queuedJobId: string): Promise<queuedJobInfo>
 }
+export const remultHandlerToResponse: (
+  responseFromRemultHandler: ServerHandleResponse | undefined,
+  sseResponse: Response | undefined,
+  requestUrl: string,
+) => Response
+//[ ] ServerHandleResponse from ./remult-api-server.js is not exported
 export interface RemultServer<RequestType>
   extends RemultServerCore<RequestType> {
   withRemult(req: RequestType, res: GenericResponse, next: VoidFunction): void
@@ -3619,7 +3632,6 @@ export interface RemultServer<RequestType>
     what: () => Promise<T>,
   ): Promise<T>
 }
-//[ ] ServerHandleResponse from TBD is not exported
 export interface RemultServerCore<RequestType> {
   getRemult(req?: RequestType): Promise<Remult>
   openApiDoc(options: { title: string; version?: string }): any
@@ -3805,6 +3817,13 @@ export interface GenericResponse {
     /** The [HTTP status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#redirection_messages). Must be in the range 300-308. */
     status: 300 | 301 | 302 | 303 | 304 | 305 | 306 | 307 | 308 | ({} & number),
     url: string,
+  ): void
+  setCookie(
+    name: string,
+    value: string,
+    opts?: import("cookie").CookieSerializeOptions & {
+      path?: string
+    },
   ): void
   status(statusCode: number): GenericResponse
   end(): void

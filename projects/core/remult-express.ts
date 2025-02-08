@@ -32,6 +32,7 @@ export function remultExpress(
     buildGenericRequestInfo: (req) => req,
     getRequestBody: async (req) => req.body,
   }) as RemultServerImplementation<express.Request>
+  // @ts-ignore TODO JYC
   server.registerRouter(app)
 
   return Object.assign(app, {
@@ -41,6 +42,7 @@ export function remultExpress(
       req: express.Request,
       res: express.Response,
       next: VoidFunction,
+      // @ts-ignore TODO JYC
     ) => server.withRemult(req, res, next),
     withRemultAsync: <T>(req: express.Request, what: () => Promise<T>) =>
       server.withRemultAsync<T>(req, what),

@@ -32,6 +32,12 @@ export function remultSveltekit(
       json: () => {},
       send: () => {},
       redirect: () => {},
+      setCookie: (name, value, options) => {
+        event.cookies.set(name, value, {
+          ...options,
+          path: options?.path ?? '/',
+        })
+      },
       status: () => {
         return response
       },
@@ -63,6 +69,7 @@ export function remultSveltekit(
     }
 
     const responseFromRemultHandler = await result.handle(event, response)
+
     return remultHandlerToResponse(
       responseFromRemultHandler,
       sseResponse,

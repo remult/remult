@@ -29,6 +29,7 @@ export function remultNuxt(
     let sse = false
 
     const response: GenericResponse & ResponseRequiredForSSE = {
+      setCookie: () => {},
       redirect: () => {},
       end: () => {},
       send: () => {},
