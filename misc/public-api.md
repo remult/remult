@@ -3497,7 +3497,7 @@ export type RemultNextServer = RemultServerCore<NextApiRequest> &
 
 ## ./server/index.js
 
-```ts
+````ts
 export declare function createRemultServer<RequestType>(
   options: RemultServerOptions<RequestType>,
   serverCoreOptions?: ServerCoreOptions<RequestType>,
@@ -3572,12 +3572,13 @@ export declare class Module<RequestType> {
   controllers?: ClassType<unknown>[]
   initApi?: RemultServerOptions<RequestType>["initApi"]
   initRequest?: RemultServerOptions<RequestType>["initRequest"]
-  extraRoutes?: (router: GenericRouter<RequestType>) => void
+  extraRoutes?: ExtraRoutes<RequestType>
   modules?: Module<RequestType>[]
   constructor(options: ModuleInput<RequestType>)
 }
 //[ ] ClassType from TBD is not exported
-export type ModuleInput<RequestType> = {
+//[ ] ExtraRoutes from TBD is not exported
+export interface ModuleInput<RequestType> {
   key: string
   /** @default 0 */
   priority?: number
@@ -3585,8 +3586,8 @@ export type ModuleInput<RequestType> = {
   controllers?: ClassType<unknown>[]
   initApi?: RemultServerOptions<RequestType>["initApi"]
   initRequest?: RemultServerOptions<RequestType>["initRequest"]
+  extraRoutes?: ExtraRoutes<RequestType>
   modules?: Module<RequestType>[]
-  extraRoutes?: (router: GenericRouter<RequestType>) => void
 }
 export interface queuedJobInfo {
   info: queuedJobInfoResponse
@@ -3705,8 +3706,19 @@ export interface RemultServerOptions<RequestType> {
     responseBody: any
     sendError: (httpStatusCode: number, body: any) => void
   }) => Promise<void> | undefined
+  /**
+   * Adding some extra routes. It will automatically add the `rootPath` _(default: `/api`)_ to the route.
+   * ```
+   * extraRoutes(add) {
+   *   add('/new-route').get((req, res) => {
+   *     return res.json({ Soooooo: 'Cool!' })
+   *   })
+   * }
+   * ```
+   * This will add the route `/api/new-route` to the api.
+   */
+  extraRoutes?: ExtraRoutes<RequestType>
   modules?: Module<RequestType>[]
-  extraRoutes?: (router: GenericRouter<RequestType>) => void
 }
 //[ ] UserInfo from TBD is not exported
 //[ ] SubscriptionServer from TBD is not exported
@@ -3733,11 +3745,11 @@ export declare function TestApiDataProvider(
   options?: Pick<RemultServerOptions<unknown>, "ensureSchema" | "dataProvider">,
 ): RestDataProvider
 //[ ] RestDataProvider from TBD is not exported
-```
+````
 
 ## ./server/core.js
 
-```ts
+````ts
 export declare function createRemultServerCore<RequestType>(
   options: RemultServerOptions<RequestType>,
   serverCoreOptions: ServerCoreOptions<RequestType>,
@@ -3912,8 +3924,19 @@ export interface RemultServerOptions<RequestType> {
     responseBody: any
     sendError: (httpStatusCode: number, body: any) => void
   }) => Promise<void> | undefined
+  /**
+   * Adding some extra routes. It will automatically add the `rootPath` _(default: `/api`)_ to the route.
+   * ```
+   * extraRoutes(add) {
+   *   add('/new-route').get((req, res) => {
+   *     return res.json({ Soooooo: 'Cool!' })
+   *   })
+   * }
+   * ```
+   * This will add the route `/api/new-route` to the api.
+   */
+  extraRoutes?: ExtraRoutes<RequestType>
   modules?: Module<RequestType>[]
-  extraRoutes?: (router: GenericRouter<RequestType>) => void
 }
 //[ ] ClassType from TBD is not exported
 //[ ] UserInfo from TBD is not exported
@@ -3923,6 +3946,7 @@ export interface RemultServerOptions<RequestType> {
 //[ ] LiveQueryStorage from TBD is not exported
 //[ ] Allowed from TBD is not exported
 //[ ] EntityMetadata from TBD is not exported
+//[ ] ExtraRoutes from TBD is not exported
 //[ ] Module from TBD is not exported
 export type SpecificRoute<RequestType> = {
   get(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
@@ -3941,7 +3965,7 @@ export declare class SseSubscriptionServer implements SubscriptionServer {
   )
   publishMessage<T>(channel: string, message: any): Promise<void>
 }
-```
+````
 
 ## ./remult-fastify.js
 

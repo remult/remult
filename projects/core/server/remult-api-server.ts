@@ -135,12 +135,27 @@ export interface RemultServerOptions<RequestType> {
     sendError: (httpStatusCode: number, body: any) => void
   }) => Promise<void> | undefined
 
-  modules?: Module<RequestType>[]
+  /**
+   * Adding some extra routes. It will automatically add the `rootPath` _(default: `/api`)_ to the route.
+   * ```
+   * extraRoutes(add) {
+   *   add('/new-route').get((req, res) => {
+   *     return res.json({ Soooooo: 'Cool!' })
+   *   })
+   * }
+   * ```
+   * This will add the route `/api/new-route` to the api.
+   */
+  extraRoutes?: ExtraRoutes<RequestType>
 
-  extraRoutes?: (router: GenericRouter<RequestType>) => void
+  modules?: Module<RequestType>[]
 }
 
-export type ModuleInput<RequestType> = {
+export interface ExtraRoutes<RequestType> {
+  (add: (relativePath: `/${string}`) => SpecificRoute<RequestType>): void
+}
+
+export interface ModuleInput<RequestType> {
   key: string
   /** @default 0 */
   priority?: number
@@ -148,8 +163,8 @@ export type ModuleInput<RequestType> = {
   controllers?: ClassType<unknown>[]
   initApi?: RemultServerOptions<RequestType>['initApi']
   initRequest?: RemultServerOptions<RequestType>['initRequest']
+  extraRoutes?: ExtraRoutes<RequestType>
   modules?: Module<RequestType>[]
-  extraRoutes?: (router: GenericRouter<RequestType>) => void
 }
 
 export class Module<RequestType> {
@@ -159,7 +174,7 @@ export class Module<RequestType> {
   controllers?: ClassType<unknown>[]
   initApi?: RemultServerOptions<RequestType>['initApi']
   initRequest?: RemultServerOptions<RequestType>['initRequest']
-  extraRoutes?: (router: GenericRouter<RequestType>) => void
+  extraRoutes?: ExtraRoutes<RequestType>
   modules?: Module<RequestType>[]
 
   constructor(options: ModuleInput<RequestType>) {
@@ -169,8 +184,8 @@ export class Module<RequestType> {
     this.controllers = options.controllers
     this.initRequest = options.initRequest
     this.initApi = options.initApi
-    this.modules = options.modules
     this.extraRoutes = options.extraRoutes
+    this.modules = options.modules
   }
 }
 
@@ -461,9 +476,17 @@ export class RemultServerImplementation<RequestType>
           }
       }
 
-      // Register extra routes from options and modules
+      // Register extra routes
+
+      const add = (relativePath: `/${string}`) => {
+        const newRoute = this.options.rootPath + relativePath
+        if (this.options.logApiEndPoints) {
+          console.info('[remult] ' + newRoute + ' *')
+        }
+        return r.route(newRoute)
+      }
       for (const module of this.modulesSorted) {
-        module.extraRoutes?.(r)
+        module.extraRoutes?.(add)
       }
 
       if (this.hasQueue)

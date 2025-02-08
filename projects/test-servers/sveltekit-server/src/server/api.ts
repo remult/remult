@@ -20,27 +20,15 @@ export const api = remultSveltekit({
   initApi: (api) => {
     console.log('Ready 💪')
   },
-  extraRoutes(router) {
-    // How to make sure it has the right starting path? (this.options.rootPath) ?
-    // Or we should return an array to registered routes ? (so that we can log them also ? like: [remult] /api/tasks)
-    router.route('/api/toto').get((req, res) => {
-      console.log('extraRoutes api/toto')
-      return res.json({ Soooooo: 'Cool!' })
-    })
-    router.route('/api/toto2').get((req, res) => {
-      console.log('extraRoutes /api/toto2')
-      return res.json({ Soooooo: 'Cool!2' })
-    })
-  },
 
   modules: [
     //
     new Module({
       key: 'some-routes',
-      extraRoutes: (router) => {
-        router.route('/api/some-routes').get((req, res) => {
-          console.log('extraRoutes /api/some-routes')
-          return res.json({ Soooooo: 'Cool! some-routes' })
+      extraRoutes: (add) => {
+        add('/new-route').get((req, res) => {
+          console.log('extraRoutes /api/new-route')
+          return res.json({ Soooooo: 'Cool! A new new-route!' })
         })
       },
     }),
