@@ -39,7 +39,7 @@ import { TasksController } from './shared/TasksController'
 import { createPostgresDataProvider } from 'remult/postgres' // [!code ++]
 import { DATABASE_URL } from '$env/static/private' // [!code ++]
 
-export const _api = remultSveltekit({
+export const api = remultSveltekit({
   entities: [Task],
   controllers: [TasksController],
   dataProvider: DATABASE_URL // [!code ++]

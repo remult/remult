@@ -24,12 +24,12 @@ export function testAsExpressMW(
   let destroy: () => Promise<void>
 
   beforeAll(async () => {
-    return new Promise(async (res) => {
+    return new Promise<void>(async (res) => {
       const app = express()
       app.use(handler)
       let connection = app.listen(port, () => res())
       destroy = async () => {
-        return new Promise((res) => connection.close(() => res()))
+        return new Promise<void>((res) => connection.close(() => res()))
       }
     })
   })

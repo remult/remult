@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.29] 2025-2-9
+
+- Fixes to remult admin
+- Improved error in case if undefined in `getEntityRef`
+
 ## [2.7.28] 2025-1-13
 
 - fix: sqlite - index already exists by @olragon in https://github.com/remult/remult/pull/599

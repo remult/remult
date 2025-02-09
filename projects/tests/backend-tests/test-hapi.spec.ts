@@ -11,7 +11,7 @@ describe('test hapi server', async () => {
   let port = 3010
 
   beforeAll(async () => {
-    return new Promise(async (res) => {
+    return new Promise<void>(async (res) => {
       const app = server({ port })
       const api = remultHapi({
         entities: [Task],

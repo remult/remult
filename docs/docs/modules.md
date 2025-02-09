@@ -1,5 +1,7 @@
 # Module Driven Development
 
+# DRAFT! IDEATION!
+
 We belive in Module Driven Development (`MDD` 😎), let us explain what it is and how it works.
 
 It would be great to be able to share modules between projects at the same time, you always need to customize the code for your project... So it's challenging to distribute modules in the same way we do with npm packages.
@@ -25,8 +27,10 @@ Basicly, a module is a folder with the following structure:
 modules
   [MODULE_NAME]
     README.md           // the module documentation
-    index.ts            // @entity
-    server.ts           // the module definition (export type Module)
+    index.ts            // @entity or any other code that can go to the client
+    server
+      index.ts          // the module definition (export type Module)
+    wc                  // Some web components ?!
     svelte
       index.ts
       Component1.svelte
