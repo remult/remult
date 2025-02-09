@@ -63,7 +63,7 @@ For a complete list of supported field types, see the [Field Types](../../docs/f
 import { remultSveltekit } from 'remult/remult-sveltekit'
 import { Task } from '../shared/Task' // [!code ++]
 
-export const _api = remultSveltekit({
+export const api = remultSveltekit({
   entities: [Task], // [!code ++]
 })
 ```
@@ -100,7 +100,7 @@ While remult supports [many relational and non-relational databases](https://rem
 
 ### Enabling the Admin UI
 
-Add the Admin UI to your Angular application by setting the `admin` option to `true` in the `remultSveltekit()`
+Add the Admin UI to your Sveltekit application by setting the `admin` option to `true` in the `remultSveltekit()`
 
 ::: code-group
 
@@ -108,7 +108,7 @@ Add the Admin UI to your Angular application by setting the `admin` option to `t
 import { remultSveltekit } from 'remult/remult-sveltekit'
 import { Task } from '../shared/Task'
 
-export const _api = remultSveltekit({
+export const api = remultSveltekit({
   entities: [Task],
   admin: true, // Enable the Admin UI
 })
