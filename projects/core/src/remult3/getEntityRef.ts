@@ -15,6 +15,7 @@ export function getEntityRef<entityType>(
   entity: entityType,
   throwException = true,
 ): EntityRef<entityType> {
+  if (!entity) throw new Error('entity is undefined')
   let x = (entity as any)[entityMember]
   if (!x && throwException)
     throw new Error(
