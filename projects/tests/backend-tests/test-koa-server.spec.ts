@@ -11,7 +11,7 @@ describe.skipIf(process.env['SKIP_KOA'])('test koa server', async () => {
   let port = 3002
 
   beforeAll(async () => {
-    return new Promise((res) => {
+    return new Promise<void>((res) => {
       const app = new koa()
       const api = createRemultServer({
         entities: [Task],
@@ -33,7 +33,7 @@ describe.skipIf(process.env['SKIP_KOA'])('test koa server', async () => {
       })
       let connection = app.listen(port, () => res())
       destroy = async () => {
-        return new Promise((res) => connection.close(() => res()))
+        return new Promise<void>((res) => connection.close(() => res()))
       }
     })
   })
