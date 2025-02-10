@@ -55,7 +55,7 @@ export function remultNuxt(
     }
     if (r) {
       if (r.statusCode !== 200) setResponseStatus(event, r.statusCode)
-      if (r.html) return r.html
+      if (r.content) return r.content
       return r.data == null ? 'null' : r.data
     }
   }

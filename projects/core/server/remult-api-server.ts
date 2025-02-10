@@ -138,7 +138,7 @@ export interface RemultServerOptions<RequestType> {
   /**
    * Adding some extra routes. It will automatically add the `rootPath` _(default: `/api`)_ to the route.
    * ```
-   * extraRoutes(add) {
+   * extraRoutes({ add }) {
    *   add('/new-route').get((req, res) => {
    *     return res.json({ Soooooo: 'Cool!' })
    *   })
@@ -152,7 +152,12 @@ export interface RemultServerOptions<RequestType> {
 }
 
 export interface ExtraRoutes<RequestType> {
-  (add: (relativePath: `/${string}`) => SpecificRoute<RequestType>): void
+  (args: {
+    add: (relativePath: `/${string}`) => SpecificRoute<RequestType>
+    rootPath: string
+    // Should we add this as well ?! To allow routes for some users?! (Maybe not in v0 ? :D)
+    // remult: Remult
+  }): void
 }
 
 export interface ModuleInput<RequestType> {
@@ -250,9 +255,10 @@ export type GenericRequestHandler<RequestType> = (
 
 export interface ServerHandleResponse {
   data?: any
-  html?: string
+  content?: string
   redirectUrl?: string
   statusCode: number
+  headers?: Record<string, string>
 }
 export interface RemultServer<RequestType>
   extends RemultServerCore<RequestType> {
@@ -293,7 +299,7 @@ export interface GenericRequestInfo {
 
 export interface GenericResponse {
   json(data: any): void
-  send(html: string): void
+  send(html: string, headers?: Record<string, string>): void
   redirect(
     /** The [HTTP status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#redirection_messages). Must be in the range 300-308. */
     status: 300 | 301 | 302 | 303 | 304 | 305 | 306 | 307 | 308 | ({} & number),
@@ -492,12 +498,12 @@ export class RemultServerImplementation<RequestType>
       const add = (relativePath: `/${string}`) => {
         const newRoute = this.options.rootPath + relativePath
         if (this.options.logApiEndPoints) {
-          console.info('[remult] ' + newRoute + ' *')
+          console.info('[remult] ' + newRoute + ' [!]')
         }
         return r.route(newRoute)
       }
       for (const module of this.modulesSorted) {
-        module.extraRoutes?.(add)
+        module.extraRoutes?.({ add, rootPath: this.options.rootPath ?? '/api' })
       }
 
       if (this.hasQueue)
@@ -1550,9 +1556,9 @@ export class RouteImplementation<RequestType> {
             data,
           })
         }
-        send(html: string) {
-          if (gRes !== undefined) gRes.send(html)
-          res({ statusCode: this.statusCode, html })
+        send(html: string, headers: Record<string, string>) {
+          if (gRes !== undefined) gRes.send(html, headers)
+          res({ statusCode: this.statusCode, content: html, headers })
         }
         redirect(status: number, redirectUrl: string): void {
           if (gRes !== undefined) gRes.redirect(status, redirectUrl)

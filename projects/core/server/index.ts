@@ -55,23 +55,26 @@ export const remultHandlerToResponse = (
     return sseResponse
   }
   if (responseFromRemultHandler !== undefined) {
+    if (responseFromRemultHandler.data)
+      return new Response(JSON.stringify(responseFromRemultHandler.data), {
+        status: responseFromRemultHandler.statusCode,
+      })
+
     if (responseFromRemultHandler.redirectUrl)
       return Response.redirect(
         new URL(responseFromRemultHandler.redirectUrl, requestUrl),
         responseFromRemultHandler.statusCode,
       )
 
-    if (responseFromRemultHandler.html)
-      return new Response(responseFromRemultHandler.html, {
+    if (responseFromRemultHandler.content)
+      return new Response(responseFromRemultHandler.content, {
         status: responseFromRemultHandler.statusCode,
         headers: {
-          'Content-Type': 'text/html',
+          ...(responseFromRemultHandler.headers ?? {
+            'Content-Type': 'text/html',
+          }),
         },
       })
-
-    return new Response(JSON.stringify(responseFromRemultHandler.data), {
-      status: responseFromRemultHandler.statusCode,
-    })
   }
   return new Response('Not Found', {
     status: 404,
