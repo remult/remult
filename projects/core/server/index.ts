@@ -67,14 +67,19 @@ export const remultHandlerToResponse = (
       )
 
     if (responseFromRemultHandler.statusCode !== 404)
-      return new Response(responseFromRemultHandler.content, {
-        status: responseFromRemultHandler.statusCode,
-        headers: {
-          ...(responseFromRemultHandler.headers ?? {
-            'Content-Type': 'text/html',
-          }),
-        },
-      })
+      console.log(
+        `responseFromRemultHandler.headers`,
+        responseFromRemultHandler.headers,
+      )
+
+    return new Response(responseFromRemultHandler.content, {
+      status: responseFromRemultHandler.statusCode,
+      headers: {
+        ...(responseFromRemultHandler.headers ?? {
+          'Content-Type': 'text/html',
+        }),
+      },
+    })
   }
   return new Response('Not Found', {
     status: 404,

@@ -72,8 +72,7 @@ export const api = remultSveltekit({
               return
             } catch (error) {}
 
-            res.status(404)
-            res.send('')
+            res.status(404).end()
           })
         }
 
@@ -107,8 +106,6 @@ export const api = remultSveltekit({
         })
 
         addStaticFolder(add, rootPath, '/styled*', './src/server/styled')
-
-        addStaticFolder(add, rootPath, '/ff*', './src/server/static')
       },
     }),
   ],
