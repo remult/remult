@@ -45,9 +45,19 @@ export function remultHapi(
             let stream: PassThrough
 
             let r: GenericResponse & ResponseRequiredForSSE = {
-              setCookie: () => {},
-              deleteCookie: () => {},
-              redirect: () => {},
+              setCookie: (name, value, options) => {
+                res(
+                  h
+                    .response()
+                    .header('Set-Cookie', `${name}=${value}; ${options}`),
+                )
+              },
+              deleteCookie: (name) => {
+                res(h.response().header('Set-Cookie', `${name}=; Max-Age=0`))
+              },
+              redirect: (status, url) => {
+                res(h.response().redirect(url).code(status))
+              },
               status(statusCode) {
                 status = statusCode
                 return r

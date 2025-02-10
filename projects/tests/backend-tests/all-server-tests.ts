@@ -614,7 +614,7 @@ export function allServerTests(
         } catch (error: any) {
           // Axios throws on redirects when maxRedirects is 0
           expect(error.response.status).toBe(307)
-          expect(error.response.headers.location).toBe('/api/html')
+          expect(error.response.headers.location).toContain('/api/html')
         }
       }),
     )

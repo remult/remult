@@ -70,9 +70,15 @@ export function remultHono(
               let result: any
               let sse: SSEStreamingApi
               const gRes: GenericResponse & ResponseRequiredForSSE = {
-                setCookie: () => {},
-                deleteCookie: () => {},
-                redirect: () => {},
+                setCookie: (name, value, options) => {
+                  res(c.header('Set-Cookie', `${name}=${value}; ${options}`))
+                },
+                deleteCookie: (name) => {
+                  res(c.header('Set-Cookie', `${name}=; Max-Age=0`))
+                },
+                redirect: (status, url) => {
+                  res(c.redirect(url, status as any))
+                },
                 json: (data: any) => {
                   res(c.json(data))
                 },
