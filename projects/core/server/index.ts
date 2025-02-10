@@ -54,10 +54,14 @@ export const remultHandlerToResponse = (
   if (sseResponse !== undefined) {
     return sseResponse
   }
-  if (responseFromRemultHandler !== undefined) {
-    if (responseFromRemultHandler.data)
-      return new Response(JSON.stringify(responseFromRemultHandler.data), {
+  if (
+    responseFromRemultHandler !== undefined &&
+    responseFromRemultHandler.statusCode !== 404
+  ) {
+    if (responseFromRemultHandler.content)
+      return new Response(responseFromRemultHandler.content, {
         status: responseFromRemultHandler.statusCode,
+        headers: responseFromRemultHandler.headers,
       })
 
     if (responseFromRemultHandler.redirectUrl)
@@ -66,11 +70,9 @@ export const remultHandlerToResponse = (
         responseFromRemultHandler.statusCode,
       )
 
-    if (responseFromRemultHandler.statusCode !== 404)
-      return new Response(responseFromRemultHandler.content, {
-        status: responseFromRemultHandler.statusCode,
-        headers: responseFromRemultHandler.headers,
-      })
+    return new Response(JSON.stringify(responseFromRemultHandler.data), {
+      status: responseFromRemultHandler.statusCode,
+    })
   }
   return new Response('Not Found', {
     status: 404,
