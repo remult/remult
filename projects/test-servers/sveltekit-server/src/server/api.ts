@@ -6,6 +6,7 @@ import { Module } from 'remult/server'
 import { remultSveltekit } from 'remult/remult-sveltekit'
 import path from 'path'
 import fs from 'fs'
+
 export const api = remultSveltekit({
   entities: [Task],
   controllers: [TasksController],
@@ -26,6 +27,56 @@ export const api = remultSveltekit({
     new Module({
       key: 'some-routes',
       extraRoutes: ({ add, rootPath }) => {
+        function addStaticFolder(
+          add: any,
+          rootPath: string,
+          urlPath: string,
+          folderPath: string,
+        ) {
+          add(urlPath).get((req: any, res: any) => {
+            const currentHttpBasePath = `${rootPath}${urlPath.replace('*', '')}`
+            const currentFilePath = folderPath
+
+            let filePath = req.url.pathname.replace(
+              currentHttpBasePath,
+              currentFilePath,
+            )
+
+            if (fs.existsSync(filePath)) {
+              if (fs.statSync(filePath).isDirectory()) {
+                const isIndexHtml = path.join(filePath, 'index.html')
+                if (!fs.existsSync(isIndexHtml)) {
+                  filePath = filePath + '.html'
+                } else {
+                  filePath = isIndexHtml
+                }
+              }
+            } else {
+              filePath = filePath + '.html'
+            }
+
+            try {
+              const content = fs.readFileSync(filePath, 'utf-8')
+
+              const seg = filePath.split('.')
+              const map: Record<string, string> = {
+                js: 'text/javascript',
+                css: 'text/css',
+                svg: 'image/svg+xml',
+                html: 'text/html',
+              }
+
+              res.send(content, {
+                'content-type': map[seg[seg.length - 1]] ?? 'text/plain',
+              })
+              return
+            } catch (error) {}
+
+            res.status(404)
+            res.send('')
+          })
+        }
+
         add('/new-route').get((req, res) => {
           console.log('extraRoutes /api/new-route')
           res.json({ Soooooo: 'Cool! A new new-route!' })
@@ -54,87 +105,10 @@ export const api = remultSveltekit({
             '<h1>deleteCookie</h1><a href="/api/setCookie">setCookie</a>',
           )
         })
-        add('/styled*').get((req, res) => {
-          const currentHttpBasePath = `${rootPath}/styled`
-          const currentFilePath = './src/server/styled'
 
-          const filePath = req.url.pathname.replace(
-            currentHttpBasePath,
-            currentFilePath,
-          )
+        addStaticFolder(add, rootPath, '/styled*', './src/server/styled')
 
-          if (fs.existsSync(filePath)) {
-            if (fs.statSync(filePath).isDirectory()) {
-              const content = fs.readFileSync(
-                path.join(currentFilePath, 'index.html'),
-                'utf-8',
-              )
-              res.send(content)
-              return
-            }
-            const content = fs.readFileSync(filePath, 'utf-8')
-
-            const seg = req.url.pathname.split('.')
-            const map: Record<string, string> = {
-              js: 'text/javascript',
-              css: 'text/css',
-              svg: 'image/svg+xml',
-              html: 'text/html',
-            }
-
-            res.send(content, {
-              'content-type': map[seg[seg.length - 1]] ?? 'text/plain',
-            })
-            return
-          }
-
-          // 404 not found!
-          res.send('')
-        })
-
-        // addStaticFolder('/ff*', './src/server/static')
-        add('/ff*').get((req, res) => {
-          const currentHttpBasePath = `${rootPath}/ff`
-          const currentFilePath = './src/server/static'
-
-          let filePath = req.url.pathname.replace(
-            currentHttpBasePath,
-            currentFilePath,
-          )
-
-          if (fs.existsSync(filePath)) {
-            if (fs.statSync(filePath).isDirectory()) {
-              const isIndexHtml = path.join(filePath, 'index.html')
-              if (!fs.existsSync(isIndexHtml)) {
-                filePath = filePath + '.html'
-              } else {
-                filePath = isIndexHtml
-              }
-            }
-          } else {
-            filePath = filePath + '.html'
-          }
-
-          try {
-            const content = fs.readFileSync(filePath, 'utf-8')
-
-            const seg = filePath.split('.')
-            const map: Record<string, string> = {
-              js: 'text/javascript',
-              css: 'text/css',
-              svg: 'image/svg+xml',
-              html: 'text/html',
-            }
-
-            res.send(content, {
-              'content-type': map[seg[seg.length - 1]] ?? 'text/plain',
-            })
-            return
-          } catch (error) {}
-
-          res.status(404)
-          res.send('')
-        })
+        addStaticFolder(add, rootPath, '/ff*', './src/server/static')
       },
     }),
   ],
