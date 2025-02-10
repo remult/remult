@@ -22,9 +22,18 @@ export function remultFastify(
   function fastifyHandler(handler: GenericRequestHandler<FastifyRequest>) {
     const response: RouteHandlerMethod = (req, res) => {
       const myRes: GenericResponse & ResponseRequiredForSSE = {
-        setCookie: () => {},
-        deleteCookie: () => {},
-        redirect: () => {},
+        setCookie: (name, value, options) => {
+          // import('cookie').then((c) =>
+          //   res.header('Set-Cookie', c.serialize(name, value, options)),
+          // )
+          res.header('Set-Cookie', `${name}=${value}; ${options}`)
+        },
+        deleteCookie: (name) => {
+          res.header('Set-Cookie', `${name}=; Max-Age=0`)
+        },
+        redirect: (statusCode, url) => {
+          res.redirect(statusCode, url)
+        },
         status(statusCode) {
           res.status(statusCode)
           return myRes

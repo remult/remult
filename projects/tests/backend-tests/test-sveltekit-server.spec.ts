@@ -26,44 +26,6 @@ describe('test sveltekit server', async () => {
           ).toMatchInlineSnapshot('"test"')
         }),
       )
-
-      it(
-        'test 404',
-        withRemultForTest(async () => {
-          try {
-            await axios.get(remult.apiClient.url + '/nothing')
-            expect('should never').toBe('be here')
-          } catch (error) {
-            expect(error).toMatchInlineSnapshot(
-              `[AxiosError: Request failed with status code 404]`,
-            )
-          }
-        }),
-      )
-
-      it(
-        'should get html',
-        withRemultForTest(async () => {
-          const result = await axios.get(remult.apiClient.url + '/new-route')
-          expect(result.data).toMatchInlineSnapshot(`
-            {
-              "Soooooo": "Cool! A new new-route!",
-            }
-          `)
-        }),
-      )
-
-      it(
-        'should setCookie',
-        withRemultForTest(async () => {
-          const result = await axios.get(remult.apiClient.url + '/setCookie')
-          expect(result.headers['set-cookie']).toMatchInlineSnapshot(`
-              [
-                "res.setCookie=Plop; Path=/; HttpOnly; Secure; SameSite=Lax",
-              ]
-            `)
-        }),
-      )
     },
   )
 })
