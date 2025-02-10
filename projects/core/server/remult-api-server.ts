@@ -1556,9 +1556,12 @@ export class RouteImplementation<RequestType> {
             data,
           })
         }
-        send(html: string, headers: Record<string, string>) {
-          if (gRes !== undefined) gRes.send(html, headers)
-          res({ statusCode: this.statusCode, content: html, headers })
+        send(content: string, _headers: Record<string, string>) {
+          const headers = _headers ?? {
+            'Content-Type': 'text/html',
+          }
+          if (gRes !== undefined) gRes.send(content, headers)
+          res({ statusCode: this.statusCode, content, headers })
         }
         redirect(status: number, redirectUrl: string): void {
           if (gRes !== undefined) gRes.redirect(status, redirectUrl)

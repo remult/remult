@@ -1,11 +1,14 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, beforeEach } from 'vitest'
 import {
   type GenericRequestInfo,
   RouteImplementation,
 } from '../../core/server/remult-api-server'
+
 describe('test router impl', async () => {
-  it('test a', async () => {
-    const r = new RouteImplementation<GenericRequestInfo>({
+  let r: RouteImplementation<GenericRequestInfo>
+
+  beforeEach(() => {
+    r = new RouteImplementation<GenericRequestInfo>({
       buildGenericRequestInfo: (req) => {
         return req
       },
@@ -13,6 +16,9 @@ describe('test router impl', async () => {
         return undefined!
       },
     })
+  })
+
+  it('test a', async () => {
     let result: any = {}
     r.route('/a').get(async (req, res) => {
       result.getWorks = true
@@ -52,14 +58,6 @@ describe('test router impl', async () => {
     `)
   })
   it('test b', async () => {
-    const r = new RouteImplementation<GenericRequestInfo>({
-      buildGenericRequestInfo: (req) => {
-        return req
-      },
-      getRequestBody: (req) => {
-        return undefined!
-      },
-    })
     let result: any = {}
     r.route('/aBc').get(async (req, res) => {
       result.getWorks = true
@@ -100,14 +98,6 @@ describe('test router impl', async () => {
     `)
   })
   it('test *', async () => {
-    const r = new RouteImplementation<GenericRequestInfo>({
-      buildGenericRequestInfo: (req) => {
-        return req
-      },
-      getRequestBody: (req) => {
-        return undefined!
-      },
-    })
     let result: any = {}
     r.route('/a*').get(async (req, res) => {
       result.getWorks = true
@@ -141,5 +131,57 @@ describe('test router impl', async () => {
         "statusCode": 200,
       }
     `)
+  })
+  it('test 404', async () => {
+    r.route('/a').get(async (req, res) => {
+      res.status(404).end()
+    })
+    expect(await r.handle({ url: '/a', method: 'GET' })).toMatchInlineSnapshot(`
+      {
+        "statusCode": 404,
+      }
+    `)
+  })
+  it('test send html', async () => {
+    r.route('/a').get(async (req, res) => {
+      res.send(`<h1>hello</h1>`)
+    })
+    expect(await r.handle({ url: '/a', method: 'GET' })).toMatchInlineSnapshot(`
+      {
+        "content": "<h1>hello</h1>",
+        "headers": {
+          "Content-Type": "text/html",
+        },
+        "statusCode": 200,
+      }
+    `)
+  })
+  it('test send js', async () => {
+    r.route('/b').get(async (req, res) => {
+      res.send(`console.log('hello')`, { 'Content-Type': 'text/javascript' })
+    })
+    expect(await r.handle({ url: '/b', method: 'GET' })).toMatchInlineSnapshot(`
+      {
+        "content": "console.log('hello')",
+        "headers": {
+          "Content-Type": "text/javascript",
+        },
+        "statusCode": 200,
+      }
+    `)
+  })
+  it('test redirect', async () => {
+    r.route('/r').get(async (req, res) => {
+      res.redirect(307, '/a')
+    })
+    expect(await r.handle({ url: '/r', method: 'GET' })).toMatchInlineSnapshot(`
+      {
+        "redirectUrl": "/a",
+        "statusCode": 307,
+      }
+    `)
+    expect(await r.handle({ url: '/a', method: 'GET' })).toMatchInlineSnapshot(
+      `undefined`,
+    )
   })
 })

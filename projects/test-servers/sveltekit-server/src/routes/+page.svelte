@@ -43,6 +43,6 @@
     <a href="/api/styled">Go to /api/styled</a>
   </li>
   <li>
-    <a href="/api/ff">Go to /api/ff</a>
+    <a href="/api/ff">Go to /api/ff (should be 404!)</a>
   </li>
 </ul>
