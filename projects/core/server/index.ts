@@ -66,7 +66,7 @@ export const remultHandlerToResponse = (
         responseFromRemultHandler.statusCode,
       )
 
-    if (responseFromRemultHandler.content)
+    if (responseFromRemultHandler.statusCode !== 404)
       return new Response(responseFromRemultHandler.content, {
         status: responseFromRemultHandler.statusCode,
         headers: {

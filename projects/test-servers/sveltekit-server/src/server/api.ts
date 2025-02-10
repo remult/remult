@@ -132,7 +132,7 @@ export const api = remultSveltekit({
             return
           } catch (error) {}
 
-          // 404 not found!
+          res.status(404)
           res.send('')
         })
       },
