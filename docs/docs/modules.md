@@ -8,39 +8,45 @@ It would be great to be able to share modules between projects at the same time,
 
 That's why we have this `module` concept in remult.
 
-## Add a module to your project
+You have 2 sort of modules:
+
+- packaged modules: these are modules that are published on npm and can be installed like any other npm package.
+- local modules: these are modules that are not published on npm that you can "clone" from a github repository and use in your project.
+
+## Packaged modules
+
+// TODO: give an example ?
+
+### Benefits
+
+- You can start quickly and tune to your needs
+
+## Local modules
 
 ```bash
-# npx remult add-module [github-org]/[github-project]/[path-to-the-module]
+# npx degit [github-org]/[github-project]/[path-to-the-module]
 
 # example
-npx remult add-module remult/official-modules/media
+npx degit remult/official-modules/media
 ```
 
 As you see, a modules can be any folder in a github repository!
 
-## Module file structure
+### Benefits
+
+- You can fully customize the code for your project (`allowApiRead: Allow.authenticated` for example!)
+- You can share entities, controllers, and even ui components between projects
+- You can develop and share modules with the community
+
+## File structure
 
 Basicly, a module is a folder with the following structure:
 
 ```
 modules
   [MODULE_NAME]
-    README.md           // the module documentation
+    README.md           // the module documentation (deps, how to use, etc...)
     index.ts            // @entity or any other code that can go to the client
     server
-      index.ts          // the module definition (export type Module)
-    wc                  // Some web components ?!
-    svelte
-      index.ts
-      Component1.svelte
-    react
-      index.ts
-      Component1.tsx
+      index.ts          // the module definition
 ```
-
-## Benefits
-
-- You can fully customize the code for your project (`allowApiRead: Allow.authenticated` for example!)
-- You can share entities, controllers, and even ui components between projects
-- You can develop and share modules with the community
