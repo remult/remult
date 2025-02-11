@@ -23,7 +23,7 @@ describe('modules', () => {
         {
           "controllers": undefined,
           "entities": undefined,
-          "extraRoutes": undefined,
+          "rawRoutes": undefined,
           "initApi": undefined,
           "initRequest": undefined,
           "key": "prio",
@@ -32,7 +32,7 @@ describe('modules', () => {
         {
           "controllers": undefined,
           "entities": undefined,
-          "extraRoutes": undefined,
+          "rawRoutes": undefined,
           "initApi": undefined,
           "initRequest": undefined,
           "key": "init",
@@ -47,7 +47,7 @@ describe('modules', () => {
         {
           "controllers": undefined,
           "entities": undefined,
-          "extraRoutes": undefined,
+          "rawRoutes": undefined,
           "initApi": undefined,
           "initRequest": undefined,
           "key": "main",
@@ -56,7 +56,7 @@ describe('modules', () => {
         {
           "controllers": undefined,
           "entities": undefined,
-          "extraRoutes": undefined,
+          "rawRoutes": undefined,
           "initApi": undefined,
           "initRequest": undefined,
           "key": "the end",
@@ -71,7 +71,7 @@ describe('modules', () => {
         {
           "controllers": undefined,
           "entities": undefined,
-          "extraRoutes": undefined,
+          "rawRoutes": undefined,
           "initApi": undefined,
           "initRequest": undefined,
           "key": "main last",

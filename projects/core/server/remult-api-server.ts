@@ -138,7 +138,7 @@ export interface RemultServerOptions<RequestType> {
   /**
    * Adding some extra routes. It will automatically add the `rootPath` _(default: `/api`)_ to the route.
    * ```
-   * extraRoutes({ add }) {
+   * rawRoutes({ add }) {
    *   add('/new-route').get((req, res) => {
    *     return res.json({ Soooooo: 'Cool!' })
    *   })
@@ -146,12 +146,12 @@ export interface RemultServerOptions<RequestType> {
    * ```
    * This will add the route `/api/new-route` to the api.
    */
-  extraRoutes?: ExtraRoutes<RequestType>
+  rawRoutes?: RawRoutes<RequestType>
 
   modules?: Module<RequestType>[]
 }
 
-export interface ExtraRoutes<RequestType> {
+export interface RawRoutes<RequestType> {
   (args: {
     add: (relativePath: `/${string}`) => SpecificRoute<RequestType>
     rootPath: string
@@ -168,7 +168,7 @@ export interface ModuleInput<RequestType> {
   controllers?: ClassType<unknown>[]
   initApi?: RemultServerOptions<RequestType>['initApi']
   initRequest?: RemultServerOptions<RequestType>['initRequest']
-  extraRoutes?: ExtraRoutes<RequestType>
+  rawRoutes?: RawRoutes<RequestType>
   modules?: Module<RequestType>[]
 }
 
@@ -179,7 +179,7 @@ export class Module<RequestType> {
   controllers?: ClassType<unknown>[]
   initApi?: RemultServerOptions<RequestType>['initApi']
   initRequest?: RemultServerOptions<RequestType>['initRequest']
-  extraRoutes?: ExtraRoutes<RequestType>
+  rawRoutes?: RawRoutes<RequestType>
   modules?: Module<RequestType>[]
 
   constructor(options: ModuleInput<RequestType>) {
@@ -189,7 +189,7 @@ export class Module<RequestType> {
     this.controllers = options.controllers
     this.initRequest = options.initRequest
     this.initApi = options.initApi
-    this.extraRoutes = options.extraRoutes
+    this.rawRoutes = options.rawRoutes
     this.modules = options.modules
   }
 }
@@ -347,7 +347,7 @@ export class RemultServerImplementation<RequestType>
       controllers: options.controllers ?? [],
       initApi: options.initApi,
       initRequest: options.initRequest,
-      extraRoutes: options.extraRoutes,
+      rawRoutes: options.rawRoutes,
       modules: [],
     })
     this.modulesSorted = modulesFlatAndOrdered<RequestType>(modules)
@@ -503,7 +503,7 @@ export class RemultServerImplementation<RequestType>
         return r.route(newRoute)
       }
       for (const module of this.modulesSorted) {
-        module.extraRoutes?.({ add, rootPath: this.options.rootPath ?? '/api' })
+        module.rawRoutes?.({ add, rootPath: this.options.rootPath ?? '/api' })
       }
 
       if (this.hasQueue)

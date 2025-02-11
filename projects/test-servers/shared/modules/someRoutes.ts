@@ -4,8 +4,8 @@ import { Module } from '../../../core/server/index.js'
 
 export const someRoutes = new Module({
   key: 'some-routes',
-  extraRoutes: ({ add, rootPath }) => {
-    // To move in remult ?! add in extraRoutes args ?
+  rawRoutes: ({ add, rootPath }) => {
+    // To move in remult ?! add in rawRoutes args ?
     function addStaticFolder(
       add: any,
       rootPath: string,
@@ -56,7 +56,6 @@ export const someRoutes = new Module({
     }
 
     add('/new-route').get((req, res) => {
-      console.log('extraRoutes /api/new-route')
       res.json({ Soooooo: 'Cool! A new new-route!' })
     })
     add('/html').get((req, res) => {

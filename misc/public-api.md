@@ -3590,12 +3590,12 @@ export declare class Module<RequestType> {
   controllers?: ClassType<unknown>[]
   initApi?: RemultServerOptions<RequestType>["initApi"]
   initRequest?: RemultServerOptions<RequestType>["initRequest"]
-  extraRoutes?: ExtraRoutes<RequestType>
+  rawRoutes?: RawRoutes<RequestType>
   modules?: Module<RequestType>[]
   constructor(options: ModuleInput<RequestType>)
 }
 //[ ] ClassType from TBD is not exported
-//[ ] ExtraRoutes from TBD is not exported
+//[ ] RawRoutes from TBD is not exported
 export interface ModuleInput<RequestType> {
   key: string
   /** @default 0 */
@@ -3604,7 +3604,7 @@ export interface ModuleInput<RequestType> {
   controllers?: ClassType<unknown>[]
   initApi?: RemultServerOptions<RequestType>["initApi"]
   initRequest?: RemultServerOptions<RequestType>["initRequest"]
-  extraRoutes?: ExtraRoutes<RequestType>
+  rawRoutes?: RawRoutes<RequestType>
   modules?: Module<RequestType>[]
 }
 export interface queuedJobInfo {
@@ -3732,7 +3732,7 @@ export interface RemultServerOptions<RequestType> {
   /**
    * Adding some extra routes. It will automatically add the `rootPath` _(default: `/api`)_ to the route.
    * ```
-   * extraRoutes({ add }) {
+   * rawRoutes({ add }) {
    *   add('/new-route').get((req, res) => {
    *     return res.json({ Soooooo: 'Cool!' })
    *   })
@@ -3740,7 +3740,7 @@ export interface RemultServerOptions<RequestType> {
    * ```
    * This will add the route `/api/new-route` to the api.
    */
-  extraRoutes?: ExtraRoutes<RequestType>
+  rawRoutes?: RawRoutes<RequestType>
   modules?: Module<RequestType>[]
 }
 //[ ] UserInfo from TBD is not exported
@@ -3968,7 +3968,7 @@ export interface RemultServerOptions<RequestType> {
   /**
    * Adding some extra routes. It will automatically add the `rootPath` _(default: `/api`)_ to the route.
    * ```
-   * extraRoutes({ add }) {
+   * rawRoutes({ add }) {
    *   add('/new-route').get((req, res) => {
    *     return res.json({ Soooooo: 'Cool!' })
    *   })
@@ -3976,7 +3976,7 @@ export interface RemultServerOptions<RequestType> {
    * ```
    * This will add the route `/api/new-route` to the api.
    */
-  extraRoutes?: ExtraRoutes<RequestType>
+  rawRoutes?: RawRoutes<RequestType>
   modules?: Module<RequestType>[]
 }
 //[ ] ClassType from TBD is not exported
@@ -3987,7 +3987,7 @@ export interface RemultServerOptions<RequestType> {
 //[ ] LiveQueryStorage from TBD is not exported
 //[ ] Allowed from TBD is not exported
 //[ ] EntityMetadata from TBD is not exported
-//[ ] ExtraRoutes from TBD is not exported
+//[ ] RawRoutes from TBD is not exported
 //[ ] Module from TBD is not exported
 export type SpecificRoute<RequestType> = {
   get(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
