@@ -864,15 +864,15 @@ app.use(
 
 ## Using your Entity on the Client
 
-To start querying and mutating data from the client-side using Remult, use the [`remult.repo`](./ref_remult.md#repo) function to create a [`Repository`](./ref_repository.md) object for your entity class. This approach simplifies data operations, allowing you to interact with your backend with the assurance of type safety.
+To start querying and mutating data from the client-side using Remult, use the [`repo`](./ref_remult.md#repo) function to create a [`Repository`](./ref_repository.md) object for your entity class. This approach simplifies data operations, allowing you to interact with your backend with the assurance of type safety.
 
 ```ts
 // frontend/code.ts
 
-import { remult } from 'remult'
+import { repo } from 'remult'
 import { Product } from '../shared/product'
 
-const productsRepo = remult.repo(Product)
+const productsRepo = repo(Product)
 
 async function playWithRemult() {
   // add a new product to the backend database
@@ -1474,10 +1474,6 @@ export class Contact {
 
 # Entities - Relations 🚀
 
----
-outline: [2, 3]
----
-
 # Relations Between Entities
 
 ::: tip **Interactive Learning Available! 🚀**
@@ -1576,8 +1572,7 @@ When querying data that involves a many-to-one relation, you can use the `includ
 Here's how you can include the relation in a query using Remult:
 
 ```typescript{3-5}
-const orderRepo = remult.repo(Order)
-const orders = await orderRepo.find({
+const orders = await repo(Order).find({
   include: {
     customer: true,
   },
@@ -1639,10 +1634,8 @@ In Remult, by default, a relation is not loaded unless explicitly specified in t
 Here's an example:
 
 ```typescript
-const orderRepo = remult.repo(Order)
-
 // Query without including the 'customer' relation
-const ordersWithoutCustomer = await orderRepo.find({})
+const ordersWithoutCustomer = await repo(Order).find({})
 ```
 
 In the above query, the `customer` relation will not be loaded and have the value of `undefined` because it is not specified in the `include` statement.
@@ -1901,8 +1894,7 @@ By defining a `toMany` relation, you can easily retrieve and manage multiple rel
 To retrieve customers along with their associated order in Remult, you can use the `include` option in your query. Let's see how to fetch customers with their orders using the `include` option:
 
 ```typescript
-const customerRepo = remult.repo(Customer)
-const customers = await customerRepo.find({
+const customers = await repo(Customer).find({
   include: {
     orders: true,
   },
@@ -1911,7 +1903,7 @@ const customers = await customerRepo.find({
 
 In this code snippet:
 
-- We first obtain a repository for the `Customer` entity using `remult.repo(Customer)`.
+- We first obtain a repository for the `Customer` entity using `repo(Customer)`.
 
 - Next, we use the `find` method to query the `Customer` entity. Within the query options, we specify the `include` option to indicate that we want to include related records.
 
@@ -2076,7 +2068,7 @@ In this example, you first create a new `Customer` entity with the name "Abshire
 Another powerful use of the `repository` methods is to load related records that were not initially retrieved. Let's say you have found a specific customer and want to access their related orders:
 
 ```typescript
-const customerRepo = remult.repo(Customer)
+const customerRepo = repo(Customer)
 const customer = await customerRepo.findFirst({ name: 'Abshire Inc' })
 const orders = await customerRepo.relations(customer).orders.find()
 ```
@@ -2100,7 +2092,7 @@ In addition to loading unfetched `toMany` relations, Remult offers a convenient 
 Consider the following example, where we have a many-to-one relation between orders and customers. We want to fetch the customer related to a specific order, even if we didn't load it initially:
 
 ```ts
-const orderRepo = remult.repo(Order)
+const orderRepo = repo(Order)
 const order = await orderRepo.findFirst({ id: 'm7m3xqyx4kwjaqcd0cu33q8g' })
 const customer = await orderRepo.relations(order).customer.findOne()
 ```
@@ -2240,16 +2232,14 @@ Let's explore how to interact with many-to-many relationships using an intermedi
 To associate a tag with a customer, consider the follow code:
 
 ```ts
-const tags = await remult
-  .repo(Tag)
-  .insert([
-    { name: 'vip' },
-    { name: 'hot-lead' },
-    { name: 'influencer' },
-    { name: 'manager' },
-  ]) // Create the tags
+const tags = await repo(Tag).insert([
+  { name: 'vip' },
+  { name: 'hot-lead' },
+  { name: 'influencer' },
+  { name: 'manager' },
+]) // Create the tags
 
-const customerRepo = remult.repo(Customer)
+const customerRepo = repo(Customer)
 const customer = await customerRepo.findFirst({ name: 'Abshire Inc' })
 await customerRepo
   .relations(customer)
@@ -2260,7 +2250,7 @@ Here's an explanation of what's happening in this code:
 
 1. We first insert some tags into the "tags" entity.
 
-2. We then create a repository instance for the "customer" entity using `remult.repo(Customer)`.
+2. We then create a repository instance for the "customer" entity using `repo(Customer)`.
 
 3. We retrieve a specific customer by searching for one with the name "Abshire Inc" using `customerRepo.findFirst({ name: "Abshire Inc" })`. The `customer` variable now holds the customer entity.
 
@@ -2325,7 +2315,6 @@ Utilizing an intermediate table for managing many-to-many relationships in Remul
 ---
 
 In this guide, we've explored the essential concepts of managing entity relations within the Remult library. From one-to-one to many-to-many relationships, we've covered the declaration, customization, and querying of these relations. By understanding the nuances of entity relations, users can harness the full potential of Remult to build robust TypeScript applications with ease.
-
 
 
 # Relations 🚀 - Filtering and Relations
@@ -2683,7 +2672,7 @@ const api = remultExpress({
 In certain scenarios, you might want to manually trigger the `ensureSchema` function to ensure that your database schema is up-to-date with your entity definitions. Here's how you can do it:
 
 ```ts
-remult.dataProvider.ensureSchema!(entities.map((x) => remult.repo(x).metadata))
+remult.dataProvider.ensureSchema!(entities.map((x) => repo(x).metadata))
 ```
 
 ## Quick Start: Introducing Migrations to Your Application
@@ -3186,7 +3175,7 @@ export class Task extends IdEntity {
 Once the backend method is defined, it can be called from the client-side code. This process typically involves fetching an entity instance and then invoking the backend method as shown below:
 
 ```typescript
-const task = await remult.repo(Task).findFirst()
+const task = await repo(Task).findFirst()
 await task.toggleCompleted()
 ```
 
@@ -5360,7 +5349,7 @@ Static backend methods represent the most straightforward type, transmitting the
 1. **Define the Backend Method:**
 
 ```typescript
-import { BackendMethod, remult } from 'remult'
+import { BackendMethod, repo } from 'remult'
 import { Task } from './Task'
 
 export class TasksController {
@@ -5370,7 +5359,7 @@ export class TasksController {
    */
   @BackendMethod({ allowed: true })
   static async setAll(completed: boolean) {
-    const taskRepo = remult.repo(Task)
+    const taskRepo = repo(Task)
 
     for (const task of await taskRepo.find()) {
       await taskRepo.save({ ...task, completed })
@@ -6460,14 +6449,6 @@ Accessing the underlying database directly in Remult provides the flexibility to
 
 # Escape Hatches - Using Remult in Non-Remult Routes
 
----
-keywords:
-  [
-    Error: remult object was requested outside of a valid context,
-    try running it within initApi or a remult request cycle,
-  ]
----
-
 # Using Remult in Non-Remult Routes
 
 When using the CRUD api or [BackendMethods](./backendMethods.md), `remult` is automatically available. Still, there are many use cases where you may want to user remult in your own routes or other code without using `BackendMethods` but would still want to take advantage of `Remult` as an ORM and use it to check for user validity, etc...
@@ -6507,31 +6488,33 @@ Use the `api.withRemultAsync` method in promises
 ```ts
 import express from 'express'
 import { remultExpress } from 'remult/remult-express'
+import { remult, repo } from 'remult'
 
-const app = express();
-...
+const app = express()
+// ...
 const api = remultExpress({
-  entities:[Task]
+  entities: [Task],
 })
 app.post('/api/customSetAll', async (req, res) => {
   // use remult in a specific piece of code // [!code highlight]
-  await api.withRemultAsync(req, async ()=> { // [!code highlight]
+  await api.withRemultAsync(req, async () => {
+    // [!code highlight]
     if (!remult.authenticated()) {
-      res.sendStatus(403);
-      return;
+      res.sendStatus(403)
+      return
     }
-    if (!remult.isAllowed("admin")) {
-      res.sendStatus(403);
-      return;
+    if (!remult.isAllowed('admin')) {
+      res.sendStatus(403)
+      return
     }
-    const taskRepo = remult.repo(Task);
+    const taskRepo = repo(Task)
     for (const task of await taskRepo.find()) {
-      task.completed = req.body.completed;
-      await taskRepo.save(task);
+      task.completed = req.body.completed
+      await taskRepo.save(task)
     }
-    res.send();
+    res.send()
   })
-});
+})
 ```
 
 You can also use it without sending the request object, for non request related code
@@ -6716,7 +6699,6 @@ import { remultHapi } from 'remult/remult-hapi'
 :::
 
 
-
 # Escape Hatches - Avoiding Decorators
 
 # Working without decorators
@@ -6778,12 +6760,12 @@ This is the same entity that is detailed in the [Entities section of the tutoria
 ## Static BackendMethod
 
 ```ts{12-14}
-import { BackendMethod, describeBackendMethods, remult } from "remult";
+import { BackendMethod, describeBackendMethods, repo } from "remult";
 import { Task } from "./Task";
 
 export class TasksController {
   static async setAll(completed: boolean) {
-    const taskRepo = remult.repo(Task);
+    const taskRepo = repo(Task);
     for (const task of await taskRepo.find()) {
       await taskRepo.save({ ...task, completed });
     }
@@ -6799,18 +6781,6 @@ This is the same backend method that is detailed in the [Backend methods of the 
 
 
 # Escape Hatches - Extensibility
-
----
-tags:
-  - options
-  - bespoke options
-  - customizing options
-  - type augmentation
-  - module augmentation
-  - UserInfo
-  - RemultContext
-  - context
----
 
 # Extensibility
 
@@ -6961,7 +6931,6 @@ or in an entity's saving event:
 ```
 
 By leveraging module augmentation, you can tailor Remult to your specific needs, adding custom options and extending interfaces to suit your application's requirements.
-
 
 
 # Integrations - Open API
@@ -8032,7 +8001,7 @@ Return's a `Repository` of the specific entity type
 
 
 #### example:
-```ts
+```
 const taskRepo = remult.repo(Task);
 ```
 
@@ -8119,9 +8088,9 @@ Arguments:
    
    #### example:
    ```ts
-   await this.remult.repo(Products).find({
-    limit:10,
-    page:2
+   await repo(Products).find({
+     limit: 10,
+     page: 2
    })
    ```
    * **page** - Determines the page number that will be used to extract the data
@@ -8129,9 +8098,9 @@ Arguments:
    
    #### example:
    ```ts
-   await this.remult.repo(Products).find({
-    limit:10,
-    page:2
+   await repo(Products).find({
+     limit: 10,
+    page: 2
    })
    ```
    * **load**
@@ -8175,13 +8144,13 @@ Arguments:
    
    #### example:
    ```ts
-   await this.remult.repo(Products).find({ orderBy: { name: "asc" }})
+   await repo(Products).find({ orderBy: { name: "asc" }})
    ```
    
    
    #### example:
    ```ts
-   await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
+   await repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
    ```
 ## clearAllCache
 * **clearAllCache**
@@ -8317,9 +8286,9 @@ Arguments:
    
    #### example:
    ```ts
-   await this.remult.repo(Products).find({
-    limit:10,
-    page:2
+   await repo(Products).find({
+     limit: 10,
+     page: 2
    })
    ```
    * **page** - Determines the page number that will be used to extract the data
@@ -8327,9 +8296,9 @@ Arguments:
    
    #### example:
    ```ts
-   await this.remult.repo(Products).find({
-    limit:10,
-    page:2
+   await repo(Products).find({
+     limit: 10,
+    page: 2
    })
    ```
    * **load**
@@ -8373,13 +8342,13 @@ Arguments:
    
    #### example:
    ```ts
-   await this.remult.repo(Products).find({ orderBy: { name: "asc" }})
+   await repo(Products).find({ orderBy: { name: "asc" }})
    ```
    
    
    #### example:
    ```ts
-   await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
+   await repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
    ```
 ## liveQuery
 returns a result array based on the provided options
@@ -8391,9 +8360,9 @@ Arguments:
    
    #### example:
    ```ts
-   await this.remult.repo(Products).find({
-    limit:10,
-    page:2
+   await repo(Products).find({
+     limit: 10,
+     page: 2
    })
    ```
    * **page** - Determines the page number that will be used to extract the data
@@ -8401,9 +8370,9 @@ Arguments:
    
    #### example:
    ```ts
-   await this.remult.repo(Products).find({
-    limit:10,
-    page:2
+   await repo(Products).find({
+     limit: 10,
+    page: 2
    })
    ```
    * **load**
@@ -8447,13 +8416,13 @@ Arguments:
    
    #### example:
    ```ts
-   await this.remult.repo(Products).find({ orderBy: { name: "asc" }})
+   await repo(Products).find({ orderBy: { name: "asc" }})
    ```
    
    
    #### example:
    ```ts
-   await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
+   await repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
    ```
 ## findFirst
 returns the first item that matchers the `where` condition
@@ -8518,13 +8487,13 @@ Arguments:
    
    #### example:
    ```ts
-   await this.remult.repo(Products).find({ orderBy: { name: "asc" }})
+   await repo(Products).find({ orderBy: { name: "asc" }})
    ```
    
    
    #### example:
    ```ts
-   await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
+   await repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
    ```
    * **useCache** - determines if to cache the result, and return the results from cache.
    * **createIfNotFound** - If set to true and an item is not found, it's created and returned
@@ -8586,13 +8555,13 @@ Arguments:
    
    #### example:
    ```ts
-   await this.remult.repo(Products).find({ orderBy: { name: "asc" }})
+   await repo(Products).find({ orderBy: { name: "asc" }})
    ```
    
    
    #### example:
    ```ts
-   await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
+   await repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
    ```
    * **useCache** - determines if to cache the result, and return the results from cache.
    * **createIfNotFound** - If set to true and an item is not found, it's created and returned
@@ -8907,16 +8876,31 @@ It's useful to start or reset a form taking your entity default values into acco
 Arguments:
 * **item**
 ## toJson
-* **toJson**
+Translates an entity to a json object.
+- Ready to be sent to the client _(Date & co are managed)_
+- Strip out fields that are not allowed to be sent to the client! Check: [Field.includeInApi](http://remult.dev/docs/ref_field#includeinapi)
+
+
+#### example:
+```ts
+const tasks = repo(Task).toJson(repo(Task).find())
+```
 
 Arguments:
-* **item**
+* **item** - Can be an array or a single entity, awaitable or not
 ## fromJson
-Translates a json object to an item instance
+Translates a json object to an item instance.
+
+
+#### example:
+```ts
+const data = // from the server
+const tasks = repo(Task).fromJson(data)
+```
 
 Arguments:
-* **x**
-* **isNew**
+* **data** - Can be an array or a single element
+* **isNew** - To help the creation of the instance
 ## getEntityRef
 returns an `entityRef` for an item returned by `create`, `find` etc...
 
@@ -9031,14 +9015,6 @@ export const api = remultExpress({
 
 
 # API Reference - EntityFilter
-
----
-tags:
-  - Where
-  - Filter
-  - Entity Where
-  - Entity Filter
----
 
 # EntityFilter
 
@@ -9180,7 +9156,6 @@ where: {
 ```
 
 
-
 # API Reference - EntityMetadata
 
 # EntityMetadata
@@ -9235,8 +9210,7 @@ EntityOptions.allowApiRead
 
 #### example:
 ```ts
-const taskRepo = remult.repo(Task);
-if (taskRepo.metadata.apiReadAllowed){
+if (repo(Task).metadata.apiReadAllowed){
   await taskRepo.find()
 }
 ```
@@ -9251,8 +9225,7 @@ EntityOptions.allowApiDelete
 
 #### example:
 ```ts
-const taskRepo = remult.repo(Task);
-if (taskRepo.metadata.apiDeleteAllowed(task)){
+if (repo(Task).metadata.apiDeleteAllowed(task)){
   // display delete button
 }
 ```
@@ -9269,8 +9242,7 @@ EntityOptions.allowApiInsert
 
 #### example:
 ```ts
-const taskRepo = remult.repo(Task);
-if (taskRepo.metadata.apiInsertAllowed(task)){
+if (repo(Task).metadata.apiInsertAllowed(task)){
   // display insert button
 }
 ```
@@ -9300,8 +9272,7 @@ The field's member name in an object.
 
 #### example:
 ```ts
-const taskRepo = remult.repo(Task);
-console.log(taskRepo.metadata.fields.title.key);
+console.log(repo(Task).metadata.fields.title.key);
 // result: title
 ```
 ## caption
@@ -9345,8 +9316,7 @@ The class that contains this field
 
 #### example:
 ```ts
-const taskRepo = remult.repo(Task);
-Task == taskRepo.metadata.fields.title.target //will return true
+Task == repo(Task).metadata.fields.title.target //will return true
 ```
 ## getDbName
 * **getDbName**
@@ -9381,9 +9351,8 @@ Determines if the current user is allowed to update a specific entity instance.
 
 #### example:
 ```ts
-const taskRepo = remult.repo(Task);
 // Check if the current user is allowed to update a specific task
-if (taskRepo.metadata.apiUpdateAllowed(task)){
+if (repo(Task).metadata.apiUpdateAllowed(task)){
   // Allow user to edit the entity
 }
 ```
@@ -10460,13 +10429,7 @@ Arguments:
 
 
 
-# Remult Blog - Introducing Remult
-
----
-title: "Introducing Remult: The Backend to Frontend Framework You Always Wanted"
-sidebar: false
-editLink: false
----
+# Introducing Remult: The Backend to Frontend Framework You Always Wanted
 
 > March 14, 2023 | Noam Honig
 
@@ -10541,7 +10504,6 @@ So we open sourced the framework, to enable other lazy developers like us to be 
 Check out [Remult](https://remult.dev), and if you like it, give it a star.  Let us know what you’d like to see next, and also feel free to contribute to the project.
 
 In our next post, we’ll do a roundup of tools in the ecosystem looking to solve similar challenges though different approaches, and unpack where Remult fits in, and what it’s optimized for.
-
 
 
 # SvelteKit - Tutorial - Go further / Extra

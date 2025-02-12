@@ -739,15 +739,15 @@ app.use(
 
 ## Using your Entity on the Client
 
-To start querying and mutating data from the client-side using Remult, use the [`remult.repo`](./ref_remult.md#repo) function to create a [`Repository`](./ref_repository.md) object for your entity class. This approach simplifies data operations, allowing you to interact with your backend with the assurance of type safety.
+To start querying and mutating data from the client-side using Remult, use the [`repo`](./ref_remult.md#repo) function to create a [`Repository`](./ref_repository.md) object for your entity class. This approach simplifies data operations, allowing you to interact with your backend with the assurance of type safety.
 
 ```ts
 // frontend/code.ts
 
-import { remult } from 'remult'
+import { repo } from 'remult'
 import { Product } from '../shared/product'
 
-const productsRepo = remult.repo(Product)
+const productsRepo = repo(Product)
 
 async function playWithRemult() {
   // add a new product to the backend database

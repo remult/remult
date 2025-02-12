@@ -10,9 +10,9 @@ Arguments:
    
    #### example:
    ```ts
-   await this.remult.repo(Products).find({
-    limit:10,
-    page:2
+   await repo(Products).find({
+     limit: 10,
+     page: 2
    })
    ```
    * **page** - Determines the page number that will be used to extract the data
@@ -20,9 +20,9 @@ Arguments:
    
    #### example:
    ```ts
-   await this.remult.repo(Products).find({
-    limit:10,
-    page:2
+   await repo(Products).find({
+     limit: 10,
+    page: 2
    })
    ```
    * **load**
@@ -66,13 +66,13 @@ Arguments:
    
    #### example:
    ```ts
-   await this.remult.repo(Products).find({ orderBy: { name: "asc" }})
+   await repo(Products).find({ orderBy: { name: "asc" }})
    ```
    
    
    #### example:
    ```ts
-   await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
+   await repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
    ```
 ## liveQuery
 returns a result array based on the provided options
@@ -84,9 +84,9 @@ Arguments:
    
    #### example:
    ```ts
-   await this.remult.repo(Products).find({
-    limit:10,
-    page:2
+   await repo(Products).find({
+     limit: 10,
+     page: 2
    })
    ```
    * **page** - Determines the page number that will be used to extract the data
@@ -94,9 +94,9 @@ Arguments:
    
    #### example:
    ```ts
-   await this.remult.repo(Products).find({
-    limit:10,
-    page:2
+   await repo(Products).find({
+     limit: 10,
+    page: 2
    })
    ```
    * **load**
@@ -140,13 +140,13 @@ Arguments:
    
    #### example:
    ```ts
-   await this.remult.repo(Products).find({ orderBy: { name: "asc" }})
+   await repo(Products).find({ orderBy: { name: "asc" }})
    ```
    
    
    #### example:
    ```ts
-   await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
+   await repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
    ```
 ## findFirst
 returns the first item that matchers the `where` condition
@@ -211,13 +211,13 @@ Arguments:
    
    #### example:
    ```ts
-   await this.remult.repo(Products).find({ orderBy: { name: "asc" }})
+   await repo(Products).find({ orderBy: { name: "asc" }})
    ```
    
    
    #### example:
    ```ts
-   await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
+   await repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
    ```
    * **useCache** - determines if to cache the result, and return the results from cache.
    * **createIfNotFound** - If set to true and an item is not found, it's created and returned
@@ -279,13 +279,13 @@ Arguments:
    
    #### example:
    ```ts
-   await this.remult.repo(Products).find({ orderBy: { name: "asc" }})
+   await repo(Products).find({ orderBy: { name: "asc" }})
    ```
    
    
    #### example:
    ```ts
-   await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
+   await repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
    ```
    * **useCache** - determines if to cache the result, and return the results from cache.
    * **createIfNotFound** - If set to true and an item is not found, it's created and returned
@@ -600,16 +600,31 @@ It's useful to start or reset a form taking your entity default values into acco
 Arguments:
 * **item**
 ## toJson
-* **toJson**
+Translates an entity to a json object.
+- Ready to be sent to the client _(Date & co are managed)_
+- Strip out fields that are not allowed to be sent to the client! Check: [Field.includeInApi](http://remult.dev/docs/ref_field#includeinapi)
+
+
+#### example:
+```ts
+const tasks = repo(Task).toJson(repo(Task).find())
+```
 
 Arguments:
-* **item**
+* **item** - Can be an array or a single entity, awaitable or not
 ## fromJson
-Translates a json object to an item instance
+Translates a json object to an item instance.
+
+
+#### example:
+```ts
+const data = // from the server
+const tasks = repo(Task).fromJson(data)
+```
 
 Arguments:
-* **x**
-* **isNew**
+* **data** - Can be an array or a single element
+* **isNew** - To help the creation of the instance
 ## getEntityRef
 returns an `entityRef` for an item returned by `create`, `find` etc...
 

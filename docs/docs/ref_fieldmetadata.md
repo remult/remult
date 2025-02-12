@@ -8,8 +8,7 @@ The field's member name in an object.
 
 #### example:
 ```ts
-const taskRepo = remult.repo(Task);
-console.log(taskRepo.metadata.fields.title.key);
+console.log(repo(Task).metadata.fields.title.key);
 // result: title
 ```
 ## caption
@@ -53,8 +52,7 @@ The class that contains this field
 
 #### example:
 ```ts
-const taskRepo = remult.repo(Task);
-Task == taskRepo.metadata.fields.title.target //will return true
+Task == repo(Task).metadata.fields.title.target //will return true
 ```
 ## getDbName
 * **getDbName**
@@ -89,9 +87,8 @@ Determines if the current user is allowed to update a specific entity instance.
 
 #### example:
 ```ts
-const taskRepo = remult.repo(Task);
 // Check if the current user is allowed to update a specific task
-if (taskRepo.metadata.apiUpdateAllowed(task)){
+if (repo(Task).metadata.apiUpdateAllowed(task)){
   // Allow user to edit the entity
 }
 ```
