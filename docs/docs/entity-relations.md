@@ -99,7 +99,7 @@ When querying data that involves a many-to-one relation, you can use the `includ
 
 Here's how you can include the relation in a query using Remult:
 
-```typescript{3-5}
+```typescript{2-4}
 const orders = await repo(Order).find({
   include: {
     customer: true,
