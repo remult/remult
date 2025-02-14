@@ -9,7 +9,7 @@
   import RelationField from './RelationField.svelte'
   import { type Content, JSONEditor } from 'svelte-jsoneditor'
 
-  export let value: any | undefined
+  export let value: any | undefined = undefined
   export let relationsToOneValues: RelationsToOneValues = {}
   export let info: FieldUIInfo
   export let isNewRow = false
@@ -134,13 +134,15 @@
     bind:value
     on:change
     type="date"
-    style="text-align: center;"
+    style="text-align: center; width: 100%;"
     on:keydown={handleKeydown}
   />
 {:else}
   <span>
     <input bind:value on:change type="text" on:keydown={handleKeydown} />
-    <button>...</button>
+    {#if value?.length > 20 && !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/.test(value)}
+      <button>...</button>
+    {/if}
   </span>
 {/if}
 
