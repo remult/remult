@@ -120,9 +120,67 @@
     {/each}
   </select>
 {:else if info.type == 'number'}
-  <input bind:value on:change type="number" on:keydown={handleKeydown} />
+  <input
+    bind:value
+    on:change
+    type="number"
+    style="text-align: right;"
+    on:keydown={handleKeydown}
+  />
 {:else if info.inputType == 'color'}
   <input bind:value on:change type="color" on:keydown={handleKeydown} />
+{:else if info.inputType == 'date'}
+  <input
+    bind:value
+    on:change
+    type="date"
+    style="text-align: center;"
+    on:keydown={handleKeydown}
+  />
 {:else}
-  <input bind:value on:change type="text" on:keydown={handleKeydown} />
+  <span>
+    <input bind:value on:change type="text" on:keydown={handleKeydown} />
+    <button>...</button>
+  </span>
 {/if}
+
+<!-- {info.inputType} -->
+
+<style>
+  span {
+    display: flex;
+    align-items: stretch;
+    gap: 1px;
+    width: 100%;
+    height: 100%;
+  }
+
+  span input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    margin: 0;
+    padding: 0 4px;
+  }
+
+  span button {
+    border: none;
+    background: none;
+    padding: 0 4px;
+    height: 100%;
+    cursor: pointer;
+    opacity: 0.5;
+    transition:
+      opacity 0.2s,
+      background-color 0.2s;
+    border-radius: 0;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+  }
+
+  span button:hover {
+    opacity: 1;
+    background-color: rgb(243 244 246);
+  }
+</style>

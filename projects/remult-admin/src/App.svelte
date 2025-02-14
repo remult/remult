@@ -98,7 +98,7 @@
 
     <input
       class="tab"
-      style="content: 'inner'; margin-left: 4px;"
+      style="content: 'inner'; margin-left: 4px; background-color: white;"
       type="text"
       placeholder="Search"
       bind:value={$LSContext.settings.search}
@@ -148,7 +148,7 @@
       use:active={{
         path: `/diagram`,
         className: 'active',
-      }}>Diagram</a
+      }}>🎨 Diagram</a
     >
   </div>
 
@@ -166,5 +166,9 @@
     /* background-color: hsla(var(--color), 70%, 50%, 0.05); */
     /* nowrap */
     white-space: nowrap;
+  }
+
+  input::placeholder {
+    color: #888;
   }
 </style>
