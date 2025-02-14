@@ -225,11 +225,13 @@ describe('remult-admin', () => {
           "key": "accounts",
           "relations": [
             {
+              "caption": "Users",
               "compoundIdField": undefined,
               "entityKey": "users",
               "fields": {
                 "account": "id",
               },
+              "key": "users",
               "where": undefined,
             },
           ],
@@ -246,12 +248,11 @@ describe('remult-admin', () => {
     }
 
     const res = remultAdminHtml({
-      entities: [User],
-      remult: new Remult(),
+      rootPath: '/api',
     })
 
     expect(res).includes('html')
-    expect(res).includes('const optionsFromServer = ')
+    expect(res).includes('window.optionsFromServer = ')
     expect(res).not.includes('<!--PLACE_HERE-->')
   })
 })
