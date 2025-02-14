@@ -74,7 +74,7 @@ const getCurrentLanguage = () => {
   return file?.languageCodeHighlight || 'typescript'
 }
 
-// Add this helper function in the <script setup> section
+// Simplified time formatting function
 const formatTime = (totalSeconds: number) => {
   const minutes = Math.floor(totalSeconds / 60)
   const seconds = totalSeconds % 60
@@ -88,36 +88,14 @@ const formatTime = (totalSeconds: number) => {
   return `${minutes}'${seconds}''`
 }
 
-// Add these new functions and refs
-const getRelativeTime = (
-  step: CodeStep,
-  currentStepIndex: number,
-  stepIndex: number,
-) => {
-  if (stepIndex === currentStepIndex) return 'now'
+// New function to get static "ago" time
+const getStepTimeAgo = (stepIndex: number) => {
+  // Sum up all times from this step to the end
+  const totalSeconds = steps.value
+    .slice(stepIndex)
+    .reduce((total, s) => total + (s.stepTime || 0), 0)
 
-  const diffIndex = stepIndex - currentStepIndex
-  if (diffIndex < 0) {
-    // For previous steps, sum up all steps between target and current (inclusive)
-    const secondsAgo = steps.value
-      .slice(stepIndex, currentStepIndex)
-      .reduce((total, s) => total + (s.stepTime || 0), 0)
-    return formatTime(secondsAgo) + ' ago'
-  } else {
-    // For next steps, sum up times from current step up to (but not including) target step
-    const secondsUntil = steps.value
-      .slice(currentStepIndex, stepIndex)
-      .reduce((total, s) => total + (s.stepTime || 0), 0)
-    return 'in ' + formatTime(secondsUntil)
-  }
-}
-
-const currentStepIndex = computed(() => {
-  return steps.value.findIndex((step) => step.id === currentStep.value?.id)
-})
-
-const getStepTimeDisplay = (step: CodeStep, index: number) => {
-  return getRelativeTime(step, currentStepIndex.value, index)
+  return formatTime(totalSeconds) + ' ago'
 }
 </script>
 
@@ -128,14 +106,16 @@ const getStepTimeDisplay = (step: CodeStep, index: number) => {
       <div class="editor-sidebar">
         <span class="steps-label">Steps</span>
         <button
-          v-for="(step, index) in steps"
+          v-for="(step, index) in [...steps].reverse()"
           :key="step.id"
           @click="selectStep(step)"
           class="step-button"
           :class="{ active: currentStep?.id === step.id }"
         >
           <span>{{ step.name }}</span>
-          <span class="step-time">{{ getStepTimeDisplay(step, index) }}</span>
+          <span class="step-time">{{
+            index === 0 ? 'now' : getStepTimeAgo(steps.length - index - 1)
+          }}</span>
         </button>
 
         <div class="editor-framework">
@@ -259,6 +239,7 @@ const getStepTimeDisplay = (step: CodeStep, index: number) => {
   padding: 0.5rem 0.75rem;
   border-radius: 0.25rem;
   transition: background-color 0.2s;
+  gap: 0.5rem;
 }
 
 .step-button:hover {
@@ -269,13 +250,20 @@ const getStepTimeDisplay = (step: CodeStep, index: number) => {
   background: #1a1a3a;
 }
 
+.step-button span:first-child {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
 .step-time {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   color: #484bd2;
   opacity: 0.8;
-  min-width: 70px;
+  min-width: 55px;
   text-align: right;
-  align-items: end;
+  flex-shrink: 0;
 }
 
 .editor-framework {
