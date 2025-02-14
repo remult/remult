@@ -26,6 +26,13 @@
     '*': NotFound,
   }
 
+  // Add cache implementation
+  const cache = new Map<
+    string,
+    { promise: Promise<Response>; timestamp: number }
+  >()
+  const CACHE_DURATION = 1000 * 2
+
   export function midTrim(
     str: string,
     o?: { len?: number; midStr?: string },
@@ -49,23 +56,61 @@
     input: RequestInfo | URL,
     init?: RequestInit,
   ) => {
-    // console.log(`input`, input)
-
-    const f = await fetch(input, {
-      ...init,
-      headers: getHeader($SSContext, $LSContext, init),
-    })
-
-    if (f.status === 403) {
-      const parsedUrl = new URL(f.url)
-      const segments = parsedUrl.pathname.split('/')
-      const lastSegment = segments.pop() || ''
-      $SSContext.forbiddenEntities = [
-        ...new Set([...$SSContext.forbiddenEntities, lastSegment]),
-      ]
+    // Only cache GET requests
+    if (init?.method && init.method !== 'GET') {
+      const f = await fetch(input, {
+        ...init,
+        headers: getHeader($SSContext, $LSContext, init),
+      })
+      handleForbidden(f)
+      return f
     }
 
-    return f
+    const cacheKey = input.toString()
+    const now = Date.now()
+    const cached = cache.get(cacheKey)
+
+    // Return cached response if it exists and is still valid
+    if (cached && now - cached.timestamp < CACHE_DURATION) {
+      const cachedResponse = await cached.promise
+      // Clone the response since it can only be used once
+      return cachedResponse.clone()
+    }
+
+    // Clean up expired cache entries
+    for (const [key, value] of cache.entries()) {
+      if (now - value.timestamp >= CACHE_DURATION) {
+        cache.delete(key)
+      }
+    }
+
+    // Create new request promise
+    const fetchPromise = fetch(input, {
+      ...init,
+      headers: getHeader($SSContext, $LSContext, init),
+    }).then((response) => {
+      handleForbidden(response)
+      return response.clone() // Clone to store in cache
+    })
+
+    // Store in cache
+    cache.set(cacheKey, {
+      promise: fetchPromise,
+      timestamp: now,
+    })
+
+    return fetchPromise
+
+    function handleForbidden(f: Response) {
+      if (f.status === 403) {
+        const parsedUrl = new URL(f.url)
+        const segments = parsedUrl.pathname.split('/')
+        const lastSegment = segments.pop() || ''
+        $SSContext.forbiddenEntities = [
+          ...new Set([...$SSContext.forbiddenEntities, lastSegment]),
+        ]
+      }
+    }
   }
 </script>
 
