@@ -289,8 +289,10 @@
   }
 
   .error-label {
+    border-top: 1px solid red;
+    border-bottom: 1px solid red;
     position: absolute;
-    bottom: -8px;
+    top: -6px;
     width: 100%;
     font-size: 0.8em;
     color: #d32f2f;
@@ -300,5 +302,6 @@
     background-color: #ffebee;
     border-radius: 2px;
     transition: opacity 0.3s ease-in-out;
+    z-index: 77;
   }
 </style>
