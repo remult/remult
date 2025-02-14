@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy'
-
   import type {
     EntityRelationToManyInfo,
     FieldUIInfo,
@@ -41,17 +39,22 @@
     isNewRow = false,
   }: Props = $props()
 
-  let error = $state(undefined)
-  let currentRelation: EntityRelationToManyInfo | null = $state(null)
-  let isFocused = false
+  let error = $state<any>(undefined)
+  let currentRelation = $state<EntityRelationToManyInfo | null>(null)
+  let isFocused = $state(false)
+  let rowFrozzen = $state<Record<string, any>>({})
+  let value = $state<Record<string, any>>({})
 
-  let rowFrozzen = $state({ ...row })
+  // Initialize state
+  $effect(() => {
+    rowFrozzen = { ...row }
+  })
 
-  let value = $state()
-  run(() => {
+  $effect(() => {
     value = row
   })
 
+  // Computed values
   let relationTable = $derived(
     currentRelation &&
       typeof currentRelation === 'object' &&
@@ -61,8 +64,6 @@
   let change = $derived(
     Boolean(
       columns.find(
-        // TODO check also for json diff? (today, when filtering or ordering, it will be considered a change "sometimes"... false positive!)
-        // x.type !== 'json' &&
         (x) => x.type !== 'json' && value[x.key] !== rowFrozzen[x.key],
       ),
     ) || isNewRow,
@@ -82,6 +83,10 @@
       : {},
   )
 
+  function updateValue(key: string, newValue: any) {
+    value[key] = newValue
+  }
+
   async function doSave() {
     try {
       error = undefined
@@ -93,7 +98,7 @@
   }
 
   async function doCancel() {
-    value = rowFrozzen
+    value = { ...rowFrozzen }
     error = undefined
     await cancelAction()
   }
@@ -106,20 +111,16 @@
     const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0
     const modifier = isMac ? e.metaKey : e.ctrlKey
 
-    // Handle global actions (with shift) or focused row actions
     if (changeOrNew(change, isNewRow)) {
       if (e.key === 'Enter' && modifier) {
         e.preventDefault()
         if (e.shiftKey) {
           // Save all changes
-          const allEditableRows = document.querySelectorAll('tr')
-          allEditableRows.forEach((row) => {
+          document.querySelectorAll('tr').forEach((row) => {
             const saveBtn = row.querySelector(
               '.save-button',
             ) as HTMLButtonElement
-            if (saveBtn) {
-              saveBtn.click()
-            }
+            saveBtn?.click()
           })
         } else if (isFocused) {
           // Save only focused row
@@ -129,14 +130,11 @@
         e.preventDefault()
         if (e.shiftKey) {
           // Cancel all changes
-          const allEditableRows = document.querySelectorAll('tr')
-          allEditableRows.forEach((row) => {
+          document.querySelectorAll('tr').forEach((row) => {
             const cancelBtn = row.querySelector(
               '.cancel-button',
             ) as HTMLButtonElement
-            if (cancelBtn) {
-              cancelBtn.click()
-            }
+            cancelBtn?.click()
           })
         } else if (isFocused) {
           // Cancel only focused row
@@ -151,7 +149,6 @@
   }
 
   function handleFocusOut(e: FocusEvent) {
-    // Check if the new focus target is still within this row
     const row = (e.target as HTMLElement).closest('tr')
     const newTarget = (e.relatedTarget as HTMLElement)?.closest('tr')
     if (row !== newTarget) {
@@ -176,7 +173,7 @@
           (currentRelation = currentRelation ? null : relations[0])}
         class:open={currentRelation}
       >
-        <ChevronRight></ChevronRight>
+        <ChevronRight />
       </button>
     {/if}
   </td>
@@ -189,9 +186,10 @@
         {isNewRow}
         info={x}
         {relationsToOneValues}
-        bind:value={value[x.valFieldKey]}
+        value={value[x.valFieldKey]}
+        on:input={(e) => updateValue(x.valFieldKey, e.detail)}
         on:change={() => {
-          if (error?.modelState?.[x.valFieldKey])
+          if (error?.modelState?.[x.valFieldKey]) {
             error = {
               ...error,
               modelState: {
@@ -199,6 +197,7 @@
                 [x.valFieldKey]: undefined,
               },
             }
+          }
         }}
       />
       {#if error?.modelState?.[x.valFieldKey]}
@@ -217,14 +216,14 @@
             title="Save (⌘/Ctrl+Enter, ⌘/Ctrl+Shift+Enter for all)"
             onclick={doSave}
           >
-            <Save></Save>
+            <Save />
           </button>
           <button
             class="icon-button cancel-button"
             title="Cancel (⌘/Ctrl+Esc, ⌘/Ctrl+Shift+Esc for all)"
             onclick={doCancel}
           >
-            <Cancel></Cancel>
+            <Cancel />
           </button>
         </div>
       {/if}
@@ -247,12 +246,13 @@
             }
           }}
         >
-          <Delete></Delete>
+          <Delete />
         </button>
       {/if}
     </div>
   </td>
 </tr>
+
 {#if currentRelation}
   <tr class="extended">
     <td></td>
@@ -305,6 +305,7 @@
   .change {
     background-color: hsl(137, 90%, 93%) !important;
   }
+
   .changeHi {
     background-color: hsl(137, 90%, 86%) !important;
   }
@@ -319,7 +320,6 @@
     color: #d32f2f;
     margin-top: -2px;
     text-align: center;
-    /* padding: 0px 4px; */
     background-color: #ffebee;
     border-radius: 2px;
     transition: opacity 0.3s ease-in-out;

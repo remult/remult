@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy'
-
   import type {
     Repository,
     FindOptions,
@@ -11,7 +9,7 @@
     FieldUIInfo,
     RelationsToOneValues,
   } from '../../../../core/server/remult-admin'
-  import { onDestroy } from 'svelte'
+  import { onDestroy, onMount } from 'svelte'
   import EditableRow from './EditableRow.svelte'
   import Filter from './Filter.svelte'
   import { writable, type Writable } from 'svelte/store'
@@ -48,50 +46,47 @@
     defaultNumberOfRows = 25,
   }: Props = $props()
 
-  let options: FindOptions<any> = $state()
-
-  // Reset to page 1 on key change
-  run(() => {
-    options = repo.metadata.key && {
-      limit: $LSContext.settings.numberOfRows,
-      page: 1,
-      orderBy: defaultOrderBy,
-    }
+  let options = $state<FindOptions<any>>({
+    limit: $LSContext.settings.numberOfRows,
+    page: 1,
+    orderBy: defaultOrderBy,
   })
 
-  let filter: Writable<EntityFilter<any>> = writable({})
-  let items: any[] | null = $state(null)
-  let relationsToOneValues: RelationsToOneValues = $state({})
-
-  run(() => {
-    $SSContext.forbiddenEntities.includes(repo.metadata.key) && (items = [])
-  })
-
-  // resting when fields change
-  run(() => {
-    items = fields && (items = null)
-  })
-  run(() => {
-    relationsToOneValues = fields && (relationsToOneValues = {})
-  })
-  run(() => {
-    $filter = fields && ($filter = {})
-  })
-
+  let filter = $state<EntityFilter<any>>({})
+  let items = $state<any[] | null>(null)
+  let relationsToOneValues = $state<RelationsToOneValues>({})
   let totalRows = $state(-1)
-  let unSub: (() => void) | null = null
+  let newRow = $state<any>()
 
-  const reSub = async (currentFilter: EntityFilter<any>) => {
-    $SSContext.forbiddenEntities = []
+  // Effects
+  // $effect(() => {
+  //   if ($SSContext.forbiddenEntities.includes(repo.metadata.key)) {
+  //     items = []
+  //   }
+  // })
 
-    if (unSub) {
-      unSub()
-    }
+  // $effect(() => {
+  //   if (fields) {
+  //     items = null
+  //     relationsToOneValues = {}
+  //     filter = {}
+  //   }
+  // })
 
-    const where = { $and: [currentFilter, { ...parentRelation }] }
+  // $effect(() => {
+  //   if (repo && options) {
+  //     reSub(filter)
+  //   }
+  // })
 
+  // onMount(() => {
+  //   reSub(filter)
+  // })
+
+  $effect(() => {
+    const where = { $and: [filter, { ...parentRelation }] }
     if ($LSContext.settings.withLiveQuery) {
-      unSub = repo
+      return repo
         .liveQuery({
           ...options,
           where,
@@ -119,13 +114,29 @@
           items = tmpItems
         })
     } else {
-      items = await repo.find({
-        ...options,
-        where,
-      })
-      await afterMainQuery(items, where)
+      manualfind(where)
+    }
+  })
+
+  const manualfind = (where: EntityFilter<any>) => {
+    if (!$LSContext.settings.withLiveQuery) {
+      repo
+        .find({
+          ...options,
+          where,
+        })
+        .then(async (_items) => {
+          items = _items
+          await afterMainQuery(items, where)
+        })
     }
   }
+
+  // Computed values
+  let from = $derived(((options.page || 1) - 1) * options.limit + 1)
+  let to = $derived(
+    ((options.page || 1) - 1) * options.limit + (items?.length || 0),
+  )
 
   const afterMainQuery = async (items: any[], where: EntityFilter<any>) => {
     const promises = fields
@@ -143,26 +154,6 @@
     totalRows = await repo.count(where)
   }
 
-  onDestroy(() => {
-    unSub && unSub()
-  })
-
-  // trick to make sure reSub is called when repo changes
-  run(() => {
-    repo && options && reSub($filter)
-  })
-
-  let from = $derived(((options.page || 1) - 1) * options.limit + 1)
-  let to = $derived(
-    ((options.page || 1) - 1) * options.limit + (items?.length || 0),
-  )
-
-  // Reset newRow when items change
-  let newRow = $state()
-  run(() => {
-    newRow = items && undefined
-  })
-
   const toggleOrderBy = (key: string) => {
     let dir = options.orderBy?.[key]
     if (dir === undefined) dir = 'desc'
@@ -173,13 +164,8 @@
 
   const getWidth = () => {
     const r = Math.random()
-
-    if (r > 0.6) {
-      return 120
-    }
-    if (r > 0.3) {
-      return 100
-    }
+    if (r > 0.6) return 120
+    if (r > 0.3) return 100
     return 70
   }
 
@@ -187,13 +173,13 @@
     _fields: FieldUIInfo[],
     _filter: EntityFilter<any>,
   ) => {
-    const res = await dialog.show<EntityFilter<any>>({
+    const res = await dialog.show({
       config: { title: 'Filter', width: '600px' },
-      component: Filter,
+      component: Filter as any, // Type assertion to fix the error
       props: { fields: _fields, filter: _filter },
     })
     if (res.success) {
-      $filter = res.data
+      filter = res.data
     }
   }
 </script>
@@ -206,7 +192,7 @@
       nav?.classList.toggle('hide-navigation')
     }}
   >
-    <Back></Back>
+    <Back />
   </button>
 
   <div class="page-bar__title title" style="--color: {color}">
@@ -217,7 +203,7 @@
       <span style="color: coral; font-size: smaller;">Forbidden</span>
     {/if}
   </div>
-  <button onclick={() => filterDialog(fields, $filter)}> Filter</button>
+  <button onclick={() => filterDialog(fields, filter)}> Filter</button>
 
   <span class="page-bar__results"
     >{from + ' - ' + to} of
@@ -231,7 +217,7 @@
       options = { ...options, page: (options.page || 2) - 1 }
     }}
   >
-    <ChevronLeft></ChevronLeft>
+    <ChevronLeft />
   </button>
 
   <button
@@ -241,7 +227,7 @@
       options = { ...options, page: (options.page || 1) + 1 }
     }}
   >
-    <ChevronRight></ChevronRight>
+    <ChevronRight />
   </button>
 </div>
 
@@ -274,7 +260,7 @@
           <th onclick={() => toggleOrderBy(column.key)}>
             <span class="th-span">
               {#if Object.keys(repo.metadata.options.id).includes(column.key)}
-                <Key></Key>
+                <Key />
               {:else}
                 <span></span>
               {/if}
@@ -283,9 +269,9 @@
                   ? column.caption
                   : column.key}
                 {#if options.orderBy?.[column.key] === 'asc'}
-                  <Asc></Asc>
+                  <Asc />
                 {:else if options.orderBy?.[column.key] === 'desc'}
-                  <Desc></Desc>
+                  <Desc />
                 {:else}
                   <span class="w-20"></span>
                 {/if}
@@ -293,7 +279,7 @@
               <ColumnType
                 type={column.type}
                 isSelect={column.values && column.values.length > 0}
-              ></ColumnType>
+              />
             </span>
           </th>
         {/each}
@@ -312,21 +298,15 @@
           saveAction={async (item) => {
             await repo.insert(item)
             newRow = undefined
-            if (!$LSContext.settings.withLiveQuery) {
-              reSub($filter)
-            }
+            manualfind(filter)
           }}
           deleteAction={async () => {
             newRow = undefined
-            if (!$LSContext.settings.withLiveQuery) {
-              reSub($filter)
-            }
+            manualfind(filter)
           }}
           cancelAction={async () => {
             newRow = undefined
-            if (!$LSContext.settings.withLiveQuery) {
-              reSub($filter)
-            }
+            manualfind(filter)
           }}
         />
       {/if}
@@ -338,15 +318,11 @@
             {relationsToOneValues}
             saveAction={async (item) => {
               await repo.update(row, item)
-              if (!$LSContext.settings.withLiveQuery) {
-                reSub($filter)
-              }
+              manualfind(filter)
             }}
             deleteAction={async () => {
               await repo.delete(row)
-              if (!$LSContext.settings.withLiveQuery) {
-                reSub($filter)
-              }
+              manualfind(filter)
             }}
             columns={fields}
             {relations}
@@ -380,6 +356,7 @@
     display: flex;
     align-items: center;
   }
+
   th {
     cursor: pointer;
   }

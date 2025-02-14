@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
+  import { run } from 'svelte/legacy'
 
   import { createEventDispatcher, onMount } from 'svelte'
   import type {
@@ -12,12 +12,12 @@
   import { godStore } from '../../stores/GodStore.js'
 
   interface Props {
-    value: any;
-    relationsToOneValues?: RelationsToOneValues;
-    info: FieldUIInfo;
+    value: any
+    relationsToOneValues?: RelationsToOneValues
+    info: FieldUIInfo
   }
 
-  let { value = $bindable(), relationsToOneValues = {}, info }: Props = $props();
+  let { value = $bindable(), relationsToOneValues = {}, info }: Props = $props()
 
   let displayValue = $state(undefined)
 
@@ -27,19 +27,33 @@
     dispatch('change', { _data })
   }
 
-
   const getDisplayValue = async (_value) => {
-    if(_value === null) {
+    if (_value === null) {
       displayValue = '- Unset -'
     } else {
       displayValue =
         relationsToOneValues[info.valFieldKey] &&
         relationsToOneValues[info.valFieldKey].get(value)
-    if (displayValue === undefined) {
+      if (displayValue === undefined) {
         displayValue = await $godStore.displayValueFor(info, value)
       }
     }
   }
+
+  $effect(() => {
+    if (value === null) {
+      displayValue = '- Unset -'
+    } else {
+      displayValue =
+        relationsToOneValues[info.valFieldKey] &&
+        relationsToOneValues[info.valFieldKey].get(value)
+      if (displayValue === undefined) {
+        $godStore.displayValueFor(info, value).then((v) => {
+          displayValue = v
+        })
+      }
+    }
+  })
 
   const getWidth = () => {
     const r = Math.random()
@@ -57,9 +71,9 @@
     dispatchChange(value)
     dialog.close({ success: true, data: { value } })
   }
-  run(() => {
-    getDisplayValue(value)
-  });
+  // run(() => {
+  //   getDisplayValue(value)
+  // });
 </script>
 
 {#if (displayValue ?? '').startsWith("Can't display")}
