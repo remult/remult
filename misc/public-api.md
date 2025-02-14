@@ -3647,10 +3647,15 @@ export interface RemultServerOptions<RequestType> {
    * @example
    * admin: true
    * @example
-   * admin: ()=> remult.isAllowed('admin')
+   * admin: () => remult.isAllowed('admin')
    * @see [allowed](http://remult.dev/docs/allowed.html)
    */
-  admin?: Allowed
+  admin?:
+    | Allowed
+    | {
+        allow: Allowed
+        head?: string
+      }
   /** Storage to use for backend methods that use queue */
   queueStorage?: QueueStorage
   /**
@@ -3853,10 +3858,15 @@ export interface RemultServerOptions<RequestType> {
    * @example
    * admin: true
    * @example
-   * admin: ()=> remult.isAllowed('admin')
+   * admin: () => remult.isAllowed('admin')
    * @see [allowed](http://remult.dev/docs/allowed.html)
    */
-  admin?: Allowed
+  admin?:
+    | Allowed
+    | {
+        allow: Allowed
+        head?: string
+      }
   /** Storage to use for backend methods that use queue */
   queueStorage?: QueueStorage
   /**

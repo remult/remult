@@ -35,5 +35,9 @@ export const api = remultExpress({
   //   you should use http://localhost:5173/api3/admin.
   // rootPath: '/api3',
   entities,
-  admin: true,
+  admin: {
+    allow: true,
+    head: `<title>Dev Admin</title>
+<link href="https://remult.dev/favicon.png" rel="icon" type="image/png">`,
+  },
 })

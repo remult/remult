@@ -249,10 +249,15 @@ describe('remult-admin', () => {
 
     const res = remultAdminHtml({
       rootPath: '/api',
+      head: '<title>Test Admin</title>',
     })
 
     expect(res).includes('html')
+
+    expect(res).not.includes('<!--PLACE_HERE_HEAD-->')
+    expect(res).includes('<title>Test Admin</title>')
+
+    expect(res).not.includes('<!--PLACE_HERE_BODY-->')
     expect(res).includes('window.optionsFromServer = ')
-    expect(res).not.includes('<!--PLACE_HERE-->')
   })
 })

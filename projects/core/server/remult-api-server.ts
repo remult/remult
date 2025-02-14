@@ -98,10 +98,15 @@ export interface RemultServerOptions<RequestType> {
    * @example
    * admin: true
    * @example
-   * admin: ()=> remult.isAllowed('admin')
+   * admin: () => remult.isAllowed('admin')
    * @see [allowed](http://remult.dev/docs/allowed.html)
    */
-  admin?: Allowed //{allowed?:Allowed,url?:string}
+  admin?:
+    | Allowed
+    | {
+        allow: Allowed
+        head?: string
+      }
 
   /** Storage to use for backend methods that use queue */
   queueStorage?: QueueStorage
@@ -421,7 +426,14 @@ export class RemultServerImplementation<RequestType>
       if (this.options.admin !== undefined && this.options.admin !== false) {
         const admin = () =>
           this.process(async (remult, req, res, orig, origResponse) => {
-            if (remult.isAllowed(this.options.admin)) {
+            const allowed = isOfType<{ allow: Allowed }>(
+              this.options.admin,
+              'allow',
+            )
+              ? this.options.admin.allow
+              : this.options.admin
+
+            if (remult.isAllowed(allowed)) {
               if (orig?.params?.id === '__entities-metadata') {
                 res.success(
                   buildEntityInfo({
@@ -430,9 +442,16 @@ export class RemultServerImplementation<RequestType>
                   }),
                 )
               } else {
+                const defaultHead = '<title>Admin</title>'
                 origResponse.send(
                   remultAdminHtml({
                     rootPath: this.options.rootPath ?? '/api',
+                    head: isOfType<{ allow: Allowed; head?: string }>(
+                      this.options.admin,
+                      'allow',
+                    )
+                      ? this.options.admin.head ?? defaultHead
+                      : defaultHead,
                   }),
                 )
               }

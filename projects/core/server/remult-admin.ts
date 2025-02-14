@@ -49,15 +49,19 @@ export interface AdminEntitiesOptions {
 }
 export interface AdminDisplayOptions {
   rootPath: string
+  head: string
 }
 
 export default function remultAdminHtml(options: AdminDisplayOptions) {
-  return getHtml().replace(
-    '<!--PLACE_HERE-->',
-    `<script>
-  window.optionsFromServer = ${JSON.stringify(options)}
+  const { rootPath, head } = options
+  return getHtml()
+    .replace('<!--PLACE_HERE_HEAD-->', head)
+    .replace(
+      '<!--PLACE_HERE_BODY-->',
+      `<script>
+  window.optionsFromServer = ${JSON.stringify({ rootPath })}
 </script>`,
-  )
+    )
 }
 
 export function buildEntityInfo(options: AdminEntitiesOptions) {
