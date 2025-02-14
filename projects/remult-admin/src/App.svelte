@@ -43,7 +43,8 @@
     return str
   }
 
-  remult.apiClient.url = $LSContext.settings.apiUrl
+  // remult.apiClient.url = $LSContext.settings.apiUrl
+  remult.apiClient.url = window.optionsFromServer?.rootPath ?? '/api'
   remult.apiClient.httpClient = async (
     input: RequestInfo | URL,
     init?: RequestInit,

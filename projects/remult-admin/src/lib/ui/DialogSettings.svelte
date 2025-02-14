@@ -52,14 +52,14 @@
     />
   </label>
 
-  <label>
+  <!-- <label>
     <span>api URL</span>
     <input
       type="text"
       bind:value={$LSContext.settings.apiUrl}
       placeholder="api URL, the default it '/api'"
     />
-  </label>
+  </label> -->
 
   <br />
 

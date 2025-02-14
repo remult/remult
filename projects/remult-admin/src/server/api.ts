@@ -25,6 +25,15 @@ export const entities = [
 ]
 
 export const api = remultExpress({
+  // to dev "remult-admin":
+  // - you should use http://localhost:5173/
+  //   and it will server the api in /api
+  // to test the result:
+  // - you should "npm run build"
+  //   you should use http://localhost:5173/api/admin.
+  //   If you want to you can change the rootPath to "/api3"
+  //   you should use http://localhost:5173/api3/admin.
+  // rootPath: '/api3',
   entities,
   admin: true,
 })

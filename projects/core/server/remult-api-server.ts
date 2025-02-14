@@ -432,9 +432,7 @@ export class RemultServerImplementation<RequestType>
               } else {
                 origResponse.send(
                   remultAdminHtml({
-                    remult: remult,
-                    entities: this.options.entities!,
-                    baseUrl: this.options.rootPath + '/admin',
+                    rootPath: this.options.rootPath ?? '/api',
                   }),
                 )
               }

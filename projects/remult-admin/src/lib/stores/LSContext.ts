@@ -12,7 +12,7 @@ export type TLSContext = {
     confirmDelete: boolean
     diagramLayoutAlgorithm: 'grid-bfs' | 'grid-dfs' | 'line'
     keyForBearerAuth: string
-    apiUrl: string
+    // apiUrl: string
   }
 }
 
@@ -28,7 +28,7 @@ const LSContextDefaults: TLSContext = {
     numberOfRows: 25,
     diagramLayoutAlgorithm: 'grid-dfs',
     keyForBearerAuth: '',
-    apiUrl: '/api',
+    // apiUrl: window.optionsFromServer?.rootPath ?? '/api',
   },
 }
 
