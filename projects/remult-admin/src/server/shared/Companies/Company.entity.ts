@@ -43,6 +43,10 @@ export class Company {
   createdAt = new Date()
   @Relations.toMany(() => Contact)
   contacts?: Contact[]
+  @Relations.toMany<Company, Contact>(() => Contact, {
+    findOptions: { where: { hasNewsletter: true } },
+  })
+  contactsWithNewsletter?: Contact[]
   @Relations.toMany(() => Deal)
   deals?: Deal[]
 }

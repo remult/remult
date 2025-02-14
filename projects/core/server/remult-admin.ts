@@ -19,6 +19,8 @@ export interface EntityUIInfo {
   color?: string
 }
 export interface EntityRelationToManyInfo extends RelationFields {
+  key: string
+  caption: string
   entityKey: string
   where?: any
 }
@@ -116,6 +118,8 @@ export function buildEntityInfo(options: AdminOptions) {
                 ...relInfo,
                 where,
                 entityKey: relRepo.metadata.key,
+                key: x.key,
+                caption: x.caption,
               })
             }
             continue

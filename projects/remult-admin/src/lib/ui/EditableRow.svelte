@@ -27,16 +27,18 @@
   export let isNewRow = false
 
   let error = undefined
-  let relation: EntityRelationToManyInfo | null = null
+  let currentRelation: EntityRelationToManyInfo | null = null
   let isFocused = false
 
   let rowFrozzen = { ...row }
 
   $: value = row
+
   $: relationTable =
-    relation &&
-    typeof relation === 'object' &&
-    $godStore.tables.find((x) => x.key === relation.entityKey)
+    currentRelation &&
+    typeof currentRelation === 'object' &&
+    $godStore.tables.find((x) => x.key === currentRelation.entityKey)
+
   $: change =
     Boolean(
       columns.find(
@@ -47,13 +49,16 @@
     ) || isNewRow
 
   $: relationWhere =
-    row && relation && typeof relation === 'object'
-      ? Object.fromEntries(
-          Object.entries(relation.fields).map(([key, value]) => [
-            key,
-            row[value],
-          ]),
-        )
+    row && currentRelation && typeof currentRelation === 'object'
+      ? {
+          ...Object.fromEntries(
+            Object.entries(currentRelation.fields).map(([key, value]) => [
+              key,
+              row[value],
+            ]),
+          ),
+          ...currentRelation.where,
+        }
       : {}
 
   async function doSave() {
@@ -146,8 +151,9 @@
       <button
         class="icon-button relations-button"
         title="Relations"
-        on:click={() => (relation = relation ? null : relations[0])}
-        class:open={relation}
+        on:click={() =>
+          (currentRelation = currentRelation ? null : relations[0])}
+        class:open={currentRelation}
       >
         <ChevronRight></ChevronRight>
       </button>
@@ -226,7 +232,7 @@
     </div>
   </td>
 </tr>
-{#if relation}
+{#if currentRelation}
   <tr class="extended">
     <td></td>
     <td colSpan={columns.length + 2}>
@@ -234,21 +240,23 @@
         <div class="extended__links">
           {#each relations as r}
             <button
-              class={'tab ' + (r === relation ? 'active' : '') + ' entityColor'}
+              class={'tab ' +
+                (r === currentRelation ? 'active' : '') +
+                ' entityColor'}
               style="--color: {$godStore.tables.find(
                 (x) => x.key === r.entityKey,
               )?.color}"
               on:click={(e) => {
-                relation = r
+                currentRelation = r
                 e.preventDefault()
               }}
             >
-              {$godStore.tables.find((x) => x.key === r.entityKey)?.caption}
+              {$LSContext.settings.dispayCaption ? r.caption : r.key}
             </button>
           {/each}
         </div>
 
-        {#if relationTable && typeof relation === 'object'}
+        {#if relationTable && typeof currentRelation === 'object'}
           <Table
             fields={relationTable.fields}
             relations={relationTable.relations}
