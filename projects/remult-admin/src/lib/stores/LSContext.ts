@@ -13,6 +13,7 @@ export type TLSContext = {
     diagramLayoutAlgorithm: 'grid-bfs' | 'grid-dfs' | 'line'
     keyForBearerAuth: string
     // apiUrl: string
+    withLiveQuery: boolean
   }
 }
 
@@ -29,6 +30,7 @@ const LSContextDefaults: TLSContext = {
     diagramLayoutAlgorithm: 'grid-dfs',
     keyForBearerAuth: '',
     // apiUrl: window.optionsFromServer?.rootPath ?? '/api',
+    withLiveQuery: true,
   },
 }
 

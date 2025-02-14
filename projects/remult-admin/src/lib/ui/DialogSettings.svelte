@@ -29,6 +29,14 @@
   </label>
 
   <label>
+    <span>With live query</span>
+    <select bind:value={$LSContext.settings.withLiveQuery}>
+      <option value={true}>Yes</option>
+      <option value={false}>No</option>
+    </select>
+  </label>
+
+  <label>
     <span>Diagram layout algorithm</span>
     <select
       bind:value={$LSContext.settings.diagramLayoutAlgorithm}

@@ -57,7 +57,7 @@
   let totalRows = -1
   let unSub: (() => void) | null = null
 
-  const reSub = (currentFilter: EntityFilter<any>) => {
+  const reSub = async (currentFilter: EntityFilter<any>) => {
     $SSContext.forbiddenEntities = []
 
     if (unSub) {
@@ -66,45 +66,57 @@
 
     const where = { $and: [currentFilter, { ...parentRelation }] }
 
-    unSub = repo
-      .liveQuery({
+    if ($LSContext.settings.withLiveQuery) {
+      unSub = repo
+        .liveQuery({
+          ...options,
+          where,
+        })
+        .subscribe(async (info) => {
+          let tmpItems = items
+          let special = false
+          if (items !== null) {
+            info.changes.forEach((c) => {
+              if (c.type === 'add') {
+                special = true
+                tmpItems = [c.data.item, ...items]
+              }
+            })
+          }
+
+          if (!special) {
+            tmpItems = info.applyChanges(items)
+          }
+
+          if (tmpItems && tmpItems.length > 0) {
+            await afterMainQuery(tmpItems, where)
+          }
+
+          items = tmpItems
+        })
+    } else {
+      items = await repo.find({
         ...options,
         where,
       })
-      .subscribe(async (info) => {
-        let tmpItems = items
-        let special = false
-        if (items !== null) {
-          info.changes.forEach((c) => {
-            if (c.type === 'add') {
-              special = true
-              tmpItems = [c.data.item, ...items]
-            }
-          })
-        }
+      await afterMainQuery(items, where)
+    }
+  }
 
-        if (!special) {
-          tmpItems = info.applyChanges(items)
-        }
+  const afterMainQuery = async (items: any[], where: EntityFilter<any>) => {
+    const promises = fields
+      .filter((f) => f.relationToOne)
+      .map((f) => $godStore.displayValueForEach(f, items))
 
-        if (tmpItems && tmpItems.length > 0) {
-          const promises = fields
-            .filter((f) => f.relationToOne)
-            .map((f) => $godStore.displayValueForEach(f, tmpItems))
+    const results = await Promise.all(promises)
+    results.forEach((r) => {
+      relationsToOneValues = {
+        ...relationsToOneValues,
+        ...r,
+      }
+    })
 
-          const results = await Promise.all(promises)
-          results.forEach((r) => {
-            relationsToOneValues = {
-              ...relationsToOneValues,
-              ...r,
-            }
-          })
-        }
-
-        items = tmpItems
-
-        totalRows = await repo.count(where)
-      })
+    totalRows = await repo.count(where)
   }
 
   onDestroy(() => {
@@ -269,12 +281,21 @@
           saveAction={async (item) => {
             await repo.insert(item)
             newRow = undefined
+            if (!$LSContext.settings.withLiveQuery) {
+              reSub($filter)
+            }
           }}
           deleteAction={async () => {
             newRow = undefined
+            if (!$LSContext.settings.withLiveQuery) {
+              reSub($filter)
+            }
           }}
           cancelAction={async () => {
             newRow = undefined
+            if (!$LSContext.settings.withLiveQuery) {
+              reSub($filter)
+            }
           }}
         />
       {/if}
@@ -286,8 +307,16 @@
             {relationsToOneValues}
             saveAction={async (item) => {
               await repo.update(row, item)
+              if (!$LSContext.settings.withLiveQuery) {
+                reSub($filter)
+              }
             }}
-            deleteAction={() => repo.delete(row)}
+            deleteAction={async () => {
+              await repo.delete(row)
+              if (!$LSContext.settings.withLiveQuery) {
+                reSub($filter)
+              }
+            }}
             columns={fields}
             {relations}
           />
