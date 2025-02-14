@@ -7,9 +7,26 @@ Enjoy a fully featured Admin UI for your entities, you can do CRUD operations on
 Add the Admin UI to your application by setting the `admin` option to `true` in the remult configuration.
 
 ```ts
-export const api = remultSveltekit({
+export const api = remult_SERVER({
   entities: [],
   admin: true, // Enable the Admin UI
+})
+```
+
+### Tunning the Admin UI
+
+You can pass some options to admin as well:
+
+- `allow`, using [allowed](https://remult.dev/docs/access-control). `true`, `"admin"`, ...
+- `head`, to add custom html to the head of the admin page.
+
+```ts
+export const api = remult_SERVER({
+  entities: [],
+  admin: {
+    allow: 'admin', // Only for user having the "admin" role
+    head: `<title>Nice Admin!</title><link href="https://remult.dev/favicon.png" rel="icon" type="image/png">`,
+  },
 })
 ```
 
