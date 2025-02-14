@@ -18,7 +18,7 @@ export const step04: CodeStep = {
     {
       name: 'entity.ts',
       keyContext: 'backend',
-      content: `import { Entity, Fields } from 'remult'
+      content: `import { Entity, Fields, Validators } from 'remult'
 
 @Entity('tasks', {
   allowApiCrud: true,
@@ -27,7 +27,9 @@ export class Task {
   @Fields.cuid()
   id!: string
 
-  @Fields.string()
+  @Fields.string({
+    validate: Validators.required
+  })
   title: string = ''
 }`,
     },

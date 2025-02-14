@@ -46,7 +46,11 @@ export default function App() {
   const [tasks, setTasks] = useState<Task[]>([])
 
   useEffect(() => {
-    taskRepo.find().then(setTasks)
+    taskRepo.find({
+      limit: 20,
+      orderBy: { title: 'asc' },
+      where: { title: 'remult' },
+    }).then(setTasks)
   }, [])
   return (
     <div>
@@ -74,7 +78,11 @@ export default function App() {
 
   $effect(() => {
     repo(Task)
-      .find()
+      .find({
+        limit: 20,
+        orderBy: { title: 'asc' },
+        where: { title: 'remult' },
+      })
       .then((t) => (tasks = t));
   });
 </script>

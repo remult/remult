@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Code from './Code.vue'
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { type CodeStep, stepsData } from './stepsData'
 import { useUserPreference } from './composables/useUserPreference'
 
@@ -21,11 +21,25 @@ const findAppropriateFile = (files: CodeStep['files']) => {
   return matchingFile || availableFiles[0]
 }
 
+// Add function to save current step index
+const saveCurrentStepIndex = (step: CodeStep) => {
+  const index = steps.value.findIndex((s) => s.id === step.id)
+  localStorage.setItem('currentStepIndex', index.toString())
+}
+
+// Modify onMounted to restore the saved step
 onMounted(() => {
   steps.value = stepsData
-  currentStep.value = stepsData[0]
 
-  const appropriateFile = findAppropriateFile(stepsData[0].files)
+  // Try to get saved step index from localStorage
+  const savedStepIndex = localStorage.getItem('currentStepIndex')
+  const initialStep = savedStepIndex
+    ? stepsData[parseInt(savedStepIndex)] || stepsData[0]
+    : stepsData[0]
+
+  currentStep.value = initialStep
+
+  const appropriateFile = findAppropriateFile(initialStep.files)
   currentFile.value = appropriateFile?.name || null
   if (appropriateFile) {
     keyContext.value = appropriateFile.keyContext
@@ -43,8 +57,10 @@ watch(framework, () => {
   }
 })
 
+// Modify selectStep to save the selection
 const selectStep = (step: CodeStep) => {
   currentStep.value = step
+  saveCurrentStepIndex(step)
   const appropriateFile = findAppropriateFile(step.files)
   if (appropriateFile) {
     currentFile.value = appropriateFile.name
