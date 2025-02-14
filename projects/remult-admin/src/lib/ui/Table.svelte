@@ -122,8 +122,8 @@
 
   const toggleOrderBy = (key: string) => {
     let dir = options.orderBy?.[key]
-    if (dir === undefined) dir = 'asc'
-    else if (dir === 'asc') dir = 'desc'
+    if (dir === undefined) dir = 'desc'
+    else if (dir === 'desc') dir = 'asc'
     else dir = undefined
     options = { ...options, orderBy: { [key]: dir } }
   }
