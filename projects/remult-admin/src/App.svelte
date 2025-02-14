@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import Router, { loc } from 'svelte-spa-router'
   import Schema from './routes/Schema.svelte'
   import NotFound from './routes/NotFound.svelte'
@@ -18,9 +16,9 @@
   import { getHeader } from './lib/helper.js'
 
   // Save the current location except on '/'
-  run(() => {
+  $effect(() => {
     $loc.location !== '/' && ($LSContext.currentLocationHash = $loc.location)
-  });
+  })
 
   const routes = {
     '/': DefaultRoute,
@@ -29,13 +27,6 @@
     // This is optional, but if present it must be the last
     '*': NotFound,
   }
-
-  // Add cache implementation
-  const cache = new Map<
-    string,
-    { promise: Promise<Response>; timestamp: number }
-  >()
-  const CACHE_DURATION = 1000 * 2
 
   export function midTrim(
     str: string,
@@ -60,50 +51,12 @@
     input: RequestInfo | URL,
     init?: RequestInit,
   ) => {
-    // Only cache GET requests
-    if (init?.method && init.method !== 'GET') {
-      const f = await fetch(input, {
-        ...init,
-        headers: getHeader($SSContext, $LSContext, init),
-      })
-      handleForbidden(f)
-      return f
-    }
-
-    const cacheKey = input.toString()
-    const now = Date.now()
-    const cached = cache.get(cacheKey)
-
-    // Return cached response if it exists and is still valid
-    if (cached && now - cached.timestamp < CACHE_DURATION) {
-      const cachedResponse = await cached.promise
-      // Clone the response since it can only be used once
-      return cachedResponse.clone()
-    }
-
-    // Clean up expired cache entries
-    for (const [key, value] of cache.entries()) {
-      if (now - value.timestamp >= CACHE_DURATION) {
-        cache.delete(key)
-      }
-    }
-
-    // Create new request promise
-    const fetchPromise = fetch(input, {
+    const f = await fetch(input, {
       ...init,
       headers: getHeader($SSContext, $LSContext, init),
-    }).then((response) => {
-      handleForbidden(response)
-      return response.clone() // Clone to store in cache
     })
-
-    // Store in cache
-    cache.set(cacheKey, {
-      promise: fetchPromise,
-      timestamp: now,
-    })
-
-    return fetchPromise
+    handleForbidden(f)
+    return f
 
     function handleForbidden(f: Response) {
       if (f.status === 403) {

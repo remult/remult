@@ -24,7 +24,7 @@
     "@tsconfig/svelte": "^5.0.4",
     "@types/express": "^4.17.21",
     "@types/node": "^20.14.6",
-    "@xyflow/svelte": "^0.1.6",
+    "@xyflow/svelte": "0.1.30",
     "express": "^4.21.1",
     "reflect-metadata": "^0.1.14",
     "svelte": "5.20.0",

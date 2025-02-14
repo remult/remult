@@ -7,15 +7,12 @@
 
   type $$Props = NodeProps
 
-  // Needed to not get warning about prop set on component
-  rest
-
   interface Props {
-    data: $$Props['data'];
+    data: $$Props['data']
     [key: string]: any
   }
 
-  let { data, ...rest }: Props = $props();
+  let { data, ...rest }: Props = $props()
 
   const getFields = () => {
     return data.fields as FieldUIInfo[]
