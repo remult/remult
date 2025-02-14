@@ -24,6 +24,11 @@
   </label>
 
   <label>
+    <span>Number of rows</span>
+    <input type="number" bind:value={$LSContext.settings.numberOfRows} />
+  </label>
+
+  <label>
     <span>Diagram layout algorithm</span>
     <select
       bind:value={$LSContext.settings.diagramLayoutAlgorithm}

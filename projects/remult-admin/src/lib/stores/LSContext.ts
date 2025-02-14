@@ -8,6 +8,7 @@ export type TLSContext = {
   settings: {
     search: string
     dispayCaption: boolean
+    numberOfRows: number
     confirmDelete: boolean
     diagramLayoutAlgorithm: 'grid-bfs' | 'grid-dfs' | 'line'
     keyForBearerAuth: string
@@ -15,7 +16,7 @@ export type TLSContext = {
   }
 }
 
-const LSContextKey = 'LSRemultAdmin_2024_08_29'
+const LSContextKey = 'LSRemultAdmin_2025_02_14'
 
 const LSContextDefaults: TLSContext = {
   currentLocationHash: '/',
@@ -24,6 +25,7 @@ const LSContextDefaults: TLSContext = {
     search: '',
     dispayCaption: true,
     confirmDelete: true,
+    numberOfRows: 25,
     diagramLayoutAlgorithm: 'grid-dfs',
     keyForBearerAuth: '',
     apiUrl: '/api',

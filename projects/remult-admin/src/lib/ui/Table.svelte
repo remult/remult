@@ -38,7 +38,7 @@
 
   // Reset to page 1 on key change
   $: options = repo.metadata.key && {
-    limit: 25,
+    limit: $LSContext.settings.numberOfRows,
     page: 1,
     orderBy: defaultOrderBy,
   }
