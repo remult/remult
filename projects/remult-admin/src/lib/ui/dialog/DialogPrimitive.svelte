@@ -5,9 +5,14 @@
   import { onDestroy, onMount, tick } from 'svelte'
   import DialogActions from './DialogActions.svelte'
 
-  export let config: DialogConfig
+  interface Props {
+    config: DialogConfig;
+    children?: import('svelte').Snippet;
+  }
 
-  let animate = false
+  let { config, children }: Props = $props();
+
+  let animate = $state(false)
   onMount(() => {
     animate = true
   })
@@ -30,7 +35,7 @@
 
 {#if animate}
   <div {...$portalled} use:portalled>
-    <div {...$overlay} use:overlay class="overlay" />
+    <div {...$overlay} use:overlay class="overlay"></div>
     <div
       style="--dialog-width: {config.width ?? '550px'}"
       class="content"
@@ -51,14 +56,14 @@
       </p>
 
       <div class="slot-content">
-        <slot></slot>
+        {@render children?.()}
       </div>
 
       {#if config.buttonSuccess}
         <DialogActions>
           <button
             {...$close}
-            on:click={() => {
+            onclick={() => {
               dialog.close({ success: true })
             }}
             class={config.isWarning ? 'warning' : 'primary'}

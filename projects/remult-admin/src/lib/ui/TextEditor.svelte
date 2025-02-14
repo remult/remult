@@ -1,8 +1,12 @@
 <script lang="ts">
   import { dialog } from './dialog/dialog.js'
 
-  export let text: string
-  let currentValue = text
+  interface Props {
+    text: string;
+  }
+
+  let { text }: Props = $props();
+  let currentValue = $state(text)
 
   function handleSave() {
     dialog.close({ success: true, data: currentValue })
@@ -12,7 +16,7 @@
 <div class="text-editor">
   <textarea bind:value={currentValue} rows="10"></textarea>
   <div class="actions">
-    <button class="primary" on:click={handleSave}> Save </button>
+    <button class="primary" onclick={handleSave}> Save </button>
   </div>
 </div>
 

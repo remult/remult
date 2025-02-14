@@ -63,11 +63,15 @@
     ],
   }
 
-  export let fields: FieldUIInfo[] = []
-  export let filter: EntityFilter<any> = {}
+  interface Props {
+    fields?: FieldUIInfo[];
+    filter?: EntityFilter<any>;
+  }
 
-  let filterValues: (typeof defaultFilter)[]
-  $: filterValues = []
+  let { fields = [], filter = $bindable({}) }: Props = $props();
+
+  let filterValues: (typeof defaultFilter)[] = $state([])
+  
 
   function addFilter() {
     filterValues = [
@@ -153,7 +157,7 @@
     filterValues = filterValues
   }
 
-  $: getOperators = (_filterValues: any, currentFieldKey: string) => {
+  let getOperators = $derived((_filterValues: any, currentFieldKey: string) => {
     const fieldWeAreTalkingAbout = fields.find((x) => x.key == currentFieldKey)
 
     if (
@@ -176,7 +180,7 @@
       return operators[fieldWeAreTalkingAbout.type]
     }
     return operators.string
-  }
+  })
 
   onMount(() => {
     translateFilterToFilterValues()
@@ -187,7 +191,7 @@
   {#each filterValues as field, i}
     {@const info = fields.find((x) => x.key == field.key)}
     <div class="filter__group">
-      <select on:change={(e) => setValue(e, field, 'key')}>
+      <select onchange={(e) => setValue(e, field, 'key')}>
         {#each fields.filter((x) => x.key == field.key || !filterValues.find((y) => y.key == x.key)) as x}
           <option value={x.key} selected={x.key === field.key}>
             {x.caption}
@@ -195,7 +199,7 @@
         {/each}
       </select>
 
-      <select on:change={(e) => setValue(e, field, 'operator')}>
+      <select onchange={(e) => setValue(e, field, 'operator')}>
         {#each getOperators(filterValues, field.key) ?? [] as [key, caption]}
           <option value={key} selected={key === field.operator}>
             {caption}
@@ -218,7 +222,7 @@
       {:else if info.type == 'boolean'}
         <select
           value={field.value}
-          on:change={(e) => setValue(e, field, 'value')}
+          onchange={(e) => setValue(e, field, 'value')}
         >
           <option value={false}>False</option>
           <option value={true}>True</option>
@@ -226,7 +230,7 @@
       {:else if info.values && info.values.length > 0}
         <select
           value={field.value}
-          on:change={(e) => setValue(e, field, 'value')}
+          onchange={(e) => setValue(e, field, 'value')}
         >
           {#each info.values as option}
             {#if typeof option == 'object'}
@@ -239,20 +243,20 @@
       {:else if info.type == 'number'}
         <input
           value={field.value}
-          on:change={(e) => setValue(e, field, 'value')}
+          onchange={(e) => setValue(e, field, 'value')}
           type="number"
         />
       {:else}
         <input
           value={field.value}
-          on:change={(e) => setValue(e, field, 'value')}
+          onchange={(e) => setValue(e, field, 'value')}
           type="text"
         />
       {/if}
 
       <button
         class="icon-button"
-        on:click={() => {
+        onclick={() => {
           filterValues = filterValues.filter((x) => x.key !== field.key)
         }}
       >
@@ -262,10 +266,10 @@
   {/each}
 
   <br />
-  <button class="primary" on:click={addFilter}> + </button>
+  <button class="primary" onclick={addFilter}> + </button>
 
   <DialogActions>
-    <button class="primary" on:click={applyFilterValues}>Apply</button>
+    <button class="primary" onclick={applyFilterValues}>Apply</button>
   </DialogActions>
 </div>
 

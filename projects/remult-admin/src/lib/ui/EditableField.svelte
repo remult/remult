@@ -1,4 +1,7 @@
 <script lang="ts">
+  import { run, createBubbler } from 'svelte/legacy';
+
+  const bubble = createBubbler();
   import { createEventDispatcher } from 'svelte'
   import type {
     FieldUIInfo,
@@ -11,15 +14,24 @@
   import { onMount } from 'svelte'
   import TextEditor from './TextEditor.svelte'
 
-  export let value: any | undefined = undefined
-  export let relationsToOneValues: RelationsToOneValues = {}
-  export let info: FieldUIInfo
-  export let isNewRow = false
+  interface Props {
+    value?: any | undefined;
+    relationsToOneValues?: RelationsToOneValues;
+    info: FieldUIInfo;
+    isNewRow?: boolean;
+  }
+
+  let {
+    value = $bindable(undefined),
+    relationsToOneValues = {},
+    info,
+    isNewRow = false
+  }: Props = $props();
 
   const dispatch = createEventDispatcher()
 
-  let inputElement: HTMLInputElement
-  let isOverflowing = false
+  let inputElement: HTMLInputElement = $state()
+  let isOverflowing = $state(false)
 
   function checkOverflow() {
     if (inputElement) {
@@ -33,9 +45,11 @@
     return () => window.removeEventListener('resize', checkOverflow)
   })
 
-  $: if (value !== undefined) {
-    setTimeout(checkOverflow, 0)
-  }
+  run(() => {
+    if (value !== undefined) {
+      setTimeout(checkOverflow, 0)
+    }
+  });
 
   const onChange = (content: Content) => {
     // @ts-ignore
@@ -101,37 +115,37 @@
     value=""
     disabled
     style="opacity: 0.5; background-color: Gainsboro; cursor: not-allowed;"
-    on:keydown={handleKeydown}
+    onkeydown={handleKeydown}
   />
 {:else if info.readOnly}
   <input
     bind:value
     disabled
     style="opacity: 0.5; cursor: not-allowed;"
-    on:keydown={handleKeydown}
+    onkeydown={handleKeydown}
   />
 {:else if info.type == 'json'}
   <button
     style="margin-left: auto; margin-right: auto; width: 100%"
     class="icon-button"
-    on:click={() => {
+    onclick={() => {
       dialog.show({
         config: { title: 'Edit JSON', width: '90vw' },
         component: JSONEditor,
         props: { content: { json: value ?? {} }, onChange },
       })
     }}
-    on:keydown={handleKeydown}
+    onkeydown={handleKeydown}
   >
     <Json></Json>
   </button>
 {:else if info.type == 'boolean'}
-  <select bind:value on:keydown={handleKeydown}>
+  <select bind:value onkeydown={handleKeydown}>
     <option value={false}>False</option>
     <option value={true}>True</option>
   </select>
 {:else if info.values && info.values.length > 0}
-  <select bind:value on:keydown={handleKeydown}>
+  <select bind:value onkeydown={handleKeydown}>
     {#each info.values as option}
       {#if typeof option == 'object'}
         <option value={String(option.id)}>{option.caption}</option>
@@ -143,34 +157,34 @@
 {:else if info.type == 'number'}
   <input
     bind:value
-    on:change
+    onchange={bubble('change')}
     type="number"
     style="text-align: right;"
-    on:keydown={handleKeydown}
+    onkeydown={handleKeydown}
   />
 {:else if info.inputType == 'color'}
-  <input bind:value on:change type="color" on:keydown={handleKeydown} />
+  <input bind:value onchange={bubble('change')} type="color" onkeydown={handleKeydown} />
 {:else if info.inputType == 'date'}
   <input
     bind:value
-    on:change
+    onchange={bubble('change')}
     type="date"
     style="text-align: center; width: 100%;"
-    on:keydown={handleKeydown}
+    onkeydown={handleKeydown}
   />
 {:else}
   <span>
     <input
       bind:this={inputElement}
       bind:value
-      on:change
+      onchange={bubble('change')}
       type="text"
-      on:keydown={handleKeydown}
-      on:input={checkOverflow}
+      onkeydown={handleKeydown}
+      oninput={checkOverflow}
     />
     {#if isOverflowing && value && !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/.test(value)}
       <button
-        on:click={async () => {
+        onclick={async () => {
           const res = await dialog.show({
             config: { title: 'Edit Text', width: '50vw' },
             component: TextEditor,

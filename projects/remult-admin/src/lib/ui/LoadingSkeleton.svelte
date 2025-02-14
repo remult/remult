@@ -1,5 +1,9 @@
 <script lang="ts">
-  export let width = 120
+  interface Props {
+    width?: number;
+  }
+
+  let { width = 120 }: Props = $props();
 </script>
 
 <span class="skeleton" style="--width: {width}px"></span>

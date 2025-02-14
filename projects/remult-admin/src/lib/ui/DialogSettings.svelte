@@ -40,7 +40,7 @@
     <span>Diagram layout algorithm</span>
     <select
       bind:value={$LSContext.settings.diagramLayoutAlgorithm}
-      on:change={() => {
+      onchange={() => {
         $LSContext.schema = {}
         window.location.reload()
       }}
@@ -74,7 +74,7 @@
   <label>
     <span></span>
     <button
-      on:click={() => {
+      onclick={() => {
         LSContext.reset()
       }}
     >
@@ -98,7 +98,7 @@
         placeholder="bearer"
       />
       <button
-        on:click={() => {
+        onclick={() => {
           godStore.reloadEntities()
         }}>Reload entities</button
       >

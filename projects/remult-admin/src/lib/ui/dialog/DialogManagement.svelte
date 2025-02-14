@@ -10,8 +10,8 @@
     </DialogPrimitive>
   {:else if toShow.component}
     <DialogPrimitive config={toShow.config}>
-      <svelte:component this={toShow.component} {...toShow.props}
-      ></svelte:component>
+      <toShow.component {...toShow.props}
+      ></toShow.component>
     </DialogPrimitive>
   {:else}
     <DialogPrimitive
