@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { run, createBubbler } from 'svelte/legacy';
+  import { run, createBubbler } from 'svelte/legacy'
 
-  const bubble = createBubbler();
+  const bubble = createBubbler()
   import { createEventDispatcher } from 'svelte'
   import type {
     FieldUIInfo,
@@ -15,18 +15,18 @@
   import TextEditor from './TextEditor.svelte'
 
   interface Props {
-    value?: any | undefined;
-    relationsToOneValues?: RelationsToOneValues;
-    info: FieldUIInfo;
-    isNewRow?: boolean;
+    value?: any | undefined
+    relationsToOneValues?: RelationsToOneValues
+    info: FieldUIInfo
+    isNewRow?: boolean
   }
 
   let {
     value = $bindable(undefined),
     relationsToOneValues = {},
     info,
-    isNewRow = false
-  }: Props = $props();
+    isNewRow = false,
+  }: Props = $props()
 
   const dispatch = createEventDispatcher()
 
@@ -49,7 +49,7 @@
     if (value !== undefined) {
       setTimeout(checkOverflow, 0)
     }
-  });
+  })
 
   const onChange = (content: Content) => {
     // @ts-ignore
@@ -111,26 +111,16 @@
 {#if info.relationToOne}
   <RelationField bind:value {info} on:change {relationsToOneValues} />
 {:else if (!isNewRow && value === undefined) || (isNewRow && info.readOnly)}
-  <input
-    value=""
-    disabled
-    style="opacity: 0.5; background-color: Gainsboro; cursor: not-allowed;"
-    onkeydown={handleKeydown}
-  />
+  <input value="" disabled class="read-only" onkeydown={handleKeydown} />
 {:else if info.readOnly}
-  <input
-    bind:value
-    disabled
-    style="opacity: 0.5; cursor: not-allowed;"
-    onkeydown={handleKeydown}
-  />
+  <input bind:value disabled class="read-only" onkeydown={handleKeydown} />
 {:else if info.type == 'json'}
   <button
-    style="margin-left: auto; margin-right: auto; width: 100%"
-    class="icon-button"
+    class="icon-button input-json"
     onclick={() => {
       dialog.show({
         config: { title: 'Edit JSON', width: '90vw' },
+        // @ts-ignore
         component: JSONEditor,
         props: { content: { json: value ?? {} }, onChange },
       })
@@ -159,17 +149,20 @@
     bind:value
     onchange={bubble('change')}
     type="number"
-    style="text-align: right;"
     onkeydown={handleKeydown}
   />
 {:else if info.inputType == 'color'}
-  <input bind:value onchange={bubble('change')} type="color" onkeydown={handleKeydown} />
+  <input
+    bind:value
+    onchange={bubble('change')}
+    type="color"
+    onkeydown={handleKeydown}
+  />
 {:else if info.inputType == 'date'}
   <input
     bind:value
     onchange={bubble('change')}
     type="date"
-    style="text-align: center; width: 100%;"
     onkeydown={handleKeydown}
   />
 {:else}
@@ -203,6 +196,19 @@
 {/if}
 
 <style>
+  .input-json {
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+  }
+  input[type='number'] {
+    text-align: right;
+  }
+
+  input[type='date'] {
+    text-align: center;
+  }
+
   span {
     display: flex;
     align-items: stretch;
@@ -240,5 +246,11 @@
   span button:hover {
     opacity: 1;
     background-color: rgb(243 244 246);
+  }
+
+  .read-only {
+    opacity: 0.5;
+    background-color: Gainsboro;
+    cursor: not-allowed;
   }
 </style>

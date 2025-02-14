@@ -1,7 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
-  import { writable } from 'svelte/store'
   import {
     SvelteFlow,
     Background,
@@ -11,6 +8,7 @@
     type NodeTypes,
     type Edge,
     MarkerType,
+    type NodeTargetEventWithPointer,
   } from '@xyflow/svelte'
 
   import '@xyflow/svelte/dist/style.css'
@@ -20,19 +18,17 @@
   import { LSContext, type TLSContext } from '../lib/stores/LSContext.js'
   import { type God, type TableInfo } from '../God.js'
 
-  const nodes = writable<Node[]>([])
-  const edges = writable<Edge[]>([])
+  let nodes = $state.raw([])
+  let edges = $state.raw([])
 
   const nodeTypes: NodeTypes = {
     entity: EntityNode,
   }
 
-
-  const init = (god: God, ctx: TLSContext) => {
+  const init = (tables: TableInfo[], ctx: TLSContext) => {
     const layoutType: 'grid-dfs' | 'grid-bfs' | 'line' =
-      $LSContext.settings.diagramLayoutAlgorithm
+      ctx.settings.diagramLayoutAlgorithm
 
-    const tables = god.getTables(ctx)
     const groups = groupTablesByRelations(layoutType, tables)
     const magicNumber = Math.ceil(Math.sqrt(tables.length + tables.length))
 
@@ -76,7 +72,7 @@
       })
     })
 
-    nodes.set(localNodes)
+    nodes = localNodes
 
     updateNodesEdges()
   }
@@ -228,8 +224,8 @@
       .find((x) => x.key === toEntity)
 
     if (target) {
-      const sourceNode = $nodes.find((x) => x.id === entity.key)!
-      const targetNode = $nodes.find((x) => x.id === target.key)!
+      const sourceNode = nodes.find((x) => x.id === entity.key)!
+      const targetNode = nodes.find((x) => x.id === target.key)!
       let i = 0
       const localEdges: Edge[] = []
       for (const key in relationFields) {
@@ -249,8 +245,8 @@
         }
         i++
       }
-      $edges = [
-        ...$edges.filter((c) => !localEdges.map((d) => d.id).includes(c.id)),
+      edges = [
+        ...edges.filter((c) => !localEdges.map((d) => d.id).includes(c.id)),
         ...localEdges,
       ]
     }
@@ -281,46 +277,42 @@
     return id
   }
 
-  const nodedrag = (
-    e: CustomEvent<{
-      event: MouseEvent
-      targetNode: Node | null
-      nodes: Node[]
-    }>,
-  ) => {
+  const nodedrag = () => {
     updateNodesEdges()
   }
 
-  const nodedragstop = (
-    e: CustomEvent<{
-      event: MouseEvent
-      targetNode: Node | null
-      nodes: Node[]
-    }>,
+  const nodedragstop: NodeTargetEventWithPointer<MouseEvent | TouchEvent> = (
+    e,
   ) => {
     $LSContext.schema = {
       ...$LSContext.schema,
-      [e.detail.targetNode.id]: {
-        x: e.detail.targetNode.position.x,
-        y: e.detail.targetNode.position.y,
+      [e.targetNode.id]: {
+        x: e.targetNode.position.x,
+        y: e.targetNode.position.y,
       },
     }
   }
-  run(() => {
-    $godStore && $LSContext && init($godStore, $LSContext)
-  });
+
+  $effect(() => {
+    return godStore.subscribe((g) => {
+      if (g) {
+        const tables = g.getTables($LSContext)
+        init(tables, $LSContext)
+      }
+    })
+  })
 </script>
 
 <div style="height:100vh;">
   <SvelteFlow
-    {nodes}
-    {edges}
+    bind:nodes
+    bind:edges
     {nodeTypes}
     fitView
     snapGrid={[16, 16]}
     minZoom={0.01}
-    on:nodedrag={nodedrag}
-    on:nodedragstop={nodedragstop}
+    onnodedrag={nodedrag}
+    onnodedragstop={nodedragstop}
   >
     <Background patternColor="#aaa" gap={16} />
     <Controls />

@@ -5,14 +5,17 @@
   import type { FieldUIInfo } from '../../../../../core/server/remult-admin.js'
   import Key from '../../icons/Key.svelte'
 
-  type $$Props = NodeProps
+  // type $$Props = NodeProps
 
-  interface Props {
-    data: $$Props['data']
-    [key: string]: any
-  }
+  // interface Props {
+  //   data: $$Props['data']
+  //   [key: string]: any
+  // }
 
-  let { data, ...rest }: Props = $props()
+  let {
+    data,
+  } //  position, selected
+  : NodeProps = $props()
 
   const getFields = () => {
     return data.fields as FieldUIInfo[]
