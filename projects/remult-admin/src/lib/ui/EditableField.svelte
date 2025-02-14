@@ -8,6 +8,8 @@
   import { dialog } from './dialog/dialog.js'
   import RelationField from './RelationField.svelte'
   import { type Content, JSONEditor } from 'svelte-jsoneditor'
+  import { onMount } from 'svelte'
+  import TextEditor from './TextEditor.svelte'
 
   export let value: any | undefined = undefined
   export let relationsToOneValues: RelationsToOneValues = {}
@@ -15,6 +17,25 @@
   export let isNewRow = false
 
   const dispatch = createEventDispatcher()
+
+  let inputElement: HTMLInputElement
+  let isOverflowing = false
+
+  function checkOverflow() {
+    if (inputElement) {
+      isOverflowing = inputElement.scrollWidth > inputElement.clientWidth + 2
+    }
+  }
+
+  onMount(() => {
+    checkOverflow()
+    window.addEventListener('resize', checkOverflow)
+    return () => window.removeEventListener('resize', checkOverflow)
+  })
+
+  $: if (value !== undefined) {
+    setTimeout(checkOverflow, 0)
+  }
 
   const onChange = (content: Content) => {
     // @ts-ignore
@@ -139,14 +160,33 @@
   />
 {:else}
   <span>
-    <input bind:value on:change type="text" on:keydown={handleKeydown} />
-    {#if value?.length > 20 && !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/.test(value)}
-      <button>...</button>
+    <input
+      bind:this={inputElement}
+      bind:value
+      on:change
+      type="text"
+      on:keydown={handleKeydown}
+      on:input={checkOverflow}
+    />
+    {#if isOverflowing && value && !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/.test(value)}
+      <button
+        on:click={async () => {
+          const res = await dialog.show({
+            config: { title: 'Edit Text', width: '50vw' },
+            component: TextEditor,
+            props: {
+              text: value,
+            },
+          })
+          if (res.success) {
+            value = res.data
+            dispatch('change', { value })
+          }
+        }}>...</button
+      >
     {/if}
   </span>
 {/if}
-
-<!-- {info.inputType} -->
 
 <style>
   span {
@@ -163,6 +203,8 @@
     height: 100%;
     margin: 0;
     padding: 0 4px;
+    overflow: hidden;
+    white-space: nowrap;
   }
 
   span button {
