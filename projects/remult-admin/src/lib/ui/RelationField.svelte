@@ -40,20 +40,20 @@
     }
   }
 
-  $effect(() => {
-    if (value === null) {
-      displayValue = '- Unset -'
-    } else {
-      displayValue =
-        relationsToOneValues[info.valFieldKey] &&
-        relationsToOneValues[info.valFieldKey].get(value)
-      if (displayValue === undefined) {
-        $godStore.displayValueFor(info, value).then((v) => {
-          displayValue = v
-        })
-      }
-    }
-  })
+  // $effect(() => {
+  //   if (value === null) {
+  //     displayValue = '- Unset -'
+  //   } else {
+  //     displayValue =
+  //       relationsToOneValues[info.valFieldKey] &&
+  //       relationsToOneValues[info.valFieldKey].get(value)
+  //     if (displayValue === undefined) {
+  //       $godStore.displayValueFor(info, value).then((v) => {
+  //         displayValue = v
+  //       })
+  //     }
+  //   }
+  // })
 
   const getWidth = () => {
     const r = Math.random()

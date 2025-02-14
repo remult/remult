@@ -45,18 +45,64 @@
     return str
   }
 
+  // Add cache implementation
+  const cache = new Map<
+    string,
+    { promise: Promise<Response>; timestamp: number }
+  >()
+  const CACHE_DURATION = 1000 * 2
+
   // remult.apiClient.url = $LSContext.settings.apiUrl
   remult.apiClient.url = window.optionsFromServer?.rootPath ?? '/api'
   remult.apiClient.httpClient = async (
     input: RequestInfo | URL,
     init?: RequestInit,
   ) => {
-    const f = await fetch(input, {
+    // Only cache GET requests
+    if (init?.method && init.method !== 'GET') {
+      const f = await fetch(input, {
+        ...init,
+        headers: getHeader($SSContext, $LSContext, init),
+      })
+      handleForbidden(f)
+      return f
+    }
+
+    const cacheKey = input.toString()
+    const now = Date.now()
+    const cached = cache.get(cacheKey)
+
+    // Return cached response if it exists and is still valid
+    if (cached && now - cached.timestamp < CACHE_DURATION) {
+      // Clone the cached response for this request
+      return cached.promise.then((response) => response.clone())
+    }
+
+    // Clean up expired cache entries
+    for (const [key, value] of cache.entries()) {
+      if (now - value.timestamp >= CACHE_DURATION) {
+        cache.delete(key)
+      }
+    }
+
+    // Create new request promise
+    const fetchPromise = fetch(input, {
       ...init,
       headers: getHeader($SSContext, $LSContext, init),
+    }).then((response) => {
+      handleForbidden(response)
+      // Store the response that can be cloned later
+      return response
     })
-    handleForbidden(f)
-    return f
+
+    // Store in cache
+    cache.set(cacheKey, {
+      promise: fetchPromise,
+      timestamp: now,
+    })
+
+    // Return a clone for this request
+    return fetchPromise.then((response) => response.clone())
 
     function handleForbidden(f: Response) {
       if (f.status === 403) {
