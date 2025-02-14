@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy'
-
   import { createEventDispatcher, onMount } from 'svelte'
   import type {
     FieldUIInfo,
@@ -27,33 +25,33 @@
     dispatch('change', { _data })
   }
 
-  const getDisplayValue = async (_value) => {
-    if (_value === null) {
+  $effect(() => {
+    if (value === null) {
       displayValue = '- Unset -'
-    } else {
-      displayValue =
-        relationsToOneValues[info.valFieldKey] &&
-        relationsToOneValues[info.valFieldKey].get(value)
-      if (displayValue === undefined) {
-        displayValue = await $godStore.displayValueFor(info, value)
-      }
+      return
     }
-  }
 
-  // $effect(() => {
-  //   if (value === null) {
-  //     displayValue = '- Unset -'
-  //   } else {
-  //     displayValue =
-  //       relationsToOneValues[info.valFieldKey] &&
-  //       relationsToOneValues[info.valFieldKey].get(value)
-  //     if (displayValue === undefined) {
-  //       $godStore.displayValueFor(info, value).then((v) => {
-  //         displayValue = v
-  //       })
-  //     }
-  //   }
-  // })
+    const fromRelations = relationsToOneValues[info.valFieldKey]?.get(value)
+    if (fromRelations !== undefined) {
+      displayValue = fromRelations
+      return
+    }
+
+    // TODO: I think it's coming here all the time at first render... and it should not!
+
+    // Only fetch if we don't have a value from relations
+    let cancelled = false
+    displayValue = undefined // Show loading state
+    $godStore.displayValueFor(info, value).then((v) => {
+      if (!cancelled) {
+        displayValue = v
+      }
+    })
+
+    return () => {
+      cancelled = true // Cleanup if effect re-runs
+    }
+  })
 
   const getWidth = () => {
     const r = Math.random()
@@ -71,9 +69,6 @@
     dispatchChange(value)
     dialog.close({ success: true, data: { value } })
   }
-  // run(() => {
-  //   getDisplayValue(value)
-  // });
 </script>
 
 {#if (displayValue ?? '').startsWith("Can't display")}
