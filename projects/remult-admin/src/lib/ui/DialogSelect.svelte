@@ -1,19 +1,15 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
-  import { createEventDispatcher, onMount } from 'svelte'
   import { writable } from 'svelte/store'
   import type { FieldRelationToOneInfo } from '../../../../core/server/remult-admin'
 
   import { godStore } from '../../stores/GodStore.js'
 
-
   interface Props {
-    relation: FieldRelationToOneInfo;
-    onSelect: (value) => void;
+    relation: FieldRelationToOneInfo
+    onSelect: (value) => void
   }
 
-  let { relation, onSelect }: Props = $props();
+  let { relation, onSelect }: Props = $props()
 
   const items = writable<{ id: any; caption: string }[]>([])
   const count = writable(0)
@@ -25,9 +21,9 @@
     $count = ret.$count
   }
 
-  run(() => {
+  $effect(() => {
     relation && refresh($search)
-  });
+  })
 
   function handleSubmit(e: Event) {
     e.preventDefault()
@@ -61,12 +57,13 @@
         {item.caption ?? "Can't display"}
       </span>
     </button>
-    {/each}
-    <button onclick={() => handleSelect(null)} style="color: rgb(var(--color-black) / 0.5); margin-top: 1rem;">
-      <span style="width: 100%; text-align: left;">
-        - Unset -
-      </span>
-    </button>
+  {/each}
+  <button
+    onclick={() => handleSelect(null)}
+    style="color: rgb(var(--color-black) / 0.5); margin-top: 1rem;"
+  >
+    <span style="width: 100%; text-align: left;"> - Unset - </span>
+  </button>
 </div>
 
 <!-- </dialog> -->

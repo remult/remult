@@ -1,4 +1,4 @@
-import { tick, type Component } from 'svelte'
+import { type Component } from 'svelte'
 import { writable } from 'svelte/store'
 
 export type DialogConfig = {
