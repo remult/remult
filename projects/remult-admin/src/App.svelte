@@ -50,6 +50,17 @@
     return str
   }
 
+  function handleForbidden(f: Response) {
+    if (f.status === 403) {
+      const parsedUrl = new URL(f.url)
+      const segments = parsedUrl.pathname.split('/')
+      const lastSegment = segments.pop() || ''
+      $SSContext.forbiddenEntities = [
+        ...new Set([...$SSContext.forbiddenEntities, lastSegment]),
+      ]
+    }
+  }
+
   // remult.apiClient.url = $LSContext.settings.apiUrl
   remult.apiClient.url = window.optionsFromServer?.rootPath ?? '/api'
   remult.apiClient.httpClient = async (
@@ -69,18 +80,15 @@
     const cacheKey = input.toString()
     const now = Date.now()
 
-    // Clean up expired cache entries
-    for (const [key, value] of cache.entries()) {
-      if (now - value.timestamp >= CACHE_DURATION) {
-        cache.delete(key)
-      }
-    }
-
     // Check cache first
     const cached = cache.get(cacheKey)
-    if (cached && now - cached.timestamp < CACHE_DURATION) {
-      const response = await cached.promise
-      return response.clone()
+    if (cached) {
+      if (now - cached.timestamp < CACHE_DURATION) {
+        const response = await cached.promise
+        return response.clone()
+      } else {
+        cache.delete(cacheKey)
+      }
     }
 
     // If not in cache, create the promise immediately
@@ -103,17 +111,6 @@
     // Return a fresh clone for this request
     const response = await fetchPromise
     return response.clone()
-
-    function handleForbidden(f: Response) {
-      if (f.status === 403) {
-        const parsedUrl = new URL(f.url)
-        const segments = parsedUrl.pathname.split('/')
-        const lastSegment = segments.pop() || ''
-        $SSContext.forbiddenEntities = [
-          ...new Set([...$SSContext.forbiddenEntities, lastSegment]),
-        ]
-      }
-    }
   }
 </script>
 
