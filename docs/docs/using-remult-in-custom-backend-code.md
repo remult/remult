@@ -45,31 +45,33 @@ Use the `api.withRemultAsync` method in promises
 ```ts
 import express from 'express'
 import { remultExpress } from 'remult/remult-express'
+import { remult, repo } from 'remult'
 
-const app = express();
-...
+const app = express()
+// ...
 const api = remultExpress({
-  entities:[Task]
+  entities: [Task],
 })
 app.post('/api/customSetAll', async (req, res) => {
   // use remult in a specific piece of code // [!code highlight]
-  await api.withRemultAsync(req, async ()=> { // [!code highlight]
+  await api.withRemultAsync(req, async () => {
+    // [!code highlight]
     if (!remult.authenticated()) {
-      res.sendStatus(403);
-      return;
+      res.sendStatus(403)
+      return
     }
-    if (!remult.isAllowed("admin")) {
-      res.sendStatus(403);
-      return;
+    if (!remult.isAllowed('admin')) {
+      res.sendStatus(403)
+      return
     }
-    const taskRepo = remult.repo(Task);
+    const taskRepo = repo(Task)
     for (const task of await taskRepo.find()) {
-      task.completed = req.body.completed;
-      await taskRepo.save(task);
+      task.completed = req.body.completed
+      await taskRepo.save(task)
     }
-    res.send();
+    res.send()
   })
-});
+})
 ```
 
 You can also use it without sending the request object, for non request related code

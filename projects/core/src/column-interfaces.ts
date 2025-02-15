@@ -140,8 +140,7 @@ export interface FieldOptions<entityType = unknown, valueType = unknown> {
 export interface FieldMetadata<valueType = unknown, entityType = unknown> {
   /** The field's member name in an object.
    * @example
-   * const taskRepo = remult.repo(Task);
-   * console.log(taskRepo.metadata.fields.title.key);
+   * console.log(repo(Task).metadata.fields.title.key);
    * // result: title
    */
   readonly key: entityType extends object ? keyof entityType & string : string
@@ -172,8 +171,7 @@ export interface FieldMetadata<valueType = unknown, entityType = unknown> {
   readonly allowNull: boolean
   /** The class that contains this field
    * @example
-   * const taskRepo = remult.repo(Task);
-   * Task == taskRepo.metadata.fields.title.target //will return true
+   * Task == repo(Task).metadata.fields.title.target //will return true
    */
   readonly target: ClassType<valueType>
   /**
@@ -197,9 +195,8 @@ export interface FieldMetadata<valueType = unknown, entityType = unknown> {
  * Determines if the current user is allowed to update a specific entity instance.
  
  * @example
- * const taskRepo = remult.repo(Task);
  * // Check if the current user is allowed to update a specific task
- * if (taskRepo.metadata.apiUpdateAllowed(task)){
+ * if (repo(Task).metadata.apiUpdateAllowed(task)){
  *   // Allow user to edit the entity
  * }
  * @see {@link FieldOptions#allowApiUpdate} for configuration details

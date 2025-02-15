@@ -260,8 +260,7 @@ export interface EntityMetadata<entityType = unknown> {
   /** true if the current user is allowed to update an entity instance
    * @see {@link EntityOptions.allowApiUpdate
    * @example
-   * const taskRepo = remult.repo(Task);
-   * if (taskRepo.metadata.apiUpdateAllowed(task)){
+   * if (repo(Task).metadata.apiUpdateAllowed(task)){
    *   // Allow user to edit the entity
    * }
    */
@@ -269,8 +268,7 @@ export interface EntityMetadata<entityType = unknown> {
   /** true if the current user is allowed to read from entity
    * @see {@link EntityOptions.allowApiRead}
    * @example
-   * const taskRepo = remult.repo(Task);
-   * if (taskRepo.metadata.apiReadAllowed){
+   * if (repo(Task).metadata.apiReadAllowed){
    *   await taskRepo.find()
    * }
    */
@@ -278,8 +276,7 @@ export interface EntityMetadata<entityType = unknown> {
   /** true if the current user is allowed to delete an entity instance
    * * @see {@link EntityOptions.allowApiDelete}
    * @example
-   * const taskRepo = remult.repo(Task);
-   * if (taskRepo.metadata.apiDeleteAllowed(task)){
+   * if (repo(Task).metadata.apiDeleteAllowed(task)){
    *   // display delete button
    * }
    */
@@ -287,8 +284,7 @@ export interface EntityMetadata<entityType = unknown> {
   /** true if the current user is allowed to create an entity instance
    * @see {@link EntityOptions.allowApiInsert}
    * @example
-   * const taskRepo = remult.repo(Task);
-   * if (taskRepo.metadata.apiInsertAllowed(task)){
+   * if (repo(Task).metadata.apiInsertAllowed(task)){
    *   // display insert button
    * }
    */
@@ -466,7 +462,7 @@ export type GroupByResult<
   $count: number
 }
 
-/**used to perform CRUD operations on an `entityType` */
+/** used to perform CRUD operations on an `entityType` */
 export interface Repository<entityType> {
   /** returns a result array based on the provided options */
   find(options?: FindOptions<entityType>): Promise<entityType[]>
@@ -816,14 +812,37 @@ export interface Repository<entityType> {
    */
   create(item?: Partial<MembersOnly<entityType>>): entityType
 
+  /**
+   * Translates an entity to a json object.
+   * - Ready to be sent to the client _(Date & co are managed)_
+   * - Strip out fields that are not allowed to be sent to the client! Check: [Field.includeInApi](http://remult.dev/docs/ref_field#includeinapi)
+   *
+   * @example
+   * ```ts
+   * const tasks = repo(Task).toJson(repo(Task).find())
+   * ```
+   *
+   * @param item Can be an array or a single entity, awaitable or not
+   */
   toJson(item: Promise<entityType[]>): Promise<any[]>
   toJson(item: entityType[]): any[]
   toJson(item: Promise<entityType>): Promise<any>
   toJson(item: entityType): any
 
-  /** Translates a json object to an item instance */
-  fromJson(x: any[], isNew?: boolean): entityType[]
-  fromJson(x: any, isNew?: boolean): entityType
+  /**
+   * Translates a json object to an item instance.
+   *
+   * @example
+   * ```ts
+   * const data = // from the server
+   * const tasks = repo(Task).fromJson(data)
+   * ```
+   *
+   * @param data Can be an array or a single element
+   * @param isNew To help the creation of the instance
+   */
+  fromJson(data: any[], isNew?: boolean): entityType[]
+  fromJson(data: any, isNew?: boolean): entityType
   /** returns an `entityRef` for an item returned by `create`, `find` etc... */
   getEntityRef(item: entityType): EntityRef<entityType>
   /** Provides information about the fields of the Repository's entity
@@ -920,26 +939,26 @@ export interface LiveQueryChangeInfo<entityType> {
 export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
   /** Determines the number of rows returned by the request, on the browser the default is 100 rows
    * @example
-   * await this.remult.repo(Products).find({
-   *  limit:10,
-   *  page:2
+   * await repo(Products).find({
+   *   limit: 10,
+   *   page: 2
    * })
    */
   limit?: number
   /** Determines the page number that will be used to extract the data
    * @example
-   * await this.remult.repo(Products).find({
-   *  limit:10,
-   *  page:2
+   * await repo(Products).find({
+   *   limit: 10,
+   *  page: 2
    * })
    */
   page?: number
 }
 /** Determines the order of items returned .
  * @example
- * await this.remult.repo(Products).find({ orderBy: { name: "asc" }})
+ * await repo(Products).find({ orderBy: { name: "asc" }})
  * @example
- * await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
+ * await repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
  */
 export declare type EntityOrderBy<entityType> = {
   [Properties in keyof Partial<MembersOnly<entityType>>]?: 'asc' | 'desc'
@@ -1243,13 +1262,13 @@ export interface LoadOptions<entityType> {
    * Example usage:
    * ```
    * // Deprecated usage with 'load' option
-   * await remult.repo(Order).find({
+   * await repo(Order).find({
    *   load: (o) => [o.customer],
    * });
    *
    *
    * // Preferred usage with 'Relations.toOne' and 'include' option
-   * await remult.repo(Order).find({
+   * await repo(Order).find({
    *   include: { customer: true },
    * });
    * ```
@@ -1287,9 +1306,9 @@ export interface FindOptionsBase<entityType> extends LoadOptions<entityType> {
   where?: EntityFilter<entityType>
   /** Determines the order of items returned .
    * @example
-   * await this.remult.repo(Products).find({ orderBy: { name: "asc" }})
+   * await repo(Products).find({ orderBy: { name: "asc" }})
    * @example
-   * await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
+   * await repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
    */
   orderBy?: EntityOrderBy<entityType>
 }
