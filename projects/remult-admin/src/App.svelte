@@ -68,14 +68,6 @@
 
     const cacheKey = input.toString()
     const now = Date.now()
-    const cached = cache.get(cacheKey)
-
-    // Return cached response if it exists and is still valid
-    if (cached && now - cached.timestamp < CACHE_DURATION) {
-      const cachedResponse = await cached.promise
-      // Clone the response since it can only be used once
-      return cachedResponse.clone()
-    }
 
     // Clean up expired cache entries
     for (const [key, value] of cache.entries()) {
@@ -84,22 +76,33 @@
       }
     }
 
-    // Create new request promise
+    // Check cache first
+    const cached = cache.get(cacheKey)
+    if (cached && now - cached.timestamp < CACHE_DURATION) {
+      const response = await cached.promise
+      return response.clone()
+    }
+
+    // If not in cache, create the promise immediately
     const fetchPromise = fetch(input, {
       ...init,
       headers: getHeader($SSContext, $LSContext, init),
-    }).then((response) => {
+    }).then(async (response) => {
       handleForbidden(response)
-      return response.clone() // Clone to store in cache
+      // Store a clone for future use
+      const clonedResponse = response.clone()
+      return clonedResponse
     })
 
-    // Store in cache
+    // Store in cache immediately
     cache.set(cacheKey, {
       promise: fetchPromise,
       timestamp: now,
     })
 
-    return fetchPromise
+    // Return a fresh clone for this request
+    const response = await fetchPromise
+    return response.clone()
 
     function handleForbidden(f: Response) {
       if (f.status === 403) {
