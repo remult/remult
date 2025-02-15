@@ -55,8 +55,13 @@ export function remultHapi(
               deleteCookie: (name) => {
                 res(h.response().header('Set-Cookie', `${name}=; Max-Age=0`))
               },
-              redirect: (status, url) => {
-                res(h.response().redirect(url).code(status))
+              redirect: (url, status) => {
+                res(
+                  h
+                    .response()
+                    .redirect(url)
+                    .code(status ?? 307),
+                )
               },
               status(statusCode) {
                 status = statusCode

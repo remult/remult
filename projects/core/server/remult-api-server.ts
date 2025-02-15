@@ -301,9 +301,19 @@ export interface GenericResponse {
   json(data: any): void
   send(html: string, headers?: Record<string, string>): void
   redirect(
-    /** The [HTTP status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#redirection_messages). Must be in the range 300-308. */
-    status: 300 | 301 | 302 | 303 | 304 | 305 | 306 | 307 | 308 | ({} & number),
     url: string,
+    /** The [HTTP status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#redirection_messages). Must be in the range 300-308. */
+    status?:
+      | 300
+      | 301
+      | 302
+      | 303
+      | 304
+      | 305
+      | 306
+      | 307
+      | 308
+      | ({} & number),
   ): void
   setCookie(
     name: string,
@@ -1563,10 +1573,12 @@ export class RouteImplementation<RequestType> {
           if (gRes !== undefined) gRes.send(content, headers)
           res({ statusCode: this.statusCode, content, headers })
         }
-        redirect(status: number, redirectUrl: string): void {
-          if (gRes !== undefined) gRes.redirect(status, redirectUrl)
-          this.statusCode = status
-          res({ statusCode: status, redirectUrl })
+        redirect(redirectUrl: string, status?: number): void {
+          if (this.statusCode < 300 || this.statusCode >= 400) {
+            this.statusCode = status ?? 307
+          }
+          if (gRes !== undefined) gRes.redirect(redirectUrl, this.statusCode)
+          res({ statusCode: this.statusCode, redirectUrl })
         }
         setCookie(name: string, value: string, options: any): void {
           if (gRes !== undefined) gRes.setCookie(name, value, options)

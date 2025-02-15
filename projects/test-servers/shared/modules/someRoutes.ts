@@ -62,11 +62,11 @@ export const someRoutes = new Module({
       res.send('<h1>Hello World</h1>')
     })
     add('/redirect').get((req, res) => {
-      res.redirect(307, '/api/html')
+      // res.status(302).redirect('/api/html')
+      res.redirect('/api/html')
     })
     add('/redirect-ext').get((req, res) => {
       res.redirect(
-        307,
         'https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#redirection_messages',
       )
     })

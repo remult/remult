@@ -172,7 +172,7 @@ describe('test router impl', async () => {
   })
   it('test redirect', async () => {
     r.route('/r').get(async (req, res) => {
-      res.redirect(307, '/a')
+      res.redirect('/a')
     })
     expect(await r.handle({ url: '/r', method: 'GET' })).toMatchInlineSnapshot(`
       {
@@ -183,5 +183,16 @@ describe('test router impl', async () => {
     expect(await r.handle({ url: '/a', method: 'GET' })).toMatchInlineSnapshot(
       `undefined`,
     )
+  })
+  it('test redirect with code', async () => {
+    r.route('/r').get(async (req, res) => {
+      res.status(302).redirect('/a')
+    })
+    expect(await r.handle({ url: '/r', method: 'GET' })).toMatchInlineSnapshot(`
+      {
+        "redirectUrl": "/a",
+        "statusCode": 302,
+      }
+    `)
   })
 })

@@ -76,8 +76,8 @@ export function remultHono(
                 deleteCookie: (name) => {
                   res(c.header('Set-Cookie', `${name}=; Max-Age=0`))
                 },
-                redirect: (status, url) => {
-                  res(c.redirect(url, status as any))
+                redirect: (url, status) => {
+                  res(c.redirect((status ?? 307) as any, url as any))
                 },
                 json: (data: any) => {
                   res(c.json(data))

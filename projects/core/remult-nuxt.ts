@@ -35,8 +35,8 @@ export function remultNuxt(
       deleteCookie: (name) => {
         event.node.res.setHeader('Set-Cookie', `${name}=; Max-Age=0`)
       },
-      redirect: (status, url) => {
-        event.node.res.writeHead(status, { Location: url })
+      redirect: (url, status) => {
+        event.node.res.writeHead(status ?? 307, { Location: url })
       },
       end: () => {},
       send: () => {},

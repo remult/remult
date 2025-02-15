@@ -31,8 +31,8 @@ export function remultFastify(
         deleteCookie: (name) => {
           res.header('Set-Cookie', `${name}=; Max-Age=0`)
         },
-        redirect: (statusCode, url) => {
-          res.redirect(statusCode, url)
+        redirect: (url, statusCode) => {
+          res.redirect(statusCode ?? 307, url)
         },
         status(statusCode) {
           res.status(statusCode)
