@@ -35,9 +35,17 @@ export const api = remultExpress({
   //   you should use http://localhost:5173/api3/admin.
   // rootPath: '/api3',
   entities,
+  getUser: async () => {
+    return {
+      id: '1',
+      name: 'JYC',
+    }
+  },
   admin: {
     allow: true,
-    head: `<title>Dev Admin</title>
+    customHtmlHead: (r) => `<title>Dev Admin (${
+      r.user?.name ?? 'Anonymous'
+    })</title>
 <link href="https://remult.dev/favicon.png" rel="icon" type="image/png">`,
   },
 })

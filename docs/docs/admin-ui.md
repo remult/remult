@@ -18,15 +18,18 @@ export const api = remultExpress({
 You can pass some options to admin as well:
 
 - `allow`, using [allowed](https://remult.dev/docs/access-control). `true`, `"admin"`, ...
-- `customHtmlHead`, to add custom html to the head of the admin page.
+- `customHtmlHead`, to add custom html to the head of the admin page. It's a function that receives remult as an argument.
+
+Example:
 
 ```ts
 export const api = remultExpress({
   entities: [],
   admin: {
     allow: 'admin', // Only for user having the "admin" role
-    customHtmlHead: () =>
-      `<title>Nice Admin!</title><link href="https://remult.dev/favicon.png" rel="icon" type="image/png">`,
+    customHtmlHead: (r) =>
+      `<title>Nice Admin! (${r.user?.name ?? 'Anonymous'})</title>
+       <link href="https://remult.dev/favicon.png" rel="icon" type="image/png">`,
   },
 })
 ```

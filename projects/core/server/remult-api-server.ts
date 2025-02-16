@@ -105,7 +105,7 @@ export interface RemultServerOptions<RequestType> {
     | Allowed
     | {
         allow: Allowed
-        head?: string
+        customHtmlHead?: (remult: Remult) => string
       }
 
   /** Storage to use for backend methods that use queue */
@@ -442,16 +442,17 @@ export class RemultServerImplementation<RequestType>
                   }),
                 )
               } else {
-                const defaultHead = '<title>Admin</title>'
+                let head = '<title>Admin</title>'
+                if (
+                  isOfType<{ allow: Allowed }>(this.options.admin, 'allow') &&
+                  this.options.admin.customHtmlHead
+                ) {
+                  head = this.options.admin.customHtmlHead(remult)
+                }
                 origResponse.send(
                   remultAdminHtml({
                     rootPath: this.options.rootPath ?? '/api',
-                    head: isOfType<{ allow: Allowed; head?: string }>(
-                      this.options.admin,
-                      'allow',
-                    )
-                      ? this.options.admin.head ?? defaultHead
-                      : defaultHead,
+                    head,
                   }),
                 )
               }
