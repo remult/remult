@@ -1,10 +1,11 @@
-import path from 'path'
-import fs from 'fs'
 import { Module } from '../../../core/server/index.js'
 
 export const someRoutes = new Module({
   key: 'some-routes',
   rawRoutes: ({ add, rootPath }) => {
+    const COOKIE_NAME = 'the_cookie_name'
+    const cookieNav = `<hr /> <a href="/api/setCookie">setCookie</a> | <a href="/api/getCookie">getCookie</a> | <a href="/api/deleteCookie">deleteCookie</a>`
+
     add('/new-route').get((req, res) => {
       res.json({ Soooooo: 'Cool! A new new-route!' })
     })
@@ -24,28 +25,22 @@ export const someRoutes = new Module({
     })
 
     add('/setCookie').get((req, res) => {
-      res.setCookie('res.setCookie', 'Plop')
-      res.send(
-        '<h1>setCookie</h1><a href="/api/setCookie">setCookie</a> | <a href="/api/getCookie">getCookie</a> | <a href="/api/deleteCookie">deleteCookie</a>',
-      )
+      res.setCookie(COOKIE_NAME, 'Hello')
+      res.send(`<h1>setCookie</h1> ${cookieNav}`)
     })
 
     add('/getCookie').get((req, res) => {
-      const val = res.getCookie('res.setCookie')
-      res.send(
-        `<h1>getCookie</h1><p>${val}</p><a href="/api/setCookie">setCookie</a> | <a href="/api/getCookie">getCookie</a> | <a href="/api/deleteCookie">deleteCookie</a>`,
-      )
+      const val = res.getCookie(COOKIE_NAME)
+      res.send(`<h1>getCookie</h1><p>${val}</p> ${cookieNav}`)
     })
 
     add('/deleteCookie').get((req, res) => {
-      res.deleteCookie('res.setCookie')
-      res.send(
-        '<h1>deleteCookie</h1><a href="/api/setCookie">setCookie</a> | <a href="/api/getCookie">getCookie</a> | <a href="/api/deleteCookie">deleteCookie</a>',
-      )
+      res.deleteCookie(COOKIE_NAME)
+      res.send(`<h1>deleteCookie</h1> ${cookieNav}`)
     })
 
     add('/styled*').staticFolder('./src/server/styled', {
-      // packageName: 'coucou',
+      // packageName: 'jyc-pck',
       editFile(filePath, content) {
         if (filePath.endsWith('index.html')) {
           return content.replace('<b>Styled</b>', '<b>Styled Replaced!</b>')

@@ -625,7 +625,7 @@ export function allServerTests(
         const result = await axios.get(remult.apiClient.url + '/setCookie')
         expect(result.headers['set-cookie']).toMatchInlineSnapshot(`
             [
-              "res.setCookie=Plop; Path=/; HttpOnly; Secure; SameSite=Lax",
+              "the_cookie_name=Hello; Path=/; HttpOnly; Secure; SameSite=Lax",
             ]
           `)
       }),
