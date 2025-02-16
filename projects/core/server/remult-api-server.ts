@@ -44,6 +44,9 @@ import remultAdminHtml, { buildEntityInfo } from './remult-admin.js'
 import { isOfType } from '../src/isOfType.js'
 import { initDataProviderOrJson } from './initDataProviderOrJson.js'
 import type { ParseOptions, SerializeOptions } from 'cookie'
+import fs from 'fs'
+import gpath from 'path'
+
 export interface RemultServerOptions<RequestType> {
   /**Entities to use for the api */
   entities?: ClassType<any>[]
@@ -155,8 +158,6 @@ export interface RawRoutes<RequestType> {
   (args: {
     add: (relativePath: `/${string}`) => SpecificRoute<RequestType>
     rootPath: string
-    // Should we add this as well ?! To allow routes for some users?! (Maybe not in v0 ? :D)
-    // remult: Remult
   }): void
 }
 
@@ -288,6 +289,20 @@ export type SpecificRoute<RequestType> = {
   post(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
   delete(
     handler: GenericRequestHandler<RequestType>,
+  ): SpecificRoute<RequestType>
+  /**
+   * Serves static files from a folder
+   * @param folderPath The path to the folder containing static files
+   * @param options Configuration options for serving static files
+   */
+  staticFolder(
+    folderPath: string,
+    options?: {
+      packageName?: string
+      editFile?: (filePath: string, content: string) => string
+      /** List of file extensions and their corresponding content types */
+      contentTypes?: Record<string, string>
+    },
   ): SpecificRoute<RequestType>
 }
 export interface GenericRequestInfo {
@@ -508,13 +523,27 @@ export class RemultServerImplementation<RequestType>
       }
 
       // Register extra routes
+      const routeImpl = r as RouteImplementation<RequestType>
       const add = (relativePath: `/${string}`) => {
         const newRoute = this.options.rootPath + relativePath
         if (this.options.logApiEndPoints) {
           console.info('[remult] ' + newRoute + ' [!]')
         }
-        return r.route(newRoute)
+        const m = new Map<string, GenericRequestHandler<RequestType>>()
+
+        // Add the route to the map
+        const r = newRoute.toLowerCase()
+        routeImpl.map.set(r, m)
+        if (newRoute.endsWith('*')) {
+          routeImpl.starRoutes.push({
+            route: r.substring(0, r.length - 1),
+            handler: m,
+          })
+        }
+
+        return routeImpl.createRouteHandlers(newRoute, m)
       }
+
       for (const module of this.modulesSorted) {
         module.rawRoutes?.({ add, rootPath: this.options.rootPath ?? '/api' })
       }
@@ -1507,16 +1536,11 @@ export class RouteImplementation<RequestType> {
     route: string
     handler: Map<string, GenericRequestHandler<RequestType>>
   }[] = []
-  route(path: string): SpecificRoute<RequestType> {
-    //consider using:
-    //* https://raw.githubusercontent.com/cmorten/opine/main/src/utils/pathToRegex.ts
-    //* https://github.com/pillarjs/path-to-regexp
-    let r = path.toLowerCase()
-    let m = new Map<string, GenericRequestHandler<RequestType>>()
 
-    this.map.set(r, m)
-    if (path.endsWith('*'))
-      this.starRoutes.push({ route: r.substring(0, r.length - 1), handler: m })
+  createRouteHandlers(
+    path: string,
+    m: Map<string, GenericRequestHandler<RequestType>>,
+  ): SpecificRoute<RequestType> {
     const route = {
       get: (h: GenericRequestHandler<RequestType>) => {
         m.set('get', h)
@@ -1534,9 +1558,112 @@ export class RouteImplementation<RequestType> {
         m.set('delete', h)
         return route
       },
+      staticFolder: (
+        folderPath: string,
+        options?: {
+          packageName?: string
+          contentTypes?: Record<string, string>
+          editFile?: (filePath: string, content: string) => string
+        },
+      ) => {
+        const defaultContentTypes: Record<string, string> = {
+          js: 'text/javascript',
+          css: 'text/css',
+          svg: 'image/svg+xml',
+          html: 'text/html',
+          ...options?.contentTypes,
+        }
+
+        m.set(
+          'get',
+          (req: RequestType, res: GenericResponse, next: VoidFunction) => {
+            const reqInfo = this.coreOptions.buildGenericRequestInfo(req)
+            const currentHttpBasePath = path.replace('*', '')
+
+            const relativePath =
+              reqInfo.url!.split(currentHttpBasePath)[1] || ''
+
+            const paths = []
+            if (options?.packageName) {
+              let packagePath = ''
+              let level = 0
+              let found = false
+              let prefix = ''
+
+              do {
+                packagePath = gpath.join(
+                  prefix,
+                  'node_modules',
+                  options.packageName,
+                )
+                if (fs.existsSync(packagePath)) {
+                  found = true
+                  break
+                }
+                prefix = gpath.join(prefix, '..')
+                level++
+              } while (level < 3)
+
+              if (!found) {
+                console.error(`Package ${options.packageName} not found!`)
+              }
+              paths.push(packagePath)
+            }
+
+            paths.push(folderPath)
+            paths.push(relativePath)
+            let filePath = gpath.join(...paths)
+
+            if (fs.existsSync(filePath)) {
+              if (fs.statSync(filePath).isDirectory()) {
+                const indexPath = gpath.join(filePath, 'index.html')
+                if (fs.existsSync(indexPath)) {
+                  filePath = indexPath
+                } else {
+                  filePath = filePath + '.html'
+                }
+              }
+            } else {
+              filePath = filePath + '.html'
+            }
+
+            try {
+              const rawContent = fs.readFileSync(filePath, 'utf-8')
+              const content =
+                options?.editFile?.(filePath, rawContent) ?? rawContent
+              const extension = gpath.extname(filePath).slice(1)
+              const contentType = defaultContentTypes[extension] ?? 'text/plain'
+
+              res.send(content, {
+                'content-type': contentType,
+              })
+              return
+            } catch (error) {
+              console.log('File read error:', {
+                error,
+                filePath,
+              })
+              res.status(404).end()
+            }
+          },
+        )
+        return route
+      },
     }
     return route
   }
+
+  route(path: string): SpecificRoute<RequestType> {
+    let r = path.toLowerCase()
+    let m = new Map<string, GenericRequestHandler<RequestType>>()
+
+    this.map.set(r, m)
+    if (path.endsWith('*'))
+      this.starRoutes.push({ route: r.substring(0, r.length - 1), handler: m })
+
+    return this.createRouteHandlers(r, m)
+  }
+
   async handle(
     req: RequestType,
     gRes?: GenericResponse,

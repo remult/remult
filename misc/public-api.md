@@ -3756,6 +3756,20 @@ export type SpecificRoute<RequestType> = {
   delete(
     handler: GenericRequestHandler<RequestType>,
   ): SpecificRoute<RequestType>
+  /**
+   * Serves static files from a folder
+   * @param folderPath The path to the folder containing static files
+   * @param options Configuration options for serving static files
+   */
+  staticFolder(
+    folderPath: string,
+    options?: {
+      packageName?: string
+      editFile?: (filePath: string, content: string) => string
+      /** List of file extensions and their corresponding content types */
+      contentTypes?: Record<string, string>
+    },
+  ): SpecificRoute<RequestType>
 }
 export declare class SseSubscriptionServer implements SubscriptionServer {
   private canUserConnectToChannel?
@@ -3999,6 +4013,20 @@ export type SpecificRoute<RequestType> = {
   post(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
   delete(
     handler: GenericRequestHandler<RequestType>,
+  ): SpecificRoute<RequestType>
+  /**
+   * Serves static files from a folder
+   * @param folderPath The path to the folder containing static files
+   * @param options Configuration options for serving static files
+   */
+  staticFolder(
+    folderPath: string,
+    options?: {
+      packageName?: string
+      editFile?: (filePath: string, content: string) => string
+      /** List of file extensions and their corresponding content types */
+      contentTypes?: Record<string, string>
+    },
   ): SpecificRoute<RequestType>
 }
 export declare class SseSubscriptionServer implements SubscriptionServer {
