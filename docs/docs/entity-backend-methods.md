@@ -40,7 +40,7 @@ export class Task extends IdEntity {
 Once the backend method is defined, it can be called from the client-side code. This process typically involves fetching an entity instance and then invoking the backend method as shown below:
 
 ```typescript
-const task = await remult.repo(Task).findFirst()
+const task = await repo(Task).findFirst()
 await task.toggleCompleted()
 ```
 
