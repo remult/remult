@@ -45,7 +45,7 @@ import { isOfType } from '../src/isOfType.js'
 import { initDataProviderOrJson } from './initDataProviderOrJson.js'
 import type { ParseOptions, SerializeOptions } from 'cookie'
 import fs from 'fs'
-import gpath from 'path'
+import { join, extname } from 'path'
 
 export interface RemultServerOptions<RequestType> {
   /**Entities to use for the api */
@@ -1591,16 +1591,12 @@ export class RouteImplementation<RequestType> {
               let prefix = ''
 
               do {
-                packagePath = gpath.join(
-                  prefix,
-                  'node_modules',
-                  options.packageName,
-                )
+                packagePath = join(prefix, 'node_modules', options.packageName)
                 if (fs.existsSync(packagePath)) {
                   found = true
                   break
                 }
-                prefix = gpath.join(prefix, '..')
+                prefix = join(prefix, '..')
                 level++
               } while (level < 3)
 
@@ -1612,11 +1608,11 @@ export class RouteImplementation<RequestType> {
 
             paths.push(folderPath)
             paths.push(relativePath)
-            let filePath = gpath.join(...paths)
+            let filePath = join(...paths)
 
             if (fs.existsSync(filePath)) {
               if (fs.statSync(filePath).isDirectory()) {
-                const indexPath = gpath.join(filePath, 'index.html')
+                const indexPath = join(filePath, 'index.html')
                 if (fs.existsSync(indexPath)) {
                   filePath = indexPath
                 } else {
@@ -1631,7 +1627,7 @@ export class RouteImplementation<RequestType> {
               const rawContent = fs.readFileSync(filePath, 'utf-8')
               const content =
                 options?.editFile?.(filePath, rawContent) ?? rawContent
-              const extension = gpath.extname(filePath).slice(1)
+              const extension = extname(filePath).slice(1)
               const contentType = defaultContentTypes[extension] ?? 'text/plain'
 
               res.send(content, {
