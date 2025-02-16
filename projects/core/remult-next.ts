@@ -13,6 +13,7 @@ import type {
   RemultServerOptions,
 } from './server/index.js'
 import { createRemultServer, remultHandlerToResponse } from './server/index.js'
+import { parse } from 'cookie'
 
 export function remultNext(
   options: RemultServerOptions<NextApiRequest>,
@@ -106,7 +107,14 @@ export function remultNextApp(
 
       const response: GenericResponse & ResponseRequiredForSSE = {
         redirect: () => {},
-        setCookie: () => {},
+        setCookie: (name, value, options) => {},
+        getCookie: (name, options) => {
+          const val = req.headers.get('cookie')
+          if (val) {
+            return parse(val, options)[name]
+          }
+          return undefined
+        },
         deleteCookie: () => {},
         end: () => {},
         json: () => {},

@@ -3559,22 +3559,14 @@ export interface GenericResponse {
       | 308
       | ({} & number),
   ): void
-  setCookie(
-    name: string,
-    value: string,
-    opts?: import("cookie").CookieSerializeOptions & {
-      path?: string
-    },
-  ): void
-  deleteCookie(
-    name: string,
-    opts?: import("cookie").CookieSerializeOptions & {
-      path?: string
-    },
-  ): void
+  setCookie(name: string, value: string, opts?: SerializeOptions): void
+  getCookie(name: string, opts?: ParseOptions): string | undefined
+  deleteCookie(name: string, opts?: SerializeOptions): void
   status(statusCode: number): GenericResponse
   end(): void
 }
+//[ ] SerializeOptions from TBD is not exported
+//[ ] ParseOptions from TBD is not exported
 export type GenericRouter<RequestType> = {
   route(path: string): SpecificRoute<RequestType>
 }
@@ -3844,22 +3836,14 @@ export interface GenericResponse {
       | 308
       | ({} & number),
   ): void
-  setCookie(
-    name: string,
-    value: string,
-    opts?: import("cookie").CookieSerializeOptions & {
-      path?: string
-    },
-  ): void
-  deleteCookie(
-    name: string,
-    opts?: import("cookie").CookieSerializeOptions & {
-      path?: string
-    },
-  ): void
+  setCookie(name: string, value: string, opts?: SerializeOptions): void
+  getCookie(name: string, opts?: ParseOptions): string | undefined
+  deleteCookie(name: string, opts?: SerializeOptions): void
   status(statusCode: number): GenericResponse
   end(): void
 }
+//[ ] SerializeOptions from TBD is not exported
+//[ ] ParseOptions from TBD is not exported
 export type GenericRouter<RequestType> = {
   route(path: string): SpecificRoute<RequestType>
 }

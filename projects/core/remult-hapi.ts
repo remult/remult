@@ -17,6 +17,7 @@ import {
 } from './server/index.js'
 import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
 import { PassThrough } from 'stream'
+import { parse, serialize } from 'cookie'
 
 export function remultHapi(
   options: RemultServerOptions<Request>,
@@ -49,8 +50,15 @@ export function remultHapi(
                 res(
                   h
                     .response()
-                    .header('Set-Cookie', `${name}=${value}; ${options}`),
+                    .header('Set-Cookie', serialize(name, value, options)),
                 )
+              },
+              getCookie: (name, options) => {
+                const val = request.headers.cookie
+                if (val) {
+                  return parse(val, options)[name]
+                }
+                return undefined
               },
               deleteCookie: (name) => {
                 res(h.response().header('Set-Cookie', `${name}=; Max-Age=0`))

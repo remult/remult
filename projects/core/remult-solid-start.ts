@@ -7,6 +7,7 @@ import type {
 } from './server/index.js'
 import { createRemultServer, remultHandlerToResponse } from './server/index.js'
 import type { APIEvent } from '@solidjs/start/server' // don't remove - augments requestEvent
+import { parse, serialize } from 'cookie'
 
 export function remultSolidStart(
   options: RemultServerOptions<RequestEvent>,
@@ -33,8 +34,25 @@ export function remultSolidStart(
       json: () => {},
       send: () => {},
       redirect: () => {},
-      setCookie: () => {},
-      deleteCookie: () => {},
+      setCookie: (name, value, options) => {
+        event?.response.headers.set(
+          'Set-Cookie',
+          serialize(name, value, options),
+        )
+      },
+      getCookie: (name, options) => {
+        const val = event?.request.headers.get('cookie')
+        if (val) {
+          return parse(val, options)[name]
+        }
+        return undefined
+      },
+      deleteCookie: (name, options) => {
+        event?.response.headers.set(
+          'Set-Cookie',
+          serialize(name, '', { ...options, maxAge: 0 }),
+        )
+      },
       status: () => {
         return response
       },

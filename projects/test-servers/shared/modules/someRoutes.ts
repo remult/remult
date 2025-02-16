@@ -72,11 +72,21 @@ export const someRoutes = new Module({
     })
     add('/setCookie').get((req, res) => {
       res.setCookie('res.setCookie', 'Plop')
-      res.send('<h1>setCookie</h1><a href="/api/deleteCookie">deleteCookie</a>')
+      res.send(
+        '<h1>setCookie</h1><a href="/api/setCookie">setCookie</a> | <a href="/api/getCookie">getCookie</a> | <a href="/api/deleteCookie">deleteCookie</a>',
+      )
+    })
+    add('/getCookie').get((req, res) => {
+      const val = res.getCookie('res.setCookie')
+      res.send(
+        `<h1>getCookie</h1><p>${val}</p><a href="/api/setCookie">setCookie</a> | <a href="/api/getCookie">getCookie</a> | <a href="/api/deleteCookie">deleteCookie</a>`,
+      )
     })
     add('/deleteCookie').get((req, res) => {
       res.deleteCookie('res.setCookie')
-      res.send('<h1>deleteCookie</h1><a href="/api/setCookie">setCookie</a>')
+      res.send(
+        '<h1>deleteCookie</h1><a href="/api/setCookie">setCookie</a> | <a href="/api/getCookie">getCookie</a> | <a href="/api/deleteCookie">deleteCookie</a>',
+      )
     })
 
     addStaticFolder(add, rootPath, '/styled*', './src/server/styled')

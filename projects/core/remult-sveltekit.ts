@@ -7,6 +7,7 @@ import type {
   RemultServer,
 } from './server/index.js'
 import { createRemultServer, remultHandlerToResponse } from './server/index.js'
+import { parse } from 'cookie'
 
 export function remultSveltekit(
   options: RemultServerOptions<RequestEvent>,
@@ -37,6 +38,13 @@ export function remultSveltekit(
           ...options,
           path: options?.path ?? '/',
         })
+      },
+      getCookie: (name, options) => {
+        const val = event.request.headers.get('cookie')
+        if (val) {
+          return parse(val, options)[name]
+        }
+        return undefined
       },
       deleteCookie: (name, options) => {
         event.cookies.delete(name, {

@@ -43,7 +43,7 @@ import { remultStatic } from '../src/remult-static.js'
 import remultAdminHtml, { buildEntityInfo } from './remult-admin.js'
 import { isOfType } from '../src/isOfType.js'
 import { initDataProviderOrJson } from './initDataProviderOrJson.js'
-
+import type { ParseOptions, SerializeOptions } from 'cookie'
 export interface RemultServerOptions<RequestType> {
   /**Entities to use for the api */
   entities?: ClassType<any>[]
@@ -315,15 +315,18 @@ export interface GenericResponse {
       | 308
       | ({} & number),
   ): void
-  setCookie(
-    name: string,
-    value: string,
-    opts?: import('cookie').CookieSerializeOptions & { path?: string },
-  ): void
-  deleteCookie(
-    name: string,
-    opts?: import('cookie').CookieSerializeOptions & { path?: string },
-  ): void
+  // TODO JYC What abou this API?
+  // cookie(
+  //   name: string,
+  //   opts?: SerializeOptions,
+  // ): {
+  //   set(value: string): void
+  //   get(): string | undefined
+  //   delete(): void
+  // }
+  setCookie(name: string, value: string, opts?: SerializeOptions): void
+  getCookie(name: string, opts?: ParseOptions): string | undefined
+  deleteCookie(name: string, opts?: SerializeOptions): void
   status(statusCode: number): GenericResponse //exists for express and next and not in opine(In opine it's setStatus)
   end(): void
 }
@@ -1590,6 +1593,10 @@ export class RouteImplementation<RequestType> {
           if (gRes !== undefined) gRes.status(statusCode)
           this.statusCode = statusCode
           return this
+        }
+        getCookie(name: string): string | undefined {
+          if (gRes !== undefined) return gRes.getCookie(name)
+          return undefined
         }
         end() {
           if (gRes !== undefined) gRes.end()

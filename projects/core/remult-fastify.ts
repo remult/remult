@@ -15,6 +15,7 @@ import type {
   RemultServer,
 } from './server/remult-api-server.js'
 import { createRemultServer } from './server/index.js'
+import { parse, serialize } from 'cookie'
 
 export function remultFastify(
   options: RemultServerOptions<FastifyRequest>,
@@ -23,10 +24,14 @@ export function remultFastify(
     const response: RouteHandlerMethod = (req, res) => {
       const myRes: GenericResponse & ResponseRequiredForSSE = {
         setCookie: (name, value, options) => {
-          // import('cookie').then((c) =>
-          //   res.header('Set-Cookie', c.serialize(name, value, options)),
-          // )
-          res.header('Set-Cookie', `${name}=${value}; ${options}`)
+          res.header('Set-Cookie', serialize(name, value, options))
+        },
+        getCookie: (name, options) => {
+          const val = req.headers.cookie
+          if (val) {
+            return parse(val, options)[name]
+          }
+          return undefined
         },
         deleteCookie: (name) => {
           res.header('Set-Cookie', `${name}=; Max-Age=0`)
