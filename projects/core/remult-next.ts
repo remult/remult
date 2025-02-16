@@ -12,7 +12,8 @@ import type {
   RemultServerCore,
   RemultServerOptions,
 } from './server/index.js'
-import { createRemultServer } from './server/index.js'
+import { createRemultServer, remultHandlerToResponse } from './server/index.js'
+import { parse } from 'cookie'
 
 export function remultNext(
   options: RemultServerOptions<NextApiRequest>,
@@ -21,6 +22,7 @@ export function remultNext(
     buildGenericRequestInfo: (req) => req,
     getRequestBody: async (req) => req.body,
   })
+  // @ts-ignore TODO JYC
   return Object.assign(
     (req: NextApiRequest, res: GenericResponse) =>
       result.handle(req, res).then(() => {}),
@@ -104,6 +106,16 @@ export function remultNextApp(
       ;(req as any)['_tempOnClose'] = () => {}
 
       const response: GenericResponse & ResponseRequiredForSSE = {
+        redirect: () => {},
+        setCookie: (name, value, options) => {},
+        getCookie: (name, options) => {
+          const val = req.headers.get('cookie')
+          if (val) {
+            return parse(val, options)[name]
+          }
+          return undefined
+        },
+        deleteCookie: () => {},
         end: () => {},
         json: () => {},
         send: () => {},
@@ -138,26 +150,11 @@ export function remultNextApp(
       }
 
       const responseFromRemultHandler = await result.handle(req, response)
-      if (sseResponse !== undefined) {
-        return sseResponse
-      }
-      if (responseFromRemultHandler) {
-        if (responseFromRemultHandler.html)
-          return new Response(responseFromRemultHandler.html, {
-            status: responseFromRemultHandler.statusCode,
-            headers: {
-              'Content-Type': 'text/html',
-            },
-          })
-        return new Response(JSON.stringify(responseFromRemultHandler.data), {
-          status: responseFromRemultHandler.statusCode,
-        })
-      }
-      if (!responseFromRemultHandler) {
-        return new Response('', {
-          status: 404,
-        })
-      }
+      return remultHandlerToResponse(
+        responseFromRemultHandler,
+        sseResponse,
+        req.url,
+      )
     }
   }
   return {

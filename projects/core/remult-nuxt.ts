@@ -8,6 +8,7 @@ import type {
   RemultServer,
 } from './server/index.js'
 import { createRemultServer } from './server/index.js'
+import { parse, serialize } from 'cookie'
 
 export function remultNuxt(
   options: RemultServerOptions<H3Event>,
@@ -29,6 +30,25 @@ export function remultNuxt(
     let sse = false
 
     const response: GenericResponse & ResponseRequiredForSSE = {
+      setCookie: (name, value, options) => {
+        event.node.res.setHeader('Set-Cookie', serialize(name, value, options))
+      },
+      getCookie: (name, options) => {
+        const val = event.node.req.headers.cookie
+        if (val) {
+          return parse(val, options)[name]
+        }
+        return undefined
+      },
+      deleteCookie: (name, options) => {
+        event.node.res.setHeader(
+          'Set-Cookie',
+          serialize(name, '', { ...options, maxAge: 0 }),
+        )
+      },
+      redirect: (url, status) => {
+        event.node.res.writeHead(status ?? 307, { Location: url })
+      },
       end: () => {},
       send: () => {},
       json: () => {},
@@ -52,7 +72,7 @@ export function remultNuxt(
     }
     if (r) {
       if (r.statusCode !== 200) setResponseStatus(event, r.statusCode)
-      if (r.html) return r.html
+      if (r.content) return r.content
       return r.data == null ? 'null' : r.data
     }
   }

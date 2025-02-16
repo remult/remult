@@ -20,7 +20,7 @@ export default defineConfig({
     coverage: {
       enabled: false,
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      reporter: ['json', 'html'],
       include: ['projects/core/**'],
     },
   },

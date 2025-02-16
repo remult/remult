@@ -7,7 +7,7 @@ import { Task } from '../../test-servers/shared/Task.js'
 import { RemultAsyncLocalStorage } from '../../core/src/context.js'
 import { allServerTests } from './all-server-tests.js'
 import { remult } from '../../core/index.js'
-
+import { someRoutes } from '../../test-servers/shared/modules/someRoutes.js'
 describe('test holo server', async () => {
   let destroy: () => Promise<void>
   let port = 3012
@@ -17,6 +17,7 @@ describe('test holo server', async () => {
     const api = remultHono({
       entities: [Task],
       admin: true,
+      modules: [someRoutes],
     })
     app.route('', api)
     app.get('/api/test', api.withRemult, async (c) =>

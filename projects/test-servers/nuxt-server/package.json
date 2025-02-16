@@ -10,7 +10,7 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "remult": "^0.23.0-esm.8"
+    "remult": "../../../dist/remult"
   },
   "devDependencies": {
     "@nuxt/devtools": "latest",

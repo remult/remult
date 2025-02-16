@@ -11,6 +11,7 @@ import {
   type GenericResponse,
 } from './server/index.js'
 import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
+import { parse, serialize } from 'cookie'
 export function remultHono(
   options: RemultServerOptions<Context<Env, '', BlankInput>>,
 ): RemultHonoServer {
@@ -70,6 +71,22 @@ export function remultHono(
               let result: any
               let sse: SSEStreamingApi
               const gRes: GenericResponse & ResponseRequiredForSSE = {
+                setCookie: (name, value, options) => {
+                  res(c.header('Set-Cookie', serialize(name, value, options)))
+                },
+                getCookie: (name, options) => {
+                  const val = c.req.header('cookie')
+                  if (val) {
+                    return parse(val, options)[name]
+                  }
+                  return undefined
+                },
+                deleteCookie: (name) => {
+                  res(c.header('Set-Cookie', `${name}=; Max-Age=0`))
+                },
+                redirect: (url, status) => {
+                  res(c.redirect((status ?? 307) as any, url as any))
+                },
                 json: (data: any) => {
                   res(c.json(data))
                 },

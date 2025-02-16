@@ -15,6 +15,7 @@ import type {
   RemultServer,
 } from './server/remult-api-server.js'
 import { createRemultServer } from './server/index.js'
+import { parse, serialize } from 'cookie'
 
 export function remultFastify(
   options: RemultServerOptions<FastifyRequest>,
@@ -22,6 +23,22 @@ export function remultFastify(
   function fastifyHandler(handler: GenericRequestHandler<FastifyRequest>) {
     const response: RouteHandlerMethod = (req, res) => {
       const myRes: GenericResponse & ResponseRequiredForSSE = {
+        setCookie: (name, value, options) => {
+          res.header('Set-Cookie', serialize(name, value, options))
+        },
+        getCookie: (name, options) => {
+          const val = req.headers.cookie
+          if (val) {
+            return parse(val, options)[name]
+          }
+          return undefined
+        },
+        deleteCookie: (name) => {
+          res.header('Set-Cookie', `${name}=; Max-Age=0`)
+        },
+        redirect: (url, statusCode) => {
+          res.redirect(statusCode ?? 307, url)
+        },
         status(statusCode) {
           res.status(statusCode)
           return myRes
@@ -29,8 +46,8 @@ export function remultFastify(
         end() {
           res.send()
         },
-        send(html) {
-          res.type('text/html').send(html)
+        send(html, headers) {
+          res.type(headers?.['Content-Type'] || 'text/html').send(html)
         },
         json(data) {
           res.send(data)

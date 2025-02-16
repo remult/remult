@@ -17,6 +17,7 @@ import {
 } from './server/index.js'
 import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
 import { PassThrough } from 'stream'
+import { parse, serialize } from 'cookie'
 
 export function remultHapi(
   options: RemultServerOptions<Request>,
@@ -45,6 +46,31 @@ export function remultHapi(
             let stream: PassThrough
 
             let r: GenericResponse & ResponseRequiredForSSE = {
+              setCookie: (name, value, options) => {
+                res(
+                  h
+                    .response()
+                    .header('Set-Cookie', serialize(name, value, options)),
+                )
+              },
+              getCookie: (name, options) => {
+                const val = request.headers.cookie
+                if (val) {
+                  return parse(val, options)[name]
+                }
+                return undefined
+              },
+              deleteCookie: (name) => {
+                res(h.response().header('Set-Cookie', `${name}=; Max-Age=0`))
+              },
+              redirect: (url, status) => {
+                res(
+                  h
+                    .response()
+                    .redirect(url)
+                    .code(status ?? 307),
+                )
+              },
               status(statusCode) {
                 status = statusCode
                 return r

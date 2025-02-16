@@ -5,8 +5,9 @@ import type {
   RemultServerCore,
   RemultServerOptions,
 } from './server/index.js'
-import { createRemultServer } from './server/index.js'
+import { createRemultServer, remultHandlerToResponse } from './server/index.js'
 import type { APIEvent } from '@solidjs/start/server' // don't remove - augments requestEvent
+import { parse, serialize } from 'cookie'
 
 export function remultSolidStart(
   options: RemultServerOptions<RequestEvent>,
@@ -32,6 +33,26 @@ export function remultSolidStart(
       end: () => {},
       json: () => {},
       send: () => {},
+      redirect: () => {},
+      setCookie: (name, value, options) => {
+        event?.response.headers.set(
+          'Set-Cookie',
+          serialize(name, value, options),
+        )
+      },
+      getCookie: (name, options) => {
+        const val = event?.request.headers.get('cookie')
+        if (val) {
+          return parse(val, options)[name]
+        }
+        return undefined
+      },
+      deleteCookie: (name, options) => {
+        event?.response.headers.set(
+          'Set-Cookie',
+          serialize(name, '', { ...options, maxAge: 0 }),
+        )
+      },
       status: () => {
         return response
       },
@@ -63,25 +84,11 @@ export function remultSolidStart(
     }
 
     const responseFromRemultHandler = await result.handle(event!, response)
-    if (sseResponse !== undefined) {
-      return sseResponse
-    }
-    if (responseFromRemultHandler) {
-      if (responseFromRemultHandler.html)
-        return new Response(responseFromRemultHandler.html, {
-          status: responseFromRemultHandler.statusCode,
-          headers: {
-            'Content-Type': 'text/html',
-          },
-        })
-      const res = new Response(JSON.stringify(responseFromRemultHandler.data), {
-        status: responseFromRemultHandler.statusCode,
-      })
-      return res
-    }
-    return new Response('Not Found', {
-      status: 404,
-    })
+    return remultHandlerToResponse(
+      responseFromRemultHandler,
+      sseResponse,
+      event!.request.url,
+    )
   }
 
   const handler = {} //async ({ event, resolve }) => {

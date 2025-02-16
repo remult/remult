@@ -6,7 +6,8 @@ import type {
   RemultServerOptions,
   RemultServer,
 } from './server/index.js'
-import { createRemultServer } from './server/index.js'
+import { createRemultServer, remultHandlerToResponse } from './server/index.js'
+import { parse } from 'cookie'
 
 export function remultSveltekit(
   options: RemultServerOptions<RequestEvent>,
@@ -31,6 +32,26 @@ export function remultSveltekit(
       end: () => {},
       json: () => {},
       send: () => {},
+      redirect: () => {},
+      setCookie: (name, value, options) => {
+        event.cookies.set(name, value, {
+          ...options,
+          path: options?.path ?? '/',
+        })
+      },
+      getCookie: (name, options) => {
+        const val = event.request.headers.get('cookie')
+        if (val) {
+          return parse(val, options)[name]
+        }
+        return undefined
+      },
+      deleteCookie: (name, options) => {
+        event.cookies.delete(name, {
+          ...options,
+          path: options?.path ?? '/',
+        })
+      },
       status: () => {
         return response
       },
@@ -62,25 +83,12 @@ export function remultSveltekit(
     }
 
     const responseFromRemultHandler = await result.handle(event, response)
-    if (sseResponse !== undefined) {
-      return sseResponse
-    }
-    if (responseFromRemultHandler !== undefined) {
-      if (responseFromRemultHandler.html)
-        return new Response(responseFromRemultHandler.html, {
-          status: responseFromRemultHandler.statusCode,
-          headers: {
-            'Content-Type': 'text/html',
-          },
-        })
-      const res = new Response(JSON.stringify(responseFromRemultHandler.data), {
-        status: responseFromRemultHandler.statusCode,
-      })
-      return res
-    }
-    return new Response('Not Found', {
-      status: 404,
-    })
+
+    return remultHandlerToResponse(
+      responseFromRemultHandler,
+      sseResponse,
+      event.url.toString(),
+    )
   }
   const handler: Handle = async ({ event, resolve }) => {
     return result.withRemultAsync(event, async () => await resolve(event))

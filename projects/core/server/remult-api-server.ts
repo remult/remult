@@ -43,6 +43,9 @@ import { remultStatic } from '../src/remult-static.js'
 import remultAdminHtml, { buildEntityInfo } from './remult-admin.js'
 import { isOfType } from '../src/isOfType.js'
 import { initDataProviderOrJson } from './initDataProviderOrJson.js'
+import type { ParseOptions, SerializeOptions } from 'cookie'
+import fs from 'fs'
+import { join, extname } from 'path'
 
 export interface RemultServerOptions<RequestType> {
   /**Entities to use for the api */
@@ -134,6 +137,62 @@ export interface RemultServerOptions<RequestType> {
     responseBody: any
     sendError: (httpStatusCode: number, body: any) => void
   }) => Promise<void> | undefined
+
+  /**
+   * Adding some extra routes. It will automatically add the `rootPath` _(default: `/api`)_ to the route.
+   * ```
+   * rawRoutes({ add }) {
+   *   add('/new-route').get((req, res) => {
+   *     return res.json({ Soooooo: 'Cool!' })
+   *   })
+   * }
+   * ```
+   * This will add the route `/api/new-route` to the api.
+   */
+  rawRoutes?: RawRoutes<RequestType>
+
+  modules?: Module<RequestType>[]
+}
+
+export interface RawRoutes<RequestType> {
+  (args: {
+    add: (relativePath: `/${string}`) => SpecificRoute<RequestType>
+    rootPath: string
+  }): void
+}
+
+export interface ModuleInput<RequestType> {
+  key: string
+  /** @default 0 */
+  priority?: number
+  entities?: ClassType<unknown>[]
+  controllers?: ClassType<unknown>[]
+  initApi?: RemultServerOptions<RequestType>['initApi']
+  initRequest?: RemultServerOptions<RequestType>['initRequest']
+  rawRoutes?: RawRoutes<RequestType>
+  modules?: Module<RequestType>[]
+}
+
+export class Module<RequestType> {
+  key: string
+  priority?: number
+  entities?: ClassType<unknown>[]
+  controllers?: ClassType<unknown>[]
+  initApi?: RemultServerOptions<RequestType>['initApi']
+  initRequest?: RemultServerOptions<RequestType>['initRequest']
+  rawRoutes?: RawRoutes<RequestType>
+  modules?: Module<RequestType>[]
+
+  constructor(options: ModuleInput<RequestType>) {
+    this.key = options.key
+    this.priority = options.priority
+    this.entities = options.entities
+    this.controllers = options.controllers
+    this.initRequest = options.initRequest
+    this.initApi = options.initApi
+    this.rawRoutes = options.rawRoutes
+    this.modules = options.modules
+  }
 }
 
 export interface InitRequestOptions {
@@ -197,8 +256,10 @@ export type GenericRequestHandler<RequestType> = (
 
 export interface ServerHandleResponse {
   data?: any
-  html?: string
+  content?: string
+  redirectUrl?: string
   statusCode: number
+  headers?: Record<string, string>
 }
 export interface RemultServer<RequestType>
   extends RemultServerCore<RequestType> {
@@ -229,6 +290,20 @@ export type SpecificRoute<RequestType> = {
   delete(
     handler: GenericRequestHandler<RequestType>,
   ): SpecificRoute<RequestType>
+  /**
+   * Serves static files from a folder
+   * @param folderPath The path to the folder containing static files
+   * @param options Configuration options for serving static files
+   */
+  staticFolder(
+    folderPath: string,
+    options?: {
+      packageName?: string
+      editFile?: (filePath: string, content: string) => string
+      /** List of file extensions and their corresponding content types */
+      contentTypes?: Record<string, string>
+    },
+  ): SpecificRoute<RequestType>
 }
 export interface GenericRequestInfo {
   url?: string //optional for next
@@ -239,7 +314,34 @@ export interface GenericRequestInfo {
 
 export interface GenericResponse {
   json(data: any): void
-  send(html: string): void
+  send(html: string, headers?: Record<string, string>): void
+  redirect(
+    url: string,
+    /** The [HTTP status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#redirection_messages). Must be in the range 300-308. */
+    status?:
+      | 300
+      | 301
+      | 302
+      | 303
+      | 304
+      | 305
+      | 306
+      | 307
+      | 308
+      | ({} & number),
+  ): void
+  // TODO JYC What abou this API?
+  // cookie(
+  //   name: string,
+  //   opts?: SerializeOptions,
+  // ): {
+  //   set(value: string): void
+  //   get(): string | undefined
+  //   delete(): void
+  // }
+  setCookie(name: string, value: string, opts?: SerializeOptions): void
+  getCookie(name: string, opts?: ParseOptions): string | undefined
+  deleteCookie(name: string, opts?: SerializeOptions): void
   status(statusCode: number): GenericResponse //exists for express and next and not in opine(In opine it's setStatus)
   end(): void
 }
@@ -250,6 +352,9 @@ export class RemultServerImplementation<RequestType>
   implements RemultServer<RequestType>
 {
   liveQueryStorage: LiveQueryStorage = new InMemoryLiveQueryStorage()
+  modulesSorted: Module<RequestType>[] = []
+  entities: ClassType<any>[] = []
+  controllers: ClassType<any>[] = []
   constructor(
     public queue: inProcessQueueHandler,
     public options: RemultServerOptions<any>,
@@ -260,7 +365,22 @@ export class RemultServerImplementation<RequestType>
       this.liveQueryStorage = options.liveQueryStorage
     if (options.subscriptionServer)
       this.subscriptionServer = options.subscriptionServer
+
     const entitiesMetaData: EntityMetadata[] = []
+    const modules = options.modules ?? []
+    modules.push({
+      key: 'default',
+      priority: 0,
+      entities: options.entities ?? [],
+      controllers: options.controllers ?? [],
+      initApi: options.initApi,
+      initRequest: options.initRequest,
+      rawRoutes: options.rawRoutes,
+      modules: [],
+    })
+    this.modulesSorted = modulesFlatAndOrdered<RequestType>(modules)
+    this.entities = this.modulesSorted.flatMap((m) => m.entities ?? [])
+    this.controllers = this.modulesSorted.flatMap((m) => m.controllers ?? [])
 
     this.dataProvider = dataProvider.then(async (dp) => {
       await this.runWithRemult(
@@ -273,9 +393,9 @@ export class RemultServerImplementation<RequestType>
               started = true
               console.time('Schema ensured')
             }
-            if (options.entities)
+            if (this.entities)
               entitiesMetaData.push(
-                ...options.entities!.map((e) => remult.repo(e).metadata),
+                ...this.entities!.map((e) => remult.repo(e).metadata),
               )
             if (dp.ensureSchema) {
               startConsoleLog()
@@ -292,7 +412,12 @@ export class RemultServerImplementation<RequestType>
             }
             if (started) console.timeEnd('Schema ensured')
           }
-          if (options.initApi) await options.initApi(remult)
+          for (let i = 0; i < this.modulesSorted.length; i++) {
+            const _initApi = this.modulesSorted[i].initApi
+            if (_initApi) {
+              await _initApi(remult)
+            }
+          }
         },
         { skipDataProvider: true },
       )
@@ -319,7 +444,7 @@ export class RemultServerImplementation<RequestType>
   getEntities(): EntityMetadata<any>[] {
     //TODO V2 - consider using entitiesMetaData - but it may require making it all awaitable
     var r = new Remult()
-    return this.options.entities!.map((x) => r.repo(x).metadata)
+    return this.entities!.map((x) => r.repo(x).metadata)
   }
 
   runWithSerializedJsonContextData: PerformWithContext = async (
@@ -327,7 +452,7 @@ export class RemultServerImplementation<RequestType>
     entityKey,
     what,
   ) => {
-    for (const e of this.options.entities!) {
+    for (const e of this.entities!) {
       let key = getEntityKey(e)
       if (key === entityKey) {
         await this.runWithRemult(async (remult) => {
@@ -384,7 +509,7 @@ export class RemultServerImplementation<RequestType>
     if (this.registeredRouter) throw 'Router already registered'
     this.registeredRouter = true
     {
-      for (const c of this.options.controllers!) {
+      for (const c of this.controllers!) {
         let z = (c as any)[classBackendMethodsArray]
         if (z)
           for (const a of z) {
@@ -396,6 +521,33 @@ export class RemultServerImplementation<RequestType>
             this.addAction(x, r)
           }
       }
+
+      // Register extra routes
+      const routeImpl = r as RouteImplementation<RequestType>
+      const add = (relativePath: `/${string}`) => {
+        const newRoute = this.options.rootPath + relativePath
+        if (this.options.logApiEndPoints) {
+          console.info('[remult] ' + newRoute + ' [!]')
+        }
+        const m = new Map<string, GenericRequestHandler<RequestType>>()
+
+        // Add the route to the map
+        const r = newRoute.toLowerCase()
+        routeImpl.map.set(r, m)
+        if (newRoute.endsWith('*')) {
+          routeImpl.starRoutes.push({
+            route: r.substring(0, r.length - 1),
+            handler: m,
+          })
+        }
+
+        return routeImpl.createRouteHandlers(newRoute, m)
+      }
+
+      for (const module of this.modulesSorted) {
+        module.rawRoutes?.({ add, rootPath: this.options.rootPath ?? '/api' })
+      }
+
       if (this.hasQueue)
         this.addAction(
           {
@@ -506,7 +658,7 @@ export class RemultServerImplementation<RequestType>
       )
     }
 
-    this.options.entities?.forEach((e) => {
+    this.entities?.forEach((e) => {
       this.addEntity(e, getEntityKey(e), r)
     })
   }
@@ -682,17 +834,21 @@ export class RemultServerImplementation<RequestType>
                 }
                 if (user) remult.user = user
 
-                if (this.options.initRequest) {
-                  await this.options.initRequest(req, {
-                    remult,
-                    get liveQueryStorage() {
-                      return remult.liveQueryStorage!
-                    },
-                    set liveQueryStorage(value: LiveQueryStorage) {
-                      remult.liveQueryStorage = value
-                    },
-                  })
+                for (let i = 0; i < this.modulesSorted.length; i++) {
+                  const _initRequest = this.modulesSorted[i].initRequest
+                  if (_initRequest) {
+                    await _initRequest(req, {
+                      remult,
+                      get liveQueryStorage() {
+                        return remult.liveQueryStorage!
+                      },
+                      set liveQueryStorage(value: LiveQueryStorage) {
+                        remult.liveQueryStorage = value
+                      },
+                    })
+                  }
                 }
+
                 await what(remult, myReq, myRes, genReq, origRes, req)
               } finally {
                 remultStatic.asyncContext.setInInitRequest(false)
@@ -1380,16 +1536,11 @@ export class RouteImplementation<RequestType> {
     route: string
     handler: Map<string, GenericRequestHandler<RequestType>>
   }[] = []
-  route(path: string): SpecificRoute<RequestType> {
-    //consider using:
-    //* https://raw.githubusercontent.com/cmorten/opine/main/src/utils/pathToRegex.ts
-    //* https://github.com/pillarjs/path-to-regexp
-    let r = path.toLowerCase()
-    let m = new Map<string, GenericRequestHandler<RequestType>>()
 
-    this.map.set(r, m)
-    if (path.endsWith('*'))
-      this.starRoutes.push({ route: r.substring(0, r.length - 1), handler: m })
+  createRouteHandlers(
+    path: string,
+    m: Map<string, GenericRequestHandler<RequestType>>,
+  ): SpecificRoute<RequestType> {
     const route = {
       get: (h: GenericRequestHandler<RequestType>) => {
         m.set('get', h)
@@ -1407,9 +1558,108 @@ export class RouteImplementation<RequestType> {
         m.set('delete', h)
         return route
       },
+      staticFolder: (
+        folderPath: string,
+        options?: {
+          packageName?: string
+          contentTypes?: Record<string, string>
+          editFile?: (filePath: string, content: string) => string
+        },
+      ) => {
+        const defaultContentTypes: Record<string, string> = {
+          js: 'text/javascript',
+          css: 'text/css',
+          svg: 'image/svg+xml',
+          html: 'text/html',
+          ...options?.contentTypes,
+        }
+
+        m.set(
+          'get',
+          (req: RequestType, res: GenericResponse, next: VoidFunction) => {
+            const reqInfo = this.coreOptions.buildGenericRequestInfo(req)
+            const currentHttpBasePath = path.replace('*', '')
+
+            const relativePath =
+              reqInfo.url!.split(currentHttpBasePath)[1] || ''
+
+            const paths = []
+            if (options?.packageName) {
+              let packagePath = ''
+              let level = 0
+              let found = false
+              let prefix = ''
+
+              do {
+                packagePath = join(prefix, 'node_modules', options.packageName)
+                if (fs.existsSync(packagePath)) {
+                  found = true
+                  break
+                }
+                prefix = join(prefix, '..')
+                level++
+              } while (level < 3)
+
+              if (!found) {
+                console.error(`Package ${options.packageName} not found!`)
+              }
+              paths.push(packagePath)
+            }
+
+            paths.push(folderPath)
+            paths.push(relativePath)
+            let filePath = join(...paths)
+
+            if (fs.existsSync(filePath)) {
+              if (fs.statSync(filePath).isDirectory()) {
+                const indexPath = join(filePath, 'index.html')
+                if (fs.existsSync(indexPath)) {
+                  filePath = indexPath
+                } else {
+                  filePath = filePath + '.html'
+                }
+              }
+            } else {
+              filePath = filePath + '.html'
+            }
+
+            try {
+              const rawContent = fs.readFileSync(filePath, 'utf-8')
+              const content =
+                options?.editFile?.(filePath, rawContent) ?? rawContent
+              const extension = extname(filePath).slice(1)
+              const contentType = defaultContentTypes[extension] ?? 'text/plain'
+
+              res.send(content, {
+                'content-type': contentType,
+              })
+              return
+            } catch (error) {
+              console.log('File read error:', {
+                error,
+                filePath,
+              })
+              res.status(404).end()
+            }
+          },
+        )
+        return route
+      },
     }
     return route
   }
+
+  route(path: string): SpecificRoute<RequestType> {
+    let r = path.toLowerCase()
+    let m = new Map<string, GenericRequestHandler<RequestType>>()
+
+    this.map.set(r, m)
+    if (path.endsWith('*'))
+      this.starRoutes.push({ route: r.substring(0, r.length - 1), handler: m })
+
+    return this.createRouteHandlers(r, m)
+  }
+
   async handle(
     req: RequestType,
     gRes?: GenericResponse,
@@ -1442,14 +1692,34 @@ export class RouteImplementation<RequestType> {
             data,
           })
         }
-        send(html: string) {
-          if (gRes !== undefined) gRes.send(html)
-          res({ statusCode: this.statusCode, html })
+        send(content: string, _headers: Record<string, string>) {
+          const headers = _headers ?? {
+            'Content-Type': 'text/html',
+          }
+          if (gRes !== undefined) gRes.send(content, headers)
+          res({ statusCode: this.statusCode, content, headers })
+        }
+        redirect(redirectUrl: string, status?: number): void {
+          if (this.statusCode < 300 || this.statusCode >= 400) {
+            this.statusCode = status ?? 307
+          }
+          if (gRes !== undefined) gRes.redirect(redirectUrl, this.statusCode)
+          res({ statusCode: this.statusCode, redirectUrl })
+        }
+        setCookie(name: string, value: string, options: any): void {
+          if (gRes !== undefined) gRes.setCookie(name, value, options)
+        }
+        deleteCookie(name: string, options: any): void {
+          if (gRes !== undefined) gRes.deleteCookie(name, options)
         }
         status(statusCode: number): GenericResponse {
           if (gRes !== undefined) gRes.status(statusCode)
           this.statusCode = statusCode
           return this
+        }
+        getCookie(name: string): string | undefined {
+          if (gRes !== undefined) return gRes.getCookie(name)
+          return undefined
         }
         end() {
           if (gRes !== undefined) gRes.end()
@@ -1561,4 +1831,31 @@ export interface ServerCoreOptions<RequestType> {
   buildGenericRequestInfo(req: RequestType): GenericRequestInfo
   getRequestBody(req: RequestType): Promise<any>
   ignoreAsyncStorage?: boolean
+}
+
+/**
+ * Full flat and ordered list by index and concatenaining the modules name
+ */
+export const modulesFlatAndOrdered = <RequestType>(
+  modules: Module<RequestType>[],
+): Module<RequestType>[] => {
+  const flattenModules = (
+    modules: Module<RequestType>[],
+    parentName = '',
+  ): Module<RequestType>[] => {
+    return modules.reduce<Module<RequestType>[]>((acc, module) => {
+      const fullKey = parentName ? `${parentName}-${module.key}` : module.key
+      // Create a new module object without the 'modules' property
+      const { modules: _, ...flatModule } = module
+      const newModule = { ...flatModule, key: fullKey }
+      const subModules = module.modules
+        ? flattenModules(module.modules, fullKey)
+        : []
+      return [...acc, newModule, ...subModules]
+    }, [])
+  }
+
+  const flatModules = flattenModules(modules)
+  flatModules.sort((a, b) => (a.priority || 0) - (b.priority || 0))
+  return flatModules
 }

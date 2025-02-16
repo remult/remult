@@ -3,6 +3,7 @@ import { remultFastify } from '../../core/remult-fastify.js'
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { Task } from '../../test-servers/shared/Task.js'
+import { someRoutes } from '../../test-servers/shared/modules/someRoutes.js'
 import { Remult, remult } from '../../core'
 import { RemultAsyncLocalStorage } from '../../core/src/context.js'
 import { allServerTests } from './all-server-tests.js'
@@ -17,6 +18,7 @@ describe('test fastify server', async () => {
       const api = remultFastify({
         entities: [Task],
         admin: true,
+        modules: [someRoutes],
       })
       await app.register(api)
       app.get('/api/test', async (req, res) => {
@@ -32,6 +34,7 @@ describe('test fastify server', async () => {
     })
   })
   allServerTests(port)
+
   afterAll(async () => {
     RemultAsyncLocalStorage.disable()
     return destroy()
