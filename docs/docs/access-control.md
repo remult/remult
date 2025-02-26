@@ -126,6 +126,8 @@ In this example, `backendPrefilter` and `backendPreprocessFilter` ensure that no
 
 Field-level authorization allows control over individual fields within an entity:
 
+_Field level authorization happens after entity level authorization AND if it's allowed._
+
 - `includeInApi`: Determines if the field is included in the API response.
 - `allowApiUpdate`: Controls if a field can be updated. If false, any change to the field is ignored.
 

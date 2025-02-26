@@ -36,6 +36,8 @@ export interface FieldOptions<entityType = unknown, valueType = unknown> {
   /**
    * Determines whether this field can be updated via the API. This setting can also
    * be controlled based on user roles or other access control checks.
+   * 
+   * _It happens after entity level authorization AND if it's allowed._
    * @example
    * // Prevent API from updating this field
    * @Fields.string({ allowApiUpdate: false })
@@ -70,8 +72,8 @@ export interface FieldOptions<entityType = unknown, valueType = unknown> {
    * })
    */
   validate?:
-    | FieldValidator<entityType, valueType>
-    | FieldValidator<entityType, valueType>[]
+  | FieldValidator<entityType, valueType>
+  | FieldValidator<entityType, valueType>[]
 
   /** Will be fired before this field is saved to the server/database */
   saving?: (
@@ -99,8 +101,8 @@ export interface FieldOptions<entityType = unknown, valueType = unknown> {
    * title='';
    */
   sqlExpression?:
-    | string
-    | ((entity: EntityMetadata<entityType>) => string | Promise<string>)
+  | string
+  | ((entity: EntityMetadata<entityType>) => string | Promise<string>)
   /** For fields that shouldn't be part of an update or insert statement */
   dbReadOnly?: boolean
   /** The value converter to be used when loading and saving this field */
@@ -355,11 +357,11 @@ export declare type FieldValidator<
   entity: entityType,
   event: ValidateFieldEvent<entityType, valueType>,
 ) =>
-  | boolean
-  | string
-  | void
-  | undefined
-  | Promise<boolean | string | void | undefined>
+    | boolean
+    | string
+    | void
+    | undefined
+    | Promise<boolean | string | void | undefined>
 export declare type ValueOrExpression<valueType> = valueType | (() => valueType)
 
 export function valueOrExpressionToValue<valueType>(

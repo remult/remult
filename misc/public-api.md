@@ -1081,6 +1081,8 @@ export interface FieldOptions<entityType = unknown, valueType = unknown> {
   /**
    * Determines whether this field can be updated via the API. This setting can also
    * be controlled based on user roles or other access control checks.
+   *
+   * _It happens after entity level authorization AND if it's allowed._
    * @example
    * // Prevent API from updating this field
    * @Fields.string({ allowApiUpdate: false })

@@ -5723,6 +5723,8 @@ In this example, `backendPrefilter` and `backendPreprocessFilter` ensure that no
 
 Field-level authorization allows control over individual fields within an entity:
 
+_Field level authorization happens after entity level authorization AND if it's allowed._
+
 - `includeInApi`: Determines if the field is included in the API response.
 - `allowApiUpdate`: Controls if a field can be updated. If false, any change to the field is ignored.
 
@@ -7509,6 +7511,8 @@ salary = 0;
 Determines whether this field can be updated via the API. This setting can also
 be controlled based on user roles or other access control checks.
 
+_It happens after entity level authorization AND if it's allowed._
+
 
 #### example:
 ```ts
@@ -8022,7 +8026,7 @@ Return's a `Repository` of the specific entity type
 
 
 #### example:
-```
+```ts
 const taskRepo = remult.repo(Task);
 ```
 
@@ -9010,7 +9014,7 @@ admin: true
 
 #### example:
 ```ts
-admin: ()=> remult.isAllowed('admin')
+admin: () => remult.isAllowed('admin')
 ```
 
 
