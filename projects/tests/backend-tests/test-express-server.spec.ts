@@ -28,7 +28,11 @@ describe('test express server', async () => {
   let api = remultExpress({
     entities: [Task, test_compound_id],
     dataProvider: new InMemoryDataProvider(),
-    admin: true,
+    admin: {
+      allow: true,
+      customHtmlHead: (r) =>
+        `<title>Test Admin (${r.user?.name ?? 'Anonymous'})</title>`,
+    },
     error: (e) => errorHandler?.(e),
     getUser: async () => {
       if (throwExceptionOnGetUser)

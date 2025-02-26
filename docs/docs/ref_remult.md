@@ -5,7 +5,7 @@ Return's a `Repository` of the specific entity type
 
 
 #### example:
-```
+```ts
 const taskRepo = remult.repo(Task);
 ```
 

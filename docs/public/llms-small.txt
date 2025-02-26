@@ -1571,7 +1571,7 @@ When querying data that involves a many-to-one relation, you can use the `includ
 
 Here's how you can include the relation in a query using Remult:
 
-```typescript{3-5}
+```typescript{2-4}
 const orders = await repo(Order).find({
   include: {
     customer: true,
@@ -5723,6 +5723,8 @@ In this example, `backendPrefilter` and `backendPreprocessFilter` ensure that no
 
 Field-level authorization allows control over individual fields within an entity:
 
+_Field level authorization happens after entity level authorization AND if it's allowed._
+
 - `includeInApi`: Determines if the field is included in the API response.
 - `allowApiUpdate`: Controls if a field can be updated. If false, any change to the field is ignored.
 
@@ -5870,9 +5872,30 @@ Enjoy a fully featured Admin UI for your entities, you can do CRUD operations on
 Add the Admin UI to your application by setting the `admin` option to `true` in the remult configuration.
 
 ```ts
-export const api = remultSveltekit({
+export const api = remultExpress({
   entities: [],
   admin: true, // Enable the Admin UI
+})
+```
+
+### Tunning the Admin UI
+
+You can pass some options to admin as well:
+
+- `allow`, using [allowed](https://remult.dev/docs/access-control). `true`, `"admin"`, ...
+- `customHtmlHead`, to add custom html to the head of the admin page. It's a function that receives remult as an argument.
+
+Example:
+
+```ts
+export const api = remultExpress({
+  entities: [],
+  admin: {
+    allow: 'admin', // Only for user having the "admin" role
+    customHtmlHead: (r) =>
+      `<title>Nice Admin! (${r.user?.name ?? 'Anonymous'})</title>
+       <link href="https://remult.dev/favicon.png" rel="icon" type="image/png">`,
+  },
 })
 ```
 
@@ -7488,6 +7511,8 @@ salary = 0;
 Determines whether this field can be updated via the API. This setting can also
 be controlled based on user roles or other access control checks.
 
+_It happens after entity level authorization AND if it's allowed._
+
 
 #### example:
 ```ts
@@ -8001,7 +8026,7 @@ Return's a `Repository` of the specific entity type
 
 
 #### example:
-```
+```ts
 const taskRepo = remult.repo(Task);
 ```
 
@@ -8989,7 +9014,7 @@ admin: true
 
 #### example:
 ```ts
-admin: ()=> remult.isAllowed('admin')
+admin: () => remult.isAllowed('admin')
 ```
 
 
