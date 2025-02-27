@@ -930,8 +930,12 @@ export function buildFilterFromRequestParameters(
         })
     }
 
-    if (not.length == 1 && !where.$not) {
-      where = not[0]
+    if (not.length == 1) {
+      if (!where.$not) {
+        where.$not = not[0].$not
+      } else {
+        where.$not.push(not[0].$not)
+      }
     } else {
       addAnd({
         $and: not,

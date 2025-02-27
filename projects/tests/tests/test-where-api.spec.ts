@@ -216,7 +216,7 @@ describe('test where stuff', () => {
         {
           "categoryName": "v2",
           "id": 2,
-        }
+        },
       ]
     `)
   })
