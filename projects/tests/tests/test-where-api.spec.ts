@@ -219,6 +219,23 @@ describe('test where stuff', () => {
         },
       ]
     `)
+
+    expect((await r.find({
+      where: {
+        $and: [
+          { $not: { id: 1 } },
+          { $not: { id: 5 } },
+          { categoryName: { $contains: "v" } },
+        ],
+      }
+    })).map(c => { return { id: c.id, categoryName: c.categoryName } })).toMatchInlineSnapshot(`
+      [
+        {
+          "categoryName": "v2",
+          "id": 2,
+        },
+      ]
+    `)
   })
 })
 
@@ -531,7 +548,7 @@ function x<
   CaseReducers extends SliceCaseReducers<{
     test?: WritableDraft<entityForrawFilter>[]
   }>,
->(what: CaseReducers) { }
+>(what: CaseReducers) {}
 //reproduce typescript bug with recursive types
 x<{
   addComment: (
