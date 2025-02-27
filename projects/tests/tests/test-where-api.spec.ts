@@ -34,6 +34,7 @@ import { testRestDb } from './testHelper'
 import { entity } from './dynamic-classes'
 import { Language, insertFourRows } from './entities-for-tests.js'
 import { Relations } from '../../core/index.js'
+import { TestApiDataProvider } from '../../core/server/test-api-data-provider.js'
 
 describe('test where stuff', () => {
   let repo: Repository<CategoriesForTesting>
@@ -192,6 +193,32 @@ describe('test where stuff', () => {
       where: { id: { '>=': 2 } },
     }
     expect(await repo.count({ id: { $lte: 3 }, $and: [fo.where!] })).toBe(2)
+  })
+  it('test api and & not', async () => {
+    remult.dataProvider = TestApiDataProvider({
+      dataProvider: new InMemoryDataProvider()
+    })
+
+    const r = remult.repo(Categories)
+    await r.insert({ id: 1, categoryName: "v1" })
+    await r.insert({ id: 2, categoryName: "v2" })
+    await r.insert({ id: 3, categoryName: "m1" })
+
+    expect((await r.find({
+      where: {
+        $and: [
+          { $not: { id: 1 } },
+          { categoryName: { $contains: "v" } },
+        ],
+      }
+    })).map(c => { return { id: c.id, categoryName: c.categoryName } })).toMatchInlineSnapshot(`
+      [
+        {
+          "categoryName": "v2",
+          "id": 2,
+        }
+      ]
+    `)
   })
 })
 
@@ -504,7 +531,7 @@ function x<
   CaseReducers extends SliceCaseReducers<{
     test?: WritableDraft<entityForrawFilter>[]
   }>,
->(what: CaseReducers) {}
+>(what: CaseReducers) { }
 //reproduce typescript bug with recursive types
 x<{
   addComment: (
