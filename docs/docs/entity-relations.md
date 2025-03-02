@@ -99,9 +99,8 @@ When querying data that involves a many-to-one relation, you can use the `includ
 
 Here's how you can include the relation in a query using Remult:
 
-```typescript{3-5}
-const orderRepo = remult.repo(Order)
-const orders = await orderRepo.find({
+```typescript{2-4}
+const orders = await repo(Order).find({
   include: {
     customer: true,
   },
@@ -163,10 +162,8 @@ In Remult, by default, a relation is not loaded unless explicitly specified in t
 Here's an example:
 
 ```typescript
-const orderRepo = remult.repo(Order)
-
 // Query without including the 'customer' relation
-const ordersWithoutCustomer = await orderRepo.find({})
+const ordersWithoutCustomer = await repo(Order).find({})
 ```
 
 In the above query, the `customer` relation will not be loaded and have the value of `undefined` because it is not specified in the `include` statement.
@@ -425,8 +422,7 @@ By defining a `toMany` relation, you can easily retrieve and manage multiple rel
 To retrieve customers along with their associated order in Remult, you can use the `include` option in your query. Let's see how to fetch customers with their orders using the `include` option:
 
 ```typescript
-const customerRepo = remult.repo(Customer)
-const customers = await customerRepo.find({
+const customers = await repo(Customer).find({
   include: {
     orders: true,
   },
@@ -435,7 +431,7 @@ const customers = await customerRepo.find({
 
 In this code snippet:
 
-- We first obtain a repository for the `Customer` entity using `remult.repo(Customer)`.
+- We first obtain a repository for the `Customer` entity using `repo(Customer)`.
 
 - Next, we use the `find` method to query the `Customer` entity. Within the query options, we specify the `include` option to indicate that we want to include related records.
 
@@ -600,7 +596,7 @@ In this example, you first create a new `Customer` entity with the name "Abshire
 Another powerful use of the `repository` methods is to load related records that were not initially retrieved. Let's say you have found a specific customer and want to access their related orders:
 
 ```typescript
-const customerRepo = remult.repo(Customer)
+const customerRepo = repo(Customer)
 const customer = await customerRepo.findFirst({ name: 'Abshire Inc' })
 const orders = await customerRepo.relations(customer).orders.find()
 ```
@@ -624,7 +620,7 @@ In addition to loading unfetched `toMany` relations, Remult offers a convenient 
 Consider the following example, where we have a many-to-one relation between orders and customers. We want to fetch the customer related to a specific order, even if we didn't load it initially:
 
 ```ts
-const orderRepo = remult.repo(Order)
+const orderRepo = repo(Order)
 const order = await orderRepo.findFirst({ id: 'm7m3xqyx4kwjaqcd0cu33q8g' })
 const customer = await orderRepo.relations(order).customer.findOne()
 ```
@@ -764,16 +760,14 @@ Let's explore how to interact with many-to-many relationships using an intermedi
 To associate a tag with a customer, consider the follow code:
 
 ```ts
-const tags = await remult
-  .repo(Tag)
-  .insert([
-    { name: 'vip' },
-    { name: 'hot-lead' },
-    { name: 'influencer' },
-    { name: 'manager' },
-  ]) // Create the tags
+const tags = await repo(Tag).insert([
+  { name: 'vip' },
+  { name: 'hot-lead' },
+  { name: 'influencer' },
+  { name: 'manager' },
+]) // Create the tags
 
-const customerRepo = remult.repo(Customer)
+const customerRepo = repo(Customer)
 const customer = await customerRepo.findFirst({ name: 'Abshire Inc' })
 await customerRepo
   .relations(customer)
@@ -784,7 +778,7 @@ Here's an explanation of what's happening in this code:
 
 1. We first insert some tags into the "tags" entity.
 
-2. We then create a repository instance for the "customer" entity using `remult.repo(Customer)`.
+2. We then create a repository instance for the "customer" entity using `repo(Customer)`.
 
 3. We retrieve a specific customer by searching for one with the name "Abshire Inc" using `customerRepo.findFirst({ name: "Abshire Inc" })`. The `customer` variable now holds the customer entity.
 

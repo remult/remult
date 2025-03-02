@@ -57,12 +57,12 @@ This is the same entity that is detailed in the [Entities section of the tutoria
 ## Static BackendMethod
 
 ```ts{12-14}
-import { BackendMethod, describeBackendMethods, remult } from "remult";
+import { BackendMethod, describeBackendMethods, repo } from "remult";
 import { Task } from "./Task";
 
 export class TasksController {
   static async setAll(completed: boolean) {
-    const taskRepo = remult.repo(Task);
+    const taskRepo = repo(Task);
     for (const task of await taskRepo.find()) {
       await taskRepo.save({ ...task, completed });
     }

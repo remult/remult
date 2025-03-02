@@ -24,6 +24,19 @@
   </label>
 
   <label>
+    <span>Number of rows</span>
+    <input type="number" bind:value={$LSContext.settings.numberOfRows} />
+  </label>
+
+  <label>
+    <span>With live query</span>
+    <select bind:value={$LSContext.settings.withLiveQuery}>
+      <option value={true}>Yes</option>
+      <option value={false}>No</option>
+    </select>
+  </label>
+
+  <label>
     <span>Diagram layout algorithm</span>
     <select
       bind:value={$LSContext.settings.diagramLayoutAlgorithm}
@@ -47,14 +60,14 @@
     />
   </label>
 
-  <label>
+  <!-- <label>
     <span>api URL</span>
     <input
       type="text"
       bind:value={$LSContext.settings.apiUrl}
       placeholder="api URL, the default it '/api'"
     />
-  </label>
+  </label> -->
 
   <br />
 
