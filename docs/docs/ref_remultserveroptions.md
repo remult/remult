@@ -51,7 +51,7 @@ admin: true
 
 #### example:
 ```ts
-admin: ()=> remult.isAllowed('admin')
+admin: () => remult.isAllowed('admin')
 ```
 
 
