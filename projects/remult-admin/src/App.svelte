@@ -106,40 +106,15 @@
       <a
         class="tab"
         style="--color: {t.color}"
-        href="#/entity/{t.key}"
+        href="#/entity/{t.superKey}"
         use:active={{
-          path: `/entity/${t.key}`,
+          path: `/entity/${t.superKey}`,
           className: 'active',
         }}
       >
         {midTrim($LSContext.settings.dispayCaption ? t.caption : t.key)}
       </a>
     {/each}
-    <!-- DIALOG DEMO -->
-    <!-- <button
-      on:click={async () => {
-        const res = await dialog.confirm('Are you sure ?')
-        if (res.success) {
-          await dialog.confirmDelete('Item to delete')
-        }
-        console.log(`res`, res)
-      }}>confirm</button
-    >
-    <button
-      on:click={async () => {
-        const res = await dialog.confirmDelete('Item to delete')
-        if (res.success) {
-          await dialog.confirm('Are you sure ?')
-        }
-        console.log(`res`, res)
-      }}>confirm delete</button
-    >
-    <button
-      on:click={async () => {
-        const res = await dialog.show({ config: {} })
-        console.log(`res`, res)
-      }}>Show</button
-    > -->
 
     <a
       href="#/diagram"

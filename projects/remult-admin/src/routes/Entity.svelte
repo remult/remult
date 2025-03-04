@@ -4,7 +4,8 @@
 
   export let params: { wild?: string } = {}
 
-  $: table = $godStore && $godStore.tables.find((c) => c.key === params.wild)
+  $: table =
+    $godStore && $godStore.tables.find((c) => c.superKey === params.wild)
 </script>
 
 {#if table}

@@ -10,6 +10,7 @@ import { getValueList } from '../src/remult3/RepositoryImplementation.js'
 import { EntityFilter } from '../src/remult3/remult3.js'
 
 export interface EntityUIInfo {
+  superKey: string
   key: string
   caption: string
   fields: FieldUIInfo[]
@@ -149,9 +150,19 @@ export function buildEntityInfo(options: AdminOptions) {
     }
 
     if (metadata.apiReadAllowed) {
+
+      let superKey = metadata.key
+      let caption = metadata.caption
+      const nbOfEntities = entities.filter(e => e.key === metadata.key).length
+      if (nbOfEntities > 0) {
+        superKey = metadata.key + '_ext_' + nbOfEntities
+        caption = metadata.caption + '*'.repeat(nbOfEntities)
+      }
+
       entities.push({
+        superKey,
         key: metadata.key,
-        caption: metadata.caption,
+        caption,
         ids,
         fields,
         relations,
