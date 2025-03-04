@@ -1,22 +1,6 @@
 import express from 'express'
-import { api, entities } from './api'
-import { buildEntityInfo } from '../../../core/server/remult-admin'
-import { remult } from '../../../core/src/remult-proxy'
+import { api } from './api'
 
 export const app = express()
 // app.use('/yop_yop', api)
 app.use('/', api)
-app.get('/api/dev-admin', api.withRemult, (req, res) => {
-  res.json(buildEntityInfo({ entities, remult }))
-})
-
-// app.get('/api/\\$admin*', api.withRemult, (req, res) => {
-//   console.log('made it here')
-//   res.send(
-//     remultAdminHtml({
-//       entities: [Customer, Order],
-//       baseUrl: '/api/$admin',
-//       remult,
-//     }),
-//   )
-// })

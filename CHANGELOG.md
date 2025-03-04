@@ -1,6 +1,9 @@
-# Changelog
-
 All notable changes to this project will be documented in this file.
+
+## [2.7.30] 2025-3-2
+
+- Fixed `where` containing a `$not` from `api` to work in addition with other filters.
+- More fixes to remult admin
 
 ## [2.7.29] 2025-2-9
 

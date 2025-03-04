@@ -20,6 +20,8 @@ export interface EntityUIInfo {
   color?: string
 }
 export interface EntityRelationToManyInfo extends RelationFields {
+  key: string
+  caption: string
   entityKey: string
   where?: any
 }
@@ -42,26 +44,30 @@ export interface FieldRelationToOneInfo extends RelationFields {
   captionField: string
   where?: any
 }
-export interface AdminOptions extends DisplayOptions {
+export interface AdminEntitiesOptions {
   entities: ClassType<any>[]
   remult: Remult
 }
-export interface DisplayOptions {
-  baseUrl?: string
+export interface AdminDisplayOptions {
+  rootPath: string
+  head: string
 }
 
-export default function remultAdminHtml(options: AdminOptions) {
-  let { remult, entities, ...optionsFromServer } = { ...options }
-  return getHtml().replace(
-    '<!--PLACE_HERE-->',
-    `<script>
-  const optionsFromServer = ${JSON.stringify(optionsFromServer)}
+export default function remultAdminHtml(options: AdminDisplayOptions) {
+  const { rootPath, head } = options
+  return getHtml()
+    .replace('<!--PLACE_HERE_HEAD-->', head)
+    .replace(
+      '<!--PLACE_HERE_BODY-->',
+      `<script>
+  window.optionsFromServer = ${JSON.stringify({ rootPath })}
 </script>`,
-  )
+    )
 }
 
-export function buildEntityInfo(options: AdminOptions) {
+export function buildEntityInfo(options: AdminEntitiesOptions) {
   const entities: EntityUIInfo[] = []
+
   for (const metadata of options.entities.map(
     (e) => options.remult.repo(e).metadata,
   )) {
@@ -117,6 +123,8 @@ export function buildEntityInfo(options: AdminOptions) {
                 ...relInfo,
                 where,
                 entityKey: relRepo.metadata.key,
+                key: x.key,
+                caption: x.caption,
               })
             }
             continue
@@ -169,6 +177,7 @@ export function buildEntityInfo(options: AdminOptions) {
       })
     }
   }
+
   return entities
 }
 
