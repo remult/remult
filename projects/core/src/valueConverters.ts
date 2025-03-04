@@ -121,7 +121,8 @@ export class ValueConverters {
     toJson: (value) => ValueConverters.Number.toDb!(value),
     fromInput: (x, type) => {
       let r = +x
-      if (x === null || x === undefined) return undefined!
+      if (x === null) return null!
+      if (x === undefined) return undefined!
       return r
     },
     toInput: (x, type) => {
