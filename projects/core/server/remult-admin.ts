@@ -84,11 +84,11 @@ export function buildEntityInfo(options: AdminOptions) {
           const relRepo = options.remult.repo(info.toEntity)
           const where =
             typeof info.options.findOptions === 'object' &&
-            info.options.findOptions.where
+              info.options.findOptions.where
               ? Filter.entityFilterToJson(
-                  relRepo.metadata,
-                  info.options.findOptions.where,
-                )
+                relRepo.metadata,
+                info.options.findOptions.where,
+              )
               : undefined
           const idField = relRepo.metadata.idMetadata.field.key
           if (info.type === 'reference' || info.type === 'toOne') {
@@ -134,12 +134,12 @@ export function buildEntityInfo(options: AdminOptions) {
             x.valueConverter.fieldTypeInDb == 'json'
               ? 'json'
               : x.valueType === Number
-              ? 'number'
-              : x.valueType === Boolean
-              ? 'boolean'
-              : x.valueType === Date
-              ? 'date'
-              : 'string',
+                ? 'number'
+                : x.valueType === Boolean
+                  ? 'boolean'
+                  : x.valueType === Date
+                    ? 'date'
+                    : 'string',
         })
       } catch (error) {
         console.error(
@@ -150,7 +150,6 @@ export function buildEntityInfo(options: AdminOptions) {
     }
 
     if (metadata.apiReadAllowed) {
-
       let superKey = metadata.key
       let caption = metadata.caption
       const nbOfEntities = entities.filter(e => e.key === metadata.key).length
