@@ -10,6 +10,7 @@ import { getValueList } from '../src/remult3/RepositoryImplementation.js'
 import { EntityFilter } from '../src/remult3/remult3.js'
 
 export interface EntityUIInfo {
+  superKey: string
   key: string
   caption: string
   fields: FieldUIInfo[]
@@ -89,11 +90,11 @@ export function buildEntityInfo(options: AdminEntitiesOptions) {
           const relRepo = options.remult.repo(info.toEntity)
           const where =
             typeof info.options.findOptions === 'object' &&
-            info.options.findOptions.where
+              info.options.findOptions.where
               ? Filter.entityFilterToJson(
-                  relRepo.metadata,
-                  info.options.findOptions.where,
-                )
+                relRepo.metadata,
+                info.options.findOptions.where,
+              )
               : undefined
           const idField = relRepo.metadata.idMetadata.field.key
           if (info.type === 'reference' || info.type === 'toOne') {
@@ -141,12 +142,12 @@ export function buildEntityInfo(options: AdminEntitiesOptions) {
             x.valueConverter.fieldTypeInDb == 'json'
               ? 'json'
               : x.valueType === Number
-              ? 'number'
-              : x.valueType === Boolean
-              ? 'boolean'
-              : x.valueType === Date
-              ? 'date'
-              : 'string',
+                ? 'number'
+                : x.valueType === Boolean
+                  ? 'boolean'
+                  : x.valueType === Date
+                    ? 'date'
+                    : 'string',
         })
       } catch (error) {
         console.error(
@@ -157,9 +158,18 @@ export function buildEntityInfo(options: AdminEntitiesOptions) {
     }
 
     if (metadata.apiReadAllowed) {
+      let superKey = metadata.key
+      let caption = metadata.caption
+      const nbOfEntities = entities.filter(e => e.key === metadata.key).length
+      if (nbOfEntities > 0) {
+        superKey = metadata.key + '_ext_' + nbOfEntities
+        caption = metadata.caption + '*'.repeat(nbOfEntities)
+      }
+
       entities.push({
+        superKey,
         key: metadata.key,
-        caption: metadata.caption,
+        caption,
         ids,
         fields,
         relations,
