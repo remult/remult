@@ -484,7 +484,17 @@ describe('order by api', () => {
     expect(r[0].id).toBe(1)
   })
 })
-
+describe('test number column', () => {
+  it('fromInput null', () => {
+    expect(ValueConverters.Number.fromInput!(null!)).toBe(null)
+  })
+  it('fromInput undefined', () => {
+    expect(ValueConverters.Number.fromInput!(undefined!)).toBe(undefined)
+  })
+  it('fromInput 1', () => {
+    expect(ValueConverters.Number.fromInput!('7.11')).toBe(7.11)
+  })
+})
 describe('test datetime column', () => {
   it('stores well', () => {
     let col = decorateColumnSettings<Date>({ valueType: Date }, new Remult())

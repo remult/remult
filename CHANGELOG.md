@@ -1,5 +1,9 @@
 All notable changes to this project will be documented in this file.
 
+## [2.7.31] TBD
+
+- `ValueConverters.Number.fromInput(null)` now returns `null` _(was undefined before)_.
+
 ## [2.7.30] 2025-3-2
 
 - Fixed `where` containing a `$not` from `api` to work in addition with other filters.
