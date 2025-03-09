@@ -6,7 +6,7 @@
   if ($LSContext.currentLocationHash === '/') {
     push(
       $godStore?.tables.length > 0
-        ? `/entity/${$godStore.tables[0].key}`
+        ? `/entity/${$godStore.tables[0].superKey}`
         : '/diagram',
     )
   } else {

@@ -1,5 +1,6 @@
 import { remultExpress } from '../../../core/remult-express'
 import { AccountManager } from './shared/AccountManagers/AccountManager.entity.js'
+import { AccountManagerExtra } from './shared/AccountManagers/AccountManagerExtra.entity.js'
 import { Company } from './shared/Companies/Company.entity.js'
 import { Contact } from './shared/Contacts/Contact.entity.js'
 import { ContactNote } from './shared/Contacts/ContactNote.entity.js'
@@ -17,6 +18,7 @@ export const entities = [
   Tag,
   ContactTag,
   DealContact,
+  AccountManagerExtra,
   AccountManager,
   Deal,
   Task,
