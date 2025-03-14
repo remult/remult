@@ -34,6 +34,7 @@ yarn-error.log
 testem.log
 /typings
 dependency-graph.svg
+dependency-violations.html
 
 # System Files
 .DS_Store
