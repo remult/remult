@@ -1,6 +1,7 @@
 import type { RestDataProviderHttpProvider } from './data-interfaces.js'
-import { RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider.js'
-import { flags } from './remult3/remult3.js'
+import { RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider-using-fetch.js'
+import { retry } from './data-providers/retry.js'
+
 
 export function buildRestDataProvider(
   provider: ExternalHttpProvider | typeof fetch | undefined,
@@ -29,9 +30,8 @@ export function isExternalHttpProvider(item: any) {
   return false
 }
 export class HttpProviderBridgeToRestDataProviderHttpProvider
-  implements RestDataProviderHttpProvider
-{
-  constructor(private http: ExternalHttpProvider) {}
+  implements RestDataProviderHttpProvider {
+  constructor(private http: ExternalHttpProvider) { }
   async post(url: string, data: any): Promise<any> {
     return await retry(() => toPromise(this.http.post(url, data)))
   }
@@ -45,31 +45,7 @@ export class HttpProviderBridgeToRestDataProviderHttpProvider
     return await retry(() => toPromise(this.http.get(url)))
   }
 }
-export async function retry<T>(what: () => Promise<T>): Promise<T> {
-  let i = 0
-  while (true) {
-    try {
-      return await what()
-    } catch (err: any) {
-      if (
-        (err.message?.startsWith('Error occurred while trying to proxy') ||
-          err.message?.startsWith('Error occured while trying to proxy') ||
-          err.message?.includes('http proxy error') ||
-          err.message?.startsWith('Gateway Timeout') ||
-          err.status == 500) &&
-        i++ < flags.error500RetryCount
-      ) {
-        await new Promise((res, req) => {
-          setTimeout(() => {
-            res({})
-          }, 500)
-        })
-        continue
-      }
-      throw err
-    }
-  }
-}
+
 
 export function toPromise<T>(p: Promise<T> | { toPromise(): Promise<T> }) {
   let r: Promise<T>

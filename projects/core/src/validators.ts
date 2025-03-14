@@ -1,4 +1,4 @@
-import { getRelationFieldInfo } from '../internals.js'
+import { getRelationFieldInfo } from '../src/remult3/relationInfoMember.js'
 import type { FieldValidator } from './column-interfaces.js'
 import type { ValidateFieldEvent } from './remult3/remult3.js'
 
@@ -143,13 +143,13 @@ export class Validators {
     (maxLength) => `Value must be at least ${maxLength} characters`,
   )
 
-   /**
-   * Validator to check if a value is within a specified range.  
-   */
-    static range = createValueValidatorWithArgs<number, [number, number]>(
-      (val: number, [minValue, maxValue]) => val >= minValue && val <= maxValue,
-      ([minValue, maxValue]) => `Value must be between ${minValue} and ${maxValue}`,
-    )
+  /**
+  * Validator to check if a value is within a specified range.  
+  */
+  static range = createValueValidatorWithArgs<number, [number, number]>(
+    (val: number, [minValue, maxValue]) => val >= minValue && val <= maxValue,
+    ([minValue, maxValue]) => `Value must be between ${minValue} and ${maxValue}`,
+  )
   static defaultMessage = 'Invalid value'
 }
 
@@ -223,8 +223,8 @@ export function createValidator<valueType>(
   return Object.assign(result, {
     withMessage:
       (message: ValidationMessage<valueType, undefined>) =>
-      async (entity: any, e: ValidateFieldEvent<any, valueType>) =>
-        result(entity, e, message),
+        async (entity: any, e: ValidateFieldEvent<any, valueType>) =>
+          result(entity, e, message),
   })
 }
 
@@ -297,10 +297,10 @@ export type ValueValidationMessage<argsType> =
 export type ValidationMessage<valueType, argsType> =
   | string
   | ((
-      entity: any,
-      event: ValidateFieldEvent<any, valueType>,
-      args: argsType,
-    ) => string)
+    entity: any,
+    event: ValidateFieldEvent<any, valueType>,
+    args: argsType,
+  ) => string)
 
 /**
  * Type representing a validator with arguments.
@@ -339,22 +339,22 @@ function createValidatorWithArgsInternal<valueType, argsType>(
 } {
   const result =
     (args: argsType, message?: ValidationMessage<valueType, argsType>) =>
-    async (entity: any, e: ValidateFieldEvent<any, valueType>) => {
-      const valid = await validate(entity, e, args)
-      if (typeof valid === 'string') e.error = valid
-      else if (!valid)
-        e.error = message
-          ? typeof message === 'function'
-            ? isValueValidator
-              ? (message as any as (args: argsType) => string)(args)
-              : message(entity, e, args)
-            : message
-          : defaultMessage
-          ? typeof defaultMessage === 'function'
-            ? defaultMessage(entity, e, args)
+      async (entity: any, e: ValidateFieldEvent<any, valueType>) => {
+        const valid = await validate(entity, e, args)
+        if (typeof valid === 'string') e.error = valid
+        else if (!valid)
+          e.error = message
+            ? typeof message === 'function'
+              ? isValueValidator
+                ? (message as any as (args: argsType) => string)(args)
+                : message(entity, e, args)
+              : message
             : defaultMessage
-          : Validators.defaultMessage
-    }
+              ? typeof defaultMessage === 'function'
+                ? defaultMessage(entity, e, args)
+                : defaultMessage
+              : Validators.defaultMessage
+      }
 
   return Object.assign(result, {
     get defaultMessage() {

@@ -13,8 +13,10 @@ import { Remult } from '../../core/src/context'
 import {
   addFilterToUrlAndReturnTrueIfSuccessful,
   RestDataProvider,
-  RestDataProviderHttpProviderUsingFetch,
 } from '../../core/src//data-providers/rest-data-provider'
+import {
+  RestDataProviderHttpProviderUsingFetch,
+} from '../../core/src//data-providers/rest-data-provider-using-fetch'
 import { entityFilterToJson } from '../../core/src/filter/filter-interfaces'
 import { Categories, Categories as newCategories } from './remult-3-entities'
 
@@ -36,9 +38,9 @@ import { assign } from '../../core/assign'
 import { describeClass } from '../../core/src/remult3/classDescribers'
 import {
   HttpProviderBridgeToRestDataProviderHttpProvider,
-  retry,
   toPromise,
 } from '../../core/src/buildRestDataProvider'
+import { retry } from '../../core/src/data-providers/retry'
 import { CompoundIdField } from '../../core'
 import {
   dbNamesOf,
@@ -68,7 +70,7 @@ import { TestApiDataProvider } from '../../core/server/test-api-data-provider.js
   },
 })
 class Phone {
-  constructor(private thePhone: string) {}
+  constructor(private thePhone: string) { }
 }
 @Entity('')
 class tableWithPhone extends EntityBase {
@@ -106,7 +108,7 @@ describe('test object column stored as string', () => {
 })
 
 describe('Test basic row functionality', () => {
-  it('filter on date keeps the type', () => {})
+  it('filter on date keeps the type', () => { })
   it('finds its id column', () => {
     let c = new Remult().repo(newCategories)
     expect(c.metadata.idMetadata.field.key).toBe('id')
@@ -385,7 +387,7 @@ describe('data api', () => {
     d.test()
   })
   it('post works', async () => {
-    let [c, remult] = await createData(async () => {})
+    let [c, remult] = await createData(async () => { })
 
     var api = new DataApi(c, remult)
     let t = new TestDataApiResponse()
@@ -400,7 +402,7 @@ describe('data api', () => {
     expect(await c.count()).toBe(1)
   })
   it('post works for array', async () => {
-    let [c, remult] = await createData(async () => {})
+    let [c, remult] = await createData(async () => { })
 
     var api = new DataApi(c, remult)
     let t = new TestDataApiResponse()
@@ -615,7 +617,7 @@ describe('data api', () => {
   it('delete with validation fails', async () => {
     var deleting = new Done()
     let happend = false
-    let type = class extends newCategories {}
+    let type = class extends newCategories { }
     Entity<typeof type.prototype>(undefined!, {
       allowApiDelete: true,
       deleted: () => (happend = true),
@@ -645,7 +647,7 @@ describe('data api', () => {
   it('delete with validation exception fails', async () => {
     var deleting = new Done()
     let happend = false
-    let type = class extends newCategories {}
+    let type = class extends newCategories { }
     Entity<typeof type.prototype>(undefined!, {
       allowApiDelete: true,
 
@@ -676,7 +678,7 @@ describe('data api', () => {
   it('delete with validation exception fails - no data api', async () => {
     var deleting = new Done()
     let happend = false
-    let type = class extends newCategories {}
+    let type = class extends newCategories { }
     Entity<typeof type.prototype>(undefined!, {
       allowApiDelete: true,
       deleted: () => (happend = true),
@@ -700,7 +702,7 @@ describe('data api', () => {
   it('delete works', async () => {
     var deleting = new Done()
     let happend = false
-    let type = class extends newCategories {}
+    let type = class extends newCategories { }
     Entity<typeof type.prototype>(undefined!, {
       allowApiDelete: true,
       deleted: (t) => {
@@ -764,7 +766,7 @@ describe('data api', () => {
 
   it('put with validation fails', async () => {
     let count = 0
-    let type = class extends newCategories {}
+    let type = class extends newCategories { }
     Entity<typeof type.prototype>(undefined!, {
       allowApiUpdate: true,
       saving: (t) => {
@@ -796,7 +798,7 @@ describe('data api', () => {
     let count = 0
     let startTest = false
     let savedWorked = new Done()
-    let type = class extends newCategories {}
+    let type = class extends newCategories { }
     Entity<typeof type.prototype>(undefined!, {
       allowApiUpdate: true,
       saving: () => count++,
@@ -831,7 +833,7 @@ describe('data api', () => {
     expect(count).toBe(1)
   })
   it('afterSave works on insert', async () => {
-    let type = class extends newCategories {}
+    let type = class extends newCategories { }
     Entity<typeof type.prototype>(undefined!, {
       allowApiUpdate: true,
       allowApiInsert: true,
@@ -843,7 +845,7 @@ describe('data api', () => {
         expect(t.categoryName).toBe('noam 1')
       },
     })(type)
-    let [c, remult] = await createData(async (insert) => {}, type)
+    let [c, remult] = await createData(async (insert) => { }, type)
 
     let savedWorked = new Done()
 
@@ -873,7 +875,7 @@ describe('data api', () => {
     let startTest = false
     let mem = new InMemoryDataProvider()
     remult.dataProvider = mem
-    let type = class extends newCategories {}
+    let type = class extends newCategories { }
     Entity<typeof type.prototype>('testE', {
       allowApiUpdate: true,
       saving: (row, { preventDefault }) => {
@@ -916,7 +918,7 @@ describe('data api', () => {
         preventDefault()
       },
     })
-    class type extends newCategories {}
+    class type extends newCategories { }
     const c = new Remult(new InMemoryDataProvider()).repo(type)
     expect(await c.count()).toBe(0)
     await c.insert({})
@@ -1052,12 +1054,12 @@ describe('data api', () => {
     expect(x[0].categoryName).toBe('noam')
   })
   it('post with syntax error fails well', async () => {
-    let type = class extends newCategories {}
+    let type = class extends newCategories { }
     Entity<newCategories>('', {
       allowApiInsert: true,
       saving: (x) => x.description.length + 1,
     })(type)
-    let [c, remult] = await createData(async (insert) => {}, type)
+    let [c, remult] = await createData(async (insert) => { }, type)
 
     var api = new DataApi(c, remult)
     let t = new TestDataApiResponse()
@@ -1125,19 +1127,19 @@ describe('data api', () => {
 
   it('allow api read depends also on api crud', async () => {
     let sc = new Remult()
-    let type = class extends EntityBase {}
+    let type = class extends EntityBase { }
     Entity('a', { allowApiCrud: false })(type)
     expect(sc.repo(type).metadata.apiReadAllowed).toBe(false)
   })
   it('allow api read depends also on api crud', async () => {
     let sc = new Remult()
-    let type = class extends EntityBase {}
+    let type = class extends EntityBase { }
     Entity('a', { allowApiCrud: false, allowApiRead: true })(type)
     expect(sc.repo(type).metadata.apiReadAllowed).toBe(true)
   })
 
   it('read is not Allowed', async () => {
-    let type = class extends newCategories {}
+    let type = class extends newCategories { }
     Entity('', {
       allowApiRead: false,
     })(type)
@@ -1162,7 +1164,7 @@ describe('data api', () => {
     d.test()
   })
   it('get is not Allowed', async () => {
-    let type = class extends newCategories {}
+    let type = class extends newCategories { }
     Entity('', {
       allowApiRead: false,
       allowApiCrud: undefined,
@@ -1184,7 +1186,7 @@ describe('data api', () => {
     d.test()
   })
   it('count is not Allowed', async () => {
-    let type = class extends newCategories {}
+    let type = class extends newCategories { }
     Entity('', {
       allowApiRead: false,
     })(type)
@@ -1210,7 +1212,7 @@ describe('data api', () => {
   })
 
   it('delete id  not Allowed', async () => {
-    let type = class extends newCategories {}
+    let type = class extends newCategories { }
     Entity('x', {
       allowApiDelete: false,
     })(type)
@@ -1238,7 +1240,7 @@ describe('data api', () => {
   })
 
   it('apiRequireId', async () => {
-    let type = class extends newCategories {}
+    let type = class extends newCategories { }
     Entity('', {
       apiRequireId: true,
     })(type)
@@ -1284,7 +1286,7 @@ describe('data api', () => {
     d.test()
   })
   it('apiRequireId in', async () => {
-    let type = class extends newCategories {}
+    let type = class extends newCategories { }
     Entity('', {
       apiRequireId: true,
     })(type)
@@ -1311,7 +1313,7 @@ describe('data api', () => {
     d.test()
   })
   it('delete id  not Allowed for specific row', async () => {
-    let type = class extends newCategories {}
+    let type = class extends newCategories { }
     Entity<typeof type.prototype>('', {
       allowApiDelete: (t, c) => {
         return t!.id == 1
@@ -1351,7 +1353,7 @@ describe('data api', () => {
     expect(await r.count()).toBe(2)
   })
   it('update id  not Allowed for specific row', async () => {
-    let type = class extends newCategories {}
+    let type = class extends newCategories { }
     Entity<typeof type.prototype>('', {
       allowApiUpdate: (t, c) => {
         return t!.id == 1
@@ -1405,7 +1407,7 @@ describe('data api', () => {
     `)
   })
   it('insert id  not Allowed for specific row', async () => {
-    let type = class extends newCategories {}
+    let type = class extends newCategories { }
     Entity<typeof type.prototype>('', {
       allowApiInsert: (t, c) => {
         return t!.categoryName == 'ok'
@@ -1554,7 +1556,7 @@ describe('compound id', () => {
     let ctx = new Remult()
     expect(
       ctx.repo(CompoundIdEntity).metadata.idMetadata.field instanceof
-        CompoundIdField,
+      CompoundIdField,
     ).toBe(true)
   })
 
@@ -1675,7 +1677,7 @@ describe('compound id', () => {
 })
 describe('test data list', () => {
   it('dbname of entity string works', async () => {
-    let type = class extends Categories {}
+    let type = class extends Categories { }
     Entity('testName', { dbName: 'test' })(type)
     let r = new Remult().repo(type)
     expect((await dbNamesOf(r.metadata)).$entityName).toBe('test')
@@ -1703,7 +1705,7 @@ describe('test date storage', () => {
   })
 })
 @Entity(undefined!)
-class myEntity {}
+class myEntity { }
 describe('', () => {
   it('dbname of entity string works when key is not defined', async () => {
     let r = new Remult().repo(myEntity)
@@ -1951,7 +1953,7 @@ describe('test http retry', () => {
         throw Error('Another error')
       })
       ok = true
-    } catch {}
+    } catch { }
     expect(ok).toBe(false)
   })
   it('fails on other errors that has no message', async () => {
@@ -1961,7 +1963,7 @@ describe('test http retry', () => {
         throw 'Another error'
       })
       ok = true
-    } catch {}
+    } catch { }
     expect(ok).toBe(false)
   })
 })
@@ -2449,9 +2451,9 @@ describe('test fetch', () => {
     const r = new RestDataProvider(() => undefined!)!
     let ok = false
     try {
-      await r.transaction(async () => {})
+      await r.transaction(async () => { })
       ok = true
-    } catch {}
+    } catch { }
     expect(ok).toBe(false)
   })
   it('json field works', async () => {
