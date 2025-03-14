@@ -7,8 +7,8 @@ import type {
   ValueConverter,
   ValueListItem,
 } from '../column-interfaces.js'
-import type { AllowedForInstance } from '../context.js'
-import { Remult, isBackend } from '../context.js'
+import type { AllowedForInstance } from '../context-types.js'
+import { Remult } from '../context.js'
 import type { EntityOptions } from '../entity.js'
 import { Filter } from '../filter/filter-interfaces.js'
 import { Sort } from '../sort.js'
@@ -86,17 +86,14 @@ import type { columnInfo } from './columnInfo.js'
 import {
   type RelationFieldInfo,
   getRelationFieldInfo,
-  type RelationFields,
 } from './relationInfoMember.js'
 import { RelationLoader } from './relation-loader.js'
 import {
   type RepositoryInternal,
   getInternalKey,
 } from './repository-internals.js'
-import {
-  entityDbName,
-  fieldDbName,
-} from '../filter/filter-consumer-bridge-to-sql-request.js'
+import { entityDbName } from '../filter/entityDbName.js'
+import { fieldDbName } from '../filter/fieldDbName.js'
 import { remultStatic } from '../remult-static.js'
 import { Validators } from '../validators.js'
 import { addValidator } from './addValidator.js'
@@ -106,11 +103,11 @@ import { QueryResultImpl } from './QueryResultImpl.js'
 
 let classValidatorValidate:
   | ((
-      item: any,
-      ref: {
-        fields: FieldsRef<any>
-      },
-    ) => Promise<void>)
+    item: any,
+    ref: {
+      fields: FieldsRef<any>
+    },
+  ) => Promise<void>)
   | undefined = undefined
 // import ("class-validator".toString())
 //     .then((v) => {
@@ -131,8 +128,7 @@ let classValidatorValidate:
 //     });
 
 export class RepositoryImplementation<entityType>
-  implements Repository<entityType>, RepositoryInternal<entityType>
-{
+  implements Repository<entityType>, RepositoryInternal<entityType> {
   _notFoundError(id: any) {
     return {
       message: `id ${id} not found in entity ${this.metadata.key}`,
@@ -229,15 +225,15 @@ export class RepositoryImplementation<entityType>
     public _dataProvider: DataProvider,
     private _info: EntityFullInfo<entityType>,
     private _defaultFindOptions?: FindOptions<entityType>,
-  ) {}
+  ) { }
   async aggregate<
     sumFields extends NumericKeys<entityType>[] | undefined = undefined,
     averageFields extends NumericKeys<entityType>[] | undefined = undefined,
     minFields extends (keyof MembersOnly<entityType>)[] | undefined = undefined,
     maxFields extends (keyof MembersOnly<entityType>)[] | undefined = undefined,
     distinctCountFields extends
-      | (keyof MembersOnly<entityType>)[]
-      | undefined = undefined,
+    | (keyof MembersOnly<entityType>)[]
+    | undefined = undefined,
   >(
     options: Omit<
       GroupByOptions<
@@ -266,15 +262,15 @@ export class RepositoryImplementation<entityType>
   }
   async groupBy<
     groupByFields extends
-      | (keyof MembersOnly<entityType>)[]
-      | undefined = undefined,
+    | (keyof MembersOnly<entityType>)[]
+    | undefined = undefined,
     sumFields extends NumericKeys<entityType>[] | undefined = undefined,
     averageFields extends NumericKeys<entityType>[] | undefined = undefined,
     minFields extends (keyof MembersOnly<entityType>)[] | undefined = undefined,
     maxFields extends (keyof MembersOnly<entityType>)[] | undefined = undefined,
     distinctCountFields extends
-      | (keyof MembersOnly<entityType>)[]
-      | undefined = undefined,
+    | (keyof MembersOnly<entityType>)[]
+    | undefined = undefined,
   >(
     options: GroupByOptions<
       entityType,
@@ -334,8 +330,7 @@ export class RepositoryImplementation<entityType>
     const getFieldNotInGroupBy = (key: keyof entityType) => {
       if (options?.group?.includes(key as any))
         throw Error(
-          `field "${
-            key as string
+          `field "${key as string
           }" cannot be used both in an aggregate and in group by`,
         )
       return getField(key)
@@ -807,13 +802,13 @@ export class RepositoryImplementation<entityType>
         if (typeof l === 'function') {
           listener = {
             next: l,
-            complete: () => {},
-            error: () => {},
+            complete: () => { },
+            error: () => { },
           }
         }
 
-        listener.error ??= () => {}
-        listener.complete ??= () => {}
+        listener.error ??= () => { }
+        listener.complete ??= () => { }
         return this._remult.liveQuerySubscriber.subscribe<entityType>( //TODO - figure out why the type was required
           this,
           options!,
@@ -1713,7 +1708,7 @@ abstract class rowHelperBase<T> {
     this.originalValues = this.copyDataToObject()
     this.saveMoreOriginalData()
   }
-  saveMoreOriginalData() {}
+  saveMoreOriginalData() { }
   async validate() {
     this.__clearErrorsAndReportChanged()
     if (classValidatorValidate)
@@ -1730,7 +1725,7 @@ abstract class rowHelperBase<T> {
     await this.__performColumnAndEntityValidations()
     this.__assertValidity()
   }
-  async __performColumnAndEntityValidations() {}
+  async __performColumnAndEntityValidations() { }
   toApiJson(includeRelatedEntities = false, notJustApi = false) {
     let result: any = {}
     for (const col of this.fieldsMetadata) {
@@ -1793,8 +1788,7 @@ abstract class rowHelperBase<T> {
 
 export class rowHelperImplementation<T>
   extends rowHelperBase<T>
-  implements EntityRef<T>
-{
+  implements EntityRef<T> {
   constructor(
     private info: EntityFullInfo<T>,
     instance: T,
@@ -2050,7 +2044,7 @@ export class rowHelperImplementation<T>
     return d
   }
 
-  private buildLifeCycleEvent(preventDefault: VoidFunction = () => {}) {
+  private buildLifeCycleEvent(preventDefault: VoidFunction = () => { }) {
     const self = this
     return {
       isNew: self.isNew(),
@@ -2170,7 +2164,7 @@ export class rowHelperImplementation<T>
     }
 
     if (this.info.entityInfo.validation) {
-      let e = this.buildLifeCycleEvent(() => {})
+      let e = this.buildLifeCycleEvent(() => { })
       await this.info.entityInfo.validation(this.instance, e)
     }
     if (this.repo.listeners)
@@ -2244,8 +2238,7 @@ export function getControllerRef<fieldsContainerType>(
 
 export class controllerRefImpl<T = unknown>
   extends rowHelperBase<T>
-  implements ControllerRef<T>
-{
+  implements ControllerRef<T> {
   constructor(columnsInfo: FieldMetadata[], instance: any, remult: Remult) {
     super(columnsInfo, instance, remult, false)
 
@@ -2281,8 +2274,7 @@ export class controllerRefImpl<T = unknown>
   fields: FieldsRef<T>
 }
 export class FieldRefImplementation<entityType, valueType>
-  implements FieldRef<entityType, valueType>
-{
+  implements FieldRef<entityType, valueType> {
   constructor(
     private settings: FieldOptions,
     public metadata: FieldMetadata<valueType, entityType>,
@@ -2330,7 +2322,7 @@ export class FieldRefImplementation<entityType, valueType>
       } else {
         let val = await this.repo
           .relations(this.container)
-          [this.metadata.key].findOne()
+        [this.metadata.key].findOne()
         if (val) this.container[this.metadata.key] = val
         else return null! //TODO: check if this (!) is correct
       }
@@ -2574,9 +2566,8 @@ export class columnDefsImpl implements FieldMetadata {
             } catch (err: any) {
               const error = `${String(
                 prop,
-              )} failed for value ${args?.[0]}. Error: ${
-                typeof err === 'string' ? err : err.message
-              }`
+              )} failed for value ${args?.[0]}. Error: ${typeof err === 'string' ? err : err.message
+                }`
               throw new EntityError({
                 message: this.caption + ': ' + error,
                 modelState: {
@@ -2702,10 +2693,10 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
         typeof entityInfo.id === 'string'
           ? this.fields.find(entityInfo.id)
           : Array.isArray(entityInfo.id)
-          ? entityInfo.id.map((x: string) => this.fields.find(x))
-          : typeof entityInfo.id === 'function'
-          ? entityInfo.id(this.fields)
-          : Object.keys(entityInfo.id).map((x) => this.fields.find(x))
+            ? entityInfo.id.map((x: string) => this.fields.find(x))
+            : typeof entityInfo.id === 'function'
+              ? entityInfo.id(this.fields)
+              : Object.keys(entityInfo.id).map((x) => this.fields.find(x))
       if (Array.isArray(r)) {
         if (r.length > 1) this.idMetadata.field = new CompoundIdField(...r)
         else if (r.length == 1) this.idMetadata.field = r[0]
@@ -2839,7 +2830,7 @@ export function ValueListFieldType<
   return (type: ClassType<valueType>, context?: any) => {
     FieldType<valueType>(
       (o) => {
-        ;(o.valueConverter = ValueListInfo.get(type)),
+        ; (o.valueConverter = ValueListInfo.get(type)),
           (o.displayValue = (item, val) => val?.caption)
         o.validate = (entity, ref) => {
           const values = ValueListInfo.get(type).getValues()
@@ -2858,8 +2849,7 @@ export interface ValueListFieldOptions<entityType, valueType>
   getValues?: () => valueType[]
 }
 export class ValueListInfo<T extends ValueListItem>
-  implements ValueConverter<T>
-{
+  implements ValueConverter<T> {
   static get<T extends ValueListItem>(type: ClassType<T>): ValueListInfo<T> {
     let r = typeCache.get(type)
     if (!r) {
@@ -2910,7 +2900,7 @@ export class ValueListInfo<T extends ValueListItem>
     } else
       throw new Error(
         `ValueType not yet initialized, did you forget to call @ValueListFieldType on ` +
-          valueListType,
+        valueListType,
       )
   }
 
@@ -3150,9 +3140,9 @@ class SubscribableImp implements Subscribable {
     listener:
       | (() => void)
       | {
-          reportChanged: () => void
-          reportObserved: () => void
-        },
+        reportChanged: () => void
+        reportObserved: () => void
+      },
   ): Unsubscribe {
     let list: {
       reportChanged: () => void
@@ -3161,7 +3151,7 @@ class SubscribableImp implements Subscribable {
     if (typeof listener === 'function')
       list = {
         reportChanged: () => listener(),
-        reportObserved: () => {},
+        reportObserved: () => { },
       }
     else list = listener
 
