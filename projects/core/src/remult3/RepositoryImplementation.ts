@@ -7,7 +7,7 @@ import type {
   ValueConverter,
   ValueListItem,
 } from '../column-interfaces.js'
-import type { AllowedForInstance } from '../context-types.js'
+import type { AllowedForInstance } from '../context.js'
 import { Remult } from '../context.js'
 import type { EntityOptions } from '../entity.js'
 import { Filter } from '../filter/filter-interfaces.js'

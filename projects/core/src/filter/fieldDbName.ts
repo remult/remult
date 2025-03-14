@@ -1,4 +1,4 @@
-import { getRelationFieldInfo } from "internals.js"
+import { getRelationFieldInfo } from '../remult3/relationInfoMember.js'
 import type { EntityMetadata, RelationOptions } from "../remult3/remult3.js"
 import type { FieldMetadata } from '../column-interfaces.js'
 
