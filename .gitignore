@@ -33,6 +33,7 @@ npm-debug.log
 yarn-error.log
 testem.log
 /typings
+dependency-graph.svg
 
 # System Files
 .DS_Store
