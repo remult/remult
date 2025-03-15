@@ -48,4 +48,4 @@ app.use(api)
 
 Click on the `Test the API` button in the preview window. You should see a JSON array with the tasks we defined in the result.
 
-> **Note:** While Remult supports [many relational and non-relational databases](https://remult.dev/docs/databases.html), in this tutorial we start by storing entity data in a backend **JSON file** stored in the `db` folder for the project. Later in this tutorial, we'll switch to using SQLite.
+> **Note:** While Remult supports [many relational and non-relational databases](https://remult.dev/docs/installation/database/), in this tutorial we start by storing entity data in a backend **JSON file** stored in the `db` folder for the project. Later in this tutorial, we'll switch to using SQLite.
