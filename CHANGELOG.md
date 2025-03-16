@@ -1,5 +1,9 @@
 All notable changes to this project will be documented in this file.
 
+## [2.7.32] TBD
+
+- Added `subscribeAuth` to remult to support reactivity
+
 ## [2.7.31] 2025-3-9
 
 - `ValueConverters.Number.fromInput(null)` now returns `null` _(was undefined before)_.
