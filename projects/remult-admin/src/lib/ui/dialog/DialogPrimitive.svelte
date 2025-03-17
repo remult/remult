@@ -212,6 +212,7 @@
 
     z-index: 50;
 
+    min-height: 50vh;
     max-height: 85vh;
     width: 90vw;
     /* max-width: 550px; */
@@ -321,6 +322,7 @@
     max-height: calc(85vh - 12rem); /* Adjust this value as needed */
     margin-bottom: 1rem;
     padding-right: 16px; /* Add padding to prevent content from being hidden behind scrollbar */
+    min-height: 50vh;
   }
 
   /* Styling for WebKit browsers (Chrome, Safari, newer versions of Edge) */

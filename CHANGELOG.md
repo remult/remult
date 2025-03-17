@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 ## [2.7.32] TBD
 
 - Added `subscribeAuth` to remult to support reactivity
+- Admin ui:
+  - Fixed issue where json editor was not working when the json field was an array
+  - Fixed issue where json field did not trigger the change detection (color green)
 
 ## [2.7.31] 2025-3-9
 

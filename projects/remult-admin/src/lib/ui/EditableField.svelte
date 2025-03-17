@@ -96,7 +96,7 @@
 
 {#if info.relationToOne}
   <RelationField bind:value {info} on:change {relationsToOneValues} />
-{:else if (!isNewRow && value === undefined) || (isNewRow && info.readOnly)}
+{:else if isNewRow && info.readOnly}
   <input
     value=""
     disabled
@@ -118,7 +118,7 @@
       dialog.show({
         config: { title: 'Edit JSON', width: '90vw' },
         component: JSONEditor,
-        props: { content: { json: value ?? {} }, onChange },
+        props: { content: { json: value }, onChange },
       })
     }}
     on:keydown={handleKeydown}
