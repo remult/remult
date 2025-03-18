@@ -1,6 +1,6 @@
 All notable changes to this project will be documented in this file.
 
-## [2.7.32] TBD
+## [2.7.32] 2025-3-18
 
 - Added `subscribeAuth` to remult to support reactivity
 - Admin ui:
