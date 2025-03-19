@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { codeToHtml } from 'shiki'
 import { ref, watch } from 'vue'
+import { transformerNotationDiff } from '@shikijs/transformers'
 
 // Add one by one when we check them https://shiki.style/languages
 export type Language =
@@ -26,10 +27,17 @@ const highlightedCode = ref('')
 
 // Function to update the highlighted code
 const updateHighlightedCode = async () => {
+  console.time('updateHighlightedCode')
   highlightedCode.value = await codeToHtml(props.code, {
     lang: props.language,
     theme: props.theme,
+    transformers: [
+      transformerNotationDiff({
+        // matchAlgorithm: 'v3',
+      }),
+    ],
   })
+  console.timeEnd('updateHighlightedCode')
 }
 
 // Watch for changes in code, language, or theme
@@ -64,5 +72,13 @@ watch(
 .loading-indicator {
   color: #666;
   padding: 1rem;
+}
+
+.line.diff.add {
+  background-color: #003d00;
+}
+
+.line.diff.remove {
+  background-color: #3d0000;
 }
 </style>

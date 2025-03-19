@@ -28,7 +28,7 @@ export class Task {
   id!: string
 
   @Fields.string({
-    validate: Validators.required
+    validate: Validators.required // [!code ++]
   })
   title: string = ''
 }`,
