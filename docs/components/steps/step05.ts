@@ -1,8 +1,8 @@
 import type { CodeStep } from '../stepsData.js'
 
-export const step03: CodeStep = {
-  id: 'step-03',
-  name: 'Add a form',
+export const step05: CodeStep = {
+  id: 'step-05',
+  name: 'Validation',
   stepTime: 1 * 60,
   cta: [
     {
@@ -18,7 +18,8 @@ export const step03: CodeStep = {
     {
       name: 'entity.ts',
       keyContext: 'backend',
-      content: `import { Entity, Fields } from 'remult'
+      changed: true,
+      content: `import { Entity, Fields, Validators } from 'remult'
 
 @Entity('tasks', {
   allowApiCrud: true,
@@ -27,7 +28,10 @@ export class Task {
   @Fields.cuid()
   id!: string
 
-  @Fields.string()
+  @Fields.string({
+    caption: 'Title of the task',
+    validate: Validators.required // [!code ++]
+  })
   title: string = ''
 }`,
     },
@@ -72,24 +76,29 @@ export default function App() {
   import { Task } from "./entity";
 
   let tasks = $state<Task[]>([]);
-  let newTask = $state(repo(Task).create()) // set default values [!code ++]
+  let newTask = $state(repo(Task).create()) 
 
   $effect(() => {
     repo(Task).find().then((t) => (tasks = t));
   });
 
-  const addTask = async (e: Event) => { // [!code ++]
-    e.preventDefault(); // [!code ++]
-    newTask = await repo(Task).insert(newTask); // [!code ++]
-    tasks.push(newTask) // [!code ++]
-    newTask = repo(Task).create(); // reset the form [!code ++] 
-  }; // [!code ++]
+  const addTask = async (e: Event) => { 
+    try { // [!code ++]
+      e.preventDefault(); 
+      newTask = await repo(Task).insert(newTask); 
+      tasks.push(newTask) 
+      newTask = repo(Task).create(); 
+    } catch (e) { // [!code ++]
+      console.log(e) // e contains the validation errors [!code ++]   
+    } // [!code ++]
+  }; 
 </script>
 
-<form onsubmit={addTask}> // [!code ++]
-  <input bind:value={newTask.title} /> // [!code ++]
-  <button>Add</button> // [!code ++]
-</form> // [!code ++]
+<form onsubmit={addTask}> 
+  <label>{repo(Task).metadata.fields.title.caption}</label>
+  <input bind:value={newTask.title} /> 
+  <button>Add</button> 
+</form> 
 
 {#each tasks as task}
   {task.title}
