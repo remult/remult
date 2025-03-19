@@ -77,7 +77,20 @@ export default function App() {
       .find()
       .then((t) => (tasks = t));
   });
+
+  let newTaskTitle = $state(""); // [!code ++]
+  const addTask = async (event: Event) => { // [!code ++]
+    event.preventDefault(); // [!code ++]
+    const newTask = await repo(Task).insert({ title: newTaskTitle }); // [!code ++]
+    tasks = [...tasks, newTask]; // [!code ++]
+    newTaskTitle = ""; // [!code ++]
+  }; // [!code ++]
 </script>
+
+<form onsubmit={addTask}> // [!code ++]
+  <input bind:value={newTaskTitle} placeholder="What needs to be done?" /> // [!code ++]
+  <button>Add</button> // [!code ++]
+</form> // [!code ++]
 
 {#each tasks as task}
   {task.title}
