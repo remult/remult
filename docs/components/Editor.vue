@@ -363,6 +363,8 @@ const getStepTimeAgo = (stepIndex: number) => {
 .editor-code {
   padding: 0;
   height: 100%;
+  overflow: scroll;
+  padding-bottom: 5rem;
 }
 
 .editor-footer {
