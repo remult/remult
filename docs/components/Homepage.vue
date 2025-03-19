@@ -26,6 +26,7 @@ import Editor from './Editor.vue'
   .homepage {
     padding: 4remgit;
     min-height: 100vh;
+    padding: 8rem 0;
     display: flex;
     justify-content: center;
     align-items: center;

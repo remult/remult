@@ -120,7 +120,7 @@ const getStepTimeAgo = (stepIndex: number) => {
     <div class="editor-header">Customer Portal</div>
     <div class="editor-body">
       <div class="editor-sidebar">
-        <span class="steps-label">Steps</span>
+        <span class="steps-label">Commit History</span>
         <button
           v-for="(step, index) in [...steps].reverse()"
           :key="step.id"
@@ -179,14 +179,18 @@ const getStepTimeAgo = (stepIndex: number) => {
   background: #050638;
   border-radius: 3px;
   overflow: hidden;
+  max-height: calc(100vh - 200px);
+  font-size: .8rem;
 }
 
 .editor-header {
+  pointer-events: none;
+  user-select: none;
   display: flex;
   justify-content: center;
   background: #0d0d2d;
-  color: white;
-  padding: 1rem;
+  color: #484BD2;
+  padding: .2rem 1rem;
 }
 
 /* Editor Styles */
@@ -214,24 +218,23 @@ const getStepTimeAgo = (stepIndex: number) => {
   gap: 0.2rem;
   background: #050638;
   border-bottom: #080a59;
-  padding: 0.5rem;
 }
 
 .tab-button {
   background: #050638;
   border: #080a59;
-  padding: 0.5rem;
+  padding: .2rem .5rem;
 }
 
 .tab-button.active {
-  background: #1a1a3a;
+  background: #080A59;
 }
 
 .editor-sidebar {
   width: 200px;
   background: #050638;
   border-right: #080a59;
-  padding: 0.5rem;
+  padding: 0;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -241,8 +244,12 @@ const getStepTimeAgo = (stepIndex: number) => {
 }
 
 .steps-label {
+  color: #3739A2;
+  text-transform: uppercase;
+  font-size: .7rem;
   display: block;
   margin-bottom: 1rem;
+  padding: .2rem 1rem;
 }
 
 .step-button {
