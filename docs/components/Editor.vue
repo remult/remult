@@ -104,11 +104,13 @@ const formatTime = (totalSeconds: number) => {
   return `${minutes} min ${seconds} sec`
 }
 
-// New function to get static "ago" time
+// Function to get "ago" time - sum of this step and all LATER steps
 const getStepTimeAgo = (stepIndex: number) => {
-  // Sum up all times from this step to the end
+  // Sum up times for the current step and all steps after it
+  // but exclude the last step which is "now"
+  const endIndex = steps.value.length - 1; // Index of the last step
   const totalSeconds = steps.value
-    .slice(stepIndex)
+    .slice(stepIndex, endIndex)  // Include current step up to (but not including) the last step
     .reduce((total, s) => total + (s.stepTime || 0), 0)
 
   return formatTime(totalSeconds) + ' ago'
@@ -125,7 +127,7 @@ const getStepTimeAgo = (stepIndex: number) => {
       <div class="editor-sidebar">
         <span class="steps-label">Commit History</span>
         <button
-          v-for="(step, index) in [...steps].reverse()"
+          v-for="(step, index) in steps"
           :key="step.id"
           @click="selectStep(step)"
           class="step-button"
@@ -133,7 +135,7 @@ const getStepTimeAgo = (stepIndex: number) => {
         >
           <span>{{ step.name }}</span>
           <span class="step-time">{{
-            index === 0 ? 'now' : getStepTimeAgo(steps.length - index - 1)
+            index === steps.length - 1 ? 'now' : getStepTimeAgo(index)
           }}</span>
         </button>
 
