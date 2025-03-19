@@ -5,12 +5,8 @@ export default {
   name: 'Add hooks',
   cta: [
     {
-      label: 'More about validation',
-      href: '/docs',
-    },
-    {
-      label: 'More about auth',
-      href: '/docs',
+      label: 'All lifecycle hooks',
+      href: '/lifecycle-hooks',
     },
   ],
   files: [

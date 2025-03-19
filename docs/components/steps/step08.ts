@@ -3,16 +3,7 @@ import previousStep from './step07.js'
 
 export default {
   name: 'Live queries',
-  cta: [
-    {
-      label: 'More about validation',
-      href: '/docs',
-    },
-    {
-      label: 'More about auth',
-      href: '/docs',
-    },
-  ],
+  cta: [],
   files: [
     {
       name: 'entity.ts',

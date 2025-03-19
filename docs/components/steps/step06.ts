@@ -5,12 +5,8 @@ export default {
   stepTime: 2 * 60,
   cta: [
     {
-      label: 'More about validation',
-      href: '/docs',
-    },
-    {
-      label: 'More about auth',
-      href: '/docs',
+      label: 'More about Access Control',
+      href: '/docs/access-control',
     },
   ],
   files: [

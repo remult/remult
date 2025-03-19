@@ -5,12 +5,12 @@ export default {
   name: 'Paging, Sorting, Filtering',
   cta: [
     {
-      label: 'More about validation',
-      href: '/docs',
+      label: 'Advanced filtering',
+      href: '/docs/custom-filter',
     },
     {
-      label: 'More about auth',
-      href: '/docs',
+      label: 'Interactive tutorial: SQL Relations',
+      href: 'https://learn.remult.dev/in-depth/4-filtering/4-sql-relations-filter',
     },
   ],
   files: [

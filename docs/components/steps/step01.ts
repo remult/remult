@@ -5,13 +5,9 @@ export default {
   stepTime: 2 * 60,
   cta: [
     {
-      label: 'More about validation',
-      href: '/docs',
-    },
-    {
-      label: 'More about auth',
-      href: '/docs',
-    },
+      label: 'Full Entity API',
+      href: '/docs/ref_entity',
+    }
   ],
   files: [
     {

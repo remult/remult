@@ -3,7 +3,7 @@ import type { Framework } from './composables/useUserPreference.js'
 
 export interface CodeStepInput {
   name: string
-  stepTime?: number
+  stepTime?: number // default is 1 minute
   files: {
     name: string
     content: string

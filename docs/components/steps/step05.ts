@@ -3,16 +3,7 @@ import type { CodeStepInput } from '../stepsData.js'
 export default {
   name: 'Add validation',
   stepTime: 2 * 60,
-  cta: [
-    {
-      label: 'More about validation',
-      href: '/docs',
-    },
-    {
-      label: 'More about auth',
-      href: '/docs',
-    },
-  ],
+  cta: [],
   files: [
     {
       name: 'entity.ts',

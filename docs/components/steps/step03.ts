@@ -4,16 +4,7 @@ import previousStep from './step02.js'
 export default {
   name: 'Add a form',
   stepTime: 3 * 60,
-  cta: [
-    {
-      label: 'More about validation',
-      href: '/docs',
-    },
-    {
-      label: 'More about auth',
-      href: '/docs',
-    },
-  ],
+  cta: [],
   files: [
     {
       name: 'entity.ts',

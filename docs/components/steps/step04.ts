@@ -4,12 +4,8 @@ export default {
   name: 'Add label using metadata',
   cta: [
     {
-      label: 'More about validation',
-      href: '/docs',
-    },
-    {
-      label: 'More about auth',
-      href: '/docs',
+      label: 'Adding your own options (eg: placeholder)',
+      href: '/docs/custom-options#enhancing-field-and-entity-definitions-with-custom-options',
     },
   ],
   files: [
