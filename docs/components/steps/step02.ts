@@ -1,6 +1,6 @@
 import type { CodeStep } from '../stepsData.js'
 
-export const step02: CodeStep = {
+export default {
   id: 'step-02',
   name: 'Paging, Sorting and Filtering',
   stepTime: 2 * 60,
@@ -151,4 +151,4 @@ export class TodoComponent {
 </div>`,
     },
   ],
-}
+} satisfies CodeStep

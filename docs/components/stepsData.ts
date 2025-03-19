@@ -1,10 +1,5 @@
 import { Language } from './Code.vue'
 import type { Framework } from './composables/useUserPreference.js'
-import { step01 } from './steps/step01.js'
-import { step02 } from './steps/step02.js'
-import { step03 } from './steps/step03.js'
-import { step04 } from './steps/step04.js'
-import { step05 } from './steps/step05.js'
 
 export interface CodeStep {
   id: string
@@ -24,5 +19,3 @@ export interface CodeStep {
     highlight?: boolean // default is false
   }[]
 }
-
-export const stepsData: CodeStep[] = [step01, step02, step03, step04, step05]

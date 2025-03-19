@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import Code from './Code.vue'
 import { ref, onMounted, watch } from 'vue'
-import { type CodeStep, stepsData } from './stepsData'
+import { type CodeStep } from './stepsData'
 import { useUserPreference } from './composables/useUserPreference'
+import { stepsData } from './steps/index.js'
 
 const steps = ref<CodeStep[]>([])
 const currentStep = ref<CodeStep | null>(null)
@@ -11,28 +12,35 @@ const currentFile = ref<string | null>(null)
 const { framework, keyContext } = useUserPreference()
 
 // Helper function to find appropriate file based on framework and keyContext
-const findAppropriateFile = (files: CodeStep['files']) => {
+const findAppropriateFile = (
+  files: CodeStep['files'],
+  isMovingForward: boolean = true,
+) => {
   const availableFiles = files.filter(
     (f) => f.framework === framework.value || !f.framework,
   )
-  
+
   // First try to find a file matching the keyContext
   const matchingFile = availableFiles.find(
     (f) => f.keyContext === keyContext.value,
   )
-  
-  // If we found a matching file and it has changes, return it
-  if (matchingFile && matchingFile.changed) {
-    return matchingFile
+
+  // If moving forward, prioritize files with changes
+  if (isMovingForward) {
+    // If we found a matching file and it has changes, return it
+    if (matchingFile && matchingFile.changed) {
+      return matchingFile
+    }
+
+    // Otherwise, find the first file with changes
+    const fileWithChanges = availableFiles.find((f) => f.changed)
+    if (fileWithChanges) {
+      return fileWithChanges
+    }
   }
-  
-  // Otherwise, find the first file with changes
-  const fileWithChanges = availableFiles.find(f => f.changed)
-  if (fileWithChanges) {
-    return fileWithChanges
-  }
-  
-  // If no files have changes, return matching file or the first available file
+
+  // If not moving forward, or no files with changes were found,
+  // return matching file or the first available file
   return matchingFile || availableFiles[0]
 }
 
@@ -54,7 +62,8 @@ onMounted(() => {
 
   currentStep.value = initialStep
 
-  const appropriateFile = findAppropriateFile(initialStep.files)
+  // For initial load, assume moving forward
+  const appropriateFile = findAppropriateFile(initialStep.files, true)
   currentFile.value = appropriateFile?.name || null
   if (appropriateFile) {
     keyContext.value = appropriateFile.keyContext
@@ -65,6 +74,7 @@ onMounted(() => {
 watch(framework, () => {
   if (!currentStep.value) return
 
+  // When framework changes, maintain current direction (use default true)
   const appropriateFile = findAppropriateFile(currentStep.value.files)
   if (appropriateFile) {
     currentFile.value = appropriateFile.name
@@ -72,11 +82,19 @@ watch(framework, () => {
   }
 })
 
-// Modify selectStep to save the selection
+// Modify selectStep to save the selection and track direction
 const selectStep = (step: CodeStep) => {
+  // Determine if we're moving forward based on the step index
+  const currentIndex = steps.value.findIndex(
+    (s) => s.id === currentStep.value?.id,
+  )
+  const newIndex = steps.value.findIndex((s) => s.id === step.id)
+  const isMovingForward = newIndex > currentIndex
+
   currentStep.value = step
   saveCurrentStepIndex(step)
-  const appropriateFile = findAppropriateFile(step.files)
+
+  const appropriateFile = findAppropriateFile(step.files, isMovingForward)
   if (appropriateFile) {
     currentFile.value = appropriateFile.name
     keyContext.value = appropriateFile.keyContext
@@ -123,9 +141,9 @@ const formatTime = (totalSeconds: number) => {
 const getStepTimeAgo = (stepIndex: number) => {
   // Sum up times for the current step and all steps after it
   // but exclude the last step which is "now"
-  const endIndex = steps.value.length - 1; // Index of the last step
+  const endIndex = steps.value.length - 1 // Index of the last step
   const totalSeconds = steps.value
-    .slice(stepIndex, endIndex)  // Include current step up to (but not including) the last step
+    .slice(stepIndex, endIndex) // Include current step up to (but not including) the last step
     .reduce((total, s) => total + (s.stepTime || 0), 0)
 
   return formatTime(totalSeconds) + ' ago'
@@ -135,7 +153,9 @@ const getStepTimeAgo = (stepIndex: number) => {
 <template>
   <div class="editor">
     <div class="editor-header">
-      <div class="editor-header-left"><span></span><span></span><span></span></div>
+      <div class="editor-header-left">
+        <span></span><span></span><span></span>
+      </div>
       Customer Portal
     </div>
     <div class="editor-body">
@@ -188,7 +208,12 @@ const getStepTimeAgo = (stepIndex: number) => {
         </div>
 
         <div class="editor-footer">
-          <a v-for="cta in currentStep?.cta" :key="cta.label" :href="cta.href" :class="{ highlight: cta.highlight }">
+          <a
+            v-for="cta in currentStep?.cta"
+            :key="cta.label"
+            :href="cta.href"
+            :class="{ highlight: cta.highlight }"
+          >
             {{ cta.label }}
           </a>
         </div>
@@ -202,7 +227,7 @@ const getStepTimeAgo = (stepIndex: number) => {
   background: #050638;
   border-radius: 3px;
   overflow: hidden;
-  font-size: .8rem;
+  font-size: 0.8rem;
   height: calc(100vh - 200px);
   min-height: 500px;
   width: 800px;
@@ -215,9 +240,9 @@ const getStepTimeAgo = (stepIndex: number) => {
   display: flex;
   justify-content: center;
   background: #050639;
-  border-bottom: 1px solid #080A59;
-  color: #484BD2;
-  padding: .2rem 1rem;
+  border-bottom: 1px solid #080a59;
+  color: #484bd2;
+  padding: 0.2rem 1rem;
 }
 
 .editor-header-left {
@@ -228,16 +253,15 @@ const getStepTimeAgo = (stepIndex: number) => {
   gap: 0.3rem;
   height: 100%;
   align-items: center;
-  padding: 0 .5rem;
+  padding: 0 0.5rem;
 }
 
 .editor-header-left span {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #080A59;
+  background: #080a59;
 }
-
 
 /* Editor Styles */
 .shiki.tokyo-night {
@@ -274,7 +298,7 @@ const getStepTimeAgo = (stepIndex: number) => {
   display: flex;
   gap: 0.2rem;
   background: #050638;
-  border-bottom: 1px solid #080A59;
+  border-bottom: 1px solid #080a59;
 }
 
 .editor-file-changed {
@@ -283,7 +307,7 @@ const getStepTimeAgo = (stepIndex: number) => {
   border-radius: 50%;
   background: #025402;
   display: inline-block;
-  margin-left: .2rem;
+  margin-left: 0.2rem;
   animation: editor-file-changed-animation 2s infinite;
 }
 
@@ -297,24 +321,22 @@ const getStepTimeAgo = (stepIndex: number) => {
   100% {
     background: #025402;
   }
-  
 }
-
 
 .tab-button {
   background: #050638;
   border: #080a59;
-  padding: .2rem .5rem;
+  padding: 0.2rem 0.5rem;
 }
 
 .tab-button.active {
-  background: #080A59;
+  background: #080a59;
 }
 
 .editor-sidebar {
   width: 250px;
   background: #050638;
-  border-right: 1px solid #080A59;
+  border-right: 1px solid #080a59;
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -324,11 +346,11 @@ const getStepTimeAgo = (stepIndex: number) => {
 }
 
 .steps-label {
-  color: #3739A2;
+  color: #3739a2;
   text-transform: uppercase;
-  font-size: .7rem;
+  font-size: 0.7rem;
   display: block;
-  padding: .2rem .5rem;
+  padding: 0.2rem 0.5rem;
 }
 
 .step-button {
@@ -337,15 +359,14 @@ const getStepTimeAgo = (stepIndex: number) => {
   align-items: center;
   width: 100%;
   text-align: left;
-  color: #3739A2;
-  padding: .1rem .5rem;
+  color: #3739a2;
+  padding: 0.1rem 0.5rem;
 }
 
 .step-button.active {
-  color: #C0C2FF;
+  color: #c0c2ff;
   font-weight: 500;
 }
-
 
 .step-button span:first-child {
   white-space: nowrap;
@@ -368,11 +389,11 @@ const getStepTimeAgo = (stepIndex: number) => {
   display: flex;
   flex-direction: column;
   width: 100%;
-  border-top: 1px solid #080A59;
+  border-top: 1px solid #080a59;
 }
 
 .editor-framework span {
-  padding: .2rem .5rem;
+  padding: 0.2rem 0.5rem;
   font-size: 0.8rem;
   color: #484bd2;
 }

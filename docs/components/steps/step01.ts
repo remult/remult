@@ -1,6 +1,6 @@
 import type { CodeStep } from '../stepsData.js'
 
-export const step01: CodeStep = {
+export default  {
   id: 'step-01',
   name: 'Define an entity',
   stepTime: 4 * 60,
@@ -141,4 +141,4 @@ export class TodoComponent {
 </div>`,
     },
   ],
-}
+} satisfies CodeStep
