@@ -27,17 +27,17 @@ const highlightedCode = ref('')
 
 // Function to update the highlighted code
 const updateHighlightedCode = async () => {
-  console.time('updateHighlightedCode')
+  // console.time('updateHighlightedCode')
   highlightedCode.value = await codeToHtml(props.code, {
     lang: props.language,
     theme: props.theme,
     transformers: [
       transformerNotationDiff({
-        // matchAlgorithm: 'v3',
+        matchAlgorithm: 'v3',
       }),
     ],
   })
-  console.timeEnd('updateHighlightedCode')
+  // console.timeEnd('updateHighlightedCode')
 }
 
 // Watch for changes in code, language, or theme
