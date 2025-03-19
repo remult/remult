@@ -1,4 +1,5 @@
 import type { CodeStep } from '../stepsData.js'
+import previousStep from './step01.js'
 
 export default {
   id: 'step-02',
@@ -18,18 +19,7 @@ export default {
     {
       name: 'entity.ts',
       keyContext: 'backend',
-      content: `import { Entity, Fields } from 'remult'
-
-@Entity('tasks', {
-  allowApiCrud: true,
-})
-export class Task {
-  @Fields.cuid()
-  id!: string
-
-  @Fields.string()
-  title: string = ''
-}`,
+      content: previousStep.files.find(c=>c.name==='entity.ts')!.content,
     },
     {
       name: 'page.tsx',

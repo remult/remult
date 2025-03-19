@@ -21,7 +21,7 @@ export default {
       changed: true,
       content: `import { Entity, Fields } from 'remult'
 
-@Entity('tasks', {
+@Entity<Task>('tasks', {
   allowApiCrud: true,
 })
 export class Task {

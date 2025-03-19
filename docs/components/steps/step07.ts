@@ -1,8 +1,8 @@
 import type { CodeStep } from '../stepsData.js'
 
 export default {
-  id: 'step-05',
-  name: 'Validation',
+  id: 'step-07',
+  name: 'Adding a saving hook',
   stepTime: 1 * 60,
   cta: [
     {
@@ -22,7 +22,17 @@ export default {
       content: `import { Entity, Fields, Validators } from 'remult'
 
 @Entity<Task>('tasks', {
-  allowApiCrud: true,
+  allowApiRead: true,
+  allowApiInsert: Allow.authenticated, 
+  allowApiUpdate: "admin",
+  allowApiDelete: false, 
+
+  saving: (task) => {// [!code ++]
+    task.createdBy = remult.user.id // [!code ++]
+  }, // [!code ++]
+  saved: (task) => {// [!code ++]
+    /* send an email */ // [!code ++]
+  }// [!code ++]
 })
 export class Task {
   @Fields.cuid()
@@ -30,9 +40,12 @@ export class Task {
 
   @Fields.string({
     caption: 'Title of the task',
-    validate: Validators.required // [!code ++]
+    validate: Validators.required 
   })
   title: string = ''
+
+  @Fields.string() // [!code ++]
+  createdBy = '' // [!code ++]
 }`,
     },
     {

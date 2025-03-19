@@ -1,9 +1,9 @@
 import type { CodeStep } from '../stepsData.js'
 
 export default {
-  id: 'step-05',
-  name: 'Validation',
-  stepTime: 1 * 60,
+  id: 'step-06',
+  name: 'Add authorization',
+  stepTime: 2 * 60,
   cta: [
     {
       label: 'More about validation',
@@ -19,10 +19,13 @@ export default {
       name: 'entity.ts',
       keyContext: 'backend',
       changed: true,
-      content: `import { Entity, Fields, Validators } from 'remult'
+      content: `import { Entity, Fields, Validators, Allow } from 'remult'
 
 @Entity<Task>('tasks', {
-  allowApiCrud: true,
+  allowApiRead: true, // [!code ++]
+  allowApiInsert: Allow.authenticated, // [!code ++]
+  allowApiUpdate: "admin", // Only users with the role "admin" [!code ++]
+  allowApiDelete: false, // [!code ++]
 })
 export class Task {
   @Fields.cuid()
@@ -30,7 +33,7 @@ export class Task {
 
   @Fields.string({
     caption: 'Title of the task',
-    validate: Validators.required // [!code ++]
+    validate: Validators.required
   })
   title: string = ''
 }`,
