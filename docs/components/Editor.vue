@@ -161,7 +161,10 @@ const getStepTimeAgo = (stepIndex: number) => {
             class="tab-button"
             :class="{ active: currentFile === file.name }"
           >
-            <span>{{ file.name }}</span>
+            <span>
+              {{ file.name }}
+              <span class="editor-file-changed"></span>
+            </span>
           </button>
         </div>
 
@@ -249,6 +252,30 @@ const getStepTimeAgo = (stepIndex: number) => {
   background: #050638;
   border-bottom: 1px solid #080A59;
 }
+
+.editor-file-changed {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #025402;
+  display: inline-block;
+  margin-left: .2rem;
+  animation: editor-file-changed-animation 2s infinite;
+}
+
+@keyframes editor-file-changed-animation {
+  0% {
+    background: #025402;
+  }
+  50% {
+    background: #0b9c0b;
+  }
+  100% {
+    background: #025402;
+  }
+  
+}
+
 
 .tab-button {
   background: #050638;
