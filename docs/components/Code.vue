@@ -57,9 +57,9 @@ watch(
   </div>
 </template>
 
-<style scoped>
+<style>
 .code-block {
-  padding: 1rem;
+  padding: .5rem 0;
 }
 
 .code-block :deep(pre) {
@@ -72,6 +72,22 @@ watch(
 .loading-indicator {
   color: #666;
   padding: 1rem;
+}
+
+.code-block code {
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+}
+
+.line {
+  padding: 0 .5rem;
+  width: 100%;
+  display: block;
+}
+
+.line:empty {
+  height: 1rem;
 }
 
 .line.diff.add {
