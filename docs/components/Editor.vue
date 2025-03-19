@@ -181,6 +181,7 @@ const getStepTimeAgo = (stepIndex: number) => {
   overflow: hidden;
   max-height: calc(100vh - 200px);
   font-size: .8rem;
+  height: calc(100vh - 200px);
 }
 
 .editor-header {
@@ -308,6 +309,7 @@ const getStepTimeAgo = (stepIndex: number) => {
 
 .editor-code {
   padding: 0;
+  height: 100%;
 }
 
 .editor-footer {
