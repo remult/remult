@@ -34,6 +34,7 @@ export class Task {
     {
       name: 'page.tsx',
       keyContext: 'frontend',
+      changed: true,
       framework: 'react',
       languageCodeHighlight: 'tsx',
       content: `import { useEffect, useState } from 'react'
@@ -47,9 +48,9 @@ export default function App() {
 
   useEffect(() => {
     taskRepo.find({
-      limit: 20,
-      orderBy: { title: 'asc' },
-      where: { title: 'remult' },
+      limit: 20, // [!code ++]
+      orderBy: { title: 'asc' }, // [!code ++]
+      where: { title: 'remult' }, // [!code ++]
     }).then(setTasks)
   }, [])
   return (
@@ -68,6 +69,7 @@ export default function App() {
     {
       name: '+page.svelte',
       keyContext: 'frontend',
+      changed: true,
       framework: 'svelte',
       languageCodeHighlight: 'svelte',
       content: `<script lang="ts">
@@ -79,9 +81,9 @@ export default function App() {
   $effect(() => {
     repo(Task)
       .find({
-        limit: 20,
-        orderBy: { title: 'asc' },
-        where: { title: 'remult' },
+        limit: 20, // [!code ++]
+        orderBy: { title: 'asc' }, // [!code ++]
+        where: { title: 'remult' }, // [!code ++]
       })
       .then((t) => (tasks = t));
   });

@@ -163,7 +163,7 @@ const getStepTimeAgo = (stepIndex: number) => {
           >
             <span>
               {{ file.name }}
-              <span class="editor-file-changed"></span>
+              <span v-if="file.changed" class="editor-file-changed"></span>
             </span>
           </button>
         </div>

@@ -18,6 +18,7 @@ export const step04: CodeStep = {
     {
       name: 'entity.ts',
       keyContext: 'backend',
+      changed: true,
       content: `import { Entity, Fields, Validators } from 'remult'
 
 @Entity('tasks', {

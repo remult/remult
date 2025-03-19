@@ -15,6 +15,7 @@ export interface CodeStep {
     keyContext: string // So that we can just from a framework to another framework keeping the context
     framework?: Framework // default is undefined
     languageCodeHighlight?: Language // default is typescript
+    changed?: boolean // default is false
   }[]
   cta?: {
     label: string
