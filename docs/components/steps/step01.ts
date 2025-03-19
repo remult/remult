@@ -2,7 +2,7 @@ import type { CodeStep } from '../stepsData.js'
 
 export const step01: CodeStep = {
   id: 'step-01',
-  name: 'Define a model',
+  name: 'Define an entity',
   stepTime: 4 * 60,
   cta: [
     {
