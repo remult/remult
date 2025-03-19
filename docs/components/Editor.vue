@@ -99,9 +99,9 @@ const formatTime = (totalSeconds: number) => {
     return `${seconds}''`
   }
   if (seconds === 0) {
-    return `${minutes}'`
+    return `${minutes} min`
   }
-  return `${minutes}'${seconds}''`
+  return `${minutes} min ${seconds} sec`
 }
 
 // New function to get static "ago" time
