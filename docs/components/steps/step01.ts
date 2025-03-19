@@ -63,7 +63,7 @@ export default function App() {
       languageCodeHighlight: 'svelte',
       content: `<script lang="ts">
   import { repo } from "remult"
-  import { Task } from "../shared/Task"
+  import { Task } from "./entity"
 
   let tasks = $state<Task[]>([])
 
@@ -109,7 +109,7 @@ export default function App() {
 import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { remult } from 'remult'
-import { Task } from '../../shared/Task'
+  import { Task } from "./entity"
 
 @Component({
   selector: 'app-todo',
