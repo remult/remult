@@ -1,4 +1,5 @@
 import type { CodeStep } from '../stepsData.js'
+import previousStep from './step06.js'
 
 export default {
   id: 'step-07',
@@ -19,7 +20,7 @@ export default {
       name: 'entity.ts',
       keyContext: 'backend',
       changed: true,
-      content: `import { Entity, Fields, Validators } from 'remult'
+      content: `import { Entity, Fields, Validators, Allow } from 'remult'
 
 @Entity<Task>('tasks', {
   allowApiRead: true,
@@ -27,11 +28,11 @@ export default {
   allowApiUpdate: "admin",
   allowApiDelete: false, 
 
-  saving: (task) => {// [!code ++]
-    task.createdBy = remult.user.id // [!code ++]
+  saving: (item) => {// [!code ++]
+    item.createdBy = remult.user.id // [!code ++]
   }, // [!code ++]
-  saved: (task) => {// [!code ++]
-    /* send an email */ // [!code ++]
+  saved: (item, e) => {// [!code ++]
+    if(e.isNew)  { /* send an email */ } // [!code ++]   
   }// [!code ++]
 })
 export class Task {
@@ -58,41 +59,9 @@ export class Task {
     {
       name: '+page.svelte',
       keyContext: 'frontend',
-      changed: true,
       framework: 'svelte',
       languageCodeHighlight: 'svelte',
-      content: `<script lang="ts">
-  import { repo } from "remult";
-  import { Task } from "./entity";
-
-  let tasks = $state<Task[]>([]);
-  let newTask = $state(repo(Task).create()) 
-
-  $effect(() => {
-    repo(Task).find().then((t) => (tasks = t));
-  });
-
-  const addTask = async (e: Event) => { 
-    try { // [!code ++]
-      e.preventDefault(); 
-      newTask = await repo(Task).insert(newTask); 
-      tasks.push(newTask) 
-      newTask = repo(Task).create(); 
-    } catch (e) { // [!code ++]
-      console.log(e) // e contains the validation errors [!code ++]   
-    } // [!code ++]
-  }; 
-</script>
-
-<form onsubmit={addTask}> 
-  <label>{repo(Task).metadata.fields.title.caption}</label>
-  <input bind:value={newTask.title} /> 
-  <button>Add</button> 
-</form> 
-
-{#each tasks as task}
-  {task.title}
-{/each}`,
+      content: previousStep.files.find(c=>c.name==='+page.svelte')!.content.replace("// [!code ++]", ""),
     },
     {
       name: 'page.vue',

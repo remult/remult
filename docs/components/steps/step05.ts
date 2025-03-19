@@ -2,7 +2,7 @@ import type { CodeStep } from '../stepsData.js'
 
 export default {
   id: 'step-05',
-  name: 'Validation',
+  name: 'Add validation',
   stepTime: 1 * 60,
   cta: [
     {

@@ -63,21 +63,21 @@ export class Task {
   });
 
   const addTask = async (e: Event) => { 
-    try { // [!code ++]
+    try { 
       e.preventDefault(); 
       newTask = await repo(Task).insert(newTask); 
       tasks.push(newTask) 
       newTask = repo(Task).create(); 
-    } catch (e) { // [!code ++]
-      console.log(e) // e contains the validation errors [!code ++]   
-    } // [!code ++]
+    } catch (e) { 
+      console.log(e)
+    } 
   }; 
 </script>
 
 <form onsubmit={addTask}> 
   <label>{repo(Task).metadata.fields.title.caption}</label>
   <input bind:value={newTask.title} /> 
-  <button>Add</button> 
+  <button disabled={!repo(Task).metadata.apiInsertAllowed()}>Add</button> // [!code ++]
 </form> 
 
 {#each tasks as task}
