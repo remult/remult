@@ -173,7 +173,7 @@ const getStepTimeAgo = (stepIndex: number) => {
         </div>
 
         <div class="editor-footer">
-          <a v-for="cta in currentStep?.cta" :key="cta.label" :href="cta.href">
+          <a v-for="cta in currentStep?.cta" :key="cta.label" :href="cta.href" :class="{ highlight: cta.highlight }">
             {{ cta.label }}
           </a>
         </div>
@@ -243,6 +243,7 @@ const getStepTimeAgo = (stepIndex: number) => {
 
 .editor-content {
   flex: 1;
+  position: relative;
   background: #050638;
 }
 
@@ -370,6 +371,9 @@ const getStepTimeAgo = (stepIndex: number) => {
   padding: 1rem;
   background: #0d0d2d;
   color: white;
+  position: absolute;
+  bottom: 0;
+  gap: 1rem;
 }
 
 .editor-footer a:hover {

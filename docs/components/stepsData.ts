@@ -20,6 +20,7 @@ export interface CodeStep {
   cta?: {
     label: string
     href: string
+    highlight?: boolean // default is false
   }[]
 }
 
