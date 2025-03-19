@@ -24,6 +24,7 @@ export default {
     {
       name: '+page.svelte',
       keyContext: 'frontend',
+      changed: true,
       framework: 'svelte',
       languageCodeHighlight: 'svelte',
       content: `<script lang="ts">
@@ -38,15 +39,15 @@ export default {
         return repo(Task) // [!code ++]
           .liveQuery(/*...*/) // [!code ++]
           .subscribe((info) => { // [!code ++]
-            tasks = info.applyChanges(tasks); // [!code ++]
-          }); // [!code ++]
+            tasks = info.applyChanges(tasks) // [!code ++]
+          }) // [!code ++]
       })
     
       const addTask = async (e: Event) => { 
         try { 
           e.preventDefault()
           const t = await repo(Task).insert(newTask)
-          tasks.push(t) // [!code --]
+          tasks.push(t) // Will be added to the list by the live query [!code --] 
           newTask = repo(Task).create() 
         } catch (e) { 
           console.log(e)
