@@ -1,10 +1,8 @@
-import type { CodeStep } from '../stepsData.js'
+import type { CodeStepInput } from '../stepsData.js'
 import previousStep from './step06.js'
 
 export default {
-  id: 'step-07',
-  name: 'Adding a saving hook',
-  stepTime: 1 * 60,
+  name: 'Add hooks',
   cta: [
     {
       label: 'More about validation',
@@ -61,7 +59,9 @@ export class Task {
       keyContext: 'frontend',
       framework: 'svelte',
       languageCodeHighlight: 'svelte',
-      content: previousStep.files.find(c=>c.name==='+page.svelte')!.content.replace("// [!code ++]", ""),
+      content: previousStep.files
+        .find((c) => c.name === '+page.svelte')!
+        .content.replace('// [!code ++]', ''),
     },
     {
       name: 'page.vue',
@@ -85,4 +85,4 @@ export class Task {
       content: `TODO`,
     },
   ],
-} satisfies CodeStep
+} satisfies CodeStepInput

@@ -1,5 +1,5 @@
 import { computed, ref, watch } from 'vue'
-import { stepsData } from '../steps/index.js'
+import { stepsData } from '../stepsData.js'
 
 export type Framework = 'svelte' | 'vue' | 'react' | 'angular'
 

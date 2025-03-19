@@ -1,9 +1,7 @@
-import type { CodeStep } from '../stepsData.js'
+import type { CodeStepInput } from '../stepsData.js'
 
 export default {
-  id: 'step-04',
-  name: 'Add label as metadata',
-  stepTime: 1 * 60,
+  name: 'Add label using metadata',
   cta: [
     {
       label: 'More about validation',
@@ -48,22 +46,22 @@ export class Task {
       framework: 'svelte',
       languageCodeHighlight: 'svelte',
       content: `<script lang="ts">
-  import { repo } from "remult";
-  import { Task } from "./entity";
+  import { repo } from "remult"
+  import { Task } from "./entity"
 
-  let tasks = $state<Task[]>([]);
+  let tasks = $state<Task[]>([])
   let newTask = $state(repo(Task).create()) 
 
   $effect(() => {
-    repo(Task).find().then((t) => (tasks = t));
-  });
+    repo(Task).find({/*...*/}).then((t) => (tasks = t))
+  })
 
-  const addTask = async (e: Event) => { 
-    e.preventDefault(); 
-    newTask = await repo(Task).insert(newTask); 
-    tasks.push(newTask) 
-    newTask = repo(Task).create(); 
-  }; 
+  const addTask = async (e: Event) => {
+    e.preventDefault()
+    const t = await repo(Task).insert(newTask)
+    tasks.push(t)
+    newTask = repo(Task).create()
+  }
 </script>
 
 <form onsubmit={addTask}> 
@@ -98,4 +96,4 @@ export class Task {
       content: `TODO`,
     },
   ],
-} satisfies CodeStep
+} satisfies CodeStepInput

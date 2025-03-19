@@ -1,7 +1,6 @@
-import type { CodeStep } from '../stepsData.js'
+import type { CodeStepInput } from '../stepsData.js'
 
 export default {
-  id: 'step-06',
   name: 'Add authorization',
   stepTime: 2 * 60,
   cta: [
@@ -52,26 +51,26 @@ export class Task {
       framework: 'svelte',
       languageCodeHighlight: 'svelte',
       content: `<script lang="ts">
-  import { repo } from "remult";
-  import { Task } from "./entity";
+  import { repo } from "remult"
+  import { Task } from "./entity"
 
-  let tasks = $state<Task[]>([]);
+  let tasks = $state<Task[]>([])
   let newTask = $state(repo(Task).create()) 
 
   $effect(() => {
-    repo(Task).find().then((t) => (tasks = t));
-  });
+    repo(Task).find({/*...*/}).then((t) => (tasks = t))
+  })
 
   const addTask = async (e: Event) => { 
     try { 
-      e.preventDefault(); 
-      newTask = await repo(Task).insert(newTask); 
-      tasks.push(newTask) 
-      newTask = repo(Task).create(); 
+      e.preventDefault()
+      const t = await repo(Task).insert(newTask)
+      tasks.push(t)
+      newTask = repo(Task).create()
     } catch (e) { 
       console.log(e)
     } 
-  }; 
+  } 
 </script>
 
 <form onsubmit={addTask}> 
@@ -106,4 +105,4 @@ export class Task {
       content: `TODO`,
     },
   ],
-} satisfies CodeStep
+} satisfies CodeStepInput

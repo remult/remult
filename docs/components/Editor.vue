@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import Code from './Code.vue'
 import { ref, onMounted, watch } from 'vue'
-import { type CodeStep } from './stepsData'
+import { type CodeStep, stepsData } from './stepsData'
 import { useUserPreference } from './composables/useUserPreference'
-import { stepsData } from './steps/index.js'
 
 const steps = ref<CodeStep[]>([])
 const currentStep = ref<CodeStep | null>(null)

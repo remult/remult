@@ -1,10 +1,9 @@
-import type { CodeStep } from '../stepsData.js'
+import type { CodeStepInput } from '../stepsData.js'
 import previousStep from './step02.js'
 
 export default {
-  id: 'step-03',
   name: 'Add a form',
-  stepTime: 1 * 60,
+  stepTime: 3 * 60,
   cta: [
     {
       label: 'More about validation',
@@ -19,7 +18,7 @@ export default {
     {
       name: 'entity.ts',
       keyContext: 'backend',
-      content: previousStep.files.find(c=>c.name==='entity.ts')!.content,
+      content: previousStep.files.find((c) => c.name === 'entity.ts')!.content,
     },
     {
       name: 'page.tsx',
@@ -35,22 +34,22 @@ export default {
       framework: 'svelte',
       languageCodeHighlight: 'svelte',
       content: `<script lang="ts">
-  import { repo } from "remult";
-  import { Task } from "./entity";
+  import { repo } from "remult"
+  import { Task } from "./entity"
 
-  let tasks = $state<Task[]>([]);
+  let tasks = $state<Task[]>([])
   let newTask = $state(repo(Task).create()) // set default values [!code ++]
 
   $effect(() => {
-    repo(Task).find().then((t) => (tasks = t));
-  });
+    repo(Task).find({/*...*/}).then((t) => (tasks = t))
+  })
 
   const addTask = async (e: Event) => { // [!code ++]
-    e.preventDefault(); // [!code ++]
-    newTask = await repo(Task).insert(newTask); // [!code ++]
-    tasks.push(newTask) // [!code ++]
-    newTask = repo(Task).create(); // reset the form [!code ++] 
-  }; // [!code ++]
+    e.preventDefault() // [!code ++]
+    const t = await repo(Task).insert(newTask) // [!code ++]
+    tasks.push(t) // [!code ++]
+    newTask = repo(Task).create() // reset the form [!code ++] 
+  } // [!code ++]
 </script>
 
 <form onsubmit={addTask}> // [!code ++]
@@ -84,4 +83,4 @@ export default {
       content: `TODO`,
     },
   ],
-} satisfies CodeStep
+} satisfies CodeStepInput
