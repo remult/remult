@@ -235,6 +235,14 @@ const getStepTimeAgo = (stepIndex: number) => {
   color: #484bd2;
 }
 
+.editor.unchanged .code-block {
+  opacity: 0.6;
+}
+
+.editor .code-block {
+  transition: opacity 0.3s ease;
+}
+
 .editor-body {
   display: flex;
   background: #050638;
