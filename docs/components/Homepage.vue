@@ -1,35 +1,29 @@
 <script setup lang="ts">
-import Editor from './Editor.vue'
+import Intro from './homepage/Intro.vue';
+import Examples from './homepage/Examples.vue';
 </script>
 
 <template>
   <div class="homepage">
-
-    <div class="intro">
-      <div class="title">
-        <h1>Adding full to your stack</h1>
-        
-        <div class="cta">
-          <a href="/">Try in Browser</a>
-          <a href="/docs">Documentation</a>
-        </div>
-      </div>
-      
-      <Editor />
-    </div>
-
+    <Intro />
+    <Examples />
   </div>
 </template>
 
 
 <style>
   .homepage {
-    padding: 4remgit;
     min-height: 100vh;
-    padding: 8rem 0;
     display: flex;
     justify-content: center;
     align-items: center;
+    flex-direction: column;
+  }
+
+  .intro {
+    padding: 8rem 0;
+    width: 100%;
+    margin: 0 auto;
     background: linear-gradient(
         to bottom,
         #000000 0%,
@@ -37,12 +31,6 @@ import Editor from './Editor.vue'
         #040664 75%,
         #7042B5 100%
     );
-  }
-
-  .intro {
-    max-width: 800px;
-    width: 100%;
-    margin: 0 auto;
   }
   
   .title {
