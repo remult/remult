@@ -117,7 +117,10 @@ const getStepTimeAgo = (stepIndex: number) => {
 
 <template>
   <div class="editor">
-    <div class="editor-header">Customer Portal</div>
+    <div class="editor-header">
+      <div class="editor-header-left"><span></span><span></span><span></span></div>
+      Customer Portal
+    </div>
     <div class="editor-body">
       <div class="editor-sidebar">
         <span class="steps-label">Commit History</span>
@@ -179,20 +182,41 @@ const getStepTimeAgo = (stepIndex: number) => {
   background: #050638;
   border-radius: 3px;
   overflow: hidden;
-  max-height: calc(100vh - 200px);
   font-size: .8rem;
   height: calc(100vh - 200px);
+  min-height: 500px;
 }
 
 .editor-header {
+  position: relative;
   pointer-events: none;
   user-select: none;
   display: flex;
   justify-content: center;
-  background: #0d0d2d;
+  background: #050639;
+  border-bottom: 1px solid #080A59;
   color: #484BD2;
   padding: .2rem 1rem;
 }
+
+.editor-header-left {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  gap: 0.3rem;
+  height: 100%;
+  align-items: center;
+  padding: 0 .5rem;
+}
+
+.editor-header-left span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #080A59;
+}
+
 
 /* Editor Styles */
 .shiki.tokyo-night {
@@ -207,6 +231,8 @@ const getStepTimeAgo = (stepIndex: number) => {
 
 .editor-body {
   display: flex;
+  background: #050638;
+  height: calc(100% - 30px);
 }
 
 .editor-content {
@@ -218,7 +244,7 @@ const getStepTimeAgo = (stepIndex: number) => {
   display: flex;
   gap: 0.2rem;
   background: #050638;
-  border-bottom: #080a59;
+  border-bottom: 1px solid #080A59;
 }
 
 .tab-button {
@@ -232,15 +258,14 @@ const getStepTimeAgo = (stepIndex: number) => {
 }
 
 .editor-sidebar {
-  width: 200px;
+  width: 250px;
   background: #050638;
-  border-right: #080a59;
+  border-right: 1px solid #080A59;
   padding: 0;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: flex-start;
-  gap: 0.2rem;
   color: white;
 }
 
@@ -249,8 +274,7 @@ const getStepTimeAgo = (stepIndex: number) => {
   text-transform: uppercase;
   font-size: .7rem;
   display: block;
-  margin-bottom: 1rem;
-  padding: .2rem 1rem;
+  padding: .2rem .5rem;
 }
 
 .step-button {
@@ -259,20 +283,15 @@ const getStepTimeAgo = (stepIndex: number) => {
   align-items: center;
   width: 100%;
   text-align: left;
-  margin-bottom: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.25rem;
-  transition: background-color 0.2s;
-  gap: 0.5rem;
-}
-
-.step-button:hover {
-  background: #1a1a3a;
+  color: #3739A2;
+  padding: .1rem .5rem;
 }
 
 .step-button.active {
-  background: #1a1a3a;
+  color: #C0C2FF;
+  font-weight: 500;
 }
+
 
 .step-button span:first-child {
   white-space: nowrap;
@@ -294,9 +313,12 @@ const getStepTimeAgo = (stepIndex: number) => {
   margin-top: auto;
   display: flex;
   flex-direction: column;
+  width: 100%;
+  border-top: 1px solid #080A59;
 }
 
 .editor-framework span {
+  padding: .2rem .5rem;
   font-size: 0.8rem;
   color: #484bd2;
 }
