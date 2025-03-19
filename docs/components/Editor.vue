@@ -15,9 +15,24 @@ const findAppropriateFile = (files: CodeStep['files']) => {
   const availableFiles = files.filter(
     (f) => f.framework === framework.value || !f.framework,
   )
+  
+  // First try to find a file matching the keyContext
   const matchingFile = availableFiles.find(
     (f) => f.keyContext === keyContext.value,
   )
+  
+  // If we found a matching file and it has changes, return it
+  if (matchingFile && matchingFile.changed) {
+    return matchingFile
+  }
+  
+  // Otherwise, find the first file with changes
+  const fileWithChanges = availableFiles.find(f => f.changed)
+  if (fileWithChanges) {
+    return fileWithChanges
+  }
+  
+  // If no files have changes, return matching file or the first available file
   return matchingFile || availableFiles[0]
 }
 
