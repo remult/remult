@@ -139,7 +139,7 @@ export function buildEntityInfo(options: AdminEntitiesOptions) {
           relationToOne: relation,
           inputType: x.inputType,
           type:
-            x.valueConverter.fieldTypeInDb == 'json'
+            x.valueType === Object
               ? 'json'
               : x.valueType === Array
                 ? 'json'

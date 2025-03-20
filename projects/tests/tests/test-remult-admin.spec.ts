@@ -35,6 +35,8 @@ describe('remult-admin', () => {
       age2!: number
       @Fields.json()
       metadata!: []
+      @Fields.json({valueType: Array})
+      metadata2!: []
       @Relations.toOne(() => Account)
       account!: Account
       @Relations.toOne(() => Account, { field: 'account' })
@@ -121,6 +123,16 @@ describe('remult-admin', () => {
               "relationToOne": undefined,
               "type": "json",
               "valFieldKey": "metadata",
+              "values": undefined,
+            },
+            {
+              "caption": "Metadata2",
+              "inputType": undefined,
+              "key": "metadata2",
+              "readOnly": false,
+              "relationToOne": undefined,
+              "type": "json",
+              "valFieldKey": "metadata2",
               "values": undefined,
             },
             {
@@ -262,6 +274,16 @@ describe('remult-admin', () => {
               "relationToOne": undefined,
               "type": "json",
               "valFieldKey": "metadata",
+              "values": undefined,
+            },
+            {
+              "caption": "Metadata2",
+              "inputType": undefined,
+              "key": "metadata2",
+              "readOnly": false,
+              "relationToOne": undefined,
+              "type": "json",
+              "valFieldKey": "metadata2",
               "values": undefined,
             },
             {
@@ -407,5 +429,39 @@ describe('remult-admin', () => {
 
     expect(res).not.includes('<!--PLACE_HERE_BODY-->')
     expect(res).includes('window.optionsFromServer = ')
+  })
+
+  it('should correctly set valueType for json fields', () => {
+    @Entity('test-json-types')
+    class JsonTypeTest {
+      @Fields.cuid()
+      id!: string
+      
+      @Fields.json()
+      metadata!: []
+      
+      @Fields.json({valueType: Array})
+      metadata2!: []
+    }
+
+    const remult = new Remult()
+    const entityInfo = buildEntityInfo({
+      entities: [JsonTypeTest],
+      remult: remult
+    })
+
+    const testEntity = entityInfo.find(e => e.key === 'test-json-types')
+    
+    const metadataField = testEntity?.fields.find(f => f.key === 'metadata')
+    const metadata2Field = testEntity?.fields.find(f => f.key === 'metadata2')
+    
+    // Check the actual underlying valueType in the repository
+    const repo = remult.repo(JsonTypeTest)
+    const metadataValueType = repo.fields.metadata.valueType
+    const metadata2ValueType = repo.fields.metadata2.valueType
+    
+    // Assertions - checking that JSON fields have the correct valueType
+    expect(metadataValueType).toBe(Object)
+    expect(metadata2ValueType).toBe(Array)
   })
 })
