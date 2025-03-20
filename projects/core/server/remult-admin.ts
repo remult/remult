@@ -139,15 +139,17 @@ export function buildEntityInfo(options: AdminEntitiesOptions) {
           relationToOne: relation,
           inputType: x.inputType,
           type:
-            x.valueConverter.fieldTypeInDb == 'json'
+            x.valueType === Object
               ? 'json'
-              : x.valueType === Number
-                ? 'number'
-                : x.valueType === Boolean
-                  ? 'boolean'
-                  : x.valueType === Date
-                    ? 'date'
-                    : 'string',
+              : x.valueType === Array
+                ? 'json'
+                : x.valueType === Number
+                  ? 'number'
+                  : x.valueType === Boolean
+                    ? 'boolean'
+                    : x.valueType === Date
+                      ? 'date'
+                      : 'string',
         })
       } catch (error) {
         console.error(

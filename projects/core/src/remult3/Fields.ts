@@ -52,7 +52,7 @@ export class Fields {
       op.valueConverter.fieldTypeInDb = 'json'
 
     return Field(
-      undefined,
+      () => Object as any ,
       {
         valueConverter: {
           fieldTypeInDb: 'json',
