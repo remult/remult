@@ -141,7 +141,7 @@ export function buildEntityInfo(options: AdminEntitiesOptions) {
           type:
             x.valueConverter.fieldTypeInDb == 'json'
               ? 'json'
-              : Array.isArray(x.valueType)
+              : x.valueType === Array
                 ? 'json'
                 : x.valueType === Number
                   ? 'number'
