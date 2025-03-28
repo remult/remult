@@ -112,7 +112,7 @@
     "typescript": "^5.5.3",
     "uuid": "^8.3.2",
     "vitest": "2.0.5",
-    "webdriverio": "^8.15.10"
+    "webdriverio": "^9.12.2"
   },
   "browser": {
     "jsonwebtoken": false,
