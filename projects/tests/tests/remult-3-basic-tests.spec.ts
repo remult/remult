@@ -161,7 +161,7 @@ describe('remult-3-basics', () => {
     try {
       await repo.insert(r)
       ok = true
-    } catch {}
+    } catch { }
     expect(ok).toBe(false)
   })
   it('save works with array', async () => {
@@ -251,5 +251,37 @@ describe('remult-3-basics', () => {
     p = (await r.findId(1, { useCache: false }))!
     expect(p.category.id).toBe(1)
     expect(p.category.categoryName).toBe('cat1')
+  })
+  it('test dateOnly save or update should be able to set null', async () => {
+    const todo = class {
+      id = 0
+      d: Date | null = null
+    }
+    describeEntity(
+      todo,
+      't',
+      {
+        id: Fields.number(),
+        d: Fields.dateOnly({ allowNull: true }),
+      },
+      { allowApiCrud: true },
+    )
+
+    var sr = new Remult(new InMemoryDataProvider())
+    var dp = TestApiDataProvider({ dataProvider: sr.dataProvider })
+    var remult = new Remult(dp)
+    const r = remult.repo(todo)
+    const dToUse = new Date("1986-11-7")
+    let t = await r.insert({ id: 1, d: dToUse })
+    expect(t.id).toBe(1)
+    expect(t.d).toBeDefined()
+    t.d = null!
+    await r.save(t)
+    expect(t.d).toBeNull()
+    t.d = dToUse
+    await r.save(t)
+    expect(t.d).toBeDefined()
+    await r.update(1, { d: null })
+    expect(t.d).toBeNull()
   })
 })
