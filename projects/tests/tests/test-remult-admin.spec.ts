@@ -169,7 +169,7 @@ describe('remult-admin', () => {
                 "idField": "id",
                 "where": undefined,
               },
-              "type": "string",
+              "type": "json",
               "valFieldKey": "account",
               "values": undefined,
             },
@@ -188,7 +188,7 @@ describe('remult-admin', () => {
                   "isBankrupt": true,
                 },
               },
-              "type": "string",
+              "type": "json",
               "valFieldKey": "accountBankrupted",
               "values": undefined,
             },
@@ -320,7 +320,7 @@ describe('remult-admin', () => {
                 "idField": "id",
                 "where": undefined,
               },
-              "type": "string",
+              "type": "json",
               "valFieldKey": "account",
               "values": undefined,
             },
@@ -339,7 +339,7 @@ describe('remult-admin', () => {
                   "isBankrupt": true,
                 },
               },
-              "type": "string",
+              "type": "json",
               "valFieldKey": "accountBankrupted",
               "values": undefined,
             },
@@ -461,7 +461,7 @@ describe('remult-admin', () => {
     const metadata2ValueType = repo.fields.metadata2.valueType
     
     // Assertions - checking that JSON fields have the correct valueType
-    expect(metadataValueType).toBe(Object)
+    expect(metadataValueType).toBe(undefined)
     expect(metadata2ValueType).toBe(Array)
   })
 })

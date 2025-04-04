@@ -7,7 +7,7 @@ import type { ClassType } from '../classType.js'
 import type { Remult } from '../src/context.js'
 import { getHtml } from './get-remult-admin-html.js'
 import { getValueList } from '../src/remult3/RepositoryImplementation.js'
-import { EntityFilter } from '../src/remult3/remult3.js'
+import type { EntityFilter } from '../src/remult3/remult3.js'
 
 export interface EntityUIInfo {
   superKey: string
@@ -139,7 +139,7 @@ export function buildEntityInfo(options: AdminEntitiesOptions) {
           relationToOne: relation,
           inputType: x.inputType,
           type:
-            x.valueType === Object
+            x.valueType === undefined
               ? 'json'
               : x.valueType === Array
                 ? 'json'
