@@ -7,7 +7,8 @@ import type { ClassType } from '../classType.js'
 import type { Remult } from '../src/context.js'
 import { getHtml } from './get-remult-admin-html.js'
 import { getValueList } from '../src/remult3/RepositoryImplementation.js'
-import { EntityFilter } from '../src/remult3/remult3.js'
+import type { EntityFilter } from '../src/remult3/remult3.js'
+import { InputTypes } from '../inputTypes.js'
 
 export interface EntityUIInfo {
   superKey: string
@@ -90,11 +91,11 @@ export function buildEntityInfo(options: AdminEntitiesOptions) {
           const relRepo = options.remult.repo(info.toEntity)
           const where =
             typeof info.options.findOptions === 'object' &&
-              info.options.findOptions.where
+            info.options.findOptions.where
               ? Filter.entityFilterToJson(
-                relRepo.metadata,
-                info.options.findOptions.where,
-              )
+                  relRepo.metadata,
+                  info.options.findOptions.where,
+                )
               : undefined
           const idField = relRepo.metadata.idMetadata.field.key
           if (info.type === 'reference' || info.type === 'toOne') {
@@ -139,15 +140,15 @@ export function buildEntityInfo(options: AdminEntitiesOptions) {
           relationToOne: relation,
           inputType: x.inputType,
           type:
-            x.valueConverter.fieldTypeInDb == 'json'
+            x.inputType === InputTypes.json
               ? 'json'
               : x.valueType === Number
-                ? 'number'
-                : x.valueType === Boolean
-                  ? 'boolean'
-                  : x.valueType === Date
-                    ? 'date'
-                    : 'string',
+              ? 'number'
+              : x.valueType === Boolean
+              ? 'boolean'
+              : x.valueType === Date
+              ? 'date'
+              : 'string',
         })
       } catch (error) {
         console.error(
@@ -160,7 +161,7 @@ export function buildEntityInfo(options: AdminEntitiesOptions) {
     if (metadata.apiReadAllowed) {
       let superKey = metadata.key
       let caption = metadata.caption
-      const nbOfEntities = entities.filter(e => e.key === metadata.key).length
+      const nbOfEntities = entities.filter((e) => e.key === metadata.key).length
       if (nbOfEntities > 0) {
         superKey = metadata.key + '_ext_' + nbOfEntities
         caption = metadata.caption + '*'.repeat(nbOfEntities)

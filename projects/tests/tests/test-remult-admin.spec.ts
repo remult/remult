@@ -2,8 +2,9 @@ import remultAdminHtml, {
   buildEntityInfo,
 } from '../../../projects/core/server/remult-admin'
 import { describe, expect, it } from 'vitest'
-import { Entity, Fields, Relations } from '../../core'
+import { Entity, Fields, Relations, repo } from '../../core'
 import { Remult } from '../../core/src/context'
+import { InputTypes } from '../../core/inputTypes.js'
 
 describe('remult-admin', () => {
   it('should get entities', async () => {
@@ -35,6 +36,8 @@ describe('remult-admin', () => {
       age2!: number
       @Fields.json()
       metadata!: []
+      @Fields.json({ valueType: Array })
+      metadata2!: []
       @Relations.toOne(() => Account)
       account!: Account
       @Relations.toOne(() => Account, { field: 'account' })
@@ -115,12 +118,22 @@ describe('remult-admin', () => {
             },
             {
               "caption": "Metadata",
-              "inputType": undefined,
+              "inputType": "json",
               "key": "metadata",
               "readOnly": false,
               "relationToOne": undefined,
               "type": "json",
               "valFieldKey": "metadata",
+              "values": undefined,
+            },
+            {
+              "caption": "Metadata2",
+              "inputType": "json",
+              "key": "metadata2",
+              "readOnly": false,
+              "relationToOne": undefined,
+              "type": "json",
+              "valFieldKey": "metadata2",
               "values": undefined,
             },
             {
@@ -256,12 +269,22 @@ describe('remult-admin', () => {
             },
             {
               "caption": "Metadata",
-              "inputType": undefined,
+              "inputType": "json",
               "key": "metadata",
               "readOnly": false,
               "relationToOne": undefined,
               "type": "json",
               "valFieldKey": "metadata",
+              "values": undefined,
+            },
+            {
+              "caption": "Metadata2",
+              "inputType": "json",
+              "key": "metadata2",
+              "readOnly": false,
+              "relationToOne": undefined,
+              "type": "json",
+              "valFieldKey": "metadata2",
               "values": undefined,
             },
             {
@@ -407,5 +430,32 @@ describe('remult-admin', () => {
 
     expect(res).not.includes('<!--PLACE_HERE_BODY-->')
     expect(res).includes('window.optionsFromServer = ')
+  })
+
+  it('should correctly set valueType for json fields', () => {
+    @Entity('test-json-types')
+    class JsonTypeTest {
+      @Fields.cuid()
+      id!: string
+
+      @Fields.json()
+      metadata!: []
+
+      @Fields.json({ valueType: Array })
+      metadata2!: []
+    }
+
+    const remult = new Remult()
+    const entityInfo = buildEntityInfo({
+      entities: [JsonTypeTest],
+      remult: remult,
+    })
+
+    // Check the actual underlying valueType in the repository
+    const repo = remult.repo(JsonTypeTest)
+    expect(repo.fields.metadata.valueType).toBe(undefined)
+    expect(repo.fields.metadata.inputType).toBe(InputTypes.json)
+    expect(repo.fields.metadata2.valueType).toBe(Array)
+    expect(repo.fields.metadata2.inputType).toBe(InputTypes.json)
   })
 })
