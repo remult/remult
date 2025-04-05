@@ -252,7 +252,7 @@ describe('remult-3-basics', () => {
     expect(p.category.id).toBe(1)
     expect(p.category.categoryName).toBe('cat1')
   })
-  it.only('test dateOnly save or update should be able to set null', async () => {
+  it('test dateOnly save or update should be able to set null', async () => {
     const todo = class {
       id = 0
       d: Date | null = null
