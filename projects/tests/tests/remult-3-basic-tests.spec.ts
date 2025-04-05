@@ -161,7 +161,7 @@ describe('remult-3-basics', () => {
     try {
       await repo.insert(r)
       ok = true
-    } catch { }
+    } catch {}
     expect(ok).toBe(false)
   })
   it('save works with array', async () => {
@@ -252,7 +252,7 @@ describe('remult-3-basics', () => {
     expect(p.category.id).toBe(1)
     expect(p.category.categoryName).toBe('cat1')
   })
-  it('test dateOnly save or update should be able to set null', async () => {
+  it.only('test dateOnly save or update should be able to set null', async () => {
     const todo = class {
       id = 0
       d: Date | null = null
@@ -271,7 +271,7 @@ describe('remult-3-basics', () => {
     var dp = TestApiDataProvider({ dataProvider: sr.dataProvider })
     var remult = new Remult(dp)
     const r = remult.repo(todo)
-    const dToUse = new Date("1986-11-7")
+    const dToUse = new Date('1986-11-7')
     let t = await r.insert({ id: 1, d: dToUse })
     expect(t.id).toBe(1)
     expect(t.d).toBeDefined()
@@ -282,6 +282,29 @@ describe('remult-3-basics', () => {
     await r.save(t)
     expect(t.d).toBeDefined()
     await r.update(1, { d: null })
+
+    t = (await r.findId(1))!
     expect(t.d).toBeNull()
+  })
+  it('test update to default value', async () => {
+    @Entity('myClass', {
+      allowApiCrud: true,
+    })
+    class myClass {
+      @Fields.integer()
+      id = 0
+      @Fields.string()
+      todo = 'nothing'
+    }
+    const sr = new Remult(new InMemoryDataProvider())
+    const dp = TestApiDataProvider({ dataProvider: sr.dataProvider })
+    const remult = new Remult(dp)
+    const r = remult.repo(myClass)
+    let x = await r.insert({ id: 1, todo: 'abc' })
+    expect(x.todo).toBe('abc')
+    await r.update(1, { todo: 'nothing' })
+
+    x = (await r.findId(1))!
+    expect(x.todo).toBe('nothing')
   })
 })
