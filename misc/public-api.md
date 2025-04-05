@@ -3317,11 +3317,9 @@ export declare class ValueConverters {
   static readonly String: ValueConverter<String>
   static readonly Integer: ValueConverter<number>
   static readonly Default: Required<ValueConverter<any>>
-  static readonly Json: ValueConverter<Object>
   static readonly JsonString: ValueConverter<any>
   static readonly JsonValue: ValueConverter<any>
 }
-//[ ] Object from TBD is not exported
 export type ValueFilter<valueType> =
   | valueType
   | valueType[]

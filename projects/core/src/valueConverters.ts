@@ -83,10 +83,10 @@ export class ValueConverters {
       if (!val) return undefined!
       return new Date(
         val.substring(0, 4) +
-        '-' +
-        val.substring(4, 6) +
-        '-' +
-        val.substring(6, 8),
+          '-' +
+          val.substring(4, 6) +
+          '-' +
+          val.substring(6, 8),
       )
     },
   }
@@ -159,11 +159,6 @@ export class ValueConverters {
     fieldTypeInDb: '',
     inputType: 'text',
   }
-
-  static readonly Json: ValueConverter<Object> = {
-    inputType: InputTypes.json,
-  }
-
   static readonly JsonString: ValueConverter<any> = {
     fromJson: (x) => x,
     toJson: (x) => x,
@@ -171,8 +166,8 @@ export class ValueConverters {
       x == null
         ? null
         : x
-          ? JSON.parse(ValueConverters.JsonString.fromJson!(x))
-          : undefined,
+        ? JSON.parse(ValueConverters.JsonString.fromJson!(x))
+        : undefined,
     toDb: (x) =>
       x !== undefined
         ? x === null

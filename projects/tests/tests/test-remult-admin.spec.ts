@@ -2,8 +2,9 @@ import remultAdminHtml, {
   buildEntityInfo,
 } from '../../../projects/core/server/remult-admin'
 import { describe, expect, it } from 'vitest'
-import { Entity, Fields, Relations } from '../../core'
+import { Entity, Fields, Relations, repo } from '../../core'
 import { Remult } from '../../core/src/context'
+import { InputTypes } from '../../core/inputTypes.js'
 
 describe('remult-admin', () => {
   it('should get entities', async () => {
@@ -35,7 +36,7 @@ describe('remult-admin', () => {
       age2!: number
       @Fields.json()
       metadata!: []
-      @Fields.json({valueType: Array})
+      @Fields.json({ valueType: Array })
       metadata2!: []
       @Relations.toOne(() => Account)
       account!: Account
@@ -117,7 +118,7 @@ describe('remult-admin', () => {
             },
             {
               "caption": "Metadata",
-              "inputType": undefined,
+              "inputType": "json",
               "key": "metadata",
               "readOnly": false,
               "relationToOne": undefined,
@@ -127,7 +128,7 @@ describe('remult-admin', () => {
             },
             {
               "caption": "Metadata2",
-              "inputType": undefined,
+              "inputType": "json",
               "key": "metadata2",
               "readOnly": false,
               "relationToOne": undefined,
@@ -169,7 +170,7 @@ describe('remult-admin', () => {
                 "idField": "id",
                 "where": undefined,
               },
-              "type": "json",
+              "type": "string",
               "valFieldKey": "account",
               "values": undefined,
             },
@@ -188,7 +189,7 @@ describe('remult-admin', () => {
                   "isBankrupt": true,
                 },
               },
-              "type": "json",
+              "type": "string",
               "valFieldKey": "accountBankrupted",
               "values": undefined,
             },
@@ -268,7 +269,7 @@ describe('remult-admin', () => {
             },
             {
               "caption": "Metadata",
-              "inputType": undefined,
+              "inputType": "json",
               "key": "metadata",
               "readOnly": false,
               "relationToOne": undefined,
@@ -278,7 +279,7 @@ describe('remult-admin', () => {
             },
             {
               "caption": "Metadata2",
-              "inputType": undefined,
+              "inputType": "json",
               "key": "metadata2",
               "readOnly": false,
               "relationToOne": undefined,
@@ -320,7 +321,7 @@ describe('remult-admin', () => {
                 "idField": "id",
                 "where": undefined,
               },
-              "type": "json",
+              "type": "string",
               "valFieldKey": "account",
               "values": undefined,
             },
@@ -339,7 +340,7 @@ describe('remult-admin', () => {
                   "isBankrupt": true,
                 },
               },
-              "type": "json",
+              "type": "string",
               "valFieldKey": "accountBankrupted",
               "values": undefined,
             },
@@ -436,32 +437,25 @@ describe('remult-admin', () => {
     class JsonTypeTest {
       @Fields.cuid()
       id!: string
-      
+
       @Fields.json()
       metadata!: []
-      
-      @Fields.json({valueType: Array})
+
+      @Fields.json({ valueType: Array })
       metadata2!: []
     }
 
     const remult = new Remult()
     const entityInfo = buildEntityInfo({
       entities: [JsonTypeTest],
-      remult: remult
+      remult: remult,
     })
 
-    const testEntity = entityInfo.find(e => e.key === 'test-json-types')
-    
-    const metadataField = testEntity?.fields.find(f => f.key === 'metadata')
-    const metadata2Field = testEntity?.fields.find(f => f.key === 'metadata2')
-    
     // Check the actual underlying valueType in the repository
     const repo = remult.repo(JsonTypeTest)
-    const metadataValueType = repo.fields.metadata.valueType
-    const metadata2ValueType = repo.fields.metadata2.valueType
-    
-    // Assertions - checking that JSON fields have the correct valueType
-    expect(metadataValueType).toBe(undefined)
-    expect(metadata2ValueType).toBe(Array)
+    expect(repo.fields.metadata.valueType).toBe(undefined)
+    expect(repo.fields.metadata.inputType).toBe(InputTypes.json)
+    expect(repo.fields.metadata2.valueType).toBe(Array)
+    expect(repo.fields.metadata2.inputType).toBe(InputTypes.json)
   })
 })
