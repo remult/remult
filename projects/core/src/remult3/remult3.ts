@@ -189,14 +189,14 @@ export interface IdFieldRef<entityType, valueType>
     id: valueType extends { id?: number }
       ? number
       : valueType extends { id?: string }
-      ? string
-      : string | number,
+        ? string
+        : string | number,
   ): void
   getId(): valueType extends { id?: number }
     ? number
     : valueType extends { id?: string }
-    ? string
-    : string | number
+      ? string
+      : string | number
 }
 
 export interface FieldRef<entityType = unknown, valueType = unknown>
@@ -315,8 +315,8 @@ export declare type idType<entityType> = entityType extends {
   ? U extends string
     ? string
     : U extends number
-    ? number
-    : string | number
+      ? number
+      : string | number
   : string | number
 
 export type NumericKeys<T> = {
@@ -452,8 +452,8 @@ export type GroupByResult<
     | sumFields[number]]: K extends groupByFields[number]
     ? entityType[K]
     : K extends sumFields[number]
-    ? { sum: number }
-    : never
+      ? { sum: number }
+      : never
 } & { [K in averageFields[number]]: { avg: number } } & {
   [K in minFields[number]]: { min: number }
 } & { [K in maxFields[number]]: { max: number } } & {
@@ -972,17 +972,17 @@ export declare type EntityFilter<entityType> = {
     | (Partial<entityType>[Properties] extends number | Date | undefined | null
         ? ComparisonValueFilter<Partial<entityType>[Properties]>
         : Partial<entityType>[Properties] extends string | undefined
-        ?
-            | Partial<entityType>[Properties]
-            | (ContainsStringValueFilter &
-                ComparisonValueFilter<Partial<entityType>[Properties]>)
-        : Partial<entityType>[Properties] extends boolean | undefined | null
-        ? ValueFilter<boolean>
-        : Partial<entityType>[Properties] extends
-            | { id?: string | number }
-            | undefined
-        ? IdFilter<Partial<entityType>[Properties]>
-        : ValueFilter<Partial<entityType>[Properties]>)
+          ?
+              | Partial<entityType>[Properties]
+              | (ContainsStringValueFilter &
+                  ComparisonValueFilter<Partial<entityType>[Properties]>)
+          : Partial<entityType>[Properties] extends boolean | undefined | null
+            ? ValueFilter<boolean>
+            : Partial<entityType>[Properties] extends
+                  | { id?: string | number }
+                  | undefined
+              ? IdFilter<Partial<entityType>[Properties]>
+              : ValueFilter<Partial<entityType>[Properties]>)
     | ContainsStringValueFilter
 } & {
   /**
@@ -1204,6 +1204,17 @@ export type ComparisonValueFilter<valueType> = ValueFilter<valueType> & {
   '<='?: valueType
 }
 export interface ContainsStringValueFilter {
+  /**
+   * Represents a 'HAS' filter condition where an array field must contain the specified substring.
+   *
+   * @example
+   * // Matches entities where the names[] contains 'joe'
+   * const filter = {
+   *   names: { $has: 'joe' }
+   * };
+   */
+  $has?: string
+
   /**
    * Represents a 'CONTAINS' filter condition where the value must contain the specified substring.
    *
@@ -1459,8 +1470,8 @@ export type RepositoryRelations<entityType> = {
   > extends Array<infer R>
     ? Repository<R>
     : entityType[K] extends infer R
-    ? { findOne: (options?: FindOptionsBase<R>) => Promise<R> }
-    : never
+      ? { findOne: (options?: FindOptionsBase<R>) => Promise<R> }
+      : never
 }
 
 export type RepositoryRelationsForEntityBase<entityType> = {
@@ -1469,8 +1480,8 @@ export type RepositoryRelationsForEntityBase<entityType> = {
   > extends Array<infer R>
     ? Repository<R>
     : entityType[K] extends infer R
-    ? { findOne: (options?: FindOptionsBase<R>) => Promise<R> }
-    : never
+      ? { findOne: (options?: FindOptionsBase<R>) => Promise<R> }
+      : never
 }
 
 export declare type EntityIdFields<entityType> = {
@@ -1524,8 +1535,8 @@ export const flags = {
         );
       },
     ```
-  
-  - 
+
+  -
 */
 //p1 - deleteAll({title:undefined}) should throw an error - not return 0 (with direct call to db)
 //p1 - remult-create, move db question ahead of auth - everyone needs a database, not everyone need auth

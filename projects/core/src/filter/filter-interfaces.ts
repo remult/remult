@@ -75,7 +75,7 @@ export class Filter {
    * //   "customerId": ["1", "2", "3"], // Precise values inferred from the filter
    * //   "status": undefined,           // Cannot infer precise values for 'status'
    * // }
-  
+
    */
   static async getPreciseValues<entityType>(
     metadata: EntityMetadata<entityType>,
@@ -99,7 +99,7 @@ export class Filter {
    * //   "customerId": ["1", "2", "3"], // Precise values inferred from the filter
    * //   "status": undefined,           // Cannot infer precise values for 'status'
    * // }
-  
+
    */
   async getPreciseValues<entityType>(): Promise<
     FilterPreciseValues<entityType>
@@ -182,7 +182,7 @@ export class Filter {
    *  where: Order.activeOrders({ year }),
    *})
 
-   
+
    * @see
    * [Sql filter and Custom filter](/docs/custom-filter.html)
    * [Filtering and Relations](/docs/filtering-and-relations.html)
@@ -367,6 +367,10 @@ export class Filter {
                       found = true
                       result.push(fh.isIn(element))
                       break
+                    case '$has':
+                      found = true
+                      result.push(fh.has(element))
+                      break
                     case '$contains':
                       found = true
                       result.push(fh.contains(element))
@@ -490,6 +494,9 @@ class filterHelper {
     return val
   }
 
+  has(val: string): Filter {
+    return new Filter((add) => add.hasItem(this.metadata, val))
+  }
   contains(val: string): Filter {
     return new Filter((add) => add.containsCaseInsensitive(this.metadata, val))
   }
@@ -562,6 +569,9 @@ class manyToOneFilterHelper implements filterHelper {
     public relationOptions: RelationOptions<any, any, any>,
   ) {}
   processVal(val: any) {
+    throw new Error('Invalid for Many To One Relation Field')
+  }
+  has(val: string): Filter {
     throw new Error('Invalid for Many To One Relation Field')
   }
   contains(val: string): Filter {
@@ -647,6 +657,7 @@ export interface FilterConsumer {
   isGreaterThan(col: FieldMetadata, val: any): void
   isLessOrEqualTo(col: FieldMetadata, val: any): void
   isLessThan(col: FieldMetadata, val: any): void
+  hasItem(col: FieldMetadata, val: any): void
   containsCaseInsensitive(col: FieldMetadata, val: any): void
   notContainsCaseInsensitive(col: FieldMetadata, val: any): void
   startsWithCaseInsensitive(col: FieldMetadata, val: any): void
@@ -774,6 +785,9 @@ export class FilterSerializer implements FilterConsumer {
   public isLessThan(col: FieldMetadata, val: any): void {
     this.add(col.key + '.lt', col.valueConverter.toJson(val))
   }
+  public hasItem(col: FieldMetadata, val: any): void {
+    this.add(col.key + '.has', val)
+  }
   public containsCaseInsensitive(col: FieldMetadata, val: any): void {
     this.add(col.key + '.contains', val)
   }
@@ -880,6 +894,7 @@ export function buildFilterFromRequestParameters(
       }
     }
 
+    addFilter('.has', (val) => ({ $has: val }), false, true)
     addFilter('.contains', (val) => ({ $contains: val }), false, true)
     addFilter('.notContains', (val) => ({ $notContains: val }), false, true)
     addFilter('.startsWith', (val) => ({ $startsWith: val }), false, true)
@@ -1043,6 +1058,9 @@ class customTranslator implements FilterConsumer {
   isLessThan(col: FieldMetadata<any>, val: any): void {
     this.commands.push((x) => x.isLessThan(col, val))
   }
+  hasItem(col: FieldMetadata<any>, val: any): void {
+    this.commands.push((x) => x.hasItem(col, val))
+  }
   containsCaseInsensitive(col: FieldMetadata<any>, val: any): void {
     this.commands.push((x) => x.containsCaseInsensitive(col, val))
   }
@@ -1102,6 +1120,7 @@ export function __updateEntityBasedOnWhere<T>(
     w.__applyToConsumer({
       custom: emptyFunction,
       databaseCustom: emptyFunction,
+      hasItem: emptyFunction,
       containsCaseInsensitive: emptyFunction,
       notContainsCaseInsensitive: emptyFunction,
       startsWithCaseInsensitive: emptyFunction,
@@ -1256,6 +1275,9 @@ class preciseValuesCollector<entityType> implements FilterConsumer {
     this.notOk(col)
   }
   isLessThan(col: FieldMetadata<any, any>, val: any): void {
+    this.notOk(col)
+  }
+  hasItem(col: FieldMetadata<any, any>, val: any): void {
     this.notOk(col)
   }
   containsCaseInsensitive(col: FieldMetadata<any, any>, val: any): void {
