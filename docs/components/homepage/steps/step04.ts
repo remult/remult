@@ -4,7 +4,7 @@ export default {
   name: 'Add label using metadata',
   cta: [
     {
-      label: 'Adding your own options (eg: placeholder)',
+      label: 'Adding your own options<span>(eg: placeholder)<span>',
       href: '/docs/custom-options#enhancing-field-and-entity-definitions-with-custom-options',
     },
   ],

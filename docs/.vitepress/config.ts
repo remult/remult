@@ -51,11 +51,16 @@ export default defineConfig({
         {
           find: /^.*\/VPHome\.vue$/,
           replacement: fileURLToPath(
-            new URL('../components/Homepage.vue', import.meta.url),
+            new URL('../Homepage.vue', import.meta.url),
           ),
         },
       ],
     },
+    build: {
+      rollupOptions: {
+        external: ['node:url']
+      }
+    }
   },
 
   head: [
@@ -485,7 +490,7 @@ export default defineConfig({
   },
 
   markdown: {
-    theme: 'catppuccin-macchiato',
+    theme: 'tokyo-night',
     config(md) {
       md.use(tabsMarkdownPlugin)
     },

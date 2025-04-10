@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import Intro from './homepage/Intro.vue';
-import Examples from './homepage/Examples.vue';
+import Intro from './components/homepage/Intro.vue';
+import Examples from './components/homepage/Examples.vue';
 </script>
 
 <template>
@@ -13,7 +13,6 @@ import Examples from './homepage/Examples.vue';
 
 <style>
   .homepage {
-    min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -21,9 +20,11 @@ import Examples from './homepage/Examples.vue';
   }
 
   .intro {
-    padding: 8rem 0;
+    position: relative;
+    padding: 8rem 0 0 0;
     width: 100%;
     margin: 0 auto;
+    margin-top: auto;
     background: linear-gradient(
         to bottom,
         #000000 0%,
@@ -31,6 +32,22 @@ import Examples from './homepage/Examples.vue';
         #040664 75%,
         #7042B5 100%
     );
+    border-radius: 0 0 1rem 1rem;
+
+    &:after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 50px;
+      opacity: 0;
+      background: linear-gradient(
+        to top,
+        rgba(4, 6, 100, 1) 100%,
+        rgba(112, 66, 181, 1) 10%
+      );
+    }
   }
   
   .title {

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import Editor from '../Editor.vue'
+import Editor from './Editor.vue'
+import Icon from '../Icon.vue'
 </script>
 
 <template>
@@ -19,6 +20,16 @@ import Editor from '../Editor.vue'
     <div class="editor-container">
       <Editor />
     </div>
+
+    <div class="intro-logos">
+      <Icon tech="react" link="/docs/installation/framework/react" />
+      <Icon tech="angular" link="/docs/installation/framework/angular" />
+      <Icon tech="vue" link="/docs/installation/framework/vue" />
+      <Icon tech="nextjs" link="/docs/installation/framework/nextjs" />
+      <Icon tech="svelte" link="/docs/installation/framework/sveltekit" />
+      <Icon tech="nuxt" link="/docs/installation/framework/nuxt" />
+      <Icon tech="solid" link="/docs/installation/framework/solid" />
+    </div>
   </div>
 </template>
 
@@ -28,5 +39,18 @@ import Editor from '../Editor.vue'
   flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+
+.intro-logos {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  svg {
+    width: 32px;
+    height: 32px;
+  }
 }
 </style>

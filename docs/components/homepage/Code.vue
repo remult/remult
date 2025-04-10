@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import 'tslib'
 import { codeToHtml } from 'shiki'
 import { ref, watch } from 'vue'
 import { transformerNotationDiff } from '@shikijs/transformers'
@@ -58,43 +59,21 @@ watch(
 </template>
 
 <style>
-.code-block {
-  padding: .5rem 0;
-}
+.intro {
+  .code-block {
+    padding: .5rem 0;
+  }
 
-.code-block :deep(pre) {
-  margin: 0;
-  font-family: 'Fira Code', monospace;
-  font-size: 0.9rem;
-  line-height: 1.5;
-}
+  .code-block :deep(pre) {
+    margin: 0;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
 
-.loading-indicator {
-  color: #666;
-  padding: 1rem;
-}
-
-.code-block code {
-  line-height: 1.5;
-  display: flex;
-  flex-direction: column;
-}
-
-.line {
-  padding: 0 .5rem;
-  width: 100%;
-  display: block;
-}
-
-.line:empty {
-  height: 1rem;
-}
-
-.line.diff.add {
-  background-color: #003d00;
-}
-
-.line.diff.remove {
-  background-color: #3d0000;
+  .loading-indicator {
+    color: #666;
+    padding: 1rem;
+  }
 }
 </style>

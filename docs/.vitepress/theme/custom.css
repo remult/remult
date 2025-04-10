@@ -15,7 +15,7 @@
 
 /* .vitepress/theme/custom.css */
 :root {
-  --vp-c-brand-1: rgb(0, 102, 200);
+  --vp-c-brand-1: rgb(5, 6, 57);
   --vp-c-brand-2: rgb(0, 102, 200);
   --vp-c-brand-3: rgb(0, 102, 200);
   --vp-c-brand-soft: rgb(0, 102, 200, 0.14);
@@ -40,6 +40,8 @@
   --vp-code-tab-hover-text-color: rgba(255, 255, 245, 0.86);
   --vp-code-tab-active-text-color: rgba(255, 255, 245, 0.86);
   /* end dark code samples*/
+
+  --vp-code-font-size: 14px;
 }
 
 .dark {
@@ -47,7 +49,38 @@
   --vp-c-brand-2: rgb(0, 153, 300);
   --vp-c-brand-3: rgb(0, 153, 300);
   --vp-c-brand-soft: rgb(0, 153, 300, 0.14);
+
+  --vp-sidebar-bg-color: rgba(2, 2, 36, 1);
+  --vp-c-bg: rgb(5, 5, 40);
+  --vp-c-bg-alt: rgba(5, 7, 57, 1);
+
+  .shiki {
+    code {
+      line-height: 1.7;
+      display: flex;
+      flex-direction: column;
+    }
+
+    code .line {
+      padding: 0 .5rem;
+      width: 100%;
+      display: block;
+    }
+
+    code .line:empty {
+      height: 1rem;
+    }
+
+    code .line.diff.add {
+      background-color: #003d00;
+    }
+
+    code .line.diff.remove {
+      background-color: #3d0000;
+    }
+  }
 }
+
 div[class*='language-'] {
   --vp-c-bg: var(--vp-code-block-bg);
 }

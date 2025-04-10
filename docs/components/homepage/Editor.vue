@@ -1,8 +1,16 @@
 <script setup lang="ts">
+/// <reference lib="es2020" />
+declare const Math: {
+  floor: (x: number) => number;
+}
 import Code from './Code.vue'
 import { ref, onMounted, watch } from 'vue'
 import { type CodeStep, stepsData } from './stepsData'
-import { useUserPreference } from './composables/useUserPreference'
+import { useUserPreference } from '../composables/useUserPreference'
+import IconSvelte from '../icons/svelte.vue'
+import IconReact from '../icons/react.vue'
+import IconVue from '../icons/vue.vue'
+import IconAngular from '../icons/angular.vue'
 
 const steps = ref<CodeStep[]>([])
 const currentStep = ref<CodeStep | null>(null)
@@ -159,6 +167,27 @@ const getStepTimeAgo = (stepIndex: number) => {
     </div>
     <div class="editor-body">
       <div class="editor-sidebar">
+        <div class="editor-framework">
+          <div class="framework-icons">
+            <label class="framework-icon" :class="{ active: framework === 'react' }">
+              <input type="radio" v-model="framework" value="react" />
+              <IconReact />
+            </label>
+            <label class="framework-icon" :class="{ active: framework === 'vue' }">
+              <input type="radio" v-model="framework" value="vue" />
+              <IconVue />
+            </label>
+            <label class="framework-icon" :class="{ active: framework === 'svelte' }">
+              <input type="radio" v-model="framework" value="svelte" />
+              <IconSvelte />
+            </label>
+            <label class="framework-icon" :class="{ active: framework === 'angular' }">
+              <input type="radio" v-model="framework" value="angular" />
+              <IconAngular />
+            </label>
+          </div>
+        </div>
+
         <span class="steps-label">Commit History</span>
         <button
           v-for="(step, index) in steps"
@@ -173,14 +202,16 @@ const getStepTimeAgo = (stepIndex: number) => {
           }}</span>
         </button>
 
-        <div class="editor-framework">
-          <span>Frontend Library</span>
-          <select v-model="framework">
-            <option value="react">React</option>
-            <option value="svelte">Svelte</option>
-            <option value="vue">Vue</option>
-            <option value="angular">Angular</option>
-          </select>
+
+        <div class="editor-sidebar-footer">
+          <a
+            v-for="cta in currentStep?.cta"
+            :key="cta.label"
+            :href="cta.href"
+            :class="{ highlight: cta.highlight }"
+          >
+            <span v-html="cta.label" />
+          </a>
         </div>
       </div>
 
@@ -205,17 +236,6 @@ const getStepTimeAgo = (stepIndex: number) => {
         <div class="editor-code">
           <Code :code="getCurrentCode()" :language="getCurrentLanguage()" />
         </div>
-
-        <div class="editor-footer">
-          <a
-            v-for="cta in currentStep?.cta"
-            :key="cta.label"
-            :href="cta.href"
-            :class="{ highlight: cta.highlight }"
-          >
-            {{ cta.label }}
-          </a>
-        </div>
       </div>
     </div>
   </div>
@@ -224,12 +244,11 @@ const getStepTimeAgo = (stepIndex: number) => {
 <style>
 .editor {
   background: #050638;
-  border-radius: 3px;
+  border-radius: 5px 5px 0 0;
   overflow: hidden;
   font-size: 0.8rem;
-  height: calc(100vh - 200px);
-  min-height: 500px;
-  width: 800px;
+  height: 500px;
+  width: 900px;
 }
 
 .editor-header {
@@ -291,6 +310,7 @@ const getStepTimeAgo = (stepIndex: number) => {
   flex: 1;
   position: relative;
   background: #050638;
+  width: calc(100% - 250px);
 }
 
 .editor-tabs {
@@ -326,6 +346,7 @@ const getStepTimeAgo = (stepIndex: number) => {
   background: #050638;
   border: #080a59;
   padding: 0.2rem 0.5rem;
+  height: 30px;
 }
 
 .tab-button.active {
@@ -384,23 +405,59 @@ const getStepTimeAgo = (stepIndex: number) => {
 }
 
 .editor-framework {
-  margin-top: auto;
   display: flex;
   flex-direction: column;
   width: 100%;
-  border-top: 1px solid #080a59;
+  border-bottom: 1px solid #080a59;
 }
 
-.editor-framework span {
-  padding: 0.2rem 0.5rem;
-  font-size: 0.8rem;
+.framework-icons {
+  display: flex;
+  justify-content: space-between;
+}
+
+.framework-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 25%;
+  height: 30px;
+  cursor: pointer;
   color: #484bd2;
+  transition: all 0.2s ease;
+  position: relative;
+  opacity: .5;
+  
+  svg {
+    filter: saturate(0.8);
+  }
 }
 
-.editor-framework select {
-  background: #050638;
-  border: #080a59;
-  padding: 0.5rem;
+.framework-icon input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.framework-icon:hover {
+  background: #080a59;
+  color: #c0c2ff;
+}
+
+.framework-icon.active {
+  background: #080a59;
+  color: #c0c2ff;
+  opacity: 1;
+
+  svg {
+    filter: saturate(1);
+  }
+}
+
+.framework-icon svg {
+  width: 20px;
+  height: 20px;
 }
 
 .editor-code {
@@ -410,18 +467,33 @@ const getStepTimeAgo = (stepIndex: number) => {
   padding-bottom: 5rem;
 }
 
-.editor-footer {
+.editor-sidebar-footer {
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
-  padding: 1rem;
-  background: #0d0d2d;
+  padding: .5rem;
   color: white;
-  position: absolute;
-  bottom: 0;
-  gap: 1rem;
-}
+  margin-top: auto;
+  width: 100%;
+  z-index: 1;
 
-.editor-footer a:hover {
-  color: #60a5fa;
+  a {
+    background: #080a59;
+    width: 100%;
+    text-align: center;
+    padding: .25rem .5rem;
+    border-radius: 5px;
+    margin-bottom: .5rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    span span {
+      display: block;
+      font-size: .8rem;
+      opacity: .5;
+    }
+  }
 }
 </style>
