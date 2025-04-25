@@ -84,7 +84,10 @@ export default defineConfig({
   ],
 
   themeConfig: {
-    logo: '/logo.png',
+    logo: {
+      dark: '/logo-white.svg',
+      light: '/logo-dark.svg'
+    },
     editLink: {
       pattern: 'https://github.com/remult/remult/edit/main/docs/:path',
     },
