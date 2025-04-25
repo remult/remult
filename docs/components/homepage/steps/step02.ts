@@ -72,7 +72,7 @@ export default function App() {
         orderBy: { title: 'asc' }, // [!code ++]
         where: { title: 'remult' }, // [!code ++]
       })
-      .then((t) => (tasks = t))
+      .then((items) => (tasks = items))
   })
 </script>
 
@@ -83,23 +83,30 @@ export default function App() {
     {
       name: 'page.vue',
       keyContext: 'frontend',
+      changed: true,
       framework: 'vue',
       languageCodeHighlight: 'vue',
       content: `<script setup lang="ts">
-  import { onMounted, ref } from "vue"
-  import { remult } from "remult"
-  import { Task } from "./shared/Task"
+  import { onMounted, ref } from 'vue'
+  import { repo } from 'remult'
+  import { Task } from './entities'
 
-  const taskRepo = remult.repo(Task)
   const tasks = ref<Task[]>([])
-  onMounted(() => taskRepo.find().then((items) => (tasks.value = items)))
+
+  onMounted(() => {
+    repo(Task)
+      .find({
+        limit: 7, // [!code ++]
+        orderBy: { title: 'asc' }, // [!code ++]
+        where: { title: 'remult' }, // [!code ++]
+      }).then((items) => (tasks.value = items))
+  })
 </script>
+
 <template>
-  <main>
-    <div v-for="task in tasks">
-      {{ task.title }}
-    </div>
-  </main>
+  <div v-for="task in tasks">
+    {{ task.title }}
+  </div>
 </template>`,
     },
     {

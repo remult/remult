@@ -70,7 +70,7 @@ export default function App() {
   let newTask = $state(repo(Task).create()) // set default values [!code ++]
 
   $effect(() => {
-    repo(Task).find({/*...*/}).then((t) => (tasks = t))
+    repo(Task).find({/*...*/}).then((items) => (tasks = items))
   })
 
   const addTask = async (e: Event) => { // [!code ++]

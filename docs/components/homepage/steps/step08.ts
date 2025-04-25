@@ -10,16 +10,63 @@ export default {
       keyContext: 'backend',
       content: previousStep.files
         .find((c) => c.name === 'entities.ts')!
-        // TODO JYC: what tsconfig ?
         // @ts-ignore
         .content.replaceAll('// [!code ++]', ''),
     },
     {
       name: 'page.tsx',
       keyContext: 'frontend',
+      changed: true,
       framework: 'react',
       languageCodeHighlight: 'tsx',
-      content: `TODO`,
+      content: `import { useEffect, useState } from 'react'
+import { repo } from 'remult'
+import { Task } from './entities'
+
+export default function App() {
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [newTaskTitle, setNewTaskTitle] = useState("")
+
+  useEffect(() => {
+    repo(Task).find({ /*...*/ }).then(setTasks) // [!code --]
+    return repo(Task) // [!code ++]
+      .liveQuery(/*...*/) // [!code ++]
+      .subscribe((info) => { // [!code ++]
+        setTasks(info.applyChanges(tasks)) // [!code ++]
+      }) // [!code ++]
+  }, [])
+
+  const addTask = async (e: FormEvent) => { 
+    try { 
+      e.preventDefault() 
+      const newTask = await repo(Task).insert({ title: newTaskTitle }) 
+      setTasks([...tasks, newTask]) 
+      setNewTaskTitle("")
+    } catch (e) {
+      console.log(e)  
+    } 
+  } 
+
+  return (
+    <div>
+      <form onSubmit={addTask}> 
+        <label>{repo(Task).metadata.fields.title.caption}</label>
+        <input
+          value={newTaskTitle} 
+          onChange={e => setNewTaskTitle(e.target.value)} 
+        /> 
+        <button disabled={!repo(Task).metadata.apiInsertAllowed()}>Add</button> // [!code ++]
+      </form>
+      {tasks.map((task) => {
+        return (
+          <div key={task.id}>
+            {task.title}
+          </div>
+        )
+      })}
+    </div>
+  )
+}`,
     },
     {
       name: '+page.svelte',
@@ -35,7 +82,7 @@ export default {
       let newTask = $state(repo(Task).create()) 
     
       $effect(() => {
-        repo(Task).find({/*...*/}).then((t) => (tasks = t)) // [!code --]
+        repo(Task).find({/*...*/}).then((items) => (tasks = items)) // [!code --]
         return repo(Task) // [!code ++]
           .liveQuery(/*...*/) // [!code ++]
           .subscribe((info) => { // [!code ++]

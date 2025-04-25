@@ -48,7 +48,9 @@ export class Task {
       keyContext: 'frontend',
       framework: 'react',
       languageCodeHighlight: 'tsx',
-      content: `TODO`,
+      content: previousStep.files
+        .find((c) => c.name === 'page.tsx')!
+        .content.replace('// [!code ++]', ''),
     },
     {
       name: '+page.svelte',
@@ -64,21 +66,27 @@ export class Task {
       keyContext: 'frontend',
       framework: 'vue',
       languageCodeHighlight: 'vue',
-      content: `TODO`,
+      content: previousStep.files
+        .find((c) => c.name === 'page.vue')!
+        .content.replace('// [!code ++]', ''),
     },
     {
       name: 'todo.component.ts',
       keyContext: 'frontend',
       framework: 'angular',
       languageCodeHighlight: 'angular-ts',
-      content: `TODO`,
+      content: previousStep.files
+        .find((c) => c.name === 'todo.component.ts')!
+        .content.replace('// [!code ++]', ''),
     },
     {
       name: 'todo.component.html',
       keyContext: 'frontend2',
       framework: 'angular',
       languageCodeHighlight: 'html',
-      content: `TODO`,
+      content: previousStep.files
+        .find((c) => c.name === 'todo.component.html')!
+        .content.replace('// [!code ++]', ''),
     },
   ],
 } satisfies CodeStepInput
