@@ -11,7 +11,7 @@ export default {
   ],
   files: [
     {
-      name: 'entity.ts',
+      name: 'entities.ts',
       keyContext: 'backend',
       changed: true,
       content: `import { Entity, Fields, Validators, Allow } from 'remult'
@@ -30,7 +30,7 @@ export class Task {
     caption: 'Title of the task',
     validate: Validators.required
   })
-  title: string = ''
+  title = ''
 }`,
     },
     {
@@ -47,8 +47,8 @@ export class Task {
       framework: 'svelte',
       languageCodeHighlight: 'svelte',
       content: `<script lang="ts">
-  import { repo } from "remult"
-  import { Task } from "./entity"
+  import { repo } from 'remult'
+  import { Task } from './entities'
 
   let tasks = $state<Task[]>([])
   let newTask = $state(repo(Task).create()) 

@@ -11,7 +11,7 @@ export default {
   ],
   files: [
     {
-      name: 'entity.ts',
+      name: 'entities.ts',
       keyContext: 'backend',
       changed: true,
       content: `import { Entity, Fields, Validators, Allow } from 'remult'
@@ -37,7 +37,7 @@ export class Task {
     caption: 'Title of the task',
     validate: Validators.required 
   })
-  title: string = ''
+  title = ''
 
   @Fields.string() // [!code ++]
   createdBy = '' // [!code ++]

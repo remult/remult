@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /// <reference lib="es2020" />
 declare const Math: {
-  floor: (x: number) => number;
+  floor: (x: number) => number
 }
 import Code from './Code.vue'
 import { ref, onMounted, watch } from 'vue'
@@ -169,19 +169,31 @@ const getStepTimeAgo = (stepIndex: number) => {
       <div class="editor-sidebar">
         <div class="editor-framework">
           <div class="framework-icons">
-            <label class="framework-icon" :class="{ active: framework === 'react' }">
+            <label
+              class="framework-icon"
+              :class="{ active: framework === 'react' }"
+            >
               <input type="radio" v-model="framework" value="react" />
               <IconReact />
             </label>
-            <label class="framework-icon" :class="{ active: framework === 'vue' }">
-              <input type="radio" v-model="framework" value="vue" />
-              <IconVue />
-            </label>
-            <label class="framework-icon" :class="{ active: framework === 'svelte' }">
+            <label
+              class="framework-icon"
+              :class="{ active: framework === 'svelte' }"
+            >
               <input type="radio" v-model="framework" value="svelte" />
               <IconSvelte />
             </label>
-            <label class="framework-icon" :class="{ active: framework === 'angular' }">
+            <label
+              class="framework-icon"
+              :class="{ active: framework === 'vue' }"
+            >
+              <input type="radio" v-model="framework" value="vue" />
+              <IconVue />
+            </label>
+            <label
+              class="framework-icon"
+              :class="{ active: framework === 'angular' }"
+            >
               <input type="radio" v-model="framework" value="angular" />
               <IconAngular />
             </label>
@@ -201,7 +213,6 @@ const getStepTimeAgo = (stepIndex: number) => {
             index === steps.length - 1 ? 'now' : getStepTimeAgo(index)
           }}</span>
         </button>
-
 
         <div class="editor-sidebar-footer">
           <a
@@ -426,14 +437,14 @@ const getStepTimeAgo = (stepIndex: number) => {
   color: #484bd2;
   transition: all 0.2s ease;
   position: relative;
-  opacity: .5;
-  
+  opacity: 0.5;
+
   svg {
     filter: saturate(0.8);
   }
 }
 
-.framework-icon input[type="radio"] {
+.framework-icon input[type='radio'] {
   position: absolute;
   opacity: 0;
   width: 0;
@@ -471,7 +482,7 @@ const getStepTimeAgo = (stepIndex: number) => {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: .5rem;
+  padding: 0.5rem;
   color: white;
   margin-top: auto;
   width: 100%;
@@ -481,9 +492,9 @@ const getStepTimeAgo = (stepIndex: number) => {
     background: #080a59;
     width: 100%;
     text-align: center;
-    padding: .25rem .5rem;
+    padding: 0.25rem 0.5rem;
     border-radius: 5px;
-    margin-bottom: .5rem;
+    margin-bottom: 0.5rem;
 
     &:last-child {
       margin-bottom: 0;
@@ -491,8 +502,8 @@ const getStepTimeAgo = (stepIndex: number) => {
 
     span span {
       display: block;
-      font-size: .8rem;
-      opacity: .5;
+      font-size: 0.8rem;
+      opacity: 0.5;
     }
   }
 }

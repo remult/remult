@@ -7,9 +7,9 @@ export default {
   cta: [],
   files: [
     {
-      name: 'entity.ts',
+      name: 'entities.ts',
       keyContext: 'backend',
-      content: previousStep.files.find((c) => c.name === 'entity.ts')!.content,
+      content: previousStep.files.find((c) => c.name === 'entities.ts')!.content,
     },
     {
       name: 'page.tsx',
@@ -25,8 +25,8 @@ export default {
       framework: 'svelte',
       languageCodeHighlight: 'svelte',
       content: `<script lang="ts">
-  import { repo } from "remult"
-  import { Task } from "./entity"
+  import { repo } from 'remult'
+  import { Task } from './entities'
 
   let tasks = $state<Task[]>([])
   let newTask = $state(repo(Task).create()) // set default values [!code ++]

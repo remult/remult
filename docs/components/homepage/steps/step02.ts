@@ -15,9 +15,9 @@ export default {
   ],
   files: [
     {
-      name: 'entity.ts',
+      name: 'entities.ts',
       keyContext: 'backend',
-      content: previousStep.files.find((c) => c.name === 'entity.ts')!.content,
+      content: previousStep.files.find((c) => c.name === 'entities.ts')!.content,
     },
     {
       name: 'page.tsx',
@@ -26,21 +26,20 @@ export default {
       framework: 'react',
       languageCodeHighlight: 'tsx',
       content: `import { useEffect, useState } from 'react'
-import { remult } from 'remult'
-import { Task } from './shared/Task'
-
-const taskRepo = remult.repo(Task)
+import { repo } from 'remult'
+import { Task } from './entities'
 
 export default function App() {
   const [tasks, setTasks] = useState<Task[]>([])
 
   useEffect(() => {
-    taskRepo.find({
+    repo(Task).find({
       limit: 7, // [!code ++]
       orderBy: { title: 'asc' }, // [!code ++]
       where: { title: 'remult' }, // [!code ++]
     }).then(setTasks)
   }, [])
+
   return (
     <div>
       {tasks.map((task) => {
@@ -61,8 +60,8 @@ export default function App() {
       framework: 'svelte',
       languageCodeHighlight: 'svelte',
       content: `<script lang="ts">
-  import { repo } from "remult"
-  import { Task } from "./entity"
+  import { repo } from 'remult'
+  import { Task } from './entities'
 
   let tasks = $state<Task[]>([])
 
@@ -112,7 +111,7 @@ export default function App() {
 import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { remult } from 'remult'
-  import { Task } from "./entity"
+  import { Task } from './entities'
 
 @Component({
   selector: 'app-todo',

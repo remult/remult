@@ -11,7 +11,7 @@ export default {
   ],
   files: [
     {
-      name: 'entity.ts',
+      name: 'entities.ts',
       keyContext: 'backend',
       content: `import { Entity, Fields } from 'remult'
 
@@ -23,7 +23,7 @@ export class Task {
   id!: string
 
   @Fields.string()
-  title: string = ''
+  title = ''
 }`,
     },
     {
@@ -32,17 +32,18 @@ export class Task {
       framework: 'react',
       languageCodeHighlight: 'tsx',
       content: `import { useEffect, useState } from 'react'
-import { remult } from 'remult'
-import { Task } from './shared/Task'
-
-const taskRepo = remult.repo(Task)
+import { repo } from 'remult'
+import { Task } from './entities'
 
 export default function App() {
   const [tasks, setTasks] = useState<Task[]>([])
 
   useEffect(() => {
-    taskRepo.find().then(setTasks)
+    repo(Task)
+      .find()
+      .then(setTasks)
   }, [])
+
   return (
     <div>
       {tasks.map((task) => {
@@ -62,8 +63,8 @@ export default function App() {
       framework: 'svelte',
       languageCodeHighlight: 'svelte',
       content: `<script lang="ts">
-  import { repo } from "remult"
-  import { Task } from "./entity"
+  import { repo } from 'remult'
+  import { Task } from './entities'
 
   let tasks = $state<Task[]>([])
 
@@ -84,20 +85,23 @@ export default function App() {
       framework: 'vue',
       languageCodeHighlight: 'vue',
       content: `<script setup lang="ts">
-  import { onMounted, ref } from "vue"
-  import { remult } from "remult"
-  import { Task } from "./shared/Task"
+  import { onMounted, ref } from 'vue'
+  import { repo } from 'remult'
+  import { Task } from './entities'
 
-  const taskRepo = remult.repo(Task)
   const tasks = ref<Task[]>([])
-  onMounted(() => taskRepo.find().then((items) => (tasks.value = items)))
+
+  onMounted(() => {
+    repo(Task)
+      .find()
+      .then((items) => (tasks.value = items))
+  })
 </script>
+
 <template>
-  <main>
-    <div v-for="task in tasks">
-      {{ task.title }}
-    </div>
-  </main>
+  <div v-for="task in tasks">
+    {{ task.title }}
+  </div>
 </template>`,
     },
     {
@@ -108,8 +112,8 @@ export default function App() {
       content: `import { Component } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
-import { remult } from 'remult'
-  import { Task } from "./entity"
+import { repo } from 'remult'
+import { Task } from './entities'
 
 @Component({
   selector: 'app-todo',
@@ -119,10 +123,11 @@ import { remult } from 'remult'
   styleUrl: './todo.component.css',
 })
 export class TodoComponent {
-  taskRepo = remult.repo(Task)
   tasks: Task[] = []
   ngOnInit() {
-    this.taskRepo.find().then((items) => (this.tasks = items))
+    repo(Task)
+      .find()
+      .then((items) => (this.tasks = items))
   }
 }`,
     },
