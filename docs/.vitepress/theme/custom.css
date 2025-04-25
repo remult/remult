@@ -110,3 +110,6 @@ div[class*='language-'] {
   gap: 1rem;
 }
 
+.VPNav .title span {
+  display: none;
+}
