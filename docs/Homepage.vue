@@ -18,6 +18,17 @@ import Faq from './components/homepage/Faq.vue'
   justify-content: center;
   align-items: center;
   flex-direction: column;
+
+  h1, h2, h3 {
+    border: none;
+    padding-top: 0;
+  }
+
+  h1:first-of-type,
+  h2:first-of-type,
+  h3:first-of-type {
+    margin-top: 0;
+  }
 }
 
 .intro {

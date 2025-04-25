@@ -8,29 +8,31 @@
       </p>
     </div>
     <div class="faq-list l-home__content">
-      <details 
+      <div 
         v-for="(item, index) in faqs" 
         :key="index" 
         class="faq-item"
-        :open="isOpen[index]"
-        @toggle="handleToggle(index, $event)"
       >
-        <summary class="faq-question">
+        <div class="faq-question" @click="toggleFaq(index)">
           <h2>
             <b>{{ item.question }}</b>
             <span class="icon">{{ isOpen[index] ? '−' : '+' }}</span>
           </h2>
-        </summary>
-        <div class="faq-answer">
-          <div v-html="item.answer"></div>
         </div>
-      </details>
+        <div 
+          class="faq-answer" 
+          :class="{ 'is-open': isOpen[index] }"
+          :style="{ height: isOpen[index] ? answerHeights[index] + 'px' : '0px' }"
+        >
+          <div v-html="item.answer" ref="answerRefs"></div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, nextTick, onUnmounted } from 'vue'
 
 interface FaqItem {
   question: string
@@ -90,15 +92,59 @@ const faqs: FaqItem[] = [
 ]
 
 const isOpen = ref<boolean[]>(Array(faqs.length).fill(false))
+const answerHeights = ref<number[]>(Array(faqs.length).fill(0))
+const answerRefs = ref<HTMLElement[]>([])
 
-const handleToggle = (index: number, event: Event) => {
-  const details = event.target as HTMLDetailsElement;
-  isOpen.value[index] = details.open;
+const calculateHeight = (index: number) => {
+  const element = answerRefs.value[index];
+  if (element) {
+    // Temporarily set height to auto to get the full height
+    element.style.height = 'auto';
+    answerHeights.value[index] = element.scrollHeight;
+    // Reset height
+    element.style.height = '';
+  }
 }
 
 const toggleFaq = (index: number) => {
-  isOpen.value[index] = !isOpen.value[index]
+  if (!isOpen.value[index]) {
+    // Calculate height first
+    calculateHeight(index);
+    // Then set isOpen in the next tick
+    nextTick(() => {
+      isOpen.value[index] = true;
+    });
+  } else {
+    isOpen.value[index] = false;
+  }
 }
+
+onMounted(() => {
+  // Pre-calculate heights for all answers
+  nextTick(() => {
+    answerRefs.value.forEach((_, index) => {
+      calculateHeight(index);
+    });
+  });
+  
+  window.addEventListener('resize', () => {
+    isOpen.value.forEach((open, index) => {
+      if (open) {
+        calculateHeight(index);
+      }
+    });
+  });
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', () => {
+    isOpen.value.forEach((open, index) => {
+      if (open) {
+        calculateHeight(index);
+      }
+    });
+  });
+})
 </script>
 
 <style>
@@ -125,11 +171,11 @@ const toggleFaq = (index: number) => {
   padding: 1rem;
   background-color: var(--vp-c-bg-alt);
   border-radius: 8px;
-  list-style: none;
+  transition: background-color 0.2s ease;
 }
 
-.faq-question::-webkit-details-marker {
-  display: none;
+.faq-question:hover {
+  background-color: var(--vp-c-bg-soft);
 }
 
 .faq-question h2 {
@@ -143,20 +189,30 @@ const toggleFaq = (index: number) => {
 .faq-question .icon {
   font-size: 1.5rem;
   font-weight: bold;
+  transition: transform 0.3s ease;
 }
 
 .faq-answer {
-  padding: 0 1rem;
-  max-height: 0;
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+              opacity 0.3s ease, 
+              transform 0.3s ease;
   background-color: var(--vp-c-bg-soft);
   border-radius: 0 0 8px 8px;
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+  height: 0;
 }
 
-details[open] .faq-answer {
-  max-height: 1000px;
-  padding: 1rem;
+.faq-answer.is-open {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.faq-answer.is-open .icon {
+  transform: rotate(180deg);
 }
 
 ul {

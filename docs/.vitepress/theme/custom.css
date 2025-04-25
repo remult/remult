@@ -89,11 +89,7 @@ div[class*='language-'] {
   display: flex;
   gap: 2rem;
   max-width: 1200px;
-  margin: 0 auto;
-}
-
-.l-home+.l-home {
-  margin-top: 8rem;
+  margin: 4rem auto;
 }
 
 .l-home__title {
