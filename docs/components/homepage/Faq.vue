@@ -51,6 +51,32 @@ const faqs: FaqItem[] = [
     <p>One of our users migrated their project over a year, and guess what? 
     They ended up with 75% less code! Talk about a productivity boost! 💪</p>`,
   },
+  {
+    question: 'Why is it different from other libs?',
+    answer: `<p>Remult stands out in several key ways:</p>
+    <ul>
+      <li>It's fully yours - we don't host anything for you! You are in full control of your application and data</li>
+      <li>We provide a complete toolkit for managing your full application, including ready-to-use Live Queries</li>
+      <li>Unlike many other solutions, Remult gives you the freedom to build exactly what you need without vendor lock-in</li>
+    </ul>`,
+  },
+  {
+    question: 'Does it Scale?',
+    answer: `<p>Scaling is a common concern, but it's important to ask: Scale in what direction?</p>
+    <ul>
+      <li>Number of users? ✅</li>
+      <li>Number of recurring users? ✅</li>
+      <li>Time spent by users? ✅</li>
+      <li>Database size? ✅</li>
+    </ul>
+    <p>Yes, Remult scales in all these directions and more! Join our community to share your scaling metrics and learn from others' experiences 🚀</p>`,
+  },
+  {
+    question: 'Missing something?',
+    answer: `We're always looking for ways to improve Remult. 
+    If you have a feature request or a bug report, please let us know
+    on <a href="https://discord.gg/GXHk7ZfuG5">discord</a> or <a href="https://github.com/remult/remult/issues">github</a>!`,
+  },
 ]
 
 const isOpen = ref<boolean[]>(Array(faqs.length).fill(false))
