@@ -493,7 +493,10 @@ export default defineConfig({
   },
 
   markdown: {
-    theme: 'tokyo-night',
+    theme: {
+      dark: 'tokyo-night',
+      light: 'github-light',
+    },
     config(md) {
       md.use(tabsMarkdownPlugin)
     },

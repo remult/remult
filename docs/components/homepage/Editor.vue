@@ -293,7 +293,7 @@ const getStepTimeAgo = (stepIndex: number) => {
 }
 
 /* Editor Styles */
-.shiki.tokyo-night {
+.editor .shiki.tokyo-night {
   background-color: #050638 !important;
   font-size: 0.8rem;
   line-height: 1.2rem;

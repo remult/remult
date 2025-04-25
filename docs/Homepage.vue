@@ -62,12 +62,16 @@ import Faq from './components/homepage/Faq.vue'
   }
 }
 
-.title {
+.homepage a {
+  text-decoration: none;
+}
+
+.intro .title {
   text-align: center;
   margin-bottom: 2rem;
 }
 
-h1 {
+.intro h1 {
   font-size: 2rem;
   margin-bottom: 2rem;
 }
