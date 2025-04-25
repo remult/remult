@@ -113,12 +113,13 @@ export default function App() {
       name: 'todo.component.ts',
       keyContext: 'frontend',
       framework: 'angular',
+      changed: true,
       languageCodeHighlight: 'angular-ts',
-      content: `import { Component } from '@angular/core'
+      content: `import { Component, OnInit } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
-import { remult } from 'remult'
-  import { Task } from './entities'
+import { repo } from 'remult'
+import { Task } from './entities'
 
 @Component({
   selector: 'app-todo',
@@ -127,11 +128,17 @@ import { remult } from 'remult'
   templateUrl: './todo.component.html',
   styleUrl: './todo.component.css',
 })
-export class TodoComponent {
-  taskRepo = remult.repo(Task)
+export class TodoComponent implements OnInit {
   tasks: Task[] = []
+
   ngOnInit() {
-    this.taskRepo.find().then((items) => (this.tasks = items))
+    repo(Task)
+      .find({
+        limit: 7, // [!code ++]
+        orderBy: { title: 'asc' }, // [!code ++]
+        where: { title: 'remult' }, // [!code ++]
+      })
+      .then(items => this.tasks = items)
   }
 }`,
     },

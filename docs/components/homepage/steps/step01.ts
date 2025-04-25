@@ -109,7 +109,7 @@ export default function App() {
       keyContext: 'frontend',
       framework: 'angular',
       languageCodeHighlight: 'angular-ts',
-      content: `import { Component } from '@angular/core'
+      content: `import { Component, OnInit } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { repo } from 'remult'
@@ -122,12 +122,13 @@ import { Task } from './entities'
   templateUrl: './todo.component.html',
   styleUrl: './todo.component.css',
 })
-export class TodoComponent {
+export class TodoComponent implements OnInit {
   tasks: Task[] = []
+
   ngOnInit() {
     repo(Task)
       .find()
-      .then((items) => (this.tasks = items))
+      .then(items => this.tasks = items)
   }
 }`,
     },

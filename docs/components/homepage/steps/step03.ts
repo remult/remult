@@ -130,14 +130,53 @@ export default function App() {
       keyContext: 'frontend',
       framework: 'angular',
       languageCodeHighlight: 'angular-ts',
-      content: `TODO`,
+      content: `import { Component, OnInit } from '@angular/core'
+import { CommonModule } from '@angular/common'
+import { FormsModule } from '@angular/forms'
+import { repo } from 'remult'
+import { Task } from './entities'
+
+@Component({
+  selector: 'app-todo',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './todo.component.html',
+  styleUrl: './todo.component.css',
+})
+export class TodoComponent implements OnInit {
+  tasks: Task[] = []
+  newTask = repo(Task).create()
+
+  ngOnInit() {
+    repo(Task)
+      .find({
+        limit: 7,
+        orderBy: { title: 'asc' },
+        where: { title: 'remult' }
+      })
+      .then(items => this.tasks = items)
+  }
+
+  async addTask() {
+    const task = await repo(Task).insert(this.newTask)
+    this.tasks.push(task)
+    this.newTask = repo(Task).create()
+  }
+}`,
     },
     {
       name: 'todo.component.html',
       keyContext: 'frontend2',
       framework: 'angular',
       languageCodeHighlight: 'html',
-      content: `TODO`,
+      content: `<form (ngSubmit)="addTask()">
+  <input [(ngModel)]="newTask.title" name="title" />
+  <button type="submit">Add</button>
+</form>
+
+<div *ngFor="let task of tasks">
+  {{task.title}}
+</div>`,
     },
   ],
 } satisfies CodeStepInput
