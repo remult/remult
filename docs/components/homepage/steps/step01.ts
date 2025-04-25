@@ -71,7 +71,7 @@ export default function App() {
   $effect(() => {
     repo(Task)
       .find()
-      .then((t) => (tasks = t))
+      .then((items) => (tasks = items))
   })
 </script>
 

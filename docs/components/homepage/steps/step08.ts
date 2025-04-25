@@ -82,7 +82,7 @@ export default function App() {
       let newTask = $state(repo(Task).create()) 
     
       $effect(() => {
-        repo(Task).find({/*...*/}).then((t) => (tasks = t)) // [!code --]
+        repo(Task).find({/*...*/}).then((items) => (tasks = items)) // [!code --]
         return repo(Task) // [!code ++]
           .liveQuery(/*...*/) // [!code ++]
           .subscribe((info) => { // [!code ++]
