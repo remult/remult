@@ -1,20 +1,30 @@
 <template>
-  <div class="faq">
-    <h2>Frequently Asked Questions</h2>
-    <div class="faq-list">
-      <div v-for="(item, index) in faqs" :key="index" class="faq-item">
-        <div class="faq-question" @click="toggleFaq(index)">
-          <h3>
-            <b>{{ item.question }}</b
-            ><span>{{ isOpen[index] ? '−' : '+' }}</span>
-          </h3>
-        </div>
-        <div class="faq-answer" :class="{ 'is-open': isOpen[index] }">
-          <br />
+  <div class="faq l-home">
+    <div class="faq-intro l-home__title">
+      <h2>Frequently Asked Questions</h2>
+      <p>
+        We've compiled a list of common questions and answers to help you get started with Remult.
+        If you have any other questions, please don't hesitate to ask us on <a href="https://discord.gg/GXHk7ZfuG5">discord</a> or <a href="https://github.com/remult/remult/issues">github</a>!
+      </p>
+    </div>
+    <div class="faq-list l-home__content">
+      <details 
+        v-for="(item, index) in faqs" 
+        :key="index" 
+        class="faq-item"
+        :open="isOpen[index]"
+        @toggle="handleToggle(index, $event)"
+      >
+        <summary class="faq-question">
+          <h2>
+            <b>{{ item.question }}</b>
+            <span class="icon">{{ isOpen[index] ? '−' : '+' }}</span>
+          </h2>
+        </summary>
+        <div class="faq-answer">
           <div v-html="item.answer"></div>
-          <br />
         </div>
-      </div>
+      </details>
     </div>
   </div>
 </template>
@@ -81,18 +91,72 @@ const faqs: FaqItem[] = [
 
 const isOpen = ref<boolean[]>(Array(faqs.length).fill(false))
 
+const handleToggle = (index: number, event: Event) => {
+  const details = event.target as HTMLDetailsElement;
+  isOpen.value[index] = details.open;
+}
+
 const toggleFaq = (index: number) => {
   isOpen.value[index] = !isOpen.value[index]
 }
 </script>
 
 <style>
-.faq-answer {
+.faq {
+  display: flex;
+  gap: 1rem;
+}
+
+.faq-intro {
+  width: 30%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.faq-item {
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.faq-question {
+  cursor: pointer;
+  padding: 1rem;
+  background-color: var(--vp-c-bg-alt);
+  border-radius: 8px;
+  list-style: none;
+}
+
+.faq-question::-webkit-details-marker {
   display: none;
 }
 
-.faq-answer.is-open {
-  display: block;
+.faq-question h2 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.faq-question .icon {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.faq-answer {
+  padding: 0 1rem;
+  max-height: 0;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  background-color: var(--vp-c-bg-soft);
+  border-radius: 0 0 8px 8px;
+}
+
+details[open] .faq-answer {
+  max-height: 1000px;
+  padding: 1rem;
 }
 
 ul {

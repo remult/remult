@@ -5,7 +5,7 @@ import Faq from './components/homepage/Faq.vue'
 </script>
 
 <template>
-  <div class="homepage">
+  <div class="homepage vp-doc">
     <Intro />
     <Examples />
     <Faq />

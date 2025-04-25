@@ -84,3 +84,29 @@
 div[class*='language-'] {
   --vp-c-bg: var(--vp-code-block-bg);
 }
+
+.l-home {
+  display: flex;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.l-home+.l-home {
+  margin-top: 8rem;
+}
+
+.l-home__title {
+  display: flex;
+  width: 33.33%;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.l-home__content {
+  display: flex;
+  width: 66.66%;
+  flex-direction: column;
+  gap: 1rem;
+}
+
