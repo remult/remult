@@ -22,7 +22,7 @@
 
   /* start dark code samples */
   --vp-code-block-color: rgba(255, 255, 245, 0.86);
-  --vp-code-block-bg: #161618;
+  --vp-code-block-bg: #f6f6f7;
   --vp-code-block-divider-color: #000000;
 
   --vp-code-lang-color: rgba(235, 235, 245, 0.38);
@@ -54,34 +54,40 @@
   --vp-c-bg: rgb(5, 5, 40);
   --vp-c-bg-alt: rgba(5, 7, 57, 1);
 
-  .shiki {
-    code {
-      line-height: 1.7;
-      display: flex;
-      flex-direction: column;
-    }
-
-    code .line {
-      padding: 0 .5rem;
-      width: 100%;
-      display: block;
-    }
-
-    code .line:empty {
-      height: 1rem;
-    }
-
-    code .line.diff.add {
-      background-color: #003d00;
-    }
-
-    code .line.diff.remove {
-      background-color: #3d0000;
-    }
+  div[class*='language-'] {
+    --vp-c-bg: #050638;
+    --vp-code-block-bg: #050638;
   }
 }
 
-div[class*='language-'] {
+
+.shiki.shiki {
+  code {
+    line-height: 1.7;
+    display: flex;
+    flex-direction: column;
+  }
+
+  code .line {
+    padding: 0 .5rem;
+    width: 100%;
+    display: block;
+  }
+
+  code .line:empty {
+    height: 1rem;
+  }
+
+  code .line.diff.add {
+    background-color: #003d00;
+  }
+
+  code .line.diff.remove {
+    background-color: #3d0000;
+  }
+}
+
+.shiki.shiki.github-light {
   --vp-c-bg: var(--vp-code-block-bg);
 }
 
