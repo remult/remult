@@ -70,7 +70,7 @@ export default function App() {
   let newTask = $state(repo(Task).create()) // set default values [!code ++]
 
   $effect(() => {
-    repo(Task).find({/*...*/}).then((items) => (tasks = items))
+    repo(Task).find({ /*...*/ }).then((items) => (tasks = items))
   })
 
   const addTask = async (e: Event) => { // [!code ++]
@@ -105,8 +105,7 @@ export default function App() {
   const newTask = ref(repo(Task).create()) // set default values [!code ++]
   
   onMounted(() => {
-    repo(Task)
-    .find({ /* ... */ }).then((items) => (tasks.value = items))
+    repo(Task).find({ /* ... */ }).then((items) => (tasks.value = items))
   })
 
   async function addTask() { // [!code ++]
@@ -125,7 +124,6 @@ export default function App() {
     {{ task.title }}
   </div>
 </template>`,
-
     },
     {
       name: 'todo.component.ts',
