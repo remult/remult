@@ -88,7 +88,7 @@ export default function App() {
   let newTask = $state(repo(Task).create()) 
 
   $effect(() => {
-    repo(Task).find({/*...*/}).then((items) => (tasks = items))
+    repo(Task).find({ /*...*/ }).then((items) => (tasks = items))
   })
 
   const addTask = async (e: Event) => {
@@ -112,9 +112,38 @@ export default function App() {
     {
       name: 'page.vue',
       keyContext: 'frontend',
+      changed: true,
       framework: 'vue',
       languageCodeHighlight: 'vue',
-      content: `TODO`,
+      content: `<script setup lang="ts">
+  import { onMounted, ref } from 'vue'
+  import { repo } from 'remult'
+  import { Task } from './entities'
+
+  const tasks = ref<Task[]>([])
+  const newTask = ref(repo(Task).create())
+  
+  onMounted(() => {
+    repo(Task).find({ /* ... */ }).then((items) => (tasks.value = items))
+  })
+
+  async function addTask() {
+    const t = await repo(Task).insert(newTask.value)
+    tasks.value.push(t)
+    newTask.value = repo(Task).create() 
+  }
+</script>
+
+<template>
+  <form @submit.prevent="addTask()">
+    <label>{repo(Task).metadata.fields.title.caption}</label> // [!code ++]
+    <input v-model="newTask.title" />
+    <button>Add</button>
+  </form>
+  <div v-for="task in tasks">
+    {{ task.title }}
+  </div>
+</template>`,
     },
     {
       name: 'todo.component.ts',
