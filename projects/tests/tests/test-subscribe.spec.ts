@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, onTestFailed } from 'vitest'
 import { InMemoryDataProvider } from '../../core/'
 import { Entity, EntityBase, Field, Fields } from '../../core'
 import { Remult } from '../../core/src/context'
@@ -124,6 +124,47 @@ describe('test subscribe', () => {
     sub()
     r.entity = refRowB
     expect(reflect.title).toBe('a')
+  })
+})
+describe('test remult', () => {
+  let remult: Remult
+  let observed = false
+  let changed = false
+  beforeEach(() => {
+    remult = new Remult()
+    remult.user = { id: '1', name: '123', roles: ['admin'] }
+    observed = false
+    changed = false
+    remult.subscribeAuth({
+      reportObserved: () => (observed = true),
+      reportChanged: () => (changed = true),
+    })
+  })
+  it('test user', () => {
+    expect(observed).toBe(false)
+    expect(changed).toBe(false)
+    remult.user = { id: '2', name: '123', roles: ['admin'] }
+    expect(observed).toBe(false)
+    expect(changed).toBe(true)
+  })
+  it('test user', () => {
+    var z = remult.user!.id
+    expect(observed).toBe(true)
+  })
+  it('test authenticated', () => {
+    expect(remult.authenticated()).toBe(true)
+    expect(observed).toBe(true)
+  })
+  it('test isAllowed', () => {
+    expect(remult.isAllowed('admin')).toBe(true)
+    expect(observed).toBe(true)
+  })
+  it('test undefined', () => {
+    remult.user = undefined
+    expect(observed).toBe(false)
+    expect(changed).toBe(true)
+    expect(remult.authenticated()).toBe(false)
+    expect(observed).toBe(true)
   })
 })
 let entityRefInitCount = 0

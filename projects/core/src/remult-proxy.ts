@@ -10,13 +10,14 @@ import type {
 } from './context.js'
 import type { DataProvider } from './data-interfaces.js'
 import type { LiveQueryClient } from './live-query/LiveQueryClient.js'
+import type { Unsubscribe } from './live-query/SubscriptionChannel.js'
 import type {
   LiveQueryChangesListener,
   LiveQueryStorage,
   SubscriptionServer,
 } from './live-query/SubscriptionServer.js'
 import { defaultFactory, remultStatic } from './remult-static.js'
-import type { Repository } from './remult3/remult3.js'
+import type { RefSubscriber, Repository } from './remult3/remult3.js'
 import { getInternalKey } from './remult3/repository-internals.js'
 
 /*@internal*/
@@ -48,6 +49,9 @@ export class RemultProxy implements Remult {
   /* @internal*/
   set liveQueryPublisher(val: LiveQueryChangesListener) {
     remultStatic.remultFactory().liveQueryPublisher = val
+  }
+  subscribeAuth(listener: RefSubscriber): Unsubscribe {
+    return remultStatic.remultFactory().subscribeAuth(listener)
   }
   initUser() {
     return remultStatic.remultFactory().initUser()

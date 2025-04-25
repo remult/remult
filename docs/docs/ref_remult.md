@@ -92,9 +92,9 @@ Arguments:
    
    #### example:
    ```ts
-   await this.remult.repo(Products).find({
-    limit:10,
-    page:2
+   await repo(Products).find({
+     limit: 10,
+     page: 2
    })
    ```
    * **page** - Determines the page number that will be used to extract the data
@@ -102,9 +102,9 @@ Arguments:
    
    #### example:
    ```ts
-   await this.remult.repo(Products).find({
-    limit:10,
-    page:2
+   await repo(Products).find({
+     limit: 10,
+    page: 2
    })
    ```
    * **load**
@@ -148,13 +148,13 @@ Arguments:
    
    #### example:
    ```ts
-   await this.remult.repo(Products).find({ orderBy: { name: "asc" }})
+   await repo(Products).find({ orderBy: { name: "asc" }})
    ```
    
    
    #### example:
    ```ts
-   await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
+   await repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
    ```
 ## clearAllCache
 * **clearAllCache**

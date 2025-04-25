@@ -15,6 +15,7 @@ import type {
   EntityMetadata,
   EntityRef,
   FindOptions,
+  RefSubscriber,
   Repository,
 } from './remult3/remult3.js'
 import type { Action } from './server-action.js'
@@ -37,6 +38,7 @@ import type {
 import { verifyFieldRelationInfo } from './remult3/relationInfoMember.js'
 import { remultStatic, resetFactory } from './remult-static.js'
 import { initDataProvider } from '../server/initDataProvider.js'
+import { SubscribableImp } from './remult3/SubscribableImp.js'
 
 export class RemultAsyncLocalStorage {
   static enable() {
@@ -134,8 +136,21 @@ export class Remult {
     }
     return r as Repository<T>
   }
+  private _subscribers?: SubscribableImp
+  subscribeAuth(listener: RefSubscriber): Unsubscribe {
+    if (!this._subscribers) this._subscribers = new SubscribableImp()
+    return this._subscribers.subscribe(listener)
+  }
+  private __user?: UserInfo
   /** Returns the current user's info */
-  user?: UserInfo
+  get user(): UserInfo | undefined {
+    this._subscribers?.reportObserved()
+    return this.__user
+  }
+  set user(user: UserInfo | undefined) {
+    this.__user = user
+    this._subscribers?.reportChanged()
+  }
 
   /**
    * Fetches user information from the backend and updates the `remult.user` object.

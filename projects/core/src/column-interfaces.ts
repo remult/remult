@@ -36,6 +36,8 @@ export interface FieldOptions<entityType = unknown, valueType = unknown> {
   /**
    * Determines whether this field can be updated via the API. This setting can also
    * be controlled based on user roles or other access control checks.
+   * 
+   * _It happens after entity level authorization AND if it's allowed._
    * @example
    * // Prevent API from updating this field
    * @Fields.string({ allowApiUpdate: false })
@@ -70,8 +72,8 @@ export interface FieldOptions<entityType = unknown, valueType = unknown> {
    * })
    */
   validate?:
-    | FieldValidator<entityType, valueType>
-    | FieldValidator<entityType, valueType>[]
+  | FieldValidator<entityType, valueType>
+  | FieldValidator<entityType, valueType>[]
 
   /** Will be fired before this field is saved to the server/database */
   saving?: (
@@ -99,8 +101,8 @@ export interface FieldOptions<entityType = unknown, valueType = unknown> {
    * title='';
    */
   sqlExpression?:
-    | string
-    | ((entity: EntityMetadata<entityType>) => string | Promise<string>)
+  | string
+  | ((entity: EntityMetadata<entityType>) => string | Promise<string>)
   /** For fields that shouldn't be part of an update or insert statement */
   dbReadOnly?: boolean
   /** The value converter to be used when loading and saving this field */
@@ -140,8 +142,7 @@ export interface FieldOptions<entityType = unknown, valueType = unknown> {
 export interface FieldMetadata<valueType = unknown, entityType = unknown> {
   /** The field's member name in an object.
    * @example
-   * const taskRepo = remult.repo(Task);
-   * console.log(taskRepo.metadata.fields.title.key);
+   * console.log(repo(Task).metadata.fields.title.key);
    * // result: title
    */
   readonly key: entityType extends object ? keyof entityType & string : string
@@ -172,8 +173,7 @@ export interface FieldMetadata<valueType = unknown, entityType = unknown> {
   readonly allowNull: boolean
   /** The class that contains this field
    * @example
-   * const taskRepo = remult.repo(Task);
-   * Task == taskRepo.metadata.fields.title.target //will return true
+   * Task == repo(Task).metadata.fields.title.target //will return true
    */
   readonly target: ClassType<valueType>
   /**
@@ -197,9 +197,8 @@ export interface FieldMetadata<valueType = unknown, entityType = unknown> {
  * Determines if the current user is allowed to update a specific entity instance.
  
  * @example
- * const taskRepo = remult.repo(Task);
  * // Check if the current user is allowed to update a specific task
- * if (taskRepo.metadata.apiUpdateAllowed(task)){
+ * if (repo(Task).metadata.apiUpdateAllowed(task)){
  *   // Allow user to edit the entity
  * }
  * @see {@link FieldOptions#allowApiUpdate} for configuration details
@@ -358,11 +357,11 @@ export declare type FieldValidator<
   entity: entityType,
   event: ValidateFieldEvent<entityType, valueType>,
 ) =>
-  | boolean
-  | string
-  | void
-  | undefined
-  | Promise<boolean | string | void | undefined>
+    | boolean
+    | string
+    | void
+    | undefined
+    | Promise<boolean | string | void | undefined>
 export declare type ValueOrExpression<valueType> = valueType | (() => valueType)
 
 export function valueOrExpressionToValue<valueType>(

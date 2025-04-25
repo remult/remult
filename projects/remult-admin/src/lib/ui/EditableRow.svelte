@@ -27,33 +27,41 @@
   export let isNewRow = false
 
   let error = undefined
-  let relation: EntityRelationToManyInfo | null = null
+  let currentRelation: EntityRelationToManyInfo | null = null
   let isFocused = false
 
   let rowFrozzen = { ...row }
 
   $: value = row
+
   $: relationTable =
-    relation &&
-    typeof relation === 'object' &&
-    $godStore.tables.find((x) => x.key === relation.entityKey)
+    currentRelation &&
+    typeof currentRelation === 'object' &&
+    $godStore.tables.find((x) => x.key === currentRelation.entityKey)
+
   $: change =
     Boolean(
-      columns.find(
-        // TODO check also for json diff? (today, when filtering or ordering, it will be considered a change "sometimes"... false positive!)
-        // x.type !== 'json' &&
-        (x) => x.type !== 'json' && value[x.key] !== rowFrozzen[x.key],
-      ),
+      columns.find((x) => {
+        if (x.type === 'json') {
+          return (
+            JSON.stringify(value[x.key]) !== JSON.stringify(rowFrozzen[x.key])
+          )
+        }
+        return value[x.key] !== rowFrozzen[x.key]
+      }),
     ) || isNewRow
 
   $: relationWhere =
-    row && relation && typeof relation === 'object'
-      ? Object.fromEntries(
-          Object.entries(relation.fields).map(([key, value]) => [
-            key,
-            row[value],
-          ]),
-        )
+    row && currentRelation && typeof currentRelation === 'object'
+      ? {
+          ...Object.fromEntries(
+            Object.entries(currentRelation.fields).map(([key, value]) => [
+              key,
+              row[value],
+            ]),
+          ),
+          ...currentRelation.where,
+        }
       : {}
 
   async function doSave() {
@@ -72,16 +80,12 @@
     await cancelAction()
   }
 
-  function changeOrNew(_change: boolean, _isNewRow: boolean) {
-    return _change || _isNewRow
-  }
-
   function handleKeydown(e: KeyboardEvent) {
     const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0
     const modifier = isMac ? e.metaKey : e.ctrlKey
 
     // Handle global actions (with shift) or focused row actions
-    if (changeOrNew(change, isNewRow)) {
+    if (change) {
       if (e.key === 'Enter' && modifier) {
         e.preventDefault()
         if (e.shiftKey) {
@@ -137,7 +141,7 @@
 <svelte:window on:keydown={handleKeydown} />
 
 <tr
-  class={changeOrNew(change, isNewRow) ? 'change' : ''}
+  class={change ? 'change' : ''}
   on:focusin={handleFocusIn}
   on:focusout={handleFocusOut}
 >
@@ -146,8 +150,9 @@
       <button
         class="icon-button relations-button"
         title="Relations"
-        on:click={() => (relation = relation ? null : relations[0])}
-        class:open={relation}
+        on:click={() =>
+          (currentRelation = currentRelation ? null : relations[0])}
+        class:open={currentRelation}
       >
         <ChevronRight></ChevronRight>
       </button>
@@ -181,9 +186,9 @@
       {/if}
     </td>
   {/each}
-  <td class="action-tab {changeOrNew(change, isNewRow) ? 'change' : ''}">
+  <td class="action-tab {change ? 'change' : ''}">
     <div class="row-actions">
-      {#if changeOrNew(change, isNewRow)}
+      {#if change}
         <div class="margin-auto">
           <button
             class="icon-button save-button"
@@ -201,7 +206,7 @@
           </button>
         </div>
       {/if}
-      {#if deleteAction && !changeOrNew(change, isNewRow)}
+      {#if deleteAction && !change}
         <button
           class="icon-button delete-button margin-auto"
           title="Delete"
@@ -226,7 +231,7 @@
     </div>
   </td>
 </tr>
-{#if relation}
+{#if currentRelation}
   <tr class="extended">
     <td></td>
     <td colSpan={columns.length + 2}>
@@ -234,21 +239,23 @@
         <div class="extended__links">
           {#each relations as r}
             <button
-              class={'tab ' + (r === relation ? 'active' : '') + ' entityColor'}
+              class={'tab ' +
+                (r === currentRelation ? 'active' : '') +
+                ' entityColor'}
               style="--color: {$godStore.tables.find(
                 (x) => x.key === r.entityKey,
               )?.color}"
               on:click={(e) => {
-                relation = r
+                currentRelation = r
                 e.preventDefault()
               }}
             >
-              {$godStore.tables.find((x) => x.key === r.entityKey)?.caption}
+              {$LSContext.settings.dispayCaption ? r.caption : r.key}
             </button>
           {/each}
         </div>
 
-        {#if relationTable && typeof relation === 'object'}
+        {#if relationTable && typeof currentRelation === 'object'}
           <Table
             fields={relationTable.fields}
             relations={relationTable.relations}
@@ -281,8 +288,10 @@
   }
 
   .error-label {
+    border-top: 1px solid red;
+    border-bottom: 1px solid red;
     position: absolute;
-    bottom: -8px;
+    top: -6px;
     width: 100%;
     font-size: 0.8em;
     color: #d32f2f;
@@ -292,5 +301,6 @@
     background-color: #ffebee;
     border-radius: 2px;
     transition: opacity 0.3s ease-in-out;
+    z-index: 77;
   }
 </style>

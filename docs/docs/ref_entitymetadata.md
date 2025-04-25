@@ -50,8 +50,7 @@ EntityOptions.allowApiRead
 
 #### example:
 ```ts
-const taskRepo = remult.repo(Task);
-if (taskRepo.metadata.apiReadAllowed){
+if (repo(Task).metadata.apiReadAllowed){
   await taskRepo.find()
 }
 ```
@@ -66,8 +65,7 @@ EntityOptions.allowApiDelete
 
 #### example:
 ```ts
-const taskRepo = remult.repo(Task);
-if (taskRepo.metadata.apiDeleteAllowed(task)){
+if (repo(Task).metadata.apiDeleteAllowed(task)){
   // display delete button
 }
 ```
@@ -84,8 +82,7 @@ EntityOptions.allowApiInsert
 
 #### example:
 ```ts
-const taskRepo = remult.repo(Task);
-if (taskRepo.metadata.apiInsertAllowed(task)){
+if (repo(Task).metadata.apiInsertAllowed(task)){
   // display insert button
 }
 ```

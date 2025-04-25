@@ -30,7 +30,7 @@ const api = remultExpress({
 In certain scenarios, you might want to manually trigger the `ensureSchema` function to ensure that your database schema is up-to-date with your entity definitions. Here's how you can do it:
 
 ```ts
-remult.dataProvider.ensureSchema!(entities.map((x) => remult.repo(x).metadata))
+remult.dataProvider.ensureSchema!(entities.map((x) => repo(x).metadata))
 ```
 
 ## Quick Start: Introducing Migrations to Your Application
@@ -64,7 +64,7 @@ In most cases, the connection string for your database will not be hard-coded bu
 
 2. Create a `.env` file in the root of your project and add your database connection string:
 
-   ```env
+   ```
    DATABASE_URL=your_connection_string
    ```
 

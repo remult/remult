@@ -626,8 +626,7 @@ export interface EntityMetadata<entityType = unknown> {
   /** true if the current user is allowed to update an entity instance
    * @see {@link EntityOptions.allowApiUpdate
    * @example
-   * const taskRepo = remult.repo(Task);
-   * if (taskRepo.metadata.apiUpdateAllowed(task)){
+   * if (repo(Task).metadata.apiUpdateAllowed(task)){
    *   // Allow user to edit the entity
    * }
    */
@@ -635,8 +634,7 @@ export interface EntityMetadata<entityType = unknown> {
   /** true if the current user is allowed to read from entity
    * @see {@link EntityOptions.allowApiRead}
    * @example
-   * const taskRepo = remult.repo(Task);
-   * if (taskRepo.metadata.apiReadAllowed){
+   * if (repo(Task).metadata.apiReadAllowed){
    *   await taskRepo.find()
    * }
    */
@@ -644,8 +642,7 @@ export interface EntityMetadata<entityType = unknown> {
   /** true if the current user is allowed to delete an entity instance
    * * @see {@link EntityOptions.allowApiDelete}
    * @example
-   * const taskRepo = remult.repo(Task);
-   * if (taskRepo.metadata.apiDeleteAllowed(task)){
+   * if (repo(Task).metadata.apiDeleteAllowed(task)){
    *   // display delete button
    * }
    */
@@ -653,8 +650,7 @@ export interface EntityMetadata<entityType = unknown> {
   /** true if the current user is allowed to create an entity instance
    * @see {@link EntityOptions.allowApiInsert}
    * @example
-   * const taskRepo = remult.repo(Task);
-   * if (taskRepo.metadata.apiInsertAllowed(task)){
+   * if (repo(Task).metadata.apiInsertAllowed(task)){
    *   // display insert button
    * }
    */
@@ -960,8 +956,7 @@ export declare function Field<entityType = unknown, valueType = unknown>(
 export interface FieldMetadata<valueType = unknown, entityType = unknown> {
   /** The field's member name in an object.
    * @example
-   * const taskRepo = remult.repo(Task);
-   * console.log(taskRepo.metadata.fields.title.key);
+   * console.log(repo(Task).metadata.fields.title.key);
    * // result: title
    */
   readonly key: entityType extends object ? keyof entityType & string : string
@@ -992,8 +987,7 @@ export interface FieldMetadata<valueType = unknown, entityType = unknown> {
   readonly allowNull: boolean
   /** The class that contains this field
    * @example
-   * const taskRepo = remult.repo(Task);
-   * Task == taskRepo.metadata.fields.title.target //will return true
+   * Task == repo(Task).metadata.fields.title.target //will return true
    */
   readonly target: ClassType<valueType>
   /**
@@ -1017,9 +1011,8 @@ export interface FieldMetadata<valueType = unknown, entityType = unknown> {
    * Determines if the current user is allowed to update a specific entity instance.
    
    * @example
-   * const taskRepo = remult.repo(Task);
    * // Check if the current user is allowed to update a specific task
-   * if (taskRepo.metadata.apiUpdateAllowed(task)){
+   * if (repo(Task).metadata.apiUpdateAllowed(task)){
    *   // Allow user to edit the entity
    * }
    * @see {@link FieldOptions#allowApiUpdate} for configuration details
@@ -1088,6 +1081,8 @@ export interface FieldOptions<entityType = unknown, valueType = unknown> {
   /**
    * Determines whether this field can be updated via the API. This setting can also
    * be controlled based on user roles or other access control checks.
+   *
+   * _It happens after entity level authorization AND if it's allowed._
    * @example
    * // Prevent API from updating this field
    * @Fields.string({ allowApiUpdate: false })
@@ -1647,17 +1642,17 @@ export interface FindFirstOptionsBase<entityType>
 export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
   /** Determines the number of rows returned by the request, on the browser the default is 100 rows
    * @example
-   * await this.remult.repo(Products).find({
-   *  limit:10,
-   *  page:2
+   * await repo(Products).find({
+   *   limit: 10,
+   *   page: 2
    * })
    */
   limit?: number
   /** Determines the page number that will be used to extract the data
    * @example
-   * await this.remult.repo(Products).find({
-   *  limit:10,
-   *  page:2
+   * await repo(Products).find({
+   *   limit: 10,
+   *  page: 2
    * })
    */
   page?: number
@@ -1671,9 +1666,9 @@ export interface FindOptionsBase<entityType> extends LoadOptions<entityType> {
   where?: EntityFilter<entityType>
   /** Determines the order of items returned .
    * @example
-   * await this.remult.repo(Products).find({ orderBy: { name: "asc" }})
+   * await repo(Products).find({ orderBy: { name: "asc" }})
    * @example
-   * await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
+   * await repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
    */
   orderBy?: EntityOrderBy<entityType>
 }
@@ -2300,8 +2295,12 @@ export declare class Remult {
    * @param dataProvider - an optional alternative data provider to use. Useful for writing to offline storage or an alternative data provider
    */
   repo: <T>(entity: ClassType<T>, dataProvider?: DataProvider) => Repository<T>
+  private _subscribers?
+  subscribeAuth(listener: RefSubscriber): Unsubscribe
+  private __user?
   /** Returns the current user's info */
-  user?: UserInfo
+  get user(): UserInfo | undefined
+  set user(user: UserInfo | undefined)
   /**
    * Fetches user information from the backend and updates the `remult.user` object.
    * Typically used during application initialization and user authentication.
@@ -2704,13 +2703,36 @@ export interface Repository<entityType> {
    *
    */
   create(item?: Partial<MembersOnly<entityType>>): entityType
+  /**
+   * Translates an entity to a json object.
+   * - Ready to be sent to the client _(Date & co are managed)_
+   * - Strip out fields that are not allowed to be sent to the client! Check: [Field.includeInApi](http://remult.dev/docs/ref_field#includeinapi)
+   *
+   * @example
+   * ```ts
+   * const tasks = repo(Task).toJson(repo(Task).find())
+   * ```
+   *
+   * @param item Can be an array or a single entity, awaitable or not
+   */
   toJson(item: Promise<entityType[]>): Promise<any[]>
   toJson(item: entityType[]): any[]
   toJson(item: Promise<entityType>): Promise<any>
   toJson(item: entityType): any
-  /** Translates a json object to an item instance */
-  fromJson(x: any[], isNew?: boolean): entityType[]
-  fromJson(x: any, isNew?: boolean): entityType
+  /**
+   * Translates a json object to an item instance.
+   *
+   * @example
+   * ```ts
+   * const data = // from the server
+   * const tasks = repo(Task).fromJson(data)
+   * ```
+   *
+   * @param data Can be an array or a single element
+   * @param isNew To help the creation of the instance
+   */
+  fromJson(data: any[], isNew?: boolean): entityType[]
+  fromJson(data: any, isNew?: boolean): entityType
   /** returns an `entityRef` for an item returned by `create`, `find` etc... */
   getEntityRef(item: entityType): EntityRef<entityType>
   /** Provides information about the fields of the Repository's entity
@@ -3647,10 +3669,15 @@ export interface RemultServerOptions<RequestType> {
    * @example
    * admin: true
    * @example
-   * admin: ()=> remult.isAllowed('admin')
+   * admin: () => remult.isAllowed('admin')
    * @see [allowed](http://remult.dev/docs/allowed.html)
    */
-  admin?: Allowed
+  admin?:
+    | Allowed
+    | {
+        allow: Allowed
+        customHtmlHead?: (remult: Remult) => string
+      }
   /** Storage to use for backend methods that use queue */
   queueStorage?: QueueStorage
   /**
@@ -3853,10 +3880,15 @@ export interface RemultServerOptions<RequestType> {
    * @example
    * admin: true
    * @example
-   * admin: ()=> remult.isAllowed('admin')
+   * admin: () => remult.isAllowed('admin')
    * @see [allowed](http://remult.dev/docs/allowed.html)
    */
-  admin?: Allowed
+  admin?:
+    | Allowed
+    | {
+        allow: Allowed
+        customHtmlHead?: (remult: Remult) => string
+      }
   /** Storage to use for backend methods that use queue */
   queueStorage?: QueueStorage
   /**

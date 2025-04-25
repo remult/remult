@@ -73,7 +73,7 @@ Follow these steps only if you want to use `liveQuery` in the app
    // src/api.ts
 
    //...
-   import ably from "ably/promises"
+   import ably from "ably"
    import { AblySubscriptionServer } from "remult/ably"
 
    const api = remultNextApp({
@@ -89,7 +89,7 @@ Follow these steps only if you want to use `liveQuery` in the app
    ```ts
    // src/app/api/getAblyToken/route.ts
 
-   import ably from 'ably/promises'
+   import ably from 'ably'
    import { NextResponse } from 'next/server'
 
    export async function POST() {
@@ -105,7 +105,7 @@ Follow these steps only if you want to use `liveQuery` in the app
    ```tsx{3-4,12-15}
    // src/components/auth.tsx
 
-   import ably from "ably/promises"
+   import ably from "ably"
    import { AblySubscriptionClient } from "remult/ably"
 
    export default function Auth() {

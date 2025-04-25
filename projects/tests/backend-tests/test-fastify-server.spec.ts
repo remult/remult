@@ -12,7 +12,7 @@ describe('test fastify server', async () => {
   let port = 3003
 
   beforeAll(async () => {
-    return new Promise(async (res) => {
+    return new Promise<void>(async (res) => {
       const app = fastify()
       const api = remultFastify({
         entities: [Task],
@@ -27,7 +27,7 @@ describe('test fastify server', async () => {
 
       app.listen({ port }, () => res())
       destroy = async () => {
-        return new Promise((res) => app.close(() => res()))
+        return new Promise<void>((res) => app.close(() => res()))
       }
     })
   })

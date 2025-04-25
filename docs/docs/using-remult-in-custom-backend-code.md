@@ -45,31 +45,33 @@ Use the `api.withRemultAsync` method in promises
 ```ts
 import express from 'express'
 import { remultExpress } from 'remult/remult-express'
+import { remult, repo } from 'remult'
 
-const app = express();
-...
+const app = express()
+// ...
 const api = remultExpress({
-  entities:[Task]
+  entities: [Task],
 })
 app.post('/api/customSetAll', async (req, res) => {
   // use remult in a specific piece of code // [!code highlight]
-  await api.withRemultAsync(req, async ()=> { // [!code highlight]
+  await api.withRemultAsync(req, async () => {
+    // [!code highlight]
     if (!remult.authenticated()) {
-      res.sendStatus(403);
-      return;
+      res.sendStatus(403)
+      return
     }
-    if (!remult.isAllowed("admin")) {
-      res.sendStatus(403);
-      return;
+    if (!remult.isAllowed('admin')) {
+      res.sendStatus(403)
+      return
     }
-    const taskRepo = remult.repo(Task);
+    const taskRepo = repo(Task)
     for (const task of await taskRepo.find()) {
-      task.completed = req.body.completed;
-      await taskRepo.save(task);
+      task.completed = req.body.completed
+      await taskRepo.save(task)
     }
-    res.send();
+    res.send()
   })
-});
+})
 ```
 
 You can also use it without sending the request object, for non request related code
@@ -156,10 +158,10 @@ You can use the `withRemult` method in specific routes
 import { json, type RequestHandler } from '@sveltejs/kit'
 import { remult } from 'remult'
 import { Task } from '../../../shared/Task'
-import { _api } from '../[...remult]/+server'
+import { api } from '../../../server/api'
 
 export const GET: RequestHandler = async (event) => {
-  return _api.withRemult(event, async () =>
+  return api.withRemult(event, async () =>
     json({ result: await remult.repo(Task).count() }),
   )
 }
@@ -171,14 +173,7 @@ You can also define the withRemult as a hook, to make remult available throughou
 // src/hooks.server.ts
 import type { Handle } from '@sveltejs/kit'
 import { sequence } from '@sveltejs/kit/hooks'
-import { _api } from './routes/api/[...remult]/+server'
-
-/**
- * Handle remult server side
- */
-const handleRemult: Handle = async ({ event, resolve }) => {
-  return await _api.withRemult(event, async () => await resolve(event))
-}
+import { api as handleRemult } from './server/api'
 
 export const handle = sequence(
   // Handle remult server side
@@ -197,7 +192,7 @@ You can use the `withRemult` method in specific routes
 
 import { remult } from 'remult'
 import { Task } from '../../../shared/Task'
-import { _api } from '../[...remult]/+server'
+import { api } from '../../../server/api'
 
 export function GET() {
   return api.withRemult(event, async () =>
@@ -221,14 +216,7 @@ You can also define the withRemult as a hook, to make remult available throughou
 // src/hooks.server.ts
 import type { Handle } from '@sveltejs/kit'
 import { sequence } from '@sveltejs/kit/hooks'
-import { _api } from './routes/api/[...remult]/+server'
-
-/**
- * Handle remult server side
- */
-const handleRemult: Handle = async ({ event, resolve }) => {
-  return await _api.withRemult(event, async () => await resolve(event))
-}
+import { api as handleRemult } from './server/api'
 
 export const handle = sequence(
   // Handle remult server side
