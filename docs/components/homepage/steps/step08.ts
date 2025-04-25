@@ -30,7 +30,7 @@ export default function App() {
   useEffect(() => {
     repo(Task).find({ /*...*/ }).then(setTasks) // [!code --]
     return repo(Task) // [!code ++]
-      .liveQuery( /* { where: ... } */ ) // [!code ++]
+      .liveQuery({ /* where: ...  */ }) // [!code ++]
       .subscribe((info) => { // [!code ++]
         setTasks(info.applyChanges(tasks)) // [!code ++]
       }) // [!code ++]
@@ -84,7 +84,7 @@ let newTask = $state(repo(Task).create())
 $effect(() => {
   repo(Task).find({ /*...*/ }).then((items) => (tasks = items)) // [!code --]
   return repo(Task) // [!code ++]
-    .liveQuery( /* { where: ... } */ ) // [!code ++]
+    .liveQuery({ /* where: ...  */ }) // [!code ++]
     .subscribe((info) => { // [!code ++]
       tasks = info.applyChanges(tasks) // [!code ++]
     }) // [!code ++]
@@ -129,7 +129,7 @@ const addTask = async (e: Event) => {
   onMounted(() => {
     repo(Task).find({ /* ... */ }).then((items) => (tasks.value = items)) // [!code --]
     return repo(Task) // [!code ++]
-      .liveQuery( /* { where: ... } */ ) // [!code ++]
+      .liveQuery({ /* where: ...  */ }) // [!code ++]
       .subscribe((info) => { // [!code ++]
         tasks.value = info.applyChanges(tasks.value) // [!code ++]
       }) // [!code ++]
