@@ -68,7 +68,7 @@ export class Task {
 </form> 
 
 {#each tasks as task}
-  {task.title}
+  <div>{task.title}</div>
 {/each}`,
     },
     {

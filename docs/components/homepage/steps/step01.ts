@@ -76,7 +76,7 @@ export default function App() {
 </script>
 
 {#each tasks as task}
-  {task.title}
+  <div>{task.title}</div>
 {/each}`,
     },
     {

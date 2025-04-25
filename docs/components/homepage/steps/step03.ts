@@ -49,7 +49,7 @@ export default {
 </form> // [!code ++]
 
 {#each tasks as task}
-  {task.title}
+  <div>{task.title}</div>
 {/each}`,
     },
     {
