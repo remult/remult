@@ -93,9 +93,39 @@ export default function App() {
     {
       name: 'page.vue',
       keyContext: 'frontend',
+      changed: true,
       framework: 'vue',
       languageCodeHighlight: 'vue',
-      content: `TODO`,
+      content: `<script setup lang="ts">
+  import { onMounted, ref } from 'vue'
+  import { repo } from 'remult'
+  import { Task } from './entities'
+
+  const tasks = ref<Task[]>([])
+  const newTask = ref(repo(Task).create()) // set default values [!code ++]
+  
+  onMounted(() => {
+    repo(Task)
+    .find({ /* ... */ }).then((items) => (tasks.value = items))
+  })
+
+  async function addTask() { // [!code ++]
+    const t = await repo(Task).insert(newTask.value) // [!code ++]
+    tasks.value.push(t) // [!code ++]
+    newTask.value = repo(Task).create() // reset the form [!code ++]
+  } // [!code ++]
+</script>
+
+<template>
+  <form @submit.prevent="addTask()"> // [!code ++]
+    <input v-model="newTask.title" /> // [!code ++]
+    <button>Add</button> // [!code ++]
+  </form> // [!code ++]
+  <div v-for="task in tasks">
+    {{ task.title }}
+  </div>
+</template>`,
+
     },
     {
       name: 'todo.component.ts',
