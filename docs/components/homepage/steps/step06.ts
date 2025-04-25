@@ -166,6 +166,7 @@ export default function App() {
       name: 'todo.component.ts',
       keyContext: 'frontend',
       framework: 'angular',
+      changed: true,
       languageCodeHighlight: 'angular-ts',
       content: `import { Component, OnInit } from '@angular/core'
 import { CommonModule } from '@angular/common'
@@ -185,16 +186,10 @@ export class TodoComponent implements OnInit {
   newTask = repo(Task).create()
   titleCaption = repo(Task).metadata.fields.title.caption
   error?: string
-  canInsert = repo(Task).metadata.apiInsertAllowed()
+  canInsert = repo(Task).metadata.apiInsertAllowed() // [!code ++]
 
   ngOnInit() {
-    repo(Task)
-      .find({
-        limit: 7,
-        orderBy: { title: 'asc' },
-        where: { title: 'remult' }
-      })
-      .then(items => this.tasks = items)
+    repo(Task).find({ /* ... */ }).then(items => this.tasks = items)
   }
 
   async addTask() {
@@ -213,11 +208,12 @@ export class TodoComponent implements OnInit {
       name: 'todo.component.html',
       keyContext: 'frontend2',
       framework: 'angular',
+      changed: true,
       languageCodeHighlight: 'html',
       content: `<form (ngSubmit)="addTask()">
   <label>{{titleCaption}}</label>
   <input [(ngModel)]="newTask.title" name="title" />
-  <button type="submit" [disabled]="!canInsert">Add</button>
+  <button type="submit" [disabled]="!canInsert">Add</button> // [!code ++]
   <div *ngIf="error" class="error">{{error}}</div>
 </form>
 

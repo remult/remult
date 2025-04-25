@@ -129,6 +129,7 @@ export default function App() {
       name: 'todo.component.ts',
       keyContext: 'frontend',
       framework: 'angular',
+      changed: true,
       languageCodeHighlight: 'angular-ts',
       content: `import { Component, OnInit } from '@angular/core'
 import { CommonModule } from '@angular/common'
@@ -145,34 +146,29 @@ import { Task } from './entities'
 })
 export class TodoComponent implements OnInit {
   tasks: Task[] = []
-  newTask = repo(Task).create()
+  newTask = repo(Task).create() // [!code ++]
 
   ngOnInit() {
-    repo(Task)
-      .find({
-        limit: 7,
-        orderBy: { title: 'asc' },
-        where: { title: 'remult' }
-      })
-      .then(items => this.tasks = items)
+    repo(Task).find({ /* ... */ }).then(items => this.tasks = items)
   }
 
-  async addTask() {
-    const task = await repo(Task).insert(this.newTask)
-    this.tasks.push(task)
-    this.newTask = repo(Task).create()
-  }
+  async addTask() { // [!code ++]
+    const task = await repo(Task).insert(this.newTask) // [!code ++]
+    this.tasks.push(task) // [!code ++]
+    this.newTask = repo(Task).create() // [!code ++]
+  } // [!code ++]
 }`,
     },
     {
       name: 'todo.component.html',
       keyContext: 'frontend2',
       framework: 'angular',
+      changed: true,
       languageCodeHighlight: 'html',
-      content: `<form (ngSubmit)="addTask()">
-  <input [(ngModel)]="newTask.title" name="title" />
-  <button type="submit">Add</button>
-</form>
+      content: `<form (ngSubmit)="addTask()"> // [!code ++]
+  <input [(ngModel)]="newTask.title" name="title" /> // [!code ++]
+  <button type="submit">Add</button> // [!code ++]
+</form> // [!code ++]
 
 <div *ngFor="let task of tasks">
   {{task.title}}

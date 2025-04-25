@@ -185,15 +185,12 @@ export class TodoComponent implements OnInit, OnDestroy {
   private subscription?: Subscription
 
   ngOnInit() {
-    this.subscription = repo(Task)
-      .liveQuery({
-        limit: 7,
-        orderBy: { title: 'asc' },
-        where: { title: 'remult' }
-      })
-      .subscribe(info => {
-        this.tasks = info.applyChanges(this.tasks)
-      })
+    repo(Task).find({ /* ... */ }).then(items => this.tasks = items) // [!code --]
+    this.subscription = repo(Task) // [!code ++]
+      .liveQuery({ /* where: ...  */ }) // [!code ++]
+      .subscribe(info => { // [!code ++]
+        this.tasks = info.applyChanges(this.tasks) // [!code ++]
+      }) // [!code ++]
   }
 
   ngOnDestroy() {

@@ -158,6 +158,7 @@ export default function App() {
       name: 'todo.component.ts',
       keyContext: 'frontend',
       framework: 'angular',
+      changed: true,
       languageCodeHighlight: 'angular-ts',
       content: `import { Component, OnInit } from '@angular/core'
 import { CommonModule } from '@angular/common'
@@ -179,24 +180,18 @@ export class TodoComponent implements OnInit {
   error?: string
 
   ngOnInit() {
-    repo(Task)
-      .find({
-        limit: 7,
-        orderBy: { title: 'asc' },
-        where: { title: 'remult' }
-      })
-      .then(items => this.tasks = items)
+    repo(Task).find({ /* ... */ }).then(items => this.tasks = items)
   }
 
   async addTask() {
-    try {
+    try { // [!code ++]
       const task = await repo(Task).insert(this.newTask)
       this.tasks.push(task)
       this.newTask = repo(Task).create()
       this.error = undefined
-    } catch (e) {
-      this.error = e.message
-    }
+    } catch (e) { // [!code ++]
+      this.error = e.message // [!code ++]
+    } // [!code ++]
   }
 }`,
     },
