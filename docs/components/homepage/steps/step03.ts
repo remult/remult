@@ -14,9 +14,47 @@ export default {
     {
       name: 'page.tsx',
       keyContext: 'frontend',
+      changed: true,
       framework: 'react',
       languageCodeHighlight: 'tsx',
-      content: `TODO`,
+      content: `import { useEffect, useState } from 'react'
+import { repo } from 'remult'
+import { Task } from './entities'
+
+export default function App() {
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [newTaskTitle, setNewTaskTitle] = useState("") // [!code ++]
+
+  useEffect(() => {
+    repo(Task).find({ /*...*/ }).then(setTasks)
+  }, [])
+
+  const addTask = async (e: FormEvent) => { // [!code ++]
+    e.preventDefault() // [!code ++]
+    const newTask = await repo(Task).insert({ title: newTaskTitle }) // [!code ++]
+    setTasks([...tasks, newTask]) // [!code ++]
+    setNewTaskTitle("") // [!code ++] 
+  } // [!code ++]
+
+  return (
+    <div>
+      <form onSubmit={addTask}> // [!code ++]
+        <input // [!code ++]
+          value={newTaskTitle} // [!code ++]
+          onChange={e => setNewTaskTitle(e.target.value)} // [!code ++]
+        /> // [!code ++]
+        <button>Add</button> // [!code ++]
+      </form> // [!code ++]
+      {tasks.map((task) => {
+        return (
+          <div key={task.id}>
+            {task.title}
+          </div>
+        )
+      })}
+    </div>
+  )
+}`,
     },
     {
       name: '+page.svelte',
