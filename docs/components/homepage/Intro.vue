@@ -29,6 +29,25 @@ import Icon from '../Icon.vue'
       <Icon tech="svelte" link="/docs/installation/framework/sveltekit" />
       <Icon tech="nuxt" link="/docs/installation/framework/nuxt" />
       <Icon tech="solid" link="/docs/installation/framework/solid" />
+      <Icon tech="express" link="/docs/installation/server/express" />
+      <Icon tech="fastify" link="/docs/installation/server/fastify" />
+      <Icon tech="hono" link="/docs/installation/server/hono" />
+      <Icon tech="hapi" link="/docs/installation/server/hapi" />
+      <Icon tech="koa" link="/docs/installation/server/koa" />
+      <Icon tech="nest" link="/docs/installation/server/nest" />
+      <Icon tech="postgres" link="/docs/installation/database/postgresql" />
+      <Icon tech="mysql" link="/docs/installation/database/mysql" />
+      <Icon tech="mongodb" link="/docs/installation/database/mongodb" />
+      <Icon tech="sqlite" link="/docs/installation/database/better-sqlite3" />
+      <Icon tech="sqljs" link="/docs/installation/database/sqljs" />
+      <Icon tech="mssql" link="/docs/installation/database/mssql" />
+      <Icon tech="bun-sqlite" link="/docs/installation/database/bun-sqlite" />
+      <Icon tech="turso" link="/docs/installation/database/turso" />
+      <Icon tech="duckdb" link="/docs/installation/database/duckdb" />
+      <Icon tech="oracle" link="/docs/installation/database/oracle" />
+    </div>
+    <div class="intro-logos-claim">
+      Works with your favorite stack
     </div>
   </div>
 </template>
@@ -46,11 +65,23 @@ import Icon from '../Icon.vue'
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
+  gap: .5rem;
   margin-top: 1rem;
-  svg {
-    width: 32px;
-    height: 32px;
+  margin-bottom: .5rem;
+
+  svg, img {
+    width: auto;
+    height: 24px;
   }
+
+  span {
+    display: none;
+  }
+}
+
+.intro-logos-claim {
+  font-size: .8rem;
+  color: #8262E1;
+  margin-bottom: 2rem;
 }
 </style>

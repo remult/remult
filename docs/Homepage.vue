@@ -54,6 +54,7 @@ import Faq from './components/homepage/Faq.vue'
     width: 100%;
     height: 50px;
     opacity: 0;
+    pointer-events: none;
     background: linear-gradient(
       to top,
       rgba(4, 6, 100, 1) 100%,
