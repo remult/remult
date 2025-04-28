@@ -15,6 +15,7 @@ import IconAngular from '../icons/angular.vue'
 const steps = ref<CodeStep[]>([])
 const currentStep = ref<CodeStep | null>(null)
 const currentFile = ref<string | null>(null)
+const codeRef = ref<InstanceType<typeof Code> | null>(null)
 
 const { framework, keyContext } = useUserPreference()
 
@@ -155,6 +156,18 @@ const getStepTimeAgo = (stepIndex: number) => {
 
   return formatTime(totalSeconds) + ' ago'
 }
+
+// Watch for code changes to scroll to changed lines
+watch(
+  () => getCurrentCode(),
+  (newCode, oldCode) => {
+    if (newCode !== oldCode) {
+      setTimeout(() => {
+        codeRef.value?.scrollToChangedLines()
+      }, 100)
+    }
+  }
+)
 </script>
 
 <template>
@@ -245,7 +258,7 @@ const getStepTimeAgo = (stepIndex: number) => {
         </div>
 
         <div class="editor-code">
-          <Code :code="getCurrentCode()" :language="getCurrentLanguage()" />
+          <Code ref="codeRef" :code="getCurrentCode()" :language="getCurrentLanguage()" />
         </div>
       </div>
     </div>

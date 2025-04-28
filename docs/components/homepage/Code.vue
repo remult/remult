@@ -25,6 +25,27 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const highlightedCode = ref('')
+const codeBlockRef = ref<HTMLElement | null>(null)
+
+// Function to scroll to changed lines
+const scrollToChangedLines = () => {
+  if (!codeBlockRef.value) return
+  
+  const changedLines = codeBlockRef.value.querySelectorAll('.line.diff.add')
+  if (changedLines.length > 0) {
+    const firstChangedLine = changedLines[0] as HTMLElement
+    const editorContainer = codeBlockRef.value.closest('.editor-code')
+    if (editorContainer) {
+      const lineTop = firstChangedLine.offsetTop
+      const containerHeight = editorContainer.clientHeight
+      const scrollTop = lineTop - (containerHeight / 2) + (firstChangedLine.clientHeight / 2)
+      editorContainer.scrollTo({
+        top: scrollTop,
+        behavior: 'smooth'
+      })
+    }
+  }
+}
 
 // Function to update the highlighted code
 const updateHighlightedCode = async () => {
@@ -49,10 +70,15 @@ watch(
   },
   { immediate: true },
 )
+
+// Expose the scroll method
+defineExpose({
+  scrollToChangedLines
+})
 </script>
 
 <template>
-  <div class="code-block">
+  <div class="code-block" ref="codeBlockRef">
     <div v-if="highlightedCode" v-html="highlightedCode" />
     <div v-else class="loading-indicator">Loading...</div>
   </div>
