@@ -24,7 +24,7 @@
           :class="{ 'is-open': isOpen[index] }"
           :style="{ height: isOpen[index] ? answerHeights[index] + 'px' : '0px' }"
         >
-          <div v-html="item.answer" ref="answerRefs"></div>
+          <div class="faq-answer-content" v-html="item.answer" ref="answerRefs"></div>
         </div>
       </div>
     </div>
@@ -100,7 +100,13 @@ const calculateHeight = (index: number) => {
   if (element) {
     // Temporarily set height to auto to get the full height
     element.style.height = 'auto';
-    answerHeights.value[index] = element.scrollHeight;
+    const computedStyle = window.getComputedStyle(element);
+    const paddingTop = parseFloat(computedStyle.paddingTop);
+    const paddingBottom = parseFloat(computedStyle.paddingBottom);
+    const marginTop = parseFloat(computedStyle.marginTop);
+    const marginBottom = parseFloat(computedStyle.marginBottom);
+    const containerPadding = 32; // 1rem = 16px * 2 (top and bottom)
+    answerHeights.value[index] = element.scrollHeight + paddingTop + paddingBottom + marginTop + marginBottom + containerPadding;
     // Reset height
     element.style.height = '';
   }
@@ -161,21 +167,14 @@ onUnmounted(() => {
 }
 
 .faq-item {
-  margin-bottom: 1rem;
-  border-radius: 8px;
   overflow: hidden;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .faq-question {
   cursor: pointer;
-  padding: 1rem;
-  background-color: var(--vp-c-bg-alt);
-  border-radius: 8px;
+  padding: 1rem 0;
   transition: background-color 0.2s ease;
-}
-
-.faq-question:hover {
-  background-color: var(--vp-c-bg-soft);
 }
 
 .faq-question h2 {
@@ -197,12 +196,12 @@ onUnmounted(() => {
   transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
               opacity 0.3s ease, 
               transform 0.3s ease;
-  background-color: var(--vp-c-bg-soft);
   border-radius: 0 0 8px 8px;
   opacity: 0;
   transform: translateY(-10px);
   pointer-events: none;
   height: 0;
+  padding: 0;
 }
 
 .faq-answer.is-open {
@@ -213,6 +212,10 @@ onUnmounted(() => {
 
 .faq-answer.is-open .icon {
   transform: rotate(180deg);
+}
+
+.faq-answer-content {
+  padding: 0.5rem 0;
 }
 
 ul {

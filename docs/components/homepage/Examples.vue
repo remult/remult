@@ -7,13 +7,7 @@ import Icon from '../Icon.vue'
   <div class="examples l-home">
     <div class="examples-intro l-home__title">
       <h2>Examples</h2>
-      <p>
-        We've compiled a list of common questions and answers to help you get
-        started with Remult. If you have any other questions, please don't
-        hesitate to ask us on
-        <a href="https://discord.gg/GXHk7ZfuG5">discord</a> or
-        <a href="https://github.com/remult/remult/issues">github</a>!
-      </p>
+      <p>We have already a ton of examples! Pick and choose the one that fits your needs.</p>
     </div>
     <div class="examples-list l-home__content">
 
