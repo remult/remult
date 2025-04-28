@@ -27,7 +27,7 @@
 
   --vp-code-lang-color: rgba(235, 235, 245, 0.38);
 
-  --vp-code-line-highlight-color: #000000;
+  --vp-code-line-highlight-color: #e2e2e5;
   --vp-code-line-number-color: rgba(235, 235, 245, 0.38);
 
   --vp-code-copy-code-border-color: rgba(82, 82, 89, 0.32);
@@ -49,6 +49,8 @@
   --vp-c-brand-2: rgb(0, 153, 300);
   --vp-c-brand-3: rgb(0, 153, 300);
   --vp-c-brand-soft: rgb(0, 153, 300, 0.14);
+
+  --vp-code-line-highlight-color: #1c1d60;
 
   --vp-sidebar-bg-color: rgba(2, 2, 36, 1);
   --vp-c-bg: rgb(5, 5, 40);
@@ -78,6 +80,11 @@
     height: 1rem;
   }
 
+  code .line.highlighted {
+    background-color: var(--vp-code-line-highlight-color);
+    margin: 0;
+  }
+
   code .line.diff.add {
     background-color: #003d00;
   }
@@ -94,7 +101,7 @@
 .l-home {
   display: flex;
   gap: 2rem;
-  max-width: 1200px;
+  max-width: 1280px;
   margin: 4rem auto;
 }
 
