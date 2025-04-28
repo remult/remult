@@ -185,7 +185,7 @@ import Icon from '../Icon.vue'
     display: none;
   }
 
-  svg {
+  svg, img {
     height: 24px;
     width: auto;
   }
