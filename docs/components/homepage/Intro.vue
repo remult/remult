@@ -70,6 +70,33 @@ import Icon from '../Icon.vue'
   justify-content: center;
 }
 
+.title {
+  display: flex;
+  flex-direction: row;
+  align-items: space-between;
+  justify-content: space-between;
+
+  width: 100%;
+  max-width: 900px;
+}
+
+.title-left {
+  text-align: left;
+
+  h1 {
+    margin-bottom: 0;
+  }
+}
+
+.title-right {
+  text-align: right;
+
+  p {
+    font-size: .8rem;
+    line-height: 1.4;
+  }
+}
+
 .intro-logos {
   display: flex;
   flex-direction: row;
