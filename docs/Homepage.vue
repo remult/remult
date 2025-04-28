@@ -74,7 +74,7 @@ import Faq from './components/homepage/Faq.vue'
 
 .intro h1 {
   font-size: 2rem;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 }
 
 .cta {

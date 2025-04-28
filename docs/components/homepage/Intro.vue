@@ -79,9 +79,18 @@ onUnmounted(() => {
         >stack
       </h1>
 
-      <div class="cta">
-        <a href="/">Try in Browser</a>
-        <a href="/docs">Documentation</a>
+        <div class="cta">
+          <a href="/">Try in Browser</a>
+          <a href="/docs">Documentation</a>
+        </div>
+      </div>
+
+      <div class="title-right">
+        <p>
+        Want to see remult in action in 60 sec?<br>
+        Auth, DB, CRUD – using your stack.<br>
+        <code>npm init remult@latest</code>
+        </p>
       </div>
     </div>
 
@@ -124,6 +133,33 @@ onUnmounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+
+.title {
+  display: flex;
+  flex-direction: row;
+  align-items: space-between;
+  justify-content: space-between;
+
+  width: 100%;
+  max-width: 900px;
+}
+
+.title-left {
+  text-align: left;
+
+  h1 {
+    margin-bottom: 0;
+  }
+}
+
+.title-right {
+  text-align: right;
+
+  p {
+    font-size: .8rem;
+    line-height: 1.4;
+  }
 }
 
 .intro-logos {
