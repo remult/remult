@@ -3,28 +3,33 @@
     <div class="faq-intro l-home__title">
       <h2>Frequently Asked Questions</h2>
       <p>
-        We've compiled a list of common questions and answers to help you get started with Remult.
-        If you have any other questions, please don't hesitate to ask us on <a href="https://discord.gg/GXHk7ZfuG5">discord</a> or <a href="https://github.com/remult/remult/issues">github</a>!
+        We've compiled a list of common questions and answers to help you get
+        started with Remult. If you have any other questions, please don't
+        hesitate to ask us on
+        <a href="https://discord.gg/GXHk7ZfuG5">discord</a> or
+        <a href="https://github.com/remult/remult/issues">github</a>!
       </p>
     </div>
     <div class="faq-list l-home__content">
-      <div 
-        v-for="(item, index) in faqs" 
-        :key="index" 
-        class="faq-item"
-      >
+      <div v-for="(item, index) in faqs" :key="index" class="faq-item">
         <div class="faq-question" @click="toggleFaq(index)">
           <h2>
             <b>{{ item.question }}</b>
             <span class="icon">{{ isOpen[index] ? '−' : '+' }}</span>
           </h2>
         </div>
-        <div 
-          class="faq-answer" 
+        <div
+          class="faq-answer"
           :class="{ 'is-open': isOpen[index] }"
-          :style="{ height: isOpen[index] ? answerHeights[index] + 'px' : '0px' }"
+          :style="{
+            height: isOpen[index] ? answerHeights[index] + 'px' : '0px',
+          }"
         >
-          <div class="faq-answer-content" v-html="item.answer" ref="answerRefs"></div>
+          <div
+            class="faq-answer-content"
+            v-html="item.answer"
+            ref="answerRefs"
+          ></div>
         </div>
       </div>
     </div>
@@ -83,12 +88,6 @@ const faqs: FaqItem[] = [
     </ul>
     <p>Yes, Remult scales in all these directions and more! Join our community to share your scaling metrics and learn from others' experiences 🚀</p>`,
   },
-  {
-    question: 'Missing something?',
-    answer: `We're always looking for ways to improve Remult. 
-    If you have a feature request or a bug report, please let us know
-    on <a href="https://discord.gg/GXHk7ZfuG5">discord</a> or <a href="https://github.com/remult/remult/issues">github</a>!`,
-  },
 ]
 
 const isOpen = ref<boolean[]>(Array(faqs.length).fill(false))
@@ -96,32 +95,38 @@ const answerHeights = ref<number[]>(Array(faqs.length).fill(0))
 const answerRefs = ref<HTMLElement[]>([])
 
 const calculateHeight = (index: number) => {
-  const element = answerRefs.value[index];
+  const element = answerRefs.value[index]
   if (element) {
     // Temporarily set height to auto to get the full height
-    element.style.height = 'auto';
-    const computedStyle = window.getComputedStyle(element);
-    const paddingTop = parseFloat(computedStyle.paddingTop);
-    const paddingBottom = parseFloat(computedStyle.paddingBottom);
-    const marginTop = parseFloat(computedStyle.marginTop);
-    const marginBottom = parseFloat(computedStyle.marginBottom);
-    const containerPadding = 32; // 1rem = 16px * 2 (top and bottom)
-    answerHeights.value[index] = element.scrollHeight + paddingTop + paddingBottom + marginTop + marginBottom + containerPadding;
+    element.style.height = 'auto'
+    const computedStyle = window.getComputedStyle(element)
+    const paddingTop = parseFloat(computedStyle.paddingTop)
+    const paddingBottom = parseFloat(computedStyle.paddingBottom)
+    const marginTop = parseFloat(computedStyle.marginTop)
+    const marginBottom = parseFloat(computedStyle.marginBottom)
+    const containerPadding = 32 // 1rem = 16px * 2 (top and bottom)
+    answerHeights.value[index] =
+      element.scrollHeight +
+      paddingTop +
+      paddingBottom +
+      marginTop +
+      marginBottom +
+      containerPadding
     // Reset height
-    element.style.height = '';
+    element.style.height = ''
   }
 }
 
 const toggleFaq = (index: number) => {
   if (!isOpen.value[index]) {
     // Calculate height first
-    calculateHeight(index);
+    calculateHeight(index)
     // Then set isOpen in the next tick
     nextTick(() => {
-      isOpen.value[index] = true;
-    });
+      isOpen.value[index] = true
+    })
   } else {
-    isOpen.value[index] = false;
+    isOpen.value[index] = false
   }
 }
 
@@ -129,27 +134,27 @@ onMounted(() => {
   // Pre-calculate heights for all answers
   nextTick(() => {
     answerRefs.value.forEach((_, index) => {
-      calculateHeight(index);
-    });
-  });
-  
+      calculateHeight(index)
+    })
+  })
+
   window.addEventListener('resize', () => {
     isOpen.value.forEach((open, index) => {
       if (open) {
-        calculateHeight(index);
+        calculateHeight(index)
       }
-    });
-  });
+    })
+  })
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', () => {
     isOpen.value.forEach((open, index) => {
       if (open) {
-        calculateHeight(index);
+        calculateHeight(index)
       }
-    });
-  });
+    })
+  })
 })
 </script>
 
@@ -193,9 +198,10 @@ onUnmounted(() => {
 
 .faq-answer {
   overflow: hidden;
-  transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
-              opacity 0.3s ease, 
-              transform 0.3s ease;
+  transition:
+    height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease,
+    transform 0.3s ease;
   border-radius: 0 0 8px 8px;
   opacity: 0;
   transform: translateY(-10px);
