@@ -6,14 +6,24 @@ import Icon from '../Icon.vue'
 <template>
   <div class="intro">
     <div class="title">
-      <h1>
-        Adding full to your <i><small>full-</small></i
-        >stack
-      </h1>
+      <div class="title-left">
+        <h1>
+          Adding full to your <i><small>full-</small></i
+          >stack
+        </h1>
 
-      <div class="cta">
-        <a href="/">Try in Browser</a>
-        <a href="/docs">Documentation</a>
+        <div class="cta">
+          <a href="/">Try in Browser</a>
+          <a href="/docs">Documentation</a>
+        </div>
+      </div>
+
+      <div class="title-right">
+        <p>
+        Want to see remult in action in 60 sec?<br>
+        Auth, DB, CRUD – using your stack.<br>
+        <code>npm init remult@latest</code>
+        </p>
       </div>
     </div>
 
