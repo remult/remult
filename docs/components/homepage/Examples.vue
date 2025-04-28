@@ -20,10 +20,10 @@ import Icon from '../Icon.vue'
             <Icon tech="express" />
           </div>
         </div>
-        <p>A fully featured CRM! Make sure to check out the dev and admin links on the top right.</p>
+        <p>A classic Todo MVC implementation with Remult.</p>
         <div class="examples-list-item-links">
-          <a href="https://github.com/remult/TodoMVC-example">Github</a>
-          <a href="https://codesandbox.io/s/github/remult/TodoMVC-example?file=/src/frontend/App.tsx">Codesandbox</a>
+          <a href="https://github.com/remult/remult/tree/main/examples/react-todo">Github</a>
+          <a href="https://codesandbox.io/s/github/remult/remult/tree/main/examples/react-todo">Codesandbox</a>
         </div>
       </div>
 
@@ -38,10 +38,10 @@ import Icon from '../Icon.vue'
             <Icon tech="mui" />
           </div>
         </div>
-        <p>A fully featured CRM! Make sure to check out the dev and admin links on the top right.</p>
+        <p>A fully featured CRM! Make sure to check out the link: <b>Dev / Admin</b> on top right!</p>
         <div class="examples-list-item-links">
           <a href="https://github.com/remult/crm-demo">Github</a>
-          <a href="https://codesandbox.io/s/github/remult/crm-demo?file=/src/frontend/App.tsx">Codesandbox</a>
+          <a href="https://crm-demo.up.railway.app/">Live Demo</a>
         </div>
       </div>
 
@@ -51,12 +51,16 @@ import Icon from '../Icon.vue'
           <div class="examples-list-item-title-stack">
             <Icon tech="react" />
             <Icon tech="vite" />
+            <Icon tech="express" />
+            <Icon tech="postgres" />
+            <Icon tech="shadcn" />
           </div>
         </div>
         <p>Using remult with server side sorting, filtering, paging & CRUD.</p>
         <div class="examples-list-item-links">
-          <a href="https://github.com/remult/shadcn-react-table">Github</a>
-          <a href="https://codesandbox.io/s/github/remult/shadcn-react-table?file=/src/frontend/App.tsx">Codesandbox</a>
+          <a href="https://www.github.com/remult/remult/tree/main/examples/shadcn-react-table">Github</a>
+          <a href="https://table.up.railway.app/">Live Demo</a>
+          <a href="https://stackblitz.com/github/remult/remult/tree/main/examples/shadcn-react-table">Stackblitz</a>
         </div>
       </div>
 
@@ -65,12 +69,14 @@ import Icon from '../Icon.vue'
           <h3>TanStack React Table</h3>
           <div class="examples-list-item-title-stack">
             <Icon tech="react" />
+            <Icon tech="vite" />
+            <Icon tech="tanstack" />
           </div>
         </div>
         <p>Example of using remult with react table - most basic design, with server side sorting, paging & filtering.</p>
         <div class="examples-list-item-links">
-          <a href="https://github.com/remult/tanstack-react-table">Github</a>
-          <a href="https://codesandbox.io/s/github/remult/tanstack-react-table?file=/src/frontend/App.tsx">Codesandbox</a>
+          <a href="https://www.github.com/remult/remult/tree/main/examples/tanstack-react-table">Github</a>
+          <a href="https://stackblitz.com/github/remult/remult/tree/main/examples/tanstack-react-table">Stackblitz</a>
         </div>
       </div>
 
@@ -86,8 +92,8 @@ import Icon from '../Icon.vue'
         </div>
         <p>An environment to reproduce issues using stackblitz, with optional sqlite database.</p>
         <div class="examples-list-item-links">
-          <a href="https://github.com/remult/ready-to-play">Github</a>
-          <a href="https://codesandbox.io/s/github/remult/ready-to-play?file=/src/frontend/App.tsx">Codesandbox</a>
+          <a href="https://www.github.com/noam-honig/ready-to-play">Github</a>
+          <a href="https://stackblitz.com/github/noam-honig/ready-to-play">Stackblitz</a>
         </div>
       </div>
 
