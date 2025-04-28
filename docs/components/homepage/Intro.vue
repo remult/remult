@@ -68,6 +68,7 @@ onUnmounted(() => {
 <template>
   <div class="intro">
     <div class="title">
+      <div class="title-left">
       <h1>
         Adding
         <span
@@ -147,6 +148,10 @@ onUnmounted(() => {
 
 .title-left {
   text-align: left;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
 
   h1 {
     margin-bottom: 0;
