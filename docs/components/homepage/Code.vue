@@ -38,11 +38,17 @@ const scrollToChangedLines = () => {
     if (editorContainer) {
       const lineTop = firstChangedLine.offsetTop
       const containerHeight = editorContainer.clientHeight
-      const scrollTop = lineTop - (containerHeight / 2) + (firstChangedLine.clientHeight / 2)
-      editorContainer.scrollTo({
-        top: scrollTop,
-        behavior: 'smooth'
-      })
+      const containerScrollTop = editorContainer.scrollTop
+      const margin = 50 // margin of error in pixels
+      
+      // Check if the line is not visible in the viewport with margin
+      if (lineTop < containerScrollTop + margin || lineTop + firstChangedLine.clientHeight > containerScrollTop + containerHeight - margin) {
+        const scrollTop = lineTop - (containerHeight / 2) + (firstChangedLine.clientHeight / 2)
+        editorContainer.scrollTo({
+          top: scrollTop,
+          behavior: 'smooth'
+        })
+      }
     }
   }
 }
