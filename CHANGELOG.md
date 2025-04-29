@@ -1,5 +1,9 @@
 All notable changes to this project will be documented in this file.
 
+## [2.7.34] 2025-4-29
+
+- Added support for sql expression based entity to knex data provider
+
 ## [2.7.33] 2025-4-5
 
 - Fixed bug with API Update of null with dateOnly
