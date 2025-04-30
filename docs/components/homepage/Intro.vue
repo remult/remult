@@ -13,7 +13,7 @@ const features = [
   { text: 'Typesafety', bgColor: '#8262E1', textColor: '#FFFFFF' },
   { text: 'Admin UI', bgColor: '#00D8FF', textColor: '#266F7C' },
   { text: 'Offline Support', bgColor: '#A91D23', textColor: '#FF979B' },
-  { text: 'Full', bgColor: '#51319E', textColor: '#BDA1FF' },
+  { text: 'full', bgColor: '#51319E', textColor: '#BDA1FF' },
 ]
 
 const currentFeature = ref(features[0])
@@ -65,8 +65,7 @@ onUnmounted(() => {
           :style="{ backgroundColor: currentFeature.bgColor, color: currentFeature.textColor }"
           >{{ currentFeature.text }}</span
         >
-        to your <i><small>full-</small></i
-        >stack
+        to your full-stack
       </h1>
 
         <div class="cta">
@@ -119,10 +118,39 @@ onUnmounted(() => {
 
 <style>
 .intro {
+  position: relative;
+  padding: 8rem 0 0 0;
+  width: 100%;
+  margin: 0 auto;
+  margin-top: auto;
+  background: linear-gradient(
+    to bottom,
+    #000000 0%,
+    #05052f 40%,
+    #040664 75%,
+    #7042b5 100%
+  );
+  border-radius: 0 0 1rem 1rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+
+  &:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 50px;
+    opacity: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      to top,
+      rgba(4, 6, 100, 1) 100%,
+      rgba(112, 66, 181, 1) 10%
+    );
+  }
 }
 
 .intro .title {
@@ -130,9 +158,10 @@ onUnmounted(() => {
   flex-direction: row;
   align-items: space-between;
   justify-content: space-between;
-
   width: 100%;
   max-width: 900px;
+  text-align: center;
+  margin-bottom: 2rem;
 }
 
 .intro .title-left {
@@ -144,6 +173,7 @@ onUnmounted(() => {
 
   h1 {
     margin-bottom: 1rem;
+    font-size: 2rem;
   }
 }
 
@@ -153,6 +183,11 @@ onUnmounted(() => {
   p {
     font-size: .8rem;
     line-height: 1.4;
+  }
+
+  code {
+    margin-top: .5rem;
+    display: inline-block;
   }
 }
 
@@ -218,4 +253,47 @@ onUnmounted(() => {
 .shake {
   animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 }
+
+.cta {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.cta a {
+  display: inline-block;
+  background: #0d0d5b;
+  color: #fff;
+  padding: 0.5rem 2rem;
+  text-decoration: none;
+}
+
+.intro a {
+  text-decoration: none;
+  color: #fff;
+}
+
+@media screen and (max-width: 1024px) {
+  .intro .title {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .intro .title-left {
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .intro .title-right {
+    text-align: center;
+  }
+
+  .intro .cta {
+    align-items: center;
+    justify-content: center;
+  }
+}
+
 </style>

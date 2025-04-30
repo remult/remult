@@ -191,5 +191,24 @@ import Icon from '../Icon.vue'
   }
 }
 
+@media screen and (max-width: 1024px) {
+  .examples-list-item-title {
+    flex-direction: column-reverse;
+  }
 
+  .examples-list-item-title-stack {
+    position: relative;
+    display: flex;
+    margin-bottom: .5rem;
+    right: 0;
+    top: 0;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .examples-list-item {
+    width: 100%;
+    margin-bottom: 2rem;
+  }
+}
 </style>
