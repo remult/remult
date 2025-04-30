@@ -77,7 +77,7 @@ Let us know how you liked the process! [@remultjs](https://twitter.com/RemultJs)
 
 ## Demo
 
-![npm init remult](../public/npm_init_remult.gif)
+![npm init remult](/npm_init_remult.gif)
 
 ## What you get ?
 

@@ -58,15 +58,22 @@ onUnmounted(() => {
   <div class="intro">
     <div class="title">
       <div class="title-left">
-      <h1>
-        Adding
-        <span
-          :class="['rotating-text', currentFeature.text.toLowerCase(), { shake: isShaking }]"
-          :style="{ backgroundColor: currentFeature.bgColor, color: currentFeature.textColor }"
-          >{{ currentFeature.text }}</span
-        >
-        to your full-stack
-      </h1>
+        <h1>
+          Adding
+          <span
+            :class="[
+              'rotating-text',
+              currentFeature.text.toLowerCase(),
+              { shake: isShaking },
+            ]"
+            :style="{
+              backgroundColor: currentFeature.bgColor,
+              color: currentFeature.textColor,
+            }"
+            >{{ currentFeature.text }}</span
+          >
+          to your full-stack
+        </h1>
 
         <div class="cta">
           <a href="/">Try in Browser</a>
@@ -76,9 +83,9 @@ onUnmounted(() => {
 
       <div class="title-right">
         <p>
-        Want to see remult in action in 60 sec?<br>
-        Auth, DB, CRUD – using your stack.<br>
-        <code>npm init remult@latest</code>
+          Want to see remult in action in 60 sec?<br />
+          Auth, DB, CRUD – using your stack.<br />
+          <code>npm init remult@latest</code>
         </p>
       </div>
     </div>
@@ -181,12 +188,12 @@ onUnmounted(() => {
   text-align: right;
 
   p {
-    font-size: .8rem;
+    font-size: 0.8rem;
     line-height: 1.4;
   }
 
   code {
-    margin-top: .5rem;
+    margin-top: 0.5rem;
     display: inline-block;
   }
 }
@@ -279,7 +286,7 @@ onUnmounted(() => {
     align-items: center;
     justify-content: center;
   }
-  
+
   .intro .title-left {
     text-align: center;
     justify-content: center;
@@ -295,5 +302,4 @@ onUnmounted(() => {
     justify-content: center;
   }
 }
-
 </style>
