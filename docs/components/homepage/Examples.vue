@@ -22,8 +22,8 @@ import Icon from '../Icon.vue'
         </div>
         <p>A classic Todo MVC implementation with Remult.</p>
         <div class="examples-list-item-links">
-          <a href="https://github.com/remult/remult/tree/main/examples/react-todo">Github</a>
-          <a href="https://codesandbox.io/s/github/remult/remult/tree/main/examples/react-todo">Codesandbox</a>
+          <a href="https://github.com/remult/remult/tree/main/examples/react-todo" target="_blank" rel="noopener noreferrer">Github</a>
+          <a href="https://codesandbox.io/s/github/remult/remult/tree/main/examples/react-todo" target="_blank" rel="noopener noreferrer">Codesandbox</a>
         </div>
       </div>
 
@@ -40,8 +40,8 @@ import Icon from '../Icon.vue'
         </div>
         <p>A fully featured CRM! Make sure to check out the link: <b>Dev / Admin</b> on top right!</p>
         <div class="examples-list-item-links">
-          <a href="https://github.com/remult/crm-demo">Github</a>
-          <a href="https://crm-demo.up.railway.app/">Live Demo</a>
+          <a href="https://github.com/remult/crm-demo" target="_blank" rel="noopener noreferrer">Github</a>
+          <a href="https://crm-demo.up.railway.app/" target="_blank" rel="noopener noreferrer">Live Demo</a>
         </div>
       </div>
 
@@ -58,9 +58,9 @@ import Icon from '../Icon.vue'
         </div>
         <p>Using remult with server side sorting, filtering, paging & CRUD.</p>
         <div class="examples-list-item-links">
-          <a href="https://www.github.com/remult/remult/tree/main/examples/shadcn-react-table">Github</a>
-          <a href="https://table.up.railway.app/">Live Demo</a>
-          <a href="https://stackblitz.com/github/remult/remult/tree/main/examples/shadcn-react-table">Stackblitz</a>
+          <a href="https://www.github.com/remult/remult/tree/main/examples/shadcn-react-table" target="_blank" rel="noopener noreferrer">Github</a>
+          <a href="https://table.up.railway.app/" target="_blank" rel="noopener noreferrer">Live Demo</a>
+          <a href="https://stackblitz.com/github/remult/remult/tree/main/examples/shadcn-react-table" target="_blank" rel="noopener noreferrer">Stackblitz</a>
         </div>
       </div>
 
@@ -75,8 +75,8 @@ import Icon from '../Icon.vue'
         </div>
         <p>Example of using remult with react table - most basic design, with server side sorting, paging & filtering.</p>
         <div class="examples-list-item-links">
-          <a href="https://www.github.com/remult/remult/tree/main/examples/tanstack-react-table">Github</a>
-          <a href="https://stackblitz.com/github/remult/remult/tree/main/examples/tanstack-react-table">Stackblitz</a>
+          <a href="https://www.github.com/remult/remult/tree/main/examples/tanstack-react-table" target="_blank" rel="noopener noreferrer">Github</a>
+          <a href="https://stackblitz.com/github/remult/remult/tree/main/examples/tanstack-react-table" target="_blank" rel="noopener noreferrer">Stackblitz</a>
         </div>
       </div>
 
@@ -92,8 +92,8 @@ import Icon from '../Icon.vue'
         </div>
         <p>An environment to reproduce issues using stackblitz, with optional sqlite database.</p>
         <div class="examples-list-item-links">
-          <a href="https://www.github.com/noam-honig/ready-to-play">Github</a>
-          <a href="https://stackblitz.com/github/noam-honig/ready-to-play">Stackblitz</a>
+          <a href="https://www.github.com/noam-honig/ready-to-play" target="_blank" rel="noopener noreferrer">Github</a>
+          <a href="https://stackblitz.com/github/noam-honig/ready-to-play" target="_blank" rel="noopener noreferrer">Stackblitz</a>
         </div>
       </div>
 
