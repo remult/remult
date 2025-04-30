@@ -103,6 +103,7 @@
   gap: 2rem;
   max-width: 1280px;
   margin: 4rem auto;
+  padding: 0 1rem;
 }
 
 .l-home__title {
@@ -121,4 +122,18 @@
 
 .VPNav .title span {
   display: none;
+}
+
+@media screen and (max-width: 1024px) {
+  .l-home {
+    flex-direction: column;
+  }
+
+  .l-home__title {
+    width: 100%;
+  }
+
+  .l-home__content {
+    width: 100%;
+  }
 }

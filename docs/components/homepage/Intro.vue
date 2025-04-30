@@ -272,4 +272,28 @@ onUnmounted(() => {
   text-decoration: none;
   color: #fff;
 }
+
+@media screen and (max-width: 1024px) {
+  .intro .title {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .intro .title-left {
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .intro .title-right {
+    text-align: center;
+  }
+
+  .intro .cta {
+    align-items: center;
+    justify-content: center;
+  }
+}
+
 </style>
