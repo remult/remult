@@ -3,31 +3,20 @@ import Editor from './Editor.vue'
 import Icon from '../Icon.vue'
 import { ref, onMounted, onUnmounted } from 'vue'
 
-const texts = [
-  'Auto API',
-  'Validation',
-  'ORM',
-  'Typesafety',
-  'Authorization',
-  'Lifecycle hooks',
-  'Real Time',
-  'Admin UI',
-  'Offline Support',
-  'Full',
+const features = [
+  { text: 'Auto API', bgColor: '#FF31D9', textColor: '#7D1369' },
+  { text: 'Validation', bgColor: '#327C98', textColor: '#9ED9F0' },
+  { text: 'Typesafe ORM', bgColor: '#51319E', textColor: '#BDA1FF' },
+  { text: 'Authorization', bgColor: '#2CA171', textColor: '#0D5337' },
+  { text: 'Lifecycle hooks', bgColor: '#050643', textColor: '#7173F2' },
+  { text: 'Real Time', bgColor: '#538CC9', textColor: '#184472' },
+  { text: 'Typesafety', bgColor: '#8262E1', textColor: '#FFFFFF' },
+  { text: 'Admin UI', bgColor: '#00D8FF', textColor: '#266F7C' },
+  { text: 'Offline Support', bgColor: '#A91D23', textColor: '#FF979B' },
+  { text: 'Full', bgColor: '#51319E', textColor: '#BDA1FF' },
 ]
-const currentText = ref(texts[0])
-const colors = [
-  '#FF6B6B',
-  '#4ECDC4',
-  '#45B7D1',
-  '#8262E1',
-  '#FFD166',
-  '#06D6A0',
-  '#EF476F',
-  '#118AB2',
-  '#073B4C',
-  '#7209B7',
-]
+
+const currentFeature = ref(features[0])
 const isShaking = ref(false)
 
 let interval: number | null = null
@@ -45,13 +34,13 @@ onMounted(() => {
   const lastItemDuration = 6000 // 6 seconds for the last item (3x longer)
 
   const updateText = () => {
-    index = (index + 1) % texts.length
-    currentText.value = texts[index]
+    index = (index + 1) % features.length
+    currentFeature.value = features[index]
     shake()
 
     // If we're at the last item, wait longer
     const duration =
-      index === texts.length - 1 ? lastItemDuration : normalDuration
+      index === features.length - 1 ? lastItemDuration : normalDuration
     interval = window.setTimeout(updateText, duration)
   }
 
@@ -72,9 +61,9 @@ onUnmounted(() => {
       <h1>
         Adding
         <span
-          :class="['rotating-text', currentText, { shake: isShaking }]"
-          :style="{ backgroundColor: colors[texts.indexOf(currentText)] }"
-          >{{ currentText }}</span
+          :class="['rotating-text', currentFeature.text.toLowerCase(), { shake: isShaking }]"
+          :style="{ backgroundColor: currentFeature.bgColor, color: currentFeature.textColor }"
+          >{{ currentFeature.text }}</span
         >
         to your <i><small>full-</small></i
         >stack
@@ -136,7 +125,7 @@ onUnmounted(() => {
   justify-content: center;
 }
 
-.title {
+.intro .title {
   display: flex;
   flex-direction: row;
   align-items: space-between;
@@ -146,7 +135,7 @@ onUnmounted(() => {
   max-width: 900px;
 }
 
-.title-left {
+.intro .title-left {
   text-align: left;
   display: flex;
   flex-direction: column;
@@ -154,11 +143,11 @@ onUnmounted(() => {
   justify-content: flex-start;
 
   h1 {
-    margin-bottom: 0;
+    margin-bottom: 1rem;
   }
 }
 
-.title-right {
+.intro .title-right {
   text-align: right;
 
   p {
@@ -198,7 +187,6 @@ onUnmounted(() => {
   min-width: 60px;
   text-align: center;
   padding: 0 8px;
-  border-radius: 4px;
   color: white;
   transition: background-color 0.3s ease;
 }
