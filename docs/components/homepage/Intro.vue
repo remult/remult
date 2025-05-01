@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import Editor from './Editor.vue'
+import EditorMobile from './EditorMobile.vue'
 import Icon from '../Icon.vue'
 import { ref, onMounted, onUnmounted } from 'vue'
 
 const features = [
   { text: 'Auto API', bgColor: '#FF31D9', textColor: '#7D1369' },
   { text: 'Validation', bgColor: '#327C98', textColor: '#9ED9F0' },
-  { text: 'Typesafe ORM', bgColor: '#51319E', textColor: '#BDA1FF' },
+  { text: 'ORM', bgColor: '#51319E', textColor: '#BDA1FF' },
   { text: 'Authorization', bgColor: '#2CA171', textColor: '#0D5337' },
   { text: 'Lifecycle hooks', bgColor: '#050643', textColor: '#7173F2' },
   { text: 'Real Time', bgColor: '#538CC9', textColor: '#184472' },
@@ -18,8 +19,10 @@ const features = [
 
 const currentFeature = ref(features[0])
 const isShaking = ref(false)
+const windowWidth = ref(0)
 
 let interval: number | null = null
+let handleResize: (() => void) | null = null
 
 const shake = () => {
   isShaking.value = true
@@ -29,6 +32,15 @@ const shake = () => {
 }
 
 onMounted(() => {
+  // Set initial window width
+  windowWidth.value = window.innerWidth
+  
+  // Add resize listener
+  handleResize = () => {
+    windowWidth.value = window.innerWidth
+  }
+  window.addEventListener('resize', handleResize)
+  
   let index = 0
   const normalDuration = 2000 // 2 seconds for normal items
   const lastItemDuration = 6000 // 6 seconds for the last item (3x longer)
@@ -48,6 +60,9 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  if (handleResize) {
+    window.removeEventListener('resize', handleResize)
+  }
   if (interval) {
     clearTimeout(interval)
   }
@@ -91,9 +106,14 @@ onUnmounted(() => {
     </div>
 
     <div class="editor-container">
-      <Editor />
+      <ClientOnly>
+        <Editor v-if="windowWidth >= 1024" />
+        <EditorMobile v-else />
+      </ClientOnly>
     </div>
+  </div>
 
+  <div class="intro-stack">
     <div class="intro-logos">
       <Icon tech="react" link="/docs/installation/framework/react" />
       <Icon tech="angular" link="/docs/installation/framework/angular" />
@@ -126,22 +146,26 @@ onUnmounted(() => {
 <style>
 .intro {
   position: relative;
-  padding: 8rem 0 0 0;
+  padding: 0 2rem 0 2rem;
   width: 100%;
-  margin: 0 auto;
-  margin-top: auto;
-  background: linear-gradient(
-    to bottom,
-    #000000 0%,
-    #05052f 40%,
-    #040664 75%,
-    #7042b5 100%
-  );
-  border-radius: 0 0 1rem 1rem;
+  max-width: 1100px;
+  margin: 8rem auto 3rem auto;
+  background: radial-gradient(circle farthest-corner at 50% -50%, #05052F00 56%, #0c0f75 77%, #7042B5 92%);
+  border-radius: 1.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  animation: pulse-gradient 8s ease-in-out infinite;
+
+  @keyframes pulse-gradient {
+    0%, 100% {
+      background: radial-gradient(circle farthest-corner at 50% -50%, #05052F00 56%, #0c0f75 77%, #7042B5 92%);
+    }
+    50% {
+      background: radial-gradient(circle farthest-corner at 50% -50%, #05052F00 60%, #0c0f75 82%, #7042B5 96%);
+    }
+  }
 
   &:after {
     content: '';
@@ -158,6 +182,10 @@ onUnmounted(() => {
       rgba(112, 66, 181, 1) 10%
     );
   }
+}
+
+.intro .editor-container {
+  margin-bottom: -32px;
 }
 
 .intro .title {
@@ -179,6 +207,7 @@ onUnmounted(() => {
   justify-content: flex-start;
 
   h1 {
+    color: var(--vp-c-text);
     margin-bottom: 1rem;
     font-size: 2rem;
   }
@@ -188,14 +217,24 @@ onUnmounted(() => {
   text-align: right;
 
   p {
+    color: var(--vp-c-text);
+    opacity: 0.8;
     font-size: 0.8rem;
     line-height: 1.4;
   }
 
   code {
+    color: var(--vp-c-text);
     margin-top: 0.5rem;
     display: inline-block;
   }
+}
+
+.intro-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .intro-logos {
@@ -218,9 +257,47 @@ onUnmounted(() => {
   }
 }
 
+.intro .editor-body {
+  position: relative;
+
+  &:before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle at bottom left, rgb(62 47 152 / 55%), rgba(5, 6, 67, 0) 71%);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  &:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle at bottom right, rgb(22 26 141 / 46%), rgba(5, 6, 67, 0) 71%);
+    pointer-events: none;
+    z-index: 1;
+  }
+}
+
+@media screen and (max-width: 1024px) {
+  .intro-logos {
+    margin-top: 2rem;
+    max-width: 470px;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+}
+
 .intro-logos-claim {
   font-size: 0.8rem;
-  color: #8262e1;
+  color: var(--vp-c-text);
+  opacity: 0.5;
   margin-bottom: 2rem;
 }
 

@@ -19,6 +19,7 @@
   --vp-c-brand-2: rgb(0, 102, 200);
   --vp-c-brand-3: rgb(0, 102, 200);
   --vp-c-brand-soft: rgb(0, 102, 200, 0.14);
+  --vp-c-text: #080A59;
 
   /* start dark code samples */
   --vp-code-block-color: rgba(255, 255, 245, 0.86);
@@ -49,6 +50,7 @@
   --vp-c-brand-2: rgb(0, 153, 300);
   --vp-c-brand-3: rgb(0, 153, 300);
   --vp-c-brand-soft: rgb(0, 153, 300, 0.14);
+  --vp-c-text: #ffffff;
 
   --vp-code-line-highlight-color: #1c1d60;
 

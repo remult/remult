@@ -4,7 +4,7 @@ declare const Math: {
   floor: (x: number) => number
 }
 import Code from './Code.vue'
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { type CodeStep, stepsData } from './stepsData'
 import { useUserPreference } from '../composables/useUserPreference'
 import IconSvelte from '../icons/svelte.vue'
@@ -16,6 +16,7 @@ const steps = ref<CodeStep[]>([])
 const currentStep = ref<CodeStep | null>(null)
 const currentFile = ref<string | null>(null)
 const codeRef = ref<InstanceType<typeof Code> | null>(null)
+const sidebarOpen = ref(false)
 
 const { framework, keyContext } = useUserPreference()
 
@@ -107,6 +108,9 @@ const selectStep = (step: CodeStep) => {
     currentFile.value = appropriateFile.name
     keyContext.value = appropriateFile.keyContext
   }
+  
+  // Close sidebar after selection on mobile
+  sidebarOpen.value = false
 }
 
 const selectFile = (fileName: string) => {
@@ -129,6 +133,10 @@ const getCurrentLanguage = () => {
   if (!currentStep.value || !currentFile.value) return 'typescript'
   const file = currentStep.value.files.find((f) => f.name === currentFile.value)
   return file?.languageCodeHighlight || 'typescript'
+}
+
+const toggleSidebar = () => {
+  sidebarOpen.value = !sidebarOpen.value
 }
 
 // Simplified time formatting function
@@ -157,6 +165,14 @@ const getStepTimeAgo = (stepIndex: number) => {
   return formatTime(totalSeconds) + ' ago'
 }
 
+// Computed property for visible files
+const visibleFiles = computed(() => {
+  if (!currentStep.value) return []
+  return currentStep.value.files.filter(
+    (f) => f.framework === undefined || f.framework === framework.value
+  )
+})
+
 // Watch for code changes to scroll to changed lines
 watch(
   () => getCurrentCode(),
@@ -171,80 +187,67 @@ watch(
 </script>
 
 <template>
-  <div class="editor">
-    <div class="editor-header">
-      <div class="editor-header-left">
-        <span></span><span></span><span></span>
-      </div>
-      Customer Portal
-    </div>
-    <div class="editor-body">
-      <div class="editor-sidebar">
-        <div class="editor-framework">
-          <div class="framework-icons">
-            <label
-              class="framework-icon"
-              :class="{ active: framework === 'react' }"
-            >
-              <input type="radio" v-model="framework" value="react" />
-              <IconReact />
-            </label>
-            <label
-              class="framework-icon"
-              :class="{ active: framework === 'svelte' }"
-            >
-              <input type="radio" v-model="framework" value="svelte" />
-              <IconSvelte />
-            </label>
-            <label
-              class="framework-icon"
-              :class="{ active: framework === 'vue' }"
-            >
-              <input type="radio" v-model="framework" value="vue" />
-              <IconVue />
-            </label>
-            <label
-              class="framework-icon"
-              :class="{ active: framework === 'angular' }"
-            >
-              <input type="radio" v-model="framework" value="angular" />
-              <IconAngular />
-            </label>
-          </div>
-        </div>
-
-        <span class="steps-label">Commit History</span>
-        <button
-          v-for="(step, index) in steps"
-          :key="step.id"
-          @click="selectStep(step)"
-          class="step-button"
-          :class="{ active: currentStep?.id === step.id }"
+  <div class="editor-mobile">    
+    <!-- Framework selector - always visible -->
+    <div class="editor-framework">
+      <div class="framework-icons">
+        <label
+          class="framework-icon"
+          :class="{ active: framework === 'react' }"
         >
-          <span>{{ step.name }}</span>
-          <span class="step-time">{{
-            index === steps.length - 1 ? 'now' : getStepTimeAgo(index)
-          }}</span>
-        </button>
+          <input type="radio" v-model="framework" value="react" />
+          <IconReact />
+        </label>
+        <label
+          class="framework-icon"
+          :class="{ active: framework === 'svelte' }"
+        >
+          <input type="radio" v-model="framework" value="svelte" />
+          <IconSvelte />
+        </label>
+        <label
+          class="framework-icon"
+          :class="{ active: framework === 'vue' }"
+        >
+          <input type="radio" v-model="framework" value="vue" />
+          <IconVue />
+        </label>
+        <label
+          class="framework-icon"
+          :class="{ active: framework === 'angular' }"
+        >
+          <input type="radio" v-model="framework" value="angular" />
+          <IconAngular />
+        </label>
+      </div>
+    </div>
 
-        <div class="editor-sidebar-footer">
-          <a
-            v-for="cta in currentStep?.cta"
-            :key="cta.label"
-            :href="cta.href"
-            :class="{ highlight: cta.highlight }"
+    <div class="editor-body">
+      <!-- Commit history as a select -->
+      <div class="commit-selector">
+        <select 
+          :value="currentStep?.id" 
+          @change="(e) => {
+            const selectedStep = steps.find(s => s.id === (e.target as HTMLSelectElement).value);
+            if (selectedStep) selectStep(selectedStep);
+          }"
+        >
+          <option 
+            v-for="(step, index) in steps" 
+            :key="step.id" 
+            :value="step.id"
           >
-            <span v-html="cta.label" />
-          </a>
-        </div>
+            {{ step.name }} ({{ index === steps.length - 1 ? 'now' : getStepTimeAgo(index) }})
+          </option>
+        </select>
       </div>
 
+      <!-- Main content -->
       <div class="editor-content">
+        <!-- Horizontal file tabs scrollbar -->
         <div class="editor-tabs">
           <button
-            v-for="file in currentStep?.files.filter(
-              (f) => f.framework === undefined || f.framework === framework,
-            )"
+            v-for="file in visibleFiles"
             :key="file.name"
             @click="selectFile(file.name)"
             class="tab-button"
@@ -262,91 +265,153 @@ watch(
         </div>
       </div>
     </div>
+
+    <div class="editor-footer">
+      <a
+        v-for="cta in currentStep?.cta"
+        :key="cta.label"
+        :href="cta.href"
+        :class="{ highlight: cta.highlight }"
+      >
+        <span v-html="cta.label" />
+      </a>
+    </div>
   </div>
 </template>
 
 <style>
-.editor {
+.editor-mobile {
   background: #050638;
-  border-radius: 5px;
+  border-radius: 10px;
   overflow: hidden;
   font-size: 0.8rem;
   height: 500px;
-  width: 900px;
+  width: 100%;
+  max-width: 600px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  margin: 0 auto;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 480px;
 }
 
-.editor-header {
-  position: relative;
-  pointer-events: none;
-  user-select: none;
-  display: flex;
-  justify-content: center;
+/* Framework selector styles */
+.editor-mobile .editor-framework {
   background: #050639;
   border-bottom: 1px solid #080a59;
-  color: #484bd2;
-  padding: 0.2rem 1rem;
+  padding: 0.5rem;
 }
 
-.editor-header-left {
-  position: absolute;
-  left: 0;
-  top: 0;
+.editor-mobile .framework-icons {
   display: flex;
-  gap: 0.3rem;
-  height: 100%;
-  align-items: center;
-  padding: 0 0.5rem;
+  justify-content: space-between;
+  gap: 5px;
 }
 
-.editor-header-left span {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #11137d;
+.editor-mobile .framework-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: 0.5rem 0;
+  cursor: pointer;
+  color: #484bd2;
+  transition: all 0.2s ease;
+  position: relative;
+  opacity: 0.5;
+  border-radius: 4px;
+}
+
+.editor-mobile .framework-icon input[type='radio'] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.editor-mobile .framework-icon:hover {
+  background: #080a59;
+  color: #c0c2ff;
+}
+
+.editor-mobile .framework-icon.active {
+  background: #080a59;
+  color: #c0c2ff;
+  opacity: 1;
+}
+
+.editor-mobile .framework-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Commit selector styles */
+.editor-mobile .commit-selector {
+  padding: 0.5rem;
+  background: #050639;
+  border-bottom: 1px solid #080a59;
+}
+
+.editor-mobile .commit-selector select {
+  width: 100%;
+  background: #080a59;
+  color: #c0c2ff;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
 }
 
 /* Editor Styles */
-.editor .shiki.tokyo-night {
+.editor-mobile .shiki.tokyo-night {
   background-color: #050638 !important;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   line-height: 1.2rem;
 }
 
-.editor {
-  color: #484bd2;
+.editor-mobile {
+  color: #c0c2ff;
 }
 
-.editor.unchanged .code-block {
-  opacity: 0.6;
-}
-
-.editor .code-block {
-  transition: opacity 0.3s ease;
-}
-
-.editor-body {
-  display: flex;
-  background: #050638;
-  height: calc(100% - 30px);
-}
-
-.editor-content {
+.editor-mobile .editor-body {
   flex: 1;
-  position: relative;
+  display: flex;
+  flex-direction: column;
   background: #050638;
-  width: calc(100% - 250px);
+  overflow: hidden;
 }
 
-.editor-tabs {
+.editor-mobile .editor-content {
+  flex: 1;
   display: flex;
-  gap: 0.2rem;
+  flex-direction: column;
+  background: #050638;
+  height: 100%;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.editor-mobile .editor-tabs {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   background: #050638;
   border-bottom: 1px solid #080a59;
+  padding: 0 0.3rem;
 }
 
-.editor-file-changed {
-  width: 8px;
-  height: 8px;
+.editor-mobile .editor-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.editor-mobile .editor-file-changed {
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: #025402;
   display: inline-block;
@@ -366,158 +431,63 @@ watch(
   }
 }
 
-.tab-button {
+.editor-mobile .tab-button {
   background: #050638;
-  border: #080a59;
-  padding: 0.2rem 0.5rem;
-  height: 30px;
-}
-
-.tab-button.active {
-  background: #080a59;
-}
-
-.editor-sidebar {
-  width: 250px;
-  background: #050638;
-  border-right: 1px solid #080a59;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: flex-start;
-  color: white;
-}
-
-.steps-label {
-  color: #3739a2;
-  text-transform: uppercase;
-  font-size: 0.7rem;
-  display: block;
-  padding: 0.2rem 0.5rem;
-}
-
-.step-button {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  text-align: left;
-  color: #3739a2;
-  padding: 0.1rem 0.5rem;
-}
-
-.step-button.active {
-  color: #c0c2ff;
-  font-weight: 500;
-}
-
-.step-button span:first-child {
+  border: none;
+  color: #484bd2;
+  padding: 0.3rem 0.6rem;
+  height: 32px;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 0.75rem;
+}
+
+.editor-mobile .tab-button.active {
+  background: #080a59;
+  color: #c0c2ff;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+
+.editor-mobile .editor-code {
   flex: 1;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 3rem;
+  font-size: 0.85rem;
+  line-height: 1.4;
 }
 
-.step-time {
-  font-size: 0.65rem;
-  color: #484bd2;
-  opacity: 0.8;
-  min-width: 55px;
-  text-align: right;
-  flex-shrink: 0;
-}
-
-.editor-framework {
+.editor-mobile .editor-footer {
   display: flex;
   flex-direction: column;
-  width: 100%;
-  border-bottom: 1px solid #080a59;
-}
-
-.framework-icons {
-  display: flex;
-  justify-content: space-between;
-}
-
-.framework-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 25%;
-  height: 30px;
-  cursor: pointer;
-  color: #484bd2;
-  transition: all 0.2s ease;
-  position: relative;
-  opacity: 0.5;
-
-  svg {
-    filter: saturate(0.8);
-  }
-}
-
-.framework-icon input[type='radio'] {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.framework-icon:hover {
-  background: #080a59;
-  color: #c0c2ff;
-}
-
-.framework-icon.active {
-  background: #080a59;
-  color: #c0c2ff;
-  opacity: 1;
-
-  svg {
-    filter: saturate(1);
-  }
-}
-
-.framework-icon svg {
-  width: 20px;
-  height: 20px;
-}
-
-.editor-code {
-  padding: 0;
-  height: 100%;
-  overflow: scroll;
-  padding-bottom: 5rem;
-}
-
-.editor-sidebar-footer {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
   padding: 0.5rem;
-  color: white;
-  margin-top: auto;
+  background: #050639;
+  border-top: 1px solid #080a59;
+}
+
+.editor-mobile .editor-footer a {
+  background: #080a59;
   width: 100%;
-  z-index: 1;
+  text-align: center;
+  padding: 0.5rem;
+  border-radius: 5px;
+  margin-bottom: 0.5rem;
+  color: #c0c2ff;
+  text-decoration: none;
+  font-size: 0.8rem;
+}
 
-  a {
-    background: #080a59;
-    width: 100%;
-    text-align: center;
-    padding: 0.25rem 0.5rem;
-    border-radius: 5px;
-    margin-bottom: 0.5rem;
+.editor-mobile .editor-footer a:last-child {
+  margin-bottom: 0;
+}
 
-    &:last-child {
-      margin-bottom: 0;
-    }
+.editor-mobile .editor-footer a.highlight {
+  background: #2a2ead;
+}
 
-    span span {
-      display: block;
-      font-size: 0.8rem;
-      opacity: 0.5;
-    }
-  }
+.editor-mobile .editor-footer a span span {
+  display: block;
+  font-size: 0.7rem;
+  opacity: 0.7;
 }
 </style>
