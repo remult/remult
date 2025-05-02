@@ -163,7 +163,7 @@ export default function App() {
 </template>`,
     },
     {
-      name: 'todo.component.ts',
+      name: 'todo.cmp.ts',
       keyContext: 'frontend',
       framework: 'angular',
       changed: true,
@@ -178,8 +178,7 @@ import { Task } from './entities'
   selector: 'app-todo',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './todo.component.html',
-  styleUrl: './todo.component.css',
+  templateUrl: './todo.cmp.html'
 })
 export class TodoComponent implements OnInit {
   tasks: Task[] = []
@@ -205,7 +204,7 @@ export class TodoComponent implements OnInit {
 }`,
     },
     {
-      name: 'todo.component.html',
+      name: 'todo.cmp.html',
       keyContext: 'frontend2',
       framework: 'angular',
       changed: true,

@@ -71,21 +71,21 @@ export class Task {
         .content.replace('// [!code ++]', ''),
     },
     {
-      name: 'todo.component.ts',
+      name: 'todo.cmp.ts',
       keyContext: 'frontend',
       framework: 'angular',
       languageCodeHighlight: 'angular-ts',
       content: previousStep.files
-        .find((c) => c.name === 'todo.component.ts')!
+        .find((c) => c.name === 'todo.cmp.ts')!
         .content.replace('// [!code ++]', ''),
     },
     {
-      name: 'todo.component.html',
+      name: 'todo.cmp.html',
       keyContext: 'frontend2',
       framework: 'angular',
       languageCodeHighlight: 'html',
       content: previousStep.files
-        .find((c) => c.name === 'todo.component.html')!
+        .find((c) => c.name === 'todo.cmp.html')!
         .content.replace('// [!code ++]', ''),
     },
   ],
