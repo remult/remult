@@ -214,7 +214,7 @@ onUnmounted(() => {
   );
   border-radius: 1.5rem;
   opacity: 0;
-  animation: pulse-opacity 5s ease-in-out infinite;
+  animation: pulse-opacity 10s ease-in-out infinite;
 }
 
 @keyframes pulse-opacity {
