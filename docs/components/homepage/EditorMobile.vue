@@ -225,6 +225,16 @@ watch(
     <div class="editor-body">
       <!-- Commit history as a select -->
       <div class="commit-selector">
+        <button 
+          class="nav-button left" 
+          @click="() => {
+            const currentIndex = steps.findIndex(s => s.id === currentStep?.id);
+            if (currentIndex > 0) selectStep(steps[currentIndex - 1]);
+          }"
+          :disabled="steps.findIndex(s => s.id === currentStep?.id) === 0"
+        >
+          ←
+        </button>
         <select 
           :value="currentStep?.id" 
           @change="(e) => {
@@ -233,13 +243,23 @@ watch(
           }"
         >
           <option 
-            v-for="(step, index) in steps" 
+            v-for="step in steps" 
             :key="step.id" 
             :value="step.id"
           >
-            {{ step.name }} ({{ index === steps.length - 1 ? 'now' : getStepTimeAgo(index) }})
+            {{ step.name }}
           </option>
         </select>
+        <button 
+          class="nav-button right" 
+          @click="() => {
+            const currentIndex = steps.findIndex(s => s.id === currentStep?.id);
+            if (currentIndex < steps.length - 1) selectStep(steps[currentIndex + 1]);
+          }"
+          :disabled="steps.findIndex(s => s.id === currentStep?.id) === steps.length - 1"
+        >
+          →
+        </button>
       </div>
 
       <!-- Main content -->
@@ -285,7 +305,7 @@ watch(
   border-radius: 10px;
   overflow: hidden;
   font-size: 0.8rem;
-  height: 500px;
+  height: calc(100vh - 100px);
   width: 100%;
   max-width: 600px;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
@@ -296,6 +316,12 @@ watch(
   width: 100%;
   max-width: 480px;
 }
+
+.editor-mobile .copy-button {
+  display: none;
+}
+
+
 
 /* Framework selector styles */
 .editor-mobile .editor-framework {
@@ -352,17 +378,53 @@ watch(
   padding: 0.5rem;
   background: #050639;
   border-bottom: 1px solid #080a59;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .editor-mobile .commit-selector select {
-  width: 100%;
+  flex: 1;
   background: #080a59;
   color: #c0c2ff;
   border: none;
   padding: 0.5rem;
   border-radius: 4px;
-  font-size: 0.8rem;
+  font-size: .8rem;
+  height: 38px;
   cursor: pointer;
+  text-align: center;
+}
+
+.editor-mobile .commit-selector select option {
+  font-size: 1rem;
+  background: #080a59;
+  color: #c0c2ff;
+}
+
+
+.editor-mobile .nav-button {
+  background: #080a59;
+  color: #c0c2ff;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.editor-mobile .nav-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.editor-mobile .nav-button:not(:disabled):hover {
+  background: #2a2ead;
 }
 
 /* Editor Styles */
@@ -370,6 +432,10 @@ watch(
   background-color: #050638 !important;
   font-size: 0.75rem;
   line-height: 1.2rem;
+
+  code {
+    padding: 0;
+  }
 }
 
 .editor-mobile {
