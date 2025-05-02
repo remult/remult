@@ -5,14 +5,14 @@ import Icon from '../Icon.vue'
 
 <template>
   <div class="examples l-home">
-    <div class="examples-intro l-home__title">
+    <div class="examples-intro l-home__title fade-in">
       <h2>Examples</h2>
       <p>
         We have already a ton of examples! Pick and choose the one that fits
         your needs.
       </p>
     </div>
-    <div class="examples-list l-home__content">
+    <div class="examples-list l-home__content fade-in">
       <div class="examples-list-item">
         <div class="examples-list-item-title">
           <h3>Todo MVC</h3>

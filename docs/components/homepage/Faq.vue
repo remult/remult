@@ -1,6 +1,6 @@
 <template>
   <div class="faq l-home">
-    <div class="faq-intro l-home__title">
+    <div class="faq-intro l-home__title fade-in">
       <h2>Frequently Asked Questions</h2>
       <p>
         We've compiled a list of common questions and answers to help you get
@@ -10,7 +10,7 @@
         <a href="https://github.com/remult/remult/issues">github</a>!
       </p>
     </div>
-    <div class="faq-list l-home__content">
+    <div class="faq-list l-home__content fade-in">
       <div v-for="(item, index) in faqs" :key="index" class="faq-item">
         <div class="faq-question" @click="toggleFaq(index)">
           <h3>

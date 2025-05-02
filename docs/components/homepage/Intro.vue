@@ -57,6 +57,31 @@ onMounted(() => {
   }
 
   interval = window.setTimeout(updateText, normalDuration)
+
+  // Setup Intersection Observer for fade-in animations
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('fade-in-visible')
+          observer.unobserve(entry.target)
+        }
+      })
+    },
+    {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    }
+  )
+
+  // Observe all fade-in elements with sequential loading
+  const fadeInElements = document.querySelectorAll('.fade-in')
+  fadeInElements.forEach((el, index) => {
+    // Add a delay of 50ms * index to create sequential animation
+    setTimeout(() => {
+      observer.observe(el)
+    }, index * 120)
+  })
 })
 
 onUnmounted(() => {
@@ -73,7 +98,7 @@ onUnmounted(() => {
   <div class="intro">
     <div class="title">
       <div class="title-left">
-        <h1>
+        <h1 class="fade-in">
           Adding
           <span
             :class="[
@@ -90,13 +115,13 @@ onUnmounted(() => {
           <span> to your full-stack</span>
         </h1>
 
-        <div class="cta">
+        <div class="cta fade-in">
           <a href="https://learn.remult.dev/">Try in Browser -></a>
           <a href="/docs">Documentation -></a>
         </div>
       </div>
 
-      <div class="title-right">
+      <div class="title-right fade-in">
         <p>
           Want to see remult in action in 60 sec?<br />
           Auth, DB, CRUD – using your stack.<br />
@@ -105,7 +130,7 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <div class="editor-container">
+    <div class="editor-container fade-in">
       <ClientOnly>
         <Editor v-if="windowWidth >= 1024" />
         <EditorMobile v-else />
@@ -113,7 +138,7 @@ onUnmounted(() => {
     </div>
   </div>
 
-  <div class="intro-stack">
+  <div class="intro-stack fade-in">
     <div class="intro-logos">
       <Icon tech="react" link="/docs/installation/framework/react" />
       <Icon tech="angular" link="/docs/installation/framework/angular" />
@@ -547,5 +572,26 @@ body.dark .rotating-text {
   .intro .title {
     margin-bottom: 1rem;
   }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  opacity: 0;
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.fade-in-visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 </style>
