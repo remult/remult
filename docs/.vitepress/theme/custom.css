@@ -65,6 +65,21 @@
 }
 
 
+.vp-code-group .tabs {
+  background-color: var(--vp-c-bg-alt);
+}
+
+.vp-code-group .tabs .tab {
+  background-color: var(--vp-c-bg-alt);
+}
+
+.vp-code-group .tabs label,
+.vp-code-group input:checked+label,
+.vp-code-group .tabs label:hover {
+  color: var(--vp-c-text);
+}
+
+
 .shiki.shiki {
   code {
     line-height: 1.7;
