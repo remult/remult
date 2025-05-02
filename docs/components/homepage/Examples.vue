@@ -214,7 +214,7 @@ import Icon from '../Icon.vue'
   margin-bottom: 20px;
 
   p {
-    color: #8262e1;
+    color: #b2a5db;
   }
 }
 
@@ -226,12 +226,13 @@ import Icon from '../Icon.vue'
   gap: 10px;
 
   a {
-    color: #fff;
+    color: var(--vp-c-text);
     position: relative;
+    text-decoration: none;
 
     &::after {
       content: '';
-      color: #fff !important;
+      color: var(--vp-c-text) !important;
     }
   }
 }

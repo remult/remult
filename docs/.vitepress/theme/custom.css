@@ -19,7 +19,7 @@
   --vp-c-brand-2: rgb(0, 102, 200);
   --vp-c-brand-3: rgb(0, 102, 200);
   --vp-c-brand-soft: rgb(0, 102, 200, 0.14);
-  --vp-c-text: #080A59;
+  --vp-c-text: #545459;
 
   /* start dark code samples */
   --vp-code-block-color: rgba(255, 255, 245, 0.86);
@@ -102,7 +102,7 @@
 
 .l-home {
   display: flex;
-  gap: 2rem;
+  gap: 3rem;
   max-width: 1280px;
   margin: 4rem auto;
   padding: 0 1rem;
@@ -112,7 +112,10 @@
   display: flex;
   width: 33.33%;
   flex-direction: column;
-  gap: 1rem;
+
+  p {
+    margin-top: 0;
+  }
 }
 
 .l-home__content {
@@ -120,6 +123,24 @@
   width: 66.66%;
   flex-direction: column;
   gap: 1rem;
+}
+
+.l-home h2 {
+  font-weight: 300;
+  font-size: 2.5rem;
+  line-height: 1.2;
+}
+
+.l-home h3 {
+  font-weight: 300;
+  font-size: 1.5rem;
+  line-height: 1.2;
+}
+
+@media screen and (max-width: 1024px) {
+  .l-home h2 {
+    font-size: 2rem;
+  }
 }
 
 .VPNav .title span {

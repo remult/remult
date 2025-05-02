@@ -8,7 +8,7 @@ const features = [
   { text: 'Auto API', bgColor: '#FF31D9', textColor: '#7D1369' },
   { text: 'Validation', bgColor: '#327C98', textColor: '#9ED9F0' },
   { text: 'ORM', bgColor: '#51319E', textColor: '#BDA1FF' },
-  { text: 'Authorization', bgColor: '#2CA171', textColor: '#0D5337' },
+  { text: 'Authorization', bgColor: '#0D5337', textColor: '#2CA171' },
   { text: 'Lifecycle hooks', bgColor: '#050643', textColor: '#7173F2' },
   { text: 'Real Time', bgColor: '#538CC9', textColor: '#184472' },
   { text: 'Typesafety', bgColor: '#8262E1', textColor: '#FFFFFF' },
@@ -82,8 +82,8 @@ onUnmounted(() => {
               { shake: isShaking },
             ]"
             :style="{
-              backgroundColor: currentFeature.bgColor,
-              color: currentFeature.textColor,
+              '--bg-color': currentFeature.bgColor,
+              '--text-color': currentFeature.textColor,
             }"
             >{{ currentFeature.text }}</span
           >
@@ -148,9 +148,9 @@ onUnmounted(() => {
   position: relative;
   padding: 0 2rem 0 2rem;
   width: 100%;
-  max-width: 1100px;
+  max-width: 1150px;
   margin: 8rem auto 3rem auto;
-  background: radial-gradient(circle farthest-corner at 50% -50%, #05052F00 56%, #0c0f75 77%, #7042B5 92%);
+  background: radial-gradient(circle farthest-corner at 50% -50%, #05052F00 60%, #0c0f75 77%, #7042B5 92%);
   border-radius: 1.5rem;
   display: flex;
   flex-direction: column;
@@ -181,6 +181,14 @@ onUnmounted(() => {
       rgba(4, 6, 100, 1) 100%,
       rgba(112, 66, 181, 1) 10%
     );
+  }
+}
+
+@media screen and (max-width: 1200px) {
+  .intro {
+    width: calc(100% - 2rem);
+    margin-left: 1rem;
+    margin-right: 1rem;
   }
 }
 
@@ -306,8 +314,14 @@ onUnmounted(() => {
   min-width: 60px;
   text-align: center;
   padding: 0 8px;
-  color: white;
+  background-color: var(--text-color);
+  color: var(--bg-color);
   transition: background-color 0.3s ease;
+}
+
+body.dark .rotating-text {
+  background-color: var(--bg-color);
+  color: var(--text-color);
 }
 
 .rotating-text.full {

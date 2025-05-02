@@ -13,10 +13,10 @@
     <div class="faq-list l-home__content">
       <div v-for="(item, index) in faqs" :key="index" class="faq-item">
         <div class="faq-question" @click="toggleFaq(index)">
-          <h2>
-            <b>{{ item.question }}</b>
+          <h3>
+            <span>{{ item.question }}</span>
             <span class="icon">{{ isOpen[index] ? '−' : '+' }}</span>
-          </h2>
+          </h3>
         </div>
         <div
           class="faq-answer"
@@ -171,6 +171,10 @@ onUnmounted(() => {
   gap: 1rem;
 }
 
+.faq-list.faq-list {
+  gap: 0;
+}
+
 .faq-item {
   overflow: hidden;
   border-bottom: 1px solid #e0e0e0;
@@ -182,7 +186,15 @@ onUnmounted(() => {
   transition: background-color 0.2s ease;
 }
 
-.faq-question h2 {
+.faq-item:first-child .faq-question {
+  padding-top: 0;
+}
+
+.faq-item:last-child {
+  border-bottom: none;
+}
+
+.faq-question h3 {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -191,8 +203,8 @@ onUnmounted(() => {
 }
 
 .faq-question .icon {
-  font-size: 1.5rem;
-  font-weight: bold;
+  font-size: 2.5rem;
+  font-weight: 300;
   transition: transform 0.3s ease;
 }
 
@@ -208,6 +220,10 @@ onUnmounted(() => {
   pointer-events: none;
   height: 0;
   padding: 0;
+}
+
+.faq-answer p:first-child {
+  margin-top: 0;
 }
 
 .faq-answer.is-open {
