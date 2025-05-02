@@ -96,6 +96,7 @@ onUnmounted(() => {
 
 <template>
   <div class="intro">
+    <div class="intro-background fade-in"></div>
     <div class="title">
       <div class="title-left">
         <h1 class="fade-in">
@@ -175,6 +176,19 @@ onUnmounted(() => {
   width: 100%;
   max-width: 1150px;
   margin: 8rem auto 3rem auto;
+  border-radius: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.intro-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background: radial-gradient(
     circle farthest-corner at 50% -50%,
     #05052f00 60%,
@@ -182,54 +196,27 @@ onUnmounted(() => {
     #7042b5 92%
   );
   border-radius: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
   animation: pulse-gradient 8s ease-in-out infinite;
-
-  @keyframes pulse-gradient {
-    0%,
-    100% {
-      background: radial-gradient(
-        circle farthest-corner at 50% -50%,
-        #05052f00 56%,
-        #0c0f75 77%,
-        #7042b5 92%
-      );
-    }
-    50% {
-      background: radial-gradient(
-        circle farthest-corner at 50% -50%,
-        #05052f00 60%,
-        #0c0f75 82%,
-        #7042b5 96%
-      );
-    }
-  }
-
-  &:after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 50px;
-    opacity: 0;
-    pointer-events: none;
-    background: linear-gradient(
-      to top,
-      rgba(4, 6, 100, 1) 100%,
-      rgba(112, 66, 181, 1) 10%
-    );
-  }
+  z-index: -1;
 }
 
-@media screen and (max-width: 1200px) {
-  .intro {
-    width: calc(100% - 2rem);
-    margin-left: 1rem;
-    margin-right: 1rem;
+@keyframes pulse-gradient {
+  0%,
+  100% {
+    background: radial-gradient(
+      circle farthest-corner at 50% -50%,
+      #05052f00 56%,
+      #0c0f75 77%,
+      #7042b5 92%
+    );
+  }
+  50% {
+    background: radial-gradient(
+      circle farthest-corner at 50% -50%,
+      #05052f00 60%,
+      #0c0f75 82%,
+      #7042b5 96%
+    );
   }
 }
 
