@@ -89,6 +89,7 @@
     line-height: 1.7;
     display: flex;
     flex-direction: column;
+    padding: 0 12px;
   }
 
   code .line {
@@ -115,8 +116,8 @@
   }
 }
 
-.shiki.shiki.github-light {
-  --vp-c-bg: var(--vp-code-block-bg);
+.shiki.shiki.tokyo-night {
+  background-color: #050638 !important;
 }
 
 .l-home {

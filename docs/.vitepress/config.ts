@@ -681,10 +681,7 @@ Boost your TypeScript stack with SSOT entities and say goodbye to boilerplate co
   },
 
   markdown: {
-    theme: {
-      dark: 'tokyo-night',
-      light: 'github-light',
-    },
+    theme: 'tokyo-night',
     config(md) {
       md.use(tabsMarkdownPlugin)
     },
