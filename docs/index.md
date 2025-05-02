@@ -12,7 +12,7 @@ head:
       content: Remult
   - - meta
     - property: og:image
-      content: https://remult.dev/logo_sm.png
+      content: https://remult.dev/og.png
   - - meta
     - property: og:url
       content: https://remult.dev/
