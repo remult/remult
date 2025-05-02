@@ -294,11 +294,29 @@ onUnmounted(() => {
 }
 
 @media screen and (max-width: 1024px) {
+  .intro {
+    margin-top: 3rem;
+  }
+
   .intro-logos {
     margin-top: 2rem;
     max-width: 470px;
     gap: 1rem;
     flex-wrap: wrap;
+  }
+
+  .intro .editor-container {
+    width: 600px;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .intro {
+    padding: 0 1rem 0 1rem
+  }
+
+  .intro .editor-container {
+    width: 100%;
   }
 }
 
