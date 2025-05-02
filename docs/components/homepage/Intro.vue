@@ -243,6 +243,7 @@ onUnmounted(() => {
   justify-content: flex-start;
 
   h1 {
+    font-weight: 500;
     color: var(--vp-c-text);
     margin-bottom: 1rem;
     font-size: 2rem;
