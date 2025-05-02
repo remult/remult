@@ -27,6 +27,19 @@ export class Task {
 }`,
     },
     {
+      name: 'api.ts',
+      keyContext: 'init',
+      content: `import { remultApi } from 'remult/remult-express' // or next, fastify, ...
+import { createPostgresDataProvider } from 'remult/postgres' // or mongo, sqlite, mysql, ...
+
+import { Task } from './entities'
+
+export const api = remultApi({
+  entities: [Task],
+  dataProvider: createPostgresDataProvider()                
+})`,
+    },
+    {
       name: 'page.tsx',
       keyContext: 'frontend',
       framework: 'react',

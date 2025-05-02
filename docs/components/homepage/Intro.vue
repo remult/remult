@@ -34,13 +34,13 @@ const shake = () => {
 onMounted(() => {
   // Set initial window width
   windowWidth.value = window.innerWidth
-  
+
   // Add resize listener
   handleResize = () => {
     windowWidth.value = window.innerWidth
   }
   window.addEventListener('resize', handleResize)
-  
+
   let index = 0
   const normalDuration = 2000 // 2 seconds for normal items
   const lastItemDuration = 6000 // 6 seconds for the last item (3x longer)
@@ -91,7 +91,7 @@ onUnmounted(() => {
         </h1>
 
         <div class="cta">
-          <a href="/">Try in Browser</a>
+          <a href="https://learn.remult.dev/">Try in Browser</a>
           <a href="/docs">Documentation</a>
         </div>
       </div>
@@ -150,7 +150,12 @@ onUnmounted(() => {
   width: 100%;
   max-width: 1150px;
   margin: 8rem auto 3rem auto;
-  background: radial-gradient(circle farthest-corner at 50% -50%, #05052F00 60%, #0c0f75 77%, #7042B5 92%);
+  background: radial-gradient(
+    circle farthest-corner at 50% -50%,
+    #05052f00 60%,
+    #0c0f75 77%,
+    #7042b5 92%
+  );
   border-radius: 1.5rem;
   display: flex;
   flex-direction: column;
@@ -159,11 +164,22 @@ onUnmounted(() => {
   animation: pulse-gradient 8s ease-in-out infinite;
 
   @keyframes pulse-gradient {
-    0%, 100% {
-      background: radial-gradient(circle farthest-corner at 50% -50%, #05052F00 56%, #0c0f75 77%, #7042B5 92%);
+    0%,
+    100% {
+      background: radial-gradient(
+        circle farthest-corner at 50% -50%,
+        #05052f00 56%,
+        #0c0f75 77%,
+        #7042b5 92%
+      );
     }
     50% {
-      background: radial-gradient(circle farthest-corner at 50% -50%, #05052F00 60%, #0c0f75 82%, #7042B5 96%);
+      background: radial-gradient(
+        circle farthest-corner at 50% -50%,
+        #05052f00 60%,
+        #0c0f75 82%,
+        #7042b5 96%
+      );
     }
   }
 
@@ -275,7 +291,11 @@ onUnmounted(() => {
     left: 0;
     width: 300px;
     height: 300px;
-    background: radial-gradient(circle at bottom left, rgb(62 47 152 / 55%), rgba(5, 6, 67, 0) 71%);
+    background: radial-gradient(
+      circle at bottom left,
+      rgb(62 47 152 / 55%),
+      rgba(5, 6, 67, 0) 71%
+    );
     pointer-events: none;
     z-index: 1;
   }
@@ -287,7 +307,11 @@ onUnmounted(() => {
     right: 0;
     width: 300px;
     height: 300px;
-    background: radial-gradient(circle at bottom right, rgb(22 26 141 / 46%), rgba(5, 6, 67, 0) 71%);
+    background: radial-gradient(
+      circle at bottom right,
+      rgb(22 26 141 / 46%),
+      rgba(5, 6, 67, 0) 71%
+    );
     pointer-events: none;
     z-index: 1;
   }
@@ -312,7 +336,7 @@ onUnmounted(() => {
 
 @media screen and (max-width: 600px) {
   .intro {
-    padding: 0 1rem 0 1rem
+    padding: 0 1rem 0 1rem;
   }
 
   .intro .editor-container {
