@@ -108,7 +108,7 @@ const selectStep = (step: CodeStep) => {
     currentFile.value = appropriateFile.name
     keyContext.value = appropriateFile.keyContext
   }
-  
+
   // Close sidebar after selection on mobile
   sidebarOpen.value = false
 }
@@ -125,7 +125,14 @@ const selectFile = (fileName: string) => {
 
 const getCurrentCode = () => {
   if (!currentStep.value || !currentFile.value) return ''
-  const file = currentStep.value.files.find((f) => f.name === currentFile.value)
+  // Get the one that matches the framework first...
+  let file = currentStep.value.files.find(
+    (f) => f.name === currentFile.value && f.framework === framework.value,
+  )
+  // If not found, get the first one that matches the name
+  if (!file) {
+    file = currentStep.value.files.find((f) => f.name === currentFile.value)
+  }
   return file?.content || ''
 }
 
@@ -169,7 +176,7 @@ const getStepTimeAgo = (stepIndex: number) => {
 const visibleFiles = computed(() => {
   if (!currentStep.value) return []
   return currentStep.value.files.filter(
-    (f) => f.framework === undefined || f.framework === framework.value
+    (f) => f.framework === undefined || f.framework === framework.value,
   )
 })
 
@@ -182,12 +189,12 @@ watch(
         codeRef.value?.scrollToChangedLines()
       }, 100)
     }
-  }
+  },
 )
 </script>
 
 <template>
-  <div class="editor-mobile">    
+  <div class="editor-mobile">
     <!-- Framework selector - always visible -->
     <div class="editor-framework">
       <div class="framework-icons">
@@ -205,10 +212,7 @@ watch(
           <input type="radio" v-model="framework" value="svelte" />
           <IconSvelte />
         </label>
-        <label
-          class="framework-icon"
-          :class="{ active: framework === 'vue' }"
-        >
+        <label class="framework-icon" :class="{ active: framework === 'vue' }">
           <input type="radio" v-model="framework" value="vue" />
           <IconVue />
         </label>
@@ -225,38 +229,50 @@ watch(
     <div class="editor-body">
       <!-- Commit history as a select -->
       <div class="commit-selector">
-        <button 
-          class="nav-button left" 
-          @click="() => {
-            const currentIndex = steps.findIndex(s => s.id === currentStep?.id);
-            if (currentIndex > 0) selectStep(steps[currentIndex - 1]);
-          }"
-          :disabled="steps.findIndex(s => s.id === currentStep?.id) === 0"
+        <button
+          class="nav-button left"
+          @click="
+            () => {
+              const currentIndex = steps.findIndex(
+                (s) => s.id === currentStep?.id,
+              )
+              if (currentIndex > 0) selectStep(steps[currentIndex - 1])
+            }
+          "
+          :disabled="steps.findIndex((s) => s.id === currentStep?.id) === 0"
         >
           ←
         </button>
-        <select 
-          :value="currentStep?.id" 
-          @change="(e) => {
-            const selectedStep = steps.find(s => s.id === (e.target as HTMLSelectElement).value);
-            if (selectedStep) selectStep(selectedStep);
-          }"
+        <select
+          :value="currentStep?.id"
+          @change="
+            (e) => {
+              const selectedStep = steps.find(
+                (s) => s.id === (e.target as HTMLSelectElement).value,
+              )
+              if (selectedStep) selectStep(selectedStep)
+            }
+          "
         >
-          <option 
-            v-for="step in steps" 
-            :key="step.id" 
-            :value="step.id"
-          >
+          <option v-for="step in steps" :key="step.id" :value="step.id">
             {{ step.name }}
           </option>
         </select>
-        <button 
-          class="nav-button right" 
-          @click="() => {
-            const currentIndex = steps.findIndex(s => s.id === currentStep?.id);
-            if (currentIndex < steps.length - 1) selectStep(steps[currentIndex + 1]);
-          }"
-          :disabled="steps.findIndex(s => s.id === currentStep?.id) === steps.length - 1"
+        <button
+          class="nav-button right"
+          @click="
+            () => {
+              const currentIndex = steps.findIndex(
+                (s) => s.id === currentStep?.id,
+              )
+              if (currentIndex < steps.length - 1)
+                selectStep(steps[currentIndex + 1])
+            }
+          "
+          :disabled="
+            steps.findIndex((s) => s.id === currentStep?.id) ===
+            steps.length - 1
+          "
         >
           →
         </button>
@@ -281,7 +297,11 @@ watch(
         </div>
 
         <div class="editor-code">
-          <Code ref="codeRef" :code="getCurrentCode()" :language="getCurrentLanguage()" />
+          <Code
+            ref="codeRef"
+            :code="getCurrentCode()"
+            :language="getCurrentLanguage()"
+          />
         </div>
       </div>
     </div>
@@ -389,7 +409,7 @@ watch(
   border: none;
   padding: 0.5rem;
   border-radius: 4px;
-  font-size: .8rem;
+  font-size: 0.8rem;
   height: 38px;
   cursor: pointer;
   text-align: center;
@@ -400,7 +420,6 @@ watch(
   background: #080a59;
   color: #c0c2ff;
 }
-
 
 .editor-mobile .nav-button {
   background: #080a59;

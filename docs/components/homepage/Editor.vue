@@ -121,7 +121,14 @@ const selectFile = (fileName: string) => {
 
 const getCurrentCode = () => {
   if (!currentStep.value || !currentFile.value) return ''
-  const file = currentStep.value.files.find((f) => f.name === currentFile.value)
+  // Get the one that matches the framework first...
+  let file = currentStep.value.files.find(
+    (f) => f.name === currentFile.value && f.framework === framework.value,
+  )
+  // If not found, get the first one that matches the name
+  if (!file) {
+    file = currentStep.value.files.find((f) => f.name === currentFile.value)
+  }
   return file?.content || ''
 }
 
@@ -166,7 +173,7 @@ watch(
         codeRef.value?.scrollToChangedLines()
       }, 100)
     }
-  }
+  },
 )
 </script>
 
@@ -258,7 +265,11 @@ watch(
         </div>
 
         <div class="editor-code">
-          <Code ref="codeRef" :code="getCurrentCode()" :language="getCurrentLanguage()" />
+          <Code
+            ref="codeRef"
+            :code="getCurrentCode()"
+            :language="getCurrentLanguage()"
+          />
         </div>
       </div>
     </div>

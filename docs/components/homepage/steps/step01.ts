@@ -1,5 +1,14 @@
 import type { CodeStepInput } from '../stepsData.js'
 
+const defaultApi = `import { createPostgresDataProvider } from 'remult/postgres' // or sqlite, mysql, mongo...
+
+import { Task } from './entities'
+
+export const api = remultApi({
+  entities: [Task],
+  dataProvider: createPostgresDataProvider()                
+})`
+
 export default {
   name: 'Define an entity',
   stepTime: 2 * 60,
@@ -26,19 +35,36 @@ export class Task {
   title = ''
 }`,
     },
+    // api
     {
       name: 'api.ts',
-      keyContext: 'init',
+      keyContext: 'api',
+      framework: 'react',
       content: `import { remultApi } from 'remult/remult-express' // or next, fastify, ...
-import { createPostgresDataProvider } from 'remult/postgres' // or mongo, sqlite, mysql, ...
-
-import { Task } from './entities'
-
-export const api = remultApi({
-  entities: [Task],
-  dataProvider: createPostgresDataProvider()                
-})`,
+${defaultApi}`,
     },
+    {
+      name: 'api.ts',
+      keyContext: 'api',
+      framework: 'svelte',
+      content: `import { remultApi } from 'remult/remult-sveltekit'
+${defaultApi}`,
+    },
+    {
+      name: 'api.ts',
+      keyContext: 'api',
+      framework: 'vue',
+      content: `import { remultApi } from 'remult/remult-nuxt' // or express, fastify, ...
+${defaultApi}`,
+    },
+    {
+      name: 'api.ts',
+      keyContext: 'api',
+      framework: 'angular',
+      content: `import { remultApi } from 'remult/remult-express' // or fastify, ...
+${defaultApi}`,
+    },
+    // frontend
     {
       name: 'page.tsx',
       keyContext: 'frontend',
