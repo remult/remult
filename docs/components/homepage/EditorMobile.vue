@@ -306,6 +306,7 @@ watch(
   overflow: hidden;
   font-size: 0.8rem;
   height: calc(100vh - 100px);
+  max-height: 600px;
   width: 100%;
   max-width: 600px;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
@@ -320,8 +321,6 @@ watch(
 .editor-mobile .copy-button {
   display: none;
 }
-
-
 
 /* Framework selector styles */
 .editor-mobile .editor-framework {
