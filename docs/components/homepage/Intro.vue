@@ -91,8 +91,8 @@ onUnmounted(() => {
         </h1>
 
         <div class="cta">
-          <a href="https://learn.remult.dev/">Try in Browser</a>
-          <a href="/docs">Documentation</a>
+          <a href="https://learn.remult.dev/">Try in Browser -></a>
+          <a href="/docs">Documentation -></a>
         </div>
       </div>
 
@@ -397,11 +397,102 @@ body.dark .rotating-text {
 }
 
 .cta a {
-  display: inline-block;
-  background: #0d0d5b;
+  position: relative;
   color: #fff;
-  padding: 0.5rem 2rem;
+  padding: 0.5rem 1rem;
   text-decoration: none;
+  border-radius: 4px;
+  z-index: 1;
+  transition: color 0.3s ease;
+  background: radial-gradient(circle farthest-corner at 8% -50%, #d6d6d600 -40%, #2e34a2 28%, #7141b5 200%);
+}
+
+.cta a:nth-child(2) {
+  background: #f6f6f7;
+  color: #545459;
+  transition: all 0.3s ease;
+}
+
+.cta a:nth-child(2)::before {
+  display: none;
+}
+
+.cta a:nth-child(2):hover {
+  background: #e5e5e7;
+  color: #545459;
+}
+
+.cta a::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: 4px;
+  z-index: -1;
+  transition: opacity 0.3s ease-in-out;
+  opacity: 0;
+  background: radial-gradient(circle farthest-corner at 8% -50%, #d6d6d600 -10%, #2e34a2 35%, #7141b5 79%);
+}
+
+.cta a:hover::before {
+  opacity: 1;
+}
+
+.cta a:hover {
+  color: #fff;
+}
+
+.dark .cta a {
+  position: relative;
+  background: radial-gradient(
+    circle farthest-corner at 50% -50%,
+    #17178e00 -3%,
+    #0c0f75 77%,
+    #7042b5 110%
+  );
+  z-index: 1;
+}
+
+.dark .cta a:hover {
+  color: #fff;
+}
+
+.dark .cta a::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: radial-gradient(
+    circle farthest-corner at 50% -50%,
+    #05052f00 -10%,
+    #0c0f75 35%,
+    #7042b5 100%
+  );
+  z-index: -1;
+  transition: opacity 0.3s ease;
+  opacity: 0;
+}
+
+.dark .cta a:hover::before {
+  opacity: 1;
+}
+
+.dark .cta a:nth-child(2) {
+  background: #050739;
+  color: #fff;
+}
+
+.dark .cta a:nth-child(2)::before {
+  display: none;
+}
+
+.dark .cta a:nth-child(2):hover {
+  background: #0c0f75;
+  color: #fff;
 }
 
 .intro a {
@@ -437,7 +528,7 @@ body.dark .rotating-text {
 
     a {
       font-size: 0.8rem;
-      padding: .5rem 1rem;
+      padding: .5rem .75rem;
     }
   }
 }
@@ -445,6 +536,15 @@ body.dark .rotating-text {
 @media screen and (max-width: 480px) {
   .intro .title-left h1 span:last-child {
     display: block;
+  }
+
+  .intro {
+    margin-left: 0rem;
+    margin-right: 0rem;
+  }
+
+  .intro .title {
+    margin-bottom: 1rem;
   }
 }
 </style>
