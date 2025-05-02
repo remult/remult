@@ -87,7 +87,7 @@ onUnmounted(() => {
             }"
             >{{ currentFeature.text }}</span
           >
-          to your full-stack
+          <span> to your full-stack</span>
         </h1>
 
         <div class="cta">
@@ -353,7 +353,7 @@ onUnmounted(() => {
 
 .rotating-text {
   display: inline-block;
-  min-width: 60px;
+  min-width: 40px;
   text-align: center;
   padding: 0 8px;
   background-color: var(--text-color);
@@ -364,10 +364,6 @@ onUnmounted(() => {
 body.dark .rotating-text {
   background-color: var(--bg-color);
   color: var(--text-color);
-}
-
-.rotating-text.full {
-  min-width: 80px;
 }
 
 @keyframes shake {
@@ -424,6 +420,11 @@ body.dark .rotating-text {
     text-align: center;
     justify-content: center;
     align-items: center;
+
+    h1 {
+      font-size: 1.5rem;
+      line-height: 1.2;
+    }
   }
 
   .intro .title-right {
@@ -433,6 +434,17 @@ body.dark .rotating-text {
   .intro .cta {
     align-items: center;
     justify-content: center;
+
+    a {
+      font-size: 0.8rem;
+      padding: .5rem 1rem;
+    }
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .intro .title-left h1 span:last-child {
+    display: block;
   }
 }
 </style>
