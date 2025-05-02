@@ -196,28 +196,7 @@ onUnmounted(() => {
     #7042b5 92%
   );
   border-radius: 1.5rem;
-  animation: pulse-gradient 8s ease-in-out infinite;
   z-index: -1;
-}
-
-@keyframes pulse-gradient {
-  0%,
-  100% {
-    background: radial-gradient(
-      circle farthest-corner at 50% -50%,
-      #05052f00 56%,
-      #0c0f75 77%,
-      #7042b5 92%
-    );
-  }
-  50% {
-    background: radial-gradient(
-      circle farthest-corner at 50% -50%,
-      #05052f00 60%,
-      #0c0f75 82%,
-      #7042b5 96%
-    );
-  }
 }
 
 .intro .editor-container {
