@@ -41,6 +41,7 @@ export class ValueConverters {
     toJson: (val: Date) => {
       var d = val
       if (typeof d === 'string' || typeof d === 'number') d = new Date(d)
+      if (d === undefined) return undefined
       if (!d || d == null) return null
 
       if (d.getHours() == 0)

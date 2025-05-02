@@ -43,7 +43,6 @@ import {
   type RelationOptions,
   type Repository,
   type RepositoryRelations,
-  type Subscribable,
   type ValidateFieldEvent,
   type idType,
 } from './remult3.js'
@@ -52,7 +51,6 @@ import type {
   QueryOptions,
   QueryResult,
   RefSubscriber,
-  RefSubscriberBase,
   UpsertOptions,
 } from './remult3.js'
 import { assign } from '../../assign.js'
@@ -99,6 +97,7 @@ import { Validators } from '../validators.js'
 import { addValidator } from './addValidator.js'
 import { cast, isOfType } from '../isOfType.js'
 import { QueryResultImpl } from './QueryResultImpl.js'
+import { SubscribableImp } from './SubscribableImp.js'
 //import  { remult } from "../remult-proxy";
 
 let classValidatorValidate:
@@ -3127,41 +3126,6 @@ export class ControllerBase {
 class cacheEntityInfo<entityType> {
   value?: entityType = {} as entityType
   promise?: Promise<entityType | undefined>
-}
-class SubscribableImp implements Subscribable {
-  reportChanged() {
-    if (this._subscribers) this._subscribers.forEach((x) => x.reportChanged())
-  }
-  reportObserved() {
-    if (this._subscribers) this._subscribers.forEach((x) => x.reportObserved())
-  }
-  private _subscribers?: RefSubscriberBase[]
-  subscribe(
-    listener:
-      | (() => void)
-      | {
-        reportChanged: () => void
-        reportObserved: () => void
-      },
-  ): Unsubscribe {
-    let list: {
-      reportChanged: () => void
-      reportObserved: () => void
-    }
-    if (typeof listener === 'function')
-      list = {
-        reportChanged: () => listener(),
-        reportObserved: () => { },
-      }
-    else list = listener
-
-    if (!this._subscribers) {
-      this._subscribers = []
-    }
-    this._subscribers.push(list)
-    return () =>
-      (this._subscribers = this._subscribers!.filter((x) => x != list))
-  }
 }
 export function getEntityMetadata<entityType>(
   entity: EntityMetadataOverloads<entityType>,

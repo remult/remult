@@ -41,11 +41,14 @@
 
   $: change =
     Boolean(
-      columns.find(
-        // TODO check also for json diff? (today, when filtering or ordering, it will be considered a change "sometimes"... false positive!)
-        // x.type !== 'json' &&
-        (x) => x.type !== 'json' && value[x.key] !== rowFrozzen[x.key],
-      ),
+      columns.find((x) => {
+        if (x.type === 'json') {
+          return (
+            JSON.stringify(value[x.key]) !== JSON.stringify(rowFrozzen[x.key])
+          )
+        }
+        return value[x.key] !== rowFrozzen[x.key]
+      }),
     ) || isNewRow
 
   $: relationWhere =
@@ -77,16 +80,12 @@
     await cancelAction()
   }
 
-  function changeOrNew(_change: boolean, _isNewRow: boolean) {
-    return _change || _isNewRow
-  }
-
   function handleKeydown(e: KeyboardEvent) {
     const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0
     const modifier = isMac ? e.metaKey : e.ctrlKey
 
     // Handle global actions (with shift) or focused row actions
-    if (changeOrNew(change, isNewRow)) {
+    if (change) {
       if (e.key === 'Enter' && modifier) {
         e.preventDefault()
         if (e.shiftKey) {
@@ -142,7 +141,7 @@
 <svelte:window on:keydown={handleKeydown} />
 
 <tr
-  class={changeOrNew(change, isNewRow) ? 'change' : ''}
+  class={change ? 'change' : ''}
   on:focusin={handleFocusIn}
   on:focusout={handleFocusOut}
 >
@@ -187,9 +186,9 @@
       {/if}
     </td>
   {/each}
-  <td class="action-tab {changeOrNew(change, isNewRow) ? 'change' : ''}">
+  <td class="action-tab {change ? 'change' : ''}">
     <div class="row-actions">
-      {#if changeOrNew(change, isNewRow)}
+      {#if change}
         <div class="margin-auto">
           <button
             class="icon-button save-button"
@@ -207,7 +206,7 @@
           </button>
         </div>
       {/if}
-      {#if deleteAction && !changeOrNew(change, isNewRow)}
+      {#if deleteAction && !change}
         <button
           class="icon-button delete-button margin-auto"
           title="Delete"

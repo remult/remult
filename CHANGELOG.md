@@ -1,5 +1,21 @@
 All notable changes to this project will be documented in this file.
 
+## [2.7.34] 2025-4-29
+
+- Added support for sql expression based entity to knex data provider
+
+## [2.7.33] 2025-4-5
+
+- Fixed bug with API Update of null with dateOnly
+- Fixed admin to show json editor also for arrays
+
+## [2.7.32] 2025-3-18
+
+- Added `subscribeAuth` to remult to support reactivity
+- Admin ui:
+  - Fixed issue where json editor was not working when the json field was an array
+  - Fixed issue where json field did not trigger the change detection (color green)
+
 ## [2.7.31] 2025-3-9
 
 - `ValueConverters.Number.fromInput(null)` now returns `null` _(was undefined before)_.

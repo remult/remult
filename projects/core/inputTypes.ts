@@ -6,4 +6,5 @@ export class InputTypes {
   static email = 'email'
   static tel = 'tel'
   static time = 'time'
+  static json = 'json'
 }

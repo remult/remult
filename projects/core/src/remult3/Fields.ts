@@ -24,6 +24,7 @@ import { relationInfoMemberInOptions } from './relationInfoMember.js'
 import { remultStatic } from '../remult-static.js'
 import { addValidator } from './addValidator.js'
 import { isOfType } from '../isOfType.js'
+import { InputTypes } from '../../inputTypes.js'
 
 const validateNumber = createValueValidator((x: number) => {
   return !isNaN(x) && isFinite(x)
@@ -50,12 +51,16 @@ export class Fields {
     if (op.valueConverter && !op.valueConverter.fieldTypeInDb)
       //@ts-ignore
       op.valueConverter.fieldTypeInDb = 'json'
+    if (op.valueType && !op.valueType.inputType)
+      //@ts-ignore
+      op.valueType.inputType = InputTypes.json
 
     return Field(
       undefined,
       {
         valueConverter: {
           fieldTypeInDb: 'json',
+          inputType: InputTypes.json,
         },
       },
       ...options,

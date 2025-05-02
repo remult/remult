@@ -2295,8 +2295,12 @@ export declare class Remult {
    * @param dataProvider - an optional alternative data provider to use. Useful for writing to offline storage or an alternative data provider
    */
   repo: <T>(entity: ClassType<T>, dataProvider?: DataProvider) => Repository<T>
+  private _subscribers?
+  subscribeAuth(listener: RefSubscriber): Unsubscribe
+  private __user?
   /** Returns the current user's info */
-  user?: UserInfo
+  get user(): UserInfo | undefined
+  set user(user: UserInfo | undefined)
   /**
    * Fetches user information from the backend and updates the `remult.user` object.
    * Typically used during application initialization and user authentication.

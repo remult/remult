@@ -195,6 +195,11 @@ class KnexEntityDataProvider implements EntityDataProvider {
       (limit, offset) => ' limit ' + limit + ' offset ' + offset,
     )
   }
+  getEntityFrom(e: EntityDbNamesBase): Knex.QueryBuilder {
+    if (this.entity.options.sqlExpression)
+      return this.knex.fromRaw(e.$entityName)
+    return this.knex(e.$entityName)
+  }
   async count(where: Filter): Promise<number> {
     const e = await this.init()
     const br = new FilterConsumerBridgeToKnexRequest(
@@ -203,7 +208,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
     )
     where.__applyToConsumer(br)
     let r = await br.resolveWhere()
-    const result = await this.knex(e.$entityName)
+    const result = await this.getEntityFrom(e)
       .count()
       .where((b) => r.forEach((w) => w(b)))
     var row = result[0]
@@ -229,7 +234,8 @@ class KnexEntityDataProvider implements EntityDataProvider {
         colKeys.push(x)
       }
     }
-    let query = this.knex(e.$entityName).select(cols)
+    let query = this.getEntityFrom(e).select(cols)
+
     if (options?.where) {
       const br = new FilterConsumerBridgeToKnexRequest(
         e,
@@ -256,7 +262,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
     }
     const r = await query
 
-    return r.map((y) => {
+    return r.map((y: any) => {
       let result: any = {}
 
       let i = 0
@@ -309,7 +315,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
     }
 
     let where = await f.resolveWhere()
-    await this.knex(e.$entityName)
+    await this.getEntityFrom(e)
       .update(updateObject)
       .where((b) => where.forEach((w) => w(b)))
     return getRowAfterUpdate(this.entity, this, data, id, 'update')
@@ -322,7 +328,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
       this.entity.idMetadata.getIdFilter(id),
     ).__applyToConsumer(f)
     let where = await f.resolveWhere()
-    await this.knex(e.$entityName)
+    await this.getEntityFrom(e)
       .delete()
       .where((b) => where.forEach((w) => w(b)))
   }
@@ -341,7 +347,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
       }
     }
 
-    let insert = this.knex(e.$entityName).insert(insertObject)
+    let insert = this.getEntityFrom(e).insert(insertObject)
     if (isAutoIncrement(this.entity.idMetadata.field)) {
       let newId
       if (

@@ -22,7 +22,7 @@ describe.skipIf(!process.env['TESTS_SQL_SERVER'])('Knex Sql Server', () => {
         options: {
           enableArithAbort: true,
           encrypt: false,
-          instanceName: 'sqlexpress',
+          // instanceName: 'sqlexpress',
         },
       }, //,debug: true
     }),
@@ -73,6 +73,23 @@ describe.skipIf(!process.env['TESTS_SQL_SERVER'])('Knex Sql Server', () => {
         ).toMatchInlineSnapshot(
           "\"CREATE TABLE [t] ([id] decimal(18, 2) not null CONSTRAINT [t_id_default] DEFAULT '0', [id2] decimal(18, 2) not null CONSTRAINT [t_id2_default] DEFAULT '0', [name] nvarchar(255) not null CONSTRAINT [t_name_default] DEFAULT '', CONSTRAINT [t_pkey] PRIMARY KEY ([id], [id2]))\"",
         )
+      })
+      it('test long sql statement', async () => {
+        @Entity('longStatement', {
+          sqlExpression: () => `(select 1 id) x`,
+        })
+        class longStatement {
+          @Fields.number()
+          id = ''
+        }
+        var r = await createEntity(longStatement)
+        expect(await r.find()).toMatchInlineSnapshot(`
+          [
+            longStatement {
+              "id": 1,
+            },
+          ]
+        `)
       })
       it('test long number', async () => {
         const r = await createEntity(

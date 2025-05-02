@@ -180,7 +180,7 @@ export function SqlDbTests({
       @Fields.integer()
       id = 0
       @Fields.integer({
-        sqlExpression: () => '1+1',
+        sqlExpression: () => 'id+1',
       })
       a = 0
       @Fields.integer({
