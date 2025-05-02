@@ -26,6 +26,13 @@
     '*': NotFound,
   }
 
+  // Add cache implementation
+  const cache = new Map<
+    string,
+    { promise: Promise<Response>; timestamp: number }
+  >()
+  const CACHE_DURATION = 1000 * 2
+
   export function midTrim(
     str: string,
     o?: { len?: number; midStr?: string },
@@ -43,18 +50,7 @@
     return str
   }
 
-  remult.apiClient.url = $LSContext.settings.apiUrl
-  remult.apiClient.httpClient = async (
-    input: RequestInfo | URL,
-    init?: RequestInit,
-  ) => {
-    // console.log(`input`, input)
-
-    const f = await fetch(input, {
-      ...init,
-      headers: getHeader($SSContext, $LSContext, init),
-    })
-
+  function handleForbidden(f: Response) {
     if (f.status === 403) {
       const parsedUrl = new URL(f.url)
       const segments = parsedUrl.pathname.split('/')
@@ -63,8 +59,58 @@
         ...new Set([...$SSContext.forbiddenEntities, lastSegment]),
       ]
     }
+  }
 
-    return f
+  // remult.apiClient.url = $LSContext.settings.apiUrl
+  remult.apiClient.url = window.optionsFromServer?.rootPath ?? '/api'
+  remult.apiClient.httpClient = async (
+    input: RequestInfo | URL,
+    init?: RequestInit,
+  ) => {
+    // Only cache GET requests
+    if (init?.method && init.method !== 'GET') {
+      const f = await fetch(input, {
+        ...init,
+        headers: getHeader($SSContext, $LSContext, init),
+      })
+      handleForbidden(f)
+      return f
+    }
+
+    const cacheKey = input.toString()
+    const now = Date.now()
+
+    // Check cache first
+    const cached = cache.get(cacheKey)
+    if (cached) {
+      if (now - cached.timestamp < CACHE_DURATION) {
+        const response = await cached.promise
+        return response.clone()
+      } else {
+        cache.delete(cacheKey)
+      }
+    }
+
+    // If not in cache, create the promise immediately
+    const fetchPromise = fetch(input, {
+      ...init,
+      headers: getHeader($SSContext, $LSContext, init),
+    }).then(async (response) => {
+      handleForbidden(response)
+      // Store a clone for future use
+      const clonedResponse = response.clone()
+      return clonedResponse
+    })
+
+    // Store in cache immediately
+    cache.set(cacheKey, {
+      promise: fetchPromise,
+      timestamp: now,
+    })
+
+    // Return a fresh clone for this request
+    const response = await fetchPromise
+    return response.clone()
   }
 </script>
 
@@ -97,7 +143,7 @@
 
     <input
       class="tab"
-      style="content: 'inner'; margin-left: 4px;"
+      style="content: 'inner'; margin-left: 4px; background-color: white;"
       type="text"
       placeholder="Search"
       bind:value={$LSContext.settings.search}
@@ -106,40 +152,15 @@
       <a
         class="tab"
         style="--color: {t.color}"
-        href="#/entity/{t.key}"
+        href="#/entity/{t.superKey}"
         use:active={{
-          path: `/entity/${t.key}`,
+          path: `/entity/${t.superKey}`,
           className: 'active',
         }}
       >
         {midTrim($LSContext.settings.dispayCaption ? t.caption : t.key)}
       </a>
     {/each}
-    <!-- DIALOG DEMO -->
-    <!-- <button
-      on:click={async () => {
-        const res = await dialog.confirm('Are you sure ?')
-        if (res.success) {
-          await dialog.confirmDelete('Item to delete')
-        }
-        console.log(`res`, res)
-      }}>confirm</button
-    >
-    <button
-      on:click={async () => {
-        const res = await dialog.confirmDelete('Item to delete')
-        if (res.success) {
-          await dialog.confirm('Are you sure ?')
-        }
-        console.log(`res`, res)
-      }}>confirm delete</button
-    >
-    <button
-      on:click={async () => {
-        const res = await dialog.show({ config: {} })
-        console.log(`res`, res)
-      }}>Show</button
-    > -->
 
     <a
       href="#/diagram"
@@ -147,7 +168,7 @@
       use:active={{
         path: `/diagram`,
         className: 'active',
-      }}>Diagram</a
+      }}>🎨 Diagram</a
     >
   </div>
 
@@ -165,5 +186,9 @@
     /* background-color: hsla(var(--color), 70%, 50%, 0.05); */
     /* nowrap */
     white-space: nowrap;
+  }
+
+  input::placeholder {
+    color: #888;
   }
 </style>

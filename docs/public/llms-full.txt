@@ -1474,6 +1474,10 @@ export class Contact {
 
 # Entities - Relations 🚀
 
+---
+outline: [2, 3]
+---
+
 # Relations Between Entities
 
 ::: tip **Interactive Learning Available! 🚀**
@@ -1571,7 +1575,7 @@ When querying data that involves a many-to-one relation, you can use the `includ
 
 Here's how you can include the relation in a query using Remult:
 
-```typescript{3-5}
+```typescript{2-4}
 const orders = await repo(Order).find({
   include: {
     customer: true,
@@ -2315,6 +2319,7 @@ Utilizing an intermediate table for managing many-to-many relationships in Remul
 ---
 
 In this guide, we've explored the essential concepts of managing entity relations within the Remult library. From one-to-one to many-to-many relationships, we've covered the declaration, customization, and querying of these relations. By understanding the nuances of entity relations, users can harness the full potential of Remult to build robust TypeScript applications with ease.
+
 
 
 # Relations 🚀 - Filtering and Relations
@@ -3871,15 +3876,30 @@ To take full advantage of it, add this snippet:
 
   // To be done once in the application.
   function initRemultSvelteReactivity() {
-    Remult.entityRefInit = (x) => {
+    // Auth reactivity (remult.user, remult.authenticated(), ...)
+    {
       let update = () => {}
       let s = createSubscriber((u) => {
         update = u
       })
-      x.subscribe({
+      remult.subscribeAuth({
         reportObserved: () => s(),
         reportChanged: () => update(),
       })
+    }
+
+    // Entities reactivity
+    {
+      Remult.entityRefInit = (x) => {
+        let update = () => {}
+        let s = createSubscriber((u) => {
+          update = u
+        })
+        x.subscribe({
+          reportObserved: () => s(),
+          reportChanged: () => update(),
+        })
+      }
     }
   }
   initRemultSvelteReactivity()
@@ -3908,6 +3928,77 @@ Then you can use `$state`, `$derived` like any other places
 ```
 
 :::
+
+### Focus on auth reactivity
+
+Anywhere in your frontend code you can set `remult.user = xxx` and all remult auth reactivity will work (remult.user, remult.authenticated(), ...)
+
+```ts
+const logout = async () => {
+  try {
+    remult.user = await AuthController.signOut()
+  } catch (error) {
+    alert(error.message)
+  }
+}
+```
+
+If you want `remult.user` to be filled in SSR, here is the code:
+
+::: code-group
+
+```svelte [src/routes/+layout.svelte]
+<script lang="ts">
+  import { untrack } from 'svelte'
+  import type { LayoutData } from './$types'
+
+  interface Props {
+    data: LayoutData
+    children?: import('svelte').Snippet
+  }
+
+  let { data, children }: Props = $props()
+
+  $effect(() => {
+    // Trigger the effect only on data.user update
+    data.user
+    untrack(() => {
+      remult.user = data.user
+    })
+  })
+
+  // initRemultSvelteReactivity stuff
+</script>
+
+{@render children?.()}
+```
+
+```ts [src/routes/+layout.server.ts]
+import { remult } from 'remult'
+
+import type { LayoutServerLoad } from './$types'
+
+export const load = (async () => {
+  return { user: remult.user }
+}) satisfies LayoutServerLoad
+```
+
+:::
+
+And you can trigger this with :
+
+```ts
+import { invalidateAll } from '$app/navigation'
+
+const logout = async () => {
+  try {
+    await AuthController.signOut()
+    invalidateAll() // [!code ++] // This will trigger the layout.server.ts load function
+  } catch (error) {
+    alert(error.message)
+  }
+}
+```
 
 
 
@@ -5723,6 +5814,8 @@ In this example, `backendPrefilter` and `backendPreprocessFilter` ensure that no
 
 Field-level authorization allows control over individual fields within an entity:
 
+_Field level authorization happens after entity level authorization AND if it's allowed._
+
 - `includeInApi`: Determines if the field is included in the API response.
 - `allowApiUpdate`: Controls if a field can be updated. If false, any change to the field is ignored.
 
@@ -5870,9 +5963,30 @@ Enjoy a fully featured Admin UI for your entities, you can do CRUD operations on
 Add the Admin UI to your application by setting the `admin` option to `true` in the remult configuration.
 
 ```ts
-export const api = remultSveltekit({
+export const api = remultExpress({
   entities: [],
   admin: true, // Enable the Admin UI
+})
+```
+
+### Tunning the Admin UI
+
+You can pass some options to admin as well:
+
+- `allow`, using [allowed](https://remult.dev/docs/access-control). `true`, `"admin"`, ...
+- `customHtmlHead`, to add custom html to the head of the admin page. It's a function that receives remult as an argument.
+
+Example:
+
+```ts
+export const api = remultExpress({
+  entities: [],
+  admin: {
+    allow: 'admin', // Only for user having the "admin" role
+    customHtmlHead: (r) =>
+      `<title>Nice Admin! (${r.user?.name ?? 'Anonymous'})</title>
+       <link href="https://remult.dev/favicon.png" rel="icon" type="image/png">`,
+  },
 })
 ```
 
@@ -6449,6 +6563,14 @@ Accessing the underlying database directly in Remult provides the flexibility to
 
 # Escape Hatches - Using Remult in Non-Remult Routes
 
+---
+keywords:
+  [
+    Error: remult object was requested outside of a valid context,
+    try running it within initApi or a remult request cycle,
+  ]
+---
+
 # Using Remult in Non-Remult Routes
 
 When using the CRUD api or [BackendMethods](./backendMethods.md), `remult` is automatically available. Still, there are many use cases where you may want to user remult in your own routes or other code without using `BackendMethods` but would still want to take advantage of `Remult` as an ORM and use it to check for user validity, etc...
@@ -6699,6 +6821,7 @@ import { remultHapi } from 'remult/remult-hapi'
 :::
 
 
+
 # Escape Hatches - Avoiding Decorators
 
 # Working without decorators
@@ -6781,6 +6904,18 @@ This is the same backend method that is detailed in the [Backend methods of the 
 
 
 # Escape Hatches - Extensibility
+
+---
+tags:
+  - options
+  - bespoke options
+  - customizing options
+  - type augmentation
+  - module augmentation
+  - UserInfo
+  - RemultContext
+  - context
+---
 
 # Extensibility
 
@@ -6931,6 +7066,7 @@ or in an entity's saving event:
 ```
 
 By leveraging module augmentation, you can tailor Remult to your specific needs, adding custom options and extending interfaces to suit your application's requirements.
+
 
 
 # Integrations - Open API
@@ -7488,6 +7624,8 @@ salary = 0;
 Determines whether this field can be updated via the API. This setting can also
 be controlled based on user roles or other access control checks.
 
+_It happens after entity level authorization AND if it's allowed._
+
 
 #### example:
 ```ts
@@ -8001,7 +8139,7 @@ Return's a `Repository` of the specific entity type
 
 
 #### example:
-```
+```ts
 const taskRepo = remult.repo(Task);
 ```
 
@@ -8989,7 +9127,7 @@ admin: true
 
 #### example:
 ```ts
-admin: ()=> remult.isAllowed('admin')
+admin: () => remult.isAllowed('admin')
 ```
 
 
@@ -9015,6 +9153,14 @@ export const api = remultExpress({
 
 
 # API Reference - EntityFilter
+
+---
+tags:
+  - Where
+  - Filter
+  - Entity Where
+  - Entity Filter
+---
 
 # EntityFilter
 
@@ -9154,6 +9300,7 @@ where: {
   }
 }
 ```
+
 
 
 # API Reference - EntityMetadata
@@ -10429,7 +10576,13 @@ Arguments:
 
 
 
-# Introducing Remult: The Backend to Frontend Framework You Always Wanted
+# Remult Blog - Introducing Remult
+
+---
+title: "Introducing Remult: The Backend to Frontend Framework You Always Wanted"
+sidebar: false
+editLink: false
+---
 
 > March 14, 2023 | Noam Honig
 
@@ -10504,6 +10657,7 @@ So we open sourced the framework, to enable other lazy developers like us to be 
 Check out [Remult](https://remult.dev), and if you like it, give it a star.  Let us know what you’d like to see next, and also feel free to contribute to the project.
 
 In our next post, we’ll do a roundup of tools in the ecosystem looking to solve similar challenges though different approaches, and unpack where Remult fits in, and what it’s optimized for.
+
 
 
 # react - Tutorial - Setup
@@ -10846,7 +11000,7 @@ curl http://localhost:3002/api/tasks -d "[{\"title\": \"Read a book\"},{\"title\
 5. Refresh the browser again, to see that the tasks were stored in the db.
 
 ::: warning Wait, where is the backend database?
-While remult supports [many relational and non-relational databases](https://remult.dev/docs/databases.html), in this tutorial we start by storing entity data in a backend **JSON file**. Notice that a `db` folder has been created under the root folder, with a `tasks.json` file containing the created tasks.
+While remult supports [many relational and non-relational databases](https://remult.dev/docs/installation/database/), in this tutorial we start by storing entity data in a backend **JSON file**. Notice that a `db` folder has been created under the root folder, with a `tasks.json` file containing the created tasks.
 :::
 
 ## Admin UI
@@ -12394,7 +12548,7 @@ curl http://localhost:3002/api/tasks -d "[{\"title\": \"Read a book\"},{\"title\
 5. Refresh the browser again, to see that the tasks were stored in the db.
 
 ::: warning Wait, where is the backend database?
-While remult supports [many relational and non-relational databases](https://remult.dev/docs/databases.html), in this tutorial we start by storing entity data in a backend **JSON file**. Notice that a `db` folder has been created under the root folder, with a `tasks.json` file containing the created tasks.
+While remult supports [many relational and non-relational databases](https://remult.dev/docs/installation/database/), in this tutorial we start by storing entity data in a backend **JSON file**. Notice that a `db` folder has been created under the root folder, with a `tasks.json` file containing the created tasks.
 :::
 
 ## Admin UI
@@ -14026,7 +14180,7 @@ curl http://localhost:3002/api/tasks -d "[{\"title\": \"Read a book\"},{\"title\
 5. Refresh the browser again, to see that the tasks were stored in the db.
 
 ::: warning Wait, where is the backend database?
-While remult supports [many relational and non-relational databases](https://remult.dev/docs/databases.html), in this tutorial we start by storing entity data in a backend **JSON file**. Notice that a `db` folder has been created under the root folder, with a `tasks.json` file containing the created tasks.
+While remult supports [many relational and non-relational databases](https://remult.dev/docs/installation/database/), in this tutorial we start by storing entity data in a backend **JSON file**. Notice that a `db` folder has been created under the root folder, with a `tasks.json` file containing the created tasks.
 :::
 
 ## Admin UI
@@ -15347,7 +15501,7 @@ curl http://localhost:5173/api/tasks -d "[{\"title\": \"Read a book\"},{\"title\
 5. Refresh the browser again, to see that the new tasks were stored in the db.
 
 ::: warning Wait, where is the backend database?
-While remult supports [many relational and non-relational databases](https://remult.dev/docs/databases.html), in this tutorial we start off by storing entity data in a backend **JSON file**. Notice that a `db` folder has been created under the root folder, with a `tasks.json` file containing the created tasks.
+While remult supports [many relational and non-relational databases](https://remult.dev/docs/installation/database/), in this tutorial we start off by storing entity data in a backend **JSON file**. Notice that a `db` folder has been created under the root folder, with a `tasks.json` file containing the created tasks.
 :::
 
 ## Admin UI
@@ -16874,15 +17028,30 @@ To take full advantage of it, add this snippet:
 
   // To be done once in the application.
   function initRemultSvelteReactivity() {
-    Remult.entityRefInit = (x) => {
+    // Auth reactivity (remult.user, remult.authenticated(), ...)
+    {
       let update = () => {}
       let s = createSubscriber((u) => {
         update = u
       })
-      x.subscribe({
+      remult.subscribeAuth({
         reportObserved: () => s(),
         reportChanged: () => update(),
       })
+    }
+
+    // Entities reactivity
+    {
+      Remult.entityRefInit = (x) => {
+        let update = () => {}
+        let s = createSubscriber((u) => {
+          update = u
+        })
+        x.subscribe({
+          reportObserved: () => s(),
+          reportChanged: () => update(),
+        })
+      }
     }
   }
   initRemultSvelteReactivity()
@@ -16911,6 +17080,77 @@ Then you can use `$state`, `$derived` like any other places
 ```
 
 :::
+
+### Focus on auth reactivity
+
+Anywhere in your frontend code you can set `remult.user = xxx` and all remult auth reactivity will work (remult.user, remult.authenticated(), ...)
+
+```ts
+const logout = async () => {
+  try {
+    remult.user = await AuthController.signOut()
+  } catch (error) {
+    alert(error.message)
+  }
+}
+```
+
+If you want `remult.user` to be filled in SSR, here is the code:
+
+::: code-group
+
+```svelte [src/routes/+layout.svelte]
+<script lang="ts">
+  import { untrack } from 'svelte'
+  import type { LayoutData } from './$types'
+
+  interface Props {
+    data: LayoutData
+    children?: import('svelte').Snippet
+  }
+
+  let { data, children }: Props = $props()
+
+  $effect(() => {
+    // Trigger the effect only on data.user update
+    data.user
+    untrack(() => {
+      remult.user = data.user
+    })
+  })
+
+  // initRemultSvelteReactivity stuff
+</script>
+
+{@render children?.()}
+```
+
+```ts [src/routes/+layout.server.ts]
+import { remult } from 'remult'
+
+import type { LayoutServerLoad } from './$types'
+
+export const load = (async () => {
+  return { user: remult.user }
+}) satisfies LayoutServerLoad
+```
+
+:::
+
+And you can trigger this with :
+
+```ts
+import { invalidateAll } from '$app/navigation'
+
+const logout = async () => {
+  try {
+    await AuthController.signOut()
+    invalidateAll() // [!code ++] // This will trigger the layout.server.ts load function
+  } catch (error) {
+    alert(error.message)
+  }
+}
+```
 
 
 
@@ -17153,7 +17393,7 @@ curl http://localhost:3000/api/tasks -d "[{\"title\": \"Read a book\"},{\"title\
 5. Refresh the browser again, to see that the tasks were stored in the db.
 
 ::: warning Wait, where is the backend database?
-While remult supports [many relational and non-relational databases](https://remult.dev/docs/databases.html), in this tutorial we start by storing entity data in a backend **JSON file**. Notice that a `db` folder has been created under the root folder, with a `tasks.json` file containing the created tasks.
+While remult supports [many relational and non-relational databases](https://remult.dev/docs/installation/database/), in this tutorial we start by storing entity data in a backend **JSON file**. Notice that a `db` folder has been created under the root folder, with a `tasks.json` file containing the created tasks.
 :::
 
 ## Admin UI
@@ -18703,7 +18943,7 @@ curl http://localhost:3000/api/tasks -d "[{\"title\": \"Read a book\"},{\"title\
 5. Refresh the browser again, to see that the tasks were stored in the db.
 
 ::: warning Wait, where is the backend database?
-While remult supports [many relational and non-relational databases](https://remult.dev/docs/databases.html), in this tutorial we start by storing entity data in a backend **JSON file**. Notice that a `db` folder has been created under the root folder, with a `tasks.json` file containing the created tasks.
+While remult supports [many relational and non-relational databases](https://remult.dev/docs/installation/database/), in this tutorial we start by storing entity data in a backend **JSON file**. Notice that a `db` folder has been created under the root folder, with a `tasks.json` file containing the created tasks.
 :::
 
 ## Admin UI
@@ -19816,7 +20056,14 @@ To see a larger more complex code base, visit our [CRM example project](https://
 Love Remult?&nbsp;<a href="https://github.com/remult/remult" target="_blank" rel="noopener"> Give our repo a star.⭐</a>
 
 
-# Interactive Tutorial - Basics - Introduction - Welcome to the Remult Tutorial
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Welcome to the Remult Tutorial
+template: after-backend-methods
+focus: /frontend/Todo.tsx
+---
 
 # Welcome to the Remult Tutorial
 
@@ -19855,7 +20102,15 @@ Ready to dive in? Click on the next lesson to start building your app with Remul
 Happy coding! 🎉
 
 
-# Interactive Tutorial - Basics - Introduction - Entity
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Entity
+focus: /shared/Task.ts
+template: before-entity
+---
 
 # The Entity
 
@@ -19896,7 +20151,15 @@ This entity will be used to define the database, API, frontend query language, v
 We've placed the entity's source code in the `shared` folder to indicate that it's shared between the frontend and the backend.
 
 
-# Interactive Tutorial - Basics - Introduction - Rest Api
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Rest Api
+focus: /backend/index.ts
+template: before-frontend
+---
 
 ## The Rest Api
 
@@ -19939,7 +20202,15 @@ await fetch('/api/tasks').then((result) => result.json())
 :::
 
 
-# Interactive Tutorial - Basics - Introduction - Insert Data on the Backend
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Insert Data on the Backend
+focus: /backend/index.ts
+template: before-frontend
+---
 
 ## Insert Data on the Backend
 
@@ -19984,10 +20255,18 @@ app.use(api)
 
 Click on the `Test the API` button in the preview window. You should see a JSON array with the tasks we defined in the result.
 
-> **Note:** While Remult supports [many relational and non-relational databases](https://remult.dev/docs/databases.html), in this tutorial we start by storing entity data in a backend **JSON file** stored in the `db` folder for the project. Later in this tutorial, we'll switch to using SQLite.
+> **Note:** While Remult supports [many relational and non-relational databases](https://remult.dev/docs/installation/database/), in this tutorial we start by storing entity data in a backend **JSON file** stored in the `db` folder for the project. Later in this tutorial, we'll switch to using SQLite.
 
 
-# Interactive Tutorial - Basics - Introduction - Display the Task List
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Display the Task List
+focus: /frontend/Todo.tsx
+autoReload: true
+---
 
 ## Display the Task List
 
@@ -20037,7 +20316,23 @@ This code makes a REST API call to the backend at the `/api/tasks` URL to get th
 You can see the tasks in the preview window below.
 
 
-# Interactive Tutorial - Basics - Querying Data - Paging
+
+# Interactive Tutorial - 
+
+---
+type: chapter
+title: Introduction
+---
+
+
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Paging
+focus: /frontend/Todo.tsx
+---
 
 # Paging
 
@@ -20066,7 +20361,14 @@ This code results in the following REST API request:
 Try playing with different values for `limit` and `page` to see the results in the preview window.
 
 
-# Interactive Tutorial - Basics - Querying Data - Sorting
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Sorting
+focus: /frontend/Todo.tsx
+---
 
 # Sorting
 
@@ -20096,7 +20398,14 @@ This code results in the following REST API request:
 Try changing the sort direction and sorting by different fields to see the results in the preview window.
 
 
-# Interactive Tutorial - Basics - Querying Data - Filtering
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Filtering
+focus: /frontend/Todo.tsx
+---
 
 # Filtering
 
@@ -20128,7 +20437,23 @@ You can experiment with other types of conditions like `$contains`, `$startsWith
 Try changing the filter condition to see the results in the preview window.
 
 
-# Interactive Tutorial - Basics - Manipulating Data - Insert
+
+# Interactive Tutorial - 
+
+---
+type: chapter
+title: Querying Data
+---
+
+
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Insert
+focus: /frontend/Todo.tsx
+---
 
 # Inserting Data
 
@@ -20212,7 +20537,14 @@ This code results in the following REST API request to insert the new task:
 Try adding new tasks using the form in the preview window below.
 
 
-# Interactive Tutorial - Basics - Manipulating Data - Update
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Update
+focus: /frontend/Todo.tsx
+---
 
 # Updating Data
 
@@ -20264,7 +20596,14 @@ This code results in the following REST API request to update the task:
 Try toggling the completion status of tasks using the checkboxes in the preview window below.
 
 
-# Interactive Tutorial - Basics - Manipulating Data - Delete
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Delete
+focus: /frontend/Todo.tsx
+---
 
 # Deleting Data
 
@@ -20326,7 +20665,23 @@ This code results in the following REST API request to delete the task:
 Try deleting tasks using the delete buttons in the preview window below.
 
 
-# Interactive Tutorial - Basics - Validation - Required
+
+# Interactive Tutorial - 
+
+---
+type: chapter
+title: Manipulating Data
+---
+
+
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Required
+focus: /shared/Task.ts
+---
 
 # Validation Introduction
 
@@ -20419,7 +20774,14 @@ See the result error object that's returned
 :::
 
 
-# Interactive Tutorial - Basics - Validation - Built-In Validations
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Built-In Validations
+focus: /shared/Task.ts
+---
 
 # Built-In Validations
 
@@ -20502,7 +20864,14 @@ export class Task {
 Try adding tasks with titles that do not meet these validation requirements to see the validation in action. The errors returned will include the validation messages specified.
 
 
-# Interactive Tutorial - Basics - Validation - Custom Validations
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Custom Validations
+focus: /shared/Task.ts
+---
 
 # Custom Validations
 
@@ -20534,7 +20903,23 @@ export class Task {
 Try adding tasks with titles shorter than 3 characters to see the custom validation in action. The error message `'too short'` will be returned if the validation fails.
 
 
-# Interactive Tutorial - Basics - Live Query - Live Query
+
+# Interactive Tutorial - 
+
+---
+type: chapter
+title: Validation
+---
+
+
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Live Query
+focus: /frontend/Todo.tsx
+---
 
 # Introduction
 
@@ -20545,7 +20930,14 @@ Our todo list app can have multiple users using it at the same time. However, ch
 In the preview window below, we can see `user-a` and `user-b`. Try making changes to data as `user-a` and see how `user-b` needs to click `reload page` to see these changes.
 
 
-# Interactive Tutorial - Basics - Live Query - Realtime Updates
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Realtime Updates
+focus: /frontend/Todo.tsx
+---
 
 # Realtime Updates
 
@@ -20611,7 +21003,24 @@ async function deleteTask(task: Task) {
 - With `liveQuery`, the state updates automatically whenever there are changes to the tasks, simplifying our state management.
 
 
-# Interactive Tutorial - Basics - Backend Methods - Updating Multiple Tasks
+
+# Interactive Tutorial - 
+
+---
+type: chapter
+title: Live Query
+template: live-query
+---
+
+
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Updating Multiple Tasks
+focus: /frontend/Todo.tsx
+---
 
 # Backend Methods
 
@@ -20669,7 +21078,14 @@ In the next lesson, we'll refactor this code to address these performance challe
 Would you like to proceed with another section or make further adjustments?
 
 
-# Interactive Tutorial - Basics - Backend Methods - Refactor to Backend
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Refactor to Backend
+focus: /shared/TasksController.ts
+---
 
 # Refactor from Frontend to Backend
 
@@ -20743,7 +21159,24 @@ async function setAllCompleted(completed: boolean) {
 Click the "Set All Completed" and "Set All Uncompleted" buttons to see the improved performance with the backend method handling the updates.
 
 
-# Interactive Tutorial - Basics - Authentication & Authorization - Authentication and Authorization
+
+# Interactive Tutorial - 
+
+---
+type: chapter
+title: Backend Methods
+---
+
+
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Authentication and Authorization
+template: after-backend-methods
+focus: /shared/Task.ts
+---
 
 # Authentication and Authorization
 
@@ -20790,7 +21223,15 @@ export class TasksController {
 - We updated the `allowed` property in the `@BackendMethod` decorator to use `remult.authenticated`, ensuring that the `setAllCompleted` function requires an authenticated user to execute.
 
 
-# Interactive Tutorial - Basics - Authentication & Authorization - Authentication
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Authentication
+template: auth
+focus: /shared/AuthController.ts
+---
 
 ## Authentication
 
@@ -20942,7 +21383,15 @@ useEffect(() => {
 Try signing in as `Alex` or `Jane` and verify that you can perform CRUD operations on tasks. Sign out and ensure that you can no longer access the tasks.
 
 
-# Interactive Tutorial - Basics - Authentication & Authorization - Role-based Authorization
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Role-based Authorization
+template: auth-3
+focus: /shared/Task.ts
+---
 
 ## Role-based Authorization
 
@@ -21019,7 +21468,15 @@ Sign in to the app as _"Alex"_ to test that actions restricted to `admin` users,
 Then, sign in as _"Jane"_ to confirm that these actions are permitted for admin users.
 
 
-# Interactive Tutorial - Basics - Authentication & Authorization - Role-based Authorization on the Frontend
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Role-based Authorization on the Frontend
+template: auth-3
+focus: /frontend/Todo.tsx
+---
 
 ## Role-based Authorization on the Frontend
 
@@ -21098,7 +21555,24 @@ By using these methods, we ensure that the frontend stays consistent with the AP
 Test the app by signing in as different users (e.g., as an admin and a regular user) and verify that the add and delete buttons appear or disappear based on the user's role.
 
 
-# Interactive Tutorial - Basics - Database - Database
+
+# Interactive Tutorial - 
+
+---
+type: chapter
+title: Authentication & Authorization
+---
+
+
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Database
+focus: /backend/index.ts
+template: after-backend-methods
+---
 
 # Database
 
@@ -21135,7 +21609,33 @@ And that's it, now you use `sqlite` as the database.
 > Just don't forget to turn it off once you're done, to improve performance
 
 
-# Interactive Tutorial - In Depth - Relations - Many to One
+
+# Interactive Tutorial - 
+
+---
+type: chapter
+title: Database
+---
+
+
+
+# Interactive Tutorial - 
+
+---
+type: part
+title: Basics
+---
+
+
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Many to One
+template: relations
+focus: /shared/Order.ts
+---
 
 # Relations
 
@@ -21206,7 +21706,15 @@ Here’s a polished version of the paragraph:
 Relations are seamlessly integrated into the [Remult Admin UI](https://remult.dev/docs/admin-ui). To explore how relations are displayed, simply click the "Remult Admin UI" link at the bottom.
 
 
-# Interactive Tutorial - In Depth - Relations - One to Many
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: One to Many
+template: relations
+focus: /shared/Customer.ts
+---
 
 # One to Many
 
@@ -21283,7 +21791,15 @@ In the Remult Admin UI, `one-to-many` relations are displayed directly within th
 To explore how this works, click the "Remult Admin UI" link at the bottom left of the interface.
 
 
-# Interactive Tutorial - In Depth - Relations - Id Based Relations
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Id Based Relations
+template: relations
+focus: /shared/Order.ts
+---
 
 # ID-Based Relations
 
@@ -21336,7 +21852,15 @@ By using ID-based relations, you have greater control over your data models and 
 Let me know if this works!
 
 
-# Interactive Tutorial - In Depth - Relations - Many to Many
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Many to Many
+template: relations-with-products
+focus: /shared/ProductInOrder.ts
+---
 
 # Many-to-Many Relations
 
@@ -21401,7 +21925,24 @@ The reason is that most **many-to-many relationships** in real-world application
 In this lesson, we've learned how to model many-to-many relationships using an intermediate table. By creating the `ProductInOrder` entity, we've enabled a flexible many-to-many relationship between `Order` and `Product`. This approach allows us to include additional fields, such as quantity, in the relationship while maintaining optimal performance through the use of composite keys.
 
 
-# Interactive Tutorial - In Depth - Advanced Filtering - Custom Filter
+
+# Interactive Tutorial - 
+
+---
+type: chapter
+title: Relations
+---
+
+
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Custom Filter
+template: relations
+focus: /frontend/Page.tsx
+---
 
 # Custom Filter
 
@@ -21498,7 +22039,15 @@ repo(Order).find({
 With composable custom filters, you can build modular, reusable filters that combine seamlessly with other conditions, making your code more flexible and maintainable. Whether you're filtering by status, date, or custom logic like order amount, custom filters allow you to easily manage complex queries with less effort.
 
 
-# Interactive Tutorial - In Depth - Advanced Filtering - Filter Based on Relation
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Filter Based on Relation
+template: relations
+focus: /shared/Order.ts
+---
 
 # Filter Based on Relation
 
@@ -21585,7 +22134,15 @@ Filtering based on relations is a common requirement in web applications, and cu
 The flexibility, efficiency, and composability of custom filters make them an essential tool for managing complex filtering scenarios in your applications.
 
 
-# Interactive Tutorial - In Depth - Advanced Filtering - Filter Based on Relation Using SQL
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Filter Based on Relation Using SQL
+template: relations
+focus: /shared/Order.ts
+---
 
 # Filter Based on Relation Using SQL
 
@@ -21762,7 +22319,15 @@ In this lesson, we've explored how to use raw SQL within custom filters to perfo
 By combining SQL-based filters with the power of Remult, you can create highly efficient and flexible filtering logic that runs on the backend, making it a powerful tool for building scalable and performant web applications.
 
 
-# Interactive Tutorial - In Depth - Advanced Filtering - Sql Relations Filter
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Sql Relations Filter
+template: relations
+focus: /shared/Order.ts
+---
 
 ### SQL Relations Filter
 
@@ -21846,7 +22411,24 @@ This SQL query:
 With `sqlRelationsFilter`, handling relation-based filtering in Remult becomes simpler, more efficient, and more powerful. Whether you’re working with large datasets or complex relational models, this utility helps you build queries that are both performant and easy to maintain.
 
 
-# Interactive Tutorial - In Depth - Sql Expression Entity Field - Introduction
+
+# Interactive Tutorial - 
+
+---
+type: chapter
+title: Advanced Filtering
+---
+
+
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Introduction
+template: relations
+focus: /shared/Customer.ts
+---
 
 ### SQL Expressions for Entity Fields
 
@@ -21915,7 +22497,15 @@ In this query:
 With `sqlExpression` fields, you can incorporate powerful SQL computations into your entities, simplifying data aggregation and improving application performance. This feature is ideal for cases like summing order totals, calculating averages, or performing other backend-based calculations, all while keeping your code clean and efficient.
 
 
-# Interactive Tutorial - In Depth - Sql Expression Entity Field - Getting a field from a relation
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Getting a field from a relation
+template: relations
+focus: /shared/Order.ts
+---
 
 ### SQL Expressions for Fields Based on Relations
 
@@ -21984,7 +22574,15 @@ In this query:
 In this lesson, you’ve seen how `sqlExpression` can transform your data handling by enabling seamless access to fields from related entities. This feature is ideal for situations where you need to use related data for sorting, filtering, or displaying, all while keeping your code efficient and streamlined.
 
 
-# Interactive Tutorial - In Depth - Sql Expression Entity Field - Sql Relations
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Sql Relations
+template: relations
+focus: /shared/Order.ts
+---
 
 ### Leveraging `sqlRelations` for Advanced SQL-Based Relationships
 
@@ -22065,7 +22663,24 @@ For advanced calculations, such as summing up the total order amount for each cu
 This approach provides a powerful way to manage complex relationships and aggregations in Remult, bringing the flexibility of SQL into the realm of structured, type-safe TypeScript fields.
 
 
-# Interactive Tutorial - In Depth - Access Control - Intro & Field-Level Authorization
+
+# Interactive Tutorial - 
+
+---
+type: chapter
+title: Sql Expression Entity Field
+---
+
+
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Intro & Field-Level Authorization
+template: access-control
+focus: /shared/Task.ts
+---
 
 # Field-Level Authorization in Remult
 
@@ -22190,7 +22805,15 @@ This flexibility with `includeInApi` allows you to apply fine-grained control ov
 By using `allowApiUpdate` and `includeInApi`, you have fine-grained control over which fields users can modify or view based on roles, data ownership, and custom conditions.
 
 
-# Interactive Tutorial - In Depth - Access Control - Row-Level Authorization
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Row-Level Authorization
+template: access-control
+focus: /shared/Task.ts
+---
 
 # Row-Level Authorization
 
@@ -22239,7 +22862,15 @@ Each of these options—`allowApiRead`, `allowApiInsert`, `allowApiDelete`, and 
 In the upcoming lesson, **"Filtering Rows Based on User Permissions"**, we’ll explore how to apply row-level access control dynamically, allowing each user to view only the rows they are permitted to access using specific filters.
 
 
-# Interactive Tutorial - In Depth - Access Control - Filtering Rows Based on User Permissions
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Filtering Rows Based on User Permissions
+template: access-control
+focus: /shared/Task.ts
+---
 
 # Filtering Rows Based on User Permissions
 
@@ -22289,7 +22920,15 @@ By switching between these accounts, you’ll observe how `apiPrefilter` limits 
 By combining `apiPrefilter` with row-specific rules in `allowApiUpdate`, `allowApiDelete`, and `allowApiInsert`, you gain a powerful framework for dynamic, row-level security based on user permissions. This approach protects data integrity and enhances security across various layers of application logic.
 
 
-# Interactive Tutorial - In Depth - Access Control - Filtering Related Rows Based on User Permissions
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Filtering Related Rows Based on User Permissions
+template: access-control-2
+focus: /shared/TimeEntry.ts
+---
 
 # Filtering Related Rows Based on User Permissions
 
@@ -22369,7 +23008,15 @@ To see this SQL-based filtering in action:
 Using SQL-based filters provides an optimized way to manage related access control by leveraging the database’s capabilities, especially useful when dealing with large datasets or complex access rules.
 
 
-# Interactive Tutorial - In Depth - Access Control - Sql Relations Filter for User Permissions
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Sql Relations Filter for User Permissions
+template: access-control-2
+focus: /shared/TimeEntry.ts
+---
 
 ### SQL Relations Filter for User Permissions
 
@@ -22413,7 +23060,24 @@ In this example, we want to ensure that users can only access `TimeEntry` rows a
 By leveraging `sqlRelationsFilter`, you can create highly performant and intuitive access control that directly uses SQL to enforce row-level permissions across related entities.
 
 
-# Interactive Tutorial - In Depth - Entities as a single source of truth - Field Metadata
+
+# Interactive Tutorial - 
+
+---
+type: chapter
+title: Access Control
+---
+
+
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Field Metadata
+focus: /shared/Task.ts
+template: metadata
+---
 
 # Field Metadata
 
@@ -22539,7 +23203,15 @@ return (
 You can use these capabilities, together with the structured error model to create dynamic forms, dynamic grid and other dynamic uis that leverage
 
 
-# Interactive Tutorial - In Depth - Entities as a single source of truth - Forms and Validation
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Forms and Validation
+focus: /frontend/TodoItem.tsx
+template: metadata
+---
 
 ### Forms and Validation
 
@@ -22699,7 +23371,14 @@ By utilizing field metadata, error handling, and dynamic rendering techniques, y
 Together, these strategies make it straightforward to construct forms and other UI components that are consistently styled, validated, and ready for reuse throughout the application.
 
 
-# Interactive Tutorial - In Depth - Entities as a single source of truth - Lifecycle Hooks
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Lifecycle Hooks
+focus: /shared/Task.ts
+---
 
 ## Introduction to Entity Lifecycle Hooks
 
@@ -22747,7 +23426,15 @@ For more information on how to leverage these hooks in your applications, refer 
 Click on the `Toggle Terminal` button on the right, make some changes to tasks, and observe the terminal output to see the messages generated in the saving and deleting hooks.
 
 
-# Interactive Tutorial - In Depth - Entities as a single source of truth - Select Fields
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Select Fields
+focus: /shared/TaskLight.ts
+template: select-fields
+---
 
 ## Introduction Select Fields
 
@@ -22782,7 +23469,15 @@ We showed that you can use `dbName` to point at an existing table in the databas
 You can also create a dynamic view, [Leveraging Database Capabilities with sqlExpression](https://remult.dev/docs/ref_entity#sqlexpression).
 
 
-# Interactive Tutorial - In Depth - Entities as a single source of truth - Extend Entity (add fields)
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Extend Entity (add fields)
+focus: /shared/TaskExtra.ts
+template: select-fields
+---
 
 ## Introduction Extend Entity
 
@@ -22820,7 +23515,23 @@ await repo(TaskExtra).find()
 ```
 
 
-# Interactive Tutorial - In Depth - Testing - Introduction to Testing with Remult
+
+# Interactive Tutorial - 
+
+---
+type: chapter
+title: Entities as a single source of truth
+---
+
+
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Introduction to Testing with Remult
+focus: /tests/validations.test.ts
+---
 
 ---
 
@@ -22875,7 +23586,14 @@ In addition to in-memory testing, you can test with your actual database provide
 By using these techniques, you can write comprehensive tests covering all entity aspects, from validations to SQL expressions.
 
 
-# Interactive Tutorial - In Depth - Testing - Testing Api Rules
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Testing Api Rules
+focus: /tests/authorization.test.ts
+---
 
 # Testing API Rules
 
@@ -22954,7 +23672,39 @@ For SQL-based tests, you can use the `SqlDatabase.LogToConsole = true` setting t
 Using these techniques allows you to simulate real API operations within tests, ensuring robust access control and proper handling of user permissions in your application.
 
 
-# Interactive Tutorial - Examples - Validations - Extending Existing Validations
+
+# Interactive Tutorial - 
+
+---
+type: chapter
+title: Testing
+template: tests
+previews: false
+terminal:
+  activePanel: 1
+  panels:
+    - ['output', 'Terminal']
+---
+
+
+
+# Interactive Tutorial - 
+
+---
+type: part
+title: In Depth
+slug: in-depth
+---
+
+
+
+# Interactive Tutorial - 
+
+---
+type: lesson
+title: Extending Existing Validations
+focus: /shared/Task.ts
+---
 
 # Extending Existing Validations
 
@@ -22992,4 +23742,35 @@ export class Task {
 ### Try It Out
 
 Test this extended validation by trying to add tasks with duplicate titles. Notice that the validation prevents duplicates only when the title is not empty.
+
+
+
+# Interactive Tutorial - 
+
+---
+type: chapter
+title: Validations
+---
+
+
+
+# Interactive Tutorial - 
+
+---
+type: part
+title: Examples
+---
+
+
+
+# Interactive Tutorial - 
+
+---
+type: tutorial
+mainCommand: ['npm run dev', 'Starting http server']
+prepareCommands:
+  - ['npm install', 'Installing dependencies']
+editPageLink: https://github.com/remult/remult/blob/main/docs/interactive/src/content/tutorial/${path}?plain=1
+---
+
 

@@ -1474,6 +1474,10 @@ export class Contact {
 
 # Entities - Relations 🚀
 
+---
+outline: [2, 3]
+---
+
 # Relations Between Entities
 
 ::: tip **Interactive Learning Available! 🚀**
@@ -1571,7 +1575,7 @@ When querying data that involves a many-to-one relation, you can use the `includ
 
 Here's how you can include the relation in a query using Remult:
 
-```typescript{3-5}
+```typescript{2-4}
 const orders = await repo(Order).find({
   include: {
     customer: true,
@@ -2315,6 +2319,7 @@ Utilizing an intermediate table for managing many-to-many relationships in Remul
 ---
 
 In this guide, we've explored the essential concepts of managing entity relations within the Remult library. From one-to-one to many-to-many relationships, we've covered the declaration, customization, and querying of these relations. By understanding the nuances of entity relations, users can harness the full potential of Remult to build robust TypeScript applications with ease.
+
 
 
 # Relations 🚀 - Filtering and Relations
@@ -3871,15 +3876,30 @@ To take full advantage of it, add this snippet:
 
   // To be done once in the application.
   function initRemultSvelteReactivity() {
-    Remult.entityRefInit = (x) => {
+    // Auth reactivity (remult.user, remult.authenticated(), ...)
+    {
       let update = () => {}
       let s = createSubscriber((u) => {
         update = u
       })
-      x.subscribe({
+      remult.subscribeAuth({
         reportObserved: () => s(),
         reportChanged: () => update(),
       })
+    }
+
+    // Entities reactivity
+    {
+      Remult.entityRefInit = (x) => {
+        let update = () => {}
+        let s = createSubscriber((u) => {
+          update = u
+        })
+        x.subscribe({
+          reportObserved: () => s(),
+          reportChanged: () => update(),
+        })
+      }
     }
   }
   initRemultSvelteReactivity()
@@ -3908,6 +3928,77 @@ Then you can use `$state`, `$derived` like any other places
 ```
 
 :::
+
+### Focus on auth reactivity
+
+Anywhere in your frontend code you can set `remult.user = xxx` and all remult auth reactivity will work (remult.user, remult.authenticated(), ...)
+
+```ts
+const logout = async () => {
+  try {
+    remult.user = await AuthController.signOut()
+  } catch (error) {
+    alert(error.message)
+  }
+}
+```
+
+If you want `remult.user` to be filled in SSR, here is the code:
+
+::: code-group
+
+```svelte [src/routes/+layout.svelte]
+<script lang="ts">
+  import { untrack } from 'svelte'
+  import type { LayoutData } from './$types'
+
+  interface Props {
+    data: LayoutData
+    children?: import('svelte').Snippet
+  }
+
+  let { data, children }: Props = $props()
+
+  $effect(() => {
+    // Trigger the effect only on data.user update
+    data.user
+    untrack(() => {
+      remult.user = data.user
+    })
+  })
+
+  // initRemultSvelteReactivity stuff
+</script>
+
+{@render children?.()}
+```
+
+```ts [src/routes/+layout.server.ts]
+import { remult } from 'remult'
+
+import type { LayoutServerLoad } from './$types'
+
+export const load = (async () => {
+  return { user: remult.user }
+}) satisfies LayoutServerLoad
+```
+
+:::
+
+And you can trigger this with :
+
+```ts
+import { invalidateAll } from '$app/navigation'
+
+const logout = async () => {
+  try {
+    await AuthController.signOut()
+    invalidateAll() // [!code ++] // This will trigger the layout.server.ts load function
+  } catch (error) {
+    alert(error.message)
+  }
+}
+```
 
 
 
@@ -5723,6 +5814,8 @@ In this example, `backendPrefilter` and `backendPreprocessFilter` ensure that no
 
 Field-level authorization allows control over individual fields within an entity:
 
+_Field level authorization happens after entity level authorization AND if it's allowed._
+
 - `includeInApi`: Determines if the field is included in the API response.
 - `allowApiUpdate`: Controls if a field can be updated. If false, any change to the field is ignored.
 
@@ -5870,9 +5963,30 @@ Enjoy a fully featured Admin UI for your entities, you can do CRUD operations on
 Add the Admin UI to your application by setting the `admin` option to `true` in the remult configuration.
 
 ```ts
-export const api = remultSveltekit({
+export const api = remultExpress({
   entities: [],
   admin: true, // Enable the Admin UI
+})
+```
+
+### Tunning the Admin UI
+
+You can pass some options to admin as well:
+
+- `allow`, using [allowed](https://remult.dev/docs/access-control). `true`, `"admin"`, ...
+- `customHtmlHead`, to add custom html to the head of the admin page. It's a function that receives remult as an argument.
+
+Example:
+
+```ts
+export const api = remultExpress({
+  entities: [],
+  admin: {
+    allow: 'admin', // Only for user having the "admin" role
+    customHtmlHead: (r) =>
+      `<title>Nice Admin! (${r.user?.name ?? 'Anonymous'})</title>
+       <link href="https://remult.dev/favicon.png" rel="icon" type="image/png">`,
+  },
 })
 ```
 
@@ -6449,6 +6563,14 @@ Accessing the underlying database directly in Remult provides the flexibility to
 
 # Escape Hatches - Using Remult in Non-Remult Routes
 
+---
+keywords:
+  [
+    Error: remult object was requested outside of a valid context,
+    try running it within initApi or a remult request cycle,
+  ]
+---
+
 # Using Remult in Non-Remult Routes
 
 When using the CRUD api or [BackendMethods](./backendMethods.md), `remult` is automatically available. Still, there are many use cases where you may want to user remult in your own routes or other code without using `BackendMethods` but would still want to take advantage of `Remult` as an ORM and use it to check for user validity, etc...
@@ -6699,6 +6821,7 @@ import { remultHapi } from 'remult/remult-hapi'
 :::
 
 
+
 # Escape Hatches - Avoiding Decorators
 
 # Working without decorators
@@ -6781,6 +6904,18 @@ This is the same backend method that is detailed in the [Backend methods of the 
 
 
 # Escape Hatches - Extensibility
+
+---
+tags:
+  - options
+  - bespoke options
+  - customizing options
+  - type augmentation
+  - module augmentation
+  - UserInfo
+  - RemultContext
+  - context
+---
 
 # Extensibility
 
@@ -6931,6 +7066,7 @@ or in an entity's saving event:
 ```
 
 By leveraging module augmentation, you can tailor Remult to your specific needs, adding custom options and extending interfaces to suit your application's requirements.
+
 
 
 # Integrations - Open API
@@ -7488,6 +7624,8 @@ salary = 0;
 Determines whether this field can be updated via the API. This setting can also
 be controlled based on user roles or other access control checks.
 
+_It happens after entity level authorization AND if it's allowed._
+
 
 #### example:
 ```ts
@@ -8001,7 +8139,7 @@ Return's a `Repository` of the specific entity type
 
 
 #### example:
-```
+```ts
 const taskRepo = remult.repo(Task);
 ```
 
@@ -8989,7 +9127,7 @@ admin: true
 
 #### example:
 ```ts
-admin: ()=> remult.isAllowed('admin')
+admin: () => remult.isAllowed('admin')
 ```
 
 
@@ -9015,6 +9153,14 @@ export const api = remultExpress({
 
 
 # API Reference - EntityFilter
+
+---
+tags:
+  - Where
+  - Filter
+  - Entity Where
+  - Entity Filter
+---
 
 # EntityFilter
 
@@ -9154,6 +9300,7 @@ where: {
   }
 }
 ```
+
 
 
 # API Reference - EntityMetadata
@@ -10429,7 +10576,13 @@ Arguments:
 
 
 
-# Introducing Remult: The Backend to Frontend Framework You Always Wanted
+# Remult Blog - Introducing Remult
+
+---
+title: "Introducing Remult: The Backend to Frontend Framework You Always Wanted"
+sidebar: false
+editLink: false
+---
 
 > March 14, 2023 | Noam Honig
 
@@ -10504,6 +10657,7 @@ So we open sourced the framework, to enable other lazy developers like us to be 
 Check out [Remult](https://remult.dev), and if you like it, give it a star.  Let us know what you’d like to see next, and also feel free to contribute to the project.
 
 In our next post, we’ll do a roundup of tools in the ecosystem looking to solve similar challenges though different approaches, and unpack where Remult fits in, and what it’s optimized for.
+
 
 
 # SvelteKit - Tutorial - Go further / Extra
@@ -10767,15 +10921,30 @@ To take full advantage of it, add this snippet:
 
   // To be done once in the application.
   function initRemultSvelteReactivity() {
-    Remult.entityRefInit = (x) => {
+    // Auth reactivity (remult.user, remult.authenticated(), ...)
+    {
       let update = () => {}
       let s = createSubscriber((u) => {
         update = u
       })
-      x.subscribe({
+      remult.subscribeAuth({
         reportObserved: () => s(),
         reportChanged: () => update(),
       })
+    }
+
+    // Entities reactivity
+    {
+      Remult.entityRefInit = (x) => {
+        let update = () => {}
+        let s = createSubscriber((u) => {
+          update = u
+        })
+        x.subscribe({
+          reportObserved: () => s(),
+          reportChanged: () => update(),
+        })
+      }
     }
   }
   initRemultSvelteReactivity()
@@ -10804,5 +10973,76 @@ Then you can use `$state`, `$derived` like any other places
 ```
 
 :::
+
+### Focus on auth reactivity
+
+Anywhere in your frontend code you can set `remult.user = xxx` and all remult auth reactivity will work (remult.user, remult.authenticated(), ...)
+
+```ts
+const logout = async () => {
+  try {
+    remult.user = await AuthController.signOut()
+  } catch (error) {
+    alert(error.message)
+  }
+}
+```
+
+If you want `remult.user` to be filled in SSR, here is the code:
+
+::: code-group
+
+```svelte [src/routes/+layout.svelte]
+<script lang="ts">
+  import { untrack } from 'svelte'
+  import type { LayoutData } from './$types'
+
+  interface Props {
+    data: LayoutData
+    children?: import('svelte').Snippet
+  }
+
+  let { data, children }: Props = $props()
+
+  $effect(() => {
+    // Trigger the effect only on data.user update
+    data.user
+    untrack(() => {
+      remult.user = data.user
+    })
+  })
+
+  // initRemultSvelteReactivity stuff
+</script>
+
+{@render children?.()}
+```
+
+```ts [src/routes/+layout.server.ts]
+import { remult } from 'remult'
+
+import type { LayoutServerLoad } from './$types'
+
+export const load = (async () => {
+  return { user: remult.user }
+}) satisfies LayoutServerLoad
+```
+
+:::
+
+And you can trigger this with :
+
+```ts
+import { invalidateAll } from '$app/navigation'
+
+const logout = async () => {
+  try {
+    await AuthController.signOut()
+    invalidateAll() // [!code ++] // This will trigger the layout.server.ts load function
+  } catch (error) {
+    alert(error.message)
+  }
+}
+```
 
 

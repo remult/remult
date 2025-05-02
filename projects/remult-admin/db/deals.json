@@ -3013,7 +3013,12 @@
     "createdAt": "2021-12-14T22:42:15.141Z",
     "updatedAt": "2022-01-12T11:00:22.542Z",
     "accountManager": "27d24908-f417-4b0c-b98a-8946d661f0ce",
-    "index": 26
+    "index": 26,
+    "itemsNumbers": [
+      1,
+      2,
+      3
+    ]
   },
   {
     "id": "fb0ee3a0-bd30-4704-94c8-2aaeb78bf84d",
