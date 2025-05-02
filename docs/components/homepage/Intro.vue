@@ -192,11 +192,38 @@ onUnmounted(() => {
   background: radial-gradient(
     circle farthest-corner at 50% -50%,
     #05052f00 60%,
-    #0c0f75 77%,
+    #0c0f75 85%,
     #7042b5 92%
   );
   border-radius: 1.5rem;
   z-index: -1;
+}
+
+.intro-background::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(
+    circle farthest-corner at 50% -50%,
+    #05052f00 60%,
+    #0c0f75 70%,
+    #7042b5 100%
+  );
+  border-radius: 1.5rem;
+  opacity: 0;
+  animation: pulse-opacity 5s ease-in-out infinite;
+}
+
+@keyframes pulse-opacity {
+  0%, 100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 .intro .editor-container {
