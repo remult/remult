@@ -302,7 +302,7 @@ watch(
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #11137d;
+  background: #1d1f9a;
 }
 
 /* Editor Styles */
@@ -313,7 +313,7 @@ watch(
 }
 
 .editor {
-  color: #484bd2;
+  color: #585ad9;
 }
 
 .editor.unchanged .code-block {
@@ -403,12 +403,12 @@ watch(
   align-items: center;
   width: 100%;
   text-align: left;
-  color: #3739a2;
+  color: #5254c5;
   padding: 0.1rem 0.5rem;
 }
 
 .step-button.active {
-  color: #c0c2ff;
+  color: #cdceff;
   font-weight: 500;
 }
 
