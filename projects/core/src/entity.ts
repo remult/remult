@@ -13,6 +13,7 @@ import type {
   MembersOnly,
 } from './remult3/remult3.js'
 import type { FilterPreciseValues } from './filter/filter-interfaces.js'
+import type { DataProvider } from './data-interfaces.js'
 
 export interface EntityOptions<entityType = unknown> {
   /**A human readable name for the entity */
@@ -231,6 +232,20 @@ export interface EntityOptions<entityType = unknown> {
 
   entityRefInit?: (ref: EntityRef<entityType>, row: entityType) => void
   apiRequireId?: Allowed
+  /**
+   * A function that allows customizing the data provider for the entity.
+   * @param defaultDataProvider The default data provider defined in the `remult` object.
+   * @example
+   * dataProvider: (dp) => {
+   *   if (!dp.isProxy) // usually indicates that we're on the backend
+   *     return getASpacificDataProvider();
+   *   return null
+   * }
+   * @returns A custom data provider for the entity.
+   */
+  dataProvider?: (
+    defaultDataProvider: DataProvider,
+  ) => DataProvider | undefined | null
 }
 
 /**
