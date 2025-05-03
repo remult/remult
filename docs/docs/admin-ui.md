@@ -19,6 +19,7 @@ You can pass some options to admin as well:
 
 - `allow`, using [allowed](https://remult.dev/docs/access-control). `true`, `"admin"`, ...
 - `customHtmlHead`, to add custom html to the head of the admin page. It's a function that receives remult as an argument.
+- `requireAuthToken`, this will open settings dialog to set the bearer token directly.
 
 Example:
 

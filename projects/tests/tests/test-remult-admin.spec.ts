@@ -421,6 +421,8 @@ describe('remult-admin', () => {
     const res = remultAdminHtml({
       rootPath: '/api',
       head: '<title>Test Admin</title>',
+      requireAuthToken: false,
+      withLiveQuery: true
     })
 
     expect(res).includes('html')
@@ -430,6 +432,25 @@ describe('remult-admin', () => {
 
     expect(res).not.includes('<!--PLACE_HERE_BODY-->')
     expect(res).includes('window.optionsFromServer = ')
+  })
+
+  it('should not have withLiveQuery', async () => {
+    @Entity('users')
+    class User {
+      @Fields.autoIncrement()
+      id!: string
+    }
+
+    const res = remultAdminHtml({
+      rootPath: '/api',
+      head: '<title>Test Admin</title>',
+      requireAuthToken: false,
+      withLiveQuery: false
+    })
+
+    expect(res).includes('html')
+
+    expect(res).includes('"withLiveQuery":false')
   })
 
   it('should correctly set valueType for json fields', () => {

@@ -2,6 +2,7 @@
   import { godStore } from '../../stores/GodStore.js'
   import { LSContext } from '../stores/LSContext'
   import { SSContext } from '../stores/SSContext'
+  import { dialog } from './dialog/dialog.js'
 </script>
 
 <div class="dialog">
@@ -31,6 +32,7 @@
   <label>
     <span>With live query</span>
     <select bind:value={$LSContext.settings.withLiveQuery}>
+      <option value={undefined}>Server settings</option>
       <option value={true}>Yes</option>
       <option value={false}>No</option>
     </select>
@@ -79,7 +81,16 @@
     />
   </label> -->
 
-  <br />
+  <label>
+    <span></span>
+    <button
+      on:click={() => {
+        dialog.closeAll()
+      }}
+    >
+      Save
+    </button>
+  </label>
 
   <label>
     <span></span>
@@ -92,7 +103,6 @@
     </button>
   </label>
 
-  <br />
   <br />
   <hr style="border-top: 1px solid black;" />
   <br />
@@ -108,9 +118,11 @@
         placeholder="bearer"
       />
       <button
+        disabled={!$SSContext.settings.bearerAuth}
         on:click={() => {
           godStore.reloadEntities()
-        }}>Reload entities</button
+          dialog.closeAll()
+        }}>Use</button
       >
     </div>
   </label>
@@ -133,6 +145,11 @@
     margin-bottom: 0.5rem;
     min-width: auto !important;
     height: var(--cell-height);
+  }
+
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   input::placeholder {
