@@ -14,10 +14,11 @@ export type TLSContext = {
     keyForBearerAuth: string
     // apiUrl: string
     withLiveQuery: boolean
+    customHeaders: string
   }
 }
 
-const LSContextKey = 'LSRemultAdmin_2025_02_14'
+const LSContextKey = 'LSRemultAdmin_2025_05_03'
 
 const LSContextDefaults: TLSContext = {
   currentLocationHash: '/',
@@ -31,6 +32,7 @@ const LSContextDefaults: TLSContext = {
     keyForBearerAuth: '',
     // apiUrl: window.optionsFromServer?.rootPath ?? '/api',
     withLiveQuery: true,
+    customHeaders: '',
   },
 }
 
