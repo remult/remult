@@ -60,6 +60,16 @@
     />
   </label>
 
+  <label>
+    <span>Custom Headers</span>
+    <textarea
+      rows={3}
+      bind:value={$LSContext.settings.customHeaders}
+      placeholder={`{ "hello": "world" }`}
+      style="resize: vertical; height: 70px;"
+    />
+  </label>
+
   <!-- <label>
     <span>api URL</span>
     <input
@@ -115,6 +125,7 @@
 
   input,
   select,
+  textarea,
   button {
     border: 1px solid var(--border-color);
     border-radius: 0;
@@ -129,6 +140,11 @@
     font-style: italic;
   }
 
+  textarea::placeholder {
+    color: gray;
+    font-style: italic;
+  }
+
   label {
     display: flex;
     justify-content: space-between;
@@ -138,6 +154,10 @@
   }
 
   select {
+    width: 180px;
+  }
+
+  textarea {
     width: 180px;
   }
 </style>
