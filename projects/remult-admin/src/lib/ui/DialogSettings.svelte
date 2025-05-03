@@ -65,7 +65,7 @@
     <textarea
       rows={3}
       bind:value={$LSContext.settings.customHeaders}
-      placeholder={`{ "hello": "world" }`}
+      placeholder={`hello: world`}
       style="resize: vertical; height: 70px;"
     />
   </label>
@@ -148,16 +148,15 @@
   label {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: start;
     gap: 1rem;
     margin-top: 10px;
   }
 
-  select {
-    width: 180px;
-  }
-
+  select,
+  input,
   textarea {
     width: 180px;
+    font-family: monospace;
   }
 </style>

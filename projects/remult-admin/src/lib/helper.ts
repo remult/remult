@@ -23,13 +23,10 @@ export function getHeader(
     return headers
   }
 
-  let customHeaders = {}
-  try {
-    customHeaders = JSON.parse(LSCtx.settings.customHeaders)
-  } catch (error) {
-    console.error(`With custom headers: "${LSCtx.settings.customHeaders}" 👇`)
-    console.error(error)
-  }
+  const customHeaders = (LSCtx.settings.customHeaders ?? '').split('\n').reduce((acc, line) => {
+    const [key, value] = line.split(':').map(part => part.trim())
+    return { ...acc, [key]: value }
+  }, {})
 
   return {
     ...headers,
