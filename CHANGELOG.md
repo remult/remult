@@ -4,7 +4,9 @@ All notable changes to this project will be documented in this file.
 
 - Unified the function name used to setup remult api to `remultApi` (Instead of `remultExpress` etc...)
 - Added a `dataProvider` function to `EntityOptions` that allows you to select a dataProvider per entity.
--
+- Admin UI:
+  - you can now add custom headers requests (`key: value` format)
+  - In diagram, you can visualize `ToOne` relations with the color of the entity on the left.
 
 ## [2.7.34] 2025-4-29
 

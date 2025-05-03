@@ -18,7 +18,7 @@ export type TLSContext = {
   }
 }
 
-const LSContextKey = 'LSRemultAdmin_2025_05_03'
+const LSContextKey = 'LSRemultAdmin_2025_05_04'
 
 const LSContextDefaults: TLSContext = {
   currentLocationHash: '/',
