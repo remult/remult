@@ -1,5 +1,8 @@
 import type { ClassType } from '../classType.js'
-import type { DataProvider } from './data-interfaces.js'
+import {
+  DataProviderPromiseWrapper,
+  type DataProvider,
+} from './data-interfaces.js'
 import {
   buildFullUrl,
   RestDataProvider,
@@ -113,9 +116,19 @@ export class Remult {
     dataProvider?: DataProvider,
   ): Repository<T> => {
     const info = createOldEntity(entity, this)
-    if (dataProvider === undefined)
-      dataProvider =
-        info?.options?.dataProvider?.(this.dataProvider) ?? this.dataProvider
+    if (dataProvider === undefined) {
+      if (info?.options?.dataProvider) {
+        const d = info.options.dataProvider(this.dataProvider)
+        if (d instanceof Promise) {
+          dataProvider = new DataProviderPromiseWrapper(d)
+        } else {
+          dataProvider = d ?? undefined
+        }
+      }
+    }
+    if (!dataProvider) {
+      dataProvider = this.dataProvider
+    }
     let dpCache = this.repCache.get(dataProvider)
     if (!dpCache)
       this.repCache.set(

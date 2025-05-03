@@ -107,3 +107,43 @@ export class EntityError<entityType = unknown>
   exception?: any
   httpStatusCode?: number
 }
+
+export class DataProviderPromiseWrapper implements DataProvider {
+  constructor(private dataProvider: Promise<DataProvider>) {}
+  getEntityDataProvider(entity: EntityMetadata): EntityDataProvider {
+    return new EntityDataProviderPromiseWrapper(
+      this.dataProvider.then((dp) => dp.getEntityDataProvider(entity)),
+    )
+  }
+  transaction(
+    action: (dataProvider: DataProvider) => Promise<void>,
+  ): Promise<void> {
+    return this.dataProvider.then((dp) => dp.transaction(action))
+  }
+  ensureSchema?(entities: EntityMetadata[]): Promise<void> {
+    return this.dataProvider.then((dp) => dp.ensureSchema?.(entities))
+  }
+  isProxy?: boolean | undefined
+}
+
+class EntityDataProviderPromiseWrapper implements EntityDataProvider {
+  constructor(private dataProvider: Promise<EntityDataProvider>) {}
+  delete(id: any): Promise<void> {
+    return this.dataProvider.then((dp) => dp.delete(id))
+  }
+  insert(data: any): Promise<any> {
+    return this.dataProvider.then((dp) => dp.insert(data))
+  }
+  count(where: Filter): Promise<number> {
+    return this.dataProvider.then((dp) => dp.count(where))
+  }
+  find(options?: EntityDataProviderFindOptions): Promise<Array<any>> {
+    return this.dataProvider.then((dp) => dp.find(options))
+  }
+  groupBy(options?: EntityDataProviderGroupByOptions): Promise<any[]> {
+    return this.dataProvider.then((dp) => dp.groupBy(options))
+  }
+  update(id: any, data: any): Promise<any> {
+    return this.dataProvider.then((dp) => dp.update(id, data))
+  }
+}
