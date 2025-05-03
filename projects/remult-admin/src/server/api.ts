@@ -49,5 +49,6 @@ export const api = remultApi({
       r.user?.name ?? 'Anonymous'
     })</title>
 <link href="https://remult.dev/favicon.png" rel="icon" type="image/png">`,
+    // requireAuthToken: true
   },
 })

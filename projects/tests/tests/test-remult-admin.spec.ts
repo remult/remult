@@ -421,6 +421,7 @@ describe('remult-admin', () => {
     const res = remultAdminHtml({
       rootPath: '/api',
       head: '<title>Test Admin</title>',
+      requireAuthToken: false
     })
 
     expect(res).includes('html')
