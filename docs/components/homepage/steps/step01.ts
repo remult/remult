@@ -21,6 +21,7 @@ export default {
   files: [
     {
       name: 'entities.ts',
+      changed: true,
       keyContext: 'backend',
       content: `import { Entity, Fields } from 'remult'
 
