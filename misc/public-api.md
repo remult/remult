@@ -887,7 +887,7 @@ export interface EntityOptions<entityType = unknown> {
    */
   dataProvider?: (
     defaultDataProvider: DataProvider,
-  ) => DataProvider | undefined | null
+  ) => DataProvider | Promise<DataProvider> | undefined | null
 }
 export declare type EntityOrderBy<entityType> = {
   [Properties in keyof Partial<MembersOnly<entityType>>]?: "asc" | "desc"
