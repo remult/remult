@@ -4,7 +4,7 @@ declare const Math: {
   floor: (x: number) => number
 }
 import Code from './Code.vue'
-import { onMounted } from 'vue'
+import { onMounted, ref, onUnmounted } from 'vue'
 import { stepsData } from './stepsData'
 import IconSvelte from '../icons/svelte.vue'
 import IconReact from '../icons/react.vue'
@@ -26,8 +26,26 @@ const {
   getCurrentLanguage,
 } = useEditor(stepsData)
 
+const isAnimating = ref(false)
+const visibleSteps = ref<number[]>([])
+
 onMounted(() => {
   initializeEditor()
+  // Start animation after 2 seconds
+  setTimeout(() => {
+    // Show first step
+    visibleSteps.value = [0]
+    // Show code after 500ms
+    setTimeout(() => {
+      isAnimating.value = true
+      // Sequentially show remaining steps
+      for (let i = 1; i < steps.value.length; i++) {
+        setTimeout(() => {
+          visibleSteps.value = [...visibleSteps.value, i]
+        }, i * 700) // 1s delay between each step
+      }
+    }, 500)
+  }, 500)
 })
 
 // Simplified time formatting function
@@ -106,9 +124,12 @@ const getStepTimeAgo = (stepIndex: number) => {
           :key="step.id"
           @click="selectStep(step)"
           class="step-button"
-          :class="{ active: currentStep?.id === step.id }"
+          :class="{ 
+            active: currentStep?.id === step.id,
+            'fade-in': visibleSteps.includes(index)
+          }"
         >
-          <span>{{ step.name }}</span>
+          <span class="step-name">{{ step.name }}</span>
           <span class="step-time">{{
             index === steps.length - 1 ? 'now' : getStepTimeAgo(index)
           }}</span>
@@ -126,7 +147,7 @@ const getStepTimeAgo = (stepIndex: number) => {
         </div>
       </div>
 
-      <div class="editor-content">
+      <div class="editor-content" :class="{ 'fade-in': isAnimating }">
         <div class="editor-tabs">
           <button
             v-for="file in currentStep?.files.filter(
@@ -226,6 +247,12 @@ const getStepTimeAgo = (stepIndex: number) => {
   position: relative;
   background: #050638;
   width: calc(100% - 250px);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.editor-content.fade-in {
+  opacity: 1;
 }
 
 .editor-tabs {
@@ -264,7 +291,8 @@ const getStepTimeAgo = (stepIndex: number) => {
   height: 30px;
 }
 
-.tab-button.active {
+.tab-button.active,
+.tab-button:hover {
   background: #080a59;
 }
 
@@ -296,18 +324,45 @@ const getStepTimeAgo = (stepIndex: number) => {
   text-align: left;
   color: #5254c5;
   padding: 0.1rem 0.5rem;
+  opacity: 0;
+  transition: all 0.15s ease;
+}
+
+.step-button.fade-in {
+  opacity: 1;
+}
+
+.step-button.fade-in .step-name {
+  transform: translateX(8px);
+  transition: transform 0.5s ease;
+}
+
+.step-button.fade-in .step-time {
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.step-button.fade-in .step-name,
+.step-button.fade-in .step-time {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.step-button.active,
+.step-button:hover {
+  color: #cdceff;
 }
 
 .step-button.active {
-  color: #cdceff;
   font-weight: 500;
 }
 
-.step-button span:first-child {
+.step-name {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   flex: 1;
+  transition: transform 0.3s ease;
 }
 
 .step-time {
