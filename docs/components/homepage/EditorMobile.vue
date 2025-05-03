@@ -329,6 +329,7 @@ const toggleSidebar = () => {
   width: 100%;
   position: relative;
   overflow: hidden;
+	opacity: 1;
 }
 
 .editor-mobile .editor-tabs {
