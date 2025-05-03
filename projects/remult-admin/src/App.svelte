@@ -112,6 +112,14 @@
     const response = await fetchPromise
     return response.clone()
   }
+
+  console.log(window.optionsFromServer?.requireAuthToken)
+  if (window.optionsFromServer?.requireAuthToken) {
+    dialog.show({
+      config: { title: 'Remult Settings' },
+      component: DialogSettings,
+    })
+  }
 </script>
 
 <div class="app-holder">

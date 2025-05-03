@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 - Admin UI:
   - you can now add custom headers requests (`key: value` format)
   - In diagram, you can visualize `ToOne` relations with the color of the entity on the left.
+  - add `requireAuthToken` to admin options to open settings dialog to set the bearer token directly.
 
 ## [2.7.34] 2025-4-29
 
