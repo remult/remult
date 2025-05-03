@@ -125,7 +125,7 @@ onUnmounted(() => {
         <p>
           Want to see remult in action in 60 sec?<br />
           Auth, DB, CRUD – using your stack.<br />
-          <code>npm init remult@latest</code>
+          <code class="code-init">npm init remult@latest</code>
         </p>
       </div>
     </div>
@@ -270,6 +270,10 @@ onUnmounted(() => {
     color: var(--vp-c-text);
     margin-top: 0.5rem;
     display: inline-block;
+  }
+
+  .code-init {
+    user-select: all;
   }
 }
 
