@@ -210,9 +210,9 @@ export const { GET, POST, PUT, DELETE } = _api
 ```ts [nuxt.js]
 // server/api/[...remult].ts
 
-import { remultNuxt } from 'remult/remult-nuxt'
+import { remultApi } from 'remult/remult-nuxt'
 
-export const api = remultNuxt({})
+export const api = remultApi({})
 
 export default defineEventHandler(api)
 
@@ -250,7 +250,7 @@ import { remultApi } from 'remult/remult-hapi'
 (async () => {
   const hapi = server({ port: 3000 })
 
-  await hapi.register(remultApi{})) // [!code highlight]
+  await hapi.register(remultApi({})) // [!code highlight]
 
   hapi.start()
 })()
@@ -278,7 +278,7 @@ import { remultApi } from 'remult/remult-express'
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
 
-  app.use(remultApi) // [!code highlight]
+  app.use(remultApi({})) // [!code highlight]
 
   await app.listen(3000)
 }
@@ -4060,10 +4060,10 @@ export default defineNuxtConfig({
    In the `server/api/` directory, create a dynamic API route that integrates Remult with Nuxt. The following code sets up the API and defines the entities to be used:
 
    ```ts [server/api/[...remult].ts]
-   import { remultNuxt } from 'remult/remult-nuxt'
+   import { remultApi } from 'remult/remult-nuxt'
    import { Task } from '../../demo/todo/Task.js'
 
-   export const api = remultNuxt({
+   export const api = remultApi({
      admin: true,
      entities: [Task],
    })
@@ -7118,15 +7118,15 @@ To add swagger UI to a `NextJs` application follow these steps:
    yarn add -D @types/swagger-ui-react
    ```
 
-2. Get the openApi document from RemultNextAppServer:
+2. Get the openApi document from remultApiServer:
 
    ```ts
    // src/api.ts
    import { Task } from '@/shared/Task'
    import { TasksController } from '@/shared/TasksController'
-   import { remultNextApp } from 'remult/remult-next'
+   import { remultApi } from 'remult/remult-next'
 
-   export const api = remultNextApp({
+   export const api = remultApi({
      admin: true,
      entities: [Task],
      controllers: [TasksController],
@@ -9075,78 +9075,111 @@ Arguments:
 # API Reference - RemultServerOptions
 
 # RemultServerOptions
-* **RemultServerOptions**
+
+- **RemultServerOptions**
+
 ## entities
+
 Entities to use for the api
+
 ## controllers
+
 Controller to use for the api
+
 ## getUser
+
 Will be called to get the current user based on the current request
+
 ## initRequest
+
 Will be called for each request and can be used for configuration
+
 ## initApi
+
 Will be called once the server is loaded and the data provider is ready
+
 ## dataProvider
+
 Data Provider to use for the api.
 
-
 #### see:
+
 [Connecting to a Database](https://remult.dev/docs/databases.html).
+
 ## ensureSchema
+
 Will create tables and columns in supporting databases. default: true
 
-
 #### description:
+
 when set to true, it'll create entities that do not exist, and add columns that are missing.
+
 ## rootPath
+
 The path to use for the api, default:/api
 
-
 #### description:
+
 If you want to use a different api path adjust this field
+
 ## defaultGetLimit
+
 The default limit to use for find requests that did not specify a limit
+
 ## logApiEndPoints
+
 When set to true (default) it'll console log each api endpoint that is created
+
 ## subscriptionServer
+
 A subscription server to use for live query and message channels
+
 ## liveQueryStorage
+
 A storage to use to store live queries, relevant mostly for serverless scenarios or larger scales
+
 ## contextSerializer
+
 Used to store the context relevant info for re running a live query
+
 ## admin
+
 When set to true, will display an admin ui in the `/api/admin` url.
 Can also be set to an arrow function for fine grained control
 
-
 #### example:
+
 ```ts
 admin: true
 ```
 
-
 #### example:
+
 ```ts
 admin: () => remult.isAllowed('admin')
 ```
 
-
 #### see:
+
 [allowed](http://remult.dev/docs/allowed.html)
+
 ## queueStorage
+
 Storage to use for backend methods that use queue
+
 ## error
+
 This method is called whenever there is an error in the API lifecycle.
 
-
 #### example:
+
 ```ts
 export const api = remultApi({
   error: async (e) => {
     if (e.httpStatusCode == 400) {
-      e.sendError(500, { message: "An error occurred" })
+      e.sendError(500, { message: 'An error occurred' })
     }
-  }
+  },
 })
 ```
 
@@ -14104,17 +14137,17 @@ The `Task` entity class we're creating will have an auto-generated `id` field, a
 ```ts
 // src/shared/Task.ts
 
-import { Entity, Fields } from "remult"
+import { Entity, Fields } from 'remult'
 
-@Entity("tasks", {
-  allowApiCrud: true
+@Entity('tasks', {
+  allowApiCrud: true,
 })
 export class Task {
   @Fields.cuid()
-  id = ""
+  id = ''
 
   @Fields.string()
-  title = ""
+  title = ''
 
   @Fields.boolean()
   completed = false
@@ -14161,7 +14194,7 @@ Now that the `Task` entity is defined, we can start using the REST API to query 
 
 1. Open a browser with the url: [http://localhost:3002/api/tasks](http://localhost:3002/api/tasks), and you'll see that you get an empty array.
 
-2. Use `curl` to `POST` a new task - *Clean car*.
+2. Use `curl` to `POST` a new task - _Clean car_.
 
 ```sh
 curl http://localhost:3002/api/tasks -d "{\"title\": \"Clean car\"}" -H "Content-Type: application/json"
@@ -14225,13 +14258,13 @@ Replace the contents of `src/App.vue` with the following code:
 // src/App.vue
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
-import { remult } from "remult";
-import { Task } from "./shared/Task";
+import { onMounted, ref } from 'vue'
+import { remult } from 'remult'
+import { Task } from './shared/Task'
 
-const taskRepo = remult.repo(Task);
-const tasks = ref<Task[]>([]);
-onMounted(() => taskRepo.find().then((items) => (tasks.value = items)));
+const taskRepo = remult.repo(Task)
+const tasks = ref<Task[]>([])
+onMounted(() => taskRepo.find().then((items) => (tasks.value = items)))
 </script>
 <template>
   <div>
@@ -14244,7 +14277,6 @@ onMounted(() => taskRepo.find().then((items) => (tasks.value = items)));
     </main>
   </div>
 </template>
-
 ```
 
 Here's a quick overview of the different parts of the code snippet:
@@ -14668,8 +14700,8 @@ A simple way to prevent this is to expose an API endpoint for `setAllCompleted` 
 ```ts
 // src/shared/TasksController.ts
 
-import { BackendMethod, remult } from "remult"
-import { Task } from "./Task.js"
+import { BackendMethod, remult } from 'remult'
+import { Task } from './Task.js'
 
 export class TasksController {
   @BackendMethod({ allowed: true })
@@ -17232,7 +17264,7 @@ npm i remult
 
 ### Bootstrap Remult in the back-end
 
-Remult is bootstrapped in a `Next.js` using a [catch all dynamic API route](https://nextjs.org/docs/app/building-your-application/routing/dynamic-routes#catch-all-segments), that passes the handling of requests to an object created using the `remultNextApp` function.
+Remult is bootstrapped in a `Next.js` using a [catch all dynamic API route](https://nextjs.org/docs/app/building-your-application/routing/dynamic-routes#catch-all-segments), that passes the handling of requests to an object created using the `remultApi` function.
 
 1. Open your IDE.
 
@@ -17241,9 +17273,9 @@ Remult is bootstrapped in a `Next.js` using a [catch all dynamic API route](http
    ```ts
    // src/api.ts
 
-   import { remultNextApp } from 'remult/remult-next'
+   import { remultApi } from 'remult/remult-next'
 
-   export const api = remultNextApp({})
+   export const api = remultApi({})
    ```
 
 3. Create an `api` directory within the app folder, and inside it, create a `[...remult]` subdirectory. Inside the `app/api/[...remult]` directory, craft a `route.ts` file with the following code. This file functions as a catch all route for the Next.js API route, effectively managing all incoming API requests.
@@ -17338,15 +17370,15 @@ export class Task {
 }
 ```
 
-3. In the `src/api.ts` api route, register the `Task` entity with Remult by adding `entities: [Task]` to an `options` object you pass to the `remultNextApp()` function:
+3. In the `src/api.ts` api route, register the `Task` entity with Remult by adding `entities: [Task]` to an `options` object you pass to the `remultApi()` function:
 
 ```ts{4,7}
 // src/api.ts
 
-import { remultNextApp } from "remult/remult-next"
+import { remultApi } from "remult/remult-next"
 import { Task } from "./shared/Task"
 
-const api = remultNextApp({
+const api = remultApi({
   entities: [Task]
 })
 
@@ -17400,15 +17432,15 @@ While remult supports [many relational and non-relational databases](https://rem
 
 ### Enabling the Admin UI
 
-Add the Admin UI to your Next.js application by setting the `admin` option to `true` in the `remultNextApp()`
+Add the Admin UI to your Next.js application by setting the `admin` option to `true` in the `remultApi()`
 
 ::: code-group
 
 ```ts [src/api.ts]
-import { remultNextApp } from 'remult/remult-next'
+import { remultApi } from 'remult/remult-next'
 import { Task } from './shared/Task'
 
-const api = remultNextApp({
+const api = remultApi({
   entities: [Task],
   admin: true,
 })
@@ -18059,7 +18091,7 @@ The `@BackendMethod` decorator tells Remult to expose the method as an API endpo
 //...
 import { TasksController } from "./shared/TaskController"
 
-export const api = remultNextApp({
+export const api = remultApi({
   //...
   controllers: [TasksController]
 })
@@ -18279,7 +18311,7 @@ Once an authentication flow is established, integrating it with Remult in the ba
 
 import { getUserOnServer } from "./auth"
 
-const api = remultNextApp({
+const api = remultApi({
   //...
   getUser: getUserOnServer,
 })
@@ -18433,7 +18465,7 @@ Don't worry if you don't have Postgres installed locally. In the next step of th
 
    const DATABASE_URL = process.env["DATABASE_URL"]
 
-   const api = remultNextApp({
+   const api = remultApi({
      //...
     dataProvider: DATABASE_URL
       ? createPostgresDataProvider({ connectionString: DATABASE_URL })
@@ -18542,7 +18574,7 @@ Follow these steps only if you want to use `liveQuery` in the app
    import ably from "ably"
    import { AblySubscriptionServer } from "remult/ably"
 
-   const api = remultNextApp({
+   const api = remultApi({
      subscriptionServer: new AblySubscriptionServer(
        new ably.Rest(process.env["ABLY_API_KEY"]!)
      )
@@ -18587,7 +18619,7 @@ Follow these steps only if you want to use `liveQuery` in the app
      }, [session])
    ```
 
-9) Configure `remultNextApp` to store live-queries in the `dataProvider`
+9) Configure `remultApi` to store live-queries in the `dataProvider`
 
    ```ts{4,6,8-9}
    // src/api.ts
@@ -18596,7 +18628,7 @@ Follow these steps only if you want to use `liveQuery` in the app
    import { DataProviderLiveQueryStorage } from "remult/server"
 
    const dataProvider = createPostgresDataProvider()
-   const api = remultNextApp({
+   const api = remultApi({
      dataProvider,
      liveQueryStorage: new DataProviderLiveQueryStorage(dataProvider)
      //...
