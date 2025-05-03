@@ -57,6 +57,15 @@
   let totalRows = -1
   let unSub: (() => void) | null = null
 
+  let withLiveQuery = true
+  const updateWithLiveQuery = (info: any) => {
+    withLiveQuery =
+      $LSContext.settings.withLiveQuery === undefined
+        ? window.optionsFromServer?.withLiveQuery ?? true
+        : $LSContext.settings.withLiveQuery
+  }
+  $: updateWithLiveQuery($LSContext.settings.withLiveQuery)
+
   const reSub = async (currentFilter: EntityFilter<any>) => {
     $SSContext.forbiddenEntities = []
 
@@ -66,7 +75,7 @@
 
     const where = { $and: [currentFilter, { ...parentRelation }] }
 
-    if ($LSContext.settings.withLiveQuery) {
+    if (withLiveQuery) {
       unSub = repo
         .liveQuery({
           ...options,
@@ -281,19 +290,19 @@
           saveAction={async (item) => {
             await repo.insert(item)
             newRow = undefined
-            if (!$LSContext.settings.withLiveQuery) {
+            if (!withLiveQuery) {
               reSub($filter)
             }
           }}
           deleteAction={async () => {
             newRow = undefined
-            if (!$LSContext.settings.withLiveQuery) {
+            if (!withLiveQuery) {
               reSub($filter)
             }
           }}
           cancelAction={async () => {
             newRow = undefined
-            if (!$LSContext.settings.withLiveQuery) {
+            if (!withLiveQuery) {
               reSub($filter)
             }
           }}
@@ -307,13 +316,13 @@
             {relationsToOneValues}
             saveAction={async (item) => {
               await repo.update(row, item)
-              if (!$LSContext.settings.withLiveQuery) {
+              if (!withLiveQuery) {
                 reSub($filter)
               }
             }}
             deleteAction={async () => {
               await repo.delete(row)
-              if (!$LSContext.settings.withLiveQuery) {
+              if (!withLiveQuery) {
                 reSub($filter)
               }
             }}
