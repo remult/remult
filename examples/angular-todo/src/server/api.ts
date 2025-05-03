@@ -1,10 +1,10 @@
 import { createPostgresDataProvider } from 'remult/postgres'
 
-import { remultApi } from 'remult/remult-express'
+import { remultExpress } from 'remult/remult-express'
 import { Task } from '../shared/Task'
 import { TasksController } from '../shared/TasksController'
 
-export const api = remultApi({
+export const api = remultExpress({
   entities: [Task],
   controllers: [TasksController],
   getUser: (req) => req.session!['user'],

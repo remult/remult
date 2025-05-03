@@ -17,7 +17,7 @@
     "express": "^4.21.1",
     "helmet": "^7.1.0",
     "pg": "^8.11.3",
-    "remult": "^0.26.12",
+    "remult": "^3.0.0-next.1",
     "vue": "^3.3.4"
   },
   "devDependencies": {
@@ -30,7 +30,7 @@
     "@vue/tsconfig": "^0.4.0",
     "npm-run-all2": "^6.1.1",
     "tsx": "^4.4.0",
-    "typescript": "~5.2.0",
+    "typescript": "^5.5.3",
     "vite": "^4.5.13",
     "vue-tsc": "^2.0.29"
   }

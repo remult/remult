@@ -12,7 +12,7 @@
     "@solidjs/router": "^0.13.2",
     "@solidjs/start": "^1.0.0-rc.0",
     "pg": "^8.11.5",
-    "remult": "^0.26.12",
+    "remult": "^3.0.0-next.1",
     "solid-js": "^1.8.16",
     "vinxi": "^0.3.11"
   },
