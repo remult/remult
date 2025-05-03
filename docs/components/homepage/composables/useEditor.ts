@@ -25,18 +25,18 @@ export function useEditor(stepsData: CodeStep[]) {
 		)
 
 		// If moving forward, prioritize files with changes
-		if (isMovingForward) {
-			// If we found a matching file and it has changes, return it
-			if (matchingFile && matchingFile.changed) {
-				return matchingFile
-			}
-
-			// Otherwise, find the first file with changes
-			const fileWithChanges = availableFiles.find((f) => f.changed)
-			if (fileWithChanges) {
-				return fileWithChanges
-			}
+		// if (isMovingForward) {
+		// If we found a matching file and it has changes, return it
+		if (matchingFile && matchingFile.changed) {
+			return matchingFile
 		}
+
+		// Otherwise, find the first file with changes
+		const fileWithChanges = availableFiles.find((f) => f.changed)
+		if (fileWithChanges) {
+			return fileWithChanges
+		}
+		// }
 
 		// If not moving forward, or no files with changes were found,
 		// return matching file or the first available file

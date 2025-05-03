@@ -5,6 +5,7 @@ import Icon from '../Icon.vue'
 import { ref, onMounted, onUnmounted } from 'vue'
 
 const features = [
+  { text: 'full', bgColor: '#51319E', textColor: '#BDA1FF' },
   { text: 'Auto API', bgColor: '#FF31D9', textColor: '#7D1369' },
   { text: 'Validation', bgColor: '#327C98', textColor: '#9ED9F0' },
   { text: 'ORM', bgColor: '#51319E', textColor: '#BDA1FF' },
@@ -12,9 +13,8 @@ const features = [
   { text: 'Lifecycle hooks', bgColor: '#050643', textColor: '#7173F2' },
   { text: 'Real Time', bgColor: '#538CC9', textColor: '#184472' },
   { text: 'Typesafety', bgColor: '#8262E1', textColor: '#FFFFFF' },
-  { text: 'Admin UI', bgColor: '#00D8FF', textColor: '#266F7C' },
   { text: 'Offline Support', bgColor: '#A91D23', textColor: '#FF979B' },
-  { text: 'full', bgColor: '#51319E', textColor: '#BDA1FF' },
+  { text: 'Admin UI', bgColor: '#00D8FF', textColor: '#266F7C' },
 ]
 
 const currentFeature = ref(features[0])
@@ -42,8 +42,8 @@ onMounted(() => {
   window.addEventListener('resize', handleResize)
 
   let index = 0
-  const normalDuration = 2000 // 2 seconds for normal items
-  const lastItemDuration = 6000 // 6 seconds for the last item (3x longer)
+  const normalDuration = 2000
+  const longItemDuration = 3000
 
   const updateText = () => {
     index = (index + 1) % features.length
@@ -51,8 +51,7 @@ onMounted(() => {
     shake()
 
     // If we're at the last item, wait longer
-    const duration =
-      index === features.length - 1 ? lastItemDuration : normalDuration
+    const duration = index === 0 ? longItemDuration : normalDuration
     interval = window.setTimeout(updateText, duration)
   }
 
@@ -70,8 +69,8 @@ onMounted(() => {
     },
     {
       threshold: 0.1,
-      rootMargin: '0px 0px -50px 0px'
-    }
+      rootMargin: '0px 0px -50px 0px',
+    },
   )
 
   // Observe all fade-in elements with sequential loading
@@ -218,7 +217,8 @@ onUnmounted(() => {
 }
 
 @keyframes pulse-opacity {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0;
   }
   50% {
@@ -424,7 +424,12 @@ body.dark .rotating-text {
   border-radius: 4px;
   z-index: 1;
   transition: color 0.3s ease;
-  background: radial-gradient(circle farthest-corner at 8% -50%, #d6d6d600 -40%, #2e34a2 28%, #7141b5 200%);
+  background: radial-gradient(
+    circle farthest-corner at 8% -50%,
+    #d6d6d600 -40%,
+    #2e34a2 28%,
+    #7141b5 200%
+  );
 }
 
 .cta a:nth-child(2) {
@@ -443,7 +448,7 @@ body.dark .rotating-text {
 }
 
 .cta a::before {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   right: 0;
@@ -453,7 +458,12 @@ body.dark .rotating-text {
   z-index: -1;
   transition: opacity 0.3s ease-in-out;
   opacity: 0;
-  background: radial-gradient(circle farthest-corner at 8% -50%, #d6d6d600 -10%, #2e34a2 35%, #7141b5 79%);
+  background: radial-gradient(
+    circle farthest-corner at 8% -50%,
+    #d6d6d600 -10%,
+    #2e34a2 35%,
+    #7141b5 79%
+  );
 }
 
 .cta a:hover::before {
@@ -480,7 +490,7 @@ body.dark .rotating-text {
 }
 
 .dark .cta a::before {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   right: 0;
@@ -548,7 +558,7 @@ body.dark .rotating-text {
 
     a {
       font-size: 0.8rem;
-      padding: .5rem .75rem;
+      padding: 0.5rem 0.75rem;
     }
   }
 }
@@ -581,7 +591,9 @@ body.dark .rotating-text {
 
 .fade-in {
   opacity: 0;
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  transition:
+    opacity 0.6s ease-out,
+    transform 0.6s ease-out;
 }
 
 .fade-in-visible {
