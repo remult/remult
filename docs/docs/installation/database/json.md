@@ -10,14 +10,14 @@ In your `index.ts` (or server file), configure the `dataProvider` to use JSON fi
 // index.ts
 
 import express from "express"
-import { remultExpress } from "remult/remult-express"
+import { remultApi } from "remult/remult-express"
 import { JsonDataProvider } from "remult"
 import { JsonEntityFileStorage } from "remult/server"
 
 const app = express()
 
 app.use(
-  remultExpress({
+  remultApi({
     dataProvider: async () =>
       new JsonDataProvider(new JsonEntityFileStorage("./db")) // Data will be stored in the 'db' folder
   })

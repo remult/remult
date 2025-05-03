@@ -1,10 +1,10 @@
-import { remultHono } from "remult/remult-hono";
-import { TasksController } from "shared";
+import { remultApi } from 'remult/remult-hono'
+import { TasksController } from 'shared'
 
-export const api = remultHono({
+export const api = remultApi({
   controllers: [TasksController],
   getUser: async (c: any) => {
-    const session = c.get("session");
-    return session.get("user");
+    const session = c.get('session')
+    return session.get('user')
   },
-});
+})

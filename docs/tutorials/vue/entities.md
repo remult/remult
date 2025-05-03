@@ -19,17 +19,17 @@ The `Task` entity class we're creating will have an auto-generated `id` field, a
 ```ts
 // src/shared/Task.ts
 
-import { Entity, Fields } from "remult"
+import { Entity, Fields } from 'remult'
 
-@Entity("tasks", {
-  allowApiCrud: true
+@Entity('tasks', {
+  allowApiCrud: true,
 })
 export class Task {
   @Fields.cuid()
-  id = ""
+  id = ''
 
   @Fields.string()
-  title = ""
+  title = ''
 
   @Fields.boolean()
   completed = false
@@ -39,15 +39,15 @@ export class Task {
 }
 ```
 
-3. In the server's `api` module, register the `Task` entity with Remult by adding `entities: [Task]` to an `options` object you pass to the `remultExpress()` middleware:
+3. In the server's `api` module, register the `Task` entity with Remult by adding `entities: [Task]` to an `options` object you pass to the `remultApi()` middleware:
 
 ```ts{4,7}
 // src/server/api.ts
 
-import { remultExpress } from "remult/remult-express"
+import { remultApi } from "remult/remult-express"
 import { Task } from "../shared/Task.js"
 
-export const api = remultExpress({
+export const api = remultApi({
   entities: [Task]
 })
 ```
@@ -76,7 +76,7 @@ Now that the `Task` entity is defined, we can start using the REST API to query 
 
 1. Open a browser with the url: [http://localhost:3002/api/tasks](http://localhost:3002/api/tasks), and you'll see that you get an empty array.
 
-2. Use `curl` to `POST` a new task - *Clean car*.
+2. Use `curl` to `POST` a new task - _Clean car_.
 
 ```sh
 curl http://localhost:3002/api/tasks -d "{\"title\": \"Clean car\"}" -H "Content-Type: application/json"
@@ -102,15 +102,15 @@ While remult supports [many relational and non-relational databases](https://rem
 
 ### Enabling the Admin UI
 
-Add the Admin UI to your React application by setting the `admin` option to `true` in the `remultExpress()`
+Add the Admin UI to your React application by setting the `admin` option to `true` in the `remultApi()`
 
 ::: code-group
 
 ```ts [src/server/api.ts]
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 import { Task } from '../shared/Task.js'
 
-export const api = remultExpress({
+export const api = remultApi({
   entities: [Task],
   admin: true, // Enable the Admin UI
 })
@@ -140,13 +140,13 @@ Replace the contents of `src/App.vue` with the following code:
 // src/App.vue
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
-import { remult } from "remult";
-import { Task } from "./shared/Task";
+import { onMounted, ref } from 'vue'
+import { remult } from 'remult'
+import { Task } from './shared/Task'
 
-const taskRepo = remult.repo(Task);
-const tasks = ref<Task[]>([]);
-onMounted(() => taskRepo.find().then((items) => (tasks.value = items)));
+const taskRepo = remult.repo(Task)
+const tasks = ref<Task[]>([])
+onMounted(() => taskRepo.find().then((items) => (tasks.value = items)))
 </script>
 <template>
   <div>
@@ -159,7 +159,6 @@ onMounted(() => taskRepo.find().then((items) => (tasks.value = items)));
     </main>
   </div>
 </template>
-
 ```
 
 Here's a quick overview of the different parts of the code snippet:

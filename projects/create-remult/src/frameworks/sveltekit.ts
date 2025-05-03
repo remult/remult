@@ -12,7 +12,7 @@ export const svelteKit: Framework = {
   url: "https://kit.svelte.dev/",
   componentFileSuffix: ".svelte",
   serverInfo: {
-    remultServerFunction: "remultSveltekit",
+    remultServerFunction: "remultApi",
     import: "remult-sveltekit",
     doesNotLikeJsFileSuffix: true,
     auth: {

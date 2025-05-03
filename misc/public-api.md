@@ -874,6 +874,20 @@ export interface EntityOptions<entityType = unknown> {
     | ((entity: FieldsMetadata<entityType>) => FieldMetadata | FieldMetadata[])
   entityRefInit?: (ref: EntityRef<entityType>, row: entityType) => void
   apiRequireId?: Allowed
+  /**
+   * A function that allows customizing the data provider for the entity.
+   * @param defaultDataProvider The default data provider defined in the `remult` object.
+   * @example
+   * dataProvider: (dp) => {
+   *   if (!dp.isProxy) // usually indicates that we're on the backend
+   *     return getASpacificDataProvider();
+   *   return null
+   * }
+   * @returns A custom data provider for the entity.
+   */
+  dataProvider?: (
+    defaultDataProvider: DataProvider,
+  ) => DataProvider | undefined | null
 }
 export declare type EntityOrderBy<entityType> = {
   [Properties in keyof Partial<MembersOnly<entityType>>]?: "asc" | "desc"
@@ -3455,14 +3469,14 @@ export declare function withRemult<T>(
 ## ./remult-express.js
 
 ```ts
-export declare function remultExpress(
+export declare function remultApi(
   options?: RemultServerOptions<express.Request> & {
     bodyParser?: boolean
     bodySizeLimit?: string
   },
-): RemultExpressServer
+): remultApiServer
 //[ ] RemultServerOptions from ./server/remult-api-server.js is not exported
-export type RemultExpressServer = express.RequestHandler &
+export type remultApiServer = express.RequestHandler &
   RemultServerCore<express.Request> & {
     withRemult: (
       req: express.Request,
@@ -3472,18 +3486,20 @@ export type RemultExpressServer = express.RequestHandler &
   } & Pick<RemultServer<express.Request>, "withRemultAsync">
 //[ ] RemultServerCore from ./server/remult-api-server.js is not exported
 //[ ] RemultServer from ./server/remult-api-server.js is not exported
+export const remultExpress: typeof remultApi
 ```
 
 ## ./remult-next.js
 
 ```ts
+export declare function remultApi(
+  options?: RemultServerOptions<Request>,
+): RemultNextAppServer
+//[ ] RemultServerOptions from ./server/index.js is not exported
 export declare function remultNext(
   options: RemultServerOptions<NextApiRequest>,
 ): RemultNextServer
-//[ ] RemultServerOptions from ./server/index.js is not exported
-export declare function remultNextApp(
-  options?: RemultServerOptions<Request>,
-): RemultNextAppServer
+export const remultNextApp: typeof remultApi
 export type RemultNextAppServer = RemultServerCore<Request> & {
   GET: (req: Request) => Promise<Response | undefined>
   PUT: (req: Request) => Promise<Response | undefined>
@@ -3693,7 +3709,7 @@ export interface RemultServerOptions<RequestType> {
    *
    * @returns A promise that resolves when the error handling is complete.
    * @example
-   * export const api = remultExpress({
+   * export const api = remultApi({
    *   error: async (e) => {
    *     if (e.httpStatusCode == 400) {
    *       e.sendError(500, { message: "An error occurred" })
@@ -3904,7 +3920,7 @@ export interface RemultServerOptions<RequestType> {
    *
    * @returns A promise that resolves when the error handling is complete.
    * @example
-   * export const api = remultExpress({
+   * export const api = remultApi({
    *   error: async (e) => {
    *     if (e.httpStatusCode == 400) {
    *       e.sendError(500, { message: "An error occurred" })
@@ -3951,10 +3967,11 @@ export declare class SseSubscriptionServer implements SubscriptionServer {
 ## ./remult-fastify.js
 
 ```ts
-export declare function remultFastify(
+export declare function remultApi(
   options: RemultServerOptions<FastifyRequest>,
 ): RemultFastifyServer
 //[ ] RemultServerOptions from ./server/remult-api-server.js is not exported
+export const remultFastify: typeof remultApi
 export type RemultFastifyServer = FastifyPluginCallback &
   RemultServerCore<FastifyRequest> & {
     withRemult: RemultServer<FastifyRequest>["withRemultAsync"]
@@ -3966,10 +3983,11 @@ export type RemultFastifyServer = FastifyPluginCallback &
 ## ./remult-hapi.js
 
 ```ts
-export declare function remultHapi(
+export declare function remultApi(
   options: RemultServerOptions<Request>,
 ): RemultHapiServer
 //[ ] RemultServerOptions from ./server/index.js is not exported
+export const remultHapi: typeof remultApi
 export type RemultHapiServer = Plugin<any, any> &
   RemultServerCore<Request> & {
     withRemult: RemultServer<Request>["withRemultAsync"]
@@ -3981,10 +3999,11 @@ export type RemultHapiServer = Plugin<any, any> &
 ## ./remult-hono.js
 
 ```ts
-export declare function remultHono(
+export declare function remultApi(
   options: RemultServerOptions<Context<Env, "", BlankInput>>,
 ): RemultHonoServer
 //[ ] RemultServerOptions from ./server/index.js is not exported
+export const remultHono: typeof remultApi
 export type RemultHonoServer = Hono &
   RemultServerCore<Context<Env, "", BlankInput>> & {
     withRemult: <T>(
@@ -4024,10 +4043,11 @@ export interface RemultFresh extends RemultServerCore<FreshRequest> {
 ## ./remult-sveltekit.js
 
 ```ts
-export declare function remultSveltekit(
+export declare function remultApi(
   options: RemultServerOptions<RequestEvent>,
 ): RemultSveltekitServer
 //[ ] RemultServerOptions from ./server/index.js is not exported
+export const remultSveltekit: typeof remultApi
 export type RemultSveltekitServer = RemultServerCore<RequestEvent> &
   Handle & {
     withRemult: RemultServer<RequestEvent>["withRemultAsync"]
@@ -4582,10 +4602,11 @@ export declare function sqlRelationsFilter<entityType>(
 ## ./remult-nuxt.js
 
 ```ts
-export declare function remultNuxt(
+export declare function remultApi(
   options: RemultServerOptions<H3Event>,
 ): RemultNuxtServer
 //[ ] RemultServerOptions from ./server/index.js is not exported
+export const remultNuxt: typeof remultApi
 export type RemultNuxtServer = RemultServerCore<H3Event> &
   ((event: H3Event) => Promise<any>) & {
     withRemult: RemultServer<H3Event>["withRemultAsync"]
@@ -4597,10 +4618,11 @@ export type RemultNuxtServer = RemultServerCore<H3Event> &
 ## ./remult-solid-start.js
 
 ```ts
-export declare function remultSolidStart(
+export declare function remultApi(
   options: RemultServerOptions<RequestEvent>,
 ): RemultSolidStartServer
 //[ ] RemultServerOptions from ./server/index.js is not exported
+export const remultSolidStart: typeof remultApi
 export type RemultSolidStartServer = RemultServerCore<RequestEvent> & {
   withRemult<T>(what: () => Promise<T>): Promise<T>
   GET: RequestHandler

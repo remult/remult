@@ -1,8 +1,5 @@
 import express from 'express'
-import {
-  type RemultExpressServer,
-  remultExpress,
-} from '../../core/remult-express.js'
+import { type remultApiServer, remultApi } from '../../core/remult-express.js'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { Task, test_compound_id } from '../../test-servers/shared/Task.js'
 import {
@@ -25,7 +22,7 @@ describe('test express server', async () => {
     throwExceptionOnGetUser = false
     errorHandler = undefined
   })
-  let api = remultExpress({
+  let api = remultApi({
     entities: [Task, test_compound_id],
     dataProvider: new InMemoryDataProvider(),
     admin: {
@@ -119,7 +116,7 @@ describe('test express server', async () => {
 })
 it('test with express remult async ', async () => {
   let initRequest: any[] = []
-  const api = remultExpress({
+  const api = remultApi({
     initRequest: async (r) => {
       initRequest.push(r)
     },

@@ -44,12 +44,12 @@ Use the `api.withRemultAsync` method in promises
 
 ```ts
 import express from 'express'
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 import { remult, repo } from 'remult'
 
 const app = express()
 // ...
-const api = remultExpress({
+const api = remultApi({
   entities: [Task],
 })
 app.post('/api/customSetAll', async (req, res) => {
@@ -89,12 +89,12 @@ setInterval(async () => {
 <!-- prettier-ignore-start -->
 ```ts 
 import fastify from 'fastify'
-import { remultFastify } from 'remult/remult-fastify'
+import { remultApi } from 'remult/remult-fastify'
 
 (async () => {
   const server = fastify()
 
-  await server.register(remultFastify({})) // [!code highlight]
+  await server.register(remultApi({})) // [!code highlight]
   server.get('/api/test', async (req, res) => {
     return {
       result: await api.withRemult(req, () => remult.repo(Task).count()), // [!code highlight]
@@ -113,11 +113,11 @@ import { remultFastify } from 'remult/remult-fastify'
 <!-- prettier-ignore-start -->
 ```ts 
 import { Hono } from 'hono'
-import { remultHono } from 'remult/remult-hono'
+import { remultApi } from 'remult/remult-hono'
 
 const app = new Hono()
 
-const api = remultHono({}) 
+const api = remultApi({}) 
 app.get('/test1', api.withRemult, async (c) => // [!code highlight]
   c.text('hello ' + (await repo(Task).count())),
 )
@@ -229,11 +229,11 @@ export const handle = sequence(
 == Hapi
 ```ts 
 import { type Plugin, server } from '@hapi/hapi'
-import { remultHapi } from 'remult/remult-hapi'
+import { remultApi } from 'remult/remult-hapi'
 
 (async () => {
   const hapi = server({ port: 3000 })
-  const api = remultHapi({})
+  const api = remultApi({})
   await hapi.register(api) // [!code highlight]
 
   server.route({

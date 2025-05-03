@@ -8,7 +8,7 @@ import type {
 import { createRemultServer } from './server/index.js'
 import type { APIEvent } from '@solidjs/start/server' // don't remove - augments requestEvent
 
-export function remultSolidStart(
+export function remultApi(
   options: RemultServerOptions<RequestEvent>,
 ): RemultSolidStartServer {
   let result = createRemultServer<RequestEvent>(options, {
@@ -116,3 +116,5 @@ export type RemultSolidStartServer = RemultServerCore<RequestEvent> & {
   POST: RequestHandler
   DELETE: RequestHandler
 }
+
+export const remultSolidStart = remultApi

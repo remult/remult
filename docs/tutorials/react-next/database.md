@@ -38,7 +38,7 @@ Don't worry if you don't have Postgres installed locally. In the next step of th
 
    const DATABASE_URL = process.env["DATABASE_URL"]
 
-   const api = remultNextApp({
+   const api = remultApi({
      //...
     dataProvider: DATABASE_URL
       ? createPostgresDataProvider({ connectionString: DATABASE_URL })

@@ -8,7 +8,7 @@ import type {
 } from './server/index.js'
 import { createRemultServer } from './server/index.js'
 
-export function remultSveltekit(
+export function remultApi(
   options: RemultServerOptions<RequestEvent>,
 ): RemultSveltekitServer {
   let result = createRemultServer<RequestEvent>(options, {
@@ -107,3 +107,5 @@ export type RemultSveltekitServer = RemultServerCore<RequestEvent> &
     POST: RequestHandler
     DELETE: RequestHandler
   }
+
+export const remultSveltekit = remultApi

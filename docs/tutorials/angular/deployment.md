@@ -46,7 +46,7 @@ If you're using angular version 16 or less, the result path is: `'/dist/remult-a
    //...
    const DATABASE_URL = process.env["DATABASE_URL"];
 
-   export const api = remultExpress({
+   export const api = remultApi({
     dataProvider: DATABASE_URL
       ? createPostgresDataProvider({ connectionString: DATABASE_URL })
       : undefined,

@@ -11,7 +11,7 @@ import {
   type GenericResponse,
 } from './server/index.js'
 import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
-export function remultHono(
+export function remultApi(
   options: RemultServerOptions<Context<Env, '', BlankInput>>,
 ): RemultHonoServer {
   let app = new Hono()
@@ -123,3 +123,6 @@ export type RemultHonoServer = Hono &
       what: () => Promise<T>,
     ) => Promise<T>
   }
+
+// @deprecated use remultApi instead
+export const remultHono = remultApi

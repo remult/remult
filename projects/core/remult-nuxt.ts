@@ -9,7 +9,7 @@ import type {
 } from './server/index.js'
 import { createRemultServer } from './server/index.js'
 
-export function remultNuxt(
+export function remultApi(
   options: RemultServerOptions<H3Event>,
 ): RemultNuxtServer {
   const result = createRemultServer<H3Event>(options, {
@@ -70,3 +70,5 @@ export type RemultNuxtServer = RemultServerCore<H3Event> &
   ((event: H3Event) => Promise<any>) & {
     withRemult: RemultServer<H3Event>['withRemultAsync']
   }
+
+export const remultNuxt = remultApi

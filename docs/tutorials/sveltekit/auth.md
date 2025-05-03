@@ -150,17 +150,17 @@ This (very) simplistic approach use Auth.js [Credentials Provider](https://next-
 
 We've configured the `session` `callback` to include the user info as part of the session data, so that Remult on the frontend will have the authorization info.
 
-4. Finally, add `getUser` to `remultSveltekit` to tell remult who is connected. Inside this function, you have access to `event`, where the session was set by Auth.js before.
+4. Finally, add `getUser` to `remultApi` to tell remult who is connected. Inside this function, you have access to `event`, where the session was set by Auth.js before.
 
 ::: code-group
 
 ```ts [src/server/api.ts]
-import { remultSveltekit } from 'remult/remult-sveltekit'
+import { remultApi } from 'remult/remult-sveltekit'
 import { Task } from '../shared/Task'
 import { TasksController } from '../shared/TasksController'
 import type { UserInfo } from 'remult' // [!code ++]
 
-export const api = remultSveltekit({
+export const api = remultApi({
   admin: true,
   entities: [Task],
   controllers: [TasksController],

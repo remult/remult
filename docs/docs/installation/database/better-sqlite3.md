@@ -18,7 +18,7 @@ In your `api.ts` or server file, configure the `dataProvider` to connect to the 
 
 ```ts
 import express from 'express'
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 import { SqlDatabase } from 'remult'
 import Database from 'better-sqlite3'
 import { BetterSqlite3DataProvider } from 'remult/remult-better-sqlite3'
@@ -26,7 +26,7 @@ import { BetterSqlite3DataProvider } from 'remult/remult-better-sqlite3'
 const app = express()
 
 app.use(
-  remultExpress({
+  remultApi({
     dataProvider: new SqlDatabase(
       new BetterSqlite3DataProvider(new Database('./mydb.sqlite')),
     ),

@@ -1,11 +1,11 @@
 import express from 'express'
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 import { Task } from '../shared/Task.js'
 import { TasksController } from '../shared/TasksController.js'
 import { repo } from 'remult'
 
 export const app = express()
-export const api = remultExpress({
+export const api = remultApi({
   entities: [Task],
   controllers: [TasksController],
   initApi: async () => {

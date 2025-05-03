@@ -1,5 +1,5 @@
 import express from 'express'
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 import { Task } from '../shared/Task.js'
 import { TasksController } from '../shared/TasksController.js'
 import { repo, SqlDatabase } from 'remult'
@@ -7,7 +7,7 @@ import sqlite3 from 'sqlite3'
 import { Sqlite3DataProvider } from 'remult/remult-sqlite3'
 
 export const app = express()
-export const api = remultExpress({
+export const api = remultApi({
   entities: [Task],
   controllers: [TasksController],
 

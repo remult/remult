@@ -1,12 +1,12 @@
-import { remultSolidStart } from "remult/remult-solid-start"
-import { Task } from "./shared/Task.js"
-import { TasksController } from "./shared/TasksController.js"
-import { getUser } from "./auth.js"
-import { createPostgresDataProvider } from "remult/postgres"
+import { remultApi } from 'remult/remult-solid-start'
+import { Task } from './shared/Task.js'
+import { TasksController } from './shared/TasksController.js'
+import { getUser } from './auth.js'
+import { createPostgresDataProvider } from 'remult/postgres'
 
-const DATABASE_URL = process.env["DATABASE_URL"]
+const DATABASE_URL = process.env['DATABASE_URL']
 
-export const api = remultSolidStart({
+export const api = remultApi({
   entities: [Task],
   admin: true,
   controllers: [TasksController],

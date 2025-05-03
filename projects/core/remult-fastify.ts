@@ -16,7 +16,7 @@ import type {
 } from './server/remult-api-server.js'
 import { createRemultServer } from './server/index.js'
 
-export function remultFastify(
+export function remultApi(
   options: RemultServerOptions<FastifyRequest>,
 ): RemultFastifyServer {
   function fastifyHandler(handler: GenericRequestHandler<FastifyRequest>) {
@@ -98,3 +98,6 @@ export type RemultFastifyServer = FastifyPluginCallback &
   RemultServerCore<FastifyRequest> & {
     withRemult: RemultServer<FastifyRequest>['withRemultAsync']
   }
+
+// @deprecated use remultApi instead
+export const remultFastify = remultApi

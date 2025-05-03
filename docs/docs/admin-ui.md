@@ -7,7 +7,7 @@ Enjoy a fully featured Admin UI for your entities, you can do CRUD operations on
 Add the Admin UI to your application by setting the `admin` option to `true` in the remult configuration.
 
 ```ts
-export const api = remultExpress({
+export const api = remultApi({
   entities: [],
   admin: true, // Enable the Admin UI
 })
@@ -23,7 +23,7 @@ You can pass some options to admin as well:
 Example:
 
 ```ts
-export const api = remultExpress({
+export const api = remultApi({
   entities: [],
   admin: {
     allow: 'admin', // Only for user having the "admin" role

@@ -16,14 +16,14 @@ Express example:
 
 ```ts
 import express from 'express'
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 
 const app = express()
 
 const entities = [
   /* entity types */
 ]
-const api = remultExpress({
+const api = remultApi({
   entities,
   admin: true,
 })

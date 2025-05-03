@@ -11,12 +11,12 @@ Next, we'll add some tasks on the backend so we can use them later.
 
 ```ts title="backend/index.ts" add={4,9-21}
 import express from 'express'
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 import { Task } from '../shared/Task.js'
 import { repo } from 'remult'
 
 export const app = express()
-export const api = remultExpress({
+export const api = remultApi({
   entities: [Task],
   initApi: async () => {
     const taskRepo = repo(Task)
@@ -38,7 +38,7 @@ app.use(api)
 
 ### Code Explanation
 
-- We added the `initApi` option to the `remultExpress` configuration.
+- We added the `initApi` option to the `remultApi` configuration.
 - `initApi` is an asynchronous function that runs once when the server is loaded and the API is ready. It allows us to perform initial setup tasks for the API.
 - We use the `repo` function to get the repository for the `Task` entity. The line `const taskRepo = repo(Task)` gets a Repository of type `Task` that we'll use to perform all CRUD operations relevant to `Task`.
 - The `if ((await taskRepo.count()) === 0)` check ensures that if there are no tasks in the database, we insert a few default tasks to get started.

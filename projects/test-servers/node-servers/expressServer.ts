@@ -1,13 +1,13 @@
 import express from 'express'
 import { createSchema, createYoga } from 'graphql-yoga'
 import { remultGraphql } from '../../core/graphql'
-import { remultExpress } from '../../core/remult-express'
+import { remultApi } from '../../core/remult-express'
 import { repo } from '../../core'
 import { remult } from '../../core/src/remult-proxy'
 import { Task } from '../shared/Task'
 
 const app = express()
-const api = remultExpress({
+const api = remultApi({
   entities: [Task],
   admin: () => 1 + 1 == 2,
 })

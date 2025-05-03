@@ -13,13 +13,13 @@ In the `/src/server/index.ts` file add the following code:
 
 ```ts{3-4,12-22}
 import express from 'express';
-import { remultExpress } from 'remult/remult-express';
+import { remultApi } from 'remult/remult-express';
 import { createSchema, createYoga } from 'graphql-yoga'
 import { remultGraphql } from 'remult/graphql';
 
 const app = express()
 const entities = [Task]
-let api = remultExpress({
+let api = remultApi({
    entities
 });
 app.use(api);

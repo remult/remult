@@ -32,7 +32,7 @@ npm i remult
 
 ### Step 3: Bootstrap Remult in the Backend
 
-Remult is integrated into `SolidStart` using a [catch-all dynamic API route](https://start.solidjs.com/core-concepts/routing#catch-all-routes), which passes API requests to a handler created using the `remultSolidStart` function.
+Remult is integrated into `SolidStart` using a [catch-all dynamic API route](https://start.solidjs.com/core-concepts/routing#catch-all-routes), which passes API requests to a handler created using the `remultApi` function.
 
 1. **Create the Remult API Configuration File**
 
@@ -41,9 +41,9 @@ Remult is integrated into `SolidStart` using a [catch-all dynamic API route](htt
    ```ts
    // src/api.ts
 
-   import { remultSolidStart } from 'remult/remult-solid-start'
+   import { remultApi } from 'remult/remult-solid-start'
 
-   export const api = remultSolidStart({})
+   export const api = remultApi({})
    ```
 
 2. **Set Up the Catch-All API Route**

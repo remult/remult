@@ -20,9 +20,9 @@ Remult is integrated into your backend as Fastify middleware.
    ```ts
    // src/server/api.ts
 
-   import { remultFastify } from 'remult/remult-fastify'
+   import { remultApi } from 'remult/remult-fastify'
 
-   export const api = remultFastify()
+   export const api = remultApi()
    ```
 
 2. **Register the Middleware**

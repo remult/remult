@@ -1,5 +1,5 @@
 import express from 'express'
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 import { Task } from '../model/task.ts'
 import { InMemoryDataProvider, SqlDatabase, remult, repo } from 'remult'
 import { seed } from '../model/seed.ts'
@@ -9,7 +9,7 @@ import fs from 'fs'
 export const app = express()
 const DATABASE_URL = process.env['DATABASE_URL']
 app.use(
-  remultExpress({
+  remultApi({
     dataProvider: DATABASE_URL
       ? createPostgresDataProvider({ connectionString: DATABASE_URL })
       : // Use JsonDataProvider if DATABASE_URL is not set

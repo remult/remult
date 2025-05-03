@@ -1,10 +1,10 @@
-import { createPostgresDataProvider } from 'remult/postgres';
+import { createPostgresDataProvider } from 'remult/postgres'
 
-import { remultExpress } from 'remult/remult-express';
-import { Task } from '../shared/Task';
-import { TasksController } from '../shared/TasksController';
+import { remultApi } from 'remult/remult-express'
+import { Task } from '../shared/Task'
+import { TasksController } from '../shared/TasksController'
 
-export const api = remultExpress({
+export const api = remultApi({
   entities: [Task],
   controllers: [TasksController],
   getUser: (req) => req.session!['user'],
@@ -13,4 +13,4 @@ export const api = remultExpress({
       process.env['DATABASE_URL'] ||
       'postgres://postgres:MASTERKEY@localhost/postgres',
   }),
-});
+})

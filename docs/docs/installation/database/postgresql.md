@@ -16,7 +16,7 @@ In the `api.ts` file, configure the `dataProvider` property to connect to your P
 
 ```ts{3,7,11-15}
 import express from "express"
-import { remultExpress } from "remult/remult-express"
+import { remultApi } from "remult/remult-express"
 import { createPostgresDataProvider } from "remult/postgres"
 
 const app = express()
@@ -24,7 +24,7 @@ const app = express()
 const connectionString = "postgres://user:password@host:5432/database"
 
 app.use(
-  remultExpress({
+  remultApi({
     dataProvider: createPostgresDataProvider({
       connectionString, // default: process.env["DATABASE_URL"]
       // configuration: {} // optional: a `pg.PoolConfig` object or "heroku"
@@ -41,7 +41,7 @@ If you already have a PostgreSQL connection set up, you can pass it directly to 
 import { Pool } from 'pg'
 import { SqlDatabase } from 'remult'
 import { PostgresDataProvider } from 'remult/postgres'
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 
 const pg = new Pool({
   connectionString: 'your-connection-string-here',
@@ -50,7 +50,7 @@ const pg = new Pool({
 const app = express()
 
 app.use(
-  remultExpress({
+  remultApi({
     dataProvider: new SqlDatabase(new PostgresDataProvider(pg)),
   }),
 )

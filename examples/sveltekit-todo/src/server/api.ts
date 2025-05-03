@@ -1,9 +1,9 @@
-import { remultSveltekit } from 'remult/remult-sveltekit'
+import { remultApi } from 'remult/remult-sveltekit'
 import { Task } from '../shared/Task'
 import { TasksController } from '../shared/TasksController'
 import type { UserInfo } from 'remult'
 
-export const api = remultSveltekit({
+export const api = remultApi({
   admin: true,
   entities: [Task],
   controllers: [TasksController],

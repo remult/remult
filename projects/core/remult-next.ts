@@ -82,7 +82,7 @@ export type RemultNextServer = RemultServerCore<NextApiRequest> &
 
 const encoder = new TextEncoder()
 
-export function remultNextApp(
+export function remultApi(
   options?: RemultServerOptions<Request>,
 ): RemultNextAppServer {
   let result = createRemultServer<Request>(options!, {
@@ -179,3 +179,5 @@ export type RemultNextAppServer = RemultServerCore<Request> & {
   DELETE: (req: Request) => Promise<Response | undefined>
   withRemult<T>(what: () => Promise<T>): Promise<T>
 }
+
+export const remultNextApp = remultApi

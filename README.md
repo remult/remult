@@ -97,14 +97,14 @@ _Example:_
 // backend/index.ts
 
 import express from 'express'
-import { remultExpress } from 'remult/remult-express' // adapters for: Fastify,Next.js, Nuxt, SvelteKit, SolidStart, Nest, more...
+import { remultApi } from 'remult/remult-express' // adapters for: Fastify,Next.js, Nuxt, SvelteKit, SolidStart, Nest, more...
 import { createPostgresDataProvider } from 'remult/postgres' // supported: PostgreSQL, MySQL, SQLite, MongoDB, MSSQL and Oracle
 import { Product } from '../shared/product'
 
 const app = express()
 
 app.use(
-  remultExpress({
+  remultApi({
     entities: [Product],
     dataProvider: createPostgresDataProvider({
       connectionString: 'postgres://user:password@host:5432/database"',

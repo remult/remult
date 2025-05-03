@@ -1,7 +1,7 @@
-import { remultNuxt } from 'remult/remult-nuxt'
+import { remultApi } from 'remult/remult-nuxt'
 import { Task } from '~/shared/Task.js'
 
-export const api = remultNuxt({
+export const api = remultApi({
   entities: [Task],
   admin: true,
 })

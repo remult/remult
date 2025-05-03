@@ -16,7 +16,7 @@ In your `index.ts` (or server file), configure the `dataProvider` to use DuckDB:
 
 ```ts
 import express from 'express'
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 import { SqlDatabase } from 'remult' // [!code highlight]
 import { Database } from 'duckdb' // [!code highlight]
 import { DuckDBDataProvider } from 'remult/remult-duckdb' // [!code highlight]
@@ -24,7 +24,7 @@ import { DuckDBDataProvider } from 'remult/remult-duckdb' // [!code highlight]
 const app = express()
 
 app.use(
-  remultExpress({
+  remultApi({
     dataProvider: new SqlDatabase( // [!code highlight]
       new DuckDBDataProvider(new Database(':memory:')), // [!code highlight]
     ), // [!code highlight]

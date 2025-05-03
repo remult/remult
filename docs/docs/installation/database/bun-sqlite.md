@@ -6,7 +6,7 @@ In your `api.ts` or server file, configure the `dataProvider` to use `bun:sqlite
 
 ```ts
 import express from 'express'
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 import { SqlDatabase } from 'remult'
 import { Database } from 'bun:sqlite'
 import { BunSqliteDataProvider } from 'remult/remult-bun-sqlite'
@@ -14,7 +14,7 @@ import { BunSqliteDataProvider } from 'remult/remult-bun-sqlite'
 const app = express()
 
 app.use(
-  remultExpress({
+  remultApi({
     dataProvider: new SqlDatabase(
       new BunSqliteDataProvider(new Database('./mydb.sqlite')),
     ),

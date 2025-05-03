@@ -11,7 +11,7 @@ Modify the highlighted code in the `src/api.ts` to prefer a `connectionString` p
 
 //...
 const DATABASE_URL = process.env["DATABASE_URL"];
-export const api = remultExpress({
+export const api = remultApi({
  dataProvider: DATABASE_URL
    ? createPostgresDataProvider({ connectionString: DATABASE_URL })
    : undefined,

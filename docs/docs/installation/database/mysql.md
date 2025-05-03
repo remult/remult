@@ -14,13 +14,13 @@ In your `api.ts` file, configure the `dataProvider` to connect to your MySQL dat
 
 ```ts{3,9-18}
 import express from "express"
-import { remultExpress } from "remult/remult-express"
+import { remultApi } from "remult/remult-express"
 import { createKnexDataProvider } from "remult/remult-knex"
 
 const app = express()
 
 app.use(
-  remultExpress({
+  remultApi({
     dataProvider: createKnexDataProvider({
       client: "mysql2", // Specify the MySQL client
       connection: {
@@ -41,7 +41,7 @@ If you're already using a `knex` instance in your project, you can pass it direc
 ```ts
 import express from 'express'
 import { KnexDataProvider } from 'remult/remult-knex'
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 import knex from 'knex'
 
 const knexDb = knex({
@@ -57,7 +57,7 @@ const knexDb = knex({
 const app = express()
 
 app.use(
-  remultExpress({
+  remultApi({
     dataProvider: new KnexDataProvider(knexDb), // Use the existing knex instance
   }),
 )

@@ -123,7 +123,7 @@ export interface RemultServerOptions<RequestType> {
    *
    * @returns A promise that resolves when the error handling is complete.
    * @example
-   * export const api = remultExpress({
+   * export const api = remultApi({
    *   error: async (e) => {
    *     if (e.httpStatusCode == 400) {
    *       e.sendError(500, { message: "An error occurred" })
