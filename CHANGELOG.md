@@ -1,5 +1,10 @@
 All notable changes to this project will be documented in this file.
 
+## [3.0.0] TBD
+
+- Added a `dataProvider` function to `EntityOptions` that allows you to select a dataProvider per entity.
+-
+
 ## [2.7.33] 2025-4-5
 
 - Fixed bug with API Update of null with dateOnly

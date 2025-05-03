@@ -112,7 +112,10 @@ export class Remult {
     entity: ClassType<T>,
     dataProvider?: DataProvider,
   ): Repository<T> => {
-    if (dataProvider === undefined) dataProvider = this.dataProvider
+    const info = createOldEntity(entity, this)
+    if (dataProvider === undefined)
+      dataProvider =
+        info?.options?.dataProvider?.(this.dataProvider) ?? this.dataProvider
     let dpCache = this.repCache.get(dataProvider)
     if (!dpCache)
       this.repCache.set(
@@ -128,7 +131,7 @@ export class Remult {
           entity,
           this,
           dataProvider,
-          createOldEntity(entity, this),
+          info,
         ) as Repository<any>),
       )
 
