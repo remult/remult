@@ -32,6 +32,7 @@
   <label>
     <span>With live query</span>
     <select bind:value={$LSContext.settings.withLiveQuery}>
+      <option value={undefined}>Server settings</option>
       <option value={true}>Yes</option>
       <option value={false}>No</option>
     </select>

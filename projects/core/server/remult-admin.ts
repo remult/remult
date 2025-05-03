@@ -53,16 +53,17 @@ export interface AdminDisplayOptions {
   rootPath: string
   head: string,
   requireAuthToken: boolean
+  withLiveQuery: boolean
 }
 
 export default function remultAdminHtml(options: AdminDisplayOptions) {
-  const { rootPath, head, requireAuthToken } = options
+  const { rootPath, head, requireAuthToken, withLiveQuery } = options
   return getHtml()
     .replace('<!--PLACE_HERE_HEAD-->', head)
     .replace(
       '<!--PLACE_HERE_BODY-->',
       `<script>
-  window.optionsFromServer = ${JSON.stringify({ rootPath, requireAuthToken })}
+  window.optionsFromServer = ${JSON.stringify({ rootPath, requireAuthToken, withLiveQuery })}
 </script>`,
     )
 }

@@ -29,6 +29,7 @@ describe('test express server', async () => {
       allow: true,
       customHtmlHead: (r) =>
         `<title>Test Admin (${r.user?.name ?? 'Anonymous'})</title>`,
+      withLiveQuery: false
     },
     error: (e) => errorHandler?.(e),
     getUser: async () => {
