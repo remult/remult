@@ -41,7 +41,7 @@
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build",
     "test": "vitest --run",
-    "try": "npx create-remult remult-project1 -t vue -s express -d postgres --crud --overwrite yes --admin -a auth.js"
+    "try": "npx create-remult remult-project1 -t next -s express -d postgres --crud --overwrite yes --admin -a auth.js"
   },
   "engines": {
     "node": "^18.0.0 || >=20.0.0"
