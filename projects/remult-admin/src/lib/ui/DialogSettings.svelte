@@ -166,14 +166,20 @@
     display: flex;
     justify-content: space-between;
     align-items: start;
-    gap: 1rem;
+    gap: 0.3rem;
     margin-top: 10px;
+  }
+
+  label span {
+    width: 170px;
+    flex-shrink: 0;
   }
 
   select,
   input,
   textarea {
-    width: 180px;
+    flex: 1;
+    min-width: 180px;
     font-family: monospace;
   }
 </style>
