@@ -47,7 +47,7 @@ export function remultApi(
           req.raw.on(event, listener)
         },
       })
-      handler(req, myRes, () => {})
+      handler(req, myRes, () => { })
     }
     return response
   }
@@ -99,5 +99,5 @@ export type RemultFastifyServer = FastifyPluginCallback &
     withRemult: RemultServer<FastifyRequest>['withRemultAsync']
   }
 
-// @deprecated use remultApi instead
+/** @deprecated use remultApi instead */
 export const remultFastify = remultApi

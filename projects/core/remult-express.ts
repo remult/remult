@@ -56,5 +56,5 @@ export type remultApiServer = express.RequestHandler &
     ) => void
   } & Pick<RemultServer<express.Request>, 'withRemultAsync'>
 
-// @deprecated use remultApi instead
+/** @deprecated use remultApi instead */
 export const remultExpress = remultApi

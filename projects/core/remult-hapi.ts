@@ -80,7 +80,7 @@ export function remultApi(
                   })
                 },
               })
-              handler(request as any, r, () => {})
+              handler(request as any, r, () => { })
             } catch (err) {
               rej(err)
             }
@@ -145,5 +145,5 @@ export type RemultHapiServer = Plugin<any, any> &
     withRemult: RemultServer<Request>['withRemultAsync']
   }
 
-// @deprecated use remultApi instead
+/** @deprecated use remultApi instead */
 export const remultHapi = remultApi
