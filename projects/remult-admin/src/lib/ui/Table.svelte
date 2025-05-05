@@ -36,6 +36,8 @@
 
   let options: FindOptions<any>
 
+  let errorMsg = ''
+
   // Reset to page 1 on key change
   $: options = repo.metadata.key && {
     limit: $LSContext.settings.numberOfRows,
@@ -58,11 +60,11 @@
   let unSub: (() => void) | null = null
 
   let disableLiveQuery = false
-  const updateDisableLiveQuery = (info: any) => {
+  const updateDisableLiveQuery = (_disableLiveQuery: any) => {
     disableLiveQuery =
-      $LSContext.settings.disableLiveQuery === undefined
-        ? window.optionsFromServer?.disableLiveQuery
-        : $LSContext.settings.disableLiveQuery
+      _disableLiveQuery === undefined
+        ? window.optionsFromServer?.disableLiveQuery ?? disableLiveQuery
+        : _disableLiveQuery
   }
   $: updateDisableLiveQuery($LSContext.settings.disableLiveQuery)
 
@@ -76,11 +78,18 @@
     const where = { $and: [currentFilter, { ...parentRelation }] }
 
     if (disableLiveQuery) {
-      items = await repo.find({
-        ...options,
-        where,
-      })
-      await afterMainQuery(items, where)
+      try {
+        items = await repo.find({
+          ...options,
+          where,
+        })
+        await afterMainQuery(items, where)
+        errorMsg = ''
+      } catch (error) {
+        // delete error.stack
+        // alert(JSON.stringify(error, null, 2))
+        errorMsg = JSON.stringify(error, null, 2)
+      }
     } else {
       unSub = repo
         .liveQuery({
@@ -224,132 +233,146 @@
 </div>
 
 <div class="table-container">
-  <table>
-    <thead>
-      <tr>
-        <td>
-          {#if newRow === undefined}
-            <button
-              class="icon-button new-entry"
-              on:click={() => {
-                newRow = repo.create({ ...parentRelation })
-              }}
-            >
-              +
-            </button>
-          {:else}
-            <button
-              class="icon-button new-entry"
-              on:click={() => {
-                newRow = undefined
-              }}
-            >
-              -
-            </button>
-          {/if}
-        </td>
-        {#each fields as column}
-          <th on:click={() => toggleOrderBy(column.key)}>
-            <span class="th-span">
-              {#if Object.keys(repo.metadata.options.id).includes(column.key)}
-                <Key></Key>
-              {:else}
-                <span></span>
-              {/if}
-              <span class="flexItemCenter">
-                {$LSContext.settings.dispayCaption
-                  ? column.caption
-                  : column.key}
-                {#if options.orderBy?.[column.key] === 'asc'}
-                  <Asc></Asc>
-                {:else if options.orderBy?.[column.key] === 'desc'}
-                  <Desc></Desc>
+  {#if errorMsg}
+    <pre class="error">{errorMsg.replaceAll(
+        '\\n',
+        `
+`,
+      )}</pre>
+  {:else}
+    <table>
+      <thead>
+        <tr>
+          <td>
+            {#if newRow === undefined}
+              <button
+                class="icon-button new-entry"
+                on:click={() => {
+                  newRow = repo.create({ ...parentRelation })
+                }}
+              >
+                +
+              </button>
+            {:else}
+              <button
+                class="icon-button new-entry"
+                on:click={() => {
+                  newRow = undefined
+                }}
+              >
+                -
+              </button>
+            {/if}
+          </td>
+          {#each fields as column}
+            <th on:click={() => toggleOrderBy(column.key)}>
+              <span class="th-span">
+                {#if Object.keys(repo.metadata.options.id).includes(column.key)}
+                  <Key></Key>
                 {:else}
-                  <span class="w-20"></span>
+                  <span></span>
                 {/if}
+                <span class="flexItemCenter">
+                  {$LSContext.settings.dispayCaption
+                    ? column.caption
+                    : column.key}
+                  {#if options.orderBy?.[column.key] === 'asc'}
+                    <Asc></Asc>
+                  {:else if options.orderBy?.[column.key] === 'desc'}
+                    <Desc></Desc>
+                  {:else}
+                    <span class="w-20"></span>
+                  {/if}
+                </span>
+                <ColumnType
+                  type={column.type}
+                  isSelect={column.values && column.values.length > 0}
+                ></ColumnType>
               </span>
-              <ColumnType
-                type={column.type}
-                isSelect={column.values && column.values.length > 0}
-              ></ColumnType>
-            </span>
-          </th>
-        {/each}
-        <th class="action-tab">Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      {#if newRow}
-        <EditableRow
-          isNewRow
-          rowId={undefined}
-          row={newRow}
-          {relationsToOneValues}
-          columns={fields}
-          {relations}
-          saveAction={async (item) => {
-            await repo.insert(item)
-            newRow = undefined
-            if (disableLiveQuery) {
-              reSub($filter)
-            }
-          }}
-          deleteAction={async () => {
-            newRow = undefined
-            if (disableLiveQuery) {
-              reSub($filter)
-            }
-          }}
-          cancelAction={async () => {
-            newRow = undefined
-            if (disableLiveQuery) {
-              reSub($filter)
-            }
-          }}
-        />
-      {/if}
-      {#if items}
-        {#each items as row (repo.metadata.idMetadata.getId(row))}
+            </th>
+          {/each}
+          <th class="action-tab">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {#if newRow}
           <EditableRow
-            rowId={repo.metadata.idMetadata.getId(row)}
-            {row}
+            isNewRow
+            rowId={undefined}
+            row={newRow}
             {relationsToOneValues}
+            columns={fields}
+            {relations}
             saveAction={async (item) => {
-              await repo.update(row, item)
+              await repo.insert(item)
+              newRow = undefined
               if (disableLiveQuery) {
                 reSub($filter)
               }
             }}
             deleteAction={async () => {
-              await repo.delete(row)
+              newRow = undefined
               if (disableLiveQuery) {
                 reSub($filter)
               }
             }}
-            columns={fields}
-            {relations}
+            cancelAction={async () => {
+              newRow = undefined
+              if (disableLiveQuery) {
+                reSub($filter)
+              }
+            }}
           />
-        {/each}
-      {:else}
-        {#each Array.from( { length: defaultNumberOfRows }, ).map((_, i) => i) as i}
-          <tr>
-            <td></td>
-            {#each fields as column}
-              <td
-                class="loading-skeleton"
-                on:click={() => toggleOrderBy(column.key)}
-              >
-                <LoadingSkeleton width={getWidth()} />
-              </td>
-            {/each}
-          </tr>
-        {/each}
-      {/if}
-    </tbody>
-  </table>
+        {/if}
+        {#if items}
+          {#each items as row (repo.metadata.idMetadata.getId(row))}
+            <EditableRow
+              rowId={repo.metadata.idMetadata.getId(row)}
+              {row}
+              {relationsToOneValues}
+              saveAction={async (item) => {
+                await repo.update(row, item)
+                if (disableLiveQuery) {
+                  reSub($filter)
+                }
+              }}
+              deleteAction={async () => {
+                await repo.delete(row)
+                if (disableLiveQuery) {
+                  reSub($filter)
+                }
+              }}
+              columns={fields}
+              {relations}
+            />
+          {/each}
+        {:else}
+          {#each Array.from( { length: defaultNumberOfRows }, ).map((_, i) => i) as i}
+            <tr>
+              <td></td>
+              {#each fields as column}
+                <td
+                  class="loading-skeleton"
+                  on:click={() => toggleOrderBy(column.key)}
+                >
+                  <LoadingSkeleton width={getWidth()} />
+                </td>
+              {/each}
+            </tr>
+          {/each}
+        {/if}
+      </tbody>
+    </table>
+  {/if}
 </div>
 
 <style>
+  .error {
+    color: red;
+    margin: 1rem;
+    padding: 1rem;
+  }
+
   .w-20 {
     width: 20px;
   }
