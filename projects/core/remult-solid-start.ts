@@ -26,16 +26,16 @@ export function remultApi(
   const serverHandler = async () => {
     const event = await getRequestEvent()
     let sseResponse: Response | undefined = undefined
-    if (event) event.locals['_tempOnClose'] = () => {}
+    if (event) event.locals['_tempOnClose'] = () => { }
 
     const response: GenericResponse & ResponseRequiredForSSE = {
-      end: () => {},
-      json: () => {},
-      send: () => {},
+      end: () => { },
+      json: () => { },
+      send: () => { },
       status: () => {
         return response
       },
-      write: () => {},
+      write: () => { },
       writeHead: (status, headers) => {
         if (status === 200 && headers) {
           const contentType = headers['Content-Type']
@@ -52,7 +52,7 @@ export function remultApi(
                 }
               },
               cancel: () => {
-                response.write = () => {}
+                response.write = () => { }
                 event?.locals?.['_tempOnClose']?.()
               },
             })
@@ -117,4 +117,5 @@ export type RemultSolidStartServer = RemultServerCore<RequestEvent> & {
   DELETE: RequestHandler
 }
 
+/** @deprecated use remultApi instead */
 export const remultSolidStart = remultApi

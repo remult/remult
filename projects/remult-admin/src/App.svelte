@@ -113,7 +113,10 @@
     return response.clone()
   }
 
-  if (window.optionsFromServer?.requireAuthToken) {
+  if (
+    window.optionsFromServer?.requireAuthToken &&
+    $SSContext.settings.bearerAuth === ''
+  ) {
     dialog.show({
       config: { title: 'Remult Settings' },
       component: DialogSettings,

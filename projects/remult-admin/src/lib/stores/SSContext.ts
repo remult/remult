@@ -1,4 +1,5 @@
 import { writable } from 'svelte/store'
+import { LSSS_ContextKey } from './LSContext.js'
 
 const browser = typeof window !== 'undefined'
 
@@ -9,8 +10,6 @@ export type TSSContext = {
   forbiddenEntities: string[]
 }
 
-const SSContextKey = 'SSRemultAdmin_2024_08_23'
-
 const SSContextDefaults: TSSContext = {
   settings: {
     bearerAuth: '',
@@ -19,7 +18,7 @@ const SSContextDefaults: TSSContext = {
 }
 
 const SSCurrentContext = browser
-  ? JSON.parse(sessionStorage.getItem(SSContextKey)!) || SSContextDefaults
+  ? JSON.parse(sessionStorage.getItem(LSSS_ContextKey)!) || SSContextDefaults
   : SSContextDefaults
 
 /**
@@ -44,9 +43,9 @@ export const SSContext = store()
 SSContext.subscribe((value) => {
   if (browser) {
     if (!value) {
-      localStorage.setItem(SSContextKey, JSON.stringify(SSContextDefaults))
+      sessionStorage.setItem(LSSS_ContextKey, JSON.stringify(SSContextDefaults))
     } else {
-      localStorage.setItem(SSContextKey, JSON.stringify(value))
+      sessionStorage.setItem(LSSS_ContextKey, JSON.stringify(value))
     }
   }
 })

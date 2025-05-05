@@ -29,9 +29,9 @@ export function remultApi(
     let sse = false
 
     const response: GenericResponse & ResponseRequiredForSSE = {
-      end: () => {},
-      send: () => {},
-      json: () => {},
+      end: () => { },
+      send: () => { },
+      json: () => { },
       status: () => {
         return response
       },
@@ -71,4 +71,5 @@ export type RemultNuxtServer = RemultServerCore<H3Event> &
     withRemult: RemultServer<H3Event>['withRemultAsync']
   }
 
+/** @deprecated use remultApi instead */
 export const remultNuxt = remultApi

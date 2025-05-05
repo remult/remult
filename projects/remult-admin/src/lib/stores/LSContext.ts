@@ -18,7 +18,7 @@ export type TLSContext = {
   }
 }
 
-const LSContextKey = 'LSRemultAdmin_2025_05_07_b'
+export const LSSS_ContextKey = 'RemultAdmin_2025_05_07'
 
 const LSContextDefaults: TLSContext = {
   currentLocationHash: '/',
@@ -37,7 +37,7 @@ const LSContextDefaults: TLSContext = {
 }
 
 const LSCurrentContext = browser
-  ? JSON.parse(localStorage.getItem(LSContextKey)!) || LSContextDefaults
+  ? JSON.parse(localStorage.getItem(LSSS_ContextKey)!) || LSContextDefaults
   : LSContextDefaults
 
 /**
@@ -62,9 +62,9 @@ export const LSContext = store()
 LSContext.subscribe((value) => {
   if (browser) {
     if (!value) {
-      localStorage.setItem(LSContextKey, JSON.stringify(LSContextDefaults))
+      localStorage.setItem(LSSS_ContextKey, JSON.stringify(LSContextDefaults))
     } else {
-      localStorage.setItem(LSContextKey, JSON.stringify(value))
+      localStorage.setItem(LSSS_ContextKey, JSON.stringify(value))
     }
   }
 })
