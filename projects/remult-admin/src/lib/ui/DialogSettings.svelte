@@ -3,6 +3,13 @@
   import { LSContext } from '../stores/LSContext'
   import { SSContext } from '../stores/SSContext'
   import { dialog } from './dialog/dialog.js'
+
+  let localSettings = { ...$LSContext.settings }
+
+  function saveSettings() {
+    $LSContext.settings = { ...localSettings }
+    dialog.closeAll()
+  }
 </script>
 
 <div class="dialog">
@@ -10,7 +17,7 @@
 
   <label>
     <span>With confirm delete</span>
-    <select bind:value={$LSContext.settings.confirmDelete}>
+    <select bind:value={localSettings.confirmDelete}>
       <option value={false}>No</option>
       <option value={true}>Yes</option>
     </select>
@@ -18,7 +25,7 @@
 
   <label>
     <span>Display fields with</span>
-    <select bind:value={$LSContext.settings.dispayCaption}>
+    <select bind:value={localSettings.dispayCaption}>
       <option value={true}>Caption</option>
       <option value={false}>key</option>
     </select>
@@ -26,12 +33,12 @@
 
   <label>
     <span>Number of rows</span>
-    <input type="number" bind:value={$LSContext.settings.numberOfRows} />
+    <input type="number" bind:value={localSettings.numberOfRows} />
   </label>
 
   <label>
     <span>With live query</span>
-    <select bind:value={$LSContext.settings.withLiveQuery}>
+    <select bind:value={localSettings.withLiveQuery}>
       <option value={undefined}>Server settings</option>
       <option value={true}>Yes</option>
       <option value={false}>No</option>
@@ -41,7 +48,7 @@
   <label>
     <span>Diagram layout algorithm</span>
     <select
-      bind:value={$LSContext.settings.diagramLayoutAlgorithm}
+      bind:value={localSettings.diagramLayoutAlgorithm}
       on:change={() => {
         $LSContext.schema = {}
         window.location.reload()
@@ -57,7 +64,7 @@
     <span>Local Storage Key for Auth</span>
     <input
       type="text"
-      bind:value={$LSContext.settings.keyForBearerAuth}
+      bind:value={localSettings.keyForBearerAuth}
       placeholder="Local Storage Key"
     />
   </label>
@@ -66,7 +73,7 @@
     <span>Custom Headers</span>
     <textarea
       rows={3}
-      bind:value={$LSContext.settings.customHeaders}
+      bind:value={localSettings.customHeaders}
       placeholder={`hello: world`}
       style="resize: vertical; height: 70px;"
     />
@@ -83,13 +90,7 @@
 
   <label>
     <span></span>
-    <button
-      on:click={() => {
-        dialog.closeAll()
-      }}
-    >
-      Save
-    </button>
+    <button on:click={saveSettings}> Save </button>
   </label>
 
   <label>
@@ -97,6 +98,7 @@
     <button
       on:click={() => {
         LSContext.reset()
+        localSettings = { ...$LSContext.settings }
       }}
     >
       Reset all settings to default
