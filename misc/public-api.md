@@ -4034,11 +4034,12 @@ export interface FreshResponse {
   json(data: unknown, init?: ResponseInit): any
 }
 //[ ] ResponseInit from TBD is not exported
-export declare function remultFresh(
+export declare function remultApi(
   options: RemultServerOptions<FreshRequest>,
   response: FreshResponse,
 ): RemultFresh
 //[ ] RemultServerOptions from ./server/remult-api-server.js is not exported
+export const remultFresh: typeof remultApi
 export interface RemultFresh extends RemultServerCore<FreshRequest> {
   handle(req: FreshRequest, ctx: FreshContext): Promise<any>
 }
