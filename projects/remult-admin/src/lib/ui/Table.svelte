@@ -86,8 +86,6 @@
         await afterMainQuery(items, where)
         errorMsg = ''
       } catch (error) {
-        // delete error.stack
-        // alert(JSON.stringify(error, null, 2))
         errorMsg = JSON.stringify(error, null, 2)
       }
     } else {
@@ -96,27 +94,33 @@
           ...options,
           where,
         })
-        .subscribe(async (info) => {
-          let tmpItems = items
-          let special = false
-          if (items !== null) {
-            info.changes.forEach((c) => {
-              if (c.type === 'add') {
-                special = true
-                tmpItems = [c.data.item, ...items]
-              }
-            })
-          }
+        .subscribe({
+          next: async (info) => {
+            let tmpItems = items
+            let special = false
+            if (items !== null) {
+              info.changes.forEach((c) => {
+                if (c.type === 'add') {
+                  special = true
+                  tmpItems = [c.data.item, ...items]
+                }
+              })
+            }
 
-          if (!special) {
-            tmpItems = info.applyChanges(items)
-          }
+            if (!special) {
+              tmpItems = info.applyChanges(items)
+            }
 
-          if (tmpItems && tmpItems.length > 0) {
-            await afterMainQuery(tmpItems, where)
-          }
+            if (tmpItems && tmpItems.length > 0) {
+              await afterMainQuery(tmpItems, where)
+            }
 
-          items = tmpItems
+            items = tmpItems
+            errorMsg = ''
+          },
+          error(error) {
+            errorMsg = JSON.stringify(error, null, 2)
+          },
         })
     }
   }
