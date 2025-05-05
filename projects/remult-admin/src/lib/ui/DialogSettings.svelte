@@ -4,6 +4,8 @@
   import { SSContext } from '../stores/SSContext'
   import { dialog } from './dialog/dialog.js'
 
+  export let onlySession: boolean = false
+
   let localSettings = { ...$LSContext.settings }
 
   function saveSettings() {
@@ -13,73 +15,74 @@
 </script>
 
 <div class="dialog">
-  <header>Local Storage</header>
+  {#if !onlySession}
+    <header>Local Storage</header>
 
-  <label>
-    <span>With confirm delete</span>
-    <select bind:value={localSettings.confirmDelete}>
-      <option value={false}>No</option>
-      <option value={true}>Yes</option>
-    </select>
-  </label>
+    <label>
+      <span>With confirm delete</span>
+      <select bind:value={localSettings.confirmDelete}>
+        <option value={false}>No</option>
+        <option value={true}>Yes</option>
+      </select>
+    </label>
 
-  <label>
-    <span>Display fields with</span>
-    <select bind:value={localSettings.dispayCaption}>
-      <option value={true}>Caption</option>
-      <option value={false}>key</option>
-    </select>
-  </label>
+    <label>
+      <span>Display fields with</span>
+      <select bind:value={localSettings.dispayCaption}>
+        <option value={true}>Caption</option>
+        <option value={false}>key</option>
+      </select>
+    </label>
 
-  <label>
-    <span>Number of rows</span>
-    <input type="number" bind:value={localSettings.numberOfRows} />
-  </label>
+    <label>
+      <span>Number of rows</span>
+      <input type="number" bind:value={localSettings.numberOfRows} />
+    </label>
 
-  <label>
-    <span>Disable live query</span>
-    <select bind:value={localSettings.disableLiveQuery}>
-      <option value={undefined}>Server settings</option>
-      <option value={false}>No</option>
-      <option value={true}>Yes</option>
-    </select>
-  </label>
+    <label>
+      <span>Disable live query</span>
+      <select bind:value={localSettings.disableLiveQuery}>
+        <option value={undefined}>Server settings</option>
+        <option value={false}>No</option>
+        <option value={true}>Yes</option>
+      </select>
+    </label>
 
-  <label>
-    <span>Diagram layout algorithm</span>
-    <select
-      bind:value={localSettings.diagramLayoutAlgorithm}
-      on:change={() => {
-        $LSContext.schema = {}
-        window.location.reload()
-      }}
-    >
-      <option value={'grid-dfs'}>grid-dfs</option>
-      <option value={'grid-bfs'}>grid-bfs</option>
-      <option value={'line'}>line</option>
-    </select>
-  </label>
+    <label>
+      <span>Diagram layout algorithm</span>
+      <select
+        bind:value={localSettings.diagramLayoutAlgorithm}
+        on:change={() => {
+          $LSContext.schema = {}
+          window.location.reload()
+        }}
+      >
+        <option value={'grid-dfs'}>grid-dfs</option>
+        <option value={'grid-bfs'}>grid-bfs</option>
+        <option value={'line'}>line</option>
+      </select>
+    </label>
 
-  <label>
-    <span>Local Storage Key for Auth</span>
-    <input
-      type="text"
-      bind:value={localSettings.keyForBearerAuth}
-      placeholder="Local Storage Key"
-    />
-  </label>
+    <label>
+      <span>Local Storage Key for Auth</span>
+      <input
+        type="text"
+        bind:value={localSettings.keyForBearerAuth}
+        placeholder="Local Storage Key"
+      />
+    </label>
 
-  <label>
-    <span>Custom Headers</span>
-    <textarea
-      rows={3}
-      bind:value={localSettings.customHeaders}
-      placeholder={`hello: world`}
-      style="resize: vertical; height: 70px;"
-    />
-  </label>
+    <label>
+      <span>Custom Headers</span>
+      <textarea
+        rows={3}
+        bind:value={localSettings.customHeaders}
+        placeholder={`hello: world`}
+        style="resize: vertical; height: 70px;"
+      />
+    </label>
 
-  <!-- <label>
+    <!-- <label>
     <span>api URL</span>
     <input
       type="text"
@@ -88,45 +91,46 @@
     />
   </label> -->
 
-  <label>
-    <span></span>
-    <button on:click={saveSettings}> Save </button>
-  </label>
+    <label>
+      <span></span>
+      <button on:click={saveSettings}> Save </button>
+    </label>
 
-  <label>
-    <span></span>
-    <button
-      on:click={() => {
-        LSContext.reset()
-        localSettings = { ...$LSContext.settings }
-      }}
-    >
-      Reset all settings to default
-    </button>
-  </label>
+    <label>
+      <span></span>
+      <button
+        on:click={() => {
+          LSContext.reset()
+          localSettings = { ...$LSContext.settings }
+        }}
+      >
+        Reset all settings to default
+      </button>
+    </label>
 
-  <br />
-  <hr style="border-top: 1px solid black;" />
-  <br />
+    <br />
+    <hr style="border-top: 1px solid black;" />
+    <br />
+  {/if}
 
   <header>Session Storage</header>
 
   <label>
     <span>Auth</span>
-    <div>
+    <form
+      on:submit|preventDefault={() => {
+        godStore.reloadEntities()
+        dialog.closeAll()
+      }}
+    >
       <input
+        id="authToken"
         type="text"
         bind:value={$SSContext.settings.bearerAuth}
         placeholder="bearer"
       />
-      <button
-        disabled={!$SSContext.settings.bearerAuth}
-        on:click={() => {
-          godStore.reloadEntities()
-          dialog.closeAll()
-        }}>Use</button
-      >
-    </div>
+      <button disabled={!$SSContext.settings.bearerAuth}>Use</button>
+    </form>
   </label>
 </div>
 

@@ -48,7 +48,7 @@ export const api = remultApi({
     customHtmlHead: (r) => `<title>Dev Admin (${r.user?.name ?? 'Anonymous'
       })</title>
 <link href="https://remult.dev/favicon.png" rel="icon" type="image/png">`,
-    // requireAuthToken: true,
-    disableLiveQuery: true,
+    requireAuthToken: true,
+    // disableLiveQuery: true,
   },
 })

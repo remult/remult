@@ -117,6 +117,9 @@
     dialog.show({
       config: { title: 'Remult Settings' },
       component: DialogSettings,
+      props: {
+        onlySession: true,
+      },
     })
   }
 </script>

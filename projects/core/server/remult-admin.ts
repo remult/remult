@@ -57,7 +57,7 @@ export interface AdminDisplayOptions {
 }
 
 export default function remultAdminHtml(options: AdminDisplayOptions) {
-  const { rootPath, head, requireAuthToken, disableLiveQuery } = options
+  const { head, rootPath, requireAuthToken, disableLiveQuery } = options
   return getHtml()
     .replace('<!--PLACE_HERE_HEAD-->', head)
     .replace(

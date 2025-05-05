@@ -447,16 +447,12 @@ export class RemultServerImplementation<RequestType>
                 let head = '<title>Admin</title>'
                 let requireAuthToken = false
                 let disableLiveQuery = false
-                if (
-                  isOfType<{ allow: Allowed }>(this.options.admin, 'allow') &&
-                  this.options.admin.customHtmlHead
-                ) {
-                  head = this.options.admin.customHtmlHead(remult)
+                if (isOfType<{ allow: Allowed }>(this.options.admin, 'allow')) {
+                  head = this.options.admin.customHtmlHead?.(remult) ?? head
                   requireAuthToken =
-                    this.options.admin.requireAuthToken ?? false
-                  if (this.options.admin.disableLiveQuery) {
-                    disableLiveQuery = true
-                  }
+                    this.options.admin.requireAuthToken ?? requireAuthToken
+                  disableLiveQuery =
+                    this.options.admin.disableLiveQuery ?? disableLiveQuery
                 }
                 origResponse.send(
                   remultAdminHtml({
