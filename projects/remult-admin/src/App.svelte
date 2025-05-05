@@ -113,7 +113,6 @@
     return response.clone()
   }
 
-  console.log(window.optionsFromServer?.requireAuthToken)
   if (window.optionsFromServer?.requireAuthToken) {
     dialog.show({
       config: { title: 'Remult Settings' },

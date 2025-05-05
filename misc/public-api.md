@@ -3693,6 +3693,8 @@ export interface RemultServerOptions<RequestType> {
     | {
         allow: Allowed
         customHtmlHead?: (remult: Remult) => string
+        requireAuthToken?: boolean
+        withLiveQuery?: boolean
       }
   /** Storage to use for backend methods that use queue */
   queueStorage?: QueueStorage
@@ -3904,6 +3906,8 @@ export interface RemultServerOptions<RequestType> {
     | {
         allow: Allowed
         customHtmlHead?: (remult: Remult) => string
+        requireAuthToken?: boolean
+        withLiveQuery?: boolean
       }
   /** Storage to use for backend methods that use queue */
   queueStorage?: QueueStorage
