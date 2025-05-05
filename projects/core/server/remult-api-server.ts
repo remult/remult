@@ -107,7 +107,7 @@ export interface RemultServerOptions<RequestType> {
         allow: Allowed
         customHtmlHead?: (remult: Remult) => string
         requireAuthToken?: boolean
-        withLiveQuery?: boolean
+        disableLiveQuery?: boolean
       }
 
   /** Storage to use for backend methods that use queue */
@@ -446,7 +446,7 @@ export class RemultServerImplementation<RequestType>
               } else {
                 let head = '<title>Admin</title>'
                 let requireAuthToken = false
-                let withLiveQuery = true
+                let disableLiveQuery = false
                 if (
                   isOfType<{ allow: Allowed }>(this.options.admin, 'allow') &&
                   this.options.admin.customHtmlHead
@@ -454,8 +454,8 @@ export class RemultServerImplementation<RequestType>
                   head = this.options.admin.customHtmlHead(remult)
                   requireAuthToken =
                     this.options.admin.requireAuthToken ?? false
-                  if (this.options.admin.withLiveQuery === false) {
-                    withLiveQuery = false
+                  if (this.options.admin.disableLiveQuery) {
+                    disableLiveQuery = true
                   }
                 }
                 origResponse.send(
@@ -463,7 +463,7 @@ export class RemultServerImplementation<RequestType>
                     rootPath: this.options.rootPath ?? '/api',
                     head,
                     requireAuthToken,
-                    withLiveQuery,
+                    disableLiveQuery,
                   }),
                 )
               }

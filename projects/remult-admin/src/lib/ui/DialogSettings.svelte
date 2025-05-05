@@ -38,7 +38,7 @@
 
   <label>
     <span>With live query</span>
-    <select bind:value={localSettings.withLiveQuery}>
+    <select bind:value={localSettings.disableLiveQuery}>
       <option value={undefined}>Server settings</option>
       <option value={true}>Yes</option>
       <option value={false}>No</option>

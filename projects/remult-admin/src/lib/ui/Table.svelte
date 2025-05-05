@@ -57,14 +57,14 @@
   let totalRows = -1
   let unSub: (() => void) | null = null
 
-  let withLiveQuery = true
-  const updateWithLiveQuery = (info: any) => {
-    withLiveQuery =
-      $LSContext.settings.withLiveQuery === undefined
-        ? window.optionsFromServer?.withLiveQuery ?? true
-        : $LSContext.settings.withLiveQuery
+  let disableLiveQuery = false
+  const updateDisableLiveQuery = (info: any) => {
+    disableLiveQuery =
+      $LSContext.settings.disableLiveQuery === undefined
+        ? window.optionsFromServer?.disableLiveQuery
+        : $LSContext.settings.disableLiveQuery
   }
-  $: updateWithLiveQuery($LSContext.settings.withLiveQuery)
+  $: updateDisableLiveQuery($LSContext.settings.disableLiveQuery)
 
   const reSub = async (currentFilter: EntityFilter<any>) => {
     $SSContext.forbiddenEntities = []
@@ -75,7 +75,13 @@
 
     const where = { $and: [currentFilter, { ...parentRelation }] }
 
-    if (withLiveQuery) {
+    if (disableLiveQuery) {
+      items = await repo.find({
+        ...options,
+        where,
+      })
+      await afterMainQuery(items, where)
+    } else {
       unSub = repo
         .liveQuery({
           ...options,
@@ -103,12 +109,6 @@
 
           items = tmpItems
         })
-    } else {
-      items = await repo.find({
-        ...options,
-        where,
-      })
-      await afterMainQuery(items, where)
     }
   }
 
@@ -290,19 +290,19 @@
           saveAction={async (item) => {
             await repo.insert(item)
             newRow = undefined
-            if (!withLiveQuery) {
+            if (disableLiveQuery) {
               reSub($filter)
             }
           }}
           deleteAction={async () => {
             newRow = undefined
-            if (!withLiveQuery) {
+            if (disableLiveQuery) {
               reSub($filter)
             }
           }}
           cancelAction={async () => {
             newRow = undefined
-            if (!withLiveQuery) {
+            if (disableLiveQuery) {
               reSub($filter)
             }
           }}
@@ -316,13 +316,13 @@
             {relationsToOneValues}
             saveAction={async (item) => {
               await repo.update(row, item)
-              if (!withLiveQuery) {
+              if (disableLiveQuery) {
                 reSub($filter)
               }
             }}
             deleteAction={async () => {
               await repo.delete(row)
-              if (!withLiveQuery) {
+              if (disableLiveQuery) {
                 reSub($filter)
               }
             }}

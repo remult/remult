@@ -13,12 +13,12 @@ export type TLSContext = {
     diagramLayoutAlgorithm: 'grid-bfs' | 'grid-dfs' | 'line'
     keyForBearerAuth: string
     // apiUrl: string
-    withLiveQuery: boolean | undefined
+    disableLiveQuery: boolean | undefined
     customHeaders: string
   }
 }
 
-const LSContextKey = 'LSRemultAdmin_2025_05_07'
+const LSContextKey = 'LSRemultAdmin_2025_05_07_b'
 
 const LSContextDefaults: TLSContext = {
   currentLocationHash: '/',
@@ -31,7 +31,7 @@ const LSContextDefaults: TLSContext = {
     diagramLayoutAlgorithm: 'grid-dfs',
     keyForBearerAuth: '',
     // apiUrl: window.optionsFromServer?.rootPath ?? '/api',
-    withLiveQuery: undefined,
+    disableLiveQuery: undefined,
     customHeaders: '',
   },
 }
