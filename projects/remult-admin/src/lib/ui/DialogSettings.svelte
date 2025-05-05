@@ -16,7 +16,7 @@
 
 <div class="dialog">
   {#if !onlySession}
-    <header>Local Storage</header>
+    <header>Stored in Local Storage</header>
 
     <label>
       <span>With confirm delete</span>
@@ -113,10 +113,14 @@
     <br />
   {/if}
 
-  <header>Session Storage</header>
-
   <label>
-    <span>Auth</span>
+    <span>
+      Authorization Token
+      <br />
+      <small style="font-size:smaller; color:gray;">
+        (Stored in session storage only)
+      </small>
+    </span>
     <form
       on:submit|preventDefault={() => {
         godStore.reloadEntities()
@@ -129,7 +133,10 @@
         bind:value={$SSContext.settings.bearerAuth}
         placeholder="bearer"
       />
-      <button disabled={!$SSContext.settings.bearerAuth}>Use</button>
+      <button
+        disabled={!$SSContext.settings.bearerAuth &&
+          localSettings.keyForBearerAuth === ''}>Use</button
+      >
     </form>
   </label>
 </div>
