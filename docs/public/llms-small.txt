@@ -34,12 +34,12 @@ If you're new to Remult or prefer a guided, hands-on approach, we recommend star
 <br />
 
 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 5rem">
-	<Icon tech="react" sizeIco=150 link="/tutorials/react" />
-	<Icon tech="angular" sizeIco=150 link="/tutorials/angular" />
-	<Icon tech="vue" sizeIco=150 link="/tutorials/vue" />
-	<Icon tech="svelte" sizeIco=150 link="/tutorials/sveltekit" />
-	<Icon tech="nextjs" sizeIco=150 link="/tutorials/react-next" />
-	<Icon tech="solid" sizeIco=150 link="/tutorials/solid-start" />
+	<Icon tech="react" sizeIco=150 link="/tutorials/react" techName="React" />
+	<Icon tech="angular" sizeIco=150 link="/tutorials/angular" techName="Angular" />
+	<Icon tech="vue" sizeIco=150 link="/tutorials/vue" techName="Vue" />
+	<Icon tech="svelte" sizeIco=150 link="/tutorials/sveltekit" techName="SvelteKit" />
+	<Icon tech="nextjs" sizeIco=150 link="/tutorials/react-next" techName="Next.js" />
+	<Icon tech="solid" sizeIco=150 link="/tutorials/solid-start" techName="SolidStart" />
 </div>
 
 ### `Option D`: Quickstart
@@ -3253,10 +3253,10 @@ Mutable controllers and backend methods provide a powerful mechanism for managin
 	<Icon tech="react" sizeIco=100 link="/docs/installation/framework/react" />
 	<Icon tech="angular" sizeIco=100 link="/docs/installation/framework/angular" />
 	<Icon tech="vue" sizeIco=100 link="/docs/installation/framework/vue" />
-	<Icon tech="nextjs" sizeIco=100 link="/docs/installation/framework/nextjs" />
 	<Icon tech="svelte" sizeIco=100 link="/docs/installation/framework/sveltekit" />
-	<Icon tech="nuxt" sizeIco=100 link="/docs/installation/framework/nuxt" />
+	<Icon tech="nextjs" sizeIco=100 link="/docs/installation/framework/nextjs" />
 	<Icon tech="solid" sizeIco=100 link="/docs/installation/framework/solid" />
+	<Icon tech="nuxt" sizeIco=100 link="/docs/installation/framework/nuxt" />
 </div>
 
 ## Servers
@@ -3296,14 +3296,14 @@ Mutable controllers and backend methods provide a powerful mechanism for managin
 
 # Select a framework
 
-<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 5rem; margin-top: 2rem">
-	<Icon tech="react" sizeIco=150 link="/docs/installation/framework/react" />
-	<Icon tech="angular" sizeIco=150 link="/docs/installation/framework/angular" />
-	<Icon tech="vue" sizeIco=150 link="/docs/installation/framework/vue" />
-	<Icon tech="nextjs" sizeIco=150 link="/docs/installation/framework/nextjs" />
-	<Icon tech="svelte" sizeIco=150 link="/docs/installation/framework/sveltekit" />
-	<Icon tech="nuxt" sizeIco=150 link="/docs/installation/framework/nuxt" />
-	<Icon tech="solid" sizeIco=150 link="/docs/installation/framework/solid" />
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 5rem; margin-top: 2rem">
+	<Icon tech="react" sizeIco=100 link="/docs/installation/framework/react" />
+	<Icon tech="angular" sizeIco=100 link="/docs/installation/framework/angular" />
+	<Icon tech="vue" sizeIco=100 link="/docs/installation/framework/vue" />
+	<Icon tech="svelte" sizeIco=100 link="/docs/installation/framework/sveltekit" />
+	<Icon tech="nextjs" sizeIco=100 link="/docs/installation/framework/nextjs" />
+	<Icon tech="solid" sizeIco=100 link="/docs/installation/framework/solid" />
+	<Icon tech="nuxt" sizeIco=100 link="/docs/installation/framework/nuxt" />
 </div>
 
 
@@ -3511,102 +3511,6 @@ This setup proxies all requests starting with `/api` from `http://localhost:5173
 ## Configure a Server
 
 Now that the app is set up, [Select an API Server](../server/)
-
-
-
-# Framework - Next.js
-
-# Next.js
-
-## Create a Next.js Project
-
-To create a new Next.js project, run the following command:
-
-```sh
-npx -y create-next-app@latest remult-nextjs
-```
-
-When prompted, use these answers:
-
-```sh
-✔ Would you like to use TypeScript? ... Yes
-✔ Would you like to use ESLint? ... No
-✔ Would you like to use Tailwind CSS? ... No
-✔ Would you like to use `src/` directory? ... Yes
-✔ Would you like to use App Router? (recommended) ... Yes
-✔ Would you like to customize the default import alias? ... No
-```
-
-Afterward, navigate into the newly created project folder:
-
-```sh
-cd remult-nextjs
-```
-
-## Install Remult
-
-Install the latest version of Remult:
-
-```bash
-npm install remult
-```
-
-## Bootstrap Remult in the Backend
-
-Remult is bootstrapped in a Next.js app by creating a [catch-all dynamic API route](https://nextjs.org/docs/app/building-your-application/routing/dynamic-routes#catch-all-segments). This route will pass API requests to an object created using the `remultApi` function.
-
-1. **Create an API file**
-
-   In the `src/` directory, create a file called `api.ts` with the following code to set up Remult:
-
-   ```ts
-   // src/api.ts
-
-   import { remultApi } from 'remult/remult-next'
-
-   export const api = remultApi({})
-   ```
-
-2. **Create the API Route**
-
-   In the `src/app/api` directory, create a `[...remult]` subdirectory. Inside that directory, create a `route.ts` file with the following code:
-
-   ```ts
-   // src/app/api/[...remult]/route.ts
-
-   import { api } from '../../../api'
-
-   export const { POST, PUT, DELETE, GET } = api
-   ```
-
-This file serves as a catch-all route for the Next.js API, handling all API requests by routing them through Remult.
-
-## Enable TypeScript Decorators
-
-To enable the use of decorators in your Next.js app, modify the `tsconfig.json` file. Add the following entry under the `compilerOptions` section:
-
-```json{7}
-// tsconfig.json
-
-{
-  ...
-  "compilerOptions": {
-    ...
-    "experimentalDecorators": true // add this line
-    ...
-  }
-}
-```
-
-## Run the App
-
-To start the development server, open a terminal and run the following command:
-
-```sh
-npm run dev
-```
-
-Your Next.js app is now running with Remult integrated and listening for API requests.
 
 
 
@@ -3997,90 +3901,99 @@ const logout = async () => {
 
 
 
-# Framework - Nuxt
+# Framework - Next.js
 
-### Create a Nuxt Project
+# Next.js
 
-To create a new Nuxt project, run the following command:
+## Create a Next.js Project
+
+To create a new Next.js project, run the following command:
 
 ```sh
-npx nuxi init remult-nuxt-todo
-cd remult-nuxt-todo
+npx -y create-next-app@latest remult-nextjs
 ```
 
-### Install Remult
-
-Install Remult in your Nuxt project by running the following command:
+When prompted, use these answers:
 
 ```sh
+✔ Would you like to use TypeScript? ... Yes
+✔ Would you like to use ESLint? ... No
+✔ Would you like to use Tailwind CSS? ... No
+✔ Would you like to use `src/` directory? ... Yes
+✔ Would you like to use App Router? (recommended) ... Yes
+✔ Would you like to customize the default import alias? ... No
+```
+
+Afterward, navigate into the newly created project folder:
+
+```sh
+cd remult-nextjs
+```
+
+## Install Remult
+
+Install the latest version of Remult:
+
+```bash
 npm install remult
 ```
 
-### Enable TypeScript Decorators
+## Bootstrap Remult in the Backend
 
-To enable the use of TypeScript decorators in your Nuxt project, modify the `nuxt.config.ts` file as follows:
+Remult is bootstrapped in a Next.js app by creating a [catch-all dynamic API route](https://nextjs.org/docs/app/building-your-application/routing/dynamic-routes#catch-all-segments). This route will pass API requests to an object created using the `remultApi` function.
 
-```ts [nuxt.config.ts]
-// https://nuxt.com/docs/api/configuration/nuxt-config
-export default defineNuxtConfig({
-  compatibilityDate: '2024-04-03',
-  devtools: { enabled: true },
-  nitro: {
-    esbuild: {
-      options: {
-        tsconfigRaw: {
-          compilerOptions: {
-            experimentalDecorators: true,
-          },
-        },
-      },
-    },
-  },
-  vite: {
-    esbuild: {
-      tsconfigRaw: {
-        compilerOptions: {
-          experimentalDecorators: true,
-        },
-      },
-    },
-  },
-})
-```
+1. **Create an API file**
 
-### Bootstrap Remult
+   In the `src/` directory, create a file called `api.ts` with the following code to set up Remult:
 
-1. **Create the API File**
+   ```ts
+   // src/api.ts
 
-   In the `server/api/` directory, create a dynamic API route that integrates Remult with Nuxt. The following code sets up the API and defines the entities to be used:
+   import { remultApi } from 'remult/remult-next'
 
-   ```ts [server/api/[...remult].ts]
-   import { remultApi } from 'remult/remult-nuxt'
-   import { Task } from '../../demo/todo/Task.js'
-
-   export const api = remultApi({
-     admin: true,
-     entities: [Task],
-   })
-
-   export default defineEventHandler(api)
+   export const api = remultApi({})
    ```
 
-   This setup uses the Remult `Task` entity and registers the API routes dynamically for the entities within the app.
+2. **Create the API Route**
 
-### Run the App
+   In the `src/app/api` directory, create a `[...remult]` subdirectory. Inside that directory, create a `route.ts` file with the following code:
 
-To start the development server, run:
+   ```ts
+   // src/app/api/[...remult]/route.ts
+
+   import { api } from '../../../api'
+
+   export const { POST, PUT, DELETE, GET } = api
+   ```
+
+This file serves as a catch-all route for the Next.js API, handling all API requests by routing them through Remult.
+
+## Enable TypeScript Decorators
+
+To enable the use of decorators in your Next.js app, modify the `tsconfig.json` file. Add the following entry under the `compilerOptions` section:
+
+```json{7}
+// tsconfig.json
+
+{
+  ...
+  "compilerOptions": {
+    ...
+    "experimentalDecorators": true // add this line
+    ...
+  }
+}
+```
+
+## Run the App
+
+To start the development server, open a terminal and run the following command:
 
 ```sh
 npm run dev
 ```
 
-The Nuxt app will now be running on the default address [http://localhost:3000](http://localhost:3000).
-
-### Setup Completed
-
-Your Nuxt app with Remult is now set up and ready to go. You can now move on to defining your entities and building your task list app.
+Your Next.js app is now running with Remult integrated and listening for API requests.
 
 
 
@@ -4182,6 +4095,93 @@ Your SolidStart project is now set up with Remult and ready to run. You can now 
 
 
 
+# Framework - Nuxt
+
+### Create a Nuxt Project
+
+To create a new Nuxt project, run the following command:
+
+```sh
+npx nuxi init remult-nuxt-todo
+cd remult-nuxt-todo
+```
+
+### Install Remult
+
+Install Remult in your Nuxt project by running the following command:
+
+```sh
+npm install remult
+```
+
+### Enable TypeScript Decorators
+
+To enable the use of TypeScript decorators in your Nuxt project, modify the `nuxt.config.ts` file as follows:
+
+```ts [nuxt.config.ts]
+// https://nuxt.com/docs/api/configuration/nuxt-config
+export default defineNuxtConfig({
+  compatibilityDate: '2024-04-03',
+  devtools: { enabled: true },
+  nitro: {
+    esbuild: {
+      options: {
+        tsconfigRaw: {
+          compilerOptions: {
+            experimentalDecorators: true,
+          },
+        },
+      },
+    },
+  },
+  vite: {
+    esbuild: {
+      tsconfigRaw: {
+        compilerOptions: {
+          experimentalDecorators: true,
+        },
+      },
+    },
+  },
+})
+```
+
+### Bootstrap Remult
+
+1. **Create the API File**
+
+   In the `server/api/` directory, create a dynamic API route that integrates Remult with Nuxt. The following code sets up the API and defines the entities to be used:
+
+   ```ts [server/api/[...remult].ts]
+   import { remultApi } from 'remult/remult-nuxt'
+   import { Task } from '../../demo/todo/Task.js'
+
+   export const api = remultApi({
+     admin: true,
+     entities: [Task],
+   })
+
+   export default defineEventHandler(api)
+   ```
+
+   This setup uses the Remult `Task` entity and registers the API routes dynamically for the entities within the app.
+
+### Run the App
+
+To start the development server, run:
+
+```sh
+npm run dev
+```
+
+The Nuxt app will now be running on the default address [http://localhost:3000](http://localhost:3000).
+
+### Setup Completed
+
+Your Nuxt app with Remult is now set up and ready to go. You can now move on to defining your entities and building your task list app.
+
+
+
 # Stacks - Server
 
 <script setup>
@@ -4190,13 +4190,13 @@ Your SolidStart project is now set up with Remult and ready to run. You can now 
 
 # Select a server
 
-<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 5rem; margin-top: 2rem">
-	<Icon tech="express" sizeIco=150 link="/docs/installation/server/express" />
-	<Icon tech="fastify" sizeIco=150 link="/docs/installation/server/fastify" />
-	<Icon tech="hono" sizeIco=150 link="/docs/installation/server/hono" />
-	<Icon tech="hapi" sizeIco=150 link="/docs/installation/server/hapi" />
-	<Icon tech="koa" sizeIco=150 link="/docs/installation/server/koa" />
-	<Icon tech="nest" sizeIco=150 link="/docs/installation/server/nest" />
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 5rem; margin-top: 2rem">
+	<Icon tech="express" sizeIco=100 link="/docs/installation/server/express" />
+	<Icon tech="fastify" sizeIco=100 link="/docs/installation/server/fastify" />
+	<Icon tech="hono" sizeIco=100 link="/docs/installation/server/hono" />
+	<Icon tech="hapi" sizeIco=100 link="/docs/installation/server/hapi" />
+	<Icon tech="koa" sizeIco=100 link="/docs/installation/server/koa" />
+	<Icon tech="nest" sizeIco=100 link="/docs/installation/server/nest" />
 </div>
 
 
@@ -4762,57 +4762,19 @@ Your Nest.js app with Remult is now up and running on port `3002`.
 
 By default, if no database provider is specified, Remult will use a simple JSON file-based database. This will store your data in JSON files located in the `db` folder at the root of your project.
 
-<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 5rem; margin-top: 2rem">
-	<Icon tech="postgres" sizeIco=150 link="/docs/installation/database/postgresql" />
-	<Icon tech="mysql" sizeIco=150 link="/docs/installation/database/mysql" />
-	<Icon tech="mongodb" sizeIco=150 link="/docs/installation/database/mongodb" />
-	<Icon tech="sqlite" sizeIco=150 link="/docs/installation/database/better-sqlite3" />
-	<Icon tech="sqljs" sizeIco=150 link="/docs/installation/database/sqljs" />
-	<Icon tech="mssql" sizeIco=150 link="/docs/installation/database/mssql" />
-	<Icon tech="bun-sqlite" sizeIco=150 link="/docs/installation/database/bun-sqlite" />
-	<Icon tech="turso" sizeIco=150 link="/docs/installation/database/turso" />
-	<Icon tech="duckdb" sizeIco=150 link="/docs/installation/database/duckdb" />
-	<Icon tech="oracle" sizeIco=150 link="/docs/installation/database/oracle" />
-	<Icon tech="json files" sizeIco=150 link="/docs/installation/database/json" />
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 5rem; margin-top: 2rem">
+	<Icon tech="postgres" sizeIco=100 link="/docs/installation/database/postgresql" />
+	<Icon tech="mysql" sizeIco=100 link="/docs/installation/database/mysql" />
+	<Icon tech="mongodb" sizeIco=100 link="/docs/installation/database/mongodb" />
+	<Icon tech="sqlite" sizeIco=100 link="/docs/installation/database/better-sqlite3" />
+	<Icon tech="sqljs" sizeIco=100 link="/docs/installation/database/sqljs" />
+	<Icon tech="mssql" sizeIco=100 link="/docs/installation/database/mssql" />
+	<Icon tech="bun-sqlite" sizeIco=100 link="/docs/installation/database/bun-sqlite" />
+	<Icon tech="turso" sizeIco=100 link="/docs/installation/database/turso" />
+	<Icon tech="duckdb" sizeIco=100 link="/docs/installation/database/duckdb" />
+	<Icon tech="oracle" sizeIco=100 link="/docs/installation/database/oracle" />
+	<Icon tech="json files" sizeIco=100 link="/docs/installation/database/json" />
 </div>
-
-
-
-# Database - Json files
-
-## JSON Files
-
-You can store data in JSON files using Remult. Here's how to configure your server:
-
-### Step 1: Configure the `dataProvider`
-
-In your `index.ts` (or server file), configure the `dataProvider` to use JSON files as the storage mechanism:
-
-```ts{5-6,12-14}
-// index.ts
-
-import express from "express"
-import { remultApi } from "remult/remult-express"
-import { JsonDataProvider } from "remult"
-import { JsonEntityFileStorage } from "remult/server"
-
-const app = express()
-
-app.use(
-  remultApi({
-    dataProvider: async () =>
-      new JsonDataProvider(new JsonEntityFileStorage("./db")) // Data will be stored in the 'db' folder
-  })
-)
-```
-
-### Explanation:
-
-- **`JsonDataProvider`**: This is the data provider that will store your data in JSON format.
-- **`JsonEntityFileStorage`**: Specifies the directory where the JSON files will be stored (in this case, `./db`).
-- **`"./db"`**: The path where JSON files for entities will be created. Ensure the folder exists or it will be created automatically.
-
-This configuration allows you to store and manage your application data in JSON files, ideal for small projects or quick setups.
 
 
 
@@ -5074,6 +5036,50 @@ This setup connects to an SQLite database stored in the `mydb.sqlite` file. The 
 
 
 
+# Database - sqljs
+
+### sql.js
+
+### Step 1: Install sql.js
+
+Run the following command to install the `sql.js` package:
+
+```sh
+npm i sql.js
+```
+
+### Step 2: Configure the `dataProvider`
+
+In your `api.ts` or server file, configure the `dataProvider` to use `sql.js`:
+
+```ts
+import express from 'express'
+import { remultApi } from 'remult/remult-express'
+import { SqlDatabase } from 'remult'
+import initSqlJs from 'sql.js'
+import { SqlJsDataProvider } from 'remult/remult-sql-js'
+
+const app = express()
+
+app.use(
+  remultApi({
+    dataProvider: new SqlDatabase(
+      new SqlJsDataProvider(initSqlJs().then((SQL) => new SQL.Database())),
+    ),
+  }),
+)
+```
+
+### Explanation:
+
+- **sql.js**: This setup initializes an in-memory SQLite database using `sql.js`, a library that runs SQLite in the browser or in Node.js.
+- **SqlJsDataProvider**: The `SqlJsDataProvider` is used to integrate the `sql.js` database as a Remult data provider.
+- **Async Initialization**: The `initSqlJs()` function initializes the SQL.js engine and sets up the database instance.
+
+This configuration allows you to use an in-memory SQLite database in your Remult application, powered by `sql.js`.
+
+
+
 # Database - MSSQL
 
 # Microsoft SQL Server
@@ -5194,50 +5200,6 @@ app.use(
 - **SqlDatabase**: Wraps the `BunSqliteDataProvider` to make it compatible with Remult's SQL-based data provider system.
 
 This setup allows you to use Bun's SQLite implementation as the database provider for your Remult application, leveraging Bun’s performance benefits with SQLite.
-
-
-
-# Database - sqljs
-
-### sql.js
-
-### Step 1: Install sql.js
-
-Run the following command to install the `sql.js` package:
-
-```sh
-npm i sql.js
-```
-
-### Step 2: Configure the `dataProvider`
-
-In your `api.ts` or server file, configure the `dataProvider` to use `sql.js`:
-
-```ts
-import express from 'express'
-import { remultApi } from 'remult/remult-express'
-import { SqlDatabase } from 'remult'
-import initSqlJs from 'sql.js'
-import { SqlJsDataProvider } from 'remult/remult-sql-js'
-
-const app = express()
-
-app.use(
-  remultApi({
-    dataProvider: new SqlDatabase(
-      new SqlJsDataProvider(initSqlJs().then((SQL) => new SQL.Database())),
-    ),
-  }),
-)
-```
-
-### Explanation:
-
-- **sql.js**: This setup initializes an in-memory SQLite database using `sql.js`, a library that runs SQLite in the browser or in Node.js.
-- **SqlJsDataProvider**: The `SqlJsDataProvider` is used to integrate the `sql.js` database as a Remult data provider.
-- **Async Initialization**: The `initSqlJs()` function initializes the SQL.js engine and sets up the database instance.
-
-This configuration allows you to use an in-memory SQLite database in your Remult application, powered by `sql.js`.
 
 
 
@@ -5419,6 +5381,44 @@ app.listen(3000, () => console.log('Server is running on port 3000'))
 - **Existing knex provider**: If you already have a `knex` instance, it can be reused directly with Remult.
 
 This setup integrates Oracle into your Remult-based application.
+
+
+
+# Database - Json files
+
+## JSON Files
+
+You can store data in JSON files using Remult. Here's how to configure your server:
+
+### Step 1: Configure the `dataProvider`
+
+In your `index.ts` (or server file), configure the `dataProvider` to use JSON files as the storage mechanism:
+
+```ts{5-6,12-14}
+// index.ts
+
+import express from "express"
+import { remultApi } from "remult/remult-express"
+import { JsonDataProvider } from "remult"
+import { JsonEntityFileStorage } from "remult/server"
+
+const app = express()
+
+app.use(
+  remultApi({
+    dataProvider: async () =>
+      new JsonDataProvider(new JsonEntityFileStorage("./db")) // Data will be stored in the 'db' folder
+  })
+)
+```
+
+### Explanation:
+
+- **`JsonDataProvider`**: This is the data provider that will store your data in JSON format.
+- **`JsonEntityFileStorage`**: Specifies the directory where the JSON files will be stored (in this case, `./db`).
+- **`"./db"`**: The path where JSON files for entities will be created. Ensure the folder exists or it will be created automatically.
+
+This configuration allows you to store and manage your application data in JSON files, ideal for small projects or quick setups.
 
 
 
@@ -5971,6 +5971,7 @@ You can pass some options to admin as well:
 - `allow`, using [allowed](https://remult.dev/docs/access-control). `true`, `"admin"`, ...
 - `customHtmlHead`, to add custom html to the head of the admin page. It's a function that receives remult as an argument.
 - `requireAuthToken`, this will open settings dialog to set the bearer token directly.
+- `disableLiveQuery`, this will disable live query for the admin ui. (can be overridden in the admin ui settings)
 
 Example:
 

@@ -143,10 +143,10 @@ onUnmounted(() => {
       <Icon tech="react" link="/docs/installation/framework/react" />
       <Icon tech="angular" link="/docs/installation/framework/angular" />
       <Icon tech="vue" link="/docs/installation/framework/vue" />
-      <Icon tech="nextjs" link="/docs/installation/framework/nextjs" />
       <Icon tech="svelte" link="/docs/installation/framework/sveltekit" />
-      <Icon tech="nuxt" link="/docs/installation/framework/nuxt" />
+      <Icon tech="nextjs" link="/docs/installation/framework/nextjs" />
       <Icon tech="solid" link="/docs/installation/framework/solid" />
+      <Icon tech="nuxt" link="/docs/installation/framework/nuxt" />
       <Icon tech="express" link="/docs/installation/server/express" />
       <Icon tech="fastify" link="/docs/installation/server/fastify" />
       <Icon tech="hono" link="/docs/installation/server/hono" />

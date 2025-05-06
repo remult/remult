@@ -96,10 +96,10 @@ const getStepTimeAgo = (stepIndex: number) => {
             </label>
             <label
               class="framework-icon"
-              :class="{ active: framework === 'svelte' }"
+              :class="{ active: framework === 'angular' }"
             >
-              <input type="radio" v-model="framework" value="svelte" />
-              <IconSvelte />
+              <input type="radio" v-model="framework" value="angular" />
+              <IconAngular />
             </label>
             <label
               class="framework-icon"
@@ -110,10 +110,10 @@ const getStepTimeAgo = (stepIndex: number) => {
             </label>
             <label
               class="framework-icon"
-              :class="{ active: framework === 'angular' }"
+              :class="{ active: framework === 'svelte' }"
             >
-              <input type="radio" v-model="framework" value="angular" />
-              <IconAngular />
+              <input type="radio" v-model="framework" value="svelte" />
+              <IconSvelte />
             </label>
           </div>
         </div>
@@ -124,9 +124,9 @@ const getStepTimeAgo = (stepIndex: number) => {
           :key="step.id"
           @click="selectStep(step)"
           class="step-button"
-          :class="{ 
+          :class="{
             active: currentStep?.id === step.id,
-            'fade-in': visibleSteps.includes(index)
+            'fade-in': visibleSteps.includes(index),
           }"
         >
           <span class="step-name">{{ step.name }}</span>
