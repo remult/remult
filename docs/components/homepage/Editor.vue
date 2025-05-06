@@ -20,7 +20,7 @@ const {
   framework,
   keyContext,
   initializeEditor,
-  selectStep,
+  selectStep: originalSelectStep,
   selectFile,
   getCurrentCode,
   getCurrentLanguage,
@@ -35,16 +35,19 @@ onMounted(() => {
   setTimeout(() => {
     // Show first step
     visibleSteps.value = [0]
+    const hasInteracted = localStorage.getItem('editorStepsInteracted') === 'true'
+    const stepDelay = hasInteracted ? 100 : 500
     // Show code after 500ms
     setTimeout(() => {
       isAnimating.value = true
+      // Check if user has interacted before
       // Sequentially show remaining steps
       for (let i = 1; i < steps.value.length; i++) {
         setTimeout(() => {
           visibleSteps.value = [...visibleSteps.value, i]
-        }, i * 400) // 400ms delay between each step
+        }, i * stepDelay) // Dynamic delay based on interaction history
       }
-    }, 500)
+    }, stepDelay)
   }, 500)
 })
 
@@ -72,6 +75,12 @@ const getStepTimeAgo = (stepIndex: number) => {
     .reduce((total, s) => total + (s.stepTime || 0), 0)
 
   return formatTime(totalSeconds) + ' ago'
+}
+
+// Wrap the original selectStep to add interaction tracking
+const selectStep = (step: any) => {
+  localStorage.setItem('editorStepsInteracted', 'true')
+  originalSelectStep(step)
 }
 </script>
 
