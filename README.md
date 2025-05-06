@@ -271,7 +271,9 @@ export class Category {
 
 ### Automatic admin UI
 
-![Automatic admin UI](static/images/admin-ui.gif)
+![Automatic admin UI](https://raw.githubusercontent.com/remult/remult/main/static/images/admin-ui.gif)
+
+Learn more [here](https://remult.dev/docs/admin-ui).
 
 ## What about complex CRUD?
 
@@ -365,7 +367,7 @@ DSL. Remult attempts to strike a better balance.
 
 ## Contributing
 
-Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
+Contributions are welcome. See [CONTRIBUTING.md](https://github.com/remult/remult/blob/main/CONTRIBUTING.md).
 
 - :speech_balloon: Any feedback or suggestions? Start a
   [discussion](https://github.com/remult/remult/discussions).
