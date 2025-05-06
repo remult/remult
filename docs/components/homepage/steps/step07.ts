@@ -6,7 +6,7 @@ export default {
   cta: [
     {
       label: 'All lifecycle hooks',
-      href: '/lifecycle-hooks',
+      href: '/docs/lifecycle-hooks',
     },
   ],
   files: [

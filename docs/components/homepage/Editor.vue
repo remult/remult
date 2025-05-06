@@ -42,7 +42,7 @@ onMounted(() => {
       for (let i = 1; i < steps.value.length; i++) {
         setTimeout(() => {
           visibleSteps.value = [...visibleSteps.value, i]
-        }, i * 700) // 1s delay between each step
+        }, i * 400) // 400ms delay between each step
       }
     }, 500)
   }, 500)
@@ -454,6 +454,7 @@ const getStepTimeAgo = (stepIndex: number) => {
     padding: 0.25rem 0.5rem;
     border-radius: 5px;
     margin-bottom: 0.5rem;
+    transition: all 0.2s ease;
 
     &:last-child {
       margin-bottom: 0;
@@ -464,6 +465,11 @@ const getStepTimeAgo = (stepIndex: number) => {
       font-size: 0.8rem;
       opacity: 0.5;
     }
+  }
+
+  a:hover {
+    color: #fff;
+    background: #2b0d86;
   }
 }
 </style>
