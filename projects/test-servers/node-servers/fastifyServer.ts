@@ -1,11 +1,11 @@
 import fastify from 'fastify'
-import { remultFastify } from '../../core/remult-fastify'
+import { remultApi } from '../../core/remult-fastify'
 import fs from 'fs'
 import { remult } from '../../core/src/remult-proxy'
 import { Task } from '../shared/Task'
 ;(async () => {
   const server = fastify()
-  const api = remultFastify({
+  const api = remultApi({
     entities: [Task],
     admin: true,
     initRequest: async () => {

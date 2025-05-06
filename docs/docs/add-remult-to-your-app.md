@@ -38,12 +38,12 @@ Here is the code for setting up the Remult middleware:
 
 ```ts
 import express from 'express'
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 
 const app = express()
 
 app.use(
-  remultExpress({
+  remultApi({
     entities: [
       /* entity types */
     ],
@@ -57,12 +57,12 @@ app.listen(3000)
 
 ```ts
 import fastify from 'fastify'
-import { remultFastify } from 'remult/remult-fastify'
+import { remultApi } from 'remult/remult-fastify'
 ;(async () => {
   const server = fastify()
 
   await server.register(
-    remultFastify({
+    remultApi({
       entities: [
         /* entity types */
       ],
@@ -92,9 +92,9 @@ export default remultNext({
 ```ts
 // src/api.ts
 
-import { remultNextApp } from 'remult/remult-next'
+import { remultApi } from 'remult/remult-next'
 
-export const api = remultNextApp({
+export const api = remultApi({
   entities: [
     /* entity types */
   ],
@@ -112,9 +112,9 @@ export const { POST, PUT, DELETE, GET } = api
 ```ts
 // src/hooks.server.ts
 
-import { remultSveltekit } from 'remult/remult-sveltekit'
+import { remultApi } from 'remult/remult-sveltekit'
 
-export const handle = remultSveltekit({
+export const handle = remultApi({
   entities: [
     /* entity types */
   ],
@@ -125,12 +125,12 @@ export const handle = remultSveltekit({
 
 ```ts
 import { type Plugin, server } from '@hapi/hapi'
-import { remultHapi } from 'remult/remult-hapi'
+import { remultApi } from 'remult/remult-hapi'
 ;(async () => {
   const hapi = server({ port: 3000 })
 
   await hapi.register(
-    remultHapi({
+    remultApi({
       entities: [
         /* entity types */
       ],
@@ -148,13 +148,13 @@ import { remultHapi } from 'remult/remult-hapi'
 
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
 
   app.use(
-    remultExpress({
+    remultApi({
       entities: [
         /* entity types */
       ],

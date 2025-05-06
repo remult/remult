@@ -51,17 +51,19 @@ export interface AdminEntitiesOptions {
 }
 export interface AdminDisplayOptions {
   rootPath: string
-  head: string
+  head: string,
+  requireAuthToken: boolean
+  disableLiveQuery: boolean
 }
 
 export default function remultAdminHtml(options: AdminDisplayOptions) {
-  const { rootPath, head } = options
+  const { head, rootPath, requireAuthToken, disableLiveQuery } = options
   return getHtml()
     .replace('<!--PLACE_HERE_HEAD-->', head)
     .replace(
       '<!--PLACE_HERE_BODY-->',
       `<script>
-  window.optionsFromServer = ${JSON.stringify({ rootPath })}
+  window.optionsFromServer = ${JSON.stringify({ rootPath, requireAuthToken, disableLiveQuery })}
 </script>`,
     )
 }
@@ -91,11 +93,11 @@ export function buildEntityInfo(options: AdminEntitiesOptions) {
           const relRepo = options.remult.repo(info.toEntity)
           const where =
             typeof info.options.findOptions === 'object' &&
-            info.options.findOptions.where
+              info.options.findOptions.where
               ? Filter.entityFilterToJson(
-                  relRepo.metadata,
-                  info.options.findOptions.where,
-                )
+                relRepo.metadata,
+                info.options.findOptions.where,
+              )
               : undefined
           const idField = relRepo.metadata.idMetadata.field.key
           if (info.type === 'reference' || info.type === 'toOne') {
@@ -143,12 +145,12 @@ export function buildEntityInfo(options: AdminEntitiesOptions) {
             x.inputType === InputTypes.json
               ? 'json'
               : x.valueType === Number
-              ? 'number'
-              : x.valueType === Boolean
-              ? 'boolean'
-              : x.valueType === Date
-              ? 'date'
-              : 'string',
+                ? 'number'
+                : x.valueType === Boolean
+                  ? 'boolean'
+                  : x.valueType === Date
+                    ? 'date'
+                    : 'string',
         })
       } catch (error) {
         console.error(

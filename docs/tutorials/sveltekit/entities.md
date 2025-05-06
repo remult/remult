@@ -60,10 +60,10 @@ For a complete list of supported field types, see the [Field Types](../../docs/f
 ::: code-group
 
 ```ts [src/server/api.ts]
-import { remultSveltekit } from 'remult/remult-sveltekit'
+import { remultApi } from 'remult/remult-sveltekit'
 import { Task } from '../shared/Task' // [!code ++]
 
-export const api = remultSveltekit({
+export const api = remultApi({
   entities: [Task], // [!code ++]
 })
 ```
@@ -100,15 +100,15 @@ While remult supports [many relational and non-relational databases](https://rem
 
 ### Enabling the Admin UI
 
-Add the Admin UI to your Sveltekit application by setting the `admin` option to `true` in the `remultSveltekit()`
+Add the Admin UI to your Sveltekit application by setting the `admin` option to `true` in the `remultApi()`
 
 ::: code-group
 
 ```ts [src/server/api.ts]
-import { remultSveltekit } from 'remult/remult-sveltekit'
+import { remultApi } from 'remult/remult-sveltekit'
 import { Task } from '../shared/Task'
 
-export const api = remultSveltekit({
+export const api = remultApi({
   entities: [Task],
   admin: true, // Enable the Admin UI
 })

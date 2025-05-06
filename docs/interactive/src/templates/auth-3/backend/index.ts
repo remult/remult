@@ -1,5 +1,5 @@
 import express from 'express'
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 import { Task } from '../shared/Task.js'
 import { TasksController } from '../shared/TasksController.js'
 import { remult, repo } from 'remult'
@@ -16,7 +16,7 @@ app.use(
   }),
 )
 
-export const api = remultExpress({
+export const api = remultApi({
   entities: [Task],
   controllers: [TasksController, AuthController],
   getUser: (request) => request.session?.['user'],

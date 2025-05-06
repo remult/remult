@@ -7,7 +7,7 @@ Enjoy a fully featured Admin UI for your entities, you can do CRUD operations on
 Add the Admin UI to your application by setting the `admin` option to `true` in the remult configuration.
 
 ```ts
-export const api = remultExpress({
+export const api = remultApi({
   entities: [],
   admin: true, // Enable the Admin UI
 })
@@ -19,11 +19,13 @@ You can pass some options to admin as well:
 
 - `allow`, using [allowed](https://remult.dev/docs/access-control). `true`, `"admin"`, ...
 - `customHtmlHead`, to add custom html to the head of the admin page. It's a function that receives remult as an argument.
+- `requireAuthToken`, this will open settings dialog to set the bearer token directly.
+- `disableLiveQuery`, this will disable live query for the admin ui. (can be overridden in the admin ui settings)
 
 Example:
 
 ```ts
-export const api = remultExpress({
+export const api = remultApi({
   entities: [],
   admin: {
     allow: 'admin', // Only for user having the "admin" role

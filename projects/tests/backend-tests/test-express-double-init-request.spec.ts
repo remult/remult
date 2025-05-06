@@ -1,5 +1,5 @@
 import express from 'express'
-import { remultExpress } from '../../core/remult-express.js'
+import { remultApi } from '../../core/remult-express.js'
 import { describe, expect, it } from 'vitest'
 import { Task } from '../../test-servers/shared/Task.js'
 import {
@@ -20,7 +20,7 @@ describe.sequential('test express server', async () => {
     try {
       const port = 3006
       let initRequestCount = 0
-      let api = remultExpress({
+      let api = remultApi({
         entities: [Task],
         dataProvider: new InMemoryDataProvider(),
         initRequest: async () => {
@@ -62,7 +62,7 @@ describe.sequential('test express server', async () => {
     try {
       const port = 3007
       let initRequestCount = 0
-      let api = remultExpress({
+      let api = remultApi({
         entities: [Task],
         dataProvider: new InMemoryDataProvider(),
         initRequest: async () => {
@@ -105,7 +105,7 @@ describe.sequential('test express server', async () => {
     try {
       const port = 3005
       let initRequestCount = 0
-      let api = remultExpress({
+      let api = remultApi({
         entities: [Task],
         controllers: [MyController],
         dataProvider: new InMemoryDataProvider(),

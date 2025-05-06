@@ -11,7 +11,7 @@ import {
   type GenericResponse,
 } from './server/index.js'
 import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
-export function remultHono(
+export function remultApi(
   options: RemultServerOptions<Context<Env, '', BlankInput>>,
 ): RemultHonoServer {
   let app = new Hono()
@@ -29,7 +29,7 @@ export function remultHono(
         }),
         url: c.req.url,
         on: (e: 'close', do1: VoidFunction) => {
-          ;(c as any)['_tempOnClose'](() => do1())
+          ; (c as any)['_tempOnClose'](() => do1())
           //   c.req.on('close', do1)
         },
       }
@@ -92,7 +92,7 @@ export function remultHono(
                     streamSSE(c, (s) => {
                       sse = s
                       return new Promise((res) => {
-                        ;(c as any)['_tempOnClose'] = (x: VoidFunction) =>
+                        ; (c as any)['_tempOnClose'] = (x: VoidFunction) =>
                           sse.onAbort(() => x())
                       })
                     }),
@@ -100,7 +100,7 @@ export function remultHono(
                 },
               }
 
-              handler(c as any, gRes, () => {})
+              handler(c as any, gRes, () => { })
             } catch (err) {
               rej(err)
             }
@@ -123,3 +123,6 @@ export type RemultHonoServer = Hono &
       what: () => Promise<T>,
     ) => Promise<T>
   }
+
+/** @deprecated use remultApi instead */
+export const remultHono = remultApi

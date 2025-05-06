@@ -43,8 +43,8 @@ These options offer granular control over authorization, allowing you to tailor 
 2. **Register the Controller:**
 
 ```typescript
-// Register TasksController in the controllers array of the remultExpress options
-export const api = remultExpress({
+// Register TasksController in the controllers array of the remultApi options
+export const api = remultApi({
   entities: [Task],
   controllers: [TasksController],
 })

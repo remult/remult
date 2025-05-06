@@ -2,12 +2,12 @@ import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 
 import { Task } from '../shared/Task.js'
-import { remultHono } from '../../core/remult-hono.js'
+import { remultApi } from '../../core/remult-hono.js'
 import { repo } from 'remult'
 
 const app = new Hono()
 
-const api = remultHono({
+const api = remultApi({
   entities: [Task],
   admin: true,
 })

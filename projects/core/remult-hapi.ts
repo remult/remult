@@ -18,7 +18,7 @@ import {
 import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
 import { PassThrough } from 'stream'
 
-export function remultHapi(
+export function remultApi(
   options: RemultServerOptions<Request>,
 ): RemultHapiServer {
   const api = createRemultServer(options, {
@@ -80,7 +80,7 @@ export function remultHapi(
                   })
                 },
               })
-              handler(request as any, r, () => {})
+              handler(request as any, r, () => { })
             } catch (err) {
               rej(err)
             }
@@ -144,3 +144,6 @@ export type RemultHapiServer = Plugin<any, any> &
   RemultServerCore<Request> & {
     withRemult: RemultServer<Request>['withRemultAsync']
   }
+
+/** @deprecated use remultApi instead */
+export const remultHapi = remultApi

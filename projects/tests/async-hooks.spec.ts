@@ -8,7 +8,7 @@ import {
   AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore,
   StubRemultAsyncLocalStorageCore,
 } from '../core/server/initAsyncHooks.js'
-import { remultExpress } from '../core/remult-express'
+import { remultApi } from '../core/remult-express'
 import { entity } from './tests/dynamic-classes'
 import {
   Fields,
@@ -101,7 +101,7 @@ describe('test stub async hooks', () => {
     const t = entity('t', { id: Fields.string() })
     var mem = new InMemoryDataProvider()
     let count = 0
-    const api = remultExpress({
+    const api = remultApi({
       dataProvider: mem,
       entities: [],
       initApi: async (req) => {
@@ -130,7 +130,7 @@ describe('test with remult within get user & init request', () => {
     remultStatic.asyncContext = new RemultAsyncLocalStorage(
       new AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore(),
     )
-    const api = remultExpress({
+    const api = remultApi({
       dataProvider: mem,
       entities: [],
       initApi: async (req) => {
@@ -160,7 +160,7 @@ describe('test default data provider based in init api server', () => {
     remultStatic.asyncContext = new RemultAsyncLocalStorage(
       new AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore(),
     )
-    const api = remultExpress({
+    const api = remultApi({
       dataProvider: mem,
       entities: [],
       initApi: async (req) => {
@@ -180,7 +180,7 @@ describe('test default data provider based in init api server', () => {
 })
 describe('errors with withRemult', () => {
   it('api with remult provides sensible error', async () => {
-    const api = remultExpress({
+    const api = remultApi({
       initApi: async (req) => {},
       entities: [],
     })
@@ -196,7 +196,7 @@ describe('errors with withRemult', () => {
     expect(error).toBe(true)
   })
   it('api with remult provides sensible error', async () => {
-    const api = remultExpress({
+    const api = remultApi({
       initApi: async (req) => {},
       entities: [],
     })
@@ -212,7 +212,7 @@ describe('errors with withRemult', () => {
     expect(error).toBe(true)
   })
   it('api with remult provides sensible error in get user', async () => {
-    const api = remultExpress({
+    const api = remultApi({
       getUser: async (req) => {
         throw Error('get user error')
       },

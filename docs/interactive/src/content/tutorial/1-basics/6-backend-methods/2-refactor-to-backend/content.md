@@ -41,7 +41,7 @@ export class TasksController {
 Head over to the `backend/index.ts` file and register the controller:
 
 ```ts title="backend/index.ts" add={3}
-export const api = remultExpress({
+export const api = remultApi({
   entities: [Task],
   controllers: [TasksController],
   initApi: async () => {

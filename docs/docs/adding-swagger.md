@@ -16,10 +16,10 @@ To add swagger to a `remult` application follow these steps:
    ```ts{2,6-9}
    import express from 'express';
    import swaggerUi from 'swagger-ui-express';
-   import { remultExpress } from 'remult/remult-express';
+   import { remultApi } from 'remult/remult-express';
 
    const app = express();
-   let api = remultExpress();
+   let api = remultApi();
 
    app.use(api);
    const openApiDocument = api.openApiDoc({ title: "remult-react-todo" });
@@ -45,15 +45,15 @@ To add swagger UI to a `NextJs` application follow these steps:
    yarn add -D @types/swagger-ui-react
    ```
 
-2. Get the openApi document from RemultNextAppServer:
+2. Get the openApi document from remultApiServer:
 
    ```ts
    // src/api.ts
    import { Task } from '@/shared/Task'
    import { TasksController } from '@/shared/TasksController'
-   import { remultNextApp } from 'remult/remult-next'
+   import { remultApi } from 'remult/remult-next'
 
-   export const api = remultNextApp({
+   export const api = remultApi({
      admin: true,
      entities: [Task],
      controllers: [TasksController],

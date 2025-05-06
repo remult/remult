@@ -1,5 +1,5 @@
 import express from 'express'
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 import { Task } from '../shared/Task.js'
 import { TimeEntry } from '../shared/TimeEntry.js'
 import session from 'cookie-session'
@@ -17,7 +17,7 @@ app.use(
   }),
 )
 
-export const api = remultExpress({
+export const api = remultApi({
   entities: [Task, TimeEntry],
   controllers: [AuthController],
   admin: true,

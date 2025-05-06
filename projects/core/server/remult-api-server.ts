@@ -106,6 +106,8 @@ export interface RemultServerOptions<RequestType> {
     | {
         allow: Allowed
         customHtmlHead?: (remult: Remult) => string
+        requireAuthToken?: boolean
+        disableLiveQuery?: boolean
       }
 
   /** Storage to use for backend methods that use queue */
@@ -123,7 +125,7 @@ export interface RemultServerOptions<RequestType> {
    *
    * @returns A promise that resolves when the error handling is complete.
    * @example
-   * export const api = remultExpress({
+   * export const api = remultApi({
    *   error: async (e) => {
    *     if (e.httpStatusCode == 400) {
    *       e.sendError(500, { message: "An error occurred" })
@@ -443,16 +445,21 @@ export class RemultServerImplementation<RequestType>
                 )
               } else {
                 let head = '<title>Admin</title>'
-                if (
-                  isOfType<{ allow: Allowed }>(this.options.admin, 'allow') &&
-                  this.options.admin.customHtmlHead
-                ) {
-                  head = this.options.admin.customHtmlHead(remult)
+                let requireAuthToken = false
+                let disableLiveQuery = false
+                if (isOfType<{ allow: Allowed }>(this.options.admin, 'allow')) {
+                  head = this.options.admin.customHtmlHead?.(remult) ?? head
+                  requireAuthToken =
+                    this.options.admin.requireAuthToken ?? requireAuthToken
+                  disableLiveQuery =
+                    this.options.admin.disableLiveQuery ?? disableLiveQuery
                 }
                 origResponse.send(
                   remultAdminHtml({
                     rootPath: this.options.rootPath ?? '/api',
                     head,
+                    requireAuthToken,
+                    disableLiveQuery,
                   }),
                 )
               }

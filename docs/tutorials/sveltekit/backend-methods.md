@@ -75,16 +75,16 @@ The `@BackendMethod` decorator tells Remult to expose the method as an API endpo
 
 **Unlike the front-end `Remult` object, the server implementation interacts directly with the database.**
 
-2. Register the new `TasksController` class by adding it to the `controllers` array of the `options` object passed to `remultSveltekit()`:
+2. Register the new `TasksController` class by adding it to the `controllers` array of the `options` object passed to `remultApi()`:
 
 ::: code-group
 
 ```ts [src/server/api.ts]
-import { remultSveltekit } from 'remult/remult-sveltekit'
+import { remultApi } from 'remult/remult-sveltekit'
 import { Task } from '../shared/Task'
 import { TasksController } from '../shared/TasksController' // [!code ++]
 
-export const api = remultSveltekit({
+export const api = remultApi({
   admin: true,
   entities: [Task], // [!code ++]
   controllers: [TasksController], // [!code ++]

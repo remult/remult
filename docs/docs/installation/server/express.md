@@ -20,9 +20,9 @@ Remult is integrated into your backend as an `Express middleware`.
    ```ts
    // src/server/api.ts
 
-   import { remultExpress } from 'remult/remult-express'
+   import { remultApi } from 'remult/remult-express'
 
-   export const api = remultExpress()
+   export const api = remultApi()
    ```
 
 2. **Register the Middleware**

@@ -32,12 +32,12 @@ If you're new to Remult or prefer a guided, hands-on approach, we recommend star
 <br />
 
 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 5rem">
-	<Icon tech="react" sizeIco=150 link="/tutorials/react" />
-	<Icon tech="angular" sizeIco=150 link="/tutorials/angular" />
-	<Icon tech="vue" sizeIco=150 link="/tutorials/vue" />
-	<Icon tech="svelte" sizeIco=150 link="/tutorials/sveltekit" />
-	<Icon tech="nextjs" sizeIco=150 link="/tutorials/react-next" />
-	<Icon tech="solid" sizeIco=150 link="/tutorials/solid-start" />
+	<Icon tech="react" sizeIco=150 link="/tutorials/react" techName="React" />
+	<Icon tech="angular" sizeIco=150 link="/tutorials/angular" techName="Angular" />
+	<Icon tech="vue" sizeIco=150 link="/tutorials/vue" techName="Vue" />
+	<Icon tech="svelte" sizeIco=150 link="/tutorials/sveltekit" techName="SvelteKit" />
+	<Icon tech="nextjs" sizeIco=150 link="/tutorials/react-next" techName="Next.js" />
+	<Icon tech="solid" sizeIco=150 link="/tutorials/solid-start" techName="SolidStart" />
 </div>
 
 ### `Option D`: Quickstart

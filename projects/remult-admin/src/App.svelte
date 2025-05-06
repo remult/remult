@@ -112,6 +112,19 @@
     const response = await fetchPromise
     return response.clone()
   }
+
+  if (
+    window.optionsFromServer?.requireAuthToken &&
+    $SSContext.settings.bearerAuth === ''
+  ) {
+    dialog.show({
+      config: { title: 'Remult Settings' },
+      component: DialogSettings,
+      props: {
+        onlySession: true,
+      },
+    })
+  }
 </script>
 
 <div class="app-holder">

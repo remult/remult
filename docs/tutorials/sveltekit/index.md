@@ -64,9 +64,9 @@ npm i remult --save-dev
 ::: code-group
 
 ```ts [src/server/api.ts]
-import { remultSveltekit } from 'remult/remult-sveltekit'
+import { remultApi } from 'remult/remult-sveltekit'
 
-export const api = remultSveltekit({})
+export const api = remultApi({})
 ```
 
 :::

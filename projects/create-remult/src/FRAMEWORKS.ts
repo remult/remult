@@ -80,7 +80,7 @@ export const Servers = {
       emoji: "🛤️",
     },
     import: "remult-express",
-    remultServerFunction: "remultExpress",
+    remultServerFunction: "remultApi",
     requiresTwoTerminal: true,
     dependencies: {
       express: "^4.21.0",
@@ -108,7 +108,7 @@ export const Servers = {
       emoji: "🚀",
     },
     import: "remult-fastify",
-    remultServerFunction: "remultFastify",
+    remultServerFunction: "remultApi",
     requiresTwoTerminal: true,
     dependencies: {
       "@fastify/static": "^8.0.0",
@@ -159,7 +159,7 @@ app.listen({ port: Number(process.env["PORT"] || 3002) }, () =>
       emoji: "🔥",
     },
     import: "remult-express",
-    remultServerFunction: "remultExpress",
+    remultServerFunction: "remultApi",
     dependencies: {
       express: "^4.21.0",
     },

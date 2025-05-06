@@ -10,10 +10,10 @@
 	<Icon tech="react" sizeIco=100 link="/docs/installation/framework/react" />
 	<Icon tech="angular" sizeIco=100 link="/docs/installation/framework/angular" />
 	<Icon tech="vue" sizeIco=100 link="/docs/installation/framework/vue" />
-	<Icon tech="nextjs" sizeIco=100 link="/docs/installation/framework/nextjs" />
 	<Icon tech="svelte" sizeIco=100 link="/docs/installation/framework/sveltekit" />
-	<Icon tech="nuxt" sizeIco=100 link="/docs/installation/framework/nuxt" />
+	<Icon tech="nextjs" sizeIco=100 link="/docs/installation/framework/nextjs" />
 	<Icon tech="solid" sizeIco=100 link="/docs/installation/framework/solid" />
+	<Icon tech="nuxt" sizeIco=100 link="/docs/installation/framework/nuxt" />
 </div>
 
 ## Servers

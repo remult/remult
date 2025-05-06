@@ -14,7 +14,7 @@ In your `api.ts` or server file, configure the `dataProvider` to use `sql.js`:
 
 ```ts
 import express from 'express'
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 import { SqlDatabase } from 'remult'
 import initSqlJs from 'sql.js'
 import { SqlJsDataProvider } from 'remult/remult-sql-js'
@@ -22,7 +22,7 @@ import { SqlJsDataProvider } from 'remult/remult-sql-js'
 const app = express()
 
 app.use(
-  remultExpress({
+  remultApi({
     dataProvider: new SqlDatabase(
       new SqlJsDataProvider(initSqlJs().then((SQL) => new SQL.Database())),
     ),

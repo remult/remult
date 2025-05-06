@@ -1,5 +1,5 @@
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from "remult/remult-express";
 
-export const api = remultExpress({
-  dataProvider: '',
-})
+export const api = remultApi({
+  dataProvider: "",
+});

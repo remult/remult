@@ -15,19 +15,20 @@
 
 /* .vitepress/theme/custom.css */
 :root {
-  --vp-c-brand-1: rgb(0, 102, 200);
+  --vp-c-brand-1: rgb(5, 6, 57);
   --vp-c-brand-2: rgb(0, 102, 200);
   --vp-c-brand-3: rgb(0, 102, 200);
   --vp-c-brand-soft: rgb(0, 102, 200, 0.14);
+  --vp-c-text: #545459;
 
   /* start dark code samples */
   --vp-code-block-color: rgba(255, 255, 245, 0.86);
-  --vp-code-block-bg: #161618;
+  --vp-code-block-bg: #f6f6f7;
   --vp-code-block-divider-color: #000000;
 
   --vp-code-lang-color: rgba(235, 235, 245, 0.38);
 
-  --vp-code-line-highlight-color: #000000;
+  --vp-code-line-highlight-color: #e2e2e5;
   --vp-code-line-number-color: rgba(235, 235, 245, 0.38);
 
   --vp-code-copy-code-border-color: rgba(82, 82, 89, 0.32);
@@ -40,6 +41,8 @@
   --vp-code-tab-hover-text-color: rgba(255, 255, 245, 0.86);
   --vp-code-tab-active-text-color: rgba(255, 255, 245, 0.86);
   /* end dark code samples*/
+
+  --vp-code-font-size: 14px;
 }
 
 .dark {
@@ -47,7 +50,140 @@
   --vp-c-brand-2: rgb(0, 153, 300);
   --vp-c-brand-3: rgb(0, 153, 300);
   --vp-c-brand-soft: rgb(0, 153, 300, 0.14);
+  --vp-c-text: #ffffff;
+
+  --vp-c-text-1: #ffffff;
+  --vp-c-text-2: #d6d6f1;
+  --vp-c-text-3: #bebee9;
+
+  --vp-code-line-highlight-color: #1c1d60;
+
+  --vp-sidebar-bg-color: rgba(2, 2, 36, 1);
+  --vp-c-bg: rgb(5, 5, 40);
+  --vp-c-bg-alt: rgba(5, 7, 57, 1);
+
+  div[class*='language-'] {
+    --vp-c-bg: #050638;
+    --vp-code-block-bg: #050638;
+  }
 }
-div[class*='language-'] {
-  --vp-c-bg: var(--vp-code-block-bg);
+
+
+.vp-code-group .tabs {
+  background-color: var(--vp-c-bg-alt);
+}
+
+.vp-code-group .tabs .tab {
+  background-color: var(--vp-c-bg-alt);
+}
+
+.vp-code-group .tabs label,
+.vp-code-group .tabs label:hover {
+  color: var(--vp-c-text);
+}
+
+.vp-code-group input:checked+label {
+  font-weight: 600;
+  color: var(--vp-c-brand-2);
+}
+
+.aside-content ul {
+  list-style-type: none;
+}
+
+.shiki.shiki {
+  code {
+    line-height: 1.7;
+    display: flex;
+    flex-direction: column;
+    padding: 0 12px;
+  }
+
+  code .line {
+    padding: 0 .5rem;
+    width: 100%;
+    display: block;
+  }
+
+  code .line:empty {
+    height: 1rem;
+  }
+
+  code .line.highlighted {
+    background-color: var(--vp-code-line-highlight-color);
+    margin: 0;
+  }
+
+  code .line.diff.add {
+    background-color: #003d00;
+  }
+
+  code .line.diff.remove {
+    background-color: #3d0000;
+  }
+}
+
+.shiki.shiki.tokyo-night {
+  background-color: #050638 !important;
+}
+
+.l-home {
+  display: flex;
+  gap: 3rem;
+  max-width: 1280px;
+  margin: 4rem auto;
+  padding: 0 1rem;
+}
+
+.l-home__title {
+  display: flex;
+  width: 33.33%;
+  flex-direction: column;
+
+  p {
+    margin-top: 0;
+  }
+}
+
+.l-home__content {
+  display: flex;
+  width: 66.66%;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.l-home h2 {
+  font-weight: 300;
+  font-size: 2.5rem;
+  line-height: 1.2;
+}
+
+.l-home h3 {
+  font-weight: 300;
+  font-size: 1.5rem;
+  line-height: 1.2;
+}
+
+@media screen and (max-width: 1024px) {
+  .l-home h2 {
+    font-size: 2rem;
+  }
+}
+
+.VPNav .title span {
+  display: none;
+}
+
+@media screen and (max-width: 1024px) {
+  .l-home {
+    flex-direction: column;
+  }
+
+  .l-home__title {
+    width: 100%;
+  }
+
+  .l-home__content {
+    width: 100%;
+  }
 }

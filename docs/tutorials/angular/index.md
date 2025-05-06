@@ -124,9 +124,9 @@ Remult is loaded in the back-end as an `Express middleware`.
 ```ts
 // src/server/api.ts
 
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 
-export const api = remultExpress()
+export const api = remultApi()
 ```
 
 2. Add the highlighted code lines to register the middleware in the main server module `index.ts`.

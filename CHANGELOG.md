@@ -1,5 +1,15 @@
 All notable changes to this project will be documented in this file.
 
+## [3.0.0] TBD
+
+- Unified the function name used to setup remult api to `remultApi` (Instead of `remultExpress` etc...)
+- Added a `dataProvider` function to `EntityOptions` that allows you to select a dataProvider per entity.
+- Admin UI:
+  - you can now add custom headers requests (`key: value` format)
+  - In diagram, you can visualize `ToOne` relations with the color of the entity on the left.
+  - add `requireAuthToken` to admin options to open settings dialog to set the bearer token directly.
+  - add `disableLiveQuery` to admin options to control if live query is used. (can be overwritten by local storage settings)
+
 ## [2.7.34] 2025-4-29
 
 - Added support for sql expression based entity to knex data provider

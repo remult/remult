@@ -76,7 +76,7 @@ Follow these steps only if you want to use `liveQuery` in the app
    import ably from "ably"
    import { AblySubscriptionServer } from "remult/ably"
 
-   const api = remultNextApp({
+   const api = remultApi({
      subscriptionServer: new AblySubscriptionServer(
        new ably.Rest(process.env["ABLY_API_KEY"]!)
      )
@@ -121,7 +121,7 @@ Follow these steps only if you want to use `liveQuery` in the app
      }, [session])
    ```
 
-9) Configure `remultNextApp` to store live-queries in the `dataProvider`
+9) Configure `remultApi` to store live-queries in the `dataProvider`
 
    ```ts{4,6,8-9}
    // src/api.ts
@@ -130,7 +130,7 @@ Follow these steps only if you want to use `liveQuery` in the app
    import { DataProviderLiveQueryStorage } from "remult/server"
 
    const dataProvider = createPostgresDataProvider()
-   const api = remultNextApp({
+   const api = remultApi({
      dataProvider,
      liveQueryStorage: new DataProviderLiveQueryStorage(dataProvider)
      //...

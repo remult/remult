@@ -9,12 +9,12 @@
 
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
 
-  app.use(remultExpress()) // Integrate Remult as middleware
+  app.use(remultApi()) // Integrate Remult as middleware
 
   await app.listen(3002) // Start server on port 3002
 }

@@ -194,7 +194,7 @@ Once an authentication flow is established, integrating it with Remult in the ba
 
 import { getUser } from "./auth.js"
 
-export const api = remultSolidStart({
+export const api = remultApi({
   //...
   getUser,
 })

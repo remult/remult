@@ -16,7 +16,7 @@ In your `api.ts` or server file, configure the `dataProvider` to connect to Turs
 
 ```ts
 import express from 'express'
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 import { SqlDatabase } from 'remult'
 import { createClient } from '@libsql/client'
 import { TursoDataProvider } from 'remult/remult-turso'
@@ -24,7 +24,7 @@ import { TursoDataProvider } from 'remult/remult-turso'
 const app = express()
 
 app.use(
-  remultExpress({
+  remultApi({
     dataProvider: new SqlDatabase(
       new TursoDataProvider(
         createClient({

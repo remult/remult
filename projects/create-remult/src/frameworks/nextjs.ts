@@ -11,7 +11,7 @@ export const nextJs: Framework = {
   envFile: ".env.local",
   serverInfo: {
     doesNotLikeJsFileSuffix: true,
-    remultServerFunction: "remultNextApp",
+    remultServerFunction: "remultApi",
     import: "remult-next",
     auth: {
       template: "nextjs",

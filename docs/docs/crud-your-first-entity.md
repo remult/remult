@@ -34,13 +34,13 @@ All Remult server middleware options contain an `entities` array. Use it to regi
 // backend/index.ts
 
 import express from 'express'
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 import { Product } from '../shared/product'
 
 const app = express()
 
 app.use(
-  remultExpress({
+  remultApi({
     entities: [Product],
   }),
 )

@@ -1,4 +1,4 @@
-import { remultExpress } from '../../../core/remult-express'
+import { remultApi } from '../../../core/remult-express'
 import { AccountManager } from './shared/AccountManagers/AccountManager.entity.js'
 import { AccountManagerExtra } from './shared/AccountManagers/AccountManagerExtra.entity.js'
 import { Company } from './shared/Companies/Company.entity.js'
@@ -26,7 +26,7 @@ export const entities = [
   Story,
 ]
 
-export const api = remultExpress({
+export const api = remultApi({
   // to dev "remult-admin":
   // - you should use http://localhost:5173/
   //   and it will server the api in /api
@@ -45,9 +45,10 @@ export const api = remultExpress({
   },
   admin: {
     allow: true,
-    customHtmlHead: (r) => `<title>Dev Admin (${
-      r.user?.name ?? 'Anonymous'
-    })</title>
+    customHtmlHead: (r) => `<title>Dev Admin (${r.user?.name ?? 'Anonymous'
+      })</title>
 <link href="https://remult.dev/favicon.png" rel="icon" type="image/png">`,
+    requireAuthToken: true,
+    // disableLiveQuery: true,
   },
 })

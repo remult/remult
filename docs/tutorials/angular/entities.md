@@ -39,15 +39,15 @@ export class Task {
 }
 ```
 
-3. In the server's `api` module, register the `Task` entity with Remult by adding `entities: [Task]` to an `options` object you pass to the `remultExpress()` middleware:
+3. In the server's `api` module, register the `Task` entity with Remult by adding `entities: [Task]` to an `options` object you pass to the `remultApi()` middleware:
 
 ```ts{4,7}
 // src/server/api.ts
 
-import { remultExpress } from "remult/remult-express"
+import { remultApi } from "remult/remult-express"
 import { Task } from "../shared/Task"
 
-export const api = remultExpress({
+export const api = remultApi({
   entities: [Task]
 })
 ```
@@ -98,15 +98,15 @@ While remult supports [many relational and non-relational databases](https://rem
 
 ### Enabling the Admin UI
 
-Add the Admin UI to your Angular application by setting the `admin` option to `true` in the `remultExpress()`
+Add the Admin UI to your Angular application by setting the `admin` option to `true` in the `remultApi()`
 
 ::: code-group
 
 ```ts [src/server/api.ts]
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 import { Task } from '../shared/Task.js'
 
-export const api = remultExpress({
+export const api = remultApi({
   entities: [Task],
   admin: true, // Enable the Admin UI
 })

@@ -16,14 +16,14 @@ In your `api.ts` or server file, configure the `dataProvider` to connect to your
 
 ```ts{3-4,10-14}
 import express from "express"
-import { remultExpress } from "remult/remult-express"
+import { remultApi } from "remult/remult-express"
 import { MongoClient } from "mongodb"
 import { MongoDataProvider } from "remult/remult-mongo"
 
 const app = express()
 
 app.use(
-  remultExpress({
+  remultApi({
     dataProvider: async () => {
       const client = new MongoClient("mongodb://localhost:27017/local")
       await client.connect()

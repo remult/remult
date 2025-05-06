@@ -160,14 +160,14 @@ npm i --save-dev @types/cookie-session
 
    - The `signOut` method clears the user session, making the user unauthenticated.
 
-4. Update `remultExpress` configuration.
+4. Update `remultApi` configuration.
 
    ```ts{3,5,6}
    // src/server/api.ts
 
    import { AuthController } from '../shared/AuthController.js'
 
-   export const api = remultExpress({
+   export const api = remultApi({
      //...
      controllers: [TaskController, AuthController]
      getUser: (req) => req.session!['user'],
