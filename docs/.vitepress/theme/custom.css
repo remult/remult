@@ -52,6 +52,10 @@
   --vp-c-brand-soft: rgb(0, 153, 300, 0.14);
   --vp-c-text: #ffffff;
 
+  --vp-c-text-1: #ffffff;
+  --vp-c-text-2: #d6d6f1;
+  --vp-c-text-3: #bebee9;
+
   --vp-code-line-highlight-color: #1c1d60;
 
   --vp-sidebar-bg-color: rgba(2, 2, 36, 1);
@@ -83,6 +87,9 @@
   color: var(--vp-c-brand-2);
 }
 
+.aside-content ul {
+  list-style-type: none;
+}
 
 .shiki.shiki {
   code {
