@@ -20,7 +20,7 @@ const {
   framework,
   keyContext,
   initializeEditor,
-  selectStep,
+  selectStep: originalSelectStep,
   selectFile,
   getCurrentCode,
   getCurrentLanguage,
@@ -35,16 +35,19 @@ onMounted(() => {
   setTimeout(() => {
     // Show first step
     visibleSteps.value = [0]
+    const hasInteracted = localStorage.getItem('editorStepsInteracted') === 'true'
+    const stepDelay = hasInteracted ? 100 : 500
     // Show code after 500ms
     setTimeout(() => {
       isAnimating.value = true
+      // Check if user has interacted before
       // Sequentially show remaining steps
       for (let i = 1; i < steps.value.length; i++) {
         setTimeout(() => {
           visibleSteps.value = [...visibleSteps.value, i]
-        }, i * 700) // 1s delay between each step
+        }, i * stepDelay) // Dynamic delay based on interaction history
       }
-    }, 500)
+    }, stepDelay)
   }, 500)
 })
 
@@ -73,6 +76,12 @@ const getStepTimeAgo = (stepIndex: number) => {
 
   return formatTime(totalSeconds) + ' ago'
 }
+
+// Wrap the original selectStep to add interaction tracking
+const selectStep = (step: any) => {
+  localStorage.setItem('editorStepsInteracted', 'true')
+  originalSelectStep(step)
+}
 </script>
 
 <template>
@@ -96,10 +105,10 @@ const getStepTimeAgo = (stepIndex: number) => {
             </label>
             <label
               class="framework-icon"
-              :class="{ active: framework === 'svelte' }"
+              :class="{ active: framework === 'angular' }"
             >
-              <input type="radio" v-model="framework" value="svelte" />
-              <IconSvelte />
+              <input type="radio" v-model="framework" value="angular" />
+              <IconAngular />
             </label>
             <label
               class="framework-icon"
@@ -110,10 +119,10 @@ const getStepTimeAgo = (stepIndex: number) => {
             </label>
             <label
               class="framework-icon"
-              :class="{ active: framework === 'angular' }"
+              :class="{ active: framework === 'svelte' }"
             >
-              <input type="radio" v-model="framework" value="angular" />
-              <IconAngular />
+              <input type="radio" v-model="framework" value="svelte" />
+              <IconSvelte />
             </label>
           </div>
         </div>
@@ -124,9 +133,9 @@ const getStepTimeAgo = (stepIndex: number) => {
           :key="step.id"
           @click="selectStep(step)"
           class="step-button"
-          :class="{ 
+          :class="{
             active: currentStep?.id === step.id,
-            'fade-in': visibleSteps.includes(index)
+            'fade-in': visibleSteps.includes(index),
           }"
         >
           <span class="step-name">{{ step.name }}</span>
@@ -454,6 +463,7 @@ const getStepTimeAgo = (stepIndex: number) => {
     padding: 0.25rem 0.5rem;
     border-radius: 5px;
     margin-bottom: 0.5rem;
+    transition: all 0.2s ease;
 
     &:last-child {
       margin-bottom: 0;
@@ -464,6 +474,11 @@ const getStepTimeAgo = (stepIndex: number) => {
       font-size: 0.8rem;
       opacity: 0.5;
     }
+  }
+
+  a:hover {
+    color: #fff;
+    background: #2b0d86;
   }
 }
 </style>

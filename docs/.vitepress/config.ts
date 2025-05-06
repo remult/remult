@@ -158,20 +158,20 @@ const sidebar = tutorials.reduce(
                 link: '/docs/installation/framework/vue',
               },
               {
-                text: 'Next.js',
-                link: '/docs/installation/framework/nextjs',
-              },
-              {
                 text: 'Sveltekit',
                 link: '/docs/installation/framework/sveltekit',
               },
               {
-                text: 'Nuxt',
-                link: '/docs/installation/framework/nuxt',
+                text: 'Next.js',
+                link: '/docs/installation/framework/nextjs',
               },
               {
                 text: 'SolidStart',
                 link: '/docs/installation/framework/solid',
+              },
+              {
+                text: 'Nuxt',
+                link: '/docs/installation/framework/nuxt',
               },
             ],
           },
@@ -212,10 +212,6 @@ const sidebar = tutorials.reduce(
             collapsed: true,
             items: [
               {
-                text: 'Json files',
-                link: '/docs/installation/database/json',
-              },
-              {
                 text: 'PostgreSQL',
                 link: '/docs/installation/database/postgresql',
               },
@@ -236,16 +232,16 @@ const sidebar = tutorials.reduce(
                 link: '/docs/installation/database/better-sqlite3',
               },
               {
+                text: 'sqljs',
+                link: '/docs/installation/database/sqljs',
+              },
+              {
                 text: 'MSSQL',
                 link: '/docs/installation/database/mssql',
               },
               {
                 text: 'Bun SQLite',
                 link: '/docs/installation/database/bun-sqlite',
-              },
-              {
-                text: 'sqljs',
-                link: '/docs/installation/database/sqljs',
               },
               {
                 text: 'Turso',
@@ -258,6 +254,10 @@ const sidebar = tutorials.reduce(
               {
                 text: 'Oracle',
                 link: '/docs/installation/database/oracle',
+              },
+              {
+                text: 'Json files',
+                link: '/docs/installation/database/json',
               },
             ],
           },

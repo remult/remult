@@ -37,6 +37,7 @@ import step05 from './steps/step05.js'
 import step06 from './steps/step06.js'
 import step07 from './steps/step07.js'
 import step08 from './steps/step08.js'
+import step09 from './steps/step09.js'
 export const stepsData = [
   step01,
   step02,
@@ -46,4 +47,5 @@ export const stepsData = [
   step06,
   step07,
   step08,
+  step09,
 ].map((c) => codeStep(c))

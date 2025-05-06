@@ -1,9 +1,24 @@
 import type { CodeStepInput } from '../stepsData.js'
-import previousStep from './step07.js'
+import previousStep from './step08.js'
+
+const defaultApi = `import { createPostgresDataProvider } from 'remult/postgres' // or sqlite, mysql, mongo...
+
+import { Task } from './entities'
+
+export const api = remultApi({
+  entities: [Task],
+  dataProvider: createPostgresDataProvider(),
+  admin: true, // Enable the Admin UI [!code ++]
+})`
 
 export default {
-  name: 'Live queries',
-  cta: [],
+  name: 'Enable Admin UI',
+  cta: [
+    {
+      label: 'More about Admin UI',
+      href: '/docs/admin-ui',
+    },
+  ],
   files: [
     {
       name: 'entities.ts',
@@ -11,12 +26,45 @@ export default {
       content: previousStep.files
         .find((c) => c.name === 'entities.ts')!
         // @ts-ignore
-        .content.replaceAll('// [!code ++]', ''),
+        .content.replaceAll('', ''),
+    },
+    // api
+    {
+      name: 'api.ts',
+      keyContext: 'api',
+      changed: true,
+      framework: 'react',
+      content: `import { remultApi } from 'remult/remult-express' // or next, fastify, ...
+${defaultApi}`,
+    },
+    {
+      name: 'api.ts',
+      keyContext: 'api',
+      changed: true,
+      framework: 'svelte',
+      content: `import { remultApi } from 'remult/remult-sveltekit'
+${defaultApi}`,
+    },
+    {
+      name: 'api.ts',
+      keyContext: 'api',
+      changed: true,
+      framework: 'vue',
+      content: `import { remultApi } from 'remult/remult-nuxt' // or express, fastify, ...
+${defaultApi}`,
+    },
+    {
+      name: 'api.ts',
+      keyContext: 'api',
+      changed: true,
+      framework: 'angular',
+      content: `import { remultApi } from 'remult/remult-express' // or fastify, ...
+${defaultApi}`,
     },
     {
       name: 'page.tsx',
       keyContext: 'frontend',
-      changed: true,
+      changed: false,
       framework: 'react',
       languageCodeHighlight: 'tsx',
       content: `import { useEffect, useState } from 'react'
@@ -28,12 +76,11 @@ export default function App() {
   const [newTaskTitle, setNewTaskTitle] = useState("")
 
   useEffect(() => {
-    repo(Task).find({ /*...*/ }).then(setTasks) // [!code --]
-    return repo(Task) // [!code ++]
-      .liveQuery({ /* where: ...  */ }) // [!code ++]
-      .subscribe((info) => { // [!code ++]
-        setTasks(info.applyChanges(tasks)) // [!code ++]
-      }) // [!code ++]
+    return repo(Task) 
+      .liveQuery({ /* where: ...  */ }) 
+      .subscribe((info) => { 
+        setTasks(info.applyChanges(tasks)) 
+      }) 
   }, [])
 
   const addTask = async (e: FormEvent) => { 
@@ -55,7 +102,7 @@ export default function App() {
           value={newTaskTitle} 
           onChange={e => setNewTaskTitle(e.target.value)} 
         /> 
-        <button disabled={!repo(Task).metadata.apiInsertAllowed()}>Add</button> // [!code ++]
+        <button disabled={!repo(Task).metadata.apiInsertAllowed()}>Add</button> 
       </form>
       {tasks.map((task) => {
         return (
@@ -71,7 +118,7 @@ export default function App() {
     {
       name: '+page.svelte',
       keyContext: 'frontend',
-      changed: true,
+      changed: false,
       framework: 'svelte',
       languageCodeHighlight: 'svelte',
       content: `<script lang="ts">
@@ -82,19 +129,17 @@ let tasks = $state<Task[]>([])
 let newTask = $state(repo(Task).create()) 
 
 $effect(() => {
-  repo(Task).find({ /*...*/ }).then((items) => (tasks = items)) // [!code --]
-  return repo(Task) // [!code ++]
-    .liveQuery({ /* where: ...  */ }) // [!code ++]
-    .subscribe((info) => { // [!code ++]
-      tasks = info.applyChanges(tasks) // [!code ++]
-    }) // [!code ++]
+  return repo(Task) 
+    .liveQuery({ /* where: ...  */ }) 
+    .subscribe((info) => { 
+      tasks = info.applyChanges(tasks) 
+    }) 
 })
 
 const addTask = async (e: Event) => { 
   try { 
     e.preventDefault()
     const t = await repo(Task).insert(newTask)
-    tasks.push(t) // Will be added to the list by the live query // [!code --] 
     newTask = repo(Task).create() 
   } catch (e) { 
     console.log(e)
@@ -115,7 +160,7 @@ const addTask = async (e: Event) => {
     {
       name: 'page.vue',
       keyContext: 'frontend',
-      changed: true,
+      changed: false,
       framework: 'vue',
       languageCodeHighlight: 'vue',
       content: `<script setup lang="ts">
@@ -127,12 +172,11 @@ const addTask = async (e: Event) => {
   const newTask = ref(repo(Task).create())
   
   onMounted(() => {
-    repo(Task).find({ /* ... */ }).then((items) => (tasks.value = items)) // [!code --]
-    return repo(Task) // [!code ++]
-      .liveQuery({ /* where: ...  */ }) // [!code ++]
-      .subscribe((info) => { // [!code ++]
-        tasks.value = info.applyChanges(tasks.value) // [!code ++]
-      }) // [!code ++]
+    return repo(Task) 
+      .liveQuery({ /* where: ...  */ }) 
+      .subscribe((info) => { 
+        tasks.value = info.applyChanges(tasks.value) 
+      }) 
   })
 
   async function addTask() {
@@ -150,7 +194,7 @@ const addTask = async (e: Event) => {
   <form @submit.prevent="addTask()">
     <label>{repo(Task).metadata.fields.title.caption}</label>
     <input v-model="newTask.title" />
-    <button v-if="taskRepo.metadata.apiDeleteAllowed(task)">Add</button> // [!code ++]
+    <button v-if="taskRepo.metadata.apiDeleteAllowed(task)">Add</button> 
   </form>
   <div v-for="task in tasks">
     {{ task.title }}
@@ -184,12 +228,11 @@ export class TodoComponent implements OnInit, OnDestroy {
   private subscription?: Subscription
 
   ngOnInit() {
-    repo(Task).find({ /* ... */ }).then(items => this.tasks = items) // [!code --]
-    this.subscription = repo(Task) // [!code ++]
-      .liveQuery({ /* where: ...  */ }) // [!code ++]
-      .subscribe(info => { // [!code ++]
-        this.tasks = info.applyChanges(this.tasks) // [!code ++]
-      }) // [!code ++]
+    this.subscription = repo(Task) 
+      .liveQuery({ /* where: ...  */ }) 
+      .subscribe(info => { 
+        this.tasks = info.applyChanges(this.tasks) 
+      }) 
   }
 
   ngOnDestroy() {

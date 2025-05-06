@@ -59,10 +59,10 @@ const toggleSidebar = () => {
         </label>
         <label
           class="framework-icon"
-          :class="{ active: framework === 'svelte' }"
+          :class="{ active: framework === 'angular' }"
         >
-          <input type="radio" v-model="framework" value="svelte" />
-          <IconSvelte />
+          <input type="radio" v-model="framework" value="angular" />
+          <IconAngular />
         </label>
         <label class="framework-icon" :class="{ active: framework === 'vue' }">
           <input type="radio" v-model="framework" value="vue" />
@@ -70,10 +70,10 @@ const toggleSidebar = () => {
         </label>
         <label
           class="framework-icon"
-          :class="{ active: framework === 'angular' }"
+          :class="{ active: framework === 'svelte' }"
         >
-          <input type="radio" v-model="framework" value="angular" />
-          <IconAngular />
+          <input type="radio" v-model="framework" value="svelte" />
+          <IconSvelte />
         </label>
       </div>
     </div>
@@ -329,7 +329,7 @@ const toggleSidebar = () => {
   width: 100%;
   position: relative;
   overflow: hidden;
-	opacity: 1;
+  opacity: 1;
 }
 
 .editor-mobile .editor-tabs {

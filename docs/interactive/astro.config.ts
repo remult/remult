@@ -5,7 +5,7 @@ export default defineConfig({
   devToolbar: {
     enabled: false,
   },
-  publicDir: '../public',
+  publicDir: './public',
 
   integrations: [
     tutorialkit({
