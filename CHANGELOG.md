@@ -1,6 +1,6 @@
 All notable changes to this project will be documented in this file.
 
-## [3.0.0] TBD
+## [3.0.0] 2025-5-7
 
 - Unified the function name used to setup remult api to `remultApi` (Instead of `remultExpress` etc...)
 - Added a `dataProvider` function to `EntityOptions` that allows you to select a dataProvider per entity.
