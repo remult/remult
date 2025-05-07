@@ -6,7 +6,7 @@
   },
   "type": "module",
   "dependencies": {
-    "remult": "next",
+    "remult": "latest",
     "sqlite3": "^5.1.7",
     "vitest": "^2.1.3"
   }
