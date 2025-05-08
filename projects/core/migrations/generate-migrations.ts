@@ -64,7 +64,7 @@ export async function generateMigrations(options: {
   const code = {
     //https://marketplace.visualstudio.com/items?itemName=qufiwefefwoyn.inline-sql-syntax
     addSql: (sql) => {
-      steps.push('await sql(`--sql\n' + sql + '`)')
+      steps.push('await sql(`--sql\n' + escapeForTpl(sql) + '`)')
       hasSql = true
     },
     addTypescriptCode: (code) => steps.push(code),
@@ -102,3 +102,9 @@ export async function generateMigrations(options: {
   }
   return steps.length > 0
 }
+
+function escapeForTpl(str: string): string {
+    // escape backticks, dollar-signs and backslashes
+    return str.replace(/[`\\$]/g, (m) => "\\" + m);
+  }
+
