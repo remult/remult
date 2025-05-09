@@ -1,5 +1,10 @@
 All notable changes to this project will be documented in this file.
 
+## [3.0.1] 2025-5-9
+
+- https://github.com/remult/remult/pull/697 - escape backtick in migrations code
+  Big thanks to @fapspirit for his first contribution
+
 ## [3.0.0] 2025-5-7
 
 - Unified the function name used to setup remult api to `remultApi` (Instead of `remultExpress` etc...)
