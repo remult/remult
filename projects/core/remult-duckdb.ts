@@ -1,5 +1,12 @@
 import type { SqlCommand, SqlResult } from './src/sql-command.js'
-import type { Database, TableData } from 'duckdb'
+import { DuckDBTypeId } from '@duckdb/node-api'
+import type {
+  DuckDBConnection,
+  DuckDBMaterializedResult,
+  DuckDBValue,
+  DuckDBTimestampValue,
+  DuckDBDateValue,
+} from '@duckdb/node-api'
 import { SqliteCoreDataProvider } from './remult-sqlite-core.js'
 import {
   ValueConverters,
@@ -11,10 +18,10 @@ import { shouldNotCreateField } from './src/filter/filter-consumer-bridge-to-sql
 import { isAutoIncrement } from './src/remult3/RepositoryImplementation.js'
 
 export class DuckDBDataProvider extends SqliteCoreDataProvider {
-  constructor(db: Database) {
+  constructor(private connection: DuckDBConnection) {
     super(
-      () => new DuckDBCommand(db),
-      async () => (await db).close(),
+      () => new DuckDBCommand(this.connection),
+      async () => this.connection.disconnectSync(),
       false,
       true,
     )
@@ -25,7 +32,9 @@ export class DuckDBDataProvider extends SqliteCoreDataProvider {
   async getCreateTableSql(entity: EntityMetadata<any>) {
     let result = ''
     let e = await dbNamesOf(entity, this.wrapIdentifier)
-    let sql = ''
+    const createSequenceStatements: string[] = []
+    let createTableSql = ''
+
     for (const x of entity.fields) {
       if (!shouldNotCreateField(x, e) || isAutoIncrement(x)) {
         if (result.length != 0) result += ','
@@ -33,7 +42,9 @@ export class DuckDBDataProvider extends SqliteCoreDataProvider {
 
         if (isAutoIncrement(x)) {
           const sequenceName = `${entity.dbName}_${x.dbName}_seq`
-          sql += `create sequence if not exists "${sequenceName}";\r\n`
+          createSequenceStatements.push(
+            `create sequence if not exists "${sequenceName}";`,
+          )
           result += `${e.$dbNameOf(
             x,
           )} integer default nextval('${sequenceName}')`
@@ -46,9 +57,10 @@ export class DuckDBDataProvider extends SqliteCoreDataProvider {
       .map((f) => e.$dbNameOf(f))
       .join(',')})`
 
-    sql +=
+    createTableSql =
       'create table if not exists ' + e.$entityName + ' (' + result + '\r\n)'
-    return [sql]
+
+    return [...createSequenceStatements, createTableSql]
   }
 
   addColumnSqlSyntax(x: FieldMetadata, dbName: string, isAlterColumn: boolean) {
@@ -86,34 +98,95 @@ export class DuckDBDataProvider extends SqliteCoreDataProvider {
 }
 
 class DuckDBCommand implements SqlCommand {
-  values: any[] = []
+  values: DuckDBValue[] = []
 
-  constructor(private db: Database) {}
+  constructor(private connection: DuckDBConnection) {}
   async execute(sql: string): Promise<SqlResult> {
-    return new Promise<SqlResult>((resolve, error) => {
-      this.db.all(sql, ...this.values, (err, rows) => {
-        if (err) error(err)
-        else resolve(new DuckDBSqlResult(rows))
-      })
-    })
+    try {
+      const result: DuckDBMaterializedResult = await this.connection.run(
+        sql,
+        this.values,
+      )
+      this.values = []
+      return new DuckDBSqlResult(result)
+    } catch (err) {
+      this.values = []
+      throw err
+    }
+  }
+
+  private addParamInternal(val: any): string {
+    if (val === undefined) {
+      this.values.push(null as unknown as DuckDBValue)
+    } else if (val instanceof Date) {
+      this.values.push(val.toISOString() as unknown as DuckDBValue)
+    } else {
+      this.values.push(val as DuckDBValue)
+    }
+    return '?'
   }
 
   addParameterAndReturnSqlToken(val: any) {
-    return this.param(val)
+    return this.addParamInternal(val)
   }
   param(val: any): string {
-    const key = '?'
-    this.values.push(val)
-    return key
+    return this.addParamInternal(val)
   }
 }
 
 class DuckDBSqlResult implements SqlResult {
-  constructor(private result: TableData) {
-    this.rows = result
-  }
   rows: any[]
+
+  constructor(private duckDbResult: DuckDBMaterializedResult) {
+    this.rows = []
+    const columnNames = this.duckDbResult.columnNames()
+    const columnTypes = this.duckDbResult.columnTypes()
+    const chunkCount = this.duckDbResult.chunkCount
+
+    for (let i = 0; i < chunkCount; i++) {
+      const chunk = this.duckDbResult.getChunk(i)
+      const chunkRowObjects = chunk.getRowObjects(columnNames).map((row) => {
+        const convertedRow: Record<string, any> = {}
+        columnNames.forEach((colName, colIndex) => {
+          const value = row[colName]
+          if (value === null) {
+            convertedRow[colName] = null
+          } else {
+            const colType = columnTypes[colIndex]
+            const typeId = colType.typeId
+
+            if (typeId === DuckDBTypeId.TIMESTAMP) {
+              const timestampValue = value as DuckDBTimestampValue
+              const parts = timestampValue.toParts()
+              convertedRow[colName] = new Date(
+                Date.UTC(
+                  parts.date.year,
+                  parts.date.month - 1,
+                  parts.date.day,
+                  parts.time.hour,
+                  parts.time.min,
+                  parts.time.sec,
+                  Math.floor(parts.time.micros / 1000),
+                ),
+              )
+            } else if (typeId === DuckDBTypeId.DATE) {
+              const dateValue = value as DuckDBDateValue
+              const parts = dateValue.toParts()
+              convertedRow[colName] = new Date(
+                Date.UTC(parts.year, parts.month - 1, parts.day),
+              )
+            } else {
+              convertedRow[colName] = value
+            }
+          }
+        })
+        return convertedRow
+      })
+      this.rows.push(...chunkRowObjects)
+    }
+  }
+
   getColumnKeyInResultForIndexInSelect(index: number): string {
-    return Object.keys(this.result[0])[index]
+    return this.duckDbResult.columnName(index)
   }
 }

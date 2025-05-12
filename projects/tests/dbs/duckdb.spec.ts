@@ -3,14 +3,16 @@ import { Remult, SqlDatabase } from '../../core'
 import { DuckDBDataProvider } from '../../core/remult-duckdb.js'
 import { SqlDbTests } from './shared-tests/sql-db-tests.js'
 import type { DbTestProps } from './shared-tests/db-tests-props.js'
-import { Database } from 'duckdb'
+import { DuckDBInstance } from '@duckdb/node-api'
 import { allDbTests } from './shared-tests/index.js'
 
 describe.skipIf(process.env['SKIP_DUCKDB_TESTS'])('duckdb', () => {
   let db: SqlDatabase
   let remult: Remult
   beforeEach(async () => {
-    db = new SqlDatabase(new DuckDBDataProvider(new Database(':memory:')))
+    const instance = await DuckDBInstance.create(':memory:')
+    const connection = await instance.connect()
+    db = new SqlDatabase(new DuckDBDataProvider(connection))
     remult = new Remult(db)
   })
   const props: DbTestProps = {
