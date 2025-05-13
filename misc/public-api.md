@@ -4394,7 +4394,8 @@ export declare class TursoDataProvider extends SqliteCoreDataProvider {
 
 ```ts
 export declare class DuckDBDataProvider extends SqliteCoreDataProvider {
-  constructor(db: Database)
+  private connection
+  constructor(connection: DuckDBConnection)
   wrapIdentifier(name: string): string
   getCreateTableSql(entity: EntityMetadata<any>): Promise<string[]>
   addColumnSqlSyntax(
