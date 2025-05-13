@@ -1,5 +1,10 @@
 All notable changes to this project will be documented in this file.
 
+## [3.0.2] 2025-4-13
+
+- Update DuckDB adapter to use new @duckdb/node-api package - #700
+  Big thanks to @jc955 for his first contribution
+
 ## [3.0.1] 2025-5-9
 
 - https://github.com/remult/remult/pull/697 - escape backtick in migrations code
