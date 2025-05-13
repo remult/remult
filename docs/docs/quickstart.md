@@ -540,7 +540,7 @@ app.use(
 Install DuckDB:
 
 ```sh
-npm i duckdb
+npm i @duckdb/node-api
 ```
 
 Set the `dataProvider` property:
@@ -549,7 +549,7 @@ Set the `dataProvider` property:
 import express from 'express'
 import { remultApi } from 'remult/remult-express'
 import { SqlDatabase } from 'remult' // [!code highlight]
-import { Database } from 'duckdb' // [!code highlight]
+import { DuckDBInstance } from '@duckdb/node-api' // [!code highlight]
 import { DuckDBDataProvider } from 'remult/remult-duckdb' // [!code highlight]
 
 const app = express()
@@ -557,7 +557,9 @@ const app = express()
 app.use(
   remultApi({
     dataProvider: new SqlDatabase( // [!code highlight]
-      new DuckDBDataProvider(new Database(':memory:')), // [!code highlight]
+      new DuckDBDataProvider(
+        (await DuckDBInstance.create(':memory:')).connect(),
+      ), // [!code highlight]
     ), // [!code highlight]
   }),
 )
