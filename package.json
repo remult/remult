@@ -74,7 +74,7 @@
     "copyfiles": "^2.4.1",
     "dependency-cruiser": "^13.1.5",
     "dotenv": "^8.1.0",
-    "duckdb": "^1.0.0",
+    "@duckdb/node-api": "^1.2.2-alpha.18",
     "eslint": "^8.56.0",
     "eslint-plugin-file-extension-in-import-ts": "^1.0.2",
     "eventsource": "^2.0.2",
