@@ -180,4 +180,4 @@ console.log(r.rows[0].c)
 
 ## Conclusion
 
-Accessing the underlying database directly in Remult provides the flexibility to handle complex use cases that might not be covered by the ORM layer. However, it's important to use this capability judiciously and securely, especially when dealing with user input, to avoid potential security vulnerabilities like SQL injection. By leveraging utilities like `dbNamesOf` and `filterToRaw
+Accessing the underlying database directly in Remult provides the flexibility to handle complex use cases that might not be covered by the ORM layer. However, it's important to use this capability judiciously and securely, especially when dealing with user input, to avoid potential security vulnerabilities like SQL injection. By leveraging utilities like `dbNamesOf` and `filterToRaw`.
