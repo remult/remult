@@ -14,6 +14,10 @@ export default {
   stepTime: 2 * 60,
   cta: [
     {
+      label: 'Use without decorators',
+      href: '/docs/working-without-decorators',
+    },
+    {
       label: 'Full Entity API',
       href: '/docs/ref_entity',
     }
