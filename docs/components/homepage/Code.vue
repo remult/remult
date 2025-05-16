@@ -153,8 +153,8 @@ defineExpose({
 
   .copy-button {
     position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
+    top: 0;
+    right: 0.6rem;
     padding: 0.25rem;
     background: rgba(0, 0, 0, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.1);
