@@ -75,6 +75,9 @@ export function remultApi(
         })
       const res = new Response(JSON.stringify(responseFromRemultHandler.data), {
         status: responseFromRemultHandler.statusCode,
+        headers: {
+          'Content-Type': 'application/json',
+        }
       })
       return res
     }
