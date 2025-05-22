@@ -64,7 +64,7 @@ export class JsonEntityIndexedDbStorage implements JsonEntityStorage {
     })
   }
 
-  async deleteItem(entityDbName: string) {
+  async removeItem(entityDbName: string) {
     return new Promise<void>(async (resolve, reject) => {
       const transaction = (await this.init()).transaction(
         [this.storeName],
