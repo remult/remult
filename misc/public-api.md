@@ -4561,6 +4561,8 @@ export declare function getRelationFieldInfo(
   field: FieldMetadata,
 ): RelationFieldInfo | undefined
 export declare function getRelationInfo(options: FieldOptions): RelationInfo
+export declare function isOfType<T>(obj: any, checkMethod: keyof T): obj is T
+//[ ] FirstTypeNode from TBD is not exported
 export interface RelationFieldInfo {
   type: "reference" | "toOne" | "toMany"
   options: RelationOptions<unknown, unknown, unknown>
