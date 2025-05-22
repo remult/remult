@@ -1,5 +1,9 @@
 All notable changes to this project will be documented in this file.
 
+## [3.0.3] TBD
+
+- Fix undefined error in TestApiDataProvider with multiple relations
+
 ## [3.0.2] 2025-4-13
 
 - Update DuckDB adapter to use new @duckdb/node-api package - #700

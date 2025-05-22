@@ -559,7 +559,7 @@ export function commonDbTests(
     })
     expect(rows.length).toBe(2)
   })
-  it('Test unique Validation,', async () => {
+  it('Test unique Validation', async () => {
     let type = class extends newCategories {
       a!: string
     }

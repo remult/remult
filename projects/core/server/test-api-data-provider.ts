@@ -34,17 +34,20 @@ export function TestApiDataProvider(
     },
   ) as RemultServerImplementation<GenericRequestInfo & { body?: any }>
 
+  const lock = new AsyncLock()
   async function handleOnServer(req: GenericRequestInfo & { body?: any }) {
-    return await MakeServerCallWithDifferentStaticRemult(async () => {
-      if (newEntities.length > 0 && options?.ensureSchema != false) {
-        await (await dp).ensureSchema?.(newEntities)
-        newEntities = []
-      }
-      var result = await server.handle(req)
-      if ((result?.statusCode ?? 200) >= 400) {
-        throw { ...result?.data, status: result?.statusCode ?? 500 }
-      }
-      return result?.data
+    return lock.runExclusive(async () => {
+      return await MakeServerCallWithDifferentStaticRemult(async () => {
+        if (newEntities.length > 0 && options?.ensureSchema != false) {
+          await (await dp).ensureSchema?.(newEntities)
+          newEntities = []
+        }
+        var result = await server.handle(req)
+        if ((result?.statusCode ?? 200) >= 400) {
+          throw { ...result?.data, status: result?.statusCode ?? 500 }
+        }
+        return result?.data
+      })
     })
   }
 
@@ -85,6 +88,25 @@ export function TestApiDataProvider(
       }
     },
   )
+}
+export class AsyncLock {
+  static enabled = true
+  private current: Promise<void> = Promise.resolve()
+  i = 0
+
+  async runExclusive<T>(fn: () => Promise<T>): Promise<T> {
+    const previous = this.current
+
+    let resolveNext: () => void
+    this.current = new Promise<void>((resolve) => (resolveNext = resolve))
+
+    if (AsyncLock.enabled) await previous
+    try {
+      return await fn()
+    } finally {
+      resolveNext!()
+    }
+  }
 }
 
 async function MakeServerCallWithDifferentStaticRemult<T>(what: () => T) {

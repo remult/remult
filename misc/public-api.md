@@ -1101,6 +1101,10 @@ export interface FieldOptions<entityType = unknown, valueType = unknown> {
    * // Prevent API from updating this field
    * @Fields.string({ allowApiUpdate: false })
    * createdBy = remult.user?.id;
+   * @example
+   * // Allow API update only on new items
+   * @Fields.string<Category>({ allowApiUpdate: (c) => getEntityRef(c).isNew() })
+   * Description = ""
    * @see [allowed](https://remult.dev/docs/allowed.html)
    * @see [Access Control](https://remult.dev/docs/access-control)
    * @type {AllowedForInstance<entityType>}
