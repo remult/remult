@@ -5,7 +5,7 @@ In Remult, you can take advantage of Entity Lifecycle Hooks to add custom logic 
 ## Validation
 
 - **Runs On**: Backend and Frontend.
-- **Purpose**: To perform validations on the entity's data before saving. This is the best place to check how individual entity fields relate to each other.
+- **Purpose**: To perform validations on the entity's data before saving. This is the best place to check how individual fields in entity relate to each other.
 - **Example**:
   ```ts
   @Entity<Order>("orders", {
@@ -17,7 +17,7 @@ In Remult, you can take advantage of Entity Lifecycle Hooks to add custom logic 
   })
   ```
 
-  You can run custom validation like in this example to check only one field, but probably better place to do it in [field validation](./validation.md).
+  You can run custom validation like in this example to check separate fields one by one, but probably better place to do it with [field validation](./validation.md).
 
   **Nota bene!** When validation runs on backend it do not load [relations](./entity-relations.md) automatically! On server side hook receives only relation primary keys and relation data is `undefined` if you try to use it. There is two ways to overcome it: `load()` relation or add [`relationExists`](./ref_validators#relationexists) validation to field:
   ```ts
