@@ -2541,11 +2541,12 @@ In Remult, you can take advantage of Entity Lifecycle Hooks to add custom logic 
     validation: async (task, e) => {
       // simple validation of single field
       if (task.title.length < 5) {
-        throw new Error("Task title must be at least 5 characters long.");
+        e.fields.collection.error = "Task title must be at least 5 characters long."
+      }
 
       // checking few fields for joint validity
       if (task.completed && task.assignedToId === null){
-        throw new Error(`Task ${task.title} must be assigned to someone before beeing completed.`);
+        throw new Error(`Task ${task.title} must be assigned to someone before beeing completed.`)
       }
     },
   })
@@ -2564,7 +2565,7 @@ In Remult, you can take advantage of Entity Lifecycle Hooks to add custom logic 
       // option 1 - load relation when you need it
       await e.fields.items.load()
       if (length(order.items) > 3 && order.destinationCountry == 'US') {
-        throw new Error("We can't ship such large orders to USA! sorry :-(");
+        throw new Error("We can't ship such large orders to USA! :-(");
       }
     },
   })
@@ -8024,7 +8025,7 @@ Validator to check if a value is within a specified range.
 ## regex
 Validator to check if a value matches a given regular expression.
 ## relationExists
-Validator to check if a related value exists in the database. By side-effect it loads relation data so it is directly available in [lifecycle hooks](./lifecycle-hooks.md)
+Validator to check if a related value exists in the database. By side-effect it loads relation data so it is directly available in [lifecycle hooks](https://remult.dev/docs/lifecycle-hooks)
 ## required
 Validator to check if a value is required (not null or empty).
 ## unique
