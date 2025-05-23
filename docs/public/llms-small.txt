@@ -1477,10 +1477,6 @@ export class Contact {
 
 # Entities - Relations
 
----
-outline: [2, 3]
----
-
 # Relations Between Entities
 
 ::: tip **Interactive Learning Available! 🚀**
@@ -2539,18 +2535,51 @@ In Remult, you can take advantage of Entity Lifecycle Hooks to add custom logic 
 ## Validation
 
 - **Runs On**: Backend and Frontend.
-- **Purpose**: To perform validations on the entity's data before saving.
+- **Purpose**: To perform validations on the entity's data before saving. This is the best place to check how individual fields in entity relate to each other.
 - **Example**:
   ```ts
   @Entity<Task>("tasks", {
     validation: async (task, e) => {
+      // simple validation of single field
       if (task.title.length < 5) {
         throw new Error("Task title must be at least 5 characters long.");
+
+      // checking few fields for joint validity
+      if (task.completed && task.assignedToId === null){
+        throw new Error(`Task ${task.title} must be assigned to someone before beeing completed.`);
       }
     },
   })
   ```
-  You can run custom validation like in this example, and you can also use [builtin validation](./validation.md).
+
+  ::: tip
+  You can run custom validation like in this example to check separate fields one by one as we do with `title.length`, but probably better place to do it with [field validation](./validation.md).
+  :::
+
+  ::: tip
+  When validation runs on backend it do not load [relations](./entity-relations.md) automatically! On server side hook receives only relation primary keys and relation data is `undefined` if you try to use it. There is two ways to overcome it:
+  * `load()` relation:
+  ```ts
+  @Entity<Order>("orders", {
+    validation: async (order, e) => {
+      // option 1 - load relation when you need it
+      await e.fields.items.load()
+      if (length(order.items) > 3 && order.destinationCountry == 'US') {
+        throw new Error("We can't ship such large orders to USA! sorry :-(");
+      }
+    },
+  })
+  ```
+
+  * add [`relationExists`](./ref_validators#relationexists) validation to field:
+  ```ts
+  @Relations.toMany(() => Items, {
+    // option 2 - relation is loaded by byproduct of this validation
+    validate: Validators.relationExists
+  })
+  items?: Item[];
+  ```
+  :::
 
 ## Saving
 
@@ -6570,14 +6599,6 @@ Accessing the underlying database directly in Remult provides the flexibility to
 
 # Escape Hatches - Using in Non-Remult Routes
 
----
-keywords:
-  [
-    Error: remult object was requested outside of a valid context,
-    try running it within initApi or a remult request cycle,
-  ]
----
-
 # Using Remult in Non-Remult Routes
 
 When using the CRUD api or [BackendMethods](./backendMethods.md), `remult` is automatically available. Still, there are many use cases where you may want to user remult in your own routes or other code without using `BackendMethods` but would still want to take advantage of `Remult` as an ORM and use it to check for user validity, etc...
@@ -6828,7 +6849,6 @@ import { remultApi } from 'remult/remult-hapi'
 :::
 
 
-
 # Escape Hatches - Avoiding Decorators
 
 # Working without decorators
@@ -6911,18 +6931,6 @@ This is the same backend method that is detailed in the [Backend methods of the 
 
 
 # Escape Hatches - Extensibility
-
----
-tags:
-  - options
-  - bespoke options
-  - customizing options
-  - type augmentation
-  - module augmentation
-  - UserInfo
-  - RemultContext
-  - context
----
 
 # Extensibility
 
@@ -7073,7 +7081,6 @@ or in an entity's saving event:
 ```
 
 By leveraging module augmentation, you can tailor Remult to your specific needs, adding custom options and extending interfaces to suit your application's requirements.
-
 
 
 # Integrations - Open API
@@ -7565,6 +7572,18 @@ An arrow function that identifies the `id` column to use for this entity
 Arguments:
 * **ref**
 * **row**
+## dataProvider
+A function that allows customizing the data provider for the entity.
+
+
+#### example:
+```ts
+dataProvider: (dp) => {
+  if (!dp.isProxy) // usually indicates that we're on the backend
+    return getASpacificDataProvider();
+  return null
+}
+```
 ## apiRequireId
 * **apiRequireId**
 
@@ -7639,6 +7658,14 @@ _It happens after entity level authorization AND if it's allowed._
 // Prevent API from updating this field
 @Fields.string({ allowApiUpdate: false })
 createdBy = remult.user?.id;
+```
+
+
+#### example:
+```ts
+// Allow API update only on new items
+@Fields.string<Category>({ allowApiUpdate: (c) => getEntityRef(c).isNew() })
+Description = ""
 ```
 
 
@@ -7998,7 +8025,7 @@ Validator to check if a value is within a specified range.
 ## regex
 Validator to check if a value matches a given regular expression.
 ## relationExists
-Validator to check if a related value exists in the database.
+Validator to check if a related value exists in the database. By side-effect it loads relation data so it is directly available in [lifecycle hooks](./lifecycle-hooks.md)
 ## required
 Validator to check if a value is required (not null or empty).
 ## unique
@@ -8157,8 +8184,11 @@ const taskRepo = remult.repo(Task);
 Arguments:
 * **entity** - the entity to use
 * **dataProvider** - an optional alternative data provider to use. Useful for writing to offline storage or an alternative data provider
-## user
-Returns the current user's info
+## subscribeAuth
+* **subscribeAuth**
+
+Arguments:
+* **listener**
 ## initUser
 Fetches user information from the backend and updates the `remult.user` object.
 Typically used during application initialization and user authentication.
@@ -8305,6 +8335,8 @@ A helper callback that is called whenever an entity is created.
 context information that can be used to store custom information that will be disposed as part of the `remult` object
 ## apiClient
 The api client that will be used by `remult` to perform calls to the `api`
+## user
+* **user**
 ## liveQueryStorage
 * **liveQueryStorage**
 ## subscriptionServer
@@ -9082,125 +9114,84 @@ Arguments:
 # API Reference - RemultServerOptions
 
 # RemultServerOptions
-
-- **RemultServerOptions**
-
+* **RemultServerOptions**
 ## entities
-
 Entities to use for the api
-
 ## controllers
-
 Controller to use for the api
-
 ## getUser
-
 Will be called to get the current user based on the current request
-
 ## initRequest
-
 Will be called for each request and can be used for configuration
-
 ## initApi
-
 Will be called once the server is loaded and the data provider is ready
-
 ## dataProvider
-
 Data Provider to use for the api.
 
+
 #### see:
-
 [Connecting to a Database](https://remult.dev/docs/databases.html).
-
 ## ensureSchema
-
 Will create tables and columns in supporting databases. default: true
 
+
 #### description:
-
 when set to true, it'll create entities that do not exist, and add columns that are missing.
-
 ## rootPath
-
 The path to use for the api, default:/api
 
+
 #### description:
-
 If you want to use a different api path adjust this field
-
 ## defaultGetLimit
-
 The default limit to use for find requests that did not specify a limit
-
 ## logApiEndPoints
-
 When set to true (default) it'll console log each api endpoint that is created
-
 ## subscriptionServer
-
 A subscription server to use for live query and message channels
-
 ## liveQueryStorage
-
 A storage to use to store live queries, relevant mostly for serverless scenarios or larger scales
-
 ## contextSerializer
-
 Used to store the context relevant info for re running a live query
-
 ## admin
-
 When set to true, will display an admin ui in the `/api/admin` url.
 Can also be set to an arrow function for fine grained control
 
-#### example:
 
+#### example:
 ```ts
 admin: true
 ```
 
-#### example:
 
+#### example:
 ```ts
 admin: () => remult.isAllowed('admin')
 ```
 
+
 #### see:
-
 [allowed](http://remult.dev/docs/allowed.html)
-
 ## queueStorage
-
 Storage to use for backend methods that use queue
-
 ## error
-
 This method is called whenever there is an error in the API lifecycle.
 
-#### example:
 
+#### example:
 ```ts
 export const api = remultApi({
   error: async (e) => {
     if (e.httpStatusCode == 400) {
-      e.sendError(500, { message: 'An error occurred' })
+      e.sendError(500, { message: "An error occurred" })
     }
-  },
+  }
 })
 ```
 
 
 
 # API Reference - EntityFilter
-
----
-tags:
-  - Where
-  - Filter
-  - Entity Where
-  - Entity Filter
----
 
 # EntityFilter
 
@@ -9340,7 +9331,6 @@ where: {
   }
 }
 ```
-
 
 
 # API Reference - EntityMetadata
@@ -10616,13 +10606,7 @@ Arguments:
 
 
 
-# Remult Blog - Introducing Remult
-
----
-title: "Introducing Remult: The Backend to Frontend Framework You Always Wanted"
-sidebar: false
-editLink: false
----
+# Introducing Remult: The Backend to Frontend Framework You Always Wanted
 
 > March 14, 2023 | Noam Honig
 
@@ -10697,7 +10681,6 @@ So we open sourced the framework, to enable other lazy developers like us to be 
 Check out [Remult](https://remult.dev), and if you like it, give it a star.  Let us know what you’d like to see next, and also feel free to contribute to the project.
 
 In our next post, we’ll do a roundup of tools in the ecosystem looking to solve similar challenges though different approaches, and unpack where Remult fits in, and what it’s optimized for.
-
 
 
 # SvelteKit - Tutorial - Go further / Extra

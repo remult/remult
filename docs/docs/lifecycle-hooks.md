@@ -8,30 +8,41 @@ In Remult, you can take advantage of Entity Lifecycle Hooks to add custom logic 
 - **Purpose**: To perform validations on the entity's data before saving. This is the best place to check how individual fields in entity relate to each other.
 - **Example**:
   ```ts
-  @Entity<Order>("orders", {
-    validation: async (order, e) => {
-      if (order.status == "complete" and order.itemsCount == 0) {
-        throw new Error("Order without items can't be `complete`!");
+  @Entity<Task>("tasks", {
+    validation: async (task, e) => {
+      // simple validation of single field
+      if (task.title.length < 5) {
+        e.fields.collection.error = "Task title must be at least 5 characters long."
+      }
+
+      // checking few fields for joint validity
+      if (task.completed && task.assignedToId === null){
+        throw new Error(`Task ${task.title} must be assigned to someone before beeing completed.`)
       }
     },
   })
   ```
 
-  You can run custom validation like in this example to check separate fields one by one, but probably better place to do it with [field validation](./validation.md).
+  ::: tip
+  You can run custom validation like in this example to check separate fields one by one as we do with `title.length`, but probably better place to do it with [field validation](./validation.md).
+  :::
 
-  **Nota bene!** When validation runs on backend it do not load [relations](./entity-relations.md) automatically! On server side hook receives only relation primary keys and relation data is `undefined` if you try to use it. There is two ways to overcome it: `load()` relation or add [`relationExists`](./ref_validators#relationexists) validation to field:
+  ::: tip
+  When validation runs on backend it do not load [relations](./entity-relations.md) automatically! On server side hook receives only relation primary keys and relation data is `undefined` if you try to use it. There is two ways to overcome it:
+  * `load()` relation:
   ```ts
   @Entity<Order>("orders", {
     validation: async (order, e) => {
       // option 1 - load relation when you need it
       await e.fields.items.load()
-      if (length(order.items) == order.itemsCount) {
-        throw new Error("itemsCount do not match with number of related items");
+      if (length(order.items) > 3 && order.destinationCountry == 'US') {
+        throw new Error("We can't ship such large orders to USA! :-(");
       }
     },
   })
   ```
 
+  * add [`relationExists`](./ref_validators#relationexists) validation to field:
   ```ts
   @Relations.toMany(() => Items, {
     // option 2 - relation is loaded by byproduct of this validation
@@ -39,7 +50,7 @@ In Remult, you can take advantage of Entity Lifecycle Hooks to add custom logic 
   })
   items?: Item[];
   ```
-
+  :::
 
 ## Saving
 
