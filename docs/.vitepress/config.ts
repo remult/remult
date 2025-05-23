@@ -99,7 +99,7 @@ const sidebar = tutorials.reduce(
         items: [
           { text: 'Fields', link: '/docs/field-types' },
           {
-            text: 'Relations 🚀',
+            text: 'Relations',
             link: '/docs/entity-relations',
             collapsed: true,
             items: [
