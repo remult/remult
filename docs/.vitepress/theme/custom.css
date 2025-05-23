@@ -283,8 +283,6 @@ body:has(.VPContent.is-home) {
 #app .VPSidebar {
   padding: 0;
   border-right: 1px solid var(--vp-c-divider);
-  scrollbar-width: thin;
-  scrollbar-color: var(--vp-c-divider) transparent;
   height: calc(100vh - var(--vp-nav-height));
   top: var(--vp-nav-height);
   margin-top: 0;
@@ -317,6 +315,10 @@ body:has(.VPContent.is-home) {
 #app .VPSidebarItem.is-active > .item .VPLink .text {
   color: var(--vp-c-brand-2);
   font-weight: 500;
+}
+
+#app .VPNavBar.has-sidebar .divider {
+  padding-left: calc((100% - var(--vp-layout-max-width)) / 2 + var(--vp-sidebar-width));
 }
 
 #app .VPNavBar.has-sidebar .divider-line {
