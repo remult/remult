@@ -267,5 +267,17 @@ An arrow function that identifies the `id` column to use for this entity
 Arguments:
 * **ref**
 * **row**
+## dataProvider
+A function that allows customizing the data provider for the entity.
+
+
+#### example:
+```ts
+dataProvider: (dp) => {
+  if (!dp.isProxy) // usually indicates that we're on the backend
+    return getASpacificDataProvider();
+  return null
+}
+```
 ## apiRequireId
 * **apiRequireId**

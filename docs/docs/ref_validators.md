@@ -25,7 +25,7 @@ Validator to check if a value is within a specified range.
 ## regex
 Validator to check if a value matches a given regular expression.
 ## relationExists
-Validator to check if a related value exists in the database. By side-effect it loads relation data so it is directly available in [lifecycle hooks](./lifecycle-hooks.md)
+Validator to check if a related value exists in the database. By side-effect it loads relation data so it is directly available in [lifecycle hooks](https://remult.dev/docs/lifecycle-hooks)
 ## required
 Validator to check if a value is required (not null or empty).
 ## unique
