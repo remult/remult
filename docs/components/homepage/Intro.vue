@@ -12,7 +12,7 @@ const features = [
   { text: 'Authorization', bgColor: '#0D5337', textColor: '#2CA171' },
   { text: 'Lifecycle hooks', bgColor: '#050643', textColor: '#7173F2' },
   { text: 'Real Time', bgColor: '#538CC9', textColor: '#184472' },
-  { text: 'Typesafety', bgColor: '#8262E1', textColor: '#FFFFFF' },
+  { text: 'Typesafety', bgColor: '#8262E1', textColor: '#ded6f6' },
   { text: 'Offline Support', bgColor: '#A91D23', textColor: '#FF979B' },
   { text: 'Admin UI', bgColor: '#00D8FF', textColor: '#266F7C' },
 ]
@@ -411,7 +411,22 @@ body.dark .rotating-text {
 }
 
 .shake {
-  animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  animation: shake 1s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shake {
+    animation: none;
+  }
+  
+  .fade-in {
+    transition: none;
+  }
+  
+  .fade-in-visible {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .cta {
