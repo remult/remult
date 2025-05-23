@@ -68,6 +68,14 @@ createdBy = remult.user?.id;
 ```
 
 
+#### example:
+```ts
+// Allow API update only on new items
+@Fields.string<Category>({ allowApiUpdate: (c) => getEntityRef(c).isNew() })
+Description = ""
+```
+
+
 #### see:
  - [allowed](https://remult.dev/docs/allowed.html)
  - [Access Control](https://remult.dev/docs/access-control)
