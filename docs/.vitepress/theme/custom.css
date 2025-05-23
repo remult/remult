@@ -84,7 +84,7 @@ body:has(.VPContent.is-home) {
   }
 }
 
-body {
+html {
   scrollbar-width: thin;
   scrollbar-color: var(--vp-c-divider) transparent;
 }
