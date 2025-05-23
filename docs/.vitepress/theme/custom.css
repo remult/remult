@@ -351,7 +351,7 @@ body:has(.VPContent.is-home) {
 
 @media screen and (max-width: 960px) {
   #app .VPNavBar.has-sidebar .title {
-    background: var(--vp-c-bg-sidebar);
+    background: transparent;
 
     .title {
       border-right: none;
