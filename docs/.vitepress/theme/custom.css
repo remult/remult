@@ -84,6 +84,16 @@ body:has(.VPContent.is-home) {
   }
 }
 
+body {
+  scrollbar-width: thin;
+  scrollbar-color: var(--vp-c-divider) transparent;
+}
+
+#app .VPSidebar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--vp-c-divider) transparent;
+}
+
 
 .vp-code-group .tabs {
   background-color: var(--vp-c-bg-alt);
