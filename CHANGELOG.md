@@ -1,11 +1,13 @@
 All notable changes to this project will be documented in this file.
 
-## [3.0.3] TBD
+## [3.0.3] 2025-5-23
 
+- Few doc updates by @jycouet in https://github.com/remult/remult/pull/704
+- add removeItem method to JsonEntityIndexedDbStorage by @TGlide in https://github.com/remult/remult/pull/703
+- :construction: UPDATE: sveltekit data is now always returning application/json by @jycouet in https://github.com/remult/remult/pull/706
 - Fix undefined error in TestApiDataProvider with multiple relations
-- sveltekit data is now always with 'Content-Type': 'application/json'
 
-## [3.0.2] 2025-4-13
+## [3.0.2] 2025-5-13
 
 - Update DuckDB adapter to use new @duckdb/node-api package - #700
   Big thanks to @jc955 for his first contribution
