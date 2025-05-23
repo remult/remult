@@ -281,12 +281,20 @@ body:has(.VPContent.is-home) {
 }
 
 #app .VPSidebar {
-  padding-left: 0;
-  padding-right: 0;
-  padding-bottom: 0;
+  padding: 0;
   border-right: 1px solid var(--vp-c-divider);
   scrollbar-width: thin;
   scrollbar-color: var(--vp-c-divider) transparent;
+  height: calc(100vh - var(--vp-nav-height));
+  top: var(--vp-nav-height);
+  margin-top: 0;
+}
+
+@media screen and (max-width: 960px) {
+  #app .VPSidebar {
+    height: 100vh;
+    top: 0;
+  }
 }
 
 #app .nav .group {
@@ -337,8 +345,14 @@ body:has(.VPContent.is-home) {
   }
 }
 
+#app .VPNavBar.has-sidebar .title {
+  background: var(--vp-c-bg-sidebar);
+}
+
 @media screen and (max-width: 960px) {
   #app .VPNavBar.has-sidebar .title {
+    background: var(--vp-c-bg-sidebar);
+
     .title {
       border-right: none;
       background-color: transparent;

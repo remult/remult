@@ -299,7 +299,7 @@ const sidebar = tutorials.reduce(
             link: '/docs/running-sql-on-the-server',
           },
           {
-            text: 'Using Remult in Non-Remult Routes',
+            text: 'Using in Non-Remult Routes',
             link: '/docs/using-remult-in-custom-backend-code',
           },
           {

@@ -6563,7 +6563,7 @@ Accessing the underlying database directly in Remult provides the flexibility to
 
 
 
-# Escape Hatches - Using Remult in Non-Remult Routes
+# Escape Hatches - Using in Non-Remult Routes
 
 # Using Remult in Non-Remult Routes
 
