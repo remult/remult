@@ -206,6 +206,12 @@ body:has(.VPContent.is-home) {
 }
 
 #app .VPNavBar:not(.has-sidebar):not(.home.top) {
+  background-color: rgba(255,255, 255, 0.75);
+  backdrop-filter: blur(12px) saturate(120%);
+  border-bottom: 1px solid var(--vp-c-divider);
+}
+
+.dark #app .VPNavBar:not(.has-sidebar):not(.home.top) {
   background-color: rgba(5, 5, 57, 0.5);
   backdrop-filter: blur(15px) saturate(120%);
   border-bottom: 1px solid var(--vp-c-divider);
@@ -213,6 +219,41 @@ body:has(.VPContent.is-home) {
 
 #app .VPNavBar:not(.has-sidebar):not(.home.top) .divider {
   opacity: 0;
+}
+
+#app .VPNavBar.has-sidebar {
+  .VPNavBarSearch {
+    padding-left: 0;
+
+    .DocSearch-Button {
+      height: 48px;
+      padding: 0 1rem;
+      border-radius: 0;
+      border: none;
+      background-color: transparent;
+      border-right: 1px solid var(--vp-c-divider);
+    }
+
+    .DocSearch-Button:hover {
+      background-color: var(--vp-c-bg-alt);
+      border: none;
+      border-right: 1px solid var(--vp-c-divider);
+    }
+  }
+}
+
+@media screen and (max-width: 960px) {
+  #app .VPNavBar.has-sidebar {
+    .VPNavBarSearch {
+      .DocSearch-Button {
+        border-right: none;
+      }
+
+      .DocSearch-Button:hover {
+        border-right: none;
+      }
+    }
+  }
 }
 
 #app .VPNavBar.has-sidebar .title {
@@ -244,6 +285,8 @@ body:has(.VPContent.is-home) {
   padding-right: 0;
   padding-bottom: 0;
   border-right: 1px solid var(--vp-c-divider);
+  scrollbar-width: thin;
+  scrollbar-color: var(--vp-c-divider) transparent;
 }
 
 #app .nav .group {
@@ -296,7 +339,6 @@ body:has(.VPContent.is-home) {
 
 @media screen and (max-width: 960px) {
   #app .VPNavBar.has-sidebar .title {
-
     .title {
       border-right: none;
       background-color: transparent;
