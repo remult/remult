@@ -3,6 +3,7 @@ All notable changes to this project will be documented in this file.
 ## [3.0.3] TBD
 
 - Fix undefined error in TestApiDataProvider with multiple relations
+- sveltekit data is now always with 'Content-Type': 'application/json'
 
 ## [3.0.2] 2025-4-13
 
