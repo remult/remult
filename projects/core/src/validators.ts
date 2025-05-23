@@ -105,7 +105,7 @@ export class Validators {
       `Value must be one of ${getEnumValues(enumObj as object).join(', ')}`,
   )
   /**
-   * Validator to check if a related value exists in the database.
+   * Validator to check if a related value exists in the database. By side-effect it loads relation data so it is directly available in [lifecycle hooks](./lifecycle-hooks.md)
    */
   static relationExists = createValidator<unknown>(async (_, e) => {
     if (e.valueIsNull()) return true
