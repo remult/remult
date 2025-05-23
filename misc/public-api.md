@@ -1905,6 +1905,7 @@ export declare class JsonEntityIndexedDbStorage implements JsonEntityStorage {
   supportsRawJson: boolean
   getItem(entityDbName: string): Promise<string>
   setItem(entityDbName: string, json: string): Promise<void>
+  removeItem(entityDbName: string): Promise<void>
 }
 export declare class JsonEntityOpfsStorage implements JsonEntityStorage {
   getItem(entityDbName: string): Promise<string>
