@@ -99,7 +99,7 @@ const sidebar = tutorials.reduce(
         items: [
           { text: 'Fields', link: '/docs/field-types' },
           {
-            text: 'Relations 🚀',
+            text: 'Relations',
             link: '/docs/entity-relations',
             collapsed: true,
             items: [
@@ -299,7 +299,7 @@ const sidebar = tutorials.reduce(
             link: '/docs/running-sql-on-the-server',
           },
           {
-            text: 'Using Remult in Non-Remult Routes',
+            text: 'Using in Non-Remult Routes',
             link: '/docs/using-remult-in-custom-backend-code',
           },
           {

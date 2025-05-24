@@ -214,7 +214,7 @@ import Icon from '../Icon.vue'
   margin-bottom: 20px;
 
   p {
-    color: #b2a5db;
+    color: var(--vp-c-text-3);
   }
 }
 
