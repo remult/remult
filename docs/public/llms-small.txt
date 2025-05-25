@@ -2320,7 +2320,6 @@ Utilizing an intermediate table for managing many-to-many relationships in Remul
 In this guide, we've explored the essential concepts of managing entity relations within the Remult library. From one-to-one to many-to-many relationships, we've covered the declaration, customization, and querying of these relations. By understanding the nuances of entity relations, users can harness the full potential of Remult to build robust TypeScript applications with ease.
 
 
-
 # Relations - Filtering and Relations
 
 # Filtering and Relations
