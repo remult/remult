@@ -712,7 +712,7 @@ export class FilterSerializer implements FilterConsumer {
   add(key: string, val: any) {
     if (val === undefined) this.hasUndefined = true
     let r = this.result
-    if (!r[key]) {
+    if (r[key] === undefined) {
       r[key] = val
       return
     }

@@ -1,5 +1,9 @@
 All notable changes to this project will be documented in this file.
 
+## [3.0.4] 2025-5-26
+
+- Fixed issue where cases when multiple `$ne` or `$nin` were used with rest data provider and the value 0 - the 0 value would sometime not be sent to the server
+
 ## [3.0.3] 2025-5-23
 
 - Few doc updates by @jycouet in https://github.com/remult/remult/pull/704
