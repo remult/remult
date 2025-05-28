@@ -15,7 +15,10 @@ export interface FieldOptions<entityType = unknown, valueType = unknown> {
   caption?: string
   /** If it can store null in the database */
   allowNull?: boolean
-  /** If a value is required */
+  /** If a value is required. Short-cut to say `validate: Validators.required`.
+      @see option [validate](https://remult.dev/docs/ref_field#validate) below
+      @see validator [required](https://remult.dev/docs/ref_validators#required)
+   */
   required?: boolean
   /**
    * Specifies whether this field should be included in the API. This can be configured
