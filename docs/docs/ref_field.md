@@ -32,7 +32,13 @@ A human readable name for the field. Can be used to achieve a consistent caption
 ## allowNull
 If it can store null in the database
 ## required
-If a value is required
+If a value is required. Short-cut to say `validate: Validators.required`.
+
+
+#### see:
+ - option [validate](https://remult.dev/docs/ref_field#validate) below
+ - validator [required](https://remult.dev/docs/ref_validators#required)
+
 ## includeInApi
 Specifies whether this field should be included in the API. This can be configured
 based on access control levels.
