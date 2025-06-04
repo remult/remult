@@ -24,7 +24,7 @@ export function remultApi(
     getRequestBody: (event) => event.request.json(),
   })
   const serverHandler = async () => {
-    const event = await getRequestEvent()
+    const event = getRequestEvent()
     let sseResponse: Response | undefined = undefined
     if (event) event.locals['_tempOnClose'] = () => { }
 
@@ -99,7 +99,7 @@ export function remultApi(
     getRemult: (req: RequestEvent) => result.getRemult(req),
     openApiDoc: (options: { title: string }) => result.openApiDoc(options),
     async withRemult<T>(what: () => Promise<T>): Promise<T> {
-      return result.withRemultAsync(await getRequestEvent(), what)
+      return result.withRemultAsync(getRequestEvent(), what)
     },
     GET: serverHandler,
     PUT: serverHandler,
