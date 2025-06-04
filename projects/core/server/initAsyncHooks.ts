@@ -7,6 +7,9 @@ import { remultStatic } from '../src/remult-static.js'
 
 let init = false
 
+/**
+ * Add an example of how to use it.
+ */
 export function initAsyncHooks() {
   if (init) return
   init = true
