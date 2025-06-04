@@ -8,7 +8,12 @@ import { remultStatic } from '../src/remult-static.js'
 let init = false
 
 /**
- * Add an example of how to use it.
+ * Initializes async context tracking for the server.
+ * 
+ * This should be called before handling any incoming requests or calling `withRemult()`.
+ * @example
+ * import { initAsyncHooks } from 'remult/async-hooks';
+ * initAsyncHooks();
  */
 export function initAsyncHooks() {
   if (init) return
