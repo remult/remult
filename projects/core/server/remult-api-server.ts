@@ -1,4 +1,3 @@
-import type { Response } from 'express'
 import type { ResponseRequiredForSSE } from '../SseSubscriptionServer.js'
 import { SseSubscriptionServer } from '../SseSubscriptionServer.js'
 import type { ClassType } from '../classType.js'
@@ -43,7 +42,7 @@ import { remultStatic } from '../src/remult-static.js'
 import remultAdminHtml, { buildEntityInfo } from './remult-admin.js'
 import { isOfType } from '../src/isOfType.js'
 import { initDataProviderOrJson } from './initDataProviderOrJson.js'
-import type { ParseOptions, SerializeOptions } from 'cookie'
+import type { CookieParseOptions, CookieSerializeOptions } from 'cookie'
 import fs from 'fs'
 import { join, extname } from 'path'
 
@@ -346,9 +345,9 @@ export interface GenericResponse {
   //   get(): string | undefined
   //   delete(): void
   // }
-  setCookie(name: string, value: string, opts?: SerializeOptions): void
-  getCookie(name: string, opts?: ParseOptions): string | undefined
-  deleteCookie(name: string, opts?: SerializeOptions): void
+  setCookie(name: string, value: string, opts?: CookieSerializeOptions): void
+  getCookie(name: string, opts?: CookieParseOptions): string | undefined
+  deleteCookie(name: string, opts?: CookieSerializeOptions): void
   status(statusCode: number): GenericResponse //exists for express and next and not in opine(In opine it's setStatus)
   end(): void
 }

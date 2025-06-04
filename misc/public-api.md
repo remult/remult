@@ -1075,7 +1075,10 @@ export interface FieldOptions<entityType = unknown, valueType = unknown> {
   caption?: string
   /** If it can store null in the database */
   allowNull?: boolean
-  /** If a value is required */
+  /** If a value is required. Short-cut to say `validate: Validators.required`.
+        @see option [validate](https://remult.dev/docs/ref_field#validate) below
+        @see validator [required](https://remult.dev/docs/ref_validators#required)
+     */
   required?: boolean
   /**
    * Specifies whether this field should be included in the API. This can be configured
@@ -3602,14 +3605,14 @@ export interface GenericResponse {
       | 308
       | ({} & number),
   ): void
-  setCookie(name: string, value: string, opts?: SerializeOptions): void
-  getCookie(name: string, opts?: ParseOptions): string | undefined
-  deleteCookie(name: string, opts?: SerializeOptions): void
+  setCookie(name: string, value: string, opts?: CookieSerializeOptions): void
+  getCookie(name: string, opts?: CookieParseOptions): string | undefined
+  deleteCookie(name: string, opts?: CookieSerializeOptions): void
   status(statusCode: number): GenericResponse
   end(): void
 }
-//[ ] SerializeOptions from TBD is not exported
-//[ ] ParseOptions from TBD is not exported
+//[ ] CookieSerializeOptions from TBD is not exported
+//[ ] CookieParseOptions from TBD is not exported
 export type GenericRouter<RequestType> = {
   route(path: string): SpecificRoute<RequestType>
 }
@@ -3900,14 +3903,14 @@ export interface GenericResponse {
       | 308
       | ({} & number),
   ): void
-  setCookie(name: string, value: string, opts?: SerializeOptions): void
-  getCookie(name: string, opts?: ParseOptions): string | undefined
-  deleteCookie(name: string, opts?: SerializeOptions): void
+  setCookie(name: string, value: string, opts?: CookieSerializeOptions): void
+  getCookie(name: string, opts?: CookieParseOptions): string | undefined
+  deleteCookie(name: string, opts?: CookieSerializeOptions): void
   status(statusCode: number): GenericResponse
   end(): void
 }
-//[ ] SerializeOptions from TBD is not exported
-//[ ] ParseOptions from TBD is not exported
+//[ ] CookieSerializeOptions from TBD is not exported
+//[ ] CookieParseOptions from TBD is not exported
 export type GenericRouter<RequestType> = {
   route(path: string): SpecificRoute<RequestType>
 }
