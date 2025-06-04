@@ -21,9 +21,10 @@ export const api = remultApi({
   initApi: (api) => {
     console.log('Ready 💪')
     console.log('🍪 Response methods now available via remult.res in backend methods!')
+    console.log('📋 Available methods: setCookie, getCookie, deleteCookie, setHeaders, redirect, status, json, send, end')
   },
 
-  // Note: modules work now because we use the framework-agnostic remult.res approach
+  // ✅ Modules work seamlessly with framework-agnostic remult.res approach!
   modules: [someRoutes],
 })
 

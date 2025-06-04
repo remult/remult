@@ -55,6 +55,11 @@ export function remultApi(
       status: () => {
         return response
       },
+      setHeaders: (headers) => {
+        Object.entries(headers).forEach(([key, value]) => {
+          event.node.res.setHeader(key, value)
+        })
+      },
       write: (what) => {
         event.node.res.write(what)
       },

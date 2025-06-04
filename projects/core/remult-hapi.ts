@@ -84,6 +84,13 @@ export function remultApi(
               json(data) {
                 res(h.response(data === null ? 'null' : data).code(status))
               },
+              setHeaders: (headers) => {
+                let response = h.response().code(status)
+                Object.entries(headers).forEach(([key, value]) => {
+                  response = response.header(key, value)
+                })
+                res(response)
+              },
               write(data) {
                 stream.write(data)
               },

@@ -356,6 +356,7 @@ export interface RemultContext {
     json(data: any): void
     send(html: string, headers?: Record<string, string>): void
     end(): void
+    setHeaders(headers: Record<string, string>): void
   }
 }
 /**

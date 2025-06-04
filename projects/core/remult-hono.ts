@@ -102,6 +102,11 @@ export function remultApi(
                 send: (data: string) => {
                   res(c.html(data))
                 },
+                setHeaders: (headers) => {
+                  Object.entries(headers).forEach(([key, value]) => {
+                    c.header(key, value)
+                  })
+                },
                 write: (data: string) => {
                   sse.write(data)
                 },

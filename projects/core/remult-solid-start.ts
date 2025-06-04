@@ -56,6 +56,11 @@ export function remultApi(
       status: () => {
         return response
       },
+      setHeaders: (headers) => {
+        Object.entries(headers).forEach(([key, value]) => {
+          event?.response.headers.set(key, value)
+        })
+      },
       write: () => { },
       writeHead: (status, headers) => {
         if (status === 200 && headers) {

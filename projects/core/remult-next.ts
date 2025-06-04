@@ -122,6 +122,9 @@ export function remultApi(
         status: () => {
           return response
         },
+        setHeaders: () => {
+          // No-op for Next.js app router - headers must be set in route handler return
+        },
         write: () => { },
         writeHead: (status, headers) => {
           if (status === 200 && headers) {

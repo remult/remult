@@ -350,6 +350,7 @@ export interface GenericResponse {
   deleteCookie(name: string, opts?: CookieSerializeOptions): void
   status(statusCode: number): GenericResponse //exists for express and next and not in opine(In opine it's setStatus)
   end(): void
+  setHeaders(headers: Record<string, string>): void
 }
 
 /* @internal*/
@@ -846,8 +847,8 @@ export class RemultServerImplementation<RequestType>
         else
           await this.runWithRemult(async (remult) => {
             if (req) {
-              ;(remult.context as { request: any }).request = req
-              ;(remult.context as { res: any }).res = origRes
+              ;(remult.context as any).request = req
+              ;(remult.context as any).res = origRes
               remultStatic.asyncContext.setInInitRequest(true)
               try {
                 let user
@@ -1751,6 +1752,9 @@ export class RouteImplementation<RequestType> {
           res({
             statusCode: this.statusCode,
           })
+        }
+        setHeaders(headers: Record<string, string>): void {
+          if (gRes !== undefined) gRes.setHeaders(headers)
         }
       })()
       try {

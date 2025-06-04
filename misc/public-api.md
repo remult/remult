@@ -2381,23 +2381,12 @@ export declare class Remult {
   /** context information that can be used to store custom information that will be disposed as part of the `remult` object */
   readonly context: RemultContext
   /** Provides access to response methods like setCookie, getCookie, deleteCookie, etc. Available only during server-side request processing. */
-  get res():
-    | {
-        setCookie(name: string, value: string, opts?: any): void
-        getCookie(name: string, opts?: any): string | undefined
-        deleteCookie(name: string, opts?: any): void
-        redirect(url: string, status?: number): void
-        status(statusCode: number): any
-        json(data: any): void
-        send(html: string, headers?: Record<string, string>): void
-        end(): void
-      }
-    | undefined
+  get res(): NonNullable<RemultContext["res"]>
   /** The api client that will be used by `remult` to perform calls to the `api` */
   apiClient: ApiClient
 }
 export interface RemultContext {
-  res?: {
+  res: {
     setCookie(name: string, value: string, opts?: any): void
     getCookie(name: string, opts?: any): string | undefined
     deleteCookie(name: string, opts?: any): void
@@ -2406,6 +2395,7 @@ export interface RemultContext {
     json(data: any): void
     send(html: string, headers?: Record<string, string>): void
     end(): void
+    setHeaders(headers: Record<string, string>): void
   }
 }
 export declare function repo<entityType>(
@@ -3634,6 +3624,7 @@ export interface GenericResponse {
   deleteCookie(name: string, opts?: CookieSerializeOptions): void
   status(statusCode: number): GenericResponse
   end(): void
+  setHeaders(headers: Record<string, string>): void
 }
 //[ ] CookieSerializeOptions from TBD is not exported
 //[ ] CookieParseOptions from TBD is not exported
@@ -3932,6 +3923,7 @@ export interface GenericResponse {
   deleteCookie(name: string, opts?: CookieSerializeOptions): void
   status(statusCode: number): GenericResponse
   end(): void
+  setHeaders(headers: Record<string, string>): void
 }
 //[ ] CookieSerializeOptions from TBD is not exported
 //[ ] CookieParseOptions from TBD is not exported

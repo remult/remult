@@ -52,6 +52,11 @@ export function remultApi(
         json(data) {
           res.send(data)
         },
+        setHeaders: (headers) => {
+          Object.entries(headers).forEach(([key, value]) => {
+            res.header(key, value)
+          })
+        },
         write(data: string) {
           res.raw.write(data)
         },
