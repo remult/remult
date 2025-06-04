@@ -7,7 +7,7 @@ export class ResBackendMethodController {
     remult.res.setHeaders({
       'X-Custom-Header': 'Hello from Remult!',
       'X-Request-ID': crypto.randomUUID(),
-      'X-Custom-str': str,
+      'header-from-remult-controller': str,
     })
 
     return { message: 'Headers set successfully!' }
