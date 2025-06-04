@@ -1,7 +1,7 @@
 import type { RequestEvent } from '@sveltejs/kit'
 import { createSchema, createYoga } from 'graphql-yoga'
 import { remultGraphql } from 'remult/graphql'
-import { Task } from '../../../shared/Task'
+import { Task } from '../../../../../shared/modules/task/Task.js'
 
 const { typeDefs, resolvers } = remultGraphql({
   entities: [Task],
