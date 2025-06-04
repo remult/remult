@@ -8,6 +8,5 @@ export const resBackendMethodModule = new Module({
 
   initApi: ()=>{
     console.info('🍪 Response methods now available via remult.res in backend methods!')
-    console.info('📋 Available methods: setCookie, getCookie, deleteCookie, setHeaders, redirect, status, json, send, end')
   }
 })
